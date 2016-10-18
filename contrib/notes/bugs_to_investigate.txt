@@ -1052,4 +1052,41 @@ Patch attached
 
 
 
+
+Date: Mon, 17 Oct 2016 16:25:20 -0700
+From: layk <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [ahlstromcj/sequencer64] Undo(ctrl-z) removes two instanses of history
+        via seqedit::on_key_press_event (GdkEventKey * ev) (#46)
+
+Hi
+Undoing(ctrl-z) removes two instances of history.To reproduce this if one makes
+three notes one at a time and presses ctrl-z once only the first one remains. Same
+goes for moving notes.
+
+This is due to a else-if statement in seqedit.cpp line 2544 where
+m_seqroll_wid->on_key_press_event(ev) calls seqroll::on_key_press_event making
+first removal. This if statement is never true and seqroll::on_key_press_event is
+called again on line result = Gtk::Window::on_key_press_event making another
+m_seq.pop_undo(); in seqroll.cpp.
+
+There was also a friend class definition in seqroll.hpp stating:
+
+    /**
+     *  For accessing on_key_press_event().  It would be good to be able to
+     *  avoid this access!
+     */
+    friend class seqedit;
+
+I'm not quite sure what was the notion here with friend class and all but changing
+this else-if to if (ev->keyval == 'z') seems to work for me in sequence editor. It
+also seems to me that regarding this undo problem there is no need for friend
+class declaration anymore.
+
+Patch attached for testing and thoughts.
+[diff.txt](https://github.com/ahlstromcj/sequencer64/files/534872/diff.txt)
+
+
+
+
 # vim: sw=4 ts=4 wm=4 et ft=rc

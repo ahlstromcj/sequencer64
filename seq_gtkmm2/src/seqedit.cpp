@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-14
+ * \updates       2016-10-18
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -2518,6 +2518,29 @@ seqedit::on_scroll_event (GdkEventScroll * ev)
  *  seen as a "1" or an "End" key depends on an interaction between the Shift
  *  and the Num Lock key.  Annoying, takes some time to get used to.
  *
+ * \change layk 2016-10-17
+ *      Issue #46.  Undoing (ctrl-z) removes two instances of history.  To
+ *      reproduce this bug, if one makes three notes one at a time and presses
+ *      ctrl-z once only the first one remains. Same goes for moving notes.
+ *      This is due to this else-if statement where we call
+ *      seqroll::on_key_press_event() making first removal.  This if statement
+ *      is never true and seqroll::on_key_press_event() is called again as
+ *      Gtk::Window::on_key_press_event(), making another m_seq.pop_undo() in
+ *      seqroll.  Note that the code here was an (ill-advised) attempt to
+ *      avoid the pattern title field from grabbing the initial keystrokes;
+ *      better to just get used to clicking the piano roll first.  Finally,
+ *      fixing the undo bug also let's ctrl-page-up/page-down change the zoom.
+ *
+ * \change ca 2016-10-18
+ *      Issue #46.  In addition to layk's fixes, we have to properly determine
+ *      if we're inside the "Sequence Name" ("GtkEntry") field, as opposed to
+ *      the "GtkDrawingArea" field, to avoid grabbing and using keystrokes
+ *      intended for the text-entry field.  We may have to rethink the whole
+ *      seqroll vs. seqedit key-press process at some point, as this is a bit
+ *      too tricky.  Please note that the name "gtkmm__GtkEntry" likely
+ *      applies only to GNU's C++ compiler, g++.  This will be an issue in any
+ *      port to Microsoft's C++ compiler.
+ *
  * \param ev
  *      Provides the keystroke event to be handled.
  *
@@ -2530,6 +2553,8 @@ bool
 seqedit::on_key_press_event (GdkEventKey * ev)
 {
     bool result = false;
+    std::string focus_name = get_focus()->get_name();
+    bool in_name_field = focus_name == "gtkmm__GtkEntry";   /* g++ only!    */
     if (is_ctrl_key(ev))
     {
         if (ev->keyval == 'w')
@@ -2541,12 +2566,24 @@ seqedit::on_key_press_event (GdkEventKey * ev)
 
             return on_delete_event((GdkEventAny *)(ev));
         }
-        else if
-        (
-            get_focus()->get_name() == "Sequence Name" ||
-            ! m_seqroll_wid->on_key_press_event(ev)
-        )
+
+        /*
+         * \change layk 2016-10-17
+         *      Issue #46.  See notes in banner.
+         *
+         *  else if
+         *  (
+         *      get_focus()->get_name() == "Sequence Name" ||
+         *      ! m_seqroll_wid->on_key_press_event(ev)
+         *  )
+         */
+
+        else if (ev->keyval == 'z')
         {
+            /*
+             * Early return!  Could just set result = true.
+             */
+
             return Gtk::Window::on_key_press_event(ev);
         }
         else if (ev->keyval == SEQ64_Page_Up)   /* zoom in              */
@@ -2586,8 +2623,11 @@ seqedit::on_key_press_event (GdkEventKey * ev)
         }
         else if (ev->keyval == SEQ64_Z)        /* zoom in               */
         {
-            set_zoom(m_zoom / 2);
-            result = true;
+            if (! in_name_field)
+            {
+                set_zoom(m_zoom / 2);
+                result = true;
+            }
         }
     }
     else
@@ -2600,20 +2640,29 @@ seqedit::on_key_press_event (GdkEventKey * ev)
 
         if (ev->keyval == SEQ64_Z)              /* zoom in              */
         {
-            set_zoom(m_zoom / 2);
-            result = true;
+            if (! in_name_field)
+            {
+                set_zoom(m_zoom / 2);
+                result = true;
+            }
         }
         else
 #endif
         if (ev->keyval == SEQ64_0)              /* reset to normal zoom */
         {
-            set_zoom(m_initial_zoom);           /* not usr().zoom())    */
-            result = true;
+            if (! in_name_field)
+            {
+                set_zoom(m_initial_zoom);       /* not usr().zoom())    */
+                result = true;
+            }
         }
         else if (ev->keyval == SEQ64_z)         /* zoom out             */
         {
-            set_zoom(m_zoom * 2);
-            result = true;
+            if (! in_name_field)
+            {
+                set_zoom(m_zoom * 2);
+                result = true;
+            }
         }
         else if (ev->keyval == SEQ64_Page_Down) /* scroll downward      */
         {

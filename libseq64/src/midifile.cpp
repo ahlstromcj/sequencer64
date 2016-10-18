@@ -1342,7 +1342,6 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             int bpmes = int(read_long());
             p.set_beats_per_bar(bpmes);
         }
-
         seqspec = parse_prop_header(file_size);
         if (seqspec == c_perf_bw)
         {

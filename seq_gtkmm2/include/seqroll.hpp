@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-16
+ * \updates       2016-10-17
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -103,9 +103,13 @@ class seqroll : public gui_drawingarea_gtk2
     /**
      *  For accessing on_key_press_event().  It would be good to be able to
      *  avoid this access!
+     *
+     * \change layk 2016-10-17
+     *      Issue #46. No need for this declaration now, due to the fix in
+     *      seqedit.
+     *
+     * friend class seqedit;
      */
-
-    friend class seqedit;
 
 private:
 

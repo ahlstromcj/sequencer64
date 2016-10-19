@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-12
+ * \updates       2016-10-19
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -150,7 +150,9 @@ sequence::~sequence ()
  *  pointer can be used without an additional include-file in the sequence.hpp
  *  module.  One minor issue is how can we unmodify the performance?  We'd need
  *  to keep a count/stack of modifications over all sequences in the
- *  performance.  Probably not practical.
+ *  performance.  Probably not practical, in general.  We will probably keep
+ *  track of the modification of the buss (port) and channel numbers, as per
+ *  GitHub Issue #47..
  */
 
 void
@@ -3988,18 +3990,34 @@ sequence::get_last_tick ()
 }
 
 /**
- *  Sets the midibus number to dump to.
+ *  Sets the MIDI buss/port number to dump MIDI data to.
  *
  * \threadsafe
+ *
+ * \param mb
+ *      The MIDI buss to set as the buss number for this sequence.  Also
+ *      called the "MIDI port" number.
+ *
+ * \param user_change
+ *      If true (the default value is false), the user has decided to change
+ *      this value, and we might need to modify the perform's dirty flag, so
+ *      that the user gets prompted for a change,  This is a response to
+ *      GitHub issue #47, where buss changes do not cause a prompt to save the
+ *      sequence.
  */
 
 void
-sequence::set_midi_bus (char mb)
+sequence::set_midi_bus (char mb, bool user_change)
 {
     automutex locker(m_mutex);
-    off_playing_notes();            /* off notes except initial         */
-    m_bus = mb;
-    set_dirty();
+    off_playing_notes();                /* off notes except initial         */
+    if (mb != m_bus)
+    {
+        m_bus = mb;
+        if (user_change)
+            modify();                   /* no easy way to undo this, though */
+    }
+    set_dirty();                        /* this is for display updating     */
 }
 
 /**
@@ -4145,18 +4163,33 @@ sequence::set_name (const std::string & name)
 }
 
 /**
- *  Sets the m_midi_channel number
+ *  Sets the m_midi_channel number>
  *
  * \threadsafe
+ *
+ * \param ch
+ *      The MIDI channel to set as the channel number for this sequence.
+ *
+ * \param user_change
+ *      If true (the default value is false), the user has decided to change
+ *      this value, and we might need to modify the perform's dirty flag, so
+ *      that the user gets prompted for a change,  This is a response to
+ *      GitHub issue #47, where channel changes do not cause a prompt to save
+ *      the sequence.
  */
 
 void
-sequence::set_midi_channel (midibyte ch)
+sequence::set_midi_channel (midibyte ch, bool user_change)
 {
     automutex locker(m_mutex);
     off_playing_notes();
-    m_midi_channel = ch;
-    set_dirty();
+    if (ch != m_midi_channel)
+    {
+        m_midi_channel = ch;
+        if (user_change)
+            modify();                   /* no easy way to undo this, though */
+    }
+    set_dirty();                        /* this is for display updating     */
 }
 
 /**

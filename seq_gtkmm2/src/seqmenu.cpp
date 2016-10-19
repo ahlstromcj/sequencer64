@@ -301,8 +301,8 @@ seqmenu::set_bus_and_midi_channel (int bus, int ch)
         if (s->get_midi_bus() != bus || s->get_midi_channel() != ch)
             s->set_dirty();
 
-        s->set_midi_bus(bus);
-        s->set_midi_channel(ch);
+        s->set_midi_bus(bus, true);       /* now can set perform's modify */
+        s->set_midi_channel(ch, true);    /* ditto                        */
 
         /*
          * New for 0.9.15.2:  Let's try to update the seqedit as well, if it

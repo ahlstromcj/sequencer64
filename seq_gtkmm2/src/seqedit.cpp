@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-18
+ * \updates       2016-10-19
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1427,7 +1427,10 @@ seqedit::popup_midibus_menu ()
     {
         m_menu_midibus->items().push_back
         (
-            MenuElem(masterbus.get_midi_out_bus_name(i), sigc::bind(SET_BUS, i))
+            MenuElem
+            (
+                masterbus.get_midi_out_bus_name(i), sigc::bind(SET_BUS, i, true)
+            )
         );
     }
     m_menu_midibus->popup(0, 0);
@@ -1455,7 +1458,7 @@ seqedit::popup_midich_menu ()
 
         m_menu_midich->items().push_back
         (
-            MenuElem(name, sigc::bind(SET_CH, channel))
+            MenuElem(name, sigc::bind(SET_CH, channel, true))
         );
     }
     m_menu_midich->popup(0, 0);
@@ -1753,15 +1756,22 @@ seqedit::popup_event_menu ()
  *
  *  Should this change set the is-modified flag?  Where should validation
  *  occur?
+ *
+ * \param midichannel
+ *      The MIDI channel  value to set.
+ *
+ * \param user_change
+ *      True if the user made this change, and thus has potentially modified
+ *      the song.
  */
 
 void
-seqedit::set_midi_channel (int midichannel)
+seqedit::set_midi_channel (int midichannel, bool user_change)
 {
     char b[8];
     snprintf(b, sizeof b, "%d", midichannel + 1);
     m_entry_channel->set_text(b);
-    m_seq.set_midi_channel(midichannel);
+    m_seq.set_midi_channel(midichannel, user_change); /* user-modified value? */
 }
 
 /**
@@ -1773,12 +1783,19 @@ seqedit::set_midi_channel (int midichannel)
  *
  *  Also, it would be nice to be able to update this display of the MIDI bus
  *  in the field if we set it from the seqmenu.
+ *
+ * \param bus
+ *      The buss value to set.
+ *
+ * \param user_change
+ *      True if the user made this change, and thus has potentially modified
+ *      the song.
  */
 
 void
-seqedit::set_midi_bus (int bus)
+seqedit::set_midi_bus (int bus, bool user_change)
 {
-    m_seq.set_midi_bus(bus);
+    m_seq.set_midi_bus(bus, user_change);       /* user-modified value? */
     mastermidibus & mmb = perf().master_bus();
     m_entry_bus->set_text(mmb.get_midi_out_bus_name(bus));
 }
@@ -2530,6 +2547,8 @@ seqedit::on_scroll_event (GdkEventScroll * ev)
  *      avoid the pattern title field from grabbing the initial keystrokes;
  *      better to just get used to clicking the piano roll first.  Finally,
  *      fixing the undo bug also let's ctrl-page-up/page-down change the zoom.
+ *      Lastly, we've removed the undo here... seqroll already handles both
+ *      undo and redo keystrokes.
  *
  * \change ca 2016-10-18
  *      Issue #46.  In addition to layk's fixes, we have to properly determine
@@ -2565,26 +2584,6 @@ seqedit::on_key_press_event (GdkEventKey * ev)
              */
 
             return on_delete_event((GdkEventAny *)(ev));
-        }
-
-        /*
-         * \change layk 2016-10-17
-         *      Issue #46.  See notes in banner.
-         *
-         *  else if
-         *  (
-         *      get_focus()->get_name() == "Sequence Name" ||
-         *      ! m_seqroll_wid->on_key_press_event(ev)
-         *  )
-         */
-
-        else if (ev->keyval == 'z')
-        {
-            /*
-             * Early return!  Could just set result = true.
-             */
-
-            return Gtk::Window::on_key_press_event(ev);
         }
         else if (ev->keyval == SEQ64_Page_Up)   /* zoom in              */
         {

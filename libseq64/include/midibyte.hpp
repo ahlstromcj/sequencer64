@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-23
- * \updates       2016-09-10
+ * \updates       2016-10-19
  * \license       GNU GPLv2 or above
  *
  *  These typedef specifications are intended to remove the ambiguity we have
@@ -69,6 +69,13 @@
 
 #define SEQ64_NULL_MIDIPULSE            (-1)        /* ULONG_MAX */
 
+/**
+ *  An unusable value for a midibyte item.  It can be used to indicate an
+ *  invalid or unassigned buss number or channel number.
+ */
+
+#define SEQ64_INVALID_MIDIBYTE          0xFF
+
 /*
  *  This namespace is not documented because it screws up the document
  *  processing done by Doxygen.
@@ -78,7 +85,9 @@ namespace seq64
 {
 
 /**
- *  Provides a fairly common type definition for a byte value.
+ *  Provides a fairly common type definition for a byte value.  This can be
+ *  used for a MIDI buss/port number or for a MIDI channel number.
+ *  See the SEQ64_INVALID_MIDIBYTE macro.
  */
 
 typedef unsigned char midibyte;

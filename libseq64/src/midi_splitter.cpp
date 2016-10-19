@@ -154,7 +154,7 @@ midi_splitter::log_main_sequence (sequence & seq, int seqnum)
 }
 
 /**
- *  This function splits an SMF 0, splitting all of the channels in the
+ *  This function splits an SMF 0 file, splitting all of the channels in the
  *  sequence out into separate sequences, and adding each to the perform
  *  object.  Lastly, it adds the SMF 0 track as the last track; the user can
  *  then examine it before removing it.  Is this worth the effort?
@@ -163,7 +163,7 @@ midi_splitter::log_main_sequence (sequence & seq, int seqnum)
  *  one channel, this code will still create a new sequence, as well as the
  *  main sequence.  Not sure if this is worth extra code to just change the
  *  channels on the main sequence and put it into the correct track for the
- *  one channel it contains.  In fact, we just want to keep it in patter slot
+ *  one channel it contains.  In fact, we just want to keep it in pattern slot
  *  number 16, to keep it out of the way.
  *
  * \param p

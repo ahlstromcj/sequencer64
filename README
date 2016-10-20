@@ -1,6 +1,6 @@
-README for Sequencer64 0.9.18.3
+README for Sequencer64 0.9.19
 Chris Ahlstrom
-2015-09-10 to 2016-10-08 (initial work started in July of 2015)
+2015-09-10 to 2016-10-19 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -14,34 +14,19 @@ with the --legacy option.  See https://github.com/ahlstromcj/sequencer64-doc.git
 
 Major updates:
 
-    -   Version 0.9.18.3:
-        -   Bug in cut-and-paste in the sequence editor.  When cutting (not
-            just copying), the event clipboard would be cleared and be
-            unpastable.
-    -   Version 0.9.18.2:
-        -   Fixed incorrect loading, saving, and usage of MIDI controls
-            feature.
-        -   Fixed Song mode and Song Editor interactions.
-        -   Updated the Debian package build process.
-    -   Version 0.9.18.1:
-        -   Fixed a bug in perfedit looping.
-        -   Fixed a segfault when modifying an event in the event editor.
-        -   Fixed a bug that disabled editing in the Song Editor if an
-            inactive sequence was clicked in.
-        -   KNOWN BUG:  In this release, Song mode will work only if the
-            Song/Live button is activated.  This could be a feature :-)
-    -   Version 0.9.18:
-        -   Added new buttons in the main window for easier control of muting,
-            live/song mode, and menu enabling.  (From Seq32).
-        -   Added more hotkeys and a second keys page to the Options dialog
-            (From Seq32).
-        -   Added a Tap-BPM button and hotkey.
-        -   Can now edit the text fields in the main window without triggering
-            patterns.
-        -   Improved the handling of wrap-around notes in a pattern.
-        -   Fixed a segfault in the zoom functionality.
-        -   A bad bug in the Song Editor (acting on the wrong pattern) was
-            fixed.  I am an idiot.
+    -   Version 0.9.19:
+        -   Fixed issue 46, pattern-edit undo being applied twice.
+        -   Fixed keystrokes meant for pattern edit fields being used to 
+            modify the sequence piano roll.
+        -   Main window Mute button is now disabled in Song mode to avoid
+            confusing behavior.
+        -   Progress bar now shown in pattern editor for empty sequences.
+        -   Some cleanup of playback handling.
+        -   Fixed issue 42, where recording a MIDI note was inadvertently of
+            fixed length.
+        -   Fixed issue 43, where MIDI files with upper-case extensions were
+            not shown.
+        -   Closed out a number of already-fixed issues.
     -   Sequencer64 loads SMF 0 files and splits the channels into separate
         tracks/sequences.
     -   JACK support has been improved.  Sequencer64 will track JACK transport
@@ -155,6 +140,34 @@ Major updates:
         -   Constant variables are slowly being assigned to new members, in
             preparation for support of altering the number of sequences and
             screen sets supported.
+    -   Version 0.9.18.3:
+        -   Bug in cut-and-paste in the sequence editor.  When cutting (not
+            just copying), the event clipboard would be cleared and be
+            unpastable.
+    -   Version 0.9.18.2:
+        -   Fixed incorrect loading, saving, and usage of MIDI controls
+            feature.
+        -   Fixed Song mode and Song Editor interactions.
+        -   Updated the Debian package build process.
+    -   Version 0.9.18.1:
+        -   Fixed a bug in perfedit looping.
+        -   Fixed a segfault when modifying an event in the event editor.
+        -   Fixed a bug that disabled editing in the Song Editor if an
+            inactive sequence was clicked in.
+        -   KNOWN BUG:  In this release, Song mode will work only if the
+            Song/Live button is activated.  This could be a feature :-)
+    -   Version 0.9.18:
+        -   Added new buttons in the main window for easier control of muting,
+            live/song mode, and menu enabling.  (From Seq32).
+        -   Added more hotkeys and a second keys page to the Options dialog
+            (From Seq32).
+        -   Added a Tap-BPM button and hotkey.
+        -   Can now edit the text fields in the main window without triggering
+            patterns.
+        -   Improved the handling of wrap-around notes in a pattern.
+        -   Fixed a segfault in the zoom functionality.
+        -   A bad bug in the Song Editor (acting on the wrong pattern) was
+            fixed.  I am an idiot.
     -   Version 0.9.17.2:
         -   A regression in the handling of muting in Live mode was fixed.
     -   Version 0.9.17.1:

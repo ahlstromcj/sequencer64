@@ -1,4 +1,4 @@
-Configuration of Sequencer64 0.9.18:
+Configuration of Sequencer64 0.9.19:
 
 Optional Features:
 
@@ -31,8 +31,8 @@ Default Features:
 Addtional Features:
 
   --enable-statistics     Enable statistics gathering
-  --enable-seq32jack      Enable using Seq32-style JACK support
-  --enable-transport      Enable using extended transport
+  --enable-seq32jack      Enable using Seq32-style JACK support, includes
+                          extended transport now.
   --enable-coverage=(no/yes) Turn on a test-coverage build (default=no)
   --enable-profile=(no/yes/gprof/prof) Turn on profiling builds
                                        (default=no, yes=gprof)

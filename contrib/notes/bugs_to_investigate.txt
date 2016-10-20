@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-10-15 (New bugs and fixed bugs)
+2015-10-27 to 2016-10-19 (New bugs and fixed bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -363,6 +363,35 @@ y  Initiatives from other projects ("-" means "not done (yet)", "y" means
          nice ideas to examine.
 
 BUG REPORTS:
+
+Extant GitHub Issues:
+
+    A fair number of these are actually fixed (*), in the fixups branch.
+
+     #1:  NSM support.
+     #2:  Install-recursive and .seq24rc equivalent
+     #4:  Would like unique set of mute groups per screen (1024 instead of 32)
+*    #5:  Mute Groups should be applied to active screen
+*   #12: Add a git tag for each new version
+    #14: [feature request] Plugin version
+    #16: [feature request] script language
+*   #18: Last Edited highlight disables On/Off highlight
+    #20: Loops not playing when using jack
+*   #28: Zooming sequencer edit window more than 1:32 kills the program.
+*   #31: SegFault in Event Editor → "Modify Event"
+    #34: [feature request] Tempo Track?
+    #36: stop playback and jack transport
+    #38: Small quirks in event editor
+*   #40: cut and paste in sequence editor does not work.
+    #41: Sometimes "play cursor" shows wrong position in main window
+*   #42: Recording midi note is fixed length due to missing handling of
+         is_pattern_playing(bool) in perform.cpp
+*   #43: Upper case midi file extension filtering when opening file
+    #45: JACK MIDI support
+*   #46: Undo(ctrl-z) removes two instanses of history via
+         seqedit::on_key_press_event()
+
+Postings About Issues:
 
 Date: Sat, 19 Dec 2015 20:48:34 -0800
 From: Tim Deagan <notifications@github.com>

@@ -1,5 +1,97 @@
+2016-10-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/midibyte.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/midi_splitter.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Better fix for issue 46, fixed issue 47
+	where bus/channel selections did not trigger a save prompt.
+
+2016-10-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt, libseq64/src/midifile.cpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/seqedit.cpp: 
+	Provision fix for layk issue 46, where undo was being applied twice,
+	with fix for text-entry focus as well.
+
+2016-10-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/jack-testing.txt: Updated the jack-testing.txt file
+	for better instructions.
+
+2016-10-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/jack_assistant.hpp, libseq64/include/perform.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqroll.cpp: More cleanup of code to better match the
+	seq32 implementation.
+
+2016-10-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Main window Mute button now disabled
+	when in Song mode, but no way yet to disable that menu entry.
+
+2016-10-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, contrib/notes/bugs_to_investigate.txt,
+	contrib/notes/git.txt, libseq64/include/keys_perform.hpp,
+	libseq64/include/perform.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/seqedit.cpp: Interim
+	check-in, more cleanup of playback and pause kruft.
+
+2016-10-14  Daniel Appelt <daniel.appelt@gmail.com>
+
+	* : Merge commit '7d9037a7aad5e298e8bc11a8190f389ea13d1900'
+
+2016-10-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp: Starting
+	to consolidate playback items more fully.
+
+2016-10-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/sequence.cpp, seq_gtkmm2/src/mainwid.cpp: Fixed issue
+	39, restored play cursor, progress bar, to pattern editor window.
+	* libseq64/include/globals.h, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/mainwid.cpp: Interim check-in, investigation into
+	seqroll progress bar for empty sequences.
+
+2016-10-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/perform.cpp, seq_gtkmm2/src/mainwnd.cpp: Fixes for
+	issues 42 and 43 by layk, still have follow-up to do with issue 42
+	and the is-playing flag.
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/midi_control.hpp, libseq64/include/perform.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp: Back to
+	tweaking seq32 JACK support, interim check-in.
+
+2016-10-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/seqmenu.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/seqmenu.cpp: Initial
+	implementation of play-toggling complete, see SEQ64_TOGGLE_PLAYING
+	macro.
+
 2016-10-08  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* ChangeLog: Rushing in bugfix version 0.9.18.3 for nasty
+	cut-and-paste bug in the sequence editor.
+	* README, configure.ac, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/sequence.cpp, man/sequencer64.1: Fixed issue 40,
+	cut-and-paste broken in sequence editor, prep for v. 0.9.18.3.
+	* ChangeLog: Stamped bug-fix version 0.9.18.2.
 	* README: Stamped bug-fix version 0.9.18.2.
 	* README, ROADMAP, VERSION, configure.ac,
 	contrib/notes/bugs_to_investigate.txt,

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-13
+ * \updates       2016-10-23
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -37,7 +37,7 @@
  *      -   e_keylabelsonsequence and e_keylabelsonsequence
  *      -   e_jack_transport, e_jack_master,
  *          e_jack_master_cond, e_jack_master_connect,
- *          e_jack_master_disconnect, e_jack_master_song_mode,
+ *          e_jack_master_disconnect, e_jack_master_song_mode
  */
 
 #include <sstream>
@@ -1005,7 +1005,8 @@ options::add_jack_sync_page ()
     add_tooltip
     (
         m_button_jack_disconnect,
-        "Disconnect JACK. Calls the JACK deinitialization function."
+        "Disconnect JACK. Calls the JACK deinitialization function, "
+        "and enables the JACK transport buttons."
     );
     m_button_jack_disconnect->signal_clicked().connect
     (
@@ -1040,9 +1041,7 @@ options::add_jack_sync_page ()
         new Gtk::CheckButton
         (
             "Enables the usage of LASH with Sequencer64. "
-            "Requires Sequencer64 to be restarted, to take effect."
-            ,
-            true
+            "Requires Sequencer64 to be restarted, to take effect.", true
         )
     );
     chk_lash->set_active(rc().lash_support());
@@ -1065,6 +1064,13 @@ options::add_jack_sync_page ()
 
 /**
  *  Clock-off callback function.
+ *
+ * \param bus
+ *      The MIDI buss number to be affected.
+ *
+ * \param button
+ *      The status of the radio-button.  If active, then the master buss
+ *      set_clock() function is called to turn off the clock (e_clock_off).
  */
 
 void
@@ -1075,7 +1081,15 @@ options::clock_callback_off (int bus, Gtk::RadioButton * button)
 }
 
 /**
- *  Clock-on callback function.
+ *  Clock-on position callback function.
+ *
+ * \param bus
+ *      The MIDI buss number to be affected.
+ *
+ * \param button
+ *      The status of the radio-button.  If active, then the master buss
+ *      set_clock() function is called to allow the repositioning of the
+ *      clock (e_clock_pos).
  */
 
 void
@@ -1087,6 +1101,13 @@ options::clock_callback_on (int bus, Gtk::RadioButton * button)
 
 /**
  *  Clock-mod callback function.
+ *
+ * \param bus
+ *      The MIDI buss number to be affected.
+ *
+ * \param button
+ *      The status of the radio-button.  If active, then the master buss
+ *      set_clock() function is called to turn turn on e_clock_mod.
  */
 
 void
@@ -1098,12 +1119,16 @@ options::clock_callback_mod (int bus, Gtk::RadioButton * button)
 
 /**
  *  Mod-clock callback function.
+ *
+ * \param adj
+ *      The horizontal adjustment object.  Its get_value() function return
+ *      value is pass to set_clock_mod.
  */
 
 void
 options::clock_mod_callback (Gtk::Adjustment * adj)
 {
-    midibus::set_clock_mod((int)adj->get_value());
+    midibus::set_clock_mod(int(adj->get_value()));
 }
 
 /**
@@ -1142,7 +1167,12 @@ options::input_callback (int bus, Gtk::Button * i_button)
 }
 
 /**
- *  NEW
+ *  Sets the ability to filter incoming MIDI events by MIDI channel.
+ *
+ * \param i_button
+ *      Provides the check-button object that was changed by a click.  It's
+ *      get_active() function provides the current state of the boolean value
+ *      to be passed to the "rc" and perform filter_by_channel() functions.
  */
 
 void
@@ -1156,6 +1186,9 @@ options::filter_callback (Gtk::Button * f_button)
 
 /**
  *  Mouse interaction = Seq24 callback function.
+ *
+ * \param btn
+ *      The button that controls the "rc" interaction_method() setting.
  */
 
 void
@@ -1167,6 +1200,9 @@ options::mouse_seq24_callback (Gtk::RadioButton * btn)
 
 /**
  *  Mouse interaction = Fruity callback function.
+ *
+ * \param btn
+ *      The button that controls the "rc" interaction_method() setting.
  */
 
 void
@@ -1178,6 +1214,9 @@ options::mouse_fruity_callback (Gtk::RadioButton * btn)
 
 /**
  *  Mouse interaction, Mod4 option callback function.
+ *
+ * \param btn
+ *      The button that controls the "rc" allow_mod4_mode() setting.
  */
 
 void
@@ -1188,6 +1227,9 @@ options::mouse_mod4_callback (Gtk::CheckButton * btn)
 
 /**
  *  Mouse interaction, snap-split option callback function.
+ *
+ * \param btn
+ *      The button that controls the "rc" allow_snap_split() setting.
  */
 
 void
@@ -1198,6 +1240,9 @@ options::mouse_snap_split_callback (Gtk::CheckButton * btn)
 
 /**
  *  Mouse interaction, Mod4 option callback function.
+ *
+ * \param btn
+ *      The button that controls the "rc" lash_support() setting.
  */
 
 void
@@ -1226,6 +1271,14 @@ options::lash_support_callback (Gtk::CheckButton * btn)
  *          -   Master Conditional (makes Sequencer64 a JACK master if it
  *              can).  Forces the Transport Master button off, and the JACK
  *              Transport button on.
+ *
+ * \param type
+ *      The type of the button that was pressed.  One of e_jack_transport,
+ *      e_jack_master, e_jack_master_cond, e_jack_start_mode_live,
+ *      e_jack_start_mode_song, e_jack_connect, or e_jack_disconnect.
+ *
+ * \param acheck
+ *      Provides the status of the check-button that was clicked.
  */
 
 void

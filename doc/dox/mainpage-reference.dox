@@ -25,7 +25,7 @@ This document describes the modules and functions of the Sequencer64
 application.
 
 \mainpage   Sequencer64
-\author     Chris Ahlstrom 2015-11-27
+\author     Chris Ahlstrom 2016-10-23
 
 \section seq64_reference_intro Introduction
 
@@ -50,12 +50,8 @@ related to PDF and LaTeX, and running "make":
 These project also have prebuilt PDFs should one not want to bother building
 them.
 
-In the present document, we've left out a fair amount of side-code to cut
-down on the size of the document.  For example, the main module, redundant
-Windows support, utility headers like easy_macros.h, standard stuff like the
-mutex module, the fruity variants (at least the ones already refactored into
-their own modules), etc., are all left out.  Still, the resulting PDF is over
-300 pages long.
+In the present document, we've left out a some side-code to cut down on the
+size of the document.  Still, the resulting PDF is over 1000 pages long.
 
 Some useful references:
 

@@ -25,9 +25,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-15
+ * \updates       2016-10-23
  * \license       GNU GPLv2 or above
  *
+ *  When the Song/Performance editor has focus, Sequencer64 is automatically
+ *  in Song mode, and playback is controlled by the layout of pattern triggers
+ *  in the piano roll of the Song/Performance editor.
  */
 
 #include <gtkmm/adjustment.h>
@@ -592,6 +595,7 @@ perfedit::popup_menu (Gtk::Menu * menu)
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
 /**
+ *  Sets the transport status when compiled for seq32 JACK support.
  *  Note that this will trigger the button signal callback.
  */
 
@@ -602,6 +606,7 @@ perfedit::set_follow_transport ()
 }
 
 /**
+ *  Toggles the transport status when compiled for seq32 JACK support.
  *  Note that this will trigger the button signal callback.
  */
 
@@ -612,17 +617,26 @@ perfedit::toggle_follow_transport ()
 }
 
 /**
- *  To avoid a lot of pointer dereferencing, much of the code is offloaded to
+ *  Sets the JACK transport status, based on the status of the JACK button in
+ *  the Song editor, when compiled for seq32 JACK support.  To avoid a lot of
+ *  pointer dereferencing, much of the code is offloaded to
  *  perform::set_jack_mode(), which now returns a boolean.
  */
 
-void
-perfedit::set_jack_mode ()
+void perfedit::set_jack_mode ()
 {
     bool active = m_button_jack->get_active();
     bool isjackrunning = perf().set_jack_mode(active);
     m_button_jack->set_active(isjackrunning);
 }
+
+/**
+ *  Gets the state fo the JACK toggle button in the Song editor, when compiled
+ *  with seq32 JACK support.
+ *
+ * \return
+ *      Returns the JACK button's get_active() status.
+ */
 
 bool
 perfedit::get_toggle_jack ()
@@ -631,7 +645,9 @@ perfedit::get_toggle_jack ()
 }
 
 /**
- *  Note that this will trigger the button signal callback.
+ *  Sets the state fo the JACK toggle button in the Song editor, when compiled
+ *  with seq32 JACK support.  Note that this will trigger the button signal
+ *  callback.
  */
 
 void

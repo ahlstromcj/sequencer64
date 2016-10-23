@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-16
+ * \updates       2016-10-23
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1848,100 +1848,53 @@ void
 perform::start_playing (bool songmode)
 {
     m_start_from_perfedit = songmode;
-    if (songmode || song_start_mode())
+    songmode = songmode || song_start_mode();
+    if (songmode)
     {
-        if (is_jack_master())
-        {
-           /*
-            * Allow to start at key-p position if set; for cosmetic reasons,
-            * to stop transport line flicker on start, position to the left
-            * tick.
-            *
-            *   m_jack_asst.position(true, m_left_tick);    // position_jack()
-            *
-            * The "! m_repostion" doesn't seem to make sense.
-            */
+       /*
+        * Allow to start at key-p position if set; for cosmetic reasons,
+        * to stop transport line flicker on start, position to the left
+        * tick.
+        *
+        *   m_jack_asst.position(true, m_left_tick);    // position_jack()
+        *
+        * The "! m_repostion" doesn't seem to make sense.
+        */
 
-           if (! m_reposition)
-               position_jack(true, m_left_tick);
-        }
-        start_jack();
-        start(true);                                        /* song mode       */
+       if (is_jack_master() && ! m_reposition)
+           position_jack(true, m_left_tick);
     }
     else
     {
-        /*
-         * m_jack_asst.position(false, 0);                  // position_jack()
-         */
-
         if (is_jack_master())
             position_jack(false);
-
-        /*
-         * EXPERIMENTAL, let's see if this works.
-         *
-         * It makes more sense to reverse the order of these calls.  The
-         * start() call signals the output function to continue.  The
-         * start_jack() call starts JACK transport.
-         *
-         *  start(false);
-         *  start_jack();
-         */
-
-        start_jack();
-        start(false);                                       /* live mode       */
     }
+    start_jack();
+    start(songmode);                                    /* song mode       */
 }
 
 #else   // SEQ64_STAZED_JACK_SUPPORT
 
 /*
- * In this legacy version, the songmode parameter simply indicates which GUI,
- * mainwnd ("live", false) or perfedit ("song", true) started the playback.
- * However, if the song-mode is false, then we fall back to the value of
- * song_start_mode(), in order not to violate user expectations from the
- * setting on of the song-sart mode on mainwnd.
+ *  In this legacy version, the songmode parameter simply indicates which GUI,
+ *  mainwnd ("live", false) or perfedit ("song", true) started the playback.
+ *  However, if the song-mode is false, then we fall back to the value of
+ *  song_start_mode(), in order not to violate user expectations from the
+ *  setting on of the song-sart mode on mainwnd.
+ *
+ *  For cosmetic reasons, to stop transport line flicker on start, we tell
+ *  position_jack() to position to the left tick, and tell start() to use the
+ *  perfedit rewind.  Calling start() with false disables the perfedit mute
+ *  control.  Calling start() with true causes a perfedit rewind.
  */
 
 void
 perform::start_playing (bool songmode)
 {
-    if (songmode || song_start_mode())
-    {
-        /*
-         * For cosmetic reasons, to stop transport line flicker on start,
-         * we tell position_jack() to position to the left tick, and tell
-         * start() to use the perfedit rewind.
-         *
-         * Is an "if Master and set_left_frame()" test needed?
-         */
-
-        position_jack(true);            /* m_jack_asst.position(false, 0);  */
-        start_jack();
-        start(true);                    /* causes perfedit rewind           */
-    }
-    else                                /* live mode                        */
-    {
-        /*
-         * For cosmetic reasons, to stop transport line flicker on start.
-         */
-
-        position_jack(false);           // if Master???
-
-        /*
-         * EXPERIMENTAL, let's see if this works.
-         *
-         * It makes more sense to reverse the order of these calls.  The
-         * start() call signals the output function to continue.  The
-         * start_jack() call starts JACK transport.
-         *
-         *  start(false);
-         *  start_jack();
-         */
-
-        start_jack();
-        start(false);                   /* disables perfedit mute control   */
-    }
+    songmode = songmode || song_start_mode();
+    position_jack(songmode);
+    start_jack();
+    start(songmode);
 
     /*
      * Let's let the output() function clear this, so that we can use this
@@ -2051,7 +2004,7 @@ perform::pause_playing (bool songmode)
         m_start_from_perfedit = false;      /* act like stop_playing()      */
 #endif
 
-#endif
+#endif  // SEQ64_JACK_SUPPORT
 
     m_dont_reset_ticks = true;
 
@@ -2725,6 +2678,7 @@ perform::output_func ()
                 m_starting_tick = m_left_tick;      // restart at left marker
                 m_reposition = false;
             }
+
 #endif
             /*
              * pad.js_init_clock will be true when we run for the first time,
@@ -2738,12 +2692,14 @@ perform::output_func ()
             }
             if (pad.js_dumping)
             {
-                // This is a mess we will have to sort out soon:
-                //
-                // if (m_looping && m_playback_mode)
-                // if (m_looping && (m_playback_mode || start_from_perfedit()))
+                /*
+                 * This is a mess we will have to sort out.  If looping, then
+                 * we ought to play if any of the tested flags are true.
+                 */
 
                 bool perfloop = m_looping;
+
+#if 0
 #ifdef SEQ64_STAZED_JACK_SUPPORT
                 if (perfloop)
                     perfloop = m_playback_mode || start_from_perfedit();
@@ -2751,6 +2707,18 @@ perform::output_func ()
                 if (perfloop)
                     perfloop = m_playback_mode || song_start_mode();
 #endif
+#endif
+
+                if (perfloop)
+                {
+                    perfloop =
+                        m_playback_mode ||
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+                        start_from_perfedit() ||
+#endif
+                        song_start_mode();
+                }
+
                 if (perfloop)
                 {
                     /*
@@ -2984,8 +2952,7 @@ perform::output_func ()
          * play tick that displays the progress bar.
          */
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-#ifdef SEQ64_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT                        // SEQ64_JACK_SUPPORT
         if (m_playback_mode)
         {
             if (is_jack_master())                       // running Song Master
@@ -2996,8 +2963,6 @@ perform::output_func ()
             if (is_jack_master())                       // running Live Master
                 position_jack(m_playback_mode, 0);
         }
-#endif
-
         if (! m_usemidiclock)                           // stop by MIDI event?
         {
             if (! is_jack_running())
@@ -3016,11 +2981,8 @@ perform::output_func ()
 
         m_master_bus.flush();
         m_master_bus.stop();
-
-#ifdef JACK_SUPPORT
         if (is_jack_running())
             set_jack_stop_tick(get_current_jack_position((void *) this));
-#endif
 
 #else  // SEQ64_STAZED_JACK_SUPPORT
 
@@ -3237,7 +3199,6 @@ perform::input_func ()
 #else
                         start(false);
 #endif
-                        // m_usemidiclock = true;   ???
                     }
                     else if (ev.get_status() == EVENT_MIDI_STOP)
                     {

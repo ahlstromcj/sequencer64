@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-15
+ * \updates       2016-10-23
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -172,7 +172,6 @@ class perform
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     friend int jack_process_callback (jack_nframes_t nframes, void * arg);
-#ifdef XXX_ADDITIONAL_FRIENDS               // new stuff on seq32, needed here?
     friend void jack_shutdown (void * arg);
     friend void jack_timebase_callback
     (
@@ -180,7 +179,6 @@ class perform
         jack_position_t * pos, int new_pos, void * arg
     );
     friend long get_current_jack_position (void * arg);
-#endif
 #endif
 
 #endif  // SEQ64_JACK_SUPPORT

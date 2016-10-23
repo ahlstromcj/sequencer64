@@ -691,9 +691,7 @@ extern void jack_timebase_callback
 extern int jack_process_callback (jack_nframes_t nframes, void * arg);
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
-
 extern long get_current_jack_position (void * arg);
-
 #endif
 
 #ifdef SEQ64_JACK_SESSION

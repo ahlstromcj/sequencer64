@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-10-16
+ * \updates       2016-10-23
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -331,7 +331,8 @@ jack_assistant::get_jack_client_info ()
     else
         m_jack_client_uuid = rc().jack_session_uuid();
 
-    std::string jinfo = m_jack_client_name;
+    std::string jinfo = "JACK client:uuid ";
+    jinfo += m_jack_client_name;
     if (! m_jack_client_uuid.empty())
     {
         jinfo += ":";
@@ -499,8 +500,8 @@ jack_assistant::init ()
         }
         if (! master_is_set)
         {
-            (void) info_message("JACK transport slave");
             m_jack_master = false;
+            (void) info_message("JACK transport slave");
         }
         if (jack_activate(m_jack_client) != 0)
         {
@@ -509,7 +510,7 @@ jack_assistant::init ()
         }
 
         if (m_jack_running)
-            (void) info_message("JACK sync now enabled");
+            (void) info_message("JACK sync enabled");
         else
             (void) error_message("Initialization error, JACK sync not enabled");
     }
@@ -1249,24 +1250,17 @@ jack_assistant::output (jack_scratchpad & pad)
         double jack_ticks_delta;
         pad.js_init_clock = false;                  // no init until a good lock
         m_jack_transport_state = jack_transport_query(m_jack_client, &m_jack_pos);
-#ifdef SEQ64_STAZED_JACK_SUPPORT
+
+        /*
+         *  Using the seq32 code here works to solve issue #48,
+         *  non-JACK-Master playback not working if built for non-seq32 JACK
+         *  transport.  So we scrapped the old code entirely.
+         */
+
         m_jack_pos.beats_per_bar = m_beats_per_measure;
         m_jack_pos.beat_type = m_beat_width;
         m_jack_pos.ticks_per_beat = m_ppqn * 10;
         m_jack_pos.beats_per_minute = parent().get_beats_per_minute();
-#else
-        /*
-         * @change ca 2016-09-09
-         *      Was removed to below, move it back to here..
-         */
-
-        m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
-
-        bool ok = m_jack_pos.frame_rate > 1000;         /* usually 48000       */
-        if (! ok)
-            info_message("jack_assistant::output(): small frame rate");
-#endif
-
         if
         (
             m_jack_transport_state_last == JackTransportStarting &&     // OR?

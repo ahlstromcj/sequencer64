@@ -284,7 +284,7 @@ void
 sequence::pop_undo ()
 {
     automutex locker(m_mutex);
-    if (m_events_undo.size() > 0)               // stazed: m_list_undo
+    if (! m_events_undo.empty())                // stazed: m_list_undo
     {
         m_events_redo.push(m_events);           // move to triggers module?
         m_events = m_events_undo.top();
@@ -309,7 +309,7 @@ void
 sequence::pop_redo ()
 {
     automutex locker(m_mutex);
-    if (m_events_redo.size() > 0)               // move to triggers module?
+    if (! m_events_redo.empty())                // move to triggers module?
     {
         m_events_undo.push(m_events);
         m_events = m_events_redo.top();
@@ -336,6 +336,8 @@ sequence::push_trigger_undo ()
 
 /**
  *  Calls triggers::pop_undo() with locking.
+ *
+ * \threadsafe
  */
 
 void
@@ -344,6 +346,12 @@ sequence::pop_trigger_undo ()
     automutex locker(m_mutex);
     m_triggers.pop_undo();
 }
+
+/**
+ *  Calls triggers::pop_redo() with locking.
+ *
+ * \threadsafe
+ */
 
 void
 sequence::pop_trigger_redo ()
@@ -405,6 +413,20 @@ sequence::set_beat_width (int beatwidth)
 }
 
 #ifdef USE_STAZED_ODD_EVEN_SELECTION
+
+/**
+ *  Selects every other note.  Enabled only if
+ * USE_STAZED_ODD_EVEN_SELECTION is defined.
+ *
+ * \param note_len
+ *      The desired note lengths for the selection.
+ *
+ * \param even
+ *      True if we want the even notes.
+ *
+ * \return
+ *      Returns the number of notes selected.
+ */
 
 int
 sequence::select_even_or_odd_notes (int note_len, bool even)
@@ -483,6 +505,9 @@ sequence::select_even_or_odd_notes (int note_len, bool even)
  *
  * \param action
  *      The action to perform on the selection.
+ *
+ * \return
+ *      Returns the number of notes selected.
  */
 
 int
@@ -659,6 +684,18 @@ sequence::select_note_events
 /**
  *  Used with seqevent when selecting Note On or Note Off, this function will
  *  select the opposite linked event.
+ *
+ * \param tick_s
+ *      Provides the starting tick.
+ *
+ * \param tick_f
+ *      Provides the ending (finishing) tick.
+ *
+ * \param status
+ *      Provides the desired MIDI event to be selected.
+ *
+ * \return
+ *      Returns the number of notes selected.
  */
 
 int
@@ -691,6 +728,24 @@ sequence::select_linked (midipulse tick_s, midipulse tick_f, midibyte status)
 
 /**
  *  Use selected note ons if any.
+ *
+ * \param tick_s
+ *      Provides the starting tick.
+ *
+ * \param tick_f
+ *      Provides the ending (finishing) tick.
+ *
+ * \param status
+ *      Provides the desired MIDI event to be selected.
+ *
+ * \param cc
+ *      Provides the desired MIDI control value to be selected.
+ *
+ * \param dats
+ *      Provides the center of a small data value range of plus or minus 2.
+ *
+ * \return
+ *      Returns the number of events selected.
  */
 
 int
@@ -2265,7 +2320,7 @@ sequence::cut_selected (bool copyevents)
 void
 sequence::paste_selected (midipulse tick, int note)
 {
-    if (! m_events_clipboard.empty())       /* m_events_clipboard.count() > 0 */
+    if (! m_events_clipboard.empty())
     {
         automutex locker(m_mutex);
         event_list clipbd = m_events_clipboard;     /* copy the clipboard   */

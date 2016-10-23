@@ -1,11 +1,19 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-10-19 (New bugs and fixed bugs)
+2015-10-27 to 2016-10-23 (New bugs and fixed bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
+y  Issue 48: JACK non-master doesn't play when built without seq32 code.
+   x Fixed by a simple change in jack_assistant.cpp.
+   - Why does Sequencer64 save the JACK Master option even when exiting
+     with it disabled?
+   - As Master (without seq32 code), it always resets to a non-zero
+     position as seen in the main window.
+   - Would be good to have an icon or status text in the main window for:
+     "ALSA", "JACK", "Master".
 x  Probably need to make play-toggle button useable only during Live mode.
 x  Consider adding --version output to Help/About.
 x  If a non-active sequence is attempted to be painted in the perfroll,
@@ -38,6 +46,8 @@ x  Need an alternate icon for the transposable button in seqedit.  Done, see
    - Add this icon and functionality to the main window.
    - Make Pause functionality work properly in ALSA and JACK mode when
      SEQ64_STAZED_JACK_SUPPORT is active.
+   - Make JACK functionality work properly when JACK Master is *not* selected,
+     when SEQ64_STAZED_JACK_SUPPORT is *not* active.
 -  Is it worthwhile to save lyric events within a sequence and restoring them
    upon writing the file (while filtering out 0-length lyrics)?
 x  Saving of a track of a stripped-down example1.mid with the notes shortened
@@ -366,29 +376,31 @@ BUG REPORTS:
 
 Extant GitHub Issues:
 
-    A fair number of these are actually fixed (*), in the fixups branch.
+    A fair number of these are actually fixed (*) or closed (C), in the fixups
+    branch.
 
-     #1:  NSM support.
-     #2:  Install-recursive and .seq24rc equivalent
-     #4:  Would like unique set of mute groups per screen (1024 instead of 32)
-*    #5:  Mute Groups should be applied to active screen
-*   #12: Add a git tag for each new version
+     #1: [feature request] NSM support.
+     #2: Install-recursive and .seq24rc equivalent
+     #4: [feature request] Would like unique set of mute groups per screen
+         (1024 instead of 32)
+C    #5: Mute Groups should be applied to active screen
+C   #12: Add a git tag for each new version
     #14: [feature request] Plugin version
     #16: [feature request] script language
-*   #18: Last Edited highlight disables On/Off highlight
-    #20: Loops not playing when using jack
-*   #28: Zooming sequencer edit window more than 1:32 kills the program.
-*   #31: SegFault in Event Editor → "Modify Event"
+C   #18: Last Edited highlight disables On/Off highlight
+C   #20: Loops not playing when using jack
+C   #28: Zooming sequencer edit window more than 1:32 kills the program.
+C   #31: SegFault in Event Editor → "Modify Event"
     #34: [feature request] Tempo Track?
     #36: stop playback and jack transport
     #38: Small quirks in event editor
-*   #40: cut and paste in sequence editor does not work.
+C   #40: cut and paste in sequence editor does not work.
     #41: Sometimes "play cursor" shows wrong position in main window
-*   #42: Recording midi note is fixed length due to missing handling of
+C   #42: Recording midi note is fixed length due to missing handling of
          is_pattern_playing(bool) in perform.cpp
-*   #43: Upper case midi file extension filtering when opening file
-    #45: JACK MIDI support
-*   #46: Undo(ctrl-z) removes two instanses of history via
+C   #43: Upper case midi file extension filtering when opening file
+    #45: [feature request] JACK MIDI support
+C   #46: Undo(ctrl-z) removes two instanses of history via
          seqedit::on_key_press_event()
 
 Postings About Issues:

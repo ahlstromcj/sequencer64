@@ -1152,7 +1152,11 @@ public:
 
     bool is_jack_running () const
     {
+#ifdef SEQ64_JACK_SUPPORT
         return m_jack_asst.is_running();
+#else
+        return false;
+#endif
     }
 
     /**
@@ -1163,7 +1167,11 @@ public:
 
     bool is_jack_master () const
     {
+#ifdef SEQ64_JACK_SUPPORT
         return m_jack_asst.is_running() && m_jack_asst.is_master();
+#else
+        return false;
+#endif
     }
 
     /**

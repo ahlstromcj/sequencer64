@@ -618,7 +618,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
     {
         midipulse Delta;                            /* MIDI delta time      */
         midipulse RunningTime;
-        midipulse CurrentTime;
+        midipulse CurrentTime = 0;
         char TrackName[SEQ64_TRACKNAME_MAX];        /* track name from file */
         midilong ID = read_long();                  /* get track marker     */
         midilong TrackLength = read_long();         /* get track length     */

@@ -57,6 +57,7 @@ namespace Gtk
     class Button;
     class Cursor;
     class Entry;
+    class Label;
     class MenuBar;
     class Menu;
     class SpinButton;
@@ -212,6 +213,12 @@ private:
     Gtk::ToggleButton * m_button_menu;  /**< Menu enable/disable button.    */
 
 #endif
+
+    /**
+     *  Indicates the current mode of Sequencer64:  JACK, Master, and ALSA.
+     */
+
+    Gtk::Label * m_label_jack_mode;
 
     /**
      *  The spin/adjustment controls for the BPM (beats-per-minute) value.

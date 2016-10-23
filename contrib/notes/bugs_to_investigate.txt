@@ -13,7 +13,7 @@ y  Issue 48: JACK non-master doesn't play when built without seq32 code.
      mute-group section at entry 30, and the rest of the file was not written.
    - As Master (without seq32 code), it always resets to a non-zero
      position as seen in the main window.
-   - Would be good to have an icon or status text in the main window for:
+   y Would be good to have an icon or status text in the main window for:
      "ALSA", "JACK", "Master".
 x  Probably need to make play-toggle button useable only during Live mode.
 x  Consider adding --version output to Help/About.

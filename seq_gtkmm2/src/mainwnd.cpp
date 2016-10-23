@@ -220,6 +220,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
             manage(new Gtk::ToggleButton("Menu"))
     ),
 #endif
+    m_label_jack_mode       (manage(new Gtk::Label())),
     m_adjust_bpm
     (
         manage
@@ -525,6 +526,10 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         sigc::mem_fun(*this, &mainwnd::set_menu_mode)
     );
     tophbox->pack_start(*m_button_menu, false, false, HBOX_PADDING/2);
+
+    m_label_jack_mode->set_width_chars(6);
+    m_label_jack_mode->set_text("      ");
+    tophbox->pack_start(*m_label_jack_mode, false, false, HBOX_PADDING/2);
 
 #endif  // SEQ64_STAZED_MENU_BUTTONS
 
@@ -935,6 +940,13 @@ mainwnd::timer_callback ()
     }
 
 #endif
+
+    if (rc().with_jack_master())
+        m_label_jack_mode->set_text("Master");
+    else if (rc().with_jack_transport())
+        m_label_jack_mode->set_text("JACK");
+    else
+        m_label_jack_mode->set_text("ALSA");
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 

@@ -486,7 +486,7 @@ eventedit::set_seq_ppqn (const std::string & p)
 void
 eventedit::set_seq_count ()
 {
-    char temptext[36];
+    char temptext[48];
     snprintf
     (
         temptext, sizeof temptext, "Sequence Count: %d events",

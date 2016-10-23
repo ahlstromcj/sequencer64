@@ -2450,6 +2450,12 @@ perform::output_func ()
 #endif
 
         jack_scratchpad pad;
+        pad.js_total_tick = 0.0;            // double
+#if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
+        pad.js_clock_tick = 0;              // long probably offers more ticks
+#else
+        pad.js_clock_tick = 0.0;            // double
+#endif
         if (m_dont_reset_ticks)
         {
             pad.js_current_tick = get_jack_tick();
@@ -2464,10 +2470,12 @@ perform::output_func ()
         {
             pad.js_current_tick = 0.0;      // tick and tick fraction
             pad.js_total_tick = 0.0;
+#if 0
 #if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
             pad.js_clock_tick = 0;          // long probably offers more ticks
 #else
             pad.js_clock_tick = 0.0;        // double
+#endif
 #endif
         }
 
@@ -2744,8 +2752,10 @@ perform::output_func ()
 
                         if (is_jack_running())
                         {
+#ifdef SEQ64_JACK_SUPPORT
                             if (m_jack_asst.transport_not_starting())
                                 play(rtick - 1);                    // play!
+#endif
                         }
                         else
                             play(rtick - 1);                        // play!

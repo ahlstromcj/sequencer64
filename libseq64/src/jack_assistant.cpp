@@ -331,7 +331,7 @@ jack_assistant::get_jack_client_info ()
     else
         m_jack_client_uuid = rc().jack_session_uuid();
 
-    std::string jinfo = "JACK client:uuid ";
+    std::string jinfo = "JACK client:uuid is ";
     jinfo += m_jack_client_name;
     if (! m_jack_client_uuid.empty())
     {

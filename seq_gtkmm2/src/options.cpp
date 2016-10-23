@@ -168,7 +168,7 @@ options::add_midi_clock_page ()
             rb_mod,
             "MIDI Clock will be sent.  MIDI Start will be sent and clocking "
             "will begin once the song position has reached the modulo of "
-            "the specified Size. For gear that doesn't respond to Song "
+            "the specified Size. Use for gear that doesn't respond to Song "
             "Position."
         );
 

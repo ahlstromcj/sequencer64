@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-20
+ * \updates       2016-10-23
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -268,6 +268,8 @@ optionsfile::parse (perform & p)
         ok = next_data_line(file);
         if (! ok)
             return error_message("midi-control");
+        else
+            ok = true;
 
         for (unsigned i = 0; i < sequences; ++i)    /* 0 to c_midi_controls-1 */
         {
@@ -290,6 +292,8 @@ optionsfile::parse (perform & p)
             ok = next_data_line(file);
             if (! ok && i < (sequences - 1))
                 return error_message("midi-control data line");
+            else
+                ok = true;
         }
     }
     else
@@ -355,13 +359,18 @@ optionsfile::parse (perform & p)
             ok = next_data_line(file);
             if (! ok && i < (c_seqs_in_set - 1))
                 return error_message("mute-group data line");
+            else
+                ok = true;
         }
     }
 
-    line_after(file, "[midi-clock]");
+    ok = line_after(file, "[midi-clock]");
     long buses = 0;
-    sscanf(m_line, "%ld", &buses);
-    ok = next_data_line(file) && buses > 0 && buses <= SEQ64_DEFAULT_BUSS_MAX;
+    if (ok)
+    {
+        sscanf(m_line, "%ld", &buses);
+        ok = next_data_line(file) && buses > 0 && buses <= SEQ64_DEFAULT_BUSS_MAX;
+    }
     if (! ok)
         return error_message("midi-clock");
 
@@ -373,6 +382,11 @@ optionsfile::parse (perform & p)
         ok = next_data_line(file);
         if (! ok && i < (buses - 1))
             return error_message("midi-clock data line");
+        else
+        {
+            ok = true;
+            break;
+        }
     }
 
     line_after(file, "[keyboard-control]");

@@ -8,8 +8,9 @@ basically done.
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
 y  Issue 48: JACK non-master doesn't play when built without seq32 code.
    x Fixed by a simple change in jack_assistant.cpp.
-   - Why does Sequencer64 save the JACK Master option even when exiting
-     with it disabled?
+   y Why does Sequencer64 save the JACK Master option even when exiting
+     with it disabled?  There was a bug, and something happened to cut off the
+     mute-group section at entry 30, and the rest of the file was not written.
    - As Master (without seq32 code), it always resets to a non-zero
      position as seen in the main window.
    - Would be good to have an icon or status text in the main window for:

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-08
+ * \updates       2016-10-23
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -665,8 +665,11 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                 RunningTime += Delta;           /* add in the time          */
                 if (m_use_default_ppqn)         /* legacy handling of ppqn  */
                 {
-                    CurrentTime = RunningTime * m_ppqn / ppqn;
-                    e.set_timestamp(CurrentTime);
+                    if (ppqn > 0)
+                    {
+                        CurrentTime = RunningTime * m_ppqn / ppqn;
+                        e.set_timestamp(CurrentTime);
+                    }
                 }
                 else
                 {
@@ -1654,6 +1657,11 @@ midifile::write (perform & p)
     bool result = true;
     int numtracks = 0;
     m_error_message.clear();
+    if (m_ppqn < SEQ64_MINIMUM_PPQN || m_ppqn > SEQ64_MAXIMUM_PPQN)
+    {
+        m_error_message = "Error, invalid PPQN for MIDI file to write";
+        return false;
+    }
     printf("[Writing MIDI file, %d ppqn]\n", m_ppqn);
     for (int i = 0; i < c_max_sequence; ++i) /* get number of active tracks */
     {
@@ -1807,7 +1815,7 @@ midifile::write_song (perform & p)
     {
         m_error_message =
             "The current MIDI song has no exportable tracks; "
-            "you need to create a performance in the Song Editor first."
+            "create a performance in the Song Editor first."
             ;
         result = false;
     }

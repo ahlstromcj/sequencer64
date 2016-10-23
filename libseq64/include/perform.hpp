@@ -845,6 +845,15 @@ public:
     }
 
     /**
+     * \getter m_ppqn
+     */
+
+    int ppqn () const
+    {
+        return m_ppqn;
+    }
+
+    /**
      * \getter m_sequence_count
      *      It is better to call this getter before bothering to even try to
      *      use a sequence.  In many cases at startup, or when loading a file,

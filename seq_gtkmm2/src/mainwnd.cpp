@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-15
+ * \updates       2016-10-24
  * \license       GNU 3PLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -220,7 +220,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
             manage(new Gtk::ToggleButton("Menu"))
     ),
 #endif
+#ifdef SEQ64_SHOW_JACK_STATUS
     m_label_jack_mode       (manage(new Gtk::Label())),
+#endif
     m_adjust_bpm
     (
         manage
@@ -527,9 +529,11 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     );
     tophbox->pack_start(*m_button_menu, false, false, HBOX_PADDING/2);
 
+#ifdef SEQ64_SHOW_JACK_STATUS
     m_label_jack_mode->set_width_chars(6);
     m_label_jack_mode->set_text("      ");
     tophbox->pack_start(*m_label_jack_mode, false, false, HBOX_PADDING/2);
+#endif
 
 #endif  // SEQ64_STAZED_MENU_BUTTONS
 
@@ -941,12 +945,21 @@ mainwnd::timer_callback ()
 
 #endif
 
-    if (rc().with_jack_master())
-        m_label_jack_mode->set_text("Master");
-    else if (rc().with_jack_transport())
-        m_label_jack_mode->set_text("JACK");
+    /*
+     * \new ca 2016-10-24.  Show JACK status in main windows
+     */
+
+#ifdef SEQ64_SHOW_JACK_STATUS
+    if (perf().is_jack_running())
+    {
+        if (rc().with_jack_master())
+            m_label_jack_mode->set_text("Master");
+        else if (rc().with_jack_transport())
+            m_label_jack_mode->set_text("JACK");
+    }
     else
         m_label_jack_mode->set_text("ALSA");
+#endif
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 

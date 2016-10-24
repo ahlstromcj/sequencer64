@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-23
+ * \updates       2016-10-24
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1487,23 +1487,6 @@ perform::set_screenset (int ss)
 void
 perform::set_auto_screenset (bool flag)
 {
-    /*
-     *  Not sure why we're doing this changing, as it is just a option
-     *  setting.
-     */
-
-#if 0
-    if (flag)
-    {
-        mute_all_tracks();
-        mute_screenset(0, false);
-    }
-    else
-    {
-        mute_all_tracks(false);             // the default is true !!!!
-    }
-#endif
-
     m_auto_screenset_queue = flag;
 }
 
@@ -2470,13 +2453,6 @@ perform::output_func ()
         {
             pad.js_current_tick = 0.0;      // tick and tick fraction
             pad.js_total_tick = 0.0;
-#if 0
-#if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
-            pad.js_clock_tick = 0;          // long probably offers more ticks
-#else
-            pad.js_clock_tick = 0.0;        // double
-#endif
-#endif
         }
 
         pad.js_jack_stopped = false;
@@ -2706,17 +2682,6 @@ perform::output_func ()
                  */
 
                 bool perfloop = m_looping;
-
-#if 0
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-                if (perfloop)
-                    perfloop = m_playback_mode || start_from_perfedit();
-#else
-                if (perfloop)
-                    perfloop = m_playback_mode || song_start_mode();
-#endif
-#endif
-
                 if (perfloop)
                 {
                     perfloop =
@@ -2726,7 +2691,6 @@ perform::output_func ()
 #endif
                         song_start_mode();
                 }
-
                 if (perfloop)
                 {
                     /*
@@ -3842,8 +3806,11 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                     pop_trigger_redo();                 /* perfedit::redo() */
                     result = true;
                 }
+            }
+            else
+            {
 #ifdef SEQ64_STAZED_JACK_SUPPORT
-                else if (k.is(keys().follow_transport()))
+                if (k.is(keys().follow_transport()))
                 {
                     toggle_follow_transport();
                     result = true;
@@ -3868,19 +3835,6 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
         }
     }
 #ifdef SEQ64_STAZED_JACK_SUPPORT
-    else
-    {
-        if (k.is(keys().fast_forward()))
-        {
-            fast_forward(false);
-            result = true;
-        }
-        else if (k.is(keys().rewind()))
-        {
-            rewind(false);
-            result = true;
-        }
-    }
 #endif
     return result;
 }

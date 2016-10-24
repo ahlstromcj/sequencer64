@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-13
+ * \updates       2016-10-24
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -46,6 +46,13 @@
 #include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
 #include "gui_window_gtk2.hpp"          /* seq64::qui_window_gtk2       */
 #include "perform.hpp"                  /* seq64::perform and callback  */
+
+/**
+ *  A new feature for showing whether JACK is connected or not in the main
+ *  window.
+ */
+
+#define SEQ64_SHOW_JACK_STATUS
 
 /*
  *  Easier access to Gtk-2 classes.
@@ -214,11 +221,15 @@ private:
 
 #endif
 
+#ifdef SEQ64_SHOW_JACK_STATUS
+
     /**
      *  Indicates the current mode of Sequencer64:  JACK, Master, and ALSA.
      */
 
     Gtk::Label * m_label_jack_mode;
+
+#endif
 
     /**
      *  The spin/adjustment controls for the BPM (beats-per-minute) value.

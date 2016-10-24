@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-16
+ * \updates       2016-10-24
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -1999,15 +1999,6 @@ seqroll::on_button_release_event (GdkEventButton * ev)
     else
         result = m_fruity_interaction.on_button_release_event(ev, *this);
 
-    /*
-     * MODIFY FIX?  Why modify just because of a button release?  If we leave
-     * this active, then even just selecting notes makes the application prompt
-     * for saving upon exit.
-     *
-     * if (result)
-     *    perf().modify();
-     */
-
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
     perf().set_follow_transport(m_transport_follow);
@@ -2209,9 +2200,20 @@ seqroll::on_key_press_event (GdkEventKey * ev)
                 m_seq.cut_selected(false);      /* does not copy the events */
                 result = true;
             }
+
+            /*
+             * Handled in perform::playback_key_event().
+             *
+             * else if (ev->keyval == k.is(keys().follow_transport()))
+             * {
+             *     perf().toggle_follow_transport();
+             *     result = true;
+             * }
+             */
+
             else if (ev->keyval == SEQ64_Home)
             {
-                m_seq.set_last_tick(0);
+                m_seq.set_last_tick(0);         /* was set_orig_tick()      */
                 result = true;
             }
             else if (ev->keyval == SEQ64_Left)

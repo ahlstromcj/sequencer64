@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-13
+ * \updates       2016-10-25
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -93,10 +93,11 @@ extern void update_perfedit_sequences ();
  *  callback.
  *
  * \param arg
- *      Provide a putative pointer to the perform object.
+ *      Provides a putative pointer to the perform object that actually
+ *      implements the timeout functionality.
  *
  * \return
- *      Returns the value of the perform::FF_RW_timeout() call if Seq32
+ *      Returns the value of the perform::FF_RW_timeout() call if seq32
  *      transport support is enabled and the arg parameter is good, otherwise
  *      false is returned.
  */
@@ -290,11 +291,30 @@ public:
     bool get_toggle_jack();
     void toggle_jack();
 
+    /**
+     *  Implements the seq32/stazed rewind operation.  The timeout is in
+     *  milliseconds, and is currently hard-wired to 120.
+     *
+     *  Note the use of "&perf()" to get the address of the perform object.
+     *
+     * \param press
+     *      True if the operation is a key press, false if the operation is a
+     *      key release.
+     */
+
     void rewind (bool press)
     {
         perf().rewind(press);
-        gtk_timeout_add(120, seq64::FF_RW_timeout, &perf());
+        gtk_timeout_add(SEQ64_FF_RW_TIMEOUT, seq64::FF_RW_timeout, &perf());
     }
+
+    /**
+     *  Implements the seq32/stazed fast-forward operation.
+     *
+     * \param press
+     *      True if the operation is a key press, false if the operation is a
+     *      key release.
+     */
 
     void fast_forward (bool press)
     {

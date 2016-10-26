@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2016-09-18
+# \update     	2016-10-26
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -33,9 +33,9 @@ export LANG
 CYGWIN=binmode
 export CYGWIN
 
-export SEQUENCER64_SCRIPT_EDIT_DATE="2016-09-18"
+export SEQUENCER64_SCRIPT_EDIT_DATE="2016-10-26"
 export SEQUENCER64_LIBRARY_API_VERSION="0.9"
-export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.9.18"
+export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.9.19"
 
 #******************************************************************************
 #  Version info
@@ -80,10 +80,11 @@ M4DIR="m4"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.9-2016-02-07)
+Usage: ./bootstrap [options]                                 (0.9-2016-10-26)
 
    'bootstrap' sets up GNU automake support and libtool support for the
-   Sequencer64 project.  It can also super-clean the project.
+   Sequencer64 project, creating the 'configure' script.  It can also
+   super-clean the project (which removes all generated files and directories).
 
  --clean             Delete the usual junk files from the project.
  --full-clean        Also delete all configure-related files.  The bootstrap
@@ -92,12 +93,12 @@ Usage: ./bootstrap [options]                                 (0.9-2016-02-07)
  --debug, -ed,       Also configure for debugging, which also disables
    --enable-debug    shared libraries/libtool for easier debugging.
  --release, -er,     Also configure for release, to save a little time.  Sets up
-   --enable-release  a "silent" build, as well.
+   --enable-release  a 'silent' build, as well.
  --help              Show this help text.
 
    The default bootstraps the projects.  Then one should run 'configure',
    which sets up for a normal release build.  A common option for
-   'bootstrap' is --enable-debug, which adds --disable-shared and sets
+   'bootstrap' is --enable-debug (-ed), which adds --disable-shared and sets
    --configure, to configure for debugging without using libtool.
 E_O_F
 
@@ -446,8 +447,10 @@ E_O_F
          cat << E_O_F
 
 Now run './configure' to configure Sequencer64 for compilation, or './configure
---help' for configuration options.  Useful options are --enable-debug,
---disable-shared, and --enable-seq32jack.
+--help' for configuration options.  Useful options:
+
+      --enable-debug --disable-shared --enable-seq32jack
+
 E_O_F
       fi
    fi

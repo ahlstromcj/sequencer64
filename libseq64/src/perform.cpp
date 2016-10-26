@@ -4106,6 +4106,12 @@ perform::max_active_set () const
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
+/**
+ *  Implements the fast-forward or rewind functionality imported from seq32.
+ *  It changes m_tick by a quarter of the number of ticks in a standard measure,
+ *  with m_excell_FF_RW (defaults to one) to factor the difference.
+ */
+
 void
 perform::FF_rewind ()
 {
@@ -4113,10 +4119,9 @@ perform::FF_rewind ()
         return;
 
     long tick = 0;
-    long measure_ticks =
-        measures_to_ticks(m_beats_per_bar, m_ppqn, m_beat_width) / 4 *
-            m_excell_FF_RW;
-
+    long measure_ticks = measures_to_ticks(m_beats_per_bar, m_ppqn, m_beat_width);
+    measure_ticks /= 4;
+    measure_ticks *= m_excell_FF_RW;
     if (m_FF_RW_button_type == FF_RW_REWIND)
     {
         tick = m_tick - measure_ticks;
@@ -4132,7 +4137,7 @@ perform::FF_rewind ()
     }
     else
     {
-        set_start_tick(tick);  // this will set progress line
+        set_start_tick(tick);               /* this sets the progress line */
         set_reposition();
     }
 }

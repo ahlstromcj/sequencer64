@@ -1,0 +1,79 @@
+Comparison of MIDI Libraries
+Chris Ahlstrom
+2016-10-25 to 2016-10-25
+
+Currently, Sequencer64 supports two forms of MIDI buss APIs:
+
+    -   ALSA
+    -   PortMidi
+        -   ALSA
+        -   OSX CoreMidi
+        -   Windows MME
+
+We would like to support JACK, and there seems to be at least two ways to
+do it:
+
+    -   JACK API
+    -   RtMidi
+        -   Linux
+            -   JACK
+            -   ALSA
+        -   OSX
+            -   JACK
+            -   CoreMidi
+        -   Windows MME
+
+So we are considering leaving PortMidi alone and recreating the MIDI buss
+suport using RtMidi.  Here is a feature matrix based on what is already in
+use in Sequencer64.
+
+        Feature                   ALSA      PortMidi    RtMidi
+        =======                   ====      ========    ======
+
+midibus:
+
+        ID                          x          x
+        Clock type                  x          x
+        PPQN                        x
+        Sequence client             x
+        Dest client addr/port       x
+        Local client addr/port      x
+        Queue (ID)                  x
+        Buss name                   x          x
+        Last tick                   x          x
+        Mutex                       x          x
+        Initialize input            x          x
+        Initialize output           x          x
+        Sysex support               x          x
+        Start                       x          x
+        Stop                        x          x
+        Clock Init                             x
+        Clock                       x          x
+        Continue                    x          x
+        Flush                                  x
+        PortMidi stream                        x
+        PortMidi number                        x
+
+master-
+midibus:
+
+        BPM                         x          x
+        PPQN                        x          x
+        Sequence client             x          x
+        Queue (ID)                  x
+        Mutex                       x          x
+        Max. busses                 x
+        Input busses                x          x
+            Active flag             x          x
+            Init flag               x          x
+            Input init flag         x
+        Output busses               x          x
+            Active flag             x          x
+            Init flag               x
+        Channel filtering           x
+        Clock Init                             x
+
+
+
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

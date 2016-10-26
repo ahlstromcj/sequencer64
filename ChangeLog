@@ -1,5 +1,40 @@
+2016-10-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/perform.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/seqroll.cpp: Tweaks to
+	JACK mode annunciation and seq32 transport.
+
+2016-10-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/perform.hpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/mainwnd.cpp: Added
+	display of ALSA/JACK/Master mode and some JACK-not-built-in
+	compilation fixes.
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/src/jack_assistant.cpp, libseq64/src/optionsfile.cpp,
+	seq_gtkmm2/src/options.cpp: Fixed error in reading the rc file,
+	found the file truncated.
+	* libseq64/include/perform.hpp, libseq64/src/lash.cpp,
+	libseq64/src/midifile.cpp: Interim check-in for work on issue 49,
+	Drop LASH support, found bugs in LASH passing ppqn value to midifile
+	constructor.
+	* contrib/notes/bugs_to_investigate.txt,
+	doc/dox/doxy-reference.cfg, doc/dox/mainpage-reference.dox,
+	libseq64/include/jack_assistant.hpp, libseq64/include/perform.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perfedit.cpp: Interim check-in, fix to issue 48 re
+	JACK non-master not working in non-seq32 support.
+
 2016-10-19  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* ChangeLog, INSTALL, README, ROADMAP, VERSION, configure.ac,
+	configure.help, contrib/notes/bugs_to_investigate.txt,
+	doc/dox/doxy-reference.cfg, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/userfile.cpp,
+	man/sequencer64.1: Interim check-in, moving towards version 0.9.19.
 	* libseq64/include/midibyte.hpp, libseq64/include/sequence.hpp,
 	libseq64/src/midi_splitter.cpp, libseq64/src/sequence.cpp,
 	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/seqedit.cpp,

@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.19
 Chris Ahlstrom
-2015-09-10 to 2016-10-19 (initial work started in July of 2015)
+2015-09-10 to 2016-10-26 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -18,9 +18,9 @@ Major updates:
         -   Fixed issue 46, pattern-edit undo being applied twice.
         -   Fixed keystrokes meant for pattern edit fields being used to 
             modify the sequence piano roll.
-        -   Main window Mute button is now disabled in Song mode to avoid
+        -   Main window Mute button is disabled in Song mode to avoid
             confusing behavior.
-        -   Progress bar now shown in pattern editor for empty sequences.
+        -   Progress bar shown in pattern editor for empty sequences.
         -   Some cleanup of playback handling.
         -   Fixed issue 42, where recording a MIDI note was inadvertently of
             fixed length.
@@ -31,26 +31,24 @@ Major updates:
         tracks/sequences.
     -   JACK support has been improved.  Sequencer64 will track JACK transport
         properly, and as Master, will provide the proper Bar:Beats:Ticks (BBT)
-        to other JACK clients.  We are still investigating JackBBTFrameOffset
-        support.
+        to other JACK clients.  We are still incorporating seq32 JACK support.
     -   Pause functionality (still tweaking it) has been added to playback
-        under ALSA.  Instead of rewinding, the Pause button leaves
-        playback where it is, and resumes when playback restarts.  Stop
-        still rewinds the sequences.  The Pause feature does not affect JACK
-        transport, which already supports pause; we would like to add rewind
-        to JACK transport eventually.  Also added is a Pause key (by default,
-        the period).  Pause can be disabled at configure time (--disable-pause).
-    -   Long sequences/patterns now auto-scroll horizontally during playback
+        under ALSA.  The Pause button leaves playback where it is, and resumes
+        when playback restarts.  Stop rewinds the sequences.  Pause does not
+        affect JACK transport; it already supports pause.  Also added is a
+        Pause key (by default, the period).  Pause can be disabled at
+        configure time (--disable-pause).
+    -   Long sequences/patterns auto-scroll horizontally during playback
         to keep up with the progress bar in the sequence/pattern editor.
     -   Highlighting of the current sequence brought up for editing.
-    -   Configurable progress bar, font, redraw timeouts, and more.
-    -   MIDI Clock support has been fixed.  Sequencer64 will now interact
-        well with QJackCtl, Hydrogen, and Klick (command-line metronome).
+    -   Configurable progress bar, font, redraw timeouts, colors, and more.
+    -   MIDI Clock support has been fixed.  Sequencer64 will interacts
+        better with QJackCtl, Hydrogen, and Klick (command-line metronome).
         See the testing described in contrib/notes/jack-testing.txt.
     -   An event-editing window has been added, for viewing and editing a
         list of events, regardless of event type.  Still in progress; viewing
         is fine, editing basics work.
-    -   Two synchronized song-editor windows can now be shown on screen, to
+    -   Two synchronized song-editor windows can be shown on screen, to
         better arrange songs with a large number of tracks.
     -   Added a more modern-looking, bolder font to the graphical user
         interface, selectable at run-time, in the "user" configuration file.
@@ -63,17 +61,17 @@ Major updates:
         performance and sequence user-interfaces in editing mode, very helpful
         for certain crappy laptop trackpads.  Extra "paint" key support also
         gets around the limitations of some trackpads.
-    -   Shift-left-click on the pattern slot in the pattern editor now
-        toggles the playing state of all other patterns.  This works across
-        screensets.  Shift-left-click on the pattern name or M in the song
-        editor now toggles the mute state of all other tracks.
+    -   Shift-left-click on the pattern slot in the pattern editor toggles
+        the playing state of all other patterns.  This works across screen-sets.
+        Shift-left-click on the pattern name or M in the song editor toggles
+        the mute state of all other tracks.
     -   Added arrow key support to some of the windows and panes.
         -   The "l" and "r" keys initiate arrow movement of the performance
             markers.
         -   If notes are selected in the pattern editor, the arrow keys can
             be used to move the notes in time and in pitch.
         -   If selected notes are copied-and-pasted, the selection box
-            that indicates where they will be dropped can now be moved with
+            that indicates where they will be dropped can be moved with
             the arrow keys.  Hitting "Enter" will then drop the notes in the
             same wasy that a click does.
         -   In the performance editor, a pattern can be selected with the
@@ -86,11 +84,11 @@ Major updates:
             "x" to escape it, in the sequence and song editors.
         -   Add "z" and "Z" keys to zoom out and zoom in the pattern and song
             piano rolls.  "0" restores the default zoom.
-    -   Tweaked the colors of some user-interface elements to make it
-        easier to see them when combined.  For example, the background
-        sequence is now colored, and the scale bars are now light grey.
-        Progress bars can be set to red, if not running in legacy mode.
-        Selected events now appear as orange in the data panel.
+    -   Tweaked the colors of some user-interface elements to make it easier
+        to see them when combined.  For example, the background sequence is
+        now colored, and the scale bars are light grey.  Progress bars can be
+        set to red, if not running in legacy mode.  Selected events appear as
+        orange in the data panel.
     -   The "rc" configuration file has been upgraded to support a couple
         more options, including the enabling/disabling of LASH session
         support.

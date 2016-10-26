@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-08-22
+ * \updates       2016-10-25
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -237,6 +237,13 @@
  */
 
 #define SEQ64_MAXIMUM_REDRAW             100
+
+/**
+ *  Defines the callback rate for gtk_timeout_add() as used by perfedit.
+ *  As usual, this value is in milliseconds.
+ */
+
+#define SEQ64_FF_RW_TIMEOUT              120
 
 /**
  *  Default value for c_beats_per_minute (global beats-per-minute, also known

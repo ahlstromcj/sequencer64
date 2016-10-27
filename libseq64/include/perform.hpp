@@ -262,16 +262,21 @@ private:
     bool m_reposition;
 
     /**
-     *  TBD.
+     *  Provides an "acceleration" factor for the fast-forward and rewind
+     *  functionality.  It starts out at 1.0, and can range up to 60.0, being
+     *  multiplied by 1.1 by the FF/RW timeout function.
      */
 
     float m_excell_FF_RW;
 
     /**
-     *  TBD.
+     *  Indicates whether the fast-forward or rewind key is in effect in the
+     *  perfedit window.  It has values of FF_RW_REWIND, FF_RW_NONE, or
+     *  FF_RW_FORWARD.  This was a free (global in a namespace) int in
+     *  perfedit.
      */
 
-    ff_rw_button_t m_FF_RW_button_type;   // was extern int in perfedit
+    ff_rw_button_t m_FF_RW_button_type;
 
 #endif  // SEQ64_STAZED_JACK_SUPPORT
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-25
+ * \updates       2016-10-27
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -107,9 +107,9 @@ FF_RW_timeout (void * arg)
 {
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     perform * p = reinterpret_cast<perform *>(arg);
-    return not_nullptr(p) ? p->FF_RW_timeout() : false ;
+    return int(not_nullptr(p) ? p->FF_RW_timeout() : false);
 #else
-    return false;
+    return int(false);
 #endif
 }
 
@@ -285,8 +285,6 @@ public:
     void set_zoom (int z);
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
-
-    friend int FF_RW_timeout (void * arg);
 
     bool get_toggle_jack();
     void toggle_jack();

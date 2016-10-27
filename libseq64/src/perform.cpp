@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-24
+ * \updates       2016-10-27
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -34,16 +34,16 @@
 #include <sched.h>
 #include <stdio.h>
 
-#if ! defined PLATFORM_WINDOWS
-#include <time.h>                       /* struct timespec                  */
-#endif
-
 #include "calculations.hpp"
 #include "event.hpp"
 #include "keystroke.hpp"
 #include "midibus.hpp"
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+
+#if ! defined PLATFORM_WINDOWS
+#include <time.h>                       /* struct timespec                  */
+#endif
 
 /**
  *  Indicates if the playing-screenset code is in force or not, for
@@ -4120,17 +4120,24 @@ perform::FF_rewind ()
 
     long tick = 0;
     long measure_ticks = measures_to_ticks(m_beats_per_bar, m_ppqn, m_beat_width);
-    measure_ticks /= 4;
-    measure_ticks *= m_excell_FF_RW;
-    if (m_FF_RW_button_type == FF_RW_REWIND)
+    if (measure_ticks >= m_ppqn)
     {
-        tick = m_tick - measure_ticks;
-        if (tick < 0)
-            tick = 0;
-    }
-    else if (m_FF_RW_button_type == FF_RW_FORWARD)
-        tick = m_tick + measure_ticks;
+        measure_ticks = long(measure_ticks * 0.25 * m_excell_FF_RW);
+        if (m_FF_RW_button_type == FF_RW_REWIND)
+        {
+            tick = m_tick - measure_ticks;
+            if (tick < 0)
+                tick = 0;
+        }
+        else                    // if (m_FF_RW_button_type == FF_RW_FORWARD)
+            tick = m_tick + measure_ticks;
 
+        printf("tick = %ld\n", tick);
+    }
+    else
+    {
+        errprint("perform::FF_rewind() programmer error");
+    }
     if (is_jack_running())
     {
         position_jack(true, tick);
@@ -4162,7 +4169,14 @@ perform::reposition (midipulse tick)
 
 /**
  *  Convenience function.  This function is used in the free function version
- *  of FF_RW_timeout() as a callback to the gtk_timeout() function.
+ *  of FF_RW_timeout() as a callback to the gtk_timeout() function.  It
+ *  multiplies m_excell_FF_RW by 1.1 as long as one of the fast-forward or
+ *  rewind keys is held, and is less than 60.
+ *
+ * \return
+ *      Returns true if one of the fast-forward or rewind keys was held,
+ *      leaving m_excell_FF_RW at the last value it had.  Otherwise, it resets
+ *      the value to 1, and returns false.
  */
 
 bool

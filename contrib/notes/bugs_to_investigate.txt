@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-10-23 (New bugs and fixed bugs)
+2015-10-27 to 2016-10-26 (New bugs and fixed bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -1128,6 +1128,44 @@ class declaration anymore.
 Patch attached for testing and thoughts.
 [diff.txt](https://github.com/ahlstromcj/sequencer64/files/534872/diff.txt)
 
+
+
+
+Obtained this project:  https://sourceforge.net/projects/jack-smf-utils/
+
+Built it, ran qjackctl, and then:
+
+% src/jack-smf-player /home/ahlstrom/Home/ca/mls/git/sequencer64/contrib/midi/horse-song.midi
+libsmf: Ignoring invalid tempo change.
+libsmf: SMF error: chunk signature contains at least one non-alphanumeric byte.
+libsmf: SMF warning: Cannot load track.
+libsmf: SMF error: chunk signature contains at least one non-alphanumeric byte.
+libsmf: SMF warning: Cannot load track.
+libsmf: SMF error: chunk signature contains at least one non-alphanumeric byte.
+libsmf: SMF warning: Cannot load track.
+libsmf: SMF error: chunk signature contains at least one non-alphanumeric byte.
+libsmf: SMF warning: Cannot load track.
+libsmf: SMF error: chunk signature contains at least one non-alphanumeric byte.
+libsmf: SMF warning: Cannot load track.
+libsmf: SMF error: chunk signature contains at least one non-alphanumeric byte.
+libsmf: SMF warning: Cannot load track.
+libsmf: SMF error: chunk signature contains at least one non-alphanumeric byte.
+libsmf: SMF warning: Cannot load track.
+libsmf: SMF warning: MThd header declared 8 tracks, but only 1 found; continuing anyway.
+jack-smf-player: format: 1 (several simultaneous tracks); number of tracks: 1; division: 192 PPQN.
+jack-smf-player: Seeking to 0.000000 seconds.
+jack-smf-player: Metadata: Sequence number
+jack-smf-player: Metadata: Sequence/Track Name: Base
+jack-smf-player: Metadata: Time Signature: 4/4, 24 clocks per click, 8 notated 32nd notes per quarter note
+jack-smf-player: Metadata: Tempo: 0 microseconds per quarter note, inf BPM
+jack-smf-player: Metadata: Proprietary (aka Sequencer) Event, length 19
+jack-smf-player: Metadata: Proprietary (aka Sequencer) Event, length 8
+jack-smf-player: Metadata: Proprietary (aka Sequencer) Event, length 9
+jack-smf-player: Metadata: Proprietary (aka Sequencer) Event, length 8
+jack-smf-player: Metadata: End Of Track
+jack-smf-player: End of song.
+
+So why all the errors?  Could be useful to find out.
 
 
 

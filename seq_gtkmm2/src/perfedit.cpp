@@ -1041,8 +1041,8 @@ perfedit::on_key_press_event (GdkEventKey * ev)
                 perf().toggle_jack_mode();
                 return true;
             }
-        }
 #endif
+        }
     }
     (void) m_perftime->key_press_event(ev);
     return Gtk::Window::on_key_press_event(ev);

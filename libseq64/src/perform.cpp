@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-27
+ * \updates       2016-10-28
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -3807,35 +3807,8 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                     result = true;
                 }
             }
-            else
-            {
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-                if (k.is(keys().follow_transport()))
-                {
-                    toggle_follow_transport();
-                    result = true;
-                }
-                else if (k.is(keys().fast_forward()))
-                {
-                    fast_forward(true);
-                    result = true;
-                }
-                else if (k.is(keys().rewind()))
-                {
-                    rewind(true);
-                    result = true;
-                }
-                else if (k.is(keys().toggle_jack()))
-                {
-                    toggle_jack_mode();
-                    result = true;
-                }
-#endif
-            }
         }
     }
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-#endif
     return result;
 }
 
@@ -4122,7 +4095,12 @@ perform::FF_rewind ()
     long measure_ticks = measures_to_ticks(m_beats_per_bar, m_ppqn, m_beat_width);
     if (measure_ticks >= m_ppqn)
     {
-        measure_ticks = long(measure_ticks * 0.25 * m_excell_FF_RW);
+        /*
+         * The factor was 0.25, now 1.0, but might be better as a
+         * configuragble item in the "usr" configuration file.
+         */
+
+        measure_ticks = long(measure_ticks * 1.00 * m_excell_FF_RW);
         if (m_FF_RW_button_type == FF_RW_REWIND)
         {
             tick = m_tick - measure_ticks;
@@ -4131,8 +4109,6 @@ perform::FF_rewind ()
         }
         else                    // if (m_FF_RW_button_type == FF_RW_FORWARD)
             tick = m_tick + measure_ticks;
-
-        printf("tick = %ld\n", tick);
     }
     else
     {

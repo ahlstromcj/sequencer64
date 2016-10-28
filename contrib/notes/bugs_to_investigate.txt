@@ -1,11 +1,16 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-10-26 (New bugs and fixed bugs)
+2015-10-27 to 2016-10-28 (New bugs and fixed bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
+-  Consider making the other perfedit and seqedit keys configurable
+   in new sections [perfedit-keys] and [seqedit-keys], in the Ext Keys
+   tab and the "rc" file.  Or at least display them there for reference.
+-  Make a left-click while playing in perfedit act like the position-pointer
+   keystroke.
 y  Issue 48: JACK non-master doesn't play when built without seq32 code.
    x Fixed by a simple change in jack_assistant.cpp.
    y Why does Sequencer64 save the JACK Master option even when exiting

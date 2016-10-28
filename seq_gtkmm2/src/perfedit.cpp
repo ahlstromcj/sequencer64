@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-23
+ * \updates       2016-10-28
  * \license       GNU GPLv2 or above
  *
  *  When the Song/Performance editor has focus, Sequencer64 is automatically
@@ -1017,9 +1017,67 @@ perfedit::on_key_press_event (GdkEventKey * ev)
                 return true;
             }
         }
+        else
+        {
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+            const keys_perform & kp = perf().keys();
+            if (k.is(kp.follow_transport()))
+            {
+                toggle_follow_transport();      // perf()?
+                return true;
+            }
+            else if (k.is(kp.fast_forward()))
+            {
+                fast_forward(true);
+                return true;
+            }
+            else if (k.is(kp.rewind()))
+            {
+                rewind(true);
+                return true;
+            }
+            else if (k.is(kp.toggle_jack()))
+            {
+                perf().toggle_jack_mode();
+                return true;
+            }
+        }
+#endif
     }
     (void) m_perftime->key_press_event(ev);
     return Gtk::Window::on_key_press_event(ev);
+}
+
+/**
+ *  This function is the callback for a key-release event.  It is needed
+ *  to turn off the fast-forward and rewind keys functionality when released.
+ *
+ * \param ev
+ *      Provides the key event to implement.
+ */
+
+bool
+perfedit::on_key_release_event (GdkEventKey * ev)
+{
+    if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_RELEASE))
+    {
+        keystroke k(ev->keyval, SEQ64_KEYSTROKE_RELEASE, ev->state);
+
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+        const keys_perform & kp = perf().keys();
+        if (k.is(kp.fast_forward()))
+        {
+            fast_forward(false);
+            return true;
+        }
+        else if (k.is(kp.rewind()))
+        {
+            rewind(false);
+            return true;
+        }
+#endif
+    }
+    return Gtk::Window::on_key_release_event(ev);   // necessary?
 }
 
 }           // namespace seq64

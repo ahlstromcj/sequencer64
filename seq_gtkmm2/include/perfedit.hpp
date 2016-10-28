@@ -89,8 +89,8 @@ namespace seq64
 extern void update_perfedit_sequences ();
 
 /**
- *  This global function in the seq64 namespace is passed to the gtk_timeout
- *  callback.
+ *  This global function in the seq64 namespace is passed to the
+ *  gtk_timeout_add callback.
  *
  * \param arg
  *      Provides a putative pointer to the perform object that actually
@@ -374,6 +374,7 @@ private:        // Gtkmm 2.4 callbacks
 
     void on_realize ();
     bool on_key_press_event (GdkEventKey * ev);
+    bool on_key_release_event (GdkEventKey * ev);
 
     /**
      *  All this callback function does is return false.

@@ -2497,6 +2497,39 @@ sequence::change_event_data_range
 
 #ifdef SEQ64_STAZED_LFO_SUPPORT
 
+/**
+ *  Modifies data events according to the parameters active in the LFO window
+ *  (lfownd).
+ *
+ * \param value
+ *      Provides the base value for the event data value.  Ranges from 0 to
+ *      127 in increments of 0.1.  This amount is added to the result of the
+ *      wave_func() calculation.
+ *
+ * \param range
+ *      Provides the range for the event data value.  Ranges from 0 to
+ *      127 in increments of 0.1.
+ *
+ * \param speed
+ *      Provides the inverse periodicity (?) for the modifications.  Ranges
+ *      from 0 to 16 in increments of 0.01.  Not sure what units this value is
+ *      in.
+ *
+ * \param phase
+ *      The phase of the event modification.  Ranges from 0 to 1 (what units?)
+ *      in increments of 0.01.
+ *
+ * \param wave
+ *      The wave type to apply.  Ranges from 1 to 5.
+ *
+ * \param status
+ *      The status value for the events to modify.
+ *
+ * \param cc
+ *      Provides the control-change value for Control Change events that are
+ *      to be modified.
+ */
+
 void
 sequence::change_event_data_lfo
 (
@@ -2505,9 +2538,14 @@ sequence::change_event_data_lfo
 )
 {
     automutex locker(m_mutex);
-    bool have_selection = false; /* change only selected events if some are */
+    double dlength = double(m_length);
+    double dbw = double(m_time_beat_width);
+    bool have_selection = false;            /* change only selected if true */
     if (get_num_selected_events(status, cc))
         have_selection = true;
+
+    if (m_length == 0)                      /* should never happen, though  */
+        dlength = double(m_ppqn);
 
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
@@ -2531,10 +2569,8 @@ sequence::change_event_data_lfo
             if (! get_hold_undo())
                 set_hold_undo(true);
 
-            int tick = e.get_timestamp();
-            int angle = speed * double(tick) / double(m_length) *
-                    double(m_time_beat_width) + phase;
-
+            double dtick = double(e.get_timestamp());
+            double angle = speed * dtick * dbw / dlength + phase;
             int newdata = value + wave_func(angle, wave) * range;
             if (newdata < 0)
                 newdata = 0;

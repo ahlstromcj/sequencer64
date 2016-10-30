@@ -78,17 +78,18 @@ namespace seq64
 
 enum wave_type_t
 {
-    WAVE_NONE               = 0,
-    WAVE_SINE               = 1,
-    WAVE_TRIANGLE           = 2,        // true?
-    WAVE_INVERSE_TRIANGLE   = 3,        // true?
-    WAVE_STEP               = 4         // true?
+    WAVE_NONE               = 0,    /**< No waveform, never used.           */
+    WAVE_SINE               = 1,    /**< Sine wave modulation.              */
+    WAVE_SAWTOOTH           = 2,    /**< Saw-tooth (ramp) modulation.       */
+    WAVE_REVERSE_SAWTOOTH   = 3,    /**< Reverse saw-tooth (decay).         */
+    WAVE_TRIANGLE           = 4     /**< No waveform, never used.           */
 };
 
 /*
  * Free functions in the seq64 namespace.
  */
 
+extern std::string wave_type_name (wave_type_t wv);
 extern bool extract_timing_numbers
 (
     const std::string & s,

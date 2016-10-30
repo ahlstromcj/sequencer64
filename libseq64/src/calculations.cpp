@@ -842,10 +842,21 @@ tempo_us_to_bytes (midibyte t[3], int tempo_us)
 /**
  *  Calculates a wave function for use as an LFO (low-frequency oscillator)
  *  for modifying data values in a sequence.  We extracted this function from
- *  mattias's lfownd module, as it is more generally useful.
+ *  mattias's lfownd module, as it is more generally useful.  The angle
+ *  parameter is provided by the lfownd object.  It is calculated by
+ *
+\verbatim
+                 speed * tick * BW
+        angle = ------------------- + phase
+                      seqlength
+\endverbatim
+ *
+ *  The speed ranges from 0 to 16; the ratio of tick/seqlength ranges from 0
+ *  to 1; BW (beat width) is generally 4; the phase ranges from 0 to 1.
  *
  * \param angle
- *      Provides the radial angle to be applied.
+ *      Provides the radial angle to be applied.  Units of radians,
+ *      apparently.
  *
  * \param wavetype
  *      Provides the wave_type_t value to select the type of wave data-point
@@ -862,15 +873,15 @@ wave_func (double angle, wave_type_t wavetype)
         result = sin(angle * PI * 2.0);
         break;
 
-    case WAVE_TRIANGLE:
+    case WAVE_SAWTOOTH:
         result = (angle - int(angle)) * 2.0 - 1.0;
         break;
 
-    case WAVE_INVERSE_TRIANGLE:
+    case WAVE_REVERSE_SAWTOOTH:
         result = (angle - int(angle)) * -2.0 + 1.0;
         break;
 
-    case WAVE_STEP:
+    case WAVE_TRIANGLE:
     {
         double tmp = angle * 2.0;
         result = (tmp - int(tmp));
@@ -880,6 +891,48 @@ wave_func (double angle, wave_type_t wavetype)
         result = result * 2.0 - 1.0;
         break;
     }
+    default:
+        break;
+    }
+    /*
+     * printf("y[%s](%f)=%f\n", wave_type_name(wavetype).c_str(), angle, result);
+     */
+    return result;
+}
+
+/**
+ *  Converts a wave type value to a string.  These names are short because I
+ *  cannot figure out how to get the window pad out to show the longer names.
+ *
+ * \param wavetype
+ *      The wave-type value to be displayed.
+ *
+ * \return
+ *      Returns a short description of the wave type.
+ */
+
+std::string
+wave_type_name (wave_type_t wavetype)
+{
+    std::string result = "None";
+    switch (wavetype)
+    {
+    case WAVE_SINE:
+        result = "Sine";
+        break;
+
+    case WAVE_SAWTOOTH:
+        result = "Ramp";
+        break;
+
+    case WAVE_REVERSE_SAWTOOTH:
+        result = "Decay";
+        break;
+
+    case WAVE_TRIANGLE:
+        result = "Triangle";
+        break;
+
     default:
         break;
     }

@@ -49,6 +49,7 @@
 namespace Gtk
 {
     class HBox;
+    class Label;
     class VScale;
 }
 
@@ -91,6 +92,7 @@ private:
     Gtk::VScale * m_scale_speed;    /**< Vertical slider for speed.         */
     Gtk::VScale * m_scale_phase;    /**< Vertical slider for phase.         */
     Gtk::VScale * m_scale_wave;     /**< Vertical slider for wave type.     */
+    Gtk::Label * m_wave_name;       /**< Human readable name for wave type. */
 
     /**
      *  Value.

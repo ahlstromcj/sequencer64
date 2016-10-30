@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-09-25
+ * \updates       2016-10-30
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -87,6 +87,7 @@ private:
     bool m_lash_support;            /**< Enable LASH, if compiled in.       */
     bool m_allow_mod4_mode;         /**< Allow Mod4 to hold drawing mode.   */
     bool m_allow_snap_split;        /**< Allow snap-split of a trigger.     */
+    bool m_allow_click_edit;        /**< Allow double-click edit pattern.   */
     bool m_show_midi;               /**< Show MIDI events to console.       */
     bool m_priority;                /**< Run at high priority (Linux only). */
     bool m_stats;                   /**< Show some output statistics.       */
@@ -207,6 +208,15 @@ public:
     bool allow_snap_split () const
     {
         return m_allow_snap_split;
+    }
+
+    /**
+     * \getter m_allow_click_edit
+     */
+
+    bool allow_click_edit () const
+    {
+        return m_allow_click_edit;
     }
 
     /**
@@ -474,6 +484,15 @@ protected:
     void allow_snap_split (bool flag)
     {
         m_allow_snap_split = flag;
+    }
+
+    /**
+     * \setter m_allow_click_edit
+     */
+
+    void allow_click_edit (bool flag)
+    {
+        m_allow_click_edit = flag;
     }
 
     /**

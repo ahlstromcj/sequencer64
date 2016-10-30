@@ -212,6 +212,7 @@ private:
     void mouse_fruity_callback (Gtk::RadioButton *);
     void mouse_mod4_callback (Gtk::CheckButton *);
     void mouse_snap_split_callback (Gtk::CheckButton *);
+    void mouse_click_edit_callback (Gtk::CheckButton *);
     void lash_support_callback (Gtk::CheckButton *);
 
     /* Notebook pages (tabs) */

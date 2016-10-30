@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-23
+ * \updates       2016-10-30
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -642,6 +642,11 @@ optionsfile::parse (perform & p)
             sscanf(m_line, "%ld", &method);
             rc().allow_snap_split(method != 0);
         }
+        if (next_data_line(file))                   /* a new option */
+        {
+            sscanf(m_line, "%ld", &method);
+            rc().allow_click_edit(method != 0);
+        }
 
         line_after(file, "[lash-session]");
         sscanf(m_line, "%ld", &method);
@@ -692,7 +697,7 @@ optionsfile::write (const perform & p)
     else
     {
         file <<
-            "# Sequencer64 0.9.19 (and above) rc configuration file\n"
+            "# Sequencer64 0.9.20 (and above) rc configuration file\n"
             "#\n"
             "# This file holds the main configuration options for Sequencer64.\n"
             "# It follows the format of the legacy seq24 'rc' configuration\n"
@@ -986,12 +991,21 @@ optionsfile::write (const perform & p)
 
     file
         << "# Set to 1 to allow Sequencer64 to split performance editor\n"
-        << "# triggers at the closest snap position, instead of splitting the\n"
+           "# triggers at the closest snap position, instead of splitting the\n"
            "# trigger exactly in its middle.  Remember that the split is\n"
            "# activated by a middle click.\n"
            "\n"
         << (rc().allow_snap_split() ? "1" : "0")    // @new 2016-08-17
         << "   # allow_snap_split\n"
+        ;
+
+    file
+        << "# Set to 1 to allow a double-click on a slot to bring it up in\n"
+           "# the pattern editor.  This is the default.  Set it to 0 if\n"
+           "# it interferes with muting/unmuting a pattern.\n"
+           "\n"
+        << (rc().allow_click_edit() ? "1" : "0")    // @new 2016-10-30
+        << "   # allow_click_edit\n"
         ;
 
     size_t kevsize = ucperf.get_key_events().size() < size_t(c_seqs_in_set) ?

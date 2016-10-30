@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-23
+ * \updates       2016-10-30
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -794,6 +794,31 @@ options::add_mouse_page ()
             mem_fun(*this, &options::mouse_snap_split_callback), chk_snap_split
         )
     );
+
+    Gtk::CheckButton * chk_click_edit = manage
+    (
+        new Gtk::CheckButton
+        (
+            "Double click brings up sequence/pattern for editing.", true
+        )
+    );
+    chk_click_edit->set_active(rc().allow_click_edit());
+    add_tooltip
+    (
+        chk_click_edit,
+        "If checked, double-click on a sequence/pattern in the patterns "
+        "panel brings up the pattern for editing. "
+        "This can interfere with muting/unmuting, so uncheck this option "
+        "if that happens."
+    );
+    seq64box->pack_start(*chk_click_edit, Gtk::PACK_SHRINK);
+    chk_click_edit->signal_toggled().connect
+    (
+        sigc::bind
+        (
+            mem_fun(*this, &options::mouse_click_edit_callback), chk_click_edit
+        )
+    );
 }
 
 /**
@@ -1236,6 +1261,19 @@ void
 options::mouse_snap_split_callback (Gtk::CheckButton * btn)
 {
     rc().allow_snap_split(btn->get_active());
+}
+
+/**
+ *  Mouse interaction, click-edit option callback function.
+ *
+ * \param btn
+ *      The button that controls the "rc" allow_click_edit() setting.
+ */
+
+void
+options::mouse_click_edit_callback (Gtk::CheckButton * btn)
+{
+    rc().allow_click_edit(btn->get_active());
 }
 
 /**

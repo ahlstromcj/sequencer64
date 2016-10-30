@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-13
+ * \updates       2016-10-30
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -920,9 +920,11 @@ mainwid::on_button_press_event (GdkEventButton * ev)
 {
     grab_focus();
     int seqnum = seq_from_xy(int(ev->x), int(ev->y));
-    if (CAST_EQUIVALENT(ev->type, SEQ64_2BUTTON_PRESS))  /* double-click?    */
+    if (CAST_EQUIVALENT(ev->type, SEQ64_2BUTTON_PRESS)) /* double-click?    */
     {
-        seq_edit();                                     /* seqmenu function */
+        if (rc().allow_click_edit())                    /* now optional     */
+            seq_edit();                                 /* seqmenu function */
+
         update_sequences_on_window();
     }
     else

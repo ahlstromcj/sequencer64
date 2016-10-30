@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2016-10-26
+# \update     	2016-10-30
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -33,7 +33,7 @@ export LANG
 CYGWIN=binmode
 export CYGWIN
 
-export SEQUENCER64_SCRIPT_EDIT_DATE="2016-10-26"
+export SEQUENCER64_SCRIPT_EDIT_DATE="2016-10-30"
 export SEQUENCER64_LIBRARY_API_VERSION="0.9"
 export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.9.19"
 
@@ -80,7 +80,7 @@ M4DIR="m4"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.9-2016-10-26)
+Usage: ./bootstrap [options]                                 (0.9-2016-10-30)
 
    'bootstrap' sets up GNU automake support and libtool support for the
    Sequencer64 project, creating the 'configure' script.  It can also
@@ -449,7 +449,9 @@ E_O_F
 Now run './configure' to configure Sequencer64 for compilation, or './configure
 --help' for configuration options.  Useful options:
 
-      --enable-debug --disable-shared --enable-seq32jack
+      --enable-debug --disable-shared --disable-seq32jack --enable-lfo
+
+Note that --enable-seq43jack is now the default!
 
 E_O_F
       fi

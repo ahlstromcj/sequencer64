@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-19
+ * \updates       2016-10-30
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -49,7 +49,7 @@
 #include "sequence.hpp"
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
-#ifdef USE_STAZED_LFO_SUPPORT
+#ifdef SEQ64_STAZED_LFO_SUPPORT
 #include "calculations.hpp"
 #endif
 
@@ -2495,49 +2495,38 @@ sequence::change_event_data_range
     return result;
 }
 
-#ifdef USE_STAZED_LFO_SUPPORT
+#ifdef SEQ64_STAZED_LFO_SUPPORT
 
 void
 sequence::change_event_data_lfo
 (
-    double value, double range,
-    double speed, double phase, wave_type_t wave,
-    midibyte status,
-    midibyte cc
+    double value, double range, double speed, double phase,
+    wave_type_t wave, midibyte status, midibyte cc
 )
 {
     automutex locker(m_mutex);
-    bool have_selection = false; /* change only selected events, if any */
-    if( get_num_selected_events(status, cc) )
+    bool have_selection = false; /* change only selected events if some are */
+    if (get_num_selected_events(status, cc))
         have_selection = true;
 
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
-        bool set = false;
+        bool is_set = false;
         midibyte d0, d1;
         event & e = DREF(i);
         e.get_data(d0, d1);
 
-        /* correct status and not CC */
+        /*
+         * If the event is in the selection, or there is no selection, and if
+         * it has the desired status and not CC, or the desired status and
+         * the correct control-change value, the we will modify (set) the
+         * event.
+         */
 
-        if (status != EVENT_CONTROL_CHANGE && e.get_status() == status )
-            set = true;
+        if (e.is_selected() || ! have_selection)
+            is_set = e.non_cc_match(status) || e.cc_match(status, cc);
 
-        /* correct status and correct cc */
-
-        if
-        (
-            status == EVENT_CONTROL_CHANGE && e.get_status() == status &&
-            d0 == cc
-        )
-            set = true;
-
-        /* in selection? */
-
-        if (have_selection && ! e.is_selected())
-            set = false;
-
-        if (set)
+        if (is_set)
         {
             if (! get_hold_undo())
                 set_hold_undo(true);
@@ -2547,39 +2536,22 @@ sequence::change_event_data_lfo
                     double(m_time_beat_width) + phase;
 
             int newdata = value + wave_func(angle, wave) * range;
-            if ( newdata < 0 )
+            if (newdata < 0)
                 newdata = 0;
+            else if (newdata > (SEQ64_MIDI_COUNT_MAX - 1))
+                newdata = SEQ64_MIDI_COUNT_MAX - 1;
 
-            if (newdata > (SEQ64_MIDI_COUNT_MAX - 1))
-                newdata = (SEQ64_MIDI_COUNT_MAX - 1);
-
-            if (status == EVENT_NOTE_ON)
+            if (event::is_two_byte_msg(status))
                 d1 = newdata;
-
-            if (status == EVENT_NOTE_OFF)
-                d1 = newdata;
-
-            if (status == EVENT_AFTERTOUCH)
-                d1 = newdata;
-
-            if (status == EVENT_CONTROL_CHANGE)
-                d1 = newdata;
-
-            if (status == EVENT_PROGRAM_CHANGE)
-                d0 = newdata;                           /* d0 == new patch  */
-
-            if (status == EVENT_CHANNEL_PRESSURE)
-                d0 = newdata;                           /* d0 == pressure   */
-
-            if (status == EVENT_PITCH_WHEEL)
-                d1 = newdata;
+            else if (event::is_one_byte_msg(status))
+                d0 = newdata;
 
             e.set_data(d0, d1);
         }
     }
 }
 
-#endif   // USE_STAZED_LFO_SUPPORT
+#endif   // SEQ64_STAZED_LFO_SUPPORT
 
 /**
  *  Adds a note of a given length and  note value, at a given tick

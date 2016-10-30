@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq42 team; modifications by Chris Ahlstrom
  * \date          2016-07-30
- * \updates       2016-08-21
+ * \updates       2016-10-30
  * \license       GNU GPLv2 or above
  *
  *  Created on: 22 mar 2013
@@ -36,9 +36,9 @@
 
 #include <string>
 #include <sigc++/slot.h>
-
 #include <gtkmm/box.h>
 #include <gtkmm/scale.h>
+#include <gtkmm/label.h>
 
 #include "calculations.hpp"             /* seq64::wave_type_t enumeration   */
 #include "lfownd.hpp"
@@ -50,7 +50,19 @@ namespace seq64
 {
 
 /**
+ *  Constructs the LFO window.
  *
+ * \param p
+ *      The performance object, which holds parameters necessary for
+ *      manipulating events.
+ *
+ * \param seq
+ *      The sequence/pattern that is to be affected by the LFO window.  It
+ *      holds the actual MIDI events being modified.
+ *
+ * \param sdata
+ *      The data pane/panel of the pattern editor window representing the
+ *      sequence.  We need to tell it to redraw.
  */
 
 lfownd::lfownd (perform & p, sequence & seq, seqdata & sdata)
@@ -58,7 +70,7 @@ lfownd::lfownd (perform & p, sequence & seq, seqdata & sdata)
     gui_window_gtk2  (p),
     m_seq            (seq),
     m_seqdata        (sdata),
-    m_hbox           (manage(new Gtk::HBox(false, 2))),
+    m_hbox           (manage(new Gtk::HBox(true, 8))),          // (false, 2))),
     m_scale_value    (manage(new Gtk::VScale(0, 127, 0.1))),
     m_scale_range    (manage(new Gtk::VScale(0, 127, 0.1))),
     m_scale_speed    (manage(new Gtk::VScale(0, 16,  0.01))),
@@ -73,16 +85,20 @@ lfownd::lfownd (perform & p, sequence & seq, seqdata & sdata)
     std::string title = "Sequencer64 - LFO Editor - ";
     title.append(m_seq.get_name());
     set_title(title);
-    set_size_request(150, 200);
+    set_size_request(300, 300); // set_size_request(150, 200);
 
-    m_scale_value->set_tooltip_text("value");
-    m_scale_range->set_tooltip_text("range");
-    m_scale_speed->set_tooltip_text("speed");
-    m_scale_phase->set_tooltip_text("phase");
-    m_scale_wave->set_tooltip_text("wave");
+    m_scale_value->set_tooltip_text("Value");
+    m_scale_range->set_tooltip_text("Range");
+    m_scale_speed->set_tooltip_text("Speed");
+    m_scale_phase->set_tooltip_text("Phase");
+    m_scale_wave->set_tooltip_text("Wave type");
 
     m_scale_value->set_value(64);
     m_scale_range->set_value(64);
+    m_scale_speed->set_value(0);
+    m_scale_phase->set_value(0);
+    m_scale_wave->set_value(1);
+
     m_scale_value->signal_value_changed().connect
     (
         sigc::mem_fun(*this, &lfownd::scale_lfo_change)
@@ -103,13 +119,32 @@ lfownd::lfownd (perform & p, sequence & seq, seqdata & sdata)
     (
         sigc::mem_fun( *this, &lfownd::scale_lfo_change)
     );
-
+    Gtk::VBox * vbox1 = manage(new Gtk::VBox(false, 2));
+    Gtk::VBox * vbox2 = manage(new Gtk::VBox(false, 2));
+    Gtk::VBox * vbox3 = manage(new Gtk::VBox(false, 2));
+    Gtk::VBox * vbox4 = manage(new Gtk::VBox(false, 2));
+    Gtk::VBox * vbox5 = manage(new Gtk::VBox(false, 2));
+    Gtk::Label * label1 = manage(new Gtk::Label("Value"));
+    Gtk::Label * label2 = manage(new Gtk::Label("Range"));
+    Gtk::Label * label3 = manage(new Gtk::Label("Speed"));
+    Gtk::Label * label4 = manage(new Gtk::Label("Phase"));
+    Gtk::Label * label5 = manage(new Gtk::Label("Type"));
+    vbox1->pack_start(*label1,  false, false, 8);
+    vbox1->pack_start(*m_scale_value,  true, true, 0);
+    vbox2->pack_start(*label2,  false, false, 8);
+    vbox2->pack_start(*m_scale_range,  true, true, 0);
+    vbox3->pack_start(*label3,  false, false, 8);
+    vbox3->pack_start(*m_scale_speed,  true, true, 0);
+    vbox4->pack_start(*label4,  false, false, 8);
+    vbox4->pack_start(*m_scale_phase,  true, true, 0);
+    vbox5->pack_start(*label5,  false, false, 8);
+    vbox5->pack_start(*m_scale_wave,  true, true, 0);
+    m_hbox->pack_start(*vbox1);
+    m_hbox->pack_start(*vbox2);
+    m_hbox->pack_start(*vbox3);
+    m_hbox->pack_start(*vbox4);
+    m_hbox->pack_start(*vbox5);
     add(*m_hbox);
-    m_hbox->pack_start(*m_scale_value);
-    m_hbox->pack_start(*m_scale_range);
-    m_hbox->pack_start(*m_scale_speed);
-    m_hbox->pack_start(*m_scale_phase);
-    m_hbox->pack_start(*m_scale_wave);
 }
 
 lfownd::~lfownd ()
@@ -127,28 +162,26 @@ lfownd::toggle_visible ()
 void
 lfownd::scale_lfo_change ()
 {
+#ifdef SEQ64_STAZED_LFO_SUPPORT
     m_value = m_scale_value->get_value();
     m_range = m_scale_range->get_value();
     m_speed = m_scale_speed->get_value();
     m_phase = m_scale_phase->get_value();
     m_wave = wave_type_t(int(m_scale_wave->get_value()));
-
-#ifdef USE_STAZED_LFO_SUPPORT
     m_seq.change_event_data_lfo
     (
         m_value, m_range, m_speed, m_phase, m_wave,
         m_seqdata.m_status, m_seqdata.m_cc
     );
-#endif
-
     m_seqdata.update_pixmap();
     m_seqdata.draw_pixmap_on_window();
+#endif
 }
 
 bool
 lfownd::on_focus_out_event (GdkEventFocus * /* p0 */)
 {
-#ifdef USE_STAZED_LFO_SUPPORT
+#ifdef SEQ64_STAZED_LFO_SUPPORT
     if (m_seq.get_hold_undo())
     {
         m_seq.push_undo(true);

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq42 team; modifications by Chris Ahlstrom
  * \date          2016-07-30
- * \updates       2016-08-21
+ * \updates       2016-10-30
  * \license       GNU GPLv2 or above
  *
  *  Created on: 22 mar 2013
@@ -81,18 +81,45 @@ private:
 
     seqdata & m_seqdata;
 
-    Gtk::HBox * m_hbox;             /**<    */
+    /*
+     * GUI elements
+     */
 
-    Gtk::VScale * m_scale_value;    /**<    */
-    Gtk::VScale * m_scale_range;    /**<    */
-    Gtk::VScale * m_scale_speed;    /**<    */
-    Gtk::VScale * m_scale_phase;    /**<    */
-    Gtk::VScale * m_scale_wave;     /**<    */
+    Gtk::HBox * m_hbox;             /**< The main horizontal packing box.   */
+    Gtk::VScale * m_scale_value;    /**< Vertical slider for value.         */
+    Gtk::VScale * m_scale_range;    /**< Vertical slider for range.         */
+    Gtk::VScale * m_scale_speed;    /**< Vertical slider for speed.         */
+    Gtk::VScale * m_scale_phase;    /**< Vertical slider for phase.         */
+    Gtk::VScale * m_scale_wave;     /**< Vertical slider for wave type.     */
+
+    /**
+     *  Value.
+     */
 
     double m_value;
+
+    /**
+     *  Range.
+     */
+
     double m_range;
+
+    /**
+     *  Speed.
+     */
+
     double m_speed;
+
+    /**
+     *  Phase.
+     */
+
     double m_phase;
+
+    /**
+     *  Wave type.
+     */
+
     wave_type_t m_wave;
 
 public:

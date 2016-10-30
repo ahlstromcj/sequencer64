@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-10-26
+dnl \update        2016-10-30
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -484,13 +484,13 @@ else
     AC_MSG_WARN([*** Statistics gathering not enabled.]);
 fi
 
-dnl Support for using the stazed JACK support.  Currently disabled by default,
-dnl until we get it fully integrated and working.
+dnl Support for using the stazed JACK support.  Now enabled by default.
+dnl It seems to work well, no complaints recently by user layk.
 
 AC_ARG_ENABLE(seq32jack,
-    [AS_HELP_STRING(--enable-seq32jack, [Enable using Seq32-style JACK support])],
+    [AS_HELP_STRING(--enable-seq32jack, [Enable JACK and Seq32 JACK support])],
     [seq32jack=$enableval],
-    [seq32jack=no])
+    [seq32jack=yes])
 
 if test "$seq32jack" != "no"; then
     AC_DEFINE(STAZED_JACK_SUPPORT, 1, [Define to enable Seq32 JACK support])
@@ -498,6 +498,22 @@ if test "$seq32jack" != "no"; then
     AC_MSG_RESULT([Seq32 JACK support enabled.]);
 else
     AC_MSG_WARN([*** Seq32 JACK support not enabled.]);
+fi
+
+dnl Support for using the stazed LFO window support.  Disabled by default,
+dnl until we get it fully integrated and working, and maybe a little nicer
+dnl to use.
+
+AC_ARG_ENABLE(lfo,
+    [AS_HELP_STRING(--enable-lfo, [Enable using Seq32 LFO window])],
+    [lfo=$enableval],
+    [lfo=no])
+
+if test "$lfo" != "no"; then
+    AC_DEFINE(STAZED_LFO_SUPPORT, 1, [Define to enable Seq32 LFO window support])
+    AC_MSG_RESULT([Seq32 LFO window support enabled.]);
+else
+    AC_MSG_WARN([*** Seq32 LFO window support not enabled.]);
 fi
 
 dnl Support for using the stazed chord generator.
@@ -579,7 +595,7 @@ dnl #define API_VERSION "0.9"             // defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-10-26"
+#define VERSION_DATE_SHORT "2016-10-30"
 #define VERSION "0.9.19"
 
 )

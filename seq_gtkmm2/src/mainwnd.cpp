@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-24
+ * \updates       2016-10-29
  * \license       GNU 3PLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1611,6 +1611,7 @@ mainwnd::about_dialog ()
     list_authors.push_back("Sebastien Alaiwan <sebastien.alaiwan@gmail.com>");
     list_authors.push_back("Kevin Meinert <kevin@subatomicglue.com>");
     list_authors.push_back("Andrea delle Canne <andreadellecanne@gmail.com>");
+    list_authors.push_back("Stan Preston <stazed10@gmail.com>");
     list_authors.push_back("Chris Ahlstrom <ahlstromcj@gmail.com>");
     dialog.set_authors(list_authors);
 

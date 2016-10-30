@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-10-06
+ * \updates       2016-10-30
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -121,10 +121,10 @@
 /**
  *  Enables using the lfownd dialog to control the envelope of certain events
  *  in seqedit's seqdata pane.  We're not too keen on the user interface,
- *  though.
+ *  though.  However, it is now  configure option.
+ *
+ *  #define USE_STAZED_LFO_SUPPORT
  */
-
-#undef  USE_STAZED_LFO_SUPPORT
 
 /**
  *  Adds a button to disable the main menu in the main window.  Adds a button
@@ -226,6 +226,7 @@
  *    - SEQ64_STAZED_CHORD_GENERATOR
  *    - SEQ64_STAZED_TRANSPOSE
  *    - SEQ64_STRIP_EMPTY_MUTES
+ *    - SEQ64_STAZED_LFO_SUPPORT
  */
 
 /*

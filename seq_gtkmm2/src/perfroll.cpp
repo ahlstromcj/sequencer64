@@ -1301,13 +1301,11 @@ perfroll::on_key_press_event (GdkEventKey * ev)
             {
                 if (ev->keyval == SEQ64_p)
                 {
-                    // m_seq24_interaction.set_adding(true, *this);
                     m_interaction.activate_adding(true, *this);
                     result = true;
                 }
                 else if (ev->keyval == SEQ64_x)     /* "x-scape" the mode   */
                 {
-                    // m_seq24_interaction.set_adding(false, *this);
                     m_interaction.activate_adding(false, *this);
                     result = true;
                 }
@@ -1323,10 +1321,8 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                 }
                 else if (ev->keyval == SEQ64_Left)
                 {
-                    // if (m_seq24_interaction.is_adding())
                     if (m_interaction.is_adding())
                     {
-                        // result = m_seq24_interaction.handle_motion_key
                         result = m_interaction.handle_motion_key(true, *this);
                         if (result)
                             perf().modify();
@@ -1334,10 +1330,8 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                 }
                 else if (ev->keyval == SEQ64_Right)
                 {
-                    // if (m_seq24_interaction.is_adding())
                     if (m_interaction.is_adding())
                     {
-                        // result = m_seq24_interaction.handle_motion_key(false, *this);
                         result = m_interaction.handle_motion_key(false, *this);
                         if (result)
                             perf().modify();

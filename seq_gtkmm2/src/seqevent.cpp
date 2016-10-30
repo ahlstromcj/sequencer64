@@ -819,6 +819,10 @@ seqevent::on_key_press_event (GdkEventKey * ev)
         }
         if (is_ctrl_key(ev))
         {
+            /*
+             * Do we really need to test the capital letters?
+             */
+
             if (ev->keyval == SEQ64_x || ev->keyval == SEQ64_X)     /* cut  */
             {
                 m_seq.cut_selected();       /* cut events with copying      */
@@ -839,6 +843,10 @@ seqevent::on_key_press_event (GdkEventKey * ev)
                 m_seq.pop_undo();   // how to detect all modifications undone?
                 result = true;
             }
+
+            /*
+             * No "Redo" support at present.
+             */
         }
         if (! result)
         {

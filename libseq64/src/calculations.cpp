@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2016-09-10
+ * \updates       2016-10-30
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -872,8 +872,9 @@ wave_func (double angle, wave_type_t wavetype)
 
     case WAVE_STEP:
     {
-        result = (angle * 2.0 - int(angle * 2.0));
-        if ((int(angle * 2.0)) % 2 == 1)
+        double tmp = angle * 2.0;
+        result = (tmp - int(tmp));
+        if ((int(tmp)) % 2 == 1)
             result = 1.0 - result;
 
         result = result * 2.0 - 1.0;

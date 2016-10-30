@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-21
+ * \updates       2016-10-30
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -533,6 +533,37 @@ public:
     midibyte get_status () const
     {
         return m_status;
+    }
+
+    /**
+     *  Returns true if the event's status is *not* a control-change, but
+     *  does match the given status.
+     *
+     * \param status
+     *      The status to be checked.
+     */
+
+    bool non_cc_match (midibyte status)
+    {
+        return status != EVENT_CONTROL_CHANGE && m_status == status;
+    }
+
+    /**
+     *  Returns true if the event's status is a control-change that matches
+     *  the given status, and has a control value matching the given
+     *  control-change value.
+     *
+     * \param st
+     *      The status to be checked.
+     *
+     * \param cc
+     *      The control-change value to be checked against the events current
+     *      "d0" value.
+     */
+
+    bool cc_match (midibyte st, midibyte cc)
+    {
+        return st == EVENT_CONTROL_CHANGE && m_status == st && m_data[0] == cc;
     }
 
     /**

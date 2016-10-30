@@ -27,7 +27,7 @@
  * \updates       2016-06-23
  * \license       GNU GPLv2 or above
  *
- *  This module define a GTK text-edit widget for getting keyboard button
+ *  This module defines a GTK text-edit widget for getting keyboard button
  *  values (for binding keys).  Put the cursor in the text-box, hit a key,
  *  and something like  'a' (42)  appears...  each keypress replaces the
  *  previous text.  It also supports key-event and key-group maps in the

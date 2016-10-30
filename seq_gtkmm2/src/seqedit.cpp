@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-19
+ * \updates       2016-10-30
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -72,7 +72,7 @@
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
 #include "user_instrument.hpp"          /* seq64::user_instrument       */
 
-#ifdef USE_STAZED_LFO_SUPPORT
+#ifdef SEQ64_STAZED_LFO_SUPPORT
 #include "lfownd.hpp"
 #endif
 
@@ -247,10 +247,6 @@ seqedit::seqedit
     m_menu_sequences    (nullptr),
     m_menu_bpm          (manage(new Gtk::Menu())),
     m_menu_bw           (manage(new Gtk::Menu())),
-#ifdef USE_STAZED_LFO_SUPPORT
-    m_button_lfo        (manage(new Gtk::Button("LFO"))),
-    m_lfo_wnd           (new lfownd(p, m_seq, *m_seqdata_wid)),
-#endif
     m_menu_rec_vol      (manage(new Gtk::Menu())),
     m_vadjust           (manage(new Gtk::Adjustment(55, 0, c_num_keys, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
@@ -274,6 +270,10 @@ seqedit::seqedit
             )
         )
     ),
+#ifdef SEQ64_STAZED_LFO_SUPPORT
+    m_button_lfo        (manage(new Gtk::Button("LFO"))),
+    m_lfo_wnd           (new lfownd(p, m_seq, *m_seqdata_wid)),
+#endif
     m_table             (manage(new Gtk::Table(7, 4, false))),
     m_vbox              (manage(new Gtk::VBox(false, 2))),
     m_hbox              (manage(new Gtk::HBox(false, 2))),
@@ -391,7 +391,7 @@ seqedit::seqedit
     dhbox->pack_start(*m_button_data, false, false);
     dhbox->pack_start(*m_entry_data, true, true);
 
-#ifdef USE_STAZED_LFO_SUPPORT
+#ifdef SEQ64_STAZED_LFO_SUPPORT
     dhbox->pack_start(*m_button_lfo, false, false);
     m_button_lfo->signal_clicked().connect
     (
@@ -2464,7 +2464,7 @@ seqedit::on_delete_event (GdkEventAny *)
 {
     handle_close();
 
-#ifdef USE_STAZED_LFO_SUPPORT
+#ifdef SEQ64_STAZED_LFO_SUPPORT
     delete m_lfo_wnd;
 #endif
 
@@ -2595,6 +2595,12 @@ seqedit::on_key_press_event (GdkEventKey * ev)
             set_zoom(m_zoom * 2);
             result = true;
         }
+#ifdef SEQ64_STAZED_LFO_SUPPORT
+        else if (ev->keyval == 'l')
+        {
+            m_lfo_wnd->toggle_visible();
+        }
+#endif
     }
     else if (is_shift_key(ev))
     {

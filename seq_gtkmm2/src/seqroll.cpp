@@ -2145,6 +2145,10 @@ seqroll::on_key_press_event (GdkEventKey * ev)
     {
         if (is_ctrl_key(ev))
         {
+            /*
+             * Do we really need to test for the capital letters?
+             */
+
             if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))        /* cut   */
             {
                 m_seq.cut_selected();
@@ -2251,6 +2255,9 @@ seqroll::on_key_press_event (GdkEventKey * ev)
                  *      m_moving = false;
                  *
                  *  m_selecting = false;
+                 *
+                 * Do we want to clear the selection?  We could paste them
+                 * again somewhere else.
                  */
 
                 clear_flags();

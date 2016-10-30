@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-18
+ * \updates       2016-10-30
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -67,11 +67,11 @@ namespace seq64
     class seqevent;
     class seqdata;
     class seqkeys;
-    class seqmenu;                      /* new */
+    class seqmenu;
     class seqroll;
     class seqtime;
 
-#ifdef USE_STAZED_LFO_SUPPORT
+#ifdef SEQ64_STAZED_LFO_SUPPORT
     class lfownd;
 #endif
 
@@ -81,9 +81,9 @@ namespace seq64
 
 enum mouse_action_e
 {
-    e_action_select,
-    e_action_draw,
-    e_action_grow
+    e_action_select,    /*<< Indicates a selection of events.               */
+    e_action_draw,      /*<< Indicates a drawing of events.                 */
+    e_action_grow       /*<< Indicates a growing of a selection of events.  */
 };
 
 /**
@@ -233,12 +233,6 @@ private:
     Gtk::Menu * m_menu_sequences;       /**< "Background sequence" button.  */
     Gtk::Menu * m_menu_bpm;             /**< Beats/measure numerator menu.  */
     Gtk::Menu * m_menu_bw;              /**< Beat-width denominator menu.   */
-
-#ifdef USE_STAZED_LFO_SUPPORT
-    Gtk::Button * m_button_lfo;
-    lfownd * m_lfo_wnd;
-#endif
-
     Gtk::Menu * m_menu_rec_vol;         /**< Recording level "Vol" button.  */
 
     /**
@@ -285,6 +279,26 @@ private:
      */
 
     seqroll * m_seqroll_wid;
+
+#ifdef SEQ64_STAZED_LFO_SUPPORT
+
+    /**
+     *  The LFO button in the pattern editor.  This item will always be an
+     *  optional part of the build, enabled by defining
+     *  SEQ64_STAZED_LFO_SUPPORT.
+     */
+
+    Gtk::Button * m_button_lfo;
+
+    /**
+     *  The LFO window object used by the pattern editor.  This item get the
+     *  seqdata window hooked into it, and so must follow that item in the C++
+     *  initializer list.
+     */
+
+    lfownd * m_lfo_wnd;
+
+#endif
 
     /**
      *  More user-interface elements.  These items provide a number of buttons

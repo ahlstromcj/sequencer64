@@ -1,0 +1,112 @@
+Hardwired Keystrokes
+Chris Ahlstrom
+2016-10-28 to 2016-10-28
+
+Keys:
+
+   The "SEQ64_" prefix is removed for brevity.  This description only includes
+   items not defined in the options dialog.  That is, hardwired values.
+
+mainwnd:
+
+   The main window keystrokes are all defined via the options dialog
+   and "rc" configuration file.
+
+eventedit:
+
+   Down.  Move one slot down.
+   Up.  Move one slot up.
+   Page_Down.  Move one frame down.
+   Page_Up.  Move one frame up.
+   Home.  Move to top frame.
+   End.  Move to bottom frame.
+   Asterisk.  KP_Multiply.  Delete the currently-selected event.
+
+perfedit:
+
+   Ctrl-z. Undo.
+   Ctrl-r. Redo.
+
+perfroll:
+
+   Ctrl-x. Cut.
+   Ctrl-c. Copy.
+   Ctrl-v. Paste.
+   Ctrl-z. Undo.
+   Ctrl-r. Redo.
+   Shift-Up.   Move backward one small unit (which is...?)
+   Shift-Down.   Move forward one small unit (which is...?)
+   Shift-Page_Up.   Move backward one frame.
+   Shift-Page_Down.   Move forward one frame.
+   Shift-Home, Shift-KP_Home.  Move to beginning of piano roll.
+   Shift-End, Shift-KP_End.  Move to end of piano roll.
+   Shift-z (Z).  Zoom in.
+   0.  Set default zoom.
+   z.  Zoom out.
+   Left.  Move item left one snap unit.
+   Right.  Move item right one snap unit.
+   Up.  Move frame up one small scroll unit.
+   Down.  Move frame down one small scroll unit.
+   Home.  Move to top of piano roll.
+   End.  Move to bottom of piano roll.
+   Page_Up.  Move up one frame (page-increment).
+   Page_Down.  Move down one frame (page-increment).
+
+perftime:
+
+   l.  Set to move L marker.
+   r.  Set to move R marker.
+   x.  Escape ("x-scape") the movement mode.
+   Left.  Move the selected marker left.
+   Right.  Move the selected marker right.
+
+seqedit:
+
+   Ctrl-W.  Exit the sequence (pattern) editor.
+   Ctrl-Page_Up.  Zoom in.
+   Ctrl-Page_Down.  Zoom out.
+   Shift-Page_Up.  Scroll leftward.
+   Shift-Page_Down.  Scroll rightward.
+   Shift-Home.  Scroll leftward to the beginning.
+   Shift-End.  Scroll rightward to the end.
+   Shift-z (Z).  Zoom in.
+   0.  Set default zoom.
+   z.  Zoom out.
+   Page_Down.  Scroll downward.
+   Page_Up.  Scroll upward.
+   Home.  Scroll upward to the beginning.
+   End.  Scroll downward to the end.
+
+   Where is Delete?
+
+seqroll:
+
+   Ctrl-x. Cut.
+   Ctrl-c. Copy.
+   Ctrl-v. Paste.
+   Ctrl-z. Undo.
+   Ctrl-r. Redo.
+   Ctrl-a. Select all.
+   Ctrl-Left.  Shrink selected notes.
+   Ctrl-Right.  Grow selected notes.
+   Delete.  Remove selected notes.
+   Backspade.  Remove selected notes.
+   Home.  Set sequence to beginnging of sequence.  (Verify!)
+   Left.  Move selected notes one snap left.
+   Down.  Move selected notes one pitch downward.
+   Up.  Move selected notes one pitch upward.
+   Enter, Return.  Paste the selected notes at the current position.
+   p.  Enter "paint" (also known as "adding") mode.
+   x.  Escape ("x-scape") the paint mode.
+
+seqevent:
+
+   Ctrl-x. Cut.
+   Ctrl-c. Copy.
+   Ctrl-v. Paste.
+   Ctrl-z. Undo.
+   Delete.  Delete (not cut!) the selected events.
+   p.  Enter "paint" (also known as "adding") mode.
+   x.  Escape ("x-scape") the paint mode.
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

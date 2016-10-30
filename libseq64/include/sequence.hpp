@@ -49,8 +49,8 @@
 #include "scales.h"                     /* key and scale constants  */
 #include "triggers.hpp"                 /* seq64::triggers, etc.    */
 
-#ifdef USE_STAZED_LFO_SUPPORT
-#include <list>
+#ifdef SEQ64_STAZED_LFO_SUPPORT
+// #include <list>
 #endif
 
 #ifdef PLATFORM_WINDOWS
@@ -1189,7 +1189,7 @@ public:
         int d_s, int d_f
     );
 
-#ifdef USE_STAZED_LFO_SUPPORT
+#ifdef SEQ64_STAZED_LFO_SUPPORT
     void change_event_data_lfo
     (
         double value, double range, double speed, double phase,

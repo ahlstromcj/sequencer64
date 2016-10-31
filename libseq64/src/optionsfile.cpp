@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-30
+ * \updates       2016-10-31
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -707,7 +707,27 @@ optionsfile::write (const perform & p)
             ;
     }
     file << "\n"
-        "[midi-control]\n\n"
+        "[midi-control]\n"
+        "\n"
+        "# The leftmost number on each line here is the pattern number, from\n"
+        "# 0 to 31 (and beyond for the mute-groups). Next, there are three\n"
+        "# groups of bracketed numbers that follow:\n"
+        "#\n"
+        "#    [toggle]  [on]  [off]\n"
+        "#\n"
+        "# In each group, there are six numbers:\n"
+        "#\n"
+        "#    [on/off invert status d0 d1min d1max]\n"
+        "#\n"
+        "# 'on/off' enables/disables (1/0) the MIDI control for the pattern.\n"
+        "# 'invert' (1/0) causes the opposite if data is outside the range.\n"
+        "# 'status' is by MIDI event to match (channel is ignored).\n"
+        "# 'd0' is the first data value.  Example: if status is 144 (Note On),\n"
+        "# then d0 represents Note 0.\n"
+        "# 'd1min'/'d1max' are the range of second values that should match.\n"
+        "# Example:  For a Note On for note 0, 0 and 127 indicate that any\n"
+        "# Note On velocity will cause the MIDI control to take effect.\n"
+        "\n"
         <<  c_midi_controls << "      # MIDI controls count\n" // constant count
         ;
 
@@ -996,7 +1016,7 @@ optionsfile::write (const perform & p)
            "# activated by a middle click.\n"
            "\n"
         << (rc().allow_snap_split() ? "1" : "0")    // @new 2016-08-17
-        << "   # allow_snap_split\n"
+        << "   # allow_snap_split\n\n"
         ;
 
     file

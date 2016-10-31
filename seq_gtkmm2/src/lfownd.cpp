@@ -93,7 +93,7 @@ lfownd::lfownd (perform & p, sequence & seq, seqdata & sdata)
     );
     m_scale_range->set_tooltip_text
     (
-        "Range: controls the depth of modulation. Starts at 64"
+        "Range: controls the depth of modulation. Starts at 64."
     );
     m_scale_speed->set_tooltip_text
     (

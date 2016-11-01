@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-30
+ * \updates       2016-11-01
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -121,6 +121,10 @@ mainwid::mainwid (perform & p)
  :
     gui_drawingarea_gtk2    (p, c_mainwid_x, c_mainwid_y),
     seqmenu                 (p),
+    m_armed_progress_color
+    (
+        progress_color() == black() ? white() : progress_color()
+    ),
     m_moving_seq            (),                 // a moving sequence object
     m_button_down           (false),
     m_moving                (false),
@@ -719,13 +723,16 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
             {
                 /*
                  * We like the look of a cyan-colored progress bar in both the
-                 * muted and unmuted sequence slots.  We might make the color
-                 * of the progress bar configurable at some point.
-                 *
-                 * seq->get_playing() ? white() : progress_color()
+                 * muted and unmuted sequence slots.  We have made the color
+                 * of the progress bar configurable.  However, when the
+                 * background is black (armed), white is still needed, at
+                 * least when the progress bar is black.
                  */
 
-                m_gc->set_foreground(progress_color());
+                m_gc->set_foreground
+                (
+                    seq->get_playing() ? m_armed_progress_color : progress_color()
+                );
             }
         }
         draw_line

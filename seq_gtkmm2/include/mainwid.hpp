@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-30
+ * \updates       2016-11-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -55,6 +55,14 @@ class mainwid : public gui_drawingarea_gtk2, public seqmenu
     friend void update_mainwid_sequences ();
 
 private:
+
+    /**
+     *  Holds the progress color for armed sequences, which have a black
+     *  background.  If the progress color is black(), we want to change it to
+     *  white for unmuted patterns.
+     */
+
+    Color m_armed_progress_color;
 
     /**
      *  Holds a partial copy of the sequence we are moving on the patterns

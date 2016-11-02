@@ -9,6 +9,7 @@
 	seq_gtkmm2/src/seqmenu.cpp: Fixed issue 50, a crash in changing MIDI
 	buss, but still working on a better solution, macroed out by
 	USE_SEQEDIT_MAP.
+   * : Stamped for version 9.9.20.
 
 2016-11-01  Chris Ahlstrom <ahlstromcj@gmail.com>
 	* : Added a stress MIDI file for issue 50 testing.

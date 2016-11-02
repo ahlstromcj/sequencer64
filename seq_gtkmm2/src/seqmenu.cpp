@@ -55,15 +55,11 @@ using namespace Gtk::Menu_Helpers;
 namespace seq64
 {
 
-#ifdef USE_SEQEDIT_MAP
-
 /**
  *  The single map of seqedit objects, for seqedit updates and management.
  */
 
 seqmenu::SeqeditMap seqmenu::sm_seqedit_list;
-
-#endif  // USE_SEQEDIT_MAP
 
 /**
  *  Principal constructor.  Apart from filling in some of the members,
@@ -326,8 +322,6 @@ seqmenu::set_bus_and_midi_channel (int bus, int ch)
          * }
          */
 
-#ifdef USE_SEQEDIT_MAP
-
         iterator sit = sm_seqedit_list.find(s->number());
         if (sit != sm_seqedit_list.end())
         {
@@ -337,9 +331,6 @@ seqmenu::set_bus_and_midi_channel (int bus, int ch)
                 sit->second->set_midi_channel(ch);
             }
         }
-
-#endif  // USE_SEQEDIT_MAP
-
     }
 }
 
@@ -437,9 +428,6 @@ seqedit *
 seqmenu::create_seqedit (sequence & s)
 {
     seqedit * result = new seqedit(m_mainperf, s, current_seq());
-
-#ifdef USE_SEQEDIT_MAP
-
     if (not_nullptr(result))
     {
 #if __cplusplus >= 201103L              /* C++11 */
@@ -449,9 +437,6 @@ seqmenu::create_seqedit (sequence & s)
 #endif
         (void) sm_seqedit_list.insert(p);
     }
-
-#endif  // USE_SEQEDIT_MAP
-
     return result;
 }
 
@@ -464,18 +449,12 @@ seqmenu::create_seqedit (sequence & s)
 void
 seqmenu::remove_seqedit (sequence & s)
 {
-
-#ifdef USE_SEQEDIT_MAP
-
     int seqnum = s.number();
     int count = int(sm_seqedit_list.erase(seqnum));
     if (count == 0)
     {
         errprint("seqedit::on_delete_event() found nothing to delete");
     }
-
-#endif  // USE_SEQEDIT_MAP
-
 }
 
 /**

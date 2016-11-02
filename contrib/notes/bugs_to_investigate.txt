@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-10-28 (New bugs and fixed bugs)
+2015-10-27 to 2016-11-02 (New bugs and fixed bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -11,6 +11,14 @@ basically done.
    tab and the "rc" file.  Or at least display them there for reference.
 -  Make a left-click while playing in perfedit act like the position-pointer
    keystroke.
+-  In perfedit, with the "stress" MIDI file, clicking on the scrollbar down
+   arrow moves the display to the 31st (bottom) page!  The PageDown key works
+   fine!
+-  Movement of the L/R markers in perftime is a little inconsistent. Also,
+   the progress bar follows the movement of the L marker (probably normal,
+   though).
+-  Selecting a perfedit trigger section, then using the left/right arrows now
+   does nothing (seq32jack mode).
 y  Issue 48: JACK non-master doesn't play when built without seq32 code.
    x Fixed by a simple change in jack_assistant.cpp.
    y Why does Sequencer64 save the JACK Master option even when exiting

@@ -33,17 +33,7 @@
  *
  *  This module is the base class for the perfnames and mainwid classes.
  */
-
-/**
- *  In-progress EXPERIMENTAL feature to fix issue 50 the right way.  Not yet
- *  ready for production.
- */
-
-#define USE_SEQEDIT_MAP
-
-#ifdef USE_SEQEDIT_MAP
 #include <map>                          /* for a "list" of seqedit objects  */
-#endif
 
 #include "perform.hpp"
 #include "sequence.hpp"
@@ -71,8 +61,6 @@ class seqmenu : public virtual Glib::ObjectBase
     friend class seqedit;           /* access to seqmenu::remove_seqedit()    */
 
 private:
-
-#ifdef USE_SEQEDIT_MAP
 
     /**
      *  An easy type definition for a map of seqedit pointers keyed by the
@@ -110,8 +98,6 @@ private:
      */
 
     static SeqeditMap sm_seqedit_list;
-
-#endif  // USE_SEQEDIT_MAP
 
     /**
      *  The menu to pop up when the right-click action is used either on a

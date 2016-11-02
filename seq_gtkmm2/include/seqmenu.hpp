@@ -39,7 +39,7 @@
  *  ready for production.
  */
 
-#undef  USE_SEQEDIT_MAP
+#define USE_SEQEDIT_MAP
 
 #ifdef USE_SEQEDIT_MAP
 #include <map>                          /* for a "list" of seqedit objects  */

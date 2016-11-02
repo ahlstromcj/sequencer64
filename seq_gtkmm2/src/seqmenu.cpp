@@ -325,6 +325,21 @@ seqmenu::set_bus_and_midi_channel (int bus, int ch)
          *     m_seqedit->set_midi_channel(ch);
          * }
          */
+
+#ifdef USE_SEQEDIT_MAP
+
+        iterator sit = sm_seqedit_list.find(s->number());
+        if (sit != sm_seqedit_list.end())
+        {
+            if (not_nullptr(sit->second))
+            {
+                sit->second->set_midi_bus(bus);
+                sit->second->set_midi_channel(ch);
+            }
+        }
+
+#endif  // USE_SEQEDIT_MAP
+
     }
 }
 

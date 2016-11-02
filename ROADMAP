@@ -1,6 +1,8 @@
 Sequencer64 Roadmap
 Chris Ahlstrom
-2015-09-10 to 2016-10-26
+2015-09-10 to 2016-11-02
+
+Latest version: 0.9.20
 
 The starting point for the Sequencer64 project is version 0.9.4 of
 Sequencer24.  Sequencer24 itself started with version 0.9.2 of Seq24 from
@@ -9,10 +11,7 @@ Debian.  The initial work for this Seq24 reboot started in late July of
 the Yoshimi software synthesizer.
 
 Also see the contrib/notes/bugs-to-investigate.txt file; I keep that one
-a lot more up-to-date.
-
-Latest version: 0.9.19
-Current branch: fixups-->master
+a lot more up-to-date.  This ROADMAP is of "historical" signficance.
 
 The following changes are planned ('x' means it is done, 'y' means it is
 in progress, and 'z' means it will be moved to a later branch).  But also

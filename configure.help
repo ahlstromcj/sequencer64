@@ -1,4 +1,4 @@
-Configuration of Sequencer64 0.9.19:
+Configuration of Sequencer64 0.9.20:
 
 Optional Features:
 
@@ -27,12 +27,12 @@ Default Features:
   --disable-chords        Disable using the chord generator
   --disable-transpose     Disable using global transpose
   --disable-mutestrip     Disable stripping empty mute groups from MIDI files
+  --disable-seq32jack     Disable using the better seq32 JACK transport support
+                          Includes extended transport now.
 
 Addtional Features:
 
   --enable-statistics     Enable statistics gathering
-  --enable-seq32jack      Enable using Seq32-style JACK support, includes
-                          extended transport now.
   --enable-coverage=(no/yes) Turn on a test-coverage build (default=no)
   --enable-profile=(no/yes/gprof/prof) Turn on profiling builds
                                        (default=no, yes=gprof)

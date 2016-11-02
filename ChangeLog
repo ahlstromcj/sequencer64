@@ -1,3 +1,73 @@
+2016-11-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/src/seqmenu.cpp: Tied up
+	issue 50 in the fixups branch.
+	* seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/src/seqmenu.cpp: Next
+	phase of fix to issue 50, tentatively works.
+	* seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Fixed issue 50, a crash in changing MIDI
+	buss, but still working on a better solution, macroed out by
+	USE_SEQEDIT_MAP.
+
+2016-11-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+	* : Added a stress MIDI file for issue 50 testing.
+	* seq_gtkmm2/include/mainwid.hpp, seq_gtkmm2/src/mainwid.cpp: Fixed
+	a side-bar of issue 50, where the armed progress bar was black.
+
+2016-10-31  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/optionsfile.cpp, seq_gtkmm2/src/lfownd.cpp: Interim
+	check-in, tweaks to rc and lfo.
+
+2016-10-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/calculations.hpp, libseq64/src/calculations.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/lfownd.hpp,
+	seq_gtkmm2/src/lfownd.cpp: Got the LFO window working well, but note
+	it must be built with the --enable-lfo option to use it.
+	* libseq64/include/rc_settings.hpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/rc_settings.cpp, seq_gtkmm2/include/options.hpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/options.cpp: Added new rc
+	configuration option to enable/disable double-clicking on a pattern
+	to edit, issue 51 from muranyia.
+	* INSTALL, bootstrap, configure.ac, contrib/code/jack-smf-player.c,
+	contrib/code/jack-smf-recorder.c, contrib/code/jacktest.c,
+	contrib/notes/keys.txt, doc/dox/doxy-reference.cfg,
+	libseq64/include/event.hpp, libseq64/include/seq64_features.h,
+	libseq64/include/sequence.hpp, libseq64/src/calculations.cpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/lfownd.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/src/keybindentry.cpp, seq_gtkmm2/src/lfownd.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Tweaks to commenting and beefed up the
+	optional LFO support, still in progress.
+
+2016-10-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/perfedit.cpp: Fixed build error in perfedit with
+	seq32 support disabled.
+	* contrib/notes/bugs_to_investigate.txt, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/src/perfedit.cpp: Got
+	seq32/stazed fast-forward and rewind to basically work, had botched
+	the initial incorporation of this feature.
+
+2016-10-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/perfedit.hpp: Working on getting ff/rewind to
+	work. Timeout not called.
+
+2016-10-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ROADMAP: Version 0.9.19 committed to master.
+	* ChangeLog, README, bootstrap, configure.ac,
+	contrib/notes/midi-libraries.txt, libseq64/include/app_limits.h,
+	libseq64/src/perform.cpp, man/sequencer64.1,
+	seq_gtkmm2/include/perfedit.hpp: Final prep for version 0.9.19.
+
 2016-10-24  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/src/perform.cpp, seq_gtkmm2/include/mainwnd.hpp,

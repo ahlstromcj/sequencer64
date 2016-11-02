@@ -28,11 +28,22 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-15
+ * \updates       2016-11-02
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
  */
+
+/**
+ *  In-progress EXPERIMENTAL feature to fix issue 50 the right way.  Not yet
+ *  ready for production.
+ */
+
+#undef  USE_SEQEDIT_MAP
+
+#ifdef USE_SEQEDIT_MAP
+#include <map>                          /* for a "list" of seqedit objects  */
+#endif
 
 #include "perform.hpp"
 #include "sequence.hpp"
@@ -57,8 +68,50 @@ namespace seq64
 class seqmenu : public virtual Glib::ObjectBase
 {
     friend class mainwnd;           /* access to seqmenu::toggle_all_tracks() */
+    friend class seqedit;           /* access to seqmenu::remove_seqedit()    */
 
 private:
+
+#ifdef USE_SEQEDIT_MAP
+
+    /**
+     *  An easy type definition for a map of seqedit pointers keyed by the
+     *  sequence number.
+     */
+
+    typedef std::map<int, seqedit *> SeqeditMap;
+
+    /**
+     *  A pair to make an entry to add to the seqedit map.
+     */
+
+    typedef std::pair<int, seqedit *> SeqeditPair;
+
+    /**
+     *  An iterator for the seqedit map.
+     */
+
+    typedef std::map<int, seqedit *>::iterator iterator;
+
+    /**
+     *  A const iterator for the seqedit map.
+     */
+
+    typedef std::map<int, seqedit *>::const_iterator const_iterator;
+
+    /**
+     *  Holds a list of the currently open seqedit objects, stored as pointers
+     *  keyed by the sequence number.  We can use this map to look up patterns
+     *  that we want to change from the right-click seqmenu, and modify the
+     *  seqedit affected if it is found in the list.
+     *
+     *  Currently selectable by the USE_SEQEDIT_MACRO until we can make it
+     *  foolproof.
+     */
+
+    static SeqeditMap sm_seqedit_list;
+
+#endif  // USE_SEQEDIT_MAP
 
     /**
      *  The menu to pop up when the right-click action is used either on a
@@ -291,6 +344,9 @@ protected:
 
     void seq_edit ();
     void seq_event_edit ();
+
+    seqedit * create_seqedit (sequence & s);
+    static void remove_seqedit (sequence & s);
 
     virtual void seq_set_and_edit (int seqnum);
     virtual void seq_set_and_eventedit (int seqnum);

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-30
+ * \updates       2016-11-02
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -186,14 +186,24 @@ enum edit_action_t
  *      Offload most of the work into an initialization function like
  *      options does.
  *
- * \todo
- *      Support the hightlight feature in one or both perfedit windows in the
- *      same way it is done in the mainwid.
- *
  *  Horizontal Gtk::Adjustment constructor: The initial value was 0 on a range
  *  from 0 to 1, with step and page increments of 1, and a page_size of 1.  We
  *  can fix these values here, or create an h_adjustment() function similar to
  *  eventedit::v_adjustment(), which first gets called in on_realize().
+ *
+ * \param p
+ *      The performance object of which the sequence is a part.
+ *
+ * \param seq
+ *      The seqeuence object this window object represents.
+ *
+ * \param pos
+ *      The sequence number (pattern slot number) for this sequence and
+ *      window.
+ *
+ * \param ppqn
+ *      The optional PPQN parameter for this sequence.  Warning:  not really
+ *      used by the caller, need to square that!
  */
 
 seqedit::seqedit
@@ -2468,6 +2478,12 @@ seqedit::on_delete_event (GdkEventAny *)
     delete m_lfo_wnd;
 #endif
 
+    /*
+     * We need to see if this object is in the map of seqedits so that we can
+     * remove it from that list.
+     */
+
+    seqmenu::remove_seqedit(m_seq);
     delete this;
     return false;
 }

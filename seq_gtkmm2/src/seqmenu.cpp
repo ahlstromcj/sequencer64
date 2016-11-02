@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-09
+ * \updates       2016-11-02
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -54,6 +54,16 @@ using namespace Gtk::Menu_Helpers;
 
 namespace seq64
 {
+
+#ifdef USE_SEQEDIT_MAP
+
+/**
+ *  The single map of seqedit objects, for seqedit updates and management.
+ */
+
+seqmenu::SeqeditMap seqmenu::sm_seqedit_list;
+
+#endif  // USE_SEQEDIT_MAP
 
 /**
  *  Principal constructor.  Apart from filling in some of the members,
@@ -306,14 +316,15 @@ seqmenu::set_bus_and_midi_channel (int bus, int ch)
 
         /*
          * New for 0.9.15.2:  Let's try to update the seqedit as well, if it
-         * is open.  Seems to work!
+         * is open.  Seems to work!  But not on all systems, as issue 50
+         * suggests.  We need a better solution.
+         *
+         * if (not_nullptr(m_seqedit))
+         * {
+         *     m_seqedit->set_midi_bus(bus);
+         *     m_seqedit->set_midi_channel(ch);
+         * }
          */
-
-        if (not_nullptr(m_seqedit))
-        {
-            m_seqedit->set_midi_bus(bus);
-            m_seqedit->set_midi_channel(ch);
-        }
     }
 }
 
@@ -376,7 +387,7 @@ seqmenu::seq_edit ()
     {
         sequence * s = get_current_sequence();
         if (! s->get_editing())
-            m_seqedit = new seqedit(m_mainperf, *s, current_seq());
+            m_seqedit = create_seqedit(*s);
         else
             s->set_raise(true);
     }
@@ -385,11 +396,71 @@ seqmenu::seq_edit ()
         seq_new();
         sequence * s = get_current_sequence();
         if (not_nullptr(s))
-            m_seqedit = new seqedit(m_mainperf, *s, current_seq());
+            m_seqedit = create_seqedit(*s);
     }
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
     set_edit_sequence(current_seq());
 #endif
+}
+
+/**
+ *  A wrapper function so that we can not only create a new seqedit object,
+ *  but have some management over it.  We don't bother checking here if the
+ *  insert succeeded.  If it doesn't, all bets are off.
+ *
+ * \param s
+ *      Provides the sequence for which the seqedit will be created.
+ *      The perform object and the current_seq() value are implicit
+ *      parameters.  This object can obviously be modified by the sequence
+ *      editor, so cannot be constant.
+ *
+ * \return
+ *      Returns the pointer to the new seqedit object.
+ */
+
+seqedit *
+seqmenu::create_seqedit (sequence & s)
+{
+    seqedit * result = new seqedit(m_mainperf, s, current_seq());
+
+#ifdef USE_SEQEDIT_MAP
+
+    if (not_nullptr(result))
+    {
+#if __cplusplus >= 201103L              /* C++11 */
+        SeqeditPair p = std::make_pair(current_seq(), result);
+#else
+        SeqeditPair p = std::make_pair<int, seqedit *>(current_seq(), result);
+#endif
+        (void) sm_seqedit_list.insert(p);
+    }
+
+#endif  // USE_SEQEDIT_MAP
+
+    return result;
+}
+
+
+/**
+ *  A wrapper function to make sure the seqedit object is removed from the
+ *  list when it goes away.  Called by seqedit::on_delete_event().
+ */
+
+void
+seqmenu::remove_seqedit (sequence & s)
+{
+
+#ifdef USE_SEQEDIT_MAP
+
+    int seqnum = s.number();
+    int count = int(sm_seqedit_list.erase(seqnum));
+    if (count == 0)
+    {
+        errprint("seqedit::on_delete_event() found nothing to delete");
+    }
+
+#endif  // USE_SEQEDIT_MAP
+
 }
 
 /**
@@ -399,6 +470,16 @@ seqmenu::seq_edit ()
  *  How do we account for the current screenset?  It might not matter if the
  *  mute/unmute keystrokes were designed to work only with the current
  *  screenset.
+ *
+ * \change ca 2016-11-01
+ *      We would like to be able to right-click on a given pattern slot in
+ *      mainwid, and figure out if it has a seqedit window open, so that we
+ *      can update that window.  So we need to add that seqedit window to a
+ *      map of seqedits, keyed by the slot number.  Then we can look up that
+ *      slot and see if it has a seqedit window open.  If the seqedit window
+ *      closes, that window needs to remove itself from the map.  This won't
+ *      be needed for the event editor, which has no functionality from
+ *      seqmenu.
  *
  * \param seqnum
  *      The number of the sequence to edit.

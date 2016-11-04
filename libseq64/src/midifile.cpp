@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-23
+ * \updates       2016-11-04
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -693,7 +693,14 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                         e.set_status(EVENT_NOTE_OFF, channel); /* vel 0==off  */
 
                     e.set_data(d0, d1);                   /* set data and add */
-                    seq.add_event(e);
+
+                    /*
+                     * We will replace seq.add_event() with
+                     * seq.append_event().  The latter won't bother sorting
+                     * events; they'll be sorted after we get them all.
+                     */
+
+                    seq.append_event(e);
                     seq.set_midi_channel(channel);        /* set midi channel */
                     if (is_smf0)
                         m_smf0_splitter.increment(channel);
@@ -704,7 +711,14 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                     d0 = read_byte();                     /* was data[0]      */
                     e.set_data(d0);                       /* set data and add */
-                    seq.add_event(e);
+
+                    /*
+                     * We will replace seq.add_event() with
+                     * seq.append_event().  The latter won't bother sorting
+                     * events; they'll be sorted after we get them all.
+                     */
+
+                    seq.append_event(e);
                     seq.set_midi_channel(channel);        /* set midi channel */
                     if (is_smf0)
                         m_smf0_splitter.increment(channel);
@@ -995,6 +1009,17 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                 if (seq.get_length() < seq.get_ppqn())
                     seq.set_length(seq.get_ppqn() * seq.get_beats_per_bar());
+
+                /*
+                 * EXPERIMENTAL, add sorting after reading all the events
+                 * for the sequence.
+                 */
+
+                seq.sort_events();      // EXPERIMENTAL
+
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+                seq.events().print();
+#endif
 
                 p.add_sequence(&seq, seqnum + (screenset * c_seqs_in_set));
             }

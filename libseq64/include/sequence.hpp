@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-10-19
+ * \updates       2016-11-03
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -520,6 +520,7 @@ public:
 
     /**
      * \getter m_events
+     *      Non-const version.
      */
 
     event_list & events ()
@@ -529,6 +530,7 @@ public:
 
     /**
      * \getter m_events
+     *      Const version.
      */
 
     const event_list & events () const
@@ -1031,7 +1033,27 @@ public:
     void print_triggers () const;
     void play (midipulse tick, bool playback_mode);
     void play_queue (midipulse tick, bool playbackmode);
-    bool add_event (const event & er);
+    void add_note (midipulse tick, midipulse len, int note, bool paint = false);
+    bool add_event (const event & er);      /* another one declared below */
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    void add_chord (int chord, midipulse tick, midipulse len, int note);
+#endif
+    void add_event
+    (
+        midipulse tick, midibyte status,
+        midibyte d0, midibyte d1, bool paint = false
+    );
+    bool append_event (const event & er);
+
+    /**
+     *  Calls event_list::sort().
+     */
+
+    void sort_events ()
+    {
+        m_events.sort();
+    }
+
     void add_trigger
     (
         midipulse tick, midipulse len,
@@ -1170,17 +1192,6 @@ public:
     midipulse trim_timestamp (midipulse t);
     midipulse clip_timestamp (midipulse ontime, midipulse offtime);
     void move_selected_notes (midipulse deltatick, int deltanote);
-    void add_note (midipulse tick, midipulse len, int note, bool paint = false);
-
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-    void add_chord (int chord, midipulse tick, midipulse len, int note);
-#endif
-
-    void add_event
-    (
-        midipulse tick, midibyte status,
-        midibyte d0, midibyte d1, bool paint = false
-    );
     bool stream_event (event & ev);
     bool change_event_data_range
     (

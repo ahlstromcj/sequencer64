@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-08-28
+ * \updates       2016-11-04
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -85,6 +85,7 @@ class event_list
 {
 
     friend class editable_events;       // access to event_key class
+    friend class midifile;              // access to print()
     friend class midi_container;        // access to event_list::iterator
     friend class midi_splitter;         // ditto
     friend class sequence;              // tritto
@@ -233,9 +234,32 @@ public:
         return m_events.empty();
     }
 
-    bool add (const event & e);
+    /**
+     *  Adds an event to the internal event list in an optionally sorted
+     *  manner.
+     *
+     * \param e
+     *      Provides the event to be added to the list.
+     *
+     * \return
+     *      Returns true.  We assume the insertion succeeded, and no longer
+     *      care about an increment in container size.  It's a multimap, so it
+     *      always inserts, and if we don't have memory left, all bets are off
+     *      anyway.
+     */
 
-#if ! defined SEQ64_USE_EVENT_MAP
+    bool add (const event & e)
+    {
+#ifdef SEQ64_USE_EVENT_MAP
+        return append(e);
+#else
+        bool result = append(e);
+        sort();                         /* by time-stamp and "rank" */
+        return result;
+#endif
+    }
+
+    bool append (const event & e);
 
     /**
      *  Needed as a special case when std::list is used.
@@ -243,6 +267,15 @@ public:
      * \param e
      *      Provides the event value to push at the back of the event list.
      */
+
+#ifdef SEQ64_USE_EVENT_MAP
+
+    void push_back (const event & /* e */)
+    {
+        // no code needed
+    }
+
+#else
 
     void push_back (const event & e)
     {
@@ -303,14 +336,15 @@ public:
      *  an empty function.
      */
 
-#if ! defined SEQ64_USE_EVENT_MAP
-
+    
     void sort ()
     {
+#ifdef SEQ64_USE_EVENT_MAP
+        // we need nothin' for sorting a multimap
+#else
         m_events.sort();
-    }
-
 #endif
+    }
 
     /**
      *  Dereference access for list or map.

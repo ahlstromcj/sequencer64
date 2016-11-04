@@ -2790,6 +2790,26 @@ sequence::add_event (const event & er)
 }
 
 /**
+ *  An alternative to add_event() that does not sort the events, even if the
+ *  event list is implemented by an std::list.  This function is meant mainly
+ *  for reading the MIDI file, to save a lot of time.
+ *
+ * \param er
+ *      Provide a reference to the event to be added; the event is copied into
+ *      the events container.
+ *
+ * \return
+ *      Returns true if the event was added.
+ */
+
+bool
+sequence::append_event (const event & er)
+{
+    automutex locker(m_mutex);
+    return m_events.append(er);     /* does *not* sort, too time-consuming */
+}
+
+/**
  *  Adds a event of a given status value and data values, at a given tick
  *  location.
  *

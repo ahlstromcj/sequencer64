@@ -161,9 +161,12 @@ event_list::~event_list ()
 }
 
 /**
- *  Adds an event to the internal event list in an optionally sorted
- *  manner. It is a wrapper, wrapper for insert() or push_front(), with an
- *  option to call sort().
+ *  Adds an event to the internal event list without sorting.  It is a
+ *  wrapper, wrapper for insert() or push_front(), with an option to call
+ *  sort().
+ *
+ *  The add() function without sorting, useful to speed up the initial
+ *  container loading into the event-list.
  *
  *  For the std::multimap implementation, This is an option if we want to make
  *  sure the insertion succeed.
@@ -182,37 +185,33 @@ event_list::~event_list ()
  *      Provides the event to be added to the list.
  *
  * \return
- *      Returns true if the insertion succeeded, as evidenced by an increment
- *      in container size.
+ *      Returns true.  We assume the insertion succeeded, and no longer care
+ *      about an increment in container size.  It's a multimap, so it always
+ *      inserts, and if we don't have memory left, all bets are off anyway.
  */
 
 bool
-event_list::add (const event & e)
+event_list::append (const event & e)
 {
-    size_t count = m_events.size();
-
 #ifdef SEQ64_USE_EVENT_MAP
+
     event_key key(e);
+
 #if __cplusplus >= 201103L              /* C++11                    */
     EventsPair p = std::make_pair(key, e);
 #else
     EventsPair p = std::make_pair<event_key, event>(key, e);
 #endif
     m_events.insert(p);                 /* std::multimap operation  */
+
 #else
+
     m_events.push_front(e);             /* std::list operation      */
+
 #endif
 
-    bool result = m_events.size() == (count + 1);
-    if (result)
-    {
-        m_is_modified = true;
-
-#if ! defined SEQ64_USE_EVENT_MAP
-        sort();                         /* by time-stamp and "rank" */
-#endif
-    }
-    return result;
+    m_is_modified = true;
+    return true;
 }
 
 #ifdef SEQ64_USE_EVENT_MAP

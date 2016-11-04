@@ -175,9 +175,7 @@ mainwid::draw_sequences_on_pixmap ()
 {
     int offset = m_screenset_offset;                /* m_screenset * slots  */
     for (int s = 0; s < m_screenset_slots; ++s, ++offset)
-    {
         draw_sequence_on_pixmap(offset);
-    }
 }
 
 /**

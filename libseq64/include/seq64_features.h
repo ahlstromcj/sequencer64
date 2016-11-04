@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-10-30
+ * \updates       2016-11-04
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -330,6 +330,17 @@
  * load.  This caused an issue with copy/paste leaving unlinked notes that
  * would either play forever or not play at all.  A good fix was provided by
  * user 0rel.
+ *
+ * We have another issue.  On a low-end, single-core, 32-bit laptop, the
+ * new b4uacuse-stress.midi file (1.5 Mb!) loads in a couple seconds with the
+ * map implementation, but takes 13 minutes (!) to load with the list
+ * implementation.  But it can't play properly from the map; it can play
+ * somewhat properly from the list.  We've added code to sort the event list
+ * after the fact when loading the file, which speeds things up.  But, as
+ * the contrib/notes/ev*.png files show, the events are drawn funny in the
+ * pattern slot.  They play fine, though.  Still exploring this issue.
+ *
+ * UNDEFINE FOR EXPERIMENTAL USAGE ONLY.
  */
 
 #define SEQ64_USE_EVENT_MAP             /* the map seems to work well!  */

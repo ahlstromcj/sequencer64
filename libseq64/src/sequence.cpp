@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-30
+ * \updates       2016-11-04
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -3835,11 +3835,12 @@ sequence::get_next_note_event
     int * note, bool * selected, int * velocity
 )
 {
-    draw_type_t result = DRAW_FIN;
     *tick_f = 0;
     while (m_iterator_draw != m_events.end())
     {
         event & drawevent = DREF(m_iterator_draw);
+        bool isnoteon = drawevent.is_note_on();
+        bool islinked = drawevent.get_linked();
         *tick_s   = drawevent.get_timestamp();
         *note     = drawevent.get_note();
         *selected = drawevent.is_selected();
@@ -3847,30 +3848,21 @@ sequence::get_next_note_event
 
         /* note on, so its linked */
 
-        if (drawevent.is_note_on() && drawevent.is_linked())
+        if (isnoteon && islinked)
         {
             *tick_f = drawevent.get_linked()->get_timestamp();
-            result = DRAW_NORMAL_LINKED;
             ++m_iterator_draw;
-            return result;
+            return DRAW_NORMAL_LINKED;
         }
-        else if
-        (
-            drawevent.is_note_on() && (! drawevent.is_linked())
-        )
+        else if (isnoteon && ! islinked)
         {
-            result = DRAW_NOTE_ON;
             ++m_iterator_draw;
-            return result;
+            return DRAW_NOTE_ON;
         }
-        else if
-        (
-            drawevent.is_note_off() && (! drawevent.is_linked())
-        )
+        else if (drawevent.is_note_off() && ! islinked)
         {
-            result = DRAW_NOTE_OFF;
             ++m_iterator_draw;
-            return result;
+            return DRAW_NOTE_OFF;
         }
         ++m_iterator_draw;  /* keep going until we hit null or find a NoteOn */
     }

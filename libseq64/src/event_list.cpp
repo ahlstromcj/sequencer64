@@ -350,7 +350,7 @@ event_list::link_new ()
  *  note-offs with their note-ons.
  *
  * Stazed (seq32):
- * 
+ *
  *      This function now deletes any notes that are >= m_length, so any
  *      resize or move of notes must modify for wrapping if Note Off is >=
  *      m_length.
@@ -380,8 +380,8 @@ event_list::verify_and_link (midipulse slength)
                 event & eoff = dref(off);
                 if                          /* Off, == notes, not marked    */
                 (
-                    eoff.is_note_off() && eoff.get_note() == eon.get_note() &&
-                    ! eoff.is_marked()
+                    eoff.is_note_off() &&
+                    eoff.get_note() == eon.get_note() && ! eoff.is_marked()
                 )
                 {
                     eon.link(&eoff);                    /* link + mark */

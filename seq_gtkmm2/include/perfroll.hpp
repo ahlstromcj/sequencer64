@@ -40,10 +40,18 @@
 #include "fruityperfroll_input.hpp"     /* FruityPerfInput      */
 #include "perfroll_input.hpp"           /* Seq24PerfInput       */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace Gtk
 {
     class Adjustment;
 }
+
+/**
+ *  Do not document a namespace; it breaks Doxygen.
+ */
 
 namespace seq64
 {

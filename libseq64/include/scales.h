@@ -55,6 +55,10 @@
 
 #define SEQ64_KEY_OF_C                  0
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

@@ -46,6 +46,10 @@ typedef struct stat stat_t;
 
 #endif                                  /* _MSC_VER                         */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

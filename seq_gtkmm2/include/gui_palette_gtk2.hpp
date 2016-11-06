@@ -42,6 +42,10 @@
 
 #include <gtkmm/drawingarea.h>          // or #include <gtkmm/widget.h>
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

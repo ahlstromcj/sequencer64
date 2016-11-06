@@ -8,7 +8,7 @@
 # \library    	generic
 # \author     	Chris Ahlstrom
 # \date       	2015-08-08
-# \update     	2016-05-29
+# \update     	2016-11-05
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -108,7 +108,24 @@ if [ "$TARGET" == "reference" ] ; then
 	echo "$DOXYGEN doxy-reference.cfg > dox-progress.log 2> dox-errors.log ..."
 	$DOXYGEN doxy-reference.cfg > dox-progress.log 2> dox-errors.log
 	sed -e 's/letterpaper,/letterpaper,margin=2cm,/' -i latex/refman.tex
-	make --directory=latex pdf
+
+#  This breaks too easily, so now we descend and run the commands a few
+#  times, similar to what the latex/Makefile does.  Bleh!
+#
+#	make --directory=latex pdf
+
+   pushd latex
+	pdflatex refman
+	makeindex refman.idx
+	pdflatex refman
+	makeindex refman.idx
+	pdflatex refman
+	makeindex refman.idx
+	pdflatex refman
+	makeindex refman.idx
+	pdflatex refman
+	makeindex refman.idx
+   popd
 	cp latex/refman.pdf ../reference_manual.pdf
 
    if [ $? == 0 ] ; then

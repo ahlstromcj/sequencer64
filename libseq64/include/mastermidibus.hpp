@@ -47,6 +47,10 @@
 #include <alsa/asoundlib.h>
 #include <alsa/seq_midi_event.h>
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
     class event;

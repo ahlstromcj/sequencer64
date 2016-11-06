@@ -38,6 +38,10 @@
 
 #include "perfroll_input.hpp"           /* ABC and Seq24 input class    */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
     class perfroll;

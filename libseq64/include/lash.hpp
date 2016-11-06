@@ -41,6 +41,10 @@
 #include <lash/lash.h>
 #endif
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
     class perform;

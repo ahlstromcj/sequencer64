@@ -39,6 +39,10 @@
 #include "userfile.hpp"                 /* seq64::userfile              */
 #include "user_instrument.hpp"          /* seq64::user_instrument       */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

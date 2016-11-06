@@ -37,6 +37,10 @@
 #include "midibyte.hpp"                 /* seq64::midipulse typedef     */
 #include "settings.hpp"                 /* seq64::choose_ppqn()         */
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

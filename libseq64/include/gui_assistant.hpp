@@ -33,12 +33,15 @@
  *
  */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
-
-class jack_assistant;                   // forward reference
-class lash;                             // ditto
-class keys_perform;                     // ditto
+    class jack_assistant;
+    class lash;
+    class keys_perform;
 
 /**
  *  This class provides an interface for some of the GUI support needed

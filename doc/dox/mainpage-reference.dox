@@ -1,7 +1,4 @@
-/******************************************************************************
- * mainpage-reference.dox
- *-----------------------------------------------------------------------------
- *
+/*
  *    This module provides no code.  It provides only a Doxygen "Doxygen
  *    information" page.
  *
@@ -16,8 +13,8 @@
  *
  *    EDIT OR TOUCH THIS FILE WHEN YOU WANT TO RECREATE THE
  *    REFERENCE MANUAL
- *
- *------------------------------------------------------------------------*//**
+ */
+/**
 
 \file       mainpage-reference.dox
 
@@ -58,10 +55,10 @@ Some useful references:
    -  http://acad.carleton.edu/courses/musc108-00-f14/pages/04/04StandardMIDIFiles.html
    -  http://www.midimusicadventures.com/qs/midi-zips/soundtracks/kq6gm.zip
 
- *//*-------------------------------------------------------------------------*/
+ */
 
-/******************************************************************************
+/*
  * mainpage-reference.dox
- *----------------------------------------------------------------------------
+ *
  * vim: ts=3 sw=3 et syntax=doxygen
- *//*-------------------------------------------------------------------------*/
+ */

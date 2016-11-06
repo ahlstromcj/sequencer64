@@ -39,6 +39,10 @@
 
 #include "easy_macros.h"                /* is_nullptr() */
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

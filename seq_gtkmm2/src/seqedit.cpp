@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-02
+ * \updates       2016-11-05
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -108,6 +108,10 @@
 #endif
 
 using namespace Gtk::Menu_Helpers;
+
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
 
 namespace seq64
 {
@@ -2020,6 +2024,9 @@ seqedit::get_measures ()
  *  Set the measures value, using the given parameter, and some internal
  *  values passed to apply_length().
  *
+ * \todo
+ *      Check if verification is needed at this point.
+ *
  * \param lim
  *      Provides the sequence length, in measures.
  */
@@ -2037,6 +2044,12 @@ seqedit::set_measures (int lim)
 /**
  *  Set the bpm (beats per measure) value, using the given parameter, and
  *  some internal values passed to apply_length().
+ *
+ * \todo
+ *      Check if verification is needed at this point.
+ *
+ * \param bpm
+ *      Provides the BPM (beats per measure) value to set.
  */
 
 void
@@ -2056,6 +2069,12 @@ seqedit::set_beats_per_bar (int bpm)
 /**
  *  Set the bw (beat width) value, using the given parameter, and
  *  some internal values passed to apply_length().
+ *
+ * \todo
+ *      Check if verification is needed at this point.
+ *
+ * \param bw
+ *      Provides the beat-width value to set.
  */
 
 void

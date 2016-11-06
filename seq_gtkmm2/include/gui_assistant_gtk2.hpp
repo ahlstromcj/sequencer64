@@ -40,6 +40,10 @@
 #include "gui_assistant.hpp"            // seq64::gui_assistant interface
 #include "keys_perform_gtk2.hpp"        // seq64::keys_perform_gtk2
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

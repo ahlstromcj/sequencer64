@@ -45,6 +45,10 @@
 
 #define SEQ64_END_OF_MIDIBYTE_TABLE     0x100       /* one more than 0xFF   */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

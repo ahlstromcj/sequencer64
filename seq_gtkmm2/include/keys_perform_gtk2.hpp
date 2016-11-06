@@ -36,6 +36,10 @@
 
 #include "keys_perform.hpp"
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

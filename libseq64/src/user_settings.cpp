@@ -102,6 +102,10 @@
 #include "settings.hpp"                 /* seq64::rc()                  */
 #include "user_settings.hpp"            /* seq64::user_settings         */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

@@ -37,8 +37,14 @@
 
 #include "globals.h"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
+
+    // NOTHING!
 
 }           // namespace seq64
 

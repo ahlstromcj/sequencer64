@@ -80,6 +80,10 @@
 #include "easy_macros.h"
 #include "event.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

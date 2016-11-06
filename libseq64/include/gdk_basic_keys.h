@@ -268,6 +268,10 @@
 
 #endif      // SEQ64_Home
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

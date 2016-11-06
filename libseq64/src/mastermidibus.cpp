@@ -69,6 +69,10 @@
 #define ALSA_CLIENT_CHECK(pinfo) \
     (snd_seq_client_id(m_alsa_seq) != snd_seq_port_info_get_client(pinfo))
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

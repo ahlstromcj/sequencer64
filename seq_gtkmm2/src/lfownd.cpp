@@ -46,6 +46,10 @@
 #include "seqedit.hpp"
 #include "sequence.hpp"
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

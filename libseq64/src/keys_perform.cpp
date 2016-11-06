@@ -40,6 +40,10 @@
 #include "gdk_basic_keys.h"
 #include "keys_perform.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

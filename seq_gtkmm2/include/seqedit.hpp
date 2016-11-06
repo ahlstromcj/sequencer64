@@ -44,6 +44,10 @@
 #include "midibyte.hpp"                 /* seq64::midibyte typedef          */
 #include "sequence.hpp"                 /* seq64::sequence class            */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace Gtk
 {
     class Adjustment;
@@ -60,6 +64,10 @@ namespace Gtk
     class VBox;
     class VScrollbar;
 }
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
 
 namespace seq64
 {

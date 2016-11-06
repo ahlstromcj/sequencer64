@@ -43,6 +43,10 @@
 #include "perftime.hpp"
 #include "settings.hpp"                 /* seq64::choose_ppqn()         */
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

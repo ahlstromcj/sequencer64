@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-11-04
+ * \updates       2016-11-05
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -343,7 +343,19 @@
  * UNDEFINE FOR EXPERIMENTAL USAGE ONLY.
  */
 
-#define SEQ64_USE_EVENT_MAP             /* the map seems to work well!  */
+#undef  SEQ64_USE_EVENT_MAP             /* the map seems to work well!  */
+
+/**
+ *  Defined if we want to use the old (and slow in std::list) pre-sort
+ *  method on the MIDI container, where the event container is sorted after
+ *  each event is added.
+ */
+
+#undef SEQ64_PRESORT_EVENT_CONTAINER
+
+#ifdef SEQ64_USE_EVENT_MAP
+#undef SEQ64_PRESORT_EVENT_CONTAINER
+#endif
 
 /**
  *  Determins which implementation of a MIDI byte container is used.

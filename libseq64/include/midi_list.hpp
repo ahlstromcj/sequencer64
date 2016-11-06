@@ -44,6 +44,10 @@
 
 #include "midi_container.hpp"           /* seq64::midi_container ABC    */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

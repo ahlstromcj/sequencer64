@@ -52,6 +52,10 @@
 #include "perform.hpp"
 #include "perfnames.hpp"
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

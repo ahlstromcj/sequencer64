@@ -51,6 +51,10 @@ static const int c_maintime_x = 300;
 static const int c_maintime_y =  12;        /* was 10 */
 static const int c_pill_width =  10;        /* was  8 */
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

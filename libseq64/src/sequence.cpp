@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-04
+ * \updates       2016-11-05
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -52,6 +52,10 @@
 #ifdef SEQ64_STAZED_LFO_SUPPORT
 #include "calculations.hpp"
 #endif
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
 
 namespace seq64
 {
@@ -2702,6 +2706,11 @@ sequence::add_note (midipulse tick, midipulse len, int note, bool paint)
  *
  * \threadsafe
  *
+ * \param chord
+ *      If greater than 0 (and less than c_chord_number), a chord (multiple
+ *      notes) will be generated using this chord in the c_chord_table[]
+ *      array.  Otherwise, only a single note will be added.
+ *
  * \param tick
  *      The time destination of the new note, in pulses.
  *
@@ -2710,9 +2719,6 @@ sequence::add_note (midipulse tick, midipulse len, int note, bool paint)
  *
  * \param note
  *      The pitch destination of the new note.
- *
- * \param paint
- *      If true, repaint to be left with just the inserted event.
  */
 
 void
@@ -3810,6 +3816,9 @@ sequence::get_minmax_note_events (int & lowest, int & highest)
  *  elements, and returns true.  When it has no more events, returns a
  *  false.
  *
+ *  Note that, before the first call to draw a sequence, the
+ *  reset_draw_marker() function must be called, to reset m_iterator_draw.
+ *
  * \param [out] tick_s
  *      Provides a pointer destination for the start time.
  *
@@ -3840,31 +3849,25 @@ sequence::get_next_note_event
     {
         event & drawevent = DREF(m_iterator_draw);
         bool isnoteon = drawevent.is_note_on();
-        bool islinked = drawevent.get_linked();
+        bool islinked = drawevent.is_linked();  /* not get_linked(), idiot! */
         *tick_s   = drawevent.get_timestamp();
         *note     = drawevent.get_note();
         *selected = drawevent.is_selected();
         *velocity = drawevent.get_note_velocity();
-
-        /* note on, so its linked */
-
+        ++m_iterator_draw;                      /* go until null or Note-On */
         if (isnoteon && islinked)
         {
             *tick_f = drawevent.get_linked()->get_timestamp();
-            ++m_iterator_draw;
             return DRAW_NORMAL_LINKED;
         }
         else if (isnoteon && ! islinked)
         {
-            ++m_iterator_draw;
             return DRAW_NOTE_ON;
         }
         else if (drawevent.is_note_off() && ! islinked)
         {
-            ++m_iterator_draw;
             return DRAW_NOTE_OFF;
         }
-        ++m_iterator_draw;  /* keep going until we hit null or find a NoteOn */
     }
     return DRAW_FIN;
 }
@@ -4098,8 +4101,23 @@ sequence::set_midi_bus (char mb, bool user_change)
 /**
  *  Sets the length (m_length) and adjusts triggers for it, if desired.
  *  This function is called in seqedit::apply_length(), when the user
- *  selects a sequence length in measures.  That function calculates the
- *  length in ticks:
+ *  selects a sequence length in measures.  This function is also called
+ *  when reading a MIDI file.
+ *
+ *  There's an issue, though.  If the application is compiled to use the
+ *  original std::list container for MIDI events, that implementation sorts
+ *  the container after every event insertion.  If the application is compiled
+ *  to used the std::map container (to speed up the reading of large MIDI
+ *  files *greatly*), sorting happens automatically.  But, if we use the
+ *  original std::list implementation, but leave the sorting until later (to
+ *  speed up the reading of large MIDI files *greatly*), then the
+ *  verify_and_link() call that happens with every new event happens before
+ *  the events are sorted, and the result is elongated notes showing up in the
+ *  pattern slot in the main window.  Therefore, we need a way to skip the
+ *  verification when reading a MIDI file, and do the verification only after
+ *  all events are read.
+ *
+ *  That function calculates the length in ticks:
  *
 \verbatim
     L = M x B x 4 x P / W
@@ -4115,24 +4133,48 @@ sequence::set_midi_bus (char mb, bool user_change)
  *  So L = 100 * 4 * 4 * 192 / 4 = 76800 ticks.  Seems small.
  *
  * \threadsafe
+ *
+ * \param len
+ *      The length value to be set.  If it is smaller than ppqn/4, then
+ *      it is set to that value, unless it is zero, in which case m_length is
+ *      used and does not change.  It also sets the length value for the
+ *      sequence's triggers.
+ *
+ * \param adjust_triggers
+ *      If true, m_triggers.adjust_offsets_to_length() is called.  The value
+ *      defaults to true.
+ *
+ * \param verify
+ *      This new parameter defaults to true.  If true, verify_and_link() is
+ *      called.  Otherwise, it is not, and the caller should call this
+ *      function with the default value after reading all the events.
  */
 
 void
-sequence::set_length (midipulse len, bool adjust_triggers)
+sequence::set_length (midipulse len, bool adjust_triggers, bool verify)
 {
     automutex locker(m_mutex);
     bool was_playing = get_playing();
     set_playing(false);                 /* turn everything off              */
-    if (len < midipulse(m_ppqn / 4))
-        len = midipulse(m_ppqn / 4);
+    if (len > 0)
+    {
+        if (len < midipulse(m_ppqn / 4))
+            len = midipulse(m_ppqn / 4);
+
+        m_length = len;
+    }
+    else
+        len = m_length;
 
     m_triggers.set_length(len);         /* must precede adjust call         */
     if (adjust_triggers)
         m_triggers.adjust_offsets_to_length(len);
 
-    m_length = len;
-    verify_and_link();
-    reset_draw_marker();
+    if (verify)
+    {
+        verify_and_link();
+        reset_draw_marker();
+    }
     if (was_playing)                    /* start up and refresh             */
         set_playing(true);
 }
@@ -4797,7 +4839,7 @@ sequence::copy_events (const event_list & newevents)
         m_events.unmodify();
 
     m_iterator_draw = m_events.begin();     /* same as in reset_draw_marker */
-    if (m_events.count() > 0)               /* need at least 1 (2?) events  */
+    if (! m_events.empty())                 /* need at least 1 (2?) events  */
     {
         /*
          * Another option, if we have a new sequence length value (in pulses)
@@ -4806,19 +4848,6 @@ sequence::copy_events (const event_list & newevents)
 
         verify_and_link();
     }
-
-    /*
-     * If we call this, we can get updates to be seen, but for longer
-     * sequences, it causes a segfault in updating the sequence pixmap in the
-     * mainwnd::timer_callback() function due to null events, when the event
-     * editor has deleted some events.  Not even locking the drawing of the
-     * sequence in mainwid helps.  RE-VERIFY!
-     */
-
-    /*
-     * MODIFY FIX?
-     */
-
     set_dirty();
     modify();
 }

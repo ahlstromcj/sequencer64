@@ -68,6 +68,10 @@
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

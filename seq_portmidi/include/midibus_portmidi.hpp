@@ -38,6 +38,10 @@
 
 #include "midibus_common.hpp"
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

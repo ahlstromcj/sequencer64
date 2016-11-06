@@ -38,6 +38,10 @@
 #include "sequence.hpp"                 /* seq64::sequence              */
 #include "settings.hpp"                 /* seq64::choose_ppqn()         */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-11-02
+ * \updates       2016-11-05
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -61,6 +61,10 @@
 #include "perform.hpp"
 #include "settings.hpp"
 #include "userfile.hpp"
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
 
 namespace seq64
 {
@@ -419,6 +423,10 @@ parse_options_files (perform & p, int argc, char * argv [])
  *  reset value for optind is 1, but 0 is used in GNU code to trigger the
  *  internal initialization routine of get_opt().
  *
+ * \param p
+ *      The performance object that implements some of the command-line
+ *      options.
+ *
  * \param argc
  *      The number of command-line arguments.
  *
@@ -730,6 +738,12 @@ const static std::string s_build_use_event_map = "ON";
 const static std::string s_build_use_event_map = "off";
 #endif
 
+#ifdef SEQ64_PRESORT_EVENT_CONTAINER
+const static std::string s_build_presort_events = "ON";
+#else
+const static std::string s_build_presort_events = "off";
+#endif
+
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
 const static std::string s_build_chord_generator = "ON";
 #else
@@ -821,6 +835,7 @@ build_details ()
 << std::endl
 << "Event editor * = "           << s_event_editor                << std::endl
 << "Event multimap (vs list) = " << s_build_use_event_map         << std::endl
+<< "Sort after each insert = "   << s_build_presort_events        << std::endl
 << "Follow progress bar = "      << s_build_follow_progress       << std::endl
 << "Highlight edit pattern * = " << s_build_edit_highlight        << std::endl
 << "Highlight empty patterns = " << s_build_highlight_empty       << std::endl

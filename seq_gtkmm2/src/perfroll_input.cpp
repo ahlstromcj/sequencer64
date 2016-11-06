@@ -47,6 +47,10 @@
 
 static int s_perfroll_size_box_click_w = 4; /* s_perfroll_size_box_w + 1 */
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

@@ -35,6 +35,10 @@
 #include "editable_events.hpp"          /* seq64::editable_events       */
 #include "sequence.hpp"                 /* seq64::sequence              */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

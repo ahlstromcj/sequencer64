@@ -34,6 +34,10 @@
 
 #include "user_midi_bus.hpp"            /* seq64::user_midi_bus         */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

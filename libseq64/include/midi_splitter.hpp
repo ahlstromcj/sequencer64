@@ -40,11 +40,14 @@
 
 #include "globals.h"                    /* SEQ64_USE_DEFAULT_PPQN   */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
-
-class perform;                          /* forward reference        */
-class sequence;                         /* forward reference        */
+    class perform;                      /* forward reference        */
+    class sequence;                     /* forward reference        */
 
 /**
  *  This class handles the parsing and writing of MIDI files.  In addition to

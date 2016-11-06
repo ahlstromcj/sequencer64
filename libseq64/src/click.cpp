@@ -35,6 +35,10 @@
 #include "easy_macros.h"                // errprint() macro
 #include "gdk_basic_keys.h"             // seq64::SEQ64_MASK_MAX, etc.
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

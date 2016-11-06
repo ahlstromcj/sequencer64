@@ -35,6 +35,10 @@
 #include "easy_macros.h"
 #include "event_list.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 
@@ -671,6 +675,20 @@ event_list::print () const
         dref(i).print();
 
     printf("events[%d]\n\n", count());
+}
+
+/**
+ * TEMPORARILY HERE for gdb.
+ *
+ */
+void 
+event_list::sort ()
+{
+#ifdef SEQ64_USE_EVENT_MAP
+    // we need nothin' for sorting a multimap
+#else
+    m_events.sort();
+#endif
 }
 
 }           // namespace seq64

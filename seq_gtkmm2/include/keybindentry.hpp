@@ -41,6 +41,10 @@
 
 #include "easy_macros.h"               // nullptr
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
     class perform;
@@ -51,7 +55,6 @@ namespace seq64
 
 class keybindentry : public Gtk::Entry
 {
-
     friend class options;
 
 private:

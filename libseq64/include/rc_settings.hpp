@@ -44,6 +44,10 @@
 
 #include "seq64_features.h"             /* SEQ64_USE_ZOOM_POWER_OF_2    */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
     class perform;                      /* forward declaration          */

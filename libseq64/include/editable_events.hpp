@@ -49,6 +49,10 @@
 
 #define EEDREF(e)       editable_events::dref(e)
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

@@ -42,6 +42,10 @@
 #include "seqevent.hpp"
 #include "sequence.hpp"                 /* for full usage of seqevent       */
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

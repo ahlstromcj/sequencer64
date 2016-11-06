@@ -112,6 +112,10 @@ static const int co_offset =  2;    /**< x, y offsets of top left pixel.    */
 static const int co_text_w =  6;    /**< Doesn't include inner padding.     */
 static const int co_text_h = 10;    /**< Doesn't include inner padding.     */
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

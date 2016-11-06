@@ -32,6 +32,10 @@
 
 #include "midi_vector.hpp"                /* seq64::midi_container base   */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

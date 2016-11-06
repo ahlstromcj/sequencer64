@@ -38,6 +38,10 @@
 
 #include "app_limits.h"                 /* SEQ64_MIDI_COUNT_MAX constant */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

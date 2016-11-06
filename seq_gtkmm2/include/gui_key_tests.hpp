@@ -35,6 +35,10 @@
 
 #include <gdk/gdkevents.h>
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
     extern bool is_ctrl_key (GdkEventKey * ev);

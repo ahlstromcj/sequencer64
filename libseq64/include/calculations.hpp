@@ -150,7 +150,7 @@ extern int zoom_power_of_2 (int ppqn);
  *  of a Tempo meta-event.  The tempo event's numeric value is given in 3
  *  bytes, and is in units of microseconds-per-quarter-note (us/qn).
  *
- * \param tempo
+ * \param tempous
  *      The value of the Tempo meta-event, in units of us/qn.  If this value
  *      is 0, we'll get an arithmetic exception.
  *

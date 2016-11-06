@@ -1,3 +1,10 @@
+MIDI Events from 2bars.midi Using Map
+Chris Ahlstrom
+2016-11-04 to 2016-11-05
+
+When patterns read using append_event() with the map implementation, they are
+shown normally, and load quickly.
+
 [Reading rc configuration /home/ahlstrom/.config/sequencer64/sequencer64.rc]
 [Reading user configuration /home/ahlstrom/.config/sequencer64/sequencer64.usr]
 [Initialized, but running without JACK]

@@ -43,10 +43,18 @@
 
 #define SEQ64_NULL_EVENT_INDEX          (-1)
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace Gtk
 {
     class Adjustment;
 }
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
 
 namespace seq64
 {

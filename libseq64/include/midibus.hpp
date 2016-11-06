@@ -49,6 +49,10 @@
 #include "midibus_portmidi.h"           /* see the seq_portmidi library */
 #endif
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

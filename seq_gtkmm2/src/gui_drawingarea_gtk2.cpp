@@ -35,6 +35,10 @@
 #include "gui_drawingarea_gtk2.hpp"
 #include "perform.hpp"
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

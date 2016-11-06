@@ -56,6 +56,10 @@
 #define SEQ64_KEYSTROKE_MIN             0x0001      /* Ctrl-A */
 #define SEQ64_KEYSTROKE_MAX             0xffff
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

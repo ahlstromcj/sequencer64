@@ -37,10 +37,13 @@
 
 #include "configfile.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
-
-class perform;
+    class perform;
 
 /**
  *  Provides a file for reading and writing the application' main

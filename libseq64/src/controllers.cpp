@@ -34,6 +34,10 @@
 
 #include "controllers.hpp"              /* seq64::c_controller_names[]  */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

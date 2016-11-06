@@ -52,6 +52,10 @@
 
 using namespace Gtk::Menu_Helpers;
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

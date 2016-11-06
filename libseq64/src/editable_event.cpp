@@ -35,6 +35,10 @@
 #include "editable_event.hpp"           /* seq64::editable_event            */
 #include "editable_events.hpp"          /* seq64::editable_events multimap  */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

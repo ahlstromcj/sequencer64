@@ -46,6 +46,10 @@
 
 #define SEQ64_NO_PASTE_TRIGGER          (-1)
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
     class sequence;

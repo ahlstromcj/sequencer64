@@ -44,10 +44,18 @@
 #include "midibyte.hpp"                 /* seq64::midibyte, etc.        */
 #include "seq24seq.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace Gtk
 {
     class Adjustment;
 }
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
 
 namespace seq64
 {
@@ -62,7 +70,7 @@ namespace seq64
 class seqevent : public gui_drawingarea_gtk2
 {
     friend struct FruitySeqEventInput;      /* module fruitseq  */
-    friend struct Seq24SeqEventInput;       /* module seq24seq  */ 
+    friend struct Seq24SeqEventInput;       /* module seq24seq  */
 
 private:
 

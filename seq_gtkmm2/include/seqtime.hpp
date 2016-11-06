@@ -38,16 +38,24 @@
 #include "globals.h"                    /* SEQ64_USE_DEFAULT_PPQN   */
 #include "gui_drawingarea_gtk2.hpp"
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace Gtk
 {
     class Adjustment;
 }
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 
-class perform;
-class sequence;
+    class perform;
+    class sequence;
 
 /**
  *    This class implements the piano time, whatever that is.

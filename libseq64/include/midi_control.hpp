@@ -35,6 +35,10 @@
 
 #include "midibyte.hpp"                 /* seq64::midibyte                  */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

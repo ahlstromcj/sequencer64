@@ -62,6 +62,10 @@
 #include "sequence.hpp"
 #include "settings.hpp"                 /* rc() and usr() accessors     */
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

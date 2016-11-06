@@ -39,6 +39,10 @@
 #include <string>
 #include <list>
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

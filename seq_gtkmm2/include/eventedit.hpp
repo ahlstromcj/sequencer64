@@ -64,6 +64,10 @@ namespace Gtk
     class VScrollbar;
 }
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
     class eventslots;

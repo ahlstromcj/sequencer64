@@ -213,6 +213,16 @@ MANUALLY-DEFINED MACROS IN CODE:
         probably implement dumping the multimap to a vector before playback.
         We shall see!
 
+    SEQ64_PRESORT_EVENT_CONTAINER:
+
+        If using the std::list MIDI implementation (from seq24), also
+        sort the MIDI event container after every event is inserted, even
+        when reading a MIDI file.  This greatly slows down the reading
+        of large MIDI files, though; our largest file then takes on the order
+        of 10 minutes to load!  So this option is a fallback in case bugs are
+        found related to NOT using SEQ64_USE_EVENT_MAP, but delaying sorting
+        until all sequence events have been loaded.
+
     SEQ64_USE_MIDI_VECTOR:
 
         Defined and used in the midifile module.  It provides the preferred

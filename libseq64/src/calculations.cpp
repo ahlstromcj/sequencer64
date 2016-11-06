@@ -81,6 +81,10 @@
 #define PI     3.14159265359
 #endif
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

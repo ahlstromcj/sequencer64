@@ -34,6 +34,10 @@
 
 #include "midibyte.hpp"                 /* seq64::midi_timing, _measures    */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

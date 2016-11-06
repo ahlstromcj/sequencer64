@@ -37,6 +37,10 @@
 
 #define STATIC_COLOR        gui_palette_gtk2::Color
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

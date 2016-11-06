@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-01
+ * \updates       2016-11-05
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -439,7 +439,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 bool selected;
                 int velocity;
                 draw_type_t dt;
-                seq->reset_draw_marker();
 
                 Color eventcolor;
 #ifdef SEQ64_STAZED_TRANSPOSE
@@ -447,8 +446,9 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     eventcolor = red();
                 else
 #endif
-                eventcolor = fg_color();
+                    eventcolor = fg_color();
 
+                seq->reset_draw_marker();       /* reset container iterator */
                 do
                 {
                     dt = seq->get_next_note_event
@@ -462,6 +462,15 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     int tick_f_x = tick_f * m_seqarea_seq_x / len;
                     int note_y = m_seqarea_seq_y -
                          m_seqarea_seq_y * (note + 1 - lowest_note) / height;
+
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+                    printf
+                    (
+                        "note %x: s=%4ld, f=%4ld, s_x=%4d f_x=%4d, f-s=%d\n",
+                        note, tick_s, tick_f, tick_s_x, tick_f_x,
+                        tick_f_x - tick_s_x
+                    );
+#endif
 
                     if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
                         tick_f_x = tick_s_x + 1;

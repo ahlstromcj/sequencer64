@@ -38,10 +38,14 @@
 
 #include "configfile.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 
-class perform;
+    class perform;
 
 /**
  *    Supports the user's <code> ~/.config/sequencer64/sequencer64.usr </code> and

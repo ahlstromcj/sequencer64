@@ -64,6 +64,10 @@
 #include "settings.hpp"                 /* seq64::rc() settings access  */
 #include "triggers.hpp"                 /* seq64::triggers helper class */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

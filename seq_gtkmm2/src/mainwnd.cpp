@@ -1712,9 +1712,9 @@ mainwnd::set_play_image (bool isrunning)
 /**
  *  Changes the image used for the song/live mode button
  *
- * \param isrunning
- *      If true, set the image to the "Pause" icon, since playback is running.
- *      Otherwise, set it to the "Play" button, since playback is not running.
+ * \param issong
+ *      If true, set the image to the "Song" icon.
+ *      Otherwise, set it to the "Live" button.
  */
 
 void

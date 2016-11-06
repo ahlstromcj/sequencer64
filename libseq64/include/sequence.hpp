@@ -49,10 +49,6 @@
 #include "scales.h"                     /* key and scale constants  */
 #include "triggers.hpp"                 /* seq64::triggers, etc.    */
 
-#ifdef SEQ64_STAZED_LFO_SUPPORT
-// #include <list>
-#endif
-
 #ifdef PLATFORM_WINDOWS
 #include "midibus_portmidi.hpp"         /* only semi-supported      */
 #else
@@ -72,6 +68,10 @@
  *  values.
  *
  *      #define SEQ64_HANDLE_TIMESIG_AND_TEMPO
+ */
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
  */
 
 namespace seq64
@@ -887,7 +887,12 @@ public:
      * Documented at the definition point in the cpp module.
      */
 
-    void set_length (midipulse len, bool adjust_triggers = true);
+    void set_length
+    (
+        midipulse len = 0,
+        bool adjust_triggers = true,
+        bool verify = true
+    );
 
     /**
      * \getter m_length

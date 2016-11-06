@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-30
+ * \updates       2016-11-05
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -47,6 +47,10 @@
  */
 
 #define SEQ64_MIDI_DATA_BYTE_COUNT      2
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
 
 namespace seq64
 {
@@ -730,12 +734,13 @@ public:
     }
 
     /**
-     * \setter m_has_link
+     * \setter m_has_link and m_linked
      */
 
     void clear_link ()
     {
         m_has_link = false;
+        m_linked = nullptr;
     }
 
     /**

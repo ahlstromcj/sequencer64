@@ -86,6 +86,10 @@
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc() */
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

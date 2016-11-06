@@ -46,12 +46,20 @@
 
 #include "gui_window_gtk2.hpp"          // seq64::qui_window_gtk2
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace Gtk
 {
     class HBox;
     class Label;
     class VScale;
 }
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
 
 namespace seq64
 {

@@ -34,6 +34,10 @@
 
 #include "keystroke.hpp"            // seq64::keystroke
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

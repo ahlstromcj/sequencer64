@@ -39,6 +39,10 @@
 #include "perform.hpp"
 #include "settings.hpp"                 /* rc() and usr() functions     */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

@@ -49,10 +49,18 @@
 #include "font.hpp"                     /* font_render() function           */
 #include "gui_palette_gtk2.hpp"         /* #include <gtkmm/drawingarea.h>   */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace Gtk
 {
     class Adjustment;
 }
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
 
 namespace seq64
 {

@@ -38,6 +38,10 @@
 #include "gdk_basic_keys.h"
 #include "gui_key_tests.hpp"
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

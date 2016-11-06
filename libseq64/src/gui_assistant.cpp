@@ -32,6 +32,10 @@
 
 #include "gui_assistant.hpp"            // seq64::gui_assistant
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

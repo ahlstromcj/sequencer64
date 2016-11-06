@@ -62,6 +62,10 @@
 
 #undef  USE_SEQ24_0_9_3_CODE            /* DEFINE ONLY FOR EXPERIMENTING!   */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
     class perform;                      /* forward reference                */

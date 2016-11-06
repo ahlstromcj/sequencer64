@@ -40,10 +40,18 @@
 #include "sequence.hpp"
 #include "scales.h"                     /* STAZED chord support     */
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace Gtk
 {
     class Adjustment;
 }
+
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
 
 namespace seq64
 {

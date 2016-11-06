@@ -26,6 +26,11 @@
 
 #define SEQ64_NULL_OPTION_INDEX         99999
 
+/*
+ * This is the main namespace of Sequencer64.  Do not attempt to
+ * Doxygenate the documentation here; it breaks Doxygen.
+ */
+
 namespace seq64
 {
     class perform;                      /* forward reference */

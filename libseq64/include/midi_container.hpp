@@ -108,6 +108,10 @@
 
 #define SEQ64_TIME_TEMPO_SIZE           15
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
     class event;

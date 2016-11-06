@@ -32,6 +32,10 @@
 #include <gtkmm/accelkey.h>             // For keys
 #include "keys_perform_gtk2.hpp"
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

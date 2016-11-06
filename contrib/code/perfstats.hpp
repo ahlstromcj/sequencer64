@@ -49,6 +49,10 @@
 
 #define SEQ64_STATS_BUFFER_SIZE     100
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

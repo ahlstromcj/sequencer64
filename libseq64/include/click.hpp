@@ -111,6 +111,10 @@
 #define SEQ64_CLICK_CTRL_LEFT_MIDDLE(b, s) \
  (SEQ64_CLICK_MIDDLE(b) || (SEQ64_CLICK_LEFT(b) && ((s) & SEQ64_CONTROL_MASK)) )
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

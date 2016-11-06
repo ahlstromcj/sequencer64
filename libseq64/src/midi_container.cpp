@@ -38,6 +38,10 @@
 #include "sequence.hpp"                 /* seq64::sequence                  */
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 
@@ -576,6 +580,10 @@ midi_container::song_fill_seq_trigger
  * \param tracknumber
  *      Provides the track number.  This number is masked into the track
  *      information.
+ *
+ * \param p
+ *      The performance object that will hold some of the parameters needed
+ *      when filling the MIDI container.
  */
 
 void

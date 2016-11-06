@@ -37,6 +37,10 @@
 #include "gui_drawingarea_gtk2.hpp"     /* one base class           */
 #include "seqmenu.hpp"                  /* the other base class     */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
     class perform;                      /* forward reference        */

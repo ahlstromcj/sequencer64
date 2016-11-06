@@ -54,6 +54,10 @@
 
 #define SEQ64_USE_TDEAGAN_CODE
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

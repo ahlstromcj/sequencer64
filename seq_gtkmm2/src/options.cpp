@@ -64,6 +64,10 @@
 #include "sequence.hpp"
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

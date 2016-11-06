@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-11-04
+ * \updates       2016-11-05
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -70,6 +70,10 @@
 #define DREF(e)         event_list::dref(e)
 
 #include "event.hpp"
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
 
 namespace seq64
 {
@@ -261,14 +265,11 @@ public:
 
     bool append (const event & e);
 
-    /**
-     *  Needed as a special case when std::list is used.
-     *
-     * \param e
-     *      Provides the event value to push at the back of the event list.
-     */
-
 #ifdef SEQ64_USE_EVENT_MAP
+
+    /**
+     *  The multimap version of this function does nothing.
+     */
 
     void push_back (const event & /* e */)
     {
@@ -276,6 +277,13 @@ public:
     }
 
 #else
+
+    /**
+     *  Needed as a special case when std::list is used.
+     *
+     * \param e
+     *      Provides the event value to push at the back of the event list.
+     */
 
     void push_back (const event & e)
     {
@@ -307,7 +315,7 @@ public:
     /**
      *  Provides a wrapper for the iterator form of erase(), which is the
      *  only one that sequence uses.  Currently, no check on removal is
-     *  performed.  Set the modified-flag.
+     *  performed.  Sets the modified-flag.
      *
      * \param ie
      *      Provides the iterator to the event to be removed.
@@ -320,7 +328,7 @@ public:
     }
 
     /**
-     *  Provides a wrapper for clear().  Set the modified-flag.
+     *  Provides a wrapper for clear().  Sets the modified-flag.
      */
 
     void clear ()
@@ -330,21 +338,7 @@ public:
     }
 
     void merge (event_list & el, bool presort = true);
-
-    /**
-     *  Wrapper for std::list::sort(), or, since multimaps are always sorted,
-     *  an empty function.
-     */
-
-    
-    void sort ()
-    {
-#ifdef SEQ64_USE_EVENT_MAP
-        // we need nothin' for sorting a multimap
-#else
-        m_events.sort();
-#endif
-    }
+    void sort ();
 
     /**
      *  Dereference access for list or map.

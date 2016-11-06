@@ -35,6 +35,10 @@
 
 #include <gtkmm/dialog.h>
 
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
 namespace Gtk
 {
     class Button;
@@ -45,6 +49,10 @@ namespace Gtk
     class Table;
     class Tooltips;
 }
+
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
 
 namespace seq64
 {

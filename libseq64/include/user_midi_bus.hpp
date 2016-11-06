@@ -39,6 +39,10 @@
 
 #include "globals.h"                    /* constants and "easy macros"      */
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

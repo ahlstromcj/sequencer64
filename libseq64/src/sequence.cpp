@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-05
+ * \updates       2016-11-06
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -77,7 +77,7 @@ event_list sequence::m_events_clipboard;
 
 sequence::sequence (int ppqn)
  :
-    m_parent                    (nullptr),
+    m_parent                    (nullptr),      // set when sequence installed
     m_events                    (),
     m_triggers                  (*this),
     m_events_undo_hold          (),             // stazed
@@ -366,7 +366,8 @@ sequence::pop_trigger_redo ()
 
 /**
  * \setter m_masterbus
- *      Do we need to call set_dirty_mp() here?
+ *      Do we need to call set_dirty_mp() here?  It doesn't affect any
+ *      user-interface elements.
  *
  * \threadsafe
  *
@@ -419,8 +420,8 @@ sequence::set_beat_width (int beatwidth)
 #ifdef USE_STAZED_ODD_EVEN_SELECTION
 
 /**
- *  Selects every other note.  Enabled only if
- * USE_STAZED_ODD_EVEN_SELECTION is defined.
+ *  Selects every other note.  Enabled only if USE_STAZED_ODD_EVEN_SELECTION
+ *  is defined.
  *
  * \param note_len
  *      The desired note lengths for the selection.
@@ -474,8 +475,8 @@ sequence::select_even_or_odd_notes (int note_len, bool even)
 #ifdef USE_STAZED_SELECTION_EXTENSIONS
 
 /**
- *  Selects events in range provided:
- *  tick start, note high, tick end, and  note low.
+ *  Selects events in range provided: tick start, note high, tick end, and
+ *  note low.
  *
  *  Be aware the the event::is_note() function is used, and that it includes
  *  Aftertouch events, which generally need to stick with their Note On
@@ -965,9 +966,8 @@ sequence::on_queued ()
 /**
  *  The play() function dumps notes starting from the given tick, and it
  *  pre-buffers ahead.  This function is called by the sequencer thread,
- *  performance.  The tick comes in as global tick.
- *
- *  It turns the sequence off after we play in this frame.
+ *  performance.  The tick comes in as global tick.  It turns the sequence off
+ *  after we play in this frame.
  *
  * \note
  *      With pause support, the progress bar for the pattern/sequence editor
@@ -975,7 +975,11 @@ sequence::on_queued ()
  *      stop button.  Works with JACK, with issues, but we'd like to have
  *      the stop button do a rewind in JACK, too.
  *
- * \param tick
+ *  The trigger calculations have been offloaded to the triggers::play()
+ *  function.  It's return value and side-effects tell if there's a change in
+ *  playing based on triggers and tells the ticks that bracket it.
+ *
+ * \param end_tick
  *      Provides the current end-tick value.
  *
  * \param playback_mode
@@ -983,36 +987,17 @@ sequence::on_queued ()
  *      performance/song-editor playback, controlled by the set of patterns
  *      and triggers set up in that editor, and saved with the song in seq24
  *      format.  False indicates that the playback is controlled by the main
- *      windows, in live mode.
+ *      window, in live mode.
  *
  * \threadsafe
  */
 
 void
-sequence::play (midipulse tick, bool playback_mode)
+sequence::play (midipulse end_tick, bool playback_mode)
 {
     automutex locker(m_mutex);
     bool trigger_turning_off = false;       /* turn off after frame play    */
     midipulse start_tick = m_last_tick;     /* modified in triggers::play() */
-
-#ifdef SEQ64_PAUSE_SUPPORT_THIS_WORKS       /* disable, it works wrongly    */
-
-    /*
-     * Note that this is currently the only reason for providing the m_parent
-     * member.
-     *
-     * HOWEVER, enabling this code can make ALSA playback run slow!  And it
-     * seems to disable the effect of the BPM control.  Not yet
-     * sure why.  Therefore, this code is currently DISABLED, even though
-     * it allows pause to work correctly.
-     */
-
-    if (not_nullptr(m_parent) && ! m_parent->is_jack_running())
-        tick = m_parent->get_jack_tick();
-
-#endif
-
-    midipulse end_tick = tick;
     if (m_song_mute)
     {
         set_playing(false);
@@ -1020,28 +1005,18 @@ sequence::play (midipulse tick, bool playback_mode)
     else
     {
         if (playback_mode)                  /* song mode: on/off triggers   */
-        {
-            /*
-             * A return value and side-effects.  Tells us if there's a change
-             * in playing status based on triggers, and the ticks that bracket
-             * the action.
-             */
-
             trigger_turning_off = m_triggers.play(start_tick, end_tick);
-        }
     }
-
-    midipulse start_tick_offset = (start_tick + m_length - m_trigger_offset);
-    midipulse end_tick_offset = (end_tick + m_length - m_trigger_offset);
-
-#ifdef SEQ64_STAZED_TRANSPOSE
-    int transpose = get_transposable() ? m_parent->get_transpose() : 0 ;
-#endif
-
     if (m_playing)                                  /* play notes in frame  */
     {
+        midipulse offset = m_length - m_trigger_offset;
+        midipulse start_tick_offset = start_tick + offset;
+        midipulse end_tick_offset = end_tick + offset;
         midipulse times_played = m_last_tick / m_length;
         midipulse offset_base = times_played * m_length;
+#ifdef SEQ64_STAZED_TRANSPOSE
+        int transpose = get_transposable() ? m_parent->get_transpose() : 0 ;
+#endif
         event_list::iterator e = m_events.begin();
         while (e != m_events.end())
         {

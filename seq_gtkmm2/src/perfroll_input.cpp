@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-06
+ * \updates       2016-11-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -397,7 +397,7 @@ bool
 Seq24PerfInput::handle_motion_key (bool is_left, perfroll & roll)
 {
     bool result = false;
-    bool ok = roll.m_drop_sequence > 0;
+    bool ok = roll.m_drop_sequence >= 0;        /* need ">=" here!  */
     if (ok)
     {
         perform & p = roll.perf();

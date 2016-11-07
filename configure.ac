@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-11-02
+dnl \update        2016-11-06
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -19,7 +19,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.9$)dnl
-AC_INIT(Sequencer64, [0.9.20], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.9.21], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl AC_CONFIG_SRCDIR([libseq64/src/midibus.cpp])
@@ -53,7 +53,7 @@ PACKAGE=sequencer64
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
 
-VERSION="0.9.20"
+VERSION="0.9.21"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -485,10 +485,12 @@ else
 fi
 
 dnl Support for using the stazed JACK support.  Now enabled by default.
-dnl It seems to work well, no complaints recently by user layk.
+dnl It seems to work well, no complaints recently by user layk.  Also
+dnl enables the stazed transport features, which are tightly coupled to stazed
+dnl JACK support.
 
 AC_ARG_ENABLE(seq32jack,
-    [AS_HELP_STRING(--enable-seq32jack, [Enable JACK and Seq32 JACK support])],
+    [AS_HELP_STRING(--disable-seq32jack, [Disable JACK and Seq32 JACK support])],
     [seq32jack=$enableval],
     [seq32jack=yes])
 
@@ -500,14 +502,12 @@ else
     AC_MSG_WARN([*** Seq32 JACK support not enabled.]);
 fi
 
-dnl Support for using the stazed LFO window support.  Disabled by default,
-dnl until we get it fully integrated and working, and maybe a little nicer
-dnl to use.
+dnl Support for using the stazed LFO window support.  Now enabled by default.
 
 AC_ARG_ENABLE(lfo,
-    [AS_HELP_STRING(--enable-lfo, [Enable using Seq32 LFO window])],
+    [AS_HELP_STRING(--disable-lfo, [Disable using Seq32 LFO window])],
     [lfo=$enableval],
-    [lfo=no])
+    [lfo=yes])
 
 if test "$lfo" != "no"; then
     AC_DEFINE(STAZED_LFO_SUPPORT, 1, [Define to enable Seq32 LFO window support])
@@ -545,26 +545,6 @@ else
     AC_MSG_WARN([*** Global seq32 transpose not enabled.]);
 fi
 
-dnl Support for using the stazed transport feature.  This adds rewind, fast-
-dnl forward, and some other features.
-dnl
-dnl ca 2016-10-06:
-dnl     Let's merge Stazed JACK and transport support, since they basically
-dnl     need each other to work properly.
-dnl
-dnl AC_ARG_ENABLE(transport,
-dnl     [AS_HELP_STRING(--enable-transport, [Enable using extended seq32 transport])],
-dnl     [transport=$enableval],
-dnl     [transport=no])
-dnl 
-dnl if test "$transport" != "no"; then
-dnl     AC_DEFINE(STAZED_TRANSPORT, 1, [
-dnl          Define to enable extended seq32 transport])
-dnl     AC_MSG_RESULT(Extended seq32 transport enabled.)
-dnl else
-dnl     AC_MSG_WARN([*** Extended seq32 transport not enabled.]);
-dnl fi
-
 dnl Support for stripping unused mute-group specifications from the output MIDI
 dnl file.  They are still left in the "rc" configuration file, but can be
 dnl manually disabled by setting the mute-group size to 0 in that file.
@@ -576,7 +556,7 @@ AC_ARG_ENABLE(mutestrip,
     [mutestrip=yes])
 
 if test "$mutestrip" != "no"; then
-    AC_DEFINE(STRIP_EMPTY_MUTES, 1, [Define to enable stripping empty mute groups])
+    AC_DEFINE(STRIP_EMPTY_MUTES, 1, [Define to enable empty mute-group stripping])
     AC_MSG_RESULT(Empty mute-strip enabled.)
 else
     AC_MSG_WARN([*** Empty mute-strip not enabled.]);
@@ -595,8 +575,8 @@ dnl #define API_VERSION "0.9"             // defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-11-02"
-#define VERSION "0.9.20"
+#define VERSION_DATE_SHORT "2016-11-06"
+#define VERSION "0.9.21"
 
 )
 

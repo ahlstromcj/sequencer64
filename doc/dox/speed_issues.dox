@@ -9,7 +9,7 @@
 This document describes some speed issues and how they can be handled.
 
 \page       speed_issues_page Speed Issue of Sequencer64
-\author     Chris Ahlstrom 2016-11-05
+\author     Chris Ahlstrom 2016-11-06
 
 \section speed_issues_intro Introduction
 
@@ -17,13 +17,18 @@ This section describes some speed issues of Sequencer64.
 Early on in our reboot of <i>seq24</i>, we noticed
 that some of our larger files took a noticeable time to load.
 It was only a few seconds, but seemed like a long time for such
-small files.
+small files.  We fixed the issue using an alternate container implementation.
 
-Then we noticed that the MIDI container implementation used the
+We recently added a large MIDI file to test,
+<code>b4uacuse-stress.midi</code>, and all hell broke loose.
+
+\section speed_issues_change Initial Change of Containers
+
+In the beginning,
+we noticed that the MIDI container implementation used the
 <code>std::list</code>
 container, and also that it called <code>std::list::sort()</code>
-after each event was added
-to the container.
+after each event was added to the container.
 
 Our first thought was to replace the
 <code>std::list</code> with an <code>std::multimap</code>.
@@ -47,6 +52,8 @@ On our old single-core laptop with 32-bit <code>Debian</code> installed,
 the sequence would not play, and would continually and visibly refresh the
 main window display.
 
+\section speed_issues_back Back to the Original Container
+
 So then we re-enabled the old <i>seq24</i> list implementation, and
 found that the time needed to load
 <code>b4uacuse-stress.midi</code> was over 6 minutes on our near-gamer
@@ -57,7 +64,7 @@ So, we had to find a way to get the fast loading speed of the
 the <code>std::list</code> iterator.
 The obvious way was to go back to the
 <code>std::list</code> container and stop sorting the container
-after every insert, when loading the file.
+after every insert, when loading the MIDI file.
 
 This worked, but had some side-effects that had to be fixed.
 We found that the <code>sequence::verify_and_link</code> function
@@ -91,6 +98,20 @@ higher throughput at the same time.
 The other options are available as a fallback in case
 one gets struck by bugs in the default, and can afford
 slower loads or less throughput.
+
+\section speed_issues_vector What is Next, the Vector?
+
+Or, what's your vector, Victor?
+
+For playback, the <code>std::vector</code> iterator can be even faster than the
+<code>std::list</code> iterator, because the vector does not use stored
+pointers to the next element, and, since its storage layout is essentially like
+a standard C array, processor caching can add even more to the speed of access.
+
+However, this change will require carefully analysis and even more careful work
+to correctly implement the change.  We will log this as a future improvement.
+
+Now to test the hell out of version 0.9.21!
 
  */
 

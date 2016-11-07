@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.9.20
+INSTALL for Sequencer64 v. 0.9.21
 Chris Ahlstrom
-2015-09-10 to 2016-11-02
+2015-09-10 to 2016-11-06
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -158,6 +158,14 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         JACK transport, including the MIDI clock fix from Seq24 v. 0.9.3.
         It is now working pretty well, and probably the best option now.
 
+    --disable-lfo
+
+        Undefines the SEQ64_STAZED_LFO_SUPPORT macro, which is now defined by
+        default.  When enable, the pattern editor includes an "LFO" button
+        that brings up a small window to allow for the modulation of event
+        data (in the data pane) by simple periodic waveforms.  This feature
+        was adopted and improved from the Seq32 project.
+
 MANUALLY-DEFINED MACROS IN CODE:
 
     The following items are not yet part of the configure script, but can
@@ -201,7 +209,7 @@ MANUALLY-DEFINED MACROS IN CODE:
 
     SEQ64_USE_EVENT_MAP:
 
-        Already defined in the event_list module.  It enables the usage of an
+        Was defined in the seq64_features.h module.  It enables the usage of an
         std::multimap, instead of an std::list, to store MIDI events.  Because
         the code does a lot of sorting of events, using the std::multimap is
         actually a lot faster (especially under debug mode, where it takes
@@ -209,13 +217,23 @@ MANUALLY-DEFINED MACROS IN CODE:
         implementation).
 
         There is still a chance that the std::multimap might prove the
-        limiting factor during playback.  If that is the case, then we would
-        probably implement dumping the multimap to a vector before playback.
-        We shall see!
+        limiting factor during playback. And, in fact, we found that for
+        the large MIDI file, contrib/midi/b4uacuse-stress.midi, on our slow
+        single-core test machine, the amount of data was simply unplayable.
+        So now the std::list implementation is back in usage, but with a
+        difference.  When loading the MIDI file, no sorting is done until
+        all of the events have been added to a sequence.  This make the
+        loading process as fast as the std::multimap, but with a much better
+        throughput for playback.
+
+        We will eventually consider replacing std::list with std::vector
+        for even better throughput; the former still has node pointers to deal
+        with, which slows simple iteration down.  There are many
+        complications, though.
 
     SEQ64_PRESORT_EVENT_CONTAINER:
 
-        If using the std::list MIDI implementation (from seq24), also
+        If using the std::list MIDI implementation (from Seq24), also
         sort the MIDI event container after every event is inserted, even
         when reading a MIDI file.  This greatly slows down the reading
         of large MIDI files, though; our largest file then takes on the order
@@ -270,16 +288,16 @@ MANUALLY-DEFINED MACROS IN CODE:
 
         Enables a Live/Song-mode toggle-button on the main window, so
         that one can choose the mode directly, rather than focussing the
-        main window versus the song-editor window.  Comes from the seq32
+        main window versus the song-editor window.  Comes from the Seq32
         project.
 
     SEQ64_STAZED_TRANSPORT:
 
         OBSOLETE.  Now rolled into SEQ64_STAZED_JACK_SUPPORT.
 
-        Adds some transport features from the seq32 project.  These include
+        Adds some transport features from the Seq32 project.  These include
         fast-forward and rewind support, storage of the song editor time
-        signature, and more.  Some features also depend upon seq32 JACK suport
+        signature, and more.  Some features also depend upon Seq32 JACK suport
         being enabled.
 
     SEQ64_STAZED_LFO_SUPPORT:
@@ -321,7 +339,7 @@ MANUALLY-DEFINED MACROS IN CODE:
         you are very familiar with the code and willing to temporarily break
         stuff.
 
-        We are incorporated some very useful code from the seq32 project
+        We are incorporated some very useful code from the Seq32 project
         of the user "stazed".  He includes some new features and some bug
         fixes that we have overlooked.  At present, we are not enabling this
         functionality, just adding it, macroed out by the following macros:

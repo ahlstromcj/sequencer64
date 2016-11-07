@@ -429,13 +429,24 @@ midibus::print ()
 }
 
 /**
- *  This play() function takes a native event, encodes it to an ALSA event,
- *  and puts it in the queue.
+ *  Defines the size of the MIDI event buffer, which should be large enough to
+ *  accomodate the largest MIDI message to be encoded.
+ *  A local define for visibility.
+ */
+
+#define SEQ64_MIDI_EVENT_SIZE_MAX   10
+
+/**
+ *  This play() function takes a native event, encodes it to an ALSA MIDI
+ *  sequencer event, sets the broadcasting to the subscribers, sets the
+ *  direct-passing mode to send the event without queueing, and puts it in the
+ *  queue.
  *
  * \threadsafe
  *
  * \param e24
- *      The event to be played on this bus.
+ *      The event to be played on this bus.  For speed, we don't bother to
+ *      check the pointer.
  *
  * \param channel
  *      The channel of the playback.
@@ -449,15 +460,15 @@ midibus::play (event * e24, midibyte channel)
     midibyte buffer[4];                             /* temp for MIDI data   */
     buffer[0] = e24->get_status();                  /* fill buffer          */
     buffer[0] += (channel & 0x0F);
-    e24->get_data(buffer[1], buffer[2]);            /* set MIDI channel     */
+    e24->get_data(buffer[1], buffer[2]);            /* set MIDI data        */
 
     snd_midi_event_t * midi_ev;                     /* ALSA MIDI parser     */
-    snd_midi_event_new(10, &midi_ev);
+    snd_midi_event_new(SEQ64_MIDI_EVENT_SIZE_MAX, &midi_ev);
 
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);                          /* clear event          */
-    snd_midi_event_encode(midi_ev, buffer, 3, &ev);
-    snd_midi_event_free(midi_ev);
+    snd_midi_event_encode(midi_ev, buffer, 3, &ev); /* encode 3 raw bytes   */
+    snd_midi_event_free(midi_ev);                   /* free the parser      */
     snd_seq_ev_set_source(&ev, m_local_addr_port);  /* set source           */
     snd_seq_ev_set_subs(&ev);
     snd_seq_ev_set_direct(&ev);                     /* it is immediate      */
@@ -483,6 +494,13 @@ min (long a, long b)
 {
     return (a < b) ? a : b ;
 }
+
+/**
+ *  Defines the value used for sleeping, in microseconds.  Defined locally
+ *  simply for visibility.  Why 80000?
+ */
+
+#define SEQ64_USLEEP_US     80000
 
 /**
  *  Takes a native SYSEX event, encodes it to an ALSA event, and then
@@ -525,7 +543,7 @@ midibus::sysex (event * e24)
             &ev, min(data_left, c_midibus_sysex_chunk), &data[offset]
         );
         snd_seq_event_output_direct(m_seq, &ev);        /* pump into queue  */
-        usleep(80000);                                  /* why this value?  */
+        usleep(SEQ64_USLEEP_US);
         flush();
     }
 #endif  // SEQ64_HAVE_LIBASOUND
@@ -710,6 +728,8 @@ midibus::stop ()
 
 /**
  *  Generates the MIDI clock, starting at the given tick value.
+ *
+ * \threadsafe
  *
  * \param tick
  *      Provides the starting tick.

@@ -1,6 +1,6 @@
-README for Sequencer64 0.9.20
+README for Sequencer64 0.9.21
 Chris Ahlstrom
-2015-09-10 to 2016-11-02 (initial work started in July of 2015)
+2015-09-10 to 2016-11-06 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -14,18 +14,18 @@ with the --legacy option.  See https://github.com/ahlstromcj/sequencer64-doc.git
 
 Major updates:
 
-    -   Version 0.9.20:
-        -   Fixed issue 50, where opening and closing a seqedit, and then
-            modifying the buss or channel of that sequence from the
-            main window slot right-click menu would cause a segfault.
-            Also fixed a minor issue with the progress bar being invisible
-            in an armed sequence.
-        -   Beefed up the LFO control window and added clarifying tooltips for
-            it.  Still currently needs the --enable-lfo configure option in
-            order to be activated.
-        -   Added new rc "allow-click-edit" option to disable bringing up the
-            pattern editor with a double-click (issue #51).
-        -   Fixed broken seq32 fast-forward and rewind functionality.
+    -   Version 0.9.21:
+        -   Going back to the std::list operation, but with sorting occurring
+            after loading.  This preserves the speed of loading of
+            std::multimap, and the better throughput of iterating through
+            std::list.  The multimap implementation is still configurable in
+            the seq64_features.h module, and the old (very slow) sorting
+            behavior is controlled by the SEQ64_PRESORT_EVENT_CONTAINER macro.
+            Try loading the large b4uacuse-stress.midi file and see for
+            yourself!  See section 5 of the Sequencer64 Developer Reference
+            Manual for the gory details.
+        -   Made the LFO window built-in by default.  Use the --disable-lfo
+            option if you do not like it.
     -   Sequencer64 loads SMF 0 files and splits the channels into separate
         tracks/sequences.
     -   JACK support has been improved.  Sequencer64 will track JACK transport
@@ -137,6 +137,18 @@ Major updates:
         -   Constant variables are slowly being assigned to new members, in
             preparation for support of altering the number of sequences and
             screen sets supported.
+    -   Version 0.9.20:
+        -   Fixed issue 50, where opening and closing a seqedit, and then
+            modifying the buss or channel of that sequence from the
+            main window slot right-click menu would cause a segfault.
+            Also fixed a minor issue with the progress bar being invisible
+            in an armed sequence.
+        -   Beefed up the LFO control window and added clarifying tooltips for
+            it.  Still currently needs the --enable-lfo configure option in
+            order to be activated.
+        -   Added new rc "allow-click-edit" option to disable bringing up the
+            pattern editor with a double-click (issue #51).
+        -   Fixed broken seq32 fast-forward and rewind functionality.
     -   Version 0.9.19:
         -   Fixed issue 46, pattern-edit undo being applied twice.
         -   Fixed keystrokes meant for pattern edit fields being used to 

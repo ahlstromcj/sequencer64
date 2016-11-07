@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-02
+ * \updates       2016-11-06
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -733,6 +733,7 @@ private:
      *  Used by the install_sequence() function.  Note that this value is
      *  not a suitable replacement for c_max_sequence/m_sequence_max, because
      *  there can be inactive sequences amidst the active sequences.
+     *  See the m_sequence_limit member.
      */
 
     int m_sequence_count;
@@ -744,6 +745,20 @@ private:
      */
 
     int m_sequence_max;
+
+    /**
+     *  Indicates the highest-number sequence.  This value starts as 0,
+     *  to indicate no sequences loaded, and then contains the highest
+     *  sequence number hitherto loaded, plus 1 so that it can be used as
+     *  a for-loop limit similar to m_sequence_max.  It's maximum value
+     *  should be m_sequence_max (c_max_sequence).
+     *
+     *  Currently meant only for limited context to try to squeeze a little
+     *  extra speed out of playback.  There's no easy way to lower this
+     *  value when the highest sequence is deleted, though.
+     */
+
+    int m_sequence_high;
 
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-28
+ * \updates       2016-11-06
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -195,6 +195,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_max_sets                  (c_max_sets),
     m_sequence_count            (0),
     m_sequence_max              (c_max_sequence),
+    m_sequence_high             (0),
     m_edit_sequence             (-1),
     m_is_modified               (false),
     m_condition_var             (),
@@ -246,6 +247,9 @@ perform::perform (gui_assistant & mygui, int ppqn)
  *  then joins the input and output threads if the were launched. Finally, any
  *  active or inactive (but allocated) patterns/sequences are deleted, and
  *  their pointers nullified.
+ *
+ *  Note that we could use m_sequence_high to replace m_sequence_max in the
+ *  for-loop, but who cares, we are exiting!
  */
 
 perform::~perform ()
@@ -258,7 +262,7 @@ perform::~perform ()
     if (m_in_thread_launched)
         pthread_join(m_in_thread, NULL);
 
-    for (int seq = 0; seq < m_sequence_max; ++seq)
+    for (int seq = 0; seq < m_sequence_max; ++seq)      /* m_sequence_high  */
     {
         if (not_nullptr(m_seqs[seq]))
         {
@@ -313,9 +317,9 @@ bool
 perform::clear_all ()
 {
     bool result = true;
-    for (int s = 0; s < m_sequence_max; ++s)
+    for (int s = 0; s < m_sequence_max; ++s)            /* m_sequence_high  */
     {
-        if (is_active(s) && m_seqs[s]->get_editing())   /* stazed check */
+        if (is_active(s) && m_seqs[s]->get_editing())   /* stazed check     */
         {
             result = false;
             break;
@@ -324,7 +328,7 @@ perform::clear_all ()
     if (result)
     {
         reset_sequences();
-        for (int s = 0; s < m_sequence_max; ++s)
+        for (int s = 0; s < m_sequence_max; ++s)        /* m_sequence_high  */
             if (is_active(s))
                 delete_sequence(s);             /* can set "is modified"    */
 
@@ -576,7 +580,7 @@ perform::select_and_mute_group (int group)
 void
 perform::mute_all_tracks (bool flag)
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int i = 0; i < m_sequence_max; ++i)    /* m_sequence_high  */
     {
         if (is_active(i))
         {
@@ -594,7 +598,7 @@ perform::mute_all_tracks (bool flag)
 void
 perform::toggle_all_tracks ()
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int i = 0; i < m_sequence_max; ++i)    /* m_sequence_high  */
     {
         if (is_active(i))
         {
@@ -624,7 +628,7 @@ perform::toggle_playing_tracks ()
     if (m_armed_saved)
     {
         m_armed_saved = false;
-        for (int i = 0; i < m_sequence_max; ++i)
+        for (int i = 0; i < m_sequence_max; ++i)    /* m_sequence_high  */
         {
             if (m_armed_statuses[i])
             {
@@ -635,7 +639,7 @@ perform::toggle_playing_tracks ()
     }
     else
     {
-        for (int i = 0; i < m_sequence_max; ++i)
+        for (int i = 0; i < m_sequence_max; ++i)    /* m_sequence_high  */
         {
             bool armed_status = false;
             if (is_active(i))
@@ -849,6 +853,9 @@ perform::install_sequence (sequence * seq, int seqnum)
         set_active(seqnum, true);
         seq->set_parent(this);
         ++m_sequence_count;
+        if (seqnum >= m_sequence_high)
+            m_sequence_high = seqnum + 1;
+
         result = true;                  /* a modification occurred  */
     }
     return result;
@@ -1234,7 +1241,7 @@ perform::set_beats_per_minute (int bpm)
 bool
 perform::is_seq_valid (int seq) const
 {
-    if (seq >= 0 && seq < m_sequence_max)
+    if (seq >= 0 && seq < m_sequence_max)   /* m_sequence_high  */
         return true;
     else
     {
@@ -1593,7 +1600,14 @@ void
 perform::play (midipulse tick)
 {
     m_tick = tick;
-    for (int s = 0; s < m_sequence_max; ++s)
+
+    /*
+     * EXPERIMENTAL:
+     *
+     * for (int s = 0; s < m_sequence_max; ++s)
+     */
+
+    for (int s = 0; s < m_sequence_high; ++s)       /* modest speed up  */
     {
         if (is_active(s))
             m_seqs[s]->play_queue(tick, m_playback_mode);
@@ -1614,7 +1628,7 @@ perform::play (midipulse tick)
 void
 perform::set_orig_ticks (midipulse tick)
 {
-    for (int s = 0; s < m_sequence_max; ++s)
+    for (int s = 0; s < m_sequence_max; ++s)        /* m_sequence_high  */
     {
         if (is_active(s))
             m_seqs[s]->set_last_tick(tick);         /* set_orig_tick()  */
@@ -1651,7 +1665,7 @@ perform::move_triggers (bool direction)
     if (m_left_tick < m_right_tick)
     {
         midipulse distance = m_right_tick - m_left_tick;
-        for (int i = 0; i < m_sequence_max; ++i)
+        for (int i = 0; i < m_sequence_max; ++i)        /* m_sequence_high  */
         {
             if (is_active(i))
                 m_seqs[i]->move_triggers(m_left_tick, distance, direction);
@@ -1683,7 +1697,7 @@ perform::push_trigger_undo (int track)
     m_undo_vect.push_back(track);                       /* stazed   */
     if (track == SEQ64_ALL_TRACKS)
     {
-        for (int i = 0; i < m_sequence_max; ++i)
+        for (int i = 0; i < m_sequence_max; ++i)        /* m_sequence_high  */
         {
             if (is_active(i))
                 m_seqs[i]->push_trigger_undo();
@@ -1719,7 +1733,7 @@ perform::pop_trigger_undo ()
         m_redo_vect.push_back(track);
         if (track == SEQ64_ALL_TRACKS)
         {
-            for (int s = 0; s < m_sequence_max; ++s)
+            for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high  */
             {
                 if (is_active(s))
                     m_seqs[s]->pop_trigger_undo();
@@ -1745,7 +1759,7 @@ perform::pop_trigger_redo ()
         m_undo_vect.push_back(track);
         if (track == SEQ64_ALL_TRACKS)
         {
-            for (int s = 0; s < m_sequence_max; ++s)
+            for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high */
             {
                 if (is_active(s))                   /* oops, was "track"!   */
                     m_seqs[s]->pop_trigger_redo();
@@ -1774,7 +1788,7 @@ perform::copy_triggers ()
     if (m_left_tick < m_right_tick)
     {
         midipulse distance = m_right_tick - m_left_tick;
-        for (int s = 0; s < m_sequence_max; ++s)
+        for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high */
         {
             if (is_active(s))
                 m_seqs[s]->copy_triggers(m_left_tick, distance);
@@ -2187,7 +2201,13 @@ perform::inner_stop (bool midiclock)
 void
 perform::off_sequences ()
 {
-    for (int s = 0; s < m_sequence_max; ++s)
+    /*
+     * EXPERIMENTAL:
+     *
+     * for (int s = 0; s < m_sequence_max; ++s)
+     */
+
+    for (int s = 0; s < m_sequence_high; ++s)       /* modest speed-up */
     {
         if (is_active(s))
             m_seqs[s]->set_playing(false);
@@ -2202,7 +2222,13 @@ perform::off_sequences ()
 void
 perform::all_notes_off ()
 {
-    for (int s = 0; s < m_sequence_max; ++s)
+    /*
+     * EXPERIMENTAL:
+     *
+     * for (int s = 0; s < m_sequence_max; ++s)
+     */
+
+    for (int s = 0; s < m_sequence_high; ++s)   /* modest speed-up  */
     {
         if (is_active(s))
             m_seqs[s]->off_playing_notes();
@@ -2227,7 +2253,7 @@ perform::all_notes_off ()
 void
 perform::reset_sequences (bool pause)
 {
-    for (int s = 0; s < m_sequence_max; ++s)
+    for (int s = 0; s < m_sequence_max; ++s)        /* m_sequence_high  */
     {
         if (is_active(s))
         {
@@ -2246,7 +2272,7 @@ perform::reset_sequences (bool pause)
 {
     if (pause)
     {
-        for (int s = 0; s < m_sequence_max; ++s)
+        for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high  */
         {
             if (is_active(s))
                 m_seqs[s]->pause();
@@ -2254,7 +2280,7 @@ perform::reset_sequences (bool pause)
     }
     else
     {
-        for (int s = 0; s < m_sequence_max; ++s)
+        for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high  */
         {
             if (is_active(s))
                 m_seqs[s]->reset(m_playback_mode);
@@ -2334,7 +2360,14 @@ midipulse
 perform::get_max_trigger ()
 {
     midipulse result = 0;
-    for (int s = 0; s < m_sequence_max; ++s)
+
+    /*
+     * EXPERIMENTAL:
+     *
+     * for (int s = 0; s < m_sequence_max; ++s)
+     */
+
+    for (int s = 0; s < m_sequence_high; ++s)           /* modest speed-up */
     {
         if (is_active(s))
         {
@@ -3374,7 +3407,13 @@ perform::combine_bytes (midibyte b0, midibyte b1)
 void
 perform::save_playing_state ()
 {
-    for (int s = 0; s < m_sequence_max; ++s)
+    /*
+     * EXPERIMENTAL:
+     *
+     * for (int s = 0; s < m_sequence_max; ++s)
+     */
+
+    for (int s = 0; s < m_sequence_high; ++s)       /* modest speed-up */
     {
         if (is_active(s))
             m_sequence_state[s] = m_seqs[s]->get_playing();
@@ -3392,7 +3431,13 @@ perform::save_playing_state ()
 void
 perform::restore_playing_state ()
 {
-    for (int s = 0; s < m_sequence_max; ++s)
+    /*
+     * EXPERIMENTAL:
+     *
+     * for (int s = 0; s < m_sequence_max; ++s)
+     */
+
+    for (int s = 0; s < m_sequence_high; ++s)       /* modest speed-up */
     {
         if (is_active(s))
             m_seqs[s]->set_playing(m_sequence_state[s]);
@@ -3639,7 +3684,7 @@ perform::set_input_bus (int bus, bool active)
         else if (bus == PERFORM_NUM_LABELS_ON_SEQUENCE)
             show_ui_sequence_number(active);
 
-        for (int seq = 0; seq < m_sequence_max; seq++)
+        for (int seq = 0; seq < m_sequence_max; seq++)  /* m_sequence_high */
         {
             sequence * s = get_sequence(seq);
             if (not_nullptr(s))
@@ -4031,7 +4076,7 @@ perform::playback_action (playback_action_t p, bool songmode)
 void
 perform::print_triggers () const
 {
-    for (int s = 0; s < m_sequence_max; ++s)
+    for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high */
     {
         if (is_active(s))
             m_seqs[s]->print_triggers();
@@ -4047,7 +4092,13 @@ perform::print_triggers () const
 void
 perform::apply_song_transpose ()
 {
-    for (int s = 0; s < m_sequence_max; ++s)
+    /*
+     * EXPERIMENTAL:
+     *
+     * for (int s = 0; s < m_sequence_max; ++s)
+     */
+
+    for (int s = 0; s < m_sequence_high; ++s)       /* modest speed-up */
     {
         if (is_active(s))
             get_sequence(s)->apply_song_transpose();
@@ -4070,7 +4121,14 @@ int
 perform::max_active_set () const
 {
     int result = -1;
-    for (int s = 0; s < m_sequence_max; ++s)
+
+    /*
+     * EXPERIMENTAL:
+     *
+     * for (int s = 0; s < m_sequence_max; ++s)
+     */
+
+    for (int s = 0; s < m_sequence_high; ++s)       /* modest speed-up */
     {
         if (is_active(s))
             result = s;

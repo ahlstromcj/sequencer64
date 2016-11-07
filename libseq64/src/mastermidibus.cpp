@@ -620,7 +620,8 @@ mastermidibus::sysex (event * ev)
  *      checked before usage!
  *
  * \param e24
- *      The seq24 event to play on the buss.
+ *      The seq24 event to play on the buss.  For speed, we don't bother to
+ *      check the pointer.
  *
  * \param channel
  *      The channel on which to play the event.

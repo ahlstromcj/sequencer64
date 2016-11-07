@@ -232,7 +232,7 @@ triggers::pop_redo ()
 bool
 triggers::play (midipulse & start_tick, midipulse & end_tick)
 {
-    bool result = false;       /* turns off after frame play */
+    bool result = false;                    /* turns off after frame play */
     bool trigger_state = false;
     midipulse trigger_offset = 0;
     midipulse trigger_tick = 0;
@@ -254,11 +254,13 @@ triggers::play (midipulse & start_tick, midipulse & end_tick)
             break;
     }
 
-    /* Had triggers in the slice, not equal to current state. */
+    /*
+     * Had triggers in the slice, not equal to current state.
+     */
 
     if (trigger_state != m_parent.get_playing())
     {
-        if (trigger_state)                  /* we are turning on        */
+        if (trigger_state)                              /* turning on   */
         {
             if (trigger_tick < m_parent.m_last_tick)
                 start_tick = m_parent.m_last_tick;      /* side-effect  */
@@ -269,12 +271,12 @@ triggers::play (midipulse & start_tick, midipulse & end_tick)
         }
         else
         {
-            end_tick = trigger_tick;        /* on, and turning off      */
-            result = true;                  /* we are done, tell caller */
+            end_tick = trigger_tick;                    /* on, turning off  */
+            result = true;                              /* done             */
         }
     }
     if (m_triggers.size() == 0 && m_parent.get_playing())
-        m_parent.set_playing(false);        /* stop the playing         */
+        m_parent.set_playing(false);                    /* stop playing     */
 
     m_parent.set_trigger_offset(trigger_offset);
     return result;

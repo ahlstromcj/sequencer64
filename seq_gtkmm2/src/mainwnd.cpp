@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-29
+ * \updates       2016-11-06
  * \license       GNU 3PLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -931,6 +931,9 @@ mainwnd::timer_callback ()
         if (m_button_mode->get_sensitive())
             m_button_mode->set_sensitive(false);
 
+        if (m_button_menu->get_sensitive())
+            m_button_menu->set_sensitive(false);
+
         if (m_menubar->get_sensitive())
             m_menubar->set_sensitive(false);
     }
@@ -938,6 +941,9 @@ mainwnd::timer_callback ()
     {
         if (! m_button_mode->get_sensitive())
             m_button_mode->set_sensitive(true);
+
+        if (! m_button_menu->get_sensitive())
+            m_button_menu->set_sensitive(true);
 
         if (m_menubar->get_sensitive() == m_menu_mode)
             m_menubar->set_sensitive(! m_menu_mode);

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-11-05
+ * \updates       2016-11-06
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -121,9 +121,10 @@
 /**
  *  Enables using the lfownd dialog to control the envelope of certain events
  *  in seqedit's seqdata pane.  We're not too keen on the user interface,
- *  though.  However, it is now  configure option.
+ *  though.  However, it is now a configure option, and is now enabled by
+ *  default.
  *
- *  #define USE_STAZED_LFO_SUPPORT
+ *  #define SEQ64_STAZED_LFO_SUPPORT
  */
 
 /**
@@ -339,8 +340,6 @@
  * after the fact when loading the file, which speeds things up.  But, as
  * the contrib/notes/ev*.png files show, the events are drawn funny in the
  * pattern slot.  They play fine, though.  Still exploring this issue.
- *
- * UNDEFINE FOR EXPERIMENTAL USAGE ONLY.
  */
 
 #undef  SEQ64_USE_EVENT_MAP             /* the map seems to work well!  */

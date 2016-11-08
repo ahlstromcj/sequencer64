@@ -1251,7 +1251,7 @@ public:
     void play_note_off (int note);
     void off_playing_notes ();
     void pause ();
-    void reset (bool live_mode);
+    void reset (bool song_mode);
     void reset_draw_marker ();
     void reset_draw_trigger_marker ();
     draw_type_t get_next_note_event

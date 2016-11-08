@@ -1961,7 +1961,8 @@ perform::set_jack_mode (bool jack_button_active)
 
 /**
  *  Pause playback, so that progress bars stay where they are, and playback
- *  always resumes where it left off, even in ALSA mode.
+ *  always resumes where it left off, at least in ALSA mode, which doesn't
+ *  have to worry about being a "slave".
  *
  *  Currently almost the same as stop_playing(), but expanded as noted in the
  *  comments so that we ultimately have more granular control over what
@@ -1970,6 +1971,14 @@ perform::set_jack_mode (bool jack_button_active)
  *
  *  We still need to make restarting pick up at the same place in ALSA mode;
  *  in JACK mode, JACK transport takes care of that feature.
+ *
+ * \change ca 2016-10-11
+ *      User layk noted this call, and it makes sense to not do this here,
+ *      since it is unknown at this point what the actual status is.  Note
+ *      that we STILL need to FOLLOW UP on calls to pause_playing() and
+ *      stop_playing() in perfedit, mainwnd, etc.
+ *
+ *      is_pattern_playing(false);
  *
  * \param songmode
  *      Indicates that, if resuming play, it should play in Song mode (true)
@@ -1980,22 +1989,12 @@ perform::set_jack_mode (bool jack_button_active)
 void
 perform::pause_playing (bool songmode)
 {
-#ifdef SEQ64_JACK_SUPPORT
-    m_jack_asst.stop();                     /* stop_jack()                  */
+    stop_jack();
     if (! is_jack_running())                /* stop() { inner_stop(); }     */
     {
-#endif
         set_running(false);
-
-        /*
-         * Do we really want to do this now?  Make it conditional on
-         * m_dont_reset_ticks?
-         */
-
-        reset_sequences(true);              /* reset "last-tick" for pause  */
+        reset_sequences(true);               /* don't reset "last-tick"     */
         m_usemidiclock = false;
-
-#ifdef SEQ64_JACK_SUPPORT
     }
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
@@ -2004,20 +2003,7 @@ perform::pause_playing (bool songmode)
     else
         m_start_from_perfedit = false;      /* act like stop_playing()      */
 #endif
-
-#endif  // SEQ64_JACK_SUPPORT
-
     m_dont_reset_ticks = true;
-
-    /*
-     * \change ca 2016-10-11
-     *      User layk noted this call, and it makes sense to not do this here,
-     *      since it is unknown at this point what the actual status is.  Note
-     *      that we STILL need to FOLLOW UP on calls to pause_playing() and
-     *      stop_playing() in perfedit, mainwnd,
-     *
-     * is_pattern_playing(false);
-     */
 }
 
 /**
@@ -2121,9 +2107,7 @@ perform::start (bool songmode)
 void
 perform::stop ()
 {
-#if ! defined SEQ64_STAZED_JACK_SUPPORT && defined SEQ64_JACK_SUPPORT
     if (! is_jack_running())
-#endif
         inner_stop();
 }
 

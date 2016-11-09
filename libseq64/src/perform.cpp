@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-11-06
+ * \updates       2016-11-09
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -65,7 +65,6 @@ namespace seq64
  *  Purely internal constants used with the functions that implement MIDI
  *  control for the application.  Note how they specify different bit values,
  *  as it they could be masked together to signal multiple functions.
- *
  *  This value signals the "replace" functionality.
  */
 
@@ -1989,6 +1988,7 @@ perform::set_jack_mode (bool jack_button_active)
 void
 perform::pause_playing (bool songmode)
 {
+    m_dont_reset_ticks = true;
     stop_jack();
     if (! is_jack_running())                /* stop() { inner_stop(); }     */
     {
@@ -1998,12 +1998,13 @@ perform::pause_playing (bool songmode)
     }
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
-    if (m_dont_reset_ticks)                 /* seq64 was in output_func()   */
+//  if (m_dont_reset_ticks)                 /* seq64 was in output_func()   */
         m_start_from_perfedit = songmode;   /* act like start_playing()     */
-    else
-        m_start_from_perfedit = false;      /* act like stop_playing()      */
+//  else
+//      m_start_from_perfedit = false;      /* act like stop_playing()      */
 #endif
-    m_dont_reset_ticks = true;
+
+//  m_dont_reset_ticks = true;
 }
 
 /**
@@ -2019,6 +2020,12 @@ perform::stop_playing ()
     stop_jack();
     stop();
 
+#if 0
+
+    /*
+     * The latest stazed perform module does not have any of this code.
+     */
+
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     m_start_from_perfedit = false;
 #endif
@@ -2026,6 +2033,8 @@ perform::stop_playing ()
     m_tick = 0;                         // or get_left_tick()
     m_dont_reset_ticks = false;
     is_pattern_playing(false);
+
+#endif  // 0
 }
 
 /**
@@ -2232,7 +2241,7 @@ perform::all_notes_off ()
  *      is false.
  */
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT_XXXXXXXXX
 
 void
 perform::reset_sequences (bool pause)
@@ -2241,15 +2250,15 @@ perform::reset_sequences (bool pause)
     {
         if (is_active(s))
         {
-            m_seqs[s]->reset(m_playback_mode);
-            if (! pause)                            /* TRIAL CODE */
+            m_seqs[s]->reset(m_playback_mode);      /* always zeroes it! */
+            if (! pause)                            /* TRIAL CODE        */
                 m_seqs[s]->zero_markers();
         }
     }
     m_master_bus.flush();                           /* flush the bus */
 }
 
-#else   // SEQ64_STAZED_JACK_SUPPORT
+#else   // SEQ64_STAZED_JACK_SUPPORT_XXXXXXXXXXX
 
 void
 perform::reset_sequences (bool pause)
@@ -2259,7 +2268,7 @@ perform::reset_sequences (bool pause)
         for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high  */
         {
             if (is_active(s))
-                m_seqs[s]->pause();
+                m_seqs[s]->pause(m_playback_mode);  /* (new parameter)  */
         }
     }
     else
@@ -2267,13 +2276,13 @@ perform::reset_sequences (bool pause)
         for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high  */
         {
             if (is_active(s))
-                m_seqs[s]->reset(m_playback_mode);
+                m_seqs[s]->stop(m_playback_mode);
         }
     }
     m_master_bus.flush();                           /* flush the MIDI buss  */
 }
 
-#endif  // SEQ64_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT_XXXXXXXXXXX
 
 /**
  *  Creates the output thread using output_thread_func().  This might be a
@@ -2964,7 +2973,7 @@ perform::output_func ()
             {
                 if (m_playback_mode)
                     m_tick = m_left_tick;               // song mode default
-                else
+                else if (! m_dont_reset_ticks)          // EXPERIMENTAL
                     m_tick = 0;                         // live mode default
             }
         }

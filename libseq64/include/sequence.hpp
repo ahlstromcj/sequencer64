@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-11-03
+ * \updates       2016-11-09
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1238,8 +1238,6 @@ public:
      *  Resets everything to zero.  This function is used when the sequencer
      *  stops.  This function currently sets m_last_tick = 0, but we would
      *  like to avoid that if doing a pause, rather than a stop, of playback.
-     *  However, commenting out this setting doesn't have any effect that we
-     *  can see with a quick look at the user-interface.
      */
 
     void zero_markers ()
@@ -1250,8 +1248,8 @@ public:
     void play_note_on (int note);
     void play_note_off (int note);
     void off_playing_notes ();
-    void pause ();
-    void reset (bool song_mode);
+    void stop (bool song_mode = false);
+    void pause (bool song_mode = false);
     void reset_draw_marker ();
     void reset_draw_trigger_marker ();
     draw_type_t get_next_note_event

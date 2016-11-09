@@ -3673,9 +3673,9 @@ sequence::paste_trigger (midipulse paste_tick)
 
 /**
  *  Provides a helper function simplify and speed up
- *  perform::reset_sequences().  Note that, in live mode, the user controls
- *  playback, while otherwise JACK or the performance/song editor controls
- *  playback.  (We're still a bit confounded about these modes, alas.)
+ *  perform :: reset_sequences().  In Live mode, the user controls
+ *  playback, while in Song mode, JACK or the performance/song editor controls
+ *  playback.  This function used to be called "reset()".
  *
  * \param song_mode
  *      True if song mode is on.  This can mean that JACK transport is not in
@@ -3683,28 +3683,31 @@ sequence::paste_trigger (midipulse paste_tick)
  */
 
 void
-sequence::reset (bool song_mode)
+sequence::stop (bool song_mode)
 {
     bool state = get_playing();
     off_playing_notes();
     set_playing(false);
-    zero_markers();                 /* sets the "last-tick" value   */
+    zero_markers();                         /* sets the "last-tick" value   */
     if (! song_mode)
         set_playing(state);
 }
 
 /**
- *  A pause version of reset().  The reset() function is currently not called
- *  when pausing, but we still need the note-shutoff capability to prevent
+ *  A pause version of stop().
+ *  It still includes the note-shutoff capability to prevent
  *  notes from lingering.  Note that we do not call set_playing(false)... it
  *  disarms the sequence, which we do not want upon pausing.
  */
 
 void
-sequence::pause ()
+sequence::pause (bool song_mode)
 {
-    if (get_playing())
-        off_playing_notes();
+    bool state = get_playing();
+    off_playing_notes();
+//  set_playing(false);
+    if (! song_mode)
+        set_playing(state);
 }
 
 /**

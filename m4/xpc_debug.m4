@@ -6,7 +6,7 @@ dnl \file       	xpc_debug.m4
 dnl \library    	xpc_suite subproject
 dnl \author     	Chris Ahlstrom
 dnl \date       	2008-03-04
-dnl \updates      2015-10-07
+dnl \updates      2015-11-09
 dnl \version    	$Revision$
 dnl \license    	$XPC_SUITE_GPL_LICENSE$
 dnl
@@ -29,7 +29,7 @@ dnl   are shown.
 dnl
 dnl   In addition, the debugging is turned on via the -ggdb flag, instead
 dnl   of the -g flag, to see if there is any advantage.   We're using the gdb
-dnl   debugger.  If you don't use it, you may have to remove this flag.
+dnl   debugger.  If you don't use it, change "-ggdb" to "-g".
 dnl
 dnl   Also, for convenience, this macro adds additional debugging symbols to
 dnl   supplement DEBUG:  _DEBUG.
@@ -106,7 +106,7 @@ AC_DEFUN([AC_XPC_DEBUGGING],
       elif test "x$profile" = "xprof" ; then
          PROFLAGS="-p"
          OPTFLAGS="-O0"
-         GDBFLAGS="-g"
+         GDBFLAGS="-ggdb"
          AC_MSG_RESULT(prof)
       elif test "x$profile" = "xgprof" ; then
          PROFLAGS="-pg"
@@ -153,7 +153,7 @@ yes=gdb)],
          AC_MSG_RESULT(yes)
       elif test "x$debug" = "xdb" ; then
          OPTFLAGS="-O0"
-         GDBFLAGS="-g"
+         GDBFLAGS="-ggdb"
          AC_MSG_RESULT(yes)
       elif test "x$debug" = "xgdb" ; then
          OPTFLAGS="-O0"
@@ -170,7 +170,7 @@ yes=gdb)],
    fi
    AC_SUBST([DBGFLAGS])
    AC_DEFINE_UNQUOTED([DBGFLAGS], [$DBGFLAGS],
-   [Define DBGFLAGS=-g -O0 -DDEBUG -NWIN32 -fno-inline if debug support is wanted.])
+   [Define DBGFLAGS=-ggdb -O0 -DDEBUG -NWIN32 -fno-inline if debug support is wanted.])
 
 ])
 

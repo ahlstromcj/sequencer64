@@ -746,7 +746,7 @@ perform::set_left_tick (midipulse tick, bool setstart)
     if (is_jack_master())                       /* don't use in slave mode  */
         m_jack_asst.position(true, tick);       /* position_jack()          */
     else if (! is_jack_running())
-        m_tick = tick;
+        set_tick(tick);
 
     m_reposition = false;
 
@@ -789,7 +789,7 @@ perform::set_right_tick (midipulse tick, bool setstart)
                 if (is_jack_master())                   // && is_jack_running())
                     position_jack(true, m_left_tick);
                 else
-                    m_tick = m_left_tick;
+                    set_tick(m_left_tick);
 
                 m_reposition = false;
             }
@@ -2972,9 +2972,9 @@ perform::output_func ()
             if (! is_jack_running())
             {
                 if (m_playback_mode)
-                    m_tick = m_left_tick;               // song mode default
+                    set_tick(m_left_tick);              // song mode default
                 else if (! m_dont_reset_ticks)          // EXPERIMENTAL
-                    m_tick = 0;                         // live mode default
+                    set_tick(0);                        // live mode default
             }
         }
 
@@ -2991,7 +2991,7 @@ perform::output_func ()
 #else  // SEQ64_STAZED_JACK_SUPPORT
 
         if (is_jack_running())
-            m_tick = 0;
+            set_tick(0);
 
         m_master_bus.flush();
         m_master_bus.stop();

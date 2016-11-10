@@ -527,7 +527,7 @@ public:
     {
         m_toggle_jack = mode;
     }
-    
+
     /**
      * \getter m_toggle_jack
      *      Seems misnamed.
@@ -687,9 +687,8 @@ extern void jack_timebase_callback
 );
 
 /*
- * ca 2015-07-23
- * Implemented second patch for JACK Transport from freddix/seq24
- * GitHub project.  Added the following function.
+ *  Implemented second patch for JACK Transport from freddix/seq24 GitHub
+ *  project.  Added the following function.
  */
 
 extern int jack_process_callback (jack_nframes_t nframes, void * arg);
@@ -702,7 +701,7 @@ extern long get_current_jack_position (void * arg);
 extern void jack_session_callback (jack_session_event_t * ev, void * arg);
 #endif
 
-#endif  // SEQ64_JACK_SUPPORT
+#endif      // SEQ64_JACK_SUPPORT
 
 }           // namespace seq64
 

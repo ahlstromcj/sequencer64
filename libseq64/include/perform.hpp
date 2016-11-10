@@ -1364,7 +1364,16 @@ public:
 
     midipulse get_tick () const
     {
-        return m_tick;
+        return m_tick;              /* printf("tick = %ld\n", m_tick); */
+    }
+
+    /**
+     * \setter m_tick
+     */
+
+    void set_tick (midipulse tick)
+    {
+        m_tick = tick;              /* printf("tick = %ld\n", m_tick); */
     }
 
     /**

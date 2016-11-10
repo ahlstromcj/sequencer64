@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-06-21
+# \update      2016-11-09
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -101,13 +101,15 @@ git_info = "$(git_version) $(git_branch)"
 
 #******************************************************************************
 # Compiler and linker flags
+#
+#  $(GTKMM_CFLAGS)
+#
 #------------------------------------------------------------------------------
 
 AM_CXXFLAGS = \
  -I../include \
  -I$(top_srcdir)/include \
  -I$(top_srcdir)/seq_gtkmm2/include \
- $(GTKMM_CFLAGS) \
  $(JACK_CFLAGS) \
  $(LASH_CFLAGS) \
  -DSEQ64_GIT_VERSION=\"$(git_info)\" \

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-30
+ * \updates       2016-11-11
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -74,12 +74,23 @@ namespace seq64
 /**
  *  The principal constructor for the options class creates a number of
  *  dialog elements.
+ *
+ * \param parent
+ *      The parent window of the options dialog.
+ *
+ * \param p
+ *      The parent performance object.
+ *
+ * \param showjack
+ *      If true, show only the JACK page, for quick access.  The default value
+ *      is false.
  */
 
 options::options
 (
     Gtk::Window & parent,
-    perform & p
+    perform & p,
+    bool showjack
 ) :
     Gtk::Dialog                     ("Options", parent, true, true),
 #if GTK_MINOR_VERSION < 12
@@ -116,14 +127,21 @@ options::options
     get_action_area()->pack_end(*m_button_ok, false, false);
     m_button_ok->signal_clicked().connect(mem_fun(*this, &options::hide));
     hbox->pack_start(*m_notebook);
-    add_midi_clock_page();
-    add_midi_input_page();
-    add_keyboard_page();
-    if (! rc().legacy_format())
-        add_extended_keys_page();
+    if (showjack)
+    {
+        add_jack_sync_page();
+    }
+    else
+    {
+        add_midi_clock_page();
+        add_midi_input_page();
+        add_keyboard_page();
+        if (! rc().legacy_format())
+            add_extended_keys_page();
 
-    add_mouse_page();
-    add_jack_sync_page();
+        add_mouse_page();
+        add_jack_sync_page();
+    }
 }
 
 /**
@@ -1001,7 +1019,8 @@ options::add_jack_sync_page ()
     (
         m_button_jack_connect,
         "Reconnect to JACK. Calls the JACK initialization function, which is "
-        "automatically called at Sequencer64 startup, if configured."
+        "automatically called at Sequencer64 startup, if configured.  Click "
+        "this button after making the JACK Transport settings above."
     );
     m_button_jack_connect->signal_clicked().connect
     (
@@ -1035,7 +1054,8 @@ options::add_jack_sync_page ()
     (
         m_button_jack_disconnect,
         "Disconnect JACK. Calls the JACK deinitialization function, "
-        "and enables the JACK transport buttons."
+        "and enables the JACK transport buttons.  Click this button to modify "
+        "the JACK Transport Mode settings above."
     );
     m_button_jack_disconnect->signal_clicked().connect
     (

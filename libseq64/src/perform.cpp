@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-11-09
+ * \updates       2016-11-10
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1990,20 +1990,29 @@ perform::pause_playing (bool songmode)
 {
     m_dont_reset_ticks = true;
     stop_jack();
-    if (! is_jack_running())                /* stop() { inner_stop(); }     */
+    if (is_jack_running())
+    {
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+        m_start_from_perfedit = songmode;   /* act like start_playing()     */
+#endif
+    }
+    else
     {
         set_running(false);
-        reset_sequences(true);               /* don't reset "last-tick"     */
+        reset_sequences(true);              /* don't reset "last-tick"      */
         m_usemidiclock = false;
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+        m_start_from_perfedit = false;      /* act like stop_playing()      */
+#endif
     }
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
+// #ifdef SEQ64_STAZED_JACK_SUPPORT
 //  if (m_dont_reset_ticks)                 /* seq64 was in output_func()   */
-        m_start_from_perfedit = songmode;   /* act like start_playing()     */
+//      m_start_from_perfedit = songmode;   /* act like start_playing()     */
 //  else
 //      m_start_from_perfedit = false;      /* act like stop_playing()      */
-#endif
-
+// #endif
+//
 //  m_dont_reset_ticks = true;
 }
 
@@ -2020,21 +2029,9 @@ perform::stop_playing ()
     stop_jack();
     stop();
 
-#if 0
-
-    /*
-     * The latest stazed perform module does not have any of this code.
-     */
-
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     m_start_from_perfedit = false;
 #endif
-
-    m_tick = 0;                         // or get_left_tick()
-    m_dont_reset_ticks = false;
-    is_pattern_playing(false);
-
-#endif  // 0
 }
 
 /**
@@ -2241,7 +2238,7 @@ perform::all_notes_off ()
  *      is false.
  */
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT_XXXXXXXXX
+#ifdef SEQ64_STAZED_JACK_SUPPORT_XXXXX
 
 void
 perform::reset_sequences (bool pause)
@@ -2250,15 +2247,15 @@ perform::reset_sequences (bool pause)
     {
         if (is_active(s))
         {
-            m_seqs[s]->reset(m_playback_mode);      /* always zeroes it! */
-            if (! pause)                            /* TRIAL CODE        */
-                m_seqs[s]->zero_markers();
+            m_seqs[s]->pause(m_playback_mode);      /* always zeroes it! */
+//////      if (! pause)                            /* TRIAL CODE        */
+//////          m_seqs[s]->zero_markers();
         }
     }
     m_master_bus.flush();                           /* flush the bus */
 }
 
-#else   // SEQ64_STAZED_JACK_SUPPORT_XXXXXXXXXXX
+#else   // SEQ64_STAZED_JACK_SUPPORT
 
 void
 perform::reset_sequences (bool pause)
@@ -2282,7 +2279,7 @@ perform::reset_sequences (bool pause)
     m_master_bus.flush();                           /* flush the MIDI buss  */
 }
 
-#endif  // SEQ64_STAZED_JACK_SUPPORT_XXXXXXXXXXX
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Creates the output thread using output_thread_func().  This might be a
@@ -2553,22 +2550,22 @@ perform::output_func ()
 
 #ifdef SEQ64_STATISTICS_SUPPORT
 
-#if ! defined PLATFORM_WINDOWS
-        clock_gettime(CLOCK_REALTIME, &last);   // get start time position
-        if (rc().stats())
-            stats_last_clock_us = (last.tv_sec*1000000) + (last.tv_nsec/1000);
-#else
+#ifdef PLATFORM_WINDOWS
         last = timeGetTime();                   // get start time position
         if (rc().stats())
             stats_last_clock_us = last * 1000;
+#else
+        clock_gettime(CLOCK_REALTIME, &last);   // get start time position
+        if (rc().stats())
+            stats_last_clock_us = (last.tv_sec*1000000) + (last.tv_nsec/1000);
 #endif
 
 #else   // SEQ64_STATISTICS_SUPPORT
 
-#if ! defined PLATFORM_WINDOWS
-        clock_gettime(CLOCK_REALTIME, &last);   // get start time position
-#else
+#ifdef PLATFORM_WINDOWS
         last = timeGetTime();                   // get start time position
+#else
+        clock_gettime(CLOCK_REALTIME, &last);   // get start time position
 #endif
 
 #endif  // SEQ64_STATISTICS_SUPPORT
@@ -2586,10 +2583,10 @@ perform::output_func ()
 #ifdef SEQ64_STATISTICS_SUPPORT
             if (rc().stats())
             {
-#if ! defined PLATFORM_WINDOWS
-                clock_gettime(CLOCK_REALTIME, &stats_loop_start);
-#else
+#ifdef PLATFORM_WINDOWS
                 stats_loop_start = timeGetTime();
+#else
+                clock_gettime(CLOCK_REALTIME, &stats_loop_start);
 #endif
             }
 #endif  // SEQ64_STATISTICS_SUPPORT
@@ -2781,10 +2778,12 @@ perform::output_func ()
                 play(midipulse(pad.js_current_tick));               // play!
 #endif
 
-#if ! defined SEQ64_STAZED_JACK_SUPPORT
-                set_jack_tick(pad.js_current_tick);
-#endif
+                /*
+                 * The next line enables proper pausing in both old and seq32
+                 * JACK builds.  Now unmacroed by SEQ64_STAZED_JACK_SUPPORT.
+                 */
 
+                set_jack_tick(pad.js_current_tick);
                 m_master_bus.clock(midipulse(pad.js_clock_tick));   // MIDI clock
 
 #ifdef SEQ64_STATISTICS_SUPPORT
@@ -2801,11 +2800,11 @@ perform::output_func ()
                         int ct = clock_ticks_from_ppqn(m_ppqn);
                         if ((stats_total_tick % ct) == 0)
                         {
-#if ! defined PLATFORM_WINDOWS
+#ifdef PLATFORM_WINDOWS
+                            long current_us = current * 1000;
+#else
                             long current_us = (current.tv_sec * 1000000) +
                                 (current.tv_nsec / 1000);
-#else
-                            long current_us = current * 1000;
 #endif
                             stats_clock_width_us = current_us-stats_last_clock_us;
                             stats_last_clock_us = current_us;
@@ -2828,15 +2827,15 @@ perform::output_func ()
 
             last = current;
 
-#if ! defined PLATFORM_WINDOWS
+#ifdef PLATFORM_WINDOWS
+            current = timeGetTime();
+            delta = current - last;
+            long elapsed_us = delta * 1000;
+#else
             clock_gettime(CLOCK_REALTIME, &current);
             delta.tv_sec  = current.tv_sec  - last.tv_sec;
             delta.tv_nsec = current.tv_nsec - last.tv_nsec;
             long elapsed_us = (delta.tv_sec * 1000000) + (delta.tv_nsec / 1000);
-#else
-            current = timeGetTime();
-            delta = current - last;
-            long elapsed_us = delta * 1000;
 #endif
 
             /**
@@ -2885,15 +2884,15 @@ perform::output_func ()
 #ifdef SEQ64_STATISTICS_SUPPORT
             if (rc().stats())
             {
-#if ! defined PLATFORM_WINDOWS
+#ifdef PLATFORM_WINDOWS
+                stats_loop_finish = timeGetTime();
+                delta = stats_loop_finish - stats_loop_start;
+                long delta_us = delta * 1000;
+#else
                 clock_gettime(CLOCK_REALTIME, &stats_loop_finish);
                 delta.tv_sec  = stats_loop_finish.tv_sec-stats_loop_start.tv_sec;
                 delta.tv_nsec = stats_loop_finish.tv_nsec-stats_loop_start.tv_nsec;
                 long delta_us = (delta.tv_sec*1000000) + (delta.tv_nsec/1000);
-#else
-                stats_loop_finish = timeGetTime();
-                delta = stats_loop_finish - stats_loop_start;
-                long delta_us = delta * 1000;
 #endif
                 int index = delta_us / 100;         // why the 100?
                 if (index >= 100)
@@ -3021,7 +3020,11 @@ input_thread_func (void * myperf)
     {
         perform * p = (perform *) myperf;
 
-#if ! defined PLATFORM_WINDOWS                // MinGW RCB
+#ifdef PLATFORM_WINDOWS
+        timeBeginPeriod(1);
+        p->input_func();
+        timeEndPeriod(1);
+#else                                   // MinGW RCB
         if (rc().priority())
         {
             struct sched_param schp;
@@ -3038,10 +3041,6 @@ input_thread_func (void * myperf)
             }
         }
         p->input_func();
-#else
-        timeBeginPeriod(1);
-        p->input_func();
-        timeEndPeriod(1);
 #endif
     }
     return nullptr;
@@ -4042,14 +4041,13 @@ perform::playback_action (playback_action_t p, bool songmode)
     else if (p == PLAYBACK_STOP)
     {
         stop_playing();
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-        m_start_from_perfedit = false;
-#endif
     }
     else if (p == PLAYBACK_PAUSE)
     {
         if (is_running())
+        {
             pause_playing(songmode);
+        }
         else
         {
             start_playing(songmode);

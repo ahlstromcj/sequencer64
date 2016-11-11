@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-24
+ * \updates       2016-11-11
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -224,10 +224,11 @@ private:
 #ifdef SEQ64_SHOW_JACK_STATUS
 
     /**
-     *  Indicates the current mode of Sequencer64:  JACK, Master, and ALSA.
+     *  Sets and indicates the current mode of Sequencer64:  JACK, Master, and
+     *  ALSA.
      */
 
-    Gtk::Label * m_label_jack_mode;
+    Gtk::Button * m_button_jack;
 
 #endif
 
@@ -463,6 +464,7 @@ private:
 
     void file_import_dialog ();
     void options_dialog ();
+    void jack_dialog ();
     void about_dialog ();
     void build_info_dialog ();
     int query_save_changes ();

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-06
+ * \updates       2016-11-11
  * \license       GNU 3PLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -221,7 +221,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     ),
 #endif
 #ifdef SEQ64_SHOW_JACK_STATUS
-    m_label_jack_mode       (manage(new Gtk::Label())),
+    m_button_jack           (manage(new Gtk::Button("ALSA"))),
 #endif
     m_adjust_bpm
     (
@@ -457,7 +457,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     if (usr().use_more_icons())
         m_button_mode->add(*manage(new PIXBUF_IMAGE(live_mode_xpm)));
 
-    m_button_mode->set_focus_on_click(false); // set_can_focus(false);
+    m_button_mode->set_focus_on_click(false);
     m_button_mode->signal_toggled().connect
     (
         sigc::mem_fun(*this, &mainwnd::set_song_mode)
@@ -530,9 +530,17 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     tophbox->pack_start(*m_button_menu, false, false, HBOX_PADDING/2);
 
 #ifdef SEQ64_SHOW_JACK_STATUS
-    m_label_jack_mode->set_width_chars(6);
-    m_label_jack_mode->set_text("      ");
-    tophbox->pack_start(*m_label_jack_mode, false, false, HBOX_PADDING/2);
+    add_tooltip
+    (
+        m_button_jack,
+        "Shows the current transport mode:  JACK, Master, or ALSA. Click "
+        "this button to bring up the JACK connection options page."
+    );
+    m_button_jack->signal_clicked().connect
+    (
+        sigc::mem_fun(*this, &mainwnd::jack_dialog)
+    );
+    tophbox->pack_start(*m_button_jack, false, false);
 #endif
 
 #endif  // SEQ64_STAZED_MENU_BUTTONS
@@ -951,20 +959,24 @@ mainwnd::timer_callback ()
 
 #endif
 
+#ifdef SEQ64_SHOW_JACK_STATUS
+
     /*
-     * \new ca 2016-10-24.  Show JACK status in main windows
+     * Show JACK status in the main window, in a button that can also bring up
+     * the JACK connection page from the Options dialog.
      */
 
-#ifdef SEQ64_SHOW_JACK_STATUS
+    std::string label("ALSA");
     if (perf().is_jack_running())
     {
         if (rc().with_jack_master())
-            m_label_jack_mode->set_text("Master");
+            label = "Master";
         else if (rc().with_jack_transport())
-            m_label_jack_mode->set_text("JACK");
+            label = "JACK";
     }
-    else
-        m_label_jack_mode->set_text("ALSA");
+    Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>(m_button_jack->get_child()));
+    if (not_nullptr(lblptr))
+        lblptr->set_text(label);
 #endif
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
@@ -1086,6 +1098,20 @@ mainwnd::options_dialog ()
         delete m_options;
 
     m_options = new options(*this, perf());
+    m_options->show_all();
+}
+
+/**
+ *  Opens the File / Options dialog to show only the JACK page.
+ */
+
+void
+mainwnd::jack_dialog ()
+{
+    if (not_nullptr(m_options))
+        delete m_options;
+
+    m_options = new options(*this, perf(), true);
     m_options->show_all();
 }
 

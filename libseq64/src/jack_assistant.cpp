@@ -414,22 +414,23 @@ jack_assistant::init ()
         get_jack_client_info();
         jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
 
-#if ! defined SEQ64_STAZED_JACK_SUPPORT
-
+#ifdef SEQ64_STAZED_JACK_SUPPORT
         /*
          * Stazed JACK support uses only the jack_process_callback().  Makes
          * sense, since seq24/32/64 are not "slow-sync" clients.
          */
 
+        int jackcode = jack_set_process_callback        /* see notes in banner  */
+        (
+            m_jack_client, jack_process_callback, (void *) this
+        );
+#else
         int jackcode = jack_set_sync_callback
         (
             m_jack_client, jack_sync_callback, (void *) this
         );
         if (jackcode != 0)
             return error_message("jack_set_sync_callback() failed");
-#else
-        int jackcode;
-#endif
 
         /*
          * Although they say this code is needed to get JACK transport to work
@@ -439,12 +440,9 @@ jack_assistant::init ()
 
         jackcode = jack_set_process_callback        /* see notes in banner  */
         (
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-            m_jack_client, jack_process_callback, (void *) this
-#else
             m_jack_client, jack_process_callback, NULL
-#endif
         );
+#endif
         if (jackcode != 0)
             return error_message("jack_set_process_callback() failed]");
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-08
+ * \updates       2016-11-11
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -811,7 +811,8 @@ private:
     bool m_have_undo;
 
     /**
-     *  Holds ??? for undo operations.
+     *  Holds the "track" numbers or the "all tracks" values for undo
+     *  operations.  See the push_trigger_undo() function.
      */
 
     std::vector<int> m_undo_vect;
@@ -823,7 +824,8 @@ private:
     bool m_have_redo;
 
     /**
-     *  Holds ??? for undo operations.
+     *  Holds the "track" numbers or the "all tracks" values for redo
+     *  operations.  See the pop_trigger_undo() function.
      */
 
     std::vector<int> m_redo_vect;
@@ -898,7 +900,7 @@ public:
      * \return
      *      Returns true if the m_control_status value is non-zero, which
      *      means that there is a queue, replace, or snapshot functionality in
-     *      progress. 
+     *      progress.
      */
 
     bool is_control_status () const
@@ -1169,7 +1171,7 @@ public:
 
     bool is_jack_running () const
     {
-#if defined SEQ64_JACK_SUPPORT && defined SEQ64_STAZED_JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
         return m_jack_asst.is_running();
 #else
         return false;

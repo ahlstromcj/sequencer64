@@ -2005,15 +2005,6 @@ perform::pause_playing (bool songmode)
         m_start_from_perfedit = false;      /* act like stop_playing()      */
 #endif
     }
-
-// #ifdef SEQ64_STAZED_JACK_SUPPORT
-//  if (m_dont_reset_ticks)                 /* seq64 was in output_func()   */
-//      m_start_from_perfedit = songmode;   /* act like start_playing()     */
-//  else
-//      m_start_from_perfedit = false;      /* act like stop_playing()      */
-// #endif
-//
-//  m_dont_reset_ticks = true;
 }
 
 /**
@@ -2027,7 +2018,10 @@ void
 perform::stop_playing ()
 {
     stop_jack();
-    stop();
+
+// EXPERIMENT:
+// if (! is_jack_running())
+        stop();
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     m_start_from_perfedit = false;
@@ -2186,17 +2180,13 @@ perform::inner_stop (bool midiclock)
 
 /**
  *  For all active patterns/sequences, set the playing state to false.
+ *
+ * EXPERIMENTAL: Replace "for (int s = 0; s < m_sequence_max; ++s)"
  */
 
 void
 perform::off_sequences ()
 {
-    /*
-     * EXPERIMENTAL:
-     *
-     * for (int s = 0; s < m_sequence_max; ++s)
-     */
-
     for (int s = 0; s < m_sequence_high; ++s)       /* modest speed-up */
     {
         if (is_active(s))
@@ -2238,25 +2228,6 @@ perform::all_notes_off ()
  *      is false.
  */
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT_XXXXX
-
-void
-perform::reset_sequences (bool pause)
-{
-    for (int s = 0; s < m_sequence_max; ++s)        /* m_sequence_high  */
-    {
-        if (is_active(s))
-        {
-            m_seqs[s]->pause(m_playback_mode);      /* always zeroes it! */
-//////      if (! pause)                            /* TRIAL CODE        */
-//////          m_seqs[s]->zero_markers();
-        }
-    }
-    m_master_bus.flush();                           /* flush the bus */
-}
-
-#else   // SEQ64_STAZED_JACK_SUPPORT
-
 void
 perform::reset_sequences (bool pause)
 {
@@ -2278,8 +2249,6 @@ perform::reset_sequences (bool pause)
     }
     m_master_bus.flush();                           /* flush the MIDI buss  */
 }
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Creates the output thread using output_thread_func().  This might be a
@@ -2405,6 +2374,10 @@ output_thread_func (void * myperf)
                 "need root priviledges."
             );
             pthread_exit(0);
+        }
+        else
+        {
+            infoprint("[Output priority set to 1]");
         }
     }
     p->output_func();
@@ -2964,7 +2937,7 @@ perform::output_func ()
         else
         {
             if (is_jack_master())                       // running Live Master
-                position_jack(m_playback_mode, 0);
+                position_jack(m_playback_mode, m_left_tick); ////////// 0);
         }
         if (! m_usemidiclock)                           // stop by MIDI event?
         {
@@ -3035,9 +3008,13 @@ input_thread_func (void * myperf)
                 printf
                 (
                     "input_thread_func: couldn't sched_setscheduler"
-                   "(FIFO), you need to be root.\n"
+                   "(FIFO), need root priviledges."
                 );
                 pthread_exit(0);
+            }
+            else
+            {
+                infoprint("[Input priority set to 1]");
             }
         }
         p->input_func();

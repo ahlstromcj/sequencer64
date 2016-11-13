@@ -25,8 +25,8 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-11
- * \license       GNU 3PLv2 or above
+ * \updates       2016-11-12
+ * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
  *  and the mainwid that holds the patterns is nestled in the interior of the
@@ -534,8 +534,10 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         m_button_jack,
         "Shows the current transport mode:  JACK, Master, or ALSA. Click "
-        "this button to bring up the JACK connection options page."
+        "this button to bring up the JACK connection options page. Ctrl-P "
+        "also brings up this page."
     );
+    m_button_jack->set_focus_on_click(false);
     m_button_jack->signal_clicked().connect
     (
         sigc::mem_fun(*this, &mainwnd::jack_dialog)
@@ -567,7 +569,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         "Click the 'L' button, then press a mute-group key to store "
         "the mute state of the sequences in that key. "
         "See File / Options / Keyboard for available mute-group keys "
-        "and the hotkey for the 'L' button."
+        "and the hotkey for the 'L' button. Ctrl-L also causes this action."
     );
     hbox3->pack_end(*m_button_learn, false, false);
 
@@ -727,7 +729,12 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         mem_fun(*this, &mainwnd::open_performance_edit)
     );
-    add_tooltip(m_button_perfedit, "Show or hide the main song editor window.");
+    add_tooltip
+    (
+        m_button_perfedit,
+        "Show or hide the main song editor window. Ctrl-E also brings up "
+        "the editor."
+    );
     bottomhbox->pack_end(*m_button_perfedit, Gtk::PACK_SHRINK);
 
     /*
@@ -1661,20 +1668,34 @@ mainwnd::about_dialog ()
 }
 
 /**
- *  Presents a Help / Version Info dialog.  It is similar to the 
- *  "--version" option on the command line.
+ *  Presents a Help / Build Info dialog.  It is similar to the "--version"
+ *  option on the command line.  The AboutDialog doesn't seem to have a way to
+ *  left-align the text, so we're trying the MessageDialog.
  */
 
 void
 mainwnd::build_info_dialog ()
 {
-    Gtk::AboutDialog dialog;
+#ifdef USE_ABOUT_DIALOG
     std::string comment("\n");
-    comment += build_details();         /* any way to left-align it? */
+    comment += build_details();
+    Gtk::AboutDialog dialog;
     dialog.set_transient_for(*this);
     dialog.set_name(SEQ64_PACKAGE_NAME " " SEQ64_VERSION "\n");
     dialog.set_comments(comment);
     dialog.show_all_children();
+#else
+    std::string caption(SEQ64_PACKAGE_NAME " " SEQ64_VERSION);
+    std::string comment = build_details();
+    std::string junk("JUNK");
+    Gtk::MessageDialog dialog
+    (
+        *this, junk, false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true
+    );
+    dialog.set_title("Sequencer64 Build Info");
+    dialog.set_message(caption);
+    dialog.set_secondary_text(comment);
+#endif
     dialog.run();
 }
 
@@ -2188,12 +2209,18 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 
                     /*
                      * Ctrl-L to toggle the group-learn mode.  Similar to
-                     * Ctrl-E to bring up the Song Editor.
+                     * Ctrl-E to bring up the Song Editor.  Ctrl-J to bring up
+                     * the new JACK connection page.
                      */
 
                     bool ok = is_ctrl_key(ev);
-                    if (ok && (k.key() == SEQ64_l))
-                        perf().learn_toggle();
+                    if (ok)
+                    {
+                        if (k.key() == SEQ64_l)
+                            perf().learn_toggle();
+                        else if (k.key() == SEQ64_p)
+                            jack_dialog();
+                    }
                 }
             }
         }

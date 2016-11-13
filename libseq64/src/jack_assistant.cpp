@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-10-23
+ * \updates       2016-11-11
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -52,6 +52,24 @@
  *      value is zero, the BBT time refers to the first frame of this cycle.
  *      If the value is positive, the BBT time refers to a frame that many
  *      frames before the start of the cycle.
+ *
+ * jack_transport_reposition():
+ *
+ *      Requests a new transport position.  The new position takes effect in
+ *      two process cycles. If there are slow-sync clients and the transport
+ *      is already rolling, it will enter the JackTransportStarting state and
+ *      begin invoking their sync_callbacks until ready. This function is
+ *      realtime-safe.
+ *
+ *      It's pos parameter provides the requested new transport position. Fill
+ *      pos->valid to specify which fields should be taken into account. If
+ *      you mark a set of fields as valid, you are expected to fill them all.
+ *      Note that "frame" is always assumed, and generally needs to be set:
+ *
+ *         http://comments.gmane.org/gmane.comp.audio.jackit/18705
+ *
+ *      Returns 0 if a valid request, EINVAL if the position structure is
+ *      rejected.
  *
  *  Only JackPositionBBT is supported so far.  Applications that support
  *  JackPositionBBT are encouraged to also fill the JackBBTFrameOffset-managed
@@ -95,7 +113,7 @@ namespace seq64
  *  Now, this is really too much output, so you'll have to enable it
  *  separately by defining USE_JACK_DEBUG_PRINT.  The difference in output
  *  between this function and what jack_assitant::show_position() report may
- *  be instructive.  LATER.
+ *  be instructive.
  *
  * \param jack
  *      The jack_assistant object for which to show debugging data.
@@ -403,6 +421,7 @@ jack_assistant::init ()
         m_jack_client = client_open(package);
         if (m_jack_client == NULL)
         {
+            m_jack_running = false;         /* ca 2016-11-11                */
             m_jack_master = false;
             return error_message("JACK server not running, JACK sync disabled");
         }
@@ -415,12 +434,13 @@ jack_assistant::init ()
         jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
+
         /*
          * Stazed JACK support uses only the jack_process_callback().  Makes
          * sense, since seq24/32/64 are not "slow-sync" clients.
          */
 
-        int jackcode = jack_set_process_callback        /* see notes in banner  */
+        int jackcode = jack_set_process_callback    /* see notes in banner  */
         (
             m_jack_client, jack_process_callback, (void *) this
         );
@@ -503,7 +523,7 @@ jack_assistant::init ()
         }
         if (jack_activate(m_jack_client) != 0)
         {
-            m_jack_running = false;             // SEQ64_STAZED_JACK_SUPPORT
+            m_jack_running = false;
             return error_message("Cannot activate as JACK client");
         }
 
@@ -602,8 +622,6 @@ jack_assistant::stop ()
         (void) error_message("Transport Stop: JACK not running");
 }
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
 /**
  *  If JACK is supported and running, sets the position of the transport to
  *  the new frame number, frame 0.  This new position takes effect in two
@@ -627,18 +645,17 @@ jack_assistant::stop ()
  * Stazed:
  *
  *      The jack_frame calculation is all that is needed to change JACK
- *      position The BBT calc can be sent but will be overridden by the first
- *      call to jack_timebase_callback() of any Master set. If no Master is
- *      set, then the BBT will display the new position but will not change
- *      even if the transport is rolling. There is no need to send BBT on
- *      position change - the fact that the function jack_transport_locate()
- *      exists and only uses the frame position is proof that BBT is not
- *      needed! Upon further reflection, why not send BBT?  Because other
- *      programs do not.... let's follow convention.  The below calculation for
- *      jack_transport_locate(), works, is simpler and does not send BBT. The
- *      calculation for jack_transport_reposition() will be commented out
- *      again.  The BBT call to jack_BBT_position() is not necessary to
- *      change jack position!
+ *      position. The BBT calculation can be sent, but will be overridden by the
+ *      first call to jack_timebase_callback() of any Master set. If no Master
+ *      is set, then the BBT will display the new position but will not change
+ *      it, even if the transport is rolling. There is no need to send BBT on
+ *      position change -- the fact that jack_transport_locate() exists and only
+ *      uses the frame position is proof that BBT is not needed! Upon further
+ *      reflection, why not send BBT?  Because other programs do not... let's
+ *      follow convention.  The calculation for jack_transport_locate(), works,
+ *      is simpler, and does not send BBT. The calculation for
+ *      jack_transport_reposition() will be commented out again.
+ *      jack_BBT_position() is not necessary to change jack position!
  *
  *  Note that there are potentially a couple of divide-by-zero opportunities
  *  in this function.
@@ -646,11 +663,21 @@ jack_assistant::stop ()
  * \param songmode
  *      True if the caller wants to position while in Song mode.
  *
+ * Alternate parameter to_left_tick (non-seq32 version):
+ *
+ *      If true, the current tick is set to the leftmost tick, instead of the
+ *      0th tick.  Now used, but only if relocate is true.  One question is,
+ *      do we want to perform this function if rc().with_jack_transport() is
+ *      true?  Seems like we should be able to do it only if m_jack_master is
+ *      true.
+ *
  * \param tick
  *      If using Song mode for this call then this value is set as the
  *      "current tick" value.  If it's value is bad (SEQ64_NULL_MIDIPULSE),
  *      then this parameter is set to 0 before being used.
  */
+
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 void
 jack_assistant::position (bool songmode, midipulse tick)
@@ -658,129 +685,32 @@ jack_assistant::position (bool songmode, midipulse tick)
 
 #ifdef SEQ64_JACK_SUPPORT
 
-    long current_tick = 0;
     if (songmode)                               /* master in song mode */
     {
-        if (! is_null_midipulse(tick))
-            current_tick = tick * 10;
+        if (is_null_midipulse(tick))
+            tick = 0;
+        else
+            tick *= 10;
     }
+    else
+        tick = 0;
 
     int ticks_per_beat = m_ppqn * 10;
     int beats_per_minute = parent().get_beats_per_minute();
-    uint64_t tick_rate = (uint64_t(m_jack_frame_rate) * current_tick * 60.0);
+    uint64_t tick_rate = (uint64_t(m_jack_frame_rate) * tick * 60.0);
     long tpb_bpm = ticks_per_beat * beats_per_minute * 4.0 / m_beat_width;
     uint64_t jack_frame = tick_rate / tpb_bpm;
-    jack_transport_locate(m_jack_client, jack_frame);
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
-#if 0
-
-    /*
-     * The call to jack_BBT_position() is not necessary to change JACK
-     * position!  Must set these here since they are set in timebase.
-     */
-
-    jack_position_t pos;
-    double jack_tick = current_tick * m_bw / 4.0;
-    pos.ticks_per_beat = m_ppqn * 10;
-    pos.beats_per_minute = m_master_bus.get_bpm();
-    jack_BBT_position(pos, jack_tick);
-
-    /*
-     * Calculate JACK frame to put into pos.frame; it is what matters for
-     * position change.  Very similar to the uncommented code above.
-     */
-
-    uint64_t tick_rate = ((uint64_t)pos.frame_rate * current_tick * 60.0);
-    long tpb_bpm = pos.ticks_per_beat * pos.beats_per_minute *
-        4.0 / pos.beat_type;
-
-    pos.frame = tick_rate / tpb_bpm;
-
-    /*
-     * ticks * 10 = jack ticks;
-     * jack ticks / ticks per beat = num beats;
-     * num beats / beats per minute = num minutes
-     * num minutes * 60 = num seconds
-     * num secords * frame_rate  = frame
-     */
-
-    jack_transport_reposition(m_jack_client, &pos);
-
-#endif  // 0
+    if (jack_transport_locate(m_jack_client, jack_frame) != 0)
+        (void) info_message("jack_transport_locate() failed");
 
     if (parent().is_running())
         parent().set_reposition(false);
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 #endif  // SEQ64_JACK_SUPPORT
 
 }
 
 #else   // SEQ64_STAZED_JACK_SUPPORT
-
-/**
- *  If JACK is supported and running, sets the position of the transport to
- *  the new frame number, frame 0.  This new position takes effect in two
- *  process cycles. If there are slow-sync clients and the transport is
- *  already rolling, it will enter the JackTransportStarting state and begin
- *  invoking their sync_callbacks until ready. This function is realtime-safe.
- *
- *      http://jackaudio.org/files/docs/html/transport-design.html
- *
- *  This position() function is called via perform::position_jack() in the
- *  mainwnd, perfedit, perfroll, and seqroll graphical user-interface support
- *  objects.
- *
- *  The code that was disabled sets the current tick to 0 or, if state was
- *  true, to the leftmost tick (which is probably the position of the L
- *  marker).  The current tick is then converted to a frame number, and then
- *  we locate the transport to that position.  We're going to enable this
- *  code, but make it dependent on a new boolean parameter that defaults to
- *  false, in anticipation of trying it out later.
- *
- *  These repositions reset the progress bars.  We don't always want that, it
- *  should be an option.  TODO.
- *
- * jack_transport_reposition():
- *
- *      Requests a new transport position.  The new position takes effect in
- *      two process cycles. If there are slow-sync clients and the transport
- *      is already rolling, it will enter the JackTransportStarting state and
- *      begin invoking their sync_callbacks until ready. This function is
- *      realtime-safe.
- *
- *      It's pos parameter provides the requested new transport position. Fill
- *      pos->valid to specify which fields should be taken into account. If
- *      you mark a set of fields as valid, you are expected to fill them all.
- *      Note that "frame" is always assumed, and generally needs to be set:
- *
- *         http://comments.gmane.org/gmane.comp.audio.jackit/18705
- *
- *      Returns 0 if a valid request, EINVAL if the position structure is
- *      rejected.
- *
- * \warning
- *      A lot of this code is effectively disabled by an early return
- *      statement.
- *
- * \param to_left_tick
- *      If true, the current tick is set to the leftmost tick, instead of the
- *      0th tick.  Now used, but only if relocate is true.  One question is,
- *      do we want to perform this function if rc().with_jack_transport() is
- *      true?  Seems like we should be able to do it only if m_jack_master is
- *      true.
- *
- * \param relocate
- *      If true (it defaults to false), then we allow the relocation of the
- *      JACK transport to the current_tick or the left tick, rather than to
- *      frame 0.  EXPERIMENTAL, enables dead code from seq24.  Seems to work
- *      if set to true when we are the JACK Master.  Enabling this code makes
- *      "klick -j -P" work, after a fashion.  It clicks, but at a way too
- *      rapid rate.
- */
 
 void
 jack_assistant::position (bool to_left_tick, midipulse tick)
@@ -1017,23 +947,19 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
         perform & p = j->m_jack_parent;
-
-        /*
-         * For start or for FF/RW/key-p when not running.  If we're stopped, we
-         * need to start, otherwise we need to reposition the transport marker.
-         */
-
-        if (! p.is_running())               // or j->is_running() ?
+        if (! p.is_running())
         {
+            /*
+             * For start or for FF/RW/key-p when not running.  If we're stopped,
+             * we need to start, otherwise we need to reposition the transport
+             * marker.
+             */
+
             jack_transport_state_t s =
                 jack_transport_query(j->client(), nullptr);
 
             if (s == JackTransportRolling || s == JackTransportStarting)
             {
-                /*
-                 * We need to start.
-                 */
-
                 j->m_jack_transport_state_last = JackTransportStarting;
                 if (p.start_from_perfedit())
                     p.inner_start(true);
@@ -1046,34 +972,14 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
                 long diff = tick - j->get_jack_stop_tick();
                 if (diff != 0)
                 {
-                    p.set_reposition();         // a perform option
-                    p.set_start_tick(tick);     // p.set_starting_tick(tick);
+                    p.set_reposition();
+                    p.set_start_tick(tick);
                     j->set_jack_stop_tick(tick);
                 }
             }
         }
 
 #endif  // SEQ64_STAZED_JACK_SUPPORT
-
-#ifdef SAMPLE_AUDIO_CODE    // disabled, shown only for reference & learning
-        jack_transport_state_t ts = jack_transport_query(jack->client(), NULL);
-        if (ts == JackTransportRolling)
-        {
-            jack_default_audio_sample_t * in;
-            jack_default_audio_sample_t * out;
-            if (client_state == Init)
-                client_state = Run;
-
-            in = jack_port_get_buffer(input_port, nframes);
-            out = jack_port_get_buffer(output_port, nframes);
-            memcpy(out, in, sizeof (jack_default_audio_sample_t) * nframes);
-        }
-        else if (ts == JackTransportStopped)
-        {
-            if (client_state == Run)
-                client_state = Exit;
-        }
-#endif
 
     }
     return 0;
@@ -1218,21 +1124,21 @@ jack_session_callback (jack_session_event_t * ev, void * arg)
  *
  * Stazed:
  *
- *      Another note about JACK....  If another JACK client is supplying
- *      tempo/BBT info that is different from seq42 (as Master), the perfroll
- *      grid will be incorrect. Perfroll uses internal temp/BBT and cannot
- *      update on the fly. Even if seq42 could support tempo/BBT changes, all
- *      info would have to be available before the transport start, to work.
- *      For this reason, the tempo/BBT info will be plugged from the seq42
- *      internal settings here... always. This is the method used by probably
- *      all other JACK clients with some sort of time-line. The JACK API
- *      indicates that BBT is optional and AFIK, other sequencers only use
- *      frame & frame_rate from JACK for internal calculations. The tempo and
- *      BBT info is always internal. Also, if there is no Master set, then we
- *      would need to plug it here to follow the JACK frame anyways.
+ *      Another note about JACK.  If another JACK client supplies tempo/BBT
+ *      different from seq42 (as Master), the perfroll grid will be incorrect.
+ *      Perfroll uses internal temp/BBT and cannot update on the fly. Even if
+ *      seq42 could support tempo/BBT changes, all info would have to be
+ *      available before the transport start, to work.  For this reason, the
+ *      tempo/BBT info will be plugged from the seq42 internal settings here,
+ *      always. This is the method used by probably all other JACK clients
+ *      with some sort of time-line. The JACK API indicates that BBT is
+ *      optional and AFIK, other sequencers only use frame & frame_rate from
+ *      JACK for internal calculations. The tempo and BBT info is always
+ *      internal. Also, if there is no Master set, then we would need to plug
+ *      it here to follow the JACK frame anyways.
  *
  * \param pad
- *      Provide a JACK scratchpad for sharing certain items between the
+ *      Provides a JACK scratchpad for sharing certain items between the
  *      perform object and the jack_assistant object.
  *
  * \return
@@ -1273,7 +1179,7 @@ jack_assistant::output (jack_scratchpad & pad)
                 jack_get_current_transport_frame(m_jack_client);
 
             m_jack_frame_last = m_jack_frame_current;
-            pad.js_dumping = true;          // info_message("Start playback");
+            pad.js_dumping = true;
             m_jack_tick = m_jack_pos.frame * m_jack_pos.ticks_per_beat *
                 m_jack_pos.beats_per_minute / (m_jack_pos.frame_rate * 60.0);
 
@@ -1284,10 +1190,7 @@ jack_assistant::output (jack_scratchpad & pad)
                 pad.js_ticks_converted_last = jack_ticks_converted;
 
             /*
-             * We need to make sure another thread can't modify these
-             * values.  Also, maybe some of the parent (perform) values need to
-             * move, to the scratch-pad, if not used directly in the perform
-             * object.  Why the "double" value here?
+             * We need to make sure another thread can't modify these values.
              */
 
             if (pad.js_looping && pad.js_playback_mode)
@@ -1296,6 +1199,11 @@ jack_assistant::output (jack_scratchpad & pad)
                 {
                     pad.js_current_tick -= m_jack_parent.left_right_size();
                 }
+
+                /*
+                 * Not sure that either of these lines have any effect!
+                 */
+
 #ifdef SEQ64_STAZED_JACK_SUPPORT
                 m_jack_parent.off_sequences();
 #else
@@ -1826,16 +1734,24 @@ jack_shutdown_callback (void * arg)
 long
 get_current_jack_position (void * arg)
 {
-    jack_assistant * j= (jack_assistant *)(arg);
+    jack_assistant * j = (jack_assistant *)(arg);
     double ppqn = double(j->get_ppqn());
     double ticks_per_beat = ppqn * 10;              // 192 * 10 = 1920
     double beats_per_minute = j->get_beats_per_measure();
     double beat_type = j->get_beat_width();
-    jack_nframes_t current_frame = jack_get_current_transport_frame(j->client());
-    double jack_tick = current_frame * ticks_per_beat * beats_per_minute /
-        (j->jack_frame_rate() * 60.0);              // need research
+    if (not_nullptr(j->client()))
+    {
+        jack_nframes_t frame = jack_get_current_transport_frame(j->client());
+        double jack_tick = frame * ticks_per_beat * beats_per_minute /
+            (j->jack_frame_rate() * 60.0);              // need research
 
-    return jack_tick * (ppqn / (ticks_per_beat * beat_type / 4.0));
+        return jack_tick * (ppqn / (ticks_per_beat * beat_type / 4.0));
+    }
+    else
+    {
+        j->error_message("Null JACK client");
+        return 0;
+    }
 }
 
 #endif      // SEQ64_STAZED_JACK_SUPPORT

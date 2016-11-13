@@ -318,7 +318,7 @@ const int c_scales_transpose_dn_neg[c_scale_size][SEQ64_OCTAVE_SIZE] =
 
 const char c_scales_text[c_scale_size][20] =            /* careful!        */
 {
-    "Off (chromatic)",
+    "Off (Chromatic)",
     "Major (Ionian)",
     "Minor (Aeolan)",
     "Harmonic Minor",

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-05
+ * \updates       2016-11-13
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -919,13 +919,13 @@ seqedit::popup_tool_menu ()
     holder->items().push_back(SeparatorElem());
     holder->items().push_back
     (
-        MenuElem("Expand Pattern (double)",
+        MenuElem("Expand pattern (double)",
             sigc::bind(DO_ACTION, c_expand_pattern, 0))
     );
 
     holder->items().push_back
     (
-        MenuElem("Compress Pattern (halve)",
+        MenuElem("Compress pattern (halve)",
             sigc::bind(DO_ACTION, c_compress_pattern, 0))
     );
 
@@ -971,7 +971,7 @@ seqedit::popup_tool_menu ()
             MenuElem("Harmonic-transpose selected", *holder2)
         );
     }
-    m_menu_tools->items().push_back(MenuElem("Modify Pitch", *holder));
+    m_menu_tools->items().push_back(MenuElem("Modify pitch", *holder));
 
 #ifdef USE_STAZED_RANDOMIZE_SUPPORT
 
@@ -986,7 +986,7 @@ seqedit::popup_tool_menu ()
     }
     m_menu_tools->items().push_back
     (
-        MenuElem("Randomize Event Values", *holder)
+        MenuElem("Randomize event values", *holder)
     );
 
 #endif

@@ -153,7 +153,7 @@ class jack_assistant
         void * arg
     );
 
-#if ! defined SEQ64_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     friend long get_current_jack_position (void * arg);
 #endif
 

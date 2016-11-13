@@ -2948,7 +2948,7 @@ sequence::stream_event (event & ev)
                 midipulse timestamp = ev.get_timestamp();
                 midibyte note = ev.get_note();
                 select_note_events(timestamp, note, timestamp, note, e_select);
-                quantize_events(EVENT_NOTE_ON, 0, m_snap_tick, 1 , true);
+                quantize_events(EVENT_NOTE_ON, 0, m_snap_tick, 1, true);
             }
         }
     }
@@ -4611,7 +4611,8 @@ sequence::set_transposable (bool flag)
  *
  * \param divide
  *      A rough indicator of the amount of quantization.  The only values used
- *      in the application seem to be either 1 or 2.
+ *      in the application are either 1 ("quantize") or 2 ("tighten").
+ *      The latter value reduces the amount of change slightly.
  *
  * \param linked
  *      False by default, this parameter indicates if marked events are to be
@@ -4715,7 +4716,29 @@ sequence::quantize_events
 }
 
 /**
- *  A new convenience function.
+ *  A new convenience function.  See the sequence::quantize_events() function
+ *  for more information.  This function just does locking and a push-undo
+ *  before calling that function.
+ *
+ * \param status
+ *      The kind of event to quantize, such as Note On, or the event type
+ *      selected in the pattern editor's data pane.
+ *
+ * \param cc
+ *      The control-change value to quantize, again as selected in the pattern
+ *      editor's data pane.  For Note Ons, this value should be set to 0.
+ *
+ * \param snap_tick
+ *      The number of ticks to use for quantizing the events.  Usually, this
+ *      is the snap value selected in the pattern editor.
+ *
+ * \param divide
+ *      Provides a division value, usually either 1 ("quantize") or 2
+ *      ("tighten").
+ *
+ * \param linked
+ *      Set this value to true for tightening notes.  The default value of
+ *      this parameter is false.
  */
 
 void

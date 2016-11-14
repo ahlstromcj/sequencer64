@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-11-09
+dnl \update        2016-11-14
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -257,7 +257,7 @@ CFLAGS="${CFLAGS}"
 dnl Checks for libraries.
 
 AC_CHECK_LIB(rt, main, ,
-    AC_MSG_ERROR([POSIX.1b RealTime Library Missing -lrt]))
+    AC_MSG_ERROR([POSIX.1b Realtime library missing librt]))
 
 dnl Convert from gtkmm-2.4 to gtkmm-3.0.  It currently builds either way.
 dnl No! I was mistaken, because I had left some 2.4 paths in place below.
@@ -294,7 +294,7 @@ dnl AC_PROG_DOXYGEN
 
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN";
-   then AC_MSG_WARN([Doxygen not found - continuing without Doxygen support])
+   then AC_MSG_WARN([Doxygen not found, continuing without Doxygen support])
 fi
 
 dnl 5.b. gcc support.
@@ -327,7 +327,7 @@ dnl
 dnl is a good place to start learning about building Windows applications.
 
 AC_XPC_MINGW32
-AC_ARG_WITH(mingw32,[  --with-mingw32[=DIR]    MingW32 installation location])
+AC_ARG_WITH(mingw32,[ --with-mingw32[=DIR] MingW32 installation location])
 
 dnl gtkmm
 dnl
@@ -384,10 +384,10 @@ if test "$jack" != "no"; then
         AC_MSG_RESULT([JACK support enabled.]);
 
     else
-        AC_MSG_WARN([*** Could not find JACK library, disabling JACK support])
+        AC_MSG_WARN([Could not find JACK library, disabling JACK support])
     fi
 else
-    AC_MSG_WARN([*** JACK support not enabled.]);
+    AC_MSG_WARN([JACK support not enabled.]);
 fi
 
 dnl LASH support
@@ -409,10 +409,10 @@ if test "$lash" != "no"; then
         AC_SUBST(LASH_LIBS)
         AC_MSG_RESULT([LASH support enabled.]);
     else
-        AC_MSG_WARN([*** LASH not found, session support will not be built.])
+        AC_MSG_WARN([LASH not found, session support will not be built.])
     fi
 else
-    AC_MSG_WARN([*** LASH support not enabled.]);
+    AC_MSG_WARN([LASH support not enabled.]);
 fi
 
 dnl PortMidi support
@@ -432,7 +432,7 @@ if test "$highlight" != "no"; then
     AC_DEFINE(HIGHLIGHT_EMPTY_SEQS, 1, [Define to enable highlighting empty sequences])
     AC_MSG_RESULT([Highlighting empty sequences enabled.]);
 else
-    AC_MSG_WARN([*** Highlighting empty sequences not enabled.]);
+    AC_MSG_WARN([Highlighting empty sequences not enabled.]);
 fi
 
 dnl Support for using the event editor.  It can cause issues if used, and adds
@@ -450,7 +450,7 @@ if test "$eveditor" != "no"; then
     AC_DEFINE(ENABLE_EVENT_EDITOR, 1, [Define to enable the event editor])
     AC_MSG_RESULT([Event editor enabled.]);
 else
-    AC_MSG_WARN([*** Event editor not enabled.]);
+    AC_MSG_WARN([Event editor not enabled.]);
 fi
 
 dnl Support for pausing playback in ALSA mode, including a pause button.
@@ -465,7 +465,7 @@ if test "$pause" != "no"; then
     AC_DEFINE(PAUSE_SUPPORT, 1, [Define to enable pausing and pause button])
     AC_MSG_RESULT([Pausing sequences and pause-button enabled.]);
 else
-    AC_MSG_WARN([*** Pausing sequences and pause-button not enabled.]);
+    AC_MSG_WARN([Pausing sequences and pause-button not enabled.]);
 fi
 
 dnl Support for re-enabling the "statistics" code.
@@ -481,7 +481,7 @@ if test "$statistics" != "no"; then
     AC_DEFINE(STATISTICS_SUPPORT, 1, [Define to enable statistics gathering])
     AC_MSG_RESULT([Statistics gathering enabled.]);
 else
-    AC_MSG_WARN([*** Statistics gathering not enabled.]);
+    AC_MSG_WARN([Statistics gathering not enabled.]);
 fi
 
 dnl Support for using the stazed JACK support.  Now enabled by default.
@@ -499,7 +499,7 @@ if test "$seq32jack" != "no"; then
     AC_DEFINE(JACK_SUPPORT, 1, [Define to enable JACK driver])
     AC_MSG_RESULT([Seq32 JACK support enabled.]);
 else
-    AC_MSG_WARN([*** Seq32 JACK support not enabled.]);
+    AC_MSG_WARN([Seq32 JACK support not enabled.]);
 fi
 
 dnl Support for using the stazed LFO window support.  Now enabled by default.
@@ -513,7 +513,7 @@ if test "$lfo" != "no"; then
     AC_DEFINE(STAZED_LFO_SUPPORT, 1, [Define to enable Seq32 LFO window support])
     AC_MSG_RESULT([Seq32 LFO window support enabled.]);
 else
-    AC_MSG_WARN([*** Seq32 LFO window support not enabled.]);
+    AC_MSG_WARN([Seq32 LFO window support not enabled.]);
 fi
 
 dnl Support for using the stazed chord generator.
@@ -527,7 +527,7 @@ if test "$chords" != "no"; then
     AC_DEFINE(STAZED_CHORD_GENERATOR, 1, [Define to enable the chord generator])
     AC_MSG_RESULT(Chord generator enabled.)
 else
-    AC_MSG_WARN([*** Chord generator not enabled.]);
+    AC_MSG_WARN([Chord generator not enabled.]);
 fi
 
 dnl Support for using the stazed transpose feature.  This affects sequence and
@@ -542,7 +542,7 @@ if test "$transpose" != "no"; then
     AC_DEFINE(STAZED_TRANSPOSE, 1, [Define to enable global transpose])
     AC_MSG_RESULT(Global seq32 transpose enabled.)
 else
-    AC_MSG_WARN([*** Global seq32 transpose not enabled.]);
+    AC_MSG_WARN([Global seq32 transpose not enabled.]);
 fi
 
 dnl Support for stripping unused mute-group specifications from the output MIDI
@@ -559,7 +559,7 @@ if test "$mutestrip" != "no"; then
     AC_DEFINE(STRIP_EMPTY_MUTES, 1, [Define to enable empty mute-group stripping])
     AC_MSG_RESULT(Empty mute-strip enabled.)
 else
-    AC_MSG_WARN([*** Empty mute-strip not enabled.]);
+    AC_MSG_WARN([Empty mute-strip not enabled.]);
 fi
 
 dnl 6.0  Top portion of the config.h/sequencer64-config.h header files.
@@ -575,7 +575,7 @@ dnl #define API_VERSION "0.9"             // defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-11-09"
+#define VERSION_DATE_SHORT "2016-11-14"
 #define VERSION "0.9.21"
 
 )

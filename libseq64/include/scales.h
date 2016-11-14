@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-06
- * \updates       2016-06-24
+ * \updates       2016-11-13
  * \license       GNU GPLv2 or above
  *
  *  These values were moved from the globals module.  Now included the
@@ -36,8 +36,6 @@
  *  configure.ac file.  It can be disabled by the command
  *  "./configure --disable-chords".
  */
-
-#include <string>
 
 #include "easy_macros.h"                /* with platform_macros.h, too  */
 
@@ -457,6 +455,6 @@ const int c_chord_table[c_chord_number][c_chord_size] =
 /*
  * scales.h
  *
- * vim: sw=4 ts=4 wm=4 et ft=cpp
+ * vim: sw=4 ts=4 wm=4 et ft=c
  */
 

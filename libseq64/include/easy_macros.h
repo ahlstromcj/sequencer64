@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2016-04-09
+ * \updates       2016-11-17
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -41,16 +41,59 @@
 #endif
 
 /**
- * Language macros:
+ *  Language macros:
  *
- *    Provides an alternative to NULL.
+ *  __cplusplus >= 201103L implies C++11
+ *
+ *    "nullptr" provides an alternative to NULL in older compilers.
+ *
+ *    "override" is undefined (defined to nothing) in older compilers.
+ *
+ *  http://stackoverflow.com/questions/11053960/
+ *      how-are-the-cplusplus-directive-defined-in-various-compilers
+ *
+ *    The 199711L stands for Year=1997, Month = 11 (i.e., November of 1997) --
+ *    the date when the committee approved the standard that the rest of the
+ *    ISO approved in early 1998.
+ *
+ *    For the 2003 standard, there were few enough changes that the committee
+ *    (apparently) decided to leave that value unchanged.
+ *
+ *    For the 2011 standard, it's required to be defined as 201103L, (again,
+ *    year=2011, month = 03) again meaning that the committee approved the
+ *    standard as finalized in March of 2011.
+ *
+ *    For the 2014 standard, it's required to be defined as 201402L,
+ *    interpreted the same way as above (February 2014).
+ *
+ *    Before the original standard was approved, quite a few compilers
+ *    normally defined it to 0 (or just an empty definition like #define
+ *    __cplusplus) to signify "not-conforming". When asked for their strictest
+ *    conformance, many defined it to 1.
  */
 
-#if ! defined __cplus_plus
+#if ! defined __cplusplus
+
 #define nullptr                  0
-#elif __cplus_plus <= 199711L
+#define override
+
+#else
+
+/* #if __cplusplus <= 199711L */
+
+#if __cplusplus >= 201103L                      /* C++11 */
+
 #define nullptr                  0
+#define override                 override
+
+#else
+
+#define nullptr                  0
+#define override
+
 #endif
+
+#endif                                          /* defined __cplusplus  */
 
 /**
  *    Provides a way to declare functions as having either a C++ or C

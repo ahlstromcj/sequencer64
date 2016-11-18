@@ -10,11 +10,11 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2016-11-17
+ * \updates       2016-11-18
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
- *  Copyright (C) 2013-2015 Chris Ahlstrom <ahlstromcj@gmail.com>
+ *  Copyright (C) 2013-2016 Chris Ahlstrom <ahlstromcj@gmail.com>
  *
  *  The macros in this file cover:
  *
@@ -74,26 +74,29 @@
 
 #if ! defined __cplusplus
 
-#define nullptr                  0
+#define nullptr                 0
 #define override
+#define noexcept
 
 #else
 
 /* #if __cplusplus <= 199711L */
 
-#if __cplusplus >= 201103L                      /* C++11 */
+#if __cplusplus >= 201103L      /* C++11                */
 
-#define nullptr                  0
-#define override                 override
+#define nullptr                 0
+#define override                override
+#define noexcept                noexcept
 
 #else
 
-#define nullptr                  0
+#define nullptr                 0
 #define override
+#define noexcept                throw()
 
-#endif
+#endif                          /* not C++11            */
 
-#endif                                          /* defined __cplusplus  */
+#endif                          /* defined __cplusplus  */
 
 /**
  *    Provides a way to declare functions as having either a C++ or C
@@ -217,6 +220,18 @@ typedef bool cbool_t;
 #define errprint(x)           fprintf(stderr, "%s!?\n", x)
 #else
 #define errprint(x)
+#endif
+
+/**
+ *  Usage:      errprintfunc(cstring);
+ *
+ *    Provides an error reporting macro that includes the function name.
+ */
+
+#ifdef PLATFORM_DEBUG
+#define errprintfunc(x)       fprintf(stderr, "%s: %s!?\n", __func__, x)
+#else
+#define errprintfunc(x)
 #endif
 
 /**

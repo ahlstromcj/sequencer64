@@ -81,6 +81,7 @@ top_srcdir = @top_srcdir@
 builddir = @abs_top_builddir@
 
 libseq64dir = $(builddir)/libseq64/src/.libs
+libseq_alsamididir = $(builddir)/seq_alsamidi/src/.libs
 libseq_gtkmm2dir = $(builddir)/seq_gtkmm2/src/.libs
 
 #******************************************************************************
@@ -92,10 +93,9 @@ libseq_gtkmm2dir = $(builddir)/seq_gtkmm2/src/.libs
 #
 #------------------------------------------------------------------------------
 
-# AM_CPPFLAGS = 
-
 AM_CXXFLAGS = \
  -I$(top_srcdir)/libseq64/include \
+ -I$(top_srcdir)/seq_alsamidi/include \
  -I$(top_srcdir)/seq_gtkmm2/include \
  $(GTKMM_CFLAGS) \
  $(JACK_CFLAGS) \
@@ -131,7 +131,8 @@ libmath = -lm
 
 libraries = \
  -L$(libseq_gtkmm2dir) -lseq_gtkmm2 \
- -L$(libseq64dir) -lseq64
+ -L$(libseq64dir) -lseq64 \
+ -L$(libseq_alsamididir) -lseq_alsamidi
 
 #****************************************************************************
 # Project-specific dependency files
@@ -143,6 +144,7 @@ libraries = \
 #----------------------------------------------------------------------------
 
 dependencies = \
+ $(libseq_alsamididir)/libseq_alsamidi.la \
  $(libseq_gtkmm2dir)/libseq_gtkmm2.la \
  $(libseq64dir)/libseq64.la
 

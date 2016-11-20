@@ -6,7 +6,7 @@
 # \library    	libseq_portmidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-09-18
+# \update      2016-11-20
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -102,6 +102,7 @@ AM_CXXFLAGS = \
  -I../include \
  -I$(top_srcdir)/include \
  -I$(top_srcdir)/libseq64/include \
+ -I$(top_srcdir)/seq_alsamidi/include \
  -Wall $(MM_WFLAGS)
 
 #******************************************************************************
@@ -119,7 +120,7 @@ libseq_portmidi_la_SOURCES = \
 	midibus_portmidi.cpp
 
 libseq_portmidi_la_LDFLAGS = -version-info $(version)
-libseq_portmidi_la_LIBADD = $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)
+libseq_portmidi_la_LIBADD = $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)
 
 #******************************************************************************
 # uninstall-hook

@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-11-19
+# \update      2016-11-20
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -111,6 +111,7 @@ git_info = "$(git_version) $(git_branch)"
 AM_CXXFLAGS = \
  -I../include \
  -I$(top_srcdir)/include \
+ -I$(top_srcdir)/seq_alsamidi/include \
  $(ALSA_CFLAGS) \
  $(JACK_CFLAGS) \
  $(LASH_CFLAGS) \
@@ -125,6 +126,12 @@ lib_LTLIBRARIES = libseq64.la
 
 #******************************************************************************
 # Source files
+#
+#  These files have been moved to the new seq_alsamidi library:
+#
+#     mastermidibus.cpp
+#     midibus.cpp
+#
 #----------------------------------------------------------------------------
 
 libseq64_la_SOURCES = \
@@ -145,8 +152,6 @@ libseq64_la_SOURCES = \
    keys_perform.cpp \
 	keystroke.cpp \
 	lash.cpp \
-	mastermidibus.cpp \
-   midibus.cpp \
    midibyte.cpp \
    midifile.cpp \
    midi_container.cpp \
@@ -167,8 +172,6 @@ libseq64_la_SOURCES = \
 
 libseq64_la_LDFLAGS = -version-info $(version)
 libseq64_la_LIBADD = $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)
-
-# libseq64_la_LIBADD = $(GTKMM_LIBS) ...
 
 #******************************************************************************
 # uninstall-hook

@@ -1,17 +1,17 @@
 #******************************************************************************
-# Makefile.am (libseq_gtkmm2)
+# Makefile.am (libseq_alsamidi)
 #------------------------------------------------------------------------------
 ##
 # \file       	Makefile.am
-# \library    	libseq_gtkmm2 library
+# \library    	libseq_alsamidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-11-20
+# \update      2016-09-18
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
-# 		This module provides an Automake makefile for the libseq_gtkmm2 C/C++
-# 		library.
+# 		This module provides an Automake makefile for the libseq_alsamidi
+# 		C/C++ library.
 #
 #------------------------------------------------------------------------------
 
@@ -41,7 +41,6 @@ EXTRA_DIST =
 
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
-GIT_VERSION = @GIT_VERSION@
 
 SEQUENCER64_API_MAJOR = @SEQUENCER64_API_MAJOR@
 SEQUENCER64_API_MINOR = @SEQUENCER64_API_MINOR@
@@ -56,13 +55,13 @@ SEQUENCER64_LT_AGE = @SEQUENCER64_LT_AGE@
 # Install directories
 #------------------------------------------------------------------------------
 
-prefix = @prefix@
-includedir = @sequencer64includedir@
-libdir = @sequencer64libdir@
-datadir = @datadir@
-datarootdir = @datarootdir@
+sequencer64docdir = @sequencer64docdir@
 sequencer64includedir = @sequencer64includedir@
 sequencer64libdir = @sequencer64libdir@
+
+prefix = @prefix@
+libdir = @sequencer64libdir@
+datadir = @datadir@
 
 #******************************************************************************
 # localedir
@@ -83,21 +82,17 @@ DEFS = -DLOCALEDIR=\"$(localedir)\" @DEFS@
 top_srcdir = @top_srcdir@
 builddir = @abs_top_builddir@
 
+#******************************************************************************
+# aclocal support
+#------------------------------------------------------------------------------
+
+ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
+
 #*****************************************************************************
 # libtool
 #-----------------------------------------------------------------------------
 
 version = $(SEQUENCER64_API_MAJOR):$(SEQUENCER64_API_MINOR):$(SEQUENCER64_API_PATCH)
-
-#*****************************************************************************
-# git_version
-#-----------------------------------------------------------------------------
-# git_version = $(shell git describe --abbrev=7 --always --tags)
-#-----------------------------------------------------------------------------
-
-git_version = $(shell git describe --tags --long)
-git_branch =$(shell git branch | grep -e ^*)
-git_info = "$(git_version) $(git_branch)"
 
 #******************************************************************************
 # Compiler and linker flags (later, PortMidi)
@@ -107,64 +102,24 @@ AM_CXXFLAGS = \
  -I../include \
  -I$(top_srcdir)/include \
  -I$(top_srcdir)/libseq64/include \
- -I$(top_srcdir)/seq_alsamidi/include \
- -I$(top_srcdir)/resources \
- $(ALSA_CFLAGS) \
- $(GTKMM_CFLAGS) \
- $(JACK_CFLAGS) \
- $(LASH_CFLAGS) \
- -DSEQ64_GIT_VERSION=\"$(git_info)\" \
  -Wall $(MM_WFLAGS)
 
 #******************************************************************************
 # The library to build, a libtool-based library
 #------------------------------------------------------------------------------
 
-lib_LTLIBRARIES = libseq_gtkmm2.la
+lib_LTLIBRARIES = libseq_alsamidi.la
 
 #******************************************************************************
 # Source files
 #----------------------------------------------------------------------------
-#
-# seq24seqroll.cpp now obsolete, removed from the build.
-#
-#----------------------------------------------------------------------------
 
-libseq_gtkmm2_la_SOURCES = \
-   eventedit.cpp \
-   eventslots.cpp \
-	font.cpp \
-	fruityperfroll_input.cpp \
-   fruityseq.cpp \
-   fruityseqroll.cpp \
-   gui_assistant_gtk2.cpp \
-   gui_drawingarea_gtk2.cpp \
-   gui_key_tests.cpp \
-   gui_palette_gtk2.cpp \
-   gui_window_gtk2.cpp \
-	keybindentry.cpp \
-   keys_perform_gtk2.cpp \
-   lfownd.cpp \
-	maintime.cpp \
-	mainwid.cpp \
-	mainwnd.cpp \
-	options.cpp \
-	perfedit.cpp \
-	perfnames.cpp \
-	perfroll.cpp \
-	perfroll_input.cpp \
-	perftime.cpp \
-	seq24seq.cpp \
-	seqdata.cpp \
-	seqedit.cpp \
-	seqevent.cpp \
-	seqkeys.cpp \
-	seqmenu.cpp \
-	seqroll.cpp \
-	seqtime.cpp
+libseq_alsamidi_la_SOURCES = \
+	mastermidibus.cpp \
+	midibus.cpp
 
-libseq_gtkmm2_la_LDFLAGS = -version-info $(version)
-libseq_gtkmm2_la_LIBADD = $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)
+libseq_alsamidi_la_LDFLAGS = -version-info $(version)
+libseq_alsamidi_la_LIBADD = $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)
 
 #******************************************************************************
 # uninstall-hook
@@ -179,7 +134,7 @@ uninstall-hook:
 	@echo "Note:  you may want to remove $(libdir) manually"
 
 #******************************************************************************
-# Makefile.am (libseq_gtkmm2)
+# Makefile.am (libseq_alsamidi)
 #------------------------------------------------------------------------------
 # 	vim: ts=3 sw=3 ft=automake
 #------------------------------------------------------------------------------

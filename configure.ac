@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-11-19
+dnl \update        2016-11-20
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -636,6 +636,9 @@ AC_CONFIG_FILES([
  libseq64/Makefile
  libseq64/include/Makefile
  libseq64/src/Makefile
+ seq_alsamidi/Makefile
+ seq_alsamidi/include/Makefile
+ seq_alsamidi/src/Makefile
  seq_gtkmm2/Makefile
  seq_gtkmm2/include/Makefile
  seq_gtkmm2/src/Makefile

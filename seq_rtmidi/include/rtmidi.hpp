@@ -1,5 +1,5 @@
-#ifndef SEQ64_RTEXMIDI_HPP
-#define SEQ64_RTEXMIDI_HPP
+#ifndef SEQ64_RTMIDI_HPP
+#define SEQ64_RTMIDI_HPP
 
 /**
  * \file          rtmidi.hpp
@@ -8,22 +8,21 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-18
+ * \updates       2016-11-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
- *
- * \class rtmidi
  */
 
-#define SEQ64_RTMIDI_VERSION "2.1.1"        /* starting revision */
+#define SEQ64_RTMIDI_VERSION "2.1.1"        /* revision at fork time        */
 
 #include <exception>
 #include <iostream>
 #include <string>
-#include <vector>
 
-#include "easy_macros.hpp"
-
-class midi_api;
+#include "easy_macros.h"                    /* platform macros for compiler */
+#include "seq64_rtmidi_features.h"          /* SEQ64_BUILD_LINUX_ALSA etc.  */
+#include "midi_api.hpp"                     /* seq64::midi[_in][_out]_api   */
+#include "rtmidi_types.hpp"                 /* seq64::rtmidi_api type       */
+#include "rterror.hpp"                      /* seq64::rterror               */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -33,27 +32,12 @@ namespace seq64
 {
 
 /**
- *  The main class of the rtmidi API.
+ *  The main class of the rtmidi API.  We moved the enum Api definition into
+ *  the new rtmidi_types.hpp module to make refactoring the code easier.
  */
 
 class rtmidi
 {
-
-public:
-
-  /**
-   *    MIDI API specifier arguments.
-   */
-
-    enum Api
-    {
-        UNSPECIFIED,    /**< Search for a working compiled API.             */
-        MACOSX_CORE,    /**< Macintosh OS-X Core Midi API.                  */
-        LINUX_ALSA,     /**< The Advanced Linux Sound Architecture API.     */
-        UNIX_JACK,      /**< The JACK Low-Latency MIDI Server API.          */
-        WINDOWS_MM,     /**< The Microsoft Multimedia MIDI API.             */
-        RTMIDI_DUMMY    /**< A compilable but non-functional API.           */
-    };
 
 protected:
 
@@ -77,7 +61,7 @@ public:
      *  compiled for certain operating systems.
      */
 
-    static void get_compiled_api (std::vector<rtmidi::Api> & apis);
+    static void get_compiled_api (std::vector<rtmidi_api> & apis);
 
     virtual void open_port
     (
@@ -101,7 +85,7 @@ public:
 
     virtual void seterrorcallback
     (
-        rtmidierrorcallback errorcallback = nullptr,
+        rterror_callback errorcallback = nullptr,
         void * userdata = 0
     ) = 0;
 
@@ -127,17 +111,6 @@ class rtmidi_in : public rtmidi
 {
 
 public:
-
-    /**
-     *  User callback function type definition.
-     */
-
-    typedef void (* rtmidi_callback_t)
-    (
-        double timeStamp,
-        std::vector<midibyte> * message,
-        void * userdata
-    );
 
     /**
      *  Default constructor that allows an optional api, client name and queue
@@ -166,7 +139,7 @@ public:
 
     rtmidi_in
     (
-        rtmidi::Api api=UNSPECIFIED,
+        rtmidi_api api = RTMIDI_API_UNSPECIFIED,
         const std::string & clientname = "rtmidi input client",
         unsigned queuesizelimit = 100
     );
@@ -181,7 +154,7 @@ public:
      *  Returns the MIDI API specifier for the current instance of rtmidi_in.
      */
 
-    rtmidi::Api get_current_api () const
+    rtmidi_api get_current_api () const
     {
         return m_rtapi->get_current_api();
     }
@@ -350,7 +323,7 @@ public:
 
     virtual void seterrorcallback
     (
-        rtmidierrorcallback errorcallback = nullptr,
+        rterror_callback errorcallback = nullptr,
         void * userdata = 0
     )
     {
@@ -361,7 +334,7 @@ protected:
 
     void openmidi_api
     (
-        rtmidi::Api api,
+        rtmidi_api api,
         const std::string & clientname,
         unsigned queuesizelimit
     );
@@ -399,7 +372,7 @@ public:
 
     rtmidi_out
     (
-        rtmidi::Api api = UNSPECIFIED,
+        rtmidi_api api = RTMIDI_API_UNSPECIFIED,
         const std::string & clientname = "rtmidi output client"
     );
 
@@ -413,7 +386,7 @@ public:
      *  Returns the MIDI API specifier for the current instance of rtmidi_out.
      */
 
-    rtmidi::Api get_current_api () const
+    rtmidi_api get_current_api () const
     {
        return m_rtapi->get_current_api();
     }
@@ -430,7 +403,7 @@ public:
     void open_port
     (
         unsigned portnumber = 0,
-        const std::string portname = "rtmidi Output"
+        const std::string & portname = "rtmidi output"
     )
     {
        m_rtapi->open_port(portnumber, portname);
@@ -512,7 +485,7 @@ public:
 
     virtual void seterrorcallback
     (
-        rtmidierrorcallback errorcallback = NULL,
+        rterror_callback errorcallback = NULL,
         void * userdata = 0
     )
     {
@@ -521,13 +494,13 @@ public:
 
 protected:
 
-  void openmidi_api (rtmidi::Api api, const std::string & clientname);
+  void openmidi_api (rtmidi_api api, const std::string & clientname);
 
 };
 
 }           // namespace seq64
 
-#endif      // SEQ64_RTEXMIDI_HPP
+#endif      // SEQ64_RTMIDI_HPP
 
 /*
  * rtmidi.hpp

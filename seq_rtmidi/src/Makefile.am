@@ -5,8 +5,8 @@
 # \file       	Makefile.am
 # \library    	seq_rtmidi library
 # \author     	Chris Ahlstrom
-# \date       	2015-09-11
-# \update      2016-11-09
+# \date       	2016-11-19
+# \update      2016-11-19
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -109,7 +109,8 @@ git_info = "$(git_version) $(git_branch)"
 AM_CXXFLAGS = \
  -I../include \
  -I$(top_srcdir)/include \
- -I$(top_srcdir)/seq_gtkmm2/include \
+ -I$(top_srcdir)/libseq64/include \
+ -I$(top_srcdir)/seq_rtmidi/include \
  $(ALSA_CFLAGS) \
  $(JACK_CFLAGS) \
  -DSEQ64_GIT_VERSION=\"$(git_info)\" \
@@ -119,7 +120,7 @@ AM_CXXFLAGS = \
 # The library to build, a libtool-based library
 #------------------------------------------------------------------------------
 
-lib_LTLIBRARIES = seq_rtmidi.la
+lib_LTLIBRARIES = libseq_rtmidi.la
 
 #******************************************************************************
 # Source files

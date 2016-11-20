@@ -51,12 +51,12 @@ public:
     ~midi_in_core ();
 
     /**
-     * \getter rtmidi::MACOSX_CORE
+     * \getter RTMIDI_API_MACOSX_CORE
      */
 
-    rtmidi::Api get_current_api () const
+    rtmidi_api get_current_api () const
     {
-        return rtmidi::MACOSX_CORE;
+        return RTMIDI_API_MACOSX_CORE;
     }
 
     void open_port (unsigned portnumber, const std::string & portname);
@@ -84,12 +84,12 @@ public:
     ~midi_out_core ();
 
     /**
-     * \getter rtmidi::MACOSX_CORE
+     * \getter RTMIDI_API_MACOSX_CORE
      */
 
-    rtmidi::Api get_current_api () const
+    rtmidi_api get_current_api () const
     {
-        return rtmidi::MACOSX_CORE;
+        return RTMIDI_API_MACOSX_CORE;
     }
 
     void open_port (unsigned portnumber, const std::string & portname);

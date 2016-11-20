@@ -13,6 +13,7 @@
  */
 
 #include "midi_api.hpp"
+#include "rtmidi.hpp"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -82,17 +83,17 @@ midi_api::error (rterror::Type type, const std::string & errorstring)
 
     if (type == rterror::WARNING)
     {
-        errprint(errorstring);
+        errprint(errorstring.c_str());
     }
     else if (type == rterror::DEBUG_WARNING)
     {
 #ifdef SEQ64_USE_DEBUG_OUTPUT
-        errprintf(errorstring);
+        errprint(errorstring.c_str());
 #endif
     }
     else
     {
-        errprintf(errorstring);
+        errprint(errorstring.c_str());
         throw rterror(errorstring, type);
     }
 }
@@ -135,14 +136,14 @@ midi_in_api::~midi_in_api ()
  * \param callback
  *      Provides the callback function.
  *
- * \param
+ * \param userdata
  *      Provides the user data needed by the callback function.
  */
 
 void
 midi_in_api::set_callback
 (
-    rtmidi_in::rtmidi_callback_t callback,
+    rtmidi_callback_t callback,
     void * userdata
 )
 {

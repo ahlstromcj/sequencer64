@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-18
+ * \updates       2016-11-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -50,7 +50,7 @@ struct JackMidiData
     jack_ringbuffer_t * buffSize;
     jack_ringbuffer_t * buffMessage;
     jack_time_t lastTime;
-    midi_in_api::rtmidi_in_data * rtMidiIn;
+    rtmidi_in_data * rtMidiIn;
 };
 
 /*
@@ -74,7 +74,7 @@ static int
 jackProcessIn (jack_nframes_t nframes, void *arg)
 {
     JackMidiData * jData = (JackMidiData *) arg;
-    midi_in_api::rtmidi_in_data * rtData = jData->rtMidiIn;
+    rtmidi_in_data * rtData = jData->rtMidiIn;
     jack_midi_event_t event;
     jack_time_t time;
     if (jData->port == NULL)                 /* is port created?        */
@@ -89,7 +89,7 @@ jackProcessIn (jack_nframes_t nframes, void *arg)
     int evCount = jack_midi_get_event_count(buff);
     for (int j = 0; j < evCount; ++j)
     {
-        midi_in_api::midi_message message;
+        midi_message message;
         message.bytes.clear();
         jack_midi_event_get(&event, buff, j);
         for (unsigned i = 0; i < event.size; ++i)
@@ -106,9 +106,7 @@ jackProcessIn (jack_nframes_t nframes, void *arg)
         {
             if (rtData->usingCallback)
             {
-                rtmidi_in::rtmidi_callback_t callback =
-                    (rtmidi_in::rtmidi_callback_t) rtData->userCallback;
-
+                rtmidi_callback_t callback = rtData->userCallback;
                 callback(message.timeStamp, &message.bytes, rtData->userdata);
             }
             else
@@ -149,7 +147,8 @@ midi_in_jack::midi_in_jack
     const std::string & clientname,
     unsigned queuesize
 ) :
-    midi_in_api(queuesize)
+    midi_in_api     (queuesize),
+    m_clientname    ()
 {
     initialize(clientname);
 }
@@ -170,7 +169,7 @@ midi_in_jack::initialize (const std::string & clientname)
     data->rtMidiIn = &m_input_data;
     data->port = NULL;
     data->client = NULL;
-    this->clientname = clientname;
+    this->m_clientname = clientname;
     connect();
 }
 
@@ -192,10 +191,13 @@ midi_in_jack::connect ()
     if (data->client)
         return;
 
-    data->client = jack_client_open(clientname.c_str(), JackNoStartServer, NULL);
+    data->client = jack_client_open
+    (
+        m_clientname.c_str(), JackNoStartServer, NULL
+    );
     if (is_nullptr(data->client))
     {
-        m_error_string = "midi_in_jack::initialize(): JACK server not running?";
+        m_error_string = func_message("JACK server not running?");
         error(rterror::WARNING, m_error_string);
         return;
     }
@@ -248,7 +250,7 @@ midi_in_jack::open_port (unsigned portnumber, const std::string & portname)
 
     if (is_nullptr(data->port))
     {
-        m_error_string = "midi_in_jack::open_port(): JACK error creating port";
+        m_error_string = func_message("JACK error creating port");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -267,7 +269,8 @@ midi_in_jack::open_port (unsigned portnumber, const std::string & portname)
  *      Provides the port name under which the virtual port is registered.
  */
 
-void midi_in_jack::open_virtual_port(const std::string portname)
+void
+midi_in_jack::open_virtual_port (const std::string & portname)
 {
     JackMidiData * data = static_cast<JackMidiData *>(m_api_data);
     connect();
@@ -281,9 +284,7 @@ void midi_in_jack::open_virtual_port(const std::string portname)
     }
     if (is_nullptr(data->port))
     {
-        m_error_string = "midi_in_jack::open_virtual_port(): "
-                         "JACK error creating virtual port";
-
+        m_error_string = func_message("JACK error creating virtual port");
         error(rterror::DRIVER_ERROR, m_error_string);
     }
 }
@@ -343,7 +344,7 @@ midi_in_jack::get_port_name (unsigned portnumber)
     );
     if (is_nullptr(ports))                      /* Check port validity      */
     {
-        m_error_string = "midi_in_jack::get_port_name(): no ports available!";
+        m_error_string = func_message("no ports available");
         error(rterror::WARNING, m_error_string);
         return result;
     }
@@ -352,9 +353,8 @@ midi_in_jack::get_port_name (unsigned portnumber)
     {
         std::ostringstream ost;
         ost
-            << "midi_in_jack::get_port_name(): "
-               "the 'portnumber' argument ("
-            << portnumber << ") is invalid."
+            << func_message("'portnumber' argument (")
+            << portnumber << ") is invalid"
             ;
         m_error_string = ost.str();
         error(rterror::WARNING, m_error_string);
@@ -432,7 +432,8 @@ jackProcessOut (jack_nframes_t nframes, void * arg)
 
 midi_out_jack::midi_out_jack (const std::string & clientname)
  :
-    midi_out_api ()
+    midi_out_api    (),
+    m_clientname    ()
 {
     initialize(clientname);
 }
@@ -467,14 +468,15 @@ midi_out_jack::initialize (const std::string & clientname)
     m_api_data = (void *) data;
     data->port = nullptr;
     data->client = nullptr;
-    this->clientname = clientname;
+    this->m_clientname = clientname;
     connect();
 }
 
 /**
  *  Connects the MIDI output port.  The following calls are made:
  *
- *      -   jack_ringbuffer_create(), called twice
+ *      -   jack_ringbuffer_create(), called twice, to initialize the
+ *          output ringbuffers
  *      -   jack_client_open(), to initialize JACK client
  *      -   jack_set_process_callback(), to set jackProcessIn()
  *      -   jack_activate()
@@ -490,21 +492,18 @@ midi_out_jack::connect ()
     if (not_nullptr(data->client))
         return;
 
-    // Initialize output ringbuffers
-
     data->buffSize = jack_ringbuffer_create(JACK_RINGBUFFER_SIZE);
     data->buffMessage = jack_ringbuffer_create(JACK_RINGBUFFER_SIZE);
-
-    // Initialize JACK client
-
-    data->client = jack_client_open(clientname.c_str(), JackNoStartServer, NULL);
+    data->client = jack_client_open             /* initialize JACK client   */
+    (
+        m_clientname.c_str(), JackNoStartServer, NULL
+    );
     if (is_nullptr(data->client))
     {
-        m_error_string = "midi_out_jack::initialize(): JACK server not running?";
+        m_error_string = func_message("JACK server not running?");
         error(rterror::WARNING, m_error_string);
         return;
     }
-
     jack_set_process_callback(data->client, jackProcessOut, data);
     jack_activate(data->client);
 }
@@ -539,7 +538,7 @@ midi_out_jack::open_port (unsigned portnumber, const std::string & portname)
 
     if (is_nullptr(data->port))
     {
-        m_error_string = "midi_out_jack::open_port(): JACK error creating port";
+        m_error_string = func_message("JACK error creating port");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -574,9 +573,7 @@ midi_out_jack::open_virtual_port (const std::string & portname)
 
     if (is_nullptr(data->port))
     {
-        m_error_string = "midi_out_jack::open_virtual_port(): "
-                         "JACK error creating virtual port";
-
+        m_error_string = func_message("JACK error creating virtual port");
         error(rterror::DRIVER_ERROR, m_error_string);
     }
 }
@@ -598,8 +595,7 @@ midi_out_jack::get_port_count ()
     if (not_nullptr(data->client))
         return 0;
 
-    // List of available ports
-    const char ** ports = jack_get_ports
+    const char ** ports = jack_get_ports    /* list of available ports */
     (
         data->client, NULL, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput
     );
@@ -638,7 +634,7 @@ midi_out_jack::get_port_name (unsigned portnumber)
 
     if (is_nullptr(ports))
     {
-        m_error_string = "midi_out_jack::get_port_name(): no ports available";
+        m_error_string = func_message("no ports available");
         error(rterror::WARNING, m_error_string);
         return result;
     }
@@ -647,8 +643,7 @@ midi_out_jack::get_port_name (unsigned portnumber)
     {
         std::ostringstream ost;
         ost
-            << "midi_out_jack::get_port_name(): "
-               "the 'portnumber' argument ("
+            << func_message("'portnumber' argument (")
             << portnumber << ") is invalid."
             ;
         m_error_string = ost.str();

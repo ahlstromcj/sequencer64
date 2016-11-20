@@ -38,12 +38,12 @@ public:
     ~midi_in_winmm ();
 
     /**
-     * \getter rtmidi::WINDOWS_MM
+     * \getter RTMIDI_API_WINDOWS_MM
      */
 
-    rtmidi::Api get_current_api () const
+    rtmidi_api get_current_api () const
     {
-        return rtmidi::WINDOWS_MM;
+        return RTMIDI_API_WINDOWS_MM;
     }
 
     void open_port (unsigned portnumber, const std::string & portname);
@@ -71,12 +71,12 @@ public:
     ~midi_out_winmm ();
 
     /**
-     * \getter rtmidi::WINDOWS_MM
+     * \getter RTMIDI_API_WINDOWS_MM
      */
 
-    rtmidi::Api get_current_api () const
+    rtmidi_api get_current_api () const
     {
-        return rtmidi::WINDOWS_MM;
+        return RTMIDI_API_WINDOWS_MM;
     }
 
     void open_port (unsigned portnumber, const std::string & portname);

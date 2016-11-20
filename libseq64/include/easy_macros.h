@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2016-11-18
+ * \updates       2016-11-20
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -210,6 +210,12 @@ typedef bool cbool_t;
 #endif  // PLATFORM_GNU
 
 /**
+ *  A macro to prepend a fully qualified function name to a string.
+ */
+
+#define func_message(x)         message_concatenate(__func__, x)
+
+/**
  *  Usage:      errprint(cstring);
  *
  *    Provides an error reporting macro (which happens to match Chris's XPC
@@ -217,7 +223,7 @@ typedef bool cbool_t;
  */
 
 #ifdef PLATFORM_DEBUG
-#define errprint(x)           fprintf(stderr, "%s!?\n", x)
+#define errprint(x)             fprintf(stderr, "%s!?\n", x)
 #else
 #define errprint(x)
 #endif
@@ -229,7 +235,7 @@ typedef bool cbool_t;
  */
 
 #ifdef PLATFORM_DEBUG
-#define errprintfunc(x)       fprintf(stderr, "%s: %s!?\n", __func__, x)
+#define errprintfunc(x)         fprintf(stderr, "%s: %s!?\n", __func__, x)
 #else
 #define errprintfunc(x)
 #endif
@@ -242,7 +248,7 @@ typedef bool cbool_t;
  */
 
 #ifdef PLATFORM_DEBUG
-#define errprintf(fmt, x)     fprintf(stderr, fmt, x)
+#define errprintf(fmt, x)       fprintf(stderr, fmt, x)
 #else
 #define errprintf(fmt, x)
 #endif
@@ -255,7 +261,7 @@ typedef bool cbool_t;
  */
 
 #ifdef PLATFORM_DEBUG
-#define warnprint(x)          fprintf(stderr, "%s!\n", x)
+#define warnprint(x)            fprintf(stderr, "%s!\n", x)
 #else
 #define warnprint(x)
 #endif
@@ -268,7 +274,7 @@ typedef bool cbool_t;
  */
 
 #ifdef PLATFORM_DEBUG
-#define warnprintf(fmt, x)    fprintf(stderr, fmt, x)
+#define warnprintf(fmt, x)      fprintf(stderr, fmt, x)
 #else
 #define warnprintf(fmt, x)
 #endif
@@ -281,7 +287,7 @@ typedef bool cbool_t;
  */
 
 #ifdef PLATFORM_DEBUG
-#define infoprint(x)          fprintf(stderr, "%s\n", x)
+#define infoprint(x)            fprintf(stderr, "%s\n", x)
 #else
 #define infoprint(x)
 #endif
@@ -294,7 +300,7 @@ typedef bool cbool_t;
  */
 
 #ifdef PLATFORM_DEBUG
-#define infoprintf(fmt, x)    fprintf(stderr, fmt, x)
+#define infoprintf(fmt, x)      fprintf(stderr, fmt, x)
 #else
 #define infoprintf(fmt, x)
 #endif
@@ -310,6 +316,8 @@ extern bool not_nullptr_assert (void * ptr, const std::string & context);
 #else
 #define not_nullptr_assert(ptr, context) (not_nullptr(ptr))
 #endif
+
+extern std::string message_concatenate (const char * m1, const char * m2);
 
 #endif         /* SEQ64_EASY_MACROS_H */
 

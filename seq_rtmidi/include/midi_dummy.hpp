@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-19
+ * \updates       2016-11-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring...
@@ -38,13 +38,13 @@ public:
      :
          midi_in_api(queuesizelimit)
     {
-        m_error_string = "midi_in_dummy: This class provides no functionality.";
+        m_error_string = func_message("class provides no functionality");
         error(rterror::WARNING, m_error_string);
     }
 
-    rtmidi::Api get_current_api () const
+    rtmidi_api get_current_api () const
     {
-        return rtmidi::RTMIDI_DUMMY;
+        return RTMIDI_API_DUMMY;
     }
 
     void open_port (unsigned /*portnumber*/, const std::string & /*portname*/)
@@ -67,7 +67,7 @@ public:
         return 0;
     }
 
-    std::string get_port_name (unsigned portnumber)
+    std::string get_port_name (unsigned /*portnumber*/)
     {
         static std::string s_dummy;
         return s_dummy;
@@ -94,17 +94,17 @@ public:
 
     midi_out_dummy (const std::string & /*clientname*/)
     {
-        m_error_string = "midi_out_dummy: This class provides no functionality.";
+        m_error_string = func_message("class provides no functionality");
         error(rterror::WARNING, m_error_string);
     }
 
     /**
-     * \getter rtmidi::RTMIDI_DUMMY
+     * \getter RTMIDI_API_DUMMY
      */
 
-    rtmidi::Api get_current_api () const
+    rtmidi_api get_current_api () const
     {
-        return rtmidi::RTMIDI_DUMMY;
+        return RTMIDI_API_DUMMY;
     }
 
     void open_port (unsigned /*portnumber*/, const std::string & /*portname*/)
@@ -155,5 +155,4 @@ protected:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
-
 

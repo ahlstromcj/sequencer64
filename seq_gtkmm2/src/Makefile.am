@@ -57,6 +57,7 @@ SEQUENCER64_LT_AGE = @SEQUENCER64_LT_AGE@
 #------------------------------------------------------------------------------
 
 prefix = @prefix@
+includedir = @sequencer64includedir@
 libdir = @sequencer64libdir@
 datadir = @datadir@
 datarootdir = @datarootdir@
@@ -107,6 +108,7 @@ AM_CXXFLAGS = \
  -I$(top_srcdir)/include \
  -I$(top_srcdir)/libseq64/include \
  -I$(top_srcdir)/resources \
+ $(ALSA_CFLAGS) \
  $(GTKMM_CFLAGS) \
  $(JACK_CFLAGS) \
  $(LASH_CFLAGS) \

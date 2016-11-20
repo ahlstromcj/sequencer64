@@ -104,12 +104,14 @@ git_info = "$(git_version) $(git_branch)"
 #
 #  $(GTKMM_CFLAGS)
 #
+#  -I$(top_srcdir)/seq_gtkmm2/include
+
 #------------------------------------------------------------------------------
 
 AM_CXXFLAGS = \
  -I../include \
  -I$(top_srcdir)/include \
- -I$(top_srcdir)/seq_gtkmm2/include \
+ $(ALSA_CFLAGS) \
  $(JACK_CFLAGS) \
  $(LASH_CFLAGS) \
  -DSEQ64_GIT_VERSION=\"$(git_info)\" \

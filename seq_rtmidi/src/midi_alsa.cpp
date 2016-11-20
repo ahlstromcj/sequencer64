@@ -5,10 +5,17 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-19
+ * \updates       2016-11-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
- *  In this refactoring...
+ *  In this refactoring, we are trying to improve the RtMidi project in the
+ *  following ways:
+ *
+ *      -   Make it more readable.
+ *      -   Partition the code into separate modules.
+ *      -   Remove the usage of virtual functions in constructors.
+ *      -   Fix bugs found while implementing a native JACK version of
+ *          Sequencer64 (Seq64Jack).
  *
  *  API information found at:
  *
@@ -74,7 +81,7 @@ struct alsa_midi_data_t
  *  Provides the ALSA MIDI callback.
  *
  * \param ptr
- *      Provides, we hope, the pointer to the midi_in_api::rtmidi_in_data
+ *      Provides, we hope, the pointer to the rtmidi_in_data
  *      object.
  *
  * \return
@@ -84,15 +91,13 @@ struct alsa_midi_data_t
 static void *
 alsa_midi_handler (void * ptr)
 {
-    midi_in_api::rtmidi_in_data * data =
-        static_cast<midi_in_api::rtmidi_in_data *>(ptr);
-
+    rtmidi_in_data * data = static_cast<rtmidi_in_data *>(ptr);
     alsa_midi_data_t * apiData = static_cast<alsa_midi_data_t *>(data->apiData);
     long nBytes;
     unsigned long long time, lastTime;
     bool continueSysex = false;
     bool doDecode = false;
-    midi_in_api::midi_message message;
+    midi_message message;
     int poll_fd_count;
     struct pollfd * poll_fds;
     snd_seq_event_t * ev;
@@ -178,13 +183,13 @@ alsa_midi_handler (void * ptr)
 
         case SND_SEQ_EVENT_PORT_SUBSCRIBED:
 #ifdef SEQ64_USE_DEBUG_OUTPUT
-            infoprint("alsa_midi_handler(): port connection made");
+            errprintfunc("port connection made");
 #endif
             break;
 
         case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:
 #ifdef SEQ64_USE_DEBUG_OUTPUT
-            infoprint("alsa_midi_handler(): port connection closed");
+            errprintfunc("port connection closed");
             printf
             (
                 "sender = %d:%d, dest = %d:%d\n"
@@ -254,12 +259,16 @@ alsa_midi_handler (void * ptr)
                  */
 
                 if (! continueSysex)
+                {
                     message.bytes.assign(buffer, &buffer[nBytes]);
+                }
                 else
+                {
                     message.bytes.insert
                     (
                         message.bytes.end(), buffer, &buffer[nBytes]
                     );
+                }
 
                 continueSysex =
                 (
@@ -307,9 +316,7 @@ alsa_midi_handler (void * ptr)
 
         if (data->usingCallback)
         {
-            rtmidi_in::rtmidi_callback_t callback =
-                (rtmidi_in::rtmidi_callback_t) data->userCallback;
-
+            rtmidi_callback_t callback = data->userCallback;
             callback(message.timeStamp, &message.bytes, data->userdata);
         }
         else
@@ -357,42 +364,30 @@ midi_in_alsa::midi_in_alsa
  :
     midi_in_api (queuesize)
 {
-    set_error_class("midi_in_alsa");
     initialize(clientname);             // is this a virtual function!!!???
 }
 
 /**
- *  Destructor.  Closes a connection if it exists, then cleans up any API
- *  resources in use.
+ *  Destructor.  Closes a connection if it exists, shuts down the input
+ *  thread, and then cleans up any API resources in use.
  */
 
 midi_in_alsa::~midi_in_alsa()
 {
     close_port();
 
-    // Shutdown the input thread.
-
     alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
     if (m_input_data.doInput)
     {
-        m_input_data.doInput = false;
-        int res = write
+        m_input_data.doInput = false;       /* shut down the input thread   */
+        (void) write
         (
             data->trigger_fds[1], &m_input_data.doInput,
             sizeof(m_input_data.doInput)
         );
-
-        /*
-         * Why did RtMidi do this????
-         */
-
-        (void) res;
-
         if (! pthread_equal(data->thread, data->dummy_thread_id))
             pthread_join(data->thread, NULL);
     }
-
-    // Cleanup
 
     close(data->trigger_fds[0]);
     close(data->trigger_fds[1]);
@@ -426,9 +421,7 @@ midi_in_alsa::initialize (const std::string & clientname)
     );
     if (result < 0)
     {
-        m_error_string =
-            "initialize(): error opening ALSA sequencer client object";
-
+        m_error_string = func_message("error opening ALSA sequencer client");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -452,7 +445,7 @@ midi_in_alsa::initialize (const std::string & clientname)
         m_input_data.apiData = (void *) data;
         if (pipe(data->trigger_fds) == -1)
         {
-            m_error_string = "initialize: error creating pipe objects";
+            m_error_string = func_message("error creating pipe objects");
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
         }
@@ -603,7 +596,7 @@ midi_in_alsa::get_port_name (unsigned portnumber)
         std::ostringstream os;
         os
             << snd_seq_client_info_get_name(cinfo) << " "
-            << snd_seq_port_info_get_client(pinfo) << ":";
+            << snd_seq_port_info_get_client(pinfo) << ":"
             << snd_seq_port_info_get_port(pinfo)
             ;
 
@@ -613,7 +606,7 @@ midi_in_alsa::get_port_name (unsigned portnumber)
     {
         // If we get here, we didn't find a match.
 
-        m_error_string = "get_port_name(): error looking for port name";
+        m_error_string = func_message("error looking for port name");
         error(rterror::WARNING, m_error_string);
     }
     return stringname;
@@ -634,7 +627,7 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
 {
     if (m_connected)
     {
-        m_error_string = "open_port(): a valid connection already exists";
+        m_error_string = func_message("a valid connection already exists");
         error(rterror::WARNING, m_error_string);
         return;
     }
@@ -642,7 +635,7 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
     unsigned nSrc = this->get_port_count();
     if (nSrc < 1)
     {
-        m_error_string = "open_port(): no MIDI input sources found!";
+        m_error_string = func_message("no MIDI input sources found");
         error(rterror::NO_DEVICES_FOUND, m_error_string);
         return;
     }
@@ -662,7 +655,7 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
     {
         std::ostringstream ost;
         ost
-            << "open_port(): the 'portnumber' argument ("
+            << func_message("'portnumber' argument (")
             << portnumber << ") is invalid"
         ;
         m_error_string = ost.str();
@@ -701,7 +694,7 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
         data->vport = snd_seq_create_port(data->seq, pinfo);
         if (data->vport < 0)
         {
-            m_error_string = "open_port(): ALSA error creating input port";
+            m_error_string = func_message("ALSA error creating input port");
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
         }
@@ -715,9 +708,7 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
 
         if (snd_seq_port_subscribe_malloc(&data->subscription) < 0)
         {
-            m_error_string =
-                "open_port(): ALSA error allocation port subscription";
-
+            m_error_string = func_message("ALSA error port subscription");
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
         }
@@ -727,7 +718,7 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
         {
             snd_seq_port_subscribe_free(data->subscription);
             data->subscription = 0;
-            m_error_string = "open_port(): ALSA error making port connection";
+            m_error_string = func_message("ALSA error making port connection");
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
         }
@@ -760,7 +751,7 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
             snd_seq_port_subscribe_free(data->subscription);
             data->subscription = 0;
             m_input_data.doInput = false;
-            m_error_string = "open_port(): error starting MIDI input thread";
+            m_error_string = func_message("error starting MIDI input thread");
             error(rterror::THREAD_ERROR, m_error_string);
             return;
         }
@@ -805,9 +796,7 @@ midi_in_alsa::open_virtual_port (const std::string & portname)
         data->vport = snd_seq_create_port(data->seq, pinfo);
         if (data->vport < 0)
         {
-            m_error_string =
-                "open_virtual_port(): ALSA error creating virtual port";
-
+            m_error_string = func_message("ALSA error creating virtual port");
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
         }
@@ -849,7 +838,7 @@ midi_in_alsa::open_virtual_port (const std::string & portname)
                 data->subscription = 0;
             }
             m_input_data.doInput = false;
-            m_error_string = "open_port(): error starting MIDI input thread";
+            m_error_string = func_message("error starting MIDI input thread");
             error(rterror::THREAD_ERROR, m_error_string);
             return;
         }
@@ -913,7 +902,6 @@ midi_out_alsa::midi_out_alsa (const std::string & clientname)
  :
     midi_out_api    ()
 {
-    set_error_class("midi_out_alsa");
     initialize(clientname);             // is this a virtual function!!!???
 }
 
@@ -957,9 +945,7 @@ midi_out_alsa::initialize (const std::string & clientname)
     );
     if (result1 < 0)
     {
-        m_error_string =
-            "initialize: error creating ALSA sequencer client object.";
-
+        m_error_string = func_message("error creating ALSA sequencer client");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -979,7 +965,7 @@ midi_out_alsa::initialize (const std::string & clientname)
     if (result < 0)
     {
         delete data;
-        m_error_string = "initialize(): error initializing MIDI event parser";
+        m_error_string = func_message("error initializing MIDI event parser");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -987,7 +973,7 @@ midi_out_alsa::initialize (const std::string & clientname)
     if (is_nullptr(data->buffer))
     {
         delete data;
-        m_error_string = "initialize(): error allocating buffer memory";
+        m_error_string = func_message("error allocating buffer memory");
         error(rterror::MEMORY_ERROR, m_error_string);
         return;
     }
@@ -1047,25 +1033,24 @@ midi_out_alsa::get_port_name (unsigned portnumber)
         int cnum = snd_seq_port_info_get_client(pinfo);
         snd_seq_get_any_client_info(data->seq, cnum, cinfo);
 
-        // These lines added to make sure devices are listed
-        // with full portnames added to ensure individual device names
+        /*
+         * These lines added to make sure devices are listed
+         * with full portnames added to ensure individual device names.
+         */
 
         std::ostringstream os;
         os
-            << snd_seq_client_info_get_name(cinfo)
-            << " "
-            << snd_seq_port_info_get_client(pinfo)
-            << ":"
+            << snd_seq_client_info_get_name(cinfo) << " "
+            << snd_seq_port_info_get_client(pinfo) << ":"
             << snd_seq_port_info_get_port(pinfo)
             ;
-
         stringname = os.str();
     }
     else
     {
         // If we get here, we didn't find a match.
 
-        m_error_string = "get_port_name(): error looking for port name";
+        m_error_string = func_message("error looking for port name");
         error(rterror::WARNING, m_error_string);
     }
     return stringname;
@@ -1086,7 +1071,7 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
 {
     if (m_connected)
     {
-        m_error_string = "open_port(): a valid connection already exists";
+        m_error_string = func_message("a valid connection already exists");
         error(rterror::WARNING, m_error_string);
         return;
     }
@@ -1094,7 +1079,7 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
     unsigned nSrc = this->get_port_count();
     if (nSrc < 1)
     {
-        m_error_string = "open_port(): no MIDI output sources found";
+        m_error_string = func_message("no MIDI output sources found");
         error(rterror::NO_DEVICES_FOUND, m_error_string);
         return;
     }
@@ -1110,8 +1095,8 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
     )
     {
         std::ostringstream ost;
-        ost << "open_port: the 'portnumber' argument ("
-            << portnumber << ") is invalid."
+        ost << func_message("'portnumber' argument (")
+            << portnumber << ") is invalid"
             ;
         m_error_string = ost.str();
         error(rterror::INVALID_PARAMETER, m_error_string);
@@ -1132,7 +1117,7 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
         );
         if (data->vport < 0)
         {
-            m_error_string = "open_port(): ALSA error creating output port.";
+            m_error_string = func_message("ALSA error creating output port");
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
         }
@@ -1145,7 +1130,7 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
     if (snd_seq_port_subscribe_malloc(&data->subscription) < 0)
     {
         snd_seq_port_subscribe_free(data->subscription);
-        m_error_string = "open_port(): error allocating port subscription.";
+        m_error_string = func_message("error allocating port subscription");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -1156,7 +1141,7 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
     if (snd_seq_subscribe_port(data->seq, data->subscription))
     {
         snd_seq_port_subscribe_free(data->subscription);
-        m_error_string = "open_port(): ALSA error making port connection.";
+        m_error_string = func_message("ALSA error making port connection");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -1202,9 +1187,7 @@ midi_out_alsa::open_virtual_port (const std::string & portname)
         );
         if (data->vport < 0)
         {
-            m_error_string = "open_virtual_port(): "
-                "ALSA error creating virtual port."
-                ;
+            m_error_string = func_message("ALSA error creating virtual port");
             error(rterror::DRIVER_ERROR, m_error_string);
         }
     }
@@ -1229,7 +1212,7 @@ midi_out_alsa::send_message (std::vector<midibyte> * message)
         result = snd_midi_event_resize_buffer(data->coder, nBytes);
         if (result != 0)
         {
-            m_error_string = "send_message(): ALSA error resizing MIDI event";
+            m_error_string = func_message("ALSA error resizing MIDI event");
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
         }
@@ -1237,7 +1220,7 @@ midi_out_alsa::send_message (std::vector<midibyte> * message)
         data->buffer = (midibyte *) malloc(data->bufferSize);
         if (data->buffer == NULL)
         {
-            m_error_string = "initialize(): error allocating buffer memory";
+            m_error_string = func_message("error allocating buffer memory");
             error(rterror::MEMORY_ERROR, m_error_string);
             return;
         }
@@ -1254,14 +1237,14 @@ midi_out_alsa::send_message (std::vector<midibyte> * message)
     result = snd_midi_event_encode(data->coder, data->buffer, long(nBytes), &ev);
     if (result < int(nBytes))
     {
-        m_error_string = "send_message(): event parsing error";
+        m_error_string = func_message("event parsing error");
         error(rterror::WARNING, m_error_string);
         return;
     }
     result = snd_seq_event_output(data->seq, &ev); // Send the event.
     if (result < 0)
     {
-        m_error_string = "send_message(): error sending MIDI message to port";
+        m_error_string = func_message("error sending MIDI message to port");
         error(rterror::WARNING, m_error_string);
         return;
     }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-26
- * \updates       2016-05-17
+ * \updates       2016-11-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -79,6 +79,30 @@ not_nullptr_assert (void * ptr, const std::string & context)
 }
 
 #endif  // PLATFORM_DEBUG
+
+/**
+ *  This function concatenates two C string pointers and returns them as
+ *  a string message.  Note that we don't bother with error-checking the
+ *  pointers.  You're on your own, Hoss.
+ *
+ * \param m1
+ *      The first message, often a __func__ macro.
+ *
+ * \param m2
+ *      The second message.
+ *
+ * \return
+ *      Returns "m1: m2" as a standard C++ string.
+ */
+
+std::string
+message_concatenate (const char * m1, const char * m2)
+{
+    std::string result(m1);
+    result += ": ";
+    result += m2;
+    return result;
+}
 
 /*
  * easy_macros.cpp

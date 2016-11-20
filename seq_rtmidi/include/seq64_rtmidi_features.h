@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-19
- * \updates       2016-11-19
+ * \updates       2016-11-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -40,16 +40,16 @@
 #endif
 
 /**
- *  ....
+ *  Macros to enable the implementations that are supported under Linux.
  */
 
-#define SEQ64_RTMIDI_XXXXXXXXXXXX
+#define SEQ64_RTMIDI_PENDING
 
 #undef  SEQ64_BUILD_MACOSX_CORE
 #define SEQ64_BUILD_LINUX_ALSA
 #define SEQ64_BUILD_UNIX_JACK
 #undef  SEQ64_BUILD_WINDOWS_MM
-#undef  SEQ64_BUILD_RTMIDI_DUMMY
+#define SEQ64_BUILD_RTMIDI_DUMMY
 
 #endif      // SEQ64_RTMIDI_FEATURES_H
 

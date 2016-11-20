@@ -1,14 +1,17 @@
 /**
  * \file          midi_probe.cpp
  *
- *    A function to check MIDI inputs and outputs, based on the RtMidi test
- *    program midiprobe.cpp.
+ *  A function to check MIDI inputs and outputs, based on the RtMidi test
+ *  program midiprobe.cpp.
  *
  * \author        Gary P. Scavone, 2003-2012; refactoring by Chris Ahlstrom
  * \date          2016-11-19
- * \updates       2016-11-19
+ * \updates       2016-11-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
+ *  We include this test code in our library, rather than in a separate
+ *  application, because we want to include some diagnostic code in the
+ *  application.
  */
 
 #include <iostream>
@@ -17,7 +20,7 @@
 
 #include "easy_macros.h"
 #include "midi_probe.hpp"
-#include "rtmidi.h"
+#include "rtmidi.hpp"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -42,15 +45,15 @@ midi_probe ()
      * Create an API map.
      */
 
-    std::map<int, std::string> api_map;
-    api_map[rtmidi::MACOSX_CORE]    = "OS-X CoreMidi";
-    api_map[rtmidi::WINDOWS_MM]     = "Windows MultiMedia";
-    api_map[rtmidi::UNIX_JACK]      = "Jack Client";
-    api_map[rtmidi::LINUX_ALSA]     = "Linux ALSA";
-    api_map[rtmidi::RTMIDI_DUMMY]   = "rtmidi dummy";
+    std::map<rtmidi_api, std::string> api_map;
+    api_map[RTMIDI_API_MACOSX_CORE] = "OS-X CoreMidi";
+    api_map[RTMIDI_API_WINDOWS_MM]  = "Windows MultiMedia";
+    api_map[RTMIDI_API_UNIX_JACK]   = "Jack Client";
+    api_map[RTMIDI_API_LINUX_ALSA]  = "Linux ALSA";
+    api_map[RTMIDI_API_DUMMY]       = "rtmidi dummy";
 
-    std::vector<rtmidi::Api> apis;
-    rtmidi :: get_compiled_api(apis);
+    std::vector<rtmidi_api> apis;
+    rtmidi::get_compiled_api(apis);
 
     std::cout << "\nCompiled APIs:\n";
     for (unsigned i = 0; i < apis.size(); i++)
@@ -58,7 +61,6 @@ midi_probe ()
 
     rtmidi_in * midiin = nullptr;
     rtmidi_out * midiout = nullptr;
-
     try
     {
         // rtmidi_in constructor ... exception possible

@@ -1,6 +1,6 @@
-README for Sequencer64 0.9.21
+README for Sequencer64 0.10.0
 Chris Ahlstrom
-2015-09-10 to 2016-11-11 (initial work started in July of 2015)
+2015-09-10 to 2016-11-19 (initial work started in July of 2015)
 
 Sequencer64 is a reboot of seq24 to refactor it to be tighter and easier to
 use.  It is now beyond seq24 in functionality and bug fixes; the code is
@@ -14,6 +14,9 @@ internal fixups.  And it maintains backward-compatibility with seq24, with the
 
 Major updates:
 
+    -   Version 0.10.0:
+        -   Initial support for using an RtMidi spinoff library to support
+            native JACK MIDI (as opposed to just JACK transport).
     -   Version 0.9.21:
         -   Returning to the std::list operation, but with sorting occurring
             after loading.  This buys speed of loading of a large MIDI file

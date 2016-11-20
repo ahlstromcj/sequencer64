@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-11-14
+dnl \update        2016-11-19
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -19,7 +19,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.9$)dnl
-AC_INIT(Sequencer64, [0.9.21], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.10.0], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl AC_CONFIG_SRCDIR([libseq64/src/midibus.cpp])
@@ -575,8 +575,8 @@ dnl #define API_VERSION "0.9"             // defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-11-14"
-#define VERSION "0.9.21"
+#define VERSION_DATE_SHORT "2016-11-19"
+#define VERSION "0.10.0"
 
 )
 
@@ -642,6 +642,9 @@ AC_CONFIG_FILES([
  seq_portmidi/Makefile
  seq_portmidi/include/Makefile
  seq_portmidi/src/Makefile
+ seq_rtmidi/Makefile
+ seq_rtmidi/include/Makefile
+ seq_rtmidi/src/Makefile
  resources/pixmaps/Makefile
  Sequencer64/Makefile
  man/Makefile

@@ -122,7 +122,7 @@ public:
      *  Returns the thrown error message as a c-style string.
      */
 
-    virtual const char * what () const
+    virtual const char * what () const noexcept
     {
         return m_message.c_str();
     }

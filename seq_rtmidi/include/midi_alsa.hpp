@@ -38,12 +38,12 @@ public:
     ~midi_in_alsa ();
 
     /**
-     * \getter rtmidi::LINUX_ALSA
+     * \getter RTMIDI_API_LINUX_ALSA
      */
 
-    rtmidi::Api get_current_api () const
+    rtmidi_api get_current_api () const
     {
-        return rtmidi::LINUX_ALSA;
+        return RTMIDI_API_LINUX_ALSA;
     }
 
     void open_port (unsigned portnumber, const std::string & portname);
@@ -70,9 +70,9 @@ public:
     midi_out_alsa (const std::string & clientname);
     ~midi_out_alsa ();
 
-    rtmidi::Api get_current_api () const
+    rtmidi_api get_current_api () const
     {
-        return rtmidi::LINUX_ALSA;
+        return RTMIDI_API_LINUX_ALSA;
     }
 
     void open_port (unsigned portnumber, const std::string & portname);

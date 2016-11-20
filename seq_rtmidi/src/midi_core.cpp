@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-18
+ * \updates       2016-11-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    The CoreMIDI API is based on the use of a callback function for MIDI
@@ -71,18 +71,18 @@ struct CoreMidiData
 
 static void midiInputCallback
 (
-   const MIDIPacketList * list, void * procRef, void * /*srcRef*/
+   const MIDIPacketList * list,
+   void * procRef,
+   void * /*srcRef*/
 )
 {
-    midi_in_api::rtmidi_in_data * data =
-        static_cast<midi_in_api::rtmidi_in_data *>(procRef);
-
+    rtmidi_in_data * data = static_cast<rtmidi_in_data *>(procRef);
     CoreMidiData * apiData = static_cast<CoreMidiData *>(data->apiData);
     midibyte status;
     unsigned short nBytes, iByte, size;
     unsigned long long time;
     bool & continueSysex = data->continueSysex;
-    midi_in_api::midi_message & message = data->message;
+    midi_message & message = data->message;
     const MIDIPacket * packet = &list->packet[0];
     for (unsigned i = 0; i < list->numPackets; ++i)
     {
@@ -154,9 +154,7 @@ static void midiInputCallback
 
                 if (data->usingCallback)
                 {
-                    rtmidi_in::rtmidi_callback_t callback =
-                        (rtmidi_in::rtmidi_callback_t) data->userCallback;
-
+                    rtmidi_callback_t callback = data->userCallback;
                     callback(message.timeStamp, &message.bytes, data->userdata);
                 }
                 else
@@ -255,8 +253,7 @@ static void midiInputCallback
 
                         if (data->usingCallback)
                         {
-                            rtmidi_in::rtmidi_callback_t callback =
-                                (rtmidi_in::rtmidi_callback_t) data->userCallback;
+                            rtmidi_callback_t callback = data->userCallback;
                             callback
                             (
                                 message.timeStamp, &message.bytes, data->userdata
@@ -347,10 +344,8 @@ midi_in_core::initialize (const std::string & clientname)
 
         std::ostringstream ost;
         ost
-            << "midi_in_core::initialize(): "
-               "error creating OS-X MIDI client object ("
-            << result
-            << ")"
+            << func_message("error creating OS-X MIDI client object (")
+            << result << ")"
             ;
         m_error_string = ost.str();
         error(rterror::DRIVER_ERROR, m_error_string);
@@ -382,9 +377,7 @@ midi_in_core::open_port (unsigned portnumber, const std::string & portname)
 {
     if (m_connected)
     {
-        m_error_string =
-            "midi_in_core::open_port(): a valid connection already exists!";
-
+        m_error_string = func_message("valid connection already exists");
         error(rterror::WARNING, m_error_string);
         return;
     }
@@ -393,9 +386,7 @@ midi_in_core::open_port (unsigned portnumber, const std::string & portname)
     unsigned nSrc = MIDIGetNumberOfSources();
     if (nSrc < 1)
     {
-        m_error_string =
-            "midi_in_core::open_port(): no MIDI input sources found!";
-
+        m_error_string = func_message("no MIDI input sources found");
         error(rterror::NO_DEVICES_FOUND, m_error_string);
         return;
     }
@@ -403,10 +394,8 @@ midi_in_core::open_port (unsigned portnumber, const std::string & portname)
     {
         std::ostringstream ost;
         ost
-            << "midi_in_core::open_port(): "
-               "the 'portnumber' argument ("
-            << portnumber
-            << ") is invalid"
+            << func_message("the 'portnumber' argument (")
+            << portnumber << ") is invalid"
             ;
         m_error_string = ost.str();
         error(rterror::INVALID_PARAMETER, m_error_string);
@@ -424,9 +413,7 @@ midi_in_core::open_port (unsigned portnumber, const std::string & portname)
     if (result != noErr)
     {
         MIDIClientDispose(data->client);
-        m_error_string =
-            "midi_in_core::open_port(): error creating OS-X MIDI input port";
-
+        m_error_string = func_message("error creating OS-X MIDI input port");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -438,8 +425,7 @@ midi_in_core::open_port (unsigned portnumber, const std::string & portname)
     {
         MIDIPortDispose(port);
         MIDIClientDispose(data->client);
-        m_error_string =
-            "midi_in_core::open_port(): error getting MIDI input source reference";
+        m_error_string = func_message("error getting MIDI input source");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -451,9 +437,7 @@ midi_in_core::open_port (unsigned portnumber, const std::string & portname)
     {
         MIDIPortDispose(port);
         MIDIClientDispose(data->client);
-        m_error_string =
-            "midi_in_core::open_port(): error connecting OS-X MIDI input port";
-
+        m_error_string = func_message("error connecting OS-X MIDI input port");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -484,8 +468,7 @@ midi_in_core::open_virtual_port (const std::string & portname)
     if (result != noErr)
     {
         m_error_string =
-            "midi_in_core::open_virtual_port(): "
-            "error creating virtual OS-X MIDI destination";
+            func_message("error creating virtual OS-X MIDI destination");
 
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
@@ -757,7 +740,7 @@ midi_in_core::get_port_name (unsigned portnumber)
     {
         std::ostringstream ost;
         ost
-            << "midi_in_core::get_port_name(): the 'portnumber' argument ("
+            << func_message("'portnumber' argument (")
             << portnumber << ") is invalid"
             ;
         m_error_string = ost.str();
@@ -826,10 +809,9 @@ midi_out_core::initialize (const std::string & clientname)
     {
         std::ostringstream ost;
         ost
-            << "midi_in_core::initialize(): "
-               "error creating OS-X MIDI client object ("
+            << func_message("error creating OS-X MIDI client object (")
             << result << ")"
-               ;
+            ;
         m_error_string = ost.str();
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
@@ -880,9 +862,8 @@ midi_out_core::get_port_name (unsigned portnumber)
     {
         std::ostringstream ost;
         ost
-            << "midi_out_core::get_port_name(): "
-               "the 'portnumber' argument ("
-           << portnumber << ") is invalid"
+            << func_message("'portnumber' argument (")
+            << portnumber << ") is invalid"
            ;
         m_error_string = ost.str();
         error(rterror::WARNING, m_error_string);
@@ -911,9 +892,7 @@ midi_out_core::open_port (unsigned portnumber, const std::string & portname)
 {
     if (m_connected)
     {
-        m_error_string =
-            "midi_out_core::open_port(): a valid connection already exists";
-
+        m_error_string = func_message("valid connection already exists");
         error(rterror::WARNING, m_error_string);
         return;
     }
@@ -922,9 +901,7 @@ midi_out_core::open_port (unsigned portnumber, const std::string & portname)
     unsigned nDest = MIDIGetNumberOfDestinations();
     if (nDest < 1)
     {
-        m_error_string =
-            "midi_out_core::open_port(): no MIDI output destinations found";
-
+        m_error_string = func_message("no MIDI output destinations found");
         error(rterror::NO_DEVICES_FOUND, m_error_string);
         return;
     }
@@ -932,8 +909,7 @@ midi_out_core::open_port (unsigned portnumber, const std::string & portname)
     {
         std::ostringstream ost;
         ost
-            << "midi_out_core::open_port(): "
-               "the 'portnumber' argument ("
+            << func_message("'portnumber' argument (")
             << portnumber << ") is invalid"
             ;
         m_error_string = ost.str();
@@ -952,9 +928,7 @@ midi_out_core::open_port (unsigned portnumber, const std::string & portname)
     if (result != noErr)
     {
         MIDIClientDispose(data->client);
-        m_error_string =
-            "midi_out_core::open_port(): error creating OS-X MIDI output port"
-            ;
+        m_error_string = func_message("error creating OS-X MIDI output port");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -973,7 +947,6 @@ midi_out_core::open_port (unsigned portnumber, const std::string & portname)
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
-
     data->port = port;      // Save our api-specific connection information.
     data->destinationId = destination;
     m_connected = true;
@@ -1005,10 +978,7 @@ midi_out_core::open_virtual_port (const std::string & portname)
     CoreMidiData * data = static_cast<CoreMidiData *>(m_api_data);
     if (data->endpoint)
     {
-        m_error_string =
-            "midi_out_core::open_virtual_port(): "
-            "a virtual output port already exists!";
-
+        m_error_string = func_message("virtual output port already exists");
         error(rterror::WARNING, m_error_string);
         return;
     }
@@ -1024,9 +994,7 @@ midi_out_core::open_virtual_port (const std::string & portname)
     );
     if (result != noErr)
     {
-        m_error_string =
-            "midi_out_core::initialize(): "
-            "error creating OS-X virtual MIDI source";
+        m_error_string = func_message("error creating OS-X virtual MIDI source");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -1048,9 +1016,7 @@ midi_out_core::send_message (std::vector<midibyte> * message)
     unsigned nBytes = message->size();
     if (nBytes == 0)
     {
-        m_error_string =
-            "midi_out_core::send_message(): no data in message argument!";
-
+        m_error_string = func_message("no data in message argument");
         error(rterror::WARNING, m_error_string);
         return;
     }
@@ -1061,8 +1027,7 @@ midi_out_core::send_message (std::vector<midibyte> * message)
     if (message->at(0) != 0xF0 && nBytes > 3)
     {
         m_error_string =
-            "midi_out_core::send_message(): "
-            "message format problem ... not SysEx but > 3 bytes?";
+            func_message("message format problem ... not SysEx but > 3 bytes?");
 
         error(rterror::WARNING, m_error_string);
         return;
@@ -1090,9 +1055,7 @@ midi_out_core::send_message (std::vector<midibyte> * message)
 
     if (is_nullptr(packet))
     {
-        m_error_string = "midi_out_core::send_message(): "
-            "could not allocate packet list";
-
+        m_error_string = func_message("could not allocate packet list");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -1102,8 +1065,7 @@ midi_out_core::send_message (std::vector<midibyte> * message)
         if (result != noErr)
         {
             m_error_string =
-                "midi_out_core::send_message(): "
-                "error sending MIDI to virtual destinations";
+                func_message("error sending MIDI to virtual destinations");
 
             error(rterror::WARNING, m_error_string);
         }
@@ -1114,10 +1076,7 @@ midi_out_core::send_message (std::vector<midibyte> * message)
         result = MIDISend(data->port, data->destinationId, packetList);
         if (result != noErr)
         {
-            m_error_string =
-                "midi_out_core::send_message(): "
-                "error sending MIDI message to port";
-
+            m_error_string = func_message("error sending MIDI message to port");
             error(rterror::WARNING, m_error_string);
         }
     }

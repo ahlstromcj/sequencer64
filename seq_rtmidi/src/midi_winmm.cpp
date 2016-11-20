@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-18
+ * \updates       2016-11-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    API information deciphered from:
@@ -57,7 +57,7 @@ struct WinMidiData
     HMIDIIN inHandle;                  /* Handle to Midi Input Device   */
     HMIDIOUT outHandle;                /* Handle to Midi Output Device  */
     DWORD lastTime;
-    midi_in_api::midi_message message;
+    midi_message message;
     LPMIDIHDR sysexBuffer[RT_SYSEX_BUFFER_COUNT];
 
     /*
@@ -118,11 +118,12 @@ midiInputCallback
         return;
     }
 
-    // static_cast<midi_in_api::rtmidi_in_data *>
+    /*
+     * We can't use a static_cast<rtmidi_in_data *> here because the types are
+     * fundamentally different.
+     */
 
-    midi_in_api::rtmidi_in_data * data =
-        (midi_in_api::rtmidi_in_data *) instancePtr;
-
+    rtmidi_in_data * data = (rtmidi_in_data *) instancePtr;
     WinMidiData * apiData = static_cast<WinMidiData *>(data->apiData);
     if (data->firstMessage == true)         // Calculate time stamp.
     {
@@ -216,9 +217,7 @@ midiInputCallback
 
     if (data->usingCallback)
     {
-        rtmidi_in::rtmidi_callback_t callback =
-            (rtmidi_in::rtmidi_callback_t) data->userCallback;
-
+        rtmidi_callback_t callback = data->userCallback;
         callback
         (
             apiData->message.timeStamp, &apiData->message.bytes, data->userdata
@@ -295,10 +294,7 @@ midi_in_winmm::initialize (const std::string & /*clientname*/)
     unsigned nDevices = midiInGetNumDevs();
     if (nDevices == 0)
     {
-        m_error_string =
-            "midi_in_winmm::initialize(): "
-            "no MIDI input devices currently available.";
-
+        m_error_string = func_message("no MIDI input devices now available");
         error(rterror::WARNING, m_error_string);
     }
 
@@ -311,8 +307,7 @@ midi_in_winmm::initialize (const std::string & /*clientname*/)
     if (!InitializeCriticalSectionAndSpinCount(&(data->_mutex), 0x00000400))
     {
         m_error_string =
-            "midi_in_winmm::initialize(): "
-            "InitializeCriticalSectionAndSpinCount failed.";
+            func_message("InitializeCriticalSectionAndSpinCount() failed");
 
         error(rterror::WARNING, m_error_string);
     }
@@ -333,9 +328,7 @@ midi_in_winmm::open_port (unsigned portnumber, const std::string & /*portname*/)
 {
     if (m_connected)
     {
-        m_error_string =
-            "midi_in_winmm::open_port: a valid connection already exists";
-
+        m_error_string = func_message("valid connection already exists");
         error(rterror::WARNING, m_error_string);
         return;
     }
@@ -343,7 +336,7 @@ midi_in_winmm::open_port (unsigned portnumber, const std::string & /*portname*/)
     unsigned nDevices = midiInGetNumDevs();
     if (nDevices == 0)
     {
-        m_error_string = "midi_in_winmm::open_port: no MIDI input sources found";
+        m_error_string = func_message("no MIDI input sources found");
         error(rterror::NO_DEVICES_FOUND, m_error_string);
         return;
     }
@@ -352,8 +345,8 @@ midi_in_winmm::open_port (unsigned portnumber, const std::string & /*portname*/)
     {
         std::ostringstream ost;
         ost
-            << "midi_in_winmm::open_port: the 'portnumber' argument ("
-            << portnumber << ") is invalid."
+            << func_message("'portnumber' argument (")
+            << portnumber << ") is invalid"
             ;
         m_error_string = ost.str();
         error(rterror::INVALID_PARAMETER, m_error_string);
@@ -369,8 +362,7 @@ midi_in_winmm::open_port (unsigned portnumber, const std::string & /*portname*/)
     if (result != MMSYSERR_NOERROR)
     {
         m_error_string =
-            "midi_in_winmm::open_port: "
-            "error creating Windows MM MIDI input port.";
+            func_message("error creating Windows MM MIDI input port");
 
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
@@ -396,8 +388,7 @@ midi_in_winmm::open_port (unsigned portnumber, const std::string & /*portname*/)
         {
             midiInClose(data->inHandle);
             m_error_string =
-                "midi_in_winmm::open_port: "
-                " error starting Windows MM MIDI input port (PrepareHeader).";
+                func_message("error starting Win MM input port (PrepareHeader)");
 
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
@@ -413,8 +404,7 @@ midi_in_winmm::open_port (unsigned portnumber, const std::string & /*portname*/)
         {
             midiInClose(data->inHandle);
             m_error_string =
-                "midi_in_winmm::open_port: "
-                "error starting Windows MM MIDI input port (AddBuffer).";
+                func_message("error starting Win MM input port (AddBuffer)");
 
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
@@ -425,10 +415,7 @@ midi_in_winmm::open_port (unsigned portnumber, const std::string & /*portname*/)
     if (result != MMSYSERR_NOERROR)
     {
         midiInClose(data->inHandle);
-        m_error_string =
-            "midi_in_winmm::open_port: "
-            "error starting Windows MM MIDI input port.";
-
+        m_error_string = func_message("error starting Win MM MIDI input port");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -447,10 +434,7 @@ midi_in_winmm::open_port (unsigned portnumber, const std::string & /*portname*/)
 void
 midi_in_winmm::open_virtual_port (const std::string & /*portname*/)
 {
-    m_error_string =
-        "midi_in_winmm::open_virtual_port: "
-        "cannot be implemented in Windows MM MIDI API!";
-
+    m_error_string = func_message("cannot be implemented in Win MM MIDI API");
     error(rterror::WARNING, m_error_string);
 }
 
@@ -458,7 +442,8 @@ midi_in_winmm::open_virtual_port (const std::string & /*portname*/)
  *  Closes the MIDI input port.
  */
 
-void midi_in_winmm::close_port ()
+void
+midi_in_winmm::close_port ()
 {
     if (m_connected)
     {
@@ -478,9 +463,8 @@ void midi_in_winmm::close_port ()
             {
                 midiInClose(data->inHandle);
                 m_error_string =
-                    "midi_in_winmm::open_port: "
-                    "error closing Windows MM MIDI "
-                    "input port (midiInUnprepareHeader).";
+                    func_message("error closing Win MM "
+                        "input port (midiInUnprepareHeader)");
 
                 error(rterror::DRIVER_ERROR, m_error_string);
                 return;
@@ -525,8 +509,8 @@ midi_in_winmm::get_port_name (unsigned portnumber)
     {
         std::ostringstream ost;
         ost
-            << "midi_in_winmm::get_port_name: the 'portnumber' argument ("
-            << portnumber << ") is invalid."
+            << func_message("'portnumber' argument (")
+            << portnumber << ") is invalid"
             ;
         m_error_string = ost.str();
         error(rterror::WARNING, m_error_string);
@@ -604,10 +588,7 @@ midi_out_winmm::initialize (const std::string & /*clientname*/)
     unsigned nDevices = midiOutGetNumDevs();
     if (nDevices == 0)
     {
-        m_error_string =
-            "midi_out_winmm::initialize: "
-            "no MIDI output devices currently available.";
-
+        m_error_string = func_message("no MIDI output devices now available");
         error(rterror::WARNING, m_error_string);
     }
 
@@ -650,8 +631,8 @@ midi_out_winmm::get_port_name (unsigned portnumber)
     {
         std::ostringstream ost;
         ost
-            << "midi_out_winmm::get_port_name: the 'portnumber' argument ("
-            << portnumber << ") is invalid."
+            << func_message("'portnumber' argument (")
+            << portnumber << ") is invalid"
             ;
         m_error_string = ost.str();
         error(rterror::WARNING, m_error_string);
@@ -704,9 +685,7 @@ midi_out_winmm::open_port (unsigned portnumber, const std::string & /*portname*/
 {
     if (m_connected)
     {
-        m_error_string =
-            "midi_out_winmm::open_port: a valid connection already exists!";
-
+        m_error_string = func_message("valid connection already exists");
         error(rterror::WARNING, m_error_string);
         return;
     }
@@ -714,9 +693,7 @@ midi_out_winmm::open_port (unsigned portnumber, const std::string & /*portname*/
     unsigned nDevices = midiOutGetNumDevs();
     if (nDevices < 1)
     {
-        m_error_string =
-            "midi_out_winmm::open_port: no MIDI output destinations found!";
-
+        m_error_string = func_message("no MIDI output destinations found");
         error(rterror::NO_DEVICES_FOUND, m_error_string);
         return;
     }
@@ -725,8 +702,8 @@ midi_out_winmm::open_port (unsigned portnumber, const std::string & /*portname*/
     {
         std::ostringstream ost;
         ost
-            << "midi_out_winmm::open_port: the 'portnumber' argument ("
-            << portnumber << ") is invalid."
+            << func_message("'portnumber' argument (")
+            << portnumber << ") is invalid"
             ;
         m_error_string = ost.str();
         error(rterror::INVALID_PARAMETER, m_error_string);
@@ -736,14 +713,11 @@ midi_out_winmm::open_port (unsigned portnumber, const std::string & /*portname*/
     WinMidiData *data = static_cast<WinMidiData *>(m_api_data);
     MMRESULT result = midiOutOpen
     (
-        &data->outHandle, portnumber, (DWORD)NULL, (DWORD)NULL, CALLBACK_NULL
+        &data->outHandle, portnumber, (DWORD) NULL, (DWORD) NULL, CALLBACK_NULL
     );
     if (result != MMSYSERR_NOERROR)
     {
-        m_error_string =
-            "midi_out_winmm::open_port: "
-            "error creating Windows MM MIDI output port.";
-
+        m_error_string = func_message("error creating Win MM output port");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
@@ -778,10 +752,7 @@ midi_out_winmm::close_port ()
 void
 midi_out_winmm::open_virtual_port (const std::string & /*portname*/)
 {
-    m_error_string =
-        "midi_out_winmm::open_virtual_port: "
-        "cannot be implemented in Windows MM MIDI API!";
-
+    m_error_string = func_message("cannot be implemented in Win MM MIDI API");
     error(rterror::WARNING, m_error_string);
 }
 
@@ -801,9 +772,7 @@ midi_out_winmm::send_message (std::vector<midibyte> * message)
     unsigned nBytes = static_cast<unsigned>(message->size());
     if (nBytes == 0)
     {
-        m_error_string =
-            "midi_out_winmm::send_message: message argument is empty!";
-
+        m_error_string = func_message("message argument is empty");
         error(rterror::WARNING, m_error_string);
         return;
     }
@@ -817,10 +786,7 @@ midi_out_winmm::send_message (std::vector<midibyte> * message)
         char * buffer = (char *) malloc(nBytes);
         if (buffer == NULL)
         {
-            m_error_string =
-                "midi_out_winmm::send_message: "
-                "error allocating sysex message memory!";
-
+            m_error_string = func_message("error allocating SysEx memory");
             error(rterror::MEMORY_ERROR, m_error_string);
             return;
         }
@@ -840,9 +806,7 @@ midi_out_winmm::send_message (std::vector<midibyte> * message)
         if (result != MMSYSERR_NOERROR)
         {
             free(buffer);
-            m_error_string =
-                "midi_out_winmm::send_message: error preparing sysex header.";
-
+            m_error_string = func_message("error preparing SysEx header");
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
         }
@@ -853,9 +817,7 @@ midi_out_winmm::send_message (std::vector<midibyte> * message)
         if (result != MMSYSERR_NOERROR)
         {
             free(buffer);
-            m_error_string =
-                "midi_out_winmm::send_message: error sending sysex message.";
-
+            m_error_string = func_message("error sending SysEx message");
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
         }
@@ -877,8 +839,7 @@ midi_out_winmm::send_message (std::vector<midibyte> * message)
         if (nBytes > 3) // Make sure the message size isn't too big.
         {
             m_error_string =
-                "midi_out_winmm::send_message: "
-                "message size is greater than 3 bytes (and not sysex)!";
+                func_message("message size is greater than 3 bytes (not sysex)");
 
             error(rterror::WARNING, m_error_string);
             return;
@@ -899,9 +860,7 @@ midi_out_winmm::send_message (std::vector<midibyte> * message)
         result = midiOutShortMsg(data->outHandle, packet);
         if (result != MMSYSERR_NOERROR)
         {
-            m_error_string =
-                "midi_out_winmm::send_message: error sending MIDI message.";
-
+            m_error_string = func_message("error sending MIDI message");
             error(rterror::DRIVER_ERROR, m_error_string);
         }
     }

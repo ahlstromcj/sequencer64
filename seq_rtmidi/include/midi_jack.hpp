@@ -38,20 +38,20 @@ protected:
 
 public:
 
-    midi_in_jack (const std::string clientname, unsigned queuesizelimit);
+    midi_in_jack (const std::string & clientname, unsigned queuesize);
     ~midi_in_jack ();
 
     /**
-     * \getter rtmidi::UNIX_JACK
+     * \getter RTMIDI_API_UNIX_JACK
      */
 
-    rtmidi::Api get_current_api () const
+    rtmidi_api get_current_api () const
     {
-        return rtmidi::UNIX_JACK;
+        return RTMIDI_API_UNIX_JACK;
     }
 
     void open_port (unsigned portnumber, const std::string & portname);
-    void open_virtual_port (const std::string portname);
+    void open_virtual_port (const std::string & portname);
     void close_port ();
     unsigned get_port_count ();
     std::string get_port_name (unsigned portnumber);
@@ -72,20 +72,20 @@ class midi_out_jack: public midi_out_api
 
 protected:
 
-    std::string clientname;
+    std::string m_clientname;
 
 public:
 
-    midi_out_jack (const std::string clientname);
+    midi_out_jack (const std::string & clientname);
     ~midi_out_jack ();
 
     /**
-     * \getter rtmidi::UNIX_JACK
+     * \getter RTMIDI_API_UNIX_JACK
      */
 
-    rtmidi::Api get_current_api () const
+    rtmidi_api get_current_api () const
     {
-        return rtmidi::UNIX_JACK;
+        return RTMIDI_API_UNIX_JACK;
     }
 
     void open_port (unsigned portnumber, const std::string & portname);

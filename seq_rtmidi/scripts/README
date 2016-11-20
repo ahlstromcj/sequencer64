@@ -1,0 +1,11 @@
+Scripts from the Original RtMidi Project
+Chris Ahlstrom
+2016-11-19 to 2016-11-19
+
+This directory contains scripting from the original RtMidi project,
+from which the Sequencer64 rtmidi project is derived, in case we
+ever provide our own separate library to "replace" RtMidi.
+
+Currently, we do not include the "C" interface (rtmidi_c).
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

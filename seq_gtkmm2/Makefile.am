@@ -68,7 +68,7 @@ DIST_SUBDIRS = $(SUBDIRS)
 
 all-local:
 	@echo "Top source-directory 'top_srcdir' is $(top_srcdir)"
-	@echo "* * * * * All libseq_gktmm2 build items completed * * * * *"
+	@echo "* * * * * All libseq_gtkmm2 build items completed * * * * *"
 
 #******************************************************************************
 # Directories

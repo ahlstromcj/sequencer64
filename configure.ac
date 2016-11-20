@@ -645,7 +645,7 @@ AC_CONFIG_FILES([
  resources/pixmaps/Makefile
  Sequencer64/Makefile
  man/Makefile
- ])
+])
 
 AC_OUTPUT
 

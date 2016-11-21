@@ -23,16 +23,14 @@
  *       -  One or more global debugging functions that are better suited
  *          than using a macro.
  *
- *  Generally, we'll try to hide this file in "globals.h".
+ *  Generally, we'll try to hide this file in "globals.h".  Note that it
+ *  really should have the "hpp" extension now.  Oh well.
  */
 
+#include <string>
 #include <stdio.h>
 
 #include "platform_macros.h"
-
-#ifdef PLATFORM_DEBUG
-#include <string>
-#endif
 
 #ifdef PLATFORM_WINDOWS
 #include "configwin32.h"

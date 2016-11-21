@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-20
+ * \updates       2016-11-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -125,7 +125,9 @@ jackProcessIn (jack_nframes_t nframes, void *arg)
                     rtData->queue.size++;
                 }
                 else
+                {
                     errprintfunc("message queue limit reached");
+                }
             }
         }
     }

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-20
+ * \updates       2016-11-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring, we are trying to improve the RtMidi project in the
@@ -180,19 +180,17 @@ alsa_midi_handler (void * ptr)
         doDecode = false;
         switch (ev->type)
         {
-
-        case SND_SEQ_EVENT_PORT_SUBSCRIBED:
+        case SND_SEQ_EVENT_PORT_SUBSCRIBED:     /* port connection made     */
 #ifdef SEQ64_USE_DEBUG_OUTPUT
-            errprintfunc("port connection made");
+            printf("port connection made\n");
 #endif
             break;
 
-        case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:
+        case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:   /* port connection closed   */
 #ifdef SEQ64_USE_DEBUG_OUTPUT
-            errprintfunc("port connection closed");
             printf
             (
-                "sender = %d:%d, dest = %d:%d\n"
+                "port connection closed: sender = %d:%d, dest = %d:%d\n"
                 int(ev->data.connect.sender.client),
                 int(ev->data.connect.sender.port),
                 int(ev->data.connect.dest.client),
@@ -333,7 +331,9 @@ alsa_midi_handler (void * ptr)
                 data->queue.size++;
             }
             else
+            {
                 errprintfunc("message queue limit reached");
+            }
         }
     }
 

@@ -263,7 +263,7 @@ mastermidibus::init (int ppqn)
             }
             m_buses_out[i] = new midibus
             (
-                snd_seq_client_id(m_alsa_seq), m_alsa_seq, i+1, m_queue
+                snd_seq_client_id(m_alsa_seq), m_alsa_seq, i+1, m_queue, ppqn
             );
             m_buses_out[i]->init_out_sub();
             m_buses_out_active[i] = m_buses_out_init[i] = true;
@@ -283,7 +283,8 @@ mastermidibus::init (int ppqn)
         m_num_in_buses = 1;
         m_buses_in[0] = new midibus
         (
-            snd_seq_client_id(m_alsa_seq), m_alsa_seq, m_num_in_buses, m_queue
+            snd_seq_client_id(m_alsa_seq), m_alsa_seq, m_num_in_buses,
+            m_queue, ppqn
         );
         m_buses_in[0]->init_in_sub();
         m_buses_in_active[0] = m_buses_in_init[0] = true;
@@ -339,7 +340,7 @@ mastermidibus::init (int ppqn)
                             snd_seq_port_info_get_port(pinfo), m_alsa_seq,
                             snd_seq_client_info_get_name(cinfo),
                             snd_seq_port_info_get_name(pinfo),
-                            m_num_out_buses, m_queue
+                            m_num_out_buses, m_queue, ppqn
                         );
                         if (m_buses_out[m_num_out_buses]->init_out())
                         {
@@ -374,7 +375,7 @@ mastermidibus::init (int ppqn)
                             snd_seq_port_info_get_port(pinfo), m_alsa_seq,
                             snd_seq_client_info_get_name(cinfo),
                             snd_seq_port_info_get_name(pinfo),
-                            m_num_in_buses, m_queue
+                            m_num_in_buses, m_queue, ppqn
                         );
                         m_buses_in_active[m_num_in_buses] =
                             m_buses_in_init[m_num_in_buses] = true;
@@ -967,7 +968,7 @@ mastermidibus::port_start (int client, int port)
             m_buses_in_active[bus_slot] = true;
             m_buses_in_init[bus_slot] = true;
             if (! replacement)
-                m_num_in_buses++;
+                ++m_num_in_buses;
         }
     }                                           /* end loop for clients */
 

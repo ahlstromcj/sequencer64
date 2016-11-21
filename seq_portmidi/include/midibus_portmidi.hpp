@@ -118,7 +118,10 @@ private:
 public:
 
     midibus (char a_id, char a_pm_num, const char * a_client_name);
-    midibus(char a_id, int a_queue);
+
+    /*
+     * midibus(char a_id, int a_queue);
+     */
 
     ~midibus ();
 

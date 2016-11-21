@@ -13,11 +13,20 @@
  *  This class implements some common functionality for the realtime
  *  MIDI input/output subclasses rtmidi_in and rtmidi_out.
  *
- *  rtmidi WWW site: http://music.mcgill.ca/~gary/rtmidi/
+ *  RtMidi WWW site: http://music.mcgill.ca/~gary/rtmidi/
  *
- *  rtmidi: realtime MIDI i/o C++ classes
+ *  RtMidi:          realtime MIDI i/o C++ classes
  *
  *  Copyright (c) 2003-2016 Gary P. Scavone
+ *
+ *  Some projects using rtmidi:
+ *
+ *      -   Csound5 *
+ *      -   SimpleSysexxer
+ *      -   Canorus
+ *      -   PianoBooster *
+ *      -   stk *
+ *      -   milkytracker *
  *
  */
 

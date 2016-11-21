@@ -1059,6 +1059,9 @@ midi_out_alsa::get_port_name (unsigned portnumber)
 /**
  *  Opens an ALSA output port.
  *
+ *  The highlights are calling snd_seq_port_info_alloca() then calling
+ *  snd_seq_create_simple_port(), as done in the "legacy" midibus::init_out().
+ *
  * \param portnumber
  *      The port to be opened.
  *
@@ -1086,7 +1089,7 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
 
     snd_seq_port_info_t * pinfo;
     snd_seq_port_info_alloca(&pinfo);
-    alsa_midi_data_t *data = static_cast<alsa_midi_data_t *>(m_api_data);
+    alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
     if
     (
         portInfo(data->seq, pinfo,
@@ -1109,6 +1112,11 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
     sender.client = snd_seq_client_id(data->seq);
     if (data->vport < 0)
     {
+        /*
+         * The "legacy" midibus::init_out() replaces the
+         * SND_SEQ_PORT_CAP_SUBS_READ flag with SND_SEQ_PORT_CAP_NO_EXPORT.
+         */
+
         data->vport = snd_seq_create_simple_port
         (
             data->seq, portname.c_str(),
@@ -1125,7 +1133,10 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
 
     sender.port = data->vport;
 
-    // Make subscription
+    /*
+     * Make subscription.  The midibus::init_out() code instead
+     * used snd_seq_connect_to(port).
+     */
 
     if (snd_seq_port_subscribe_malloc(&data->subscription) < 0)
     {

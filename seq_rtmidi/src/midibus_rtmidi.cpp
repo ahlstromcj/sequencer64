@@ -17,19 +17,20 @@
  */
 
 /**
- * \file          midibus_portmidi.cpp
+ * \file          midibus_rtmidi.cpp
  *
  *  This module declares/defines the base class for MIDI I/O under one of
  *  Windows' audio frameworks.
  *
  * \library       sequencer64 application
- * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2015-07-24
- * \updates       2016-11-20
+ * \author        Chris Ahlstrom
+ * \date          2016-11-21
+ * \updates       2016-11-21
  * \license       GNU GPLv2 or above
  *
- *  This file provides a Windows-only implementation of the midibus class.
- *  It differs from the ALSA implementation in the following particulars:
+ *  This file provides a cross-platform implementation of the midibus class.
+ *  Based initially on the PortMidi version which has the following
+ *  "features":
  *
  *      -   No concept of a buss-name or a port-name, though it does have a
  *          client-name.  The ALSA version has an ID, a client address, a
@@ -39,11 +40,19 @@
  *          -   init_out_sub()
  *          -   init_in_sub()
  *          -   deinit_in()
+ *
+ *  PortMidi function calls to replace:
+ *
+ *      -   Pm_Close()
+ *      -   Pm_Poll()
+ *      -   Pm_OpenOutput()
+ *      -   Pm_OpenInput()
+ *      -   Pm_Message()
+ *      -   Pm_Write()
+ *
  */
 
-#include "midibus_portmidi.hpp"
-
-#ifdef PLATFORM_WINDOWS                // covers this whole module
+#include "midibus_rtmidi.hpp"
 
 /**
  *  Initialize this static member.
@@ -55,10 +64,10 @@ int midibus::m_clock_mod = 16 * 4;
  *  Principal constructor.
  */
 
-midibus::midibus (char a_id, char a_pm_num, const char * a_client_name)
+midibus::midibus (char id, char pm_num, const char * client_name)
  :
-    m_id            (a_id),
-    m_pm_num        (a_pm_num),
+    m_id            (id),
+    m_pm_num        (pm_num),
     m_clock_type    (e_clock_off),
     m_inputing      (false),
     m_name          (),
@@ -69,35 +78,9 @@ midibus::midibus (char a_id, char a_pm_num, const char * a_client_name)
     /* copy the client names */
 
     char tmp[64];
-    snprintf(tmp, sizeof(tmp), "[%d] %s", m_id, a_client_name);
+    snprintf(tmp, sizeof(tmp), "[%d] %s", m_id, client_name);
     m_name = tmp;
 }
-
-/**
- *  Secondary constructor.
-
-midibus::midibus (char a_id, int a_queue)
- :
-    m_id            (a_id),
-    m_pm_num        (a_pm_num),             // huh, no such parameter
-    m_clock_type    (e_clock_off),
-    m_inputing      (false),
-    m_name          (),
-    m_lasttick      (0),
-    m_mutex         (),
-    m_pms           (nullptr)
-{
-    //
-     * Not a member: m_queue = a_queue;
-     //
-
-    // synthesize the client names //
-
-    char tmp[64];
-    snprintf(tmp, sizeof(tmp), "[%d] seq24 %d", m_id, m_id);
-    m_name = tmp;
-}
- */
 
 /**
  *  The destructor closes out the Windows MIDI infrastructure.
@@ -181,7 +164,7 @@ midibus::print ()
  */
 
 void
-midibus::play (event * a_e24, unsigned char a_channel)
+midibus::play (event * e24, unsigned char channel)
 {
     automutex locker(m_mutex);
     PmEvent event;
@@ -190,9 +173,9 @@ midibus::play (event * a_e24, unsigned char a_channel)
     /* fill buffer and set midi channel */
 
     unsigned char buffer[3];                /* temp for midi data */
-    buffer[0] = a_e24->get_status();
-    buffer[0] += (a_channel & 0x0F);
-    a_e24->get_data(&buffer[1], &buffer[2]);
+    buffer[0] = e24->get_status();
+    buffer[0] += (channel & 0x0F);
+    e24->get_data(&buffer[1], &buffer[2]);
     event.message = Pm_Message(buffer[0], buffer[1], buffer[2]);
     /*PmError err = */ Pm_Write(m_pms, &event, 1);
 }
@@ -201,8 +184,8 @@ midibus::play (event * a_e24, unsigned char a_channel)
  *  min() for long values.
  */
 
-inline long
-min (long a, long b)
+inline midipulse
+min (midipulse a, midipulse b)
 {
     return (a < b) ? a : b ;
 }
@@ -212,7 +195,7 @@ min (long a, long b)
  */
 
 void
-midibus::sysex (event * a_e24)
+midibus::sysex (event * e24)
 {
     // no code at present
 }
@@ -232,13 +215,13 @@ midibus::flush ()
  */
 
 void
-midibus::init_clock (long a_tick)
+midibus::init_clock (midipulse tick)
 {
-    if (m_clock_type == e_clock_pos && a_tick != 0)
+    if (m_clock_type == e_clock_pos && tick != 0)
     {
-        continue_from(a_tick);
+        continue_from(tick);
     }
-    else if (m_clock_type == e_clock_mod || a_tick == 0)
+    else if (m_clock_type == e_clock_mod || tick == 0)
     {
         start();
 
@@ -247,9 +230,9 @@ midibus::init_clock (long a_tick)
          *      Use an m_ppqn member variable and the usual adjustments.
          */
 
-        long clock_mod_ticks = (usr().midi_ppqn() / 4) * m_clock_mod;
-        long leftover = (a_tick % clock_mod_ticks);
-        long starting_tick = a_tick - leftover;
+        midipulse clock_mod_ticks = (usr().midi_ppqn() / 4) * m_clock_mod;
+        midipulse leftover = (tick % clock_mod_ticks);
+        midipulse starting_tick = tick - leftover;
 
         /*
          * Was there anything left? Then wait for next beat (16th note)
@@ -268,16 +251,16 @@ midibus::init_clock (long a_tick)
  */
 
 void
-midibus::continue_from (long a_tick)
+midibus::continue_from (midipulse tick)
 {
     /*
      * Tell the device that we are going to start at a certain position.
      */
 
-    long pp16th = (usr().midi_ppqn() / 4);
-    long leftover = (a_tick % pp16th);
-    long beats = (a_tick / pp16th);
-    long starting_tick = a_tick - leftover;
+    midipulse pp16th = (usr().midi_ppqn() / 4);
+    midipulse leftover = (tick % pp16th);
+    midipulse beats = (tick / pp16th);
+    midipulse starting_tick = tick - leftover;
 
     /*
      * Was there anything left? Then wait for next beat (16th note) to
@@ -341,19 +324,19 @@ midibus::stop ()
  */
 
 void
-midibus::clock (long a_tick)
+midibus::clock (midipulse tick)
 {
     automutex locker(m_mutex);
     if (m_clock_type != e_clock_off)
     {
         bool done = false;
-        if (m_lasttick >= a_tick)
+        if (m_lasttick >= tick)
             done = true;
 
         while (! done)
         {
-            m_lasttick++;
-            if (m_lasttick >= a_tick)
+            ++m_lasttick;
+            if (m_lasttick >= tick)
                 done = true;
 
             if (m_lasttick % (usr().midi_ppqn() / 24) == 0) /* tick time? */
@@ -367,10 +350,8 @@ midibus::clock (long a_tick)
     }
 }
 
-#endif   // PLATFORM_WINDOWS
-
 /*
- * midibus_portmidi.cpp
+ * midibus_rtmidi.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

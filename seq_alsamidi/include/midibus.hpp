@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-31
+ * \updates       2016-11-21
  * \license       GNU GPLv2 or above
  *
  *  The midibus module is the Linux version of the midibus module.
@@ -45,8 +45,6 @@
 #if SEQ64_HAVE_LIBASOUND
 #include <alsa/asoundlib.h>
 #include <alsa/seq_midi_event.h>
-#else
-#include "midibus_portmidi.h"           /* see the seq_portmidi library */
 #endif
 
 /*
@@ -56,10 +54,10 @@
 namespace seq64
 {
 
-class event;
+    class event;
 
 /**
- *  Provides a class for handling the MIDI buss on Linux.
+ *  This class implements with ALSA version of the midibus object.
  */
 
 class midibus
@@ -299,7 +297,7 @@ public:
         return m_clock_mod;
     }
 
-};
+};          // class midibus (ALSA version)
 
 }           // namespace seq64
 

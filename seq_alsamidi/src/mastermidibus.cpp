@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-09-10
+ * \updates       2016-11-21
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -44,7 +44,7 @@
 #include "calculations.hpp"             /* tempo_from_beats_per_minute()    */
 #include "event.hpp"                    /* seq64::event                     */
 #include "mastermidibus.hpp"            /* seq64::mastermidibus             */
-#include "midibus.hpp"                  /* seq64::midibus                   */
+#include "midibus.hpp"                  /* seq64::midibus for ALSA          */
 #include "sequence.hpp"                 /* seq64::sequence                  */
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 

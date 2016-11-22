@@ -6,7 +6,7 @@
 # \library    	libseq_portmidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-09-18
+# \update      2016-11-21
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -67,8 +67,8 @@ sequencer64libdir = @sequencer64libdir@
 #----------------------------------------------------------------------------
 
 pkginclude_HEADERS = \
-	mastermidibus_portmidi.hpp \
-	midibus_portmidi.hpp
+	mastermidibus.hpp \
+	midibus.hpp
 
 #******************************************************************************
 # uninstall-hook

@@ -17,7 +17,7 @@
  */
 
 /**
- * \file          midibus_portmidi.cpp
+ * \file          midibus.cpp
  *
  *  This module declares/defines the base class for MIDI I/O under one of
  *  Windows' audio frameworks.
@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-20
+ * \updates       2016-11-21
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the midibus class.
@@ -41,9 +41,9 @@
  *          -   deinit_in()
  */
 
-#include "midibus_portmidi.hpp"
+#include "midibus.hpp"                  /* seq64::midibus for PortMIDI      */
 
-#ifdef PLATFORM_WINDOWS                // covers this whole module
+#ifdef PLATFORM_WINDOWS                 /* covers this whole module         */
 
 /**
  *  Initialize this static member.
@@ -370,7 +370,7 @@ midibus::clock (long a_tick)
 #endif   // PLATFORM_WINDOWS
 
 /*
- * midibus_portmidi.cpp
+ * midibus.cpp for PortMIDI
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

@@ -25,17 +25,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-04
+ * \updates       2016-11-21
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus class.
  *  There is a lot of common code between these two versions!
  */
 
-#include "easy_macros.h"
-#include "midibus_portmidi.hpp"
+#include "easy_macros.h"                /* handy macros                     */
+#include "midibus.hpp"                  /* seq64::midibus for PortMIDI      */
 
-#ifdef PLATFORM_WINDOWS                // covers this whole module
+#ifdef PLATFORM_WINDOWS                 /* covers this whole module         */
 
 /**
  *  This constructor fills the array for our busses.  The only member

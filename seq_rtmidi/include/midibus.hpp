@@ -1,5 +1,5 @@
-#ifndef SEQ64_MIDIBUS_PORTMIDI_HPP
-#define SEQ64_MIDIBUS_PORTMIDI_HPP
+#ifndef SEQ64_MIDIBUS_HPP
+#define SEQ64_MIDIBUS_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -20,35 +20,37 @@
  */
 
 /**
- * \file          midibus_portmidi.hpp
+ * \file          midibus.hpp
  *
  *  This module declares/defines the base class for MIDI I/O for Windows.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2015-07-24
- * \updates       2016-03-04
+ * \date          2016-11-21
+ * \updates       2016-11-21
  * \license       GNU GPLv2 or above
  *
- *  The midibus_portmidi module is the Windows version of the midibus
+ *  This midibus module is the RtMidi version of the midibus
  *  module.  There's almost enough commonality to be worth creating a base
- *  class for both classes, and it might be nice to put the mastermidibus
- *  classes into their own modules.
+ *  class for both classes.
  */
 
+#include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
+#include "easy_macros.h"                /* for autoconf header files    */
+#include "mutex.hpp"
 #include "midibus_common.hpp"
 
 /*
- * Do not document the namespace; it breaks Doxygen.
+ * Do not document a namespace; it breaks Doxygen.
  */
 
 namespace seq64
 {
 
-#ifdef PLATFORM_WINDOWS                // covers this whole module
+    class event;
 
 /**
- *  This class implements with Windows version of the midibus object.
+ *  This class implements with rtmidi version of the midibus object.
  */
 
 class midibus
@@ -62,7 +64,7 @@ class midibus
 private:
 
     /**
-     *  TBD
+     *  This is another name for "16 * 4".
      */
 
     static int m_clock_mod;
@@ -71,13 +73,7 @@ private:
      *  The ID of the midibus object.
      */
 
-    char m_id;
-
-    /**
-     *  TBD
-     */
-
-    char m_pm_num;
+    int m_id;
 
     /**
      *  The type of clock to use.
@@ -92,6 +88,24 @@ private:
     bool m_inputing;
 
     /**
+     *  Provides the PPQN value in force, currently a constant.
+     */
+
+    int m_ppqn;
+
+    /**
+     *  TBD
+     */
+
+    char m_pm_num;
+
+    /**
+     *  The type of clock to use.
+     */
+
+    clock_e m_clock_type;
+
+    /**
      *  The name of the MIDI buss.
      */
 
@@ -101,7 +115,7 @@ private:
      *  The last (most recent?  final?) tick.
      */
 
-    long m_lasttick;
+    midipulse m_lasttick;
 
     /**
      *  Locking mutex.
@@ -117,16 +131,31 @@ private:
 
 public:
 
-    midibus (char a_id, char a_pm_num, const char * a_client_name);
+    midibus (char id, char pm_num, const char * client_name);
 
     /*
-     * midibus(char a_id, int a_queue);
+     * midibus(char id, int queue);
      */
 
     ~midibus ();
 
     bool init_out ();
     bool init_in ();
+    bool deinit_in ()
+    {
+        return false;
+    }
+
+    bool init_out_sub ()
+    {
+        return false;
+    }
+
+    bool init_in_sub ()
+    {
+        return false;
+    }
+
     void print ();
 
     /**
@@ -147,8 +176,8 @@ public:
         return m_id;
     }
 
-    void play (event * a_e24, unsigned char a_channel);
-    void sysex(event * a_e24);
+    void play (event * e24, unsigned char channel);
+    void sysex(event * e24);
 
     int poll_for_midi ();
 
@@ -158,17 +187,20 @@ public:
 
     void start ();
     void stop ();
-    void clock (long a_tick);
-    void continue_from (long a_tick);
-    void init_clock (long a_tick);
+    void clock (midipulse tick);
+    void continue_from (midipulse tick);
+    void init_clock (midipulse tick);
 
     /**
      * \setter m_clock_type
+     *
+     * \param clocktype
+     *      The value used to set the clock-type.
      */
 
-    void set_clock (clock_e a_clock_type)
+    void set_clock (clock_e clocktype)
     {
-        m_clock_type = a_clock_type;
+        m_clock_type = clocktype;
     }
 
     /**
@@ -185,10 +217,10 @@ public:
      *      Compare this Windows version to the Linux version.
      */
 
-    void set_input (bool a_inputing)
+    void set_input (bool inputing)
     {
-        if (m_inputing != a_inputing)
-            m_inputing = a_inputing;
+        if (m_inputing != inputing)
+            m_inputing = inputing;
     }
 
     /**
@@ -202,19 +234,18 @@ public:
 
     void flush ();
 
-    static void set_clock_mod(int a_clock_mod);
+    static void set_clock_mod(int clockmod);
     static int get_clock_mod ();
 
-};
-
-#endif      // PLATFORM_WINDOWS
+};          // class midibus (rtmidi version)
 
 }           // namespace seq64
 
-#endif      // SEQ64_MIDIBUS_PORTMIDI_HPP
+#endif      // SEQ64_MIDIBUS_HPP
 
 /*
- * midibus_portmidi.hpp
+ * midibus.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

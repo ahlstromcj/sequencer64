@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-11
+ * \updates       2016-11-21
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -55,7 +55,7 @@
 #include "jack_assistant.hpp"           /* optional seq64::jack_assistant   */
 #include "gui_assistant.hpp"            /* seq64::gui_assistant             */
 #include "keys_perform.hpp"             /* seq64::keys_perform              */
-#include "mastermidibus.hpp"            /* seq64::mastermidibus             */
+#include "mastermidibus.hpp"            /* seq64::mastermidibus for ALSA    */
 #include "midi_control.hpp"             /* seq64::midi_control "struct"     */
 #include "sequence.hpp"                 /* seq64::sequence                  */
 

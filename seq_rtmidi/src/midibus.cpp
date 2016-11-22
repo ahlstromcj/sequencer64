@@ -17,7 +17,7 @@
  */
 
 /**
- * \file          midibus_rtmidi.cpp
+ * \file          midibus.cpp
  *
  *  This module declares/defines the base class for MIDI I/O under one of
  *  Windows' audio frameworks.
@@ -52,7 +52,7 @@
  *
  */
 
-#include "midibus_rtmidi.hpp"
+#include "midibus.hpp"                  /* seq64::midibus for rtmidi        */
 
 /**
  *  Initialize this static member.
@@ -351,7 +351,7 @@ midibus::clock (midipulse tick)
 }
 
 /*
- * midibus_rtmidi.cpp
+ * midibus.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

@@ -1,5 +1,5 @@
-#ifndef SEQ64_MASTERMIDIBUS_HPP
-#define SEQ64_MASTERMIDIBUS_HPP
+#ifndef SEQ64_MASTERMIDIBUS_ALSAMIDI_HPP
+#define SEQ64_MASTERMIDIBUS_ALSAMIDI_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-20
+ * \updates       2016-11-21
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -328,13 +328,13 @@ public:
     void set_input (bussbyte bus, bool inputing);
     bool get_input (bussbyte bus);
 
-};
+};          // class mastermidibus (ALSA version)
 
 #endif      // SEQ64_HAVE_LIBASOUND
 
 }           // namespace seq64
 
-#endif      // SEQ64_MASTERMIDIBUS_HPP
+#endif      // SEQ64_MASTERMIDIBUS_ALSAMIDI_HPP
 
 /*
  * mastermidibus.hpp

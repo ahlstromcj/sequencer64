@@ -6,7 +6,7 @@
 # \library    	libseq_portmidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-11-20
+# \update      2016-11-21
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -116,8 +116,8 @@ lib_LTLIBRARIES = libseq_portmidi.la
 #----------------------------------------------------------------------------
 
 libseq_portmidi_la_SOURCES = \
-	mastermidibus_portmidi.cpp \
-	midibus_portmidi.cpp
+	mastermidibus.cpp \
+	midibus.cpp
 
 libseq_portmidi_la_LDFLAGS = -version-info $(version)
 libseq_portmidi_la_LIBADD = $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)

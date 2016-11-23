@@ -107,7 +107,7 @@ jackProcessIn (jack_nframes_t nframes, void *arg)
             if (rtData->usingCallback)
             {
                 rtmidi_callback_t callback = rtData->userCallback;
-                callback(message.timeStamp, &message.bytes, rtData->userdata);
+                callback(message.timeStamp, message.bytes, rtData->userdata);
             }
             else
             {
@@ -684,13 +684,13 @@ midi_out_jack::close_port ()
  */
 
 void
-midi_out_jack::send_message (std::vector<midibyte> * message)
+midi_out_jack::send_message (const std::vector<midibyte> & message)
 {
-    int nBytes = message->size();
+    int nBytes = message.size();
     JackMidiData * data = static_cast<JackMidiData *>(m_api_data);
     jack_ringbuffer_write
     (
-        data->buffMessage, (const char *) &(*message)[0], message->size()
+        data->buffMessage, (const char *) &message[0], message.size()
     );
     jack_ringbuffer_write(data->buffSize, (char *) &nBytes, sizeof(nBytes));
 }

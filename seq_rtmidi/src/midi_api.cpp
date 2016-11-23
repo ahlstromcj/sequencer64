@@ -215,13 +215,13 @@ midi_in_api::ignore_types (bool midisysex, bool miditime, bool midisense)
  *  Gets a MIDI input message from the message queue.
  *
  * \param message
- *      A string of characters for the messages.  Not sure why it is a vector.
+ *      A string of characters for the messages.
  */
 
 double
-midi_in_api::get_message (std::vector<midibyte> * message)
+midi_in_api::get_message (std::vector<midibyte> & message)
 {
-    message->clear();
+    message.clear();
     if (m_input_data.usingCallback)
     {
         m_error_string = func_message("user callback already set for this port");
@@ -231,12 +231,14 @@ midi_in_api::get_message (std::vector<midibyte> * message)
     if (m_input_data.queue.size == 0)
         return 0.0;
 
-    // Copy queued message to the vector pointer argument and then "pop" it.
+    /*
+     * Copy queued message to the vector reference argument and then "pop" it.
+     */
 
-    std::vector<midibyte> * bytes =
-        &(m_input_data.queue.ring[m_input_data.queue.front].bytes);
+    std::vector<midibyte> & bytes =
+        m_input_data.queue.ring[m_input_data.queue.front].bytes;
 
-    message->assign(bytes->begin(), bytes->end());
+    message.assign(bytes.begin(), bytes.end());
     double deltaTime =
         m_input_data.queue.ring[m_input_data.queue.front].timeStamp;
 

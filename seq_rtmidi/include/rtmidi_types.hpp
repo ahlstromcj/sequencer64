@@ -58,7 +58,7 @@ enum rtmidi_api
 typedef void (* rtmidi_callback_t)
 (
     double timeStamp,
-    std::vector<midibyte> * message,
+    std::vector<midibyte> & message,
     void * userdata
 );
 

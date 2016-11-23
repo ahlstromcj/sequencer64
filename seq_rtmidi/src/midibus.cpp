@@ -50,6 +50,36 @@
  *      -   Pm_Message()
  *      -   Pm_Write()
  *
+ *  Now let's survey the test files of the rtmidi project to determine what
+ *  functions we need to use.
+ *
+ *      -   MIDI input.
+ *          -#  Create an rtmidi_in object, midiin.
+ *          -#  MIDI input.  Need to define a callback of the format
+ *              c(double delta, std::vector<midibyte> * msg, void * userdata).
+ *              Set it with midiin->set_callback(&mycallback).
+ *          -#  Set status to ignore sysex, timing, or active sensing messages:
+ *              midiin->ignoreTypes(false, false, false); that is, don't
+ *              ignore.
+ *          -#  If desired, one can do midiin->open_virtual_port().
+ *          -#  Otherwise: unsigned numberofports = midiin->get_port_count().
+ *          -#  std::string portname = midiin->get_port_name(portnumber);
+ *          -#  Finally, midiin->open_port().
+ *          -#  To get messages:
+ *              -   A polling loop: stamp = midiin->get_message().
+ *              -   Use the callback to process each message.
+ *      -   MIDI clock in/out.  See rtmidi-master/tests/midiclock.cpp.
+ *          Lots of push_back() of message bytes followed by send_message()
+ *          for the MIDI-clock out.
+ *      -   MIDI output.
+ *          -#  Create an rtmidi_out object, midiout.
+ *          -#  If desired, one can do midiout->open_virtual_port().
+ *          -#  Otherwise: unsigned numberofports = midiout->get_port_count().
+ *          -#  std::string portname = midiin->get_port_name(portnumber);
+ *          -#  Finally, midiout->open_port().
+ *          -#  To send a message, push_back() the message bytes (or use array
+ *              notation).  Then midiout->send_message().
+ *
  */
 
 #include "midibus.hpp"                  /* seq64::midibus for rtmidi        */

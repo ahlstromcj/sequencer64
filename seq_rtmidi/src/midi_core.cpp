@@ -1011,9 +1011,9 @@ midi_out_core::open_virtual_port (const std::string & portname)
  */
 
 void
-midi_out_core::send_message (std::vector<midibyte> * message)
+midi_out_core::send_message (const std::vector<midibyte> & message)
 {
-    unsigned nBytes = message->size();
+    unsigned nBytes = message.size();
     if (nBytes == 0)
     {
         m_error_string = func_message("no data in message argument");
@@ -1024,7 +1024,7 @@ midi_out_core::send_message (std::vector<midibyte> * message)
     MIDITimeStamp timeStamp = AudioGetCurrentHostTime();
     CoreMidiData * data = static_cast<CoreMidiData *>(m_api_data);
     OSStatus result;
-    if (message->at(0) != 0xF0 && nBytes > 3)
+    if (message.at(0) != 0xF0 && nBytes > 3)
     {
         m_error_string =
             func_message("message format problem ... not SysEx but > 3 bytes?");
@@ -1044,7 +1044,7 @@ midi_out_core::send_message (std::vector<midibyte> * message)
             65535 : remainingBytes; // 65535 = maximum size of a MIDIPacket
 
         const Byte * dataStartPtr =
-            (const Byte *) &message->at(nBytes - remainingBytes);
+            (const Byte *) &message.at(nBytes - remainingBytes);
 
         packet = MIDIPacketListAdd
         (

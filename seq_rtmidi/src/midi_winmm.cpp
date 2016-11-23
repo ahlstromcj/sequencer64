@@ -764,12 +764,12 @@ midi_out_winmm::open_virtual_port (const std::string & /*portname*/)
  */
 
 void
-midi_out_winmm::send_message (std::vector<midibyte> * message)
+midi_out_winmm::send_message (const std::vector<midibyte> & message)
 {
     if (! m_connected)
         return;
 
-    unsigned nBytes = static_cast<unsigned>(message->size());
+    unsigned nBytes = static_cast<unsigned>(message.size());
     if (nBytes == 0)
     {
         m_error_string = func_message("message argument is empty");
@@ -779,7 +779,7 @@ midi_out_winmm::send_message (std::vector<midibyte> * message)
 
     MMRESULT result;
     WinMidiData * data = static_cast<WinMidiData *>(m_api_data);
-    if (message->at(0) == 0xF0)     // Sysex message
+    if (message.at(0) == 0xF0)     // Sysex message
     {
         // Allocate buffer for sysex data.
 
@@ -794,7 +794,7 @@ midi_out_winmm::send_message (std::vector<midibyte> * message)
         // Copy data to buffer.
 
         for (unsigned i = 0; i < nBytes; ++i)
-            buffer[i] = message->at(i);
+            buffer[i] = message.at(i);
 
         // Create and prepare MIDIHDR structure.
 
@@ -851,7 +851,7 @@ midi_out_winmm::send_message (std::vector<midibyte> * message)
         midibyte * ptr = (midibyte *) &packet;
         for (unsigned i = 0; i < nBytes; ++i)
         {
-            *ptr = message->at(i);
+            *ptr = message.at(i);
             ++ptr;
         }
 

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-20
+ * \updates       2016-11-23
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -91,7 +91,7 @@ rtmidi::rtmidi ()
 
 rtmidi::~rtmidi()
 {
-    if (m_rtapi)
+    if (not_nullptr(m_rtapi))
         delete m_rtapi;
 
     m_rtapi = nullptr;
@@ -124,16 +124,16 @@ rtmidi::get_compiled_api (std::vector<rtmidi_api> & apis)
      * constructor.
      */
 
-#ifdef SEQ64_BUILD_MACOSX_CORE
-    apis.push_back(RTMIDI_API_MACOSX_CORE);
+#ifdef SEQ64_BUILD_UNIX_JACK
+    apis.push_back(RTMIDI_API_UNIX_JACK);
 #endif
 
 #ifdef SEQ64_BUILD_LINUX_ALSA
     apis.push_back(RTMIDI_API_LINUX_ALSA);
 #endif
 
-#ifdef SEQ64_BUILD_UNIX_JACK
-    apis.push_back(RTMIDI_API_UNIX_JACK);
+#ifdef SEQ64_BUILD_MACOSX_CORE
+    apis.push_back(RTMIDI_API_MACOSX_CORE);
 #endif
 
 #ifdef SEQ64_BUILD_WINDOWS_MM
@@ -149,6 +149,19 @@ rtmidi::get_compiled_api (std::vector<rtmidi_api> & apis)
  * class rtmidi_in
  */
 
+/**
+ *  Opens the desired MIDI API.
+ *
+ * \param api
+ *      The desired MIDI API.
+ *
+ * \param clientname
+ *      The name of the client.  This is the name used to access the client.
+ *
+ * \param queuesizelimit
+ *      The maximum size of the MIDI message queue.
+ */
+
 void
 rtmidi_in::openmidi_api
 (
@@ -157,7 +170,7 @@ rtmidi_in::openmidi_api
    unsigned queuesizelimit
 )
 {
-    if (m_rtapi)
+    if (not_nullptr(m_rtapi))
         delete m_rtapi;
 
     m_rtapi = nullptr;
@@ -172,14 +185,14 @@ rtmidi_in::openmidi_api
         m_rtapi = new midi_in_alsa(clientname, queuesizelimit);
 #endif
 
-#ifdef SEQ64_BUILD_WINDOWS_MM
-    if (api == RTMIDI_API_WINDOWS_MM)
-        m_rtapi = new midi_in_winmm(clientname, queuesizelimit);
-#endif
-
 #ifdef SEQ64_BUILD_MACOSX_CORE
     if (api == RTMIDI_API_MACOSX_CORE)
         m_rtapi = new midi_in_core(clientname, queuesizelimit);
+#endif
+
+#ifdef SEQ64_BUILD_WINDOWS_MM
+    if (api == RTMIDI_API_WINDOWS_MM)
+        m_rtapi = new midi_in_winmm(clientname, queuesizelimit);
 #endif
 
 #ifdef SEQ64_BUILD_RTMIDI_DUMMY
@@ -188,6 +201,19 @@ rtmidi_in::openmidi_api
 #endif
 
 }
+
+/**
+ *  Constructs the desired MIDI API.
+ *
+ * \param api
+ *      The desired MIDI API.
+ *
+ * \param clientname
+ *      The name of the client.  This is the name used to access the client.
+ *
+ * \param queuesizelimit
+ *      The maximum size of the MIDI message queue.
+ */
 
 rtmidi_in::rtmidi_in
 (
@@ -200,18 +226,16 @@ rtmidi_in::rtmidi_in
 {
     if (api != RTMIDI_API_UNSPECIFIED)
     {
-        // Attempt to open the specified API.
-
         openmidi_api(api, clientname, queuesizelimit);
-        if (m_rtapi) return;
+        if (not_nullptr(m_rtapi))
+            return;
 
-        // No compiled support for specified API value.  Issue a warning
-        // and continue as if no API was specified.
+        /*
+         * No compiled support for specified API value.  Issue a warning and
+         * continue as if no API was specified.
+         */
 
-        std::cerr
-            << func_message("no compiled support for specified API")
-            << std::endl
-            ;
+        errprintfunc("no compiled support for specified API");
     }
 
     /*
@@ -224,11 +248,11 @@ rtmidi_in::rtmidi_in
     for (unsigned i = 0; i < apis.size(); ++i)
     {
         openmidi_api(apis[i], clientname, queuesizelimit);
-        if (m_rtapi->get_port_count())
+        if (m_rtapi->get_port_count() > 0)
            break;
     }
 
-    if (m_rtapi)
+    if (not_nullptr(m_rtapi))
        return;
 
     /*
@@ -242,52 +266,54 @@ rtmidi_in::rtmidi_in
     throw(rterror(errorText, rterror::UNSPECIFIED));
 }
 
+/**
+ *  A do-nothing virtual destructor.
+ */
+
 rtmidi_in::~rtmidi_in()
 {
    // no code
 }
 
+/*
+ * rtmidi_out class
+ */
+
 /**
- *  Principal constructor.
+ *  Principal constructor.  Attempt to open the specified API.  If there is no
+ *  compiled support for specified API value, then issue a warning and
+ *  continue as if no API was specified.  In that case, we Iterate through the
+ *  compiled APIs and return as soon as we find one with at least one port or
+ *  we reach the end of the list.
  *
  * \param api
  *      Provides the API to be constructed.
  *
  * \param clientname
  *      Provides the name of the MIDI output client, used by some of the APIs.
+ *
+ * \throw
+ *      This function will throw an rterror object if it cannot find a MIDI
+ *      API to use.
  */
 
 rtmidi_out::rtmidi_out (rtmidi_api api, const std::string & clientname)
 {
     if (api != RTMIDI_API_UNSPECIFIED)
     {
-        /*
-         * Attempt to open the specified API.  If there is no compiled support
-         * for specified API value, then issue a warning and continue as if no
-         * API was specified.
-         */
-
         openmidi_api(api, clientname);
         if (not_nullptr(m_rtapi))
            return;
 
-        std::cerr
-            << func_message("no compiled support for specified API argument")
-            << std::endl
-            ;
+        errprintfunc("no compiled support for specified API argument");
     }
-
-    /*
-     * Iterate through the compiled APIs and return as soon as we find one
-     * with at least one port or we reach the end of the list.
-     */
 
     std::vector<rtmidi_api> apis;
     get_compiled_api(apis);
     for (unsigned i = 0; i < apis.size(); ++i)
     {
         openmidi_api(apis[i], clientname);
-        if (m_rtapi->get_port_count())
+        if (m_rtapi->get_port_count() > 0)
            break;
     }
 
@@ -309,15 +335,33 @@ rtmidi_out::rtmidi_out (rtmidi_api api, const std::string & clientname)
  * class rtmidi_out
  */
 
+/**
+ *  A do-nothing virtual destructor.
+ */
+
 rtmidi_out::~rtmidi_out()
 {
    // no code
 }
 
+/***
+ *  Opens the desired MIDI output API.
+ *
+ * \param api
+ *      Provides the API to be constructed.
+ *
+ * \param clientname
+ *      Provides the name of the MIDI output client, used by some of the APIs.
+ *
+ * \throw
+ *      This function will throw an rterror object if it cannot find a MIDI
+ *      API to use.
+ */
+
 void
 rtmidi_out::openmidi_api (rtmidi_api api, const std::string & clientname)
 {
-    if (m_rtapi)
+    if (not_nullptr(m_rtapi))
         delete m_rtapi;
 
     m_rtapi = nullptr;
@@ -332,14 +376,14 @@ rtmidi_out::openmidi_api (rtmidi_api api, const std::string & clientname)
         m_rtapi = new midi_out_alsa(clientname);
 #endif
 
-#ifdef SEQ64_BUILD_WINDOWS_MM
-    if (api == RTMIDI_API_WINDOWS_MM)
-        m_rtapi = new midi_out_winmm(clientname);
-#endif
-
 #ifdef SEQ64_BUILD_MACOSX_CORE
     if (api == RTMIDI_API_MACOSX_CORE)
         m_rtapi = new midi_out_core(clientname);
+#endif
+
+#ifdef SEQ64_BUILD_WINDOWS_MM
+    if (api == RTMIDI_API_WINDOWS_MM)
+        m_rtapi = new midi_out_winmm(clientname);
 #endif
 
 #ifdef SEQ64_BUILD_RTMIDI_DUMMY

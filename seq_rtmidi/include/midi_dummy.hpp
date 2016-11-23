@@ -132,7 +132,7 @@ public:
         return std::string("");
     }
 
-    void send_message (std::vector<midibyte> * /*message*/)
+    void send_message (const std::vector<midibyte> & /*message*/)
     {
         // no code
     }

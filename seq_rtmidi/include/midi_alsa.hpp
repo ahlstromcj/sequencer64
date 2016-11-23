@@ -80,7 +80,7 @@ public:
     void close_port ();
     unsigned get_port_count ();
     std::string get_port_name (unsigned portnumber);
-    void send_message (std::vector<midibyte> * message);
+    void send_message (const std::vector<midibyte> & message);
 
 protected:
 

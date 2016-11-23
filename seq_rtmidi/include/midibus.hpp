@@ -94,7 +94,7 @@ private:
     int m_ppqn;
 
     /**
-     *  TBD
+     *  TBD.  Is this a port number or a client number.
      */
 
     char m_pm_num;
@@ -124,7 +124,7 @@ private:
     mutex m_mutex;
 
     /**
-     *  The PortMidiStream for the Windows implementation.
+     *
      */
 
     PortMidiStream * m_pms;

@@ -125,7 +125,7 @@ public:
 
     void set_callback (rtmidi_callback_t callback, void * userdata);
     void cancel_callback ();
-    double get_message (std::vector<midibyte> * message);
+    double get_message (std::vector<midibyte> & message);
 };
 
 /*
@@ -139,7 +139,7 @@ public:
 
     midi_out_api ();
     virtual ~midi_out_api ();
-    virtual void send_message (std::vector<midibyte> * message) = 0;
+    virtual void send_message (const std::vector<midibyte> & message) = 0;
 
 };
 

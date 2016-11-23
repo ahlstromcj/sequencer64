@@ -308,7 +308,7 @@ public:
      *  established.
      */
 
-    double get_message (std::vector<midibyte> * message)
+    double get_message (std::vector<midibyte> & message)
     {
        return ((midi_in_api *) m_rtapi)->get_message(message);
     }
@@ -454,7 +454,6 @@ public:
 
     /**
      *  Return a string identifier for the specified MIDI port type and number.
-     *
      *  An empty string is returned if an invalid port specifier is provided.
      */
 
@@ -465,22 +464,20 @@ public:
 
     /**
      *  Immediately send a single message out an open MIDI output port.
-     *
      *  An exception is thrown if an error occurs during output or an
      *  output connection was not previously established.
      */
 
-    void send_message (std::vector<midibyte> * message)
+    void send_message (const std::vector<midibyte> & message)
     {
        ((midi_out_api *) m_rtapi)->send_message(message);
     }
 
     /**
      *  Set an error callback function to be invoked when an error has
-     *  occured.
-     *
-     *  The callback function will be called whenever an error has occured. It
-     *  is best to set the error callback function before opening a port.
+     *  occurred.  The callback function will be called whenever an error has
+     *  occured. It is best to set the error callback function before opening
+     *  a port.
      */
 
     virtual void seterrorcallback

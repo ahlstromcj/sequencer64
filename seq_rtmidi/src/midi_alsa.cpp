@@ -315,7 +315,7 @@ alsa_midi_handler (void * ptr)
         if (data->usingCallback)
         {
             rtmidi_callback_t callback = data->userCallback;
-            callback(message.timeStamp, &message.bytes, data->userdata);
+            callback(message.timeStamp, message.bytes, data->userdata);
         }
         else
         {
@@ -1212,11 +1212,11 @@ midi_out_alsa::open_virtual_port (const std::string & portname)
  */
 
 void
-midi_out_alsa::send_message (std::vector<midibyte> * message)
+midi_out_alsa::send_message (const std::vector<midibyte> & message)
 {
     int result;
     alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
-    unsigned nBytes = message->size();
+    unsigned nBytes = message.size();
     if (nBytes > data->bufferSize)
     {
         data->bufferSize = nBytes;
@@ -1243,7 +1243,7 @@ midi_out_alsa::send_message (std::vector<midibyte> * message)
     snd_seq_ev_set_subs(&ev);
     snd_seq_ev_set_direct(&ev);
     for (unsigned i = 0; i < nBytes; ++i)
-        data->buffer[i] = message->at(i);
+        data->buffer[i] = message.at(i);
 
     result = snd_midi_event_encode(data->coder, data->buffer, long(nBytes), &ev);
     if (result < int(nBytes))

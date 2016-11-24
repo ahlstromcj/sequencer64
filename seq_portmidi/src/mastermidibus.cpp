@@ -17,7 +17,7 @@
  */
 
 /**
- * \file          mastermidibus_portmidi.cpp
+ * \file          mastermidibus.cpp
  *
  *  This module declares/defines the base class for MIDI I/O under one of
  *  Windows' audio frameworks.
@@ -25,56 +25,44 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-21
+ * \updates       2016-11-24
  * \license       GNU GPLv2 or above
  *
- *  This file provides a Windows-only implementation of the mastermidibus class.
- *  There is a lot of common code between these two versions!
+ *  This file provides a Windows-only implementation of the mastermidibus
+ *  class.  There is a lot of common code between these two versions!
  */
 
 #include "easy_macros.h"                /* handy macros                     */
-#include "midibus.hpp"                  /* seq64::midibus for PortMIDI      */
+#include "event.hpp"                    /* seq64::event                     */
+#include "mastermidibus.hpp"            /* seq64::mastermidibus, PortMIDI   */
+#include "midibus.hpp"                  /* seq64::midibus, PortMIDI         */
+#include "portmidi.h"
 
-#ifdef PLATFORM_WINDOWS                 /* covers this whole module         */
+// #ifdef PLATFORM_WINDOWS              /* covers this whole module         */
 
-/**
- *  This constructor fills the array for our busses.  The only member
- *  "missing" from this Windows version is the "m_alsa_seq" member of the
- *  Linux version.
+/*
+ *  Do not document a namespace; it breaks Doxygen.
  */
 
-mastermidibus::mastermidibus ()
- :
-    m_num_out_buses     (0),        // or c_max_busses, or what?
-    m_num_in_buses      (0),        // or c_max_busses, or 1, or what?
-    m_buses_out         (),         // array of c_max_busses midibus pointers
-    m_buses_in          (),         // array of c_max_busses midibus pointers
-    m_bus_announce      (nullptr),  // one pointer
-    m_buses_out_active  (),         // array of c_max_busses booleans
-    m_buses_in_active   (),         // array of c_max_busses booleans
-    m_buses_out_init    (),         // array of c_max_busses booleans
-    m_buses_in_init     (),         // array of c_max_busses booleans
-    m_init_clock        (),         // array of c_max_busses clock_e values
-    m_init_input        (),         // array of c_max_busses booleans
-    m_queue             (0),
-    m_ppqn              (0),        // set in constructor body
-    m_beats_per_minute  (0),
-    m_num_poll_descriptors (0),
-    m_poll_descriptors  (nullptr),
-    m_dumping_input     (false),
-    m_seq               (nullptr),
-    m_mutex             ()
+namespace seq64
 {
-    m_ppqn = choose_ppqn(ppqn);
-    for (int i = 0; i < c_max_busses; ++i)
-    {
-        m_buses_in_active[i] = false;
-        m_buses_out_active[i] = false;
-        m_buses_in_init[i] = false;
-        m_buses_out_init[i] = false;
-        m_init_clock[i] = e_clock_off;
-        m_init_input[i] = false;
-    }
+
+/**
+ *  The base-class constructor fills the array for our busses.
+ *
+ * \param ppqn
+ *      Provides the PPQN value for this object.  However, in most cases, the
+ *      default value, SEQ64_USE_DEFAULT_PPQN should be specified.
+ *
+ * \param bpm
+ *      Provides the beats per minute value, which defaults to
+ *      c_beats_per_minute.
+ */
+
+mastermidibus::mastermidibus (int ppqn, int bpm)
+ :
+    mastermidibase      (ppqn, bpm)
+{
     Pm_Initialize();
 }
 
@@ -85,30 +73,16 @@ mastermidibus::mastermidibus ()
 
 mastermidibus::~mastermidibus ()
 {
-    for (int i = 0; i < m_num_out_buses; i++)
-    {
-        if (not_nullptr(m_buses_out[i]))
-        {
-            delete m_buses_out[i];
-            m_buses_out[i] = nullptr;
-        }
-    }
-    for (int i = 0; i < m_num_in_buses; i++)
-    {
-        if (not_nullptr(m_buses_in[i]))
-        {
-            delete m_buses_in[i];
-            m_buses_in[i] = nullptr;
-        }
-    }
     Pm_Terminate();
 }
 
+/**
+ *  Provides the PortMidi implementation needed for the init() function.
+ */
 
 void
-mastermidibus::init ()
+mastermidibus::api_init ()
 {
-
     int num_devices = Pm_CountDevices();
     const PmDeviceInfo * dev_info = nullptr;
     for (int i = 0; i < num_devices; ++i)
@@ -135,7 +109,7 @@ mastermidibus::init ()
             {
                 m_buses_out_active[m_num_out_buses] = true;
                 m_buses_out_init[m_num_out_buses] = true;
-                m_num_out_buses++;
+                ++m_num_out_buses;
             }
             else
             {
@@ -163,8 +137,8 @@ mastermidibus::init ()
         }
     }
 
-    set_beats_per_minute(c_beats_per_minute;);
-    set_ppqn(DEFAULT_PPQN);
+    set_beats_per_minute(c_beats_per_minute);
+    set_ppqn(m_ppqn);   // SEQ64_DEFAULT_PPQN);
 
     /* MIDI input poll descriptors */
 
@@ -177,235 +151,7 @@ mastermidibus::init ()
 }
 
 /**
- *  Starts all of the configured output busses up to m_num_out_buses.
- *
- * \threadsafe
- */
-
-void
-mastermidibus::start ()
-{
-    automutex locker(m_mutex);
-    for (int i = 0; i < m_num_out_buses; i++)
-        m_buses_out[i]->start();
-}
-
-/**
- *  Gets the output busses running again.
- *
- * \threadsafe
- */
-
-void
-mastermidibus::continue_from (long tick)
-{
-    automutex locker(m_mutex);
-    for (int i = 0; i < m_num_out_buses; i++)
-        m_buses_out[i]->continue_from(tick);
-}
-
-/**
- *  Initializes the clock of each of the output busses.
- *
- * \threadsafe
- */
-
-void
-mastermidibus::init_clock (long tick)
-{
-    automutex locker(m_mutex);
-    for (int i = 0; i < m_num_out_buses; i++)
-        m_buses_out[i]->init_clock(tick);
-}
-
-/**
- *  Stops each of the output busses.
- *
- * \threadsafe
- */
-
-void
-mastermidibus::stop ()
-{
-    automutex locker(m_mutex);
-    for (int i = 0; i < m_num_out_buses; i++)
-        m_buses_out[i]->stop();
-}
-
-/**
- *  Generates the MIDI clock for each of the output busses.
- *
- * \threadsafe
- */
-
-void
-mastermidibus::clock (long tick)
-{
-    automutex locker(m_mutex);
-    for (int i = 0; i < m_num_out_buses; i++)
-        m_buses_out[i]->clock(tick);
-}
-
-/**
- *  Set the PPQN value (parts per quarter note) member.
- *
- * \threadsafe
- */
-
-void
-mastermidibus::set_ppqn (int ppqn)
-{
-    automutex locker(m_mutex);
-    m_ppqn = choose_ppqn(ppqn);
-}
-
-/**
- *  Set the BPM value (beats per minute) member.
- *
- * \threadsafe
- */
-
-void
-mastermidibus::set_beats_per_minute (int bpm)
-{
-    automutex locker(m_mutex);
-    m_beats_per_minute = bpm;
-}
-
-/**
- *  Flushes our local queue events out; but the Windows version does
- *  nothing.
- */
-
-void
-mastermidibus::flush ()
-{
-    // empty body
-}
-
-/**
- *  Handle the sending of SYSEX events.
- *
- * \threadsafe
- */
-
-void
-mastermidibus::sysex (event * ev)
-{
-    automutex locker(m_mutex);
-    for (int i = 0; i < m_num_out_buses; i++)
-        m_buses_out[i]->sysex(ev);
-
-    flush();
-}
-
-/**
- *  Handle the playing of MIDI events on the MIDI buss given by the
- *  parameter, as long as it is a legal buss number.
- *
- * \threadsafe
- */
-
-void
-mastermidibus::play (unsigned char bus, event * e24, unsigned char channel)
-{
-    automutex locker(m_mutex);
-    if (m_buses_out_active[bus] && bus < m_num_out_buses)
-        m_buses_out[bus]->play(e24, channel);
-}
-
-/**
- *  Set the clock for the given (legal) buss number.
- *
- * \threadsafe
- */
-
-void
-mastermidibus::set_clock (unsigned char bus, clock_e clock_type)
-{
-    automutex locker(m_mutex);
-    if (bus < c_max_busses)
-        m_init_clock[bus] = clock_type;
-
-    if (m_buses_out_active[bus] && bus < m_num_out_buses)
-        m_buses_out[bus]->set_clock(clock_type);
-}
-
-/**
- *  Get the clock for the given (legal) buss number.
- */
-
-clock_e
-mastermidibus::get_clock (unsigned char bus)
-{
-    if (m_buses_out_active[bus] && bus < m_num_out_buses)
-    {
-        return m_buses_out[bus]->get_clock();
-    }
-    return e_clock_off;
-}
-
-/**
- *  Set the clock mod to the given value, if legal.
- */
-
-void
-midibus::set_clock_mod (int clock_mod)
-{
-    if (clock_mod != 0)
-        m_clock_mod = clock_mod;
-}
-
-/**
- *  Get the clock mod.
- */
-
-int
-midibus::get_clock_mod ()
-{
-    return m_clock_mod;
-}
-
-/**
- *  Set the status of the given input buss, if a legal buss number.
- *
- *  Why is another buss-count constant, and a global one at that, being
- *  used?  And I thought there was only one input buss anyway!
- *
- * \threadsafe
- */
-
-void
-mastermidibus::set_input (unsigned char bus, bool inputing)
-{
-    automutex locker(m_mutex);
-    if (bus < c_max_busses)         // should be m_num_in_buses I believe!!!
-        m_init_input[bus] = inputing;
-
-    /*
-     * NEED COMMON CODE CHECK
-     */
-
-    if (m_buses_in_active[bus] && bus < m_num_in_buses)
-        m_buses_in[bus]->set_input(inputing);
-}
-
-/**
- *  Get the input for the given (legal) buss number.
- */
-
-bool
-mastermidibus::get_input (unsigned char bus)
-{
-    if (m_buses_in_active[bus] && bus < m_num_in_buses)
-        return m_buses_in[bus]->get_input();
-
-    return false;
-}
-
-/**
  *  Get the MIDI output buss name for the given (legal) buss number.
- */
 
 std::string
 mastermidibus::get_midi_out_bus_name (int bus)
@@ -415,10 +161,10 @@ mastermidibus::get_midi_out_bus_name (int bus)
 
     return "get_midi_out_bus_name(): error";
 }
+ */
 
 /**
  *  Get the MIDI input buss name for the given (legal) buss number.
- */
 
 std::string
 mastermidibus::get_midi_in_bus_name (int bus)
@@ -428,18 +174,7 @@ mastermidibus::get_midi_in_bus_name (int bus)
 
     return "get_midi_in_bus_name(): error";
 }
-
-/**
- *  Print some information about the available MIDI output busses.
  */
-
-void
-mastermidibus::print ()
-{
-    printf("Available Buses\n");
-    for (int i = 0; i < m_num_out_buses; i++)
-        printf("%s\n", m_buses_out[i]->m_name.c_str());
-}
 
 /**
  *  Initiate a poll() on the existing poll descriptors.  This is a
@@ -447,16 +182,17 @@ mastermidibus::print ()
  */
 
 int
-mastermidibus::poll_for_midi ()
+mastermidibus::api_poll_for_midi ()
 {
     for (;;)
     {
-        for (int i = 0; i < m_num_in_buses; i++)
+        for (int i = 0; i < m_num_in_buses; ++i)
         {
             if (m_buses_in[i]->poll_for_midi())
                 return 1;
         }
-        Sleep(1);                      // yield processor for 1 millisecond
+        // Sleep(1);                      // yield processor for 1 millisecond
+        millisleep(1);
         return 0;
     }
 }
@@ -468,9 +204,8 @@ mastermidibus::poll_for_midi ()
  */
 
 bool
-mastermidibus::is_more_input ()
+mastermidibus::api_is_more_input ()
 {
-    automutex locker(m_mutex);
     int size = 0;
     for (int i = 0; i < m_num_in_buses; i++)
     {
@@ -480,10 +215,6 @@ mastermidibus::is_more_input ()
     return size > 0;
 }
 
-/*
- * No mastermidibus::port_start(), port_exit() in Windows version.
- */
-
 /**
  *  Grab a MIDI event.
  *
@@ -491,19 +222,17 @@ mastermidibus::is_more_input ()
  */
 
 bool
-mastermidibus::get_midi_event (event * in)
+mastermidibus::api_get_midi_event (event * in)
 {
-    automutex locker(m_mutex);
     bool result = false;
     PmEvent event;
-    PmError err;
     for (int i = 0; i < m_num_in_buses; i++)
     {
         if (m_buses_in[i]->poll_for_midi())
         {
-            err = Pm_Read(m_buses_in[i]->m_pms, &event, 1);
+            int /*PmError*/ err = Pm_Read(m_buses_in[i]->m_pms, &event, 1);
             if (err < 0)
-                printf("Pm_Read: %s\n", Pm_GetErrorText(err));
+                printf("Pm_Read: %s\n", Pm_GetErrorText((PmError) err));
 
             if (m_buses_in[i]->m_inputing)
                 result = true;
@@ -513,7 +242,10 @@ mastermidibus::get_midi_event (event * in)
         return false;
 
     in->set_status(Pm_MessageStatus(event.message));
-    in->set_size(3);
+
+    // TO BE FIXED!!!!!!!!!!!!!!!!!!
+    // in->set_size(3); !!!!!!!!!!!!
+
     in->set_data(Pm_MessageData1(event.message), Pm_MessageData2(event.message));
 
     /* some keyboards send Note On with velocity 0 for Note Off */
@@ -526,25 +258,12 @@ mastermidibus::get_midi_event (event * in)
     return true;
 }
 
-/**
- *  Set the input sequence object, and set the m_dumping_input value to
- *  the given state.
- *
- * \threadsafe
- */
+}           // namespace seq64
 
-void
-mastermidibus::set_sequence_input (bool state, sequence * seq)
-{
-    automutex locker(m_mutex);
-    m_seq = seq;
-    m_dumping_input = state;
-}
-
-#endif   // PLATFORM_WINDOWS
+// #endif   // PLATFORM_WINDOWS
 
 /*
- * mastermidibus_portmidi.cpp
+ * mastermidibus.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

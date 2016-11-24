@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-11-21
+ * \updates       2016-11-23
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -433,12 +433,12 @@ mastermidibus::init (int ppqn)
 void
 mastermidibus::start ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
+#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_start_queue(m_alsa_seq, m_queue, NULL);     /* start timer */
+#endif
     for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->start();
-#endif
 }
 
 /**
@@ -453,12 +453,12 @@ mastermidibus::start ()
 void
 mastermidibus::continue_from (midipulse tick)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
+#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_start_queue(m_alsa_seq, m_queue, NULL);     /* start timer */
+#endif
     for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->continue_from(tick);
-#endif
 }
 
 /**
@@ -532,9 +532,9 @@ mastermidibus::clock (midipulse tick)
 void
 mastermidibus::set_ppqn (int ppqn)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
     m_ppqn = ppqn;
+#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);             /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
@@ -561,9 +561,9 @@ mastermidibus::set_ppqn (int ppqn)
 void
 mastermidibus::set_beats_per_minute (int bpm)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
     m_beats_per_minute = bpm;
+#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_queue_tempo_t *tempo;
     snd_seq_queue_tempo_alloca(&tempo);          /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
@@ -584,8 +584,8 @@ mastermidibus::set_beats_per_minute (int bpm)
 void
 mastermidibus::flush ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
+#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_drain_output(m_alsa_seq);
 #endif
 }
@@ -851,8 +851,8 @@ mastermidibus::poll_for_midi ()
 bool
 mastermidibus::is_more_input ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
+#ifdef SEQ64_HAVE_LIBASOUND
     return snd_seq_event_input_pending(m_alsa_seq, 0) > 0;
 #else
     return false;
@@ -875,8 +875,8 @@ mastermidibus::is_more_input ()
 void
 mastermidibus::port_start (int client, int port)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
+#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_client_info_t * cinfo;                      /* client info        */
     snd_seq_client_info_alloca(&cinfo);
     snd_seq_get_any_client_info(m_alsa_seq, client, cinfo);
@@ -1002,8 +1002,8 @@ mastermidibus::port_start (int client, int port)
 void
 mastermidibus::port_exit (int client, int port)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
+#ifdef SEQ64_HAVE_LIBASOUND
     for (int i = 0; i < m_num_out_buses; ++i)
     {
         if (m_buses_out[i]->get_client() == client &&
@@ -1040,9 +1040,8 @@ mastermidibus::port_exit (int client, int port)
 bool
 mastermidibus::get_midi_event (event * inev)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
-
     automutex locker(m_mutex);
+#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_event_t * ev;
     bool sysex = false;
     bool result = false;

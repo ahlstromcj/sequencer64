@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          midibus_portmidi.hpp
+ * \file          midibus.hpp
  *
  *  This module declares/defines the base class for MIDI I/O for Windows.
  *
@@ -30,13 +30,15 @@
  * \updates       2016-11-21
  * \license       GNU GPLv2 or above
  *
- *  The midibus_portmidi module is the Windows version of the midibus
+ *  The midibus module is the Windows version of the midibus
  *  module.  There's almost enough commonality to be worth creating a base
  *  class for both classes, and it might be nice to put the mastermidibus
  *  classes into their own modules.
  */
 
 #include "midibus_common.hpp"
+#include "mutex.hpp"                    /* seq64::mutex                     */
+#include "portmidi.h"                   /* PortMIDI API header file         */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -45,7 +47,9 @@
 namespace seq64
 {
 
-#ifdef PLATFORM_WINDOWS                // covers this whole module
+// #ifdef PLATFORM_WINDOWS                // covers this whole module
+
+    class event;
 
 /**
  *  This class implements with Windows version of the midibus object.
@@ -207,7 +211,7 @@ public:
 
 };
 
-#endif      // PLATFORM_WINDOWS
+// #endif      // PLATFORM_WINDOWS
 
 }           // namespace seq64
 

@@ -159,22 +159,6 @@ protected:
     int m_beats_per_minute;
 
     /**
-     *  The number of descriptors for polling.  Goes into derived
-     *  class; also remove it from portmidi implementation.
-     * 
-
-    int m_num_poll_descriptors;
-     */
-
-    /**
-     *  Points to the list of descriptors for polling.  Goes into derived
-     *  class; also remove it from portmidi implementation.
-     * 
-
-    struct pollfd * m_poll_descriptors;
-     */
-
-    /**
      *  For dumping MIDI input to a sequence for recording.
      */
 
@@ -405,21 +389,25 @@ protected:
 
     virtual void api_clock ()
     {
-        // no code for base or portmidi
+        // no code for base, alsmidi, or portmidi
     }
-
- /* virtual void api_sysex (event * ev) = 0; */
- /* virtual void api_play (bussbyte bus, event * e24, midibyte channel) = 0; */
- /* virtual void api_set_clock (bussbyte bus, clock_e clocktype) = 0; */
- /* virtual void api_get_clock (bussbyte bus) = 0; */
- /* virtual void api_set_input (bussbyte bus, bool inputting) = 0; */
- /* virtual void api_get_input (bussbyte bus) = 0; */
 
     virtual void api_port_start (int client, int port) = 0;
     virtual void api_port_exit (int client, int port) = 0;
     virtual bool api_is_more_input () = 0;
     virtual bool api_get_midi_event (event * inev) = 0;
     virtual int api_poll_for_midi () = 0;
+
+/*
+ *  So far, there is no need for these API-specific functions.
+ *
+ *  virtual void api_sysex (event * ev) = 0;
+ *  virtual void api_play (bussbyte bus, event * e24, midibyte channel) = 0;
+ *  virtual void api_set_clock (bussbyte bus, clock_e clocktype) = 0;
+ *  virtual void api_get_clock (bussbyte bus) = 0;
+ *  virtual void api_set_input (bussbyte bus, bool inputting) = 0;
+ *  virtual void api_get_input (bussbyte bus) = 0;
+ */
 
 protected:
 

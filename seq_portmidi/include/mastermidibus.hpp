@@ -30,15 +30,11 @@
  * \updates       2016-11-24
  * \license       GNU GPLv2 or above
  *
- *  This mastermidibus module is the Windows version of the mastermidibus
- *  module.  There's almost enough commonality to be worth creating a base
- *  class for both classes. We moved the mastermidibus class into its own
- *  module, this one.
+ *  This mastermidibus module is the Windows (and Linux now!) version of the
+ *  mastermidibus module using the PortMidi library.
  */
 
-// #include "midibus_common.hpp"
-
-#include "mastermidibase.hpp"           /* seq64::mastermidibase ABC    */
+#include "mastermidibase.hpp"           /* seq64::mastermidibase ABC        */
 #include "portmidi.h"                   /* PortMIDI API header file         */
 
 /*
@@ -48,10 +44,10 @@
 namespace seq64
 {
 
-// #ifdef PLATFORM_WINDOWS                // covers this whole module
-
 /**
- *  The class that "supervises" all of the midibus objects?
+ *  The class that "supervises" all of the midibus objects.  This
+ *  implementation uses the PortMidi library, which supports Linux and
+ *  Windows, but not JACK or Mac OSX.
  */
 
 class mastermidibus : public mastermidibase
@@ -60,7 +56,7 @@ class mastermidibus : public mastermidibase
 private:
 
     /*
-     *  All member have been moved into the new base class.
+     *  All members have been moved into the new base class.
      */
 
 public:
@@ -72,16 +68,14 @@ public:
     );
     virtual ~mastermidibus ();
 
-    void api_init ();
-//  std::string get_midi_out_bus_name (int a_bus);
-//  std::string get_midi_in_bus_name (int a_bus);
-    int api_poll_for_midi ();
-    bool api_is_more_input ();
-    bool api_get_midi_event (event *a_in);
+protected:
+
+    virtual void api_init ();
+    virtual int api_poll_for_midi ();
+    virtual bool api_is_more_input ();
+    virtual bool api_get_midi_event (event *a_in);
 
 };
-
-// #endif      // PLATFORM_WINDOWS
 
 }           // namespace seq64
 
@@ -92,3 +86,4 @@ public:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

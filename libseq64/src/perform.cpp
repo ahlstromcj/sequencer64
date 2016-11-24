@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-11-10
+ * \updates       2016-11-24
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -2018,10 +2018,7 @@ void
 perform::stop_playing ()
 {
     stop_jack();
-
-// EXPERIMENT:
-// if (! is_jack_running())
-        stop();
+    stop();
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     m_start_from_perfedit = false;

@@ -38,8 +38,6 @@
 #include "midibus.hpp"                  /* seq64::midibus, PortMIDI         */
 #include "portmidi.h"
 
-// #ifdef PLATFORM_WINDOWS              /* covers this whole module         */
-
 /*
  *  Do not document a namespace; it breaks Doxygen.
  */
@@ -259,8 +257,6 @@ mastermidibus::api_get_midi_event (event * in)
 }
 
 }           // namespace seq64
-
-// #endif   // PLATFORM_WINDOWS
 
 /*
  * mastermidibus.cpp

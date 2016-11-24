@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-06
+ * \updates       2016-11-24
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -3705,7 +3705,6 @@ sequence::pause (bool song_mode)
 {
     bool state = get_playing();
     off_playing_notes();
-//  set_playing(false);
     if (! song_mode)
         set_playing(state);
 }

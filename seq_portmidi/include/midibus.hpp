@@ -47,8 +47,6 @@
 namespace seq64
 {
 
-// #ifdef PLATFORM_WINDOWS                // covers this whole module
-
     class event;
 
 /**
@@ -209,9 +207,7 @@ public:
     static void set_clock_mod(int a_clock_mod);
     static int get_clock_mod ();
 
-};
-
-// #endif      // PLATFORM_WINDOWS
+};          // class midibus (portmidi)
 
 }           // namespace seq64
 

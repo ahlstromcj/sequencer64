@@ -85,6 +85,7 @@ mastermidibase::mastermidibase (int ppqn, int bpm)
     m_ppqn              (0),
     m_beats_per_minute  (bpm),      // beats per minute
     m_dumping_input     (false),
+    m_vector_sequence   (),         // stazed feature
     m_filter_by_channel (false),    // set below based on configuration
     m_seq               (nullptr),
     m_mutex             ()
@@ -138,21 +139,6 @@ mastermidibase::~mastermidibase ()
         m_bus_announce = nullptr;
     }
 }
-
-/**
- *  Initialize the mastermidibase.  It initializes 16 MIDI output busses, a
- *  hardwired constant, SEQ64_ALSA_OUTPUT_BUSS_MAX == 16.  Only one MIDI input
- *  buss is initialized.
- *
- * \param ppqn
- *      The PPQN value to which to initialize the master MIDI buss.
-
-void
-mastermidibase::init (int ppqn)
-{
-    api_init(ppqn);
-}
- */
 
 /**
  *  Starts all of the configured output busses up to m_num_out_buses.  Calls
@@ -211,8 +197,6 @@ void
 mastermidibase::init_clock (midipulse tick)
 {
     automutex locker(m_mutex);
-#ifdef SEQ64_HAVE_LIBASOUND_XXX
-#endif
     api_init_clock(tick);
     for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->init_clock(tick);
@@ -258,8 +242,6 @@ void
 mastermidibase::clock (midipulse tick)
 {
     automutex locker(m_mutex);
-#ifdef SEQ64_HAVE_LIBASOUND_XXX
-#endif
     api_clock();
     for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->clock(tick);
@@ -280,13 +262,6 @@ mastermidibase::set_ppqn (int ppqn)
 {
     automutex locker(m_mutex);
     m_ppqn = choose_ppqn(ppqn);                     /* m_ppqn = ppqn        */
-#ifdef SEQ64_HAVE_LIBASOUND_XXX
-    snd_seq_queue_tempo_t * tempo;
-    snd_seq_queue_tempo_alloca(&tempo);             /* allocate tempo struct */
-    snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
-    snd_seq_queue_tempo_set_ppq(tempo, m_ppqn);
-    snd_seq_set_queue_tempo(m_alsa_seq, m_queue, tempo);
-#endif
     api_set_ppqn(ppqn);
 }
 
@@ -305,16 +280,6 @@ mastermidibase::set_beats_per_minute (int bpm)
 {
     automutex locker(m_mutex);
     m_beats_per_minute = bpm;
-#ifdef SEQ64_HAVE_LIBASOUND_XXX
-    snd_seq_queue_tempo_t *tempo;
-    snd_seq_queue_tempo_alloca(&tempo);          /* allocate tempo struct */
-    snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
-    snd_seq_queue_tempo_set_tempo
-    (
-        tempo, int(tempo_us_from_beats_per_minute(bpm))
-    );
-    snd_seq_set_queue_tempo(m_alsa_seq, m_queue, tempo);
-#endif
     api_set_beats_per_minute(bpm);
 }
 
@@ -330,9 +295,6 @@ void
 mastermidibase::flush ()
 {
     automutex locker(m_mutex);
-#ifdef SEQ64_HAVE_LIBASOUND_XXX
-    snd_seq_drain_output(m_alsa_seq);
-#endif
     api_flush();
 }
 
@@ -605,13 +567,6 @@ mastermidibase::print ()
 int
 mastermidibase::poll_for_midi ()
 {
-// #ifdef SEQ64_HAVE_LIBASOUND_XXX
-//  int result = poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
-// #else
-//  int result = 0;
-// #endif
-//  return result;
-
     return api_poll_for_midi();
 }
 
@@ -634,12 +589,6 @@ bool
 mastermidibase::is_more_input ()
 {
     automutex locker(m_mutex);
-#ifdef SEQ64_HAVE_LIBASOUND_XXX
-    return snd_seq_event_input_pending(m_alsa_seq, 0) > 0;
-#else
-    return false;
-#endif
-
     return api_is_more_input();
 }
 
@@ -683,32 +632,11 @@ void
 mastermidibase::port_exit (int client, int port)
 {
     automutex locker(m_mutex);
-#ifdef SEQ64_HAVE_LIBASOUND_XXX
-    for (int i = 0; i < m_num_out_buses; ++i)
-    {
-        if (m_buses_out[i]->get_client() == client &&
-            m_buses_out[i]->get_port() == port)
-        {
-            m_buses_out_active[i] = false;
-        }
-    }
-    for (int i = 0; i < m_num_in_buses; ++i)
-    {
-        if (m_buses_in[i]->get_client() == client &&
-            m_buses_in[i]->get_port() == port)
-        {
-            m_buses_in_active[i] = false;
-        }
-    }
-#endif
-
     api_port_exit(client, port);
 }
 
 /**
  *  Grab a MIDI event.
- *
- *  Should be a pure function.....
  *
  * \threadsafe
  *
@@ -720,101 +648,7 @@ bool
 mastermidibase::get_midi_event (event * inev)
 {
     automutex locker(m_mutex);
-    bool result = false;
-#ifdef SEQ64_HAVE_LIBASOUND_XXX
-    bool sysex = false;
-    midibyte buffer[0x1000];                /* temporary buffer for MIDI data */
-    snd_seq_event_t * ev;
-    snd_seq_event_input(m_alsa_seq, &ev);
-    if (! rc().manual_alsa_ports())
-    {
-        switch (ev->type)
-        {
-        case SND_SEQ_EVENT_PORT_START:
-        {
-            port_start(ev->data.addr.client, ev->data.addr.port);
-            result = true;
-            break;
-        }
-        case SND_SEQ_EVENT_PORT_EXIT:
-        {
-            port_exit(ev->data.addr.client, ev->data.addr.port);
-            result = true;
-            break;
-        }
-        case SND_SEQ_EVENT_PORT_CHANGE:
-        {
-            result = true;
-            break;
-        }
-        default:
-            break;
-        }
-    }
-    if (result)
-        return false;
-
-    snd_midi_event_t * midi_ev;                     /* for ALSA MIDI parser  */
-    snd_midi_event_new(sizeof(buffer), &midi_ev);   /* make ALSA MIDI parser */
-    long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
-    if (bytes <= 0)
-    {
-        return false;
-    }
-    inev->set_timestamp(ev->time.tick);
-    inev->set_status_keep_channel(buffer[0]);
-
-    /**
-     *  We will only get EVENT_SYSEX on the first packet of MIDI data;
-     *  the rest we have to poll for.  SysEx processing is currently
-     *  disabled.
-     */
-
-#ifdef USE_SYSEX_PROCESSING                    /* currently disabled           */
-    inev->set_sysex_size(bytes);
-    if (buffer[0] == EVENT_MIDI_SYSEX)
-    {
-        inev->restart_sysex();              /* set up for sysex if needed   */
-        sysex = inev->append_sysex(buffer, bytes);
-    }
-    else
-    {
-#endif
-        /*
-         *  Some keyboards send Note On with velocity 0 for Note Off, so we
-         *  take care of that situation here by creating a Note Off event,
-         *  with the channel nybble preserved. Note that we call
-         *  event :: set_status_keep_channel() instead of using stazed's
-         *  set_status function with the "record" parameter.  A little more
-         *  confusing, but faster.
-         */
-
-        inev->set_data(buffer[1], buffer[2]);
-        if (inev->is_note_off_recorded())
-            inev->set_status_keep_channel(EVENT_NOTE_OFF);
-
-        sysex = false;
-
-#ifdef USE_SYSEX_PROCESSING
-    }
-#endif
-
-    while (sysex)       /* sysex messages might be more than one message */
-    {
-        snd_seq_event_input(m_alsa_seq, &ev);
-        long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
-        if (bytes > 0)
-            sysex = inev->append_sysex(buffer, bytes);
-        else
-            sysex = false;
-    }
-    snd_midi_event_free(midi_ev);
-
-#endif  // SEQ64_HAVE_LIBASOUND_XXX
-
-    result = api_get_midi_event(inev);
-
-    return result;      // true;
+    return api_get_midi_event(inev);
 }
 
 /**

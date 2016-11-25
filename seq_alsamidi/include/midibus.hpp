@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-21
+ * \updates       2016-11-25
  * \license       GNU GPLv2 or above
  *
  *  The midibus module is the Linux version of the midibus module.
@@ -37,10 +37,7 @@
  *  We moved the mastermidibus class into its own module.
  */
 
-#include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
-#include "easy_macros.h"                /* for autoconf header files    */
-#include "mutex.hpp"
-#include "midibus_common.hpp"
+#include "midibase.hpp"
 
 #if SEQ64_HAVE_LIBASOUND
 #include <alsa/asoundlib.h>
@@ -53,14 +50,13 @@
 
 namespace seq64
 {
-
     class event;
 
 /**
  *  This class implements with ALSA version of the midibus object.
  */
 
-class midibus
+class midibus : public midibase
 {
     /**
      *  The master MIDI bus sets up the buss.
@@ -69,36 +65,6 @@ class midibus
     friend class mastermidibus;
 
 private:
-
-    /**
-     *  This is another name for "16 * 4".
-     */
-
-    static int m_clock_mod;
-
-    /**
-     *  The ID of the midibus object.
-     */
-
-    int m_id;
-
-    /**
-     *  The type of clock to use.
-     */
-
-    clock_e m_clock_type;
-
-    /**
-     *  TBD
-     */
-
-    bool m_inputing;
-
-    /**
-     *  Provides the PPQN value in force, currently a constant.
-     */
-
-    int m_ppqn;
 
 #if SEQ64_HAVE_LIBASOUND
 
@@ -134,31 +100,12 @@ private:
 
     int m_local_addr_port;
 
-    /**
-     *  Another ID of the MIDI queue?
-     */
-
-    int m_queue;
-
-    /**
-     *  The name of the MIDI buss.
-     */
-
-    std::string m_name;
-
-    /**
-     *  The last (most recent?  final?) tick.
-     */
-
-    midipulse m_lasttick;
-
-    /**
-     *  Locking mutex.
-     */
-
-    mutex m_mutex;
-
 public:
+
+    /*
+     *  This version is used when querying for existing input ports in the
+     *  ALSA system.  It is also used when creating the "announce buss".
+     */
 
     midibus
     (
@@ -166,12 +113,18 @@ public:
         int destclient,
         int destport,
         snd_seq_t * seq,
-        const char * client_name,
-        const char * port_name,
+        const std::string & client_name,
+        const std::string & port_name,
         int id,
         int queue,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
+
+    /*
+     *  This version is used with the --manual-alsa-ports option, for both
+     *  input and output busses.
+     */
+
     midibus
     (
         int localclient,
@@ -181,79 +134,7 @@ public:
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
 
-    ~midibus ();
-
-    bool init_out ();
-    bool init_in ();
-    bool deinit_in ();
-    bool init_out_sub ();
-    bool init_in_sub ();
-    void print ();
-
-    /**
-     * \getter n_name
-     */
-
-    const std::string & get_name () const
-    {
-        return m_name;
-    }
-
-    /**
-     * \getter m_id
-     */
-
-    int get_id () const
-    {
-        return m_id;
-    }
-
-    void play (event * e24, midibyte channel);
-    void sysex (event * e24);
-
-    /*
-     * Clock functions
-     */
-
-    void start ();
-    void stop ();
-    void clock (midipulse tick);
-    void continue_from (midipulse tick);
-    void init_clock (midipulse tick);
-
-    /**
-     * \setter m_clock_type
-     *
-     * \param clocktype
-     *      The value used to set the clock-type.
-     */
-
-    void set_clock (clock_e clocktype)
-    {
-        m_clock_type = clocktype;
-    }
-
-    /**
-     * \getter m_clock_type
-     */
-
-    clock_e get_clock () const
-    {
-        return m_clock_type;
-    }
-
-    void set_input (bool inputing);   // too much to inline
-
-    /**
-     * \getter m_inputing
-     */
-
-    bool get_input () const
-    {
-        return m_inputing;
-    }
-
-    void flush ();
+    virtual ~midibus ();
 
     /**
      * \getter m_dest_addr_client
@@ -274,28 +155,20 @@ public:
         return m_dest_addr_port;
     };
 
-    /**
-     *  Set the clock mod to the given value, if legal.
-     *
-     * \param clockmod
-     *      If this value is not equal to 0, it is used to set the static
-     *      member m_clock_mod.
-     */
+protected:
 
-    static void set_clock_mod (int clockmod)
-    {
-        if (clockmod != 0)
-            m_clock_mod = clockmod;
-    }
-
-    /**
-     *  Get the clock mod value.
-     */
-
-    static int get_clock_mod ()
-    {
-        return m_clock_mod;
-    }
+    virtual bool api_init_out ();
+    virtual bool api_init_in ();
+    virtual bool api_init_out_sub ();
+    virtual bool api_init_in_sub ();
+    virtual bool api_deinit_in ();
+    virtual void api_play (event * e24, midibyte channel);
+    virtual void api_sysex (event * e24);
+    virtual void api_flush ();
+    virtual void api_continue_from (midipulse tick, midipulse beats);
+    virtual void api_start ();
+    virtual void api_stop ();
+    virtual void api_clock (midipulse tick);
 
 };          // class midibus (ALSA version)
 

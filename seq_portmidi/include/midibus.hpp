@@ -27,17 +27,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-21
+ * \updates       2016-11-25
  * \license       GNU GPLv2 or above
  *
- *  The midibus module is the Windows version of the midibus
- *  module.  There's almost enough commonality to be worth creating a base
- *  class for both classes, and it might be nice to put the mastermidibus
- *  classes into their own modules.
+ *  This midibus module is the Windows (PortMidi) version of the midibus
+ *  module.  There's  enough commonality that is was worth creating a base
+ *  class for all midibus classes.
  */
 
-#include "midibus_common.hpp"
-#include "mutex.hpp"                    /* seq64::mutex                     */
+#include "midibase.hpp"
 #include "portmidi.h"                   /* PortMIDI API header file         */
 
 /*
@@ -46,14 +44,13 @@
 
 namespace seq64
 {
-
     class event;
 
 /**
  *  This class implements with Windows version of the midibus object.
  */
 
-class midibus
+class midibus : public midibase
 {
     /**
      *  The master MIDI bus sets up the buss.
@@ -64,54 +61,6 @@ class midibus
 private:
 
     /**
-     *  TBD
-     */
-
-    static int m_clock_mod;
-
-    /**
-     *  The ID of the midibus object.
-     */
-
-    char m_id;
-
-    /**
-     *  TBD
-     */
-
-    char m_pm_num;
-
-    /**
-     *  The type of clock to use.
-     */
-
-    clock_e m_clock_type;
-
-    /**
-     *  TBD
-     */
-
-    bool m_inputing;
-
-    /**
-     *  The name of the MIDI buss.
-     */
-
-    std::string m_name;
-
-    /**
-     *  The last (most recent?  final?) tick.
-     */
-
-    long m_lasttick;
-
-    /**
-     *  Locking mutex.
-     */
-
-    mutex m_mutex;
-
-    /**
      *  The PortMidiStream for the Windows implementation.
      */
 
@@ -119,93 +68,23 @@ private:
 
 public:
 
-    midibus (char a_id, char a_pm_num, const char * a_client_name);
+    midibus (int id, int pm_num, const std::string & client_name);
 
-    /*
-     * midibus(char a_id, int a_queue);
-     */
+    virtual ~midibus ();
 
-    ~midibus ();
-
-    bool init_out ();
-    bool init_in ();
-    void print ();
-
-    /**
-     * \getter n_name
-     */
-
-    const std::string & get_name () const
-    {
-        return m_name;
-    }
-
-    /**
-     * \getter m_id
-     */
-
-    int get_id () const
-    {
-        return m_id;
-    }
-
-    void play (event * a_e24, unsigned char a_channel);
-    void sysex(event * a_e24);
-
-    int poll_for_midi ();
-
-    /*
-     * Clock functions
-     */
-
-    void start ();
-    void stop ();
-    void clock (long a_tick);
-    void continue_from (long a_tick);
-    void init_clock (long a_tick);
-
-    /**
-     * \setter m_clock_type
-     */
-
-    void set_clock (clock_e a_clock_type)
-    {
-        m_clock_type = a_clock_type;
-    }
-
-    /**
-     * \getter m_clock_type
-     */
-
-    clock_e get_clock () const
-    {
-        return m_clock_type;
-    }
-
-    /**
-     * \setter m_inputing
-     *      Compare this Windows version to the Linux version.
-     */
-
-    void set_input (bool a_inputing)
-    {
-        if (m_inputing != a_inputing)
-            m_inputing = a_inputing;
-    }
-
-    /**
-     * \getter m_inputing
-     */
-
-    bool get_input () const
-    {
-        return m_inputing;
-    }
-
-    void flush ();
-
-    static void set_clock_mod(int a_clock_mod);
+    static void set_clock_mod (int clock_mod);
     static int get_clock_mod ();
+
+protected:
+
+    virtual int api_poll_for_midi ();
+    virtual bool api_init_in ();
+    virtual bool api_init_out ();
+    virtual void api_continue_from (midipulse tick, midipulse beats);
+    virtual void api_start ();
+    virtual void api_stop ();
+    virtual void api_clock (midipulse tick);
+    virtual void api_play (event * e24, midibyte channel);
 
 };          // class midibus (portmidi)
 
@@ -218,3 +97,4 @@ public:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

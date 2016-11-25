@@ -475,7 +475,7 @@ mastermidibase::get_midi_out_bus_name (int bus)
     {
         if (m_buses_out_active[bus])
         {
-            result = m_buses_out[bus]->get_name();
+            result = m_buses_out[bus]->bus_name();
         }
         else
         {
@@ -519,7 +519,7 @@ mastermidibase::get_midi_in_bus_name (int bus)
 {
     if (m_buses_in_active[bus] && bus < m_num_in_buses)
     {
-        return m_buses_in[bus]->get_name();
+        return m_buses_in[bus]->bus_name();
     }
     else
     {
@@ -549,7 +549,14 @@ mastermidibase::print ()
 {
     printf("Available busses:\n");
     for (int i = 0; i < m_num_out_buses; ++i)
-        printf("%s\n", m_buses_out[i]->get_name().c_str());
+    {
+        printf
+        (
+            "%s:%s\n",
+            m_buses_out[i]->bus_name().c_str(),
+            m_buses_out[i]->port_name().c_str()
+        );
+    }
 }
 
 /**

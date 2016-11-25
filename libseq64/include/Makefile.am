@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-11-24
+# \update      2016-11-25
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -106,6 +106,8 @@ pkginclude_HEADERS = \
 	keystroke.hpp \
 	lash.hpp \
    mastermidibase.hpp \
+   midibase.hpp \
+	midibus_common.hpp \
 	midibyte.hpp \
 	midifile.hpp \
    midi_container.hpp \

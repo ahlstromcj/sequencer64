@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-21
+ * \updates       2016-11-25
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the midibus class.
@@ -41,63 +41,34 @@
  *          -   deinit_in()
  */
 
+#include "event.hpp"                    /* seq64::event and macros          */
 #include "midibus.hpp"                  /* seq64::midibus for PortMIDI      */
 
-#ifdef PLATFORM_WINDOWS                 /* covers this whole module         */
-
-/**
- *  Initialize this static member.
+/*
+ *  Do not document a namespace; it breaks Doxygen.
  */
 
-int midibus::m_clock_mod = 16 * 4;
+namespace seq64
+{
 
 /**
  *  Principal constructor.
  */
 
-midibus::midibus (char a_id, char a_pm_num, const char * a_client_name)
+midibus::midibus (int id, int pmnum, const std::string & clientname)
  :
-    m_id            (a_id),
-    m_pm_num        (a_pm_num),
-    m_clock_type    (e_clock_off),
-    m_inputing      (false),
-    m_name          (),
-    m_lasttick      (0),
-    m_mutex         (),
+    midibase        (clientname, "", id, pmnum),
     m_pms           (nullptr)
 {
-    /* copy the client names */
-
+    /*
+     * Synthesize the client names.
+     *
     char tmp[64];
-    snprintf(tmp, sizeof(tmp), "[%d] %s", m_id, a_client_name);
+    snprintf(tmp, sizeof tmp, "[%d] %s", get_id(), clientname);
     m_name = tmp;
+     *
+     */
 }
-
-/**
- *  Secondary constructor.
-
-midibus::midibus (char a_id, int a_queue)
- :
-    m_id            (a_id),
-    m_pm_num        (a_pm_num),             // huh, no such parameter
-    m_clock_type    (e_clock_off),
-    m_inputing      (false),
-    m_name          (),
-    m_lasttick      (0),
-    m_mutex         (),
-    m_pms           (nullptr)
-{
-    //
-     * Not a member: m_queue = a_queue;
-     //
-
-    // synthesize the client names //
-
-    char tmp[64];
-    snprintf(tmp, sizeof(tmp), "[%d] seq24 %d", m_id, m_id);
-    m_name = tmp;
-}
- */
 
 /**
  *  The destructor closes out the Windows MIDI infrastructure.
@@ -113,13 +84,18 @@ midibus::~midibus ()
 }
 
 /**
- *  Polls for MIDI events.
+ *  Polls for MIDI events.  This is the API implementation for PortMidi.
+ *  It tests that the queue number (formerly m_pm) is valid first.  It assumes
+ *  that the PortMidiStream pointer m_pms is valid, for speed.
+ *
+ * \return
+ *      Returns 0 if the polling succeeded, and 1 if it failed.
  */
 
 int
-midibus::poll_for_midi ()
+midibus::api_poll_for_midi ()
 {
-    if (m_pm_num)
+    if (queue_number() > 0)
     {
         PmError err = Pm_Poll(m_pms);
         if (err == FALSE)
@@ -128,20 +104,23 @@ midibus::poll_for_midi ()
         }
         if (err == TRUE)
         {
+            errprintf("Pm_Poll: %s\n", Pm_GetErrorText(err));
             return 1;
         }
-        errprintf("Pm_Poll: %s\n", Pm_GetErrorText(err));
     }
     return 0;
 }
 
 /**
- *  Initialize the MIDI output port.
+ *  Initializes the MIDI output port, for PortMidi.
+ *
+ * \return
+ *      Returns true if the output port was successfully opened.
  */
 
-bool midibus::init_out ()
+bool midibus::api_init_out ()
 {
-    PmError err = Pm_OpenOutput(&m_pms, m_pm_num, NULL, 100, NULL, NULL, 0);
+    PmError err = Pm_OpenOutput(&m_pms, queue_number(), NULL, 100, NULL, NULL, 0);
     if (err != pmNoError)
     {
         errprintf("Pm_OpenOutput: %s\n", Pm_GetErrorText(err));
@@ -151,12 +130,15 @@ bool midibus::init_out ()
 }
 
 /**
- *  Initialize the MIDI input port.
+ *  Initializes the MIDI input port, for PortMidi.
+ *
+ * \return
+ *      Returns true if the input port was successfully opened.
  */
 
-bool midibus::init_in ()
+bool midibus::api_init_in ()
 {
-    PmError err = Pm_OpenInput(&m_pms, m_pm_num, NULL, 100, NULL, NULL);
+    PmError err = Pm_OpenInput(&m_pms, queue_number(), NULL, 100, NULL, NULL);
     if (err != pmNoError)
     {
         errprintf("Pm_OpenInput: %s\n", Pm_GetErrorText(err));
@@ -166,208 +148,104 @@ bool midibus::init_in ()
 }
 
 /**
- *  Prints m_name.
+ *  Takes a native event, and encodes to a Windows message, and writes it to
+ *  the queue.  It fills a small byte buffer, sets the MIDI channel, make a
+ *  message of it, and writes the message.
+ *
+ * \param e24
+ *      The MIDI event to play.
+ *
+ * \param channel
+ *      The channel on which to play the event.
  */
 
 void
-midibus::print ()
+midibus::api_play (event * e24, midibyte channel)
 {
-    printf("%s" , m_name.c_str());
-}
+    midibyte buffer[3];                /* temp for midi data */
+    buffer[0] = e24->get_status();
+    buffer[0] += (channel & 0x0F);
+    e24->get_data(buffer[1], buffer[2]);
 
-/**
- *  Takes a native event, and encodes to a Windows message, and writes it
- *  to the queue.
- */
-
-void
-midibus::play (event * a_e24, unsigned char a_channel)
-{
-    automutex locker(m_mutex);
     PmEvent event;
     event.timestamp = 0;
-
-    /* fill buffer and set midi channel */
-
-    unsigned char buffer[3];                /* temp for midi data */
-    buffer[0] = a_e24->get_status();
-    buffer[0] += (a_channel & 0x0F);
-    a_e24->get_data(&buffer[1], &buffer[2]);
     event.message = Pm_Message(buffer[0], buffer[1], buffer[2]);
-    /*PmError err = */ Pm_Write(m_pms, &event, 1);
+    /* PmError err = */ Pm_Write(m_pms, &event, 1);
 }
 
 /**
- *  min() for long values.
- */
-
-inline long
-min (long a, long b)
-{
-    return (a < b) ? a : b ;
-}
-
-/**
- *  For Windows, this event does nothing for handling SYSEx messages.
- */
-
-void
-midibus::sysex (event * a_e24)
-{
-    // no code at present
-}
-
-/**
- *  This function does nothing in Windows.
+ *  Continue from the given tick.  This function implements only the
+ *  PortMidi-specific code.
+ *
+ * \param tick
+ *      The tick to continue from; unused in the PortMidi API implementation.
+ *
+ * \param beats
+ *      The calculated beats.  This calculation is made in the
+ *      midibase::continue_from() function.
  */
 
 void
-midibus::flush ()
+midibus::api_continue_from (midipulse /* tick */, midipulse beats)
 {
-    // empty body
-}
-
-/**
- *  Initialize the clock, continuing from the given tick.
- */
-
-void
-midibus::init_clock (long a_tick)
-{
-    if (m_clock_type == e_clock_pos && a_tick != 0)
-    {
-        continue_from(a_tick);
-    }
-    else if (m_clock_type == e_clock_mod || a_tick == 0)
-    {
-        start();
-
-        /*
-         * \todo
-         *      Use an m_ppqn member variable and the usual adjustments.
-         */
-
-        long clock_mod_ticks = (usr().midi_ppqn() / 4) * m_clock_mod;
-        long leftover = (a_tick % clock_mod_ticks);
-        long starting_tick = a_tick - leftover;
-
-        /*
-         * Was there anything left? Then wait for next beat (16th note)
-         * to start clocking.
-         */
-
-        if (leftover > 0)
-            starting_tick += clock_mod_ticks;
-
-        m_lasttick = starting_tick - 1;
-    }
-}
-
-/**
- *  Continue from the given tick.
- */
-
-void
-midibus::continue_from (long a_tick)
-{
-    /*
-     * Tell the device that we are going to start at a certain position.
-     */
-
-    long pp16th = (usr().midi_ppqn() / 4);
-    long leftover = (a_tick % pp16th);
-    long beats = (a_tick / pp16th);
-    long starting_tick = a_tick - leftover;
-
-    /*
-     * Was there anything left? Then wait for next beat (16th note) to
-     * start clocking.
-     */
-
-    if (leftover > 0)
-        starting_tick += pp16th;
-
-    m_lasttick = starting_tick - 1;
-    if (m_clock_type != e_clock_off)
-    {
-        PmEvent event;
-        event.timestamp = 0;
-        event.message = Pm_Message(EVENT_MIDI_CONTINUE, 0, 0);
-        Pm_Write(m_pms, &event, 1);
-        event.message = Pm_Message
-        (
-            EVENT_MIDI_SONG_POS, (beats & 0x3F80 >> 7), (beats & 0x7F)
-        );
-        Pm_Write(m_pms, &event, 1);
-    }
+    PmEvent event;
+    event.timestamp = 0;
+    event.message = Pm_Message(EVENT_MIDI_CONTINUE, 0, 0);
+    Pm_Write(m_pms, &event, 1);
+    event.message = Pm_Message
+    (
+        EVENT_MIDI_SONG_POS, (beats & 0x3F80 >> 7), (beats & 0x7F)
+    );
+    Pm_Write(m_pms, &event, 1);
 }
 
 /**
  *  Sets the MIDI clock a-runnin', if the clock type is not e_clock_off.
+ *  This function is called by midibase::start().
  */
 
 void
-midibus::start ()
+midibus::api_start ()
 {
-    m_lasttick = -1;
-    if (m_clock_type != e_clock_off)
-    {
-        PmEvent event;
-        event.timestamp = 0;
-        event.message = Pm_Message(EVENT_MIDI_START, 0, 0);
-        Pm_Write(m_pms, &event, 1);
-    }
+    PmEvent event;
+    event.timestamp = 0;
+    event.message = Pm_Message(EVENT_MIDI_START, 0, 0);
+    Pm_Write(m_pms, &event, 1);
 }
 
 /**
  *  Stops the MIDI clock, if the clock-type is not e_clock_off.
+ *  This function is called by midibase::stop().
  */
 
 void
-midibus::stop ()
+midibus::api_stop ()
 {
-    m_lasttick = -1;
-    if (m_clock_type != e_clock_off)
-    {
-        PmEvent event;
-        event.timestamp = 0;
-        event.message = Pm_Message(EVENT_MIDI_STOP, 0, 0);
-        Pm_Write(m_pms, &event, 1);
-    }
+    PmEvent event;
+    event.timestamp = 0;
+    event.message = Pm_Message(EVENT_MIDI_STOP, 0, 0);
+    Pm_Write(m_pms, &event, 1);
 }
 
 /**
  *  Generates MIDI clock.
+ *  This function is called by midibase::clock().
+ *
+ * \param tick
+ *      The clock tick value, not used in the API implementation of this
+ *      function for PortMidi.
  */
 
 void
-midibus::clock (long a_tick)
+midibus::api_clock (midipulse /* tick */)
 {
-    automutex locker(m_mutex);
-    if (m_clock_type != e_clock_off)
-    {
-        bool done = false;
-        if (m_lasttick >= a_tick)
-            done = true;
-
-        while (! done)
-        {
-            m_lasttick++;
-            if (m_lasttick >= a_tick)
-                done = true;
-
-            if (m_lasttick % (usr().midi_ppqn() / 24) == 0) /* tick time? */
-            {
-                PmEvent event;
-                event.timestamp = 0;
-                event.message = Pm_Message(EVENT_MIDI_CLOCK, 0, 0);
-                Pm_Write(m_pms, &event, 1);
-            }
-        }
-    }
+    PmEvent event;
+    event.timestamp = 0;
+    event.message = Pm_Message(EVENT_MIDI_CLOCK, 0, 0);
+    Pm_Write(m_pms, &event, 1);
 }
 
-#endif   // PLATFORM_WINDOWS
+}           // namespace seq64
 
 /*
  * midibus.cpp for PortMIDI

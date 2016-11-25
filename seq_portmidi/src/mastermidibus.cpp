@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-24
+ * \updates       2016-11-25
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -149,32 +149,6 @@ mastermidibus::api_init ()
 }
 
 /**
- *  Get the MIDI output buss name for the given (legal) buss number.
-
-std::string
-mastermidibus::get_midi_out_bus_name (int bus)
-{
-    if (m_buses_out_active[bus] && bus < m_num_out_buses)
-        return m_buses_out[bus]->get_name();
-
-    return "get_midi_out_bus_name(): error";
-}
- */
-
-/**
- *  Get the MIDI input buss name for the given (legal) buss number.
-
-std::string
-mastermidibus::get_midi_in_bus_name (int bus)
-{
-    if (m_buses_in_active[bus] && bus < m_num_in_buses)
-        return m_buses_in[bus]->get_name();
-
-    return "get_midi_in_bus_name(): error";
-}
- */
-
-/**
  *  Initiate a poll() on the existing poll descriptors.  This is a
  *  primitive poll, which exits when some data is obtained.
  */
@@ -189,7 +163,6 @@ mastermidibus::api_poll_for_midi ()
             if (m_buses_in[i]->poll_for_midi())
                 return 1;
         }
-        // Sleep(1);                      // yield processor for 1 millisecond
         millisleep(1);
         return 0;
     }
@@ -240,10 +213,7 @@ mastermidibus::api_get_midi_event (event * in)
         return false;
 
     in->set_status(Pm_MessageStatus(event.message));
-
-    // TO BE FIXED!!!!!!!!!!!!!!!!!!
-    // in->set_size(3); !!!!!!!!!!!!
-
+    in->set_sysex_size(3);
     in->set_data(Pm_MessageData1(event.message), Pm_MessageData2(event.message));
 
     /* some keyboards send Note On with velocity 0 for Note Off */
@@ -263,3 +233,4 @@ mastermidibus::api_get_midi_event (event * in)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-11-23
+# \update      2016-11-25
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -153,6 +153,7 @@ libseq64_la_SOURCES = \
 	keystroke.cpp \
 	lash.cpp \
    mastermidibase.cpp \
+   midibase.cpp \
    midibyte.cpp \
    midifile.cpp \
    midi_container.cpp \

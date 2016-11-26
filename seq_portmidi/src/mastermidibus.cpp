@@ -79,7 +79,7 @@ mastermidibus::~mastermidibus ()
  */
 
 void
-mastermidibus::api_init ()
+mastermidibus::api_init (int ppqn)
 {
     int num_devices = Pm_CountDevices();
     const PmDeviceInfo * dev_info = nullptr;
@@ -136,7 +136,7 @@ mastermidibus::api_init ()
     }
 
     set_beats_per_minute(c_beats_per_minute);
-    set_ppqn(m_ppqn);   // SEQ64_DEFAULT_PPQN);
+    set_ppqn(ppqn);     // m_ppqn);   // SEQ64_DEFAULT_PPQN);
 
     /* MIDI input poll descriptors */
 

@@ -70,7 +70,7 @@ public:
 
 protected:
 
-    virtual void api_init ();
+    virtual void api_init (int ppqn);
     virtual int api_poll_for_midi ();
     virtual bool api_is_more_input ();
     virtual bool api_get_midi_event (event *a_in);

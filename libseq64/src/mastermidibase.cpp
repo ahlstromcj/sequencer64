@@ -790,7 +790,7 @@ mastermidibase::dump_midi_input (event ev)
  */
 
 void
-millisleep (unsigned long ms)
+mastermidibase::millisleep (unsigned long ms)
 {
 #if defined PLATFORM_LINUX
     (void) usleep((useconds_t) (ms * 1000));

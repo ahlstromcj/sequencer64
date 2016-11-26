@@ -1,13 +1,13 @@
 #!/bin/bash
 #
 #*****************************************************************************
-# test_script (sequencer64/tests)
+# test_script (seq64portmidi/tests)
 #-----------------------------------------------------------------------------
 ##
 # \file       	test_script
 # \library    	N/A
 # \author     	Chris Ahlstrom
-# \date       	2016-02-21
+# \date       	2016-11-25
 # \updates     2016-11-25
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
@@ -27,7 +27,7 @@ echo "All tests PASSED."
 exit 0
 
 #*****************************************************************************
-# test_script (sequencer64/tests)
+# test_script (seq64portmidi/tests)
 #-----------------------------------------------------------------------------
 # vim: ts=3 sw=3 ft=sh
 #-----------------------------------------------------------------------------

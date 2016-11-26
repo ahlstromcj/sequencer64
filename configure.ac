@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-11-20
+dnl \update        2016-11-25
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -415,9 +415,77 @@ else
     AC_MSG_WARN([LASH support not enabled.]);
 fi
 
-dnl PortMidi support
-dnl
-dnl TODO
+dnl Support for building ALL libraries and applications.  Mostly for developer
+dnl use.
+
+AC_ARG_ENABLE(all,
+    [AS_HELP_STRING(--enable-all, [Enable building ALL libraries and applications])],
+    [all=$enableval],
+    [all=no])
+
+if test "$all" != "no"; then
+    AC_MSG_RESULT([Build of ALL libraries and application enabled.]);
+    AM_CONDITIONAL([BUILD_ALL], [test x$all = xyes])
+    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xhellno])
+    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xhellno])
+    AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xhellno])
+else
+    AC_MSG_WARN([Build of ALL sub-projects not enabled.]);
+fi
+
+dnl AlsaMidi support.  This is the default build for the standard Sequencer64
+dnl application.  This section defines a variable that is used only in the
+dnl top-level Makefile to determine what directories are included in the
+dnl SUBDIRS variable.
+
+AC_ARG_ENABLE(alsamidi,
+    [AS_HELP_STRING(--disable-alsamidi, [Disable standard ALSA build])],
+    [alsamidi=$enableval],
+    [alsamidi=yes])
+
+if test "$alsamidi" != "no"; then
+    AC_MSG_RESULT([Standard ALSA build enabled, can be overridden though.]);
+    AM_CONDITIONAL([BUILD_ALL], [test x$all = xhellno])
+    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xyes])
+    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xhellno])
+    AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xhellno])
+else
+    AC_MSG_WARN([Standard ALSA build not enabled.]);
+fi
+
+dnl PortMidi support.
+
+AC_ARG_ENABLE(portmidi,
+    [AS_HELP_STRING(--enable-portmidi, [Enable PortMidi build])],
+    [portmidi=$enableval],
+    [portmidi=no])
+
+if test "$portmidi" != "no"; then
+    AC_MSG_RESULT([PortMidi build enabled.]);
+    AM_CONDITIONAL([BUILD_ALL], [test x$all = xhellno])
+    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xhellno])
+    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xyes])
+    AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xhellno])
+else
+    AC_MSG_WARN([PortMidi build not enabled.]);
+fi
+
+dnl RtMidi support.
+
+AC_ARG_ENABLE(rtmidi,
+    [AS_HELP_STRING(--enable-rtmidi, [Enable RtMidi build])],
+    [rtmidi=$enableval],
+    [rtmidi=no])
+
+if test "$rtmidi" != "no"; then
+    AC_MSG_RESULT([RtMidi build enabled.]);
+    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xhellno])
+    AM_CONDITIONAL([BUILD_ALL], [test x$all = xhellno])
+    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xhellno])
+    AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xyes])
+else
+    AC_MSG_WARN([RtMidi build not enabled.]);
+fi
 
 dnl Support for highlighting empty sequences (in yellow).  If enabled, the
 dnl macro SEQ64_HIGHLIGHT_EMPTY_SEQS is defined.  All macros produced by
@@ -626,9 +694,19 @@ dnl We decided to build the Doxygen documentation only manually, and have
 dnl removed the doc directory from the Makefile.am, and commented out the
 dnl following check.
 dnl
-dnl AM_CONDITIONAL([HAVE_DOXYGEN],
-dnl     [test -n "$DOXYGEN"])AM_COND_IF([HAVE_DOXYGEN],
-dnl     [AC_CONFIG_FILES([doc/dox/Makefile])])
+dnl AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
+dnl AM_COND_IF([HAVE_DOXYGEN], [AC_CONFIG_FILES([doc/dox/Makefile])])
+dnl
+dnl Using AC_CONFIG_FILES rather than AC_OUTPUT enables more flexibility. For
+dnl example:
+dnl
+dnl AS_IF([test "x$for_dist" == "xyes"],
+dnl     [AC_CONFIG_FILES(b/Makefile c/Makefile)] )
+dnl
+dnl AC_OUTPUT(Makefile a/Makefile)
+dnl
+dnl This will output three Makefiles in case for_dist has the value yes, and
+dnl will output only one Makefile otherwise.
 
 AC_CONFIG_FILES([
  Makefile
@@ -650,6 +728,7 @@ AC_CONFIG_FILES([
  seq_rtmidi/src/Makefile
  resources/pixmaps/Makefile
  Sequencer64/Makefile
+ Seq64portmidi/Makefile
  man/Makefile
 ])
 

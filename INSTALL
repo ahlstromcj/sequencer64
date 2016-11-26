@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.9.21
+INSTALL for Sequencer64 v. 0.10.0
 Chris Ahlstrom
-2015-09-10 to 2016-11-06
+2015-09-10 to 2016-11-25
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -165,6 +165,17 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         that brings up a small window to allow for the modulation of event
         data (in the data pane) by simple periodic waveforms.  This feature
         was adopted and improved from the Seq32 project.
+
+    --enable-all
+    --enable-portmidi
+    --disable-alsamidi
+
+        We are starting to get alternate implementations to work.  The normal
+        build is effectively --enable-alsamid.  The --enable-portmidi flag
+        creates a new application, seq64portmidi, that is based on using ALSA
+        on Linux via the PortMidi application.  If we get a nice
+        implementation of gtkmm2 for Windows working, we ought to have the
+        Windows version we were looking at.
 
 MANUALLY-DEFINED MACROS IN CODE:
 
@@ -365,6 +376,8 @@ DEPENDENCIES:
       -  liblash-compat-dev (optional)
       -  libpng-dev (replaces libpng12-dev with libpng16, latest Debian Sid,
          and brings in libpng-tools)
+      -  libportmidi-dev, needed if we want to build the Linux PortMidi
+         version of Sequencer64 (currently only for testing)
 
    Runtime:
 

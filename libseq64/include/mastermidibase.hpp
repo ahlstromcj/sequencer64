@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2016-11-24
+ * \updates       2016-11-25
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibase module is the base-class version of the mastermidibus
@@ -392,8 +392,16 @@ protected:
         // no code for base, alsmidi, or portmidi
     }
 
-    virtual void api_port_start (int client, int port) = 0;
-    virtual void api_port_exit (int client, int port) = 0;
+    virtual void api_port_start (int /* client */, int /* port */)
+    {
+        // no code for portmidi
+    }
+
+    virtual void api_port_exit (int /* client */, int /* port */)
+    {
+        // no code for portmidi
+    }
+
     virtual bool api_is_more_input () = 0;
     virtual bool api_get_midi_event (event * inev) = 0;
     virtual int api_poll_for_midi () = 0;

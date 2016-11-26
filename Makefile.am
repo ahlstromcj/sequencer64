@@ -6,7 +6,7 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2016-11-20
+# \updates     2016-11-25
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -125,12 +125,30 @@ libtool: $(LIBTOOL_DEPS)
 #-----------------------------------------------------------------------------
 #
 #  We decided to build the Doxygen documentation only manually, and have
-#  commented it out below.
+#  commented it out.
+#
+#  # doc/dox
 #
 #-----------------------------------------------------------------------------
 
+if BUILD_ALSAMIDI
+SUBDIRS = resources/pixmaps libseq64 seq_alsamidi seq_gtkmm2 Sequencer64 man
+endif
+
+if BUILD_PORTMIDI
+SUBDIRS = resources/pixmaps libseq64 seq_portmidi seq_gtkmm2 Seq64portmidi man
+endif
+
+# NOT YET READY AT ALL!!!
+#
+# if BUILD_RTMIDI
+# SUBDIRS = resources/pixmaps libseq64 seq_rtmidi seq_gtkmm2 Seq64rtmidi man
+# endif
+
+if BUILD_ALL
 SUBDIRS = resources/pixmaps libseq64 seq_alsamidi seq_gtkmm2 seq_portmidi \
- seq_rtmidi Sequencer64 man # doc/dox
+  seq_rtmidi Sequencer64 Seq64portmidi man
+endif
 
 #*****************************************************************************
 # DIST_SUBDIRS

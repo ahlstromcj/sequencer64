@@ -1,5 +1,5 @@
-#ifndef SEQ64_MIDIBUS_HPP
-#define SEQ64_MIDIBUS_HPP
+#ifndef SEQ64_MIDIBUS_RTMIDI_HPP
+#define SEQ64_MIDIBUS_RTMIDI_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -28,17 +28,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-11-27
+ * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
  *  module.
  */
-
-// #include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
-// #include "easy_macros.h"                /* for autoconf header files    */
-// #include "mutex.hpp"
-// #include "midibus_common.hpp"
 
 #include "midibase.hpp"
 #include "rtmidi.h"                     /* RtMIDI API header file       */
@@ -67,7 +62,7 @@ class midibus
 private:
 
     /**
-     *
+     *  The RtMidi API interface object this midibus will be using.
      */
 
     rtmidi * m_rt_midi;
@@ -120,7 +115,7 @@ protected:
 
 }           // namespace seq64
 
-#endif      // SEQ64_MIDIBUS_HPP
+#endif      // SEQ64_MIDIBUS_RTMIDI_HPP
 
 /*
  * midibus.hpp

@@ -6,7 +6,7 @@
 # \library    	libseq_portmidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-11-21
+# \update      2016-11-28
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -102,7 +102,7 @@ AM_CXXFLAGS = \
  -I../include \
  -I$(top_srcdir)/include \
  -I$(top_srcdir)/libseq64/include \
- -I$(top_srcdir)/seq_alsamidi/include \
+ -I$(top_srcdir)/seq_portmidi/include \
  -Wall $(MM_WFLAGS)
 
 #******************************************************************************

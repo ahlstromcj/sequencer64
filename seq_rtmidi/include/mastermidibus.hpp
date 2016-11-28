@@ -1,5 +1,5 @@
-#ifndef SEQ64_MASTERMIDIBUS_HPP
-#define SEQ64_MASTERMIDIBUS_HPP
+#ifndef SEQ64_MASTERMIDIBUS_RTMIDI_HPP
+#define SEQ64_MASTERMIDIBUS_RTMIDI_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-26
+ * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
  *  This mastermidibus module is the Windows (and Linux now!) version of the
@@ -80,7 +80,7 @@ protected:
 
 }           // namespace seq64
 
-#endif      // SEQ64_MASTERMIDIBUS_HPP
+#endif      // SEQ64_MASTERMIDIBUS_RTMIDI_HPP
 
 /*
  * mastermidibus.hpp

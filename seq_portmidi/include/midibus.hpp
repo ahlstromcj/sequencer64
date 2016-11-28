@@ -1,5 +1,5 @@
-#ifndef SEQ64_MIDIBUS_HPP
-#define SEQ64_MIDIBUS_HPP
+#ifndef SEQ64_MIDIBUS_PORTMIDI_HPP
+#define SEQ64_MIDIBUS_PORTMIDI_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-27
+ * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the Windows (PortMidi) version of the midibus

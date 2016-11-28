@@ -82,7 +82,7 @@ mastermidibase::mastermidibase (int ppqn, int bpm)
     m_init_clock        (),         // array of c_max_busses clock_e values
     m_init_input        (),         // array of c_max_busses booleans
     m_queue             (0),
-    m_ppqn              (0),
+    m_ppqn              (choose_ppqn(ppqn)),
     m_beats_per_minute  (bpm),      // beats per minute
     m_dumping_input     (false),
     m_vector_sequence   (),         // stazed feature
@@ -90,10 +90,10 @@ mastermidibase::mastermidibase (int ppqn, int bpm)
     m_seq               (nullptr),
     m_mutex             ()
 {
-    m_ppqn = choose_ppqn(ppqn);
     for (int i = 0; i < m_max_busses; ++i)
     {
         m_init_clock[i] = e_clock_off;
+        m_buses_out[i] = m_buses_in[i] = nullptr;
         m_buses_in_active[i] =
             m_buses_out_active[i] =
             m_buses_in_init[i] =

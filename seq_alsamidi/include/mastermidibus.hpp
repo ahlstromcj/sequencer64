@@ -1,5 +1,5 @@
-#ifndef SEQ64_MASTERMIDIBUS_HPP
-#define SEQ64_MASTERMIDIBUS_HPP
+#ifndef SEQ64_MASTERMIDIBUS_ALSAMIDI_HPP
+#define SEQ64_MASTERMIDIBUS_ALSAMIDI_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-11-24
+ * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -112,7 +112,7 @@ private:
 
 }           // namespace seq64
 
-#endif      // SEQ64_MASTERMIDIBUS_HPP
+#endif      // SEQ64_MASTERMIDIBUS_ALSAMIDI_HPP
 
 /*
  * mastermidibus.hpp

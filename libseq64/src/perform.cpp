@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-11-27
+ * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -33,6 +33,7 @@
 
 #include <sched.h>
 #include <stdio.h>
+#include <string.h>                     /* memset()                         */
 
 #include "calculations.hpp"
 #include "event.hpp"

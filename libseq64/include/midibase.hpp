@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2016-11-27
+ * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -207,6 +207,29 @@ public:
     int get_port_id () const
     {
         return m_port_id;
+    }
+
+    /*
+     * The following are currently REDUNDANT, must clean 'em out.
+     */
+
+    /**
+     * \getter m_dest_addr_client
+     *      The address of client.
+     */
+
+    virtual int get_client () const
+    {
+        return SEQ64_NO_BUS;
+    }
+
+    /**
+     * \getter m_dest_addr_port
+     */
+
+    virtual int get_port () const
+    {
+        return SEQ64_NO_PORT;
     }
 
     /**

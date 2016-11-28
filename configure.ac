@@ -427,6 +427,7 @@ AC_ARG_ENABLE(alsamidi,
 
 if test "$alsamidi" != "no"; then
     AC_MSG_RESULT([Standard ALSA build enabled, can be overridden though.]);
+    AC_DEFINE(ALSAMIDI_SUPPORT, 1, [Indicates if ALSA MIDI support is enabled])
     AM_CONDITIONAL([BUILD_ALL], [test x$all = xhellno])
     AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xyes])
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xhellno])
@@ -469,24 +470,6 @@ if test "$rtmidi" != "no"; then
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xyes])
 else
     AC_MSG_WARN([RtMidi build not enabled.]);
-fi
-
-dnl Support for building ALL libraries and applications.  Mostly for developer
-dnl use.  NOT RECOMMENDED.
-
-AC_ARG_ENABLE(all,
-    [AS_HELP_STRING(--enable-all, [Enable building ALL libraries and applications])],
-    [all=$enableval],
-    [all=no])
-
-if test "$all" != "no"; then
-    AC_MSG_RESULT([Build of ALL libraries and application enabled.]);
-    AM_CONDITIONAL([BUILD_ALL], [test x$all = xyes])
-    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xyes])
-    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xyes])
-    AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xyes])
-else
-    AC_MSG_WARN([Build of ALL sub-projects not enabled.]);
 fi
 
 dnl Support for highlighting empty sequences (in yellow).  If enabled, the

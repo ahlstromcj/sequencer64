@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-21
+ * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and

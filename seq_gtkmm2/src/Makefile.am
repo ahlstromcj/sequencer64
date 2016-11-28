@@ -108,6 +108,7 @@ AM_CXXFLAGS = \
  -I$(top_srcdir)/include \
  -I$(top_srcdir)/libseq64/include \
  -I$(top_srcdir)/seq_alsamidi/include \
+ -I$(top_srcdir)/seq_portmidi/include \
  -I$(top_srcdir)/resources \
  $(ALSA_CFLAGS) \
  $(GTKMM_CFLAGS) \

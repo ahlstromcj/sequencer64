@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-11-26
+ * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -48,6 +48,7 @@
  */
 
 #include <sstream>
+#include <string.h>                     /* strlen() <gasp!>                 */
 #include "platform_macros.h"
 
 #ifdef PLATFORM_UNIX
@@ -700,6 +701,12 @@ write_options_files (const perform & p)
  *  enabled or disabled during the build.
  */
 
+#ifdef SEQ64_ALSAMIDI_SUPPORT
+const static std::string s_build_alsamidi_support = "ON";
+#else
+const static std::string s_build_alsamidi_support = "off";
+#endif
+
 #ifdef SEQ64_PORTMIDI_SUPPORT
 const static std::string s_build_portmidi_support = "ON";
 #else
@@ -850,6 +857,7 @@ build_details ()
     std::ostringstream result;
     result
 << "Build features:" << std::endl << std::endl
+<< "ALSA MIDI support * = "      << s_build_alsamidi_support      << std::endl
 << "PortMidi support * = "       << s_build_portmidi_support      << std::endl
 << "RtMidi support * = "         << s_build_rtmidi_support        << std::endl
 << "Event editor * = "           << s_event_editor                << std::endl

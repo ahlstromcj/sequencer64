@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-11-09
+ * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -45,15 +45,10 @@
 #include "calculations.hpp"             /* measures_to_ticks()      */
 #include "event_list.hpp"               /* seq64::event_list        */
 #include "midi_container.hpp"           /* seq64::midi_container    */
+#include "midibus.hpp"                  /* seq64::midibus           */
 #include "mutex.hpp"                    /* seq64::mutex, automutex  */
 #include "scales.h"                     /* key and scale constants  */
 #include "triggers.hpp"                 /* seq64::triggers, etc.    */
-
-#ifdef PLATFORM_WINDOWS
-#include "midibus_portmidi.hpp"         /* only semi-supported      */
-#else
-#include "midibus.hpp"                  /* seq64::midibus           */
-#endif
 
 /**
  * \obsolete

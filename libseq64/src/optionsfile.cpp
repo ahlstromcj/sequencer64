@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-31
+ * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -61,6 +61,8 @@
  *
  *      46   # period pause sequencer
  */
+
+#include <string.h>                     /* memset()                         */
 
 #include "gdk_basic_keys.h"             /* SEQ64_equal, SEQ64_minus         */
 #include "midibus.hpp"

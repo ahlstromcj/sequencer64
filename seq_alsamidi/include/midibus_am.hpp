@@ -143,7 +143,7 @@ public:
      *      The address of client.
      */
 
-    int get_client () const
+    virtual int get_client () const
     {
         return m_dest_addr_client;
     }
@@ -152,10 +152,10 @@ public:
      * \getter m_dest_addr_port
      */
 
-    int get_port () const
+    virtual int get_port () const
     {
         return m_dest_addr_port;
-    };
+    }
 
 protected:
 

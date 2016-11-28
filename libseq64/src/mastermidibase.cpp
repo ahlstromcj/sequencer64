@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2016-11-24
+ * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -36,7 +36,6 @@
 #include "easy_macros.h"
 #include "event.hpp"                    /* seq64::event                     */
 #include "mastermidibase.hpp"           /* seq64::mastermidibase            */
-#include "midibus.hpp"                  /* seq64::midibus for ALSA          */
 #include "sequence.hpp"                 /* seq64::sequence                  */
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 

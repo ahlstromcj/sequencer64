@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-13
+ * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -57,7 +57,6 @@
 #include "gtk_helpers.h"
 #include "gui_key_tests.hpp"            /* is_ctrl_key(), etc.          */
 #include "mainwid.hpp"
-#include "midibus.hpp"
 #include "options.hpp"
 #include "perfedit.hpp"
 #include "perform.hpp"

@@ -67,8 +67,8 @@ sequencer64libdir = @sequencer64libdir@
 #----------------------------------------------------------------------------
 
 pkginclude_HEADERS = \
-	mastermidibus_rm.hpp \
-	midibus_rm.hpp
+	mastermidibus_am.hpp \
+	midibus_am.hpp
 
 #******************************************************************************
 # uninstall-hook

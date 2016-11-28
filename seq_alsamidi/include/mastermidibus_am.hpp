@@ -1,5 +1,5 @@
-#ifndef SEQ64_MASTERMIDIBUS_ALSAMIDI_HPP
-#define SEQ64_MASTERMIDIBUS_ALSAMIDI_HPP
+#ifndef SEQ64_MASTERMIDIBUS_AM_HPP
+#define SEQ64_MASTERMIDIBUS_AM_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          mastermidibus.hpp
+ * \file          mastermidibus_am.hpp
  *
  *  This module declares/defines the Master MIDI Bus.
  *
@@ -112,10 +112,10 @@ private:
 
 }           // namespace seq64
 
-#endif      // SEQ64_MASTERMIDIBUS_ALSAMIDI_HPP
+#endif      // SEQ64_MASTERMIDIBUS_AM_HPP
 
 /*
- * mastermidibus.hpp
+ * mastermidibus_am.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

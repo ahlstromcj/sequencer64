@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-25
+ * \updates       2016-11-27
  * \license       GNU GPLv2 or above
  *
  *  The midibus module is the Linux version of the midibus module.
@@ -105,6 +105,7 @@ public:
     /*
      *  This version is used when querying for existing input ports in the
      *  ALSA system.  It is also used when creating the "announce buss".
+     *  Does not yet directly include the concept of buss ID and port ID.
      */
 
     midibus
@@ -122,7 +123,8 @@ public:
 
     /*
      *  This version is used with the --manual-alsa-ports option, for both
-     *  input and output busses.
+     *  input and output busses.  Does not yet directly include the concept of
+     *  buss ID and port ID.
      */
 
     midibus

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2016-11-25
+ * \updates       2016-11-27
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -59,31 +59,36 @@ int midibase::m_clock_mod = 16 * 4;
  *  not in force.  Also used for the announce buss, and in the
  *  mastermidibase::port_start() function.
  *
- * \param localclient
- *      Provides the local-client number.
+ * \param clientname
+ *      Provides the client name, also known as the buss name.
  *
- * \param destclient
- *      Provides the destination-client number.
+ * \param portname
+ *      Provides the port name.  This item defaults to empty, which means the
+ *      port name should be obtained via the API.
  *
- * \param destport
- *      Provides the destination-client port.
- *
- * \param seq
- *      Provides the ALSA sequence that will work with this buss.
- *
- * \param client_name
- *      Provides the client name, but this parameter is unused.
- *
- * \param port_name
- *      Provides the port name.
- *
- * \param id
- *      Provides the ID code for this bus.  It is an index into the midibase
+ * \param bus_id
+ *      Provides the ID code for this bus.  It is an index into the midibus
  *      definitions array, and is also used in the constructed human-readable
- *      buss name.
+ *      buss name.  Defaults to SEQ64_NO_BUS.
+ *
+ *          -   ALSA (seq24).  This is the ALSA buss number, ranging from 1 to
+ *              32, I think.
+ *          -   PortMidi.  This number is not yet used in PortMidi.  Perhaps
+ *              this should be used instead of the queue parameter.
+ *          -   RtMidi.  Like ALSA, we will use this as a buss number.
+ *
+ * \param port_id
+ *      Indicates the port ID.  Defaults to SEQ64_NO_PORT.
  *
  * \param queue
- *      Provides the queue ID.
+ *      Provides the queue ID.  It has different meanings in each of the MIDI
+ *      implementations.  Defaults to SEQ64_NO_QUEUE.
+ *
+ *          -   ALSA (seq24).  This is the ALSA queue number, which is an ALSA
+ *              concept.
+ *          -   PortMidi.  This is the PortMidi buss number, sort of.  It is
+ *              the PmDeviceID value.
+ *          -   RtMidi.  Not sure yet if it will have meaning here.
  *
  * \param ppqn
  *      Provides the PPQN value.
@@ -93,11 +98,13 @@ midibase::midibase
 (
     const std::string & clientname,
     const std::string & portname,
-    int id,
+    int bus_id,
+    int port_id,
     int queue,
     int ppqn
 ) :
-    m_id                (id),
+    m_bus_id            (bus_id),
+    m_port_id           (port_id),
     m_clock_type        (e_clock_off),
     m_inputing          (false),
     m_ppqn              (choose_ppqn(ppqn)),

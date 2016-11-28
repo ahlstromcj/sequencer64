@@ -1,4 +1,4 @@
-README for Sequencer64 0.10.0
+README for Sequencer64 0.90.0
 Chris Ahlstrom
 2015-09-10 to 2016-11-19 (initial work started in July of 2015)
 
@@ -14,9 +14,11 @@ internal fixups.  And it maintains backward-compatibility with seq24, with the
 
 Major updates:
 
-    -   Version 0.10.0:
+    -   Version 0.90.0:
         -   Initial support for using an RtMidi spinoff library to support
             native JACK MIDI (as opposed to just JACK transport).
+        -   PortMidi has been activated!  Builds and runs in Linux, still
+            need to set up Gtk for Windows.
     -   Version 0.9.21:
         -   Returning to the std::list operation, but with sorting occurring
             after loading.  This buys speed of loading of a large MIDI file

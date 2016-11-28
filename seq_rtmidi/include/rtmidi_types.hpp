@@ -43,9 +43,9 @@ namespace seq64
 enum rtmidi_api
 {
     RTMIDI_API_UNSPECIFIED,     /**< Search for a working compiled API.      */
-    RTMIDI_API_MACOSX_CORE,     /**< Macintosh OS-X Core Midi API.           */
     RTMIDI_API_LINUX_ALSA,      /**< Advanced Linux Sound Architecture API.  */
     RTMIDI_API_UNIX_JACK,       /**< JACK Low-Latency MIDI Server API.       */
+    RTMIDI_API_MACOSX_CORE,     /**< Macintosh OS-X Core Midi API.           */
     RTMIDI_API_WINDOWS_MM,      /**< Microsoft Multimedia MIDI API.          */
     RTMIDI_API_DUMMY            /**< A compilable but non-functional API.    */
 };

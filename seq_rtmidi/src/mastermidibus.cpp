@@ -32,11 +32,10 @@
  *  class.  There is a lot of common code between these two versions!
  */
 
-#include "easy_macros.h"                /* handy macros                     */
-#include "event.hpp"                    /* seq64::event                     */
+// #include "easy_macros.h"                /* handy macros                     */
+// #include "event.hpp"                    /* seq64::event                     */
 #include "mastermidibus.hpp"            /* seq64::mastermidibus, PortMIDI   */
 #include "midibus.hpp"                  /* seq64::midibus, PortMIDI         */
-#include "portmidi.h"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -61,7 +60,7 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
  :
     mastermidibase      (ppqn, bpm)
 {
-    Pm_Initialize();
+    // Pm_Initialize();
 }
 
 /**
@@ -71,46 +70,105 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
 
 mastermidibus::~mastermidibus ()
 {
-    Pm_Terminate();
+    // Pm_Terminate();
 }
 
 /**
- *  Provides the PortMidi implementation needed for the init() function.
- *  Unlike the seq24 ALSA implementation, this version does not support the
- *  --manual-alsa-ports option.  It initializes as many input and output MIDI
- *  devices as are found by Pm_CountDevices(), and the flags
- *  PmDeviceInfo::input and output determine what category of MIDI device it
- *  is.
+ *  Initializes the RtMidi implementation.
+ *
  */
 
 void
 mastermidibus::api_init (int ppqn)
 {
-    int num_devices = Pm_CountDevices();
-    const PmDeviceInfo * dev_info = nullptr;
-    for (int i = 0; i < num_devices; ++i)
+    if (rc().manual_alsa_ports())
     {
-        dev_info = Pm_GetDeviceInfo(i);
-
-#ifdef PLATFORM_DEBUG
-        fprintf
-        (
-            stderr,
-            "[0x%x] [%s] [%s] input[%d] output[%d]\n",
-            i, dev_info->interf, dev_info->name,
-               dev_info->input, dev_info->output
-        );
-#endif
-
-        if (dev_info->output)
+        int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
+        for (int i = 0; i < num_buses; ++i)         /* output busses    */
         {
-            /*
-             * The parameters here are bus ID, port ID, and client name.
-             */
-
-            m_buses_out[m_num_out_buses] = new midibus
+            if (not_nullptr(m_buses_out[i]))
+            {
+                delete m_buses_out[i];
+                errprintf("manual: m_buses_out[%d] not null\n", i);
+            }
+            char tmp[4];
+            snprintf(tmp, sizeof tmp, "%d", i);
+            std::string clientname = "rtmidi out";
+            std::string portname = tmp;
+            m_buses_out[i] = new midibus
             (
-                m_num_out_buses, i, dev_info->name
+                clientname, portname, i,
+                SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
+            );
+            m_buses_out[i]->init_out_sub();
+            m_buses_out_active[i] = m_buses_out_init[i] = true;
+        }
+        m_num_out_buses = num_buses;
+        if (not_nullptr(m_buses_in[0]))
+        {
+            delete m_buses_in[0];
+            errprint("manual: m_buses_[0] not null");
+        }
+
+        /*
+         * Input buss.  Only the first element is set up.  The rest are used
+         * only for non-manual ALSA ports in the else-class below.
+         */
+
+        std::string clientname = "rtmidi out";
+        std::string portname = "0";
+        m_num_in_buses = 1;
+        m_buses_in[i] = new midibus
+        (
+            clientname, portname, 0,
+            SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
+        );
+        m_buses_in[0]->init_in_sub();
+        m_buses_in_active[0] = m_buses_in_init[0] = true;
+    }
+    else
+    {
+        /*
+         * Code currently similar to midi_probe().  Assumes only one compiled
+         * API at present.
+         */
+
+        rtmidi_in in;
+        unsigned nports = in.get_port_count();
+        m_num_in_buses = 0;
+        for (unsigned i = 0; i < nports; ++i)
+        {
+            std::string clientname = "rtmidi in";
+            std::string portname = in.get_port_name(i);
+            m_buses_in[m_num_in_buses] = new midibus
+            (
+                clientname, portname, m_num_in_buses,
+                SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
+            );
+            if (m_buses_in[m_num_in_buses]->init_in())
+            {
+                m_buses_in_active[m_num_in_buses] = true;
+                m_buses_in_init[m_num_in_buses] = true;
+                ++m_num_in_buses;
+            }
+            else
+            {
+                delete m_buses_in[m_num_in_buses];
+                m_buses_in[m_num_in_buses] = nullptr;
+            }
+        }
+
+        rtmidi_out out;
+        nports = out.get_port_count();
+        m_num_out_buses = 0;
+        for (unsigned i = 0; i < nports; ++i)
+        {
+            std::string clientname = "rtmidi out";
+            std::string portname = out.get_port_name(i);
+            m_buses_in[m_num_in_buses] = new midibus
+            (
+                clientname, portname, m_num_out_buses,
+                SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
             );
             if (m_buses_out[m_num_out_buses]->init_out())
             {
@@ -124,41 +182,30 @@ mastermidibus::api_init (int ppqn)
                 m_buses_out[m_num_out_buses] = nullptr;
             }
         }
-        if (dev_info->input)
-        {
-            /*
-             * The parameters here are bus ID, port ID, and client name.
-             */
-
-            m_buses_in[m_num_in_buses] = new midibus
-            (
-                m_num_in_buses, i, dev_info->name
-            );
-            if (m_buses_in[m_num_in_buses]->init_in())
-            {
-                m_buses_in_active[m_num_in_buses] = true;
-                m_buses_in_init[m_num_in_buses] = true;
-                m_num_in_buses++;
-            }
-            else
-            {
-                delete m_buses_in[m_num_in_buses];
-                m_buses_in[m_num_in_buses] = nullptr;
-            }
-        }
     }
 
-    set_beats_per_minute(c_beats_per_minute);
+    set_beats_per_minute(c_beats_per_minute);       // ????????
     set_ppqn(ppqn);     // m_ppqn);   // SEQ64_DEFAULT_PPQN);
 
-    /* MIDI input poll descriptors */
+    /*
+     * MIDI input poll descriptors
+     *
+     *
+        m_bus_announce = new midibus
+        (
+            "system", "announce",   // clientname and portname
+            0, m_queue, ppqn
+        );
+        m_bus_announce->set_input(true);
 
-    set_sequence_input(false, NULL);
-    for (int i = 0; i < m_num_out_buses; i++)
-        set_clock(i, m_init_clock[i]);
+        set_sequence_input(false, NULL);
+        for (int i = 0; i < m_num_out_buses; i++)
+            set_clock(i, m_init_clock[i]);
 
-    for (int i = 0; i < m_num_in_buses; i++)
-        set_input(i, m_init_input[i]);
+        for (int i = 0; i < m_num_in_buses; i++)
+            set_input(i, m_init_input[i]);
+     *
+     */
 }
 
 /**
@@ -190,8 +237,9 @@ mastermidibus::api_poll_for_midi ()
 bool
 mastermidibus::api_is_more_input ()
 {
+    automutex locker(m_mutex);
     int size = 0;
-    for (int i = 0; i < m_num_in_buses; i++)
+    for (int i = 0; i < m_num_in_buses; ++i)
     {
         if (m_buses_in[i]->poll_for_midi())
             size = 1;
@@ -209,8 +257,7 @@ bool
 mastermidibus::api_get_midi_event (event * in)
 {
     bool result = false;
-    PmEvent event;
-    for (int i = 0; i < m_num_in_buses; i++)
+    for (int i = 0; i < m_num_in_buses; ++i)
     {
         if (m_buses_in[i]->poll_for_midi())
         {

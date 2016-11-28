@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2016-11-25
+ * \updates       2016-11-27
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -39,6 +39,24 @@
 #include "easy_macros.h"                /* for autoconf header files    */
 #include "mutex.hpp"
 #include "midibus_common.hpp"
+
+/**
+ *  Flags an unspecified buss number.
+ */
+
+#define SEQ64_NO_BUS                    (-1)
+
+/**
+ *  Flags an unspecified port number.
+ */
+
+#define SEQ64_NO_PORT                   (-1)
+
+/**
+ *  Flags an unspecified queue number.
+ */
+
+#define SEQ64_NO_QUEUE                  (-1)
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -69,10 +87,16 @@ private:
     static int m_clock_mod;
 
     /**
-     *  The ID of the midibase object.
+     *  The buss ID of the midibase object.
      */
 
-    int m_id;
+    int m_bus_id;
+
+    /**
+     *  The port ID of the midibase object.
+     */
+
+    int m_port_id;
 
     /**
      *  The type of clock to use.
@@ -93,25 +117,29 @@ private:
     int m_ppqn;
 
     /**
-     *  Another ID of the MIDI queue?
+     *  Another ID of the MIDI queue?  This is an implementation-dependent
+     *  value.  For ALSA, it is the ALSA queue number.  For PortMidi, this is
+     *  the old "m_pm_num" value.  For RtMidi, it is not currently used.
      */
 
-    int m_queue;            // portidi's m_pm_num
+    int m_queue;
 
     /**
-     *  The name of the MIDI buss.
+     *  The name of the MIDI buss.  This should be something like a major device
+     *  name or the name of a subsystem such as Timidity.
      */
 
     std::string m_bus_name;
 
     /**
-     *  The name of the MIDI port.
+     *  The name of the MIDI port.  This should be the name of a specific device
+     *  or port on a major device.
      */
 
     std::string m_port_name;
 
     /**
-     *  The last (most recent?  final?) tick.
+     *  The last (most recent? final?) tick.
      */
 
     midipulse m_lasttick;
@@ -126,11 +154,12 @@ public:
 
     midibase
     (
-        const std::string & client_name,
-        const std::string & port_name,
-        int id,
-        int queue,
-        int ppqn = SEQ64_USE_DEFAULT_PPQN
+        const std::string & client_name = "",
+        const std::string & port_name   = "",
+        int bus_id  = SEQ64_NO_BUS,
+        int port_id = SEQ64_NO_PORT,
+        int queue   = SEQ64_NO_QUEUE,
+        int ppqn    = SEQ64_USE_DEFAULT_PPQN
     );
 
     virtual ~midibase ();
@@ -154,12 +183,30 @@ public:
     }
 
     /**
-     * \getter m_id
+     * \getter m_bus_name and m_port_name
      */
 
-    int get_id () const
+    std::string connect_name () const
     {
-        return m_id;
+        return m_bus_name + ":" + m_port_name;
+    }
+
+    /**
+     * \getter m_bus_id
+     */
+
+    int get_bus_id () const
+    {
+        return m_bus_id;
+    }
+
+    /**
+     * \getter m_port_id
+     */
+
+    int get_port_id () const
+    {
+        return m_port_id;
     }
 
     /**

@@ -168,14 +168,20 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 
     --enable-all
     --enable-portmidi
+    --enable-rtmidi
     --disable-alsamidi
 
         We are starting to get alternate implementations to work.  The normal
-        build is effectively --enable-alsamid.  The --enable-portmidi flag
+        build is effectively --enable-alsamidi.  The --enable-portmidi flag
         creates a new application, seq64portmidi, that is based on using ALSA
         on Linux via the PortMidi application.  If we get a nice
         implementation of gtkmm2 for Windows working, we ought to have the
-        Windows version we were looking at.
+        Windows version we were looking at.  The macros are:
+
+        SEQ64_PORTMIDI_SUPPORT
+        SEQ64_RTMIDI_SUPPORT
+
+        They are used only in the --version output.
 
 MANUALLY-DEFINED MACROS IN CODE:
 

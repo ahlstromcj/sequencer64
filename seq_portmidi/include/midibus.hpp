@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-25
+ * \updates       2016-11-27
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the Windows (PortMidi) version of the midibus
@@ -68,12 +68,9 @@ private:
 
 public:
 
-    midibus (int id, int pm_num, const std::string & client_name);
+    midibus (int id, int port_id, const std::string & client_name);
 
     virtual ~midibus ();
-
-    static void set_clock_mod (int clock_mod);
-    static int get_clock_mod ();
 
 protected:
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-11-24
+ * \updates       2016-11-27
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -128,27 +128,27 @@ perform::perform (gui_assistant & mygui, int ppqn)
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     m_start_from_perfedit       (false),
     m_reposition                (false),
-    m_excell_FF_RW              (1.0),
+    m_excell_FF_RW              (1.0f),
     m_FF_RW_button_type         (FF_RW_NONE),
 #endif
-    m_gui_support               (mygui),
     m_mute_group                (),         // boolean array, size 32 * 32
 #ifdef SEQ64_TOGGLE_PLAYING
     m_armed_saved               (false),
     m_armed_statuses            (),         // boolean array, size 1024
 #endif
+    m_tracks_mute_state         (),         // set's tracks [c_seqs_in_set]
     m_mode_group                (true),
     m_mode_group_learn          (false),
     m_mute_group_selected       (0),
     m_playing_screen            (0),        // vice m_screenset
     m_playscreen_offset         (0),
-    m_seqs                      (),         // pointer array
-    m_seqs_active               (),         // boolean array
-    m_was_active_main           (),         // boolean array
-    m_was_active_edit           (),         // boolean array
-    m_was_active_perf           (),         // boolean array
-    m_was_active_names          (),         // boolean array
-    m_sequence_state            (),         // boolean array
+    m_seqs                      (),         // pointer array [c_max_sequence]
+    m_seqs_active               (),         // boolean array [c_max_sequence]
+    m_was_active_main           (),         // boolean array [c_max_sequence]
+    m_was_active_edit           (),         // boolean array [c_max_sequence]
+    m_was_active_perf           (),         // boolean array [c_max_sequence]
+    m_was_active_names          (),         // boolean array [c_max_sequence]
+    m_sequence_state            (),         // boolean array [c_max_sequence]
     m_master_bus                (),         // will call its init() later
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_transpose                 (0),
@@ -180,10 +180,10 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_midiclocktick             (0),
     m_midiclockpos              (-1),
     m_dont_reset_ticks          (false),
-    m_screen_set_notepad        (),         // string array of size c_max_sets
-    m_midi_cc_toggle            (),         // midi_control array
-    m_midi_cc_on                (),         // midi_control array
-    m_midi_cc_off               (),         // midi_control array
+    m_screen_set_notepad        (),         // string array [c_max_sets]
+    m_midi_cc_toggle            (),         // midi_control [c_midi_controls]
+    m_midi_cc_on                (),         // midi_control [c_midi_controls]
+    m_midi_cc_off               (),         // midi_control [c_midi_controls]
     m_offset                    (0),
     m_control_status            (0),
     m_screenset                 (0),        // vice m_playing_screen
@@ -195,7 +195,9 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_sequence_count            (0),
     m_sequence_max              (c_max_sequence),
     m_sequence_high             (0),
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
     m_edit_sequence             (-1),
+#endif
     m_is_modified               (false),
     m_condition_var             (),
 #ifdef SEQ64_JACK_SUPPORT
@@ -209,15 +211,17 @@ perform::perform (gui_assistant & mygui, int ppqn)
     ),
 #endif
     m_have_undo                 (false),
-    m_undo_vect                 (),
+    m_undo_vect                 (),          // vector of int
     m_have_redo                 (false),
-    m_redo_vect                 (),
-    m_notify                    ()          // vector of pointers, public!
+    m_redo_vect                 (),          // vector of int
+    m_notify                    (),          // vector of callback pointers
+    m_gui_support               (mygui)
 {
     for (int i = 0; i < m_sequence_max; ++i)
     {
         m_seqs[i] = nullptr;
         m_seqs_active[i] =                      /* seq24 0.9.3 addition     */
+            m_sequence_state[i] =               /* ca 2016-11-27            */
             m_was_active_main[i] = m_was_active_edit[i] =
             m_was_active_perf[i] = m_was_active_names[i] = false;
     }
@@ -233,12 +237,22 @@ perform::perform (gui_assistant & mygui, int ppqn)
     for (int i = 0; i < c_seqs_in_set; ++i)
         m_tracks_mute_state[i] = false;
 
+    for (int i = 0; i < m_max_sets; ++i)
+        m_screen_set_notepad[i].clear();
+
     midi_control zero;                          /* all members false or 0   */
     for (int i = 0; i < c_midi_controls; ++i)
         m_midi_cc_toggle[i] = m_midi_cc_on[i] = m_midi_cc_off[i] = zero;
 
-    set_all_key_events();
-    set_all_key_groups();
+    /*
+     * Not sure why we need to this, since it is done by the
+     * keys_perform-derived object.  Plus, in our PortMidi implementation,
+     * this deals with an object that is null, for some reason, resulting in a
+     * segfault.  But we still now get a segfault for other reasons.
+     *
+     * set_all_key_events();
+     * set_all_key_groups();
+     */
 }
 
 /**

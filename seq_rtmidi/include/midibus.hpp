@@ -22,23 +22,26 @@
 /**
  * \file          midibus.hpp
  *
- *  This module declares/defines the base class for MIDI I/O for Windows.
+ *  This module declares/defines the base class for MIDI I/O for Linux, Mac,
+ *  and Windows, using a refactored RtMidi library..
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-11-21
+ * \updates       2016-11-27
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
- *  module.  There's almost enough commonality to be worth creating a base
- *  class for both classes.
+ *  module.
  */
 
-#include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
-#include "easy_macros.h"                /* for autoconf header files    */
-#include "mutex.hpp"
-#include "midibus_common.hpp"
+// #include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
+// #include "easy_macros.h"                /* for autoconf header files    */
+// #include "mutex.hpp"
+// #include "midibus_common.hpp"
+
+#include "midibase.hpp"
+#include "rtmidi.h"                     /* RtMIDI API header file       */
 
 /*
  * Do not document a namespace; it breaks Doxygen.
@@ -64,178 +67,54 @@ class midibus
 private:
 
     /**
-     *  This is another name for "16 * 4".
-     */
-
-    static int m_clock_mod;
-
-    /**
-     *  The ID of the midibus object.
-     */
-
-    int m_id;
-
-    /**
-     *  The type of clock to use.
-     */
-
-    clock_e m_clock_type;
-
-    /**
-     *  TBD
-     */
-
-    bool m_inputing;
-
-    /**
-     *  Provides the PPQN value in force, currently a constant.
-     */
-
-    int m_ppqn;
-
-    /**
-     *  TBD.  Is this a port number or a client number.
-     */
-
-    char m_pm_num;
-
-    /**
-     *  The type of clock to use.
-     */
-
-    clock_e m_clock_type;
-
-    /**
-     *  The name of the MIDI buss.
-     */
-
-    std::string m_name;
-
-    /**
-     *  The last (most recent?  final?) tick.
-     */
-
-    midipulse m_lasttick;
-
-    /**
-     *  Locking mutex.
-     */
-
-    mutex m_mutex;
-
-    /**
      *
      */
 
-    PortMidiStream * m_pms;
+    rtmidi * m_rt_midi;
 
 public:
 
-    midibus (char id, char pm_num, const char * client_name);
+    midibus
+    (
+        const std::string & clientname,
+        const std::string & portname = "",
+        int bus_id  = SEQ64_NO_BUS,
+        int port_id = SEQ64_NO_PORT,
+        int queue   = SEQ64_NO_QUEUE,
+        int ppqn    = SEQ64_USE_DEFAULT_PPQN
+    );
 
-    /*
-     * midibus(char id, int queue);
-     */
+    virtual ~midibus ();
 
-    ~midibus ();
+protected:
 
-    bool init_out ();
-    bool init_in ();
-    bool deinit_in ()
-    {
-        return false;
-    }
-
-    bool init_out_sub ()
-    {
-        return false;
-    }
-
-    bool init_in_sub ()
-    {
-        return false;
-    }
-
-    void print ();
+    virtual int api_poll_for_midi ();
+    virtual bool api_init_in ();
+    virtual bool api_init_out ();
 
     /**
-     * \getter n_name
+     *  Temporary easy implementation for now.
      */
 
-    const std::string & get_name () const
+    virtual bool api_init_in_sub ()
     {
-        return m_name;
+        return api_init_in();
     }
 
     /**
-     * \getter m_id
+     *  Temporary easy implementation for now.
      */
 
-    int get_id () const
+    virtual bool api_init_out_sub ()
     {
-        return m_id;
+        return api_init_out();
     }
 
-    void play (event * e24, unsigned char channel);
-    void sysex(event * e24);
-
-    int poll_for_midi ();
-
-    /*
-     * Clock functions
-     */
-
-    void start ();
-    void stop ();
-    void clock (midipulse tick);
-    void continue_from (midipulse tick);
-    void init_clock (midipulse tick);
-
-    /**
-     * \setter m_clock_type
-     *
-     * \param clocktype
-     *      The value used to set the clock-type.
-     */
-
-    void set_clock (clock_e clocktype)
-    {
-        m_clock_type = clocktype;
-    }
-
-    /**
-     * \getter m_clock_type
-     */
-
-    clock_e get_clock () const
-    {
-        return m_clock_type;
-    }
-
-    /**
-     * \setter m_inputing
-     *      Compare this Windows version to the Linux version.
-     */
-
-    void set_input (bool inputing)
-    {
-        if (m_inputing != inputing)
-            m_inputing = inputing;
-    }
-
-    /**
-     * \getter m_inputing
-     */
-
-    bool get_input () const
-    {
-        return m_inputing;
-    }
-
-    void flush ();
-
-    static void set_clock_mod(int clockmod);
-    static int get_clock_mod ();
+    virtual void api_continue_from (midipulse tick, midipulse beats);
+    virtual void api_start ();
+    virtual void api_stop ();
+    virtual void api_clock (midipulse tick);
+    virtual void api_play (event * e24, midibyte channel);
 
 };          // class midibus (rtmidi version)
 

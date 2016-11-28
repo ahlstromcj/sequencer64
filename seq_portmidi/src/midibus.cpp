@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-25
+ * \updates       2016-11-27
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the midibus class.
@@ -55,16 +55,16 @@ namespace seq64
  *  Principal constructor.
  */
 
-midibus::midibus (int id, int pmnum, const std::string & clientname)
+midibus::midibus (int bus_id, int port_id, const std::string & clientname)
  :
-    midibase        (clientname, "", id, pmnum),
+    midibase        (clientname, "", bus_id, SEQ64_NO_PORT, port_id),
     m_pms           (nullptr)
 {
     /*
      * Synthesize the client names.
      *
     char tmp[64];
-    snprintf(tmp, sizeof tmp, "[%d] %s", get_id(), clientname);
+    snprintf(tmp, sizeof tmp, "[%d] %s", get_bus_id(), clientname);
     m_name = tmp;
      *
      */
@@ -95,7 +95,7 @@ midibus::~midibus ()
 int
 midibus::api_poll_for_midi ()
 {
-    if (queue_number() > 0)
+    if (queue_number() >= 0)            /* used as a buss number here */
     {
         PmError err = Pm_Poll(m_pms);
         if (err == FALSE)

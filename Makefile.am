@@ -139,11 +139,9 @@ if BUILD_PORTMIDI
 SUBDIRS = resources/pixmaps libseq64 seq_portmidi seq_gtkmm2 Seq64portmidi man
 endif
 
-# NOT YET READY AT ALL!!!
-#
-# if BUILD_RTMIDI
+if BUILD_RTMIDI
 # SUBDIRS = resources/pixmaps libseq64 seq_rtmidi seq_gtkmm2 Seq64rtmidi man
-# endif
+endif
 
 if BUILD_ALL
 SUBDIRS = resources/pixmaps libseq64 seq_alsamidi seq_gtkmm2 seq_portmidi \

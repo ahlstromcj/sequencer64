@@ -69,7 +69,7 @@ keys_perform_gtk2 gui_assistant_gtk2::sm_internal_keys;
 
 gui_assistant_gtk2::gui_assistant_gtk2 ()
  :
-    gui_assistant (sm_internal_keys)
+    gui_assistant   (sm_internal_keys)
 {
     // No code yet
 }

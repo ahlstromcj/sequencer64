@@ -5,8 +5,8 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-21
- * \license       See the rtexmidi.lic file.  Too big for a header file.
+ * \updates       2016-11-26
+ * \license       See the rtexmidi.lic file.  Too big.
  *
  *  In this refactoring, we are trying to improve the RtMidi project in the
  *  following ways:
@@ -478,17 +478,20 @@ midi_in_alsa::initialize (const std::string & clientname)
  *      TO DO.
  *
  * \param type
- *      TO DO.
+ *      The type of port to look up.  It is a one of the following masks:
+ *      SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ, and
+ *      SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE.
  *
  * \param portnumber
- *      TO DO.
+ *      The port number to look up. If this value is -1, then the ports are
+ *      counted.
  *
  * \return
  *      Returns the port count, or 0.
  */
 
-unsigned
-portInfo
+static unsigned
+alsa_port_info
 (
     snd_seq_t * seq, snd_seq_port_info_t * pinfo,
     unsigned type, int portnumber
@@ -502,7 +505,8 @@ portInfo
     while (snd_seq_query_next_client(seq, cinfo) >= 0)
     {
         client = snd_seq_client_info_get_client(cinfo);
-        if (client == 0) continue;
+        if (client == 0)
+            continue;
 
         // Reset query info
 
@@ -543,7 +547,7 @@ portInfo
  *  Gets the input sequencer port count from ALSA.
  *
  * \return
- *      Returns the result of a portInfo() call.
+ *      Returns the result of a alsa_port_info() call.
  */
 
 unsigned
@@ -552,9 +556,10 @@ midi_in_alsa::get_port_count ()
     snd_seq_port_info_t * pinfo;
     snd_seq_port_info_alloca(&pinfo);
     alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
-    return portInfo
+    return alsa_port_info
     (
-        data->seq, pinfo, SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ, -1
+        data->seq, pinfo,
+        SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ, -1
     );
 }
 
@@ -579,7 +584,7 @@ midi_in_alsa::get_port_name (unsigned portnumber)
     alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
     if
     (
-        portInfo
+        alsa_port_info
         (
             data->seq, pinfo,
             SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
@@ -632,8 +637,8 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
         return;
     }
 
-    unsigned nSrc = this->get_port_count();
-    if (nSrc < 1)
+    unsigned nsrc = this->get_port_count();
+    if (nsrc < 1)
     {
         m_error_string = func_message("no MIDI input sources found");
         error(rterror::NO_DEVICES_FOUND, m_error_string);
@@ -645,7 +650,7 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
     alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
     if
     (
-        portInfo
+        alsa_port_info
         (
             data->seq, src_pinfo,
             SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
@@ -985,7 +990,7 @@ midi_out_alsa::initialize (const std::string & clientname)
  *  Counts the number of ALSA output ports.
  *
  * \return
- *      Returns the number of output ports returned by the portInfo()
+ *      Returns the number of output ports returned by the alsa_port_info()
  *      function.
  */
 
@@ -994,9 +999,8 @@ midi_out_alsa::get_port_count ()
 {
     snd_seq_port_info_t * pinfo;
     snd_seq_port_info_alloca(&pinfo);
-
     alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
-    return portInfo
+    return alsa_port_info
     (
         data->seq, pinfo,
         SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE, -1
@@ -1025,9 +1029,12 @@ midi_out_alsa::get_port_name (unsigned portnumber)
     alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
     if
     (
-        portInfo(data->seq, pinfo,
+        alsa_port_info
+        (
+            data->seq, pinfo,
             SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
-            int(portnumber))
+            int(portnumber)
+        )
     )
     {
         int cnum = snd_seq_port_info_get_client(pinfo);
@@ -1079,8 +1086,8 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
         return;
     }
 
-    unsigned nSrc = this->get_port_count();
-    if (nSrc < 1)
+    unsigned nsrc = this->get_port_count();
+    if (nsrc < 1)
     {
         m_error_string = func_message("no MIDI output sources found");
         error(rterror::NO_DEVICES_FOUND, m_error_string);
@@ -1092,9 +1099,12 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
     alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
     if
     (
-        portInfo(data->seq, pinfo,
+        alsa_port_info
+        (
+            data->seq, pinfo,
             SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
-            int(portnumber)) == 0
+            int(portnumber)
+        ) == 0
     )
     {
         std::ostringstream ost;
@@ -1115,6 +1125,8 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
         /*
          * The "legacy" midibus::init_out() replaces the
          * SND_SEQ_PORT_CAP_SUBS_READ flag with SND_SEQ_PORT_CAP_NO_EXPORT.
+         * This code here is like the seq24's midibus::init_out_sub()
+         * function.  Thus, data->vport here is like m_local_addr_port there.
          */
 
         data->vport = snd_seq_create_simple_port
@@ -1178,7 +1190,8 @@ midi_out_alsa::close_port ()
 /**
  *  Opens a virtual ALSA output port.
  *
- *  Need to learn what that is.
+ *  Need to learn what that is.  Right now, it seems to line up with the
+ *  functionality of api_init_out() in the "legacy" midibus module.
  *
  * \param portname
  *      The name of the virtual port to open.
@@ -1190,9 +1203,9 @@ midi_out_alsa::open_virtual_port (const std::string & portname)
     alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
     if (data->vport < 0)
     {
-        data->vport = snd_seq_create_simple_port
+        data->vport = snd_seq_create_simple_port    /* m_local_addr_port    */
         (
-            data->seq, portname.c_str(),
+            data->seq, portname.c_str(),            /* portname, bus name   */
             SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
             SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
         );

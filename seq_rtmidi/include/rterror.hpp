@@ -95,7 +95,7 @@ public:
      *  Prints thrown error message to stderr.
      */
 
-    virtual void printMessage () const
+    virtual void print_message () const
     {
        infoprint(m_message.c_str());
     }

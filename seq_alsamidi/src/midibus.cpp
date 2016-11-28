@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-25
+ * \updates       2016-11-27
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -54,6 +54,9 @@ namespace seq64
  *  the MIDI input and output busses, when the [manual-alsa-ports] option is
  *  not in force.  Also used for the announce buss, and in the
  *  mastermidibus::port_start() function.
+ *
+ *  There's currently some overlap between local/dest client and port numbers
+ *  and the buss and port numbers of the new midibase interface.
  *
  * \param localclient
  *      Provides the local-client number.
@@ -97,7 +100,10 @@ midibus::midibus
     int queue,
     int ppqn
 ) :
-    midibase            (clientname, portname, id, queue, ppqn),
+    midibase
+    (
+        clientname, portname, id, SEQ64_NO_PORT, queue, ppqn
+    ),
     m_seq               (seq),
     m_dest_addr_client  (destclient),
     m_dest_addr_port    (destport),
@@ -105,7 +111,7 @@ midibus::midibus
     m_local_addr_port   (-1)
 {
     char alias[64];
-    const std::string & bussname = usr().bus_name(get_id());
+    const std::string & bussname = usr().bus_name(get_bus_id());
     if (! bussname.empty())
         snprintf(alias, sizeof alias, "%s", bussname.c_str());
     else
@@ -115,7 +121,7 @@ midibus::midibus
     snprintf                            /* copy the client name parts */
     (
         name, sizeof name, "[%d] %d:%d %s",
-        get_id(), m_dest_addr_client, m_dest_addr_port, alias
+        get_bus_id(), m_dest_addr_client, m_dest_addr_port, alias
     );
     bus_name(name);
 }
@@ -154,12 +160,12 @@ midibus::midibus
     int queue,
     int ppqn
 ) :
-    midibase            ("", "", id, queue, ppqn),
+    midibase            ("", "", id, SEQ64_NO_PORT, queue, ppqn),
     m_seq               (seq),
-    m_dest_addr_client  (-1),
-    m_dest_addr_port    (-1),
+    m_dest_addr_client  (SEQ64_NO_BUS),
+    m_dest_addr_port    (SEQ64_NO_PORT),
     m_local_addr_client (localclient),
-    m_local_addr_port   (-1)
+    m_local_addr_port   (SEQ64_NO_PORT)
 {
     /*
      * Copy the client name.  It used to be "seq24", but this is now a new
@@ -170,7 +176,10 @@ midibus::midibus
      */
 
     char name[64];
-    snprintf(name, sizeof name, "[%d] sequencer64 %d", get_id(), get_id());
+    snprintf
+    (
+        name, sizeof name, "[%d] sequencer64 %d", get_bus_id(), get_port_id()
+    );
     bus_name(name);
 }
 
@@ -186,7 +195,12 @@ midibus::~midibus()
 }
 
 /**
- *  Initialize the MIDI output port.
+ *  Initialize the MIDI output port.  This initialization is done when the
+ *  "manual ALSA ports" option is not in force.
+ *
+ *  This initialization is like the "open_virtual_port()" function of the
+ *  RtMidi library, with the addition of the snd_seq_connect_to() call involving
+ *  the local and destination ports.
  *
  * \return
  *      Returns true unless setting up ALSA MIDI failed in some way.
@@ -216,8 +230,7 @@ midibus::api_init_out ()
     {
         fprintf
         (
-            stderr,
-            "snd_seq_connect_to(%d:%d) error\n",
+            stderr, "snd_seq_connect_to(%d:%d) error\n",
             m_dest_addr_client, m_dest_addr_port
         );
         return false;
@@ -284,7 +297,8 @@ midibus::api_init_in ()
 }
 
 /**
- *  Initialize the output in a different way?
+ *  Initialize the output in a different way.  This version of initialization is
+ *  used by mastermidibus in the "manual ALSA ports" clause.
  *
  * \return
  *      Returns true unless setting up the ALSA port failed in some way.
@@ -510,49 +524,6 @@ midibus::api_flush ()
 #endif
 }
 
-#if 0
-/**
- *  Initialize the clock, continuing from the given tick.
- *
- * \param tick
- *      The starting tick.
- */
-
-void
-midibus::init_clock (midipulse tick)
-{
-#ifdef SEQ64_HAVE_LIBASOUND
-    if (m_clock_type == e_clock_pos && tick != 0)
-    {
-        continue_from(tick);
-    }
-    else if (m_clock_type == e_clock_mod || tick == 0)
-    {
-        start();
-
-        /*
-         * The next equation is effectively (m_ppqn / 4) * 16 * 4,
-         * or m_ppqn * 16.  Note that later we have pp16th = (m_ppqn / 4).
-         */
-
-        midipulse clock_mod_ticks = (m_ppqn / 4) * m_clock_mod;
-        midipulse leftover = (tick % clock_mod_ticks);
-        midipulse starting_tick = tick - leftover;
-
-        /*
-         * Was there anything left? Then wait for next beat (16th note)
-         * to start clocking.
-         */
-
-        if (leftover > 0)
-            starting_tick += clock_mod_ticks;
-
-        m_lasttick = starting_tick - 1;
-    }
-#endif  // SEQ64_HAVE_LIBASOUND
-}
-#endif // 0
-
 /**
  *  Continue from the given tick.
  *
@@ -569,9 +540,11 @@ midibus::api_continue_from (midipulse /* tick */, midipulse beats)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
         snd_seq_event_t ev;
+        snd_seq_ev_clear(&ev);                          /* clear event      */
         ev.type = SND_SEQ_EVENT_CONTINUE;
 
         snd_seq_event_t evc;
+        snd_seq_ev_clear(&evc);                         /* clear event      */
         evc.type = SND_SEQ_EVENT_SONGPOS;
         evc.data.control.value = beats;
         snd_seq_ev_set_fixed(&ev);
@@ -600,6 +573,7 @@ midibus::api_start ()
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_event_t ev;
+    snd_seq_ev_clear(&ev);                          /* memsets it to 0      */
     ev.type = SND_SEQ_EVENT_START;
     snd_seq_ev_set_fixed(&ev);
     snd_seq_ev_set_priority(&ev, 1);
@@ -619,13 +593,14 @@ midibus::api_stop ()
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_event_t ev;
+    snd_seq_ev_clear(&ev);                          /* memsets it to 0      */
     ev.type = SND_SEQ_EVENT_STOP;
     snd_seq_ev_set_fixed(&ev);
     snd_seq_ev_set_priority(&ev, 1);
-    snd_seq_ev_set_source(&ev, m_local_addr_port);  /* set the source   */
+    snd_seq_ev_set_source(&ev, m_local_addr_port);  /* set the source       */
     snd_seq_ev_set_subs(&ev);
-    snd_seq_ev_set_direct(&ev);                     /* it's immediate   */
-    snd_seq_event_output(m_seq, &ev);               /* pump into queue  */
+    snd_seq_ev_set_direct(&ev);                     /* it's immediate       */
+    snd_seq_event_output(m_seq, &ev);               /* pump into queue      */
 #endif  // SEQ64_HAVE_LIBASOUND
 }
 
@@ -647,14 +622,15 @@ midibus::api_clock (midipulse /* tick */)
      */
 
     snd_seq_event_t ev;
+    snd_seq_ev_clear(&ev);                          /* clear event          */
     ev.type = SND_SEQ_EVENT_CLOCK;
     ev.tag = 127;
     snd_seq_ev_set_fixed(&ev);
     snd_seq_ev_set_priority(&ev, 1);
-    snd_seq_ev_set_source(&ev, m_local_addr_port); /* set source    */
+    snd_seq_ev_set_source(&ev, m_local_addr_port);  /* set source           */
     snd_seq_ev_set_subs(&ev);
-    snd_seq_ev_set_direct(&ev);             /* it's immediate       */
-    snd_seq_event_output(m_seq, &ev);       /* pump it into queue   */
+    snd_seq_ev_set_direct(&ev);                     /* it's immediate       */
+    snd_seq_event_output(m_seq, &ev);               /* pump it into queue   */
 #endif  // SEQ64_HAVE_LIBASOUND
 }
 

@@ -809,7 +809,7 @@ optionsfile::write (const perform & p)
         const midi_control & on = ucperf.midi_control_on(mcontrol);
         snprintf
         (
-            outs, sizeof(outs),
+            outs, sizeof outs,
             "%d [%1d %1d %3d %3d %3d %3d]"
               " [%1d %1d %3d %3d %3d %3d]"
               " [%1d %1d %3d %3d %3d %3d]",
@@ -857,7 +857,7 @@ optionsfile::write (const perform & p)
 
         snprintf
         (
-            outs, sizeof(outs),
+            outs, sizeof outs,
             "%d [%1d %1d %1d %1d %1d %1d %1d %1d]"
             " [%1d %1d %1d %1d %1d %1d %1d %1d]"
             " [%1d %1d %1d %1d %1d %1d %1d %1d]"

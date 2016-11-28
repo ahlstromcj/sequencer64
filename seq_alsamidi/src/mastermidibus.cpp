@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-11-25
+ * \updates       2016-11-27
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -159,7 +159,7 @@ mastermidibus::~mastermidibus ()
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_event_t ev;
-    snd_seq_ev_clear(&ev);                          /* kill timer           */
+    snd_seq_ev_clear(&ev);                          /* memsets it to 0      */
     snd_seq_stop_queue(m_alsa_seq, m_queue, &ev);
     snd_seq_free_queue(m_alsa_seq, m_queue);
     snd_seq_close(m_alsa_seq);                      /* close client         */
@@ -196,21 +196,18 @@ mastermidibus::api_init (int ppqn)
     snd_seq_client_info_set_client(cinfo, -1);
     if (rc().manual_alsa_ports())
     {
-        /*
-         * Output busses
-         */
-
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
-        for (int i = 0; i < num_buses; ++i)
+        for (int i = 0; i < num_buses; ++i)         /* output busses    */
         {
             if (not_nullptr(m_buses_out[i]))
             {
                 delete m_buses_out[i];
-                errprintf("mmbus::init() manual: m_buses_out[%d] not null\n", i);
+                errprintf("manual: m_buses_out[%d] not null\n", i);
             }
             m_buses_out[i] = new midibus
             (
-                snd_seq_client_id(m_alsa_seq), m_alsa_seq, i+1, m_queue, ppqn
+                snd_seq_client_id(m_alsa_seq), m_alsa_seq, i+1,
+                /* SEQ64_NO_PORT, */ m_queue, ppqn
             );
             m_buses_out[i]->init_out_sub();
             m_buses_out_active[i] = m_buses_out_init[i] = true;
@@ -219,7 +216,7 @@ mastermidibus::api_init (int ppqn)
         if (not_nullptr(m_buses_in[0]))
         {
             delete m_buses_in[0];
-            errprint("mmbus::init() manual: m_buses_[0] not null");
+            errprint("manual: m_buses_[0] not null");
         }
 
         /*
@@ -231,7 +228,7 @@ mastermidibus::api_init (int ppqn)
         m_buses_in[0] = new midibus
         (
             snd_seq_client_id(m_alsa_seq), m_alsa_seq, m_num_in_buses,
-            m_queue, ppqn
+            /* SEQ64_NO_BUS_PORT, */ m_queue, ppqn
         );
         m_buses_in[0]->init_in_sub();
         m_buses_in_active[0] = m_buses_in_init[0] = true;

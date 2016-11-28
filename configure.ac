@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-11-25
+dnl \update        2016-11-27
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -18,8 +18,8 @@ dnl
 dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
-AC_REVISION($Revision: 0.9$)dnl
-AC_INIT(Sequencer64, [0.10.0], [ahlstromcj@gmail.com])
+AC_REVISION($Revision: 0.90$)dnl
+AC_INIT(Sequencer64, [0.90.0], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl AC_CONFIG_SRCDIR([libseq64/src/midibus.cpp])
@@ -95,7 +95,7 @@ dnl      incremented.
 SEQUENCER64_API_MAJOR="0"
 AC_SUBST([SEQUENCER64_API_MAJOR])
 
-SEQUENCER64_API_MINOR="9"
+SEQUENCER64_API_MINOR="90"
 AC_SUBST([SEQUENCER64_API_MINOR])
 
 SEQUENCER64_API_PATCH="0"
@@ -415,24 +415,6 @@ else
     AC_MSG_WARN([LASH support not enabled.]);
 fi
 
-dnl Support for building ALL libraries and applications.  Mostly for developer
-dnl use.
-
-AC_ARG_ENABLE(all,
-    [AS_HELP_STRING(--enable-all, [Enable building ALL libraries and applications])],
-    [all=$enableval],
-    [all=no])
-
-if test "$all" != "no"; then
-    AC_MSG_RESULT([Build of ALL libraries and application enabled.]);
-    AM_CONDITIONAL([BUILD_ALL], [test x$all = xyes])
-    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xhellno])
-    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xhellno])
-    AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xhellno])
-else
-    AC_MSG_WARN([Build of ALL sub-projects not enabled.]);
-fi
-
 dnl AlsaMidi support.  This is the default build for the standard Sequencer64
 dnl application.  This section defines a variable that is used only in the
 dnl top-level Makefile to determine what directories are included in the
@@ -441,7 +423,7 @@ dnl SUBDIRS variable.
 AC_ARG_ENABLE(alsamidi,
     [AS_HELP_STRING(--disable-alsamidi, [Disable standard ALSA build])],
     [alsamidi=$enableval],
-    [alsamidi=yes])
+    [alsamidi=no])
 
 if test "$alsamidi" != "no"; then
     AC_MSG_RESULT([Standard ALSA build enabled, can be overridden though.]);
@@ -462,6 +444,7 @@ AC_ARG_ENABLE(portmidi,
 
 if test "$portmidi" != "no"; then
     AC_MSG_RESULT([PortMidi build enabled.]);
+    AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates if PortMidi support is enabled])
     AM_CONDITIONAL([BUILD_ALL], [test x$all = xhellno])
     AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xhellno])
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xyes])
@@ -479,12 +462,31 @@ AC_ARG_ENABLE(rtmidi,
 
 if test "$rtmidi" != "no"; then
     AC_MSG_RESULT([RtMidi build enabled.]);
+    AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if RtMidi support is enabled])
     AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xhellno])
     AM_CONDITIONAL([BUILD_ALL], [test x$all = xhellno])
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xhellno])
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xyes])
 else
     AC_MSG_WARN([RtMidi build not enabled.]);
+fi
+
+dnl Support for building ALL libraries and applications.  Mostly for developer
+dnl use.
+
+AC_ARG_ENABLE(all,
+    [AS_HELP_STRING(--enable-all, [Enable building ALL libraries and applications])],
+    [all=$enableval],
+    [all=yes])
+
+if test "$all" != "no"; then
+    AC_MSG_RESULT([Build of ALL libraries and application enabled.]);
+    AM_CONDITIONAL([BUILD_ALL], [test x$all = xyes])
+    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xyes])
+    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xyes])
+    AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xyes])
+else
+    AC_MSG_WARN([Build of ALL sub-projects not enabled.]);
 fi
 
 dnl Support for highlighting empty sequences (in yellow).  If enabled, the
@@ -638,13 +640,11 @@ dnl      since the macro call in quotes does /not/ get expanded.
 dnl
 dnl Note: The AX_PREFIX_CONFIG_H macro called way above prepends
 dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
-dnl
-dnl #define API_VERSION "0.9"             // defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-11-19"
-#define VERSION "0.10.0"
+#define VERSION_DATE_SHORT "2016-11-27"
+#define VERSION "0.90.0"
 
 )
 

@@ -6,7 +6,7 @@
  *
  * \author        Gary P. Scavone, 2003-2012; refactoring by Chris Ahlstrom
  * \date          2016-11-19
- * \updates       2016-11-20
+ * \updates       2016-11-27
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  We include this test code in our library, rather than in a separate
@@ -30,6 +30,40 @@ namespace seq64
 {
 
 /**
+ *  Function to get RtMidi API names in a reusable manner.
+ *
+ * \param i
+ *      The integer value code for the desired API.  Must range from
+ *      int(RTMIDI_API_UNSPECIFIED) to int(RTMIDI_API_DUMMY).
+ *
+ * \return
+ *      Returns a human-readable name for the API.
+ */
+
+std::string
+midi_api_name (int i)
+{
+    static std::map<rtmidi_api, std::string> s_api_map;
+    static bool s_map_is_initialized = false;
+    if (! s_map_is_initialized)
+    {
+        s_api_map[RTMIDI_API_UNSPECIFIED] = "Unspecified";
+        s_api_map[RTMIDI_API_LINUX_ALSA]  = "Linux ALSA";
+        s_api_map[RTMIDI_API_UNIX_JACK]   = "Jack Client";
+        s_api_map[RTMIDI_API_MACOSX_CORE] = "OS-X CoreMidi";
+        s_api_map[RTMIDI_API_WINDOWS_MM]  = "Windows MultiMedia";
+        s_api_map[RTMIDI_API_DUMMY]       = "rtmidi dummy";
+        s_map_is_initialized = true;
+    }
+
+    std::string result = "Unknown MIDI API";
+    if (i >= int(RTMIDI_API_UNSPECIFIED) && i <= int(RTMIDI_API_DUMMY))
+        result = s_api_map[rtmidi_api(i)];
+
+    return result;
+}
+
+/**
  *  Formerly the main program of the RtMidi test program midiprobe.
  *
  *  We will upgrade this function for some better testing eventually.
@@ -41,89 +75,52 @@ namespace seq64
 int
 midi_probe ()
 {
-    /*
-     * Create an API map.
-     */
-
-    std::map<rtmidi_api, std::string> api_map;
-    api_map[RTMIDI_API_MACOSX_CORE] = "OS-X CoreMidi";
-    api_map[RTMIDI_API_WINDOWS_MM]  = "Windows MultiMedia";
-    api_map[RTMIDI_API_UNIX_JACK]   = "Jack Client";
-    api_map[RTMIDI_API_LINUX_ALSA]  = "Linux ALSA";
-    api_map[RTMIDI_API_DUMMY]       = "rtmidi dummy";
-
     std::vector<rtmidi_api> apis;
     rtmidi::get_compiled_api(apis);
 
     std::cout << "\nCompiled APIs:\n";
-    for (unsigned i = 0; i < apis.size(); i++)
-        std::cout << "  " << api_map[apis[i]] << std::endl;
-
-    rtmidi_in * midiin = nullptr;
-    rtmidi_out * midiout = nullptr;
-    try
+    for (unsigned i = 0; i < apis.size(); ++i)
     {
-        // rtmidi_in constructor ... exception possible
+        std::cout << "  " << midi_api_name(apis[i]) << std::endl;
+    }
 
-        midiin = new rtmidi_in();
+    try                         /* rtmidi constructors; exceptions possible */
+    {
+        rtmidi_in midiin;
         std::cout
-            << "Current input API: "
-            << api_map[ midiin->get_current_api() ]
+            << "MIDI input API: "
+            << midi_api_name(midiin.get_current_api())
             << std::endl
             ;
 
-        // Check inputs.
-
-        unsigned nPorts = midiin->get_port_count();
-        std::cout
-            << "There are "
-            << nPorts << " MIDI input sources available."
-            << std::endl
-            ;
-
-        for (unsigned i = 0; i < nPorts; ++i)
+        unsigned nports = midiin.get_port_count();
+        std::cout << nports << " MIDI input sources:" << std::endl;
+        for (unsigned i = 0; i < nports; ++i)
         {
-            std::string portname = midiin->get_port_name(i);
-            std::cout
-                << "  Input Port #"
-                << i + 1 << ": " << portname
-                << std::endl
-                ;
+            std::string portname = midiin.get_port_name(i);
+            std::cout << "  Input Port #" << i+1 << ": " << portname << std::endl;
         }
 
-        // rtmidi_out constructor ... exception possible
-
-        midiout = new rtmidi_out();
+        rtmidi_out midiout;
         std::cout
-            << "Current output API: "
-            << api_map[midiout->get_current_api()]
+            << "MIDI output API: "
+            << midi_api_name(midiout.get_current_api())
             << std::endl
             ;
 
-        // Check outputs.
-
-        nPorts = midiout->get_port_count();
-        std::cout
-            << "There are " << nPorts << " MIDI output ports available."
-            << std::endl
-            ;
-
-        for (unsigned i = 0; i < nPorts; ++i)
+        nports = midiout.get_port_count();
+        std::cout << nports << " MIDI output ports:" << std::endl;
+        for (unsigned i = 0; i < nports; ++i)
         {
-            std::string portname = midiout->get_port_name(i);
-            std::cout
-                << "  Output Port #" << i + 1 << ": " << portname
-                << std::endl
-                ;
+            std::string portname = midiout.get_port_name(i);
+            std::cout << "  Output Port #" << i+1 << ": " << portname << std::endl;
         }
         std::cout << std::endl;
     }
-    catch (rterror & error)
+    catch (const rterror & error)
     {
-        error.printMessage();
+        error.print_message();
     }
-    delete midiin;
-    delete midiout;
     return 0;
 }
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-11-10
+ * \updates       2016-11-26
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -175,7 +175,7 @@ static const std::string s_arg_list =
  */
 
 static const char * const s_help_1a =
-"sequencer64 v 0.9.20  A significant reboot of the seq24 live sequencer.\n"
+"sequencer64 v 0.90.0  A significant reboot of the seq24 live sequencer.\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message and exit.\n"
@@ -700,6 +700,18 @@ write_options_files (const perform & p)
  *  enabled or disabled during the build.
  */
 
+#ifdef SEQ64_PORTMIDI_SUPPORT
+const static std::string s_build_portmidi_support = "ON";
+#else
+const static std::string s_build_portmidi_support = "off";
+#endif
+
+#ifdef SEQ64_RTMIDI_SUPPORT
+const static std::string s_build_rtmidi_support = "ON";
+#else
+const static std::string s_build_rtmidi_support = "off";
+#endif
+
 #ifdef SEQ64_HIGHLIGHT_EMPTY_SEQS
 const static std::string s_build_highlight_empty = "ON";
 #else
@@ -837,8 +849,9 @@ build_details ()
 {
     std::ostringstream result;
     result
-<< "Build features:" << std::endl
-<< std::endl
+<< "Build features:" << std::endl << std::endl
+<< "PortMidi support * = "       << s_build_portmidi_support      << std::endl
+<< "RtMidi support * = "         << s_build_rtmidi_support        << std::endl
 << "Event editor * = "           << s_event_editor                << std::endl
 << "Event multimap (vs list) = " << s_build_use_event_map         << std::endl
 << "Sort after each insert = "   << s_build_presort_events        << std::endl

@@ -24,7 +24,7 @@
  * \library       seq64portmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2016-11-25
+ * \updates       2016-11-27
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -44,6 +44,13 @@
 #include "mainwid.hpp"                  /* needed to fulfill mainwnd        */
 #include "mainwnd.hpp"                  /* the main window of seq64portmidi */
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc()     */
+
+/**
+ *  Let's try this here to see if we can tease out the cause of the PortMidi
+ *  seqfault.
+ */
+
+static seq64::gui_assistant_gtk2 gs_gui;    /* GUI-specific objects         */
 
 /**
  *  The standard C/C++ entry point to this application.  This first thing
@@ -86,8 +93,7 @@ main (int argc, char * argv [])
      * whatever other settings were made via the configuration files.
      */
 
-    seq64::gui_assistant_gtk2 gui;              /* GUI-specific objects     */
-    seq64::perform p(gui);                      /* main performance object  */
+    seq64::perform p(gs_gui);               /* main performance object      */
     (void) seq64::parse_command_line_options(p, argc, argv);
     bool is_help = seq64::help_check(argc, argv);
     bool ok = true;

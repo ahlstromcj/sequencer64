@@ -278,12 +278,6 @@ private:
 #endif  // SEQ64_STAZED_JACK_SUPPORT
 
     /**
-     *  Support for a wide range of GUI-related operations.
-     */
-
-    gui_assistant & m_gui_support;
-
-    /**
      *  Mute group support.  This value determines whether a particular track
      *  will be muted or unmuted, and it can handle all tracks available in
      *  the application (currently c_max_sets * c_seqs_in_set, i.e. 1024).
@@ -430,7 +424,9 @@ private:
     bool m_sequence_state[c_max_sequence];
 
     /**
-     *  Provides our MIDI buss.
+     *  Provides our MIDI buss.  The PortMidi implementation might be a hot spot
+     *  for the weird segfault we're having with the mygui constructor parameter
+     *  or the m_gui_support member getting stomped.
      */
 
     mastermidibus m_master_bus;
@@ -836,6 +832,12 @@ private:
      */
 
     std::vector<performcallback *> m_notify;
+
+    /**
+     *  Support for a wide range of GUI-related operations.
+     */
+
+    gui_assistant & m_gui_support;
 
 public:
 
@@ -2354,21 +2356,21 @@ private:
 
     /**
      *  Pass-along function for keys().set_all_key_events.
-     */
 
     void set_all_key_events ()
     {
         keys().set_all_key_events();
     }
+     */
 
     /**
      *  Pass-along function for keys().set_all_key_events.
-     */
 
     void set_all_key_groups ()
     {
         keys().set_all_key_groups();
     }
+     */
 
     /**
      *  At construction time, this function sets up one keycode and one event

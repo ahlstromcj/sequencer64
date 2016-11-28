@@ -82,7 +82,7 @@
  */
 
 #include "event.hpp"                    /* seq64::event and macros          */
-#include "midibus.hpp"                  /* seq64::midibus for rtmidi        */
+#include "midibus_rm.hpp"               /* seq64::midibus for rtmidi        */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

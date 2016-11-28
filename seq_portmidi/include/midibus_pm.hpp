@@ -1,5 +1,5 @@
-#ifndef SEQ64_MASTERMIDIBUS_PORTMIDI_HPP
-#define SEQ64_MASTERMIDIBUS_PORTMIDI_HPP
+#ifndef SEQ64_MIDIBUS_PM_HPP
+#define SEQ64_MIDIBUS_PM_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          mastermidibus.hpp
+ * \file          midibus_pm.hpp
  *
  *  This module declares/defines the base class for MIDI I/O for Windows.
  *
@@ -30,11 +30,12 @@
  * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
- *  This mastermidibus module is the Windows (and Linux now!) version of the
- *  mastermidibus module using the PortMidi library.
+ *  This midibus module is the Windows (PortMidi) version of the midibus
+ *  module.  There's  enough commonality that is was worth creating a base
+ *  class for all midibus classes.
  */
 
-#include "mastermidibase.hpp"           /* seq64::mastermidibase ABC        */
+#include "midibase.hpp"
 #include "portmidi.h"                   /* PortMIDI API header file         */
 
 /*
@@ -43,46 +44,53 @@
 
 namespace seq64
 {
+    class event;
 
 /**
- *  The class that "supervises" all of the midibus objects.  This
- *  implementation uses the PortMidi library, which supports Linux and
- *  Windows, but not JACK or Mac OSX.
+ *  This class implements with Windows version of the midibus object.
  */
 
-class mastermidibus : public mastermidibase
+class midibus : public midibase
 {
+    /**
+     *  The master MIDI bus sets up the buss.
+     */
+
+    friend class mastermidibus;
 
 private:
 
-    /*
-     *  All members have been moved into the new base class.
+    /**
+     *  The PortMidiStream for the Windows implementation.
      */
+
+    PortMidiStream * m_pms;
 
 public:
 
-    mastermidibus
-    (
-        int ppqn = SEQ64_USE_DEFAULT_PPQN,
-        int bpm = c_beats_per_minute
-    );
-    virtual ~mastermidibus ();
+    midibus (int id, int port_id, const std::string & client_name);
+
+    virtual ~midibus ();
 
 protected:
 
-    virtual void api_init (int ppqn);
     virtual int api_poll_for_midi ();
-    virtual bool api_is_more_input ();
-    virtual bool api_get_midi_event (event *a_in);
+    virtual bool api_init_in ();
+    virtual bool api_init_out ();
+    virtual void api_continue_from (midipulse tick, midipulse beats);
+    virtual void api_start ();
+    virtual void api_stop ();
+    virtual void api_clock (midipulse tick);
+    virtual void api_play (event * e24, midibyte channel);
 
-};
+};          // class midibus (portmidi)
 
 }           // namespace seq64
 
-#endif      // SEQ64_MASTERMIDIBUS_PORTMIDI_HPP
+#endif      // SEQ64_MIDIBUS_PM_HPP
 
 /*
- * mastermidibus.hpp
+ * midibus_pm.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

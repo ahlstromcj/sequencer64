@@ -6,7 +6,7 @@
 # \library    	libseq_alsamidi library
 # \author     	Chris Ahlstrom
 # \date       	2016-11-20
-# \update      2016-11-20
+# \update      2016-11-28
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -67,8 +67,8 @@ sequencer64libdir = @sequencer64libdir@
 #----------------------------------------------------------------------------
 
 pkginclude_HEADERS = \
-	mastermidibus.hpp \
-	midibus.hpp
+	mastermidibus_rm.hpp \
+	midibus_rm.hpp
 
 #******************************************************************************
 # uninstall-hook

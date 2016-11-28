@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-27
+ * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the midibus class.
@@ -42,7 +42,7 @@
  */
 
 #include "event.hpp"                    /* seq64::event and macros          */
-#include "midibus.hpp"                  /* seq64::midibus for PortMIDI      */
+#include "midibus_pm.hpp"               /* seq64::midibus for PortMIDI      */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

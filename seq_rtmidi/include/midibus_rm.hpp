@@ -1,5 +1,5 @@
-#ifndef SEQ64_MIDIBUS_RTMIDI_HPP
-#define SEQ64_MIDIBUS_RTMIDI_HPP
+#ifndef SEQ64_MIDIBUS_RM_HPP
+#define SEQ64_MIDIBUS_RM_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          midibus.hpp
+ * \file          midibus_rm.hpp
  *
  *  This module declares/defines the base class for MIDI I/O for Linux, Mac,
  *  and Windows, using a refactored RtMidi library..
@@ -115,10 +115,10 @@ protected:
 
 }           // namespace seq64
 
-#endif      // SEQ64_MIDIBUS_RTMIDI_HPP
+#endif      // SEQ64_MIDIBUS_RM_HPP
 
 /*
- * midibus.hpp
+ * midibus_rm.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

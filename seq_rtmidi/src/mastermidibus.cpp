@@ -25,17 +25,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-27
+ * \updates       2016-11-28
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
  *  class.  There is a lot of common code between these two versions!
  */
 
-// #include "easy_macros.h"                /* handy macros                     */
-// #include "event.hpp"                    /* seq64::event                     */
-#include "mastermidibus.hpp"            /* seq64::mastermidibus, PortMIDI   */
-#include "midibus.hpp"                  /* seq64::midibus, PortMIDI         */
+// #include "easy_macros.h"             /* handy macros                     */
+// #include "event.hpp"                 /* seq64::event                     */
+#include "mastermidibus_rm.hpp"         /* seq64::mastermidibus, RtMIDI     */
+#include "midibus_rm.hpp"               /* seq64::midibus, RtMIDI           */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

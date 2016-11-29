@@ -88,6 +88,11 @@ midibus::~midibus ()
  *  It tests that the queue number (formerly m_pm) is valid first.  It assumes
  *  that the PortMidiStream pointer m_pms is valid, for speed.
  *
+ *  The original error-checking was too simplistic.  The PmError values of
+ *  PmNoError, pmNoData, and pmGotData are actually "no error" codes, if you
+ *  read /usr/include/portmidi.h, so we should not print a message if they
+ *  occur.  FALSE and TRUE are just too limiting.
+ *
  * \return
  *      Returns 0 if the polling succeeded, and 1 if it failed.
  */
@@ -98,7 +103,12 @@ midibus::api_poll_for_midi ()
     if (queue_number() >= 0)            /* used as a buss number here */
     {
         PmError err = Pm_Poll(m_pms);
-        if (err == FALSE)
+
+        /*
+         * if (err == FALSE versus TRUE), too simplistic.
+         */
+
+        if (err == pmNoError || err == pmNoData || err == pmGotData)
         {
             return 0;
         }

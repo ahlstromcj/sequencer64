@@ -41,6 +41,8 @@
 #include "midibus_rm.hpp"               /* seq64::midibus for RtMidi  */
 #elif defined SEQ64_PORTMIDI_SUPPORT
 #include "midibus_pm.hpp"               /* seq64::midibus, PortMidi   */
+#else
+#include "midibus_am.hpp"               /* seq64::midibus for ALSA    */
 #endif
 
 #endif      // SEQ64_MIDIBUS_HPP

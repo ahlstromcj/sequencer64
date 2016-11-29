@@ -418,17 +418,18 @@ fi
 dnl AlsaMidi support.  This is the default build for the standard Sequencer64
 dnl application.  This section defines a variable that is used only in the
 dnl top-level Makefile to determine what directories are included in the
-dnl SUBDIRS variable.
+dnl SUBDIRS variable.  Also, the defaultness of this value is enforced
+dnl in the latest versions of the midibus.hpp and mastermidibus.hpp files in
+dnl the libseq64/include directory.
 
 AC_ARG_ENABLE(alsamidi,
     [AS_HELP_STRING(--disable-alsamidi, [Disable standard ALSA build])],
     [alsamidi=$enableval],
-    [alsamidi=yes])
+    [alsamidi=no])
 
 if test "$alsamidi" != "no"; then
     AC_MSG_RESULT([Standard ALSA build enabled, can be overridden though.]);
     AC_DEFINE(ALSAMIDI_SUPPORT, 1, [Indicates if ALSA MIDI support is enabled])
-    AM_CONDITIONAL([BUILD_ALL], [test x$all = xhellno])
     AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xyes])
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xhellno])
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xhellno])
@@ -446,7 +447,6 @@ AC_ARG_ENABLE(portmidi,
 if test "$portmidi" != "no"; then
     AC_MSG_RESULT([PortMidi build enabled.]);
     AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates if PortMidi support is enabled])
-    AM_CONDITIONAL([BUILD_ALL], [test x$all = xhellno])
     AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xhellno])
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xyes])
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xhellno])
@@ -465,7 +465,6 @@ if test "$rtmidi" != "no"; then
     AC_MSG_RESULT([RtMidi build enabled.]);
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if RtMidi support is enabled])
     AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xhellno])
-    AM_CONDITIONAL([BUILD_ALL], [test x$all = xhellno])
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xhellno])
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xyes])
 else

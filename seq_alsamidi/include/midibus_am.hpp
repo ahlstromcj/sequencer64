@@ -77,13 +77,15 @@ private:
 #endif
 
     /**
-     *  Destination address of client.
+     *  Destination address of client.  Could potentially be replaced by
+     *  midibase::m_bus_id.
      */
 
     const int m_dest_addr_client;
 
     /**
-     *  Destination port of client.
+     *  Destination port of client.  Could potentially be replaced by
+     *  midibase::m_port_id.
      */
 
     const int m_dest_addr_port;

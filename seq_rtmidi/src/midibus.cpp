@@ -25,21 +25,12 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-11-26
+ * \updates       2016-11-29
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
- *  Based initially on the PortMidi version which has the following
- *  "features":
- *
- *      -   No concept of a buss-name or a port-name, though it does have a
- *          client-name.  The ALSA version has an ID, a client address, a
- *          client port, and a user-configurable alias.
- *      -   It has a poll_for_midi() function.
- *      -   It does not have the following functions:
- *          -   init_out_sub()
- *          -   init_in_sub()
- *          -   deinit_in()
+ *  Based on our refactored version of the RtMidi project included in this
+ *  library.
  *
  *  PortMidi function calls to replace:
  *
@@ -79,6 +70,8 @@
  *          -#  Finally, midiout->open_port().
  *          -#  To send a message, push_back() the message bytes (or use array
  *              notation).  Then midiout->send_message().
+ *
+ *  What's the difference between a regular port and a virtual port?
  */
 
 #include "event.hpp"                    /* seq64::event and macros          */
@@ -107,31 +100,27 @@ midibus::midibus
     midibase        (clientname, portname, bus_id, port_id, queue, ppqn),
     m_rt_midi       (nullptr)
 {
-    /*
-     * Copy the client names.
-     *
-    char tmp[64];
-    snprintf(tmp, sizeof(tmp), "[%d] %s", m_id, client_name);
-    m_name = tmp;
-     *
-     */
+    // Empty body
 }
 
 /**
- *  The destructor closes out the Windows MIDI infrastructure.
+ *  The destructor closes out the RtMidi MIDI infrastructure.
  */
 
 midibus::~midibus ()
 {
     if (not_nullptr(m_rt_midi))
     {
-//      Pm_Close(m_rt_midi);
+        delete m_rt_midi;           // Pm_Close(m_rt_midi)
         m_rt_midi = nullptr;
     }
 }
 
 /**
  *  Polls for MIDI events.  This is the API implementation for RtMidi.
+ *
+ *  NOT TRUE:
+ *
  *  It tests that the queue number (formerly m_pm) is valid first.  It assumes
  *  that the RtMidi pointer m_rt_midi is valid, for speed.
  *
@@ -151,11 +140,17 @@ midibus::api_poll_for_midi ()
  *  Currently, we use the default values for the rtmidi API, the queue number,
  *  and the queue size.
  *
+ *  -#  If desired, one can do midiout->open_virtual_port().
+ *  -#  Or unsigned numberofports = midiout->get_port_count().
+ *  -#  std::string portname = midiin->get_port_name(portnumber);
+ *  -#  Finally, midiout->open_port().
+ *
  * \return
  *      Returns true if the output port was successfully opened.
  */
 
-bool midibus::api_init_out ()
+bool
+midibus::api_init_out ()
 {
     bool result = true;
     try
@@ -177,7 +172,8 @@ bool midibus::api_init_out ()
  *      Returns true if the input port was successfully opened.
  */
 
-bool midibus::api_init_in ()
+bool
+midibus::api_init_in ()
 {
     bool result = true;
     try

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-11-28
+ * \updates       2016-11-29
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -247,9 +247,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
 
     /*
      * Not sure why we need to this, since it is done by the
-     * keys_perform-derived object.  Plus, in our PortMidi implementation,
-     * this deals with an object that is null, for some reason, resulting in a
-     * segfault.  But we still now get a segfault for other reasons.
+     * keys_perform-derived object.
      *
      * set_all_key_events();
      * set_all_key_groups();
@@ -1762,6 +1760,11 @@ perform::pop_trigger_undo ()
         set_have_redo(! m_redo_vect.empty());
     }
 }
+
+/**
+ *  For every active sequence, call that sequence's pop_trigger_redo()
+ *  function.
+ */
 
 void
 perform::pop_trigger_redo ()

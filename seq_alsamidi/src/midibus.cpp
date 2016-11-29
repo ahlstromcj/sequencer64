@@ -76,7 +76,7 @@ namespace seq64
  * \param port_name
  *      Provides the port name.
  *
- * \param id
+ * \param bus_id
  *      Provides the ID code for this bus.  It is an index into the midibus
  *      definitions array, and is also used in the constructed human-readable
  *      buss name.
@@ -96,17 +96,17 @@ midibus::midibus
     snd_seq_t * seq,
     const std::string & clientname,
     const std::string & portname,
-    int id,
+    int bus_id,
     int queue,
     int ppqn
 ) :
     midibase
     (
-        clientname, portname, id, SEQ64_NO_PORT, queue, ppqn
+        clientname, portname, bus_id, SEQ64_NO_PORT, queue, ppqn
     ),
     m_seq               (seq),
-    m_dest_addr_client  (destclient),
-    m_dest_addr_port    (destport),
+    m_dest_addr_client  (destclient),   // actually the buss ID
+    m_dest_addr_port    (destport),     // actually the port ID
     m_local_addr_client (localclient),
     m_local_addr_port   (-1)
 {

@@ -156,7 +156,7 @@ Seq24SeqEventInput::on_button_press_event
                  * Stazed fix: if we didn't select anything (user clicked empty
                  * space), then unselect all notes, and start selecting.
                  */
-                
+
                 if (event::is_strict_note_msg(seqev.m_status))
                 {
                     seqev.m_seq.select_linked(tick_s, tick_f, seqev.m_status);
@@ -288,7 +288,7 @@ Seq24SeqEventInput::on_button_release_event
              * Stazed fix: if we did'nt select anything (user clicked empty
              * space), then unselect all notes, and start selecting.
              */
-            
+
             if (event::is_strict_note_msg(seqev.m_status))
             {
                 seqev.m_seq.select_linked(tick_s, tick_f, seqev.m_status);

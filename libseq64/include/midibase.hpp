@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2016-11-28
+ * \updates       2016-11-29
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -210,7 +210,9 @@ public:
     }
 
     /*
-     * The following are currently REDUNDANT, must clean 'em out.
+     * The following are currently REDUNDANT, must clean 'em out once we
+     * replace the ALSA members m_dest_addr_client and m_dest_addr_port
+     * with m_bus_id and m_port_id.
      */
 
     /**
@@ -341,7 +343,7 @@ protected:
     }
 
     /**
-     *
+     *  Not defined in the PortMidi implementation.
      */
 
     virtual bool api_init_in_sub ()
@@ -350,7 +352,7 @@ protected:
     }
 
     /**
-     *
+     *  Not defined in the PortMidi implementation.
      */
 
     virtual bool api_init_out_sub ()
@@ -359,7 +361,7 @@ protected:
     }
 
     /**
-     *
+     *  Not defined in the PortMidi implementation.
      */
 
     virtual bool api_deinit_in ()

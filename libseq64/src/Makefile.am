@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-11-28
+# \update      2016-11-29
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -105,7 +105,11 @@ git_info = "$(git_version) $(git_branch)"
 #  $(GTKMM_CFLAGS)
 #
 #  -I$(top_srcdir)/seq_gtkmm2/include
-
+#
+#	Unfortunately, we need to add the platform-specific include directories
+#	because we include the perform module in some modules, and it includes
+#	the platform-specific stuff.
+#
 #------------------------------------------------------------------------------
 
 AM_CXXFLAGS = \
@@ -113,6 +117,7 @@ AM_CXXFLAGS = \
  -I$(top_srcdir)/include \
  -I$(top_srcdir)/seq_alsamidi/include \
  -I$(top_srcdir)/seq_portmidi/include \
+ -I$(top_srcdir)/seq_rtmidi/include \
  $(ALSA_CFLAGS) \
  $(JACK_CFLAGS) \
  $(LASH_CFLAGS) \

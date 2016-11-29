@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-11-20
+# \update      2016-11-29
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -101,6 +101,11 @@ git_info = "$(git_version) $(git_branch)"
 
 #******************************************************************************
 # Compiler and linker flags (later, PortMidi)
+#
+#	Unfortunately, we need to add the platform-specific include directories
+#	because we include the perform module in some modules, and it includes
+#	the platform-specific stuff.
+#
 #------------------------------------------------------------------------------
 
 AM_CXXFLAGS = \
@@ -109,6 +114,7 @@ AM_CXXFLAGS = \
  -I$(top_srcdir)/libseq64/include \
  -I$(top_srcdir)/seq_alsamidi/include \
  -I$(top_srcdir)/seq_portmidi/include \
+ -I$(top_srcdir)/seq_rtmidi/include \
  -I$(top_srcdir)/resources \
  $(ALSA_CFLAGS) \
  $(GTKMM_CFLAGS) \

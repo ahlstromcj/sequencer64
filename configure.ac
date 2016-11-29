@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-11-28
+dnl \update        2016-11-29
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -420,7 +420,12 @@ dnl application.  This section defines a variable that is used only in the
 dnl top-level Makefile to determine what directories are included in the
 dnl SUBDIRS variable.  Also, the defaultness of this value is enforced
 dnl in the latest versions of the midibus.hpp and mastermidibus.hpp files in
-dnl the libseq64/include directory.
+dnl the libseq64/include directory.  Is there a better way to define the
+dnl defaults.
+
+AM_CONDITIONAL([BUILD_ALSAMIDI], [test xyes = xyes])
+AM_CONDITIONAL([BUILD_PORTMIDI], [test xno = xyes])
+AM_CONDITIONAL([BUILD_RTMIDI], [test xno = xyes])
 
 AC_ARG_ENABLE(alsamidi,
     [AS_HELP_STRING(--disable-alsamidi, [Disable standard ALSA build])],

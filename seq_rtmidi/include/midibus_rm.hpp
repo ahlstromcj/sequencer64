@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-11-28
+ * \updates       2016-11-29
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
@@ -36,7 +36,7 @@
  */
 
 #include "midibase.hpp"
-#include "rtmidi.h"                     /* RtMIDI API header file       */
+#include "rtmidi.hpp"                   /* RtMIDI API header file       */
 
 /*
  * Do not document a namespace; it breaks Doxygen.
@@ -51,7 +51,7 @@ namespace seq64
  *  This class implements with rtmidi version of the midibus object.
  */
 
-class midibus
+class midibus : public midibase
 {
     /**
      *  The master MIDI bus sets up the buss.

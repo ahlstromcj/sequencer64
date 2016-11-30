@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-11-29
+ * \updates       2016-11-30
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -95,9 +95,13 @@ midibus::midibus
     int bus_id,
     int port_id,
     int queue,
-    int ppqn
+    int ppqn,
+    bool makevirtual
  :
-    midibase        (clientname, portname, bus_id, port_id, queue, ppqn),
+    midibase
+    (
+        clientname, portname, bus_id, port_id, queue, ppqn, makevirtual
+    ),
     m_rt_midi       (nullptr)
 {
     // Empty body
@@ -156,6 +160,27 @@ midibus::api_init_out ()
     try
     {
         m_rt_midi = new rtmidi_out(RTMIDI_API_UNSPECIFIED, connect_name());
+        if (is_virtual_port())
+        {
+            m_rt_midi->open_virtual_port(port_name());
+        }
+        else
+        {
+            unsigned portcount = m_rt_midi->get_port_count();
+            if (get_port_id() <= portcount)     /* numbering re 1 */
+            {
+                std::string portname = m_rt_midi->get_port_name(get_port_id);
+                if (! portname.empty())
+                    port_name(portname);
+
+                m_rt_midi->open_port(get_port_id());
+            }
+            else
+            {
+                result = false;
+            }
+        }
+
     }
     catch (const rterror & err)
     {

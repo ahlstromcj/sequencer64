@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2016-11-29
+ * \updates       2016-11-30
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -145,6 +145,12 @@ private:
     midipulse m_lasttick;
 
     /**
+     *  Indicates if the port is to be a virtual port.
+     */
+
+    bool m_is_virtual_port;
+
+    /**
      *  Locking mutex.
      */
 
@@ -159,7 +165,8 @@ public:
         int bus_id  = SEQ64_NO_BUS,
         int port_id = SEQ64_NO_PORT,
         int queue   = SEQ64_NO_QUEUE,
-        int ppqn    = SEQ64_USE_DEFAULT_PPQN
+        int ppqn    = SEQ64_USE_DEFAULT_PPQN,
+        bool makevirtual = false
     );
 
     virtual ~midibase ();
@@ -232,6 +239,15 @@ public:
     virtual int get_port () const
     {
         return SEQ64_NO_PORT;
+    }
+
+    /**
+     * \getter m_is_virtual_port
+     */
+
+    bool is_virtual_port () const
+    {
+        return m_is_virtual_port;
     }
 
     /**

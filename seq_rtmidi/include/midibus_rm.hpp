@@ -76,7 +76,8 @@ public:
         int bus_id  = SEQ64_NO_BUS,
         int port_id = SEQ64_NO_PORT,
         int queue   = SEQ64_NO_QUEUE,
-        int ppqn    = SEQ64_USE_DEFAULT_PPQN
+        int ppqn    = SEQ64_USE_DEFAULT_PPQN,
+        bool makevirtual = false
     );
 
     virtual ~midibus ();

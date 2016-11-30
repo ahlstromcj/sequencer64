@@ -132,7 +132,9 @@ midibus::midibus
  *
  *  This constructor is the one that seems to be the one that is used for
  *  the MIDI input and output busses when the [manual-alsa-ports] option is in
- *  effect.
+ *  effect.  In effect, it is meant to create a virtual port.  This is
+ *  indicated by passing "true" as the final parameter of the base-class
+ *  constructor.
  *
  * \param localclient
  *      Provides the local-client number.
@@ -166,7 +168,7 @@ midibus::midibus
      * midibase            ("", "", id, SEQ64_NO_PORT, queue, ppqn),
      */
 
-    midibase            ("", "", id, id, queue, ppqn),
+    midibase            ("", "", id, id, queue, ppqn, true), /* virtual port */
     m_seq               (seq),
     m_dest_addr_client  (SEQ64_NO_BUS),
     m_dest_addr_port    (SEQ64_NO_PORT),

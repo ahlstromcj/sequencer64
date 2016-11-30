@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2016-11-27
+ * \updates       2016-11-29
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -91,7 +91,11 @@ int midibase::m_clock_mod = 16 * 4;
  *          -   RtMidi.  Not sure yet if it will have meaning here.
  *
  * \param ppqn
- *      Provides the PPQN value.
+ *      Provides the PPQN value.  Defaults to SEQ64_USE_DEFAULT_PPQN.
+ *
+ * \param makevirtual
+ *      Indicates that the port represented by this object is to be virtual.
+ *      Defaults to false.
  */
 
 midibase::midibase
@@ -101,7 +105,8 @@ midibase::midibase
     int bus_id,
     int port_id,
     int queue,
-    int ppqn
+    int ppqn,
+    bool makevirtual
 ) :
     m_bus_id            (bus_id),
     m_port_id           (port_id),
@@ -112,6 +117,7 @@ midibase::midibase
     m_bus_name          (clientname),
     m_port_name         (portname),
     m_lasttick          (0),
+    m_is_virtual_port   (makevirtual),
     m_mutex             ()
 {
     // Some settings made in derived class.

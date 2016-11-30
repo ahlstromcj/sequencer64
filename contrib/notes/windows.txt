@@ -1,0 +1,90 @@
+Notes About Windows Support
+Chris Ahlstrom
+2016-11-30 to 2016-11-30
+
+https://wiki.gnome.org/Projects/gtkmm/MSWindows
+
+    gtkmm on Microsoft Windows
+
+    The old page has moved to Attic/GtkmmOnWindows. It describes gtkmm
+    2.x, but still contains valuable information. It shows how to use
+    gtkmm with both MinGW and Visual Studio.
+
+    As of this writing, gtkmm 3.x has no official installer for Windows.
+    If you plan on using MinGW for development, MSYS2 has prebuilt
+    binaries of version 3.16 (both i686/32-bit and x86_64/64-bit). The
+    binaries were built using MinGW-w64 (which, despite the name, can
+    generate both 32-bit and 64-bit code) - you will need to use
+    either the same compiler, or one that generates code that is binary
+    compatible with MinGW-w64 output.
+
+    Setting up everything with MSYS2
+
+    Install MSYS2, preferably to a path without spaces (note that either
+    version of MSYS2 can be used to create both kinds of binaries
+    - i686 and x86_64).
+
+    Follow the instructions on the MSYS2 website to update the base
+    system.
+
+    The installer should have created 3 shortcuts:
+
+    "MSYS2 Shell" is a generic shell, with compiler paths not set up;
+    "MinGW-w64 Win32 Shell" is a shell with paths set up for i686 compilation;
+    "MinGW-w64 Win64 Shell" is a shell with paths set up for x86_64 compilation.
+    The compilers are not installed by default.
+
+    To install the one targeting i686:
+
+    pacman -S mingw-w64-i686-gcc
+
+    To install the one targeting x86_64:
+
+    pacman -S mingw-w64-x86_64-gcc
+
+    Similarly, you need to install the gtkmm libs:
+
+    pacman -S mingw-w64-i686-gtkmm3
+
+    and/or
+
+    pacman -S mingw-w64-x86_64-gtkmm3
+
+    You will probably also want pkg-config:
+
+    pacman -S pkg-config
+
+    Use some simple code to test that everything works, e.g.:
+
+    //foo.cpp
+    #include <gtkmm.h>
+    int main(int argc, char** argv)
+    {
+        auto app = Gtk::Application::create(argc, argv);
+        Gtk::Window window;
+        window.set_default_size(600,400);
+        return app->run(window);
+    }
+
+    You will need to compile using a relatively new standard (-std=c++11
+    should work, but feel free to use anything newer).
+
+    If compiling manually, you might prefer to generate the correct
+    compiler and linker flags with pkg-config gtkmm-3.0 --cflags --libs.
+    If g++ generates warnings for the gtkmm headers that you do n0t want to
+    see, replace the "-I" in the flags with "-isystem " (note the space).
+
+    For example:
+
+    g++ -std=c++11 foo.cpp $(pkg-config gtkmm-3.0 --cflags --libs | sed
+    's/ -I/ -isystem /g') To be able to start, the created
+    executable will need several DLLs to either be accessible through the
+    PATH or be located in the same folder as the exe. All of these should
+    be available in C:\msysXX\mingw32\bin or C:\msysXX\mingw64\bin
+    (assuming MSYS2 was installed to C:\msysXX).
+
+    If the system complains about missing entry points for some DLLs,
+    putting those DLLs next to the exe should solve the problem (currently
+    zlib1.dll and libfreetype-6.dll seem to need this).
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

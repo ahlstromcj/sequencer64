@@ -1,13 +1,15 @@
 # .gitignore for sequencer64
 #
 # Chris Ahlstrom
-# Updates: 2015-09-12 to 2016-02-21
+# Updates: 2015-09-12 to 2016-11-30
 #
 # Compiled application
 
 Makefile
 Makefile.in
 Sequencer64/sequencer64
+Seq64portmidi/seq64portmidi
+Seq64rtmidi/seq64rtmidi
 aclocal.m4
 bootstrap.stamp
 configure

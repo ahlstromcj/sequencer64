@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-11-28
+ * \updates       2016-11-30
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -191,9 +191,10 @@ static const char * const s_help_1a =
 "   -L, --lash               Activate built-in LASH support.\n"
 "   -n, --no-lash            Do not activate built-in LASH support.\n"
 #endif
-"   -m, --manual-alsa-ports  Do not attach ALSA ports.  Use when exposing ALSA\n"
-"                            ports to JACK (e.g. using a2jmidid).\n"
+"   -m, --manual-alsa-ports  Do not attach ALSA ports.  Use 'virtual' ports.\n"
 "   -a, --auto-alsa-ports    Attach ALSA ports (overrides the 'rc' file).\n"
+"                            Use to expose system ALSA ports to JACK (e.g.\n"
+"                            using a2jmidid).\n"
     ;
 
 /**

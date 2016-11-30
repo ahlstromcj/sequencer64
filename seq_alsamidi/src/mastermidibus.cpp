@@ -25,11 +25,32 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-11-27
+ * \updates       2016-11-29
  * \license       GNU GPLv2 or above
  *
- *  This file provides a Linux-only implementation of MIDI support.
- *  There is a lot of common code between these two versions!
+ *  This file provides a Linux-only implementation of ALSA MIDI support.
+ *
+ *  Manual ALSA Ports:
+ *
+ *      This option has the following features when creating new midibus
+ *      objects in api_init():
+ *
+ *      -   The short midibus constructor is called.
+ *      -   For each input buss, midibus::init_in_sub() is called.
+ *      -   For each output buss, midibus::init_out_sub() is called.
+ *
+ *  Regular ALSA Ports:
+ *
+ *      This option has the following features when creating new midibus
+ *      objects in api_init():
+ *
+ *      -   The long midibus constructor is called.
+ *      -   For each input buss, midibus::init_in() is NOT (!) called.
+ *          This function is called in midibase::set_input() if the inputing
+ *          parameter is true, though.  It is also called in the PortMidi
+ *          version of mastermidibus::init().
+ *      -   For each output buss, midibus::init_out() is called.
+ *          This function is also called in the api_port_start() function!
  */
 
 #include "easy_macros.h"
@@ -632,6 +653,11 @@ mastermidibus::api_port_start (int client, int port)
                 m_num_in_buses,
                 m_queue
             );
+
+            /*
+             * Why no call to init_in() here????
+             */
+
             m_buses_in_active[bus_slot] = true;
             m_buses_in_init[bus_slot] = true;
             if (! replacement)

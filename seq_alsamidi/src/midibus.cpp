@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-27
+ * \updates       2016-11-30
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -160,7 +160,13 @@ midibus::midibus
     int queue,
     int ppqn
 ) :
-    midibase            ("", "", id, SEQ64_NO_PORT, queue, ppqn),
+    /*
+     * Preserve old behavior under manual-alsa-ports.
+     *
+     * midibase            ("", "", id, SEQ64_NO_PORT, queue, ppqn),
+     */
+
+    midibase            ("", "", id, id, queue, ppqn),
     m_seq               (seq),
     m_dest_addr_client  (SEQ64_NO_BUS),
     m_dest_addr_port    (SEQ64_NO_PORT),

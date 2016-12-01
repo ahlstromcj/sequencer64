@@ -220,9 +220,8 @@ rtmidi_in::rtmidi_in
    rtmidi_api api,
    const std::string & clientname,
    unsigned queuesizelimit
-)
- :
-   rtmidi   ()
+) :
+    rtmidi   ()
 {
     if (api != RTMIDI_API_UNSPECIFIED)
     {
@@ -276,7 +275,7 @@ rtmidi_in::~rtmidi_in()
 }
 
 /*
- * rtmidi_out class
+ * class rtmidi_out
  */
 
 /**
@@ -298,6 +297,8 @@ rtmidi_in::~rtmidi_in()
  */
 
 rtmidi_out::rtmidi_out (rtmidi_api api, const std::string & clientname)
+ :
+    rtmidi   ()
 {
     if (api != RTMIDI_API_UNSPECIFIED)
     {
@@ -330,10 +331,6 @@ rtmidi_out::rtmidi_out (rtmidi_api api, const std::string & clientname)
     std::string errorText = func_message("no compiled API support found");
     throw(rterror(errorText, rterror::UNSPECIFIED));
 }
-
-/*
- * class rtmidi_out
- */
 
 /**
  *  A do-nothing virtual destructor.

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2016-11-29
+ * \updates       2016-12-01
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -36,6 +36,12 @@
 #include "event.hpp"                    /* seq64::event (MIDI event)        */
 #include "midibase.hpp"                 /* seq64::midibase for ALSA         */
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+
+#ifdef SEQ64_PLATFORM_WINDOWS
+#include <windows.h>                    /* Sleep()                          */
+#else
+#include <unistd.h>                     /* usleep() or select()             */
+#endif
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -411,6 +417,49 @@ midibase::clock (midipulse tick)
         }
         api_flush();            /* and send out */
     }
+}
+
+/*
+ *  This free-function in the seq64 namespace provides a way to suspend a
+ *  thread for a small amount of time.
+ *
+ * \linux
+ *      We can use the usleep(3) function.
+ *
+ * \unix
+ *    In POSIX, select() can return early if any signal occurs.  We don't
+ *    correct for that here at this time.  Actually, it is a convenient
+ *    feature, and we wish that Sleep() would provide it.
+ *
+ * \win32
+ *    In Windows, the Sleep(0) function does not sleep, but it does cede
+ *    control of the thread to the operating system, which then schedules
+ *    another thread to run.
+ *
+ * \warning
+ *    Please note that this function isn't all that accurate for small
+ *    sleep values, due to the time taken to set up the operation, and
+ *    resolution issues in many operating systems.
+ *
+ * \param ms
+ *    The number of milliseconds to "sleep".
+ *
+ */
+
+void
+millisleep (unsigned long ms)
+{
+#if defined PLATFORM_LINUX
+    (void) usleep((useconds_t) (ms * 1000));
+#elif defined PLATFORM_UNIX
+   struct timeval tv;
+   struct timeval * tvptr = &tv;
+   tv.tv_usec = long(ms % 1000) * 1000;
+   tv.tv_sec = long(ms / 1000;
+   (void) select(0, 0, 0, 0, tvptr);
+#elif defined PLATFORM_WINDOWS
+   Sleep((DWORD) ms);
+#endif
 }
 
 }           // namespace seq64

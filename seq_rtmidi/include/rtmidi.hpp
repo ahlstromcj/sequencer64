@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-20
+ * \updates       2016-12-01
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  */
 
@@ -38,6 +38,8 @@ namespace seq64
 
 class rtmidi
 {
+
+    friend class midibus;
 
 protected:
 
@@ -88,6 +90,27 @@ public:
         rterror_callback errorcallback = nullptr,
         void * userdata = 0
     ) = 0;
+
+    /**
+     * TEMPORARY UNTIL we work out how to best handle input versus output in
+     * RtMidi.
+     */
+
+    virtual void send_message (const std::vector<midibyte> &)
+    {
+        // empty body
+    }
+
+    virtual void ignore_types (bool, bool, bool)
+    {
+        // empty body
+    }
+
+    virtual double get_message (std::vector<midibyte> &)
+    {
+        return 0.0;
+    }
+
 
 };          // class rtmidi
 
@@ -284,9 +307,11 @@ public:
      *  MIDI sysex messages are ignored by default as well.  Variable
      *  values of "true" imply that the respective message type will be
      *  ignored.
+     *
+     *  TEMPORARILY VIRTUAL:
      */
 
-    void ignore_types
+    virtual void ignore_types
     (
         bool midisysex = true,
         bool miditime = true,
@@ -306,9 +331,18 @@ public:
      *  vector size.  An exception is thrown if an error occurs during
      *  message retrieval or an input connection was not previously
      *  established.
+     *
+     * \param message
+     *      A string of characters for the messages.
+     *
+     * \return
+     *      Returns the delta-time (timestamp) of the incoming message.  If an
+     *      error occurs, or if there is not message, then 0.0 is returned.
+     *
+     *  TEMPORARILY VIRTUAL:
      */
 
-    double get_message (std::vector<midibyte> & message)
+    virtual double get_message (std::vector<midibyte> & message)
     {
        return ((midi_in_api *) m_rtapi)->get_message(message);
     }
@@ -466,9 +500,11 @@ public:
      *  Immediately send a single message out an open MIDI output port.
      *  An exception is thrown if an error occurs during output or an
      *  output connection was not previously established.
+     *
+     *  TEMPORARILY VIRTUAL:
      */
 
-    void send_message (const std::vector<midibyte> & message)
+    virtual void send_message (const std::vector<midibyte> & message)
     {
        ((midi_out_api *) m_rtapi)->send_message(message);
     }

@@ -216,6 +216,10 @@ midi_in_api::ignore_types (bool midisysex, bool miditime, bool midisense)
  *
  * \param message
  *      A string of characters for the messages.
+ *
+ * \return
+ *      Returns the delta-time (timestamp) of the incoming message.  If an
+ *      error occurs, or if there is not message, then 0.0 is returned.
  */
 
 double
@@ -239,15 +243,14 @@ midi_in_api::get_message (std::vector<midibyte> & message)
         m_input_data.queue.ring[m_input_data.queue.front].bytes;
 
     message.assign(bytes.begin(), bytes.end());
-    double deltaTime =
-        m_input_data.queue.ring[m_input_data.queue.front].timeStamp;
 
+    double stamp = m_input_data.queue.ring[m_input_data.queue.front].timeStamp;
     m_input_data.queue.size--;
     m_input_data.queue.front++;
     if (m_input_data.queue.front == m_input_data.queue.ringSize)
         m_input_data.queue.front = 0;
 
-    return deltaTime;
+    return stamp;
 }
 
 /*

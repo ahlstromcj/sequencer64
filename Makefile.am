@@ -6,7 +6,7 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2016-11-29
+# \updates     2016-11-30
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -164,33 +164,33 @@ all-local:
 show:
 	@echo "Install directories:"
 	@echo
-	@echo "prefix                 = $(prefix)"
-	@echo "datadir                = $(datadir)"
-	@echo "datarootdir            = $(datarootdir)"
-	@echo "libdir                 = $(libdir)"
-	@echo "sequencer64libdir      = $(sequencer64libdir)"
-	@echo "sequencer64docdir      = $(sequencer64docdir)"
-	@echo "sequencer64doxygendir  = $(sequencer64doxygendir)"
-	@echo "sequencer64includedir  = $(sequencer64includedir)"
-	@echo "localedir              = $(localedir)"
+	@echo "prefix                    = $(prefix)"
+	@echo "datadir                   = $(datadir)"
+	@echo "datarootdir               = $(datarootdir)"
+	@echo "libdir                    = $(libdir)"
+	@echo "sequencer64libdir         = $(sequencer64libdir)"
+	@echo "sequencer64docdir         = $(sequencer64docdir)"
+	@echo "sequencer64doxygendir     = $(sequencer64doxygendir)"
+	@echo "sequencer64includedir     = $(sequencer64includedir)"
+	@echo "localedir                 = $(localedir)"
 	@echo
 	@echo "Local directories:"
 	@echo
-	@echo "top_srcdir             = $(top_srcdir) [project root directory]"
-	@echo "srcdir                 = $(srcdir)"
-	@echo "top_builddir           = $(top_builddir)"
-	@echo "builddir               = $(builddir)"
+	@echo "top_srcdir                = $(top_srcdir) [project root directory]"
+	@echo "srcdir                    = $(srcdir)"
+	@echo "top_builddir              = $(top_builddir)"
+	@echo "builddir                  = $(builddir)"
 
 showver:
-	@echo "PACKAGE                  = $(PACKAGE)"
-	@echo "VERSION                  = $(VERSION)"
-	@echo "SEQUENCER64_API_MAJOR    = $(SEQUENCER64_API_MAJOR)"
-	@echo "SEQUENCER64_API_MINOR    = $(SEQUENCER64_API_MINOR)"
-	@echo "SEQUENCER64_API_PATCH    = $(SEQUENCER64_API_PATCH)"
-	@echo "SEQUENCER64_API_VERSION  = $(SEQUENCER64_API_VERSION)"
-	@echo "SEQUENCER64_LT_CURRENT   = $(SEQUENCER64_LT_CURRENT)"
-	@echo "SEQUENCER64_LT_REVISION  = $(SEQUENCER64_LT_REVISION)"
-	@echo "SEQUENCER64_LT_AGE       = $(SEQUENCER64_LT_AGE)"
+	@echo "PACKAGE                   = $(PACKAGE)"
+	@echo "VERSION                   = $(VERSION)"
+	@echo "SEQUENCER64_API_MAJOR     = $(SEQUENCER64_API_MAJOR)"
+	@echo "SEQUENCER64_API_MINOR     = $(SEQUENCER64_API_MINOR)"
+	@echo "SEQUENCER64_API_PATCH     = $(SEQUENCER64_API_PATCH)"
+	@echo "SEQUENCER64_API_VERSION   = $(SEQUENCER64_API_VERSION)"
+	@echo "SEQUENCER64_LT_CURRENT    = $(SEQUENCER64_LT_CURRENT)"
+	@echo "SEQUENCER64_LT_REVISION   = $(SEQUENCER64_LT_REVISION)"
+	@echo "SEQUENCER64_LT_AGE        = $(SEQUENCER64_LT_AGE)"
 
 #****************************************************************************
 # Makefile.am (sequencer64 top-level)

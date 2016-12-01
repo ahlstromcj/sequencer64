@@ -22,8 +22,6 @@ AC_REVISION($Revision: 0.90$)dnl
 AC_INIT(Sequencer64, [0.90.0], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
-dnl AC_CONFIG_SRCDIR([libseq64/src/midibus.cpp])
-
 dnl Do we need the following?  No, but it cleans up a lot of warning messages.
 
 AC_CANONICAL_SYSTEM
@@ -34,7 +32,7 @@ AM_INIT_AUTOMAKE([dist-bzip2])
 AC_CONFIG_HEADER([include/config.h])
 
 dnl Prepends "SEQ64_" to a lot of the macro definitions, for a better
-dnl guarantee of avoiding naming conflicts.
+dnl guarantee of avoiding naming conflicts in macros.
 
 AX_PREFIX_CONFIG_H([include/seq64-config.h], [seq64])
 
@@ -302,10 +300,11 @@ dnl 5.b. gcc support.
 AC_GCC_VERSION
 
 dnl C++ support.  Run tests in C++.  Note the order; avoids messy warnings.
+dnl AC_LANG([C++])
 
 AC_LANG_C
 AC_PROG_CC
-AC_LANG_CPLUSPLUS       dnl or AC_LANG([C++])
+AC_LANG_CPLUSPLUS
 AC_PROG_CXX
 AC_PROG_CXXCPP
 AC_PROG_INSTALL
@@ -350,12 +349,14 @@ if test "x$CYGWIN" = "xyes" -o "x$MINGW32" = "xyes" ; then
    X_LIBS=""
 fi
 
-dnl JACK SUPPORT
+dnl JACK support
 
 AC_ARG_ENABLE(jack,
     [AS_HELP_STRING(--disable-jack, [Disable JACK support])],
     [jack=$enableval],
     [jack=yes])
+
+dnl JACK session support
 
 AC_ARG_ENABLE(jack-session,
     [AS_HELP_STRING(--disable-jack-session, [Disable JACK session support])],
@@ -630,7 +631,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-11-28"
+#define VERSION_DATE_SHORT "2016-11-30"
 #define VERSION "0.90.0"
 
 )
@@ -723,14 +724,13 @@ AC_OUTPUT
 
 cat << E_O_F
 
-Now do 'make' to compile the Sequencer64-related projects.
-Do 'make install' as root/sudo to install the Sequencer64 application.
-Some tests can be run using the separate seq64-tests project.
-Do 'make dist', etc. to create gzip and other archives.
-To build the PDF documentation, make sure Doxygen and TexLive are installed,
-change to the doc/dox directory, and run './make_dox reference'.  To clean
-the documentation, run './make_dox clean'.  'install' and 'uninstall' are other
-options for make_dox.
+Now do 'make' to compile the Sequencer64-related projects.  Do 'make install'
+as root/sudo to install the Sequencer64 application.  Some tests can be run
+using the separate seq64-tests project.  Do 'make dist', etc. to create gzip
+and other archives.  To build the PDF documentation, make sure Doxygen and
+TexLive are installed, change to the doc/dox directory, and run './make_dox
+reference'.  To clean the documentation, run './make_dox clean'.  'install' and
+'uninstall' are other options for make_dox.
 
 E_O_F
 

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2016-11-25
+ * \updates       2016-12-01
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibase module is the base-class version of the mastermidibus
@@ -416,10 +416,6 @@ protected:
  *  virtual void api_set_input (bussbyte bus, bool inputting) = 0;
  *  virtual void api_get_input (bussbyte bus) = 0;
  */
-
-protected:
-
-    void millisleep (unsigned long ms);
 
 };          // class mastermidibase
 

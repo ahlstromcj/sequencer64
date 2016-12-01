@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-11-29
+ * \updates       2016-11-30
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
@@ -72,21 +72,28 @@ public:
     midibus
     (
         const std::string & clientname,
-        const std::string & portname = "",
-        int bus_id  = SEQ64_NO_BUS,
-        int port_id = SEQ64_NO_PORT,
-        int queue   = SEQ64_NO_QUEUE,
-        int ppqn    = SEQ64_USE_DEFAULT_PPQN,
-        bool makevirtual = false
+        const std::string & portname    = "",
+        int bus_id                      = SEQ64_NO_BUS,
+        int port_id                     = SEQ64_NO_PORT,
+        int queue                       = SEQ64_NO_QUEUE,
+        int ppqn                        = SEQ64_USE_DEFAULT_PPQN,
+        bool makevirtual                = false
     );
 
     virtual ~midibus ();
 
 protected:
 
+
     virtual int api_poll_for_midi ();
     virtual bool api_init_in ();
     virtual bool api_init_out ();
+
+    /*
+     *  Provides common code between api_init_in() and api_initi_out().
+     */
+
+    bool api_init (rtmidi * rtm);
 
     /**
      *  Temporary easy implementation for now.

@@ -91,7 +91,7 @@ They currently show some issues.
         back.
 
         Are JACK slaves allowed to start/stop playback on the JACK buss?
-    
+
     Bug:
 
         The main window Stop and Start buttons behave the same, except
@@ -141,7 +141,8 @@ ALSA:
 
     On our setup, Sequencer64 sees 6 ports.  Port 0 is a Thru port; ports
     1 to 4 are TiMidity ports; and port 5 is Yoshimi port 0.  So we want
-    to force Sequencer64 to use buss 5 and ALSA:
+    to force Sequencer64 to use the system's ALSA ports, the ALSA
+    subsystem (without JACK transport) and ALSA buss 5 (device 5):
 
         $ sequencer64 -a -A -b 5
 
@@ -198,14 +199,14 @@ JACK:
             The bottom line is to connect the desired port in the
             "Readable Clients / Output Ports" section to the synthesizer's
             port in the "Writeable Clients / Input Ports" section.
-            
+
     Load a complex test tune, such as b4uacuse-GM-format.midi.
 
     Go to Yoshimi and enable multiple parts.  Any instrument, such as
     Simple Sound, is enough for this test.
 
     Finally:
-    
+
         If JACK Song Mode is set in your configuration, open the Song
         Editor in Sequencer64, and view it.  You can start the music from
         that view, or the main window.  You should hear the music,
@@ -235,7 +236,7 @@ MIDI Clock Testing
     Install and run the "klick" application:
 
         $ klick -j -P &
-    
+
     Run Sequencer64 from a console window, to see its internal messages:
 
         $ ./Sequencer64/sequencer64 -J
@@ -330,7 +331,7 @@ MIDI Clock Testing
     00001        0 001:1:0000 4/4   192 110 -979988768
 
     We have labelled key points with capital letters.
-    
+
     A. There are no JACK position bits set at first.  The initial
        non-1:1:0 position is just a leftover from the previous test.
        Maybe not?  The jack_position_t::ticks_per_beat field is 192 * 10,
@@ -345,10 +346,10 @@ MIDI Clock Testing
 
     C. The JACK Master setting of Sequencer64 is unchecked, and we
        disconnect from JACK.
-       
+
     D. We reconnect to JACK, now as Slave.  The JackPositionBBT bit then
        turns off.
-    
+
     E. We see Hydrogen to Master, and The JackPositionBBT bit then
        turns on.  Of interest is why Hydrogen does not seem to multiply
        the PPQN (192) by 10.0.  Is this a bug or is it deliberate?  Also of
@@ -359,7 +360,7 @@ MIDI Clock Testing
        changes it to 110, but doesn't update its display.  A minor bug.
 
     F. Hydrogen starts the JACK transport.
-    
+
     G. We stop Hydrogen playback.  Note how Hydrogen rewinds the
        transport.  Is that something Sequencer64 ought to do?
        Or should we implement a Pause functionality (if feasible) in
@@ -397,7 +398,7 @@ MIDI Clock Testing
     callback, and so cannot get access to position data for modification.
 
     [1] Is this a bug:  -j from the command line doesn't turn off the JACK
-        Master option stored in the "rc" configuration file.  We have to 
+        Master option stored in the "rc" configuration file.  We have to
         change the settings in the user-interface and disconnect and
         reconnect.
 
@@ -528,7 +529,7 @@ qjackctl &
 You can then click on the Start button to start jackd. Your linux station
 is now set up to play music.
 
-Install Zynaddsubfx, Seq24 and Hydrogen 
+Install Zynaddsubfx, Seq24 and Hydrogen
 
 seq24 --manual_alsa_ports & zynaddsubfx -r 48000 -b 128 & hydrogen -d jack
 &
@@ -589,7 +590,7 @@ Seq24 --> QSynth -----------> Audio 1     |
                           |               |
                           +---------------+
 
-And works fine for me. As Seq24 generates all the midi events, there are 
+And works fine for me. As Seq24 generates all the midi events, there are
 no sync problems.
 
 ===========================================================================
@@ -609,7 +610,7 @@ no sync problems.
    -make the following settings in Seq24 (File>Options):
 
    MIDI Clock tab: use the radio buttons to route the clock signal to your
-   MIDI device 
+   MIDI device
    (if it's plugged in, it should be on the list, otherwise choose a port
    and do the routing in Jack Connect)
    Jack Sync tab: tick only Jack Transport box, select Live Mode, click on

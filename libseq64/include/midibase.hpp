@@ -417,6 +417,12 @@ protected:
 
 };          // class midibase (ALSA version)
 
+/*
+ *  Free functions
+ */
+
+extern void millisleep (unsigned long ms);
+
 }           // namespace seq64
 
 #endif      // SEQ64_MIDIBASE_HPP

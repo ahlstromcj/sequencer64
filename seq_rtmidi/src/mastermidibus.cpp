@@ -25,17 +25,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-28
+ * \updates       2016-12-01
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
  *  class.  There is a lot of common code between these two versions!
  */
 
-// #include "easy_macros.h"             /* handy macros                     */
-// #include "event.hpp"                 /* seq64::event                     */
+#include "event.hpp"                    /* seq64::event                     */
 #include "mastermidibus_rm.hpp"         /* seq64::mastermidibus, RtMIDI     */
 #include "midibus_rm.hpp"               /* seq64::midibus, RtMIDI           */
+#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -118,7 +118,7 @@ mastermidibus::api_init (int ppqn)
         std::string clientname = "rtmidi out";
         std::string portname = "0";
         m_num_in_buses = 1;
-        m_buses_in[i] = new midibus
+        m_buses_in[0] = new midibus
         (
             clientname, portname, 0,
             SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
@@ -261,9 +261,9 @@ mastermidibus::api_get_midi_event (event * in)
     {
         if (m_buses_in[i]->poll_for_midi())
         {
-            int /*PmError*/ err = Pm_Read(m_buses_in[i]->m_pms, &event, 1);
-            if (err < 0)
-                printf("Pm_Read: %s\n", Pm_GetErrorText((PmError) err));
+//          int /*PmError*/ err = Pm_Read(m_buses_in[i]->m_pms, &event, 1);
+//          if (err < 0)
+//              printf("Pm_Read: %s\n", Pm_GetErrorText((PmError) err));
 
             if (m_buses_in[i]->m_inputing)
                 result = true;
@@ -272,9 +272,9 @@ mastermidibus::api_get_midi_event (event * in)
     if (! result)
         return false;
 
-    in->set_status(Pm_MessageStatus(event.message));
-    in->set_sysex_size(3);
-    in->set_data(Pm_MessageData1(event.message), Pm_MessageData2(event.message));
+//  in->set_status(Pm_MessageStatus(event.message));
+//  in->set_sysex_size(3);
+//  in->set_data(Pm_MessageData1(event.message), Pm_MessageData2(event.message));
 
     /* some keyboards send Note On with velocity 0 for Note Off */
 

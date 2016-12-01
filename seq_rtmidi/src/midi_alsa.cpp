@@ -428,6 +428,10 @@ midi_in_alsa::initialize (const std::string & clientname)
 
     snd_seq_set_client_name(seq, clientname.c_str());   // set client name
 
+    /*
+     * m_queue = snd_seq_alloc_queue(m_alsa_seq);
+     */
+
     // Save our api-specific connection information.
 
     alsa_midi_data_t * data = (alsa_midi_data_t *) new alsa_midi_data_t;

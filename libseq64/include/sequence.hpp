@@ -293,13 +293,13 @@ private:
     bool m_recording;
 
     /**
-     *  True if recoring in quantized mode.
+     *  True if recording in quantized mode.
      */
 
     bool m_quantized_rec;
 
     /**
-     *  True if recoring in MIDI-through mode.
+     *  True if recording in MIDI-through mode.
      */
 
     bool m_thru;

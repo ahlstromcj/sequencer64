@@ -6,7 +6,7 @@
 # \library    	seq_rtmidi library
 # \author     	Chris Ahlstrom
 # \date       	2016-11-19
-# \update      2016-11-30
+# \update      2016-12-01
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -134,6 +134,7 @@ lib_LTLIBRARIES = libseq_rtmidi.la
 #----------------------------------------------------------------------------
 
 libseq_rtmidi_la_SOURCES = \
+   mastermidibus.cpp \
    midibus.cpp \
 	midi_api.cpp \
 	midi_alsa.cpp \

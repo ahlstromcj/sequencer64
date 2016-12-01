@@ -91,25 +91,9 @@ public:
         void * userdata = 0
     ) = 0;
 
-    /**
-     * TEMPORARY UNTIL we work out how to best handle input versus output in
-     * RtMidi.
-     */
-
-    virtual void send_message (const std::vector<midibyte> &)
-    {
-        // empty body
-    }
-
-    virtual void ignore_types (bool, bool, bool)
-    {
-        // empty body
-    }
-
-    virtual double get_message (std::vector<midibyte> &)
-    {
-        return 0.0;
-    }
+    virtual void send_message (const std::vector<midibyte> &) = 0;
+    virtual void ignore_types (bool, bool, bool) = 0;
+    virtual double get_message (std::vector<midibyte> &) = 0;
 
 
 };          // class rtmidi
@@ -364,6 +348,8 @@ public:
        m_rtapi->seterrorcallback(errorcallback, userdata);
     }
 
+    virtual void send_message (const std::vector<midibyte> &);
+
 protected:
 
     void openmidi_api
@@ -415,6 +401,9 @@ public:
      */
 
     ~rtmidi_out ();
+
+    virtual void ignore_types (bool, bool, bool);
+    virtual double get_message (std::vector<midibyte> &);
 
     /**
      *  Returns the MIDI API specifier for the current instance of rtmidi_out.

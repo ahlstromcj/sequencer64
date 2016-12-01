@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-23
+ * \updates       2016-12-01
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -261,8 +261,8 @@ rtmidi_in::rtmidi_in
      * case something weird happens, we'll throw an error.
      */
 
-    std::string errorText = func_message("no compiled API support found");
-    throw(rterror(errorText, rterror::UNSPECIFIED));
+    std::string errortext = func_message("no compiled API support found");
+    throw(rterror(errortext, rterror::UNSPECIFIED));
 }
 
 /**
@@ -272,6 +272,17 @@ rtmidi_in::rtmidi_in
 rtmidi_in::~rtmidi_in()
 {
    // no code
+}
+
+/**
+ *  Throws an error.
+ */
+
+void
+rtmidi_in::send_message (const std::vector<midibyte> &)
+{
+    std::string errortext = func_message("not supported");
+    throw(rterror(errortext, rterror::UNSPECIFIED));
 }
 
 /*
@@ -387,7 +398,28 @@ rtmidi_out::openmidi_api (rtmidi_api api, const std::string & clientname)
     if (api == RTMIDI_API_DUMMY)
         m_rtapi = new midi_out_dummy(clientname);
 #endif
+}
 
+/**
+ *  Throws an error.
+ */
+
+void
+rtmidi_out::ignore_types (bool, bool, bool)
+{
+    std::string errortext = func_message("not supported");
+    throw(rterror(errortext, rterror::UNSPECIFIED));
+}
+
+/**
+ *  Throws an error.
+ */
+
+double
+rtmidi_out::get_message (std::vector<midibyte> &)
+{
+    std::string errortext = func_message("not supported");
+    throw(rterror(errortext, rterror::UNSPECIFIED));
 }
 
 }           // namespace seq64

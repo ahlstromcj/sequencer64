@@ -130,13 +130,13 @@ midibus::~midibus ()
 /**
  *  Polls for MIDI events.  This is the API implementation for RtMidi.
  *
- *  NOTE:  This should work only for input busses, so we need to insure this
- *  at some point!!!!!!!!!!!!!!
- *
- *  NOT TRUE:
- *
- *  It tests that the queue number (formerly m_pm) is valid first.  It assumes
- *  that the RtMidi pointer m_rt_midi is valid, for speed.
+ * \note
+ *      This should work only for input busses, so we need to insure this at
+ *      some point.  Currently, this is the domain of the master bus.
+ *      We also should make this routine just check the input queue size and
+ *      then read the queue.  Note that the ALSA handle checks incoming MIDI
+ *      events and either passes them to the callback function or pushes them
+ *      onto the input queue.
  *
  * \return
  *      Returns 0 if the polling succeeded, and 1 if it failed.
@@ -145,6 +145,7 @@ midibus::~midibus ()
 int
 midibus::api_poll_for_midi ()
 {
+#if 0
     std::vector<midibyte> msg;
     double stamp = m_rt_midi->get_message(msg);
     if (stamp > 0.0)
@@ -155,6 +156,9 @@ midibus::api_poll_for_midi ()
     }
     else
         return 0;
+#else
+    return 1;
+#endif
 }
 
 /**

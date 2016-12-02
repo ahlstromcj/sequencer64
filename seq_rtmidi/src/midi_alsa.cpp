@@ -91,8 +91,11 @@ struct alsa_midi_data_t
 static void *
 alsa_midi_handler (void * ptr)
 {
-    rtmidi_in_data * data = static_cast<rtmidi_in_data *>(ptr);
-    alsa_midi_data_t * apiData = static_cast<alsa_midi_data_t *>(data->apiData);
+    rtmidi_in_data * rtindata = static_cast<rtmidi_in_data *>(ptr);
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>
+    (
+        rtindata->api_data()
+    );
     long nBytes;
     unsigned long long time, lastTime;
     bool continueSysex = false;
@@ -102,42 +105,42 @@ alsa_midi_handler (void * ptr)
     struct pollfd * poll_fds;
     snd_seq_event_t * ev;
     int result;
-    apiData->bufferSize = 32;
-    result = snd_midi_event_new(0, &apiData->coder);
+    alsadata->bufferSize = 32;
+    result = snd_midi_event_new(0, &alsadata->coder);
     if (result < 0)
     {
-        data->doInput = false;
+        rtindata->do_input(false);
         errprintfunc("error initializing MIDI event parser");
         return nullptr;
     }
 
-    midibyte * buffer = (midibyte *) malloc(apiData->bufferSize);
+    midibyte * buffer = (midibyte *) malloc(alsadata->bufferSize);
     if (is_nullptr(buffer))
     {
-        data->doInput = false;
-        snd_midi_event_free(apiData->coder);
-        apiData->coder = 0;
+        rtindata->do_input(false);
+        snd_midi_event_free(alsadata->coder);
+        alsadata->coder = 0;
         errprintfunc("error initializing buffer memory");
         return nullptr;
     }
-    snd_midi_event_init(apiData->coder);
-    snd_midi_event_no_status(apiData->coder, 1); // suppress running status
+    snd_midi_event_init(alsadata->coder);
+    snd_midi_event_no_status(alsadata->coder, 1); // suppress running status
 
     /*
      * Can this return value ever be zero?
      */
 
-    poll_fd_count = snd_seq_poll_descriptors_count(apiData->seq, POLLIN) + 1;
+    poll_fd_count = snd_seq_poll_descriptors_count(alsadata->seq, POLLIN) + 1;
     poll_fds = (struct pollfd *) alloca(poll_fd_count * sizeof(struct pollfd));
     snd_seq_poll_descriptors
     (
-        apiData->seq, poll_fds + 1, poll_fd_count - 1, POLLIN
+        alsadata->seq, poll_fds + 1, poll_fd_count - 1, POLLIN
     );
-    poll_fds[0].fd = apiData->trigger_fds[0];
+    poll_fds[0].fd = alsadata->trigger_fds[0];
     poll_fds[0].events = POLLIN;
-    while (data->doInput)
+    while (rtindata->do_input())
     {
-        if (snd_seq_event_input_pending(apiData->seq, 1) == 0)
+        if (snd_seq_event_input_pending(alsadata->seq, 1) == 0)
         {
             if (poll(poll_fds, poll_fd_count, -1) >= 0) // no data pending
             {
@@ -158,7 +161,7 @@ alsa_midi_handler (void * ptr)
 
         // If here, there should be data.
 
-        result = snd_seq_event_input(apiData->seq, &ev);
+        result = snd_seq_event_input(alsadata->seq, &ev);
         if (result == -ENOSPC)
         {
             errprintfunc("MIDI input buffer overrun");
@@ -200,37 +203,37 @@ alsa_midi_handler (void * ptr)
             break;
 
         case SND_SEQ_EVENT_QFRAME:  // MIDI time code
-            if (!(data->ignoreFlags & 0x02))
+            if (! rtindata->test_ignore_flags(0x02))
                 doDecode = true;
             break;
 
         case SND_SEQ_EVENT_TICK:    // 0xF9 ... MIDI timing tick
-            if (!(data->ignoreFlags & 0x02))
+            if (! rtindata->test_ignore_flags(0x02))
                 doDecode = true;
             break;
 
         case SND_SEQ_EVENT_CLOCK:   // 0xF8 ... MIDI timing (clock) tick
-            if (!(data->ignoreFlags & 0x02))
+            if (! rtindata->test_ignore_flags(0x02))
                 doDecode = true;
             break;
 
         case SND_SEQ_EVENT_SENSING: // Active sensing
-            if (!(data->ignoreFlags & 0x04))
+            if (! rtindata->test_ignore_flags(0x04))
                 doDecode = true;
             break;
 
         case SND_SEQ_EVENT_SYSEX:
-            if ((data->ignoreFlags & 0x01))
+            if ((rtindata->test_ignore_flags(0x01))
                 break;
 
-            if (ev->data.ext.len > apiData->bufferSize)
+            if (ev->data.ext.len > alsadata->bufferSize)
             {
-                apiData->bufferSize = ev->data.ext.len;
+                alsadata->bufferSize = ev->data.ext.len;
                 free(buffer);
-                buffer = (midibyte *) malloc(apiData->bufferSize);
+                buffer = (midibyte *) malloc(alsadata->bufferSize);
                 if (buffer == NULL)
                 {
-                    data->doInput = false;
+                    rtindata->do_input(false);
                     errprintfunc("error resizing buffer memory");
                     break;
                 }
@@ -244,7 +247,7 @@ alsa_midi_handler (void * ptr)
         {
             nBytes = snd_midi_event_decode
             (
-                apiData->coder, buffer, apiData->bufferSize, ev
+                alsadata->coder, buffer, alsadata->bufferSize, ev
             );
             if (nBytes > 0)
             {
@@ -292,10 +295,10 @@ alsa_midi_handler (void * ptr)
                         (ev->time.time.tv_nsec / 1000);
 
                     lastTime = time;
-                    time -= apiData->lastTime;
-                    apiData->lastTime = lastTime;
-                    if (data->firstMessage == true)
-                        data->firstMessage = false;
+                    time -= alsadata->lastTime;
+                    alsadata->lastTime = lastTime;
+                    if (rtindata->first_message())
+                        rtindata->first_message(false);
                     else
                         message.timeStamp = time * 0.000001;
                 }
@@ -312,10 +315,10 @@ alsa_midi_handler (void * ptr)
         if (message.bytes.size() == 0 || continueSysex)
             continue;
 
-        if (data->usingCallback)
+        if (rtindata->using_callback())
         {
-            rtmidi_callback_t callback = data->userCallback;
-            callback(message.timeStamp, message.bytes, data->userdata);
+            rtmidi_callback_t callback = rtindata->user_callback();
+            callback(message.timeStamp, message.bytes, rtindata->userdata);
         }
         else
         {
@@ -324,16 +327,16 @@ alsa_midi_handler (void * ptr)
              * message.
              */
 
-            (void) data->queue.add(message);
+            (void) rtindata->queue.add(message);
         }
     }
 
     if (not_nullptr(buffer))
         free(buffer);
 
-    snd_midi_event_free(apiData->coder);
-    apiData->coder = 0;
-    apiData->thread = apiData->dummy_thread_id;
+    snd_midi_event_free(alsadata->coder);
+    alsadata->coder = 0;
+    alsadata->thread = alsadata->dummy_thread_id;
     return nullptr;
 }
 
@@ -367,29 +370,26 @@ midi_in_alsa::~midi_in_alsa()
 {
     close_port();
 
-    alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
-    if (m_input_data.doInput)
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
+    if (m_input_data.do_input())
     {
-        m_input_data.doInput = false;       /* shut down the input thread   */
-        (void) write
-        (
-            data->trigger_fds[1], &m_input_data.doInput,
-            sizeof(m_input_data.doInput)
-        );
-        if (! pthread_equal(data->thread, data->dummy_thread_id))
-            pthread_join(data->thread, NULL);
+        bool f = false;
+        m_input_data.do_input(false);       /* shut down the input thread   */
+        (void) write(alsadata->trigger_fds[1], &f, sizeof(f));
+        if (! pthread_equal(alsadata->thread, alsadata->dummy_thread_id))
+            pthread_join(alsadata->thread, NULL);
     }
 
-    close(data->trigger_fds[0]);
-    close(data->trigger_fds[1]);
-    if (data->vport >= 0)
-        snd_seq_delete_port(data->seq, data->vport);
+    close(alsadata->trigger_fds[0]);
+    close(alsadata->trigger_fds[1]);
+    if (alsadata->vport >= 0)
+        snd_seq_delete_port(alsadata->seq, alsadata->vport);
 
 #ifndef AVOID_TIMESTAMPING
-    snd_seq_free_queue(data->seq, data->queue_id);
+    snd_seq_free_queue(alsadata->seq, alsadata->queue_id);
 #endif
 
-    snd_seq_close(data->seq);
+    snd_seq_close(alsadata->seq);
     delete data;
 }
 
@@ -425,20 +425,23 @@ midi_in_alsa::initialize (const std::string & clientname)
 
     // Save our api-specific connection information.
 
-    alsa_midi_data_t * data = (alsa_midi_data_t *) new alsa_midi_data_t;
-    if (not_nullptr(data))
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>
+    (
+        new (std::nothrow) alsa_midi_data_t;
+    );
+    if (not_nullptr(alsadata))
     {
-        data->seq = seq;
-        data->portNum = -1;
-        data->vport = -1;
-        data->subscription = 0;
-        data->dummy_thread_id = pthread_self();
-        data->thread = data->dummy_thread_id;
-        data->trigger_fds[0] = -1;
+        alsadata->seq = seq;
+        alsadata->portNum = -1;
+        alsadata->vport = -1;
+        alsadata->subscription = 0;
+        alsadata->dummy_thread_id = pthread_self();
+        alsadata->thread = data->dummy_thread_id;
+        alsadata->trigger_fds[0] = -1;
         data->trigger_fds[1] = -1;
-        m_api_data = (void *) data;
-        m_input_data.apiData = (void *) data;
-        if (pipe(data->trigger_fds) == -1)
+        m_api_data = reinterpret_cast<(void *> alsadata;
+        m_input_data.alsadata = reinterpret_cast<void *> alsadata;
+        if (pipe(alsadata->trigger_fds) == -1)
         {
             m_error_string = func_message("error creating pipe objects");
             error(rterror::DRIVER_ERROR, m_error_string);
@@ -448,7 +451,7 @@ midi_in_alsa::initialize (const std::string & clientname)
         // Create the input queue
 
 #ifndef AVOID_TIMESTAMPING
-        data->queue_id = snd_seq_alloc_named_queue(seq, "rtmidi Queue");
+        alsadata->queue_id = snd_seq_alloc_named_queue(seq, "rtmidi Queue");
 
         // Set arbitrary tempo (mm=100) and resolution (240)
 
@@ -456,8 +459,8 @@ midi_in_alsa::initialize (const std::string & clientname)
         snd_seq_queue_tempo_alloca(&qtempo);
         snd_seq_queue_tempo_set_tempo(qtempo, 600000);
         snd_seq_queue_tempo_set_ppq(qtempo, 240);
-        snd_seq_set_queue_tempo(data->seq, data->queue_id, qtempo);
-        snd_seq_drain_output(data->seq);
+        snd_seq_set_queue_tempo(alsadata->seq, alsadata->queue_id, qtempo);
+        snd_seq_drain_output(alsadata->seq);
 #endif
     }
 }
@@ -550,10 +553,10 @@ midi_in_alsa::get_port_count ()
 {
     snd_seq_port_info_t * pinfo;
     snd_seq_port_info_alloca(&pinfo);
-    alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
     return alsa_port_info
     (
-        data->seq, pinfo,
+        alsadata->seq, pinfo,
         SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ, -1
     );
 }
@@ -576,19 +579,19 @@ midi_in_alsa::get_port_name (unsigned portnumber)
     snd_seq_client_info_alloca(&cinfo);
     snd_seq_port_info_alloca(&pinfo);
     std::string stringname;
-    alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
     if
     (
         alsa_port_info
         (
-            data->seq, pinfo,
+            alsadata->seq, pinfo,
             SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
             int(portnumber)
         )
     )
     {
         int cnum = snd_seq_port_info_get_client(pinfo);
-        snd_seq_get_any_client_info(data->seq, cnum, cinfo);
+        snd_seq_get_any_client_info(alsadata->seq, cnum, cinfo);
 
         // These lines added to make sure devices are listed
         // with full portnames added to ensure individual device names
@@ -642,12 +645,12 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
 
     snd_seq_port_info_t * src_pinfo;
     snd_seq_port_info_alloca(&src_pinfo);
-    alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
     if
     (
         alsa_port_info
         (
-            data->seq, src_pinfo,
+            alsadata->seq, src_pinfo,
             SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
             int(portnumber)
         ) == 0
@@ -666,11 +669,11 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
     snd_seq_addr_t sender, receiver;
     sender.client = snd_seq_port_info_get_client(src_pinfo);
     sender.port = snd_seq_port_info_get_port(src_pinfo);
-    receiver.client = snd_seq_client_id(data->seq);
+    receiver.client = snd_seq_client_id(alsadata->seq);
 
     snd_seq_port_info_t * pinfo;
     snd_seq_port_info_alloca(&pinfo);
-    if (data->vport < 0)
+    if (alsadata->vport < 0)
     {
         snd_seq_port_info_set_client(pinfo, 0);
         snd_seq_port_info_set_port(pinfo, 0);
@@ -687,50 +690,50 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
 #ifndef AVOID_TIMESTAMPING
         snd_seq_port_info_set_timestamping(pinfo, 1);
         snd_seq_port_info_set_timestamp_real(pinfo, 1);
-        snd_seq_port_info_set_timestamp_queue(pinfo, data->queue_id);
+        snd_seq_port_info_set_timestamp_queue(pinfo, alsadata->queue_id);
 #endif
 
         snd_seq_port_info_set_name(pinfo,  portname.c_str());
-        data->vport = snd_seq_create_port(data->seq, pinfo);
-        if (data->vport < 0)
+        alsadata->vport = snd_seq_create_port(alsadata->seq, pinfo);
+        if (alsadata->vport < 0)
         {
             m_error_string = func_message("ALSA error creating input port");
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
         }
-        data->vport = snd_seq_port_info_get_port(pinfo);
+        alsadata->vport = snd_seq_port_info_get_port(pinfo);
     }
 
-    receiver.port = data->vport;
-    if (! data->subscription)
+    receiver.port = alsadata->vport;
+    if (! alsadata->subscription)
     {
         // Make subscription
 
-        if (snd_seq_port_subscribe_malloc(&data->subscription) < 0)
+        if (snd_seq_port_subscribe_malloc(&alsadata->subscription) < 0)
         {
             m_error_string = func_message("ALSA error port subscription");
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
         }
-        snd_seq_port_subscribe_set_sender(data->subscription, &sender);
-        snd_seq_port_subscribe_set_dest(data->subscription, &receiver);
-        if (snd_seq_subscribe_port(data->seq, data->subscription))
+        snd_seq_port_subscribe_set_sender(alsadata->subscription, &sender);
+        snd_seq_port_subscribe_set_dest(alsadata->subscription, &receiver);
+        if (snd_seq_subscribe_port(alsadata->seq, alsadata->subscription))
         {
-            snd_seq_port_subscribe_free(data->subscription);
-            data->subscription = 0;
+            snd_seq_port_subscribe_free(alsadata->subscription);
+            alsadata->subscription = 0;
             m_error_string = func_message("ALSA error making port connection");
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
         }
     }
 
-    if (m_input_data.doInput == false)
+    if (! m_input_data.do_input())
     {
         // Start the input queue
 
 #ifndef AVOID_TIMESTAMPING
-        snd_seq_start_queue(data->seq, data->queue_id, NULL);
-        snd_seq_drain_output(data->seq);
+        snd_seq_start_queue(alsadata->seq, alsadata->queue_id, NULL);
+        snd_seq_drain_output(alsadata->seq);
 #endif
 
         // Start our MIDI input thread.
@@ -739,18 +742,18 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
         pthread_attr_init(&attr);
         pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
         pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
-        m_input_data.doInput = true;
+        m_input_data.do_input(true);
         int err = pthread_create
         (
-            &data->thread, &attr, alsa_midi_handler, &m_input_data
+            &alsadata->thread, &attr, alsa_midi_handler, &m_input_data
         );
         pthread_attr_destroy(&attr);
         if (err)
         {
-            snd_seq_unsubscribe_port(data->seq, data->subscription);
-            snd_seq_port_subscribe_free(data->subscription);
-            data->subscription = 0;
-            m_input_data.doInput = false;
+            snd_seq_unsubscribe_port(alsadata->seq, alsadata->subscription);
+            snd_seq_port_subscribe_free(alsadata->subscription);
+            alsadata->subscription = 0;
+            m_input_data.do_input(false);
             m_error_string = func_message("error starting MIDI input thread");
             error(rterror::THREAD_ERROR, m_error_string);
             return;
@@ -771,8 +774,8 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
 void
 midi_in_alsa::open_virtual_port (const std::string & portname)
 {
-    alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
-    if (data->vport < 0)
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
+    if (alsadata->vport < 0)
     {
         snd_seq_port_info_t * pinfo;
         snd_seq_port_info_alloca(&pinfo);
@@ -789,32 +792,32 @@ midi_in_alsa::open_virtual_port (const std::string & portname)
 #ifndef AVOID_TIMESTAMPING
         snd_seq_port_info_set_timestamping(pinfo, 1);
         snd_seq_port_info_set_timestamp_real(pinfo, 1);
-        snd_seq_port_info_set_timestamp_queue(pinfo, data->queue_id);
+        snd_seq_port_info_set_timestamp_queue(pinfo, alsadata->queue_id);
 #endif
 
         snd_seq_port_info_set_name(pinfo, portname.c_str());
-        data->vport = snd_seq_create_port(data->seq, pinfo);
-        if (data->vport < 0)
+        alsadata->vport = snd_seq_create_port(alsadata->seq, pinfo);
+        if (alsadata->vport < 0)
         {
             m_error_string = func_message("ALSA error creating virtual port");
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
         }
-        data->vport = snd_seq_port_info_get_port(pinfo);
+        alsadata->vport = snd_seq_port_info_get_port(pinfo);
     }
 
-    if (m_input_data.doInput == false)
+    if (! m_input_data.do_input())
     {
         // Wait for old thread to stop, if still running
 
-        if (! pthread_equal(data->thread, data->dummy_thread_id))
-            pthread_join(data->thread, NULL);
+        if (! pthread_equal(alsadata->thread, alsadata->dummy_thread_id))
+            pthread_join(alsadata->thread, NULL);
 
         // Start the input queue
 
 #ifndef AVOID_TIMESTAMPING
-        snd_seq_start_queue(data->seq, data->queue_id, NULL);
-        snd_seq_drain_output(data->seq);
+        snd_seq_start_queue(alsadata->seq, alsadata->queue_id, NULL);
+        snd_seq_drain_output(alsadata->seq);
 #endif
 
         // Start our MIDI input thread.
@@ -823,21 +826,21 @@ midi_in_alsa::open_virtual_port (const std::string & portname)
         pthread_attr_init(&attr);
         pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
         pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
-        m_input_data.doInput = true;
+        m_input_data.do_input(true);
         int err = pthread_create
         (
-            &data->thread, &attr, alsa_midi_handler, &m_input_data
+            &alsadata->thread, &attr, alsa_midi_handler, &m_input_data
         );
         pthread_attr_destroy(&attr);
         if (err)
         {
-            if (data->subscription)
+            if (alsadata->subscription)
             {
-                snd_seq_unsubscribe_port(data->seq, data->subscription);
-                snd_seq_port_subscribe_free(data->subscription);
-                data->subscription = 0;
+                snd_seq_unsubscribe_port(alsadata->seq, alsadata->subscription);
+                snd_seq_port_subscribe_free(alsadata->subscription);
+                alsadata->subscription = 0;
             }
-            m_input_data.doInput = false;
+            m_input_data.do_input(false);
             m_error_string = func_message("error starting MIDI input thread");
             error(rterror::THREAD_ERROR, m_error_string);
             return;
@@ -855,18 +858,18 @@ midi_in_alsa::close_port ()
     alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
     if (m_connected)
     {
-        if (data->subscription)
+        if (alsadata->subscription)
         {
-            snd_seq_unsubscribe_port(data->seq, data->subscription);
-            snd_seq_port_subscribe_free(data->subscription);
-            data->subscription = 0;
+            snd_seq_unsubscribe_port(alsadata->seq, alsadata->subscription);
+            snd_seq_port_subscribe_free(alsadata->subscription);
+            alsadata->subscription = 0;
         }
 
         // Stop the input queue
 
 #ifndef AVOID_TIMESTAMPING
-        snd_seq_stop_queue(data->seq, data->queue_id, NULL);
-        snd_seq_drain_output(data->seq);
+        snd_seq_stop_queue(alsadata->seq, alsadata->queue_id, NULL);
+        snd_seq_drain_output(alsadata->seq);
 #endif
         m_connected = false;
     }
@@ -874,23 +877,19 @@ midi_in_alsa::close_port ()
     // Stop thread to avoid triggering the callback, while the port is
     // intended to be closed
 
-    if (m_input_data.doInput)
+    if (m_input_data.do_input())
     {
-        m_input_data.doInput = false;
-        int res = write
-        (
-            data->trigger_fds[1],
-            &m_input_data.doInput,
-            sizeof(m_input_data.doInput)
-        );
+        bool f = false;
+        m_input_data.do_input(false);
+        int res = write(alsadata->trigger_fds[1], &f, sizeof(f));
 
         /*
          * Why did RtMidi do this????
          */
 
         (void) res;
-        if (! pthread_equal(data->thread, data->dummy_thread_id))
-            pthread_join(data->thread, NULL);
+        if (! pthread_equal(alsadata->thread, alsadata->dummy_thread_id))
+            pthread_join(alsadata->thread, NULL);
     }
 }
 
@@ -913,18 +912,18 @@ midi_out_alsa::~midi_out_alsa ()
 {
     close_port();   // Close a connection if it exists.
 
-    alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
-    if (data->vport >= 0)
-        snd_seq_delete_port(data->seq, data->vport);
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
+    if (alsadata->vport >= 0)
+        snd_seq_delete_port(alsadata->seq, alsadata->vport);
 
-    if (data->coder)
-        snd_midi_event_free(data->coder);
+    if (alsadata->coder)
+        snd_midi_event_free(alsadata->coder);
 
-    if (data->buffer)
-        free(data->buffer);
+    if (alsadata->buffer)
+        free(alsadata->buffer);
 
-    snd_seq_close(data->seq);
-    delete data;
+    snd_seq_close(alsadata->seq);
+    delete alsadata;
 }
 
 /**
@@ -954,25 +953,25 @@ midi_out_alsa::initialize (const std::string & clientname)
 
     // Save our api-specific connection information.
 
-    alsa_midi_data_t * data = (alsa_midi_data_t *) new alsa_midi_data_t;
-    data->seq = seq;
-    data->portNum = -1;
-    data->vport = -1;
-    data->bufferSize = 32;
-    data->coder = 0;
-    data->buffer = 0;
-    int result = snd_midi_event_new(data->bufferSize, &data->coder);
+    alsa_midi_data_t * alsadata = (alsa_midi_data_t *) new alsa_midi_data_t;
+    alsadata->seq = seq;
+    alsadata->portNum = -1;
+    alsadata->vport = -1;
+    alsadata->bufferSize = 32;
+    alsadata->coder = 0;
+    alsadata->buffer = 0;
+    int result = snd_midi_event_new(alsadata->bufferSize, &alsadata->coder);
     if (result < 0)
     {
-        delete data;
+        delete alsadata;
         m_error_string = func_message("error initializing MIDI event parser");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
-    data->buffer = (midibyte *) malloc(data->bufferSize);
-    if (is_nullptr(data->buffer))
+    alsadata->buffer = (midibyte *) malloc(alsadata->bufferSize);
+    if (is_nullptr(alsadata->buffer))
     {
-        delete data;
+        delete alsadata;
         m_error_string = func_message("error allocating buffer memory");
         error(rterror::MEMORY_ERROR, m_error_string);
         return;
@@ -994,10 +993,10 @@ midi_out_alsa::get_port_count ()
 {
     snd_seq_port_info_t * pinfo;
     snd_seq_port_info_alloca(&pinfo);
-    alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
     return alsa_port_info
     (
-        data->seq, pinfo,
+        alsadata->seq, pinfo,
         SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE, -1
     );
 }
@@ -1021,19 +1020,19 @@ midi_out_alsa::get_port_name (unsigned portnumber)
     snd_seq_port_info_alloca(&pinfo);
 
     std::string stringname;
-    alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
     if
     (
         alsa_port_info
         (
-            data->seq, pinfo,
+            alsadata->seq, pinfo,
             SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
             int(portnumber)
         )
     )
     {
         int cnum = snd_seq_port_info_get_client(pinfo);
-        snd_seq_get_any_client_info(data->seq, cnum, cinfo);
+        snd_seq_get_any_client_info(alsadata->seq, cnum, cinfo);
 
         /*
          * These lines added to make sure devices are listed
@@ -1091,12 +1090,12 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
 
     snd_seq_port_info_t * pinfo;
     snd_seq_port_info_alloca(&pinfo);
-    alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
     if
     (
         alsa_port_info
         (
-            data->seq, pinfo,
+            alsadata->seq, pinfo,
             SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
             int(portnumber)
         ) == 0
@@ -1114,23 +1113,23 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
     snd_seq_addr_t sender, receiver;
     receiver.client = snd_seq_port_info_get_client(pinfo);
     receiver.port = snd_seq_port_info_get_port(pinfo);
-    sender.client = snd_seq_client_id(data->seq);
-    if (data->vport < 0)
+    sender.client = snd_seq_client_id(alsadata->seq);
+    if (alsadata->vport < 0)
     {
         /*
          * The "legacy" midibus::init_out() replaces the
          * SND_SEQ_PORT_CAP_SUBS_READ flag with SND_SEQ_PORT_CAP_NO_EXPORT.
          * This code here is like the seq24's midibus::init_out_sub()
-         * function.  Thus, data->vport here is like m_local_addr_port there.
+         * function.  Thus, alsadata->vport here is like m_local_addr_port there.
          */
 
-        data->vport = snd_seq_create_simple_port
+        alsadata->vport = snd_seq_create_simple_port
         (
-            data->seq, portname.c_str(),
+            alsadata->seq, portname.c_str(),
             SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
             SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
         );
-        if (data->vport < 0)
+        if (alsadata->vport < 0)
         {
             m_error_string = func_message("ALSA error creating output port");
             error(rterror::DRIVER_ERROR, m_error_string);
@@ -1138,27 +1137,27 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
         }
     }
 
-    sender.port = data->vport;
+    sender.port = alsadata->vport;
 
     /*
      * Make subscription.  The midibus::init_out() code instead
      * used snd_seq_connect_to(port).
      */
 
-    if (snd_seq_port_subscribe_malloc(&data->subscription) < 0)
+    if (snd_seq_port_subscribe_malloc(&alsadata->subscription) < 0)
     {
-        snd_seq_port_subscribe_free(data->subscription);
+        snd_seq_port_subscribe_free(alsadata->subscription);
         m_error_string = func_message("error allocating port subscription");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
-    snd_seq_port_subscribe_set_sender(data->subscription, &sender);
-    snd_seq_port_subscribe_set_dest(data->subscription, &receiver);
-    snd_seq_port_subscribe_set_time_update(data->subscription, 1);
-    snd_seq_port_subscribe_set_time_real(data->subscription, 1);
-    if (snd_seq_subscribe_port(data->seq, data->subscription))
+    snd_seq_port_subscribe_set_sender(alsadata->subscription, &sender);
+    snd_seq_port_subscribe_set_dest(alsadata->subscription, &receiver);
+    snd_seq_port_subscribe_set_time_update(alsadata->subscription, 1);
+    snd_seq_port_subscribe_set_time_real(alsadata->subscription, 1);
+    if (snd_seq_subscribe_port(alsadata->seq, alsadata->subscription))
     {
-        snd_seq_port_subscribe_free(data->subscription);
+        snd_seq_port_subscribe_free(alsadata->subscription);
         m_error_string = func_message("ALSA error making port connection");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
@@ -1175,9 +1174,9 @@ midi_out_alsa::close_port ()
 {
     if (m_connected)
     {
-        alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
-        snd_seq_unsubscribe_port(data->seq, data->subscription);
-        snd_seq_port_subscribe_free(data->subscription);
+        alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
+        snd_seq_unsubscribe_port(alsadata->seq, alsadata->subscription);
+        snd_seq_port_subscribe_free(alsadata->subscription);
         m_connected = false;
     }
 }
@@ -1195,16 +1194,16 @@ midi_out_alsa::close_port ()
 void
 midi_out_alsa::open_virtual_port (const std::string & portname)
 {
-    alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
-    if (data->vport < 0)
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
+    if (alsadata->vport < 0)
     {
-        data->vport = snd_seq_create_simple_port    /* m_local_addr_port    */
+        alsadata->vport = snd_seq_create_simple_port    /* m_local_addr_port    */
         (
-            data->seq, portname.c_str(),            /* portname, bus name   */
+            alsadata->seq, portname.c_str(),            /* portname, bus name   */
             SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
             SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
         );
-        if (data->vport < 0)
+        if (alsadata->vport < 0)
         {
             m_error_string = func_message("ALSA error creating virtual port");
             error(rterror::DRIVER_ERROR, m_error_string);
@@ -1223,21 +1222,21 @@ void
 midi_out_alsa::send_message (const std::vector<midibyte> & message)
 {
     int result;
-    alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
     unsigned nBytes = message.size();
-    if (nBytes > data->bufferSize)
+    if (nBytes > alsadata->bufferSize)
     {
-        data->bufferSize = nBytes;
-        result = snd_midi_event_resize_buffer(data->coder, nBytes);
+        alsadata->bufferSize = nBytes;
+        result = snd_midi_event_resize_buffer(alsadata->coder, nBytes);
         if (result != 0)
         {
             m_error_string = func_message("ALSA error resizing MIDI event");
             error(rterror::DRIVER_ERROR, m_error_string);
             return;
         }
-        free(data->buffer);
-        data->buffer = (midibyte *) malloc(data->bufferSize);
-        if (data->buffer == NULL)
+        free(alsadata->buffer);
+        alsadata->buffer = (midibyte *) malloc(alsadata->bufferSize);
+        if (alsadata->buffer == NULL)
         {
             m_error_string = func_message("error allocating buffer memory");
             error(rterror::MEMORY_ERROR, m_error_string);
@@ -1247,27 +1246,30 @@ midi_out_alsa::send_message (const std::vector<midibyte> & message)
 
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);
-    snd_seq_ev_set_source(&ev, data->vport);
+    snd_seq_ev_set_source(&ev, alsadata->vport);
     snd_seq_ev_set_subs(&ev);
     snd_seq_ev_set_direct(&ev);
     for (unsigned i = 0; i < nBytes; ++i)
-        data->buffer[i] = message.at(i);
+        alsadata->buffer[i] = message.at(i);
 
-    result = snd_midi_event_encode(data->coder, data->buffer, long(nBytes), &ev);
+    result = snd_midi_event_encode
+    (
+        alsadata->coder, alsadata->buffer, long(nBytes), &ev
+    );
     if (result < int(nBytes))
     {
         m_error_string = func_message("event parsing error");
         error(rterror::WARNING, m_error_string);
         return;
     }
-    result = snd_seq_event_output(data->seq, &ev); // Send the event.
+    result = snd_seq_event_output(alsadata->seq, &ev); // Send the event.
     if (result < 0)
     {
         m_error_string = func_message("error sending MIDI message to port");
         error(rterror::WARNING, m_error_string);
         return;
     }
-    snd_seq_drain_output(data->seq);
+    snd_seq_drain_output(alsadata->seq);
 }
 
 }           // namespace seq64

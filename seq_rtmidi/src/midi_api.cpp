@@ -113,7 +113,7 @@ midi_in_api::midi_in_api (unsigned queuesize)
  :
     midi_api    ()
 {
-    m_input_data.queue.allocate(queuesize);
+    m_input_data.queue().allocate(queuesize);
 }
 
 /**
@@ -124,7 +124,7 @@ midi_in_api::midi_in_api (unsigned queuesize)
 
 midi_in_api::~midi_in_api ()
 {
-    m_input_data.queue.deallocate();
+    m_input_data.queue().deallocate();
 }
 
 /**
@@ -144,7 +144,7 @@ midi_in_api::set_callback
     void * userdata
 )
 {
-    if (m_input_data.usingCallback)
+    if (m_input_data.using_callback())
     {
         m_error_string = func_message("callback function is already set");
         error(rterror::WARNING, m_error_string);
@@ -156,9 +156,9 @@ midi_in_api::set_callback
         error(rterror::WARNING, m_error_string);
         return;
     }
-    m_input_data.userCallback = callback;
-    m_input_data.userdata = userdata;
-    m_input_data.usingCallback = true;
+    m_input_data.user_callback(callback);
+    m_input_data.user_data(userdata);
+    m_input_data.using_callback(true);
 }
 
 /**
@@ -168,11 +168,11 @@ midi_in_api::set_callback
 void
 midi_in_api::cancel_callback ()
 {
-    if (m_input_data.usingCallback)
+    if (m_input_data.using_callback())
     {
-        m_input_data.userCallback = 0;
-        m_input_data.userdata = 0;
-        m_input_data.usingCallback = false;
+        m_input_data.user_callback(nullptr);
+        m_input_data.user_data(nullptr);
+        m_input_data.using_callback(false);
     }
     else
     {
@@ -197,15 +197,17 @@ midi_in_api::cancel_callback ()
 void
 midi_in_api::ignore_types (bool midisysex, bool miditime, bool midisense)
 {
-    m_input_data.ignoreFlags = 0;
+    midibyte flags = 0;
     if (midisysex)
-        m_input_data.ignoreFlags = 0x01;
+        flags = 0x01;
 
     if (miditime)
-        m_input_data.ignoreFlags |= 0x02;
+        flags |= 0x02;
 
     if (midisense)
-        m_input_data.ignoreFlags |= 0x04;
+        flags |= 0x04;
+
+    m_input_data.ignore_flags(flags);
 }
 
 /**
@@ -223,20 +225,20 @@ double
 midi_in_api::get_message (std::vector<midibyte> & message)
 {
     message.clear();
-    if (m_input_data.usingCallback)
+    if (m_input_data.using_callback())
     {
         m_error_string = func_message("user callback already set for this port");
         error(rterror::WARNING, m_error_string);
         return 0.0;
     }
-    if (m_input_data.queue.empty())
+    if (m_input_data.queue().empty())
         return 0.0;
 
     /*
      * Copy queued message to the vector reference argument and then "pop" it.
      */
 
-    const std::vector<midibyte> & bytes = m_input_data.queue.front().bytes;
+    const std::vector<midibyte> & bytes = m_input_data.queue.()front().bytes;
     message.assign(bytes.begin(), bytes.end());
 
     double stamp = m_input_data.queue.front().timeStamp;

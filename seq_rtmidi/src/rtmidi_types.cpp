@@ -107,6 +107,26 @@ midi_queue::pop ()
 }           // namespace seq64
 
 /*
+ * class rtmidi_in_data
+ */
+
+rtmidi_in_data::rtmidi_in_data ()
+ :
+    m_queue             (),
+    m_message           (),
+    m_ignore_flags      (7),
+    m_do_input          (false),
+    m_first_message     (true),
+    m_api_data          (nullptr),
+    m_using_callback    (false),
+    m_user_callback     (nullptr),
+    m_user_data         (nullptr),
+    m_continue_sysex    (false)
+{
+    // no body
+}
+
+/*
  * rtmidi_types.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp

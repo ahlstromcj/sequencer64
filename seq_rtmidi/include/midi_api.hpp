@@ -131,8 +131,8 @@ public:
     virtual bool poll_queue () const
     {
         bool result = false;
-        if (is_nullptr(m_input_data.userCallback))
-            result = ! m_input_data.queue.empty();
+        if (is_nullptr(m_input_data.callback()))
+            result = ! m_input_data.queue().empty();
 
         return result;
     }

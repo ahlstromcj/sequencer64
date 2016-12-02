@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2016-11-20
+ * \updates       2016-12-02
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -129,32 +129,116 @@ public:
  *  rtmidi_in class.
  */
 
-struct rtmidi_in_data
+class rtmidi_in_data
 {
-    midi_queue queue;
-    midi_message message;
-    midibyte ignoreFlags;
-    bool doInput;
-    bool firstMessage;
-    void * apiData;
-    bool usingCallback;
-    rtmidi_callback_t userCallback;
-    void * userdata;
-    bool continueSysex;
 
-    rtmidi_in_data()
-     :
-        ignoreFlags(7),
-        doInput(false),
-        firstMessage(true),
-        apiData(0),
-        usingCallback(false),
-        userCallback(0),
-        userdata(0),
-        continueSysex(false)
+private:
+
+    midi_queue m_queue;
+    midi_message m_message;
+    midibyte m_ignore_flags;
+    bool m_do_input;
+    bool m_first_message;
+    void * m_api_data;
+    bool m_using_callback;
+    rtmidi_callback_t m_user_callback;
+    void * m_user_data;
+    bool m_continue_sysex;
+
+public:
+
+    rtmidi_in_data ();
+
+    midi_queue & queue ()
     {
-        // no body
+        return m_queue;
     }
+
+    const midi_message & message () const
+    {
+        return m_message;
+    }
+
+    midibyte ignore_flags () const
+    {
+        return m_ignore_flags;
+    }
+
+    bool test_ignore_flags (midibyte testbits)
+    {
+        return bool(m_ignore_flags & testbits);
+    }
+
+    void ignore_flags (midibyte setbits)
+    {
+        m_ignore_flags = setbits;
+    }
+
+    bool do_input () const
+    {
+        return m_do_input;
+    }
+
+    void do_input (bool flag)
+    {
+        m_do_input = flag;
+    }
+
+    bool first_message () const
+    {
+        return m_first_message;
+    }
+
+    void first_message (bool flag)
+    {
+        m_first_message = false;
+    }
+
+    bool continue_sysex () const
+    {
+        return m_continue_sysex;
+    }
+
+    void continue_sysex (bool flag)
+    {
+        m_continue_sysex = flag;
+    }
+
+    bool using_callback () const
+    {
+        return m_using_callback;
+    }
+
+    void using_callback (bool flag)
+    {
+        m_using_callback = flag;
+    }
+
+    void * api_data ()
+    {
+        return m_api_data;
+    }
+
+    void * user_data ()
+    {
+        return m_user_data;
+    }
+
+    void user_data (void * dataptr)
+    {
+        m_user_data = dataptr;
+    }
+
+    rtmidi_callback_t user_callback ()
+    {
+        return m_user_callback;
+    }
+
+    void user_callback (rtmidi_callback_t cbptr)
+    {
+        m_user_callback = cbptr;
+    }
+
 };
 
 }           // namespace seq64

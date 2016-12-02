@@ -76,13 +76,13 @@ static void midiInputCallback
    void * /*srcRef*/
 )
 {
-    rtmidi_in_data * data = static_cast<rtmidi_in_data *>(procRef);
-    CoreMidiData * apiData = static_cast<CoreMidiData *>(data->apiData);
+    rtmidi_in_data * rtindata = static_cast<rtmidi_in_data *>(procRef);
+    CoreMidiData * apiData = static_cast<CoreMidiData *>(rtindata->api_data());
     midibyte status;
     unsigned short nBytes, iByte, size;
     unsigned long long time;
-    bool & continueSysex = data->continueSysex;
-    midi_message & message = data->message;
+    bool continuesysex = rtindata->continue_sysex();
+    midi_message & message = rtindata->message;
     const MIDIPacket * packet = &list->packet[0];
     for (unsigned i = 0; i < list->numPackets; ++i)
     {
@@ -96,10 +96,10 @@ static void midiInputCallback
 
         /* Calculate time stamp.    */
 
-        if (data->firstMessage)
+        if (rtindata->first_message())
         {
             message.timeStamp = 0.0;
-            data->firstMessage = false;
+            rtindata->firstMessage(false);
         }
         else
         {
@@ -116,7 +116,7 @@ static void midiInputCallback
             }
             time -= apiData->lastTime;
             time = AudioConvertHostTimeToNanos(time);
-            if (! continueSysex)
+            if (! continuesysex)
                 message.timeStamp = time * 0.000000001;
         }
         apiData->lastTime = packet->timeStamp;
@@ -132,30 +132,31 @@ static void midiInputCallback
         }
 
         iByte = 0;
-        if (continueSysex)
+        if (continuesysex)
         {
             // We have a continuing, segmented SysEx message.
 
-            if (!(data->ignoreFlags & 0x01))
+            if (! rtindata->test_ignore_flags(0x01))
             {
                 // If we're not ignoring SysEx messages, copy the entire packet.
 
                 for (unsigned j = 0; j < nBytes; ++j)
                     message.bytes.push_back(packet->data[j]);
             }
-            continueSysex = packet->data[nBytes - 1] != 0xF7;
+            continuesysex = packet->data[nBytes - 1] != 0xF7;
+            rtindata->continue_sysex(continuesysex);
 
-            if (!(data->ignoreFlags & 0x01) && !continueSysex)
+            if (! rtindata->test_ignore_flags(0x01) && ! continuesysex)
             {
                 /*
                  * If not a continuing SysEx message, invoke the user callback
                  * function or queue the message.
                  */
 
-                if (data->usingCallback)
+                if (rtindata->usingCallback)
                 {
-                    rtmidi_callback_t callback = data->userCallback;
-                    callback(message.timeStamp, &message.bytes, data->userdata);
+                    rtmidi_callback_t callback = rtindata->userCallback;
+                    callback(message.timeStamp, &message.bytes, rtindata->userdata);
                 }
                 else
                 {
@@ -164,7 +165,7 @@ static void midiInputCallback
                      * push the message.
                      */
 
-                    (void) data->queue.add(message);
+                    (void) rtindata->queue.add(message);
                 }
                 message.bytes.clear();
             }
@@ -192,7 +193,7 @@ static void midiInputCallback
                     size = 3;
                 else if (status == 0xF0)
                 {
-                    if (data->ignoreFlags & 0x01) // MIDI SysEx
+                    if (rtindata->test_ignore_flags(0x01)) // MIDI SysEx
                     {
                         size = 0;
                         iByte = nBytes;
@@ -200,11 +201,12 @@ static void midiInputCallback
                     else
                         size = nBytes - iByte;
 
-                    continueSysex = packet->data[nBytes - 1] != 0xF7;
+                    continuesysex = packet->data[nBytes - 1] != 0xF7;
+                    rtindata->continue_sysex(continuesysex);
                 }
                 else if (status == 0xF1)
                 {
-                    if (data->ignoreFlags & 0x02) // MIDI time code message
+                    if (rtindata->test_ignore_flags(0x02)) // MIDI time code message
                     {
                         size = 0;
                         iByte += 2;
@@ -216,12 +218,13 @@ static void midiInputCallback
                     size = 3;
                 else if (status == 0xF3)
                     size = 2;
-                else if (status == 0xF8 && (data->ignoreFlags & 0x02))
+                else if (status == 0xF8 && rtindata->test_ignore_flags(0x02))
                 {
                     size = 0;                   // MIDI timing tick message ...
                     iByte += 1;                 // ...and we're ignoring it.
                 }
-                else if (status == 0xFE && (data->ignoreFlags & 0x04))
+                else if (status == 0xFE && rtindata->test_ignore_flags(0x04))
+                    HERE HERE
                 {
                     size = 0;                   // MIDI active sensing message...
                     iByte += 1;                 // ...and we're ignoring it.
@@ -235,7 +238,7 @@ static void midiInputCallback
                     (
                         &packet->data[iByte], &packet->data[iByte + size]
                     );
-                    if (! continueSysex)
+                    if (! continuesysex)
                     {
                         /*
                          * If not a continuing SysEx message, invoke the user

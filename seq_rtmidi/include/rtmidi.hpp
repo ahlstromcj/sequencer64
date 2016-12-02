@@ -65,6 +65,19 @@ public:
 
     static void get_compiled_api (std::vector<rtmidi_api> & apis);
 
+    /**
+     *  Checks the input queue.  If the API object doesn't have an input
+     *  queue, this function will throw an rterror, for now.
+     *
+     * \return
+     *      Returns true if the input queue is not empty.
+     */
+
+    bool poll_queue () const
+    {
+        return m_rtapi->poll_queue();
+    }
+
     virtual void open_port
     (
         unsigned portnumber = 0,
@@ -94,7 +107,6 @@ public:
     virtual void send_message (const std::vector<midibyte> &) = 0;
     virtual void ignore_types (bool, bool, bool) = 0;
     virtual double get_message (std::vector<midibyte> &) = 0;
-
 
 };          // class rtmidi
 

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-26
+ * \updates       2016-12-01
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  In this refactoring, we are trying to improve the RtMidi project in the
@@ -319,25 +319,16 @@ alsa_midi_handler (void * ptr)
         }
         else
         {
-            // As long as we haven't reached our queue size limit, push the
-            // message.
+            /*
+             * As long as we haven't reached our queue size limit, push the
+             * message.
+             */
 
-            if (data->queue.size < data->queue.ringSize)
-            {
-                data->queue.ring[data->queue.back++] = message;
-                if (data->queue.back == data->queue.ringSize)
-                    data->queue.back = 0;
-
-                data->queue.size++;
-            }
-            else
-            {
-                errprintfunc("message queue limit reached");
-            }
+            (void) data->queue.add(message);
         }
     }
 
-    if (buffer)
+    if (not_nullptr(buffer))
         free(buffer);
 
     snd_midi_event_free(apiData->coder);

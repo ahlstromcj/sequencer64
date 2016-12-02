@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-19
+ * \updates       2016-12-02
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring...
@@ -35,26 +35,26 @@ class midi_in_alsa : public midi_in_api
 public:
 
     midi_in_alsa (const std::string & clientname, unsigned queuesizelimit);
-    ~midi_in_alsa ();
+    virtual ~midi_in_alsa ();
 
     /**
      * \getter RTMIDI_API_LINUX_ALSA
      */
 
-    rtmidi_api get_current_api () const
+    virtual rtmidi_api get_current_api () const
     {
         return RTMIDI_API_LINUX_ALSA;
     }
 
-    void open_port (unsigned portnumber, const std::string & portname);
-    void open_virtual_port (const std::string & portname);
-    void close_port ();
-    unsigned get_port_count ();
-    std::string get_port_name (unsigned portnumber);
+    virtual void open_port (unsigned portnumber, const std::string & portname);
+    virtual void open_virtual_port (const std::string & portname);
+    virtual void close_port ();
+    virtual unsigned get_port_count ();
+    virtual std::string get_port_name (unsigned portnumber);
 
 protected:
 
-    void initialize(const std::string & clientname);
+    virtual void initialize(const std::string & clientname);
 
 };          // midi_in_alsa
 
@@ -68,23 +68,23 @@ class midi_out_alsa: public midi_out_api
 public:
 
     midi_out_alsa (const std::string & clientname);
-    ~midi_out_alsa ();
+    virtual ~midi_out_alsa ();
 
-    rtmidi_api get_current_api () const
+    virtual rtmidi_api get_current_api () const
     {
         return RTMIDI_API_LINUX_ALSA;
     }
 
-    void open_port (unsigned portnumber, const std::string & portname);
-    void open_virtual_port (const std::string & portname);
-    void close_port ();
-    unsigned get_port_count ();
-    std::string get_port_name (unsigned portnumber);
-    void send_message (const std::vector<midibyte> & message);
+    virtual void open_port (unsigned portnumber, const std::string & portname);
+    virtual void open_virtual_port (const std::string & portname);
+    virtual void close_port ();
+    virtual unsigned get_port_count ();
+    virtual std::string get_port_name (unsigned portnumber);
+    virtual void send_message (const std::vector<midibyte> & message);
 
 protected:
 
-    void initialize (const std::string & clientname);
+    virtual void initialize (const std::string & clientname);
 
 };          // midi_out_alsa
 

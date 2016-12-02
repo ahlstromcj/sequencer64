@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-16
+ * \updates       2016-12-02
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring...
@@ -39,27 +39,28 @@ protected:
 public:
 
     midi_in_jack (const std::string & clientname, unsigned queuesize);
-    ~midi_in_jack ();
+    virtual ~midi_in_jack ();
 
     /**
      * \getter RTMIDI_API_UNIX_JACK
      */
 
-    rtmidi_api get_current_api () const
+    virtual rtmidi_api get_current_api () const
     {
         return RTMIDI_API_UNIX_JACK;
     }
 
-    void open_port (unsigned portnumber, const std::string & portname);
-    void open_virtual_port (const std::string & portname);
-    void close_port ();
-    unsigned get_port_count ();
-    std::string get_port_name (unsigned portnumber);
+    virtual void open_port (unsigned portnumber, const std::string & portname);
+    virtual void open_virtual_port (const std::string & portname);
+    virtual void close_port ();
+    virtual unsigned get_port_count ();
+    virtual std::string get_port_name (unsigned portnumber);
 
 protected:
 
+    virtual void initialize (const std::string & clientname);
+
     void connect ();
-    void initialize (const std::string & clientname);
 
 };          // midi_in_jack
 
@@ -77,28 +78,29 @@ protected:
 public:
 
     midi_out_jack (const std::string & clientname);
-    ~midi_out_jack ();
+    virtual ~midi_out_jack ();
 
     /**
      * \getter RTMIDI_API_UNIX_JACK
      */
 
-    rtmidi_api get_current_api () const
+    virtual rtmidi_api get_current_api () const
     {
         return RTMIDI_API_UNIX_JACK;
     }
 
-    void open_port (unsigned portnumber, const std::string & portname);
-    void open_virtual_port (const std::string & portname);
-    void close_port ();
-    unsigned get_port_count ();
-    std::string get_port_name (unsigned portnumber);
-    void send_message (const std::vector<midibyte> & message);
+    virtual void open_port (unsigned portnumber, const std::string & portname);
+    virtual void open_virtual_port (const std::string & portname);
+    virtual void close_port ();
+    virtual unsigned get_port_count ();
+    virtual std::string get_port_name (unsigned portnumber);
+    virtual void send_message (const std::vector<midibyte> & message);
 
 protected:
 
+    virtual void initialize (const std::string & clientname);
+
     void connect ();
-    void initialize (const std::string & clientname);
 
 };          // midi_out_jack
 

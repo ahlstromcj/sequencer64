@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-17
+ * \updates       2016-12-01
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring...
@@ -113,9 +113,7 @@ midi_in_api::midi_in_api (unsigned queuesize)
  :
     midi_api    ()
 {
-    m_input_data.queue.ringSize = queuesize; // allocate the MIDI queue
-    if (queuesize > 0)
-        m_input_data.queue.ring = new (std::nothrow) midi_message[queuesize];
+    m_input_data.queue.allocate(queuesize);
 }
 
 /**
@@ -126,8 +124,7 @@ midi_in_api::midi_in_api (unsigned queuesize)
 
 midi_in_api::~midi_in_api ()
 {
-    if (not_nullptr(m_input_data.queue.ring))  // m_input_data.queue.ringSize>0
-        delete [] m_input_data.queue.ring;
+    m_input_data.queue.deallocate();
 }
 
 /**
@@ -232,24 +229,18 @@ midi_in_api::get_message (std::vector<midibyte> & message)
         error(rterror::WARNING, m_error_string);
         return 0.0;
     }
-    if (m_input_data.queue.size == 0)
+    if (m_input_data.queue.empty())
         return 0.0;
 
     /*
      * Copy queued message to the vector reference argument and then "pop" it.
      */
 
-    std::vector<midibyte> & bytes =
-        m_input_data.queue.ring[m_input_data.queue.front].bytes;
-
+    const std::vector<midibyte> & bytes = m_input_data.queue.front().bytes;
     message.assign(bytes.begin(), bytes.end());
 
-    double stamp = m_input_data.queue.ring[m_input_data.queue.front].timeStamp;
-    m_input_data.queue.size--;
-    m_input_data.queue.front++;
-    if (m_input_data.queue.front == m_input_data.queue.ringSize)
-        m_input_data.queue.front = 0;
-
+    double stamp = m_input_data.queue.front().timeStamp;
+    m_input_data.queue.pop();
     return stamp;
 }
 
@@ -276,6 +267,19 @@ midi_out_api::~midi_out_api ()
 {
     // no code
 }
+
+/**
+ *
+ */
+
+bool
+midi_out_api::poll_queue () const
+{
+    std::string errortext = func_message("not supported");
+    throw(rterror(errortext, rterror::UNSPECIFIED));
+    return false;
+}
+
 
 }           // namespace seq64
 

@@ -225,23 +225,16 @@ midiInputCallback
     }
     else
     {
-        // As long as we haven't reached our queue size limit, push the message.
+        /*
+         * As long as we haven't reached our queue size limit, push the
+         * message.
+         */
 
-        if (data->queue.size < data->queue.ringSize)
-        {
-            data->queue.ring[data->queue.back++] = apiData->message;
-            if (data->queue.back == data->queue.ringSize)
-                data->queue.back = 0;
-
-            data->queue.size++;
-        }
-        else
-            errprintfunc("message queue limit reached");
+        (void) data->queue.add(message);
     }
 
-    // Clear the vector for the next input message.
 
-    apiData->message.bytes.clear();
+    apiData->message.bytes.clear();     /* clear for the next input message */
 }
 
 /**

@@ -70,6 +70,8 @@ typedef void (* rtmidi_callback_t)
 
 struct midi_message
 {
+    friend class midi_queue;
+
     std::vector<midibyte> bytes;
     double timeStamp;
 
@@ -84,18 +86,41 @@ struct midi_message
  *  nested in the midi_in_api class.
  */
 
-struct midi_queue
+class midi_queue
 {
-    unsigned front;
-    unsigned back;
-    unsigned size;
-    unsigned ringSize;
-    midi_message * ring;
 
-    midi_queue() : front(0), back(0), size(0), ringSize(0), ring(nullptr)
+private:
+
+    unsigned m_front;
+    unsigned m_back;
+    unsigned m_size;
+    unsigned m_ring_size;
+    midi_message * m_ring;
+
+public:
+
+    midi_queue ();
+
+    bool empty () const
     {
-        // no body
+        return m_size == 0;
     }
+
+    bool full () const
+    {
+        return m_size == m_ring_size;
+    }
+
+    bool add (const midi_message & mmsg);
+    void pop ();
+    void allocate (unsigned queuesize);
+    void deallocate ();
+
+    const midi_message & front () const
+    {
+        return m_ring[m_front];
+    }
+
 };
 
 /**

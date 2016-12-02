@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-19
+ * \updates       2016-12-02
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring, we are currently not concerned with making sure
@@ -48,26 +48,26 @@ class midi_in_core: public midi_in_api
 public:
 
     midi_in_core (const std::string & clientname, unsigned queuesizelimit);
-    ~midi_in_core ();
+    virtual ~midi_in_core ();
 
     /**
      * \getter RTMIDI_API_MACOSX_CORE
      */
 
-    rtmidi_api get_current_api () const
+    virtual rtmidi_api get_current_api () const
     {
         return RTMIDI_API_MACOSX_CORE;
     }
 
-    void open_port (unsigned portnumber, const std::string & portname);
-    void open_virtual_port (const std::string & portname);
-    void close_port ();
-    unsigned get_port_count ();
-    std::string get_port_name (unsigned portnumber);
+    virtual void open_port (unsigned portnumber, const std::string & portname);
+    virtual void open_virtual_port (const std::string & portname);
+    virtual void close_port ();
+    virtual unsigned get_port_count ();
+    virtual std::string get_port_name (unsigned portnumber);
 
 protected:
 
-    void initialize (const std::string & clientname);
+    virtual void initialize (const std::string & clientname);
 
 };
 
@@ -81,27 +81,27 @@ class midi_out_core: public midi_out_api
 public:
 
     midi_out_core (const std::string & clientname);
-    ~midi_out_core ();
+    virtual ~midi_out_core ();
 
     /**
      * \getter RTMIDI_API_MACOSX_CORE
      */
 
-    rtmidi_api get_current_api () const
+    virtual rtmidi_api get_current_api () const
     {
         return RTMIDI_API_MACOSX_CORE;
     }
 
-    void open_port (unsigned portnumber, const std::string & portname);
-    void open_virtual_port (const std::string & portname);
-    void close_port ();
-    unsigned get_port_count ();
-    std::string get_port_name (unsigned portnumber);
-    void send_message (const std::vector<midibyte> & message);
+    virtual void open_port (unsigned portnumber, const std::string & portname);
+    virtual void open_virtual_port (const std::string & portname);
+    virtual void close_port ();
+    virtual unsigned get_port_count ();
+    virtual std::string get_port_name (unsigned portnumber);
+    virtual void send_message (const std::vector<midibyte> & message);
 
 protected:
 
-    void initialize (const std::string & clientname);
+    virtual void initialize (const std::string & clientname);
 
 };          // midi_out_core
 

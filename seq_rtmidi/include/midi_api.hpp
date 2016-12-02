@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-20
+ * \updates       2016-12-02
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -67,6 +67,7 @@ public:
     virtual void close_port () = 0;
     virtual unsigned get_port_count () = 0;
     virtual std::string get_port_name (unsigned portnumber) = 0;
+    virtual bool poll_queue () const = 0;
 
     /**
      * \getter m_connected
@@ -126,7 +127,17 @@ public:
     void set_callback (rtmidi_callback_t callback, void * userdata);
     void cancel_callback ();
     double get_message (std::vector<midibyte> & message);
-};
+
+    virtual bool poll_queue () const
+    {
+        bool result = false;
+        if (is_nullptr(m_input_data.userCallback))
+            result = ! m_input_data.queue.empty();
+
+        return result;
+    }
+
+};          // class midi_in_api
 
 /*
  *  MIDI Output API.
@@ -140,8 +151,9 @@ public:
     midi_out_api ();
     virtual ~midi_out_api ();
     virtual void send_message (const std::vector<midibyte> & message) = 0;
+    virtual bool poll_queue () const;
 
-};
+};          // class midi_out_api
 
 }           // namespace seq64
 

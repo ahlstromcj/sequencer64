@@ -164,16 +164,7 @@ static void midiInputCallback
                      * push the message.
                      */
 
-                    if (data->queue.size < data->queue.ringSize)
-                    {
-                        data->queue.ring[data->queue.back++] = message;
-                        if (data->queue.back == data->queue.ringSize)
-                            data->queue.back = 0;
-
-                        data->queue.size++;
-                    }
-                    else
-                        errprintfunc("message queue limit reached");
+                    (void) data->queue.add(message);
                 }
                 message.bytes.clear();
             }
@@ -266,16 +257,7 @@ static void midiInputCallback
                              * limit, push the message.
                              */
 
-                            if (data->queue.size < data->queue.ringSize)
-                            {
-                                data->queue.ring[data->queue.back++] = message;
-                                if (data->queue.back == data->queue.ringSize)
-                                    data->queue.back = 0;
-
-                                data->queue.size++;
-                            }
-                            else
-                                errprintfunc("message queue limit reached");
+                            (void) data->queue.add(message);
                         }
                         message.bytes.clear();
                     }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-01
+ * \updates       2016-12-02
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -157,7 +157,9 @@ midibus::api_poll_for_midi ()
     else
         return 0;
 #else
-    return 1;
+
+    return m_rt_midi->poll_queue() ? 1 : 0 ;
+
 #endif
 }
 

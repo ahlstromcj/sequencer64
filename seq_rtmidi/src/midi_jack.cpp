@@ -74,7 +74,7 @@ static int
 jackProcessIn (jack_nframes_t nframes, void *arg)
 {
     JackMidiData * jData = (JackMidiData *) arg;
-    rtmidi_in_data * rtData = jData->rtMidiIn;
+    rtmidi_in_data * rtdata = jData->rtMidiIn;
     jack_midi_event_t event;
     jack_time_t time;
     if (jData->port == NULL)                 /* is port created?        */
@@ -96,18 +96,18 @@ jackProcessIn (jack_nframes_t nframes, void *arg)
             message.bytes.push_back(event.buffer[i]);
 
         time = jack_get_time();              /* compute the delta time  */
-        if (rtData->firstMessage == true)
-            rtData->firstMessage = false;
+        if (rtdata->firstMessage == true)
+            rtdata->firstMessage = false;
         else
             message.timeStamp = (time - jData->lastTime) * 0.000001;
 
         jData->lastTime = time;
-        if (! rtData->continueSysex)
+        if (! rtdata->continueSysex)
         {
-            if (rtData->usingCallback)
+            if (rtdata->usingCallback)
             {
-                rtmidi_callback_t callback = rtData->userCallback;
-                callback(message.timeStamp, message.bytes, rtData->userdata);
+                rtmidi_callback_t callback = rtdata->userCallback;
+                callback(message.timeStamp, message.bytes, rtdata->userdata);
             }
             else
             {
@@ -116,18 +116,7 @@ jackProcessIn (jack_nframes_t nframes, void *arg)
                  * the message.
                  */
 
-                if (rtData->queue.size < rtData->queue.ringSize)
-                {
-                    rtData->queue.ring[rtData->queue.back++] = message;
-                    if (rtData->queue.back == rtData->queue.ringSize)
-                        rtData->queue.back = 0;
-
-                    rtData->queue.size++;
-                }
-                else
-                {
-                    errprintfunc("message queue limit reached");
-                }
+                (void) rtdata->queue.add(message);
             }
         }
     }

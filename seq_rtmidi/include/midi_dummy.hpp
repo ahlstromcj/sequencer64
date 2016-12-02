@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-20
+ * \updates       2016-12-02
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring...
@@ -42,32 +42,37 @@ public:
         error(rterror::WARNING, m_error_string);
     }
 
-    rtmidi_api get_current_api () const
+    virtual ~midi_in_dummy ()
+    {
+        // Empty body
+    }
+
+    virtual rtmidi_api get_current_api () const
     {
         return RTMIDI_API_DUMMY;
     }
 
-    void open_port (unsigned /*portnumber*/, const std::string & /*portname*/)
+    virtual void open_port (unsigned /*number*/, const std::string & /*name*/)
     {
         // no code
     }
 
-    void open_virtual_port (const std::string & /*portname*/)
+    virtual void open_virtual_port (const std::string & /*portname*/)
     {
         // no code
     }
 
-    void close_port ()
+    virtual void close_port ()
     {
         // no code
     }
 
-    unsigned get_port_count ()
+    virtual unsigned get_port_count ()
     {
         return 0;
     }
 
-    std::string get_port_name (unsigned /*portnumber*/)
+    virtual std::string get_port_name (unsigned /*portnumber*/)
     {
         static std::string s_dummy;
         return s_dummy;
@@ -76,7 +81,7 @@ public:
 
 protected:
 
-    void initialize (const std::string & /*clientname*/)
+    virtual void initialize (const std::string & /*clientname*/)
     {
         // no code
     }
@@ -98,48 +103,53 @@ public:
         error(rterror::WARNING, m_error_string);
     }
 
+    virtual ~midi_out_dummy ()
+    {
+        // Empty body
+    }
+
     /**
      * \getter RTMIDI_API_DUMMY
      */
 
-    rtmidi_api get_current_api () const
+    virtual rtmidi_api get_current_api () const
     {
         return RTMIDI_API_DUMMY;
     }
 
-    void open_port (unsigned /*portnumber*/, const std::string & /*portname*/)
+    virtual void open_port (unsigned /*number*/, const std::string & /*name*/)
     {
         // no code
     }
 
-    void open_virtual_port (const std::string & /*portname*/)
+    virtual void open_virtual_port (const std::string & /*portname*/)
     {
         // no code
     }
 
-    void close_port ()
+    virtual void close_port ()
     {
         // no code
     }
 
-    unsigned get_port_count ()
+    virtual unsigned get_port_count ()
     {
         return 0;
     }
 
-    std::string get_port_name (unsigned /*portnumber*/)
+    virtual std::string get_port_name (unsigned /*portnumber*/)
     {
         return std::string("");
     }
 
-    void send_message (const std::vector<midibyte> & /*message*/)
+    virtual void send_message (const std::vector<midibyte> & /*message*/)
     {
         // no code
     }
 
 protected:
 
-    void initialize (const std::string & /*clientname*/)
+    virtual void initialize (const std::string & /*clientname*/)
     {
         // no code
     }

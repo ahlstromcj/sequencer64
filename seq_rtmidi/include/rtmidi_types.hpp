@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2016-12-02
+ * \updates       2016-12-03
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -18,7 +18,7 @@
 
 #include <vector>                           /* std::vector container        */
 
-#include "midibyte.hpp"
+#include "midibyte.hpp"                     /* seq64::midibyte typedef      */
 
 /*
  * This was the version of the RtMidi library from which this reimplementation
@@ -57,7 +57,7 @@ enum rtmidi_api
 
 typedef void (* rtmidi_callback_t)
 (
-    double timeStamp,
+    double timestamp,
     std::vector<midibyte> & message,
     void * userdata
 );
@@ -82,8 +82,9 @@ struct midi_message
 };
 
 /**
- *  Provides a queue of midi_message structures.  This entity used to be
- *  nested in the midi_in_api class.
+ *  Provides a queue of midi_message structures.  This entity used to be a
+ *  plain structure nested in the midi_in_api class.  We made it a class to
+ *  encapsulate some common operations to save a burden on the callers.
  */
 
 class midi_queue
@@ -101,10 +102,19 @@ public:
 
     midi_queue ();
 
+    /**
+     * \getter m_size
+     */
+
     bool empty () const
     {
         return m_size == 0;
     }
+
+    /**
+     * \return
+     *      Returns true if the queue size is at maximum.
+     */
 
     bool full () const
     {
@@ -115,6 +125,10 @@ public:
     void pop ();
     void allocate (unsigned queuesize);
     void deallocate ();
+
+    /**
+     * \getter m_ring[m_front]
+     */
 
     const midi_message & front () const
     {
@@ -149,12 +163,30 @@ public:
 
     rtmidi_in_data ();
 
+    /**
+     * \getter m_queue const
+     */
+
+    const midi_queue & queue () const
+    {
+        return m_queue;
+    }
+
+    /**
+     * \getter m_queue non-const
+     */
+
     midi_queue & queue ()
     {
         return m_queue;
     }
 
     const midi_message & message () const
+    {
+        return m_message;
+    }
+
+    midi_message & message ()
     {
         return m_message;
     }
@@ -191,7 +223,7 @@ public:
 
     void first_message (bool flag)
     {
-        m_first_message = false;
+        m_first_message = flag;
     }
 
     bool continue_sysex () const
@@ -214,22 +246,57 @@ public:
         m_using_callback = flag;
     }
 
+    /**
+     * \getter m_api_data const
+     */
+
+    const void * api_data () const
+    {
+        return m_api_data;
+    }
+
+    /**
+     * \getter m_api_data non-const
+     */
+
     void * api_data ()
     {
         return m_api_data;
     }
+
+    void api_data (void * dataptr)
+    {
+        m_api_data = dataptr;
+    }
+
+    /**
+     * \getter m_user_data const
+     */
+
+    const void * user_data () const
+    {
+        return m_user_data;
+    }
+
+    /**
+     * \getter m_user_data const
+     */
 
     void * user_data ()
     {
         return m_user_data;
     }
 
+    /**
+     * \setter m_user_data
+     */
+
     void user_data (void * dataptr)
     {
         m_user_data = dataptr;
     }
 
-    rtmidi_callback_t user_callback ()
+    rtmidi_callback_t user_callback () const
     {
         return m_user_callback;
     }
@@ -239,7 +306,7 @@ public:
         m_user_callback = cbptr;
     }
 
-};
+};          // class rtmidi_in_data
 
 }           // namespace seq64
 

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-20
+ * \updates       2016-12-03
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    API information deciphered from:
@@ -123,17 +123,17 @@ midiInputCallback
      * fundamentally different.
      */
 
-    rtmidi_in_data * data = (rtmidi_in_data *) instancePtr;
-    WinMidiData * apiData = static_cast<WinMidiData *>(data->apiData);
-    if (data->firstMessage == true)         // Calculate time stamp.
+    rtmidi_in_data * rtindata = (rtmidi_in_data *) instancePtr;
+    WinMidiData * windata = static_cast<WinMidiData *>(rtindata->api_data());
+    if (rtindata->first_message())         // Calculate time stamp.
     {
-        apiData->message.timeStamp = 0.0;
-        data->firstMessage = false;
+        windata->message.timeStamp = 0.0;
+        rtindata->first_message(false);
     }
     else
-        apiData->message.timeStamp = double(timestamp-apiData->lastTime) * 0.001;
+        windata->message.timeStamp = double(timestamp-windata->lastTime) * 0.001;
 
-    apiData->lastTime = timestamp;
+    windata->lastTime = timestamp;
     if (inputStatus == MIM_DATA)     // Channel or system message
     {
         // Make sure the first byte is a status byte.
@@ -153,7 +153,7 @@ midiInputCallback
             nBytes = 3;
         else if (status == 0xF1)
         {
-            if (data->ignoreFlags & 0x02)
+            if (rtindata->test_ignore_flags(0x02))
                 return;
             else
                 nBytes = 2;
@@ -162,65 +162,62 @@ midiInputCallback
             nBytes = 3;
         else if (status == 0xF3)
             nBytes = 2;
-        else if (status == 0xF8 && (data->ignoreFlags & 0x02))
+        else if (status == 0xF8 && rtindata->test_ignore_flags(0x02))
         {
-            // A MIDI timing tick message and we're ignoring it.
-
-            return;
+            return;     // MIDI timing tick message and we're ignoring it.
         }
-        else if (status == 0xFE && (data->ignoreFlags & 0x04))
+        else if (status == 0xFE && rtindata->test_ignore_flags(0x04))
         {
-            // A MIDI active sensing message and we're ignoring it.
-
-            return;
+            return;     // MIDI active sensing message and we're ignoring it.
         }
 
         // Copy bytes to our MIDI message.
 
         midibyte * ptr = (midibyte *) &midiMessage;
         for (int i = 0; i < nBytes; ++i)
-            apiData->message.bytes.push_back(*ptr++);
+            windata->message.bytes.push_back(*ptr++);
     }
     else   // Sysex message ( MIM_LONGDATA or MIM_LONGERROR )
     {
         MIDIHDR * sysex = (MIDIHDR *) midiMessage;
-        if (!(data->ignoreFlags & 0x01) && inputStatus != MIM_LONGERROR)
+        if (! rtindata->test_ignore_flags(0x01) && inputStatus != MIM_LONGERROR)
         {
             // Sysex message and we're not ignoring it
 
-            for (int i = 0; i < (int)sysex->dwBytesRecorded; ++i)
-                apiData->message.bytes.push_back(sysex->lpData[i]);
+            for (int i = 0; i < int(sysex->dwBytesRecorded); ++i)
+                windata->message.bytes.push_back(sysex->lpData[i]);
         }
 
         /*
          * See banner notes about the WinMM API.
          */
 
-        if (apiData->sysexBuffer[sysex->dwUser]->dwBytesRecorded > 0)
+        if (windata->sysexBuffer[sysex->dwUser]->dwBytesRecorded > 0)
         {
-            EnterCriticalSection(&(apiData->_mutex));
+            EnterCriticalSection(&(windata->_mutex));
             MMRESULT result = midiInAddBuffer
             (
-                apiData->inHandle, apiData->sysexBuffer[sysex->dwUser],
+                windata->inHandle, windata->sysexBuffer[sysex->dwUser],
                 sizeof(MIDIHDR)
             );
-            LeaveCriticalSection(&(apiData->_mutex));
+            LeaveCriticalSection(&(windata->_mutex));
             if (result != MMSYSERR_NOERROR)
                 errprintfunc("error sending sysex to Midi device";
 
-            if (data->ignoreFlags & 0x01)
+            if (rtindata->test_ignore_flags(0x01))
                 return;
         }
         else
             return;
     }
 
-    if (data->usingCallback)
+    if (rtindata->using_callback())
     {
-        rtmidi_callback_t callback = data->userCallback;
+        rtmidi_callback_t callback = rtindata->user_callback();
         callback
         (
-            apiData->message.timeStamp, &apiData->message.bytes, data->userdata
+            windata->message.timeStamp, &windata->message.bytes,
+            rtindata->userdata
         );
     }
     else
@@ -230,11 +227,9 @@ midiInputCallback
          * message.
          */
 
-        (void) data->queue.add(message);
+        (void) data->queue().add(message);
     }
-
-
-    apiData->message.bytes.clear();     /* clear for the next input message */
+    windata->message.bytes.clear();     /* clear for the next input message */
 }
 
 /**
@@ -264,15 +259,15 @@ midi_in_winmm::midi_in_winmm
 
 midi_in_winmm::~midi_in_winmm ()
 {
-    WinMidiData * data = static_cast<WinMidiData *>(m_api_data);
+    WinMidiData * windata = static_cast<WinMidiData *>(m_api_data);
     close_port();
-    DeleteCriticalSection(&(data->_mutex));
-    delete data;
+    DeleteCriticalSection(&(windata->_mutex));
+    delete windata;
 }
 
 /**
- *  Initializes the JACK client MIDI data structure.  Then calls the connect()
- *  function.
+ *  Initializes the WinMM client MIDI data structure.  Then calls the
+ *  connect() function.
  *
  *  We'll issue a warning here if no devices are available but not throw an
  *  error since the user can plugin something later.
@@ -293,11 +288,11 @@ midi_in_winmm::initialize (const std::string & /*clientname*/)
 
     // Save our api-specific connection information.
 
-    WinMidiData *data = (WinMidiData *) new WinMidiData;
-    m_api_data = (void *) data;
-    m_input_data.apiData = (void *) data;
-    data->message.bytes.clear();  // needs to be empty for first input message
-    if (!InitializeCriticalSectionAndSpinCount(&(data->_mutex), 0x00000400))
+    WinMidiData * windata = reinterpret_cast<WinMidiData *>(new WinMidiData);
+    m_api_data = reinterpret_cast<void *>(windata);
+    m_input_data.windata = reinterpret_cast<void *>(windata);
+    windata->message.bytes.clear();  // must be empty for first input message
+    if (!InitializeCriticalSectionAndSpinCount(&(windata->_mutex), 0x00000400))
     {
         m_error_string =
             func_message("InitializeCriticalSectionAndSpinCount() failed");
@@ -346,10 +341,10 @@ midi_in_winmm::open_port (unsigned portnumber, const std::string & /*portname*/)
         return;
     }
 
-    WinMidiData * data = static_cast<WinMidiData *>(m_api_data);
+    WinMidiData * windata = static_cast<WinMidiData *>(m_api_data);
     MMRESULT result = midiInOpen
     (
-        &data->inHandle, portnumber, (DWORD_PTR) &midiInputCallback,
+        &windata->inHandle, portnumber, (DWORD_PTR) &midiInputCallback,
         (DWORD_PTR) &m_input_data, CALLBACK_FUNCTION
     );
     if (result != MMSYSERR_NOERROR)
@@ -365,21 +360,21 @@ midi_in_winmm::open_port (unsigned portnumber, const std::string & /*portname*/)
 
     for (int i = 0; i < RT_SYSEX_BUFFER_COUNT; ++i)
     {
-        data->sysexBuffer[i] = (MIDIHDR*) new char[ sizeof(MIDIHDR) ];
-        data->sysexBuffer[i]->lpData = new char[ RT_SYSEX_BUFFER_SIZE ];
-        data->sysexBuffer[i]->dwBufferLength = RT_SYSEX_BUFFER_SIZE;
+        windata->sysexBuffer[i] = (MIDIHDR *) new char [sizeof(MIDIHDR)];
+        windata->sysexBuffer[i]->lpData = new char [RT_SYSEX_BUFFER_SIZE];
+        windata->sysexBuffer[i]->dwBufferLength = RT_SYSEX_BUFFER_SIZE;
 
         // We use the dwUser parameter as buffer indicator
 
-        data->sysexBuffer[i]->dwUser = i;
-        data->sysexBuffer[i]->dwFlags = 0;
+        windata->sysexBuffer[i]->dwUser = i;
+        windata->sysexBuffer[i]->dwFlags = 0;
         result = midiInPrepareHeader
         (
-            data->inHandle, data->sysexBuffer[i], sizeof(MIDIHDR)
+            windata->inHandle, windata->sysexBuffer[i], sizeof(MIDIHDR)
         );
         if (result != MMSYSERR_NOERROR)
         {
-            midiInClose(data->inHandle);
+            midiInClose(windata->inHandle);
             m_error_string =
                 func_message("error starting Win MM input port (PrepareHeader)");
 
@@ -391,11 +386,11 @@ midi_in_winmm::open_port (unsigned portnumber, const std::string & /*portname*/)
 
         result = midiInAddBuffer
         (
-            data->inHandle, data->sysexBuffer[i], sizeof(MIDIHDR)
+            windata->inHandle, windata->sysexBuffer[i], sizeof(MIDIHDR)
         );
         if (result != MMSYSERR_NOERROR)
         {
-            midiInClose(data->inHandle);
+            midiInClose(windata->inHandle);
             m_error_string =
                 func_message("error starting Win MM input port (AddBuffer)");
 
@@ -404,10 +399,10 @@ midi_in_winmm::open_port (unsigned portnumber, const std::string & /*portname*/)
         }
     }
 
-    result = midiInStart(data->inHandle);
+    result = midiInStart(windata->inHandle);
     if (result != MMSYSERR_NOERROR)
     {
-        midiInClose(data->inHandle);
+        midiInClose(windata->inHandle);
         m_error_string = func_message("error starting Win MM MIDI input port");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
@@ -440,21 +435,21 @@ midi_in_winmm::close_port ()
 {
     if (m_connected)
     {
-        WinMidiData *data = static_cast<WinMidiData *>(m_api_data);
-        EnterCriticalSection(&(data->_mutex));
-        midiInReset(data->inHandle);
-        midiInStop(data->inHandle);
+        WinMidiData * windata = static_cast<WinMidiData *>(m_api_data);
+        EnterCriticalSection(&(windata->_mutex));
+        midiInReset(windata->inHandle);
+        midiInStop(windata->inHandle);
         for (int i = 0; i < RT_SYSEX_BUFFER_COUNT; ++i)
         {
             int result = midiInUnprepareHeader
             (
-                data->inHandle, data->sysexBuffer[i], sizeof(MIDIHDR)
+                windata->inHandle, windata->sysexBuffer[i], sizeof(MIDIHDR)
             );
-            delete [] data->sysexBuffer[i]->lpData;
-            delete [] data->sysexBuffer[i];
+            delete [] windata->sysexBuffer[i]->lpData;
+            delete [] windata->sysexBuffer[i];
             if (result != MMSYSERR_NOERROR)
             {
-                midiInClose(data->inHandle);
+                midiInClose(windata->inHandle);
                 m_error_string =
                     func_message("error closing Win MM "
                         "input port (midiInUnprepareHeader)");
@@ -463,9 +458,9 @@ midi_in_winmm::close_port ()
                 return;
             }
         }
-        midiInClose(data->inHandle);
+        midiInClose(windata->inHandle);
         m_connected = false;
-        LeaveCriticalSection(&(data->_mutex));
+        LeaveCriticalSection(&(windata->_mutex));
     }
 }
 
@@ -703,10 +698,10 @@ midi_out_winmm::open_port (unsigned portnumber, const std::string & /*portname*/
         return;
     }
 
-    WinMidiData *data = static_cast<WinMidiData *>(m_api_data);
+    WinMidiData * windata = static_cast<WinMidiData *>(m_api_data);
     MMRESULT result = midiOutOpen
     (
-        &data->outHandle, portnumber, (DWORD) NULL, (DWORD) NULL, CALLBACK_NULL
+        &windata->outHandle, portnumber, (DWORD) NULL, (DWORD) NULL, CALLBACK_NULL
     );
     if (result != MMSYSERR_NOERROR)
     {
@@ -726,9 +721,9 @@ midi_out_winmm::close_port ()
 {
     if (m_connected)
     {
-        WinMidiData * data = static_cast<WinMidiData *>(m_api_data);
-        midiOutReset(data->outHandle);
-        midiOutClose(data->outHandle);
+        WinMidiData * windata = static_cast<WinMidiData *>(m_api_data);
+        midiOutReset(windata->outHandle);
+        midiOutClose(windata->outHandle);
         m_connected = false;
     }
 }
@@ -771,7 +766,7 @@ midi_out_winmm::send_message (const std::vector<midibyte> & message)
     }
 
     MMRESULT result;
-    WinMidiData * data = static_cast<WinMidiData *>(m_api_data);
+    WinMidiData * windata = static_cast<WinMidiData *>(m_api_data);
     if (message.at(0) == 0xF0)     // Sysex message
     {
         // Allocate buffer for sysex data.
@@ -795,7 +790,7 @@ midi_out_winmm::send_message (const std::vector<midibyte> & message)
         sysex.lpData = (LPSTR) buffer;
         sysex.dwBufferLength = nBytes;
         sysex.dwFlags = 0;
-        result = midiOutPrepareHeader(data->outHandle,  &sysex, sizeof(MIDIHDR));
+        result = midiOutPrepareHeader(windata->outHandle,  &sysex, sizeof(MIDIHDR));
         if (result != MMSYSERR_NOERROR)
         {
             free(buffer);
@@ -806,7 +801,7 @@ midi_out_winmm::send_message (const std::vector<midibyte> & message)
 
         // Send the message.
 
-        result = midiOutLongMsg(data->outHandle, &sysex, sizeof(MIDIHDR));
+        result = midiOutLongMsg(windata->outHandle, &sysex, sizeof(MIDIHDR));
         if (result != MMSYSERR_NOERROR)
         {
             free(buffer);
@@ -820,7 +815,7 @@ midi_out_winmm::send_message (const std::vector<midibyte> & message)
         while
         (
             MIDIERR_STILLPLAYING ==
-                midiOutUnprepareHeader(data->outHandle, &sysex, sizeof(MIDIHDR))
+                midiOutUnprepareHeader(windata->outHandle, &sysex, sizeof(MIDIHDR))
         )
         {
             Sleep(1);
@@ -850,7 +845,7 @@ midi_out_winmm::send_message (const std::vector<midibyte> & message)
 
         // Send the message immediately.
 
-        result = midiOutShortMsg(data->outHandle, packet);
+        result = midiOutShortMsg(windata->outHandle, packet);
         if (result != MMSYSERR_NOERROR)
         {
             m_error_string = func_message("error sending MIDI message");

@@ -128,18 +128,11 @@ public:
     void cancel_callback ();
     double get_message (std::vector<midibyte> & message);
 
-    virtual bool poll_queue () const
-    {
-        bool result = false;
-        if (is_nullptr(m_input_data.callback()))
-            result = ! m_input_data.queue().empty();
-
-        return result;
-    }
+    virtual bool poll_queue () const;
 
 };          // class midi_in_api
 
-/*
+/**
  *  MIDI Output API.
  */
 

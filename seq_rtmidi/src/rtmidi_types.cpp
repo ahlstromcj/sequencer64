@@ -6,7 +6,7 @@
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-01
  * \updates       2016-12-01
- * \license       See the rtexmidi.lic file.  Too big for a header file.
+ * \license       See the r3exmidi.lic file.  Too big for a header file.
  *
  *
  */
@@ -71,6 +71,7 @@ midi_queue::deallocate ()
 
 /**
  *
+ *  As long as we haven't reached our queue size limit, push the message.
  */
 
 bool
@@ -104,8 +105,6 @@ midi_queue::pop ()
         m_front = 0;
 }
 
-}           // namespace seq64
-
 /*
  * class rtmidi_in_data
  */
@@ -125,6 +124,8 @@ rtmidi_in_data::rtmidi_in_data ()
 {
     // no body
 }
+
+}           // namespace seq64
 
 /*
  * rtmidi_types.cpp

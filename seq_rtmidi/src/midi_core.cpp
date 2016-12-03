@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-11-20
+ * \updates       2016-12-02
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    The CoreMIDI API is based on the use of a callback function for MIDI
@@ -77,12 +77,12 @@ static void midiInputCallback
 )
 {
     rtmidi_in_data * rtindata = static_cast<rtmidi_in_data *>(procRef);
-    CoreMidiData * apiData = static_cast<CoreMidiData *>(rtindata->api_data());
+    CoreMidiData * coredata = static_cast<CoreMidiData *>(rtindata->api_data());
     midibyte status;
     unsigned short nBytes, iByte, size;
     unsigned long long time;
     bool continuesysex = rtindata->continue_sysex();
-    midi_message & message = rtindata->message;
+    midi_message & message = rtindata->message();           // const?
     const MIDIPacket * packet = &list->packet[0];
     for (unsigned i = 0; i < list->numPackets; ++i)
     {
@@ -99,7 +99,7 @@ static void midiInputCallback
         if (rtindata->first_message())
         {
             message.timeStamp = 0.0;
-            rtindata->firstMessage(false);
+            rtindata->first_message(false);
         }
         else
         {
@@ -111,25 +111,22 @@ static void midiInputCallback
              */
 
             if (time == 0)
-            {
                 time = AudioGetCurrentHostTime();
-            }
-            time -= apiData->lastTime;
+
+            time -= coredata->lastTime;
             time = AudioConvertHostTimeToNanos(time);
             if (! continuesysex)
                 message.timeStamp = time * 0.000000001;
         }
-        apiData->lastTime = packet->timeStamp;
+        coredata->lastTime = packet->timeStamp;
 
         /*
          *  "Last time" equals 0: this happens when receiving asynchronous
          *  SysEx messages
          */
 
-        if (apiData->lastTime == 0)
-        {
-            apiData->lastTime = AudioGetCurrentHostTime();
-        }
+        if (coredata->lastTime == 0)
+            coredata->lastTime = AudioGetCurrentHostTime();
 
         iByte = 0;
         if (continuesysex)
@@ -145,7 +142,6 @@ static void midiInputCallback
             }
             continuesysex = packet->data[nBytes - 1] != 0xF7;
             rtindata->continue_sysex(continuesysex);
-
             if (! rtindata->test_ignore_flags(0x01) && ! continuesysex)
             {
                 /*
@@ -153,20 +149,18 @@ static void midiInputCallback
                  * function or queue the message.
                  */
 
-                if (rtindata->usingCallback)
+                if (rtindata->using_callback())
                 {
-                    rtmidi_callback_t callback = rtindata->userCallback;
-                    callback(message.timeStamp, &message.bytes, rtindata->userdata);
+                    rtmidi_callback_t callback = rtindata->user_callback();
+                    callback
+                    (
+                        message.timeStamp, &message.bytes,
+                        rtindata->user_data()
+                    );
                 }
                 else
-                {
-                    /*
-                     * As long as we haven't reached our queue size limit,
-                     * push the message.
-                     */
+                    (void) rtindata->queue().add(message);
 
-                    (void) rtindata->queue.add(message);
-                }
                 message.bytes.clear();
             }
         }
@@ -193,7 +187,7 @@ static void midiInputCallback
                     size = 3;
                 else if (status == 0xF0)
                 {
-                    if (rtindata->test_ignore_flags(0x01)) // MIDI SysEx
+                    if (rtindata->test_ignore_flags(0x01))  // MIDI SysEx
                     {
                         size = 0;
                         iByte = nBytes;
@@ -206,7 +200,7 @@ static void midiInputCallback
                 }
                 else if (status == 0xF1)
                 {
-                    if (rtindata->test_ignore_flags(0x02)) // MIDI time code message
+                    if (rtindata->test_ignore_flags(0x02))  // MIDI time code
                     {
                         size = 0;
                         iByte += 2;
@@ -224,7 +218,6 @@ static void midiInputCallback
                     iByte += 1;                 // ...and we're ignoring it.
                 }
                 else if (status == 0xFE && rtindata->test_ignore_flags(0x04))
-                    HERE HERE
                 {
                     size = 0;                   // MIDI active sensing message...
                     iByte += 1;                 // ...and we're ignoring it.
@@ -245,23 +238,18 @@ static void midiInputCallback
                          * callback function or queue the message.
                          */
 
-                        if (data->usingCallback)
+                        if (rtindata->using_callback())
                         {
-                            rtmidi_callback_t callback = data->userCallback;
+                            rtmidi_callback_t callback = data->user_callback();
                             callback
                             (
-                                message.timeStamp, &message.bytes, data->userdata
+                                message.timeStamp, &message.bytes,
+                                rtindata->userdata
                             );
                         }
                         else
-                        {
-                            /*
-                             * As long as we haven't reached our queue size
-                             * limit, push the message.
-                             */
+                            (void) rtindata->queue.add(message);
 
-                            (void) data->queue.add(message);
-                        }
                         message.bytes.clear();
                     }
                     iByte += size;
@@ -296,10 +284,10 @@ midi_in_core::midi_in_core
 midi_in_core::~midi_in_core ()
 {
     close_port();
-    CoreMidiData * data = static_cast<CoreMidiData *>(m_api_data);
-    MIDIClientDispose(data->client);
-    if (data->endpoint)
-        MIDIEndpointDispose(data->endpoint);
+    CoreMidiData * coredata = static_cast<CoreMidiData *>(m_api_data);
+    MIDIClientDispose(coredata->client);
+    if (coredata->endpoint)
+        MIDIEndpointDispose(coredata->endpoint);
 
     delete data;
 }
@@ -339,11 +327,14 @@ midi_in_core::initialize (const std::string & clientname)
 
     // Save our api-specific connection information.
 
-    CoreMidiData * data = (CoreMidiData *) new CoreMidiData;
-    data->client = client;
-    data->endpoint = 0;
-    m_api_data = (void *) data;
-    m_input_data.apiData = (void *) data;
+    CoreMidiData * coredata = static_cast<CoreMidiData *>
+    (
+        new (std::nothrow) CoreMidiData()
+    );
+    coredata->client = client;
+    coredata->endpoint = 0;
+    m_api_data = reinterpret_cast<void *>(coredata);
+    m_input_data.api_data(reinterpret_cast<void *>(coredata));
     CFRelease(name);
 }
 
@@ -388,16 +379,16 @@ midi_in_core::open_port (unsigned portnumber, const std::string & portname)
     }
 
     MIDIPortRef port;
-    CoreMidiData * data = static_cast<CoreMidiData *>(m_api_data);
+    CoreMidiData * coredata = static_cast<CoreMidiData *>(m_api_data);
     OSStatus result = MIDIInputPortCreate
     (
-        data->client,
+        coredata->client,
         CFStringCreateWithCString(NULL, portname.c_str(), kCFStringEncodingASCII),
         midiInputCallback, (void *) &m_input_data, &port
     );
     if (result != noErr)
     {
-        MIDIClientDispose(data->client);
+        MIDIClientDispose(coredata->client);
         m_error_string = func_message("error creating OS-X MIDI input port");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
@@ -409,7 +400,7 @@ midi_in_core::open_port (unsigned portnumber, const std::string & portname)
     if (endpoint == 0)
     {
         MIDIPortDispose(port);
-        MIDIClientDispose(data->client);
+        MIDIClientDispose(coredata->client);
         m_error_string = func_message("error getting MIDI input source");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
@@ -421,13 +412,13 @@ midi_in_core::open_port (unsigned portnumber, const std::string & portname)
     if (result != noErr)
     {
         MIDIPortDispose(port);
-        MIDIClientDispose(data->client);
+        MIDIClientDispose(coredata->client);
         m_error_string = func_message("error connecting OS-X MIDI input port");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
 
-    data->port = port;          // Save our api-specific port information
+    coredata->port = port;          // Save our api-specific port information
     m_connected = true;
 }
 
@@ -442,11 +433,11 @@ midi_in_core::open_port (unsigned portnumber, const std::string & portname)
 void
 midi_in_core::open_virtual_port (const std::string & portname)
 {
-    CoreMidiData * data = static_cast<CoreMidiData *>(m_api_data);
+    CoreMidiData * coredata = static_cast<CoreMidiData *>(m_api_data);
     MIDIEndpointRef endpoint;
     OSStatus result = MIDIDestinationCreate
     (
-        data->client,
+        coredata->client,
         CFStringCreateWithCString(NULL, portname.c_str(), kCFStringEncodingASCII),
         midiInputCallback, (void *) &m_input_data, &endpoint
     );
@@ -458,7 +449,7 @@ midi_in_core::open_virtual_port (const std::string & portname)
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
-    data->endpoint = endpoint; // save API-specific connection information
+    coredata->endpoint = endpoint; // save API-specific connection information
 }
 
 /**
@@ -468,12 +459,12 @@ midi_in_core::open_virtual_port (const std::string & portname)
 void
 midi_in_core::close_port ()
 {
-    CoreMidiData * data = static_cast<CoreMidiData *>(m_api_data);
-    if (data->endpoint)
-        MIDIEndpointDispose(data->endpoint);
+    CoreMidiData * coredata = static_cast<CoreMidiData *>(m_api_data);
+    if (coredata->endpoint)
+        MIDIEndpointDispose(coredata->endpoint);
 
-    if (data->port)
-        MIDIPortDispose(data->port);
+    if (coredata->port)
+        MIDIPortDispose(coredata->port);
 
     m_connected = false;
 }
@@ -766,12 +757,12 @@ midi_out_core::midi_out_core (const std::string & clientname)
 midi_out_core::~midi_out_core ()
 {
     close_port();
-    CoreMidiData * data = static_cast<CoreMidiData *>(m_api_data);
-    MIDIClientDispose(data->client);
-    if (data->endpoint)
-        MIDIEndpointDispose(data->endpoint);
+    CoreMidiData * coredata = static_cast<CoreMidiData *>(m_api_data);
+    MIDIClientDispose(coredata->client);
+    if (coredata->endpoint)
+        MIDIEndpointDispose(coredata->endpoint);
 
-    delete data;
+    delete coredata;
 }
 
 /**
@@ -804,10 +795,10 @@ midi_out_core::initialize (const std::string & clientname)
 
     // Save our API-specific connection information.
 
-    CoreMidiData * data = (CoreMidiData *) new CoreMidiData;
-    data->client = client;
-    data->endpoint = 0;
-    m_api_data = (void *) data;
+    CoreMidiData * coredata = new (std::nothrow) CoreMidiData();
+    coredata->client = client;
+    coredata->endpoint = 0;
+    m_api_data = reinterpret_cast<void *>(coredata);
     CFRelease(name);
 }
 
@@ -903,16 +894,16 @@ midi_out_core::open_port (unsigned portnumber, const std::string & portname)
     }
 
     MIDIPortRef port;
-    CoreMidiData * data = static_cast<CoreMidiData *>(m_api_data);
+    CoreMidiData * coredata = static_cast<CoreMidiData *>(m_api_data);
     OSStatus result = MIDIOutputPortCreate
     (
-        data->client,
+        coredata->client,
         CFStringCreateWithCString(NULL, portname.c_str(), kCFStringEncodingASCII),
         &port
     );
     if (result != noErr)
     {
-        MIDIClientDispose(data->client);
+        MIDIClientDispose(coredata->client);
         m_error_string = func_message("error creating OS-X MIDI output port");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
@@ -924,7 +915,7 @@ midi_out_core::open_port (unsigned portnumber, const std::string & portname)
     if (destination == 0)
     {
         MIDIPortDispose(port);
-        MIDIClientDispose(data->client);
+        MIDIClientDispose(coredata->client);
         m_error_string =
             "midi_out_core::open_port(): "
             "error getting MIDI output destination reference";
@@ -932,8 +923,8 @@ midi_out_core::open_port (unsigned portnumber, const std::string & portname)
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
-    data->port = port;      // Save our api-specific connection information.
-    data->destinationId = destination;
+    coredata->port = port;      // Save our api-specific connection information.
+    coredata->destinationId = destination;
     m_connected = true;
 }
 
@@ -943,12 +934,12 @@ midi_out_core::open_port (unsigned portnumber, const std::string & portname)
 
 void midi_out_core::close_port ()
 {
-    CoreMidiData * data = static_cast<CoreMidiData *>(m_api_data);
-    if (data->endpoint)
-        MIDIEndpointDispose(data->endpoint);
+    CoreMidiData * coredata = static_cast<CoreMidiData *>(m_api_data);
+    if (coredata->endpoint)
+        MIDIEndpointDispose(coredata->endpoint);
 
-    if (data->port)
-        MIDIPortDispose(data->port);
+    if (coredata->port)
+        MIDIPortDispose(coredata->port);
 
     m_connected = false;
 }
@@ -960,8 +951,8 @@ void midi_out_core::close_port ()
 void
 midi_out_core::open_virtual_port (const std::string & portname)
 {
-    CoreMidiData * data = static_cast<CoreMidiData *>(m_api_data);
-    if (data->endpoint)
+    CoreMidiData * coredata = static_cast<CoreMidiData *>(m_api_data);
+    if (coredata->endpoint)
     {
         m_error_string = func_message("virtual output port already exists");
         error(rterror::WARNING, m_error_string);
@@ -973,7 +964,7 @@ midi_out_core::open_virtual_port (const std::string & portname)
     MIDIEndpointRef endpoint;
     OSStatus result = MIDISourceCreate
     (
-        data->client,
+        coredata->client,
         CFStringCreateWithCString(NULL, portname.c_str(), kCFStringEncodingASCII),
         &endpoint
     );
@@ -983,7 +974,7 @@ midi_out_core::open_virtual_port (const std::string & portname)
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
-    data->endpoint = endpoint; // Save API-specific connection information.
+    coredata->endpoint = endpoint; // Save API-specific connection information.
 }
 
 /**
@@ -1007,7 +998,7 @@ midi_out_core::send_message (const std::vector<midibyte> & message)
     }
 
     MIDITimeStamp timeStamp = AudioGetCurrentHostTime();
-    CoreMidiData * data = static_cast<CoreMidiData *>(m_api_data);
+    CoreMidiData * coredata = static_cast<CoreMidiData *>(m_api_data);
     OSStatus result;
     if (message.at(0) != 0xF0 && nBytes > 3)
     {
@@ -1044,9 +1035,9 @@ midi_out_core::send_message (const std::vector<midibyte> & message)
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
-    if (data->endpoint)     // send to any destinations that may have connected
+    if (coredata->endpoint) // send to destinations that may have connected
     {
-        result = MIDIReceived(data->endpoint, packetList);
+        result = MIDIReceived(coredata->endpoint, packetList);
         if (result != noErr)
         {
             m_error_string =
@@ -1056,9 +1047,9 @@ midi_out_core::send_message (const std::vector<midibyte> & message)
         }
     }
 
-    if (m_connected)        // send to an explicit destination port if connected
+    if (m_connected)        // send to explicit destination port if connected
     {
-        result = MIDISend(data->port, data->destinationId, packetList);
+        result = MIDISend(coredata->port, coredata->destinationId, packetList);
         if (result != noErr)
         {
             m_error_string = func_message("error sending MIDI message to port");

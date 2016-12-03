@@ -238,12 +238,31 @@ midi_in_api::get_message (std::vector<midibyte> & message)
      * Copy queued message to the vector reference argument and then "pop" it.
      */
 
-    const std::vector<midibyte> & bytes = m_input_data.queue.()front().bytes;
+    const std::vector<midibyte> & bytes = m_input_data.queue().front().bytes;
     message.assign(bytes.begin(), bytes.end());
 
-    double stamp = m_input_data.queue.front().timeStamp;
-    m_input_data.queue.pop();
+    double stamp = m_input_data.queue().front().timeStamp;
+    m_input_data.queue().pop();
     return stamp;
+}
+
+/**
+ *  Simply checks to see if the input queue has any items.  A new addition to
+ *  the RtMidi interface.
+ *
+ * \return
+ *      Retruns true only if the API is not using a callback function and the
+ *      input queue is not empty.
+ */
+
+bool
+midi_in_api::poll_queue () const
+{
+    bool result = false;
+    if (is_nullptr(m_input_data.user_callback()))
+        result = ! m_input_data.queue().empty();
+
+    return result;
 }
 
 /*

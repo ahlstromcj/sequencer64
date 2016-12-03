@@ -77,7 +77,6 @@ midi_probe ()
 {
     std::vector<rtmidi_api> apis;
     rtmidi::get_compiled_api(apis);
-
     std::cout << "\nCompiled APIs:\n";
     for (unsigned i = 0; i < apis.size(); ++i)
     {
@@ -98,7 +97,9 @@ midi_probe ()
         for (unsigned i = 0; i < nports; ++i)
         {
             std::string portname = midiin.get_port_name(i);
-            std::cout << "  Input Port #" << i+1 << ": " << portname << std::endl;
+            std::cout
+                << "  Input Port #" << i+1 << ": " << portname << std::endl
+                ;
         }
 
         rtmidi_out midiout;
@@ -113,7 +114,9 @@ midi_probe ()
         for (unsigned i = 0; i < nports; ++i)
         {
             std::string portname = midiout.get_port_name(i);
-            std::cout << "  Output Port #" << i+1 << ": " << portname << std::endl;
+            std::cout
+                << "  Output Port #" << i+1 << ": " << portname << std::endl
+                ;
         }
         std::cout << std::endl;
     }

@@ -121,7 +121,8 @@ rtmidi::get_compiled_api (std::vector<rtmidi_api> & apis)
 
     /*
      * The order here will control the order of rtmidi's API search in the
-     * constructor.
+     * constructor.  For Linux, we will try JACK first, then fall back to
+     * ALSA, and then to the dummy implementation.
      */
 
 #ifdef SEQ64_BUILD_UNIX_JACK

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-01
+ * \updates       2016-12-03
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  In this refactoring, we are trying to improve the RtMidi project in the
@@ -223,7 +223,7 @@ alsa_midi_handler (void * ptr)
             break;
 
         case SND_SEQ_EVENT_SYSEX:
-            if ((rtindata->test_ignore_flags(0x01))
+            if (rtindata->test_ignore_flags(0x01))
                 break;
 
             if (ev->data.ext.len > alsadata->bufferSize)
@@ -318,7 +318,7 @@ alsa_midi_handler (void * ptr)
         if (rtindata->using_callback())
         {
             rtmidi_callback_t callback = rtindata->user_callback();
-            callback(message.timeStamp, message.bytes, rtindata->userdata);
+            callback(message.timeStamp, message.bytes, rtindata->user_data());
         }
         else
         {
@@ -327,7 +327,7 @@ alsa_midi_handler (void * ptr)
              * message.
              */
 
-            (void) rtindata->queue.add(message);
+            (void) rtindata->queue().add(message);
         }
     }
 
@@ -366,7 +366,7 @@ midi_in_alsa::midi_in_alsa
  *  thread, and then cleans up any API resources in use.
  */
 
-midi_in_alsa::~midi_in_alsa()
+midi_in_alsa::~midi_in_alsa ()
 {
     close_port();
 
@@ -390,7 +390,7 @@ midi_in_alsa::~midi_in_alsa()
 #endif
 
     snd_seq_close(alsadata->seq);
-    delete data;
+    delete alsadata;
 }
 
 /**
@@ -423,24 +423,22 @@ midi_in_alsa::initialize (const std::string & clientname)
      * m_queue = snd_seq_alloc_queue(m_alsa_seq);
      */
 
-    // Save our api-specific connection information.
-
     alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>
     (
-        new (std::nothrow) alsa_midi_data_t;
+        new (std::nothrow) alsa_midi_data_t
     );
-    if (not_nullptr(alsadata))
+    if (not_nullptr(alsadata))      /* save API-specific connection info */
     {
         alsadata->seq = seq;
         alsadata->portNum = -1;
         alsadata->vport = -1;
         alsadata->subscription = 0;
         alsadata->dummy_thread_id = pthread_self();
-        alsadata->thread = data->dummy_thread_id;
+        alsadata->thread = alsadata->dummy_thread_id;
         alsadata->trigger_fds[0] = -1;
-        data->trigger_fds[1] = -1;
-        m_api_data = reinterpret_cast<(void *> alsadata;
-        m_input_data.alsadata = reinterpret_cast<void *> alsadata;
+        alsadata->trigger_fds[1] = -1;
+        m_api_data = alsadata;                          /* no cast needed */
+        m_input_data.api_data(alsadata);                /* no cast needed */
         if (pipe(alsadata->trigger_fds) == -1)
         {
             m_error_string = func_message("error creating pipe objects");
@@ -451,16 +449,18 @@ midi_in_alsa::initialize (const std::string & clientname)
         // Create the input queue
 
 #ifndef AVOID_TIMESTAMPING
+
         alsadata->queue_id = snd_seq_alloc_named_queue(seq, "rtmidi Queue");
 
         // Set arbitrary tempo (mm=100) and resolution (240)
 
-        snd_seq_queue_tempo_t *qtempo;
+        snd_seq_queue_tempo_t * qtempo;
         snd_seq_queue_tempo_alloca(&qtempo);
         snd_seq_queue_tempo_set_tempo(qtempo, 600000);
         snd_seq_queue_tempo_set_ppq(qtempo, 240);
         snd_seq_set_queue_tempo(alsadata->seq, alsadata->queue_id, qtempo);
         snd_seq_drain_output(alsadata->seq);
+
 #endif
     }
 }
@@ -855,7 +855,7 @@ midi_in_alsa::open_virtual_port (const std::string & portname)
 void
 midi_in_alsa::close_port ()
 {
-    alsa_midi_data_t * data = static_cast<alsa_midi_data_t *>(m_api_data);
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
     if (m_connected)
     {
         if (alsadata->subscription)
@@ -976,8 +976,8 @@ midi_out_alsa::initialize (const std::string & clientname)
         error(rterror::MEMORY_ERROR, m_error_string);
         return;
     }
-    snd_midi_event_init(data->coder);
-    m_api_data = (void *) data;
+    snd_midi_event_init(alsadata->coder);
+    m_api_data = alsadata;                          /* no cast needed */
 }
 
 /**

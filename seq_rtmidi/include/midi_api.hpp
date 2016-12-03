@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-02
+ * \updates       2016-12-03
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -20,6 +20,7 @@
 
 #include <string>
 
+#include "app_limits.h"                 /* SEQ64_DEFAULT_PPQN etc.  */
 #include "easy_macros.h"
 #include "rterror.hpp"
 #include "rtmidi_types.hpp"
@@ -47,15 +48,32 @@ protected:
 
     void * m_api_data;
     bool m_connected;
-    std::string m_error_class;
     std::string m_error_string;
     rterror_callback m_error_callback;
     bool m_first_error_occurred;
     void * m_error_callback_user_data;
 
+    /**
+     *  Holds the current PPQN value.  Currently used only in setting up the
+     *  ALSA input API.
+     */
+
+    int m_ppqn;
+
+    /**
+     *  Holds the current BPM value.  Currently used only in setting up the
+     *  ALSA input API.
+     */
+
+    int m_bpm;
+
 public:
 
-    midi_api ();
+    midi_api
+    (
+        int ppqn    = SEQ64_DEFAULT_PPQN,       // 192, see app_limits.h
+        int bpm     = SEQ64_DEFAULT_BPM         // 120, see app_limits.h
+    );
     virtual ~midi_api ();
 
     virtual rtmidi_api get_current_api () const = 0;
@@ -76,6 +94,28 @@ public:
     bool is_port_open () const
     {
         return m_connected;
+    }
+
+    /**
+     * \getter m_ppqn
+     *      This is the pulses per quarter note.
+     *      Used only in the ALSA implementation at present.
+     */
+
+    int ppqn () const
+    {
+        return m_ppqn;
+    }
+
+    /**
+     * \getter m_bpm
+     *      This is the tempo value in beats per minute.
+     *      Used only in the ALSA implementation at present.
+     */
+
+    int bpm () const
+    {
+        return m_bpm;
     }
 
     /**
@@ -101,10 +141,6 @@ public:
 
     void error (rterror::Type type, const std::string & errorstring);
 
-protected:
-
-    virtual void initialize (const std::string & clientname) = 0;
-
 };          // class midi_api
 
 /**
@@ -120,7 +156,13 @@ protected:
 
 public:
 
-    midi_in_api (unsigned queuesizelimit);
+    midi_in_api
+    (
+        unsigned queuesizelimit,
+        int ppqn    = SEQ64_DEFAULT_PPQN,       // 192, see app_limits.h
+        int bpm     = SEQ64_DEFAULT_BPM         // 120, see app_limits.h
+    );
+
     virtual ~midi_in_api ();
     virtual void ignore_types (bool midisysex, bool miditime, bool midisense);
 
@@ -141,7 +183,7 @@ class midi_out_api : public midi_api
 
 public:
 
-    midi_out_api ();
+    midi_out_api (unsigned queuesizelimit = 0);
     virtual ~midi_out_api ();
     virtual void send_message (const std::vector<midibyte> & message) = 0;
     virtual bool poll_queue () const;

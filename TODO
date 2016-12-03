@@ -1,0 +1,15 @@
+Current Hot To-Do Items
+Chris Ahlstrom
+2016-12-03
+
+RtMidi implementation issues to work out:
+
+    -   Support for -A and -J (and skip JACK setup tries if -A is specified)
+    -   Support for the --buss option
+    -   Support for passing along the BPM and PPQN
+        -   At startup time
+        -   When changed in the GUI
+    -
+
+
+# vim: sw=4 ts=4 wm=4 et ft=sh

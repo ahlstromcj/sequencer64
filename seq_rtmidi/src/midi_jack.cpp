@@ -19,7 +19,6 @@
  */
 
 #include <sstream>
-
 #include <jack/jack.h>
 #include <jack/midiport.h>
 #include <jack/ringbuffer.h>
@@ -41,6 +40,8 @@ namespace seq64
 
 /**
  *  Contains the JACK MIDI API data as a kind of scratchpad for this object.
+ *  This guy needs a constructor taking parameters for an rtmidi_in_data
+ *  pointer.
  */
 
 struct JackMidiData
@@ -155,11 +156,13 @@ void
 midi_in_jack::initialize (const std::string & clientname)
 {
     JackMidiData * jackdata = new JackMidiData;
-//  m_api_data = (void *) jackdata;
     m_api_data = jackdata;                              /* no cast needed */
     jackdata->rtMidiIn = &m_input_data;
-    jackdata->port = NULL;
-    jackdata->client = NULL;
+    jackdata->port = nullptr;
+    jackdata->client = nullptr;
+    jackdata->buffSize = nullptr;
+    jackdata->buffMessage = nullptr;
+    jackdata->lastTime = 0;
     m_clientname = clientname;
     connect();
 }
@@ -173,6 +176,10 @@ midi_in_jack::initialize (const std::string & clientname)
  *
  *  If the JackMidiData client member is already set, this function returns
  *  immediately.
+ *
+ * \todo
+ *      See if the jack_client_open() call from jack_assistant is better or
+ *      has useful features.
  */
 
 void
@@ -455,7 +462,6 @@ void
 midi_out_jack::initialize (const std::string & clientname)
 {
     JackMidiData * jackdata = new JackMidiData;
-//  m_api_data = (void *) jackdata;
     m_api_data = jackdata;                          /* no cast needed */
     jackdata->port = nullptr;
     jackdata->client = nullptr;

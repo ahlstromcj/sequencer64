@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-01
+ * \updates       2016-12-03
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring...
@@ -30,15 +30,16 @@ namespace seq64
  *  Default constructor.
  */
 
-midi_api::midi_api ()
+midi_api::midi_api (int ppqn, int bpm)
  :
     m_api_data                  (0),
     m_connected                 (false),
-    m_error_class               ("midi_api"),
     m_error_string              (),
     m_error_callback            (0),
     m_first_error_occurred      (false),
-    m_error_callback_user_data  (0)
+    m_error_callback_user_data  (0),
+    m_ppqn                      (ppqn),
+    m_bpm                       (bpm)
 {
     // no code
 }
@@ -109,9 +110,13 @@ midi_api::error (rterror::Type type, const std::string & errorstring)
  *      Provides the ring-size of the MIDI input data queue.
  */
 
-midi_in_api::midi_in_api (unsigned queuesize)
- :
-    midi_api    ()
+midi_in_api::midi_in_api
+(
+    unsigned queuesize,
+    int ppqn,
+    int bpm
+) :
+    midi_api    (ppqn, bpm)
 {
     m_input_data.queue().allocate(queuesize);
 }
@@ -273,7 +278,7 @@ midi_in_api::poll_queue () const
  *  Default constructor.
  */
 
-midi_out_api::midi_out_api ()
+midi_out_api::midi_out_api (unsigned /*queuesize*/)
  :
     midi_api    ()
 {

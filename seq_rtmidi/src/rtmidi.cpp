@@ -110,6 +110,9 @@ rtmidi::get_version ()
 /**
  *  Gets the list of APIs compiled into the application.
  *
+ *  Note that we would also like to make ALSA versus JACK a runtime option as
+ *  it is in the legacy Sequencer64 application.
+ *
  * \param apis
  *      The API structure.
  */
@@ -149,59 +152,6 @@ rtmidi::get_compiled_api (std::vector<rtmidi_api> & apis)
 /*
  * class rtmidi_in
  */
-
-/**
- *  Opens the desired MIDI API.
- *
- * \param api
- *      The desired MIDI API.
- *
- * \param clientname
- *      The name of the client.  This is the name used to access the client.
- *
- * \param queuesizelimit
- *      The maximum size of the MIDI message queue.
- */
-
-void
-rtmidi_in::openmidi_api
-(
-   rtmidi_api api,
-   const std::string & clientname,
-   unsigned queuesizelimit
-)
-{
-    if (not_nullptr(m_rtapi))
-        delete m_rtapi;
-
-    m_rtapi = nullptr;
-
-#ifdef SEQ64_BUILD_UNIX_JACK
-    if (api == RTMIDI_API_UNIX_JACK)
-        m_rtapi = new midi_in_jack(clientname, queuesizelimit);
-#endif
-
-#ifdef SEQ64_BUILD_LINUX_ALSA
-    if (api == RTMIDI_API_LINUX_ALSA)
-        m_rtapi = new midi_in_alsa(clientname, queuesizelimit);
-#endif
-
-#ifdef SEQ64_BUILD_MACOSX_CORE
-    if (api == RTMIDI_API_MACOSX_CORE)
-        m_rtapi = new midi_in_core(clientname, queuesizelimit);
-#endif
-
-#ifdef SEQ64_BUILD_WINDOWS_MM
-    if (api == RTMIDI_API_WINDOWS_MM)
-        m_rtapi = new midi_in_winmm(clientname, queuesizelimit);
-#endif
-
-#ifdef SEQ64_BUILD_RTMIDI_DUMMY
-    if (api == RTMIDI_API_DUMMY)
-        m_rtapi = new midi_in_dummy(clientname, queuesizelimit);
-#endif
-
-}
 
 /**
  *  Constructs the desired MIDI API.
@@ -273,6 +223,59 @@ rtmidi_in::rtmidi_in
 rtmidi_in::~rtmidi_in()
 {
    // no code
+}
+
+/**
+ *  Opens the desired MIDI API.
+ *
+ * \param api
+ *      The desired MIDI API.
+ *
+ * \param clientname
+ *      The name of the client.  This is the name used to access the client.
+ *
+ * \param queuesizelimit
+ *      The maximum size of the MIDI message queue.
+ */
+
+void
+rtmidi_in::openmidi_api
+(
+   rtmidi_api api,
+   const std::string & clientname,
+   unsigned queuesizelimit
+)
+{
+    if (not_nullptr(m_rtapi))
+        delete m_rtapi;
+
+    m_rtapi = nullptr;
+
+#ifdef SEQ64_BUILD_UNIX_JACK
+    if (api == RTMIDI_API_UNIX_JACK)
+        m_rtapi = new midi_in_jack(clientname, queuesizelimit);
+#endif
+
+#ifdef SEQ64_BUILD_LINUX_ALSA
+    if (api == RTMIDI_API_LINUX_ALSA)
+        m_rtapi = new midi_in_alsa(clientname, queuesizelimit);
+#endif
+
+#ifdef SEQ64_BUILD_MACOSX_CORE
+    if (api == RTMIDI_API_MACOSX_CORE)
+        m_rtapi = new midi_in_core(clientname, queuesizelimit);
+#endif
+
+#ifdef SEQ64_BUILD_WINDOWS_MM
+    if (api == RTMIDI_API_WINDOWS_MM)
+        m_rtapi = new midi_in_winmm(clientname, queuesizelimit);
+#endif
+
+#ifdef SEQ64_BUILD_RTMIDI_DUMMY
+    if (api == RTMIDI_API_DUMMY)
+        m_rtapi = new midi_in_dummy(clientname, queuesizelimit);
+#endif
+
 }
 
 /**

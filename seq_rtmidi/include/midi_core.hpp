@@ -65,9 +65,9 @@ public:
     virtual unsigned get_port_count ();
     virtual std::string get_port_name (unsigned portnumber);
 
-protected:
+private:
 
-    virtual void initialize (const std::string & clientname);
+    /* virtual */ void initialize (const std::string & clientname);
 
 };
 
@@ -99,9 +99,9 @@ public:
     virtual std::string get_port_name (unsigned portnumber);
     virtual void send_message (const std::vector<midibyte> & message);
 
-protected:
+private:
 
-    virtual void initialize (const std::string & clientname);
+    /* virtual */ void initialize (const std::string & clientname);
 
 };          // midi_out_core
 

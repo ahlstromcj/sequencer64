@@ -24,6 +24,7 @@
 
 #include <sstream>
 
+#include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
 #include "midi_alsa.hpp"
 
 /*
@@ -41,8 +42,8 @@ namespace seq64
  * stamps and other assorted fixes!!!
  *
  * If you don't need timestamping for incoming MIDI events, define the
- * preprocessor definition AVOID_TIMESTAMPING to save resources associated
- * with the ALSA sequencer queues.
+ * preprocessor definition SEQ64_AVOID_TIMESTAMPING to save resources
+ * associated with the ALSA sequencer queues.
  */
 
 #include <pthread.h>
@@ -353,10 +354,11 @@ alsa_midi_handler (void * ptr)
 midi_in_alsa::midi_in_alsa
 (
     const std::string & clientname,
-    unsigned queuesize
-)
- :
-    midi_in_api (queuesize)
+    unsigned queuesize,
+    int ppqn,
+    int bpm
+) :
+    midi_in_api (queuesize, ppqn, bpm)
 {
     initialize(clientname);             // is this a virtual function!!!???
 }
@@ -385,7 +387,7 @@ midi_in_alsa::~midi_in_alsa ()
     if (alsadata->vport >= 0)
         snd_seq_delete_port(alsadata->seq, alsadata->vport);
 
-#ifndef AVOID_TIMESTAMPING
+#ifndef SEQ64_AVOID_TIMESTAMPING
     snd_seq_free_queue(alsadata->seq, alsadata->queue_id);
 #endif
 
@@ -448,16 +450,20 @@ midi_in_alsa::initialize (const std::string & clientname)
 
         // Create the input queue
 
-#ifndef AVOID_TIMESTAMPING
+#ifndef SEQ64_AVOID_TIMESTAMPING
 
         alsadata->queue_id = snd_seq_alloc_named_queue(seq, "rtmidi Queue");
 
-        // Set arbitrary tempo (mm=100) and resolution (240)
+        /*
+         * This code used to set arbitrary tempo (mm=100, or 60000.0) and
+         * resolution (240) values, but now we've made them parameters.
+         */
 
+        int tempous = tempo_us_from_beats_per_minute(bpm());
         snd_seq_queue_tempo_t * qtempo;
         snd_seq_queue_tempo_alloca(&qtempo);
-        snd_seq_queue_tempo_set_tempo(qtempo, 600000);
-        snd_seq_queue_tempo_set_ppq(qtempo, 240);
+        snd_seq_queue_tempo_set_tempo(qtempo, tempous);
+        snd_seq_queue_tempo_set_ppq(qtempo, ppqn());
         snd_seq_set_queue_tempo(alsadata->seq, alsadata->queue_id, qtempo);
         snd_seq_drain_output(alsadata->seq);
 
@@ -687,7 +693,7 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
         );
         snd_seq_port_info_set_midi_channels(pinfo, 16);
 
-#ifndef AVOID_TIMESTAMPING
+#ifndef SEQ64_AVOID_TIMESTAMPING
         snd_seq_port_info_set_timestamping(pinfo, 1);
         snd_seq_port_info_set_timestamp_real(pinfo, 1);
         snd_seq_port_info_set_timestamp_queue(pinfo, alsadata->queue_id);
@@ -731,7 +737,7 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
     {
         // Start the input queue
 
-#ifndef AVOID_TIMESTAMPING
+#ifndef SEQ64_AVOID_TIMESTAMPING
         snd_seq_start_queue(alsadata->seq, alsadata->queue_id, NULL);
         snd_seq_drain_output(alsadata->seq);
 #endif
@@ -789,7 +795,7 @@ midi_in_alsa::open_virtual_port (const std::string & portname)
         );
         snd_seq_port_info_set_midi_channels(pinfo, 16);
 
-#ifndef AVOID_TIMESTAMPING
+#ifndef SEQ64_AVOID_TIMESTAMPING
         snd_seq_port_info_set_timestamping(pinfo, 1);
         snd_seq_port_info_set_timestamp_real(pinfo, 1);
         snd_seq_port_info_set_timestamp_queue(pinfo, alsadata->queue_id);
@@ -815,7 +821,7 @@ midi_in_alsa::open_virtual_port (const std::string & portname)
 
         // Start the input queue
 
-#ifndef AVOID_TIMESTAMPING
+#ifndef SEQ64_AVOID_TIMESTAMPING
         snd_seq_start_queue(alsadata->seq, alsadata->queue_id, NULL);
         snd_seq_drain_output(alsadata->seq);
 #endif
@@ -867,7 +873,7 @@ midi_in_alsa::close_port ()
 
         // Stop the input queue
 
-#ifndef AVOID_TIMESTAMPING
+#ifndef SEQ64_AVOID_TIMESTAMPING
         snd_seq_stop_queue(alsadata->seq, alsadata->queue_id, NULL);
         snd_seq_drain_output(alsadata->seq);
 #endif

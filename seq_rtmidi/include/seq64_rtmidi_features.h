@@ -53,6 +53,7 @@
 #define SEQ64_BUILD_UNIX_JACK
 #define SEQ64_BUILD_LINUX_ALSA          /* an alternative for Linux         */
 #define SEQ64_BUILD_RTMIDI_DUMMY        /* an alternative for Linux, etc.   */
+#undef  SEQ64_AVOID_TIMESTAMPING        /* a feaure of the ALSA rtmidi API  */
 #endif
 
 #ifdef PLATFORM_WINDOWS

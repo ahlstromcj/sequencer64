@@ -35,7 +35,13 @@ class midi_in_alsa : public midi_in_api
 
 public:
 
-    midi_in_alsa (const std::string & clientname, unsigned queuesizelimit);
+    midi_in_alsa
+    (
+        const std::string & clientname,
+        unsigned queuesizelimit,
+        int ppqn    = SEQ64_DEFAULT_PPQN,       // 192, see app_limits.h
+        int bpm     = SEQ64_DEFAULT_BPM         // 120, see app_limits.h
+    );
     virtual ~midi_in_alsa ();
 
     /**
@@ -53,9 +59,9 @@ public:
     virtual unsigned get_port_count ();
     virtual std::string get_port_name (unsigned portnumber);
 
-protected:
+private:
 
-    virtual void initialize(const std::string & clientname);
+    /* virtual */ void initialize(const std::string & clientname);
 
 };          // midi_in_alsa
 
@@ -83,9 +89,9 @@ public:
     virtual std::string get_port_name (unsigned portnumber);
     virtual void send_message (const std::vector<midibyte> & message);
 
-protected:
+private:
 
-    virtual void initialize (const std::string & clientname);
+    /* virtual */ void initialize (const std::string & clientname);
 
 };          // midi_out_alsa
 

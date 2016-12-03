@@ -78,10 +78,9 @@ public:
         return s_dummy;
     }
 
+private:
 
-protected:
-
-    virtual void initialize (const std::string & /*clientname*/)
+    /* virtual */ void initialize (const std::string & /*clientname*/)
     {
         // no code
     }
@@ -147,9 +146,9 @@ public:
         // no code
     }
 
-protected:
+private:
 
-    virtual void initialize (const std::string & /*clientname*/)
+    /* virtual */ void initialize (const std::string & /*clientname*/)
     {
         // no code
     }

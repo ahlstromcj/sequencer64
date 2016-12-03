@@ -165,7 +165,7 @@ mastermidibus::api_init (int ppqn)
         {
             std::string clientname = "rtmidi out";
             std::string portname = out.get_port_name(i);
-            m_buses_in[m_num_in_buses] = new midibus
+            m_buses_out[m_num_out_buses] = new midibus
             (
                 clientname, portname, m_num_out_buses,
                 SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn

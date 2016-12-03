@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-01
+ * \updates       2016-12-03
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  */
 
@@ -21,7 +21,6 @@
 #include "easy_macros.h"                    /* platform macros for compiler */
 #include "seq64_rtmidi_features.h"          /* SEQ64_BUILD_LINUX_ALSA etc.  */
 #include "midi_api.hpp"                     /* seq64::midi[_in][_out]_api   */
-#include "rtmidi_types.hpp"                 /* seq64::rtmidi_api type       */
 #include "rterror.hpp"                      /* seq64::rterror               */
 
 /*

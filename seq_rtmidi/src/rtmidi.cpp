@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-01
+ * \updates       2016-12-03
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.

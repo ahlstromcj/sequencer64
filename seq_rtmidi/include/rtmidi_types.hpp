@@ -35,6 +35,15 @@ namespace seq64
 {
 
 /**
+ *  A macro to prepend a fully qualified function name to a string.
+ *  Cannot get circular reference to message_concatenate() resolved!
+
+#define func_message(x)         seq64::message_concatenate(__func__, x)
+ */
+
+extern std::string message_concatenate (const char * m1, const char * m2);
+
+/**
  *    MIDI API specifier arguments.  These items used to be nested in
  *    the rtmidi class, but that only worked when RtMidi.cpp/h were
  *    large monolithic modules.

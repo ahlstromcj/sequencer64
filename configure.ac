@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-11-29
+dnl \update        2016-12-03
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -717,6 +717,7 @@ AC_CONFIG_FILES([
  resources/pixmaps/Makefile
  Sequencer64/Makefile
  Seq64portmidi/Makefile
+ Seq64rtmidi/Makefile
  man/Makefile
 ])
 

@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2016-11-20
+ * \updates       2016-12-03
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -209,9 +209,12 @@ typedef bool cbool_t;
 
 /**
  *  A macro to prepend a fully qualified function name to a string.
+ *  Currently defined in the rtmidi library due to an weird inability
+ *  to resolve circular references involving message_concatenate() and
+ *  the mastermidibus() class!
  */
 
-#define func_message(x)         message_concatenate(__func__, x)
+#define func_message(x)         seq64::message_concatenate(__func__, x)
 
 /**
  *  Usage:      errprint(cstring);
@@ -315,9 +318,20 @@ extern bool not_nullptr_assert (void * ptr, const std::string & context);
 #define not_nullptr_assert(ptr, context) (not_nullptr(ptr))
 #endif
 
-extern std::string message_concatenate (const char * m1, const char * m2);
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
 
-#endif         /* SEQ64_EASY_MACROS_H */
+namespace seq64
+{
+
+#if DEFINE_MESSAGE_CONCATENATE_HERE
+extern std::string message_concatenate (const char * m1, const char * m2);
+#endif
+
+}               /* namespace seq64      */
+
+#endif          /* SEQ64_EASY_MACROS_H  */
 
 /*
  * easy_macros.h

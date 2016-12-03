@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-26
- * \updates       2016-11-20
+ * \updates       2016-12-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -80,6 +80,15 @@ not_nullptr_assert (void * ptr, const std::string & context)
 
 #endif  // PLATFORM_DEBUG
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
+#if DEFINE_MESSAGE_CONCATENATE_HERE
+
+namespace seq64
+{
+
 /**
  *  This function concatenates two C string pointers and returns them as
  *  a string message.  Note that we don't bother with error-checking the
@@ -103,6 +112,10 @@ message_concatenate (const char * m1, const char * m2)
     result += m2;
     return result;
 }
+
+}           // namespace seq64
+
+#endif      // DEFINE_MESSAGE_CONCATENATE_HERE
 
 /*
  * easy_macros.cpp

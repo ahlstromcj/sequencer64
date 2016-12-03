@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-02
+ * \updates       2016-12-03
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring...
@@ -17,6 +17,7 @@
 #include <string>
 
 #include "midi_api.hpp"
+#include "rtmidi_types.hpp"                 /* seq64::rtmidi_api type       */
 
 /*
  * Do not document the namespace; it breaks Doxygen.

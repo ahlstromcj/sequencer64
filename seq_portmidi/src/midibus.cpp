@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-03
+ * \updates       2016-12-04
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the midibus class.
@@ -59,19 +59,18 @@ namespace seq64
  *  midibase constructor.  PortMidi does not support those constructs.
  */
 
-midibus::midibus (int bus_id, int port_id, const std::string & clientname)
- :
-    midibase        (clientname, "PortMidi", bus_id, SEQ64_NO_PORT, port_id),
+midibus::midibus
+(
+    int index, int bus_id, int port_id, const std::string & clientname
+) :
+    midibase
+    (
+        SEQ64_APP_NAME /* clientname */, clientname /* "PortMidi" */, index,
+        bus_id, port_id /* SEQ64_NO_PORT */, port_id  /* PM uses 'queue' still */
+    ),
     m_pms           (nullptr)
 {
-    /*
-     * Synthesize the client names.
-     *
-    char tmp[64];
-    snprintf(tmp, sizeof tmp, "[%d] %s", get_bus_id(), clientname);
-    m_name = tmp;
-     *
-     */
+    // Empty body
 }
 
 /**

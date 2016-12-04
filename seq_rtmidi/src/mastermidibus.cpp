@@ -98,7 +98,8 @@ mastermidibus::api_init (int ppqn, int bpm)
             std::string portname = tmp;
             m_buses_out[i] = new midibus
             (
-                clientname, portname, i, i, /* i is bus ID and port ID here */
+                clientname, portname, i,
+                i, i,                       /* i is bus ID and port ID here */
                 SEQ64_NO_QUEUE, ppqn, bpm
             );
             m_buses_out[i]->init_out_sub();
@@ -122,7 +123,7 @@ mastermidibus::api_init (int ppqn, int bpm)
         m_buses_in[0] = new midibus
         (
             clientname, portname, 0,
-            SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
+            0, SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
         );
         m_buses_in[0]->init_in_sub();
         m_buses_in_active[0] = m_buses_in_init[0] = true;
@@ -143,8 +144,8 @@ mastermidibus::api_init (int ppqn, int bpm)
             std::string portname = in.get_port_name(i);
             m_buses_in[m_num_in_buses] = new midibus
             (
-                clientname, portname, m_num_in_buses,
-                SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
+                clientname, portname, i,
+                m_num_in_buses, SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
             );
             if (m_buses_in[m_num_in_buses]->init_in())
             {
@@ -168,8 +169,8 @@ mastermidibus::api_init (int ppqn, int bpm)
             std::string portname = out.get_port_name(i);
             m_buses_out[m_num_out_buses] = new midibus
             (
-                clientname, portname, m_num_out_buses,
-                SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
+                clientname, portname, i,
+                m_num_out_buses, SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
             );
             if (m_buses_out[m_num_out_buses]->init_out())
             {

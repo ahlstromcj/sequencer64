@@ -1,6 +1,6 @@
 Comparison of MIDI Libraries
 Chris Ahlstrom
-2016-10-25 to 2016-10-25
+2016-10-25 to 2016-12-04
 
 Currently, Sequencer64 supports two forms of MIDI buss APIs:
 
@@ -73,7 +73,30 @@ midibus:
         Channel filtering           x
         Clock Init                             x
 
+PortMidi port enumeration:
 
+    One thing we need to document is how PortMidi enumerates ALSA devices.
+    If we run seq64portmidi in "auto" (not manual) mode, our debug output
+    shows:
+
+    [ALSA device 0: Midi Through Port-0 in:0 out:1
+    [ALSA device 1: Midi Through Port-0 in:1 out:0
+    [ALSA device 2: TiMidity port 0 in:0 out:1
+    [ALSA device 3: TiMidity port 1 in:0 out:1
+    [ALSA device 4: TiMidity port 2 in:0 out:1
+    [ALSA device 5: TiMidity port 3 in:0 out:1
+
+    But in the MIDI Clock (i.e. MIDI output) page, we see:
+
+    [0] 0:0 Midi Through Port-0
+    [1] 1:2 TiMidty port 0
+    [2] 2:3 TiMidty port 0
+    [3] 3:4 TiMidty port 0
+    [4] 4:5 TiMidty port 0
+
+    Where is the ":1" entry?  It is on the MIDI Input page:
+
+    [0] 0:1 Midi Through Port-0
 
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

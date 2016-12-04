@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-12-03
+ * \updates       2016-12-04
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -203,6 +203,11 @@ mastermidibus::~mastermidibus ()
  *  hardwired constant, SEQ64_ALSA_OUTPUT_BUSS_MAX == 16.  Only one MIDI input
  *  buss is initialized.
  *
+ * \note
+ *      We now start the buss numbers at 0 in manual mode, so they match the
+ *      number base (0) in normal mode, where the system is queried for the
+ *      ports.
+ *
  * \param ppqn
  *      The PPQN value to which to initialize the master MIDI buss.
  *
@@ -215,23 +220,23 @@ void
 mastermidibus::api_init (int ppqn, int bpm)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
-    snd_seq_client_info_t * cinfo;          /* client info */
-    snd_seq_port_info_t * pinfo;            /* port info   */
+    snd_seq_client_info_t * cinfo;                      /* client info      */
+    snd_seq_port_info_t * pinfo;                        /* port info        */
     snd_seq_client_info_alloca(&cinfo);
     snd_seq_client_info_set_client(cinfo, -1);
     if (rc().manual_alsa_ports())
     {
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
-        for (int i = 0; i < num_buses; ++i)         /* output busses    */
+        for (int i = 0; i < num_buses; ++i)             /* output busses    */
         {
             if (not_nullptr(m_buses_out[i]))
             {
                 delete m_buses_out[i];
                 errprintf("manual: m_buses_out[%d] not null\n", i);
             }
-            m_buses_out[i] = new midibus
+            m_buses_out[i] = new midibus                /* virtual port     */
             (
-                snd_seq_client_id(m_alsa_seq), m_alsa_seq, i+1,
+                snd_seq_client_id(m_alsa_seq), m_alsa_seq, i /* i+1 */,
                 /* SEQ64_NO_PORT, */ m_queue, ppqn, bpm
             );
             m_buses_out[i]->init_out_sub();
@@ -250,9 +255,9 @@ mastermidibus::api_init (int ppqn, int bpm)
          */
 
         m_num_in_buses = 1;
-        m_buses_in[0] = new midibus
+        m_buses_in[0] = new midibus                     /* virtual port     */
         (
-            snd_seq_client_id(m_alsa_seq), m_alsa_seq, m_num_in_buses,
+            snd_seq_client_id(m_alsa_seq), m_alsa_seq, 0 /* m_num_in_buses */,
             /* SEQ64_NO_BUS_PORT, */ m_queue, ppqn, bpm
         );
         m_buses_in[0]->init_in_sub();
@@ -285,9 +290,7 @@ mastermidibus::api_init (int ppqn, int bpm)
                 )
                 {
                     /*
-                     * Output busses:
-                     *
-                     * Why are we doing the ALSA client check again here?
+                     * Output busses.  Why dothe ALSA client check again here?
                      * Because it could be altered in the if-clause above.
                      */
 

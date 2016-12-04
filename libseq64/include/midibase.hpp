@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2016-12-03
+ * \updates       2016-12-04
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -170,10 +170,11 @@ public:
     (
         const std::string & client_name = "",
         const std::string & port_name   = "",
+        int index   = 0,                        /* a display ordinal    */
         int bus_id  = SEQ64_NO_BUS,
         int port_id = SEQ64_NO_PORT,
         int queue   = SEQ64_NO_QUEUE,
-        int ppqn    = SEQ64_USE_DEFAULT_PPQN,   /* SEQ64_DEFAULT_PPQN */
+        int ppqn    = SEQ64_USE_DEFAULT_PPQN,   /* SEQ64_DEFAULT_PPQN   */
         int bpm     = SEQ64_DEFAULT_BPM,
         bool makevirtual = false
     );

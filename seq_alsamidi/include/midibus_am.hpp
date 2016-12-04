@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-03
+ * \updates       2016-12-04
  * \license       GNU GPLv2 or above
  *
  *  The midibus module is the Linux version of the midibus module.
@@ -118,7 +118,7 @@ public:
         snd_seq_t * seq,
         const std::string & client_name,
         const std::string & port_name,
-        int id,
+        int index,                              /* a display ordinal    */
         int queue,
         int ppqn = SEQ64_USE_DEFAULT_PPQN,
         int bpm  = SEQ64_DEFAULT_BPM
@@ -134,7 +134,8 @@ public:
     (
         int localclient,
         snd_seq_t * seq,
-        int id,
+        int index,                              /* a display ordinal    */
+        int bus_id,
         int queue,
         int ppqn = SEQ64_USE_DEFAULT_PPQN,
         int bpm  = SEQ64_DEFAULT_BPM

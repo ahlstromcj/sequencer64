@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-28
+ * \updates       2016-12-04
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -95,10 +95,9 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
 #ifdef PLATFORM_DEBUG
         fprintf
         (
-            stderr,
-            "[0x%x] [%s] [%s] input[%d] output[%d]\n",
-            i, dev_info->interf, dev_info->name,
-               dev_info->input, dev_info->output
+            stderr, "[%s device %d: %s in:%d out:%d\n",
+            dev_info->interf, i, dev_info->name,
+            dev_info->input, dev_info->output
         );
 #endif
 
@@ -110,7 +109,7 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
 
             m_buses_out[m_num_out_buses] = new midibus
             (
-                m_num_out_buses, i, dev_info->name
+                i, m_num_out_buses, i, dev_info->name
             );
             if (m_buses_out[m_num_out_buses]->init_out())
             {
@@ -132,7 +131,7 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
 
             m_buses_in[m_num_in_buses] = new midibus
             (
-                m_num_in_buses, i, dev_info->name
+                i, m_num_in_buses, i, dev_info->name
             );
             if (m_buses_in[m_num_in_buses]->init_in())
             {
@@ -149,10 +148,7 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
     }
 
     set_beats_per_minute(c_beats_per_minute);
-    set_ppqn(ppqn);     // m_ppqn);   // SEQ64_DEFAULT_PPQN);
-
-    /* MIDI input poll descriptors */
-
+    set_ppqn(ppqn);                             // m_ppqn); SEQ64_DEFAULT_PPQN);
     set_sequence_input(false, NULL);
     for (int i = 0; i < m_num_out_buses; i++)
         set_clock(i, m_init_clock[i]);

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2016-12-01
+ * \updates       2016-12-04
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -66,7 +66,9 @@ int midibase::m_clock_mod = 16 * 4;
  *  mastermidibase::port_start() function.
  *
  * \param clientname
- *      Provides the client name, also known as the buss name.
+ *      Provides the client name, also known as the buss name.  Well, now we
+ *      are are making it the name of the application.  The derived class will
+ *      determine this name.
  *
  * \param portname
  *      Provides the port name.  This item defaults to empty, which means the
@@ -111,6 +113,7 @@ midibase::midibase
 (
     const std::string & clientname,
     const std::string & portname,
+    int index,                          // just an ordinal for display
     int bus_id,
     int port_id,
     int queue,
@@ -131,7 +134,33 @@ midibase::midibase
     m_is_virtual_port   (makevirtual),
     m_mutex             ()
 {
-    // Some settings made in derived class.
+    if (makevirtual)
+    {
+        char name[64];
+        snprintf
+        (
+            name, sizeof name, "[%d] %d:%d %s",
+            index, get_bus_id(), get_port_id(), clientname.c_str()
+        );
+        bus_name(name);
+    }
+    else
+    {
+        char alias[64];
+        const std::string & bussname = usr().bus_name(get_bus_id());
+        if (! bussname.empty())
+            snprintf(alias, sizeof alias, "%s", bussname.c_str());
+        else
+            snprintf(alias, sizeof alias, "%s", portname.c_str());
+
+        char name[80];
+        snprintf                            /* copy the client name parts */
+        (
+            name, sizeof name, "[%d] %d:%d %s",
+            index, get_bus_id(), get_port_id(), alias
+        );
+        bus_name(name);
+    }
 }
 
 /**

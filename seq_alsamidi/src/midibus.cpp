@@ -58,11 +58,15 @@ namespace seq64
  *  There's currently some overlap between local/dest client and port numbers
  *  and the buss and port numbers of the new midibase interface.
  *
+ *  Also, note that the optionsfile module uses the master buss to get the
+ *  buss names when it writes the file.
+ *
  * \param localclient
  *      Provides the local-client number.
  *
  * \param destclient
- *      Provides the destination-client number.
+ *      Provides the destination-client number.  This is the actual buss
+ *      number (e.g. 0, 1, 14, 128, 131, etc.)
  *
  * \param destport
  *      Provides the destination-client port.
@@ -76,10 +80,9 @@ namespace seq64
  * \param port_name
  *      Provides the port name.
  *
- * \param bus_id
- *      Provides the ID code for this bus.  It is an index into the midibus
- *      definitions array, and is also used in the constructed human-readable
- *      buss name.
+ * \param index
+ *      This is the order of the buss in the lookup, used for display and
+ *      labelling.  Starts from 0.
  *
  * \param queue
  *      Provides the queue ID.
@@ -94,19 +97,20 @@ namespace seq64
 midibus::midibus
 (
     int localclient,
-    int destclient,
+    int destclient,                     // is this the major ifx number?
     int destport,
     snd_seq_t * seq,
-    const std::string & clientname,
+    const std::string & /* clientname */,
     const std::string & portname,
-    int bus_id,
+    int index,                          // just an ordinal for display
     int queue,
     int ppqn,
     int bpm
 ) :
     midibase
     (
-        clientname, portname, bus_id, SEQ64_NO_PORT, queue, ppqn, bpm
+        SEQ64_APP_NAME /* "sequencer64", clientname */, portname, index,
+        destclient /* bus_id */, destport /*SEQ64_NO_PORT*/, queue, ppqn, bpm
     ),
     m_seq               (seq),
     m_dest_addr_client  (destclient),   // actually the buss ID
@@ -114,20 +118,7 @@ midibus::midibus
     m_local_addr_client (localclient),
     m_local_addr_port   (-1)
 {
-    char alias[64];
-    const std::string & bussname = usr().bus_name(get_bus_id());
-    if (! bussname.empty())
-        snprintf(alias, sizeof alias, "%s", bussname.c_str());
-    else
-        snprintf(alias, sizeof alias, "%s", portname.c_str());
-
-    char name[80];
-    snprintf                            /* copy the client name parts */
-    (
-        name, sizeof name, "[%d] %d:%d %s",
-        get_bus_id(), m_dest_addr_client, m_dest_addr_port, alias
-    );
-    bus_name(name);
+    // Functionality moved to the base class
 }
 
 /**
@@ -149,7 +140,8 @@ midibus::midibus
  * \param id
  *      Provides the ID code for this bus.  It is an index into the midibus
  *      definitions array, and is also used in the constructed human-readable
- *      buss name.
+ *      buss name.  This is also the port ID; currently the buss-number and
+ *      port-number implement the same concept.
  *
  * \param queue
  *      Provides the queue ID.
@@ -165,14 +157,16 @@ midibus::midibus
 (
     int localclient,
     snd_seq_t * seq,
-    int id,
+    int index,                          // just an ordinal for display
+    int bus_id,
     int queue,
     int ppqn,
     int bpm
 ) :
     midibase
     (
-        "ALSA", "ALSA port", id, id, queue, ppqn, bpm, true /* virtual */
+        "sequencer64", "ALSA port", index, bus_id, bus_id,
+        queue, ppqn, bpm, true /* virtual */
     ),
     m_seq               (seq),
     m_dest_addr_client  (SEQ64_NO_BUS),
@@ -180,20 +174,7 @@ midibus::midibus
     m_local_addr_client (localclient),
     m_local_addr_port   (SEQ64_NO_PORT)
 {
-    /*
-     * Copy the client name.  It used to be "seq24", but this is now a new
-     * application.
-     *
-     * \todo
-     *      We need to make a single macro for this name at some point.
-     */
-
-    char name[64];
-    snprintf
-    (
-        name, sizeof name, "[%d] sequencer64 %d", get_bus_id(), get_port_id()
-    );
-    bus_name(name);
+    // Functionality moved to the base class
 }
 
 #endif   // SEQ64_HAVE_LIBASOUND

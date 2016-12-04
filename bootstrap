@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2016-11-30
+# \update     	2016-12-04
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -36,7 +36,7 @@ export LANG
 CYGWIN=binmode
 export CYGWIN
 
-export SEQUENCER64_SCRIPT_EDIT_DATE="2016-11-30"
+export SEQUENCER64_SCRIPT_EDIT_DATE="2016-12-04"
 export SEQUENCER64_LIBRARY_API_VERSION="0.90"
 export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.90.0"
 
@@ -73,6 +73,8 @@ DODEBUG="no"
 DORELEASE="no"
 DOTESTONLY="no"
 DOVERSION="no"
+DOPORTMIDI="no"
+DORTMIDI="no"
 LOGFILENAME=""
 M4DIR="m4"
 
@@ -83,7 +85,7 @@ M4DIR="m4"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.9-2016-11-30)
+Usage: ./bootstrap [options]                                 (0.90-2016-12-04)
 
    'bootstrap' sets up GNU automake support and libtool support for the
    Sequencer64 project, creating the 'configure' script.  It can also
@@ -146,6 +148,14 @@ if [ $# -ge 1 ] ; then
 
          --release | -er | --enable-release)
             DORELEASE="yes"
+            ;;
+
+         --portmidi | -pm)
+            DOPORTMIDI="yes"
+            ;;
+
+         --rtmidi | -rm)
+            DORTMIDI="yes"
             ;;
 
          --version)
@@ -440,13 +450,20 @@ E_O_F
 #------------------------------------------------------------------------
 
    if [ "$DOBOOTSTRAP" == "yes" ] ; then
+
+      EXTRAFLAGS=""
+      if [ "$DOPORTMIDI" == "yes" ] ; then
+         EXTRAFLAGS="--enable-portmidi"
+      elif [ "$DORTMIDI" == "yes" ] ; then
+         EXTRAFLAGS="--enable-rtmidi"
+      fi
+
       if [ "$DODEBUG" == "yes" ] ; then
-#        echo "Running './configure --enable-eveditor --enable-debug --disable-shared'..."
          echo "Running './configure --enable-debug=gdb --disable-shared'..."
-         ./configure --enable-debug=gdb --disable-shared
+         ./configure --enable-debug=gdb --disable-shared $EXTRAFLAGS
       elif [ "$DORELEASE" == "yes" ] ; then
          echo "Running './configure --enable-silent-rules ..."
-         ./configure --enable-silent-rules
+         ./configure --enable-silent-rules $EXTRAFLAGS
          echo "Note that running 'make V=1' will turn on full command output."
       else
          cat << E_O_F

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-03
+ * \updates       2016-12-04
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
@@ -73,6 +73,7 @@ public:
     (
         const std::string & clientname,
         const std::string & portname    = "",
+        int index                       = 0,
         int bus_id                      = SEQ64_NO_BUS,
         int port_id                     = SEQ64_NO_PORT,
         int queue                       = SEQ64_NO_QUEUE,

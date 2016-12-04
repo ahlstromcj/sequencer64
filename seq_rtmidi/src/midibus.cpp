@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-03
+ * \updates       2016-12-04
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -99,6 +99,7 @@ midibus::midibus
 (
     const std::string & clientname,
     const std::string & portname,
+    int index,
     int bus_id,
     int port_id,
     int queue,
@@ -108,7 +109,8 @@ midibus::midibus
 ) :
     midibase
     (
-        clientname, portname, bus_id, port_id, queue, ppqn, bpm, makevirtual
+        clientname, portname, index, bus_id, port_id,
+        queue, ppqn, bpm, makevirtual
     ),
     m_rt_midi       (nullptr)
 {

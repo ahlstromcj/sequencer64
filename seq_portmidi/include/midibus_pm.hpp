@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-28
+ * \updates       2016-12-04
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the Windows (PortMidi) version of the midibus
@@ -72,7 +72,10 @@ public:
      * Supports a lot fewer parameters of Sequencer64 than do other APIs.
      */
 
-    midibus (int id, int port_id, const std::string & client_name);
+    midibus
+    (
+        int index, int bus_id, int port_id, const std::string & client_name
+    );
 
     virtual ~midibus ();
 

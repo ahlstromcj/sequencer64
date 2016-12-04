@@ -21,6 +21,8 @@
 namespace seq64
 {
 
+// #if DEFINE_MESSAGE_CONCATENATE_HERE
+
 /**
  *  This function concatenates two C string pointers and returns them as
  *  a string message.  Note that we don't bother with error-checking the
@@ -44,6 +46,47 @@ message_concatenate (const char * m1, const char * m2)
     result += m2;
     return result;
 }
+
+/**
+ *  Common-code for console messages.  Adds markers and a newline.
+ *
+ * \param msg
+ *      The message to print, sans the newline.
+ *
+ * \return
+ *      Returns true.
+ */
+
+bool
+info_message (const std::string & msg)
+{
+    std::string temp = "[";
+    temp += msg;
+    temp += "]\n";
+    printf(temp.c_str());
+    return true;
+}
+
+/**
+ *  Common-code for error messages.  Adds markers, and sets m_jack_running to
+ *  false.
+ *
+ * \param msg
+ *      The message to print, sans the newline.
+ *
+ * \return
+ *      Returns false for convenience/brevity in setting function return
+ *      values.
+ */
+
+bool
+error_message (const std::string & msg)
+{
+    (void) info_message(msg);
+    return false;
+}
+
+// #endif
 
 /*
  * class midi_queue

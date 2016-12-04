@@ -197,7 +197,7 @@ public:
     mastermidibase
     (
         int ppqn = SEQ64_USE_DEFAULT_PPQN,
-        int bpm = c_beats_per_minute
+        int bpm =  SEQ64_DEFAULT_BPM            /* c_beats_per_minute */
     );
     virtual ~mastermidibase ();
 
@@ -209,9 +209,9 @@ public:
      *      The PPQN value to which to initialize the master MIDI buss.
      */
 
-    virtual void init (int ppqn)
+    virtual void init (int ppqn, int bpm)
     {
-        api_init(ppqn);
+        api_init(ppqn, bpm);
     }
 
     /**
@@ -255,6 +255,16 @@ public:
      */
 
     int get_beats_per_minute () const
+    {
+        return m_beats_per_minute;
+    }
+
+    /**
+     * \getter m_beats_per_minute
+     *      This is a second version.
+     */
+
+    int get_bpm () const
     {
         return m_beats_per_minute;
     }
@@ -315,7 +325,7 @@ public:
 
 protected:
 
-    virtual void api_init (int ppqn) = 0;
+    virtual void api_init (int ppqn, int bpm) = 0;
 
     /**
      *  Provides MIDI API-specific functionality for the start() function.

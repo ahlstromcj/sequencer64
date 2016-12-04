@@ -295,12 +295,15 @@ perform::~perform ()
  * \param ppqn
  *      Provides the PPQN value, which is either the default value (192) or is
  *      read from the "user" configuration file.
+ *
+ * \todo
+ *      We probably need a bpm parameter for consistency at some point.
  */
 
 void
 perform::launch (int ppqn)
 {
-    m_master_bus.init(ppqn);
+    m_master_bus.init(ppqn, m_beats_per_bar);
     launch_input_thread();
     launch_output_thread();
 #ifdef SEQ64_JACK_SUPPORT

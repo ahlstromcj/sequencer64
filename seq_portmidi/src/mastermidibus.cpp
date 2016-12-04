@@ -84,7 +84,7 @@ mastermidibus::~mastermidibus ()
  */
 
 void
-mastermidibus::api_init (int ppqn)
+mastermidibus::api_init (int ppqn, int /*bpm*/)
 {
     int num_devices = Pm_CountDevices();
     const PmDeviceInfo * dev_info = nullptr;

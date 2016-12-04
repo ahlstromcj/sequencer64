@@ -1,6 +1,6 @@
 Current Hot To-Do Items
 Chris Ahlstrom
-2016-12-03
+2016-12-03 to 2016-12-03
 
 RtMidi implementation issues to work out:
 
@@ -9,7 +9,12 @@ RtMidi implementation issues to work out:
     -   Support for passing along the BPM and PPQN
         -   At startup time
         -   When changed in the GUI
-    -
+    -   Issues with reading or saving the "rc" and "usr" files.
+    -   The PortMidi implementation does not show
+        "[0] this port".  It just shows "this port".
+    -   Currently we have to do a --full-clean and then configure
+        for the particular app version, otherwise weird unsolvable unresolved
+        externals occur.
 
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

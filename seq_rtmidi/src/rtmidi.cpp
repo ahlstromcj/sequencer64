@@ -31,6 +31,7 @@
  */
 
 #include "rtmidi.hpp"                   /* seq64::rtmidi, etc.          */
+#include "settings.hpp"                 /* seq64::rc().with_jack_...()  */
 
 #ifdef SEQ64_BUILD_LINUX_ALSA
 #include "midi_alsa.hpp"
@@ -92,9 +93,10 @@ rtmidi::rtmidi ()
 rtmidi::~rtmidi()
 {
     if (not_nullptr(m_rtapi))
+    {
         delete m_rtapi;
-
-    m_rtapi = nullptr;
+        m_rtapi = nullptr;
+    }
 }
 
 /**
@@ -129,7 +131,8 @@ rtmidi::get_compiled_api (std::vector<rtmidi_api> & apis)
      */
 
 #ifdef SEQ64_BUILD_UNIX_JACK
-    apis.push_back(RTMIDI_API_UNIX_JACK);
+    if (rc().with_jack_transport())
+        apis.push_back(RTMIDI_API_UNIX_JACK);
 #endif
 
 #ifdef SEQ64_BUILD_LINUX_ALSA
@@ -247,9 +250,10 @@ rtmidi_in::openmidi_api
 )
 {
     if (not_nullptr(m_rtapi))
+    {
         delete m_rtapi;
-
-    m_rtapi = nullptr;
+        m_rtapi = nullptr;
+    }
 
 #ifdef SEQ64_BUILD_UNIX_JACK
     if (api == RTMIDI_API_UNIX_JACK)

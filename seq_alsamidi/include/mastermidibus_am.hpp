@@ -87,13 +87,13 @@ public:
     mastermidibus
     (
         int ppqn = SEQ64_USE_DEFAULT_PPQN,
-        int bpm = c_beats_per_minute
+        int bpm  = SEQ64_DEFAULT_BPM            /* c_beats_per_minute */
     );
     virtual ~mastermidibus ();
 
 private:
 
-    virtual void api_init (int ppqn);
+    virtual void api_init (int ppqn, int bpm);
     virtual void api_set_beats_per_minute (int bpm);
     virtual void api_set_ppqn (int ppqn);
     virtual void api_flush ();

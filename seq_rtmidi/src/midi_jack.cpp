@@ -24,6 +24,7 @@
 #include <jack/ringbuffer.h>
 
 #include "midi_jack.hpp"
+#include "settings.hpp"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -139,7 +140,7 @@ midi_in_jack::midi_in_jack
     unsigned queuesize
 ) :
     midi_in_api     (queuesize),
-    m_clientname    ()
+    m_clientname    (clientname)
 {
     initialize(clientname);
 }
@@ -170,9 +171,11 @@ midi_in_jack::initialize (const std::string & clientname)
 /**
  *  Connects the MIDI input port.  The following calls are made:
  *
- *      -   jack_client_open(), to initialize JACK client
- *      -   jack_set_process_callback(), to set jackProcessIn()
- *      -   jack_activate()
+ *      -   jack_client_open(), to initialize JACK client.
+ *          We've added the code used in jack_assistant to get better status
+ *          information.
+ *      -   jack_set_process_callback(), to set jackProcessIn().
+ *      -   jack_activate().
  *
  *  If the JackMidiData client member is already set, this function returns
  *  immediately.
@@ -186,21 +189,52 @@ void
 midi_in_jack::connect ()
 {
     JackMidiData * jackdata = static_cast<JackMidiData *>(m_api_data);
-    if (jackdata->client)
-        return;
-
-    jackdata->client = jack_client_open
-    (
-        m_clientname.c_str(), JackNoStartServer, NULL
-    );
     if (is_nullptr(jackdata->client))
     {
-        m_error_string = func_message("JACK server not running?");
-        error(rterror::WARNING, m_error_string);
-        return;
+        jack_client_t * result = nullptr;
+        jack_status_t status;
+        jack_status_t * pstatus = &status;
+        const char * name = m_clientname.c_str();
+        if (rc().jack_session_uuid().empty())
+        {
+            /*
+             * Let's replace JackNullOption.
+             */
+
+            result = jack_client_open(name, JackNoStartServer, pstatus);
+        }
+        else
+        {
+            const char * uuid = rc().jack_session_uuid().c_str();
+            result = jack_client_open(name, JackNoStartServer, pstatus, uuid);
+        }
+        if (is_nullptr(result))
+        {
+            m_error_string = func_message("JACK server not running?");
+            error(rterror::WARNING, m_error_string);
+            return;
+        }
+        else
+        {
+            if (not_nullptr(pstatus))
+            {
+                if (status & JackServerStarted)
+                    (void) info_message("JACK server started now");
+                else
+                    (void) info_message("JACK server already started");
+
+                if (status & JackNameNotUnique)
+                    (void) info_message("JACK client-name NOT unique");
+            }
+            jackdata->client = result;
+            jack_set_process_callback(result, jackProcessIn, jackdata);
+            jack_activate(result);
+        }
     }
-    jack_set_process_callback(jackdata->client, jackProcessIn, jackdata);
-    jack_activate(jackdata->client);
+    else
+    {
+        (void) info_message("JACK server already started");
+    }
 }
 
 /**

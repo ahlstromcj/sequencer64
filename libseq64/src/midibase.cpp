@@ -99,6 +99,9 @@ int midibase::m_clock_mod = 16 * 4;
  * \param ppqn
  *      Provides the PPQN value.  Defaults to SEQ64_USE_DEFAULT_PPQN.
  *
+ * \param bpm
+ *      Provides the BPM value.  Defaults to SEQ64_DEFAULT_BPM.
+ *
  * \param makevirtual
  *      Indicates that the port represented by this object is to be virtual.
  *      Defaults to false.
@@ -112,6 +115,7 @@ midibase::midibase
     int port_id,
     int queue,
     int ppqn,
+    int bpm,
     bool makevirtual
 ) :
     m_bus_id            (bus_id),
@@ -119,6 +123,7 @@ midibase::midibase
     m_clock_type        (e_clock_off),
     m_inputing          (false),
     m_ppqn              (choose_ppqn(ppqn)),
+    m_bpm               (bpm),
     m_queue             (queue),
     m_bus_name          (clientname),
     m_port_name         (portname),

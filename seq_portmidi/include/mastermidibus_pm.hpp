@@ -64,13 +64,13 @@ public:
     mastermidibus
     (
         int ppqn = SEQ64_USE_DEFAULT_PPQN,
-        int bpm = c_beats_per_minute
+        int bpm  = SEQ64_DEFAULT_BPM            /* c_beats_per_minute */
     );
     virtual ~mastermidibus ();
 
 protected:
 
-    virtual void api_init (int ppqn);
+    virtual void api_init (int ppqn, int /*bpm*/);
     virtual int api_poll_for_midi ();
     virtual bool api_is_more_input ();
     virtual bool api_get_midi_event (event *a_in);

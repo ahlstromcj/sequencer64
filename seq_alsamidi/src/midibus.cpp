@@ -86,6 +86,9 @@ namespace seq64
  *
  * \param ppqn
  *      Provides the PPQN value.
+ *
+ * \param bpm
+ *      Provides the BPM value.
  */
 
 midibus::midibus
@@ -98,11 +101,12 @@ midibus::midibus
     const std::string & portname,
     int bus_id,
     int queue,
-    int ppqn
+    int ppqn,
+    int bpm
 ) :
     midibase
     (
-        clientname, portname, bus_id, SEQ64_NO_PORT, queue, ppqn
+        clientname, portname, bus_id, SEQ64_NO_PORT, queue, ppqn, bpm
     ),
     m_seq               (seq),
     m_dest_addr_client  (destclient),   // actually the buss ID
@@ -152,6 +156,9 @@ midibus::midibus
  *
  * \param ppqn
  *      Provides the PPQN value.
+ *
+ * \param bpm
+ *      Provides the BPM value.
  */
 
 midibus::midibus
@@ -160,15 +167,13 @@ midibus::midibus
     snd_seq_t * seq,
     int id,
     int queue,
-    int ppqn
+    int ppqn,
+    int bpm
 ) :
-    /*
-     * Preserve old behavior under manual-alsa-ports.
-     *
-     * midibase            ("", "", id, SEQ64_NO_PORT, queue, ppqn),
-     */
-
-    midibase            ("", "", id, id, queue, ppqn, true), /* virtual port */
+    midibase
+    (
+        "ALSA", "ALSA port", id, id, queue, ppqn, bpm, true /* virtual */
+    ),
     m_seq               (seq),
     m_dest_addr_client  (SEQ64_NO_BUS),
     m_dest_addr_port    (SEQ64_NO_PORT),

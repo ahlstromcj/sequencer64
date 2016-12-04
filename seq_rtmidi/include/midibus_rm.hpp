@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-11-30
+ * \updates       2016-12-03
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
@@ -77,6 +77,7 @@ public:
         int port_id                     = SEQ64_NO_PORT,
         int queue                       = SEQ64_NO_QUEUE,
         int ppqn                        = SEQ64_USE_DEFAULT_PPQN,
+        int bpm                         = SEQ64_DEFAULT_BPM,
         bool makevirtual                = false
     );
 
@@ -93,7 +94,7 @@ protected:
      *  Provides common code between api_init_in() and api_initi_out().
      */
 
-    bool api_init (rtmidi * rtm);
+    bool api_init_common (rtmidi * rtm);
 
     /**
      *  Temporary easy implementation for now.

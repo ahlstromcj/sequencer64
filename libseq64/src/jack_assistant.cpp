@@ -1507,7 +1507,18 @@ jack_assistant::client_open (const std::string & clientname)
     const char * name = clientname.c_str();
     jack_status_t status;
 
-#ifdef SEQ64_JACK_SESSION
+    /*
+     * We've never disabled the SEQ64_JACK_SESSION macro, and we like the
+     * error-reporting we get by that method.  So we've commented out the
+     * following code in favor of using the session-uuid code:
+     *
+     *  #ifdef SEQ64_JACK_SESSION
+     *  #else
+     *      jack_status_t * pstatus = NULL;
+     *      result = jack_client_open(name, JackNullOption, pstatus);
+     *  #endif
+     */
+
     jack_status_t * pstatus = &status;
     if (rc().jack_session_uuid().empty())
     {
@@ -1518,11 +1529,6 @@ jack_assistant::client_open (const std::string & clientname)
         const char * uuid = rc().jack_session_uuid().c_str();
         result = jack_client_open(name, JackSessionID, pstatus, uuid);
     }
-#else
-    jack_status_t * pstatus = NULL;
-    result = jack_client_open(name, JackNullOption, pstatus);       // 0x800000
-#endif
-
     if (not_nullptr(result) && not_nullptr(pstatus))
     {
         if (status & JackServerStarted)

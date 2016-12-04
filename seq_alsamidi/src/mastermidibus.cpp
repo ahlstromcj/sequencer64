@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-11-30
+ * \updates       2016-12-03
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -205,10 +205,14 @@ mastermidibus::~mastermidibus ()
  *
  * \param ppqn
  *      The PPQN value to which to initialize the master MIDI buss.
+ *
+ * \param bpm
+ *      The BPM value to which to initialize the master MIDI buss, if
+ *      applicable.
  */
 
 void
-mastermidibus::api_init (int ppqn)
+mastermidibus::api_init (int ppqn, int bpm)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_client_info_t * cinfo;          /* client info */
@@ -228,7 +232,7 @@ mastermidibus::api_init (int ppqn)
             m_buses_out[i] = new midibus
             (
                 snd_seq_client_id(m_alsa_seq), m_alsa_seq, i+1,
-                /* SEQ64_NO_PORT, */ m_queue, ppqn
+                /* SEQ64_NO_PORT, */ m_queue, ppqn, bpm
             );
             m_buses_out[i]->init_out_sub();
             m_buses_out_active[i] = m_buses_out_init[i] = true;
@@ -249,7 +253,7 @@ mastermidibus::api_init (int ppqn)
         m_buses_in[0] = new midibus
         (
             snd_seq_client_id(m_alsa_seq), m_alsa_seq, m_num_in_buses,
-            /* SEQ64_NO_BUS_PORT, */ m_queue, ppqn
+            /* SEQ64_NO_BUS_PORT, */ m_queue, ppqn, bpm
         );
         m_buses_in[0]->init_in_sub();
         m_buses_in_active[0] = m_buses_in_init[0] = true;
@@ -306,7 +310,7 @@ mastermidibus::api_init (int ppqn)
                             m_alsa_seq,
                             snd_seq_client_info_get_name(cinfo),
                             snd_seq_port_info_get_name(pinfo),
-                            m_num_out_buses, m_queue, ppqn
+                            m_num_out_buses, m_queue, ppqn, bpm
                         );
                         if (m_buses_out[m_num_out_buses]->init_out())
                         {
@@ -342,7 +346,7 @@ mastermidibus::api_init (int ppqn)
                             m_alsa_seq,
                             snd_seq_client_info_get_name(cinfo),
                             snd_seq_port_info_get_name(pinfo),
-                            m_num_in_buses, m_queue, ppqn
+                            m_num_in_buses, m_queue, ppqn, bpm
                         );
                         m_buses_in_active[m_num_in_buses] =
                             m_buses_in_init[m_num_in_buses] = true;
@@ -379,7 +383,7 @@ mastermidibus::api_init (int ppqn)
         snd_seq_client_id(m_alsa_seq),
         SND_SEQ_CLIENT_SYSTEM, SND_SEQ_PORT_SYSTEM_ANNOUNCE,
         m_alsa_seq, "system", "announce",   // was "annouce" ca 2016-04-03
-        0, m_queue
+        0, m_queue, ppqn, bpm
     );
     m_bus_announce->set_input(true);
     for (int i = 0; i < m_num_out_buses; ++i)
@@ -610,7 +614,7 @@ mastermidibus::api_port_start (int client, int port)
                 snd_seq_client_info_get_name(cinfo),
                 snd_seq_port_info_get_name(pinfo),
                 m_num_out_buses,
-                m_queue
+                m_queue, get_ppqn(), get_bpm()
             );
             m_buses_out[bus_slot]->init_out();
             m_buses_out_active[bus_slot] = true;
@@ -651,7 +655,7 @@ mastermidibus::api_port_start (int client, int port)
                 snd_seq_client_info_get_name(cinfo),
                 snd_seq_port_info_get_name(pinfo),
                 m_num_in_buses,
-                m_queue
+                m_queue, get_ppqn(), get_bpm()
             );
 
             /*

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-01
+ * \updates       2016-12-03
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -76,10 +76,11 @@ mastermidibus::~mastermidibus ()
 /**
  *  Initializes the RtMidi implementation.
  *
+ *  Will need to add bpm as a parameter (for ALSA input at least)
  */
 
 void
-mastermidibus::api_init (int ppqn)
+mastermidibus::api_init (int ppqn, int bpm)
 {
     if (rc().manual_alsa_ports())
     {
@@ -97,8 +98,8 @@ mastermidibus::api_init (int ppqn)
             std::string portname = tmp;
             m_buses_out[i] = new midibus
             (
-                clientname, portname, i,
-                SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
+                clientname, portname, i, i, /* i is bus ID and port ID here */
+                SEQ64_NO_QUEUE, ppqn, bpm
             );
             m_buses_out[i]->init_out_sub();
             m_buses_out_active[i] = m_buses_out_init[i] = true;

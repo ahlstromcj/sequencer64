@@ -68,6 +68,10 @@ private:
 
 public:
 
+    /*
+     * Supports a lot fewer parameters of Sequencer64 than do other APIs.
+     */
+
     midibus (int id, int port_id, const std::string & client_name);
 
     virtual ~midibus ();

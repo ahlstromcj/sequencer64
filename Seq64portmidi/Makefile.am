@@ -6,7 +6,7 @@
 # \library    	seq64portmidi application
 # \author     	Chris Ahlstrom
 # \date       	2016-11-25
-# \update      2016-11-25
+# \update      2016-12-03
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #

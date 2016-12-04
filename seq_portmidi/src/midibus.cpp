@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-28
+ * \updates       2016-12-03
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the midibus class.
@@ -53,11 +53,15 @@ namespace seq64
 
 /**
  *  Principal constructor.
+ *
+ *  There's a little confusion with the port ID parameter(s).  Also, the
+ *  default values of queue, ppqn, bpm, and makevirtual are passed to the
+ *  midibase constructor.  PortMidi does not support those constructs.
  */
 
 midibus::midibus (int bus_id, int port_id, const std::string & clientname)
  :
-    midibase        (clientname, "", bus_id, SEQ64_NO_PORT, port_id),
+    midibase        (clientname, "PortMidi", bus_id, SEQ64_NO_PORT, port_id),
     m_pms           (nullptr)
 {
     /*

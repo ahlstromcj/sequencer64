@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2016-11-30
+ * \updates       2016-12-03
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -112,9 +112,17 @@ private:
 
     /**
      *  Provides the PPQN value in force, currently a constant.
+     *  Some APIs can control or use this value.
      */
 
     int m_ppqn;
+
+    /**
+     *  Provides the PPQN value in force, currently a constant.
+     *  Some APIs can control or use this value.
+     */
+
+    int m_bpm;
 
     /**
      *  Another ID of the MIDI queue?  This is an implementation-dependent
@@ -165,7 +173,8 @@ public:
         int bus_id  = SEQ64_NO_BUS,
         int port_id = SEQ64_NO_PORT,
         int queue   = SEQ64_NO_QUEUE,
-        int ppqn    = SEQ64_USE_DEFAULT_PPQN,
+        int ppqn    = SEQ64_USE_DEFAULT_PPQN,   /* SEQ64_DEFAULT_PPQN */
+        int bpm     = SEQ64_DEFAULT_BPM,
         bool makevirtual = false
     );
 

@@ -134,9 +134,36 @@ midibase::midibase
     m_is_virtual_port   (makevirtual),
     m_mutex             ()
 {
+    set_name(makevirtual, clientname, portname, index, bus_id, port_id);
+}
+
+/**
+ *  A rote empty destructor.
+ */
+
+midibase::~midibase()
+{
+    // empty body
+}
+
+/**
+ *  Sets the name of the buss.
+ */
+
+void
+midibase::set_name
+(
+    bool makevirtual,
+    const std::string & clientname,
+    const std::string & portname,
+    int index,
+    int bus_id,
+    int port_id
+)
+{
+    char name[80];
     if (makevirtual)
     {
-        char name[64];
         snprintf
         (
             name, sizeof name, "[%d] %d:%d %s",
@@ -153,24 +180,14 @@ midibase::midibase
         else
             snprintf(alias, sizeof alias, "%s", portname.c_str());
 
-        char name[80];
         snprintf                            /* copy the client name parts */
         (
-            name, sizeof name, "[%d] %d:%d %s",
-            index, get_bus_id(), get_port_id(), alias
+            name, sizeof name, "[%d] %d:%d %s", index, bus_id, port_id, alias
         );
-        bus_name(name);
     }
+    bus_name(name);
 }
 
-/**
- *  A rote empty destructor.
- */
-
-midibase::~midibase()
-{
-    // empty body
-}
 
 /**
  *  Polls for MIDI events.

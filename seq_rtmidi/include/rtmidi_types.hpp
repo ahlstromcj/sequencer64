@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2016-12-03
+ * \updates       2016-12-04
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -41,14 +41,13 @@ namespace seq64
  *  WTF!?
  *
  * #define func_message(x)         seq64::message_concatenate(__func__, x)
+ *
+ * #ifdef DEFINE_MESSAGE_CONCATENATE_HERE
  */
 
-
-// #ifdef DEFINE_MESSAGE_CONCATENATE_HERE
 extern std::string message_concatenate (const char * m1, const char * m2);
 extern bool info_message (const std::string & msg);
 extern bool error_message (const std::string & msg);
-// #endif
 
 /**
  *    MIDI API specifier arguments.  These items used to be nested in

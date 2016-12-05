@@ -91,8 +91,9 @@
 namespace seq64
 {
 
+
 /**
- *  Principal constructor.
+ *  Virtual-port constructor.
  */
 
 midibus::midibus
@@ -104,17 +105,46 @@ midibus::midibus
     int port_id,
     int queue,
     int ppqn,
-    int bpm,
-    bool makevirtual
+    int bpm
+//  bool makevirtual
 ) :
     midibase
     (
         clientname, portname, index, bus_id, port_id,
-        queue, ppqn, bpm, makevirtual
+        queue, ppqn, bpm, true
     ),
     m_rt_midi       (nullptr)
 {
     // Empty body
+}
+
+/**
+ *  Non-virtual-port constructor.
+ *
+ *  We cannot pass the necessary parameters without getting some of them from
+ *  an already-constructed rtmidi_in or rtmidi_out object.
+ */
+
+midibus::midibus
+(
+    /*const*/ rtmidi & rt,
+    const std::string & clientname,
+    int index,
+    int ppqn,
+    int bpm
+) :
+    midibase
+    (
+        clientname, "" /*portname*/, index, SEQ64_NO_BUS, SEQ64_NO_PORT,
+        SEQ64_NO_QUEUE, ppqn, bpm, false
+    ),
+    m_rt_midi       (nullptr)
+{
+    set_name
+    (
+        false, clientname, rt.get_port_name(index), index,
+        rt.get_client_id(index), index /* port ID */
+    );
 }
 
 /**

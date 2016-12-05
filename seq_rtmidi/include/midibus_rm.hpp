@@ -69,6 +69,10 @@ private:
 
 public:
 
+    /*
+     * Virtual-port and non-virtual-port constructors.
+     */
+
     midibus
     (
         const std::string & clientname,
@@ -78,8 +82,17 @@ public:
         int port_id                     = SEQ64_NO_PORT,
         int queue                       = SEQ64_NO_QUEUE,
         int ppqn                        = SEQ64_USE_DEFAULT_PPQN,
-        int bpm                         = SEQ64_DEFAULT_BPM,
-        bool makevirtual                = false
+        int bpm                         = SEQ64_DEFAULT_BPM
+//      bool makevirtual                = false
+    );
+
+    midibus
+    (
+        /*const*/ rtmidi & rt,
+        const std::string & clientname,
+        int index                       = 0,
+        int ppqn                        = SEQ64_USE_DEFAULT_PPQN,
+        int bpm                         = SEQ64_DEFAULT_BPM
     );
 
     virtual ~midibus ();

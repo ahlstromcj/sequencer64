@@ -418,12 +418,24 @@ protected:
         // no code for portmidi
     }
 
+protected:
+
     virtual bool api_init_in () = 0;
     virtual bool api_init_out () = 0;
     virtual void api_continue_from (midipulse tick, midipulse beats) = 0;
     virtual void api_start () = 0;
     virtual void api_stop () = 0;
     virtual void api_clock (midipulse tick) = 0;
+
+protected:
+
+    void set_name
+    (
+        bool makevirtual,
+        const std::string & clientname,
+        const std::string & portname,
+        int index, int bus_id, int port_id
+    );
 
 };          // class midibase (ALSA version)
 

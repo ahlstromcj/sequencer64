@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-28
+ * \updates       2016-12-04
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -524,6 +524,12 @@ private:
      */
 
     int m_ppqn;
+
+    /**
+     *  Holds the current BPM (beats per minute) for later usage.
+     */
+
+    int m_bpm;
 
     /**
      *  Holds the beats/bar value as obtained from the MIDI file.

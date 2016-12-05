@@ -19,13 +19,13 @@
 /**
  * \file          mastermidibus.cpp
  *
- *  This module declares/defines the base class for MIDI I/O under one of
- *  Windows' audio frameworks.
+ *  This module declares/defines the base class for MIDI I/O under the
+ *  RtMidi framework.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-03
+ * \updates       2016-12-04
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -58,7 +58,9 @@ namespace seq64
 
 mastermidibus::mastermidibus (int ppqn, int bpm)
  :
-    mastermidibase      (ppqn, bpm)
+    mastermidibase      (ppqn, bpm),
+    m_scratch_input     (),
+    m_scratch_output    ()
 {
     // Pm_Initialize();
 }
@@ -94,13 +96,12 @@ mastermidibus::api_init (int ppqn, int bpm)
             }
             char tmp[4];
             snprintf(tmp, sizeof tmp, "%d", i);
-            std::string clientname = "rtmidi out";
+//          std::string clientname = "rtmidi out";
             std::string portname = tmp;
             m_buses_out[i] = new midibus
             (
-                clientname, portname, i,
-                i, i,                       /* i is bus ID and port ID here */
-                SEQ64_NO_QUEUE, ppqn, bpm
+                SEQ64_APP_NAME /*clientname*/, portname, i,
+                i, i, /* bus and port ID */ SEQ64_NO_QUEUE, ppqn, bpm
             );
             m_buses_out[i]->init_out_sub();
             m_buses_out_active[i] = m_buses_out_init[i] = true;
@@ -122,8 +123,8 @@ mastermidibus::api_init (int ppqn, int bpm)
         m_num_in_buses = 1;
         m_buses_in[0] = new midibus
         (
-            clientname, portname, 0,
-            0, SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
+            SEQ64_APP_NAME /*clientname*/, portname, 0,
+            0, 0, /* bus and port ID */ SEQ64_NO_QUEUE, ppqn, bpm
         );
         m_buses_in[0]->init_in_sub();
         m_buses_in_active[0] = m_buses_in_init[0] = true;
@@ -135,17 +136,18 @@ mastermidibus::api_init (int ppqn, int bpm)
          * API at present.
          */
 
-        rtmidi_in in;
-        unsigned nports = in.get_port_count();
+        unsigned nports = m_scratch_input.get_port_count();
         m_num_in_buses = 0;
         for (unsigned i = 0; i < nports; ++i)
         {
             std::string clientname = "rtmidi in";
-            std::string portname = in.get_port_name(i);
+            std::string portname = m_scratch_input.get_port_name(i);
             m_buses_in[m_num_in_buses] = new midibus
             (
-                clientname, portname, i,
-                m_num_in_buses, SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
+//              clientname, portname, i,
+//              m_num_in_buses, SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
+                m_scratch_input, SEQ64_APP_NAME /* clientname */,
+                i, ppqn, bpm
             );
             if (m_buses_in[m_num_in_buses]->init_in())
             {
@@ -160,17 +162,18 @@ mastermidibus::api_init (int ppqn, int bpm)
             }
         }
 
-        rtmidi_out out;
-        nports = out.get_port_count();
+        nports = m_scratch_output.get_port_count();
         m_num_out_buses = 0;
         for (unsigned i = 0; i < nports; ++i)
         {
             std::string clientname = "rtmidi out";
-            std::string portname = out.get_port_name(i);
+            std::string portname = m_scratch_output.get_port_name(i);
             m_buses_out[m_num_out_buses] = new midibus
             (
-                clientname, portname, i,
-                m_num_out_buses, SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
+//              clientname, portname, i,
+//              m_num_out_buses, SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
+                m_scratch_output, SEQ64_APP_NAME /* clientname */,
+                i, ppqn, bpm
             );
             if (m_buses_out[m_num_out_buses]->init_out())
             {

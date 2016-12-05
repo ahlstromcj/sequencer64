@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-03
+ * \updates       2016-12-05
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  In this refactoring, we are trying to improve the RtMidi project in the
@@ -20,9 +20,22 @@
  *  API information found at:
  *
  *      - http://www.alsa-project.org/documentation.php#Library
+ *
+ *  The ALSA Sequencer API is based on the use of a callback function for MIDI
+ *  input.
+ *
+ *  Thanks to Pedro Lopez-Cabanillas for help with the ALSA sequencer time
+ *  stamps and other assorted fixes!!!
+ *
+ *  If you don't need timestamping for incoming MIDI events, define the
+ *  preprocessor definition SEQ64_AVOID_TIMESTAMPING to save resources
+ *  associated with the ALSA sequencer queues.
  */
 
 #include <sstream>
+#include <pthread.h>
+#include <sys/time.h>
+#include <alsa/asoundlib.h>
 
 #include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
 #include "midi_alsa.hpp"
@@ -33,22 +46,6 @@
 
 namespace seq64
 {
-
-/**
- * The ALSA Sequencer API is based on the use of a callback function for MIDI
- * input.
- *
- * Thanks to Pedro Lopez-Cabanillas for help with the ALSA sequencer time
- * stamps and other assorted fixes!!!
- *
- * If you don't need timestamping for incoming MIDI events, define the
- * preprocessor definition SEQ64_AVOID_TIMESTAMPING to save resources
- * associated with the ALSA sequencer queues.
- */
-
-#include <pthread.h>
-#include <sys/time.h>
-#include <alsa/asoundlib.h>
 
 /**
  *  An internal structure to hold variables related to the ALSA API
@@ -471,6 +468,9 @@ midi_in_alsa::initialize (const std::string & clientname)
     }
 }
 
+#define SEQ64_ALSA_PORT_CLIENT      0xFF000000
+#define SEQ64_ALSA_PORT_COUNT       (-1)
+
 /*
  * This function is used to count or get the pinfo structure for a given port
  * number.
@@ -485,36 +485,48 @@ midi_in_alsa::initialize (const std::string & clientname)
  *      The type of port to look up.  It is a one of the following masks:
  *      SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ, and
  *      SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE.
+ *      We add a new value, SEQ64_ALSA_PORT_CLIENT = 0xFF000000, to indicate we only
+ *      want the client value.
  *
  * \param portnumber
  *      The port number to look up. If this value is -1, then the ports are
  *      counted.
  *
  * \return
- *      Returns the port count, or 0.
+ *      Returns the port count if portnumber is -1, 1 if the port number
+ *      queried is portnumber, or 0 if there is no match to portnumber.  If
+ *      type is the new value, 0xFF000000, then the client value is returned
+ *      without further querying of the ALSA subsystem.
  */
 
 static unsigned
 alsa_port_info
 (
-    snd_seq_t * seq, snd_seq_port_info_t * pinfo,
-    unsigned type, int portnumber
+    snd_seq_t * seq,
+    snd_seq_port_info_t * pinfo,
+    unsigned type,
+    int portnumber
 )
 {
-    snd_seq_client_info_t * cinfo;
     int client;
     int count = 0;
+    snd_seq_client_info_t * cinfo;
     snd_seq_client_info_alloca(&cinfo);
     snd_seq_client_info_set_client(cinfo, -1);
     while (snd_seq_query_next_client(seq, cinfo) >= 0)
     {
         client = snd_seq_client_info_get_client(cinfo);
         if (client == 0)
+        {
             continue;
+        }
+        else if (type == SEQ64_ALSA_PORT_CLIENT)
+        {
+            infoprint("Returning client number");
+            return client;
+        }
 
-        // Reset query info
-
-        snd_seq_port_info_set_client(pinfo, client);
+        snd_seq_port_info_set_client(pinfo, client);    /* reset query info */
         snd_seq_port_info_set_port(pinfo, -1);
         while (snd_seq_query_next_port(seq, pinfo) >= 0)
         {
@@ -539,12 +551,25 @@ alsa_port_info
         }
     }
 
-    // If a negative portnumber was used, return the port count.
+    /*
+     * If a negative portnumber was used, return the port count.
+     */
 
     if (portnumber < 0)
         return count;
 
     return 0;
+}
+
+/**
+ *  Tries to get the buss/client number.
+ */
+
+int
+midi_in_alsa::get_client_id (int index)
+{
+    ////// TO DO //////////////
+    return index;
 }
 
 /**
@@ -563,7 +588,8 @@ midi_in_alsa::get_port_count ()
     return alsa_port_info
     (
         alsadata->seq, pinfo,
-        SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ, -1
+        SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
+        SEQ64_ALSA_PORT_COUNT
     );
 }
 
@@ -574,49 +600,53 @@ midi_in_alsa::get_port_count ()
  *      The port number to query for the port name.
  *
  * \return
- *      Returns the port name reported by ALSA.
+ *      Returns the port name reported by ALSA.  If an error occurs, this
+ *      value is empty.
  */
 
 std::string
 midi_in_alsa::get_port_name (unsigned portnumber)
 {
-    snd_seq_client_info_t * cinfo;
-    snd_seq_port_info_t * pinfo;
-    snd_seq_client_info_alloca(&cinfo);
-    snd_seq_port_info_alloca(&pinfo);
     std::string stringname;
-    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
-    if
-    (
-        alsa_port_info
+    if (portnumber >= 0)
+    {
+        snd_seq_client_info_t * cinfo;
+        snd_seq_port_info_t * pinfo;
+        snd_seq_client_info_alloca(&cinfo);
+        snd_seq_port_info_alloca(&pinfo);
+        alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
+        if
         (
-            alsadata->seq, pinfo,
-            SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
-            int(portnumber)
+            alsa_port_info
+            (
+                alsadata->seq, pinfo,
+                SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
+                int(portnumber)
+            )
         )
-    )
-    {
-        int cnum = snd_seq_port_info_get_client(pinfo);
-        snd_seq_get_any_client_info(alsadata->seq, cnum, cinfo);
+        {
+            int cnum = snd_seq_port_info_get_client(pinfo);
+            snd_seq_get_any_client_info(alsadata->seq, cnum, cinfo);
 
-        // These lines added to make sure devices are listed
-        // with full portnames added to ensure individual device names
+            /*
+             * Assemble name with with full portnames added to ensure unique
+             * device names.
+             */
 
-        std::ostringstream os;
-        os
-            << snd_seq_client_info_get_name(cinfo) << " "
-            << snd_seq_port_info_get_client(pinfo) << ":"
-            << snd_seq_port_info_get_port(pinfo)
-            ;
+            std::ostringstream os;
+            os
+                << snd_seq_client_info_get_name(cinfo) << " "
+                << snd_seq_port_info_get_client(pinfo) << ":"
+                << snd_seq_port_info_get_port(pinfo)
+                ;
 
-        stringname = os.str();
-    }
-    else
-    {
-        // If we get here, we didn't find a match.
-
-        m_error_string = func_message("error looking for port name");
-        error(rterror::WARNING, m_error_string);
+            stringname = os.str();
+        }
+        else
+        {
+            m_error_string = func_message("error looking for port name");
+            error(rterror::WARNING, m_error_string);
+        }
     }
     return stringname;
 }
@@ -1003,12 +1033,15 @@ midi_out_alsa::get_port_count ()
     return alsa_port_info
     (
         alsadata->seq, pinfo,
-        SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE, -1
+        SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
+        SEQ64_ALSA_PORT_COUNT
     );
 }
 
 /**
  *  Provides the ALSA output port name.
+ *
+ *  THIS IS COMMON CODE!!!!!!
  *
  * \param portnumber
  *      Provides the output port number to query.
@@ -1020,45 +1053,46 @@ midi_out_alsa::get_port_count ()
 std::string
 midi_out_alsa::get_port_name (unsigned portnumber)
 {
-    snd_seq_client_info_t * cinfo;
-    snd_seq_port_info_t * pinfo;
-    snd_seq_client_info_alloca(&cinfo);
-    snd_seq_port_info_alloca(&pinfo);
-
     std::string stringname;
-    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
-    if
-    (
-        alsa_port_info
+    if (portnumber >= 0)
+    {
+        snd_seq_client_info_t * cinfo;
+        snd_seq_port_info_t * pinfo;
+        snd_seq_client_info_alloca(&cinfo);
+        snd_seq_port_info_alloca(&pinfo);
+
+        alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
+        if
         (
-            alsadata->seq, pinfo,
-            SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
-            int(portnumber)
+            alsa_port_info
+            (
+                alsadata->seq, pinfo,
+                SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
+                int(portnumber)
+            )
         )
-    )
-    {
-        int cnum = snd_seq_port_info_get_client(pinfo);
-        snd_seq_get_any_client_info(alsadata->seq, cnum, cinfo);
+        {
+            int cnum = snd_seq_port_info_get_client(pinfo);
+            snd_seq_get_any_client_info(alsadata->seq, cnum, cinfo);
 
-        /*
-         * These lines added to make sure devices are listed
-         * with full portnames added to ensure individual device names.
-         */
+            /*
+             * Ensure devices are listed with full portnames added to ensure
+             * unique device names.
+             */
 
-        std::ostringstream os;
-        os
-            << snd_seq_client_info_get_name(cinfo) << " "
-            << snd_seq_port_info_get_client(pinfo) << ":"
-            << snd_seq_port_info_get_port(pinfo)
-            ;
-        stringname = os.str();
-    }
-    else
-    {
-        // If we get here, we didn't find a match.
-
-        m_error_string = func_message("error looking for port name");
-        error(rterror::WARNING, m_error_string);
+            std::ostringstream os;
+            os
+                << snd_seq_client_info_get_name(cinfo) << " "
+                << snd_seq_port_info_get_client(pinfo) << ":"
+                << snd_seq_port_info_get_port(pinfo)
+                ;
+            stringname = os.str();
+        }
+        else
+        {
+            m_error_string = func_message("error looking for port name");
+            error(rterror::WARNING, m_error_string);
+        }
     }
     return stringname;
 }
@@ -1094,18 +1128,85 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
         return;
     }
 
-    snd_seq_port_info_t * pinfo;
-    snd_seq_port_info_alloca(&pinfo);
-    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
-    if
-    (
-        alsa_port_info
+    if (portnumber >= 0)
+    {
+        snd_seq_port_info_t * pinfo;
+        snd_seq_port_info_alloca(&pinfo);
+        alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
+        if
         (
-            alsadata->seq, pinfo,
-            SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
-            int(portnumber)
-        ) == 0
-    )
+            alsa_port_info
+            (
+                alsadata->seq, pinfo,
+                SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
+                int(portnumber)
+            ) == 0
+        )
+        {
+            std::ostringstream ost;
+            ost << func_message("'portnumber' argument (")
+                << portnumber << ") is invalid"
+                ;
+            m_error_string = ost.str();
+            error(rterror::INVALID_PARAMETER, m_error_string);
+            return;
+        }
+
+        snd_seq_addr_t sender, receiver;
+        receiver.client = snd_seq_port_info_get_client(pinfo);
+        receiver.port = snd_seq_port_info_get_port(pinfo);
+        sender.client = snd_seq_client_id(alsadata->seq);
+        if (alsadata->vport < 0)
+        {
+            /*
+             * The "legacy" midibus::init_out() replaces the
+             * SND_SEQ_PORT_CAP_SUBS_READ flag with SND_SEQ_PORT_CAP_NO_EXPORT.
+             * This code here is like the seq24's midibus::init_out_sub()
+             * function.  Thus, alsadata->vport here is like m_local_addr_port there.
+             */
+
+            alsadata->vport = snd_seq_create_simple_port
+            (
+                alsadata->seq, portname.c_str(),
+                SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
+                SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
+            );
+            if (alsadata->vport < 0)
+            {
+                m_error_string = func_message("ALSA error creating output port");
+                error(rterror::DRIVER_ERROR, m_error_string);
+                return;
+            }
+        }
+
+        sender.port = alsadata->vport;
+
+        /*
+         * Make subscription.  The midibus::init_out() code instead
+         * used snd_seq_connect_to(port).
+         */
+
+        if (snd_seq_port_subscribe_malloc(&alsadata->subscription) < 0)
+        {
+            snd_seq_port_subscribe_free(alsadata->subscription);
+            m_error_string = func_message("error allocating port subscription");
+            error(rterror::DRIVER_ERROR, m_error_string);
+            return;
+        }
+        snd_seq_port_subscribe_set_sender(alsadata->subscription, &sender);
+        snd_seq_port_subscribe_set_dest(alsadata->subscription, &receiver);
+        snd_seq_port_subscribe_set_time_update(alsadata->subscription, 1);
+        snd_seq_port_subscribe_set_time_real(alsadata->subscription, 1);
+        if (snd_seq_subscribe_port(alsadata->seq, alsadata->subscription))
+        {
+            snd_seq_port_subscribe_free(alsadata->subscription);
+            m_error_string = func_message("ALSA error making port connection");
+            error(rterror::DRIVER_ERROR, m_error_string);
+            return;
+        }
+        m_connected = true;
+    }
+    else
     {
         std::ostringstream ost;
         ost << func_message("'portnumber' argument (")
@@ -1115,60 +1216,6 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
         error(rterror::INVALID_PARAMETER, m_error_string);
         return;
     }
-
-    snd_seq_addr_t sender, receiver;
-    receiver.client = snd_seq_port_info_get_client(pinfo);
-    receiver.port = snd_seq_port_info_get_port(pinfo);
-    sender.client = snd_seq_client_id(alsadata->seq);
-    if (alsadata->vport < 0)
-    {
-        /*
-         * The "legacy" midibus::init_out() replaces the
-         * SND_SEQ_PORT_CAP_SUBS_READ flag with SND_SEQ_PORT_CAP_NO_EXPORT.
-         * This code here is like the seq24's midibus::init_out_sub()
-         * function.  Thus, alsadata->vport here is like m_local_addr_port there.
-         */
-
-        alsadata->vport = snd_seq_create_simple_port
-        (
-            alsadata->seq, portname.c_str(),
-            SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
-            SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
-        );
-        if (alsadata->vport < 0)
-        {
-            m_error_string = func_message("ALSA error creating output port");
-            error(rterror::DRIVER_ERROR, m_error_string);
-            return;
-        }
-    }
-
-    sender.port = alsadata->vport;
-
-    /*
-     * Make subscription.  The midibus::init_out() code instead
-     * used snd_seq_connect_to(port).
-     */
-
-    if (snd_seq_port_subscribe_malloc(&alsadata->subscription) < 0)
-    {
-        snd_seq_port_subscribe_free(alsadata->subscription);
-        m_error_string = func_message("error allocating port subscription");
-        error(rterror::DRIVER_ERROR, m_error_string);
-        return;
-    }
-    snd_seq_port_subscribe_set_sender(alsadata->subscription, &sender);
-    snd_seq_port_subscribe_set_dest(alsadata->subscription, &receiver);
-    snd_seq_port_subscribe_set_time_update(alsadata->subscription, 1);
-    snd_seq_port_subscribe_set_time_real(alsadata->subscription, 1);
-    if (snd_seq_subscribe_port(alsadata->seq, alsadata->subscription))
-    {
-        snd_seq_port_subscribe_free(alsadata->subscription);
-        m_error_string = func_message("ALSA error making port connection");
-        error(rterror::DRIVER_ERROR, m_error_string);
-        return;
-    }
-    m_connected = true;
 }
 
 /**

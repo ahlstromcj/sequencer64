@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-11-29
+ * \updates       2016-12-04
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -165,6 +165,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_looping                   (false),
     m_playback_mode             (false),
     m_ppqn                      (choose_ppqn(ppqn)),
+    m_bpm                       (SEQ64_DEFAULT_BPM),
     m_beats_per_bar             (SEQ64_DEFAULT_BEATS_PER_MEASURE),
     m_beat_width                (SEQ64_DEFAULT_BEAT_WIDTH),
     m_clocks_per_metronome      (24),
@@ -303,7 +304,7 @@ perform::~perform ()
 void
 perform::launch (int ppqn)
 {
-    m_master_bus.init(ppqn, m_beats_per_bar);
+    m_master_bus.init(ppqn, m_bpm);
     launch_input_thread();
     launch_output_thread();
 #ifdef SEQ64_JACK_SUPPORT
@@ -1232,6 +1233,7 @@ perform::set_beats_per_minute (int bpm)
     {
         m_master_bus.set_beats_per_minute(bpm);
         m_us_per_quarter_note = tempo_to_us(bpm);
+        m_bpm = bpm;
     }
 }
 

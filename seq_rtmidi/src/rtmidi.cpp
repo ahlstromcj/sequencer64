@@ -81,7 +81,8 @@ namespace seq64
 
 rtmidi::rtmidi ()
  :
-   m_rtapi  (nullptr)
+   m_rtapi          (nullptr),
+   m_selected_api   (RTMIDI_API_UNSPECIFIED)
 {
    // no code
 }
@@ -181,7 +182,10 @@ rtmidi_in::rtmidi_in
     {
         openmidi_api(api, clientname, queuesizelimit);
         if (not_nullptr(m_rtapi))
+        {
+            selected_api(api);              /* log the API that worked  */
             return;
+        }
 
         /*
          * No compiled support for specified API value.  Issue a warning and
@@ -202,7 +206,10 @@ rtmidi_in::rtmidi_in
     {
         openmidi_api(apis[i], clientname, queuesizelimit);
         if (m_rtapi->get_port_count() > 0)
-           break;
+        {
+            selected_api(apis[i]);          /* log the API that worked  */
+            break;
+        }
     }
 
     if (not_nullptr(m_rtapi))

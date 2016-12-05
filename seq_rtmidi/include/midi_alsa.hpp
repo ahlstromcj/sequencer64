@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-03
+ * \updates       2016-12-04
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring...
@@ -58,6 +58,7 @@ public:
     virtual void close_port ();
     virtual unsigned get_port_count ();
     virtual std::string get_port_name (unsigned portnumber);
+    virtual int get_client_id (int index);
 
 private:
 

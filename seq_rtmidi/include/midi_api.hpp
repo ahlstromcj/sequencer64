@@ -88,6 +88,24 @@ public:
     virtual bool poll_queue () const = 0;
 
     /**
+     *  Gets the buss/client ID for a MIDI interfaces.  This is the left-hand
+     *  side of a X:Y pair (such as 128:0).
+     *
+     *  This function is a new part of the RtMidi interface.
+     *
+     * \param index
+     *      The ordinal index of the desired interface to look up.
+     *
+     * \return
+     *      Returns the buss/client value as provided by the selected API.
+     */
+
+    virtual int get_client_id (int index)
+    {
+        return index;
+    }
+
+    /**
      * \getter m_connected
      */
 

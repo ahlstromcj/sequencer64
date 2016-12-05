@@ -57,8 +57,21 @@ class mastermidibus : public mastermidibase
 private:
 
     /*
-     *  All members have been moved into the new base class.
+     *  Many members have been moved into the new base class.  The following
+     *  members have been added.
      */
+
+    /**
+     *  Holds the MIDI input information for later re-use.
+     */
+
+    rtmidi_in m_scratch_input;
+
+    /**
+     *  Holds the MIDI output information for later re-use.
+     */
+
+    rtmidi_out m_scratch_output;
 
 public:
 

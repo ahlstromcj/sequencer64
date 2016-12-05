@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-03
+ * \updates       2016-12-04
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  */
 
@@ -44,6 +44,13 @@ protected:
 
     midi_api * m_rtapi;
 
+    /**
+     *  To save from repeated queries, we save this value.  Its default value
+     *  is RTMIDI_API_UNSPECIFIED.
+     */
+
+    rtmidi_api m_selected_api;
+
 protected:
 
     rtmidi ();
@@ -51,11 +58,13 @@ protected:
 
 public:
 
-    //  A static function to determine the current rtmidi version.
+    /*
+     *  A static function to determine the current rtmidi version.
+     */
 
     static std::string get_version ();
 
-    /**
+    /*
      *  A static function to determine the available compiled MIDI APIs.  The
      *  values returned in the std::vector can be compared against the
      *  enumerated list values.  Note that there can be more than one API
@@ -64,7 +73,7 @@ public:
 
     static void get_compiled_api (std::vector<rtmidi_api> & apis);
 
-    /**
+    /*
      *  Checks the input queue.  If the API object doesn't have an input
      *  queue, this function will throw an rterror, for now.
      *
@@ -75,6 +84,15 @@ public:
     bool poll_queue () const
     {
         return m_rtapi->poll_queue();
+    }
+
+    /**
+     * \getter m_selected_api
+     */
+
+    rtmidi_api selected_api () const
+    {
+        return m_selected_api;
     }
 
     virtual void open_port
@@ -106,6 +124,36 @@ public:
     virtual void send_message (const std::vector<midibyte> &) = 0;
     virtual void ignore_types (bool, bool, bool) = 0;
     virtual double get_message (std::vector<midibyte> &) = 0;
+
+    /**
+     *  Gets the buss/client ID for a MIDI interfaces.  This is the left-hand
+     *  side of a X:Y pair (such as 128:0).
+     *
+     *  This function is a new part of the RtMidi interface.
+     *
+     * \param index
+     *      The ordinal index of the desired interface to look up.
+     *
+     * \return
+     *      Returns the buss/client value as provided by the selected API.
+     */
+
+    virtual int get_client_id (int index)
+    {
+        return m_rtapi->get_client_id(index);
+    }
+
+
+protected:
+
+    /**
+     * \setter m_selected_api
+     */
+
+    void selected_api (rtmidi_api api)
+    {
+        m_selected_api = api;
+    }
 
 };          // class rtmidi
 

@@ -471,7 +471,7 @@ midi_in_alsa::initialize (const std::string & clientname)
 #define SEQ64_ALSA_PORT_CLIENT      0xFF000000
 #define SEQ64_ALSA_PORT_COUNT       (-1)
 
-/*
+/**
  * This function is used to count or get the pinfo structure for a given port
  * number.
  *
@@ -484,9 +484,9 @@ midi_in_alsa::initialize (const std::string & clientname)
  * \param type
  *      The type of port to look up.  It is a one of the following masks:
  *      SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ, and
- *      SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE.
- *      We add a new value, SEQ64_ALSA_PORT_CLIENT = 0xFF000000, to indicate we only
- *      want the client value.
+ *      SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE.  We add a new
+ *      value, SEQ64_ALSA_PORT_CLIENT = 0xFF000000, to indicate we only want the
+ *      client value.
  *
  * \param portnumber
  *      The port number to look up. If this value is -1, then the ports are

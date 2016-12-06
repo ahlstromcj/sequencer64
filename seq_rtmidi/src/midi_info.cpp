@@ -84,8 +84,8 @@ midi_info::midi_info
 std::string
 midi_info::port_list () const
 {
-    int in_portcount = m_input.port_count();
-    int out_portcount = m_output.port_count();
+    int inportcount = m_input.port_count();
+    int outportcount = m_output.port_count();
     std::ostringstream os;
 
     os << "Input ports (" << inportcount << "):" << std::endl;

@@ -79,7 +79,7 @@ public:
         return m_port_count;
     }
 
-    int client_number (int index)
+    int client_number (int index) const
     {
         if (index >= 0 && index < port_count())
             return m_port_container[index].m_client_number;
@@ -87,7 +87,7 @@ public:
             return -1;
     }
 
-    int port_number (int index)
+    int port_number (int index) const
     {
         if (index >= 0 && index < port_count())
             return m_port_container[index].m_port_number;
@@ -95,7 +95,7 @@ public:
             return -1;
     }
 
-    const std::string & port_name (int index)
+    const std::string & port_name (int index) const
     {
         static std::string s_dummy;
         if (index >= 0 && index < port_count())
@@ -166,34 +166,34 @@ public:
             m_input.port_count() : m_output.port_count() ;
     }
 
-    int client_number (int index, bool input) const
+    int client_number (bool input, int index) const
     {
         return input ?
             m_input.client_number(index) :
             m_output.client_number(index) ;
     }
 
-    int port_number (int index, bool input) const
+    int port_number (bool input, int index) const
     {
         return input ?
             m_input.port_number(index) :
             m_output.port_number(index) ;
     }
 
-    const std::string & port_name (int index) const
+    const std::string & port_name (bool input, int index) const
     {
         return input ?
             m_input.port_name(index) :
-            m_output.port_nname(index) ;
+            m_output.port_name(index) ;
     }
 
     std::string port_list () const;
 
 private:
 
-    void initialize(const std::string & clientname);
+    // void initialize (const std::string & clientname);
 
-    virtual unsigned get_all_port_info ();
+    // virtual unsigned get_all_port_info ();
 
 };          // midi_info
 

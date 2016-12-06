@@ -34,6 +34,18 @@ class midi_alsa_info
 private:
 
     /**
+     *  Flags that denote queries for input (read) ports.
+     */
+
+    static unsigned sm_input_caps;
+
+    /**
+     *  Flags that denote queries for output (write) ports.
+     */
+
+    static unsigned sm_output_caps;
+
+    /**
      *  Holds a "handle" to the ALSA MIDI subsystem.
      */
 

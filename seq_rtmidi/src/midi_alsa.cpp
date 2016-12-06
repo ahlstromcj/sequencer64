@@ -32,7 +32,7 @@
  *  associated with the ALSA sequencer queues.
  */
 
-#include <sstream>
+#include <sstream>                      /* std::ostringstream               */
 #include <pthread.h>
 #include <sys/time.h>
 #include <alsa/asoundlib.h>

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-03
+ * \updates       2016-12-06
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -16,8 +16,6 @@
  *  about client number, port numbers, and port names, and hold them
  *  for usage when creating ALSA midibus objects and midi_alsa API objects.
  */
-
-#include <sstream>
 
 #include <pthread.h>
 #include <sys/time.h>
@@ -32,6 +30,16 @@
 
 namespace seq64
 {
+
+/*
+ * Initialization of static members.
+ */
+
+static unsigned midi_alsa_info::sm_input_caps =
+    SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ;
+
+static unsigned midi_alsa_info::sm_output_caps =
+    SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE;
 
 /**
  *  Principal constructor.
@@ -78,31 +86,18 @@ int
 midi_alsa_info::get_all_port_info ()
 {
     int count = 0;
-    snd_seq_t * seq = &m_alsa_seq;
-    snd_seq_port_info_t * pinfo = &m_alsa_port_info;
+    snd_seq_t * seq = &m_alsa_seq;                      /* point to member  */
+    snd_seq_port_info_t * pinfo = &m_alsa_port_info;    /* point to member  */
     snd_seq_client_info_t * cinfo;
     snd_seq_client_info_alloca(&cinfo);
     snd_seq_client_info_set_client(cinfo, -1);
-    unsigned input_caps =
-        SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ;
-
-    unsigned output_caps =
-        SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE;
-
     input_ports().clear();
     output_ports().clear();
     while (snd_seq_query_next_client(seq, cinfo) >= 0)
     {
         int client = snd_seq_client_info_get_client(cinfo);
         if (client == 0)
-        {
             continue;
-        }
-        else if (type == SEQ64_ALSA_PORT_CLIENT)
-        {
-            infoprint("Returning client number");
-            return client;
-        }
 
         snd_seq_port_info_set_client(pinfo, client);    /* reset query info */
         snd_seq_port_info_set_port(pinfo, -1);
@@ -119,24 +114,31 @@ midi_alsa_info::get_all_port_info ()
             }
 
             unsigned caps = snd_seq_port_info_get_capability(pinfo);
-            if ((caps & type) != type)
-                continue;
-
-            if (count == portnumber)
-                return 1;
-
-            ++count;
+            std::string clientname = snd_seq_client_info_get_name(cinfo);
+            int portnumber = snd_seq_port_info_get_port(pinfo);
+            char temp[80];
+            snprintf
+            (
+                temp, sizeof temp, "%s %d:%d",
+                clientname.c_str(), client, portnumber
+            );
+            if ((caps & sm_input_caps) == sm_input_caps)
+            {
+                input_ports().add(clientnumber, portnumber, clientname);
+                ++count;
+            }
+            else if ((caps & sm_output_caps) == sm_output_caps)
+            {
+                output_ports().add(clientnumber, portnumber, clientname);
+                ++count;
+            }
+            else
+            {
+                infoprintf("Non-I/O port '%s'", clientname.c_str());
+            }
         }
     }
-
-    /*
-     * If a negative portnumber was used, return the port count.
-     */
-
-    if (portnumber < 0)
-        return count;
-
-    return 0;
+    return count;
 }
 
 /**

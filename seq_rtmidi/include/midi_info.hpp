@@ -62,6 +62,18 @@ public:
 
     midi_port_info ();
 
+    void add
+    (
+        int clientnumber,
+        int portnumber,
+        const std::string & portname
+    );
+
+    void clear ()
+    {
+        m_port_container.clear();
+    }
+
     int port_count () const
     {
         return m_port_count;
@@ -95,7 +107,7 @@ public:
 };          // class midi_port_info
 
 /**
- *  Macros
+ *  Macros for selecting input versus output ports
  */
 
 #define SEQ64_MIDI_OUTPUT       false
@@ -174,6 +186,8 @@ public:
             m_input.port_name(index) :
             m_output.port_nname(index) ;
     }
+
+    std::string port_list () const;
 
 private:
 

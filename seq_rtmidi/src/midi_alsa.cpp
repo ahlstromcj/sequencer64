@@ -66,7 +66,34 @@ struct alsa_midi_data_t
     unsigned long long lastTime;
     int queue_id;                // input queue needed to get timestamped events
     int trigger_fds[2];
+
+    alsa_midi_data_t (snd_seq_t * s);
+
 };
+
+/**
+ *  Convenient constructor to make sure every member is assigned to a
+ *  non-random value :-D.
+ */
+
+alsa_midi_data_t::alsa_midi_data_t (snd_seq_t * s)
+ :
+    seq                 (s),
+    portNum             (-1),
+    vport               (-1),
+    subscription        (nullptr),
+    coder               (nullptr),
+    bufferSize          (0),        // or 32 for output
+    buffer              (nullptr),
+    thread              (),         // or alsadata->dummy_thread_id for input
+    dummy_thread_id     (),         // or pthread_self() for input
+    lastTime            (0LL),
+    queue_id            (-1),       // filled in later
+    trigger_fds         ()
+{
+    trigger_fds[0] = -1;            // for input setup
+    trigger_fds[1] = -1;            // for input setup
+}
 
 /*
  * Doesn't seem to be used.
@@ -367,9 +394,8 @@ midi_in_alsa::midi_in_alsa
 
 midi_in_alsa::~midi_in_alsa ()
 {
-    close_port();
-
     alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
+    close_port();
     if (m_input_data.do_input())
     {
         bool f = false;
@@ -379,8 +405,11 @@ midi_in_alsa::~midi_in_alsa ()
             pthread_join(alsadata->thread, NULL);
     }
 
-    close(alsadata->trigger_fds[0]);
-    close(alsadata->trigger_fds[1]);
+    if (alsadata->trigger_fds[0] != (-1))
+    {
+        close(alsadata->trigger_fds[0]);
+        close(alsadata->trigger_fds[1]);
+    }
     if (alsadata->vport >= 0)
         snd_seq_delete_port(alsadata->seq, alsadata->vport);
 
@@ -393,7 +422,10 @@ midi_in_alsa::~midi_in_alsa ()
 }
 
 /**
- *  Initializes the ALSA input object.
+ *  Initializes the ALSA input object.  The first item opened is the snd_seq_t
+ *  "handle".  An alsa_midi_data_t object is allocated on the heap, and it is
+ *  then stored in the m_api_data member <i>and</i> the API pointer in the
+ *  m_input_data member.  The "handle" is stored in this member as well.
  *
  * \param clientname
  *      The client name to be applied to the object for visibility.
@@ -402,10 +434,8 @@ midi_in_alsa::~midi_in_alsa ()
 void
 midi_in_alsa::initialize (const std::string & clientname)
 {
-    // Set up the ALSA sequencer client.
-
-    snd_seq_t * seq;
-    int result = snd_seq_open
+    snd_seq_t * seq;                        /* stored in alsa_midi_data_t   */
+    int result = snd_seq_open               /* set up ALSA sequencer client */
     (
         &seq, "default", SND_SEQ_OPEN_DUPLEX, SND_SEQ_NONBLOCK
     );
@@ -415,56 +445,49 @@ midi_in_alsa::initialize (const std::string & clientname)
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
-
-    snd_seq_set_client_name(seq, clientname.c_str());   // set client name
-
-    /*
-     * m_queue = snd_seq_alloc_queue(m_alsa_seq);
-     */
+    snd_seq_set_client_name(seq, clientname.c_str());   /* set client name  */
 
     alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>
     (
-        new (std::nothrow) alsa_midi_data_t
+        new (std::nothrow) alsa_midi_data_t(seq)
     );
-    if (not_nullptr(alsadata))      /* save API-specific connection info */
+
+    /*
+     * Same as for output up to here.
+     */
+
+    if (not_nullptr(alsadata))                  /* save API-specific info   */
     {
-        alsadata->seq = seq;
-        alsadata->portNum = -1;
-        alsadata->vport = -1;
-        alsadata->subscription = 0;
         alsadata->dummy_thread_id = pthread_self();
         alsadata->thread = alsadata->dummy_thread_id;
-        alsadata->trigger_fds[0] = -1;
-        alsadata->trigger_fds[1] = -1;
-        m_api_data = alsadata;                          /* no cast needed */
-        m_input_data.api_data(alsadata);                /* no cast needed */
+//      m_api_data = alsadata;                          /* no cast needed */
+//      m_input_data.api_data(alsadata);                /* no cast needed */
         if (pipe(alsadata->trigger_fds) == -1)
         {
             m_error_string = func_message("error creating pipe objects");
             error(rterror::DRIVER_ERROR, m_error_string);
-            return;
         }
-
-        // Create the input queue
-
+        else
+        {
 #ifndef SEQ64_AVOID_TIMESTAMPING
+            /*
+             * Create the input queue.  Tempo (mm=100, or 60000.0) and
+             * resolution (240) values, but now we've made them parameters.
+             */
 
-        alsadata->queue_id = snd_seq_alloc_named_queue(seq, "rtmidi Queue");
+            int tempous = tempo_us_from_beats_per_minute(bpm());
+            alsadata->queue_id = snd_seq_alloc_named_queue(seq, "rtmidi queue");
 
-        /*
-         * This code used to set arbitrary tempo (mm=100, or 60000.0) and
-         * resolution (240) values, but now we've made them parameters.
-         */
-
-        int tempous = tempo_us_from_beats_per_minute(bpm());
-        snd_seq_queue_tempo_t * qtempo;
-        snd_seq_queue_tempo_alloca(&qtempo);
-        snd_seq_queue_tempo_set_tempo(qtempo, tempous);
-        snd_seq_queue_tempo_set_ppq(qtempo, ppqn());
-        snd_seq_set_queue_tempo(alsadata->seq, alsadata->queue_id, qtempo);
-        snd_seq_drain_output(alsadata->seq);
-
+            snd_seq_queue_tempo_t * qtempo;
+            snd_seq_queue_tempo_alloca(&qtempo);
+            snd_seq_queue_tempo_set_tempo(qtempo, tempous);
+            snd_seq_queue_tempo_set_ppq(qtempo, ppqn());
+            snd_seq_set_queue_tempo(alsadata->seq, alsadata->queue_id, qtempo);
+            snd_seq_drain_output(alsadata->seq);
 #endif
+            m_api_data = alsadata;                      /* no cast needed */
+            m_input_data.api_data(alsadata);            /* no cast needed */
+        }
     }
 }
 
@@ -972,48 +995,55 @@ midi_out_alsa::~midi_out_alsa ()
 void
 midi_out_alsa::initialize (const std::string & clientname)
 {
-
     snd_seq_t * seq;
-    int result1 = snd_seq_open
+    int result = snd_seq_open
     (
         &seq, "default", SND_SEQ_OPEN_OUTPUT, SND_SEQ_NONBLOCK
     );
-    if (result1 < 0)
-    {
-        m_error_string = func_message("error creating ALSA sequencer client");
-        error(rterror::DRIVER_ERROR, m_error_string);
-        return;
-    }
-
-    snd_seq_set_client_name(seq, clientname.c_str());
-
-    // Save our api-specific connection information.
-
-    alsa_midi_data_t * alsadata = (alsa_midi_data_t *) new alsa_midi_data_t;
-    alsadata->seq = seq;
-    alsadata->portNum = -1;
-    alsadata->vport = -1;
-    alsadata->bufferSize = 32;
-    alsadata->coder = 0;
-    alsadata->buffer = 0;
-    int result = snd_midi_event_new(alsadata->bufferSize, &alsadata->coder);
     if (result < 0)
     {
-        delete alsadata;
-        m_error_string = func_message("error initializing MIDI event parser");
+        m_error_string = func_message("error opening ALSA sequencer client");
         error(rterror::DRIVER_ERROR, m_error_string);
         return;
     }
-    alsadata->buffer = (midibyte *) malloc(alsadata->bufferSize);
-    if (is_nullptr(alsadata->buffer))
+    snd_seq_set_client_name(seq, clientname.c_str());
+
+    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>
+    (
+        new (std::nothrow) alsa_midi_data_t(seq)
+    );
+
+    /*
+     * Same as for input up to here.
+     */
+
+    if (not_nullptr(alsadata))                  /* save API-specific info   */
     {
-        delete alsadata;
-        m_error_string = func_message("error allocating buffer memory");
-        error(rterror::MEMORY_ERROR, m_error_string);
-        return;
+        int result = snd_midi_event_new(alsadata->bufferSize, &alsadata->coder);
+        if (result < 0)
+        {
+            delete alsadata;
+            m_error_string = func_message("error initializing MIDI event parser");
+            error(rterror::DRIVER_ERROR, m_error_string);
+        }
+        else
+        {
+            alsadata->bufferSize = 32;
+            alsadata->buffer = (midibyte *) malloc(alsadata->bufferSize);
+            if (is_nullptr(alsadata->buffer))
+            {
+                delete alsadata;
+                m_error_string = func_message("error allocating buffer memory");
+                error(rterror::MEMORY_ERROR, m_error_string);
+            }
+            else
+            {
+                snd_midi_event_init(alsadata->coder);
+                m_api_data = alsadata;                  /* no cast needed */
+                // m_output_data.api_data(alsadata);    /* no cast needed */
+            }
+        }
     }
-    snd_midi_event_init(alsadata->coder);
-    m_api_data = alsadata;                          /* no cast needed */
 }
 
 /**

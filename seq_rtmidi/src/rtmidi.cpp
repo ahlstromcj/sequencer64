@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-03
+ * \updates       2016-12-08
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -91,7 +91,7 @@ rtmidi::rtmidi ()
  *  Destructor.
  */
 
-rtmidi::~rtmidi()
+rtmidi::~rtmidi ()
 {
     if (not_nullptr(m_rtapi))
     {
@@ -263,8 +263,11 @@ rtmidi_in::openmidi_api
     }
 
 #ifdef SEQ64_BUILD_UNIX_JACK
-    if (api == RTMIDI_API_UNIX_JACK)
-        m_rtapi = new midi_in_jack(clientname, queuesizelimit);
+    if (rc().with_jack_transport())
+    {
+        if (api == RTMIDI_API_UNIX_JACK)
+            m_rtapi = new midi_in_jack(clientname, queuesizelimit);
+    }
 #endif
 
 #ifdef SEQ64_BUILD_LINUX_ALSA
@@ -390,8 +393,11 @@ rtmidi_out::openmidi_api (rtmidi_api api, const std::string & clientname)
     m_rtapi = nullptr;
 
 #ifdef SEQ64_BUILD_UNIX_JACK
-    if (api == RTMIDI_API_UNIX_JACK)
-        m_rtapi = new midi_out_jack(clientname);
+    if (rc().with_jack_transport())
+    {
+        if (api == RTMIDI_API_UNIX_JACK)
+            m_rtapi = new midi_out_jack(clientname);
+    }
 #endif
 
 #ifdef SEQ64_BUILD_LINUX_ALSA

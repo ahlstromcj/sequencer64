@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-04
+ * \updates       2016-12-08
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
@@ -83,7 +83,6 @@ public:
         int queue                       = SEQ64_NO_QUEUE,
         int ppqn                        = SEQ64_USE_DEFAULT_PPQN,
         int bpm                         = SEQ64_DEFAULT_BPM
-//      bool makevirtual                = false
     );
 
     midibus

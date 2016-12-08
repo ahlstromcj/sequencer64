@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-04
+ * \updates       2016-12-08
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring...
@@ -58,7 +58,9 @@ public:
     virtual void close_port ();
     virtual unsigned get_port_count ();
     virtual std::string get_port_name (unsigned portnumber);
-    virtual int get_client_id (int index);
+
+//  virtual unsigned get_portnumber (unsigned index);
+    virtual unsigned get_client_id (unsigned portnumber);
 
 private:
 
@@ -88,6 +90,10 @@ public:
     virtual void close_port ();
     virtual unsigned get_port_count ();
     virtual std::string get_port_name (unsigned portnumber);
+
+//  virtual unsigned get_portnumber (unsigned index);
+//  virtual unsigned get_client_id (unsigned portnumber);
+
     virtual void send_message (const std::vector<midibyte> & message);
 
 private:

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2016-12-06
+ * \updates       2016-12-08
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
@@ -48,8 +48,8 @@ midi_port_info::midi_port_info
 void
 midi_port_info::add
 (
-    int clientnumber,
-    int portnumber,
+    unsigned clientnumber,
+    unsigned portnumber,
     const std::string & portname
 )
 {
@@ -84,20 +84,20 @@ midi_info::midi_info
 std::string
 midi_info::port_list () const
 {
-    int inportcount = m_input.port_count();
-    int outportcount = m_output.port_count();
+    unsigned inportcount = m_input.get_port_count();
+    unsigned outportcount = m_output.get_port_count();
     std::ostringstream os;
 
     os << "Input ports (" << inportcount << "):" << std::endl;
-    for (int i = 0; i < inportcount; ++i)
+    for (unsigned i = 0; i < inportcount; ++i)
     {
-        os << "  " << port_name(SEQ64_MIDI_INPUT, i) << std::endl;
+        os << "  " << get_port_name(SEQ64_MIDI_INPUT, i) << std::endl;
     }
 
     os << "Output ports (" << outportcount << "):" << std::endl;
-    for (int o = 0; o < outportcount; ++o)
+    for (unsigned o = 0; o < outportcount; ++o)
     {
-        os << "  " << port_name(SEQ64_MIDI_OUTPUT, o) << std::endl;
+        os << "  " << get_port_name(SEQ64_MIDI_OUTPUT, o) << std::endl;
     }
     return os.str();
 }

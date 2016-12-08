@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-04
- * \updates       2016-12-06
+ * \updates       2016-12-08
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the ALSA information of
@@ -65,10 +65,15 @@ private:
 
     /* virtual */ void initialize(const std::string & clientname);
 
+    /*
     unsigned alsa_port_info
     (
-        unsigned type, int portnumber
+        unsigned type, unsigned portnumber
     );
+    */
+
+    unsigned get_all_port_info ();
+
 
 };          // midi_alsa_info
 

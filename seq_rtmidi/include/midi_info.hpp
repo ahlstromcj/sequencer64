@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2016-12-06
+ * \updates       2016-12-08
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the ALSA information of
@@ -17,6 +17,8 @@
 
 #include <string>
 #include <vector>
+
+#include "rtmidi_types.hpp"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -40,8 +42,8 @@ private:
 
     typedef struct
     {
-        int m_client_number;        /**< The major buss number of the port. */
-        int m_port_number;          /**< The minor port number of the port. */
+        unsigned m_client_number;   /**< The major buss number of the port. */
+        unsigned m_port_number;     /**< The minor port number of the port. */
         std::string m_port_name;    /**< The system's name for the port.    */
 
     } port_info_t;
@@ -50,7 +52,7 @@ private:
      *  Holds the number of ports counted.
      */
 
-    int m_port_count;
+    unsigned m_port_count;
 
     /**
      *  Holds information on all of the ports that were "scanned".
@@ -64,8 +66,8 @@ public:
 
     void add
     (
-        int clientnumber,
-        int portnumber,
+        unsigned clientnumber,
+        unsigned portnumber,
         const std::string & portname
     );
 
@@ -74,31 +76,31 @@ public:
         m_port_container.clear();
     }
 
-    int port_count () const
+    unsigned get_port_count () const
     {
         return m_port_count;
     }
 
-    int client_number (int index) const
+    unsigned get_client_id (unsigned index) const
     {
-        if (index >= 0 && index < port_count())
+        if (index < get_port_count())
             return m_port_container[index].m_client_number;
         else
-            return -1;
+            return SEQ64_BAD_PORT_ID;
     }
 
-    int port_number (int index) const
+    unsigned get_port_number (unsigned index) const
     {
-        if (index >= 0 && index < port_count())
+        if (index < get_port_count())
             return m_port_container[index].m_port_number;
         else
-            return -1;
+            return SEQ64_BAD_PORT_ID;
     }
 
-    const std::string & port_name (int index) const
+    const std::string & get_port_name (unsigned index) const
     {
         static std::string s_dummy;
-        if (index >= 0 && index < port_count())
+        if (index < get_port_count())
             return m_port_container[index].m_port_name;
         else
             return s_dummy;
@@ -160,40 +162,34 @@ public:
      *
      */
 
-    int port_count (bool input) const
+    unsigned get_port_count (bool input) const
     {
         return input ?
-            m_input.port_count() : m_output.port_count() ;
+            m_input.get_port_count() : m_output.get_port_count() ;
     }
 
-    int client_number (bool input, int index) const
+    unsigned get_client_id (bool input, unsigned index) const
     {
         return input ?
-            m_input.client_number(index) :
-            m_output.client_number(index) ;
+            m_input.get_client_id(index) :
+            m_output.get_client_id(index) ;
     }
 
-    int port_number (bool input, int index) const
+    unsigned get_port_number (bool input, unsigned index) const
     {
         return input ?
-            m_input.port_number(index) :
-            m_output.port_number(index) ;
+            m_input.get_port_number(index) :
+            m_output.get_port_number(index) ;
     }
 
-    const std::string & port_name (bool input, int index) const
+    const std::string & get_port_name (bool input, unsigned index) const
     {
         return input ?
-            m_input.port_name(index) :
-            m_output.port_name(index) ;
+            m_input.get_port_name(index) :
+            m_output.get_port_name(index) ;
     }
 
     std::string port_list () const;
-
-private:
-
-    // void initialize (const std::string & clientname);
-
-    // virtual unsigned get_all_port_info ();
 
 };          // midi_info
 

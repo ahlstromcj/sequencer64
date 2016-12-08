@@ -14,8 +14,10 @@
  *
  */
 
-#include "rtmidi_base.hpp"              /* seq64::rtmidi_base           */
-#include "settings.hpp"                 /* seq64::rc().with_jack_...()  */
+#include "midi_api.hpp"                 /* seq64::midi_api base class       */
+#include "rtmidi_base.hpp"              /* seq64::rtmidi_base class         */
+#include "rterror.hpp"                  /* seq64::rterror class             */
+#include "settings.hpp"                 /* seq64::rc().with_jack_...()      */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -100,26 +102,6 @@ rtmidi_base::get_compiled_api (std::vector<rtmidi_api> & apis)
 #ifdef SEQ64_BUILD_RTMIDI_DUMMY
     apis.push_back(RTMIDI_API_DUMMY);
 #endif
-
-    /*
-     * Iterate through the compiled APIs and return as soon as we find
-     * one with at least one port or we reach the end of the list.
-     */
-
-    std::vector<rtmidi_api> apis;
-    get_compiled_api(apis);
-    for (unsigned i = 0; i < apis.size(); ++i)
-    {
-        openmidi_api(apis[i], clientname, queuesizelimit);
-        if (m_rtapi->get_port_count() > 0)
-        {
-            selected_api(apis[i]);          /* log the API that worked  */
-            break;
-        }
-    }
-
-    if (not_nullptr(m_rtapi))
-       return;
 
     /*
      * It should not be possible to get here because the preprocessor

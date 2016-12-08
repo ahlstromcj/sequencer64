@@ -588,11 +588,12 @@ alsa_port_info
  *  Tries to get the buss/client number.
  */
 
-int
-midi_in_alsa::get_client_id (int index)
+unsigned
+midi_in_alsa::get_client_id (unsigned index)
 {
     ////// TO DO //////////////
-    return index;
+
+    return SEQ64_BAD_PORT_ID;
 }
 
 /**
@@ -631,7 +632,7 @@ std::string
 midi_in_alsa::get_port_name (unsigned portnumber)
 {
     std::string stringname;
-    if (portnumber >= 0)
+    if (portnumber != SEQ64_BAD_PORT_ID)
     {
         snd_seq_client_info_t * cinfo;
         snd_seq_port_info_t * pinfo;
@@ -1084,7 +1085,7 @@ std::string
 midi_out_alsa::get_port_name (unsigned portnumber)
 {
     std::string stringname;
-    if (portnumber >= 0)
+    if (portnumber != SEQ64_BAD_PORT_ID)
     {
         snd_seq_client_info_t * cinfo;
         snd_seq_port_info_t * pinfo;
@@ -1158,7 +1159,7 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
         return;
     }
 
-    if (portnumber >= 0)
+    if (portnumber != SEQ64_BAD_PORT_ID)
     {
         snd_seq_port_info_t * pinfo;
         snd_seq_port_info_alloca(&pinfo);

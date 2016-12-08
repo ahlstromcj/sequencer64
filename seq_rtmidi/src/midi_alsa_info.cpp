@@ -82,10 +82,10 @@ midi_alsa_info::~midi_alsa_info ()
  *      Returns the total number of ports found.
  */
 
-int
+unsigned
 midi_alsa_info::get_all_port_info ()
 {
-    int count = 0;
+    unsigned count = 0;
     snd_seq_t * seq = &m_alsa_seq;                      /* point to member  */
     snd_seq_port_info_t * pinfo = &m_alsa_port_info;    /* point to member  */
     snd_seq_client_info_t * cinfo;

@@ -17,14 +17,11 @@
  *  wrapper/selector for the new midi_base class and its children.
  */
 
-#include <exception>
-#include <iostream>
 #include <string>
 
 #include "easy_macros.h"                    /* platform macros for compiler */
 #include "seq64_rtmidi_features.h"          /* SEQ64_BUILD_LINUX_ALSA etc.  */
-// #include "midi_api.hpp"                     /* seq64::midi[_in][_out]_api   */
-// #include "rterror.hpp"                      /* seq64::rterror               */
+#include "rtmidi_types.hpp"                 /* rtmidi helper entities       */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -32,6 +29,7 @@
 
 namespace seq64
 {
+    class midi_api;
 
 /**
  *  A class for enumerating MIDI clients and ports.  New, but ripe for
@@ -40,7 +38,6 @@ namespace seq64
 
 class rtmidi_base
 {
-
     friend class midibus;
 
 protected:
@@ -74,24 +71,28 @@ public:
 
     static void get_compiled_api (std::vector<rtmidi_api> & apis);
 
-    virtual void rtmidi_base::openmidi_api
-    (
-       rtmidi_api api,
-       const std::string & clientname,
-       unsigned queuesizelimit
-    ) = 0;
-
     virtual unsigned get_port_count () = 0;
+    virtual unsigned get_client_id (unsigned portnumber) = 0;
+    virtual unsigned get_port_number (unsigned portnumber) = 0;
     virtual std::string get_port_name (unsigned portnumber = 0) = 0;
-    virtual int get_client_id (int index) = 0;
 
     /**
      * \getter m_selected_api
      */
 
-    rtmidi_api selected_api () const
+    rtmidi_api & selected_api ()
     {
         return m_selected_api;
+    }
+
+
+    /**
+     * \getter m_rtapi
+     */
+
+    midi_api * api ()
+    {
+        return m_rtapi;
     }
 
 protected:
@@ -100,7 +101,7 @@ protected:
      * \setter m_selected_api
      */
 
-    void selected_api (rtmidi_api api)
+    void selected_api (const rtmidi_api & api)
     {
         m_selected_api = api;
     }

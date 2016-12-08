@@ -6,7 +6,7 @@
 # \library    	seq_rtmidi library
 # \author     	Chris Ahlstrom
 # \date       	2016-11-19
-# \update      2016-12-06
+# \update      2016-12-08
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -89,6 +89,8 @@ pkginclude_HEADERS = \
 	midi_probe.hpp \
 	midi_winmm.hpp \
 	rterror.hpp \
+	rtmidi_base.hpp \
+	rtmidi_info.hpp \
 	rtmidi.hpp \
 	seq64_rtmidi_features.h
 

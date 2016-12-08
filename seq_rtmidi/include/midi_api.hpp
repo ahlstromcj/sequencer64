@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-03
+ * \updates       2016-12-08
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -83,8 +83,6 @@ public:
     ) = 0;
     virtual void open_virtual_port (const std::string & portname) = 0;
     virtual void close_port () = 0;
-    virtual unsigned get_port_count () = 0;
-    virtual std::string get_port_name (unsigned portnumber) = 0;
     virtual bool poll_queue () const = 0;
 
     /**
@@ -100,9 +98,21 @@ public:
      *      Returns the buss/client value as provided by the selected API.
      */
 
-    virtual int get_client_id (int index)
+    virtual unsigned get_client_id (unsigned /*portnumber*/)
     {
-        return index;
+        return SEQ64_BAD_PORT_ID;                   // TODO
+    }
+
+    virtual unsigned get_port_count () = 0;
+
+    virtual unsigned get_port_number (unsigned /*portnumber*/)         // = 0;
+    {
+        return SEQ64_BAD_PORT_ID;                   // TODO
+    }
+
+    virtual std::string get_port_name (unsigned /*portnumber*/)   // = 0;
+    {
+        return std::string("");                     // TODO
     }
 
     /**
@@ -150,7 +160,7 @@ public:
     void seterrorcallback (rterror_callback errorcallback, void * userdata)
     {
         m_error_callback = errorcallback;
-        m_error_callback_user_data = userdata;
+        m_error_callback_user_data = userdata;  // BEWARE IF NULLPTR!!!!
     }
 
     /**

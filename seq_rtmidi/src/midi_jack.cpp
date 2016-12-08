@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-03
+ * \updates       2016-12-08
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -332,7 +332,7 @@ midi_in_jack::open_virtual_port (const std::string & portname)
 unsigned
 midi_in_jack::get_port_count ()
 {
-    int count = 0;
+    unsigned count = 0;
     JackMidiData * jackdata = static_cast<JackMidiData *>(m_api_data);
     connect();
     if (is_nullptr(jackdata->client))
@@ -620,7 +620,7 @@ midi_out_jack::open_virtual_port (const std::string & portname)
 unsigned
 midi_out_jack::get_port_count ()
 {
-    int count = 0;
+    unsigned count = 0;
     JackMidiData * jackdata = static_cast<JackMidiData *>(m_api_data);
     connect();
     if (not_nullptr(jackdata->client))

@@ -17,14 +17,8 @@
  *  wrapper/selector for the new midi_info class and its children.
  */
 
-#include <exception>
-#include <iostream>
-#include <string>
-
-#include "easy_macros.h"                    /* platform macros for compiler */
-#include "seq64_rtmidi_features.h"          /* SEQ64_BUILD_LINUX_ALSA etc.  */
-// #include "midi_api.hpp"                     /* seq64::midi[_in][_out]_api   */
-// #include "rterror.hpp"                      /* seq64::rterror               */
+#include "midi_api.hpp"                     /* seq64::midi[_in][_out]_api   */
+#include "rtmidi_base.hpp"                  /* seq64::rtmidi_base class     */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -38,68 +32,21 @@ namespace seq64
  *  refactoring nonetheless.
  */
 
-class rtmidi_info
+class rtmidi_info : public rtmidi_base
 {
-
     friend class midibus;
-
-protected:
-
-    midi_api * m_rtapi;
-
-    /**
-     *  To save from repeated queries, we save this value.  Its default value
-     *  is RTMIDI_API_UNSPECIFIED.
-     */
-
-    rtmidi_api m_selected_api;
 
 public:
 
     rtmidi_info ();
     virtual ~rtmidi_info ();
 
-    /*
-     *  A static function to determine the current rtmidi version.
-     */
-
-    static std::string get_version ();
-
-    /*
-     *  A static function to determine the available compiled MIDI APIs.  The
-     *  values returned in the std::vector can be compared against the
-     *  enumerated list values.  Note that there can be more than one API
-     *  compiled for certain operating systems.
-     */
-
-    static void get_compiled_api (std::vector<rtmidi_api> & apis);
-
-    void rtmidi_info::openmidi_api
+    void openmidi_api
     (
        rtmidi_api api,
        const std::string & clientname,
        unsigned queuesizelimit
     );
-
-    /**
-     * \getter m_selected_api
-     */
-
-    rtmidi_api selected_api () const
-    {
-        return m_selected_api;
-    }
-
-    virtual unsigned get_port_count ()
-    {
-        return m_rtapi->port_count();
-    }
-
-    virtual std::string get_port_name (unsigned portnumber = 0)
-    {
-        return m_rtapi->port_name(portnumber);
-    }
-
 
     /**
      *  Gets the buss/client ID for a MIDI interfaces.  This is the left-hand
@@ -114,20 +61,24 @@ public:
      *      Returns the buss/client value as provided by the selected API.
      */
 
-    virtual int get_client_id (int index)
+    virtual unsigned get_client_id (unsigned index)
     {
-        return m_rtapi->get_client_id(index);
+        return api()->get_client_id(index);
     }
 
-protected:
-
-    /**
-     * \setter m_selected_api
-     */
-
-    void selected_api (rtmidi_api api)
+    virtual unsigned get_port_count ()
     {
-        m_selected_api = api;
+        return api()->get_port_count();
+    }
+
+    virtual unsigned get_port_number (unsigned index)
+    {
+        return api()->get_port_number(index);
+    }
+
+    virtual std::string get_port_name (unsigned index)
+    {
+        return api()->get_port_name(index);
     }
 
 };          // class rtmidi_info

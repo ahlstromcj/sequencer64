@@ -8,8 +8,12 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-04
+ * \updates       2016-12-08
  * \license       See the rtexmidi.lic file.  Too big for a header file.
+ *
+ *  The big difference between this class (seq64::rtmidi) and
+ *  seq64::rtmidi_info is that it gets information via midi_api-derived
+ *  functions, while the latter gets if via midi_api_info-derived functions.
  */
 
 #define SEQ64_RTMIDI_VERSION "2.1.1"        /* revision at fork time        */
@@ -102,28 +106,8 @@ public:
     ) = 0;
 
     virtual void open_virtual_port (const std::string & portname = "rtmidi") = 0;
-    virtual unsigned get_port_count () = 0;
-    virtual std::string get_port_name (unsigned portnumber = 0) = 0;
     virtual void close_port () = 0;
     virtual bool is_port_open () const = 0;
-
-    /**
-     *  Set an error callback function to be invoked when an error has
-     *  occured.
-     *
-     *  The callback function will be called whenever an error has occured. It
-     *  is best to set the error callback function before opening a port.
-     */
-
-    virtual void seterrorcallback
-    (
-        rterror_callback errorcallback = nullptr,
-        void * userdata = 0
-    ) = 0;
-
-    virtual void send_message (const std::vector<midibyte> &) = 0;
-    virtual void ignore_types (bool, bool, bool) = 0;
-    virtual double get_message (std::vector<midibyte> &) = 0;
 
     /**
      *  Gets the buss/client ID for a MIDI interfaces.  This is the left-hand
@@ -138,10 +122,37 @@ public:
      *      Returns the buss/client value as provided by the selected API.
      */
 
-    virtual int get_client_id (int index)
+    virtual unsigned get_client_id (unsigned index)
     {
         return m_rtapi->get_client_id(index);
     }
+
+    virtual unsigned get_port_count () = 0;
+
+    virtual unsigned get_port_number (unsigned /*index*/) //  = 0;
+    {
+        return SEQ64_BAD_PORT_ID;
+    }
+
+    virtual std::string get_port_name (unsigned index) = 0;
+
+    /**
+     *  Set an error callback function to be invoked when an error has
+     *  occured.
+     *
+     *  The callback function will be called whenever an error has occured. It
+     *  is best to set the error callback function before opening a port.
+     */
+
+    virtual void seterrorcallback
+    (
+        rterror_callback errorcallback = nullptr,
+        void * userdata = nullptr
+    ) = 0;
+
+    virtual void send_message (const std::vector<midibyte> &) = 0;
+    virtual void ignore_types (bool, bool, bool) = 0;
+    virtual double get_message (std::vector<midibyte> &) = 0;
 
 
 protected:
@@ -239,7 +250,7 @@ public:
 
     void open_port
     (
-        unsigned portnumber = 0,
+        unsigned portnumber,
         const std::string & portname = "rtmidi input"
     )
     {
@@ -281,7 +292,7 @@ public:
      *      callback function whenever it is called.
      */
 
-    void set_callback (rtmidi_callback_t callback, void * userdata = 0)
+    void set_callback (rtmidi_callback_t callback, void * userdata = nullptr)
     {
        ((midi_in_api *) m_rtapi)->set_callback(callback, userdata);
     }
@@ -325,7 +336,7 @@ public:
 
     unsigned get_port_count ()
     {
-       return m_rtapi->get_port_count();
+       return int(m_rtapi->get_port_count());
     }
 
     /**
@@ -336,7 +347,7 @@ public:
      *      string is returned if an invalid port specifier is provided.
      */
 
-    std::string get_port_name (unsigned portnumber = 0)
+    std::string get_port_name (unsigned portnumber)
     {
        return m_rtapi->get_port_name(portnumber);
     }
@@ -484,7 +495,7 @@ public:
 
     void open_port
     (
-        unsigned portnumber = 0,
+        unsigned portnumber,
         const std::string & portname = "rtmidi output"
     )
     {
@@ -522,7 +533,7 @@ public:
 
     void open_virtual_port (const std::string & portname = "rtmidi output")
     {
-       m_rtapi->open_virtual_port( portname );
+       m_rtapi->open_virtual_port(portname);
     }
 
     /**
@@ -539,7 +550,7 @@ public:
      *  An empty string is returned if an invalid port specifier is provided.
      */
 
-    std::string get_port_name (unsigned portnumber = 0)
+    std::string get_port_name (unsigned portnumber)
     {
        return m_rtapi->get_port_name(portnumber);
     }
@@ -566,8 +577,8 @@ public:
 
     virtual void seterrorcallback
     (
-        rterror_callback errorcallback = NULL,
-        void * userdata = 0
+        rterror_callback errorcallback = nullptr,
+        void * userdata = nullptr
     )
     {
        m_rtapi->seterrorcallback(errorcallback, userdata);

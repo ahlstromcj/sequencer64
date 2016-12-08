@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2016-12-04
+ * \updates       2016-12-08
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -20,12 +20,18 @@
 
 #include "midibyte.hpp"                     /* seq64::midibyte typedef      */
 
-/*
+/**
  * This was the version of the RtMidi library from which this reimplementation
  * was forked.
  */
 
 #define SEQ64_RTMIDI_VERSION "2.1.1"        /* revision at fork time        */
+
+/**
+ *  Indicates a bad client ID or port number.
+ */
+
+#define SEQ64_BAD_PORT_ID   (unsigned(-1))
 
 /*
  * Do not document the namespace; it breaks Doxygen.

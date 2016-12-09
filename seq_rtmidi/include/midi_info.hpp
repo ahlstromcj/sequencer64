@@ -4,21 +4,36 @@
 /**
  * \file          midi_info.hpp
  *
- *    A class for holding the current status of the ALSA system on the host.
+ *      A class for holding the current status of the MIDI system on the host.
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2016-12-08
+ * \updates       2016-12-09
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
- *    We need to have a way to get all of the ALSA information of
- *    the midi_alsa
+ *      We need to have a way to get all of the API information from each
+ *      framework, without supporting the full API.  The Sequencer64
+ *      masteridibus and midibus classes require certain information to be
+ *      known when they are created:
+ *
+ *      -   Port counts.  The number of input ports and output ports needs to
+ *          be known so that we can iterate properly over them to create
+ *          midibus objects.
+ *      -   Port information.  We want to assemble port names just once, and
+ *          never have to deal with it again (assuming that MIDI ports do not
+ *          come and go during the execution of Sequencer64.
+ *      -   Client information.  We want to assemble client names or numbers
+ *          just once.
+ *
+ *      Note that, while the other midi_api-based classes access port via the
+ *      port numbers assigned by the MIDI subsystem, midi_info-based classes
+ *      use the concept of an "index", which ranges from 0 to one less than
+ *      the number of input or output ports.  These values are indices into a
+ *      vector of port_info_t structures, and are easily looked up when
+ *      mastermidibus creates a midibus object.
  */
 
-#include <string>
-#include <vector>
-
-#include "rtmidi_types.hpp"
+#include "midi_api.hpp"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -109,17 +124,18 @@ public:
 };          // class midi_port_info
 
 /**
- *  Macros for selecting input versus output ports
+ *  Macros for selecting input versus output ports in a more obvious way.
  */
 
 #define SEQ64_MIDI_OUTPUT       false
 #define SEQ64_MIDI_INPUT        true
 
 /**
- *  The class for handling ALSA MIDI input.
+ *  The class for holding basic information on the MIDI input and output ports
+ *  currently present in the system.
  */
 
-class midi_info
+class midi_info : public midi_api
 {
 
 private:
@@ -190,6 +206,40 @@ public:
     }
 
     std::string port_list () const;
+
+    /*
+     * We don't want yet another base class, but we have to override these
+     * pure virtual functions from midi_api.  We might actually be able to
+     * eventually migrate common code into some of these functions.
+     */
+
+    virtual rtmidi_api get_current_api () const
+    {
+        return RTMIDI_API_UNSPECIFIED;
+    }
+
+    virtual void open_port
+    (
+        unsigned /*portnumber*/, const std::string & /*portname*/
+    )
+    {
+        // No action at this time
+    }
+
+    virtual void open_virtual_port (const std::string & /*portname*/)
+    {
+        // No action at this time
+    }
+
+    virtual void close_port ()
+    {
+        // No action at this time
+    }
+
+    virtual bool poll_queue () const
+    {
+        return false;
+    }
 
 };          // midi_info
 

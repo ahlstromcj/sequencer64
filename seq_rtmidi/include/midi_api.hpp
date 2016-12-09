@@ -18,8 +18,6 @@
  *      -   seq64::midi_out_api
  */
 
-#include <string>
-
 #include "app_limits.h"                 /* SEQ64_DEFAULT_PPQN etc.  */
 #include "easy_macros.h"
 #include "rterror.hpp"

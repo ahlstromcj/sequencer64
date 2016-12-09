@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2016-12-08
+ * \updates       2016-12-09
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -16,6 +16,7 @@
  *  refactor and partition, and slightly easier to read.
  */
 
+#include <string>                           /* std::string                  */
 #include <vector>                           /* std::vector container        */
 
 #include "midibyte.hpp"                     /* seq64::midibyte typedef      */

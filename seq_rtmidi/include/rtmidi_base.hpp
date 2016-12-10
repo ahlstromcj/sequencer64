@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-08
+ * \updates       2016-12-09
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -22,6 +22,8 @@
 #include "easy_macros.h"                    /* platform macros for compiler */
 #include "seq64_rtmidi_features.h"          /* SEQ64_BUILD_LINUX_ALSA etc.  */
 #include "rtmidi_types.hpp"                 /* rtmidi helper entities       */
+
+#define SEQ64_RTMIDI_VERSION "2.1.1"        /* revision at fork time        */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -40,7 +42,7 @@ class rtmidi_base
 {
     friend class midibus;
 
-protected:
+private:
 
     midi_api * m_rtapi;
 
@@ -85,12 +87,20 @@ public:
         return m_selected_api;
     }
 
-
     /**
-     * \getter m_rtapi
+     * \getter m_rtapi const version
      */
 
-    midi_api * api ()
+    const midi_api * get_api () const
+    {
+        return m_rtapi;
+    }
+
+    /**
+     * \getter m_rtapi non-const version
+     */
+
+    midi_api * get_api ()
     {
         return m_rtapi;
     }
@@ -104,6 +114,29 @@ protected:
     void selected_api (const rtmidi_api & api)
     {
         m_selected_api = api;
+    }
+
+    /**
+     * \setter m_rtapi
+     */
+
+    void set_api (midi_api * ma)
+    {
+        if (not_nullptr(ma))
+            m_rtapi = ma;
+    }
+
+    /**
+     * \setter m_rtapi
+     */
+
+    void delete_api ()
+    {
+        if (not_nullptr(m_rtapi))
+        {
+            delete m_rtapi;
+            m_rtapi = nullptr;
+        }
     }
 
 };          // class rtmidi_base

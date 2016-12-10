@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-05
+ * \updates       2016-12-09
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  In this refactoring, we are trying to improve the RtMidi project in the
@@ -443,50 +443,53 @@ midi_in_alsa::initialize (const std::string & clientname)
     {
         m_error_string = func_message("error opening ALSA sequencer client");
         error(rterror::DRIVER_ERROR, m_error_string);
-        return;
     }
-    snd_seq_set_client_name(seq, clientname.c_str());   /* set client name  */
-
-    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>
-    (
-        new (std::nothrow) alsa_midi_data_t(seq)
-    );
-
-    /*
-     * Same as for output up to here.
-     */
-
-    if (not_nullptr(alsadata))                  /* save API-specific info   */
+    else
     {
-        alsadata->dummy_thread_id = pthread_self();
-        alsadata->thread = alsadata->dummy_thread_id;
-//      m_api_data = alsadata;                          /* no cast needed */
-//      m_input_data.api_data(alsadata);                /* no cast needed */
-        if (pipe(alsadata->trigger_fds) == -1)
+
+        alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>
+        (
+            new (std::nothrow) alsa_midi_data_t(seq)
+        );
+
+        /*
+         * Same as for output up to here.
+         */
+
+        if (not_nullptr(alsadata))                  /* save API-specific info   */
         {
-            m_error_string = func_message("error creating pipe objects");
-            error(rterror::DRIVER_ERROR, m_error_string);
-        }
-        else
-        {
+            snd_seq_set_client_name(seq, clientname.c_str());
+            alsadata->dummy_thread_id = pthread_self();
+            alsadata->thread = alsadata->dummy_thread_id;
+            if (pipe(alsadata->trigger_fds) == -1)
+            {
+                m_error_string = func_message("error creating pipe objects");
+                error(rterror::DRIVER_ERROR, m_error_string);
+            }
+            else
+            {
 #ifndef SEQ64_AVOID_TIMESTAMPING
-            /*
-             * Create the input queue.  Tempo (mm=100, or 60000.0) and
-             * resolution (240) values, but now we've made them parameters.
-             */
+                /*
+                 * Create the input queue.  Tempo (mm=100, or 60000.0) and
+                 * resolution (240) values, but now we've made them parameters.
+                 */
 
-            int tempous = tempo_us_from_beats_per_minute(bpm());
-            alsadata->queue_id = snd_seq_alloc_named_queue(seq, "rtmidi queue");
+                int tempous = tempo_us_from_beats_per_minute(bpm());
+                alsadata->queue_id = snd_seq_alloc_named_queue
+                (
+                    seq, "rtmidi queue"
+                );
 
-            snd_seq_queue_tempo_t * qtempo;
-            snd_seq_queue_tempo_alloca(&qtempo);
-            snd_seq_queue_tempo_set_tempo(qtempo, tempous);
-            snd_seq_queue_tempo_set_ppq(qtempo, ppqn());
-            snd_seq_set_queue_tempo(alsadata->seq, alsadata->queue_id, qtempo);
-            snd_seq_drain_output(alsadata->seq);
+                snd_seq_queue_tempo_t * qtempo;
+                snd_seq_queue_tempo_alloca(&qtempo);
+                snd_seq_queue_tempo_set_tempo(qtempo, tempous);
+                snd_seq_queue_tempo_set_ppq(qtempo, ppqn());
+                snd_seq_set_queue_tempo(alsadata->seq, alsadata->queue_id, qtempo);
+                snd_seq_drain_output(alsadata->seq);
 #endif
-            m_api_data = alsadata;                      /* no cast needed */
-            m_input_data.api_data(alsadata);            /* no cast needed */
+                m_api_data = alsadata;                      /* no cast needed */
+                m_input_data.api_data(alsadata);            /* no cast needed */
+            }
         }
     }
 }

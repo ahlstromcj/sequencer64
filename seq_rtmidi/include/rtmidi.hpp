@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-08
+ * \updates       2016-12-09
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The big difference between this class (seq64::rtmidi) and
@@ -16,16 +16,9 @@
  *  functions, while the latter gets if via midi_api_info-derived functions.
  */
 
-#define SEQ64_RTMIDI_VERSION "2.1.1"        /* revision at fork time        */
-
-#include <exception>
-#include <iostream>
-#include <string>
-
-#include "easy_macros.h"                    /* platform macros for compiler */
-#include "seq64_rtmidi_features.h"          /* SEQ64_BUILD_LINUX_ALSA etc.  */
 #include "midi_api.hpp"                     /* seq64::midi[_in][_out]_api   */
 #include "rterror.hpp"                      /* seq64::rterror               */
+#include "rtmidi_base.hpp"                  /* seq64::rtmidi_base           */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -39,21 +32,9 @@ namespace seq64
  *  the new rtmidi_types.hpp module to make refactoring the code easier.
  */
 
-class rtmidi
+class rtmidi : public rtmidi_base
 {
-
     friend class midibus;
-
-protected:
-
-    midi_api * m_rtapi;
-
-    /**
-     *  To save from repeated queries, we save this value.  Its default value
-     *  is RTMIDI_API_UNSPECIFIED.
-     */
-
-    rtmidi_api m_selected_api;
 
 protected:
 
@@ -61,21 +42,6 @@ protected:
     virtual ~rtmidi ();
 
 public:
-
-    /*
-     *  A static function to determine the current rtmidi version.
-     */
-
-    static std::string get_version ();
-
-    /*
-     *  A static function to determine the available compiled MIDI APIs.  The
-     *  values returned in the std::vector can be compared against the
-     *  enumerated list values.  Note that there can be more than one API
-     *  compiled for certain operating systems.
-     */
-
-    static void get_compiled_api (std::vector<rtmidi_api> & apis);
 
     /*
      *  Checks the input queue.  If the API object doesn't have an input
@@ -87,16 +53,7 @@ public:
 
     bool poll_queue () const
     {
-        return m_rtapi->poll_queue();
-    }
-
-    /**
-     * \getter m_selected_api
-     */
-
-    rtmidi_api selected_api () const
-    {
-        return m_selected_api;
+        return get_api()->poll_queue();
     }
 
     virtual void open_port
@@ -124,7 +81,7 @@ public:
 
     virtual unsigned get_client_id (unsigned index)
     {
-        return m_rtapi->get_client_id(index);
+        return get_api()->get_client_id(index);
     }
 
     virtual unsigned get_port_count () = 0;
@@ -154,17 +111,7 @@ public:
     virtual void ignore_types (bool, bool, bool) = 0;
     virtual double get_message (std::vector<midibyte> &) = 0;
 
-
 protected:
-
-    /**
-     * \setter m_selected_api
-     */
-
-    void selected_api (rtmidi_api api)
-    {
-        m_selected_api = api;
-    }
 
 };          // class rtmidi
 
@@ -225,15 +172,20 @@ public:
      *  If a MIDI connection is still open, it will be closed by the destructor.
      */
 
-    ~rtmidi_in ();
+    virtual ~rtmidi_in ();
 
     /**
      *  Returns the MIDI API specifier for the current instance of rtmidi_in.
+     *  This is an integer enumeration value, starting with
+     *  RTMIDI_API_UNSPECIFIED.
+     *
+     *  This function could be moved into rtmidi_base, if we see the need for
+     *  that.
      */
 
     rtmidi_api get_current_api () const
     {
-        return m_rtapi->get_current_api();
+        return get_api()->get_current_api();
     }
 
     /**
@@ -254,7 +206,7 @@ public:
         const std::string & portname = "rtmidi input"
     )
     {
-       m_rtapi->open_port(portnumber, portname);
+       get_api()->open_port(portnumber, portname);
     }
 
     /**
@@ -273,7 +225,7 @@ public:
 
     void open_virtual_port (const std::string & portname = "rtmidi input")
     {
-       m_rtapi->open_virtual_port(portname);
+       get_api()->open_virtual_port(portname);
     }
 
     /**
@@ -294,7 +246,7 @@ public:
 
     void set_callback (rtmidi_callback_t callback, void * userdata = nullptr)
     {
-       ((midi_in_api *) m_rtapi)->set_callback(callback, userdata);
+       dynamic_cast<midi_in_api *>(get_api())->set_callback(callback, userdata);
     }
 
     /**
@@ -306,7 +258,7 @@ public:
 
     void cancel_callback ()
     {
-       ((midi_in_api *) m_rtapi)->cancel_callback();
+       dynamic_cast<midi_in_api *>(get_api())->cancel_callback();
     }
 
     /**
@@ -315,7 +267,7 @@ public:
 
     void close_port ()
     {
-       m_rtapi->close_port();
+       get_api()->close_port();
     }
 
     /**
@@ -324,7 +276,7 @@ public:
 
     virtual bool is_port_open () const
     {
-       return m_rtapi->is_port_open();
+       return get_api()->is_port_open();
     }
 
     /**
@@ -336,7 +288,7 @@ public:
 
     unsigned get_port_count ()
     {
-       return int(m_rtapi->get_port_count());
+       return get_api()->get_port_count();
     }
 
     /**
@@ -349,7 +301,7 @@ public:
 
     std::string get_port_name (unsigned portnumber)
     {
-       return m_rtapi->get_port_name(portnumber);
+       return get_api()->get_port_name(portnumber);
     }
 
     /**
@@ -372,7 +324,7 @@ public:
         bool midisense = true
     )
     {
-       ((midi_in_api *) m_rtapi)->ignore_types(midisysex, miditime, midisense);
+       dynamic_cast<midi_in_api *>(get_api())->ignore_types(midisysex, miditime, midisense);
     }
 
     /**
@@ -398,7 +350,7 @@ public:
 
     virtual double get_message (std::vector<midibyte> & message)
     {
-       return ((midi_in_api *) m_rtapi)->get_message(message);
+       return dynamic_cast<midi_in_api *>(get_api())->get_message(message);
     }
 
     /**
@@ -415,7 +367,7 @@ public:
         void * userdata = 0
     )
     {
-       m_rtapi->seterrorcallback(errorcallback, userdata);
+       get_api()->seterrorcallback(errorcallback, userdata);
     }
 
     virtual void send_message (const std::vector<midibyte> &);
@@ -470,7 +422,7 @@ public:
      *  The destructor closes any open MIDI connections.
      */
 
-    ~rtmidi_out ();
+    virtual ~rtmidi_out ();
 
     virtual void ignore_types (bool, bool, bool);
     virtual double get_message (std::vector<midibyte> &);
@@ -481,7 +433,7 @@ public:
 
     rtmidi_api get_current_api () const
     {
-       return m_rtapi->get_current_api();
+       return get_api()->get_current_api();
     }
 
     /**
@@ -499,7 +451,7 @@ public:
         const std::string & portname = "rtmidi output"
     )
     {
-       m_rtapi->open_port(portnumber, portname);
+       get_api()->open_port(portnumber, portname);
     }
 
     /**
@@ -508,7 +460,7 @@ public:
 
     void close_port ()
     {
-       m_rtapi->close_port();
+       get_api()->close_port();
     }
 
     /**
@@ -517,7 +469,7 @@ public:
 
     virtual bool is_port_open () const
     {
-       return m_rtapi->is_port_open();
+       return get_api()->is_port_open();
     }
 
     /**
@@ -533,7 +485,7 @@ public:
 
     void open_virtual_port (const std::string & portname = "rtmidi output")
     {
-       m_rtapi->open_virtual_port(portname);
+       get_api()->open_virtual_port(portname);
     }
 
     /**
@@ -542,7 +494,7 @@ public:
 
     unsigned get_port_count ()
     {
-       return m_rtapi->get_port_count();
+       return get_api()->get_port_count();
     }
 
     /**
@@ -552,7 +504,7 @@ public:
 
     std::string get_port_name (unsigned portnumber)
     {
-       return m_rtapi->get_port_name(portnumber);
+       return get_api()->get_port_name(portnumber);
     }
 
     /**
@@ -565,7 +517,7 @@ public:
 
     virtual void send_message (const std::vector<midibyte> & message)
     {
-       ((midi_out_api *) m_rtapi)->send_message(message);
+       dynamic_cast<midi_out_api *>(get_api())->send_message(message);
     }
 
     /**
@@ -581,7 +533,7 @@ public:
         void * userdata = nullptr
     )
     {
-       m_rtapi->seterrorcallback(errorcallback, userdata);
+       get_api()->seterrorcallback(errorcallback, userdata);
     }
 
 protected:

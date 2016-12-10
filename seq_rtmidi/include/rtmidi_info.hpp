@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-08
+ * \updates       2016-12-09
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -41,13 +41,6 @@ public:
     rtmidi_info ();
     virtual ~rtmidi_info ();
 
-    void openmidi_api
-    (
-       rtmidi_api api,
-       const std::string & clientname,
-       unsigned queuesizelimit
-    );
-
     /**
      *  Gets the buss/client ID for a MIDI interfaces.  This is the left-hand
      *  side of a X:Y pair (such as 128:0).
@@ -63,23 +56,32 @@ public:
 
     virtual unsigned get_client_id (unsigned index)
     {
-        return api()->get_client_id(index);
+        return get_api()->get_client_id(index);
     }
 
     virtual unsigned get_port_count ()
     {
-        return api()->get_port_count();
+        return get_api()->get_port_count();
     }
 
     virtual unsigned get_port_number (unsigned index)
     {
-        return api()->get_port_number(index);
+        return get_api()->get_port_number(index);
     }
 
     virtual std::string get_port_name (unsigned index)
     {
-        return api()->get_port_name(index);
+        return get_api()->get_port_name(index);
     }
+
+protected:
+
+    void openmidi_api
+    (
+       rtmidi_api api,
+       const std::string & clientname,
+       unsigned queuesizelimit
+    );
 
 };          // class rtmidi_info
 

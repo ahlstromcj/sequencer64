@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-08
+ * \updates       2016-12-09
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -81,10 +81,9 @@ namespace seq64
 
 rtmidi::rtmidi ()
  :
-   m_rtapi          (nullptr),
-   m_selected_api   (RTMIDI_API_UNSPECIFIED)
+    rtmidi_base     ()
 {
-   // no code
+   // No added code
 }
 
 /**
@@ -93,64 +92,7 @@ rtmidi::rtmidi ()
 
 rtmidi::~rtmidi ()
 {
-    if (not_nullptr(m_rtapi))
-    {
-        delete m_rtapi;
-        m_rtapi = nullptr;
-    }
-}
-
-/**
- * \getter SEQ64_RTMIDI_VERSION
- */
-
-std::string
-rtmidi::get_version ()
-{
-    return std::string(SEQ64_RTMIDI_VERSION);
-}
-
-/**
- *  Gets the list of APIs compiled into the application.
- *
- *  Note that we would also like to make ALSA versus JACK a runtime option as
- *  it is in the legacy Sequencer64 application.
- *
- * \param apis
- *      The API structure.
- */
-
-void
-rtmidi::get_compiled_api (std::vector<rtmidi_api> & apis)
-{
-    apis.clear();
-
-    /*
-     * The order here will control the order of rtmidi's API search in the
-     * constructor.  For Linux, we will try JACK first, then fall back to
-     * ALSA, and then to the dummy implementation.
-     */
-
-#ifdef SEQ64_BUILD_UNIX_JACK
-    if (rc().with_jack_transport())
-        apis.push_back(RTMIDI_API_UNIX_JACK);
-#endif
-
-#ifdef SEQ64_BUILD_LINUX_ALSA
-    apis.push_back(RTMIDI_API_LINUX_ALSA);
-#endif
-
-#ifdef SEQ64_BUILD_MACOSX_CORE
-    apis.push_back(RTMIDI_API_MACOSX_CORE);
-#endif
-
-#ifdef SEQ64_BUILD_WINDOWS_MM
-    apis.push_back(RTMIDI_API_WINDOWS_MM);
-#endif
-
-#ifdef SEQ64_BUILD_RTMIDI_DUMMY
-    apis.push_back(RTMIDI_API_DUMMY);
-#endif
+    // No added code
 }
 
 /*
@@ -181,7 +123,7 @@ rtmidi_in::rtmidi_in
     if (api != RTMIDI_API_UNSPECIFIED)
     {
         openmidi_api(api, clientname, queuesizelimit);
-        if (not_nullptr(m_rtapi))
+        if (not_nullptr(get_api()))
         {
             selected_api(api);              /* log the API that worked  */
             return;
@@ -205,14 +147,14 @@ rtmidi_in::rtmidi_in
     for (unsigned i = 0; i < apis.size(); ++i)
     {
         openmidi_api(apis[i], clientname, queuesizelimit);
-        if (m_rtapi->get_port_count() > 0)
+        if (get_api()->get_port_count() > 0)
         {
             selected_api(apis[i]);          /* log the API that worked  */
             break;
         }
     }
 
-    if (not_nullptr(m_rtapi))
+    if (not_nullptr(get_api()))
        return;
 
     /*
@@ -256,38 +198,34 @@ rtmidi_in::openmidi_api
    unsigned queuesizelimit
 )
 {
-    if (not_nullptr(m_rtapi))
-    {
-        delete m_rtapi;
-        m_rtapi = nullptr;
-    }
+    delete_api();
 
 #ifdef SEQ64_BUILD_UNIX_JACK
     if (rc().with_jack_transport())
     {
         if (api == RTMIDI_API_UNIX_JACK)
-            m_rtapi = new midi_in_jack(clientname, queuesizelimit);
+            set_api(new midi_in_jack(clientname, queuesizelimit));
     }
 #endif
 
 #ifdef SEQ64_BUILD_LINUX_ALSA
     if (api == RTMIDI_API_LINUX_ALSA)
-        m_rtapi = new midi_in_alsa(clientname, queuesizelimit);
+        set_api(new midi_in_alsa(clientname, queuesizelimit));
 #endif
 
 #ifdef SEQ64_BUILD_MACOSX_CORE
     if (api == RTMIDI_API_MACOSX_CORE)
-        m_rtapi = new midi_in_core(clientname, queuesizelimit);
+        set_api(new midi_in_core(clientname, queuesizelimit));
 #endif
 
 #ifdef SEQ64_BUILD_WINDOWS_MM
     if (api == RTMIDI_API_WINDOWS_MM)
-        m_rtapi = new midi_in_winmm(clientname, queuesizelimit);
+        set_api(new midi_in_winmm(clientname, queuesizelimit));
 #endif
 
 #ifdef SEQ64_BUILD_RTMIDI_DUMMY
     if (api == RTMIDI_API_DUMMY)
-        m_rtapi = new midi_in_dummy(clientname, queuesizelimit);
+        set_api(new midi_in_dummy(clientname, queuesizelimit));
 #endif
 
 }
@@ -332,7 +270,7 @@ rtmidi_out::rtmidi_out (rtmidi_api api, const std::string & clientname)
     if (api != RTMIDI_API_UNSPECIFIED)
     {
         openmidi_api(api, clientname);
-        if (not_nullptr(m_rtapi))
+        if (not_nullptr(get_api()))
            return;
 
         errprintfunc("no compiled support for specified API argument");
@@ -343,11 +281,11 @@ rtmidi_out::rtmidi_out (rtmidi_api api, const std::string & clientname)
     for (unsigned i = 0; i < apis.size(); ++i)
     {
         openmidi_api(apis[i], clientname);
-        if (m_rtapi->get_port_count() > 0)
+        if (get_api()->get_port_count() > 0)
            break;
     }
 
-    if (not_nullptr(m_rtapi))
+    if (not_nullptr(get_api()))
        return;
 
     /*
@@ -387,37 +325,34 @@ rtmidi_out::~rtmidi_out()
 void
 rtmidi_out::openmidi_api (rtmidi_api api, const std::string & clientname)
 {
-    if (not_nullptr(m_rtapi))
-        delete m_rtapi;
-
-    m_rtapi = nullptr;
+    delete_api();
 
 #ifdef SEQ64_BUILD_UNIX_JACK
     if (rc().with_jack_transport())
     {
         if (api == RTMIDI_API_UNIX_JACK)
-            m_rtapi = new midi_out_jack(clientname);
+            set_api(new midi_out_jack(clientname));
     }
 #endif
 
 #ifdef SEQ64_BUILD_LINUX_ALSA
     if (api == RTMIDI_API_LINUX_ALSA)
-        m_rtapi = new midi_out_alsa(clientname);
+        set_api(new midi_out_alsa(clientname));
 #endif
 
 #ifdef SEQ64_BUILD_MACOSX_CORE
     if (api == RTMIDI_API_MACOSX_CORE)
-        m_rtapi = new midi_out_core(clientname);
+        set_api(new midi_out_core(clientname));
 #endif
 
 #ifdef SEQ64_BUILD_WINDOWS_MM
     if (api == RTMIDI_API_WINDOWS_MM)
-        m_rtapi = new midi_out_winmm(clientname);
+        set_api(new midi_out_winmm(clientname));
 #endif
 
 #ifdef SEQ64_BUILD_RTMIDI_DUMMY
     if (api == RTMIDI_API_DUMMY)
-        m_rtapi = new midi_out_dummy(clientname);
+        set_api(new midi_out_dummy(clientname));
 #endif
 }
 

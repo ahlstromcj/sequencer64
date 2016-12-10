@@ -139,6 +139,7 @@ libseq_rtmidi_la_SOURCES = \
    midibus.cpp \
 	midi_api.cpp \
 	midi_alsa.cpp \
+	midi_alsa_info.cpp \
 	midi_info.cpp \
 	midi_jack.cpp \
 	midi_probe.cpp \

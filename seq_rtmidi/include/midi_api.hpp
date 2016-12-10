@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-08
+ * \updates       2016-12-09
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -101,7 +101,10 @@ public:
         return SEQ64_BAD_PORT_ID;                   // TODO
     }
 
-    virtual unsigned get_port_count () = 0;
+    virtual unsigned get_port_count ()
+    {
+        return 0;                                   // TODO
+    }
 
     virtual unsigned get_port_number (unsigned /*portnumber*/)         // = 0;
     {

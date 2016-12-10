@@ -156,6 +156,11 @@ public:
 
     midi_info ();
 
+    virtual ~midi_info ()
+    {
+        // Empty body
+    }
+
     /**
      * \getter m_input
      */

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-06
+ * \updates       2016-12-09
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -17,9 +17,9 @@
  *  for usage when creating ALSA midibus objects and midi_alsa API objects.
  */
 
-#include <pthread.h>
-#include <sys/time.h>
-#include <alsa/asoundlib.h>
+#include <pthread.h>            //
+#include <sys/time.h>           //
+#include <alsa/asoundlib.h>         //
 
 #include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
 #include "midi_alsa_info.hpp"
@@ -35,10 +35,10 @@ namespace seq64
  * Initialization of static members.
  */
 
-static unsigned midi_alsa_info::sm_input_caps =
+unsigned midi_alsa_info::sm_input_caps =
     SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ;
 
-static unsigned midi_alsa_info::sm_output_caps =
+unsigned midi_alsa_info::sm_output_caps =
     SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE;
 
 /**
@@ -55,8 +55,8 @@ midi_alsa_info::midi_alsa_info
 (
 ) :
     midi_info           (),
-    m_alsa_seq          (),             // snd_seq_t pointer or reference
-    m_alsa_port_info    ()              // snd_seq_port_info_t * pinfo,
+    m_alsa_seq          (nullptr),      // snd_seq_t pointer or reference
+    m_alsa_port_info    (nullptr)       // snd_seq_port_info_t * pinfo,
 {
     //
 }
@@ -68,7 +68,12 @@ midi_alsa_info::midi_alsa_info
 
 midi_alsa_info::~midi_alsa_info ()
 {
-    //
+    if (not_nullptr(m_alsa_seq))
+    {
+    }
+    if (not_nullptr(m_alsa_port_info))
+    {
+    }
 }
 
 #define SEQ64_PORT_CLIENT      0xFF000000
@@ -86,57 +91,72 @@ unsigned
 midi_alsa_info::get_all_port_info ()
 {
     unsigned count = 0;
-    snd_seq_t * seq = &m_alsa_seq;                      /* point to member  */
-    snd_seq_port_info_t * pinfo = &m_alsa_port_info;    /* point to member  */
-    snd_seq_client_info_t * cinfo;
-    snd_seq_client_info_alloca(&cinfo);
-    snd_seq_client_info_set_client(cinfo, -1);
-    input_ports().clear();
-    output_ports().clear();
-    while (snd_seq_query_next_client(seq, cinfo) >= 0)
+    snd_seq_t * seq;                        /* point to member              */
+    int result = snd_seq_open               /* set up ALSA sequencer client */
+    (
+        &seq, "default", SND_SEQ_OPEN_DUPLEX, SND_SEQ_NONBLOCK
+    );
+    if (result < 0)
     {
-        int client = snd_seq_client_info_get_client(cinfo);
-        if (client == 0)
-            continue;
-
-        snd_seq_port_info_set_client(pinfo, client);    /* reset query info */
-        snd_seq_port_info_set_port(pinfo, -1);
-        while (snd_seq_query_next_port(seq, pinfo) >= 0)
+        m_error_string = func_message("error opening ALSA sequencer client");
+        error(rterror::DRIVER_ERROR, m_error_string);
+    }
+    else
+    {
+        snd_seq_port_info_t * pinfo = m_alsa_port_info; /* point to member  */
+        snd_seq_client_info_t * cinfo;
+        snd_seq_client_info_alloca(&cinfo);
+        snd_seq_client_info_set_client(cinfo, -1);
+        m_alsa_seq = seq;                               /* save seq!        */
+        input_ports().clear();
+        output_ports().clear();
+        while (snd_seq_query_next_client(seq, cinfo) >= 0)
         {
-            unsigned alsatype = snd_seq_port_info_get_type(pinfo);
-            if
-            (
-                ((alsatype & SND_SEQ_PORT_TYPE_MIDI_GENERIC) == 0) &&
-                ((alsatype & SND_SEQ_PORT_TYPE_SYNTH) == 0)
-            )
-            {
+            int client = snd_seq_client_info_get_client(cinfo);
+            if (client == 0)
                 continue;
-            }
 
-            unsigned caps = snd_seq_port_info_get_capability(pinfo);
-            std::string clientname = snd_seq_client_info_get_name(cinfo);
-            int portnumber = snd_seq_port_info_get_port(pinfo);
-            char temp[80];
-            snprintf
-            (
-                temp, sizeof temp, "%s %d:%d",
-                clientname.c_str(), client, portnumber
-            );
-            if ((caps & sm_input_caps) == sm_input_caps)
+            snd_seq_port_info_set_client(pinfo, client); /* reset query info */
+            snd_seq_port_info_set_port(pinfo, -1);
+            while (snd_seq_query_next_port(seq, pinfo) >= 0)
             {
-                input_ports().add(clientnumber, portnumber, clientname);
-                ++count;
-            }
-            else if ((caps & sm_output_caps) == sm_output_caps)
-            {
-                output_ports().add(clientnumber, portnumber, clientname);
-                ++count;
-            }
-            else
-            {
-                infoprintf("Non-I/O port '%s'", clientname.c_str());
+                unsigned alsatype = snd_seq_port_info_get_type(pinfo);
+                if
+                (
+                    ((alsatype & SND_SEQ_PORT_TYPE_MIDI_GENERIC) == 0) &&
+                    ((alsatype & SND_SEQ_PORT_TYPE_SYNTH) == 0)
+                )
+                {
+                    continue;
+                }
+
+                unsigned caps = snd_seq_port_info_get_capability(pinfo);
+                std::string clientname = snd_seq_client_info_get_name(cinfo);
+                int portnumber = snd_seq_port_info_get_port(pinfo);
+                char temp[80];
+                snprintf
+                (
+                    temp, sizeof temp, "%s %d:%d",
+                    clientname.c_str(), client, portnumber
+                );
+                if ((caps & sm_input_caps) == sm_input_caps)
+                {
+                    input_ports().add(unsigned(client), portnumber, clientname);
+                    ++count;
+                }
+                else if ((caps & sm_output_caps) == sm_output_caps)
+                {
+                    output_ports().add(unsigned(client), portnumber, clientname);
+                    ++count;
+                }
+                else
+                {
+                    infoprintf("Non-I/O port '%s'", clientname.c_str());
+                }
             }
         }
+        snd_seq_close(seq);
+        m_alsa_seq = nullptr;                           /* kill seq!        */
     }
     return count;
 }

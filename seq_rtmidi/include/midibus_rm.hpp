@@ -28,15 +28,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-08
+ * \updates       2016-12-10
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
  *  module.
  */
 
-#include "midibase.hpp"
-#include "rtmidi.hpp"                   /* RtMIDI API header file       */
+#include "midibase.hpp"                 /* seq64::midibase class (new)  */
 
 /*
  * Do not document a namespace; it breaks Doxygen.
@@ -44,8 +43,9 @@
 
 namespace seq64
 {
-
     class event;
+    class rtmidi;
+    class rtmidi_info;
 
 /**
  *  This class implements with rtmidi version of the midibus object.
@@ -87,8 +87,8 @@ public:
 
     midibus
     (
-        /*const*/ rtmidi & rt,
-        const std::string & clientname,
+        /*const*/ rtmidi_info & rt,
+        const std::string & clientname,             /* includes port name   */
         int index                       = 0,
         int ppqn                        = SEQ64_USE_DEFAULT_PPQN,
         int bpm                         = SEQ64_DEFAULT_BPM

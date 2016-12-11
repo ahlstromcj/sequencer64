@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-09
+ * \updates       2016-12-10
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -102,6 +102,11 @@ rtmidi::~rtmidi ()
 /**
  *  Constructs the desired MIDI API.
  *
+ *  If no compiled support for specified API value is found, we issue a warning
+ *  and continue as if no API was specified.  In this case, we iterate through
+ *  the compiled APIs and return as soon as we find one with at least one port
+ *  or we reach the end of the list.
+ *
  * \param api
  *      The desired MIDI API.
  *
@@ -128,19 +133,8 @@ rtmidi_in::rtmidi_in
             selected_api(api);              /* log the API that worked  */
             return;
         }
-
-        /*
-         * No compiled support for specified API value.  Issue a warning and
-         * continue as if no API was specified.
-         */
-
         errprintfunc("no compiled support for specified API");
     }
-
-    /*
-     * Iterate through the compiled APIs and return as soon as we find
-     * one with at least one port or we reach the end of the list.
-     */
 
     std::vector<rtmidi_api> apis;
     get_compiled_api(apis);
@@ -154,18 +148,18 @@ rtmidi_in::rtmidi_in
         }
     }
 
-    if (not_nullptr(get_api()))
-       return;
+    if (is_nullptr(get_api()))
+    {
+        /*
+         * It should not be possible to get here because the preprocessor
+         * definition SEQ64_BUILD_RTMIDI_DUMMY is automatically defined if no
+         * API-specific definitions are passed to the compiler. But just in
+         * case something weird happens, we'll throw an error.
+         */
 
-    /*
-     * It should not be possible to get here because the preprocessor
-     * definition SEQ64_BUILD_RTMIDI_DUMMY is automatically defined if no
-     * API-specific definitions are passed to the compiler. But just in
-     * case something weird happens, we'll throw an error.
-     */
-
-    std::string errortext = func_message("no compiled API support found");
-    throw(rterror(errortext, rterror::UNSPECIFIED));
+        std::string errortext = func_message("no compiled API support found");
+        throw(rterror(errortext, rterror::UNSPECIFIED));
+    }
 }
 
 /**
@@ -227,7 +221,6 @@ rtmidi_in::openmidi_api
     if (api == RTMIDI_API_DUMMY)
         set_api(new midi_in_dummy(clientname, queuesizelimit));
 #endif
-
 }
 
 /**
@@ -271,8 +264,10 @@ rtmidi_out::rtmidi_out (rtmidi_api api, const std::string & clientname)
     {
         openmidi_api(api, clientname);
         if (not_nullptr(get_api()))
-           return;
-
+        {
+            selected_api(api);              /* log the API that worked  */
+            return;
+        }
         errprintfunc("no compiled support for specified API argument");
     }
 
@@ -282,21 +277,24 @@ rtmidi_out::rtmidi_out (rtmidi_api api, const std::string & clientname)
     {
         openmidi_api(apis[i], clientname);
         if (get_api()->get_port_count() > 0)
-           break;
+        {
+            selected_api(apis[i]);          /* log the API that worked  */
+            break;
+        }
     }
 
-    if (not_nullptr(get_api()))
-       return;
+    if (is_nullptr(get_api()))
+    {
+        /*
+         * It should not be possible to get here because the preprocessor
+         * definition SEQ64_BUILD_RTMIDI_DUMMY is automatically defined if no
+         * API-specific definitions are passed to the compiler. But just in
+         * case something weird happens, we'll thrown an error.
+         */
 
-    /*
-     * It should not be possible to get here because the preprocessor
-     * definition SEQ64_BUILD_RTMIDI_DUMMY is automatically defined if no
-     * API-specific definitions are passed to the compiler. But just in case
-     * something weird happens, we'll thrown an error.
-     */
-
-    std::string errorText = func_message("no compiled API support found");
-    throw(rterror(errorText, rterror::UNSPECIFIED));
+        std::string errorText = func_message("no compiled API support found");
+        throw(rterror(errorText, rterror::UNSPECIFIED));
+    }
 }
 
 /**
@@ -309,7 +307,7 @@ rtmidi_out::~rtmidi_out()
 }
 
 /***
- *  Opens the desired MIDI output API.
+ *  Opens the desired MIDI API.
  *
  * \param api
  *      Provides the API to be constructed.

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2016-12-04
+ * \updates       2016-12-11
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -114,8 +114,8 @@ midibase::midibase
     const std::string & clientname,
     const std::string & portname,
     int index,                          // just an ordinal for display
-    int bus_id,
-    int port_id,
+    int bus_id,                         // an index in some implementations
+    int port_id,                        // an index in some implementations
     int queue,
     int ppqn,
     int bpm,

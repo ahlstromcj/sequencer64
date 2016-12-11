@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-04
+ * \updates       2016-12-10
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -59,10 +59,9 @@ namespace seq64
 mastermidibus::mastermidibus (int ppqn, int bpm)
  :
     mastermidibase      (ppqn, bpm),
-    m_scratch_input     (),
-    m_scratch_output    ()
+    m_midi_scratch      ()
 {
-    // Pm_Initialize();
+    // Empty body
 }
 
 /**
@@ -76,9 +75,16 @@ mastermidibus::~mastermidibus ()
 }
 
 /**
- *  Initializes the RtMidi implementation.
+ *  Initializes the RtMidi implementation.  Two different styles are
+ *  supported.  If the --manual-alsa-ports option is in force, then 16 virtual
+ *  output ports and one virtual input port are created.  Otherwise, the
+ *  system MIDI input and output ports are scanned (via the rtmidi_info
+ *  member) and passed to the midibus constructor calls.
  *
- *  Will need to add bpm as a parameter (for ALSA input at least)
+ *  Will need to add bpm as a parameter (for ALSA input at least).
+ *
+ *  Code currently roughly similar to midi_probe().  Assumes only one compiled
+ *  API at present.
  */
 
 void
@@ -96,7 +102,6 @@ mastermidibus::api_init (int ppqn, int bpm)
             }
             char tmp[4];
             snprintf(tmp, sizeof tmp, "%d", i);
-//          std::string clientname = "rtmidi out";
             std::string portname = tmp;
             m_buses_out[i] = new midibus
             (
@@ -118,12 +123,11 @@ mastermidibus::api_init (int ppqn, int bpm)
          * only for non-manual ALSA ports in the else-class below.
          */
 
-        std::string clientname = "rtmidi out";
         std::string portname = "0";
         m_num_in_buses = 1;
         m_buses_in[0] = new midibus
         (
-            SEQ64_APP_NAME /*clientname*/, portname, 0,
+            SEQ64_APP_NAME /*client name*/, portname, 0,
             0, 0, /* bus and port ID */ SEQ64_NO_QUEUE, ppqn, bpm
         );
         m_buses_in[0]->init_in_sub();
@@ -131,66 +135,63 @@ mastermidibus::api_init (int ppqn, int bpm)
     }
     else
     {
-        /*
-         * Code currently similar to midi_probe().  Assumes only one compiled
-         * API at present.
-         */
-
-        unsigned nports = m_scratch_input.get_port_count();
-        m_num_in_buses = 0;
-        for (unsigned i = 0; i < nports; ++i)
+        unsigned nports = m_midi_scratch.get_all_port_info();
+        if (nports > 0)
         {
-            std::string clientname = "rtmidi in";
-            std::string portname = m_scratch_input.get_port_name(i);
-            m_buses_in[m_num_in_buses] = new midibus
-            (
-//              clientname, portname, i,
-//              m_num_in_buses, SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
-                m_scratch_input, SEQ64_APP_NAME /* clientname */,
-                i, ppqn, bpm
-            );
-            if (m_buses_in[m_num_in_buses]->init_in())
+            m_midi_scratch.midi_mode(SEQ64_MIDI_INPUT);
+            nports = m_midi_scratch.get_port_count();
+            m_num_in_buses = 0;
+            for (unsigned i = 0; i < nports; ++i)
             {
-                m_buses_in_active[m_num_in_buses] = true;
-                m_buses_in_init[m_num_in_buses] = true;
-                ++m_num_in_buses;
+//              std::string clientname = "rtmidi in";
+//              std::string portname = m_midi_scratch.get_port_name(i);
+                m_buses_in[m_num_in_buses] = new midibus
+                (
+                    m_midi_scratch, SEQ64_APP_NAME,         /* client name */
+                    i, ppqn, bpm
+                );
+                if (m_buses_in[m_num_in_buses]->init_in())
+                {
+                    m_buses_in_active[m_num_in_buses] = true;
+                    m_buses_in_init[m_num_in_buses] = true;
+                    ++m_num_in_buses;
+                }
+                else
+                {
+                    delete m_buses_in[m_num_in_buses];
+                    m_buses_in[m_num_in_buses] = nullptr;
+                }
             }
-            else
-            {
-                delete m_buses_in[m_num_in_buses];
-                m_buses_in[m_num_in_buses] = nullptr;
-            }
-        }
 
-        nports = m_scratch_output.get_port_count();
-        m_num_out_buses = 0;
-        for (unsigned i = 0; i < nports; ++i)
-        {
-            std::string clientname = "rtmidi out";
-            std::string portname = m_scratch_output.get_port_name(i);
-            m_buses_out[m_num_out_buses] = new midibus
-            (
-//              clientname, portname, i,
-//              m_num_out_buses, SEQ64_NO_PORT, SEQ64_NO_QUEUE, ppqn
-                m_scratch_output, SEQ64_APP_NAME /* clientname */,
-                i, ppqn, bpm
-            );
-            if (m_buses_out[m_num_out_buses]->init_out())
+            m_midi_scratch.midi_mode(SEQ64_MIDI_OUTPUT);
+            nports = m_midi_scratch.get_port_count();
+            m_num_out_buses = 0;
+            for (unsigned i = 0; i < nports; ++i)
             {
-                m_buses_out_active[m_num_out_buses] = true;
-                m_buses_out_init[m_num_out_buses] = true;
-                ++m_num_out_buses;
-            }
-            else
-            {
-                delete m_buses_out[m_num_out_buses];
-                m_buses_out[m_num_out_buses] = nullptr;
+//              std::string clientname = "rtmidi out";
+//              std::string portname = m_midi_scratch.get_port_name(i);
+                m_buses_out[m_num_out_buses] = new midibus
+                (
+                    m_midi_scratch, SEQ64_APP_NAME /* client name */,
+                    i, ppqn, bpm
+                );
+                if (m_buses_out[m_num_out_buses]->init_out())
+                {
+                    m_buses_out_active[m_num_out_buses] = true;
+                    m_buses_out_init[m_num_out_buses] = true;
+                    ++m_num_out_buses;
+                }
+                else
+                {
+                    delete m_buses_out[m_num_out_buses];
+                    m_buses_out[m_num_out_buses] = nullptr;
+                }
             }
         }
     }
 
     set_beats_per_minute(c_beats_per_minute);       // ????????
-    set_ppqn(ppqn);     // m_ppqn);   // SEQ64_DEFAULT_PPQN);
+    set_ppqn(ppqn);
 
     /*
      * MIDI input poll descriptors
@@ -266,10 +267,6 @@ mastermidibus::api_get_midi_event (event * in)
     {
         if (m_buses_in[i]->poll_for_midi())
         {
-//          int /*PmError*/ err = Pm_Read(m_buses_in[i]->m_pms, &event, 1);
-//          if (err < 0)
-//              printf("Pm_Read: %s\n", Pm_GetErrorText((PmError) err));
-
             if (m_buses_in[i]->m_inputing)
                 result = true;
         }

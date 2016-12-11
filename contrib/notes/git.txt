@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2016-09-16
+2015-09-09 to 2016-12-10
 
 Creating a GitHub Repository:
 
@@ -231,5 +231,16 @@ Diffs:
     of the best diff viewers ever:
 
         $ git difftool <commit1> <commit2>
+
+Listing files:
+
+    One often wants to do a quick edit or survey of modified files.
+    The following command is useful:
+
+        $ git ls-files -m
+
+    In bash, one can pass the list to vi(m):
+
+        $ vi $(git ls-files -m)
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

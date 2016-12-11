@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-04
+ * \updates       2016-12-11
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -76,6 +76,8 @@
 
 #include "event.hpp"                    /* seq64::event and macros          */
 #include "midibus_rm.hpp"               /* seq64::midibus for rtmidi        */
+#include "rtmidi.hpp"                   /* RtMidi updated API header file   */
+#include "rtmidi_info.hpp"              /* seq64::rtmidi_info (new)         */
 
 /**
  *  A monaifest constant for the RtMidi version of the api_poll_for_midi()
@@ -91,7 +93,6 @@
 namespace seq64
 {
 
-
 /**
  *  Virtual-port constructor.
  */
@@ -106,12 +107,11 @@ midibus::midibus
     int queue,
     int ppqn,
     int bpm
-//  bool makevirtual
 ) :
     midibase
     (
         clientname, portname, index, bus_id, port_id,
-        queue, ppqn, bpm, true
+        queue, ppqn, bpm, true  /* make virtual */
     ),
     m_rt_midi       (nullptr)
 {
@@ -123,11 +123,34 @@ midibus::midibus
  *
  *  We cannot pass the necessary parameters without getting some of them from
  *  an already-constructed rtmidi_in or rtmidi_out object.
+ *
+ * \param rt
+ *      Provides the rtmidi_in or rtmidi_out object to use to obtain the
+ *      client ID (buss ID), port ID, and port name, as obtained via calls to
+ *      the ALSA, JACK, Core MIDI, or Windows MM subsystems.
+ *
+ * \param clientname
+ *      This is the name of the client, which is the application name
+ *      ("seq64rtmidi").  We still have confusion over the meaning of
+ *      "client" and "buss", which we hope to clear up eventually.
+ *
+ * \param index
+ *      This is the index into the rtmidi object, and is used to get the
+ *      desired client and port information.  It is an index into the
+ *      data vector held by the rtmidi object.
+ *
+ * \param ppqn
+ *      The PPQN value to use to initialize the MIDI buss, if applicable to
+ *      the MIDI API being used.
+ *
+ * \param bpm
+ *      The BPM (beats/minute) value to use to initialize the MIDI buss, if
+ *      applicable to the MIDI API being used.
  */
 
 midibus::midibus
 (
-    /*const*/ rtmidi & rt,
+    /*const*/ rtmidi_info & rt,
     const std::string & clientname,
     int index,
     int ppqn,
@@ -135,16 +158,37 @@ midibus::midibus
 ) :
     midibase
     (
-        clientname, "" /*portname*/, index, SEQ64_NO_BUS, SEQ64_NO_PORT,
-        SEQ64_NO_QUEUE, ppqn, bpm, false
+        clientname,
+        "",                             /* portname */
+        index,
+        SEQ64_NO_BUS,
+        SEQ64_NO_PORT,
+        SEQ64_NO_QUEUE,
+        ppqn, bpm, false
     ),
     m_rt_midi       (nullptr)
 {
-    set_name
-    (
-        false, clientname, rt.get_port_name(index), index,
-        rt.get_client_id(index), index /* port ID */
-    );
+    int portcount = int(rt.get_port_count());
+    if (index < portcount)
+    {
+        int id = int(rt.get_port_number(index));
+        if (id >= 0)
+            set_port_id(id);
+
+        id = int(rt.get_client_id(index));
+        if (id >= 0)
+            set_bus_id(id);
+
+        set_name
+        (
+            false, clientname, rt.get_port_name(index), index,
+            rt.get_client_id(index), index /* port ID */
+        );
+
+//      std::string portname = rt.get_port_name(id);
+//      if (! portname.empty())
+//          port_name(portname);
+    }
 }
 
 /**
@@ -220,7 +264,7 @@ midibus::api_poll_for_midi ()
 bool
 midibus::api_init_out ()
 {
-    bool result = true;
+    bool result = false;
     try
     {
         m_rt_midi = new rtmidi_out(RTMIDI_API_UNSPECIFIED, connect_name());
@@ -229,7 +273,6 @@ midibus::api_init_out ()
     catch (const rterror & err)
     {
         err.print_message();
-        result = false;
     }
     return result;
 }
@@ -244,7 +287,7 @@ midibus::api_init_out ()
 bool
 midibus::api_init_in ()
 {
-    bool result = true;
+    bool result = false;
     try
     {
         m_rt_midi = new rtmidi_in(RTMIDI_API_UNSPECIFIED, connect_name());
@@ -253,7 +296,6 @@ midibus::api_init_in ()
     catch (const rterror & err)
     {
         err.print_message();
-        result = false;
     }
     return result;
 }
@@ -279,19 +321,15 @@ midibus::api_init_common (rtmidi * rtm)
     }
     else
     {
-        unsigned portcount = rtm->get_port_count();
-        if (get_port_id() <= int(portcount))            /* numbering re 1 */
+        int portid = get_port_id();
+        if (portid >= 0)
         {
-            std::string portname = rtm->get_port_name(get_port_id());
-            if (! portname.empty())
-                port_name(portname);
-
-            rtm->open_port(get_port_id());
-
             /*
-             * Set up not to ignore SysEx, timing, or active-sensing messages.
+             * Open the desired port (specified by system port number).  Then
+             * set up not to ignore SysEx, timing, or active-sensing messages.
              */
 
+            rtm->open_port(portid);
             rtm->ignore_types(false, false, false);
         }
         else

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-29
+ * \updates       2016-12-10
  * \license       GNU GPLv2 or above
  *
  *  This mastermidibus module is the Windows (and Linux now!) version of the
@@ -36,7 +36,7 @@
  */
 
 #include "mastermidibase.hpp"           /* seq64::mastermidibase ABC        */
-#include "rtmidi.hpp"                   /* RtMIDI API header file           */
+#include "rtmidi_info.hpp"              /* seq64::rtmidi_info, new class    */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -56,22 +56,12 @@ class mastermidibus : public mastermidibase
 
 private:
 
-    /*
-     *  Many members have been moved into the new base class.  The following
-     *  members have been added.
-     */
-
     /**
-     *  Holds the MIDI input information for later re-use.
+     *  Holds the basic MIDI input and output information for later re-use in
+     *  the construction of midibus objects.
      */
 
-    rtmidi_in m_scratch_input;
-
-    /**
-     *  Holds the MIDI output information for later re-use.
-     */
-
-    rtmidi_out m_scratch_output;
+    rtmidi_info m_midi_scratch;
 
 public:
 

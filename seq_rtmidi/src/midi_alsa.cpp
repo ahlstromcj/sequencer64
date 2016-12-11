@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-09
+ * \updates       2016-12-11
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  In this refactoring, we are trying to improve the RtMidi project in the
@@ -446,7 +446,6 @@ midi_in_alsa::initialize (const std::string & clientname)
     }
     else
     {
-
         alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>
         (
             new (std::nothrow) alsa_midi_data_t(seq)
@@ -600,7 +599,9 @@ midi_in_alsa::get_client_id (unsigned index)
 }
 
 /**
- *  Gets the input sequencer port count from ALSA.
+ *  Gets the input sequencer port count from ALSA.  Note that this data was
+ *  already obtained ahead of time via the new rtmidi_info object, so that
+ *  this call is redundant, and eventually we hope to eliminate it.
  *
  * \return
  *      Returns the result of a alsa_port_info() call.
@@ -621,7 +622,9 @@ midi_in_alsa::get_port_count ()
 }
 
 /**
- *  Returns the name of the given port number from ALSA.
+ *  Returns the name of the given port number from ALSA.  Note that this data
+ *  was already obtained ahead of time via the new rtmidi_info object, so that
+ *  this call is redundant, and eventually we hope to eliminate it.
  *
  * \param portnumber
  *      The port number to query for the port name.
@@ -679,7 +682,8 @@ midi_in_alsa::get_port_name (unsigned portnumber)
 }
 
 /**
- *  Opens an ALSA input port.
+ *  Opens an ALSA input port.  This code is a lot like the code for the output
+ *  port, and could perhaps be folded into midi_alsa_info.
  *
  * \param portnumber
  *      The port to be opened.
@@ -691,144 +695,167 @@ midi_in_alsa::get_port_name (unsigned portnumber)
 void
 midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
 {
+    /* START OF COMMON CODE */
+
     if (m_connected)
     {
         m_error_string = func_message("a valid connection already exists");
         error(rterror::WARNING, m_error_string);
         return;
     }
-
-    unsigned nsrc = this->get_port_count();
-    if (nsrc < 1)
+    if (get_port_count() < 1)
     {
         m_error_string = func_message("no MIDI input sources found");
         error(rterror::NO_DEVICES_FOUND, m_error_string);
         return;
     }
 
-    snd_seq_port_info_t * src_pinfo;
-    snd_seq_port_info_alloca(&src_pinfo);
-    alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
-    if
-    (
-        alsa_port_info
-        (
-            alsadata->seq, src_pinfo,
-            SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
-            int(portnumber)
-        ) == 0
-    )
+    if (portnumber != SEQ64_BAD_PORT_ID)
     {
-        std::ostringstream ost;
-        ost
-            << func_message("'portnumber' argument (")
-            << portnumber << ") is invalid"
-        ;
-        m_error_string = ost.str();
-        error(rterror::INVALID_PARAMETER, m_error_string);
-        return;
-    }
-
-    snd_seq_addr_t sender, receiver;
-    sender.client = snd_seq_port_info_get_client(src_pinfo);
-    sender.port = snd_seq_port_info_get_port(src_pinfo);
-    receiver.client = snd_seq_client_id(alsadata->seq);
-
-    snd_seq_port_info_t * pinfo;
-    snd_seq_port_info_alloca(&pinfo);
-    if (alsadata->vport < 0)
-    {
-        snd_seq_port_info_set_client(pinfo, 0);
-        snd_seq_port_info_set_port(pinfo, 0);
-        snd_seq_port_info_set_capability
+        snd_seq_port_info_t * src_pinfo;
+        snd_seq_port_info_alloca(&src_pinfo);
+        alsa_midi_data_t * alsadata = static_cast<alsa_midi_data_t *>(m_api_data);
+        if
         (
-            pinfo, SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE
-        );
-        snd_seq_port_info_set_type
-        (
-            pinfo, SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
-        );
-        snd_seq_port_info_set_midi_channels(pinfo, 16);
+            alsa_port_info
+            (
+                alsadata->seq, src_pinfo,
+                SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ, // vs WRITE
+                int(portnumber)
+            ) == 0
+        )
+        {
+            std::ostringstream ost;
+            ost
+                << func_message("'portnumber' argument (")
+                << portnumber << ") is invalid"
+            ;
+            m_error_string = ost.str();
+            error(rterror::INVALID_PARAMETER, m_error_string);
+            return;
+        }
 
-#ifndef SEQ64_AVOID_TIMESTAMPING
-        snd_seq_port_info_set_timestamping(pinfo, 1);
-        snd_seq_port_info_set_timestamp_real(pinfo, 1);
-        snd_seq_port_info_set_timestamp_queue(pinfo, alsadata->queue_id);
-#endif
+        /* END OF COMMON CODE */
 
-        snd_seq_port_info_set_name(pinfo,  portname.c_str());
-        alsadata->vport = snd_seq_create_port(alsadata->seq, pinfo);
+        /*
+         * We need to determine what the heck is a sender client versus receiver
+         * client.  For example, on our system, the sender client is 14 (for the
+         * Midi Through device), while the receiver client is 129 (which is not
+         * found by the rtmidi_info object.
+         */
+
+        snd_seq_addr_t sender;
+        sender.client = snd_seq_port_info_get_client(src_pinfo);
+        sender.port = snd_seq_port_info_get_port(src_pinfo);
+
+        snd_seq_addr_t receiver;
+        receiver.client = snd_seq_client_id(alsadata->seq);
+
+        snd_seq_port_info_t * pinfo;
+        snd_seq_port_info_alloca(&pinfo);
         if (alsadata->vport < 0)
         {
-            m_error_string = func_message("ALSA error creating input port");
-            error(rterror::DRIVER_ERROR, m_error_string);
-            return;
-        }
-        alsadata->vport = snd_seq_port_info_get_port(pinfo);
-    }
-
-    receiver.port = alsadata->vport;
-    if (! alsadata->subscription)
-    {
-        // Make subscription
-
-        if (snd_seq_port_subscribe_malloc(&alsadata->subscription) < 0)
-        {
-            m_error_string = func_message("ALSA error port subscription");
-            error(rterror::DRIVER_ERROR, m_error_string);
-            return;
-        }
-        snd_seq_port_subscribe_set_sender(alsadata->subscription, &sender);
-        snd_seq_port_subscribe_set_dest(alsadata->subscription, &receiver);
-        if (snd_seq_subscribe_port(alsadata->seq, alsadata->subscription))
-        {
-            snd_seq_port_subscribe_free(alsadata->subscription);
-            alsadata->subscription = 0;
-            m_error_string = func_message("ALSA error making port connection");
-            error(rterror::DRIVER_ERROR, m_error_string);
-            return;
-        }
-    }
-
-    if (! m_input_data.do_input())
-    {
-        // Start the input queue
+            snd_seq_port_info_set_client(pinfo, 0);
+            snd_seq_port_info_set_port(pinfo, 0);
+            snd_seq_port_info_set_capability
+            (
+                pinfo, SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE
+            );
+            snd_seq_port_info_set_type
+            (
+                pinfo, SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
+            );
+            snd_seq_port_info_set_midi_channels(pinfo, 16);
 
 #ifndef SEQ64_AVOID_TIMESTAMPING
-        snd_seq_start_queue(alsadata->seq, alsadata->queue_id, NULL);
-        snd_seq_drain_output(alsadata->seq);
+            snd_seq_port_info_set_timestamping(pinfo, 1);
+            snd_seq_port_info_set_timestamp_real(pinfo, 1);
+            snd_seq_port_info_set_timestamp_queue(pinfo, alsadata->queue_id);
 #endif
 
-        // Start our MIDI input thread.
-
-        pthread_attr_t attr;
-        pthread_attr_init(&attr);
-        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-        pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
-        m_input_data.do_input(true);
-        int err = pthread_create
-        (
-            &alsadata->thread, &attr, alsa_midi_handler, &m_input_data
-        );
-        pthread_attr_destroy(&attr);
-        if (err)
-        {
-            snd_seq_unsubscribe_port(alsadata->seq, alsadata->subscription);
-            snd_seq_port_subscribe_free(alsadata->subscription);
-            alsadata->subscription = 0;
-            m_input_data.do_input(false);
-            m_error_string = func_message("error starting MIDI input thread");
-            error(rterror::THREAD_ERROR, m_error_string);
-            return;
+            snd_seq_port_info_set_name(pinfo,  portname.c_str());
+            alsadata->vport = snd_seq_create_port(alsadata->seq, pinfo);
+            if (alsadata->vport < 0)
+            {
+                m_error_string = func_message("ALSA error creating input port");
+                error(rterror::DRIVER_ERROR, m_error_string);
+                return;
+            }
+            alsadata->vport = snd_seq_port_info_get_port(pinfo);
         }
+
+        receiver.port = alsadata->vport;
+        if (! alsadata->subscription)
+        {
+            /*
+             * Make a port subscription.
+             */
+
+            if (snd_seq_port_subscribe_malloc(&alsadata->subscription) < 0)
+            {
+                m_error_string = func_message("ALSA error port subscription");
+                error(rterror::DRIVER_ERROR, m_error_string);
+                return;
+            }
+            snd_seq_port_subscribe_set_sender(alsadata->subscription, &sender);
+            snd_seq_port_subscribe_set_dest(alsadata->subscription, &receiver);
+            if (snd_seq_subscribe_port(alsadata->seq, alsadata->subscription))
+            {
+                snd_seq_port_subscribe_free(alsadata->subscription);
+                alsadata->subscription = 0;
+                m_error_string = func_message("ALSA error making port connection");
+                error(rterror::DRIVER_ERROR, m_error_string);
+                return;
+            }
+        }
+
+        if (! m_input_data.do_input())
+        {
+            // Start the input queue
+
+#ifndef SEQ64_AVOID_TIMESTAMPING
+            snd_seq_start_queue(alsadata->seq, alsadata->queue_id, NULL);
+            snd_seq_drain_output(alsadata->seq);
+#endif
+
+            // Start our MIDI input thread.
+
+            pthread_attr_t attr;
+            pthread_attr_init(&attr);
+            pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+            pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
+            m_input_data.do_input(true);
+            int err = pthread_create
+            (
+                &alsadata->thread, &attr, alsa_midi_handler, &m_input_data
+            );
+            pthread_attr_destroy(&attr);
+            if (err)
+            {
+                snd_seq_unsubscribe_port(alsadata->seq, alsadata->subscription);
+                snd_seq_port_subscribe_free(alsadata->subscription);
+                alsadata->subscription = 0;
+                m_input_data.do_input(false);
+                m_error_string = func_message("error starting MIDI input thread");
+                error(rterror::THREAD_ERROR, m_error_string);
+                return;
+            }
+        }
+        m_connected = true;
     }
-    m_connected = true;
+    else
+    {
+        std::ostringstream ost;
+        ost << func_message("'portnumber' ") << portnumber << " is invalid";
+        m_error_string = ost.str();
+        error(rterror::INVALID_PARAMETER, m_error_string);
+    }
 }
 
 /**
- *  Opens a virtual ALSA input port.
- *
- *  Need to learn what that is.
+ *  Opens a virtual ALSA input port.  This is an application-provided port
+ *  to which other ALSA elements can connect.  It is similar to seq24's
+ *  "manual ALSA ports" concept.
  *
  * \param portname
  *      The name of the virtual port to open.
@@ -871,19 +898,19 @@ midi_in_alsa::open_virtual_port (const std::string & portname)
 
     if (! m_input_data.do_input())
     {
-        // Wait for old thread to stop, if still running
+        /*
+         * Wait for old thread to stop, if still running.  Then start the
+         * input queue if SEQ64_AVOID_TIMESTAMPING is not defined.  Then
+         * start the MIDI input thread.
+         */
 
         if (! pthread_equal(alsadata->thread, alsadata->dummy_thread_id))
             pthread_join(alsadata->thread, NULL);
-
-        // Start the input queue
 
 #ifndef SEQ64_AVOID_TIMESTAMPING
         snd_seq_start_queue(alsadata->seq, alsadata->queue_id, NULL);
         snd_seq_drain_output(alsadata->seq);
 #endif
-
-        // Start our MIDI input thread.
 
         pthread_attr_t attr;
         pthread_attr_init(&attr);
@@ -928,7 +955,9 @@ midi_in_alsa::close_port ()
             alsadata->subscription = 0;
         }
 
-        // Stop the input queue
+        /*
+         * Stop the input queue if SEQ64_AVOID_TIMESTAMPING is not defined.
+         */
 
 #ifndef SEQ64_AVOID_TIMESTAMPING
         snd_seq_stop_queue(alsadata->seq, alsadata->queue_id, NULL);
@@ -937,8 +966,10 @@ midi_in_alsa::close_port ()
         m_connected = false;
     }
 
-    // Stop thread to avoid triggering the callback, while the port is
-    // intended to be closed
+    /*
+     * Then stop the thread to avoid triggering the callback, while the port
+     * is intended to be closed.
+     */
 
     if (m_input_data.do_input())
     {
@@ -1147,6 +1178,8 @@ midi_out_alsa::get_port_name (unsigned portnumber)
 void
 midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
 {
+    /* START OF COMMON CODE */
+
     if (m_connected)
     {
         m_error_string = func_message("a valid connection already exists");
@@ -1154,8 +1187,7 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
         return;
     }
 
-    unsigned nsrc = this->get_port_count();
-    if (nsrc < 1)
+    if (get_port_count() < 1)
     {
         m_error_string = func_message("no MIDI output sources found");
         error(rterror::NO_DEVICES_FOUND, m_error_string);
@@ -1172,7 +1204,7 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
             alsa_port_info
             (
                 alsadata->seq, pinfo,
-                SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
+                SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE, // vs READ
                 int(portnumber)
             ) == 0
         )
@@ -1186,9 +1218,13 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
             return;
         }
 
-        snd_seq_addr_t sender, receiver;
+        /* END OF COMMON CODE */
+
+        snd_seq_addr_t receiver;
         receiver.client = snd_seq_port_info_get_client(pinfo);
         receiver.port = snd_seq_port_info_get_port(pinfo);
+
+        snd_seq_addr_t sender;
         sender.client = snd_seq_client_id(alsadata->seq);
         if (alsadata->vport < 0)
         {
@@ -1215,40 +1251,41 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
 
         sender.port = alsadata->vport;
 
-        /*
-         * Make subscription.  The midibus::init_out() code instead
-         * used snd_seq_connect_to(port).
-         */
+        if (! alsadata->subscription)       // NEW CONDITION, VALID???
+        {
 
-        if (snd_seq_port_subscribe_malloc(&alsadata->subscription) < 0)
-        {
-            snd_seq_port_subscribe_free(alsadata->subscription);
-            m_error_string = func_message("error allocating port subscription");
-            error(rterror::DRIVER_ERROR, m_error_string);
-            return;
-        }
-        snd_seq_port_subscribe_set_sender(alsadata->subscription, &sender);
-        snd_seq_port_subscribe_set_dest(alsadata->subscription, &receiver);
-        snd_seq_port_subscribe_set_time_update(alsadata->subscription, 1);
-        snd_seq_port_subscribe_set_time_real(alsadata->subscription, 1);
-        if (snd_seq_subscribe_port(alsadata->seq, alsadata->subscription))
-        {
-            snd_seq_port_subscribe_free(alsadata->subscription);
-            m_error_string = func_message("ALSA error making port connection");
-            error(rterror::DRIVER_ERROR, m_error_string);
-            return;
+            /*
+             * Make subscription.  The midibus::init_out() code instead
+             * used snd_seq_connect_to(port).
+             */
+
+            if (snd_seq_port_subscribe_malloc(&alsadata->subscription) < 0)
+            {
+                snd_seq_port_subscribe_free(alsadata->subscription);
+                m_error_string = func_message("ALSA error port subscription");
+                error(rterror::DRIVER_ERROR, m_error_string);
+                return;
+            }
+            snd_seq_port_subscribe_set_sender(alsadata->subscription, &sender);
+            snd_seq_port_subscribe_set_dest(alsadata->subscription, &receiver);
+            snd_seq_port_subscribe_set_time_update(alsadata->subscription, 1);
+            snd_seq_port_subscribe_set_time_real(alsadata->subscription, 1);
+            if (snd_seq_subscribe_port(alsadata->seq, alsadata->subscription))
+            {
+                snd_seq_port_subscribe_free(alsadata->subscription);
+                m_error_string = func_message("ALSA error making port connection");
+                error(rterror::DRIVER_ERROR, m_error_string);
+                return;
+            }
         }
         m_connected = true;
     }
     else
     {
         std::ostringstream ost;
-        ost << func_message("'portnumber' argument (")
-            << portnumber << ") is invalid"
-            ;
+        ost << func_message("'portnumber' ") << portnumber << " is invalid";
         m_error_string = ost.str();
         error(rterror::INVALID_PARAMETER, m_error_string);
-        return;
     }
 }
 

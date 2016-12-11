@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-09
+ * \updates       2016-12-10
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -22,6 +22,17 @@
 #include "easy_macros.h"
 #include "rterror.hpp"
 #include "rtmidi_types.hpp"
+
+/**
+ *  Macros for selecting input versus output ports in a more obvious way.
+ *  These items are needed for the midi_mode() setter function.  Note that
+ *  midi_mode() has no functionality in the midi_api base class, which has a
+ *  number of such stub functions so that we can use the midi_info and midi_api
+ *  derived classes.
+ */
+
+#define SEQ64_MIDI_OUTPUT       false       /* the MIDI mode is not input   */
+#define SEQ64_MIDI_INPUT        true        /* the MIDI mode is input       */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -83,6 +94,11 @@ public:
     virtual void close_port () = 0;
     virtual bool poll_queue () const = 0;
 
+    virtual unsigned get_all_port_info ()
+    {
+        return 0;
+    }
+
     /**
      *  Gets the buss/client ID for a MIDI interfaces.  This is the left-hand
      *  side of a X:Y pair (such as 128:0).
@@ -114,6 +130,11 @@ public:
     virtual std::string get_port_name (unsigned /*portnumber*/)   // = 0;
     {
         return std::string("");                     // TODO
+    }
+
+    virtual void midi_mode (bool /*flag*/)
+    {
+        // no code
     }
 
     /**
@@ -194,12 +215,11 @@ public:
 
     virtual ~midi_in_api ();
     virtual void ignore_types (bool midisysex, bool miditime, bool midisense);
+    virtual bool poll_queue () const;
 
     void set_callback (rtmidi_callback_t callback, void * userdata);
     void cancel_callback ();
     double get_message (std::vector<midibyte> & message);
-
-    virtual bool poll_queue () const;
 
 };          // class midi_in_api
 

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2016-12-04
+ * \updates       2016-12-11
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -153,7 +153,8 @@ private:
     midipulse m_lasttick;
 
     /**
-     *  Indicates if the port is to be a virtual port.
+     *  Indicates if the port is to be a virtual port.  The default is to
+     *  create a system port (true).
      */
 
     bool m_is_virtual_port;
@@ -168,13 +169,13 @@ public:
 
     midibase
     (
-        const std::string & client_name = "",
-        const std::string & port_name   = "",
-        int index   = 0,                        /* a display ordinal    */
+        const std::string & client_name = "",       /* usually a full name  */
+        const std::string & port_name   = "",       /* rarely needed now    */
+        int index   = 0,                            /* a display ordinal    */
         int bus_id  = SEQ64_NO_BUS,
         int port_id = SEQ64_NO_PORT,
         int queue   = SEQ64_NO_QUEUE,
-        int ppqn    = SEQ64_USE_DEFAULT_PPQN,   /* SEQ64_DEFAULT_PPQN   */
+        int ppqn    = SEQ64_USE_DEFAULT_PPQN,       /* SEQ64_DEFAULT_PPQN   */
         int bpm     = SEQ64_DEFAULT_BPM,
         bool makevirtual = false
     );
@@ -205,7 +206,13 @@ public:
 
     std::string connect_name () const
     {
-        return m_bus_name + ":" + m_port_name;
+        std::string result = m_bus_name;
+        if (! m_port_name.empty())
+        {
+            result += ":";
+            result += m_port_name;
+        }
+        return result;
     }
 
     /**
@@ -348,6 +355,28 @@ protected:
     void port_name (const std::string & name)
     {
         m_port_name = name;
+    }
+
+    /**
+     * \setter m_bus_id
+     *      Useful for setting the buss ID when using the rtmidi_info object
+     *      to look create a list of busses and ports.
+     */
+
+    void set_bus_id (int id)
+    {
+        m_bus_id = id;
+    }
+
+    /**
+     * \setter m_port_id
+     *      Useful for setting the port ID when using the rtmidi_info object
+     *      to inspect and create a list of busses and ports.
+     */
+
+    void set_port_id (int id)
+    {
+        m_port_id = id;
     }
 
     /**

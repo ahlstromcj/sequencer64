@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-0n
+ * \updates       2016-12-10
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -46,14 +46,48 @@ namespace seq64
 {
 
 /**
- *  Default constructor.
+ *  Default constructor.  Code basically cut-and-paste from rtmidi_in or
+ *  rtmidi_out. Common code!
  */
 
-rtmidi_info::rtmidi_info ()
+rtmidi_info::rtmidi_info (rtmidi_api api)
  :
      rtmidi_base    ()
 {
-   // no code
+    if (api != RTMIDI_API_UNSPECIFIED)
+    {
+        openmidi_api(api, "", 0);
+        if (not_nullptr(get_api()))
+        {
+            selected_api(api);              /* log first API that worked    */
+            return;
+        }
+        errprintfunc("no compiled support for specified API");
+    }
+
+    std::vector<rtmidi_api> apis;
+    get_compiled_api(apis);
+    for (unsigned i = 0; i < apis.size(); ++i)
+    {
+        openmidi_api(apis[i], "", 0);
+        if (not_nullptr(get_api()))
+        {
+            if (get_api()->get_all_port_info() > 0)
+            {
+                selected_api(apis[i]);      /* log first API that worked    */
+                break;
+            }
+        }
+        else
+        {
+            continue;
+        }
+    }
+    if (is_nullptr(get_api()))
+    {
+        std::string errortext = func_message("no compiled API support found");
+        throw(rterror(errortext, rterror::UNSPECIFIED));
+    }
 }
 
 /**

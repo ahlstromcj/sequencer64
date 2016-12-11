@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2016-12-09
+ * \updates       2016-12-10
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -112,23 +112,15 @@ public:
             return SEQ64_BAD_PORT_ID;
     }
 
-    const std::string & get_port_name (unsigned index) const
+    std::string get_port_name (unsigned index) const
     {
-        static std::string s_dummy;
         if (index < get_port_count())
             return m_port_container[index].m_port_name;
         else
-            return s_dummy;
+            return std::string("");
     }
 
 };          // class midi_port_info
-
-/**
- *  Macros for selecting input versus output ports in a more obvious way.
- */
-
-#define SEQ64_MIDI_OUTPUT       false
-#define SEQ64_MIDI_INPUT        true
 
 /**
  *  The class for holding basic information on the MIDI input and output ports
@@ -139,6 +131,15 @@ class midi_info : public midi_api
 {
 
 private:
+
+    /**
+     *  Indicates which mode we're in, input or output.  We have to pick the
+     *  mode we need to be in with the set_mode() function before we do a
+     *  series of operations.  This clumsy two-step is needed in order to
+     *  preserve the midi_api interface.
+     */
+
+    bool m_midi_mode_input;
 
     /**
      *  Holds data on the ALSA/JACK/Core/WinMM inputs.
@@ -159,6 +160,15 @@ public:
     virtual ~midi_info ()
     {
         // Empty body
+    }
+
+    /**
+     * \setter m_midi_mode_input
+     */
+
+    virtual void midi_mode (bool flag)
+    {
+        m_midi_mode_input = flag;
     }
 
     /**
@@ -183,31 +193,28 @@ public:
      *
      */
 
-    unsigned get_port_count (bool input) const
+    unsigned get_port_count () /*const*/
     {
-        return input ?
-            m_input.get_port_count() : m_output.get_port_count() ;
+        midi_port_info & mpi = nc_midi_port_info();
+        return mpi.get_port_count();
     }
 
-    unsigned get_client_id (bool input, unsigned index) const
+    unsigned get_client_id (unsigned index) /*const*/
     {
-        return input ?
-            m_input.get_client_id(index) :
-            m_output.get_client_id(index) ;
+        midi_port_info & mpi = nc_midi_port_info();
+        return mpi.get_client_id(index);
     }
 
-    unsigned get_port_number (bool input, unsigned index) const
+    unsigned get_port_number (unsigned index) /*const*/
     {
-        return input ?
-            m_input.get_port_number(index) :
-            m_output.get_port_number(index) ;
+        midi_port_info & mpi = nc_midi_port_info();
+        return mpi.get_port_number(index);
     }
 
-    const std::string & get_port_name (bool input, unsigned index) const
+    std::string get_port_name (unsigned index) /*const*/
     {
-        return input ?
-            m_input.get_port_name(index) :
-            m_output.get_port_name(index) ;
+        midi_port_info & mpi = nc_midi_port_info();
+        return mpi.get_port_name(index);
     }
 
     std::string port_list () const;
@@ -244,6 +251,19 @@ public:
     virtual bool poll_queue () const
     {
         return false;
+    }
+
+protected:
+
+    virtual unsigned get_all_port_info () = 0;
+
+private:
+
+    midi_port_info & nc_midi_port_info ()
+    {
+        return m_midi_mode_input ?
+            const_cast<midi_port_info &>(m_input) :
+            const_cast<midi_port_info &>(m_output) ;
     }
 
 };          // midi_info

@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-09
+ * \updates       2016-12-10
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output and enumeration.
@@ -99,15 +99,11 @@ rtmidi_base::get_compiled_api (std::vector<rtmidi_api> & apis)
     apis.push_back(RTMIDI_API_DUMMY);
 #endif
 
-    /*
-     * It should not be possible to get here because the preprocessor
-     * definition SEQ64_BUILD_RTMIDI_DUMMY is automatically defined if no
-     * API-specific definitions are passed to the compiler. But just in
-     * case something weird happens, we'll throw an error.
-     */
-
-    std::string errortext = func_message("no compiled API support found");
-    throw(rterror(errortext, rterror::UNSPECIFIED));
+    if (apis.empty())
+    {
+        std::string errortext = func_message("no compiled API support found");
+        throw(rterror(errortext, rterror::UNSPECIFIED));
+    }
 }
 
 }           // namespace seq64

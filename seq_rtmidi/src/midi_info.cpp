@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2016-12-08
+ * \updates       2016-12-10
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
@@ -58,6 +58,7 @@ midi_port_info::add
     temp.m_port_number = portnumber;
     temp.m_port_name = portname;
     m_port_container.push_back(temp);
+    m_port_count = unsigned(m_port_container.size());
 }
 
 /*
@@ -87,21 +88,23 @@ midi_info::port_list () const
     unsigned inportcount = m_input.get_port_count();
     unsigned outportcount = m_output.get_port_count();
     std::ostringstream os;
+    midi_info * nc_this = const_cast<midi_info *>(this);
 
+    nc_this->midi_mode(SEQ64_MIDI_INPUT);
     os << "Input ports (" << inportcount << "):" << std::endl;
     for (unsigned i = 0; i < inportcount; ++i)
     {
-        os << "  " << get_port_name(SEQ64_MIDI_INPUT, i) << std::endl;
+        os << "  " << nc_this->get_port_name(i) << std::endl;
     }
 
+    nc_this->midi_mode(SEQ64_MIDI_OUTPUT);
     os << "Output ports (" << outportcount << "):" << std::endl;
     for (unsigned o = 0; o < outportcount; ++o)
     {
-        os << "  " << get_port_name(SEQ64_MIDI_OUTPUT, o) << std::endl;
+        os << "  " << nc_this->get_port_name(o) << std::endl;
     }
     return os.str();
 }
-
 
 }           // namespace seq64
 

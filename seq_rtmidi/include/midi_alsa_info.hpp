@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-04
- * \updates       2016-12-09
+ * \updates       2016-12-10
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the ALSA information of
@@ -51,15 +51,15 @@ private:
      *  Holds a "handle" to the ALSA MIDI subsystem.  This has to
      *  be a pointer because snd_seq_t is a typedef for a hidden
      *  structure called _snd_seq (see /usr/include/alsa/seq.h).
-     */
 
     snd_seq_t * m_alsa_seq;
+     */
 
     /**
      *  Holds data on the ALSA ports.  Again, this member must be a pointer.
-     */
 
     snd_seq_port_info_t * m_alsa_port_info;
+     */
 
 public:
 
@@ -76,7 +76,7 @@ private:
     );
     */
 
-    unsigned get_all_port_info ();
+    virtual unsigned get_all_port_info ();
 
 
 };          // midi_alsa_info

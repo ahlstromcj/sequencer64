@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-11
+ * \updates       2016-12-12
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -179,11 +179,7 @@ midibus::midibus
         if (id >= 0)
             set_bus_id(id);
 
-        set_name
-        (
-            false, clientname, rt.get_port_name(index), index,
-            rt.get_client_id(index), index /* port ID */
-        );
+        set_name(clientname, rt.get_port_name(index));
 
 //      std::string portname = rt.get_port_name(id);
 //      if (! portname.empty())

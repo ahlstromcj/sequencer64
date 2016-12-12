@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2016-12-11
+ * \updates       2016-12-12
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -87,7 +87,16 @@ private:
     static int m_clock_mod;
 
     /**
-     *  The buss ID of the midibase object.
+     *  Provides the index of the midibase object in either the input list or
+     *  the output list.  Currently needed in the RtMidi code.  Otherwise, it
+     *  is currently -1.
+     */
+
+    const int m_bus_index;
+
+    /**
+     *  The buss ID of the midibase object.  For example, on one system the
+     *  IDs are 14 (MIDI Through), 128 (TiMidity), and 129 (Yoshimi).
      */
 
     int m_bus_id;
@@ -213,6 +222,15 @@ public:
             result += m_port_name;
         }
         return result;
+    }
+
+    /**
+     * \getter m_bus_index
+     */
+
+    int get_bus_index () const
+    {
+        return m_bus_index;
     }
 
     /**
@@ -360,7 +378,7 @@ protected:
     /**
      * \setter m_bus_id
      *      Useful for setting the buss ID when using the rtmidi_info object
-     *      to look create a list of busses and ports.
+     *      to create a list of busses and ports.
      */
 
     void set_bus_id (int id)
@@ -460,10 +478,8 @@ protected:
 
     void set_name
     (
-        bool makevirtual,
         const std::string & clientname,
-        const std::string & portname,
-        int index, int bus_id, int port_id
+        const std::string & portname
     );
 
 };          // class midibase (ALSA version)

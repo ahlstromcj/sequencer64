@@ -25,10 +25,25 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2016-12-11
+ * \updates       2016-12-12
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
+ *
+ *  Elements of a MIDI buss:
+ *
+ *      -   Client.  This is the application:  sequencer64, seq64portmidi, or
+ *          seq64rtmidi.
+ *      -   Buss.   This is the main MIDI item, such as MIDI Through (14)
+ *          or TiMidity (128).  The buss numbers are provided by the system.
+ *          Currently, the buss name is empty.
+ *      -   Port.  This is one of the items provided by the buss, and the
+ *          number usually starts at 0.  The port numbers are provided by the
+ *          system.  Currently, the port name includes the buss name as
+ *          provided by the system, as a single unit.
+ *      -   Index.  This number is the order of the input or output MIDI
+ *          device as enumerated by the system lookup code, and always starts
+ *          at 0.
  */
 
 #include "globals.h"
@@ -121,6 +136,7 @@ midibase::midibase
     int bpm,
     bool makevirtual
 ) :
+    m_bus_index         (index),
     m_bus_id            (bus_id),
     m_port_id           (port_id),
     m_clock_type        (e_clock_off),
@@ -134,7 +150,7 @@ midibase::midibase
     m_is_virtual_port   (makevirtual),
     m_mutex             ()
 {
-    set_name(makevirtual, clientname, portname, index, bus_id, port_id);
+    set_name(clientname, portname);
 }
 
 /**
@@ -153,21 +169,17 @@ midibase::~midibase()
 void
 midibase::set_name
 (
-    bool makevirtual,
     const std::string & clientname,
-    const std::string & portname,
-    int index,
-    int bus_id,
-    int port_id
+    const std::string & portname
 )
 {
     char name[80];
-    if (makevirtual)
+    if (is_virtual_port())
     {
         snprintf
         (
             name, sizeof name, "[%d] %d:%d %s",
-            index, get_bus_id(), get_port_id(), clientname.c_str()
+            get_bus_index(), get_bus_id(), get_port_id(), clientname.c_str()
         );
         bus_name(name);
     }
@@ -176,13 +188,20 @@ midibase::set_name
         char alias[64];
         const std::string & bussname = usr().bus_name(get_bus_id());
         if (! bussname.empty())
-            snprintf(alias, sizeof alias, "%s", bussname.c_str());
+        {
+            snprintf
+            (
+                alias, sizeof alias, "%s %s",
+                bussname.c_str(), portname.c_str()
+            );
+        }
         else
             snprintf(alias, sizeof alias, "%s", portname.c_str());
 
         snprintf                            /* copy the client name parts */
         (
-            name, sizeof name, "[%d] %d:%d %s", index, bus_id, port_id, alias
+            name, sizeof name, "[%d] %d:%d %s",
+            get_bus_index(), get_bus_id(), get_port_id(), alias
         );
     }
     bus_name(name);

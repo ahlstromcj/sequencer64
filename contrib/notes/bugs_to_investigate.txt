@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-11-02 (New bugs and fixed bugs)
+2015-10-27 to 2016-12-12 (New bugs and fixed bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -1180,6 +1180,49 @@ jack-smf-player: End of song.
 
 So why all the errors?  Could be useful to find out.
 
+RTMIDI IMPLEMENTATION BUGS:
 
+Currently, sequencer64 (v. 0.9.20) shows, with yoshimi running, on my system:
+
+    MIDI Clock:
+
+        [0] 14:0 Midi Through Port-0
+        [1] 128:0 TiMidity port 0
+        [2] 128:0 TiMidity port 1
+        [3] 128:0 TiMidity port 2
+        [4] 128:0 TiMidity port 3
+        [5] 129:0 input
+
+    MIDI Input:
+
+        [0] 14:0 Midi Through Port-0
+
+seq64rtmidi shows:
+
+    MIDI Clock:
+
+        [0] 128:0 TiMidity
+        [1] 128:1 TiMidity
+        [2] 128:2 TiMidity
+        [3] 128:3 TiMidity
+        [4] 129:4 yoshimi
+
+    MIDI Input:
+
+        [0] 14:0 Midi Through
+
+So both need some fixing.  First, seq64rtmidi:
+
+    mastermidibus.cpp starting at line #139:
+
+        nports = 6 (both input and output)
+        1 input port
+        midibus.cpp
+            #176: perhaps set_port_id(id) is the wrong thing to do; the module
+                  overwrites the first input port with the first output port.
+                  get_port_id() and the index value seem to be conflated.
+            #180: make sure the bus id is handled properly.
+
+Also build sequencer64 and see what it does with the new code.
 
 # vim: sw=4 ts=4 wm=4 et ft=rc

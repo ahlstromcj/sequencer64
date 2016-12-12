@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-10
+ * \updates       2016-12-11
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -355,25 +355,31 @@ rtmidi_out::openmidi_api (rtmidi_api api, const std::string & clientname)
 }
 
 /**
- *  Throws an error.
+ *  Throws an error.  No, for now just does nothing.
  */
 
 void
 rtmidi_out::ignore_types (bool, bool, bool)
 {
-    std::string errortext = func_message("not supported");
-    throw(rterror(errortext, rterror::UNSPECIFIED));
+    /*
+     * std::string errortext = func_message("not supported");
+     * throw(rterror(errortext, rterror::UNSPECIFIED));
+     */
 }
 
 /**
- *  Throws an error.
+ *  Throws an error.  No, for now just does nothing.
  */
 
 double
 rtmidi_out::get_message (std::vector<midibyte> &)
 {
-    std::string errortext = func_message("not supported");
-    throw(rterror(errortext, rterror::UNSPECIFIED));
+    /*
+     * std::string errortext = func_message("not supported");
+     * throw(rterror(errortext, rterror::UNSPECIFIED));
+     */
+
+    return 0.0;
 }
 
 }           // namespace seq64

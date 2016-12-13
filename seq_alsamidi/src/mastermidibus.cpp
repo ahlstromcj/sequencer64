@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-12-04
+ * \updates       2016-12-12
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -590,8 +590,8 @@ mastermidibus::api_port_start (int client, int port)
             {
                 if
                 (
-                    m_buses_out[i]->get_client() == client  &&
-                    m_buses_out[i]->get_port() == port &&
+                    m_buses_out[i]->get_bus_id() == client  &&
+                    m_buses_out[i]->get_port_id() == port &&
                     ! m_buses_out_active[i]
                 )
                 {
@@ -633,8 +633,9 @@ mastermidibus::api_port_start (int client, int port)
             {
                 if
                 (
-                    m_buses_in[i]->get_client() == client  &&
-                    m_buses_in[i]->get_port() == port && ! m_buses_in_active[i]
+                    m_buses_in[i]->get_bus_id() == client &&
+                    m_buses_in[i]->get_port_id() == port &&
+                    ! m_buses_in_active[i]
                 )
                 {
                     replacement = true;
@@ -705,16 +706,16 @@ mastermidibus::api_port_exit (int client, int port)
 #ifdef SEQ64_HAVE_LIBASOUND
     for (int i = 0; i < m_num_out_buses; ++i)
     {
-        if (m_buses_out[i]->get_client() == client &&
-            m_buses_out[i]->get_port() == port)
+        if (m_buses_out[i]->get_bus_id() == client &&
+            m_buses_out[i]->get_port_id() == port)
         {
             m_buses_out_active[i] = false;
         }
     }
     for (int i = 0; i < m_num_in_buses; ++i)
     {
-        if (m_buses_in[i]->get_client() == client &&
-            m_buses_in[i]->get_port() == port)
+        if (m_buses_in[i]->get_bus_id() == client &&
+            m_buses_in[i]->get_port_id() == port)
         {
             m_buses_in_active[i] = false;
         }

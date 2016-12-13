@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2016-12-01
+ * \updates       2016-12-12
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -453,6 +453,7 @@ mastermidibase::get_input (bussbyte bus)
  *
  * \param bus
  *      Provides the output buss number.  Checked before usage.
+ *      Actually should now be an index number
  *
  * \return
  *      Returns the buss name as a standard C++ string, truncated to 80-1
@@ -478,8 +479,8 @@ mastermidibase::get_midi_out_bus_name (int bus)
                 snprintf
                 (
                     tmp, sizeof tmp, "[%d] %d:%d (disconnected)",
-                    bus, m_buses_out[bus]->get_client(),
-                    m_buses_out[bus]->get_port()
+                    bus, m_buses_out[bus]->get_bus_id(),
+                    m_buses_out[bus]->get_port_id()
                 );
             }
             else
@@ -522,8 +523,8 @@ mastermidibase::get_midi_in_bus_name (int bus)
             snprintf
             (
                 tmp, sizeof tmp, "[%d] %d:%d (disconnected)",
-                bus, m_buses_in[bus]->get_client(),
-                m_buses_in[bus]->get_port()
+                bus, m_buses_in[bus]->get_bus_id(),
+                m_buses_in[bus]->get_port_id()
             );
         }
         else

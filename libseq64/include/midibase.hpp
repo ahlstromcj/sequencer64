@@ -260,21 +260,21 @@ public:
     /**
      * \getter m_dest_addr_client
      *      The address of client.
-     */
 
     virtual int get_client () const
     {
         return SEQ64_NO_BUS;
     }
+     */
 
     /**
      * \getter m_dest_addr_port
-     */
 
     virtual int get_port () const
     {
         return SEQ64_NO_PORT;
     }
+     */
 
     /**
      * \getter m_is_virtual_port

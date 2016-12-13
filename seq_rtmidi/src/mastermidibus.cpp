@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-10
+ * \updates       2016-12-12
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -139,16 +139,14 @@ mastermidibus::api_init (int ppqn, int bpm)
         if (nports > 0)
         {
             m_midi_scratch.midi_mode(SEQ64_MIDI_INPUT);
-            nports = m_midi_scratch.get_port_count();
+            unsigned inports = m_midi_scratch.get_port_count();
             m_num_in_buses = 0;
-            for (unsigned i = 0; i < nports; ++i)
+            for (unsigned i = 0; i < inports; ++i)
             {
-//              std::string clientname = "rtmidi in";
-//              std::string portname = m_midi_scratch.get_port_name(i);
                 m_buses_in[m_num_in_buses] = new midibus
                 (
                     m_midi_scratch, SEQ64_APP_NAME,         /* client name */
-                    i, ppqn, bpm
+                    m_num_in_buses, ppqn, bpm
                 );
                 if (m_buses_in[m_num_in_buses]->init_in())
                 {
@@ -164,16 +162,14 @@ mastermidibus::api_init (int ppqn, int bpm)
             }
 
             m_midi_scratch.midi_mode(SEQ64_MIDI_OUTPUT);
-            nports = m_midi_scratch.get_port_count();
+            unsigned outports = m_midi_scratch.get_port_count();
             m_num_out_buses = 0;
-            for (unsigned i = 0; i < nports; ++i)
+            for (unsigned i = 0; i < outports; ++i)
             {
-//              std::string clientname = "rtmidi out";
-//              std::string portname = m_midi_scratch.get_port_name(i);
                 m_buses_out[m_num_out_buses] = new midibus
                 (
                     m_midi_scratch, SEQ64_APP_NAME /* client name */,
-                    i, ppqn, bpm
+                    inports, ppqn, bpm
                 );
                 if (m_buses_out[m_num_out_buses]->init_out())
                 {
@@ -189,29 +185,8 @@ mastermidibus::api_init (int ppqn, int bpm)
             }
         }
     }
-
-    set_beats_per_minute(c_beats_per_minute);       // ????????
+    set_beats_per_minute(c_beats_per_minute);
     set_ppqn(ppqn);
-
-    /*
-     * MIDI input poll descriptors
-     *
-     *
-        m_bus_announce = new midibus
-        (
-            "system", "announce",   // clientname and portname
-            0, m_queue, ppqn
-        );
-        m_bus_announce->set_input(true);
-
-        set_sequence_input(false, NULL);
-        for (int i = 0; i < m_num_out_buses; i++)
-            set_clock(i, m_init_clock[i]);
-
-        for (int i = 0; i < m_num_in_buses; i++)
-            set_input(i, m_init_input[i]);
-     *
-     */
 }
 
 /**

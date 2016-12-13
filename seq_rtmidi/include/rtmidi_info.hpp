@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-10
+ * \updates       2016-12-12
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -60,27 +60,27 @@ public:
      *      Returns the buss/client value as provided by the selected API.
      */
 
-    /*virtual*/ unsigned get_client_id (unsigned index)
+    virtual unsigned get_client_id (unsigned index)
     {
         return get_api()->get_client_id(index);
     }
 
-    /*virtual*/ unsigned get_port_count ()
+    virtual unsigned get_port_count ()
     {
         return get_api()->get_port_count();
     }
 
-    /*virtual*/ unsigned get_port_number (unsigned index)
+    virtual unsigned get_port_number (unsigned index)
     {
         return get_api()->get_port_number(index);
     }
 
-    /*virtual*/ std::string get_port_name (unsigned index)
+    virtual std::string get_port_name (unsigned index)
     {
         return get_api()->get_port_name(index);
     }
 
-    /*virtual*/ unsigned get_all_port_info ()
+    virtual unsigned get_all_port_info ()
     {
         return get_api()->get_all_port_info();
     }

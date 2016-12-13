@@ -127,7 +127,9 @@ midibus::midibus
  * \param rt
  *      Provides the rtmidi_in or rtmidi_out object to use to obtain the
  *      client ID (buss ID), port ID, and port name, as obtained via calls to
- *      the ALSA, JACK, Core MIDI, or Windows MM subsystems.
+ *      the ALSA, JACK, Core MIDI, or Windows MM subsystems.  We would like to
+ *      make this a const parameter, but its accessors are all non-const, like
+ *      the rtmidi interface.  Oh well.
  *
  * \param clientname
  *      This is the name of the client, which is the application name
@@ -150,7 +152,7 @@ midibus::midibus
 
 midibus::midibus
 (
-    /*const*/ rtmidi_info & rt,
+    rtmidi_info & rt,                   /* we wish this could be const  */
     const std::string & clientname,
     int index,
     int ppqn,
@@ -180,10 +182,6 @@ midibus::midibus
             set_bus_id(id);
 
         set_name(clientname, rt.get_port_name(index));
-
-//      std::string portname = rt.get_port_name(id);
-//      if (! portname.empty())
-//          port_name(portname);
     }
 }
 

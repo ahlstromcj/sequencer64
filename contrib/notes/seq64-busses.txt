@@ -1,0 +1,60 @@
+Sequencer64 "Legacy" Buss Building
+Chris Ahlstrom
+2016-12-13 to 2016-12-13
+
+Describes the sequence for creating input and output ports.
+
+mastermidibus:
+
+   while (next client)
+   {
+      while (next port)
+      {
+      }
+   }
+
+First client in ALSA is 0; it's 2 ports do not pass the client check.
+
+Second client is 14.  The first port (unnumbered) has write (output)
+capability.  The call is
+
+   seq64::midibus::midibus
+   (
+      this=0x555555af9120,
+      localclient=129,     // snd_seq_client_id()
+      destclient=14,       // snd_seq_port_info_get_client()
+      dest port=0,         // snd_seq_port_info_get_port()
+      seq=0x555555b0ec90,
+      port_name="Midi Through Port-0", // snd_seq_client_info_get_name()
+      /* client name is unused, but why not? */
+      id=0, queue=1, ppqn=-1
+   )
+
+   The client name is "Midi Through".
+
+   The first port also has read (input) capability.  The midibus call
+   is the same.
+
+Third client is 128.  First port has write capability, but not read capability.
+Four ports total.
+
+   The client name is "TiMidity".
+   The port name is "TiMidity port 0".
+
+Fourth client is 129.  None of its 4 ports pass the client check.
+
+We then create an announcement buss:
+
+   seq64::midibus::midibus
+   (
+      this=0x555555b0fd90,
+      localclient=129,
+      destclient=0,
+      destport=1,
+      seq=0x555555b0ed10,
+      c=0x555555794cd0 "system",
+      port_name=0x55 5555794cd7 "announce",
+      id=0, queue=1, ppqn=-1
+   )
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

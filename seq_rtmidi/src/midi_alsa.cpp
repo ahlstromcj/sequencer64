@@ -587,18 +587,6 @@ alsa_port_info
 }
 
 /**
- *  Tries to get the buss/client number.
- */
-
-unsigned
-midi_in_alsa::get_client_id (unsigned index)
-{
-    ////// TO DO //////////////
-
-    return SEQ64_BAD_PORT_ID;
-}
-
-/**
  *  Gets the input sequencer port count from ALSA.  Note that this data was
  *  already obtained ahead of time via the new rtmidi_info object, so that
  *  this call is redundant, and eventually we hope to eliminate it.

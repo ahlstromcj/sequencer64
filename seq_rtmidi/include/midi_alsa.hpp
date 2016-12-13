@@ -60,7 +60,15 @@ public:
     virtual std::string get_port_name (unsigned portnumber);
 
 //  virtual unsigned get_portnumber (unsigned index);
-    virtual unsigned get_client_id (unsigned portnumber);
+
+    /**
+     *  Tries to get the buss/client number.
+     */
+
+    virtual unsigned get_client_id (unsigned index)
+    {
+        return index;   // SEQ64_BAD_PORT_ID; ////// TO DO //////////////
+    }
 
 private:
 

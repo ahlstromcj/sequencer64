@@ -49,12 +49,14 @@ void
 midi_port_info::add
 (
     unsigned clientnumber,
+    const std::string & clientname,
     unsigned portnumber,
     const std::string & portname
 )
 {
     port_info_t temp;
     temp.m_client_number = clientnumber;
+    temp.m_client_name = clientname;
     temp.m_port_number = portnumber;
     temp.m_port_name = portname;
     m_port_container.push_back(temp);
@@ -94,14 +96,22 @@ midi_info::port_list () const
     os << "Input ports (" << inportcount << "):" << std::endl;
     for (unsigned i = 0; i < inportcount; ++i)
     {
-        os << "  " << nc_this->get_port_name(i) << std::endl;
+        os
+            << "  " << nc_this->get_client_name(i) << ":"
+            << nc_this->get_port_name(i)
+            << std::endl
+            ;
     }
 
     nc_this->midi_mode(SEQ64_MIDI_OUTPUT);
     os << "Output ports (" << outportcount << "):" << std::endl;
     for (unsigned o = 0; o < outportcount; ++o)
     {
-        os << "  " << nc_this->get_port_name(o) << std::endl;
+        os
+            << "  " << nc_this->get_client_name(o) << ":"
+            << nc_this->get_port_name(o)
+            << std::endl
+            ;
     }
     return os.str();
 }

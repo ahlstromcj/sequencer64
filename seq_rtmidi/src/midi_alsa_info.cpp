@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-10
+ * \updates       2016-12-13
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -121,6 +121,7 @@ midi_alsa_info::get_all_port_info ()
 
                 unsigned caps = snd_seq_port_info_get_capability(pinfo);
                 std::string clientname = snd_seq_client_info_get_name(cinfo);
+                std::string portname = snd_seq_port_info_get_name(pinfo);
                 int portnumber = snd_seq_port_info_get_port(pinfo);
 
                 /*
@@ -136,12 +137,20 @@ midi_alsa_info::get_all_port_info ()
 
                 if ((caps & sm_input_caps) == sm_input_caps)
                 {
-                    input_ports().add(unsigned(client), portnumber, clientname);
+                    input_ports().add
+                    (
+                        unsigned(client), clientname,
+                        unsigned(portnumber), portname
+                    );
                     ++count;
                 }
-                else if ((caps & sm_output_caps) == sm_output_caps)
+                if ((caps & sm_output_caps) == sm_output_caps)
                 {
-                    output_ports().add(unsigned(client), portnumber, clientname);
+                    output_ports().add
+                    (
+                        unsigned(client), clientname,
+                        unsigned(portnumber), portname
+                    );
                     ++count;
                 }
                 else

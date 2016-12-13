@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2016-12-10
+ * \updates       2016-12-13
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -58,6 +58,7 @@ private:
     typedef struct
     {
         unsigned m_client_number;   /**< The major buss number of the port. */
+        std::string m_client_name;  /**< The system's name for the client.  */
         unsigned m_port_number;     /**< The minor port number of the port. */
         std::string m_port_name;    /**< The system's name for the port.    */
 
@@ -82,6 +83,7 @@ public:
     void add
     (
         unsigned clientnumber,
+        const std::string & clientname,
         unsigned portnumber,
         const std::string & portname
     );
@@ -102,6 +104,14 @@ public:
             return m_port_container[index].m_client_number;
         else
             return SEQ64_BAD_PORT_ID;
+    }
+
+    std::string get_client_name (unsigned index) const
+    {
+        if (index < get_port_count())
+            return m_port_container[index].m_client_name;
+        else
+            return std::string("");
     }
 
     unsigned get_port_number (unsigned index) const
@@ -197,6 +207,12 @@ public:
     {
         midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_port_count();
+    }
+
+    std::string get_client_name (unsigned index) /*const*/
+    {
+        midi_port_info & mpi = nc_midi_port_info();
+        return mpi.get_client_name(index);
     }
 
     unsigned get_client_id (unsigned index) /*const*/

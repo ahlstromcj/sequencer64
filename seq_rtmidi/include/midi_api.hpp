@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-10
+ * \updates       2016-12-13
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -117,6 +117,11 @@ public:
         return SEQ64_BAD_PORT_ID;                   // TODO
     }
 
+    virtual std::string get_client_name (unsigned /*portnumber*/)   // = 0;
+    {
+        return std::string("");                     // TODO
+    }
+
     virtual unsigned get_port_count ()
     {
         return 0;                                   // TODO
@@ -135,6 +140,11 @@ public:
     virtual void midi_mode (bool /*flag*/)
     {
         // no code
+    }
+
+    virtual std::string port_list () const
+    {
+        return std::string("base class midi_api cannot list ports");
     }
 
     /**

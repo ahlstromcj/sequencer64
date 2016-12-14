@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-04
+ * \updates       2016-12-14
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the midibus class.
@@ -65,8 +65,8 @@ midibus::midibus
 ) :
     midibase
     (
-        SEQ64_APP_NAME /* clientname */, clientname /* "PortMidi" */, index,
-        bus_id, port_id /* SEQ64_NO_PORT */, port_id  /* PM uses 'queue' still */
+        SEQ64_APP_NAME, "PortMidi", clientname, index,
+        bus_id, port_id, port_id                /* PM uses 'queue' still */
     ),
     m_pms           (nullptr)
 {

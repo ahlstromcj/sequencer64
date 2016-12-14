@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-12
+ * \updates       2016-12-14
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -65,6 +65,11 @@ public:
         return get_api()->get_client_id(index);
     }
 
+    virtual std::string get_client_name (unsigned index)
+    {
+        return get_api()->get_client_name(index);
+    }
+
     virtual unsigned get_port_count ()
     {
         return get_api()->get_port_count();
@@ -85,14 +90,14 @@ public:
         return get_api()->get_all_port_info();
     }
 
+    std::string port_list () const
+    {
+        return get_api()->port_list();
+    }
+
 protected:
 
-    void openmidi_api
-    (
-       rtmidi_api api,
-       const std::string & clientname,
-       unsigned queuesizelimit
-    );
+    void openmidi_api (rtmidi_api api);
 
 };          // class rtmidi_info
 

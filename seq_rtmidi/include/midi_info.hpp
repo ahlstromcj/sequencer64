@@ -203,37 +203,37 @@ public:
      *
      */
 
-    unsigned get_port_count () /*const*/
+    virtual unsigned get_port_count () /*const*/
     {
         midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_port_count();
     }
 
-    std::string get_client_name (unsigned index) /*const*/
-    {
-        midi_port_info & mpi = nc_midi_port_info();
-        return mpi.get_client_name(index);
-    }
-
-    unsigned get_client_id (unsigned index) /*const*/
+    virtual unsigned get_client_id (unsigned index) /*const*/
     {
         midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_client_id(index);
     }
 
-    unsigned get_port_number (unsigned index) /*const*/
+    virtual std::string get_client_name (unsigned index) /*const*/
+    {
+        midi_port_info & mpi = nc_midi_port_info();
+        return mpi.get_client_name(index);
+    }
+
+    virtual unsigned get_port_number (unsigned index) /*const*/
     {
         midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_port_number(index);
     }
 
-    std::string get_port_name (unsigned index) /*const*/
+    virtual std::string get_port_name (unsigned index) /*const*/
     {
         midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_port_name(index);
     }
 
-    std::string port_list () const;
+    virtual std::string port_list () const;
 
     /*
      * We don't want yet another base class, but we have to override these

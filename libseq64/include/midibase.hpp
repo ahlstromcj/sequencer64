@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2016-12-12
+ * \updates       2016-12-14
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -178,8 +178,9 @@ public:
 
     midibase
     (
-        const std::string & client_name = "",       /* usually a full name  */
-        const std::string & port_name   = "",       /* rarely needed now    */
+        const std::string & appname,                /* usually the app name */
+        const std::string & busname     = "",       /* subsystem name       */
+        const std::string & portname    = "",       /* rarely needed now    */
         int index   = 0,                            /* a display ordinal    */
         int bus_id  = SEQ64_NO_BUS,
         int port_id = SEQ64_NO_PORT,
@@ -479,6 +480,7 @@ protected:
     void set_name
     (
         const std::string & clientname,
+        const std::string & busname,
         const std::string & portname
     );
 

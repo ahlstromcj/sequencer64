@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2016-12-12
+ * \updates       2016-12-14
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -80,10 +80,13 @@ int midibase::m_clock_mod = 16 * 4;
  *  not in force.  Also used for the announce buss, and in the
  *  mastermidibase::port_start() function.
  *
- * \param clientname
- *      Provides the client name, also known as the buss name.  Well, now we
- *      are are making it the name of the application.  The derived class will
+ * \param appname
+ *      Provides the the name of the application.  The derived class will
  *      determine this name.
+ *
+ * \param busname
+ *      Provides the ALSA client name or the MIDI subsystem name (e.g.
+ *      "TiMidity").
  *
  * \param portname
  *      Provides the port name.  This item defaults to empty, which means the
@@ -126,7 +129,8 @@ int midibase::m_clock_mod = 16 * 4;
 
 midibase::midibase
 (
-    const std::string & clientname,
+    const std::string & appname,     // application name, really
+    const std::string & busname,
     const std::string & portname,
     int index,                          // just an ordinal for display
     int bus_id,                         // an index in some implementations
@@ -144,13 +148,13 @@ midibase::midibase
     m_ppqn              (choose_ppqn(ppqn)),
     m_bpm               (bpm),
     m_queue             (queue),
-    m_bus_name          (clientname),
+    m_bus_name          (busname),
     m_port_name         (portname),
     m_lasttick          (0),
     m_is_virtual_port   (makevirtual),
     m_mutex             ()
 {
-    set_name(clientname, portname);
+    set_name(appname, busname, portname);
 }
 
 /**
@@ -164,12 +168,25 @@ midibase::~midibase()
 
 /**
  *  Sets the name of the buss.
+ *
+ * \param clientname
+ *      This is the name of the client, or application.  Not to be confused
+ *      with the ALSA client-name, which is actually a buss or subsystem name.
+ *
+ * \param busname
+ *      Provides the name of the sub-system, such as "Midi Through" or
+ *      "TiMidity".
+ *
+ * \param portname
+ *      Provides the name of the port.  In ALSA, this is something like
+ *      "busname port X".
  */
 
 void
 midibase::set_name
 (
     const std::string & clientname,
+    const std::string & busname,
     const std::string & portname
 )
 {
@@ -195,9 +212,17 @@ midibase::set_name
                 bussname.c_str(), portname.c_str()
             );
         }
+        else if (! busname.empty())
+        {
+            snprintf
+            (
+                alias, sizeof alias, "%s:%s", busname.c_str(), portname.c_str()
+            );
+        }
         else
+        {
             snprintf(alias, sizeof alias, "%s", portname.c_str());
-
+        }
         snprintf                            /* copy the client name parts */
         (
             name, sizeof name, "[%d] %d:%d %s",

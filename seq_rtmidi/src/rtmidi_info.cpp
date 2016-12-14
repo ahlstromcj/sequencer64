@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-10
+ * \updates       2016-12-14
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -56,7 +56,7 @@ rtmidi_info::rtmidi_info (rtmidi_api api)
 {
     if (api != RTMIDI_API_UNSPECIFIED)
     {
-        openmidi_api(api, "", 0);
+        openmidi_api(api);
         if (not_nullptr(get_api()))
         {
             selected_api(api);              /* log first API that worked    */
@@ -69,7 +69,7 @@ rtmidi_info::rtmidi_info (rtmidi_api api)
     get_compiled_api(apis);
     for (unsigned i = 0; i < apis.size(); ++i)
     {
-        openmidi_api(apis[i], "", 0);
+        openmidi_api(apis[i]);
         if (not_nullptr(get_api()))
         {
             if (get_api()->get_all_port_info() > 0)
@@ -104,21 +104,10 @@ rtmidi_info::~rtmidi_info ()
  *
  * \param api
  *      The desired MIDI API.
- *
- * \param clientname
- *      The name of the client.  This is the name used to access the client.
- *
- * \param queuesizelimit
- *      The maximum size of the MIDI message queue.
  */
 
 void
-rtmidi_info::openmidi_api
-(
-   rtmidi_api api,
-   const std::string & clientname,          // probably unnecessary here
-   unsigned queuesizelimit                  // probably unnecessary here
-)
+rtmidi_info::openmidi_api (rtmidi_api api)
 {
     delete_api();
 
@@ -133,22 +122,21 @@ rtmidi_info::openmidi_api
 #ifdef SEQ64_BUILD_LINUX_ALSA
     if (api == RTMIDI_API_LINUX_ALSA)
         set_api(new midi_alsa_info());
-//      set_api(new midi_alsa_info(clientname, queuesizelimit));
 #endif
 
 #ifdef SEQ64_BUILD_MACOSX_CORE__NOT_READY
     if (api == RTMIDI_API_MACOSX_CORE)
-        set_api(new midi_core_info(clientname, queuesizelimit));
+        set_api(new midi_core_info());
 #endif
 
 #ifdef SEQ64_BUILD_WINDOWS_MM__NOT_READY
     if (api == RTMIDI_API_WINDOWS_MM)
-        set_api(new midi_winmm_info(clientname, queuesizelimit));
+        set_api(new midi_winmm_info());
 #endif
 
 #ifdef SEQ64_BUILD_RTMIDI_DUMMY__NOT_READY
     if (api == RTMIDI_API_DUMMY)
-        set_api(new midi_dummy_info(clientname, queuesizelimit));
+        set_api(new midi_dummy_info());
 #endif
 
 }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-30
+ * \updates       2016-12-14
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -75,7 +75,9 @@ namespace seq64
  *      Provides the ALSA sequence that will work with this buss.
  *
  * \param client_name
- *      Provides the client name, but this parameter is unused.
+ *      Provides the client name; but this parameter was unused, but now
+ *      enabled for better port naming in the Options dialog.  This is actual
+ *      the buss though "buss" is also kind of misleading.
  *
  * \param port_name
  *      Provides the port name.
@@ -100,7 +102,7 @@ midibus::midibus
     int destclient,                     // is this the major ifx number?
     int destport,
     snd_seq_t * seq,
-    const std::string & /* clientname */,
+    const std::string & clientname,     // the ALSA "client" (buss) name
     const std::string & portname,
     int index,                          // just an ordinal for display
     int queue,
@@ -109,8 +111,10 @@ midibus::midibus
 ) :
     midibase
     (
-        SEQ64_APP_NAME /* "sequencer64", clientname */, portname, index,
-        destclient /* bus_id */, destport /*SEQ64_NO_PORT*/, queue, ppqn, bpm
+        SEQ64_APP_NAME, clientname, portname, index,
+        destclient,                     // bus_id
+        destport,                       // SEQ64_NO_PORT
+        queue, ppqn, bpm
     ),
     m_seq               (seq),
     m_dest_addr_client  (destclient),   // actually the buss ID
@@ -118,7 +122,7 @@ midibus::midibus
     m_local_addr_client (localclient),
     m_local_addr_port   (-1)
 {
-    // Functionality moved to the base class
+    // Empty body
 }
 
 /**
@@ -165,7 +169,7 @@ midibus::midibus
 ) :
     midibase
     (
-        "sequencer64", "ALSA port", index, bus_id, bus_id,
+        SEQ64_APP_NAME, "ALSA", "port", index, bus_id, bus_id,
         queue, ppqn, bpm, true /* virtual */
     ),
     m_seq               (seq),

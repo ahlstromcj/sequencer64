@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-12
+ * \updates       2016-12-14
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -110,7 +110,7 @@ midibus::midibus
 ) :
     midibase
     (
-        clientname, portname, index, bus_id, port_id,
+        SEQ64_APP_NAME, clientname, portname, index, bus_id, port_id,
         queue, ppqn, bpm, true  /* make virtual */
     ),
     m_rt_midi       (nullptr)
@@ -131,7 +131,7 @@ midibus::midibus
  *      make this a const parameter, but its accessors are all non-const, like
  *      the rtmidi interface.  Oh well.
  *
- * \param clientname
+ * \param appname
  *      This is the name of the client, which is the application name
  *      ("seq64rtmidi").  We still have confusion over the meaning of
  *      "client" and "buss", which we hope to clear up eventually.
@@ -152,16 +152,17 @@ midibus::midibus
 
 midibus::midibus
 (
-    rtmidi_info & rt,                   /* we wish this could be const  */
-    const std::string & clientname,
-    int index,
+    rtmidi_info & rt,                   /* we wish this could be const      */
+    const std::string & appname,        /* the application name, confusing  */
+    int index,                          /* index into list of ports         */
     int ppqn,
     int bpm
 ) :
     midibase
     (
-        clientname,
-        "",                             /* portname */
+        appname,                        /* basically the application name   */
+        "",                             /* buss name extracted from rt      */
+        "",                             /* port name extracted from rt      */
         index,
         SEQ64_NO_BUS,
         SEQ64_NO_PORT,
@@ -181,7 +182,11 @@ midibus::midibus
         if (id >= 0)
             set_bus_id(id);
 
-        set_name(clientname, rt.get_port_name(index));
+        /*
+         * This changes what was set in the base class.
+         */
+
+        set_name(appname, rt.get_client_name(index), rt.get_port_name(index));
     }
 }
 

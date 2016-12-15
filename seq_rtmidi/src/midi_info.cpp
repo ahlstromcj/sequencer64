@@ -97,7 +97,9 @@ midi_info::port_list () const
     for (unsigned i = 0; i < inportcount; ++i)
     {
         os
-            << "  " << nc_this->get_client_name(i) << ":"
+            << "  [" << i << "] "
+            << nc_this->get_client_id(i) << ":" << nc_this->get_port_number(i)
+            << " " << nc_this->get_client_name(i) << ": "
             << nc_this->get_port_name(i)
             << std::endl
             ;
@@ -108,6 +110,8 @@ midi_info::port_list () const
     for (unsigned o = 0; o < outportcount; ++o)
     {
         os
+            << "  [" << o << "] "
+            << nc_this->get_client_id(o) << ":" << nc_this->get_port_number(o)
             << "  " << nc_this->get_client_name(o) << ":"
             << nc_this->get_port_name(o)
             << std::endl

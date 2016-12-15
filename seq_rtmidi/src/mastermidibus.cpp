@@ -147,22 +147,19 @@ mastermidibus::api_init (int ppqn, int bpm)
             m_num_in_buses = 0;
             for (unsigned i = 0; i < inports; ++i)
             {
-                m_buses_in[m_num_in_buses] = new midibus
+                midibus * nextbus = new midibus
                 (
-                    m_midi_scratch, SEQ64_APP_NAME,         /* client name */
-                    m_num_in_buses, ppqn, bpm
+                    m_midi_scratch, SEQ64_APP_NAME, m_num_in_buses, ppqn, bpm
                 );
-                if (m_buses_in[m_num_in_buses]->init_in())
+                if (nextbus->init_in())
                 {
+                    m_buses_in[m_num_in_buses] = nextbus;
                     m_buses_in_active[m_num_in_buses] = true;
                     m_buses_in_init[m_num_in_buses] = true;
                     ++m_num_in_buses;
                 }
                 else
-                {
-                    delete m_buses_in[m_num_in_buses];
-                    m_buses_in[m_num_in_buses] = nullptr;
-                }
+                    delete nextbus;     // m_buses_in[m_num_in_buses] = nullptr;
             }
 
             m_midi_scratch.midi_mode(SEQ64_MIDI_OUTPUT);
@@ -170,22 +167,19 @@ mastermidibus::api_init (int ppqn, int bpm)
             m_num_out_buses = 0;
             for (unsigned i = 0; i < outports; ++i)
             {
-                m_buses_out[m_num_out_buses] = new midibus
+                midibus * nextbus = new midibus
                 (
-                    m_midi_scratch, SEQ64_APP_NAME /* client name */,
-                    m_num_out_buses, ppqn, bpm
+                    m_midi_scratch, SEQ64_APP_NAME, m_num_out_buses, ppqn, bpm
                 );
-                if (m_buses_out[m_num_out_buses]->init_out())
+                if (nextbus->init_out())
                 {
+                    m_buses_out[m_num_out_buses] = nextbus;
                     m_buses_out_active[m_num_out_buses] = true;
                     m_buses_out_init[m_num_out_buses] = true;
                     ++m_num_out_buses;
                 }
                 else
-                {
-                    delete m_buses_out[m_num_out_buses];
-                    m_buses_out[m_num_out_buses] = nullptr;
-                }
+                    delete nextbus;
             }
         }
     }
@@ -201,7 +195,7 @@ mastermidibus::api_init (int ppqn, int bpm)
 int
 mastermidibus::api_poll_for_midi ()
 {
-    for (;;)
+    for (;;)                    // why this clause???
     {
         for (int i = 0; i < m_num_in_buses; ++i)
         {

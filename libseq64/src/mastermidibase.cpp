@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2016-12-12
+ * \updates       2016-12-14
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -87,10 +87,8 @@ mastermidibase::mastermidibase (int ppqn, int bpm)
     {
         m_init_clock[i] = e_clock_off;
         m_buses_out[i] = m_buses_in[i] = nullptr;
-        m_buses_in_active[i] =
-            m_buses_out_active[i] =
-            m_buses_in_init[i] =
-            m_buses_out_init[i] =
+        m_buses_in_active[i] = m_buses_out_active[i] =
+            m_buses_in_init[i] = m_buses_out_init[i] =
             m_init_input[i] = false;
     }
 }

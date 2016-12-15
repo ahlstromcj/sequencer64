@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-11
+ * \updates       2016-12-15
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  In this refactoring, we are trying to improve the RtMidi project in the
@@ -94,13 +94,6 @@ alsa_midi_data_t::alsa_midi_data_t (snd_seq_t * s)
     trigger_fds[0] = -1;            // for input setup
     trigger_fds[1] = -1;            // for input setup
 }
-
-/*
- * Doesn't seem to be used.
- *
- * #define PORT_TYPE(pinfo, bits) \
- *  ((snd_seq_port_info_get_capability(pinfo) & (bits)) == (bits))
- */
 
 /**
  *  Provides the ALSA MIDI callback.
@@ -471,12 +464,16 @@ midi_in_alsa::initialize (const std::string & clientname)
                 /*
                  * Create the input queue.  Tempo (mm=100, or 60000.0) and
                  * resolution (240) values, but now we've made them parameters.
+                 *
+                 * Alternate:
+                 *
+                 * snd_seq_alloc_queue(seq);
                  */
 
                 int tempous = tempo_us_from_beats_per_minute(bpm());
                 alsadata->queue_id = snd_seq_alloc_named_queue
                 (
-                    seq, "rtmidi queue"
+                    seq, "seq64rtmidi queue"
                 );
 
                 snd_seq_queue_tempo_t * qtempo;
@@ -1042,7 +1039,8 @@ midi_out_alsa::initialize (const std::string & clientname)
 
     if (not_nullptr(alsadata))                  /* save API-specific info   */
     {
-        int result = snd_midi_event_new(alsadata->bufferSize, &alsadata->coder);
+        unsigned buffsize = 32;                 /* set before using :-D     */
+        int result = snd_midi_event_new(buffsize, &alsadata->coder);
         if (result < 0)
         {
             delete alsadata;
@@ -1051,19 +1049,19 @@ midi_out_alsa::initialize (const std::string & clientname)
         }
         else
         {
-            alsadata->bufferSize = 32;
-            alsadata->buffer = (midibyte *) malloc(alsadata->bufferSize);
-            if (is_nullptr(alsadata->buffer))
+            midibyte * b = reinterpret_cast<midibyte *>(malloc(buffsize));
+            if (not_nullptr(b))
             {
-                delete alsadata;
-                m_error_string = func_message("error allocating buffer memory");
-                error(rterror::MEMORY_ERROR, m_error_string);
+                alsadata->buffer = b;
+                alsadata->bufferSize = 32;
+                m_api_data = alsadata;                  /* no cast needed */
+                snd_midi_event_init(alsadata->coder);
             }
             else
             {
-                snd_midi_event_init(alsadata->coder);
-                m_api_data = alsadata;                  /* no cast needed */
-                // m_output_data.api_data(alsadata);    /* no cast needed */
+                delete alsadata;
+                m_error_string = func_message("error allocating output memory");
+                error(rterror::MEMORY_ERROR, m_error_string);
             }
         }
     }
@@ -1218,9 +1216,10 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
         {
             /*
              * The "legacy" midibus::init_out() replaces the
-             * SND_SEQ_PORT_CAP_SUBS_READ flag with SND_SEQ_PORT_CAP_NO_EXPORT.
-             * This code here is like the seq24's midibus::init_out_sub()
-             * function.  Thus, alsadata->vport here is like m_local_addr_port there.
+             * SND_SEQ_PORT_CAP_SUBS_READ flag with
+             * SND_SEQ_PORT_CAP_NO_EXPORT.  This code here is like the seq24's
+             * midibus::init_out_sub() function.  Thus, alsadata->vport here
+             * is like m_local_addr_port there.
              */
 
             alsadata->vport = snd_seq_create_simple_port
@@ -1236,12 +1235,9 @@ midi_out_alsa::open_port (unsigned portnumber, const std::string & portname)
                 return;
             }
         }
-
         sender.port = alsadata->vport;
-
         if (! alsadata->subscription)       // NEW CONDITION, VALID???
         {
-
             /*
              * Make subscription.  The midibus::init_out() code instead
              * used snd_seq_connect_to(port).

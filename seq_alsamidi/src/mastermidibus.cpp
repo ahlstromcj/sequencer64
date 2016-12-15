@@ -220,10 +220,6 @@ void
 mastermidibus::api_init (int ppqn, int bpm)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
-    snd_seq_client_info_t * cinfo;                      /* client info      */
-    snd_seq_port_info_t * pinfo;                        /* port info        */
-    snd_seq_client_info_alloca(&cinfo);
-    snd_seq_client_info_set_client(cinfo, -1);
     if (rc().manual_alsa_ports())
     {
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
@@ -270,6 +266,10 @@ mastermidibus::api_init (int ppqn, int bpm)
          * from cinfo.  Fill pinfo.
          */
 
+        snd_seq_client_info_t * cinfo;                      /* client info      */
+        snd_seq_port_info_t * pinfo;                        /* port info        */
+        snd_seq_client_info_alloca(&cinfo);
+        snd_seq_client_info_set_client(cinfo, -1);
         while (snd_seq_query_next_client(m_alsa_seq, cinfo) >= 0)
         {
             int client = snd_seq_client_info_get_client(cinfo);
@@ -491,7 +491,7 @@ void
 mastermidibus::api_set_beats_per_minute (int bpm)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
-    snd_seq_queue_tempo_t *tempo;
+    snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);          /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
     snd_seq_queue_tempo_set_tempo

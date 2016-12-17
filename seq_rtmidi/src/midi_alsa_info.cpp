@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-13
+ * \updates       2016-12-16
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -47,12 +47,25 @@ unsigned midi_alsa_info::sm_output_caps =
  *      Provides the upper limit of the queue size.
  */
 
-midi_alsa_info::midi_alsa_info
-(
-) :
-    midi_info           ()
+midi_alsa_info::midi_alsa_info ()
+ :
+    midi_info   (),
+    m_alsa_seq  (nullptr)
 {
-    // Empty body
+    snd_seq_t * seq;                        /* point to member              */
+    int result = snd_seq_open               /* set up ALSA sequencer client */
+    (
+        &seq, "default", SND_SEQ_OPEN_DUPLEX, 0 // SND_SEQ_NONBLOCK
+    );
+    if (result < 0)
+    {
+        m_error_string = func_message("error opening ALSA sequencer client");
+        error(rterror::DRIVER_ERROR, m_error_string);
+    }
+    else
+    {
+        m_alsa_seq = seq;
+    }
 }
 
 /**
@@ -62,7 +75,8 @@ midi_alsa_info::midi_alsa_info
 
 midi_alsa_info::~midi_alsa_info ()
 {
-    // Empty body
+    if (not_nullptr(m_alsa_seq))
+        snd_seq_close(m_alsa_seq);
 }
 
 #define SEQ64_PORT_CLIENT      0xFF000000
@@ -80,17 +94,7 @@ unsigned
 midi_alsa_info::get_all_port_info ()
 {
     unsigned count = 0;
-    snd_seq_t * seq;                        /* point to member              */
-    int result = snd_seq_open               /* set up ALSA sequencer client */
-    (
-        &seq, "default", SND_SEQ_OPEN_DUPLEX, 0 // SND_SEQ_NONBLOCK
-    );
-    if (result < 0)
-    {
-        m_error_string = func_message("error opening ALSA sequencer client");
-        error(rterror::DRIVER_ERROR, m_error_string);
-    }
-    else
+    if (not_nullptr(m_alsa_seq))
     {
         snd_seq_port_info_t * pinfo;                    /* point to member  */
         snd_seq_client_info_t * cinfo;
@@ -98,7 +102,7 @@ midi_alsa_info::get_all_port_info ()
         snd_seq_client_info_set_client(cinfo, -1);
         input_ports().clear();
         output_ports().clear();
-        while (snd_seq_query_next_client(seq, cinfo) >= 0)
+        while (snd_seq_query_next_client(m_alsa_seq, cinfo) >= 0)
         {
             int client = snd_seq_client_info_get_client(cinfo);
             if (client == 0)
@@ -107,7 +111,7 @@ midi_alsa_info::get_all_port_info ()
             snd_seq_port_info_alloca(&pinfo);
             snd_seq_port_info_set_client(pinfo, client); /* reset query info */
             snd_seq_port_info_set_port(pinfo, -1);
-            while (snd_seq_query_next_port(seq, pinfo) >= 0)
+            while (snd_seq_query_next_port(m_alsa_seq, pinfo) >= 0)
             {
                 unsigned alsatype = snd_seq_port_info_get_type(pinfo);
                 if
@@ -159,7 +163,6 @@ midi_alsa_info::get_all_port_info ()
                 }
             }
         }
-        snd_seq_close(seq);
     }
     return count;
 }

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-12
+ * \updates       2016-12-17
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
@@ -62,10 +62,20 @@ class midibus : public midibase
 private:
 
     /**
-     *  The RtMidi API interface object this midibus will be using.
+     *  The RtMidi API interface object this midibus will be creating and then
+     *  using.
      */
 
     rtmidi * m_rt_midi;
+
+    /**
+     *  For Sequencer64, the ALSA model used requires that all the midibus
+     *  objects use the same ASLA sequencer "handle".  The rtmidi_info object
+     *  used for enumerating the ports is a good place to get this handle.
+     *  It is an extension of the legacy RtMidi interface.
+     */
+
+    rtmidi_info & m_master_info;
 
 public:
 
@@ -75,6 +85,7 @@ public:
 
     midibus
     (
+        rtmidi_info & rt,
         const std::string & clientname,
         const std::string & portname    = "",
         int index                       = 0,

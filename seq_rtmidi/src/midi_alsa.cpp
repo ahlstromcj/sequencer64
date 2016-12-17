@@ -115,7 +115,7 @@ alsa_midi_handler (void * ptr)
         rtindata->api_data()
     );
     long nBytes;
-    unsigned long long time, lastTime;
+    unsigned long long time, lasttime;
     bool continueSysex = false;
     bool doDecode = false;
     midi_message message;
@@ -296,25 +296,24 @@ alsa_midi_handler (void * ptr)
                 );
                 if (! continueSysex)
                 {
+                    /*
+                     * Calculate the time stamp.
+                     * Method 1: Use the system time:
+                     *
+                     * ()gettimeofday(&tv, (struct timezone *)NULL);
+                     * time = (tv.tv_sec * 1000000) + tv.tv_usec;
+                     *
+                     * Method 2: Use the ALSA sequencer event time data.
+                     * (Thanks to Pedro Lopez-Cabanillas!)
+                     */
+
                     message.timeStamp = 0.0;
-
-                    // Calculate the time stamp:
-                    //
-                    // Method 1: Use the system time.
-                    //
-                    // ()gettimeofday(&tv, (struct timezone *)NULL);
-                    // time = (tv.tv_sec * 1000000) + tv.tv_usec;
-                    //
-                    // Method 2: Use the ALSA sequencer event time data.
-                    //
-                    // (thanks to Pedro Lopez-Cabanillas!).
-
                     time = (ev->time.time.tv_sec * 1000000) +
                         (ev->time.time.tv_nsec / 1000);
 
-                    lastTime = time;
+                    lasttime = time;
                     time -= alsadata->lastTime;
-                    alsadata->lastTime = lastTime;
+                    alsadata->lastTime = lasttime;
                     if (rtindata->first_message())
                         rtindata->first_message(false);
                     else

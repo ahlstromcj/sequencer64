@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-12-04
+dnl \update        2016-12-17
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -280,7 +280,9 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 
 AC_C_CONST
 
-dnl ALSA
+dnl ALSA test, performed by m4/alsa.m4.  Note that all original ALSA code
+dnl has been moved to the new seq_alsamidi directory, to distinguish it from
+dnl the new rtmidi code.
 
 AM_PATH_ALSA(0.9.0)
 
@@ -432,7 +434,7 @@ AC_DEFINE(APP_NAME, ["sequencer64"], [Names default version of application])
 AC_ARG_ENABLE(alsamidi,
     [AS_HELP_STRING(--disable-alsamidi, [Disable standard ALSA build])],
     [alsamidi=$enableval],
-    [alsamidi=no])
+    [alsamidi=yes])
 
 if test "$alsamidi" != "no"; then
     AC_MSG_RESULT([Standard ALSA build enabled, can be overridden though.]);
@@ -635,7 +637,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-12-04"
+#define VERSION_DATE_SHORT "2016-12-17"
 #define VERSION "0.90.0"
 
 )

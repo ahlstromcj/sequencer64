@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2016-12-13
+ * \updates       2016-12-16
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -128,6 +128,11 @@ public:
             return m_port_container[index].m_port_name;
         else
             return std::string("");
+    }
+
+    virtual void * midi_handle ()
+    {
+        return nullptr;
     }
 
 };          // class midi_port_info

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-04
+ * \updates       2016-12-17
  * \license       GNU GPLv2 or above
  *
  *  The midibus module is the Linux version of the midibus module.
@@ -42,6 +42,8 @@
 #if SEQ64_HAVE_LIBASOUND
 #include <alsa/asoundlib.h>
 #include <alsa/seq_midi_event.h>
+#else
+#error ALSA not supported in this build, fix the project configuration.
 #endif
 
 /*
@@ -66,15 +68,11 @@ class midibus : public midibase
 
 private:
 
-#if SEQ64_HAVE_LIBASOUND
-
     /**
      *  ALSA sequencer client handle.
      */
 
     snd_seq_t * const m_seq;
-
-#endif
 
     /**
      *  Destination address of client.  Could potentially be replaced by

@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-04
- * \updates       2016-12-10
+ * \updates       2016-12-16
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the ALSA information of
@@ -48,36 +48,43 @@ private:
     static unsigned sm_output_caps;
 
     /**
-     *  Holds a "handle" to the ALSA MIDI subsystem.  This has to
-     *  be a pointer because snd_seq_t is a typedef for a hidden
-     *  structure called _snd_seq (see /usr/include/alsa/seq.h).
+     *  Holds the ALSA sequencer client pointer so that it can be used
+     *  by the midibus objects.  This is actually an opaque pointer; there is
+     *  no way to get the actual fields in this structure; they can only be
+     *  accessed through functions in the ALSA API.
+     */
 
     snd_seq_t * m_alsa_seq;
-     */
-
-    /**
-     *  Holds data on the ALSA ports.  Again, this member must be a pointer.
-
-    snd_seq_port_info_t * m_alsa_port_info;
-     */
 
 public:
 
     midi_alsa_info ();
     virtual ~midi_alsa_info ();
 
+    /**
+     * \getter m_alsa_seq
+     *      This is the void-pointer version.
+     */
+
+    virtual void * midi_handle ()
+    {
+        return m_alsa_seq;
+    }
+
+protected:
+
+    /**
+     * \getter m_alsa_seq
+     */
+
+    snd_seq_t * seq ()
+    {
+        return m_alsa_seq;
+    }
+
 private:
 
-    /*
-    virtual void initialize(const std::string & clientname);
-    unsigned alsa_port_info
-    (
-        unsigned type, unsigned portnumber
-    );
-    */
-
     virtual unsigned get_all_port_info ();
-
 
 };          // midi_alsa_info
 

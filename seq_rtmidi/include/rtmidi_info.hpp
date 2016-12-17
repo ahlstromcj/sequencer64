@@ -90,6 +90,15 @@ public:
         return get_api()->get_all_port_info();
     }
 
+    /**
+     *  Could also return the whole API data structure.
+     */
+
+    virtual void * midi_handle ()
+    {
+        return get_api()->midi_handle();
+    }
+
     std::string port_list () const
     {
         return get_api()->port_list();

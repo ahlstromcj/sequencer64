@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-13
+ * \updates       2016-12-16
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -140,6 +140,11 @@ public:
     virtual void midi_mode (bool /*flag*/)
     {
         // no code
+    }
+
+    virtual void * midi_handle ()
+    {
+        return nullptr;
     }
 
     virtual std::string port_list () const

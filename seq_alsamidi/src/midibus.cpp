@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-14
+ * \updates       2016-12-17
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -43,8 +43,6 @@
 
 namespace seq64
 {
-
-#ifdef SEQ64_HAVE_LIBASOUND
 
 /**
  *  Provides a constructor with client number, port number, ALSA sequencer
@@ -126,14 +124,12 @@ midibus::midibus
 }
 
 /**
- *  Secondary constructor.  Similar to the principal constructor, but
+ *  Virtual port constructor, a secondary constructor.  This constructor is
+ *  used for the MIDI input and output busses when the [manual-alsa-ports]
+ *  option is in effect.  In effect, it is meant to create a virtual port.
+ *  This is indicated by passing "true" as the final parameter of the
+ *  base-class constructor.  It is similar to the principal constructor, but
  *  labels the buss by number more than by name.
- *
- *  This constructor is the one that seems to be the one that is used for
- *  the MIDI input and output busses when the [manual-alsa-ports] option is in
- *  effect.  In effect, it is meant to create a virtual port.  This is
- *  indicated by passing "true" as the final parameter of the base-class
- *  constructor.
  *
  * \param localclient
  *      Provides the local-client number.
@@ -181,8 +177,6 @@ midibus::midibus
     // Functionality moved to the base class
 }
 
-#endif   // SEQ64_HAVE_LIBASOUND
-
 /**
  *  A rote empty destructor.
  */
@@ -207,7 +201,6 @@ midibus::~midibus()
 bool
 midibus::api_init_out ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     int result = snd_seq_create_simple_port         /* create ports     */
     (
         m_seq, bus_name().c_str(),
@@ -233,7 +226,6 @@ midibus::api_init_out ()
         );
         return false;
     }
-#endif  // SEQ64_HAVE_LIBASOUND
     return true;
 }
 
@@ -247,7 +239,6 @@ midibus::api_init_out ()
 bool
 midibus::api_init_in ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     int result = snd_seq_create_simple_port             /* create ports */
     (
         m_seq, "sequencer64 in",                        /* "seq24 in"   */
@@ -290,7 +281,6 @@ midibus::api_init_in ()
         );
         return false;
     }
-#endif  // SEQ64_HAVE_LIBASOUND
     return true;
 }
 
@@ -305,7 +295,6 @@ midibus::api_init_in ()
 bool
 midibus::api_init_out_sub ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     int result = snd_seq_create_simple_port             /* create ports */
     (
         m_seq, bus_name().c_str(),
@@ -318,7 +307,6 @@ midibus::api_init_out_sub ()
         errprint("snd_seq_create_simple_port(write) error");
         return false;
     }
-#endif
     return true;
 }
 
@@ -332,7 +320,6 @@ midibus::api_init_out_sub ()
 bool
 midibus::api_init_in_sub ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     int result = snd_seq_create_simple_port             /* create ports */
     (
         m_seq, "sequencer64 in",                        /* "seq24 in"   */
@@ -345,7 +332,6 @@ midibus::api_init_in_sub ()
         errprint("snd_seq_create_simple_port(write) error");
         return false;
     }
-#endif
     return true;
 }
 
@@ -360,7 +346,6 @@ midibus::api_init_in_sub ()
 bool
 midibus::api_deinit_in ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_port_subscribe_t * subs;
     snd_seq_port_subscribe_alloca(&subs);
 
@@ -387,7 +372,6 @@ midibus::api_deinit_in ()
         );
         return false;
     }
-#endif  // SEQ64_HAVE_LIBASOUND
     return true;
 }
 
@@ -418,7 +402,6 @@ midibus::api_deinit_in ()
 void
 midibus::api_play (event * e24, midibyte channel)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     midibyte buffer[4];                             /* temp for MIDI data   */
     buffer[0] = e24->get_status();                  /* fill buffer          */
     buffer[0] += (channel & 0x0F);
@@ -435,7 +418,6 @@ midibus::api_play (event * e24, midibyte channel)
     snd_seq_ev_set_subs(&ev);
     snd_seq_ev_set_direct(&ev);                     /* it is immediate      */
     snd_seq_event_output(m_seq, &ev);               /* pump into the queue  */
-#endif  // SEQ64_HAVE_LIBASOUND
 }
 
 /**
@@ -475,7 +457,6 @@ min (long a, long b)
 void
 midibus::api_sysex (event * e24)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);                              /* clear event      */
     snd_seq_ev_set_priority(&ev, 1);
@@ -507,7 +488,6 @@ midibus::api_sysex (event * e24)
         usleep(SEQ64_USLEEP_US);
         flush();
     }
-#endif  // SEQ64_HAVE_LIBASOUND
 }
 
 /**
@@ -517,9 +497,7 @@ midibus::api_sysex (event * e24)
 void
 midibus::api_flush ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_drain_output(m_seq);
-#endif
 }
 
 /**
@@ -536,29 +514,27 @@ midibus::api_flush ()
 void
 midibus::api_continue_from (midipulse /* tick */, midipulse beats)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
-        snd_seq_event_t ev;
-        snd_seq_ev_clear(&ev);                          /* clear event      */
-        ev.type = SND_SEQ_EVENT_CONTINUE;
+    snd_seq_event_t ev;
+    snd_seq_ev_clear(&ev);                          /* clear event      */
+    ev.type = SND_SEQ_EVENT_CONTINUE;
 
-        snd_seq_event_t evc;
-        snd_seq_ev_clear(&evc);                         /* clear event      */
-        evc.type = SND_SEQ_EVENT_SONGPOS;
-        evc.data.control.value = beats;
-        snd_seq_ev_set_fixed(&ev);
-        snd_seq_ev_set_fixed(&evc);
-        snd_seq_ev_set_priority(&ev, 1);
-        snd_seq_ev_set_priority(&evc, 1);
-        snd_seq_ev_set_source(&evc, m_local_addr_port); /* set the source   */
-        snd_seq_ev_set_subs(&evc);
-        snd_seq_ev_set_source(&ev, m_local_addr_port);
-        snd_seq_ev_set_subs(&ev);
-        snd_seq_ev_set_direct(&ev);                     /* it's immediate   */
-        snd_seq_ev_set_direct(&evc);
-        snd_seq_event_output(m_seq, &evc);              /* pump into queue  */
-        api_flush();
-        snd_seq_event_output(m_seq, &ev);
-#endif  // SEQ64_HAVE_LIBASOUND
+    snd_seq_event_t evc;
+    snd_seq_ev_clear(&evc);                         /* clear event      */
+    evc.type = SND_SEQ_EVENT_SONGPOS;
+    evc.data.control.value = beats;
+    snd_seq_ev_set_fixed(&ev);
+    snd_seq_ev_set_fixed(&evc);
+    snd_seq_ev_set_priority(&ev, 1);
+    snd_seq_ev_set_priority(&evc, 1);
+    snd_seq_ev_set_source(&evc, m_local_addr_port); /* set the source   */
+    snd_seq_ev_set_subs(&evc);
+    snd_seq_ev_set_source(&ev, m_local_addr_port);
+    snd_seq_ev_set_subs(&ev);
+    snd_seq_ev_set_direct(&ev);                     /* it's immediate   */
+    snd_seq_ev_set_direct(&evc);
+    snd_seq_event_output(m_seq, &evc);              /* pump into queue  */
+    api_flush();
+    snd_seq_event_output(m_seq, &ev);
 }
 
 /**
@@ -569,9 +545,8 @@ midibus::api_continue_from (midipulse /* tick */, midipulse beats)
 void
 midibus::api_start ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_event_t ev;
-    snd_seq_ev_clear(&ev);                          /* memsets it to 0      */
+    snd_seq_ev_clear(&ev);                          /* memsets it to 0  */
     ev.type = SND_SEQ_EVENT_START;
     snd_seq_ev_set_fixed(&ev);
     snd_seq_ev_set_priority(&ev, 1);
@@ -579,7 +554,6 @@ midibus::api_start ()
     snd_seq_ev_set_subs(&ev);
     snd_seq_ev_set_direct(&ev);                     /* it's immediate   */
     snd_seq_event_output(m_seq, &ev);               /* pump into queue  */
-#endif  // SEQ64_HAVE_LIBASOUND
 }
 
 /**
@@ -589,7 +563,6 @@ midibus::api_start ()
 void
 midibus::api_stop ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);                          /* memsets it to 0      */
     ev.type = SND_SEQ_EVENT_STOP;
@@ -599,7 +572,6 @@ midibus::api_stop ()
     snd_seq_ev_set_subs(&ev);
     snd_seq_ev_set_direct(&ev);                     /* it's immediate       */
     snd_seq_event_output(m_seq, &ev);               /* pump into queue      */
-#endif  // SEQ64_HAVE_LIBASOUND
 }
 
 /**
@@ -614,7 +586,6 @@ midibus::api_stop ()
 void
 midibus::api_clock (midipulse /* tick */)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     /*
      * Set the event tag to 127 so the sequences won't remove it.
      */
@@ -629,7 +600,6 @@ midibus::api_clock (midipulse /* tick */)
     snd_seq_ev_set_subs(&ev);
     snd_seq_ev_set_direct(&ev);                     /* it's immediate       */
     snd_seq_event_output(m_seq, &ev);               /* pump it into queue   */
-#endif  // SEQ64_HAVE_LIBASOUND
 }
 
 #if REMOVE_QUEUED_ON_EVENTS_CODE

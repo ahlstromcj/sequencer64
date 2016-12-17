@@ -105,7 +105,7 @@ mastermidibus::api_init (int ppqn, int bpm)
             std::string portname = tmp;
             m_buses_out[i] = new midibus
             (
-                SEQ64_APP_NAME /*clientname*/, portname, i,
+                m_midi_scratch, SEQ64_APP_NAME /*clientname*/, portname, i,
                 i, i, /* bus and port ID */ SEQ64_NO_QUEUE, ppqn, bpm
             );
             m_buses_out[i]->init_out_sub();
@@ -127,7 +127,7 @@ mastermidibus::api_init (int ppqn, int bpm)
         m_num_in_buses = 1;
         m_buses_in[0] = new midibus
         (
-            SEQ64_APP_NAME /*client name*/, portname, 0,
+            m_midi_scratch, SEQ64_APP_NAME /*client name*/, portname, 0,
             0, 0, /* bus and port ID */ SEQ64_NO_QUEUE, ppqn, bpm
         );
         m_buses_in[0]->init_in_sub();

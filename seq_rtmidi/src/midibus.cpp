@@ -95,10 +95,19 @@ namespace seq64
 
 /**
  *  Virtual-port constructor.
+ *
+ * \param rt
+ *      Provides the rtmidi_info object to use to obtain the
+ *      client ID (buss ID), port ID, and port name, as obtained via calls to
+ *      the ALSA, JACK, Core MIDI, or Windows MM subsystems.
+ *      We need it to provide the single ALSA "handle" needed in the in
+ *      Sequencer64 buss model, where the master MIDI buss provides it to be
+ *      used by all the MIDI buss objects.
  */
 
 midibus::midibus
 (
+    rtmidi_info & rt,
     const std::string & clientname,
     const std::string & portname,
     int index,
@@ -113,7 +122,8 @@ midibus::midibus
         SEQ64_APP_NAME, clientname, portname, index, bus_id, port_id,
         queue, ppqn, bpm, true  /* make virtual */
     ),
-    m_rt_midi       (nullptr)
+    m_rt_midi       (nullptr),
+    m_master_info   (rt)
 {
     // Empty body
 }
@@ -125,11 +135,12 @@ midibus::midibus
  *  an already-constructed rtmidi_in or rtmidi_out object.
  *
  * \param rt
- *      Provides the rtmidi_in or rtmidi_out object to use to obtain the
+ *      Provides the rtmidi_info object to use to obtain the
  *      client ID (buss ID), port ID, and port name, as obtained via calls to
- *      the ALSA, JACK, Core MIDI, or Windows MM subsystems.  We would like to
- *      make this a const parameter, but its accessors are all non-const, like
- *      the rtmidi interface.  Oh well.
+ *      the ALSA, JACK, Core MIDI, or Windows MM subsystems.
+ *      We need it to provide the single ALSA "handle" needed in the in
+ *      Sequencer64 buss model, where the master MIDI buss provides it to be
+ *      used by all the MIDI buss objects.
  *
  * \param appname
  *      This is the name of the client, which is the application name
@@ -152,7 +163,7 @@ midibus::midibus
 
 midibus::midibus
 (
-    rtmidi_info & rt,                   /* we wish this could be const      */
+    rtmidi_info & rt,
     const std::string & appname,        /* the application name, confusing  */
     int index,                          /* index into list of ports         */
     int ppqn,
@@ -169,7 +180,8 @@ midibus::midibus
         SEQ64_NO_QUEUE,
         ppqn, bpm, false
     ),
-    m_rt_midi       (nullptr)
+    m_rt_midi       (nullptr),
+    m_master_info   (rt)
 {
     int portcount = int(rt.get_port_count());
     if (index < portcount)

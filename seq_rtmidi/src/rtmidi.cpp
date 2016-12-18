@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-11
+ * \updates       2016-12-18
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -16,41 +16,13 @@
  *  RtMidi WWW site: http://music.mcgill.ca/~gary/rtmidi/
  *
  *  RtMidi:          realtime MIDI i/o C++ classes
- *
- *  Copyright (c) 2003-2016 Gary P. Scavone
- *
- *  Some projects using rtmidi:
- *
- *      -   Csound5 *
- *      -   SimpleSysexxer
- *      -   Canorus
- *      -   PianoBooster *
- *      -   stk *
- *      -   milkytracker *
- *
  */
 
 #include "rtmidi.hpp"                   /* seq64::rtmidi, etc.          */
 #include "settings.hpp"                 /* seq64::rc().with_jack_...()  */
 
-#ifdef SEQ64_BUILD_LINUX_ALSA
-#include "midi_alsa.hpp"
-#endif
-
-#ifdef SEQ64_BUILD_MACOSX_CORE
-#include "midi_core.hpp"
-#endif
-
-#ifdef SEQ64_BUILD_RTMIDI_DUMMY
-#include "midi_dummy.hpp"
-#endif
-
 #ifdef SEQ64_BUILD_UNIX_JACK
 #include "midi_jack.hpp"
-#endif
-
-#ifdef SEQ64_BUILD_WINDOWS_MM
-#include "midi_winmm.hpp"
 #endif
 
 /*
@@ -59,17 +31,6 @@
 
 namespace seq64
 {
-
-/*
- *  MIDI on the iPhone?  Whoa!
- */
-
-#ifdef SEQ64_BUILD_MACOSX_CORE
-#if TARGET_OS_IPHONE
-#define AudioGetCurrentHostTime CAHostTimeBase::GetCurrentTime
-#define AudioConvertHostTimeToNanos CAHostTimeBase::ConvertToNanos
-#endif
-#endif
 
 /*
  * class rtmidi
@@ -202,25 +163,6 @@ rtmidi_in::openmidi_api
     }
 #endif
 
-#ifdef SEQ64_BUILD_LINUX_ALSA
-    if (api == RTMIDI_API_LINUX_ALSA)
-        set_api(new midi_in_alsa(clientname, queuesizelimit));
-#endif
-
-#ifdef SEQ64_BUILD_MACOSX_CORE
-    if (api == RTMIDI_API_MACOSX_CORE)
-        set_api(new midi_in_core(clientname, queuesizelimit));
-#endif
-
-#ifdef SEQ64_BUILD_WINDOWS_MM
-    if (api == RTMIDI_API_WINDOWS_MM)
-        set_api(new midi_in_winmm(clientname, queuesizelimit));
-#endif
-
-#ifdef SEQ64_BUILD_RTMIDI_DUMMY
-    if (api == RTMIDI_API_DUMMY)
-        set_api(new midi_in_dummy(clientname, queuesizelimit));
-#endif
 }
 
 /**
@@ -331,26 +273,6 @@ rtmidi_out::openmidi_api (rtmidi_api api, const std::string & clientname)
         if (api == RTMIDI_API_UNIX_JACK)
             set_api(new midi_out_jack(clientname));
     }
-#endif
-
-#ifdef SEQ64_BUILD_LINUX_ALSA
-    if (api == RTMIDI_API_LINUX_ALSA)
-        set_api(new midi_out_alsa(clientname));
-#endif
-
-#ifdef SEQ64_BUILD_MACOSX_CORE
-    if (api == RTMIDI_API_MACOSX_CORE)
-        set_api(new midi_out_core(clientname));
-#endif
-
-#ifdef SEQ64_BUILD_WINDOWS_MM
-    if (api == RTMIDI_API_WINDOWS_MM)
-        set_api(new midi_out_winmm(clientname));
-#endif
-
-#ifdef SEQ64_BUILD_RTMIDI_DUMMY
-    if (api == RTMIDI_API_DUMMY)
-        set_api(new midi_out_dummy(clientname));
 #endif
 }
 

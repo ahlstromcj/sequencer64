@@ -54,7 +54,7 @@ midi_api::~midi_api ()
 }
 
 /**
- *  Provides an error handler.
+ *  Provides an error handler that can support an error callback.
  *
  * \throw
  *      If the error is not just a warning, then an rterror object is thrown.

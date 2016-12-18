@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-14
+ * \updates       2016-12-18
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -17,25 +17,14 @@
 
 #include "rtmidi_info.hpp"              /* seq64::rtmidi_info           */
 #include "settings.hpp"                 /* seq64::rc().with_jack_...()  */
+#include "seq64_rtmidi_features.h"      /* selects the usable APIs      */
 
 #ifdef SEQ64_BUILD_LINUX_ALSA
 #include "midi_alsa_info.hpp"
 #endif
 
-#ifdef SEQ64_BUILD_MACOSX_CORE__NOT_READY
-#include "midi_core_info.hpp"
-#endif
-
-#ifdef SEQ64_BUILD_RTMIDI_DUMMY__NOT_READY
-#include "midi_dummy_info.hpp"
-#endif
-
 #ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
 #include "midi_jack_info.hpp"
-#endif
-
-#ifdef SEQ64_BUILD_WINDOWS_MM__NOT_READY
-#include "midi_winmm_info.hpp"
 #endif
 
 /*
@@ -46,13 +35,60 @@ namespace seq64
 {
 
 /**
+ * \getter SEQ64_RTMIDI_VERSION
+ *      This is a static function to replace the midi_api version.
+ */
+
+std::string
+rtmidi_info::get_version ()
+{
+    return std::string(SEQ64_RTMIDI_VERSION);
+}
+
+/**
+ *  Gets the list of APIs compiled into the application.  Note that we make
+ *  ALSA versus JACK a runtime option as it is in the legacy Sequencer64
+ *  application.
+ *
+ *  This is a static function to replace the midi_api version.
+ *
+ * \param apis
+ *      The API structure.
+ */
+
+void
+rtmidi_info::get_compiled_api (std::vector<rtmidi_api> & apis)
+{
+    apis.clear();
+
+    /*
+     * The order here will control the order of rtmidi's API search in the
+     * constructor.  For Linux, we will try JACK first, then fall back to
+     * ALSA, and then to the dummy implementation.
+     */
+
+#ifdef SEQ64_BUILD_UNIX_JACK
+    if (rc().with_jack_transport())
+        apis.push_back(RTMIDI_API_UNIX_JACK);
+#endif
+
+#ifdef SEQ64_BUILD_LINUX_ALSA
+        apis.push_back(RTMIDI_API_LINUX_ALSA);
+#endif
+
+    if (apis.empty())
+    {
+        std::string errortext = func_message("no compiled API support found");
+        throw(rterror(errortext, rterror::UNSPECIFIED));
+    }
+}
+
+/**
  *  Default constructor.  Code basically cut-and-paste from rtmidi_in or
  *  rtmidi_out. Common code!
  */
 
-rtmidi_info::rtmidi_info (rtmidi_api api)
- :
-     rtmidi_base    ()
+rtmidi_info::rtmidi_info (rtmidi_api api)   // : rtmidi_base    ()
 {
     if (api != RTMIDI_API_UNSPECIFIED)
     {
@@ -122,21 +158,6 @@ rtmidi_info::openmidi_api (rtmidi_api api)
 #ifdef SEQ64_BUILD_LINUX_ALSA
     if (api == RTMIDI_API_LINUX_ALSA)
         set_api(new midi_alsa_info());
-#endif
-
-#ifdef SEQ64_BUILD_MACOSX_CORE__NOT_READY
-    if (api == RTMIDI_API_MACOSX_CORE)
-        set_api(new midi_core_info());
-#endif
-
-#ifdef SEQ64_BUILD_WINDOWS_MM__NOT_READY
-    if (api == RTMIDI_API_WINDOWS_MM)
-        set_api(new midi_winmm_info());
-#endif
-
-#ifdef SEQ64_BUILD_RTMIDI_DUMMY__NOT_READY
-    if (api == RTMIDI_API_DUMMY)
-        set_api(new midi_dummy_info());
 #endif
 
 }

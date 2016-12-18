@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2016-12-09
+ * \updates       2016-12-18
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -33,6 +33,17 @@
  */
 
 #define SEQ64_BAD_PORT_ID   (unsigned(-1))
+
+/**
+ *  Macros for selecting input versus output ports in a more obvious way.
+ *  These items are needed for the midi_mode() setter function.  Note that
+ *  midi_mode() has no functionality in the midi_api base class, which has a
+ *  number of such stub functions so that we can use the midi_info and midi_api
+ *  derived classes.
+ */
+
+#define SEQ64_MIDI_OUTPUT       false       /* the MIDI mode is not input   */
+#define SEQ64_MIDI_INPUT        true        /* the MIDI mode is input       */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -64,12 +75,25 @@ extern bool error_message (const std::string & msg);
 
 enum rtmidi_api
 {
-    RTMIDI_API_UNSPECIFIED,     /**< Search for a working compiled API.      */
-    RTMIDI_API_LINUX_ALSA,      /**< Advanced Linux Sound Architecture API.  */
-    RTMIDI_API_UNIX_JACK,       /**< JACK Low-Latency MIDI Server API.       */
-    RTMIDI_API_MACOSX_CORE,     /**< Macintosh OS-X Core Midi API.           */
-    RTMIDI_API_WINDOWS_MM,      /**< Microsoft Multimedia MIDI API.          */
-    RTMIDI_API_DUMMY            /**< A compilable but non-functional API.    */
+    RTMIDI_API_UNSPECIFIED,     /**< Search for a working compiled API.     */
+    RTMIDI_API_LINUX_ALSA,      /**< Advanced Linux Sound Architecture API. */
+    RTMIDI_API_UNIX_JACK,       /**< JACK Low-Latency MIDI Server API.      */
+
+#ifdef USE_RTMIDI_API_ALL
+
+    /*
+     * We're not supporting these until we get a simplified
+     * sequencer64-friendly API worked out.
+     */
+
+    RTMIDI_API_MACOSX_CORE,     /**< Macintosh OS-X Core Midi API.          */
+    RTMIDI_API_WINDOWS_MM,      /**< Microsoft Multimedia MIDI API.         */
+    RTMIDI_API_DUMMY,           /**< A compilable but non-functional API.   */
+
+#endif
+
+    RTMIDI_API_MAXIMUM          /**< A count of APIs; an erroneous value.   */
+
 };
 
 /**

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-16
+ * \updates       2016-12-18
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -19,6 +19,7 @@
 
 #include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
 #include "midi_alsa_info.hpp"           /* seq64::midi_alsa_info            */
+#include "midibus_common.hpp"           /* from the libseq64 sub-project    */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -96,9 +97,9 @@ midi_alsa_info::midi_alsa_info ()
         (
             m_alsa_seq, m_poll_descriptors, m_num_poll_descriptors, POLLIN
         );
-//      set_sequence_input(false, nullptr);
-//      snd_seq_set_output_buffer_size(m_alsa_seq, c_midibus_output_size);
-//      snd_seq_set_input_buffer_size(m_alsa_seq, c_midibus_input_size);
+//      set_sequence_input(false, nullptr);     // mastermidibase function
+        snd_seq_set_output_buffer_size(m_alsa_seq, c_midibus_output_size);
+        snd_seq_set_input_buffer_size(m_alsa_seq, c_midibus_input_size);
     }
 }
 

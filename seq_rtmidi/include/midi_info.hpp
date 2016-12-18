@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2016-12-16
+ * \updates       2016-12-18
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -33,7 +33,12 @@
  *      mastermidibus creates a midibus object.
  */
 
-#include "midi_api.hpp"
+// #include "midi_api.hpp"
+
+#include "app_limits.h"                 /* SEQ64_DEFAULT_PPQN etc.  */
+#include "easy_macros.h"
+#include "rterror.hpp"
+#include "rtmidi_types.hpp"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -142,7 +147,7 @@ public:
  *  currently present in the system.
  */
 
-class midi_info : public midi_api
+class midi_info         // : public midi_api
 {
 
 private:
@@ -167,6 +172,14 @@ private:
      */
 
     midi_port_info m_output;
+
+protected:
+
+    /**
+     *  Error string for the midi_info interface.
+     */
+
+    std::string m_error_string;
 
 public:
 
@@ -251,6 +264,8 @@ public:
         return RTMIDI_API_UNSPECIFIED;
     }
 
+#if 0
+
     virtual void open_port
     (
         unsigned /*portnumber*/, const std::string & /*portname*/
@@ -274,7 +289,13 @@ public:
         return false;
     }
 
-protected:
+#endif  // 0
+
+    /**
+     *  A basic error reporting function for midi_info classes.
+     */
+
+    void error (rterror::Type type, const std::string & errorstring);
 
     virtual unsigned get_all_port_info () = 0;
 

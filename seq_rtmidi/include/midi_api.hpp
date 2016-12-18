@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-16
+ * \updates       2016-12-18
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -22,17 +22,6 @@
 #include "easy_macros.h"
 #include "rterror.hpp"
 #include "rtmidi_types.hpp"
-
-/**
- *  Macros for selecting input versus output ports in a more obvious way.
- *  These items are needed for the midi_mode() setter function.  Note that
- *  midi_mode() has no functionality in the midi_api base class, which has a
- *  number of such stub functions so that we can use the midi_info and midi_api
- *  derived classes.
- */
-
-#define SEQ64_MIDI_OUTPUT       false       /* the MIDI mode is not input   */
-#define SEQ64_MIDI_INPUT        true        /* the MIDI mode is input       */
 
 /*
  * Do not document the namespace; it breaks Doxygen.

@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-12-17
+dnl \update        2016-12-18
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -427,13 +427,13 @@ dnl in the latest versions of the midibus.hpp and mastermidibus.hpp files in
 dnl the libseq64/include directory.  Is there a better way to define the
 dnl defaults.
 
-AM_CONDITIONAL([BUILD_ALSAMIDI], [test xyes = xyes])
-AM_CONDITIONAL([BUILD_PORTMIDI], [test xno = xyes])
-AM_CONDITIONAL([BUILD_RTMIDI], [test xno = xyes])
-AC_DEFINE(APP_NAME, ["sequencer64"], [Names default version of application])
+dnl AM_CONDITIONAL([BUILD_ALSAMIDI], [test xyes = xyes])
+dnl AM_CONDITIONAL([BUILD_PORTMIDI], [test xno = xyes])
+dnl AM_CONDITIONAL([BUILD_RTMIDI], [test xno = xyes])
+dnl AC_DEFINE(APP_NAME, ["sequencer64"], [Names default version of application])
 
 AC_ARG_ENABLE(alsamidi,
-    [AS_HELP_STRING(--disable-alsamidi, [Disable standard ALSA build])],
+    [AS_HELP_STRING(--enable-alsamidi, [Enable standard ALSA build])],
     [alsamidi=$enableval],
     [alsamidi=no])
 

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2016-12-10
+ * \updates       2016-12-18
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
@@ -74,10 +74,46 @@ midi_port_info::add
 midi_info::midi_info
 (
 ) :
-    m_input     (),
-    m_output    ()
+    m_midi_mode_input   (true),
+    m_input             (),             /* midi_port_info   */
+    m_output            (),             /* midi_port_info   */
+    m_error_string      ()
 {
     //
+}
+
+/**
+ *  Provides an error handler.  Unlike the midi_api version, it cannot support
+ *  an error callback.
+ *
+ * \throw
+ *      If the error is not just a warning, then an rterror object is thrown.
+ *
+ * \param type
+ *      The type of the error.
+ *
+ * \param errorstring
+ *      The error message, which gets copied if this is the first error.
+ */
+
+void
+midi_info::error (rterror::Type type, const std::string & errorstring)
+{
+    if (type == rterror::WARNING)
+    {
+        errprint(errorstring.c_str());
+    }
+    else if (type == rterror::DEBUG_WARNING)
+    {
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+        errprint(errorstring.c_str());
+#endif
+    }
+    else
+    {
+        errprint(errorstring.c_str());
+        throw rterror(errorstring, type);
+    }
 }
 
 /**

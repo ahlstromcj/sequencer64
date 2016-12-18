@@ -6,7 +6,7 @@
  *
  * \author        Gary P. Scavone, 2003-2012; refactoring by Chris Ahlstrom
  * \date          2016-11-19
- * \updates       2016-11-27
+ * \updates       2016-12-18
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  We include this test code in our library, rather than in a separate
@@ -50,14 +50,24 @@ midi_api_name (int i)
         s_api_map[RTMIDI_API_UNSPECIFIED] = "Unspecified";
         s_api_map[RTMIDI_API_LINUX_ALSA]  = "Linux ALSA";
         s_api_map[RTMIDI_API_UNIX_JACK]   = "Jack Client";
+
+#ifdef USE_RTMIDI_API_ALL
+
+        /*
+         * We're not supporting these until we get a simplified
+         * sequencer64-friendly API worked out.
+         */
+
         s_api_map[RTMIDI_API_MACOSX_CORE] = "OS-X CoreMidi";
         s_api_map[RTMIDI_API_WINDOWS_MM]  = "Windows MultiMedia";
         s_api_map[RTMIDI_API_DUMMY]       = "rtmidi dummy";
+#endif
+
         s_map_is_initialized = true;
     }
 
     std::string result = "Unknown MIDI API";
-    if (i >= int(RTMIDI_API_UNSPECIFIED) && i <= int(RTMIDI_API_DUMMY))
+    if (i >= int(RTMIDI_API_UNSPECIFIED) && i < int(RTMIDI_API_MAXIMUM))
         result = s_api_map[rtmidi_api(i)];
 
     return result;

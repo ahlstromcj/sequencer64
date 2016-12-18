@@ -13,7 +13,8 @@ dnl
 dnl   This script is for the Sequencer64 project, a repacking and fixing
 dnl   of seq24 v0.9.2 and a direct fork from sequencer24.
 dnl
-dnl   Process this file with autoconf to produce a configure script.
+dnl   Process this file with bootstrap (autoconf) to produce a configure
+dnl   script.
 dnl
 dnl ---------------------------------------------------------------------------
 
@@ -434,7 +435,7 @@ AC_DEFINE(APP_NAME, ["sequencer64"], [Names default version of application])
 AC_ARG_ENABLE(alsamidi,
     [AS_HELP_STRING(--disable-alsamidi, [Disable standard ALSA build])],
     [alsamidi=$enableval],
-    [alsamidi=yes])
+    [alsamidi=no])
 
 if test "$alsamidi" != "no"; then
     AC_MSG_RESULT([Standard ALSA build enabled, can be overridden though.]);

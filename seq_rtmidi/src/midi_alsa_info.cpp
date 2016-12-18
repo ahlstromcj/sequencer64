@@ -49,8 +49,11 @@ unsigned midi_alsa_info::sm_output_caps =
 
 midi_alsa_info::midi_alsa_info ()
  :
-    midi_info   (),
-    m_alsa_seq  (nullptr)
+    midi_info               (),
+    m_alsa_seq              (nullptr),
+    m_queue                 (-1),           /* from mastermidibase          */
+    m_num_poll_descriptors  (0),            /* from ALSA mastermidibus      */
+    m_poll_descriptors      (nullptr)       /* ditto                        */
 {
     snd_seq_t * seq;                        /* point to member              */
     int result = snd_seq_open               /* set up ALSA sequencer client */
@@ -64,7 +67,38 @@ midi_alsa_info::midi_alsa_info ()
     }
     else
     {
+        /*
+         * Save the ALSA "handle".  Set the client's name for ALSA.  Then set
+         * up the ALSA client queue.  No LASH support included.
+         */
+
         m_alsa_seq = seq;
+        snd_seq_set_client_name(m_alsa_seq, SEQ64_APP_NAME);
+        m_queue = snd_seq_alloc_queue(m_alsa_seq);
+
+//      set_beats_per_minute(m_beats_per_minute);
+//      set_ppqn(ppqn);
+
+        /*
+         * Get the number of MIDI input poll file descriptors.  Allocate the
+         * poll-descriptors array.  Then get the input poll-descriptors into
+         * the array.  Finally, set the input and output buffer sizes.  Can we
+         * do this before creating all the MIDI busses?  If not, we'll put
+         * them in a separate function to call later.
+         */
+
+        m_num_poll_descriptors = snd_seq_poll_descriptors_count
+        (
+            m_alsa_seq, POLLIN
+        );
+        m_poll_descriptors = new pollfd[m_num_poll_descriptors];
+        snd_seq_poll_descriptors
+        (
+            m_alsa_seq, m_poll_descriptors, m_num_poll_descriptors, POLLIN
+        );
+//      set_sequence_input(false, nullptr);
+//      snd_seq_set_output_buffer_size(m_alsa_seq, c_midibus_output_size);
+//      snd_seq_set_input_buffer_size(m_alsa_seq, c_midibus_input_size);
     }
 }
 
@@ -76,7 +110,19 @@ midi_alsa_info::midi_alsa_info ()
 midi_alsa_info::~midi_alsa_info ()
 {
     if (not_nullptr(m_alsa_seq))
-        snd_seq_close(m_alsa_seq);
+    {
+        snd_seq_event_t ev;
+        snd_seq_ev_clear(&ev);                          /* memset it to 0   */
+        snd_seq_stop_queue(m_alsa_seq, m_queue, &ev);
+        snd_seq_free_queue(m_alsa_seq, m_queue);
+        snd_seq_close(m_alsa_seq);                      /* close client     */
+        (void) snd_config_update_free_global();         /* more cleanup     */
+        if (not_nullptr(m_poll_descriptors))
+        {
+            delete [] m_poll_descriptors;
+            m_poll_descriptors = nullptr;
+        }
+    }
 }
 
 #define SEQ64_PORT_CLIENT      0xFF000000

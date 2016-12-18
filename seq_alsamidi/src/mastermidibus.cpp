@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-12-12
+ * \updates       2016-12-17
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -118,8 +118,6 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     m_num_poll_descriptors  (0),
     m_poll_descriptors      (nullptr)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
-
     /*
      * Open the sequencer client.  This line of code results in a loss of
      * 4 bytes somewhere in snd_seq_open(), as discovered via valgrind.
@@ -149,8 +147,6 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     snd_seq_set_client_name(m_alsa_seq, SEQ64_PACKAGE); /* "sequencer64" */
     m_queue = snd_seq_alloc_queue(m_alsa_seq);
 
-#endif      // SEQ64_HAVE_LIBASOUND
-
 #ifdef SEQ64_LASH_SUPPORT
 
     /*
@@ -178,7 +174,6 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
 
 mastermidibus::~mastermidibus ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);                          /* memsets it to 0      */
     snd_seq_stop_queue(m_alsa_seq, m_queue, &ev);
@@ -195,7 +190,6 @@ mastermidibus::~mastermidibus ()
         delete [] m_poll_descriptors;
         m_poll_descriptors = nullptr;
     }
-#endif
 }
 
 /**
@@ -219,7 +213,6 @@ mastermidibus::~mastermidibus ()
 void
 mastermidibus::api_init (int ppqn, int bpm)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     if (rc().manual_alsa_ports())
     {
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
@@ -290,8 +283,9 @@ mastermidibus::api_init (int ppqn, int bpm)
                 )
                 {
                     /*
-                     * Output busses.  Why dothe ALSA client check again here?
-                     * Because it could be altered in the if-clause above.
+                     * Output busses.  Why do the ALSA client check again
+                     * here?  Because it could be altered in the if-clause
+                     * above.
                      */
 
                     if (CAP_WRITE(cap) && ALSA_CLIENT_CHECK(pinfo))
@@ -366,7 +360,8 @@ mastermidibus::api_init (int ppqn, int bpm)
     /*
      * Get the number of MIDI input poll file descriptors.  Allocate the
      * poll-descriptors array.  Then get the input poll-descriptors into the
-     * array
+     * array.  Then set the input and output buffer sizes.   Then create an
+     * announcment buss.
      */
 
     m_num_poll_descriptors = snd_seq_poll_descriptors_count(m_alsa_seq, POLLIN);
@@ -376,9 +371,6 @@ mastermidibus::api_init (int ppqn, int bpm)
         m_alsa_seq, m_poll_descriptors, m_num_poll_descriptors, POLLIN
     );
     set_sequence_input(false, nullptr);
-
-    /* Set the input and output buffer sizes */
-
     snd_seq_set_output_buffer_size(m_alsa_seq, c_midibus_output_size);
     snd_seq_set_input_buffer_size(m_alsa_seq, c_midibus_input_size);
     m_bus_announce = new midibus
@@ -394,8 +386,6 @@ mastermidibus::api_init (int ppqn, int bpm)
 
     for (int i = 0; i < m_num_in_buses; ++i)
         set_input(i, m_init_input[i]);
-
-#endif  // SEQ64_HAVE_LIBASOUND
 }
 
 /**
@@ -407,9 +397,7 @@ mastermidibus::api_init (int ppqn, int bpm)
 void
 mastermidibus::api_start ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_start_queue(m_alsa_seq, m_queue, NULL);     /* start timer */
-#endif
 }
 
 /**
@@ -425,9 +413,7 @@ mastermidibus::api_start ()
 void
 mastermidibus::api_continue_from (midipulse /* tick */)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_start_queue(m_alsa_seq, m_queue, NULL);     /* start timer */
-#endif
 }
 
 /**
@@ -440,11 +426,9 @@ mastermidibus::api_continue_from (midipulse /* tick */)
 void
 mastermidibus::api_stop ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_drain_output(m_alsa_seq);
     snd_seq_sync_output_queue(m_alsa_seq);
     snd_seq_stop_queue(m_alsa_seq, m_queue, NULL);  /* start timer */
-#endif
 }
 
 /**
@@ -463,13 +447,11 @@ mastermidibus::api_stop ()
 void
 mastermidibus::api_set_ppqn (int ppqn)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);             /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
     snd_seq_queue_tempo_set_ppq(tempo, ppqn);
     snd_seq_set_queue_tempo(m_alsa_seq, m_queue, tempo);
-#endif
 }
 
 /**
@@ -490,7 +472,6 @@ mastermidibus::api_set_ppqn (int ppqn)
 void
 mastermidibus::api_set_beats_per_minute (int bpm)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);          /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
@@ -499,7 +480,6 @@ mastermidibus::api_set_beats_per_minute (int bpm)
         tempo, int(tempo_us_from_beats_per_minute(bpm))
     );
     snd_seq_set_queue_tempo(m_alsa_seq, m_queue, tempo);
-#endif
 }
 
 /**
@@ -511,13 +491,13 @@ mastermidibus::api_set_beats_per_minute (int bpm)
 void
 mastermidibus::api_flush ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_drain_output(m_alsa_seq);
-#endif
 }
 
 /**
  *  Initiate a poll() on the existing poll descriptors.
+ *
+ *  No locking needed?
  *
  * \return
  *      Returns the result of the poll, or 0 if ALSA is not supported.
@@ -526,12 +506,7 @@ mastermidibus::api_flush ()
 int
 mastermidibus::api_poll_for_midi ()
 {
-#ifdef SEQ64_HAVE_LIBASOUND
-    int result = poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
-#else
-    int result = 0;
-#endif
-    return result;
+    return poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
 }
 
 /**
@@ -548,11 +523,7 @@ bool
 mastermidibus::api_is_more_input ()
 {
     automutex locker(m_mutex);
-#ifdef SEQ64_HAVE_LIBASOUND
     return snd_seq_event_input_pending(m_alsa_seq, 0) > 0;
-#else
-    return false;
-#endif
 }
 
 /**
@@ -571,7 +542,6 @@ mastermidibus::api_is_more_input ()
 void
 mastermidibus::api_port_start (int client, int port)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_client_info_t * cinfo;                      /* client info        */
     snd_seq_client_info_alloca(&cinfo);
     snd_seq_get_any_client_info(m_alsa_seq, client, cinfo);
@@ -683,7 +653,6 @@ mastermidibus::api_port_start (int client, int port)
     (
         m_alsa_seq, m_poll_descriptors, m_num_poll_descriptors, POLLIN
     );
-#endif  // SEQ64_HAVE_LIBASOUND
 }
 
 /**
@@ -703,7 +672,6 @@ mastermidibus::api_port_start (int client, int port)
 void
 mastermidibus::api_port_exit (int client, int port)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     for (int i = 0; i < m_num_out_buses; ++i)
     {
         if (m_buses_out[i]->get_bus_id() == client &&
@@ -720,7 +688,6 @@ mastermidibus::api_port_exit (int client, int port)
             m_buses_in_active[i] = false;
         }
     }
-#endif
 }
 
 /**
@@ -740,7 +707,6 @@ mastermidibus::api_port_exit (int client, int port)
 bool
 mastermidibus::api_get_midi_event (event * inev)
 {
-#ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_event_t * ev;
     bool sysex = false;
     bool result = false;
@@ -840,9 +806,6 @@ mastermidibus::api_get_midi_event (event * inev)
             sysex = false;
     }
     snd_midi_event_free(midi_ev);
-
-#endif  // SEQ64_HAVE_LIBASOUND
-
     return true;
 }
 

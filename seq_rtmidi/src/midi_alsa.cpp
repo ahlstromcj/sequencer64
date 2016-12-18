@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-15
+ * \updates       2016-12-17
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  In this refactoring, we are trying to improve the RtMidi project in the
@@ -61,7 +61,7 @@ struct alsa_midi_data_t
     snd_midi_event_t * coder;
     unsigned bufferSize;
     midibyte * buffer;
-    pthread_t thread;
+    pthread_t m_thread;
     pthread_t dummy_thread_id;
     unsigned long long lastTime;
     int queue_id;                // input queue needed to get timestamped events
@@ -85,7 +85,7 @@ alsa_midi_data_t::alsa_midi_data_t (snd_seq_t * s)
     coder               (nullptr),
     bufferSize          (0),        // or 32 for output
     buffer              (nullptr),
-    thread              (),         // or alsadata->dummy_thread_id for input
+    m_thread            (),         // or alsadata->dummy_thread_id for input
     dummy_thread_id     (),         // or pthread_self() for input
     lastTime            (0LL),
     queue_id            (-1),       // filled in later
@@ -353,7 +353,7 @@ alsa_midi_handler (void * ptr)
 
     snd_midi_event_free(alsadata->coder);
     alsadata->coder = 0;
-    alsadata->thread = alsadata->dummy_thread_id;
+    alsadata->m_thread = alsadata->dummy_thread_id;
     return nullptr;
 }
 
@@ -393,8 +393,8 @@ midi_in_alsa::~midi_in_alsa ()
         bool f = false;
         m_input_data.do_input(false);       /* shut down the input thread   */
         (void) write(alsadata->trigger_fds[1], &f, sizeof(f));
-        if (! pthread_equal(alsadata->thread, alsadata->dummy_thread_id))
-            pthread_join(alsadata->thread, NULL);
+        if (! pthread_equal(alsadata->m_thread, alsadata->dummy_thread_id))
+            pthread_join(alsadata->m_thread, NULL);
     }
 
     if (alsadata->trigger_fds[0] != (-1))
@@ -451,7 +451,7 @@ midi_in_alsa::initialize (const std::string & clientname)
         {
             snd_seq_set_client_name(seq, clientname.c_str());
             alsadata->dummy_thread_id = pthread_self();
-            alsadata->thread = alsadata->dummy_thread_id;
+            alsadata->m_thread = alsadata->dummy_thread_id;
             if (pipe(alsadata->trigger_fds) == -1)
             {
                 m_error_string = func_message("error creating pipe objects");
@@ -811,7 +811,7 @@ midi_in_alsa::open_port (unsigned portnumber, const std::string & portname)
             m_input_data.do_input(true);
             int err = pthread_create
             (
-                &alsadata->thread, &attr, alsa_midi_handler, &m_input_data
+                &alsadata->m_thread, &attr, alsa_midi_handler, &m_input_data
             );
             pthread_attr_destroy(&attr);
             if (err)
@@ -888,8 +888,8 @@ midi_in_alsa::open_virtual_port (const std::string & portname)
          * start the MIDI input thread.
          */
 
-        if (! pthread_equal(alsadata->thread, alsadata->dummy_thread_id))
-            pthread_join(alsadata->thread, NULL);
+        if (! pthread_equal(alsadata->m_thread, alsadata->dummy_thread_id))
+            pthread_join(alsadata->m_thread, NULL);
 
 #ifndef SEQ64_AVOID_TIMESTAMPING
         snd_seq_start_queue(alsadata->seq, alsadata->queue_id, NULL);
@@ -903,7 +903,7 @@ midi_in_alsa::open_virtual_port (const std::string & portname)
         m_input_data.do_input(true);
         int err = pthread_create
         (
-            &alsadata->thread, &attr, alsa_midi_handler, &m_input_data
+            &alsadata->m_thread, &attr, alsa_midi_handler, &m_input_data
         );
         pthread_attr_destroy(&attr);
         if (err)
@@ -966,8 +966,8 @@ midi_in_alsa::close_port ()
          */
 
         (void) res;
-        if (! pthread_equal(alsadata->thread, alsadata->dummy_thread_id))
-            pthread_join(alsadata->thread, NULL);
+        if (! pthread_equal(alsadata->m_thread, alsadata->dummy_thread_id))
+            pthread_join(alsadata->m_thread, NULL);
     }
 }
 

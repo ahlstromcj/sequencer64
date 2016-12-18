@@ -185,6 +185,17 @@ mastermidibus::api_init (int ppqn, int bpm)
     }
     set_beats_per_minute(c_beats_per_minute);
     set_ppqn(ppqn);
+
+    /*
+     * Poll descriptor code moved to midi_alsa_info constructor.  MIDI
+     * announce bus code not currently in place.
+     */
+
+    for (int i = 0; i < m_num_out_buses; ++i)
+        set_clock(i, m_init_clock[i]);
+
+    for (int i = 0; i < m_num_in_buses; ++i)
+        set_input(i, m_init_input[i]);
 }
 
 /**

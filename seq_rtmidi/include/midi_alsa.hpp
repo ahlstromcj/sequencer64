@@ -106,7 +106,11 @@ public:
      *  Temporary one.
      */
 
-    midi_alsa (const std::string & client_name);
+    midi_alsa
+    (
+        midi_info & masterinfo,
+        const std::string & client_name
+    );
 
     /*
      *  This version is used when querying for existing input ports in the
@@ -116,6 +120,7 @@ public:
 
     midi_alsa
     (
+        midi_info & masterinfo,
         int localclient,
         int destclient,
         int destport,
@@ -136,6 +141,7 @@ public:
 
     midi_alsa
     (
+        midi_info & masterinfo,
         int localclient,
         snd_seq_t * seq,
         int index,                              /* a display ordinal    */

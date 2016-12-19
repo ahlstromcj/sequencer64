@@ -77,6 +77,8 @@ public:             // NEW APIS
 
 public:
 
+#if 0   // 0
+
     /*
      *  Checks the input queue.  If the API object doesn't have an input
      *  queue, this function will throw an rterror, for now.
@@ -99,6 +101,8 @@ public:
     virtual void open_virtual_port (const std::string & portname = "rtmidi") = 0;
     virtual void close_port () = 0;
     virtual bool is_port_open () const = 0;
+
+#endif  // 0
 
     /**
      *  Gets the buss/client ID for a MIDI interfaces.  This is the left-hand
@@ -236,6 +240,8 @@ public:
 
     virtual ~rtmidi_in ();
 
+#if 0
+
     /**
      *  Returns the MIDI API specifier for the current instance of rtmidi_in.
      *  This is an integer enumeration value, starting with
@@ -299,6 +305,8 @@ public:
        get_api()->close_port();
     }
 
+#endif  // 0
+
     /**
      *  Returns true if a port is open and false if not.
      */
@@ -307,6 +315,8 @@ public:
     {
        return get_api()->is_port_open();
     }
+
+#if 0
 
     /**
      *  Return the number of available MIDI input ports.
@@ -332,6 +342,8 @@ public:
     {
        return get_api()->get_port_name(portnumber);
     }
+
+#endif  // 0
 
 protected:
 
@@ -384,6 +396,8 @@ public:
 
     virtual ~rtmidi_out ();
 
+#if 0
+
     /**
      *  Returns the MIDI API specifier for the current instance of rtmidi_out.
      */
@@ -420,6 +434,8 @@ public:
        get_api()->close_port();
     }
 
+#endif  // 0
+
     /**
      *  Returns true if a port is open and false if not.
      */
@@ -428,6 +444,8 @@ public:
     {
        return get_api()->is_port_open();
     }
+
+#if 0
 
     /**
      *  Create a virtual output port, with optional name, to allow software
@@ -476,6 +494,8 @@ public:
        dynamic_cast<midi_out_api *>(get_api())->send_message(message);
     }
      */
+
+#endif // 0
 
 protected:
 

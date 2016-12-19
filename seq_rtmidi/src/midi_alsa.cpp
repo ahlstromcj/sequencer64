@@ -502,28 +502,21 @@ midi_alsa::api_sysex (event * e24)
      *  iterators).
      */
 
-    /*
-     * TODO
-     * TODO
-     * TODO
-     * TODO
     event::SysexContainer & data = e24->get_sysex();
     int data_size = e24->get_sysex_size();
-    for (int offset = 0; offset < data_size; offset += c_midi_alsa_sysex_chunk)
+//  for (int offset = 0; offset < data_size; offset += c_midi_alsa_sysex_chunk)
+    for (int offset = 0; offset < data_size; offset += 256)
     {
         int data_left = data_size - offset;
         snd_seq_ev_set_sysex
         (
-            &ev, min(data_left, c_midi_alsa_sysex_chunk), &data[offset]
+//          &ev, min(data_left, c_midi_alsa_sysex_chunk), &data[offset]
+            &ev, min(data_left, 256), &data[offset]
         );
         snd_seq_event_output_direct(m_seq, &ev);        // pump into queue
         usleep(SEQ64_USLEEP_US);
         api_flush();
     }
-     * TODO
-     * TODO
-     * TODO
-     */
 }
 
 /**

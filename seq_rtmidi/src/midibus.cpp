@@ -328,7 +328,8 @@ midibus::api_init_common (rtmidi * rtm)
     bool result = true;
     if (is_virtual_port())
     {
-        rtm->open_virtual_port(port_name());
+        // replace with api_init......
+        //rtm->open_virtual_port(port_name());
     }
     else
     {
@@ -340,7 +341,8 @@ midibus::api_init_common (rtmidi * rtm)
              * set up not to ignore SysEx, timing, or active-sensing messages.
              */
 
-            rtm->open_port(portid);
+        // replace with api_init......
+        //    rtm->open_port(portid);
 //          rtm->ignore_types(false, false, false);
         }
         else

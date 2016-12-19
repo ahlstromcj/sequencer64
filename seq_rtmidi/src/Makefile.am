@@ -125,26 +125,22 @@ lib_LTLIBRARIES = libseq_rtmidi.la
 #******************************************************************************
 # Source files
 #
-#  We include only the JACK and ALSA support here, for now.  Left out are the
-#  following modules:
+#  We include only the JACK and ALSA support here.
 #
-#     midi_core.cpp   (Mac OSX)
-#     midi_winmm.cpp  (Windows)
-#     midi_dummy.cpp  (header file only)
+# midi_jack.cpp
 #
 #----------------------------------------------------------------------------
 
 libseq_rtmidi_la_SOURCES = \
    mastermidibus.cpp \
    midibus.cpp \
-	midi_api.cpp \
+	midi_alsa.cpp \
 	midi_alsa_info.cpp \
+	midi_api.cpp \
 	midi_info.cpp \
-	midi_jack.cpp \
 	midi_probe.cpp \
-	rtmidi_base.cpp \
-	rtmidi_info.cpp \
 	rtmidi.cpp \
+	rtmidi_info.cpp \
 	rtmidi_types.cpp
 
 libseq_rtmidi_la_LDFLAGS = -version-info $(version)

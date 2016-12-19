@@ -75,20 +75,25 @@ AM_CXXFLAGS = \
 
 #******************************************************************************
 # Source files
+#
+# TODO:
+#
+# midi_jack.hpp
+#
 #----------------------------------------------------------------------------
 
 pkginclude_HEADERS = \
    mastermidibus_rm.hpp \
+   midibase_abc.hpp \
    midibus_rm.hpp \
+	midi_alsa.hpp \
 	midi_alsa_info.hpp \
 	midi_api.hpp \
 	midi_info.hpp \
-	midi_jack.hpp \
 	midi_probe.hpp \
 	rterror.hpp \
-	rtmidi_base.hpp \
-	rtmidi_info.hpp \
 	rtmidi.hpp \
+	rtmidi_info.hpp \
 	seq64_rtmidi_features.h
 
 #******************************************************************************

@@ -20,7 +20,8 @@
 
 #include "easy_macros.h"
 #include "midi_probe.hpp"
-#include "rtmidi.hpp"
+#include "rtmidi.hpp"                   /* rtmidi_in and rt_midi_out */
+#include "rtmidi_info.hpp"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -86,7 +87,7 @@ int
 midi_probe ()
 {
     std::vector<rtmidi_api> apis;
-    rtmidi::get_compiled_api(apis);
+    rtmidi_info::get_compiled_api(apis);
     std::cout << "\nCompiled APIs:\n";
     for (unsigned i = 0; i < apis.size(); ++i)
     {

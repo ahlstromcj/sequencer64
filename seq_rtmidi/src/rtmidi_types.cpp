@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-01
- * \updates       2016-12-01
+ * \updates       2016-12-18
  * \license       See the r3exmidi.lic file.  Too big for a header file.
  *
  *
@@ -87,6 +87,8 @@ error_message (const std::string & msg)
 }
 
 // #endif
+
+#if 0
 
 /*
  * class midi_queue
@@ -191,6 +193,8 @@ rtmidi_in_data::rtmidi_in_data ()
 {
     // no body
 }
+
+#endif      // 0
 
 }           // namespace seq64
 

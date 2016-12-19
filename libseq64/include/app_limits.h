@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-10-25
+ * \updates       2016-12-18
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -121,6 +121,26 @@
  */
 
 #define SEQ64_ALSA_OUTPUT_BUSS_MAX        16
+
+/**
+ *  Flags an unspecified buss number.  Two spellings are provided, one for
+ *  youngsters and one for old men.  :-D
+ */
+
+#define SEQ64_NO_BUS                    (-1)
+#define SEQ64_NO_BUSS                   (-1)
+
+/**
+ *  Flags an unspecified port number.
+ */
+
+#define SEQ64_NO_PORT                   (-1)
+
+/**
+ *  Flags an unspecified queue number.
+ */
+
+#define SEQ64_NO_QUEUE                  (-1)
 
 /**
  *  Guessing that this has to do with the width of the performance piano roll.

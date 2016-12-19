@@ -19,7 +19,6 @@
 
 #include "midi_api.hpp"                     /* seq64::midi[_in][_out]_api   */
 #include "midi_info.hpp"
-// #include "rtmidi_base.hpp"                  /* seq64::rtmidi_base class     */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -33,9 +32,11 @@ namespace seq64
  *  refactoring nonetheless.
  */
 
-class rtmidi_info   // : public rtmidi_base
+class rtmidi_info
 {
     friend class midibus;
+    friend class rtmidi_in;
+    friend class rtmidi_out;
 
 private:
 
@@ -43,14 +44,14 @@ private:
      *  Provides access to the selected API (currently only JACK or ALSA.
      */
 
-    midi_info * m_rtapi;
+    midi_info * m_info_api;
 
     /**
      *  To save from repeated queries, we save this value.  Its default value
      *  is RTMIDI_API_UNSPECIFIED.
      */
 
-    rtmidi_api m_selected_api;
+    static rtmidi_api sm_selected_api;
 
 public:
 
@@ -126,15 +127,6 @@ public:
     }
 
     /**
-     *  Could also return the whole API data structure.
-
-    virtual void * midi_handle ()
-    {
-        return get_api()->midi_handle();
-    }
-     */
-
-    /**
      *  Returns a list of all the ports as an ASCII string.
      */
 
@@ -144,63 +136,63 @@ public:
     }
 
     /**
-     * \getter m_selected_api
+     * \getter sm_selected_api
      */
 
-    rtmidi_api & selected_api ()
+    static rtmidi_api & selected_api ()
     {
-        return m_selected_api;
+        return sm_selected_api;
     }
 
     /**
-     * \getter m_rtapi const version
+     * \getter m_info_api const version
      */
 
     const midi_info * get_api () const
     {
-        return m_rtapi;
+        return m_info_api;
     }
 
     /**
-     * \getter m_rtapi non-const version
+     * \getter m_info_api non-const version
      */
 
     midi_info * get_api ()
     {
-        return m_rtapi;
+        return m_info_api;
     }
 
 protected:
 
     /**
-     * \setter m_selected_api
+     * \setter sm_selected_api
      */
 
-    void selected_api (const rtmidi_api & api)
+    static void selected_api (const rtmidi_api & api)
     {
-        m_selected_api = api;
+        sm_selected_api = api;
     }
 
     /**
-     * \setter m_rtapi
+     * \setter m_info_api
      */
 
     void set_api (midi_info * ma)
     {
         if (not_nullptr(ma))
-            m_rtapi = ma;
+            m_info_api = ma;
     }
 
     /**
-     * \setter m_rtapi
+     * \setter m_info_api
      */
 
     void delete_api ()
     {
-        if (not_nullptr(m_rtapi))
+        if (not_nullptr(m_info_api))
         {
-            delete m_rtapi;
-            m_rtapi = nullptr;
+            delete m_info_api;
+            m_info_api = nullptr;
         }
     }
 

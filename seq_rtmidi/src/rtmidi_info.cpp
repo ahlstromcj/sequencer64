@@ -35,6 +35,12 @@ namespace seq64
 {
 
 /**
+ *  Holds the selected API code.
+ */
+
+rtmidi_api rtmidi_info::sm_selected_api = RTMIDI_API_UNSPECIFIED;
+
+/**
  * \getter SEQ64_RTMIDI_VERSION
  *      This is a static function to replace the midi_api version.
  */

@@ -5,13 +5,14 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-03
+ * \updates       2016-12-18
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring...
  *
  */
 
+#include "event.hpp"
 #include "midi_api.hpp"
 #include "rtmidi.hpp"
 
@@ -30,9 +31,14 @@ namespace seq64
  *  Default constructor.
  */
 
-midi_api::midi_api (int ppqn, int bpm)
- :
-    m_api_data                  (0),
+midi_api::midi_api
+(
+    midi_info & masterinfo,
+    int ppqn,
+    int bpm
+) :
+    m_master_info               (masterinfo),
+//  m_api_data                  (0),
     m_connected                 (false),
     m_error_string              (),
     m_error_callback            (0),
@@ -112,13 +118,13 @@ midi_api::error (rterror::Type type, const std::string & errorstring)
 
 midi_in_api::midi_in_api
 (
-    unsigned queuesize,
+    midi_info & masterinfo,
     int ppqn,
     int bpm
 ) :
-    midi_api    (ppqn, bpm)
+    midi_api    (masterinfo, ppqn, bpm)
 {
-    m_input_data.queue().allocate(queuesize);
+    // any code?
 }
 
 /**
@@ -129,145 +135,7 @@ midi_in_api::midi_in_api
 
 midi_in_api::~midi_in_api ()
 {
-    m_input_data.queue().deallocate();
-}
-
-/**
- *  Wires in a MIDI input callback function.
- *
- * \param callback
- *      Provides the callback function.
- *
- * \param userdata
- *      Provides the user data needed by the callback function.
- */
-
-void
-midi_in_api::set_callback
-(
-    rtmidi_callback_t callback,
-    void * userdata
-)
-{
-    if (m_input_data.using_callback())
-    {
-        m_error_string = func_message("callback function is already set");
-        error(rterror::WARNING, m_error_string);
-        return;
-    }
-    if (! callback)
-    {
-        m_error_string = func_message("callback function is invalid");
-        error(rterror::WARNING, m_error_string);
-        return;
-    }
-    m_input_data.user_callback(callback);
-    m_input_data.user_data(userdata);
-    m_input_data.using_callback(true);
-}
-
-/**
- *  Removes the MIDI input callback and some items related to it.
- */
-
-void
-midi_in_api::cancel_callback ()
-{
-    if (m_input_data.using_callback())
-    {
-        m_input_data.user_callback(nullptr);
-        m_input_data.user_data(nullptr);
-        m_input_data.using_callback(false);
-    }
-    else
-    {
-        m_error_string = func_message("no callback function was set");
-        error(rterror::WARNING, m_error_string);
-    }
-}
-
-/**
- *  Sets m_input_data.ignoreFlag according to the given parameters.
- *
- * \param midisysex
- *      The MIDI SysEx flag.
- *
- * \param miditime
- *      The MIDI time flag.
- *
- * \param midisysex
- *      The MIDI sense flag.
- */
-
-void
-midi_in_api::ignore_types (bool midisysex, bool miditime, bool midisense)
-{
-    midibyte flags = 0;
-    if (midisysex)
-        flags = 0x01;
-
-    if (miditime)
-        flags |= 0x02;
-
-    if (midisense)
-        flags |= 0x04;
-
-    m_input_data.ignore_flags(flags);
-}
-
-/**
- *  Gets a MIDI input message from the message queue.
- *
- * \param message
- *      A string of characters for the messages.
- *
- * \return
- *      Returns the delta-time (timestamp) of the incoming message.  If an
- *      error occurs, or if there is not message, then 0.0 is returned.
- */
-
-double
-midi_in_api::get_message (std::vector<midibyte> & message)
-{
-    message.clear();
-    if (m_input_data.using_callback())
-    {
-        m_error_string = func_message("user callback already set for this port");
-        error(rterror::WARNING, m_error_string);
-        return 0.0;
-    }
-    if (m_input_data.queue().empty())
-        return 0.0;
-
-    /*
-     * Copy queued message to the vector reference argument and then "pop" it.
-     */
-
-    const std::vector<midibyte> & bytes = m_input_data.queue().front().bytes;
-    message.assign(bytes.begin(), bytes.end());
-
-    double stamp = m_input_data.queue().front().timeStamp;
-    m_input_data.queue().pop();
-    return stamp;
-}
-
-/**
- *  Simply checks to see if the input queue has any items.  A new addition to
- *  the RtMidi interface.
- *
- * \return
- *      Retruns true only if the API is not using a callback function and the
- *      input queue is not empty.
- */
-
-bool
-midi_in_api::poll_queue () const
-{
-    bool result = false;
-    if (is_nullptr(m_input_data.user_callback()))
-        result = ! m_input_data.queue().empty();
-
-    return result;
+    // any code?
 }
 
 /*
@@ -278,9 +146,13 @@ midi_in_api::poll_queue () const
  *  Default constructor.
  */
 
-midi_out_api::midi_out_api (unsigned /*queuesize*/)
- :
-    midi_api    ()
+midi_out_api::midi_out_api
+(
+    midi_info & masterinfo,
+    int ppqn,
+    int bpm
+) :
+    midi_api    (masterinfo, ppqn, bpm)
 {
     // no code
 }
@@ -293,19 +165,6 @@ midi_out_api::~midi_out_api ()
 {
     // no code
 }
-
-/**
- *
- */
-
-bool
-midi_out_api::poll_queue () const
-{
-    std::string errortext = func_message("not supported");
-    throw(rterror(errortext, rterror::UNSPECIFIED));
-    return false;
-}
-
 
 }           // namespace seq64
 

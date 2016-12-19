@@ -18,7 +18,10 @@
  *      -   seq64::midi_out_api
  */
 
-#include "midi_info.hpp"                /* holds basic API information  */
+#include "app_limits.h"                 /* SEQ64_DEFAULT_PPQN etc.  */
+#include "easy_macros.h"
+#include "rterror.hpp"
+#include "rtmidi_types.hpp"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -26,7 +29,6 @@
 
 namespace seq64
 {
-    class event;
 
 /**
  *  Subclasses of midi_in_api and midi_out_api contain all API- and
@@ -42,7 +44,7 @@ class midi_api
 
 protected:
 
-    midi_info & m_master_info;
+    void * m_api_data;
     bool m_connected;
     std::string m_error_string;
     rterror_callback m_error_callback;
@@ -67,21 +69,10 @@ public:
 
     midi_api
     (
-        midi_info & masterinfo,
         int ppqn    = SEQ64_DEFAULT_PPQN,       // 192, see app_limits.h
         int bpm     = SEQ64_DEFAULT_BPM         // 120, see app_limits.h
     );
     virtual ~midi_api ();
-
-public:
-
-    virtual void api_play (event * e24, midibyte channel) = 0;
-    virtual void api_continue_from (midipulse tick, midipulse beats) = 0;
-    virtual void api_start () = 0;
-    virtual void api_stop () = 0;
-    virtual void api_clock (midipulse tick) = 0;
-
-public:
 
     virtual rtmidi_api get_current_api () const = 0;
     virtual void open_port
@@ -182,6 +173,23 @@ public:
     }
 
     /**
+     *  Locks in the MIDI API error callback.
+     *
+     * \param errorcallback
+     *      The function to be used as the error callback.
+     *
+     * \param userdata
+     *      The data area associated with the callback, defaults to a null
+     *      pointer.
+     */
+
+    void seterrorcallback (rterror_callback errorcallback, void * userdata)
+    {
+        m_error_callback = errorcallback;
+        m_error_callback_user_data = userdata;  // BEWARE IF NULLPTR!!!!
+    }
+
+    /**
      *  A basic error reporting function for rtmidi classes.
      */
 
@@ -196,16 +204,26 @@ public:
 class midi_in_api : public midi_api
 {
 
+protected:
+
+    rtmidi_in_data m_input_data;
+
 public:
 
     midi_in_api
     (
-        midi_info & masterinfo,
+        unsigned queuesizelimit,
         int ppqn    = SEQ64_DEFAULT_PPQN,       // 192, see app_limits.h
         int bpm     = SEQ64_DEFAULT_BPM         // 120, see app_limits.h
     );
 
     virtual ~midi_in_api ();
+    virtual void ignore_types (bool midisysex, bool miditime, bool midisense);
+    virtual bool poll_queue () const;
+
+    void set_callback (rtmidi_callback_t callback, void * userdata);
+    void cancel_callback ();
+    double get_message (std::vector<midibyte> & message);
 
 };          // class midi_in_api
 
@@ -218,16 +236,10 @@ class midi_out_api : public midi_api
 
 public:
 
-    midi_out_api
-    (
-        midi_info & masterinfo,
-        int ppqn    = SEQ64_DEFAULT_PPQN,       // 192, see app_limits.h
-        int bpm     = SEQ64_DEFAULT_BPM         // 120, see app_limits.h
-    );
+    midi_out_api (unsigned queuesizelimit = 0);
     virtual ~midi_out_api ();
-
-//  virtual void send_message (const std::vector<midibyte> & message) = 0;
-//  virtual bool poll_queue () const;
+    virtual void send_message (const std::vector<midibyte> & message) = 0;
+    virtual bool poll_queue () const;
 
 };          // class midi_out_api
 

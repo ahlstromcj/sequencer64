@@ -40,24 +40,6 @@
 #include "mutex.hpp"
 #include "midibus_common.hpp"
 
-/**
- *  Flags an unspecified buss number.
- */
-
-#define SEQ64_NO_BUS                    (-1)
-
-/**
- *  Flags an unspecified port number.
- */
-
-#define SEQ64_NO_PORT                   (-1)
-
-/**
- *  Flags an unspecified queue number.
- */
-
-#define SEQ64_NO_QUEUE                  (-1)
-
 /*
  *  Do not document a namespace; it breaks Doxygen.
  */
@@ -251,31 +233,6 @@ public:
     {
         return m_port_id;
     }
-
-    /*
-     * The following are currently REDUNDANT, must clean 'em out once we
-     * replace the ALSA members m_dest_addr_client and m_dest_addr_port
-     * with m_bus_id and m_port_id.
-     */
-
-    /**
-     * \getter m_dest_addr_client
-     *      The address of client.
-
-    virtual int get_client () const
-    {
-        return SEQ64_NO_BUS;
-    }
-     */
-
-    /**
-     * \getter m_dest_addr_port
-
-    virtual int get_port () const
-    {
-        return SEQ64_NO_PORT;
-    }
-     */
 
     /**
      * \getter m_is_virtual_port

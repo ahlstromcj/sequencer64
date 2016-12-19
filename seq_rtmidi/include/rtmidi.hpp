@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-09
+ * \updates       2016-12-18
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The big difference between this class (seq64::rtmidi) and
@@ -16,9 +16,12 @@
  *  functions, while the latter gets if via midi_api_info-derived functions.
  */
 
+#include <string>
+
 #include "midi_api.hpp"                     /* seq64::midi[_in][_out]_api   */
+#include "easy_macros.h"                    /* platform macros for compiler */
 #include "rterror.hpp"                      /* seq64::rterror               */
-#include "rtmidi_base.hpp"                  /* seq64::rtmidi_base           */
+#include "seq64_rtmidi_features.h"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -32,14 +35,45 @@ namespace seq64
  *  the new rtmidi_types.hpp module to make refactoring the code easier.
  */
 
-class rtmidi : public rtmidi_base
+class rtmidi                //  : public rtmidi_base
 {
     friend class midibus;
+
+private:
+
+    midi_api * m_rtapi;
 
 protected:
 
     rtmidi ();
     virtual ~rtmidi ();
+
+public:             // NEW APIS
+
+    void api_play (event * e24, midibyte channel)
+    {
+        get_api()->api_play(e24, channel);
+    }
+
+    void api_continue_from (midipulse tick, midipulse beats)
+    {
+        get_api()->api_continue_from(tick, beats);
+    }
+
+    void api_start ()
+    {
+        get_api()->api_start();
+    }
+
+    void api_stop ()
+    {
+        get_api()->api_stop();
+    }
+
+    void api_clock (midipulse tick)
+    {
+        get_api()->api_clock(tick);
+    }
 
 public:
 
@@ -84,9 +118,12 @@ public:
         return get_api()->get_client_id(index);
     }
 
-    virtual unsigned get_port_count () = 0;
+    virtual unsigned get_port_count ()
+    {
+        return SEQ64_BAD_PORT_ID;
+    }
 
-    virtual unsigned get_port_number (unsigned /*index*/) //  = 0;
+    virtual unsigned get_port_number (unsigned /*index*/)
     {
         return SEQ64_BAD_PORT_ID;
     }
@@ -94,22 +131,47 @@ public:
     virtual std::string get_port_name (unsigned index) = 0;
 
     /**
-     *  Set an error callback function to be invoked when an error has
-     *  occured.
-     *
-     *  The callback function will be called whenever an error has occured. It
-     *  is best to set the error callback function before opening a port.
+     * \getter m_rtapi const version
      */
 
-    virtual void seterrorcallback
-    (
-        rterror_callback errorcallback = nullptr,
-        void * userdata = nullptr
-    ) = 0;
+    const midi_api * get_api () const
+    {
+        return m_rtapi;
+    }
 
-    virtual void send_message (const std::vector<midibyte> &) = 0;
-    virtual void ignore_types (bool, bool, bool) = 0;
-    virtual double get_message (std::vector<midibyte> &) = 0;
+    /**
+     * \getter m_rtapi non-const version
+     */
+
+    midi_api * get_api ()
+    {
+        return m_rtapi;
+    }
+
+protected:
+
+    /**
+     * \setter m_rtapi
+     */
+
+    void set_api (midi_api * ma)
+    {
+        if (not_nullptr(ma))
+            m_rtapi = ma;
+    }
+
+    /**
+     * \setter m_rtapi
+     */
+
+    void delete_api ()
+    {
+        if (not_nullptr(m_rtapi))
+        {
+            delete m_rtapi;
+            m_rtapi = nullptr;
+        }
+    }
 
 protected:
 
@@ -164,12 +226,12 @@ public:
     rtmidi_in
     (
         rtmidi_api api = RTMIDI_API_UNSPECIFIED,
-        const std::string & clientname = "rtmidi input client",
-        unsigned queuesizelimit = 100
+        const std::string & clientname = "rtmidi input client"
     );
 
     /**
-     *  If a MIDI connection is still open, it will be closed by the destructor.
+     *  If a MIDI connection is still open, it will be closed by the
+     *  destructor.
      */
 
     virtual ~rtmidi_in ();
@@ -229,39 +291,6 @@ public:
     }
 
     /**
-     *  Set a callback function to be invoked for incoming MIDI messages.
-     *
-     *  The callback function will be called whenever an incoming MIDI
-     *  message is received.  While not absolutely necessary, it is best
-     *  to set the callback function before opening a MIDI port to avoid
-     *  leaving some messages in the queue.
-     *
-     * \param callback
-     *      A callback function must be given.
-     *
-     * \param userdata
-     *      Optionally, a pointer to additional data can be passed to the
-     *      callback function whenever it is called.
-     */
-
-    void set_callback (rtmidi_callback_t callback, void * userdata = nullptr)
-    {
-       dynamic_cast<midi_in_api *>(get_api())->set_callback(callback, userdata);
-    }
-
-    /**
-     *  Cancel use of the current callback function (if one exists).
-     *
-     *  Subsequent incoming MIDI messages will be written to the queue
-     *  and can be retrieved with the \e get_message function.
-     */
-
-    void cancel_callback ()
-    {
-       dynamic_cast<midi_in_api *>(get_api())->cancel_callback();
-    }
-
-    /**
      *  Close an open MIDI connection (if one exists).
      */
 
@@ -304,81 +333,12 @@ public:
        return get_api()->get_port_name(portnumber);
     }
 
-    /**
-     *  Specify whether certain MIDI message types should be queued or ignored
-     *  during input.
-     *
-     *  By default, MIDI timing and active sensing messages are ignored
-     *  during message input because of their relative high data rates.
-     *  MIDI sysex messages are ignored by default as well.  Variable
-     *  values of "true" imply that the respective message type will be
-     *  ignored.
-     *
-     *  TEMPORARILY VIRTUAL:
-     */
-
-    virtual void ignore_types
-    (
-        bool midisysex = true,
-        bool miditime = true,
-        bool midisense = true
-    )
-    {
-       dynamic_cast<midi_in_api *>(get_api())->ignore_types(midisysex, miditime, midisense);
-    }
-
-    /**
-     *  Fill the user-provided vector with the data bytes for the next
-     *  available MIDI message in the input queue and return the event
-     *  delta-time in seconds.
-     *
-     *  This function returns immediately whether a new message is
-     *  available or not.  A valid message is indicated by a non-zero
-     *  vector size.  An exception is thrown if an error occurs during
-     *  message retrieval or an input connection was not previously
-     *  established.
-     *
-     * \param message
-     *      A string of characters for the messages.
-     *
-     * \return
-     *      Returns the delta-time (timestamp) of the incoming message.  If an
-     *      error occurs, or if there is not message, then 0.0 is returned.
-     *
-     *  TEMPORARILY VIRTUAL:
-     */
-
-    virtual double get_message (std::vector<midibyte> & message)
-    {
-       return dynamic_cast<midi_in_api *>(get_api())->get_message(message);
-    }
-
-    /**
-     *  Set an error callback function to be invoked when an error has
-     *  occured.
-     *
-     *  The callback function will be called whenever an error has occured. It
-     *  is best to set the error callback function before opening a port.
-     */
-
-    virtual void seterrorcallback
-    (
-        rterror_callback errorcallback = nullptr,
-        void * userdata = 0
-    )
-    {
-       get_api()->seterrorcallback(errorcallback, userdata);
-    }
-
-    virtual void send_message (const std::vector<midibyte> &);
-
 protected:
 
     void openmidi_api
     (
         rtmidi_api api,
-        const std::string & clientname,
-        unsigned queuesizelimit
+        const std::string & clientname
     );
 
 };
@@ -423,9 +383,6 @@ public:
      */
 
     virtual ~rtmidi_out ();
-
-    virtual void ignore_types (bool, bool, bool);
-    virtual double get_message (std::vector<midibyte> &);
 
     /**
      *  Returns the MIDI API specifier for the current instance of rtmidi_out.
@@ -513,32 +470,16 @@ public:
      *  output connection was not previously established.
      *
      *  TEMPORARILY VIRTUAL:
-     */
 
     virtual void send_message (const std::vector<midibyte> & message)
     {
        dynamic_cast<midi_out_api *>(get_api())->send_message(message);
     }
-
-    /**
-     *  Set an error callback function to be invoked when an error has
-     *  occurred.  The callback function will be called whenever an error has
-     *  occured. It is best to set the error callback function before opening
-     *  a port.
      */
-
-    virtual void seterrorcallback
-    (
-        rterror_callback errorcallback = nullptr,
-        void * userdata = nullptr
-    )
-    {
-       get_api()->seterrorcallback(errorcallback, userdata);
-    }
 
 protected:
 
-  void openmidi_api (rtmidi_api api, const std::string & clientname);
+    void openmidi_api (rtmidi_api api, const std::string & clientname);
 
 };
 

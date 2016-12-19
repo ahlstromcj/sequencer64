@@ -19,10 +19,15 @@
  */
 
 #include "rtmidi.hpp"                   /* seq64::rtmidi, etc.          */
+#include "rtmidi_info.hpp"              /* seq64::rtmidi_info, etc.     */
 #include "settings.hpp"                 /* seq64::rc().with_jack_...()  */
 
-#ifdef SEQ64_BUILD_UNIX_JACK
+#ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
 #include "midi_jack.hpp"
+#endif
+
+#ifdef SEQ64_BUILD_LINUX_ALSA
+#include "midi_alsa.hpp"
 #endif
 
 /*
@@ -42,7 +47,7 @@ namespace seq64
 
 rtmidi::rtmidi ()
  :
-    rtmidi_base     ()
+    m_rtapi          (nullptr)
 {
    // No added code
 }
@@ -53,7 +58,7 @@ rtmidi::rtmidi ()
 
 rtmidi::~rtmidi ()
 {
-    // No added code
+    delete_api();
 }
 
 /*
@@ -81,30 +86,30 @@ rtmidi::~rtmidi ()
 rtmidi_in::rtmidi_in
 (
    rtmidi_api api,
-   const std::string & clientname,
-   unsigned queuesizelimit
+   const std::string & clientname //,
+// unsigned queuesizelimit
 ) :
     rtmidi   ()
 {
     if (api != RTMIDI_API_UNSPECIFIED)
     {
-        openmidi_api(api, clientname, queuesizelimit);
+        openmidi_api(api, clientname /*, queuesizelimit*/);
         if (not_nullptr(get_api()))
         {
-            selected_api(api);              /* log the API that worked  */
+            rtmidi_info::selected_api(api);     /* log the API that worked  */
             return;
         }
         errprintfunc("no compiled support for specified API");
     }
 
     std::vector<rtmidi_api> apis;
-    get_compiled_api(apis);
+    rtmidi_info::get_compiled_api(apis);
     for (unsigned i = 0; i < apis.size(); ++i)
     {
-        openmidi_api(apis[i], clientname, queuesizelimit);
+        openmidi_api(apis[i], clientname /*, queuesizelimit*/);
         if (get_api()->get_port_count() > 0)
         {
-            selected_api(apis[i]);          /* log the API that worked  */
+            rtmidi_info::selected_api(api);     /* log the API that worked  */
             break;
         }
     }
@@ -149,25 +154,38 @@ void
 rtmidi_in::openmidi_api
 (
    rtmidi_api api,
-   const std::string & clientname,
-   unsigned queuesizelimit
+   const std::string & clientname // ,
+// unsigned queuesizelimit
 )
 {
-    delete_api();
-
-#ifdef SEQ64_BUILD_UNIX_JACK
-    if (rc().with_jack_transport())
+    if (api == RTMIDI_API_UNSPECIFIED)
     {
-        if (api == RTMIDI_API_UNIX_JACK)
-            set_api(new midi_in_jack(clientname, queuesizelimit));
-    }
-#endif
+        delete_api();
 
+        if (rc().with_jack_transport())
+        {
+            if (api == RTMIDI_API_UNIX_JACK)
+            {
+#ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
+                set_api(new midi_in_jack(clientname /*, queuesizelimit*/));
+#endif
+            }
+        }
+
+        else
+        {
+            if (api == RTMIDI_API_LINUX_ALSA)
+            {
+#ifdef SEQ64_BUILD_LINUX_ALSA__NOT_READY
+                set_api(new midi_in_alsa(clientname /*, queuesizelimit*/));
+#endif
+            }
+        }
+    }
 }
 
 /**
  *  Throws an error.
- */
 
 void
 rtmidi_in::send_message (const std::vector<midibyte> &)
@@ -175,6 +193,7 @@ rtmidi_in::send_message (const std::vector<midibyte> &)
     std::string errortext = func_message("not supported");
     throw(rterror(errortext, rterror::UNSPECIFIED));
 }
+ */
 
 /*
  * class rtmidi_out
@@ -207,20 +226,20 @@ rtmidi_out::rtmidi_out (rtmidi_api api, const std::string & clientname)
         openmidi_api(api, clientname);
         if (not_nullptr(get_api()))
         {
-            selected_api(api);              /* log the API that worked  */
+            rtmidi_info::selected_api(api);     /* log the API that worked  */
             return;
         }
         errprintfunc("no compiled support for specified API argument");
     }
 
     std::vector<rtmidi_api> apis;
-    get_compiled_api(apis);
+    rtmidi_info::get_compiled_api(apis);
     for (unsigned i = 0; i < apis.size(); ++i)
     {
         openmidi_api(apis[i], clientname);
         if (get_api()->get_port_count() > 0)
         {
-            selected_api(apis[i]);          /* log the API that worked  */
+            rtmidi_info::selected_api(api);     /* log the API that worked  */
             break;
         }
     }
@@ -267,14 +286,29 @@ rtmidi_out::openmidi_api (rtmidi_api api, const std::string & clientname)
 {
     delete_api();
 
-#ifdef SEQ64_BUILD_UNIX_JACK
     if (rc().with_jack_transport())
     {
         if (api == RTMIDI_API_UNIX_JACK)
+        {
+#ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
             set_api(new midi_out_jack(clientname));
-    }
 #endif
+        }
+    }
+
+    else
+    {
+        if (api == RTMIDI_API_LINUX_ALSA)
+        {
+#ifdef SEQ64_BUILD_LINUX_ALSA__NOT_READY
+            set_api(new midi_out_alsa(clientname));
+#endif
+        }
+    }
+
 }
+
+#if 0
 
 /**
  *  Throws an error.  No, for now just does nothing.
@@ -303,6 +337,8 @@ rtmidi_out::get_message (std::vector<midibyte> &)
 
     return 0.0;
 }
+
+#endif      // 0
 
 }           // namespace seq64
 

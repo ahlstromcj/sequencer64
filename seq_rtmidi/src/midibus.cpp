@@ -341,7 +341,7 @@ midibus::api_init_common (rtmidi * rtm)
              */
 
             rtm->open_port(portid);
-            rtm->ignore_types(false, false, false);
+//          rtm->ignore_types(false, false, false);
         }
         else
             result = false;
@@ -366,6 +366,8 @@ midibus::api_init_common (rtmidi * rtm)
 void
 midibus::api_play (event * e24, midibyte channel)
 {
+    m_rt_midi->api_play(e24, channel);
+    /*
     std::vector<midibyte> msg;
     midibyte d0, d1;
     midibyte status = e24->get_status();
@@ -375,6 +377,7 @@ midibus::api_play (event * e24, midibyte channel)
     msg.push_back(d0);
     msg.push_back(d1);
     m_rt_midi->send_message(msg);
+    */
 }
 
 /**
@@ -393,8 +396,10 @@ midibus::api_play (event * e24, midibyte channel)
  */
 
 void
-midibus::api_continue_from (midipulse /* tick */, midipulse beats)
+midibus::api_continue_from (midipulse tick, midipulse beats)
 {
+    m_rt_midi->api_continue_from(tick, beats);
+    /*
     std::vector<midibyte> msg;
     midibyte d0 = (beats & 0x3F80) >> 7;
     midibyte d1 = (beats & 0x7F);
@@ -407,6 +412,7 @@ midibus::api_continue_from (midipulse /* tick */, midipulse beats)
     msg.push_back(d0);
     msg.push_back(d1);
     m_rt_midi->send_message(msg);
+    */
 }
 
 /**
@@ -417,11 +423,14 @@ midibus::api_continue_from (midipulse /* tick */, midipulse beats)
 void
 midibus::api_start ()
 {
+    m_rt_midi->api_start();
+    /*
     std::vector<midibyte> msg;
     msg.push_back(EVENT_MIDI_START);
     msg.push_back(0);
     msg.push_back(0);
     m_rt_midi->send_message(msg);
+    */
 }
 
 /**
@@ -432,11 +441,14 @@ midibus::api_start ()
 void
 midibus::api_stop ()
 {
+    m_rt_midi->api_stop();
+    /*
     std::vector<midibyte> msg;
     msg.push_back(EVENT_MIDI_STOP);
     msg.push_back(0);
     msg.push_back(0);
     m_rt_midi->send_message(msg);
+    */
 }
 
 /**
@@ -449,13 +461,16 @@ midibus::api_stop ()
  */
 
 void
-midibus::api_clock (midipulse /* tick */)
+midibus::api_clock (midipulse tick)
 {
+    m_rt_midi->api_clock(tick);
+    /*
     std::vector<midibyte> msg;
     msg.push_back(EVENT_MIDI_CLOCK);
     msg.push_back(0);
     msg.push_back(0);
     m_rt_midi->send_message(msg);
+    */
 }
 
 }           // namespace seq64

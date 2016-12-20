@@ -183,14 +183,14 @@ midibus::midibus
     m_rt_midi       (nullptr),
     m_master_info   (rt)
 {
-    int portcount = int(rt.get_port_count());
+    int portcount = rt.get_port_count();
     if (index < portcount)
     {
-        int id = int(rt.get_port_number(index));
+        int id = rt.get_port_id(index);
         if (id >= 0)
             set_port_id(id);
 
-        id = int(rt.get_client_id(index));
+        id = rt.get_bus_id(index);
         if (id >= 0)
             set_bus_id(id);
 
@@ -198,7 +198,7 @@ midibus::midibus
          * This changes what was set in the base class.
          */
 
-        set_name(appname, rt.get_client_name(index), rt.get_port_name(index));
+        set_name(appname, rt.get_bus_name(index), rt.get_port_name(index));
     }
 }
 
@@ -246,7 +246,13 @@ midibus::api_poll_for_midi ()
         return 0;
 #else
 
-    return m_rt_midi->poll_queue() ? 1 : 0 ;
+//  TODO
+//  TODO
+//  TODO
+//  TODO
+//  return m_rt_midi->poll_queue() ? 1 : 0 ;
+
+    return 0;
 
 #endif
 }
@@ -278,7 +284,7 @@ midibus::api_init_out ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_out(RTMIDI_API_UNSPECIFIED, connect_name());
+        m_rt_midi = new rtmidi_out(m_master_info, RTMIDI_API_UNSPECIFIED, connect_name());
         result = api_init_common(m_rt_midi);
     }
     catch (const rterror & err)
@@ -301,7 +307,7 @@ midibus::api_init_in ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_in(RTMIDI_API_UNSPECIFIED, connect_name());
+        m_rt_midi = new rtmidi_in(m_master_info, RTMIDI_API_UNSPECIFIED, connect_name());
         result = api_init_common(m_rt_midi);
     }
     catch (const rterror & err)

@@ -96,27 +96,27 @@ public:
      *      Returns the buss/client value as provided by the selected API.
      */
 
-    virtual unsigned get_client_id (unsigned index)
+    virtual int get_bus_id (int index)
     {
-        return get_api()->get_client_id(index);
+        return get_api()->get_bus_id(index);
     }
 
-    virtual std::string get_client_name (unsigned index)
+    virtual std::string get_bus_name (int index)
     {
-        return get_api()->get_client_name(index);
+        return get_api()->get_bus_name(index);
     }
 
-    virtual unsigned get_port_count ()
+    virtual int get_port_count ()
     {
         return get_api()->get_port_count();
     }
 
-    virtual unsigned get_port_number (unsigned index)
+    virtual int get_port_id (int index)
     {
-        return get_api()->get_port_number(index);
+        return get_api()->get_port_id(index);
     }
 
-    virtual std::string get_port_name (unsigned index)
+    virtual std::string get_port_name (int index)
     {
         return get_api()->get_port_name(index);
     }

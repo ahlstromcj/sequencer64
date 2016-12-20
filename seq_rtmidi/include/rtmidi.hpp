@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-18
+ * \updates       2016-12-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The big difference between this class (seq64::rtmidi) and
@@ -18,10 +18,12 @@
 
 #include <string>
 
+#include "seq64_rtmidi_features.h"
 #include "midi_api.hpp"                     /* seq64::midi[_in][_out]_api   */
 #include "easy_macros.h"                    /* platform macros for compiler */
 #include "rterror.hpp"                      /* seq64::rterror               */
-#include "seq64_rtmidi_features.h"
+#include "rtmidi_types.hpp"                 /* seq64::rtmidi_api etc.       */
+#include "rtmidi_info.hpp"                  /* seq64::rtmidi_info           */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -35,17 +37,32 @@ namespace seq64
  *  the new rtmidi_types.hpp module to make refactoring the code easier.
  */
 
-class rtmidi                //  : public rtmidi_base
+class rtmidi : public midi_api
 {
     friend class midibus;
 
 private:
 
-    midi_api * m_rtapi;
+    /**
+     *  Holds a reference to the "global" midi_info wrapper object.
+     *  Unlike the original RtMidi library, this library separates the
+     *  port-enumeration code ("info") from the port-usage code ("api").
+     *
+     *  We might make it a static object at some point.
+     */
+
+    rtmidi_info & m_midi_info;
+
+    /**
+     *  Points to the API I/O object (e.g. midi_alsa or midi_jack) for which
+     *  this class is a wrapper.
+     */
+
+    midi_api * m_midi_api;
 
 protected:
 
-    rtmidi ();
+    rtmidi (rtmidi_info & info);
     virtual ~rtmidi ();
 
 public:             // NEW APIS
@@ -75,34 +92,51 @@ public:             // NEW APIS
         get_api()->api_clock(tick);
     }
 
-public:
-
-#if 0   // 0
-
-    /*
-     *  Checks the input queue.  If the API object doesn't have an input
-     *  queue, this function will throw an rterror, for now.
-     *
-     * \return
-     *      Returns true if the input queue is not empty.
-     */
-
-    bool poll_queue () const
+    virtual bool api_init_out ()
     {
-        return get_api()->poll_queue();
+        return get_api()->api_init_out();
     }
 
-    virtual void open_port
-    (
-        unsigned portnumber = 0,
-        const std::string & portname = "rtmidi"
-    ) = 0;
+    virtual bool api_init_out_sub ()
+    {
+        return get_api()->api_init_out_sub();
+    }
 
-    virtual void open_virtual_port (const std::string & portname = "rtmidi") = 0;
-    virtual void close_port () = 0;
-    virtual bool is_port_open () const = 0;
+    virtual bool api_init_in ()
+    {
+        return get_api()->api_init_in();
+    }
 
-#endif  // 0
+    virtual bool api_init_in_sub ()
+    {
+        return get_api()->api_init_in_sub();
+    }
+
+    virtual bool api_deinit_in ()
+    {
+        return get_api()->api_deinit_in();
+    }
+
+    virtual void api_sysex (event * e24)
+    {
+        get_api()->api_sysex(e24);
+    }
+
+    virtual void api_flush ()
+    {
+        get_api()->api_flush();
+    }
+
+public:
+
+    /**
+     *  Returns true if a port is open and false if not.
+     */
+
+    virtual bool is_port_open () const
+    {
+       return get_api()->is_port_open();
+    }
 
     /**
      *  Gets the buss/client ID for a MIDI interfaces.  This is the left-hand
@@ -117,63 +151,71 @@ public:
      *      Returns the buss/client value as provided by the selected API.
      */
 
-    virtual unsigned get_client_id (unsigned index)
+    virtual int get_bus_id ()   // (int index)
     {
-        return get_api()->get_client_id(index);
+        return get_api()->get_bus_id();  // (index);
     }
 
-    virtual unsigned get_port_count ()
+    virtual std::string get_bus_name ()
     {
-        return SEQ64_BAD_PORT_ID;
+        return get_api()->bus_name();
     }
 
-    virtual unsigned get_port_number (unsigned /*index*/)
+    virtual int get_port_id ()
     {
-        return SEQ64_BAD_PORT_ID;
+        return get_api()->get_port_id();
     }
 
-    virtual std::string get_port_name (unsigned index) = 0;
+    virtual std::string get_port_name ()
+    {
+        return get_api()->port_name();
+    }
+
+    int get_port_count ()
+    {
+        return m_midi_info.get_port_count();
+    }
 
     /**
-     * \getter m_rtapi const version
+     * \getter m_midi_api const version
      */
 
     const midi_api * get_api () const
     {
-        return m_rtapi;
+        return m_midi_api;
     }
 
     /**
-     * \getter m_rtapi non-const version
+     * \getter m_midi_api non-const version
      */
 
     midi_api * get_api ()
     {
-        return m_rtapi;
+        return m_midi_api;
     }
 
 protected:
 
     /**
-     * \setter m_rtapi
+     * \setter m_midi_api
      */
 
     void set_api (midi_api * ma)
     {
         if (not_nullptr(ma))
-            m_rtapi = ma;
+            m_midi_api = ma;
     }
 
     /**
-     * \setter m_rtapi
+     * \setter m_midi_api
      */
 
     void delete_api ()
     {
-        if (not_nullptr(m_rtapi))
+        if (not_nullptr(m_midi_api))
         {
-            delete m_rtapi;
-            m_rtapi = nullptr;
+            delete m_midi_api;
+            m_midi_api = nullptr;
         }
     }
 
@@ -229,6 +271,7 @@ public:
 
     rtmidi_in
     (
+        rtmidi_info & info,
         rtmidi_api api = RTMIDI_API_UNSPECIFIED,
         const std::string & clientname = "rtmidi input client"
     );
@@ -240,118 +283,9 @@ public:
 
     virtual ~rtmidi_in ();
 
-#if 0
-
-    /**
-     *  Returns the MIDI API specifier for the current instance of rtmidi_in.
-     *  This is an integer enumeration value, starting with
-     *  RTMIDI_API_UNSPECIFIED.
-     *
-     *  This function could be moved into rtmidi_base, if we see the need for
-     *  that.
-     */
-
-    rtmidi_api get_current_api () const
-    {
-        return get_api()->get_current_api();
-    }
-
-    /**
-     *  Open a MIDI input connection given by enumeration number.
-     *
-     * \param portnumber
-     *      An optional port number greater than 0 can be specified.
-     *      Otherwise, the default or first port found is opened.
-     *
-     * \param portname
-     *      An optional name for the application port that is used to connect
-     *      to portId can be specified.
-     */
-
-    void open_port
-    (
-        unsigned portnumber,
-        const std::string & portname = "rtmidi input"
-    )
-    {
-       get_api()->open_port(portnumber, portname);
-    }
-
-    /**
-     *  Create a virtual input port, with optional name, to allow software
-     *  connections (OS X, JACK and ALSA only).
-     *
-     *  This function creates a virtual MIDI input port to which other
-     *  software applications can connect.  This type of functionality
-     *  is currently only supported by the Macintosh OS-X, any JACK,
-     *  and Linux ALSA APIs (the function returns an error for the other APIs).
-     *
-     * \param portname
-     *      An optional name for the application port that is used to connect
-     *      to portId can be specified.
-     */
-
-    void open_virtual_port (const std::string & portname = "rtmidi input")
-    {
-       get_api()->open_virtual_port(portname);
-    }
-
-    /**
-     *  Close an open MIDI connection (if one exists).
-     */
-
-    void close_port ()
-    {
-       get_api()->close_port();
-    }
-
-#endif  // 0
-
-    /**
-     *  Returns true if a port is open and false if not.
-     */
-
-    virtual bool is_port_open () const
-    {
-       return get_api()->is_port_open();
-    }
-
-#if 0
-
-    /**
-     *  Return the number of available MIDI input ports.
-     *
-     * \return
-     *      This function returns the number of MIDI ports of the selected API.
-     */
-
-    unsigned get_port_count ()
-    {
-       return get_api()->get_port_count();
-    }
-
-    /**
-     *  Return a string identifier for the specified MIDI input port number.
-     *
-     * \return
-     *      The name of the port with the given Id is returned.  An empty
-     *      string is returned if an invalid port specifier is provided.
-     */
-
-    std::string get_port_name (unsigned portnumber)
-    {
-       return get_api()->get_port_name(portnumber);
-    }
-
-#endif  // 0
-
 protected:
 
-    void openmidi_api
-    (
-        rtmidi_api api,
-        const std::string & clientname
-    );
+    void openmidi_api (rtmidi_api api, const std::string & clientname);
 
 };
 
@@ -386,6 +320,7 @@ public:
 
     rtmidi_out
     (
+        rtmidi_info & info,
         rtmidi_api api = RTMIDI_API_UNSPECIFIED,
         const std::string & clientname = "rtmidi output client"
     );
@@ -395,107 +330,6 @@ public:
      */
 
     virtual ~rtmidi_out ();
-
-#if 0
-
-    /**
-     *  Returns the MIDI API specifier for the current instance of rtmidi_out.
-     */
-
-    rtmidi_api get_current_api () const
-    {
-       return get_api()->get_current_api();
-    }
-
-    /**
-     *  Open a MIDI output connection.
-     *
-     *   An optional port number greater than 0 can be specified.
-     *   Otherwise, the default or first port found is opened.  An
-     *   exception is thrown if an error occurs while attempting to make
-     *   the port connection.
-     */
-
-    void open_port
-    (
-        unsigned portnumber,
-        const std::string & portname = "rtmidi output"
-    )
-    {
-       get_api()->open_port(portnumber, portname);
-    }
-
-    /**
-     *  Close an open MIDI connection (if one exists).
-     */
-
-    void close_port ()
-    {
-       get_api()->close_port();
-    }
-
-#endif  // 0
-
-    /**
-     *  Returns true if a port is open and false if not.
-     */
-
-    virtual bool is_port_open () const
-    {
-       return get_api()->is_port_open();
-    }
-
-#if 0
-
-    /**
-     *  Create a virtual output port, with optional name, to allow software
-     *  connections (OS X, JACK and ALSA only).
-     *
-     *  This function creates a virtual MIDI output port to which other
-     *  software applications can connect.  This type of functionality is
-     *  currently only supported by the Macintosh OS-X, Linux ALSA and JACK
-     *  APIs (the function does nothing with the other APIs).  An exception is
-     *  thrown if an error occurs while attempting to create the virtual port.
-     */
-
-    void open_virtual_port (const std::string & portname = "rtmidi output")
-    {
-       get_api()->open_virtual_port(portname);
-    }
-
-    /**
-     *  Return the number of available MIDI output ports.
-     */
-
-    unsigned get_port_count ()
-    {
-       return get_api()->get_port_count();
-    }
-
-    /**
-     *  Return a string identifier for the specified MIDI port type and number.
-     *  An empty string is returned if an invalid port specifier is provided.
-     */
-
-    std::string get_port_name (unsigned portnumber)
-    {
-       return get_api()->get_port_name(portnumber);
-    }
-
-    /**
-     *  Immediately send a single message out an open MIDI output port.
-     *  An exception is thrown if an error occurs during output or an
-     *  output connection was not previously established.
-     *
-     *  TEMPORARILY VIRTUAL:
-
-    virtual void send_message (const std::vector<midibyte> & message)
-    {
-       dynamic_cast<midi_out_api *>(get_api())->send_message(message);
-    }
-     */
-
-#endif // 0
 
 protected:
 

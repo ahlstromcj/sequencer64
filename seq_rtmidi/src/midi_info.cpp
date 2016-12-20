@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2016-12-18
+ * \updates       2016-12-19
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
@@ -48,9 +48,9 @@ midi_port_info::midi_port_info
 void
 midi_port_info::add
 (
-    unsigned clientnumber,
+    int clientnumber,
     const std::string & clientname,
-    unsigned portnumber,
+    int portnumber,
     const std::string & portname
 )
 {
@@ -123,8 +123,8 @@ midi_info::error (rterror::Type type, const std::string & errorstring)
 std::string
 midi_info::port_list () const
 {
-    unsigned inportcount = m_input.get_port_count();
-    unsigned outportcount = m_output.get_port_count();
+    int inportcount = m_input.get_port_count();
+    int outportcount = m_output.get_port_count();
     std::ostringstream os;
     midi_info * nc_this = const_cast<midi_info *>(this);
 
@@ -134,8 +134,8 @@ midi_info::port_list () const
     {
         os
             << "  [" << i << "] "
-            << nc_this->get_client_id(i) << ":" << nc_this->get_port_number(i)
-            << " " << nc_this->get_client_name(i) << ": "
+            << nc_this->get_bus_id(i) << ":" << nc_this->get_port_id(i)
+            << " " << nc_this->get_bus_name(i) << ": "
             << nc_this->get_port_name(i)
             << std::endl
             ;
@@ -147,8 +147,8 @@ midi_info::port_list () const
     {
         os
             << "  [" << o << "] "
-            << nc_this->get_client_id(o) << ":" << nc_this->get_port_number(o)
-            << "  " << nc_this->get_client_name(o) << ":"
+            << nc_this->get_bus_id(o) << ":" << nc_this->get_port_id(o)
+            << "  " << nc_this->get_bus_name(o) << ":"
             << nc_this->get_port_name(o)
             << std::endl
             ;

@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2016-12-18
+ * \updates       2016-12-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -32,8 +32,6 @@
  *      vector of port_info_t structures, and are easily looked up when
  *      mastermidibus creates a midibus object.
  */
-
-// #include "midi_api.hpp"
 
 #include "app_limits.h"                 /* SEQ64_DEFAULT_PPQN etc.  */
 #include "easy_macros.h"
@@ -62,9 +60,9 @@ private:
 
     typedef struct
     {
-        unsigned m_client_number;   /**< The major buss number of the port. */
+        int m_client_number;        /**< The major buss number of the port. */
         std::string m_client_name;  /**< The system's name for the client.  */
-        unsigned m_port_number;     /**< The minor port number of the port. */
+        int m_port_number;          /**< The minor port number of the port. */
         std::string m_port_name;    /**< The system's name for the port.    */
 
     } port_info_t;
@@ -73,7 +71,7 @@ private:
      *  Holds the number of ports counted.
      */
 
-    unsigned m_port_count;
+    int m_port_count;
 
     /**
      *  Holds information on all of the ports that were "scanned".
@@ -87,9 +85,9 @@ public:
 
     void add
     (
-        unsigned clientnumber,
-        const std::string & clientname,
-        unsigned portnumber,
+        int clientnumber,                   // buss number/ID
+        const std::string & clientname,     // buss name
+        int portnumber,
         const std::string & portname
     );
 
@@ -98,20 +96,20 @@ public:
         m_port_container.clear();
     }
 
-    unsigned get_port_count () const
+    int get_port_count () const
     {
         return m_port_count;
     }
 
-    unsigned get_client_id (unsigned index) const
+    int get_bus_id (int index) const
     {
         if (index < get_port_count())
             return m_port_container[index].m_client_number;
         else
-            return SEQ64_BAD_PORT_ID;
+            return SEQ64_BAD_BUS_ID;
     }
 
-    std::string get_client_name (unsigned index) const
+    std::string get_bus_name (int index) const
     {
         if (index < get_port_count())
             return m_port_container[index].m_client_name;
@@ -119,7 +117,7 @@ public:
             return std::string("");
     }
 
-    unsigned get_port_number (unsigned index) const
+    int get_port_id (int index) const
     {
         if (index < get_port_count())
             return m_port_container[index].m_port_number;
@@ -127,7 +125,7 @@ public:
             return SEQ64_BAD_PORT_ID;
     }
 
-    std::string get_port_name (unsigned index) const
+    std::string get_port_name (int index) const
     {
         if (index < get_port_count())
             return m_port_container[index].m_port_name;
@@ -221,75 +219,37 @@ public:
      *
      */
 
-    virtual unsigned get_port_count () /*const*/
+    virtual int get_port_count () /*const*/
     {
         midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_port_count();
     }
 
-    virtual unsigned get_client_id (unsigned index) /*const*/
+    virtual int get_bus_id (int index) /*const*/
     {
         midi_port_info & mpi = nc_midi_port_info();
-        return mpi.get_client_id(index);
+        return mpi.get_bus_id(index);
     }
 
-    virtual std::string get_client_name (unsigned index) /*const*/
+    virtual std::string get_bus_name (int index) /*const*/
     {
         midi_port_info & mpi = nc_midi_port_info();
-        return mpi.get_client_name(index);
+        return mpi.get_bus_name(index);
     }
 
-    virtual unsigned get_port_number (unsigned index) /*const*/
+    virtual int get_port_id (int index) /*const*/
     {
         midi_port_info & mpi = nc_midi_port_info();
-        return mpi.get_port_number(index);
+        return mpi.get_port_id(index);
     }
 
-    virtual std::string get_port_name (unsigned index) /*const*/
+    virtual std::string get_port_name (int index) /*const*/
     {
         midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_port_name(index);
     }
 
     virtual std::string port_list () const;
-
-    /*
-     * We don't want yet another base class, but we have to override these
-     * pure virtual functions from midi_api.  We might actually be able to
-     * eventually migrate common code into some of these functions.
-     */
-
-    virtual rtmidi_api get_current_api () const
-    {
-        return RTMIDI_API_UNSPECIFIED;
-    }
-
-#if 0
-
-    virtual void open_port
-    (
-        unsigned /*portnumber*/, const std::string & /*portname*/
-    )
-    {
-        // No action at this time
-    }
-
-    virtual void open_virtual_port (const std::string & /*portname*/)
-    {
-        // No action at this time
-    }
-
-    virtual void close_port ()
-    {
-        // No action at this time
-    }
-
-    virtual bool poll_queue () const
-    {
-        return false;
-    }
-
-#endif  // 0
 
     /**
      *  A basic error reporting function for midi_info classes.

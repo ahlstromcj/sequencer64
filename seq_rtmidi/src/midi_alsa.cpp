@@ -49,21 +49,6 @@ namespace seq64
 {
 
 /**
- *  Tempory simple constructor so the code will compile.
- */
-
-midi_alsa::midi_alsa (const std::string & /*client_name*/)
- :
-    m_seq               (nullptr),
-    m_dest_addr_client  (SEQ64_NO_BUS),
-    m_dest_addr_port    (SEQ64_NO_PORT),
-    m_local_addr_client (SEQ64_NO_BUS),
-    m_local_addr_port   (SEQ64_NO_PORT)
-{
-    // Functionality moved to the base class
-}
-
-/**
  *  Provides a constructor with client number, port number, ALSA sequencer
  *  support, name of client, name of port.
  *
@@ -115,24 +100,19 @@ midi_alsa::midi_alsa (const std::string & /*client_name*/)
 
 midi_alsa::midi_alsa
 (
+    midi_info & masterinfo,
     int localclient,
     int destclient,                     // is this the major ifx number?
     int destport,
     snd_seq_t * seq,
-    const std::string & clientname,     // the ALSA "client" (buss) name
-    const std::string & portname,
+    const std::string & busname,        // UNUSED SO FAR
+    const std::string & portname,       // UNUSED SO FAR
     int index,                          // just an ordinal for display
-    int queue,
+    int queue,                          // UNUSED SO FAR
     int ppqn,
     int bpm
 ) :
-//  midibase
-//  (
-//      SEQ64_APP_NAME, clientname, portname, index,
-//      destclient,                     // bus_id
-//      destport,                       // SEQ64_NO_PORT
-//      queue, ppqn, bpm
-//  ),
+    midi_api            (masterinfo, index, ppqn, bpm),
     m_seq               (seq),
     m_dest_addr_client  (destclient),   // actually the buss ID
     m_dest_addr_port    (destport),     // actually the port ID
@@ -174,19 +154,16 @@ midi_alsa::midi_alsa
 
 midi_alsa::midi_alsa
 (
+    midi_info & masterinfo,
     int localclient,
     snd_seq_t * seq,
     int index,                          // just an ordinal for display
-    int bus_id,
-    int queue,
+    int bus_id,                         // UNUSED SO FAR
+    int queue,                          // UNUSED SO FAR
     int ppqn,
     int bpm
 ) :
-//  midibase
-//  (
-//      SEQ64_APP_NAME, "ALSA", "port", index, bus_id, bus_id,
-//      queue, ppqn, bpm, true /* virtual */
-//  ),
+    midi_api            (masterinfo, index, ppqn, bpm),
     m_seq               (seq),
     m_dest_addr_client  (SEQ64_NO_BUS),
     m_dest_addr_port    (SEQ64_NO_PORT),

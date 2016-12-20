@@ -70,8 +70,7 @@ private:
 
     /**
      *  Provides the index of the midibase object in either the input list or
-     *  the output list.  Currently needed in the RtMidi code.  Otherwise, it
-     *  is currently -1.
+     *  the output list.  Otherwise, it is currently -1.
      */
 
     const int m_bus_index;
@@ -163,12 +162,12 @@ public:
         const std::string & appname,                /* usually the app name */
         const std::string & busname     = "",       /* subsystem name       */
         const std::string & portname    = "",       /* rarely needed now    */
-        int index   = 0,                            /* a display ordinal    */
-        int bus_id  = SEQ64_NO_BUS,
-        int port_id = SEQ64_NO_PORT,
-        int queue   = SEQ64_NO_QUEUE,
-        int ppqn    = SEQ64_USE_DEFAULT_PPQN,       /* SEQ64_DEFAULT_PPQN   */
-        int bpm     = SEQ64_DEFAULT_BPM,
+        int index                       = 0,        /* a display ordinal    */
+        int bus_id                      = SEQ64_NO_BUS,
+        int port_id                     = SEQ64_NO_PORT,
+        int queue                       = SEQ64_NO_QUEUE,
+        int ppqn                        = SEQ64_USE_DEFAULT_PPQN,
+        int bpm                         = SEQ64_DEFAULT_BPM,
         bool makevirtual = false
     );
 

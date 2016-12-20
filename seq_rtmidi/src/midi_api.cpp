@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-18
+ * \updates       2016-12-19
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring...
@@ -14,7 +14,7 @@
 
 #include "event.hpp"
 #include "midi_api.hpp"
-#include "rtmidi.hpp"
+#include "midi_info.hpp"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -34,31 +34,27 @@ namespace seq64
 midi_api::midi_api
 (
     midi_info & masterinfo,
+    int index,
     int ppqn,
     int bpm
 ) :
+    midibase
+    (
+        SEQ64_APP_NAME,
+        masterinfo.get_bus_name(index),
+        masterinfo.get_port_name(index),
+        index,
+        masterinfo.get_bus_id(index),
+        masterinfo.get_port_id(index),
+        index,  // queue
+        ppqn, bpm, false /* non-virtual */
+    ),
     m_master_info               (masterinfo),
     m_connected                 (false),
     m_error_string              (),
     m_error_callback            (0),
     m_first_error_occurred      (false),
-    m_error_callback_user_data  (0),
-
-    m_bus_index                 (SEQ64_NO_BUS),
-    m_bus_id                    (SEQ64_NO_BUS),
-    m_port_id                   (SEQ64_NO_PORT),
-    m_clock_type                (e_clock_off),
-    m_inputing                  (false),
-    m_ppqn                      (choose_ppqn(ppqn)),
-    m_bpm                       (bpm),
-    m_queue                     (SEQ64_NO_QUEUE),
-    m_bus_name                  (),
-    m_port_name                 (),
-//  m_lasttick                  (0),
-    m_is_virtual_port           (false),
-
-    m_ppqn                      (ppqn),
-    m_bpm                       (bpm)
+    m_error_callback_user_data  (0)
 {
     // no code
 }

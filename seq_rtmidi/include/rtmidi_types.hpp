@@ -29,12 +29,6 @@
 #define SEQ64_RTMIDI_VERSION "2.1.1"        /* revision at fork time        */
 
 /**
- *  Indicates a bad client ID or port number.
- */
-
-#define SEQ64_BAD_PORT_ID   (unsigned(-1))
-
-/**
  *  Macros for selecting input versus output ports in a more obvious way.
  *  These items are needed for the midi_mode() setter function.  Note that
  *  midi_mode() has no functionality in the midi_api base class, which has a

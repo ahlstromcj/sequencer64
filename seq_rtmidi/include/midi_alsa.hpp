@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2016-12-18
+ * \updates       2016-12-19
  * \license       GNU GPLv2 or above
  *
  *  The midi_alsa module is the Linux version of the midi_alsa module.
@@ -38,6 +38,7 @@
  */
 
 #include "seq64-config.h"
+#include "midi_api.hpp"
 
 #if SEQ64_HAVE_LIBASOUND
 #include <alsa/asoundlib.h>
@@ -58,7 +59,7 @@ namespace seq64
  *  This class implements with ALSA version of the midi_alsa object.
  */
 
-class midi_alsa       // : public midibase
+class midi_alsa : public midi_api
 {
     /**
      *  The master MIDI bus sets up the buss.
@@ -103,16 +104,6 @@ private:
 public:
 
     /*
-     *  Temporary one.
-     */
-
-    midi_alsa
-    (
-        midi_info & masterinfo,
-        const std::string & client_name
-    );
-
-    /*
      *  This version is used when querying for existing input ports in the
      *  ALSA system.  It is also used when creating the "announce buss".
      *  Does not yet directly include the concept of buss ID and port ID.
@@ -155,7 +146,7 @@ public:
 
     /**
      * \getter m_dest_addr_client
-     *      The address of client.
+     *      The address of client.  Can we replace it with get_client_id()?
      */
 
     virtual int get_client () const
@@ -165,6 +156,7 @@ public:
 
     /**
      * \getter m_dest_addr_port
+     *      Can we replace it with get_port_id()?
      */
 
     virtual int get_port () const

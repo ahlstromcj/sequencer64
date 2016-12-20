@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-02
+ * \updates       2016-12-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring...
@@ -41,15 +41,6 @@ public:
     midi_in_jack (const std::string & clientname, unsigned queuesize);
     virtual ~midi_in_jack ();
 
-    /**
-     * \getter RTMIDI_API_UNIX_JACK
-     */
-
-    virtual rtmidi_api get_current_api () const
-    {
-        return RTMIDI_API_UNIX_JACK;
-    }
-
     virtual void open_port (unsigned portnumber, const std::string & portname);
     virtual void open_virtual_port (const std::string & portname);
     virtual void close_port ();
@@ -79,15 +70,6 @@ public:
 
     midi_out_jack (const std::string & clientname);
     virtual ~midi_out_jack ();
-
-    /**
-     * \getter RTMIDI_API_UNIX_JACK
-     */
-
-    virtual rtmidi_api get_current_api () const
-    {
-        return RTMIDI_API_UNIX_JACK;
-    }
 
     virtual void open_port (unsigned portnumber, const std::string & portname);
     virtual void open_virtual_port (const std::string & portname);

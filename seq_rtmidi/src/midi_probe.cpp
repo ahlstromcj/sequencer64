@@ -6,7 +6,7 @@
  *
  * \author        Gary P. Scavone, 2003-2012; refactoring by Chris Ahlstrom
  * \date          2016-11-19
- * \updates       2016-12-18
+ * \updates       2016-12-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  We include this test code in our library, rather than in a separate
@@ -96,35 +96,43 @@ midi_probe ()
 
     try                         /* rtmidi constructors; exceptions possible */
     {
-        rtmidi_in midiin;
+        rtmidi_info info;
+
+        /*
+         * We sactually need to get this object in the loop!
+         */
+
+        rtmidi_in midiin(info);
         std::cout
-            << "MIDI input API: "
-            << midi_api_name(midiin.get_current_api())
+            << "MIDI Input/Output API: "
+            << midi_api_name(rtmidi_info::selected_api())
             << std::endl
             ;
 
-        unsigned nports = midiin.get_port_count();
+        int nports = midiin.get_port_count();
         std::cout << nports << " MIDI input sources:" << std::endl;
-        for (unsigned i = 0; i < nports; ++i)
+        for (int i = 0; i < nports; ++i)
         {
-            std::string portname = midiin.get_port_name(i);
+//          std::string portname = midiin.get_port_name(i);
+            std::string portname = midiin.get_port_name();
             std::cout
                 << "  Input Port #" << i+1 << ": " << portname << std::endl
                 ;
         }
 
-        rtmidi_out midiout;
-        std::cout
-            << "MIDI output API: "
-            << midi_api_name(midiout.get_current_api())
-            << std::endl
-            ;
+        /*
+         * We sactually need to get this object in the loop!
+         */
+
+        rtmidi_out midiout(info);
+        std::cout << std::endl;
 
         nports = midiout.get_port_count();
         std::cout << nports << " MIDI output ports:" << std::endl;
-        for (unsigned i = 0; i < nports; ++i)
+        for (int i = 0; i < nports; ++i)
         {
-            std::string portname = midiout.get_port_name(i);
+//          std::string portname = midiout.get_port_name(i);
+            std::string portname = midiout.get_port_name();
             std::cout
                 << "  Output Port #" << i+1 << ": " << portname << std::endl
                 ;

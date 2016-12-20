@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-18
+ * \updates       2016-12-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -45,9 +45,10 @@ namespace seq64
  *  Default constructor.
  */
 
-rtmidi::rtmidi ()
+rtmidi::rtmidi (rtmidi_info & info)
  :
-    m_rtapi          (nullptr)
+    m_midi_info     (info),
+    m_midi_api      (nullptr)
 {
    // No added code
 }
@@ -85,11 +86,11 @@ rtmidi::~rtmidi ()
 
 rtmidi_in::rtmidi_in
 (
-   rtmidi_api api,
-   const std::string & clientname //,
-// unsigned queuesizelimit
+    rtmidi_info & info,
+    rtmidi_api api,
+    const std::string & clientname
 ) :
-    rtmidi   ()
+    rtmidi   (info)
 {
     if (api != RTMIDI_API_UNSPECIFIED)
     {
@@ -217,9 +218,13 @@ rtmidi_in::send_message (const std::vector<midibyte> &)
  *      API to use.
  */
 
-rtmidi_out::rtmidi_out (rtmidi_api api, const std::string & clientname)
- :
-    rtmidi   ()
+rtmidi_out::rtmidi_out
+(
+    rtmidi_info & info,
+    rtmidi_api api,
+    const std::string & clientname
+) :
+    rtmidi   (info)
 {
     if (api != RTMIDI_API_UNSPECIFIED)
     {

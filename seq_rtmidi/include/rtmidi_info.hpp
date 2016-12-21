@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-18
+ * \updates       2016-12-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -80,7 +80,7 @@ public:
 
     virtual void midi_mode (bool flag)
     {
-        get_api()->midi_mode(flag);
+        get_api_info()->midi_mode(flag);
     }
 
     /**
@@ -98,32 +98,37 @@ public:
 
     virtual int get_bus_id (int index)
     {
-        return get_api()->get_bus_id(index);
+        return get_api_info()->get_bus_id(index);
     }
 
     virtual std::string get_bus_name (int index)
     {
-        return get_api()->get_bus_name(index);
+        return get_api_info()->get_bus_name(index);
     }
 
     virtual int get_port_count ()
     {
-        return get_api()->get_port_count();
+        return get_api_info()->get_port_count();
     }
 
     virtual int get_port_id (int index)
     {
-        return get_api()->get_port_id(index);
+        return get_api_info()->get_port_id(index);
     }
 
     virtual std::string get_port_name (int index)
     {
-        return get_api()->get_port_name(index);
+        return get_api_info()->get_port_name(index);
     }
 
     virtual unsigned get_all_port_info ()
     {
-        return get_api()->get_all_port_info();
+        return get_api_info()->get_all_port_info();
+    }
+
+    virtual int queue_number (int index)
+    {
+        return get_api_info()->queue_number(index);
     }
 
     /**
@@ -132,7 +137,7 @@ public:
 
     std::string port_list () const
     {
-        return get_api()->port_list();
+        return get_api_info()->port_list();
     }
 
     /**
@@ -148,7 +153,7 @@ public:
      * \getter m_info_api const version
      */
 
-    const midi_info * get_api () const
+    const midi_info * get_api_info () const
     {
         return m_info_api;
     }
@@ -157,7 +162,7 @@ public:
      * \getter m_info_api non-const version
      */
 
-    midi_info * get_api ()
+    midi_info * get_api_info ()
     {
         return m_info_api;
     }
@@ -177,7 +182,7 @@ protected:
      * \setter m_info_api
      */
 
-    void set_api (midi_info * ma)
+    void set_api_info (midi_info * ma)
     {
         if (not_nullptr(ma))
             m_info_api = ma;

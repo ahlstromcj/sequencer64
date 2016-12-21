@@ -64,6 +64,7 @@ private:
         std::string m_client_name;  /**< The system's name for the client.  */
         int m_port_number;          /**< The minor port number of the port. */
         std::string m_port_name;    /**< The system's name for the port.    */
+        int m_queue_number;         /**< A number used in some APIs.        */
 
     } port_info_t;
 
@@ -88,7 +89,8 @@ public:
         int clientnumber,                   // buss number/ID
         const std::string & clientname,     // buss name
         int portnumber,
-        const std::string & portname
+        const std::string & portname,
+        int queuenumber = SEQ64_BAD_QUEUE_ID
     );
 
     void clear ()
@@ -133,6 +135,14 @@ public:
             return std::string("");
     }
 
+    int get_queue_number (int index) const
+    {
+        if (index < get_port_count())
+            return m_port_container[index].m_queue_number;
+        else
+            return SEQ64_BAD_QUEUE_ID;
+    }
+
     virtual void * midi_handle ()
     {
         return nullptr;
@@ -171,6 +181,12 @@ private:
 
     midi_port_info m_output;
 
+    /**
+     *  The ID of the ALSA MIDI queue.
+     */
+
+    int m_queue;
+
 protected:
 
     /**
@@ -181,7 +197,7 @@ protected:
 
 public:
 
-    midi_info ();
+    midi_info (int queuenumber = SEQ64_NO_QUEUE);
 
     virtual ~midi_info ()
     {
@@ -249,7 +265,18 @@ public:
         return mpi.get_port_name(index);
     }
 
+    virtual int queue_number (int index)
+    {
+        midi_port_info & mpi = nc_midi_port_info();
+        return mpi.get_queue_number(index);
+    }
+
     virtual std::string port_list () const;
+
+    int queue_number ()
+    {
+        return m_queue;
+    }
 
     /**
      *  A basic error reporting function for midi_info classes.
@@ -258,6 +285,15 @@ public:
     void error (rterror::Type type, const std::string & errorstring);
 
     virtual unsigned get_all_port_info () = 0;
+
+protected:
+
+    /*
+    void queue_number (int q)
+    {
+        m_queue = q;
+    }
+    */
 
 private:
 

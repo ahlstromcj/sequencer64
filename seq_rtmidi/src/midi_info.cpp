@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2016-12-19
+ * \updates       2016-12-20
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
@@ -51,7 +51,8 @@ midi_port_info::add
     int clientnumber,
     const std::string & clientname,
     int portnumber,
-    const std::string & portname
+    const std::string & portname,
+    int queuenumber
 )
 {
     port_info_t temp;
@@ -59,6 +60,7 @@ midi_port_info::add
     temp.m_client_name = clientname;
     temp.m_port_number = portnumber;
     temp.m_port_name = portname;
+    temp.m_queue_number = queuenumber;
     m_port_container.push_back(temp);
     m_port_count = unsigned(m_port_container.size());
 }
@@ -71,12 +73,12 @@ midi_port_info::add
  *  Principal constructor.
  */
 
-midi_info::midi_info
-(
-) :
+midi_info::midi_info (int queuenumber)
+ :
     m_midi_mode_input   (true),
-    m_input             (),             /* midi_port_info   */
-    m_output            (),             /* midi_port_info   */
+    m_input             (),             /* midi_port_info       */
+    m_output            (),             /* midi_port_info       */
+    m_queue             (queuenumber),  /* a la mastermidibase  */
     m_error_string      ()
 {
     //
@@ -130,7 +132,7 @@ midi_info::port_list () const
 
     nc_this->midi_mode(SEQ64_MIDI_INPUT);
     os << "Input ports (" << inportcount << "):" << std::endl;
-    for (unsigned i = 0; i < inportcount; ++i)
+    for (int i = 0; i < inportcount; ++i)
     {
         os
             << "  [" << i << "] "
@@ -143,7 +145,7 @@ midi_info::port_list () const
 
     nc_this->midi_mode(SEQ64_MIDI_OUTPUT);
     os << "Output ports (" << outportcount << "):" << std::endl;
-    for (unsigned o = 0; o < outportcount; ++o)
+    for (int o = 0; o < outportcount; ++o)
     {
         os
             << "  [" << o << "] "

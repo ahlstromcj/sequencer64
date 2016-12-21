@@ -47,6 +47,7 @@ namespace seq64
 
 rtmidi::rtmidi (rtmidi_info & info)
  :
+    midi_api        (*info.get_api_info(), 0, 192, 120),
     m_midi_info     (info),
     m_midi_api      (nullptr)
 {
@@ -79,9 +80,6 @@ rtmidi::~rtmidi ()
  *
  * \param clientname
  *      The name of the client.  This is the name used to access the client.
- *
- * \param queuesizelimit
- *      The maximum size of the MIDI message queue.
  */
 
 rtmidi_in::rtmidi_in
@@ -94,7 +92,7 @@ rtmidi_in::rtmidi_in
 {
     if (api != RTMIDI_API_UNSPECIFIED)
     {
-        openmidi_api(api, clientname /*, queuesizelimit*/);
+        openmidi_api(api, clientname);
         if (not_nullptr(get_api()))
         {
             rtmidi_info::selected_api(api);     /* log the API that worked  */
@@ -107,8 +105,8 @@ rtmidi_in::rtmidi_in
     rtmidi_info::get_compiled_api(apis);
     for (unsigned i = 0; i < apis.size(); ++i)
     {
-        openmidi_api(apis[i], clientname /*, queuesizelimit*/);
-        if (get_api()->get_port_count() > 0)
+        openmidi_api(apis[i], clientname);
+        if (info.get_api_info()->get_port_count() > 0)
         {
             rtmidi_info::selected_api(api);     /* log the API that worked  */
             break;
@@ -146,17 +144,13 @@ rtmidi_in::~rtmidi_in()
  *
  * \param clientname
  *      The name of the client.  This is the name used to access the client.
- *
- * \param queuesizelimit
- *      The maximum size of the MIDI message queue.
  */
 
 void
 rtmidi_in::openmidi_api
 (
    rtmidi_api api,
-   const std::string & clientname // ,
-// unsigned queuesizelimit
+   const std::string & clientname
 )
 {
     if (api == RTMIDI_API_UNSPECIFIED)
@@ -168,7 +162,7 @@ rtmidi_in::openmidi_api
             if (api == RTMIDI_API_UNIX_JACK)
             {
 #ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
-                set_api(new midi_in_jack(clientname /*, queuesizelimit*/));
+                set_api(new midi_in_jack(clientname));
 #endif
             }
         }
@@ -178,7 +172,7 @@ rtmidi_in::openmidi_api
             if (api == RTMIDI_API_LINUX_ALSA)
             {
 #ifdef SEQ64_BUILD_LINUX_ALSA__NOT_READY
-                set_api(new midi_in_alsa(clientname /*, queuesizelimit*/));
+                set_api(new midi_in_alsa(clientname));
 #endif
             }
         }
@@ -242,7 +236,7 @@ rtmidi_out::rtmidi_out
     for (unsigned i = 0; i < apis.size(); ++i)
     {
         openmidi_api(apis[i], clientname);
-        if (get_api()->get_port_count() > 0)
+        if (info.get_api_info()->get_port_count() > 0)
         {
             rtmidi_info::selected_api(api);     /* log the API that worked  */
             break;

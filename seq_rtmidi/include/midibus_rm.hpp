@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-17
+ * \updates       2016-12-21
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
@@ -81,25 +81,26 @@ public:
 
     /*
      * Virtual-port and non-virtual-port constructors.
-     */
+    */
 
-    midibus
+    midibus                                 // virtual constructor
     (
         rtmidi_info & rt,
-        const std::string & clientname,
-        const std::string & portname    = "",
-        int index                       = 0,
-        int bus_id                      = SEQ64_NO_BUS,
-        int port_id                     = SEQ64_NO_PORT,
-        int queue                       = SEQ64_NO_QUEUE,
-        int ppqn                        = SEQ64_USE_DEFAULT_PPQN,
-        int bpm                         = SEQ64_DEFAULT_BPM
+        const std::string & appname,
+        const std::string & clientname,     // rt.get_bus_name(index)
+//      const std::string & portname = "",  // rt.get_port_name(index)
+        int index    = 0,
+        int bus_id   = SEQ64_NO_BUS,        // rt.get_bus_id(index)
+        int port_id  = SEQ64_NO_PORT,       // rt.get_port_id(index)
+        int queue    = SEQ64_NO_QUEUE,      // rt.get_queue_id(index) NEW
+        int ppqn     = SEQ64_USE_DEFAULT_PPQN,
+        int bpm      = SEQ64_DEFAULT_BPM
     );
 
-    midibus
+    midibus                                 // normal constructor
     (
         rtmidi_info & rt,
-        const std::string & clientname,             /* includes port name   */
+        const std::string & appname,        /* includes port name   */
         int index                       = 0,
         int ppqn                        = SEQ64_USE_DEFAULT_PPQN,
         int bpm                         = SEQ64_DEFAULT_BPM

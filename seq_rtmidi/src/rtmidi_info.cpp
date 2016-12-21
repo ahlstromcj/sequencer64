@@ -99,7 +99,7 @@ rtmidi_info::rtmidi_info (rtmidi_api api)   // : rtmidi_base    ()
     if (api != RTMIDI_API_UNSPECIFIED)
     {
         openmidi_api(api);
-        if (not_nullptr(get_api()))
+        if (not_nullptr(get_api_info()))
         {
             selected_api(api);              /* log first API that worked    */
             return;
@@ -112,9 +112,9 @@ rtmidi_info::rtmidi_info (rtmidi_api api)   // : rtmidi_base    ()
     for (unsigned i = 0; i < apis.size(); ++i)
     {
         openmidi_api(apis[i]);
-        if (not_nullptr(get_api()))
+        if (not_nullptr(get_api_info()))
         {
-            if (get_api()->get_all_port_info() > 0)
+            if (get_api_info()->get_all_port_info() > 0)
             {
                 selected_api(apis[i]);      /* log first API that worked    */
                 break;
@@ -125,7 +125,7 @@ rtmidi_info::rtmidi_info (rtmidi_api api)   // : rtmidi_base    ()
             continue;
         }
     }
-    if (is_nullptr(get_api()))
+    if (is_nullptr(get_api_info()))
     {
         std::string errortext = func_message("no compiled API support found");
         throw(rterror(errortext, rterror::UNSPECIFIED));
@@ -163,7 +163,7 @@ rtmidi_info::openmidi_api (rtmidi_api api)
 
 #ifdef SEQ64_BUILD_LINUX_ALSA
     if (api == RTMIDI_API_LINUX_ALSA)
-        set_api(new midi_alsa_info());
+        set_api_info(new midi_alsa_info());
 #endif
 
 }

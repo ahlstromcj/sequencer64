@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-14
+ * \updates       2016-12-21
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -108,8 +108,9 @@ namespace seq64
 midibus::midibus
 (
     rtmidi_info & rt,
-    const std::string & clientname,
-    const std::string & portname,
+    const std::string & appname,
+    const std::string & clientname,     // OR IS IT THE APPNAME?
+//  const std::string & portname,
     int index,
     int bus_id,
     int port_id,
@@ -119,13 +120,21 @@ midibus::midibus
 ) :
     midibase
     (
-        SEQ64_APP_NAME, clientname, portname, index, bus_id, port_id,
-        queue, ppqn, bpm, true  /* make virtual */
+//      SEQ64_APP_NAME, clientname, portname, index, bus_id, port_id,
+//      queue, ppqn, bpm, true  /* make virtual */
+        appname,
+        clientname,                     // rt.get_bus_name(index),
+        "port",                         // rt.get_port_name(index),
+        index,
+        bus_id,                         // rt.get_bus_id(index),
+        port_id,                        // rt.get_port_id(index),
+        queue,                          // rt.queue_number(index),
+        ppqn, bpm, true  /* make virtual */
     ),
     m_rt_midi       (nullptr),
-    m_master_info   (rt)
+    m_master_info   (rt)                // currently unused
 {
-    // Empty body
+    // TODO:  generate better buss and port names.
 }
 
 /**
@@ -174,11 +183,11 @@ midibus::midibus
         appname,                        /* basically the application name   */
         "",                             /* buss name extracted from rt      */
         "",                             /* port name extracted from rt      */
-        index,
-        SEQ64_NO_BUS,
-        SEQ64_NO_PORT,
-        SEQ64_NO_QUEUE,
-        ppqn, bpm, false
+        index,                          /* index into list of systemports   */
+        SEQ64_NO_BUS,                   /* buss ID extracted from rt        */
+        SEQ64_NO_PORT,                  /* port ID extracted from rt        */
+        SEQ64_NO_QUEUE,                 /* queue number extracted from rt   */
+        ppqn, bpm, false                /* PPQN, BPM, and non-virtual flag  */
     ),
     m_rt_midi       (nullptr),
     m_master_info   (rt)

@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-04
- * \updates       2016-12-17
+ * \updates       2016-12-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the ALSA information of
@@ -57,12 +57,6 @@ private:
     snd_seq_t * m_alsa_seq;
 
     /**
-     *  The ID of the ALSA MIDI queue.
-     */
-
-    int m_queue;
-
-    /**
      *  The number of descriptors for polling.
      */
 
@@ -76,7 +70,7 @@ private:
 
 public:
 
-    midi_alsa_info ();
+    midi_alsa_info (int queuenumber = SEQ64_NO_QUEUE);
     virtual ~midi_alsa_info ();
 
     /**

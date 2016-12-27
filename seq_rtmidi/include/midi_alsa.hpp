@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2016-12-19
+ * \updates       2016-12-24
  * \license       GNU GPLv2 or above
  *
  *  The midi_alsa module is the Linux version of the midi_alsa module.
@@ -104,27 +104,35 @@ private:
 public:
 
     /*
+     *  Normal port constructor.
      *  This version is used when querying for existing input ports in the
      *  ALSA system.  It is also used when creating the "announce buss".
      *  Does not yet directly include the concept of buss ID and port ID.
+     *
+     *  Compare to the output midibus constructor called in seq_alsamidi's
+     *  mastermidibus module.  Also note we'll need midi_info::midi_mode()
+     *  to set up for midi_alsa_in versus midi_alsa_out.
      */
 
     midi_alsa
     (
         midi_info & masterinfo,
-        int localclient,
-        int destclient,
-        int destport,
-        snd_seq_t * seq,
-        const std::string & client_name,
-        const std::string & port_name,
-        int index,                              /* a display ordinal    */
-        int queue,
+//      int localclient,
+//      int destclient,                     // masterinfo.get_bus_id(index)?
+//      int destport,                       // masterinfo.get_port_id(index)?
+        snd_seq_t * seq,                    // alsa masterinfo.midi_handle()
+//      const std::string & client_name,    // masterinfo.get_bus_name(index)?
+//      const std::string & port_name,      // masterinfo.get_port_name(index)?
+        int index,                          /* a display ordinal    */
+//      int queue,                          // masterinfo.queue_number()
         int ppqn = SEQ64_USE_DEFAULT_PPQN,
         int bpm  = SEQ64_DEFAULT_BPM
     );
 
+#if 0
+
     /*
+     *  Virtual-port constructor.
      *  This version is used with the --manual-alsa-ports option, for both
      *  input and output busses.  Does not yet directly include the concept of
      *  buss ID and port ID.
@@ -133,14 +141,16 @@ public:
     midi_alsa
     (
         midi_info & masterinfo,
-        int localclient,
+//      int localclient,
         snd_seq_t * seq,
         int index,                              /* a display ordinal    */
-        int bus_id,
-        int queue,
+//      int bus_id,
+//      int queue,
         int ppqn = SEQ64_USE_DEFAULT_PPQN,
         int bpm  = SEQ64_DEFAULT_BPM
     );
+
+#endif  // 0
 
     virtual ~midi_alsa ();
 

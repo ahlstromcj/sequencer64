@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-18
+ * \updates       2016-12-26
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -94,14 +94,21 @@ rtmidi_info::get_compiled_api (std::vector<rtmidi_api> & apis)
  *  rtmidi_out. Common code!
  */
 
-rtmidi_info::rtmidi_info (rtmidi_api api)   // : rtmidi_base    ()
+rtmidi_info::rtmidi_info
+(
+    rtmidi_api api,
+    const std::string & appname,
+    int ppqn,
+    int bpm
+) :
+    m_info_api  (nullptr)
 {
     if (api != RTMIDI_API_UNSPECIFIED)
     {
-        openmidi_api(api);
+        openmidi_api(api, appname, ppqn, bpm);
         if (not_nullptr(get_api_info()))
         {
-            selected_api(api);              /* log first API that worked    */
+            selected_api(api);              /* log the API that worked      */
             return;
         }
         errprintfunc("no compiled support for specified API");
@@ -111,7 +118,7 @@ rtmidi_info::rtmidi_info (rtmidi_api api)   // : rtmidi_base    ()
     get_compiled_api(apis);
     for (unsigned i = 0; i < apis.size(); ++i)
     {
-        openmidi_api(apis[i]);
+        openmidi_api(apis[i], appname, ppqn, bpm);
         if (not_nullptr(get_api_info()))
         {
             if (get_api_info()->get_all_port_info() > 0)
@@ -149,7 +156,13 @@ rtmidi_info::~rtmidi_info ()
  */
 
 void
-rtmidi_info::openmidi_api (rtmidi_api api)
+rtmidi_info::openmidi_api
+(
+    rtmidi_api api,
+    const std::string & appname,
+    int ppqn,
+    int bpm
+)
 {
     delete_api();
 
@@ -157,13 +170,13 @@ rtmidi_info::openmidi_api (rtmidi_api api)
     if (rc().with_jack_transport())
     {
         if (api == RTMIDI_API_UNIX_JACK)
-            set_api(new midi_jack_info(clientname, queuesizelimit));
+            set_api(new midi_jack_info(appname, ppqn, bpm));
     }
 #endif
 
 #ifdef SEQ64_BUILD_LINUX_ALSA
     if (api == RTMIDI_API_LINUX_ALSA)
-        set_api_info(new midi_alsa_info());
+        set_api_info(new midi_alsa_info(appname, ppqn, bpm));
 #endif
 
 }

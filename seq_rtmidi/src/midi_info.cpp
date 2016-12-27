@@ -5,11 +5,11 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2016-12-20
+ * \updates       2016-12-26
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
- *  about client number, port numbers, and port names, and hold them
+ *  about client/buss number, port numbers, and port names, and hold them
  *  for usage when creating midibus objects and midi_api objects.
  */
 
@@ -38,11 +38,28 @@ midi_port_info::midi_port_info
     m_port_count        (),
     m_port_container    ()
 {
-    //
+    // Empty body
 }
 
 /**
+ *  Adds a set of port information to the port container.
  *
+ * \param clientnumber
+ *      Provides the client or buss number for the port.  This is a value like
+ *
+ * \param clientname
+ *      Provides the system or user-supplied name for the client or buss.
+ *
+ * \param portnumber
+ *      Provides the port number, usually re 0.
+ *
+ * \param portname
+ *      Provides the system or user-supplied name for the port.
+ *
+ * \param queuenumber
+ *      Provides the optional queue number, if applicable.  For example, the
+ *      sequencer64 application grabs the client number (normally valued at 1)
+ *      from the ALSA subsystem.
  */
 
 void
@@ -73,12 +90,20 @@ midi_port_info::add
  *  Principal constructor.
  */
 
-midi_info::midi_info (int queuenumber)
- :
+midi_info::midi_info
+(
+    const std::string & appname,
+    int ppqn,
+    int bpm
+) :
     m_midi_mode_input   (true),
-    m_input             (),             /* midi_port_info       */
-    m_output            (),             /* midi_port_info       */
-    m_queue             (queuenumber),  /* a la mastermidibase  */
+    m_input             (),                 /* midi_port_info for inputs    */
+    m_output            (),                 /* midi_port_info for outputs   */
+    m_global_queue      (SEQ64_NO_QUEUE),   /* a la mastermidibase; created */
+    m_midi_handle       (nullptr),          /* usually looked up or created */
+    m_app_name          (appname),
+    m_ppqn              (ppqn),
+    m_bpm               (bpm),
     m_error_string      ()
 {
     //
@@ -119,7 +144,11 @@ midi_info::error (rterror::Type type, const std::string & errorstring)
 }
 
 /**
+ *  Generates a string listing all of the ports present in the port container.
+ *  Useful for debugging and probing.
  *
+ * \return
+ *      Returns a multi-line ASCII string enumerating all of the ports.
  */
 
 std::string

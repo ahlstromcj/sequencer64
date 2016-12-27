@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-17
+ * \updates       2016-12-24
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -60,7 +60,9 @@ namespace seq64
  *  buss names when it writes the file.
  *
  * \param localclient
- *      Provides the local-client number.
+ *      Provides the local-client number.  Also known as the user-client
+ *      number.  The ALSA snd_seq_client_id() function assigns user-client
+ *      numbers ranging from 128 to 191.
  *
  * \param destclient
  *      Provides the destination-client number.  This is the actual buss
@@ -120,7 +122,16 @@ midibus::midibus
     m_local_addr_client (localclient),
     m_local_addr_port   (-1)
 {
-    // Empty body
+#ifdef PLATFORM_DEBUG
+    printf
+    (
+        "midibus [%2d] (normal): user-client = %d; queue = %d;"
+        " dest-client:port = %s (%d):(%d); PPQN = %d; BPM = %d\n"
+        ,
+        index, localclient, queue,
+        clientname.c_str(), destclient, destport, ppqn, bpm
+    );
+#endif
 }
 
 /**
@@ -175,6 +186,16 @@ midibus::midibus
     m_local_addr_port   (SEQ64_NO_PORT)
 {
     // Functionality moved to the base class
+
+#ifdef PLATFORM_DEBUG
+    printf
+    (
+        "midibus [%2d] (virtual): user-client = %d; queue = %d; buss ID = %d;"
+        " PPQN = %d; BPM = %d\n"
+        ,
+        index, localclient, queue, bus_id, ppqn, bpm
+    );
+#endif
 }
 
 /**

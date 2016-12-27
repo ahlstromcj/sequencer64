@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2016-12-17
+# \update     	2016-12-26
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -36,7 +36,7 @@ export LANG
 CYGWIN=binmode
 export CYGWIN
 
-export SEQUENCER64_SCRIPT_EDIT_DATE="2016-12-17"
+export SEQUENCER64_SCRIPT_EDIT_DATE="2016-12-26"
 export SEQUENCER64_LIBRARY_API_VERSION="0.90"
 export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.90.0"
 
@@ -76,6 +76,7 @@ DOVERSION="no"
 DOALSAMIDI="yes"
 DOPORTMIDI="no"
 DORTMIDI="no"
+EXTRAFLAGS=""
 LOGFILENAME=""
 M4DIR="m4"
 
@@ -86,7 +87,7 @@ M4DIR="m4"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.90-2016-12-17)
+Usage: ./bootstrap [options]                                 (0.90-2016-12-26)
 
    'bootstrap' sets up GNU automake support and libtool support for the
    Sequencer64 project, creating the 'configure' script.  It can also
@@ -101,9 +102,9 @@ Usage: ./bootstrap [options]                                 (0.90-2016-12-17)
    --enable-debug=gdb
  --release, -er,     Also configure for release, to save a little time.  Sets up
    --enable-release  a 'silent' build, as well.
- --am                Configure to build sequencer64 (original ALSA version).
- --pm                Configure to build seq64portmidi.
- --rm                Configure to build seq64rtmidi.
+ -am                 Configure to build sequencer64 (original ALSA version).
+ -pm                 Configure to build seq64portmidi.
+ -rm                 Configure to build seq64rtmidi.
  --help              Show this help text.
 
    The default bootstraps the projects.  Then one should run 'configure',
@@ -146,20 +147,27 @@ if [ $# -ge 1 ] ; then
             DOCLEAN="yes"
             ;;
 
-         --debug | -ed | --enable-debug)
+         --debug | -ed | --enable-debug | --ed)
             DODEBUG="yes"
             ;;
 
-         --release | -er | --enable-release)
+         --release | -er | --enable-release | --er)
             DORELEASE="yes"
             ;;
 
-         --portmidi | -pm)
-            DOPORTMIDI="yes"
+         --alsamidi | -am | --am)
+            DOALSAMIDI="yes"
+            EXTRAFLAGS="--enable-alsamidi"
             ;;
 
-         --rtmidi | -rm)
+         --portmidi | -pm | --pm)
+            DOPORTMIDI="yes"
+            EXTRAFLAGS="--enable-portmidi"
+            ;;
+
+         --rtmidi | -rm | --rm)
             DORTMIDI="yes"
+            EXTRAFLAGS="--enable-rtmidi"
             ;;
 
          --version)
@@ -455,18 +463,11 @@ E_O_F
 
    if [ "$DOBOOTSTRAP" == "yes" ] ; then
 
-      EXTRAFLAGS=""
-      if [ "$DOPORTMIDI" == "yes" ] ; then
-         EXTRAFLAGS="--enable-portmidi"
-      elif [ "$DORTMIDI" == "yes" ] ; then
-         EXTRAFLAGS="--enable-rtmidi"
-      fi
-
       if [ "$DODEBUG" == "yes" ] ; then
-         echo "Running './configure --enable-debug=gdb --disable-shared'..."
+         echo "Running './configure --enable-debug=gdb --disable-shared $EXTRAFLAGS'"
          ./configure --enable-debug=gdb --disable-shared $EXTRAFLAGS
       elif [ "$DORELEASE" == "yes" ] ; then
-         echo "Running './configure --enable-silent-rules ..."
+         echo "Running './configure --enable-silent-rules $EXTRAFLAGS'"
          ./configure --enable-silent-rules $EXTRAFLAGS
          echo "Note that running 'make V=1' will turn on full command output."
       else

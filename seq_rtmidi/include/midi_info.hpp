@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2016-12-20
+ * \updates       2016-12-26
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -143,11 +143,6 @@ public:
             return SEQ64_BAD_QUEUE_ID;
     }
 
-    virtual void * midi_handle ()
-    {
-        return nullptr;
-    }
-
 };          // class midi_port_info
 
 /**
@@ -185,7 +180,36 @@ private:
      *  The ID of the ALSA MIDI queue.
      */
 
-    int m_queue;
+    int m_global_queue;
+
+    /**
+     *  Provides a handle to the main ALSA or JACK implementation object.
+     *  Created by the class derived from midi_info.
+     */
+
+    void * m_midi_handle;
+
+    /**
+     *  Holds this value for passing along, to reduce the number of arguments
+     *  needed.  This value is the main application name as determined at
+     *  ./configure time.
+     */
+
+    const std::string m_app_name;
+
+    /**
+     *  Hold this value for passing along to some ports that get created.
+     *  Some APIs can use this value.
+     */
+
+    int m_ppqn;
+
+    /**
+     *  Hold this value for passing along to some ports that get created.
+     *  Some APIs can use this value.
+     */
+
+    int m_bpm;
 
 protected:
 
@@ -197,7 +221,12 @@ protected:
 
 public:
 
-    midi_info (int queuenumber = SEQ64_NO_QUEUE);
+    midi_info                                   /* similar to mastermidibus */
+    (
+        const std::string & appname,
+        int ppqn = SEQ64_DEFAULT_PPQN,          /* 192  */
+        int bpm  = SEQ64_DEFAULT_BPM            /* 120  */
+    );
 
     virtual ~midi_info ()
     {
@@ -211,6 +240,15 @@ public:
     virtual void midi_mode (bool flag)
     {
         m_midi_mode_input = flag;
+    }
+
+    /**
+     * \getter m_midi_handle
+     */
+
+    void * midi_handle ()
+    {
+        return m_midi_handle;
     }
 
     /**
@@ -232,50 +270,68 @@ public:
     }
 
     /**
+     * \getter m_ppqn
+     */
+
+    int ppqn () const
+    {
+        return m_ppqn;
+    }
+
+    /**
+     * \getter m_bpm
+     */
+
+    int bpm () const
+    {
+        return m_bpm;
+    }
+
+    /**
      *
      */
 
-    virtual int get_port_count () /*const*/
+    virtual int get_port_count () const
     {
-        midi_port_info & mpi = nc_midi_port_info();
+        const midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_port_count();
     }
 
-    virtual int get_bus_id (int index) /*const*/
+    virtual int get_bus_id (int index) const
     {
-        midi_port_info & mpi = nc_midi_port_info();
+        const midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_bus_id(index);
     }
 
-    virtual std::string get_bus_name (int index) /*const*/
+    virtual std::string get_bus_name (int index) const
     {
-        midi_port_info & mpi = nc_midi_port_info();
+        const midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_bus_name(index);
     }
 
-    virtual int get_port_id (int index) /*const*/
+    virtual int get_port_id (int index) const
     {
-        midi_port_info & mpi = nc_midi_port_info();
+        const midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_port_id(index);
     }
 
-    virtual std::string get_port_name (int index) /*const*/
+    virtual std::string get_port_name (int index) const
     {
-        midi_port_info & mpi = nc_midi_port_info();
+        const midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_port_name(index);
     }
 
-    virtual int queue_number (int index)
+    virtual int queue_number (int index) const
     {
-        midi_port_info & mpi = nc_midi_port_info();
+        const midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_queue_number(index);
     }
 
     virtual std::string port_list () const;
 
-    int queue_number ()
+    int global_queue () const
     {
-        return m_queue;
+        return m_global_queue;
     }
 
     /**
@@ -288,20 +344,33 @@ public:
 
 protected:
 
-    /*
-    void queue_number (int q)
+    void global_queue (int q)
     {
-        m_queue = q;
+        m_global_queue = q;
     }
-    */
+
+    /**
+     * \setter m_midi_handle
+     */
+
+    void midi_handle (void * h)
+    {
+        m_midi_handle = h;
+    }
 
 private:
 
-    midi_port_info & nc_midi_port_info ()
+    /*
+     * \getter m_input or m_output
+     *      Used for retrieving values from the input or output containers.
+     *      The caller must insure the proper container by calling the
+     *      midi_mode() function with the value of true (SEQ64_MIDI_INPUT) or
+     *      false (SEQ64_MIDI_OUTPUT) first.
+     */
+
+    const midi_port_info & nc_midi_port_info () const
     {
-        return m_midi_mode_input ?
-            const_cast<midi_port_info &>(m_input) :
-            const_cast<midi_port_info &>(m_output) ;
+        return m_midi_mode_input ? m_input : m_output ;
     }
 
 };          // midi_info

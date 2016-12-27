@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-04
- * \updates       2016-12-20
+ * \updates       2016-12-26
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the ALSA information of
@@ -70,23 +70,17 @@ private:
 
 public:
 
-    midi_alsa_info (int queuenumber = SEQ64_NO_QUEUE);
+    midi_alsa_info
+    (
+        const std::string & appname,
+        int ppqn = SEQ64_DEFAULT_PPQN,          /* 192  */
+        int bpm  = SEQ64_DEFAULT_BPM            /* 120  */
+    );
     virtual ~midi_alsa_info ();
 
     /**
      * \getter m_alsa_seq
-     *      This is the void-pointer version.
-     */
-
-    virtual void * midi_handle ()
-    {
-        return m_alsa_seq;
-    }
-
-protected:
-
-    /**
-     * \getter m_alsa_seq
+     *      This is the platform-specific version of midi_handle().
      */
 
     snd_seq_t * seq ()

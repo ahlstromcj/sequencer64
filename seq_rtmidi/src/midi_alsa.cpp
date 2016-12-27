@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2016-12-18
+ * \updates       2016-12-24
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -39,6 +39,7 @@
 #include "calculations.hpp"             /* clock_ticks_from_ppqn()          */
 #include "event.hpp"                    /* seq64::event (MIDI event)        */
 #include "midi_alsa.hpp"                /* seq64::midi_alsa for ALSA        */
+#include "midi_info.hpp"                /* seq64::midi_info                 */
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
 /*
@@ -50,13 +51,12 @@ namespace seq64
 
 /**
  *  Provides a constructor with client number, port number, ALSA sequencer
- *  support, name of client, name of port.
+ *  support, name of client, name of port, etc., mostly contained within an
+ *  already-initialized midi_info object..
  *
- *  This constructor is the one that seems to be the one that is used for
- *  the MIDI input and output busses, when the [manual-alsa-ports] option is
- *  not in force.  Also used for the announce buss, and in the
- *  mastermidi_alsa::port_start() function.
- *
+ *  This constructor is the one that is used for the MIDI input and output
+ *  busses, when the [manual-alsa-ports] option is not in force.  Also used
+ *  for the announce buss, and in the mastermidi_alsa::port_start() function.
  *  There's currently some overlap between local/dest client and port numbers
  *  and the buss and port numbers of the new midibase interface.
  *
@@ -64,14 +64,18 @@ namespace seq64
  *  buss names when it writes the file.
  *
  * \param localclient
- *      Provides the local-client number.
+ *      Provides the local-client (i.e. user-client) number, which is obtained
+ *      by the ALSA snd_seq_client_id() function, and ranges from 128 to 191.
+ *      Now obtained directly via that function, rather than via a parameter.
  *
  * \param destclient
  *      Provides the destination-client number.  This is the actual buss
- *      number (e.g. 0, 1, 14, 128, 131, etc.)
+ *      number (e.g. 0, 1, 14, 128, 131, etc.)  This is a duplicate buss ID
+ *      value.
  *
  * \param destport
- *      Provides the destination-client port.
+ *      Provides the destination-client port.  This is a duplicate port ID
+ *      value.
  *
  * \param seq
  *      Provides the ALSA sequence that will work with this buss.
@@ -101,26 +105,28 @@ namespace seq64
 midi_alsa::midi_alsa
 (
     midi_info & masterinfo,
-    int localclient,
-    int destclient,                     // is this the major ifx number?
-    int destport,
+//  int localclient,
+//  int destclient,                     // is this the major ifx number?
+//  int destport,
     snd_seq_t * seq,
-    const std::string & busname,        // UNUSED SO FAR
-    const std::string & portname,       // UNUSED SO FAR
-    int index,                          // just an ordinal for display
-    int queue,                          // UNUSED SO FAR
+//  const std::string & busname,        // UNUSED SO FAR
+//  const std::string & portname,       // UNUSED SO FAR
+    int index,                          // index into master-info container
+//  int queue,                          // UNUSED SO FAR
     int ppqn,
     int bpm
 ) :
     midi_api            (masterinfo, index, ppqn, bpm),
     m_seq               (seq),
-    m_dest_addr_client  (destclient),   // actually the buss ID
-    m_dest_addr_port    (destport),     // actually the port ID
-    m_local_addr_client (localclient),
+    m_dest_addr_client  (masterinfo.get_bus_id(index)),     // redundant
+    m_dest_addr_port    (masterinfo.get_port_id(index)),    // redundant
+    m_local_addr_client (snd_seq_client_id(seq)),           // localclient
     m_local_addr_port   (-1)
 {
     // Empty body
 }
+
+#if 0
 
 /**
  *  Virtual port constructor, a secondary constructor.  This constructor is
@@ -158,8 +164,8 @@ midi_alsa::midi_alsa
     int localclient,
     snd_seq_t * seq,
     int index,                          // just an ordinal for display
-    int bus_id,                         // UNUSED SO FAR
-    int queue,                          // UNUSED SO FAR
+//  int bus_id,                         // UNUSED SO FAR
+//  int queue,                          // UNUSED SO FAR
     int ppqn,
     int bpm
 ) :
@@ -167,11 +173,14 @@ midi_alsa::midi_alsa
     m_seq               (seq),
     m_dest_addr_client  (SEQ64_NO_BUS),
     m_dest_addr_port    (SEQ64_NO_PORT),
-    m_local_addr_client (localclient),
+//  m_local_addr_client (localclient),
+    m_local_addr_client (snd_seq_client_id(seq)),           // localclient
     m_local_addr_port   (SEQ64_NO_PORT)
 {
     // Functionality moved to the base class
 }
+
+#endif  // 0
 
 /**
  *  A rote empty destructor.

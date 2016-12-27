@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-20
+ * \updates       2016-12-26
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -55,7 +55,13 @@ private:
 
 public:
 
-    rtmidi_info (rtmidi_api api = RTMIDI_API_UNSPECIFIED);
+    rtmidi_info
+    (
+        rtmidi_api api                  = RTMIDI_API_UNSPECIFIED,
+        const std::string & appname     = "rtmidiapp",
+        int ppqn                        = SEQ64_DEFAULT_PPQN,
+        int bpm                         = SEQ64_DEFAULT_BPM
+    );
 
     virtual ~rtmidi_info ();
 
@@ -203,7 +209,13 @@ protected:
 
 protected:
 
-    void openmidi_api (rtmidi_api api);
+    void openmidi_api
+    (
+        rtmidi_api api,
+        const std::string & appname,
+        int ppqn,
+        int bpm
+    );
 
 };          // class rtmidi_info
 

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-20
+ * \updates       2016-12-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -140,7 +140,8 @@ rtmidi_in::~rtmidi_in()
  *  Opens the desired MIDI API.
  *
  * \param api
- *      The desired MIDI API.
+ *      The desired MIDI API.  If not specified, first JACK is tried, then
+ *      ALSA.
  *
  * \param clientname
  *      The name of the client.  This is the name used to access the client.
@@ -153,10 +154,9 @@ rtmidi_in::openmidi_api
    const std::string & clientname
 )
 {
+    delete_api();
     if (api == RTMIDI_API_UNSPECIFIED)
     {
-        delete_api();
-
         if (rc().with_jack_transport())
         {
             if (api == RTMIDI_API_UNIX_JACK)
@@ -172,10 +172,25 @@ rtmidi_in::openmidi_api
             if (api == RTMIDI_API_LINUX_ALSA)
             {
 #ifdef SEQ64_BUILD_LINUX_ALSA__NOT_READY
-                set_api(new midi_in_alsa(clientname));
+                set_api
+                (
+                    new midi_in_alsa(clientname);
+                );
 #endif
             }
         }
+    }
+    else if (api == RTMIDI_API_UNIX_JACK)
+    {
+#ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
+        set_api(new midi_in_jack(clientname));
+#endif
+    }
+    else if (api == RTMIDI_API_LINUX_ALSA)
+    {
+#ifdef SEQ64_BUILD_LINUX_ALSA__NOT_READY
+        set_api(new midi_in_alsa(clientname));
+#endif
     }
 }
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-13
+ * \updates       2016-12-26
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -59,7 +59,7 @@ namespace seq64
 mastermidibus::mastermidibus (int ppqn, int bpm)
  :
     mastermidibase      (ppqn, bpm),
-    m_midi_scratch      ()
+    m_midi_scratch      (RTMIDI_API_UNSPECIFIED, SEQ64_APP_NAME, ppqn, bpm)
 {
     // Empty body
 }
@@ -140,7 +140,7 @@ mastermidibus::api_init (int ppqn, int bpm)
         unsigned nports = m_midi_scratch.get_all_port_info();
 #ifdef PLATFORM_DEBUG
         std::string plist = m_midi_scratch.port_list();
-        printf("RtMidi ports found:\n%s\n", plist.c_str());
+        printf("rtmidi ports found:\n%s\n", plist.c_str());
 #endif
         if (nports > 0)
         {

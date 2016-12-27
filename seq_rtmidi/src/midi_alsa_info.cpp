@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-20
+ * \updates       2016-12-26
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -48,9 +48,13 @@ unsigned midi_alsa_info::sm_output_caps =
  *      Provides the upper limit of the queue size.
  */
 
-midi_alsa_info::midi_alsa_info (int queuenumber)
- :
-    midi_info               (queuenumber),  /* generally will be changed    */
+midi_alsa_info::midi_alsa_info
+(
+    const std::string & appname,
+    int ppqn,
+    int bpm
+) :
+    midi_info               (appname, ppqn, bpm),
     m_alsa_seq              (nullptr),
     m_num_poll_descriptors  (0),            /* from ALSA mastermidibus      */
     m_poll_descriptors      (nullptr)       /* ditto                        */
@@ -73,8 +77,9 @@ midi_alsa_info::midi_alsa_info (int queuenumber)
          */
 
         m_alsa_seq = seq;
+        midi_handle(seq);
         snd_seq_set_client_name(m_alsa_seq, SEQ64_APP_NAME);
-        queue_number(snd_seq_alloc_queue(m_alsa_seq));
+        global_queue(snd_seq_alloc_queue(m_alsa_seq));
 
 //      set_beats_per_minute(m_beats_per_minute);
 //      set_ppqn(ppqn);
@@ -113,8 +118,8 @@ midi_alsa_info::~midi_alsa_info ()
     {
         snd_seq_event_t ev;
         snd_seq_ev_clear(&ev);                          /* memset it to 0   */
-        snd_seq_stop_queue(m_alsa_seq, queue_number(), &ev);
-        snd_seq_free_queue(m_alsa_seq, queue_number());
+        snd_seq_stop_queue(m_alsa_seq, global_queue(), &ev);
+        snd_seq_free_queue(m_alsa_seq, global_queue());
         snd_seq_close(m_alsa_seq);                      /* close client     */
         (void) snd_config_update_free_global();         /* more cleanup     */
         if (not_nullptr(m_poll_descriptors))
@@ -190,7 +195,7 @@ midi_alsa_info::get_all_port_info ()
                     input_ports().add
                     (
                         unsigned(client), clientname,
-                        unsigned(portnumber), portname
+                        unsigned(portnumber), portname, global_queue()
                     );
                     ++count;
                 }

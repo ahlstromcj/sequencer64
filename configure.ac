@@ -638,7 +638,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-12-17"
+#define VERSION_DATE_SHORT "2016-12-24"
 #define VERSION "0.90.0"
 
 )

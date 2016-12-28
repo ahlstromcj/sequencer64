@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-20
+ * \updates       2016-12-28
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The big difference between this class (seq64::rtmidi) and
@@ -62,7 +62,7 @@ private:
 
 protected:
 
-    rtmidi (rtmidi_info & info);
+    rtmidi (rtmidi_info & info, int index = SEQ64_NO_INDEX);
     virtual ~rtmidi ();
 
 public:             // NEW APIS
@@ -235,8 +235,6 @@ protected:
  *  time.  With the OS-X, Linux ALSA, and JACK MIDI APIs, it is also
  *  possible to open a virtual input port to which other MIDI software
  *  clients can connect.
- *
- *  By Gary P. Scavone, 2003-2014.
  */
 
 class rtmidi_in : public rtmidi
@@ -272,8 +270,7 @@ public:
     rtmidi_in
     (
         rtmidi_info & info,
-        rtmidi_api api = RTMIDI_API_UNSPECIFIED,
-        const std::string & clientname = "rtmidi input client"
+        int index = SEQ64_NO_INDEX
     );
 
     /**
@@ -285,7 +282,10 @@ public:
 
 protected:
 
-    void openmidi_api (rtmidi_api api, const std::string & clientname);
+    void openmidi_api
+    (
+        rtmidi_api api, rtmidi_info & info, int index = SEQ64_NO_INDEX
+    );
 
 };
 
@@ -299,8 +299,6 @@ protected:
  *  connect to more than one MIDI device at the same time.  With the
  *  OS-X, Linux ALSA and JACK MIDI APIs, it is also possible to open a
  *  virtual port to which other MIDI software clients can connect.
- *
- *  by Gary P. Scavone, 2003-2014.
  */
 
 class rtmidi_out : public rtmidi
@@ -321,8 +319,7 @@ public:
     rtmidi_out
     (
         rtmidi_info & info,
-        rtmidi_api api = RTMIDI_API_UNSPECIFIED,
-        const std::string & clientname = "rtmidi output client"
+        int index = SEQ64_NO_INDEX
     );
 
     /**
@@ -333,7 +330,10 @@ public:
 
 protected:
 
-    void openmidi_api (rtmidi_api api, const std::string & clientname);
+    void openmidi_api
+    (
+        rtmidi_api api, rtmidi_info & info, int index = SEQ64_NO_INDEX
+    );
 
 };
 

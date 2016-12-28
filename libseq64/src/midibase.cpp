@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2016-12-14
+ * \updates       2016-12-28
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -124,7 +124,9 @@ int midibase::m_clock_mod = 16 * 4;
  *
  * \param makevirtual
  *      Indicates that the port represented by this object is to be virtual.
- *      Defaults to false.
+ *      Defaults to false.  This could also be set via the init_in(),
+ *      init_out(), init_in_sub(), or init_out_sub() routines.  Doing it here
+ *      seems okay.
  */
 
 midibase::midibase

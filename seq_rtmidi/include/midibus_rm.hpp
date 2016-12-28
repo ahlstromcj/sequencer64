@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-21
+ * \updates       2016-12-27
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
@@ -86,24 +86,15 @@ public:
     midibus                                 // virtual constructor
     (
         rtmidi_info & rt,
-        const std::string & appname,
         const std::string & clientname,     // rt.get_bus_name(index)
-//      const std::string & portname = "",  // rt.get_port_name(index)
-        int index    = 0,
-        int bus_id   = SEQ64_NO_BUS,        // rt.get_bus_id(index)
-        int port_id  = SEQ64_NO_PORT,       // rt.get_port_id(index)
-        int queue    = SEQ64_NO_QUEUE,      // rt.get_queue_id(index) NEW
-        int ppqn     = SEQ64_USE_DEFAULT_PPQN,
-        int bpm      = SEQ64_DEFAULT_BPM
+        int index,
+        int bus_id = 0                      // rt.get_bus_id(index)
     );
 
     midibus                                 // normal constructor
     (
         rtmidi_info & rt,
-        const std::string & appname,        /* includes port name   */
-        int index                       = 0,
-        int ppqn                        = SEQ64_USE_DEFAULT_PPQN,
-        int bpm                         = SEQ64_DEFAULT_BPM
+        int index
     );
 
     virtual ~midibus ();
@@ -113,31 +104,15 @@ protected:
 
     virtual int api_poll_for_midi ();
     virtual bool api_init_in ();
+    virtual bool api_init_in_sub ();
     virtual bool api_init_out ();
+    virtual bool api_init_out_sub ();
 
     /*
      *  Provides common code between api_init_in() and api_initi_out().
      */
 
     bool api_init_common (rtmidi * rtm);
-
-    /**
-     *  Temporary easy implementation for now.
-     */
-
-    virtual bool api_init_in_sub ()
-    {
-        return api_init_in();
-    }
-
-    /**
-     *  Temporary easy implementation for now.
-     */
-
-    virtual bool api_init_out_sub ()
-    {
-        return api_init_out();
-    }
 
     virtual void api_continue_from (midipulse tick, midipulse beats);
     virtual void api_start ();

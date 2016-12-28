@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2016-12-24
+ * \updates       2016-12-28
  * \license       GNU GPLv2 or above
  *
  *  The midi_alsa module is the Linux version of the midi_alsa module.
@@ -117,40 +117,8 @@ public:
     midi_alsa
     (
         midi_info & masterinfo,
-//      int localclient,
-//      int destclient,                     // masterinfo.get_bus_id(index)?
-//      int destport,                       // masterinfo.get_port_id(index)?
-        snd_seq_t * seq,                    // alsa masterinfo.midi_handle()
-//      const std::string & client_name,    // masterinfo.get_bus_name(index)?
-//      const std::string & port_name,      // masterinfo.get_port_name(index)?
-        int index,                          /* a display ordinal    */
-//      int queue,                          // masterinfo.queue_number()
-        int ppqn = SEQ64_USE_DEFAULT_PPQN,
-        int bpm  = SEQ64_DEFAULT_BPM
+        int index                           /* a display ordinal    */
     );
-
-#if 0
-
-    /*
-     *  Virtual-port constructor.
-     *  This version is used with the --manual-alsa-ports option, for both
-     *  input and output busses.  Does not yet directly include the concept of
-     *  buss ID and port ID.
-     */
-
-    midi_alsa
-    (
-        midi_info & masterinfo,
-//      int localclient,
-        snd_seq_t * seq,
-        int index,                              /* a display ordinal    */
-//      int bus_id,
-//      int queue,
-        int ppqn = SEQ64_USE_DEFAULT_PPQN,
-        int bpm  = SEQ64_DEFAULT_BPM
-    );
-
-#endif  // 0
 
     virtual ~midi_alsa ();
 
@@ -189,16 +157,33 @@ protected:
     virtual void api_stop ();
     virtual void api_clock (midipulse tick);
 
-};          // class midi_alsa (ALSA version)
+};          // class midi_alsa
 
 /**
- *  This class implements with ALSA version of the midi_alsa object.
+ *  This class implements the ALSA version of a MIDI input object.
+ */
 
 class midi_in_alsa : public midi_alsa
 {
 
-}
+public:
+
+    midi_in_alsa (midi_info & masterinfo, int index);
+
+};          // class midi_in_alsa
+
+/**
+ *  This class implements the ALSA version of a MIDI output object.
  */
+
+class midi_out_alsa : public midi_alsa
+{
+
+public:
+
+    midi_out_alsa (midi_info & masterinfo, int index);
+
+};          // class midi_out_alsa
 
 }           // namespace seq64
 

@@ -164,21 +164,29 @@ rtmidi_info::openmidi_api
     int bpm
 )
 {
+    bool got_an_api = false;
     delete_api();
 
 #ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
     if (rc().with_jack_transport())
     {
         if (api == RTMIDI_API_UNIX_JACK)
+        {
             set_api(new midi_jack_info(appname, ppqn, bpm));
+            got_an_api = true;
+        }
     }
 #endif
 
+    if (! got_an_api)
+    {
 #ifdef SEQ64_BUILD_LINUX_ALSA
-    if (api == RTMIDI_API_LINUX_ALSA)
-        set_api_info(new midi_alsa_info(appname, ppqn, bpm));
+        if (api == RTMIDI_API_LINUX_ALSA)
+        {
+            set_api_info(new midi_alsa_info(appname, ppqn, bpm));
+        }
 #endif
-
+    }
 }
 
 }           // namespace seq64

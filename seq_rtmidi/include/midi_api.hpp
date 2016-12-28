@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-19
+ * \updates       2016-12-28
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -20,6 +20,7 @@
 
 #include "midibase.hpp"
 #include "rterror.hpp"
+#include "rtmidi_types.hpp"             /* SEQ64_NO_INDEX               */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -54,13 +55,7 @@ protected:
 
 public:
 
-    midi_api
-    (
-        midi_info & masterinfo,
-        int index   = 0,
-        int ppqn    = SEQ64_DEFAULT_PPQN,       // 192, see app_limits.h
-        int bpm     = SEQ64_DEFAULT_BPM         // 120, see app_limits.h
-    );
+    midi_api (midi_info & masterinfo, int index = SEQ64_NO_INDEX);
     virtual ~midi_api ();
 
 public:
@@ -106,13 +101,7 @@ class midi_in_api : public midi_api
 
 public:
 
-    midi_in_api
-    (
-        midi_info & masterinfo,
-        int ppqn    = SEQ64_DEFAULT_PPQN,       // 192, see app_limits.h
-        int bpm     = SEQ64_DEFAULT_BPM         // 120, see app_limits.h
-    );
-
+    midi_in_api (midi_info & masterinfo, int index = SEQ64_NO_INDEX);
     virtual ~midi_in_api ();
 
 };          // class midi_in_api
@@ -126,12 +115,7 @@ class midi_out_api : public midi_api
 
 public:
 
-    midi_out_api
-    (
-        midi_info & masterinfo,
-        int ppqn    = SEQ64_DEFAULT_PPQN,       // 192, see app_limits.h
-        int bpm     = SEQ64_DEFAULT_BPM         // 120, see app_limits.h
-    );
+    midi_out_api (midi_info & masterinfo, int index = SEQ64_NO_INDEX);
     virtual ~midi_out_api ();
 
 };          // class midi_out_api

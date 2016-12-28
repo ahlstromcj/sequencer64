@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2016-12-24
+ * \updates       2016-12-28
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -52,135 +52,45 @@ namespace seq64
 /**
  *  Provides a constructor with client number, port number, ALSA sequencer
  *  support, name of client, name of port, etc., mostly contained within an
- *  already-initialized midi_info object..
+ *  already-initialized midi_info object.
  *
- *  This constructor is the one that is used for the MIDI input and output
- *  busses, when the [manual-alsa-ports] option is not in force.  Also used
- *  for the announce buss, and in the mastermidi_alsa::port_start() function.
- *  There's currently some overlap between local/dest client and port numbers
- *  and the buss and port numbers of the new midibase interface.
+ *  This constructor is the only one that is used for the MIDI input and
+ *  output busses, whether the [manual-alsa-ports] option is in force or not.
+ *  The actual setup of a normal or virtual port is done in the api_*_init_*()
+ *  routines.
+ *
+ *  Also used for the announce buss, and in the mastermidi_alsa::port_start()
+ *  function.  There's currently some overlap between local/dest client and
+ *  port numbers and the buss and port numbers of the new midibase interface.
  *
  *  Also, note that the optionsfile module uses the master buss to get the
  *  buss names when it writes the file.
  *
- * \param localclient
- *      Provides the local-client (i.e. user-client) number, which is obtained
- *      by the ALSA snd_seq_client_id() function, and ranges from 128 to 191.
- *      Now obtained directly via that function, rather than via a parameter.
- *
- * \param destclient
- *      Provides the destination-client number.  This is the actual buss
- *      number (e.g. 0, 1, 14, 128, 131, etc.)  This is a duplicate buss ID
- *      value.
- *
- * \param destport
- *      Provides the destination-client port.  This is a duplicate port ID
- *      value.
- *
- * \param seq
- *      Provides the ALSA sequence that will work with this buss.
- *
- * \param client_name
- *      Provides the client name; but this parameter was unused, but now
- *      enabled for better port naming in the Options dialog.  This is actual
- *      the buss though "buss" is also kind of misleading.
- *
- * \param port_name
- *      Provides the port name.
+ * \param info
+ *      Provides the information about the desired port, and more.
  *
  * \param index
  *      This is the order of the buss in the lookup, used for display and
  *      labelling.  Starts from 0.
- *
- * \param queue
- *      Provides the queue ID.
- *
- * \param ppqn
- *      Provides the PPQN value.
- *
- * \param bpm
- *      Provides the BPM value.
  */
 
 midi_alsa::midi_alsa
 (
     midi_info & masterinfo,
-//  int localclient,
-//  int destclient,                     // is this the major ifx number?
-//  int destport,
-    snd_seq_t * seq,
-//  const std::string & busname,        // UNUSED SO FAR
-//  const std::string & portname,       // UNUSED SO FAR
-    int index,                          // index into master-info container
-//  int queue,                          // UNUSED SO FAR
-    int ppqn,
-    int bpm
+    int index                           // index into master-info container
 ) :
-    midi_api            (masterinfo, index, ppqn, bpm),
-    m_seq               (seq),
+    midi_api            (masterinfo, index),
+    m_seq
+    (
+        reinterpret_cast<snd_seq_t *>(masterinfo.midi_handle())
+    ),
     m_dest_addr_client  (masterinfo.get_bus_id(index)),     // redundant
     m_dest_addr_port    (masterinfo.get_port_id(index)),    // redundant
-    m_local_addr_client (snd_seq_client_id(seq)),           // localclient
+    m_local_addr_client (snd_seq_client_id(m_seq)),         // localclient
     m_local_addr_port   (-1)
 {
     // Empty body
 }
-
-#if 0
-
-/**
- *  Virtual port constructor, a secondary constructor.  This constructor is
- *  used for the MIDI input and output busses when the [manual-alsa-ports]
- *  option is in effect.  In effect, it is meant to create a virtual port.
- *  This is indicated by passing "true" as the final parameter of the
- *  base-class constructor.  It is similar to the principal constructor, but
- *  labels the buss by number more than by name.
- *
- * \param localclient
- *      Provides the local-client number.
- *
- * \param seq
- *      Provides the sequence that will work with this buss.
- *
- * \param id
- *      Provides the ID code for this bus.  It is an index into the midi_alsa
- *      definitions array, and is also used in the constructed human-readable
- *      buss name.  This is also the port ID; currently the buss-number and
- *      port-number implement the same concept.
- *
- * \param queue
- *      Provides the queue ID.
- *
- * \param ppqn
- *      Provides the PPQN value.
- *
- * \param bpm
- *      Provides the BPM value.
- */
-
-midi_alsa::midi_alsa
-(
-    midi_info & masterinfo,
-    int localclient,
-    snd_seq_t * seq,
-    int index,                          // just an ordinal for display
-//  int bus_id,                         // UNUSED SO FAR
-//  int queue,                          // UNUSED SO FAR
-    int ppqn,
-    int bpm
-) :
-    midi_api            (masterinfo, index, ppqn, bpm),
-    m_seq               (seq),
-    m_dest_addr_client  (SEQ64_NO_BUS),
-    m_dest_addr_port    (SEQ64_NO_PORT),
-//  m_local_addr_client (localclient),
-    m_local_addr_client (snd_seq_client_id(seq)),           // localclient
-    m_local_addr_port   (SEQ64_NO_PORT)
-{
-    // Functionality moved to the base class
-}
-
-#endif  // 0
 
 /**
  *  A rote empty destructor.
@@ -640,6 +550,32 @@ midi_alsa::remove_queued_on_events (int tag)
 }
 
 #endif      // REMOVE_QUEUED_ON_EVENTS_CODE
+
+/**
+ *  ALSA MIDI input normal port or virtual port constructor.
+ *  We need a flag for which to construct, and the code taken from the
+ *  seq_alsamidi midibus class to do the port opening.
+ */
+
+midi_in_alsa::midi_in_alsa (midi_info & masterinfo, int index)
+ :
+    midi_alsa   (masterinfo, index)
+{
+    // TODO
+}
+
+/**
+ *  ALSA MIDI output normal port or virtual port constructor.
+ *  We need a flag for which to construct, and the code taken from the
+ *  seq_alsamidi midibus class to do the port opening.
+ */
+
+midi_out_alsa::midi_out_alsa (midi_info & masterinfo, int index)
+ :
+    midi_alsa   (masterinfo, index)
+{
+    // TODO
+}
 
 }           // namespace seq64
 

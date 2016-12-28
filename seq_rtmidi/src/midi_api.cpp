@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-19
+ * \updates       2016-12-27
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring...
@@ -31,13 +31,8 @@ namespace seq64
  *  Default constructor.
  */
 
-midi_api::midi_api
-(
-    midi_info & masterinfo,
-    int index,
-    int ppqn,
-    int bpm
-) :
+midi_api::midi_api (midi_info & masterinfo, int index)
+ :
     midibase
     (
         SEQ64_APP_NAME,
@@ -47,7 +42,9 @@ midi_api::midi_api
         masterinfo.get_bus_id(index),
         masterinfo.get_port_id(index),
         index,  // queue
-        ppqn, bpm, false /* non-virtual */
+        masterinfo.ppqn(),
+        masterinfo.bpm(),
+        false               /* non-virtual HMMMMMMMMMMM */
     ),
     m_master_info               (masterinfo),
     m_connected                 (false),
@@ -125,13 +122,9 @@ midi_api::error (rterror::Type type, const std::string & errorstring)
  *      Provides the ring-size of the MIDI input data queue.
  */
 
-midi_in_api::midi_in_api
-(
-    midi_info & masterinfo,
-    int ppqn,
-    int bpm
-) :
-    midi_api    (masterinfo, ppqn, bpm)
+midi_in_api::midi_in_api (midi_info & masterinfo, int index)
+ :
+    midi_api    (masterinfo, index)
 {
     // any code?
 }
@@ -155,13 +148,9 @@ midi_in_api::~midi_in_api ()
  *  Default constructor.
  */
 
-midi_out_api::midi_out_api
-(
-    midi_info & masterinfo,
-    int ppqn,
-    int bpm
-) :
-    midi_api    (masterinfo, ppqn, bpm)
+midi_out_api::midi_out_api (midi_info & masterinfo, int index)
+ :
+    midi_api    (masterinfo, index)
 {
     // no code
 }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-26
+ * \updates       2016-12-27
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -105,9 +105,7 @@ mastermidibus::api_init (int ppqn, int bpm)
             std::string portname = tmp;
             m_buses_out[i] = new midibus
             (
-                m_midi_scratch, /* unused */
-                SEQ64_APP_NAME, SEQ64_APP_NAME, /* portname,*/ i,
-                0, i, /* bus and port ID */ SEQ64_NO_QUEUE, ppqn, bpm
+                m_midi_scratch, SEQ64_APP_NAME, i  /* index and port */
             );
             m_buses_out[i]->init_out_sub();
             m_buses_out_active[i] = m_buses_out_init[i] = true;
@@ -128,9 +126,7 @@ mastermidibus::api_init (int ppqn, int bpm)
         m_num_in_buses = 1;
         m_buses_in[0] = new midibus
         (
-            m_midi_scratch, /* unused */
-            SEQ64_APP_NAME, SEQ64_APP_NAME, /* portname,*/ 0,
-            0, 0, /* bus and port ID */ SEQ64_NO_QUEUE, ppqn, bpm
+            m_midi_scratch, SEQ64_APP_NAME, 0  /* index and port */
         );
         m_buses_in[0]->init_in_sub();
         m_buses_in_active[0] = m_buses_in_init[0] = true;
@@ -149,10 +145,7 @@ mastermidibus::api_init (int ppqn, int bpm)
             m_num_in_buses = 0;
             for (unsigned i = 0; i < inports; ++i)
             {
-                midibus * nextbus = new midibus
-                (
-                    m_midi_scratch, SEQ64_APP_NAME, m_num_in_buses, ppqn, bpm
-                );
+                midibus * nextbus = new midibus(m_midi_scratch, m_num_in_buses);
                 if (nextbus->init_in())
                 {
                     m_buses_in[m_num_in_buses] = nextbus;
@@ -169,10 +162,7 @@ mastermidibus::api_init (int ppqn, int bpm)
             m_num_out_buses = 0;
             for (unsigned i = 0; i < outports; ++i)
             {
-                midibus * nextbus = new midibus
-                (
-                    m_midi_scratch, SEQ64_APP_NAME, m_num_out_buses, ppqn, bpm
-                );
+                midibus * nextbus = new midibus(m_midi_scratch, m_num_out_buses);
                 if (nextbus->init_out())
                 {
                     m_buses_out[m_num_out_buses] = nextbus;
@@ -185,7 +175,7 @@ mastermidibus::api_init (int ppqn, int bpm)
             }
         }
     }
-    set_beats_per_minute(c_beats_per_minute);
+    set_beats_per_minute(bpm);                  // c_beats_per_minute
     set_ppqn(ppqn);
 
     /*

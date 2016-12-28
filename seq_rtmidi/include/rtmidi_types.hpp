@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2016-12-18
+ * \updates       2016-12-28
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -23,7 +23,9 @@
 
 /**
  * This was the version of the RtMidi library from which this reimplementation
- * was forked.
+ * was forked.  However, the divergence from RtMidi by this library is now
+ * very great... only the idea of selecting the MIDI API at runtime has been
+ * preserved.
  */
 
 #define SEQ64_RTMIDI_VERSION "2.1.1"        /* revision at fork time        */
@@ -38,6 +40,14 @@
 
 #define SEQ64_MIDI_OUTPUT       false       /* the MIDI mode is not input   */
 #define SEQ64_MIDI_INPUT        true        /* the MIDI mode is input       */
+
+/**
+ *  Like the SEQ64_NO_BUS and SEQ64_NO_PORT macros in
+ *  libseq64/include/app_limits.h, this value indicates an unspecified or
+ *  invalid index into the list of available ports.
+ */
+
+#define SEQ64_NO_INDEX          (-1)        /* good values start at 0       */
 
 /*
  * Do not document the namespace; it breaks Doxygen.

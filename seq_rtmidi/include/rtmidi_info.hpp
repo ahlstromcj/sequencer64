@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-26
+ * \updates       2016-12-27
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -41,7 +41,7 @@ class rtmidi_info
 private:
 
     /**
-     *  Provides access to the selected API (currently only JACK or ALSA.
+     *  Provides access to the selected API (currently only JACK or ALSA).
      */
 
     midi_info * m_info_api;
@@ -84,7 +84,7 @@ public:
      *  Sets the input or output mode for getting data.
      */
 
-    virtual void midi_mode (bool flag)
+    void midi_mode (bool flag)
     {
         get_api_info()->midi_mode(flag);
     }
@@ -102,39 +102,59 @@ public:
      *      Returns the buss/client value as provided by the selected API.
      */
 
-    virtual int get_bus_id (int index)
+    int get_bus_id (int index) const
     {
         return get_api_info()->get_bus_id(index);
     }
 
-    virtual std::string get_bus_name (int index)
+    std::string get_bus_name (int index) const
     {
         return get_api_info()->get_bus_name(index);
     }
 
-    virtual int get_port_count ()
+    int get_port_count () const
     {
         return get_api_info()->get_port_count();
     }
 
-    virtual int get_port_id (int index)
+    int get_port_id (int index) const
     {
         return get_api_info()->get_port_id(index);
     }
 
-    virtual std::string get_port_name (int index)
+    std::string get_port_name (int index) const
     {
         return get_api_info()->get_port_name(index);
     }
 
-    virtual unsigned get_all_port_info ()
+    unsigned get_all_port_info ()
     {
         return get_api_info()->get_all_port_info();
     }
 
-    virtual int queue_number (int index)
+    int queue_number (int index) const
     {
         return get_api_info()->queue_number(index);
+    }
+
+    const std::string & app_name () const
+    {
+        return get_api_info()->app_name();
+    }
+
+    int global_queue () const
+    {
+        return get_api_info()->global_queue();
+    }
+
+    int ppqn () const
+    {
+        return get_api_info()->ppqn();
+    }
+
+    int bpm () const
+    {
+        return get_api_info()->bpm();
     }
 
     /**

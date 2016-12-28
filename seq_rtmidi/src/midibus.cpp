@@ -25,53 +25,12 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-21
+ * \updates       2016-12-28
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
- *  Based on our refactored version of the RtMidi project included in this
- *  library.
- *
- *  PortMidi function calls to replace with RtMidi work-arounds:
- *
- *      -   Pm_Close()
- *      -   Pm_Poll()
- *      -   Pm_OpenOutput()
- *      -   Pm_OpenInput()
- *      -   Pm_Message()
- *      -   Pm_Write()
- *
- *  Now let's survey the test files of the rtmidi project to determine what
- *  functions we need to use.
- *
- *      -   MIDI input.
- *          -#  Create an rtmidi_in object, midiin.
- *          -#  MIDI input.  Need to define a callback of the format
- *              c(double delta, std::vector<midibyte> * msg, void * userdata).
- *              Set it with midiin->set_callback(&mycallback).
- *          -#  Set status to ignore sysex, timing, or active sensing messages:
- *              midiin->ignoreTypes(false, false, false); that is, don't
- *              ignore.
- *          -#  If desired, one can do midiin->open_virtual_port().
- *          -#  Otherwise: unsigned numberofports = midiin->get_port_count().
- *          -#  std::string portname = midiin->get_port_name(portnumber);
- *          -#  Finally, midiin->open_port().
- *          -#  To get messages:
- *              -   A polling loop: stamp = midiin->get_message().
- *              -   Use the callback to process each message.
- *      -   MIDI clock in/out.  See rtmidi-master/tests/midiclock.cpp.
- *          Lots of push_back() of message bytes followed by send_message()
- *          for the MIDI-clock out.
- *      -   MIDI output.
- *          -#  Create an rtmidi_out object, midiout.
- *          -#  If desired, one can do midiout->open_virtual_port().
- *          -#  Otherwise: unsigned numberofports = midiout->get_port_count().
- *          -#  std::string portname = midiin->get_port_name(portnumber);
- *          -#  Finally, midiout->open_port().
- *          -#  To send a message, push_back() the message bytes (or use array
- *              notation).  Then midiout->send_message().
- *
- *  What's the difference between a regular port and a virtual port?
+ *  Based on our super-heavily refactored version of the RtMidi project
+ *  included in this library.
  */
 
 #include "event.hpp"                    /* seq64::event and macros          */
@@ -80,7 +39,7 @@
 #include "rtmidi_info.hpp"              /* seq64::rtmidi_info (new)         */
 
 /**
- *  A monaifest constant for the RtMidi version of the api_poll_for_midi()
+ *  A manifest constant for the RtMidi version of the api_poll_for_midi()
  *  function.
  */
 
@@ -108,28 +67,21 @@ namespace seq64
 midibus::midibus
 (
     rtmidi_info & rt,
-    const std::string & appname,
     const std::string & clientname,     // OR IS IT THE APPNAME?
-//  const std::string & portname,
     int index,
-    int bus_id,
-    int port_id,
-    int queue,
-    int ppqn,
-    int bpm
+    int bus_id
 ) :
     midibase
     (
-//      SEQ64_APP_NAME, clientname, portname, index, bus_id, port_id,
-//      queue, ppqn, bpm, true  /* make virtual */
-        appname,
-        clientname,                     // rt.get_bus_name(index),
-        "port",                         // rt.get_port_name(index),
+        rt.app_name(),
+        clientname,
+        "port",
         index,
-        bus_id,                         // rt.get_bus_id(index),
-        port_id,                        // rt.get_port_id(index),
-        queue,                          // rt.queue_number(index),
-        ppqn, bpm, true  /* make virtual */
+        bus_id,
+        index,                          // used as virtual port ID
+        rt.global_queue(),
+        rt.ppqn(), rt.bpm(),
+        true                            // make virtual
     ),
     m_rt_midi       (nullptr),
     m_master_info   (rt)                // currently unused
@@ -159,7 +111,7 @@ midibus::midibus
  * \param index
  *      This is the index into the rtmidi object, and is used to get the
  *      desired client and port information.  It is an index into the
- *      data vector held by the rtmidi object.
+ *      info container held by the rtmidi object.
  *
  * \param ppqn
  *      The PPQN value to use to initialize the MIDI buss, if applicable to
@@ -173,21 +125,19 @@ midibus::midibus
 midibus::midibus
 (
     rtmidi_info & rt,
-    const std::string & appname,        /* the application name, confusing  */
-    int index,                          /* index into list of ports         */
-    int ppqn,
-    int bpm
+    int index                           /* index into list of ports         */
 ) :
     midibase
     (
-        appname,                        /* basically the application name   */
+        rt.app_name(),                  /* basically the application name   */
         "",                             /* buss name extracted from rt      */
         "",                             /* port name extracted from rt      */
         index,                          /* index into list of systemports   */
         SEQ64_NO_BUS,                   /* buss ID extracted from rt        */
         SEQ64_NO_PORT,                  /* port ID extracted from rt        */
-        SEQ64_NO_QUEUE,                 /* queue number extracted from rt   */
-        ppqn, bpm, false                /* PPQN, BPM, and non-virtual flag  */
+        rt.global_queue(),              /* queue number extracted from rt   */
+        rt.ppqn(), rt.bpm(),
+        false                           /* non-virtual port flag            */
     ),
     m_rt_midi       (nullptr),
     m_master_info   (rt)
@@ -207,7 +157,10 @@ midibus::midibus
          * This changes what was set in the base class.
          */
 
-        set_name(appname, rt.get_bus_name(index), rt.get_port_name(index));
+        set_name
+        (
+            rt.app_name(), rt.get_bus_name(index), rt.get_port_name(index)
+        );
     }
 }
 
@@ -242,46 +195,14 @@ midibus::~midibus ()
 int
 midibus::api_poll_for_midi ()
 {
-#if 0
-    std::vector<midibyte> msg;
-    double stamp = m_rt_midi->get_message(msg);
-    if (stamp > 0.0)
-    {
-        int nbytes = msg.size();
-        millisleep(SEQ64_RTMIDI_POLL_FOR_MIDI_SLEEP_MS);
-        return (nbytes == 0) ? 1 : 0;
-    }
-    else
-        return 0;
-#else
-
-//  TODO
-//  TODO
-//  TODO
-//  TODO
-//  return m_rt_midi->poll_queue() ? 1 : 0 ;
-
     return 0;
-
-#endif
 }
 
 /**
- *  Initializes the MIDI output port, for RtMidi.
+ *  Initializes the MIDI output port.
  *
  *  Currently, we use the default values for the rtmidi API, the queue number,
  *  and the queue size.
- *
- *  -#  If desired, one can do midiout->open_virtual_port().
- *  -#  Or unsigned numberofports = midiout->get_port_count().
- *  -#  std::string portname = midiin->get_port_name(portnumber);
- *  -#  Finally, midiout->open_port().
- *
- *  One question is how does RtMidi distinguish between input and output
- *  ports?  Right now, the input and output init functions are basically
- *  identical.  The only different is that one creates an rtmidi_in
- *  object, and the other creates an rtmidi_out object.  So we will
- *  consolidate the common parts.
  *
  * \return
  *      Returns true if the output port was successfully opened.
@@ -293,7 +214,7 @@ midibus::api_init_out ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_out(m_master_info, RTMIDI_API_UNSPECIFIED, connect_name());
+        m_rt_midi = new rtmidi_out(m_master_info, get_bus_index());
         result = api_init_common(m_rt_midi);
     }
     catch (const rterror & err)
@@ -304,7 +225,30 @@ midibus::api_init_out ()
 }
 
 /**
- *  Initializes the MIDI input port, for RtMidi.
+ *  Initializes the MIDI virtual output port.
+ *
+ * \return
+ *      Returns true if the output port was successfully opened.
+ */
+
+bool
+midibus::api_init_out_sub ()
+{
+    bool result = false;
+    try
+    {
+        m_rt_midi = new rtmidi_out(m_master_info, get_bus_index());
+        result = api_init_common(m_rt_midi);
+    }
+    catch (const rterror & err)
+    {
+        err.print_message();
+    }
+    return result;
+}
+
+/**
+ *  Initializes the MIDI input port.
  *
  * \return
  *      Returns true if the input port was successfully opened.
@@ -316,7 +260,30 @@ midibus::api_init_in ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_in(m_master_info, RTMIDI_API_UNSPECIFIED, connect_name());
+        m_rt_midi = new rtmidi_in(m_master_info, get_bus_index());
+        result = api_init_common(m_rt_midi);
+    }
+    catch (const rterror & err)
+    {
+        err.print_message();
+    }
+    return result;
+}
+
+/**
+ *  Initializes the MIDI virtual input port.
+ *
+ * \return
+ *      Returns true if the input port was successfully opened.
+ */
+
+bool
+midibus::api_init_in_sub ()
+{
+    bool result = false;
+    try
+    {
+        m_rt_midi = new rtmidi_in(m_master_info, get_bus_index());
         result = api_init_common(m_rt_midi);
     }
     catch (const rterror & err)
@@ -338,13 +305,15 @@ midibus::api_init_in ()
  */
 
 bool
-midibus::api_init_common (rtmidi * rtm)
+midibus::api_init_common (rtmidi * /*rtm*/)
 {
     bool result = true;
     if (is_virtual_port())
     {
-        // replace with api_init......
-        //rtm->open_virtual_port(port_name());
+        /*
+         * Opening a virtual port is done in api_init_in_sub() or
+         * api_init_out_sub().
+         */
     }
     else
     {
@@ -352,13 +321,9 @@ midibus::api_init_common (rtmidi * rtm)
         if (portid >= 0)
         {
             /*
-             * Open the desired port (specified by system port number).  Then
-             * set up not to ignore SysEx, timing, or active-sensing messages.
+             * Opening the desired port (specified by system port number) is
+             * done in api_init_in() or api_init_out().
              */
-
-        // replace with api_init......
-        //    rtm->open_port(portid);
-//          rtm->ignore_types(false, false, false);
         }
         else
             result = false;
@@ -373,6 +338,9 @@ midibus::api_init_common (rtmidi * rtm)
  *
  *  Again, DO WE NEED to distinguish between input and output here?
  *
+ *  Note that we're doing a double-forwarding here, which may lower
+ *  throughput.
+ *
  * \param e24
  *      The MIDI event to play.
  *
@@ -384,17 +352,6 @@ void
 midibus::api_play (event * e24, midibyte channel)
 {
     m_rt_midi->api_play(e24, channel);
-    /*
-    std::vector<midibyte> msg;
-    midibyte d0, d1;
-    midibyte status = e24->get_status();
-    status += (channel & 0x0F);
-    e24->get_data(d0, d1);
-    msg.push_back(status);
-    msg.push_back(d0);
-    msg.push_back(d1);
-    m_rt_midi->send_message(msg);
-    */
 }
 
 /**
@@ -416,20 +373,6 @@ void
 midibus::api_continue_from (midipulse tick, midipulse beats)
 {
     m_rt_midi->api_continue_from(tick, beats);
-    /*
-    std::vector<midibyte> msg;
-    midibyte d0 = (beats & 0x3F80) >> 7;
-    midibyte d1 = (beats & 0x7F);
-    msg.push_back(EVENT_MIDI_CONTINUE);
-    msg.push_back(0);
-    msg.push_back(0);
-    m_rt_midi->send_message(msg);
-    msg.clear();
-    msg.push_back(EVENT_MIDI_SONG_POS);
-    msg.push_back(d0);
-    msg.push_back(d1);
-    m_rt_midi->send_message(msg);
-    */
 }
 
 /**
@@ -441,13 +384,6 @@ void
 midibus::api_start ()
 {
     m_rt_midi->api_start();
-    /*
-    std::vector<midibyte> msg;
-    msg.push_back(EVENT_MIDI_START);
-    msg.push_back(0);
-    msg.push_back(0);
-    m_rt_midi->send_message(msg);
-    */
 }
 
 /**
@@ -459,13 +395,6 @@ void
 midibus::api_stop ()
 {
     m_rt_midi->api_stop();
-    /*
-    std::vector<midibyte> msg;
-    msg.push_back(EVENT_MIDI_STOP);
-    msg.push_back(0);
-    msg.push_back(0);
-    m_rt_midi->send_message(msg);
-    */
 }
 
 /**
@@ -481,13 +410,6 @@ void
 midibus::api_clock (midipulse tick)
 {
     m_rt_midi->api_clock(tick);
-    /*
-    std::vector<midibyte> msg;
-    msg.push_back(EVENT_MIDI_CLOCK);
-    msg.push_back(0);
-    msg.push_back(0);
-    m_rt_midi->send_message(msg);
-    */
 }
 
 }           // namespace seq64

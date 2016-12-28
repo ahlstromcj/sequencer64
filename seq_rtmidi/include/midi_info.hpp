@@ -150,7 +150,7 @@ public:
  *  currently present in the system.
  */
 
-class midi_info         // : public midi_api
+class midi_info
 {
 
 private:
@@ -267,6 +267,15 @@ public:
     midi_port_info & output_ports ()
     {
         return m_output;
+    }
+
+    /**
+     * \getter m_app_name
+     */
+
+    const std::string & app_name () const
+    {
+        return m_app_name;
     }
 
     /**

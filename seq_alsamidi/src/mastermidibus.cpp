@@ -144,8 +144,8 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
      * ALSA client's queue.
      */
 
-    snd_seq_set_client_name(m_alsa_seq, SEQ64_PACKAGE); /* "sequencer64" */
-    m_queue = snd_seq_alloc_queue(m_alsa_seq);
+    snd_seq_set_client_name(m_alsa_seq, SEQ64_PACKAGE); /* "sequencer64"    */
+    m_queue = snd_seq_alloc_queue(m_alsa_seq);          /* protected member */
 
 #ifdef SEQ64_LASH_SUPPORT
 

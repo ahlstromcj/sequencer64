@@ -6,7 +6,7 @@
 # \library    	seq_rtmidi library
 # \author     	Chris Ahlstrom
 # \date       	2016-11-19
-# \update      2016-12-18
+# \update      2016-12-27
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -84,7 +84,6 @@ AM_CXXFLAGS = \
 
 pkginclude_HEADERS = \
    mastermidibus_rm.hpp \
-   midibase_abc.hpp \
    midibus_rm.hpp \
 	midi_alsa.hpp \
 	midi_alsa_info.hpp \

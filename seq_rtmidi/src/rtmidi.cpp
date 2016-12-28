@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-21
+ * \updates       2016-12-28
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -45,9 +45,9 @@ namespace seq64
  *  Default constructor.
  */
 
-rtmidi::rtmidi (rtmidi_info & info)
+rtmidi::rtmidi (rtmidi_info & info, int index)
  :
-    midi_api        (*info.get_api_info(), 0, 192, 120),
+    midi_api        (*(info.get_api_info()), index),
     m_midi_info     (info),
     m_midi_api      (nullptr)
 {
@@ -75,40 +75,52 @@ rtmidi::~rtmidi ()
  *  the compiled APIs and return as soon as we find one with at least one port
  *  or we reach the end of the list.
  *
- * \param api
- *      The desired MIDI API.
+ * \param info
+ *      Contains information about the existing ports and the selected MIDI
+ *      API.  Actually, the selected MIDI API is a static value of the
+ *      rtmidi_info class.
  *
- * \param clientname
- *      The name of the client.  This is the name used to access the client.
+ * \param index
+ *      The desired port to open for input.
+ *
+ * \throw
+ *      This function will throw an rterror object if it cannot find a MIDI
+ *      API to use.
  */
 
 rtmidi_in::rtmidi_in
 (
     rtmidi_info & info,
-    rtmidi_api api,
-    const std::string & clientname
+    int index
 ) :
-    rtmidi   (info)
+    rtmidi   (info, index)
 {
-    if (api != RTMIDI_API_UNSPECIFIED)
+    if (rtmidi_info::selected_api() != RTMIDI_API_UNSPECIFIED)
     {
-        openmidi_api(api, clientname);
+        openmidi_api(rtmidi_info::selected_api(), info, index);
         if (not_nullptr(get_api()))
         {
-            rtmidi_info::selected_api(api);     /* log the API that worked  */
             return;
         }
-        errprintfunc("no compiled support for specified API");
+        else
+        {
+            errprintfunc("no compiled support for specified API");
+        }
     }
+
+    /*
+     * Generally, we should have already selected the API at this point,
+     * so this is fallback code.
+     */
 
     std::vector<rtmidi_api> apis;
     rtmidi_info::get_compiled_api(apis);
     for (unsigned i = 0; i < apis.size(); ++i)
     {
-        openmidi_api(apis[i], clientname);
+        openmidi_api(apis[i], info, index);
         if (info.get_api_info()->get_port_count() > 0)
         {
-            rtmidi_info::selected_api(api);     /* log the API that worked  */
+            rtmidi_info::selected_api(apis[i]); /* log the API that worked  */
             break;
         }
     }
@@ -140,70 +152,64 @@ rtmidi_in::~rtmidi_in()
  *  Opens the desired MIDI API.
  *
  * \param api
- *      The desired MIDI API.  If not specified, first JACK is tried, then
- *      ALSA.
+ *      The enum value for the desired MIDI API.  If not specified, first JACK
+ *      is tried, then ALSA.
  *
- * \param clientname
- *      The name of the client.  This is the name used to access the client.
+ * \param info
+ *      Holds information about the API's setup (e.g. a list of the ALSA ports
+ *      found on the system, the main ALSA "handle" pointer, plus the PPQN,
+ *      BPM, and other information).
  */
 
 void
 rtmidi_in::openmidi_api
 (
    rtmidi_api api,
-   const std::string & clientname
+   rtmidi_info & info,
+   int index
 )
 {
-    delete_api();
-    if (api == RTMIDI_API_UNSPECIFIED)
+    bool got_an_api = false;
+    if (not_nullptr(info.get_api_info()))
     {
-        if (rc().with_jack_transport())
+        midi_info & midiinfo = *(info.get_api_info());
+        delete_api();
+        if (api == RTMIDI_API_UNSPECIFIED)
         {
-            if (api == RTMIDI_API_UNIX_JACK)
+            if (rc().with_jack_transport())
             {
+                if (api == RTMIDI_API_UNIX_JACK)
+                {
 #ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
-                set_api(new midi_in_jack(clientname));
+                    set_api(new midi_in_jack(midiinfo, index));
+                    got_an_api = true;
 #endif
+                }
+            }
+            if (! got_an_api)
+            {
+                if (api == RTMIDI_API_LINUX_ALSA)
+                {
+#ifdef SEQ64_BUILD_LINUX_ALSA
+                    set_api(new midi_in_alsa(midiinfo, index));
+#endif
+                }
             }
         }
-
-        else
+        else if (api == RTMIDI_API_UNIX_JACK)
         {
-            if (api == RTMIDI_API_LINUX_ALSA)
-            {
-#ifdef SEQ64_BUILD_LINUX_ALSA__NOT_READY
-                set_api
-                (
-                    new midi_in_alsa(clientname);
-                );
+#ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
+            set_api(new midi_in_jack(midiinfo, index));
 #endif
-            }
+        }
+        else if (api == RTMIDI_API_LINUX_ALSA)
+        {
+#ifdef SEQ64_BUILD_LINUX_ALSA
+            set_api(new midi_in_alsa(midiinfo, index));
+#endif
         }
     }
-    else if (api == RTMIDI_API_UNIX_JACK)
-    {
-#ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
-        set_api(new midi_in_jack(clientname));
-#endif
-    }
-    else if (api == RTMIDI_API_LINUX_ALSA)
-    {
-#ifdef SEQ64_BUILD_LINUX_ALSA__NOT_READY
-        set_api(new midi_in_alsa(clientname));
-#endif
-    }
 }
-
-/**
- *  Throws an error.
-
-void
-rtmidi_in::send_message (const std::vector<midibyte> &)
-{
-    std::string errortext = func_message("not supported");
-    throw(rterror(errortext, rterror::UNSPECIFIED));
-}
- */
 
 /*
  * class rtmidi_out
@@ -216,11 +222,13 @@ rtmidi_in::send_message (const std::vector<midibyte> &)
  *  compiled APIs and return as soon as we find one with at least one port or
  *  we reach the end of the list.
  *
- * \param api
- *      Provides the API to be constructed.
+ * \param info
+ *      Contains information about the existing ports and the selected MIDI
+ *      API.  Actually, the selected MIDI API is a static value of the
+ *      rtmidi_info class.
  *
- * \param clientname
- *      Provides the name of the MIDI output client, used by some of the APIs.
+ * \param index
+ *      The desired port to open for output.
  *
  * \throw
  *      This function will throw an rterror object if it cannot find a MIDI
@@ -230,30 +238,36 @@ rtmidi_in::send_message (const std::vector<midibyte> &)
 rtmidi_out::rtmidi_out
 (
     rtmidi_info & info,
-    rtmidi_api api,
-    const std::string & clientname
+    int index
 ) :
-    rtmidi   (info)
+    rtmidi   (info, index)
 {
-    if (api != RTMIDI_API_UNSPECIFIED)
+    if (rtmidi_info::selected_api() != RTMIDI_API_UNSPECIFIED)
     {
-        openmidi_api(api, clientname);
+        openmidi_api(rtmidi_info::selected_api(), info, index);
         if (not_nullptr(get_api()))
         {
-            rtmidi_info::selected_api(api);     /* log the API that worked  */
             return;
         }
-        errprintfunc("no compiled support for specified API argument");
+        else
+        {
+            errprintfunc("no compiled support for specified API argument");
+        }
     }
+
+    /*
+     * Generally, we should have already selected the API at this point,
+     * so this is fallback code.
+     */
 
     std::vector<rtmidi_api> apis;
     rtmidi_info::get_compiled_api(apis);
     for (unsigned i = 0; i < apis.size(); ++i)
     {
-        openmidi_api(apis[i], clientname);
+        openmidi_api(apis[i], info, index);
         if (info.get_api_info()->get_port_count() > 0)
         {
-            rtmidi_info::selected_api(api);     /* log the API that worked  */
+            rtmidi_info::selected_api(apis[i]); /* log the API that worked  */
             break;
         }
     }
@@ -296,63 +310,54 @@ rtmidi_out::~rtmidi_out()
  */
 
 void
-rtmidi_out::openmidi_api (rtmidi_api api, const std::string & clientname)
+rtmidi_out::openmidi_api
+(
+   rtmidi_api api,
+   rtmidi_info & info,
+   int index
+)
 {
-    delete_api();
-
-    if (rc().with_jack_transport())
+    bool got_an_api = false;
+    if (not_nullptr(info.get_api_info()))
     {
-        if (api == RTMIDI_API_UNIX_JACK)
+        midi_info & midiinfo = *(info.get_api_info());
+        delete_api();
+        if (api == RTMIDI_API_UNSPECIFIED)
+        {
+            if (rc().with_jack_transport())
+            {
+                if (api == RTMIDI_API_UNIX_JACK)
+                {
+#ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
+                    set_api(new midi_out_jack(midiinfo, index));
+                    got_an_api = true;
+#endif
+                }
+            }
+            if (! got_an_api)
+            {
+                if (api == RTMIDI_API_LINUX_ALSA)
+                {
+#ifdef SEQ64_BUILD_LINUX_ALSA
+                    set_api(new midi_out_alsa(midiinfo, index));
+#endif
+                }
+            }
+        }
+        else if (api == RTMIDI_API_UNIX_JACK)
         {
 #ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
-            set_api(new midi_out_jack(clientname));
+            set_api(new midi_out_jack(midiinfo, index));
 #endif
         }
-    }
-
-    else
-    {
-        if (api == RTMIDI_API_LINUX_ALSA)
+        else if (api == RTMIDI_API_LINUX_ALSA)
         {
-#ifdef SEQ64_BUILD_LINUX_ALSA__NOT_READY
-            set_api(new midi_out_alsa(clientname));
+#ifdef SEQ64_BUILD_LINUX_ALSA
+            set_api(new midi_out_alsa(midiinfo, index));
 #endif
         }
     }
-
 }
-
-#if 0
-
-/**
- *  Throws an error.  No, for now just does nothing.
- */
-
-void
-rtmidi_out::ignore_types (bool, bool, bool)
-{
-    /*
-     * std::string errortext = func_message("not supported");
-     * throw(rterror(errortext, rterror::UNSPECIFIED));
-     */
-}
-
-/**
- *  Throws an error.  No, for now just does nothing.
- */
-
-double
-rtmidi_out::get_message (std::vector<midibyte> &)
-{
-    /*
-     * std::string errortext = func_message("not supported");
-     * throw(rterror(errortext, rterror::UNSPECIFIED));
-     */
-
-    return 0.0;
-}
-
-#endif      // 0
 
 }           // namespace seq64
 

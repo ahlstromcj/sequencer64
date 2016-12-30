@@ -94,8 +94,8 @@ public:
 private:
 
     virtual void api_init (int ppqn, int bpm);
-    virtual void api_set_beats_per_minute (int bpm);
     virtual void api_set_ppqn (int ppqn);
+    virtual void api_set_beats_per_minute (int bpm);
     virtual void api_flush ();
     virtual void api_start ();
     virtual void api_stop ();

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2016-12-28
+ * \updates       2016-12-30
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -116,9 +116,11 @@ midi_alsa::~midi_alsa()
 bool
 midi_alsa::api_init_out ()
 {
+    master_info().midi_mode(SEQ64_MIDI_OUTPUT);
+    std::string busname = master_info().get_bus_name(get_bus_index());
     int result = snd_seq_create_simple_port         /* create ports     */
     (
-        m_seq, "TODO", // bus_name().c_str(),
+        m_seq, busname.c_str(),
         SND_SEQ_PORT_CAP_NO_EXPORT | SND_SEQ_PORT_CAP_READ,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );
@@ -141,6 +143,9 @@ midi_alsa::api_init_out ()
         );
         return false;
     }
+    else
+        set_port_open();
+
     return true;
 }
 
@@ -154,9 +159,11 @@ midi_alsa::api_init_out ()
 bool
 midi_alsa::api_init_in ()
 {
+    master_info().midi_mode(SEQ64_MIDI_INPUT);
+    std::string busname = master_info().get_bus_name(get_bus_index());
     int result = snd_seq_create_simple_port             /* create ports */
     (
-        m_seq, "sequencer64 in",                        /* "seq24 in"   */
+        m_seq, busname.c_str(),
         SND_SEQ_PORT_CAP_NO_EXPORT | SND_SEQ_PORT_CAP_WRITE,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );
@@ -184,10 +191,7 @@ midi_alsa::api_init_in ()
      * Use the master queue, and get ticks, then subscribe.
      */
 
-    // TODO:
-    // snd_seq_port_subscribe_set_queue(subs, queue_number());
-    snd_seq_port_subscribe_set_queue(subs, 1);          // BAD CODE
-
+    snd_seq_port_subscribe_set_queue(subs, master_info().global_queue());
     snd_seq_port_subscribe_set_time_update(subs, 1);
     result = snd_seq_subscribe_port(m_seq, subs);
     if (result < 0)
@@ -199,6 +203,9 @@ midi_alsa::api_init_in ()
         );
         return false;
     }
+    else
+        set_port_open();
+
     return true;
 }
 
@@ -213,9 +220,12 @@ midi_alsa::api_init_in ()
 bool
 midi_alsa::api_init_out_sub ()
 {
+    std::string busname = SEQ64_APP_NAME;
+    busname += " ";
+    busname += "out";
     int result = snd_seq_create_simple_port             /* create ports */
     (
-        m_seq, "TODO", // bus_name().c_str(),
+        m_seq, busname.c_str(),
         SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );
@@ -225,6 +235,9 @@ midi_alsa::api_init_out_sub ()
         errprint("snd_seq_create_simple_port(write) error");
         return false;
     }
+    else
+        set_port_open();
+
     return true;
 }
 
@@ -238,9 +251,12 @@ midi_alsa::api_init_out_sub ()
 bool
 midi_alsa::api_init_in_sub ()
 {
+    std::string busname = SEQ64_APP_NAME;
+    busname += " ";
+    busname += "in";
     int result = snd_seq_create_simple_port             /* create ports */
     (
-        m_seq, "sequencer64 in",                        /* "seq24 in"   */
+        m_seq, busname.c_str(),
         SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );
@@ -250,6 +266,9 @@ midi_alsa::api_init_in_sub ()
         errprint("snd_seq_create_simple_port(write) error");
         return false;
     }
+    else
+        set_port_open();
+
     return true;
 }
 
@@ -278,14 +297,14 @@ midi_alsa::api_deinit_in ()
     snd_seq_port_subscribe_set_dest(subs, &dest);
 
     /*
-     * TODO
-    snd_seq_port_subscribe_set_queue(subs, queue_number()); // master queue
+     * This would seem to unsubscribe all ports.  True?  Danger?
      */
 
-    snd_seq_port_subscribe_set_queue(subs, 1);              // TODO TODO
-    snd_seq_port_subscribe_set_time_update(subs, 1);        /* get ticks    */
+    int queue = master_info().global_queue();
+    snd_seq_port_subscribe_set_queue(subs, queue);
+    snd_seq_port_subscribe_set_time_update(subs, queue);    /* get ticks    */
 
-    int result = snd_seq_unsubscribe_port(m_seq, subs);     /* subscribe    */
+    int result = snd_seq_unsubscribe_port(m_seq, subs);     /* unsubscribe  */
     if (result < 0)
     {
         fprintf
@@ -527,7 +546,41 @@ midi_alsa::api_clock (midipulse /* tick */)
     snd_seq_event_output(m_seq, &ev);               /* pump it into queue   */
 }
 
-#if REMOVE_QUEUED_ON_EVENTS_CODE
+#if USE_PER_PORT_PPQN_BPM_SETTING
+
+/*
+ * Currently, this code is implemented in the midi_alsa_info module, since
+ * it is a mastermidibus function.
+ */
+
+void
+midi_alsa::api_set_ppqn (int ppqn)
+{
+    int queue = master_info().global_queue();
+    snd_seq_queue_tempo_t * tempo;
+    snd_seq_queue_tempo_alloca(&tempo);             /* allocate tempo struct */
+    snd_seq_get_queue_tempo(m_seq, queue, tempo);
+    snd_seq_queue_tempo_set_ppq(tempo, ppqn);
+    snd_seq_set_queue_tempo(m_seq, queue, tempo);
+}
+
+void
+midi_alsa::api_set_beats_per_minute (int bpm)
+{
+    int queue = master_info().global_queue();
+    snd_seq_queue_tempo_t * tempo;
+    snd_seq_queue_tempo_alloca(&tempo);          /* allocate tempo struct */
+    snd_seq_get_queue_tempo(m_seq, queue, tempo);
+    snd_seq_queue_tempo_set_tempo
+    (
+        tempo, int(tempo_us_from_beats_per_minute(bpm))
+    );
+    snd_seq_set_queue_tempo(m_seq, queue, tempo);
+}
+
+#endif  // USE_PER_PORT_PPQN_BPM_SETTING
+
+#ifdef REMOVE_QUEUED_ON_EVENTS_CODE
 
 /**
  *  Deletes events in the queue.  This function is not used anywhere, and
@@ -552,29 +605,29 @@ midi_alsa::remove_queued_on_events (int tag)
 #endif      // REMOVE_QUEUED_ON_EVENTS_CODE
 
 /**
- *  ALSA MIDI input normal port or virtual port constructor.
- *  We need a flag for which to construct, and the code taken from the
- *  seq_alsamidi midibus class to do the port opening.
+ *  ALSA MIDI input normal port or virtual port constructor.  The kind of port
+ *  is determine by which port-initialization function the mastermidibus
+ *  calls.
  */
 
 midi_in_alsa::midi_in_alsa (midi_info & masterinfo, int index)
  :
     midi_alsa   (masterinfo, index)
 {
-    // TODO
+    // Empty body
 }
 
 /**
- *  ALSA MIDI output normal port or virtual port constructor.
- *  We need a flag for which to construct, and the code taken from the
- *  seq_alsamidi midibus class to do the port opening.
+ *  ALSA MIDI output normal port or virtual port constructor.  The kind of
+ *  port is determine by which port-initialization function the mastermidibus
+ *  calls.
  */
 
 midi_out_alsa::midi_out_alsa (midi_info & masterinfo, int index)
  :
     midi_alsa   (masterinfo, index)
 {
-    // TODO
+    // Empty body
 }
 
 }           // namespace seq64

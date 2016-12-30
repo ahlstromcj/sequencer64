@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-24
+ * \updates       2016-12-30
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -122,11 +122,11 @@ midibus::midibus
     m_local_addr_client (localclient),
     m_local_addr_port   (-1)
 {
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_XXX
     printf
     (
         "midibus [%2d] (normal): user-client = %d; queue = %d;"
-        " dest-client:port = %s (%d):(%d); PPQN = %d; BPM = %d\n"
+        " dest-client:port = %s %d:%d; PPQN = %d; BPM = %d\n"
         ,
         index, localclient, queue,
         clientname.c_str(), destclient, destport, ppqn, bpm

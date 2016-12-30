@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2016-12-26
+ * \updates       2016-12-30
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -237,7 +237,7 @@ public:
      * \setter m_midi_mode_input
      */
 
-    virtual void midi_mode (bool flag)
+    void midi_mode (bool flag)
     {
         m_midi_mode_input = flag;
     }
@@ -279,7 +279,7 @@ public:
     }
 
     /**
-     * \getter m_ppqn
+     * \getter m_ppqn, simple version, also see api_set_ppqn().
      */
 
     int ppqn () const
@@ -288,12 +288,30 @@ public:
     }
 
     /**
-     * \getter m_bpm
+     * \getter m_bpm, simple version, also see api_set_beats_per_minute().
      */
 
     int bpm () const
     {
         return m_bpm;
+    }
+
+    /**
+     *  Special setter.
+     */
+
+    virtual void api_set_ppqn (int p)
+    {
+        m_ppqn = p;
+    }
+
+    /**
+     *  Special setter.
+     */
+
+    virtual void api_set_beats_per_minute (int b)
+    {
+        m_bpm = b;
     }
 
     /**
@@ -336,7 +354,7 @@ public:
         return mpi.get_queue_number(index);
     }
 
-    virtual std::string port_list () const;
+    std::string port_list () const;
 
     int global_queue () const
     {
@@ -352,6 +370,10 @@ public:
     virtual unsigned get_all_port_info () = 0;
 
 protected:
+
+    /**
+     * \setter m_global_queue
+     */
 
     void global_queue (int q)
     {

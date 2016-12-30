@@ -86,7 +86,7 @@ public:
     midibus                                 // virtual constructor
     (
         rtmidi_info & rt,
-        const std::string & clientname,     // rt.get_bus_name(index)
+        const std::string & appname,
         int index,
         int bus_id = 0                      // rt.get_bus_id(index)
     );

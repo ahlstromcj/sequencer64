@@ -84,6 +84,11 @@ main (int argc, char * argv [])
      * they might affect what gets read from the 'rc' or 'user' configuration
      * files.  They will be parsed again later so that they can still override
      * whatever other settings were made via the configuration files.
+     *
+     * However, we currently have a issue where the mastermidibus created by
+     * the perform object gets the default PPQN value, because the "user"
+     * configuration file has not been read at that point.  See the
+     * perfrom::launch() function.
      */
 
     seq64::gui_assistant_gtk2 gui;              /* GUI-specific objects     */

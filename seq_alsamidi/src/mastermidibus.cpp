@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-12-17
+ * \updates       2016-12-30
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -103,12 +103,12 @@ namespace seq64
  * \param ppqn
  *      Provides the PPQN value for this object.  However, in most cases, the
  *      default, SEQ64_USE_DEFAULT_PPQN should be specified.  Then the caller
- *      of this constructor should call mastermidibus::set_ppqn() to set up
+ *      of this constructor should call mastermidibus::api_set_ppqn() to set up
  *      the proper PPQN value.
  *
  * \param bpm
  *      Provides the beats per minute value, which defaults to
- *      c_beats_per_minute.
+ *      c_beats_per_minute.  Must be handled similarly to ppqn.
  */
 
 mastermidibus::mastermidibus (int ppqn, int bpm)
@@ -201,6 +201,11 @@ mastermidibus::~mastermidibus ()
  *      We now start the buss numbers at 0 in manual mode, so they match the
  *      number base (0) in normal mode, where the system is queried for the
  *      ports.
+ *
+ * \todo
+ *      We still need to reset the PPQN and BPM values via the ALSA API
+ *      if they are different here!  See the "rtmidi" implementation of
+ *      this function.
  *
  * \param ppqn
  *      The PPQN value to which to initialize the master MIDI buss.
@@ -445,12 +450,12 @@ mastermidibus::api_stop ()
  */
 
 void
-mastermidibus::api_set_ppqn (int ppqn)
+mastermidibus::api_set_ppqn (int p)
 {
     snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);             /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
-    snd_seq_queue_tempo_set_ppq(tempo, ppqn);
+    snd_seq_queue_tempo_set_ppq(tempo, p);
     snd_seq_set_queue_tempo(m_alsa_seq, m_queue, tempo);
 }
 
@@ -470,14 +475,14 @@ mastermidibus::api_set_ppqn (int ppqn)
  */
 
 void
-mastermidibus::api_set_beats_per_minute (int bpm)
+mastermidibus::api_set_beats_per_minute (int b)
 {
     snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);          /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
     snd_seq_queue_tempo_set_tempo
     (
-        tempo, int(tempo_us_from_beats_per_minute(bpm))
+        tempo, int(tempo_us_from_beats_per_minute(b))
     );
     snd_seq_set_queue_tempo(m_alsa_seq, m_queue, tempo);
 }

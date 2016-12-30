@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-04
- * \updates       2016-12-26
+ * \updates       2016-12-30
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the ALSA information of
@@ -87,6 +87,9 @@ public:
     {
         return m_alsa_seq;
     }
+
+    virtual void api_set_ppqn (int p);
+    virtual void api_set_beats_per_minute (int b);
 
 private:
 

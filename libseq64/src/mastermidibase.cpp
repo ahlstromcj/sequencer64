@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2016-12-14
+ * \updates       2016-12-30
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI

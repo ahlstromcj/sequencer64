@@ -65,7 +65,7 @@ protected:
     rtmidi (rtmidi_info & info, int index = SEQ64_NO_INDEX);
     virtual ~rtmidi ();
 
-public:             // NEW APIS
+public:
 
     void api_play (event * e24, midibyte channel)
     {
@@ -90,6 +90,16 @@ public:             // NEW APIS
     void api_clock (midipulse tick)
     {
         get_api()->api_clock(tick);
+    }
+
+    virtual void api_set_ppqn (int ppqn)
+    {
+        get_api()->api_set_ppqn(ppqn);
+    }
+
+    virtual void api_set_beats_per_minute (int bpm)
+    {
+        get_api()->api_set_beats_per_minute(bpm);
     }
 
     virtual bool api_init_out ()

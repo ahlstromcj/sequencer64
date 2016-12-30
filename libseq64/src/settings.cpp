@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-05-17
- * \updates       2016-05-17
+ * \updates       2016-12-29
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -89,18 +89,29 @@ usr ()
  *  Common code for handling PPQN settings.  Putting it here means we can
  *  reduce the reliance on the global ppqn.
  *
+ *  However, this function works completely only if the "user" configuration
+ *  file has already been read.  In some cases we may need to retrofit the
+ *  desired PPQN value!
+ *
  * \param ppqn
  *      Provides the PPQN value to be used.
  *
  * \return
  *      Returns the ppqn parameter, unless that parameter is
  *      SEQ64_USE_DEFAULT_PPQN (-1), then usr().midi_ppqn is returned.
+ *      If that value is also -1, then we return SEQ64_DEFAULT_PPQN (192).
  */
 
 int
 choose_ppqn (int ppqn)
 {
-    return (ppqn == SEQ64_USE_DEFAULT_PPQN) ? usr().midi_ppqn() : ppqn ;
+    int result = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? usr().midi_ppqn() : ppqn ;
+    if (result == SEQ64_USE_DEFAULT_PPQN)
+    {
+        result = SEQ64_DEFAULT_PPQN;
+        warnprint("Setting PPQN = 192");
+    }
+    return result;
 }
 
 }           // namespace seq64

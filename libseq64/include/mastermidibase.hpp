@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2016-12-01
+ * \updates       2016-12-30
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibase module is the base-class version of the mastermidibus
@@ -211,6 +211,8 @@ public:
 
     virtual void init (int ppqn, int bpm)
     {
+        m_ppqn = ppqn;
+        m_beats_per_minute = bpm;
         api_init(ppqn, bpm);
     }
 
@@ -302,8 +304,6 @@ public:
     void port_exit (int client, int port);
     void play (bussbyte bus, event * e24, midibyte channel);
     void set_clock (bussbyte bus, clock_e clock_type);
-    void set_beats_per_minute (int bpm);
-    void set_ppqn (int ppqn);
     void continue_from (midipulse tick);
     void init_clock (midipulse tick);
     void clock (midipulse tick);
@@ -322,6 +322,9 @@ public:
     bool get_midi_event (event * in);
     bool get_input (bussbyte bus);
     clock_e get_clock (bussbyte bus);
+
+    void set_ppqn (int ppqn);
+    void set_beats_per_minute (int bpm);
 
 protected:
 

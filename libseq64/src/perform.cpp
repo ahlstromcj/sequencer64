@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-12-04
+ * \updates       2016-12-29
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -150,7 +150,6 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_was_active_perf           (),         // boolean array [c_max_sequence]
     m_was_active_names          (),         // boolean array [c_max_sequence]
     m_sequence_state            (),         // boolean array [c_max_sequence]
-    m_master_bus                (),         // will call its init() later
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_transpose                 (0),
 #endif
@@ -171,6 +170,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_clocks_per_metronome      (24),
     m_32nds_per_quarter         (8),
     m_us_per_quarter_note       (tempo_to_us(SEQ64_DEFAULT_BPM)),
+    m_master_bus                (),         // (new location)
     m_one_measure               (m_ppqn * 4),
     m_left_tick                 (0),
     m_right_tick                (m_one_measure * 4),        // m_ppqn * 16

@@ -43,11 +43,13 @@ namespace seq64
 class midi_api : public midibase
 {
 
-protected:
+private:
 
     midi_info & m_master_info;
-
     bool m_connected;
+
+protected:
+
     std::string m_error_string;
     rterror_callback m_error_callback;
     bool m_first_error_occurred;
@@ -72,6 +74,8 @@ public:
     virtual void api_stop () = 0;
     virtual void api_flush () = 0;
     virtual void api_clock (midipulse tick) = 0;
+    virtual void api_set_ppqn (int ppqn) = 0;
+    virtual void api_set_beats_per_minute (int bpm) = 0;
 
 public:
 
@@ -85,10 +89,26 @@ public:
     }
 
     /**
+     * \getter m_master_info
+     */
+
+    midi_info & master_info ()
+    {
+        return m_master_info;
+    }
+
+    /**
      *  A basic error reporting function for rtmidi classes.
      */
 
     void error (rterror::Type type, const std::string & errorstring);
+
+protected:
+
+    void set_port_open ()
+    {
+        m_connected = true;
+    }
 
 };          // class midi_api
 

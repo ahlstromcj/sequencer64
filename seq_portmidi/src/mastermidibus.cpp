@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-04
+ * \updates       2016-12-29
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -81,6 +81,18 @@ mastermidibus::~mastermidibus ()
  *  devices as are found by Pm_CountDevices(), and the flags
  *  PmDeviceInfo::input and output determine what category of MIDI device it
  *  is.
+ *
+ * \todo
+ *      We still need to reset the PPQN and BPM values via the ALSA API
+ *      if they are different here!  See the "rtmidi" implementation of
+ *      this function.
+ *
+ * \param ppqn
+ *      The PPQN value to which to initialize the master MIDI buss.
+ *
+ * \param bpm
+ *      The BPM value to which to initialize the master MIDI buss, if
+ *      applicable.
  */
 
 void

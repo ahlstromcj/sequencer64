@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-28
+ * \updates       2016-12-29
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -67,15 +67,15 @@ namespace seq64
 midibus::midibus
 (
     rtmidi_info & rt,
-    const std::string & clientname,     // OR IS IT THE APPNAME?
+    const std::string & appname,
     int index,
     int bus_id
 ) :
     midibase
     (
-        rt.app_name(),
-        clientname,
-        "port",
+        appname,
+        rt.get_bus_name(index),
+        rt.get_port_name(index),
         index,
         bus_id,
         index,                          // used as virtual port ID
@@ -130,8 +130,8 @@ midibus::midibus
     midibase
     (
         rt.app_name(),                  /* basically the application name   */
-        "",                             /* buss name extracted from rt      */
-        "",                             /* port name extracted from rt      */
+        rt.get_bus_name(index),         /* buss name extracted from rt      */
+        rt.get_port_name(index),        /* port name extracted from rt      */
         index,                          /* index into list of systemports   */
         SEQ64_NO_BUS,                   /* buss ID extracted from rt        */
         SEQ64_NO_PORT,                  /* port ID extracted from rt        */
@@ -216,6 +216,8 @@ midibus::api_init_out ()
     {
         m_rt_midi = new rtmidi_out(m_master_info, get_bus_index());
         result = api_init_common(m_rt_midi);
+        if (result)
+            result = m_rt_midi->api_init_out();
     }
     catch (const rterror & err)
     {
@@ -239,6 +241,8 @@ midibus::api_init_out_sub ()
     {
         m_rt_midi = new rtmidi_out(m_master_info, get_bus_index());
         result = api_init_common(m_rt_midi);
+        if (result)
+            result = m_rt_midi->api_init_out_sub();
     }
     catch (const rterror & err)
     {
@@ -262,6 +266,8 @@ midibus::api_init_in ()
     {
         m_rt_midi = new rtmidi_in(m_master_info, get_bus_index());
         result = api_init_common(m_rt_midi);
+        if (result)
+            result = m_rt_midi->api_init_in();
     }
     catch (const rterror & err)
     {
@@ -285,6 +291,8 @@ midibus::api_init_in_sub ()
     {
         m_rt_midi = new rtmidi_in(m_master_info, get_bus_index());
         result = api_init_common(m_rt_midi);
+        if (result)
+            result = m_rt_midi->api_init_in_sub();
     }
     catch (const rterror & err)
     {

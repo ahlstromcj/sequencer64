@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-04
+ * \updates       2016-12-29
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -423,13 +423,11 @@ private:
 
     bool m_sequence_state[c_max_sequence];
 
-    /**
-     *  Provides our MIDI buss.  The PortMidi implementation might be a hot spot
-     *  for the weird segfault we're having with the mygui constructor parameter
-     *  or the m_gui_support member getting stomped.
+    /*
+     * \change ca 2016-12-29.  Found via the "rtmidi" branch that this
+     * was getting passed a bad PPQN value, so moved the m_master_bus value
+     * past the iniitialization of the member values it needs.
      */
-
-    mastermidibus m_master_bus;
 
 #ifdef SEQ64_STAZED_TRANSPOSE
 
@@ -570,6 +568,14 @@ private:
      */
 
     long m_us_per_quarter_note;
+
+    /**
+     *  Provides our MIDI buss.  The PortMidi implementation might be a hot spot
+     *  for the weird segfault we're having with the mygui constructor parameter
+     *  or the m_gui_support member getting stomped.
+     */
+
+    mastermidibus m_master_bus;
 
     /**
      *  Holds the "one measure's worth" of pulses (ticks), which is normally

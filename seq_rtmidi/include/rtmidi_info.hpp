@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-27
+ * \updates       2016-12-29
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -152,9 +152,19 @@ public:
         return get_api_info()->ppqn();
     }
 
+    void ppqn (int p)
+    {
+        get_api_info()->ppqn(p);
+    }
+
     int bpm () const
     {
         return get_api_info()->bpm();
+    }
+
+    void bpm (int b)
+    {
+        return get_api_info()->bpm(b);
     }
 
     /**

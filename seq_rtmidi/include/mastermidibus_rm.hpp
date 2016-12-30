@@ -79,6 +79,25 @@ protected:
     virtual bool api_is_more_input ();
     virtual bool api_get_midi_event (event * in);
 
+    /**
+     *  Provides MIDI API-specific functionality for the set_ppqn() function.
+     */
+
+    virtual void api_set_ppqn (int p)
+    {
+        m_midi_scratch.api_set_ppqn(p);
+    }
+
+    /**
+     *  Provides MIDI API-specific functionality for the
+     *  set_beats_per_minute() function.
+     */
+
+    virtual void api_set_beats_per_minute (int b)
+    {
+        m_midi_scratch.api_set_beats_per_minute(b);
+    }
+
 };
 
 }           // namespace seq64

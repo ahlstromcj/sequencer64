@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-27
+ * \updates       2016-12-29
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -85,11 +85,19 @@ mastermidibus::~mastermidibus ()
  *
  *  Code currently roughly similar to midi_probe().  Assumes only one compiled
  *  API at present.
+ *
+ * \param ppqn
+ *      Provides the (possibly new) value of PPQN to set.
+ *
+ * \param bpm
+ *      Provides the (possibly new) value of BPM (beats per minute)  to set.
  */
 
 void
 mastermidibus::api_init (int ppqn, int bpm)
 {
+    m_midi_scratch.ppqn(ppqn);
+    m_midi_scratch.bpm(bpm);
     if (rc().manual_alsa_ports())
     {
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;

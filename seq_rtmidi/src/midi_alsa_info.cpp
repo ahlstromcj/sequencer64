@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-26
+ * \updates       2016-12-30
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -80,9 +80,6 @@ midi_alsa_info::midi_alsa_info
         midi_handle(seq);
         snd_seq_set_client_name(m_alsa_seq, SEQ64_APP_NAME);
         global_queue(snd_seq_alloc_queue(m_alsa_seq));
-
-//      set_beats_per_minute(m_beats_per_minute);
-//      set_ppqn(ppqn);
 
         /*
          * Get the number of MIDI input poll file descriptors.  Allocate the
@@ -216,6 +213,51 @@ midi_alsa_info::get_all_port_info ()
         }
     }
     return count;
+}
+
+/**
+ *  Sets the PPQN numeric value, then makes ALSA calls to set up the PPQ
+ *  tempo.
+ *
+ * \param p
+ *      The desired new PPQN value to set.
+ */
+
+void
+midi_alsa_info::api_set_ppqn (int p)
+{
+    midi_info::api_set_ppqn(p);
+
+    int queue = global_queue();
+    snd_seq_queue_tempo_t * tempo;
+    snd_seq_queue_tempo_alloca(&tempo);             /* allocate tempo struct */
+    snd_seq_get_queue_tempo(m_seq, queue, tempo);
+    snd_seq_queue_tempo_set_ppq(tempo, p);
+    snd_seq_set_queue_tempo(m_seq, queue, tempo);
+}
+
+/**
+ *  Sets the BPM numeric value, then makes ALSA calls to set up the BPM
+ *  tempo.
+ *
+ * \param b
+ *      The desired new BPM value to set.
+ */
+
+void
+midi_alsa_info::api_set_beats_per_minute (int b)
+{
+    midi_info::api_set_bpm(b);
+
+    int queue = global_queue();
+    snd_seq_queue_tempo_t * tempo;
+    snd_seq_queue_tempo_alloca(&tempo);          /* allocate tempo struct */
+    snd_seq_get_queue_tempo(m_seq, queue, tempo);
+    snd_seq_queue_tempo_set_tempo
+    (
+        tempo, int(tempo_us_from_beats_per_minute(b))
+    );
+    snd_seq_set_queue_tempo(m_seq, queue, tempo);
 }
 
 }           // namespace seq64

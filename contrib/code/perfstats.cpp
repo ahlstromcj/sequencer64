@@ -199,7 +199,7 @@ perfstats::get_total_ticks (const jack_scratchpad & pad)
              * 100 and 300?
              */
 
-//          int ct = clock_ticks_from_ppqn(m_ppqn);
+            // int ct = clock_ticks_from_ppqn(m_ppqn);
             if ((m_stats_total_tick % ct) == 0)
             {
 

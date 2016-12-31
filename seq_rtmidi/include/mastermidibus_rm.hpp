@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-18
+ * \updates       2016-12-31
  * \license       GNU GPLv2 or above
  *
  *  This mastermidibus module is the Linux (and, soon, JACK) version of the
@@ -96,6 +96,16 @@ protected:
     virtual void api_set_beats_per_minute (int b)
     {
         m_midi_scratch.api_set_beats_per_minute(b);
+    }
+
+    virtual void api_flush ()
+    {
+        m_midi_scratch.api_flush();
+    }
+
+    virtual void api_port_start (mastermidibus & masterbus, int bus, int port)
+    {
+        m_midi_scratch.api_port_start(masterbus, bus, port);
     }
 
 };

@@ -117,7 +117,7 @@ get_delta_time(void)
    }
    delta = now - previously;
    previously = now;
-// assert(delta >= 0.0);
+   // assert(delta >= 0.0);
    return delta;
 }
 
@@ -139,7 +139,7 @@ static double
 nframes_to_ms (jack_nframes_t nframes)
 {
    jack_nframes_t sr = jack_get_sample_rate(jack_client);
-// assert(sr > 0);
+   // assert(sr > 0);
    return (nframes * 1000.0) / (double)sr;
 }
 
@@ -204,7 +204,7 @@ process_midi_input (jack_nframes_t nframes)
          );
          continue;
       }
-//    assert(smf_event->midi_buffer_length >= 1);
+   //    assert(smf_event->midi_buffer_length >= 1);
       channel = smf_event->midi_buffer[0] & 0x0F;
       smf_track_add_event_seconds
       (
@@ -305,7 +305,7 @@ init_jack (void)
 
 #ifdef WITH_LASH
    event = lash_event_new_with_type(LASH_Client_Name);
-// assert(event); /* Documentation does not say anything about return value. */
+   // assert(event); /* Documentation does not say anything about return value. */
    lash_event_set_string(event, jack_get_client_name(jack_client));
    lash_send_event(lash_client, event);
    lash_jack_client_name(lash_client, jack_get_client_name(jack_client));

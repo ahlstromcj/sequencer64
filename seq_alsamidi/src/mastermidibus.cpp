@@ -537,7 +537,7 @@ mastermidibus::api_is_more_input ()
  *  \threadsafe
  *      Quite a lot is done during the lock!
  *
- * \param client
+ * \param bus
  *      Provides the ALSA client number.
  *
  * \param port
@@ -545,14 +545,14 @@ mastermidibus::api_is_more_input ()
  */
 
 void
-mastermidibus::api_port_start (int client, int port)
+mastermidibus::api_port_start (int bus, int port)
 {
     snd_seq_client_info_t * cinfo;                      /* client info        */
     snd_seq_client_info_alloca(&cinfo);
-    snd_seq_get_any_client_info(m_alsa_seq, client, cinfo);
+    snd_seq_get_any_client_info(m_alsa_seq, bus, cinfo);
     snd_seq_port_info_t * pinfo;                        /* port info          */
     snd_seq_port_info_alloca(&pinfo);
-    snd_seq_get_any_port_info(m_alsa_seq, client, port, pinfo);
+    snd_seq_get_any_port_info(m_alsa_seq, bus, port, pinfo);
 
     int cap = snd_seq_port_info_get_capability(pinfo);  /* get its capability */
     if (ALSA_CLIENT_CHECK(pinfo))
@@ -563,12 +563,7 @@ mastermidibus::api_port_start (int client, int port)
             int bus_slot = m_num_out_buses;
             for (int i = 0; i < m_num_out_buses; ++i)
             {
-                if
-                (
-                    m_buses_out[i]->get_bus_id() == client  &&
-                    m_buses_out[i]->get_port_id() == port &&
-                    ! m_buses_out_active[i]
-                )
+                if (m_buses_out[i]->match(bus, port) && ! m_buses_out_active[i])
                 {
                     replacement = true;
                     bus_slot = i;
@@ -577,11 +572,7 @@ mastermidibus::api_port_start (int client, int port)
             if (not_nullptr(m_buses_out[bus_slot]))
             {
                 delete m_buses_out[bus_slot];
-                errprintf
-                (
-                    "mastermidibus::port_start(): m_buses_out[%d] not null\n",
-                    bus_slot
-                );
+                errprintf("port_start(): m_buses_out[%d] not null\n", bus_slot);
             }
             m_buses_out[bus_slot] = new midibus
             (
@@ -595,8 +586,7 @@ mastermidibus::api_port_start (int client, int port)
                 m_queue, get_ppqn(), get_bpm()
             );
             m_buses_out[bus_slot]->init_out();
-            m_buses_out_active[bus_slot] = true;
-            m_buses_out_init[bus_slot] = true;
+            m_buses_out_active[bus_slot] = m_buses_out_init[bus_slot] = true;
             if (! replacement)
                 ++m_num_out_buses;
         }
@@ -606,12 +596,7 @@ mastermidibus::api_port_start (int client, int port)
             int bus_slot = m_num_in_buses;
             for (int i = 0; i < m_num_in_buses; ++i)
             {
-                if
-                (
-                    m_buses_in[i]->get_bus_id() == client &&
-                    m_buses_in[i]->get_port_id() == port &&
-                    ! m_buses_in_active[i]
-                )
+                if (m_buses_in[i]->match(bus, port) && ! m_buses_in_active[i])
                 {
                     replacement = true;
                     bus_slot = i;
@@ -620,10 +605,7 @@ mastermidibus::api_port_start (int client, int port)
             if (not_nullptr(m_buses_in[bus_slot]))
             {
                 delete m_buses_in[bus_slot];
-                errprintf
-                (
-                    "mmbus::port_start(): m_buses_in[%d] not null\n", bus_slot
-                );
+                errprintf("port_start(): m_buses_in[%d] not null\n", bus_slot);
             }
             m_buses_in[bus_slot] = new midibus
             (
@@ -638,11 +620,10 @@ mastermidibus::api_port_start (int client, int port)
             );
 
             /*
-             * Why no call to init_in() here????
+             * Commented out in seq24:  bus_in[bus_slot]->init_in();
              */
 
-            m_buses_in_active[bus_slot] = true;
-            m_buses_in_init[bus_slot] = true;
+            m_buses_in_active[bus_slot] = m_buses_in_init[bus_slot] = true;
             if (! replacement)
                 ++m_num_in_buses;
         }
@@ -658,41 +639,6 @@ mastermidibus::api_port_start (int client, int port)
     (
         m_alsa_seq, m_poll_descriptors, m_num_poll_descriptors, POLLIN
     );
-}
-
-/**
- *  Turn off the given port for the given client.  Both the input and output
- *  busses for the given client are stopped, and set to inactive.
- *
- * \threadsafe
- *
- * \param client
- *      The client to be matched and acted on.
- *
- * \param port
- *      The port to be acted on.  Both parameter must be match before the buss
- *      is made inactive.
- */
-
-void
-mastermidibus::api_port_exit (int client, int port)
-{
-    for (int i = 0; i < m_num_out_buses; ++i)
-    {
-        if (m_buses_out[i]->get_bus_id() == client &&
-            m_buses_out[i]->get_port_id() == port)
-        {
-            m_buses_out_active[i] = false;
-        }
-    }
-    for (int i = 0; i < m_num_in_buses; ++i)
-    {
-        if (m_buses_in[i]->get_bus_id() == client &&
-            m_buses_in[i]->get_port_id() == port)
-        {
-            m_buses_in_active[i] = false;
-        }
-    }
 }
 
 /**

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-12-29
+ * \updates       2016-12-31
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -848,7 +848,7 @@ perform::install_sequence (sequence * seq, int seqnum)
     {
         errprintf
         (
-            "install_sequence(): m_seqs[%d] not null, removing old sequence\n",
+            "install_sequence(): m_seqs[%d] not null, deleting old sequence\n",
             seqnum
         );
         delete m_seqs[seqnum];
@@ -1607,23 +1607,20 @@ perform::set_playing_screenset ()
  *
  *  Note how often the "s" (sequence) pointer was used.  It was worth
  *  offloading all these calls to a new sequence function.  Hence the new
- *  sequence::play_queue function.
+ *  sequence::play_queue() function.
+ *
+ *  Finally, we stop the looping at m_sequence_high rather than
+ *  m_sequence_max, to save a little time.
  *
  * \param tick
- *      Provides the tick at which to start playing.
+ *      Provides the tick at which to start playing.  This value is also
+ *      copied to m_tick.
  */
 
 void
 perform::play (midipulse tick)
 {
     m_tick = tick;
-
-    /*
-     * EXPERIMENTAL:
-     *
-     * for (int s = 0; s < m_sequence_max; ++s)
-     */
-
     for (int s = 0; s < m_sequence_high; ++s)       /* modest speed up  */
     {
         if (is_active(s))

@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2016-12-30
+ * \updates       2016-12-31
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -44,6 +44,9 @@
 
 namespace seq64
 {
+    class event;
+    class mastermidibus;
+    class midibus;
 
 /**
  *  A class for holding port information.
@@ -313,6 +316,32 @@ public:
     {
         m_bpm = b;
     }
+
+    /**
+     *  An ALSA-specific function at the moment.
+     */
+
+    virtual void api_port_start
+    (
+#if 0
+        midibus ** /* bus_in */,
+        bool * /* bus_in_active */,
+        bool * /* bus_in_init */,
+        int & /* num_in_buses */,
+        midibus ** /* bus_out */,
+        bool * /* bus_out_active */,
+        bool * /* bus_in_init */,
+        int & /* num_out_buses */,
+#endif
+        mastermidibus & /* masterbus */,
+        int /* bus */, int /* port */
+    )
+    {
+        // Empty body
+    }
+
+    virtual bool api_get_midi_event (event * inev) = 0;
+    virtual void api_flush () = 0;
 
     /**
      *

@@ -113,7 +113,7 @@ midi_probe ()
         std::cout << nports << " MIDI input sources:" << std::endl;
         for (int i = 0; i < nports; ++i)
         {
-//          std::string portname = midiin.get_port_name(i);
+            // std::string portname = midiin.get_port_name(i);
             std::string portname = midiin.get_port_name();
             std::cout
                 << "  Input Port #" << i+1 << ": " << portname << std::endl
@@ -131,7 +131,7 @@ midi_probe ()
         std::cout << nports << " MIDI output ports:" << std::endl;
         for (int i = 0; i < nports; ++i)
         {
-//          std::string portname = midiout.get_port_name(i);
+            // std::string portname = midiout.get_port_name(i);
             std::string portname = midiout.get_port_name();
             std::cout
                 << "  Output Port #" << i+1 << ": " << portname << std::endl

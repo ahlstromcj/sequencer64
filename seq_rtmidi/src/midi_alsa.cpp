@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2016-12-30
+ * \updates       2016-12-31
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -415,27 +415,26 @@ midi_alsa::api_sysex (event * e24)
      *  std::vector where all n elements of the vector are guaranteed to be
      *  stored contiguously (in order to be accessible via random-access
      *  iterators).
+     *
+     *  256 == c_midi_alsa_sysex_chunk
      */
 
+    const int chunk = 256;
     event::SysexContainer & data = e24->get_sysex();
     int data_size = e24->get_sysex_size();
-//  for (int offset = 0; offset < data_size; offset += c_midi_alsa_sysex_chunk)
-    for (int offset = 0; offset < data_size; offset += 256)
+    for (int offset = 0; offset < data_size; offset += chunk)
     {
         int data_left = data_size - offset;
-        snd_seq_ev_set_sysex
-        (
-//          &ev, min(data_left, c_midi_alsa_sysex_chunk), &data[offset]
-            &ev, min(data_left, 256), &data[offset]
-        );
-        snd_seq_event_output_direct(m_seq, &ev);        // pump into queue
+        snd_seq_ev_set_sysex(&ev, min(data_left, chunk), &data[offset]);
+        snd_seq_event_output_direct(m_seq, &ev);        /* pump into queue  */
         usleep(SEQ64_USLEEP_US);
         api_flush();
     }
 }
 
 /**
- *  Flushes our local queue events out into ALSA.
+ *  Flushes our local queue events out into ALSA.  This is also a midi_alsa_info
+ *  function.
  */
 
 void
@@ -446,6 +445,8 @@ midi_alsa::api_flush ()
 
 /**
  *  Continue from the given tick.
+ *
+ *  Also defined in midi_alsa_info.
  *
  * \param tick
  *      The continuing tick, unused in the ALSA implementation here.
@@ -546,8 +547,6 @@ midi_alsa::api_clock (midipulse /* tick */)
     snd_seq_event_output(m_seq, &ev);               /* pump it into queue   */
 }
 
-#if USE_PER_PORT_PPQN_BPM_SETTING
-
 /*
  * Currently, this code is implemented in the midi_alsa_info module, since
  * it is a mastermidibus function.
@@ -577,8 +576,6 @@ midi_alsa::api_set_beats_per_minute (int bpm)
     );
     snd_seq_set_queue_tempo(m_seq, queue, tempo);
 }
-
-#endif  // USE_PER_PORT_PPQN_BPM_SETTING
 
 #ifdef REMOVE_QUEUED_ON_EVENTS_CODE
 

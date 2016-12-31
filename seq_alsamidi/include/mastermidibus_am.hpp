@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-11-28
+ * \updates       2016-12-31
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -104,7 +104,14 @@ private:
     virtual bool api_is_more_input ();
     virtual bool api_get_midi_event (event * in);
     virtual void api_port_start (int client, int port);
-    virtual void api_port_exit (int client, int port);
+
+    /*
+     * Not implemented:
+     *
+     *  api_init_clock()
+     *  api_clock()
+     *  api_port_exit (int client, int port)
+     */
 
 };          // class mastermidibus (ALSA version)
 

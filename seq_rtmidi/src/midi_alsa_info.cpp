@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-30
+ * \updates       2016-12-31
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -18,8 +18,10 @@
  */
 
 #include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
+#include "event.hpp"                    /* seq64::event and other tokens    */
 #include "midi_alsa_info.hpp"           /* seq64::midi_alsa_info            */
 #include "midibus_common.hpp"           /* from the libseq64 sub-project    */
+#include "settings.hpp"                 /* seq64::rc() configuration object */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -98,7 +100,7 @@ midi_alsa_info::midi_alsa_info
         (
             m_alsa_seq, m_poll_descriptors, m_num_poll_descriptors, POLLIN
         );
-//      set_sequence_input(false, nullptr);     // mastermidibase function
+        // set_sequence_input(false, nullptr);     // mastermidibase function
         snd_seq_set_output_buffer_size(m_alsa_seq, c_midibus_output_size);
         snd_seq_set_input_buffer_size(m_alsa_seq, c_midibus_input_size);
     }
@@ -216,6 +218,17 @@ midi_alsa_info::get_all_port_info ()
 }
 
 /**
+ *  Flushes our local queue events out into ALSA.  This is also a midi_alsa
+ *  function.
+ */
+
+void
+midi_alsa_info::api_flush ()
+{
+    snd_seq_drain_output(m_alsa_seq);
+}
+
+/**
  *  Sets the PPQN numeric value, then makes ALSA calls to set up the PPQ
  *  tempo.
  *
@@ -231,9 +244,9 @@ midi_alsa_info::api_set_ppqn (int p)
     int queue = global_queue();
     snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);             /* allocate tempo struct */
-    snd_seq_get_queue_tempo(m_seq, queue, tempo);
+    snd_seq_get_queue_tempo(m_alsa_seq, queue, tempo);
     snd_seq_queue_tempo_set_ppq(tempo, p);
-    snd_seq_set_queue_tempo(m_seq, queue, tempo);
+    snd_seq_set_queue_tempo(m_alsa_seq, queue, tempo);
 }
 
 /**
@@ -247,17 +260,295 @@ midi_alsa_info::api_set_ppqn (int p)
 void
 midi_alsa_info::api_set_beats_per_minute (int b)
 {
-    midi_info::api_set_bpm(b);
+    midi_info::api_set_beats_per_minute(b);
 
     int queue = global_queue();
     snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);          /* allocate tempo struct */
-    snd_seq_get_queue_tempo(m_seq, queue, tempo);
+    snd_seq_get_queue_tempo(m_alsa_seq, queue, tempo);
     snd_seq_queue_tempo_set_tempo
     (
         tempo, int(tempo_us_from_beats_per_minute(b))
     );
-    snd_seq_set_queue_tempo(m_seq, queue, tempo);
+    snd_seq_set_queue_tempo(m_alsa_seq, queue, tempo);
+}
+
+/*
+ * Definitions copped from the seq_alsamidi/src/mastermidibus.cpp module.
+ */
+
+/**
+ *  Macros to make capabilities-checking more readable.
+ */
+
+#define CAP_READ(cap)       (((cap) & SND_SEQ_PORT_CAP_SUBS_READ) != 0)
+#define CAP_WRITE(cap)      (((cap) & SND_SEQ_PORT_CAP_SUBS_WRITE) != 0)
+
+/**
+ *  These checks need both bits to be set.  Intermediate macros used for
+ *  readability.
+ */
+
+#define CAP_R_BITS      (SND_SEQ_PORT_CAP_SUBS_READ | SND_SEQ_PORT_CAP_READ)
+#define CAP_W_BITS      (SND_SEQ_PORT_CAP_SUBS_WRITE | SND_SEQ_PORT_CAP_WRITE)
+
+#define CAP_FULL_READ(cap)  (((cap) & CAP_R_BITS) == CAP_R_BITS)
+#define CAP_FULL_WRITE(cap) (((cap) & CAP_W_BITS) == CAP_W_BITS)
+
+#define ALSA_CLIENT_CHECK(pinfo) \
+    (snd_seq_client_id(m_alsa_seq) != snd_seq_port_info_get_client(pinfo))
+
+/**
+ *  Start the given ALSA MIDI port.  This function is called by
+ *  api_get_midi_event() when an ALSA event SND_SEQ_EVENT_PORT_START is
+ *  received.
+ *
+ *  -   Get the API's client and port information.
+ *  -   Do some capability checks.
+ *  -   Find the client/port combination among the set of input/output busses.
+ *      If it exists and is not active, then mark it as a replacement.  If it
+ *      is not a replacement, it will increment the number of input/output
+ *      busses.
+ *
+ *  We can simplify this code a bit by using elements already present in
+ *  midi_alsa_info.
+ *
+ *  \threadsafe
+ *      Quite a lot is done during the lock!
+ *
+ * \param client
+ *      Provides the ALSA client number.
+ *
+ * \param port
+ *      Provides the ALSA client port.
+ */
+
+void
+midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
+{
+    snd_seq_client_info_t * cinfo;                      /* get bus info       */
+    snd_seq_client_info_alloca(&cinfo);
+    snd_seq_get_any_client_info(m_alsa_seq, bus, cinfo);
+    snd_seq_port_info_t * pinfo;                        /* get port info      */
+    snd_seq_port_info_alloca(&pinfo);
+    snd_seq_get_any_port_info(m_alsa_seq, bus, port, pinfo);
+
+    int cap = snd_seq_port_info_get_capability(pinfo);  /* get its capability */
+    if (ALSA_CLIENT_CHECK(pinfo))
+    {
+        if (CAP_FULL_WRITE(cap) && ALSA_CLIENT_CHECK(pinfo)) /* outputs */
+        {
+            bool replacement = false;
+            int bus_slot = masterbus.m_num_out_buses;
+            for (int i = 0; i < masterbus.m_num_out_buses; ++i)
+            {
+                if (masterbus.m_buses_out[i]->match(bus, port) &&
+                    ! masterbus.m_buses_out_active[i])
+                {
+                    replacement = true;
+                    bus_slot = i;
+                }
+            }
+            if (not_nullptr(masterbus.m_buses_out[bus_slot]))
+            {
+                delete masterbus.m_buses_out[bus_slot];
+                errprintf("port_start(): bus_out[%d] not null\n", bus_slot);
+            }
+#ifdef CAN_USE_NEW_MIDIBUS_CONSTRUCTOR
+            masterbus.m_buses_out[bus_slot] = new midibus
+            (
+                snd_seq_client_id(m_alsa_seq),
+                snd_seq_port_info_get_client(pinfo),
+                snd_seq_port_info_get_port(pinfo),
+                m_alsa_seq,
+                snd_seq_client_info_get_name(cinfo),
+                snd_seq_port_info_get_name(pinfo),
+                masterbus.m_num_out_buses,
+                global_queue(), ppqn(), bpm()
+            );
+            masterbus.m_buses_out[bus_slot]->init_out();
+            masterbus.m_buses_out_active[bus_slot] = masterbus.m_buses_out_init[bus_slot] = true;
+            if (! replacement)
+                ++masterbus.m_num_out_buses;
+#endif  // CAN_USE_NEW_MIDIBUS_CONSTRUCTOR
+        }
+        if (CAP_FULL_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
+        {
+            bool replacement = false;
+            int bus_slot = masterbus.m_num_in_buses;
+            for (int i = 0; i < masterbus.m_num_in_buses; ++i)
+            {
+                if (masterbus.m_buses_in[i]->match(bus, port) &&
+                    ! masterbus.m_buses_in_active[i])
+                {
+                    replacement = true;
+                    bus_slot = i;
+                }
+            }
+            if (not_nullptr(masterbus.m_buses_in[bus_slot]))
+            {
+                delete masterbus.m_buses_in[bus_slot];
+                errprintf("port_start(): bus_in[%d] not null\n", bus_slot);
+            }
+#ifdef CAN_USE_NEW_MIDIBUS_CONSTRUCTOR
+            masterbus.m_buses_in[bus_slot] = new midibus
+            (
+                snd_seq_client_id(m_alsa_seq),
+                snd_seq_port_info_get_client(pinfo),
+                snd_seq_port_info_get_port(pinfo),
+                m_alsa_seq,
+                snd_seq_client_info_get_name(cinfo),
+                snd_seq_port_info_get_name(pinfo),
+                masterbus.m_num_in_buses,
+                global_queue(), ppqn(), bpm()
+            );
+
+            /*
+             * Commented out in seq24:  masterbus.m_buses_in[bus_slot]->init_in();
+             */
+
+            masterbus.m_buses_in_active[bus_slot] = masterbus.m_buses_in_init[bus_slot] = true;
+            if (! replacement)
+                ++masterbus.m_num_in_buses;
+#endif  // CAN_USE_NEW_MIDIBUS_CONSTRUCTOR
+        }
+    }                                           /* end loop for clients */
+
+    /*
+     * Get the number of MIDI input poll file descriptors.
+     */
+
+    m_num_poll_descriptors = snd_seq_poll_descriptors_count(m_alsa_seq, POLLIN);
+    m_poll_descriptors = new pollfd[m_num_poll_descriptors]; /* allocate info */
+    snd_seq_poll_descriptors                        /* get input descriptors */
+    (
+        m_alsa_seq, m_poll_descriptors, m_num_poll_descriptors, POLLIN
+    );
+}
+
+/**
+ *  Grab a MIDI event.  First, a rather large buffer is allocated on the stack
+ *  to hold the MIDI event data.  Next, if the --alsa-manual-ports option is
+ *  not in force, then we check to see if the event is a port-start,
+ *  port-exit, or port-change event, and we prcess it, and are done.
+ *
+ *  Otherwise, we create a "MIDI event parser" and decode the MIDI event.
+ *
+ * \threadsafe
+ *
+ * \param inev
+ *      The event to be set based on the found input event.
+ */
+
+bool
+midi_alsa_info::api_get_midi_event (event * inev)
+{
+    snd_seq_event_t * ev;
+    bool sysex = false;
+    bool result = false;
+    midibyte buffer[0x1000];                /* temporary buffer for MIDI data */
+    snd_seq_event_input(m_alsa_seq, &ev);
+    if (! rc().manual_alsa_ports())
+    {
+        switch (ev->type)
+        {
+        case SND_SEQ_EVENT_PORT_START:
+        {
+            /*
+             * TODO:  figure out how to best do this.  It has way too many
+             * parameters now, and is currently meant to be called from
+             * mastermidibus.
+
+            port_start(masterbus, ev->data.addr.client, ev->data.addr.port);
+             */
+
+            result = true;
+            break;
+        }
+        case SND_SEQ_EVENT_PORT_EXIT:
+        {
+            /*
+             * TODO:  figure out how to best do this.
+
+            port_exit(masterbus, ev->data.addr.client, ev->data.addr.port);
+             */
+
+            result = true;
+            break;
+        }
+        case SND_SEQ_EVENT_PORT_CHANGE:
+        {
+            result = true;
+            break;
+        }
+        default:
+            break;
+        }
+    }
+    if (result)
+        return false;
+
+    snd_midi_event_t * midi_ev;                     /* for ALSA MIDI parser  */
+    snd_midi_event_new(sizeof(buffer), &midi_ev);   /* make ALSA MIDI parser */
+    long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
+    if (bytes <= 0)
+    {
+        /*
+         * This happens even at startup, before anything is really happening.
+         */
+
+        return false;
+    }
+
+    inev->set_timestamp(ev->time.tick);
+    inev->set_status_keep_channel(buffer[0]);
+
+    /**
+     *  We will only get EVENT_SYSEX on the first packet of MIDI data;
+     *  the rest we have to poll for.  SysEx processing is currently
+     *  disabled.
+     */
+
+#ifdef USE_SYSEX_PROCESSING                    /* currently disabled           */
+    inev->set_sysex_size(bytes);
+    if (buffer[0] == EVENT_MIDI_SYSEX)
+    {
+        inev->restart_sysex();              /* set up for sysex if needed   */
+        sysex = inev->append_sysex(buffer, bytes);
+    }
+    else
+    {
+#endif
+        /*
+         *  Some keyboards send Note On with velocity 0 for Note Off, so we
+         *  take care of that situation here by creating a Note Off event,
+         *  with the channel nybble preserved. Note that we call
+         *  event :: set_status_keep_channel() instead of using stazed's
+         *  set_status function with the "record" parameter.  A little more
+         *  confusing, but faster.
+         */
+
+        inev->set_data(buffer[1], buffer[2]);
+        if (inev->is_note_off_recorded())
+            inev->set_status_keep_channel(EVENT_NOTE_OFF);
+
+        sysex = false;
+
+#ifdef USE_SYSEX_PROCESSING
+    }
+#endif
+
+    while (sysex)       /* sysex messages might be more than one message */
+    {
+        snd_seq_event_input(m_alsa_seq, &ev);
+        long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
+        if (bytes > 0)
+            sysex = inev->append_sysex(buffer, bytes);
+        else
+            sysex = false;
+    }
+    snd_midi_event_free(midi_ev);
+    return true;
 }
 
 }           // namespace seq64

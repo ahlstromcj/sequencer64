@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-29
+ * \updates       2016-12-31
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -26,6 +26,7 @@
 
 namespace seq64
 {
+    class mastermidibus;
 
 /**
  *  A class for enumerating MIDI clients and ports.  New, but ripe for
@@ -152,9 +153,9 @@ public:
         return get_api_info()->ppqn();
     }
 
-    void ppqn (int p)
+    void api_set_ppqn (int p)
     {
-        get_api_info()->ppqn(p);
+        get_api_info()->api_set_ppqn(p);
     }
 
     int bpm () const
@@ -162,9 +163,34 @@ public:
         return get_api_info()->bpm();
     }
 
-    void bpm (int b)
+    void api_set_beats_per_minute (int b)
     {
-        return get_api_info()->bpm(b);
+        return get_api_info()->api_set_beats_per_minute(b);
+    }
+
+    void api_port_start (mastermidibus & masterbus, int bus, int port)
+    {
+        get_api_info()->api_port_start(masterbus, bus, port);
+    }
+
+    /*
+     * There is no need for a corresponding port-exit function, because
+     * the functionality in it is not API-specific.
+     *
+     *  void api_port_exit (int client, int port)
+     *  {
+     *      get_api_info()->api_port_exit(client, port);
+     *  }
+     */
+
+    bool api_get_midi_event (event * inev)
+    {
+        return get_api_info()->api_get_midi_event(inev);
+    }
+
+    void api_flush ()
+    {
+        get_api_info()->api_flush();
     }
 
     /**

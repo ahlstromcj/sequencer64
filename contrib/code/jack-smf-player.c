@@ -126,7 +126,7 @@ get_delta_time (void)
    }
    delta = now - previously;
    previously = now;
-// assert(delta >= 0.0);
+   // assert(delta >= 0.0);
    return delta;
 }
 
@@ -148,7 +148,7 @@ static double
 nframes_to_ms(jack_nframes_t nframes)
 {
    jack_nframes_t sr = jack_get_sample_rate(jack_client);
-// assert(sr > 0);
+   // assert(sr > 0);
    return (nframes * 1000.0) / (double) sr;
 }
 
@@ -166,7 +166,7 @@ static jack_nframes_t
 ms_to_nframes (double ms)
 {
    jack_nframes_t sr = jack_get_sample_rate(jack_client);
-// assert(sr > 0);
+   // assert(sr > 0);
    return ((double)sr * ms) / 1000.0;
 }
 
@@ -341,11 +341,11 @@ process_midi_output (jack_nframes_t nframes)
       if (t < 0)
          t = 0;
 
-//    assert
-//    (
-//       event->track->track_number >= 0 &&
-//       event->track->track_number <= MAX_NUMBER_OF_TRACKS
-//    );
+   //    assert
+   //    (
+   //       event->track->track_number >= 0 &&
+   //       event->track->track_number <= MAX_NUMBER_OF_TRACKS
+   //    );
 
       /*
        * We will send this event; remove it from the queue.  First, send it via
@@ -406,7 +406,7 @@ process_midi_output (jack_nframes_t nframes)
 
       /* Before sending, reset channel to 0. XXX: Not very pretty. */
 
-//    assert(event->midi_buffer_length >= 1);
+   //    assert(event->midi_buffer_length >= 1);
 
       tmp_status = event->midi_buffer[0];
       if (event->midi_buffer[0] >= 0x80 && event->midi_buffer[0] <= 0xEF)
@@ -470,7 +470,7 @@ sync_callback
    void * notused
 )
 {
-// assert(jack_client);
+   // assert(jack_client);
 
    /* XXX: We should probably adapt to external tempo changes. */
 
@@ -510,7 +510,7 @@ timebase_callback
       return;
 
    tempo = smf_get_tempo_by_pulses(smf, event->time_pulses);
-// assert(tempo);
+   // assert(tempo);
 
    if (new_pos || previous_tempo != tempo)
    {
@@ -602,7 +602,7 @@ init_jack (void)
 
 #ifdef WITH_LASH
    event = lash_event_new_with_type(LASH_Client_Name);
-// assert (event); /* Documentation does not say anything about return value. */
+   // assert (event); /* Documentation does not say anything about return value. */
    lash_event_set_string(event, jack_get_client_name(jack_client));
    lash_send_event(lash_client, event);
    lash_jack_client_name(lash_client, jack_get_client_name(jack_client));
@@ -644,7 +644,7 @@ init_jack (void)
 #endif
    }
 
-// assert(smf->number_of_tracks >= 1);
+   // assert(smf->number_of_tracks >= 1);
 
    /* We are allocating number_of_tracks + 1 output ports. */
 

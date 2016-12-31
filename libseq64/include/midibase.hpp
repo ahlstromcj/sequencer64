@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2016-12-14
+ * \updates       2016-12-31
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -231,6 +231,15 @@ public:
     int get_port_id () const
     {
         return m_port_id;
+    }
+
+    /**
+     *  Checks if the given parameters match the current bus and port numbers.
+     */
+
+    bool match (int bus, int port)
+    {
+        return (m_port_id == port) && (m_bus_id == bus);
     }
 
     /**

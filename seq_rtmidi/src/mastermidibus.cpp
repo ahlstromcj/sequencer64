@@ -25,12 +25,18 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-29
+ * \updates       2016-12-30
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
  *  class.  There is a lot of common code between these two versions!
  */
+
+#include "easy_macros.h"
+
+#ifdef SEQ64_HAVE_LIBASOUND
+#include <sys/poll.h>
+#endif
 
 #include "event.hpp"                    /* seq64::event                     */
 #include "mastermidibus_rm.hpp"         /* seq64::mastermidibus, RtMIDI     */
@@ -96,8 +102,8 @@ mastermidibus::~mastermidibus ()
 void
 mastermidibus::api_init (int ppqn, int bpm)
 {
-    m_midi_scratch.ppqn(ppqn);
-    m_midi_scratch.bpm(bpm);
+    m_midi_scratch.api_set_ppqn(ppqn);
+    m_midi_scratch.api_set_beats_per_minute(bpm);
     if (rc().manual_alsa_ports())
     {
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
@@ -244,8 +250,11 @@ mastermidibus::api_is_more_input ()
  */
 
 bool
-mastermidibus::api_get_midi_event (event * in)
+mastermidibus::api_get_midi_event (event * inev)
 {
+    return m_midi_scratch.api_get_midi_event(inev);
+
+#if 0
     bool result = false;
     for (int i = 0; i < m_num_in_buses; ++i)
     {
@@ -258,18 +267,15 @@ mastermidibus::api_get_midi_event (event * in)
     if (! result)
         return false;
 
-//  in->set_status(Pm_MessageStatus(event.message));
-//  in->set_sysex_size(3);
-//  in->set_data(Pm_MessageData1(event.message), Pm_MessageData2(event.message));
+    /*
+     * Some keyboards send Note On with velocity 0 for Note Off.
+     */
 
-    /* some keyboards send Note On with velocity 0 for Note Off */
-
-    if (in->get_status() == EVENT_NOTE_ON && in->get_note_velocity() == 0x00)
+    if (in->is_note_on() && in->get_note_velocity() == 0x00)
         in->set_status(EVENT_NOTE_OFF);
 
-    // Why no "sysex = false" here, like in Linux version?
-
-    return true;
+    return true; // Why no "sysex = false" here, like in Linux version?
+#endif  // 0
 }
 
 }           // namespace seq64

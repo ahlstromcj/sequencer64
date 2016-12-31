@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2016-12-30
+ * \updates       2016-12-31
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -592,8 +592,11 @@ mastermidibase::is_more_input ()
 }
 
 /**
- *  Start the given MIDI port.  As a virtual function, the base-class version
- *  should do nothing (as in the PortMIDI version of mastermidibus.
+ *  Start the given MIDI port.  This function is called by
+ *  api_get_midi_event() when the ALSA event SND_SEQ_EVENT_PORT_START is
+ *  received.  Unlike port_exit(), the port_start() function does rely on
+ *  API-specific code, so we do need to create a virtual api_port_start()
+ *  function to implement the port-start event.
  *
  *  \threadsafe
  *      Quite a lot is done during the lock for the ALSA implimentation.
@@ -614,7 +617,12 @@ mastermidibase::port_start (int client, int port)
 
 /**
  *  Turn off the given port for the given client.  Both the input and output
- *  busses for the given client are stopped, and set to inactive.
+ *  busses for the given client are stopped: that is, set to inactive.
+ *
+ *  This function is called by api_get_midi_event() when the ALSA event
+ *  SND_SEQ_EVENT_PORT_EXIT is received.  Since port_exit() has no direct
+ *  API-specific code in it, we do not need to create a virtual
+ *  api_port_exit() function to implement the port-exit event.
  *
  * \threadsafe
  *
@@ -631,11 +639,32 @@ void
 mastermidibase::port_exit (int client, int port)
 {
     automutex locker(m_mutex);
-    api_port_exit(client, port);
+    for (int i = 0; i < m_num_out_buses; ++i)
+    {
+        if
+        (
+            m_buses_out[i]->get_bus_id() == client &&
+            m_buses_out[i]->get_port_id() == port
+        )
+        {
+            m_buses_out_active[i] = false;
+        }
+    }
+    for (int i = 0; i < m_num_in_buses; ++i)
+    {
+        if
+        (
+            m_buses_in[i]->get_bus_id() == client &&
+            m_buses_in[i]->get_port_id() == port
+        )
+        {
+            m_buses_in_active[i] = false;
+        }
+    }
 }
 
 /**
- *  Grab a MIDI event.
+ *  Grab a MIDI event via the currently-selected MIDI API.
  *
  * \threadsafe
  *
@@ -644,10 +673,18 @@ mastermidibase::port_exit (int client, int port)
  */
 
 bool
-mastermidibase::get_midi_event (event * inev)
+mastermidibase::get_midi_event (event * ev)
 {
     automutex locker(m_mutex);
-    return api_get_midi_event(inev);
+
+    /*
+     * Some keyboards send Note On with velocity 0 for Note Off:
+
+    if (ev->is_note_on() && ev->get_note_velocity() == 0x00)
+        ev->set_status(EVENT_NOTE_OFF);
+     */
+
+    return api_get_midi_event(ev);
 }
 
 /**

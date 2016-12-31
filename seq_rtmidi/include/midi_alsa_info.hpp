@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-04
- * \updates       2016-12-30
+ * \updates       2016-12-31
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the ALSA information of
@@ -17,7 +17,9 @@
 
 #include <alsa/asoundlib.h>
 
-#include "midi_info.hpp"                /* seq::midi_port_info etc.     */
+#include "midi_info.hpp"                /* seq64::midi_port_info etc.   */
+#include "mastermidibus_rm.hpp"
+#include "midibus.hpp"                  /* seq64::midibus               */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -25,6 +27,7 @@
 
 namespace seq64
 {
+    class mastermidibus;
 
 /**
  *  The class for handling ALSA MIDI input.
@@ -90,6 +93,9 @@ public:
 
     virtual void api_set_ppqn (int p);
     virtual void api_set_beats_per_minute (int b);
+    virtual void api_port_start (mastermidibus & masterbus, int bus, int port);
+    virtual bool api_get_midi_event (event * inev);
+    virtual void api_flush ();
 
 private:
 

@@ -1,6 +1,6 @@
 README for Sequencer64 0.90.0
 Chris Ahlstrom
-2015-09-10 to 2016-11-19 (initial work started in July of 2015)
+2015-09-10 to 2016-12-31 (initial work started in July of 2015)
 
 Sequencer64 is a reboot of seq24 to refactor it to be tighter and easier to
 use.  It is now beyond seq24 in functionality and bug fixes; the code is
@@ -12,11 +12,24 @@ visually.  It is an old friend with some user-interface lipstick and a lot of
 internal fixups.  And it maintains backward-compatibility with seq24, with the
 --legacy option.  See https://github.com/ahlstromcj/sequencer64-doc.git.
 
+With the big version jump from 0.9 to 0.90, the install process has changed.
+See the INSTALL file.  There are now three different versions of Sequencer64
+that can be built:
+
+    -   The original, ALSA-based version.
+    -   A PortMIDI version based on the Linux version of the PortMIDI library.
+        This opens the door for a straightforward port to Windows.
+    -   A version that defaults to native JACK support, and falls back to
+        ALSA if JACK is not running.
+
 Major updates:
 
     -   Version 0.90.0:
-        -   Initial support for using an RtMidi spinoff library to support
-            native JACK MIDI (as opposed to just JACK transport).
+        -   Initial support for using a heavily-refactored RtMidi spinoff
+            library to support native JACK MIDI (as opposed to just JACK
+            transport).  RtMidi turned out not to match the model of
+            Sequencer64 very well, so to call it an "RtMidi" version is very
+            misleading.
         -   PortMidi has been activated!  Builds and runs in Linux, still
             need to set up Gtk for Windows.
     -   Version 0.9.21:

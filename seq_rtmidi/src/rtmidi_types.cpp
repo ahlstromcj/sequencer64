@@ -5,10 +5,11 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-01
- * \updates       2016-12-18
+ * \updates       2016-12-31
  * \license       See the r3exmidi.lic file.  Too big for a header file.
  *
- *
+ *  Provides some basic types for the (heavily-factored) rtmidi library, very
+ *  loosely based on Gary Scavone's RtMidi library.
  */
 
 #include "easy_macros.h"                /* errprintfunc() macro, etc.   */
@@ -20,8 +21,6 @@
 
 namespace seq64
 {
-
-// #if DEFINE_MESSAGE_CONCATENATE_HERE
 
 /**
  *  This function concatenates two C string pointers and returns them as
@@ -85,116 +84,6 @@ error_message (const std::string & msg)
     (void) info_message(msg);
     return false;
 }
-
-// #endif
-
-#if 0
-
-/*
- * class midi_queue
- */
-
-/**
- *  Default constructor.
- */
-
-midi_queue::midi_queue ()
- :
-    m_front     (0),
-    m_back      (0),
-    m_size      (0),
-    m_ring_size (0),
-    m_ring      (nullptr)
-{
-    // Empty body
-}
-
-/**
- *
- *  This would be better off as a constructor operation.  But one step at a
- *  time.
- */
-
-void
-midi_queue::allocate (unsigned queuesize)
-{
-    if (queuesize > 0 && is_nullptr(m_ring))
-    {
-        m_ring_size = queuesize;
-        m_ring = new (std::nothrow) midi_message[queuesize];
-    }
-}
-
-/**
- *
- *  This would be better off as a destructor operation.  But one step at a
- *  time.
- */
-
-void
-midi_queue::deallocate ()
-{
-    if (not_nullptr(m_ring))
-        delete [] m_ring;
-}
-
-/**
- *
- *  As long as we haven't reached our queue size limit, push the message.
- */
-
-bool
-midi_queue::add (const midi_message & mmsg)
-{
-    bool result = ! full();
-    if (result)
-    {
-        m_ring[m_back++] = mmsg;
-        if (m_back == m_ring_size)
-            m_back = 0;
-
-        ++m_size;
-    }
-    else
-        errprintfunc("message queue limit reached");
-
-    return result;
-}
-
-/**
- *
- */
-
-void
-midi_queue::pop ()
-{
-    --m_size;
-    ++m_front;
-    if (m_front == m_ring_size)
-        m_front = 0;
-}
-
-/*
- * class rtmidi_in_data
- */
-
-rtmidi_in_data::rtmidi_in_data ()
- :
-    m_queue             (),
-    m_message           (),
-    m_ignore_flags      (7),
-    m_do_input          (false),
-    m_first_message     (true),
-    m_api_data          (nullptr),
-    m_using_callback    (false),
-    m_user_callback     (nullptr),
-    m_user_data         (nullptr),
-    m_continue_sysex    (false)
-{
-    // no body
-}
-
-#endif      // 0
 
 }           // namespace seq64
 

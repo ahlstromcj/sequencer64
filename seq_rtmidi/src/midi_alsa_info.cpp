@@ -338,6 +338,21 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
     {
         if (CAP_FULL_WRITE(cap) && ALSA_CLIENT_CHECK(pinfo)) /* outputs */
         {
+#ifdef USE_BUS_ARRAY_CODE
+//          bool replacement = false;
+            int bus_slot = masterbus.m_outbus_array.count();
+            int test = masterbus.m_outbus_array.replacement_port(bus, port);
+            if (test >= 0)
+            {
+//              replacement = true;
+                bus_slot = test;
+            }
+            midibus * m = new midibus
+            (
+                masterbus.m_midi_scratch, SEQ64_APP_NAME, bus_slot /* index, port */
+            );
+            masterbus.m_outbus_array.add(m, false, false);  /* out, nonvirt */
+#else
             bool replacement = false;
             int bus_slot = masterbus.m_num_out_buses;
             for (int i = 0; i < masterbus.m_num_out_buses; ++i)
@@ -371,9 +386,25 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
             if (! replacement)
                 ++masterbus.m_num_out_buses;
 #endif  // CAN_USE_NEW_MIDIBUS_CONSTRUCTOR
+#endif  // USE_BUS_ARRAY_CODE
         }
         if (CAP_FULL_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
         {
+#ifdef USE_BUS_ARRAY_CODE
+//          bool replacement = false;
+            int bus_slot = masterbus.m_inbus_array.count();
+            int test = masterbus.m_inbus_array.replacement_port(bus, port);
+            if (test >= 0)
+            {
+//              replacement = true;
+                bus_slot = test;
+            }
+            midibus * m = new midibus
+            (
+                masterbus.m_midi_scratch, SEQ64_APP_NAME, bus_slot /* index, port */
+            );
+            masterbus.m_inbus_array.add(m, false, false);  /* out, nonvirt */
+#else
             bool replacement = false;
             int bus_slot = masterbus.m_num_in_buses;
             for (int i = 0; i < masterbus.m_num_in_buses; ++i)
@@ -404,13 +435,16 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
             );
 
             /*
-             * Commented out in seq24:  masterbus.m_buses_in[bus_slot]->init_in();
+             * Commented out in seq24: masterbus.m_buses_in[bus_slot]->init_in();
              */
 
-            masterbus.m_buses_in_active[bus_slot] = masterbus.m_buses_in_init[bus_slot] = true;
+            masterbus.m_buses_in_active[bus_slot] =
+                masterbus.m_buses_in_init[bus_slot] = true;
+
             if (! replacement)
                 ++masterbus.m_num_in_buses;
 #endif  // CAN_USE_NEW_MIDIBUS_CONSTRUCTOR
+#endif  // USE_BUS_ARRAY_CODE
         }
     }                                           /* end loop for clients */
 

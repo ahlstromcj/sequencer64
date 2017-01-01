@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2016-12-31
+ * \updates       2017-01-01
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -63,17 +63,22 @@ namespace seq64
 mastermidibase::mastermidibase (int ppqn, int bpm)
  :
     m_max_busses        (c_max_busses),
+    m_bus_announce      (nullptr),  // one pointer
+#ifdef USE_BUS_ARRAY_CODE
+    m_inbus_array       (),
+    m_outbus_array      (),
+#else
     m_num_out_buses     (0),        // or c_max_busses, or what?
     m_num_in_buses      (0),        // or c_max_busses, or 1, or what?
     m_buses_out         (),         // array of c_max_busses midibus pointers
     m_buses_in          (),         // array of c_max_busses midibus pointers
-    m_bus_announce      (nullptr),  // one pointer
     m_buses_out_active  (),         // array of c_max_busses booleans
     m_buses_in_active   (),         // array of c_max_busses booleans
     m_buses_out_init    (),         // array of c_max_busses booleans
     m_buses_in_init     (),         // array of c_max_busses booleans
     m_init_clock        (),         // array of c_max_busses clock_e values
     m_init_input        (),         // array of c_max_busses booleans
+#endif
     m_queue             (0),
     m_ppqn              (choose_ppqn(ppqn)),
     m_beats_per_minute  (bpm),      // beats per minute
@@ -83,6 +88,7 @@ mastermidibase::mastermidibase (int ppqn, int bpm)
     m_seq               (nullptr),
     m_mutex             ()
 {
+#ifndef USE_BUS_ARRAY_CODE
     for (int i = 0; i < m_max_busses; ++i)
     {
         m_init_clock[i] = e_clock_off;
@@ -91,6 +97,7 @@ mastermidibase::mastermidibase (int ppqn, int bpm)
             m_buses_in_init[i] = m_buses_out_init[i] =
             m_init_input[i] = false;
     }
+#endif
 }
 
 /**
@@ -108,6 +115,7 @@ mastermidibase::mastermidibase (int ppqn, int bpm)
 
 mastermidibase::~mastermidibase ()
 {
+#ifndef USE_BUS_ARRAY_CODE
     for (int i = 0; i < m_num_out_buses; ++i)
     {
         if (not_nullptr(m_buses_out[i]))
@@ -124,6 +132,8 @@ mastermidibase::~mastermidibase ()
             m_buses_in[i] = nullptr;
         }
     }
+#endif
+
     if (not_nullptr(m_bus_announce))
     {
         delete m_bus_announce;
@@ -142,12 +152,14 @@ void
 mastermidibase::start ()
 {
     automutex locker(m_mutex);
-#ifdef SEQ64_HAVE_LIBASOUND_XXX
-    snd_seq_start_queue(m_alsa_seq, m_queue, NULL);     /* start timer */
-#endif
     api_start();
+
+#ifdef USE_BUS_ARRAY_CODE
+    m_outbus_array.start();
+#else
     for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->start();
+#endif
 }
 
 /**
@@ -165,12 +177,14 @@ void
 mastermidibase::continue_from (midipulse tick)
 {
     automutex locker(m_mutex);
-#ifdef SEQ64_HAVE_LIBASOUND_XXX
-    snd_seq_start_queue(m_alsa_seq, m_queue, NULL);     /* start timer */
-#endif
     api_continue_from(tick);
+
+#ifdef USE_BUS_ARRAY_CODE
+    m_outbus_array.continue_from(tick);
+#else
     for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->continue_from(tick);
+#endif
 }
 
 /**
@@ -189,8 +203,13 @@ mastermidibase::init_clock (midipulse tick)
 {
     automutex locker(m_mutex);
     api_init_clock(tick);
+
+#ifdef USE_BUS_ARRAY_CODE
+    m_outbus_array.init_clock(tick);
+#else
     for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->init_clock(tick);
+#endif
 }
 
 /**
@@ -206,13 +225,12 @@ void
 mastermidibase::stop ()
 {
     automutex locker(m_mutex);
+
+#ifdef USE_BUS_ARRAY_CODE
+    m_outbus_array.stop();
+#else
     for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->stop();
-
-#ifdef SEQ64_HAVE_LIBASOUND_XXX
-    snd_seq_drain_output(m_alsa_seq);
-    snd_seq_sync_output_queue(m_alsa_seq);
-    snd_seq_stop_queue(m_alsa_seq, m_queue, NULL);  /* start timer */
 #endif
 
     api_stop();
@@ -234,8 +252,13 @@ mastermidibase::clock (midipulse tick)
 {
     automutex locker(m_mutex);
     api_clock();
+
+#ifdef USE_BUS_ARRAY_CODE
+    m_outbus_array.clock(tick);
+#else
     for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->clock(tick);
+#endif
 }
 
 /**
@@ -305,8 +328,13 @@ void
 mastermidibase::sysex (event * ev)
 {
     automutex locker(m_mutex);
+
+#ifdef USE_BUS_ARRAY_CODE
+    m_outbus_array.sysex(ev);
+#else
     for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->sysex(ev);
+#endif
 
     flush();                /* recursive locking! */
 }
@@ -335,8 +363,12 @@ void
 mastermidibase::play (bussbyte bus, event * e24, midibyte channel)
 {
     automutex locker(m_mutex);
+#ifdef USE_BUS_ARRAY_CODE
+    m_outbus_array.play(bus, e24, channel);
+#else
     if (bus < m_num_out_buses && m_buses_out_active[bus])
         m_buses_out[bus]->play(e24, channel);
+#endif
 }
 
 /**
@@ -359,11 +391,16 @@ void
 mastermidibase::set_clock (bussbyte bus, clock_e clocktype)
 {
     automutex locker(m_mutex);
+
+#ifdef USE_BUS_ARRAY_CODE
+    m_outbus_array.set_clock(bus, clocktype);
+#else
     if (bus < m_max_busses)
         m_init_clock[bus] = clocktype;
 
     if (bus < m_num_out_buses && m_buses_out_active[bus])
         m_buses_out[bus]->set_clock(clocktype);
+#endif
 }
 
 /**
@@ -382,10 +419,14 @@ mastermidibase::set_clock (bussbyte bus, clock_e clocktype)
 clock_e
 mastermidibase::get_clock (bussbyte bus)
 {
+#ifdef USE_BUS_ARRAY_CODE
+    return m_outbus_array.get_clock(bus);
+#else
     if (bus < m_num_out_buses && m_buses_out_active[bus])
         return m_buses_out[bus]->get_clock();
 
     return e_clock_off;
+#endif
 }
 
 /**
@@ -410,15 +451,16 @@ void
 mastermidibase::set_input (bussbyte bus, bool inputing)
 {
     automutex locker(m_mutex);
+
+#ifdef USE_BUS_ARRAY_CODE
+    m_inbus_array.set_input(bus, inputing);
+#else
     if (bus < m_max_busses)         // should be m_num_in_buses I believe!!!
         m_init_input[bus] = inputing;
 
-    /*
-     * NEED COMMON CODE CHECK
-     */
-
     if (m_buses_in_active[bus] && bus < m_num_in_buses)
         m_buses_in[bus]->set_input(inputing);
+#endif
 }
 
 /**
@@ -436,10 +478,14 @@ mastermidibase::set_input (bussbyte bus, bool inputing)
 bool
 mastermidibase::get_input (bussbyte bus)
 {
+#ifdef USE_BUS_ARRAY_CODE
+    return m_inbus_array.get_input(bus);
+#else
     if (m_buses_in_active[bus] && bus < m_num_in_buses)
         return m_buses_in[bus]->get_input();
 
     return false;
+#endif
 }
 
 /**
@@ -460,9 +506,13 @@ mastermidibase::get_input (bussbyte bus)
  */
 
 std::string
-mastermidibase::get_midi_out_bus_name (int bus)
+mastermidibase::get_midi_out_bus_name (bussbyte bus)
 {
     std::string result;
+
+#ifdef USE_BUS_ARRAY_CODE
+    result = m_outbus_array.get_midi_bus_name(bus);
+#else
     if (bus < m_num_out_buses)
     {
         if (m_buses_out_active[bus])
@@ -487,6 +537,8 @@ mastermidibase::get_midi_out_bus_name (int bus)
             result = std::string(tmp);
         }
     }
+#endif  // USE_BUS_ARRAY_CODE
+
     return result;
 }
 
@@ -507,8 +559,11 @@ mastermidibase::get_midi_out_bus_name (int bus)
  */
 
 std::string
-mastermidibase::get_midi_in_bus_name (int bus)
+mastermidibase::get_midi_in_bus_name (bussbyte bus)
 {
+#ifdef USE_BUS_ARRAY_CODE
+    return m_inbus_array.get_midi_bus_name(bus);
+#else
     if (m_buses_in_active[bus] && bus < m_num_in_buses)
     {
         return m_buses_in[bus]->bus_name();
@@ -530,15 +585,20 @@ mastermidibase::get_midi_in_bus_name (int bus)
 
         return std::string(tmp);
     }
+#endif  // USE_BUS_ARRAY_CODE
 }
 
 /**
- *  Print some information about the available MIDI output busses.
+ *  Print some information about the available MIDI input and output busses.
  */
 
 void
 mastermidibase::print ()
 {
+#ifdef USE_BUS_ARRAY_CODE
+    m_inbus_array.print();
+    m_outbus_array.print();
+#else
     printf("Available busses:\n");
     for (int i = 0; i < m_num_out_buses; ++i)
     {
@@ -549,6 +609,7 @@ mastermidibase::print ()
             m_buses_out[i]->port_name().c_str()
         );
     }
+#endif
 }
 
 /**
@@ -639,6 +700,10 @@ void
 mastermidibase::port_exit (int client, int port)
 {
     automutex locker(m_mutex);
+#ifdef USE_BUS_ARRAY_CODE
+    m_outbus_array.port_exit(client, port);
+    m_inbus_array.port_exit(client, port);
+#else
     for (int i = 0; i < m_num_out_buses; ++i)
     {
         if
@@ -661,6 +726,7 @@ mastermidibase::port_exit (int client, int port)
             m_buses_in_active[i] = false;
         }
     }
+#endif
 }
 
 /**
@@ -679,9 +745,9 @@ mastermidibase::get_midi_event (event * ev)
 
     /*
      * Some keyboards send Note On with velocity 0 for Note Off:
-
-    if (ev->is_note_on() && ev->get_note_velocity() == 0x00)
-        ev->set_status(EVENT_NOTE_OFF);
+     *
+     * if (ev->is_note_on() && ev->get_note_velocity() == 0x00)
+     *     ev->set_status(EVENT_NOTE_OFF);
      */
 
     return api_get_midi_event(ev);

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-30
+ * \updates       2017-01-01
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -107,8 +107,23 @@ mastermidibus::api_init (int ppqn, int bpm)
     if (rc().manual_alsa_ports())
     {
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
-        for (int i = 0; i < num_buses; ++i)         /* output busses    */
+        for (int i = 0; i < num_buses; ++i)             /* output busses    */
         {
+#ifdef USE_BUS_ARRAY_CODE
+            /*
+             * This code creates a midibus in the conventional manner.  Then
+             * the busarray::add() function makes a new businfo object with
+             * the desired "output" and "isvirtual" parameters; the businfo
+             * object then decides whether to call init_in(), init_out(),
+             * init_in_sub(), or init_out_sub().
+             */
+
+            midibus * m = new midibus                   /* virtual port     */
+            (
+                m_midi_scratch, SEQ64_APP_NAME, i  /* index and port */
+            );
+            m_outbus_array.add(m, false, true);         /* output & virtual */
+#else
             if (not_nullptr(m_buses_out[i]))
             {
                 delete m_buses_out[i];
@@ -123,8 +138,18 @@ mastermidibus::api_init (int ppqn, int bpm)
             );
             m_buses_out[i]->init_out_sub();
             m_buses_out_active[i] = m_buses_out_init[i] = true;
+#endif
         }
+#ifndef USE_BUS_ARRAY_CODE
         m_num_out_buses = num_buses;
+#endif
+#ifdef USE_BUS_ARRAY_CODE
+        midibus * m = new midibus                       /* virtual port     */
+        (
+            m_midi_scratch, SEQ64_APP_NAME, 0           /* index and port */
+        );
+        m_inbus_array.add(m, true, true);               /* input & virtual  */
+#else
         if (not_nullptr(m_buses_in[0]))
         {
             delete m_buses_in[0];
@@ -140,15 +165,16 @@ mastermidibus::api_init (int ppqn, int bpm)
         m_num_in_buses = 1;
         m_buses_in[0] = new midibus
         (
-            m_midi_scratch, SEQ64_APP_NAME, 0  /* index and port */
+            m_midi_scratch, SEQ64_APP_NAME, 0           /* index and port */
         );
         m_buses_in[0]->init_in_sub();
         m_buses_in_active[0] = m_buses_in_init[0] = true;
+#endif
     }
     else
     {
         unsigned nports = m_midi_scratch.get_all_port_info();
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_XXX
         std::string plist = m_midi_scratch.port_list();
         printf("rtmidi ports found:\n%s\n", plist.c_str());
 #endif
@@ -156,36 +182,50 @@ mastermidibus::api_init (int ppqn, int bpm)
         {
             m_midi_scratch.midi_mode(SEQ64_MIDI_INPUT);
             unsigned inports = m_midi_scratch.get_port_count();
+#ifndef USE_BUS_ARRAY_CODE
             m_num_in_buses = 0;
+#endif
             for (unsigned i = 0; i < inports; ++i)
             {
-                midibus * nextbus = new midibus(m_midi_scratch, m_num_in_buses);
-                if (nextbus->init_in())
+#ifdef USE_BUS_ARRAY_CODE
+                midibus * m = new midibus(m_midi_scratch, i);
+                m_inbus_array.add(m, true, false);        /* input, nonvirt */
+#else
+                midibus * m = new midibus(m_midi_scratch, m_num_in_buses);
+                if (m->init_in())
                 {
-                    m_buses_in[m_num_in_buses] = nextbus;
+                    m_buses_in[m_num_in_buses] = m;     /* different!     */
                     m_buses_in_active[m_num_in_buses] = true;
                     m_buses_in_init[m_num_in_buses] = true;
                     ++m_num_in_buses;
                 }
                 else
-                    delete nextbus;     // m_buses_in[m_num_in_buses] = nullptr;
+                    delete m;
+#endif
             }
 
             m_midi_scratch.midi_mode(SEQ64_MIDI_OUTPUT);
             unsigned outports = m_midi_scratch.get_port_count();
+#ifndef USE_BUS_ARRAY_CODE
             m_num_out_buses = 0;
+#endif
             for (unsigned i = 0; i < outports; ++i)
             {
-                midibus * nextbus = new midibus(m_midi_scratch, m_num_out_buses);
-                if (nextbus->init_out())
+#ifdef USE_BUS_ARRAY_CODE
+                midibus * m = new midibus(m_midi_scratch, i);
+                m_outbus_array.add(m, false, false);     /* output, nonvirt */
+#else
+                midibus * m = new midibus(m_midi_scratch, m_num_out_buses);
+                if (m->init_out())
                 {
-                    m_buses_out[m_num_out_buses] = nextbus;
+                    m_buses_out[m_num_out_buses] = m;
                     m_buses_out_active[m_num_out_buses] = true;
                     m_buses_out_init[m_num_out_buses] = true;
                     ++m_num_out_buses;
                 }
                 else
-                    delete nextbus;
+                    delete m;
+#endif
             }
         }
     }
@@ -197,11 +237,27 @@ mastermidibus::api_init (int ppqn, int bpm)
      * announce bus code not currently in place.
      */
 
+#if 0                               // we need an announce-bus constructor
+    m_bus_announce = new midibus
+    (
+        snd_seq_client_id(m_alsa_seq),
+        SND_SEQ_CLIENT_SYSTEM, SND_SEQ_PORT_SYSTEM_ANNOUNCE,
+        m_alsa_seq, "system", "announce",   // was "annouce" ca 2016-04-03
+        0, m_queue, ppqn, bpm
+    );
+    m_bus_announce->set_input(true);
+#endif
+
+#ifdef USE_BUS_ARRAY_CODE
+    m_outbus_array.set_all_clocks();
+    m_inbus_array.set_all_inputs();
+#else
     for (int i = 0; i < m_num_out_buses; ++i)
         set_clock(i, m_init_clock[i]);
 
     for (int i = 0; i < m_num_in_buses; ++i)
         set_input(i, m_init_input[i]);
+#endif
 }
 
 /**
@@ -212,20 +268,26 @@ mastermidibus::api_init (int ppqn, int bpm)
 int
 mastermidibus::api_poll_for_midi ()
 {
-    for (;;)                    // why this clause???
+    for (;;)
     {
+#ifdef USE_BUS_ARRAY_CODE
+        if (m_inbus_array.poll_for_midi())
+            return 1;
+#else
         for (int i = 0; i < m_num_in_buses; ++i)
         {
             if (m_buses_in[i]->poll_for_midi())
                 return 1;
         }
+#endif
         millisleep(1);
         return 0;
     }
 }
 
 /**
- *  Test the ALSA sequencer to see if any more input is pending.
+ *  Test the ALSA sequencer to see if any more input is pending.  Similar to
+ *  api_poll_for_midi(), except it is threadsafe.  We got some cleanup to do!
  *
  * \threadsafe
  */
@@ -234,6 +296,9 @@ bool
 mastermidibus::api_is_more_input ()
 {
     automutex locker(m_mutex);
+#ifdef USE_BUS_ARRAY_CODE
+    return m_inbus_array.poll_for_midi();
+#else
     int size = 0;
     for (int i = 0; i < m_num_in_buses; ++i)
     {
@@ -241,6 +306,7 @@ mastermidibus::api_is_more_input ()
             size = 1;
     }
     return size > 0;
+#endif
 }
 
 /**

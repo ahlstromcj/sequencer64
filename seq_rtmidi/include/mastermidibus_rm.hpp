@@ -54,6 +54,8 @@ namespace seq64
 class mastermidibus : public mastermidibase
 {
 
+    friend class midi_alsa_info;                /* TENTATIVE */
+
 private:
 
     /**

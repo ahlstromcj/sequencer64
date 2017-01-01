@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2016-12-31
+ * \updates       2017-01-01
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibase module is the base-class version of the mastermidibus
@@ -37,6 +37,16 @@
  */
 
 #include <vector>                       /* for channel-filtered recording   */
+
+/*
+ * EXPERIMENTAL
+ */
+
+#define USE_BUS_ARRAY_CODE
+
+#ifdef USE_BUS_ARRAY_CODE
+#include "businfo.hpp"                  /* seq64::businfo & busarray        */
+#endif
 
 #include "midibus_common.hpp"
 #include "mutex.hpp"
@@ -64,10 +74,33 @@ class mastermidibase
 protected:
 
     /**
-     *  The maximum number of busses supported.  Set to c_max_busses for now.
+     *  The maximum number of busses supported.  Set to c_max_busses
+     *  (SEQ64_DEFAULT_BUSS_MAX = 32) for now.
      */
 
     int m_max_busses;
+
+    /**
+     *  MIDI buss announcer?
+     */
+
+    midibus * m_bus_announce;
+
+#ifdef USE_BUS_ARRAY_CODE
+
+    /**
+     *  Encapsulates information about the input busses.
+     */
+
+    busarray m_inbus_array;
+
+    /**
+     *  Encapsulates information about the output busses.
+     */
+
+    busarray m_outbus_array;
+
+#else
 
     /**
      *  The number of output busses.
@@ -92,12 +125,6 @@ protected:
      */
 
     midibus * m_buses_in[c_max_busses];
-
-    /**
-     *  MIDI buss announcer?
-     */
-
-    midibus * m_bus_announce;
 
     /**
      *  Active output MIDI busses.  It would be good to make this
@@ -140,6 +167,8 @@ protected:
      */
 
     bool m_init_input[c_max_busses];
+
+#endif  // USE_BUS_ARRAY_CODE
 
     /**
      *  The ID of the MIDI queue.
@@ -224,7 +253,11 @@ public:
 
     int get_num_out_buses () const
     {
+#ifdef USE_BUS_ARRAY_CODE
+        return m_outbus_array.count();
+#else
         return m_num_out_buses;
+#endif
     }
 
     /**
@@ -233,7 +266,11 @@ public:
 
     int get_num_in_buses () const
     {
+#ifdef USE_BUS_ARRAY_CODE
+        return m_inbus_array.count();
+#else
         return m_num_in_buses;
+#endif
     }
 
     /**
@@ -316,8 +353,8 @@ public:
     void set_input (bussbyte bus, bool inputing);
     void dump_midi_input (event in);                    /* seq32 function */
 
-    std::string get_midi_out_bus_name (int bus);
-    std::string get_midi_in_bus_name (int bus);
+    std::string get_midi_out_bus_name (bussbyte bus);
+    std::string get_midi_in_bus_name (bussbyte bus);
 
     int poll_for_midi ();
     bool is_more_input ();

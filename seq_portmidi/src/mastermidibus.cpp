@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-29
+ * \updates       2017-01-01
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -100,11 +100,15 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
 {
     int num_devices = Pm_CountDevices();
     const PmDeviceInfo * dev_info = nullptr;
+#ifdef USE_BUS_ARRAY_CODE
+    int numouts = 0;
+    int numins = 0;
+#endif
     for (int i = 0; i < num_devices; ++i)
     {
         dev_info = Pm_GetDeviceInfo(i);
 
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_XXX
         fprintf
         (
             stderr, "[%s device %d: %s in:%d out:%d\n",
@@ -119,6 +123,14 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
              * The parameters here are bus ID, port ID, and client name.
              */
 
+#ifdef USE_BUS_ARRAY_CODE
+            midibus * m = new midibus
+            (
+                i, numouts, i, dev_info->name
+            );
+            m_outbus_array.add(m, false, false);        /* output & normal */
+            ++numouts;
+#else
             m_buses_out[m_num_out_buses] = new midibus
             (
                 i, m_num_out_buses, i, dev_info->name
@@ -134,6 +146,7 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
                 delete m_buses_out[m_num_out_buses];
                 m_buses_out[m_num_out_buses] = nullptr;
             }
+#endif
         }
         if (dev_info->input)
         {
@@ -141,6 +154,14 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
              * The parameters here are bus ID, port ID, and client name.
              */
 
+#ifdef USE_BUS_ARRAY_CODE
+            midibus * m = new midibus
+            (
+                i, numins, i, dev_info->name
+            );
+            m_inbus_array.add(m, true, false);         /* input & normal    */
+            ++numins;
+#else
             m_buses_in[m_num_in_buses] = new midibus
             (
                 i, m_num_in_buses, i, dev_info->name
@@ -156,17 +177,35 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
                 delete m_buses_in[m_num_in_buses];
                 m_buses_in[m_num_in_buses] = nullptr;
             }
+#endif
         }
     }
 
     set_beats_per_minute(c_beats_per_minute);
     set_ppqn(ppqn);                             // m_ppqn); SEQ64_DEFAULT_PPQN);
     set_sequence_input(false, NULL);
+
+#if 0                                           // what does this bus DO?
+    m_bus_announce = new midibus
+    (
+        snd_seq_client_id(m_alsa_seq),
+        SND_SEQ_CLIENT_SYSTEM, SND_SEQ_PORT_SYSTEM_ANNOUNCE,
+        m_alsa_seq, "system", "announce",   // was "annouce" ca 2016-04-03
+        0, m_queue, ppqn, bpm
+    );
+    m_bus_announce->set_input(true);
+#endif
+
+#ifdef USE_BUS_ARRAY_CODE
+    m_outbus_array.set_all_clocks();
+    m_inbus_array.set_all_inputs();
+#else
     for (int i = 0; i < m_num_out_buses; i++)
         set_clock(i, m_init_clock[i]);
 
     for (int i = 0; i < m_num_in_buses; i++)
         set_input(i, m_init_input[i]);
+#endif
 }
 
 /**
@@ -179,11 +218,16 @@ mastermidibus::api_poll_for_midi ()
 {
     for (;;)
     {
+#ifdef USE_BUS_ARRAY_CODE
+        if (m_inbus_array.poll_for_midi())
+            return 1;
+#else
         for (int i = 0; i < m_num_in_buses; ++i)
         {
             if (m_buses_in[i]->poll_for_midi())
                 return 1;
         }
+#endif
         millisleep(1);
         return 0;
     }
@@ -192,12 +236,17 @@ mastermidibus::api_poll_for_midi ()
 /**
  *  Test the ALSA sequencer to see if any more input is pending.
  *
- * \threadsafe
+ * \threadunsafe
+ *      Why is this version not protected by a mutex?  The seq_alsamidi and
+ *      seq_rtmidi versions are protected by one!
  */
 
 bool
 mastermidibus::api_is_more_input ()
 {
+#ifdef USE_BUS_ARRAY_CODE
+    return m_inbus_array.poll_for_midi();
+#else
     int size = 0;
     for (int i = 0; i < m_num_in_buses; i++)
     {
@@ -205,6 +254,7 @@ mastermidibus::api_is_more_input ()
             size = 1;
     }
     return size > 0;
+#endif
 }
 
 /**
@@ -218,15 +268,25 @@ mastermidibus::api_get_midi_event (event * in)
 {
     bool result = false;
     PmEvent event;
-    for (int i = 0; i < m_num_in_buses; i++)
+#ifdef USE_BUS_ARRAY_CODE
+    int count = m_inbus_array.count();
+#else
+    int count = m_num_in_buses;
+#endif
+    for (int i = 0; i < count; ++i)
     {
-        if (m_buses_in[i]->poll_for_midi())
+#ifdef USE_BUS_ARRAY_CODE
+        midibus * m = m_inbus_array.bus(i);
+#else
+        midibus * m = m_buses_in[i];
+#endif
+        if (m->poll_for_midi())
         {
-            int /*PmError*/ err = Pm_Read(m_buses_in[i]->m_pms, &event, 1);
+            int /*PmError*/ err = Pm_Read(m->m_pms, &event, 1);
             if (err < 0)
                 printf("Pm_Read: %s\n", Pm_GetErrorText((PmError) err));
 
-            if (m_buses_in[i]->m_inputing)
+            if (m->m_inputing)
                 result = true;
         }
     }

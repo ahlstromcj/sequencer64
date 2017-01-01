@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-11-28
+# \update      2016-12-31
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -87,6 +87,7 @@ AM_CXXFLAGS = \
 
 pkginclude_HEADERS = \
 	app_limits.h \
+   businfo.hpp \
 	calculations.hpp \
 	click.hpp \
 	cmdlineopts.hpp \

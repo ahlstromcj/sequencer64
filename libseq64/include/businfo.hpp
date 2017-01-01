@@ -101,8 +101,7 @@ public:
 
     ~businfo ()
     {
-        /*
-         */
+        // No code
     }
 
     void remove ()
@@ -149,8 +148,6 @@ public:
     void bus (midibus * b)
     {
         m_bus = b;
-
-        // and set members appropriately
     }
 
     void activate ()
@@ -206,7 +203,7 @@ private:
         bus()->sysex(ev);
     }
 
-};          // busarray
+};          // class busarray
 
 /**
  *  Holds a number of businfo objects.
@@ -264,7 +261,7 @@ public:
     bool poll_for_midi ();
     int replacement_port (int bus, int port);
 
-};          // busarray
+};          // class busarray
 
 }           // namespace seq64
 

@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-12-18
+dnl \update        2017-01-01
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -440,7 +440,7 @@ AC_ARG_ENABLE(alsamidi,
 if test "$alsamidi" != "no"; then
     AC_MSG_RESULT([Standard ALSA build enabled, can be overridden though.]);
     AC_DEFINE(ALSAMIDI_SUPPORT, 1, [Indicates if ALSA MIDI support is enabled])
-    AC_DEFINE(APP_NAME, ["sequencer64"], [Names this version of application])
+    AC_DEFINE(APP_NAME, ["sequencer64"], [Names legacy version of application])
     AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xyes])
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xhellno])
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xhellno])
@@ -476,7 +476,7 @@ AC_ARG_ENABLE(rtmidi,
 if test "$rtmidi" != "no"; then
     AC_MSG_RESULT([RtMidi build enabled.]);
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if RtMidi support is enabled])
-    AC_DEFINE(APP_NAME, ["seq64rtmidi"], [Names this version of application])
+    AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
     AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xhellno])
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xhellno])
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xyes])
@@ -638,7 +638,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-12-24"
+#define VERSION_DATE_SHORT "2017-01-01"
 #define VERSION "0.90.0"
 
 )

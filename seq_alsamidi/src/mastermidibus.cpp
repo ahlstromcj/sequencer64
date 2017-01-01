@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-12-31
+ * \updates       2017-01-01
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -223,56 +223,17 @@ mastermidibus::api_init (int ppqn, int bpm)
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
         for (int i = 0; i < num_buses; ++i)             /* output busses    */
         {
-#ifdef USE_BUS_ARRAY_CODE
             midibus * m = new midibus                   /* virtual port     */
             (
                 snd_seq_client_id(m_alsa_seq), m_alsa_seq, i, m_queue, ppqn, bpm
             );
             m_outbus_array.add(m, false, true);            /* output & virtual */
-#else
-            if (not_nullptr(m_buses_out[i]))
-            {
-                delete m_buses_out[i];
-                errprintf("manual: m_buses_out[%d] not null\n", i);
-            }
-            m_buses_out[i] = new midibus                /* virtual port     */
-            (
-                snd_seq_client_id(m_alsa_seq), m_alsa_seq, i, m_queue, ppqn, bpm
-            );
-            m_buses_out[i]->init_out_sub();
-            m_buses_out_active[i] = m_buses_out_init[i] = true;
-#endif
         }
-#ifndef USE_BUS_ARRAY_CODE
-        m_num_out_buses = num_buses;
-#endif
-
-#ifdef USE_BUS_ARRAY_CODE
         midibus * m = new midibus                       /* virtual port     */
         (
             snd_seq_client_id(m_alsa_seq), m_alsa_seq, 0, m_queue, ppqn, bpm
         );
         m_inbus_array.add(m, true, true);                 /* input & virtual  */
-#else
-        if (not_nullptr(m_buses_in[0]))
-        {
-            delete m_buses_in[0];
-            errprint("manual: m_buses_[0] not null");
-        }
-
-        /*
-         * Input buss.  Only the first element is set up.  The rest are used
-         * only for non-manual ALSA ports in the else-class below.
-         */
-
-        m_num_in_buses = 1;
-        m_buses_in[0] = new midibus                     /* virtual port     */
-        (
-            snd_seq_client_id(m_alsa_seq), m_alsa_seq, 0, m_queue, ppqn, bpm
-        );
-        m_buses_in[0]->init_in_sub();
-        m_buses_in_active[0] = m_buses_in_init[0] = true;
-#endif
     }
     else
     {
@@ -285,10 +246,8 @@ mastermidibus::api_init (int ppqn, int bpm)
         snd_seq_port_info_t * pinfo;                        /* port info        */
         snd_seq_client_info_alloca(&cinfo);
         snd_seq_client_info_set_client(cinfo, -1);
-#ifdef USE_BUS_ARRAY_CODE
         int numouts = 0;
         int numins = 0;
-#endif
         while (snd_seq_query_next_client(m_alsa_seq, cinfo) >= 0)
         {
             int client = snd_seq_client_info_get_client(cinfo);
@@ -316,7 +275,6 @@ mastermidibus::api_init (int ppqn, int bpm)
 
                     if (CAP_WRITE(cap) && ALSA_CLIENT_CHECK(pinfo))
                     {
-#ifdef USE_BUS_ARRAY_CODE
                         midibus * m = new midibus
                         (
                             snd_seq_client_id(m_alsa_seq),
@@ -329,36 +287,6 @@ mastermidibus::api_init (int ppqn, int bpm)
                         );
                         m_outbus_array.add(m, false, false);   /* output, nonvirt */
                         ++numouts;
-#else
-                        if (not_nullptr(m_buses_out[m_num_out_buses]))
-                        {
-                            delete m_buses_out[m_num_out_buses];
-                            errprintf
-                            (
-                                "mmbus::init(): m_buses_out[%d] not null\n",
-                                m_num_out_buses
-                            );
-                        }
-                        m_buses_out[m_num_out_buses] = new midibus
-                        (
-                            snd_seq_client_id(m_alsa_seq),
-                            snd_seq_port_info_get_client(pinfo),
-                            snd_seq_port_info_get_port(pinfo),
-                            m_alsa_seq,
-                            snd_seq_client_info_get_name(cinfo),
-                            snd_seq_port_info_get_name(pinfo),
-                            m_num_out_buses, m_queue, ppqn, bpm
-                        );
-                        if (m_buses_out[m_num_out_buses]->init_out())
-                        {
-                            m_buses_out_active[m_num_out_buses] = true;
-                            m_buses_out_init[m_num_out_buses] = true;
-                        }
-                        else
-                            m_buses_out_init[m_num_out_buses] = true;
-
-                        ++m_num_out_buses;
-#endif
                     }
 
                     /*
@@ -367,7 +295,6 @@ mastermidibus::api_init (int ppqn, int bpm)
 
                     if (CAP_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
                     {
-#ifdef USE_BUS_ARRAY_CODE
                         midibus * m = new midibus
                         (
                             snd_seq_client_id(m_alsa_seq),
@@ -380,37 +307,6 @@ mastermidibus::api_init (int ppqn, int bpm)
                         );
                         m_inbus_array.add(m, true, false);   /* input, nonvirt */
                         ++numins;
-#else
-                        if (not_nullptr(m_buses_in[m_num_in_buses]))
-                        {
-                            delete m_buses_in[m_num_in_buses];
-                            errprintf
-                            (
-                                "mmbus::init(): m_buses_in[%d] not null\n",
-                                m_num_in_buses
-                            );
-                        }
-                        m_buses_in[m_num_in_buses] = new midibus
-                        (
-                            snd_seq_client_id(m_alsa_seq),
-                            snd_seq_port_info_get_client(pinfo),
-                            snd_seq_port_info_get_port(pinfo),
-                            m_alsa_seq,
-                            snd_seq_client_info_get_name(cinfo),
-                            snd_seq_port_info_get_name(pinfo),
-                            m_num_in_buses, m_queue, ppqn, bpm
-                        );
-
-                        /*
-                         * Why no call to midibus::init_in()?  Commented out in
-                         * seq24!
-                         */
-
-                        m_buses_in_active[m_num_in_buses] =
-                            m_buses_in_init[m_num_in_buses] = true;
-
-                        ++m_num_in_buses;
-#endif
                     }
                 }
             }
@@ -445,17 +341,8 @@ mastermidibus::api_init (int ppqn, int bpm)
         0, m_queue, ppqn, bpm
     );
     m_bus_announce->set_input(true);
-
-#ifdef USE_BUS_ARRAY_CODE
     m_outbus_array.set_all_clocks();
     m_inbus_array.set_all_inputs();
-#else
-    for (int i = 0; i < m_num_out_buses; ++i)
-        set_clock(i, m_init_clock[i]);
-
-    for (int i = 0; i < m_num_in_buses; ++i)
-        set_input(i, m_init_input[i]);
-#endif
 }
 
 /**
@@ -624,15 +511,11 @@ mastermidibus::api_port_start (int bus, int port)
     {
         if (CAP_FULL_WRITE(cap) && ALSA_CLIENT_CHECK(pinfo)) /* outputs */
         {
-#ifdef USE_BUS_ARRAY_CODE
-//          bool replacement = false;
             int bus_slot = m_outbus_array.count();
             int test = m_outbus_array.replacement_port(bus, port);
             if (test >= 0)
-            {
-//              replacement = true;
                 bus_slot = test;
-            }
+
             midibus * m = new midibus
             (
                 snd_seq_client_id(m_alsa_seq),
@@ -645,42 +528,9 @@ mastermidibus::api_port_start (int bus, int port)
                 m_queue, get_ppqn(), get_bpm()
             );
             m_outbus_array.add(m, false, false);  /* out, nonvirt */
-#else
-            bool replacement = false;
-            int bus_slot = m_num_out_buses;
-            for (int i = 0; i < m_num_out_buses; ++i)
-            {
-                if (m_buses_out[i]->match(bus, port) && ! m_buses_out_active[i])
-                {
-                    replacement = true;
-                    bus_slot = i;
-                }
-            }
-            if (not_nullptr(m_buses_out[bus_slot]))
-            {
-                delete m_buses_out[bus_slot];
-                errprintf("port_start(): m_buses_out[%d] not null\n", bus_slot);
-            }
-            m_buses_out[bus_slot] = new midibus
-            (
-                snd_seq_client_id(m_alsa_seq),
-                snd_seq_port_info_get_client(pinfo),
-                snd_seq_port_info_get_port(pinfo),
-                m_alsa_seq,
-                snd_seq_client_info_get_name(cinfo),
-                snd_seq_port_info_get_name(pinfo),
-                m_num_out_buses,
-                m_queue, get_ppqn(), get_bpm()
-            );
-            m_buses_out[bus_slot]->init_out();
-            m_buses_out_active[bus_slot] = m_buses_out_init[bus_slot] = true;
-            if (! replacement)
-                ++m_num_out_buses;
-#endif  // USE_BUS_ARRAY_CODE
         }
         if (CAP_FULL_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
         {
-#ifdef USE_BUS_ARRAY_CODE
             int bus_slot = m_inbus_array.count();
             int test = m_inbus_array.replacement_port(bus, port);
             if (test >= 0)
@@ -699,42 +549,6 @@ mastermidibus::api_port_start (int bus, int port)
                 m_queue, get_ppqn(), get_bpm()
             );
             m_inbus_array.add(m, false, false);  /* out, nonvirt */
-#else
-            bool replacement = false;
-            int bus_slot = m_num_in_buses;
-            for (int i = 0; i < m_num_in_buses; ++i)
-            {
-                if (m_buses_in[i]->match(bus, port) && ! m_buses_in_active[i])
-                {
-                    replacement = true;
-                    bus_slot = i;
-                }
-            }
-            if (not_nullptr(m_buses_in[bus_slot]))
-            {
-                delete m_buses_in[bus_slot];
-                errprintf("port_start(): m_buses_in[%d] not null\n", bus_slot);
-            }
-            m_buses_in[bus_slot] = new midibus
-            (
-                snd_seq_client_id(m_alsa_seq),
-                snd_seq_port_info_get_client(pinfo),
-                snd_seq_port_info_get_port(pinfo),
-                m_alsa_seq,
-                snd_seq_client_info_get_name(cinfo),
-                snd_seq_port_info_get_name(pinfo),
-                m_num_in_buses,
-                m_queue, get_ppqn(), get_bpm()
-            );
-
-            /*
-             * Commented out in seq24:  bus_in[bus_slot]->init_in();
-             */
-
-            m_buses_in_active[bus_slot] = m_buses_in_init[bus_slot] = true;
-            if (! replacement)
-                ++m_num_in_buses;
-#endif  // USE_BUS_ARRAY_CODE
         }
     }                                           /* end loop for clients */
 

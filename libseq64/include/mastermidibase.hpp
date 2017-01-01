@@ -38,16 +38,7 @@
 
 #include <vector>                       /* for channel-filtered recording   */
 
-/*
- * EXPERIMENTAL
- */
-
-#define USE_BUS_ARRAY_CODE
-
-#ifdef USE_BUS_ARRAY_CODE
 #include "businfo.hpp"                  /* seq64::businfo & busarray        */
-#endif
-
 #include "midibus_common.hpp"
 #include "mutex.hpp"
 #include "user_midi_bus.hpp"
@@ -86,8 +77,6 @@ protected:
 
     midibus * m_bus_announce;
 
-#ifdef USE_BUS_ARRAY_CODE
-
     /**
      *  Encapsulates information about the input busses.
      */
@@ -99,76 +88,6 @@ protected:
      */
 
     busarray m_outbus_array;
-
-#else
-
-    /**
-     *  The number of output busses.
-     */
-
-    int m_num_out_buses;
-
-    /**
-     *  The number of input busses.
-     */
-
-    int m_num_in_buses;
-
-    /**
-     *  Output MIDI busses.
-     */
-
-    midibus * m_buses_out[c_max_busses];
-
-    /**
-     *  Input MIDI busses.
-     */
-
-    midibus * m_buses_in[c_max_busses];
-
-    /**
-     *  Active output MIDI busses.  It would be good to make this
-     *  a flag in midibus instead.
-     */
-
-    bool m_buses_out_active[c_max_busses];
-
-    /**
-     *  Active input MIDI busses.  It would be good to make this
-     *  a flag in midibus instead.
-     */
-
-    bool m_buses_in_active[c_max_busses];
-
-    /**
-     *  Output MIDI buss initialization.  It would be good to make this
-     *  a flag in midibus instead.
-     */
-
-    bool m_buses_out_init[c_max_busses];
-
-    /**
-     *  Input MIDI buss initialization.  It would be good to make this
-     *  a flag in midibus instead.
-     */
-
-    bool m_buses_in_init[c_max_busses];
-
-    /**
-     *  Clock initialization.  It might be good to make this a value in
-     *  midibus instead.
-     */
-
-    clock_e m_init_clock[c_max_busses];
-
-    /**
-     *  Input initialization?  It might be good to make this a flag in
-     *  midibus instead.
-     */
-
-    bool m_init_input[c_max_busses];
-
-#endif  // USE_BUS_ARRAY_CODE
 
     /**
      *  The ID of the MIDI queue.
@@ -253,11 +172,7 @@ public:
 
     int get_num_out_buses () const
     {
-#ifdef USE_BUS_ARRAY_CODE
         return m_outbus_array.count();
-#else
-        return m_num_out_buses;
-#endif
     }
 
     /**
@@ -266,11 +181,7 @@ public:
 
     int get_num_in_buses () const
     {
-#ifdef USE_BUS_ARRAY_CODE
         return m_inbus_array.count();
-#else
-        return m_num_in_buses;
-#endif
     }
 
     /**

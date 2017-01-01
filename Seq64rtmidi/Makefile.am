@@ -6,7 +6,7 @@
 # \library    	seq64rtmidi application
 # \author     	Chris Ahlstrom
 # \date       	2016-12-03
-# \update      2016-12-03
+# \update      2017-01-01
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -152,15 +152,15 @@ dependencies = \
 # The programs to build
 #------------------------------------------------------------------------------
 
-bin_PROGRAMS = seq64rtmidi
+bin_PROGRAMS = seq64
 
 #******************************************************************************
-# seq64rtmidi
+# seq64
 #----------------------------------------------------------------------------
 
-seq64rtmidi_SOURCES = seq64rtmidi.cpp
-seq64rtmidi_DEPENDENCIES = $(dependencies)
-seq64rtmidi_LDADD = $(libraries) $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)
+seq64_SOURCES = seq64rtmidi.cpp
+seq64_DEPENDENCIES = $(dependencies)
+seq64_LDADD = $(libraries) $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)
 
 #******************************************************************************
 # Testing

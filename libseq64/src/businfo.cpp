@@ -148,16 +148,6 @@ bool
 busarray::add (midibus * bus, bool is_input, bool is_virtual)
 {
     size_t count = m_container.size();
-#if 0
-    if (count > 0)
-    {
-        if (not_nullptr(m_container[count].bus()))
-        {
-            m_container.pop_back();         /* delete existing bus info */
-            errprint("busarray::add(): removing existing businfo");
-        }
-    }
-#endif
     m_container.push_back(businfo(bus, is_input, is_virtual));
     return m_container.size() == (count + 1);
 }

@@ -100,10 +100,8 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
 {
     int num_devices = Pm_CountDevices();
     const PmDeviceInfo * dev_info = nullptr;
-#ifdef USE_BUS_ARRAY_CODE
     int numouts = 0;
     int numins = 0;
-#endif
     for (int i = 0; i < num_devices; ++i)
     {
         dev_info = Pm_GetDeviceInfo(i);
@@ -123,30 +121,12 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
              * The parameters here are bus ID, port ID, and client name.
              */
 
-#ifdef USE_BUS_ARRAY_CODE
             midibus * m = new midibus
             (
                 i, numouts, i, dev_info->name
             );
             m_outbus_array.add(m, false, false);        /* output & normal */
             ++numouts;
-#else
-            m_buses_out[m_num_out_buses] = new midibus
-            (
-                i, m_num_out_buses, i, dev_info->name
-            );
-            if (m_buses_out[m_num_out_buses]->init_out())
-            {
-                m_buses_out_active[m_num_out_buses] = true;
-                m_buses_out_init[m_num_out_buses] = true;
-                ++m_num_out_buses;
-            }
-            else
-            {
-                delete m_buses_out[m_num_out_buses];
-                m_buses_out[m_num_out_buses] = nullptr;
-            }
-#endif
         }
         if (dev_info->input)
         {
@@ -154,30 +134,12 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
              * The parameters here are bus ID, port ID, and client name.
              */
 
-#ifdef USE_BUS_ARRAY_CODE
             midibus * m = new midibus
             (
                 i, numins, i, dev_info->name
             );
             m_inbus_array.add(m, true, false);         /* input & normal    */
             ++numins;
-#else
-            m_buses_in[m_num_in_buses] = new midibus
-            (
-                i, m_num_in_buses, i, dev_info->name
-            );
-            if (m_buses_in[m_num_in_buses]->init_in())
-            {
-                m_buses_in_active[m_num_in_buses] = true;
-                m_buses_in_init[m_num_in_buses] = true;
-                m_num_in_buses++;
-            }
-            else
-            {
-                delete m_buses_in[m_num_in_buses];
-                m_buses_in[m_num_in_buses] = nullptr;
-            }
-#endif
         }
     }
 
@@ -196,16 +158,8 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
     m_bus_announce->set_input(true);
 #endif
 
-#ifdef USE_BUS_ARRAY_CODE
     m_outbus_array.set_all_clocks();
     m_inbus_array.set_all_inputs();
-#else
-    for (int i = 0; i < m_num_out_buses; i++)
-        set_clock(i, m_init_clock[i]);
-
-    for (int i = 0; i < m_num_in_buses; i++)
-        set_input(i, m_init_input[i]);
-#endif
 }
 
 /**
@@ -218,16 +172,9 @@ mastermidibus::api_poll_for_midi ()
 {
     for (;;)
     {
-#ifdef USE_BUS_ARRAY_CODE
         if (m_inbus_array.poll_for_midi())
             return 1;
-#else
-        for (int i = 0; i < m_num_in_buses; ++i)
-        {
-            if (m_buses_in[i]->poll_for_midi())
-                return 1;
-        }
-#endif
+
         millisleep(1);
         return 0;
     }
@@ -244,17 +191,7 @@ mastermidibus::api_poll_for_midi ()
 bool
 mastermidibus::api_is_more_input ()
 {
-#ifdef USE_BUS_ARRAY_CODE
     return m_inbus_array.poll_for_midi();
-#else
-    int size = 0;
-    for (int i = 0; i < m_num_in_buses; i++)
-    {
-        if (m_buses_in[i]->poll_for_midi())
-            size = 1;
-    }
-    return size > 0;
-#endif
 }
 
 /**
@@ -268,18 +205,10 @@ mastermidibus::api_get_midi_event (event * in)
 {
     bool result = false;
     PmEvent event;
-#ifdef USE_BUS_ARRAY_CODE
     int count = m_inbus_array.count();
-#else
-    int count = m_num_in_buses;
-#endif
     for (int i = 0; i < count; ++i)
     {
-#ifdef USE_BUS_ARRAY_CODE
         midibus * m = m_inbus_array.bus(i);
-#else
-        midibus * m = m_buses_in[i];
-#endif
         if (m->poll_for_midi())
         {
             int /*PmError*/ err = Pm_Read(m->m_pms, &event, 1);

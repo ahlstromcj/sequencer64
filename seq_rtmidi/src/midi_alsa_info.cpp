@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-31
+ * \updates       2017-01-01
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -338,113 +338,29 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
     {
         if (CAP_FULL_WRITE(cap) && ALSA_CLIENT_CHECK(pinfo)) /* outputs */
         {
-#ifdef USE_BUS_ARRAY_CODE
-//          bool replacement = false;
             int bus_slot = masterbus.m_outbus_array.count();
             int test = masterbus.m_outbus_array.replacement_port(bus, port);
             if (test >= 0)
-            {
-//              replacement = true;
                 bus_slot = test;
-            }
+
             midibus * m = new midibus
             (
-                masterbus.m_midi_scratch, SEQ64_APP_NAME, bus_slot /* index, port */
+                masterbus.m_midi_scratch, SEQ64_APP_NAME, bus_slot // index, port
             );
             masterbus.m_outbus_array.add(m, false, false);  /* out, nonvirt */
-#else
-            bool replacement = false;
-            int bus_slot = masterbus.m_num_out_buses;
-            for (int i = 0; i < masterbus.m_num_out_buses; ++i)
-            {
-                if (masterbus.m_buses_out[i]->match(bus, port) &&
-                    ! masterbus.m_buses_out_active[i])
-                {
-                    replacement = true;
-                    bus_slot = i;
-                }
-            }
-            if (not_nullptr(masterbus.m_buses_out[bus_slot]))
-            {
-                delete masterbus.m_buses_out[bus_slot];
-                errprintf("port_start(): bus_out[%d] not null\n", bus_slot);
-            }
-#ifdef CAN_USE_NEW_MIDIBUS_CONSTRUCTOR
-            masterbus.m_buses_out[bus_slot] = new midibus
-            (
-                snd_seq_client_id(m_alsa_seq),
-                snd_seq_port_info_get_client(pinfo),
-                snd_seq_port_info_get_port(pinfo),
-                m_alsa_seq,
-                snd_seq_client_info_get_name(cinfo),
-                snd_seq_port_info_get_name(pinfo),
-                masterbus.m_num_out_buses,
-                global_queue(), ppqn(), bpm()
-            );
-            masterbus.m_buses_out[bus_slot]->init_out();
-            masterbus.m_buses_out_active[bus_slot] = masterbus.m_buses_out_init[bus_slot] = true;
-            if (! replacement)
-                ++masterbus.m_num_out_buses;
-#endif  // CAN_USE_NEW_MIDIBUS_CONSTRUCTOR
-#endif  // USE_BUS_ARRAY_CODE
         }
         if (CAP_FULL_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
         {
-#ifdef USE_BUS_ARRAY_CODE
-//          bool replacement = false;
             int bus_slot = masterbus.m_inbus_array.count();
             int test = masterbus.m_inbus_array.replacement_port(bus, port);
             if (test >= 0)
-            {
-//              replacement = true;
                 bus_slot = test;
-            }
+
             midibus * m = new midibus
             (
-                masterbus.m_midi_scratch, SEQ64_APP_NAME, bus_slot /* index, port */
+                masterbus.m_midi_scratch, SEQ64_APP_NAME, bus_slot // index, port
             );
             masterbus.m_inbus_array.add(m, false, false);  /* out, nonvirt */
-#else
-            bool replacement = false;
-            int bus_slot = masterbus.m_num_in_buses;
-            for (int i = 0; i < masterbus.m_num_in_buses; ++i)
-            {
-                if (masterbus.m_buses_in[i]->match(bus, port) &&
-                    ! masterbus.m_buses_in_active[i])
-                {
-                    replacement = true;
-                    bus_slot = i;
-                }
-            }
-            if (not_nullptr(masterbus.m_buses_in[bus_slot]))
-            {
-                delete masterbus.m_buses_in[bus_slot];
-                errprintf("port_start(): bus_in[%d] not null\n", bus_slot);
-            }
-#ifdef CAN_USE_NEW_MIDIBUS_CONSTRUCTOR
-            masterbus.m_buses_in[bus_slot] = new midibus
-            (
-                snd_seq_client_id(m_alsa_seq),
-                snd_seq_port_info_get_client(pinfo),
-                snd_seq_port_info_get_port(pinfo),
-                m_alsa_seq,
-                snd_seq_client_info_get_name(cinfo),
-                snd_seq_port_info_get_name(pinfo),
-                masterbus.m_num_in_buses,
-                global_queue(), ppqn(), bpm()
-            );
-
-            /*
-             * Commented out in seq24: masterbus.m_buses_in[bus_slot]->init_in();
-             */
-
-            masterbus.m_buses_in_active[bus_slot] =
-                masterbus.m_buses_in_init[bus_slot] = true;
-
-            if (! replacement)
-                ++masterbus.m_num_in_buses;
-#endif  // CAN_USE_NEW_MIDIBUS_CONSTRUCTOR
-#endif  // USE_BUS_ARRAY_CODE
         }
     }                                           /* end loop for clients */
 

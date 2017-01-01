@@ -77,7 +77,7 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
 
 mastermidibus::~mastermidibus ()
 {
-    // Pm_Terminate();
+    // Empty body
 }
 
 /**
@@ -109,7 +109,6 @@ mastermidibus::api_init (int ppqn, int bpm)
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
         for (int i = 0; i < num_buses; ++i)             /* output busses    */
         {
-#ifdef USE_BUS_ARRAY_CODE
             /*
              * This code creates a midibus in the conventional manner.  Then
              * the busarray::add() function makes a new businfo object with
@@ -123,53 +122,12 @@ mastermidibus::api_init (int ppqn, int bpm)
                 m_midi_scratch, SEQ64_APP_NAME, i  /* index and port */
             );
             m_outbus_array.add(m, false, true);         /* output & virtual */
-#else
-            if (not_nullptr(m_buses_out[i]))
-            {
-                delete m_buses_out[i];
-                errprintf("manual: m_buses_out[%d] not null\n", i);
-            }
-            char tmp[4];
-            snprintf(tmp, sizeof tmp, "%d", i);
-            std::string portname = tmp;
-            m_buses_out[i] = new midibus
-            (
-                m_midi_scratch, SEQ64_APP_NAME, i  /* index and port */
-            );
-            m_buses_out[i]->init_out_sub();
-            m_buses_out_active[i] = m_buses_out_init[i] = true;
-#endif
         }
-#ifndef USE_BUS_ARRAY_CODE
-        m_num_out_buses = num_buses;
-#endif
-#ifdef USE_BUS_ARRAY_CODE
         midibus * m = new midibus                       /* virtual port     */
         (
             m_midi_scratch, SEQ64_APP_NAME, 0           /* index and port */
         );
         m_inbus_array.add(m, true, true);               /* input & virtual  */
-#else
-        if (not_nullptr(m_buses_in[0]))
-        {
-            delete m_buses_in[0];
-            errprint("manual: m_buses_[0] not null");
-        }
-
-        /*
-         * Input buss.  Only the first element is set up.  The rest are used
-         * only for non-manual ALSA ports in the else-class below.
-         */
-
-        std::string portname = "0";
-        m_num_in_buses = 1;
-        m_buses_in[0] = new midibus
-        (
-            m_midi_scratch, SEQ64_APP_NAME, 0           /* index and port */
-        );
-        m_buses_in[0]->init_in_sub();
-        m_buses_in_active[0] = m_buses_in_init[0] = true;
-#endif
     }
     else
     {
@@ -182,50 +140,18 @@ mastermidibus::api_init (int ppqn, int bpm)
         {
             m_midi_scratch.midi_mode(SEQ64_MIDI_INPUT);
             unsigned inports = m_midi_scratch.get_port_count();
-#ifndef USE_BUS_ARRAY_CODE
-            m_num_in_buses = 0;
-#endif
             for (unsigned i = 0; i < inports; ++i)
             {
-#ifdef USE_BUS_ARRAY_CODE
                 midibus * m = new midibus(m_midi_scratch, i);
                 m_inbus_array.add(m, true, false);        /* input, nonvirt */
-#else
-                midibus * m = new midibus(m_midi_scratch, m_num_in_buses);
-                if (m->init_in())
-                {
-                    m_buses_in[m_num_in_buses] = m;     /* different!     */
-                    m_buses_in_active[m_num_in_buses] = true;
-                    m_buses_in_init[m_num_in_buses] = true;
-                    ++m_num_in_buses;
-                }
-                else
-                    delete m;
-#endif
             }
 
             m_midi_scratch.midi_mode(SEQ64_MIDI_OUTPUT);
             unsigned outports = m_midi_scratch.get_port_count();
-#ifndef USE_BUS_ARRAY_CODE
-            m_num_out_buses = 0;
-#endif
             for (unsigned i = 0; i < outports; ++i)
             {
-#ifdef USE_BUS_ARRAY_CODE
                 midibus * m = new midibus(m_midi_scratch, i);
                 m_outbus_array.add(m, false, false);     /* output, nonvirt */
-#else
-                midibus * m = new midibus(m_midi_scratch, m_num_out_buses);
-                if (m->init_out())
-                {
-                    m_buses_out[m_num_out_buses] = m;
-                    m_buses_out_active[m_num_out_buses] = true;
-                    m_buses_out_init[m_num_out_buses] = true;
-                    ++m_num_out_buses;
-                }
-                else
-                    delete m;
-#endif
             }
         }
     }
@@ -248,16 +174,8 @@ mastermidibus::api_init (int ppqn, int bpm)
     m_bus_announce->set_input(true);
 #endif
 
-#ifdef USE_BUS_ARRAY_CODE
     m_outbus_array.set_all_clocks();
     m_inbus_array.set_all_inputs();
-#else
-    for (int i = 0; i < m_num_out_buses; ++i)
-        set_clock(i, m_init_clock[i]);
-
-    for (int i = 0; i < m_num_in_buses; ++i)
-        set_input(i, m_init_input[i]);
-#endif
 }
 
 /**
@@ -270,16 +188,9 @@ mastermidibus::api_poll_for_midi ()
 {
     for (;;)
     {
-#ifdef USE_BUS_ARRAY_CODE
         if (m_inbus_array.poll_for_midi())
             return 1;
-#else
-        for (int i = 0; i < m_num_in_buses; ++i)
-        {
-            if (m_buses_in[i]->poll_for_midi())
-                return 1;
-        }
-#endif
+
         millisleep(1);
         return 0;
     }
@@ -296,17 +207,7 @@ bool
 mastermidibus::api_is_more_input ()
 {
     automutex locker(m_mutex);
-#ifdef USE_BUS_ARRAY_CODE
     return m_inbus_array.poll_for_midi();
-#else
-    int size = 0;
-    for (int i = 0; i < m_num_in_buses; ++i)
-    {
-        if (m_buses_in[i]->poll_for_midi())
-            size = 1;
-    }
-    return size > 0;
-#endif
 }
 
 /**
@@ -319,29 +220,6 @@ bool
 mastermidibus::api_get_midi_event (event * inev)
 {
     return m_midi_scratch.api_get_midi_event(inev);
-
-#if 0
-    bool result = false;
-    for (int i = 0; i < m_num_in_buses; ++i)
-    {
-        if (m_buses_in[i]->poll_for_midi())
-        {
-            if (m_buses_in[i]->m_inputing)
-                result = true;
-        }
-    }
-    if (! result)
-        return false;
-
-    /*
-     * Some keyboards send Note On with velocity 0 for Note Off.
-     */
-
-    if (in->is_note_on() && in->get_note_velocity() == 0x00)
-        in->set_status(EVENT_NOTE_OFF);
-
-    return true; // Why no "sysex = false" here, like in Linux version?
-#endif  // 0
 }
 
 }           // namespace seq64

@@ -132,7 +132,7 @@ mastermidibus::api_init (int ppqn, int bpm)
     else
     {
         unsigned nports = m_midi_scratch.get_all_port_info();
-#ifdef PLATFORM_DEBUG_XXX
+#ifdef PLATFORM_DEBUG
         std::string plist = m_midi_scratch.port_list();
         printf("rtmidi ports found:\n%s\n", plist.c_str());
 #endif

@@ -6,7 +6,7 @@
  *
  *    A class for holding the current status of the ALSA system on the host.
  *
- * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
+ * \author        Chris Ahlstrom
  * \date          2016-12-04
  * \updates       2016-12-31
  * \license       See the rtexmidi.lic file.  Too big for a header file.
@@ -99,7 +99,7 @@ public:
 
 private:
 
-    virtual unsigned get_all_port_info ();
+    virtual int get_all_port_info ();
 
 };          // midi_alsa_info
 

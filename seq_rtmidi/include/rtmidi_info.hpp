@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-31
+ * \updates       2017-01-02
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -128,7 +128,7 @@ public:
         return get_api_info()->get_port_name(index);
     }
 
-    unsigned get_all_port_info ()
+    int get_all_port_info ()
     {
         return get_api_info()->get_all_port_info();
     }
@@ -242,12 +242,21 @@ protected:
 
     /**
      * \setter m_info_api
+     *      This function also checks the pointer and returns false if it is
+     *      not valid.  This feature is important to allow a missing API (e.g.
+     *      the JACK server is not running) to be detected.
      */
 
-    void set_api_info (midi_info * ma)
+    bool set_api_info (midi_info * ma)
     {
-        if (not_nullptr(ma))
-            m_info_api = ma;
+        bool result = not_nullptr(ma);
+        if (result)
+        {
+            result = not_nullptr(ma->midi_handle());
+            if (result)
+                m_info_api = ma;
+        }
+        return result;
     }
 
     /**
@@ -265,7 +274,7 @@ protected:
 
 protected:
 
-    void openmidi_api
+    bool openmidi_api
     (
         rtmidi_api api,
         const std::string & appname,

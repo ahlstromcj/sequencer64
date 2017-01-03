@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-10-30
+ * \updates       2017-01-03
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -76,6 +76,7 @@ class rc_settings
     friend class optionsfile;
     friend class options;
     friend class mainwnd;
+    friend class rtmidi_info;
     friend int parse_command_line_options (perform & p, int argc, char * argv []);
     friend bool help_check (int argc, char * argv []);
 
@@ -158,6 +159,19 @@ private:
      */
 
     std::string m_user_filename_alt;
+
+    /**
+     *  Indicates if the JACK settings are locked, and not to be overridden.
+     *  This feature is used only in the "rtmidi" version of Sequencer64, and
+     *  is needed because, currently, we initialize from the configuration
+     *  file <i> after </i> creating the perform object (and its
+     *  mastermidibus).  This is only a workaround.  Unfortunately, a lot of
+     *  the settings from the "rc" file are placed directly into the perform
+     *  object, and not in the rc_settings object.  Too much to deal with
+     *  right now, but will have to be dealt with eventually.
+     */
+
+    bool m_jack_kludge_lock;
 
 public:
 
@@ -300,15 +314,6 @@ public:
     }
 
     /**
-     * \getter m_song_start_mode,
-
-    bool song_start_mode () const
-    {
-        return m_song_start_mode;
-    }
-     */
-
-    /**
      * \getter m_filter_by_channel
      */
 
@@ -443,6 +448,15 @@ public:
         return m_user_filename_alt;
     }
 
+    /**
+     * \getter m_jack_kludge_lock
+     */
+
+    bool jack_kludge_lock () const
+    {
+        return m_jack_kludge_lock;
+    }
+
 protected:
 
     /**
@@ -541,7 +555,8 @@ protected:
 
     void with_jack_transport (bool flag)
     {
-        m_with_jack_transport = flag;
+        if (! m_jack_kludge_lock)
+            m_with_jack_transport = flag;
     }
 
     /**
@@ -550,7 +565,8 @@ protected:
 
     void with_jack_master (bool flag)
     {
-        m_with_jack_master = flag;
+        if (! m_jack_kludge_lock)
+            m_with_jack_master = flag;
     }
 
     /**
@@ -559,17 +575,9 @@ protected:
 
     void with_jack_master_cond (bool flag)
     {
-        m_with_jack_master_cond = flag;
+        if (! m_jack_kludge_lock)
+            m_with_jack_master_cond = flag;
     }
-
-    /**
-     * \setter m_song_start_mode,
-
-    void song_start_mode (bool flag)
-    {
-        m_song_start_mode = flag;
-    }
-     */
 
     /**
      * \setter m_filter_by_channel
@@ -614,6 +622,15 @@ protected:
     void device_ignore (bool flag)
     {
         m_device_ignore = flag;
+    }
+
+    /**
+     * \setter m_jack_kludge_lock
+     */
+
+    void jack_kludge_lock (bool flag)
+    {
+        m_jack_kludge_lock = flag;
     }
 
     /*

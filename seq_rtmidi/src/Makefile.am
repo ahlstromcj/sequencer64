@@ -6,7 +6,7 @@
 # \library    	seq_rtmidi library
 # \author     	Chris Ahlstrom
 # \date       	2016-11-19
-# \update      2016-12-18
+# \update      2017-01-02
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -138,6 +138,7 @@ libseq_rtmidi_la_SOURCES = \
 	midi_alsa_info.cpp \
 	midi_api.cpp \
 	midi_info.cpp \
+	midi_jack_info.cpp \
 	midi_probe.cpp \
 	rtmidi.cpp \
 	rtmidi_info.cpp \

@@ -1,0 +1,109 @@
+#ifndef SEQ64_MIDI_JACK_INFO_HPP
+#define SEQ64_MIDI_JACK_INFO_HPP
+
+/**
+ * \file          midi_jack_info.hpp
+ *
+ *    A class for holding the current status of the JACK system on the host.
+ *
+ * \author        Chris Ahlstrom
+ * \date          2017-01-01
+ * \updates       2017-01-02
+ * \license       See the rtexmidi.lic file.  Too big for a header file.
+ *
+ *    We need to have a way to get all of the JACK information of
+ *    the midi_jack
+ */
+
+#include <jack/jack.h>
+
+#include "midi_info.hpp"                /* seq64::midi_port_info etc.   */
+#include "midi_jack_data.hpp"           /* seq64::midi_jack_data        */
+#include "mastermidibus_rm.hpp"
+#include "midibus.hpp"                  /* seq64::midibus               */
+
+/*
+ * Do not document the namespace; it breaks Doxygen.
+ */
+
+namespace seq64
+{
+    class mastermidibus;
+
+/**
+ *  The class for handling JACK MIDI port enumeration.
+ */
+
+class midi_jack_info : public midi_info
+{
+
+private:
+
+    /**
+     *  Holds the data needed for JACK processing.  Please do not confuse this
+     *  item with m_jack_client or the m_midi_handle of the base class.
+     *  However, this object does hold a copy of the m_jack_client pointer.
+     */
+
+    midi_jack_data m_jack_data;
+
+    /**
+     *  Holds the JACK sequencer client pointer so that it can be used
+     *  by the midibus objects.  This is actually an opaque pointer; there is
+     *  no way to get the actual fields in this structure; they can only be
+     *  accessed through functions in the JACK API.  Note that it is also
+     *  stored as a void pointer in midi_info::m_midi_handle.
+     */
+
+    jack_client_t * m_jack_client;
+
+public:
+
+    midi_jack_info
+    (
+        const std::string & appname,
+        int ppqn = SEQ64_DEFAULT_PPQN,          /* 192  */
+        int bpm  = SEQ64_DEFAULT_BPM            /* 120  */
+    );
+    virtual ~midi_jack_info ();
+
+    /**
+     * \getter m_jack_client
+     *      This is the platform-specific version of midi_handle().
+     */
+
+    jack_client_t * client_handle ()
+    {
+        return m_jack_client;
+    }
+
+    virtual void api_set_ppqn (int p);
+    virtual void api_set_beats_per_minute (int b);
+    virtual void api_port_start (mastermidibus & masterbus, int bus, int port);
+    virtual bool api_get_midi_event (event * inev);
+    virtual void api_flush ();
+
+private:
+
+    virtual int get_all_port_info ();
+
+    jack_client_t * connect ();
+    void extract_names
+    (
+        const std::string & fullname,
+        std::string & clientname,
+        std::string & portname
+    );
+
+};          // midi_jack_info
+
+}           // namespace seq64
+
+#endif      // SEQ64_MIDI_JACK_INFO_HPP
+
+/*
+ * midi_jack_info.hpp
+ *
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
+ */
+

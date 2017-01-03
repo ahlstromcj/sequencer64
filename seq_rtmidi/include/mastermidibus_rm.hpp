@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-31
+ * \updates       2017-01-02
  * \license       GNU GPLv2 or above
  *
  *  This mastermidibus module is the Linux (and, soon, JACK) version of the
@@ -53,8 +53,8 @@ namespace seq64
 
 class mastermidibus : public mastermidibase
 {
-
-    friend class midi_alsa_info;                /* TENTATIVE */
+    friend class midi_alsa_info;
+    friend class midi_jack_info;
 
 private:
 

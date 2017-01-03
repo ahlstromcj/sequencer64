@@ -1,11 +1,11 @@
 /**
  * \file          midi_alsa_info.cpp
  *
- *    A class for obrtaining ALSA information
+ *    A class for obtaining ALSA information.
  *
- * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
+ * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-01
+ * \updates       2017-01-02
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -140,10 +140,10 @@ midi_alsa_info::~midi_alsa_info ()
  *      Returns the total number of ports found.
  */
 
-unsigned
+int
 midi_alsa_info::get_all_port_info ()
 {
-    unsigned count = 0;
+    int count = 0;
     if (not_nullptr(m_alsa_seq))
     {
         snd_seq_port_info_t * pinfo;                    /* point to member  */
@@ -193,18 +193,13 @@ midi_alsa_info::get_all_port_info ()
                 {
                     input_ports().add
                     (
-                        unsigned(client), clientname,
-                        unsigned(portnumber), portname, global_queue()
+                        client, clientname, portnumber, portname, global_queue()
                     );
                     ++count;
                 }
                 if ((caps & sm_output_caps) == sm_output_caps)
                 {
-                    output_ports().add
-                    (
-                        unsigned(client), clientname,
-                        unsigned(portnumber), portname
-                    );
+                    output_ports().add(client, clientname, portnumber, portname);
                     ++count;
                 }
                 else
@@ -383,8 +378,6 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
  *  port-exit, or port-change event, and we prcess it, and are done.
  *
  *  Otherwise, we create a "MIDI event parser" and decode the MIDI event.
- *
- * \threadsafe
  *
  * \param inev
  *      The event to be set based on the found input event.

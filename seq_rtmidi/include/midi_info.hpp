@@ -396,7 +396,7 @@ public:
 
     void error (rterror::Type type, const std::string & errorstring);
 
-    virtual unsigned get_all_port_info () = 0;
+    virtual int get_all_port_info () = 0;
 
 protected:
 

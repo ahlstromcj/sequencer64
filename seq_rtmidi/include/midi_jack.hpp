@@ -17,6 +17,7 @@
 #include <string>
 
 #include "midi_api.hpp"
+#include "midi_jack_info.hpp"           /* seq64::midi_jack_info            */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -41,11 +42,11 @@ public:
     midi_in_jack (const std::string & clientname, unsigned queuesize);
     virtual ~midi_in_jack ();
 
-    virtual void open_port (unsigned portnumber, const std::string & portname);
+    virtual void open_port (int portnumber, const std::string & portname);
     virtual void open_virtual_port (const std::string & portname);
     virtual void close_port ();
-    virtual unsigned get_port_count ();
-    virtual std::string get_port_name (unsigned portnumber);
+    virtual int get_port_count ();
+    virtual std::string get_port_name (int portnumber);
 
 private:
 
@@ -71,11 +72,11 @@ public:
     midi_out_jack (const std::string & clientname);
     virtual ~midi_out_jack ();
 
-    virtual void open_port (unsigned portnumber, const std::string & portname);
+    virtual void open_port (int portnumber, const std::string & portname);
     virtual void open_virtual_port (const std::string & portname);
     virtual void close_port ();
-    virtual unsigned get_port_count ();
-    virtual std::string get_port_name (unsigned portnumber);
+    virtual int get_port_count ();
+    virtual std::string get_port_name (int portnumber);
     virtual void send_message (const std::vector<midibyte> & message);
 
 private:

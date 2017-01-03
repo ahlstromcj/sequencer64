@@ -3,9 +3,9 @@
  *
  *    A class for obrtaining ALSA information
  *
- * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
+ * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2016-12-26
+ * \updates       2017-01-02
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
@@ -79,7 +79,7 @@ midi_port_info::add
     temp.m_port_name = portname;
     temp.m_queue_number = queuenumber;
     m_port_container.push_back(temp);
-    m_port_count = unsigned(m_port_container.size());
+    m_port_count = int(m_port_container.size());
 }
 
 /*

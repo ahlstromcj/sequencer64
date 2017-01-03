@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-10-30
+ * \updates       2017-01-03
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -86,7 +86,11 @@ rc_settings::rc_settings ()
     m_priority                  (false),
     m_stats                     (false),
     m_pass_sysex                (false),
+#ifdef SEQ64_RTMIDI_SUPPORT
+    m_with_jack_transport       (true),
+#else
     m_with_jack_transport       (false),
+#endif
     m_with_jack_master          (false),
     m_with_jack_master_cond     (false),
     m_manual_alsa_ports         (false),
@@ -102,7 +106,8 @@ rc_settings::rc_settings ()
     m_config_filename           (),
     m_user_filename             (),
     m_config_filename_alt       (),
-    m_user_filename_alt         ()
+    m_user_filename_alt         (),
+    m_jack_kludge_lock          (false)
 {
     // Empty body
 }
@@ -142,7 +147,8 @@ rc_settings::rc_settings (const rc_settings & rhs)
     m_config_filename           (rhs.m_config_filename),
     m_user_filename             (rhs.m_user_filename),
     m_config_filename_alt       (rhs.m_config_filename_alt),
-    m_user_filename_alt         (rhs.m_user_filename_alt)
+    m_user_filename_alt         (rhs.m_user_filename_alt),
+    m_jack_kludge_lock          (rhs.m_jack_kludge_lock)
 {
     // Empty body
 }
@@ -189,6 +195,7 @@ rc_settings::operator = (const rc_settings & rhs)
         m_user_filename             = rhs.m_user_filename;
         m_config_filename_alt       = rhs.m_config_filename_alt;
         m_user_filename_alt         = rhs.m_user_filename_alt;
+        m_jack_kludge_lock          = rhs.m_jack_kludge_lock;
     }
     return *this;
 }
@@ -210,7 +217,11 @@ rc_settings::set_defaults ()
     m_priority                  = false;
     m_stats                     = false;
     m_pass_sysex                = false;
+#ifdef SEQ64_RTMIDI_SUPPORT
+    m_with_jack_transport       = true;
+#else
     m_with_jack_transport       = false;
+#endif
     m_with_jack_master          = false;
     m_with_jack_master_cond     = false;
     m_manual_alsa_ports         = false;
@@ -227,6 +238,7 @@ rc_settings::set_defaults ()
     m_user_filename             = "sequencer64.usr";
     m_config_filename_alt       = ".seq24rc";
     m_user_filename_alt         = ".seq24usr";
+    m_jack_kludge_lock          = "false";
 }
 
 /**

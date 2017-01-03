@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2016-12-26
+ * \updates       2017-01-03
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -23,7 +23,7 @@
 #include "midi_alsa_info.hpp"
 #endif
 
-#ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
+#ifdef SEQ64_BUILD_UNIX_JACK
 #include "midi_jack_info.hpp"
 #endif
 
@@ -70,11 +70,14 @@ rtmidi_info::get_compiled_api (std::vector<rtmidi_api> & apis)
     /*
      * The order here will control the order of rtmidi's API search in the
      * constructor.  For Linux, we will try JACK first, then fall back to
-     * ALSA, and then to the dummy implementation.
+     * ALSA, and then to the dummy implementation.  We were checking
+     * rc().with_jack_transport(), but the "rc" configuration file has not yet
+     * been read by the time we get to here.  On the other hand, we can make
+     * it default to "true" and see what happens.
      */
 
 #ifdef SEQ64_BUILD_UNIX_JACK
-    if (rc().with_jack_transport())
+     if (rc().with_jack_transport())
         apis.push_back(RTMIDI_API_UNIX_JACK);
 #endif
 
@@ -105,7 +108,7 @@ rtmidi_info::rtmidi_info
 {
     if (api != RTMIDI_API_UNSPECIFIED)
     {
-        openmidi_api(api, appname, ppqn, bpm);
+        (void) openmidi_api(api, appname, ppqn, bpm);
         if (not_nullptr(get_api_info()))
         {
             selected_api(api);              /* log the API that worked      */
@@ -118,8 +121,7 @@ rtmidi_info::rtmidi_info
     get_compiled_api(apis);
     for (unsigned i = 0; i < apis.size(); ++i)
     {
-        openmidi_api(apis[i], appname, ppqn, bpm);
-        if (not_nullptr(get_api_info()))
+        if (openmidi_api(apis[i], appname, ppqn, bpm)) // get_api_info()
         {
             if (get_api_info()->get_all_port_info() > 0)
             {
@@ -151,11 +153,32 @@ rtmidi_info::~rtmidi_info ()
 /**
  *  Opens the desired MIDI API.
  *
+ *  If the JACK API is tried, and found missing, we turn off all of the other
+ *  JACK flags found in the "rc" configuration file.  Also, the loop in the
+ *  constructor will come back here to try the other compiled-in APIs
+ *  (currently just ALSA).
+ *
  * \param api
  *      The desired MIDI API.
+ *
+ * \param appname
+ *      The name of the application, to be passed to the midi_info-derived
+ *      constructor.
+ *
+ * \param ppqn
+ *      The PPQN value to pass along to the midi_info_derived constructor.
+ *
+ * \param bpm
+ *      The BPM (beats per minute) value to pass along to the
+ *      midi_info_derived constructor.
+ *
+ * \return
+ *      Returns true if a valid API is found.  A valid API is on that is both
+ *      compiled into the application and is found existing on the host
+ *      computer (system).
  */
 
-void
+bool
 rtmidi_info::openmidi_api
 (
     rtmidi_api api,
@@ -164,29 +187,43 @@ rtmidi_info::openmidi_api
     int bpm
 )
 {
-    bool got_an_api = false;
+    bool result = false;
     delete_api();
 
-#ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
-    if (rc().with_jack_transport())
+#ifdef SEQ64_BUILD_UNIX_JACK
+    if (api == RTMIDI_API_UNIX_JACK)
     {
-        if (api == RTMIDI_API_UNIX_JACK)
+        if (rc().with_jack_transport())
         {
-            set_api(new midi_jack_info(appname, ppqn, bpm));
-            got_an_api = true;
+            result = set_api_info(new midi_jack_info(appname, ppqn, bpm));
+            if (! result)
+            {
+                /**
+                 * Disables the usage of JACK for the rest of the program run.
+                 * This is a work-around for ordering of setting up JACK/ALSA
+                 * versus reading the "rc" configuration file, an issue
+                 * exposed by the new native JACK version of sequencer64.
+                 * Order of the calls is important here; the lock call must be
+                 * last.
+                 */
+
+                rc().with_jack_transport(false);
+                rc().with_jack_master(false);
+                rc().with_jack_master_cond(false);
+                rc().jack_kludge_lock(true);
+            }
         }
     }
 #endif
 
-    if (! got_an_api)
-    {
 #ifdef SEQ64_BUILD_LINUX_ALSA
-        if (api == RTMIDI_API_LINUX_ALSA)
-        {
-            set_api_info(new midi_alsa_info(appname, ppqn, bpm));
-        }
-#endif
+    if (api == RTMIDI_API_LINUX_ALSA)
+    {
+        result = set_api_info(new midi_alsa_info(appname, ppqn, bpm));
     }
+#endif
+
+    return result;
 }
 
 }           // namespace seq64

@@ -238,7 +238,7 @@ rc_settings::set_defaults ()
     m_user_filename             = "sequencer64.usr";
     m_config_filename_alt       = ".seq24rc";
     m_user_filename_alt         = ".seq24usr";
-    m_jack_kludge_lock          = "false";
+    m_jack_kludge_lock          = false;
 }
 
 /**
@@ -523,6 +523,39 @@ rc_settings::user_filename_alt (const std::string & value)
 {
     if (! value.empty())
         m_user_filename_alt = value;
+}
+
+/**
+ * \setter m_with_jack_transport
+ */
+
+void
+rc_settings::with_jack_transport (bool flag)
+{
+    if (! m_jack_kludge_lock)
+        m_with_jack_transport = flag;
+}
+
+/**
+ * \setter m_with_jack_master
+ */
+
+void
+rc_settings::with_jack_master (bool flag)
+{
+    if (! m_jack_kludge_lock)
+        m_with_jack_master = flag;
+}
+
+/**
+ * \setter m_with_jack_master_cond
+ */
+
+void
+rc_settings::with_jack_master_cond (bool flag)
+{
+    if (! m_jack_kludge_lock)
+        m_with_jack_master_cond = flag;
 }
 
 }           // namespace seq64

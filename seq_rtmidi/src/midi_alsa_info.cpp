@@ -137,7 +137,10 @@ midi_alsa_info::~midi_alsa_info ()
  *  container, and putting output data into another container.
  *
  * \return
- *      Returns the total number of ports found.
+ *      Returns the total number of ports found.  For an ALSA setup, finding
+ *      no ALSA ports can be considered an error.  However, finding no ports
+ *      for other APIS may be fine.  So, we set the result to -1 to flag a
+ *      true error.
  */
 
 int
@@ -209,6 +212,9 @@ midi_alsa_info::get_all_port_info ()
             }
         }
     }
+    if (count == 0)
+        count = -1;
+
     return count;
 }
 

@@ -6,7 +6,7 @@
 # \library    	seq_rtmidi library
 # \author     	Chris Ahlstrom
 # \date       	2016-11-19
-# \update      2017-01-02
+# \update      2017-01-04
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -75,11 +75,6 @@ AM_CXXFLAGS = \
 
 #******************************************************************************
 # Source files
-#
-# TODO:
-#
-# midi_jack.hpp
-#
 #----------------------------------------------------------------------------
 
 pkginclude_HEADERS = \
@@ -89,6 +84,7 @@ pkginclude_HEADERS = \
 	midi_alsa_info.hpp \
 	midi_api.hpp \
 	midi_info.hpp \
+	midi_jack.hpp \
 	midi_jack_data.hpp \
 	midi_jack_info.hpp \
 	midi_probe.hpp \

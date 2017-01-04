@@ -103,6 +103,11 @@ midi_jack_info::connect ()
         {
             m_jack_client = result;
             jack_set_process_callback(result, jack_process_dummy, &m_jack_data);
+
+            /*
+             * COMMENTED OUT AS AN EXPERIMENT
+             */
+
             jack_activate(result);
         }
         else
@@ -150,7 +155,9 @@ midi_jack_info::extract_names
  *  jack_get_port_by_name().
  *
  * \return
- *      Returns the total number of ports found.
+ *      Returns the total number of ports found.  Note that 0 ports is not
+ *      necessarily an error; there may be no JACK apps running with exposed
+ *      ports.  If there is no JACK client, then -1 is returned.
  */
 
 int
@@ -165,31 +172,40 @@ midi_jack_info::get_all_port_info ()
         );
         if (is_nullptr(inports))                  /* check port validity  */
         {
-            m_error_string = func_message("no JACK input ports available");
-            error(rterror::WARNING, m_error_string);
-            return 0;
-        }
+            /*
+             * Not having any JACK input ports present isn't necessarily an
+             * error.  There may not be any, and there may still be at least
+             * one output port.
+             *
+             * m_error_string = func_message("no JACK input ports available");
+             * error(rterror::WARNING, m_error_string);
+             */
 
-        std::vector<std::string> client_name_list;
-        int client = -1;
-        int count = 0;
-        input_ports().clear();
-        while (not_nullptr(inports[count]))
-        {
-            std::string fullname = inports[count];
-            std::string clientname;
-            std::string portname;
-            extract_names(fullname, clientname, portname);
-            if (client == -1 || clientname != client_name_list.back())
-            {
-                client_name_list.push_back(clientname);
-                ++client;
-            }
-            input_ports().add(client, clientname, count, portname);
-            ++count;
+            warnprint("no JACK input ports available");
         }
-        jack_free(inports);
-        result += count;
+        else
+        {
+            std::vector<std::string> client_name_list;
+            int client = -1;
+            int count = 0;
+            input_ports().clear();
+            while (not_nullptr(inports[count]))
+            {
+                std::string fullname = inports[count];
+                std::string clientname;
+                std::string portname;
+                extract_names(fullname, clientname, portname);
+                if (client == -1 || clientname != client_name_list.back())
+                {
+                    client_name_list.push_back(clientname);
+                    ++client;
+                }
+                input_ports().add(client, clientname, count, portname);
+                ++count;
+            }
+            jack_free(inports);
+            result += count;
+        }
 
         const char ** outports = jack_get_ports    /* list of JACK ports   */
         (
@@ -197,31 +213,41 @@ midi_jack_info::get_all_port_info ()
         );
         if (is_nullptr(outports))                  /* check port validity  */
         {
-            m_error_string = func_message("no JACK outputs ports available");
-            error(rterror::WARNING, m_error_string);
-            return 0;
+            /*
+             * m_error_string = func_message("no JACK outputs ports available");
+             * error(rterror::WARNING, m_error_string);
+             * return 0;
+             */
+
+            warnprint("no JACK output ports available");
         }
-        client = -1;
-        count = 0;
-        client_name_list.clear();
-        output_ports().clear();
-        while (not_nullptr(outports[count]))
+        else
         {
-            std::string fullname = outports[count];
-            std::string clientname;
-            std::string portname;
-            extract_names(fullname, clientname, portname);
-            if (client == -1 || clientname != client_name_list.back())
+            std::vector<std::string> client_name_list;
+            int client = -1;
+            int count = 0;
+            output_ports().clear();
+            while (not_nullptr(outports[count]))
             {
-                client_name_list.push_back(clientname);
-                ++client;
+                std::string fullname = outports[count];
+                std::string clientname;
+                std::string portname;
+                extract_names(fullname, clientname, portname);
+                if (client == -1 || clientname != client_name_list.back())
+                {
+                    client_name_list.push_back(clientname);
+                    ++client;
+                }
+                output_ports().add(client, clientname, count, portname);
+                ++count;
             }
-            output_ports().add(client, clientname, count, portname);
-            ++count;
+            jack_free(outports);
+            result += count;
         }
-        jack_free(outports);
-        result += count;
     }
+    else
+        result = -1;
+
     return result;
 }
 

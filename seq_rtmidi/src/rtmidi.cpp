@@ -22,7 +22,7 @@
 #include "rtmidi_info.hpp"              /* seq64::rtmidi_info, etc.     */
 #include "settings.hpp"                 /* seq64::rc().with_jack_...()  */
 
-#ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
+#ifdef SEQ64_BUILD_UNIX_JACK
 #include "midi_jack.hpp"
 #endif
 
@@ -180,7 +180,7 @@ rtmidi_in::openmidi_api
             {
                 if (api == RTMIDI_API_UNIX_JACK)
                 {
-#ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
+#ifdef SEQ64_BUILD_UNIX_JACK
                     set_api(new midi_in_jack(midiinfo, index));
                     got_an_api = true;
 #endif
@@ -198,7 +198,7 @@ rtmidi_in::openmidi_api
         }
         else if (api == RTMIDI_API_UNIX_JACK)
         {
-#ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
+#ifdef SEQ64_BUILD_UNIX_JACK
             set_api(new midi_in_jack(midiinfo, index));
 #endif
         }
@@ -328,7 +328,7 @@ rtmidi_out::openmidi_api
             {
                 if (api == RTMIDI_API_UNIX_JACK)
                 {
-#ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
+#ifdef SEQ64_BUILD_UNIX_JACK
                     set_api(new midi_out_jack(midiinfo, index));
                     got_an_api = true;
 #endif
@@ -346,7 +346,7 @@ rtmidi_out::openmidi_api
         }
         else if (api == RTMIDI_API_UNIX_JACK)
         {
-#ifdef SEQ64_BUILD_UNIX_JACK__NOT_READY
+#ifdef SEQ64_BUILD_UNIX_JACK
             set_api(new midi_out_jack(midiinfo, index));
 #endif
         }

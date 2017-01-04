@@ -131,6 +131,12 @@ mastermidibus::api_init (int ppqn, int bpm)
     }
     else
     {
+        /*
+         * Hmmmm, this call is already made in the rtmidi_info constructor.
+         * In any case, we want to make port connections.  These may be
+         * input/output backwards for JACK, we're still learning.
+         */
+
         unsigned nports = m_midi_scratch.get_all_port_info();
 #ifdef PLATFORM_DEBUG
         std::string plist = m_midi_scratch.port_list();

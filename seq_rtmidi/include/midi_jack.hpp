@@ -6,9 +6,9 @@
  *
  *    A class for realtime MIDI input/output via JACK.
  *
- * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
+ * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-20
+ * \updates       2017-01-04
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring...
@@ -27,10 +27,97 @@ namespace seq64
 {
 
 /**
+ *  This class implements with JACK version of the midi_alsa object.
+ */
+
+class midi_jack : public midi_api
+{
+
+private:
+
+protected:
+
+    void * m_api_data;  // TEMPORARY, just to get code to compile
+
+public:
+
+    midi_jack (midi_info & masterinfo, int index = SEQ64_NO_INDEX)
+     :
+        midi_api   (masterinfo, index),
+        m_api_data (nullptr)
+    {
+    }
+
+protected:
+
+    virtual bool api_init_out ()
+    {
+        return true;
+    }
+
+    virtual bool api_init_in ()
+    {
+        return true;
+    }
+
+    virtual bool api_init_out_sub ()
+    {
+        return true;
+    }
+
+    virtual bool api_init_in_sub ()
+    {
+        return true;
+    }
+
+    virtual bool api_deinit_in ()
+    {
+        return true;
+    }
+
+    virtual void api_play (event * e24, midibyte channel)
+    {
+    }
+
+    virtual void api_sysex (event * e24)
+    {
+    }
+
+    virtual void api_flush ()
+    {
+    }
+
+    virtual void api_continue_from (midipulse tick, midipulse beats)
+    {
+    }
+
+    virtual void api_start ()
+    {
+    }
+
+    virtual void api_stop ()
+    {
+    }
+
+    virtual void api_clock (midipulse tick)
+    {
+    }
+
+    virtual void api_set_ppqn (int ppqn)
+    {
+    }
+
+    virtual void api_set_beats_per_minute (int bpm)
+    {
+    }
+
+};
+
+/**
  *  The class for handling JACK MIDI input.
  */
 
-class midi_in_jack: public midi_in_api
+class midi_in_jack: public midi_jack
 {
 
 protected:
@@ -39,7 +126,11 @@ protected:
 
 public:
 
-    midi_in_jack (const std::string & clientname, unsigned queuesize);
+    midi_in_jack
+    (
+        midi_info & masterinfo, int index = SEQ64_NO_INDEX,
+        const std::string & clientname = "", unsigned queuesize = 0
+    );
     virtual ~midi_in_jack ();
 
     virtual void open_port (int portnumber, const std::string & portname);
@@ -60,7 +151,7 @@ private:
  *  The JACK MIDI output API class.
  */
 
-class midi_out_jack: public midi_out_api
+class midi_out_jack: public midi_jack
 {
 
 protected:
@@ -69,7 +160,11 @@ protected:
 
 public:
 
-    midi_out_jack (const std::string & clientname);
+    midi_out_jack
+    (
+        midi_info & masterinfo, int index = SEQ64_NO_INDEX,
+        const std::string & clientname = ""
+    );
     virtual ~midi_out_jack ();
 
     virtual void open_port (int portnumber, const std::string & portname);

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-02
+ * \updates       2017-01-04
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -120,10 +120,11 @@ jack_process_input (jack_nframes_t nframes, void * arg)
 
 midi_in_jack::midi_in_jack
 (
+    midi_info & masterinfo, int index,
     const std::string & clientname,
     unsigned queuesize
 ) :
-    midi_in_api     (queuesize),
+    midi_jack       (masterinfo, index),
     m_clientname    (clientname)
 {
     initialize(clientname);
@@ -446,9 +447,12 @@ jack_process_output (jack_nframes_t nframes, void * arg)
  *      The name of the MIDI output port.
  */
 
-midi_out_jack::midi_out_jack (const std::string & clientname)
- :
-    midi_out_api    (),
+midi_out_jack::midi_out_jack
+(
+    midi_info & masterinfo, int index,
+    const std::string & clientname
+) :
+    midi_jack       (masterinfo, index),
     m_clientname    ()
 {
     initialize(clientname);
@@ -705,15 +709,15 @@ midi_out_jack::close_port ()
 void
 midi_out_jack::send_message (const std::vector<midibyte> & message)
 {
-    int nBytes = message.size();
+    int nbytes = message.size();
     midi_jack_data * jackdata = static_cast<midi_jack_data *>(m_api_data);
     jack_ringbuffer_write
     (
-        jackdata->m_client_buffmessage, (const char *) &message[0], message.size()
+        jackdata->m_jack_buffmessage, (const char *) &message[0], message.size()
     );
     jack_ringbuffer_write
     (
-        jackdata->m_jack_buffsize, (char *) &nBytes, sizeof(nBytes)
+        jackdata->m_jack_buffsize, (char *) &nbytes, sizeof(nbytes)
     );
 }
 

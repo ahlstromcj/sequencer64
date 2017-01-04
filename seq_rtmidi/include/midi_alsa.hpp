@@ -33,8 +33,6 @@
  *  The midi_alsa module is the Linux version of the midi_alsa module.
  *  There's almost enough commonality to be worth creating a base class
  *  for both classes.
- *
- *  We moved the mastermidi_alsa class into its own module.
  */
 
 #include "seq64-config.h"
@@ -56,16 +54,11 @@ namespace seq64
     class event;
 
 /**
- *  This class implements with ALSA version of the midi_alsa object.
+ *  This class implements the ALSA version of the midi_api.
  */
 
 class midi_alsa : public midi_api
 {
-    /**
-     *  The master MIDI bus sets up the buss.
-     */
-
-    friend class mastermidi_alsa;
 
 private:
 

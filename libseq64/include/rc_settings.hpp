@@ -549,35 +549,9 @@ protected:
         m_pass_sysex = flag;
     }
 
-    /**
-     * \setter m_with_jack_transport
-     */
-
-    void with_jack_transport (bool flag)
-    {
-        if (! m_jack_kludge_lock)
-            m_with_jack_transport = flag;
-    }
-
-    /**
-     * \setter m_with_jack_master
-     */
-
-    void with_jack_master (bool flag)
-    {
-        if (! m_jack_kludge_lock)
-            m_with_jack_master = flag;
-    }
-
-    /**
-     * \setter m_with_jack_master_cond
-     */
-
-    void with_jack_master_cond (bool flag)
-    {
-        if (! m_jack_kludge_lock)
-            m_with_jack_master_cond = flag;
-    }
+    void with_jack_transport (bool flag);
+    void with_jack_master (bool flag);
+    void with_jack_master_cond (bool flag);
 
     /**
      * \setter m_filter_by_channel

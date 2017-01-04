@@ -123,7 +123,12 @@ rtmidi_info::rtmidi_info
     {
         if (openmidi_api(apis[i], appname, ppqn, bpm)) // get_api_info()
         {
-            if (get_api_info()->get_all_port_info() > 0)
+            /*
+             * For JACK, there may be no ports (from other applications)
+             * yet in place.
+             */
+
+            if (get_api_info()->get_all_port_info() >= 0)
             {
                 selected_api(apis[i]);      /* log first API that worked    */
                 break;
@@ -210,8 +215,8 @@ rtmidi_info::openmidi_api
                 rc().with_jack_transport(false);
                 rc().with_jack_master(false);
                 rc().with_jack_master_cond(false);
-                rc().jack_kludge_lock(true);
             }
+            rc().jack_kludge_lock(true);        /* lock in this setting */
         }
     }
 #endif

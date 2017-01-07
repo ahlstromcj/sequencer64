@@ -71,14 +71,11 @@ namespace seq64
  *
  * \param index
  *      This is the order of the buss in the lookup, used for display and
- *      labelling.  Starts from 0.
+ *      labelling.  It is an index into master-info container. Starts from 0.
  */
 
-midi_alsa::midi_alsa
-(
-    midi_info & masterinfo,
-    int index                           // index into master-info container
-) :
+midi_alsa::midi_alsa ( midi_info & masterinfo, int index)
+ :
     midi_api            (masterinfo, index),
     m_seq
     (
@@ -96,7 +93,7 @@ midi_alsa::midi_alsa
  *  A rote empty destructor.
  */
 
-midi_alsa::~midi_alsa()
+midi_alsa::~midi_alsa ()
 {
     // empty body
 }
@@ -105,8 +102,8 @@ midi_alsa::~midi_alsa()
  *  Initialize the MIDI output port.  This initialization is done when the
  *  "manual ALSA ports" option is not in force.
  *
- *  This initialization is like the "open_virtual_port()" function of the
- *  RtMidi library, with the addition of the snd_seq_connect_to() call involving
+ *  This initialization is like the "open_port()" function of the RtMidi
+ *  library, with the addition of the snd_seq_connect_to() call involving
  *  the local and destination ports.
  *
  * \return

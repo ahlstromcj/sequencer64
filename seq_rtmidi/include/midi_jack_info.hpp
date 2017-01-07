@@ -8,7 +8,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-02
+ * \updates       2017-01-07
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the JACK information of
@@ -96,6 +96,14 @@ private:
     );
 
 };          // midi_jack_info
+
+/*
+ * Free functions in the seq64 namespace
+ */
+
+void silence_jack_errors (bool silent = true);
+void silence_jack_info (bool silent = true);
+
 
 }           // namespace seq64
 

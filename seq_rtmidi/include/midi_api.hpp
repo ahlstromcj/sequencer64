@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-28
+ * \updates       2017-01-07
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -77,6 +77,22 @@ public:
     virtual void api_set_ppqn (int ppqn) = 0;
     virtual void api_set_beats_per_minute (int bpm) = 0;
 
+    /*
+     * The next two functions are provisional.  Currently useful only in the
+     * midi_jack module.
+     */
+
+    virtual std::string api_get_bus_name ()
+    {
+        std::string sm_empty;
+        return sm_empty;
+    }
+    virtual std::string api_get_port_name ()
+    {
+        std::string sm_empty;
+        return sm_empty;
+    }
+
 public:
 
     /**
@@ -96,6 +112,8 @@ public:
     {
         return m_master_info;
     }
+
+    void master_midi_mode (bool input);
 
     /**
      *  A basic error reporting function for rtmidi classes.

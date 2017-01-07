@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-10-16
+ * \updates       2017-01-06
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -338,6 +338,8 @@ public:
         int beatwidth   = SEQ64_DEFAULT_BEAT_WIDTH
     );
     ~jack_assistant ();
+
+    static void show_statuses (unsigned bits);
 
     /**
      * \getter m_jack_parent
@@ -654,14 +656,14 @@ private:
         return double(m_ppqn) / denom;
     }
 
-    bool info_message (const std::string & msg);
-    bool error_message (const std::string & msg);
     jack_client_t * client_open (const std::string & clientname);
     void get_jack_client_info ();
-    void show_statuses (unsigned bits);
     void show_position (const jack_position_t & pos) const;
     int sync (jack_transport_state_t state = (jack_transport_state_t)(-1));
     void set_position (midipulse currenttick);
+
+    static bool info_message (const std::string & msg);
+    static bool error_message (const std::string & msg);
 
 };
 

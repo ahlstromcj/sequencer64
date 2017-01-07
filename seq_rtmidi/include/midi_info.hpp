@@ -146,6 +146,28 @@ public:
             return SEQ64_BAD_QUEUE_ID;
     }
 
+    /**
+     *  Provides the bus name and port name in canonical JACK format:
+     *  "busname:portname".  This function is basically the same as
+     *  midibase::connect_name() function.  If either the bus name or port
+     *  name are empty, then an empty string is returned.
+     */
+
+    std::string connect_name (int index) const
+    {
+        std::string result = get_bus_name(index);
+        if (! result.empty())
+        {
+            std::string pname = get_port_name(index);
+            if (! pname.empty())
+            {
+                result += ":";
+                result += pname;
+            }
+        }
+        return result;
+    }
+
 };          // class midi_port_info
 
 /**
@@ -381,6 +403,12 @@ public:
     {
         const midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_queue_number(index);
+    }
+
+    std::string connect_name (int index) const
+    {
+        const midi_port_info & mpi = nc_midi_port_info();
+        return mpi.connect_name(index);
     }
 
     std::string port_list () const;

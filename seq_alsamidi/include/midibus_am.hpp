@@ -162,10 +162,13 @@ public:
 
 protected:
 
+#if 1
     virtual bool api_init_out ();
     virtual bool api_init_in ();
     virtual bool api_init_out_sub ();
     virtual bool api_init_in_sub ();
+#endif
+
     virtual bool api_deinit_in ();
     virtual void api_play (event * e24, midibyte channel);
     virtual void api_sysex (event * e24);

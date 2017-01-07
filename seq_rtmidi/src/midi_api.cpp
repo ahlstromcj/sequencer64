@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-27
+ * \updates       2017-01-07
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring...
@@ -109,6 +109,17 @@ midi_api::error (rterror::Type type, const std::string & errorstring)
         errprint(errorstring.c_str());
         throw rterror(errorstring, type);
     }
+}
+
+/**
+ * \getter m_master_info.midi_mode()
+ *      This function makes it a bit simpler on the caller.
+ */
+
+void
+midi_api::master_midi_mode (bool input)
+{
+    m_master_info.midi_mode(input);
 }
 
 /*

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-11-28
+ * \updates       2017-01-06
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -307,7 +307,6 @@ bool
 jack_assistant::error_message (const std::string & msg)
 {
     (void) info_message(msg);
-    m_jack_running = false;
     return false;
 }
 
@@ -422,7 +421,7 @@ jack_assistant::init ()
         m_jack_client = client_open(package);
         if (m_jack_client == NULL)
         {
-            m_jack_running = false;         /* ca 2016-11-11                */
+            m_jack_running = false;
             m_jack_master = false;
             return error_message("JACK server not running, JACK sync disabled");
         }
@@ -451,7 +450,11 @@ jack_assistant::init ()
             m_jack_client, jack_sync_callback, (void *) this
         );
         if (jackcode != 0)
+        {
+            m_jack_running = false;
+            m_jack_master = false;
             return error_message("jack_set_sync_callback() failed");
+        }
 
         /*
          * Although they say this code is needed to get JACK transport to work
@@ -465,7 +468,11 @@ jack_assistant::init ()
         );
 #endif
         if (jackcode != 0)
+        {
+            m_jack_running = false;
+            m_jack_master = false;
             return error_message("jack_set_process_callback() failed]");
+        }
 
         /*
          * Some possible code:
@@ -484,7 +491,11 @@ jack_assistant::init ()
                 m_jack_client, jack_session_callback, (void *) this
             );
             if (jackcode != 0)
+            {
+                m_jack_running = false;
+                m_jack_master = false;
                 return error_message("jack_set_session_callback() failed]");
+            }
         }
 #endif
 
@@ -513,7 +524,8 @@ jack_assistant::init ()
                  * seq24 doesn't set this flag, but that seems incorrect.
                  */
 
-                m_jack_master = false;      // m_jack_running = false too?
+                m_jack_running = false;
+                m_jack_master = false;
                 return error_message("jack_set_timebase_callback() failed");
             }
         }
@@ -525,13 +537,17 @@ jack_assistant::init ()
         if (jack_activate(m_jack_client) != 0)
         {
             m_jack_running = false;
+            m_jack_master = false;
             return error_message("Cannot activate as JACK client");
         }
 
         if (m_jack_running)
             (void) info_message("JACK sync enabled");
         else
+        {
+            m_jack_master = false;
             (void) error_message("Initialization error, JACK sync not enabled");
+        }
     }
     else
     {

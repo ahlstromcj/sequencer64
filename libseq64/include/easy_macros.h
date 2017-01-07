@@ -188,10 +188,10 @@ typedef bool cbool_t;
 /*
  * Alternative:
  *
- * #define __func__        __FUNCTION__               // bald func names      //
+ * #define __func__        __PRETTY_FUNCTION__          // adorned func names
  */
 
-#define __func__        __PRETTY_FUNCTION__           /* adorned func names   */
+#define __func__           __FUNCTION__                 // bald func names
 
 #else
 #define __func__        "<unknown>"

@@ -112,7 +112,6 @@ public:
         midi_info & masterinfo,
         int index                           /* a display ordinal    */
     );
-
     virtual ~midi_alsa ();
 
     /**

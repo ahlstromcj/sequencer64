@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2017-01-02
+ * \updates       2017-01-07
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
@@ -166,7 +166,7 @@ midi_info::port_list () const
         os
             << "  [" << i << "] "
             << nc_this->get_bus_id(i) << ":" << nc_this->get_port_id(i)
-            << " " << nc_this->get_bus_name(i) << ": "
+            << " " << nc_this->get_bus_name(i) << ":"
             << nc_this->get_port_name(i)
             << std::endl
             ;
@@ -179,7 +179,7 @@ midi_info::port_list () const
         os
             << "  [" << o << "] "
             << nc_this->get_bus_id(o) << ":" << nc_this->get_port_id(o)
-            << "  " << nc_this->get_bus_name(o) << ":"
+            << " " << nc_this->get_bus_name(o) << ":"
             << nc_this->get_port_name(o)
             << std::endl
             ;

@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-02
+ * \updates       2017-01-07
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -50,6 +50,7 @@ midi_jack_info::midi_jack_info
     m_jack_data             (),
     m_jack_client           (connect())
 {
+    silence_jack_info();
     if (not_nullptr(m_jack_client))
     {
         /*
@@ -472,6 +473,43 @@ midi_jack_info::api_get_midi_event (event * inev)
     }
 //  snd_midi_event_free(midi_ev);
     return true;
+}
+
+/**
+ *  This function merely eats the string passed as a parameter.
+ */
+
+static void
+jack_message_bit_bucket (const char *)
+{
+    // Into the bit-bucket with ye ya scalliwag!
+}
+
+/**
+ *  This function silences JACK error output to the console.  Probably not
+ *  good to silence this output, but let's provide the option.
+ */
+
+void
+silence_jack_errors (bool silent)
+{
+    if (silent)
+    {
+        jack_set_error_function(jack_message_bit_bucket);
+    }
+}
+
+/**
+ *  This function silences JACK info output to the console.
+ */
+
+void
+silence_jack_info (bool silent)
+{
+    if (silent)
+    {
+        jack_set_info_function(jack_message_bit_bucket);
+    }
 }
 
 }           // namespace seq64

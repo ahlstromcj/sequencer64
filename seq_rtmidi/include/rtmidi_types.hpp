@@ -57,14 +57,11 @@ namespace seq64
 {
 
 /**
- *  A macro to prepend a fully qualified function name to a string.
- *  Cannot get circular reference to message_concatenate() resolved!
- *  In fact any true functions added to easy_macros are unresolved.
- *  WTF!?
+ *  A macro to prepend a fully qualified function name to a string.  Cannot
+ *  get circular reference to message_concatenate() resolved!  In fact any
+ *  true functions added to easy_macros are unresolved.  WTF!?
  *
  * #define func_message(x)         seq64::message_concatenate(__func__, x)
- *
- * #ifdef DEFINE_MESSAGE_CONCATENATE_HERE
  */
 
 extern std::string message_concatenate (const char * m1, const char * m2);

@@ -193,12 +193,15 @@ public:
 
     /**
      * \getter m_bus_name and m_port_name
+     *      Concatenates the bus and port names into a string of the form
+     *      "busname:portname".  If either name is empty, an empty string is
+     *      returned.
      */
 
     std::string connect_name () const
     {
         std::string result = m_bus_name;
-        if (! m_port_name.empty())
+        if (! result.empty() && ! m_port_name.empty())
         {
             result += ":";
             result += m_port_name;

@@ -207,6 +207,8 @@ midibus::~midibus()
     // empty body
 }
 
+#if 1
+
 /**
  *  Initialize the MIDI output port.  This initialization is done when the
  *  "manual ALSA ports" option is not in force.
@@ -355,6 +357,8 @@ midibus::api_init_in_sub ()
     }
     return true;
 }
+
+#endif // 1
 
 /**
  *  Deinitialize the MIDI input.  Set the input and the output ports.

@@ -1,4 +1,4 @@
-.TH Sequencer64 "November 6 2016" "Version 0.9.21" "Sequencer64 Manual Page"
+.TH Sequencer64 "January 8 2017" "Version 0.90.0" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real-time live MIDI sequencer refactored from Seq24
@@ -82,13 +82,14 @@ Instead, specify the file itself as the last command-line argument.
 
 .TP 8
 .B \-m, \-\-manual-alsa-ports
-Sequencer64 won't attach ALSA MIDI ports.
-Instead, it will create is own set of input and output busses/ports.
+Sequencer64 won't attach ALSA MIDI ports, it will make "manual" (virtual) ports.
+Instead, it will create is own set of virtual input and output busses/ports.
+Not support in the PortMIDI build.
 
 .TP 8
 .B \-a, \-\-auto-alsa-ports
 Sequencer64 will attach ALSA ports.  Useful for overriding the
-sequencer64.rc configuration file when set up to use JACK.
+sequencer64.rc configuration file when set up to use manual (virtual) ports.
 
 .TP 8
 .B \-r, \-\-reveal-alsa-ports

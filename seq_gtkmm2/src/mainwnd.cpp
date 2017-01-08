@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-12
+ * \updates       2017-01-08
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -104,8 +104,14 @@
 #include "pixmaps/learn2.xpm"
 #include "pixmaps/perfedit.xpm"
 #include "pixmaps/seq64.xpm"
+
+#ifdef SEQ64_RTMIDI_SUPPORT
+#include "pixmaps/seq64_logo.xpm"
+#include "pixmaps/seq64_logo_legacy.xpm"
+#else
 #include "pixmaps/sequencer64_square_small.xpm"
 #include "pixmaps/sequencer64_legacy.xpm"
+#endif
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS
 #include "pixmaps/live_mode.xpm"
@@ -444,8 +450,14 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      */
 
     Gtk::HBox * tophbox = manage(new Gtk::HBox(false, 0));
+
+#ifdef SEQ64_RTMIDI_SUPPORT
+    const char ** bitmap = rc().legacy_format() ?
+        seq64_logo_legacy_xpm : seq64_logo_xpm ;
+#else
     const char ** bitmap = rc().legacy_format() ?
         sequencer64_legacy_xpm : sequencer64_square_small_xpm ;
+#endif
 
     tophbox->pack_start
     (

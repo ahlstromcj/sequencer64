@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-30
+ * \updates       2017-01-08
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -45,13 +45,15 @@ namespace seq64
 {
 
 /**
- *  Provides a constructor with client number, port number, ALSA sequencer
- *  support, name of client, name of port.
+ *  Creates a normal ALSA MIDI port, which will correspond to an existing
+ *  system ALSA port, such as one provided by Timidity.  Provides a
+ *  constructor with client number, port number, ALSA sequencer support, name
+ *  of client, name of port.
  *
- *  This constructor is the one that seems to be the one that is used for
- *  the MIDI input and output busses, when the [manual-alsa-ports] option is
- *  not in force.  Also used for the announce buss, and in the
- *  mastermidibus::port_start() function.
+ *  This constructor is the one that is used for the MIDI input and output
+ *  busses, when the [manual-alsa-ports] option is <i> not </i> in force.  It
+ *  is also used for the announce buss, and in the mastermidibus::port_start()
+ *  function.
  *
  *  There's currently some overlap between local/dest client and port numbers
  *  and the buss and port numbers of the new midibase interface.
@@ -122,16 +124,7 @@ midibus::midibus
     m_local_addr_client (localclient),
     m_local_addr_port   (-1)
 {
-#ifdef PLATFORM_DEBUG_XXX
-    printf
-    (
-        "midibus [%2d] (normal): user-client = %d; queue = %d;"
-        " dest-client:port = %s %d:%d; PPQN = %d; BPM = %d\n"
-        ,
-        index, localclient, queue,
-        clientname.c_str(), destclient, destport, ppqn, bpm
-    );
-#endif
+    // Functionality moved into the base class
 }
 
 /**
@@ -169,14 +162,14 @@ midibus::midibus
     int localclient,
     snd_seq_t * seq,
     int index,                          // just an ordinal for display
-    int bus_id,
+    int bus_id,                         // might just remove this parameter!!!
     int queue,
     int ppqn,
     int bpm
 ) :
     midibase
     (
-        SEQ64_APP_NAME, "ALSA", "port", index, bus_id, bus_id,
+        SEQ64_APP_NAME, "", "", index, bus_id, index+1, /* port ID */
         queue, ppqn, bpm, true /* virtual */
     ),
     m_seq               (seq),
@@ -186,16 +179,6 @@ midibus::midibus
     m_local_addr_port   (SEQ64_NO_PORT)
 {
     // Functionality moved to the base class
-
-#ifdef PLATFORM_DEBUG
-    printf
-    (
-        "midibus [%2d] (virtual): user-client = %d; queue = %d; buss ID = %d;"
-        " PPQN = %d; BPM = %d\n"
-        ,
-        index, localclient, queue, bus_id, ppqn, bpm
-    );
-#endif
 }
 
 /**
@@ -206,8 +189,6 @@ midibus::~midibus()
 {
     // empty body
 }
-
-#if 1
 
 /**
  *  Initialize the MIDI output port.  This initialization is done when the
@@ -308,6 +289,50 @@ midibus::api_init_in ()
 }
 
 /**
+ *  Gets information directly from ALSA.  The problem this function solves is
+ *  that the midibus constructor for a virtual ALSA port doesn't not have all
+ *  of the information it needs at that point.  Here, we can get this
+ *  information and get the actual data we need to rename the port to
+ *  something accurate.
+ *
+ * \return
+ *      Returns true if all of the information could be obtained.  If false is
+ *      returned, then the caller should not use the side-effects.
+ *
+ * \sideeffect
+ *      Passes back the values found.
+ */
+
+bool
+midibus::set_virtual_name (int portid, const std::string & portname)
+{
+    bool result = not_nullptr(m_seq);
+    if (result)
+    {
+        snd_seq_client_info_t * cinfo;                  /* client info      */
+        snd_seq_client_info_alloca(&cinfo);             /* will fill cinfo  */
+        snd_seq_get_client_info(m_seq, cinfo);          /* filled!          */
+
+        int cid = snd_seq_client_info_get_client(cinfo);
+        const char * cname = snd_seq_client_info_get_name(cinfo);
+        result = not_nullptr(cname);
+        if (result)
+        {
+            std::string clientname = cname;
+            std::string pname = portname;
+            set_port_id(portid);
+            pname += " ";
+            pname += std::to_string(portid);
+//          port_name(pname);
+            set_bus_id(cid);
+//          bus_name(clientname);
+            set_name(SEQ64_APP_NAME, clientname, pname);
+        }
+    }
+    return result;
+}
+
+/**
  *  Initialize the output in a different way.  This version of initialization is
  *  used by mastermidibus in the "manual ALSA ports" clause.
  *
@@ -318,9 +343,13 @@ midibus::api_init_in ()
 bool
 midibus::api_init_out_sub ()
 {
+    std::string portname = port_name();
+    if (portname.empty())
+        portname = SEQ64_CLIENT_NAME " out";
+
     int result = snd_seq_create_simple_port             /* create ports */
     (
-        m_seq, bus_name().c_str(),
+        m_seq, portname.c_str(),
         SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );
@@ -330,6 +359,9 @@ midibus::api_init_out_sub ()
         errprint("snd_seq_create_simple_port(write) error");
         return false;
     }
+    else
+        set_virtual_name(result, portname);
+
     return true;
 }
 
@@ -343,9 +375,13 @@ midibus::api_init_out_sub ()
 bool
 midibus::api_init_in_sub ()
 {
+    std::string portname = port_name();
+    if (portname.empty())
+        portname = SEQ64_CLIENT_NAME " in";
+
     int result = snd_seq_create_simple_port             /* create ports */
     (
-        m_seq, "sequencer64 in",                        /* "seq24 in"   */
+        m_seq, portname.c_str(),
         SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );
@@ -355,10 +391,11 @@ midibus::api_init_in_sub ()
         errprint("snd_seq_create_simple_port(write) error");
         return false;
     }
+    else
+        set_virtual_name(result, portname);
+
     return true;
 }
-
-#endif // 1
 
 /**
  *  Deinitialize the MIDI input.  Set the input and the output ports.

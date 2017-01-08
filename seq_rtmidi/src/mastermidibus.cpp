@@ -119,13 +119,13 @@ mastermidibus::api_init (int ppqn, int bpm)
 
             midibus * m = new midibus                   /* virtual port     */
             (
-                m_midi_scratch, SEQ64_APP_NAME, i  /* index and port */
+                m_midi_scratch, SEQ64_APP_NAME, i       /* index and port   */
             );
             m_outbus_array.add(m, false, true);         /* output & virtual */
         }
         midibus * m = new midibus                       /* virtual port     */
         (
-            m_midi_scratch, SEQ64_APP_NAME, 0           /* index and port */
+            m_midi_scratch, SEQ64_APP_NAME, 0           /* index and port   */
         );
         m_inbus_array.add(m, true, true);               /* input & virtual  */
     }

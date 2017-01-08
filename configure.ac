@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-01-01
+dnl \update        2017-01-08
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -41,16 +41,15 @@ dnl New for autoconf 2.60, prevents spurious datarootdir warnings.
 
 AC_DEFUN([AC_DATAROOTDIR_CHECKED])
 
-dnl 1. Package version information.  The first item is the name that covers
-dnl    a number of libraries, all of whose names start with "midicvt".
-dnl    We have to set up a "suite" name; since PACKAGE is defined to be the
-dnl    name of the current project, we can't use that value in the package
-dnl    configuration files.  It is replaced by MIDICVT_SUITE_NAME, which covers
-dnl    all of the library projects.
+dnl 1. Package version information.  We define the name of the package, the
+dnl    name of the client application for display, and the version.
 
-PACKAGE=sequencer64
+PACKAGE="sequencer64"
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
+
+AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
+AC_SUBST(CLIENT_NAME)
 
 VERSION="0.90.0"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
@@ -638,7 +637,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-01-01"
+#define VERSION_DATE_SHORT "2017-01-08"
 #define VERSION "0.90.0"
 
 )

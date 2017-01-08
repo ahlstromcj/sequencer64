@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-01-01
+ * \updates       2017-01-08
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -225,15 +225,19 @@ mastermidibus::api_init (int ppqn, int bpm)
         {
             midibus * m = new midibus                   /* virtual port     */
             (
-                snd_seq_client_id(m_alsa_seq), m_alsa_seq, i, m_queue, ppqn, bpm
+                snd_seq_client_id(m_alsa_seq),  // localclient
+                m_alsa_seq,                     // snd_seq_t
+                i, SEQ64_NO_BUS,                // index and bus ID
+                m_queue, ppqn, bpm
             );
-            m_outbus_array.add(m, false, true);            /* output & virtual */
+            m_outbus_array.add(m, false, true);         /* output & virtual */
         }
         midibus * m = new midibus                       /* virtual port     */
         (
-            snd_seq_client_id(m_alsa_seq), m_alsa_seq, 0, m_queue, ppqn, bpm
+            snd_seq_client_id(m_alsa_seq), m_alsa_seq, 0,
+            SEQ64_NO_BUS, m_queue, ppqn, bpm
         );
-        m_inbus_array.add(m, true, true);                 /* input & virtual  */
+        m_inbus_array.add(m, true, true);               /* input & virtual  */
     }
     else
     {
@@ -242,8 +246,8 @@ mastermidibus::api_init (int ppqn, int bpm)
          * from cinfo.  Fill pinfo.
          */
 
-        snd_seq_client_info_t * cinfo;                      /* client info      */
-        snd_seq_port_info_t * pinfo;                        /* port info        */
+        snd_seq_client_info_t * cinfo;                  /* client info      */
+        snd_seq_port_info_t * pinfo;                    /* port info        */
         snd_seq_client_info_alloca(&cinfo);
         snd_seq_client_info_set_client(cinfo, -1);
         int numouts = 0;

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2016-12-28
+ * \updates       2017-01-08
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -72,12 +72,15 @@ namespace seq64
 int midibase::m_clock_mod = 16 * 4;
 
 /**
- *  Provides a constructor with client number, port number, ALSA sequencer
- *  support, name of client, name of port.
+ *  Creates a normal MIDI port, which will correspond to an existing system
+ *  MIDI port, such as one provided by Timidity or a running JACK application,
+ *  or a virtual port, which has a name made up by the application.  Provides
+ *  a constructor with client number, port number, name of client, name of
+ *  port.
  *
  *  This constructor is the one that seems to be the one that is used for
  *  the MIDI input and output busses, when the [manual-alsa-ports] option is
- *  not in force.  Also used for the announce buss, and in the
+ *  <i> not </i> in force.  Also used for the announce buss, and in the
  *  mastermidibase::port_start() function.
  *
  * \param appname
@@ -86,25 +89,29 @@ int midibase::m_clock_mod = 16 * 4;
  *
  * \param busname
  *      Provides the ALSA client name or the MIDI subsystem name (e.g.
- *      "TiMidity").
+ *      "TiMidity").  If empty, a name will be assembled by the derived class
+ *      at port-setup time.
  *
  * \param portname
  *      Provides the port name.  This item defaults to empty, which means the
- *      port name should be obtained via the API.
+ *      port name should be obtained via the API, or be assembled by the
+ *      derived class at port-setup time.
  *
  * \param bus_id
  *      Provides the ID code for this bus.  It is an index into the midibus
  *      definitions array, and is also used in the constructed human-readable
  *      buss name.  Defaults to SEQ64_NO_BUS.
  *
- *          -   ALSA (seq24).  This is the ALSA buss number, ranging from 1 to
- *              32, I think.
+ *          -   ALSA (seq24).  This is the ALSA buss number, ranging from 1 on
+ *              upwards.  If SEQ64_NO_BUS, the derived class will get the buss
+ *              ID at port-setup time.
  *          -   PortMidi.  This number is not yet used in PortMidi.  Perhaps
  *              this should be used instead of the queue parameter.
  *          -   RtMidi.  Like ALSA, we will use this as a buss number.
  *
  * \param port_id
- *      Indicates the port ID.  Defaults to SEQ64_NO_PORT.
+ *      Indicates the port ID.  Defaults to SEQ64_NO_PORT.  If SEQ64_NO_PORT,
+ *      the derived class will get the port ID at port-setup time.
  *
  * \param queue
  *      Provides the queue ID.  It has different meanings in each of the MIDI
@@ -131,9 +138,9 @@ int midibase::m_clock_mod = 16 * 4;
 
 midibase::midibase
 (
-    const std::string & appname,     // application name, really
-    const std::string & busname,
-    const std::string & portname,
+    const std::string & appname,        // application name
+    const std::string & busname,        // can be empty
+    const std::string & portname,       // can be empty
     int index,                          // just an ordinal for display
     int bus_id,                         // an index in some implementations
     int port_id,                        // an index in some implementations
@@ -156,7 +163,8 @@ midibase::midibase
     m_is_virtual_port   (makevirtual),
     m_mutex             ()
 {
-    set_name(appname, busname, portname);
+    if (! busname.empty() && ! portname.empty())
+        set_name(appname, busname, portname);
 }
 
 /**
@@ -197,8 +205,9 @@ midibase::set_name
     {
         snprintf
         (
-            name, sizeof name, "[%d] %d:%d %s",
-            get_bus_index(), get_bus_id(), get_port_id(), clientname.c_str()
+            name, sizeof name, "[%d] %d:%d %s:%s",
+            get_bus_index(), get_bus_id(), get_port_id(),
+            clientname.c_str(), portname.c_str()
         );
         bus_name(name);
     }

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-17
+ * \updates       2017-01-08
  * \license       GNU GPLv2 or above
  *
  *  The midibus module is the Linux version of the midibus module.
@@ -162,13 +162,10 @@ public:
 
 protected:
 
-#if 1
     virtual bool api_init_out ();
     virtual bool api_init_in ();
     virtual bool api_init_out_sub ();
     virtual bool api_init_in_sub ();
-#endif
-
     virtual bool api_deinit_in ();
     virtual void api_play (event * e24, midibyte channel);
     virtual void api_sysex (event * e24);
@@ -177,6 +174,10 @@ protected:
     virtual void api_start ();
     virtual void api_stop ();
     virtual void api_clock (midipulse tick);
+
+private:
+
+    bool set_virtual_name (int portid, const std::string & portname);
 
 };          // class midibus (ALSA version)
 

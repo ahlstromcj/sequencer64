@@ -20,7 +20,7 @@
  * \file          midibus.cpp
  *
  *  This module declares/defines the base class for MIDI I/O under one of
- *  Windows' audio frameworks.
+ *  the rtmidi frameworks.
  *
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
@@ -30,7 +30,7 @@
  *
  *  This file provides a cross-platform implementation of the midibus class.
  *  Based on our super-heavily refactored version of the RtMidi project
- *  included in this library.
+ *  included in this library.  Currently only ALSA and JACK are supported.
  */
 
 #include "event.hpp"                    /* seq64::event and macros          */

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2016-12-29
+ * \updates       2017-01-08
  * \license       GNU GPLv2 or above
  *
  *  The midi_alsa module is the Linux version of the midi_alsa module.
@@ -150,6 +150,10 @@ protected:
     virtual void api_clock (midipulse tick);
     virtual void api_set_ppqn (int ppqn);
     virtual void api_set_beats_per_minute (int bpm);
+
+private:
+
+    bool set_virtual_name (int portid, const std::string & portname);
 
 };          // class midi_alsa
 

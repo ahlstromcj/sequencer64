@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-07
+ * \updates       2017-01-08
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -218,11 +218,12 @@ midi_jack::~midi_jack ()
 bool
 midi_jack::api_init_out ()
 {
+    is_virtual_port(false);
     master_midi_mode(SEQ64_MIDI_OUTPUT);
+
     int portid = master_info().get_port_id(get_bus_index());
     std::string sourceportname = api_get_port_name();
     std::string destportname = master_info().get_port_name(get_bus_index());
-//  std::string busname = master_info().get_bus_name(get_bus_index());
     bool result = connect_port(SEQ64_MIDI_OUTPUT, destportname, sourceportname);
     if (result)
         set_port_open();
@@ -246,11 +247,12 @@ midi_jack::api_init_out ()
 bool
 midi_jack::api_init_in ()
 {
+    is_virtual_port(false);
     master_midi_mode(SEQ64_MIDI_INPUT);
+
     int portid = master_info().get_port_id(get_bus_index());
     std::string sourceportname = api_get_port_name();
     std::string destportname = master_info().get_port_name(get_bus_index());
-//  std::string busname = master_info().get_bus_name(get_bus_index());
     bool result = connect_port(SEQ64_MIDI_INPUT, destportname, sourceportname);
     if (result)
         set_port_open();
@@ -267,7 +269,9 @@ midi_jack::api_init_in ()
 bool
 midi_jack::api_init_out_sub ()
 {
+    is_virtual_port(true);
     master_midi_mode(SEQ64_MIDI_OUTPUT);
+
     int portid = master_info().get_port_id(get_bus_index());
     std::string portname = master_info().get_port_name(get_bus_index());
     bool result = register_port(SEQ64_MIDI_OUTPUT, portname);
@@ -280,7 +284,9 @@ midi_jack::api_init_out_sub ()
 bool
 midi_jack::api_init_in_sub ()
 {
+    is_virtual_port(true);
     master_midi_mode(SEQ64_MIDI_INPUT);
+
     int portid = master_info().get_port_id(get_bus_index());
     std::string portname = master_info().get_port_name(get_bus_index());
     bool result = register_port(SEQ64_MIDI_INPUT, portname);

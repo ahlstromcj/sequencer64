@@ -163,8 +163,11 @@ midibase::midibase
     m_is_virtual_port   (makevirtual),
     m_mutex             ()
 {
-    if (! busname.empty() && ! portname.empty())
-        set_name(appname, busname, portname);
+    if (! makevirtual)
+    {
+        if (! busname.empty() && ! portname.empty())
+            set_name(appname, busname, portname);
+    }
 }
 
 /**

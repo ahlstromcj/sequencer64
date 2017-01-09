@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2016-12-31
+ * \updates       2017-01-09
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -95,10 +95,17 @@ public:
         const std::string & portname,
         int queuenumber = SEQ64_BAD_QUEUE_ID
     );
+    void add (const midibus * m);
+
+    /**
+     *  This function is useful in replacing the discovered system ports with
+     *  the manual/virtual ports added in "manual" mode.
+     */
 
     void clear ()
     {
         m_port_container.clear();
+        m_port_count = 0;
     }
 
     int get_port_count () const
@@ -295,6 +302,22 @@ public:
     }
 
     /**
+     * \getter
+     *      Total port count.
+     */
+
+    int full_port_count () const
+    {
+        return m_input.get_port_count() + m_output.get_port_count();
+    }
+
+    void clear ()
+    {
+        m_input.clear();
+        m_output.clear();
+    }
+
+    /**
      * \getter m_app_name
      */
 
@@ -345,16 +368,6 @@ public:
 
     virtual void api_port_start
     (
-#if 0
-        midibus ** /* bus_in */,
-        bool * /* bus_in_active */,
-        bool * /* bus_in_init */,
-        int & /* num_in_buses */,
-        midibus ** /* bus_out */,
-        bool * /* bus_out_active */,
-        bool * /* bus_in_init */,
-        int & /* num_out_buses */,
-#endif
         mastermidibus & /* masterbus */,
         int /* bus */, int /* port */
     )

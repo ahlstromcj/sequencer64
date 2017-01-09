@@ -106,6 +106,8 @@ mastermidibus::api_init (int ppqn, int bpm)
     m_midi_scratch.api_set_beats_per_minute(bpm);
     if (rc().manual_alsa_ports())
     {
+        m_midi_scratch.clear();
+
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
         for (int i = 0; i < num_buses; ++i)             /* output busses    */
         {
@@ -122,12 +124,22 @@ mastermidibus::api_init (int ppqn, int bpm)
                 m_midi_scratch, SEQ64_APP_NAME, i       /* index and port   */
             );
             m_outbus_array.add(m, false, true);         /* output & virtual */
+            m_midi_scratch.add_output(m);               /* must come 2nd    */
         }
         midibus * m = new midibus                       /* virtual port     */
         (
             m_midi_scratch, SEQ64_APP_NAME, 0           /* index and port   */
         );
         m_inbus_array.add(m, true, true);               /* input & virtual  */
+        m_midi_scratch.add_input(m);                    /* must come 2nd    */
+#ifdef PLATFORM_DEBUG
+        std::string plist = m_midi_scratch.port_list();
+        printf
+        (
+            "%d virtual ports created:\n%s\n",
+            m_midi_scratch.full_port_count(), plist.c_str()
+        );
+#endif
     }
     else
     {
@@ -140,7 +152,11 @@ mastermidibus::api_init (int ppqn, int bpm)
         unsigned nports = m_midi_scratch.get_all_port_info();
 #ifdef PLATFORM_DEBUG
         std::string plist = m_midi_scratch.port_list();
-        printf("rtmidi ports found:\n%s\n", plist.c_str());
+        printf
+        (
+            "%d rtmidi ports found:\n%s\n",
+            m_midi_scratch.full_port_count(), plist.c_str()
+        );
 #endif
         if (nports > 0)
         {

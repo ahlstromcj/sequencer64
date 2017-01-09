@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2017-01-07
+ * \updates       2017-01-09
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
@@ -15,6 +15,7 @@
 
 #include <sstream>                      /* std::ostringstream               */
 
+#include "midibus.hpp"
 #include "midi_info.hpp"
 
 /*
@@ -35,7 +36,7 @@ namespace seq64
 midi_port_info::midi_port_info
 (
 ) :
-    m_port_count        (),
+    m_port_count        (0),
     m_port_container    ()
 {
     // Empty body
@@ -80,6 +81,23 @@ midi_port_info::add
     temp.m_queue_number = queuenumber;
     m_port_container.push_back(temp);
     m_port_count = int(m_port_container.size());
+}
+
+/**
+ *  Adds values from a midibus (actually a midibase class).
+ *
+ *  WHY ARE SOME OF THE FIELDS (e.g. port name) empty????
+ */
+
+void
+midi_port_info::add (const midibus * m)
+{
+    add
+    (
+        m->get_bus_id(), m->bus_name(),
+        m->get_port_id(), m->port_name(),
+        m->queue_number()
+    );
 }
 
 /*

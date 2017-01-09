@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2016-12-31
+ * \updates       2017-01-08
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -255,6 +255,20 @@ public:
     }
 
     /**
+     * \setter m_is_virtual_port
+     *      This function is needed in the rtmidi library to set the
+     *      is-virtual flag in the api_init_*_sub() functions, so that
+     *      midi_alsa, midi_jack (and any other additional APIs that end up
+     *      supported by our heavily-refactored rtmidi library), as well as
+     *      the original midibus, can know that they represent a virtual port.
+     */
+
+    void is_virtual_port (bool flag)
+    {
+        m_is_virtual_port = flag;
+    }
+
+    /**
      * \setter m_clock_type
      *
      * \param clocktype
@@ -282,6 +296,15 @@ public:
     bool get_input () const
     {
         return m_inputing;
+    }
+
+    /**
+     * \getter m_queue
+     */
+
+    int queue_number () const
+    {
+        return m_queue;
     }
 
     /**
@@ -364,15 +387,6 @@ protected:
     void set_port_id (int id)
     {
         m_port_id = id;
-    }
-
-    /**
-     * \getter m_queue
-     */
-
-    int queue_number () const
-    {
-        return m_queue;
     }
 
     /**

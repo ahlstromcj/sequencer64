@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2017-01-02
+ * \updates       2017-01-09
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -91,6 +91,33 @@ public:
     }
 
     /**
+     *  Clear the MIDI port container.
+     */
+
+    void clear ()
+    {
+        get_api_info()->clear();
+    }
+
+    /**
+     *  Add midibus information to the input ports.
+     */
+
+    void add_input (const midibus * m)
+    {
+        get_api_info()->input_ports().add(m);
+    }
+
+    /**
+     *  Add midibus information to the output ports.
+     */
+
+    void add_output (const midibus * m)
+    {
+        get_api_info()->output_ports().add(m);
+    }
+
+    /**
      *  Gets the buss/client ID for a MIDI interfaces.  This is the left-hand
      *  side of a X:Y pair (such as 128:0).
      *
@@ -116,6 +143,11 @@ public:
     int get_port_count () const
     {
         return get_api_info()->get_port_count();
+    }
+
+    int full_port_count () const
+    {
+        return get_api_info()->full_port_count();
     }
 
     int get_port_id (int index) const

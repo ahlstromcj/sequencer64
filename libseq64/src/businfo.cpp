@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-01-01
+ * \updates       2017-01-09
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -115,6 +115,21 @@ businfo::businfo (midibus * bus, bool is_input, bool is_virtual)
     {
         errprint("businfo(): null midibus pointer provided");
     }
+}
+
+/**
+ *  Copy constructor.  Currently it does not replicate the pointed-to object.
+ */
+
+businfo::businfo (const businfo & rhs)
+ :
+    m_bus           (rhs.m_bus),
+    m_active        (rhs.m_active),
+    m_initialized   (rhs.m_initialized),
+    m_init_clock    (rhs.m_init_clock),
+    m_init_input    (rhs.m_init_input)
+{
+    // No code needed
 }
 
 /*
@@ -305,7 +320,8 @@ busarray::get_midi_bus_name (int bus)
     {
         if (m_container[bus].active())
         {
-            result = m_container[bus].bus()->bus_name();
+//          result = m_container[bus].bus()->bus_name();
+            result = m_container[bus].bus()->full_name();
         }
         else
         {

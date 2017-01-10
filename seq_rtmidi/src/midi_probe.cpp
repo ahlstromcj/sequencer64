@@ -6,7 +6,7 @@
  *
  * \author        Gary P. Scavone, 2003-2012; refactoring by Chris Ahlstrom
  * \date          2016-11-19
- * \updates       2016-12-20
+ * \updates       2017-01-09
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  We include this test code in our library, rather than in a separate
@@ -20,6 +20,7 @@
 
 #include "easy_macros.h"
 #include "midi_probe.hpp"
+#include "midibus_rm.hpp"
 #include "rtmidi.hpp"                   /* rtmidi_in and rt_midi_out */
 #include "rtmidi_info.hpp"
 
@@ -86,6 +87,8 @@ midi_api_name (int i)
 int
 midi_probe ()
 {
+    static rtmidi_info s_rtmidi_info_dummy;
+    static midibus s_midibus_dummy(s_rtmidi_info_dummy, "dummy", 0);
     std::vector<rtmidi_api> apis;
     rtmidi_info::get_compiled_api(apis);
     std::cout << "\nCompiled APIs:\n";
@@ -102,7 +105,7 @@ midi_probe ()
          * We sactually need to get this object in the loop!
          */
 
-        rtmidi_in midiin(info);
+        rtmidi_in midiin(s_midibus_dummy, info);
         std::cout
             << "MIDI Input/Output API: "
             << midi_api_name(rtmidi_info::selected_api())
@@ -113,7 +116,6 @@ midi_probe ()
         std::cout << nports << " MIDI input sources:" << std::endl;
         for (int i = 0; i < nports; ++i)
         {
-            // std::string portname = midiin.get_port_name(i);
             std::string portname = midiin.get_port_name();
             std::cout
                 << "  Input Port #" << i+1 << ": " << portname << std::endl
@@ -124,14 +126,13 @@ midi_probe ()
          * We sactually need to get this object in the loop!
          */
 
-        rtmidi_out midiout(info);
+        rtmidi_out midiout(s_midibus_dummy, info);
         std::cout << std::endl;
 
         nports = midiout.get_port_count();
         std::cout << nports << " MIDI output ports:" << std::endl;
         for (int i = 0; i < nports; ++i)
         {
-            // std::string portname = midiout.get_port_name(i);
             std::string portname = midiout.get_port_name();
             std::cout
                 << "  Output Port #" << i+1 << ": " << portname << std::endl

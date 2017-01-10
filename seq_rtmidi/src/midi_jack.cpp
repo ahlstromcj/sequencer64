@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-08
+ * \updates       2017-01-10
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -37,9 +37,11 @@
 #include <jack/midiport.h>
 #include <jack/ringbuffer.h>
 
-#include "jack_assistant.hpp"           /* seq64::jack_status_pair_t    */
-#include "midi_jack.hpp"
-#include "settings.hpp"
+#include "event.hpp"                    /* seq64::event from main library   */
+#include "jack_assistant.hpp"           /* seq64::jack_status_pair_t        */
+#include "midibus_rm.hpp"               /* seq64::midibus for rtmidi        */
+#include "midi_jack.hpp"                /* seq64::midi_jack                 */
+#include "settings.hpp"                 /* seq64::rc() accessor function    */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -169,9 +171,13 @@ jack_process_output (jack_nframes_t nframes, void * arg)
  * to each port.  Same for the JACK data item.
  */
 
-midi_jack::midi_jack (midi_info & masterinfo, int index)
- :
-    midi_api        (masterinfo, index),
+midi_jack::midi_jack
+(
+    midibus & parentbus,
+    midi_info & masterinfo,
+    int index
+) :
+    midi_api        (parentbus, masterinfo, index),
     m_jack_data     ()
 {
     client_handle((reinterpret_cast<jack_client_t *>(masterinfo.midi_handle())));
@@ -260,6 +266,52 @@ midi_jack::api_init_in ()
     return result;
 }
 
+/**
+ *  Gets information directly from JACK.  The problem this function solves is
+ *  that the midibus constructor for a virtual JACK port doesn't not have all
+ *  of the information it needs at that point.  Here, we can get this
+ *  information and get the actual data we need to rename the port to
+ *  something accurate.
+ *
+ *  IN PROGRESS.
+ *
+ *      const char * pname = jack_port_name(const jack_port_t *);
+ *
+ * \return
+ *      Returns true if all of the information could be obtained.  If false is
+ *      returned, then the caller should not use the side-effects.
+ *
+ * \sideeffect
+ *      Passes back the values found.
+ */
+
+bool
+midi_jack::set_virtual_name (int portid, const std::string & portname)
+{
+    bool result = not_nullptr(client_handle());
+    if (result)
+    {
+        char * cname = jack_get_client_name(client_handle());
+        result = not_nullptr(cname);
+        if (result)
+        {
+            std::string clientname = cname;
+            std::string pname = portname;
+            set_port_id(portid);
+            pname += " ";
+            pname += std::to_string(portid);
+            port_name(pname);
+#if 0
+            set_bus_id(cid);
+            bus_name(clientname);
+#endif
+            set_name(SEQ64_APP_NAME, clientname, pname);
+            parent_bus().set_name(SEQ64_APP_NAME, clientname, pname);
+        }
+    }
+    return result;
+}
+
 /*
  *
  *  This initialization is like the "open_virtual_port()" function of the
@@ -276,8 +328,10 @@ midi_jack::api_init_out_sub ()
     std::string portname = master_info().get_port_name(get_bus_index());
     bool result = register_port(SEQ64_MIDI_OUTPUT, portname);
     if (result)
+    {
+        set_virtual_name(portid, portname);
         set_port_open();
-
+    }
     return result;
 }
 
@@ -291,20 +345,56 @@ midi_jack::api_init_in_sub ()
     std::string portname = master_info().get_port_name(get_bus_index());
     bool result = register_port(SEQ64_MIDI_INPUT, portname);
     if (result)
+    {
+        set_virtual_name(portid, portname);
         set_port_open();
-
+    }
     return result;
 }
+
+/**
+ *  We could define these in the opposite order.
+ */
 
 bool
 midi_jack::api_deinit_in ()
 {
+    close_port();
     return true;
 }
+
+/**
+ *  We could push the bytes of the event into a midibyte vector, as done in
+ *  send_message().  The ALSA code (seq_alsamidi/src/midibus.cpp) sticks the
+ *  event bytes in an array, which might be a little faster than using
+ *  push_back(), but let's try the vector first.
+ */
 
 void
 midi_jack::api_play (event * e24, midibyte channel)
 {
+    midibyte status = e24->get_status() + (channel & 0x0F);
+    midibyte d0, d1;
+    e24->get_data(d0, d1);
+
+    midi_message::container message;
+    message.push_back(status);
+    message.push_back(d0);
+    message.push_back(d1);
+
+    int nbytes = message.size();            /* send_message(message) */
+    int count1 = jack_ringbuffer_write
+    (
+        m_jack_data.m_jack_buffmessage, (const char *) &message[0], message.size()
+    );
+    int count2 = jack_ringbuffer_write
+    (
+        m_jack_data.m_jack_buffsize, (char *) &nbytes, sizeof nbytes
+    );
+    if ((count1 <= 0) || (count2 <= 0))
+    {
+        // somehow report an error
+    }
 }
 
 void
@@ -681,11 +771,13 @@ midi_jack::close_port ()
 
 midi_in_jack::midi_in_jack
 (
-    midi_info & masterinfo, int index,
+    midibus & parentbus,
+    midi_info & masterinfo,
+    int index,
     const std::string & clientname,
     unsigned /*queuesize*/
 ) :
-    midi_jack       (masterinfo, index)
+    midi_jack       (parentbus, masterinfo, index)
 {
     (void) initialize(clientname);
 }
@@ -831,10 +923,12 @@ midi_in_jack::get_port_name (int portnumber)
 
 midi_out_jack::midi_out_jack
 (
-    midi_info & masterinfo, int index,
+    midibus & parentbus,
+    midi_info & masterinfo,
+    int index,
     const std::string & clientname
 ) :
-    midi_jack       (masterinfo, index),
+    midi_jack       (parentbus, masterinfo, index),
     m_clientname    ()
 {
     (void) initialize(clientname);
@@ -969,7 +1063,7 @@ midi_out_jack::get_port_name (int portnumber)
  */
 
 bool
-midi_out_jack::send_message (const std::vector<midibyte> & message)
+midi_out_jack::send_message (const midi_message::container & message)
 {
     int nbytes = message.size();
     int count1 = jack_ringbuffer_write

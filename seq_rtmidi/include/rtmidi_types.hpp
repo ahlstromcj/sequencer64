@@ -97,10 +97,6 @@ enum rtmidi_api
 
 };
 
-/*
- * LOTS OF TO BE DETERMINES HERE!
- */
-
 /**
  *  Provides a handy capsule for a MIDI message, based on the
  *  std::vector<unsigned char> data type from the RtMidi project.

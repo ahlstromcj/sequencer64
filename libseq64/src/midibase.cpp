@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2017-01-08
+ * \updates       2017-01-09
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -212,7 +212,8 @@ midibase::set_name
             get_bus_index(), get_bus_id(), get_port_id(),
             clientname.c_str(), portname.c_str()
         );
-        bus_name(name);
+        bus_name(clientname);
+        port_name(portname);
     }
     else
     {
@@ -242,8 +243,9 @@ midibase::set_name
             name, sizeof name, "[%d] %d:%d %s",
             get_bus_index(), get_bus_id(), get_port_id(), alias
         );
+        bus_name(name);
     }
-    bus_name(name);
+    full_name(name);
 }
 
 

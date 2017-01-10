@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-28
+ * \updates       2017-01-09
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -45,9 +45,13 @@ namespace seq64
  *  Default constructor.
  */
 
-rtmidi::rtmidi (rtmidi_info & info, int index)
- :
-    midi_api        (*(info.get_api_info()), index),
+rtmidi::rtmidi
+(
+    midibus & parentbus,
+    rtmidi_info & info,
+    int index
+) :
+    midi_api        (parentbus, *(info.get_api_info()), index),
     m_midi_info     (info),
     m_midi_api      (nullptr)
 {
@@ -90,10 +94,11 @@ rtmidi::~rtmidi ()
 
 rtmidi_in::rtmidi_in
 (
+    midibus & parentbus,
     rtmidi_info & info,
     int index
 ) :
-    rtmidi   (info, index)
+    rtmidi   (parentbus, info, index)
 {
     if (rtmidi_info::selected_api() != RTMIDI_API_UNSPECIFIED)
     {
@@ -181,7 +186,7 @@ rtmidi_in::openmidi_api
                 if (api == RTMIDI_API_UNIX_JACK)
                 {
 #ifdef SEQ64_BUILD_UNIX_JACK
-                    set_api(new midi_in_jack(midiinfo, index));
+                    set_api(new midi_in_jack(parent_bus(), midiinfo, index));
                     got_an_api = true;
 #endif
                 }
@@ -191,7 +196,7 @@ rtmidi_in::openmidi_api
                 if (api == RTMIDI_API_LINUX_ALSA)
                 {
 #ifdef SEQ64_BUILD_LINUX_ALSA
-                    set_api(new midi_in_alsa(midiinfo, index));
+                    set_api(new midi_in_alsa(parent_bus(), midiinfo, index));
 #endif
                 }
             }
@@ -199,13 +204,13 @@ rtmidi_in::openmidi_api
         else if (api == RTMIDI_API_UNIX_JACK)
         {
 #ifdef SEQ64_BUILD_UNIX_JACK
-            set_api(new midi_in_jack(midiinfo, index));
+            set_api(new midi_in_jack(parent_bus(), midiinfo, index));
 #endif
         }
         else if (api == RTMIDI_API_LINUX_ALSA)
         {
 #ifdef SEQ64_BUILD_LINUX_ALSA
-            set_api(new midi_in_alsa(midiinfo, index));
+            set_api(new midi_in_alsa(parent_bus(), midiinfo, index));
 #endif
         }
     }
@@ -237,10 +242,11 @@ rtmidi_in::openmidi_api
 
 rtmidi_out::rtmidi_out
 (
+    midibus & parentbus,
     rtmidi_info & info,
     int index
 ) :
-    rtmidi   (info, index)
+    rtmidi   (parentbus, info, index)
 {
     if (rtmidi_info::selected_api() != RTMIDI_API_UNSPECIFIED)
     {
@@ -329,7 +335,7 @@ rtmidi_out::openmidi_api
                 if (api == RTMIDI_API_UNIX_JACK)
                 {
 #ifdef SEQ64_BUILD_UNIX_JACK
-                    set_api(new midi_out_jack(midiinfo, index));
+                    set_api(new midi_out_jack(parent_bus(), midiinfo, index));
                     got_an_api = true;
 #endif
                 }
@@ -339,7 +345,7 @@ rtmidi_out::openmidi_api
                 if (api == RTMIDI_API_LINUX_ALSA)
                 {
 #ifdef SEQ64_BUILD_LINUX_ALSA
-                    set_api(new midi_out_alsa(midiinfo, index));
+                    set_api(new midi_out_alsa(parent_bus(), midiinfo, index));
 #endif
                 }
             }
@@ -347,13 +353,13 @@ rtmidi_out::openmidi_api
         else if (api == RTMIDI_API_UNIX_JACK)
         {
 #ifdef SEQ64_BUILD_UNIX_JACK
-            set_api(new midi_out_jack(midiinfo, index));
+            set_api(new midi_out_jack(parent_bus(), midiinfo, index));
 #endif
         }
         else if (api == RTMIDI_API_LINUX_ALSA)
         {
 #ifdef SEQ64_BUILD_LINUX_ALSA
-            set_api(new midi_out_alsa(midiinfo, index));
+            set_api(new midi_out_alsa(parent_bus(), midiinfo, index));
 #endif
         }
     }

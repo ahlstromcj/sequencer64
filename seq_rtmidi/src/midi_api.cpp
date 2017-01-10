@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-07
+ * \updates       2017-01-09
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring...
@@ -15,6 +15,7 @@
 #include "event.hpp"
 #include "midi_api.hpp"
 #include "midi_info.hpp"
+#include "midibus_rm.hpp"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -28,11 +29,15 @@ namespace seq64
  */
 
 /**
- *  Default constructor.
+ *  Principle constructor.
  */
 
-midi_api::midi_api (midi_info & masterinfo, int index)
- :
+midi_api::midi_api
+(
+    midibus & parentbus,
+    midi_info & masterinfo,
+    int index
+) :
     midibase
     (
         SEQ64_APP_NAME,
@@ -47,6 +52,7 @@ midi_api::midi_api (midi_info & masterinfo, int index)
         false               /* non-virtual HMMMMMMMMMMM */
     ),
     m_master_info               (masterinfo),
+    m_parent_bus                (parentbus),
     m_connected                 (false),
     m_error_string              (),
     m_error_callback            (0),
@@ -133,9 +139,13 @@ midi_api::master_midi_mode (bool input)
  *      Provides the ring-size of the MIDI input data queue.
  */
 
-midi_in_api::midi_in_api (midi_info & masterinfo, int index)
- :
-    midi_api    (masterinfo, index)
+midi_in_api::midi_in_api
+(
+    midibus & parentbus,
+    midi_info & masterinfo,
+    int index
+) :
+    midi_api    (parentbus, masterinfo, index)
 {
     // any code?
 }
@@ -159,9 +169,13 @@ midi_in_api::~midi_in_api ()
  *  Default constructor.
  */
 
-midi_out_api::midi_out_api (midi_info & masterinfo, int index)
- :
-    midi_api    (masterinfo, index)
+midi_out_api::midi_out_api
+(
+    midibus & parentbus,
+    midi_info & masterinfo,
+    int index
+) :
+    midi_api    (parentbus, masterinfo, index)
 {
     // no code
 }

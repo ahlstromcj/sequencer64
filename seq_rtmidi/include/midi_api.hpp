@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-07
+ * \updates       2017-01-09
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -30,6 +30,7 @@ namespace seq64
 {
     class event;
     class midi_info;
+    class midibus;
 
 /**
  *  Subclasses of midi_in_api and midi_out_api contain all API- and
@@ -46,6 +47,7 @@ class midi_api : public midibase
 private:
 
     midi_info & m_master_info;
+    midibus & m_parent_bus;
     bool m_connected;
 
 protected:
@@ -57,7 +59,12 @@ protected:
 
 public:
 
-    midi_api (midi_info & masterinfo, int index = SEQ64_NO_INDEX);
+    midi_api
+    (
+        midibus & parentbus,
+        midi_info & masterinfo,
+        int index = SEQ64_NO_INDEX
+    );
     virtual ~midi_api ();
 
 public:
@@ -113,6 +120,15 @@ public:
         return m_master_info;
     }
 
+    /**
+     * \getter m_parent_bus
+     */
+
+    midibus & parent_bus ()
+    {
+        return m_parent_bus;
+    }
+
     void master_midi_mode (bool input);
 
     /**
@@ -139,7 +155,12 @@ class midi_in_api : public midi_api
 
 public:
 
-    midi_in_api (midi_info & masterinfo, int index = SEQ64_NO_INDEX);
+    midi_in_api
+    (
+        midibus & parentbus,
+        midi_info & masterinfo,
+        int index = SEQ64_NO_INDEX
+    );
     virtual ~midi_in_api ();
 
 };          // class midi_in_api
@@ -153,7 +174,12 @@ class midi_out_api : public midi_api
 
 public:
 
-    midi_out_api (midi_info & masterinfo, int index = SEQ64_NO_INDEX);
+    midi_out_api
+    (
+        midibus & parentbus,
+        midi_info & masterinfo,
+        int index = SEQ64_NO_INDEX
+    );
     virtual ~midi_out_api ();
 
 };          // class midi_out_api

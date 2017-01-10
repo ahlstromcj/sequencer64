@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2016-12-28
+ * \updates       2017-01-09
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The big difference between this class (seq64::rtmidi) and
@@ -62,7 +62,12 @@ private:
 
 protected:
 
-    rtmidi (rtmidi_info & info, int index = SEQ64_NO_INDEX);
+    rtmidi
+    (
+        midibus & parentbus,
+        rtmidi_info & info,
+        int index = SEQ64_NO_INDEX
+    );
     virtual ~rtmidi ();
 
 public:
@@ -279,6 +284,7 @@ public:
 
     rtmidi_in
     (
+        midibus & parentbus,
         rtmidi_info & info,
         int index = SEQ64_NO_INDEX
     );
@@ -328,6 +334,7 @@ public:
 
     rtmidi_out
     (
+        midibus & parentbus,
         rtmidi_info & info,
         int index = SEQ64_NO_INDEX
     );

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2017-01-08
+ * \updates       2017-01-09
  * \license       GNU GPLv2 or above
  *
  *  The midi_alsa module is the Linux version of the midi_alsa module.
@@ -52,6 +52,7 @@
 namespace seq64
 {
     class event;
+    class midibus;
 
 /**
  *  This class implements the ALSA version of the midi_api.
@@ -109,6 +110,7 @@ public:
 
     midi_alsa
     (
+        midibus & parentbus,
         midi_info & masterinfo,
         int index                           /* a display ordinal    */
     );
@@ -166,7 +168,12 @@ class midi_in_alsa : public midi_alsa
 
 public:
 
-    midi_in_alsa (midi_info & masterinfo, int index);
+    midi_in_alsa
+    (
+        midibus & parentbus,
+        midi_info & masterinfo,
+        int index
+    );
 
 };          // class midi_in_alsa
 
@@ -179,7 +186,12 @@ class midi_out_alsa : public midi_alsa
 
 public:
 
-    midi_out_alsa (midi_info & masterinfo, int index);
+    midi_out_alsa
+    (
+        midibus & parentbus,
+        midi_info & masterinfo,
+        int index
+    );
 
 };          // class midi_out_alsa
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-29
+ * \updates       2017-01-09
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -214,7 +214,7 @@ midibus::api_init_out ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_out(m_master_info, get_bus_index());
+        m_rt_midi = new rtmidi_out(*this, m_master_info, get_bus_index());
         result = api_init_common(m_rt_midi);
         if (result)
             result = m_rt_midi->api_init_out();
@@ -239,7 +239,7 @@ midibus::api_init_out_sub ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_out(m_master_info, get_bus_index());
+        m_rt_midi = new rtmidi_out(*this, m_master_info, get_bus_index());
         result = api_init_common(m_rt_midi);
         if (result)
             result = m_rt_midi->api_init_out_sub();
@@ -264,7 +264,7 @@ midibus::api_init_in ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_in(m_master_info, get_bus_index());
+        m_rt_midi = new rtmidi_in(*this, m_master_info, get_bus_index());
         result = api_init_common(m_rt_midi);
         if (result)
             result = m_rt_midi->api_init_in();
@@ -289,7 +289,7 @@ midibus::api_init_in_sub ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_in(m_master_info, get_bus_index());
+        m_rt_midi = new rtmidi_in(*this, m_master_info, get_bus_index());
         result = api_init_common(m_rt_midi);
         if (result)
             result = m_rt_midi->api_init_in_sub();

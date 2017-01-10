@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2017-01-08
+ * \updates       2017-01-09
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -123,6 +123,13 @@ private:
     int m_queue;
 
     /**
+     *  Holds the full nmae of the bus, index, ID numbers, and item names.
+     *  Assembled by the set_name() function.
+     */
+
+    std::string m_full_name;
+
+    /**
      *  The name of the MIDI buss.  This should be something like a major device
      *  name or the name of a subsystem such as Timidity.
      */
@@ -172,6 +179,15 @@ public:
     );
 
     virtual ~midibase ();
+
+    /**
+     * \getter m_full_name
+     */
+
+    const std::string & full_name () const
+    {
+        return m_full_name;
+    }
 
     /**
      * \getter m_bus_name
@@ -307,6 +323,13 @@ public:
         return m_queue;
     }
 
+    void set_name
+    (
+        const std::string & clientname,
+        const std::string & busname,
+        const std::string & portname
+    );
+
     /**
      *  Set the clock mod to the given value, if legal.
      *
@@ -348,6 +371,15 @@ public:
     virtual void set_input (bool inputing);
 
 protected:
+
+    /**
+     * \setter m_full_name
+     */
+
+    void full_name (const std::string & name)
+    {
+        m_full_name = name;
+    }
 
     /**
      * \setter m_bus_name
@@ -456,15 +488,6 @@ protected:
     virtual void api_start () = 0;
     virtual void api_stop () = 0;
     virtual void api_clock (midipulse tick) = 0;
-
-protected:
-
-    void set_name
-    (
-        const std::string & clientname,
-        const std::string & busname,
-        const std::string & portname
-    );
 
 };          // class midibase (ALSA version)
 

@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-07
+ * \updates       2017-01-10
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring...
@@ -25,6 +25,7 @@
 
 namespace seq64
 {
+    class midibus;
 
 /**
  *  This class implements with JACK version of the midi_alsa object.
@@ -47,7 +48,12 @@ protected:
 
 public:
 
-    midi_jack (midi_info & masterinfo, int index = SEQ64_NO_INDEX);
+    midi_jack
+    (
+        midibus & parentbus,
+        midi_info & masterinfo,
+        int index = SEQ64_NO_INDEX
+    );
     virtual ~midi_jack ();
 
     /**
@@ -113,6 +119,10 @@ protected:
     virtual void api_set_beats_per_minute (int bpm);
     virtual std::string api_get_port_name ();
 
+private:
+
+    bool set_virtual_name (int portid, const std::string & portname);
+
 };          // class midi_jack
 
 /**
@@ -130,8 +140,11 @@ public:
 
     midi_in_jack
     (
-        midi_info & masterinfo, int index = SEQ64_NO_INDEX,
-        const std::string & clientname = "", unsigned queuesize = 0
+        midibus & parentbus,
+        midi_info & masterinfo,
+        int index = SEQ64_NO_INDEX,
+        const std::string & clientname = "",
+        unsigned queuesize = 0
     );
     virtual ~midi_in_jack ();
 
@@ -180,7 +193,9 @@ public:
 
     midi_out_jack
     (
-        midi_info & masterinfo, int index = SEQ64_NO_INDEX,
+        midibus & parentbus,
+        midi_info & masterinfo,
+        int index = SEQ64_NO_INDEX,
         const std::string & clientname = ""
     );
     virtual ~midi_out_jack ();
@@ -204,10 +219,10 @@ public:
 #endif
 
     /*
-     * midi_message::container &
+     *  Note that midi_message::container is a vector<midibyte> object.
      */
 
-    virtual bool send_message (const std::vector<midibyte> & message);
+    virtual bool send_message (const midi_message::container & message);
 
 private:
 

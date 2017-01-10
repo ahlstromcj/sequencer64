@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-01-01
+ * \updates       2017-01-09
  * \license       GNU GPLv2 or above
  *
  *  The businfo module defines the businfo and busarray classes so that we can
@@ -94,6 +94,7 @@ public:
 
     businfo ();
     businfo (midibus * bus, bool is_input, bool is_virtual);
+    businfo (const businfo & rhs);
 
     /**
      * We can't destroy the bus pointer.
@@ -236,7 +237,7 @@ public:
     midibus * bus (bussbyte b)
     {
         midibus * result = nullptr;
-        if (b < count())
+        if (b < bussbyte(count()))
             result = m_container[b].bus();
 
         return result;

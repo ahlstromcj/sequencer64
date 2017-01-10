@@ -38,6 +38,7 @@
 #include "globals.h"
 #include "calculations.hpp"             /* clock_ticks_from_ppqn()          */
 #include "event.hpp"                    /* seq64::event (MIDI event)        */
+#include "midibus_rm.hpp"               /* seq64::midibus for rtmidi        */
 #include "midi_alsa.hpp"                /* seq64::midi_alsa for ALSA        */
 #include "midi_info.hpp"                /* seq64::midi_info                 */
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
@@ -74,9 +75,13 @@ namespace seq64
  *      labelling.  It is an index into master-info container. Starts from 0.
  */
 
-midi_alsa::midi_alsa ( midi_info & masterinfo, int index)
- :
-    midi_api            (masterinfo, index),
+midi_alsa::midi_alsa
+(
+    midibus & parentbus,
+    midi_info & masterinfo,
+    int index
+) :
+    midi_api            (parentbus, masterinfo, index),
     m_seq
     (
         reinterpret_cast<snd_seq_t *>(masterinfo.midi_handle())
@@ -247,8 +252,9 @@ midi_alsa::set_virtual_name (int portid, const std::string & portname)
             pname += std::to_string(portid);
             port_name(pname);
             set_bus_id(cid);
-            bus_name(clientname);
+//          bus_name(clientname);           // done in set_name()
             set_name(SEQ64_APP_NAME, clientname, pname);
+            parent_bus().set_name(SEQ64_APP_NAME, clientname, pname);
         }
     }
     return result;
@@ -664,9 +670,13 @@ midi_alsa::remove_queued_on_events (int tag)
  *  calls.
  */
 
-midi_in_alsa::midi_in_alsa (midi_info & masterinfo, int index)
- :
-    midi_alsa   (masterinfo, index)
+midi_in_alsa::midi_in_alsa
+(
+    midibus & parentbus,
+    midi_info & masterinfo,
+    int index
+) :
+    midi_alsa   (parentbus, masterinfo, index)
 {
     // Empty body
 }
@@ -677,9 +687,13 @@ midi_in_alsa::midi_in_alsa (midi_info & masterinfo, int index)
  *  calls.
  */
 
-midi_out_alsa::midi_out_alsa (midi_info & masterinfo, int index)
- :
-    midi_alsa   (masterinfo, index)
+midi_out_alsa::midi_out_alsa
+(
+    midibus & parentbus,
+    midi_info & masterinfo,
+    int index
+) :
+    midi_alsa   (parentbus, masterinfo, index)
 {
     // Empty body
 }

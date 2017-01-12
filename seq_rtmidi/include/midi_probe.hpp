@@ -8,12 +8,14 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-19
- * \updates       2016-11-26
+ * \updates       2017-01-11
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  */
 
 #include <string>
+
+#include "rtmidi_info.hpp"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -24,6 +26,7 @@ namespace seq64
 
 extern std::string midi_api_name (int i);
 extern int midi_probe ();
+extern bool midi_input_test (rtmidi_info & info, int portindex);
 
 }           // namespace seq64
 

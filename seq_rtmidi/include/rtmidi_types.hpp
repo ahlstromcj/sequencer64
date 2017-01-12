@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2016-12-28
+ * \updates       2017-01-11
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -112,6 +112,13 @@ class midi_message
 
 public:
 
+    /**
+     *  Holds the data of the MIDI message.  Callers should use
+     *  midi_message::container rather than using the vector directly.
+     *  Bytes are added by the push() function, and are safely accessed
+     *  (with bounds-checking) by operator [].
+     */
+
     typedef std::vector<midibyte> container;
 
 private:
@@ -137,6 +144,26 @@ public:
         return (i >= 0 && i < int(m_bytes.size())) ? m_bytes[i] : 0 ;
     }
 
+    midibyte & at (int i)
+    {
+        return m_bytes.at(i);       /* can throw an exception */
+    }
+
+    const midibyte & at (int i) const
+    {
+        return m_bytes.at(i);       /* can throw an exception */
+    }
+
+    int count () const
+    {
+        return int(m_bytes.size());
+    }
+
+    bool empty () const
+    {
+        return m_bytes.empty();
+    }
+
     void push (midibyte b)
     {
         m_bytes.push_back(b);
@@ -156,7 +183,9 @@ public:
 
 /**
  *  MIDI caller callback function type definition.  Used to be nested in the
- *  rtmidi_in class.
+ *  rtmidi_in class.  The timestamp parameter has been folded into the
+ *  midi_message class (a wrapper for std::vector<unsigned char>), and the
+ *  pointer has been replaced by a reference.
  */
 
 typedef void (* rtmidi_callback_t)
@@ -380,10 +409,21 @@ public:
         m_user_data = dataptr;
     }
 
+    /**
+     * \getter m_user_callback
+     */
+
     rtmidi_callback_t user_callback () const
     {
         return m_user_callback;
     }
+
+    /**
+     * \setter m_user_callback
+     *      This should be done immediately after opening the port to avoid
+     *      having incoming messages written to the queue instead of sent to
+     *      the callback function.
+     */
 
     void user_callback (rtmidi_callback_t cbptr)
     {

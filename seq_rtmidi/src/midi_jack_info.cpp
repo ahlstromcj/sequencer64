@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-07
+ * \updates       2017-01-11
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -64,14 +64,18 @@ midi_jack_info::midi_jack_info
 }
 
 /**
- *  Destructor.  Closes a connection if it exists, shuts down the input
+ *  Destructor.  Deactivates (disconnects and closes) any ports maintained by
+ *  the JACK client, then closes the JACK client, shuts down the input
  *  thread, and then cleans up any API resources in use.
  */
 
 midi_jack_info::~midi_jack_info ()
 {
     if (not_nullptr(m_jack_client))
+    {
+        jack_deactivate(m_jack_client);
         jack_client_close(m_jack_client);
+    }
 }
 
 /**
@@ -104,11 +108,6 @@ midi_jack_info::connect ()
         {
             m_jack_client = result;
             jack_set_process_callback(result, jack_process_dummy, &m_jack_data);
-
-            /*
-             * COMMENTED OUT AS AN EXPERIMENT
-             */
-
             jack_activate(result);
         }
         else
@@ -298,8 +297,6 @@ void
 midi_jack_info::api_set_ppqn (int p)
 {
     midi_info::api_set_ppqn(p);
-
-    int queue = global_queue();
 }
 
 /**
@@ -314,8 +311,6 @@ void
 midi_jack_info::api_set_beats_per_minute (int b)
 {
     midi_info::api_set_beats_per_minute(b);
-
-    int queue = global_queue();
 }
 
 /**

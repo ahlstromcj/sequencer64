@@ -1,12 +1,12 @@
 /**
  * \file          midi_probe.cpp
  *
- *  A function to check MIDI inputs and outputs, based on the RtMidi test
- *  program midiprobe.cpp.
+ *  Functions to check MIDI inputs and outputs, based on the RtMidi test
+ *  programs.
  *
  * \author        Gary P. Scavone, 2003-2012; refactoring by Chris Ahlstrom
  * \date          2016-11-19
- * \updates       2017-01-09
+ * \updates       2017-01-11
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  We include this test code in our library, rather than in a separate
@@ -22,7 +22,6 @@
 #include "midi_probe.hpp"
 #include "midibus_rm.hpp"
 #include "rtmidi.hpp"                   /* rtmidi_in and rt_midi_out */
-#include "rtmidi_info.hpp"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -77,8 +76,9 @@ midi_api_name (int i)
 
 /**
  *  Formerly the main program of the RtMidi test program midiprobe.
- *
  *  We will upgrade this function for some better testing eventually.
+ *  It uses the functionality of the midi_info/rtmidi_info objects, plus
+ *  its own version of some of that functionality.
  *
  * \return
  *      Currently always returns 0.
@@ -99,13 +99,8 @@ midi_probe ()
 
     try                         /* rtmidi constructors; exceptions possible */
     {
-        rtmidi_info info;
-
-        /*
-         * We sactually need to get this object in the loop!
-         */
-
-        rtmidi_in midiin(s_midibus_dummy, info);
+        rtmidi_info dummyinfo;
+        rtmidi_in midiin(s_midibus_dummy, dummyinfo);
         std::cout
             << "MIDI Input/Output API: "
             << midi_api_name(rtmidi_info::selected_api())
@@ -123,10 +118,10 @@ midi_probe ()
         }
 
         /*
-         * We sactually need to get this object in the loop!
+         * We actually need to get this object in the loop!
          */
 
-        rtmidi_out midiout(s_midibus_dummy, info);
+        rtmidi_out midiout(s_midibus_dummy, dummyinfo);
         std::cout << std::endl;
 
         nports = midiout.get_port_count();
@@ -145,6 +140,56 @@ midi_probe ()
         error.print_message();
     }
     return 0;
+}
+
+/**
+ *  Provides the callback for midi_input_test().
+ */
+
+static void
+midi_input_callback (midi_message & message, void * /*userdata*/)
+{
+    if (! message.empty())
+    {
+        std::cout
+            << "Message (" << message.count() << " bytes, "
+            << "delta = " << message.timestamp() << "):"
+            << std::endl
+            ;
+        for (int i = 0; i < message.count(); ++i)
+        {
+            std::cout << "  byte[" << i << "] = " << int(message[i]) << "; ";
+        }
+    }
+}
+
+/**
+ *  Provides testing the MIDI input process for 10 seconds.
+ */
+
+bool
+midi_input_test (rtmidi_info & info, int portindex)
+{
+    bool result = false;
+    try
+    {
+        static midibus s_midibus_dummy(info, "dummy", portindex);
+        rtmidi_in midiin(s_midibus_dummy, info);
+        midiin.user_callback(midi_input_callback);
+//      midiin.ignore_types(false, false, false); // sysex, timing, active sensing
+
+        result = true;
+        if (result)
+        {
+            std::cout << "You have 10 seconds to play some MIDI" << std::endl;
+            millisleep(10000);
+        }
+    }
+    catch (rterror & e)
+    {
+        e.print_message();
+    }
+    return result;
 }
 
 }           // namespace seq64

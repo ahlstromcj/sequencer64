@@ -153,6 +153,10 @@ protected:
 class midi_in_api : public midi_api
 {
 
+protected:
+
+    rtmidi_in_data m_input_data;
+
 public:
 
     midi_in_api
@@ -162,6 +166,13 @@ public:
         int index = SEQ64_NO_INDEX
     );
     virtual ~midi_in_api ();
+
+//  virtual void ignore_types (bool midisysex, bool miditime, bool midisense);
+//  virtual bool poll_queue () const;
+//  double get_message (std::vector<midibyte> & message);
+
+    void user_callback (rtmidi_callback_t callback, void * userdata);
+    void cancel_callback ();
 
 };          // class midi_in_api
 

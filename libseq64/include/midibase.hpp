@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2017-01-09
+ * \updates       2017-01-11
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -250,6 +250,24 @@ public:
     int get_port_id () const
     {
         return m_port_id;
+    }
+
+    /**
+     * \getter  m_ppqn;
+     */
+
+    int ppqn () const
+    {
+        return m_ppqn;
+    }
+
+    /**
+     * \getter  m_bpm;
+     */
+
+    int bpm () const
+    {
+        return m_bpm;
     }
 
     /**

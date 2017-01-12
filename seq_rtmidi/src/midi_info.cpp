@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2017-01-09
+ * \updates       2017-01-12
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
@@ -150,14 +150,20 @@ midi_info::error (rterror::Type type, const std::string & errorstring)
     }
     else if (type == rterror::DEBUG_WARNING)
     {
-#ifdef SEQ64_USE_DEBUG_OUTPUT
+#ifdef PLATFORM_DEBUG                       // SEQ64_USE_DEBUG_OUTPUT
         errprint(errorstring.c_str());
 #endif
     }
     else
     {
         errprint(errorstring.c_str());
-        throw rterror(errorstring, type);
+
+        /*
+         * Not a big fan of throwing errors, especially since we currently log
+         * errors in rtmidi to the console.  Might make this a build option.
+         *
+         * throw rterror(errorstring, type);
+         */
     }
 }
 

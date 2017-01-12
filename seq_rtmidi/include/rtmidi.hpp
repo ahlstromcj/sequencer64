@@ -296,6 +296,39 @@ public:
 
     virtual ~rtmidi_in ();
 
+    /**
+     *  Set a callback function to be invoked for incoming MIDI messages.
+     *
+     *  The callback function will be called whenever an incoming MIDI
+     *  message is received.  While not absolutely necessary, it is best
+     *  to set the callback function before opening a MIDI port to avoid
+     *  leaving some messages in the queue.
+     *
+     * \param callback
+     *      A callback function must be given.
+     *
+     * \param userdata
+     *      Optionally, a pointer to additional data can be passed to the
+     *      callback function whenever it is called.
+     */
+
+    void user_callback (rtmidi_callback_t callback, void * userdata = nullptr)
+    {
+       dynamic_cast<midi_in_api *>(get_api())->user_callback(callback, userdata);
+    }
+
+    /**
+     *  Cancel use of the current callback function (if one exists).
+     *
+     *  Subsequent incoming MIDI messages will be written to the queue
+     *  and can be retrieved with the \e get_message function.
+     */
+
+    void cancel_callback ()
+    {
+       dynamic_cast<midi_in_api *>(get_api())->cancel_callback();
+    }
+
 protected:
 
     void openmidi_api

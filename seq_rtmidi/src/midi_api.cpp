@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-09
+ * \updates       2017-01-12
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring...
@@ -106,14 +106,20 @@ midi_api::error (rterror::Type type, const std::string & errorstring)
     }
     else if (type == rterror::DEBUG_WARNING)
     {
-#ifdef SEQ64_USE_DEBUG_OUTPUT
+#ifdef PLATFORM_DEBUG                       // SEQ64_USE_DEBUG_OUTPUT
         errprint(errorstring.c_str());
 #endif
     }
     else
     {
         errprint(errorstring.c_str());
-        throw rterror(errorstring, type);
+
+        /*
+         * Not a big fan of throwing errors, especially since we currently log
+         * errors in rtmidi to the console.  Might make this a build option.
+         *
+         * throw rterror(errorstring, type);
+         */
     }
 }
 
@@ -145,7 +151,8 @@ midi_in_api::midi_in_api
     midi_info & masterinfo,
     int index
 ) :
-    midi_api    (parentbus, masterinfo, index)
+    midi_api        (parentbus, masterinfo, index),
+    m_input_data    ()
 {
     // any code?
 }
@@ -159,6 +166,60 @@ midi_in_api::midi_in_api
 midi_in_api::~midi_in_api ()
 {
     // any code?
+}
+
+/**
+ *  Wires in a MIDI input callback function.
+ *
+ * \param callback
+ *      Provides the callback function.
+ *
+ * \param userdata
+ *      Provides the user data needed by the callback function.
+ */
+
+void
+midi_in_api::user_callback
+(
+    rtmidi_callback_t callback,
+    void * userdata
+)
+{
+    if (m_input_data.using_callback())
+    {
+        m_error_string = func_message("callback function is already set");
+        error(rterror::WARNING, m_error_string);
+        return;
+    }
+    if (is_nullptr(callback))
+    {
+        m_error_string = func_message("callback function is null");
+        error(rterror::WARNING, m_error_string);
+        return;
+    }
+    m_input_data.user_callback(callback);
+    m_input_data.user_data(userdata);
+    m_input_data.using_callback(true);
+}
+
+/**
+ *  Removes the MIDI input callback and some items related to it.
+ */
+
+void
+midi_in_api::cancel_callback ()
+{
+    if (m_input_data.using_callback())
+    {
+        m_input_data.user_callback(nullptr);
+        m_input_data.user_data(nullptr);
+        m_input_data.using_callback(false);
+    }
+    else
+    {
+        m_error_string = func_message("no callback function was set");
+        error(rterror::WARNING, m_error_string);
+    }
 }
 
 /*

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-10
+ * \updates       2017-01-12
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -15,7 +15,8 @@
  *  opened directly by the application, to the Sequencer64 midibus model,
  *  where the port object is created, but initialized after creation.  This
  *  proved very challenging -- it took a long time to get the midi_alsa
- *  implementation working.
+ *  implementation working, and still more time to get the midi_jack
+ *  implementation solid.
  *
  *  There is an additional issue with JACK ports.  First, think of our ALSA
  *  implementation.  We have two modes:  manual (virtual) and real (normal)
@@ -31,6 +32,18 @@
  *  automatically to whatever is already present.  Currently, though, new
  *  devices that appear in the system won't be accessible until a restart.
  *
+ * Random JACK notes:
+ *
+ *      jack_activate() tells the JACK server that the program is ready to
+ *      process JACK events.  jack_deactivate() removes the JACK client from
+ *      the process graph and disconnects all ports belonging to it.
+ *
+ * Callbacks:
+ *
+ *      The input JACK callback can call an rtmidi input callback of the form
+ *      void callback (double delta, midi_message::container *, void *
+ *      userdata).  This callback is wired in by calling rtmidi_in_data ::
+ *      user_callback().
  */
 
 #include <sstream>
@@ -57,13 +70,28 @@ namespace seq64
 #define JACK_RINGBUFFER_SIZE 16384      /* default size for ringbuffer  */
 
 /**
- *    Provides the JACK process input callback.
+ *  Provides the JACK process input callback.  This function does the
+ *  following:
+ *
+ *      -# Get the JACK port buffer and the MIDI event-count into this buffer.
+ *      -# For each MIDI event, get the event from JACK and push it into a local
+ *        midi_message object.
+ *      -# Get the event time, converting it to a delta time if possible.
+ *      -# If it is not a SysEx continuation, then:
+ *         -# If we're using a callback, pass the data to that callback.  Do
+ *            we need this callback to interface with the midibus-based code?
+ *         -# Otherwise, add the midi_message container to the rtmidi input
+ *            queue.  One can then grab this data in a midibase ::
+ *            poll_for_midi() call.  We still ought to check the add success.
+ *
+ *  The ALSA code polls for events, and that model is also available here.
+ *  We're still working exactly how it will work best.
  *
  * \param nframes
  *    The frame number to be processed.
  *
  * \param arg
- *    A pointer to the JackMIDIData structure to be processed.
+ *    A pointer to the midi_jack_data structure to be processed.
  *
  * \return
  *    Returns 0.
@@ -74,23 +102,19 @@ jack_process_input (jack_nframes_t nframes, void * arg)
 {
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
     rtmidi_in_data * rtindata = jackdata->m_jack_rtmidiin;
-    jack_midi_event_t event;
-    jack_time_t time;
     if (jackdata->m_jack_port == NULL)      /* is port created?        */
        return 0;
 
-    /*
-     * We have MIDI events in the buffer.
-     */
-
+    jack_midi_event_t jmevent;
+    jack_time_t time;
     void * buff = jack_port_get_buffer(jackdata->m_jack_port, nframes);
     int evcount = jack_midi_get_event_count(buff);
     for (int j = 0; j < evcount; ++j)
     {
         midi_message message;
-        jack_midi_event_get(&event, buff, j);
-        for (int i = 0; i < event.size; ++i)
-            message.push(event.buffer[i]);
+        jack_midi_event_get(&jmevent, buff, j);
+        for (int i = 0; i < int(jmevent.size); ++i)
+            message.push(jmevent.buffer[i]);
 
         time = jack_get_time();              /* compute the delta time  */
         if (rtindata->first_message())
@@ -101,11 +125,6 @@ jack_process_input (jack_nframes_t nframes, void * arg)
         jackdata->m_jack_lasttime = time;
         if (! rtindata->continue_sysex())
         {
-            /*
-             * We probably need this callback to interface with the
-             * midibus-based code.
-             */
-
             if (rtindata->using_callback())
             {
                 rtmidi_callback_t callback = rtindata->user_callback();
@@ -113,12 +132,7 @@ jack_process_input (jack_nframes_t nframes, void * arg)
             }
             else
             {
-                /*
-                 * As long as we haven't reached our queue size limit, push
-                 * the message.
-                 */
-
-                (void) rtindata->queue().add(message);
+                (void) rtindata->queue().add(message);      // NEED TO CHECK
             }
         }
     }
@@ -126,7 +140,13 @@ jack_process_input (jack_nframes_t nframes, void * arg)
 }
 
 /**
- *  Defines the JACK output process callback.
+ *  Defines the JACK output process callback.  It does the following:
+ *
+ *      -# Get the JACK port buffer, clear it, and loop while the number of
+ *         bytes available for reading [via jack_ringbuffer_read_space()].
+ *      -# Get the size of each event, and allocate space for an event to be
+ *         written to an event port buffer (the JACK "reserve" function).
+ *      -# Read the data into this buffer.
  *
  * \param nframes
  *    The frame number to be processed.
@@ -191,7 +211,8 @@ midi_jack::midi_jack
 
 midi_jack::~midi_jack ()
 {
-    close_port();
+    //// DOES THIS CAUSE A SEGFAULT (manual mode)?
+    //// close_port();
     close_client();
     if (not_nullptr(m_jack_data.m_jack_buffsize))
         jack_ringbuffer_free(m_jack_data.m_jack_buffsize);
@@ -227,7 +248,6 @@ midi_jack::api_init_out ()
     is_virtual_port(false);
     master_midi_mode(SEQ64_MIDI_OUTPUT);
 
-    int portid = master_info().get_port_id(get_bus_index());
     std::string sourceportname = api_get_port_name();
     std::string destportname = master_info().get_port_name(get_bus_index());
     bool result = connect_port(SEQ64_MIDI_OUTPUT, destportname, sourceportname);
@@ -256,7 +276,6 @@ midi_jack::api_init_in ()
     is_virtual_port(false);
     master_midi_mode(SEQ64_MIDI_INPUT);
 
-    int portid = master_info().get_port_id(get_bus_index());
     std::string sourceportname = api_get_port_name();
     std::string destportname = master_info().get_port_name(get_bus_index());
     bool result = connect_port(SEQ64_MIDI_INPUT, destportname, sourceportname);
@@ -313,9 +332,8 @@ midi_jack::set_virtual_name (int portid, const std::string & portname)
 }
 
 /*
- *
  *  This initialization is like the "open_virtual_port()" function of the
- *  RtMidi library...
+ *  RtMidi library.  However, unlike the ALSA case...
  */
 
 bool
@@ -325,12 +343,26 @@ midi_jack::api_init_out_sub ()
     master_midi_mode(SEQ64_MIDI_OUTPUT);
 
     int portid = master_info().get_port_id(get_bus_index());
-    std::string portname = master_info().get_port_name(get_bus_index());
-    bool result = register_port(SEQ64_MIDI_OUTPUT, portname);
+    bool result = portid >= 0;
+    if (! result)
+    {
+        portid = get_bus_index();
+        result = portid >= 0;
+    }
     if (result)
     {
-        set_virtual_name(portid, portname);
-        set_port_open();
+        std::string portname = master_info().get_port_name(get_bus_index());
+        if (portname.empty())
+        {
+            portname = "port ";
+            portname += std::to_string(portid);
+        }
+        result = register_port(SEQ64_MIDI_OUTPUT, portname);
+        if (result)
+        {
+            set_virtual_name(portid, portname);
+            set_port_open();
+        }
     }
     return result;
 }
@@ -342,12 +374,26 @@ midi_jack::api_init_in_sub ()
     master_midi_mode(SEQ64_MIDI_INPUT);
 
     int portid = master_info().get_port_id(get_bus_index());
-    std::string portname = master_info().get_port_name(get_bus_index());
-    bool result = register_port(SEQ64_MIDI_INPUT, portname);
+    bool result = portid >= 0;
+    if (! result)
+    {
+        portid = get_bus_index();
+        result = portid >= 0;
+    }
     if (result)
     {
-        set_virtual_name(portid, portname);
-        set_port_open();
+        std::string portname = master_info().get_port_name(get_bus_index());
+        if (portname.empty())
+        {
+            portname = "port ";
+            portname += std::to_string(portid);
+        }
+        result = register_port(SEQ64_MIDI_INPUT, portname);
+        if (result)
+        {
+            set_virtual_name(portid, portname);
+            set_port_open();
+        }
     }
     return result;
 }
@@ -367,7 +413,8 @@ midi_jack::api_deinit_in ()
  *  We could push the bytes of the event into a midibyte vector, as done in
  *  send_message().  The ALSA code (seq_alsamidi/src/midibus.cpp) sticks the
  *  event bytes in an array, which might be a little faster than using
- *  push_back(), but let's try the vector first.
+ *  push_back(), but let's try the vector first.  The rtmidi code here is from
+ *  midi_out_jack::send_message().
  */
 
 void
@@ -397,44 +444,89 @@ midi_jack::api_play (event * e24, midibyte channel)
     }
 }
 
+/**
+ * \todo
+ *      Flesh out this routine.
+ */
+
 void
-midi_jack::api_sysex (event * e24)
+midi_jack::api_sysex (event * /* e24 */)
 {
+    // Will put this one off until later....
 }
+
+/**
+ *  It seems like JACK doesn't have the concept of flushing event.
+ */
 
 void
 midi_jack::api_flush ()
 {
+    // No code needed
 }
 
+/**
+ *  jack_transport_locate(), jack_transport_reposition(), or something else?
+ *
+ *  What is used by jack_assistant?
+ */
+
 void
-midi_jack::api_continue_from (midipulse tick, midipulse beats)
+midi_jack::api_continue_from (midipulse tick, midipulse /*beats*/)
 {
+    int beat_width = 4;                                 // no m_beat_width !!!
+    int ticks_per_beat = ppqn() * 10;
+    int beats_per_minute = bpm();
+    uint64_t tick_rate =
+    (
+        uint64_t(jack_get_sample_rate(client_handle())) * tick * 60.0
+    );
+    long tpb_bpm = ticks_per_beat * beats_per_minute * 4.0 / beat_width;
+    uint64_t jack_frame = tick_rate / tpb_bpm;
+    if (jack_transport_locate(client_handle(), jack_frame) != 0)
+        (void) info_message("jack api_continue_from() failed");
 }
+
+/**
+ * Starts this JACK client.   Note that the jack_assistant code (which
+ * implements JACK transport) checks if JACK is running, but a check of the
+ * JACK client handle here should be enough.
+ */
 
 void
 midi_jack::api_start ()
 {
+    jack_transport_start(client_handle());
 }
+
+/**
+ * Starts this JACK client.   Note that the jack_assistant code (which
+ * implements JACK transport) checks if JACK is running, but a check of the
+ * JACK client handle here should be enough.
+ */
 
 void
 midi_jack::api_stop ()
 {
+    jack_transport_stop(client_handle());
 }
 
 void
-midi_jack::api_clock (midipulse tick)
+midi_jack::api_clock (midipulse /*tick*/)
 {
+    // No code needed yet
 }
 
 void
-midi_jack::api_set_ppqn (int ppqn)
+midi_jack::api_set_ppqn (int /*ppqn*/)
 {
+    // No code needed yet
 }
 
 void
-midi_jack::api_set_beats_per_minute (int bpm)
+midi_jack::api_set_beats_per_minute (int /*bpm*/)
 {
+    // No code needed yet
 }
 
 /**
@@ -783,12 +875,13 @@ midi_in_jack::midi_in_jack
 }
 
 /**
- *  Destructor.  Closes the port, closes the JACK client, and cleans up the
- *  API data structure.
+ *  Destructor.  Currently the base class closes the port, closes the JACK
+ *  client, and cleans up the API data structure.
  */
 
 midi_in_jack::~midi_in_jack()
 {
+    // No code yet
 }
 
 /**
@@ -935,11 +1028,13 @@ midi_out_jack::midi_out_jack
 }
 
 /**
- *  The destructor closes the port and cleans out the API data structure.
+ *  Destructor.  Currently the base class closes the port, closes the JACK
+ *  client, and cleans up the API data structure.
  */
 
 midi_out_jack::~midi_out_jack ()
 {
+    // No code yet
 }
 
 /**

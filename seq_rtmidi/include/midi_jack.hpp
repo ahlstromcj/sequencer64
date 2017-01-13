@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-10
+ * \updates       2017-01-13
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring...
@@ -36,12 +36,21 @@ class midi_jack : public midi_api
 
 private:
 
+    /**
+     *  Set to true if each JACK port should be its own client.  In this case,
+     *  the functions api_init_in(), api_init_out(), api_init_in_sub(), and
+     *  api_init_out_sub() need to open their own JACK client.  Otherwise,
+     *  they will use the JACK client created in the midi_jack_info class.
+     */
+
+    bool m_multi_client;
+
 protected:
 
     /**
      *  Holds the data needed for JACK processing.  Please do not confuse this
-     *  item with the m_midi_handle of the midi_api base class.
-     *  This object holds a JACK-client pointer and a JACK-port pointer.
+     *  item with the m_midi_handle of the midi_api base class.  This object
+     *  holds a JACK-client pointer and a JACK-port pointer.
      */
 
     midi_jack_data m_jack_data;
@@ -55,6 +64,15 @@ public:
         int index = SEQ64_NO_INDEX
     );
     virtual ~midi_jack ();
+
+    /**
+     * \getter m_multi_client
+     */
+
+    bool multi_client () const
+    {
+        return m_multi_client;
+    }
 
     /**
      * \getter m_jack_client
@@ -88,7 +106,7 @@ protected:
         m_jack_data.m_jack_port = handle;
     }
 
-    bool open_client_impl (bool input); // implements "connect()"
+    bool open_client_impl (bool input);     /* implements "connect()"   */
     void close_client ();
     void close_port ();
     bool connect_port
@@ -169,12 +187,18 @@ public:
 
 private:
 
-    /* virtual */ bool initialize (const std::string & clientname);
+    /**
+     *  This function is virtual, so we don't call it in the constructor,
+     *  using open_client_impl() directly instead.  This function replaces the
+     *  RtMidi function "connect()".
+     */
 
-    virtual bool open_client ()     // replaces "connect()"
+    virtual bool open_client ()
     {
         return open_client_impl(SEQ64_MIDI_INPUT);
     }
+
+    bool initialize (const std::string & clientname);
 
 };          // midi_in_jack
 
@@ -226,12 +250,18 @@ public:
 
 private:
 
-    /* virtual */ bool initialize (const std::string & clientname);
+    /**
+     *  This function is virtual, so we don't call it in the constructor,
+     *  using open_client_impl() directly instead.  This function replaces the
+     *  RtMidi function "connect()".
+     */
 
-    virtual bool open_client ()             // replaces "connect()"
+    virtual bool open_client ()
     {
         return open_client_impl(SEQ64_MIDI_OUTPUT);
     }
+
+    bool initialize (const std::string & clientname);
 
 };          // midi_out_jack
 

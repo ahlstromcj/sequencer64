@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2017-01-09
+ * \updates       2017-01-12
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -62,6 +62,17 @@ namespace seq64
  *      We need it to provide the single ALSA "handle" needed in the in
  *      Sequencer64 buss model, where the master MIDI buss provides it to be
  *      used by all the MIDI buss objects.
+ *
+ * \param appname
+ *      The application name needed to construct a good bus/port name.
+ *
+ * \param index
+ *      This is the index into the rtmidi object, and is used to get the
+ *      desired client and port information.  It is an index into the
+ *      info container held by the rtmidi object.
+ *
+ * \param bus_id
+ *      Optional buss ID, if not equal to the index parameter.
  */
 
 midibus::midibus
@@ -102,9 +113,6 @@ midibus::midibus
  *      We need it to provide the single ALSA "handle" needed in the in
  *      Sequencer64 buss model, where the master MIDI buss provides it to be
  *      used by all the MIDI buss objects.
- *
- * \param appname
- *      This is the name of the client, which is the application name
  *      ("seq64rtmidi").  We still have confusion over the meaning of
  *      "client" and "buss", which we hope to clear up eventually.
  *

@@ -108,6 +108,15 @@ mastermidibus::api_init (int ppqn, int bpm)
     {
         m_midi_scratch.clear();
 
+#ifdef PLATFORM_DEBUG
+        std::string plist = m_midi_scratch.port_list();
+        printf
+        (
+            "%d virtual ports created:\n%s\n",
+            m_midi_scratch.full_port_count(), plist.c_str()
+        );
+#endif
+
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
         for (int i = 0; i < num_buses; ++i)             /* output busses    */
         {
@@ -132,21 +141,15 @@ mastermidibus::api_init (int ppqn, int bpm)
         );
         m_inbus_array.add(m, true, true);               /* input & virtual  */
         m_midi_scratch.add_input(m);                    /* must come 2nd    */
-#ifdef PLATFORM_DEBUG
-        std::string plist = m_midi_scratch.port_list();
-        printf
-        (
-            "%d virtual ports created:\n%s\n",
-            m_midi_scratch.full_port_count(), plist.c_str()
-        );
-#endif
     }
     else
     {
         /*
          * Hmmmm, this call is already made in the rtmidi_info constructor.
          * In any case, we want to make port connections.  These may be
-         * input/output backwards for JACK, we're still learning.
+         * input/output backwards for JACK, we're still learning.  For each
+         * input port that midi_jack_info finds, we want to make a
+         * corresponding output port with a similar name.  And vice versa.
          */
 
         unsigned nports = m_midi_scratch.get_all_port_info();
@@ -165,7 +168,8 @@ mastermidibus::api_init (int ppqn, int bpm)
             for (unsigned i = 0; i < inports; ++i)
             {
                 midibus * m = new midibus(m_midi_scratch, i);
-                m_inbus_array.add(m, true, false);        /* input, nonvirt */
+                m_inbus_array.add(m, true, false);      /* input, nonvirt  */
+//              m_outbus_array.add(m, false, false);    /* output, nonvirt */
             }
 
             m_midi_scratch.midi_mode(SEQ64_MIDI_OUTPUT);
@@ -173,7 +177,8 @@ mastermidibus::api_init (int ppqn, int bpm)
             for (unsigned i = 0; i < outports; ++i)
             {
                 midibus * m = new midibus(m_midi_scratch, i);
-                m_outbus_array.add(m, false, false);     /* output, nonvirt */
+                m_outbus_array.add(m, false, false);    /* output, nonvirt */
+//              m_inbus_array.add(m, true, false);      /* input, nonvirt  */
             }
         }
     }

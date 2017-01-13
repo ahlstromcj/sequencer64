@@ -8,7 +8,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-07
+ * \updates       2017-01-13
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the JACK information of
@@ -40,6 +40,17 @@ class midi_jack_info : public midi_info
 private:
 
     /**
+     *  Set to true if each JACK port should be its own client.  In this case,
+     *  the functions api_init_in(), api_init_out(), api_init_in_sub(), and
+     *  api_init_out_sub() need to open their own JACK client.  Otherwise,
+     *  they will use the JACK client created here.  And this class will have
+     *  to close out its own client so it will not persist in the JACK
+     *  client list (e.g. in QJackCtl).
+     */
+
+    bool m_multi_client;
+
+    /**
      *  Holds the data needed for JACK processing.  Please do not confuse this
      *  item with m_jack_client or the m_midi_handle of the base class.
      *  However, this object does hold a copy of the m_jack_client pointer.
@@ -68,6 +79,15 @@ public:
     virtual ~midi_jack_info ();
 
     /**
+     * \getter m_multi_client
+     */
+
+    bool multi_client () const
+    {
+        return m_multi_client;
+    }
+
+    /**
      * \getter m_jack_client
      *      This is the platform-specific version of midi_handle().
      */
@@ -87,7 +107,18 @@ private:
 
     virtual int get_all_port_info ();
 
+    /**
+     * \getter m_jack_client
+     *      This is the platform-specific version of midi_handle().
+     */
+
+    void client_handle (jack_client_t * j)
+    {
+        m_jack_client = j;
+    }
+
     jack_client_t * connect ();
+    void disconnect ();
     void extract_names
     (
         const std::string & fullname,

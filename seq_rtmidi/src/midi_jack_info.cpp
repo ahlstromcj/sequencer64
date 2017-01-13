@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-11
+ * \updates       2017-01-13
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -33,11 +33,17 @@ namespace seq64
 /**
  *  Principal constructor.
  *
- * \param clientname
- *      Provides the name of the MIDI input port.
+ *  Note the m_multi_client member.  We may want each JACK port to have its
+ *  own client, as in the original RtMidi implementation.
  *
- * \param queuesize
- *      Provides the upper limit of the queue size.
+ * \param appname
+ *      Provides the name of the application.
+ *
+ * \param ppqn
+ *      Provides the desired value of the PPQN (pulses per quarter note).
+ *
+ * \param bpm
+ *      Provides the desired value of the BPM (beats per minute).
  */
 
 midi_jack_info::midi_jack_info
@@ -47,19 +53,16 @@ midi_jack_info::midi_jack_info
     int bpm
 ) :
     midi_info               (appname, ppqn, bpm),
+    m_multi_client          (false),
     m_jack_data             (),
     m_jack_client           (connect())
 {
     silence_jack_info();
-    if (not_nullptr(m_jack_client))
+    if (not_nullptr(m_jack_client))                 /* created by connect() */
     {
-        /*
-         * Save the JACK "handle".  Set the client's name for JACK.  Then set
-         * up the JACK client queue.
-         */
-
-        midi_handle(m_jack_client);
-        m_jack_data.m_jack_client = m_jack_client;
+        midi_handle(m_jack_client);                 /* void version         */
+        client_handle(m_jack_client);               /* jack version         */
+        m_jack_data.m_jack_client = m_jack_client;  /* port version         */
     }
 }
 
@@ -71,11 +74,7 @@ midi_jack_info::midi_jack_info
 
 midi_jack_info::~midi_jack_info ()
 {
-    if (not_nullptr(m_jack_client))
-    {
-        jack_deactivate(m_jack_client);
-        jack_client_close(m_jack_client);
-    }
+    disconnect();
 }
 
 /**
@@ -94,7 +93,11 @@ jack_process_dummy (jack_nframes_t nframes, void * arg)
 }
 
 /**
- *  Local JACK connection for enumerating the ports.
+ *  Local JACK connection for enumerating the ports.  Note that this name will
+ *  be used for normal ports, so we make sure it reflects the application
+ *  name.
+ *
+ *  Note that this function does not call jack_connect().
  */
 
 jack_client_t *
@@ -103,7 +106,11 @@ midi_jack_info::connect ()
     jack_client_t * result = m_jack_client;
     if (is_nullptr(result))
     {
-        result = jack_client_open("dummy", JackNoStartServer, NULL);
+        const char * clientname = SEQ64_APP_NAME;
+        if (multi_client())
+            clientname = "midi_jack_info";
+
+        result = jack_client_open(clientname, JackNoStartServer, NULL);
         if (not_nullptr(result))
         {
             m_jack_client = result;
@@ -117,6 +124,21 @@ midi_jack_info::connect ()
         }
     }
     return result;
+}
+
+/**
+ *  The opposite of connect().
+ */
+
+void
+midi_jack_info::disconnect ()
+{
+    if (not_nullptr(m_jack_client))
+    {
+        jack_deactivate(m_jack_client);
+        jack_client_close(m_jack_client);
+        m_jack_client = nullptr;
+    }
 }
 
 /**
@@ -153,6 +175,14 @@ midi_jack_info::extract_names
  *
  *  Don't forget about the usefulness of jack_get_port_by_id() and
  *  jack_get_port_by_name().
+ *
+ *  If in multi-client mode, then this function disconnects the JACK
+ *  client afterward. At this point, we have got all the data we need, and are
+ *  not providing a client to each JACK port we create.
+ *
+ *  Note that, at some pointer, we ought to consider how to deal with
+ *  transitory system JACK clients and ports, and adjust for it.  A kind of
+ *  miniature form of session management.
  *
  * \return
  *      Returns the total number of ports found.  Note that 0 ports is not
@@ -248,31 +278,11 @@ midi_jack_info::get_all_port_info ()
     else
         result = -1;
 
+    if (multi_client())
+        disconnect();
+
     return result;
 }
-
-#if USE_THIS_CODE
-
-/**
- *  Retrieves the number of JACK MIDI output (!) ports.  Note that this
- *  function gets the kind of port opposite its enclosing class.
- *
- * \return
- *      Returns the number of port counted in the output of the
- *      jack_get_ports() call.
- */
-
-int
-midi_jack_info::get_port_count ()
-{
-    int count = 0;
-//  connect();
-//  if (is_nullptr(m_jack_client))
-//      return 0;
-
-}
-
-#endif
 
 /**
  *  Flushes our local queue events out into JACK.  This is also a midi_jack
@@ -282,7 +292,7 @@ midi_jack_info::get_port_count ()
 void
 midi_jack_info::api_flush ()
 {
-    // snd_seq_drain_output(m_jack_seq);
+    // No code yet
 }
 
 /**
@@ -341,7 +351,7 @@ midi_jack_info::api_set_beats_per_minute (int b)
 void
 midi_jack_info::api_port_start (mastermidibus & masterbus, int bus, int port)
 {
-    if (1)
+    if (1)          /////////////////////////////
     {
         int bus_slot = masterbus.m_outbus_array.count();
         int test = masterbus.m_outbus_array.replacement_port(bus, port);
@@ -354,7 +364,7 @@ midi_jack_info::api_port_start (mastermidibus & masterbus, int bus, int port)
         );
         masterbus.m_outbus_array.add(m, false, false);  /* out, nonvirt */
     }
-    if (1)
+    if (1)          /////////////////////////////
     {
         int bus_slot = masterbus.m_inbus_array.count();
         int test = masterbus.m_inbus_array.replacement_port(bus, port);
@@ -385,42 +395,10 @@ midi_jack_info::api_get_midi_event (event * inev)
 
     if (! rc().manual_alsa_ports())
     {
-#if 0
-        switch (ev->type)
-        {
-        case SND_SEQ_EVENT_PORT_START:
-        {
-            /*
-            port_start(masterbus, ev->data.addr.client, ev->data.addr.port);
-             */
-
-            result = true;
-            break;
-        }
-        case SND_SEQ_EVENT_PORT_EXIT:
-        {
-            /*
-            port_exit(masterbus, ev->data.addr.client, ev->data.addr.port);
-             */
-
-            result = true;
-            break;
-        }
-        case SND_SEQ_EVENT_PORT_CHANGE:
-        {
-            result = true;
-            break;
-        }
-        default:
-            break;
-        }
-#endif
+        // to do?
     }
     if (result)
         return false;
-
-//  inev->set_timestamp(ev->time.tick);
-//  inev->set_status_keep_channel(buffer[0]);
 
     /**
      *  We will only get EVENT_SYSEX on the first packet of MIDI data;
@@ -459,14 +437,8 @@ midi_jack_info::api_get_midi_event (event * inev)
 
     while (sysex)       /* sysex messages might be more than one message */
     {
-//      snd_seq_event_input(m_jack_seq, &ev);
-//      long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
-//      if (bytes > 0)
-//          sysex = inev->append_sysex(buffer, bytes);
-//      else
-            sysex = false;
+        sysex = false;
     }
-//  snd_midi_event_free(midi_ev);
     return true;
 }
 
@@ -482,29 +454,28 @@ jack_message_bit_bucket (const char *)
 
 /**
  *  This function silences JACK error output to the console.  Probably not
- *  good to silence this output, but let's provide the option.
+ *  good to silence this output, but let's provide the option, for the sake of
+ *  symmetry, consistency, what have you.
  */
 
 void
 silence_jack_errors (bool silent)
 {
     if (silent)
-    {
         jack_set_error_function(jack_message_bit_bucket);
-    }
 }
 
 /**
- *  This function silences JACK info output to the console.
+ *  This function silences JACK info output to the console.  We were getting
+ *  way too many informational message, to the point of obscuring the debug
+ *  and error output.
  */
 
 void
 silence_jack_info (bool silent)
 {
     if (silent)
-    {
         jack_set_info_function(jack_message_bit_bucket);
-    }
 }
 
 }           // namespace seq64

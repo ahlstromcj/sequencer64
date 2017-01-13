@@ -95,7 +95,10 @@ businfo::businfo (midibus * bus, bool is_input, bool is_virtual)
             else
             {
                 /*
-                 * \note:  This call is commented out in seq64!
+                 * \note
+                 *      This call is commented out in seq64!  For non-virtual
+                 *      "input" ports, we probably want to create an output
+                 *      port to connect to the input port.  TO DO!
                  */
 
                 ok = m_bus->init_in();
@@ -106,7 +109,16 @@ businfo::businfo (midibus * bus, bool is_input, bool is_virtual)
             if (is_virtual)
                 ok = m_bus->init_out_sub();
             else
+            {
+                /*
+                 * \note
+                 *      This call is commented out in seq64!  For non-virtual
+                 *      "output" ports, we probably want to create an input
+                 *      port to connect to the output port.  TO DO!
+                 */
+
                 ok = m_bus->init_out();
+            }
         }
         if (ok)
             activate();

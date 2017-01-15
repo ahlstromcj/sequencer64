@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2016-08-24
+ * \updates       2017-01-14
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -437,6 +437,13 @@ measures_to_ticks (int bpm, int ppqn, int bw, int measures = 1)
 }
 
 extern double wave_func (double angle, wave_type_t wavetype);
+
+extern bool extract_port_names
+(
+    const std::string & fullname,
+    std::string & clientname,
+    std::string & portname
+);
 
 }           // namespace seq64
 

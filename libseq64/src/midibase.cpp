@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2017-01-09
+ * \updates       2017-01-15
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -134,6 +134,10 @@ int midibase::m_clock_mod = 16 * 4;
  *      Defaults to false.  This could also be set via the init_in(),
  *      init_out(), init_in_sub(), or init_out_sub() routines.  Doing it here
  *      seems okay.
+ *
+ * \param isinput
+ *      Indicates that this midibus represents and input port, as opposed to
+ *      an output port.
  */
 
 midibase::midibase
@@ -147,7 +151,8 @@ midibase::midibase
     int queue,
     int ppqn,
     int bpm,
-    bool makevirtual
+    bool makevirtual,
+    bool isinput
 ) :
     m_bus_index         (index),
     m_bus_id            (bus_id),
@@ -161,6 +166,7 @@ midibase::midibase
     m_port_name         (portname),
     m_lasttick          (0),
     m_is_virtual_port   (makevirtual),
+    m_is_input_port     (isinput),
     m_mutex             ()
 {
     if (! makevirtual)
@@ -180,9 +186,12 @@ midibase::~midibase()
 }
 
 /**
- *  Sets the name of the buss.
+ *  Sets the name of the buss by assembling the name components obtained from
+ *  the system in a straightforward manner:
  *
- * \param clientname
+ *      [0] 128:2 seq64:seq64 port 2
+ *
+ * \param appname
  *      This is the name of the client, or application.  Not to be confused
  *      with the ALSA client-name, which is actually a buss or subsystem name.
  *
@@ -198,7 +207,7 @@ midibase::~midibase()
 void
 midibase::set_name
 (
-    const std::string & clientname,
+    const std::string & appname,
     const std::string & busname,
     const std::string & portname
 )
@@ -210,22 +219,23 @@ midibase::set_name
         (
             name, sizeof name, "[%d] %d:%d %s:%s",
             get_bus_index(), get_bus_id(), get_port_id(),
-            clientname.c_str(), portname.c_str()
+            appname.c_str(), portname.c_str()
         );
-        bus_name(clientname);
+        bus_name(appname);
         port_name(portname);
     }
     else
     {
         char alias[64];
-        const std::string & bussname = usr().bus_name(get_bus_id());
+        std::string bussname = usr().bus_name(get_bus_id()); // WHY usr()???
         if (! bussname.empty())
         {
             snprintf
             (
-                alias, sizeof alias, "%s %s",
+                alias, sizeof alias, "%s:%s",
                 bussname.c_str(), portname.c_str()
             );
+            bus_name(bussname);
         }
         else if (! busname.empty())
         {
@@ -233,6 +243,7 @@ midibase::set_name
             (
                 alias, sizeof alias, "%s:%s", busname.c_str(), portname.c_str()
             );
+            bus_name(busname);
         }
         else
         {
@@ -243,11 +254,96 @@ midibase::set_name
             name, sizeof name, "[%d] %d:%d %s",
             get_bus_index(), get_bus_id(), get_port_id(), alias
         );
-        bus_name(name);
     }
     full_name(name);
 }
 
+/**
+ *  Sets the name of the buss in a different way.  If the port is virtual,
+ *  this function just calls set_name().  Otherwise, it reassembles the name
+ *  so that it refers to a port found on the system, but modified to make it a
+ *  unique application port.  For example:
+ *
+ *      [0] 128:0 yoshimi:midi in
+ *
+ *  is transformed to this:
+ *
+ *      [0] 128:0 seq64:yoshimi midi in
+ *
+ *  As a side-effect, the portname is changed, from (for example) "midi in" to
+ *  "yoshimi midi in".
+ *
+ * \param appname
+ *      This is the name of the client, or application.  Not to be confused
+ *      with the ALSA client-name, which is actually a buss or subsystem name.
+ *
+ * \param busname
+ *      Provides the name of the sub-system, such as "Midi Through" or
+ *      "TiMidity".
+ *
+ * \param portname
+ *      Provides the name of the port.  In ALSA, this is something like
+ *      "busname port X".
+ */
+
+void
+midibase::set_alt_name
+(
+    const std::string & appname,
+    const std::string & busname,
+    const std::string & portname
+)
+{
+    if (is_virtual_port())
+    {
+        set_name(appname, busname, portname);
+    }
+    else
+    {
+        std::string bussname = busname;
+        if (bussname.empty())
+            bussname = bus_name();
+
+        if (bussname.empty())
+            bussname = usr().bus_name(get_bus_id());        // WHY usr()???
+
+        if (bussname.empty())
+        {
+            bussname = SEQ64_CLIENT_NAME;        // need accessor
+        }
+
+        std::string pname = portname;
+        if (pname.empty())
+            pname = port_name();
+
+        if (pname.empty())
+        {
+            pname = "midi";
+            pname += " ";
+            pname += is_input_port() ? "in" : "out" ;
+            pname += " ";
+            pname += std::to_string(get_port_id());
+        }
+        else
+        {
+            std::string bname = bussname;
+            bname += ":";
+            bname += pname;
+            pname = bname;
+        }
+        bus_name(bussname);
+        port_name(pname);
+
+        char alias[64];
+        snprintf                            /* copy the client name parts */
+        (
+            alias, sizeof alias, "[%d] %d:%d %s:%s",
+            get_bus_index(), get_bus_id(), get_port_id(),
+            bussname.c_str(), pname.c_str()
+        );
+        full_name(alias);
+    }
+}
 
 /**
  *  Polls for MIDI events.

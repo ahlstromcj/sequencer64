@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2017-01-11
+ * \updates       2017-01-14
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -40,6 +40,14 @@
 
 #define SEQ64_MIDI_OUTPUT       false       /* the MIDI mode is not input   */
 #define SEQ64_MIDI_INPUT        true        /* the MIDI mode is input       */
+
+/**
+ *  Macros for selecting virtual versus normal ports in a more obvious way.
+ *  Used in the rtmidi midibus constructors.
+ */
+
+#define SEQ64_MIDI_NORMAL_PORT  false       /* the MIDI port is not virtual */
+#define SEQ64_MIDI_VIRTUAL_PORT true        /* the MIDI port is virtual     */
 
 /**
  *  Like the SEQ64_NO_BUS and SEQ64_NO_PORT macros in

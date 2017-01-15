@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2017-01-09
+ * \updates       2017-01-14
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -68,6 +68,7 @@ private:
         int m_port_number;          /**< The minor port number of the port. */
         std::string m_port_name;    /**< The system's name for the port.    */
         int m_queue_number;         /**< A number used in some APIs.        */
+        bool m_is_virtual;          /**< Indicates a missing system port.   */
 
     } port_info_t;
 
@@ -93,7 +94,8 @@ public:
         const std::string & clientname,     // buss name
         int portnumber,
         const std::string & portname,
-        int queuenumber = SEQ64_BAD_QUEUE_ID
+        bool makevirtual    = false,
+        int queuenumber     = SEQ64_BAD_QUEUE_ID
     );
     void add (const midibus * m);
 
@@ -143,6 +145,14 @@ public:
             return m_port_container[index].m_port_name;
         else
             return std::string("");
+    }
+
+    bool get_virtual (int index) const
+    {
+        if (index < get_port_count())
+            return m_port_container[index].m_is_virtual;
+        else
+            return false;
     }
 
     int get_queue_number (int index) const

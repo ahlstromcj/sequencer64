@@ -110,7 +110,9 @@ Usage: ./bootstrap [options]                                 (0.90-2016-12-26)
    The default bootstraps the projects.  Then one should run 'configure',
    which sets up for a normal release build.  A common option for
    'bootstrap' is --enable-debug (-ed), which adds --disable-shared and sets
-   --configure, to configure for debugging without using libtool.
+   --configure, to configure for debugging without the need to use
+   
+      $ libtool --mode=execute gdb sequencer64
 E_O_F
 
    exit 1

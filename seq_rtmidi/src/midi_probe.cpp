@@ -6,7 +6,7 @@
  *
  * \author        Gary P. Scavone, 2003-2012; refactoring by Chris Ahlstrom
  * \date          2016-11-19
- * \updates       2017-01-11
+ * \updates       2017-01-14
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  We include this test code in our library, rather than in a separate
@@ -87,8 +87,9 @@ midi_api_name (int i)
 int
 midi_probe ()
 {
-    static rtmidi_info s_rtmidi_info_dummy;
-    static midibus s_midibus_dummy(s_rtmidi_info_dummy, "dummy", 0);
+    static rtmidi_info s_rtmidi_info_dummy(RTMIDI_API_UNSPECIFIED, "probe");
+//  static midibus s_midibus_dummy(s_rtmidi_info_dummy, "dummy", 0);
+    static midibus s_midibus_dummy(s_rtmidi_info_dummy, 0);
     std::vector<rtmidi_api> apis;
     rtmidi_info::get_compiled_api(apis);
     std::cout << "\nCompiled APIs:\n";
@@ -173,7 +174,7 @@ midi_input_test (rtmidi_info & info, int portindex)
     bool result = false;
     try
     {
-        static midibus s_midibus_dummy(info, "dummy", portindex);
+        static midibus s_midibus_dummy(info, portindex);
         rtmidi_in midiin(s_midibus_dummy, info);
         midiin.user_callback(midi_input_callback);
 //      midiin.ignore_types(false, false, false); // sysex, timing, active sensing

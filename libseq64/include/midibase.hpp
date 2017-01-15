@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2017-01-11
+ * \updates       2017-01-15
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -157,6 +157,15 @@ private:
     bool m_is_virtual_port;
 
     /**
+     *  Indicates if the port is to be an input (versus output) port.
+     *  It matters when we are creating the name of the port, where we don't
+     *  want an input virtual port to have the same name as an output virtual
+     *  port... one of them will fail.
+     */
+
+    bool m_is_input_port;
+
+    /**
      *  Locking mutex.
      */
 
@@ -175,7 +184,8 @@ public:
         int queue                       = SEQ64_NO_QUEUE,
         int ppqn                        = SEQ64_USE_DEFAULT_PPQN,
         int bpm                         = SEQ64_DEFAULT_BPM,
-        bool makevirtual = false
+        bool makevirtual                = false,
+        bool isinput                    = false
     );
 
     virtual ~midibase ();
@@ -303,6 +313,24 @@ public:
     }
 
     /**
+     * \getter m_is_input_port
+     */
+
+    bool is_input_port () const
+    {
+        return m_is_input_port;
+    }
+
+    /**
+     * \setter m_is_input_port
+     */
+
+    void is_input_port (bool flag)
+    {
+        m_is_input_port = flag;
+    }
+
+    /**
      * \setter m_clock_type
      *
      * \param clocktype
@@ -343,7 +371,14 @@ public:
 
     void set_name
     (
-        const std::string & clientname,
+        const std::string & appname,
+        const std::string & busname,
+        const std::string & portname
+    );
+
+    void set_alt_name
+    (
+        const std::string & appname,
         const std::string & busname,
         const std::string & portname
     );

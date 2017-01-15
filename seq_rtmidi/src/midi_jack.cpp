@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-13
+ * \updates       2017-01-14
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -204,7 +204,7 @@ midi_jack::midi_jack
     m_multi_client  (false),
     m_jack_data     ()
 {
-    if (! m_multi_client)
+    if (! multi_client())
     {
         client_handle
         (
@@ -221,12 +221,11 @@ midi_jack::midi_jack
 
 midi_jack::~midi_jack ()
 {
-    if (m_multi_client)
+    if (multi_client())
     {
         close_port();
         close_client();
     }
-
     if (not_nullptr(m_jack_data.m_jack_buffsize))
         jack_ringbuffer_free(m_jack_data.m_jack_buffsize);
 
@@ -300,13 +299,16 @@ midi_jack::api_init_in ()
     is_virtual_port(false);
     master_midi_mode(SEQ64_MIDI_INPUT);             // is this necessary here?
     if (multi_client())
-        result = open_client_impl(SEQ64_MIDI_OUTPUT);
+        result = open_client_impl(SEQ64_MIDI_INPUT);
+
 
 //  bool result = register_port(SEQ64_MIDI_OUTPUT, portname);
     if (result)
     {
-        std::string srcportname = api_get_port_name();
         std::string destportname = master_info().get_port_name(get_bus_index());
+        set_alt_name(SEQ64_APP_NAME, SEQ64_CLIENT_NAME, destportname);
+
+        std::string srcportname = connect_name();
         bool result = connect_port(SEQ64_MIDI_INPUT, destportname, srcportname);
 //      bool result = connect_port(SEQ64_MIDI_OUTPUT, destportname, srcportname);
         if (result)
@@ -386,7 +388,12 @@ midi_jack::api_init_out_sub ()
             std::string portname = master_info().get_port_name(get_bus_index());
             if (portname.empty())
             {
-                portname = SEQ64_APP_NAME " out ";
+//              if (parent_bus().is_virtual_port())
+//                  portname = SEQ64_CLIENT_NAME " virtual";
+//              else
+                    portname = SEQ64_CLIENT_NAME;
+
+                portname += " midi out ";
                 portname += std::to_string(portid);
             }
             result = register_port(SEQ64_MIDI_OUTPUT, portname);
@@ -427,7 +434,12 @@ midi_jack::api_init_in_sub ()
             std::string portname = master_info().get_port_name(get_bus_index());
             if (portname.empty())
             {
-                portname = SEQ64_APP_NAME " in ";
+//              if (parent_bus().is_virtual_port())
+//                  portname = SEQ64_CLIENT_NAME " virtual";
+//              else
+                    portname = SEQ64_CLIENT_NAME;
+
+                portname += " midi in ";
                 portname += std::to_string(portid);
             }
             result = register_port(SEQ64_MIDI_INPUT, portname);
@@ -800,7 +812,10 @@ midi_jack::close_client ()
  *      For input, this should be name of port that was enumerated at start-up.
  *      For output, this should be the name associated with the JACK client
  *      handle; it is the port that gets registered.  The JackPortFlags of the
- *      destination port must include JackPortIsInput.
+ *      destination port must include JackPortIsInput.  Now, if this name is
+ *      empty, that basically means that there is no such port, and we create
+ *      a virtual port in this case.  So jack_connect() is not called in this
+ *      case.  We do not treat this case as an error.
  */
 
 bool
@@ -812,7 +827,7 @@ midi_jack::connect_port
 )
 {
     bool result = register_port(input, srcportname);
-    if (result)
+    if (result && ! destportname.empty())
     {
         int rc = jack_connect
         (

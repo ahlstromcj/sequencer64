@@ -253,7 +253,7 @@ public:
     void set_clock (bussbyte bus, clock_e clocktype);
     void set_all_clocks ();
     clock_e get_clock (bussbyte bus);
-    std::string get_midi_bus_name (int bus);
+    std::string get_midi_bus_name (int bus);        // full version
     void print ();
     void port_exit (int client, int port);
     void set_input (bussbyte bus, bool inputing);

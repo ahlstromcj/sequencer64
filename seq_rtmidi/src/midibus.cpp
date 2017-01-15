@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2017-01-12
+ * \updates       2017-01-14
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -71,6 +71,12 @@ namespace seq64
  *      desired client and port information.  It is an index into the
  *      info container held by the rtmidi object.
  *
+ * \param makevirtual
+ *      Indicates that the port is virtual, as opposed to normal.
+ *
+ * \param isinput
+ *      Indicates that the port is an input port, as opposed to an output port.
+ *
  * \param bus_id
  *      Optional buss ID, if not equal to the index parameter.
  */
@@ -78,97 +84,59 @@ namespace seq64
 midibus::midibus
 (
     rtmidi_info & rt,
-    const std::string & appname,
     int index,
-    int bus_id
+    bool makevirtual,
+    bool isinput,
+    int bussoverride
 ) :
     midibase
     (
-        appname,
+        rt.app_name(),
         rt.get_bus_name(index),
         rt.get_port_name(index),
         index,
-        bus_id,
-        index,                          // used as virtual port ID
+        bussoverride != SEQ64_NO_BUS ? bussoverride : rt.get_bus_id(index),
+        index,
         rt.global_queue(),
         rt.ppqn(), rt.bpm(),
-        true                            // make virtual
+        makevirtual,
+        isinput
     ),
     m_rt_midi       (nullptr),
     m_master_info   (rt)                // currently unused
 {
-    // TODO:  generate better buss and port names.
-}
-
-/**
- *  Non-virtual-port constructor.
- *
- *  We cannot pass the necessary parameters without getting some of them from
- *  an already-constructed rtmidi_in or rtmidi_out object.
- *
- * \param rt
- *      Provides the rtmidi_info object to use to obtain the
- *      client ID (buss ID), port ID, and port name, as obtained via calls to
- *      the ALSA, JACK, Core MIDI, or Windows MM subsystems.
- *      We need it to provide the single ALSA "handle" needed in the in
- *      Sequencer64 buss model, where the master MIDI buss provides it to be
- *      used by all the MIDI buss objects.
- *      ("seq64rtmidi").  We still have confusion over the meaning of
- *      "client" and "buss", which we hope to clear up eventually.
- *
- * \param index
- *      This is the index into the rtmidi object, and is used to get the
- *      desired client and port information.  It is an index into the
- *      info container held by the rtmidi object.
- *
- * \param ppqn
- *      The PPQN value to use to initialize the MIDI buss, if applicable to
- *      the MIDI API being used.
- *
- * \param bpm
- *      The BPM (beats/minute) value to use to initialize the MIDI buss, if
- *      applicable to the MIDI API being used.
- */
-
-midibus::midibus
-(
-    rtmidi_info & rt,
-    int index                           /* index into list of ports         */
-) :
-    midibase
-    (
-        rt.app_name(),                  /* basically the application name   */
-        rt.get_bus_name(index),         /* buss name extracted from rt      */
-        rt.get_port_name(index),        /* port name extracted from rt      */
-        index,                          /* index into list of systemports   */
-        SEQ64_NO_BUS,                   /* buss ID extracted from rt        */
-        SEQ64_NO_PORT,                  /* port ID extracted from rt        */
-        rt.global_queue(),              /* queue number extracted from rt   */
-        rt.ppqn(), rt.bpm(),
-        false                           /* non-virtual port flag            */
-    ),
-    m_rt_midi       (nullptr),
-    m_master_info   (rt)
-{
-    int portcount = rt.get_port_count();
-    if (index < portcount)
+    if (makevirtual)
     {
-        int id = rt.get_port_id(index);
-        if (id >= 0)
-            set_port_id(id);
+        if (bus_name().empty())
+            bus_name(SEQ64_APP_NAME);   // we need an accessor!!!!
 
-        id = rt.get_bus_id(index);
-        if (id >= 0)
-            set_bus_id(id);
+        if (port_name().empty())
+        {
+            std::string pname = SEQ64_APP_NAME; // need an accessor!!!
+            pname += " midi ";
+            pname += isinput ? "in " : "out ";
+            pname += std::to_string(get_port_id());
+            port_name(pname);
+        }
+    }
+    else
+    {
+        int portcount = rt.get_port_count();
+        if (index < portcount)
+        {
+            int id = rt.get_port_id(index);
+            if (id >= 0)
+                set_port_id(id);
 
-        /*
-         * This changes what was set in the base class.
-         */
+            id = rt.get_bus_id(index);
+            if (id >= 0)
+                set_bus_id(id);
 
-        set_name
-        (
-            rt.app_name(), rt.get_bus_name(index), rt.get_port_name(index)
-        );
+            set_name                /* change what was set in base class    */
+            (
+                rt.app_name(), rt.get_bus_name(index), rt.get_port_name(index)
+            );
+        }
     }
 }
 

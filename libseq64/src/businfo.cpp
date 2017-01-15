@@ -312,7 +312,14 @@ busarray::get_clock (bussbyte bus)
  *
  *  This function adds the retrieval of client and port numbers that are not
  *  needed in the portmidi implementation, but seem generally useful to
- *  support in all implementations.
+ *  support in all implementations.  It's main use is to display the
+ *  full portname in one of two forms:
+ *
+ *      -   "clientname:portname"
+ *      -   "portname"
+ *
+ *  The second version is chosen if "clientname" is already included in the
+ *  port name, as many MIDI clients do that.
  *
  * \param bus
  *      Provides the output buss number.  Checked before usage.
@@ -332,26 +339,37 @@ busarray::get_midi_bus_name (int bus)
     {
         if (m_container[bus].active())
         {
-//          result = m_container[bus].bus()->bus_name();
-            result = m_container[bus].bus()->full_name();
+            std::string busname = m_container[bus].bus()->bus_name();
+            std::string portname = m_container[bus].bus()->port_name();
+            std::size_t len = busname.size();
+            int test = busname.compare(0, len, portname, 0, len);
+            if (test == 0)
+            {
+                char tmp[80];
+                snprintf
+                (
+                    tmp, sizeof tmp, "[%d] %d:%d %s",
+                    bus, m_container[bus].bus()->get_bus_id(),
+                    m_container[bus].bus()->get_port_id(), portname.c_str()
+                );
+                result = tmp;
+            }
+            else
+                result = m_container[bus].bus()->full_name();
         }
         else
         {
             char tmp[80];                           /* copy names */
+            std::string status = "virtual";
             if (m_container[bus].initialized())
-            {
-                snprintf
-                (
-                    tmp, sizeof tmp, "[%d] %d:%d (disconnected)",
-                    bus,
-                    m_container[bus].bus()->get_bus_id(),
-                    m_container[bus].bus()->get_port_id()
-                );
-            }
-            else
-                snprintf(tmp, sizeof tmp, "[%d] (unconnected)", bus);
+                status = "disconnected";
 
-            result = std::string(tmp);
+            snprintf
+            (
+                tmp, sizeof tmp, "%s (%s)",
+                m_container[bus].bus()->full_name().c_str(), status.c_str()
+            );
+            result = tmp;
         }
     }
     return result;

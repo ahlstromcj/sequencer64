@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2017-01-09
+ * \updates       2017-01-14
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -277,7 +277,14 @@ midi_alsa::api_init_out_sub ()
 
     std::string portname = port_name();
     if (portname.empty())
-        portname = SEQ64_CLIENT_NAME " out";
+    {
+//      if (parent_bus().is_virtual_port())
+//          portname = SEQ64_CLIENT_NAME " virtual";
+//      else
+            portname = SEQ64_CLIENT_NAME;
+
+        portname += " midi out";
+    }
 
     int result = snd_seq_create_simple_port             /* create ports */
     (
@@ -313,7 +320,14 @@ midi_alsa::api_init_in_sub ()
 
     std::string portname = port_name();
     if (portname.empty())
-        portname = SEQ64_CLIENT_NAME " in";
+    {
+//      if (parent_bus().is_virtual_port())
+//          portname = SEQ64_CLIENT_NAME " virtual";
+//      else
+            portname = SEQ64_CLIENT_NAME;
+
+        portname += " midi in";
+    }
 
     int result = snd_seq_create_simple_port             /* create ports */
     (

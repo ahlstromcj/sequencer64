@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-01
+ * \updates       2017-01-14
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -83,20 +83,37 @@ mastermidibus::~mastermidibus ()
 /**
  *  Initializes the RtMidi implementation.  Two different styles are
  *  supported.  If the --manual-alsa-ports option is in force, then 16 virtual
- *  output ports and one virtual input port are created.  Otherwise, the
- *  system MIDI input and output ports are scanned (via the rtmidi_info
- *  member) and passed to the midibus constructor calls.
+ *  output ports and one virtual input port are created.  They are given names
+ *  that make it clear which application (seq64) has set them up.  They are
+ *  not connected to anything.  The user will have to use a connection GUI
+ *  (such as qjackctl) or a session manager to make the connections.
  *
- *  Will need to add bpm as a parameter (for ALSA input at least).
+ *  Otherwise, the system MIDI input and output ports are scanned (via the
+ *  rtmidi_info member) and passed to the midibus constructor calls.  For
+ *  every MIDI input port found on the system, this function creates a
+ *  corresponding output port, and connects to the system MIDI input.  For
+ *  example, for an input port found called "qmidiarp:in 1", we want to create
+ *  a "shadow" output port called "seq64:qmidiarp in 1".
  *
- *  Code currently roughly similar to midi_probe().  Assumes only one compiled
- *  API at present.
+ *  For every MIDI output found on the system this function creates a
+ *  corresponding input port, and connects it to the system MIDI output.  For
+ *  For example, for an output port found called "qmidiarp:out 1", we want to
+ *  create a "shadow" input port called "seq64:qmidiarp out 1".
+ *
+ *  Are these good conventions, or potentially confusing to users?  They match
+ *  what the legacy seq24 and sequencer64 do for ALSA.
+ *
+ * \todo
+ *      MAKE SURE THIS REVERSAL DOES NOT BREAK ALSA PLAYBACK!
  *
  * \param ppqn
- *      Provides the (possibly new) value of PPQN to set.
+ *      Provides the (possibly new) value of PPQN to set.  ALSA has a function
+ *      that sets its idea of the PPQN.  JACK, as far as we know, does not.
  *
  * \param bpm
- *      Provides the (possibly new) value of BPM (beats per minute)  to set.
+ *      Provides the (possibly new) value of BPM (beats per minute) to set.
+ *      ALSA has a function that sets its idea of the BPM.  JACK, as far as we
+ *      know, does not.
  */
 
 void
@@ -108,16 +125,7 @@ mastermidibus::api_init (int ppqn, int bpm)
     {
         m_midi_scratch.clear();
 
-#ifdef PLATFORM_DEBUG
-        std::string plist = m_midi_scratch.port_list();
-        printf
-        (
-            "%d virtual ports created:\n%s\n",
-            m_midi_scratch.full_port_count(), plist.c_str()
-        );
-#endif
-
-        int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
+        int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;     /* not just ALSA!   */
         for (int i = 0; i < num_buses; ++i)             /* output busses    */
         {
             /*
@@ -128,32 +136,33 @@ mastermidibus::api_init (int ppqn, int bpm)
              * init_in_sub(), or init_out_sub().
              */
 
-            midibus * m = new midibus                   /* virtual port     */
+            midibus * m = new midibus
             (
-                m_midi_scratch, SEQ64_APP_NAME, i       /* index and port   */
+                m_midi_scratch, i, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_OUTPUT
             );
-            m_outbus_array.add(m, false, true);         /* output & virtual */
+            m_outbus_array.add(m, SEQ64_MIDI_OUTPUT, SEQ64_MIDI_VIRTUAL_PORT);
             m_midi_scratch.add_output(m);               /* must come 2nd    */
         }
-        midibus * m = new midibus                       /* virtual port     */
+        midibus * m = new midibus
         (
-            m_midi_scratch, SEQ64_APP_NAME, 0           /* index and port   */
+            m_midi_scratch, 0, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_INPUT
         );
-        m_inbus_array.add(m, true, true);               /* input & virtual  */
+        m_inbus_array.add(m, SEQ64_MIDI_INPUT, SEQ64_MIDI_VIRTUAL_PORT);
         m_midi_scratch.add_input(m);                    /* must come 2nd    */
+
+#ifdef PLATFORM_DEBUG_XXX
+        std::string plist = m_midi_scratch.port_list();
+        printf
+        (
+            "%d virtual ports created:\n%s\n",
+            m_midi_scratch.full_port_count(), plist.c_str()
+        );
+#endif
     }
     else
     {
-        /*
-         * Hmmmm, this call is already made in the rtmidi_info constructor.
-         * In any case, we want to make port connections.  These may be
-         * input/output backwards for JACK, we're still learning.  For each
-         * input port that midi_jack_info finds, we want to make a
-         * corresponding output port with a similar name.  And vice versa.
-         */
-
-        unsigned nports = m_midi_scratch.get_all_port_info();
-#ifdef PLATFORM_DEBUG
+        unsigned nports = m_midi_scratch.get_port_count();
+#ifdef PLATFORM_DEBUG_XXX
         std::string plist = m_midi_scratch.port_list();
         printf
         (
@@ -167,18 +176,22 @@ mastermidibus::api_init (int ppqn, int bpm)
             unsigned inports = m_midi_scratch.get_port_count();
             for (unsigned i = 0; i < inports; ++i)
             {
-                midibus * m = new midibus(m_midi_scratch, i);
-                m_inbus_array.add(m, true, false);      /* input, nonvirt  */
-//              m_outbus_array.add(m, false, false);    /* output, nonvirt */
+                midibus * m = new midibus
+                (
+                    m_midi_scratch, i, SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_OUTPUT
+                );
+                m_outbus_array.add(m, SEQ64_MIDI_OUTPUT, SEQ64_MIDI_NORMAL_PORT);
             }
 
             m_midi_scratch.midi_mode(SEQ64_MIDI_OUTPUT);
             unsigned outports = m_midi_scratch.get_port_count();
             for (unsigned i = 0; i < outports; ++i)
             {
-                midibus * m = new midibus(m_midi_scratch, i);
-                m_outbus_array.add(m, false, false);    /* output, nonvirt */
-//              m_inbus_array.add(m, true, false);      /* input, nonvirt  */
+                midibus * m = new midibus
+                (
+                    m_midi_scratch, i, SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_INPUT
+                );
+                m_outbus_array.add(m, SEQ64_MIDI_INPUT, SEQ64_MIDI_NORMAL_PORT);
             }
         }
     }

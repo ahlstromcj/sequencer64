@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2016-10-30
+ * \updates       2017-01-14
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -939,6 +939,71 @@ wave_type_name (wave_type_t wavetype)
 
     default:
         break;
+    }
+    return result;
+}
+
+/**
+ *  Extracts the two names from the ALSA/JACK client/port name format,
+ *  "[0] 128:0 clientname:portname".
+ *
+ *  It's a bit krufty to have to rely on that strict format; changes
+ *  in the bus/port code could break this function.
+ *
+ * \param fullname
+ *      The full port specification to be split.
+ *
+ * \param [out] clientname
+ *      The destination for the client name portion, "clientname".
+ *
+ * \param [out] portname
+ *      The destination for the port name portion, "portname".
+ *
+ * \return
+ *      Returns true if all items are non-empty after the process.
+ */
+
+bool
+extract_port_names
+(
+    const std::string & fullname,
+    std::string & clientname,
+    std::string & portname
+)
+{
+    bool result = ! fullname.empty();
+    clientname.clear();
+    portname.clear();
+    if (result)
+    {
+        std::string cname;
+        std::string pname;
+        std::size_t colonpos = fullname.find_last_of(":");
+        if (colonpos != std::string::npos)
+        {
+            cname = fullname.substr(0, colonpos);
+            if (! cname.empty())
+            {
+                std::size_t spacepos = cname.find_first_of(" ");
+                if (spacepos != std::string::npos)
+                {
+                    spacepos = cname.find_first_of(" ", spacepos+1);
+                    if (spacepos != std::string::npos)
+                    {
+                        std::size_t colonpos = cname.find_last_of(":");
+                        if (colonpos != std::string::npos)
+                        cname = cname.substr(spacepos+1, colonpos);
+                    }
+                }
+            }
+            pname = fullname.substr(colonpos+1);
+            result = ! cname.empty() && ! pname.empty();
+        }
+        else
+            pname = fullname;
+
+        clientname = cname;
+        portname = pname;
     }
     return result;
 }

@@ -1,6 +1,6 @@
-Notes About JACK
+Notes About JACK and RtMidi
 Chris Ahlstrom
-2016-01-14 to 2016-02-13
+2016-01-14 to 2017-01-15
 
 Also be sure to read through the source code, especially the jack_assistant
 module.  The following is a note about seq24:
@@ -75,5 +75,62 @@ In the timebase callback:
     pos->bar = H->getPosForTick ( PlayTick );
 
 Duhhhh....
+
+RtMidi JACK:
+
+    Here, we summarize how RtMidi sets up and connects JACK ports.  First,
+    what the constructor does, via a number of member functions not named
+    here.
+
+    1.  If it is an input port, allocate a midi-queue structure.  Also,
+        in test code, add a midi-message.
+    2.  Allocate a new midi-data structure to act as a scratchpad for the
+        port.
+    3.  Call jack_client_open() with the desired client name.  This is
+        something like "RtMidi Input Client".
+    4.  Call jack_set_process_callback() with the JACK client pointer,
+        the desired process-input callback, currently the stock callback
+        provided with RtMidi.
+    5.  Call jack_activate() with the JACK client pointer.
+    6.  Call getPortCount().  This calls:
+        1.  Call connect() again, which does nothing because already
+            connected.  2. Call jack_get_ports() to get a listing of the
+            ports.  This yields an array of string pointers such as
+            "qmidiarp:out 1" and "qmidiarp:out 2".
+    7.  Now call openPort() [here, MidiInJack::openPort()] with the
+        desired port number re 0 and the desired port name, such as
+        "RtMidi Input".
+        1.  Call connect() again, which does nothing because already
+            connected.
+        2.  Call jack_port_register() with the JACK client pointer, the
+            port name ("RtMidi Input"), and the JackPortIsInput flag.
+            Take note that this flag means we are a local port
+            representing a connection to a remote input port.
+        3.  Call getPortName(portnumber = 0), which again uselessly calls
+            connect(), then calls jack_get_ports() with the JACK client
+            pointer and the JackPortIsOutput flag.  This gets us strings
+            like "qmidiarp:out 1" and "qmidiarp:out 2", and we pick one
+            via the port number.
+        4.  Finally, call jack_connect() with the JACK client pointer,
+            the name of the source port ("qmidiarp:out 1") which has
+            (and must have) the flag JackPortIsOutput, and the name of the
+            (local) destination port, which is obtained by
+
+                jack_port_name(data->port)  // pointer to local port
+
+            and is, here, "RtMidi Input Client:RtMidi Input".
+            In qjackctl, one will see that the "out 1" port of "qmidiarp" is
+            connected to the "RtMidi input" port of "RtMidi Input Client".
+        5.  Then set the input callback function, which has the function
+            signature "void (double ts, vector<char> message, void * userdata)".
+        6.  Call ignoreTypes() as desired.
+
+    The take-away from this is that an RtMidi input port is one that is
+    meant to connect to a JACK output port set up by another application or
+    piece of MIDI hardware.  The local port is JackPortIsInput, and the
+    remote port is JackPortIsOutput.
+
+    In our case, we will create local ports in one-to-one correspondence with
+    remote ports.
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

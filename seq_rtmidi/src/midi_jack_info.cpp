@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-13
+ * \updates       2017-01-14
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -154,19 +154,7 @@ midi_jack_info::extract_names
     std::string & portname
 )
 {
-    clientname.clear();
-    portname.clear();
-    if (! fullname.empty())
-    {
-        std::size_t colonpos = fullname.find_first_of(":");
-        if (colonpos != std::string::npos)
-        {
-            clientname = fullname.substr(0, colonpos);
-            portname = fullname.substr(colonpos+1);
-        }
-        else
-            portname = fullname;
-    }
+    (void) extract_port_names(fullname, clientname, portname);
 }
 
 /**
@@ -179,6 +167,9 @@ midi_jack_info::extract_names
  *  If in multi-client mode, then this function disconnects the JACK
  *  client afterward. At this point, we have got all the data we need, and are
  *  not providing a client to each JACK port we create.
+ *
+ *  If there is no system input port, or no system output port, then we add a
+ *  virtual port so that the application has something to work with.
  *
  *  Note that, at some pointer, we ought to consider how to deal with
  *  transitory system JACK clients and ports, and adjust for it.  A kind of
@@ -209,9 +200,19 @@ midi_jack_info::get_all_port_info ()
              *
              * m_error_string = func_message("no JACK input ports available");
              * error(rterror::WARNING, m_error_string);
+             *
+             * Also, if there are none, we try to make a virtual port so that
+             * the application has something to work with.  The only issue is
+             * the client number.  Currently all virtual ports we create have
+             * a client number of 0.
              */
 
-            warnprint("no JACK input ports available");
+            warnprint("no JACK input port available, creating a virtual port");
+            int client = 0;
+            std::string clientname = SEQ64_APP_NAME;
+            std::string portname = SEQ64_APP_NAME " midi in 0";
+            input_ports().add(client, clientname, 0, portname);
+            ++result;
         }
         else
         {
@@ -244,12 +245,20 @@ midi_jack_info::get_all_port_info ()
         if (is_nullptr(outports))                  /* check port validity  */
         {
             /*
+             * Not really an error, though perhaps we want to warn about it.
+             *
              * m_error_string = func_message("no JACK outputs ports available");
              * error(rterror::WARNING, m_error_string);
-             * return 0;
+             *
+             * As with the input port, we create a virtual port.
              */
 
-            warnprint("no JACK output ports available");
+            warnprint("no JACK output port available, creating a virtual port");
+            int client = 0;
+            std::string clientname = SEQ64_APP_NAME;
+            std::string portname = SEQ64_APP_NAME " midi out 0";
+            output_ports().add(client, clientname, 0, portname);
+            ++result;
         }
         else
         {
@@ -351,7 +360,7 @@ midi_jack_info::api_set_beats_per_minute (int b)
 void
 midi_jack_info::api_port_start (mastermidibus & masterbus, int bus, int port)
 {
-    if (1)          /////////////////////////////
+    if (0)          /////////////////////////////
     {
         int bus_slot = masterbus.m_outbus_array.count();
         int test = masterbus.m_outbus_array.replacement_port(bus, port);
@@ -360,11 +369,12 @@ midi_jack_info::api_port_start (mastermidibus & masterbus, int bus, int port)
 
         midibus * m = new midibus
         (
-            masterbus.m_midi_scratch, SEQ64_APP_NAME, bus_slot // index, port
+//          masterbus.m_midi_scratch, SEQ64_APP_NAME, bus_slot // index, port
+            masterbus.m_midi_scratch, bus_slot // index
         );
         masterbus.m_outbus_array.add(m, false, false);  /* out, nonvirt */
     }
-    if (1)          /////////////////////////////
+    if (0)          /////////////////////////////
     {
         int bus_slot = masterbus.m_inbus_array.count();
         int test = masterbus.m_inbus_array.replacement_port(bus, port);
@@ -373,7 +383,8 @@ midi_jack_info::api_port_start (mastermidibus & masterbus, int bus, int port)
 
         midibus * m = new midibus
         (
-            masterbus.m_midi_scratch, SEQ64_APP_NAME, bus_slot // index, port
+//          masterbus.m_midi_scratch, SEQ64_APP_NAME, bus_slot // index, port
+            masterbus.m_midi_scratch, bus_slot // index
         );
         masterbus.m_inbus_array.add(m, false, false);  /* out, nonvirt */
     }

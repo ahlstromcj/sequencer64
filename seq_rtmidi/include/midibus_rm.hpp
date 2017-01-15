@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2016-12-27
+ * \updates       2017-01-14
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
@@ -36,6 +36,7 @@
  */
 
 #include "midibase.hpp"                 /* seq64::midibase class (new)  */
+#include "rtmidi_types.hpp"             /* SEQ64_MIDI_NORMAL_PORT       */
 
 /*
  * Do not document a namespace; it breaks Doxygen.
@@ -86,15 +87,10 @@ public:
     midibus                                 // virtual constructor
     (
         rtmidi_info & rt,
-        const std::string & appname,
         int index,
-        int bus_id = 0                      // rt.get_bus_id(index)
-    );
-
-    midibus                                 // normal constructor
-    (
-        rtmidi_info & rt,
-        int index
+        bool makevirtual     = SEQ64_MIDI_NORMAL_PORT,
+        bool isinput         = SEQ64_MIDI_OUTPUT,       // gotcha!
+        int bussoverride = 0
     );
 
     virtual ~midibus ();

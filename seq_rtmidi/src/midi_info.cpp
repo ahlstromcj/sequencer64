@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2017-01-12
+ * \updates       2017-01-14
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
@@ -57,6 +57,11 @@ midi_port_info::midi_port_info
  * \param portname
  *      Provides the system or user-supplied name for the port.
  *
+ * \param makevirtual
+ *      If the system currently has no input or output port available, then we
+ *      want to create a virtual port so that the application has something to
+ *      work with.
+ *
  * \param queuenumber
  *      Provides the optional queue number, if applicable.  For example, the
  *      sequencer64 application grabs the client number (normally valued at 1)
@@ -70,6 +75,7 @@ midi_port_info::add
     const std::string & clientname,
     int portnumber,
     const std::string & portname,
+    bool makevirtual,
     int queuenumber
 )
 {
@@ -78,6 +84,7 @@ midi_port_info::add
     temp.m_client_name = clientname;
     temp.m_port_number = portnumber;
     temp.m_port_name = portname;
+    temp.m_is_virtual = makevirtual;
     temp.m_queue_number = queuenumber;
     m_port_container.push_back(temp);
     m_port_count = int(m_port_container.size());
@@ -96,7 +103,7 @@ midi_port_info::add (const midibus * m)
     (
         m->get_bus_id(), m->bus_name(),
         m->get_port_id(), m->port_name(),
-        m->queue_number()
+        m->is_virtual_port(), m->queue_number()
     );
 }
 

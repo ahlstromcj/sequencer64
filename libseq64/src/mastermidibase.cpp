@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-01-01
+ * \updates       2017-01-14
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -33,6 +33,7 @@
  *  buss classes.
  */
 
+#include "calculations.hpp"             /* seq64::extract_port_names()      */
 #include "easy_macros.h"
 #include "event.hpp"                    /* seq64::event                     */
 #include "mastermidibase.hpp"           /* seq64::mastermidibase            */
@@ -374,10 +375,16 @@ mastermidibase::get_input (bussbyte bus)
 
 /**
  *  Get the MIDI output buss name for the given (legal) buss number.
+ *  This function is used for display purposes, and is also written to the
+ *  options ("rc") file.
  *
  *  This function adds the retrieval of client and port numbers that are not
  *  needed in the portmidi implementation, but seem generally useful to
  *  support in all implementations.
+ *
+ *  Also, if the client name is already part of the port name, as in
+ *  "client:client port 0", then we
+ *  remove the "client:" portion to make the listing look cleaner.
  *
  * \param bus
  *      Provides the output buss number.  Checked before usage.
@@ -392,7 +399,22 @@ mastermidibase::get_input (bussbyte bus)
 std::string
 mastermidibase::get_midi_out_bus_name (bussbyte bus)
 {
+#ifdef USE_KRUFTY_KODE
+    std::string result = m_outbus_array.get_midi_bus_name(bus);
+    std::string clientname;
+    std::string portname;
+    bool valid = extract_port_names(result, clientname, portname);
+    if (valid)
+    {
+        std::size_t len = clientname.size();
+        int test = clientname.compare(0, len, portname, 0, len);
+        if (test == 0)
+            result = portname;
+    }
+    return result;
+#else
     return m_outbus_array.get_midi_bus_name(bus);
+#endif
 }
 
 /**
@@ -414,7 +436,22 @@ mastermidibase::get_midi_out_bus_name (bussbyte bus)
 std::string
 mastermidibase::get_midi_in_bus_name (bussbyte bus)
 {
+#ifdef USE_KRUFTY_KODE
+    std::string result = m_inbus_array.get_midi_bus_name(bus);
+    std::string clientname;
+    std::string portname;
+    bool valid = extract_port_names(result, clientname, portname);
+    if (valid)
+    {
+        int len = int(clientname.size()) - 1;
+        int test = clientname.compare(0, len, portname);
+        if (test == 0)
+            result = portname;
+    }
+    return result;
+#else
     return m_inbus_array.get_midi_bus_name(bus);
+#endif
 }
 
 /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-01-09
+ * \updates       2017-01-16
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -68,16 +68,18 @@ businfo::businfo ()
 /**
  *  Principal constructor.
  *
- * \param is_input
+ * is_input_port():
+ *
  *      Indicates if the midibus represents an input port (true) versus an
  *      output port (false).
  *
- * \param is_virtual
+ * is_virtual_port():
+ *
  *      Indicates if the midibus represents a virtual port (true) versus a
  *      normal port (false).
  */
 
-businfo::businfo (midibus * bus, bool is_input, bool is_virtual)
+businfo::businfo (midibus * bus)
  :
     m_bus           (bus),
     m_active        (false),
@@ -88,9 +90,9 @@ businfo::businfo (midibus * bus, bool is_input, bool is_virtual)
     if (not_nullptr(bus))
     {
         bool ok;
-        if (is_input)
+        if (bus->is_input_port())
         {
-            if (is_virtual)
+            if (bus->is_virtual_port())
                 ok = m_bus->init_in_sub();
             else
             {
@@ -106,7 +108,7 @@ businfo::businfo (midibus * bus, bool is_input, bool is_virtual)
         }
         else
         {
-            if (is_virtual)
+            if (bus->is_virtual_port())
                 ok = m_bus->init_out_sub();
             else
             {
@@ -172,10 +174,10 @@ busarray::~busarray ()
  */
 
 bool
-busarray::add (midibus * bus, bool is_input, bool is_virtual)
+busarray::add (midibus * bus)
 {
     size_t count = m_container.size();
-    m_container.push_back(businfo(bus, is_input, is_virtual));
+    m_container.push_back(businfo(bus));
     return m_container.size() == (count + 1);
 }
 

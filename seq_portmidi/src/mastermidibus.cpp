@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-01
+ * \updates       2017-01-16
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -123,9 +123,11 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
 
             midibus * m = new midibus
             (
-                i, numouts, i, dev_info->name
+                i, numouts, i, dev_info->name   // false, false NEEDED
             );
-            m_outbus_array.add(m, false, false);        /* output & normal */
+            m->is_virtual_port(false);
+            m->is_input_port(false);
+            m_outbus_array.add(m);
             ++numouts;
         }
         if (dev_info->input)
@@ -136,9 +138,11 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
 
             midibus * m = new midibus
             (
-                i, numins, i, dev_info->name
+                i, numins, i, dev_info->name    // true, false NEEDED
             );
-            m_inbus_array.add(m, true, false);         /* input & normal    */
+            m->is_virtual_port(false);
+            m->is_input_port(true);
+            m_inbus_array.add(m);
             ++numins;
         }
     }

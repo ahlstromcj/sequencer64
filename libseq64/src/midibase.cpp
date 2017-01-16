@@ -278,12 +278,12 @@ midibase::set_name
  *      with the ALSA client-name, which is actually a buss or subsystem name.
  *
  * \param busname
- *      Provides the name of the sub-system, such as "Midi Through" or
- *      "TiMidity".
+ *      Provides the name of the sub-system, such as "Midi Through",
+ *      "TiMidity", or "seq64".
  *
  * \param portname
- *      Provides the name of the port.  In ALSA, this is something like
- *      "busname port X".
+ *      Provides the name of the port.  In JACK, this should be the full port
+ *      name, such as "qmidiarp:in".
  */
 
 void
@@ -326,10 +326,9 @@ midibase::set_alt_name
         }
         else
         {
-            std::string bname = bussname;
-            bname += ":";
-            bname += pname;
-            pname = bname;
+            std::size_t colonpos = pname.find_first_of(":");
+            if (colonpos != std::string::npos)
+                pname[colonpos] = ' ';
         }
         bus_name(bussname);
         port_name(pname);

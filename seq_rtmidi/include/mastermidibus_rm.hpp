@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-02
+ * \updates       2017-01-15
  * \license       GNU GPLv2 or above
  *
  *  This mastermidibus module is the Linux (and, soon, JACK) version of the
@@ -109,6 +109,10 @@ protected:
     {
         m_midi_scratch.api_port_start(masterbus, bus, port);
     }
+
+private:
+
+    void port_list (const std::string & tag);
 
 };
 

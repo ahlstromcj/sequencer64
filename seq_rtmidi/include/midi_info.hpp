@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2017-01-14
+ * \updates       2017-01-16
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -94,7 +94,7 @@ public:
         const std::string & clientname,     // buss name
         int portnumber,
         const std::string & portname,
-        bool makevirtual    = false,
+        bool makevirtual    = SEQ64_MIDI_NORMAL_PORT,   /* i.e. false */
         int queuenumber     = SEQ64_BAD_QUEUE_ID
     );
     void add (const midibus * m);
@@ -152,7 +152,7 @@ public:
         if (index < get_port_count())
             return m_port_container[index].m_is_virtual;
         else
-            return false;
+            return SEQ64_MIDI_NORMAL_PORT;          /* i.e. false */
     }
 
     int get_queue_number (int index) const
@@ -420,6 +420,12 @@ public:
     {
         const midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_port_name(index);
+    }
+
+    virtual bool get_virtual (int index) const
+    {
+        const midi_port_info & mpi = nc_midi_port_info();
+        return mpi.get_virtual(index);
     }
 
     virtual int queue_number (int index) const

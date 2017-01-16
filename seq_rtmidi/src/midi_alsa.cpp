@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2017-01-14
+ * \updates       2017-01-16
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -111,6 +111,12 @@ midi_alsa::~midi_alsa ()
  *  library, with the addition of the snd_seq_connect_to() call involving
  *  the local and destination ports.
  *
+ * \tricky
+ *      One important thing to note is that this output port is initialized
+ *      with the SND_SEQ_PORT_CAP_READ flag, which means this is really an
+ *      input port.  We connect this input port with a system output port that
+ *      was discovered.  This is backwards of the way RtMidi does it.
+ *
  * \return
  *      Returns true unless setting up ALSA MIDI failed in some way.
  */
@@ -118,7 +124,6 @@ midi_alsa::~midi_alsa ()
 bool
 midi_alsa::api_init_out ()
 {
-    is_virtual_port(false);
     master_info().midi_mode(SEQ64_MIDI_OUTPUT);
 
     std::string busname = master_info().get_bus_name(get_bus_index());
@@ -156,6 +161,12 @@ midi_alsa::api_init_out ()
 /**
  *  Initialize the MIDI input port.
  *
+ * \tricky
+ *      One important thing to note is that this input port is initialized
+ *      with the SND_SEQ_PORT_CAP_WRITE flag, which means this is really an
+ *      output port.  We connect this output port with a system input port
+ *      that was discovered.  This is backwards of the way RtMidi does it.
+ *
  * \return
  *      Returns true unless setting up ALSA MIDI failed in some way.
  */
@@ -163,7 +174,6 @@ midi_alsa::api_init_out ()
 bool
 midi_alsa::api_init_in ()
 {
-    is_virtual_port(false);
     master_info().midi_mode(SEQ64_MIDI_INPUT);
 
     std::string busname = master_info().get_bus_name(get_bus_index());
@@ -273,18 +283,9 @@ midi_alsa::set_virtual_name (int portid, const std::string & portname)
 bool
 midi_alsa::api_init_out_sub ()
 {
-    is_virtual_port(true);
-
     std::string portname = port_name();
     if (portname.empty())
-    {
-//      if (parent_bus().is_virtual_port())
-//          portname = SEQ64_CLIENT_NAME " virtual";
-//      else
-            portname = SEQ64_CLIENT_NAME;
-
-        portname += " midi out";
-    }
+        portname = SEQ64_CLIENT_NAME " midi out";
 
     int result = snd_seq_create_simple_port             /* create ports */
     (
@@ -316,18 +317,9 @@ midi_alsa::api_init_out_sub ()
 bool
 midi_alsa::api_init_in_sub ()
 {
-    is_virtual_port(true);
-
     std::string portname = port_name();
     if (portname.empty())
-    {
-//      if (parent_bus().is_virtual_port())
-//          portname = SEQ64_CLIENT_NAME " virtual";
-//      else
-            portname = SEQ64_CLIENT_NAME;
-
-        portname += " midi in";
-    }
+        portname = SEQ64_CLIENT_NAME " midi in";
 
     int result = snd_seq_create_simple_port             /* create ports */
     (

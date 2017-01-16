@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-12
+ * \updates       2017-01-16
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring...
@@ -69,6 +69,18 @@ midi_api::midi_api
 midi_api::~midi_api ()
 {
     // no code
+}
+
+bool
+midi_api::is_virtual_port () const
+{
+    return parent_bus().is_virtual_port();
+}
+
+bool
+midi_api::is_input_port () const
+{
+    return parent_bus().is_input_port();
 }
 
 /**

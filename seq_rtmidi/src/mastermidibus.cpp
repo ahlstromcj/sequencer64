@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-14
+ * \updates       2017-01-15
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -104,7 +104,8 @@ mastermidibus::~mastermidibus ()
  *  what the legacy seq24 and sequencer64 do for ALSA.
  *
  * \todo
- *      MAKE SURE THIS REVERSAL DOES NOT BREAK ALSA PLAYBACK!
+ *      MAKE SURE THIS REVERSAL DOES NOT BREAK ALSA PLAYBACK!  IT DOES,
+ *      REMOVED.
  *
  * \param ppqn
  *      Provides the (possibly new) value of PPQN to set.  ALSA has a function
@@ -140,58 +141,45 @@ mastermidibus::api_init (int ppqn, int bpm)
             (
                 m_midi_scratch, i, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_OUTPUT
             );
-            m_outbus_array.add(m, SEQ64_MIDI_OUTPUT, SEQ64_MIDI_VIRTUAL_PORT);
+            m_outbus_array.add(m);
             m_midi_scratch.add_output(m);               /* must come 2nd    */
         }
         midibus * m = new midibus
         (
             m_midi_scratch, 0, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_INPUT
         );
-        m_inbus_array.add(m, SEQ64_MIDI_INPUT, SEQ64_MIDI_VIRTUAL_PORT);
+        m_inbus_array.add(m);
         m_midi_scratch.add_input(m);                    /* must come 2nd    */
-
-#ifdef PLATFORM_DEBUG_XXX
-        std::string plist = m_midi_scratch.port_list();
-        printf
-        (
-            "%d virtual ports created:\n%s\n",
-            m_midi_scratch.full_port_count(), plist.c_str()
-        );
-#endif
+        port_list("virtual");
     }
     else
     {
         unsigned nports = m_midi_scratch.get_port_count();
-#ifdef PLATFORM_DEBUG_XXX
-        std::string plist = m_midi_scratch.port_list();
-        printf
-        (
-            "%d rtmidi ports found:\n%s\n",
-            m_midi_scratch.full_port_count(), plist.c_str()
-        );
-#endif
+        port_list("rtmidi");
         if (nports > 0)
         {
             m_midi_scratch.midi_mode(SEQ64_MIDI_INPUT);
             unsigned inports = m_midi_scratch.get_port_count();
             for (unsigned i = 0; i < inports; ++i)
             {
+                bool isvirtual = m_midi_scratch.get_virtual(i);
                 midibus * m = new midibus
                 (
-                    m_midi_scratch, i, SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_OUTPUT
+                    m_midi_scratch, i, isvirtual, SEQ64_MIDI_INPUT
                 );
-                m_outbus_array.add(m, SEQ64_MIDI_OUTPUT, SEQ64_MIDI_NORMAL_PORT);
+                m_inbus_array.add(m);
             }
 
             m_midi_scratch.midi_mode(SEQ64_MIDI_OUTPUT);
             unsigned outports = m_midi_scratch.get_port_count();
             for (unsigned i = 0; i < outports; ++i)
             {
+                bool isvirtual = m_midi_scratch.get_virtual(i);
                 midibus * m = new midibus
                 (
-                    m_midi_scratch, i, SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_INPUT
+                    m_midi_scratch, i, isvirtual, SEQ64_MIDI_OUTPUT
                 );
-                m_outbus_array.add(m, SEQ64_MIDI_INPUT, SEQ64_MIDI_NORMAL_PORT);
+                m_outbus_array.add(m);
             }
         }
     }
@@ -217,6 +205,36 @@ mastermidibus::api_init (int ppqn, int bpm)
     m_outbus_array.set_all_clocks();
     m_inbus_array.set_all_inputs();
 }
+
+/**
+ *  Shows a list of discovered ports in debug mode.
+ *
+ * \param tag
+ *      Provides a string label indicate the context of this list.
+ */
+
+#ifdef PLATFORM_DEBUG // _XXX
+
+void
+mastermidibus::port_list (const std::string & tag)
+{
+        std::string plist = m_midi_scratch.port_list();
+        printf
+        (
+            "%d %s ports created:\n%s\n",
+            m_midi_scratch.full_port_count(), tag.c_str(), plist.c_str()
+        );
+}
+
+#else
+
+void
+mastermidibus::port_list (const std::string & )
+{
+    // No code if not debugging
+}
+
+#endif
 
 /**
  *  Initiate a poll() on the existing poll descriptors.  This is a

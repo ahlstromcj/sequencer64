@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-09
+ * \updates       2017-01-16
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -46,15 +46,52 @@ class midi_api : public midibase
 
 private:
 
+    /**
+     *
+     */
+
     midi_info & m_master_info;
+
+    /**
+     *
+     */
+
     midibus & m_parent_bus;
+
+    /**
+     *
+     */
+
     bool m_connected;
+
+    /**
+     *
+     */
 
 protected:
 
+    /**
+     *
+     */
+
     std::string m_error_string;
+
+    /**
+     *
+     */
+
     rterror_callback m_error_callback;
+
+    /**
+     *
+     */
+
     bool m_first_error_occurred;
+
+    /**
+     *
+     */
+
     void * m_error_callback_user_data;
 
 public:
@@ -66,6 +103,9 @@ public:
         int index = SEQ64_NO_INDEX
     );
     virtual ~midi_api ();
+
+    bool is_virtual_port () const;
+    bool is_input_port () const;
 
 public:
 
@@ -121,10 +161,30 @@ public:
     }
 
     /**
+     * \getter m_master_info
+     *      The const version.
+     */
+
+    const midi_info & master_info () const
+    {
+        return m_master_info;
+    }
+
+    /**
      * \getter m_parent_bus
      */
 
     midibus & parent_bus ()
+    {
+        return m_parent_bus;
+    }
+
+    /**
+     * \getter m_parent_bus
+     *      The const version.
+     */
+
+    const midibus & parent_bus () const
     {
         return m_parent_bus;
     }

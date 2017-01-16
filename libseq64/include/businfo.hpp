@@ -93,7 +93,7 @@ private:
 public:
 
     businfo ();
-    businfo (midibus * bus, bool is_input, bool is_virtual);
+    businfo (midibus * bus);
     businfo (const businfo & rhs);
 
     /**
@@ -227,7 +227,7 @@ public:
     busarray ();
     ~busarray ();
 
-    bool add (midibus * bus, bool is_input, bool is_virtual);
+    bool add (midibus * bus);
 
     int count () const
     {

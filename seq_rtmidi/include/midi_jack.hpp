@@ -139,6 +139,7 @@ protected:
 
 private:
 
+    bool api_init_inout (bool input);
     bool set_virtual_name (int portid, const std::string & portname);
 
 };          // class midi_jack
@@ -180,10 +181,6 @@ public:
     {
         return 0;           // master info later
     }
-
-#if 0
-    virtual std::string get_port_name (int portnumber);
-#endif
 
 private:
 
@@ -233,14 +230,11 @@ public:
      * \return
      *      Returns the number of ports counted by the midi_info member.
      */
+
     virtual int get_port_count ()
     {
         return 0;           // master info later
     }
-
-#if 0
-    virtual std::string get_port_name (int portnumber);
-#endif
 
     /*
      *  Note that midi_message::container is a vector<midibyte> object.

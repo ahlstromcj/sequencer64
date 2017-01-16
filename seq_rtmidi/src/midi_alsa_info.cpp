@@ -100,7 +100,6 @@ midi_alsa_info::midi_alsa_info
         (
             m_alsa_seq, m_poll_descriptors, m_num_poll_descriptors, POLLIN
         );
-        // set_sequence_input(false, nullptr);     // mastermidibase function
         snd_seq_set_output_buffer_size(m_alsa_seq, c_midibus_output_size);
         snd_seq_set_input_buffer_size(m_alsa_seq, c_midibus_input_size);
     }
@@ -346,11 +345,11 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
 
             midibus * m = new midibus
             (
-//              masterbus.m_midi_scratch, SEQ64_APP_NAME, bus_slot // index, port
                 masterbus.m_midi_scratch, bus_slot // index
             );
-            /////////////////////////////////////////////
-            masterbus.m_outbus_array.add(m, false, false);  /* out, nonvirt */
+            m->is_virtual_port(false);
+            m->is_input_port(false);
+            masterbus.m_outbus_array.add(m);
         }
         if (CAP_FULL_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
         {
@@ -361,11 +360,11 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
 
             midibus * m = new midibus
             (
-//              masterbus.m_midi_scratch, SEQ64_APP_NAME, bus_slot // index, port
                 masterbus.m_midi_scratch, bus_slot // index
             );
-            /////////////////////////////////////////////
-            masterbus.m_inbus_array.add(m, false, false);  /* out, nonvirt */
+            m->is_virtual_port(false);
+            m->is_input_port(true);                  // was false BEWARE BREAKAGE
+            masterbus.m_inbus_array.add(m);
         }
     }                                           /* end loop for clients */
 

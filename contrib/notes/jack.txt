@@ -94,9 +94,10 @@ RtMidi JACK:
     5.  Call jack_activate() with the JACK client pointer.
     6.  Call getPortCount().  This calls:
         1.  Call connect() again, which does nothing because already
-            connected.  2. Call jack_get_ports() to get a listing of the
-            ports.  This yields an array of string pointers such as
-            "qmidiarp:out 1" and "qmidiarp:out 2".
+            connected.
+        2.  Call jack_get_ports() to get a listing of the ports.  This
+            yields an array of string pointers such as "qmidiarp:out 1"
+            and "qmidiarp:out 2".
     7.  Now call openPort() [here, MidiInJack::openPort()] with the
         desired port number re 0 and the desired port name, such as
         "RtMidi Input".
@@ -104,13 +105,22 @@ RtMidi JACK:
             connected.
         2.  Call jack_port_register() with the JACK client pointer, the
             port name ("RtMidi Input"), and the JackPortIsInput flag.
-            Take note that this flag means we are a local port
-            representing a connection to a remote input port.
+            Take note that this flag means we are a local input port
+            representing a connection to a remote output port.
+            If we are setting up a local output port, then we would register
+            with a JackPortIsOutput, to connect to s remote input port.
         3.  Call getPortName(portnumber = 0), which again uselessly calls
             connect(), then calls jack_get_ports() with the JACK client
-            pointer and the JackPortIsOutput flag.  This gets us strings
-            like "qmidiarp:out 1" and "qmidiarp:out 2", and we pick one
-            via the port number.
+            pointer.  Since we are setting up a local input port, we want
+            to find the names of output ports, that is, ports with the
+            JackPortIsOutput flag.  If we are setting up a MidiInJack
+            port, we get the list of "JackPortIsOutput" ports from the
+            system.  This gets us strings like "qmidiarp:out 1" and
+            "qmidiarp:out 2", and we pick one via the port number.  If we
+            are setting up a MidiOutJack port, we get the list of
+            "JackPortIsIntput" ports from the system.  This gets us
+            strings like "qmidiarp:in 1" and "qmidiarp:in 2", and we pick
+            one via the port number.
         4.  Finally, call jack_connect() with the JACK client pointer,
             the name of the source port ("qmidiarp:out 1") which has
             (and must have) the flag JackPortIsOutput, and the name of the
@@ -118,9 +128,10 @@ RtMidi JACK:
 
                 jack_port_name(data->port)  // pointer to local port
 
-            and is, here, "RtMidi Input Client:RtMidi Input".
-            In qjackctl, one will see that the "out 1" port of "qmidiarp" is
-            connected to the "RtMidi input" port of "RtMidi Input Client".
+            and is, here, "RtMidi Input Client:RtMidi Input", and has the
+            flag JackPortIsInput.  In qjackctl, one sees that the "out 1"
+            port of "qmidiarp" is connected to the "RtMidi input" port of
+            "RtMidi Input Client".
         5.  Then set the input callback function, which has the function
             signature "void (double ts, vector<char> message, void * userdata)".
         6.  Call ignoreTypes() as desired.

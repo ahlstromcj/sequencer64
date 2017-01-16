@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-01-14
+ * \updates       2017-01-16
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -1006,6 +1006,47 @@ extract_port_names
         portname = pname;
     }
     return result;
+}
+
+/**
+ *  Extracts the buss name from "bus:port".  Sometimes we don't need both
+ *  parts at once.
+ *
+ * \param fullname
+ *      The "bus:port" name.
+ *
+ * \return
+ *      Returns the "bus" portion of the string.  If there is no colon, then
+ *      it is assumed there is no buss name, so an empty string is returned.
+ */
+
+std::string
+extract_bus_name (const std::string & fullname)
+{
+    std::size_t colonpos = fullname.find_last_of(":");
+    return (colonpos != std::string::npos) ?
+        fullname.substr(0, colonpos) : std::string("");
+}
+
+/**
+ *  Extracts the port name from "bus:port".  Sometimes we don't need both
+ *  parts at once.
+ *
+ * \param fullname
+ *      The "bus:port" name.
+ *
+ * \return
+ *      Returns the "port" portion of the string.  If there is no colon, then
+ *      it is assumed that the name is a port name, and so \a fullname is
+ *      returned.
+ */
+
+std::string
+extract_port_name (const std::string & fullname)
+{
+    std::size_t colonpos = fullname.find_last_of(":");
+    return (colonpos != std::string::npos) ?
+        fullname.substr(colonpos + 1) : fullname ;
 }
 
 }       // namespace seq64

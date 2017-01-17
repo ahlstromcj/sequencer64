@@ -2415,6 +2415,10 @@ output_thread_func (void * myperf)
  *      Hurray, seq24 is coming back to life!  We see that there is a fix for
  *      clock tick drift here, which relies on using long and long long
  *      values.  See the Changelog for seq24 0.9.3.
+ *
+ * \warning
+ *      Valgrind shows that output_func() is being called before the JACK
+ *      client pointer is being initialized!!!
  */
 
 void

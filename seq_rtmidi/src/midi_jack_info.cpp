@@ -5,12 +5,8 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-16
+ * \updates       2017-01-17
  * \license       See the rtexmidi.lic file.  Too big.
- *
- *  API information found at:
- *
- *      - ....
  *
  *  This class is meant to collect a whole bunch of JACK information
  *  about client number, port numbers, and port names, and hold them
@@ -55,9 +51,10 @@ midi_jack_info::midi_jack_info
     midi_info               (appname, ppqn, bpm),
     m_multi_client          (false),
     m_jack_data             (),
-    m_jack_client           (connect())
+    m_jack_client           (nullptr)               /* inited for connect() */
 {
     silence_jack_info();
+    m_jack_client = connect();
     if (not_nullptr(m_jack_client))                 /* created by connect() */
     {
         midi_handle(m_jack_client);                 /* void version         */
@@ -114,8 +111,21 @@ midi_jack_info::connect ()
         if (not_nullptr(result))
         {
             m_jack_client = result;
-            jack_set_process_callback(result, jack_process_dummy, &m_jack_data);
-            jack_activate(result);
+            int rc = jack_set_process_callback
+            (
+                result, jack_process_dummy, &m_jack_data
+            );
+            if (rc == 0)
+            {
+                jack_activate(result);
+            }
+            else
+            {
+                // TODO:  UNREGISTER the PORT!!!
+
+                m_error_string = func_message("JACK can't set dummy callback");
+                error(rterror::WARNING, m_error_string);
+            }
         }
         else
         {

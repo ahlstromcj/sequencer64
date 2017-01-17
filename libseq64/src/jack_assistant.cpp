@@ -1754,6 +1754,11 @@ jack_shutdown_callback (void * arg)
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
+/**
+ * \warning
+ *      Currently valgrind flags j->client() as uninitialized.
+ */
+
 long
 get_current_jack_position (void * arg)
 {

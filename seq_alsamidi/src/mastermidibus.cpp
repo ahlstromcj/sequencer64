@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-01-16
+ * \updates       2017-01-17
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -230,8 +230,8 @@ mastermidibus::api_init (int ppqn, int bpm)
                 i, SEQ64_NO_BUS,                // index and bus ID
                 m_queue, ppqn, bpm
             );
-            m.is_virtual_port(true);
-            m.is_input_port(false);
+            m->is_virtual_port(true);
+            m->is_input_port(false);
             m_outbus_array.add(m);
         }
         midibus * m = new midibus                       /* virtual port     */
@@ -239,8 +239,8 @@ mastermidibus::api_init (int ppqn, int bpm)
             snd_seq_client_id(m_alsa_seq), m_alsa_seq, 0,
             SEQ64_NO_BUS, m_queue, ppqn, bpm
         );
-        m.is_virtual_port(true);
-        m.is_input_port(true);
+        m->is_virtual_port(true);
+        m->is_input_port(true);
         m_inbus_array.add(m);
     }
     else
@@ -293,8 +293,8 @@ mastermidibus::api_init (int ppqn, int bpm)
                             snd_seq_port_info_get_name(pinfo),
                             numouts, m_queue, ppqn, bpm
                         );
-                        m.is_virtual_port(false);
-                        m.is_input_port(false);
+                        m->is_virtual_port(false);
+                        m->is_input_port(false);
                         m_outbus_array.add(m);
                         ++numouts;
                     }
@@ -315,8 +315,8 @@ mastermidibus::api_init (int ppqn, int bpm)
                             snd_seq_port_info_get_name(pinfo),
                             numins, m_queue, ppqn, bpm
                         );
-                        m.is_virtual_port(false);
-                        m.is_input_port(true);
+                        m->is_virtual_port(false);
+                        m->is_input_port(true);
                         m_inbus_array.add(m);
                         ++numins;
                     }
@@ -537,8 +537,8 @@ mastermidibus::api_port_start (int bus, int port)
                 bus_slot,
                 m_queue, get_ppqn(), get_bpm()
             );
-            m.is_virtual_port(false);
-            m.is_input_port(false);
+            m->is_virtual_port(false);
+            m->is_input_port(false);
             m_outbus_array.add(m);
         }
         if (CAP_FULL_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
@@ -560,8 +560,8 @@ mastermidibus::api_port_start (int bus, int port)
                 bus_slot,
                 m_queue, get_ppqn(), get_bpm()
             );
-            m.is_virtual_port(false);
-            m.is_input_port(false);
+            m->is_virtual_port(false);
+            m->is_input_port(false);
             m_inbus_array.add(m);
         }
     }                                           /* end loop for clients */

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2017-01-06
+ * \updates       2017-01-18
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -161,6 +161,108 @@ jack_debug_print
 }
 
 #endif  // USE_JACK_DEBUG_PRINT
+
+/**
+ * EXPERIMENTAL
+ */
+
+int
+jack_dummy_callback (jack_nframes_t /* nframes */, void * arg)
+{
+    jack_assistant * j = (jack_assistant *)(arg);
+    if (not_nullptr(j))
+    {
+        // no code
+    }
+    return 0;
+}
+
+/*
+ *  Implemented second patch for JACK Transport from freddix/seq24 GitHub
+ *  project.  Added the following function.  This function is supposed to
+ *  allow seq24/sequencer64 to follow JACK transport.
+ *
+ *  For more advanced ideas, see the MetronomeJack::process_callback()
+ *  function in the klick project.  It plays a metronome tick after
+ *  calculating if it needs to or not.  (Maybe we could use it to provide our
+ *  own tick for recording patterns.)
+ *
+ *  If debugging is enabled in the build, then this function outputs the
+ *  current JACK position information every couple of seconds, which can be
+ *  useful to examine the interactions with other JACK clients.
+ *
+ *  The code enabled via USE_JACK_BBT_OFFSET sets the JACK
+ *  position fieldl bbt_offset to 0.  It doesn't seem to have any effect,
+ *  though it can be send when calling show_position() in the
+ *  jack_transport_callback() function.
+ *
+ * Stazed:
+ *
+ *      This process callback is called by JACK whether stopped or rolling.
+ *      Assuming every JACK cycle...  "...client supplied function that is
+ *      called by the engine anytime there is work to be done".  There seems to
+ *      be no definition of '...work to be done'.  nframes = buffer_size -- is
+ *      not used.
+ *
+ * \param nframes
+ *      Unused.
+ *
+ * \param arg
+ *      Used for debug output now.  Note that this function will be called
+ *      very often, and this pointer will currently not be used unless
+ *      debugging is turned on.
+ *
+ * \return
+ *      Returns 0 on success, non-zero on error.
+ */
+
+int
+jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
+{
+    jack_assistant * j = (jack_assistant *)(arg);
+    if (not_nullptr(j))
+    {
+
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+
+        perform & p = j->m_jack_parent;
+        if (! p.is_running())
+        {
+            /*
+             * For start or for FF/RW/key-p when not running.  If we're stopped,
+             * we need to start, otherwise we need to reposition the transport
+             * marker.
+             */
+
+            jack_transport_state_t s =
+                jack_transport_query(j->client(), nullptr);
+
+            if (s == JackTransportRolling || s == JackTransportStarting)
+            {
+                j->m_jack_transport_state_last = JackTransportStarting;
+                if (p.start_from_perfedit())
+                    p.inner_start(true);
+                else
+                    p.inner_start(p.song_start_mode());
+            }
+            else        /* don't start, just reposition transport marker */
+            {
+                long tick = get_current_jack_position((void *) j);
+                long diff = tick - j->get_jack_stop_tick();
+                if (diff != 0)
+                {
+                    p.set_reposition();
+                    p.set_start_tick(tick);
+                    j->set_jack_stop_tick(tick);
+                }
+            }
+        }
+
+#endif  // SEQ64_STAZED_JACK_SUPPORT
+
+    }
+    return 0;
+}
 
 /**
  *  This constructor initializes a number of member variables, some
@@ -436,13 +538,13 @@ jack_assistant::init ()
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
         /*
-         * Stazed JACK support uses only the jack_process_callback().  Makes
+         * Stazed JACK support uses only the jack_transport_callback().  Makes
          * sense, since seq24/32/64 are not "slow-sync" clients.
          */
 
         int jackcode = jack_set_process_callback    /* see notes in banner  */
         (
-            m_jack_client, jack_process_callback, (void *) this
+            m_jack_client, jack_transport_callback, (void *) this
         );
 #else
         int jackcode = jack_set_sync_callback
@@ -464,7 +566,7 @@ jack_assistant::init ()
 
         jackcode = jack_set_process_callback        /* see notes in banner  */
         (
-            m_jack_client, jack_process_callback, NULL
+            m_jack_client, jack_transport_callback, NULL
         );
 #endif
         if (jackcode != 0)
@@ -915,93 +1017,6 @@ jack_assistant::sync (jack_transport_state_t state)
     return result;
 }
 
-/*
- *  Implemented second patch for JACK Transport from freddix/seq24 GitHub
- *  project.  Added the following function.  This function is supposed to
- *  allow seq24/sequencer64 to follow JACK transport.
- *
- *  For more advanced ideas, see the MetronomeJack::process_callback()
- *  function in the klick project.  It plays a metronome tick after
- *  calculating if it needs to or not.  (Maybe we could use it to provide our
- *  own tick for recording patterns.)
- *
- *  If debugging is enabled in the build, then this function outputs the
- *  current JACK position information every couple of seconds, which can be
- *  useful to examine the interactions with other JACK clients.
- *
- *  The code enabled via USE_JACK_BBT_OFFSET sets the JACK
- *  position fieldl bbt_offset to 0.  It doesn't seem to have any effect,
- *  though it can be send when calling show_position() in the
- *  jack_process_callback() function.
- *
- * Stazed:
- *
- *      This process callback is called by JACK whether stopped or rolling.
- *      Assuming every JACK cycle...  "...client supplied function that is
- *      called by the engine anytime there is work to be done".  There seems to
- *      be no definition of '...work to be done'.  nframes = buffer_size -- is
- *      not used.
- *
- * \param nframes
- *      Unused.
- *
- * \param arg
- *      Used for debug output now.  Note that this function will be called
- *      very often, and this pointer will currently not be used unless
- *      debugging is turned on.
- *
- * \return
- *      Returns 0 on success, non-zero on error.
- */
-
-int
-jack_process_callback (jack_nframes_t /* nframes */, void * arg)
-{
-    jack_assistant * j = (jack_assistant *)(arg);
-    if (not_nullptr(j))
-    {
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
-        perform & p = j->m_jack_parent;
-        if (! p.is_running())
-        {
-            /*
-             * For start or for FF/RW/key-p when not running.  If we're stopped,
-             * we need to start, otherwise we need to reposition the transport
-             * marker.
-             */
-
-            jack_transport_state_t s =
-                jack_transport_query(j->client(), nullptr);
-
-            if (s == JackTransportRolling || s == JackTransportStarting)
-            {
-                j->m_jack_transport_state_last = JackTransportStarting;
-                if (p.start_from_perfedit())
-                    p.inner_start(true);
-                else
-                    p.inner_start(p.song_start_mode());
-            }
-            else        /* don't start, just reposition transport marker */
-            {
-                long tick = get_current_jack_position((void *) j);
-                long diff = tick - j->get_jack_stop_tick();
-                if (diff != 0)
-                {
-                    p.set_reposition();
-                    p.set_start_tick(tick);
-                    j->set_jack_stop_tick(tick);
-                }
-            }
-        }
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
-
-    }
-    return 0;
-}
-
 /**
  *  This JACK synchronization callback informs the specified perform
  *  object of the current state and parameters of JACK.
@@ -1014,7 +1029,7 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
  *          position is now a moving target.
  *
  *  This is the slow-sync callback, which the stazed code replaces with
- *  jack_process_callback().
+ *  jack_transport_callback().
  *
  * \param state
  *      The JACK Transport state.

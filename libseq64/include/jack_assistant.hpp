@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2017-01-06
+ * \updates       2017-01-18
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -136,7 +136,7 @@ typedef struct
 
 class jack_assistant
 {
-    friend int jack_process_callback (jack_nframes_t nframes, void * arg);
+    friend int jack_transport_callback (jack_nframes_t nframes, void * arg);
     friend void jack_shutdown_callback (void * arg);
     friend int jack_sync_callback
     (

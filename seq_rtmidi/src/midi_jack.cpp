@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-17
+ * \updates       2017-01-18
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -57,18 +57,18 @@
 #include "midi_jack.hpp"                /* seq64::midi_jack                 */
 #include "settings.hpp"                 /* seq64::rc() accessor function    */
 
+/**
+ *  Delimits the size of the JACK ringbuffer.
+ */
+
+#define JACK_RINGBUFFER_SIZE 16384      /* default size for ringbuffer  */
+
 /*
  * Do not document the namespace; it breaks Doxygen.
  */
 
 namespace seq64
 {
-
-/**
- *  Delimits the size of the JACK ringbuffer.
- */
-
-#define JACK_RINGBUFFER_SIZE 16384      /* default size for ringbuffer  */
 
 /**
  *  Provides the JACK process input callback.  This function does the
@@ -88,6 +88,9 @@ namespace seq64
  *  The ALSA code polls for events, and that model is also available here.
  *  We're still working exactly how it will work best.
  *
+ *  This function used to be static, but now we make if available to
+ *  midi_jack_info.
+ *
  * \param nframes
  *    The frame number to be processed.
  *
@@ -98,8 +101,8 @@ namespace seq64
  *    Returns 0.
  */
 
-static int
-jack_process_input (jack_nframes_t nframes, void * arg)
+int
+jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
 {
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
     rtmidi_in_data * rtindata = jackdata->m_jack_rtmidiin;
@@ -149,6 +152,9 @@ jack_process_input (jack_nframes_t nframes, void * arg)
  *         written to an event port buffer (the JACK "reserve" function).
  *      -# Read the data into this buffer.
  *
+ *  This function used to be static, but now we make if available to
+ *  midi_jack_info.
+ *
  * \param nframes
  *    The frame number to be processed.
  *
@@ -159,8 +165,8 @@ jack_process_input (jack_nframes_t nframes, void * arg)
  *    Returns 0.
  */
 
-static int
-jack_process_output (jack_nframes_t nframes, void * arg)
+int
+jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
 {
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
     if (not_nullptr(jackdata->m_jack_port))             /* is port created? */
@@ -635,8 +641,8 @@ midi_jack::api_get_port_name ()
  *  For input, it connects the MIDI input port.  The following calls are made:
  *
  *      -   jack_client_open(), to initialize JACK client.
- *      -   jack_set_process_callback(), to set jack_process_input() or
- *          jack_process_output().
+ *      -   jack_set_process_callback(), to set jack_process_rtmidi_input() or
+ *          jack_process_rtmidi_output().
  *      -   jack_activate().
  *
  *  For output, connects the MIDI output port.  The following calls are made:
@@ -715,7 +721,7 @@ midi_jack::open_client_impl (bool input)
             {
                 int rc = jack_set_process_callback
                 (
-                    clipointer, jack_process_input, &m_jack_data
+                    clipointer, jack_process_rtmidi_input, &m_jack_data
                 );
                 if (rc != 0)
                 {
@@ -757,7 +763,7 @@ midi_jack::open_client_impl (bool input)
                 {
                     int rc = jack_set_process_callback
                     (
-                        clipointer, jack_process_output, &m_jack_data
+                        clipointer, jack_process_rtmidi_output, &m_jack_data
                     );
                     if (rc != 0)
                     {

@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-17
+ * \updates       2017-01-18
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of JACK information
@@ -25,6 +25,37 @@
 
 namespace seq64
 {
+
+/*
+ * Defined in midi_jack.cpp; used to be static.
+ */
+
+extern int jack_process_rtmidi_input (jack_nframes_t nframes, void * arg);
+extern int jack_process_rtmidi_output (jack_nframes_t nframes, void * arg);
+
+/**
+ *  Provides a JACK callback function that uses the callbacks defined in the
+ *  midi_jack module.
+ */
+
+static int
+jack_process_io (jack_nframes_t nframes, void * arg)
+{
+    if (nframes > 0)
+    {
+        jack_process_rtmidi_input(nframes, arg);
+        jack_process_rtmidi_output(nframes, arg);
+    }
+    return 0;
+
+#if USE_DUMMY_CODE
+    midi_jack_data * jackdata = (midi_jack_data *) arg;
+    if (jackdata->m_jack_port == NULL)      /* is port created?        */
+       return 0;
+    else
+       return int(nframes) == 0 ? int(nframes) : 0 ;    // EXPERIMENTAL
+#endif
+}
 
 /**
  *  Principal constructor.
@@ -75,21 +106,6 @@ midi_jack_info::~midi_jack_info ()
 }
 
 /**
- *  Provides a dummy JACK callback function to use when only enumerating the
- *  existing JACK ports.
- */
-
-static int
-jack_process_dummy (jack_nframes_t nframes, void * arg)
-{
-    midi_jack_data * jackdata = (midi_jack_data *) arg;
-    if (jackdata->m_jack_port == NULL)      /* is port created?        */
-       return 0;
-    else
-       return int(nframes);
-}
-
-/**
  *  Local JACK connection for enumerating the ports.  Note that this name will
  *  be used for normal ports, so we make sure it reflects the application
  *  name.
@@ -113,7 +129,7 @@ midi_jack_info::connect ()
             m_jack_client = result;
             int rc = jack_set_process_callback
             (
-                result, jack_process_dummy, &m_jack_data
+                result, jack_process_io, &m_jack_data
             );
             if (rc == 0)
             {
@@ -123,7 +139,7 @@ midi_jack_info::connect ()
             {
                 // TODO:  UNREGISTER the PORT!!!
 
-                m_error_string = func_message("JACK can't set dummy callback");
+                m_error_string = func_message("JACK can't set I/O callback");
                 error(rterror::WARNING, m_error_string);
             }
         }

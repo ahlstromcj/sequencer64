@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-13
+ * \updates       2017-01-17
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring...

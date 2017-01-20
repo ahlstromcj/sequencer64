@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-17
+ * \updates       2017-01-19
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring...
@@ -44,6 +44,13 @@ private:
      */
 
     bool m_multi_client;
+
+    /**
+     *  Preserves the original name of the remote port, so it can be used
+     *  later for connection.
+     */
+
+    std::string m_remote_port_name;
 
 protected:
 
@@ -85,6 +92,24 @@ public:
     }
 
     /**
+     * \getter m_remote_port_name
+     */
+
+    const std::string & remote_port_name () const
+    {
+        return m_remote_port_name;
+    }
+
+    /**
+     * \setter m_remote_port_name
+     */
+
+    void remote_port_name (const std::string & s)
+    {
+        m_remote_port_name = s;
+    }
+
+    /**
      * \getter m_jack_port
      *      This is the platform-specific version of midi_handle().
      */
@@ -121,6 +146,7 @@ protected:
 
     virtual bool open_client () = 0;    // replaces "connect()"
 
+    virtual bool api_connect ();
     virtual bool api_init_out ();       // still in progress
     virtual bool api_init_in ();
     virtual bool api_init_out_sub ();

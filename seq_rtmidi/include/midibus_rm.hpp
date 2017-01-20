@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2017-01-14
+ * \updates       2017-01-19
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
@@ -95,21 +95,15 @@ public:
 
     virtual ~midibus ();
 
-protected:
+    virtual bool api_connect ();
 
+protected:
 
     virtual int api_poll_for_midi ();
     virtual bool api_init_in ();
     virtual bool api_init_in_sub ();
     virtual bool api_init_out ();
     virtual bool api_init_out_sub ();
-
-    /*
-     *  Provides common code between api_init_in() and api_initi_out().
-     */
-
-    bool api_init_common (rtmidi * rtm);
-
     virtual void api_continue_from (midipulse tick, midipulse beats);
     virtual void api_start ();
     virtual void api_stop ();

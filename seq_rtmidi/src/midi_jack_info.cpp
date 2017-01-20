@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-18
+ * \updates       2017-01-20
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of JACK information
@@ -15,6 +15,7 @@
 
 #include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
 #include "event.hpp"                    /* seq64::event and other tokens    */
+#include "jack_assistant.hpp"           /* seq64::create_jack_client()      */
 #include "midi_jack_info.hpp"           /* seq64::midi_jack_info            */
 #include "midibus_common.hpp"           /* from the libseq64 sub-project    */
 #include "settings.hpp"                 /* seq64::rc() configuration object */
@@ -123,7 +124,7 @@ midi_jack_info::connect ()
         if (multi_client())
             clientname = "midi_jack_info";
 
-        result = jack_client_open(clientname, JackNoStartServer, NULL);
+        result = create_jack_client(clientname);
         if (not_nullptr(result))
         {
             m_jack_client = result;
@@ -133,12 +134,19 @@ midi_jack_info::connect ()
             );
             if (rc == 0)
             {
-                jack_activate(result);
+                /**
+                 * We need to add a call to jack_on_shutdown() to set up a
+                 * shutdown callback.  We also need to wait on the activation
+                 * call until we have registered all the ports.  Then we
+                 * (actually the mastermidibus) can call the api_connect()
+                 * function to activate this JACK client and connect all the
+                 * ports.
+                 *
+                 * jack_activate(result);
+                 */
             }
             else
             {
-                // TODO:  UNREGISTER the PORT!!!
-
                 m_error_string = func_message("JACK can't set I/O callback");
                 error(rterror::WARNING, m_error_string);
             }
@@ -339,6 +347,41 @@ void
 midi_jack_info::api_flush ()
 {
     // No code yet
+}
+
+/**
+ *  Goes through all the ports, represented by midibus objects, that have
+ *  been created.  For any non-virtual port, the port connection is made.
+ */
+
+bool
+midi_jack_info::api_connect ()
+{
+    bool result = not_nullptr(client_handle());
+    if (result)
+    {
+        int rc = jack_activate(client_handle());
+        result = rc == 0;
+        if (result)
+        {
+            for
+            (
+                std::vector<midibus *>::iterator it = bus_container().begin();
+                it != bus_container().end(); ++it
+            )
+            {
+                midibus * m = *it;
+                if (! m->is_virtual_port())
+                    m->api_connect();
+            }
+        }
+        else
+        {
+            m_error_string = func_message("JACK can't activate I/O");
+            error(rterror::WARNING, m_error_string);
+        }
+    }
+    return result;
 }
 
 /**

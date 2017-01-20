@@ -8,7 +8,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-13
+ * \updates       2017-01-19
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the JACK information of
@@ -102,6 +102,7 @@ public:
     virtual void api_port_start (mastermidibus & masterbus, int bus, int port);
     virtual bool api_get_midi_event (event * inev);
     virtual void api_flush ();
+    virtual bool api_connect ();
 
 private:
 

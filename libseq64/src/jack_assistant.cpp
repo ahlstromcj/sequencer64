@@ -265,6 +265,203 @@ jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
 }
 
 /**
+ *  A more full-featured initialization for a JACK client, which is meant to
+ *  be called by the init() function.  Do not call this function if the JACK
+ *  client handle is already open.
+ *
+ * Status bits for jack_status_t return pointer:
+ *
+ *      JackNameNotUnique means that the client name was not unique. With
+ *      JackUseExactName, this is fatal. Otherwise, the name was modified by
+ *      appending a dash and a two-digit number in the range "-01" to "-99".
+ *      The jack_get_client_name() function returns the exact string used. If
+ *      the specified client_name plus these extra characters would be too
+ *      long, the open fails instead.
+ *
+ *      JackServerStarted means that the JACK server was started as a result
+ *      of this operation. Otherwise, it was running already. In either case
+ *      the caller is now connected to jackd, so there is no race condition.
+ *      When the server shuts down, the client will find out.
+ *
+ * JackOpenOptions:
+ *
+ *      JackSessionID | JackServerName | JackNoStartServer | JackUseExactName
+ *
+ *      Only the first is used at present.
+ *
+ * \param clientname
+ *      Provides the name of the client, used in the call to
+ *      jack_client_open().  By default, this name is the macro SEQ64_PACKAGE
+ *      (i.e.  "sequencer64").  The name scope is local to each server. Unless
+ *      forbidden by the JackUseExactName option, the server will modify this
+ *      name to create a unique variant, if needed.
+ *
+ * \return
+ *      Returns a pointer to the JACK client if JACK has opened the client
+ *      connection successfully.  Otherwise, a null pointer is returned.
+ */
+
+jack_client_t *
+create_jack_client
+(
+    const std::string & clientname,
+    const std::string & uuid
+)
+{
+    jack_client_t * result = nullptr;
+    const char * name = clientname.c_str();
+    jack_status_t status;
+
+    /*
+     * We've never disabled the SEQ64_JACK_SESSION macro, and we like the
+     * error-reporting we get by that method.  So we've commented out the
+     * following code in favor of using the session-uuid code:
+     *
+     *  #ifdef SEQ64_JACK_SESSION
+     *  #else
+     *      jack_status_t * pstatus = NULL;
+     *      result = jack_client_open(name, JackNullOption, pstatus);
+     *  #endif
+     */
+
+    jack_status_t * pstatus = &status;
+    if (uuid.empty())
+    {
+        result = jack_client_open(name, JackNoStartServer, pstatus);
+    }
+    else
+    {
+        const char * uid = uuid.c_str();
+        result = jack_client_open
+        (
+            name, (jack_options_t)(JackNoStartServer|JackSessionID), pstatus, uid
+        );
+    }
+    if (not_nullptr(result))
+    {
+        if (not_nullptr(pstatus))
+        {
+            if (status & JackServerStarted)
+                (void) info_message("JACK server started now");
+            else
+                (void) info_message("JACK server already started");
+
+            if (status & JackNameNotUnique)
+                (void) info_message("JACK client-name NOT unique");
+
+            show_jack_statuses(status);
+        }
+    }
+    else
+        (void) error_message("JACK server not running?");
+
+    return result;                      /* bad result handled by caller     */
+}
+
+/**
+ *  Provides a list of JACK status bits, and a brief string to explain the
+ *  status bit.  Terminated by a 0 value and an empty string.
+ */
+
+jack_status_pair_t
+s_status_pairs [] =
+{
+    {
+        JackFailure,
+        "JackFailure, overall operation failed"
+    },
+    {
+        JackInvalidOption,
+        "JackInvalidOption, operation contained an invalid or unsupported option"
+    },
+    {
+        JackNameNotUnique,
+        "JackNameNotUnique, the client name was not unique"
+    },
+    {
+        JackServerStarted,
+        "JackServerStarted, JACK started by this operation, not running already"
+    },
+    {
+        JackServerFailed,
+        "JackServerFailed, unable to connect to the JACK server"
+    },
+    {
+        JackServerError,
+        "JackServerError, communication error with the JACK server"
+    },
+    {
+        JackNoSuchClient,
+        "JackNoSuchClient, requested client does not exist"
+    },
+    {
+        JackLoadFailure,
+        "JackLoadFailure, unable to load internal client"
+    },
+    {
+        JackInitFailure,
+        "JackInitFailure, unable to initialize client"
+    },
+    {
+        JackShmFailure,
+        "JackShmFailure, unable to access shared memory"
+    },
+    {
+        JackVersionError,
+        "JackVersionError, client's protocol version does not match"
+    },
+    {
+        JackBackendError,
+        "JackBackendError, a JACK back-end error occurred"
+    },
+    {
+        JackClientZombie,
+        "JackClientZombie, a JACK zombie process exists"
+    },
+    {                                   /* terminator */
+        0, ""
+    }
+};
+
+/**
+ *  Loops through the full set of JACK bits, showing the information for any
+ *  bits that are set in the given parameter.  For reference, here are the
+ *  enumeration values from /usr/include/jack/types.h:
+ *
+\verbatim
+        JackFailure         = 0x01
+        JackInvalidOption   = 0x02
+        JackNameNotUnique   = 0x04
+        JackServerStarted   = 0x08
+        JackServerFailed    = 0x10
+        JackServerError     = 0x20
+        JackNoSuchClient    = 0x40
+        JackLoadFailure     = 0x80
+        JackInitFailure     = 0x100
+        JackShmFailure      = 0x200
+        JackVersionError    = 0x400
+        JackBackendError    = 0x800
+        JackClientZombie    = 0x1000
+\endverbatim
+ *
+ * \param bits
+ *      The mask of the bits to be shown in the output.
+ */
+
+void
+show_jack_statuses (unsigned bits)
+{
+    jack_status_pair_t * jsp = &s_status_pairs[0];
+    while (jsp->jf_bit != 0)
+    {
+        if (bits & jsp->jf_bit)
+            (void) info_message(jsp->jf_meaning);
+
+        ++jsp;
+    }
+}
+
+/**
  *  This constructor initializes a number of member variables, some
  *  of them public!
  *
@@ -1295,108 +1492,6 @@ jack_assistant::output (jack_scratchpad & pad)
 }
 
 /**
- *  Provides a list of JACK status bits, and a brief string to explain the
- *  status bit.  Terminated by a 0 value and an empty string.
- */
-
-jack_status_pair_t jack_assistant::sm_status_pairs [] =
-{
-    {
-        JackFailure,
-        "JackFailure, overall operation failed"
-    },
-    {
-        JackInvalidOption,
-        "JackInvalidOption, operation contained an invalid or unsupported option"
-    },
-    {
-        JackNameNotUnique,
-        "JackNameNotUnique, the client name was not unique"
-    },
-    {
-        JackServerStarted,
-        "JackServerStarted, JACK started by this operation, not running already"
-    },
-    {
-        JackServerFailed,
-        "JackServerFailed, unable to connect to the JACK server"
-    },
-    {
-        JackServerError,
-        "JackServerError, communication error with the JACK server"
-    },
-    {
-        JackNoSuchClient,
-        "JackNoSuchClient, requested client does not exist"
-    },
-    {
-        JackLoadFailure,
-        "JackLoadFailure, unable to load internal client"
-    },
-    {
-        JackInitFailure,
-        "JackInitFailure, unable to initialize client"
-    },
-    {
-        JackShmFailure,
-        "JackShmFailure, unable to access shared memory"
-    },
-    {
-        JackVersionError,
-        "JackVersionError, client's protocol version does not match"
-    },
-    {
-        JackBackendError,
-        "JackBackendError, a JACK back-end error occurred"
-    },
-    {
-        JackClientZombie,
-        "JackClientZombie, a JACK zombie process exists"
-    },
-    {                                   /* terminator */
-        0, ""
-    }
-};
-
-/**
- *  Loops through the full set of JACK bits, showing the information for any
- *  bits that are set in the given parameter.  For reference, here are the
- *  enumeration values from /usr/include/jack/types.h:
- *
-\verbatim
-        JackFailure         = 0x01
-        JackInvalidOption   = 0x02
-        JackNameNotUnique   = 0x04
-        JackServerStarted   = 0x08
-        JackServerFailed    = 0x10
-        JackServerError     = 0x20
-        JackNoSuchClient    = 0x40
-        JackLoadFailure     = 0x80
-        JackInitFailure     = 0x100
-        JackShmFailure      = 0x200
-        JackVersionError    = 0x400
-        JackBackendError    = 0x800
-        JackClientZombie    = 0x1000
-\endverbatim
- *
- * \param bits
- *      The mask of the bits to be shown in the output.
- */
-
-void
-jack_assistant::show_statuses (unsigned bits)
-{
-    jack_status_pair_t * jsp = &sm_status_pairs[0];
-    while (jsp->jf_bit != 0)
-    {
-        if (bits & jsp->jf_bit)
-            (void) info_message(jsp->jf_meaning);
-
-        ++jsp;
-    }
-}
-
-/**
  *  Shows a one-line summary of a JACK position structure.  This function is
  *  meant for experimenting and learning.
  *
@@ -1496,35 +1591,12 @@ jack_assistant::show_position (const jack_position_t & pos) const
 }
 
 /**
- *  A more full-featured initialization for a JACK client, which is meant to
- *  be called by the init() function.
- *
- * Status bits for jack_status_t return pointer:
- *
- *      JackNameNotUnique means that the client name was not unique. With
- *      JackUseExactName, this is fatal. Otherwise, the name was modified by
- *      appending a dash and a two-digit number in the range "-01" to "-99".
- *      The jack_get_client_name() function returns the exact string used. If
- *      the specified client_name plus these extra characters would be too
- *      long, the open fails instead.
- *
- *      JackServerStarted means that the JACK server was started as a result
- *      of this operation. Otherwise, it was running already. In either case
- *      the caller is now connected to jackd, so there is no race condition.
- *      When the server shuts down, the client will find out.
- *
- * JackOpenOptions:
- *
- *      JackSessionID | JackServerName | JackNoStartServer | JackUseExactName
- *
- *      Only the first is used at present.
+ *  A member wrapper function for the new free function create_jack_client().
  *
  * \param clientname
  *      Provides the name of the client, used in the call to
- *      jack_client_open().  By default, this name is the macro SEQ64_PACKAGE
- *      (i.e.  "sequencer64").  The name scope is local to each server. Unless
- *      forbidden by the JackUseExactName option, the server will modify this
- *      name to create a unique variant, if needed.
+ *      create_jack_client().  By default, this name is the macro SEQ64_PACKAGE
+ *      (i.e.  "sequencer64").
  *
  * \return
  *      Returns a pointer to the JACK client if JACK has opened the client
@@ -1534,6 +1606,12 @@ jack_assistant::show_position (const jack_position_t & pos) const
 jack_client_t *
 jack_assistant::client_open (const std::string & clientname)
 {
+
+    jack_client_t * result = create_jack_client
+    (
+        clientname, rc().jack_session_uuid()
+    );
+#if 0
     jack_client_t * result = nullptr;
     const char * name = clientname.c_str();
     jack_status_t status;
@@ -1570,10 +1648,34 @@ jack_assistant::client_open (const std::string & clientname)
         if (status & JackNameNotUnique)
             (void) info_message("JACK client-name NOT unique");
 
-        show_statuses(status);
+        show_jack_statuses(status);
     }
+#endif
     return result;                      /* bad result handled by caller     */
 }
+
+#ifdef PLATFORM_DEBUG
+
+jack_client_t *
+jack_assistant::client () const
+{
+    static jack_client_t * s_preserved_client = nullptr;
+    if (not_nullptr(s_preserved_client))
+    {
+        if (s_preserved_client != m_jack_client)
+        {
+            errprint("JACK client pointer corrrupt!");
+            s_preserved_client = m_jack_client = nullptr;
+        }
+    }
+    else
+    {
+        s_preserved_client = m_jack_client;
+    }
+    return m_jack_client;
+}
+
+#endif  // PLATFORM_DEBUG
 
 /**
  *  The JACK timebase function defined here sets the JACK position structure.

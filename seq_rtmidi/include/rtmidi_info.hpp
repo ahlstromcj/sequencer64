@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2017-01-16
+ * \updates       2017-01-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -35,6 +35,7 @@ namespace seq64
 
 class rtmidi_info
 {
+    friend class mastermidibus;
     friend class midibus;
     friend class rtmidi_in;
     friend class rtmidi_out;
@@ -100,21 +101,40 @@ public:
     }
 
     /**
-     *  Add midibus information to the input ports.
+     *  Add midibus information to the input ports.  Also adds the midibus to
+     *  a lit of busses to connect in mastermidibus.  This function is meant
+     *  for virtual ports, so maybe we don't need the add_bus() call.  But
+     *  for now we can save the information, it is harmless, really.
      */
 
     void add_input (const midibus * m)
     {
         get_api_info()->input_ports().add(m);
+        add_bus(m);
     }
 
     /**
-     *  Add midibus information to the output ports.
+     *  Add midibus information to the output ports.  Also adds the midibus
+     *  to a lit of busses to connect in mastermidibus.  This function is
+     *  meant for virtual ports, so maybe we don't need the add_bus() call.
+     *  But for now we can save the information, it is harmless, really.
      */
 
     void add_output (const midibus * m)
     {
         get_api_info()->output_ports().add(m);
+        add_bus(m);
+    }
+
+    /**
+     *  Adds the bus to a list of busses to be connected by the API at the
+     *  right time (currently applies only to JACK).  See the calls to this
+     *  function in mastermidibus.
+     */
+
+    void add_bus (const midibus * m)
+    {
+        get_api_info()->add_bus(m);
     }
 
     /**
@@ -267,6 +287,11 @@ public:
     }
 
 protected:
+
+    bool api_connect ()
+    {
+        return get_api_info()->api_connect();
+    }
 
     /**
      * \setter sm_selected_api

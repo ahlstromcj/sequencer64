@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-09
+ * \updates       2017-01-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The big difference between this class (seq64::rtmidi) and
@@ -71,6 +71,11 @@ protected:
     virtual ~rtmidi ();
 
 public:
+
+    bool api_connect ()
+    {
+        return get_api()->api_connect();
+    }
 
     void api_play (event * e24, midibyte channel)
     {

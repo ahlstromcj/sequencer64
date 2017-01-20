@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-18
+ * \updates       2017-01-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -245,17 +245,14 @@ midi_jack::~midi_jack ()
  *  "manual ports" option is not in force.  This code is basically what was
  *  done by midi_out_jack::open_port() in RtMidi.
  *
-\verbatim
-    master_info().connect_name(get_bus_index())
-    master_info().get_bus_name(get_bus_index())
-    master_info().get_port_name(get_bus_index())
-\endverbatim
- *
  *  For jack_connect(), the first port-name is the source port, and the source
  *  port must include the JackPortIsOutput flag.  The second port-name is the
  *  destination port, and the destination port must include the
  *  JackPortIsInput flag.  For this function, the source/output port is this
  *  port, and the destination/input is....
+ *
+ *  Note that connect_port() [which calls jack_connect()] cannot usefully be
+ *  called until jack_activate() has been called.
  *
  * \return
  *      Returns true unless setting up ALSA MIDI failed in some way.
@@ -271,18 +268,25 @@ midi_jack::api_init_out ()
     if (result)
     {
         std::string remoteportname = connect_name();    /* "bus:port"   */
+        remote_port_name(remoteportname);
         set_alt_name(SEQ64_APP_NAME, SEQ64_CLIENT_NAME, remoteportname);
+        result = register_port(SEQ64_MIDI_OUTPUT, port_name());
 
-        std::string localportname = connect_name();
-        bool result = connect_port                      /* registers too    */
-        (
-            SEQ64_MIDI_OUTPUT, remoteportname, localportname
-        );
+#ifdef USE_OLD_CODE
+        if (result)
+        {
+            std::string localportname = connect_name();
+            result = connect_port                      /* registers too    */
+            (
+                SEQ64_MIDI_OUTPUT, remoteportname, localportname
+            );
+        }
         if (result)
         {
 //          parent_bus().set_alt_name(SEQ64_APP_NAME, clientname, portname);
             set_port_open();
         }
+#endif
     }
     return result;
 }
@@ -329,16 +333,50 @@ midi_jack::api_init_in ()
         std::string remoteportname = connect_name();    /* "bus:port"       */
         set_alt_name(SEQ64_APP_NAME, SEQ64_CLIENT_NAME, remoteportname);
 
-        std::string localportname = connect_name();     /* now altered      */
-        bool result = connect_port                      /* registers too    */
-        (
-            SEQ64_MIDI_INPUT, localportname, remoteportname
-        );
+        result = register_port(SEQ64_MIDI_INPUT, port_name());
+#ifdef USE_OLD_CODE
+        if (result)
+        {
+            /*
+             * JACK activation must occur here.
+             */
+
+            std::string localportname = connect_name(); /* now altered      */
+            result = connect_port                       /* registers too    */
+            (
+                SEQ64_MIDI_INPUT, localportname, remoteportname
+            );
+        }
         if (result)
         {
 //          parent_bus().set_alt_name(SEQ64_APP_NAME, clientname, portname);
             set_port_open();
         }
+#endif
+    }
+    return result;
+}
+
+/**
+ *  Assumes that the port has already been registered, and that JACK
+ *  activation has already occurred.
+ */
+
+bool
+midi_jack::api_connect ()
+{
+    std::string remoteportname = remote_port_name();
+    std::string localportname = connect_name();     /* modified!    */
+    bool result;
+    if (is_input_port())
+        result = connect_port(SEQ64_MIDI_INPUT, localportname, remoteportname);
+    else
+        result = connect_port(SEQ64_MIDI_OUTPUT, remoteportname, localportname);
+
+    if (result)
+    {
+//      parent_bus().set_alt_name(SEQ64_APP_NAME, clientname, portname);
+        set_port_open();
     }
     return result;
 }
@@ -684,39 +722,10 @@ midi_jack::open_client_impl (bool input)
     if (is_nullptr(client_handle()))
     {
         const char * name = master_info().connect_name(get_bus_index()).c_str();
-        jack_client_t * clipointer = nullptr;
-        jack_status_t status;
-        jack_status_t * pstatus = &status;
-        jack_options_t options = JackNoStartServer;
-        if (rc().jack_session_uuid().empty())
+        jack_client_t * clipointer = create_jack_client(name); // , uuid);
+        if (not_nullptr(clipointer))
         {
-            clipointer = jack_client_open(name, options, pstatus);
-        }
-        else
-        {
-            const char * uuid = rc().jack_session_uuid().c_str();
-            clipointer = jack_client_open(name, options, pstatus, uuid);
-        }
-        if (is_nullptr(clipointer))
-        {
-            m_error_string = func_message("JACK server not running?");
-            error(rterror::WARNING, m_error_string);
-        }
-        else
-        {
-            client_handle(clipointer);
-            if (not_nullptr(pstatus))
-            {
-                if (status & JackServerStarted)
-                    (void) info_message("JACK server started");
-                else
-                    (void) info_message("JACK server already started");
-
-                if (status & JackNameNotUnique)
-                    (void) info_message("JACK client-name not unique");
-
-                jack_assistant::show_statuses(status);
-            }
+            client_handle(clipointer);          // midi_handle() too???
             if (input)
             {
                 int rc = jack_set_process_callback
@@ -852,8 +861,24 @@ midi_jack::connect_port
 )
 {
     bool result = ! srcportname.empty() && ! destportname.empty();
-    if (result)
-        result = register_port(input, input ? srcportname : destportname);
+
+    /*
+     * EXPERIMENTAL.
+     *
+     * This code is disabled for now because the order of JACK setup calls
+     * that works is
+     *
+     *      -   jack_port_register()
+     *      -   jack_activate()
+     *      -   jack_connect()
+     *
+     * So we have to break this up.
+     */
+
+#if 0
+     if (result)
+         result = register_port(input, input ? srcportname : destportname);
+#endif
 
     if (result)
     {
@@ -983,7 +1008,8 @@ midi_in_jack::midi_in_jack
 ) :
     midi_jack       (parentbus, masterinfo, index)
 {
-    (void) initialize(clientname);
+    if (multi_client())
+        (void) initialize(clientname);
 }
 
 /**
@@ -1014,8 +1040,11 @@ midi_in_jack::initialize (const std::string & clientname)
 /**
  *  Opens the JACK MIDI input port.  It makes the following calls:
  *
- *      -   open_client(), which operates only if not called already.
- *      -   connect_port(), which registers a new port and then connects it.
+ *      -#  open_client(), which operates only if not called already.
+ *      -#  registert_port(), which registers a new port. This should be done
+ *          before JACK is activated.
+ *      -#  connect_port(), which connects the new port.  This should be done
+ *          after JACK is activated.
  *
  * \param portnumber
  *      Provides the port number.
@@ -1030,9 +1059,20 @@ midi_in_jack::open_port (int portnumber, const std::string & portname)
     bool result = open_client();
     if (result)
     {
-        master_midi_mode(SEQ64_MIDI_INPUT);
-        std::string destportname = master_info().get_port_name(portnumber);
-        result = connect_port(SEQ64_MIDI_INPUT, portname, destportname);
+//      result = register_port(input, input ? srcportname : destportname);
+
+        result = register_port(SEQ64_MIDI_INPUT, portname);
+
+        /*
+         * JACK activation should occur here.
+         */
+
+        if (result)
+        {
+            master_midi_mode(SEQ64_MIDI_INPUT);
+            std::string destportname = master_info().get_port_name(portnumber);
+            result = connect_port(SEQ64_MIDI_INPUT, portname, destportname);
+        }
     }
     return result;
 }
@@ -1134,7 +1174,8 @@ midi_out_jack::midi_out_jack
     midi_jack       (parentbus, masterinfo, index),
     m_clientname    ()
 {
-    (void) initialize(clientname);
+    if (multi_client())
+        (void) initialize(clientname);
 }
 
 /**
@@ -1181,8 +1222,16 @@ midi_out_jack::open_port (int portnumber, const std::string & portname)
     if (result)
     {
         master_midi_mode(SEQ64_MIDI_OUTPUT);
-        std::string srcportname = master_info().get_port_name(portnumber);
-        result = connect_port(SEQ64_MIDI_OUTPUT, srcportname, portname);
+        result = register_port(SEQ64_MIDI_OUTPUT, port_name());
+        if (result)
+        {
+            /*
+             * JACK activation must occur here.
+             */
+
+            std::string srcportname = master_info().get_port_name(portnumber);
+            result = connect_port(SEQ64_MIDI_OUTPUT, srcportname, portname);
+        }
     }
     return result;
 }

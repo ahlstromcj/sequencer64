@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-15
+ * \updates       2017-01-20
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -124,9 +124,8 @@ mastermidibus::api_init (int ppqn, int bpm)
     m_midi_scratch.api_set_beats_per_minute(bpm);
     if (rc().manual_alsa_ports())
     {
-        m_midi_scratch.clear();
-
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;     /* not just ALSA!   */
+        m_midi_scratch.clear();                         /* ignore system    */
         for (int i = 0; i < num_buses; ++i)             /* output busses    */
         {
             /*
@@ -141,14 +140,14 @@ mastermidibus::api_init (int ppqn, int bpm)
             (
                 m_midi_scratch, i, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_OUTPUT
             );
-            m_outbus_array.add(m);
+            m_outbus_array.add(m);                      /* must come 1st    */
             m_midi_scratch.add_output(m);               /* must come 2nd    */
         }
         midibus * m = new midibus
         (
             m_midi_scratch, 0, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_INPUT
         );
-        m_inbus_array.add(m);
+        m_inbus_array.add(m);                           /* must come 1st    */
         m_midi_scratch.add_input(m);                    /* must come 2nd    */
         port_list("virtual");
     }
@@ -167,7 +166,8 @@ mastermidibus::api_init (int ppqn, int bpm)
                 (
                     m_midi_scratch, i, isvirtual, SEQ64_MIDI_INPUT
                 );
-                m_inbus_array.add(m);
+                m_inbus_array.add(m);                   /* must come 1st    */
+                m_midi_scratch.add_bus(m);              /* must come 2nd    */
             }
 
             m_midi_scratch.midi_mode(SEQ64_MIDI_OUTPUT);
@@ -179,11 +179,13 @@ mastermidibus::api_init (int ppqn, int bpm)
                 (
                     m_midi_scratch, i, isvirtual, SEQ64_MIDI_OUTPUT
                 );
-                m_outbus_array.add(m);
+                m_outbus_array.add(m);                  /* must come 1st    */
+                m_midi_scratch.add_bus(m);              /* must come 2nd    */
             }
         }
     }
-    set_beats_per_minute(bpm);                  // c_beats_per_minute
+    m_midi_scratch.api_connect();                       /* activate ports!  */
+    set_beats_per_minute(bpm);                          // c_beats_per_minute
     set_ppqn(ppqn);
 
     /*

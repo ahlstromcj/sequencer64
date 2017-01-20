@@ -124,6 +124,7 @@ midi_info::midi_info
     m_midi_mode_input   (true),
     m_input             (),                 /* midi_port_info for inputs    */
     m_output            (),                 /* midi_port_info for outputs   */
+    m_bus_container     (),
     m_global_queue      (SEQ64_NO_QUEUE),   /* a la mastermidibase; created */
     m_midi_handle       (nullptr),          /* usually looked up or created */
     m_app_name          (appname),

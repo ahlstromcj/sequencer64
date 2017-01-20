@@ -195,6 +195,8 @@ public:
 class midi_info
 {
 
+    friend class rtmidi_info;
+
 private:
 
     /**
@@ -217,6 +219,14 @@ private:
      */
 
     midi_port_info m_output;
+
+    /**
+     *  Holds pointers to the ports that were created, so that, after
+     *  activation, we can call the connect_port() function on those that are
+     *  not virtual.
+     */
+
+    std::vector<midibus *> m_bus_container;
 
     /**
      *  The ID of the ALSA MIDI queue.
@@ -389,6 +399,15 @@ public:
     virtual void api_flush () = 0;
 
     /**
+     *  Used only in the midi_jack_info class.
+     */
+
+    virtual bool api_connect ()
+    {
+        return true;
+    }
+
+    /**
      *
      */
 
@@ -458,6 +477,20 @@ public:
 protected:
 
     /**
+     *  Adds the midibus to a quick list of all ports for use in the
+     *  api_connect() call in mastermidibus.  We could add the midibus
+     *  pointer to the midi_port_info structure, but that information
+     *  is strictly for representing data obtained by querying the system
+     *  via the selected API.
+     */
+
+    void add_bus (const midibus * m)
+    {
+        if (not_nullptr(m))
+            m_bus_container.push_back(const_cast<midibus *>(m));
+    }
+
+    /**
      * \setter m_global_queue
      */
 
@@ -473,6 +506,15 @@ protected:
     void midi_handle (void * h)
     {
         m_midi_handle = h;
+    }
+
+    /**
+     * \getter m_bus_container
+     */
+
+    std::vector<midibus *> & bus_container ()
+    {
+        return m_bus_container;
     }
 
 private:

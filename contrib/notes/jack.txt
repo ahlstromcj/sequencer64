@@ -144,4 +144,16 @@ RtMidi JACK:
     In our case, we will create local ports in one-to-one correspondence with
     remote ports.
 
+Normal general use case:
+
+    1.  Open a connection to the JACK client server with
+        jack_client_open().
+    2.  Examine the status and bail out if needed.
+    3.  Install a handler to manage I/O with jack_set_process_callback().
+    4.  Install a shutdown handler with jack_on_shutdown().  **********
+    5.  Register the ports with jack_port_register().
+    6.  Activate the ports with jack_activate().
+    7.  Connect the ports to the pipeline with jack_connect().
+    8.  Sit there and wait for stuff to happen (e.g. stay in the GUI).
+
 # vim: sw=4 ts=4 wm=8 et ft=sh

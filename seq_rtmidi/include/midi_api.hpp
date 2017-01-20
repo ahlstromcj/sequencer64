@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-16
+ * \updates       2017-01-19
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -108,6 +108,15 @@ public:
     bool is_input_port () const;
 
 public:
+
+    /**
+     *  No code; only midi_jack overrides this function at present
+     */
+
+    virtual bool api_connect ()
+    {
+        return true;
+    }
 
     virtual bool api_init_out () = 0;
     virtual bool api_init_out_sub () = 0;

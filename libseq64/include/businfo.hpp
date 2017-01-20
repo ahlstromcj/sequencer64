@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-01-09
+ * \updates       2017-01-18
  * \license       GNU GPLv2 or above
  *
  *  The businfo module defines the businfo and busarray classes so that we can
@@ -204,7 +204,7 @@ private:
         bus()->sysex(ev);
     }
 
-};          // class busarray
+};          // class businfo
 
 /**
  *  Holds a number of businfo objects.

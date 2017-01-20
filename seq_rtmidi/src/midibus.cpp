@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2017-01-14
+ * \updates       2017-01-19
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -154,6 +154,16 @@ midibus::~midibus ()
 }
 
 /**
+ *  Connects to another port.
+ */
+
+bool
+midibus::api_connect ()
+{
+    return m_rt_midi->api_connect();
+}
+
+/**
  *  Polls for MIDI events.  This is the API implementation for RtMidi.
  *
  * \note
@@ -191,9 +201,7 @@ midibus::api_init_out ()
     try
     {
         m_rt_midi = new rtmidi_out(*this, m_master_info, get_bus_index());
-        result = api_init_common(m_rt_midi);
-        if (result)
-            result = m_rt_midi->api_init_out();
+        result = m_rt_midi->api_init_out();
     }
     catch (const rterror & err)
     {
@@ -216,9 +224,7 @@ midibus::api_init_out_sub ()
     try
     {
         m_rt_midi = new rtmidi_out(*this, m_master_info, get_bus_index());
-        result = api_init_common(m_rt_midi);
-        if (result)
-            result = m_rt_midi->api_init_out_sub();
+        result = m_rt_midi->api_init_out_sub();
     }
     catch (const rterror & err)
     {
@@ -241,9 +247,7 @@ midibus::api_init_in ()
     try
     {
         m_rt_midi = new rtmidi_in(*this, m_master_info, get_bus_index());
-        result = api_init_common(m_rt_midi);
-        if (result)
-            result = m_rt_midi->api_init_in();
+        result = m_rt_midi->api_init_in();
     }
     catch (const rterror & err)
     {
@@ -266,51 +270,11 @@ midibus::api_init_in_sub ()
     try
     {
         m_rt_midi = new rtmidi_in(*this, m_master_info, get_bus_index());
-        result = api_init_common(m_rt_midi);
-        if (result)
-            result = m_rt_midi->api_init_in_sub();
+        result = m_rt_midi->api_init_in_sub();
     }
     catch (const rterror & err)
     {
         err.print_message();
-    }
-    return result;
-}
-
-/**
- *  Common code for api_init_in() and api_init_out().  The caller sets up the
- *  try-catch block.
- *
- * \param rtm
- *      Provides the rt_midi_in or rt_midi_out object to be initialized.
- *
- * \return
- *      Returns true if the input/output port was successfully opened.
- */
-
-bool
-midibus::api_init_common (rtmidi * /*rtm*/)
-{
-    bool result = true;
-    if (is_virtual_port())
-    {
-        /*
-         * Opening a virtual port is done in api_init_in_sub() or
-         * api_init_out_sub().
-         */
-    }
-    else
-    {
-        int portid = get_port_id();
-        if (portid >= 0)
-        {
-            /*
-             * Opening the desired port (specified by system port number) is
-             * done in api_init_in() or api_init_out().
-             */
-        }
-        else
-            result = false;
     }
     return result;
 }

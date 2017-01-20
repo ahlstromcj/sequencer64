@@ -182,7 +182,7 @@ private:
      *  client, can issue commands and retrieve status information from JACK.
      */
 
-    jack_client_t * m_jack_client;
+    mutable jack_client_t * m_jack_client;
 
     /**
      *  A new member to hold the actual name of the client assigned by JACK.
@@ -338,8 +338,6 @@ public:
         int beatwidth   = SEQ64_DEFAULT_BEAT_WIDTH
     );
     ~jack_assistant ();
-
-    static void show_statuses (unsigned bits);
 
     /**
      * \getter m_jack_parent
@@ -600,6 +598,12 @@ public:
 
 #endif  // SEQ64_STAZED_JACK_SUPPORT
 
+#ifdef PLATFORM_DEBUG
+
+    jack_client_t * client () const;
+
+#else
+
     /**
      * \getter m_jack_client
      */
@@ -608,6 +612,8 @@ public:
     {
         return m_jack_client;
     }
+
+#endif
 
     /**
      * \getter m_jack_client_name
@@ -693,7 +699,13 @@ extern void jack_timebase_callback
  *  project.  Added the following function.
  */
 
-extern int jack_process_callback (jack_nframes_t nframes, void * arg);
+extern int jack_transport_callback (jack_nframes_t nframes, void * arg);
+extern jack_client_t * create_jack_client
+(
+    const std::string & clientname,
+    const std::string & uuid        = ""
+);
+extern void show_jack_statuses (unsigned bits);
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 extern long get_current_jack_position (void * arg);

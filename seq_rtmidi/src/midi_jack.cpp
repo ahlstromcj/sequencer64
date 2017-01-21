@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-20
+ * \updates       2017-01-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -49,6 +49,8 @@
 #include <sstream>
 #include <jack/midiport.h>
 #include <jack/ringbuffer.h>
+
+#define SEQ64_SHOW_JACK_CALLS           /* TEMPORARY */
 
 #include "calculations.hpp"             /* seq64::extract_port_name()       */
 #include "event.hpp"                    /* seq64::event from main library   */
@@ -140,6 +142,13 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
             }
         }
     }
+
+    /*
+     * Too much.
+     *
+     * jackprint("jack_process_rtmidi_input", "jack");
+     */
+
     return 0;
 }
 
@@ -188,6 +197,13 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
             );
         }
     }
+
+    /*
+     * Too much:
+     *
+     * jackprint("jack_process_rtmidi_output", "jack");
+     */
+
     return 0;
 }
 
@@ -209,6 +225,7 @@ midi_jack::midi_jack
 ) :
     midi_api            (parentbus, masterinfo, index),
     m_multi_client      (false),
+    m_remote_port_name  (),
     m_jack_data         ()
 {
     if (! multi_client())
@@ -238,6 +255,8 @@ midi_jack::~midi_jack ()
 
     if (not_nullptr(m_jack_data.m_jack_buffmessage))
         jack_ringbuffer_free(m_jack_data.m_jack_buffmessage);
+
+    jackprint("~midi_jack", "jack");
 }
 
 /**
@@ -331,9 +350,10 @@ midi_jack::api_init_in ()
     if (result)
     {
         std::string remoteportname = connect_name();    /* "bus:port"       */
+        remote_port_name(remoteportname);
         set_alt_name(SEQ64_APP_NAME, SEQ64_CLIENT_NAME, remoteportname);
-
         result = register_port(SEQ64_MIDI_INPUT, port_name());
+
 #ifdef USE_OLD_CODE
         if (result)
         {
@@ -546,19 +566,29 @@ midi_jack::api_play (event * e24, midibyte channel)
     message.push_back(d0);
     message.push_back(d1);
 
-    int nbytes = message.size();            /* send_message(message) */
-    int count1 = jack_ringbuffer_write
+    int nbytes = int(message.size());               /* send_message(message) */
+    if
     (
-        m_jack_data.m_jack_buffmessage, (const char *) &message[0], message.size()
-    );
-    int count2 = jack_ringbuffer_write
-    (
-        m_jack_data.m_jack_buffsize, (char *) &nbytes, sizeof nbytes
-    );
-    if ((count1 <= 0) || (count2 <= 0))
+        nbytes > 0 &&
+        not_nullptr(m_jack_data.m_jack_buffmessage) &&
+        not_nullptr(m_jack_data.m_jack_buffsize)
+    )
     {
-        // somehow report an error
+        int count1 = jack_ringbuffer_write
+        (
+            m_jack_data.m_jack_buffmessage,
+            (const char *) &message[0], message.size()
+        );
+        int count2 = jack_ringbuffer_write
+        (
+            m_jack_data.m_jack_buffsize, (char *) &nbytes, sizeof nbytes
+        );
+        if ((count1 <= 0) || (count2 <= 0))
+        {
+            // somehow report an error
+        }
     }
+    jackprint("api_play()", "jack");
 }
 
 /**
@@ -602,6 +632,8 @@ midi_jack::api_continue_from (midipulse tick, midipulse /*beats*/)
     uint64_t jack_frame = tick_rate / tpb_bpm;
     if (jack_transport_locate(client_handle(), jack_frame) != 0)
         (void) info_message("jack api_continue_from() failed");
+
+    jackprint("api_continue_from", "jack");
 }
 
 /**
@@ -614,6 +646,7 @@ void
 midi_jack::api_start ()
 {
     jack_transport_start(client_handle());
+    jackprint("jack_transport_start", "jack");
 }
 
 /**
@@ -626,6 +659,7 @@ void
 midi_jack::api_stop ()
 {
     jack_transport_stop(client_handle());
+    jackprint("jack_transport_stop", "jack");
 }
 
 void
@@ -796,6 +830,7 @@ midi_jack::open_client_impl (bool input)
          * (void) info_message("JACK client already open");
          */
     }
+    jackprint("open_client_impl", "jack");
     return result;
 }
 
@@ -809,6 +844,7 @@ midi_jack::close_client ()
     if (not_nullptr(client_handle()))
     {
         int rc = jack_client_close(client_handle());
+        jackprint("jack_client_close", "jack");
         client_handle(nullptr);
         if (rc != 0)
         {
@@ -886,6 +922,7 @@ midi_jack::connect_port
         (
             client_handle(), srcportname.c_str(), destportname.c_str()
         );
+        jackprint("jack_connect", "jack");
         result = rc == 0;
         if (! result)
         {
@@ -950,6 +987,7 @@ midi_jack::register_port (bool input, const std::string & portname)
             input ? JackPortIsOutput : JackPortIsInput,     /* \tricky */
             0               /* buffer size of non-built-in port type, ignored */
         );
+        jackprint("jack_port_register", "jack");
         if (not_nullptr(p))
         {
             port_handle(p);
@@ -978,6 +1016,7 @@ midi_jack::close_port ()
     {
         jack_port_unregister(client_handle(), port_handle());
         port_handle(nullptr);
+        jackprint("jack_port_unregister", "jack");
     }
 }
 
@@ -1328,6 +1367,7 @@ midi_out_jack::send_message (const midi_message::container & message)
     (
         m_jack_data.m_jack_buffsize, (char *) &nbytes, sizeof(nbytes)
     );
+    jackprint("send_message", "jack");
     return (count1 > 0) && (count2 > 0);
 }
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-15
+ * \updates       2017-01-20
  * \license       GNU GPLv2 or above
  *
  *  This mastermidibus module is the Linux (and, soon, JACK) version of the
@@ -70,9 +70,14 @@ public:
     mastermidibus
     (
         int ppqn = SEQ64_USE_DEFAULT_PPQN,
-        int bpm  = SEQ64_DEFAULT_BPM            /* c_beats_per_minute */
+        int bpm  = SEQ64_DEFAULT_BPM            /* c_beats_per_minute   */
     );
     virtual ~mastermidibus ();
+
+    virtual bool activate ()
+    {
+        return m_midi_scratch.api_connect();    /* also activates       */
+    }
 
 protected:
 

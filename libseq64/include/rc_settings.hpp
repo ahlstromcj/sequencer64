@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-01-03
+ * \updates       2017-01-21
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -100,6 +100,7 @@ private:
     bool m_with_jack_transport;     /**< Enable synchrony with JACK.        */
     bool m_with_jack_master;        /**< Serve as a JACK transport Master.  */
     bool m_with_jack_master_cond;   /**< Serve as JACK Master if possible.  */
+    bool m_no_jack_midi;            /**< Use ALSA, even if JACK is present. */
     bool m_filter_by_channel;       /**< Record only sequence channel data. */
     bool m_manual_alsa_ports;       /**< [manual-alsa-ports] setting.       */
     bool m_reveal_alsa_ports;       /**< [reveal-alsa-ports] setting.       */
@@ -159,19 +160,6 @@ private:
      */
 
     std::string m_user_filename_alt;
-
-    /**
-     *  Indicates if the JACK settings are locked, and not to be overridden.
-     *  This feature is used only in the "rtmidi" version of Sequencer64, and
-     *  is needed because, currently, we initialize from the configuration
-     *  file <i> after </i> creating the perform object (and its
-     *  mastermidibus).  This is only a workaround.  Unfortunately, a lot of
-     *  the settings from the "rc" file are placed directly into the perform
-     *  object, and not in the rc_settings object.  Too much to deal with
-     *  right now, but will have to be dealt with eventually.
-     */
-
-    bool m_jack_kludge_lock;
 
 public:
 
@@ -301,8 +289,18 @@ public:
     }
 
     /**
+     * \getter m_no_jack_midi
+     */
+
+    bool no_jack_midi () const
+    {
+        return m_no_jack_midi;
+    }
+
+    /**
      * \getter m_with_jack_transport m_with_jack_master, and
-     * m_with_jack_master_cond, to save client code some trouble.
+     * m_with_jack_master_cond, to save client code some trouble.  Do not
+     * confuse these original options with the new "no JACK MIDI" option.
      */
 
     bool with_jack () const
@@ -448,15 +446,6 @@ public:
         return m_user_filename_alt;
     }
 
-    /**
-     * \getter m_jack_kludge_lock
-     */
-
-    bool jack_kludge_lock () const
-    {
-        return m_jack_kludge_lock;
-    }
-
 protected:
 
     /**
@@ -554,6 +543,15 @@ protected:
     void with_jack_master_cond (bool flag);
 
     /**
+     * \setter m_no_jack_midi
+     */
+
+    void no_jack_midi (bool flag)
+    {
+        m_no_jack_midi = flag;
+    }
+
+    /**
      * \setter m_filter_by_channel
      */
 
@@ -596,15 +594,6 @@ protected:
     void device_ignore (bool flag)
     {
         m_device_ignore = flag;
-    }
-
-    /**
-     * \setter m_jack_kludge_lock
-     */
-
-    void jack_kludge_lock (bool flag)
-    {
-        m_jack_kludge_lock = flag;
     }
 
     /*

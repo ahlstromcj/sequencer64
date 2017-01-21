@@ -65,7 +65,11 @@ namespace seq64
 mastermidibus::mastermidibus (int ppqn, int bpm)
  :
     mastermidibase      (ppqn, bpm),
-    m_midi_scratch      (RTMIDI_API_UNSPECIFIED, SEQ64_APP_NAME, ppqn, bpm)
+    m_midi_scratch
+    (
+        rc().no_jack_midi() ? RTMIDI_API_LINUX_ALSA : RTMIDI_API_UNSPECIFIED,
+        SEQ64_APP_NAME, ppqn, bpm
+    )
 {
     // Empty body
 }
@@ -122,7 +126,7 @@ mastermidibus::api_init (int ppqn, int bpm)
 {
     m_midi_scratch.api_set_ppqn(ppqn);
     m_midi_scratch.api_set_beats_per_minute(bpm);
-    if (rc().manual_alsa_ports())
+    if (rc().manual_alsa_ports())                       /* virtual ports    */
     {
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;     /* not just ALSA!   */
         m_midi_scratch.clear();                         /* ignore system    */
@@ -184,7 +188,13 @@ mastermidibus::api_init (int ppqn, int bpm)
             }
         }
     }
-    m_midi_scratch.api_connect();                       /* activate ports!  */
+
+    /*
+     * We cannot activate yet.
+     *
+     * m_midi_scratch.api_connect();                    // activate ports!
+     */
+
     set_beats_per_minute(bpm);                          // c_beats_per_minute
     set_ppqn(ppqn);
 

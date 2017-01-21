@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-28
+ * \updates       2017-01-21
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -384,7 +384,7 @@ optionsfile::parse (perform & p)
     {
         long bus_on, bus;
         sscanf(m_line, "%ld %ld", &bus, &bus_on);
-        p.master_bus().set_clock(bus, (clock_e) bus_on);
+        p.add_clock(static_cast<clock_e>(bus_on));
         ok = next_data_line(file);
         if (! ok && i < (buses - 1))
             return error_message("midi-clock data line");
@@ -598,7 +598,7 @@ optionsfile::parse (perform & p)
     {
         long bus_on, bus;
         sscanf(m_line, "%ld %ld", &bus, &bus_on);
-        p.master_bus().set_input(bus, bool(bus_on));
+        p.add_input(bool(bus_on));
         next_data_line(file);
     }
     if (next_data_line(file))                       /* new 2016-08-20 */
@@ -606,7 +606,6 @@ optionsfile::parse (perform & p)
         sscanf(m_line, "%ld", &flag);
         rc().filter_by_channel(bool(flag));
     }
-
     line_after(file, "[midi-clock-mod-ticks]");
 
     long ticks = 64;
@@ -874,7 +873,9 @@ optionsfile::write (const perform & p)
     }
 
     /*
-     * Bus mute/unmute data
+     * Bus mute/unmute data.  At this point, we can use the master_bus()
+     * accessor, even if a pointer dereference, because it was created at
+     * application start-up, and here we are at application close-down.
      */
 
     int buses = ucperf.master_bus().get_num_out_buses();
@@ -937,7 +938,7 @@ optionsfile::write (const perform & p)
         snprintf
         (
             outs, sizeof(outs), "%d %d",
-            i, (char) ucperf.master_bus().get_input(i)
+            i, static_cast<char>(ucperf.master_bus().get_input(i))
         );
         file << outs << "\n";
     }

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-12-31
+ * \updates       2017-01-21
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -170,7 +170,9 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_clocks_per_metronome      (24),
     m_32nds_per_quarter         (8),
     m_us_per_quarter_note       (tempo_to_us(SEQ64_DEFAULT_BPM)),
-    m_master_bus                (),         // (new location)
+    m_master_bus                (nullptr),
+    m_master_clocks             (),         // vector<clock_e>
+    m_master_inputs             (),         // vector<bool>
     m_one_measure               (m_ppqn * 4),
     m_left_tick                 (0),
     m_right_tick                (m_one_measure * 4),        // m_ppqn * 16
@@ -286,6 +288,22 @@ perform::~perform ()
 }
 
 /**
+ *  Creates the mastermidibus.  We need to delay creation until launch time,
+ *  so that settings can be obtained before determining just how to set up the
+ *  application.
+ *
+ * \return
+ *      Returns true if the creation succeeded.
+ */
+
+bool
+perform::create_master_bus ()
+{
+    m_master_bus = new (std::nothrow) mastermidibus();
+    return not_nullptr(m_master_bus);
+}
+
+/**
  *  Calls the MIDI buss and JACK initialization functions and the input/output
  *  thread-launching functions.  This function is called in main().  We
  *  collected all the calls here as a simplification, and renamed it because
@@ -304,12 +322,24 @@ perform::~perform ()
 void
 perform::launch (int ppqn)
 {
-    m_master_bus.init(ppqn, m_bpm);
-    launch_input_thread();
-    launch_output_thread();
+    if (create_master_bus())
+    {
+
 #ifdef SEQ64_JACK_SUPPORT
-    init_jack();
+        init_jack();
 #endif
+
+        for (int bus = 0; bus < int(m_master_clocks.size()); ++bus)
+            master_bus().set_clock(bus, m_master_clocks[bus]);
+
+        for (int bus = 0; bus < int(m_master_inputs.size()); ++bus)
+            master_bus().set_input(bus, m_master_inputs[bus]);
+
+        master_bus().init(ppqn, m_bpm);
+        activate();
+        launch_input_thread();
+        launch_output_thread();
+    }
 }
 
 /**
@@ -975,7 +1005,7 @@ perform::new_sequence (int seq)
                      */
 
                     char buss_override = usr().midi_buss_override();
-                    m_seqs[seq]->set_master_midi_bus(&m_master_bus);
+                    m_seqs[seq]->set_master_midi_bus(&master_bus());
                     modify();
                     if (buss_override != SEQ64_BAD_BUSS)
                         m_seqs[seq]->set_midi_bus(buss_override);
@@ -1231,7 +1261,7 @@ perform::set_beats_per_minute (int bpm)
 
     if (ok)
     {
-        m_master_bus.set_beats_per_minute(bpm);
+        master_bus().set_beats_per_minute(bpm);
         m_us_per_quarter_note = tempo_to_us(bpm);
         m_bpm = bpm;
     }
@@ -1626,7 +1656,7 @@ perform::play (midipulse tick)
         if (is_active(s))
             m_seqs[s]->play_queue(tick, m_playback_mode);
     }
-    m_master_bus.flush();                           /* flush MIDI buss  */
+    master_bus().flush();                           /* flush MIDI buss  */
 }
 
 /**
@@ -2069,6 +2099,21 @@ perform::position_jack (bool songmode, midipulse tick)
 }
 
 /**
+ *  Performs a controlled activation of the jack_assistant and other JACK
+ *  modules. Currently does work only for JACK.
+ */
+
+bool
+perform::activate ()
+{
+    bool result = master_bus().activate();
+    if (result)
+        result = m_jack_asst.activate();
+
+    return result;
+}
+
+/**
  *  If JACK is not running, call inner_start() with the given state.
  *
  * \param songmode
@@ -2230,7 +2275,7 @@ perform::all_notes_off ()
         if (is_active(s))
             m_seqs[s]->off_playing_notes();
     }
-    m_master_bus.flush();               /* flush the MIDI buss  */
+    master_bus().flush();               /* flush the MIDI buss  */
 }
 
 /**
@@ -2264,7 +2309,7 @@ perform::reset_sequences (bool pause)
                 m_seqs[s]->stop(m_playback_mode);
         }
     }
-    m_master_bus.flush();                           /* flush the MIDI buss  */
+    master_bus().flush();                           /* flush the MIDI buss  */
 }
 
 /**
@@ -2540,7 +2585,7 @@ perform::output_func ()
             set_orig_ticks(m_starting_tick);                // what member?
         }
 
-        int ppqn = m_master_bus.get_ppqn();
+        int ppqn = master_bus().get_ppqn();
 
 #ifdef SEQ64_STATISTICS_SUPPORT
 
@@ -2599,7 +2644,7 @@ perform::output_func ()
             delta.tv_nsec = current.tv_nsec - last.tv_nsec;     // delta!
             long delta_us = (delta.tv_sec * 1000000) + (delta.tv_nsec / 1000);
 #endif
-            int bpm  = m_master_bus.get_beats_per_minute();
+            int bpm  = master_bus().get_beats_per_minute();
 
             /*
              * Delta time to ticks; get delta ticks.
@@ -2692,7 +2737,7 @@ perform::output_func ()
 
             if (pad.js_init_clock)
             {
-                m_master_bus.init_clock(midipulse(pad.js_clock_tick));
+                master_bus().init_clock(midipulse(pad.js_clock_tick));
                 pad.js_init_clock = false;
             }
             if (pad.js_dumping)
@@ -2778,7 +2823,7 @@ perform::output_func ()
                  */
 
                 set_jack_tick(pad.js_current_tick);
-                m_master_bus.clock(midipulse(pad.js_clock_tick));   // MIDI clock
+                master_bus().clock(midipulse(pad.js_clock_tick));   // MIDI clock
 
 #ifdef SEQ64_STATISTICS_SUPPORT
                 if (rc().stats())
@@ -2929,7 +2974,7 @@ perform::output_func ()
                 printf("[%3d][%8ld]\n", i * 100, stats_all[i]);
             }
             printf("\n\n-- clock width --\n");
-            int bpm  = m_master_bus.get_beats_per_minute();
+            int bpm  = master_bus().get_beats_per_minute();
             printf
             (
                 "optimal: [%d us]\n", int(clock_tick_duration_bogus(bpm, m_ppqn))
@@ -2976,8 +3021,8 @@ perform::output_func ()
          * if m_usemidiclock == true.
          */
 
-        m_master_bus.flush();
-        m_master_bus.stop();
+        master_bus().flush();
+        master_bus().stop();
         if (is_jack_running())
             set_jack_stop_tick(get_current_jack_position((void *) this));
 
@@ -2986,8 +3031,8 @@ perform::output_func ()
         if (is_jack_running())
             set_tick(0);
 
-        m_master_bus.flush();
-        m_master_bus.stop();
+        master_bus().flush();
+        master_bus().stop();
 
 #endif  // SEQ64_STAZED_JACK_SUPPORT
 
@@ -3161,11 +3206,11 @@ perform::input_func ()
     event ev;
     while (m_inputing)
     {
-        if (m_master_bus.poll_for_midi() > 0)
+        if (master_bus().poll_for_midi() > 0)
         {
             do
             {
-                if (m_master_bus.get_midi_event(&ev))
+                if (master_bus().get_midi_event(&ev))
                 {
                     /*
                      * Used when starting from the beginning of the song.
@@ -3263,13 +3308,13 @@ perform::input_func ()
                          * possibly multiple sequences set.
                          */
 
-                        if (m_master_bus.is_dumping())
+                        if (master_bus().is_dumping())
                         {
                             ev.set_timestamp(m_tick);
 #ifdef USE_STAZED_MIDI_DUMP
-                            m_master_bus.dump_midi_input(ev);
+                            master_bus().dump_midi_input(ev);
 #else
-                            m_master_bus.get_sequence()->stream_event(ev);
+                            master_bus().get_sequence()->stream_event(ev);
 #endif
                         }
                         else            /* use it to control our sequencer */
@@ -3341,10 +3386,10 @@ perform::input_func ()
                             ev.print();
 
                         if (rc().pass_sysex())
-                            m_master_bus.sysex(&ev);
+                            master_bus().sysex(&ev);
                     }
                 }
-            } while (m_master_bus.is_more_input());
+            } while (master_bus().is_more_input());
         }
     }
     pthread_exit(0);

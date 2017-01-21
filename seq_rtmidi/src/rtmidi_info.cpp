@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2017-01-03
+ * \updates       2017-01-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -108,11 +108,17 @@ rtmidi_info::rtmidi_info
 {
     if (api != RTMIDI_API_UNSPECIFIED)
     {
-        (void) openmidi_api(api, appname, ppqn, bpm);
-        if (not_nullptr(get_api_info()))
+        bool ok = openmidi_api(api, appname, ppqn, bpm);
+        if (ok)
         {
-            selected_api(api);              /* log the API that worked      */
-            return;
+            if (not_nullptr(get_api_info()))
+            {
+                if (get_api_info()->get_all_port_info() >= 0)
+                {
+                    selected_api(api);      /* log the API that worked      */
+                    return;
+                }
+            }
         }
         errprintfunc("no compiled support for specified API");
     }
@@ -124,14 +130,17 @@ rtmidi_info::rtmidi_info
         if (openmidi_api(apis[i], appname, ppqn, bpm)) // get_api_info()
         {
             /*
-             * For JACK, there may be no ports (from other applications)
-             * yet in place.
+             * For JACK, or any other API, there may be no ports (from other
+             * applications) yet in place.
              */
 
-            if (get_api_info()->get_all_port_info() >= 0)
+            if (not_nullptr(get_api_info()))
             {
-                selected_api(apis[i]);      /* log first API that worked    */
-                break;
+                if (get_api_info()->get_all_port_info() >= 0)
+                {
+                    selected_api(apis[i]);  /* log first API that worked    */
+                    break;
+                }
             }
         }
         else
@@ -205,18 +214,13 @@ rtmidi_info::openmidi_api
             {
                 /**
                  * Disables the usage of JACK for the rest of the program run.
-                 * This is a work-around for ordering of setting up JACK/ALSA
-                 * versus reading the "rc" configuration file, an issue
-                 * exposed by the new native JACK version of sequencer64.
-                 * Order of the calls is important here; the lock call must be
-                 * last.
                  */
 
                 rc().with_jack_transport(false);
                 rc().with_jack_master(false);
                 rc().with_jack_master_cond(false);
+                rc().no_jack_midi(true);
             }
-            rc().jack_kludge_lock(true);        /* lock in this setting */
         }
     }
 #endif

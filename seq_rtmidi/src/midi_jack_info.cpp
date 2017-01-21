@@ -13,6 +13,8 @@
  *  for usage when creating JACK midibus objects and midi_jack API objects.
  */
 
+#define SEQ64_SHOW_JACK_CALLS           /* TEMPORARY */
+
 #include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
 #include "event.hpp"                    /* seq64::event and other tokens    */
 #include "jack_assistant.hpp"           /* seq64::create_jack_client()      */
@@ -47,6 +49,13 @@ jack_process_io (jack_nframes_t nframes, void * arg)
         jack_process_rtmidi_input(nframes, arg);
         jack_process_rtmidi_output(nframes, arg);
     }
+
+    /*
+     * Occurs too frequently to be useful.
+     *
+     * jackprint("jack_process_io", "info");
+     */
+
     return 0;
 
 #if USE_DUMMY_CODE
@@ -132,6 +141,7 @@ midi_jack_info::connect ()
             (
                 result, jack_process_io, &m_jack_data
             );
+            jackprint("jack_set_process_callback", "info");
             if (rc == 0)
             {
                 /**
@@ -172,6 +182,8 @@ midi_jack_info::disconnect ()
         jack_deactivate(m_jack_client);
         jack_client_close(m_jack_client);
         m_jack_client = nullptr;
+        jackprint("jack_deactivate", "info");
+        jackprint("jack_client_close", "info");
     }
 }
 
@@ -361,6 +373,7 @@ midi_jack_info::api_connect ()
     if (result)
     {
         int rc = jack_activate(client_handle());
+        jackprint("jack_activate", "info");
         result = rc == 0;
         if (result)
         {
@@ -560,7 +573,11 @@ void
 silence_jack_info (bool silent)
 {
     if (silent)
+    {
+#ifndef SEQ64_SHOW_JACK_CALLS
         jack_set_info_function(jack_message_bit_bucket);
+#endif
+    }
 }
 
 }           // namespace seq64

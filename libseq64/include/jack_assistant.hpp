@@ -478,6 +478,7 @@ public:
     bool session_event ();              // jack_session_event ();
 #endif
 
+    bool activate ();
     void start ();                      // start_jack();
     void stop ();                       // stop();
 

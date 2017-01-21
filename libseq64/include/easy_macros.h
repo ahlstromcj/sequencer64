@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2017-01-16
+ * \updates       2017-01-21
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -304,6 +304,20 @@ typedef bool cbool_t;
 #define infoprintf(fmt, x)      fprintf(stderr, fmt, x)
 #else
 #define infoprintf(fmt, x)
+#endif
+
+/**
+ *  Usage:      jackprint(function_name, context_tag);
+ *
+ *  This macro can be enabled in JACK modules in order to see the flow of
+ *  calls to the JACK API.  It also disables the hiding of JACK information
+ *  messages.
+ */
+
+#ifdef SEQ64_SHOW_JACK_CALLS
+#define jackprint(name, tag)    fprintf(stderr, "= %s(%s)\n", name, tag)
+#else
+#define jackprint(name, tag)
 #endif
 
 /**

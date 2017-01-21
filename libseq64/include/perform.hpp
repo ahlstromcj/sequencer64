@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-18
+ * \updates       2017-01-21
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -570,12 +570,26 @@ private:
     long m_us_per_quarter_note;
 
     /**
-     *  Provides our MIDI buss.  The PortMidi implementation might be a hot spot
-     *  for the weird segfault we're having with the mygui constructor parameter
-     *  or the m_gui_support member getting stomped.
+     *  Provides our MIDI buss.  We changed this item to a pointer so that we
+     *  can delay the creation of this object until after all settings have
+     *  been read.
      */
 
-    mastermidibus m_master_bus;
+    mastermidibus * m_master_bus;
+
+    /**
+     *  Saves the clock settings obtained from the "rc" (options) file so that
+     *  they can be loaded into the mastermidibus once it is created.
+     */
+
+    std::vector<clock_e> m_master_clocks;
+
+    /**
+     *  Saves the input settings obtained from the "rc" (options) file so that
+     *  they can be loaded into the mastermidibus once it is created.
+     */
+
+    std::vector<bool> m_master_inputs;
 
     /**
      *  Holds the "one measure's worth" of pulses (ticks), which is normally
@@ -1114,11 +1128,13 @@ public:
 
     /**
      * \getter m_master_bus
+     *      Obviously, this is a dangerous function, but we've got ya
+     *      covered.
      */
 
     mastermidibus & master_bus ()
     {
-        return m_master_bus;
+        return *m_master_bus;
     }
 
     /**
@@ -1127,7 +1143,7 @@ public:
 
     void filter_by_channel (bool flag)
     {
-        m_master_bus.filter_by_channel(flag);
+        master_bus().filter_by_channel(flag);
     }
 
     /**
@@ -1529,7 +1545,7 @@ public:
 
     int get_beats_per_minute ()
     {
-        return m_master_bus.get_beats_per_minute();
+        return master_bus().get_beats_per_minute();
     }
 
     void set_sequence_control_status (int status);
@@ -2156,6 +2172,7 @@ private:
     }
 
     void set_and_copy_mute_group (int group);
+    bool activate ();
     void start (bool state);
     void stop ();
 
@@ -2367,24 +2384,6 @@ private:
     int clamp_track (int track) const;
 
     /**
-     *  Pass-along function for keys().set_all_key_events.
-
-    void set_all_key_events ()
-    {
-        keys().set_all_key_events();
-    }
-     */
-
-    /**
-     *  Pass-along function for keys().set_all_key_events.
-
-    void set_all_key_groups ()
-    {
-        keys().set_all_key_groups();
-    }
-     */
-
-    /**
      *  At construction time, this function sets up one keycode and one event
      *  slot.  It is called 32 times, corresponding to the pattern/sequence
      *  slots in the Patterns window.  It first removes the given key-code
@@ -2425,6 +2424,36 @@ private:
 #ifdef PLATFORM_DEBUG_XXX
     void dump_mute_statuses (const std::string & tag);
 #endif
+
+private:
+
+    bool create_master_bus ();
+
+    /**
+     *  Saves the clock settings read from the "rc" file so that they can be
+     *  passed to the mastermidibus after it is created.
+     *
+     * \param clocktype
+     *      The clock value read from the "rc" file.
+     */
+
+    void add_clock (clock_e clocktype)
+    {
+        m_master_clocks.push_back(clocktype);
+    }
+
+    /**
+     *  Saves the input settings read from the "rc" file so that they can be
+     *  passed to the mastermidibus after it is created.
+     *
+     * \param flag
+     *      The input flag read from the "rc" file.
+     */
+
+    void add_input (bool flag)
+    {
+        m_master_inputs.push_back(flag);
+    }
 
 };
 

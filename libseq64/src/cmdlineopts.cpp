@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-01-01
+ * \updates       2017-01-21
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -49,7 +49,8 @@
 
 #include <sstream>
 #include <string.h>                     /* strlen() <gasp!>                 */
-#include "platform_macros.h"
+// #include "platform_macros.h"
+#include "easy_macros.h"
 
 #ifdef PLATFORM_UNIX
 #include <getopt.h>
@@ -118,6 +119,7 @@ static struct option long_options [] =
     {"jack-master-cond",    0, 0, 'C'},
     {"jack-start-mode",     required_argument, 0, 'M'},
     {"jack-session-uuid",   required_argument, 0, 'U'},
+    {"no-jack-midi",        0, 0, 'N'},
 #endif
     {"manual-alsa-ports",   0, 0, 'm'},
     {"auto-alsa-ports",     0, 0, 'a'},
@@ -164,14 +166,14 @@ static struct option long_options [] =
  *
 \verbatim
         0123456789 @AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz
-         ooooooooo oxxxxxx x  xx  xx xxx xxxxx x  xx xxxxx  xxxa   x
+         ooooooooo oxxxxxx x  xx  xx xxx xxxxxxx  xx xxxxx  xxxa   x
 \endverbatim
  *
  *  Previous arg-list, items missing! "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"
  */
 
 static const std::string s_arg_list =
-    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mnPpq:RrSsU:uVvx:"       /* modern args      */
+    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNnPpq:RrSsU:uVvx:"      /* modern args      */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -235,6 +237,7 @@ static const char * const s_help_2 =
 "   -C, --jack-master-cond   Fail if there's already a Jack Master; sets -j.\n"
 "   -M, --jack-start-mode m  When synced to JACK, the following play modes are\n"
 "                            available: 0 = live mode; 1 = song mode (default).\n"
+"   -N, --no-jack-midi       Use ALSA MIDI, even if JACK is running.\n"
 " -U, --jack-session-uuid u  Set UUID for JACK session.\n"
 " -x, --interaction-method n Set mouse style: 0 = seq24; 1 = fruity. Note that\n"
 "                            fruity does not support arrow keys and paint key.\n"
@@ -568,6 +571,11 @@ parse_command_line_options (perform & p, int argc, char * argv [])
         case 'm':
         case '8':
             seq64::rc().manual_alsa_ports(true);
+            break;
+
+        case 'N':
+            seq64::rc().no_jack_midi(true);
+            printf("Deactivating JACK MIDI.\n");
             break;
 
         case 'n':

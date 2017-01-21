@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2017-01-18
+ * \updates       2017-01-21
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -83,6 +83,8 @@
 
 #include <stdio.h>
 #include <string.h>                     /* strdup() <gasp!>                 */
+
+#define SEQ64_SHOW_JACK_CALLS           /* TEMPORARY */
 
 #include "jack_assistant.hpp"           /* this seq64::jack_ass class   */
 #include "midifile.hpp"                 /* seq64::midifile class        */
@@ -337,6 +339,7 @@ create_jack_client
             name, (jack_options_t)(JackNoStartServer|JackSessionID), pstatus, uid
         );
     }
+    jackprint("jack_client_open", clientname.c_str());
     if (not_nullptr(result))
     {
         if (not_nullptr(pstatus))
@@ -622,6 +625,7 @@ jack_assistant::get_jack_client_info ()
     if (rc().jack_session_uuid().empty())
     {
         actualname = jack_get_client_name(m_jack_client);
+        jackprint("jack_get_client_name", "sync");
     }
     else
     {
@@ -633,6 +637,7 @@ jack_assistant::get_jack_client_info ()
 
         const char * uuid = rc().jack_session_uuid().c_str();
         actualname = jack_get_client_name_by_uuid(m_jack_client, uuid);
+        jackprint("jack_get_client_name_by_uuid", "sync");
     }
     if (not_nullptr(actualname))
         m_jack_client_name = actualname;
@@ -643,6 +648,7 @@ jack_assistant::get_jack_client_info ()
     (
         m_jack_client, m_jack_client_name.c_str()
     );
+    jackprint("jack_get_uuid_for_client_name", "sync");
     if (not_nullptr(actualuuid))
         m_jack_client_uuid = actualuuid;
     else
@@ -731,6 +737,7 @@ jack_assistant::init ()
 
         get_jack_client_info();
         jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
+        jackprint("jack_on_shutdown", "sync");
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
@@ -743,11 +750,14 @@ jack_assistant::init ()
         (
             m_jack_client, jack_transport_callback, (void *) this
         );
+        jackprint("jack_set_process_callback", "sync");
 #else
         int jackcode = jack_set_sync_callback
         (
             m_jack_client, jack_sync_callback, (void *) this
         );
+
+        jackprint("jack_set_sync_callback", "sync");
         if (jackcode != 0)
         {
             m_jack_running = false;
@@ -765,6 +775,7 @@ jack_assistant::init ()
         (
             m_jack_client, jack_transport_callback, NULL
         );
+        jackprint("jack_set_process_callback", "sync");
 #endif
         if (jackcode != 0)
         {
@@ -789,6 +800,7 @@ jack_assistant::init ()
             (
                 m_jack_client, jack_session_callback, (void *) this
             );
+            jackprint("jack_set_session_callback", "sync");
             if (jackcode != 0)
             {
                 m_jack_running = false;
@@ -811,9 +823,10 @@ jack_assistant::init ()
             (
                 m_jack_client, cond, jack_timebase_callback, (void *) this
             );
+            jackprint("jack_set_timebase_callback", "sync");
             if (jackcode == 0)
             {
-                (void) info_message("JACK transport master");
+                (void) info_message("JACK sync master");
                 m_jack_master = true;
                 master_is_set = true;
             }
@@ -831,9 +844,16 @@ jack_assistant::init ()
         if (! master_is_set)
         {
             m_jack_master = false;
-            (void) info_message("JACK transport slave");
+            (void) info_message("JACK sync slave");
         }
-        if (jack_activate(m_jack_client) != 0)
+
+        /*
+         * We may need to delay this call until both jack_assistant and
+         * midi_jack_info (in the rtmidi library) are ready.
+         */
+
+#ifdef NOT_MOVED_INTO_ACTIVATE_FUNCTION
+        if (! activate())
         {
             m_jack_running = false;
             m_jack_master = false;
@@ -847,13 +867,14 @@ jack_assistant::init ()
             m_jack_master = false;
             (void) error_message("Initialization error, JACK sync not enabled");
         }
+#endif
     }
     else
     {
         if (m_jack_running)
             (void) info_message("JACK sync still enabled");
         else
-            (void) info_message("Initialized, but running without JACK");
+            (void) info_message("Initialized, running without JACK sync");
     }
     return m_jack_running;
 }
@@ -890,16 +911,52 @@ jack_assistant::deinit ()
          * thus important as well.
          */
 
+        jackprint("jack_deactivate", "sync");
         if (jack_deactivate(m_jack_client) != 0)
-            (void) error_message("Cannot deactivate JACK client");
+            (void) error_message("Can't deactivate JACK sync client");
 
         if (jack_client_close(m_jack_client) != 0)
-            (void) error_message("Cannot close JACK client");
+            (void) error_message("Can't close JACK sync client");
+
+        jackprint("deinit", "sync");
     }
     if (! m_jack_running)
         (void) info_message("JACK sync disabled");
 
     return m_jack_running;
+}
+
+/**
+ *  Activate JACK here.
+ */
+
+bool
+jack_assistant::activate ()
+{
+    bool result = not_nullptr(m_jack_client);
+    if (result)
+    {
+        int rc = jack_activate(m_jack_client);
+        result = rc == 0;
+        jackprint("jack_activate", "sync");
+        if (! result)
+        {
+            m_jack_running = false;
+            m_jack_master = false;
+            (void) error_message("Can't activate JACK sync client");
+        }
+        else
+        {
+            if (m_jack_running)
+                (void) info_message("JACK sync enabled");
+            else
+            {
+                m_jack_master = false;
+                (void) error_message("error, JACK sync not enabled");
+            }
+        }
+    }
+    return result;
 }
 
 /**
@@ -919,9 +976,12 @@ void
 jack_assistant::start ()
 {
     if (m_jack_running)
+    {
         jack_transport_start(m_jack_client);
+        jackprint("jack_transport_start", "sync");
+    }
     else if (rc().with_jack())
-        (void) error_message("Transport Start: JACK not running");
+        (void) error_message("Sync start: JACK not running");
 }
 
 /**
@@ -933,9 +993,12 @@ void
 jack_assistant::stop ()
 {
     if (m_jack_running)
+    {
         jack_transport_stop(m_jack_client);
+        jackprint("jack_transport_stop", "sync");
+    }
     else if (rc().with_jack())
-        (void) error_message("Transport Stop: JACK not running");
+        (void) error_message("Sync stop: JACK not running");
 }
 
 /**
@@ -1048,6 +1111,7 @@ jack_assistant::position (bool to_left_tick, midipulse tick)
         }
         else
         {
+            jackprint("jack_transport_locate", "sync");
             if (jack_transport_locate(m_jack_client, 0) != 0)
                 (void) info_message("jack_transport_locate() failed");
         }
@@ -1116,6 +1180,7 @@ jack_assistant::set_position (midipulse currenttick)
 #endif
 
     int jackcode = jack_transport_reposition(m_jack_client, &pos);
+    jackprint("jack_transport_reposition", "sync");
     if (jackcode != 0)
     {
         errprint("jack_assistant::set_position(): bad position structure");
@@ -1162,6 +1227,7 @@ jack_assistant::sync (jack_transport_state_t state)
     int result = 0;                     /* seq24 always returns 1   */
     m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
     (void) jack_transport_query(m_jack_client, &m_jack_pos);
+    jackprint("jack_transport_query", "sync");
 
     jack_nframes_t rate = m_jack_pos.frame_rate;
     if (rate == 0)
@@ -1208,7 +1274,7 @@ jack_assistant::sync (jack_transport_state_t state)
 
     default:
 
-        errprint("jack_assistant::sync(): unknown JACK transport state");
+        errprint("unknown JACK transport/sync state");
         break;
     }
     return result;
@@ -1611,46 +1677,6 @@ jack_assistant::client_open (const std::string & clientname)
     (
         clientname, rc().jack_session_uuid()
     );
-#if 0
-    jack_client_t * result = nullptr;
-    const char * name = clientname.c_str();
-    jack_status_t status;
-
-    /*
-     * We've never disabled the SEQ64_JACK_SESSION macro, and we like the
-     * error-reporting we get by that method.  So we've commented out the
-     * following code in favor of using the session-uuid code:
-     *
-     *  #ifdef SEQ64_JACK_SESSION
-     *  #else
-     *      jack_status_t * pstatus = NULL;
-     *      result = jack_client_open(name, JackNullOption, pstatus);
-     *  #endif
-     */
-
-    jack_status_t * pstatus = &status;
-    if (rc().jack_session_uuid().empty())
-    {
-        result = jack_client_open(name, JackNullOption, pstatus);   // 0x800000
-    }
-    else
-    {
-        const char * uuid = rc().jack_session_uuid().c_str();
-        result = jack_client_open(name, JackSessionID, pstatus, uuid);
-    }
-    if (not_nullptr(result) && not_nullptr(pstatus))
-    {
-        if (status & JackServerStarted)
-            (void) info_message("JACK server started now");
-        else
-            (void) info_message("JACK server already started");
-
-        if (status & JackNameNotUnique)
-            (void) info_message("JACK client-name NOT unique");
-
-        show_jack_statuses(status);
-    }
-#endif
     return result;                      /* bad result handled by caller     */
 }
 
@@ -1664,7 +1690,7 @@ jack_assistant::client () const
     {
         if (s_preserved_client != m_jack_client)
         {
-            errprint("JACK client pointer corrrupt!");
+            errprint("JACK sync client pointer corrupt, JACK disabled!");
             s_preserved_client = m_jack_client = nullptr;
         }
     }
@@ -1894,7 +1920,7 @@ get_current_jack_position (void * arg)
     }
     else
     {
-        j->error_message("Null JACK client");
+        j->error_message("Null JACK sync client");
         return 0;
     }
 }

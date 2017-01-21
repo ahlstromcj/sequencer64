@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-01-01
+ * \updates       2017-01-20
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibase module is the base-class version of the mastermidibus
@@ -277,6 +277,16 @@ public:
     void set_beats_per_minute (int bpm);
 
 protected:
+
+    /**
+     *  Activates the busses, in an API-dependent manner.  Currently
+     *  re-implement only in the rtmidi JACK API.
+     */
+
+    virtual bool activate ()
+    {
+        return true;
+    }
 
     virtual void api_init (int ppqn, int bpm) = 0;
 

@@ -1,6 +1,6 @@
 Notes About JACK and RtMidi
 Chris Ahlstrom
-2016-01-14 to 2017-01-15
+2016-01-14 to 2017-01-21
 
 Also be sure to read through the source code, especially the jack_assistant
 module.  The following is a note about seq24:
@@ -156,4 +156,51 @@ Normal general use case:
     7.  Connect the ports to the pipeline with jack_connect().
     8.  Sit there and wait for stuff to happen (e.g. stay in the GUI).
 
+http://quod.lib.umich.edu/i/icmc/bbp2372.2005.016/--jack-audio-server-for-multi-processor-machines?rgn=main;view=fulltext
+
+    This link discusses JACK internals.
+
+Read/write conflicts:
+
+    -   jack_client_open() internals, even if a mutex is used in
+        create_jack_client().
+    -   perform::m_start_from_perfedit between jack_transport_callback()
+        and perform::start_playing().
+    -   perform::m_song_start_mode between jack_transport_callback() and
+        perform::song_start_mode() called from mainwnd::set_song_mode().
+    -   perform::set_running() and is_running() between
+        jack_transport_callback() and perform::output_func().
+    -   perform::play() from perform::output_func() and
+        perform::get_tick() from mainwnd::timer_callback().  This
+        read/write conflict occurs in both directions.
+    -   jack_assistant::position(), jack_transport_locate() and
+        jack_timebase_callback().
+    -   perform::m_start_from_perfedit between jack_transport_callback()
+        and perform::stop_playing().  WHERE THE CORRUPTION of the JACK
+        client pointer in jack_assistant occurs???
+    -   perform::set_reposition() from jack_transport_callback() and
+        perform::start_playing().
+    -   perform::set_start_tick() from jack_transport_callback() and
+    -   perform::set_start_tick() from perform::set_jack_mode().
+    -   jack_transport_callback() has conflicts in itself from two
+        different threads.
+    -   jack_assistant::set_jack_stop_tick() from
+        jack_transport_callback() and from perform::set_jack_stop_tick().
+    -   jack_assistant::client() from jack_transport_callback() and
+        jack_assistant::get_current_jack_position().  ANOTHER ONE!
+    -   jack_assistant::get_jack_stop_tick() and set_jack_stop_tick().
+    -   Many others near exit time.
+
+void * jack_port_get_buffer	(jack_port_t *, jack_nframes_t)		
+
+    This returns a pointer to the memory area associated with the
+    specified port. For an output port, it will be a memory area that can
+    be written to; for an input port, it will be an area containing the
+    data from the port connection(s), or zero-filled. if there are
+    multiple inbound connections, the data will be mixed appropriately.
+    Do not cache the returned address across process() callbacks. Port
+    buffers have to be retrieved in each callback for proper functionning.
+
+
+   
 # vim: sw=4 ts=4 wm=8 et ft=sh

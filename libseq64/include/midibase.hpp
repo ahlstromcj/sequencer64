@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2017-01-15
+ * \updates       2017-01-22
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -123,11 +123,11 @@ private:
     int m_queue;
 
     /**
-     *  Holds the full nmae of the bus, index, ID numbers, and item names.
-     *  Assembled by the set_name() function.
+     *  Holds the full display name of the bus, index, ID numbers, and item
+     *  names.  Assembled by the set_name() function.
      */
 
-    std::string m_full_name;
+    std::string m_display_name;
 
     /**
      *  The name of the MIDI buss.  This should be something like a major device
@@ -191,12 +191,12 @@ public:
     virtual ~midibase ();
 
     /**
-     * \getter m_full_name
+     * \getter m_display_name
      */
 
-    const std::string & full_name () const
+    const std::string & display_name () const
     {
-        return m_full_name;
+        return m_display_name;
     }
 
     /**
@@ -375,12 +375,17 @@ public:
         const std::string & busname,
         const std::string & portname
     );
-
     void set_alt_name
     (
         const std::string & appname,
         const std::string & busname,
         const std::string & portname
+    );
+    void set_multi_name
+    (
+        const std::string & appname,
+        const std::string & localbusname,
+        const std::string & remoteportname
     );
 
     /**
@@ -426,12 +431,12 @@ public:
 protected:
 
     /**
-     * \setter m_full_name
+     * \setter m_display_name
      */
 
-    void full_name (const std::string & name)
+    void display_name (const std::string & name)
     {
-        m_full_name = name;
+        m_display_name = name;
     }
 
     /**

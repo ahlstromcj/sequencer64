@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-20
+ * \updates       2017-01-22
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of JACK information
@@ -13,7 +13,7 @@
  *  for usage when creating JACK midibus objects and midi_jack API objects.
  */
 
-#define SEQ64_SHOW_JACK_CALLS           /* TEMPORARY */
+#define SEQ64_SHOW_JACK_CALLS
 
 #include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
 #include "event.hpp"                    /* seq64::event and other tokens    */
@@ -49,13 +49,6 @@ jack_process_io (jack_nframes_t nframes, void * arg)
         jack_process_rtmidi_input(nframes, arg);
         jack_process_rtmidi_output(nframes, arg);
     }
-
-    /*
-     * Occurs too frequently to be useful.
-     *
-     * jackprint("jack_process_io", "info");
-     */
-
     return 0;
 
 #if USE_DUMMY_CODE
@@ -63,7 +56,7 @@ jack_process_io (jack_nframes_t nframes, void * arg)
     if (jackdata->m_jack_port == NULL)      /* is port created?        */
        return 0;
     else
-       return int(nframes) == 0 ? int(nframes) : 0 ;    // EXPERIMENTAL
+       return int(nframes) == 0 ? int(nframes) : 0 ;
 #endif
 }
 
@@ -90,7 +83,7 @@ midi_jack_info::midi_jack_info
     int bpm
 ) :
     midi_info               (appname, ppqn, bpm),
-    m_multi_client          (false),
+    m_multi_client          (SEQ64_RTMIDI_MULTICLIENT),
     m_jack_data             (),
     m_jack_client           (nullptr)               /* inited for connect() */
 {
@@ -362,37 +355,61 @@ midi_jack_info::api_flush ()
 }
 
 /**
- *  Goes through all the ports, represented by midibus objects, that have
- *  been created.  For any non-virtual port, the port connection is made.
+ *  Sets up all of the ports, represented by midibus objects, that have
+ *  been created.
+ *
+ *  If multi-client usage has been specified, each non-virtual port that has
+ *  been set up (with its own JACK client pointer) is activated, and then
+ *  connected to its corresponding remote system port.
+ *
+ *  Otherwise, the main JACK client is activated, and then all non-virtual
+ *  ports are simply connected.
+ *
+ *  Each JACK port's midi_jack::api_connect() function decides, based on
+ *  multi-client status, whether or not to activate before making the
+ *  connection.
+ *
+ * \return
+ *      Returns true if activation succeeds.
  */
 
 bool
 midi_jack_info::api_connect ()
 {
-    bool result = not_nullptr(client_handle());
-    if (result)
+    bool result = true;
+    if (! multi_client())
     {
-        int rc = jack_activate(client_handle());
-        jackprint("jack_activate", "info");
-        result = rc == 0;
+        result = not_nullptr(client_handle());
         if (result)
         {
-            for
-            (
-                std::vector<midibus *>::iterator it = bus_container().begin();
-                it != bus_container().end(); ++it
-            )
+            int rc = jack_activate(client_handle());
+            jackprint("jack_activate", "info");
+            result = rc == 0;
+        }
+    }
+    if (result)
+    {
+        for
+        (
+            std::vector<midibus *>::iterator it = bus_container().begin();
+            it != bus_container().end(); ++it
+        )
+        {
+            midibus * m = *it;
+            if (! m->is_virtual_port())
             {
-                midibus * m = *it;
-                if (! m->is_virtual_port())
-                    m->api_connect();
+                result = m->api_connect();
+                if (! result)
+                {
+                    break;
+                }
             }
         }
-        else
-        {
-            m_error_string = func_message("JACK can't activate I/O");
-            error(rterror::WARNING, m_error_string);
-        }
+    }
+    if (! result)
+    {
+        m_error_string = func_message("JACK can't activate and connect I/O");
+        error(rterror::WARNING, m_error_string);
     }
     return result;
 }

@@ -162,6 +162,11 @@ public:
         return m_bytes.at(i);       /* can throw an exception */
     }
 
+    const char * array () const
+    {
+        return reinterpret_cast<const char *>(&m_bytes[0]);
+    }
+
     int count () const
     {
         return int(m_bytes.size());

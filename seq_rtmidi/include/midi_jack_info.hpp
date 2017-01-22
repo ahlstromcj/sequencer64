@@ -8,7 +8,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-19
+ * \updates       2017-01-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the JACK information of
@@ -21,6 +21,12 @@
 #include "midi_jack_data.hpp"           /* seq64::midi_jack_data        */
 #include "mastermidibus_rm.hpp"
 #include "midibus.hpp"                  /* seq64::midibus               */
+
+/**
+ *  We've tried this false, now trying it true.
+ */
+
+#define SEQ64_RTMIDI_MULTICLIENT        true
 
 /*
  * Do not document the namespace; it breaks Doxygen.

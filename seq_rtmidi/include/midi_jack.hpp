@@ -8,10 +8,14 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-19
+ * \updates       2017-01-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
- *    In this refactoring...
+ *    In this refactoring, we've stripped out most of the original RtMidi
+ *    functionality, leaving only the method for selecting the API to use for
+ *    MIDI.  The method that Sequencer64's mastermidibus uses to initialize
+ *    port has been transplanted to this rtmidi library.  The name "rtmidi" is
+ *    now somewhat misleading.
  */
 
 #include <string>
@@ -165,7 +169,6 @@ protected:
 
 private:
 
-    bool api_init_inout (bool input);
     bool set_virtual_name (int portid, const std::string & portname);
 
 };          // class midi_jack
@@ -188,25 +191,9 @@ public:
         midibus & parentbus,
         midi_info & masterinfo,
         int index = SEQ64_NO_INDEX,
-        const std::string & clientname = "",
         unsigned queuesize = 0
     );
     virtual ~midi_in_jack ();
-
-    virtual bool open_port (int portnumber, const std::string & portname);
-    virtual bool open_virtual_port (const std::string & portname);
-
-    /**
-     *  Retrieves the number of JACK MIDI input ports.
-     *
-     * \return
-     *      Returns the number of ports counted by the midi_info member.
-     */
-
-    virtual int get_port_count ()
-    {
-        return 0;           // master info later
-    }
 
 private:
 
@@ -221,8 +208,6 @@ private:
         return open_client_impl(SEQ64_MIDI_INPUT);
     }
 
-    bool initialize (const std::string & clientname);
-
 };          // midi_in_jack
 
 /**
@@ -232,35 +217,15 @@ private:
 class midi_out_jack: public midi_jack
 {
 
-protected:
-
-    std::string m_clientname;
-
 public:
 
     midi_out_jack
     (
         midibus & parentbus,
         midi_info & masterinfo,
-        int index = SEQ64_NO_INDEX,
-        const std::string & clientname = ""
+        int index = SEQ64_NO_INDEX
     );
     virtual ~midi_out_jack ();
-
-    virtual bool open_port (int portnumber, const std::string & portname);
-    virtual bool open_virtual_port (const std::string & portname);
-
-    /**
-     *  Retrieves the number of JACK MIDI output ports.
-     *
-     * \return
-     *      Returns the number of ports counted by the midi_info member.
-     */
-
-    virtual int get_port_count ()
-    {
-        return 0;           // master info later
-    }
 
     /*
      *  Note that midi_message::container is a vector<midibyte> object.
@@ -280,8 +245,6 @@ private:
     {
         return open_client_impl(SEQ64_MIDI_OUTPUT);
     }
-
-    bool initialize (const std::string & clientname);
 
 };          // midi_out_jack
 

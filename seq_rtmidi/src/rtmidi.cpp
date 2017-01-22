@@ -103,44 +103,41 @@ rtmidi_in::rtmidi_in
     if (rtmidi_info::selected_api() != RTMIDI_API_UNSPECIFIED)
     {
         openmidi_api(rtmidi_info::selected_api(), info, index);
-        if (not_nullptr(get_api()))
-        {
-            return;
-        }
-        else
+        if (is_nullptr(get_api()))
         {
             errprintfunc("no compiled support for specified API");
         }
     }
-
-    /*
-     * Generally, we should have already selected the API at this point,
-     * so this is fallback code.
-     */
-
-    std::vector<rtmidi_api> apis;
-    rtmidi_info::get_compiled_api(apis);
-    for (unsigned i = 0; i < apis.size(); ++i)
-    {
-        openmidi_api(apis[i], info, index);
-        if (info.get_api_info()->get_port_count() > 0)
-        {
-            rtmidi_info::selected_api(apis[i]); /* log the API that worked  */
-            break;
-        }
-    }
-
-    if (is_nullptr(get_api()))
+    else
     {
         /*
-         * It should not be possible to get here because the preprocessor
-         * definition SEQ64_BUILD_RTMIDI_DUMMY is automatically defined if no
-         * API-specific definitions are passed to the compiler. But just in
-         * case something weird happens, we'll throw an error.
+         * Generally, we should have already selected the API at this point,
+         * so this is fallback code.
          */
 
-        std::string errortext = func_message("no compiled API support found");
-        throw(rterror(errortext, rterror::UNSPECIFIED));
+        std::vector<rtmidi_api> apis;
+        rtmidi_info::get_compiled_api(apis);
+        for (unsigned i = 0; i < apis.size(); ++i)
+        {
+            openmidi_api(apis[i], info, index);
+            if (info.get_api_info()->get_port_count() > 0)
+            {
+                rtmidi_info::selected_api(apis[i]);  /* log API that worked */
+                break;
+            }
+        }
+        if (is_nullptr(get_api()))
+        {
+            /*
+             * It should not be possible to get here because the preprocessor
+             * definition SEQ64_BUILD_RTMIDI_DUMMY is automatically defined if no
+             * API-specific definitions are passed to the compiler. But just in
+             * case something weird happens, we'll throw an error.
+             */
+
+            std::string errortext = func_message("no compiled API support found");
+            throw(rterror(errortext, rterror::UNSPECIFIED));
+        }
     }
 }
 

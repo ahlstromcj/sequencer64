@@ -1881,6 +1881,10 @@ perform::copy_triggers ()
  *       -# ALSA versus JACK.  One issue here is that, if JACK isn't "running"
  *          at all (i.e. we are in ALSA mode), then we cannot be JACK Master.
  *
+ *  Helgrind shows a read/write race condition in m_start_from_perfedit
+ *  bewteen jack_transport_callback() and start_playing() here.  Is inline
+ *  function access of a boolean atomic?
+ *
  * \param songmode
  *      Indicates if the caller wants to start the playback in Song mode
  *      (sometimes erroneously referred to as "JACK mode").  In the seq32 code
@@ -2994,7 +2998,8 @@ perform::output_func ()
          * play tick that displays the progress bar.
          */
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT                        // SEQ64_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+
         if (m_playback_mode)
         {
             if (is_jack_master())                       // running Song Master
@@ -3003,7 +3008,7 @@ perform::output_func ()
         else
         {
             if (is_jack_master())                       // running Live Master
-                position_jack(m_playback_mode, m_left_tick); ////////// 0);
+                position_jack(m_playback_mode, 0);      // ca 2016-01-21
         }
         if (! m_usemidiclock)                           // stop by MIDI event?
         {
@@ -3023,8 +3028,17 @@ perform::output_func ()
 
         master_bus().flush();
         master_bus().stop();
+
+        /*
+         * In the new rtmidi version of the application (seq64), enabling this
+         * code causes some conflicts between data access, and some how
+         * jack_assistant::m_jack_client ends up being corrupted.
+         */
+
+#if USE_THIS_SEGFAULT_CAUSING_CODE
         if (is_jack_running())
             set_jack_stop_tick(get_current_jack_position((void *) this));
+#endif
 
 #else  // SEQ64_STAZED_JACK_SUPPORT
 

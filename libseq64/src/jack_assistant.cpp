@@ -82,12 +82,13 @@
  */
 
 #include <stdio.h>
-#include <string.h>                     /* strdup() <gasp!>                 */
+#include <string.h>                     /* strdup() <gasp!>             */
 
-#define SEQ64_SHOW_JACK_CALLS           /* TEMPORARY */
+#undef  SEQ64_SHOW_JACK_CALLS
 
 #include "jack_assistant.hpp"           /* this seq64::jack_ass class   */
 #include "midifile.hpp"                 /* seq64::midifile class        */
+#include "mutex.hpp"                    /* seq64::mutex, automutex      */
 #include "perform.hpp"                  /* seq64::perform class         */
 #include "settings.hpp"                 /* "rc" and "user" settings     */
 
@@ -289,7 +290,19 @@ jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
  *
  *      JackSessionID | JackServerName | JackNoStartServer | JackUseExactName
  *
- *      Only the first is used at present.
+ * helgrind:
+ *
+ *      Valgrind's helgrind tool shows
+ *
+\verbatim
+          Possible data race during read of size 4 at 0xF854E58 by thread #1
+             by 0x267602: seq64::create_jack_client(...)
+          This conflicts with a previous write of size 4 by thread #2
+             by 0x267602: seq64::create_jack_client(...)
+\endverbatim
+ *
+ *      So we add a static mutex to use with our automutex.  Does not prevent
+ *      that message..... WHY?
  *
  * \param clientname
  *      Provides the name of the client, used in the call to
@@ -310,6 +323,13 @@ create_jack_client
     const std::string & uuid
 )
 {
+    /*
+     * Doesn't help:
+     *
+     * static mutex s_client_open_mutex;
+     * automutex locker(s_client_open_mutex);
+     */
+
     jack_client_t * result = nullptr;
     const char * name = clientname.c_str();
     jack_status_t status;
@@ -1038,6 +1058,9 @@ jack_assistant::stop ()
  *
  *  Note that there are potentially a couple of divide-by-zero opportunities
  *  in this function.
+ *
+ *  Helgrind complains about a possible data race involving
+ *  jack_transport_locate() when starting playing.
  *
  * \param songmode
  *      True if the caller wants to position while in Song mode.

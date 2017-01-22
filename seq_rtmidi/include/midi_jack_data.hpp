@@ -75,6 +75,15 @@ struct midi_jack_data
         // Empty body
     }
 
+    /**
+     *  Tests that the buffer is good.
+     */
+
+    bool valid_buffer () const
+    {
+        return not_nullptr(m_jack_buffsize) && not_nullptr(m_jack_buffmessage);
+    }
+
 };          // class midi_jack_data
 
 }           // namespace seq64

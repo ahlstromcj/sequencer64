@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-01-18
+ * \updates       2017-01-22
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -310,18 +310,20 @@ busarray::get_clock (bussbyte bus)
 }
 
 /**
- *  Get the MIDI output buss name for the given (legal) buss number.
+ *  Get the MIDI output buss name (i.e. the full display name) for the given
+ *  (legal) buss number.
  *
  *  This function adds the retrieval of client and port numbers that are not
  *  needed in the portmidi implementation, but seem generally useful to
  *  support in all implementations.  It's main use is to display the
  *  full portname in one of two forms:
  *
- *      -   "clientname:portname"
- *      -   "portname"
+ *      -   "[0] 0:0 clientname:portname"
+ *      -   "[0] 0:0 portname"
  *
  *  The second version is chosen if "clientname" is already included in the
- *  port name, as many MIDI clients do that.
+ *  port name, as many MIDI clients do that.  However, the name gets
+ *  modified to reflect the remote system port to which it will connect.
  *
  * \param bus
  *      Provides the output buss number.  Checked before usage.
@@ -357,7 +359,7 @@ busarray::get_midi_bus_name (int bus)
                 result = tmp;
             }
             else
-                result = m_container[bus].bus()->full_name();
+                result = m_container[bus].bus()->display_name();
         }
         else
         {
@@ -369,7 +371,7 @@ busarray::get_midi_bus_name (int bus)
             snprintf
             (
                 tmp, sizeof tmp, "%s (%s)",
-                m_container[bus].bus()->full_name().c_str(), status.c_str()
+                m_container[bus].bus()->display_name().c_str(), status.c_str()
             );
             result = tmp;
         }

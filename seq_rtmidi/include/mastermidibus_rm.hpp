@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-20
+ * \updates       2017-01-25
  * \license       GNU GPLv2 or above
  *
  *  This mastermidibus module is the Linux (and, soon, JACK) version of the
@@ -76,7 +76,11 @@ public:
 
     virtual bool activate ()
     {
-        return m_midi_scratch.api_connect();    /* also activates       */
+        bool result = mastermidibus::activate();
+        if (result)
+            result = m_midi_scratch.api_connect(); /* also activates       */
+
+        return result;
     }
 
 protected:

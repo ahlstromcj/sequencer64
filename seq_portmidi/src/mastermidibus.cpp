@@ -149,7 +149,7 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
 
     set_beats_per_minute(c_beats_per_minute);
     set_ppqn(ppqn);                             // m_ppqn); SEQ64_DEFAULT_PPQN);
-    set_sequence_input(false, NULL);
+    set_sequence_input(false, nullptr);
 
 #if 0                                           // what does this bus DO?
     m_bus_announce = new midibus

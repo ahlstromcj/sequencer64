@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-01-14
+ * \updates       2017-01-24
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -67,6 +67,8 @@ mastermidibase::mastermidibase (int ppqn, int bpm)
     m_bus_announce      (nullptr),  // one pointer
     m_inbus_array       (),
     m_outbus_array      (),
+    m_master_clocks     (),
+    m_master_inputs     (),
     m_queue             (0),
     m_ppqn              (choose_ppqn(ppqn)),
     m_beats_per_minute  (bpm),      // beats per minute
@@ -304,11 +306,15 @@ mastermidibase::play (bussbyte bus, event * e24, midibyte channel)
  *      in the midibus_common module.
  */
 
-void
+bool
 mastermidibase::set_clock (bussbyte bus, clock_e clocktype)
 {
     automutex locker(m_mutex);
-    m_outbus_array.set_clock(bus, clocktype);
+    bool result = m_outbus_array.set_clock(bus, clocktype);
+    if (result)
+        result = save_clock(bus, clocktype);    /* save into the vector */
+
+    return result;
 }
 
 /**
@@ -330,6 +336,17 @@ mastermidibase::get_clock (bussbyte bus)
     return m_outbus_array.get_clock(bus);
 }
 
+bool
+mastermidibase::initialize_buses ()
+{
+    automutex locker(m_mutex);
+    bool result = m_inbus_array.initialize();
+    if (result)
+        result = m_outbus_array.initialize();
+
+    return result;
+}
+
 /**
  *  Set the status of the given input buss, if a legal buss number.
  *  Why is another buss-count constant, and a global one at that, being
@@ -348,11 +365,15 @@ mastermidibase::get_clock (bussbyte bus)
  *      True if the input bus will be inputting MIDI data.
  */
 
-void
+bool
 mastermidibase::set_input (bussbyte bus, bool inputing)
 {
     automutex locker(m_mutex);
-    m_inbus_array.set_input(bus, inputing);
+    bool result = m_inbus_array.set_input(bus, inputing);
+    if (result)
+        result = save_input(bus, inputing);     /* save into the vector */
+
+    return result;
 }
 
 /**

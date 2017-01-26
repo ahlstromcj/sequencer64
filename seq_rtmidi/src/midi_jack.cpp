@@ -660,9 +660,6 @@ std::string
 midi_jack::api_get_port_name ()
 {
     std::string result;
-//  if (not_nullptr(m_jack_data.m_jack_port))
-//      result = std::string(jack_port_name(m_jack_data.m_jack_port));
-
     if (not_nullptr(port_handle()))
         result = std::string(jack_port_name(port_handle()));
 

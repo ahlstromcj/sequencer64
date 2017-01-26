@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-01-17
+ * \updates       2017-01-25
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -207,6 +207,8 @@ mastermidibus::~mastermidibus ()
  *      if they are different here!  See the "rtmidi" implementation of
  *      this function.
  *
+ *      A return value would be nice!
+ *
  * \param ppqn
  *      The PPQN value to which to initialize the master MIDI buss.
  *
@@ -225,14 +227,14 @@ mastermidibus::api_init (int ppqn, int bpm)
         {
             midibus * m = new midibus                   /* virtual port     */
             (
-                snd_seq_client_id(m_alsa_seq),  // localclient
-                m_alsa_seq,                     // snd_seq_t
-                i, SEQ64_NO_BUS,                // index and bus ID
+                snd_seq_client_id(m_alsa_seq),          /* localclient      */
+                m_alsa_seq,                             /* snd_seq_t        */
+                i, SEQ64_NO_BUS,                        /* index and bus ID */
                 m_queue, ppqn, bpm
             );
             m->is_virtual_port(true);
             m->is_input_port(false);
-            m_outbus_array.add(m);
+            m_outbus_array.add(m, clock(i));
         }
         midibus * m = new midibus                       /* virtual port     */
         (
@@ -241,7 +243,7 @@ mastermidibus::api_init (int ppqn, int bpm)
         );
         m->is_virtual_port(true);
         m->is_input_port(true);
-        m_inbus_array.add(m);
+        m_inbus_array.add(m, input(0));
     }
     else
     {
@@ -250,12 +252,12 @@ mastermidibus::api_init (int ppqn, int bpm)
          * from cinfo.  Fill pinfo.
          */
 
+        int numouts = 0;
+        int numins = 0;
         snd_seq_client_info_t * cinfo;                  /* client info      */
         snd_seq_port_info_t * pinfo;                    /* port info        */
         snd_seq_client_info_alloca(&cinfo);
         snd_seq_client_info_set_client(cinfo, -1);
-        int numouts = 0;
-        int numins = 0;
         while (snd_seq_query_next_client(m_alsa_seq, cinfo) >= 0)
         {
             int client = snd_seq_client_info_get_client(cinfo);
@@ -295,7 +297,14 @@ mastermidibus::api_init (int ppqn, int bpm)
                         );
                         m->is_virtual_port(false);
                         m->is_input_port(false);
-                        m_outbus_array.add(m);
+
+                        /*
+                         * seq24 calls init_out() and sets both active and
+                         * init to true if it works, and only init to true
+                         * otherwise.  We do it afterward instead.
+                         */
+
+                        m_outbus_array.add(m, clock(numouts));
                         ++numouts;
                     }
 
@@ -317,7 +326,13 @@ mastermidibus::api_init (int ppqn, int bpm)
                         );
                         m->is_virtual_port(false);
                         m->is_input_port(true);
-                        m_inbus_array.add(m);
+
+                        /*
+                         * seq24 skips the init_in(), but sets the active and
+                         * inited flags to true unconditionally!
+                         */
+
+                        m_inbus_array.add(m, input(numins));
                         ++numins;
                     }
                 }
@@ -351,8 +366,18 @@ mastermidibus::api_init (int ppqn, int bpm)
         0, m_queue, ppqn, bpm
     );
     m_bus_announce->set_input(true);
-    m_outbus_array.set_all_clocks();
-    m_inbus_array.set_all_inputs();
+
+    /*
+     * Set clock values and initialize the configured inputs.  Some inputs
+     * might not need to be initialized, according to the configuration.
+     * Note that the input settings are accessible from the Options / MIDI
+     * Input tab in the GUI.  We make these settings above, and defer actual
+     * initialization until later, after the called to mastermidibus::init()
+     * in perform::launch().
+     *
+     *  m_outbus_array.set_all_clocks();
+     *  m_inbus_array.set_all_inputs();
+     */
 }
 
 /**
@@ -539,7 +564,7 @@ mastermidibus::api_port_start (int bus, int port)
             );
             m->is_virtual_port(false);
             m->is_input_port(false);
-            m_outbus_array.add(m);
+            m_outbus_array.add(m, clock(bus_slot));
         }
         if (CAP_FULL_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
         {
@@ -562,7 +587,7 @@ mastermidibus::api_port_start (int bus, int port)
             );
             m->is_virtual_port(false);
             m->is_input_port(false);
-            m_inbus_array.add(m);
+            m_inbus_array.add(m, input(bus_slot));
         }
     }                                           /* end loop for clients */
 
@@ -631,20 +656,8 @@ mastermidibus::api_get_midi_event (event * inev)
     snd_midi_event_t * midi_ev;                     /* for ALSA MIDI parser  */
     snd_midi_event_new(sizeof(buffer), &midi_ev);   /* make ALSA MIDI parser */
     long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
-    if (bytes <= 0)
-    {
-        /*
-         * This happens even at startup, before anything is really happening.
-         * Let's not show it.
-         *
-         * if (bytes < 0)
-         * {
-         *     errprint("error decoding MIDI event");
-         * }
-         */
-
+    if (bytes <= 0)                                 /* happens at startup    */
         return false;
-    }
 
     inev->set_timestamp(ev->time.tick);
     inev->set_status_keep_channel(buffer[0]);

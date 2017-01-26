@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-01-20
+ * \updates       2017-01-24
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibase module is the base-class version of the mastermidibus
@@ -60,6 +60,7 @@ namespace seq64
 class mastermidibase
 {
 
+    friend class perform;
     friend class midi_alsa_info;
 
 protected:
@@ -88,6 +89,20 @@ protected:
      */
 
     busarray m_outbus_array;
+
+    /**
+     *  Saves the clock settings obtained from the "rc" (options) file so that
+     *  they can be loaded into the mastermidibus once it is created.
+     */
+
+    std::vector<clock_e> m_master_clocks;
+
+    /**
+     *  Saves the input settings obtained from the "rc" (options) file so that
+     *  they can be loaded into the mastermidibus once it is created.
+     */
+
+    std::vector<bool> m_master_inputs;
 
     /**
      *  The ID of the MIDI queue.
@@ -153,7 +168,7 @@ public:
 
     /**
      *  Initialize the mastermidibus using the implementation-specific API
-     *  function.
+     *  function. A return value would be nice.
      *
      * \param ppqn
      *      The PPQN value to which to initialize the master MIDI buss.
@@ -163,7 +178,7 @@ public:
     {
         m_ppqn = ppqn;
         m_beats_per_minute = bpm;
-        api_init(ppqn, bpm);
+        api_init(ppqn, bpm);                /* a return value would be nice */
     }
 
     /**
@@ -253,7 +268,6 @@ public:
     void port_start (int client, int port);
     void port_exit (int client, int port);
     void play (bussbyte bus, event * e24, midibyte channel);
-    void set_clock (bussbyte bus, clock_e clock_type);
     void continue_from (midipulse tick);
     void init_clock (midipulse tick);
     void clock (midipulse tick);
@@ -261,8 +275,8 @@ public:
     void print ();
     void flush ();
     void set_sequence_input (bool state, sequence * seq);
-    void set_input (bussbyte bus, bool inputing);
     void dump_midi_input (event in);                    /* seq32 function */
+    bool initialize_buses ();
 
     std::string get_midi_out_bus_name (bussbyte bus);
     std::string get_midi_in_bus_name (bussbyte bus);
@@ -270,6 +284,9 @@ public:
     int poll_for_midi ();
     bool is_more_input ();
     bool get_midi_event (event * in);
+
+    bool set_clock (bussbyte bus, clock_e clock_type);
+    bool set_input (bussbyte bus, bool inputing);
     bool get_input (bussbyte bus);
     clock_e get_clock (bussbyte bus);
 
@@ -278,14 +295,44 @@ public:
 
 protected:
 
+    void port_settings
+    (
+        const std::vector<clock_e> & clocks,
+        const std::vector<bool> & inputs
+    )
+    {
+        m_master_clocks = clocks;
+        m_master_inputs = inputs;
+    }
+
+    clock_e clock (int bus)
+    {
+        if (bus < int(m_master_clocks.size()))
+            return m_master_clocks[bus];
+        else
+            return e_clock_off;
+    }
+
+    bool input (int bus)
+    {
+        if (bus < int(m_master_inputs.size()))
+            return m_master_inputs[bus];
+        else
+            return false;
+    }
+
     /**
-     *  Activates the busses, in an API-dependent manner.  Currently
-     *  re-implement only in the rtmidi JACK API.
+     *  Initializes and ctivates the busses, in a partly API-dependent manner.
+     *  Currently re-implemented only in the rtmidi JACK API.
      */
 
     virtual bool activate ()
     {
-        return true;
+        bool result = m_inbus_array.initialize();
+        if (result)
+            result = m_outbus_array.initialize();
+
+        return result;
     }
 
     virtual void api_init (int ppqn, int bpm) = 0;
@@ -384,6 +431,26 @@ protected:
  *  virtual void api_set_input (bussbyte bus, bool inputting) = 0;
  *  virtual void api_get_input (bussbyte bus) = 0;
  */
+
+private:
+
+    bool save_clock (bussbyte bus, clock_e clock)
+    {
+        bool result = bus < int(m_master_clocks.size());
+        if (bus < int(m_master_clocks.size()))
+            m_master_clocks[bus] = clock;
+
+        return result;
+    }
+
+    bool save_input (bussbyte bus, bool inputing)
+    {
+        bool result = bus < int(m_master_inputs.size());
+        if (bus < int(m_master_inputs.size()))
+            m_master_inputs[bus] = inputing;
+
+        return result;
+    }
 
 };          // class mastermidibase
 

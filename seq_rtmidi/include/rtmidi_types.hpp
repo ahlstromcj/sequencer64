@@ -70,11 +70,12 @@ namespace seq64
  *  true functions added to easy_macros are unresolved.  WTF!?
  *
  * #define func_message(x)         seq64::message_concatenate(__func__, x)
- */
 
 extern std::string message_concatenate (const char * m1, const char * m2);
 extern bool info_message (const std::string & msg);
 extern bool error_message (const std::string & msg);
+
+ */
 
 /**
  *    MIDI API specifier arguments.  These items used to be nested in

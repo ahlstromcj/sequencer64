@@ -87,7 +87,7 @@ not_nullptr_assert (void * ptr, const std::string & context)
 namespace seq64
 {
 
-#if DEFINE_MESSAGE_CONCATENATE_HERE
+// #if DEFINE_MESSAGE_CONCATENATE_HERE
 
 /**
  *  This function concatenates two C string pointers and returns them as
@@ -152,7 +152,7 @@ error_message (const std::string & msg)
     return false;
 }
 
-#endif      // DEFINE_MESSAGE_CONCATENATE_HERE
+// #endif      // DEFINE_MESSAGE_CONCATENATE_HERE
 
 }           // namespace seq64
 

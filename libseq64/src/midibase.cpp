@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2017-01-22
+ * \updates       2017-01-24
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -633,17 +633,19 @@ midibase::start ()
  *      The inputing value to set.
  */
 
-void
+bool
 midibase::set_input (bool inputing)     // not part of portmidi
 {
+    bool result = true;
     if (m_inputing != inputing)
     {
         m_inputing = inputing;
         if (inputing)
-            init_in();
+            result = init_in();
         else
-            deinit_in();
+            result = deinit_in();
     }
+    return result;
 }
 
 /**

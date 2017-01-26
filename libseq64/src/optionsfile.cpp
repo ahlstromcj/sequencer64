@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-21
+ * \updates       2017-01-25
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -380,18 +380,24 @@ optionsfile::parse (perform & p)
     if (! ok)
         return error_message("midi-clock");
 
+    /*
+     * One thing about MIDI clock values.  If a device (e.g. my Korg nanoKEY2)
+     * is present in a system when Sequencer64 is exited, it will be saved in
+     * the [midi-clock] list.  When unplugged, it will be read here at
+     * startup, but won't be shown.  The next exit will find it removed from
+     * this list.
+     */
+
     for (int i = 0; i < buses; ++i)
     {
         long bus_on, bus;
         sscanf(m_line, "%ld %ld", &bus, &bus_on);
         p.add_clock(static_cast<clock_e>(bus_on));
         ok = next_data_line(file);
-        if (! ok && i < (buses - 1))
-            return error_message("midi-clock data line");
-        else
+        if (! ok)
         {
-            ok = true;
-            break;
+            if (i < (buses-1))
+                return error_message("midi-clock data line missing");
         }
     }
 

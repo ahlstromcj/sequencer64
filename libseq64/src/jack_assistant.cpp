@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2017-01-21
+ * \updates       2017-01-26
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -948,13 +948,22 @@ jack_assistant::deinit ()
 
 /**
  *  Activate JACK here.
+ *
+ * \return
+ *      Returns true if the m_jack_client pointer is null, which means only
+ *      that we're not running JACK.  Also returns true if the pointer exists
+ *      and the jack_active() call succeeds.
+ *
+ * \sideeffect
+ *      The m_jack_running and m_jack_master flags are falsified in
+ *      jack_activate() fails.
  */
 
 bool
 jack_assistant::activate ()
 {
-    bool result = not_nullptr(m_jack_client);
-    if (result)
+    bool result = true;
+    if (not_nullptr(m_jack_client))
     {
         int rc = jack_activate(m_jack_client);
         result = rc == 0;

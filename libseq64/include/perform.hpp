@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-21
+ * \updates       2017-01-25
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1985,6 +1985,7 @@ public:
     void sequence_key (int seq);                        // encapsulation
     std::string sequence_label(const sequence & seq);
     void set_input_bus (int bus, bool input_active);    // used in options
+    void set_clock_bus (int bus, clock_e clocktype);    // used in options
     bool mainwnd_key_event (const keystroke & k);
     bool perfroll_key_event (const keystroke & k, int drop_sequence);
     bool playback_key_event (const keystroke & k, bool songmode = false);
@@ -2443,6 +2444,17 @@ private:
     }
 
     /**
+     *  Sets a single clock item, if in the currently existing range.
+     *  Mostly meant for use by the Options / MIDI Input tab.
+     */
+
+    void set_clock (int bus, clock_e clocktype)
+    {
+        if (bus < int(m_master_clocks.size()))
+            m_master_clocks[bus] = clocktype;
+    }
+
+    /**
      *  Saves the input settings read from the "rc" file so that they can be
      *  passed to the mastermidibus after it is created.
      *
@@ -2453,6 +2465,17 @@ private:
     void add_input (bool flag)
     {
         m_master_inputs.push_back(flag);
+    }
+
+    /**
+     *  Sets a single input item, if in the currently existing range.
+     *  Mostly meant for use by the Options / MIDI Input tab.
+     */
+
+    void set_input (int bus, bool inputing)
+    {
+        if (bus < int(m_master_inputs.size()))
+            m_master_inputs[bus] = inputing;
     }
 
 };

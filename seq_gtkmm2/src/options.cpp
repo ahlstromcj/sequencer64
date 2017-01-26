@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-11
+ * \updates       2017-01-25
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -1126,7 +1126,7 @@ void
 options::clock_callback_off (int bus, Gtk::RadioButton * button)
 {
     if (button->get_active())
-        perf().master_bus().set_clock(bus, e_clock_off);
+        perf().set_clock_bus(bus, e_clock_off);
 }
 
 /**
@@ -1145,7 +1145,7 @@ void
 options::clock_callback_on (int bus, Gtk::RadioButton * button)
 {
     if (button->get_active())
-        perf().master_bus().set_clock(bus, e_clock_pos);
+        perf().set_clock_bus(bus, e_clock_pos);
 }
 
 /**
@@ -1163,7 +1163,7 @@ void
 options::clock_callback_mod (int bus, Gtk::RadioButton * button)
 {
     if (button->get_active())
-        perf().master_bus().set_clock(bus, e_clock_mod);
+        perf().set_clock_bus(bus, e_clock_mod);
 }
 
 /**

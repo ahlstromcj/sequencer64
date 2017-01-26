@@ -22,6 +22,8 @@
 namespace seq64
 {
 
+#if 0
+
 /**
  *  This function concatenates two C string pointers and returns them as
  *  a string message.  Note that we don't bother with error-checking the
@@ -84,6 +86,8 @@ error_message (const std::string & msg)
     (void) info_message(msg);
     return false;
 }
+
+#endif  // 0
 
 /*
  * class midimessage

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2017-01-16
+ * \updates       2017-01-22
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -262,7 +262,6 @@ midi_alsa::set_virtual_name (int portid, const std::string & portname)
             pname += std::to_string(portid);
             port_name(pname);
             set_bus_id(cid);
-//          bus_name(clientname);           // done in set_name()
             set_name(SEQ64_APP_NAME, clientname, pname);
             parent_bus().set_name(SEQ64_APP_NAME, clientname, pname);
         }

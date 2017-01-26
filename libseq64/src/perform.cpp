@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-01-21
+ * \updates       2017-01-25
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -292,6 +292,12 @@ perform::~perform ()
  *  so that settings can be obtained before determining just how to set up the
  *  application.
  *
+ *  Once the master buss is created, we then copy the clocks and input setting
+ *  that were read from the "rc" file, via the mastermidibus::port_settings()
+ *  function, to use in determining whether to initialize and connect the
+ *  input ports at start-up.  Seq24 wouldn't connect unconditionally, and
+ *  Sequencer64 shouldn't, either.
+ *
  * \return
  *      Returns true if the creation succeeded.
  */
@@ -300,7 +306,11 @@ bool
 perform::create_master_bus ()
 {
     m_master_bus = new (std::nothrow) mastermidibus();
-    return not_nullptr(m_master_bus);
+    bool result = not_nullptr(m_master_bus);
+    if (result)
+        master_bus().port_settings(m_master_clocks, m_master_inputs);
+
+    return result;
 }
 
 /**
@@ -309,7 +319,8 @@ perform::create_master_bus ()
  *  collected all the calls here as a simplification, and renamed it because
  *  it is more than just initialization.  This function must be called after
  *  the perform constructor and after the configuration file and command-line
- *  configuration overrides.
+ *  configuration overrides.  The original implementation, where the master
+ *  buss was an object, was too inflexible to handle a JACK implementation.
  *
  * \param ppqn
  *      Provides the PPQN value, which is either the default value (192) or is
@@ -329,16 +340,12 @@ perform::launch (int ppqn)
         init_jack();
 #endif
 
-        for (int bus = 0; bus < int(m_master_clocks.size()); ++bus)
-            master_bus().set_clock(bus, m_master_clocks[bus]);
-
-        for (int bus = 0; bus < int(m_master_inputs.size()); ++bus)
-            master_bus().set_input(bus, m_master_inputs[bus]);
-
-        master_bus().init(ppqn, m_bpm);
-        activate();
-        launch_input_thread();
-        launch_output_thread();
+        master_bus().init(ppqn, m_bpm);     /* calls api_init() per API */
+        if (activate())
+        {
+            launch_input_thread();
+            launch_output_thread();
+        }
     }
 }
 
@@ -2104,13 +2111,14 @@ perform::position_jack (bool songmode, midipulse tick)
 
 /**
  *  Performs a controlled activation of the jack_assistant and other JACK
- *  modules. Currently does work only for JACK.
+ *  modules. Currently does work only for JACK; the activate() calls for other
+ *  APIs just return true without doing anything.
  */
 
 bool
 perform::activate ()
 {
-    bool result = master_bus().activate();
+    bool result = master_bus().activate();      // make it initialize too!!!!!
     if (result)
         result = m_jack_asst.activate();
 
@@ -3707,6 +3715,9 @@ perform::sequence_label (const sequence & seq)
  *  "sequence numbers on sequence" functionality.  This function is called by
  *  options::input_callback().
  *
+ *  Note that the mastermidibus::set_input() function passes the setting along
+ *  to the input busarray.
+ *
  * \tricky
  *      See the bus parameter.  We should provide two separate functions for
  *      this feature, but it is already combined into one input-callback
@@ -3741,7 +3752,30 @@ perform::set_input_bus (int bus, bool active)
         }
     }
     else if (bus >= 0)
-        master_bus().set_input(bus, active);
+    {
+        if (master_bus().set_input(bus, active))
+            set_input(bus, active);
+    }
+}
+
+/**
+ *  Sets the clock value, as specified in the Options / MIDI Clocks tab.
+ *  Note that the call to mastermidibus::set_clock() also sets the clock in
+ *  the output busarray.
+ *
+ * \param bus
+ *      The bus index to be set.
+ *
+ * \param clocktype
+ *      Indicates whether the buss or the user-interface feature is
+ *      e_clock_off, e_clock_pos, and e_clock_mod.
+ */
+
+void
+perform::set_clock_bus (int bus, clock_e clocktype)
+{
+    if (master_bus().set_clock(bus, clocktype))     /* checks bus index, too */
+        set_clock(bus, clocktype);
 }
 
 /**

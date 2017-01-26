@@ -426,7 +426,7 @@ public:
     void continue_from (midipulse tick);
     void init_clock (midipulse tick);
     void print ();
-    virtual void set_input (bool inputing);
+    /* virtual void */ bool set_input (bool inputing);
 
 protected:
 

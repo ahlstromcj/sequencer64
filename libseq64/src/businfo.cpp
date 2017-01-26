@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-01-22
+ * \updates       2017-01-25
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -87,48 +87,7 @@ businfo::businfo (midibus * bus)
     m_init_clock    (e_clock_off),
     m_init_input    (false)
 {
-    if (not_nullptr(bus))
-    {
-        bool ok;
-        if (bus->is_input_port())
-        {
-            if (bus->is_virtual_port())
-                ok = m_bus->init_in_sub();
-            else
-            {
-                /*
-                 * \note
-                 *      This call is commented out in seq64!  For non-virtual
-                 *      "input" ports, we probably want to create an output
-                 *      port to connect to the input port.  TO DO!
-                 */
-
-                ok = m_bus->init_in();
-            }
-        }
-        else
-        {
-            if (bus->is_virtual_port())
-                ok = m_bus->init_out_sub();
-            else
-            {
-                /*
-                 * \note
-                 *      This call is commented out in seq64!  For non-virtual
-                 *      "output" ports, we probably want to create an input
-                 *      port to connect to the output port.  TO DO!
-                 */
-
-                ok = m_bus->init_out();
-            }
-        }
-        if (ok)
-            activate();
-    }
-    else
-    {
-        errprint("businfo(): null midibus pointer provided");
-    }
+    // See the initialize() function
 }
 
 /**
@@ -144,6 +103,72 @@ businfo::businfo (const businfo & rhs)
     m_init_input    (rhs.m_init_input)
 {
     // No code needed
+}
+
+/**
+ *  This function is called when the businfo object is added to the busarray.
+ *  It relies on the perform::launch() function to actually activate() all of
+ *  the ports that have been flagged as "activated" here.
+ *
+ * is_input_port():
+ *
+ *      Indicates if the midibus represents an input port (true) versus an
+ *      output port (false).
+ *
+ * is_virtual_port():
+ *
+ *      Indicates if the midibus represents a manual/virtual port (true)
+ *      versus a normal port (false).
+ *
+ *  The rules for port initialization follow those of seq24 for MIDI busses:
+ *
+ *      -   Manual (virtual) input and output ports always get their init
+ *          functions called.  They are unconditionally marked as "active"
+ *          and "initialized".
+ *      -   Normal output ports are marked as "active" and "initialized" if
+ *          init_out() succeeds, but are marked only as "initialized" if it
+ *          fails.  (!)
+ *      -   Normal input ports don't have init_in() called, but are marked
+ *          as "active" and "initialized" anyway.  The settings from the "rc"
+ *          file determine which inputs will operate.
+ */
+
+bool
+businfo::initialize ()
+{
+    bool result = not_nullptr(bus());
+    if (result)
+    {
+        if (bus()->is_virtual_port())
+        {
+            if (bus()->is_input_port())
+                result = bus()->init_in_sub();
+            else
+                result = bus()->init_out_sub();
+
+            activate();                     /* "initialized" and "active"   */
+        }
+        else
+        {
+            if (bus()->is_input_port())
+            {
+                activate();                 /* "initialized" and "active"   */
+            }
+            else
+            {
+                result = bus()->init_out();
+                if (result)
+                    activate();             /* "initialized" and "active"   */
+                else
+                    m_initialized = true;   /* this seems surprising to me  */
+            }
+        }
+    }
+    else
+    {
+        errprint("businfo(): null midibus pointer provided");
+    }
+    return result;
 }
 
 /*
@@ -170,19 +195,87 @@ busarray::~busarray ()
 }
 
 /**
- *  Creates, initializes, and adds a new midibus object to the list.
+ *  Creates and adds a new midibus object to the list.  Then the clock value
+ *  is set.  This function is meant for output ports.
+ *
+ *  We need to belay the initialization until later, when we know the
+ *  configured clock settings for the output ports.  So initialization has
+ *  been removed from the constructor and moved to the initialize() function.
+ *
+ * \param bus
+ *      The midibus to be hooked into the array of busses.
+ *
+ * \param clock
+ *      The clocking value for the bus.
+ *
+ * \return
+ *      Returns true if the bus was added successfully, though, really, it
+ *      cannot fail.
  */
 
 bool
-busarray::add (midibus * bus)
+busarray::add (midibus * bus, clock_e clock)
 {
     size_t count = m_container.size();
-    m_container.push_back(businfo(bus));
+    businfo b(bus);
+    b.init_clock(clock);
+    m_container.push_back(b);
     return m_container.size() == (count + 1);
 }
 
 /**
- *  Starts all of the busses; used for output busses only.
+ *  Creates and adds a new midibus object to the list.  Then the inputing value
+ *  is set.  This function is meant for input ports.
+ *
+ *  We need to belay the initialization until later, when we know
+ *  the configured inputing settings for the input ports.
+ *  So initialization has been removed from the
+ *  constructor and moved to the initialize() function.
+ *
+ * \param bus
+ *      The midibus to be hooked into the array of busses.
+ *
+ * \param clock
+ *      The clocking value for the bus.
+ *
+ * \return
+ *      Returns true if the bus was added successfully, though, really, it
+ *      cannot fail.
+ */
+
+bool
+busarray::add (midibus * bus, bool inputing)
+{
+    size_t count = m_container.size();
+    businfo b(bus);
+    b.init_input(inputing);
+    m_container.push_back(b);
+    return m_container.size() == (count + 1);
+}
+
+/**
+ *  Initializes all busses.  Not sure we need this function.
+ *
+ * \return
+ *      Returns true if all busses initialized successfully.
+ */
+
+bool
+busarray::initialize ()
+{
+    bool result = true;
+    std::vector<businfo>::iterator bi;
+    for (bi = m_container.begin(); bi != m_container.end(); ++bi)
+    {
+        if (! bi->initialize())
+            result = false;
+    }
+    return result;
+}
+
+/**
+ *  Starts all of the busses; used for output busses only, but no check is
+ *  made at present.
  */
 
 void
@@ -194,7 +287,8 @@ busarray::start ()
 }
 
 /**
- *  Stops all of the busses; used for output busses only.
+ *  Stops all of the busses; used for output busses only, but no check is made
+ *  at present.
  */
 
 void
@@ -272,18 +366,21 @@ busarray::play (bussbyte bus, event * e24, midibyte channel)
  *  mastermidibus::set_clock().
  */
 
-void
+bool
 busarray::set_clock (bussbyte bus, clock_e clocktype)
 {
-    if (bus < count() && m_container[bus].active())
+    bool result = bus < count() && m_container[bus].active();
+    if (result)
     {
         m_container[bus].init_clock(clocktype);
         m_container[bus].bus()->set_clock(clocktype);
     }
+    return result;
 }
 
 /**
  *  Sets the clock type for all busses, usually the output buss.
+ *  Note that the settings to apply are added when the add() call is made.
  */
 
 void
@@ -291,9 +388,7 @@ busarray::set_all_clocks ()
 {
     std::vector<businfo>::iterator bi;
     for (bi = m_container.begin(); bi != m_container.end(); ++bi)
-    {
         bi->bus()->set_clock(bi->init_clock());
-    }
 }
 
 /**
@@ -429,8 +524,12 @@ busarray::port_exit (int client, int port)
 }
 
 /**
- *  Set the status of the given input buss, if a legal buss number.
- *  There's currently no implementation-specific API function here.
+ *  Set the status of the given input buss, if a legal buss number.  There's
+ *  currently no implementation-specific API function called directly here.
+ *  What happens is that midibase::set_input() uses the \a inputing parameter
+ *  to decide whether to call init_in() or deinit_in(), and these functions
+ *  ultimately lead to an API specific called.
+ *
  *  This function should be used only for the input busarray, obviously.
  *
  * \threadsafe
@@ -442,21 +541,25 @@ busarray::port_exit (int client, int port)
  *      True if the input bus will be inputting MIDI data.
  */
 
-void
+bool
 busarray::set_input (bussbyte bus, bool inputing)
 {
-    if (bus < count())
+    bool result = bus < count();
+    if (result)
     {
         m_container[bus].init_input(inputing);
         if (m_container[bus].active())
-            m_container[bus].bus()->set_input(inputing);
+            result = m_container[bus].bus()->set_input(inputing);
     }
+    return result;
 }
 
 /**
- *  Set the status of all input busses.  There's currently no
- *  implementation-specific API function here.  This function should be used
- *  only for the input busarray, obviously.
+ *  Set the status of all input busses.  There's no implementation-specific
+ *  API function here.  This function should be used only for the input
+ *  busarray, obviously.  Note that the input settings used here were stored
+ *  when the add() function was called.  They can be changed by the user via
+ *  the Options / MIDI Input tab.
  *
  * \param inputing
  *      True if the input bus will be inputting MIDI data.
@@ -467,9 +570,7 @@ busarray::set_all_inputs ()
 {
     std::vector<businfo>::iterator bi;
     for (bi = m_container.begin(); bi != m_container.end(); ++bi)
-    {
         bi->bus()->set_input(bi->init_input());
-    }
 }
 
 /**

@@ -127,7 +127,7 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
             );
             m->is_virtual_port(false);
             m->is_input_port(false);
-            m_outbus_array.add(m);
+            m_outbus_array.add(m, clock(i));
             ++numouts;
         }
         if (dev_info->input)
@@ -142,7 +142,7 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
             );
             m->is_virtual_port(false);
             m->is_input_port(true);
-            m_inbus_array.add(m);
+            m_inbus_array.add(m, input(i));
             ++numins;
         }
     }

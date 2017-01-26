@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-22
+ * \updates       2017-01-26
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of JACK information
@@ -480,7 +480,7 @@ midi_jack_info::api_port_start (mastermidibus & masterbus, int bus, int port)
         midibus * m = new midibus(masterbus.m_midi_scratch, bus_slot);
         m->is_virtual_port(false);
         m->is_input_port(false);
-        masterbus.m_outbus_array.add(m);
+        masterbus.m_outbus_array.add(m, e_clock_off);
 
         bus_slot = masterbus.m_inbus_array.count();
         test = masterbus.m_inbus_array.replacement_port(bus, port);
@@ -490,7 +490,7 @@ midi_jack_info::api_port_start (mastermidibus & masterbus, int bus, int port)
         m = new midibus(masterbus.m_midi_scratch, bus_slot);
         m->is_virtual_port(false);
         m->is_input_port(false);
-        masterbus.m_inbus_array.add(m);
+        masterbus.m_inbus_array.add(m, false);
     }
 }
 

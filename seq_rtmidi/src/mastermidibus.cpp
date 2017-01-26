@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-20
+ * \updates       2017-01-26
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -144,14 +144,18 @@ mastermidibus::api_init (int ppqn, int bpm)
             (
                 m_midi_scratch, i, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_OUTPUT
             );
-            m_outbus_array.add(m);                      /* must come 1st    */
+            m->is_virtual_port(true);
+            m->is_input_port(false);
+            m_outbus_array.add(m, clock(i));            /* must come 1st    */
             m_midi_scratch.add_output(m);               /* must come 2nd    */
         }
         midibus * m = new midibus
         (
             m_midi_scratch, 0, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_INPUT
         );
-        m_inbus_array.add(m);                           /* must come 1st    */
+        m->is_virtual_port(true);
+        m->is_input_port(true);
+        m_inbus_array.add(m, input(0));                 /* must come 1st    */
         m_midi_scratch.add_input(m);                    /* must come 2nd    */
         port_list("virtual");
     }
@@ -170,7 +174,9 @@ mastermidibus::api_init (int ppqn, int bpm)
                 (
                     m_midi_scratch, i, isvirtual, SEQ64_MIDI_INPUT
                 );
-                m_inbus_array.add(m);                   /* must come 1st    */
+                m->is_virtual_port(false);
+                m->is_input_port(true);
+                m_inbus_array.add(m, input(i));         /* must come 1st    */
                 m_midi_scratch.add_bus(m);              /* must come 2nd    */
             }
 
@@ -183,7 +189,9 @@ mastermidibus::api_init (int ppqn, int bpm)
                 (
                     m_midi_scratch, i, isvirtual, SEQ64_MIDI_OUTPUT
                 );
-                m_outbus_array.add(m);                  /* must come 1st    */
+                m->is_virtual_port(false);
+                m->is_input_port(false);
+                m_outbus_array.add(m, clock(i));        /* must come 1st    */
                 m_midi_scratch.add_bus(m);              /* must come 2nd    */
             }
         }

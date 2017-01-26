@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2017-01-20
+ * \updates       2017-01-26
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -103,8 +103,7 @@ public:
     /**
      *  Add midibus information to the input ports.  Also adds the midibus to
      *  a lit of busses to connect in mastermidibus.  This function is meant
-     *  for virtual ports, so maybe we don't need the add_bus() call.  But
-     *  for now we can save the information, it is harmless, really.
+     *  for virtual ports.
      */
 
     void add_input (const midibus * m)
@@ -116,8 +115,7 @@ public:
     /**
      *  Add midibus information to the output ports.  Also adds the midibus
      *  to a lit of busses to connect in mastermidibus.  This function is
-     *  meant for virtual ports, so maybe we don't need the add_bus() call.
-     *  But for now we can save the information, it is harmless, really.
+     *  meant for virtual ports.
      */
 
     void add_output (const midibus * m)

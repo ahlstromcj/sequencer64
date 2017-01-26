@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-01-24
+ * \updates       2017-01-26
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibase module is the base-class version of the mastermidibus
@@ -270,7 +270,7 @@ public:
     void play (bussbyte bus, event * e24, midibyte channel);
     void continue_from (midipulse tick);
     void init_clock (midipulse tick);
-    void clock (midipulse tick);
+    void set_clock (midipulse tick);
     void sysex (event * event);
     void print ();
     void flush ();

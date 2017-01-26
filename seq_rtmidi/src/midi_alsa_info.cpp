@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-14
+ * \updates       2017-01-26
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -349,7 +349,7 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
             );
             m->is_virtual_port(false);
             m->is_input_port(false);
-            masterbus.m_outbus_array.add(m);
+            masterbus.m_outbus_array.add(m, e_clock_off);
         }
         if (CAP_FULL_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
         {
@@ -364,7 +364,7 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
             );
             m->is_virtual_port(false);
             m->is_input_port(true);                  // was false BEWARE BREAKAGE
-            masterbus.m_inbus_array.add(m);
+            masterbus.m_inbus_array.add(m, false);
         }
     }                                           /* end loop for clients */
 

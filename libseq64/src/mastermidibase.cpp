@@ -185,7 +185,7 @@ mastermidibase::stop ()
  */
 
 void
-mastermidibase::clock (midipulse tick)
+mastermidibase::set_clock (midipulse tick)
 {
     automutex locker(m_mutex);
     api_clock();

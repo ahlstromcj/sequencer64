@@ -373,6 +373,10 @@ mastermidibase::set_input (bussbyte bus, bool inputing)
     if (result)
         result = save_input(bus, inputing);     /* save into the vector */
 
+    if (result)
+    {
+    }
+
     return result;
 }
 

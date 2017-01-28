@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-01-24
+ * \updates       2017-01-26
  * \license       GNU GPLv2 or above
  *
  *  The businfo module defines the businfo and busarray classes so that we can
@@ -164,14 +164,29 @@ public:
         m_active = false;
     }
 
-    void init_clock (clock_e c)
+    void init_clock (clock_e clocktype)
     {
-        m_init_clock = c;
+        m_init_clock = clocktype;
+        if (not_nullptr(bus()))
+            bus()->set_clock_status(clocktype);
     }
 
     void init_input (bool flag)
     {
         m_init_input = flag;
+
+        /*
+         * When clicking on the MIDI Input item, this is not needed...
+         * it disables the detection of a change, so that init() and deinit()
+         * do not get called.
+         *
+         * When starting up we need to honor the init-input flag if it is
+         * set, and init() the bus.  But we don't need to call deinit() at
+         * startup if it is false, since init() hasn't been called yet.
+         */
+
+        if (not_nullptr(bus()))
+            bus()->set_input_status(flag);
     }
 
 private:

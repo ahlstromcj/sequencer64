@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-01-25
+ * \updates       2017-01-28
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -227,10 +227,10 @@ busarray::add (midibus * bus, clock_e clock)
  *  Creates and adds a new midibus object to the list.  Then the inputing value
  *  is set.  This function is meant for input ports.
  *
- *  We need to belay the initialization until later, when we know
- *  the configured inputing settings for the input ports.
- *  So initialization has been removed from the
- *  constructor and moved to the initialize() function.
+ *  We need to belay the initialization until later, when we know the
+ *  configured inputing settings for the input ports.  So initialization has
+ *  been removed from the constructor and moved to the initialize() function.
+ *  However, now we know the configured status and can apply it right away.
  *
  * \param bus
  *      The midibus to be hooked into the array of busses.
@@ -248,8 +248,14 @@ busarray::add (midibus * bus, bool inputing)
 {
     size_t count = m_container.size();
     businfo b(bus);
-    b.init_input(inputing);
     m_container.push_back(b);
+    if (inputing)
+    {
+        bool was_inputing = bus->get_input();
+        if (! was_inputing)
+            bus->set_input(inputing);       /* will call init_in()          */
+    }
+    b.init_input(inputing);                 /* just sets the flag (again)   */
     return m_container.size() == (count + 1);
 }
 
@@ -530,6 +536,12 @@ busarray::port_exit (int client, int port)
  *  to decide whether to call init_in() or deinit_in(), and these functions
  *  ultimately lead to an API specific called.
  *
+ *  Note that the call to midibase::set_input() will set its m_inputing flag,
+ *  and then call init_in() or deinit_in() if that flag changed. This change
+ *  is important, so we have to call midibase::set_input() first. Then the
+ *  call to businfo::init_input() will set that flag again (plus another
+ *  flag).  A bit confusing in sequence and in function naming.
+ *
  *  This function should be used only for the input busarray, obviously.
  *
  * \threadsafe
@@ -547,9 +559,10 @@ busarray::set_input (bussbyte bus, bool inputing)
     bool result = bus < count();
     if (result)
     {
-        m_container[bus].init_input(inputing);
         if (m_container[bus].active())
             result = m_container[bus].bus()->set_input(inputing);
+
+        m_container[bus].init_input(inputing);
     }
     return result;
 }

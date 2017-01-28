@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-25
+ * \updates       2017-01-28
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -256,6 +256,20 @@ options::add_midi_clock_page ()
 /**
  *  Adds the MIDI Input page (tab) to the Options dialog.  We've added a frame
  *  for the MIDI input, and a frame for additional MIDI input options.
+ *
+ *  Here is the sequence of calls made when enabling a MIDI input in this
+ *  dialog:
+ *
+\verbatim
+options::input_callback()
+   perform::set_input_bus(1, true)
+      mastermidibus::set_input(1, true)
+         busarray::set_input(1, true)
+            businfo::active() [true]
+            midibase::set_input(true)           [m_inputing = true, init_in()]
+            businfo::init_input(true)           [m_init_input = true]
+               midibase::set_input_status(true) [m_inputing = true (again)]
+\endverbatim
  */
 
 void
@@ -279,11 +293,15 @@ options::add_midi_input_page ()
         (
             new Gtk::CheckButton(perf().master_bus().get_midi_in_bus_name(bus), 0)
         );
+        add_tooltip
+        (
+            check, "Select (click/space-bar) to enable/disable this MIDI input."
+        );
         check->signal_toggled().connect
         (
             bind(mem_fun(*this, &options::input_callback), bus, check)
         );
-        check->set_active(perf().master_bus().get_input(bus));
+        check->set_active(perf().get_input(bus));
         inputbox->pack_start(*check, false, false);
     }
 
@@ -299,7 +317,7 @@ options::add_midi_input_page ()
     (
         new Gtk::CheckButton
         (
-            "Record input into sequence according to channel", true
+            "Record input into sequences according to channel", true
         )
     );
     midioptfilter->set_active(rc().filter_by_channel());

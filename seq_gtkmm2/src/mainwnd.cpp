@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-08
+ * \updates       2017-01-28
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1450,9 +1450,10 @@ mainwnd::query_save_changes ()
 {
     std::string query_str;
     if (rc().filename().empty())
-        query_str = "Unnamed file was changed.\nSave changes?";
+        query_str = "Unnamed MIDI file was changed.\nSave changes?";
     else
-        query_str = "File '" + rc().filename() + "' was changed.\nSave changes?";
+        query_str = "MIDI file '" + rc().filename() +
+            "' was changed.\nSave changes?";
 
     Gtk::MessageDialog dialog
     (

@@ -2478,6 +2478,15 @@ private:
             m_master_inputs[bus] = inputing;
     }
 
+    /**
+     *
+     */
+
+    bool get_input (int bus)
+    {
+        return master_bus().get_input(bus);
+    }
+
 };
 
 /**

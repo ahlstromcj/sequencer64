@@ -352,12 +352,30 @@ public:
     }
 
     /**
+     * \setter m_clock_type TENTATIVE
+     */
+
+    void set_clock_status (clock_e clocktype)
+    {
+        m_clock_type = clocktype;
+    }
+
+    /**
      * \getter m_inputing
      */
 
     bool get_input () const
     {
         return m_inputing;
+    }
+
+    /**
+     * \setter m_inputing TENTATIVE
+     */
+
+    void set_input_status (bool flag)
+    {
+        m_inputing = flag;
     }
 
     /**

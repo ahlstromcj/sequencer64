@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2017-01-16
+ * \updates       2017-01-28
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -63,12 +63,13 @@ private:
 
     typedef struct
     {
-        int m_client_number;        /**< The major buss number of the port. */
-        std::string m_client_name;  /**< The system's name for the client.  */
-        int m_port_number;          /**< The minor port number of the port. */
-        std::string m_port_name;    /**< The system's name for the port.    */
-        int m_queue_number;         /**< A number used in some APIs.        */
-        bool m_is_virtual;          /**< Indicates a missing system port.   */
+        int m_client_number;        /**< The major buss number of the port.  */
+        std::string m_client_name;  /**< The system's name for the client.   */
+        int m_port_number;          /**< The minor port number of the port.  */
+        std::string m_port_name;    /**< The system's name for the port.     */
+        int m_queue_number;         /**< A number used in some APIs.         */
+        bool m_is_virtual;          /**< Indicates an additional port.       */
+        bool m_is_system;           /**< Built-in port, almost always false. */
 
     } port_info_t;
 
@@ -95,7 +96,8 @@ public:
         int portnumber,
         const std::string & portname,
         bool makevirtual    = SEQ64_MIDI_NORMAL_PORT,   /* i.e. false */
-        int queuenumber     = SEQ64_BAD_QUEUE_ID
+        int queuenumber     = SEQ64_BAD_QUEUE_ID,
+        bool makesystem     = false
     );
     void add (const midibus * m);
 
@@ -153,6 +155,14 @@ public:
             return m_port_container[index].m_is_virtual;
         else
             return SEQ64_MIDI_NORMAL_PORT;          /* i.e. false */
+    }
+
+    bool get_system (int index) const
+    {
+        if (index < get_port_count())
+            return m_port_container[index].m_is_system;
+        else
+            return false;
     }
 
     int get_queue_number (int index) const
@@ -445,6 +455,12 @@ public:
     {
         const midi_port_info & mpi = nc_midi_port_info();
         return mpi.get_virtual(index);
+    }
+
+    virtual bool get_system (int index) const
+    {
+        const midi_port_info & mpi = nc_midi_port_info();
+        return mpi.get_system(index);
     }
 
     virtual int queue_number (int index) const

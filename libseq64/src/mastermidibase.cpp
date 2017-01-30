@@ -64,7 +64,7 @@ namespace seq64
 mastermidibase::mastermidibase (int ppqn, int bpm)
  :
     m_max_busses        (c_max_busses),
-    m_bus_announce      (nullptr),  // one pointer
+    m_bus_announce      (nullptr),      /* used only for ALSA announce bus  */
     m_inbus_array       (),
     m_outbus_array      (),
     m_master_clocks     (),
@@ -389,13 +389,29 @@ mastermidibase::set_input (bussbyte bus, bool inputing)
  *      Provides the buss number.
  *
  * \return
- *      Always returns false.
+ *      Returns the value of the busarray::get_input(bus) call.
  */
 
 bool
 mastermidibase::get_input (bussbyte bus)
 {
     return m_inbus_array.get_input(bus);
+}
+
+/**
+ *  Get the system-buss status for the given (legal) buss number.
+ *
+ * \param bus
+ *      Provides the buss number.
+ *
+ * \return
+ *      Returns the value of the busarray::get_input(bus) call.
+ */
+
+bool
+mastermidibase::is_input_system_port (bussbyte bus)
+{
+    return m_inbus_array.is_system_port(bus);
 }
 
 /**

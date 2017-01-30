@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-20
+ * \updates       2017-01-29
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The big difference between this class (seq64::rtmidi) and
@@ -72,32 +72,32 @@ protected:
 
 public:
 
-    bool api_connect ()
+    virtual bool api_connect ()
     {
         return get_api()->api_connect();
     }
 
-    void api_play (event * e24, midibyte channel)
+    virtual void api_play (event * e24, midibyte channel)
     {
         get_api()->api_play(e24, channel);
     }
 
-    void api_continue_from (midipulse tick, midipulse beats)
+    virtual void api_continue_from (midipulse tick, midipulse beats)
     {
         get_api()->api_continue_from(tick, beats);
     }
 
-    void api_start ()
+    virtual void api_start ()
     {
         get_api()->api_start();
     }
 
-    void api_stop ()
+    virtual void api_stop ()
     {
         get_api()->api_stop();
     }
 
-    void api_clock (midipulse tick)
+    virtual void api_clock (midipulse tick)
     {
         get_api()->api_clock(tick);
     }
@@ -135,6 +135,11 @@ public:
     virtual bool api_deinit_in ()
     {
         return get_api()->api_deinit_in();
+    }
+
+    virtual int api_poll_for_midi ()
+    {
+        return get_api()->api_poll_for_midi();
     }
 
     virtual void api_sysex (event * e24)

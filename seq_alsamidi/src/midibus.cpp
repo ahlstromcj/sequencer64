@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-08
+ * \updates       2017-01-30
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -36,6 +36,15 @@
 #include "event.hpp"                    /* seq64::event (MIDI event)        */
 #include "midibus.hpp"                  /* seq64::midibus for ALSA          */
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+
+/**
+ *  Currently experimental for subscription purposes.  Change back if it
+ *  breaks input processing, but this better matches what seq24 does.
+ *
+ *  Defines the name for all MIDI input ports.
+ */
+
+#define SEQ64_MIDI_INPUT_PORTNAME       SEQ64_CLIENT_NAME " in"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -245,7 +254,8 @@ midibus::api_init_in ()
 {
     int result = snd_seq_create_simple_port             /* create ports */
     (
-        m_seq, "sequencer64 in",                        /* "seq24 in"   */
+        m_seq,
+        SEQ64_MIDI_INPUT_PORTNAME,      // "sequencer64 in" // "seq24 in"
         SND_SEQ_PORT_CAP_NO_EXPORT | SND_SEQ_PORT_CAP_WRITE,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );
@@ -323,9 +333,7 @@ midibus::set_virtual_name (int portid, const std::string & portname)
             set_port_id(portid);
             pname += " ";
             pname += std::to_string(portid);
-//          port_name(pname);
             set_bus_id(cid);
-//          bus_name(clientname);
             set_name(SEQ64_APP_NAME, clientname, pname);
         }
     }
@@ -377,11 +385,12 @@ midibus::api_init_in_sub ()
 {
     std::string portname = port_name();
     if (portname.empty())
-        portname = SEQ64_CLIENT_NAME " in";
+        portname = SEQ64_MIDI_INPUT_PORTNAME;
 
     int result = snd_seq_create_simple_port             /* create ports */
     (
-        m_seq, portname.c_str(),
+        m_seq,
+        SEQ64_MIDI_INPUT_PORTNAME,                      // portname.c_str()
         SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );

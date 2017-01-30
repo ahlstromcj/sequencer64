@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-21
+ * \updates       2017-01-29
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring, we've stripped out most of the original RtMidi
@@ -149,13 +149,18 @@ protected:
 protected:
 
     virtual bool open_client () = 0;    // replaces "connect()"
-
     virtual bool api_connect ();
     virtual bool api_init_out ();       // still in progress
     virtual bool api_init_in ();
     virtual bool api_init_out_sub ();
     virtual bool api_init_in_sub ();
     virtual bool api_deinit_in ();
+
+    virtual int api_poll_for_midi ()
+    {
+        return 0;
+    }
+
     virtual void api_play (event * e24, midibyte channel);
     virtual void api_sysex (event * e24);
     virtual void api_flush ();

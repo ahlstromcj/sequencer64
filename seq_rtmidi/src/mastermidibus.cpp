@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-26
+ * \updates       2017-01-28
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -104,12 +104,13 @@ mastermidibus::~mastermidibus ()
  *  For example, for an output port found called "qmidiarp:out 1", we want to
  *  create a "shadow" input port called "seq64:qmidiarp out 1".
  *
- *  Are these good conventions, or potentially confusing to users?  They match
- *  what the legacy seq24 and sequencer64 do for ALSA.
+ *  This code creates a midibus in the conventional manner.  Then the
+ *  busarray::add() function makes a new businfo object with the desired
+ *  "output" and "isvirtual" parameters; the businfo object then decides
+ *  whether to call init_in(), init_out(), init_in_sub(), or init_out_sub().
  *
- * \todo
- *      MAKE SURE THIS REVERSAL DOES NOT BREAK ALSA PLAYBACK!  IT DOES,
- *      REMOVED.
+ *  Are these good conventions, or potentially confusing to users?  They
+ *  match what the legacy seq24 and sequencer64 do for ALSA.
  *
  * \param ppqn
  *      Provides the (possibly new) value of PPQN to set.  ALSA has a function
@@ -132,14 +133,6 @@ mastermidibus::api_init (int ppqn, int bpm)
         m_midi_scratch.clear();                         /* ignore system    */
         for (int i = 0; i < num_buses; ++i)             /* output busses    */
         {
-            /*
-             * This code creates a midibus in the conventional manner.  Then
-             * the busarray::add() function makes a new businfo object with
-             * the desired "output" and "isvirtual" parameters; the businfo
-             * object then decides whether to call init_in(), init_out(),
-             * init_in_sub(), or init_out_sub().
-             */
-
             midibus * m = new midibus
             (
                 m_midi_scratch, i, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_OUTPUT
@@ -169,13 +162,15 @@ mastermidibus::api_init (int ppqn, int bpm)
             unsigned inports = m_midi_scratch.get_port_count();
             for (unsigned i = 0; i < inports; ++i)
             {
-                bool isvirtual = m_midi_scratch.get_virtual(i);
                 midibus * m = new midibus
                 (
-                    m_midi_scratch, i, isvirtual, SEQ64_MIDI_INPUT
+                    m_midi_scratch, i, SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_INPUT
                 );
                 m->is_virtual_port(false);
                 m->is_input_port(true);
+                if (m_midi_scratch.get_system(i))
+                    m->set_system_port_flag();          /* can only set it  */
+
                 m_inbus_array.add(m, input(i));         /* must come 1st    */
                 m_midi_scratch.add_bus(m);              /* must come 2nd    */
             }
@@ -184,10 +179,9 @@ mastermidibus::api_init (int ppqn, int bpm)
             unsigned outports = m_midi_scratch.get_port_count();
             for (unsigned i = 0; i < outports; ++i)
             {
-                bool isvirtual = m_midi_scratch.get_virtual(i);
                 midibus * m = new midibus
                 (
-                    m_midi_scratch, i, isvirtual, SEQ64_MIDI_OUTPUT
+                    m_midi_scratch, i, SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_OUTPUT
                 );
                 m->is_virtual_port(false);
                 m->is_input_port(false);
@@ -196,34 +190,20 @@ mastermidibus::api_init (int ppqn, int bpm)
             }
         }
     }
-
-    /*
-     * We cannot activate yet.
-     *
-     * m_midi_scratch.api_connect();                    // activate ports!
-     */
-
     set_beats_per_minute(bpm);                          // c_beats_per_minute
     set_ppqn(ppqn);
 
-    /*
-     * Poll descriptor code moved to midi_alsa_info constructor.  MIDI
-     * announce bus code not currently in place.
-     */
-
-#if 0                               // we need an announce-bus constructor
-    m_bus_announce = new midibus
-    (
-        snd_seq_client_id(m_alsa_seq),
-        SND_SEQ_CLIENT_SYSTEM, SND_SEQ_PORT_SYSTEM_ANNOUNCE,
-        m_alsa_seq, "system", "announce",   // was "annouce" ca 2016-04-03
-        0, m_queue, ppqn, bpm
-    );
-    m_bus_announce->set_input(true);
+#if 0
+    set_sequence_input(false, nullptr);                 // needed in rtmidi?
 #endif
 
-    m_outbus_array.set_all_clocks();
-    m_inbus_array.set_all_inputs();
+    /*
+     * Deferred until later in startup.  See the comment here in the
+     * seq_alsamidi version of this module.
+     *
+     * m_outbus_array.set_all_clocks();
+     * m_inbus_array.set_all_inputs();
+     */
 }
 
 /**
@@ -255,6 +235,21 @@ mastermidibus::port_list (const std::string & )
 }
 
 #endif
+
+/**
+ *  Activates the mastermidibase code and the rtmidi_info object via its
+ *  api_connect() function.
+ */
+
+bool
+mastermidibus::activate ()
+{
+    bool result = mastermidibase::activate();
+    if (result)
+        result = m_midi_scratch.api_connect();      /* activates, too    */
+
+    return result;
+}
 
 /**
  *  Initiate a poll() on the existing poll descriptors.  This is a

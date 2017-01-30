@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2017-01-14
+ * \updates       2017-01-28
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
@@ -66,6 +66,11 @@ midi_port_info::midi_port_info
  *      Provides the optional queue number, if applicable.  For example, the
  *      sequencer64 application grabs the client number (normally valued at 1)
  *      from the ALSA subsystem.
+ *
+ * \param makesystem
+ *      In some systems, we need to create and activate a system port, such as
+ *      a timer port or an ALSA announce port.  For all other ports, this
+ *      value is false.
  */
 
 void
@@ -76,7 +81,8 @@ midi_port_info::add
     int portnumber,
     const std::string & portname,
     bool makevirtual,
-    int queuenumber
+    int queuenumber,
+    bool makesystem
 )
 {
     port_info_t temp;
@@ -86,6 +92,7 @@ midi_port_info::add
     temp.m_port_name = portname;
     temp.m_is_virtual = makevirtual;
     temp.m_queue_number = queuenumber;
+    temp.m_is_system = makesystem;
     m_port_container.push_back(temp);
     m_port_count = int(m_port_container.size());
 }
@@ -103,7 +110,8 @@ midi_port_info::add (const midibus * m)
     (
         m->get_bus_id(), m->bus_name(),
         m->get_port_id(), m->port_name(),
-        m->is_virtual_port(), m->queue_number()
+        m->is_virtual_port(), m->queue_number(),
+        m->is_system_port()
     );
 }
 
@@ -195,13 +203,22 @@ midi_info::port_list () const
     os << "Input ports (" << inportcount << "):" << std::endl;
     for (int i = 0; i < inportcount; ++i)
     {
+        std::string annotation;
+        if (nc_this->get_virtual(i))
+            annotation = "virtual";
+        else if (nc_this->get_system(i))
+            annotation = "system";
+
         os
             << "  [" << i << "] "
-            << nc_this->get_bus_id(i) << ":" << nc_this->get_port_id(i)
-            << " " << nc_this->get_bus_name(i) << ":"
-            << nc_this->get_port_name(i)
-            << std::endl
+            << nc_this->get_bus_id(i) << ":" << nc_this->get_port_id(i) << " "
+            << nc_this->get_bus_name(i) << ":" << nc_this->get_port_name(i)
             ;
+
+        if (! annotation.empty())
+            os << " (" << annotation << ")";
+
+        os << std::endl;
     }
 
     nc_this->midi_mode(SEQ64_MIDI_OUTPUT);
@@ -213,6 +230,7 @@ midi_info::port_list () const
             << nc_this->get_bus_id(o) << ":" << nc_this->get_port_id(o)
             << " " << nc_this->get_bus_name(o) << ":"
             << nc_this->get_port_name(o)
+            << (nc_this->get_virtual(o) ? " (virtual)" : " ")
             << std::endl
             ;
     }

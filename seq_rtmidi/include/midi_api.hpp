@@ -123,6 +123,9 @@ public:
     virtual bool api_init_in () = 0;
     virtual bool api_init_in_sub () = 0;
     virtual bool api_deinit_in () = 0;
+
+    virtual int api_poll_for_midi () = 0;
+
     virtual void api_play (event * e24, midibyte channel) = 0;
     virtual void api_sysex (event * e24) = 0;
     virtual void api_continue_from (midipulse tick, midipulse beats) = 0;

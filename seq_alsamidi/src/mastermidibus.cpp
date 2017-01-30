@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-01-25
+ * \updates       2017-01-29
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -341,6 +341,7 @@ mastermidibus::api_init (int ppqn, int bpm)
     }
     set_beats_per_minute(m_beats_per_minute);
     set_ppqn(ppqn);
+    set_sequence_input(false, nullptr);         // EXPERIMENTAL: moved from below
 
     /*
      * Get the number of MIDI input poll file descriptors.  Allocate the
@@ -355,7 +356,6 @@ mastermidibus::api_init (int ppqn, int bpm)
     (
         m_alsa_seq, m_poll_descriptors, m_num_poll_descriptors, POLLIN
     );
-    set_sequence_input(false, nullptr);
     snd_seq_set_output_buffer_size(m_alsa_seq, c_midibus_output_size);
     snd_seq_set_input_buffer_size(m_alsa_seq, c_midibus_input_size);
     m_bus_announce = new midibus
@@ -492,7 +492,10 @@ mastermidibus::api_flush ()
  *  No locking needed?
  *
  * \return
- *      Returns the result of the poll, or 0 if ALSA is not supported.
+ *      Returns a value greater than 0 if the result of the poll indicates
+ *      events or errors available from the poll, or 0 if there are no events,
+ *      and -1 if an error occurred.  We don't use the errno value that
+ *      results from that error yet.
  */
 
 int
@@ -559,8 +562,7 @@ mastermidibus::api_port_start (int bus, int port)
                 m_alsa_seq,
                 snd_seq_client_info_get_name(cinfo),
                 snd_seq_port_info_get_name(pinfo),
-                bus_slot,
-                m_queue, get_ppqn(), get_bpm()
+                bus_slot, m_queue, get_ppqn(), get_bpm()
             );
             m->is_virtual_port(false);
             m->is_input_port(false);
@@ -582,8 +584,7 @@ mastermidibus::api_port_start (int bus, int port)
                 m_alsa_seq,
                 snd_seq_client_info_get_name(cinfo),
                 snd_seq_port_info_get_name(pinfo),
-                bus_slot,
-                m_queue, get_ppqn(), get_bpm()
+                bus_slot, m_queue, get_ppqn(), get_bpm()
             );
             m->is_virtual_port(false);
             m->is_input_port(false);

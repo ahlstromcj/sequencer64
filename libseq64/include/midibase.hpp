@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2017-01-22
+ * \updates       2017-01-29
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -166,6 +166,16 @@ private:
     bool m_is_input_port;
 
     /**
+     *  Indicates if the port is a system port.  Two examples are the ALSA
+     *  System Timer buss and the ALSA System Announce bus, the latter being
+     *  necessary for input subscription and notification.  For most ports,
+     *  this value will be false.  A restricted setter is provided.
+     *  Only the rtmidi ALSA implementation sets this flag.
+     */
+
+    bool m_is_system_port;
+
+    /**
      *  Locking mutex.
      */
 
@@ -185,7 +195,8 @@ public:
         int ppqn                        = SEQ64_USE_DEFAULT_PPQN,
         int bpm                         = SEQ64_DEFAULT_BPM,
         bool makevirtual                = false,
-        bool isinput                    = false
+        bool isinput                    = false,
+        bool makesystem                 = false
     );
 
     virtual ~midibase ();
@@ -331,6 +342,25 @@ public:
     }
 
     /**
+     * \getter m_is_system_port
+     */
+
+    bool is_system_port () const
+    {
+        return m_is_system_port;
+    }
+
+    /**
+     * \setter m_is_system_port
+     *      Can only set it to true.
+     */
+
+    void set_system_port_flag ()
+    {
+        m_is_system_port = true;
+    }
+
+    /**
      * \setter m_clock_type
      *
      * \param clocktype
@@ -444,7 +474,7 @@ public:
     void continue_from (midipulse tick);
     void init_clock (midipulse tick);
     void print ();
-    /* virtual void */ bool set_input (bool inputing);
+    bool set_input (bool inputing);
 
 protected:
 
@@ -498,12 +528,13 @@ protected:
     }
 
     /**
-     *  Not defined in the ALSA implementation.
+     *  Now defined in the ALSA implementation, and used by mastermidibus.
+     *  Also used in the JACK implementation.
      */
 
     virtual int api_poll_for_midi ()
     {
-        return 0;                       /* no code for alsa     */
+        return 0;
     }
 
     /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2017-01-24
+ * \updates       2017-01-29
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -138,6 +138,10 @@ int midibase::m_clock_mod = 16 * 4;
  * \param isinput
  *      Indicates that this midibus represents and input port, as opposed to
  *      an output port.
+ *
+ * \param makesystem
+ *      Indicates that the port represented by this object is a system port.
+ *      Currently true only for ALSA system ports (timer or announce ports).
  */
 
 midibase::midibase
@@ -152,7 +156,8 @@ midibase::midibase
     int ppqn,
     int bpm,
     bool makevirtual,
-    bool isinput
+    bool isinput,
+    bool makesystem
 ) :
     m_bus_index         (index),
     m_bus_id            (bus_id),
@@ -167,6 +172,7 @@ midibase::midibase
     m_lasttick          (0),
     m_is_virtual_port   (makevirtual),
     m_is_input_port     (isinput),
+    m_is_system_port    (makesystem),
     m_mutex             ()
 {
     if (! makevirtual)
@@ -411,6 +417,11 @@ midibase::set_multi_name
 
 /**
  *  Polls for MIDI events.
+ *
+ * \return
+ *      Returns a value greater than 0 if MIDI events are available.
+ *      Otherwise 0 is returned, or -1 for some APIs (ALSA) when an internal
+ *      error occurs.
  */
 
 int
@@ -630,14 +641,20 @@ midibase::start ()
  *  true, then init_in() is called; otherwise, deinit_in() is called.
  *
  * \param inputing
- *      The inputing value to set.
+ *      The inputing value to set.  For input system ports, it is always set
+ *      to true, no matter how it is configured in the "rc" file.
  */
 
 bool
 midibase::set_input (bool inputing)     // not part of portmidi
 {
     bool result = true;
-    if (m_inputing != inputing)
+    if (m_is_system_port)
+    {
+        m_inputing = true;
+        result = init_in();
+    }
+    else if (m_inputing != inputing)
     {
         m_inputing = inputing;
         if (inputing)

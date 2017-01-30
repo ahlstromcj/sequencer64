@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2017-01-19
+ * \updates       2017-01-29
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
@@ -81,16 +81,17 @@ private:
 public:
 
     /*
-     * Virtual-port and non-virtual-port constructors.
-    */
+     * Virtual-port and non-virtual-port constructor.
+     */
 
-    midibus                                 // virtual constructor
+    midibus
     (
         rtmidi_info & rt,
         int index,
-        bool makevirtual     = SEQ64_MIDI_NORMAL_PORT,
-        bool isinput         = SEQ64_MIDI_OUTPUT,       // gotcha!
-        int bussoverride = 0
+        bool makevirtual    = SEQ64_MIDI_NORMAL_PORT,
+        bool isinput        = SEQ64_MIDI_OUTPUT,        /* gotcha! */
+        int bussoverride    = 0,
+        bool makesystem     = false
     );
 
     virtual ~midibus ();
@@ -99,11 +100,13 @@ public:
 
 protected:
 
-    virtual int api_poll_for_midi ();
     virtual bool api_init_in ();
     virtual bool api_init_in_sub ();
     virtual bool api_init_out ();
     virtual bool api_init_out_sub ();
+
+    virtual int api_poll_for_midi ();
+
     virtual void api_continue_from (midipulse tick, midipulse beats);
     virtual void api_start ();
     virtual void api_stop ();

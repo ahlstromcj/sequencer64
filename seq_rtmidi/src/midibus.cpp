@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2017-01-19
+ * \updates       2017-01-29
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -53,7 +53,7 @@ namespace seq64
 {
 
 /**
- *  Virtual-port constructor.
+ *  Normal-port and virtual-port constructor.
  *
  * \param rt
  *      Provides the rtmidi_info object to use to obtain the
@@ -87,7 +87,8 @@ midibus::midibus
     int index,
     bool makevirtual,
     bool isinput,
-    int bussoverride
+    int bussoverride,
+    bool makesystem
 ) :
     midibase
     (
@@ -100,7 +101,8 @@ midibus::midibus
         rt.global_queue(),
         rt.ppqn(), rt.bpm(),
         makevirtual,
-        isinput
+        isinput,
+        makesystem
     ),
     m_rt_midi       (nullptr),
     m_master_info   (rt)                // currently unused
@@ -166,22 +168,23 @@ midibus::api_connect ()
 /**
  *  Polls for MIDI events.  This is the API implementation for RtMidi.
  *
- * \note
- *      This should work only for input busses, so we need to insure this at
- *      some point.  Currently, this is the domain of the master bus.
- *      We also should make this routine just check the input queue size and
- *      then read the queue.  Note that the ALSA handle checks incoming MIDI
- *      events and either passes them to the callback function or pushes them
- *      onto the input queue.
+ *  This should work only for input busses, so we need to insure this at some
+ *  point.  Currently, this is the domain of the master bus.  We also should
+ *  make this routine just check the input queue size and then read the queue.
+ *  Note that the ALSA handle checks incoming MIDI events and either passes
+ *  them to the callback function or pushes them onto the input queue.
  *
  * \return
- *      Returns 0 if the polling succeeded, and 1 if it failed.
+ *      Returns 0 if the polling succeeded, and 1 if it failed.  If the buss
+ *      hasn't been initialized, it has a null m_rt_midi pointer, and will
+ *      return 0.  This can happen normally when a MIDI input port is
+ *      configured to be disabled.
  */
 
 int
 midibus::api_poll_for_midi ()
 {
-    return 0;
+    return not_nullptr(m_rt_midi) ? m_rt_midi->api_poll_for_midi() : 0 ;
 }
 
 /**

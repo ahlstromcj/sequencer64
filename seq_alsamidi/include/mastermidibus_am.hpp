@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-12-31
+ * \updates       2017-01-29
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -93,6 +93,11 @@ public:
 
 private:
 
+    virtual bool api_is_more_input ();
+    virtual bool api_get_midi_event (event * in);
+
+    virtual int api_poll_for_midi ();
+
     virtual void api_init (int ppqn, int bpm);
     virtual void api_set_ppqn (int ppqn);
     virtual void api_set_beats_per_minute (int bpm);
@@ -100,9 +105,6 @@ private:
     virtual void api_start ();
     virtual void api_stop ();
     virtual void api_continue_from (midipulse tick);
-    virtual int api_poll_for_midi ();
-    virtual bool api_is_more_input ();
-    virtual bool api_get_midi_event (event * in);
     virtual void api_port_start (int client, int port);
 
     /*

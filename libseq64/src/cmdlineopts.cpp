@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-01-21
+ * \updates       2017-01-28
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -237,7 +237,7 @@ static const char * const s_help_2 =
 "   -C, --jack-master-cond   Fail if there's already a Jack Master; sets -j.\n"
 "   -M, --jack-start-mode m  When synced to JACK, the following play modes are\n"
 "                            available: 0 = live mode; 1 = song mode (default).\n"
-"   -N, --no-jack-midi       Use ALSA MIDI, even if JACK is running.\n"
+"   -N, --no-jack-midi       Use ALSA MIDI, even if JACK is running. See -A.\n"
 " -U, --jack-session-uuid u  Set UUID for JACK session.\n"
 " -x, --interaction-method n Set mouse style: 0 = seq24; 1 = fruity. Note that\n"
 "                            fruity does not support arrow keys and paint key.\n"
@@ -470,6 +470,8 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             seq64::rc().with_jack_transport(false);
             seq64::rc().with_jack_master(false);
             seq64::rc().with_jack_master_cond(false);
+            seq64::rc().no_jack_midi(true);
+            printf("Forcing ALSA mode.\n");
             break;
 
         case 'a':
@@ -486,6 +488,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             seq64::rc().with_jack_transport(true);
             seq64::rc().with_jack_master(false);
             seq64::rc().with_jack_master_cond(true);
+            seq64::rc().no_jack_midi(false);
             break;
 
         case 'c':                           /* --config option              */
@@ -532,11 +535,13 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             seq64::rc().with_jack_transport(true);
             seq64::rc().with_jack_master(true);
             seq64::rc().with_jack_master_cond(false);
+            seq64::rc().no_jack_midi(false);
             break;
 
         case 'j':
         case '1':
             seq64::rc().with_jack_transport(true);
+            seq64::rc().no_jack_midi(false);
             break;
 
         case 'k':

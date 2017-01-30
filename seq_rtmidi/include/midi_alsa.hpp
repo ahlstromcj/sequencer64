@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2017-01-09
+ * \updates       2017-01-29
  * \license       GNU GPLv2 or above
  *
  *  The midi_alsa module is the Linux version of the midi_alsa module.
@@ -143,6 +143,9 @@ protected:
     virtual bool api_init_out_sub ();
     virtual bool api_init_in_sub ();
     virtual bool api_deinit_in ();
+
+    virtual int api_poll_for_midi ();
+
     virtual void api_play (event * e24, midibyte channel);
     virtual void api_sysex (event * e24);
     virtual void api_flush ();

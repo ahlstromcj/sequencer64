@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-01-28
+ * \updates       2017-01-29
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -595,22 +595,50 @@ busarray::set_all_inputs ()
  *      Provides the buss number.
  *
  * \return
- *      Always returns false.
+ *      If the buss is a system buss, always returns true.  Otherwise, if the
+ *      buss is inactive, returns false. Otherwise, the buss's get_input()
+ *      status is returned.
  */
 
 bool
 busarray::get_input (bussbyte bus)
 {
+    bool result = false;
     if (bus < count() && m_container[bus].active())
-        return m_container[bus].bus()->get_input();
-
-    return false;
+    {
+        if (m_container[bus].bus()->is_system_port())
+            result = true;
+        else
+            result = m_container[bus].bus()->get_input();
+    }
+    return result;
 }
 
 /**
- *  Initiate a poll() on the existing poll descriptors.  This is a
- *  primitive poll, which exits when some data is obtained.  It also applies
- *  only to the input busses.
+ *  Get the system-port status for the given (legal) buss number.
+ *
+ * \param bus
+ *      Provides the buss number.
+ *
+ * \return
+ *      Returns the selected buss's is-system-port status.  If the buss number
+ *      is out of range, then false is returned.
+ */
+
+bool
+busarray::is_system_port (bussbyte bus)
+{
+    bool result = false;
+    if (bus < count() && m_container[bus].active())
+        result = m_container[bus].bus()->is_system_port();
+
+    return result;
+}
+
+/**
+ *  Initiate a poll() on the existing poll descriptors.  This is a primitive
+ *  poll, which exits when some data is obtained.  It also applies only to the
+ *  input busses.
  */
 
 bool

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-25
+ * \updates       2017-01-29
  * \license       GNU GPLv2 or above
  *
  *  This mastermidibus module is the Linux (and, soon, JACK) version of the
@@ -74,21 +74,14 @@ public:
     );
     virtual ~mastermidibus ();
 
-    virtual bool activate ()
-    {
-        bool result = mastermidibus::activate();
-        if (result)
-            result = m_midi_scratch.api_connect(); /* also activates       */
-
-        return result;
-    }
+    virtual bool activate ();
 
 protected:
 
-    virtual void api_init (int ppqn, int bpm);
-    virtual int api_poll_for_midi ();
     virtual bool api_is_more_input ();
     virtual bool api_get_midi_event (event * in);
+    virtual int api_poll_for_midi ();
+    virtual void api_init (int ppqn, int bpm);
 
     /**
      *  Provides MIDI API-specific functionality for the set_ppqn() function.

@@ -8,7 +8,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-12-04
- * \updates       2016-12-31
+ * \updates       2017-01-28
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the ALSA information of

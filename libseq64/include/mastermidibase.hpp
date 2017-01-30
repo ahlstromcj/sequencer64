@@ -288,6 +288,7 @@ public:
     bool set_clock (bussbyte bus, clock_e clock_type);
     bool set_input (bussbyte bus, bool inputing);
     bool get_input (bussbyte bus);
+    bool is_input_system_port (bussbyte bus);
     clock_e get_clock (bussbyte bus);
 
     void set_ppqn (int ppqn);

@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-26
+ * \updates       2017-01-30
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -15,6 +15,32 @@
  *  This class is meant to collect a whole bunch of ALSA information
  *  about client number, port numbers, and port names, and hold them
  *  for usage when creating ALSA midibus objects and midi_alsa API objects.
+ *
+ *  This was to be a function to create an ALSA "announce" bus.  But it turned
+ *  out to be feasible and simpler to add it as a special input port in the
+ *  get_all_port_info() function.  Still, the discussion here is useful.
+ *
+ *  A sequencer core has two pre-defined system ports on the system client
+ *  SND_SEQ_CLIENT_SYSTEM: SND_SEQ_PORT_SYSTEM_TIMER and
+ *  SND_SEQ_PORT_SYSTEM_ANNOUNCE. The SND_SEQ_PORT_SYSTEM_TIMER is the system
+ *  timer port, and SND_SEQ_PORT_SYSTEM_ANNOUNCE is the system announce port.
+ *
+ * Timer:
+ *
+ *  In order to control a queue from a client, client should send a
+ *  queue-control event like start, stop and continue queue, change tempo,
+ *  etc. to the system timer port. Then the sequencer system handles the queue
+ *  according to the received event. This port supports subscription. The
+ *  received timer events are broadcasted to all subscribed clients.  From
+ *  SND_SEQ_PORT_SYSTEM_TIMER, one may receive SND_SEQ_EVENT_START events.
+ *
+ * Announce:
+ *
+ *  The SND_SEQ_PORT_SYSTEM_ANNOUNCE port does not receive messages, but
+ *  supports subscription. When each client or port is attached, detached or
+ *  modified, an announcement is sent to subscribers from this port.  From
+ *  SND_SEQ_PORT_SYSTEM_ANNOUNCE, one may receive
+ *  SND_SEQ_EVENT_PORT_SUBSCRIBED events.
  */
 
 #include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
@@ -133,7 +159,10 @@ midi_alsa_info::~midi_alsa_info ()
 
 /**
  *  Gets information on ALL ports, putting input data into one midi_info
- *  container, and putting output data into another container.
+ *  container, and putting output data into another container.  For ALSA
+ *  input, the first item added is the ALSA MIDI system "announce" buss.
+ *  It has the client:port value of "0:1", denoted by the ALSA macros
+ *  SND_SEQ_CLIENT_SYSTEM:SND_SEQ_PORT_SYSTEM_ANNOUNCE.
  *
  * \return
  *      Returns the total number of ports found.  For an ALSA setup, finding
@@ -154,11 +183,25 @@ midi_alsa_info::get_all_port_info ()
         snd_seq_client_info_set_client(cinfo, -1);
         input_ports().clear();
         output_ports().clear();
+        input_ports().add
+        (
+            SND_SEQ_CLIENT_SYSTEM, "system",
+            SND_SEQ_PORT_SYSTEM_ANNOUNCE, "announce",
+            SEQ64_MIDI_NORMAL_PORT, global_queue(), true    /* system port */
+        );
+        ++count;
         while (snd_seq_query_next_client(m_alsa_seq, cinfo) >= 0)
         {
             int client = snd_seq_client_info_get_client(cinfo);
-            if (client == 0)
+            if (client == SND_SEQ_CLIENT_SYSTEM)        /* i.e. 0 in seq.h  */
+            {
+                /*
+                 * Client 0 won't have ports (timer and announce) that match
+                 * the MIDI-generic and Synth types checked below.
+                 */
+
                 continue;
+            }
 
             snd_seq_port_info_alloca(&pinfo);
             snd_seq_port_info_set_client(pinfo, client); /* reset query info */
@@ -195,13 +238,18 @@ midi_alsa_info::get_all_port_info ()
                 {
                     input_ports().add
                     (
-                        client, clientname, portnumber, portname, global_queue()
+                        client, clientname, portnumber, portname,
+                        SEQ64_MIDI_NORMAL_PORT, global_queue()
                     );
                     ++count;
                 }
                 if ((caps & sm_output_caps) == sm_output_caps)
                 {
-                    output_ports().add(client, clientname, portnumber, portname);
+                    output_ports().add
+                    (
+                        client, clientname, portnumber, portname,
+                        SEQ64_MIDI_NORMAL_PORT
+                    );
                     ++count;
                 }
                 else

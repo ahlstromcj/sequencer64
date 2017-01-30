@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-28
+ * \updates       2017-01-29
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -302,6 +302,7 @@ options::add_midi_input_page ()
             bind(mem_fun(*this, &options::input_callback), bus, check)
         );
         check->set_active(perf().get_input(bus));
+        check->set_sensitive(! perf().is_input_system_port(bus));
         inputbox->pack_start(*check, false, false);
     }
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2017-01-22
+ * \updates       2017-01-30
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -33,6 +33,53 @@
  *  Note that we are changing the MIDI API somewhat from the original RtMidi
  *  midi_api class; that interface didn't really fit the sequencer64 model,
  *  and it was getting very painful to warp RtMidi to fit.
+ *
+ * Examples of subscription:
+ *	Capture from keyboard:
+ *
+ *		Assume MIDI input port = 64:0, application port = 128:0, and queue for
+ *		timestamp = 1 with real-time stamp. The application port must have
+ *		capability SND_SEQ_PORT_CAP_WRITE.
+ *
+\verbatim
+    void capture_keyboard (snd_seq_t * seq)
+    {
+        snd_seq_addr_t sender, dest;
+        snd_seq_port_subscribe_t *subs;
+        sender.client = 64;
+        sender.port = 0;
+        dest.client = 128;
+        dest.port = 0;
+        snd_seq_port_subscribe_alloca(&subs);
+        snd_seq_port_subscribe_set_sender(subs, &sender);
+        snd_seq_port_subscribe_set_dest(subs, &dest);
+        snd_seq_port_subscribe_set_queue(subs, 1);
+        snd_seq_port_subscribe_set_time_update(subs, 1);
+        snd_seq_port_subscribe_set_time_real(subs, 1);
+        snd_seq_subscribe_port(seq, subs);
+    }
+\endverbatim
+ *
+ *  Output to MIDI device:
+ *
+ *      Assume MIDI output port = 65:1 and application port = 128:0. The
+ *      application port must have capability SND_SEQ_PORT_CAP_READ.
+ *
+\verbatim
+    void subscribe_output(snd_seq_t *seq)
+    {
+        snd_seq_addr_t sender, dest;
+        snd_seq_port_subscribe_t *subs;
+        sender.client = 128;
+        sender.port = 0;
+        dest.client = 65;
+        dest.port = 1;
+        snd_seq_port_subscribe_alloca(&subs);
+        snd_seq_port_subscribe_set_sender(subs, &sender);
+        snd_seq_port_subscribe_set_dest(subs, &dest);
+        snd_seq_subscribe_port(seq, subs);
+    }
+\endverbatim
  */
 
 #include "globals.h"
@@ -42,6 +89,15 @@
 #include "midi_alsa.hpp"                /* seq64::midi_alsa for ALSA        */
 #include "midi_info.hpp"                /* seq64::midi_info                 */
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+
+/**
+ *  Currently experimental for subscription purposes.  Change back if it
+ *  breaks input processing, but this better matches what seq24 does.
+ *
+ *  Defines the name for all MIDI input ports.
+ */
+
+#define SEQ64_MIDI_INPUT_PORTNAME       SEQ64_CLIENT_NAME " in"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -161,6 +217,32 @@ midi_alsa::api_init_out ()
 /**
  *  Initialize the MIDI input port.
  *
+ * Subscription handlers:
+ *
+ *  In ALSA library, subscription is done via snd_seq_subscribe_port()
+ *  function. It takes the argument of snd_seq_port_subscribe_t record
+ *  pointer. Suppose that you have a client which will receive data from a
+ *  MIDI input device. The source and destination addresses are like the
+ *  below:
+ *
+\verbatim
+    snd_seq_addr_t sender, dest;
+    sender.client = MIDI_input_client;
+    sender.port = MIDI_input_port;
+    dest.client = my_client;
+    dest.port = my_port;
+\endverbatim
+ *
+    To set these values as the connection call like this.
+ *
+\verbatim
+    snd_seq_port_subscribe_t *subs;
+    snd_seq_port_subscribe_alloca(&subs);
+    snd_seq_port_subscribe_set_sender(subs, &sender);
+    snd_seq_port_subscribe_set_dest(subs, &dest);
+    snd_seq_subscribe_port(handle, subs);
+\endverbatim
+ *
  * \tricky
  *      One important thing to note is that this input port is initialized
  *      with the SND_SEQ_PORT_CAP_WRITE flag, which means this is really an
@@ -179,7 +261,8 @@ midi_alsa::api_init_in ()
     std::string busname = master_info().get_bus_name(get_bus_index());
     int result = snd_seq_create_simple_port             /* create ports */
     (
-        m_seq, busname.c_str(),
+        m_seq,
+        SEQ64_MIDI_INPUT_PORTNAME,                      // busname.c_str(),
         SND_SEQ_PORT_CAP_NO_EXPORT | SND_SEQ_PORT_CAP_WRITE,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );
@@ -194,13 +277,13 @@ midi_alsa::api_init_in ()
     snd_seq_port_subscribe_alloca(&subs);
 
     snd_seq_addr_t sender;
-    sender.client = m_dest_addr_client;
-    sender.port = m_dest_addr_port;
+    sender.client = m_dest_addr_client;                 /* MIDI input client  */
+    sender.port = m_dest_addr_port;                     /* MIDI input port    */
     snd_seq_port_subscribe_set_sender(subs, &sender);   /* destination        */
 
     snd_seq_addr_t dest;
-    dest.client = m_local_addr_client;
-    dest.port = m_local_addr_port;
+    dest.client = m_local_addr_client;                  /* my client          */
+    dest.port = m_local_addr_port;                      /* my port            */
     snd_seq_port_subscribe_set_dest(subs, &dest);       /* local              */
 
     /*
@@ -284,7 +367,7 @@ midi_alsa::api_init_out_sub ()
 {
     std::string portname = port_name();
     if (portname.empty())
-        portname = SEQ64_CLIENT_NAME " midi out";
+        portname = SEQ64_CLIENT_NAME " out";
 
     int result = snd_seq_create_simple_port             /* create ports */
     (
@@ -322,7 +405,8 @@ midi_alsa::api_init_in_sub ()
 
     int result = snd_seq_create_simple_port             /* create ports */
     (
-        m_seq, portname.c_str(),
+        m_seq,
+        SEQ64_MIDI_INPUT_PORTNAME,                      // portname.c_str()
         SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );
@@ -383,6 +467,22 @@ midi_alsa::api_deinit_in ()
         return false;
     }
     return true;
+}
+
+/**
+ *
+ */
+
+int
+midi_alsa::api_poll_for_midi ()
+{
+    /*
+     * TODO?  See seq_alsamidi's mastermidibus::api_poll_for_midi().
+     *
+     * return poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
+     */
+
+    return 0;
 }
 
 /**

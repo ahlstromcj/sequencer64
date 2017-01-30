@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-25
+ * \updates       2017-01-29
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2485,6 +2485,15 @@ private:
     bool get_input (int bus)
     {
         return master_bus().get_input(bus);
+    }
+
+    /**
+     *
+     */
+
+    bool is_input_system_port (int bus)
+    {
+        return master_bus().is_input_system_port(bus);
     }
 
 };

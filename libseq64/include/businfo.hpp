@@ -278,6 +278,7 @@ public:
     bool set_input (bussbyte bus, bool inputing);
     void set_all_inputs ();
     bool get_input (bussbyte bus);
+    bool is_system_port (bussbyte bus);
     bool poll_for_midi ();
     int replacement_port (int bus, int port);
 

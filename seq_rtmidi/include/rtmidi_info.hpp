@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2017-01-26
+ * \updates       2017-01-28
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -49,8 +49,8 @@ private:
     midi_info * m_info_api;
 
     /**
-     *  To save from repeated queries, we save this value.  Its default value
-     *  is RTMIDI_API_UNSPECIFIED.
+     *  To save repeated queries, we save this value.  Its default value is
+     *  RTMIDI_API_UNSPECIFIED.
      */
 
     static rtmidi_api sm_selected_api;
@@ -181,6 +181,11 @@ public:
     bool get_virtual (int index) const
     {
         return get_api_info()->get_virtual(index);
+    }
+
+    bool get_system (int index) const
+    {
+        return get_api_info()->get_system(index);
     }
 
     int get_all_port_info ()

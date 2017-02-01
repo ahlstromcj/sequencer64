@@ -140,6 +140,7 @@ midibus::midibus
             );
         }
     }
+    printf("midibus '%s' created (may change!)\n", display_name().c_str());
 }
 
 /**
@@ -302,6 +303,7 @@ midibus::api_init_in_sub ()
 void
 midibus::api_play (event * e24, midibyte channel)
 {
+    printf("midibus::play()\n");
     m_rt_midi->api_play(e24, channel);
 }
 

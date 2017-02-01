@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-28
+ * \updates       2017-02-01
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -65,7 +65,7 @@ namespace seq64
 mastermidibus::mastermidibus (int ppqn, int bpm)
  :
     mastermidibase      (ppqn, bpm),
-    m_midi_scratch
+    m_midi_master
     (
         rc().no_jack_midi() ? RTMIDI_API_LINUX_ALSA : RTMIDI_API_UNSPECIFIED,
         SEQ64_APP_NAME, ppqn, bpm
@@ -125,68 +125,68 @@ mastermidibus::~mastermidibus ()
 void
 mastermidibus::api_init (int ppqn, int bpm)
 {
-    m_midi_scratch.api_set_ppqn(ppqn);
-    m_midi_scratch.api_set_beats_per_minute(bpm);
+    m_midi_master.api_set_ppqn(ppqn);
+    m_midi_master.api_set_beats_per_minute(bpm);
     if (rc().manual_alsa_ports())                       /* virtual ports    */
     {
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;     /* not just ALSA!   */
-        m_midi_scratch.clear();                         /* ignore system    */
+        m_midi_master.clear();                         /* ignore system    */
         for (int i = 0; i < num_buses; ++i)             /* output busses    */
         {
             midibus * m = new midibus
             (
-                m_midi_scratch, i, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_OUTPUT
+                m_midi_master, i, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_OUTPUT
             );
             m->is_virtual_port(true);
             m->is_input_port(false);
             m_outbus_array.add(m, clock(i));            /* must come 1st    */
-            m_midi_scratch.add_output(m);               /* must come 2nd    */
+            m_midi_master.add_output(m);               /* must come 2nd    */
         }
         midibus * m = new midibus
         (
-            m_midi_scratch, 0, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_INPUT
+            m_midi_master, 0, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_INPUT
         );
         m->is_virtual_port(true);
         m->is_input_port(true);
         m_inbus_array.add(m, input(0));                 /* must come 1st    */
-        m_midi_scratch.add_input(m);                    /* must come 2nd    */
+        m_midi_master.add_input(m);                    /* must come 2nd    */
         port_list("virtual");
     }
     else
     {
-        unsigned nports = m_midi_scratch.get_port_count();
+        unsigned nports = m_midi_master.get_port_count();
         port_list("rtmidi");
         if (nports > 0)
         {
-            m_midi_scratch.midi_mode(SEQ64_MIDI_INPUT);
-            unsigned inports = m_midi_scratch.get_port_count();
+            m_midi_master.midi_mode(SEQ64_MIDI_INPUT);
+            unsigned inports = m_midi_master.get_port_count();
             for (unsigned i = 0; i < inports; ++i)
             {
                 midibus * m = new midibus
                 (
-                    m_midi_scratch, i, SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_INPUT
+                    m_midi_master, i, SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_INPUT
                 );
                 m->is_virtual_port(false);
                 m->is_input_port(true);
-                if (m_midi_scratch.get_system(i))
+                if (m_midi_master.get_system(i))
                     m->set_system_port_flag();          /* can only set it  */
 
                 m_inbus_array.add(m, input(i));         /* must come 1st    */
-                m_midi_scratch.add_bus(m);              /* must come 2nd    */
+                m_midi_master.add_bus(m);              /* must come 2nd    */
             }
 
-            m_midi_scratch.midi_mode(SEQ64_MIDI_OUTPUT);
-            unsigned outports = m_midi_scratch.get_port_count();
+            m_midi_master.midi_mode(SEQ64_MIDI_OUTPUT);
+            unsigned outports = m_midi_master.get_port_count();
             for (unsigned i = 0; i < outports; ++i)
             {
                 midibus * m = new midibus
                 (
-                    m_midi_scratch, i, SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_OUTPUT
+                    m_midi_master, i, SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_OUTPUT
                 );
                 m->is_virtual_port(false);
                 m->is_input_port(false);
                 m_outbus_array.add(m, clock(i));        /* must come 1st    */
-                m_midi_scratch.add_bus(m);              /* must come 2nd    */
+                m_midi_master.add_bus(m);              /* must come 2nd    */
             }
         }
     }
@@ -218,11 +218,11 @@ mastermidibus::api_init (int ppqn, int bpm)
 void
 mastermidibus::port_list (const std::string & tag)
 {
-        std::string plist = m_midi_scratch.port_list();
+        std::string plist = m_midi_master.port_list();
         printf
         (
             "%d %s ports created:\n%s\n",
-            m_midi_scratch.full_port_count(), tag.c_str(), plist.c_str()
+            m_midi_master.full_port_count(), tag.c_str(), plist.c_str()
         );
 }
 
@@ -246,7 +246,7 @@ mastermidibus::activate ()
 {
     bool result = mastermidibase::activate();
     if (result)
-        result = m_midi_scratch.api_connect();      /* activates, too    */
+        result = m_midi_master.api_connect();      /* activates, too    */
 
     return result;
 }
@@ -259,6 +259,7 @@ mastermidibus::activate ()
 int
 mastermidibus::api_poll_for_midi ()
 {
+#ifdef USE_MULTICLIENT_API
     for (;;)
     {
         if (m_inbus_array.poll_for_midi())
@@ -267,6 +268,9 @@ mastermidibus::api_poll_for_midi ()
         millisleep(1);
         return 0;
     }
+#else
+    return m_midi_master.api_poll_for_midi();
+#endif
 }
 
 /**
@@ -292,7 +296,7 @@ mastermidibus::api_is_more_input ()
 bool
 mastermidibus::api_get_midi_event (event * inev)
 {
-    return m_midi_scratch.api_get_midi_event(inev);
+    return m_midi_master.api_get_midi_event(inev);
 }
 
 }           // namespace seq64

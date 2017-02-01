@@ -31,6 +31,8 @@
  *      the number of input or output ports.  These values are indices into a
  *      vector of port_info_t structures, and are easily looked up when
  *      mastermidibus creates a midibus object.
+ *
+ *      An alternate name for this class could be "midi_master".  :-)
  */
 
 #include "app_limits.h"                 /* SEQ64_DEFAULT_PPQN etc.  */
@@ -406,6 +408,7 @@ public:
     }
 
     virtual bool api_get_midi_event (event * inev) = 0;
+    virtual int api_poll_for_midi () = 0;
     virtual void api_flush () = 0;
 
     /**

@@ -307,17 +307,17 @@ typedef bool cbool_t;
 #endif
 
 /**
- *  Usage:      jackprint(function_name, context_tag);
+ *  Usage:      apiprint(function_name, context_tag);
  *
  *  This macro can be enabled in JACK modules in order to see the flow of
- *  calls to the JACK API.  It also disables the hiding of JACK information
- *  messages.
+ *  calls to the JACK or ALSA API.  It also disables the hiding of JACK/ALSA
+ *  information messages.
  */
 
-#ifdef SEQ64_SHOW_JACK_CALLS
-#define jackprint(name, tag)    fprintf(stderr, "= %s(%s)\n", name, tag)
+#ifdef SEQ64_SHOW_API_CALLS
+#define apiprint(name, tag)    fprintf(stderr, "= %s(%s)\n", name, tag)
 #else
-#define jackprint(name, tag)
+#define apiprint(name, tag)
 #endif
 
 /**

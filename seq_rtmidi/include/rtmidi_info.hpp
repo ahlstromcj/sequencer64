@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2017-01-28
+ * \updates       2017-02-01
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -251,6 +251,11 @@ public:
     void api_flush ()
     {
         get_api_info()->api_flush();
+    }
+
+    int api_poll_for_midi ()
+    {
+        return get_api_info()->api_poll_for_midi();
     }
 
     /**

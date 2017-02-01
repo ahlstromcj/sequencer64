@@ -134,8 +134,7 @@ info_message (const std::string & msg)
 }
 
 /**
- *  Common-code for error messages.  Adds markers, and sets m_jack_running to
- *  false.
+ *  Common-code for error messages.  Adds markers, and returns false.
  *
  * \param msg
  *      The message to print, sans the newline.

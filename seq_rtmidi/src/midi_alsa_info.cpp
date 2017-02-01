@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-30
+ * \updates       2017-01-31
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -321,6 +321,20 @@ midi_alsa_info::api_set_beats_per_minute (int b)
     snd_seq_set_queue_tempo(m_alsa_seq, queue, tempo);
 }
 
+/**
+ *
+ */
+
+int
+midi_alsa_info::api_poll_for_midi ()
+{
+    int result = poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
+#if 0
+    printf("midi_alsa_info::poll_for_midi() = %d\n", result);
+#endif
+    return result;
+}
+
 /*
  * Definitions copped from the seq_alsamidi/src/mastermidibus.cpp module.
  */
@@ -381,6 +395,8 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
     snd_seq_port_info_alloca(&pinfo);
     snd_seq_get_any_port_info(m_alsa_seq, bus, port, pinfo);
 
+    printf("midi_alsa_info::port_start(%d:%d)\n", bus, port);
+
     int cap = snd_seq_port_info_get_capability(pinfo);  /* get its capability */
     if (ALSA_CLIENT_CHECK(pinfo))
     {
@@ -391,10 +407,7 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
             if (test >= 0)
                 bus_slot = test;
 
-            midibus * m = new midibus
-            (
-                masterbus.m_midi_scratch, bus_slot // index
-            );
+            midibus * m = new midibus(masterbus.m_midi_master, bus_slot);
             m->is_virtual_port(false);
             m->is_input_port(false);
             masterbus.m_outbus_array.add(m, e_clock_off);
@@ -406,10 +419,7 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
             if (test >= 0)
                 bus_slot = test;
 
-            midibus * m = new midibus
-            (
-                masterbus.m_midi_scratch, bus_slot // index
-            );
+            midibus * m = new midibus(masterbus.m_midi_master, bus_slot);
             m->is_virtual_port(false);
             m->is_input_port(true);                  // was false BEWARE BREAKAGE
             masterbus.m_inbus_array.add(m, false);
@@ -468,9 +478,10 @@ midi_alsa_info::api_get_midi_event (event * inev)
         case SND_SEQ_EVENT_PORT_EXIT:
         {
             /*
-             * TODO:  figure out how to best do this.
-
-            port_exit(masterbus, ev->data.addr.client, ev->data.addr.port);
+             * TODO:  figure out how to best do this.  port_exit() is defined
+             * in mastermidibase and in businfo.
+             *
+             * port_exit(masterbus, ev->data.addr.client, ev->data.addr.port);
              */
 
             result = true;

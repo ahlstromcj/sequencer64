@@ -54,7 +54,7 @@
 #include <jack/midiport.h>
 #include <jack/ringbuffer.h>
 
-#define SEQ64_SHOW_JACK_CALLS
+#define SEQ64_SHOW_API_CALLS
 
 #include "calculations.hpp"             /* seq64::extract_port_name()       */
 #include "event.hpp"                    /* seq64::event from main library   */
@@ -250,7 +250,7 @@ midi_jack::~midi_jack ()
     if (not_nullptr(m_jack_data.m_jack_buffmessage))
         jack_ringbuffer_free(m_jack_data.m_jack_buffmessage);
 
-    jackprint("~midi_jack", "jack");
+    apiprint("~midi_jack", "jack");
 }
 
 /**
@@ -537,6 +537,8 @@ midi_jack::api_play (event * e24, midibyte channel)
     message.push(d0);
     message.push(d1);
 
+    printf("midi_jack::play()\n");
+
     int nbytes = message.count();               /* send_message(message) */
     if (nbytes > 0 && m_jack_data.valid_buffer())
     {
@@ -599,7 +601,7 @@ midi_jack::api_continue_from (midipulse tick, midipulse /*beats*/)
     if (jack_transport_locate(client_handle(), jack_frame) != 0)
         (void) info_message("jack api_continue_from() failed");
 
-    jackprint("api_continue_from", "jack");
+    apiprint("api_continue_from", "jack");
 }
 
 /**
@@ -612,7 +614,7 @@ void
 midi_jack::api_start ()
 {
     jack_transport_start(client_handle());
-    jackprint("jack_transport_start", "jack");
+    apiprint("jack_transport_start", "jack");
 }
 
 /**
@@ -625,7 +627,7 @@ void
 midi_jack::api_stop ()
 {
     jack_transport_stop(client_handle());
-    jackprint("jack_transport_stop", "jack");
+    apiprint("jack_transport_stop", "jack");
 }
 
 void
@@ -796,7 +798,7 @@ midi_jack::open_client_impl (bool input)
             }
         }
     }
-    jackprint("open_client_impl", "jack");
+    apiprint("open_client_impl", "jack");
     return result;
 }
 
@@ -810,7 +812,7 @@ midi_jack::close_client ()
     if (not_nullptr(client_handle()))
     {
         int rc = jack_client_close(client_handle());
-        jackprint("jack_client_close", "jack");
+        apiprint("jack_client_close", "jack");
         client_handle(nullptr);
         if (rc != 0)
         {
@@ -878,7 +880,7 @@ midi_jack::connect_port
         (
             client_handle(), srcportname.c_str(), destportname.c_str()
         );
-        jackprint("jack_connect", "jack");
+        apiprint("jack_connect", "jack");
         result = rc == 0;
         if (! result)
         {
@@ -943,7 +945,7 @@ midi_jack::register_port (bool input, const std::string & portname)
             input ? JackPortIsOutput : JackPortIsInput,     /* \tricky */
             0               /* buffer size of non-built-in port type, ignored */
         );
-        jackprint("jack_port_register", "jack");
+        apiprint("jack_port_register", "jack");
         if (not_nullptr(p))
         {
             port_handle(p);
@@ -972,7 +974,7 @@ midi_jack::close_port ()
     {
         jack_port_unregister(client_handle(), port_handle());
         port_handle(nullptr);
-        jackprint("jack_port_unregister", "jack");
+        apiprint("jack_port_unregister", "jack");
     }
 }
 
@@ -1009,6 +1011,24 @@ midi_in_jack::midi_in_jack
      * if (multi_client())
      *     (void) initialize(clientname);
      */
+}
+
+/**
+ *
+ */
+
+int
+midi_in_jack::api_poll_for_midi ()
+{
+    rtmidi_in_data * rtindata = m_jack_data.m_jack_rtmidiin;
+    if (rtindata->using_callback())
+    {
+        return 0;
+    }
+    else
+    {
+        return rtindata->queue().count();
+    }
 }
 
 /**
@@ -1081,7 +1101,7 @@ midi_out_jack::send_message (const midi_message::container & message)
     (
         m_jack_data.m_jack_buffsize, (char *) &nbytes, sizeof(nbytes)
     );
-    jackprint("send_message", "jack");
+    apiprint("send_message", "jack");
     return (count1 > 0) && (count2 > 0);
 }
 

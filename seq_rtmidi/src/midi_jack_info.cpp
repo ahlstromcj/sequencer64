@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-26
+ * \updates       2017-02-01
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of JACK information
@@ -13,7 +13,7 @@
  *  for usage when creating JACK midibus objects and midi_jack API objects.
  */
 
-#define SEQ64_SHOW_JACK_CALLS
+#define SEQ64_SHOW_API_CALLS
 
 #include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
 #include "event.hpp"                    /* seq64::event and other tokens    */
@@ -134,7 +134,7 @@ midi_jack_info::connect ()
             (
                 result, jack_process_io, &m_jack_data
             );
-            jackprint("jack_set_process_callback", "info");
+            apiprint("jack_set_process_callback", "info");
             if (rc == 0)
             {
                 /**
@@ -175,8 +175,8 @@ midi_jack_info::disconnect ()
         jack_deactivate(m_jack_client);
         jack_client_close(m_jack_client);
         m_jack_client = nullptr;
-        jackprint("jack_deactivate", "info");
-        jackprint("jack_client_close", "info");
+        apiprint("jack_deactivate", "info");
+        apiprint("jack_client_close", "info");
     }
 }
 
@@ -383,7 +383,7 @@ midi_jack_info::api_connect ()
         if (result)
         {
             int rc = jack_activate(client_handle());
-            jackprint("jack_activate", "info");
+            apiprint("jack_activate", "info");
             result = rc == 0;
         }
     }
@@ -477,7 +477,7 @@ midi_jack_info::api_port_start (mastermidibus & masterbus, int bus, int port)
         if (test >= 0)
             bus_slot = test;
 
-        midibus * m = new midibus(masterbus.m_midi_scratch, bus_slot);
+        midibus * m = new midibus(masterbus.m_midi_master, bus_slot);
         m->is_virtual_port(false);
         m->is_input_port(false);
         masterbus.m_outbus_array.add(m, e_clock_off);
@@ -487,11 +487,21 @@ midi_jack_info::api_port_start (mastermidibus & masterbus, int bus, int port)
         if (test >= 0)
             bus_slot = test;
 
-        m = new midibus(masterbus.m_midi_scratch, bus_slot);
+        m = new midibus(masterbus.m_midi_master, bus_slot);
         m->is_virtual_port(false);
         m->is_input_port(false);
         masterbus.m_inbus_array.add(m, false);
     }
+}
+
+/**
+ *  MUCH TO DO!
+ */
+
+int
+midi_jack_info::api_poll_for_midi ()
+{
+    return 0;       // TODO TODO TODO
 }
 
 /**
@@ -591,7 +601,7 @@ silence_jack_info (bool silent)
 {
     if (silent)
     {
-#ifndef SEQ64_SHOW_JACK_CALLS
+#ifndef SEQ64_SHOW_API_CALLS
         jack_set_info_function(jack_message_bit_bucket);
 #endif
     }

@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2017-01-14
+ * \updates       2017-01-31
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -230,12 +230,21 @@ public:
     midi_queue ();
 
     /**
-     * \getter m_size
+     * \getter m_size == 0
      */
 
     bool empty () const
     {
         return m_size == 0;
+    }
+
+    /**
+     * \getter m_size == 0
+     */
+
+    int count () const
+    {
+        return int(m_size);
     }
 
     /**

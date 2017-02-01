@@ -209,8 +209,16 @@ midi_alsa::api_init_out ()
         return false;
     }
     else
+    {
         set_port_open();
-
+        printf
+        (
+            "READ/output port '%s' created:\n  "
+            "local port %d connected to %d:%d\n",
+            busname.c_str(), m_local_addr_port,
+            m_dest_addr_client, m_dest_addr_port
+        );
+    }
     return true;
 }
 
@@ -303,8 +311,17 @@ midi_alsa::api_init_in ()
         return false;
     }
     else
+    {
         set_port_open();
-
+        printf
+        (
+            "WRITE/input port '%s' created; sender %d:%d, "
+            "destination (local) %d:%d\n",
+            SEQ64_MIDI_INPUT_PORTNAME,
+            m_dest_addr_client, m_dest_addr_port,
+            m_local_addr_client, m_local_addr_port
+        );
+    }
     return true;
 }
 
@@ -385,6 +402,11 @@ midi_alsa::api_init_out_sub ()
     {
         set_virtual_name(result, portname);
         set_port_open();
+        printf
+        (
+            "virtual READ/output port '%s' created, local port %d\n",
+            portname.c_str(), result
+        );
     }
     return true;
 }
@@ -420,6 +442,7 @@ midi_alsa::api_init_in_sub ()
     {
         set_virtual_name(result, portname);
         set_port_open();
+        printf("virtual WRITE/input port 'seq24 in' created; port %d\n", result);
     }
     return true;
 }
@@ -466,6 +489,12 @@ midi_alsa::api_deinit_in ()
         );
         return false;
     }
+    printf
+    (
+        "WRITE/input port deinit'ed; sender %d:%d, destination (local) %d:%d\n",
+        m_dest_addr_client, m_dest_addr_port,
+        m_local_addr_client, m_local_addr_port
+    );
     return true;
 }
 
@@ -478,6 +507,7 @@ midi_alsa::api_poll_for_midi ()
 {
     /*
      * TODO?  See seq_alsamidi's mastermidibus::api_poll_for_midi().
+     * Right now we'd need to forward this call to midi_alsa_info.
      *
      * return poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
      */
@@ -525,6 +555,9 @@ midi_alsa::api_play (event * e24, midibyte channel)
     snd_midi_event_encode(midi_ev, buffer, 3, &ev); /* encode 3 raw bytes   */
     snd_midi_event_free(midi_ev);                   /* free the parser      */
     snd_seq_ev_set_source(&ev, m_local_addr_port);  /* set source           */
+
+    printf("midi_alsa::play() local port %d\n", m_local_addr_port);
+
     snd_seq_ev_set_subs(&ev);
     snd_seq_ev_set_direct(&ev);                     /* it is immediate      */
     snd_seq_event_output(m_seq, &ev);               /* pump into the queue  */
@@ -625,7 +658,7 @@ midi_alsa::api_flush ()
  */
 
 void
-midi_alsa::api_continue_from (midipulse /* tick */, midipulse beats)
+midi_alsa::api_continue_from (midipulse tick, midipulse beats)
 {
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);                          /* clear event      */
@@ -648,6 +681,12 @@ midi_alsa::api_continue_from (midipulse /* tick */, midipulse beats)
     snd_seq_event_output(m_seq, &evc);              /* pump into queue  */
     api_flush();
     snd_seq_event_output(m_seq, &ev);
+
+    printf
+    (
+        "midi_alsa::continue_from(%ld) local port %d\n",
+        tick, m_local_addr_port
+    );
 }
 
 /**

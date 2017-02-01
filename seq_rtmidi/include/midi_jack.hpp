@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-29
+ * \updates       2017-01-31
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring, we've stripped out most of the original RtMidi
@@ -156,6 +156,11 @@ protected:
     virtual bool api_init_in_sub ();
     virtual bool api_deinit_in ();
 
+    /**
+     * \return
+     *      Returns 0, since this is basically an input function.
+     */
+
     virtual int api_poll_for_midi ()
     {
         return 0;
@@ -199,6 +204,8 @@ public:
         unsigned queuesize = 0
     );
     virtual ~midi_in_jack ();
+
+    virtual int api_poll_for_midi ();
 
 private:
 

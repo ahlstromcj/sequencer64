@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-16
+ * \updates       2017-02-03
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring...
@@ -44,12 +44,14 @@ midi_api::midi_api
         masterinfo.get_bus_name(index),
         masterinfo.get_port_name(index),
         index,
-        masterinfo.get_bus_id(index),
-        masterinfo.get_port_id(index),
+        masterinfo.get_bus_id(index),               // parentbus an option
+        masterinfo.get_port_id(index),              // parentbus an option
         index,  // queue
-        masterinfo.ppqn(),
-        masterinfo.bpm(),
-        false               /* non-virtual HMMMMMMMMMMM */
+        masterinfo.ppqn(),                          // parentbus an option
+        masterinfo.bpm(),                           // parentbus an option
+        parentbus.is_virtual_port(),                // ALSA EFFECT?
+        parentbus.is_input_port(),                  // ALSA EFFECT?
+        parentbus.is_system_port()                  // ALSA EFFECT?
     ),
     m_master_info               (masterinfo),
     m_parent_bus                (parentbus),

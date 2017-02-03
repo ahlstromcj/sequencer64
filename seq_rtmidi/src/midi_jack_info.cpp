@@ -5,15 +5,13 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-02-01
+ * \updates       2017-02-02
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of JACK information
  *  about client number, port numbers, and port names, and hold them
  *  for usage when creating JACK midibus objects and midi_jack API objects.
  */
-
-#define SEQ64_SHOW_API_CALLS
 
 #include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
 #include "event.hpp"                    /* seq64::event and other tokens    */

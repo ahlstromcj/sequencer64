@@ -329,9 +329,11 @@ int
 midi_alsa_info::api_poll_for_midi ()
 {
     int result = poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
-#if 0
+
+#ifdef SEQ64_SHOW_API_CALLS_XXX                 /* too much output!     */
     printf("midi_alsa_info::poll_for_midi() = %d\n", result);
 #endif
+
     return result;
 }
 
@@ -395,7 +397,9 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
     snd_seq_port_info_alloca(&pinfo);
     snd_seq_get_any_port_info(m_alsa_seq, bus, port, pinfo);
 
+#ifdef SEQ64_SHOW_API_CALLS
     printf("midi_alsa_info::port_start(%d:%d)\n", bus, port);
+#endif
 
     int cap = snd_seq_port_info_get_capability(pinfo);  /* get its capability */
     if (ALSA_CLIENT_CHECK(pinfo))

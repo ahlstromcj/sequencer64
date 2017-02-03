@@ -70,6 +70,9 @@ private:
         int m_port_number;          /**< The minor port number of the port.  */
         std::string m_port_name;    /**< The system's name for the port.     */
         int m_queue_number;         /**< A number used in some APIs.         */
+
+        // WE SHOULD ADD m_is_input HERE
+
         bool m_is_virtual;          /**< Indicates an additional port.       */
         bool m_is_system;           /**< Built-in port, almost always false. */
 

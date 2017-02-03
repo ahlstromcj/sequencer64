@@ -23,10 +23,10 @@
 #include "midibus.hpp"                  /* seq64::midibus               */
 
 /**
- *  We've tried this false, now trying it true.
+ *  We've tried this false, now trying it true.  And vice versa.
  */
 
-#define SEQ64_RTMIDI_MULTICLIENT        true
+#define SEQ64_RTMIDI_MULTICLIENT        false
 
 /*
  * Do not document the namespace; it breaks Doxygen.

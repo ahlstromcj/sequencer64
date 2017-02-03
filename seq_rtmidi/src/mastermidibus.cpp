@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-01
+ * \updates       2017-02-03
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -154,7 +154,7 @@ mastermidibus::api_init (int ppqn, int bpm)
     }
     else
     {
-        unsigned nports = m_midi_master.get_port_count();
+        unsigned nports = m_midi_master.full_port_count();
         port_list("rtmidi");
         if (nports > 0)
         {
@@ -166,7 +166,13 @@ mastermidibus::api_init (int ppqn, int bpm)
                 (
                     m_midi_master, i, SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_INPUT
                 );
-                m->is_virtual_port(false);
+
+                /*
+                 * This is decided at JACK system port scan time in
+                 * midi_jack_info::get_all_port_info().
+                 */
+
+                m->is_virtual_port(m_midi_master.get_virtual(i));
                 m->is_input_port(true);
                 if (m_midi_master.get_system(i))
                     m->set_system_port_flag();          /* can only set it  */
@@ -183,7 +189,13 @@ mastermidibus::api_init (int ppqn, int bpm)
                 (
                     m_midi_master, i, SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_OUTPUT
                 );
-                m->is_virtual_port(false);
+
+                /*
+                 * This is decided at JACK system port scan time in
+                 * midi_jack_info::get_all_port_info().
+                 */
+
+                m->is_virtual_port(m_midi_master.get_virtual(i));
                 m->is_input_port(false);
                 m_outbus_array.add(m, clock(i));        /* must come 1st    */
                 m_midi_master.add_bus(m);              /* must come 2nd    */
@@ -218,12 +230,12 @@ mastermidibus::api_init (int ppqn, int bpm)
 void
 mastermidibus::port_list (const std::string & tag)
 {
-        std::string plist = m_midi_master.port_list();
-        printf
-        (
-            "%d %s ports created:\n%s\n",
-            m_midi_master.full_port_count(), tag.c_str(), plist.c_str()
-        );
+    std::string plist = m_midi_master.port_list();
+    printf
+    (
+        "%d %s ports created:\n%s\n",
+        m_midi_master.full_port_count(), tag.c_str(), plist.c_str()
+    );
 }
 
 #else

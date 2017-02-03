@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-22
+ * \updates       2017-02-02
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -53,8 +53,6 @@
 #include <sstream>
 #include <jack/midiport.h>
 #include <jack/ringbuffer.h>
-
-#define SEQ64_SHOW_API_CALLS
 
 #include "calculations.hpp"             /* seq64::extract_port_name()       */
 #include "event.hpp"                    /* seq64::event from main library   */
@@ -112,7 +110,10 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
 {
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
     rtmidi_in_data * rtindata = jackdata->m_jack_rtmidiin;
-    if (jackdata->m_jack_port == NULL)      /* is port created?        */
+    if (is_nullptr(jackdata->m_jack_port))     /* is port created?        */
+       return 0;
+
+    if (is_nullptr(rtindata))
        return 0;
 
     jack_midi_event_t jmevent;
@@ -537,7 +538,9 @@ midi_jack::api_play (event * e24, midibyte channel)
     message.push(d0);
     message.push(d1);
 
+// #if 0
     printf("midi_jack::play()\n");
+// #endif
 
     int nbytes = message.count();               /* send_message(message) */
     if (nbytes > 0 && m_jack_data.valid_buffer())
@@ -863,6 +866,11 @@ midi_jack::close_client ()
  *      Now, if this name is empty, that basically means that there is no such
  *      port, and we create a virtual port in this case.  So jack_connect() is
  *      not called in this case.  We do not treat this case as an error.
+ *
+ * \return
+ *      If the jack_connect() call succeeds, true is returned.  If the port is
+ *      a virtual (manual) port, then it is not connected, and true is
+ *      returned without any action.
  */
 
 bool
@@ -873,32 +881,36 @@ midi_jack::connect_port
     const std::string & destportname
 )
 {
-    bool result = ! srcportname.empty() && ! destportname.empty();
-    if (result)
+    bool result = true;
+    if (! is_virtual_port())
     {
-        int rc = jack_connect
-        (
-            client_handle(), srcportname.c_str(), destportname.c_str()
-        );
-        apiprint("jack_connect", "jack");
-        result = rc == 0;
-        if (! result)
+        result = ! srcportname.empty() && ! destportname.empty();
+        if (result)
         {
-            if (rc == EEXIST)
+            int rc = jack_connect
+            (
+                client_handle(), srcportname.c_str(), destportname.c_str()
+            );
+            apiprint("jack_connect", "jack");
+            result = rc == 0;
+            if (! result)
             {
-                /*
-                 * Probably not worth emitting a warning to the console.
-                 */
-            }
-            else
-            {
-                m_error_string = func_message("JACK error connecting port ");
-                m_error_string += input ? "input '" : "output '";
-                m_error_string += srcportname;
-                m_error_string += "' to '";
-                m_error_string += destportname;
-                m_error_string += "'";
-                error(rterror::DRIVER_ERROR, m_error_string);
+                if (rc == EEXIST)
+                {
+                    /*
+                     * Probably not worth emitting a warning to the console.
+                     */
+                }
+                else
+                {
+                    m_error_string = func_message("JACK error connecting port ");
+                    m_error_string += input ? "input '" : "output '";
+                    m_error_string += srcportname;
+                    m_error_string += "' to '";
+                    m_error_string += destportname;
+                    m_error_string += "'";
+                    error(rterror::DRIVER_ERROR, m_error_string);
+                }
             }
         }
     }

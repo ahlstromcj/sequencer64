@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2017-01-30
+ * \updates       2017-02-01
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -211,13 +211,16 @@ midi_alsa::api_init_out ()
     else
     {
         set_port_open();
+
+#ifdef SEQ64_SHOW_API_CALLS
         printf
         (
-            "READ/output port '%s' created:\n  "
-            "local port %d connected to %d:%d\n",
+            "READ/output port '%s' created:\n local port %d connected to %d:%d\n",
             busname.c_str(), m_local_addr_port,
             m_dest_addr_client, m_dest_addr_port
         );
+#endif
+
     }
     return true;
 }
@@ -313,6 +316,7 @@ midi_alsa::api_init_in ()
     else
     {
         set_port_open();
+#ifdef SEQ64_SHOW_API_CALLS
         printf
         (
             "WRITE/input port '%s' created; sender %d:%d, "
@@ -321,6 +325,7 @@ midi_alsa::api_init_in ()
             m_dest_addr_client, m_dest_addr_port,
             m_local_addr_client, m_local_addr_port
         );
+#endif
     }
     return true;
 }
@@ -402,11 +407,15 @@ midi_alsa::api_init_out_sub ()
     {
         set_virtual_name(result, portname);
         set_port_open();
+
+#ifdef SEQ64_SHOW_API_CALLS
         printf
         (
             "virtual READ/output port '%s' created, local port %d\n",
             portname.c_str(), result
         );
+#endif
+
     }
     return true;
 }
@@ -442,7 +451,11 @@ midi_alsa::api_init_in_sub ()
     {
         set_virtual_name(result, portname);
         set_port_open();
+
+#ifdef SEQ64_SHOW_API_CALLS
         printf("virtual WRITE/input port 'seq24 in' created; port %d\n", result);
+#endif
+
     }
     return true;
 }
@@ -489,12 +502,16 @@ midi_alsa::api_deinit_in ()
         );
         return false;
     }
+
+#ifdef SEQ64_SHOW_API_CALLS
     printf
     (
         "WRITE/input port deinit'ed; sender %d:%d, destination (local) %d:%d\n",
         m_dest_addr_client, m_dest_addr_port,
         m_local_addr_client, m_local_addr_port
     );
+#endif
+
     return true;
 }
 
@@ -556,7 +573,9 @@ midi_alsa::api_play (event * e24, midibyte channel)
     snd_midi_event_free(midi_ev);                   /* free the parser      */
     snd_seq_ev_set_source(&ev, m_local_addr_port);  /* set source           */
 
+#ifdef SEQ64_SHOW_API_CALLS
     printf("midi_alsa::play() local port %d\n", m_local_addr_port);
+#endif
 
     snd_seq_ev_set_subs(&ev);
     snd_seq_ev_set_direct(&ev);                     /* it is immediate      */
@@ -657,8 +676,14 @@ midi_alsa::api_flush ()
  *      The beats value calculated by midibase::continue_from().
  */
 
+#ifdef SEQ64_SHOW_API_CALLS
+#define tick_parameter tick
+#else
+#define tick_parameter /* tick */
+#endif
+
 void
-midi_alsa::api_continue_from (midipulse tick, midipulse beats)
+midi_alsa::api_continue_from (midipulse tick_parameter, midipulse beats)
 {
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);                          /* clear event      */
@@ -682,11 +707,14 @@ midi_alsa::api_continue_from (midipulse tick, midipulse beats)
     api_flush();
     snd_seq_event_output(m_seq, &ev);
 
+#ifdef SEQ64_SHOW_API_CALLS
     printf
     (
         "midi_alsa::continue_from(%ld) local port %d\n",
         tick, m_local_addr_port
     );
+#endif
+
 }
 
 /**

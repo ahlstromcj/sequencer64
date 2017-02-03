@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2017-01-26
+ * \updates       2017-02-02
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -83,8 +83,6 @@
 
 #include <stdio.h>
 #include <string.h>                     /* strdup() <gasp!>             */
-
-#undef  SEQ64_SHOW_API_CALLS
 
 #include "jack_assistant.hpp"           /* this seq64::jack_ass class   */
 #include "midifile.hpp"                 /* seq64::midifile class        */
@@ -370,9 +368,16 @@ create_jack_client
                 (void) info_message("JACK server already started");
 
             if (status & JackNameNotUnique)
-                (void) info_message("JACK client-name NOT unique");
-
-            show_jack_statuses(status);
+            {
+                char temp[80];
+                snprintf
+                (
+                    temp, sizeof temp, "JACK client-name '%s' not unique", name
+                );
+                (void) info_message(temp);
+            }
+            else
+                show_jack_statuses(status);
         }
     }
     else
@@ -740,7 +745,7 @@ jack_assistant::init ()
 {
     if (rc().with_jack() && ! m_jack_running)
     {
-        std::string package = SEQ64_PACKAGE;
+        std::string package = SEQ64_CLIENT_NAME "-transport";
         m_jack_running = true;              /* determined surely below      */
         m_jack_master = true;               /* ditto, too tricky, though    */
         m_jack_client = client_open(package);

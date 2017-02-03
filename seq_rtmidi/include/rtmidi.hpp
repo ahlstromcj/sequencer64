@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-29
+ * \updates       2017-02-03
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The big difference between this class (seq64::rtmidi) and
@@ -196,9 +196,22 @@ public:
         return get_api()->port_name();
     }
 
+    /**
+     * This value depends on the MIDI mode setting (input versus output).
+     */
+
     int get_port_count ()
     {
         return m_midi_info.get_port_count();
+    }
+
+    /**
+     *  This value is the sum of the number of input and output ports.
+     */
+
+    int full_port_count ()
+    {
+        return m_midi_info.full_port_count();
     }
 
     /**

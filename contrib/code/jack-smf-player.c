@@ -635,13 +635,6 @@ init_jack (void)
          g_critical("Could not register JACK sync callback.");
          exit(EX_UNAVAILABLE);
       }
-#if 0
-      err = jack_set_timebase_callback(jack_client, 1, timebase_callback, 0);
-      if (err) {
-         g_critical("Could not register JACK timebase callback.");
-         exit(EX_UNAVAILABLE);
-      }
-#endif
    }
 
    // assert(smf->number_of_tracks >= 1);

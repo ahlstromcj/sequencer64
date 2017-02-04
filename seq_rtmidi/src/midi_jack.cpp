@@ -538,9 +538,9 @@ midi_jack::api_play (event * e24, midibyte channel)
     message.push(d0);
     message.push(d1);
 
-// #if 0
+#ifdef SEQ64_SHOW_API_CALLS
     printf("midi_jack::play()\n");
-// #endif
+#endif
 
     int nbytes = message.count();               /* send_message(message) */
     if (nbytes > 0 && m_jack_data.valid_buffer())

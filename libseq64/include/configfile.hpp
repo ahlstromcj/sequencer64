@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-29
+ * \updates       2017-02-04
  * \license       GNU GPLv2 or above
  *
  *  This is actually an elegant little parser, and works well as long as one
@@ -62,6 +62,14 @@ class perform;
 
 class configfile
 {
+
+private:
+
+    /**
+     *  Holds the last error message, if any.  Not a 100% foolproof yet.
+     */
+
+    std::string m_error_message;
 
 protected:
 
@@ -105,6 +113,18 @@ public:
 
     virtual bool parse (perform & perf) = 0;
     virtual bool write (const perform & perf) = 0;
+
+    const std::string & get_error_message () const
+    {
+        return m_error_message;
+    }
+
+protected:
+
+    void set_error_message (const std::string & msg)
+    {
+        m_error_message = msg;
+    }
 
 };
 

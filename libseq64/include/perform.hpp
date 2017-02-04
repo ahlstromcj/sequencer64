@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-29
+ * \updates       2017-02-04
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1387,7 +1387,7 @@ public:
 
     void finish ()
     {
-        deinit_jack();
+        deinit_jack_transport();
     }
 
     /**
@@ -2248,7 +2248,7 @@ private:
      *      not running.
      */
 
-    bool init_jack ()
+    bool init_jack_transport ()
     {
 #ifdef SEQ64_JACK_SUPPORT
         return m_jack_asst.init();
@@ -2268,7 +2268,7 @@ private:
      *      JACK is (definitely) not running.
      */
 
-    bool deinit_jack ()
+    bool deinit_jack_transport ()
     {
 #ifdef SEQ64_JACK_SUPPORT
         return m_jack_asst.deinit();

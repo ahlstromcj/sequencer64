@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-11
+ * \updates       2017-02-04
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -340,6 +340,7 @@ public:
     virtual ~mainwnd ();
 
     void open_file (const std::string & filename);
+    void rc_error_dialog (const std::string & message);
 
     /**
      * \getter m_ppqn

@@ -88,7 +88,6 @@ int
 midi_probe ()
 {
     static rtmidi_info s_rtmidi_info_dummy(RTMIDI_API_UNSPECIFIED, "probe");
-//  static midibus s_midibus_dummy(s_rtmidi_info_dummy, "dummy", 0);
     static midibus s_midibus_dummy(s_rtmidi_info_dummy, 0);
     std::vector<rtmidi_api> apis;
     rtmidi_info::get_compiled_api(apis);
@@ -177,8 +176,6 @@ midi_input_test (rtmidi_info & info, int portindex)
         static midibus s_midibus_dummy(info, portindex);
         rtmidi_in midiin(s_midibus_dummy, info);
         midiin.user_callback(midi_input_callback);
-//      midiin.ignore_types(false, false, false); // sysex, timing, active sensing
-
         result = true;
         if (result)
         {

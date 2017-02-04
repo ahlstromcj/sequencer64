@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2017-01-29
+ * \updates       2017-02-04
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -382,7 +382,7 @@ public:
     }
 
     /**
-     * \setter m_clock_type TENTATIVE
+     * \setter m_clock_type
      */
 
     void set_clock_status (clock_e clocktype)
@@ -400,7 +400,7 @@ public:
     }
 
     /**
-     * \setter m_inputing TENTATIVE
+     * \setter m_inputing
      */
 
     void set_input_status (bool flag)

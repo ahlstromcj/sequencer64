@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2017-02-01
+ * \updates       2017-02-04
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -81,6 +81,15 @@ public:
      */
 
     static void get_compiled_api (std::vector<rtmidi_api> & apis);
+
+    /**
+     *  Sets the input or output mode for getting data.
+     */
+
+    bool midi_mode () const
+    {
+        return get_api_info()->midi_mode();
+    }
 
     /**
      *  Sets the input or output mode for getting data.

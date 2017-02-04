@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-28
+ * \updates       2017-02-04
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -762,10 +762,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     contentvbox->pack_start(*tophbox, Gtk::PACK_SHRINK);
     contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
     contentvbox->pack_start(*bottomhbox, Gtk::PACK_SHRINK);
-
-    /* TENTATIVE from stazed */
-
-    m_main_wid->set_can_focus();
+    m_main_wid->set_can_focus();            /* from stazed */
     m_main_wid->grab_focus();
 
     /*
@@ -1184,6 +1181,37 @@ mainwnd::new_open_error_dialog ()
     std::string prompt =
         "All sequence edit windows must be closed\n"
         "before opening a new file." ;
+
+    Gtk::MessageDialog errdialog
+    (
+        *this, prompt, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
+    );
+    errdialog.run();
+}
+
+/**
+ *  Tells the user that the "rc" file is erroneous.  We can't yet display the
+ *  specific error, except in a terminal window.
+ *
+ * \param message
+ *      Provides the error message returned by the configuration file.
+ */
+
+void
+mainwnd::rc_error_dialog (const std::string & message)
+{
+    std::string prompt;
+    if (message.empty())
+    {
+        prompt =
+            "Error found in 'rc' configuration file.  Run within\n"
+            "a terminal window to see the error message." ;
+    }
+    else
+    {
+        prompt = "Error found in 'rc' configuration file:\n";
+        prompt += message;
+    }
 
     Gtk::MessageDialog errdialog
     (

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-01-25
+ * \updates       2017-02-04
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -298,6 +298,10 @@ perform::~perform ()
  *  input ports at start-up.  Seq24 wouldn't connect unconditionally, and
  *  Sequencer64 shouldn't, either.
  *
+ *  However, the devices actually on the system at start time might be
+ *  different from what was saved in the "rc" file after the last run of
+ *  Sequencer64.
+ *
  * \return
  *      Returns true if the creation succeeded.
  */
@@ -337,10 +341,18 @@ perform::launch (int ppqn)
     {
 
 #ifdef SEQ64_JACK_SUPPORT
-        init_jack();
+        init_jack_transport();
 #endif
 
         master_bus().init(ppqn, m_bpm);     /* calls api_init() per API */
+
+        /*
+         * We may need to copy the actually input buss settings back to here,
+         * as they can change.  LATER.  They get saved properly anyway,
+         * because the optionsfile object gets the information from the
+         * mastermidibus more directly.
+         */
+
         if (activate())
         {
             launch_input_thread();
@@ -1995,9 +2007,9 @@ perform::set_jack_mode (bool jack_button_active)
     if (! is_running())                         /* was global_is_running    */
     {
         if (jack_button_active)
-            init_jack();
+            init_jack_transport();
         else
-            deinit_jack();
+            deinit_jack_transport();
     }
     m_jack_asst.set_jack_mode(is_jack_running());    /* seqroll keybinding  */
 

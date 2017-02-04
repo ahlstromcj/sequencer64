@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2017-01-28
+ * \updates       2017-02-04
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -298,6 +298,15 @@ public:
     virtual ~midi_info ()
     {
         // Empty body
+    }
+
+    /**
+     * \getter m_midi_mode_input
+     */
+
+    bool midi_mode () const
+    {
+        return m_midi_mode_input;
     }
 
     /**

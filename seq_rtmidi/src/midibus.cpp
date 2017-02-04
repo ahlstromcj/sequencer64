@@ -288,6 +288,21 @@ midibus::api_init_in_sub ()
 }
 
 /**
+ *  Forwards the de-initialization call to the API object that implements
+ *  it.  We don't bother checking the m_rt_midi pointer.  If it is null,
+ *  it is the programmer's fault.
+ *
+ * \return
+ *      Returns the result of the m_rt_midi->api_deinit_in() call.
+ */
+
+bool
+midibus::api_deinit_in ()
+{
+    return m_rt_midi->api_deinit_in();
+}
+
+/**
  *  Takes a native event, and encodes to a Windows message, and writes it to
  *  the queue.  It fills a small byte buffer, sets the MIDI channel, make a
  *  message of it, and writes the message.

@@ -9,7 +9,7 @@
  *
  * \author  Chris Ahlstrom
  * \date    2015-11-20
- * \updates 2016-09-10
+ * \updates 2017-02-04
  * \version $Revision$
  *
  *    Also see the file_functions.cpp module.  These modules together simplify
@@ -40,7 +40,10 @@ namespace seq64
  */
 
 extern bool help_check (int argc, char * argv []);
-extern bool parse_options_files (perform & p, int argc, char * argv []);
+extern bool parse_options_files
+(
+    perform & p, std::string & errmessage, int argc, char * argv []
+);
 extern int parse_command_line_options (perform & p, int argc, char * argv []);
 extern bool write_options_files (const perform & p);
 extern std::string build_details ();

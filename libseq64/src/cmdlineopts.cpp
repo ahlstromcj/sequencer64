@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-01-28
+ * \updates       2017-02-04
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -49,7 +49,6 @@
 
 #include <sstream>
 #include <string.h>                     /* strlen() <gasp!>                 */
-// #include "platform_macros.h"
 #include "easy_macros.h"
 
 #ifdef PLATFORM_UNIX
@@ -375,6 +374,11 @@ help_check (int argc, char * argv [])
  *      Provides the perform object that will be affected by the new
  *      parameters.
  *
+ * \param [out] errmessage
+ *      Provides a string into which to dump any error-message that might
+ *      occur.  Still not thoroughly supported in the "rc" and "user"
+ *      configuration files.
+ *
  * \param argc
  *      The number of command-line arguments.
  *
@@ -386,7 +390,12 @@ help_check (int argc, char * argv [])
  */
 
 bool
-parse_options_files (perform & p, int argc, char * argv [])
+parse_options_files
+(
+    perform & p,
+    std::string & errmessage,
+    int argc, char * argv []
+)
 {
     bool result = true;
     std::string rcname = seq64::rc().config_filespec();
@@ -408,19 +417,28 @@ parse_options_files (perform & p, int argc, char * argv [])
             // Nothing to do?
         }
         else
-            result = false;
-    }
-    rcname = seq64::rc().user_filespec();
-    if (file_accessible(rcname))
-    {
-        printf("[Reading user configuration %s]\n", rcname.c_str());
-        seq64::userfile ufile(rcname);
-        if (ufile.parse(p))
         {
-            // Nothing to do?
-        }
-        else
+            errmessage = options.get_error_message();
             result = false;
+        }
+    }
+    if (result)
+    {
+        rcname = seq64::rc().user_filespec();
+        if (file_accessible(rcname))
+        {
+            printf("[Reading user configuration %s]\n", rcname.c_str());
+            seq64::userfile ufile(rcname);
+            if (ufile.parse(p))
+            {
+                // Nothing to do?
+            }
+            else
+            {
+                errmessage = ufile.get_error_message();
+                result = false;
+            }
+        }
     }
     return result;
 }

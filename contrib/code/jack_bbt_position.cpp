@@ -25,42 +25,6 @@ jack_assistant::position (bool songmode, midipulse tick)
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
-#if 0
-
-    /*
-     * The call to jack_BBT_position() is not necessary to change JACK
-     * position!  Must set these here since they are set in timebase.
-     */
-
-    jack_position_t pos;
-    double jack_tick = current_tick * m_bw / 4.0;
-    pos.ticks_per_beat = m_ppqn * 10;
-    pos.beats_per_minute = m_master_bus.get_bpm();
-    jack_BBT_position(pos, jack_tick);
-
-    /*
-     * Calculate JACK frame to put into pos.frame; it is what matters for
-     * position change.  Very similar to the uncommented code above.
-     */
-
-    uint64_t tick_rate = ((uint64_t)pos.frame_rate * current_tick * 60.0);
-    long tpb_bpm = pos.ticks_per_beat * pos.beats_per_minute *
-        4.0 / pos.beat_type;
-
-    pos.frame = tick_rate / tpb_bpm;
-
-    /*
-     * ticks * 10 = jack ticks;
-     * jack ticks / ticks per beat = num beats;
-     * num beats / beats per minute = num minutes
-     * num minutes * 60 = num seconds
-     * num secords * frame_rate  = frame
-     */
-
-    jack_transport_reposition(m_jack_client, &pos);
-
-#endif  // 0
-
     if (parent().is_running())
         parent().set_reposition(false);
 

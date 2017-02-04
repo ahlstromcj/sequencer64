@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-29
+ * \updates       2017-02-04
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -1432,7 +1432,7 @@ options::transport_callback (button type, Gtk::Button * acheck)
          * of the JACK options page.
          */
 
-        if (perf().init_jack())                             // true = it worked
+        if (perf().init_jack_transport())                   // true = it worked
         {
             m_button_jack_connect->set_sensitive(false);    // disable connect
             m_button_jack_disconnect->set_sensitive(true);  // enable disconnect
@@ -1448,7 +1448,7 @@ options::transport_callback (button type, Gtk::Button * acheck)
          * Also legacy behavior, like the comment above.
          */
 
-        if (! perf().deinit_jack())                         // false = it worked
+        if (! perf().deinit_jack_transport())               // false = it worked
         {
             m_button_jack_connect->set_sensitive(true);     // enable connect
             m_button_jack_disconnect->set_sensitive(false); // disable disconnect

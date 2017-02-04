@@ -239,10 +239,6 @@ public:
     );
     virtual ~midi_in_api ();
 
-//  virtual void ignore_types (bool midisysex, bool miditime, bool midisense);
-//  virtual bool poll_queue () const;
-//  double get_message (std::vector<midibyte> & message);
-
     void user_callback (rtmidi_callback_t callback, void * userdata);
     void cancel_callback ();
 

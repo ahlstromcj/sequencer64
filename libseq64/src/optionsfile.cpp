@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-28
+ * \updates       2017-02-04
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -107,17 +107,28 @@ optionsfile::~optionsfile ()
  * \param sectionname
  *      Provides the name of the section for reporting the error.
  *
+ * \param additional
+ *      Additional context information to help in finding the error.
+ *
  * \return
  *      Always returns false.
  */
 
 bool
-optionsfile::error_message (const std::string & sectionname)
+optionsfile::error_message
+(
+    const std::string & sectionname,
+    const std::string & additional
+)
 {
-    std::string msg = "BAD DATA after [";
+    std::string msg = "BAD OR MISSING DATA in [";
     msg += sectionname;
-    msg += "], should ABORT";
+    msg += "]: ";
+    if (! additional.empty())
+        msg += additional;
+
     errprint(msg.c_str());
+    set_error_message(msg);
     return false;
 }
 
@@ -267,13 +278,13 @@ optionsfile::parse (perform & p)
     bool ok = false;
     if (sequences > c_midi_controls)                /* 1 to 74 are valid      */
     {
-        return error_message("midi-control, too many values");
+        return error_message("midi-control", "too many sequences");
     }
     else if (sequences > 0)
     {
         ok = next_data_line(file);
         if (! ok)
-            return error_message("midi-control");
+            return error_message("midi-control", "no data");
         else
             ok = true;
 
@@ -297,7 +308,7 @@ optionsfile::parse (perform & p)
             p.midi_control_off(i).set(c);
             ok = next_data_line(file);
             if (! ok && i < (sequences - 1))
-                return error_message("midi-control data line");
+                return error_message("midi-control", "not enough data");
             else
                 ok = true;
         }
@@ -370,8 +381,8 @@ optionsfile::parse (perform & p)
         }
     }
 
-    ok = line_after(file, "[midi-clock]");
     long buses = 0;
+    ok = line_after(file, "[midi-clock]");
     if (ok)
     {
         sscanf(m_line, "%ld", &buses);
@@ -596,21 +607,50 @@ optionsfile::parse (perform & p)
     sscanf(m_line, "%ld", &flag);
     p.song_start_mode(bool(flag));
 
-    line_after(file, "[midi-input]");
-    buses = 0;
-    sscanf(m_line, "%ld", &buses);
-    next_data_line(file);
-    for (int i = 0; i < buses; ++i)
+    /*
+     *  We are taking a slightly different approach to this section.
+     *  When Sequencer64 exits, it saves all of the inputs it has.
+     *  If an input is removed from the system (e.g. unplugging a MIDI
+     *  controller), then there will be too many entries in this section.
+     *  The user might remove one, and forget to update the buss count.
+     *  So we basically ignore the buss count.  But we also have to read
+     *  the new channel-filter boolean if not in legacy format. If an error
+     *  occurs, we abort... the user must fix the "rc" file.
+     */
+
+    if (line_after(file, "[midi-input]"))
     {
-        long bus_on, bus;
-        sscanf(m_line, "%ld %ld", &bus, &bus_on);
-        p.add_input(bool(bus_on));
-        next_data_line(file);
+        int buses = 0;
+        int count = sscanf(m_line, "%d", &buses);
+        if (count > 0 && buses > 0)
+        {
+            int b = 0;
+            while (next_data_line(file))
+            {
+                long bus_on, bus;
+                count = sscanf(m_line, "%ld %ld", &bus, &bus_on);
+                if (count == 2)
+                {
+                    p.add_input(bool(bus_on));
+                    ++b;
+                }
+                else if (count == 1)
+                    rc().filter_by_channel(bool(bus));
+            }
+            if (b < buses)
+                return error_message("midi-input", "too few buses");
+        }
     }
-    if (next_data_line(file))                       /* new 2016-08-20 */
+    else
+        return error_message("midi-input");
+
+    if (rc().legacy_format())
     {
-        sscanf(m_line, "%ld", &flag);
-        rc().filter_by_channel(bool(flag));
+        if (next_data_line(file))                       /* new 2016-08-20 */
+        {
+            sscanf(m_line, "%ld", &flag);
+            rc().filter_by_channel(bool(flag));
+        }
     }
     line_after(file, "[midi-clock-mod-ticks]");
 
@@ -658,7 +698,6 @@ optionsfile::parse (perform & p)
             sscanf(m_line, "%ld", &method);
             rc().allow_click_edit(method != 0);
         }
-
         line_after(file, "[lash-session]");
         sscanf(m_line, "%ld", &method);
         rc().lash_support(method != 0);

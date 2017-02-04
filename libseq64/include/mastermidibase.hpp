@@ -98,8 +98,11 @@ protected:
     std::vector<clock_e> m_master_clocks;
 
     /**
-     *  Saves the input settings obtained from the "rc" (options) file so that
-     *  they can be loaded into the mastermidibus once it is created.
+     *  Saves the input settings obtained from the "[midi-input] section of
+     *  the "rc" (options) file, so that they can be loaded into the
+     *  mastermidibus once it is created.  However, these items will be
+     *  modified if the actual enumerated input ports do not match the port
+     *  read from the "rc" file.
      */
 
     std::vector<bool> m_master_inputs;
@@ -435,23 +438,8 @@ protected:
 
 private:
 
-    bool save_clock (bussbyte bus, clock_e clock)
-    {
-        bool result = bus < int(m_master_clocks.size());
-        if (bus < int(m_master_clocks.size()))
-            m_master_clocks[bus] = clock;
-
-        return result;
-    }
-
-    bool save_input (bussbyte bus, bool inputing)
-    {
-        bool result = bus < int(m_master_inputs.size());
-        if (bus < int(m_master_inputs.size()))
-            m_master_inputs[bus] = inputing;
-
-        return result;
-    }
+    bool save_clock (bussbyte bus, clock_e clock);
+    bool save_input (bussbyte bus, bool inputing);
 
 };          // class mastermidibase
 

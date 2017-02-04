@@ -560,7 +560,7 @@ perfroll::auto_scroll_horz ()
             m_hadjust.set_value(left_tick / 2 );
             break;
 
-#if 0
+#if USE_THESE_EXTRA_VALUES
         case 32:
             m_hadjust.set_value(left_tick);
             break;

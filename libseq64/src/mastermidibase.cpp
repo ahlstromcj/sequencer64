@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-01-24
+ * \updates       2017-02-04
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -71,10 +71,10 @@ mastermidibase::mastermidibase (int ppqn, int bpm)
     m_master_inputs     (),
     m_queue             (0),
     m_ppqn              (choose_ppqn(ppqn)),
-    m_beats_per_minute  (bpm),      // beats per minute
+    m_beats_per_minute  (bpm),          /* beats per minute                 */
     m_dumping_input     (false),
-    m_vector_sequence   (),         // stazed feature
-    m_filter_by_channel (false),    // set below based on configuration
+    m_vector_sequence   (),             /* stazed feature                   */
+    m_filter_by_channel (false),        /* set based on configuration       */
     m_seq               (nullptr),
     m_mutex             ()
 {
@@ -318,6 +318,20 @@ mastermidibase::set_clock (bussbyte bus, clock_e clocktype)
 }
 
 /**
+ *
+ */
+
+bool
+mastermidibase::save_clock (bussbyte bus, clock_e clock)
+{
+    bool result = bus < int(m_master_clocks.size());
+    if (bus < int(m_master_clocks.size()))
+        m_master_clocks[bus] = clock;
+
+    return result;
+}
+
+/**
  *  Gets the clock setting for the given (legal) buss number.
  *
  *  There's currently no implementation-specific API function here.
@@ -373,11 +387,37 @@ mastermidibase::set_input (bussbyte bus, bool inputing)
     if (result)
         result = save_input(bus, inputing);     /* save into the vector */
 
-    if (result)
-    {
-    }
-
     return result;
+}
+
+/**
+ *  Saves the input status (as selected in the MIDI Input tab).  Now, we were
+ *  checking this bus number against the size of the vector as gotten from the
+ *  perform object, which it got the from the "rc" file's [midi-input]
+ *  section.  However, the "rc" file won't necessarily match what is on the
+ *  system now.  So we might have to adjust.
+ *
+ *  Do we also have to adjust the perform's vector?
+ */
+
+bool
+mastermidibase::save_input (bussbyte bus, bool inputing)
+{
+    int currentcount = int(m_master_inputs.size());
+    if (bus < currentcount)
+        m_master_inputs[bus] = inputing;
+    else
+    {
+        for (int i = currentcount; i <= bus; ++i)
+        {
+            bool value = false;
+            if (i == int(bus))
+                value = inputing;
+
+            m_master_inputs.push_back(value);
+        }
+    }
+    return true;
 }
 
 /**

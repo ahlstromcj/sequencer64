@@ -130,7 +130,7 @@ mastermidibus::api_init (int ppqn, int bpm)
     if (rc().manual_alsa_ports())                       /* virtual ports    */
     {
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;     /* not just ALSA!   */
-        m_midi_master.clear();                         /* ignore system    */
+        m_midi_master.clear();                          /* ignore system    */
         for (int i = 0; i < num_buses; ++i)             /* output busses    */
         {
             midibus * m = new midibus
@@ -140,7 +140,7 @@ mastermidibus::api_init (int ppqn, int bpm)
             m->is_virtual_port(true);
             m->is_input_port(false);
             m_outbus_array.add(m, clock(i));            /* must come 1st    */
-            m_midi_master.add_output(m);               /* must come 2nd    */
+            m_midi_master.add_output(m);                /* must come 2nd    */
         }
         midibus * m = new midibus
         (
@@ -149,7 +149,7 @@ mastermidibus::api_init (int ppqn, int bpm)
         m->is_virtual_port(true);
         m->is_input_port(true);
         m_inbus_array.add(m, input(0));                 /* must come 1st    */
-        m_midi_master.add_input(m);                    /* must come 2nd    */
+        m_midi_master.add_input(m);                     /* must come 2nd    */
         port_list("virtual");
     }
     else
@@ -204,10 +204,6 @@ mastermidibus::api_init (int ppqn, int bpm)
     }
     set_beats_per_minute(bpm);                          // c_beats_per_minute
     set_ppqn(ppqn);
-
-#if 0
-    set_sequence_input(false, nullptr);                 // needed in rtmidi?
-#endif
 
     /*
      * Deferred until later in startup.  See the comment here in the

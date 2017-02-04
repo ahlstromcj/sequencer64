@@ -19,7 +19,7 @@
 /**
  * \file          keys_perform_gtk2.cpp
  *
- *  This module defines Gtk-2 interface items, VERY TENTATIVE
+ *  This module defines Gtk-2 interface items.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom

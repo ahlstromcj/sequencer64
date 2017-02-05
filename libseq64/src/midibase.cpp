@@ -281,7 +281,8 @@ midibase::set_name
  *
  * \param appname
  *      This is the name of the client, or application.  Not to be confused
- *      with the ALSA client-name, which is actually a buss or subsystem name.
+ *      with the ALSA/JACK client-name, which is actually a buss or subsystem
+ *      name.
  *
  * \param busname
  *      Provides the name of the sub-system, such as "Midi Through",
@@ -658,9 +659,16 @@ midibase::set_input (bool inputing)     // not part of portmidi
     {
         m_inputing = inputing;
         if (inputing)
-            result = init_in();
+        {
+            if (m_is_virtual_port)
+                result = init_in_sub();
+            else
+                result = init_in();
+        }
         else
+        {
             result = deinit_in();
+        }
     }
     return result;
 }

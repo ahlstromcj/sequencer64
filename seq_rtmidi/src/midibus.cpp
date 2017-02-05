@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2017-01-29
+ * \updates       2017-02-05
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -105,40 +105,38 @@ midibus::midibus
         makesystem
     ),
     m_rt_midi       (nullptr),
-    m_master_info   (rt)                // currently unused
+    m_master_info   (rt)
 {
     if (makevirtual)
     {
         if (bus_name().empty())
-            bus_name(SEQ64_APP_NAME);   // we need an accessor!!!!
+            bus_name(SEQ64_APP_NAME);           // we need an accessor!!!!
 
         if (port_name().empty())
         {
-            std::string pname = SEQ64_APP_NAME; // need an accessor!!!
+            std::string pname = SEQ64_APP_NAME; // we need an accessor!!!!
             pname += " midi ";
             pname += isinput ? "in " : "out ";
             pname += std::to_string(get_port_id());
             port_name(pname);
         }
     }
-    else
+
+    int portcount = rt.get_port_count();
+    if (index < portcount)
     {
-        int portcount = rt.get_port_count();
-        if (index < portcount)
-        {
-            int id = rt.get_port_id(index);
-            if (id >= 0)
-                set_port_id(id);
+        int id = rt.get_port_id(index);
+        if (id >= 0)
+            set_port_id(id);
 
-            id = rt.get_bus_id(index);
-            if (id >= 0)
-                set_bus_id(id);
+        id = rt.get_bus_id(index);
+        if (id >= 0)
+            set_bus_id(id);
 
-            set_name                /* change what was set in base class    */
-            (
-                rt.app_name(), rt.get_bus_name(index), rt.get_port_name(index)
-            );
-        }
+        set_name                /* change what was set in base class    */
+        (
+            rt.app_name(), rt.get_bus_name(index), rt.get_port_name(index)
+        );
     }
 
 #ifdef SEQ64_SHOW_API_CALLS

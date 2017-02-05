@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-02
+ * \updates       2017-02-05
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -279,7 +279,7 @@ midi_jack::api_init_out ()
     std::string remoteportname = connect_name();    /* "bus:port"   */
     remote_port_name(remoteportname);
     if (multi_client())
-        result = open_client_impl(SEQ64_MIDI_OUTPUT);
+        result = open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
     else
         set_alt_name(SEQ64_APP_NAME, SEQ64_CLIENT_NAME, remoteportname);
 
@@ -287,7 +287,7 @@ midi_jack::api_init_out ()
 
     if (result)
     {
-        result = register_port(SEQ64_MIDI_OUTPUT, port_name());
+        result = register_port(SEQ64_MIDI_OUTPUT_PORT, port_name());
 
         /*
          * Note that we cannot connect ports until we are activated, and we
@@ -339,7 +339,7 @@ midi_jack::api_init_in ()
     std::string remoteportname = connect_name();    /* "bus:port"       */
     remote_port_name(remoteportname);
     if (multi_client())
-        result = open_client_impl(SEQ64_MIDI_INPUT);
+        result = open_client_impl(SEQ64_MIDI_INPUT_PORT);
     else
         set_alt_name(SEQ64_APP_NAME, SEQ64_CLIENT_NAME, remoteportname);
 
@@ -347,7 +347,7 @@ midi_jack::api_init_in ()
 
     if (result)
     {
-        result = register_port(SEQ64_MIDI_INPUT, port_name());
+        result = register_port(SEQ64_MIDI_INPUT_PORT, port_name());
 
         /*
          * Note that we cannot connect ports until we are activated, and we
@@ -370,16 +370,16 @@ midi_jack::api_init_in ()
 bool
 midi_jack::api_connect ()
 {
-    std::string remoteportname = remote_port_name();
-    std::string localportname = connect_name();     /* modified!    */
+    std::string remotename = remote_port_name();
+    std::string localname = connect_name();     /* modified!    */
     bool result;
     if (multi_client())
         jack_activate(client_handle());
 
     if (is_input_port())
-        result = connect_port(SEQ64_MIDI_INPUT, localportname, remoteportname);
+        result = connect_port(SEQ64_MIDI_INPUT_PORT, localname, remotename);
     else
-        result = connect_port(SEQ64_MIDI_OUTPUT, remoteportname, localportname);
+        result = connect_port(SEQ64_MIDI_OUTPUT_PORT, remotename, localname);
 
     if (result)
         set_port_open();
@@ -393,8 +393,6 @@ midi_jack::api_connect ()
  *  of the information it needs at that point.  Here, we can get this
  *  information and get the actual data we need to rename the port to
  *  something accurate.
- *
- *  IN PROGRESS.
  *
  *      const char * pname = jack_port_name(const jack_port_t *);
  *
@@ -435,9 +433,9 @@ bool
 midi_jack::api_init_out_sub ()
 {
     bool result = true;
-    master_midi_mode(SEQ64_MIDI_OUTPUT);            /* this is necessary    */
+    master_midi_mode(SEQ64_MIDI_OUTPUT_PORT);    /* this is necessary */
     if (multi_client())
-        result = open_client_impl(SEQ64_MIDI_OUTPUT);
+        result = open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
 
     if (result)
     {
@@ -456,7 +454,7 @@ midi_jack::api_init_out_sub ()
                 portname = SEQ64_CLIENT_NAME " midi out ";
                 portname += std::to_string(portid);
             }
-            result = register_port(SEQ64_MIDI_OUTPUT, portname);
+            result = register_port(SEQ64_MIDI_OUTPUT_PORT, portname);
             if (result)
             {
                 set_virtual_name(portid, portname);
@@ -475,9 +473,9 @@ bool
 midi_jack::api_init_in_sub ()
 {
     bool result = true;
-    master_midi_mode(SEQ64_MIDI_INPUT);
+    master_midi_mode(SEQ64_MIDI_INPUT_PORT);
     if (multi_client())
-        result = open_client_impl(SEQ64_MIDI_INPUT);
+        result = open_client_impl(SEQ64_MIDI_INPUT_PORT);
 
     if (result)
     {
@@ -496,7 +494,7 @@ midi_jack::api_init_in_sub ()
                 portname = SEQ64_CLIENT_NAME " midi in ";
                 portname += std::to_string(portid);
             }
-            result = register_port(SEQ64_MIDI_INPUT, portname);
+            result = register_port(SEQ64_MIDI_INPUT_PORT, portname);
             if (result)
             {
                 set_virtual_name(portid, portname);
@@ -538,7 +536,7 @@ midi_jack::api_play (event * e24, midibyte channel)
     message.push(d0);
     message.push(d1);
 
-#ifdef SEQ64_SHOW_API_CALLS
+#ifdef SEQ64_SHOW_API_CALLS_XXX
     printf("midi_jack::play()\n");
 #endif
 
@@ -849,7 +847,7 @@ midi_jack::close_client ()
  * \param input
  *      Indicates true if the port to register and connect is an input port,
  *      and false if the port is an output port.  Useful macros for readability:
- *      SEQ64_MIDI_INPUT and SEQ64_MIDI_OUTPUT.
+ *      SEQ64_MIDI_INPUT_PORT and SEQ64_MIDI_OUTPUT_PORT.
  *
  * \param srcportname
  *      Provides the destination port-name for the connection.  For input,
@@ -924,6 +922,9 @@ midi_jack::connect_port
  *  For jack_port_register(), the port-name must be the actual port-name, not
  *  the full-port name ("busname:portname").
  *
+ *  Note that the buffer size of non-built-in port type is 0, and so it is
+ *  ignored.
+ *
  * \tricky
  *      If we are registering an input port, this means that we got the input
  *      port from the system.  In order to connect to that port, we have
@@ -935,7 +936,7 @@ midi_jack::connect_port
  * \param input
  *      Indicates true if the port to register input port, and false if the
  *      port is an output port.  Two macros can be used for this purpose:
- *      SEQ64_MIDI_INPUT and SEQ64_MIDI_OUTPUT.
+ *      SEQ64_MIDI_INPUT_PORT and SEQ64_MIDI_OUTPUT_PORT.
  *
  * \param portname
  *      Provides the local name of the port.  This is the full name
@@ -950,14 +951,15 @@ midi_jack::register_port (bool input, const std::string & portname)
     if (! result)
     {
         std::string shortname = extract_port_name(portname);
+        unsigned long flag = input ? JackPortIsOutput : JackPortIsInput;
+//      unsigned long flag = input ? JackPortIsInput : JackPortIsOutput;
+        unsigned long buffsize = 0;
         jack_port_t * p = jack_port_register
         (
-            client_handle(), shortname.c_str(),
-            JACK_DEFAULT_MIDI_TYPE,
-            input ? JackPortIsOutput : JackPortIsInput,     /* \tricky */
-            0               /* buffer size of non-built-in port type, ignored */
+            client_handle(), shortname.c_str(), JACK_DEFAULT_MIDI_TYPE,
+            flag, buffsize
         );
-        apiprint("jack_port_register", "jack");
+        apiprint("jack_port_register", shortname.c_str());
         if (not_nullptr(p))
         {
             port_handle(p);
@@ -1035,10 +1037,12 @@ midi_in_jack::api_poll_for_midi ()
     rtmidi_in_data * rtindata = m_jack_data.m_jack_rtmidiin;
     if (rtindata->using_callback())
     {
+        millisleep(1);
         return 0;
     }
     else
     {
+        millisleep(1);
         return rtindata->queue().count();
     }
 }

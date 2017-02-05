@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2017-02-04
+ * \updates       2017-02-05
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
@@ -89,8 +89,8 @@ public:
         rtmidi_info & rt,
         int index,
         bool makevirtual    = SEQ64_MIDI_NORMAL_PORT,
-        bool isinput        = SEQ64_MIDI_OUTPUT,        /* gotcha! */
-        int bussoverride    = 0,
+        bool isinput        = SEQ64_MIDI_OUTPUT_PORT,   /* gotcha! */
+        int bussoverride    = SEQ64_NO_BUS,             /* was 0!! */
         bool makesystem     = false
     );
 

@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-02-02
+ * \updates       2017-02-05
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of JACK information
@@ -254,7 +254,9 @@ midi_jack_info::get_all_port_info ()
             std::string portname = SEQ64_APP_NAME " midi in 0";
             input_ports().add
             (
-                client, clientname, 0, portname, SEQ64_MIDI_VIRTUAL_PORT
+                client, clientname, 0, portname,
+                SEQ64_MIDI_VIRTUAL_PORT, SEQ64_BAD_QUEUE_ID,
+                false /* non-system */, SEQ64_MIDI_INPUT_PORT
             );
             ++result;
         }
@@ -275,7 +277,12 @@ midi_jack_info::get_all_port_info ()
                     client_name_list.push_back(clientname);
                     ++client;
                 }
-                input_ports().add(client, clientname, count, portname);
+                input_ports().add
+                (
+                    client, clientname, count, portname,
+                    SEQ64_MIDI_NORMAL_PORT, SEQ64_BAD_QUEUE_ID,
+                    false /* non-system */, SEQ64_MIDI_INPUT_PORT
+                );
                 ++count;
             }
             jack_free(inports);
@@ -304,7 +311,9 @@ midi_jack_info::get_all_port_info ()
             std::string portname = SEQ64_APP_NAME " midi out 0";
             output_ports().add
             (
-                client, clientname, 0, portname, SEQ64_MIDI_VIRTUAL_PORT
+                client, clientname, 0, portname,
+                SEQ64_MIDI_VIRTUAL_PORT, SEQ64_BAD_QUEUE_ID, false /*
+                non-system */, SEQ64_MIDI_OUTPUT_PORT
             );
             ++result;
         }
@@ -325,7 +334,12 @@ midi_jack_info::get_all_port_info ()
                     client_name_list.push_back(clientname);
                     ++client;
                 }
-                output_ports().add(client, clientname, count, portname);
+                output_ports().add
+                (
+                    client, clientname, count, portname,
+                    SEQ64_MIDI_NORMAL_PORT, SEQ64_BAD_QUEUE_ID,
+                    false /* non-system */, SEQ64_MIDI_OUTPUT_PORT
+                );
                 ++count;
             }
             jack_free(outports);
@@ -499,6 +513,7 @@ midi_jack_info::api_port_start (mastermidibus & masterbus, int bus, int port)
 int
 midi_jack_info::api_poll_for_midi ()
 {
+    millisleep(1);
     return 0;       // TODO TODO TODO
 }
 

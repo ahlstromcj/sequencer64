@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2017-02-01
+ * \updates       2017-02-05
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -180,7 +180,7 @@ midi_alsa::~midi_alsa ()
 bool
 midi_alsa::api_init_out ()
 {
-    master_info().midi_mode(SEQ64_MIDI_OUTPUT);
+    master_info().midi_mode(SEQ64_MIDI_OUTPUT_PORT);
 
     std::string busname = master_info().get_bus_name(get_bus_index());
     int result = snd_seq_create_simple_port         /* create ports     */
@@ -267,7 +267,7 @@ midi_alsa::api_init_out ()
 bool
 midi_alsa::api_init_in ()
 {
-    master_info().midi_mode(SEQ64_MIDI_INPUT);
+    master_info().midi_mode(SEQ64_MIDI_INPUT_PORT);
 
     std::string busname = master_info().get_bus_name(get_bus_index());
     int result = snd_seq_create_simple_port             /* create ports */
@@ -573,7 +573,7 @@ midi_alsa::api_play (event * e24, midibyte channel)
     snd_midi_event_free(midi_ev);                   /* free the parser      */
     snd_seq_ev_set_source(&ev, m_local_addr_port);  /* set source           */
 
-#ifdef SEQ64_SHOW_API_CALLS
+#ifdef SEQ64_SHOW_API_CALLS_XXX                     /* Too Much Information */
     printf("midi_alsa::play() local port %d\n", m_local_addr_port);
 #endif
 

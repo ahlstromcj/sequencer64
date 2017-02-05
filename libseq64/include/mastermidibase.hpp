@@ -311,18 +311,13 @@ protected:
 
     clock_e clock (int bus)
     {
-        if (bus < int(m_master_clocks.size()))
-            return m_master_clocks[bus];
-        else
-            return e_clock_off;
+        return bus < int(m_master_clocks.size()) ?
+            m_master_clocks[bus] : e_clock_off ;
     }
 
     bool input (int bus)
     {
-        if (bus < int(m_master_inputs.size()))
-            return m_master_inputs[bus];
-        else
-            return false;
+        return bus < int(m_master_inputs.size()) ? m_master_inputs[bus] : false ;
     }
 
     /**

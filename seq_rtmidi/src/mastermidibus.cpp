@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-03
+ * \updates       2017-02-05
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -135,19 +135,16 @@ mastermidibus::api_init (int ppqn, int bpm)
         {
             midibus * m = new midibus
             (
-                m_midi_master, i, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_OUTPUT
+                m_midi_master, i, SEQ64_MIDI_VIRTUAL_PORT,
+                SEQ64_MIDI_OUTPUT_PORT
             );
-            m->is_virtual_port(true);
-            m->is_input_port(false);
             m_outbus_array.add(m, clock(i));            /* must come 1st    */
             m_midi_master.add_output(m);                /* must come 2nd    */
         }
         midibus * m = new midibus
         (
-            m_midi_master, 0, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_INPUT
+            m_midi_master, 0, SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_INPUT_PORT
         );
-        m->is_virtual_port(true);
-        m->is_input_port(true);
         m_inbus_array.add(m, input(0));                 /* must come 1st    */
         m_midi_master.add_input(m);                     /* must come 2nd    */
         port_list("virtual");
@@ -158,47 +155,34 @@ mastermidibus::api_init (int ppqn, int bpm)
         port_list("rtmidi");
         if (nports > 0)
         {
-            m_midi_master.midi_mode(SEQ64_MIDI_INPUT);
+            m_midi_master.midi_mode(SEQ64_MIDI_INPUT_PORT);     /* ugh! */
             unsigned inports = m_midi_master.get_port_count();
             for (unsigned i = 0; i < inports; ++i)
             {
+                bool isvirtual = m_midi_master.get_virtual(i);
+                bool issystem = m_midi_master.get_system(i);
                 midibus * m = new midibus
                 (
-                    m_midi_master, i, SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_INPUT
+                    m_midi_master, i, isvirtual, SEQ64_MIDI_INPUT_PORT,
+                    SEQ64_NO_BUS, issystem
                 );
-
-                /*
-                 * This is decided at JACK system port scan time in
-                 * midi_jack_info::get_all_port_info().
-                 */
-
-                m->is_virtual_port(m_midi_master.get_virtual(i));
-                m->is_input_port(true);
-                if (m_midi_master.get_system(i))
-                    m->set_system_port_flag();          /* can only set it  */
-
                 m_inbus_array.add(m, input(i));         /* must come 1st    */
-                m_midi_master.add_bus(m);              /* must come 2nd    */
+                m_midi_master.add_bus(m);               /* must come 2nd    */
             }
 
-            m_midi_master.midi_mode(SEQ64_MIDI_OUTPUT);
+            m_midi_master.midi_mode(SEQ64_MIDI_OUTPUT_PORT);    /* ugh! */
             unsigned outports = m_midi_master.get_port_count();
             for (unsigned i = 0; i < outports; ++i)
             {
+                bool isvirtual = m_midi_master.get_virtual(i);
+                bool issystem = m_midi_master.get_system(i);
                 midibus * m = new midibus
                 (
-                    m_midi_master, i, SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_OUTPUT
+                    m_midi_master, i, isvirtual, SEQ64_MIDI_OUTPUT_PORT,
+                    SEQ64_NO_BUS, issystem
                 );
-
-                /*
-                 * This is decided at JACK system port scan time in
-                 * midi_jack_info::get_all_port_info().
-                 */
-
-                m->is_virtual_port(m_midi_master.get_virtual(i));
-                m->is_input_port(false);
                 m_outbus_array.add(m, clock(i));        /* must come 1st    */
-                m_midi_master.add_bus(m);              /* must come 2nd    */
+                m_midi_master.add_bus(m);               /* must come 2nd    */
             }
         }
     }

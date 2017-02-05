@@ -27,12 +27,22 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-01-26
+ * \updates       2017-02-05
  * \license       GNU GPLv2 or above
  *
  *  The businfo module defines the businfo and busarray classes so that we can
- *  start avoiding arrays and explicit access to them.
+ *  start avoiding arrays and explicit access to them.  This module replaces
+ *  the following arrays from the mastermidibus class: m_buses_out[],
+ *  m_buses_in[], m_buses_out_active[], m_buses_in_active[],
+ *  m_buses_out_init[], m_buses_in_init[], m_init_clock[], and m_init_input[].
+ *
+ *  The businfo class holds a pointer to its midibus object.  We could make
+ *  the values noted above part of the midibus class at some point.
+ *
+ *  The busarray class holds a number of businfo classes, and two busarrays
+ *  are maintained, one for input and one for output.
  */
+
 
 #include <vector>                       /* for containing the bus objects   */
 
@@ -162,6 +172,7 @@ public:
     void deactivate ()
     {
         m_active = false;
+        m_initialized = false;
     }
 
     void init_clock (clock_e clocktype)

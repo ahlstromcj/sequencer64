@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-19
+ * \updates       2017-02-05
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -104,8 +104,9 @@ public:
     );
     virtual ~midi_api ();
 
-    bool is_virtual_port () const;
     bool is_input_port () const;
+    bool is_virtual_port () const;
+    bool is_system_port () const;
 
 public:
 

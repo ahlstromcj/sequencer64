@@ -187,7 +187,8 @@ midi_alsa_info::get_all_port_info ()
         (
             SND_SEQ_CLIENT_SYSTEM, "system",
             SND_SEQ_PORT_SYSTEM_ANNOUNCE, "announce",
-            SEQ64_MIDI_NORMAL_PORT, global_queue(), true    /* system port */
+            SEQ64_MIDI_NORMAL_PORT, global_queue(), true /* system port */,
+            SEQ64_MIDI_INPUT_PORT
         );
         ++count;
         while (snd_seq_query_next_client(m_alsa_seq, cinfo) >= 0)
@@ -239,7 +240,8 @@ midi_alsa_info::get_all_port_info ()
                     input_ports().add
                     (
                         client, clientname, portnumber, portname,
-                        SEQ64_MIDI_NORMAL_PORT, global_queue()
+                        SEQ64_MIDI_NORMAL_PORT, global_queue(),
+                        false /* non-system */, SEQ64_MIDI_INPUT_PORT
                     );
                     ++count;
                 }
@@ -248,7 +250,8 @@ midi_alsa_info::get_all_port_info ()
                     output_ports().add
                     (
                         client, clientname, portnumber, portname,
-                        SEQ64_MIDI_NORMAL_PORT
+                        SEQ64_MIDI_NORMAL_PORT, SEQ64_BAD_QUEUE_ID,
+                        false /* non-system */, SEQ64_MIDI_OUTPUT_PORT
                     );
                     ++count;
                 }

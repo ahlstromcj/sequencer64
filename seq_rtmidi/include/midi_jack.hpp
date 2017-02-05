@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-31
+ * \updates       2017-02-05
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring, we've stripped out most of the original RtMidi
@@ -217,7 +217,7 @@ private:
 
     virtual bool open_client ()
     {
-        return open_client_impl(SEQ64_MIDI_INPUT);
+        return open_client_impl(SEQ64_MIDI_INPUT_PORT);
     }
 
 };          // midi_in_jack
@@ -255,7 +255,7 @@ private:
 
     virtual bool open_client ()
     {
-        return open_client_impl(SEQ64_MIDI_OUTPUT);
+        return open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
     }
 
 };          // midi_out_jack

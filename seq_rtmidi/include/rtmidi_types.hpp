@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2017-01-31
+ * \updates       2017-02-05
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -38,8 +38,8 @@
  *  derived classes.
  */
 
-#define SEQ64_MIDI_OUTPUT       false       /* the MIDI mode is not input   */
-#define SEQ64_MIDI_INPUT        true        /* the MIDI mode is input       */
+#define SEQ64_MIDI_OUTPUT_PORT  false       /* the MIDI mode is not input   */
+#define SEQ64_MIDI_INPUT_PORT   true        /* the MIDI mode is input       */
 
 /**
  *  Macros for selecting virtual versus normal ports in a more obvious way.

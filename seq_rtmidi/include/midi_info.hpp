@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2017-02-04
+ * \updates       2017-02-05
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -60,7 +60,9 @@ class midi_port_info
 private:
 
     /**
-     *  Hold the information for a single port.
+     *  Hold the information for a single port.  Except for the
+     *  virtual-vs-normal status, this information is obtained by scanning
+     *  the system at the startup time of the application.
      */
 
     typedef struct
@@ -70,10 +72,8 @@ private:
         int m_port_number;          /**< The minor port number of the port.  */
         std::string m_port_name;    /**< The system's name for the port.     */
         int m_queue_number;         /**< A number used in some APIs.         */
-
-        // WE SHOULD ADD m_is_input HERE
-
-        bool m_is_virtual;          /**< Indicates an additional port.       */
+        bool m_is_input;            /**< Indicates an input port.            */
+        bool m_is_virtual;          /**< Indicates an manual/virtual port.   */
         bool m_is_system;           /**< Built-in port, almost always false. */
 
     } port_info_t;
@@ -100,9 +100,10 @@ public:
         const std::string & clientname,     // buss name
         int portnumber,
         const std::string & portname,
-        bool makevirtual    = SEQ64_MIDI_NORMAL_PORT,   /* i.e. false */
-        int queuenumber     = SEQ64_BAD_QUEUE_ID,
-        bool makesystem     = false
+        bool makevirtual, //    = SEQ64_MIDI_NORMAL_PORT,   /* i.e. false */
+        int queuenumber, //     = SEQ64_BAD_QUEUE_ID,
+        bool makesystem, //     = false,
+        bool makeinput   //   = false
     );
     void add (const midibus * m);
 
@@ -152,6 +153,14 @@ public:
             return m_port_container[index].m_port_name;
         else
             return std::string("");
+    }
+
+    bool get_input (int index) const
+    {
+        if (index < get_port_count())
+            return m_port_container[index].m_is_input;
+        else
+            return SEQ64_MIDI_OUTPUT_PORT;          /* i.e. false */
     }
 
     bool get_virtual (int index) const
@@ -466,6 +475,12 @@ public:
         return mpi.get_port_name(index);
     }
 
+    virtual bool get_input (int index) const
+    {
+        const midi_port_info & mpi = nc_midi_port_info();
+        return mpi.get_input(index);
+    }
+
     virtual bool get_virtual (int index) const
     {
         const midi_port_info & mpi = nc_midi_port_info();
@@ -554,8 +569,9 @@ private:
      * \getter m_input or m_output
      *      Used for retrieving values from the input or output containers.
      *      The caller must insure the proper container by calling the
-     *      midi_mode() function with the value of true (SEQ64_MIDI_INPUT) or
-     *      false (SEQ64_MIDI_OUTPUT) first.
+     *      midi_mode() function with the value of true
+     *      (SEQ64_MIDI_INPUT_PORT) or false (SEQ64_MIDI_OUTPUT_PORT) first.
+     *      Ugly stuff.  I hate it.
      */
 
     const midi_port_info & nc_midi_port_info () const

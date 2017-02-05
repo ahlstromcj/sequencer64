@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-01-29
+ * \updates       2017-02-05
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -113,7 +113,9 @@ businfo::businfo (const businfo & rhs)
  * is_input_port():
  *
  *      Indicates if the midibus represents an input port (true) versus an
- *      output port (false).
+ *      output port (false).  The way the mastermidibus currently works, it
+ *      creates the API MIDI input objects there, so it does not need to be
+ *      done here.  This falls under the heading of "tricky code".
  *
  * is_virtual_port():
  *
@@ -126,8 +128,7 @@ businfo::businfo (const businfo & rhs)
  *          functions called.  They are unconditionally marked as "active"
  *          and "initialized".
  *      -   Normal output ports are marked as "active" and "initialized" if
- *          init_out() succeeds, but are marked only as "initialized" if it
- *          fails.  (!)
+ *          init_out() succeeds.
  *      -   Normal input ports don't have init_in() called, but are marked
  *          as "active" and "initialized" anyway.  The settings from the "rc"
  *          file determine which inputs will operate.
@@ -139,30 +140,15 @@ businfo::initialize ()
     bool result = not_nullptr(bus());
     if (result)
     {
-        if (bus()->is_virtual_port())
+        if (! bus()->is_input_port())       /* not built in master bus  */
         {
-            if (bus()->is_input_port())
-                result = bus()->init_in_sub();
+            if (bus()->is_virtual_port())
+                result = bus()->init_out_sub(); /* not built in master bus  */
             else
-                result = bus()->init_out_sub();
-
-            activate();                     /* "initialized" and "active"   */
-        }
-        else
-        {
-            if (bus()->is_input_port())
-            {
-                activate();                 /* "initialized" and "active"   */
-            }
-            else
-            {
                 result = bus()->init_out();
-                if (result)
-                    activate();             /* "initialized" and "active"   */
-                else
-                    m_initialized = true;   /* this seems surprising to me  */
-            }
         }
+        if (result)
+            activate();             /* "initialized" and "active"   */
     }
     else
     {

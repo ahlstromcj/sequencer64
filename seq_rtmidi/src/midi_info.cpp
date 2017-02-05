@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2017-01-28
+ * \updates       2017-02-05
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
@@ -82,7 +82,8 @@ midi_port_info::add
     const std::string & portname,
     bool makevirtual,
     int queuenumber,
-    bool makesystem
+    bool makesystem,
+    bool makeinput
 )
 {
     port_info_t temp;
@@ -90,17 +91,16 @@ midi_port_info::add
     temp.m_client_name = clientname;
     temp.m_port_number = portnumber;
     temp.m_port_name = portname;
-    temp.m_is_virtual = makevirtual;
     temp.m_queue_number = queuenumber;
+    temp.m_is_input = makeinput;
+    temp.m_is_virtual = makevirtual;
     temp.m_is_system = makesystem;
     m_port_container.push_back(temp);
     m_port_count = int(m_port_container.size());
 }
 
 /**
- *  Adds values from a midibus (actually a midibase class).
- *
- *  WHY ARE SOME OF THE FIELDS (e.g. port name) empty????
+ *  Adds values from a midibus (actually a midibase-derived class).
  */
 
 void
@@ -111,7 +111,7 @@ midi_port_info::add (const midibus * m)
         m->get_bus_id(), m->bus_name(),
         m->get_port_id(), m->port_name(),
         m->is_virtual_port(), m->queue_number(),
-        m->is_system_port()
+        m->is_system_port(), m->is_input_port()
     );
 }
 
@@ -199,7 +199,7 @@ midi_info::port_list () const
     std::ostringstream os;
     midi_info * nc_this = const_cast<midi_info *>(this);
 
-    nc_this->midi_mode(SEQ64_MIDI_INPUT);
+    nc_this->midi_mode(SEQ64_MIDI_INPUT_PORT);
     os << "Input ports (" << inportcount << "):" << std::endl;
     for (int i = 0; i < inportcount; ++i)
     {
@@ -221,7 +221,7 @@ midi_info::port_list () const
         os << std::endl;
     }
 
-    nc_this->midi_mode(SEQ64_MIDI_OUTPUT);
+    nc_this->midi_mode(SEQ64_MIDI_OUTPUT_PORT);
     os << "Output ports (" << outportcount << "):" << std::endl;
     for (int o = 0; o < outportcount; ++o)
     {

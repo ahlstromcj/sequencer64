@@ -1022,6 +1022,15 @@ sequence::play (midipulse end_tick, bool playback_mode)
         {
             event & er = DREF(e);
             midipulse stamp = er.get_timestamp() + offset_base;
+
+#if 0
+            printf
+            (
+                "stamp = %ld; start = %ld; end = %ld\n",
+                stamp, start_tick_offset, end_tick_offset
+            );
+#endif
+
             if (stamp >= start_tick_offset && stamp <= end_tick_offset)
             {
 #ifdef SEQ64_STAZED_TRANSPOSE

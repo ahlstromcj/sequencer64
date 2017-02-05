@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2017-02-04
+ * \updates       2017-02-05
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -185,6 +185,11 @@ public:
     std::string get_port_name (int index) const
     {
         return get_api_info()->get_port_name(index);
+    }
+
+    bool get_input (int index) const
+    {
+        return get_api_info()->get_input(index);
     }
 
     bool get_virtual (int index) const

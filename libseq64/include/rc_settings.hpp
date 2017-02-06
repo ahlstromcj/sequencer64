@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-01-21
+ * \updates       2017-02-05
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -101,6 +101,7 @@ private:
     bool m_with_jack_master;        /**< Serve as a JACK transport Master.  */
     bool m_with_jack_master_cond;   /**< Serve as JACK Master if possible.  */
     bool m_no_jack_midi;            /**< Use ALSA, even if JACK is present. */
+    bool m_with_jack_midi;          /**< Use JACK MIDI.                     */
     bool m_filter_by_channel;       /**< Record only sequence channel data. */
     bool m_manual_alsa_ports;       /**< [manual-alsa-ports] setting.       */
     bool m_reveal_alsa_ports;       /**< [reveal-alsa-ports] setting.       */
@@ -295,6 +296,15 @@ public:
     bool no_jack_midi () const
     {
         return m_no_jack_midi;
+    }
+
+    /**
+     * \getter m_with_jack_midi
+     */
+
+    bool with_jack_midi () const
+    {
+        return m_with_jack_midi;
     }
 
     /**
@@ -549,6 +559,15 @@ protected:
     void no_jack_midi (bool flag)
     {
         m_no_jack_midi = flag;
+    }
+
+    /**
+     * \setter m_with_jack_midi
+     */
+
+    void with_jack_midi (bool flag)
+    {
+        m_with_jack_midi = flag;
     }
 
     /**

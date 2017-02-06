@@ -1426,6 +1426,10 @@ seqedit::popup_menu (Gtk::Menu * menu)
  *  Populates the MIDI Output buss pop-up menu.  The MIDI busses are
  *  obtained by getting the mastermidibus object, and iterating through
  *  the busses that it contains.
+ *
+ *  However, JACK counts the playback ports, such as "yoshimi:midi in",
+ *  as "input" ports... the application outputs to the input ports.
+ *  So we have to deal with that somehow.
  */
 
 void

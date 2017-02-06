@@ -1,11 +1,11 @@
 /**
  * \file          rtmidi.cpp
- *
+with_jack_transport *
  *    A class for managing various MIDI APIs.
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-09
+ * \updates       2017-02-05
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -178,7 +178,7 @@ rtmidi_in::openmidi_api
         delete_api();
         if (api == RTMIDI_API_UNSPECIFIED)
         {
-            if (rc().with_jack_transport())
+            if (rc().with_jack_midi())
             {
                 if (api == RTMIDI_API_UNIX_JACK)
                 {
@@ -327,7 +327,7 @@ rtmidi_out::openmidi_api
         delete_api();
         if (api == RTMIDI_API_UNSPECIFIED)
         {
-            if (rc().with_jack_transport())
+            if (rc().with_jack_midi())
             {
                 if (api == RTMIDI_API_UNIX_JACK)
                 {

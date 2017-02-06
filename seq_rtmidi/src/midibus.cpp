@@ -165,7 +165,19 @@ midibus::~midibus ()
 bool
 midibus::api_connect ()
 {
-    return m_rt_midi->api_connect();
+    bool result = not_nullptr(m_rt_midi);
+    if (result)
+        result = m_rt_midi->api_connect();
+    else
+    {
+        char temp[80];
+        snprintf
+        (
+            temp, sizeof temp, "null pointer, port '%s'", display_name().c_str()
+        );
+        errprintfunc(temp);
+    }
+    return result;
 }
 
 /**

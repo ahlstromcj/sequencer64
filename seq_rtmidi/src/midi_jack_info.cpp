@@ -21,6 +21,12 @@
 #include "settings.hpp"                 /* seq64::rc() configuration object */
 
 /*
+ * EXPERIMENTAL:
+ */
+
+#undef  USE_SEQ64_JACK_PORT_REVERSAL
+
+/*
  * Do not document the namespace; it breaks Doxygen.
  */
 
@@ -241,6 +247,9 @@ midi_jack_info::get_all_port_info ()
     int result = 0;
     if (not_nullptr(m_jack_client))
     {
+        input_ports().clear();
+        output_ports().clear();
+
         const char ** inports = jack_get_ports    /* list of JACK ports   */
         (
             m_jack_client, NULL,
@@ -252,12 +261,21 @@ midi_jack_info::get_all_port_info ()
             int client = 0;
             std::string clientname = SEQ64_APP_NAME;
             std::string portname = SEQ64_APP_NAME " midi in 0";
+#ifdef USE_SEQ64_JACK_PORT_REVERSAL
+            output_ports().add
+            (
+                client, clientname, 0, portname,
+                SEQ64_MIDI_VIRTUAL_PORT, SEQ64_BAD_QUEUE_ID,
+                false /* non-system */, SEQ64_MIDI_OUTPUT_PORT
+            );
+#else
             input_ports().add
             (
                 client, clientname, 0, portname,
                 SEQ64_MIDI_VIRTUAL_PORT, SEQ64_BAD_QUEUE_ID,
                 false /* non-system */, SEQ64_MIDI_INPUT_PORT
             );
+#endif
             ++result;
         }
         else
@@ -265,7 +283,6 @@ midi_jack_info::get_all_port_info ()
             std::vector<std::string> client_name_list;
             int client = -1;
             int count = 0;
-            input_ports().clear();
             while (not_nullptr(inports[count]))
             {
                 std::string fullname = inports[count];
@@ -277,12 +294,21 @@ midi_jack_info::get_all_port_info ()
                     client_name_list.push_back(clientname);
                     ++client;
                 }
+#ifdef USE_SEQ64_JACK_PORT_REVERSAL
+                output_ports().add
+                (
+                    client, clientname, count, portname,
+                    SEQ64_MIDI_NORMAL_PORT, SEQ64_BAD_QUEUE_ID,
+                    false /* non-system */, SEQ64_MIDI_OUTPUT_PORT
+                );
+#else
                 input_ports().add
                 (
                     client, clientname, count, portname,
                     SEQ64_MIDI_NORMAL_PORT, SEQ64_BAD_QUEUE_ID,
                     false /* non-system */, SEQ64_MIDI_INPUT_PORT
                 );
+#endif
                 ++count;
             }
             jack_free(inports);
@@ -309,12 +335,21 @@ midi_jack_info::get_all_port_info ()
             int client = 0;
             std::string clientname = SEQ64_APP_NAME;
             std::string portname = SEQ64_APP_NAME " midi out 0";
+#ifdef USE_SEQ64_JACK_PORT_REVERSAL
+            input_ports().add
+            (
+                client, clientname, 0, portname,
+                SEQ64_MIDI_VIRTUAL_PORT, SEQ64_BAD_QUEUE_ID, false /*
+                non-system */, SEQ64_MIDI_INPUT_PORT
+            );
+#else
             output_ports().add
             (
                 client, clientname, 0, portname,
                 SEQ64_MIDI_VIRTUAL_PORT, SEQ64_BAD_QUEUE_ID, false /*
                 non-system */, SEQ64_MIDI_OUTPUT_PORT
             );
+#endif
             ++result;
         }
         else
@@ -322,7 +357,6 @@ midi_jack_info::get_all_port_info ()
             std::vector<std::string> client_name_list;
             int client = -1;
             int count = 0;
-            output_ports().clear();
             while (not_nullptr(outports[count]))
             {
                 std::string fullname = outports[count];
@@ -334,12 +368,21 @@ midi_jack_info::get_all_port_info ()
                     client_name_list.push_back(clientname);
                     ++client;
                 }
+#ifdef USE_SEQ64_JACK_PORT_REVERSAL
+                input_ports().add
+                (
+                    client, clientname, count, portname,
+                    SEQ64_MIDI_NORMAL_PORT, SEQ64_BAD_QUEUE_ID,
+                    false /* non-system */, SEQ64_MIDI_INPUT_PORT
+                );
+#else
                 output_ports().add
                 (
                     client, clientname, count, portname,
                     SEQ64_MIDI_NORMAL_PORT, SEQ64_BAD_QUEUE_ID,
                     false /* non-system */, SEQ64_MIDI_OUTPUT_PORT
                 );
+#endif
                 ++count;
             }
             jack_free(outports);

@@ -94,6 +94,11 @@ rc_settings::rc_settings ()
     m_with_jack_master          (false),
     m_with_jack_master_cond     (false),
     m_no_jack_midi              (false),
+#ifdef SEQ64_RTMIDI_SUPPORT
+    m_with_jack_midi            (true),
+#else
+    m_with_jack_midi            (false),
+#endif
     m_manual_alsa_ports         (false),
     m_reveal_alsa_ports         (false),
     m_print_keys                (false),
@@ -135,6 +140,7 @@ rc_settings::rc_settings (const rc_settings & rhs)
     m_with_jack_master          (rhs.m_with_jack_master),
     m_with_jack_master_cond     (rhs.m_with_jack_master_cond),
     m_no_jack_midi              (rhs.m_no_jack_midi),
+    m_with_jack_midi            (rhs.m_with_jack_midi),
     m_manual_alsa_ports         (rhs.m_manual_alsa_ports),
     m_reveal_alsa_ports         (rhs.m_reveal_alsa_ports),
     m_print_keys                (rhs.m_print_keys),
@@ -182,6 +188,7 @@ rc_settings::operator = (const rc_settings & rhs)
         m_with_jack_master          = rhs.m_with_jack_master;
         m_with_jack_master_cond     = rhs.m_with_jack_master_cond;
         m_no_jack_midi              = rhs.m_no_jack_midi;
+        m_with_jack_midi            = rhs.m_with_jack_midi;
         m_manual_alsa_ports         = rhs.m_manual_alsa_ports;
         m_reveal_alsa_ports         = rhs.m_reveal_alsa_ports;
         m_print_keys                = rhs.m_print_keys;
@@ -219,8 +226,10 @@ rc_settings::set_defaults ()
     m_pass_sysex                = false;
 #ifdef SEQ64_RTMIDI_SUPPORT
     m_with_jack_transport       = true;
+    m_with_jack_midi            = true;
 #else
     m_with_jack_transport       = false;
+    m_with_jack_midi            = false;
 #endif
     m_with_jack_master          = false;
     m_with_jack_master_cond     = false;

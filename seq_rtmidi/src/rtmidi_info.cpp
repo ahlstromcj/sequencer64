@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2017-02-04
+ * \updates       2017-02-05
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -77,7 +77,7 @@ rtmidi_info::get_compiled_api (std::vector<rtmidi_api> & apis)
      */
 
 #ifdef SEQ64_BUILD_UNIX_JACK
-     if (rc().with_jack_transport())
+     if (rc().with_jack_midi())
         apis.push_back(RTMIDI_API_UNIX_JACK);
 #endif
 
@@ -207,7 +207,7 @@ rtmidi_info::openmidi_api
 #ifdef SEQ64_BUILD_UNIX_JACK
     if (api == RTMIDI_API_UNIX_JACK)
     {
-        if (rc().with_jack_transport())
+        if (rc().with_jack_midi())
         {
             result = set_api_info(new midi_jack_info(appname, ppqn, bpm));
             if (! result)
@@ -219,6 +219,7 @@ rtmidi_info::openmidi_api
                 rc().with_jack_transport(false);
                 rc().with_jack_master(false);
                 rc().with_jack_master_cond(false);
+                rc().with_jack_midi(false);
                 rc().no_jack_midi(true);
             }
         }

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-04
+ * \updates       2017-02-06
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -388,28 +388,39 @@ optionsfile::parse (perform & p)
         sscanf(m_line, "%ld", &buses);
         ok = next_data_line(file) && buses > 0 && buses <= SEQ64_DEFAULT_BUSS_MAX;
     }
-    if (! ok)
-        return error_message("midi-clock");
-
-    /*
-     * One thing about MIDI clock values.  If a device (e.g. my Korg nanoKEY2)
-     * is present in a system when Sequencer64 is exited, it will be saved in
-     * the [midi-clock] list.  When unplugged, it will be read here at
-     * startup, but won't be shown.  The next exit will find it removed from
-     * this list.
-     */
-
-    for (int i = 0; i < buses; ++i)
+    if (ok)
     {
-        long bus_on, bus;
-        sscanf(m_line, "%ld %ld", &bus, &bus_on);
-        p.add_clock(static_cast<clock_e>(bus_on));
-        ok = next_data_line(file);
-        if (! ok)
+        /*
+         * One thing about MIDI clock values.  If a device (e.g. my Korg
+         * nanoKEY2) is present in a system when Sequencer64 is exited, it
+         * will be saved in the [midi-clock] list.  When unplugged, it will be
+         * read here at startup, but won't be shown.  The next exit will find
+         * it removed from this list.
+         */
+
+        for (int i = 0; i < buses; ++i)
         {
-            if (i < (buses-1))
-                return error_message("midi-clock data line missing");
+            long bus_on, bus;
+            sscanf(m_line, "%ld %ld", &bus, &bus_on);
+            p.add_clock(static_cast<clock_e>(bus_on));
+            ok = next_data_line(file);
+            if (! ok)
+            {
+                if (i < (buses-1))
+                    return error_message("midi-clock data line missing");
+            }
         }
+    }
+    else
+    {
+        /*
+         *  If this is zero, we need to fake it to have 1 buss with a 0 clock,
+         *  rather than make the poor user figure out how to fix it.
+         *
+         *      return error_message("midi-clock");
+         */
+
+        p.add_clock(e_clock_off);
     }
 
     line_after(file, "[keyboard-control]");

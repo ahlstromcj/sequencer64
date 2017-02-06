@@ -61,6 +61,12 @@
 #include "midi_jack.hpp"                /* seq64::midi_jack                 */
 #include "settings.hpp"                 /* seq64::rc() accessor function    */
 
+/*
+ * EXPERIMENTAL:
+ */
+
+#undef  USE_SEQ64_JACK_PORT_REVERSAL
+
 /**
  *  Delimits the size of the JACK ringbuffer.
  */
@@ -951,8 +957,11 @@ midi_jack::register_port (bool input, const std::string & portname)
     if (! result)
     {
         std::string shortname = extract_port_name(portname);
+#ifdef USE_SEQ64_JACK_PORT_REVERSAL
+        unsigned long flag = input ? JackPortIsInput : JackPortIsOutput;
+#else
         unsigned long flag = input ? JackPortIsOutput : JackPortIsInput;
-//      unsigned long flag = input ? JackPortIsInput : JackPortIsOutput;
+#endif
         unsigned long buffsize = 0;
         jack_port_t * p = jack_port_register
         (

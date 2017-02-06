@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-02-04
+ * \updates       2017-02-05
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -119,6 +119,7 @@ static struct option long_options [] =
     {"jack-start-mode",     required_argument, 0, 'M'},
     {"jack-session-uuid",   required_argument, 0, 'U'},
     {"no-jack-midi",        0, 0, 'N'},
+    {"with-jack-midi",      0, 0, 't'},
 #endif
     {"manual-alsa-ports",   0, 0, 'm'},
     {"auto-alsa-ports",     0, 0, 'a'},
@@ -165,14 +166,14 @@ static struct option long_options [] =
  *
 \verbatim
         0123456789 @AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz
-         ooooooooo oxxxxxx x  xx  xx xxx xxxxxxx  xx xxxxx  xxxa   x
+         ooooooooo oxxxxxx x  xx  xx xxx xxxxxxx  xx xxxxx *xxxa   x
 \endverbatim
  *
  *  Previous arg-list, items missing! "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"
  */
 
 static const std::string s_arg_list =
-    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNnPpq:RrSsU:uVvx:"      /* modern args      */
+    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNnPpq:RrtSsU:uVvx:"     /* modern args      */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -488,6 +489,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             seq64::rc().with_jack_transport(false);
             seq64::rc().with_jack_master(false);
             seq64::rc().with_jack_master_cond(false);
+            seq64::rc().with_jack_midi(false);
             seq64::rc().no_jack_midi(true);
             printf("Forcing ALSA mode.\n");
             break;
@@ -506,6 +508,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             seq64::rc().with_jack_transport(true);
             seq64::rc().with_jack_master(false);
             seq64::rc().with_jack_master_cond(true);
+            seq64::rc().with_jack_midi(true);
             seq64::rc().no_jack_midi(false);
             break;
 
@@ -553,12 +556,14 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             seq64::rc().with_jack_transport(true);
             seq64::rc().with_jack_master(true);
             seq64::rc().with_jack_master_cond(false);
+            seq64::rc().with_jack_midi(true);
             seq64::rc().no_jack_midi(false);
             break;
 
         case 'j':
         case '1':
             seq64::rc().with_jack_transport(true);
+            seq64::rc().with_jack_midi(true);
             seq64::rc().no_jack_midi(false);
             break;
 
@@ -597,6 +602,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             break;
 
         case 'N':
+            seq64::rc().with_jack_midi(false);
             seq64::rc().no_jack_midi(true);
             printf("Deactivating JACK MIDI.\n");
             break;
@@ -635,6 +641,14 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 's':
             seq64::rc().show_midi(true);
+            break;
+
+        case 't':
+            seq64::rc().with_jack_transport(false);
+            seq64::rc().with_jack_master(false);
+            seq64::rc().with_jack_master_cond(false);
+            seq64::rc().with_jack_midi(true);
+            seq64::rc().no_jack_midi(false);
             break;
 
         case 'U':

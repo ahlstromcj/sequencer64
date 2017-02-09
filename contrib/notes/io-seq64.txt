@@ -115,5 +115,45 @@ JACK startup (BACKWARDS and ERRONEOUS):
 	[JACK sync still enabled]
 	[JACK sync still enabled]
 
+JACK startup (NEW):
 
+   = jack_client_open(seq64)
+   = jack_set_process_callback(info)
+   = jack_client_open(seq64-transport)
+   = jack_get_client_name(sync)
+   = jack_get_uuid_for_client_name(sync)
+   = jack_on_shutdown(sync)
+   = jack_set_process_callback(sync)
+   = jack_set_session_callback(sync)
+   = jack_set_timebase_callback(sync)
+   = jack_port_register(system midi_capture_2)
+   = jack_port_register(system midi_playback_2)
+   = jack_port_register(yoshimi midi in)
+   = jack_activate(info)
+   = jack_connect(jack)
+   connect_port: JACK error connecting port input 'seq64:system midi_capture_2' to 'system:midi_capture_2'
+   api_connect: JACK can't activate and connect I/O
+   = jack_deactivate(sync)
+   = deinit(sync)
+   [Reading rc configuration /home/ahlstrom/.config/sequencer64/sequencer64.rc]
+   [Reading user configuration /home/ahlstrom/.config/sequencer64/sequencer64.usr]
+   [JACK server already started]
+   [JACK server already started]
+   [JACK client:uuid is seq64-transport:9]
+   [JACK sync master]
+   3 rtmidi ports created:
+   Input ports (1):
+     [0] 0:0 system:midi_capture_2
+   Output ports (2):
+     [0] 0:0 system:midi_playback_2 
+     [1] 1:1 yoshimi:midi in 
 
+   midibus '[0] 0:0 system:midi_capture_2' created
+   midibus '[0] 0:0 system:midi_playback_2' created
+   midibus '[1] 1:1 yoshimi:midi in' created
+   [JACK sync still enabled]
+   [JACK sync still enabled]
+   [JACK sync disabled]
+   [Writing rc configuration /home/ahlstrom/.config/sequencer64/sequencer64.rc]
+
+   But then these ports appear on the wrong side of the qjackctl window.

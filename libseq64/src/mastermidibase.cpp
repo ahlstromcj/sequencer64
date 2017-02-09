@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-02-04
+ * \updates       2017-02-07
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -472,30 +472,15 @@ mastermidibase::is_input_system_port (bussbyte bus)
  *      Actually should now be an index number
  *
  * \return
- *      Returns the buss name as a standard C++ string, truncated to 80-1
- *      characters.  Also contains an indication that the buss is disconnected
- *      or unconnected.  If the buss number is illegal, this string is empty.
+ *      Returns the buss name as a standard C++ string.  Also contains an
+ *      indication that the buss is disconnected or unconnected.  If the buss
+ *      number is illegal, this string is empty.
  */
 
 std::string
 mastermidibase::get_midi_out_bus_name (bussbyte bus)
 {
-#ifdef USE_KRUFTY_KODE
-    std::string result = m_outbus_array.get_midi_bus_name(bus);
-    std::string clientname;
-    std::string portname;
-    bool valid = extract_port_names(result, clientname, portname);
-    if (valid)
-    {
-        std::size_t len = clientname.size();
-        int test = clientname.compare(0, len, portname, 0, len);
-        if (test == 0)
-            result = portname;
-    }
-    return result;
-#else
     return m_outbus_array.get_midi_bus_name(bus);
-#endif
 }
 
 /**
@@ -509,30 +494,14 @@ mastermidibase::get_midi_out_bus_name (bussbyte bus)
  *      Provides the input buss number.
  *
  * \return
- *      Returns the buss name as a standard C++ string, truncated to 80-1
- *      characters.  Also contains an indication that the buss is disconnected
- *      or unconnected.
+ *      Returns the buss name as a standard C++ string.  Also contains an
+ *      indication that the buss is disconnected or unconnected.
  */
 
 std::string
 mastermidibase::get_midi_in_bus_name (bussbyte bus)
 {
-#ifdef USE_KRUFTY_KODE
-    std::string result = m_inbus_array.get_midi_bus_name(bus);
-    std::string clientname;
-    std::string portname;
-    bool valid = extract_port_names(result, clientname, portname);
-    if (valid)
-    {
-        int len = int(clientname.size()) - 1;
-        int test = clientname.compare(0, len, portname);
-        if (test == 0)
-            result = portname;
-    }
-    return result;
-#else
     return m_inbus_array.get_midi_bus_name(bus);
-#endif
 }
 
 /**
@@ -764,6 +733,19 @@ mastermidibase::dump_midi_input (event ev)
 
             break;
         }
+    }
+}
+
+/**
+ *
+ */
+
+void
+mastermidibase::swap ()
+{
+    if (rc().with_jack_midi())
+    {
+        seq64::swap(m_inbus_array, m_outbus_array);
     }
 }
 

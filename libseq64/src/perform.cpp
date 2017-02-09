@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-02-04
+ * \updates       2017-02-07
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -355,6 +355,7 @@ perform::launch (int ppqn)
 
         if (activate())
         {
+            master_bus().swap();            /* reconcile with JACK ways */
             launch_input_thread();
             launch_output_thread();
         }

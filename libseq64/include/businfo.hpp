@@ -120,7 +120,7 @@ public:
         if (not_nullptr(m_bus))
         {
             delete m_bus;
-            m_bus = 0;
+            m_bus = nullptr;
         }
     }
 
@@ -294,6 +294,12 @@ public:
     int replacement_port (int bus, int port);
 
 };          // class busarray
+
+/*
+ * Free functions
+ */
+
+extern void swap (busarray & buses0, busarray & buses1);
 
 }           // namespace seq64
 

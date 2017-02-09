@@ -173,11 +173,22 @@ busarray::busarray ()
     // Empty body
 }
 
+/**
+ *  Removes components from the container.
+ *
+ *  However, now that we swap containers, we cannot call this functionality,
+ *  because it deletes the bus's midibus pointer and nullifies it.
+ *
+ *  DISABLED, BUT WE NEED A WAY TO CLEAN UP AT EXIT TIME!!!
+ */
+
 busarray::~busarray ()
 {
+#if 0
     std::vector<businfo>::iterator bi;
     for (bi = m_container.begin(); bi != m_container.end(); ++bi)
         bi->remove();
+#endif
 }
 
 /**
@@ -678,6 +689,18 @@ busarray::replacement_port (int bus, int port)
         }
     }
     return result;
+}
+
+/**
+ *  This free function swaps the contents of two busarray objects.
+ */
+
+void
+swap (busarray & buses0, busarray & buses1)
+{
+    busarray temp = buses0;
+    buses0 = buses1;
+    buses1 = temp;
 }
 
 }           // namespace seq64

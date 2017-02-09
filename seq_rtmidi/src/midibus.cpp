@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2017-02-05
+ * \updates       2017-02-09
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -159,23 +159,40 @@ midibus::~midibus ()
 }
 
 /**
- *  Connects to another port.
+ *  Connects to another port.  If the port is an input port, but is not
+ *  configured (by the user or the "rc" configuration file), then it is not
+ *  connected, and this is not an error.  Output ports are always connected.
+ *
+ *  Note that the api_connect() function will errprint is own errors.  But if
+ *  we expected to be able to connect, and have a null rt_midi pointer, then
+ *  this is a reported error.
+ *
+ * \return
+ *      Returns true if the connection was made succuessfully, or there was no
+ *      need to make the connection.
  */
 
 bool
 midibus::api_connect ()
 {
-    bool result = not_nullptr(m_rt_midi);
-    if (result)
-        result = m_rt_midi->api_connect();
-    else
+    bool result = true;
+    if (get_input() || is_output_port())
     {
-        char temp[80];
-        snprintf
-        (
-            temp, sizeof temp, "null pointer, port '%s'", display_name().c_str()
-        );
-        errprintfunc(temp);
+        result = not_nullptr(m_rt_midi);
+        if (result)
+        {
+            result = m_rt_midi->api_connect();
+        }
+        else
+        {
+            char temp[80];
+            snprintf
+            (
+                temp, sizeof temp, "null rtmidi pointer, port '%s'",
+                display_name().c_str()
+            );
+            errprintfunc(temp);
+        }
     }
     return result;
 }

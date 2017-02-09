@@ -95,7 +95,9 @@ private:
     clock_e m_clock_type;
 
     /**
-     *  TBD
+     *  This flag indicates if an input bus has been selected for action as an
+     *  input device (such as a MIDI controller).  It is turned on if the user
+     *  selects the port in the Options / MIDI Input tab.
      */
 
     bool m_inputing;
@@ -330,6 +332,15 @@ public:
     bool is_input_port () const
     {
         return m_is_input_port;
+    }
+
+    /**
+     * \getter ! m_is_input_port
+     */
+
+    bool is_output_port () const
+    {
+        return ! m_is_input_port;
     }
 
     /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-02-05
+ * \updates       2017-02-11
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from

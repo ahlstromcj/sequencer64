@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2017-02-09
+ * \updates       2017-02-11
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -37,6 +37,7 @@
 #include "midibus_rm.hpp"               /* seq64::midibus for rtmidi        */
 #include "rtmidi.hpp"                   /* RtMidi updated API header file   */
 #include "rtmidi_info.hpp"              /* seq64::rtmidi_info (new)         */
+#include "settings.hpp"                 /* seq64::rc_settings ...           */
 
 /**
  *  A manifest constant for the RtMidi version of the api_poll_for_midi()
@@ -110,11 +111,11 @@ midibus::midibus
     if (makevirtual)
     {
         if (bus_name().empty())
-            bus_name(SEQ64_APP_NAME);           // we need an accessor!!!!
+            bus_name(rc().application_name());
 
         if (port_name().empty())
         {
-            std::string pname = SEQ64_APP_NAME; // we need an accessor!!!!
+            std::string pname = rc().application_name();
             pname += " midi ";
             pname += isinput ? "in " : "out ";
             pname += std::to_string(get_port_id());
@@ -235,7 +236,7 @@ midibus::api_init_out ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_out(*this, m_master_info, get_bus_index());
+        m_rt_midi = new rtmidi_out(*this, m_master_info/*, get_bus_index()*/);
         result = m_rt_midi->api_init_out();
     }
     catch (const rterror & err)
@@ -258,7 +259,7 @@ midibus::api_init_out_sub ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_out(*this, m_master_info, get_bus_index());
+        m_rt_midi = new rtmidi_out(*this, m_master_info/*, get_bus_index()*/);
         result = m_rt_midi->api_init_out_sub();
     }
     catch (const rterror & err)
@@ -281,7 +282,7 @@ midibus::api_init_in ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_in(*this, m_master_info, get_bus_index());
+        m_rt_midi = new rtmidi_in(*this, m_master_info /*, get_bus_index()*/);
         result = m_rt_midi->api_init_in();
     }
     catch (const rterror & err)
@@ -304,7 +305,7 @@ midibus::api_init_in_sub ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_in(*this, m_master_info, get_bus_index());
+        m_rt_midi = new rtmidi_in(*this, m_master_info/*, get_bus_index()*/);
         result = m_rt_midi->api_init_in_sub();
     }
     catch (const rterror & err)

@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-01-31
+ * \updates       2017-02-11
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -106,7 +106,7 @@ midi_alsa_info::midi_alsa_info
 
         m_alsa_seq = seq;
         midi_handle(seq);
-        snd_seq_set_client_name(m_alsa_seq, SEQ64_APP_NAME);
+        snd_seq_set_client_name(m_alsa_seq, rc().application_name().c_str());
         global_queue(snd_seq_alloc_queue(m_alsa_seq));
 
         /*
@@ -223,25 +223,13 @@ midi_alsa_info::get_all_port_info ()
                 std::string clientname = snd_seq_client_info_get_name(cinfo);
                 std::string portname = snd_seq_port_info_get_name(pinfo);
                 int portnumber = snd_seq_port_info_get_port(pinfo);
-
-                /*
-                 * Not needed here, though it works.
-                 *
-                 *  char temp[80];
-                 *  snprintf
-                 *  (
-                 *      temp, sizeof temp, "%s %d:%d",
-                 *      clientname.c_str(), client, portnumber
-                 *  );
-                 */
-
                 if ((caps & sm_input_caps) == sm_input_caps)
                 {
                     input_ports().add
                     (
                         client, clientname, portnumber, portname,
-                        SEQ64_MIDI_NORMAL_PORT, global_queue(),
-                        false /* non-system */, SEQ64_MIDI_INPUT_PORT
+                        SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_NORMAL_PORT,
+                        SEQ64_MIDI_INPUT_PORT, global_queue()
                     );
                     ++count;
                 }
@@ -250,8 +238,8 @@ midi_alsa_info::get_all_port_info ()
                     output_ports().add
                     (
                         client, clientname, portnumber, portname,
-                        SEQ64_MIDI_NORMAL_PORT, SEQ64_BAD_QUEUE_ID,
-                        false /* non-system */, SEQ64_MIDI_OUTPUT_PORT
+                        SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_NORMAL_PORT,
+                        SEQ64_MIDI_OUTPUT_PORT
                     );
                     ++count;
                 }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2017-01-29
+ * \updates       2017-02-11
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -178,7 +178,13 @@ midibase::midibase
     if (! makevirtual)
     {
         if (! busname.empty() && ! portname.empty())
+        {
             set_name(appname, busname, portname);
+        }
+        else
+        {
+            errprint("programmer error in midibase()");
+        }
     }
 }
 
@@ -249,7 +255,7 @@ midibase::set_name
             (
                 alias, sizeof alias, "%s:%s", busname.c_str(), portname.c_str()
             );
-            bus_name(busname);
+            bus_name(busname);              // bus_name(alias);
         }
         else
         {
@@ -308,35 +314,10 @@ midibase::set_alt_name
     else
     {
         std::string bussname = busname;
-        if (bussname.empty())
-            bussname = bus_name();
-
-        if (bussname.empty())
-            bussname = usr().bus_name(get_bus_id());        // WHY usr()???
-
-        if (bussname.empty())
-            bussname = SEQ64_CLIENT_NAME;        // need accessor
-
         std::string pname = portname;
-        if (pname.empty())
-            pname = port_name();
-
-        if (pname.empty())
-        {
-            pname = "midi";
-            pname += " ";
-            pname += is_input_port() ? "in" : "out" ;
-            pname += " ";
-            pname += std::to_string(get_port_id());
-        }
-        else
-        {
-            std::size_t colonpos = pname.find_first_of(":");
-            if (colonpos != std::string::npos)
-                pname[colonpos] = ' ';
-        }
-        bus_name(bussname);
-        port_name(pname);
+        std::size_t colonpos = pname.find_first_of(":");
+        if (colonpos != std::string::npos)
+            pname[colonpos] = ' ';
 
         char alias[64];
         snprintf                            /* copy the client name parts */
@@ -345,6 +326,8 @@ midibase::set_alt_name
             get_bus_index(), get_bus_id(), get_port_id(),
             bussname.c_str(), pname.c_str()
         );
+        bus_name(bussname);
+        port_name(pname);
         display_name(alias);
     }
 }
@@ -414,6 +397,25 @@ midibase::set_multi_name
         );
         display_name(alias);
     }
+}
+
+/**
+ * \getter m_bus_name and m_port_name
+ *      Concatenates the bus and port names into a string of the form
+ *      "busname:portname".  If either name is empty, an empty string is
+ *      returned.
+ */
+
+std::string
+midibase::connect_name () const
+{
+    std::string result = m_bus_name;
+    if (! result.empty() && ! m_port_name.empty())
+    {
+        result += ":";
+        result += m_port_name;
+    }
+    return result;
 }
 
 /**
@@ -715,6 +717,33 @@ midibase::clock (midipulse tick)
         }
         api_flush();            /* and send out */
     }
+}
+
+/**
+ * Shows most midibase members.
+ */
+
+void
+midibase::show_bus_values ()
+{
+#ifdef SEQ64_SHOW_API_CALLS
+    const char * vport = is_virtual_port() ? "virtual" : "non-virtual" ;
+    const char * iport = is_input_port() ? "input" : "output" ;
+    const char * sport = is_system_port() ? "system" : "device" ;
+    printf
+    (
+        "display name:      %s\n"
+        "connect name:      %s\n"
+        "bus : port name:   %s : %s\n"
+        "bus type:          %s %s %s\n"
+        "clock & inputing:  %d & %s\n"
+        ,
+        display_name().c_str(), connect_name().c_str(),
+        m_bus_name.c_str(), m_port_name.c_str(),
+        vport, iport, sport,
+        int(get_clock()), get_input() ? "yes" : "no"
+    );
+#endif
 }
 
 /*

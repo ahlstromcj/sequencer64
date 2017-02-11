@@ -99,8 +99,8 @@ public:
     midi_api
     (
         midibus & parentbus,
-        midi_info & masterinfo,
-        int index = SEQ64_NO_INDEX
+        midi_info & masterinfo
+//      int index = SEQ64_NO_INDEX
     );
     virtual ~midi_api ();
 
@@ -235,8 +235,8 @@ public:
     midi_in_api
     (
         midibus & parentbus,
-        midi_info & masterinfo,
-        int index = SEQ64_NO_INDEX
+        midi_info & masterinfo
+//      int index = SEQ64_NO_INDEX
     );
     virtual ~midi_in_api ();
 
@@ -257,8 +257,8 @@ public:
     midi_out_api
     (
         midibus & parentbus,
-        midi_info & masterinfo,
-        int index = SEQ64_NO_INDEX
+        midi_info & masterinfo
+//      int index = SEQ64_NO_INDEX
     );
     virtual ~midi_out_api ();
 

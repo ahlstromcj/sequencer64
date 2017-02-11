@@ -65,8 +65,8 @@ protected:
     rtmidi
     (
         midibus & parentbus,
-        rtmidi_info & info,
-        int index = SEQ64_NO_INDEX
+        rtmidi_info & info
+//      int index = SEQ64_NO_INDEX
     );
     virtual ~rtmidi ();
 
@@ -308,8 +308,8 @@ public:
     rtmidi_in
     (
         midibus & parentbus,
-        rtmidi_info & info,
-        int index = SEQ64_NO_INDEX
+        rtmidi_info & info
+//      int index = SEQ64_NO_INDEX
     );
 
     /**
@@ -356,7 +356,7 @@ protected:
 
     void openmidi_api
     (
-        rtmidi_api api, rtmidi_info & info, int index = SEQ64_NO_INDEX
+        rtmidi_api api, rtmidi_info & info //, int index = SEQ64_NO_INDEX
     );
 
 };
@@ -391,8 +391,8 @@ public:
     rtmidi_out
     (
         midibus & parentbus,
-        rtmidi_info & info,
-        int index = SEQ64_NO_INDEX
+        rtmidi_info & info
+//      int index = SEQ64_NO_INDEX
     );
 
     /**
@@ -405,7 +405,7 @@ protected:
 
     void openmidi_api
     (
-        rtmidi_api api, rtmidi_info & info, int index = SEQ64_NO_INDEX
+        rtmidi_api api, rtmidi_info & info // , int index = SEQ64_NO_INDEX
     );
 
 };

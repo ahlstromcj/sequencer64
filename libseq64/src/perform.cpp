@@ -355,7 +355,9 @@ perform::launch (int ppqn)
 
         if (activate())
         {
+#if 0
             master_bus().swap();            /* reconcile with JACK ways */
+#endif
             launch_input_thread();
             launch_output_thread();
         }

@@ -1038,14 +1038,14 @@ sequence::play (midipulse end_tick, bool playback_mode)
                 {
                     event transposed_event = er;    /* assign ALL members   */
                     transposed_event.transpose_note(transpose);
-                    printf("put_event_on_bus()\n");
+///////////         printf("put_event_on_bus()\n");
                     put_event_on_bus(transposed_event);
                 }
                 else
                 {
 #endif
                     put_event_on_bus(er);           /* frame still going    */
-                    printf("put_event_on_bus()\n");
+///////////         printf("put_event_on_bus()\n");
 #ifdef SEQ64_STAZED_TRANSPOSE
                 }
 #endif

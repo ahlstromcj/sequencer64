@@ -71,8 +71,8 @@ public:
     midi_jack
     (
         midibus & parentbus,
-        midi_info & masterinfo,
-        int index = SEQ64_NO_INDEX
+        midi_info & masterinfo
+//      int index = SEQ64_NO_INDEX
     );
     virtual ~midi_jack ();
 
@@ -199,9 +199,9 @@ public:
     midi_in_jack
     (
         midibus & parentbus,
-        midi_info & masterinfo,
-        int index = SEQ64_NO_INDEX,
-        unsigned queuesize = 0
+        midi_info & masterinfo
+//      int index = SEQ64_NO_INDEX,
+//      unsigned queuesize = 0
     );
     virtual ~midi_in_jack ();
 
@@ -234,8 +234,8 @@ public:
     midi_out_jack
     (
         midibus & parentbus,
-        midi_info & masterinfo,
-        int index = SEQ64_NO_INDEX
+        midi_info & masterinfo
+//      int index = SEQ64_NO_INDEX
     );
     virtual ~midi_out_jack ();
 

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2017-02-05
+ * \updates       2017-02-11
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
@@ -81,9 +81,9 @@ midi_port_info::add
     int portnumber,
     const std::string & portname,
     bool makevirtual,
-    int queuenumber,
     bool makesystem,
-    bool makeinput
+    bool makeinput,
+    int queuenumber
 )
 {
     port_info_t temp;
@@ -97,6 +97,16 @@ midi_port_info::add
     temp.m_is_system = makesystem;
     m_port_container.push_back(temp);
     m_port_count = int(m_port_container.size());
+#ifdef SEQ64_SHOW_API_CALLS
+    const char * vport = makevirtual ? "virtual" : "non-virtual" ;
+    const char * iport = makeinput ? "input" : "output" ;
+    const char * sport = makesystem ? "system" : "device" ;
+    printf
+    (
+        "Found port %s:%s of type %s %s %s\n",
+        clientname.c_str(), portname.c_str(), vport, iport, sport
+    );
+#endif
 }
 
 /**

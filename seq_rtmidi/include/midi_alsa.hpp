@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2017-01-29
+ * \updates       2017-02-11
  * \license       GNU GPLv2 or above
  *
  *  The midi_alsa module is the Linux version of the midi_alsa module.
@@ -95,6 +95,14 @@ private:
 
     int m_local_addr_port;
 
+    /**
+     *  Holds the port name for the ALSA MIDI input port.  It is derived from
+     *  the (optionally configured) official client name for the application
+     *  with the word "in" appended.
+     */
+
+    const std::string m_input_port_name;
+
 public:
 
     /*
@@ -111,8 +119,8 @@ public:
     midi_alsa
     (
         midibus & parentbus,
-        midi_info & masterinfo,
-        int index                           /* a display ordinal    */
+        midi_info & masterinfo
+//      int index                           /* a display ordinal    */
     );
     virtual ~midi_alsa ();
 
@@ -174,8 +182,8 @@ public:
     midi_in_alsa
     (
         midibus & parentbus,
-        midi_info & masterinfo,
-        int index
+        midi_info & masterinfo
+//      int index
     );
 
 };          // class midi_in_alsa
@@ -192,8 +200,8 @@ public:
     midi_out_alsa
     (
         midibus & parentbus,
-        midi_info & masterinfo,
-        int index
+        midi_info & masterinfo
+//      int index
     );
 
 };          // class midi_out_alsa

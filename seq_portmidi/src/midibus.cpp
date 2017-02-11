@@ -65,7 +65,7 @@ midibus::midibus
 ) :
     midibase
     (
-        SEQ64_APP_NAME, "PortMidi", clientname, index,
+        rc().application_name(), "PortMidi", clientname, index,
         bus_id, port_id, port_id                /* PM uses 'queue' still */
     ),
     m_pms           (nullptr)

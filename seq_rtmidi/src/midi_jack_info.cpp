@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-02-05
+ * \updates       2017-02-11
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of JACK information
@@ -120,7 +120,7 @@ midi_jack_info::connect ()
     jack_client_t * result = m_jack_client;
     if (is_nullptr(result))
     {
-        const char * clientname = SEQ64_APP_NAME;
+        const char * clientname = rc().app_client_name().c_str();
         if (multi_client())
             clientname = "midi_jack_info";
 
@@ -252,14 +252,15 @@ midi_jack_info::get_all_port_info ()
         if (is_nullptr(inports))                  /* check port validity  */
         {
             warnprint("no JACK input port available, creating virtual port");
-            int client = 0;
-            std::string clientname = SEQ64_APP_NAME;
-            std::string portname = SEQ64_APP_NAME " midi in 0";
+            int clientnumber = 0;
+            int portnumber = 0;
+            std::string clientname = rc().app_client_name();
+            std::string portname = clientname + " midi in 0";
             input_ports().add
             (
-                client, clientname, 0, portname,
-                SEQ64_MIDI_VIRTUAL_PORT, SEQ64_BAD_QUEUE_ID,
-                false /* non-system */, SEQ64_MIDI_INPUT_PORT
+                clientnumber, clientname, portnumber, portname,
+                SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_NORMAL_PORT,
+                SEQ64_MIDI_INPUT_PORT
             );
             ++result;
         }
@@ -282,8 +283,8 @@ midi_jack_info::get_all_port_info ()
                 input_ports().add
                 (
                     client, clientname, count, portname,
-                    SEQ64_MIDI_NORMAL_PORT, SEQ64_BAD_QUEUE_ID,
-                    false /* non-system */, SEQ64_MIDI_INPUT_PORT
+                    SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_NORMAL_PORT,
+                    SEQ64_MIDI_INPUT_PORT
                 );
                 ++count;
             }
@@ -309,13 +310,13 @@ midi_jack_info::get_all_port_info ()
 
             warnprint("no JACK output port available, creating virtual port");
             int client = 0;
-            std::string clientname = SEQ64_APP_NAME;
-            std::string portname = SEQ64_APP_NAME " midi out 0";
+            std::string clientname = rc().app_client_name();
+            std::string portname = clientname + " midi out 0";
             output_ports().add
             (
                 client, clientname, 0, portname,
-                SEQ64_MIDI_VIRTUAL_PORT, SEQ64_BAD_QUEUE_ID, false /*
-                non-system */, SEQ64_MIDI_OUTPUT_PORT
+                SEQ64_MIDI_VIRTUAL_PORT, SEQ64_MIDI_NORMAL_PORT,
+                SEQ64_MIDI_OUTPUT_PORT
             );
             ++result;
         }
@@ -338,8 +339,8 @@ midi_jack_info::get_all_port_info ()
                 output_ports().add
                 (
                     client, clientname, count, portname,
-                    SEQ64_MIDI_NORMAL_PORT, SEQ64_BAD_QUEUE_ID,
-                    false /* non-system */, SEQ64_MIDI_OUTPUT_PORT
+                    SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_NORMAL_PORT,
+                    SEQ64_MIDI_OUTPUT_PORT
                 );
                 ++count;
             }

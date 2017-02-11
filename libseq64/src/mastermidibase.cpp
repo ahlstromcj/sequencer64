@@ -736,6 +736,8 @@ mastermidibase::dump_midi_input (event ev)
     }
 }
 
+#if 0
+
 /**
  *
  */
@@ -748,6 +750,8 @@ mastermidibase::swap ()
         seq64::swap(m_inbus_array, m_outbus_array);
     }
 }
+
+#endif
 
 }           // namespace seq64
 

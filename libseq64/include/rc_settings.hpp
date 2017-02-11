@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-02-05
+ * \updates       2017-02-11
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -161,6 +161,21 @@ private:
      */
 
     std::string m_user_filename_alt;
+
+    /**
+     *  Holds the application name, e.g. "sequencer64", "seq64portmidi", or
+     *  "seq64".  This is a constant, set to SEQ64_APP_NAME.
+     */
+
+    const std::string m_application_name;
+
+    /**
+     *  Holds the client name for the application.  This is much like the
+     *  application name, but in the future will be a configuration option.
+     *  For now it is just the value of the SEQ64_CLIENT_NAME macro.
+     */
+
+    std::string m_app_client_name;
 
 public:
 
@@ -454,6 +469,24 @@ public:
     const std::string & user_filename_alt () const
     {
         return m_user_filename_alt;
+    }
+
+    /**
+     * \getter m_application_name
+     */
+
+    const std::string application_name () const
+    {
+        return m_application_name;
+    }
+
+    /**
+     * \getter m_app_client_name
+     */
+
+    const std::string & app_client_name () const
+    {
+        return m_app_client_name;
     }
 
 protected:

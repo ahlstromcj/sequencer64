@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2017-02-02
+ * \updates       2017-02-11
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -302,6 +302,16 @@ jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
  *      So we add a static mutex to use with our automutex.  Does not prevent
  *      that message..... WHY?
  *
+ * We've never disabled the SEQ64_JACK_SESSION macro, and we like the
+ * error-reporting we get by that method.  So we've commented out the
+ * following code in favor of using the session-uuid code:
+ *
+ *  #ifdef SEQ64_JACK_SESSION
+ *  #else
+ *      jack_status_t * pstatus = NULL;
+ *      result = jack_client_open(name, JackNullOption, pstatus);
+ *  #endif
+ *
  * \param clientname
  *      Provides the name of the client, used in the call to
  *      jack_client_open().  By default, this name is the macro SEQ64_PACKAGE
@@ -321,29 +331,9 @@ create_jack_client
     const std::string & uuid
 )
 {
-    /*
-     * Doesn't help:
-     *
-     * static mutex s_client_open_mutex;
-     * automutex locker(s_client_open_mutex);
-     */
-
     jack_client_t * result = nullptr;
     const char * name = clientname.c_str();
     jack_status_t status;
-
-    /*
-     * We've never disabled the SEQ64_JACK_SESSION macro, and we like the
-     * error-reporting we get by that method.  So we've commented out the
-     * following code in favor of using the session-uuid code:
-     *
-     *  #ifdef SEQ64_JACK_SESSION
-     *  #else
-     *      jack_status_t * pstatus = NULL;
-     *      result = jack_client_open(name, JackNullOption, pstatus);
-     *  #endif
-     */
-
     jack_status_t * pstatus = &status;
     if (uuid.empty())
     {
@@ -745,7 +735,7 @@ jack_assistant::init ()
 {
     if (rc().with_jack() && ! m_jack_running)
     {
-        std::string package = SEQ64_CLIENT_NAME "-transport";
+        std::string package = rc().app_client_name() + "_transport";
         m_jack_running = true;              /* determined surely below      */
         m_jack_master = true;               /* ditto, too tricky, though    */
         m_jack_client = client_open(package);

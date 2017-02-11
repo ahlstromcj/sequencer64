@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-30
+ * \updates       2017-02-11
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -36,15 +36,6 @@
 #include "event.hpp"                    /* seq64::event (MIDI event)        */
 #include "midibus.hpp"                  /* seq64::midibus for ALSA          */
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
-
-/**
- *  Currently experimental for subscription purposes.  Change back if it
- *  breaks input processing, but this better matches what seq24 does.
- *
- *  Defines the name for all MIDI input ports.
- */
-
-#define SEQ64_MIDI_INPUT_PORTNAME       SEQ64_CLIENT_NAME " in"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -122,7 +113,7 @@ midibus::midibus
 ) :
     midibase
     (
-        SEQ64_APP_NAME, clientname, portname, index,
+        rc().application_name(), clientname, portname, index,
         destclient,                     // bus_id
         destport,                       // SEQ64_NO_PORT
         queue, ppqn, bpm
@@ -131,7 +122,8 @@ midibus::midibus
     m_dest_addr_client  (destclient),   // actually the buss ID
     m_dest_addr_port    (destport),     // actually the port ID
     m_local_addr_client (localclient),
-    m_local_addr_port   (-1)
+    m_local_addr_port   (-1),
+    m_input_port_name   (rc().app_client_name() + " in")
 {
     // Functionality moved into the base class
 }
@@ -178,14 +170,15 @@ midibus::midibus
 ) :
     midibase
     (
-        SEQ64_APP_NAME, "", "", index, bus_id, index+1, /* port ID */
+        rc().application_name(), "", "", index, bus_id, index+1, /* port ID */
         queue, ppqn, bpm, true /* virtual */
     ),
     m_seq               (seq),
     m_dest_addr_client  (SEQ64_NO_BUS),
     m_dest_addr_port    (SEQ64_NO_PORT),
     m_local_addr_client (localclient),
-    m_local_addr_port   (SEQ64_NO_PORT)
+    m_local_addr_port   (SEQ64_NO_PORT),
+    m_input_port_name   (rc().app_client_name() + " in")
 {
     // Functionality moved to the base class
 }
@@ -255,7 +248,7 @@ midibus::api_init_in ()
     int result = snd_seq_create_simple_port             /* create ports */
     (
         m_seq,
-        SEQ64_MIDI_INPUT_PORTNAME,      // "sequencer64 in" // "seq24 in"
+        m_input_port_name,
         SND_SEQ_PORT_CAP_NO_EXPORT | SND_SEQ_PORT_CAP_WRITE,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );
@@ -334,7 +327,7 @@ midibus::set_virtual_name (int portid, const std::string & portname)
             pname += " ";
             pname += std::to_string(portid);
             set_bus_id(cid);
-            set_name(SEQ64_APP_NAME, clientname, pname);
+            set_name(rc().application_name(), clientname, pname);
         }
     }
     return result;
@@ -353,7 +346,7 @@ midibus::api_init_out_sub ()
 {
     std::string portname = port_name();
     if (portname.empty())
-        portname = SEQ64_CLIENT_NAME " out";
+        portname = rc().app_client_name() + " out";
 
     int result = snd_seq_create_simple_port             /* create ports */
     (
@@ -385,12 +378,12 @@ midibus::api_init_in_sub ()
 {
     std::string portname = port_name();
     if (portname.empty())
-        portname = SEQ64_MIDI_INPUT_PORTNAME;
+        portname = m_input_port_name;
 
     int result = snd_seq_create_simple_port             /* create ports */
     (
         m_seq,
-        SEQ64_MIDI_INPUT_PORTNAME,                      // portname.c_str()
+        portname.c_str(),
         SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );

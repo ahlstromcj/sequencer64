@@ -1,6 +1,6 @@
 /**
  * \file          rtmidi.cpp
-with_jack_transport *
+ *
  *    A class for managing various MIDI APIs.
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
@@ -48,10 +48,10 @@ namespace seq64
 rtmidi::rtmidi
 (
     midibus & parentbus,
-    rtmidi_info & info,
-    int index
+    rtmidi_info & info
+//  int index
 ) :
-    midi_api        (parentbus, *(info.get_api_info()), index),
+    midi_api        (parentbus, *(info.get_api_info())),
     m_midi_info     (info),
     m_midi_api      (nullptr)
 {
@@ -95,14 +95,14 @@ rtmidi::~rtmidi ()
 rtmidi_in::rtmidi_in
 (
     midibus & parentbus,
-    rtmidi_info & info,
-    int index
+    rtmidi_info & info
+//  int index
 ) :
-    rtmidi   (parentbus, info, index)
+    rtmidi   (parentbus, info)
 {
     if (rtmidi_info::selected_api() != RTMIDI_API_UNSPECIFIED)
     {
-        openmidi_api(rtmidi_info::selected_api(), info, index);
+        openmidi_api(rtmidi_info::selected_api(), info/*, index*/);
         if (is_nullptr(get_api()))
         {
             errprintfunc("no compiled support for specified API");
@@ -119,7 +119,7 @@ rtmidi_in::rtmidi_in
         rtmidi_info::get_compiled_api(apis);
         for (unsigned i = 0; i < apis.size(); ++i)
         {
-            openmidi_api(apis[i], info, index);
+            openmidi_api(apis[i], info/*, index*/);
             if (info.get_api_info()->get_port_count() > 0)
             {
                 rtmidi_info::selected_api(apis[i]);  /* log API that worked */
@@ -167,8 +167,8 @@ void
 rtmidi_in::openmidi_api
 (
    rtmidi_api api,
-   rtmidi_info & info,
-   int index
+   rtmidi_info & info
+// int index
 )
 {
     bool got_an_api = false;
@@ -183,7 +183,7 @@ rtmidi_in::openmidi_api
                 if (api == RTMIDI_API_UNIX_JACK)
                 {
 #ifdef SEQ64_BUILD_UNIX_JACK
-                    set_api(new midi_in_jack(parent_bus(), midiinfo, index));
+                    set_api(new midi_in_jack(parent_bus(), midiinfo/*, index*/));
                     got_an_api = true;
 #endif
                 }
@@ -193,7 +193,7 @@ rtmidi_in::openmidi_api
                 if (api == RTMIDI_API_LINUX_ALSA)
                 {
 #ifdef SEQ64_BUILD_LINUX_ALSA
-                    set_api(new midi_in_alsa(parent_bus(), midiinfo, index));
+                    set_api(new midi_in_alsa(parent_bus(), midiinfo/*, index*/));
 #endif
                 }
             }
@@ -201,13 +201,13 @@ rtmidi_in::openmidi_api
         else if (api == RTMIDI_API_UNIX_JACK)
         {
 #ifdef SEQ64_BUILD_UNIX_JACK
-            set_api(new midi_in_jack(parent_bus(), midiinfo, index));
+            set_api(new midi_in_jack(parent_bus(), midiinfo/*, index*/));
 #endif
         }
         else if (api == RTMIDI_API_LINUX_ALSA)
         {
 #ifdef SEQ64_BUILD_LINUX_ALSA
-            set_api(new midi_in_alsa(parent_bus(), midiinfo, index));
+            set_api(new midi_in_alsa(parent_bus(), midiinfo/*, index*/));
 #endif
         }
     }
@@ -240,14 +240,14 @@ rtmidi_in::openmidi_api
 rtmidi_out::rtmidi_out
 (
     midibus & parentbus,
-    rtmidi_info & info,
-    int index
+    rtmidi_info & info
+//  int index
 ) :
-    rtmidi   (parentbus, info, index)
+    rtmidi   (parentbus, info)
 {
     if (rtmidi_info::selected_api() != RTMIDI_API_UNSPECIFIED)
     {
-        openmidi_api(rtmidi_info::selected_api(), info, index);
+        openmidi_api(rtmidi_info::selected_api(), info /*, index*/);
         if (not_nullptr(get_api()))
         {
             return;
@@ -267,7 +267,7 @@ rtmidi_out::rtmidi_out
     rtmidi_info::get_compiled_api(apis);
     for (unsigned i = 0; i < apis.size(); ++i)
     {
-        openmidi_api(apis[i], info, index);
+        openmidi_api(apis[i], info /*, index*/);
         if (info.get_api_info()->get_port_count() > 0)
         {
             rtmidi_info::selected_api(apis[i]); /* log the API that worked  */
@@ -316,8 +316,8 @@ void
 rtmidi_out::openmidi_api
 (
    rtmidi_api api,
-   rtmidi_info & info,
-   int index
+   rtmidi_info & info
+// int index
 )
 {
     bool got_an_api = false;
@@ -332,7 +332,7 @@ rtmidi_out::openmidi_api
                 if (api == RTMIDI_API_UNIX_JACK)
                 {
 #ifdef SEQ64_BUILD_UNIX_JACK
-                    set_api(new midi_out_jack(parent_bus(), midiinfo, index));
+                    set_api(new midi_out_jack(parent_bus(), midiinfo/*, index*/));
                     got_an_api = true;
 #endif
                 }
@@ -342,7 +342,7 @@ rtmidi_out::openmidi_api
                 if (api == RTMIDI_API_LINUX_ALSA)
                 {
 #ifdef SEQ64_BUILD_LINUX_ALSA
-                    set_api(new midi_out_alsa(parent_bus(), midiinfo, index));
+                    set_api(new midi_out_alsa(parent_bus(), midiinfo/*, index*/));
 #endif
                 }
             }
@@ -350,13 +350,13 @@ rtmidi_out::openmidi_api
         else if (api == RTMIDI_API_UNIX_JACK)
         {
 #ifdef SEQ64_BUILD_UNIX_JACK
-            set_api(new midi_out_jack(parent_bus(), midiinfo, index));
+            set_api(new midi_out_jack(parent_bus(), midiinfo/*, index*/));
 #endif
         }
         else if (api == RTMIDI_API_LINUX_ALSA)
         {
 #ifdef SEQ64_BUILD_LINUX_ALSA
-            set_api(new midi_out_alsa(parent_bus(), midiinfo, index));
+            set_api(new midi_out_alsa(parent_bus(), midiinfo/*, index*/));
 #endif
         }
     }

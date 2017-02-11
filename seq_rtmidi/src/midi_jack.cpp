@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-05
+ * \updates       2017-02-11
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -215,10 +215,10 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
 midi_jack::midi_jack
 (
     midibus & parentbus,
-    midi_info & masterinfo,
-    int index
+    midi_info & masterinfo
+//  int index
 ) :
-    midi_api            (parentbus, masterinfo, index),
+    midi_api            (parentbus, masterinfo),
     m_multi_client      (SEQ64_RTMIDI_MULTICLIENT),
     m_remote_port_name  (),
     m_jack_data         ()
@@ -281,7 +281,12 @@ midi_jack::api_init_out ()
     if (multi_client())
         result = open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
     else
-        set_alt_name(SEQ64_APP_NAME, SEQ64_CLIENT_NAME, remoteportname);
+    {
+        set_alt_name
+        (
+            rc().application_name(), rc().app_client_name(), remoteportname
+        );
+    }
 
         // NO parent_bus() setting?
 
@@ -341,7 +346,12 @@ midi_jack::api_init_in ()
     if (multi_client())
         result = open_client_impl(SEQ64_MIDI_INPUT_PORT);
     else
-        set_alt_name(SEQ64_APP_NAME, SEQ64_CLIENT_NAME, remoteportname);
+    {
+        set_alt_name
+        (
+            rc().application_name(), rc().app_client_name(), remoteportname
+        );
+    }
 
         // NO parent_bus() setting?
 
@@ -417,8 +427,8 @@ midi_jack::set_virtual_name (int portid, const std::string & portname)
             std::string clientname = cname;
             set_port_id(portid);
             port_name(portname);
-            set_name(SEQ64_APP_NAME, clientname, portname);
-            parent_bus().set_name(SEQ64_APP_NAME, clientname, portname);
+            set_name(rc().application_name(), clientname, portname);
+            parent_bus().set_name(rc().application_name(), clientname, portname);
         }
     }
     return result;
@@ -439,7 +449,8 @@ midi_jack::api_init_out_sub ()
 
     if (result)
     {
-        int portid = master_info().get_port_id(get_bus_index());
+//      int portid = master_info().get_port_id(get_bus_index());
+        int portid = parent_bus().get_port_id();
         result = portid >= 0;
         if (! result)
         {
@@ -448,10 +459,11 @@ midi_jack::api_init_out_sub ()
         }
         if (result)
         {
-            std::string portname = master_info().get_port_name(get_bus_index());
+//          std::string portname = master_info().get_port_name(get_bus_index());
+            std::string portname = parent_bus().port_name();
             if (portname.empty())
             {
-                portname = SEQ64_CLIENT_NAME " midi out ";
+                portname = rc().app_client_name() + " midi out ";
                 portname += std::to_string(portid);
             }
             result = register_port(SEQ64_MIDI_OUTPUT_PORT, portname);
@@ -479,7 +491,8 @@ midi_jack::api_init_in_sub ()
 
     if (result)
     {
-        int portid = master_info().get_port_id(get_bus_index());
+//      int portid = master_info().get_port_id(get_bus_index());
+        int portid = parent_bus().get_port_id();
         result = portid >= 0;
         if (! result)
         {
@@ -489,9 +502,10 @@ midi_jack::api_init_in_sub ()
         if (result)
         {
             std::string portname = master_info().get_port_name(get_bus_index());
+            std::string portname2 = parent_bus().port_name();
             if (portname.empty())
             {
-                portname = SEQ64_CLIENT_NAME " midi in ";
+                portname = rc().app_client_name() + " midi in ";
                 portname += std::to_string(portid);
             }
             result = register_port(SEQ64_MIDI_INPUT_PORT, portname);
@@ -722,8 +736,8 @@ midi_jack::open_client_impl (bool input)
     master_midi_mode(input);
     if (is_nullptr(client_handle()))
     {
-        std::string appname = SEQ64_APP_NAME;
-        std::string clientname = SEQ64_CLIENT_NAME;
+        std::string appname = rc().application_name();
+        std::string clientname = rc().app_client_name();
         std::string rpname = remote_port_name();
         if (is_virtual_port())
         {
@@ -818,7 +832,8 @@ midi_jack::close_client ()
         if (rc != 0)
         {
             int index = get_bus_index();
-            int id = master_info().get_port_id(index);
+//          int id = master_info().get_port_id(index);
+            int id = parent_bus().get_port_id();
             m_error_string = func_message("JACK closing port #");
             m_error_string += std::to_string(index);
             m_error_string += " (id ";
@@ -889,7 +904,15 @@ midi_jack::connect_port
             (
                 client_handle(), srcportname.c_str(), destportname.c_str()
             );
-            apiprint("jack_connect", "jack");
+#ifdef SEQ64_SHOW_API_CALLS
+            printf("Parent bus:\n");
+            parent_bus().show_bus_values();
+            printf
+            (
+                "jack_connect(src = '%s', dest = '%s')\n",
+                srcportname.c_str(), destportname.c_str()
+            );
+#endif
             result = rc == 0;
             if (! result)
             {
@@ -958,7 +981,17 @@ midi_jack::register_port (bool input, const std::string & portname)
             client_handle(), shortname.c_str(), JACK_DEFAULT_MIDI_TYPE,
             flag, buffsize
         );
-        apiprint("jack_port_register", shortname.c_str());
+#ifdef SEQ64_SHOW_API_CALLS
+        std::string flagname = input ? "JackPortIsOutput" : "JackPortIsInput" ;
+        printf("Parent bus:\n");
+        parent_bus().show_bus_values();
+        printf
+        (
+            "jack_port_register(name = '%s', flag(%s) = '%s')\n",
+            shortname.c_str(), input ? "input" : "output", flagname.c_str()
+        );
+        printf("  Full port name: '%s'\n", portname.c_str());
+#endif
         if (not_nullptr(p))
         {
             port_handle(p);
@@ -1011,11 +1044,11 @@ midi_jack::close_port ()
 midi_in_jack::midi_in_jack
 (
     midibus & parentbus,
-    midi_info & masterinfo,
-    int index,
-    unsigned /*queuesize*/
+    midi_info & masterinfo
+//  int index,
+//  unsigned /*queuesize*/
 ) :
-    midi_jack       (parentbus, masterinfo, index)
+    midi_jack       (parentbus, masterinfo)
 {
     /*
      * Currently, we cannot initialize here because the clientname is empty.
@@ -1072,10 +1105,10 @@ midi_in_jack::~midi_in_jack()
 midi_out_jack::midi_out_jack
 (
     midibus & parentbus,
-    midi_info & masterinfo,
-    int index
+    midi_info & masterinfo
+//  int index
 ) :
-    midi_jack       (parentbus, masterinfo, index)
+    midi_jack       (parentbus, masterinfo)
 {
     /*
      * Currently, we cannot initialize here because the clientname is empty.

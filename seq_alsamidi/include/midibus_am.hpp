@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-01-08
+ * \updates       2017-02-11
  * \license       GNU GPLv2 or above
  *
  *  The midibus module is the Linux version of the midibus module.
@@ -99,6 +99,14 @@ private:
      */
 
     int m_local_addr_port;
+
+    /**
+     *  Holds the port name for the ALSA MIDI input port.  It is derived from
+     *  the (optionally configured) official client name for the application
+     *  with the word "in" appended.
+     */
+
+    const std::string m_input_port_name;
 
 public:
 

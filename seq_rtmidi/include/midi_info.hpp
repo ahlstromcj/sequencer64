@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2017-02-05
+ * \updates       2017-02-11
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -100,10 +100,10 @@ public:
         const std::string & clientname,     // buss name
         int portnumber,
         const std::string & portname,
-        bool makevirtual, //    = SEQ64_MIDI_NORMAL_PORT,   /* i.e. false */
-        int queuenumber, //     = SEQ64_BAD_QUEUE_ID,
-        bool makesystem, //     = false,
-        bool makeinput   //   = false
+        bool makevirtual,                   // SEQ64_MIDI_VIRTUAL_PORT
+        bool makesystem,                    // SEQ64_MIDI_SYSTEM_PORT
+        bool makeinput,                     // SEQ64_MIDI_INPUT_PORT
+        int queuenumber = SEQ64_BAD_QUEUE_ID
     );
     void add (const midibus * m);
 

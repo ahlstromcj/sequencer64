@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-01-21
+ * \updates       2017-02-11
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -112,7 +112,9 @@ rc_settings::rc_settings ()
     m_config_filename           (),
     m_user_filename             (),
     m_config_filename_alt       (),
-    m_user_filename_alt         ()
+    m_user_filename_alt         (),
+    m_application_name          (SEQ64_APP_NAME),
+    m_app_client_name           (SEQ64_CLIENT_NAME)
 {
     // Empty body
 }
@@ -154,7 +156,9 @@ rc_settings::rc_settings (const rc_settings & rhs)
     m_config_filename           (rhs.m_config_filename),
     m_user_filename             (rhs.m_user_filename),
     m_config_filename_alt       (rhs.m_config_filename_alt),
-    m_user_filename_alt         (rhs.m_user_filename_alt)
+    m_user_filename_alt         (rhs.m_user_filename_alt),
+    m_application_name          (rhs.m_application_name),
+    m_app_client_name           (rhs.m_app_client_name)
 {
     // Empty body
 }
@@ -203,6 +207,12 @@ rc_settings::operator = (const rc_settings & rhs)
         m_user_filename             = rhs.m_user_filename;
         m_config_filename_alt       = rhs.m_config_filename_alt;
         m_user_filename_alt         = rhs.m_user_filename_alt;
+
+        /*
+         * const: m_application_name = rhs.m_application_name;
+         */
+
+        m_app_client_name           = rhs.m_app_client_name;
     }
     return *this;
 }
@@ -248,6 +258,12 @@ rc_settings::set_defaults ()
     m_user_filename             = "sequencer64.usr";
     m_config_filename_alt       = ".seq24rc";
     m_user_filename_alt         = ".seq24usr";
+
+    /*
+     * const: m_application_name = SEQ64_APP_NAME;
+     */
+
+    m_app_client_name           = SEQ64_CLIENT_NAME;
 }
 
 /**

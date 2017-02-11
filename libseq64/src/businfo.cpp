@@ -217,6 +217,13 @@ busarray::add (midibus * bus, clock_e clock)
     businfo b(bus);
     b.init_clock(clock);
     m_container.push_back(b);
+#ifdef SEQ64_SHOW_API_CALLS
+    printf
+    (
+        "Added output bus %s, clock %d\n",
+        bus->display_name().c_str(), int(clock)
+    );
+#endif
     return m_container.size() == (count + 1);
 }
 
@@ -253,6 +260,13 @@ busarray::add (midibus * bus, bool inputing)
             bus->set_input(inputing);       /* will call init_in()          */
     }
     b.init_input(inputing);                 /* just sets the flag (again)   */
+#ifdef SEQ64_SHOW_API_CALLS
+    printf
+    (
+        "Added input bus %s, inputing = %s\n",
+        bus->display_name().c_str(), inputing ? "yes" : "no"
+    );
+#endif
     return m_container.size() == (count + 1);
 }
 

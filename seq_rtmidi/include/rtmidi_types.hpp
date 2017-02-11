@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2017-02-05
+ * \updates       2017-02-11
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -35,7 +35,7 @@
  *  These items are needed for the midi_mode() setter function.  Note that
  *  midi_mode() has no functionality in the midi_api base class, which has a
  *  number of such stub functions so that we can use the midi_info and midi_api
- *  derived classes.
+ *  derived classes.  Tested by the is_input_port() functions.
  */
 
 #define SEQ64_MIDI_OUTPUT_PORT  false       /* the MIDI mode is not input   */
@@ -43,11 +43,22 @@
 
 /**
  *  Macros for selecting virtual versus normal ports in a more obvious way.
- *  Used in the rtmidi midibus constructors.
+ *  Used in the rtmidi midibus constructors.  Tested by the is_virtual_port()
+ *  functions.  But note the overload usage of the SEQ64_MIDI_NORMAL_PORT
+ *  macro.
  */
 
 #define SEQ64_MIDI_NORMAL_PORT  false       /* the MIDI port is not virtual */
 #define SEQ64_MIDI_VIRTUAL_PORT true        /* the MIDI port is virtual     */
+
+/**
+ *  Macros for indicating if the port is a built-in system port versus a port
+ *  that exists because a MIDI device is plugged in or some application has
+ *  set up a virtual port.  Tested by the is_system_port() functions.  But
+ *  note the overload usage of the SEQ64_MIDI_NORMAL_PORT macro.
+ */
+
+#define SEQ64_MIDI_SYSTEM_PORT  true        /* API always exposes this port */
 
 /**
  *  Like the SEQ64_NO_BUS and SEQ64_NO_PORT macros in

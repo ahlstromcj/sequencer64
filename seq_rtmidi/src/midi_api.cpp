@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-05
+ * \updates       2017-02-11
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring...
@@ -16,6 +16,7 @@
 #include "midi_api.hpp"
 #include "midi_info.hpp"
 #include "midibus_rm.hpp"
+#include "settings.hpp"                 /* seq64::rc_settings ...           */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -35,12 +36,13 @@ namespace seq64
 midi_api::midi_api
 (
     midibus & parentbus,
-    midi_info & masterinfo,
-    int index
+    midi_info & masterinfo
+//  int index                       // NOT NEEDED
 ) :
     midibase
     (
-        SEQ64_APP_NAME,
+        rc().application_name(),
+#ifdef USE_MIDI_INFO_HERE
         masterinfo.get_bus_name(index),
         masterinfo.get_port_name(index),
         index,
@@ -49,6 +51,16 @@ midi_api::midi_api
         index,                                      // queue
         masterinfo.ppqn(),                          // parentbus an option
         masterinfo.bpm(),                           // parentbus an option
+#else
+        parentbus.bus_name(),
+        parentbus.port_name(),
+        parentbus.get_bus_index(),
+        parentbus.get_bus_id(),
+        parentbus.get_port_id(),
+        parentbus.get_bus_index(),
+        parentbus.ppqn(),
+        parentbus.bpm(),
+#endif
         parentbus.is_virtual_port(),
         parentbus.is_input_port(),
         parentbus.is_system_port()
@@ -168,10 +180,10 @@ midi_api::master_midi_mode (bool input)
 midi_in_api::midi_in_api
 (
     midibus & parentbus,
-    midi_info & masterinfo,
-    int index
+    midi_info & masterinfo
+//  int index
 ) :
-    midi_api        (parentbus, masterinfo, index),
+    midi_api        (parentbus, masterinfo),
     m_input_data    ()
 {
     // any code?
@@ -253,10 +265,10 @@ midi_in_api::cancel_callback ()
 midi_out_api::midi_out_api
 (
     midibus & parentbus,
-    midi_info & masterinfo,
-    int index
+    midi_info & masterinfo
+//  int index
 ) :
-    midi_api    (parentbus, masterinfo, index)
+    midi_api    (parentbus, masterinfo)
 {
     // no code
 }

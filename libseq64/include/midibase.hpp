@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2017-02-04
+ * \updates       2017-02-11
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -203,6 +203,8 @@ public:
 
     virtual ~midibase ();
 
+    void show_bus_values ();
+
     /**
      * \getter m_display_name
      */
@@ -230,23 +232,7 @@ public:
         return m_port_name;
     }
 
-    /**
-     * \getter m_bus_name and m_port_name
-     *      Concatenates the bus and port names into a string of the form
-     *      "busname:portname".  If either name is empty, an empty string is
-     *      returned.
-     */
-
-    std::string connect_name () const
-    {
-        std::string result = m_bus_name;
-        if (! result.empty() && ! m_port_name.empty())
-        {
-            result += ":";
-            result += m_port_name;
-        }
-        return result;
-    }
+    std::string connect_name () const;
 
     /**
      * \getter m_bus_index

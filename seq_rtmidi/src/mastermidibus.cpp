@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-05
+ * \updates       2017-02-11
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -68,7 +68,7 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     m_midi_master
     (
         rc().no_jack_midi() ? RTMIDI_API_LINUX_ALSA : RTMIDI_API_UNSPECIFIED,
-        SEQ64_APP_NAME, ppqn, bpm
+        rc().application_name(), ppqn, bpm
     )
 {
     // Empty body
@@ -152,6 +152,9 @@ mastermidibus::api_init (int ppqn, int bpm)
     else
     {
         unsigned nports = m_midi_master.full_port_count();
+        bool swap_io = rc().with_jack_midi();
+        bool isinput = swap_io ? SEQ64_MIDI_OUTPUT_PORT : SEQ64_MIDI_INPUT_PORT;
+        bool isoutput = swap_io ? SEQ64_MIDI_INPUT_PORT : SEQ64_MIDI_OUTPUT_PORT;
         port_list("rtmidi");
         if (nports > 0)
         {
@@ -163,10 +166,14 @@ mastermidibus::api_init (int ppqn, int bpm)
                 bool issystem = m_midi_master.get_system(i);
                 midibus * m = new midibus
                 (
-                    m_midi_master, i, isvirtual, SEQ64_MIDI_INPUT_PORT,
+                    m_midi_master, i, isvirtual, isinput,
                     SEQ64_NO_BUS, issystem
                 );
-                m_inbus_array.add(m, input(i));         /* must come 1st    */
+                if (swap_io)
+                    m_outbus_array.add(m, clock(i));    /* must come 1st    */
+                else
+                    m_inbus_array.add(m, input(i));     /* must come 1st    */
+
                 m_midi_master.add_bus(m);               /* must come 2nd    */
             }
 
@@ -178,10 +185,14 @@ mastermidibus::api_init (int ppqn, int bpm)
                 bool issystem = m_midi_master.get_system(i);
                 midibus * m = new midibus
                 (
-                    m_midi_master, i, isvirtual, SEQ64_MIDI_OUTPUT_PORT,
+                    m_midi_master, i, isvirtual, isoutput,
                     SEQ64_NO_BUS, issystem
                 );
-                m_outbus_array.add(m, clock(i));        /* must come 1st    */
+                if (swap_io)
+                    m_inbus_array.add(m, input(i));     /* must come 1st    */
+                else
+                    m_outbus_array.add(m, clock(i));    /* must come 1st    */
+
                 m_midi_master.add_bus(m);               /* must come 2nd    */
             }
         }

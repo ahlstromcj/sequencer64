@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-11
+ * \updates       2017-02-12
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -48,6 +48,40 @@
  *      This callback is wired in by calling rtmidi_in_data ::
  *      user_callback().  Unlike RtMidi, the delta time is stored as part of
  *      the message.
+ *
+ * JackPortFlags:
+ *
+\verbatim
+        JackPortIsInput     = 0x01
+        JackPortIsOutput    = 0x02
+        JackPortIsPhysical  = 0x04
+        JackPortCanMonitor  = 0x08
+        JackPortIsTerminal  = 0x10
+\endverbatim
+ *
+ * I/O Issues:
+ *
+ *      The nomenclature for JACK input/output ports seems to be backwards of
+ *      that for ALSA.  Note the confusing (but necessary) orientation of the
+ *      driver backend ports: playback ports are "input" to the backend, and
+ *      capture ports are "output" from the backend.  Here are the properties
+ *      we have gleaned for JACK I/O ports:
+ *
+ *      -#  JACK Input Port.
+ *          -#  A writable client.
+ *          -#  Accepts input from an application or device.
+ *          -#  We create an "output" port and connect it to this input port,
+ *              so that we can send data to the port.
+ *          -#  We set up an "output" JACK process callback that hands off the
+ *              data to JACK, so that it can be played.
+ *      -#  JACK Output Port.
+ *          -#  A readable client.
+ *          -#  Provides output to an application or device.
+ *          -#  We create an "input" port and connect it to this output port,
+ *              so that we can receive data from the port.
+ *          -#  We set up an "input" JACK process callback that provides us
+ *              with the data collected by JACK, so that we can record the
+ *              data.
  */
 
 #include <sstream>
@@ -75,25 +109,44 @@ namespace seq64
 {
 
 /**
- *  Provides the JACK process input callback.  This function does the
- *  following:
+ *  Defines the JACK process input callback.  It is the JACK process callback
+ *  for a MIDI input port (a midi_in_jack object associated with, for example,
+ *  "system:midi_playback_1", representing, for example, a Korg nanoKEY2 to
+ *  which we can send information), also known as a "Writable Client" by
+ *  qjackctl.
  *
- *      -# Get the JACK port buffer and the MIDI event-count into this buffer.
- *      -# For each MIDI event, get the event from JACK and push it into a local
- *        midi_message object.
- *      -# Get the event time, converting it to a delta time if possible.
- *      -# If it is not a SysEx continuation, then:
- *         -# If we're using a callback, pass the data to that callback.  Do
- *            we need this callback to interface with the midibus-based code?
- *         -# Otherwise, add the midi_message container to the rtmidi input
- *            queue.  One can then grab this data in a midibase ::
- *            poll_for_midi() call.  We still ought to check the add success.
+ *  This callback receives data from JACK and gives it to our application's
+ *  input port.
+ *
+ *  This function does the following:
+ *
+ *      -#  Get the JACK port buffer and the MIDI event-count into this
+ *          buffer.
+ *      -#  For each MIDI event, get the event from JACK and push it into a
+ *          local midi_message object.
+ *      -#  Get the event time, converting it to a delta time if possible.
+ *      -#  If it is not a SysEx continuation, then:
+ *          -#  If we're using a callback, pass the data to that callback.  Do
+ *              we need this callback to interface with the midibus-based
+ *              code?
+ *          -#  Otherwise, add the midi_message container to the rtmidi input
+ *              queue.  One can then grab this data in a midibase ::
+ *              poll_for_midi() call.  We still ought to check the add
+ *              success.
  *
  *  The ALSA code polls for events, and that model is also available here.
  *  We're still working exactly how it will work best.
  *
  *  This function used to be static, but now we make if available to
  *  midi_jack_info.
+ *
+ *  jack_port_get_buffer() returns a pointer to the memory area associated with
+ *  the specified port. For an output port, it will be a memory area that can be
+ *  written to; for an input port, it will be an area containing the data from
+ *  the port's connection(s), or zero-filled. if there are multiple inbound
+ *  connections, the data will be mixed appropriately.  Do not cache the
+ *  returned address across process() callbacks. Port buffers have to be
+ *  retrieved in each callback for proper functionning.
  *
  * \param nframes
  *    The frame number to be processed.
@@ -111,16 +164,27 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
     rtmidi_in_data * rtindata = jackdata->m_jack_rtmidiin;
     if (is_nullptr(jackdata->m_jack_port))     /* is port created?        */
-       return 0;
+    {
+        apiprint("jack_process_rtmidi_input", "null jack port");
+        return 0;
+    }
 
     if (is_nullptr(rtindata))
-       return 0;
+    {
+        apiprint("jack_process_rtmidi_input", "null rtmidi_in_data");
+        return 0;
+    }
 
-    jack_midi_event_t jmevent;
-    jack_time_t time;
+    /*
+     * Since this is an input port, buff is the area that contains data from the
+     * "remote" (i.e. outside our application) port.
+     */
+
     void * buff = jack_port_get_buffer(jackdata->m_jack_port, nframes);
     if (not_nullptr(buff))
     {
+        jack_midi_event_t jmevent;
+        jack_time_t time;
         int evcount = jack_midi_get_event_count(buff);
         for (int j = 0; j < evcount; ++j)
         {
@@ -155,16 +219,43 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
 
 /**
  *  Defines the JACK output process callback.  It is the JACK process callback
- *  for a MIDI output port (e.g. midi_out_jack). It does the following:
+ *  for a MIDI output port (e.g. "system:midi_capture_1", which gives us the
+ *  output of the Korg nanoKEY2 MIDI controller), also known as a "Readable
+ *  Client" by qjackctl. It does the following:
  *
- *      -# Get the JACK port buffer, clear it, and loop while the number of
- *         bytes available for reading [via jack_ringbuffer_read_space()].
- *      -# Get the size of each event, and allocate space for an event to be
- *         written to an event port buffer (the JACK "reserve" function).
- *      -# Read the data into this buffer.
+ *      -#  Get the JACK port buffer, clear it, and loop while the number of
+ *          bytes available for reading [via jack_ringbuffer_read_space()].
+ *      -#  Get the size of each event, and allocate space for an event to be
+ *          written to an event port buffer (the JACK "reserve" function).
+ *      -#  Read the data into this buffer.
  *
  *  This function used to be static, but now we make if available to
  *  midi_jack_info.
+ *
+ *  jack_port_get_buffer() returns a pointer to the memory area associated with
+ *  the specified port. For an output port, it will be a memory area that can be
+ *  written to.
+ *
+ *  jack_midi_clear_buffer() clears the buffer, which must be an output buffer.
+ *  It must be called before calling jack_midi_event_reserve() or
+ *  jack_midi_event_write().
+ *
+ *  jack_midi_event_reserve() allocates space for an event to be written to an
+ *  event port buffer.
+ *  Clients must write the event data to the
+ *  pointer returned by this function. Clients must not write more than
+ *  data_size bytes into this buffer. Clients must write normalised MIDI data to
+ *  the port - no running status and no (1-byte) realtime messages interspersed
+ *  with other messages (realtime messages are fine when they occur on their
+ *  own, like other messages).
+ *  Events must be written in order, sorted by their sample offsets. JACK will
+ *  not sort the events for you, and will refuse to store out-of-order events.
+ *
+ *  jack_ringbuffer_read() reads data from the ring-buffer and advances the data
+ *  pointer.  The first parameter is the pointer to the ring-buffer.  The second
+ *  parameter is the destination for the data that is read from the ring-buffer.
+ *  The third parameter is the number of bytes to read.  It returns the number
+ *  of bytes actually read.
  *
  * \param nframes
  *    The frame number to be processed.
@@ -182,22 +273,43 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
     if (not_nullptr(jackdata->m_jack_port))             /* is port created? */
     {
+        /*
+         * Since this is an output port, buff is the area to which we can
+         * write data, to send it to the "remote" (i.e. outside our application)
+         * port.
+         */
+
+        static size_t s_offset = 0;
         void * buff = jack_port_get_buffer(jackdata->m_jack_port, nframes);
         jack_midi_clear_buffer(buff);
         while (jack_ringbuffer_read_space(jackdata->m_jack_buffsize) > 0)
         {
             int space;
-            jack_ringbuffer_read
+            (void) jack_ringbuffer_read
             (
-                jackdata->m_jack_buffsize, (char *) &space, sizeof(space)
+                jackdata->m_jack_buffsize, (char *) &space, sizeof space
             );
-            jack_midi_data_t * md = jack_midi_event_reserve(buff, 0, space);
-            char * mididata = reinterpret_cast<char *>(md);
-            jack_ringbuffer_read
+            jack_midi_data_t * md = jack_midi_event_reserve
             (
-                jackdata->m_jack_buffmessage, mididata, size_t(space)
+                buff, s_offset, space
             );
+            if (not_nullptr(md))
+            {
+                char * mididata = reinterpret_cast<char *>(md);
+                (void) jack_ringbuffer_read
+                (
+                    jackdata->m_jack_buffmessage, mididata, size_t(space)
+                );
+            }
+            else
+            {
+                errprint("jack_midi_event_reserve() returned a null pointer");
+            }
         }
+    }
+    else
+    {
+        // TMI: apiprint("jack_process_rtmidi_output", "null jack port");
     }
     return 0;
 }
@@ -216,7 +328,6 @@ midi_jack::midi_jack
 (
     midibus & parentbus,
     midi_info & masterinfo
-//  int index
 ) :
     midi_api            (parentbus, masterinfo),
     m_multi_client      (SEQ64_RTMIDI_MULTICLIENT),
@@ -279,17 +390,24 @@ midi_jack::api_init_out ()
     std::string remoteportname = connect_name();    /* "bus:port"   */
     remote_port_name(remoteportname);
     if (multi_client())
+    {
         result = open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
+    }
     else
     {
-        set_alt_name
-        (
-            rc().application_name(), rc().app_client_name(), remoteportname
-        );
+        result = create_ringbuffer(JACK_RINGBUFFER_SIZE);
+        if (result)
+        {
+            set_alt_name
+            (
+                rc().application_name(), rc().app_client_name(), remoteportname
+            );
+            parent_bus().set_alt_name           // TENTATIVE
+            (
+                rc().application_name(), rc().app_client_name(), remoteportname
+            );
+        }
     }
-
-        // NO parent_bus() setting?
-
     if (result)
     {
         result = register_port(SEQ64_MIDI_OUTPUT_PORT, port_name());
@@ -351,10 +469,11 @@ midi_jack::api_init_in ()
         (
             rc().application_name(), rc().app_client_name(), remoteportname
         );
+        parent_bus().set_alt_name           // TENTATIVE
+        (
+            rc().application_name(), rc().app_client_name(), remoteportname
+        );
     }
-
-        // NO parent_bus() setting?
-
     if (result)
     {
         result = register_port(SEQ64_MIDI_INPUT_PORT, port_name());
@@ -387,9 +506,9 @@ midi_jack::api_connect ()
         jack_activate(client_handle());
 
     if (is_input_port())
-        result = connect_port(SEQ64_MIDI_INPUT_PORT, localname, remotename);
+        result = connect_port(SEQ64_MIDI_INPUT_PORT, remotename, localname);
     else
-        result = connect_port(SEQ64_MIDI_OUTPUT_PORT, remotename, localname);
+        result = connect_port(SEQ64_MIDI_OUTPUT_PORT, localname, remotename);
 
     if (result)
         set_port_open();
@@ -449,7 +568,6 @@ midi_jack::api_init_out_sub ()
 
     if (result)
     {
-//      int portid = master_info().get_port_id(get_bus_index());
         int portid = parent_bus().get_port_id();
         result = portid >= 0;
         if (! result)
@@ -459,7 +577,6 @@ midi_jack::api_init_out_sub ()
         }
         if (result)
         {
-//          std::string portname = master_info().get_port_name(get_bus_index());
             std::string portname = parent_bus().port_name();
             if (portname.empty())
             {
@@ -491,7 +608,6 @@ midi_jack::api_init_in_sub ()
 
     if (result)
     {
-//      int portid = master_info().get_port_id(get_bus_index());
         int portid = parent_bus().get_port_id();
         result = portid >= 0;
         if (! result)
@@ -550,7 +666,7 @@ midi_jack::api_play (event * e24, midibyte channel)
     message.push(d0);
     message.push(d1);
 
-#ifdef SEQ64_SHOW_API_CALLS_XXX
+#ifdef SEQ64_SHOW_API_CALLS_TMI
     printf("midi_jack::play()\n");
 #endif
 
@@ -757,6 +873,10 @@ midi_jack::open_client_impl (bool input)
             client_handle(clipointer);          // midi_handle() too???
             if (input)
             {
+                /*
+                 * TODO:  MAKE SURE THE m_jack_data PORT VALUE IS NOT NULL!!!
+                 */
+
                 int rc = jack_set_process_callback
                 (
                     clipointer, jack_process_rtmidi_input, &m_jack_data
@@ -773,28 +893,8 @@ midi_jack::open_client_impl (bool input)
             }
             else
             {
-                bool iserror = false;
-                jack_ringbuffer_t * rb =
-                    jack_ringbuffer_create(JACK_RINGBUFFER_SIZE);
-
-                if (not_nullptr(rb))
-                {
-                    m_jack_data.m_jack_buffsize = rb;
-                    rb = jack_ringbuffer_create(JACK_RINGBUFFER_SIZE);
-                    if (not_nullptr(rb))
-                        m_jack_data.m_jack_buffmessage = rb;
-                    else
-                        iserror = true;
-                }
-                else
-                    iserror = true;
-
-                if (iserror)
-                {
-                    m_error_string = func_message("JACK ringbuffer error");
-                    error(rterror::WARNING, m_error_string);
-                }
-                else
+                bool ok = create_ringbuffer(JACK_RINGBUFFER_SIZE);
+                if (ok)
                 {
                     int rc = jack_set_process_callback
                     (
@@ -832,7 +932,6 @@ midi_jack::close_client ()
         if (rc != 0)
         {
             int index = get_bus_index();
-//          int id = master_info().get_port_id(index);
             int id = parent_bus().get_port_id();
             m_error_string = func_message("JACK closing port #");
             m_error_string += std::to_string(index);
@@ -904,7 +1003,7 @@ midi_jack::connect_port
             (
                 client_handle(), srcportname.c_str(), destportname.c_str()
             );
-#ifdef SEQ64_SHOW_API_CALLS
+#ifdef SEQ64_SHOW_API_CALLS_TMI
             printf("Parent bus:\n");
             parent_bus().show_bus_values();
             printf
@@ -974,14 +1073,14 @@ midi_jack::register_port (bool input, const std::string & portname)
     if (! result)
     {
         std::string shortname = extract_port_name(portname);
-        unsigned long flag = input ? JackPortIsOutput : JackPortIsInput;
+        unsigned long flag = input ? JackPortIsInput : JackPortIsOutput;
         unsigned long buffsize = 0;
         jack_port_t * p = jack_port_register
         (
             client_handle(), shortname.c_str(), JACK_DEFAULT_MIDI_TYPE,
             flag, buffsize
         );
-#ifdef SEQ64_SHOW_API_CALLS
+#ifdef SEQ64_SHOW_API_CALLS_TMI
         std::string flagname = input ? "JackPortIsOutput" : "JackPortIsInput" ;
         printf("Parent bus:\n");
         parent_bus().show_bus_values();
@@ -1024,6 +1123,38 @@ midi_jack::close_port ()
     }
 }
 
+/**
+ *  Creates the JACK ring-buffers.
+ */
+
+bool
+midi_jack::create_ringbuffer (size_t rbsize)
+{
+    bool result = rbsize > 0;
+    if (result)
+    {
+        jack_ringbuffer_t * rb = jack_ringbuffer_create(rbsize);
+        if (not_nullptr(rb))
+        {
+            m_jack_data.m_jack_buffsize = rb;
+            rb = jack_ringbuffer_create(rbsize);
+            if (not_nullptr(rb))
+                m_jack_data.m_jack_buffmessage = rb;
+            else
+                result = false;
+        }
+        else
+            result = false;
+
+        if (! result)
+        {
+            m_error_string = func_message("JACK ringbuffer error");
+            error(rterror::WARNING, m_error_string);
+        }
+    }
+    return result;
+}
+
 /*
  * MIDI JACK input class.
  */
@@ -1041,13 +1172,8 @@ midi_jack::close_port ()
  *      Provides the limit of the size of the MIDI input queue.
  */
 
-midi_in_jack::midi_in_jack
-(
-    midibus & parentbus,
-    midi_info & masterinfo
-//  int index,
-//  unsigned /*queuesize*/
-) :
+midi_in_jack::midi_in_jack (midibus & parentbus, midi_info & masterinfo)
+ :
     midi_jack       (parentbus, masterinfo)
 {
     /*
@@ -1102,12 +1228,8 @@ midi_in_jack::~midi_in_jack()
  *      The name of the MIDI output port.
  */
 
-midi_out_jack::midi_out_jack
-(
-    midibus & parentbus,
-    midi_info & masterinfo
-//  int index
-) :
+midi_out_jack::midi_out_jack (midibus & parentbus, midi_info & masterinfo)
+ :
     midi_jack       (parentbus, masterinfo)
 {
     /*

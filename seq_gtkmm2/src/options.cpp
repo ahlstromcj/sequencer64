@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-04
+ * \updates       2017-02-11
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -110,13 +110,19 @@ options::options
     (
         manage(new Gtk::CheckButton("Master C_onditional", true))
     ),
+#ifdef SEQ64_RTMIDI_SUPPORT
+    m_button_jack_midi
+    (
+        manage(new Gtk::CheckButton("Native JACK _MIDI", true))
+    ),
+#endif
     m_button_jack_connect
     (
-        manage(new Gtk::Button("JACK Co_nnect", true))
+        manage(new Gtk::Button("JACK Transport Co_nnect", true))
     ),
     m_button_jack_disconnect
     (
-        manage(new Gtk::Button("JACK _Disconnect", true))
+        manage(new Gtk::Button("JACK Transport _Disconnect", true))
     ),
     m_notebook                      (manage(new Gtk::Notebook()))
 {
@@ -893,7 +899,12 @@ options::add_jack_sync_page ()
 
     /* Frame for transport options */
 
+#ifdef SEQ64_RTMIDI_SUPPORT
+    Gtk::Frame * transportframe = manage(new Gtk::Frame("JACK Transport/MIDI"));
+#else
     Gtk::Frame * transportframe = manage(new Gtk::Frame("JACK Transport Mode"));
+#endif
+
     transportframe->set_border_width(4);
     vbox->pack_start(*transportframe, Gtk::PACK_SHRINK);
 
@@ -952,6 +963,26 @@ options::add_jack_sync_page ()
         )
     );
     transportbox->pack_start(*m_button_jack_master_cond, false, false);
+
+#ifdef SEQ64_RTMIDI_SUPPORT
+    m_button_jack_midi->set_active(rc().with_jack_midi());
+    add_tooltip
+    (
+        m_button_jack_midi,
+        "Sequencer64 will use JACK MIDI for input/output. "
+        "This setting is independent of the 'JACK Transport' and related "
+        "settings."
+    );
+    m_button_jack_midi->signal_toggled().connect
+    (
+        bind
+        (
+            mem_fun(*this, &options::transport_callback),
+            e_jack_midi, m_button_jack_midi
+        )
+    );
+    transportbox->pack_start(*m_button_jack_midi, false, false);
+#endif
 
     /*
      * If JACK is already running, we don't want the user modifying these
@@ -1037,9 +1068,11 @@ options::add_jack_sync_page ()
     add_tooltip
     (
         m_button_jack_connect,
-        "Reconnect to JACK. Calls the JACK initialization function, which is "
+        "Reconnect to JACK transport. Calls the JACK transport "
+        "initialization function, which is "
         "automatically called at Sequencer64 startup, if configured.  Click "
-        "this button after making the JACK Transport settings above."
+        "this button after making the JACK Transport settings above. "
+        "Does not apply to the Native JACK MIDI setting."
     );
     m_button_jack_connect->signal_clicked().connect
     (
@@ -1072,8 +1105,9 @@ options::add_jack_sync_page ()
     add_tooltip
     (
         m_button_jack_disconnect,
-        "Disconnect JACK. Calls the JACK deinitialization function, "
-        "and enables the JACK transport buttons.  Click this button to modify "
+        "Disconnect JACK transport. Calls the JACK transport "
+        "deinitialization function, and enables the "
+        "JACK transport buttons.  Click this button to modify "
         "the JACK Transport Mode settings above."
     );
     m_button_jack_disconnect->signal_clicked().connect
@@ -1414,6 +1448,11 @@ options::transport_callback (button type, Gtk::Button * acheck)
             rc().with_jack_master(false);
             m_button_jack_master->set_active(0);
         }
+        break;
+
+    case e_jack_midi:
+
+        rc().with_jack_midi(is_active);
         break;
 
     case e_jack_start_mode_live:

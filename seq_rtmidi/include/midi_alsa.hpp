@@ -116,12 +116,7 @@ public:
      *  to set up for midi_alsa_in versus midi_alsa_out.
      */
 
-    midi_alsa
-    (
-        midibus & parentbus,
-        midi_info & masterinfo
-//      int index                           /* a display ordinal    */
-    );
+    midi_alsa (midibus & parentbus, midi_info & masterinfo);
     virtual ~midi_alsa ();
 
     /**
@@ -179,12 +174,7 @@ class midi_in_alsa : public midi_alsa
 
 public:
 
-    midi_in_alsa
-    (
-        midibus & parentbus,
-        midi_info & masterinfo
-//      int index
-    );
+    midi_in_alsa (midibus & parentbus, midi_info & masterinfo);
 
 };          // class midi_in_alsa
 
@@ -197,12 +187,7 @@ class midi_out_alsa : public midi_alsa
 
 public:
 
-    midi_out_alsa
-    (
-        midibus & parentbus,
-        midi_info & masterinfo
-//      int index
-    );
+    midi_out_alsa (midibus & parentbus, midi_info & masterinfo);
 
 };          // class midi_out_alsa
 

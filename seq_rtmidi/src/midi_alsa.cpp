@@ -114,27 +114,20 @@ namespace seq64
  *  Also, note that the optionsfile module uses the master buss to get the
  *  buss names when it writes the file.
  *
+ * \param parentbus
+ *      Provides much of the infor about this ALSA buss.
+ *
  * \param info
  *      Provides the information about the desired port, and more.
- *
- * \param index
- *      This is the order of the buss in the lookup, used for display and
- *      labelling.  It is an index into master-info container. Starts from 0.
  */
 
-midi_alsa::midi_alsa
-(
-    midibus & parentbus,
-    midi_info & masterinfo
-//  int index
-) :
+midi_alsa::midi_alsa (midibus & parentbus, midi_info & masterinfo)
+ :
     midi_api            (parentbus, masterinfo),
     m_seq
     (
         reinterpret_cast<snd_seq_t *>(masterinfo.midi_handle())
     ),
-//  m_dest_addr_client  (masterinfo.get_bus_id(index)),     // redundant
-//  m_dest_addr_port    (masterinfo.get_port_id(index)),    // redundant
     m_dest_addr_client  (parentbus.get_bus_id()),
     m_dest_addr_port    (parentbus.get_port_id()),
     m_local_addr_client (snd_seq_client_id(m_seq)),         // localclient
@@ -174,9 +167,6 @@ midi_alsa::~midi_alsa ()
 bool
 midi_alsa::api_init_out ()
 {
-//  master_info().midi_mode(SEQ64_MIDI_OUTPUT_PORT);
-//  std::string busname2 = master_info().get_bus_name(get_bus_index());
-
     std::string busname = parent_bus().bus_name();
     int result = snd_seq_create_simple_port         /* create ports     */
     (
@@ -262,10 +252,6 @@ midi_alsa::api_init_out ()
 bool
 midi_alsa::api_init_in ()
 {
-//  master_info().midi_mode(SEQ64_MIDI_INPUT_PORT);
-//  std::string busname = master_info().get_bus_name(get_bus_index());
-//  std::string portname = m_input_port_name;           // busname.c_str(),
-//  std::string portname = master_info().get_port_name(get_bus_index());
     std::string portname = parent_bus().port_name();
     int result = snd_seq_create_simple_port             /* create ports */
     (
@@ -297,7 +283,6 @@ midi_alsa::api_init_in ()
      * Use the master queue, and get ticks, then subscribe.
      */
 
-//  int queue = master_info().global_queue();
     int queue = parent_bus().queue_number();
     snd_seq_port_subscribe_set_queue(subs, queue);
     snd_seq_port_subscribe_set_time_update(subs, 1);
@@ -486,7 +471,6 @@ midi_alsa::api_deinit_in ()
      * This would seem to unsubscribe all ports.  True?  Danger?
      */
 
-//  int queue = master_info().global_queue();
     int queue = parent_bus().queue_number();
     snd_seq_port_subscribe_set_queue(subs, queue);
     snd_seq_port_subscribe_set_time_update(subs, queue);    /* get ticks    */
@@ -789,7 +773,6 @@ midi_alsa::api_clock (midipulse /* tick */)
 void
 midi_alsa::api_set_ppqn (int ppqn)
 {
-//  int queue = master_info().global_queue();
     int queue = parent_bus().queue_number();
     snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);             /* allocate tempo struct */
@@ -801,7 +784,6 @@ midi_alsa::api_set_ppqn (int ppqn)
 void
 midi_alsa::api_set_beats_per_minute (int bpm)
 {
-//  int queue = master_info().global_queue();
     int queue = parent_bus().queue_number();
     snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);          /* allocate tempo struct */
@@ -843,12 +825,8 @@ midi_alsa::remove_queued_on_events (int tag)
  *  calls.
  */
 
-midi_in_alsa::midi_in_alsa
-(
-    midibus & parentbus,
-    midi_info & masterinfo
-//  int index
-) :
+midi_in_alsa::midi_in_alsa (midibus & parentbus, midi_info & masterinfo)
+ :
     midi_alsa   (parentbus, masterinfo)
 {
     // Empty body
@@ -860,12 +838,8 @@ midi_in_alsa::midi_in_alsa
  *  calls.
  */
 
-midi_out_alsa::midi_out_alsa
-(
-    midibus & parentbus,
-    midi_info & masterinfo
-//  int index
-) :
+midi_out_alsa::midi_out_alsa (midibus & parentbus, midi_info & masterinfo)
+ :
     midi_alsa   (parentbus, masterinfo)
 {
     // Empty body

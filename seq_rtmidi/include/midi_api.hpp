@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-05
+ * \updates       2017-02-11
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -96,12 +96,7 @@ protected:
 
 public:
 
-    midi_api
-    (
-        midibus & parentbus,
-        midi_info & masterinfo
-//      int index = SEQ64_NO_INDEX
-    );
+    midi_api (midibus & parentbus, midi_info & masterinfo);
     virtual ~midi_api ();
 
     bool is_input_port () const;
@@ -232,12 +227,7 @@ protected:
 
 public:
 
-    midi_in_api
-    (
-        midibus & parentbus,
-        midi_info & masterinfo
-//      int index = SEQ64_NO_INDEX
-    );
+    midi_in_api (midibus & parentbus, midi_info & masterinfo);
     virtual ~midi_in_api ();
 
     void user_callback (rtmidi_callback_t callback, void * userdata);
@@ -254,12 +244,7 @@ class midi_out_api : public midi_api
 
 public:
 
-    midi_out_api
-    (
-        midibus & parentbus,
-        midi_info & masterinfo
-//      int index = SEQ64_NO_INDEX
-    );
+    midi_out_api (midibus & parentbus, midi_info & masterinfo);
     virtual ~midi_out_api ();
 
 };          // class midi_out_api

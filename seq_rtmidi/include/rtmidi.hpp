@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-03
+ * \updates       2017-02-11
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The big difference between this class (seq64::rtmidi) and
@@ -62,12 +62,7 @@ private:
 
 protected:
 
-    rtmidi
-    (
-        midibus & parentbus,
-        rtmidi_info & info
-//      int index = SEQ64_NO_INDEX
-    );
+    rtmidi (midibus & parentbus, rtmidi_info & info);
     virtual ~rtmidi ();
 
 public:
@@ -305,12 +300,7 @@ public:
      *      An optional size of the MIDI input queue can be specified.
      */
 
-    rtmidi_in
-    (
-        midibus & parentbus,
-        rtmidi_info & info
-//      int index = SEQ64_NO_INDEX
-    );
+    rtmidi_in (midibus & parentbus, rtmidi_info & info);
 
     /**
      *  If a MIDI connection is still open, it will be closed by the
@@ -388,12 +378,7 @@ public:
      *  JACK (OS-X).
      */
 
-    rtmidi_out
-    (
-        midibus & parentbus,
-        rtmidi_info & info
-//      int index = SEQ64_NO_INDEX
-    );
+    rtmidi_out ( midibus & parentbus, rtmidi_info & info);
 
     /**
      *  The destructor closes any open MIDI connections.
@@ -408,7 +393,7 @@ protected:
         rtmidi_api api, rtmidi_info & info // , int index = SEQ64_NO_INDEX
     );
 
-};
+};          // class rtmidi_out
 
 }           // namespace seq64
 

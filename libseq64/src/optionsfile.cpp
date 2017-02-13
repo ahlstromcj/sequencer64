@@ -601,22 +601,30 @@ optionsfile::parse (perform & p)
     keyval_normalize(ktx);                  /* fix any missing values   */
     p.keys().set_keys(ktx);                 /* copy into perform keys   */
 
-    line_after(file, "[jack-transport]");
     long flag = 0;
-    sscanf(m_line, "%ld", &flag);
-    rc().with_jack_transport(bool(flag));
+    if (line_after(file, "[jack-transport]"))
+    {
+        sscanf(m_line, "%ld", &flag);
+        rc().with_jack_transport(bool(flag));
 
-    next_data_line(file);
-    sscanf(m_line, "%ld", &flag);
-    rc().with_jack_master(bool(flag));
+        next_data_line(file);
+        sscanf(m_line, "%ld", &flag);
+        rc().with_jack_master(bool(flag));
 
-    next_data_line(file);
-    sscanf(m_line, "%ld", &flag);
-    rc().with_jack_master_cond(bool(flag));
+        next_data_line(file);
+        sscanf(m_line, "%ld", &flag);
+        rc().with_jack_master_cond(bool(flag));
 
-    next_data_line(file);
-    sscanf(m_line, "%ld", &flag);
-    p.song_start_mode(bool(flag));
+        next_data_line(file);
+        sscanf(m_line, "%ld", &flag);
+        p.song_start_mode(bool(flag));
+
+        if (next_data_line(file))
+        {
+            sscanf(m_line, "%ld", &flag);
+            rc().with_jack_midi(bool(flag));
+        }
+    }
 
     /*
      *  We are taking a slightly different approach to this section.
@@ -1270,16 +1278,17 @@ optionsfile::write (const perform & p)
 
     file
         << "\n[jack-transport]\n\n"
-        "# jack_transport - Enable slave synchronization with JACK Transport.\n\n"
-        << rc().with_jack_transport() << "   # jack_transport\n\n"
+        "# jack_transport - Enable slave synchronization with JACK Transport.\n"
+        "# Also contains the new flag to use JACK MIDI.\n\n"
+        << rc().with_jack_transport() << "   # with_jack_transport\n\n"
         "# jack_master - Sequencer64 attempts to serve as JACK Master.\n"
         "# Also must enable jack_transport (the user interface forces this,\n"
         "# and also disables jack_master_cond).\n\n"
-        << rc().with_jack_master() << "   # jack_master\n\n"
+        << rc().with_jack_master() << "   # with_jack_master\n\n"
         "# jack_master_cond - Sequencer64 is JACK master if no other JACK\n"
         "# master exists. Also must enable jack_transport (the user interface\n"
         "# forces this, and disables jack_master).\n\n"
-        << rc().with_jack_master_cond()  << "   # jack_master_cond\n\n"
+        << rc().with_jack_master_cond()  << "   # with_jack_master_cond\n\n"
         "# song_start_mode (applies mainly if JACK is enabled).\n\n"
         "# 0 = Playback in live mode. Allows muting and unmuting of loops.\n"
         "#     from the main (patterns) window.  Disables both manual and\n"
@@ -1287,7 +1296,10 @@ optionsfile::write (const perform & p)
         "# 1 = Playback uses the song (performance) editor's data and mute\n"
         "#     controls, regardless of which window was used to start the\n"
         "#     playback.\n\n"
-        << p.song_start_mode() << "   # song_start_mode\n"
+        << p.song_start_mode() << "   # song_start_mode\n\n"
+        "# jack_midi - Enable JACK MIDI, which is a separate option from\n"
+        "# JACK Transport.\n\n"
+        << rc().with_jack_midi()  << "   # with_jack_midi\n\n"
         ;
 
     /*

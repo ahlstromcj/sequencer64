@@ -33,25 +33,11 @@ namespace seq64
  *  Principle constructor.
  */
 
-midi_api::midi_api
-(
-    midibus & parentbus,
-    midi_info & masterinfo
-//  int index                       // NOT NEEDED
-) :
+midi_api::midi_api (midibus & parentbus, midi_info & masterinfo)
+ :
     midibase
     (
         rc().application_name(),
-#ifdef USE_MIDI_INFO_HERE
-        masterinfo.get_bus_name(index),
-        masterinfo.get_port_name(index),
-        index,
-        masterinfo.get_bus_id(index),               // parentbus an option
-        masterinfo.get_port_id(index),              // parentbus an option
-        index,                                      // queue
-        masterinfo.ppqn(),                          // parentbus an option
-        masterinfo.bpm(),                           // parentbus an option
-#else
         parentbus.bus_name(),
         parentbus.port_name(),
         parentbus.get_bus_index(),
@@ -60,7 +46,6 @@ midi_api::midi_api
         parentbus.get_bus_index(),
         parentbus.ppqn(),
         parentbus.bpm(),
-#endif
         parentbus.is_virtual_port(),
         parentbus.is_input_port(),
         parentbus.is_system_port()
@@ -177,12 +162,8 @@ midi_api::master_midi_mode (bool input)
  *      Provides the ring-size of the MIDI input data queue.
  */
 
-midi_in_api::midi_in_api
-(
-    midibus & parentbus,
-    midi_info & masterinfo
-//  int index
-) :
+midi_in_api::midi_in_api (midibus & parentbus, midi_info & masterinfo)
+ :
     midi_api        (parentbus, masterinfo),
     m_input_data    ()
 {
@@ -211,11 +192,7 @@ midi_in_api::~midi_in_api ()
  */
 
 void
-midi_in_api::user_callback
-(
-    rtmidi_callback_t callback,
-    void * userdata
-)
+midi_in_api::user_callback (rtmidi_callback_t callback, void * userdata)
 {
     if (m_input_data.using_callback())
     {
@@ -262,12 +239,8 @@ midi_in_api::cancel_callback ()
  *  Default constructor.
  */
 
-midi_out_api::midi_out_api
-(
-    midibus & parentbus,
-    midi_info & masterinfo
-//  int index
-) :
+midi_out_api::midi_out_api (midibus & parentbus, midi_info & masterinfo)
+ :
     midi_api    (parentbus, masterinfo)
 {
     // no code

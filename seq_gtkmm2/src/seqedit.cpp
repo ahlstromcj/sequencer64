@@ -520,7 +520,14 @@ seqedit::seqedit
     set_beat_width(m_seq.get_beat_width());
     set_measures(get_measures());
     set_midi_channel(m_seq.get_midi_channel());
+
+    /*
+     * HERE, if JACK, we get bus == 1, when it should be 0.
+     * If ALSA, bus == 1 works.
+     */
+
     set_midi_bus(m_seq.get_midi_bus());
+
     set_data_type(EVENT_NOTE_ON);
     if (m_seq.musical_scale() != int(c_scale_off))
         set_scale(m_seq.musical_scale());

@@ -44,8 +44,10 @@ jack_process_io (jack_nframes_t nframes, void * arg)
 {
     if (nframes > 0)
     {
-        jack_process_rtmidi_input(nframes, arg);
-        jack_process_rtmidi_output(nframes, arg);
+        /*
+         * jack_process_rtmidi_input(nframes, arg);
+         * jack_process_rtmidi_output(nframes, arg);
+         */
     }
     return 0;
 
@@ -229,6 +231,12 @@ midi_jack_info::extract_names
  *  application has something to work with.  The only issue is the client
  *  number.  Currently all virtual ports we create have a client number of 0.
  *
+ * JackPortIsPhysical:
+ *
+ *  If this flag is added, then only ports corresponding to a physical device
+ *  are get detected and connected.  This might be a useful option to add at a
+ *  later date.
+ *
  * \return
  *      Returns the total number of ports found.  Note that 0 ports is not
  *      necessarily an error; there may be no JACK apps running with exposed
@@ -247,7 +255,8 @@ midi_jack_info::get_all_port_info ()
         const char ** inports = jack_get_ports    /* list of JACK ports   */
         (
             m_jack_client, NULL,
-            JACK_DEFAULT_MIDI_TYPE, JackPortIsInput         /* tricky   */
+            JACK_DEFAULT_MIDI_TYPE,
+            JackPortIsInput                            /* tricky   */
         );
         if (is_nullptr(inports))                  /* check port validity  */
         {
@@ -295,7 +304,8 @@ midi_jack_info::get_all_port_info ()
         const char ** outports = jack_get_ports    /* list of JACK ports   */
         (
             m_jack_client, NULL,
-            JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput    /* tricky   */
+            JACK_DEFAULT_MIDI_TYPE,
+            JackPortIsOutput                       /* tricky   */
         );
         if (is_nullptr(outports))                  /* check port validity  */
         {

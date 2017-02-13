@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-11
+ * \updates       2017-02-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -105,6 +105,18 @@ private:
 
         e_jack_master_cond,
 
+#ifdef SEQ64_RTMIDI_SUPPORT
+
+        /**
+         *  Turns on the "Native JACK MIDI" option
+         *  rc_settings::with_jack_midi().  This is a setting independent of
+         *  the JACK Transport settings.
+         */
+
+        e_jack_midi,
+
+#endif
+
         /**
          *  Doesn't directly do anything; the live mode versus song mode is
          *  set by the e_jack_start_mode_song value.
@@ -168,11 +180,21 @@ private:
 
     Gtk::CheckButton * m_button_jack_master;
 
+#ifdef SEQ64_RTMIDI_SUPPORT
+
     /**
      *  Main JACK transport master-conditional selection.
      */
 
     Gtk::CheckButton * m_button_jack_master_cond;
+
+#endif
+
+    /**
+     *  JACK MIDI I/O selection.
+     */
+
+    Gtk::CheckButton * m_button_jack_midi;
 
     /**
      *  JACK Connect button, which we need to enable/disable for clarity and

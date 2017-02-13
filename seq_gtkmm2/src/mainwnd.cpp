@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-04
+ * \updates       2017-02-11
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -990,6 +990,12 @@ mainwnd::timer_callback ()
         else if (rc().with_jack_transport())
             label = "JACK";
     }
+
+#ifdef SEQ64_RTMIDI_SUPPORT
+    if (rc().with_jack_midi())
+        label = "Native";
+#endif
+
     Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>(m_button_jack->get_child()));
     if (not_nullptr(lblptr))
         lblptr->set_text(label);

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-21
+ * \updates       2017-02-12
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -136,7 +136,8 @@ event::event (const event & rhs)
     m_status        (rhs.m_status),
     m_channel       (rhs.m_channel),
     m_data          (),                     /* a two-element array      */
-    m_sysex         (),                     /* copies a vector of data  */
+/// m_sysex         (),                     /* copies a vector of data  */
+    m_sysex         (rhs.m_sysex),          /* copies a vector of data  */
     m_sysex_size    (rhs.m_sysex_size),
     m_linked        (nullptr),              /* pointer, not yet handled */
     m_has_link      (false),                /* must indicate that fact  */

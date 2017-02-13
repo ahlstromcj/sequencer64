@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-05
+ * \updates       2017-02-12
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring, we've stripped out most of the original RtMidi
@@ -68,12 +68,7 @@ protected:
 
 public:
 
-    midi_jack
-    (
-        midibus & parentbus,
-        midi_info & masterinfo
-//      int index = SEQ64_NO_INDEX
-    );
+    midi_jack (midibus & parentbus, midi_info & masterinfo);
     virtual ~midi_jack ();
 
     /**
@@ -138,6 +133,7 @@ protected:
     bool open_client_impl (bool input);     /* implements "connect()"   */
     void close_client ();
     void close_port ();
+    bool create_ringbuffer (size_t rbsize);
     bool connect_port
     (
         bool input,
@@ -196,13 +192,7 @@ protected:
 
 public:
 
-    midi_in_jack
-    (
-        midibus & parentbus,
-        midi_info & masterinfo
-//      int index = SEQ64_NO_INDEX,
-//      unsigned queuesize = 0
-    );
+    midi_in_jack (midibus & parentbus, midi_info & masterinfo);
     virtual ~midi_in_jack ();
 
     virtual int api_poll_for_midi ();
@@ -231,12 +221,7 @@ class midi_out_jack: public midi_jack
 
 public:
 
-    midi_out_jack
-    (
-        midibus & parentbus,
-        midi_info & masterinfo
-//      int index = SEQ64_NO_INDEX
-    );
+    midi_out_jack (midibus & parentbus, midi_info & masterinfo);
     virtual ~midi_out_jack ();
 
     /*

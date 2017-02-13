@@ -2120,6 +2120,7 @@ perform::position_jack (bool songmode, midipulse tick)
     if (rc().with_jack_master())
         tick = SEQ64_NULL_MIDIPULSE;
 #endif
+    printf("jack-ass position tick = %ld\n",tick);
     m_jack_asst.position(songmode, tick);
 #endif
 }

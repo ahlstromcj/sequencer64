@@ -53,6 +53,13 @@ namespace seq64
 /**
  *  The base-class constructor fills the array for our busses.
  *
+ * Hmmmmm.  See the actual code below.
+ *
+\verbatim
+        rc().no_jack_midi() ? RTMIDI_API_LINUX_ALSA : RTMIDI_API_UNSPECIFIED,
+        rc().with_jack_midi() ? RTMIDI_API_UNIX_JACK : RTMIDI_API_UNSPECIFIED,
+\endverbatim
+ *
  * \param ppqn
  *      Provides the PPQN value for this object.  However, in most cases, the
  *      default value, SEQ64_USE_DEFAULT_PPQN should be specified.
@@ -67,7 +74,7 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     mastermidibase      (ppqn, bpm),
     m_midi_master
     (
-        rc().no_jack_midi() ? RTMIDI_API_LINUX_ALSA : RTMIDI_API_UNSPECIFIED,
+        rc().with_jack_midi() ? RTMIDI_API_UNIX_JACK : RTMIDI_API_LINUX_ALSA,
         rc().application_name(), ppqn, bpm
     )
 {

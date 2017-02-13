@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2017-02-05
+ * \updates       2017-02-11
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -213,14 +213,15 @@ rtmidi_info::openmidi_api
             if (! result)
             {
                 /**
-                 * Disables the usage of JACK for the rest of the program run.
+                 * Disables the usage of JACK MIDI for the rest of the program
+                 * run.  This includes JACK Transport, which also obviously
+                 * needs JACK to work.
                  */
 
                 rc().with_jack_transport(false);
                 rc().with_jack_master(false);
                 rc().with_jack_master_cond(false);
                 rc().with_jack_midi(false);
-                rc().no_jack_midi(true);
             }
         }
     }

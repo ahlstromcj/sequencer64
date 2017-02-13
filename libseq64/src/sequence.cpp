@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-28
+ * \updates       2017-02-12
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -980,7 +980,8 @@ sequence::on_queued ()
  *  playing based on triggers and tells the ticks that bracket it.
  *
  * \param end_tick
- *      Provides the current end-tick value.
+ *      Provides the current end-tick value.  The tick comes in as a global
+ *      tick.
  *
  * \param playback_mode
  *      Provides how playback is managed.  True indicates that it is
@@ -1007,7 +1008,7 @@ sequence::play (midipulse end_tick, bool playback_mode)
         if (playback_mode)                  /* song mode: on/off triggers   */
             trigger_turning_off = m_triggers.play(start_tick, end_tick);
     }
-    if (m_playing)                                  /* play notes in frame  */
+    if (m_playing)                          /* play notes in frame  */
     {
         midipulse offset = m_length - m_trigger_offset;
         midipulse start_tick_offset = start_tick + offset;
@@ -1038,14 +1039,12 @@ sequence::play (midipulse end_tick, bool playback_mode)
                 {
                     event transposed_event = er;    /* assign ALL members   */
                     transposed_event.transpose_note(transpose);
-///////////         printf("put_event_on_bus()\n");
                     put_event_on_bus(transposed_event);
                 }
                 else
                 {
 #endif
                     put_event_on_bus(er);           /* frame still going    */
-///////////         printf("put_event_on_bus()\n");
 #ifdef SEQ64_STAZED_TRANSPOSE
                 }
 #endif

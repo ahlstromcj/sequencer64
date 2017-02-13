@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-11
+ * \updates       2017-02-13
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this

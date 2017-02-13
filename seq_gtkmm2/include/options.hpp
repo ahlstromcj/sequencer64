@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-11
+ * \updates       2017-02-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -82,40 +82,37 @@ private:
     enum button
     {
         /**
-         *  Turns on the "with JACK Transport" option,
-         *  rc_settings::with_jack_transport().
+         *  Turns on the "with JACK Transport" option, rc_settings ::
+         *  with_jack_transport().
          */
 
         e_jack_transport,
 
         /**
-         *  Turns on the "with JACK Master" option,
-         *  rc_settings::with_jack_master().  If another application is
-         *  already JACK Master, this will fail.
+         *  Turns on the "with JACK Master" option, rc_settings ::
+         *  with_jack_master().  If another application is already JACK
+         *  Master, this will fail.
          */
 
         e_jack_master,
 
         /**
-         *  Turns on the "with JACK Master" option
-         *  rc_settings::with_jack_master_cond().  This option makes
-         *  sequencer64 the JACK Master conditionally, that is, if no other
-         *  application has claimed that role.
+         *  Turns on the "with JACK Master" option rc_settings ::
+         *  with_jack_master_cond().  This option makes sequencer64 the JACK
+         *  Master conditionally, that is, if no other application has claimed
+         *  that role.
          */
 
         e_jack_master_cond,
 
-#ifdef SEQ64_RTMIDI_SUPPORT
-
         /**
-         *  Turns on the "Native JACK MIDI" option
-         *  rc_settings::with_jack_midi().  This is a setting independent of
-         *  the JACK Transport settings.
+         *  Turns on the "Native JACK MIDI" option rc_settings ::
+         *  with_jack_midi().  This is a setting independent of the JACK
+         *  Transport settings.  This is use only in the "rtmidi"
+         *  implementation os Sequencer64, seq64.
          */
 
         e_jack_midi,
-
-#endif
 
         /**
          *  Doesn't directly do anything; the live mode versus song mode is
@@ -127,7 +124,7 @@ private:
         /**
          *  Sets the "JACK start mode" value to true, which means that
          *  sequencer64 is in song mode.  This value is obtained via
-         *  rc_settings::song_start_mode().  It will eventually be the start
+         *  rc_settings :: song_start_mode().  It will eventually be the start
          *  mode that applies to either ALSA or JACK playback.
          */
 
@@ -180,21 +177,21 @@ private:
 
     Gtk::CheckButton * m_button_jack_master;
 
-#ifdef SEQ64_RTMIDI_SUPPORT
-
     /**
      *  Main JACK transport master-conditional selection.
      */
 
     Gtk::CheckButton * m_button_jack_master_cond;
 
-#endif
+#ifdef SEQ64_RTMIDI_SUPPORT
 
     /**
      *  JACK MIDI I/O selection.
      */
 
     Gtk::CheckButton * m_button_jack_midi;
+
+#endif
 
     /**
      *  JACK Connect button, which we need to enable/disable for clarity and

@@ -29,6 +29,14 @@
  *
  *  Note that there are a number of header files that we don't need to add
  *  here, since other header files include them.
+ *
+ * \todo
+ *      "I don't like seq24's pianoroll editor, the way you do CC envelopes
+ *      isn't ideal, it uses alsa-midi, there's unnecessary complexity in
+ *      switching from pattern-trigger mode to song mode, and its insistence
+ *      on being transport master while not even being able to adjust tempo
+ *      when live is annoying."  The JACK support may need updating/upgrading
+ *      as well.
  */
 
 #include <stdio.h>

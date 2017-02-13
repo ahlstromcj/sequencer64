@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-11
+ * \updates       2017-02-13
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -248,7 +248,7 @@ midibus::api_init_in ()
     int result = snd_seq_create_simple_port             /* create ports */
     (
         m_seq,
-        m_input_port_name,
+        m_input_port_name.c_str(),
         SND_SEQ_PORT_CAP_NO_EXPORT | SND_SEQ_PORT_CAP_WRITE,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );
@@ -576,7 +576,7 @@ midibus::api_flush ()
  */
 
 void
-midibus::api_continue_from (midipulse /* tick */, midipulse beats)
+midibus::api_continue_from (midipulse tick, midipulse beats)
 {
 #ifdef USE_THIS_SEQ24_CODE
 
@@ -628,10 +628,14 @@ midibus::api_continue_from (midipulse /* tick */, midipulse beats)
     api_flush();
     snd_seq_event_output(m_seq, &ev);
 
-    printf
-    (
-        "midibus::continue_from(%ld) local port %d\n", tick, m_local_addr_port
-    );
+    if (tick > 0)
+    {
+        printf
+        (
+            "midibus::continue_from(%ld) local port %d\n",
+            tick, m_local_addr_port
+        );
+    }
 }
 
 /**

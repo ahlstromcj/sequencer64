@@ -24,7 +24,7 @@
  * \library       seq64portmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2016-11-27
+ * \updates       2017-02-13
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -95,16 +95,14 @@ main (int argc, char * argv [])
     if (! is_help)
     {
         /*
-         * \todo
-         *      If parsing fails at all, we need to report it and disable
-         *      usage of the application and saving bad garbage out when
-         *      exiting.
+         *  If parsing fails, report it and disable usage of the application
+         *  and saving bad garbage out when exiting.  Still must launch,
+         *  otherwise a segfault occurs via dependencies in the mainwnd.
          */
 
-        ok = seq64::parse_options_files(p, argc, argv);
-        if (ok)
-            optionindex = seq64::parse_command_line_options(p, argc, argv);
-
+        std::string errmessage;                     /* just in case!        */
+        ok = seq64::parse_options_files(p, errmessage, argc, argv);
+        optionindex = seq64::parse_command_line_options(p, argc, argv);
         p.launch(seq64::usr().midi_ppqn());     /* set up performance       */
         if (seq64::usr().inverse_colors())
             seq64::gui_palette_gtk2::load_inverse_palette(true);
@@ -120,29 +118,34 @@ main (int argc, char * argv [])
         (
             p, seq64::usr().allow_two_perfedits(), seq64::usr().midi_ppqn()
         );
-        if (optionindex < argc)                 /* MIDI filename provided?  */
+        if (ok)
         {
-            std::string midifilename = argv[optionindex];
-            if (seq64::file_accessible(midifilename))
-                seq24_window.open_file(midifilename);
+            if (optionindex < argc)                 /* MIDI filename given? */
+            {
+                std::string midifilename = argv[optionindex];
+                if (seq64::file_accessible(midifilename))
+                    seq24_window.open_file(midifilename);
+                else
+                    printf("? MIDI file not found: %s\n", midifilename.c_str());
+            }
+
+            if (seq64::rc().lash_support())
+                seq64::create_lash_driver(p, argc, argv);
+
+            kit.run(seq24_window);                  /* run until user quits  */
+            p.finish();                             /* tear down performance */
+            if (seq64::rc().auto_option_save())
+            {
+                if (ok)                             /* don't write bad stuff */
+                    ok = seq64::write_options_files(p);
+            }
             else
-                printf("? MIDI file not found: %s\n", midifilename.c_str());
-        }
+                printf("[auto-option-save is off, so not saving config files]\n");
 
-        if (seq64::rc().lash_support())
-            seq64::create_lash_driver(p, argc, argv);
-
-        kit.run(seq24_window);                  /* run until user quits     */
-        p.finish();                             /* tear down performance    */
-        if (seq64::rc().auto_option_save())
-        {
-            if (ok)                             /* don't write bad stuff    */
-                ok = seq64::write_options_files(p);
+            seq64::delete_lash_driver();            /* deletes only if exists   */
         }
         else
-            printf("[auto-option-save is off, so not saving config files]\n");
-
-        seq64::delete_lash_driver();            /* deletes only if exists   */
+            seq24_window.rc_error_dialog(errmessage);
     }
     return ok ? EXIT_SUCCESS : EXIT_FAILURE ;
 }

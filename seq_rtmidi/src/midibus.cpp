@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2017-02-11
+ * \updates       2017-02-13
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -236,7 +236,7 @@ midibus::api_init_out ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_out(*this, m_master_info/*, get_bus_index()*/);
+        m_rt_midi = new rtmidi_out(*this, m_master_info);
         result = m_rt_midi->api_init_out();
     }
     catch (const rterror & err)
@@ -259,7 +259,7 @@ midibus::api_init_out_sub ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_out(*this, m_master_info/*, get_bus_index()*/);
+        m_rt_midi = new rtmidi_out(*this, m_master_info);
         result = m_rt_midi->api_init_out_sub();
     }
     catch (const rterror & err)
@@ -282,7 +282,7 @@ midibus::api_init_in ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_in(*this, m_master_info /*, get_bus_index()*/);
+        m_rt_midi = new rtmidi_in(*this, m_master_info);
         result = m_rt_midi->api_init_in();
     }
     catch (const rterror & err)
@@ -305,7 +305,7 @@ midibus::api_init_in_sub ()
     bool result = false;
     try
     {
-        m_rt_midi = new rtmidi_in(*this, m_master_info/*, get_bus_index()*/);
+        m_rt_midi = new rtmidi_in(*this, m_master_info);
         result = m_rt_midi->api_init_in_sub();
     }
     catch (const rterror & err)

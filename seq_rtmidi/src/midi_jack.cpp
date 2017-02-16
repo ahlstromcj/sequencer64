@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-12
+ * \updates       2017-02-16
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -82,6 +82,34 @@
  *          -#  We set up an "input" JACK process callback that provides us
  *              with the data collected by JACK, so that we can record the
  *              data.
+ *
+ *  jack_port_get_buffer() returns a pointer to the memory area associated with
+ *  the specified port. For an output port, it will be a memory area that can be
+ *  written to; for an input port, it will be an area containing the data from
+ *  the port's connection(s), or zero-filled. if there are multiple inbound
+ *  connections, the data will be mixed appropriately.  Do not cache the
+ *  returned address across process() callbacks. Port buffers have to be
+ *  retrieved in each callback for proper functionning.
+ *
+ *  jack_midi_clear_buffer() clears the buffer, which must be an output buffer.
+ *  It must be called before calling jack_midi_event_reserve() or
+ *  jack_midi_event_write().
+ *
+ *  jack_midi_event_reserve() allocates space for an event to be written to an
+ *  event port buffer.  Clients must write the event data to the pointer
+ *  returned by this function. Clients must not write more than data_size
+ *  bytes into this buffer. Clients must write normalised MIDI data to the
+ *  port - no running status and no (1-byte) realtime messages interspersed
+ *  with other messages (realtime messages are fine when they occur on their
+ *  own, like other messages).  Events must be written in order, sorted by
+ *  their sample offsets. JACK will not sort the events for you, and will
+ *  refuse to store out-of-order events.
+ *
+ *  jack_ringbuffer_read() reads data from the ring-buffer and advances the data
+ *  pointer.  The first parameter is the pointer to the ring-buffer.  The second
+ *  parameter is the destination for the data that is read from the ring-buffer.
+ *  The third parameter is the number of bytes to read.  It returns the number
+ *  of bytes actually read.
  */
 
 #include <sstream>
@@ -109,11 +137,10 @@ namespace seq64
 {
 
 /**
- *  Defines the JACK process input callback.  It is the JACK process callback
- *  for a MIDI input port (a midi_in_jack object associated with, for example,
- *  "system:midi_playback_1", representing, for example, a Korg nanoKEY2 to
- *  which we can send information), also known as a "Writable Client" by
- *  qjackctl.
+ *  Defines the JACK input process callback.  It is the JACK process callback
+ *  for a MIDI output port (e.g. "system:midi_capture_1", which gives us the
+ *  output of the Korg nanoKEY2 MIDI controller), also known as a "Readable
+ *  Client" by qjackctl. It does the following:
  *
  *  This callback receives data from JACK and gives it to our application's
  *  input port.
@@ -139,14 +166,6 @@ namespace seq64
  *
  *  This function used to be static, but now we make if available to
  *  midi_jack_info.
- *
- *  jack_port_get_buffer() returns a pointer to the memory area associated with
- *  the specified port. For an output port, it will be a memory area that can be
- *  written to; for an input port, it will be an area containing the data from
- *  the port's connection(s), or zero-filled. if there are multiple inbound
- *  connections, the data will be mixed appropriately.  Do not cache the
- *  returned address across process() callbacks. Port buffers have to be
- *  retrieved in each callback for proper functionning.
  *
  * \param nframes
  *    The frame number to be processed.
@@ -218,44 +237,24 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
 }
 
 /**
- *  Defines the JACK output process callback.  It is the JACK process callback
- *  for a MIDI output port (e.g. "system:midi_capture_1", which gives us the
- *  output of the Korg nanoKEY2 MIDI controller), also known as a "Readable
- *  Client" by qjackctl. It does the following:
+ *  Defines the JACK process input callback.  It is the JACK process callback
+ *  for a MIDI input port (a midi_in_jack object associated with, for example,
+ *  "system:midi_playback_1", representing, for example, a Korg nanoKEY2 to
+ *  which we can send information), also known as a "Writable Client" by
+ *  qjackctl.  Here's how it works:
  *
- *      -#  Get the JACK port buffer, clear it, and loop while the number of
- *          bytes available for reading [via jack_ringbuffer_read_space()].
+ *      -#  Get the JACK port buffer, for our local jack port.  Clear it.
+ *      -#  Loop while the number of bytes available for reading [via
+ *          jack_ringbuffer_read_space()] is non-zero.
  *      -#  Get the size of each event, and allocate space for an event to be
  *          written to an event port buffer (the JACK "reserve" function).
- *      -#  Read the data into this buffer.
+ *      -#  Read the data from the ringbuffer into this port buffer.  JACK
+ *          should then send it to the remote port.
  *
- *  This function used to be static, but now we make if available to
- *  midi_jack_info.
- *
- *  jack_port_get_buffer() returns a pointer to the memory area associated with
- *  the specified port. For an output port, it will be a memory area that can be
- *  written to.
- *
- *  jack_midi_clear_buffer() clears the buffer, which must be an output buffer.
- *  It must be called before calling jack_midi_event_reserve() or
- *  jack_midi_event_write().
- *
- *  jack_midi_event_reserve() allocates space for an event to be written to an
- *  event port buffer.
- *  Clients must write the event data to the
- *  pointer returned by this function. Clients must not write more than
- *  data_size bytes into this buffer. Clients must write normalised MIDI data to
- *  the port - no running status and no (1-byte) realtime messages interspersed
- *  with other messages (realtime messages are fine when they occur on their
- *  own, like other messages).
- *  Events must be written in order, sorted by their sample offsets. JACK will
- *  not sort the events for you, and will refuse to store out-of-order events.
- *
- *  jack_ringbuffer_read() reads data from the ring-buffer and advances the data
- *  pointer.  The first parameter is the pointer to the ring-buffer.  The second
- *  parameter is the destination for the data that is read from the ring-buffer.
- *  The third parameter is the number of bytes to read.  It returns the number
- *  of bytes actually read.
+ *  Since this is an output port, "buff" is the area to which we can write
+ *  data, to send it to the "remote" (i.e. outside our application) port.  The
+ *  data is written to the ringbuffer in api_init_out(), and here we read the
+ *  ring buffer and pass it to the output buffer.
  *
  * \param nframes
  *    The frame number to be processed.
@@ -273,12 +272,6 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
     if (not_nullptr(jackdata->m_jack_port))             /* is port created? */
     {
-        /*
-         * Since this is an output port, buff is the area to which we can
-         * write data, to send it to the "remote" (i.e. outside our application)
-         * port.
-         */
-
         static size_t s_offset = 0;
         void * buff = jack_port_get_buffer(jackdata->m_jack_port, nframes);
         jack_midi_clear_buffer(buff);
@@ -332,14 +325,22 @@ midi_jack::midi_jack
     midi_api            (parentbus, masterinfo),
     m_multi_client      (SEQ64_RTMIDI_MULTICLIENT),
     m_remote_port_name  (),
+    m_jack_info         (dynamic_cast<midi_jack_info &>(masterinfo)),
     m_jack_data         ()
 {
-    if (! multi_client())
+    if (multi_client())
+    {
+        // No code needed, yet
+    }
+    else
     {
         client_handle
         (
             reinterpret_cast<jack_client_t *>(masterinfo.midi_handle())
         );
+#ifdef USE_JACK_PORT_LIST
+        (void) m_jack_info.add(*this);
+#endif
     }
 }
 
@@ -462,7 +463,9 @@ midi_jack::api_init_in ()
     std::string remoteportname = connect_name();    /* "bus:port"       */
     remote_port_name(remoteportname);
     if (multi_client())
+    {
         result = open_client_impl(SEQ64_MIDI_INPUT_PORT);
+    }
     else
     {
         set_alt_name
@@ -486,6 +489,8 @@ midi_jack::api_init_in ()
          *  std::string localname = connect_name();
          *  result = connect_port(SEQ64_MIDI_INPUT, localname, remoteportname);
          *  if (result) set_port_open();
+         *
+         * We also need to fill in the m_jack_data member here.
          */
     }
     return result;
@@ -1174,7 +1179,8 @@ midi_jack::create_ringbuffer (size_t rbsize)
 
 midi_in_jack::midi_in_jack (midibus & parentbus, midi_info & masterinfo)
  :
-    midi_jack       (parentbus, masterinfo)
+    midi_jack       (parentbus, masterinfo),
+    m_client_name   ()
 {
     /*
      * Currently, we cannot initialize here because the clientname is empty.
@@ -1183,6 +1189,8 @@ midi_in_jack::midi_in_jack (midibus & parentbus, midi_info & masterinfo)
      * if (multi_client())
      *     (void) initialize(clientname);
      */
+
+    m_jack_data.m_jack_rtmidiin = input_data();
 }
 
 /**

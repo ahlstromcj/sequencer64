@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-11
+ * \updates       2017-02-16
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring...
@@ -52,6 +52,7 @@ midi_api::midi_api (midibus & parentbus, midi_info & masterinfo)
     ),
     m_master_info               (masterinfo),
     m_parent_bus                (parentbus),
+    m_input_data                (),
     m_connected                 (false),
     m_error_string              (),
     m_error_callback            (0),
@@ -151,38 +152,11 @@ midi_api::master_midi_mode (bool input)
     m_master_info.midi_mode(input);
 }
 
-/*
- *  Common midi_in_api Definitions
- */
-
-/**
- *  Constructor.
- *
- * \param queuesize
- *      Provides the ring-size of the MIDI input data queue.
- */
-
-midi_in_api::midi_in_api (midibus & parentbus, midi_info & masterinfo)
- :
-    midi_api        (parentbus, masterinfo),
-    m_input_data    ()
-{
-    // any code?
-}
-
-/**
- *  Destructor.
- *
- *  Deletes the MIDI input queue.
- */
-
-midi_in_api::~midi_in_api ()
-{
-    // any code?
-}
-
 /**
  *  Wires in a MIDI input callback function.
+ *
+ *  We moved it into the base class, trading convenience for the chance of
+ *  confusion.
  *
  * \param callback
  *      Provides the callback function.
@@ -192,7 +166,7 @@ midi_in_api::~midi_in_api ()
  */
 
 void
-midi_in_api::user_callback (rtmidi_callback_t callback, void * userdata)
+midi_api::user_callback (rtmidi_callback_t callback, void * userdata)
 {
     if (m_input_data.using_callback())
     {
@@ -213,10 +187,13 @@ midi_in_api::user_callback (rtmidi_callback_t callback, void * userdata)
 
 /**
  *  Removes the MIDI input callback and some items related to it.
+ *
+ *  We moved it into the base class, trading convenience for the chance of
+ *  confusion.
  */
 
 void
-midi_in_api::cancel_callback ()
+midi_api::cancel_callback ()
 {
     if (m_input_data.using_callback())
     {
@@ -229,30 +206,6 @@ midi_in_api::cancel_callback ()
         m_error_string = func_message("no callback function was set");
         error(rterror::WARNING, m_error_string);
     }
-}
-
-/*
- *  Common midi_out_api Definitions
- */
-
-/**
- *  Default constructor.
- */
-
-midi_out_api::midi_out_api (midibus & parentbus, midi_info & masterinfo)
- :
-    midi_api    (parentbus, masterinfo)
-{
-    // no code
-}
-
-/**
- *  Stock empty destructor.
- */
-
-midi_out_api::~midi_out_api ()
-{
-    // no code
 }
 
 }           // namespace seq64

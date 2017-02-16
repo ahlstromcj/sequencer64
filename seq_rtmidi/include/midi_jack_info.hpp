@@ -8,7 +8,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-01-21
+ * \updates       2017-02-14
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the JACK information of
@@ -28,6 +28,12 @@
 
 #define SEQ64_RTMIDI_MULTICLIENT        false
 
+/**
+ * EXPERIMENTAL
+ */
+
+#define USE_JACK_PORT_LIST
+
 /*
  * Do not document the namespace; it breaks Doxygen.
  */
@@ -36,12 +42,21 @@ namespace seq64
 {
     class mastermidibus;
 
+#ifdef USE_JACK_PORT_LIST
+    class midi_jack;
+#endif
+
 /**
  *  The class for handling JACK MIDI port enumeration.
  */
 
 class midi_jack_info : public midi_info
 {
+
+#ifdef USE_JACK_PORT_LIST
+    friend class midi_jack;
+    friend int jack_process_io (jack_nframes_t nframes, void * arg);
+#endif
 
 private:
 
@@ -56,13 +71,23 @@ private:
 
     bool m_multi_client;
 
-    /**
+    /*
      *  Holds the data needed for JACK processing.  Please do not confuse this
      *  item with m_jack_client or the m_midi_handle of the base class.
      *  However, this object does hold a copy of the m_jack_client pointer.
+     *
+     *      midi_jack_data m_jack_data;
      */
 
-    midi_jack_data m_jack_data;
+#ifdef USE_JACK_PORT_LIST
+
+    /**
+     *  Holds the port data.  Not for use with the multi-client option.
+     */
+
+    std::vector<midi_jack *> m_jack_ports;
+
+#endif
 
     /**
      *  Holds the JACK sequencer client pointer so that it can be used
@@ -135,6 +160,22 @@ private:
         std::string & clientname,
         std::string & portname
     );
+
+#ifdef USE_JACK_PORT_LIST
+
+private:
+
+    /**
+     *  Adds a pointer to a JACK port.
+     */
+
+    bool add (midi_jack & mj)
+    {
+        m_jack_ports.push_back(&mj);
+        return true;
+    }
+
+#endif
 
 };          // midi_jack_info
 

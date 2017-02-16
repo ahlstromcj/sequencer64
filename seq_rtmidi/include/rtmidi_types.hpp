@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2017-02-11
+ * \updates       2017-02-16
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -67,6 +67,12 @@
  */
 
 #define SEQ64_NO_INDEX          (-1)        /* good values start at 0       */
+
+/**
+ *  Default size of the MIDI queue.
+ */
+
+#define SEQ64_DEFAULT_QUEUE_SIZE    100
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -239,6 +245,7 @@ private:
 public:
 
     midi_queue ();
+    ~midi_queue ();
 
     /**
      * \getter m_size == 0
@@ -270,7 +277,7 @@ public:
 
     bool add (const midi_message & mmsg);
     void pop ();
-    void allocate (unsigned queuesize);
+    void allocate (unsigned queuesize = SEQ64_DEFAULT_QUEUE_SIZE);
     void deallocate ();
 
     /**

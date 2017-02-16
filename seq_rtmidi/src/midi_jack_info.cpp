@@ -20,6 +20,8 @@
 #include "midibus_common.hpp"           /* from the libseq64 sub-project    */
 #include "settings.hpp"                 /* seq64::rc() configuration object */
 
+#include "midi_jack.hpp"           /* seq64::midi_jack_info            */
+
 /*
  * Do not document the namespace; it breaks Doxygen.
  */
@@ -39,15 +41,44 @@ extern int jack_process_rtmidi_output (jack_nframes_t nframes, void * arg);
  *  midi_jack module.
  */
 
-static int
+int
 jack_process_io (jack_nframes_t nframes, void * arg)
 {
     if (nframes > 0)
     {
-        /*
-         * jack_process_rtmidi_input(nframes, arg);
-         * jack_process_rtmidi_output(nframes, arg);
-         */
+#ifdef USE_JACK_PORT_LIST
+        midi_jack_info * self = reinterpret_cast<midi_jack_info *>(arg);
+        if (not_nullptr(self))
+        {
+            /*
+             * Here we want to go through the I/O ports and route the data
+             * appropriately.
+             */
+
+            std::vector<midi_jack *>::iterator mi;
+            for
+            (
+                mi = self->m_jack_ports.begin();
+                mi != self->m_jack_ports.end(); ++mi
+            )
+            {
+                midi_jack * mj = *mi;
+                midi_jack_data * mjp = &mj->jack_data();
+                if (mj->parent_bus().is_input_port())
+                {
+                    (void) jack_process_rtmidi_input(nframes, mjp);
+                }
+                else
+                {
+                    (void) jack_process_rtmidi_output(nframes, mjp);
+                }
+            }
+        }
+
+#else
+        // jack_process_rtmidi_input(nframes, arg);
+        // jack_process_rtmidi_output(nframes, arg);
+#endif
     }
     return 0;
 
@@ -84,7 +115,9 @@ midi_jack_info::midi_jack_info
 ) :
     midi_info               (appname, ppqn, bpm),
     m_multi_client          (SEQ64_RTMIDI_MULTICLIENT),
-    m_jack_data             (),
+#ifdef USE_JACK_PORT_LIST
+    m_jack_ports            (),
+#endif
     m_jack_client           (nullptr)               /* inited for connect() */
 {
     silence_jack_info();
@@ -93,7 +126,6 @@ midi_jack_info::midi_jack_info
     {
         midi_handle(m_jack_client);                 /* void version         */
         client_handle(m_jack_client);               /* jack version         */
-        m_jack_data.m_jack_client = m_jack_client;  /* port version         */
     }
 }
 
@@ -129,12 +161,19 @@ midi_jack_info::connect ()
         result = create_jack_client(clientname);
         if (not_nullptr(result))
         {
-            m_jack_client = result;
+#ifdef USE_JACK_PORT_LIST
             int rc = jack_set_process_callback
             (
-                result, jack_process_io, &m_jack_data
+                result, jack_process_io, this
             );
-            apiprint("jack_set_process_callback", "info");
+#else
+            static int s_dummy;
+            int rc = jack_set_process_callback
+            (
+                result, jack_process_io, &s_dummy
+            );
+#endif
+            m_jack_client = result;
             if (rc == 0)
             {
                 /**

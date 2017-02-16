@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-11
+ * \updates       2017-02-16
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The big difference between this class (seq64::rtmidi) and
@@ -18,7 +18,7 @@
 
 #include <string>
 
-#include "seq64_rtmidi_features.h"
+#include "seq64_rtmidi_features.h"          /* defines what's implemented   */
 #include "midi_api.hpp"                     /* seq64::midi[_in][_out]_api   */
 #include "easy_macros.h"                    /* platform macros for compiler */
 #include "rterror.hpp"                      /* seq64::rterror               */
@@ -327,7 +327,7 @@ public:
 
     void user_callback (rtmidi_callback_t callback, void * userdata = nullptr)
     {
-       dynamic_cast<midi_in_api *>(get_api())->user_callback(callback, userdata);
+       dynamic_cast<midi_api *>(get_api())->user_callback(callback, userdata);
     }
 
     /**
@@ -339,7 +339,7 @@ public:
 
     void cancel_callback ()
     {
-       dynamic_cast<midi_in_api *>(get_api())->cancel_callback();
+       dynamic_cast<midi_api *>(get_api())->cancel_callback();
     }
 
 protected:

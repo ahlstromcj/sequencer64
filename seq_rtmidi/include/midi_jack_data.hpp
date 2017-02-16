@@ -49,10 +49,33 @@ struct midi_jack_data
 
     jack_port_t * m_jack_port;
 
+    /**
+     *
+     */
+
     jack_ringbuffer_t * m_jack_buffsize;
+
+    /**
+     *
+     */
+
     jack_ringbuffer_t * m_jack_buffmessage;
+
+    /**
+     *
+     */
+
     jack_time_t m_jack_lasttime;
+
+    /**
+     *
+     */
+
     rtmidi_in_data * m_jack_rtmidiin;
+
+    /**
+     * \ctor midi_jack_data
+     */
 
     midi_jack_data () :
         m_jack_client       (nullptr),

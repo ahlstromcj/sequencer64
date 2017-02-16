@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-12
+ * \updates       2017-02-16
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring, we've stripped out most of the original RtMidi
@@ -38,6 +38,8 @@ namespace seq64
 class midi_jack : public midi_api
 {
 
+    friend class midi_jack_info;
+
 private:
 
     /**
@@ -57,6 +59,15 @@ private:
     std::string m_remote_port_name;
 
 protected:
+
+    /**
+     *  EXPERIMENTAL.
+     *  This reference is needed in order for this midi_jack object to add
+     *  itself to the main midi_jack_info list when running in single-JACK
+     *  client mode.
+     */
+
+    midi_jack_info & m_jack_info;
 
     /**
      *  Holds the data needed for JACK processing.  Please do not confuse this
@@ -88,6 +99,15 @@ public:
     jack_client_t * client_handle ()
     {
         return m_jack_data.m_jack_client;
+    }
+
+    /**
+     * \getter m_jack_data
+     */
+
+    midi_jack_data & jack_data()
+    {
+        return m_jack_data;
     }
 
     /**
@@ -188,7 +208,7 @@ class midi_in_jack: public midi_jack
 
 protected:
 
-    std::string m_clientname;
+    std::string m_client_name;
 
 public:
 

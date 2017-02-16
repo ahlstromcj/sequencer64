@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-11
+ * \updates       2017-02-16
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -57,6 +57,14 @@ private:
      */
 
     midibus & m_parent_bus;
+
+    /**
+     *  Although this really is useful only for MIDI input objects,
+     *  the split of the midi_api is not as convenient for re-use
+     *  as is the split for derived classes like midi_in_jack/midi_out_jack.
+     */
+
+    rtmidi_in_data m_input_data;
 
     /**
      *
@@ -199,11 +207,18 @@ public:
 
     void master_midi_mode (bool input);
 
-    /**
+    /*
      *  A basic error reporting function for rtmidi classes.
      */
 
     void error (rterror::Type type, const std::string & errorstring);
+
+    /*
+     * Moved from the now-removed midi_in_api class.
+     */
+
+    void user_callback (rtmidi_callback_t callback, void * userdata);
+    void cancel_callback ();
 
 protected:
 
@@ -212,42 +227,12 @@ protected:
         m_connected = true;
     }
 
+    rtmidi_in_data * input_data ()
+    {
+        return &m_input_data;
+    }
+
 };          // class midi_api
-
-/**
- *  MIDI Input API.
- */
-
-class midi_in_api : public midi_api
-{
-
-protected:
-
-    rtmidi_in_data m_input_data;
-
-public:
-
-    midi_in_api (midibus & parentbus, midi_info & masterinfo);
-    virtual ~midi_in_api ();
-
-    void user_callback (rtmidi_callback_t callback, void * userdata);
-    void cancel_callback ();
-
-};          // class midi_in_api
-
-/**
- *  MIDI Output API.
- */
-
-class midi_out_api : public midi_api
-{
-
-public:
-
-    midi_out_api (midibus & parentbus, midi_info & masterinfo);
-    virtual ~midi_out_api ();
-
-};          // class midi_out_api
 
 }           // namespace seq64
 

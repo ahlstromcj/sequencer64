@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-01
- * \updates       2016-12-31
+ * \updates       2017-02-16
  * \license       See the r3exmidi.lic file.  Too big for a header file.
  *
  *  Provides some basic types for the (heavily-factored) rtmidi library, very
@@ -125,7 +125,16 @@ midi_queue::midi_queue ()
     m_ring_size (0),
     m_ring      (nullptr)
 {
-    // Empty body
+    allocate();
+}
+
+/**
+ *  Destructor.
+ */
+
+midi_queue::~midi_queue ()
+{
+    deallocate();
 }
 
 /**
@@ -154,7 +163,10 @@ void
 midi_queue::deallocate ()
 {
     if (not_nullptr(m_ring))
+    {
         delete [] m_ring;
+        m_ring = nullptr;
+    }
 }
 
 /**

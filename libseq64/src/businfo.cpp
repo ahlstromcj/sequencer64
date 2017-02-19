@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-02-05
+ * \updates       2017-02-19
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -650,6 +650,11 @@ busarray::is_system_port (bussbyte bus)
  *  Initiate a poll() on the existing poll descriptors.  This is a primitive
  *  poll, which exits when some data is obtained.  It also applies only to the
  *  input busses.
+ *
+ * \return
+ *      Returns true if a MIDI event was detected on one of the busses.  Note
+ *      that this is a boolean value, while the midibase::poll_for_midi()
+ *      function returns an integer.
  */
 
 bool
@@ -658,7 +663,32 @@ busarray::poll_for_midi ()
     std::vector<businfo>::iterator bi;
     for (bi = m_container.begin(); bi != m_container.end(); ++bi)
     {
-        if (bi->bus()->poll_for_midi())
+        if (bi->bus()->poll_for_midi() > 0)
+            return true;
+    }
+    return false;
+}
+
+/**
+ *  Gets the first MIDI event in finds on an input bus.
+ *
+ *  Note that this function risks starving the second input device if more
+ *  than one is enabled in Sequencer64.  We will figure that one out later.
+ *
+ * \param inev
+ *      A pointer to the event to be modified by incoming data, if any.
+ *
+ * \return
+ *      Returns true if an event's data was copied into the event pointer.
+ */
+
+bool
+busarray::get_midi_event (event * inev)
+{
+    std::vector<businfo>::iterator bi;
+    for (bi = m_container.begin(); bi != m_container.end(); ++bi)
+    {
+        if (bi->bus()->get_midi_event(inev))
             return true;
     }
     return false;

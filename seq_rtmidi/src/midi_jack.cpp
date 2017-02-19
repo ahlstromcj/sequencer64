@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-16
+ * \updates       2017-02-18
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -110,6 +110,12 @@
  *  parameter is the destination for the data that is read from the ring-buffer.
  *  The third parameter is the number of bytes to read.  It returns the number
  *  of bytes actually read.
+ *
+ *  jack_midi_event_get() gets a MIDI event from an event port buffer.
+ *  JACK MIDI is normalized, the MIDI event returned by this function is
+ *  guaranteed to be a complete MIDI event (the status byte will always be
+ *  present, and no realtime events will interspered with the event).
+ *  It returns 0 on success, or ENODATA if buffer is empty.
  */
 
 #include <sstream>
@@ -165,7 +171,9 @@ namespace seq64
  *  We're still working exactly how it will work best.
  *
  *  This function used to be static, but now we make if available to
- *  midi_jack_info.
+ *  midi_jack_info.  Also note the s_null_detected flag.  It is used only to
+ *  have the apiprint() debug messages appear only once, for better
+ *  trouble-shooting.
  *
  * \param nframes
  *    The frame number to be processed.
@@ -180,55 +188,85 @@ namespace seq64
 int
 jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
 {
+    static bool s_null_detected = false;
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
     rtmidi_in_data * rtindata = jackdata->m_jack_rtmidiin;
     if (is_nullptr(jackdata->m_jack_port))     /* is port created?        */
     {
-        apiprint("jack_process_rtmidi_input", "null jack port");
+        if (! s_null_detected)
+        {
+            s_null_detected = true;
+            apiprint("jack_process_rtmidi_input", "null jack port");
+        }
         return 0;
     }
-
     if (is_nullptr(rtindata))
     {
-        apiprint("jack_process_rtmidi_input", "null rtmidi_in_data");
+        if (! s_null_detected)
+        {
+            s_null_detected = true;
+            apiprint("jack_process_rtmidi_input", "null rtmidi_in_data");
+        }
         return 0;
     }
+    s_null_detected = false;
 
     /*
-     * Since this is an input port, buff is the area that contains data from the
-     * "remote" (i.e. outside our application) port.
+     * Since this is an input port, buff is the area that contains data from
+     * the "remote" (i.e. outside our application) port.
      */
 
     void * buff = jack_port_get_buffer(jackdata->m_jack_port, nframes);
     if (not_nullptr(buff))
     {
         jack_midi_event_t jmevent;
-        jack_time_t time;
+        jack_time_t jtime;
         int evcount = jack_midi_get_event_count(buff);
         for (int j = 0; j < evcount; ++j)
         {
             midi_message message;
-            jack_midi_event_get(&jmevent, buff, j);
-            for (int i = 0; i < int(jmevent.size); ++i)
-                message.push(jmevent.buffer[i]);
-
-            time = jack_get_time();              /* compute the delta time  */
-            if (rtindata->first_message())
-                rtindata->first_message(false);
-            else
-                message.timestamp((time - jackdata->m_jack_lasttime) * 0.000001);
-
-            jackdata->m_jack_lasttime = time;
-            if (! rtindata->continue_sysex())
+            int rc = jack_midi_event_get(&jmevent, buff, j);
+            if (rc == 0)
             {
-                if (rtindata->using_callback())
+                int eventsize = int(jmevent.size);
+                for (int i = 0; i < eventsize; ++i)
+                    message.push(jmevent.buffer[i]);
+
+                jtime = jack_get_time();            /* compute delta time   */
+                if (rtindata->first_message())
                 {
-                    rtmidi_callback_t callback = rtindata->user_callback();
-                    callback(message, rtindata->user_data());
+                    rtindata->first_message(false);
                 }
                 else
                 {
-                    (void) rtindata->queue().add(message);      // NEED TO CHECK
+                    message.timestamp
+                    (
+                        (jtime - jackdata->m_jack_lasttime) * 0.000001
+                    );
+                }
+                jackdata->m_jack_lasttime = jtime;
+                if (! rtindata->continue_sysex())
+                {
+                    if (rtindata->using_callback())
+                    {
+                        rtmidi_callback_t callback = rtindata->user_callback();
+                        callback(message, rtindata->user_data());
+                    }
+                    else
+                    {
+                        (void) rtindata->queue().add(message);
+                    }
+                }
+            }
+            else
+            {
+                if (rc == ENODATA)
+                {
+                    errprintf("jack_process_rtmidi_input() ENODATA = %x", rc);
+                }
+                else
+                {
+                    errprintf("jack_process_rtmidi_input() ERROR = %x", rc);
                 }
             }
         }
@@ -245,7 +283,8 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
  *
  *      -#  Get the JACK port buffer, for our local jack port.  Clear it.
  *      -#  Loop while the number of bytes available for reading [via
- *          jack_ringbuffer_read_space()] is non-zero.
+ *          jack_ringbuffer_read_space()] is non-zero.  Note that the second
+ *          parameter is where the data is copied.
  *      -#  Get the size of each event, and allocate space for an event to be
  *          written to an event port buffer (the JACK "reserve" function).
  *      -#  Read the data from the ringbuffer into this port buffer.  JACK
@@ -255,6 +294,10 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
  *  data, to send it to the "remote" (i.e. outside our application) port.  The
  *  data is written to the ringbuffer in api_init_out(), and here we read the
  *  ring buffer and pass it to the output buffer.
+ *
+ *  We were wondering if, like the JACK midiseq example program, we need to
+ *  wrap out process in a for-loop over the number of frames.  In our tests,
+ *  we are getting 1024 frames, and the code seems to work without that loop.
  *
  * \param nframes
  *    The frame number to be processed.
@@ -272,9 +315,23 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
     if (not_nullptr(jackdata->m_jack_port))             /* is port created? */
     {
-        static size_t s_offset = 0;
-        void * buff = jack_port_get_buffer(jackdata->m_jack_port, nframes);
-        jack_midi_clear_buffer(buff);
+        static size_t soffset = 0;
+        void * buf = jack_port_get_buffer(jackdata->m_jack_port, nframes);
+
+#ifdef SEQ64_SHOW_API_CALLS_TMI
+        printf
+        (
+            "%d frames for jack port %lx\n",
+            int(nframes), (unsigned long)(jackdata->m_jack_port)
+        );
+#endif
+
+        jack_midi_clear_buffer(buf);
+
+        /*
+         * A for-loop over the number of nframes?  See discussion above.
+         */
+
         while (jack_ringbuffer_read_space(jackdata->m_jack_buffsize) > 0)
         {
             int space;
@@ -282,17 +339,23 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
             (
                 jackdata->m_jack_buffsize, (char *) &space, sizeof space
             );
-            jack_midi_data_t * md = jack_midi_event_reserve
-            (
-                buff, s_offset, space
-            );
+            jack_midi_data_t * md = jack_midi_event_reserve(buf, soffset, space);
             if (not_nullptr(md))
             {
                 char * mididata = reinterpret_cast<char *>(md);
-                (void) jack_ringbuffer_read
+                (void) jack_ringbuffer_read         /* copy into mididata */
                 (
                     jackdata->m_jack_buffmessage, mididata, size_t(space)
                 );
+
+#ifdef SEQ64_SHOW_API_CALLS_TMI
+                printf("%d bytes read: ", space);
+                for (int i = 0; i < space; ++i)
+                {
+                    printf("%x ", (unsigned char)(mididata[i]));
+                }
+                printf("\n");
+#endif
             }
             else
             {
@@ -302,7 +365,7 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
     }
     else
     {
-        // TMI: apiprint("jack_process_rtmidi_output", "null jack port");
+        apiprint("jack_process_rtmidi_output", "null jack port");
     }
     return 0;
 }
@@ -1091,8 +1154,9 @@ midi_jack::register_port (bool input, const std::string & portname)
         parent_bus().show_bus_values();
         printf
         (
-            "jack_port_register(name = '%s', flag(%s) = '%s')\n",
-            shortname.c_str(), input ? "input" : "output", flagname.c_str()
+            "%lx = jack_port_register(name = '%s', flag(%s) = '%s')\n",
+            (unsigned long)(p), shortname.c_str(), input ? "input" : "output",
+            flagname.c_str()
         );
         printf("  Full port name: '%s'\n", portname.c_str());
 #endif
@@ -1188,13 +1252,22 @@ midi_in_jack::midi_in_jack (midibus & parentbus, midi_info & masterinfo)
      *
      * if (multi_client())
      *     (void) initialize(clientname);
+     *
+     * Hook in the input data.  The JACK port pointer will get set in
+     * api_init_in() or api_init_out() when the port is registered.
      */
 
     m_jack_data.m_jack_rtmidiin = input_data();
 }
 
 /**
+ *  Checks the rtmidi_in_data queue for the number of items in the queue.
  *
+ *  WE MAY NEED LOCKING.
+ *
+ * \return
+ *      Returns the value of rtindata->queue().count(), unless the caller is
+ *      using an rtmidi callback function, in which case 0 is always returned.
  */
 
 int
@@ -1211,6 +1284,22 @@ midi_in_jack::api_poll_for_midi ()
         millisleep(1);
         return rtindata->queue().count();
     }
+}
+
+/**
+ *  Gets a MIDI event.
+ *
+ * \param inev
+ *      Provides the destination for the MIDI event.
+ *
+ * \return
+ *      Returns true if a MIDI event was obtained, indicating that the return
+ *      parameter can be used.
+ */
+
+bool
+midi_in_jack::api_get_midi_event (event * inev)
+{
 }
 
 /**

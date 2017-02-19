@@ -434,6 +434,23 @@ midibase::poll_for_midi ()
 }
 
 /**
+ *  Obtains a MIDI event.
+ *
+ * \param inev
+ *      Points the event to be filled with the MIDI event data.
+ *
+ * \return
+ *      Returns true if an event was found, thus making the return parameter
+ *      useful.
+ */
+
+bool
+midibase::get_midi_event (event * inev)
+{
+    return api_poll_for_midi();
+}
+
+/**
  *  Initialize the MIDI output port.
  *
  * \return

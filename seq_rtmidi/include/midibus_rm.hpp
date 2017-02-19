@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2017-02-05
+ * \updates       2017-02-19
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the RtMidi version of the midibus
@@ -105,6 +105,7 @@ protected:
     virtual bool api_init_out ();
     virtual bool api_init_out_sub ();
     virtual bool api_deinit_in ();
+    virtual bool api_get_midi_event (event * inev);
 
     virtual int api_poll_for_midi ();
 

@@ -127,7 +127,9 @@ protected:
     int m_beats_per_minute;
 
     /**
-     *  For dumping MIDI input to a sequence for recording.
+     *  For dumping MIDI input to a sequence for recording.  This value is set
+     *  to true when a sequence editor window is open and the user has
+     *  clicked the "record MIDI" or "thru MIDI" button.
      */
 
     bool m_dumping_input;

@@ -521,7 +521,7 @@ mastermidibase::print ()
  *  portmidi's poll_for_midi() function, maybe.  But currently it is better
  *  just call the implementation-specific API function.
  *
- *  DO WE NEED TO USE A MUTEX LOCK?
+ *  Do we need to use a mutex lock?  NO!  It causes a deadlock!!!
  *
  * \return
  *      Returns the result of the poll, or 0 if the API is not supported.
@@ -610,6 +610,8 @@ mastermidibase::port_exit (int client, int port)
 /**
  *  Grab a MIDI event via the currently-selected MIDI API.
  *
+ *  Not yet sure if mutex locking is useful here.
+ *
  * \threadsafe
  *
  * \param inev
@@ -619,8 +621,6 @@ mastermidibase::port_exit (int client, int port)
 bool
 mastermidibase::get_midi_event (event * ev)
 {
-    automutex locker(m_mutex);
-
     /*
      * Some keyboards send Note On with velocity 0 for Note Off:
      *

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2017-02-11
+ * \updates       2017-02-19
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -499,19 +499,25 @@ midi_alsa::api_deinit_in ()
 }
 
 /**
+ *  This function is supposed to poll for MIDI data, but the current
+ *  ALSA implementation DOES NOT USE THIS FUNCTION.
  *
+ *  TODO?  See seq_alsamidi's mastermidibus::api_poll_for_midi().  Right now
+ *  we'd need to forward this call to midi_alsa_info.
+ *
+ *      return poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
+ *
+ *  This kills startup:
+ *
+ *      return master_info().api_poll_for_midi();
+ *
+ * \return
+ *      Always returns 0.
  */
 
 int
 midi_alsa::api_poll_for_midi ()
 {
-    /*
-     * TODO?  See seq_alsamidi's mastermidibus::api_poll_for_midi().
-     * Right now we'd need to forward this call to midi_alsa_info.
-     *
-     * return poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
-     */
-
     return 0;
 }
 

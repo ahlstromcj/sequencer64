@@ -102,7 +102,6 @@
 namespace seq64
 {
 
-#define USE_JACK_DEBUG_PRINT            // TEMPORARY
 #ifdef USE_JACK_DEBUG_PRINT
 
 /**

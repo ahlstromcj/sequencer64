@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-21
- * \updates       2017-02-13
+ * \updates       2017-02-19
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of the midibus class.
@@ -218,6 +218,22 @@ int
 midibus::api_poll_for_midi ()
 {
     return not_nullptr(m_rt_midi) ? m_rt_midi->api_poll_for_midi() : 0 ;
+}
+
+/**
+ *  Gets a MIDI event.
+ *
+ * \param inev
+ *      The location to deposit the MIDI event data.
+ *
+ * \return
+ *      Returns true if a MIDI event was obtained.
+ */
+
+bool
+midibus::api_get_midi_event (event * inev)
+{
+    return not_nullptr(m_rt_midi) ? m_rt_midi->api_get_midi_event(inev) : false ;
 }
 
 /**

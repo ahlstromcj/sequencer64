@@ -247,7 +247,7 @@ private:
     /**
      *  Holds pointers to the ports that were created, so that, after
      *  activation, we can call the connect_port() function on those that are
-     *  not virtual.
+     *  not virtual.  See the add_bus() and bus_container() member functions.
      */
 
     std::vector<midibus *> m_bus_container;

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-28
+ * \updates       2017-02-19
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -105,6 +105,17 @@
 #include "pixmaps/drum.xpm"
 #include "pixmaps/transpose.xpm"
 #endif
+
+/*
+ * EXPERIMENTAL.  I forgot about this one, and am enabling it for testing; it
+ *                seems like a necessity.
+ */
+
+#undef  USE_STAZED_RECORDING_FIX
+
+/*
+ * Saves some typing.
+ */
 
 using namespace Gtk::Menu_Helpers;
 
@@ -422,7 +433,7 @@ seqedit::seqedit
     add_tooltip
     (
         m_toggle_transpose,
-        "Sequence is allowed to be transposed if button is highighted (checked)."
+        "Sequence is allowed to be transposed if button is highighted/checked."
     );
     m_toggle_transpose->set_active(m_seq.get_transposable());
     set_transpose_image(m_seq.get_transposable());
@@ -696,9 +707,9 @@ seqedit::create_menus ()
 
 #define SET_REC_VOL     mem_fun(*this, &seqedit::set_rec_vol)
 
-    m_menu_rec_vol->items().push_back                   /* record volume */
+    m_menu_rec_vol->items().push_back                   /* record volume    */
     (
-        MenuElem("Free", sigc::bind(SET_REC_VOL, 0))
+        MenuElem("Free", sigc::bind(SET_REC_VOL, SEQ64_KEEP_NOTE_VELOCITY))
     );
     m_menu_rec_vol->items().push_back
     (
@@ -2177,7 +2188,7 @@ seqedit::play_change_callback ()
 void
 seqedit::record_change_callback ()
 {
-#ifdef USE_STAZED_FIX
+#ifdef USE_STAZED_RECORDING_FIX
     bool thru_active = m_toggle_thru->get_active();
     bool record_active = m_toggle_record->get_active();
     if (! thru_active)
@@ -2244,7 +2255,7 @@ seqedit::redo_callback ()
 void
 seqedit::thru_change_callback ()
 {
-#ifdef USE_STAZED_FIX
+#ifdef USE_STAZED_RECORDING_FIX
     bool thru_active = m_toggle_thru->get_active();
     bool record_active = m_toggle_record->get_active();
     if (! record_active)

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-12
+ * \updates       2017-02-18
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -2628,14 +2628,24 @@ sequence::change_event_data_lfo
  * \param paint
  *      If true, repaint the whole set of events, in order to be left with
  *      a clean view of the inserted event.  The default is false.
+ *
+ * \param velocity
+ *      If not set to SEQ64_KEEP_NOTE_VELOCITY, the velocity of the note is
+ *      set to this value.  Otherwise, it is hard-wired to the stored note-on
+ *      velocity.  Currently, the note-off velocity is HARD-WIRED!
  */
 
 void
-sequence::add_note (midipulse tick, midipulse len, int note, bool paint)
+sequence::add_note
+(
+    midipulse tick, midipulse len, int note,
+    bool paint, int velocity
+)
 {
     if (tick >= 0 && note >= 0 && note < c_num_keys)
     {
         automutex locker(m_mutex);
+        bool hardwired = velocity == SEQ64_KEEP_NOTE_VELOCITY;
         bool ignore = false;
         if (paint)                        /* see the banner above */
         {
@@ -2673,12 +2683,12 @@ sequence::add_note (midipulse tick, midipulse len, int note, bool paint)
                 e.paint();
 
             e.set_status(EVENT_NOTE_ON);
-            e.set_data(note, m_note_on_velocity);
+            e.set_data(note, hardwired ? m_note_on_velocity : velocity);
             e.set_timestamp(tick);
             add_event(e);
 
             e.set_status(EVENT_NOTE_OFF);
-            e.set_data(note, m_note_off_velocity);
+            e.set_data(note, m_note_off_velocity);      /* HARD-WIRED */
             e.set_timestamp(tick + len);
             add_event(e);
         }
@@ -2692,6 +2702,9 @@ sequence::add_note (midipulse tick, midipulse len, int note, bool paint)
  *  Adds a chord of a given length and  note value, at a given tick
  *  location.  If SEQ64_STAZED_CHORD_GENERATOR is not defined, it
  *  devolves to add_note().
+ *
+ * \todo
+ *      Add the ability to preserve the incoming velocity.
  *
  * \threadsafe
  *
@@ -2889,7 +2902,9 @@ sequence::add_event
  *  also need to make sure that the channel is appended on both playback and
  *  in saving of the MIDI file.
  *
- *  We are also adding the usage, at last, of the m_rec_vol member.
+ *  We are also adding the usage, at last, of the m_rec_vol member, including
+ *  the "Free" menu entry in seqedit, which sets the velocity to
+ *  SEQ64_KEEP_NOTE_VELOCITY (-1).
  *
  * \todo
  *      When we feel like debugging, we will replace the global is-playing
@@ -2920,7 +2935,7 @@ sequence::stream_event (event & ev)
         {
             if (m_parent->is_pattern_playing()) /* m_parent->is_running()   */
             {
-                if (m_rec_vol > 0 && ev.is_note_on())
+                if (m_rec_vol > SEQ64_KEEP_NOTE_VELOCITY && ev.is_note_on())
                     ev.set_note_velocity(m_rec_vol);
 
                 add_event(ev);                          /* more locking     */
@@ -2935,11 +2950,15 @@ sequence::stream_event (event & ev)
 
                 if (ev.is_note_on())
                 {
+                    bool keepvelocity = m_rec_vol == SEQ64_KEEP_NOTE_VELOCITY;
+                    int velocity = keepvelocity ?
+                        ev.get_note_velocity() : SEQ64_KEEP_NOTE_VELOCITY ;
+
                     m_events_undo.push(m_events);       /* push_undo()      */
                     add_note                            /* more locking     */
                     (
                         mod_last_tick(), m_snap_tick - m_note_off_margin,
-                        ev.get_note(), false
+                        ev.get_note(), false, velocity
                     );
                     set_dirty();
                     ++m_notes_on;

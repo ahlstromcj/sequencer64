@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-16
+ * \updates       2017-02-19
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The big difference between this class (seq64::rtmidi) and
@@ -130,6 +130,11 @@ public:
     virtual bool api_deinit_in ()
     {
         return get_api()->api_deinit_in();
+    }
+
+    virtual bool api_get_midi_event (event * inev)
+    {
+        return get_api()->api_get_midi_event(inev);
     }
 
     virtual int api_poll_for_midi ()

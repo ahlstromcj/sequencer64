@@ -6,9 +6,9 @@
  *
  *  Type definitions pulled out for the needs of the refactoring.
  *
- * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
+ * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2017-02-16
+ * \updates       2017-02-19
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -24,8 +24,8 @@
 /**
  * This was the version of the RtMidi library from which this reimplementation
  * was forked.  However, the divergence from RtMidi by this library is now
- * very great... only the idea of selecting the MIDI API at runtime has been
- * preserved.
+ * very great... only the idea of selecting the MIDI API at runtime, and the
+ * queuing and call-back mechanism  have been preserved.
  */
 
 #define SEQ64_RTMIDI_VERSION "2.1.1"        /* revision at fork time        */
@@ -277,6 +277,7 @@ public:
 
     bool add (const midi_message & mmsg);
     void pop ();
+    midi_message pop_front ();
     void allocate (unsigned queuesize = SEQ64_DEFAULT_QUEUE_SIZE);
     void deallocate ();
 

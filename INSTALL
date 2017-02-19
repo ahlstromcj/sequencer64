@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.10.0
+INSTALL for Sequencer64 v. 0.90.0
 Chris Ahlstrom
-2015-09-10 to 2016-11-25
+2015-09-10 to 2017-02-18
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -349,12 +349,17 @@ MANUALLY-DEFINED MACROS IN CODE:
 
     USE_xxxxxx:
     SEQ64_xxxxxx_XXX:
+    SEQ64_xxxxxx_TMI:
 
         This category of macro are usually undefined values that let us keep
         old code around in case we decide it was the better code after all.
         Generally, you do not want to change the status of these macros unless
         you are very familiar with the code and willing to temporarily break
         stuff.
+
+        The "TMI" in some denotes debug code that dumps too much information
+        (TMI) to the console, so has to be enabled by editing it on those
+        occasions where.
 
         We are incorporated some very useful code from the Seq32 project
         of the user "stazed".  He includes some new features and some bug

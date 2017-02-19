@@ -174,7 +174,19 @@ protected:
 
     /**
      * \return
-     *      Returns 0, since this is basically an input function.
+     *      Returns false, since this is an input function that is implemented
+     *      fully only by midi_in_jack.
+     */
+
+    virtual bool api_get_midi_event (event *)
+    {
+        return false;
+    }
+
+    /**
+     * \return
+     *      Returns 0, since this is an input function that is implemented
+     *      fully only by midi_in_jack.
      */
 
     virtual int api_poll_for_midi ()
@@ -216,6 +228,7 @@ public:
     virtual ~midi_in_jack ();
 
     virtual int api_poll_for_midi ();
+    virtual bool api_get_midi_event (event *);
 
 private:
 

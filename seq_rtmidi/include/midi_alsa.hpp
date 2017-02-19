@@ -147,6 +147,15 @@ protected:
     virtual bool api_init_in_sub ();
     virtual bool api_deinit_in ();
 
+    /**
+     * ALSA get MIDI events via the midi_alsa_info object at present.
+     */
+
+    virtual bool api_get_midi_event (event *)
+    {
+        return false;
+    }
+
     virtual int api_poll_for_midi ();
 
     virtual void api_play (event * e24, midibyte channel);

@@ -3,10 +3,10 @@
  *
  *    Classes that use to be structs.
  *
- * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
+ * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-12-01
- * \updates       2017-02-16
- * \license       See the r3exmidi.lic file.  Too big for a header file.
+ * \updates       2017-02-19
+ * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Provides some basic types for the (heavily-factored) rtmidi library, very
  *  loosely based on Gary Scavone's RtMidi library.
@@ -148,8 +148,9 @@ midi_queue::allocate (unsigned queuesize)
 {
     if (queuesize > 0 && is_nullptr(m_ring))
     {
-        m_ring_size = queuesize;
         m_ring = new (std::nothrow) midi_message[queuesize];
+        if (not_nullptr(m_ring))
+            m_ring_size = queuesize;
     }
 }
 
@@ -193,7 +194,15 @@ midi_queue::add (const midi_message & mmsg)
 }
 
 /**
+ *  Pops, so to speak, the front message out of the queue, effectively
+ *  throwing it away.  One useful call sequence is:
  *
+\verbatim
+    midi_message latest = queue.front();
+    queue.pop();
+\endverbatim
+ *
+ *  An alternative is to use the pop_front() function instead.
  */
 
 void
@@ -203,6 +212,31 @@ midi_queue::pop ()
     ++m_front;
     if (m_front == m_ring_size)
         m_front = 0;
+}
+
+/**
+ *  Pops a copy of the front message.   Could be a little inefficient, since a
+ *  couple of copies are made, and we cannot use return-code optimization.
+ *
+ *  Perhaps at some point we could use move semantics?
+ *
+ * \return
+ *      Returns a copy of the message that was in front before the popping.
+ *      If the queue is empty, an empty (all zeros) message is returned.
+ *      Can be checked with the midi_message::empty() function.
+ */
+
+midi_message
+midi_queue::pop_front ()
+{
+    midi_message result;
+    if (m_size != 0)
+    {
+        midi_message & mmr = m_ring[m_front];
+        result = mmr;
+        pop();
+    }
+    return result;
 }
 
 /*
@@ -224,7 +258,6 @@ rtmidi_in_data::rtmidi_in_data ()
 {
     // no body
 }
-
 
 }           // namespace seq64
 

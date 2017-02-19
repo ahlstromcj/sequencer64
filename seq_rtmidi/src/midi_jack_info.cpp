@@ -572,7 +572,11 @@ midi_jack_info::api_poll_for_midi ()
  *  Grab a MIDI event.
  *
  * \param inev
- *      The event to be set based on the found input event.
+ *      The event to be set based on the found input event.  We should make
+ *      this value a reference someday.
+ *
+ * \return
+ *      Returns true if
  */
 
 bool
@@ -582,12 +586,36 @@ midi_jack_info::api_get_midi_event (event * inev)
     bool result = false;
     midibyte buffer[0x1000];                /* temporary buffer for MIDI data */
 
+#ifdef USE_THIS_CODE
     if (! rc().manual_alsa_ports())
     {
-        // to do?
+        /*
+         * Here, ALSA would check for port-start, port-exit, and port-change
+         * events, and would set result to true, in order to return a value of
+         * false.  Is there a similar need for JACK?
+         */
     }
     if (result)
         return false;
+#endif
+
+#if 0
+//  snd_midi_event_t * midi_ev;                     /* for ALSA MIDI parser  */
+//  snd_midi_event_new(sizeof(buffer), &midi_ev);   /* make ALSA MIDI parser */
+//  long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
+
+    if (bytes <= 0)
+    {
+        /*
+         * This happens even at startup, before anything is really happening.
+         */
+
+        return false;
+    }
+
+    inev->set_timestamp(ev->time.tick);
+    inev->set_status_keep_channel(buffer[0]);
+#endif
 
     /**
      *  We will only get EVENT_SYSEX on the first packet of MIDI data;
@@ -614,9 +642,11 @@ midi_jack_info::api_get_midi_event (event * inev)
          *  confusing, but faster.
          */
 
+#if 0
         inev->set_data(buffer[1], buffer[2]);
         if (inev->is_note_off_recorded())
             inev->set_status_keep_channel(EVENT_NOTE_OFF);
+#endif
 
         sysex = false;
 
@@ -628,7 +658,7 @@ midi_jack_info::api_get_midi_event (event * inev)
     {
         sysex = false;
     }
-    return true;
+    return result;
 }
 
 /**

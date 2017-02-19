@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-11-06
+ * \updates       2017-02-19
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -91,13 +91,6 @@
  */
 
 #undef  USE_STAZED_EXTRA_SNAPS
-
-/**
- *  Modifies the handling of seqedit::record_change_callback() and
- *  seqedit::thru_change_callback().
- */
-
-#undef  USE_STAZED_FIX
 
 /**
  *  Adds more SYSEX processing, plus the ability to read SYSEX information

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-11
+ * \updates       2017-02-18
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -264,6 +264,8 @@ mastermidibus::activate ()
 /**
  *  Initiate a poll() on the existing poll descriptors.  This is a
  *  primitive poll, which exits when some data is obtained.
+ *
+ *          m_midi_master.api_poll_for_midi();       // NON-FUNCTIONAL!
  */
 
 int
@@ -273,10 +275,15 @@ mastermidibus::api_poll_for_midi ()
     for (;;)
     {
         if (m_inbus_array.poll_for_midi())
+        {
+            infoprint("poll_for_midi(): found event");
             return 1;
-
-        millisleep(1);
-        return 0;
+        }
+        else
+        {
+            millisleep(1);
+            return 0;
+        }
     }
 #else
     return m_midi_master.api_poll_for_midi();
@@ -298,7 +305,7 @@ mastermidibus::api_is_more_input ()
 }
 
 /**
- *  Grab a MIDI event.
+ *  Grab a MIDI event.  For the ALSA implementation, this call
  *
  * \threadsafe
  */
@@ -306,6 +313,10 @@ mastermidibus::api_is_more_input ()
 bool
 mastermidibus::api_get_midi_event (event * inev)
 {
+    /*
+     * This call cannot do anything in JACK! YET.
+     */
+
     return m_midi_master.api_get_midi_event(inev);
 }
 

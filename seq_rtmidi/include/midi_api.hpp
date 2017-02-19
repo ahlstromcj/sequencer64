@@ -127,6 +127,7 @@ public:
     virtual bool api_init_in () = 0;
     virtual bool api_init_in_sub () = 0;
     virtual bool api_deinit_in () = 0;
+    virtual bool api_get_midi_event (event *) = 0;
 
     virtual int api_poll_for_midi () = 0;
 

@@ -457,6 +457,7 @@ public:
     }
 
     int poll_for_midi ();
+    bool get_midi_event (event * inev);
     bool init_out ();
     bool init_in ();
     bool deinit_in ();

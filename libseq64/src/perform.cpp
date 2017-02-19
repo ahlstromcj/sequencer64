@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-02-07
+ * \updates       2017-02-18
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -2116,12 +2116,18 @@ void
 perform::position_jack (bool songmode, midipulse tick)
 {
 #ifdef SEQ64_JACK_SUPPORT
+
 #if ! defined SEQ64_STAZED_JACK_SUPPORT
     if (rc().with_jack_master())
         tick = SEQ64_NULL_MIDIPULSE;
 #endif
-    printf("jack-ass position tick = %ld\n",tick);
+
+    /*
+     * TMI: printf("jack-ass position tick = %ld\n",tick);
+     */
+
     m_jack_asst.position(songmode, tick);
+
 #endif
 }
 

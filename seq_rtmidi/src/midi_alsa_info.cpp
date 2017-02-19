@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-11
+ * \updates       2017-02-19
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -313,7 +313,12 @@ midi_alsa_info::api_set_beats_per_minute (int b)
 }
 
 /**
+ *  Polls for any ALSA MIDI information using a timeout value of 1000
+ *  milliseconds.
  *
+ * \return
+ *      Returns the result of the call to poll() on the global ALSA poll
+ *      descriptors.
  */
 
 int
@@ -321,7 +326,7 @@ midi_alsa_info::api_poll_for_midi ()
 {
     int result = poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
 
-#ifdef SEQ64_SHOW_API_CALLS_XXX                 /* too much output!     */
+#ifdef SEQ64_SHOW_API_CALLS_TMI                 /* too much output!     */
     printf("midi_alsa_info::poll_for_midi() = %d\n", result);
 #endif
 
@@ -443,6 +448,12 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
  *
  * \param inev
  *      The event to be set based on the found input event.
+ *
+ * \return
+ *      This function returns false if we are not using virtual/manual ports
+ *      and the event is an ALSA port-start, port-exit, or port-change event.
+ *      It also returns false if there is no event to decode.  Otherwise, it
+ *      returns true.
  */
 
 bool

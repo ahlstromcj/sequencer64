@@ -1,7 +1,7 @@
-# Sequencer64 0.9.9.13 (and above) user configuration file
+# Sequencer64 0.90.0 (and above) user configuration file
 #
 # Created by reading the following file and writing it out via the
-# sequencer64 application:
+# Sequencer64 application:
 #
 # https://raw.githubusercontent.com/vext01/seq24/master/seq24usr.example
 #
@@ -20,103 +20,8 @@
 
 [user-midi-bus-definitions]
 
-6     # number of user-defined MIDI busses
+0     # number of user-defined MIDI busses
 
-[user-midi-bus-0]
-
-# Device name for this buss:
-
-Midi Through Port-0
-
-# Number of channels:
-
-1
-
-# channel and instrument (or program) number
-
-0 0
-
-# End of buss definition 0
-
-[user-midi-bus-1]
-
-# Device name for this buss:
-
-Timid port 0
-
-# Number of channels:
-
-1
-
-# channel and instrument (or program) number
-
-0 1
-
-# End of buss definition 1
-
-[user-midi-bus-2]
-
-# Device name for this buss:
-
-Timid port 1
-
-# Number of channels:
-
-1
-
-# channel and instrument (or program) number
-
-0 1
-
-# End of buss definition 2
-
-[user-midi-bus-3]
-
-# Device name for this buss:
-
-Timid port 2
-
-# Number of channels:
-
-1
-
-# channel and instrument (or program) number
-
-0 1
-
-# End of buss definition 3
-
-[user-midi-bus-4]
-
-# Device name for this buss:
-
-Timid port 3
-
-# Number of channels:
-
-1
-
-# channel and instrument (or program) number
-
-0 1
-
-# End of buss definition 4
-
-[user-midi-bus-5]
-
-# Device name for this buss:
-
-Yoshimi Port 0
-
-# Number of channels:
-
-1
-
-# channel and instrument (or program) number
-
-0 1
-
-# End of buss definition 5
 # In the following MIDI instrument definitions, active controller
 # numbers (i.e. supported by the instrument) are paired with
 # the (optional) name of the controller supported.
@@ -172,59 +77,11 @@ Timidity
 
 # End of instrument/controllers definition 2
 
-
-[user-instrument-3]
-
-# Name of instrument:
-
-Timidity
-
-# Number of MIDI controller values:
-
-0
-
-# controller number and (optional) name:
-
-
-# End of instrument/controllers definition 2
-
-
-[user-instrument-4]
-
-# Name of instrument:
-
-Timidity
-
-# Number of MIDI controller values:
-
-0
-
-# controller number and (optional) name:
-
-
-# End of instrument/controllers definition 2
-
-
-[user-instrument-5]
-
-# Name of instrument:
-
-Yoshimi
-
-# Number of MIDI controller values:
-
-0
-
-# controller number and (optional) name:
-
-
-# End of instrument/controllers definition 2
-
 #   ======== Sequencer64-Specific Variables Section ========
 
 [user-interface-settings]
 
-# These settings specify the soon-to-be-modifiable configuration
+# These settings specify the modifiable configuration
 # of some of the Sequencer64 user-interface elements.
 
 # Specifies the style of the main-window grid of patterns.
@@ -243,7 +100,7 @@ Yoshimi
 # -1 = Same as 0, draw a box outline one-pixel thick.
 # -2 to -30 = Draw a box outline, thicker and thicker.
 
-0        # grid_brackets
+1       # grid_brackets
 
 # Specifies the number of rows in the main window.
 # At present, only a value of 4 is supportable.
@@ -256,7 +113,7 @@ Yoshimi
 
 8       # mainwnd_cols
 
-# Specifies the maximum number of sets, which defaults to 1024.
+# Specifies the maximum number of sets, which defaults to 32.
 # It is currently never necessary to change this value.
 
 32      # max_sets
@@ -269,14 +126,18 @@ Yoshimi
 
 2      # mainwid_spacing
 
-# Specifies some quantity, it is not known what it means.
+# Specifies a quantity that affect the height of the main window.
 
 0      # control_height
 
 # Specifies the initial zoom for the piano rolls.  Ranges from 1.
-# to 512, and defaults to 2 unless changed here.
+# to 512 (the legacy maximum was 32), and defaults to 2 unless
+# changed here.  Note that large PPQN values will require larger
+# zoom values in order to look good in the sequence editor.
+# Sequencer64 adapts the zoom to the PPQN, if zoom is set to 0.
+# 
 
-0      # zoom (0 == auto-adjust to PPQN)
+0      # default zoom (0 = auto-adjust to PPQN)
 
 # Specifies if the key, scale, and background sequence are to be
 # applied to all sequences, or to individual sequences.  The
@@ -328,11 +189,17 @@ Yoshimi
 8      # perf_v_page_increment
 
 # Specifies if the progress bar is colored black, or a different
-# color.  Currently, the different color is hardwired, and is
-# red.  The other colors are washed out compared to red. Set this
-# value to 1 to enable the feature, 0 to disable it.
+# color.  The following integer color values are supported:
+# 
+# 0 = black
+# 1 = dark red
+# 2 = dark green
+# 3 = dark orange
+# 4 = dark blue
+# 5 = dark magenta
+# 6 = dark cyan
 
-1      # progress_bar_colored
+0      # progress_bar_colored
 
 # Specifies if the progress bar is thicker.  The default is 1
 # pixel.  The 'thick' value is 2 pixels.  (More than that is not
@@ -341,10 +208,24 @@ Yoshimi
 
 1      # progress_bar_thick
 
+# Specifies using an alternate (darker) color palette.  The
+# default is the normal palette.  Not all items in the user
+# interface are altered by this setting, and it's not perfect.
+# Set this value to 1 to enable the feature, 0 to disable it.
+
+0      # inverse_colors
+
 # Specifies the window redraw rate for all windows that support
 # that concept.  The default is 40 ms.  Some windows used 25 ms.
 
-40       # window_redraw_rate
+40      # window_redraw_rate
+
+# Specifies using icons for some of the user-interface buttons
+# instead of text buttons.  This is purely a preference setting.
+# If 0, text is used in some buttons (the main window buttons).
+# Otherwise, icons are used.  One will have to experiment :-).
+
+0      # use_more_icons (currently affects only main window)
 
 [user-midi-settings]
 
@@ -371,16 +252,22 @@ Yoshimi
 
 4       # midi_beat_width
 
-# Specifies the buss-number override. The default value is -1,
-# which means that there is no buss override.  If a value
-# from 0 to 31 is given, then that buss value overrides all
-# buss values specified in all sequences/patterns.
-# Change this value from -1 only if you want to use a single
-# output buss, either for testing or convenience.  And don't
-# save the MIDI afterwards, unless you really want to change
-# all of its buss values.
+# Specifies the buss-number override, the same as the --bus
+# command-line option. The default value is -1, which means that
+# there is no buss override.  If a value from 0 to 31 is given,
+# then that buss value overrides all buss values in all patterns.
+# Change this value from -1 only to use a single output buss,
+# either for testing or convenience.  And don't save the MIDI file
+# afterwards, unless you want to overwrite all the buss values!
 
--1      # midi_buss_override
+-1       # midi_buss_override (disabled)
+
+# Specifies the default velocity override when adding notes in the
+# sequence/pattern editor.  This value is obtained via the 'Vol'
+# button, and ranges from 0 (not recommended :-) to 127.  If the
+# value is -1, then the incoming note velocity is preserved.
+
+-1       # velocity_override (-1 = 'Free')
 
 # End of /home/ahlstrom/.config/sequencer64/sequencer64.usr
 #

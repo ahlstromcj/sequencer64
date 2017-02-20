@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-18
+ * \updates       2017-02-19
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -76,7 +76,8 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     (
         rc().with_jack_midi() ? RTMIDI_API_UNIX_JACK : RTMIDI_API_LINUX_ALSA,
         rc().application_name(), ppqn, bpm
-    )
+    ),
+    m_use_jack_polling  (rc().with_jack_midi())
 {
     // Empty body
 }
@@ -271,23 +272,27 @@ mastermidibus::activate ()
 int
 mastermidibus::api_poll_for_midi ()
 {
-#ifdef USE_MULTICLIENT_API
-    for (;;)
+    if (m_use_jack_polling)
     {
-        if (m_inbus_array.poll_for_midi())
+        for (;;)
         {
-            infoprint("poll_for_midi(): found event");
-            return 1;
-        }
-        else
-        {
-            millisleep(1);
-            return 0;
+            if (m_inbus_array.poll_for_midi())
+            {
+                /*
+                 * TMI: infoprint("poll_for_midi(): found event");
+                 */
+
+                return 1;
+            }
+            else
+            {
+                millisleep(1);
+                return 0;
+            }
         }
     }
-#else
-    return m_midi_master.api_poll_for_midi();
-#endif
+    else
+        return m_midi_master.api_poll_for_midi();
 }
 
 /**
@@ -313,11 +318,14 @@ mastermidibus::api_is_more_input ()
 bool
 mastermidibus::api_get_midi_event (event * inev)
 {
-    /*
-     * This call cannot do anything in JACK! YET.
-     */
-
-    return m_midi_master.api_get_midi_event(inev);
+    if (m_use_jack_polling)
+    {
+        return m_inbus_array.get_midi_event(inev);
+    }
+    else
+    {
+        return m_midi_master.api_get_midi_event(inev);
+    }
 }
 
 }           // namespace seq64

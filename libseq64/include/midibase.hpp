@@ -536,6 +536,16 @@ protected:
     }
 
     /**
+     *  Used in the JACK implementation.
+     */
+
+    virtual bool api_get_midi_event (event * inev)
+    {
+        errprint("api_get_midi_event() BASE VERSION CALLED");
+        return not_nullptr(inev);
+    }
+
+    /**
      *  Not defined in the PortMidi implementation.
      */
 

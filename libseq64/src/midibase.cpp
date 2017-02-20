@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2017-02-11
+ * \updates       2017-02-19
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -447,7 +447,7 @@ midibase::poll_for_midi ()
 bool
 midibase::get_midi_event (event * inev)
 {
-    return api_poll_for_midi();
+    return api_get_midi_event(inev);
 }
 
 /**

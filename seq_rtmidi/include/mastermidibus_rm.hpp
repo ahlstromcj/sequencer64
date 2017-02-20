@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-01
+ * \updates       2017-02-19
  * \license       GNU GPLv2 or above
  *
  *  This mastermidibus module is the Linux (and, soon, JACK) version of the
@@ -64,6 +64,15 @@ private:
      */
 
     rtmidi_info m_midi_master;
+
+    /**
+     *  Indicates we are running with JACK MIDI enabled, and need to
+     *  use each port's ability to poll for and get MIDI events, rather
+     *  than use ALSA's method of calling functions from the "MIDI master"
+     *  object.
+     */
+
+    bool m_use_jack_polling;
 
 public:
 

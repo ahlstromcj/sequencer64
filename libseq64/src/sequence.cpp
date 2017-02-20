@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-18
+ * \updates       2017-02-20
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -897,14 +897,22 @@ sequence::select_event_handle
  *
  * \param recvol
  *      The new setting of the recording volume setting.  It is used only if
- *      it ranges from 0 to SEQ64_MAX_NOTE_ON_VELOCITY.
+ *      it ranges from 0 to SEQ64_MAX_NOTE_ON_VELOCITY, or is set to
+ *      SEQ64_PRESERVE_VELOCITY.
  */
 
 void
 sequence::set_rec_vol (int recvol)
 {
     automutex locker(m_mutex);
-    if (m_rec_vol >= 0 && m_rec_vol <= SEQ64_MAX_NOTE_ON_VELOCITY)
+    bool valid = m_rec_vol >= 0;
+    if (valid)
+        valid = m_rec_vol <= SEQ64_MAX_NOTE_ON_VELOCITY;
+
+    if (! valid)
+        valid = m_rec_vol == SEQ64_PRESERVE_VELOCITY;
+
+    if (valid)
     {
         m_rec_vol = recvol;
         if (m_rec_vol > 0)
@@ -2630,9 +2638,10 @@ sequence::change_event_data_lfo
  *      a clean view of the inserted event.  The default is false.
  *
  * \param velocity
- *      If not set to SEQ64_KEEP_NOTE_VELOCITY, the velocity of the note is
+ *      If not set to SEQ64_PRESERVE_VELOCITY, the velocity of the note is
  *      set to this value.  Otherwise, it is hard-wired to the stored note-on
- *      velocity.  Currently, the note-off velocity is HARD-WIRED!
+ *      velocity.  The name of this macro is counter-intuitive here.
+ *      Currently, the note-off velocity is HARD-WIRED!
  */
 
 void
@@ -2645,7 +2654,7 @@ sequence::add_note
     if (tick >= 0 && note >= 0 && note < c_num_keys)
     {
         automutex locker(m_mutex);
-        bool hardwired = velocity == SEQ64_KEEP_NOTE_VELOCITY;
+        bool hardwire = velocity == SEQ64_PRESERVE_VELOCITY;
         bool ignore = false;
         if (paint)                        /* see the banner above */
         {
@@ -2683,7 +2692,7 @@ sequence::add_note
                 e.paint();
 
             e.set_status(EVENT_NOTE_ON);
-            e.set_data(note, hardwired ? m_note_on_velocity : velocity);
+            e.set_data(note, hardwire ? m_note_on_velocity : velocity);
             e.set_timestamp(tick);
             add_event(e);
 
@@ -2904,7 +2913,7 @@ sequence::add_event
  *
  *  We are also adding the usage, at last, of the m_rec_vol member, including
  *  the "Free" menu entry in seqedit, which sets the velocity to
- *  SEQ64_KEEP_NOTE_VELOCITY (-1).
+ *  SEQ64_PRESERVE_VELOCITY (-1).
  *
  * \todo
  *      When we feel like debugging, we will replace the global is-playing
@@ -2935,8 +2944,8 @@ sequence::stream_event (event & ev)
         {
             if (m_parent->is_pattern_playing()) /* m_parent->is_running()   */
             {
-                if (m_rec_vol > SEQ64_KEEP_NOTE_VELOCITY && ev.is_note_on())
-                    ev.set_note_velocity(m_rec_vol);
+                if (ev.is_note_on() && m_rec_vol > SEQ64_PRESERVE_VELOCITY)
+                    ev.set_note_velocity(m_rec_vol);    /* modify incoming  */
 
                 add_event(ev);                          /* more locking     */
                 set_dirty();
@@ -2944,15 +2953,22 @@ sequence::stream_event (event & ev)
             else
             {
                 /*
-                 * Supports the step-edit feature, so we set the generic
-                 * default note length and volume to the snap.
+                 * Supports the step-edit feature, where we are entering notes
+                 * without playback occurring, so we set the generic default
+                 * note length and volume to the snap.  If the
+                 * recording-volume is SEQ64_DEFAULT_NOTE_ON_VELOCITY, then we
+                 * have to set a default value, 100.
                  */
 
                 if (ev.is_note_on())
                 {
-                    bool keepvelocity = m_rec_vol == SEQ64_KEEP_NOTE_VELOCITY;
-                    int velocity = keepvelocity ?
-                        ev.get_note_velocity() : SEQ64_KEEP_NOTE_VELOCITY ;
+                    bool keepvelocity = m_rec_vol == SEQ64_PRESERVE_VELOCITY;
+                    int velocity = int(ev.get_note_velocity());
+                    if (velocity == 0)
+                        velocity = SEQ64_DEFAULT_NOTE_ON_VELOCITY;
+
+                    if (! keepvelocity)
+                        velocity = m_rec_vol;
 
                     m_events_undo.push(m_events);       /* push_undo()      */
                     add_note                            /* more locking     */

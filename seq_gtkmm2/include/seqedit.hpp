@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-30
+ * \updates       2017-02-20
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -402,19 +402,7 @@ private:
     void set_beats_per_bar (int bpm);
     void set_beat_width (int bw);
     void set_transpose_image (bool istransposable);
-
-    /**
-     *  Passes the given parameter to sequence::set_rec_vol().
-     *
-     * \param recvol
-     *      The setting to be made, obtained from the recording-volume ("Vol")
-     *      menu.
-     */
-
-    void set_rec_vol (int recvol)
-    {
-        m_seq.set_rec_vol(recvol);
-    }
+    void set_rec_vol (int recvol);
 
     /**
      *  This function provides optimization for the on_scroll_event() function.

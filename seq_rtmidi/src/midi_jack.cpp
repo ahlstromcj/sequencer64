@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-18
+ * \updates       2017-02-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -351,9 +351,8 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
 #ifdef SEQ64_SHOW_API_CALLS_TMI
                 printf("%d bytes read: ", space);
                 for (int i = 0; i < space; ++i)
-                {
                     printf("%x ", (unsigned char)(mididata[i]));
-                }
+
                 printf("\n");
 #endif
             }
@@ -1287,7 +1286,8 @@ midi_in_jack::api_poll_for_midi ()
 }
 
 /**
- *  Gets a MIDI event.
+ *  Gets a MIDI event.  This implementation gets a midi_message off the front
+ *  of the queue and converts it to an sequence64 event.
  *
  * \param inev
  *      Provides the destination for the MIDI event.
@@ -1300,6 +1300,56 @@ midi_in_jack::api_poll_for_midi ()
 bool
 midi_in_jack::api_get_midi_event (event * inev)
 {
+    rtmidi_in_data * rtindata = m_jack_data.m_jack_rtmidiin;
+    bool result = ! rtindata->queue().empty();
+    if (result)
+    {
+        midi_message mm = rtindata->queue().pop_front();
+        inev->set_timestamp(mm.timestamp());
+        if (mm.count() == 3)
+        {
+            inev->set_status_keep_channel(mm[0]);
+            inev->set_data(mm[1], mm[2]);
+
+#if 0
+            /*
+             *  Some keyboards send Note On with velocity 0 for Note Off, so
+             *  we take care of that situation here by creating a Note Off
+             *  event, with the channel nybble preserved. Note that we call
+             *  event :: set_status_keep_channel() instead of using stazed's
+             *  set_status function with the "record" parameter.  A little
+             *  more confusing, but faster.
+             */
+
+            inev->set_data(mm[1], mm[2]);
+            if (inev->is_note_off_recorded())
+                inev->set_status_keep_channel(EVENT_NOTE_OFF);
+#endif
+        }
+        else
+        {
+            infoprint("SysEx information encountered?");
+
+#ifdef USE_SYSEX_PROCESSING                 /* currently disabled           */
+
+            /**
+             *  We will only get EVENT_SYSEX on the first packet of MIDI data;
+             *  the rest we have to poll for.  SysEx processing is currently
+             *  disabled.
+             */
+
+            midibyte buffer[0x1000];        /* temporary buffer for Sysex   */
+
+            inev->set_sysex_size(bytes);
+            if (buffer[0] == EVENT_MIDI_SYSEX)
+            {
+                inev->restart_sysex();      /* set up for sysex if needed   */
+                sysex = inev->append_sysex(buffer, bytes);
+            }
+#endif
+        }
+    }
+    return result;
 }
 
 /**

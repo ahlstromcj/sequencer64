@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-02-11
+ * \updates       2017-02-20
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of JACK information
@@ -573,92 +573,16 @@ midi_jack_info::api_poll_for_midi ()
  *
  * \param inev
  *      The event to be set based on the found input event.  We should make
- *      this value a reference someday.
+ *      this value a reference someday.  Not used here.
  *
  * \return
- *      Returns true if
+ *      Always returns false.  Will eventually delete this function.
  */
 
 bool
-midi_jack_info::api_get_midi_event (event * inev)
+midi_jack_info::api_get_midi_event (event * /*inev*/)
 {
-    bool sysex = false;
-    bool result = false;
-    midibyte buffer[0x1000];                /* temporary buffer for MIDI data */
-
-#ifdef USE_THIS_CODE
-    if (! rc().manual_alsa_ports())
-    {
-        /*
-         * Here, ALSA would check for port-start, port-exit, and port-change
-         * events, and would set result to true, in order to return a value of
-         * false.  Is there a similar need for JACK?
-         */
-    }
-    if (result)
-        return false;
-#endif
-
-#if 0
-//  snd_midi_event_t * midi_ev;                     /* for ALSA MIDI parser  */
-//  snd_midi_event_new(sizeof(buffer), &midi_ev);   /* make ALSA MIDI parser */
-//  long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
-
-    if (bytes <= 0)
-    {
-        /*
-         * This happens even at startup, before anything is really happening.
-         */
-
-        return false;
-    }
-
-    inev->set_timestamp(ev->time.tick);
-    inev->set_status_keep_channel(buffer[0]);
-#endif
-
-    /**
-     *  We will only get EVENT_SYSEX on the first packet of MIDI data;
-     *  the rest we have to poll for.  SysEx processing is currently
-     *  disabled.
-     */
-
-#ifdef USE_SYSEX_PROCESSING                 /* currently disabled           */
-    inev->set_sysex_size(bytes);
-    if (buffer[0] == EVENT_MIDI_SYSEX)
-    {
-        inev->restart_sysex();              /* set up for sysex if needed   */
-        sysex = inev->append_sysex(buffer, bytes);
-    }
-    else
-    {
-#endif
-        /*
-         *  Some keyboards send Note On with velocity 0 for Note Off, so we
-         *  take care of that situation here by creating a Note Off event,
-         *  with the channel nybble preserved. Note that we call
-         *  event :: set_status_keep_channel() instead of using stazed's
-         *  set_status function with the "record" parameter.  A little more
-         *  confusing, but faster.
-         */
-
-#if 0
-        inev->set_data(buffer[1], buffer[2]);
-        if (inev->is_note_off_recorded())
-            inev->set_status_keep_channel(EVENT_NOTE_OFF);
-#endif
-
-        sysex = false;
-
-#ifdef USE_SYSEX_PROCESSING
-    }
-#endif
-
-    while (sysex)       /* sysex messages might be more than one message */
-    {
-        sysex = false;
-    }
-    return result;
+    return false;
 }
 
 /**

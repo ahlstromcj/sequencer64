@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2016-10-03
+ * \updates       2017-02-20
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -172,6 +172,7 @@ user_settings::user_settings ()
     m_midi_beats_per_minute     (0),
     m_midi_beat_width           (0),
     m_midi_buss_override        (0),
+    m_velocity_override         (SEQ64_PRESERVE_VELOCITY),
 
     /*
      * Calculated from other member values in the normalize() function.
@@ -263,6 +264,7 @@ user_settings::user_settings (const user_settings & rhs)
     m_midi_beats_per_minute     (rhs.m_midi_beats_per_minute),
     m_midi_beat_width           (rhs.m_midi_beat_width),
     m_midi_buss_override        (rhs.m_midi_buss_override),
+    m_velocity_override         (rhs.m_velocity_override),
 
     /*
      * Calculated from other member values in the normalize() function.
@@ -357,6 +359,7 @@ user_settings::operator = (const user_settings & rhs)
         m_midi_beats_per_minute     = rhs.m_midi_beats_per_minute;
         m_midi_beat_width           = rhs.m_midi_beat_width;
         m_midi_buss_override        = rhs.m_midi_buss_override;
+        m_velocity_override         = rhs.m_velocity_override;
 
         /*
          * Calculated from other member values in the normalize() function.
@@ -431,6 +434,7 @@ user_settings::set_defaults ()
     m_midi_beats_per_minute = SEQ64_DEFAULT_BPM;    // range: 20-500
     m_midi_beat_width = SEQ64_DEFAULT_BEAT_WIDTH;   // range: 1-16, powers of 2
     m_midi_buss_override = SEQ64_BAD_BUSS;          // range: 1 to 32
+    m_velocity_override = SEQ64_PRESERVE_VELOCITY;  // -1, range: 0 to 127
 
     /*
      * Constants:
@@ -891,6 +895,21 @@ user_settings::midi_buss_override (char buss)
     {
         m_midi_buss_override = buss;
     }
+}
+
+/**
+ * \setter m_velocity_override
+ */
+
+void
+user_settings::velocity_override (int vel)
+{
+	if (vel > SEQ64_MAX_NOTE_ON_VELOCITY)
+		vel = SEQ64_MAX_NOTE_ON_VELOCITY;
+	else if (vel < 0)
+		vel = SEQ64_PRESERVE_VELOCITY;
+
+	m_velocity_override = vel;
 }
 
 /**

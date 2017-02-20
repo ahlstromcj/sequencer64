@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-19
+ * \updates       2017-02-20
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -488,6 +488,7 @@ seqedit::seqedit
     dhbox->pack_end(*m_toggle_play, false, false, 4);
     dhbox->pack_end(*(manage(new Gtk::VSeparator())), false, false, 4);
     fill_top_bar();
+    set_rec_vol(usr().velocity_override());
 
 #ifdef USE_STAZED_EXTRAS
     if (m_seq.get_name() != std::string("Untitled"))
@@ -709,39 +710,39 @@ seqedit::create_menus ()
 
     m_menu_rec_vol->items().push_back                   /* record volume    */
     (
-        MenuElem("Free", sigc::bind(SET_REC_VOL, SEQ64_KEEP_NOTE_VELOCITY))
+        MenuElem("Free", sigc::bind(SET_REC_VOL, SEQ64_PRESERVE_VELOCITY))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed 8: 127", sigc::bind(SET_REC_VOL, 127))
+        MenuElem("Fixed: 127", sigc::bind(SET_REC_VOL, 127))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed 7: 112", sigc::bind(SET_REC_VOL, 112))
+        MenuElem("Fixed: 112", sigc::bind(SET_REC_VOL, 112))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed 6: 96", sigc::bind(SET_REC_VOL, 96))
+        MenuElem("Fixed:  96", sigc::bind(SET_REC_VOL, 96))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed 5: 80", sigc::bind(SET_REC_VOL, 80))
+        MenuElem("Fixed:  80", sigc::bind(SET_REC_VOL, 80))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed 4: 64", sigc::bind(SET_REC_VOL, 64))
+        MenuElem("Fixed:  64", sigc::bind(SET_REC_VOL, 64))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed 3: 48", sigc::bind(SET_REC_VOL, 48))
+        MenuElem("Fixed:  48", sigc::bind(SET_REC_VOL, 48))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed 2: 32", sigc::bind(SET_REC_VOL, 32))
+        MenuElem("Fixed:  32", sigc::bind(SET_REC_VOL, 32))
     );
     m_menu_rec_vol->items().push_back
     (
-        MenuElem("Fixed 1: 16", sigc::bind(SET_REC_VOL, 16))
+        MenuElem("Fixed:  16", sigc::bind(SET_REC_VOL, 16))
     );
 
     /**
@@ -2266,6 +2267,35 @@ seqedit::thru_change_callback ()
     perf().master_bus().set_sequence_input(true, &m_seq);
     m_seq.set_thru(m_toggle_thru->get_active());
 #endif
+}
+
+/**
+ *  Passes the given parameter to sequence::set_rec_vol().  This function also
+ *  changes the button's text to match the selection, and also changes the
+ *  global velocity-override setting in user_settings.  Note that the setting
+ *  will not be saved to the "usr" configuration file unless Sequencer64 was
+ *  run with the "--user-save" option.
+ *
+ * \param recvol
+ *      The setting to be made, obtained from the recording-volume ("Vol")
+ *      menu.
+ */
+
+void
+seqedit::set_rec_vol (int recvol)
+{
+    char selection[16];
+    if (recvol == SEQ64_PRESERVE_VELOCITY)
+        snprintf(selection, sizeof selection, "Free");
+    else
+        snprintf(selection, sizeof selection, "%d", recvol);
+
+    Gtk::Label * lbl(dynamic_cast<Gtk::Label *>(m_button_rec_vol->get_child()));
+    if (not_nullptr(lbl))
+        lbl->set_text(selection);
+
+    m_seq.set_rec_vol(recvol);          /* save to the sequence settings    */
+    usr().velocity_override(recvol);    /* save to the "usr" config file    */
 }
 
 /**

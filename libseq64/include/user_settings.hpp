@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-10-03
+ * \updates       2017-02-20
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -499,11 +499,23 @@ class user_settings
 
     char m_midi_buss_override;          /* --bus n option               */
 
+    /**
+     *  Sets the default velocity for note adding.  The value
+     *  SEQ64_PRESERVE_VELOCITY (-1) preserves the velocity of incoming notes,
+     *  so that nuances in live playing can be preserved.  The popup-menu for
+     *  the "Vol" button in the seqedit window shows this value as the "Free"
+     *  menu entry.  The rest of the values in the menu show a few select
+     *  velocities, but any velocity from 0 to 127 can be entered here. Of
+     *  course, 0 is not recommended.
+     */
+
+    int m_velocity_override;
+
     /*
      *  Values calculated from other member values in the normalize() function.
      */
 
-    /*
+    /**
      *  The maximum number of patterns supported is given by the number of
      *  patterns supported in the panel (32) times the maximum number of
      *  sets (32), or 1024 patterns.  It is basically the same value as
@@ -1284,6 +1296,15 @@ public:
     }
 
     /**
+     * \getter m_velocity_override
+     */
+
+    int velocity_override () const
+    {
+        return m_velocity_override;
+    }
+
+    /**
      * \getter mc_min_zoom
      */
 
@@ -1381,6 +1402,7 @@ public:         // used in main application module and the userfile class
 
     void midi_ppqn (int ppqn);
     void midi_buss_override (char buss);
+    void velocity_override (int vel);
 
 protected:
 

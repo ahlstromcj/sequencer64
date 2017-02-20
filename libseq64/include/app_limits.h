@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-12-19
+ * \updates       2017-02-20
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -344,10 +344,30 @@
 #define SEQ64_MIDI_COUNT_MAX             128
 
 /**
+ *  Defines the minimum Note On velocity.
+ */
+
+#define SEQ64_MIN_NOTE_ON_VELOCITY         0
+
+/**
+ *  Defines the default Note On velocity, a new "stazed" feature.
+ */
+
+#define SEQ64_DEFAULT_NOTE_ON_VELOCITY   100
+
+/**
  *  Defines the maximum Note On velocity.
  */
 
 #define SEQ64_MAX_NOTE_ON_VELOCITY       127
+
+/**
+ *  Indicates to preserve the velocity of incoming MIDI Note events, for both
+ *  on or off events.  This value represents the "Free" popup-menu entry for
+ *  the "Vol" button in the seqedit window.
+ */
+
+#define SEQ64_PRESERVE_VELOCITY         (-1)
 
 /**
  *  Defines the maximum MIDI data value
@@ -361,12 +381,6 @@
  */
 
 #define SEQ64_DEFAULT_NOTE_VELOCITY      100
-
-/**
- *  Defines the default Note On velocity, a new "stazed" feature.
- */
-
-#define SEQ64_DEFAULT_NOTE_ON_VELOCITY   100
 
 /**
  *  Defines the default Note Off velocity, a new "stazed" feature.

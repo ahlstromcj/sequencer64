@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-02-18
+ * \updates       2017-02-20
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -64,13 +64,6 @@
  *
  *      #define SEQ64_HANDLE_TIMESIG_AND_TEMPO
  */
-
-/**
- *  Indicates to preserve the velocity of incoming MIDI Note events, for both
- *  on or off event.
- */
-
-#define SEQ64_KEEP_NOTE_VELOCITY        (-1)
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -1044,7 +1037,7 @@ public:
     (
         midipulse tick, midipulse len, int note,
         bool paint = false,
-        int velocity = SEQ64_KEEP_NOTE_VELOCITY
+        int velocity = SEQ64_PRESERVE_VELOCITY
     );
     bool add_event (const event & er);      /* another one declared below */
 #ifdef SEQ64_STAZED_CHORD_GENERATOR

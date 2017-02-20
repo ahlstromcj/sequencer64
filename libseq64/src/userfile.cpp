@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-02
+ * \updates       2017-02-20
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -412,6 +412,12 @@ userfile::parse (perform & /* a_perf */)
         next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().midi_buss_override(char(scratch));
+
+        if (next_data_line(file))
+        {
+            sscanf(m_line, "%d", &scratch);
+            usr().velocity_override(scratch);
+        }
     }
 
     /*
@@ -630,7 +636,7 @@ userfile::write (const perform & /* a_perf */ )
             "\n"
             "[user-interface-settings]\n"
             "\n"
-            "# These settings specify the soon-to-be-modifiable configuration\n"
+            "# These settings specify the modifiable configuration\n"
             "# of some of the Sequencer64 user-interface elements.\n"
             ;
 
@@ -672,7 +678,7 @@ userfile::write (const perform & /* a_perf */ )
             ;
 
         file << "\n"
-            "# Specifies the maximum number of sets, which defaults to 1024.\n"
+            "# Specifies the maximum number of sets, which defaults to 32.\n"
             "# It is currently never necessary to change this value.\n"
             "\n"
             << usr().max_sets() << "      # max_sets\n"
@@ -691,7 +697,7 @@ userfile::write (const perform & /* a_perf */ )
             ;
 
         file << "\n"
-            "# Specifies some quantity, it is not known what it means.\n"
+            "# Specifies a quantity that affect the height of the main window.\n"
             "\n"
             << usr().control_height() << "      # control_height\n"
             ;
@@ -879,14 +885,12 @@ userfile::write (const perform & /* a_perf */ )
 
         file << "\n"
             "# Specifies the buss-number override, the same as the --bus\n"
-            "# command-line option. The default value is -1, which\n"
-            "# means that there is no buss override.  If a value\n"
-            "# from 0 to 31 is given, then that buss value overrides all\n"
-            "# buss values specified in all sequences/patterns.\n"
-            "# Change this value from -1 only to use a single\n"
-            "# output buss, either for testing or convenience.  And don't\n"
-            "# save the MIDI file afterwards, unless you really want to change\n"
-            "# all of its buss values!\n"
+            "# command-line option. The default value is -1, which means that\n"
+            "# there is no buss override.  If a value from 0 to 31 is given,\n"
+            "# then that buss value overrides all buss values in all patterns.\n"
+            "# Change this value from -1 only to use a single output buss,\n"
+            "# either for testing or convenience.  And don't save the MIDI file\n"
+            "# afterwards, unless you want to overwrite all the buss values!\n"
             "\n"
             ;
 
@@ -895,6 +899,17 @@ userfile::write (const perform & /* a_perf */ )
             file << "-1" << "       # midi_buss_override (disabled)\n";
         else
             file << bo   << "       # midi_buss_override (enabled, careful!)\n";
+
+        file << "\n"
+            "# Specifies the default velocity override when adding notes in the\n"
+            "# sequence/pattern editor.  This value is obtained via the 'Vol'\n"
+            "# button, and ranges from 0 (not recommended :-) to 127.  If the\n"
+            "# value is -1, then the incoming note velocity is preserved.\n"
+            "\n"
+            ;
+
+        int vel = usr().velocity_override();
+        file << vel      << "       # velocity_override (-1 = 'Free')\n";
     }
 
     /*

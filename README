@@ -1,28 +1,43 @@
-README for Sequencer64 0.90.0
+README for Sequencer64 0.90.0 (Native JACK)
 Chris Ahlstrom
-2015-09-10 to 2016-12-31 (initial work started in July of 2015)
+2015-09-10 to 2017-02-21 (initial work started in July of 2015)
 
-Sequencer64 is a reboot of seq24 to refactor it to be tighter and easier to
-use.  It is now beyond seq24 in functionality and bug fixes; the code is
-*significantly* refactored, although the heart of seq24 definitely remains
-intact.  See the ROADMAP file, which has been updated recently.
-
+Sequencer64 is a reboot of seq24 to refactor and improve it.  It extends seq24
+in functionality and bug fixes, although the heart of seq24 remains intact.
 See the screenshot in the project root for some idea of what has changed
 visually.  It is an old friend with some user-interface lipstick and a lot of
-internal fixups.  And it maintains backward-compatibility with seq24, with the
+internal fixups.  It maintains backward-compatibility with seq24, with the
 --legacy option.  See https://github.com/ahlstromcj/sequencer64-doc.git.
+
+There are some MAJOR changes now.  Be prepared to regress to the 0.9.21 tagged
+version should you encounter any show-stoppers in your workflow.
+
+Native JACK support: Seq64rtmidi/seq64
+
+    Sequencer64 can now be built with native JACK support.  It features
+    virtual ports and auto-connect just like the ALSA version.  It is based on
+    a heavily refactored version of the RtMidi library, and it will fall back
+    to ALSA support if JACK is not running.  It seems to work, but we have
+    a lot of cleanup and efficiency work that we want to do.  Consider it
+    experimental.  See the INSTALL file for the options.
+
+PortMIDI: Seq64portmidi/seq64portmidi
+
+    The PortMIDI implementation has been fixed so that it can be built
+    and run if you have installed the portmidi library in your Linux distro.
+    However, this application has issues and is deprecated, and we will
+    eventually implement Windows support using code from the RtMidi library.
+
+Legacy Sequencer64: Sequencer64/sequencer64
+
+    This is the original version of the project, which we are preserving until
+    the bug reports for the native-JACK version slow down to a trickle.
 
 With the big version jump from 0.9 to 0.90, the install process has changed.
 See the INSTALL file.  There are now three different versions of Sequencer64
-that can be built:
+that can be built.
 
-    -   The original, ALSA-based version.
-    -   A PortMIDI version based on the Linux version of the PortMIDI library.
-        This opens the door for a straightforward port to Windows.
-    -   A version that defaults to native JACK support, and falls back to
-        ALSA if JACK is not running.
-
-Major updates:
+Major new updates:
 
     -   Version 0.90.0:
         -   Initial support for using a heavily-refactored RtMidi spinoff
@@ -31,7 +46,8 @@ Major updates:
             Sequencer64 very well, so to call it an "RtMidi" version is very
             misleading.
         -   PortMidi has been activated!  Builds and runs in Linux, still
-            need to set up Gtk for Windows.
+            need to set up Gtk for Windows.  However, it has issues currently,
+            and we are going to eventually deprecate it.
     -   Version 0.9.21:
         -   Returning to the std::list operation, but with sorting occurring
             after loading.  This buys speed of loading of a large MIDI file
@@ -45,236 +61,95 @@ Major updates:
             if you do not like it.
         -   Added a JACK/ALSA button to show status and bring up a JACK
             connection dialog.
-    -   Sequencer64 loads SMF 0 files and splits the channels into separate
-        tracks/sequences.
-    -   JACK support has been improved, thanks in part to incorporating seq32
-        JACK support.
-    -   Pause functionality (still tweaking it) has been added to playback
-        under ALSA.  The Pause button leaves playback where it is, and resumes
-        when playback restarts.  Stop rewinds the sequences.  Also added is a
-        Pause key (by default, the period).  Pause can be disabled at
-        configure time (--disable-pause).
-    -   Long sequences/patterns auto-scroll horizontally during playback
-        to keep up with the progress bar in the sequence/pattern editor.
-    -   Highlighting of the current sequence brought up for editing.
-    -   MIDI Clock support has been fixed.  Sequencer64 interacts better with
-        QJackCtl, Hydrogen, and Klick (command-line metronome).  See the
-        testing described in contrib/notes/jack-testing.txt.
-    -   An event-editing window has been added, for viewing and editing a
-        list of events, regardless of event type.  Viewing is fine, editing
-        basics work.
-    -   Two synchronized song-editor windows can be shown on screen, to
-        better arrange songs with a large number of tracks.
-    -   Added a more modern-looking, bolder font to the graphical user
-        interface, selectable at run-time, in the "user" configuration file.
-    -   Added an ALSA --bus option for easier testing against a specific
-        hardware/software synthesizer.
-    -   Added a --ppqn option to try to play files at the right speed.  Still
-        in progress, as the Seq24 PPQN value of 192 affects a lot of code!
-        It basically works, but bugs may still lurk.
-    -   Added support for keeping performance and sequence user-interfaces in
-        editing mode, very helpful for certain crappy laptop trackpads.
-    -   Shift-left-click on the pattern slot in the pattern editor toggles
-        the playing state of all other patterns.  This works across screen-sets.
-        Shift-left-click on the pattern name or M in the song editor toggles
-        the mute state of all other tracks.
-    -   Added arrow key support to some of the windows and panes.
-        -   The "l" and "r" keys initiate arrow movement of the performance
-            markers.
-        -   If notes are selected in the pattern editor, the arrow keys can
-            be used to move the notes in time and in pitch.
-        -   If selected notes are copied-and-pasted, the selection box that
-            indicates where they will be dropped can be moved with the arrow
-            keys.  Hitting "Enter" drops the notes just like a left-click.
-        -   In the performance editor, a pattern can be selected with the
-            mouse and moved right/left with the arrow keys.
-    -   Added support for using special keys to manipulate some of the
-        user-interface elements:
-        -   The "l" and "r" keys initiate arrow movement of the performance
-            markers, with "x" to escape this mode.
-        -   Also supplemented the mouse with "p" to start paint/draw mode, and
-            "x" to escape it, in the sequence and song editors.
-        -   Add "z" and "Z" keys to zoom out and zoom in the pattern and song
-            piano rolls.  "0" restores the default zoom.
-    -   Configurable progress bar, font, redraw timeouts, colors, and more.
-        More coloring to help show various editing elements.
-    -   The "rc" configuration file has been upgraded to support a couple
-        more options, including the enabling/disabling of LASH session
-        support.
-    -   The "user" configuration file is now written, as well as being read.
-        It contains more extensive run-time configuration for
-        the user-interface.
-        -   [user-interface-setting]
-            -   Style of the main-window grid
-            -   Control height
-            -   Allowing two performance editors onscreen
-            -   The page settings of scrollbar.
-        -   [user-midi-settings]
-            -   Global PPQN value
-            -   Global beats per bar and per minute, beat width
-            -   Global MIDI buss override
-    -   Fixed a long-standing (back to seq24) bug that caused the main window
-        buttons to grab focus, causing the space bar to press the button, as
-        well as doing its start function.
-    -   Internal (invisible) work:
-        -   The code has been broken up into libraries, for better separation
-            between GUI support and the files, MIDI, JACK, and LASH support.
-        -   A wide range of MIDI files have been tested, to find bugs that
-            can crash the application.  A nice increase in robustness.
-        -   Centralized dirtiness-handling to the perform module, and
-            improving its accuracy and comprehensiveness.
-        -   Set Tempo and Time Signature events are now read from
-            non-Sequencer64 MIDI files, and are also saved in the normal
-            MIDI format, for compatibility with other sequencers.
-        -   Sequencer64 now loads large MIDI files quickly, and plays
-            with throughput comparable to seq24.
-    -   Version 0.9.20:
-        -   Fixed issue 50, where opening and closing a seqedit, and then
-            modifying the buss or channel of that sequence from the
-            main window slot right-click menu would cause a segfault.
-        -   Also fixed a minor issue with the progress bar being invisible
-            in an armed sequence.
-        -   Beefed up the LFO control window and added clarifying tooltips for
-            it.  Still currently needs the --enable-lfo configure option in
-            order to be activated.
-        -   Added new rc "allow-click-edit" option to disable bringing up the
-            pattern editor with a double-click (issue #51).
-        -   Fixed broken seq32 fast-forward and rewind functionality.
-    -   Version 0.9.19:
-        -   Fixed issue 46, pattern-edit undo being applied twice.
-        -   Fixed keystrokes meant for pattern edit fields being used to 
-            modify the sequence piano roll.
-        -   Main window Mute button is disabled in Song mode to avoid
-            confusing behavior.
-        -   Progress bar shown in pattern editor for empty sequences.
-        -   Some cleanup of playback handling.
-        -   Fixed issue 42, where recording a MIDI note was inadvertently of
-            fixed length.
-        -   Fixed issue 43, where MIDI files with upper-case extensions were
-            not shown.
-        -   Closed out a number of already-fixed issues.
-    -   Version 0.9.18.3:
-        -   Bug in cut-and-paste in the sequence editor.  When cutting (not
-            just copying), the event clipboard would be cleared and be
-            unpastable.
-    -   Version 0.9.18.2:
-        -   Fixed incorrect loading, saving, and usage of MIDI controls
-            feature.
-        -   Fixed Song mode and Song Editor interactions.
-        -   Updated the Debian package build process.
-    -   Version 0.9.18.1:
-        -   Fixed a bug in perfedit looping.
-        -   Fixed a segfault when modifying an event in the event editor.
-        -   Fixed a bug that disabled editing in the Song Editor if an
-            inactive sequence was clicked in.
-        -   KNOWN BUG:  In this release, Song mode will work only if the
-            Song/Live button is activated.  This could be a feature :-)
-    -   Version 0.9.18:
-        -   Added new buttons in the main window for easier control of muting,
-            live/song mode, and menu enabling.  (From Seq32).
-        -   Added more hotkeys and a second keys page to the Options dialog
-            (From Seq32).
-        -   Added a Tap-BPM button and hotkey.
-        -   Can now edit the text fields in the main window without triggering
-            patterns.
-        -   Improved the handling of wrap-around notes in a pattern.
-        -   Fixed a segfault in the zoom functionality.
-        -   A bad bug in the Song Editor (acting on the wrong pattern) was
-            fixed.  I am an idiot.
-    -   Version 0.9.17.2:
-        -   A regression in the handling of muting in Live mode was fixed.
-    -   Version 0.9.17.1:
-        -   An important regression/bug for JACK transport support.  I am
-            so embarrassed!  It seems to be fixed; basically one line of code
-            accidentally commented out.
-    -   Version 0.9.17:
-        -   Added export of a Sequencer64 song performance as a MIDI file,
-            where the MIDI file is laid out as per the song triggers in the
-            performance editor.  The triggers are preserved in the exported
-            file, but any sequencer can read the performance and will ignore
-            the Sequencer64-specific triggers.
-        -   Added an "inverse colors" options so that the user interface is a
-            bit less bright in a "night" environment.  Also, the progress bar
-            can be changed to a number of different colors.
-        -   Added an optional Edit menu and the export of a song performance
-            to a non-Sequencer64 MIDI file.  (Stazed feature).
-        -   Ctrl-Left-Click in the Song Editor now works as a middle-click,
-            to split the song trigger in half.
-        -   The seq32 feature of splitting at the nearest snap point near
-            a middle-click, in the Song Editor, has been added as an optional
-            feature.
-        -   Started adding support for recording incoming MIDI to the
-            sequences that match the incoming channel data. (Stazed feature).
-            This is a run-time option, and can be set from the Options dialog,
-            the command-line, and in the "rc" configuration file.
-        -   Enabled actual support for the recording-volume feature, which was
-            not actually used in seq24.
-        -   Added better support for undo/redo ability from the stazed project
-            (seq32).
-        -   Added support for a lot of other stazed (seq32) features and
-            extensions, macroed out until we can get them complete and
-            finalized.  Some, noted above, are now available.
-        -   Added the LFO window module code and refactored it, not yet
-            available through the user interface, must be enabled in the code.
-        -   Playback status now folded completely into the perform and
-            jack_assistant classes.
-        -   Lots of bug fixed based on fixes from seq32.  Also merged a
-            fix from Arnaud for issue "MIDI controller toggles the wrong
-            pattern", a regression caused by my fat fingers.
-        -   See earlier version fixes near the end of this README.
-    -   Version 0.9.16:
-        -   If there is no mute-group information, it is no longer written
-            to the MIDI file (unless --legacy is in force).  Saves 4000+
-            bytes.  It can be disabled with build option --disable-mutestrip.
-        -   Fixed bug in detecting the --jack-session-uuid option.
-        -   Hardwired Ctrl-L as an alternative to the "L" (learn) button,
-            and added automatic "Caps Lock" when in Learn mode, for keyboards
-            that disable Caps Lock.
-        -   Fixes and testing of replace, queue, and mute-groups.
-        -   Much cleanup and optimization.
-    -   Version 0.9.15.1 and .2:
-        -   Fixing corner-case issues with saving the configuration.
-            Transpose state saved with each pattern.
-        -   Moved transpose support to the perform class.
-        -   Red-colored events in non-transposable patterns (e.g. drums).
-        -   Addition menu entries for muting/unmuting.
-        -   Fixed perfedit continual-refresh bug.
-        -   Prevent pathological note alterations when growing/shrinking
-            selected notes.
-    -   Version 0.9.15:
-        -   Added the Stazed song-transpose feature from his Seq32 project.
-        -   Additional sequence menu entries.
-        -   Fixed a bug in muting/unmuting all tracks.
-    -   Version 0.9.14:  Apart from some bug fixes and tweaks, the following
-        major features have been added:
-        -   Chord generation in the pattern editor, similar to what the 
-            seq32 project has, but it can be disabled via the configure step.
-        -   The song editor now pages horizontally to follow the progress bar.
-    -   Version 0.9.13:
-        -   Includes an important bug-fix from user 0rel that caused some
-            notes to be missing or messed up in a copy operation in the
-            pattern editor.
-        -   Adds nearly complete support for moving, paging, and going to
-            start and end both horizontally and vertically in the song editor
-            and the pattern editor using keystrokes. 
-        -   Copied note selections can be moved around using the arrow keys
-            and pasted using the Enter key.
-        -   Note copy/paste/move pattern-editor operations have been fixed or
-            improved, and non-note events are handled better, instead of being
-            stripped.
-        -   Initial support for growing/stretching selected events via
-            ctrl-left-arrow and ctrl-right-arrow.  Also, the Enter key
-            finishes and then cancels a number of operations: paste, grow,
-            move, and selection.
-    -   Version 0.9.12 fixes a bug in the drawing of MIDI note numbers in the
-        seqkeys panel.
+    -   Particular changes since the seq64 fork:
+        -   Sequencer64 loads SMF 0 files and splits the channels into separate
+            tracks/sequences.
+        -   JACK support has been improved, thanks in part to incorporating seq32
+            JACK support.
+        -   Pause functionality (still tweaking it) has been added to playback
+            under ALSA.  The Pause button leaves playback where it is, and resumes
+            when playback restarts.  Stop rewinds the sequences.  Also added is a
+            Pause key (by default, the period).  Pause can be disabled at
+            configure time (--disable-pause).
+        -   Long sequences/patterns auto-scroll horizontally during playback
+            to keep up with the progress bar in the sequence/pattern editor.
+        -   Highlighting of the current sequence brought up for editing.
+        -   MIDI Clock support has been fixed.  Sequencer64 interacts better with
+            QJackCtl, Hydrogen, and Klick (command-line metronome).  See the
+            testing described in contrib/notes/jack-testing.txt.
+        -   An event-editing window has been added, for viewing and editing a
+            list of events, regardless of event type.  Viewing is fine, editing
+            basics work.
+        -   Two synchronized song-editor windows can be shown on screen, to
+            better arrange songs with a large number of tracks.
+        -   Added a more modern-looking, bolder font to the graphical user
+            interface, selectable at run-time, in the "user" configuration file.
+        -   Added an ALSA --bus option for easier testing against a specific
+            hardware/software synthesizer.
+        -   Added a --ppqn option to try to play files at the right speed.  Still
+            in progress, as the Seq24 PPQN value of 192 affects a lot of code!
+            It basically works, but bugs may still lurk.
+        -   Added support for keeping performance and sequence user-interfaces in
+            editing mode, very helpful for certain crappy laptop trackpads.
+        -   Shift-left-click on the pattern slot in the pattern editor toggles
+            the playing state of all other patterns.  This works across
+            screen-sets.  Shift-left-click on the pattern name or M in the
+            song editor toggles the mute state of all other tracks.
+        -   Added arrow key support to some of the windows and panes.
+            -   The "l" and "r" keys initiate arrow movement of the performance
+                markers.
+            -   If notes are selected in the pattern editor, the arrow keys can
+                be used to move the notes in time and in pitch.
+            -   If selected notes are copied-and-pasted, the selection box that
+                indicates where they will be dropped can be moved with the arrow
+                keys.  Hitting "Enter" drops the notes just like a left-click.
+            -   In the performance editor, a pattern can be selected with the
+                mouse and moved right/left with the arrow keys.
+        -   Added support for using special keys to manipulate some of the
+            user-interface elements:
+            -   The "l" and "r" keys initiate arrow movement of the performance
+                markers, with "x" to escape this mode.
+            -   Also supplemented the mouse with "p" to start paint/draw mode, and
+                "x" to escape it, in the sequence and song editors.
+            -   Add "z" and "Z" keys to zoom out and zoom in the pattern and song
+                piano rolls.  "0" restores the default zoom.
+        -   Configurable progress bar, font, redraw timeouts, colors, and more.
+            More coloring to help show various editing elements.
+        -   The "rc" configuration file has been upgraded to support a couple
+            more options, including the enabling/disabling of LASH session
+            support.
+        -   The "user" configuration file is now written, as well as being read.
+            It contains more extensive run-time configuration for
+            the user-interface.
+            -   [user-interface-setting]
+                -   Style of the main-window grid
+                -   Control height
+                -   Allowing two performance editors onscreen
+                -   The page settings of scrollbar.
+            -   [user-midi-settings]
+                -   Global PPQN value
+                -   Global beats per bar and per minute, beat width
+                -   Global MIDI buss override
+        -   Fixed a long-standing (back to seq24) bug that caused the main window
+            buttons to grab focus, causing the space bar to press the button, as
+            well as doing its start function.
+        -   Internal (invisible) work:
+            -   The code has been broken up into libraries, for better separation
+                between GUI support and the files, MIDI, JACK, and LASH support.
+            -   A wide range of MIDI files have been tested, to find bugs that
+                can crash the application.  A nice increase in robustness.
+            -   Centralized dirtiness-handling to the perform module, and
+                improving its accuracy and comprehensiveness.
+            -   Set Tempo and Time Signature events are now read from
+                non-Sequencer64 MIDI files, and are also saved in the normal
+                MIDI format, for compatibility with other sequencers.
+            -   Sequencer64 now loads large MIDI files quickly, and plays
+                with throughput comparable to seq24.
+    -   For more version information, see the NEWS file.
 
-The list of minor issues we have found while exploring with Sequencer64 has
-gotten fairly long, so we will concentrate on tightening up the application
-behavior as much as possible.  This package is currently oriented to
-developers.  It is fairly well organized, fairly well documented, and less
-mysterious (to us, anyway) than before.  Please see the INSTALL file for a
-brief description of installation.
+This package is currently oriented to developers.  It is fairly well
+organized, fairly well documented, and less mysterious (to us, anyway) than
+before.  Please see the INSTALL file for a brief description of installation.
 
 See the ROADMAP file for more information and a kind of TODO list.  Also see
 contrib/notes/bugs_to_investigate.  Sequencer64 is well-documented by the

@@ -1,12 +1,14 @@
 Sequencer64 Debian Instructions
 Chris Ahlstrom
-2015-09-10 to 2016-10-06
+2015-09-10 to 2017-02-20
 
 There is a concise, recent, and fairly complete guide to creating a "deb"
 package in the Debian package called "maint-guide", which stores different
 versions of the "Debian New Maintainers' Guide" in
 /usr/share/doc/maint-guide.  The debhelper package (and perhaps some related
 packages) need to be installed in order to create a Sequencer64 DEB package.
+
+NOTE:  Still needs updating for version 0.90.0 !!!
 
 However, since the rules file was already provided by the Debian maintainer
 of seq24, the process of creating a "deb" file is very simple.

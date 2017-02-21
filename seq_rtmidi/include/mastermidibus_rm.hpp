@@ -125,7 +125,7 @@ private:
 
     void port_list (const std::string & tag);
 
-};
+};          // class mastermidibus
 
 }           // namespace seq64
 

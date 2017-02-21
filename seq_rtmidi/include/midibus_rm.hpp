@@ -55,7 +55,8 @@ namespace seq64
 class midibus : public midibase
 {
     /**
-     *  The master MIDI bus sets up the buss.
+     *  The master MIDI bus sets up the buss, so it gets access to private
+     *  details.
      */
 
     friend class mastermidibus;

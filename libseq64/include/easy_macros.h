@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2017-02-02
+ * \updates       2017-02-20
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -38,7 +38,7 @@
 #include "seq64-config.h"
 #endif
 
-#define SEQ64_SHOW_API_CALLS            /////// TEMPORARY !!!!!!!!!
+#undef  SEQ64_SHOW_API_CALLS
 
 /**
  *  Language macros:

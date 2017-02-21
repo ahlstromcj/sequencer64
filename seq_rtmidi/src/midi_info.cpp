@@ -170,19 +170,20 @@ midi_info::midi_info
 void
 midi_info::error (rterror::Type type, const std::string & errorstring)
 {
+    std::string errstring = errorstring;
     if (type == rterror::WARNING)
     {
-        errprint(errorstring.c_str());
+        errprint(errstring.c_str());
     }
     else if (type == rterror::DEBUG_WARNING)
     {
 #ifdef PLATFORM_DEBUG                       // SEQ64_USE_DEBUG_OUTPUT
-        errprint(errorstring.c_str());
+        errprint(errstring.c_str());
 #endif
     }
     else
     {
-        errprint(errorstring.c_str());
+        errprint(errstring.c_str());
 
         /*
          * Not a big fan of throwing errors, especially since we currently log

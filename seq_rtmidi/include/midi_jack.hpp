@@ -140,10 +140,18 @@ public:
 
 protected:
 
+    /**
+     * \setter m_jack_data.m_jack_client
+     */
+
     void client_handle (jack_client_t * handle)
     {
         m_jack_data.m_jack_client = handle;
     }
+
+    /**
+     * \setter m_jack_data.m_jack_port
+     */
 
     void port_handle (jack_port_t * handle)
     {
@@ -243,7 +251,7 @@ private:
         return open_client_impl(SEQ64_MIDI_INPUT_PORT);
     }
 
-};          // midi_in_jack
+};          // class midi_in_jack
 
 /**
  *  The JACK MIDI output API class.
@@ -276,7 +284,7 @@ private:
         return open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
     }
 
-};          // midi_out_jack
+};          // class midi_out_jack
 
 }           // namespace seq64
 

@@ -470,7 +470,7 @@ dnl RtMidi support.
 AC_ARG_ENABLE(rtmidi,
     [AS_HELP_STRING(--enable-rtmidi, [Enable RtMidi build])],
     [rtmidi=$enableval],
-    [rtmidi=no])
+    [rtmidi=yes])
 
 if test "$rtmidi" != "no"; then
     AC_MSG_RESULT([RtMidi build enabled.]);

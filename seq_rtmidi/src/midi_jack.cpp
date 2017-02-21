@@ -376,7 +376,19 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
 /**
  *  We still need to figure out if we want a "master" client handle, or a
  *  handle to each port.  Same for the JACK data item.  Currently, we provide
- *  the m_multi_client member so that we can experiment.
+ *  the m_multi_client member so that we can experiment, but "multi-client"
+ *  mode is currently incompletely implemented.
+ *
+ *  Note that this constructor also adds its object to the midi_jack_info port
+ *  list, so that the JACK callback functions can iterate through all of the
+ *  JACK ports in use by this application, performing work on them.
+ *
+ * \param parentbus
+ *      Provides a reference to the midibus that represents this object.
+ *
+ * \param masterinfo
+ *      Provides a reference to the midi_jack_info object that may provide
+ *      extra informatino that is needed by this port.  Too many entities!
  */
 
 midi_jack::midi_jack
@@ -400,16 +412,14 @@ midi_jack::midi_jack
         (
             reinterpret_cast<jack_client_t *>(masterinfo.midi_handle())
         );
-#ifdef USE_JACK_PORT_LIST
         (void) m_jack_info.add(*this);
-#endif
     }
 }
 
 /**
  *  This could be a rote empty destructor if we offload this destruction to the
- *  midi_jack_data structure.  However, other than the initialization, this
- *  structure is "dumb".
+ *  midi_jack_data structure.  However, other than the initialization, that
+ *  structure is currently "dumb".
  */
 
 midi_jack::~midi_jack ()
@@ -443,7 +453,7 @@ midi_jack::~midi_jack ()
  *  called until jack_activate() has been called.
  *
  * \return
- *      Returns true unless setting up ALSA MIDI failed in some way.
+ *      Returns true unless setting up JACK MIDI failed in some way.
  */
 
 bool
@@ -561,6 +571,9 @@ midi_jack::api_init_in ()
 /**
  *  Assumes that the port has already been registered, and that JACK
  *  activation has already occurred.
+ *
+ * \return
+ *      Returns true if all steps of the connection succeeded.
  */
 
 bool
@@ -622,7 +635,10 @@ midi_jack::set_virtual_name (int portid, const std::string & portname)
 
 /*
  *  This initialization is like the "open_virtual_port()" function of the
- *  RtMidi library.  However, unlike the ALSA case...
+ *  RtMidi library.  However, unlike the ALSA case... to be determined.
+ *
+ * \return
+ *      Returns true if all steps of the initialization succeeded.
  */
 
 bool
@@ -662,7 +678,10 @@ midi_jack::api_init_out_sub ()
 }
 
 /**
+ *  Initializes a virtual/manual input port.
  *
+ * \return
+ *      Returns true if all steps of the initialization succeeded.
  */
 
 bool
@@ -1404,6 +1423,10 @@ midi_out_jack::~midi_out_jack ()
  *
  * \param message
  *      Provides the vector of message bytes to send.
+ *
+ * \return
+ *      Returns true if the buffer message and buffer size seem to be written
+ *      correctly.
  */
 
 bool

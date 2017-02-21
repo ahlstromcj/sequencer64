@@ -28,12 +28,6 @@
 
 #define SEQ64_RTMIDI_MULTICLIENT        false
 
-/**
- * EXPERIMENTAL
- */
-
-#define USE_JACK_PORT_LIST
-
 /*
  * Do not document the namespace; it breaks Doxygen.
  */
@@ -41,10 +35,7 @@
 namespace seq64
 {
     class mastermidibus;
-
-#ifdef USE_JACK_PORT_LIST
     class midi_jack;
-#endif
 
 /**
  *  The class for handling JACK MIDI port enumeration.
@@ -52,11 +43,8 @@ namespace seq64
 
 class midi_jack_info : public midi_info
 {
-
-#ifdef USE_JACK_PORT_LIST
     friend class midi_jack;
     friend int jack_process_io (jack_nframes_t nframes, void * arg);
-#endif
 
 private:
 
@@ -79,15 +67,13 @@ private:
      *      midi_jack_data m_jack_data;
      */
 
-#ifdef USE_JACK_PORT_LIST
-
     /**
      *  Holds the port data.  Not for use with the multi-client option.
+     *  This list is iterated in the input and output portions of the JACK
+     *  process callback.
      */
 
     std::vector<midi_jack *> m_jack_ports;
-
-#endif
 
     /**
      *  Holds the JACK sequencer client pointer so that it can be used
@@ -161,8 +147,6 @@ private:
         std::string & portname
     );
 
-#ifdef USE_JACK_PORT_LIST
-
 private:
 
     /**
@@ -175,8 +159,6 @@ private:
         return true;
     }
 
-#endif
-
 };          // midi_jack_info
 
 /*
@@ -185,7 +167,6 @@ private:
 
 void silence_jack_errors (bool silent = true);
 void silence_jack_info (bool silent = true);
-
 
 }           // namespace seq64
 

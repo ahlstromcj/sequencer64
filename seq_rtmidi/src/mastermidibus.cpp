@@ -53,13 +53,6 @@ namespace seq64
 /**
  *  The base-class constructor fills the array for our busses.
  *
- * Hmmmmm.  See the actual code below.
- *
-\verbatim
-        rc().no_jack_midi() ? RTMIDI_API_LINUX_ALSA : RTMIDI_API_UNSPECIFIED,
-        rc().with_jack_midi() ? RTMIDI_API_UNIX_JACK : RTMIDI_API_UNSPECIFIED,
-\endverbatim
- *
  * \param ppqn
  *      Provides the PPQN value for this object.  However, in most cases, the
  *      default value, SEQ64_USE_DEFAULT_PPQN should be specified.
@@ -224,7 +217,7 @@ mastermidibus::api_init (int ppqn, int bpm)
  *      Provides a string label indicate the context of this list.
  */
 
-#ifdef PLATFORM_DEBUG // _XXX
+#ifdef PLATFORM_DEBUG_XXX
 
 void
 mastermidibus::port_list (const std::string & tag)
@@ -278,10 +271,6 @@ mastermidibus::api_poll_for_midi ()
         {
             if (m_inbus_array.poll_for_midi())
             {
-                /*
-                 * TMI: infoprint("poll_for_midi(): found event");
-                 */
-
                 return 1;
             }
             else

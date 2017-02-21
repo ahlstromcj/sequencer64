@@ -1,9 +1,15 @@
 INSTALL for Sequencer64 v. 0.90.0
 Chris Ahlstrom
-2015-09-10 to 2017-02-18
+2015-09-10 to 2017-02-20
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
+With version 0.90.0, three different versions of the program can be build:
+
+    -   seq64.  Native JACK.  The default build after a simple bootstrap
+        command.  JACK MIDI with optional JACK transport.  Fallback to ALSA.
+    -   sequencer64.  ALSA with JACK transport.  The original version.
+    -   seq64portmidi.  PortMIDI implementation.  Has issues, deprecated.
 
 Steps:
 
@@ -12,65 +18,72 @@ Steps:
        or, at worst, a build error will tell you.
 
    1.  Check-out the branch you want.  Make a branch if you want to make
-       changes.  The current branches are "master" and "fixups".  The latter
-       is where we do most of our tentative changes, and it can be way ahead
-       of "master" in number of commits.
+       changes.  The current branches are "master", "fixups", and "rtmidi".
+4
+   2.  The first thing to do is decide what version of Sequencer64 you want to
+       build.  There are now 3 versions:
 
-   2. From the top project directory, run the commands:
+       1.   Seq64rtmidi/seq64:           ./bootstrap -er -rm
+       2.   Sequencer64/sequencer64:     ./bootstrap -er -am
+       3.   Seq64portmidi/seq64portmidi: ./bootstrap -er -pm
+   
+       From the top project directory, run the commands:
 
-      $ ./bootstrap
-      $ ./configure
+       $ ./bootstrap
+       $ ./configure
 
-      If you do not want to see a lot of output, the stock autotools
-      option "--enable-silent-rules" can be added to the ./configure command.
+       If you do not want to see a lot of output, the stock autotools
+       option "--enable-silent-rules" can be added to the ./configure command.
 
-      For debugging without libtool getting in the way, just run the
-      following command, which will add the --enable-debug and
-      --disable-shared options to a configure run:
+       For debugging without libtool getting in the way, just run the
+       following command, which will add the --enable-debug and
+       --disable-shared options to a configure run:
 
-      $ ./bootstrap --enable-debug
-      $ ./bootstrap -ed
+       $ ./bootstrap --enable-debug [ -rm | -am | -pm ]
+       $ ./bootstrap -ed [ -rm | -am | -pm ]
 
-      For building in release mode without seeing a ton of compiler output,
-      the following command will configure for the "silent rules" of Automake:
+       For building in release mode without seeing a ton of compiler output,
+       the following command will configure for the "silent rules" of Automake:
 
-      $ ./bootstrap --enable-release
-      $ ./bootstrap -er
+       $ ./bootstrap --enable-release [ -rm | -am | -pm ]
+       $ ./bootstrap -er [ -rm | -am | -pm ]
 
-      If desired, there are also configure options as described below,
-      and also conditional macros in the code.  The configure options can be 
-      supplied to the ./configure command, while the macros can be defined
-      (in the code) to even further tailor the build.
+       The commands above set up a build of seq64 by default.
 
-   3. Run the make command:
+       If desired, there are also configure options as described below,
+       and also conditional macros in the code.  The configure options can be 
+       supplied to the ./configure command, while the macros can be defined
+       (in the code) to even further tailor the build.
+
+   3.  Run the make command:
 
       $ make
 
-      This procedure no longer builds the documentation. If you do care about
-      the documentation change to the doc/dox directory and run
-      "./make_dox reference".
+       This procedure no longer builds the documentation. If you do care about
+       the documentation change to the doc/dox directory and run
+       "./make_dox reference".
       
-      Do not forget that you can add options to "make", such as "V=0" (enable
-      silent build), "V=1" (enable the normal verbose build), and "-j n" (use
-      n processors to speed up the build).
+       Do not forget that you can add options to "make", such as "V=0" (enable
+       silent build), "V=1" (enable the normal verbose build), and "-j n" (use
+       n processors to speed up the build).
 
-   4. To install, become root and run:
+   4.  To install, become root and run:
 
-      # make install
+       # make install
 
-      Note that we have removed the developer reference manual from the
-      automated build (see the Doxygen DEPENDENCIES below), but the existig
-      documents will still be installed.
+       Note that we have removed the developer reference manual from the
+       automated build (see the Doxygen DEPENDENCIES below), but the existig
+       documents will still be installed.
 
-   5. See the additional features that can be enabled, below, using 
-      build macros.
+   5.  See the additional features that can be enabled, below, using 
+       build macros.
 
-   6. Also grab the Sequencer64 User Manual from:
+   6.  Also grab the Sequencer64 User Manual from:
 
-        http://github.com/ahlstromcj/sequencer64-doc.git
+            http://github.com/ahlstromcj/sequencer64-doc.git
 
-      It contains a prebuilt PDF version of the manual, as well as the
-      LaTeX files needed to rebuild it.
+       It contains a prebuilt PDF version of the manual, as well as the
+       LaTeX files needed to rebuild it.
 
 CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 
@@ -376,8 +389,8 @@ MANUALLY-DEFINED MACROS IN CODE:
 
 DEPENDENCIES:
 
-   With luck, the following dependencies will bring in their own
-   dependencies when installed.
+   With luck, the following dependencies will bring in their own dependencies
+   when installed.
 
    Code:
 
@@ -387,8 +400,8 @@ DEPENDENCIES:
       -  liblash-compat-dev (optional)
       -  libpng-dev (replaces libpng12-dev with libpng16, latest Debian Sid,
          and brings in libpng-tools)
-      -  libportmidi-dev, needed if we want to build the Linux PortMidi
-         version of Sequencer64 (currently only for testing)
+      -  libportmidi-dev, needed to build the Linux PortMidi version of
+         Sequencer64 (currently only for experimentation)
 
    Runtime:
 
@@ -429,6 +442,8 @@ DEPENDENCIES:
          ./make_dox install
       
    Debian packaging:
+
+      See the README file in the Debian directory.
 
       -  debhelper
       -  fakeroot

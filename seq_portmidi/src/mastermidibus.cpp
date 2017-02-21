@@ -130,7 +130,7 @@ mastermidibus::api_init (int ppqn, int /*bpm*/)
             m_outbus_array.add(m, clock(i));
             ++numouts;
         }
-        if (dev_info->input)
+        else if (dev_info->input)
         {
             /*
              * The parameters here are bus ID, port ID, and client name.

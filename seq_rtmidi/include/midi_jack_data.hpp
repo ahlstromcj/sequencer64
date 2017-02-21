@@ -38,7 +38,10 @@ struct midi_jack_data
      *  by the midibus objects.  This is actually an opaque pointer; there is
      *  no way to get the actual fields in this structure; they can only be
      *  accessed through functions in the JACK API.  Note that it is also
-     *  stored as a void pointer in midi_info::m_midi_handle.
+     *  stored as a void pointer in midi_info::m_midi_handle.  This item
+     *  can either be the single JACK client created by the midi_jack_info
+     *  object, or a JACK client created by the midi_jack object in the
+     *  "multi-client" mode (which is not yet complete or usable).
      */
 
     jack_client_t * m_jack_client;
@@ -50,25 +53,29 @@ struct midi_jack_data
     jack_port_t * m_jack_port;
 
     /**
-     *
+     *  Holds the size of data for communicating between the client
+     *  ring-buffer and the JACK port's internal buffer.
      */
 
     jack_ringbuffer_t * m_jack_buffsize;
 
     /**
-     *
+     *  Holds the data for communicating between the client ring-buffer and
+     *  the JACK port's internal buffer.
      */
 
     jack_ringbuffer_t * m_jack_buffmessage;
 
     /**
-     *
+     *  The last time-stamp obtained.  Use for calculating the delta time, I
+     *  would imagine.
      */
 
     jack_time_t m_jack_lasttime;
 
     /**
-     *
+     *  Holds special data peculiar to the client and its MIDI input
+     *  processing.
      */
 
     rtmidi_in_data * m_jack_rtmidiin;

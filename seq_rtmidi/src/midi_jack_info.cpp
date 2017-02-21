@@ -46,7 +46,6 @@ jack_process_io (jack_nframes_t nframes, void * arg)
 {
     if (nframes > 0)
     {
-#ifdef USE_JACK_PORT_LIST
         midi_jack_info * self = reinterpret_cast<midi_jack_info *>(arg);
         if (not_nullptr(self))
         {
@@ -74,21 +73,8 @@ jack_process_io (jack_nframes_t nframes, void * arg)
                 }
             }
         }
-
-#else
-        // jack_process_rtmidi_input(nframes, arg);
-        // jack_process_rtmidi_output(nframes, arg);
-#endif
     }
     return 0;
-
-#if USE_DUMMY_CODE
-    midi_jack_data * jackdata = (midi_jack_data *) arg;
-    if (jackdata->m_jack_port == NULL)      /* is port created?        */
-       return 0;
-    else
-       return int(nframes) == 0 ? int(nframes) : 0 ;
-#endif
 }
 
 /**
@@ -115,9 +101,7 @@ midi_jack_info::midi_jack_info
 ) :
     midi_info               (appname, ppqn, bpm),
     m_multi_client          (SEQ64_RTMIDI_MULTICLIENT),
-#ifdef USE_JACK_PORT_LIST
     m_jack_ports            (),
-#endif
     m_jack_client           (nullptr)               /* inited for connect() */
 {
     silence_jack_info();
@@ -161,18 +145,7 @@ midi_jack_info::connect ()
         result = create_jack_client(clientname);
         if (not_nullptr(result))
         {
-#ifdef USE_JACK_PORT_LIST
-            int rc = jack_set_process_callback
-            (
-                result, jack_process_io, this
-            );
-#else
-            static int s_dummy;
-            int rc = jack_set_process_callback
-            (
-                result, jack_process_io, &s_dummy
-            );
-#endif
+            int rc = jack_set_process_callback(result, jack_process_io, this);
             m_jack_client = result;
             if (rc == 0)
             {

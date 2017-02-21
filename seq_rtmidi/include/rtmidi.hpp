@@ -264,15 +264,14 @@ protected:
 /**
  *  A realtime MIDI input class.
  *
- *  This class provides a common, platform-independent API for
- *  realtime MIDI input.  It allows access to a single MIDI input
- *  port.  Incoming MIDI messages are either saved to a queue for
- *  retrieval using the get_message() function or immediately passed to
- *  a user-specified callback function.  Create multiple instances of
- *  this class to connect to more than one MIDI device at the same
- *  time.  With the OS-X, Linux ALSA, and JACK MIDI APIs, it is also
- *  possible to open a virtual input port to which other MIDI software
- *  clients can connect.
+ *  This class provides a common, platform-independent API for realtime MIDI
+ *  input.  It allows access to a single MIDI input port.  Incoming MIDI
+ *  messages are either saved to a queue for retrieval using the get_message()
+ *  function or immediately passed to a user-specified callback function.
+ *  Create multiple instances of this class to connect to more than one MIDI
+ *  device at the same time.  With the OS-X, Linux ALSA, and JACK MIDI APIs,
+ *  it is also possible to open a virtual input port to which other MIDI
+ *  software clients can connect.
  */
 
 class rtmidi_in : public rtmidi
@@ -284,11 +283,10 @@ public:
      *  Default constructor that allows an optional api, client name and queue
      *  size.
      *
-     *  An exception will be thrown if a MIDI system initialization
-     *  error occurs.  The queue size defines the maximum number of
-     *  messages that can be held in the MIDI queue (when not using a
-     *  callback function).  If the queue size limit is reached,
-     *  incoming messages will be ignored.
+     *  An exception will be thrown if a MIDI system initialization error
+     *  occurs.  The queue size defines the maximum number of messages that
+     *  can be held in the MIDI queue (when not using a callback function).
+     *  If the queue size limit is reached, incoming messages will be ignored.
      *
      *  If no API argument is specified and multiple API support has been
      *  compiled, the default order of use is ALSA, JACK (Linux) and CORE,
@@ -359,13 +357,13 @@ protected:
 /**
  *  A realtime MIDI output class.
  *
- *  This class provides a common, platform-independent API for MIDI
- *  output.  It allows one to probe available MIDI output ports, to
- *  connect to one such port, and to send MIDI bytes immediately over
- *  the connection.  Create multiple instances of this class to
- *  connect to more than one MIDI device at the same time.  With the
- *  OS-X, Linux ALSA and JACK MIDI APIs, it is also possible to open a
- *  virtual port to which other MIDI software clients can connect.
+ *  This class provides a common, platform-independent API for MIDI output.
+ *  It allows one to probe available MIDI output ports, to connect to one such
+ *  port, and to send MIDI bytes immediately over the connection.  Create
+ *  multiple instances of this class to connect to more than one MIDI device
+ *  at the same time.  With the OS-X, Linux ALSA and JACK MIDI APIs, it is
+ *  also possible to open a virtual port to which other MIDI software clients
+ *  can connect.
  */
 
 class rtmidi_out : public rtmidi
@@ -374,13 +372,10 @@ class rtmidi_out : public rtmidi
 public:
 
     /**
-     *  Default constructor that allows an optional client name.
-     *
-     *  An exception will be thrown if a MIDI system initialization error occurs.
-     *
-     *  If no API argument is specified and multiple API support has been
-     *  compiled, the default order of use is ALSA, JACK (Linux) and CORE,
-     *  JACK (OS-X).
+     *  Default constructor that allows an optional client name.  An exception
+     *  will be thrown if a MIDI system initialization error occurs.  If no
+     *  API argument is specified and multiple API support has been compiled,
+     *  the default order of use is ALSA, JACK (Linux) and CORE, JACK (OS-X).
      */
 
     rtmidi_out ( midibus & parentbus, rtmidi_info & info);

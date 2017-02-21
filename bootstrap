@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2016-12-26
+# \update     	2017-02-21
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -36,7 +36,7 @@ export LANG
 CYGWIN=binmode
 export CYGWIN
 
-export SEQUENCER64_SCRIPT_EDIT_DATE="2016-12-26"
+export SEQUENCER64_SCRIPT_EDIT_DATE="2017-02-21"
 export SEQUENCER64_LIBRARY_API_VERSION="0.90"
 export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.90.0"
 
@@ -87,7 +87,7 @@ M4DIR="m4"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.90-2016-12-26)
+Usage: ./bootstrap [options]                                 (0.90-2017-02-21)
 
    'bootstrap' sets up GNU automake support and libtool support for the
    Sequencer64 project, creating the 'configure' script.  It can also
@@ -104,7 +104,7 @@ Usage: ./bootstrap [options]                                 (0.90-2016-12-26)
    --enable-release  a 'silent' build, as well.
  -am                 Configure to build sequencer64 (original ALSA version).
  -pm                 Configure to build seq64portmidi.
- -rm                 Configure to build seq64rtmidi.
+ -rm                 Configure to build seq64rtmidi (JACK version, the default).
  --help              Show this help text.
 
    The default bootstraps the projects.  Then one should run 'configure',
@@ -479,8 +479,8 @@ Now run './configure' to configure Sequencer64 for compilation, or './configure
 --help' for configuration options.  Useful options:
 
       --enable-debug=gdb  --disable-shared   --enable-silent-rules
-      --disable-seq32jack --enable-portmidi  --enable-rtmidi
-      --enable-alsamidi (default)
+      --disable-seq32jack --enable-alsamidi  --enable-rtmidi (default)
+      --enable-portmidi (experimental)
 
 E_O_F
       fi

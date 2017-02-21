@@ -104,7 +104,7 @@ private:
 
     virtual int get_all_port_info ();
 
-};          // midi_alsa_info
+};          // class midi_alsa_info
 
 }           // namespace seq64
 

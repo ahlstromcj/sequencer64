@@ -1,0 +1,69 @@
+README.jack for Sequencer64 0.90.0 (Native JACK)
+Chris Ahlstrom
+2017-02-21 to 2017-02-22 (initial work started in July of 2015)
+
+Until we can update the following document...
+
+   https://github.com/ahlstromcj/sequencer64-doc.git
+
+... this README file provides the things you need to know to run
+the new native JACK implmentation of sequencer64, called seq64.
+
+The first thing to note about seq64 is that it supports both ALSA and JACK
+MIDI.  If you run it to support JACK, and JACK is not present, then seq64
+falls back to ALSA support.
+
+To run seq64 to support JACK, for now, one must add the "-t" or "--jack-midi"
+option.  Why "-t"?  We are running out of option letters.
+
+The next thing to note about seq64 is that the original JACK-transport options
+are still present, but the JACK-transport support is *separate* from the
+JACK-MIDI support.  The JACK-transport client is an invisible client with the
+name "seq64-transport", while the JACK-MIDI client is visible in QJackCtl, and
+is named "seq64".
+
+To enable the JACK transport support, the options -j/--jack-transport,
+-J/--jack-master, and -C/--jack-master-cond are available.
+
+To enable the JACK MIDI support, the -t/--jack-midi options are available.
+When enabled, the "transport" button in the main window will show the word
+"Native" (even when JACK transport is also enabled).  Please note that, if you
+select the jack-midi option and JACK is not available, seq64 will start in
+ALSA mode and save that mode when exiting.
+
+The JACK options are sticky options.  That is, they are saved to the "rc"
+configuration file, so one does not have to specify them in subsequent seq64
+sessions.
+
+The manual-versus-normal port support for JACK MIDI is essentially the same as
+that for ALSA.  The -m/--manual-alsa-ports option actually provides what are
+known as "virtual" ports.  These are ports that do not represent hardware, but
+are created by applications to allow them to connect to other applications or
+MIDI devices.
+
+The different between manual/virtual ports and normal ports is that, while
+normal ports are automatically connected to the remote ports that exist in the
+system, while the manual/virtual ports are just created, and one must manually
+connect them via, for example, the QJackCtl connections dialog.
+
+So, if you want seq64 to automatically connect to all existing JACK MIDI
+ports, do not use the -m/--manual-alsa-ports option... use the
+-a/auto-alsa-ports option.  Both options apply to both ALSA and JACK, but we
+do not want to change the options names yet.
+
+If you want the freedom to make the connections yourself, or with a session
+manager, use the manual/virtual option.
+
+One thing fixed in the new version is the ability to store MIDI note-on events
+with the actual velocity provided by the MIDI keyboard used to generate the
+notes.  Previously, even in seq24, the "Free" "Vol" option did not work.  this
+is fixed.
+
+Also, do not forget the step option.  If one paints notes with the mouse, the
+note is previewed, and the note position advances with each click.  If one
+paints notes via an external MIDI keyboard, the notes are painted and
+advanced, but they are not previewed.  To preview them, click the "pass MIDI
+in to output" button to activate so that they will be passed to your sound
+generator.
+
+# vim: sw=4 ts=4 wm=4 et ft=sh

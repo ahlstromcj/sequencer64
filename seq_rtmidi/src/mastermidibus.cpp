@@ -137,7 +137,8 @@ mastermidibus::api_init (int ppqn, int bpm)
             midibus * m = new midibus
             (
                 m_midi_master, i, SEQ64_MIDI_VIRTUAL_PORT,
-                SEQ64_MIDI_OUTPUT_PORT
+                SEQ64_MIDI_OUTPUT_PORT,
+                i /* bussoverride */                    /* breaks ALSA?     */
             );
             m_outbus_array.add(m, clock(i));            /* must come 1st    */
             m_midi_master.add_output(m);                /* must come 2nd    */

@@ -1,6 +1,6 @@
 README for Sequencer64 0.90.0 (Native JACK)
 Chris Ahlstrom
-2015-09-10 to 2017-02-21 (initial work started in July of 2015)
+2015-09-10 to 2017-02-22 (initial work started in July of 2015)
 
 Sequencer64 is a reboot of seq24 to refactor and improve it.  It extends seq24
 in functionality and bug fixes, although the heart of seq24 remains intact.
@@ -10,7 +10,8 @@ internal fixups.  It maintains backward-compatibility with seq24, with the
 --legacy option.  See https://github.com/ahlstromcj/sequencer64-doc.git.
 
 There are some MAJOR changes now.  Be prepared to regress to the 0.9.21 tagged
-version should you encounter any show-stoppers in your workflow.
+version should you encounter any show-stoppers in your workflow.  Please see
+the INSTALL file for new build instructions.
 
 Native JACK support: Seq64rtmidi/seq64
 
@@ -19,7 +20,9 @@ Native JACK support: Seq64rtmidi/seq64
     a heavily refactored version of the RtMidi library, and it will fall back
     to ALSA support if JACK is not running.  It seems to work, but we have
     a lot of cleanup and efficiency work that we want to do.  Consider it
-    experimental.  See the INSTALL file for the options.
+    experimental.  See the INSTALL file for the options.  See the
+    README.jack file for basic instructions on native JACK (until we can get
+    the Sequencer64 manual up-to-date.
 
 PortMIDI: Seq64portmidi/seq64portmidi
 
@@ -35,7 +38,7 @@ Legacy Sequencer64: Sequencer64/sequencer64
 
 With the big version jump from 0.9 to 0.90, the install process has changed.
 See the INSTALL file.  There are now three different versions of Sequencer64
-that can be built.
+that can be built, as noted above.
 
 Major new updates:
 

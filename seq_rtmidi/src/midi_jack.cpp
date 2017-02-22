@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-20
+ * \updates       2017-02-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -312,59 +312,72 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
 int
 jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
 {
+    static bool s_null_detected = false;
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
-    if (not_nullptr(jackdata->m_jack_port))             /* is port created? */
+    if (is_nullptr(jackdata->m_jack_port))          /* is port created?     */
     {
-        static size_t soffset = 0;
-        void * buf = jack_port_get_buffer(jackdata->m_jack_port, nframes);
-
-#ifdef SEQ64_SHOW_API_CALLS_TMI
-        printf
-        (
-            "%d frames for jack port %lx\n",
-            int(nframes), (unsigned long)(jackdata->m_jack_port)
-        );
-#endif
-
-        jack_midi_clear_buffer(buf);
-
-        /*
-         * A for-loop over the number of nframes?  See discussion above.
-         */
-
-        while (jack_ringbuffer_read_space(jackdata->m_jack_buffsize) > 0)
+        if (! s_null_detected)
         {
-            int space;
-            (void) jack_ringbuffer_read
-            (
-                jackdata->m_jack_buffsize, (char *) &space, sizeof space
-            );
-            jack_midi_data_t * md = jack_midi_event_reserve(buf, soffset, space);
-            if (not_nullptr(md))
-            {
-                char * mididata = reinterpret_cast<char *>(md);
-                (void) jack_ringbuffer_read         /* copy into mididata */
-                (
-                    jackdata->m_jack_buffmessage, mididata, size_t(space)
-                );
+            s_null_detected = true;
+            apiprint("jack_process_rtmidi_output", "null jack port");
+        }
+        return 0;
+    }
+    if (is_nullptr(jackdata->m_jack_buffsize))      /* port set up?        */
+    {
+        if (! s_null_detected)
+        {
+            s_null_detected = true;
+            apiprint("jack_process_rtmidi_output", "null jack buffer");
+        }
+        return 0;
+    }
+
+    static size_t soffset = 0;
+    void * buf = jack_port_get_buffer(jackdata->m_jack_port, nframes);
 
 #ifdef SEQ64_SHOW_API_CALLS_TMI
-                printf("%d bytes read: ", space);
-                for (int i = 0; i < space; ++i)
-                    printf("%x ", (unsigned char)(mididata[i]));
-
-                printf("\n");
+    printf
+    (
+        "%d frames for jack port %lx\n",
+        int(nframes), (unsigned long)(jackdata->m_jack_port)
+    );
 #endif
-            }
-            else
-            {
-                errprint("jack_midi_event_reserve() returned a null pointer");
-            }
-        }
-    }
-    else
+
+    jack_midi_clear_buffer(buf);
+
+    /*
+     * A for-loop over the number of nframes?  See discussion above.
+     */
+
+    while (jack_ringbuffer_read_space(jackdata->m_jack_buffsize) > 0)
     {
-        apiprint("jack_process_rtmidi_output", "null jack port");
+        int space;
+        (void) jack_ringbuffer_read
+        (
+            jackdata->m_jack_buffsize, (char *) &space, sizeof space
+        );
+        jack_midi_data_t * md = jack_midi_event_reserve(buf, soffset, space);
+        if (not_nullptr(md))
+        {
+            char * mididata = reinterpret_cast<char *>(md);
+            (void) jack_ringbuffer_read         /* copy into mididata */
+            (
+                jackdata->m_jack_buffmessage, mididata, size_t(space)
+            );
+
+#ifdef SEQ64_SHOW_API_CALLS_TMI
+            printf("%d bytes read: ", space);
+            for (int i = 0; i < space; ++i)
+                printf("%x ", (unsigned char)(mididata[i]));
+
+            printf("\n");
+#endif
+        }
+        else
+        {
+            errprint("jack_midi_event_reserve() returned a null pointer");
+        }
     }
     return 0;
 }
@@ -463,10 +476,9 @@ midi_jack::api_init_out ()
     std::string remoteportname = connect_name();    /* "bus:port"   */
     remote_port_name(remoteportname);
     if (multi_client())
-    {
         result = open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
-    }
-    else
+
+    if (result)
     {
         result = create_ringbuffer(JACK_RINGBUFFER_SIZE);
         if (result)
@@ -658,6 +670,9 @@ midi_jack::api_init_out_sub ()
             portid = get_bus_index();
             result = portid >= 0;
         }
+        if (result)
+            result = create_ringbuffer(JACK_RINGBUFFER_SIZE);
+
         if (result)
         {
             std::string portname = parent_bus().port_name();

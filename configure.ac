@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-01-08
+dnl \update        2017-02-22
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -426,10 +426,25 @@ dnl in the latest versions of the midibus.hpp and mastermidibus.hpp files in
 dnl the libseq64/include directory.  Is there a better way to define the
 dnl defaults.
 
-dnl AM_CONDITIONAL([BUILD_ALSAMIDI], [test xyes = xyes])
-dnl AM_CONDITIONAL([BUILD_PORTMIDI], [test xno = xyes])
-dnl AM_CONDITIONAL([BUILD_RTMIDI], [test xno = xyes])
-dnl AC_DEFINE(APP_NAME, ["sequencer64"], [Names default version of application])
+dnl RtMidi support.
+
+AC_ARG_ENABLE(rtmidi,
+    [AS_HELP_STRING(--enable-rtmidi, [Enable RtMidi build])],
+    [rtmidi=$enableval],
+    [rtmidi=yes])
+
+if test "$rtmidi" != "no"; then
+    AC_MSG_RESULT([RtMidi build enabled.]);
+    AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if RtMidi support is enabled])
+    AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
+    AM_CONDITIONAL([BUILD_ALSAMIDI], [0])
+    AM_CONDITIONAL([BUILD_PORTMIDI], [0])
+    AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xyes])
+else
+    AC_MSG_WARN([RtMidi build not enabled.]);
+fi
+
+dnl ALSA MIDI (legacy) support.
 
 AC_ARG_ENABLE(alsamidi,
     [AS_HELP_STRING(--enable-alsamidi, [Enable standard ALSA build])],
@@ -441,8 +456,8 @@ if test "$alsamidi" != "no"; then
     AC_DEFINE(ALSAMIDI_SUPPORT, 1, [Indicates if ALSA MIDI support is enabled])
     AC_DEFINE(APP_NAME, ["sequencer64"], [Names legacy version of application])
     AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xyes])
-    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xhellno])
-    AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xhellno])
+    AM_CONDITIONAL([BUILD_PORTMIDI], [0])
+    AM_CONDITIONAL([BUILD_RTMIDI], [0])
 else
     AC_MSG_WARN([Standard ALSA build not enabled.]);
 fi
@@ -458,29 +473,11 @@ if test "$portmidi" != "no"; then
     AC_MSG_RESULT([PortMidi build enabled.]);
     AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates if PortMidi support is enabled])
     AC_DEFINE(APP_NAME, ["seq64portmidi"], [Names this version of application])
-    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xhellno])
+    AM_CONDITIONAL([BUILD_ALSAMIDI], [0])
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xyes])
-    AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xhellno])
+    AM_CONDITIONAL([BUILD_RTMIDI], [0])
 else
     AC_MSG_WARN([PortMidi build not enabled.]);
-fi
-
-dnl RtMidi support.
-
-AC_ARG_ENABLE(rtmidi,
-    [AS_HELP_STRING(--enable-rtmidi, [Enable RtMidi build])],
-    [rtmidi=$enableval],
-    [rtmidi=yes])
-
-if test "$rtmidi" != "no"; then
-    AC_MSG_RESULT([RtMidi build enabled.]);
-    AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if RtMidi support is enabled])
-    AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
-    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xhellno])
-    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xhellno])
-    AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xyes])
-else
-    AC_MSG_WARN([RtMidi build not enabled.]);
 fi
 
 dnl Support for highlighting empty sequences (in yellow).  If enabled, the

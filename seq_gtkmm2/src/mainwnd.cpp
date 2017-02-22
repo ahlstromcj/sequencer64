@@ -993,7 +993,7 @@ mainwnd::timer_callback ()
 
 #ifdef SEQ64_RTMIDI_SUPPORT
     if (rc().with_jack_midi())
-        label = "Native (currently requires a restart)";
+        label = "Native";
 #endif
 
     Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>(m_button_jack->get_child()));

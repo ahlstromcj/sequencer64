@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-13
+ * \updates       2017-02-22
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -113,7 +113,10 @@ options::options
 #ifdef SEQ64_RTMIDI_SUPPORT
     m_button_jack_midi
     (
-        manage(new Gtk::CheckButton("Native JACK _MIDI", true))
+        manage
+        (
+            new Gtk::CheckButton("Native JACK _MIDI (requires a restart)", true)
+        )
     ),
 #endif
     m_button_jack_connect

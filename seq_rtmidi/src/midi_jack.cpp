@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-21
+ * \updates       2017-02-23
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -1164,7 +1164,12 @@ midi_jack::connect_port
  * \param portname
  *      Provides the local name of the port.  This is the full name
  *      ("clientname:portname"), but the "portname" part is extracted to fit
- *      the requirements of the jack_port_register() function.
+ *      the requirements of the jack_port_register() function.  There is an
+ *      issue here when a2jmidid is running.  We may see a client name of
+ *      "seq64", but a port name of "a2j Midi Through [1] capture: Midi
+ *      Through Port-0", which as a colon in it.  What to do?  Just not
+ *      extract the port name from the portname parameter.  If we have an
+ *      issue here, we'll ahve to fix it in the caller.
  */
 
 bool
@@ -1173,7 +1178,13 @@ midi_jack::register_port (bool input, const std::string & portname)
     bool result = not_nullptr(port_handle());
     if (! result)
     {
-        std::string shortname = extract_port_name(portname);
+        /*
+         * See description of the portname parameter above.
+         *
+         * std::string shortname = extract_port_name(portname);
+         */
+
+        std::string shortname = portname;
         unsigned long flag = input ? JackPortIsInput : JackPortIsOutput;
         unsigned long buffsize = 0;
         jack_port_t * p = jack_port_register

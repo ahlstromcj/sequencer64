@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-02-20
+ * \updates       2017-02-23
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of JACK information
@@ -138,6 +138,11 @@ midi_jack_info::connect ()
     jack_client_t * result = m_jack_client;
     if (is_nullptr(result))
     {
+        /*
+         * int jacksize = jack_port_name_size();
+         * infoprintf("JACK PORT NAME SIZE = %d\n", jacksize); // = 320
+         */
+
         const char * clientname = rc().app_client_name().c_str();
         if (multi_client())
             clientname = "midi_jack_info";

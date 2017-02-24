@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-01-16
+ * \updates       2017-02-23
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -950,6 +950,16 @@ wave_type_name (wave_type_t wavetype)
  *  It's a bit krufty to have to rely on that strict format; changes
  *  in the bus/port code could break this function.
  *
+ *  And when a2jmidid is running, indeed this function breaks.  The
+ *  name of a port changes to
+ *
+ *      a2j:Midi Through [14] (playback): Midi Through Port-0
+ *
+ *  with "a2j" as the client name and the rest, including the second colon, as
+ *  the port name.
+ *
+ *  TODO:  FIX ME!!!!!!!
+ *
  * \param fullname
  *      The full port specification to be split.
  *
@@ -978,24 +988,16 @@ extract_port_names
     {
         std::string cname;
         std::string pname;
-        std::size_t colonpos = fullname.find_last_of(":");
+        std::size_t colonpos = fullname.find_first_of(":"); /* not last! */
         if (colonpos != std::string::npos)
         {
+            /*
+             * The client name consists of all characters up the the first
+             * colon.  Period.  The port name consists of all characters
+             * after that colon.  Period.
+             */
+
             cname = fullname.substr(0, colonpos);
-            if (! cname.empty())
-            {
-                std::size_t spacepos = cname.find_first_of(" ");
-                if (spacepos != std::string::npos)
-                {
-                    spacepos = cname.find_first_of(" ", spacepos+1);
-                    if (spacepos != std::string::npos)
-                    {
-                        std::size_t colonpos = cname.find_last_of(":");
-                        if (colonpos != std::string::npos)
-                        cname = cname.substr(spacepos+1, colonpos);
-                    }
-                }
-            }
             pname = fullname.substr(colonpos+1);
             result = ! cname.empty() && ! pname.empty();
         }
@@ -1012,6 +1014,8 @@ extract_port_names
  *  Extracts the buss name from "bus:port".  Sometimes we don't need both
  *  parts at once.
  *
+ *  However, when a2jmidid is active. the port name will have a colon in it.
+ *
  * \param fullname
  *      The "bus:port" name.
  *
@@ -1023,7 +1027,7 @@ extract_port_names
 std::string
 extract_bus_name (const std::string & fullname)
 {
-    std::size_t colonpos = fullname.find_last_of(":");
+    std::size_t colonpos = fullname.find_first_of(":");  /* not last! */
     return (colonpos != std::string::npos) ?
         fullname.substr(0, colonpos) : std::string("");
 }
@@ -1031,6 +1035,8 @@ extract_bus_name (const std::string & fullname)
 /**
  *  Extracts the port name from "bus:port".  Sometimes we don't need both
  *  parts at once.
+ *
+ *  However, when a2jmidid is active. the port name will have a colon in it.
  *
  * \param fullname
  *      The "bus:port" name.
@@ -1044,7 +1050,7 @@ extract_bus_name (const std::string & fullname)
 std::string
 extract_port_name (const std::string & fullname)
 {
-    std::size_t colonpos = fullname.find_last_of(":");
+    std::size_t colonpos = fullname.find_first_of(":");  /* not last! */
     return (colonpos != std::string::npos) ?
         fullname.substr(colonpos + 1) : fullname ;
 }

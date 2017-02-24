@@ -224,7 +224,7 @@ midibase::set_name
     const std::string & portname
 )
 {
-    char name[80];
+    char name[128];
     if (is_virtual_port())
     {
         snprintf
@@ -238,7 +238,7 @@ midibase::set_name
     }
     else
     {
-        char alias[64];
+        char alias[128];
         std::string bussname = usr().bus_name(get_bus_id()); // WHY usr()???
         if (! bussname.empty())
         {
@@ -319,7 +319,7 @@ midibase::set_alt_name
         if (colonpos != std::string::npos)
             pname[colonpos] = ' ';
 
-        char alias[64];
+        char alias[128];
         snprintf                            /* copy the client name parts */
         (
             alias, sizeof alias, "[%d] %d:%d %s:%s",
@@ -388,7 +388,7 @@ midibase::set_multi_name
         bus_name(bussname);
         port_name(rpname);
 
-        char alias[64];
+        char alias[128];
         snprintf                            /* copy the client name parts */
         (
             alias, sizeof alias, "[%d] %d:%d %s:%s",

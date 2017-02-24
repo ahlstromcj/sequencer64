@@ -1,15 +1,15 @@
-INSTALL for Sequencer64 v. 0.90.0
+INSTALL for Sequencer64 v. 0.90.1
 Chris Ahlstrom
-2015-09-10 to 2017-02-20
+2015-09-10 to 2017-02-24
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
 With version 0.90.0, three different versions of the program can be build:
 
-    -   seq64.  Native JACK.  The default build after a simple bootstrap
-        command.  JACK MIDI with optional JACK transport.  Fallback to ALSA.
-    -   sequencer64.  ALSA with JACK transport.  The original version.
-    -   seq64portmidi.  PortMIDI implementation.  Has issues, deprecated.
+    -   seq64. Native JACK; the default build after a simple bootstrap.
+        command; JACK MIDI with optional JACK transport; fall-back to ALSA.
+    -   sequencer64. ALSA with JACK transport; the original version.
+    -   seq64portmidi. PortMIDI implementation; has issues, deprecated.
 
 Steps:
 
@@ -23,11 +23,12 @@ Steps:
    2.  The first thing to do is decide what version of Sequencer64 you want to
        build.  There are now 3 versions:
 
-       1.   Seq64rtmidi/seq64:           ./bootstrap -er -rm
+       1.   Seq64rtmidi/seq64:           ./bootstrap [ -er -rm ]
        2.   Sequencer64/sequencer64:     ./bootstrap -er -am
        3.   Seq64portmidi/seq64portmidi: ./bootstrap -er -pm
    
-       From the top project directory, run the commands:
+       From the top project directory, run these commands, which set up a
+       build of seq64 by default.
 
        $ ./bootstrap
        $ ./configure
@@ -48,11 +49,9 @@ Steps:
        $ ./bootstrap --enable-release [ -rm | -am | -pm ]
        $ ./bootstrap -er [ -rm | -am | -pm ]
 
-       The commands above set up a build of seq64 by default.
-
        If desired, there are also configure options as described below,
        and also conditional macros in the code.  The configure options can be 
-       supplied to the ./configure command, while the macros can be defined
+       supplied to the ./configure command, while build macros can be defined
        (in the code) to even further tailor the build.
 
    3.  Run the make command:
@@ -89,6 +88,9 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 
     These options undefine the following build macros:
 
+        SEQ64_RTMIDI_SUPPORT
+        SEQ64_ALSAMIDI_SUPPORT
+        SEQ64_PORTMIDI_SUPPORT
         SEQ64_HIGHLIGHT_EMPTY_SEQS
         SEQ64_LASH_SUPPORT
         SEQ64_JACK_SUPPORT
@@ -98,6 +100,28 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         SEQ64_STAZED_TRANSPOSE
         SEQ64_STRIP_EMPTY_MUTES
 
+    --enable-rtmidi
+
+        Defines SEQ64_RTMIDI_SUPPORT to enable our heavily modified
+        "rtmidi" library.  This option enables the usage of native JACK MIDI
+        which will fall back to ALSA if JACK is not running.  Builds
+        Seq64rtmidi/seq64.
+
+    --enable-alsamidi
+
+        Defines SEQ64_ALSAMIDI_SUPPORT to build the original Sequencer64.
+        This build is not quite the same, since we have refactored the midibus
+        and mastermidibus modules, and added the businfo module.
+        Builds Sequencer64/sequencer64.
+
+    --enable-portmidi
+
+        Defines SEQ64_PORTMIDI_SUPPORT to build the PortMIDI version of
+        Sequencer64, using the Linux version of this library.  Builds
+        Seq64portmidi/seq64portmidi.  We have tested only playback.
+        When we eventually get to Windows MIDI support, we will use the
+        "rtmidi" build to do it.
+        
     --disable-highlight
 
         Undefines the SEQ64_HIGHLIGHT_EMPTY_SEQS  macro, which is

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-02-11
+ * \updates       2017-02-24
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -898,9 +898,9 @@ build_details ()
     std::ostringstream result;
     result
 << "Build features:" << std::endl << std::endl
-<< "ALSA MIDI support * = "      << s_build_alsamidi_support      << std::endl
-<< "PortMidi support * = "       << s_build_portmidi_support      << std::endl
-<< "RtMidi support * = "         << s_build_rtmidi_support        << std::endl
+<< "Native JACK/ALSA (rtmidi) * = " << s_build_rtmidi_support     << std::endl
+<< "ALSA-only MIDI support * = " << s_build_alsamidi_support      << std::endl
+<< "PortMIDI support * = "       << s_build_portmidi_support      << std::endl
 << "Event editor * = "           << s_event_editor                << std::endl
 << "Event multimap (vs list) = " << s_build_use_event_map         << std::endl
 << "Sort after each insert = "   << s_build_presort_events        << std::endl

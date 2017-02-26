@@ -1,3 +1,644 @@
+2017-02-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, README.jack, TODO, configure.ac, contrib/notes/git.txt,
+	libseq64/include/easy_macros.h, libseq64/src/easy_macros.cpp: Some
+	cleanup and doc updates preparatory to 0.90.1.
+
+2017-02-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, configure.ac, libseq64/src/c.cpp,
+	libseq64/src/calculations.cpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/midibase.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp: Initial check-in of 0.90.1 to fix
+	a2jmidid, issues #61, #62.
+
+2017-02-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp: Minor
+	tweaks to jack buttons.
+	* README, README.jack, configure.ac, seq_gtkmm2/src/mainwnd.cpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_jack.cpp: 
+	Nearing the finish line for JACK support, fixed a configure issue.
+
+2017-02-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, NEWS, README, bootstrap, configure.ac, debian/README,
+	libseq64/include/easy_macros.h, seq_portmidi/src/mastermidibus.cpp,
+	seq_rtmidi/include/mastermidibus_rm.hpp,
+	seq_rtmidi/include/midi_alsa_info.hpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midi_jack_data.hpp,
+	seq_rtmidi/include/midi_jack_info.hpp,
+	seq_rtmidi/include/midibus_rm.hpp, seq_rtmidi/include/rtmidi.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_info.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp,
+	seq_rtmidi/src/rtmidi_types.cpp: Interim check-in for safe-keeping,
+	clean-up.
+
+2017-02-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/configs/sequencer64.usr.example,
+	libseq64/include/app_limits.h, libseq64/include/midibase.hpp,
+	libseq64/include/sequence.hpp, libseq64/include/user_settings.hpp,
+	libseq64/src/midibase.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_rtmidi/include/mastermidibus_rm.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp: Interim check-in, JACK I/O and
+	free-velocity recording basically work.
+
+2017-02-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, libseq64/include/businfo.hpp,
+	libseq64/include/mastermidibase.hpp, libseq64/include/midibase.hpp,
+	libseq64/include/seq64_features.h, libseq64/include/sequence.hpp,
+	libseq64/src/businfo.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/mastermidibase.cpp, libseq64/src/midibase.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_rtmidi/include/midi_alsa.hpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midibus_rm.hpp, seq_rtmidi/include/rtmidi.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/midibus.cpp,
+	seq_rtmidi/src/rtmidi_types.cpp: Got JACK MIDI output working, still
+	refactoring to make JACK input polling work.
+
+2017-02-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_rtmidi/include/midi_api.hpp,
+	seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midi_jack_data.hpp,
+	seq_rtmidi/include/midi_jack_info.hpp,
+	seq_rtmidi/include/rtmidi.hpp, seq_rtmidi/include/rtmidi_types.hpp,
+	seq_rtmidi/src/midi_api.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/rtmidi_types.cpp: 
+	Interim check-in, getting rtmidi_in_data properly initialized is in
+	progress.
+
+2017-02-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64portmidi/seq64portmidi.cpp, Seq64rtmidi/seq64rtmidi.cpp,
+	Sequencer64/sequencer64.cpp, seq_alsamidi/src/midibus.cpp,
+	seq_gtkmm2/include/options.hpp, seq_gtkmm2/src/options.cpp,
+	seq_portmidi/src/midibus.cpp, seq_rtmidi/src/midibus.cpp: Interim
+	check-in, fixed some compiler errors on regular and portmidi
+	libraries.
+	* libseq64/include/rc_settings.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/event.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/options.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_rtmidi/include/midi_alsa.hpp, seq_rtmidi/include/midi_api.hpp,
+	seq_rtmidi/include/midi_jack.hpp, seq_rtmidi/include/rtmidi.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_api.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/rtmidi.cpp,
+	seq_rtmidi/src/rtmidi_info.cpp: More tweaking, still working on
+	getting data between JACK ports properly.
+
+2017-02-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/mastermidibase.hpp,
+	libseq64/include/midibase.hpp, libseq64/include/rc_settings.hpp,
+	libseq64/src/businfo.cpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/mastermidibase.cpp,
+	libseq64/src/midibase.cpp, libseq64/src/perform.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/sequence.cpp,
+	seq_alsamidi/include/midibus_am.hpp, seq_alsamidi/src/midibus.cpp,
+	seq_portmidi/src/midibus.cpp, seq_rtmidi/include/midi_alsa.hpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midi_jack.hpp, seq_rtmidi/include/rtmidi.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_api.cpp,
+	seq_rtmidi/src/midi_info.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/midibus.cpp,
+	seq_rtmidi/src/rtmidi.cpp: Interim check-in, still fixing setting up
+	JACK I/O ports, what a pain.
+
+2017-02-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/io-seq64.txt, libseq64/include/businfo.hpp,
+	libseq64/include/mastermidibase.hpp, libseq64/include/midibase.hpp,
+	libseq64/src/businfo.cpp, libseq64/src/mastermidibase.cpp,
+	libseq64/src/perform.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/midibus.cpp: 
+	Improvements in JACK I/O bus arranging, still in progress.
+
+2017-02-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/io-seq64.txt, libseq64/include/rc_settings.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/midibus.cpp,
+	seq_rtmidi/src/rtmidi.cpp, seq_rtmidi/src/rtmidi_info.cpp: Added
+	with-jack-midi option, currently command-line only, still dealing
+	with backward I/O of JACK re ALSA.
+
+2017-02-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/businfo.hpp,
+	libseq64/include/mastermidibase.hpp, libseq64/src/businfo.cpp,
+	libseq64/src/midibase.cpp, libseq64/src/sequence.cpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midibus_rm.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_api.cpp,
+	seq_rtmidi/src/midi_info.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/midibus.cpp: 
+	Fixups for handling virtual ports properly.
+
+2017-02-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64rtmidi/seq64rtmidi.cpp, contrib/code/jack-smf-player.c,
+	contrib/code/jack_bbt_position.cpp,
+	libseq64/include/cmdlineopts.hpp, libseq64/include/configfile.hpp,
+	libseq64/include/mastermidibase.hpp, libseq64/include/midibase.hpp,
+	libseq64/include/optionsfile.hpp, libseq64/include/perform.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/configfile.cpp,
+	libseq64/src/mastermidibase.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/keys_perform_gtk2.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midibus_rm.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_probe.cpp, seq_rtmidi/src/midibus.cpp,
+	seq_rtmidi/src/rtmidi_info.cpp: Fixed rtmidi ALSA input toggle, made
+	midi-input configuration more robust.
+
+2017-02-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/easy_macros.h, libseq64/src/jack_assistant.cpp,
+	seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midi_jack_info.hpp,
+	seq_rtmidi/include/rtmidi.hpp, seq_rtmidi/src/mastermidibus.cpp,
+	seq_rtmidi/src/midi_alsa.cpp, seq_rtmidi/src/midi_alsa_info.cpp,
+	seq_rtmidi/src/midi_api.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/midibus.cpp: Back
+	to ALSA, MIDI Input GUI toggle does not work, interim check-in.
+
+2017-02-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/easy_macros.h, libseq64/src/easy_macros.cpp,
+	libseq64/src/jack_assistant.cpp, seq_alsamidi/src/midibus.cpp,
+	seq_rtmidi/include/mastermidibus_rm.hpp,
+	seq_rtmidi/include/midi_alsa_info.hpp,
+	seq_rtmidi/include/midi_info.hpp, seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midi_jack_info.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/midibus.cpp: Got
+	rtmidi ALSA implementation polling keyboard properly.
+
+2017-01-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/businfo.hpp,
+	libseq64/include/mastermidibase.hpp, libseq64/include/midibase.hpp,
+	libseq64/include/perform.hpp, libseq64/src/businfo.cpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/mastermidibase.cpp,
+	libseq64/src/midibase.cpp,
+	seq_alsamidi/include/mastermidibus_am.hpp,
+	seq_alsamidi/src/mastermidibus.cpp, seq_alsamidi/src/midibus.cpp,
+	seq_gtkmm2/src/options.cpp,
+	seq_rtmidi/include/mastermidibus_rm.hpp,
+	seq_rtmidi/include/midi_alsa.hpp,
+	seq_rtmidi/include/midi_alsa_info.hpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midibus_rm.hpp, seq_rtmidi/include/rtmidi.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_info.cpp,
+	seq_rtmidi/src/midibus.cpp: Got announce bus in place, but still
+	strugging to get MIDI keyboard ALSA input to work.
+
+2017-01-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/businfo.hpp, libseq64/include/midibase.hpp,
+	libseq64/include/perform.hpp, libseq64/src/businfo.cpp,
+	libseq64/src/mastermidibase.cpp, libseq64/src/optionsfile.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp: Fixed
+	alsamidi start up and MIDI input toggling.
+
+2017-01-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_portmidi/src/mastermidibus.cpp: Made portmidi bus interface
+	match new businfo interface.
+	* libseq64/include/mastermidibase.hpp,
+	libseq64/src/mastermidibase.cpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp: Made rtmidi bus interface match
+	new businfo interface.
+	* libseq64/include/businfo.hpp, libseq64/include/easy_macros.h,
+	libseq64/include/mastermidibase.hpp, libseq64/include/midibase.hpp,
+	libseq64/include/perform.hpp, libseq64/src/businfo.cpp,
+	libseq64/src/easy_macros.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/mastermidibase.cpp, libseq64/src/midibase.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	seq_alsamidi/src/mastermidibus.cpp, seq_gtkmm2/src/options.cpp,
+	seq_portmidi/src/mastermidibus.cpp,
+	seq_rtmidi/include/mastermidibus_rm.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/rtmidi_types.cpp: Still
+	working on fixing bugs introduced to original app by the
+	refactoring, working on rc and options dialog.
+
+2017-01-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/jack.txt, libseq64/include/midibase.hpp,
+	libseq64/src/businfo.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/midibase.cpp, libseq64/src/perform.cpp,
+	seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midi_jack_data.hpp,
+	seq_rtmidi/include/midi_jack_info.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/rtmidi.cpp: 
+	Getting mulit-client code to work, still in progress.
+
+2017-01-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/easy_macros.h,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/include/mastermidibase.hpp, libseq64/include/perform.hpp,
+	libseq64/include/rc_settings.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/rc_settings.cpp,
+	seq_rtmidi/include/mastermidibus_rm.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/rtmidi_info.cpp: 
+	Added jack logging, refactored mastermidibus creation, still get
+	corrupt JACK transport client pointer when stopping.
+
+2017-01-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/jack.txt, libseq64/include/businfo.hpp,
+	libseq64/include/jack_assistant.hpp, libseq64/src/businfo.cpp,
+	libseq64/src/jack_assistant.cpp, seq_rtmidi/include/midi_api.hpp,
+	seq_rtmidi/include/midi_info.hpp, seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midi_jack_info.hpp,
+	seq_rtmidi/include/midibus_rm.hpp, seq_rtmidi/include/rtmidi.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_info.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp,
+	seq_rtmidi/src/midi_jack_preserved.cpp, seq_rtmidi/src/midibus.cpp: 
+	Added api_connect() to the rtmidi API set.
+
+2017-01-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/include/perform.hpp, libseq64/src/jack_assistant.cpp,
+	seq_rtmidi/include/midi_jack.hpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp: Trying different JACK process
+	callbacks to avoid segfault when JACK is running.
+	* seq_alsamidi/src/mastermidibus.cpp: Fixed alsamidi mastermidibus
+	module bus pointer usage.
+
+2017-01-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp,
+	seq_rtmidi/src/midi_jack_preserved.cpp: Interim check-in, JACK
+	transport and JACK I/O together cause a segfault in the JACK
+	transport callback.
+
+2017-01-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/jack.txt, libseq64/include/businfo.hpp,
+	libseq64/include/calculations.hpp, libseq64/include/easy_macros.h,
+	libseq64/src/businfo.cpp, libseq64/src/calculations.cpp,
+	libseq64/src/midibase.cpp, seq_alsamidi/src/mastermidibus.cpp,
+	seq_portmidi/src/mastermidibus.cpp,
+	seq_rtmidi/include/mastermidibus_rm.hpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_api.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp: 
+	Interim check-in, got JACK auto-connect basically working.
+
+2017-01-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* bootstrap, contrib/notes/jack.txt, libseq64/include/businfo.hpp,
+	libseq64/include/calculations.hpp, libseq64/include/midibase.hpp,
+	libseq64/src/businfo.cpp, libseq64/src/calculations.cpp,
+	libseq64/src/mastermidibase.cpp, libseq64/src/midibase.cpp,
+	seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midibus_rm.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_info.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp,
+	seq_rtmidi/src/midi_probe.cpp, seq_rtmidi/src/midibus.cpp: Interim
+	check-in, still getting port names to be exactl correct for virtual
+	versus normal ports.
+
+2017-01-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/businfo.cpp, seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midi_jack_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/midibus.cpp: Added
+	multi-client option, still getting client names and non-virtual
+	ports squared away.
+
+2017-01-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/midibase.hpp, seq_rtmidi/include/midi_api.hpp,
+	seq_rtmidi/include/midi_probe.hpp, seq_rtmidi/include/rtmidi.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp, seq_rtmidi/src/midi_api.cpp,
+	seq_rtmidi/src/midi_info.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/midi_probe.cpp: 
+	Slowly getting JACK manual/virtual ports to work, have a segfault at
+	exit, though.
+
+2017-01-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/businfo.hpp, libseq64/include/midibase.hpp,
+	libseq64/src/businfo.cpp, libseq64/src/midibase.cpp,
+	seq_rtmidi/include/midi_alsa.hpp, seq_rtmidi/include/midi_api.hpp,
+	seq_rtmidi/include/midi_jack.hpp, seq_rtmidi/include/rtmidi.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_api.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_probe.cpp, seq_rtmidi/src/midibus.cpp,
+	seq_rtmidi/src/rtmidi.cpp: Added support for modifying the parent
+	bus, more api code added to midi_jack.
+
+2017-01-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/midibase.hpp, libseq64/src/midibase.cpp,
+	seq_rtmidi/include/midi_alsa.hpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_info.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midibus.cpp: Still trying to get virtual/manual
+	rtmidi mode to work, a pointer changes in mastermidibus.
+
+2017-01-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/cmdlineopts.cpp, man/sequencer64.1,
+	resources/pixmaps/seq64_logo.xpm,
+	resources/pixmaps/seq64_logo_legacy.xpm, seq_gtkmm2/src/mainwnd.cpp: 
+	Added SEQ64 logos for rtmidi version, seq64.
+	* configure.ac, libseq64/src/midibase.cpp,
+	seq_alsamidi/include/midibus_am.hpp,
+	seq_alsamidi/src/mastermidibus.cpp, seq_alsamidi/src/midibus.cpp,
+	seq_rtmidi/src/mastermidibus.cpp: Fixed enumeration of ALSA ports in
+	standard Sequencer64.
+
+2017-01-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/easy_macros.h,
+	libseq64/include/jack_assistant.hpp, libseq64/include/midibase.hpp,
+	libseq64/src/jack_assistant.cpp,
+	seq_alsamidi/include/midibus_am.hpp, seq_alsamidi/src/midibus.cpp,
+	seq_rtmidi/include/midi_alsa.hpp, seq_rtmidi/include/midi_api.hpp,
+	seq_rtmidi/include/midi_info.hpp, seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midi_jack_data.hpp,
+	seq_rtmidi/include/midi_jack_info.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_api.cpp, seq_rtmidi/src/midi_info.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp: 
+	Still working out JACK port setup, currently getting virtual ports
+	to work, weird issues.
+
+2017-01-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/rc_settings.hpp, libseq64/src/rc_settings.cpp,
+	seq_rtmidi/include/Makefile.am, seq_rtmidi/include/midi_alsa.hpp,
+	seq_rtmidi/include/midi_jack.hpp, seq_rtmidi/src/Makefile.am,
+	seq_rtmidi/src/mastermidibus.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/rtmidi.cpp,
+	seq_rtmidi/src/rtmidi_info.cpp: Added unfinished midi_jack module to
+	get things building and starting up.
+
+2017-01-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/rc_settings.hpp, libseq64/src/rc_settings.cpp,
+	seq_rtmidi/include/Makefile.am,
+	seq_rtmidi/include/mastermidibus_rm.hpp,
+	seq_rtmidi/include/midi_alsa_info.hpp,
+	seq_rtmidi/include/midi_info.hpp, seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midi_jack_data.hpp,
+	seq_rtmidi/include/midi_jack_info.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp, seq_rtmidi/src/Makefile.am,
+	seq_rtmidi/src/mastermidibus.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_info.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp,
+	seq_rtmidi/src/rtmidi_info.cpp, seq_rtmidi/src/rtmidi_types.cpp: 
+	Added jack-kludge-lock to protect JACK disabling, but found that
+	opening the ALSA API alters the with_jack_transport flag.
+
+2017-01-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, Seq64rtmidi/Makefile.am, configure.ac,
+	libseq64/include/businfo.hpp, libseq64/include/mastermidibase.hpp,
+	libseq64/src/businfo.cpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/mastermidibase.cpp,
+	seq_alsamidi/src/mastermidibus.cpp,
+	seq_portmidi/src/mastermidibus.cpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa_info.cpp: 
+	Removed all non-busarray code from mastermidibus.
+	* libseq64/include/Makefile.am, libseq64/include/businfo.hpp,
+	libseq64/include/mastermidibase.hpp, libseq64/src/Makefile.am,
+	libseq64/src/businfo.cpp, libseq64/src/mastermidibase.cpp,
+	seq_alsamidi/src/mastermidibus.cpp,
+	seq_portmidi/src/mastermidibus.cpp,
+	seq_rtmidi/include/mastermidibus_rm.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa_info.cpp: 
+	Got new busarray management working in alsamidi, portmidi, and
+	rtmidi versions of Sequencer64.
+
+2016-12-31  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, contrib/code/jack-smf-player.c,
+	contrib/code/jack-smf-recorder.c, contrib/code/perfstats.cpp,
+	libseq64/include/mastermidibase.hpp, libseq64/include/midibase.hpp,
+	libseq64/src/mastermidibase.cpp, libseq64/src/perform.cpp,
+	seq_alsamidi/include/mastermidibus_am.hpp,
+	seq_alsamidi/src/mastermidibus.cpp,
+	seq_rtmidi/include/mastermidibus_rm.hpp,
+	seq_rtmidi/include/midi_alsa_info.hpp,
+	seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_probe.cpp,
+	seq_rtmidi/src/rtmidi_types.cpp: Got rtmidi ALSA playback working,
+	but still some refactoring needed for completeness.
+
+2016-12-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64rtmidi/seq64rtmidi.cpp, libseq64/include/mastermidibase.hpp,
+	libseq64/include/perform.hpp, libseq64/src/mastermidibase.cpp,
+	libseq64/src/perform.cpp, libseq64/src/settings.cpp,
+	seq_alsamidi/include/mastermidibus_am.hpp,
+	seq_alsamidi/src/mastermidibus.cpp, seq_alsamidi/src/midibus.cpp,
+	seq_portmidi/src/mastermidibus.cpp,
+	seq_rtmidi/include/mastermidibus_rm.hpp,
+	seq_rtmidi/include/midi_alsa.hpp,
+	seq_rtmidi/include/midi_alsa_info.hpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midibus_rm.hpp, seq_rtmidi/include/rtmidi.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midibus.cpp: 
+	Interim check-in, still cannot get rtmidi ALSA version to emit
+	notes.
+
+2016-12-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/midibase.cpp, seq_alsamidi/src/mastermidibus.cpp,
+	seq_rtmidi/include/Makefile.am, seq_rtmidi/include/midi_alsa.hpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midibase_abc.hpp,
+	seq_rtmidi/include/midibus_rm.hpp, seq_rtmidi/include/rtmidi.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_api.cpp, seq_rtmidi/src/midibus.cpp,
+	seq_rtmidi/src/rtmidi.cpp, seq_rtmidi/src/rtmidi_info.cpp: Pretty
+	close to finalizing the heavily refactored rtmidi API for ALSA.
+
+2016-12-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* bootstrap, configure.ac, seq_alsamidi/src/midibus.cpp,
+	seq_rtmidi/include/midi_alsa.hpp,
+	seq_rtmidi/include/midi_alsa_info.hpp,
+	seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_info.cpp,
+	seq_rtmidi/src/rtmidi.cpp, seq_rtmidi/src/rtmidi_info.cpp: Interim
+	check-in, folding more parameters into rtmidi_info and midi_info.
+
+2016-12-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_rtmidi/include/midi_alsa_info.hpp,
+	seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midibus_rm.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_info.cpp,
+	seq_rtmidi/src/midibus.cpp, seq_rtmidi/src/rtmidi.cpp,
+	seq_rtmidi/src/rtmidi_info.cpp: More rtmidi midibus constructor
+	refinements...
+
+2016-12-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/app_limits.h, libseq64/include/midibase.hpp,
+	seq_rtmidi/include/midi_alsa.hpp, seq_rtmidi/include/midi_api.hpp,
+	seq_rtmidi/include/midi_api_original.hpp,
+	seq_rtmidi/include/midi_info.hpp, seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/rtmidi.hpp, seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_api.cpp, seq_rtmidi/src/midi_info.cpp,
+	seq_rtmidi/src/midi_probe.cpp, seq_rtmidi/src/midibus.cpp,
+	seq_rtmidi/src/rtmidi.cpp: Interim check-in, interface rework, does
+	not build at present.
+
+2016-12-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_rtmidi/include/midi_alsa.hpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/rtmidi.hpp,
+	seq_rtmidi/src/midi_alsa.cpp, seq_rtmidi/src/midi_api.cpp,
+	seq_rtmidi/src/midibus.cpp: More massive refactoring of rtmidi
+	interface, does not build right now.
+
+2016-12-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/app_limits.h, libseq64/include/midibase.hpp,
+	seq_rtmidi/include/Makefile.am,
+	seq_rtmidi/include/mastermidibus_rm.hpp,
+	seq_rtmidi/include/midi_alsa.hpp, seq_rtmidi/include/midi_api.hpp,
+	seq_rtmidi/include/midi_api_original.hpp,
+	seq_rtmidi/include/midibase_abc.hpp, seq_rtmidi/include/rtmidi.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp, seq_rtmidi/src/Makefile.am,
+	seq_rtmidi/src/midi_alsa.cpp, seq_rtmidi/src/midi_api.cpp,
+	seq_rtmidi/src/midi_probe.cpp, seq_rtmidi/src/midibus.cpp,
+	seq_rtmidi/src/rtmidi.cpp, seq_rtmidi/src/rtmidi_info.cpp,
+	seq_rtmidi/src/rtmidi_types.cpp: Stripped out midi_api stuff that
+	does not apply to seq64, still fleshing out new version of midi_alsa
+	rtmidi module.
+	* configure.ac, seq_rtmidi/include/Makefile.am,
+	seq_rtmidi/include/midi_alsa.hpp, seq_rtmidi/include/midi_api.hpp,
+	seq_rtmidi/include/midi_core.hpp,
+	seq_rtmidi/include/midi_dummy.hpp,
+	seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midi_winmm.hpp,
+	seq_rtmidi/include/rtmidi_base.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp, seq_rtmidi/src/Makefile.am,
+	seq_rtmidi/src/midi_alsa.cpp, seq_rtmidi/src/midi_alsa_info.cpp,
+	seq_rtmidi/src/midi_api.cpp, seq_rtmidi/src/midi_core.cpp,
+	seq_rtmidi/src/midi_info.cpp, seq_rtmidi/src/midi_probe.cpp,
+	seq_rtmidi/src/midi_winmm.cpp, seq_rtmidi/src/rtmidi.cpp,
+	seq_rtmidi/src/rtmidi_base.cpp, seq_rtmidi/src/rtmidi_info.cpp: 
+	Paring out old midi_alsa, removing midi_core, midi_winmm,
+	midi_dummy, and rtmidi_base.
+	* bootstrap, configure.ac, seq_alsamidi/src/mastermidibus.cpp,
+	seq_rtmidi/include/midi_alsa_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp: The last check-in before
+	abandoning the direct RtMidi model.
+
+2016-12-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, seq_alsamidi/include/midibus_am.hpp,
+	seq_alsamidi/src/midibus.cpp,
+	seq_rtmidi/include/midi_alsa_info.hpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midibus_rm.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midibus.cpp: 
+	Started work on shared MIDI handle model extension for rtmidi.
+
+2016-12-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* bootstrap, doc/dia/seq24/mainwindow.dia,
+	doc/dia/seq24/mainwnd.dia, doc/dia/seq24/mastermidibus.dia,
+	doc/dia/seq24/patterneditor.dia, doc/dia/seq24/perfedit.dia,
+	doc/dia/seq24/perfnames.dia, doc/dia/seq24/perform.dia,
+	doc/dia/seq24/performanceeditor.dia, doc/dia/seq24/perfroll.dia,
+	doc/dia/seq24/perftime.dia, doc/dia/seq24/seqdata.dia,
+	doc/dia/seq24/seqedit.dia, doc/dia/seq24/seqevent.dia,
+	doc/dia/seq24/seqkeys.dia, doc/dia/seq24/seqmenu.dia,
+	doc/dia/seq24/seqroll.dia, doc/dia/seq24/seqtime.dia,
+	doc/dia/seq24/sequence.dia, libseq64/src/mastermidibase.cpp,
+	seq_alsamidi/src/mastermidibus.cpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_info.cpp: Fixed rtmidi ALSA allocation bug,
+	added old diagrams.
+
+2016-12-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/midibase.hpp, libseq64/src/midibase.cpp,
+	seq_alsamidi/src/midibus.cpp, seq_portmidi/src/midibus.cpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midibus.cpp,
+	seq_rtmidi/src/rtmidi_info.cpp: Fixed midibase setup for all app
+	versions, rtmidi still seqfaults on playback and is silent.
+
 2016-12-13  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* ChangeLog: Stamped version 0.9.21.  Stayed tuned for rtmidi version.

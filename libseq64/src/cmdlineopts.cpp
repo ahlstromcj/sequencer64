@@ -182,7 +182,7 @@ static const std::string s_arg_list =
  */
 
 static const char * const s_help_1a =
-SEQ64_APP_NAME " v 0.90.0  A significant reboot of the seq24 live sequencer.\n"
+SEQ64_APP_NAME " v 0.90.1  A significant reboot of the seq24 live sequencer.\n"
 "Usage: " SEQ64_APP_NAME " [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message and exit.\n"

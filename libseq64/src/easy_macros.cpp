@@ -25,9 +25,10 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-26
- * \updates       2016-12-03
+ * \updates       2017-02-26
  * \license       GNU GPLv2 or above
  *
+ *  These functions are used in macros such as func_message().
  */
 
 #include <assert.h>
@@ -86,8 +87,6 @@ not_nullptr_assert (void * ptr, const std::string & context)
 
 namespace seq64
 {
-
-// #if DEFINE_MESSAGE_CONCATENATE_HERE
 
 /**
  *  This function concatenates two C string pointers and returns them as
@@ -150,8 +149,6 @@ error_message (const std::string & msg)
     (void) info_message(msg);
     return false;
 }
-
-// #endif      // DEFINE_MESSAGE_CONCATENATE_HERE
 
 }           // namespace seq64
 

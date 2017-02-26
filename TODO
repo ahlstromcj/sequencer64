@@ -1,20 +1,81 @@
 Current Hot To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2016-12-03
+2016-12-03 to 2017-02-26
 
-RtMidi implementation issues to work out:
+Rtmidi implementation issues to work out:
 
-    -   Support for -A and -J (and skip JACK setup tries if -A is specified)
-    -   Support for the --buss option
     -   Support for passing along the BPM and PPQN
         -   At startup time
         -   When changed in the GUI
-    -   Issues with reading or saving the "rc" and "usr" files.
-    -   The PortMidi implementation does not show
-        "[0] this port".  It just shows "this port".
-    -   Currently we have to do a --full-clean and then configure
-        for the particular app version, otherwise weird unsolvable unresolved
-        externals occur.
+    -   Add Windows implementation and build files.
+    -   Remove PortMidi implementation after Windows implementation.
 
+Active GitHub Issues:
+
+ *  Actually, some of these are fixed, need to update them.
+
+    1 rhetr : nsm support
+
+    2 TDeagan : Install-recursive and .seq24rc equivalent
+
+    4 TDeagan : Would like unique set of mute groups per screen (1024 instead
+                of 32)
+
+    14 ssj71 : [feature request] Plugin version
+
+    16 F0rth : [feature request] script language
+
+    27 teamblubee : [Question] OSS support and other things
+
+    34 smondet : [feature request] Tempo Track?
+
+    36 y1ds : stop playback and jack transport
+
+    38 AndrewPy : Small quirks in event editor
+
+    41 AndrewPy : Sometimes "play cursor" shows wrong position in main window
+
+    45 simonvanderveldt : JACK MIDI support
+
+    48 ahlstromcj : JACK transport as non-Master does not work with seq32 JACK
+                    support not built in.
+
+    49 simonvanderveldt : Drop LASH support?
+
+    50 muranyia : occasional segfault or ui freeze when changing MIDI Bus
+
+    51 muranyia : Double clicking track vs hi-freq mute-unmute clicking
+
+    52 simonvanderveldt : No cursor in sequence name field
+
+ *  53 simonvanderveldt : pattern midi control controlling wrong pattern/not
+                          working for some patterns
+
+    54 F0rth : [feature request] recording live sessions
+
+ *  55 muranyia : bootstrap mentions 'enable-seq43jack'
+
+    56 muranyia : [feature request] New midi control mod params: Rec Arm, Solo
+
+    57 y1ds : [Feature request] CC sequencing
+
+    58 georgkrause : [Feature request] midi control out
+
+       Is there any possibility to have midi outputs for the controls? i want
+       to "print" the state of the patterns to my apc mini.
+
+ +  59 georgkrause : Recording improvements
+
+    60 georgkrause : change speed while running
+
+ *  61 georgkrause : Jack MIDI Client Naming
+
+ *  62 georgkrause : Jack Midi auto connect
+
+    63 milkmiruku : [Feature request] tempo to two decimal places
+
+       Being able to set the tempo to two decimal places would be very handy
+       for beatmatching and mixing with an audio source, either live or
+       recorded.
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

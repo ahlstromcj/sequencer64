@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2017-02-20
+ * \updates       2017-02-26
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -80,11 +80,9 @@
 
 #else
 
-/* #if __cplusplus <= 199711L */
-
 #if __cplusplus >= 201103L      /* C++11                */
 
-#define nullptr                 0
+#define nullptr                 nullptr
 #define override                override
 #define noexcept                noexcept
 
@@ -341,11 +339,9 @@ extern bool not_nullptr_assert (void * ptr, const std::string & context);
 namespace seq64
 {
 
-// #ifdef DEFINE_MESSAGE_CONCATENATE_HERE
 extern std::string message_concatenate (const char * m1, const char * m2);
 extern bool info_message (const std::string & msg);
 extern bool error_message (const std::string & msg);
-// #endif
 
 }               /* namespace seq64      */
 

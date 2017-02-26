@@ -1,6 +1,6 @@
 README.jack for Sequencer64 0.90.0 (Native JACK)
 Chris Ahlstrom
-2017-02-21 to 2017-02-22 (initial work started in July of 2015)
+2017-02-21 to 2017-02-26 (initial work started in July of 2015)
 
 Until we can update the following document...
 
@@ -48,7 +48,7 @@ connect them via, for example, the QJackCtl connections dialog.
 
 So, if you want seq64 to automatically connect to all existing JACK MIDI
 ports, do not use the -m/--manual-alsa-ports option... use the
--a/auto-alsa-ports option.  Both options apply to both ALSA and JACK, but we
+-a/--auto-alsa-ports option.  Both options apply to both ALSA and JACK, but we
 do not want to change the options names yet.
 
 If you want the freedom to make the connections yourself, or with a session

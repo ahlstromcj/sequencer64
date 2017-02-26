@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2016-12-10
+2015-09-09 to 2017-02-25
 
 Creating a GitHub Repository:
 
@@ -242,5 +242,18 @@ Listing files:
     In bash, one can pass the list to vi(m):
 
         $ vi $(git ls-files -m)
+
+Listing issues:
+
+    See https://adriansieber.com/download-github-issues-from-command-line/.
+
+    Browsing to the following URL will obtain a dump of all Sequencer64
+    issues:
+
+    https://api.github.com/repos/ahlstromcj/sequencer64/issues
+
+    This dump needs programming to whip it into human-readable form.
+
+    http -b https://api.github.com/repos/ahlstromcj/sequencer64/issues?state=all
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

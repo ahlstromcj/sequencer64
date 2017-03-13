@@ -113,6 +113,14 @@ midibus::midibus
         if (bus_name().empty())
             bus_name(rc().application_name());
 
+        /*
+         * Set the buss ID for virtual ports to 0.  We might consider another
+         * number.
+         */
+
+        if (get_bus_id() == SEQ64_NO_BUS)
+            set_bus_id(0);
+
         if (port_name().empty())
         {
             std::string pname = rc().application_name();

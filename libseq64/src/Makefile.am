@@ -172,6 +172,7 @@ libseq64_la_SOURCES = \
    perform.cpp \
 	rc_settings.cpp \
 	sequence.cpp \
+	seq64_features.cpp \
 	settings.cpp \
 	triggers.cpp \
 	user_instrument.cpp \

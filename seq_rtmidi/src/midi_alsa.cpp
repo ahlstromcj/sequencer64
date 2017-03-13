@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2017-02-19
+ * \updates       2017-03-13
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -134,7 +134,25 @@ midi_alsa::midi_alsa (midibus & parentbus, midi_info & masterinfo)
     m_local_addr_port   (-1),
     m_input_port_name   (rc().app_client_name() + " in")
 {
-    // Empty body
+    /*
+     * Get the actual user-client ID from ALSA, then rebuild the descriptive
+     * name for this port. Also have to do it for the parent midibus.  We'd
+     * like to use seq_client_name(), but it comes up unresolved by the damned
+     * GNU linker!  The obvious fixes don't work!
+     */
+
+    set_bus_id(m_local_addr_client);
+    set_name(SEQ64_CLIENT_NAME, bus_name(), port_name());
+    parentbus.set_bus_id(m_local_addr_client);
+    parentbus.set_name(SEQ64_CLIENT_NAME, bus_name(), port_name());
+
+    /*
+     * EXPERIMENTAL.  BUT WE need to find out how to get this client ID where
+     * it is needed to show in File / Options / MIDI Clock and MIDI Input.
+     *
+     *
+    masterinfo.set_bus_id(parentbus.get_port_id(), m_local_addr_client);
+     */
 }
 
 /**

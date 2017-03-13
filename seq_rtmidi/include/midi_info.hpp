@@ -131,6 +131,16 @@ public:
             return SEQ64_BAD_BUS_ID;
     }
 
+    /*
+     * EXPERIMENTAL
+
+    void set_bus_id (int index, int id)
+    {
+        if (index < get_port_count())
+            m_port_container[index].m_client_number = id;
+    }
+     */
+
     std::string get_bus_name (int index) const
     {
         if (index < get_port_count())
@@ -457,6 +467,16 @@ public:
         return mpi.get_bus_id(index);
     }
 
+    /*
+     * EXPERIMENTAL
+
+    virtual void set_bus_id (int index, int id)
+    {
+        midi_port_info & mpi = ref_midi_port_info();
+        mpi.set_bus_id(index, id);
+    }
+     */
+
     virtual std::string get_bus_name (int index) const
     {
         const midi_port_info & mpi = nc_midi_port_info();
@@ -575,6 +595,15 @@ private:
      */
 
     const midi_port_info & nc_midi_port_info () const
+    {
+        return m_midi_mode_input ? m_input : m_output ;
+    }
+
+    /*
+     * EXPERIMENTAL
+     */
+
+    midi_port_info & ref_midi_port_info ()
     {
         return m_midi_mode_input ? m_input : m_output ;
     }

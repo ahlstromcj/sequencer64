@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-02-19
+ * \updates       2017-03-12
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -49,6 +49,8 @@
  *    TEMPORARY; we want to build with them all disabled, and enable them
  *    one-by-one in a controlled, tested manner.
  */
+
+#include <string>
 
 #ifdef PLATFORM_WINDOWS
 #include "configwin32.h"
@@ -367,6 +369,14 @@
  */
 
 #endif      // SEQ64_FEATURES_H
+
+/*
+ * Global (free) functions.
+ */
+
+extern const std::string & seq_app_name ();
+extern const std::string & seq_client_name ();
+extern const std::string & seq_version ();
 
 /*
  * seq64_features.h

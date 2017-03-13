@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-26
+ * \updates       2017-03-12
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1653,7 +1653,7 @@ mainwnd::file_exit ()
 /**
  *  Presents a Help / About dialog.  I (Chris) took the liberty of tacking
  *  my name at the end, and hope to have done eventually enough work to
- *  warrant having it there.
+ *  warrant having it there.  Hmmmmm....
  */
 
 void
@@ -1662,10 +1662,25 @@ mainwnd::about_dialog ()
     std::string comment("Interactive MIDI Sequencer\n");
     Gtk::AboutDialog dialog;
     dialog.set_transient_for(*this);
-    dialog.set_name(SEQ64_PACKAGE_NAME " " SEQ64_VERSION "\n");
+
+    /*
+     * For some reason, using the new functions causes them to be found as
+     * unresolved.  Weird.
+     */
+
+#if USE_PROBLEMATICLY_LINKED_FUNCTION
+    std::string apptag = seq_app_name();
+    apptag += " ";
+    apptag += seq_version();
+//  apptag += "\n";
+#else
+    std::string apptag = SEQ64_APP_NAME " " SEQ64_VERSION; // "\n";
+#endif
+
+    dialog.set_name(apptag);
     dialog.set_version
     (
-        SEQ64_VERSION_DATE_SHORT "\n" SEQ64_GIT_VERSION "\n"
+        "\n" SEQ64_VERSION_DATE_SHORT "\n" SEQ64_GIT_VERSION "\n"
     );
     if (rc().legacy_format())
         comment += "Using original seq24 format (legacy mode)\n";

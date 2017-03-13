@@ -138,6 +138,12 @@ mastermidibus::api_init (int ppqn, int bpm)
             (
                 m_midi_master, i, SEQ64_MIDI_VIRTUAL_PORT,
                 SEQ64_MIDI_OUTPUT_PORT,
+
+                /*
+                 * ca 2017-03-12 Let's put in an invalid value or
+                 * somehow get a client number from the (ALSA) API....
+                 */
+
                 i /* bussoverride */                    /* breaks ALSA?     */
             );
             m_outbus_array.add(m, clock(i));            /* must come 1st    */

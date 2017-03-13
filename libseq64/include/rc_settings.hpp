@@ -163,7 +163,8 @@ private:
 
     /**
      *  Holds the application name, e.g. "sequencer64", "seq64portmidi", or
-     *  "seq64".  This is a constant, set to SEQ64_APP_NAME.
+     *  "seq64".  This is a constant, set to SEQ64_APP_NAME.  Also see the
+     *  seq_app_name() function.
      */
 
     const std::string m_application_name;
@@ -171,7 +172,8 @@ private:
     /**
      *  Holds the client name for the application.  This is much like the
      *  application name, but in the future will be a configuration option.
-     *  For now it is just the value of the SEQ64_CLIENT_NAME macro.
+     *  For now it is just the value of the SEQ64_CLIENT_NAME macro.  Also see
+     *  the seq_client_name() function.
      */
 
     std::string m_app_client_name;

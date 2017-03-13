@@ -414,6 +414,19 @@ public:
         return m_queue;
     }
 
+    /**
+     * \setter m_bus_id
+     *      Useful for setting the buss ID when using the rtmidi_info object
+     *      to create a list of busses and ports.  Would be protected, but
+     *      midi_alsa needs to change this value to reflect the user-client ID
+     *      actually assigned by ALSA.  (That value ranges from 128 to 191.)
+     */
+
+    void set_bus_id (int id)
+    {
+        m_bus_id = id;
+    }
+
     void set_name
     (
         const std::string & appname,
@@ -501,17 +514,6 @@ protected:
     void port_name (const std::string & name)
     {
         m_port_name = name;
-    }
-
-    /**
-     * \setter m_bus_id
-     *      Useful for setting the buss ID when using the rtmidi_info object
-     *      to create a list of busses and ports.
-     */
-
-    void set_bus_id (int id)
-    {
-        m_bus_id = id;
     }
 
     /**

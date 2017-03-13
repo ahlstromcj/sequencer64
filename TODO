@@ -1,6 +1,6 @@
 Current Hot To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-02-26
+2016-12-03 to 2017-03-11
 
 Rtmidi implementation issues to work out:
 
@@ -77,5 +77,7 @@ Active GitHub Issues:
        Being able to set the tempo to two decimal places would be very handy
        for beatmatching and mixing with an audio source, either live or
        recorded.
+
+    64 y1ds : [Feature request] No gui
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

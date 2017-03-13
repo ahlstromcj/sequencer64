@@ -1,4 +1,4 @@
-README for Sequencer64 0.90.1 (Native JACK)
+README for Sequencer64 0.90.2 (Native JACK)
 Chris Ahlstrom
 2015-09-10 to 2017-02-26 (initial work started in July of 2015)
 
@@ -40,6 +40,9 @@ that can be built, as noted above.
 
 Major new updates:
 
+    -   Version 0.90.2:
+        -   Some minor bugs.
+        -   Functions for SEQ64_APP_NAME and SEQ64_CLIENT_NAME.
     -   Version 0.90.1:
         -   Fixes a JACK naming and connection issue when accessing ports
             exposed by a2jmidid.

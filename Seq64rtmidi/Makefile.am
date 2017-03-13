@@ -160,7 +160,7 @@ bin_PROGRAMS = seq64
 
 seq64_SOURCES = seq64rtmidi.cpp
 seq64_DEPENDENCIES = $(dependencies)
-seq64_LDADD = $(libraries) $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)
+seq64_LDADD = $(libraries) $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
 
 #******************************************************************************
 # Testing

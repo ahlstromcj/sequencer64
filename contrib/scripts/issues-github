@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# \file        issues-github
+# \library     Sequencer64
+# \author      Chris Ahlstrom
+# \date        2017-02-25
+# \update      2017-02-25
+# \version     $Revision$
+# \license     $XPC_SUITE_GPL_LICENSE$
+#
+#     This script provides a way to obtain a useable list of issues from our
+#     GitHub repository.  It comes from
+#
+#        https://adriansieber.com/download-github-issues-from-command-line/
+#
+#     It requires the "json" command-line application from
+#
+#        https://github.com/trentm/json
+#
+#     which requires node.js (nodejs in Debian) to be installed. The
+#     quick-and-dirty install (see the README.md file in the "json" project) is
+#     to do the following in your ~/bin directory:
+#
+#     curl -L https://github.com/trentm/json/raw/master/lib/json.js > json
+#
+#     and then make the script executable, and, if needed modify the shebang
+#     line to change "node" to "nodejs".
+#        
+# Other:
+#
+#     http -a <username> if authentication is needed.
+#
+#     This process is still not satisfactory, as the output is still a big mush
+#     of data :-(
+
+http -b https://api.github.com/repos/ahlstromcj/sequencer64/issues?state=all \
+   | json -0 -a \
+   | while read -r line; do echo $line ; done
+
+# vim: ft=sh

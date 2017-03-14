@@ -28,11 +28,16 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-21
- * \updates       2016-05-17
+ * \updates       2017-03-14
  * \license       GNU GPLv2 or above
  *
+ *  This module defines a number of constants relating to control of the 32
+ *  sequences in a set, plus additional controls that shipped with seq24, plus
+ *  new controls to help make Sequencer64 controllable without a graphical
+ *  user interface.
  */
 
+#include "globals.h"                    /* c_seqs_in_set, and more          */
 #include "midibyte.hpp"                 /* seq64::midibyte                  */
 
 /*
@@ -53,9 +58,23 @@ namespace seq64
  *  The controls are read in from the "rc" configuration files, and are
  *  written to the c_midictrl section of the "proprietary" final track in a
  *  Seq24/Sequencer64 MIDI file.
+ *
+ *  Note that we are adding some more MIDI control entries to support the
+ *  following additional functions:
+ *
+ *      -   Start
+ *      -   Pause
+ *      -   Stop
+ *      -   (any more???)
+ *
+ *  To help with backward compatibility, the old c_midi_controls limit is
+ *  supplemented with a new, higher limit, c_midi_controls_extended.
+ *  We also add a number of placeholders so we don't have to adjust the new
+ *  limit again later.  To aid the transition, g_midi_control_limit replaces
+ *  c_midi_controls, though, for now, it has the same value.
  */
 
-const int c_midi_track_ctrl           = c_seqs_in_set * 2;
+const int c_midi_track_ctrl           = c_seqs_in_set * 2;      /* 64       */
 const int c_midi_control_bpm_up       = c_midi_track_ctrl;
 const int c_midi_control_bpm_dn       = c_midi_track_ctrl + 1;
 const int c_midi_control_ss_up        = c_midi_track_ctrl + 2;
@@ -66,7 +85,20 @@ const int c_midi_control_mod_queue    = c_midi_track_ctrl + 6;
 const int c_midi_control_mod_gmute    = c_midi_track_ctrl + 7;
 const int c_midi_control_mod_glearn   = c_midi_track_ctrl + 8;
 const int c_midi_control_play_ss      = c_midi_track_ctrl + 9;
-const int c_midi_controls             = c_midi_track_ctrl + 10;
+const int c_midi_controls             = c_midi_track_ctrl + 10; /* old = 74 */
+const int c_midi_control_start        = c_midi_track_ctrl + 10;
+const int c_midi_control_pause        = c_midi_track_ctrl + 11;
+const int c_midi_control_stop         = c_midi_track_ctrl + 12;
+const int c_midi_control_record       = c_midi_track_ctrl + 13; /* arm for  */
+const int c_midi_control_solo_off     = c_midi_track_ctrl + 14;
+const int c_midi_control_solo_on      = c_midi_track_ctrl + 15;
+const int c_midi_control_thru         = c_midi_track_ctrl + 16;
+const int c_midi_control_17           = c_midi_track_ctrl + 17;
+const int c_midi_control_18           = c_midi_track_ctrl + 18;
+const int c_midi_control_19           = c_midi_track_ctrl + 19;
+const int c_midi_controls_extended    = c_midi_track_ctrl + 20; /* new = 84 */
+
+extern int g_midi_control_limit;
 
 /**
  *  This class (formerly a struct) contains the control information for
@@ -252,7 +284,7 @@ public:
      *      members in this order: m_active, m_inverse_active, m_status,
      *      m_data, m_min_value, and m_max_value.
      */
-    
+
     void set (midibyte values[6])
     {
         m_active = bool(values[0]);

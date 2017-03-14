@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-06
+ * \updates       2017-03-14
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -272,13 +272,16 @@ optionsfile::parse (perform & p)
      * values.  Note that c_midi_controls is, in a roundabout way, defined
      * as 74.  See the old "dot-seq24rc" file in the contrib directory.
      * We should do some testing on what happens if "sequences" is 0 or
-     * greater than or equal to 74 (c_midi_controls)).
+     * greater than or equal to 74 or 84 (g_midi_control_limit)).
      */
 
     bool ok = false;
-    if (sequences > c_midi_controls)                /* 1 to 74 are valid      */
+    if (rc().legacy_format())                   /* init "non-legacy" fields */
+        g_midi_control_limit = c_midi_controls; /* use the original value   */
+
+    if (int(sequences) > g_midi_control_limit)
     {
-        return error_message("midi-control", "too many sequences");
+        return error_message("midi-control", "too many control entries");
     }
     else if (sequences > 0)
     {
@@ -797,11 +800,11 @@ optionsfile::write (const perform & p)
         "# Example:  For a Note On for note 0, 0 and 127 indicate that any\n"
         "# Note On velocity will cause the MIDI control to take effect.\n"
         "\n"
-        <<  c_midi_controls << "      # MIDI controls count\n" // constant count
+        <<  g_midi_control_limit << "      # MIDI controls count (74 or 84)\n"
         ;
 
     char outs[SEQ64_LINE_MAX];
-    for (int mcontrol = 0; mcontrol < c_midi_controls; ++mcontrol)
+    for (int mcontrol = 0; mcontrol < g_midi_control_limit; ++mcontrol)
     {
         /*
          * \tricky
@@ -862,8 +865,48 @@ optionsfile::write (const perform & p)
             file << "# screen set play:\n";
             break;
 
+        case c_midi_control_start:          // 74 (new values!)
+            file << "# start playback:\n";
+            break;
+
+        case c_midi_control_pause:          // 75
+            file << "# pause playback:\n";
+            break;
+
+        case c_midi_control_stop:           // 76
+            file << "# stop playback:\n";
+            break;
+
+        case c_midi_control_record:         // 77
+            file << "# performance record:\n";
+            break;
+
+        case c_midi_control_solo_off:       // 78
+            file << "# solo off:\n";
+            break;
+
+        case c_midi_control_solo_on:        // 79
+            file << "# solo on:\n";
+            break;
+
+        case c_midi_control_thru:           // 80
+            file << "# toggle THRU:\n";
+            break;
+
+        case c_midi_control_17:             // 81
+            file << "# reserved for expansion:\n";
+            break;
+
+        case c_midi_control_18:             // 82
+            file << "# reserved for expansion:\n";
+            break;
+
+        case c_midi_control_19:             // 83
+            file << "# reserved for expansion:\n";
+            break;
+
         /*
-         * case c_midi_controls:  74, the last value, not written.
+         * case g_midi_control_limit:  74 or 84, last value, not written.
          */
 
         default:

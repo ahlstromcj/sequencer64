@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-04
+ * \updates       2017-03-14
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -683,19 +683,19 @@ private:
      *  Provides the settings of MIDI Toggle, as read from the "rc" file.
      */
 
-    midi_control m_midi_cc_toggle[c_midi_controls];
+    midi_control m_midi_cc_toggle[c_midi_controls_extended];
 
     /**
      *  Provides the settings of MIDI On, as read from the "rc" file.
      */
 
-    midi_control m_midi_cc_on[c_midi_controls];
+    midi_control m_midi_cc_on[c_midi_controls_extended];
 
     /**
      *  Provides the settings of MIDI Off, as read from the "rc" file.
      */
 
-    midi_control m_midi_cc_off[c_midi_controls];
+    midi_control m_midi_cc_off[c_midi_controls_extended];
 
     /**
      *  Holds the current offset into the screen-sets.  It is used in the MIDI
@@ -2104,9 +2104,9 @@ private:
         is_modified(true);
     }
 
-    midi_control & midi_control_toggle (int seq);
-    midi_control & midi_control_on (int seq);
-    midi_control & midi_control_off (int seq);
+    midi_control & midi_control_toggle (int ctl);
+    midi_control & midi_control_on (int ctl);
+    midi_control & midi_control_off (int ctl);
     void handle_midi_control (int control, bool state);
     const std::string & get_screen_set_notepad (int screen_set) const;
 
@@ -2292,17 +2292,20 @@ private:
     }
 
     /**
-     *  Checks the parameter against c_midi_controls.  We were checking
-     *  against c_midi_track_ctrl as well, but that was a bug.  This function
-     *  is meant to check that the supplied sequence number does not exceed
-     *  the value of c_midi_controls (32 * 2 + 10 = 74).  The track (sequence
-     *  or pattern) controls rangoe from 0 to 64.  Next come the
-     *  "c_midi_control" values:  bpm_up, bpm_dn, ..., play_ss, and, lastly,
-     *  c_midi_controls itself.
+     *  Checks the parameter against c_midi_controls_extended.  We were
+     *  checking against c_midi_track_ctrl as well, but that was a bug.  This
+     *  function is meant to check that the supplied sequence number does not
+     *  exceed the value of c_midi_controls_extended (32 * 2 + 10 + 10 = 84).
+     *  The track (sequence or pattern) controls rangoe from 0 to 64.  Next
+     *  come the "c_midi_control" values:  bpm_up, bpm_dn, ..., play_ss, plus
+     *  some extended controls that are relatively new, and, lastly,
+     *  c_midi_controls_extended itself.
      *
      * \param seq
      *      The sequence number value that should be inside the
-     *      c_midi_controls range.
+     *      c_midi_controls_extended range.  This value can specify not only a
+     *      sequence number, but larger control values as well, so the
+     *      function and parameter are mildly mis-named.
      *
      * \return
      *      Returns true if the sequence number is valid for accessing the
@@ -2312,7 +2315,7 @@ private:
 
     bool valid_midi_control_seq (int seq) const
     {
-        return seq < c_midi_controls;
+        return seq < c_midi_controls_extended;
     }
 
     /**

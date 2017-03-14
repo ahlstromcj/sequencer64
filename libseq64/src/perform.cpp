@@ -24,11 +24,35 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-02-18
+ * \updates       2017-03-13
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
  *  it supports sequences, playback, JACK, and more.
+ *
+ * Requests for more MIDI control:
+ *
+ *  "On a rather selfish note, I'd love to be able to send these mods from my
+ *  shiny new (AKAI APC MINI) control surface:
+ *
+ *      - Arm for Recording
+ *      - Solo On (compare it to the Replace functionality)
+ *      - Solo Off
+ *
+ *  "Solo might not even be necessary as we have Replace. It would make sense
+ *  if it allowed a temporary solo which could then be released and the
+ *  original state would return. I don't exactly know how this would work,
+ *  however."
+ *
+ *  "A MIDI mod to toggle the recording of incoming MIDI data would be an
+ *  amazing step toward not having to touch the mouse. I guess a mod for MIDI
+ *  pass through would also be required?"
+ *
+ *  "And then, actually, Start/Stop via MIDI would be something very
+ *  valuable."
+ *
+ *  "Waiting OSC avaibility, I use
+ *  https://github.com/Excds/seq24-launchpad-mapper for my Launchpad Mini."
  */
 
 #include <sched.h>
@@ -185,9 +209,9 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_midiclockpos              (-1),
     m_dont_reset_ticks          (false),
     m_screen_set_notepad        (),         // string array [c_max_sets]
-    m_midi_cc_toggle            (),         // midi_control [c_midi_controls]
-    m_midi_cc_on                (),         // midi_control [c_midi_controls]
-    m_midi_cc_off               (),         // midi_control [c_midi_controls]
+    m_midi_cc_toggle            (),         // midi_control []
+    m_midi_cc_on                (),         // midi_control []
+    m_midi_cc_off               (),         // midi_control []
     m_offset                    (0),
     m_control_status            (0),
     m_screenset                 (0),        // vice m_playing_screen
@@ -245,7 +269,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
         m_screen_set_notepad[i].clear();
 
     midi_control zero;                          /* all members false or 0   */
-    for (int i = 0; i < c_midi_controls; ++i)
+    for (int i = 0; i < c_midi_controls_extended; ++i)
         m_midi_cc_toggle[i] = m_midi_cc_on[i] = m_midi_cc_off[i] = zero;
 
     /*
@@ -1410,58 +1434,57 @@ perform::is_sequence_in_edit (int seq)
 /**
  *  Retrieves a reference to a value from m_midi_cc_toggle[].
  *
- * \param seq
- *      Provides the index to pass to valid_midi_control_seq() to obtain a
- *      control value (such as c_midi_control_bpm_up) to use to retrieve the
- *      desired midi_control object.  Note that this value is unsigned simply
- *      to make the legality check of the parameter easier.
- *
- * \return
- *      Returns the "toggle" value if the sequence is valid, and a reference
- *      to sm_mc_dummy otherwise.
- */
-
-midi_control &
-perform::midi_control_toggle (int seq)
-{
-    return valid_midi_control_seq(seq) ? m_midi_cc_toggle[seq] : sm_mc_dummy ;
-}
-
-/**
- *  Retrieves a reference to a value from m_midi_cc_on[].
- *
- * \param seq
+ * \param ctl
  *      Provides the index to pass to valid_midi_control_seq() to obtain a
  *      control value (such as c_midi_control_bpm_up) to use to retrieve the
  *      desired midi_control object.
  *
  * \return
- *      Returns the "on" value if the sequence is valid, and a reference
+ *      Returns the "toggle" value if the control value is valid, and a
+ *      reference to sm_mc_dummy otherwise.
+ */
+
+midi_control &
+perform::midi_control_toggle (int ctl)
+{
+    return valid_midi_control_seq(ctl) ? m_midi_cc_toggle[ctl] : sm_mc_dummy ;
+}
+
+/**
+ *  Retrieves a reference to a value from m_midi_cc_on[].
+ *
+ * \param ctl
+ *      Provides the index to pass to valid_midi_control_seq() to obtain a
+ *      control value (such as c_midi_control_bpm_up) to use to retrieve the
+ *      desired midi_control object.
+ *
+ * \return
+ *      Returns the "on" value if the control value is valid, and a reference
  *      to sm_mc_dummy otherwise.
  */
 
 midi_control &
-perform::midi_control_on (int seq)
+perform::midi_control_on (int ctl)
 {
-    return valid_midi_control_seq(seq) ? m_midi_cc_on[seq] : sm_mc_dummy ;
+    return valid_midi_control_seq(ctl) ? m_midi_cc_on[ctl] : sm_mc_dummy ;
 }
 
 /**
  *  Retrieves a reference to a value from m_midi_cc_off[].
  *
- * \param seq
+ * \param ctl
  *      Provides a control value (such as c_midi_control_bpm_up) to use to
  *      retrieve the desired midi_control object.
  *
  * \return
- *      Returns the "off" value if the sequence is valid, and a reference
+ *      Returns the "off" value if the control value is valid, and a reference
  *      to sm_mc_dummy otherwise.
  */
 
 midi_control &
-perform::midi_control_off (int seq)
+perform::midi_control_off (int ctl)
 {
-    return valid_midi_control_seq(seq) ? m_midi_cc_off[seq] : sm_mc_dummy ;
+    return valid_midi_control_seq(ctl) ? m_midi_cc_off[ctl] : sm_mc_dummy ;
 }
 
 /**
@@ -3150,12 +3173,41 @@ input_thread_func (void * myperf)
         c_midi_control_mod_gmute
         c_midi_control_mod_glearn
 \endverbatim
+ *
+ *  Other values supported:
+ *
+\verbatim
+        c_midi_control_bpm_up
+        c_midi_control_bpm_dn
+        c_midi_control_ss_up
+        c_midi_control_ss_dn
+        c_midi_control_play_ss
+\endverbatim
+ *
+ *  We have added the following values:
+ *
+\verbatim
+        c_midi_control_start
+        c_midi_control_pause
+        c_midi_control_stop
+        c_midi_control_record
+        c_midi_control_solo_off
+        c_midi_control_solo_on
+        c_midi_control_thru
+\endverbatim
+ *
+ *  c_midi_control_solo probably will need the parameter.
+ *
+ *  Values from 32 through 2*32 are normalized by subtracting 32 and passed to
+ *  the select_and_mute_group() function.  Otherwise, the following apply:
+ *
+ *  We also reserve a few control values above that for expansion.
  */
 
 void
-perform::handle_midi_control (int ctrl, bool state)
+perform::handle_midi_control (int ctl, bool state)
 {
-    switch (ctrl)
+    switch (ctl)
     {
     case c_midi_control_bpm_up:
         set_beats_per_minute(get_beats_per_minute() + 1);
@@ -3211,16 +3263,44 @@ perform::handle_midi_control (int ctrl, bool state)
         set_playing_screenset();
         break;
 
+    case c_midi_control_start:
+        start_key();
+        break;
+
+    case c_midi_control_pause:
+        pause_key();
+        break;
+
+    case c_midi_control_stop:
+        stop_key();
+        break;
+
+    case c_midi_control_record:                 /* arm for recording */
+        // TODO
+        break;
+
+    case c_midi_control_solo_off:
+        // TODO
+        break;
+
+    case c_midi_control_solo_on:
+        // TODO
+        break;
+
+    case c_midi_control_thru:
+        // TODO
+        break;
+
     default:
 
         /*
          * Based on the value of c_midi_track_crl (32 * 2) versus
          * m_seqs_in_set (32), maybe the first comparison should be
-         * "ctrl >= 2 * m_seqs_in_set".
+         * "ctl >= 2 * m_seqs_in_set".
          */
 
-        if ((ctrl >= m_seqs_in_set) && (ctrl < c_midi_track_ctrl))
-            select_and_mute_group(ctrl - m_seqs_in_set);
+        if ((ctl >= m_seqs_in_set) && (ctl < c_midi_track_ctrl))
+            select_and_mute_group(ctl - m_seqs_in_set);
 
         break;
     }
@@ -3366,6 +3446,13 @@ perform::input_func ()
 	                        /*
                              * Incorporates pull request #24, arnaud-jacquemin,
                              * issue #23 "MIDI controller toggles wrong pattern"
+                             *
+                             * QUESTIONS/TODO:
+                             *
+                             *  1. Why go above the sequence numbers, why not
+                             *     just go up to c_midi_track_ctrl?
+                             *
+                             *  2. What about our new extended controls?
                              */
 
                             for (int i = 0; i < c_midi_controls; ++i)
@@ -3968,7 +4055,8 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
 
 /**
  *  Invoke the start key functionality.  Meant to be used by GUIs to unify the
- *  treatment of keys versus buttons.
+ *  treatment of keys versus buttons.  Also handy in the extended MIDI
+ *  controls that people have requested.
  *
  * \param songmode
  *      The live/play mode parameter to be passed along to the key processor.
@@ -3983,7 +4071,8 @@ perform::start_key (bool songmode)
 
 /**
  *  Invoke the pause key functionality.  Meant to be used by GUIs to unify the
- *  treatment of keys versus buttons.
+ *  treatment of keys versus buttons.  Also handy in the extended MIDI
+ *  controls that people have requested.
  *
  * \param songmode
  *      The live/play mode parameter to be passed along to the key processor,
@@ -3998,7 +4087,8 @@ perform::pause_key (bool songmode)
 
 /**
  *  Invoke the stop key functionality.  Meant to be used by GUIs to unify the
- *  treatment of keys versus buttons.
+ *  treatment of keys versus buttons.  Also handy in the extended MIDI
+ *  controls that people have requested.
  */
 
 void

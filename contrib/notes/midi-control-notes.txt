@@ -1,0 +1,93 @@
+
+The control processing of MIDI loops through all of the supported MIDI control
+lines. To describe it, we make some abbreviations:
+
+   toggle.match() == midi_control_toggle(i).match(status, data[0])
+   toggle.in_range() == midi_control_toggle(i).in_range(data[1])
+   is_a_sequence == i < m_seqs_in_set 
+
+The decisions:
+
+   if (toggle.match() and toggle.in_range() and is_a_sequence)
+      sequence_playing_toggle()
+
+   if (on.match())
+   {
+      if (on.in_range())
+      {
+         if (is_a_sequence)
+            sequence_playing_toggle()
+         else
+            handle_midi_control(true)
+   }
+
+   . . .
+
+Action on the incoming event is done (for each MIDI control line from 0 to 73)
+only if the event status matches the MIDI control line's status values.
+The status values are checked for the toggle group, then the on group, and then
+the off group.
+
+The toggle-function operates only if the event data-byte (data[1]) is in range
+and the MIDI control represents a sequence.  The sequence is toggled in one of
+two ways, depending on the current control status, which was set previously and
+is either "queue" or "replace":
+
+   -  Queue.  Toggle the queued status of the sequence.  Otherwise:
+   -  Replace. If "replace", clear the replace status, then call
+      off_sequences().  Then unconditionally toggle the playing of the
+      sequence.  What does off_sequences() do?  Calls set_playing(false) for
+      all active sequences.
+
+The on-function is more involved.  If the data-byte is in-range, then either
+sequence_playing_on() or handle_midi_control(true) is called.  If not in-range,
+then if inverse-active is true, then sequence_playing_off() or
+handle_midi_control(false) is called.
+
+The off-function simply reverses the on-function sequence of calls: If the
+data-byte is in-range, then either sequence_playing_off() or
+handle_midi_control(false) is called.  If not in-range, then if inverse-active
+is true, then sequence_playing_on() or handle_midi_control(true) is called.
+
+   -  sequence_playing_on():  This is actually sequence_playing_change(true).
+   -  sequence_playing_off():  This is actually sequence_playing_change(false).
+   -  handle_midi_control(true):
+   -  handle_midi_control(false):
+
+We need to understand the difference in handling of sequences, controls up to
+2*sequences, and above that.
+
+And what is the difference between sequence toggling and
+sequence_playing_change()?
+
+sequence_playing_change() works on active sequences:
+
+   -  If the sequence is in the playing screen-set, the mute-state for the
+      sequences is set to the boolean parameter ("on").
+   -  If "on", then we toggle the sequence playing status.
+   -  If this toggled playing status is true:
+      -  If we're currently queuing, but not queued, then toggle the queuing
+         state of the sequence.
+      -  Otherwise, set the playing status to the "on" value.
+   -  If this toggled playing status is false, and the sequence is queued,
+      and we are currently queuing, then toggled the queuing state of the
+      sequence.
+
+This function is also used in mute_group_tracks().
+
+handle_midi_control():
+
+   Most of the c_midi_control_xxx values do not use the boolean state
+   parameter.  Those control values cause an increment or decrement,
+   or some action function to be called.  The control values that use
+   the state parameter cause something to be set or unset.
+
+   If the control value is below c_midi_track_ctrl and at or above 32,
+   we subtract 32 from it and pass it to select_and_mute_group().
+
+   What happens to control values from 0 to 31?  They are ignored by this
+   function, but the processing described earlier still applies.
+
+We tried to make a graphviz diagram of this process, and could not make it look
+reasonable.
+

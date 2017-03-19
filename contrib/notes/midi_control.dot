@@ -1,0 +1,92 @@
+/*
+ * \file    midi_control.dot
+ *
+ *  This script tries to create a flowchart for the handling of MIDI control
+ *  events.
+ *
+ * \library       sequencer64 application
+ * \author        Chris Ahlstrom
+ * \date          2017-03-18
+ * \updates       2017-03-18
+ * \license       GNU GPLv2 or above
+ *
+ *  To create the diagram:
+ *
+ *      $ dot -Tpng -o midi_control.png midi_control.dot
+ *
+ *  Although one can combine all of the attributes of a box in one statement,
+ *  it is probably better to declare nodes, using short names, and labels for
+ *  these short name, all separately.
+ *
+ */
+
+digraph midi_control
+{
+    label = "Sequencer64 MIDI Control Flow";
+
+//  graph [splines=ortho, nodesep=1.0];
+
+    node [fontsize=16];
+
+    node[shape=box, style=rounded]
+
+        start[label="Start"];
+        end[label="End"];
+
+    node[shape=box, style=""]
+
+        event[label="for each event"];
+        nextevent[label="next event"];
+//      process[label="PROCESS"];
+
+    node[shape=diamond, style="", fontsize=12]
+
+        done[label="done?"];
+        toggle_match[label="toggle match?"];
+        toggle_in_range[label="in range?"];
+        toggle_is_seq[label="is sequence?"];
+//      on_match[label="on match?"];
+//      on_in_range[label="data in range?"];
+//      off_match[label="off match?"];
+//      off_in_range[label="data in range?"];
+
+    node[shape=parallelogram, style="", fontsize=12]
+
+        toggle[label="seqplaying toggle"];
+//      on[label="seqplaying on"];
+//      off[label="seqplaying off"];
+//      control[label="handle midi control"];
+
+    subgraph cluster_on
+    {
+        style=filled;
+        color=lightgrey;
+        node[style=filled,color=white];
+        label="ON"
+        toggle_match -> done[label="N"];
+        toggle_match -> toggle_in_range[label="Y"];
+        toggle_in_range -> done[label="N"];
+        toggle_in_range -> toggle_is_seq[label="Y"];
+        toggle_is_seq -> toggle[label="Y"];
+        toggle_is_seq -> done[label="N"];
+    }
+    
+    start -> event;
+//  event -> process;
+//  process -> done;
+    event -> toggle_match;
+    toggle -> done;
+    {
+        rank=same;
+        done:e -> nextevent[label="N"];
+    }
+    nextevent -> event[label="N"];
+    done -> end[label="Y"];
+}
+
+/*
+ * midi_control.dot
+ *
+ * vim: ts=4 sw=4 et wm=4 ft=dot
+ */
+

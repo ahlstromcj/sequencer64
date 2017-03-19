@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-14
+ * \updates       2017-03-18
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -258,10 +258,10 @@ optionsfile::parse (perform & p)
     /*
      * This call causes parsing to skip all of the header material.  Please note
      * that the line_after() function always starts from the beginning of the
-     * file every time.  A lot a rescanning!  But it goes fast.
+     * file every time.  A lot a rescanning!  But it goes fast these days.
      */
 
-    unsigned sequences = 0;
+    unsigned sequences = 0;                                 /* seq & ctrl #s */
     line_after(file, "[midi-control]");                     /* find section  */
     sscanf(m_line, "%u", &sequences);
 
@@ -271,8 +271,6 @@ optionsfile::parse (perform & p)
      * we should modify that value, instead of the throw-away "sequences"
      * values.  Note that c_midi_controls is, in a roundabout way, defined
      * as 74.  See the old "dot-seq24rc" file in the contrib directory.
-     * We should do some testing on what happens if "sequences" is 0 or
-     * greater than or equal to 74 or 84 (g_midi_control_limit)).
      */
 
     bool ok = false;
@@ -808,15 +806,17 @@ optionsfile::write (const perform & p)
     {
         /*
          * \tricky
-         *      32 mutes for channel, 32 group mutes, 9 odds-and-ends.
-         *      This first output item merely write a <i> comment </i> to
-         *      the "rc" file to indicate what the next section describes.
-         *      The first section of [midi-control] specifies 74 items.
-         *      The first 32 are unlabelled by a comment, and run from 0
-         *      to 31.  The next 32 are labelled "mute in group", and run
-         *      from 32 to 63.  The next 10 are each labelled, starting
-         *      with "bpm up" and ending with "screen set play", and are
-         *      each one line long.
+         *      32 mutes for channel, 32 group mutes, 10 odds-and-ends, and 10
+         *      extended values.  This first output item merely write a <i>
+         *      comment </i> to the "rc" file to indicate what the next
+         *      section describes.  The first section of [midi-control]
+         *      specifies 74 items.  The first 32 are unlabelled by a comment,
+         *      and run from 0 to 31.  The next 32 are labelled "mute in
+         *      group", and run from 32 to 63.  The next 10 are each labelled,
+         *      starting with "bpm up" and ending with "screen set play", and
+         *      are each one line long.  Then we've added 10 more, for
+         *      playback, record (of performance), solo, thru, and 6 reserved
+         *      for expansion.
          */
 
         switch (mcontrol)
@@ -865,32 +865,32 @@ optionsfile::write (const perform & p)
             file << "# screen set play:\n";
             break;
 
-        case c_midi_control_start:          // 74 (new values!)
-            file << "# start playback:\n";
+        case c_midi_control_playback:       // 74 (new values!)
+            file << "# start playback (pause, start, stop):\n";
             break;
 
-        case c_midi_control_pause:          // 75
-            file << "# pause playback:\n";
-            break;
-
-        case c_midi_control_stop:           // 76
-            file << "# stop playback:\n";
-            break;
-
-        case c_midi_control_record:         // 77
+        case c_midi_control_record:         // 75
             file << "# performance record:\n";
             break;
 
-        case c_midi_control_solo_off:       // 78
-            file << "# solo off:\n";
+        case c_midi_control_solo:           // 76
+            file << "# solo (toggle, on, off):\n";
             break;
 
-        case c_midi_control_solo_on:        // 79
-            file << "# solo on:\n";
+        case c_midi_control_thru:           // 77
+            file << "# MIDI THRU (toggle, on, off):\n";
             break;
 
-        case c_midi_control_thru:           // 80
-            file << "# toggle THRU:\n";
+        case c_midi_control_14:             // 78
+            file << "# reserved for expansion:\n";
+            break;
+
+        case c_midi_control_15:             // 79
+            file << "# reserved for expansion:\n";
+            break;
+
+        case c_midi_control_16:             // 80
+            file << "# reserved for expansion:\n";
             break;
 
         case c_midi_control_17:             // 81

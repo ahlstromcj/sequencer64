@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-21
- * \updates       2017-03-14
+ * \updates       2017-03-18
  * \license       GNU GPLv2 or above
  *
  *  This module defines a number of constants relating to control of the 32
@@ -86,13 +86,13 @@ const int c_midi_control_mod_gmute    = c_midi_track_ctrl + 7;
 const int c_midi_control_mod_glearn   = c_midi_track_ctrl + 8;
 const int c_midi_control_play_ss      = c_midi_track_ctrl + 9;
 const int c_midi_controls             = c_midi_track_ctrl + 10; /* old = 74 */
-const int c_midi_control_start        = c_midi_track_ctrl + 10;
-const int c_midi_control_pause        = c_midi_track_ctrl + 11;
-const int c_midi_control_stop         = c_midi_track_ctrl + 12;
-const int c_midi_control_record       = c_midi_track_ctrl + 13; /* arm for  */
-const int c_midi_control_solo_off     = c_midi_track_ctrl + 14;
-const int c_midi_control_solo_on      = c_midi_track_ctrl + 15;
-const int c_midi_control_thru         = c_midi_track_ctrl + 16;
+const int c_midi_control_playback     = c_midi_track_ctrl + 10;
+const int c_midi_control_record       = c_midi_track_ctrl + 11; /* arm for  */
+const int c_midi_control_solo         = c_midi_track_ctrl + 12;
+const int c_midi_control_thru         = c_midi_track_ctrl + 13;
+const int c_midi_control_14           = c_midi_track_ctrl + 14;
+const int c_midi_control_15           = c_midi_track_ctrl + 15;
+const int c_midi_control_16           = c_midi_track_ctrl + 16;
 const int c_midi_control_17           = c_midi_track_ctrl + 17;
 const int c_midi_control_18           = c_midi_track_ctrl + 18;
 const int c_midi_control_19           = c_midi_track_ctrl + 19;
@@ -123,14 +123,14 @@ extern int g_midi_control_limit;
     n [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 \endverbatim
  *
- *  where n ranges from 0 to 73.  Lines 0 to 31 provide controller values for
- *  the "pattern group", one line for each of the 32 pattern slots.
- *  Lines 32 to 63 provide controller values for
- *  the "mute in group", one line for each of the 32 pattern slots.
- *  The rest of the lines provide entries for control of:
- *  BPM up, BPM down, Screen-set up, Screen-set down, Mod Replaces, Mod
- *  Snapshot, Mod Queue, Mod gmute (group mute), Mod glearn (group learn),
- *  and Screen-set Play.
+ *  where n ranges from 0 to 73 or 83.  Lines 0 to 31 provide controller values for
+ *  the "pattern group", one line for each of the 32 pattern slots.  Lines 32
+ *  to 63 provide controller values for the "mute in group", one line for each
+ *  of the 32 pattern slots.  The rest of the lines provide entries for
+ *  control of: BPM up, BPM down, Screen-set up, Screen-set down, Mod
+ *  Replaces, Mod Snapshot, Mod Queue, Mod gmute (group mute), Mod glearn
+ *  (group learn), and Screen-set Play.  Additional controls are currently in
+ *  the works.
  *
  *  In each of the bracketed sections, the values correspond to the members in
  *  this order: m_active, m_inverse_active, m_status, m_data, m_min_value, and
@@ -144,6 +144,33 @@ extern int g_midi_control_limit;
 
 class midi_control
 {
+
+public:
+
+    /**
+     *  Provides the kind of MIDI control event found, used in the new
+     *  perform::handle_midi_control_ex() function.
+     *
+     * \var action_toggle
+     *      Toggles the status of the given control.  For the "playback"
+     *      status, indicates the "pause" functionality.
+     *
+     * \var action_on
+     *      Turns on the status of the given control.  For the "playback"
+     *      status, indicates the "start" functionality.
+     *
+     * \var action_off
+     *      Turns off the status of the given control.  For the "playback"
+     *      status, indicates the "stop" functionality.
+     */
+
+    typedef enum
+    {
+        action_toggle,
+        action_on,
+        action_off
+
+    } action;
 
 private:
 
@@ -241,7 +268,7 @@ public:
      * \getter m_min_value
      */
 
-    int min_value () const 
+    int min_value () const
     {
         return m_min_value;
     }

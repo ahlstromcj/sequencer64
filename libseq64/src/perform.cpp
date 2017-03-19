@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-03-13
+ * \updates       2017-03-17
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1432,7 +1432,12 @@ perform::is_sequence_in_edit (int seq)
 }
 
 /**
- *  Retrieves a reference to a value from m_midi_cc_toggle[].
+ *  Retrieves a reference to a value from m_midi_cc_toggle[].  Recall that the
+ *  midi_control object specifies if a control is active, inversely-active,
+ *  what status byte initiates it, what data byte initiates it, and the
+ *  min/max values.  Note that the status byte determines what category of
+ *  event it is (e.g. note on/off versus a continuous controller), and the
+ *  data byte indicates the note value or the type of continous controller.
  *
  * \param ctl
  *      Provides the index to pass to valid_midi_control_seq() to obtain a
@@ -1440,7 +1445,7 @@ perform::is_sequence_in_edit (int seq)
  *      desired midi_control object.
  *
  * \return
- *      Returns the "toggle" value if the control value is valid, and a
+ *      Returns the "toggle" value if the control value is valid, or a
  *      reference to sm_mc_dummy otherwise.
  */
 
@@ -1491,8 +1496,8 @@ perform::midi_control_off (int ctl)
  *  Copies the given string into m_screen_set_notepad[].
  *
  * \param screenset
- *      The ID number of the string set, an index into the
- *      m_screen_set_xxx[] arrays.
+ *      The ID number of the screen set, an index into the
+ *      m_screen_set_notepad[] array.
  *
  * \param notepad
  *      Provides the string date to copy into the notepad.  Not sure why a
@@ -1517,7 +1522,7 @@ perform::set_screen_set_notepad (int screenset, const std::string & notepad)
  *  Retrieves the given string from m_screen_set_notepad[].
  *
  * \param screenset
- *      The ID number of the string set, an index into the
+ *      The ID number of the screen set, an index into the
  *      m_screen_set_notepad[] array.  This value is validated.
  *
  * \return
@@ -3184,19 +3189,20 @@ input_thread_func (void * myperf)
         c_midi_control_play_ss
 \endverbatim
  *
- *  We have added the following values:
+ *  We have added the following extended values:
  *
 \verbatim
-        c_midi_control_start
-        c_midi_control_pause
-        c_midi_control_stop
+        c_midi_control_playback     (for pause/toggle, start, and stop)
         c_midi_control_record
-        c_midi_control_solo_off
-        c_midi_control_solo_on
+        c_midi_control_solo         (for toggle, on, or off)
         c_midi_control_thru
+        c_midi_control_14 to _19    (reserved for expansion)
 \endverbatim
  *
- *  c_midi_control_solo probably will need the parameter.
+ *  The extended values will actually be handled by a new function,
+ *  handle_midi_control_ex().
+ *
+ *  c_midi_control_solo probably will need a parameter.
  *
  *  Values from 32 through 2*32 are normalized by subtracting 32 and passed to
  *  the select_and_mute_group() function.  Otherwise, the following apply:
@@ -3210,22 +3216,27 @@ perform::handle_midi_control (int ctl, bool state)
     switch (ctl)
     {
     case c_midi_control_bpm_up:
-        set_beats_per_minute(get_beats_per_minute() + 1);
+
+        (void) increment_beats_per_minute();
         break;
 
     case c_midi_control_bpm_dn:
-        set_beats_per_minute(get_beats_per_minute() - 1);
+
+        (void) decrement_beats_per_minute();
         break;
 
     case c_midi_control_ss_up:
-        set_screenset(get_screenset() + 1);
+
+        (void) increment_screenset();
         break;
 
     case c_midi_control_ss_dn:
-        set_screenset(get_screenset() - 1);
+
+        (void) decrement_screenset();
         break;
 
     case c_midi_control_mod_replace:
+
         if (state)
             set_sequence_control_status(c_status_replace);
         else
@@ -3233,6 +3244,7 @@ perform::handle_midi_control (int ctl, bool state)
         break;
 
     case c_midi_control_mod_snapshot:
+
         if (state)
             set_sequence_control_status(c_status_snapshot);
         else
@@ -3240,12 +3252,14 @@ perform::handle_midi_control (int ctl, bool state)
         break;
 
     case c_midi_control_mod_queue:
+
         if (state)
             set_sequence_control_status(c_status_queue);
         else
             unset_sequence_control_status(c_status_queue);
 
     case c_midi_control_mod_gmute:
+
         if (state)
             set_mode_group_mute();              /* m_mode_group = true */
         else
@@ -3253,6 +3267,7 @@ perform::handle_midi_control (int ctl, bool state)
         break;
 
     case c_midi_control_mod_glearn:
+
         if (state)
             set_mode_group_learn();
         else
@@ -3260,35 +3275,8 @@ perform::handle_midi_control (int ctl, bool state)
         break;
 
     case c_midi_control_play_ss:                // Andy case; printf("play_ss\n");
+
         set_playing_screenset();
-        break;
-
-    case c_midi_control_start:
-        start_key();
-        break;
-
-    case c_midi_control_pause:
-        pause_key();
-        break;
-
-    case c_midi_control_stop:
-        stop_key();
-        break;
-
-    case c_midi_control_record:                 /* arm for recording */
-        // TODO
-        break;
-
-    case c_midi_control_solo_off:
-        // TODO
-        break;
-
-    case c_midi_control_solo_on:
-        // TODO
-        break;
-
-    case c_midi_control_thru:
-        // TODO
         break;
 
     default:
@@ -3303,6 +3291,130 @@ perform::handle_midi_control (int ctl, bool state)
             select_and_mute_group(ctl - m_seqs_in_set);
 
         break;
+    }
+}
+
+void
+perform::handle_midi_control_ex (int ctl, midi_control::action a)
+{
+    switch (ctl)
+    {
+    case c_midi_control_playback:
+
+        if (a == midi_control::action_toggle)
+            pause_key();
+        else if (a == midi_control::action_on)
+            start_key();
+        else if (a == midi_control::action_off)
+            stop_key();
+        break;
+
+    case c_midi_control_record:                 /* arm for recording */
+
+        // TODO
+        break;
+
+    case c_midi_control_solo:
+
+        // TODO
+        break;
+
+    case c_midi_control_thru:
+
+        // TODO
+        break;
+    }
+}
+
+/**
+ *  This function encapsulates code in input_func() to make it easier to read
+ *  and understand.
+ *
+ *  Here is the processing involved in this function ....
+ *
+ *  Incorporates pull request #24, arnaud-jacquemin, issue #23 "MIDI controller
+ *  toggles wrong pattern".
+ *
+ * \change ca 2016-10-05
+ *      Issue #35.  Changed "on" to "off".
+ *
+ *  QUESTIONS/TODO:
+ *
+ *      1. Why go above the sequence numbers, why not
+ *         just go up to c_midi_track_ctrl?
+ *
+ *      2. What about our new extended controls?
+ */
+
+void
+perform::midi_control_event (const event & ev)
+{
+    midibyte data[2] = { 0, 0 };
+    midibyte status = ev.get_status();
+    int offset = m_offset;
+    ev.get_data(data[0], data[1]);
+
+    // TODO: ACTIVATE this for-loop
+    // for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)
+
+    for (int ctl = 0; ctl < c_midi_controls; ++ctl, ++offset)
+    {
+        bool is_a_sequence = ctl < m_seqs_in_set;
+        bool is_extended = ctl >= c_midi_controls &&
+            ctl< c_midi_controls_extended;
+
+        if (midi_control_toggle(ctl).match(status, data[0]))
+        {
+            if (midi_control_toggle(ctl).in_range(data[1]))
+            {
+                if (is_a_sequence)
+                    sequence_playing_toggle(offset);
+                else if (is_extended)
+                    handle_midi_control_ex(ctl, midi_control::action_toggle);
+            }
+        }
+        if (midi_control_on(ctl).match(status, data[0]))
+        {
+            if (midi_control_on(ctl).in_range(data[1]))
+            {
+                if (is_a_sequence)
+                    sequence_playing_on(offset);
+                else if (is_extended)
+                    handle_midi_control_ex(ctl, midi_control::action_on);
+                else
+                    handle_midi_control(ctl, true);
+            }
+            else if (midi_control_on(ctl).inverse_active())
+            {
+                if (is_a_sequence)
+                    sequence_playing_off(offset);
+                else if (is_extended)
+                    handle_midi_control_ex(ctl, midi_control::action_off);
+                else
+                    handle_midi_control(ctl, false);
+            }
+        }
+        if (midi_control_off(ctl).match(status, data[0]))
+        {
+            if (midi_control_off(ctl).in_range(data[1]))  /* Issue #35 */
+            {
+                if (is_a_sequence)
+                    sequence_playing_off(offset);
+                else if (is_extended)
+                    handle_midi_control_ex(ctl, midi_control::action_off);
+                else
+                    handle_midi_control(ctl, false);
+            }
+            else if (midi_control_off(ctl).inverse_active())
+            {
+                if (is_a_sequence)
+                    sequence_playing_on(offset);
+                else if (is_extended)
+                    handle_midi_control_ex(ctl, midi_control::action_on);
+                else
+                    handle_midi_control(ctl, true);
+            }
+        }
     }
 }
 
@@ -3356,10 +3468,10 @@ perform::input_func ()
                     else if (ev.get_status() == EVENT_MIDI_CONTINUE)
                     {
                         /*
-                         * MIDI continue: start from current position.  this
-                         * will be sent immediately after EVENT_MIDI_SONG_POS
-                         * and is used for start from other than beginning of
-                         * the song, or to start from previous location at
+                         * MIDI continue: start from current position.  This
+                         * is sent immediately after EVENT_MIDI_SONG_POS, and
+                         * is used for starting from other than beginning of
+                         * the song, or to starting from previous location at
                          * EVENT_MIDI_STOP.
                          */
 
@@ -3427,9 +3539,12 @@ perform::input_func ()
                             ev.print();
 
                         /*
-                         * Is there are least one sequence set?  Then, if the
-                         * seq32 support is in force, dump to it, with
-                         * possibly multiple sequences set.
+                         * "Dumping" is set when a seqedit window is open and
+                         * the user has clicked the "record MIDI" or "thru
+                         * MIDI" button.  In this case, if the seq32 support
+                         * is in force, dump to it, else stream the event,
+                         * with possibly multiple sequences set.  Otherwise,
+                         * handle an incoming MIDI control event.
                          */
 
                         if (master_bus().is_dumping())
@@ -3443,72 +3558,7 @@ perform::input_func ()
                         }
                         else            /* use it to control our sequencer */
                         {
-	                        /*
-                             * Incorporates pull request #24, arnaud-jacquemin,
-                             * issue #23 "MIDI controller toggles wrong pattern"
-                             *
-                             * QUESTIONS/TODO:
-                             *
-                             *  1. Why go above the sequence numbers, why not
-                             *     just go up to c_midi_track_ctrl?
-                             *
-                             *  2. What about our new extended controls?
-                             */
-
-                            for (int i = 0; i < c_midi_controls; ++i)
-                            {
-                                int offset = m_offset + i;      /* arnaud fix */
-                                midibyte data[2] = { 0, 0 };
-                                midibyte status = ev.get_status();
-                                ev.get_data(data[0], data[1]);
-                                if (midi_control_toggle(i).match(status, data[0]))
-                                {
-                                    if (midi_control_toggle(i).in_range(data[1]))
-                                    {
-                                        if (i < m_seqs_in_set)
-                                            sequence_playing_toggle(offset);
-                                    }
-                                }
-                                if (midi_control_on(i).match(status, data[0]))
-                                {
-                                    if (midi_control_on(i).in_range(data[1]))
-                                    {
-                                        if (i < m_seqs_in_set)
-                                            sequence_playing_on(offset);
-                                        else
-                                            handle_midi_control(i, true);
-                                    }
-                                    else if (midi_control_on(i).inverse_active())
-                                    {
-                                        if (i < m_seqs_in_set)
-                                            sequence_playing_off(offset);
-                                        else
-                                            handle_midi_control(i, false);
-                                    }
-                                }
-                                if (midi_control_off(i).match(status, data[0]))
-                                {
-                                    /*
-                                     * \change ca 2016-10-05
-                                     *      Issue #35.  Changed "on" to "off".
-                                     */
-
-                                    if (midi_control_off(i).in_range(data[1]))
-                                    {
-                                        if (i < m_seqs_in_set)
-                                            sequence_playing_off(offset);
-                                        else
-                                            handle_midi_control(i, false);
-                                    }
-                                    else if (midi_control_off(i).inverse_active())
-                                    {
-                                        if (i < m_seqs_in_set)
-                                            sequence_playing_on(offset);
-                                        else
-                                            handle_midi_control(i, true);
-                                    }
-                                }
-                            }
+                            midi_control_event(ev);     /* replaces big block */
                         }
                     }
                     if (ev.get_status() == EVENT_MIDI_SYSEX)
@@ -3651,8 +3701,18 @@ perform::unset_sequence_control_status (int status)
  *  is unset, and all sequences (?) are turned off.  Then the sequence's
  *  toggle-playing() function is called.
  *
+ *  This function is called in sequence_key() to implement a toggling of the
+ *  sequence of the pattern slot in the current screen-set that is represented
+ *  by the keystroke.
+ *
+ *  This function is also called in midi_control_event() if the control number
+ *  represents a sequence number in a screen-set, that is, it ranges from 0 to
+ *  31.  This value is offset by the current screen-set number, m_offset
+ *  before passing it to this function.
+ *
  * \param seq
  *      The sequence number of the sequence to be potentially toggled.
+ *      This value must be a valid and active sequence number.
  */
 
 void
@@ -3666,7 +3726,7 @@ perform::sequence_playing_toggle (int seq)
         }
         else
         {
-            if (m_control_status & c_status_replace)
+            if ((m_control_status & c_status_replace) != 0)
             {
                 unset_sequence_control_status(c_status_replace);
                 off_sequences();
@@ -3720,13 +3780,13 @@ perform::sequence_playing_change (int seq, bool on)
             m_tracks_mute_state[seq - m_playscreen_offset] = on;
 
         bool queued = m_seqs[seq]->get_queued();
-        bool ok = m_seqs[seq]->get_playing();
+        bool playing = m_seqs[seq]->get_playing();
         if (on)
-            ok = ! ok;
+            playing = ! playing;
 
-        if (ok)
+        if (playing)
         {
-            if (m_control_status & c_status_queue)
+            if ((m_control_status & c_status_queue) != 0)
             {
                 if (! queued)
                     m_seqs[seq]->toggle_queued();

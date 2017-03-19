@@ -1,6 +1,6 @@
 Current Hot To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-03-11
+2016-12-03 to 2017-03-19
 
 Rtmidi implementation issues to work out:
 
@@ -35,7 +35,7 @@ Active GitHub Issues:
 
     41 AndrewPy : Sometimes "play cursor" shows wrong position in main window
 
-    45 simonvanderveldt : JACK MIDI support
+ *  45 simonvanderveldt : JACK MIDI support
 
     48 ahlstromcj : JACK transport as non-Master does not work with seq32 JACK
                     support not built in.

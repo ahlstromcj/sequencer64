@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-18
+ * \updates       2017-03-19
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -799,6 +799,8 @@ optionsfile::write (const perform & p)
         "# Note On velocity will cause the MIDI control to take effect.\n"
         "\n"
         <<  g_midi_control_limit << "      # MIDI controls count (74 or 84)\n"
+        "\n"
+        << "# Pattern-group section:\n"
         ;
 
     char outs[SEQ64_LINE_MAX];
@@ -822,7 +824,7 @@ optionsfile::write (const perform & p)
         switch (mcontrol)
         {
         case c_seqs_in_set:                 // 32
-            file << "# mute in group section:\n";
+            file << "# Mute-in group section:\n";
             break;
 
         case c_midi_control_bpm_up:         // 64
@@ -866,6 +868,7 @@ optionsfile::write (const perform & p)
             break;
 
         case c_midi_control_playback:       // 74 (new values!)
+            file << "# Extended MIDI controls:\n";
             file << "# start playback (pause, start, stop):\n";
             break;
 
@@ -882,25 +885,10 @@ optionsfile::write (const perform & p)
             break;
 
         case c_midi_control_14:             // 78
-            file << "# reserved for expansion:\n";
-            break;
-
         case c_midi_control_15:             // 79
-            file << "# reserved for expansion:\n";
-            break;
-
         case c_midi_control_16:             // 80
-            file << "# reserved for expansion:\n";
-            break;
-
         case c_midi_control_17:             // 81
-            file << "# reserved for expansion:\n";
-            break;
-
         case c_midi_control_18:             // 82
-            file << "# reserved for expansion:\n";
-            break;
-
         case c_midi_control_19:             // 83
             file << "# reserved for expansion:\n";
             break;

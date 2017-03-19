@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-03-17
+ * \updates       2017-03-19
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -3354,10 +3354,9 @@ perform::midi_control_event (const event & ev)
     int offset = m_offset;
     ev.get_data(data[0], data[1]);
 
-    // TODO: ACTIVATE this for-loop
-    // for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)
+    // for (int ctl = 0; ctl < c_midi_controls; ++ctl, ++offset)    // LEGACY
 
-    for (int ctl = 0; ctl < c_midi_controls; ++ctl, ++offset)
+    for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)
     {
         bool is_a_sequence = ctl < m_seqs_in_set;
         bool is_extended = ctl >= c_midi_controls &&

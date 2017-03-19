@@ -1,6 +1,6 @@
 README for Sequencer64 0.90.2 (Native JACK)
 Chris Ahlstrom
-2015-09-10 to 2017-02-26 (initial work started in July of 2015)
+2015-09-10 to 2017-03-19 (initial work started in July of 2015)
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in functionality and bug
 fixes, although the heart of seq24 remains intact.  See the screenshot in the
@@ -43,6 +43,7 @@ Major new updates:
     -   Version 0.90.2:
         -   Some minor bugs.
         -   Functions for SEQ64_APP_NAME and SEQ64_CLIENT_NAME.
+        -   Extended MIDI controls for Stop / Pause / Start.
     -   Version 0.90.1:
         -   Fixes a JACK naming and connection issue when accessing ports
             exposed by a2jmidid.

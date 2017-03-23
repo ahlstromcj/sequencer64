@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2017-01-18
+ * \updates       2017-03-21
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -325,17 +325,17 @@ private:
      *  position.
      */
 
-    int m_beats_per_minute;
+    midibpm m_beats_per_minute;
 
 public:
 
     jack_assistant
     (
         perform & parent,
-        int bpminute    = SEQ64_DEFAULT_BPM,
-        int ppqn        = SEQ64_USE_DEFAULT_PPQN,
-        int bpm         = SEQ64_DEFAULT_BEATS_PER_MEASURE,
-        int beatwidth   = SEQ64_DEFAULT_BEAT_WIDTH
+        midibpm bpminute = SEQ64_DEFAULT_BPM,
+        int ppqn         = SEQ64_USE_DEFAULT_PPQN,
+        int bpm          = SEQ64_DEFAULT_BEATS_PER_MEASURE,
+        int beatwidth    = SEQ64_DEFAULT_BEAT_WIDTH
     );
     ~jack_assistant ();
 
@@ -433,7 +433,7 @@ public:
      * \getter m_beats_per_minute
      */
 
-    int get_beats_per_minute () const
+    midibpm get_beats_per_minute () const
     {
         return m_beats_per_minute;
     }
@@ -448,7 +448,7 @@ public:
      *      Provides the beats/minute value to set.
      */
 
-    void set_beats_per_minute (int bpminute)
+    void set_beats_per_minute (midibpm bpminute)
     {
         m_beats_per_minute = bpminute;
     }

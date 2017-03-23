@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-20
+ * \updates       2017-03-22
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -312,13 +312,17 @@ userfile::parse (perform & /* a_perf */)
         sscanf(m_line, "%d", &scratch);
         usr().allow_two_perfedits(scratch != 0);
 
-        (void) next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().perf_h_page_increment(scratch);
+        if (next_data_line(file))
+        {
+            sscanf(m_line, "%d", &scratch);
+            usr().perf_h_page_increment(scratch);
+        }
 
-        (void) next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().perf_v_page_increment(scratch);
+        if (next_data_line(file))
+        {
+            sscanf(m_line, "%d", &scratch);
+            usr().perf_v_page_increment(scratch);
+        }
 
         /*
          *  Here, we start checking the lines, on the theory that these
@@ -401,6 +405,10 @@ userfile::parse (perform & /* a_perf */)
         sscanf(m_line, "%d", &scratch);
         usr().midi_beats_per_bar(scratch);
 
+        /*
+         * TODO: HANDLE DOUBLE BPM
+         */
+
         next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().midi_beats_per_minute(scratch);
@@ -417,6 +425,18 @@ userfile::parse (perform & /* a_perf */)
         {
             sscanf(m_line, "%d", &scratch);
             usr().velocity_override(scratch);
+        }
+        if (next_data_line(file))
+        {
+            sscanf(m_line, "%d", &scratch);
+            usr().bpm_precision(scratch);
+        }
+
+        if (next_data_line(file))
+        {
+            float inc;
+            sscanf(m_line, "%f", &inc);
+            usr().bpm_increment(midibpm(inc));
         }
     }
 
@@ -462,7 +482,7 @@ userfile::write (const perform & /* a_perf */ )
            "# Sequencer64 user configuration file (legacy Seq24 0.9.2 format)\n";
     }
     else
-        file << "# Sequencer64 0.90.0 (and above) user configuration file\n";
+        file << "# Sequencer64 0.90.2 (and above) user configuration file\n";
 
     file << "#\n"
         "# Created by reading the following file and writing it out via the\n"
@@ -591,25 +611,31 @@ userfile::write (const perform & /* a_perf */ )
                 << "# Number of MIDI controller values:\n"
                 << "\n"
                 << uin.controller_count() << "\n"
-                << "\n"
-                << "# controller number and (optional) name:\n"
-                << "\n"
                 ;
 
-            for (int ctlr = 0; ctlr < uin.controller_max(); ++ctlr)
+            if (uin.controller_count() > 0)
             {
-                if (uin.controller_active(ctlr))
-                    file << ctlr << " " << uin.controller_name(ctlr) << "\n";
-#if defined PLATFORM_DEBUG && defined SHOW_IGNORED_ITEMS
-                else
+                file
+                    << "\n"
+                    << "# controller number and (optional) name:\n"
+                    << "\n"
+                    ;
+
+                for (int ctlr = 0; ctlr < uin.controller_max(); ++ctlr)
                 {
-                    fprintf
-                    (
-                        stderr, "instrument %d, controller %d (%s) ignored\n",
-                        inst, ctlr, uin.controller_name(ctlr).c_str()
-                    );
-                }
+                    if (uin.controller_active(ctlr))
+                        file << ctlr << " " << uin.controller_name(ctlr) << "\n";
+#if defined PLATFORM_DEBUG && defined SHOW_IGNORED_ITEMS
+                    else
+                    {
+                        fprintf
+                        (
+                            stderr, "instrument %d, controller %d (%s) ignored\n",
+                            inst, ctlr, uin.controller_name(ctlr).c_str()
+                        );
+                    }
 #endif
+                }
             }
         }
         else
@@ -617,7 +643,7 @@ userfile::write (const perform & /* a_perf */ )
             file << "? This instrument specification is invalid\n";
         }
         file << "\n# End of instrument/controllers definition "
-            << inst << "\n\n"
+            << inst << "\n"
             ;
     }
 
@@ -910,6 +936,29 @@ userfile::write (const perform & /* a_perf */ )
 
         int vel = usr().velocity_override();
         file << vel      << "       # velocity_override (-1 = 'Free')\n";
+
+        file << "\n"
+            "# Specifies the precision of the beats-per-minutes spinner and\n"
+            "# MIDI control over the BPM value.  The default is 0, which means\n"
+            "# the BPM is an integer.  Other values are 1 and 2 decimal digits\n"
+            "# of precision.\n"
+            "\n"
+            ;
+
+        int precision = usr().bpm_precision();
+        file << precision << "       # bpm_precision\n";
+
+        file << "\n"
+            "# Specifies the increment of the beats-per-minutes spinner and\n"
+            "# MIDI control over the BPM value.  The default is 1. For a\n"
+            "# precision of 1 decimal point, 0.1 is a good value.  For a\n"
+            "# precision of 2 decimal points, 0.01 is a good value, but one\n"
+            "# might want somethings a little faster, like 0.05.\n"
+            "\n"
+            ;
+
+        int increment = usr().bpm_increment();
+        file << increment << "       # bpm_increment\n";
     }
 
     /*

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-28
+ * \updates       2017-03-21
  * \license       GNU GPLv2 or above
  *
  *  This mastermidibus module is the Windows (and Linux now!) version of the
@@ -63,19 +63,19 @@ public:
 
     mastermidibus
     (
-        int ppqn = SEQ64_USE_DEFAULT_PPQN,
-        int bpm  = SEQ64_DEFAULT_BPM            /* c_beats_per_minute */
+        int ppqn    = SEQ64_USE_DEFAULT_PPQN,
+        midibpm bpm = SEQ64_DEFAULT_BPM        /* c_beats_per_minute */
     );
     virtual ~mastermidibus ();
 
 protected:
 
-    virtual void api_init (int ppqn, int /*bpm*/);
+    virtual void api_init (int ppqn, midibpm /*bpm*/);
     virtual int api_poll_for_midi ();
     virtual bool api_is_more_input ();
-    virtual bool api_get_midi_event (event *a_in);
+    virtual bool api_get_midi_event (event * in);
 
-};
+};          // class mastermidibus
 
 }           // namespace seq64
 

@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-19
+ * \updates       2017-03-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The big difference between this class (seq64::rtmidi) and
@@ -102,7 +102,7 @@ public:
         get_api()->api_set_ppqn(ppqn);
     }
 
-    virtual void api_set_beats_per_minute (int bpm)
+    virtual void api_set_beats_per_minute (midibpm bpm)
     {
         get_api()->api_set_beats_per_minute(bpm);
     }

@@ -507,9 +507,9 @@ show_jack_statuses (unsigned bits)
 jack_assistant::jack_assistant
 (
     perform & parent,
-    int bpminute,
+    midibpm bpminute,
     int ppqn,
-    int bpm,
+    int bpmeasure,
     int beatwidth
 ) :
     m_jack_parent               (parent),
@@ -533,7 +533,7 @@ jack_assistant::jack_assistant
     m_jack_stop_tick            (0),
 #endif
     m_ppqn                      (0),
-    m_beats_per_measure         (bpm),          // m_bp_measure
+    m_beats_per_measure         (bpmeasure),    // m_bp_measure
     m_beat_width                (beatwidth),    // m_bw
     m_beats_per_minute          (bpminute)
 {

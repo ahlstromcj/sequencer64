@@ -8,7 +8,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-02-14
+ * \updates       2017-03-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the JACK information of
@@ -90,8 +90,8 @@ public:
     midi_jack_info
     (
         const std::string & appname,
-        int ppqn = SEQ64_DEFAULT_PPQN,          /* 192  */
-        int bpm  = SEQ64_DEFAULT_BPM            /* 120  */
+        int ppqn    = SEQ64_DEFAULT_PPQN,       /* 192    */
+        midibpm bpm = SEQ64_DEFAULT_BPM         /* 120.0  */
     );
     virtual ~midi_jack_info ();
 
@@ -120,7 +120,7 @@ public:
     virtual int api_poll_for_midi ();
 
     virtual void api_set_ppqn (int p);
-    virtual void api_set_beats_per_minute (int b);
+    virtual void api_set_beats_per_minute (midibpm b);
     virtual void api_port_start (mastermidibus & masterbus, int bus, int port);
     virtual void api_flush ();
 

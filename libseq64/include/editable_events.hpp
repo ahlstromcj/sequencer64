@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2016-08-28
+ * \updates       2016-03-21
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -137,7 +137,7 @@ private:
 
 public:
 
-    editable_events (sequence & seq, int bpm);
+    editable_events (sequence & seq, midibpm bpm);
     editable_events (const editable_events & rhs);
     editable_events & operator = (const editable_events & rhs);
 

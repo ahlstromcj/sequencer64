@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-20
+ * \updates       2017-03-22
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -108,20 +108,20 @@ sequence::sequence (int ppqn)
     m_dirty_names               (true),
     m_editing                   (false),
     m_raise                     (false),
-    m_name                      (),             // c_dummy:  leave it empty
+    m_name                      (),
     m_last_tick                 (0),
-    m_queued_tick               (0),            // accessed by perform::play()
-    m_trigger_offset            (0),            // needed for record-keeping
+    m_queued_tick               (0),            /* used by perform::play()   */
+    m_trigger_offset            (0),            /* needed for record-keeping */
     m_maxbeats                  (c_maxbeats),
-    m_ppqn                      (0),            // set in constructor body
-    m_seq_number                (-1),           // may be set later
-    m_length                    (0),            // set in constructor body
-    m_snap_tick                 (0),            // set in constructor body
+    m_ppqn                      (0),            /* set in constructor body   */
+    m_seq_number                (-1),           /* may be set later          */
+    m_length                    (0),            /* set in constructor body   */
+    m_snap_tick                 (0),            /* set in constructor body   */
     m_time_beats_per_measure    (4),
     m_time_beat_width           (4),
     m_clocks_per_metronome      (24),
     m_32nds_per_quarter         (8),
-    m_us_per_quarter_note       (tempo_to_us(SEQ64_DEFAULT_BPM)),
+    m_us_per_quarter_note       (tempo_us_from_bpm(SEQ64_DEFAULT_BPM)),
     m_rec_vol                   (0),
     m_note_on_velocity          (SEQ64_DEFAULT_NOTE_ON_VELOCITY),
     m_note_off_velocity         (SEQ64_DEFAULT_NOTE_OFF_VELOCITY),

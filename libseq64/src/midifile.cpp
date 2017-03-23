@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-05
+ * \updates       2017-03-22
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -55,7 +55,7 @@
 #include <fstream>
 
 #include "app_limits.h"                 /* SEQ64_USE_MIDI_VECTOR            */
-#include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
+#include "calculations.hpp"             /* bpm_from_tempo_us()              */
 #include "perform.hpp"                  /* must precede midifile.hpp !      */
 #include "midifile.hpp"                 /* seq64::midifile                  */
 #include "sequence.hpp"                 /* seq64::sequence                  */
@@ -870,24 +870,20 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                             if (len == 3)
                             {
-                                unsigned tt = unsigned(read_byte());
-                                tt = (tt * 256) + unsigned(read_byte());
-                                tt = (tt * 256) + unsigned(read_byte());
+                                midibpm tt = midibpm(read_byte());  // unsigned
+                                tt = (tt * 256) + midibpm(read_byte());
+                                tt = (tt * 256) + midibpm(read_byte());
 
                                 /*
-                                 * If valid, set values.  Sometimes bad tempos
-                                 * occur, and they stick around forever,
-                                 * screwing up exported songs.
+                                 * If valid, set.  Bad tempos do occur, and
+                                 * stick around, munging exported songs.
                                  */
 
                                 if (tt > 0)
                                 {
-                                    int bpm = int
-                                    (
-                                        beats_per_minute_from_tempo_us(double(tt))
-                                    );
                                     if (curtrack == 0)
                                     {
+                                        midibpm bpm = bpm_from_tempo_us(tt);
                                         p.set_beats_per_minute(bpm);
                                         p.us_per_quarter_note(int(tt));
                                     }
@@ -1195,6 +1191,17 @@ midifile::parse_prop_header (int file_size)
  *  Otherwise, though, the only penality is that the "proprietary" chunk is
  *  completely skipped.
  *
+ * Extra precision BPM:
+ *
+ *  Based on a request for two decimals of precision in beats-per-minute, we
+ *  now save a scaled version of BPM.  Our supported range of BPM is
+ *  SEQ64_MINIMUM_BPM = 1 to SEQ64_MAXIMUM_BPM = 600.  If this range is
+ *  encountered, the value is read as is.  If greater than this range
+ *  (actually, we use 999 as the limit), then we divide the number by 1000 to
+ *  get the actual BPM, which can thus have more precision than the old
+ *  integer value allowed.  Obviously, when saving, we will multiply by 1000
+ *  to encode the BPM.
+ *
  * \param p
  *      The performance object that is being set via the incoming MIDI file.
  *
@@ -1325,10 +1332,15 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         {
             /*
              * Should check here for a conflict between the Tempo meta event
-             * and this tag's value.  NOT YET.
+             * and this tag's value.  NOT YET.  Also, as of 2017-03-22, we
+             * want to be able to handle two decimal points of precision in
+             * BPM.  See the function banner for a discussion.
              */
 
-            long bpm = read_long();
+            midibpm bpm = midibpm(read_long());
+            if (bpm > (SEQ64_BPM_SCALE_FACTOR - 1.0))
+                bpm /= SEQ64_BPM_SCALE_FACTOR;
+
             p.set_beats_per_minute(bpm);                /* 2nd way to set!  */
         }
 
@@ -2081,7 +2093,19 @@ midifile::write_proprietary_track (perform & p)
             write_byte(note[n]);
     }
     write_prop_header(c_bpmtag, 4);             /* bpm tag + long data      */
+#ifdef USE_DOUBLE_BEATS_PER_MINUTE
+
+    /*
+     *  We now encode the Sequencer64-specific BPM value by multiplying it
+     *  by 1000.0 first, to get more implicit precision in the number.
+     *  We should probably sanity-check the BPM at some point.
+     */
+
+    long scaled_bpm = long(p.get_beats_per_minute() * SEQ64_BPM_SCALE_FACTOR);
+    write_long(scaled_bpm);                     /* 4 bytes                  */
+#else
     write_long(p.get_beats_per_minute());       /* 4 bytes                  */
+#endif
     if (gmutesz > 0)
     {
         write_prop_header(c_mutegroups, gmutesz);   /* mute groups tag etc. */

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-04
+ * \updates       2017-03-21
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -380,9 +380,11 @@ private:
     void toggle_playing ();
 
 #ifdef SEQ64_MAINWND_TAP_BUTTON
+
     void tap ();
-    int update_bpm ();
     void set_tap_button (int beats);
+    midibpm update_bpm ();
+
 #endif
 
     /**

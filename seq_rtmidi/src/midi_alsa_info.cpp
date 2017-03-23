@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-19
+ * \updates       2017-03-22
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -43,7 +43,7 @@
  *  SND_SEQ_EVENT_PORT_SUBSCRIBED events.
  */
 
-#include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
+#include "calculations.hpp"             /* seq64::tempo_us_from_bpm()       */
 #include "event.hpp"                    /* seq64::event and other tokens    */
 #include "midi_alsa_info.hpp"           /* seq64::midi_alsa_info            */
 #include "midibus_common.hpp"           /* from the libseq64 sub-project    */
@@ -80,7 +80,7 @@ midi_alsa_info::midi_alsa_info
 (
     const std::string & appname,
     int ppqn,
-    int bpm
+    midibpm bpm
 ) :
     midi_info               (appname, ppqn, bpm),
     m_alsa_seq              (nullptr),
@@ -297,7 +297,7 @@ midi_alsa_info::api_set_ppqn (int p)
  */
 
 void
-midi_alsa_info::api_set_beats_per_minute (int b)
+midi_alsa_info::api_set_beats_per_minute (midibpm b)
 {
     midi_info::api_set_beats_per_minute(b);
 
@@ -305,10 +305,7 @@ midi_alsa_info::api_set_beats_per_minute (int b)
     snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);          /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, queue, tempo);
-    snd_seq_queue_tempo_set_tempo
-    (
-        tempo, int(tempo_us_from_beats_per_minute(b))
-    );
+    snd_seq_queue_tempo_set_tempo(tempo, unsigned(tempo_us_from_bpm(b)));
     snd_seq_set_queue_tempo(m_alsa_seq, queue, tempo);
 }
 

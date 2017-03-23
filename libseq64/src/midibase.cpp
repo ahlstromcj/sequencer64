@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2017-02-19
+ * \updates       2017-03-21
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -154,7 +154,7 @@ midibase::midibase
     int port_id,                        // an index in some implementations
     int queue,
     int ppqn,
-    int bpm,
+    midibpm bpm,
     bool makevirtual,
     bool isinput,
     bool makesystem

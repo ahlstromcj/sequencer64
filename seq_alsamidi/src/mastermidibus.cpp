@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-01-29
+ * \updates       2017-03-22
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -111,7 +111,7 @@ namespace seq64
  *      c_beats_per_minute.  Must be handled similarly to ppqn.
  */
 
-mastermidibus::mastermidibus (int ppqn, int bpm)
+mastermidibus::mastermidibus (int ppqn, midibpm bpm)
  :
     mastermidibase          (ppqn, bpm),
     m_alsa_seq              (nullptr),
@@ -217,8 +217,13 @@ mastermidibus::~mastermidibus ()
  *      applicable.
  */
 
+#ifdef USE_DOUBLE_BEATS_PER_MINUTE
+void
+mastermidibus::api_init (int ppqn, midibpm bpm)
+#else
 void
 mastermidibus::api_init (int ppqn, int bpm)
+#endif
 {
     if (rc().manual_alsa_ports())
     {
@@ -462,15 +467,12 @@ mastermidibus::api_set_ppqn (int p)
  */
 
 void
-mastermidibus::api_set_beats_per_minute (int b)
+mastermidibus::api_set_beats_per_minute (midibpm b)
 {
     snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);          /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
-    snd_seq_queue_tempo_set_tempo
-    (
-        tempo, int(tempo_us_from_beats_per_minute(b))
-    );
+    snd_seq_queue_tempo_set_tempo(tempo, unsigned(tempo_us_from_bpm(b)));
     snd_seq_set_queue_tempo(m_alsa_seq, m_queue, tempo);
 }
 

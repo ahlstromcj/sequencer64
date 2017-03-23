@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
- * \updates       2017-02-11
+ * \updates       2017-03-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *      We need to have a way to get all of the API information from each
@@ -295,7 +295,7 @@ private:
      *  Some APIs can use this value.
      */
 
-    int m_bpm;
+    midibpm m_bpm;
 
 protected:
 
@@ -310,8 +310,8 @@ public:
     midi_info                                   /* similar to mastermidibus */
     (
         const std::string & appname,
-        int ppqn = SEQ64_DEFAULT_PPQN,          /* 192  */
-        int bpm  = SEQ64_DEFAULT_BPM            /* 120  */
+        int ppqn    = SEQ64_DEFAULT_PPQN,       /* 192  */
+        midibpm bpm = SEQ64_DEFAULT_BPM         /* 120  */
     );
 
     virtual ~midi_info ()
@@ -402,7 +402,7 @@ public:
      * \getter m_bpm, simple version, also see api_set_beats_per_minute().
      */
 
-    int bpm () const
+    midibpm bpm () const
     {
         return m_bpm;
     }
@@ -420,7 +420,7 @@ public:
      *  Special setter.
      */
 
-    virtual void api_set_beats_per_minute (int b)
+    virtual void api_set_beats_per_minute (midibpm b)
     {
         m_bpm = b;
     }
@@ -585,7 +585,7 @@ protected:
 
 private:
 
-    /*
+    /**
      * \getter m_input or m_output
      *      Used for retrieving values from the input or output containers.
      *      The caller must insure the proper container by calling the
@@ -599,8 +599,8 @@ private:
         return m_midi_mode_input ? m_input : m_output ;
     }
 
-    /*
-     * EXPERIMENTAL
+    /**
+     * \getter m_input or m_output
      */
 
     midi_port_info & ref_midi_port_info ()

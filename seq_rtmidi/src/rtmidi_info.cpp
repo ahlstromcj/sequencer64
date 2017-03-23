@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2017-02-11
+ * \updates       2017-03-20
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -102,7 +102,7 @@ rtmidi_info::rtmidi_info
     rtmidi_api api,
     const std::string & appname,
     int ppqn,
-    int bpm
+    midibpm bpm
 ) :
     m_info_api  (nullptr)
 {
@@ -198,7 +198,7 @@ rtmidi_info::openmidi_api
     rtmidi_api api,
     const std::string & appname,
     int ppqn,
-    int bpm
+    midibpm bpm
 )
 {
     bool result = false;

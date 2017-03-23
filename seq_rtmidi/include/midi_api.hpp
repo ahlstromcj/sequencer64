@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-20
+ * \updates       2017-03-21
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -145,7 +145,7 @@ public:
     virtual void api_flush () = 0;
     virtual void api_clock (midipulse tick) = 0;
     virtual void api_set_ppqn (int ppqn) = 0;
-    virtual void api_set_beats_per_minute (int bpm) = 0;
+    virtual void api_set_beats_per_minute (midibpm bpm) = 0;
 
     /*
      * The next two functions are provisional.  Currently useful only in the

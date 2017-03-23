@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-05-17
+ * \updates       2017-03-21
  * \license       GNU GPLv2 or above
  *
  *  These classes were originally structures, but now they are "constant"
@@ -112,7 +112,7 @@ midi_timing::midi_timing ()
 
 midi_timing::midi_timing
 (
-    int bpminute,
+    midibpm bpminute,
     int bpmeasure,
     int beatwidth,
     int ppqn

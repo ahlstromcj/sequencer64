@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-12
+ * \updates       2017-03-21
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -143,7 +143,8 @@
 using namespace Gtk::Menu_Helpers;      /* MenuElem, etc.                */
 
 /*
- *  All library code for this project is in the "seq64" namespace.
+ *  All library code for this project is in the "seq64" namespace.  Do not
+ *  attempt to document this namespace; it breaks Doxygen.
  */
 
 namespace seq64
@@ -645,12 +646,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     bottomhbox->pack_start(*bpmhbox, Gtk::PACK_SHRINK);
     m_spinbutton_bpm->set_sensitive(true);
     m_spinbutton_bpm->set_editable(true);
+    m_spinbutton_bpm->set_digits(usr().bpm_precision());
 
 #ifdef SEQ64_MAINWND_TAP_BUTTON
-
-    /*
-     * EXPERIMENTAL
-     */
 
     m_button_tap->signal_clicked().connect(mem_fun(*this, &mainwnd::tap));
     add_tooltip
@@ -666,6 +664,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         mem_fun(*this, &mainwnd::adj_callback_bpm)
     );
+    m_adjust_bpm->set_step_increment(usr().bpm_increment());
+    m_adjust_bpm->set_page_increment(10.0 * usr().bpm_increment());
+
     add_tooltip(m_spinbutton_bpm, "Adjust beats per minute (BPM) value.");
     Gtk::Label * bpmlabel = manage(new Gtk::Label("_BPM", true));
     bpmlabel->set_mnemonic_widget(*m_spinbutton_bpm);
@@ -919,7 +920,11 @@ mainwnd::timer_callback ()
     m_main_time->idle_progress(tick);
     m_main_wid->update_markers(tick);           /* tick ignored for pause   */
 
-    int bpm = perf().get_beats_per_minute();
+    /*
+     * EXPERIMENTAL.  Let's try doubles.
+     */
+
+    midibpm bpm = perf().get_beats_per_minute();
     if (m_adjust_bpm->get_value() != bpm)
         m_adjust_bpm->set_value(bpm);
 
@@ -1784,7 +1789,7 @@ mainwnd::adj_callback_ss ()
 void
 mainwnd::adj_callback_bpm ()
 {
-    perf().set_beats_per_minute(int(m_adjust_bpm->get_value()));
+    perf().set_beats_per_minute(midibpm(m_adjust_bpm->get_value()));
 }
 
 /**
@@ -1957,7 +1962,7 @@ mainwnd::toggle_playing ()
 void
 mainwnd::tap ()
 {
-    int bpm = update_bpm();
+    midibpm bpm = update_bpm();
     set_tap_button(m_current_beats);
     if (m_current_beats > 1)                    /* first one is useless */
         m_adjust_bpm->set_value(double(bpm));
@@ -1989,10 +1994,10 @@ mainwnd::set_tap_button (int beats)
  *      Returns the current BPM value.
  */
 
-int
+midibpm
 mainwnd::update_bpm ()
 {
-    int bpm = 0;
+    midibpm bpm = 0.0;
     struct timespec spec;
     clock_gettime(CLOCK_REALTIME, &spec);
     long ms = long(spec.tv_sec) * 1000;     /* seconds to milliseconds      */
@@ -2003,16 +2008,16 @@ mainwnd::update_bpm ()
         m_last_time_ms = 0;
     }
     else if (m_current_beats >= 1)
- 	{
+    {
         int diffms = ms - m_base_time_ms;
-        bpm = int(m_current_beats * 60000.0 / diffms);
+        bpm = m_current_beats * 60000.0 / diffms;
         m_last_time_ms = ms;
-	}
+    }
     ++m_current_beats;
     return bpm;
 }
 
-#endif
+#endif      // SEQ64_MAINWND_TAP_BUTTON
 
 /**
  *  This callback function handles a delete event from ...?
@@ -2089,13 +2094,13 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
         {
             if (k.key() == PREFKEY(bpm_dn))
             {
-                int newbpm = perf().decrement_beats_per_minute();
-                m_adjust_bpm->set_value(newbpm);
+                midibpm newbpm = perf().decrement_beats_per_minute();
+                m_adjust_bpm->set_value(double(newbpm));
             }
             else if (k.key() == PREFKEY(bpm_up))
             {
-                int newbpm = perf().increment_beats_per_minute();
-                m_adjust_bpm->set_value(newbpm);
+                midibpm newbpm = perf().increment_beats_per_minute();
+                m_adjust_bpm->set_value(double(newbpm));
             }
 
             /*

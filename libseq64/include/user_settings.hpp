@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-02-20
+ * \updates       2017-03-22
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -510,6 +510,27 @@ class user_settings
      */
 
     int m_velocity_override;
+
+    /**
+     *  Sets the precision of the BPM (beats-per-minute) setting.  The
+     *  original value was effectively 0, but we need to be able to support
+     *  the following values:
+     *
+     *      -   0.  The legacy default.
+     *      -   1.  One decimal place in the BPM spinner.
+     *      -   2.  Two decimal places in the BPM spinner.
+     */
+
+    int m_bpm_precision;
+
+    /**
+     *  The increment value for BPM, regardless of the decimal precision.
+     *  The default value is the legacy value, 1, for a BPM precision value of
+     *  0.  The default value is 0.1 if one decimal place of precision is in
+     *  force, and 0.01 if two decimal places of precision is in force.
+     */
+
+    midibpm m_bpm_increment;
 
     /*
      *  Values calculated from other member values in the normalize() function.
@@ -1272,7 +1293,7 @@ public:
      * \getter m_midi_beats_per_minute
      */
 
-    int midi_beats_per_minute () const
+    midibpm midi_beats_per_minute () const
     {
         return m_midi_beats_per_minute;
     }
@@ -1302,6 +1323,24 @@ public:
     int velocity_override () const
     {
         return m_velocity_override;
+    }
+
+    /**
+     * \getter m_bpm_precision
+     */
+
+    int bpm_precision () const
+    {
+        return m_bpm_precision;
+    }
+
+    /**
+     * \getter m_bpm_increment
+     */
+
+    midibpm bpm_increment () const
+    {
+        return m_bpm_increment;
     }
 
     /**
@@ -1403,11 +1442,13 @@ public:         // used in main application module and the userfile class
     void midi_ppqn (int ppqn);
     void midi_buss_override (char buss);
     void velocity_override (int vel);
+    void bpm_precision (int precision);
+    void bpm_increment (midibpm increment);
 
 protected:
 
     void midi_beats_per_bar (int beatsperbar);
-    void midi_beats_per_minute (int beatsperminute);
+    void midi_beats_per_minute (midibpm beatsperminute);
     void midi_beat_width (int beatwidth);
 
 private:

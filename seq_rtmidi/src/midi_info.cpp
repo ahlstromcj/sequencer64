@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-12-06
- * \updates       2017-02-11
+ * \updates       2017-03-21
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of ALSA information
@@ -137,7 +137,7 @@ midi_info::midi_info
 (
     const std::string & appname,
     int ppqn,
-    int bpm
+    midibpm bpm
 ) :
     m_midi_mode_input   (true),
     m_input             (),                 /* midi_port_info for inputs    */

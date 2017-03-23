@@ -726,7 +726,7 @@ perfedit::set_snap (int snap)
 void
 perfedit::set_beats_per_bar (int bpm)
 {
-    if (bpm != m_bpm && bpm > 0)
+    if (bpm != m_bpm && bpm > 0 && bpm < 32)
     {
         char b[8];
         snprintf(b, sizeof b, "%d", bpm);

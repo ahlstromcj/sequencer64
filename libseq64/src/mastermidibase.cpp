@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-02-07
+ * \updates       2017-03-21
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -61,8 +61,11 @@ namespace seq64
  *      c_beats_per_minute.
  */
 
-mastermidibase::mastermidibase (int ppqn, int bpm)
- :
+mastermidibase::mastermidibase
+(
+    int ppqn,
+    midibpm bpm
+) :
     m_max_busses        (c_max_busses),
     m_bus_announce      (nullptr),      /* used only for ALSA announce bus  */
     m_inbus_array       (),
@@ -221,7 +224,7 @@ mastermidibase::set_ppqn (int ppqn)
  */
 
 void
-mastermidibase::set_beats_per_minute (int bpm)
+mastermidibase::set_beats_per_minute (midibpm bpm)
 {
     automutex locker(m_mutex);
     m_beats_per_minute = bpm;

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-19
+ * \updates       2017-03-22
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1330,7 +1330,7 @@ optionsfile::write (const perform & p)
         << p.song_start_mode() << "   # song_start_mode\n\n"
         "# jack_midi - Enable JACK MIDI, which is a separate option from\n"
         "# JACK Transport.\n\n"
-        << rc().with_jack_midi()  << "   # with_jack_midi\n\n"
+        << rc().with_jack_midi()  << "   # with_jack_midi\n"
         ;
 
     /*
@@ -1374,10 +1374,12 @@ optionsfile::write (const perform & p)
         "# Last used directory:\n\n"
         << rc().last_used_dir() << "\n\n"
         ;
+
     file
         << "# End of " << m_name << "\n#\n"
         << "# vim: sw=4 ts=4 wm=4 et ft=sh\n"   /* ft=sh for nice colors */
         ;
+
     file.close();
     return true;
 }

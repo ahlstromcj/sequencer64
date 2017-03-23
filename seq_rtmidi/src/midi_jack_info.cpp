@@ -13,14 +13,13 @@
  *  for usage when creating JACK midibus objects and midi_jack API objects.
  */
 
-#include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
+#include "calculations.hpp"             /* extract_port_names()             */
 #include "event.hpp"                    /* seq64::event and other tokens    */
 #include "jack_assistant.hpp"           /* seq64::create_jack_client()      */
+#include "midi_jack.hpp"                /* seq64::midi_jack_info            */
 #include "midi_jack_info.hpp"           /* seq64::midi_jack_info            */
 #include "midibus_common.hpp"           /* from the libseq64 sub-project    */
 #include "settings.hpp"                 /* seq64::rc() configuration object */
-
-#include "midi_jack.hpp"           /* seq64::midi_jack_info            */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -97,7 +96,7 @@ midi_jack_info::midi_jack_info
 (
     const std::string & appname,
     int ppqn,
-    int bpm
+    midibpm bpm
 ) :
     midi_info               (appname, ppqn, bpm),
     m_multi_client          (SEQ64_RTMIDI_MULTICLIENT),
@@ -478,7 +477,7 @@ midi_jack_info::api_set_ppqn (int p)
  */
 
 void
-midi_jack_info::api_set_beats_per_minute (int b)
+midi_jack_info::api_set_beats_per_minute (midibpm b)
 {
     midi_info::api_set_beats_per_minute(b);
 }

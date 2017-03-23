@@ -66,6 +66,24 @@ Active GitHub Issues:
 
  +  59 georgkrause : Recording improvements
 
+    And it would be nice if there would be another recording mode, where is
+    start the recording on the next loop (like queue) and end it at the end of
+    the loop.  even better would be to set the length while recording. so you
+    start the recording and when you press the record toggle again, it ends on
+    the end of the current loop. while you record the pattern is getting
+    longer and longer.  but this isnt that important. But it would be nice if
+    I could set the default pattern length in the config file.
+
+    The workflow I imagine would be:
+
+    -   start sequencer64
+    -   select input device in settings. this is fine.
+    -   start transport
+    -   toggle a recording modifier
+    -   trigger a pattern
+    -   the recording will start at the beginning of the next bar
+    -   the pattern gets longer and longer until...
+
     60 georgkrause : change speed while running
 
  *  61 georgkrause : Jack MIDI Client Naming

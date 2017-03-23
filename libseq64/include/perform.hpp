@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-15
+ * \updates       2017-03-22
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -999,7 +999,7 @@ public:
      *      beats/measure in the JACK assistant object.
      */
 
-    void set_beats_per_bar (int bpm)
+    void set_beats_per_bar (midibpm bpm)
     {
         m_beats_per_bar = bpm;
 #ifdef SEQ64_JACK_SUPPORT
@@ -1543,7 +1543,7 @@ public:
      *      Returns the value of beats/minute from the master buss.
      */
 
-    int get_beats_per_minute ()
+    midibpm get_beats_per_minute ()
     {
         return master_bus().get_beats_per_minute();
     }
@@ -1850,29 +1850,8 @@ public:
             set_mode_group_learn();
     }
 
-    /**
-     *  Encapsulates some calls used in mainwnd.  Actually does a lot of
-     *  work in those function calls.
-     */
-
-    int decrement_beats_per_minute ()
-    {
-        int result = get_beats_per_minute() - 1;
-        set_beats_per_minute(result);
-        return result;
-    }
-
-    /**
-     *  Encapsulates some calls used in mainwnd.  Actually does a lot of
-     *  work in those function calls.
-     */
-
-    int increment_beats_per_minute ()
-    {
-        int result = get_beats_per_minute() + 1;
-        set_beats_per_minute(result);
-        return result;
-    }
+    midibpm decrement_beats_per_minute ();
+    midibpm increment_beats_per_minute ();
 
     /**
      *  Encapsulates some calls used in mainwnd.
@@ -2214,7 +2193,7 @@ private:
 
     void play (midipulse tick);
     void set_orig_ticks (midipulse tick);
-    void set_beats_per_minute (int bpm);        /* more than just a setter  */
+    void set_beats_per_minute (midibpm bpm);    /* more than just a setter  */
 
     /**
      * \setter m_looping

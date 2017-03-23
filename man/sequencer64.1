@@ -1,10 +1,12 @@
-.TH Sequencer64 "January 8 2017" "Version 0.90.0" "Sequencer64 Manual Page"
+.TH Sequencer64 "March 19 2017" "Version 0.90.2" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real-time live MIDI sequencer refactored from Seq24
 
 .SH SYNOPSIS
 .B sequencer64
+[\fIOPTIONS\fP] [\fIFILENAME\fP]
+.B seq64
 [\fIOPTIONS\fP] [\fIFILENAME\fP]
 
 .SH DESCRIPTION
@@ -155,7 +157,8 @@ not compiled for JACK support.
 
 .TP 8
 .B \-j, \-\-jack-transport
-Sequencer64 will sync to JACK transport.
+Sequencer64 will sync to JACK transport.  Note that JACK transport is separate
+from native JACK MIDI support.
 
 .TP 8
 .B \-J, \-\-jack-master
@@ -172,8 +175,13 @@ When Sequencer64 is synced to JACK, the following play modes are available:
 	(1 = song mode) (default)
 
 .TP 8
-.B \-U, \-\-jack-session-uuid \fI<uuid>\fP
-Set the UUID for the JACK session.
+.B \-t, \-\-jack-midi
+Use native JACK MIDI.  This is a separate option from JACK Transport, and is
+the default.  If JACK is not running, the application falls back to ALSA.
+
+.TP 8
+.B \-N, \-\-no-jack-midi
+Use ALSA MIDI, even with JACK Transport.  See the -A option.
 
 .TP 8
 .B \-S, \-\-stats

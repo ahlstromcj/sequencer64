@@ -823,12 +823,12 @@ midi_jack::api_continue_from (midipulse tick, midipulse /*beats*/)
 {
     int beat_width = 4;                                 // no m_beat_width !!!
     int ticks_per_beat = ppqn() * 10;
-    int beats_per_minute = bpm();
+    midibpm beats_per_minute = bpm();
     uint64_t tick_rate =
     (
         uint64_t(jack_get_sample_rate(client_handle())) * tick * 60.0
     );
-    long tpb_bpm = ticks_per_beat * beats_per_minute * 4.0 / beat_width;
+    long tpb_bpm = long(ticks_per_beat * beats_per_minute * 4.0 / beat_width);
     uint64_t jack_frame = tick_rate / tpb_bpm;
     if (jack_transport_locate(client_handle(), jack_frame) != 0)
         (void) info_message("jack api_continue_from() failed");
@@ -875,7 +875,7 @@ midi_jack::api_set_ppqn (int /*ppqn*/)
 }
 
 void
-midi_jack::api_set_beats_per_minute (int /*bpm*/)
+midi_jack::api_set_beats_per_minute (midibpm /*bpm*/)
 {
     // No code needed yet
 }

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-20
+ * \updates       2017-03-21
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -461,7 +461,7 @@ private:
     }
 
     void set_measures (int lim);
-    void apply_length (int bpm, int bw, int measures);
+    void apply_length (midibpm bpm, int bw, int measures);
     long get_measures ();
     void set_midi_channel (int midichannel, bool user_change = false);
     void set_midi_bus (int midibus, bool user_change = false);

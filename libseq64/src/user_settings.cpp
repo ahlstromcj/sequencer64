@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2017-02-20
+ * \updates       2017-03-22
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -173,6 +173,8 @@ user_settings::user_settings ()
     m_midi_beat_width           (0),
     m_midi_buss_override        (0),
     m_velocity_override         (SEQ64_PRESERVE_VELOCITY),
+    m_bpm_precision             (SEQ64_DEFAULT_BPM_PRECISION),
+    m_bpm_increment             (SEQ64_DEFAULT_BPM_INCREMENT),
 
     /*
      * Calculated from other member values in the normalize() function.
@@ -265,6 +267,8 @@ user_settings::user_settings (const user_settings & rhs)
     m_midi_beat_width           (rhs.m_midi_beat_width),
     m_midi_buss_override        (rhs.m_midi_buss_override),
     m_velocity_override         (rhs.m_velocity_override),
+    m_bpm_precision             (rhs.m_bpm_precision),
+    m_bpm_increment             (rhs.m_bpm_increment),
 
     /*
      * Calculated from other member values in the normalize() function.
@@ -360,6 +364,8 @@ user_settings::operator = (const user_settings & rhs)
         m_midi_beat_width           = rhs.m_midi_beat_width;
         m_midi_buss_override        = rhs.m_midi_buss_override;
         m_velocity_override         = rhs.m_velocity_override;
+        m_bpm_precision             = rhs.m_bpm_precision;
+        m_bpm_increment             = rhs.m_bpm_increment;
 
         /*
          * Calculated from other member values in the normalize() function.
@@ -435,6 +441,8 @@ user_settings::set_defaults ()
     m_midi_beat_width = SEQ64_DEFAULT_BEAT_WIDTH;   // range: 1-16, powers of 2
     m_midi_buss_override = SEQ64_BAD_BUSS;          // range: 1 to 32
     m_velocity_override = SEQ64_PRESERVE_VELOCITY;  // -1, range: 0 to 127
+    m_bpm_precision = SEQ64_DEFAULT_BPM_PRECISION;
+    m_bpm_increment = SEQ64_DEFAULT_BPM_INCREMENT;
 
     /*
      * Constants:
@@ -855,7 +863,7 @@ user_settings::midi_beats_per_bar (int value)
  */
 
 void
-user_settings::midi_beats_per_minute (int value)
+user_settings::midi_beats_per_minute (midibpm value)
 {
     if (value >= SEQ64_MINIMUM_BPM && value <= SEQ64_MAXIMUM_BPM)
         m_midi_beats_per_minute = value;
@@ -904,12 +912,42 @@ user_settings::midi_buss_override (char buss)
 void
 user_settings::velocity_override (int vel)
 {
-	if (vel > SEQ64_MAX_NOTE_ON_VELOCITY)
-		vel = SEQ64_MAX_NOTE_ON_VELOCITY;
-	else if (vel < 0)
-		vel = SEQ64_PRESERVE_VELOCITY;
+    if (vel > SEQ64_MAX_NOTE_ON_VELOCITY)
+        vel = SEQ64_MAX_NOTE_ON_VELOCITY;
+    else if (vel < 0)
+        vel = SEQ64_PRESERVE_VELOCITY;
 
-	m_velocity_override = vel;
+    m_velocity_override = vel;
+}
+
+/**
+ * \setter m_bpm_precision
+ */
+
+void
+user_settings::bpm_precision (int precision)
+{
+    if (precision > SEQ64_MAXIMUM_BPM_PRECISION)
+        precision = SEQ64_MAXIMUM_BPM_PRECISION;
+    else if (precision < SEQ64_MINIMUM_BPM_PRECISION)
+        precision = SEQ64_MINIMUM_BPM_PRECISION;
+
+    m_bpm_precision = precision;
+}
+
+/**
+ * \setter m_bpm_increment
+ */
+
+void
+user_settings::bpm_increment (midibpm increment)
+{
+    if (increment > SEQ64_MAXIMUM_BPM_INCREMENT)
+        increment = SEQ64_MAXIMUM_BPM_INCREMENT;
+    else if (increment < SEQ64_MINIMUM_BPM_INCREMENT)
+        increment = SEQ64_MINIMUM_BPM_INCREMENT;
+
+    m_bpm_increment = increment;
 }
 
 /**
@@ -1009,7 +1047,7 @@ user_settings::dump_summary ()
     (
         "   midi_ppqn() = %d\n"
         "   midi_beats_per_bar() = %d\n"
-        "   midi_beats_per_minute() = %d\n"
+        "   midi_beats_per_minute() = %g\n"
         "   midi_beat_width() = %d\n"
         "   midi_buss_override() = %d\n"
         ,

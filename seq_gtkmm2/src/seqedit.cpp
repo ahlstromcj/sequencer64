@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-20
+ * \updates       2017-03-21
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1171,7 +1171,7 @@ seqedit::fill_top_bar ()
     );
     add_tooltip
     (
-        m_button_bpm, "Time signature: beats per measure, or beats per bar."
+        m_button_bpm, "Time signature: beats per measure, beats per bar."
     );
     m_entry_bpm = manage(new Gtk::Entry());
     m_entry_bpm->set_width_chars(2);
@@ -2009,7 +2009,7 @@ seqedit::set_chord (int chord)
  */
 
 void
-seqedit::apply_length (int bpm, int bw, int measures)
+seqedit::apply_length (midibpm bpm, int bw, int measures)
 {
     m_seq.set_length(measures_to_ticks(bpm, m_ppqn, bw, measures));
     m_seqroll_wid->reset();
@@ -2078,7 +2078,7 @@ void
 seqedit::set_beats_per_bar (int bpm)
 {
     char b[8];
-    snprintf(b, sizeof b, "%d", bpm);
+    snprintf(b, sizeof b, "%d", int(bpm));
     m_entry_bpm->set_text(b);
     if (bpm != m_seq.get_beats_per_bar())
     {

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2016-06-12
+ * \updates       2017-03-21
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_events
@@ -60,7 +60,7 @@ namespace seq64
  *      get and provides in this parameter.
  */
 
-editable_events::editable_events (sequence & seq, int bpm)
+editable_events::editable_events (sequence & seq, midibpm bpm)
  :
     m_events            (),
     m_current_event     (m_events.end()),

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-13
+ * \updates       2017-03-21
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -109,7 +109,7 @@ midibus::midibus
     int index,                          // just an ordinal for display
     int queue,
     int ppqn,
-    int bpm
+    midibpm bpm
 ) :
     midibase
     (
@@ -166,7 +166,7 @@ midibus::midibus
     int bus_id,                         // might just remove this parameter!!!
     int queue,
     int ppqn,
-    int bpm
+    midibpm bpm
 ) :
     midibase
     (

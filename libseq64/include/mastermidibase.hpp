@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-01-26
+ * \updates       2017-03-20
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibase module is the base-class version of the mastermidibus
@@ -124,7 +124,7 @@ protected:
      *  confuse it with "bpm" for "beats per measure".
      */
 
-    int m_beats_per_minute;
+    midibpm m_beats_per_minute;
 
     /**
      *  For dumping MIDI input to a sequence for recording.  This value is set
@@ -166,8 +166,8 @@ public:
 
     mastermidibase
     (
-        int ppqn = SEQ64_USE_DEFAULT_PPQN,
-        int bpm =  SEQ64_DEFAULT_BPM            /* c_beats_per_minute */
+        int ppqn    = SEQ64_USE_DEFAULT_PPQN,
+        midibpm bpm =  SEQ64_DEFAULT_BPM         /* c_beats_per_minute */
     );
     virtual ~mastermidibase ();
 
@@ -179,11 +179,11 @@ public:
      *      The PPQN value to which to initialize the master MIDI buss.
      */
 
-    virtual void init (int ppqn, int bpm)
+    virtual void init (int ppqn, midibpm bpm)
     {
         m_ppqn = ppqn;
         m_beats_per_minute = bpm;
-        api_init(ppqn, bpm);                /* a return value would be nice */
+        api_init(ppqn, int(bpm));           /* NEED DOUBLE !!! */
     }
 
     /**
@@ -226,7 +226,7 @@ public:
      * \getter m_beats_per_minute
      */
 
-    int get_beats_per_minute () const
+    midibpm get_beats_per_minute () const
     {
         return m_beats_per_minute;
     }
@@ -236,7 +236,7 @@ public:
      *      This is a second version.
      */
 
-    int get_bpm () const
+    midibpm get_bpm () const
     {
         return m_beats_per_minute;
     }
@@ -297,7 +297,7 @@ public:
     clock_e get_clock (bussbyte bus);
 
     void set_ppqn (int ppqn);
-    void set_beats_per_minute (int bpm);
+    void set_beats_per_minute (midibpm bpm);
 
 protected:
 
@@ -336,7 +336,7 @@ protected:
         return result;
     }
 
-    virtual void api_init (int ppqn, int bpm) = 0;
+    virtual void api_init (int ppqn, midibpm bpm) = 0;
 
     /**
      *  Provides MIDI API-specific functionality for the start() function.
@@ -390,7 +390,7 @@ protected:
      *  set_beats_per_minute() function.
      */
 
-    virtual void api_set_beats_per_minute (int /* bpm */)
+    virtual void api_set_beats_per_minute (midibpm /* bpm */)
     {
         // no code for base or portmidi
     }

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-01-16
+ * \updates       2017-03-22
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -155,45 +155,33 @@ extern int zoom_power_of_2 (int ppqn);
  *      is 0, we'll get an arithmetic exception.
  *
  * \return
- *      Returns the beats per minute.  If the tempo value is too small,
- *      then this function will crash.  :-D
+ *      Returns the beats per minute.  If the tempo value is 0, then 0 is
+ *      returned.
  */
 
 inline double
-beats_per_minute_from_tempo_us (double tempous)
+bpm_from_tempo_us (double tempous)
 {
-    return 60000000.0 / tempous;
+    return tempous > 0.0 ? (60000000.0 / tempous) : 0.0 ;
 }
 
 /**
- *  This function is the inverse of beats_per_minute_from_tempo().
+ *  Converts tempo (e.g. 120 beats/minute) to microseconds.
+ *  This function is the inverse of bpm_from_tempo_us().
  *
  * \param bpm
  *      The value of beats-per-minute.  If this value is 0, we'll get an
  *      arithmetic exception.
  *
  * \return
- *      Returns the tempo in qn/us.  If the bpm value is too small,
- *      then this function will crash.  :-D
+ *      Returns the tempo in qn/us.  If the bpm value is 0, then 0 is
+ *      returned.
  */
 
 inline double
-tempo_us_from_beats_per_minute (double bpm)
+tempo_us_from_bpm (midibpm bpm)
 {
-    return 60000000.0 / bpm;
-}
-
-/**
- *  Converts tempo (e.g. 120 beats/minute) to microseconds.
- *
- * \param bpm
- *      Provides the tempo in beats/minute.
- */
-
-inline long
-tempo_to_us (int bpm)
-{
-    return 60000000L / long(bpm);
+    return bpm > 0.0 ? (60000000.0 / bpm) : 0.0 ;
 }
 
 /**
@@ -221,7 +209,7 @@ tempo_to_us (int bpm)
  */
 
 inline double
-pulse_length_us (int bpm, int ppqn)
+pulse_length_us (midibpm bpm, int ppqn)
 {
     /*
      * Let's use the original notation for now.
@@ -266,7 +254,7 @@ pulse_length_us (int bpm, int ppqn)
  */
 
 inline double
-delta_time_us_to_ticks (unsigned long us, int bpm, int ppqn)
+delta_time_us_to_ticks (unsigned long us, midibpm bpm, int ppqn)
 {
     return double(bpm * ppqn * (us / 60000000.0f));
 }
@@ -295,7 +283,7 @@ delta_time_us_to_ticks (unsigned long us, int bpm, int ppqn)
  */
 
 inline double
-ticks_to_delta_time_us (midipulse delta_ticks, int bpm, int ppqn)
+ticks_to_delta_time_us (midipulse delta_ticks, midibpm bpm, int ppqn)
 {
     return double(delta_ticks) * pulse_length_us(bpm, ppqn);
 }
@@ -331,7 +319,7 @@ ticks_to_delta_time_us (midipulse delta_ticks, int bpm, int ppqn)
  */
 
 inline double
-clock_tick_duration_bogus (int bpm, int ppqn)
+clock_tick_duration_bogus (midibpm bpm, int ppqn)
 {
     return (ppqn / SEQ64_MIDI_CLOCK_IN_PPQN) * 60000000.0 / (bpm * ppqn);
 }
@@ -431,7 +419,7 @@ pulses_per_measure (int ppqn = SEQ64_DEFAULT_PPQN)
  */
 
 inline midipulse
-measures_to_ticks (int bpm, int ppqn, int bw, int measures = 1)
+measures_to_ticks (midibpm bpm, int ppqn, int bw, int measures = 1)
 {
     return (bw > 0) ? (4 * ppqn * measures * bpm / bw) : 0 ;
 }

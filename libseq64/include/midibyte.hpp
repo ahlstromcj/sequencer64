@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-23
- * \updates       2016-10-19
+ * \updates       2017-03-21
  * \license       GNU GPLv2 or above
  *
  *  These typedef specifications are intended to remove the ambiguity we have
@@ -47,6 +47,8 @@
 #include <limits.h>                     /* ULONG_MAX and other limits   */
 
 #include "easy_macros.h"                /* insure build macros defined  */
+
+#define USE_DOUBLE_BEATS_PER_MINUTE     // TEMPORARY
 
 /*
  *  Since we're using unsigned variables for counting pulses, we can't do the
@@ -122,6 +124,18 @@ typedef unsigned long midilong;
  */
 
 typedef long midipulse;
+
+/**
+ *  Provides the data type for BPM (beats per minute) values.  This value used
+ *  to be an integer, but we need to provide more precision in order to
+ *  support better tempo matching.
+ */
+
+#ifdef USE_DOUBLE_BEATS_PER_MINUTE
+typedef double midibpm;
+#else
+typedef int midibpm;
+#endif
 
 /**
  *  Provides a data structure to hold the numeric equivalent of the measures
@@ -247,7 +261,7 @@ class midi_timing
      *  of pulses/ticks/divisions.
      */
 
-    int m_beats_per_minute;             /* T (tempo, BPM in upper-case)   */
+    midibpm m_beats_per_minute;         /* T (tempo, BPM in upper-case)   */
 
     /**
      *  This value should match the numerator value selected when editing the
@@ -276,13 +290,13 @@ class midi_timing
 public:
 
     midi_timing ();
-    midi_timing (int bpminute, int bpmeasure, int beatwidth, int ppqn);
+    midi_timing (midibpm bpminute, int bpmeasure, int beatwidth, int ppqn);
 
     /**
      * \getter m_beats_per_minute
      */
 
-    int beats_per_minute () const
+    midibpm beats_per_minute () const
     {
         return m_beats_per_minute;
     }
@@ -295,7 +309,7 @@ public:
      *      We can add validation later.
      */
 
-    void beats_per_minute (int b)
+    void beats_per_minute (midibpm b)
     {
         m_beats_per_minute = b;
     }

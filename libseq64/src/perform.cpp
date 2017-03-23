@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-03-19
+ * \updates       2017-03-22
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -193,7 +193,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_beat_width                (SEQ64_DEFAULT_BEAT_WIDTH),
     m_clocks_per_metronome      (24),
     m_32nds_per_quarter         (8),
-    m_us_per_quarter_note       (tempo_to_us(SEQ64_DEFAULT_BPM)),
+    m_us_per_quarter_note       (tempo_us_from_bpm(SEQ64_DEFAULT_BPM)),
     m_master_bus                (nullptr),
     m_master_clocks             (),         // vector<clock_e>
     m_master_inputs             (),         // vector<bool>
@@ -1283,7 +1283,7 @@ perform::is_dirty_names (int seq)
  */
 
 void
-perform::set_beats_per_minute (int bpm)
+perform::set_beats_per_minute (midibpm bpm)
 {
     if (bpm < SEQ64_MINIMUM_BPM)
         bpm = SEQ64_MINIMUM_BPM;
@@ -1308,9 +1308,41 @@ perform::set_beats_per_minute (int bpm)
     if (ok)
     {
         master_bus().set_beats_per_minute(bpm);
-        m_us_per_quarter_note = tempo_to_us(bpm);
+        m_us_per_quarter_note = tempo_us_from_bpm(bpm);
         m_bpm = bpm;
     }
+}
+
+/**
+ *  Encapsulates some calls used in mainwnd.  Actually does a lot of
+ *  work in those function calls.
+ *
+ * \return
+ *      Returns the resultant BPM, as a convenience.
+ */
+
+midibpm
+perform::decrement_beats_per_minute ()
+{
+    midibpm result = get_beats_per_minute() - usr().bpm_increment();
+    set_beats_per_minute(result);
+    return result;
+}
+
+/**
+ *  Encapsulates some calls used in mainwnd.  Actually does a lot of
+ *  work in those function calls.
+ *
+ * \return
+ *      Returns the resultant BPM, as a convenience.
+ */
+
+midibpm
+perform::increment_beats_per_minute ()
+{
+    midibpm result = get_beats_per_minute() + usr().bpm_increment();
+    set_beats_per_minute(result);
+    return result;
 }
 
 /**
@@ -2706,7 +2738,7 @@ perform::output_func ()
             delta.tv_nsec = current.tv_nsec - last.tv_nsec;     // delta!
             long delta_us = (delta.tv_sec * 1000000) + (delta.tv_nsec / 1000);
 #endif
-            int bpm  = master_bus().get_beats_per_minute();
+            midibpm bpm  = master_bus().get_beats_per_minute();
 
             /*
              * Delta time to ticks; get delta ticks.
@@ -2729,10 +2761,7 @@ perform::output_func ()
             pad.js_delta_tick_frac = long(delta_tick_num % delta_tick_denom);
 
 #else
-            // delta_tick = double(bpm * ppqn * (delta_us / 60000000.0f));
-
             double delta_tick = delta_time_us_to_ticks(delta_us, bpm, ppqn);
-
 #endif
 
             if (m_usemidiclock)
@@ -3036,7 +3065,8 @@ perform::output_func ()
                 printf("[%3d][%8ld]\n", i * 100, stats_all[i]);
             }
             printf("\n\n-- clock width --\n");
-            int bpm  = master_bus().get_beats_per_minute();
+
+            midibpm bpm  = master_bus().get_beats_per_minute();
             printf
             (
                 "optimal: [%d us]\n", int(clock_tick_duration_bogus(bpm, m_ppqn))

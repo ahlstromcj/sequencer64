@@ -8,7 +8,7 @@
  *
  * \author        refactoring by Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2017-02-05
+ * \updates       2017-03-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  * \license       GNU GPLv2 or above
  *
@@ -62,7 +62,7 @@ public:
         rtmidi_api api                  = RTMIDI_API_UNSPECIFIED,
         const std::string & appname     = "rtmidiapp",
         int ppqn                        = SEQ64_DEFAULT_PPQN,
-        int bpm                         = SEQ64_DEFAULT_BPM
+        midibpm bpm                     = SEQ64_DEFAULT_BPM
     );
 
     virtual ~rtmidi_info ();
@@ -232,12 +232,12 @@ public:
         get_api_info()->api_set_ppqn(p);
     }
 
-    int bpm () const
+    midibpm bpm () const
     {
         return get_api_info()->bpm();
     }
 
-    void api_set_beats_per_minute (int b)
+    void api_set_beats_per_minute (midibpm b)
     {
         return get_api_info()->api_set_beats_per_minute(b);
     }
@@ -363,7 +363,7 @@ protected:
         rtmidi_api api,
         const std::string & appname,
         int ppqn,
-        int bpm
+        midibpm bpm
     );
 
 };          // class rtmidi_info

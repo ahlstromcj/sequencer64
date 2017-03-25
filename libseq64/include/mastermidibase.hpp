@@ -183,7 +183,7 @@ public:
     {
         m_ppqn = ppqn;
         m_beats_per_minute = bpm;
-        api_init(ppqn, int(bpm));           /* NEED DOUBLE !!! */
+        api_init(ppqn, bpm);
     }
 
     /**

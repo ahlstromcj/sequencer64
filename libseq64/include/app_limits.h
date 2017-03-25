@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2017-03-22
+ * \updates       2017-03-25
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -283,11 +283,7 @@
  *  measure".
  */
 
-#ifdef USE_DOUBLE_BEATS_PER_MINUTE
 #define SEQ64_DEFAULT_BPM                120.0
-#else
-#define SEQ64_DEFAULT_BPM                120
-#endif
 
 /**
  *  Minimum value for c_beats_per_minute (global beats-per-minute, also known
@@ -295,22 +291,14 @@
  *  debugging and troubleshooting.
  */
 
-#ifdef USE_DOUBLE_BEATS_PER_MINUTE
 #define SEQ64_MINIMUM_BPM                  1.0       /* 20   */
-#else
-#define SEQ64_MINIMUM_BPM                  1         /* 20   */
-#endif
 
 /**
  *  Maximum value for c_beats_per_minute (global beats-per-minute, also known
  *  as "BPM").  Mostly for sanity-checking.
  */
 
-#ifdef USE_DOUBLE_BEATS_PER_MINUTE
 #define SEQ64_MAXIMUM_BPM                600.0       /* 500  */
-#else
-#define SEQ64_MAXIMUM_BPM                600         /* 500  */
-#endif
 
 /**
  *  Provides a fallback value for the BPM precision.  This is the "legacy"
@@ -348,7 +336,20 @@
  *  Provides a maximum value for the BPM increment.
  */
 
-#define SEQ64_MAXIMUM_BPM_INCREMENT        5.0
+#define SEQ64_MAXIMUM_BPM_INCREMENT       25.0
+
+/**
+ *  Provides a fallback value for the BPM step increment.  This is the "legacy"
+ *  value.
+ */
+
+#define SEQ64_DEFAULT_BPM_STEP_INCREMENT   1.0
+
+/**
+ *  Provides a fallback value for the BPM page increment.
+ */
+
+#define SEQ64_DEFAULT_BPM_PAGE_INCREMENT  10.0
 
 /**
  *  Default value for "beats-per-measure".  This is the "numerator" in a 4/4

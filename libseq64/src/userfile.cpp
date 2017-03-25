@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-22
+ * \updates       2017-03-25
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -405,13 +405,10 @@ userfile::parse (perform & /* a_perf */)
         sscanf(m_line, "%d", &scratch);
         usr().midi_beats_per_bar(scratch);
 
-        /*
-         * TODO: HANDLE DOUBLE BPM
-         */
-
+        float beatspm;
         next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().midi_beats_per_minute(scratch);
+        sscanf(m_line, "%f", &beatspm);
+        usr().midi_beats_per_minute(midibpm(beatspm));
 
         next_data_line(file);
         sscanf(m_line, "%d", &scratch);
@@ -431,12 +428,17 @@ userfile::parse (perform & /* a_perf */)
             sscanf(m_line, "%d", &scratch);
             usr().bpm_precision(scratch);
         }
-
         if (next_data_line(file))
         {
             float inc;
             sscanf(m_line, "%f", &inc);
-            usr().bpm_increment(midibpm(inc));
+            usr().bpm_step_increment(midibpm(inc));
+        }
+        if (next_data_line(file))
+        {
+            float inc;
+            sscanf(m_line, "%f", &inc);
+            usr().bpm_page_increment(midibpm(inc));
         }
     }
 
@@ -898,7 +900,7 @@ userfile::write (const perform & /* a_perf */ )
 
         file << "\n"
             "# Specifies the default beats per minute.  The default value\n"
-            "# is 120, and the legal range is 20 to 500.\n"
+            "# is 120, and the legal range is 20 to 600.\n"
             "\n"
             << usr().midi_beats_per_minute() << "       # midi_beats_per_minute\n"
             ;
@@ -949,7 +951,7 @@ userfile::write (const perform & /* a_perf */ )
         file << precision << "       # bpm_precision\n";
 
         file << "\n"
-            "# Specifies the increment of the beats-per-minutes spinner and\n"
+            "# Specifies the step increment of the beats/minute spinner and\n"
             "# MIDI control over the BPM value.  The default is 1. For a\n"
             "# precision of 1 decimal point, 0.1 is a good value.  For a\n"
             "# precision of 2 decimal points, 0.01 is a good value, but one\n"
@@ -957,8 +959,18 @@ userfile::write (const perform & /* a_perf */ )
             "\n"
             ;
 
-        int increment = usr().bpm_increment();
-        file << increment << "       # bpm_increment\n";
+        midibpm increment = usr().bpm_step_increment();
+        file << increment << "       # bpm_step_increment\n";
+
+        file << "\n"
+            "# Specifies the page increment of the beats/minute field. It is\n"
+            "# used when the Page-Up/Page-Down keys are pressed while the BPM\n"
+            "# field has the keyboard focus.  The default value is 10.\n"
+            "\n"
+            ;
+
+        increment = usr().bpm_page_increment();
+        file << increment << "       # bpm_page_increment\n";
     }
 
     /*

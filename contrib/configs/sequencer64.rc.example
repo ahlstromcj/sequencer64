@@ -1,14 +1,35 @@
-# Sequencer64 0.9.16 (and above) rc configuration file
+# Sequencer64 0.90.0 (and above) rc configuration file
 #
 # This file holds the main configuration options for Sequencer64.
 # It follows the format of the legacy seq24 'rc' configuration
 # file, but adds some new options, such as LASH, Mod4 interaction
-# support, and an auto-save-on-exit option.  Also provided is a
-# legacy mode.
+# support, an auto-save-on-exit option, and more.  Also provided
+# is a legacy mode.
 
 [midi-control]
 
-74      # MIDI controls count
+# The leftmost number on each line here is the pattern number, from
+# 0 to 31 (and beyond for the mute-groups). Next, there are three
+# groups of bracketed numbers that follow:
+#
+#    [toggle]  [on]  [off]
+#
+# In each group, there are six numbers:
+#
+#    [on/off invert status d0 d1min d1max]
+#
+# 'on/off' enables/disables (1/0) the MIDI control for the pattern.
+# 'invert' (1/0) causes the opposite if data is outside the range.
+# 'status' is by MIDI event to match (channel is ignored).
+# 'd0' is the first data value.  Example: if status is 144 (Note On),
+# then d0 represents Note 0.
+# 'd1min'/'d1max' are the range of second values that should match.
+# Example:  For a Note On for note 0, 0 and 127 indicate that any
+# Note On velocity will cause the MIDI control to take effect.
+
+84      # MIDI controls count (74 or 84)
+
+# Pattern-group section:
 0 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 1 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 2 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
@@ -41,7 +62,7 @@
 29 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 30 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 31 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-# mute in group section:
+# Mute-in group section:
 32 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 33 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 34 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
@@ -94,11 +115,36 @@
 72 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # screen set play:
 73 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Extended MIDI controls:
+# start playback (pause, start, stop):
+74 [1 0 144   2   0 127] [1 0 144   4   0 127] [1 0 144   0   0 127]
+# performance record:
+75 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# solo (toggle, on, off):
+76 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI THRU (toggle, on, off):
+77 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# bpm page up:
+78 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# bpm page down:
+79 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# reserved for expansion:
+80 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# reserved for expansion:
+81 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# reserved for expansion:
+82 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# reserved for expansion:
+83 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 
 [mute-group]
 
-1024    # group mute value count (0 or 1024)
-0 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+# All mute-group values are saved, even if the all are zero, and will
+# be stripped out from the MIDI file by the new strip-empty-mutes
+# functionality (a build option).  This is less confusing to the user.
+
+1024       # group mute count
+0 [1 1 1 1 1 0 0 0] [1 1 1 1 1 1 1 1] [1 1 1 0 1 0 1 0] [1 0 1 1 0 0 0 0]
 1 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
 2 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
 3 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
@@ -129,7 +175,7 @@
 28 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
 29 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
 30 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
-31 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+31 [1 1 1 1 1 0 0 0] [1 1 1 1 1 1 1 1] [1 1 1 0 1 0 1 0] [1 0 1 1 0 0 0 0]
 
 [midi-clock]
 
@@ -141,20 +187,18 @@
 # Clock Modulo, where MIDI clocking will not begin until the song
 # position reaches the start modulo value [midi-clock-mod-ticks].
 
-6    # number of MIDI clocks/busses
+5    # number of MIDI clocks/busses
 
-# Output buss name: [0] 14:0 Midi Through Port-0
-0 1  # buss number, clock status
-# Output buss name: [1] 128:0 Timid port 0
+# Output buss name: [0] 129:0 Midi Through Port-0
+0 0  # buss number, clock status
+# Output buss name: [1] 129:0 TiMidity port 0
 1 0  # buss number, clock status
-# Output buss name: [2] 128:1 Timid port 1
+# Output buss name: [2] 129:1 TiMidity port 1
 2 0  # buss number, clock status
-# Output buss name: [3] 128:2 Timid port 2
+# Output buss name: [3] 129:2 TiMidity port 2
 3 0  # buss number, clock status
-# Output buss name: [4] 128:3 Timid port 3
+# Output buss name: [4] 129:3 TiMidity port 3
 4 0  # buss number, clock status
-# Output buss name: [5] 129:0 Yoshimi Port 0
-5 0  # buss number, clock status
 
 [midi-clock-mod-ticks]
 
@@ -165,13 +209,22 @@
 
 [midi-input]
 
-1   # number of input MIDI busses
+2   # number of input MIDI busses
 
 # The first number is the port number, and the second number
 # indicates whether it is disabled (0), or enabled (1).
 
-# [0] 14:0 Midi Through Port-0
-0 0
+# [0] 129:1 system:announce
+0 1
+# [1] 14:0 Midi Through Port-0
+1 0
+
+# If set to 1, this option allows the master MIDI bus to record
+# (filter) incoming MIDI data by channel, allocating each incoming
+# MIDI event to the sequence that is set to that channel.
+# This is an option adopted from the Seq32 project at GitHub.
+
+0   # flag to record incoming data by channel
 
 [manual-alsa-ports]
 
@@ -196,13 +249,26 @@
 # 0 - 'seq24' (original seq24 method)
 # 1 - 'fruity' (similar to a certain fruity sequencer we like)
 
-0
+0   # interaction_method
 
 # Set to 1 to allow Sequencer64 to stay in note-adding mode when
 # the right-click is released while holding the Mod4 (Super or
 # Windows) key.
 
-1
+0   # allow_mod4_mode
+
+# Set to 1 to allow Sequencer64 to split performance editor
+# triggers at the closest snap position, instead of splitting the
+# trigger exactly in its middle.  Remember that the split is
+# activated by a middle click.
+
+0   # allow_snap_split
+
+# Set to 1 to allow a double-click on a slot to bring it up in
+# the pattern editor.  This is the default.  Set it to 0 if
+# it interferes with muting/unmuting a pattern.
+
+1   # allow_click_edit
 
 [keyboard-control]
 
@@ -257,7 +323,7 @@
 38  5   # ampersand
 40  7   # parenleft
 47  6   # slash
-60  31   # less
+59  31   # semicolon
 65  16   # A
 66  28   # B
 67  26   # C
@@ -281,41 +347,57 @@
 88  25   # X
 89  13   # Y
 90  24   # Z
+
 # bpm up and bpm down:
 39 59          # apostrophe semicolon
 # screen set up, screen set down, play:
 93 91 65360    # bracketright bracketleft Home
 # group on, group off, group learn:
-236 58 65451   # igrave colon KP_Add
+236 39 65379   # igrave apostrophe Insert
 # replace, queue, snapshot_1, snapshot 2, keep queue:
-65453 65455 65480 65481 92   # KP_Subtract KP_Divide F11 F12 backslash
+65507 65508 65513 65514 92   # Control_L Control_R Alt_L Alt_R backslash
 1     # show_ui_sequence_key (1 = true / 0 = false)
 32    # space start sequencer
 65307    # Escape stop sequencer
 46    # period pause sequencer
 1     # show sequence numbers (1 = true / 0 = false); ignored in legacy mode
-61    # equal toggle use of slot shortcut key to bring up pattern editor
-45    # minus toggle use of slot shortcut key to bring up event editor
+61    # equal is the shortcut key to bring up the pattern editor
+45    # minus is the shortcut key to bring up the event editor
+
+[extended-keys]
+
+# Currently there is no user interface for this section.
+
+65470    # F1 handles the Song/Live mode
+65471    # F2 handles the JACK mode
+65472    # F3 handles the menu mode
+65473    # F4 handles the following of JACK transport
+65475    # F6 handles the Fast-Forward function
+65474    # F5 handles Rewind function
+65476    # F7 handles song pointer-position function
+65478    # F9 emulates clicking the Tap (BPM) button
+65477    # F8 handles the toggling-all-pattern-mutes function
 
 [jack-transport]
 
 # jack_transport - Enable slave synchronization with JACK Transport.
+# Also contains the new flag to use JACK MIDI.
 
-0
+0   # with_jack_transport
 
 # jack_master - Sequencer64 attempts to serve as JACK Master.
 # Also must enable jack_transport (the user interface forces this,
 # and also disables jack_master_cond).
 
-0
+0   # with_jack_master
 
 # jack_master_cond - Sequencer64 is JACK master if no other JACK
 # master exists. Also must enable jack_transport (the user interface
 # forces this, and disables jack_master).
 
-0
+0   # with_jack_master_cond
 
-# jack_start_mode (applies only if JACK is enabled).
+# song_start_mode (applies mainly if JACK is enabled).
 
 # 0 = Playback in live mode. Allows muting and unmuting of loops.
 #     from the main (patterns) window.  Disables both manual and
@@ -324,7 +406,12 @@
 #     controls, regardless of which window was used to start the
 #     playback.
 
-1
+1   # song_start_mode
+
+# jack_midi - Enable JACK MIDI, which is a separate option from
+# JACK Transport.
+
+0   # with_jack_midi
 
 [lash-session]
 

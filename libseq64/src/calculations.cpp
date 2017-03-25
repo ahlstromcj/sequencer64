@@ -348,7 +348,7 @@ pulses_to_timestring (midipulse p, const midi_timing & timinginfo)
  */
 
 std::string
-pulses_to_timestring (midipulse p, int bpm, int ppqn)
+pulses_to_timestring (midipulse p, midibpm bpm, int ppqn)
 {
     unsigned long microseconds = ticks_to_delta_time_us(p, bpm, ppqn);
     int seconds = int(microseconds / 1000000UL);
@@ -496,7 +496,7 @@ midi_measures_to_pulses
  */
 
 midipulse
-timestring_to_pulses (const std::string & timestring, int bpm, int ppqn)
+timestring_to_pulses (const std::string & timestring, midibpm bpm, int ppqn)
 {
     midipulse result = 0;
     if (! timestring.empty())

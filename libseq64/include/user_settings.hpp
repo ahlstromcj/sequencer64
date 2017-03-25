@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-03-22
+ * \updates       2017-03-25
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -524,13 +524,24 @@ class user_settings
     int m_bpm_precision;
 
     /**
-     *  The increment value for BPM, regardless of the decimal precision.
+     *  The step increment value for BPM, regardless of the decimal precision.
      *  The default value is the legacy value, 1, for a BPM precision value of
      *  0.  The default value is 0.1 if one decimal place of precision is in
      *  force, and 0.01 if two decimal places of precision is in force.
+     *  This is the increment that is performed in the BPM field of the main
+     *  window when the arrow-buttons are clicked, the up/down arrow keys are
+     *  pressed, or the BPM MIDI controls are processed.
      */
 
-    midibpm m_bpm_increment;
+    midibpm m_bpm_step_increment;
+
+    /**
+     *  This is the larger increment for paging the BPM.  Currently, the only
+     *  way to use this increment is to click in the BPM field of the main
+     *  window and then use the Page-Up and Page-Down keys.
+     */
+
+    midibpm m_bpm_page_increment;
 
     /*
      *  Values calculated from other member values in the normalize() function.
@@ -1335,12 +1346,21 @@ public:
     }
 
     /**
-     * \getter m_bpm_increment
+     * \getter m_bpm_step_increment
      */
 
-    midibpm bpm_increment () const
+    midibpm bpm_step_increment () const
     {
-        return m_bpm_increment;
+        return m_bpm_step_increment;
+    }
+
+    /**
+     * \getter m_bpm_page_increment
+     */
+
+    midibpm bpm_page_increment () const
+    {
+        return m_bpm_page_increment;
     }
 
     /**
@@ -1443,7 +1463,8 @@ public:         // used in main application module and the userfile class
     void midi_buss_override (char buss);
     void velocity_override (int vel);
     void bpm_precision (int precision);
-    void bpm_increment (midibpm increment);
+    void bpm_step_increment (midibpm increment);
+    void bpm_page_increment (midibpm increment);
 
 protected:
 

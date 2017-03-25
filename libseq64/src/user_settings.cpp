@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2017-03-22
+ * \updates       2017-03-25
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -174,7 +174,8 @@ user_settings::user_settings ()
     m_midi_buss_override        (0),
     m_velocity_override         (SEQ64_PRESERVE_VELOCITY),
     m_bpm_precision             (SEQ64_DEFAULT_BPM_PRECISION),
-    m_bpm_increment             (SEQ64_DEFAULT_BPM_INCREMENT),
+    m_bpm_step_increment        (SEQ64_DEFAULT_BPM_STEP_INCREMENT),
+    m_bpm_page_increment        (SEQ64_DEFAULT_BPM_PAGE_INCREMENT),
 
     /*
      * Calculated from other member values in the normalize() function.
@@ -268,7 +269,8 @@ user_settings::user_settings (const user_settings & rhs)
     m_midi_buss_override        (rhs.m_midi_buss_override),
     m_velocity_override         (rhs.m_velocity_override),
     m_bpm_precision             (rhs.m_bpm_precision),
-    m_bpm_increment             (rhs.m_bpm_increment),
+    m_bpm_step_increment        (rhs.m_bpm_step_increment),
+    m_bpm_page_increment        (rhs.m_bpm_page_increment),
 
     /*
      * Calculated from other member values in the normalize() function.
@@ -365,7 +367,8 @@ user_settings::operator = (const user_settings & rhs)
         m_midi_buss_override        = rhs.m_midi_buss_override;
         m_velocity_override         = rhs.m_velocity_override;
         m_bpm_precision             = rhs.m_bpm_precision;
-        m_bpm_increment             = rhs.m_bpm_increment;
+        m_bpm_step_increment        = rhs.m_bpm_step_increment;
+        m_bpm_page_increment        = rhs.m_bpm_page_increment;
 
         /*
          * Calculated from other member values in the normalize() function.
@@ -442,7 +445,8 @@ user_settings::set_defaults ()
     m_midi_buss_override = SEQ64_BAD_BUSS;          // range: 1 to 32
     m_velocity_override = SEQ64_PRESERVE_VELOCITY;  // -1, range: 0 to 127
     m_bpm_precision = SEQ64_DEFAULT_BPM_PRECISION;
-    m_bpm_increment = SEQ64_DEFAULT_BPM_INCREMENT;
+    m_bpm_step_increment = SEQ64_DEFAULT_BPM_STEP_INCREMENT;
+    m_bpm_page_increment = SEQ64_DEFAULT_BPM_PAGE_INCREMENT;
 
     /*
      * Constants:
@@ -457,6 +461,9 @@ user_settings::set_defaults ()
 
 /**
  *  Calculate the derived values from the already-set values.
+ *
+ *  Should we normalize the BPM increment values here, in case they
+ *  are irregular?
  */
 
 void
@@ -936,18 +943,33 @@ user_settings::bpm_precision (int precision)
 }
 
 /**
- * \setter m_bpm_increment
+ * \setter m_bpm_step_increment
  */
 
 void
-user_settings::bpm_increment (midibpm increment)
+user_settings::bpm_step_increment (midibpm increment)
 {
     if (increment > SEQ64_MAXIMUM_BPM_INCREMENT)
         increment = SEQ64_MAXIMUM_BPM_INCREMENT;
     else if (increment < SEQ64_MINIMUM_BPM_INCREMENT)
         increment = SEQ64_MINIMUM_BPM_INCREMENT;
 
-    m_bpm_increment = increment;
+    m_bpm_step_increment = increment;
+}
+
+/**
+ * \setter m_bpm_page_increment
+ */
+
+void
+user_settings::bpm_page_increment (midibpm increment)
+{
+    if (increment > SEQ64_MAXIMUM_BPM_INCREMENT)
+        increment = SEQ64_MAXIMUM_BPM_INCREMENT;
+    else if (increment < SEQ64_MINIMUM_BPM_INCREMENT)
+        increment = SEQ64_MINIMUM_BPM_INCREMENT;
+
+    m_bpm_page_increment = increment;
 }
 
 /**

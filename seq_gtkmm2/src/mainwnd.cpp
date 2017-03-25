@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-21
+ * \updates       2017-03-25
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -664,8 +664,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         mem_fun(*this, &mainwnd::adj_callback_bpm)
     );
-    m_adjust_bpm->set_step_increment(usr().bpm_increment());
-    m_adjust_bpm->set_page_increment(10.0 * usr().bpm_increment());
+    m_adjust_bpm->set_step_increment(usr().bpm_step_increment());
+    m_adjust_bpm->set_page_increment(usr().bpm_page_increment());
 
     add_tooltip(m_spinbutton_bpm, "Adjust beats per minute (BPM) value.");
     Gtk::Label * bpmlabel = manage(new Gtk::Label("_BPM", true));

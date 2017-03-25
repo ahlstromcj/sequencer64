@@ -42,6 +42,22 @@ Active GitHub Issues:
 
     49 simonvanderveldt : Drop LASH support?
 
+        I doubt there are a lot of people of people left   using liblash
+        though, since LADISH does more, all GUI front-ends switched to
+        LADISH and the command-line `ladish_control` offers a lot more options
+        than `lash_control` ever did.                                                          
+        I do not think untouched  code in itself is an issue, but if it relies
+        on external libraries that get replaced it does become a problem).         
+        I just built the `fixups` branch and tried it, the LASH stuff works
+        fine now :) There's only one thing standing out: sequencer64 doesn't
+        show the filename in the title bar when used in a LASH session. This
+        does not happen when using sequencer64 normally/within a LADISH
+        session.
+
+        P.S. If you reference an issue in a commit message using the `#`
+        notation (like #49) GitHub will make it a link when browsing the
+        commits and also add a link to that commit in the referenced issue.
+
     50 muranyia : occasional segfault or ui freeze when changing MIDI Bus
 
     51 muranyia : Double clicking track vs hi-freq mute-unmute clicking
@@ -53,9 +69,32 @@ Active GitHub Issues:
 
     54 F0rth : [feature request] recording live sessions
 
+    What I envisionned was a record button next to the play and stop buttons
+    in the main window. In live mode, when the record button is armed it
+    behaves as you said "replace or add to the triggers shown in the
+    Performance/Song Editor".            
+
  *  55 muranyia : bootstrap mentions 'enable-seq43jack'
 
     56 muranyia : [feature request] New midi control mod params: Rec Arm, Solo
+
+    Just a quick try with wip and MIDI pause:
+
+    MIDI pause works fine on start                                              
+
+    There seems to be a state mismatch between a pattern being black and the
+    "Sequence dumps data to MIDI bus". Turning on/off it in the editor window
+    turns it on/off in the main window, but turning on/off in the main window
+    doesn't turn it on/off in the editor window. Not actually sure if that's
+    new though, more paying attention to figure out what causes the following.
+    Clicking "incoming midi passes through" and the pause midi control stops
+    doing anything. Unclicking it and the app stays unresponsive to midi
+    pause.
+
+    Click "record incoming midi data" and pressing midi pause (or any other
+    MIDI key/knob/fader) advances the pattern by one note, with keys adding a
+    note but CC buttons/pots/faders (including MIDI pause) not being recorded
+    as a CC event.
 
     57 y1ds : [Feature request] CC sequencing
 
@@ -63,6 +102,15 @@ Active GitHub Issues:
 
        Is there any possibility to have midi outputs for the controls? i want
        to "print" the state of the patterns to my apc mini.
+
+       i see it like @muranyia, all those controllers have specific mappings.
+       my apc mini sends note on/off instead of control changes, so we need a
+       system like the midi mapping for incoming midi
+
+       That feature would be awesome for controllers like the APC mini or
+       Novation's     Launchpad.  @ahlstromcj I don't think there is a
+       standard. Here is the spec for the Launchpad :
+       https://d19ulaff0trnck.cloudfront.net/sites/default/files/novation/downloads/10529 /launchpad-mk2-programmers-reference-guide-v1-02.pdf
 
  +  59 georgkrause : Recording improvements
 
@@ -86,6 +134,34 @@ Active GitHub Issues:
 
     60 georgkrause : change speed while running
 
+    i know, this might be pretty hard to do. but it would be really really
+    cool if you could adjust the playback speed while the transport is
+    rolling. this would give us some nice possibilities for live performances,
+    and i would really love it.        
+
+    More:
+
+    Okay, thanks for the reply! I already red most of the manual and its
+    great! thank you for this!                                                                     
+    re 1.: i got how recording works, and i used it. no technical problems.
+    but the   workflow is pretty unhandy. i try to make music without touching
+    the mouse or     keyboard a lot and this is nearly impossible with
+    sequencer64 at the moment.      
+    the workflow i imagine would be:                                                  
+    1. start sequencer64                                                              2. select input device in settings. this is fine.                                 3. start transport                                                                4. toggle a recording modifier                                                    5. trigger a pattern                                                              6. the recording will start at the beginning of the next bar                      7. the pattern gets longer and longer until...                                    8. trigger the pattern again to stop recording on the next bar                    
+    this would be the best case i can imagine, but maybe its a good idea to
+    split things at implement on after another. the flexible length of the
+    patterns seems a bit critical for me to implement so it might be a good
+    idea to move this to the future.
+
+    an alternative, maybe easier way to implement:                                    
+    1. start sequencer64
+    2. select input
+    3. select default length for patterns
+    4. start transport
+    5. toggle recording modifier
+    6. trigger a pattern
+    7. now the pattern records exactly one loop, than recording stops                 
  *  61 georgkrause : Jack MIDI Client Naming
 
  *  62 georgkrause : Jack Midi auto connect
@@ -96,6 +172,23 @@ Active GitHub Issues:
        for beatmatching and mixing with an audio source, either live or
        recorded.
 
+       Nearly done!
+
     64 y1ds : [Feature request] No gui
+
+    I remember reading somewere of plans to make it possible to run without
+    gui. I was wondering if this is gonna happen cause it would be really
+    helpfull for my raspberry pi drumcomputer project, if someone could give
+    me some  hints I could also have a try at it, but my coding skills are not
+    that great                    
+
+    65 muranyia : [Feature request] Fullscreen mode
+
+    By no means to overwhelm you, rather to throw this into the buffer so you
+    can evaluate and eventually prioritize... :)
+    I'm thinking about putting sequencer64 on a dedicated PI box with a small
+    LCD display, and fullscreen mode (perhaps switchable by F11 and/or a
+    command line option) would come very handy.
+    Thank you for all the great work you've done so far, sir!
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

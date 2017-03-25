@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-22
+ * \updates       2017-03-25
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -527,7 +527,7 @@ private:
      *  Holds the current BPM (beats per minute) for later usage.
      */
 
-    int m_bpm;
+    midibpm m_bpm;
 
     /**
      *  Holds the beats/bar value as obtained from the MIDI file.
@@ -1852,6 +1852,8 @@ public:
 
     midibpm decrement_beats_per_minute ();
     midibpm increment_beats_per_minute ();
+    midibpm page_decrement_beats_per_minute ();
+    midibpm page_increment_beats_per_minute ();
 
     /**
      *  Encapsulates some calls used in mainwnd.

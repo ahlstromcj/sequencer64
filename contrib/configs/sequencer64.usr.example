@@ -1,4 +1,4 @@
-# Sequencer64 0.90.0 (and above) user configuration file
+# Sequencer64 0.90.2 (and above) user configuration file
 #
 # Created by reading the following file and writing it out via the
 # Sequencer64 application:
@@ -40,11 +40,7 @@ Midi Thru 0
 
 0
 
-# controller number and (optional) name:
-
-
 # End of instrument/controllers definition 0
-
 
 [user-instrument-1]
 
@@ -56,11 +52,7 @@ Timidity
 
 0
 
-# controller number and (optional) name:
-
-
 # End of instrument/controllers definition 1
-
 
 [user-instrument-2]
 
@@ -72,11 +64,7 @@ Timidity
 
 0
 
-# controller number and (optional) name:
-
-
 # End of instrument/controllers definition 2
-
 #   ======== Sequencer64-Specific Variables Section ========
 
 [user-interface-settings]
@@ -244,7 +232,7 @@ Timidity
 4       # midi_beats_per_measure/bar
 
 # Specifies the default beats per minute.  The default value
-# is 120, and the legal range is 20 to 500.
+# is 120, and the legal range is 20 to 600.
 
 120       # midi_beats_per_minute
 
@@ -260,14 +248,35 @@ Timidity
 # either for testing or convenience.  And don't save the MIDI file
 # afterwards, unless you want to overwrite all the buss values!
 
--1       # midi_buss_override (disabled)
+1       # midi_buss_override (enabled, careful!)
 
 # Specifies the default velocity override when adding notes in the
 # sequence/pattern editor.  This value is obtained via the 'Vol'
 # button, and ranges from 0 (not recommended :-) to 127.  If the
 # value is -1, then the incoming note velocity is preserved.
 
--1       # velocity_override (-1 = 'Free')
+80       # velocity_override (-1 = 'Free')
+
+# Specifies the precision of the beats-per-minutes spinner and
+# MIDI control over the BPM value.  The default is 0, which means
+# the BPM is an integer.  Other values are 1 and 2 decimal digits
+# of precision.
+
+2       # bpm_precision
+
+# Specifies the step increment of the beats/minute spinner and
+# MIDI control over the BPM value.  The default is 1. For a
+# precision of 1 decimal point, 0.1 is a good value.  For a
+# precision of 2 decimal points, 0.01 is a good value, but one
+# might want somethings a little faster, like 0.05.
+
+0.05       # bpm_step_increment
+
+# Specifies the page increment of the beats/minute field. It is
+# used when the Page-Up/Page-Down keys are pressed while the BPM
+# field has the keyboard focus.  The default value is 10.
+
+10       # bpm_page_increment
 
 # End of /home/ahlstrom/.config/sequencer64/sequencer64.usr
 #

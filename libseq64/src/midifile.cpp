@@ -2093,7 +2093,6 @@ midifile::write_proprietary_track (perform & p)
             write_byte(note[n]);
     }
     write_prop_header(c_bpmtag, 4);             /* bpm tag + long data      */
-#ifdef USE_DOUBLE_BEATS_PER_MINUTE
 
     /*
      *  We now encode the Sequencer64-specific BPM value by multiplying it
@@ -2103,9 +2102,6 @@ midifile::write_proprietary_track (perform & p)
 
     long scaled_bpm = long(p.get_beats_per_minute() * SEQ64_BPM_SCALE_FACTOR);
     write_long(scaled_bpm);                     /* 4 bytes                  */
-#else
-    write_long(p.get_beats_per_minute());       /* 4 bytes                  */
-#endif
     if (gmutesz > 0)
     {
         write_prop_header(c_mutegroups, gmutesz);   /* mute groups tag etc. */

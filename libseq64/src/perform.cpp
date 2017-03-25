@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-03-22
+ * \updates       2017-03-25
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -135,6 +135,10 @@ midi_control perform::sm_mc_dummy;
  *  Tempo meta event in track 0, and from the Seq24's c_bpm SeqSpec section!
  *  This setting is now also made for the two Time Signature values.
  *
+ *  But note that Sequencer64 now scales the c_bpm value so that two extra
+ *  digits of precision can be saved with the MIDI file.  We went throughout
+ *  the code, changing BPM from an integer to a double.
+ *
  * \param mygui
  *      Provides access to the GUI assistant that holds many things,
  *      including the containers of keys and the "events" they
@@ -188,18 +192,18 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_looping                   (false),
     m_playback_mode             (false),
     m_ppqn                      (choose_ppqn(ppqn)),
-    m_bpm                       (SEQ64_DEFAULT_BPM),
+    m_bpm                       (SEQ64_DEFAULT_BPM),    /* now a double     */
     m_beats_per_bar             (SEQ64_DEFAULT_BEATS_PER_MEASURE),
     m_beat_width                (SEQ64_DEFAULT_BEAT_WIDTH),
     m_clocks_per_metronome      (24),
     m_32nds_per_quarter         (8),
     m_us_per_quarter_note       (tempo_us_from_bpm(SEQ64_DEFAULT_BPM)),
     m_master_bus                (nullptr),
-    m_master_clocks             (),         // vector<clock_e>
-    m_master_inputs             (),         // vector<bool>
+    m_master_clocks             (),                     /* vector<clock_e>  */
+    m_master_inputs             (),                     /* vector<bool>     */
     m_one_measure               (m_ppqn * 4),
     m_left_tick                 (0),
-    m_right_tick                (m_one_measure * 4),        // m_ppqn * 16
+    m_right_tick                (m_one_measure * 4),    /* m_ppqn * 16      */
     m_starting_tick             (0),
     m_tick                      (0),
     m_jack_tick                 (0),
@@ -1324,7 +1328,7 @@ perform::set_beats_per_minute (midibpm bpm)
 midibpm
 perform::decrement_beats_per_minute ()
 {
-    midibpm result = get_beats_per_minute() - usr().bpm_increment();
+    midibpm result = get_beats_per_minute() - usr().bpm_step_increment();
     set_beats_per_minute(result);
     return result;
 }
@@ -1340,7 +1344,45 @@ perform::decrement_beats_per_minute ()
 midibpm
 perform::increment_beats_per_minute ()
 {
-    midibpm result = get_beats_per_minute() + usr().bpm_increment();
+    midibpm result = get_beats_per_minute() + usr().bpm_step_increment();
+    set_beats_per_minute(result);
+    return result;
+}
+
+/**
+ *  Provides additional coarse control over the BPM value, which comes into
+ *  force when the Page-Up/Page-Down keys are pressed.
+ *
+ *  Encapsulates some calls used in mainwnd.  Actually does a lot of
+ *  work in those function calls.
+ *
+ * \return
+ *      Returns the resultant BPM, as a convenience.
+ */
+
+midibpm
+perform::page_decrement_beats_per_minute ()
+{
+    midibpm result = get_beats_per_minute() - usr().bpm_page_increment();
+    set_beats_per_minute(result);
+    return result;
+}
+
+/**
+ *  Provides additional coarse control over the BPM value, which comes into
+ *  force when the Page-Up/Page-Down keys are pressed.
+ *
+ *  Encapsulates some calls used in mainwnd.  Actually does a lot of
+ *  work in those function calls.
+ *
+ * \return
+ *      Returns the resultant BPM, as a convenience.
+ */
+
+midibpm
+perform::page_increment_beats_per_minute ()
+{
+    midibpm result = get_beats_per_minute() + usr().bpm_page_increment();
     set_beats_per_minute(result);
     return result;
 }
@@ -3195,12 +3237,6 @@ input_thread_func (void * myperf)
  *  Handle the MIDI Control values that provide some automation for the
  *  application.
  *
- * \param ctrl
- *      The MIDI control value to use to perform an operation.
- *
- * \param state
- *      The state of the control, used with the following values:
- *
 \verbatim
         c_midi_control_mod_replace
         c_midi_control_mod_snapshot
@@ -3226,7 +3262,9 @@ input_thread_func (void * myperf)
         c_midi_control_record
         c_midi_control_solo         (for toggle, on, or off)
         c_midi_control_thru
-        c_midi_control_14 to _19    (reserved for expansion)
+        c_midi_control_bpm_page_up
+        c_midi_control_bpm_page_dn
+        c_midi_control_16 to _19    (reserved for expansion)
 \endverbatim
  *
  *  The extended values will actually be handled by a new function,
@@ -3238,6 +3276,12 @@ input_thread_func (void * myperf)
  *  the select_and_mute_group() function.  Otherwise, the following apply:
  *
  *  We also reserve a few control values above that for expansion.
+ *
+ * \param ctl
+ *      The MIDI control value to use to perform an operation.
+ *
+ * \param state
+ *      The state of the control, used with the following values:
  */
 
 void
@@ -3253,6 +3297,21 @@ perform::handle_midi_control (int ctl, bool state)
     case c_midi_control_bpm_dn:
 
         (void) decrement_beats_per_minute();
+        break;
+
+    /*
+     * Handled in handle_midi_control_ex().  No big harm leaving these active
+     * for now.
+     */
+
+    case c_midi_control_bpm_page_up:
+
+        (void) page_increment_beats_per_minute();
+        break;
+
+    case c_midi_control_bpm_page_dn:
+
+        (void) page_decrement_beats_per_minute();
         break;
 
     case c_midi_control_ss_up:
@@ -3324,6 +3383,17 @@ perform::handle_midi_control (int ctl, bool state)
     }
 }
 
+/**
+ *  Provides operation of the new MIDI controls.
+ *
+ * \param ctl
+ *      The MIDI control value to use to perform an operation.
+ *
+ * \param a
+ *      The action of the control.
+ *
+ */
+
 void
 perform::handle_midi_control_ex (int ctl, midi_control::action a)
 {
@@ -3352,6 +3422,24 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a)
     case c_midi_control_thru:
 
         // TODO
+        break;
+
+    case c_midi_control_bpm_page_up:
+
+        /*
+         * TODO:  Handle inversion
+         */
+
+        (void) page_increment_beats_per_minute();
+        break;
+
+    case c_midi_control_bpm_page_dn:
+
+        /*
+         * TODO:  Handle inversion
+         */
+
+        (void) page_decrement_beats_per_minute();
         break;
     }
 }

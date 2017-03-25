@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-22
+ * \updates       2017-03-25
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -884,8 +884,14 @@ optionsfile::write (const perform & p)
             file << "# MIDI THRU (toggle, on, off):\n";
             break;
 
-        case c_midi_control_14:             // 78
-        case c_midi_control_15:             // 79
+        case c_midi_control_bpm_page_up:    // 78
+            file << "# bpm page up:\n";
+            break;
+
+        case c_midi_control_bpm_page_dn:    // 79
+            file << "# bpm page down:\n";
+            break;
+
         case c_midi_control_16:             // 80
         case c_midi_control_17:             // 81
         case c_midi_control_18:             // 82

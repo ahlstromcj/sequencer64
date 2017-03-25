@@ -48,8 +48,6 @@
 
 #include "easy_macros.h"                /* insure build macros defined  */
 
-#define USE_DOUBLE_BEATS_PER_MINUTE     // TEMPORARY
-
 /*
  *  Since we're using unsigned variables for counting pulses, we can't do the
  *  occasional test for negativity, we have to use wraparound.  One way is to
@@ -131,11 +129,7 @@ typedef long midipulse;
  *  support better tempo matching.
  */
 
-#ifdef USE_DOUBLE_BEATS_PER_MINUTE
 typedef double midibpm;
-#else
-typedef int midibpm;
-#endif
 
 /**
  *  Provides a data structure to hold the numeric equivalent of the measures

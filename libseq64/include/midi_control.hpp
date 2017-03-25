@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-21
- * \updates       2017-03-18
+ * \updates       2017-03-25
  * \license       GNU GPLv2 or above
  *
  *  This module defines a number of constants relating to control of the 32
@@ -90,8 +90,8 @@ const int c_midi_control_playback     = c_midi_track_ctrl + 10;
 const int c_midi_control_record       = c_midi_track_ctrl + 11; /* arm for  */
 const int c_midi_control_solo         = c_midi_track_ctrl + 12;
 const int c_midi_control_thru         = c_midi_track_ctrl + 13;
-const int c_midi_control_14           = c_midi_track_ctrl + 14;
-const int c_midi_control_15           = c_midi_track_ctrl + 15;
+const int c_midi_control_bpm_page_up  = c_midi_track_ctrl + 14;
+const int c_midi_control_bpm_page_dn  = c_midi_track_ctrl + 15;
 const int c_midi_control_16           = c_midi_track_ctrl + 16;
 const int c_midi_control_17           = c_midi_track_ctrl + 17;
 const int c_midi_control_18           = c_midi_track_ctrl + 18;

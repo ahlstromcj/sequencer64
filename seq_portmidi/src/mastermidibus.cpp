@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-21
+ * \updates       2017-03-23
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -57,7 +57,7 @@ namespace seq64
  *      c_beats_per_minute.
  */
 
-mastermidibus::mastermidibus (midibpm ppqn, int bpm)
+mastermidibus::mastermidibus (int ppqn, midibpm bpm)
  :
     mastermidibase      (ppqn, bpm)
 {

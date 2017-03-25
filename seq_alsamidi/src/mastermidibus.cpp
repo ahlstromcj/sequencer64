@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-03-22
+ * \updates       2017-03-23
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -217,13 +217,8 @@ mastermidibus::~mastermidibus ()
  *      applicable.
  */
 
-#ifdef USE_DOUBLE_BEATS_PER_MINUTE
 void
 mastermidibus::api_init (int ppqn, midibpm bpm)
-#else
-void
-mastermidibus::api_init (int ppqn, int bpm)
-#endif
 {
     if (rc().manual_alsa_ports())
     {

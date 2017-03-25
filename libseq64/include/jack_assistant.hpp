@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2017-03-21
+ * \updates       2017-03-23
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -471,16 +471,16 @@ public:
         return m_jack_transport_state != JackTransportStarting;
     }
 
-    bool init ();                       // init_jack ();
-    bool deinit ();                     // deinit_jack ();
+    bool init ();
+    bool deinit ();
 
 #ifdef SEQ64_JACK_SESSION
-    bool session_event ();              // jack_session_event ();
+    bool session_event ();
 #endif
 
     bool activate ();
-    void start ();                      // start_jack();
-    void stop ();                       // stop();
+    void start ();
+    void stop ();
 
     void position (bool state, midipulse tick = 0);
     bool output (jack_scratchpad & pad);
@@ -519,10 +519,18 @@ public:
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
+    /**
+     * \setter m_toggle_jack
+     */
+
     void toggle_jack_mode ()
     {
         set_jack_mode(! m_jack_running);
     }
+
+    /**
+     * \setter m_toggle_jack
+     */
 
     void set_jack_mode (bool mode)
     {

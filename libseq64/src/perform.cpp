@@ -3764,12 +3764,6 @@ perform::save_playing_state ()
 void
 perform::restore_playing_state ()
 {
-    /*
-     * EXPERIMENTAL:
-     *
-     * for (int s = 0; s < m_sequence_max; ++s)
-     */
-
     for (int s = 0; s < m_sequence_high; ++s)       /* modest speed-up */
     {
         if (is_active(s))

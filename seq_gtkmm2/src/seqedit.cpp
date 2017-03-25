@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-21
+ * \updates       2017-03-25
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -35,6 +35,9 @@
  *  dependent on the PPQN values.  As the PPQN gets larger, so does the size
  *  of each measure, until too big to appear in whole on the screen.  Luckily,
  *  we can get around this issue by changing the zoom range.
+ *
+ *  We've made the Stazed thru/record fix permanent.  See issue #56 re MIDI
+ *  control.  We weren't turning off thru!
  */
 
 #include <gtkmm/adjustment.h>
@@ -105,13 +108,6 @@
 #include "pixmaps/drum.xpm"
 #include "pixmaps/transpose.xpm"
 #endif
-
-/*
- * EXPERIMENTAL.  I forgot about this one, and am enabling it for testing; it
- *                seems like a necessity.
- */
-
-#undef  USE_STAZED_RECORDING_FIX
 
 /*
  * Saves some typing.
@@ -446,19 +442,23 @@ seqedit::seqedit
     (
         mem_fun(*this, &seqedit::play_change_callback)
     );
-    add_tooltip(m_toggle_play, "Sequence dumps data to MIDI bus.");
+    add_tooltip
+    (
+        m_toggle_play,
+        "If active, sequence is unmuted, and dumps data to MIDI bus."
+    );
     m_toggle_record->add(*manage(new PIXBUF_IMAGE(rec_xpm)));
     m_toggle_record->signal_clicked().connect
     (
         mem_fun(*this, &seqedit::record_change_callback)
     );
-    add_tooltip(m_toggle_record, "Records incoming MIDI data.");
+    add_tooltip(m_toggle_record, "If active, records incoming MIDI data.");
     m_toggle_q_rec->add(*manage(new PIXBUF_IMAGE(q_rec_xpm)));
     m_toggle_q_rec->signal_clicked().connect
     (
         mem_fun(*this, &seqedit::q_rec_change_callback)
     );
-    add_tooltip(m_toggle_q_rec, "Quantized record.");
+    add_tooltip(m_toggle_q_rec, "If active, quantized record.");
 
 #define SET_POPUP   mem_fun(*this, &seqedit::popup_menu)
 
@@ -2189,17 +2189,12 @@ seqedit::play_change_callback ()
 void
 seqedit::record_change_callback ()
 {
-#ifdef USE_STAZED_RECORDING_FIX
     bool thru_active = m_toggle_thru->get_active();
     bool record_active = m_toggle_record->get_active();
     if (! thru_active)
         perf().master_bus().set_sequence_input(record_active, &m_seq);
 
     m_seq.set_recording(record_active);
-#else
-    perf().master_bus().set_sequence_input(true, &m_seq);
-    m_seq.set_recording(m_toggle_record->get_active());
-#endif
 }
 
 /**
@@ -2256,17 +2251,12 @@ seqedit::redo_callback ()
 void
 seqedit::thru_change_callback ()
 {
-#ifdef USE_STAZED_RECORDING_FIX
     bool thru_active = m_toggle_thru->get_active();
     bool record_active = m_toggle_record->get_active();
     if (! record_active)
         perf().master_bus().set_sequence_input(thru_active, &m_seq);
 
     m_seq.set_recording(thru_active);
-#else
-    perf().master_bus().set_sequence_input(true, &m_seq);
-    m_seq.set_thru(m_toggle_thru->get_active());
-#endif
 }
 
 /**
@@ -2400,6 +2390,14 @@ seqedit::timeout ()
         m_button_redo->set_sensitive(true);
     else if (! m_seq.have_redo() && redo_on)
         m_button_redo->set_sensitive(false);
+
+    /*
+     * Experimental.  Let the toggle-play button track the sequence's mute
+     * state.
+     */
+
+    if (m_seq.get_playing() != m_toggle_play->get_active())
+        m_toggle_play->set_active(m_seq.get_playing());
 
     return true;
 }

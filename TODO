@@ -1,6 +1,6 @@
 Current Hot To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-03-19
+2016-12-03 to 2017-03-25
 
 Rtmidi implementation issues to work out:
 
@@ -42,7 +42,7 @@ Active GitHub Issues:
 
     49 simonvanderveldt : Drop LASH support?
 
-        I doubt there are a lot of people of people left   using liblash
+        I doubt there are a lot of people of people left using liblash
         though, since LADISH does more, all GUI front-ends switched to
         LADISH and the command-line `ladish_control` offers a lot more options
         than `lash_control` ever did.                                                          
@@ -86,10 +86,26 @@ Active GitHub Issues:
     "Sequence dumps data to MIDI bus". Turning on/off it in the editor window
     turns it on/off in the main window, but turning on/off in the main window
     doesn't turn it on/off in the editor window. Not actually sure if that's
-    new though, more paying attention to figure out what causes the following.
+    new though,...
+
+    (
+        This occurs in seq24 as well. It is NOW FIXED in seqedit.
+    )
+    
+    ...more paying attention to figure out what causes the following.
     Clicking "incoming midi passes through" and the pause midi control stops
     doing anything. Unclicking it and the app stays unresponsive to midi
     pause.
+
+    (
+        Checked usage of sequence::get_thru()...  I ended up enabled
+        the Stazed Seq32 fixes for thru/record handling in seqedit.
+
+        The enabling of MIDI pass-thru still blocks MIDI control.
+        But disabling it now brings MIDI control back.  Still need to
+        see if why we do not handle MIDI control when dumping.
+        It looks like we could do both!  WILL TRY THIS EXPERIMENT.
+    )
 
     Click "record incoming midi data" and pressing midi pause (or any other
     MIDI key/knob/fader) advances the pattern by one note, with keys adding a
@@ -110,6 +126,7 @@ Active GitHub Issues:
        That feature would be awesome for controllers like the APC mini or
        Novation's     Launchpad.  @ahlstromcj I don't think there is a
        standard. Here is the spec for the Launchpad :
+
        https://d19ulaff0trnck.cloudfront.net/sites/default/files/novation/downloads/10529 /launchpad-mk2-programmers-reference-guide-v1-02.pdf
 
  +  59 georgkrause : Recording improvements
@@ -144,8 +161,8 @@ Active GitHub Issues:
     Okay, thanks for the reply! I already red most of the manual and its
     great! thank you for this!                                                                     
     re 1.: i got how recording works, and i used it. no technical problems.
-    but the   workflow is pretty unhandy. i try to make music without touching
-    the mouse or     keyboard a lot and this is nearly impossible with
+    but the workflow is pretty unhandy. i try to make music without touching
+    the mouse or keyboard a lot and this is nearly impossible with
     sequencer64 at the moment.      
     the workflow i imagine would be:                                                  
     1. start sequencer64                                                              2. select input device in settings. this is fine.                                 3. start transport                                                                4. toggle a recording modifier                                                    5. trigger a pattern                                                              6. the recording will start at the beginning of the next bar                      7. the pattern gets longer and longer until...                                    8. trigger the pattern again to stop recording on the next bar                    

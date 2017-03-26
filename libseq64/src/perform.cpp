@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-03-25
+ * \updates       2017-03-26
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -3300,18 +3300,14 @@ perform::handle_midi_control (int ctl, bool state)
         break;
 
     /*
-     * Handled in handle_midi_control_ex().  No big harm leaving these active
-     * for now.
+     * Handled in handle_midi_control_ex().  If we get here, ignore these
+     * extended controls.
      */
 
     case c_midi_control_bpm_page_up:
-
-        (void) page_increment_beats_per_minute();
-        break;
-
     case c_midi_control_bpm_page_dn:
 
-        (void) page_decrement_beats_per_minute();
+        /* printf("BPM DOWN ignored\n"); */
         break;
 
     case c_midi_control_ss_up:
@@ -3392,21 +3388,33 @@ perform::handle_midi_control (int ctl, bool state)
  * \param a
  *      The action of the control.
  *
+ * \return
+ *      Returns true if the control was an extended control and was acted on.
  */
 
-void
+bool
 perform::handle_midi_control_ex (int ctl, midi_control::action a)
 {
+    bool result = false;
     switch (ctl)
     {
     case c_midi_control_playback:
 
         if (a == midi_control::action_toggle)
+        {
             pause_key();
+            result = true;
+        }
         else if (a == midi_control::action_on)
+        {
             start_key();
+            result = true;
+        }
         else if (a == midi_control::action_off)
+        {
             stop_key();
+            result = true;
+        }
         break;
 
     case c_midi_control_record:                 /* arm for recording */
@@ -3430,7 +3438,11 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a)
          * TODO:  Handle inversion
          */
 
-        (void) page_increment_beats_per_minute();
+        if (a == midi_control::action_on)
+        {
+            (void) page_increment_beats_per_minute();
+            result = true;
+        }
         break;
 
     case c_midi_control_bpm_page_dn:
@@ -3439,9 +3451,18 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a)
          * TODO:  Handle inversion
          */
 
-        (void) page_decrement_beats_per_minute();
+        if (a == midi_control::action_on)
+        {
+            (void) page_decrement_beats_per_minute();
+            result = true;
+        }
+        break;
+
+    default:
+
         break;
     }
+    return result;
 }
 
 /**
@@ -3471,14 +3492,11 @@ perform::midi_control_event (const event & ev)
     midibyte status = ev.get_status();
     int offset = m_offset;
     ev.get_data(data[0], data[1]);
-
-    // for (int ctl = 0; ctl < c_midi_controls; ++ctl, ++offset)    // LEGACY
-
     for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)
     {
         bool is_a_sequence = ctl < m_seqs_in_set;
         bool is_extended = ctl >= c_midi_controls &&
-            ctl< c_midi_controls_extended;
+            ctl < c_midi_controls_extended;
 
         if (midi_control_toggle(ctl).match(status, data[0]))
         {
@@ -3487,7 +3505,10 @@ perform::midi_control_event (const event & ev)
                 if (is_a_sequence)
                     sequence_playing_toggle(offset);
                 else if (is_extended)
-                    handle_midi_control_ex(ctl, midi_control::action_toggle);
+                {
+                    if (handle_midi_control_ex(ctl, midi_control::action_toggle))
+                        break;
+                }
             }
         }
         if (midi_control_on(ctl).match(status, data[0]))
@@ -3497,7 +3518,10 @@ perform::midi_control_event (const event & ev)
                 if (is_a_sequence)
                     sequence_playing_on(offset);
                 else if (is_extended)
-                    handle_midi_control_ex(ctl, midi_control::action_on);
+                {
+                    if (handle_midi_control_ex(ctl, midi_control::action_on))
+                        break;
+                }
                 else
                     handle_midi_control(ctl, true);
             }
@@ -3506,7 +3530,10 @@ perform::midi_control_event (const event & ev)
                 if (is_a_sequence)
                     sequence_playing_off(offset);
                 else if (is_extended)
-                    handle_midi_control_ex(ctl, midi_control::action_off);
+                {
+                    if (handle_midi_control_ex(ctl, midi_control::action_off))
+                        break;
+                }
                 else
                     handle_midi_control(ctl, false);
             }
@@ -3518,7 +3545,10 @@ perform::midi_control_event (const event & ev)
                 if (is_a_sequence)
                     sequence_playing_off(offset);
                 else if (is_extended)
-                    handle_midi_control_ex(ctl, midi_control::action_off);
+                {
+                    if (handle_midi_control_ex(ctl, midi_control::action_off))
+                        break;
+                }
                 else
                     handle_midi_control(ctl, false);
             }
@@ -3527,7 +3557,10 @@ perform::midi_control_event (const event & ev)
                 if (is_a_sequence)
                     sequence_playing_on(offset);
                 else if (is_extended)
-                    handle_midi_control_ex(ctl, midi_control::action_on);
+                {
+                    if (handle_midi_control_ex(ctl, midi_control::action_on))
+                        break;
+                }
                 else
                     handle_midi_control(ctl, true);
             }

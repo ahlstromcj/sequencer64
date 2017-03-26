@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-03-23
+ * \updates       2017-03-26
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -51,6 +51,9 @@
  *          version of mastermidibus::init().
  *      -   For each output buss, midibus::init_out() is called.
  *          This function is also called in the api_port_start() function!
+ *
+ *  See http://www.alsa-project.org/alsa-doc/alsa-lib/seq.html for a wealth of
+ *  information on ALSA sequencing.
  */
 
 #include "easy_macros.h"
@@ -454,6 +457,11 @@ mastermidibus::api_set_ppqn (int p)
  *  We fill the ALSA tempo structure (snd_seq_queue_tempo_t) with the current
  *  tempo information, set the BPM value, put it in the tempo structure, and
  *  give the tempo value to the ALSA queue.
+ *
+ * \note
+ *      Consider using snd_seq_change_queue_tempo() here if the ALSA queue has
+ *      already been started.  It's arguments would be m_alsa_seq, m_queue,
+ *      tempo (microseconds), and null.
  *
  * \threadsafe
  *

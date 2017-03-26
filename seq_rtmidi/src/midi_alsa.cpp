@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2017-03-22
+ * \updates       2017-03-26
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -80,6 +80,9 @@
         snd_seq_subscribe_port(seq, subs);
     }
 \endverbatim
+ *
+ *  See http://www.alsa-project.org/alsa-doc/alsa-lib/seq.html for a wealth of
+ *  information on ALSA sequencing.
  */
 
 #include "globals.h"
@@ -804,6 +807,26 @@ midi_alsa::api_set_ppqn (int ppqn)
     snd_seq_queue_tempo_set_ppq(tempo, ppqn);
     snd_seq_set_queue_tempo(m_seq, queue, tempo);
 }
+
+/**
+ *  Set the BPM value (beats per minute).  This is done by creating
+ *  an ALSA tempo structure, adding tempo information to it, and then
+ *  setting the ALSA sequencer object with this information.
+ *
+ *  We fill the ALSA tempo structure (snd_seq_queue_tempo_t) with the current
+ *  tempo information, set the BPM value, put it in the tempo structure, and
+ *  give the tempo value to the ALSA queue.
+ *
+ * \note
+ *      Consider using snd_seq_change_queue_tempo() here if the ALSA queue has
+ *      already been started.  It's arguments would be m_alsa_seq, m_queue,
+ *      tempo (microseconds), and null.
+ *
+ * \threadsafe
+ *
+ * \param bpm
+ *      Provides the beats-per-minute value to set.
+ */
 
 void
 midi_alsa::api_set_beats_per_minute (midibpm bpm)

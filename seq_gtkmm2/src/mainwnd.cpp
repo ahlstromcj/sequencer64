@@ -655,7 +655,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         m_button_tap,
         "Tap in time to set the beats per minute (BPM) value. "
-        "After 5 seconds of no taps, the tap-counter will reset."
+        "After 5 seconds of no taps, the tap-counter will reset to 0."
     );
 
 #endif
@@ -667,7 +667,13 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_adjust_bpm->set_step_increment(usr().bpm_step_increment());
     m_adjust_bpm->set_page_increment(usr().bpm_page_increment());
 
-    add_tooltip(m_spinbutton_bpm, "Adjust beats per minute (BPM) value.");
+    add_tooltip
+    (
+        m_spinbutton_bpm,
+        "Adjusts the beats per minute (BPM) value. Once clicked, "
+        "the Up/Down arrows adjust by the step size, and the Page-Up/Page-Down "
+        "keys adjust by the page size, as configured in the 'usr' file."
+    );
     Gtk::Label * bpmlabel = manage(new Gtk::Label("_BPM", true));
     bpmlabel->set_mnemonic_widget(*m_spinbutton_bpm);
     bpmhbox->pack_start(*bpmlabel, Gtk::PACK_SHRINK);
@@ -920,11 +926,17 @@ mainwnd::timer_callback ()
     m_main_time->idle_progress(tick);
     m_main_wid->update_markers(tick);           /* tick ignored for pause   */
 
-    /*
-     * EXPERIMENTAL.  Let's try doubles.
-     */
-
     midibpm bpm = perf().get_beats_per_minute();
+
+#ifdef SEQ64_USE_DEBUG_OUTPUT_XXX               /* TMI */
+    static midibpm s_bpm = 0.0;
+    if (bpm != s_bpm)
+    {
+        s_bpm = bpm;
+        printf("BPM = %g\n", bpm);
+    }
+#endif
+
     if (m_adjust_bpm->get_value() != bpm)
         m_adjust_bpm->set_value(bpm);
 

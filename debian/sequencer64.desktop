@@ -7,5 +7,5 @@ Icon=/usr/share/pixmaps/sequencer64.xpm
 Type=Application
 Categories=AudioVideo;Audio;
 
-Exec=sequencer64
+Exec=seq64
 Terminal=false

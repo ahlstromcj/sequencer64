@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-03-19
+dnl \update        2017-03-27
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -116,6 +116,9 @@ SEQUENCER64_LIBTOOL_VERSION="$SEQUENCER64_LT_CURRENT.$SEQUENCER64_LT_REVISION.$S
 
 dnl 1.b. Set up the version strings.  The primary version string of interest
 dnl      is SEQUENCER64_API_VERSION.
+
+dnl API_VERSION="$SEQUENCER64_API_MAJOR.$SEQUENCER64_API_MINOR"
+dnl AC_SUBST([API_VERSION])
 
 SEQUENCER64_API_VERSION="$SEQUENCER64_API_MAJOR.$SEQUENCER64_API_MINOR"
 AC_SUBST([SEQUENCER64_API_VERSION])
@@ -400,9 +403,9 @@ dnl this code, so the default is to DISABLE it!  We need to separate out
 dnl some of the perform code and other code from the GUI framework.
 
 AC_ARG_ENABLE(lash,
-    [AS_HELP_STRING(--disable-lash, [Disable LASH support])],
+    [AS_HELP_STRING(--enable-lash, [Enable LASH support (deprecated)])],
     [lash=$enableval],
-    [lash=yes])
+    [lash=no])
 
 if test "$lash" != "no"; then
     PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.5.0, lash_found="yes", lash_found="no")
@@ -634,7 +637,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-03-19"
+#define VERSION_DATE_SHORT "2017-03-27"
 #define VERSION "0.90.2"
 
 )
@@ -653,7 +656,7 @@ AC_XPC_DEBUGGING
 dnl 8.  Set up other options in the compiler macros.
 
 APIDEF="-DAPI_VERSION=\"$SEQUENCER64_API_VERSION\""
-WARNFLAGS="-Wall -Wextra -pedantic $WARNINGS"
+WARNFLAGS="-Wall -Wextra -pedantic -Wno-error=date-time $WARNINGS"
 SPEEDFLAGS="-ffast-math"
 COMMONFLAGS="$WARNFLAGS -D_REENTRANT $APIDEF $DBGFLAGS $STACKCHK $NOERRLOG $NOTHISPTR"
 

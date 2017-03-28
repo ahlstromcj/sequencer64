@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-26
- * \updates       2017-02-26
+ * \updates       2017-03-27
  * \license       GNU GPLv2 or above
  *
  *  These functions are used in macros such as func_message().
@@ -125,10 +125,7 @@ message_concatenate (const char * m1, const char * m2)
 bool
 info_message (const std::string & msg)
 {
-    std::string temp = "[";
-    temp += msg;
-    temp += "]\n";
-    printf(temp.c_str());
+    printf("[%s]\n", msg.c_str());
     return true;
 }
 

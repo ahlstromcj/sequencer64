@@ -4,5 +4,5 @@
  title="Sequencer64"\
  command="/usr/bin/sequencer64"\
  hints="MIDI,Music Editor"\
- description="Sequencer64 is a live/editing MIDI sequencer based on Seq24."\
+ description="Sequencer64 is a live/editing MIDI sequencer based on Seq24 with native JACK MIDI."\
  icon="/usr/share/pixmaps/sequencer64.xpm"

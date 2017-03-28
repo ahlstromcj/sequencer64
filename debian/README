@@ -1,6 +1,6 @@
 Sequencer64 Debian Instructions
 Chris Ahlstrom
-2015-09-10 to 2017-02-20
+2015-09-10 to 2017-03-27
 
 There is a concise, recent, and fairly complete guide to creating a "deb"
 package in the Debian package called "maint-guide", which stores different
@@ -17,26 +17,35 @@ of seq24, the process of creating a "deb" file is very simple.
 
    a. ./bootstrap --full-clean
    b. ./bootstrap -er       # enables and configures a Release build
-   c. make                  # optional
+   c. make                  # optional, checks for build issues
 
 1. Make sure the command console current directory is the top directory
    of the project.
 
-2. Run the following command (it can be a useful error check):
+2. Add a new entry to the debian/changelog to update the version number
+   as appropriate for this build.
+
+        sequencer64 (0.90.2-0) unstable; urgency=low
+
+        * See the source-code ChangeLog for the full list of changes.
+
+        -- Chris Ahlstrom <ahlstromcj@gmail.com>  Thu, 06 Oct 2016 12:00:00 +0400
+
+3. Run the following command (it can be a useful error check):
 
    $ debian/rules clean
 
-3. Run the following command:
+4. Run the following command:
 
    $ fakeroot debian/rules binary
 
    In the directory just above the top directory of the project, you will
    find:
    
-    sequencer64_0.9.18-2_amd64.deb, if built on a 64-bit system.
-    sequencer64_0.9.18-2_i386.deb, if built on a 32-bit system.
+        sequencer64_0.90.2-2_amd64.deb, if built on a 64-bit system.
+        sequencer64_0.90.2-2_i386.deb, if built on a 32-bit system.
 
-4. Run the following command again to get rid of all the build products:
+5. Run the following command again to get rid of all the build products:
 
    $ debian/rules clean
 

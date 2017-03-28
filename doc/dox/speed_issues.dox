@@ -9,7 +9,7 @@
 This document describes some speed issues and how they can be handled.
 
 \page       speed_issues_page Speed Issue of Sequencer64
-\author     Chris Ahlstrom 2016-11-06
+\author     Chris Ahlstrom 2017-03-27
 
 \section speed_issues_intro Introduction
 
@@ -111,7 +111,12 @@ a standard C array, processor caching can add even more to the speed of access.
 However, this change will require carefully analysis and even more careful work
 to correctly implement the change.  We will log this as a future improvement.
 
-Now to test the hell out of version 0.9.21!
+Actually, now we have reverted back to the <code>std::list</code>
+implementation, with the key difference that, when loading a file, we do not
+sort until we have read all of the events.  So we get a fast load time and
+higher maximum throughput during playback.
+
+Now to test the hell out of the next version!
 
  */
 

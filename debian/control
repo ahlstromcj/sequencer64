@@ -3,7 +3,7 @@ Section: sound
 Priority: optional
 Maintainer: Chris Ahlstrom <ahlstromcj@gmail.com>
 Uploaders: Chris Ahlstrom <ahlstromcj@gmail.com>
-Build-Depends: debhelper (>= 7),
+Build-Depends: debhelper (>= 9),
  automake,
  autoconf,
  autotools-dev (>= 20100122.1~),
@@ -19,6 +19,7 @@ Package: sequencer64
 Architecture: any
 Depends: ${shlibs:Depends},
  ${misc:Depends}
-Description: Real time MIDI sequencer refactored from seq24 and sequencer24.
- Sequencer64 breaks the project into smaller libraries and modules
- for easier work, and adds many enhancements and fixes.
+Description: Live MIDI sequencer refactored from seq24 and sequencer24.
+ Sequencer64 breaks the project into smaller libraries and modules for
+ easier work, and adds many enhancements and fixes, including native JACK
+ MIDI.

@@ -4,4 +4,4 @@
 LDFLAGS+=-Wl,--as-needed
 
 %:
-	dh --with=autotools_dev $@
+	dh $@ --with=autotools_dev

@@ -104,7 +104,8 @@ Active GitHub Issues:
         The enabling of MIDI pass-thru still blocks MIDI control.
         But disabling it now brings MIDI control back.  Still need to
         see if why we do not handle MIDI control when dumping.
-        It looks like we could do both!  WILL TRY THIS EXPERIMENT.
+        It looks like we could do both!  WILL TRY THIS EXPERIMENT, but only
+        if it makes sense to users.
     )
 
     Click "record incoming midi data" and pressing midi pause (or any other

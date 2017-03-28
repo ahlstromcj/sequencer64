@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2017-02-11
+ * \updates       2017-03-27
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -600,10 +600,7 @@ jack_assistant::set_start_from_perfedit (bool start)
 bool
 jack_assistant::info_message (const std::string & msg)
 {
-    std::string temp = "[";
-    temp += msg;
-    temp += "]\n";
-    printf(temp.c_str());
+    printf("[%s]\n", msg.c_str());
     return true;
 }
 

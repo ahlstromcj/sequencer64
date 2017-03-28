@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-22
+ * \updates       2017-03-27
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -2298,11 +2298,10 @@ void
 midifile::errdump (const std::string & msg)
 {
     char temp[32];
-    snprintf(temp, sizeof temp, "Near offset 0x%x:  ", m_pos);
+    snprintf(temp, sizeof temp, "Near offset 0x%x: ", m_pos);
     std::string result = temp;
     result += msg;
-    result += "\n";
-    fprintf(stderr, result.c_str());
+    fprintf(stderr, "%s\n", result.c_str());
     m_error_message = result;
 }
 
@@ -2327,13 +2326,12 @@ midifile::errdump (const std::string & msg, unsigned long value)
     char temp[64];
     snprintf
     (
-        temp, sizeof temp, "Near offset 0x%x, bad value %lu (0x%lx):  ",
+        temp, sizeof temp, "Near offset 0x%x, bad value %lu (0x%lx): ",
         m_pos, value, value
     );
     std::string result = temp;
     result += msg;
-    result += "\n";
-    fprintf(stderr, result.c_str());
+    fprintf(stderr, "%s\n", result.c_str());
     m_error_message = result;
 }
 

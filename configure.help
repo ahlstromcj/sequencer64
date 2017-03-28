@@ -1,4 +1,4 @@
-Configuration of Sequencer64 0.9.21:
+Configuration of Sequencer64 0.90.x:
 
 Optional Features:
 
@@ -6,6 +6,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-silent-rules   less verbose build output (undo: "make V=1")
+  --enable-lash           Enable LASH support
   --disable-silent-rules  verbose build output (undo: "make V=0")
   --enable-shared[=PKGS]  build shared libraries [default=yes]
   --enable-static[=PKGS]  build static libraries [default=yes]
@@ -20,7 +21,6 @@ Default Features:
   --disable-alsatest      Do not try to compile and run a test Alsa program
   --disable-jack          Disable JACK support
   --disable-jack-session  Disable JACK session support
-  --disable-lash          Disable LASH support
   --disable-highlight     Disable highlighting empty sequences
   --disable-eveditor      Disable using the event editor
   --disable-pause         Disable pausing sequences and pause button

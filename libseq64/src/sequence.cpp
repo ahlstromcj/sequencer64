@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-22
+ * \updates       2017-03-27
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -4852,7 +4852,7 @@ sequence::show_events () const
     {
         const event & er = DREF(i);
         std::string evdump = to_string(er);
-        printf(evdump.c_str());
+        printf("%s", evdump.c_str());
     }
 }
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-15
+ * \updates       2017-03-28
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -371,6 +371,11 @@ perfnames::on_button_press_event (GdkEventButton * ev)
     current_seq(seqnum);
     if (SEQ64_CLICK_LEFT(ev->button))
     {
+#define USE_THIS_WORKING_CODE
+#ifdef USE_THIS_WORKING_CODE
+        if (perf().toggle_other_names(seqnum, is_shift_key(ev)))
+            enqueue_draw();
+#else
         if (perf().is_active(seqnum))
         {
             if (is_shift_key(ev))
@@ -401,6 +406,7 @@ perfnames::on_button_press_event (GdkEventButton * ev)
             }
             enqueue_draw();
         }
+#endif
     }
     return true;
 }

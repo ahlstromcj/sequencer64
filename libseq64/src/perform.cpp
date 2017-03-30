@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-03-26
+ * \updates       2017-03-30
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -3839,11 +3839,15 @@ perform::unset_sequence_control_status (int status)
 }
 
 /**
- *  If the given sequence is active, then it is toggled.  If the
- *  m_control_status is c_status_queue, then the sequence's toggle_queued()
- *  function is called.  Otherwise, if it is c_status_replace, then the status
- *  is unset, and all sequences (?) are turned off.  Then the sequence's
- *  toggle-playing() function is called.
+ *  If the given sequence is active, then it is toggled as per the current
+ *  value of m_control_status.  If m_control_status is c_status_queue, then
+ *  the sequence's toggle_queued() function is called.  This is the "mod
+ *  queue" implementation.
+ *
+ *  Otherwise, if it is c_status_replace, then the status is unset, and all
+ *  sequences are turned off.  Then the sequence's toggle-playing() function
+ *  is called, which should turn it back on.  This is the "mod replace"
+ *  implementation; it is like a Solo.  But can it be undone?
  *
  *  This function is called in sequence_key() to implement a toggling of the
  *  sequence of the pattern slot in the current screen-set that is represented
@@ -4251,6 +4255,99 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                     pop_trigger_redo();                 /* perfedit::redo() */
                     result = true;
                 }
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ *  This code handles the use of the Shift key to toggle the mute state of all
+ *  other sequences.  See mainwid::on_button_release_event().  If the Shift
+ *  key is pressed, toggle the mute state of all other sequences.  Inactive
+ *  sequences are skipped.
+ *
+ * \param seqnum
+ *      The sequence that is being clicked on.  It must be active in order to
+ *      allow toggling.
+ *
+ * \param
+ *      Indicates if the shift-key functionality for toggling all of the other
+ *      sequences is active.
+ *
+ * \return
+ *      Returns true if the full toggling was able to be performed.
+ */
+
+bool
+perform::toggle_other_seqs (int seqnum, bool isshiftkey)
+{
+    bool result = is_active(seqnum);
+    if (result)
+    {
+        result = isshiftkey;
+        if (result)
+        {
+            for (int s = 0; s < m_sequence_max; ++s)
+            {
+                if (s != seqnum)
+                    sequence_playing_toggle(s);
+            }
+        }
+        else
+        {
+            sequence * seq = get_sequence(seqnum);
+            if (not_nullptr(seq))
+                seq->toggle_song_mute();
+        }
+    }
+    return result;
+}
+
+/**
+ *  This code handles the use of the Shift key to toggle the mute state of all
+ *  other sequences.  See perfnames::on_button_press_event().  If the Shift
+ *  key is pressed, toggle the mute state of all other sequences.
+ *  Inactive sequences are skipped.
+ *
+ * \param seqnum
+ *      The sequence that is being clicked on.  It must be active in order to
+ *      allow toggling.
+ *
+ * \param
+ *      Indicates if the shift-key functionality for toggling all of the other
+ *      sequences is active.
+ *
+ * \return
+ *      Returns true if the toggling was able to be performed.
+ */
+
+bool
+perform::toggle_other_names (int seqnum, bool isshiftkey)
+{
+    bool result = is_active(seqnum);
+    if (result)
+    {
+        result = isshiftkey;
+        if (result)
+        {
+            for (int s = 0; s < m_sequence_max; ++s)
+            {
+                if (s != seqnum)
+                {
+                    sequence * seq = get_sequence(s);
+                    if (not_nullptr(seq))
+                        seq->toggle_song_mute();
+                }
+            }
+        }
+        else
+        {
+            sequence * seq = get_sequence(seqnum);
+            if (not_nullptr(seq))
+            {
+                seq->toggle_song_mute();
+                result = true;
             }
         }
     }

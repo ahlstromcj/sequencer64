@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-25
+ * \updates       2017-03-28
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -655,7 +655,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         m_button_tap,
         "Tap in time to set the beats per minute (BPM) value. "
-        "After 5 seconds of no taps, the tap-counter will reset to 0."
+        "After 5 seconds of no taps, the tap-counter will reset to 0. "
+        "Also see the File / Options / Ext Keys / Tap BPM key assignment."
     );
 
 #endif

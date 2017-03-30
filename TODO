@@ -1,6 +1,6 @@
 Current Hot To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-03-25
+2016-12-03 to 2017-03-28
 
 Rtmidi implementation issues to work out:
 
@@ -9,6 +9,15 @@ Rtmidi implementation issues to work out:
         -   When changed in the GUI
     -   Add Windows implementation and build files.
     -   Remove PortMidi implementation after Windows implementation.
+
+Puzzles:
+
+    -   The Shift Key processing of Seq64 is different from Seq24.  For
+        example, implementing Mod Replace with "{" (Shift-[) in Seq24
+        basically works, but in Seq64 it unmutes all other patterns!
+        Using a non-shift character seems to work in both, though in Seq64 the
+        repeat-key rate seems to show up as an mildly annoying jitter.
+    -   Toggle JACK keys does nothing.
 
 Active GitHub Issues:
 

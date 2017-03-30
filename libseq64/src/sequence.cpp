@@ -4410,15 +4410,16 @@ void
 sequence::off_playing_notes ()
 {
     automutex locker(m_mutex);
+    event e;
     for (int x = 0; x < c_midi_notes; ++x)
     {
         while (m_playing_notes[x] > 0)
         {
-            event e;
             e.set_status(EVENT_NOTE_OFF);
             e.set_data(x, 0);
             m_masterbus->play(m_bus, &e, m_midi_channel);
-            --m_playing_notes[x];
+//          --m_playing_notes[x];
+            m_playing_notes[x]--;
         }
     }
     m_masterbus->flush();

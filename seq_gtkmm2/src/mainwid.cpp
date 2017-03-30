@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-05
+ * \updates       2017-03-30
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -1047,26 +1047,27 @@ mainwid::on_button_release_event (GdkEventButton * ev)
         {
             /*
              * If shift is held, toggle all the other sequences.
+             *
+             * \note ca 2017-03-27 This causes Options / Keyboard key settings
+             *      involving shifted keys to misbehave.  Specifically, Mod
+             *      Replace!
              */
 
-            if (is_shift_key(ev))
+            bool shifted = is_shift_key(ev);
+            bool done = perf().toggle_other_seqs(current_seq(), shifted);
+            if (! done)
             {
-                for (int s = 0; s < c_max_sequence; ++s)
+                if (! is_ctrl_key(ev))
                 {
-                    if (s != current_seq())
-                        perf().sequence_playing_toggle(s);
-                }
-            }
-            else if (! is_ctrl_key(ev))
-            {
-                /*
-                 * This is the original action, a toggle of one pattern.
-                 */
+                    /*
+                     * This is the original action, a toggle of one pattern.
+                     */
 
-                if (is_current_seq_active())    /* toggle its playing status */
-                {
-                    toggle_current_sequence();
-                    redraw(current_seq());
+                    if (is_current_seq_active())    /* toggle playing status */
+                    {
+                        toggle_current_sequence();
+                        redraw(current_seq());
+                    }
                 }
             }
         }

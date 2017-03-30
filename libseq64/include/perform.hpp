@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-26
+ * \updates       2017-03-30
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2006,6 +2006,9 @@ public:
     {
         return m_playing_screen;
     }
+
+    bool toggle_other_seqs (int seqnum, bool isshiftkey);   /* mainwid      */
+    bool toggle_other_names (int seqnum, bool isshiftkey);  /* perfnames    */
 
 private:
 

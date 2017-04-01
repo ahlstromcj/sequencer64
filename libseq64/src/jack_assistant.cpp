@@ -90,7 +90,7 @@
 #include "perform.hpp"                  /* seq64::perform class         */
 #include "settings.hpp"                 /* "rc" and "user" settings     */
 
-#undef  SEQ64_USE_DEBUG_OUTPUT          /* define for EXPERIMENTS only  */
+#undef  SEQ64_USE_DEBUG_OUTPUT          /* define for experiments only  */
 #define USE_JACK_BBT_OFFSET             /* another EXPERIMENT           */
 
 #ifdef SEQ64_JACK_SUPPORT
@@ -163,7 +163,10 @@ jack_debug_print
 #endif  // USE_JACK_DEBUG_PRINT
 
 /**
- * EXPERIMENTAL
+ *  Provides a dummy callback.
+ *
+ * \return
+ *      Does nothing, always returns 0.
  */
 
 int

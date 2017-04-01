@@ -487,6 +487,7 @@ private:
     bool on_delete_event (GdkEventAny * ev);
     bool on_key_press_event (GdkEventKey * ev);
     bool on_key_release_event (GdkEventKey * ev);
+    void on_realize ();
 
 private:
 

@@ -109,11 +109,9 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
         return false;
 
     /*
-     * EXPERIMENTAL.
      *  Let's make better use of the Ctrl key here.  First, let Ctrl-Left be
-     *  handled exactly like the Middle click, then bug out.
-     *
-     *  Note that this middle-click code ought to be folded into a function.
+     *  handled exactly like the Middle click, then bug out.  Note that this
+     *  middle-click code ought to be folded into a function.
      */
 
     if (is_ctrl_key(ev))

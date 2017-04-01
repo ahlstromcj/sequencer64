@@ -34,6 +34,7 @@
  */
 
 #include <gdk/gdkevents.h>
+#include <gtk/gtkwidget.h>
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -50,6 +51,7 @@ namespace seq64
     extern bool is_shift_key (GdkEventButton * ev);
     extern bool is_ctrl_shift_key (GdkEventButton * ev);
     extern bool is_super_key (GdkEventButton * ev);
+    extern void test_widget_click (GtkWidget * w);
 }
 
 #endif          // SEQ64_GUI_KEY_TESTS_HPP

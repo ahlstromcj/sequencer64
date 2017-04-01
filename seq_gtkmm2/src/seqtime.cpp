@@ -201,9 +201,6 @@ seqtime::update_pixmap ()
     int bwidth = m_seq.get_beat_width();
     int ticks_per_major = 4 * m_ppqn * bpbar / bwidth;
 
-#define USE_TRIAL_CODE
-#ifdef USE_TRIAL_CODE
-
     /*
      * This makes the position of END the same for zoom = 2 or 1, but it is
      * offset a bit from the measure, instead of being right on a measure.
@@ -214,10 +211,8 @@ seqtime::update_pixmap ()
      * Also, once we scroll to the end of the sequence, the seqtime and
      * seqroll measure bars get out-of-synch.
      *
-     * int starttick = m_scroll_offset_ticks;      // EXPERIMENTAL
-     */
-
-    /*
+     * int starttick = m_scroll_offset_ticks;
+     *
      * User layk found that m_zoom > 32 causes a seqfault.  Not sure when this
      * issue crept in.  He offered the solution of using float value, but
      * let's try refactoring the equation first.  And let's go even further,
@@ -236,12 +231,6 @@ seqtime::update_pixmap ()
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     int starttick = m_scroll_offset_ticks -
         (m_scroll_offset_ticks % ticks_per_step);
-
-#else
-    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
-    int starttick = m_scroll_offset_ticks -
-        (m_scroll_offset_ticks % ticks_per_major);
-#endif
 
     m_gc->set_foreground(black_paint());                     /* vert. line   */
     for (int tick = starttick; tick < endtick; tick += ticks_per_major)

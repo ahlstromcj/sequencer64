@@ -704,11 +704,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                      * events; they'll be sorted after we get them all.
                      */
 
-#ifdef SEQ64_PRESORT_EVENT_CONTAINER
-                    seq.add_event(e);                     /* sorts, too       */
-#else
                     seq.append_event(e);                  /* does not sort    */
-#endif
                     seq.set_midi_channel(channel);        /* set midi channel */
                     if (is_smf0)
                         m_smf0_splitter.increment(channel);
@@ -726,11 +722,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                      * events; they'll be sorted after we get them all.
                      */
 
-#ifdef SEQ64_PRESORT_EVENT_CONTAINER
-                    seq.add_event(e);                     /* sorts, too       */
-#else
                     seq.append_event(e);                  /* does not sort    */
-#endif
                     seq.set_midi_channel(channel);        /* set midi channel */
                     if (is_smf0)
                         m_smf0_splitter.increment(channel);
@@ -908,11 +900,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                              *      ++CurrentTime;
                              */
 
-#ifdef SEQ64_PRESORT_EVENT_CONTAINER
-                            seq.set_length(CurrentTime, false, false);
-#else
                             seq.set_length(CurrentTime, false);
-#endif
                             seq.zero_markers();
                             done = true;
                             break;
@@ -1021,34 +1009,18 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                 if (seq.get_length() < seq.get_ppqn())
                 {
-#ifdef SEQ64_PRESORT_EVENT_CONTAINER
-                    seq.set_length
-                    (
-                        seq.get_ppqn() * seq.get_beats_per_bar(),
-                        false, false
-                    );
-#else
                     seq.set_length
                     (
                         seq.get_ppqn() * seq.get_beats_per_bar(), false
                     );
-#endif
                 }
 
                 /*
-                 * EXPERIMENTAL, add sorting after reading all the events
-                 * for the sequence.
+                 * Add sorting after reading all the events for the sequence.
                  */
 
-#if ! defined SEQ64_PRESORT_EVENT_CONTAINER
-                seq.sort_events();              /* EXPERIMENTAL             */
+                seq.sort_events();              /* sort the events now      */
                 seq.set_length();               /* final verify_and_link    */
-#endif
-
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-                seq.events().print();
-#endif
-
                 p.add_sequence(&seq, seqnum + (screenset * c_seqs_in_set));
             }
         }

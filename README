@@ -1,27 +1,21 @@
 README for Sequencer64 0.90.2 (Native JACK)
 Chris Ahlstrom
-2015-09-10 to 2017-03-26 (initial work started in July of 2015)
+2015-09-10 to 2017-04-01 (initial work started in July of 2015)
 
-Sequencer64 is a reboot of seq24.  It extends seq24 in functionality and bug
-fixes, although the heart of seq24 remains intact.  See the screenshot in the
-project root for some idea of what has changed visually.  It is an old friend
-with some user-interface lipstick and a lot of internal fixups.  It maintains
+Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
+the heart of seq24 remains intact.  See the screenshot to see some visible
+change.  It is an old friend, we hope.  It maintains some
 backward-compatibility with seq24, with the --legacy option.  See
 https://github.com/ahlstromcj/sequencer64-doc.git.
 
-There are some MAJOR changes now.  Be prepared to regress to the 0.9.21 tagged
-version should you encounter any show-stoppers in your workflow.  Please see
-the INSTALL file for new build instructions.
-
 Native JACK support: Seq64rtmidi/seq64
 
-    Sequencer64 can now be built with native JACK support.  It features
-    virtual ports and auto-connect like the ALSA version.  It is based on a
-    heavily refactored RtMidi library; it will fall back to ALSA support if
-    JACK is not running.  It works, but we have a lot of cleanup and
-    efficiency work to do.  Consider it experimental.  See the INSTALL file
-    for the options.  See README.jack for basic instructions on native JACK
-    until we can get the Sequencer64 manual up-to-date.
+    Sequencer64 can now be built with native JACK support:  It has
+    virtual/manual ports and auto-connect like the ALSA build.  It is based on
+    a massively refactored RtMidi library; it falls back to ALSA support if
+    JACK is not running.  See the INSTALL file for options.  See README.jack
+    for basic instructions on native JACK until we can get the Sequencer64
+    manual up-to-date.
 
 Legacy Sequencer64: Sequencer64/sequencer64
 
@@ -30,9 +24,8 @@ Legacy Sequencer64: Sequencer64/sequencer64
 
 PortMIDI: Seq64portmidi/seq64portmidi
 
-    This implementation builds and runs with the portmidi library in a Linux
-    distro.  This version has issues and is deprecated; we would implement
-    Windows support using the RtMidi code.
+    Builds and runs via the portmidi library in a Linux distro.  Has issues
+    and is deprecated.
 
 With the big version jump from 0.9 to 0.90, the install process has changed.
 See the INSTALL file.  There are now three different versions of Sequencer64
@@ -42,10 +35,11 @@ Major new updates:
 
     -   Version 0.90.2:
         -   Some minor bugs, such as mute status (mainwid) and playback status
-            (seqedit) not being in synch..
+            (seqedit) not being in synch.
         -   Functions for SEQ64_APP_NAME and SEQ64_CLIENT_NAME.
         -   Extended MIDI controls for Stop / Pause / Start, and coarse BPM
             settings.
+        -   Upgraded the Debian packaging setup.
     -   Version 0.90.1:
         -   Fixes a JACK naming and connection issue when accessing ports
             exposed by a2jmidid.
@@ -64,12 +58,10 @@ Major new updates:
     -   Version 0.9.21:
         -   Returning to the std::list operation, but with sorting occurring
             after loading.  This buys speed of loading of a large MIDI file
-            and better throughput during playback.  The multimap
-            implementation and the old (very slow) sorting method can be
-            enabled the seq64_features.h module.  Try loading the large
-            b4uacuse-stress.midi file and experiment for yourself.  See
-            section 5 of the Sequencer64 Developer Reference Manual for the
-            gory details.
+            and better throughput during playback.  Other implementations can
+            be activate (see INSTALL).
+            Try the large
+            b4uacuse-stress.midi file and experiment for yourself.
         -   The LFO window is now built-in by default.  Use --disable-lfo
             if you do not like it.
         -   Added a JACK/ALSA button to show status and bring up a JACK
@@ -77,13 +69,11 @@ Major new updates:
     -   Particular changes since the seq64 fork:
         -   Sequencer64 loads SMF 0 files and splits the channels into separate
             tracks/sequences.
-        -   JACK support has been improved, thanks in part to incorporating seq32
-            JACK support.
-        -   Pause functionality (still tweaking it) has been added to playback
-            under ALSA.  The Pause button leaves playback where it is, and resumes
-            when playback restarts.  Stop rewinds the sequences.  Also added is a
-            Pause key (by default, the period).  Pause can be disabled at
-            configure time (--disable-pause).
+        -   JACK support has been improved, thanks in part to seq32.
+        -   Pause functionality added to playback under ALSA.  Pause leaves
+            playback where it is, and resumes when playback restarts.  Stop
+            rewinds the sequences.  Also added is a Pause key (the period).
+            Pause can be disabled at configure time.
         -   Long sequences/patterns auto-scroll horizontally during playback
             to keep up with the progress bar in the sequence/pattern editor.
         -   Highlighting of the current sequence brought up for editing.

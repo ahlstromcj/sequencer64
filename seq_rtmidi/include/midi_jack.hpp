@@ -61,7 +61,6 @@ private:
 protected:
 
     /**
-     *  EXPERIMENTAL.
      *  This reference is needed in order for this midi_jack object to add
      *  itself to the main midi_jack_info list when running in single-JACK
      *  client mode.

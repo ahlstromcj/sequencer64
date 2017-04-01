@@ -38,7 +38,7 @@
  *      We leave a small gap in various functions where mark_selected() locks
  *      and unlocks, then we lock again.  This should only be an issue if
  *      altering selected notes while recording.  We will test this at some
- *      point, and add better locking coverage if necessary.  EXPERIMENTAL.
+ *      point, and add better locking coverage if necessary.
  */
 
 #include <stdlib.h>

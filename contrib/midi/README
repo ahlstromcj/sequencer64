@@ -1,6 +1,6 @@
 Contributed MIDI/Test Files
 Chris Ahlstrom
-2015-09-11 to 2016-08-28
+2015-09-11 to 2017-04-01
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
@@ -85,13 +85,12 @@ the "example1" file.
         application on the imported MIDI file.  Export this file and
         verify that it simply adds a gap into the consolidate performance.
 
-   b4uacuse-GM-alternate.midi:
+   b4uacuse-stress.midi:
 
-        Forgot what process created this, but we use it for testing a lot.
-
-   b4uacuse-GM-doubled.midi:
-
-        The tune with set 1 copied to set 2, for experimentation with sets.
+        This is a large MIDI file to test both the speed of loading the
+        file and the maximum throughput that Sequencer64 can manage.
+        We still need to try this one with the new native JACK version of
+        Sequencer64, seq64.
 
    CountryStrum.midi:
 
@@ -164,7 +163,7 @@ the "example1" file.
 
         A Vangelis tune with a BPM of 80 and a PPQN of 96.   It also seems
         to have a lot more "Note On" events than "Note Off" events.
-        Weird!
+        Weird!  Probably a lot of note-offs using a note-on velocity of 0.
 
    Itis.mid
 

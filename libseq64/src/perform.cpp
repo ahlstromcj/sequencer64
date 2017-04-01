@@ -90,19 +90,61 @@ namespace seq64
  *  Purely internal constants used with the functions that implement MIDI
  *  control for the application.  Note how they specify different bit values,
  *  as it they could be masked together to signal multiple functions.
- *  This value signals the "replace" functionality.
+ *
+ *  This value signals the "replace" functionality.  If this bit is set, then
+ *  perform::sequence_playing_toggle() unsets this status and calls
+ *  perform::off_sequences(), which calls sequence::set_playing(false) for all
+ *  active sequences.
+ *
+ *  It works like this:
+ *
+ *      -#  The user presses the Replace key, or the MIDI control message for
+ *          c_midi_control_mod_replace is received.
+ *      -#  This bit is OR'd into perform::m_control_status.  This status bit
+ *          is used in perform::sequence_playing_toggle().
+ *          -   Called in perform::sequence_key() so that keystrokes in
+ *              the main window toggle patterns in the main window.
+ *          -   Called in peform::toggle_other_seqs() to implement
+ *              Shift-click to toggle all other patterns but the one
+ *              clicked.
+ *          -   Called in seqmenu::toggle_current_sequence(), called in
+ *              mainwid to implement clicking on a pattern.
+ *          -   Also used in MIDI control to toggle patterns 0 to 31,
+ *              offset by the screen-set.
+ *          -   perform::sequence_playing_off(), similarly used in MIDI control.
+ *          -   perform::sequence_playing_on(), similarly used in MIDI control.
+ *      -#  When the key is released, this bit is AND'd out of
+ *          perform::m_control_status.
+ *
+ *      Both the MIDI control and the keystoke set the sequence to be
+ *      "replaced".
  */
 
 static const int c_status_replace  = 0x01;
 
 /**
- *  This value signals the "snapshot" functionality.
+ *  This value signals the "snapshot" functionality.  By default,
+ *  perform::sequence_playing_toggle() calls sequence::toggle_playing() on the
+ *  given sequence number, plus what is noted for c_status_snapshot.
+ *
+ *  It works like this:
+ *
+ *      -#  The user presses the Snapshot key.
+ *      -#  This bit is OR'd into perform::m_control_status.
+ *      -#  The playing state of the patterns is saved by
+ *          perform::save_playing_state().
+ *      -#  When the key is released, this bit is AND'd out of
+ *          perform::m_control_status.
+ *      -#  The playing state of the patterns is restored by
+ *          perform::restore_playing_state().
  */
 
 static const int c_status_snapshot = 0x02;
 
 /**
- *  This value signals the "queue" functionality.
+ *  This value signals the "queue" functionality.  If this bit is set, then
+ *  perform::sequence_playing_toggle() calls sequence::toggle_queued() on the
+ *  given sequence number.
  */
 
 static const int c_status_queue    = 0x04;
@@ -589,7 +631,7 @@ perform::set_and_copy_mute_group (int mutegroup)
     mutegroup = clamp_track(mutegroup);
     int groupbase = mutegroup * m_seqs_in_set;
 #ifdef SEQ64_USE_TDEAGAN_CODE
-    int setbase = m_screenset * m_seqs_in_set;  /* was m_playscreen_offset  */
+    int setbase = m_screenset * m_seqs_in_set;  /* was m_playscreen_offset! */
 #else
     int setbase = m_playscreen_offset;          /* includes m_seqs_in_set   */
 #endif
@@ -2379,7 +2421,7 @@ perform::inner_stop (bool midiclock)
 /**
  *  For all active patterns/sequences, set the playing state to false.
  *
- * EXPERIMENTAL: Replace "for (int s = 0; s < m_sequence_max; ++s)"
+ *  Replaces "for (int s = 0; s < m_sequence_max; ++s)"
  */
 
 void
@@ -2400,12 +2442,6 @@ perform::off_sequences ()
 void
 perform::all_notes_off ()
 {
-    /*
-     * EXPERIMENTAL:
-     *
-     * for (int s = 0; s < m_sequence_max; ++s)
-     */
-
     for (int s = 0; s < m_sequence_high; ++s)   /* modest speed-up  */
     {
         if (is_active(s))
@@ -2517,13 +2553,6 @@ midipulse
 perform::get_max_trigger ()
 {
     midipulse result = 0;
-
-    /*
-     * EXPERIMENTAL:
-     *
-     * for (int s = 0; s < m_sequence_max; ++s)
-     */
-
     for (int s = 0; s < m_sequence_high; ++s)           /* modest speed-up */
     {
         if (is_active(s))
@@ -3146,7 +3175,7 @@ perform::output_func ()
             {
                 if (m_playback_mode)
                     set_tick(m_left_tick);              // song mode default
-                else if (! m_dont_reset_ticks)          // EXPERIMENTAL
+                else if (! m_dont_reset_ticks)
                     set_tick(0);                        // live mode default
             }
         }
@@ -3503,7 +3532,9 @@ perform::midi_control_event (const event & ev)
             if (midi_control_toggle(ctl).in_range(data[1]))
             {
                 if (is_a_sequence)
+                {
                     sequence_playing_toggle(offset);
+                }
                 else if (is_extended)
                 {
                     if (handle_midi_control_ex(ctl, midi_control::action_toggle))
@@ -3516,7 +3547,9 @@ perform::midi_control_event (const event & ev)
             if (midi_control_on(ctl).in_range(data[1]))
             {
                 if (is_a_sequence)
+                {
                     sequence_playing_on(offset);
+                }
                 else if (is_extended)
                 {
                     if (handle_midi_control_ex(ctl, midi_control::action_on))
@@ -3528,7 +3561,9 @@ perform::midi_control_event (const event & ev)
             else if (midi_control_on(ctl).inverse_active())
             {
                 if (is_a_sequence)
+                {
                     sequence_playing_off(offset);
+                }
                 else if (is_extended)
                 {
                     if (handle_midi_control_ex(ctl, midi_control::action_off))
@@ -3543,7 +3578,9 @@ perform::midi_control_event (const event & ev)
             if (midi_control_off(ctl).in_range(data[1]))  /* Issue #35 */
             {
                 if (is_a_sequence)
+                {
                     sequence_playing_off(offset);
+                }
                 else if (is_extended)
                 {
                     if (handle_midi_control_ex(ctl, midi_control::action_off))
@@ -3555,7 +3592,9 @@ perform::midi_control_event (const event & ev)
             else if (midi_control_off(ctl).inverse_active())
             {
                 if (is_a_sequence)
+                {
                     sequence_playing_on(offset);
+                }
                 else if (is_extended)
                 {
                     if (handle_midi_control_ex(ctl, midi_control::action_on))
@@ -3773,12 +3812,6 @@ perform::combine_bytes (midibyte b0, midibyte b1)
 void
 perform::save_playing_state ()
 {
-    /*
-     * EXPERIMENTAL:
-     *
-     * for (int s = 0; s < m_sequence_max; ++s)
-     */
-
     for (int s = 0; s < m_sequence_high; ++s)       /* modest speed-up */
     {
         if (is_active(s))
@@ -3868,7 +3901,7 @@ perform::sequence_playing_toggle (int seq)
 {
     if (is_active(seq))
     {
-        if (m_control_status & c_status_queue)
+        if ((m_control_status & c_status_queue) != 0)
         {
             m_seqs[seq]->toggle_queued();
         }
@@ -3967,7 +4000,7 @@ perform::sequence_playing_change (int seq, bool on)
 void
 perform::sequence_key (int seq)
 {
-    seq += m_screenset * m_seqs_in_set;
+    seq += m_screenset * m_seqs_in_set;     /* m_playscreen_offset !!!  */
     if (is_active(seq))
         sequence_playing_toggle(seq);
 }
@@ -4587,12 +4620,6 @@ perform::print_triggers () const
 void
 perform::apply_song_transpose ()
 {
-    /*
-     * EXPERIMENTAL:
-     *
-     * for (int s = 0; s < m_sequence_max; ++s)
-     */
-
     for (int s = 0; s < m_sequence_high; ++s)       /* modest speed-up */
     {
         if (is_active(s))
@@ -4616,13 +4643,6 @@ int
 perform::max_active_set () const
 {
     int result = -1;
-
-    /*
-     * EXPERIMENTAL:
-     *
-     * for (int s = 0; s < m_sequence_max; ++s)
-     */
-
     for (int s = 0; s < m_sequence_high; ++s)       /* modest speed-up */
     {
         if (is_active(s))

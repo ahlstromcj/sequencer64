@@ -148,14 +148,6 @@ midi_alsa::midi_alsa (midibus & parentbus, midi_info & masterinfo)
     set_name(SEQ64_CLIENT_NAME, bus_name(), port_name());
     parentbus.set_bus_id(m_local_addr_client);
     parentbus.set_name(SEQ64_CLIENT_NAME, bus_name(), port_name());
-
-    /*
-     * EXPERIMENTAL.  BUT WE need to find out how to get this client ID where
-     * it is needed to show in File / Options / MIDI Clock and MIDI Input.
-     *
-     *
-    masterinfo.set_bus_id(parentbus.get_port_id(), m_local_addr_client);
-     */
 }
 
 /**

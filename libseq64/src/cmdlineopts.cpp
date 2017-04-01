@@ -799,12 +799,6 @@ const static std::string s_build_use_event_map = "ON";
 const static std::string s_build_use_event_map = "off";
 #endif
 
-#ifdef SEQ64_PRESORT_EVENT_CONTAINER
-const static std::string s_build_presort_events = "ON";
-#else
-const static std::string s_build_presort_events = "off";
-#endif
-
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
 const static std::string s_build_chord_generator = "ON";
 #else
@@ -850,7 +844,7 @@ const static std::string s_strip_empty_mutes = "off";
 #endif
 
 /*
- * Still EXPERIMENTAL/UNOFFICIAL support.
+ * Right now Stazed JACK support is the preferred support for JACK transport.
  */
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
@@ -904,7 +898,6 @@ build_details ()
 << "PortMIDI support * = "       << s_build_portmidi_support      << std::endl
 << "Event editor * = "           << s_event_editor                << std::endl
 << "Event multimap (vs list) = " << s_build_use_event_map         << std::endl
-<< "Sort after each insert = "   << s_build_presort_events        << std::endl
 << "Follow progress bar = "      << s_build_follow_progress       << std::endl
 << "Highlight edit pattern * = " << s_build_edit_highlight        << std::endl
 << "Highlight empty patterns = " << s_build_highlight_empty       << std::endl

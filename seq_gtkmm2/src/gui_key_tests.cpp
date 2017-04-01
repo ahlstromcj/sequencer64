@@ -35,7 +35,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
-#include "gdk_basic_keys.h"
+#include "click.hpp"                /* #include "gdk_basic_keys.h" */
 #include "gui_key_tests.hpp"
 
 /*
@@ -174,6 +174,16 @@ bool
 is_super_key (GdkEventButton * ev)
 {
     return (ev->state & SEQ64_MOD4_MASK) != 0;
+}
+
+/**
+ *
+ */
+
+void
+test_widget_click (GtkWidget * w)
+{
+    gtk_test_widget_click(w, SEQ64_CLICK_BUTTON_LEFT, GDK_BUTTON1_MASK);
 }
 
 }           // namespace seq64

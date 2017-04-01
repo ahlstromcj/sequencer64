@@ -44,7 +44,7 @@
  *    (soon to be this file) to enable or disable features.  These options are
  *    those that we feel more strongly about.
  *
- *    Currently, we've tested all the EXPERIMENTAL options to the extent of
+ *    Currently, we've tested all the experimental options to the extent of
  *    building them successfully.  However, enabling them is currently
  *    TEMPORARY; we want to build with them all disabled, and enable them
  *    one-by-one in a controlled, tested manner.
@@ -66,7 +66,7 @@
 #define USE_NON_NOTE_EVENT_ADJUSTMENT   /* see sequence.cpp                 */
 
 /**
- * Currently, many macros are undefined as tentative or EXPERIMENTAL.
+ * Currently, many macros are undefined as tentative or experimental.
  */
 
 /**
@@ -206,7 +206,7 @@
 #undef  USE_STAZED_PERF_AUTO_SCROLL
 
 /*
- * To recapitulate, all the options above are EXPERIMENTAL and in progress.
+ * To recapitulate, all the options above are experimental and in progress.
  */
 
 /**
@@ -338,18 +338,6 @@
  */
 
 #undef  SEQ64_USE_EVENT_MAP             /* the map seems to work well!  */
-
-/**
- *  Defined if we want to use the old (and slow in std::list) pre-sort
- *  method on the MIDI container, where the event container is sorted after
- *  each event is added.
- */
-
-#undef SEQ64_PRESORT_EVENT_CONTAINER
-
-#ifdef SEQ64_USE_EVENT_MAP
-#undef SEQ64_PRESORT_EVENT_CONTAINER
-#endif
 
 /**
  *  Determins which implementation of a MIDI byte container is used.

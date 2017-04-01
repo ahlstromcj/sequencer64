@@ -344,7 +344,7 @@ mastermidibus::api_init (int ppqn, midibpm bpm)
     }
     set_beats_per_minute(m_beats_per_minute);
     set_ppqn(ppqn);
-    set_sequence_input(false, nullptr);         // EXPERIMENTAL: moved from below
+    set_sequence_input(false, nullptr);
 
     /*
      * Get the number of MIDI input poll file descriptors.  Allocate the

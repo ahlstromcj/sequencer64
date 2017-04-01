@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-03-27
+dnl \update        2017-04-01
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -397,10 +397,6 @@ else
 fi
 
 dnl LASH support
-dnl
-dnl WARNING:  LASH support is too entangle in the GUI system at present in
-dnl this code, so the default is to DISABLE it!  We need to separate out
-dnl some of the perform code and other code from the GUI framework.
 
 AC_ARG_ENABLE(lash,
     [AS_HELP_STRING(--enable-lash, [Enable LASH support (deprecated)])],
@@ -421,15 +417,11 @@ else
     AC_MSG_WARN([LASH support not enabled.]);
 fi
 
-dnl AlsaMidi support.  This is the default build for the standard Sequencer64
-dnl application.  This section defines a variable that is used only in the
+dnl "RtMidi" support.  This is now the default build for Sequencer64.
+dnl This section defines a variable that is used only in the
 dnl top-level Makefile to determine what directories are included in the
-dnl SUBDIRS variable.  Also, the defaultness of this value is enforced
-dnl in the latest versions of the midibus.hpp and mastermidibus.hpp files in
-dnl the libseq64/include directory.  Is there a better way to define the
-dnl defaults.
-
-dnl RtMidi support.
+dnl SUBDIRS variable.  Also see the latest versions of the midibus.hpp and
+dnl mastermidibus.hpp files in libseq64/include.
 
 AC_ARG_ENABLE(rtmidi,
     [AS_HELP_STRING(--enable-rtmidi, [Enable RtMidi build])],
@@ -465,7 +457,7 @@ else
     AC_MSG_WARN([Standard ALSA build not enabled.]);
 fi
 
-dnl PortMidi support.
+dnl PortMidi support.  Deprecated.
 
 AC_ARG_ENABLE(portmidi,
     [AS_HELP_STRING(--enable-portmidi, [Enable PortMidi build])],
@@ -532,9 +524,8 @@ else
     AC_MSG_WARN([Pausing sequences and pause-button not enabled.]);
 fi
 
-dnl Support for re-enabling the "statistics" code.
-dnl If enabled, the macro SEQ64_STATISTICS_SUPPORT is defined.
-dnl The default is for this feature to be disabled.
+dnl Support for re-enabling the "statistics" code.  If enabled, macro
+dnl SEQ64_STATISTICS_SUPPORT is defined.  Default is disabled.  Not too useful.
 
 AC_ARG_ENABLE(statistics,
     [AS_HELP_STRING(--enable-statistics, [Enable statistics gathering])],
@@ -549,9 +540,8 @@ else
 fi
 
 dnl Support for using the stazed JACK support.  Now enabled by default.
-dnl It seems to work well, no complaints recently by user layk.  Also
-dnl enables the stazed transport features, which are tightly coupled to stazed
-dnl JACK support.
+dnl It works well, no complaints recently by user layk.  Also enables stazed
+dnl transport features, tightly coupled to stazed JACK support.
 
 AC_ARG_ENABLE(seq32jack,
     [AS_HELP_STRING(--disable-seq32jack, [Disable JACK and Seq32 JACK support])],
@@ -637,7 +627,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-03-27"
+#define VERSION_DATE_SHORT "2017-04-01"
 #define VERSION "0.90.2"
 
 )

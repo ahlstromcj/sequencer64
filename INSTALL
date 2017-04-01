@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.90.1
+INSTALL for Sequencer64 v. 0.90.2
 Chris Ahlstrom
-2015-09-10 to 2017-02-24
+2015-09-10 to 2017-04-01
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -19,16 +19,18 @@ Steps:
 
    1.  Check-out the branch you want.  Make a branch if you want to make
        changes.  The current branches are "master", "fixups", and "rtmidi".
-4
+
    2.  The first thing to do is decide what version of Sequencer64 you want to
        build.  There are now 3 versions:
 
        1.   Seq64rtmidi/seq64:           ./bootstrap [ -er -rm ]
        2.   Sequencer64/sequencer64:     ./bootstrap -er -am
        3.   Seq64portmidi/seq64portmidi: ./bootstrap -er -pm
+
+       Note that the portmidi build is deprecated.
    
        From the top project directory, run these commands, which set up a
-       build of seq64 by default.
+       build of seq64 (native JACK, native ALSA fallback) by default.
 
        $ ./bootstrap
        $ ./configure
@@ -59,7 +61,7 @@ Steps:
       $ make
 
        This procedure no longer builds the documentation. If you do care about
-       the documentation change to the doc/dox directory and run
+       programmer documentation, change to the doc/dox directory and run
        "./make_dox reference".
       
        Do not forget that you can add options to "make", such as "V=0" (enable
@@ -71,7 +73,7 @@ Steps:
        # make install
 
        Note that we have removed the developer reference manual from the
-       automated build (see the Doxygen DEPENDENCIES below), but the existig
+       automated build (see the Doxygen DEPENDENCIES below), but the existing
        documents will still be installed.
 
    5.  See the additional features that can be enabled, below, using 
@@ -285,7 +287,7 @@ MANUALLY-DEFINED MACROS IN CODE:
         with, which slows simple iteration down.  There are many
         complications, though.
 
-    SEQ64_PRESORT_EVENT_CONTAINER:
+    SEQ64_PRESORT_EVENT_CONTAINER (obsolete):
 
         If using the std::list MIDI implementation (from Seq24), also
         sort the MIDI event container after every event is inserted, even

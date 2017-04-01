@@ -291,7 +291,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         MenuElem
         (
-            "_New", Gtk::AccelKey("<control>N"),
+            "_New", Gtk::AccelKey("<control>N"),    /* Ctrl-N does nothing! */
             mem_fun(*this, &mainwnd::file_new)
         )
     );
@@ -1153,6 +1153,26 @@ mainwnd::jack_dialog ()
 
     m_options = new options(*this, perf(), true);
     m_options->show_all();
+}
+
+/**
+ *  We are trying to work around an apparent Gtk+ bug (which occurs on my
+ *  64-bit Debian Sid laptop, but not on my 32-bit Debian Jessie laptop) that
+ *  causes Sequencer64 to freeze, emitting Gtk errors, if one tries to access
+ *  the main menu via Alt-F, Alt-E, etc. without first moving the mouse to
+ *  the main window.  Weird with a beard!
+ */
+
+void
+mainwnd::on_realize ()
+{
+    gui_window_gtk2::on_realize();
+
+    /*
+     * Does not fix the Alt-F issue.
+     *
+     * test_widget_click(m_button_tap->get_child()->gobj());
+     */
 }
 
 /**

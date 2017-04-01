@@ -75,18 +75,9 @@ sorting had occurred.
 Anyway, the current configuration for the usage of
 <code>std::multimap</code> versus
 <code>std::list</code> and the sorting of the MIDI container
-after every event insertion versus after all the events are loaded
-are deterimined only in <code>libseq64/include/seq64_features.h</code>:
-
-\verbatim
-   #undef SEQ64_USE_EVENT_MAP
-   #undef SEQ64_PRESORT_EVENT_CONTAINER
-   #ifdef SEQ64_USE_EVENT_MAP
-   #undef SEQ64_PRESORT_EVENT_CONTAINER
-   #endif
-\endverbatim
-
-Currently, the default is, as shown above, to not use the event multimap,
+after every event insertion versus after all the events are now
+permanent and hardwired.
+The default is to not use the event multimap,
 and to not presort events.  This makes loading fast, and playback
 able to handle more sequences.  One can also try to use
 the multimap, or use the list with pre-sorting, if bugs appear when

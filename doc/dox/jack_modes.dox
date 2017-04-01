@@ -10,7 +10,7 @@ This document describes some issues and scenarios involving the JACK, live, and
 song modes.
 
 \page       jack_modes_page JACK, Live, and Song Modes in Sequencer64
-\author     Chris Ahlstrom 2016-08-18
+\author     Chris Ahlstrom 2017-04-01
 
 \section jack_modes_intro Introduction
 
@@ -18,6 +18,10 @@ This section describes the interactions between JACK settings and the Live/Song
 Mode settings, with an eye to describing the proper behavior of Sequencer64 with
 JACK settings, how the Live/Song modes are supposed to work, and what bugs or
 issues remain in Sequencer64's JACK handling.
+
+Note: There is currently no description of the 0.90.x line's native JACK MIDI
+support, except what is found in the developer's reference manual and in the
+updated sequencer64-doc project at GitHub.
 
 I'm not sure why Doxygen is applying the "code" font so often here.
 Weird, annoying.

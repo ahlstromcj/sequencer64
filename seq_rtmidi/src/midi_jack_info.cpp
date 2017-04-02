@@ -497,11 +497,12 @@ midi_jack_info::api_set_beats_per_minute (midibpm b)
  *  We can simplify this code a bit by using elements already present in
  *  midi_jack_info.
  *
- *  \threadsafe
- *      Quite a lot is done during the lock!
+ * \param masterbus
+ *      Provides the object needed to get access to the array of input and
+ *      output buss objects.
  *
- * \param client
- *      Provides the JACK client number.
+ * \param bus
+ *      Provides the JACK bus/client number.
  *
  * \param port
  *      Provides the JACK client port.

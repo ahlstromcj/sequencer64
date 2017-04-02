@@ -33,9 +33,8 @@ namespace seq64
  *  Principal constructor.
  */
 
-midi_port_info::midi_port_info
-(
-) :
+midi_port_info::midi_port_info ()
+ :
     m_port_count        (0),
     m_port_container    ()
 {
@@ -62,15 +61,18 @@ midi_port_info::midi_port_info
  *      want to create a virtual port so that the application has something to
  *      work with.
  *
- * \param queuenumber
- *      Provides the optional queue number, if applicable.  For example, the
- *      sequencer64 application grabs the client number (normally valued at 1)
- *      from the ALSA subsystem.
- *
  * \param makesystem
  *      In some systems, we need to create and activate a system port, such as
  *      a timer port or an ALSA announce port.  For all other ports, this
  *      value is false.
+ *
+ * \param makeinput
+ *      Indicates if the port is an input port or an output port.
+ *
+ * \param queuenumber
+ *      Provides the optional queue number, if applicable.  For example, the
+ *      sequencer64 application grabs the client number (normally valued at 1)
+ *      from the ALSA subsystem.
  */
 
 void

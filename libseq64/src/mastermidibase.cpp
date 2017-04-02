@@ -353,6 +353,13 @@ mastermidibase::get_clock (bussbyte bus)
     return m_outbus_array.get_clock(bus);
 }
 
+/**
+ *  Initializes all fo the busses in the input and output buss arrays.
+ *
+ * \return
+ *      Returns true if both busses were successfully initialized.
+ */
+
 bool
 mastermidibase::initialize_buses ()
 {
@@ -380,6 +387,10 @@ mastermidibase::initialize_buses ()
  *
  * \param inputing
  *      True if the input bus will be inputting MIDI data.
+ *
+ * \return
+ *      Returns true if the input buss array item could be set and then saved
+ *      into the status container.
  */
 
 bool
@@ -401,6 +412,15 @@ mastermidibase::set_input (bussbyte bus, bool inputing)
  *  system now.  So we might have to adjust.
  *
  *  Do we also have to adjust the perform's vector?
+ *
+ * \param bus
+ *      Provides the buss number.
+ *
+ * \param inputing
+ *      True if the input bus will be inputting MIDI data.
+ *
+ * \return
+ *      Returns true, always.
  */
 
 bool
@@ -613,24 +633,13 @@ mastermidibase::port_exit (int client, int port)
 /**
  *  Grab a MIDI event via the currently-selected MIDI API.
  *
- *  Not yet sure if mutex locking is useful here.
- *
- * \threadsafe
- *
- * \param inev
+ * \param ev
  *      The event to be set based on the found input event.
  */
 
 bool
 mastermidibase::get_midi_event (event * ev)
 {
-    /*
-     * Some keyboards send Note On with velocity 0 for Note Off:
-     *
-     * if (ev->is_note_on() && ev->get_note_velocity() == 0x00)
-     *     ev->set_status(EVENT_NOTE_OFF);
-     */
-
     return api_get_midi_event(ev);
 }
 
@@ -738,23 +747,6 @@ mastermidibase::dump_midi_input (event ev)
         }
     }
 }
-
-#if 0
-
-/**
- *
- */
-
-void
-mastermidibase::swap ()
-{
-    if (rc().with_jack_midi())
-    {
-        seq64::swap(m_inbus_array, m_outbus_array);
-    }
-}
-
-#endif
 
 }           // namespace seq64
 

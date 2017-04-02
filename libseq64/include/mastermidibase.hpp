@@ -177,6 +177,10 @@ public:
      *
      * \param ppqn
      *      The PPQN value to which to initialize the master MIDI buss.
+     *
+     * \param bpm
+     *      The beats/minute value to which to initialize the master MIDI
+     *      buss.
      */
 
     virtual void init (int ppqn, midibpm bpm)

@@ -43,6 +43,14 @@ namespace seq64
 
 /**
  *  Default constructor.
+ *
+ * \param parentbus
+ *      This is the midibus that the rtmidi object is going to implement, by
+ *      forwarding calls to the selected MIDI subsystem (e.g. ALSA or JACK).
+ *
+ * \param info
+ *      This object provides the system's enumerated busses/ports as found by
+ *      the selected MIDI subsystem.
  */
 
 rtmidi::rtmidi (midibus & parentbus, rtmidi_info & info)
@@ -75,13 +83,14 @@ rtmidi::~rtmidi ()
  *  the compiled APIs and return as soon as we find one with at least one port
  *  or we reach the end of the list.
  *
+ * \param parentbus
+ *      This is the midibus that the rtmidi object is going to implement, by
+ *      forwarding calls to the selected MIDI subsystem (e.g. ALSA or JACK).
+ *
  * \param info
  *      Contains information about the existing ports and the selected MIDI
  *      API.  Actually, the selected MIDI API is a static value of the
  *      rtmidi_info class.
- *
- * \param index
- *      The desired port to open for input.
  *
  * \throw
  *      This function will throw an rterror object if it cannot find a MIDI
@@ -210,6 +219,10 @@ rtmidi_in::openmidi_api (rtmidi_api api, rtmidi_info & info)
  *  continue as if no API was specified.  In that case, we Iterate through the
  *  compiled APIs and return as soon as we find one with at least one port or
  *  we reach the end of the list.
+ *
+ * \param parentbus
+ *      This is the midibus that the rtmidi object is going to implement, by
+ *      forwarding calls to the selected MIDI subsystem (e.g. ALSA or JACK).
  *
  * \param info
  *      Contains information about the existing ports and the selected MIDI

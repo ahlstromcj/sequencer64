@@ -120,7 +120,7 @@ namespace seq64
  * \param parentbus
  *      Provides much of the infor about this ALSA buss.
  *
- * \param info
+ * \param masterinfo
  *      Provides the information about the desired port, and more.
  */
 

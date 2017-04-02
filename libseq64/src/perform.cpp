@@ -4304,7 +4304,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
  *      The sequence that is being clicked on.  It must be active in order to
  *      allow toggling.
  *
- * \param
+ * \param isshiftkey
  *      Indicates if the shift-key functionality for toggling all of the other
  *      sequences is active.
  *
@@ -4347,7 +4347,7 @@ perform::toggle_other_seqs (int seqnum, bool isshiftkey)
  *      The sequence that is being clicked on.  It must be active in order to
  *      allow toggling.
  *
- * \param
+ * \param isshiftkey
  *      Indicates if the shift-key functionality for toggling all of the other
  *      sequences is active.
  *

@@ -64,9 +64,6 @@ namespace seq64
  *      Sequencer64 buss model, where the master MIDI buss provides it to be
  *      used by all the MIDI buss objects.
  *
- * \param appname
- *      The application name needed to construct a good bus/port name.
- *
  * \param index
  *      This is the index into the rtmidi object, and is used to get the
  *      desired client and port information.  It is an index into the
@@ -78,8 +75,11 @@ namespace seq64
  * \param isinput
  *      Indicates that the port is an input port, as opposed to an output port.
  *
- * \param bus_id
+ * \param bussoverride
  *      Optional buss ID, if not equal to the index parameter.
+ *
+ * \param makesystem
+ *      Indicates that the port is also a system port (i.e. always present).
  */
 
 midibus::midibus

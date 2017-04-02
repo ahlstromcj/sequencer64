@@ -169,27 +169,39 @@ public:
      *
      *  This function is a new part of the RtMidi interface.
      *
-     * \param index
-     *      The ordinal index of the desired interface to look up.
-     *
      * \return
      *      Returns the buss/client value as provided by the selected API.
      */
 
-    virtual int get_bus_id ()   // (int index)
+    virtual int get_bus_id ()
     {
-        return get_api()->get_bus_id();  // (index);
+        return get_api()->get_bus_id();
     }
+
+    /**
+     * \return
+     *      Returns the buss name from the selected API subsystem.
+     */
 
     virtual std::string get_bus_name ()
     {
         return get_api()->bus_name();
     }
 
+    /**
+     * \return
+     *      Returns the port ID number from the selected API subsystem.
+     */
+
     virtual int get_port_id ()
     {
         return get_api()->get_port_id();
     }
+
+    /**
+     * \return
+     *      Returns the port name from the selected API subsystem.
+     */
 
     virtual std::string get_port_name ()
     {
@@ -197,7 +209,8 @@ public:
     }
 
     /**
-     * This value depends on the MIDI mode setting (input versus output).
+     *  \return
+     *      This value depends on the MIDI mode setting (input versus output).
      */
 
     int get_port_count ()
@@ -206,7 +219,8 @@ public:
     }
 
     /**
-     *  This value is the sum of the number of input and output ports.
+     *  \return
+     *      This value is the sum of the number of input and output ports.
      */
 
     int full_port_count ()
@@ -279,37 +293,7 @@ class rtmidi_in : public rtmidi
 
 public:
 
-    /**
-     *  Default constructor that allows an optional api, client name and queue
-     *  size.
-     *
-     *  An exception will be thrown if a MIDI system initialization error
-     *  occurs.  The queue size defines the maximum number of messages that
-     *  can be held in the MIDI queue (when not using a callback function).
-     *  If the queue size limit is reached, incoming messages will be ignored.
-     *
-     *  If no API argument is specified and multiple API support has been
-     *  compiled, the default order of use is ALSA, JACK (Linux) and CORE,
-     *  JACK (OS-X).
-     *
-     * \param api
-     *      An optional API id can be specified.
-     *
-     * \param clientname
-     *      An optional client name can be specified. This will be used to
-     *      group the ports that are created by the application.
-     *
-     * \param queuesizelimit
-     *      An optional size of the MIDI input queue can be specified.
-     */
-
     rtmidi_in (midibus & parentbus, rtmidi_info & info);
-
-    /**
-     *  If a MIDI connection is still open, it will be closed by the
-     *  destructor.
-     */
-
     virtual ~rtmidi_in ();
 
     /**
@@ -371,14 +355,7 @@ class rtmidi_out : public rtmidi
 
 public:
 
-    /**
-     *  Default constructor that allows an optional client name.  An exception
-     *  will be thrown if a MIDI system initialization error occurs.  If no
-     *  API argument is specified and multiple API support has been compiled,
-     *  the default order of use is ALSA, JACK (Linux) and CORE, JACK (OS-X).
-     */
-
-    rtmidi_out ( midibus & parentbus, rtmidi_info & info);
+    rtmidi_out (midibus & parentbus, rtmidi_info & info);
 
     /**
      *  The destructor closes any open MIDI connections.

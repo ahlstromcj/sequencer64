@@ -97,6 +97,9 @@ int midibase::m_clock_mod = 16 * 4;
  *      port name should be obtained via the API, or be assembled by the
  *      derived class at port-setup time.
  *
+ * \param index
+ *      Provides the ordinal of this buss/port, mostly for display purposes.
+ *
  * \param bus_id
  *      Provides the ID code for this bus.  It is an index into the midibus
  *      definitions array, and is also used in the constructed human-readable

@@ -69,11 +69,14 @@ unsigned midi_alsa_info::sm_output_caps =
 /**
  *  Principal constructor.
  *
- * \param clientname
- *      Provides the name of the MIDI input port.
+ * \param appname
+ *      Provides the name of the application.
  *
- * \param queuesize
- *      Provides the upper limit of the queue size.
+ * \param ppqn
+ *      Provides the PPQN value needed by this object.
+ *
+ * \param bpm
+ *      Provides the beats/minute value needed by this object.
  */
 
 midi_alsa_info::midi_alsa_info
@@ -370,11 +373,12 @@ midi_alsa_info::api_poll_for_midi ()
  *  We can simplify this code a bit by using elements already present in
  *  midi_alsa_info.
  *
- *  \threadsafe
- *      Quite a lot is done during the lock!
+ * \param masterbus
+ *      Provides the object that is need to get access to the busses that need
+ *      to be started.
  *
- * \param client
- *      Provides the ALSA client number.
+ * \param bus
+ *      Provides the ALSA bus/client number.
  *
  * \param port
  *      Provides the ALSA client port.

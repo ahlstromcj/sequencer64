@@ -308,11 +308,11 @@ jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
  * error-reporting we get by that method.  So we've commented out the
  * following code in favor of using the session-uuid code:
  *
- *  #ifdef SEQ64_JACK_SESSION
- *  #else
+ *  # ifdef SEQ64_JACK_SESSION
+ *  # else
  *      jack_status_t * pstatus = NULL;
  *      result = jack_client_open(name, JackNullOption, pstatus);
- *  #endif
+ *  # endif
  *
  * \param clientname
  *      Provides the name of the client, used in the call to
@@ -320,6 +320,10 @@ jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
  *      (i.e.  "sequencer64").  The name scope is local to each server. Unless
  *      forbidden by the JackUseExactName option, the server will modify this
  *      name to create a unique variant, if needed.
+ *
+ * \param uuid
+ *      The optional UUID to assign to the new client.  If empty, there is no
+ *      UUID.
  *
  * \return
  *      Returns a pointer to the JACK client if JACK has opened the client
@@ -498,7 +502,7 @@ show_jack_statuses (unsigned bits)
  * \param ppqn
  *      The parts-per-quarter-note setting in force for the present tune.
  *
- * \param bpm
+ * \param bpmeasure
  *      The beats/measure (time signature numerator) in force for the present
  *      tune.
  *

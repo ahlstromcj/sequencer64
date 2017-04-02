@@ -77,6 +77,10 @@ businfo::businfo ()
  *
  *      Indicates if the midibus represents a virtual port (true) versus a
  *      normal port (false).
+ *
+ * \param bus
+ *      Provides a pointer to the MIDI buss object to be represented by this
+ *      object.
  */
 
 businfo::businfo (midibus * bus)
@@ -92,6 +96,9 @@ businfo::businfo (midibus * bus)
 
 /**
  *  Copy constructor.  Currently it does not replicate the pointed-to object.
+ *
+ * \param rhs
+ *      The source object to be copied.
  */
 
 businfo::businfo (const businfo & rhs)
@@ -132,6 +139,10 @@ businfo::businfo (const businfo & rhs)
  *      -   Normal input ports don't have init_in() called, but are marked
  *          as "active" and "initialized" anyway.  The settings from the "rc"
  *          file determine which inputs will operate.
+ *
+ * \return
+ *      Returns true if the buss is value, and it could be initialized (as an
+ *      output port or a virtual output port.
  */
 
 bool
@@ -239,8 +250,9 @@ busarray::add (midibus * bus, clock_e clock)
  * \param bus
  *      The midibus to be hooked into the array of busses.
  *
- * \param clock
- *      The clocking value for the bus.
+ * \param inputing
+ *      The input flag value for the bus.  If true, this value indicates that
+ *      the user has selected this bus to be the input MIDI bus.
  *
  * \return
  *      Returns true if the bus was added successfully, though, really, it
@@ -319,6 +331,9 @@ busarray::stop ()
 /**
  *  Continues from the given tick for all of the busses; used for output busses
  *  only.
+ *
+ * \param tick
+ *      Provides the tick value for all busses to continue from.
  */
 
 void
@@ -332,6 +347,9 @@ busarray::continue_from (midipulse tick)
 /**
  *  Initializes the clocking at the given tick for all of the busses; used for
  *  output busses only.
+ *
+ * \param tick
+ *      Provides the tick value for all busses use as the clock tick.
  */
 
 void
@@ -344,6 +362,9 @@ busarray::init_clock (midipulse tick)
 
 /**
  *  Clocks at the given tick for all of the busses; used for output busses only.
+ *
+ * \param tick
+ *      Provides the tick value for all busses use as the clock tick.
  */
 
 void
@@ -356,6 +377,9 @@ busarray::clock (midipulse tick)
 
 /**
  *  Handles SysEx events; used for output busses.
+ *
+ * \param ev
+ *      Provides the SysEx event to handle.
  */
 
 void
@@ -368,6 +392,17 @@ busarray::sysex (event * ev)
 
 /**
  *  Plays an event, if the bus is proper.
+ *
+ * \param bus
+ *      The MIDI buss on which to play the event.
+ *
+ * \param e24
+ *      A pointer to the event to be played.
+ *
+ * \param channel
+ *      The MIDI channel on which to play the event.  Sequencer64 controls
+ *      the actual channel of playback, no matter what the channel specified
+ *      in the event.
  */
 
 void
@@ -381,6 +416,12 @@ busarray::play (bussbyte bus, event * e24, midibyte channel)
  *  Sets the clock type for the given bus, usually the output buss.
  *  This code is a bit more restrictive than the original code in
  *  mastermidibus::set_clock().
+ *
+ * \param bus
+ *      The MIDI bus for which the clock is to be set.
+ *
+ * \param clocktype
+ *      Provides the type of clocking for the buss.
  */
 
 bool
@@ -410,6 +451,13 @@ busarray::set_all_clocks ()
 
 /**
  *  Gets the clock type for the given bus, usually the output buss.
+ *
+ * \param bus
+ *      The MIDI bus for which the clock is to be set.
+ *
+ * \return
+ *      Returns the clock value set for the desired buss.  If the buss is
+ *      invalid, then e_clock_off is returned.
  */
 
 clock_e
@@ -562,6 +610,10 @@ busarray::port_exit (int client, int port)
  *
  * \param inputing
  *      True if the input bus will be inputting MIDI data.
+ *
+ * \return
+ *      Returns true if the buss number is valid and was active, and so could
+ *      be set.
  */
 
 bool
@@ -584,9 +636,6 @@ busarray::set_input (bussbyte bus, bool inputing)
  *  busarray, obviously.  Note that the input settings used here were stored
  *  when the add() function was called.  They can be changed by the user via
  *  the Options / MIDI Input tab.
- *
- * \param inputing
- *      True if the input bus will be inputting MIDI data.
  */
 
 void
@@ -701,6 +750,12 @@ busarray::get_midi_event (event * inev)
  *
  *  Still need to determine exactly what this function needs to do.
  *
+ * \param bus
+ *      The buss to be affected.
+ *
+ * \param port
+ *      The prot to be affected.
+ *
  * \return
  *      Returns -1 if no matching port is found, otherwise it returns the
  *      replacement-port number.
@@ -737,6 +792,12 @@ busarray::replacement_port (int bus, int port)
 
 /**
  *  This free function swaps the contents of two busarray objects.
+ *
+ * \param buses0
+ *      Provides the first buss in the swap.
+ *
+ * \param buses1
+ *      Provides the second buss in the swap.
  */
 
 void

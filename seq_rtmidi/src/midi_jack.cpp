@@ -1278,11 +1278,12 @@ midi_jack::create_ringbuffer (size_t rbsize)
  *  api_init_in*() functions.  Also, this constructor still needs to do
  *  something with queue size.
  *
- * \param clientname
- *      The name to give the client.
+ * \param parentbus
+ *      Provides the buss object that determines buss-specific parameters of
+ *      this class.
  *
- * \param queuesize
- *      Provides the limit of the size of the MIDI input queue.
+ * \param masterinfo
+ *      Provides information about the JACK system as found on this machine.
  */
 
 midi_in_jack::midi_in_jack (midibus & parentbus, midi_info & masterinfo)
@@ -1416,8 +1417,12 @@ midi_in_jack::~midi_in_jack()
  *  a midi_out_jack object; all that is needed is created via the
  *  api_init_out*() functions.
  *
- * \param clientname
- *      The name of the MIDI output port.
+ * \param parentbus
+ *      Provides the buss object that determines buss-specific parameters of
+ *      this class.
+ *
+ * \param masterinfo
+ *      Provides information about the JACK system as found on this machine.
  */
 
 midi_out_jack::midi_out_jack (midibus & parentbus, midi_info & masterinfo)

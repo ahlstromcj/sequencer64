@@ -579,8 +579,7 @@ protected:
     /**
      *  Handles implementation details for SysEx messages.
      *
-     * \param e24
-     *      The SysEx event pointer.
+     *  The \a e24 parameter, the SysEx event pointer, is unused here.
      */
 
     virtual void api_sysex (event * /* e24 */)

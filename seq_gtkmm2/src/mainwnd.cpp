@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-28
+ * \updates       2017-04-02
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -278,172 +278,16 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     set_resizable(false);
     perf().enregister(this);                        /* register for notify  */
     update_window_title();                          /* main window          */
+
     m_menubar->items().push_front(MenuElem("_File", *m_menu_file));
     m_menubar->items().push_back(MenuElem("_Edit", *m_menu_edit));
     m_menubar->items().push_back(MenuElem("_View", *m_menu_view));
     m_menubar->items().push_back(MenuElem("_Help", *m_menu_help));
 
-    /*
-     * File menu items, their accelerator keys, and their hot keys.
-     */
-
-    m_menu_file->items().push_back
-    (
-        MenuElem
-        (
-            "_New", Gtk::AccelKey("<control>N"),    /* Ctrl-N does nothing! */
-            mem_fun(*this, &mainwnd::file_new)
-        )
-    );
-    m_menu_file->items().push_back
-    (
-        MenuElem
-        (
-            "_Open...", Gtk::AccelKey("<control>O"),
-            mem_fun(*this, &mainwnd::file_open)
-        )
-    );
-    m_menu_file->items().push_back
-    (
-        MenuElem
-        (
-            "_Save", Gtk::AccelKey("<control>S"),
-            mem_fun(*this, &mainwnd::file_save)
-        )
-    );
-    m_menu_file->items().push_back
-    (
-        MenuElem
-        (
-            "Save _as...",
-            sigc::bind(mem_fun(*this, &mainwnd::file_save_as), false)
-        )
-    );
-    m_menu_file->items().push_back(SeparatorElem());
-    m_menu_file->items().push_back
-    (
-        MenuElem("_Import MIDI...", mem_fun(*this, &mainwnd::file_import_dialog))
-    );
-
-    /*
-     * Export means to write out the song as a standard MIDI file based on the
-     * triggers shown in the performance window.
-     */
-
-    m_menu_file->items().push_back
-    (
-        MenuElem
-        (
-            "E_xport song as MIDI...",
-            sigc::bind(mem_fun(*this, &mainwnd::file_save_as), true)
-        )
-    );
-    m_menu_file->items().push_back(SeparatorElem());
-    m_menu_file->items().push_back
-    (
-        MenuElem("O_ptions...", mem_fun(*this, &mainwnd::options_dialog))
-    );
-    m_menu_file->items().push_back(SeparatorElem());
-    m_menu_file->items().push_back
-    (
-        MenuElem
-        (
-            "E_xit", Gtk::AccelKey("<control>Q"),
-            mem_fun(*this, &mainwnd::file_exit)
-        )
-    );
-
-    /**
-     * Edit menu items and their hot keys.
-     */
-
-    m_menu_edit->items().push_back
-    (
-        MenuElem
-        (
-            "_Song Editor...", Gtk::AccelKey("<control>E"),
-            mem_fun(*this, &mainwnd::open_performance_edit)
-        )
-    );
-
-#ifdef SEQ64_STAZED_TRANSPOSE
-
-    m_menu_edit->items().push_back
-    (
-        MenuElem
-        (
-            "_Apply song transpose",
-            mem_fun(*this, &mainwnd::apply_song_transpose)
-        )
-    );
-
-#endif
-
-    m_menu_edit->items().push_back(SeparatorElem());
-    m_menu_edit->items().push_back
-    (
-        MenuElem("_Mute all tracks",
-        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), perform::MUTE_ON))
-    );
-    m_menu_edit->items().push_back
-    (
-        MenuElem("_Unmute all tracks",
-        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), perform::MUTE_OFF))
-    );
-    m_menu_edit->items().push_back
-    (
-        MenuElem("_Toggle mute all tracks",
-        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), perform::MUTE_TOGGLE))
-    );
-
-    /**
-     * View menu items and their hot keys.  It repeats the song editor edit
-     * command, just to help those whose muscle memory is already
-     * seq32-oriented.
-     */
-
-    m_menu_view->items().push_back
-    (
-        MenuElem
-        (
-            "_Song Editor toggle...", Gtk::AccelKey("<control>E"),
-            mem_fun(*this, &mainwnd::open_performance_edit)
-        )
-    );
-
-    /**
-     * View menu items and their hot keys.
-     */
-
-    if (not_nullptr(m_perf_edit_2))
-    {
-        m_menu_view->items().push_back
-        (
-            MenuElem
-            (
-                "Song Editor _2 toggle...", // Gtk::AccelKey("<control>F"),
-                mem_fun(*this, &mainwnd::open_performance_edit_2)
-            )
-        );
-        enregister_perfedits();
-    }
-
-    /**
-     * Help menu items
-     */
-
-    m_menu_help->items().push_back
-    (
-        MenuElem("_About...", mem_fun(*this, &mainwnd::about_dialog))
-    );
-
-    m_menu_help->items().push_back
-    (
-        MenuElem
-        (
-            "_Build Info...", mem_fun(*this, &mainwnd::build_info_dialog)
-        )
-    );
+    populate_menu_file ();
+    populate_menu_edit ();
+    populate_menu_view ();
+    populate_menu_help ();
 
     /**
      * Top panel items, including the logo (updated for the new version of
@@ -781,14 +625,13 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     mainvbox->pack_start(*m_menubar, false, false);
     mainvbox->pack_start(*contentvbox);
     add(*mainvbox);                         /* add main layout box (this->) */
-    show_all();                             /* show everything              */
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
+    // show_all();                          /* show everything              */
     m_timeout_connect = Glib::signal_timeout().connect
     (
         mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
     );
-    m_sigpipe[0] = -1;                      /* initialize static array      */
-    m_sigpipe[1] = -1;
+    show_all();                          /* works here as well           */
     install_signal_handlers();
 }
 
@@ -918,6 +761,9 @@ mainwnd::toggle_menu_mode ()
  *      sequences that don't yet exist.  Also, if a sequence is changed by the
  *      event editor, we get a crash; need to find out how seqedit gets away
  *      with the changes.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
@@ -2376,6 +2222,8 @@ mainwnd::handle_signal (int sig)
 bool
 mainwnd::install_signal_handlers ()
 {
+    m_sigpipe[0] = -1;          /* initialize this static array             */
+    m_sigpipe[1] = -1;
     if (pipe(m_sigpipe) < 0)    /* pipe to forward received system signals  */
     {
         printf("pipe() failed: %s\n", std::strerror(errno));
@@ -2446,6 +2294,188 @@ mainwnd::signal_action (Glib::IOCondition condition)
         }
     }
     return result;
+}
+
+/**
+ *  Populates the File menu: File menu items; their accelerator keys; and their
+ *  hot keys.  Provided to make the constructor more readable and manageable.
+ */
+
+void
+mainwnd::populate_menu_file ()
+{
+    m_menu_file->items().push_back
+    (
+        MenuElem
+        (
+            "_New", Gtk::AccelKey("<control>N"),    /* Ctrl-N does nothing! */
+            mem_fun(*this, &mainwnd::file_new)
+        )
+    );
+    m_menu_file->items().push_back
+    (
+        MenuElem
+        (
+            "_Open...", Gtk::AccelKey("<control>O"),
+            mem_fun(*this, &mainwnd::file_open)
+        )
+    );
+    m_menu_file->items().push_back
+    (
+        MenuElem
+        (
+            "_Save", Gtk::AccelKey("<control>S"),
+            mem_fun(*this, &mainwnd::file_save)
+        )
+    );
+    m_menu_file->items().push_back
+    (
+        MenuElem
+        (
+            "Save _as...",
+            sigc::bind(mem_fun(*this, &mainwnd::file_save_as), false)
+        )
+    );
+    m_menu_file->items().push_back(SeparatorElem());
+    m_menu_file->items().push_back
+    (
+        MenuElem("_Import MIDI...", mem_fun(*this, &mainwnd::file_import_dialog))
+    );
+
+    /*
+     * Export means to write out the song as a standard MIDI file based on the
+     * triggers shown in the performance window.
+     */
+
+    m_menu_file->items().push_back
+    (
+        MenuElem
+        (
+            "E_xport song as MIDI...",
+            sigc::bind(mem_fun(*this, &mainwnd::file_save_as), true)
+        )
+    );
+    m_menu_file->items().push_back(SeparatorElem());
+    m_menu_file->items().push_back
+    (
+        MenuElem("O_ptions...", mem_fun(*this, &mainwnd::options_dialog))
+    );
+    m_menu_file->items().push_back(SeparatorElem());
+    m_menu_file->items().push_back
+    (
+        MenuElem
+        (
+            "E_xit", Gtk::AccelKey("<control>Q"),
+            mem_fun(*this, &mainwnd::file_exit)
+        )
+    );
+}
+
+/**
+ *  Populates the Edit menu: Edit menu items; their accelerator keys; and their
+ *  hot keys.  Provided to make the constructor more readable and manageable.
+ */
+
+void
+mainwnd::populate_menu_edit ()
+{
+    m_menu_edit->items().push_back
+    (
+        MenuElem
+        (
+            "_Song Editor...", Gtk::AccelKey("<control>E"),
+            mem_fun(*this, &mainwnd::open_performance_edit)
+        )
+    );
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+
+    m_menu_edit->items().push_back
+    (
+        MenuElem
+        (
+            "_Apply song transpose",
+            mem_fun(*this, &mainwnd::apply_song_transpose)
+        )
+    );
+
+#endif
+
+    m_menu_edit->items().push_back(SeparatorElem());
+    m_menu_edit->items().push_back
+    (
+        MenuElem("_Mute all tracks",
+        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), perform::MUTE_ON))
+    );
+    m_menu_edit->items().push_back
+    (
+        MenuElem("_Unmute all tracks",
+        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), perform::MUTE_OFF))
+    );
+    m_menu_edit->items().push_back
+    (
+        MenuElem("_Toggle mute all tracks",
+        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), perform::MUTE_TOGGLE))
+    );
+}
+
+/**
+ *  Populates the View menu: View menu items and their hot keys.  It repeats
+ *  the song editor edit command, just to help those whose muscle memory is
+ *  already seq32-oriented.  Provided to make the constructor more readable and
+ *  manageable.
+ */
+
+void
+mainwnd::populate_menu_view ()
+{
+    m_menu_view->items().push_back
+    (
+        MenuElem
+        (
+            "_Song Editor toggle...", Gtk::AccelKey("<control>E"),
+            mem_fun(*this, &mainwnd::open_performance_edit)
+        )
+    );
+
+    /**
+     * View menu items and their hot keys.
+     */
+
+    if (not_nullptr(m_perf_edit_2))
+    {
+        m_menu_view->items().push_back
+        (
+            MenuElem
+            (
+                "Song Editor _2 toggle...", // Gtk::AccelKey("<control>F"),
+                mem_fun(*this, &mainwnd::open_performance_edit_2)
+            )
+        );
+        enregister_perfedits();
+    }
+}
+
+/**
+ *  Populates the Help menu.  Provided to make the constructor more readable
+ *  and manageable.
+ */
+
+void
+mainwnd::populate_menu_help ()
+{
+    m_menu_help->items().push_back
+    (
+        MenuElem("_About...", mem_fun(*this, &mainwnd::about_dialog))
+    );
+
+    m_menu_help->items().push_back
+    (
+        MenuElem
+        (
+            "_Build Info...", mem_fun(*this, &mainwnd::build_info_dialog)
+        )
+    );
 }
 
 }           /* namespace seq64 */

@@ -1,6 +1,6 @@
 Current Hot To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-03-28
+2016-12-03 to 2017-04-02
 
 Rtmidi implementation issues to work out:
 
@@ -199,7 +199,7 @@ Active GitHub Issues:
        for beatmatching and mixing with an audio source, either live or
        recorded.
 
-       Nearly done!
+       Nearly done!  Seems to work!
 
     64 y1ds : [Feature request] No gui
 

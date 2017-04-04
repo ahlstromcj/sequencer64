@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-03-22
+ * \updates       2017-04-02
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -248,7 +248,12 @@ midi_alsa_info::get_all_port_info ()
                 }
                 else
                 {
-                    infoprintf("Non-I/O port '%s'", clientname.c_str());
+                    /*
+                     * When VMPK is running, we get this message for a
+                     * client-name of 'VMPK Output'.
+                     */
+
+                    infoprintf("Non-I/O port '%s'\n", clientname.c_str());
                 }
             }
         }

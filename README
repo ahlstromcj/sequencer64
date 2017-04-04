@@ -1,6 +1,6 @@
 README for Sequencer64 0.90.2 (Native JACK)
 Chris Ahlstrom
-2015-09-10 to 2017-04-01 (initial work started in July of 2015)
+2015-09-10 to 2017-04-02 (initial work started in July of 2015)
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot to see some visible
@@ -34,11 +34,15 @@ that can be built, as noted above.
 Major new updates:
 
     -   Version 0.90.2:
+        -   Extended MIDI controls for Stop / Pause / Start, and coarse BPM
+            settings.  Precursor to issue #64 ("no GUI").  Partial fix for
+            issue #56 ("more midi control").
+        -   Converted BPM to a double-precision value, and made the number of
+            digits of precision for beats/minute configurable to 0, 1, or 2.
+            Takes care of issue #63.
         -   Some minor bugs, such as mute status (mainwid) and playback status
             (seqedit) not being in synch.
         -   Functions for SEQ64_APP_NAME and SEQ64_CLIENT_NAME.
-        -   Extended MIDI controls for Stop / Pause / Start, and coarse BPM
-            settings.
         -   Upgraded the Debian packaging setup.
     -   Version 0.90.1:
         -   Fixes a JACK naming and connection issue when accessing ports

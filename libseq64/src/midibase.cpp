@@ -731,9 +731,7 @@ midibase::clock (midipulse tick)
             ++m_lasttick;
             done = m_lasttick >= tick;
             if ((m_lasttick % ct) == 0)                 /* tick time?           */
-            {
                 api_clock(tick);
-            }
         }
         api_flush();            /* and send out */
     }

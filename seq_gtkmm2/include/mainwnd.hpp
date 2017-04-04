@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-21
+ * \updates       2017-04-02
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -481,6 +481,13 @@ private:
     bool install_signal_handlers ();
     bool signal_action (Glib::IOCondition condition);
     bool edit_field_has_focus () const;
+
+private:
+
+    void populate_menu_file ();
+    void populate_menu_edit ();
+    void populate_menu_help ();
+    void populate_menu_view ();
 
 private:
 

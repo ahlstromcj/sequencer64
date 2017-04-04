@@ -279,7 +279,7 @@ public:
     void play (bussbyte bus, event * e24, midibyte channel);
     void continue_from (midipulse tick);
     void init_clock (midipulse tick);
-    void set_clock (midipulse tick);
+    void emit_clock (midipulse tick);
     void sysex (event * event);
     void print ();
     void flush ();

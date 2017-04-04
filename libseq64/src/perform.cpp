@@ -2985,7 +2985,16 @@ perform::output_func ()
                  */
 
                 set_jack_tick(pad.js_current_tick);
-                master_bus().clock(midipulse(pad.js_clock_tick));   // MIDI clock
+
+                /*
+                 * ca 2017-04-03 issue #67.
+                 * Somehow we are calling the wrong function, not the one we
+                 * need to emit the MIDI clock.
+                 *
+                 * master_bus().clock(midipulse(pad.js_clock_tick));
+                 */
+
+                master_bus().emit_clock(midipulse(pad.js_clock_tick));
 
 #ifdef SEQ64_STATISTICS_SUPPORT
                 if (rc().stats())
@@ -3336,7 +3345,7 @@ perform::handle_midi_control (int ctl, bool state)
     case c_midi_control_bpm_page_up:
     case c_midi_control_bpm_page_dn:
 
-        /* printf("BPM DOWN ignored\n"); */
+        /* printf("BPM UP/DOWN ignored\n"); */
         break;
 
     case c_midi_control_ss_up:

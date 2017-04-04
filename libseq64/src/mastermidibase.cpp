@@ -188,7 +188,7 @@ mastermidibase::stop ()
  */
 
 void
-mastermidibase::set_clock (midipulse tick)
+mastermidibase::emit_clock (midipulse tick)
 {
     automutex locker(m_mutex);
     api_clock();
@@ -321,14 +321,23 @@ mastermidibase::set_clock (bussbyte bus, clock_e clocktype)
 }
 
 /**
+ *  Saves the given clock value in m_master_clocks[bus].
  *
+ * \param bus
+ *      Provides the desired buss to be set.
+ *
+ * \param clock
+ *      Provides the clocking value to set.
+ *
+ * \return
+ *      Returns true if the buss value is valid.
  */
 
 bool
 mastermidibase::save_clock (bussbyte bus, clock_e clock)
 {
     bool result = bus < int(m_master_clocks.size());
-    if (bus < int(m_master_clocks.size()))
+    if (result)
         m_master_clocks[bus] = clock;
 
     return result;

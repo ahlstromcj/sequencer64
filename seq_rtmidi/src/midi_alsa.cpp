@@ -758,6 +758,7 @@ midi_alsa::api_stop ()
 
 /**
  *  Generates the MIDI clock, starting at the given tick value.
+ *  Also sets the event tag to 127 so the sequences won't remove it.
  *
  * \threadsafe
  *
@@ -768,10 +769,6 @@ midi_alsa::api_stop ()
 void
 midi_alsa::api_clock (midipulse /* tick */)
 {
-    /*
-     * Set the event tag to 127 so the sequences won't remove it.
-     */
-
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);                          /* clear event          */
     ev.type = SND_SEQ_EVENT_CLOCK;

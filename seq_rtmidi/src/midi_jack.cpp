@@ -865,7 +865,24 @@ midi_jack::api_stop ()
 void
 midi_jack::api_clock (midipulse /*tick*/)
 {
-    // No code needed yet
+    midi_message message;
+    message.push(EVENT_MIDI_CLOCK);
+    int nbytes = 1;
+    if (m_jack_data.valid_buffer())
+    {
+        int count1 = jack_ringbuffer_write
+        (
+            m_jack_data.m_jack_buffmessage, message.array(), 1
+        );
+        int count2 = jack_ringbuffer_write
+        (
+            m_jack_data.m_jack_buffsize, (char *) &nbytes, sizeof nbytes
+        );
+        if ((count1 <= 0) || (count2 <= 0))
+        {
+            errprint("JACK api_clock failed");
+        }
+    }
 }
 
 void

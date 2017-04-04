@@ -38,6 +38,7 @@ latex
 autom4te.cache/
 aux-files/
 compile/
+scratch/
 i18n/
 .deps/
 .libs/

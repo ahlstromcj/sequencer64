@@ -763,11 +763,11 @@ midi_alsa::api_stop ()
  * \threadsafe
  *
  * \param tick
- *      Provides the starting tick, unused in the ASLA implementation.
+ *      Provides the starting tick, unused in the ALSA implementation.
  */
 
 void
-midi_alsa::api_clock (midipulse /* tick */)
+midi_alsa::api_clock (midipulse /*tick*/)
 {
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);                          /* clear event          */

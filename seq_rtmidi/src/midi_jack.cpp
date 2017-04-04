@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-23
+ * \updates       2017-04-04
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -116,6 +116,11 @@
  *  guaranteed to be a complete MIDI event (the status byte will always be
  *  present, and no realtime events will interspered with the event).
  *  It returns 0 on success, or ENODATA if buffer is empty.
+ *
+ * MIDI clock:
+ *
+ *      We need to study the source code to the jack_midi_clock application to
+ *      make sure we're doing this correctly.
  */
 
 #include <sstream>
@@ -814,8 +819,12 @@ midi_jack::api_flush ()
 
 /**
  *  jack_transport_locate(), jack_transport_reposition(), or something else?
- *
  *  What is used by jack_assistant?
+ *
+ * \param tick
+ *      Provides the tick value to continue from.
+ *
+ *  The param beats is currently unused.
  */
 
 void
@@ -833,40 +842,81 @@ midi_jack::api_continue_from (midipulse tick, midipulse /*beats*/)
     if (jack_transport_locate(client_handle(), jack_frame) != 0)
         (void) info_message("jack api_continue_from() failed");
 
+    /*
+     * New code to work like the ALSA version, needs testing.  Related to
+     * issue #67.
+     */
+
+    send_byte(EVENT_MIDI_SONG_POS);
+    api_flush();
+    send_byte(EVENT_MIDI_CONTINUE);
     apiprint("api_continue_from", "jack");
 }
 
 /**
- * Starts this JACK client.   Note that the jack_assistant code (which
- * implements JACK transport) checks if JACK is running, but a check of the
- * JACK client handle here should be enough.
+ *  Starts this JACK client and sends MIDI start.   Note that the
+ *  jack_assistant code (which implements JACK transport) checks if JACK is
+ *  running, but a check of the JACK client handle here should be enough.
  */
 
 void
 midi_jack::api_start ()
 {
     jack_transport_start(client_handle());
+    send_byte(EVENT_MIDI_START);
     apiprint("jack_transport_start", "jack");
 }
 
 /**
- * Starts this JACK client.   Note that the jack_assistant code (which
- * implements JACK transport) checks if JACK is running, but a check of the
- * JACK client handle here should be enough.
+ *  Stops this JACK client and sends MIDI stop.   Note that the jack_assistant
+ *  code (which implements JACK transport) checks if JACK is running, but a
+ *  check of the JACK client handle here should be enough.
  */
 
 void
 midi_jack::api_stop ()
 {
     jack_transport_stop(client_handle());
+    send_byte(EVENT_MIDI_STOP);
     apiprint("jack_transport_stop", "jack");
 }
 
+/**
+ *  Sends a MIDI clock event.
+ *
+ * \param tick
+ *      The value of the tick to use, but currently unused.
+ */
+
 void
-midi_jack::api_clock (midipulse /*tick*/)
+midi_jack::api_clock (midipulse tick)
+{
+    send_byte(EVENT_MIDI_CLOCK, tick);
+}
+
+/**
+ *  An internal helper function for sending MIDI clock bytes.
+ *
+ * \param evbyte
+ *      Provides one of the following values (though any byte can be sent):
+ *
+ *          -   EVENT_MIDI_SONG_POS
+ *          -   EVENT_MIDI_CLOCK
+ *          -   EVENT_MIDI_START
+ *          -   EVENT_MIDI_CONTINUE
+ *          -   EVENT_MIDI_STOP
+ *
+ * \param tick
+ *      Provides the tick value, if applicable.  We will eventually implement
+ *      this, along with an "impossible" default value that means "ignore the
+ *      tick".
+ */
+
+void
+midi_jack::send_byte (midibyte evbyte, midipulse /*tick*/)
 {
     midi_message message;
-    message.push(EVENT_MIDI_CLOCK);
+    message.push(evbyte);
     int nbytes = 1;
     if (m_jack_data.valid_buffer())
     {
@@ -880,7 +930,7 @@ midi_jack::api_clock (midipulse /*tick*/)
         );
         if ((count1 <= 0) || (count2 <= 0))
         {
-            errprint("JACK api_clock failed");
+            errprint("JACK send_byte() failed");
         }
     }
 }

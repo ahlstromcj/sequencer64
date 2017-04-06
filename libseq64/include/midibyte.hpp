@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-23
- * \updates       2017-03-21
+ * \updates       2017-04-05
  * \license       GNU GPLv2 or above
  *
  *  These typedef specifications are intended to remove the ambiguity we have
@@ -59,23 +59,6 @@
  *  #define IS_SEQ64_MIDIPULSE_WRAPAROUND(x)  ((x) > (ULONG_MAX / 2))
  */
 
-/**
- *  We need a unique midipulse value that can be used to be indicate a bad,
- *  unusable pulse value.  This value should be modified if the typedef of
- *  midipulse is changed.  For a signed long value, -1 can be used.  For an
- *  unsigned long value, ULONG_MAX is probably best.  To avoid issues, when
- *  testing for this value, use the inline function is_null_midipulse().
- */
-
-#define SEQ64_NULL_MIDIPULSE            (-1)        /* ULONG_MAX */
-
-/**
- *  An unusable value for a midibyte item.  It can be used to indicate an
- *  invalid or unassigned buss number or channel number.
- */
-
-#define SEQ64_INVALID_MIDIBYTE          0xFF
-
 /*
  *  This namespace is not documented because it screws up the document
  *  processing done by Doxygen.
@@ -91,6 +74,16 @@ namespace seq64
  */
 
 typedef unsigned char midibyte;
+
+/*
+ *  An unusable value for a midibyte item.  It can be used to indicate an
+ *  invalid or unassigned buss number or channel number, but only in contexts
+ *  where 0xFF is not a usable value.
+ *
+ *  Currently no obvious use for this value, so commented out.
+ *
+ * #define SEQ64_INVALID_MIDIBYTE          0xFF
+ */
 
 /**
  *  Distinguishes a buss/bus number from other MIDI bytes.
@@ -111,6 +104,17 @@ typedef unsigned short midishort;
  */
 
 typedef unsigned long midilong;
+
+/**
+ *  We need a unique midipulse value that can be used to be indicate a bad,
+ *  unusable pulse value (type definition midipulse).  This value should be
+ *  modified if the typedef of midipulse is changed.  For a signed long value,
+ *  -1 can be used.  For an unsigned long value, ULONG_MAX is probably best.
+ *  To avoid issues, when testing for this value, use the inline function
+ *  is_null_midipulse().
+ */
+
+#define SEQ64_NULL_MIDIPULSE            (-1)        /* ULONG_MAX */
 
 /**
  *  Distinguishes a long value from the unsigned long values implicit in MIDI

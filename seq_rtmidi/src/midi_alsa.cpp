@@ -710,11 +710,13 @@ midi_alsa::api_continue_from (midipulse tick_parameter, midipulse beats)
     snd_seq_event_output(m_seq, &ev);
 
 #ifdef SEQ64_SHOW_API_CALLS
-    printf
-    (
-        "midi_alsa::continue_from(%ld) local port %d\n",
-        tick, m_local_addr_port
-    );
+    if (tick > 0)
+    {
+        printf
+        (
+            "midi_alsa::continue_from(%ld) local port %d\n", tick, m_local_addr_port
+        );
+    }
 #endif
 
 }

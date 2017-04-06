@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-04-04
+ * \updates       2017-04-05
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -897,14 +897,25 @@ midi_jack::api_clock (midipulse tick)
 /**
  *  An internal helper function for sending MIDI clock bytes.
  *
+ *  Based on the GitHub project "jack_midi_clock", we could try to bypass the
+ *  ringbuffer used here and convert the ticks to jack_nframes_t, and use the
+ *  following code:
+ *
+ *      uint8_t * buffer = jack_midi_event_reserve(port_buf, time, 1);
+ *      if (buffer)
+ *          buffer[0] = rt_msg;
+ *
+ *  We generally need to send the (realtime) MIDI clock messages Start, Stop,
+ *  and  Continue if the JACK transport state changed.
+ *
  * \param evbyte
  *      Provides one of the following values (though any byte can be sent):
  *
  *          -   EVENT_MIDI_SONG_POS
- *          -   EVENT_MIDI_CLOCK
- *          -   EVENT_MIDI_START
- *          -   EVENT_MIDI_CONTINUE
- *          -   EVENT_MIDI_STOP
+ *          -   EVENT_MIDI_CLOCK. The tick value is needed if...
+ *          -   EVENT_MIDI_START.  The tick value is not needed.
+ *          -   EVENT_MIDI_CONTINUE.  The tick value is needed if...
+ *          -   EVENT_MIDI_STOP.  The tick value is not needed.
  *
  * \param tick
  *      Provides the tick value, if applicable.  We will eventually implement
@@ -913,11 +924,17 @@ midi_jack::api_clock (midipulse tick)
  */
 
 void
-midi_jack::send_byte (midibyte evbyte, midipulse /*tick*/)
+midi_jack::send_byte (midibyte evbyte, midipulse tick)
 {
     midi_message message;
     message.push(evbyte);
     int nbytes = 1;
+
+    if (is_null_midipulse(tick))
+    {
+        // TODO
+    }
+
     if (m_jack_data.valid_buffer())
     {
         int count1 = jack_ringbuffer_write

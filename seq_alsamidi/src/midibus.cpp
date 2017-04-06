@@ -579,31 +579,23 @@ void
 midibus::api_continue_from (midipulse tick, midipulse beats)
 {
 #ifdef USE_THIS_SEQ24_CODE
-
     /*
      * Tell the device that we are going to start at a certain position.
-     */
-
-    long pp16th = (c_ppqn / 4);
-    long leftover = ( a_tick % pp16th );
-    long beats = ( a_tick / pp16th );
-    long starting_tick = a_tick - leftover;
-
-    /*
-     * Was there anything left? Then wait for next beat (16th note) to start
+     * Was there anything left over? Then wait for next beat (16th note) to start
      * clocking.
      */
 
-    if ( leftover > 0)
-    {
+    long pp16th = c_ppqn / 4;
+    long beats = tick / pp16th;
+    long leftover = tick % pp16th;
+    long starting_tick = tick - leftover;
+    if (leftover > 0)
         starting_tick += pp16th;
-    }
 
     m_lasttick = starting_tick - 1;
     if ( m_clock_type != e_clock_off )
     {
         ... covers the rest of the statements....
-
 #endif	// USE_THIS_SEQ24_CODE
 
     snd_seq_event_t ev;
@@ -628,14 +620,15 @@ midibus::api_continue_from (midipulse tick, midipulse beats)
     api_flush();
     snd_seq_event_output(m_seq, &ev);
 
+#ifdef SEQ64_SHOW_API_CALLS
     if (tick > 0)
     {
         printf
         (
-            "midibus::continue_from(%ld) local port %d\n",
-            tick, m_local_addr_port
+            "midibus::continue_from(%ld) local port %d\n", tick, m_local_addr_port
         );
     }
+#endif
 }
 
 /**

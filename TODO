@@ -1,6 +1,6 @@
 Current Hot To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-04-02
+2016-12-03 to 2017-04-06
 
 Rtmidi implementation issues to work out:
 
@@ -217,5 +217,10 @@ Active GitHub Issues:
     LCD display, and fullscreen mode (perhaps switchable by F11 and/or a
     command line option) would come very handy.
     Thank you for all the great work you've done so far, sir!
+
+    66 milkmuruku : [Feature request] 'Focus' an 'Close' options in right
+    click menu for sequences with opened edit windows 
+
+    67 no midiclock output on rtmidi 0.90.1
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

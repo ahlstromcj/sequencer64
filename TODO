@@ -18,6 +18,8 @@ Puzzles:
         Using a non-shift character seems to work in both, though in Seq64 the
         repeat-key rate seems to show up as an mildly annoying jitter.
     -   Toggle JACK keys does nothing.
+    -   Need to disable ALSA button on playback as well, and document it
+        in sequencer64-doc.
 
 Active GitHub Issues:
 

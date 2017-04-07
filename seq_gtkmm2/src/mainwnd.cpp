@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-02
+ * \updates       2017-04-06
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -863,7 +863,19 @@ mainwnd::timer_callback ()
     Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>(m_button_jack->get_child()));
     if (not_nullptr(lblptr))
         lblptr->set_text(label);
-#endif
+
+    if (perf().is_pattern_playing())
+    {
+        if (m_button_jack->get_sensitive())
+            m_button_jack->set_sensitive(false);
+    }
+    else
+    {
+        if (! m_button_jack->get_sensitive())
+            m_button_jack->set_sensitive(true);
+    }
+
+#endif  // SEQ64_SHOW_JACK_STATUS
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 

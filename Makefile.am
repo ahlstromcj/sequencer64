@@ -6,7 +6,7 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2016-12-03
+# \updates     2017-04-08
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -141,6 +141,10 @@ endif
 
 if BUILD_RTMIDI
 SUBDIRS = resources/pixmaps libseq64 seq_rtmidi seq_gtkmm2 Seq64rtmidi man
+endif
+
+if BUILD_RTCLI
+SUBDIRS = resources/pixmaps libseq64 seq_rtmidi Seq64cli man
 endif
 
 #*****************************************************************************

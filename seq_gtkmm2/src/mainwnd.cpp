@@ -1276,10 +1276,9 @@ mainwnd::file_save_as (bool do_export)
 void
 mainwnd::open_file (const std::string & fn)
 {
-    bool result;
     midifile f(fn);                     /* create object to represent file  */
     perf().clear_all();
-    result = f.parse(perf());           /* parsing handles old & new format */
+    bool result = f.parse(perf());      /* parsing handles old & new format */
     if (! result)
     {
         std::string errmsg = f.error_message();

@@ -45,7 +45,7 @@
 
 #include "cmdlineopts.hpp"              /* command-line functions           */
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
-#include "font.hpp"                     /* seq64::font (colored pixmaps)    */
+// #include "font.hpp"                     /* seq64::font (colored pixmaps)    */
 #include "gui_assistant_gtk2.hpp"       /* seq64::gui_assistant_gtk2        */
 #include "gui_palette_gtk2.hpp"         /* colors and "inverse" colors      */
 #include "lash.hpp"                     /* seq64::lash_driver functions     */
@@ -153,7 +153,7 @@ main (int argc, char * argv [])
                     ok = seq64::write_options_files(p);
             }
             else
-                printf("[auto-option-save is off, not saving config files]\n");
+                printf("[auto-option-save off, not saving config files]\n");
 
             seq64::delete_lash_driver();            /* deleted only exists  */
         }

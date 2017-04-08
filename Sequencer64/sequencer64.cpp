@@ -45,7 +45,7 @@
 
 #include "cmdlineopts.hpp"              /* command-line functions           */
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
-#include "font.hpp"                     /* seq64::font (colored pixmaps)    */
+// #include "font.hpp"                     /* seq64::font (colored pixmaps)    */
 #include "gui_assistant_gtk2.hpp"       /* seq64::gui_assistant_gtk2        */
 #include "gui_palette_gtk2.hpp"         /* colors and "inverse" colors      */
 #include "lash.hpp"                     /* seq64::lash_driver functions     */

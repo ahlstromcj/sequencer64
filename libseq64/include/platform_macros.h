@@ -11,7 +11,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-08-30
+ * \updates       2017-04-09
  * \license       GNU GPLv2 or above
  *
  *  Copyright (C) 2013-2015 Chris Ahlstrom <ahlstromcj@gmail.com>
@@ -281,6 +281,125 @@
 #if ! defined NDEBUG
 #define NDEBUG
 #endif
+#endif
+
+/**
+ *  Provides a check for error return codes from applications.  It is a
+ *  non-error value for most POSIX-conformant functions.  This macro defines
+ *  the integer value returned by many POSIX functions when they succeed --
+ *  zero (0).
+ *
+ * \note
+ *      Rather than testing this value directory, the macro functions
+ *      is_posix_success() and not_posix_success() should be used.  See the
+ *      descriptions of those macros for more information.
+ */
+
+#ifndef PLATFORM_POSIX_SUCCESS
+#define PLATFORM_POSIX_SUCCESS              0
+#endif
+
+/**
+ *
+ *  PLATFORM_POSIX_ERROR is returned from a string function when it has
+ *  processed an error.  It indicates that an error is in force.  Normally,
+ *  the caller then uses this indicator to set a class-based error message.
+ *  This macro defines the integer value returned by many POSIX functions when
+ *  they fail -- minus one (-1).  The EXIT_FAILURE and PLATFORM_POSIX_ERROR
+ *  macros also have the same value.
+ *
+ * \note
+ *      Rather than testing this value directory, the macro functions
+ *      is_posix_error() and not_posix_error() should be used.  See the
+ *      descriptions of those macros for more information.
+ */
+
+#ifndef PLATFORM_POSIX_ERROR
+#define PLATFORM_POSIX_ERROR              (-1)
+#endif
+
+/**
+ *    This macro tests the integer value against PLATFORM_POSIX_SUCCESS.
+ *    Other related macros are:
+ *
+ *       -  is_posix_success()
+ *       -  is_posix_error()
+ *       -  not_posix_success()
+ *       -  not_posix_error()
+ *       -  set_posix_success()
+ *       -  set_posix_error()
+ *
+ * \note
+ *      -   Some functions return values other than PLATFORM_POSIX_ERROR when
+ *          an error occurs.
+ *      -   Some functions return values other than PLATFORM_POSIX_SUCCESS
+ *          when the function succeeds.
+ *      -   Please refer to the online documentation for these quixotic
+ *          functions, and decide which macro one want to use for the test, if
+ *          any.
+ *      -   In some case, one might want to use a clearer test.  For example,
+ *          the socket functions return a result that is PLATFORM_POSIX_ERROR
+ *          (-1) if the function fails, but non-zero integer values are
+ *          returned if the function succeeds.  For these functions, the
+ *          is_valid_socket() and not_valid_socket() macros are much more
+ *          appropriate to use.
+ *
+ *//*-------------------------------------------------------------------------*/
+
+#define is_posix_success(x)      ((x) == PLATFORM_POSIX_SUCCESS)
+
+/**
+ *  This macro tests the integer value against PLATFORM_POSIX_ERROR (-1).
+ */
+
+#define is_posix_error(x)        ((x) == PLATFORM_POSIX_ERROR)
+
+/**
+ *  This macro tests the integer value against PLATFORM_POSIX_SUCCESS (0).
+ */
+
+#define not_posix_success(x)     ((x) != PLATFORM_POSIX_SUCCESS)
+
+/**
+ *  This macro tests the integer value against PLATFORM_POSIX_ERROR (-1).
+ */
+
+#define not_posix_error(x)       ((x) != PLATFORM_POSIX_ERROR)
+
+/**
+ *  This macro set the integer value to PLATFORM_POSIX_SUCCESS (0).  The
+ *  parameter must be an lvalue, as the assignment operator is used.
+ */
+
+#define set_posix_success(x)     ((x) = PLATFORM_POSIX_SUCCESS)
+
+/**
+ *  This macro set the integer value to PLATFORM_POSIX_ERROR (-1).  The
+ *  parameter must be an lvalue, as the assignment operator is used.
+ */
+
+#define set_posix_error(x)       ((x) = PLATFORM_POSIX_ERROR)
+
+/**
+ *  Provides a wrapper for chdir() and _chdir().  Yet another ANSI versus ISO
+ *  battle.  (USA versus Europe?  The Fed versus the EU?)
+ */
+
+#ifdef PLATFORM_POSIX_API
+#define CHDIR       chdir
+#else
+#define CHDIR       _chdir
+#endif
+
+/**
+ *  This macro provides a portable name for getcwd() [POSIX] and _getcwd()
+ *  [Win32, Microsoft compiler].
+ */
+
+#ifdef PLATFORM_POSIX_API
+#define GETCWD      getcwd
+#else
+#define GETCWD      _getcwd
 #endif
 
 #endif                  /* SEQ64_PLATFORM_MACROS_H */

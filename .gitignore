@@ -7,6 +7,7 @@
 
 Makefile
 Makefile.in
+Seq64cli/seq64cli
 Sequencer64/sequencer64
 Seq64portmidi/seq64portmidi
 Seq64rtmidi/seq64

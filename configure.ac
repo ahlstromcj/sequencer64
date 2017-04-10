@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-04-08
+dnl \update        2017-04-10
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -274,10 +274,15 @@ dnl     AC_MSG_ERROR(Essential library libgtkmm-3.0 not found))
 AC_CHECK_LIB(sigc-2.0, main,,
     AC_MSG_ERROR(Essential library libsigc++-2.0 not found))
 
-dnl Checks for header files.
+dnl Checks for header files.  Added some more to support daemonization.
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(getopt.h)
+AC_CHECK_HEADERS([getopt.h])
+AC_CHECK_HEADERS([string.h])
+AC_CHECK_HEADERS([stdarg.h stdio.h stddef.h stdlib.h string.h])
+AC_CHECK_HEADERS([limits.h ctype.h sys/time.h time.h errno.h])
+AC_CHECK_HEADERS([errno.h sys/sysctl.h])
+AC_CHECK_HEADERS([syslog.h unistd.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
@@ -314,6 +319,8 @@ AC_PROG_CXX
 AC_PROG_CXXCPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
+
+dnl     [AC_DEFINE(HAVE_SYSLOG_H) LIBS="$LIBS $lib"; break]
 
 dnl 5.c. Mingw support.
 dnl

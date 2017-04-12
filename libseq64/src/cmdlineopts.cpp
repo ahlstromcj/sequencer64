@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-02-24
+ * \updates       2017-04-12
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -573,17 +573,13 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 'L':
             seq64::rc().lash_support(true);
-            printf("Activating LASH support.\n");
+            printf("[Activating LASH support]\n");
             break;
 
         case 'l':
             seq64::rc().legacy_format(true);
             seq64::rc().filter_by_channel(false);
-            printf
-            (
-                "Setting legacy seq24 file format for configuration, "
-                "writing, and recording.\n"
-            );
+            printf("[Setting legacy seq24 format/operation]\n");
             break;
 
         case 'M':
@@ -598,7 +594,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 'N':
             seq64::rc().with_jack_midi(false);
-            printf("Deactivating JACK MIDI.\n");
+            printf("[Deactivating JACK MIDI]\n");
             break;
 
         case 'n':
@@ -621,12 +617,12 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 'R':
             seq64::rc().reveal_alsa_ports(false);
-            printf("Showing user-configured ALSA ports.\n");
+            printf("[Showing user-configured ALSA ports]\n");
             break;
 
         case 'r':
             seq64::rc().reveal_alsa_ports(true);
-            printf("Showing native ALSA ports.\n");
+            printf("[Showing native ALSA ports]\n");
             break;
 
         case 'S':
@@ -639,7 +635,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 't':
             seq64::rc().with_jack_midi(true);
-            printf("Activating JACK MIDI.\n");
+            printf("[Activating native JACK MIDI]\n");
             break;
 
         case 'U':
@@ -678,7 +674,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
         if (appname == "seq24")
         {
             seq64::rc().legacy_format(true);
-            printf("Setting legacy seq24 file format.\n");
+            printf("[Setting legacy seq24 format/operation]\n");
         }
         result = optind;
     }

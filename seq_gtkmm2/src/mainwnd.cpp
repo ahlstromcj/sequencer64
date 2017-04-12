@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-06
+ * \updates       2017-04-12
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -72,6 +72,7 @@
 #include <cerrno>
 #include <cstring>
 #include <stdio.h>                      /* snprintf()                   */
+// #include <glib.h>                       /* g_log_set_always_fatal()     */
 #include <gtk/gtkversion.h>
 #include <gtkmm/aboutdialog.h>
 #include <gtkmm/adjustment.h>
@@ -270,6 +271,16 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_call_seq_eventedit    (false)                 /* new ca 2016-05-19    */
 {
     /*
+     * Trying to debug a way out of a weird GTK freeze-up that occurs if
+     * Alt-F (or other menu hotkeys) is pressed before clicking in the GUI.
+     */
+
+#ifdef PLATFORM_DEBUG
+    GLogLevelFlags f = GLogLevelFlags(G_LOG_LEVEL_CRITICAL|G_LOG_LEVEL_WARNING);
+    g_log_set_always_fatal(f);
+#endif
+
+    /*
      * This provides the application icon, seen in the title bar of the
      * window decoration.
      */
@@ -280,14 +291,13 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     update_window_title();                          /* main window          */
 
     m_menubar->items().push_front(MenuElem("_File", *m_menu_file));
+    populate_menu_file();
     m_menubar->items().push_back(MenuElem("_Edit", *m_menu_edit));
+    populate_menu_edit();
     m_menubar->items().push_back(MenuElem("_View", *m_menu_view));
+    populate_menu_view();
     m_menubar->items().push_back(MenuElem("_Help", *m_menu_help));
-
-    populate_menu_file ();
-    populate_menu_edit ();
-    populate_menu_view ();
-    populate_menu_help ();
+    populate_menu_help();
 
     /**
      * Top panel items, including the logo (updated for the new version of
@@ -626,12 +636,12 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     mainvbox->pack_start(*contentvbox);
     add(*mainvbox);                         /* add main layout box (this->) */
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
-    // show_all();                          /* show everything              */
+//  show_all();                             /* show everything              */
     m_timeout_connect = Glib::signal_timeout().connect
     (
         mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
     );
-    show_all();                          /* works here as well           */
+    show_all();                             /* works here as well           */
     install_signal_handlers();
 }
 
@@ -2343,14 +2353,18 @@ mainwnd::populate_menu_file ()
     (
         MenuElem
         (
-            "Save _as...",
+            "Save _as...", Gtk::AccelKey("<control><shift>S"),
             sigc::bind(mem_fun(*this, &mainwnd::file_save_as), false)
         )
     );
     m_menu_file->items().push_back(SeparatorElem());
     m_menu_file->items().push_back
     (
-        MenuElem("_Import MIDI...", mem_fun(*this, &mainwnd::file_import_dialog))
+        MenuElem
+        (
+            "_Import MIDI...", Gtk::AccelKey("<control>I"),
+            mem_fun(*this, &mainwnd::file_import_dialog)
+        )
     );
 
     /*
@@ -2362,14 +2376,18 @@ mainwnd::populate_menu_file ()
     (
         MenuElem
         (
-            "E_xport song as MIDI...",
+            "E_xport song as MIDI...", Gtk::AccelKey("<control><shift>I"),
             sigc::bind(mem_fun(*this, &mainwnd::file_save_as), true)
         )
     );
     m_menu_file->items().push_back(SeparatorElem());
     m_menu_file->items().push_back
     (
-        MenuElem("O_ptions...", mem_fun(*this, &mainwnd::options_dialog))
+        MenuElem
+        (
+            "O_ptions...", Gtk::AccelKey("<control>B"),
+            mem_fun(*this, &mainwnd::options_dialog)
+        )
     );
     m_menu_file->items().push_back(SeparatorElem());
     m_menu_file->items().push_back

@@ -1379,6 +1379,7 @@ public:
     bool is_sequence_in_edit (int seq);
     void clear_sequence_triggers (int seq);
     void print_triggers () const;
+    void print_busses () const;
 
     /**
      *  The rough opposite of launch(); it doesn't stop the threads.  A minor
@@ -1396,7 +1397,7 @@ public:
 
     midipulse get_tick () const
     {
-        return m_tick;              /* printf("tick = %ld\n", m_tick); */
+        return m_tick;
     }
 
     /**

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-03-25
+ * \updates       2017-04-13
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -688,6 +688,16 @@ class user_settings
      */
 
     const int mc_baseline_ppqn;
+
+    /**
+     *  Indicates if the application should be daemonized.  All options that
+     *  begin with "option_" are options specific to a particular version of
+     *  Sequencer64.  We don't anticipate having a lot of such options,
+     *  so there's no need for a separate class to handle them.  These options
+     *  are flagged on the command-line by the strings "-o" or "--option".
+     */
+
+    bool m_user_option_daemonize;
 
 public:
 
@@ -1390,6 +1400,15 @@ public:
         return mc_baseline_ppqn;
     }
 
+    /**
+     * \getter m_user_option_daemonize
+     */
+
+    bool option_daemonize () const
+    {
+        return m_user_option_daemonize;
+    }
+
 public:         // used in main application module and the userfile class
 
     /**
@@ -1457,6 +1476,15 @@ public:         // used in main application module and the userfile class
     void use_more_icons (bool flag)
     {
         m_use_more_icons = flag;
+    }
+
+    /**
+     * \setter m_user_option_daemonize
+     */
+
+    void option_daemonize (bool flag)
+    {
+        m_user_option_daemonize = flag;
     }
 
     void midi_ppqn (int ppqn);

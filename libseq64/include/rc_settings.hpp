@@ -178,6 +178,13 @@ private:
 
     std::string m_app_client_name;
 
+    /**
+     *  Indicates if the application should be daemonized.  All options that
+     *  begin with "option_" are options specific to a particular version of
+     *  Sequencer64.  We don't anticipate having a lot of such options,
+     *  though.
+     */
+
 public:
 
     rc_settings ();

@@ -27,6 +27,31 @@
  *  daemon.  There are large differences between POSIX daemons and Win32
  *  services.  Thus, this module is currently Linux-specific.
  *
+ *  The quick-and-dirty story on creating a daemon.
+ *
+ *      -#  Fork off the parent process.
+ *      -#  Change file mode mask (umask)
+ *      -#  Open any logs for writing.
+ *      -#  Create a unique Session ID (SID)
+ *      -#  Change the current working directory to a safe place.
+ *      -#  Close standard file descriptors.
+ *      -#  Enter actual daemon code.
+ *
+ *  This module handles all of the above.  Things not yet handled:
+ *
+ *      -#  Generation of various helpful files:
+ *          -   PID file
+ *          -   Lock file
+ *          -   Error and information output file (though we do log some
+ *              information via the syslog).
+ *      -#  Thorough setting of the environment.
+ *      -#  Thorough handling of user IDs and groups.
+ *      -#  Redirection of the standard outputs to files.
+ *
+ *  See this project for an application that does all of the above:
+ *
+ *      https://github.com/bmc/daemonize
+ *
  * \todo
  *      There is a service wrapper available under Win32.  It is called
  *      "srvhost.exe".  At this time, we *still* don't know how to use it, but
@@ -64,7 +89,8 @@ namespace seq64
 /**
  *  Sets the current directory for the application.  A wrapper replacement for
  *  chdir() or _chdir().  It sets the current working directory in the
- *  application.
+ *  application.  This function is necessary in order to make sure the current
+ *  working directory is a safe place to work.
  *
  * \return
  *      Returns true if the path name is good, and the chdir() call succeeded.
@@ -202,7 +228,7 @@ daemonize (const std::string & appname, const std::string & cwd)
    uint32_t result = 0;
    s_app_name.clear();                       /* blank out the base app name   */
    if (! appname.empty())
-      s_app_name = appname;                  /* copy the base app name     */
+      s_app_name = appname;                  /* copy the base app name        */
 
    pid_t pid = fork();                       /* 1. fork the parent process    */
    if (is_posix_error(pid))                  /*    -1 process creation failed */

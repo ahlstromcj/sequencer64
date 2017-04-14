@@ -4606,11 +4606,22 @@ perform::playback_action (playback_action_t p, bool songmode)
 void
 perform::print_triggers () const
 {
-    for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high */
+    for (int s = 0; s < m_sequence_high; ++s)
     {
         if (is_active(s))
             m_seqs[s]->print_triggers();
     }
+}
+
+/**
+ *  Shows all the triggers of all the sequences.
+ */
+
+void
+perform::print_busses () const
+{
+    if (not_nullptr(m_master_bus))
+        m_master_bus->print();
 }
 
 #ifdef SEQ64_STAZED_TRANSPOSE

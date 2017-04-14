@@ -541,7 +541,7 @@ mastermidibase::get_midi_in_bus_name (bussbyte bus)
  */
 
 void
-mastermidibase::print ()
+mastermidibase::print () const
 {
     m_inbus_array.print();
     m_outbus_array.print();

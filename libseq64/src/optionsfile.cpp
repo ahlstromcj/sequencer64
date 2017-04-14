@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-25
+ * \updates       2017-04-12
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1378,7 +1378,7 @@ optionsfile::write (const perform & p)
     file << "\n"
         "[last-used-dir]\n\n"
         "# Last used directory:\n\n"
-        << rc().last_used_dir() << "\n\n"
+        << rc().last_used_dir() << "      # last_used_dir and current dir\n\n"
         ;
 
     file

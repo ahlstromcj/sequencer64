@@ -237,4 +237,22 @@ Active GitHub Issues:
 
     67 no midiclock output on rtmidi 0.90.1
 
+Upgrades:
+
+    -o, --options:
+
+        We want to support app-specific options:
+
+        seq64cli:
+
+            -   daemonize.  Need to figure out when to daemonize, and
+                to what value the current working directory should be
+                set [e.g. rc().last_used_dir], or do we need another
+                directory option value?
+            -   file list ?
+
+        seq64rtmidi:
+
+            -   no GUI (daemonize)? :-D
+
 # vim: sw=4 ts=4 wm=4 et ft=sh

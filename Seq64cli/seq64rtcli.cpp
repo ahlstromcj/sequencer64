@@ -24,7 +24,7 @@
  * \library       seq64rtcli application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-04-07
- * \updates       2017-04-08
+ * \updates       2017-04-14
  * \license       GNU GPLv2 or above
  *
  *  This application is seq64 without a GUI, control must be done via MIDI.
@@ -40,6 +40,7 @@
 #endif
 
 #include "cmdlineopts.hpp"              /* command-line functions           */
+#include "daemonize.hpp"                /* seqg4::daemonize()               */
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "gui_assistant.hpp"            /* seq64::gui_assistant base class  */
 #include "keys_perform.hpp"             /* seq64::keys_perform              */
@@ -134,9 +135,35 @@ main (int argc, char * argv [])
         std::string errmessage;                     /* just in case!        */
         ok = seq64::parse_options_files(p, errmessage, argc, argv);
         optionindex = seq64::parse_command_line_options(p, argc, argv);
+
+        /*
+         * EXPERIMENTAL:  May need to be moved earlier in the process,
+         * somehow.
+
+        TODO:
+        Dump the following option values to console:
+            Output buss number and device on that buss
+            Input busses, names, and if active.
+         */
+
+        uint32_t usermask = 0;
+        if (seq64::usr().option_daemonize())
+        {
+            printf("Forking to background...\n");
+            usermask = seq64::daemonize(SEQ64_APP_NAME, ".");
+        }
         p.launch(seq64::usr().midi_ppqn());         /* set up performance   */
         if (ok)
         {
+            if (! seq64::usr().option_daemonize())
+            {
+                /*
+                 * Show information on the busses to help the user diagnose
+                 * any configuration issues.
+                 */
+
+                p.print_busses();
+            }
             if (optionindex < argc)                 /* MIDI filename given? */
             {
                 std::string fn = argv[optionindex];
@@ -195,6 +222,13 @@ main (int argc, char * argv [])
                 seq64::delete_lash_driver();        /* deleted only exists  */
             }
         }
+
+        /*
+         * EXPERIMENTAL:
+         */
+
+        if (seq64::usr().option_daemonize())
+            seq64::undaemonize(usermask);
     }
     return ok ? EXIT_SUCCESS : EXIT_FAILURE ;
 }

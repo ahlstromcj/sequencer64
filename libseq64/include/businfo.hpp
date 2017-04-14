@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-02-19
+ * \updates       2017-04-14
  * \license       GNU GPLv2 or above
  *
  *  The businfo module defines the businfo and busarray classes so that we can
@@ -115,6 +115,10 @@ public:
         // No code
     }
 
+    /**
+     *  Deletes and nullifies the m_bus pointer.
+     */
+
     void remove ()
     {
         if (not_nullptr(m_bus))
@@ -124,15 +128,27 @@ public:
         }
     }
 
+    /**
+     * \getter m_bus pointer, const version
+     */
+
     const midibus * bus () const
     {
         return m_bus;
     }
 
+    /**
+     * \getter m_bus pointer
+     */
+
     midibus * bus ()
     {
         return m_bus;
     }
+
+    /**
+     * \getter m_active
+     */
 
     bool active () const
     {
@@ -140,6 +156,10 @@ public:
     }
 
     bool initialize ();
+
+    /**
+     * \getter m_initialized
+     */
 
     bool initialized () const
     {
@@ -232,6 +252,10 @@ private:
         bus()->sysex(ev);
     }
 
+private:
+
+    void print () const;
+
 };          // class businfo
 
 /**
@@ -284,7 +308,7 @@ public:
     void set_all_clocks ();
     clock_e get_clock (bussbyte bus);
     std::string get_midi_bus_name (int bus);        // full version
-    void print ();
+    void print () const;
     void port_exit (int client, int port);
     bool set_input (bussbyte bus, bool inputing);
     void set_all_inputs ();

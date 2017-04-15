@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-04
+ * \updates       2017-04-15
  * \license       GNU GPLv2 or above
  *
  *  We found a couple of unused members in this module and removed them.
@@ -131,15 +131,24 @@ configfile::line_after (std::ifstream & file, const std::string & tag)
     file.clear();
     file.seekg(0, std::ios::beg);
     file.getline(m_line, sizeof(m_line));
-    while (! file.eof())
+    while (file.good())                 /* includes the EOF check           */
     {
         result = strncmp(m_line, tag.c_str(), tag.length()) == 0;
         if (result)
             break;
         else
-            file.getline(m_line, sizeof(m_line));
+        {
+            if (file.bad())
+            {
+                errprint("bad file stream reading config file");
+            }
+            else
+                file.getline(m_line, sizeof(m_line));
+        }
     }
-    (void) next_data_line(file);
+    if (result)
+        result = next_data_line(file);
+
     return result;
 }
 

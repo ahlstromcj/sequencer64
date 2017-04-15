@@ -3640,7 +3640,8 @@ perform::input_func ()
                 if (master_bus().get_midi_event(&ev))
                 {
                     /*
-                     * Used when starting from the beginning of the song.
+                     * Used when starting from the beginning of the song.  Obey
+                     * the MIDI time clock.
                      */
 
                     if (ev.get_status() == EVENT_MIDI_START) // MIDI Time Clock

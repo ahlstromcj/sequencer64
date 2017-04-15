@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-12
+ * \updates       2017-04-14
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -791,7 +791,7 @@ optionsfile::write (const perform & p)
         "#\n"
         "# 'on/off' enables/disables (1/0) the MIDI control for the pattern.\n"
         "# 'invert' (1/0) causes the opposite if data is outside the range.\n"
-        "# 'status' is by MIDI event to match (channel is ignored).\n"
+        "# 'status' is by MIDI event to match (channel is NOT ignored).\n"
         "# 'd0' is the first data value.  Example: if status is 144 (Note On),\n"
         "# then d0 represents Note 0.\n"
         "# 'd1min'/'d1max' are the range of second values that should match.\n"

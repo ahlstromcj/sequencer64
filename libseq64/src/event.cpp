@@ -290,9 +290,10 @@ event::transpose_note (int tn)
  *      will be stored without the channel nybble.  This is necessary since
  *      the channel is appended by midibus::play() based on the track.
  *
- *      Instead of adding a "record" parameter to set_status(), we provide a
- *      more specific function, set_status_keep_channel(), for use in the
- *      mastermidibus class.
+ *  Instead of adding a "record" parameter to set_status(), we provide a more
+ *  specific function, set_status_keep_channel(), for use in the mastermidibus
+ *  class.  This usage also has the side-effect of allowing the usage of
+ *  channel in the MIDI-control feature.
  *
  * \param status
  *      The status byte, perhaps read from a MIDI file or edited in the

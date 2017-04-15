@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-27
+ * \updates       2017-04-15
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -693,7 +693,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                     d0 = read_byte();                     /* was data[0]      */
                     d1 = read_byte();                     /* was data[1]      */
-                    if (eventcode == EVENT_NOTE_ON && d1 == 0)
+                    if (is_note_off_velocity(eventcode, d1))
                         e.set_status(EVENT_NOTE_OFF, channel); /* vel 0==off  */
 
                     e.set_data(d0, d1);                   /* set data and add */

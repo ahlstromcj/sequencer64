@@ -1441,7 +1441,6 @@ midi_in_jack::api_get_midi_event (event * inev)
             inev->set_status_keep_channel(mm[0]);
             inev->set_data(mm[1], mm[2]);
 
-#if 0
             /*
              *  Some keyboards send Note On with velocity 0 for Note Off, so
              *  we take care of that situation here by creating a Note Off
@@ -1451,10 +1450,8 @@ midi_in_jack::api_get_midi_event (event * inev)
              *  more confusing, but faster.
              */
 
-            inev->set_data(mm[1], mm[2]);
             if (inev->is_note_off_recorded())
                 inev->set_status_keep_channel(EVENT_NOTE_OFF);
-#endif
         }
         else
         {
@@ -1465,11 +1462,10 @@ midi_in_jack::api_get_midi_event (event * inev)
             /**
              *  We will only get EVENT_SYSEX on the first packet of MIDI data;
              *  the rest we have to poll for.  SysEx processing is currently
-             *  disabled.
+             *  disabled.  The code that follows has a big bug!
              */
 
             midibyte buffer[0x1000];        /* temporary buffer for Sysex   */
-
             inev->set_sysex_size(bytes);
             if (buffer[0] == EVENT_MIDI_SYSEX)
             {

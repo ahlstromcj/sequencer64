@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-05
+ * \updates       2017-04-15
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -945,7 +945,7 @@ public:
         return
         (
             m_status == EVENT_NOTE_ON &&
-            (m_data[1] & EVENT_CLEAR_CHAN_MASK) == 0
+            m_data[1] == 0                      // back-ported BUG FIX!
         );
     }
 

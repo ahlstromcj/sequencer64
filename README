@@ -1,6 +1,6 @@
 README for Sequencer64 0.90.2 (Native JACK)
 Chris Ahlstrom
-2015-09-10 to 2017-04-06 (initial work started in July of 2015)
+2015-09-10 to 2017-04-15 (initial work started in July of 2015)
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot to see some visible
@@ -34,6 +34,9 @@ that can be built, as noted above.
 Major new updates:
 
     -   Version 0.90.2:
+        -   BACKPORTED a BUG FIX from wip 0.91.0 to fix issue with
+            detecting Note On velocity 0!
+        -   Fixed weird parsing bug in configfile module.
         -   Fixed incomplete implementation of MIDI stop, start, continue, and
             song-position events, issue #67.
         -   Extended MIDI controls for Stop / Pause / Start, and coarse BPM

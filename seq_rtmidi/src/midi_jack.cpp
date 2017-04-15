@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-04-05
+ * \updates       2017-04-15
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -1441,20 +1441,18 @@ midi_in_jack::api_get_midi_event (event * inev)
             inev->set_status_keep_channel(mm[0]);
             inev->set_data(mm[1], mm[2]);
 
-#if 0
             /*
              *  Some keyboards send Note On with velocity 0 for Note Off, so
              *  we take care of that situation here by creating a Note Off
              *  event, with the channel nybble preserved. Note that we call
              *  event :: set_status_keep_channel() instead of using stazed's
              *  set_status function with the "record" parameter.  A little
-             *  more confusing, but faster.
+             *  more confusing, but faster. BACKPORTED BUG FIX.
              */
 
             inev->set_data(mm[1], mm[2]);
             if (inev->is_note_off_recorded())
                 inev->set_status_keep_channel(EVENT_NOTE_OFF);
-#endif
         }
         else
         {

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-04-08
+ * \updates       2017-04-18
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -4330,12 +4330,20 @@ perform::toggle_other_seqs (int seqnum, bool isshiftkey)
                     sequence_playing_toggle(s);
             }
         }
+
+#if 0
+        \change ca 2017-04-18 Issue #71.
+        This code causes issue #71, where Live mode does not work correctly,
+        and it also toggles the muting status in the song/ performance window!
+        This code was never meant to be activated :-(
+
         else
         {
             sequence * seq = get_sequence(seqnum);
             if (not_nullptr(seq))
                 seq->toggle_song_mute();
         }
+#endif
     }
     return result;
 }

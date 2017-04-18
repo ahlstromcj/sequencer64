@@ -1,6 +1,6 @@
 Current Hot To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-04-08
+2016-12-03 to 2017-04-18
 
 Rtmidi implementation issues to work out:
 
@@ -235,7 +235,18 @@ Active GitHub Issues:
     66 milkmuruku : [Feature request] 'Focus' an 'Close' options in right
     click menu for sequences with opened edit windows 
 
-    67 no midiclock output on rtmidi 0.90.1
+ *  67 no midiclock output on rtmidi 0.90.1
+
+    68 .......
+
+    69 milkmuruki : 'pass through' button activates 'record incoming', does
+    not pass MIDI through
+
+    70 milkmuruki : Hovering pointer over an active toggle button gives the
+    same graphic as an inactive button, confusing
+
+ *  71 milkmuruki : On start; activated patterns become inactive on play
+    (once)
 
 Upgrades:
 

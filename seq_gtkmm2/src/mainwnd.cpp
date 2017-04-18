@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-12
+ * \updates       2017-04-15
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -72,7 +72,6 @@
 #include <cerrno>
 #include <cstring>
 #include <stdio.h>                      /* snprintf()                   */
-// #include <glib.h>                       /* g_log_set_always_fatal()     */
 #include <gtk/gtkversion.h>
 #include <gtkmm/aboutdialog.h>
 #include <gtkmm/adjustment.h>
@@ -636,7 +635,6 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     mainvbox->pack_start(*contentvbox);
     add(*mainvbox);                         /* add main layout box (this->) */
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
-//  show_all();                             /* show everything              */
     m_timeout_connect = Glib::signal_timeout().connect
     (
         mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
@@ -1577,7 +1575,6 @@ mainwnd::about_dialog ()
     std::string apptag = seq_app_name();
     apptag += " ";
     apptag += seq_version();
-//  apptag += "\n";
 #else
     std::string apptag = SEQ64_APP_NAME " " SEQ64_VERSION; // "\n";
 #endif

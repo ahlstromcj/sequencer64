@@ -1,6 +1,10 @@
-Current Hot To-Do Items
+To-Do Items
 Chris Ahlstrom
 2016-12-03 to 2017-04-18
+
+Debian packaging:
+
+    -   Need a Sequencer64-debian project to hold packages for convenience.
 
 Rtmidi implementation issues to work out:
 

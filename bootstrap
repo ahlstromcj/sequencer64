@@ -37,8 +37,8 @@ CYGWIN=binmode
 export CYGWIN
 
 export SEQUENCER64_SCRIPT_EDIT_DATE="2017-04-07"
-export SEQUENCER64_LIBRARY_API_VERSION="0.91"
-export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.91.0"
+export SEQUENCER64_LIBRARY_API_VERSION="0.90"
+export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.90.0"
 
 #******************************************************************************
 #  Version info
@@ -88,7 +88,7 @@ M4DIR="m4"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.91-2017-04-07)
+Usage: ./bootstrap [options]                                 (0.90-2017-04-19)
 
    'bootstrap' sets up GNU automake support and libtool support for the
    Sequencer64 project, creating the 'configure' script.  It can also
@@ -106,7 +106,7 @@ Usage: ./bootstrap [options]                                 (0.91-2017-04-07)
  -am                 Configure to build sequencer64 (original ALSA version).
  -pm                 Configure to build seq64portmidi.
  -rm                 Configure to build seq64rtmidi (JACK version, the default).
- -rc                 Configure to build seq64cli (command-line rtmidi version).
+ -rc, -cli           Configure to build seq64cli (command-line rtmidi version).
  --help              Show this help text.
 
    The default bootstraps the projects.  Then one should run 'configure',
@@ -174,7 +174,7 @@ if [ $# -ge 1 ] ; then
             EXTRAFLAGS="--enable-rtmidi"
             ;;
 
-         --cli | -cli)
+         --cli | -cli | -rc)
             DORTCLI="yes"
             EXTRAFLAGS="--enable-cli"
             ;;

@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-04-15
+dnl \update        2017-04-19
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -20,7 +20,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.90$)dnl
-AC_INIT(Sequencer64, [0.91.0], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.90.3], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl Do we need the following?  No, but it cleans up a lot of warning messages.
@@ -51,7 +51,7 @@ AC_SUBST(PACKAGE)
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
 
-VERSION="0.91.0"
+VERSION="0.90.3"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -93,7 +93,7 @@ dnl      incremented.
 SEQUENCER64_API_MAJOR="0"
 AC_SUBST([SEQUENCER64_API_MAJOR])
 
-SEQUENCER64_API_MINOR="91"
+SEQUENCER64_API_MINOR="90"
 AC_SUBST([SEQUENCER64_API_MINOR])
 
 SEQUENCER64_API_PATCH="0"
@@ -656,8 +656,8 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-04-15"
-#define VERSION "0.91.0"
+#define VERSION_DATE_SHORT "2017-04-19"
+#define VERSION "0.90.3"
 
 )
 

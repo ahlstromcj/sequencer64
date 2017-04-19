@@ -1,0 +1,6 @@
+# Add this fragment to ~/.bashrc:
+
+DEBEMAIL=”ahlstromcj@gmail.com"
+DEBFULLNAME="Chris Ahlstrom"
+export DEBEMAIL DEBFULLNAME
+

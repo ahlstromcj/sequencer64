@@ -1,5 +1,11 @@
 #!/usr/bin/make -f
 # -*- mode: makefile; coding: utf-8 -*-
+#
+# See debhelper(9).  Enables output of every command that modifies files on the
+# build system.
+#
+# DH_VERBOSE = 1
+# export DH_OPTIONS=-v
 
 LDFLAGS+=-Wl,--as-needed
 

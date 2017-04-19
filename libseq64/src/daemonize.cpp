@@ -3,7 +3,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2005-07-03 to 2007-08-21
- * \updates       2017-04-10
+ * \updates       2017-04-19
  * \license       GNU GPLv2 or above
  *
  *  Daemonization module of the POSIX C Wrapper (PSXC) library
@@ -109,7 +109,9 @@ set_current_directory (const std::string & path)
         int rcode = CHDIR(path.c_str());
         result = is_posix_success(rcode);
         if (! result)
+        {
             errprintf("could not set current directory '%s'", path.c_str());
+        }
     }
     return result;
 }
@@ -137,11 +139,14 @@ get_current_directory ()
       if (len > 0)
          result = cwd;
       else
+      {
          errprint("empty directory name returned");
+      }
    }
    else
+   {
       errprint("could not get current directory");
-
+   }
    return result;
 }
 

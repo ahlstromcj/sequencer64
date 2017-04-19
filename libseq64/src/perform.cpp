@@ -4331,19 +4331,19 @@ perform::toggle_other_seqs (int seqnum, bool isshiftkey)
             }
         }
 
-#if 0
-        \change ca 2017-04-18 Issue #71.
-        This code causes issue #71, where Live mode does not work correctly,
-        and it also toggles the muting status in the song/ performance window!
-        This code was never meant to be activated :-(
-
-        else
-        {
-            sequence * seq = get_sequence(seqnum);
-            if (not_nullptr(seq))
-                seq->toggle_song_mute();
-        }
-#endif
+        /*
+         * \change ca 2017-04-18 Issue #71.
+         * This code causes issue #71, where Live mode does not work correctly,
+         * and it also toggles the muting status in the song/ performance window!
+         * This code was never meant to be activated :-(
+         *
+         * else
+         * {
+         *     sequence * seq = get_sequence(seqnum);
+         *     if (not_nullptr(seq))
+         *         seq->toggle_song_mute();
+         * }
+         */
     }
     return result;
 }

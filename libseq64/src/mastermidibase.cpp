@@ -541,7 +541,7 @@ mastermidibase::get_midi_in_bus_name (bussbyte bus)
  */
 
 void
-mastermidibase::print ()
+mastermidibase::print () const
 {
     m_inbus_array.print();
     m_outbus_array.print();
@@ -662,7 +662,9 @@ mastermidibase::get_midi_event (event * ev)
  * \threadsafe
  *
  * \param state
- *      Provides the dumping-input (recording) state to be set.
+ *      Provides the dumping-input (recording) state to be set.  This value,
+ *      as used in seqedit, can represent the state of the thru button or the
+ *      record button.
  *
  * \param seq
  *      Provides the sequence object to be logged as the mastermidibase's

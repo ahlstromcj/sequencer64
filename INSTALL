@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.90.2
+INSTALL for Sequencer64 v. 0.90.3
 Chris Ahlstrom
-2015-09-10 to 2017-04-01
+2015-09-10 to 2017-04-19
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -420,7 +420,9 @@ DEPENDENCIES:
 
    Code:
 
+	  -  libasound2-dev
       -  libgtkmm-2.4-dev (dev is the header-file package)
+	  -  libgtk2.0-dev
       -  libsigc++-2.0-dev
       -  libjack-jackd2-dev
       -  liblash-compat-dev (optional)

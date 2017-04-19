@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-02-24
+ * \updates       2017-04-12
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -154,6 +154,12 @@ static struct option long_options [] =
     {"pass_sysex",          0, 0, '9'},                 /* underscores!     */
     {"showmidi",            0, 0, '@'},                 /* no separator!    */
 
+    /*
+     * New app-specific options, for easier expansion.
+     */
+
+    {"option",              0, 0, 'o'},                 /* expansion!       */
+
     {0, 0, 0, 0}                                        /* terminator       */
 };
 
@@ -162,18 +168,21 @@ static struct option long_options [] =
  *  getopt_long().  The following string keeps track of the characters used so
  *  far.  An 'x' means the character is used; an 'o' means it is used for the
  *  legacy spelling of the option, which uses underscores instead of hyphens.
- *  An 'a' indicates we could repurpose the key with minimal impact.
+ *  An 'a' indicates we could repurpose the key with minimal impact. An
+ *  asterisk indicates the option is reserved for application-specific
+ *  options.  Currently we will use it for options like "daemonize" in the
+ *  seq64cli application.
  *
 \verbatim
         0123456789 @AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz
-         ooooooooo oxxxxxx x  xx  xx xxx xxxxxxx  xx xxxxx xxxxa   x
+         ooooooooo oxxxxxx x  xx  xx xxx xxxxxxx *xx xxxxx xxxxa   x
 \endverbatim
  *
  *  Previous arg-list, items missing! "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"
  */
 
 static const std::string s_arg_list =
-    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNnPpq:RrtSsU:uVvx:"     /* modern args      */
+    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNno:Ppq:RrtSsU:uVvx:"   /* modern args      */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -183,7 +192,7 @@ static const std::string s_arg_list =
 
 static const char * const s_help_1a =
 SEQ64_APP_NAME " v " SEQ64_VERSION
-" A significant reboot of the seq24 live sequencer.\n"
+" A reboot of the seq24 live sequencer.\n"
 "Usage: " SEQ64_APP_NAME " [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message and exit.\n"
@@ -268,6 +277,11 @@ static const char * const s_help_3 =
 "                            extension is added if needed.\n"
 "   -c, --config basename    Change both 'rc' and 'usr' files.  Any extension\n"
 "                            provided is stripped starting at the last period.\n"
+"   -o, --option optoken     Provides app-specific options for expansion.  The\n"
+"                            options supported are:\n"
+"\n"
+" seq64cli:    daemonize     Makes this application fork to the background.\n"
+"              no-daemonize  Makes this application not fork to the background.\n"
 "\n"
     ;
 
@@ -573,17 +587,13 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 'L':
             seq64::rc().lash_support(true);
-            printf("Activating LASH support.\n");
+            printf("[Activating LASH support]\n");
             break;
 
         case 'l':
             seq64::rc().legacy_format(true);
             seq64::rc().filter_by_channel(false);
-            printf
-            (
-                "Setting legacy seq24 file format for configuration, "
-                "writing, and recording.\n"
-            );
+            printf("[Setting legacy seq24 format/operation]\n");
             break;
 
         case 'M':
@@ -598,12 +608,21 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 'N':
             seq64::rc().with_jack_midi(false);
-            printf("Deactivating JACK MIDI.\n");
+            printf("[Deactivating JACK MIDI]\n");
             break;
 
         case 'n':
             seq64::rc().lash_support(false);
             printf("Deactivating LASH support.\n");
+            break;
+
+        case 'o':
+            if (std::string(optarg) == "daemonize")
+                usr().option_daemonize(true);
+            else if (std::string(optarg) == "no-daemonize")
+                usr().option_daemonize(false);
+            else
+                printf("Non-fatal error:  unsupport --option value\n");
             break;
 
         case 'P':
@@ -621,12 +640,12 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 'R':
             seq64::rc().reveal_alsa_ports(false);
-            printf("Showing user-configured ALSA ports.\n");
+            printf("[Showing user-configured ALSA ports]\n");
             break;
 
         case 'r':
             seq64::rc().reveal_alsa_ports(true);
-            printf("Showing native ALSA ports.\n");
+            printf("[Showing native ALSA ports]\n");
             break;
 
         case 'S':
@@ -639,7 +658,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 't':
             seq64::rc().with_jack_midi(true);
-            printf("Activating JACK MIDI.\n");
+            printf("[Activating native JACK MIDI]\n");
             break;
 
         case 'U':
@@ -678,7 +697,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
         if (appname == "seq24")
         {
             seq64::rc().legacy_format(true);
-            printf("Setting legacy seq24 file format.\n");
+            printf("[Setting legacy seq24 format/operation]\n");
         }
         result = optind;
     }

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-25
+ * \updates       2017-04-13
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -150,9 +150,9 @@ userfile::parse (perform & /* a_perf */)
          * [user-midi-bus-definitions]
          */
 
-        line_after(file, "[user-midi-bus-definitions]");    /* find the tag  */
         int buses = 0;
-        sscanf(m_line, "%d", &buses);                       /* atavistic!    */
+        if (line_after(file, "[user-midi-bus-definitions]"))
+            sscanf(m_line, "%d", &buses);                    /* atavistic!    */
 
         /*
          * [user-midi-bus-x]
@@ -161,7 +161,9 @@ userfile::parse (perform & /* a_perf */)
         for (int bus = 0; bus < buses; ++bus)
         {
             std::string label = make_section_name("user-midi-bus", bus);
-            line_after(file, label);
+            if (! line_after(file, label))
+                break;
+
             if (usr().add_bus(m_line))
             {
                 (void) next_data_line(file);
@@ -191,9 +193,9 @@ userfile::parse (perform & /* a_perf */)
      * [user-instrument-definitions]
      */
 
-    line_after(file, "[user-instrument-definitions]");
     int instruments = 0;
-    sscanf(m_line, "%d", &instruments);
+    if (line_after(file, "[user-instrument-definitions]"))
+        sscanf(m_line, "%d", &instruments);
 
     /*
      * [user-instrument-x]
@@ -202,7 +204,9 @@ userfile::parse (perform & /* a_perf */)
     for (int i = 0; i < instruments; ++i)
     {
         std::string label = make_section_name("user-instrument", i);
-        line_after(file, label);
+        if (! line_after(file, label))
+            break;
+
         if (usr().add_instrument(m_line))
         {
             char ccname[SEQ64_LINE_MAX];
@@ -253,113 +257,115 @@ userfile::parse (perform & /* a_perf */)
     if (! rc().legacy_format())
     {
         int scratch = 0;
-        line_after(file, "[user-interface-settings]");
-        sscanf(m_line, "%d", &scratch);
-        usr().grid_style(scratch);
-
-        (void) next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().grid_brackets(scratch);
-
-        (void) next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().mainwnd_rows(scratch);
-
-        (void) next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().mainwnd_cols(scratch);
-
-        (void) next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().max_sets(scratch);
-
-        (void) next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().mainwid_border(scratch);
-
-        (void) next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().mainwid_spacing(scratch);
-
-        (void) next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().control_height(scratch);
-
-        (void) next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().zoom(scratch);
-
-        /*
-         * This boolean affects the behavior of the scale, key, and background
-         * sequence features, but their actual values are stored in the MIDI
-         * file, not in the "user" configuration file.
-         */
-
-        (void) next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().global_seq_feature(scratch != 0);
-
-        /*
-         * The user-interface font is now selectable at run time.  Old versus
-         * new font.
-         */
-
-        (void) next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().use_new_font(scratch != 0);
-
-        (void) next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().allow_two_perfedits(scratch != 0);
-
-        if (next_data_line(file))
+        if (line_after(file, "[user-interface-settings]"))
         {
             sscanf(m_line, "%d", &scratch);
-            usr().perf_h_page_increment(scratch);
-        }
+            usr().grid_style(scratch);
 
-        if (next_data_line(file))
-        {
+            (void) next_data_line(file);
             sscanf(m_line, "%d", &scratch);
-            usr().perf_v_page_increment(scratch);
-        }
+            usr().grid_brackets(scratch);
 
-        /*
-         *  Here, we start checking the lines, on the theory that these
-         *  very new (2016-02-14) items might mess up people who already have
-         *  older Sequencer64 "user" configuration files.
-         */
+            (void) next_data_line(file);
+            sscanf(m_line, "%d", &scratch);
+            usr().mainwnd_rows(scratch);
 
-        if (next_data_line(file))
-        {
-            sscanf(m_line, "%d", &scratch);                 /* now an int   */
-            usr().progress_bar_colored(scratch);            /* pick a color */
+            (void) next_data_line(file);
+            sscanf(m_line, "%d", &scratch);
+            usr().mainwnd_cols(scratch);
+
+            (void) next_data_line(file);
+            sscanf(m_line, "%d", &scratch);
+            usr().max_sets(scratch);
+
+            (void) next_data_line(file);
+            sscanf(m_line, "%d", &scratch);
+            usr().mainwid_border(scratch);
+
+            (void) next_data_line(file);
+            sscanf(m_line, "%d", &scratch);
+            usr().mainwid_spacing(scratch);
+
+            (void) next_data_line(file);
+            sscanf(m_line, "%d", &scratch);
+            usr().control_height(scratch);
+
+            (void) next_data_line(file);
+            sscanf(m_line, "%d", &scratch);
+            usr().zoom(scratch);
+
+            /*
+             * This boolean affects the behavior of the scale, key, and
+             * background sequence features, but their actual values are
+             * stored in the MIDI file, not in the "user" configuration file.
+             */
+
+            (void) next_data_line(file);
+            sscanf(m_line, "%d", &scratch);
+            usr().global_seq_feature(scratch != 0);
+
+            /*
+             * The user-interface font is now selectable at run time.  Old
+             * versus new font.
+             */
+
+            (void) next_data_line(file);
+            sscanf(m_line, "%d", &scratch);
+            usr().use_new_font(scratch != 0);
+
+            (void) next_data_line(file);
+            sscanf(m_line, "%d", &scratch);
+            usr().allow_two_perfedits(scratch != 0);
+
             if (next_data_line(file))
             {
                 sscanf(m_line, "%d", &scratch);
-                usr().progress_bar_thick(scratch != 0);
+                usr().perf_h_page_increment(scratch);
             }
+
             if (next_data_line(file))
             {
                 sscanf(m_line, "%d", &scratch);
-                if (scratch <= 1)                           /* boolean?     */
+                usr().perf_v_page_increment(scratch);
+            }
+
+            /*
+             *  Here, we start checking the lines, on the theory that these
+             *  very new (2016-02-14) items might mess up people who already
+             *  have older Sequencer64 "user" configuration files.
+             */
+
+            if (next_data_line(file))
+            {
+                sscanf(m_line, "%d", &scratch);             /* now an int   */
+                usr().progress_bar_colored(scratch);        /* pick a color */
+                if (next_data_line(file))
                 {
-                    usr().inverse_colors(scratch != 0);
-                    if (next_data_line(file))
-                        sscanf(m_line, "%d", &scratch);     /* get redraw   */
+                    sscanf(m_line, "%d", &scratch);
+                    usr().progress_bar_thick(scratch != 0);
                 }
-                if (scratch < SEQ64_MINIMUM_REDRAW)
-                    scratch = SEQ64_MINIMUM_REDRAW;
-                else if (scratch > SEQ64_MAXIMUM_REDRAW)
-                    scratch = SEQ64_MAXIMUM_REDRAW;
+                if (next_data_line(file))
+                {
+                    sscanf(m_line, "%d", &scratch);
+                    if (scratch <= 1)                       /* boolean?     */
+                    {
+                        usr().inverse_colors(scratch != 0);
+                        if (next_data_line(file))
+                            sscanf(m_line, "%d", &scratch); /* get redraw   */
+                    }
+                    if (scratch < SEQ64_MINIMUM_REDRAW)
+                        scratch = SEQ64_MINIMUM_REDRAW;
+                    else if (scratch > SEQ64_MAXIMUM_REDRAW)
+                        scratch = SEQ64_MAXIMUM_REDRAW;
 
-                usr().window_redraw_rate(scratch);
-            }
-            if (next_data_line(file))
-            {
-                sscanf(m_line, "%d", &scratch);
-                if (scratch <= 1)                           /* boolean?     */
-                    usr().use_more_icons(scratch != 0);
+                    usr().window_redraw_rate(scratch);
+                }
+                if (next_data_line(file))
+                {
+                    sscanf(m_line, "%d", &scratch);
+                    if (scratch <= 1)                       /* boolean?     */
+                        usr().use_more_icons(scratch != 0);
+                }
             }
         }
         usr().normalize();    /* calculate derived values */
@@ -396,49 +402,64 @@ userfile::parse (perform & /* a_perf */)
 
     if (! rc().legacy_format())
     {
-        line_after(file, "[user-midi-settings]");
-        int scratch = 0;
-        sscanf(m_line, "%d", &scratch);
-        usr().midi_ppqn(scratch);
-
-        next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().midi_beats_per_bar(scratch);
-
-        float beatspm;
-        next_data_line(file);
-        sscanf(m_line, "%f", &beatspm);
-        usr().midi_beats_per_minute(midibpm(beatspm));
-
-        next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().midi_beat_width(scratch);
-
-        next_data_line(file);
-        sscanf(m_line, "%d", &scratch);
-        usr().midi_buss_override(char(scratch));
-
-        if (next_data_line(file))
+        if (line_after(file, "[user-midi-settings]"))
         {
+            int scratch = 0;
             sscanf(m_line, "%d", &scratch);
-            usr().velocity_override(scratch);
-        }
-        if (next_data_line(file))
-        {
+            usr().midi_ppqn(scratch);
+
+            next_data_line(file);
             sscanf(m_line, "%d", &scratch);
-            usr().bpm_precision(scratch);
+            usr().midi_beats_per_bar(scratch);
+
+            float beatspm;
+            next_data_line(file);
+            sscanf(m_line, "%f", &beatspm);
+            usr().midi_beats_per_minute(midibpm(beatspm));
+
+            next_data_line(file);
+            sscanf(m_line, "%d", &scratch);
+            usr().midi_beat_width(scratch);
+
+            next_data_line(file);
+            sscanf(m_line, "%d", &scratch);
+            usr().midi_buss_override(char(scratch));
+
+            if (next_data_line(file))
+            {
+                sscanf(m_line, "%d", &scratch);
+                usr().velocity_override(scratch);
+            }
+            if (next_data_line(file))
+            {
+                sscanf(m_line, "%d", &scratch);
+                usr().bpm_precision(scratch);
+            }
+            if (next_data_line(file))
+            {
+                float inc;
+                sscanf(m_line, "%f", &inc);
+                usr().bpm_step_increment(midibpm(inc));
+            }
+            if (next_data_line(file))
+            {
+                float inc;
+                sscanf(m_line, "%f", &inc);
+                usr().bpm_page_increment(midibpm(inc));
+            }
         }
-        if (next_data_line(file))
+
+        /*
+         * -o special options support.
+         */
+
+        if (line_after(file, "[user-options]"))
         {
-            float inc;
-            sscanf(m_line, "%f", &inc);
-            usr().bpm_step_increment(midibpm(inc));
-        }
-        if (next_data_line(file))
-        {
-            float inc;
-            sscanf(m_line, "%f", &inc);
-            usr().bpm_page_increment(midibpm(inc));
+            int scratch = 0;
+            if (next_data_line(file))
+                sscanf(m_line, "%d", &scratch);
+
+            usr().option_daemonize(scratch);
         }
     }
 
@@ -484,7 +505,7 @@ userfile::write (const perform & /* a_perf */ )
            "# Sequencer64 user configuration file (legacy Seq24 0.9.2 format)\n";
     }
     else
-        file << "# Sequencer64 0.90.2 (and above) user configuration file\n";
+        file << "# Sequencer64 0.90.3 (and above) user configuration file\n";
 
     file << "#\n"
         "# Created by reading the following file and writing it out via the\n"
@@ -872,7 +893,7 @@ userfile::write (const perform & /* a_perf */ )
     }
 
     /*
-     * [user-midi-settings]
+     * [user-midi-settings] and [user-options]
      */
 
     if (! rc().legacy_format())
@@ -971,6 +992,25 @@ userfile::write (const perform & /* a_perf */ )
 
         increment = usr().bpm_page_increment();
         file << increment << "       # bpm_page_increment\n";
+
+        /*
+         * [user-options]
+         */
+
+        file << "\n"
+            "[user-options]\n"
+            "\n"
+            "# These settings specify application-specific values that are\n"
+            "# set via the -o or --option switch, which help expand the number\n"
+            "# of options the Sequencer64 options can support.\n"
+            "\n"
+            "# The daemonize option is used in seq64cli to indicate that the\n"
+            "# application should be gracefully run as a service.\n"
+            "\n"
+            ;
+
+        int uscratch = usr().option_daemonize() ? 1 : 0 ;
+        file << uscratch << "       # option_daemonize\n";
     }
 
     /*

@@ -1,6 +1,10 @@
-Current Hot To-Do Items
+To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-04-06
+2016-12-03 to 2017-04-18
+
+Debian packaging:
+
+    -   Need a Sequencer64-debian project to hold packages for convenience.
 
 Rtmidi implementation issues to work out:
 
@@ -18,6 +22,8 @@ Puzzles:
         Using a non-shift character seems to work in both, though in Seq64 the
         repeat-key rate seems to show up as an mildly annoying jitter.
     -   Toggle JACK keys does nothing.
+    -   Need to disable ALSA button on playback as well, and document it
+        in sequencer64-doc.
 
 Active GitHub Issues:
 
@@ -33,6 +39,18 @@ Active GitHub Issues:
     14 ssj71 : [feature request] Plugin version
 
     16 F0rth : [feature request] script language
+
+    Just thought I'd pop in here to say I'd rather all sequencer64's features
+    be exposed via OSC such that the system could be scripted from any
+    language.
+
+    Just thought I'd pop in here to say I'd rather all sequencer64's features
+    be exposed via OSC such that the system could be scripted from any
+    language.
+
+    FYI ZynAddSubFX switched to a decoupled interface which uses OSC to
+    control everything in 2.5.x. Maybe you can get some useful info from
+    their code or contact them for any tips.
 
     27 teamblubee : [Question] OSS support and other things
 
@@ -221,6 +239,35 @@ Active GitHub Issues:
     66 milkmuruku : [Feature request] 'Focus' an 'Close' options in right
     click menu for sequences with opened edit windows 
 
-    67 no midiclock output on rtmidi 0.90.1
+ *  67 no midiclock output on rtmidi 0.90.1
+
+    68 .......
+
+    69 milkmuruki : 'pass through' button activates 'record incoming', does
+    not pass MIDI through
+
+    70 milkmuruki : Hovering pointer over an active toggle button gives the
+    same graphic as an inactive button, confusing
+
+ *  71 milkmuruki : On start; activated patterns become inactive on play
+    (once)
+
+Upgrades:
+
+    -o, --options:
+
+        We want to support app-specific options:
+
+        seq64cli:
+
+            -   daemonize.  Need to figure out when to daemonize, and
+                to what value the current working directory should be
+                set [e.g. rc().last_used_dir], or do we need another
+                directory option value?
+            -   file list ?
+
+        seq64rtmidi:
+
+            -   no GUI (daemonize)? :-D
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

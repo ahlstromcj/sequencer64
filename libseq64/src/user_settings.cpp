@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2017-03-25
+ * \updates       2017-04-12
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -199,7 +199,8 @@ user_settings::user_settings ()
 
     mc_min_zoom                 (SEQ64_MINIMUM_ZOOM),
     mc_max_zoom                 (SEQ64_MAXIMUM_ZOOM),
-    mc_baseline_ppqn            (SEQ64_DEFAULT_PPQN)
+    mc_baseline_ppqn            (SEQ64_DEFAULT_PPQN),
+    m_user_option_daemonize     (false)
 {
     // Empty body; it's no use to call normalize() here, see set_defaults().
 }
@@ -294,7 +295,8 @@ user_settings::user_settings (const user_settings & rhs)
 
     mc_min_zoom                 (rhs.mc_min_zoom),
     mc_max_zoom                 (rhs.mc_max_zoom),
-    mc_baseline_ppqn            (SEQ64_DEFAULT_PPQN)
+    mc_baseline_ppqn            (SEQ64_DEFAULT_PPQN),
+    m_user_option_daemonize     (false)
 {
     // Empty body; no need to call normalize() here.
 }
@@ -396,6 +398,8 @@ user_settings::operator = (const user_settings & rhs)
          * mc_max_zoom              = rhs.mc_max_zoom;
          * mc_baseline_ppqn         = rhs.mc_baseline_ppqn;
          */
+
+        m_user_option_daemonize = rhs.m_user_option_daemonize;
     }
     return *this;
 }
@@ -456,6 +460,7 @@ user_settings::set_defaults ()
      *  mc_baseline_ppqn
      */
 
+    m_user_option_daemonize = false;
     normalize();                            // recalculate derived values
 }
 

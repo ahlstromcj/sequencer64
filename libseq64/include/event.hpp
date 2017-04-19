@@ -28,12 +28,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-15
+ * \updates       2017-04-19
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
  *  values, or data values for MIDI events.  This class is also a base class,
  *  so that we can manage "editable events".
+ *
+ *  Note the new inline free function is_note_off_velocity().
  */
 
 #include <string>                       /* used in to_string()          */
@@ -158,6 +160,20 @@ const int EVENTS_ALL                    = -1;
 const int EVENTS_UNSELECTED             =  0;
 
 /**
+ *  This free function is used in the midifile module and in the
+ *  event::is_note_off_recorded() member function.
+ *
+ * \param status
+ *      The type of event, which might be EVENT_NOTE_ON.
+ */
+
+inline bool
+is_note_off_velocity (midibyte status, midibyte data)
+{
+    return status == EVENT_NOTE_ON && data == 0;
+}
+
+/**
  *  Provides events for management of MIDI events.
  *
  *  A MIDI event consists of 3 bytes:
@@ -196,8 +212,8 @@ private:
      *  This is the status byte without the channel. The channel is included
      *  when recording MIDI, but, once a sequence with a matching channel is
      *  found, the channel nybble is cleared for storage.  The channel will be
-     *  added back on the MIDI bus upon playback.  The high nibble = type of
-     *  event; The low nibble = channel.  Bit 7 is present in all status
+     *  added back on the MIDI bus upon playback.  The high nybble = type of
+     *  event; The low nybble = channel.  Bit 7 is present in all status
      *  bytes.
      */
 
@@ -504,8 +520,9 @@ public:
     /**
      *  This function is used in recording to preserve the input channel
      *  information for deciding what to do with an incoming MIDI event.
-     *  It replaces stazed's set_status() with the optional "record"
-     *  parameter.
+     *  It replaces stazed's set_status() that had an optional "record"
+     *  parameter.  This call allows channel to be detected and used in MIDI
+     *  control events.
      *
      * \param eventcode
      *      The status byte, generally read from the MIDI buss.
@@ -514,6 +531,11 @@ public:
     void set_status_keep_channel (midibyte eventcode)
     {
         m_status = eventcode;
+
+        // EXPERIMENTAL:  we need to set the channel here, otherwise it ends
+        // up as 0xFF, which is itself suspect.
+
+        set_channel(eventcode & EVENT_GET_CHAN_MASK);
     }
 
     /**
@@ -933,8 +955,16 @@ public:
 
     /**
      *  Some keyboards send Note On with velocity 0 for Note Off, so we
-     *  provide this function to test that during recording.  The channel
-     *  nybble is masked off before the test.
+     *  provide this function to test that during recording.
+     *
+     *  The channel nybble is masked off before the test, but this is
+     *  unnecessary since the velocity byte doesn't contain the channel!
+     *  And it is a nasty bug!
+     *
+     *  "(m_data[1] & EVENT_CLEAR_CHAN_MASK) == 0" is wrong!
+     *
+     *  "m_status == EVENT_NOTE_ON && m_data[1] == 0" replaced by an inline
+     *  function call for robustness.
      *
      * \return
      *      Returns true if the event is a Note On event with velocity of 0.
@@ -942,11 +972,7 @@ public:
 
     bool is_note_off_recorded () const
     {
-        return
-        (
-            m_status == EVENT_NOTE_ON &&
-            m_data[1] == 0                      // back-ported BUG FIX!
-        );
+        return is_note_off_velocity(m_status, m_data[1]);
     }
 
     void print () const;

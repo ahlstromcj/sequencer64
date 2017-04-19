@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ArdourMIDIBindings version="1.0.0" name="Akai APC40">
+<!-- 2017-11-04 Timothée Giet (animtim@gmail.com)            -->
+
+<!-- the faders are not motorized, but setting "yes" makes fader take control
+directly even if value is different-->
+<DeviceInfo bank-size="8" motorized="no"/>
+
+<Binding channel="1" ctl="07"  uri="/route/gain B1"/>
+<Binding channel="2" ctl="07"  uri="/route/gain B2"/>
+<Binding channel="3" ctl="07"  uri="/route/gain B3"/>
+<Binding channel="4" ctl="07"  uri="/route/gain B4"/>
+<Binding channel="5" ctl="07"  uri="/route/gain B5"/>
+<Binding channel="6" ctl="07"  uri="/route/gain B6"/>
+<Binding channel="7" ctl="07"  uri="/route/gain B7"/>
+<Binding channel="8" ctl="07"  uri="/route/gain B8"/>
+
+<Binding channel="1" ctl="14"  uri="/bus/gain master"/>
+
+<Binding channel="1" note="50"  uri="/route/mute B1" momentary="yes"/>
+<Binding channel="2" note="50"  uri="/route/mute B2" momentary="yes"/>
+<Binding channel="3" note="50"  uri="/route/mute B3" momentary="yes"/>
+<Binding channel="4" note="50"  uri="/route/mute B4" momentary="yes"/>
+<Binding channel="5" note="50"  uri="/route/mute B5" momentary="yes"/>
+<Binding channel="6" note="50"  uri="/route/mute B6" momentary="yes"/>
+<Binding channel="7" note="50"  uri="/route/mute B7" momentary="yes"/>
+<Binding channel="8" note="50"  uri="/route/mute B8" momentary="yes"/>
+
+<Binding channel="1" note="49"  uri="/route/solo B1" momentary="yes"/>
+<Binding channel="2" note="49"  uri="/route/solo B2" momentary="yes"/>
+<Binding channel="3" note="49"  uri="/route/solo B3" momentary="yes"/>
+<Binding channel="4" note="49"  uri="/route/solo B4" momentary="yes"/>
+<Binding channel="5" note="49"  uri="/route/solo B5" momentary="yes"/>
+<Binding channel="6" note="49"  uri="/route/solo B6" momentary="yes"/>
+<Binding channel="7" note="49"  uri="/route/solo B7" momentary="yes"/>
+<Binding channel="8" note="49"  uri="/route/solo B8" momentary="yes"/>
+
+<Binding channel="1" note="48"  uri="/route/recenable B1" momentary="yes"/>
+<Binding channel="2" note="48"  uri="/route/recenable B2" momentary="yes"/>
+<Binding channel="3" note="48"  uri="/route/recenable B3" momentary="yes"/>
+<Binding channel="4" note="48"  uri="/route/recenable B4" momentary="yes"/>
+<Binding channel="5" note="48"  uri="/route/recenable B5" momentary="yes"/>
+<Binding channel="6" note="48"  uri="/route/recenable B6" momentary="yes"/>
+<Binding channel="7" note="48"  uri="/route/recenable B7" momentary="yes"/>
+<Binding channel="8" note="48"  uri="/route/recenable B8" momentary="yes"/>
+
+<!-- use the left-right bank select buttons; I'm not sure yet what to do with
+top-down buttons-->
+<Binding msg="80 61 7f" function="prev-bank"/>
+<Binding msg="80 60 7f" function="next-bank"/>
+
+<Binding msg="80 5b 7f" function="transport-roll"/> 
+<Binding msg="80 5c 7f" function="transport-stop"/>
+<Binding msg="80 5d 7f" action="Transport/Record"/>
+
+<!-- use the Track Control pots for bank tracks pan control by default-->
+<Binding channel="1" ctl="48"  uri="/route/pandirection B1"/>
+<Binding channel="1" ctl="49"  uri="/route/pandirection B2"/>
+<Binding channel="1" ctl="50"  uri="/route/pandirection B3"/>
+<Binding channel="1" ctl="51"  uri="/route/pandirection B4"/>
+<Binding channel="1" ctl="52"  uri="/route/pandirection B5"/>
+<Binding channel="1" ctl="53"  uri="/route/pandirection B6"/>
+<Binding channel="1" ctl="54"  uri="/route/pandirection B7"/>
+<Binding channel="1" ctl="55"  uri="/route/pandirection B8"/>
+
+
+<!-- Remaining unassigned controls:
+
+-The 9x6 trigger buttons (they play notes with note-off on release. Each
+vertical strip sends notes from top to bottom: 35 36 37 38 39 34 (hex values)
+on the respective channel, except the last one sending 52 53 54 55 56 51 on
+channel 1.
+
+
+-Some note-on/note-off switch buttons with some labels:
+pan     (ch1 57)
+send a  (ch1 58)
+send b  (ch1 59)
+send c  (ch1 5a)
+
+
+-Some buttons with note-off on release:
+shift  (ch1 62)
+bank select top and down (ch1 5e 5f)
+tap tempo  (ch1 63)
+nudge -    (ch1 65)
+nudge +    (ch1 64)
+
+
+-The Device Control part, with 8 pots, 4 on/off buttons and 4 trigger buttons.
+All of them can use midi channel from 1 to 9 depending on selected button in
+"Track Selection".
+
+pots 1 to 8 (cc 10 11 12 13 14 15 16 17)
+
+clip/track      (note 3a)
+device on/off   (note 3b)
+<-              (note 3c)
+->              (note 3d)
+
+detail view     (note 3e)
+rec quant       (note 3f)
+midi overdub    (note 40)
+metronome       (note 41)
+
+
+-The crossfader (ch1 cc 0f)
+
+
+-The Cue Level pot, which sends stange controls (when turning to the right, it
+sends ch1 cc 2F with value depending on speed from 00 to 0f apparently, and
+when turning right the value is from 7f to 70).
+
+-->
+
+
+</ArdourMIDIBindings>

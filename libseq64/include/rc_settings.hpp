@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-02-11
+ * \updates       2017-04-08
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -177,6 +177,13 @@ private:
      */
 
     std::string m_app_client_name;
+
+    /**
+     *  Indicates if the application should be daemonized.  All options that
+     *  begin with "option_" are options specific to a particular version of
+     *  Sequencer64.  We don't anticipate having a lot of such options,
+     *  though.
+     */
 
 public:
 
@@ -400,6 +407,8 @@ public:
         return m_filename;
     }
 
+    void filename (const std::string & value);
+
     /**
      * \getter m_jack_session_uuid
      */
@@ -417,6 +426,8 @@ public:
     {
         return m_last_used_dir;
     }
+
+    void last_used_dir (const std::string & value);
 
     /**
      * \getter m_config_directory
@@ -638,9 +649,7 @@ protected:
 
     void device_ignore_num (int value);
     void interaction_method (interaction_method_t value);
-    void filename (const std::string & value);
     void jack_session_uuid (const std::string & value);
-    void last_used_dir (const std::string & value);
     void config_directory (const std::string & value);
     void set_config_files (const std::string & value);
     void config_filename (const std::string & value);
@@ -652,7 +661,7 @@ private:
 
     std::string home_config_directory () const;
 
-};
+};          // class rc_settings
 
 }           // namespace seq64
 

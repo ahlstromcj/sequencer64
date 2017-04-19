@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-02-19
+ * \updates       2017-04-14
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -166,6 +166,58 @@ businfo::initialize ()
         errprint("businfo(): null midibus pointer provided");
     }
     return result;
+}
+
+/**
+ *  Print some information about the MIDI bus.
+ */
+
+void
+businfo::print () const
+{
+    std::string flags;
+    if (bus()->is_virtual_port())
+        flags += " virtual";
+    else if (bus()->is_system_port())
+        flags += " system";
+
+    if (bus()->is_input_port())
+        flags += " input";
+    else
+        flags += " output";
+
+    if (active())
+        flags += " active";
+    else
+        flags += " inactive";
+
+    if (initialized())
+        flags += " initialized";
+    else
+        flags += " uninitialized";
+
+    if (bus()->is_input_port())
+    {
+        flags += " ";
+        flags += init_input() ? "inputting" : "not inputting" ;
+    }
+    else
+    {
+        flags += " clock ";
+        if (init_clock() == e_clock_off)
+            flags += "Off";
+        else if (init_clock() == e_clock_pos)
+            flags += "Pos";
+        else if (init_clock() == e_clock_mod)
+            flags += "Mod";
+        else
+            flags += "illegal!";
+    }
+    printf
+    (
+        "  %s:%s %s\n",
+        bus()->bus_name().c_str(), bus()->port_name().c_str(), flags.c_str()
+    );
 }
 
 /*
@@ -540,23 +592,16 @@ busarray::get_midi_bus_name (int bus)
 }
 
 /**
- *  Print some information about the available MIDI output busses.
+ *  Print some information about the available MIDI input or output busses.
  */
 
 void
-busarray::print ()
+busarray::print () const
 {
     printf("Available busses:\n");
-    std::vector<businfo>::iterator bi;
+    std::vector<businfo>::const_iterator bi;
     for (bi = m_container.begin(); bi != m_container.end(); ++bi)
-    {
-        printf
-        (
-            "%s:%s\n",
-            bi->bus()->bus_name().c_str(),
-            bi->bus()->port_name().c_str()
-        );
-    }
+        bi->print();
 }
 
 /**

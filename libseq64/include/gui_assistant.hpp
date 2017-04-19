@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-01-15
+ * \updates       2017-04-08
  * \license       GNU GPLv2 or above
  *
  */
@@ -76,13 +76,39 @@ public:
         // Empty body
     }
 
-    virtual void quit () = 0;
+    /**
+     *  Handles the GUI's exiting.  However, with the new command-line
+     *  support, we now need a default implementation that does nothing.
+     */
+
+    virtual void quit ()
+    {
+        // no code
+    }
 
 #ifdef SEQ64_JACK_SESSION
-    virtual void jack_idle_connect (jack_assistant & jack) = 0;
+
+    /**
+     *  Handles connecting the "idle" signal to the session-event function.
+     *  But we now need a default implementation that does nothing.
+     */
+
+    virtual void jack_idle_connect (jack_assistant & /*jack*/)
+    {
+        // no code
+    }
+
 #endif
 
-    virtual void lash_timeout_connect (lash * lashobject) = 0;
+    /**
+     *  Handles connecting the "timeout" signal to the process-event function.
+     *  But we now need a default implementation that does nothing.
+     */
+
+    virtual void lash_timeout_connect (lash * /*lashobject*/)
+    {
+        // no code
+    }
 
     /**
      * \getter m_keys_perform

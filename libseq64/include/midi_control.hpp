@@ -187,7 +187,9 @@ private:
     bool m_inverse_active;
 
     /**
-     *  Provides the value for the status.
+     *  Provides the value for the status.  Big question is, is the channel
+     *  included here?  Yes.  So the next question is, is it ignored?  We
+     *  don't think so.
      */
 
     int m_status;               // midibyte

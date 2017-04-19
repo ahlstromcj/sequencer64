@@ -1,6 +1,6 @@
-README for Sequencer64 0.90.2 (Native JACK)
+README for Sequencer64 0.90.3 (Native JACK)
 Chris Ahlstrom
-2015-09-10 to 2017-04-15 (initial work started in July of 2015)
+2015-09-10 to 2017-04-19 (initial work started in July of 2015)
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot to see some visible
@@ -16,6 +16,15 @@ Native JACK support: Seq64rtmidi/seq64
     JACK is not running.  See the INSTALL file for options.  See README.jack
     for basic instructions on native JACK until we can get the Sequencer64
     manual up-to-date.
+
+GUI-less native JACK support: Seq64rtmidi/seq64cli
+
+    This is the version above with no GUI code included.  Currently
+    controllable only via MIDI control events (start and stop in particular
+    must be set up), it relies on a good working configuration generated via
+    the GUI version (or edited by hand).  Also, currently the only way to load
+    the desired MIDI file is as the last argument on the command line.  We are
+    looking to add an OSC harness and command application eventually.
 
 Legacy Sequencer64: Sequencer64/sequencer64
 
@@ -33,6 +42,14 @@ that can be built, as noted above.
 
 Major new updates:
 
+    -   Version 0.90.3:
+        -   Added a console/daemon (no GUI) version, seq64cli. Configure this
+            one with "./bootstrap -er -cli".  Still a work in progress, many
+            issues remain.
+        -   Fixed a bug in detecting Note On events with 0 velocity.
+        -   Fixed issue #69, pass-thru button not working correctly
+        -   Fixed issue #71, bad handling of Live mode pattern clicks.
+        -   Updated the Debian package-creation "code".
     -   Version 0.90.2:
         -   BACKPORTED a BUG FIX from wip 0.91.0 to fix issue with
             detecting Note On velocity 0!

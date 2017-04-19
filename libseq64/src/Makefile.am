@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2017-03-14
+# \update      2017-04-04
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -147,6 +147,7 @@ libseq64_la_SOURCES = \
 	configfile.cpp \
 	controllers.cpp \
 	click.cpp \
+	daemonize.cpp \
 	easy_macros.cpp \
 	editable_event.cpp \
 	editable_events.cpp \

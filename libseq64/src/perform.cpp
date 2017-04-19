@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-03-30
+ * \updates       2017-04-18
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -425,9 +425,6 @@ perform::launch (int ppqn)
 
         if (activate())
         {
-#if 0
-            master_bus().swap();            /* reconcile with JACK ways */
-#endif
             launch_input_thread();
             launch_output_thread();
         }
@@ -968,11 +965,7 @@ perform::install_sequence (sequence * seq, int seqnum)
     bool result = false;
     if (not_nullptr(m_seqs[seqnum]))
     {
-        errprintf
-        (
-            "install_sequence(): m_seqs[%d] not null, deleting old sequence\n",
-            seqnum
-        );
+        errprintf("m_seqs[%d] not null, deleting old sequence\n", seqnum);
         delete m_seqs[seqnum];
         m_seqs[seqnum] = nullptr;
         if (m_sequence_count > 0)
@@ -981,7 +974,7 @@ perform::install_sequence (sequence * seq, int seqnum)
         }
         else
         {
-            errprint("install_sequence(): sequence counter already 0");
+            errprint("sequence counter already 0");
         }
         result = true;                  /* a modification occurred  */
     }
@@ -3397,7 +3390,7 @@ perform::handle_midi_control (int ctl, bool state)
             unset_mode_group_learn();
         break;
 
-    case c_midi_control_play_ss:                // Andy case; printf("play_ss\n");
+    case c_midi_control_play_ss:
 
         set_playing_screenset();
         break;
@@ -3647,7 +3640,8 @@ perform::input_func ()
                 if (master_bus().get_midi_event(&ev))
                 {
                     /*
-                     * Used when starting from the beginning of the song.
+                     * Used when starting from the beginning of the song.  Obey
+                     * the MIDI time clock.
                      */
 
                     if (ev.get_status() == EVENT_MIDI_START) // MIDI Time Clock
@@ -4336,12 +4330,20 @@ perform::toggle_other_seqs (int seqnum, bool isshiftkey)
                     sequence_playing_toggle(s);
             }
         }
-        else
-        {
-            sequence * seq = get_sequence(seqnum);
-            if (not_nullptr(seq))
-                seq->toggle_song_mute();
-        }
+
+        /*
+         * \change ca 2017-04-18 Issue #71.
+         * This code causes issue #71, where Live mode does not work correctly,
+         * and it also toggles the muting status in the song/ performance window!
+         * This code was never meant to be activated :-(
+         *
+         * else
+         * {
+         *     sequence * seq = get_sequence(seqnum);
+         *     if (not_nullptr(seq))
+         *         seq->toggle_song_mute();
+         * }
+         */
     }
     return result;
 }
@@ -4613,11 +4615,22 @@ perform::playback_action (playback_action_t p, bool songmode)
 void
 perform::print_triggers () const
 {
-    for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high */
+    for (int s = 0; s < m_sequence_high; ++s)
     {
         if (is_active(s))
             m_seqs[s]->print_triggers();
     }
+}
+
+/**
+ *  Shows all the triggers of all the sequences.
+ */
+
+void
+perform::print_busses () const
+{
+    if (not_nullptr(m_master_bus))
+        m_master_bus->print();
 }
 
 #ifdef SEQ64_STAZED_TRANSPOSE

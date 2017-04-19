@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2017-02-21
+# \update     	2017-04-07
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -36,7 +36,7 @@ export LANG
 CYGWIN=binmode
 export CYGWIN
 
-export SEQUENCER64_SCRIPT_EDIT_DATE="2017-02-21"
+export SEQUENCER64_SCRIPT_EDIT_DATE="2017-04-07"
 export SEQUENCER64_LIBRARY_API_VERSION="0.90"
 export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.90.0"
 
@@ -76,6 +76,7 @@ DOVERSION="no"
 DOALSAMIDI="yes"
 DOPORTMIDI="no"
 DORTMIDI="no"
+DORTCLI="no"
 EXTRAFLAGS=""
 LOGFILENAME=""
 M4DIR="m4"
@@ -87,7 +88,7 @@ M4DIR="m4"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.90-2017-02-21)
+Usage: ./bootstrap [options]                                 (0.90-2017-04-19)
 
    'bootstrap' sets up GNU automake support and libtool support for the
    Sequencer64 project, creating the 'configure' script.  It can also
@@ -105,6 +106,7 @@ Usage: ./bootstrap [options]                                 (0.90-2017-02-21)
  -am                 Configure to build sequencer64 (original ALSA version).
  -pm                 Configure to build seq64portmidi.
  -rm                 Configure to build seq64rtmidi (JACK version, the default).
+ -rc, -cli           Configure to build seq64cli (command-line rtmidi version).
  --help              Show this help text.
 
    The default bootstraps the projects.  Then one should run 'configure',
@@ -170,6 +172,11 @@ if [ $# -ge 1 ] ; then
          --rtmidi | -rm | --rm)
             DORTMIDI="yes"
             EXTRAFLAGS="--enable-rtmidi"
+            ;;
+
+         --cli | -cli | -rc)
+            DORTCLI="yes"
+            EXTRAFLAGS="--enable-cli"
             ;;
 
          --version)
@@ -480,7 +487,7 @@ Now run './configure' to configure Sequencer64 for compilation, or './configure
 
       --enable-debug=gdb  --disable-shared   --enable-silent-rules
       --disable-seq32jack --enable-alsamidi  --enable-rtmidi (default)
-      --enable-portmidi (experimental)
+      --enable-cli (no-GUI) --enable-portmidi (deprecated)
 
 E_O_F
       fi

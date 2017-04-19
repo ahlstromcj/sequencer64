@@ -1,6 +1,6 @@
 Sequencer64 Debian Instructions
 Chris Ahlstrom
-2015-09-10 to 2017-03-27
+2015-09-10 to 2017-04-19
 
 There is a concise, recent, and fairly complete guide to creating a "deb"
 package in the Debian package called "maint-guide", which stores different
@@ -16,7 +16,7 @@ of seq24, the process of creating a "deb" file is very simple.
 0. First build the project normally:
 
    a. ./bootstrap --full-clean
-   b. ./bootstrap -er       # enables and configures a Release build
+   b. ./bootstrap -er -rm   # enable & configure an "rtmidi" Release build
    c. make                  # optional, checks for build issues
 
 1. Make sure the command console current directory is the top directory
@@ -25,29 +25,38 @@ of seq24, the process of creating a "deb" file is very simple.
 2. Add a new entry to the debian/changelog to update the version number
    as appropriate for this build.
 
-        sequencer64 (0.90.2-0) unstable; urgency=low
+        sequencer64 (0.90.3-0) unstable; urgency=low
 
         * See the source-code ChangeLog for the full list of changes.
 
         -- Chris Ahlstrom <ahlstromcj@gmail.com>  Thu, 06 Oct 2016 12:00:00 +0400
 
-3. Run the following command (it can be a useful error check):
+3. Run the following commands (they can be useful error checks):
 
    $ debian/rules clean
+   $ debian/rules build
+
+   The build command also runs the (minimalist) test script.
 
 4. Run the following command:
 
    $ fakeroot debian/rules binary
 
    In the directory just above the top directory of the project, you will
-   find:
+   find something like the following:
    
-        sequencer64_0.90.2-2_amd64.deb, if built on a 64-bit system.
-        sequencer64_0.90.2-2_i386.deb, if built on a 32-bit system.
+        sequencer64_0.90.3-0_amd64.deb, if built on a 64-bit system.
+        sequencer64_0.90.3-0_i386.deb, if built on a 32-bit system.
 
 5. Run the following command again to get rid of all the build products:
 
    $ debian/rules clean
+
+   The following command is supposed to do all the steps, but our project,
+   being the "upstream" project, still has issues in some of the commands it
+   carries out:
+
+   $ dpkg-buildpackage -us -uc
 
 Dependencies:
 

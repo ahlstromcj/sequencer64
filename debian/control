@@ -17,9 +17,10 @@ Vcs-Browser: http://github.com/ahlstromcj/sequencer64.git
 
 Package: sequencer64
 Architecture: any
-Depends: ${shlibs:Depends},
- ${misc:Depends}
-Description: Live MIDI sequencer refactored from seq24 and sequencer24.
- Sequencer64 breaks the project into smaller libraries and modules for
- easier work, and adds many enhancements and fixes, including native JACK
- MIDI.
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Native JACK/ALSA MIDI live sequencer refactored from seq24.
+ The seq64 application provides a major upgrade to seq24, including support for
+ native JACK MIDI, SMF 0 files, a range of PPQN values, more MIDI controls,
+ more scales, chord-generation, expanded configuration options, pause,
+ event-editing window, tap-tempo, improved keystroke control, and many other
+ enhancements and fixes.

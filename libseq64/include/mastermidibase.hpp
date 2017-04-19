@@ -281,7 +281,7 @@ public:
     void init_clock (midipulse tick);
     void emit_clock (midipulse tick);
     void sysex (event * event);
-    void print ();
+    void print () const;
     void flush ();
     void set_sequence_input (bool state, sequence * seq);
     void dump_midi_input (event in);                    /* seq32 function */

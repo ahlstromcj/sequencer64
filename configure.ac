@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-04-06
+dnl \update        2017-04-19
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -20,7 +20,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.90$)dnl
-AC_INIT(Sequencer64, [0.90.2], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.90.3], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl Do we need the following?  No, but it cleans up a lot of warning messages.
@@ -51,7 +51,7 @@ AC_SUBST(PACKAGE)
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
 
-VERSION="0.90.2"
+VERSION="0.90.3"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -274,10 +274,15 @@ dnl     AC_MSG_ERROR(Essential library libgtkmm-3.0 not found))
 AC_CHECK_LIB(sigc-2.0, main,,
     AC_MSG_ERROR(Essential library libsigc++-2.0 not found))
 
-dnl Checks for header files.
+dnl Checks for header files.  Added some more to support daemonization.
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(getopt.h)
+AC_CHECK_HEADERS([getopt.h])
+AC_CHECK_HEADERS([string.h])
+AC_CHECK_HEADERS([stdarg.h stdio.h stddef.h stdlib.h string.h])
+AC_CHECK_HEADERS([limits.h ctype.h sys/time.h time.h errno.h])
+AC_CHECK_HEADERS([errno.h sys/sysctl.h])
+AC_CHECK_HEADERS([syslog.h unistd.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
@@ -314,6 +319,8 @@ AC_PROG_CXX
 AC_PROG_CXXCPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
+
+dnl     [AC_DEFINE(HAVE_SYSLOG_H) LIBS="$LIBS $lib"; break]
 
 dnl 5.c. Mingw support.
 dnl
@@ -424,19 +431,37 @@ dnl SUBDIRS variable.  Also see the latest versions of the midibus.hpp and
 dnl mastermidibus.hpp files in libseq64/include.
 
 AC_ARG_ENABLE(rtmidi,
-    [AS_HELP_STRING(--enable-rtmidi, [Enable RtMidi build])],
+    [AS_HELP_STRING(--enable-rtmidi, [Enable rtmidi build])],
     [rtmidi=$enableval],
     [rtmidi=yes])
 
 if test "$rtmidi" != "no"; then
     AC_MSG_RESULT([RtMidi build enabled.]);
-    AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if RtMidi support is enabled])
+    AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi support is enabled])
     AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
-    AM_CONDITIONAL([BUILD_ALSAMIDI], [0])
-    AM_CONDITIONAL([BUILD_PORTMIDI], [0])
+    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$disable = no])
+    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xyes])
+    AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
 else
-    AC_MSG_WARN([RtMidi build not enabled.]);
+    AC_MSG_WARN([rtmidi build not enabled.]);
+fi
+
+AC_ARG_ENABLE(cli,
+    [AS_HELP_STRING(--enable-cli, [Enable RtMidi command-line build])],
+    [cli=$enableval],
+    [cli=no])
+
+if test "$cli" != "no"; then
+    AC_MSG_RESULT([rtmidi CLI build enabled.]);
+    AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi support is enabled])
+    AC_DEFINE(APP_NAME, ["seq64cli"], [Names the CLI version of application])
+    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$disable = no])
+    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
+    AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
+    AM_CONDITIONAL([BUILD_RTCLI], [test x$cli = xyes])
+else
+    AC_MSG_WARN([rtmidi command-line build not enabled.]);
 fi
 
 dnl ALSA MIDI (legacy) support.
@@ -447,12 +472,13 @@ AC_ARG_ENABLE(alsamidi,
     [alsamidi=no])
 
 if test "$alsamidi" != "no"; then
-    AC_MSG_RESULT([Standard ALSA build enabled, can be overridden though.]);
+    AC_MSG_RESULT([Standard ALSA build enabled.]);
     AC_DEFINE(ALSAMIDI_SUPPORT, 1, [Indicates if ALSA MIDI support is enabled])
     AC_DEFINE(APP_NAME, ["sequencer64"], [Names legacy version of application])
     AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xyes])
-    AM_CONDITIONAL([BUILD_PORTMIDI], [0])
-    AM_CONDITIONAL([BUILD_RTMIDI], [0])
+    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
+    AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
+    AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
 else
     AC_MSG_WARN([Standard ALSA build not enabled.]);
 fi
@@ -468,12 +494,15 @@ if test "$portmidi" != "no"; then
     AC_MSG_RESULT([PortMidi build enabled.]);
     AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates if PortMidi support is enabled])
     AC_DEFINE(APP_NAME, ["seq64portmidi"], [Names this version of application])
-    AM_CONDITIONAL([BUILD_ALSAMIDI], [0])
+    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xyes])
-    AM_CONDITIONAL([BUILD_RTMIDI], [0])
+    AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
+    AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
 else
     AC_MSG_WARN([PortMidi build not enabled.]);
 fi
+
+AC_SUBST(APP_NAME)
 
 dnl Support for highlighting empty sequences (in yellow).  If enabled, the
 dnl macro SEQ64_HIGHLIGHT_EMPTY_SEQS is defined.  All macros produced by
@@ -627,8 +656,8 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-04-06"
-#define VERSION "0.90.2"
+#define VERSION_DATE_SHORT "2017-04-19"
+#define VERSION "0.90.3"
 
 )
 
@@ -714,15 +743,18 @@ AC_CONFIG_FILES([
  Sequencer64/Makefile
  Seq64portmidi/Makefile
  Seq64rtmidi/Makefile
+ Seq64cli/Makefile
  man/Makefile
 ])
 
 AC_OUTPUT
 
+AC_MSG_RESULT([$SEQ64_APP_NAME]);
+
 cat << E_O_F
 
-Now do 'make' to compile the Sequencer64-related projects.  Do 'make install'
-as root/sudo to install the Sequencer64 application.  Some tests can be run
+Now do 'make' to compile the selected application.  Do 'make install'
+as root/sudo to install the selected application.  Some tests can be run
 using the separate seq64-tests project.  Do 'make dist', etc. to create gzip
 and other archives.  To build the PDF documentation, make sure Doxygen and
 TexLive are installed, change to the doc/dox directory, and run './make_dox

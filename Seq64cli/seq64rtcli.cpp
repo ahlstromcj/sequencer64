@@ -24,7 +24,7 @@
  * \library       seq64rtcli application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-04-07
- * \updates       2017-04-14
+ * \updates       2017-04-23
  * \license       GNU GPLv2 or above
  *
  *  This application is seq64 without a GUI, control must be done via MIDI.
@@ -86,6 +86,18 @@ seq64_signal_handler (int signalnumber)
  *  The last thing is to override any other settings via the command-line
  *  parameters.
  *
+ * Daemon support:
+ *
+ *  Apart from the usual daemon stuff, we need to handle the following issues:
+ *
+ *      -#  Detecting the need for daemonizing and doing it before all the
+ *          normal configuration work is performed.
+ *      -#  Loading the initial MIDI file.  Does this filename need to be
+ *          grabbed before forking?  No, local variables are passed to the new
+ *          process.
+ *      -#  Setting the current-working directory.  Should it be grabbed from
+ *          the "rc" file?
+ *
  * \param argc
  *      The number of command-line parameters, including the name of the
  *      application as parameter 0.
@@ -101,20 +113,31 @@ seq64_signal_handler (int signalnumber)
 int
 main (int argc, char * argv [])
 {
+    uint32_t usermask = 0;                  /* used only in daemonization   */
+    bool stdio_rerouted = false;            /* used only in log-file option */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
+    if (seq64::process_o_options(argc, argv))
+    {
+        std::string logfile = seq64::usr().option_logfile();
+        if (! logfile.empty())
+        {
+            (void) seq64::reroute_stdio(logfile);
+            stdio_rerouted = true;
+        }
 
-    /*
-     * Set up objects that are specific to the Gtk-2 GUI.  Pass them to the
-     * perform constructor.  Then parse any command-line options to see if
-     * they might affect what gets read from the 'rc' or 'user' configuration
-     * files.  They will be parsed again later so that they can still override
-     * whatever other settings were made via the configuration files.
-     *
-     * However, we currently have a issue where the mastermidibus created by
+        if (seq64::usr().option_daemonize())
+        {
+            printf("Forking to background...\n");
+            usermask = seq64::daemonize(SEQ64_APP_NAME, ".");
+        }
+    }
+
+    /**
+     * We currently have a issue where the mastermidibus created by
      * the perform object gets the default PPQN value, because the "user"
      * configuration file has not been read at that point.  See the
-     * perfrom::launch() function.
+     * perform::launch() function.
      */
 
     seq64::keys_perform keys;                   /* keystroke support        */
@@ -124,6 +147,12 @@ main (int argc, char * argv [])
     bool is_help = seq64::help_check(argc, argv);
     bool ok = true;
     int optionindex = SEQ64_NULL_OPTION_INDEX;
+    if (! stdio_rerouted)                       /* not done already?        */
+    {
+        std::string logfile = seq64::usr().option_logfile();
+        if (! logfile.empty())
+            (void) seq64::reroute_stdio(logfile);
+    }
     if (! is_help)
     {
         /*
@@ -135,23 +164,6 @@ main (int argc, char * argv [])
         std::string errmessage;                     /* just in case!        */
         ok = seq64::parse_options_files(p, errmessage, argc, argv);
         optionindex = seq64::parse_command_line_options(p, argc, argv);
-
-        /*
-         * EXPERIMENTAL:  May need to be moved earlier in the process,
-         * somehow.
-
-        TODO:
-        Dump the following option values to console:
-            Output buss number and device on that buss
-            Input busses, names, and if active.
-         */
-
-        uint32_t usermask = 0;
-        if (seq64::usr().option_daemonize())
-        {
-            printf("Forking to background...\n");
-            usermask = seq64::daemonize(SEQ64_APP_NAME, ".");
-        }
         p.launch(seq64::usr().midi_ppqn());         /* set up performance   */
         if (ok)
         {
@@ -159,7 +171,7 @@ main (int argc, char * argv [])
             {
                 /*
                  * Show information on the busses to help the user diagnose
-                 * any configuration issues.
+                 * any configuration issues.  Still has ISSUES!
                  */
 
                 p.print_busses();

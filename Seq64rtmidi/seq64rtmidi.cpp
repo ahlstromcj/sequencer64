@@ -86,7 +86,7 @@ main (int argc, char * argv [])
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
 
-    /*
+    /**
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to the
      * perform constructor.  Then parse any command-line options to see if
      * they might affect what gets read from the 'rc' or 'user' configuration
@@ -96,7 +96,7 @@ main (int argc, char * argv [])
      * However, we currently have a issue where the mastermidibus created by
      * the perform object gets the default PPQN value, because the "user"
      * configuration file has not been read at that point.  See the
-     * perfrom::launch() function.
+     * perform::launch() function.
      */
 
     seq64::gui_assistant_gtk2 gui;              /* GUI-specific objects     */

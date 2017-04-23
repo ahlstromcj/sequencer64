@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-04-13
+ * \updates       2017-04-22
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -698,6 +698,20 @@ class user_settings
      */
 
     bool m_user_option_daemonize;
+
+    /**
+     *  If not empty, this file will be set up as the destination for all
+     *  logging done by the errprint(), infoprint(), warnprint(), and printf()
+     *  functions.  In other words, stdout and stderr will go to a log
+     *  file instead.  Unless a full path is provided, this filename will be a
+     *  base filename, with the path given by rc().config_directory()
+     *  prepended to it.  That path is normally ~/.config/sequencer64, but can
+     *  be modified on the command line via the -H (--home) option.
+     *
+     *  This file can also be specified by the "-o log=filename" option.
+     */
+
+    std::string m_user_option_logfile;
 
 public:
 
@@ -1409,6 +1423,8 @@ public:
         return m_user_option_daemonize;
     }
 
+    std::string option_logfile () const;
+
 public:         // used in main application module and the userfile class
 
     /**
@@ -1485,6 +1501,15 @@ public:         // used in main application module and the userfile class
     void option_daemonize (bool flag)
     {
         m_user_option_daemonize = flag;
+    }
+
+    /**
+     * \setter m_user_option_logfile
+     */
+
+    void option_logfile (const std::string & logfile)
+    {
+        m_user_option_logfile = logfile;
     }
 
     void midi_ppqn (int ppqn);

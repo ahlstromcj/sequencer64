@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2017-04-12
+ * \updates       2017-04-22
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -200,7 +200,8 @@ user_settings::user_settings ()
     mc_min_zoom                 (SEQ64_MINIMUM_ZOOM),
     mc_max_zoom                 (SEQ64_MAXIMUM_ZOOM),
     mc_baseline_ppqn            (SEQ64_DEFAULT_PPQN),
-    m_user_option_daemonize     (false)
+    m_user_option_daemonize     (false),
+    m_user_option_logfile       ()
 {
     // Empty body; it's no use to call normalize() here, see set_defaults().
 }
@@ -296,7 +297,8 @@ user_settings::user_settings (const user_settings & rhs)
     mc_min_zoom                 (rhs.mc_min_zoom),
     mc_max_zoom                 (rhs.mc_max_zoom),
     mc_baseline_ppqn            (SEQ64_DEFAULT_PPQN),
-    m_user_option_daemonize     (false)
+    m_user_option_daemonize     (false),
+    m_user_option_logfile       ()
 {
     // Empty body; no need to call normalize() here.
 }
@@ -400,6 +402,7 @@ user_settings::operator = (const user_settings & rhs)
          */
 
         m_user_option_daemonize = rhs.m_user_option_daemonize;
+        m_user_option_logfile = rhs.m_user_option_logfile;
     }
     return *this;
 }
@@ -461,6 +464,7 @@ user_settings::set_defaults ()
      */
 
     m_user_option_daemonize = false;
+    m_user_option_logfile.clear();
     normalize();                            // recalculate derived values
 }
 
@@ -1004,6 +1008,36 @@ user_settings::perf_v_page_increment (int inc)
     if (inc >= 1 && inc <= 18)
         m_v_perf_page_increment = inc;
 }
+
+/**
+ * \getter m_user_option_logfile
+ *
+ * \return
+ *      This function returns rc().config_directory() + m_user_option_logfile
+ *      if the latter does not contain a path marker ("/").  Otherwise, it
+ *      returns m_user_option_logfile, which must be a full path specification
+ *      to the desired log-file.
+ */
+
+std::string
+user_settings::option_logfile () const
+{
+    std::string result;
+    if (! m_user_option_logfile.empty())
+    {
+        std::size_t slashpos = m_user_option_logfile.find_first_of("/");
+        if (slashpos == std::string::npos)
+        {
+            result = rc().home_config_directory();
+            char lastchar = result[result.length() - 1];
+            if (lastchar != '/')
+                result += '/';
+        }
+        result += m_user_option_logfile;
+    }
+    return result;
+}
+
 
 /**
  *  Provides a debug dump of basic information to help debug a

@@ -4,8 +4,8 @@
 /**
  * \file          daemonize.hpp
  * \author        Chris Ahlstrom
- * \date          2005-07-03 to 2007-08-21
- * \updates       2017-04-10
+ * \date          2005-07-03 to 2007-08-21 (from xpc-suite project)
+ * \updates       2017-04-22
  * \license       GNU GPLv2 or above
  *
  *    Daemonization of POSIX C Wrapper (PSXC) library
@@ -40,9 +40,20 @@ namespace seq64
  *    These functions do a lot of the work of dealing with UNIX daemons.
  */
 
-extern uint32_t daemonize (const std::string & appname, const std::string & cwd);
+extern bool check_daemonize (int argc, char * argv []);
+extern uint32_t daemonize
+(
+    const std::string & appname,
+    const std::string & cwd         = ".",
+    int mask                        = 0
+);
 extern void undaemonize (uint32_t previous_umask);
 extern std::string get_current_directory ();
+extern bool reroute_stdio
+(
+    const std::string & logfile = "",
+    bool closem = false
+);
 
 }        // namespace seq64
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-02-11
+ * \updates       2017-04-22
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that

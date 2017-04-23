@@ -1,12 +1,14 @@
-README for Sequencer64 0.90.3 (Native JACK)
+README for Sequencer64 0.90.4 (Native JACK and CLI)
 Chris Ahlstrom
-2015-09-10 to 2017-04-19 (initial work started in July of 2015)
+2015-09-10 to 2017-04-23 (initial work started in July of 2015)
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot to see some visible
 change.  It is an old friend, we hope.  It maintains some
 backward-compatibility with seq24, with the --legacy option.  See
-https://github.com/ahlstromcj/sequencer64-doc.git.
+https://github.com/ahlstromcj/sequencer64-doc.git.  Also see
+https://github.com/ahlstromcj/sequencer64-packages.git for prebuilt
+Debian packages for 32-bit and 64-bit systems.
 
 Native JACK support: Seq64rtmidi/seq64
 
@@ -25,6 +27,8 @@ GUI-less native JACK support: Seq64rtmidi/seq64cli
     the GUI version (or edited by hand).  Also, currently the only way to load
     the desired MIDI file is as the last argument on the command line.  We are
     looking to add an OSC harness and command application eventually.
+    Also supports a "daemonize" option, and dumping information to a log-file
+    in the user configuration directory.
 
 Legacy Sequencer64: Sequencer64/sequencer64
 
@@ -42,6 +46,11 @@ that can be built, as noted above.
 
 Major new updates:
 
+    -   Version 0.90.4:
+        -   Replaces 0.91.0 for now.
+        -   Added usable "daemonize" and "log=file" options.
+        -   Improved the CLI version, still MIDI control only.  Still handles
+            only one MIDI file, passed on the command-line.
     -   Version 0.90.3:
         -   Added a console/daemon (no GUI) version, seq64cli. Configure this
             one with "./bootstrap -er -cli".  Still a work in progress, many

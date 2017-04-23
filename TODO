@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-04-18
+2016-12-03 to 2017-04-20
 
 Debian packaging:
 
@@ -24,6 +24,9 @@ Puzzles:
     -   Toggle JACK keys does nothing.
     -   Need to disable ALSA button on playback as well, and document it
         in sequencer64-doc.
+    -   No song, press Space to start.  The buttons disable.  Press space
+        again, and the buttons enable, though app is still playing (the pill
+        is moving.).
 
 Active GitHub Issues:
 
@@ -241,12 +244,12 @@ Active GitHub Issues:
 
  *  67 no midiclock output on rtmidi 0.90.1
 
-    68 .......
+ *  68 XRUNS ... (turned out to be realtime system settings for user)
 
-    69 milkmuruki : 'pass through' button activates 'record incoming', does
+ *  69 milkmuruki : 'pass through' button activates 'record incoming', does
     not pass MIDI through
 
-    70 milkmuruki : Hovering pointer over an active toggle button gives the
+ *  70 milkmuruki : Hovering pointer over an active toggle button gives the
     same graphic as an inactive button, confusing
 
  *  71 milkmuruki : On start; activated patterns become inactive on play

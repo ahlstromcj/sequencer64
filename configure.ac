@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-04-19
+dnl \update        2017-04-23
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -20,7 +20,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.90$)dnl
-AC_INIT(Sequencer64, [0.90.3], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.90.4], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl Do we need the following?  No, but it cleans up a lot of warning messages.
@@ -281,7 +281,7 @@ AC_CHECK_HEADERS([getopt.h])
 AC_CHECK_HEADERS([string.h])
 AC_CHECK_HEADERS([stdarg.h stdio.h stddef.h stdlib.h string.h])
 AC_CHECK_HEADERS([limits.h ctype.h sys/time.h time.h errno.h])
-AC_CHECK_HEADERS([errno.h sys/sysctl.h])
+AC_CHECK_HEADERS([fcntl.h sys/stat.h sys/sysctl.h])
 AC_CHECK_HEADERS([syslog.h unistd.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
@@ -656,8 +656,8 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-04-19"
-#define VERSION "0.90.3"
+#define VERSION_DATE_SHORT "2017-04-23"
+#define VERSION "0.90.4"
 
 )
 

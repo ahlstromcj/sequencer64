@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-04-12
+ * \updates       2017-04-23
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -84,7 +84,9 @@ namespace seq64
  */
 
 static const std::string versiontext =
-    SEQ64_APP_NAME " " SEQ64_GIT_VERSION " " __DATE__ "\n";
+    SEQ64_APP_NAME " " SEQ64_GIT_VERSION " "
+    SEQ64_VERSION_DATE_SHORT "\n"
+    ;
 
 /**
  *  A structure for command parsing that provides the long forms of
@@ -282,6 +284,8 @@ static const char * const s_help_3 =
 "\n"
 " seq64cli:    daemonize     Makes this application fork to the background.\n"
 "              no-daemonize  Makes this application not fork to the background.\n"
+"              log=filename  Redirect console output to a log file in the\n"
+"                            --home directory [$HOME/.config/sequencer64].\n"
 "\n"
     ;
 
@@ -296,6 +300,56 @@ static const char * const s_help_4 =
 "get saved to the configuration files when Sequencer64 exits.  See the\n"
 "user manual at https://github.com/ahlstromcj/sequencer64-doc.\n"
     ;
+
+/**
+ *  Gets a compound option argument.  An option argument is a value flagged on
+ *  the command line by the -o/--option options.  Each option has a value
+ *  associated with it, as the next argument on the command-line.  A compound
+ *  option is of the form name=value, of which one example is:
+ *
+ *      log=filename
+ *
+ *  This function extracts both the name and the value.  If the name is empty,
+ *  then the option is unsupported and should be ignored.  If the value is
+ *  empty, then there may be a default value to use.
+ *
+ * \param compound
+ *      The putative compound option.
+ *
+ * \param [out] optionname
+ *      This value is filled in with the name of the option-value, if there
+ *      is an equals sign in the \a compound parameter.
+ *
+ * \return
+ *      Returns the value part of the compound option, or just the compound
+ *      parameter is there is no '=' sign.  That is, it returns the
+ *      option-value.
+ *
+ * \sideeffect
+ *      The name portion is returned in the optionname parameter.
+ */
+
+static std::string
+get_compound_option
+(
+    const std::string & compound,
+    std::string & optionname
+)
+{
+    std::string value;
+    std::size_t eqpos = compound.find_first_of("=");
+    if (eqpos == std::string::npos)
+    {
+        optionname.clear();
+        value = compound;
+    }
+    else
+    {
+        optionname = compound.substr(0, eqpos); /* beginning to eqpos chars */
+        value = compound.substr(eqpos + 1);     /* rest of the string       */
+    }
+    return value;
+}
 
 /**
  *  Checks to see if the first option is a help or version argument, just so
@@ -345,6 +399,83 @@ help_check (int argc, char * argv [])
             printf(s_help_4);
             result = true;
             break;
+        }
+    }
+    return result;
+}
+
+/**
+ *  Checks the putative command-line arguments for any of the new "options"
+ *  options.  These are flagged by "-o" or "--option".  These options are then
+ *  passed to the user_settings module.  Multiple options can be supplied; the
+ *  whole command-line is processed.
+ *
+ * \param argc
+ *      The number of command-line parameters, including the name of the
+ *      application as parameter 0.
+ *
+ * \param argv
+ *      The array of pointers to the command-line parameters.
+ *
+ * \return
+ *      Returns true if any "options" option was found, and false otherwise.
+ *      If the options flags ("-o" or "--option") were found, but were not
+ *      valid options, then we break out of processing and return false.
+ */
+
+bool
+process_o_options (int argc, char * argv [])
+{
+    bool result = false;
+    if (argc > 1 && not_nullptr(argv))
+    {
+        int argn = 1;
+        std::string arg;
+        std::string optionname;
+        while (argn < argc)
+        {
+            if (not_nullptr(argv[argn]))
+            {
+                arg = argv[argn];
+                if ((arg == "-o") || (arg == "--option"))
+                {
+                    ++argn;
+                    if (argn < argc && not_nullptr(argv[argn]))
+                    {
+                        arg = get_compound_option(argv[argn], optionname);
+                        if (optionname.empty())
+                        {
+                            if (arg == "daemonize")
+                            {
+                                result = true;
+                                usr().option_daemonize(true);
+                            }
+                            else if (arg == "no-daemonize")
+                            {
+                                result = true;
+                                usr().option_daemonize(false);
+                            }
+                        }
+                        else
+                        {
+                            if (optionname == "log")
+                            {
+                                result = true;
+                                usr().option_logfile(arg);
+                            }
+                        }
+                        if (! result)
+                        {
+                            printf("Warning:  unsupported --option value\n");
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+                break;
+
+            ++argn;
         }
     }
     return result;
@@ -486,6 +617,8 @@ int
 parse_command_line_options (perform & p, int argc, char * argv [])
 {
     int result = 0;
+    std::string optionval;                  /* used only with -o options    */
+    std::string optionname;                 /* ditto                        */
     optind = 0;
     for (;;)                                /* parse all command parameters */
     {
@@ -617,12 +750,22 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             break;
 
         case 'o':
-            if (std::string(optarg) == "daemonize")
+
+        /*
+         * We now handle this processing separately and first, in the
+         * process_o_option() function.
+         *
+            optionval = get_compound_option(std::string(optarg), optionname);
+            if (optionval == "daemonize")
                 usr().option_daemonize(true);
-            else if (std::string(optarg) == "no-daemonize")
+            else if (optionval == "no-daemonize")
                 usr().option_daemonize(false);
+            else if (optionname == "log")
+                usr().option_logfile(optionval);
             else
-                printf("Non-fatal error:  unsupport --option value\n");
+                printf("Non-fatal error:  unsupported --option value\n");
+         *
+         */
             break;
 
         case 'P':

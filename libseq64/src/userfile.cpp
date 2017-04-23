@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-13
+ * \updates       2017-04-23
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -460,6 +460,17 @@ userfile::parse (perform & /* a_perf */)
                 sscanf(m_line, "%d", &scratch);
 
             usr().option_daemonize(scratch);
+            char temp[256];                         // TENTATIVE
+            if (next_data_line(file))
+            {
+                sscanf(m_line, "%s", temp);
+                std::string logfile = std::string(temp);
+/**/            printf("logfile = '%s'\n", logfile.c_str());
+                if (logfile == "\"\"")
+                    logfile.clear();
+
+                usr().option_logfile(logfile);
+            }
         }
     }
 
@@ -492,7 +503,6 @@ userfile::write (const perform & /* a_perf */ )
         fprintf(stderr, "? error opening [%s] for writing\n", m_name.c_str());
         return false;
     }
-
     dump_setting_summary();
 
     /*
@@ -505,7 +515,7 @@ userfile::write (const perform & /* a_perf */ )
            "# Sequencer64 user configuration file (legacy Seq24 0.9.2 format)\n";
     }
     else
-        file << "# Sequencer64 0.90.3 (and above) user configuration file\n";
+        file << "# Sequencer64 0.90.4 (and above) user configuration file\n";
 
     file << "#\n"
         "# Created by reading the following file and writing it out via the\n"
@@ -1010,7 +1020,19 @@ userfile::write (const perform & /* a_perf */ )
             ;
 
         int uscratch = usr().option_daemonize() ? 1 : 0 ;
-        file << uscratch << "       # option_daemonize\n";
+        file << uscratch << "       # option_daemonize\n\n";
+        file << "\n"
+            "# This value specifies an optional log-file that replaces output\n"
+            "# to standard output and standard error.  To indicate no log-file,\n"
+            "# the string \"\" is used.  Currently, this option works best from\n"
+            "# the command line, as in '-o log=filename.log'.\n"
+            "\n"
+            ;
+        std::string logfile = usr().option_logfile();
+        if (logfile.empty())
+            file << "\"\"\n";
+        else
+            file << logfile << "\n";
     }
 
     /*

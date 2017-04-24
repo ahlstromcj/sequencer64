@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2017-04-14
+2015-09-09 to 2017-04-24
 
 Creating a GitHub Repository:
 
@@ -24,12 +24,13 @@ URL, verify it, and push your local repository to it.
 Now you are ready to work, making changes locally and pushing them to
 GitHub.
 
+Create a Repository on Your Own Server:
+
 On a side note, if you want to create a local repository called "proj.git"
 on a machine with many users, who are all in the group "devs", initialize
 the repository to be "shared":
 
-    $ cd proj.git
-    $ git init --bare --shared=group
+    $ git init --bare --shared=group proj.git
 
 The --bare option avoids creating a working directory, which is desirable
 if the repository is to be shared.  The --shared option makes the
@@ -40,15 +41,21 @@ sure to find:
     bare = true
     sharedrepository = 1    (or "true")
 
-Then change the group owner of the repository:
+Then change the group owner of the repository, if not already set to
+"devs" by git:
 
     $ chgrp -R devs proj.git
 
-If you bare-cloned a repository from somewhere, you can initialize it:
+To get your code to this new bare repository, first go to the top-level
+directory in your code base (e.g. the "proj") directory.  Then:
 
-    $ git clone --bare <url to proj.git>
-    $ cd proj.git
-    $ git init --bare --shared=group
+    $ git init
+    $ git add .
+    $ git commit -m "Initial commit before pushing to central repo."
+    $ git remote add origin ssh://user@theserver/srv/git/proj.git
+    $ git push --all origin   -or-   git push -u origin master
+
+This process is very similar to what done does for GitHub.
 
 Repository Management:
 

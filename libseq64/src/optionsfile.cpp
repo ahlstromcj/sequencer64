@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-14
+ * \updates       2017-04-24
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -323,25 +323,25 @@ optionsfile::parse (perform & p)
     int gtrack = 0;
 
     /*
-     * @change ca 2016-07-07
-     *  We used to throw this value away, but it is useful if
-     *  no mute groups have been created.  So, if it reads 0 (instead of
-     *  1024), we will assume there are no mute-group settings.
+     *  We used to throw this value away, but it is useful if no mute groups
+     *  have been created.  So, if it reads 0 (instead of 1024), we will
+     *  assume there are no mute-group settings.  We also have to be sure to
+     *  go to the next data line even if the strip-empty-mutes option is on.
      */
 
     sscanf(m_line, "%d", &gtrack);
-
-#ifdef SEQ64_STRIP_EMPTY_MUTES
-    ok = gtrack == 0 ||
-        gtrack == SEQ64_DEFAULT_SET_MAX * SEQ64_SET_KEYS_MAX;       /* 1024 */
-#else
     ok = next_data_line(file);
     if (ok)
+    {
+#ifdef SEQ64_STRIP_EMPTY_MUTES
+        ok = gtrack == 0 ||
+            gtrack == SEQ64_DEFAULT_SET_MAX * SEQ64_SET_KEYS_MAX;   /* 1024 */
+#else
         ok = gtrack == SEQ64_DEFAULT_SET_MAX * SEQ64_SET_KEYS_MAX;  /* 1024 */
-
-    if (! ok)
-        (void) error_message("mute-group");         /* finish the parsing!  */
 #endif
+    }
+    if (! ok)
+        (void) error_message("mute-group");         /* abort the parsing!   */
 
     if (ok && gtrack > 0)
     {
@@ -349,14 +349,13 @@ optionsfile::parse (perform & p)
 
         /*
          * This loop is a bit odd.  We set groupmute, read it, increment it,
-         * and then read it again.  Issue?  Will fix when we have time to test
-         * it fully.
+         * and then read it again.  We could just use the i variable, I think.
          */
 
         int groupmute = 0;
-        for (int i = 0; i < c_seqs_in_set; ++i)
+        for (int i = 0; i < c_seqs_in_set; ++i) /* for all groups, not seqs! */
         {
-            p.select_group_mute(groupmute);
+            p.select_group_mute(i);             /* too iffy: groupmute       */
             sscanf
             (
                 m_line,
@@ -364,16 +363,24 @@ optionsfile::parse (perform & p)
                   " [%d %d %d %d %d %d %d %d]"
                   " [%d %d %d %d %d %d %d %d]"
                   " [%d %d %d %d %d %d %d %d]",
-    &groupmute,
-    &gm[0],  &gm[1],  &gm[2],  &gm[3],  &gm[4],  &gm[5],  &gm[6],  &gm[7],
-    &gm[8],  &gm[9],  &gm[10], &gm[11], &gm[12], &gm[13], &gm[14], &gm[15],
-    &gm[16], &gm[17], &gm[18], &gm[19], &gm[20], &gm[21], &gm[22], &gm[23],
-    &gm[24], &gm[25], &gm[26], &gm[27], &gm[28], &gm[29], &gm[30], &gm[31]
+                &groupmute,
+                &gm[0],  &gm[1],  &gm[2],  &gm[3],
+                &gm[4],  &gm[5],  &gm[6],  &gm[7],
+                &gm[8],  &gm[9],  &gm[10], &gm[11],
+                &gm[12], &gm[13], &gm[14], &gm[15],
+                &gm[16], &gm[17], &gm[18], &gm[19],
+                &gm[20], &gm[21], &gm[22], &gm[23],
+                &gm[24], &gm[25], &gm[26], &gm[27],
+                &gm[28], &gm[29], &gm[30], &gm[31]
             );
+            if (groupmute < 0 || groupmute >= c_seqs_in_set)
+            {
+                return error_message("group-mute number out of range");
+            }
             for (int k = 0; k < c_seqs_in_set; ++k)
-                p.set_group_mute_state(k, gm[k]);
+                p.set_group_mute_state(k, gm[k] != 0);
 
-            ++groupmute;
+            ++groupmute;                    /* get set for next group   */
             ok = next_data_line(file);
             if (! ok && i < (c_seqs_in_set - 1))
                 return error_message("mute-group data line");

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-04-18
+ * \updates       2017-04-24
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -497,10 +497,15 @@ int
 perform::clamp_track (int track) const
 {
     if (track < 0)
+    {
         track = 0;
+        errprint("clamped track to 0");
+    }
     else if (track >= m_seqs_in_set)
+    {
         track = m_seqs_in_set - 1;
-
+        errprint("clamped track to maximum");
+    }
     return track;
 }
 

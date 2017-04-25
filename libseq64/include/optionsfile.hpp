@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-04
+ * \updates       2017-04-25
  * \license       GNU GPLv2 or above
  *
  *  The ~/.seq24rc or ~/.config/sequencer64/sequencer64.rc files are
@@ -59,8 +59,9 @@ public:
     optionsfile (const std::string & name);
     ~optionsfile ();
 
-    bool parse (perform & perf);
-    bool write (const perform & perf);
+    bool parse (perform & p);
+    bool parse_mute_group_section (perform & p);
+    bool write (const perform & p);
 
 private:
 
@@ -70,7 +71,7 @@ private:
         const std::string & additional = ""
     );
 
-};
+};          // class optionsfile
 
 }           // namespace seq64
 

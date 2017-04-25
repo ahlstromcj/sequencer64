@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-24
+ * \updates       2017-04-25
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -319,78 +319,11 @@ optionsfile::parse (perform & p)
         warnprint("[midi-controls] specifies a count of 0, so skipped");
     }
 
-    line_after(file, "[mute-group]");               /* Group MIDI control   */
-    int gtrack = 0;
-
-    /*
-     *  We used to throw this value away, but it is useful if no mute groups
-     *  have been created.  So, if it reads 0 (instead of 1024), we will
-     *  assume there are no mute-group settings.  We also have to be sure to
-     *  go to the next data line even if the strip-empty-mutes option is on.
-     */
-
-    sscanf(m_line, "%d", &gtrack);
-    ok = next_data_line(file);
-    if (ok)
-    {
-#ifdef SEQ64_STRIP_EMPTY_MUTES
-        ok = gtrack == 0 ||
-            gtrack == SEQ64_DEFAULT_SET_MAX * SEQ64_SET_KEYS_MAX;   /* 1024 */
-#else
-        ok = gtrack == SEQ64_DEFAULT_SET_MAX * SEQ64_SET_KEYS_MAX;  /* 1024 */
-#endif
-    }
-    if (! ok)
-        (void) error_message("mute-group");         /* abort the parsing!   */
-
-    if (ok && gtrack > 0)
-    {
-        int gm[c_seqs_in_set];
-
-        /*
-         * This loop is a bit odd.  We set groupmute, read it, increment it,
-         * and then read it again.  We could just use the i variable, I think.
-         */
-
-        int groupmute = 0;
-        for (int i = 0; i < c_seqs_in_set; ++i) /* for all groups, not seqs! */
-        {
-            p.select_group_mute(i);             /* too iffy: groupmute       */
-            sscanf
-            (
-                m_line,
-                "%d [%d %d %d %d %d %d %d %d]"
-                  " [%d %d %d %d %d %d %d %d]"
-                  " [%d %d %d %d %d %d %d %d]"
-                  " [%d %d %d %d %d %d %d %d]",
-                &groupmute,
-                &gm[0],  &gm[1],  &gm[2],  &gm[3],
-                &gm[4],  &gm[5],  &gm[6],  &gm[7],
-                &gm[8],  &gm[9],  &gm[10], &gm[11],
-                &gm[12], &gm[13], &gm[14], &gm[15],
-                &gm[16], &gm[17], &gm[18], &gm[19],
-                &gm[20], &gm[21], &gm[22], &gm[23],
-                &gm[24], &gm[25], &gm[26], &gm[27],
-                &gm[28], &gm[29], &gm[30], &gm[31]
-            );
-            if (groupmute < 0 || groupmute >= c_seqs_in_set)
-            {
-                return error_message("group-mute number out of range");
-            }
-            for (int k = 0; k < c_seqs_in_set; ++k)
-                p.set_group_mute_state(k, gm[k] != 0);
-
-            ++groupmute;                    /* get set for next group   */
-            ok = next_data_line(file);
-            if (! ok && i < (c_seqs_in_set - 1))
-                return error_message("mute-group data line");
-            else
-                ok = true;
-        }
-    }
-
     long buses = 0;
-    ok = line_after(file, "[midi-clock]");
+    ok = parse_mute_group_section(p);       /* "[mute-group]" */
+    if (ok)
+        ok = line_after(file, "[midi-clock]");
+
     if (ok)
     {
         sscanf(m_line, "%ld", &buses);
@@ -739,6 +672,102 @@ optionsfile::parse (perform & p)
 }
 
 /**
+ *  Parses the [mute-group] section.  This function is used both in the
+ *  original reading of the "rc" file, and for reloading the original
+ *  mute-group data from the "rc".
+ *
+ *  We used to throw the mute-group count value away, since it was always
+ *  1024, but it is useful if no mute groups have been created.  So, if it
+ *  reads 0 (instead of 1024), we will assume there are no mute-group
+ *  settings.  We also have to be sure to go to the next data line even if the
+ *  strip-empty-mutes option is on.
+ *
+ * \param p
+ *      Provides a reference to the main perform object.  However,
+ *      we have to cast away the constness, because too many of the
+ *      perform getter functions are used in non-const contexts.
+ *
+ * \return
+ *      Returns true if the file was able to be opened for reading, and the
+ *      desired data successfully extracted.
+ */
+
+bool
+optionsfile::parse_mute_group_section (perform & p)
+{
+    std::ifstream file(m_name.c_str(), std::ios::in | std::ios::ate);
+    if (! file.is_open())
+    {
+        printf("? error opening [%s] for reading\n", m_name.c_str());
+        return false;
+    }
+    file.seekg(0, std::ios::beg);                           /* seek to start */
+
+    line_after(file, "[mute-group]");               /* Group MIDI control   */
+    int gtrack = 0;
+    sscanf(m_line, "%d", &gtrack);
+    bool result = next_data_line(file);
+    if (result)
+    {
+#ifdef SEQ64_STRIP_EMPTY_MUTES
+        result = gtrack == 0 ||
+            gtrack == SEQ64_DEFAULT_SET_MAX * SEQ64_SET_KEYS_MAX;   /* 1024 */
+#else
+        result = gtrack == SEQ64_DEFAULT_SET_MAX * SEQ64_SET_KEYS_MAX;  /* 1024 */
+#endif
+    }
+    if (! result)
+        (void) error_message("mute-group");         /* abort the parsing!   */
+
+    if (result && gtrack > 0)
+    {
+        int gm[c_seqs_in_set];
+
+        /*
+         * This loop is a bit odd.  We set groupmute, read it, increment it,
+         * and then read it again.  We could just use the i variable, I think.
+         */
+
+        int groupmute = 0;
+        for (int i = 0; i < c_seqs_in_set; ++i) /* for all groups, not seqs! */
+        {
+            p.select_group_mute(i);             /* too iffy: groupmute       */
+            sscanf
+            (
+                m_line,
+                "%d [%d %d %d %d %d %d %d %d]"
+                  " [%d %d %d %d %d %d %d %d]"
+                  " [%d %d %d %d %d %d %d %d]"
+                  " [%d %d %d %d %d %d %d %d]",
+                &groupmute,
+                &gm[0],  &gm[1],  &gm[2],  &gm[3],
+                &gm[4],  &gm[5],  &gm[6],  &gm[7],
+                &gm[8],  &gm[9],  &gm[10], &gm[11],
+                &gm[12], &gm[13], &gm[14], &gm[15],
+                &gm[16], &gm[17], &gm[18], &gm[19],
+                &gm[20], &gm[21], &gm[22], &gm[23],
+                &gm[24], &gm[25], &gm[26], &gm[27],
+                &gm[28], &gm[29], &gm[30], &gm[31]
+            );
+            if (groupmute < 0 || groupmute >= c_seqs_in_set)
+            {
+                return error_message("group-mute number out of range");
+            }
+            for (int k = 0; k < c_seqs_in_set; ++k)
+                p.set_group_mute_state(k, gm[k] != 0);
+
+            ++groupmute;                    /* get set for next group   */
+            result = next_data_line(file);
+            if (! result && i < (c_seqs_in_set - 1))
+                return error_message("mute-group data line");
+            else
+                result = true;
+        }
+    }
+    return true;
+}
+
+/**
  *  This options-writing function is just about as complex as the
  *  options-reading function.
  *
@@ -957,6 +986,9 @@ optionsfile::write (const perform & p)
         "\n"
         << c_max_sequence << "       # group mute count\n"
         ;
+
+    ////// WHAT TO DO IF USER CLEARED THEM FROM SONG (ONLY)?
+    ////// if (! p.any_group_unmutes())
 
     for (int seqj = 0; seqj < c_seqs_in_set; ++seqj)
     {

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-15
+ * \updates       2017-04-25
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1346,7 +1346,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                     }
                 }
             }
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_XXX
             printf("%ld mute groups\n", len);
             p.print_group_unmutes();
 #endif

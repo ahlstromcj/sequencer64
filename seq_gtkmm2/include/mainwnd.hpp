@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-02
+ * \updates       2017-04-25
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -414,6 +414,9 @@ private:
 #ifdef SEQ64_STAZED_TRANSPOSE
     void apply_song_transpose ();
 #endif
+
+    void clear_mute_groups ();
+    void reload_mute_groups ();
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS
     void set_song_mode ();

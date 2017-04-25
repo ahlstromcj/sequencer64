@@ -60,6 +60,7 @@
 #include <string.h>                     /* memset()                         */
 
 #include "calculations.hpp"
+#include "cmdlineopts.hpp"              /* seq64::parse_mute_groups()       */
 #include "event.hpp"
 #include "keystroke.hpp"
 #include "midibus.hpp"
@@ -4680,6 +4681,23 @@ perform::apply_song_transpose ()
 }
 
 #endif      // SEQ64_STAZED_TRANSPOSE
+
+/**
+ *  Reloads the mute groups from the "rc" file.  NOT READY.
+ *
+ * \param errmessage
+ *      A pass-back parameter for any error message the file-processing might
+ *      cause.
+ *
+ * \return
+ *      Returns true if the reload succeeded.
+ */
+
+bool
+perform::reload_mute_groups (std::string & errmessage)
+{
+    return parse_mute_groups(*this, errmessage);
+}
 
 /**
  *  Checks the whole universe of sequences to determine the current

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-04-23
+ * \updates       2017-04-25
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -586,6 +586,41 @@ parse_options_files
                 errmessage = ufile.get_error_message();
                 result = false;
             }
+        }
+    }
+    return result;
+}
+
+/**
+ *  Like parse_options_files(), but reads only the [mute-group] section.
+ */
+
+bool
+parse_mute_groups (perform & p, std::string & errmessage)
+{
+    bool result = true;
+    std::string rcname = seq64::rc().config_filespec();
+
+    /*
+     * The caller must make these calls, at the appropriate time, which is
+     * before any parsing of the command-line options.
+     *
+     * seq64::rc().set_defaults();     // start out with normal values
+     * seq64::usr().set_defaults();    // ditto
+     */
+
+    if (file_accessible(rcname))
+    {
+        printf("[Reading mute-group section from %s]\n", rcname.c_str());
+        seq64::optionsfile options(rcname);
+        if (options.parse_mute_group_section(p))
+        {
+            // Nothing to do?
+        }
+        else
+        {
+            errmessage = options.get_error_message();
+            result = false;
         }
     }
     return result;

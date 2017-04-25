@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-15
+ * \updates       2017-04-25
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1782,6 +1782,31 @@ mainwnd::apply_song_transpose ()
 #endif
 
 /**
+ *  Reload all mute-group settings from the "rc" file.
+ */
+
+void
+mainwnd::reload_mute_groups ()
+{
+    std::string errmessage;
+    bool result = perf().reload_mute_groups(errmessage);
+    if (! result)
+    {
+        // display the error-message
+    }
+}
+
+/**
+ *  Clear all mute-group settings.  Sets all values to false/zero.
+ */
+
+void
+mainwnd::clear_mute_groups ()
+{
+    perf().clear_mute_groups();
+}
+
+/**
  *  Starts playing of the song.  An accessor to perform::start_playing().
  *  This function is actually a callback for the pause/play button.
  *  Now very similar to perfedit::start_playing(), except that the implicit
@@ -2427,7 +2452,26 @@ mainwnd::populate_menu_edit ()
 
 #endif
 
+    m_menu_edit->items().push_back
+    (
+        MenuElem
+        (
+            "_Clear mute groups",
+            mem_fun(*this, &mainwnd::clear_mute_groups)
+        )
+    );
+
+    m_menu_edit->items().push_back
+    (
+        MenuElem
+        (
+            "_Reload mute groups",
+            mem_fun(*this, &mainwnd::reload_mute_groups)
+        )
+    );
+
     m_menu_edit->items().push_back(SeparatorElem());
+
     m_menu_edit->items().push_back
     (
         MenuElem("_Mute all tracks",

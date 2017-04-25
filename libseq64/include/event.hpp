@@ -595,7 +595,8 @@ public:
     /**
      *  Clears the most-significant-bit of the d1 parameter, and sets it into
      *  the first byte of m_data.  The second byte of data is zeroed.  The
-     *  data bytes are in a two =-byte array member, m_data.
+     *  data bytes are in a two-byte array member, m_data.  This setter is
+     *  useful for Program Change and Channel Pressure events.
      *
      * \param d1
      *      The byte value to set as the first data byte.

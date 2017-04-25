@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-04-15
+ * \updates       2017-04-25
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -1452,6 +1452,11 @@ midi_in_jack::api_get_midi_event (event * inev)
 
             if (inev->is_note_off_recorded())
                 inev->set_status_keep_channel(EVENT_NOTE_OFF);
+        }
+        else if (mm.count() == 2)
+        {
+            inev->set_status_keep_channel(mm[0]);
+            inev->set_data(mm[1]);
         }
         else
         {

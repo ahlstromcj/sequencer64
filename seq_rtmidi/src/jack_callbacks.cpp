@@ -1,8 +1,62 @@
 
+extern int jack_process_rtmidi_input (jack_nframes_t nframes, void * arg);
+extern int jack_process_rtmidi_output (jack_nframes_t nframes, void * arg);
+
+/**
+ *  Provides a JACK callback function that uses the callbacks defined in the
+ *  midi_jack module.
+ *
+ *  QUESTIONS:
+ *
+ *    1. Is the nframes parameter legitimate for both input and output?
+ *    2. For input, the arg parameter gets us an rtmidi_in_data pointer,
+ *       but this pointer will be null for output.
+ *
+ *    How do we know whether an input vs output action causes this callback to
+ *    be called?????
+ */
+
+int
+jack_process_io (jack_nframes_t nframes, void * arg)
+{
+    if (nframes > 0)
+    {
+        midi_jack_info * self = reinterpret_cast<midi_jack_info *>(arg);
+        if (not_nullptr(self))
+        {
+            /*
+             * Here we want to go through the I/O ports and route the data
+             * appropriately.
+             */
+
+            std::vector<midi_jack *>::iterator mi;
+            for
+            (
+                mi = self->m_jack_ports.begin();
+                mi != self->m_jack_ports.end(); ++mi
+            )
+            {
+                midi_jack * mj = *mi;
+                midi_jack_data * mjp = &mj->jack_data();
+                if (mj->parent_bus().is_input_port())
+                {
+                    (void) jack_process_rtmidi_input(nframes, mjp);
+                }
+                else
+                {
+                    (void) jack_process_rtmidi_output(nframes, mjp);
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+//---------------------------------------------------------------------
+
 int
 jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
 {
-#if 0
     static bool s_null_detected = false;
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
     rtmidi_in_data * rtindata = jackdata->m_jack_rtmidiin;
@@ -25,12 +79,6 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
         return 0;
     }
     s_null_detected = false;
-
-    /*
-     * Since this is an input port, buff is the area that contains data from
-     * the "remote" (i.e. outside our application) port.
-     */
-#endif  // 0
 
     void * buff = jack_port_get_buffer(jackdata->m_jack_port, nframes);
     if (not_nullptr(buff))
@@ -91,61 +139,8 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
 }
 
 int
-jack_process_rtmidi_io (jack_nframes_t nframes, void * arg)
-{
-    static bool s_null_detected = false;
-    midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
-
-    /*
-     * Useful for both input and output.
-     */
-
-    if (is_nullptr(jackdata->m_jack_port))          /* is port created?     */
-    {
-        if (! s_null_detected)
-        {
-            s_null_detected = true;
-            apiprint("jack_process_rtmidi_output", "null jack port");
-        }
-        return 0;
-    }
-
-    /*
-     * Useful for output.
-     */
-
-    if (is_nullptr(jackdata->m_jack_buffsize))      /* port set up?        */
-    {
-        if (! s_null_detected)
-        {
-            s_null_detected = true;
-            apiprint("jack_process_rtmidi_output", "null jack buffer");
-        }
-        return 0;
-    }
-
-    /*
-     * Useful for input.
-     */
-
-    rtmidi_in_data * rtindata = jackdata->m_jack_rtmidiin;
-    if (is_nullptr(rtindata))
-    {
-        if (! s_null_detected)
-        {
-            s_null_detected = true;
-            apiprint("jack_process_rtmidi_input", "null rtmidi_in_data");
-        }
-        return 0;
-    }
-    s_null_detected = false;
-
-}
-
-int
 jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
 {
-#if 0
     static bool s_null_detected = false;
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
     if (is_nullptr(jackdata->m_jack_port))          /* is port created?     */
@@ -166,17 +161,10 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
         }
         return 0;
     }
-#endif  // 0
 
     static size_t soffset = 0;
     void * buf = jack_port_get_buffer(jackdata->m_jack_port, nframes);
-
     jack_midi_clear_buffer(buf);
-
-    /*
-     * A for-loop over the number of nframes?  See discussion above.
-     */
-
     while (jack_ringbuffer_read_space(jackdata->m_jack_buffsize) > 0)
     {
         int space;
@@ -192,14 +180,6 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
             (
                 jackdata->m_jack_buffmessage, mididata, size_t(space)
             );
-
-#ifdef SEQ64_SHOW_API_CALLS_TMI
-            printf("%d bytes read: ", space);
-            for (int i = 0; i < space; ++i)
-                printf("%x ", (unsigned char)(mididata[i]));
-
-            printf("\n");
-#endif
         }
         else
         {

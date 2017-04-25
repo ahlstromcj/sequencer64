@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-04-24
+ * \updates       2017-04-25
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -531,6 +531,31 @@ perform::any_group_unmutes () const
         }
     }
     return result;
+}
+
+/**
+ *  This function is a way to dump the mute-group settings in a way
+ *  independent of the code in the optionsfile module, for debugging.
+ */
+
+void
+perform::print_group_unmutes () const
+{
+    const bool * mp = &m_mute_group[0];
+    int set_number = 0;
+    for (int i = 0; i < m_sequence_max; ++i, ++mp)      /* c_gmute_tracks */
+    {
+        if ((i % m_seqs_in_set) == 0)
+        {
+            printf("\n[%2d]", set_number);
+            ++set_number;
+        }
+        if ((i % 8) == 0)
+            printf(" ");
+
+        printf("%d", *mp ? 1 : 0);
+    }
+    printf("\n");
 }
 
 /**

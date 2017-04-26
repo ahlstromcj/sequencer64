@@ -50,12 +50,14 @@ Major new updates:
         -   Replaces 0.91.0 for now.
         -   Fixed issue #75 where program-change and channel-pressure were
             stripped.
+        -   Fixed issue #72 where "ghost" mute-groups were appearing due
+            to an error in scanning the mute-group section.
         -   Added a menu command to clear mute groups.  This affects MIDI
-            files that contain mute group information.  Empty mute groups
-            will not zero out those in the "rc" file, however.
-        -   Added usable "daemonize" and "log=file" options.
+            files that contain mute group information.
+        -   Added a menu command to reload the mute groups from the "rc" file.
         -   Improved the CLI version, still MIDI control only.  Still handles
-            only one MIDI file, passed on the command-line.
+            only one MIDI file, passed on the command-line.  Added usable
+            "daemonize" and "log=file" options.
     -   Version 0.90.3:
         -   Added a console/daemon (no GUI) version, seq64cli. Configure this
             one with "./bootstrap -er -cli".  Still a work in progress, many

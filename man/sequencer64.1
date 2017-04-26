@@ -1,4 +1,4 @@
-.TH Sequencer64 "March 19 2017" "Version 0.90.2" "Sequencer64 Manual Page"
+.TH Sequencer64 "April 25 2017" "Version 0.90.4" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real-time live MIDI sequencer refactored from Seq24
@@ -213,6 +213,18 @@ no extension is present in the filename.
 Use a different configuration file base name for the 'rc' and 'usr' files.
 For example, one can specify a full configuration for "testing", for "jack",
 or for "alsa".
+.TP 8
+.B \-o, \-\-option opvalue
+Provides additional options, mostly meant for the no-GUI version of
+Sequencer64 at present.  Here are the opvalues supported:
+
+daemonize     Makes this application fork to the background.
+
+no-daemonize  Makes this application not fork to the background.
+
+log=filename  Redirect console output to a log file in the
+              --home directory [$HOME/.config/sequencer64].
+
 .SH FILES
 \fB$HOME\fP/.config/sequencer64.rc stores the main configuration settings for
 Sequencer64.  If it does not exist, it will be generated when Sequencer64

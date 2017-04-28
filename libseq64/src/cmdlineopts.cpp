@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-04-25
+ * \updates       2017-04-28
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -1034,12 +1034,6 @@ const static std::string s_statistics_support = "ON";
 const static std::string s_statistics_support = "off";
 #endif
 
-#ifdef SEQ64_STRIP_EMPTY_MUTES
-const static std::string s_strip_empty_mutes = "ON";
-#else
-const static std::string s_strip_empty_mutes = "off";
-#endif
-
 /*
  * Right now Stazed JACK support is the preferred support for JACK transport.
  */
@@ -1112,7 +1106,6 @@ build_details ()
 << "Seq32 transpose * = "        << s_seq32_transpose             << std::endl
 << "Solid piano-roll grid = "    << s_build_solid_grid            << std::endl
 << "Statistics support * = "     << s_statistics_support          << std::endl
-<< "Strip empty mutes * = "      << s_strip_empty_mutes           << std::endl
 << "Debug code * = "             << s_debug_mode                  << std::endl
 << std::endl
 << "* option is enabled/disabled via the configure script." << std::endl

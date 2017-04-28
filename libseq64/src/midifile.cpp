@@ -2012,17 +2012,11 @@ midifile::write_proprietary_track (perform & p)
      */
 
     int gmutesz = 4 + c_seqs_in_set * (4 + c_seqs_in_set * 4);
-
-#ifdef SEQ64_STRIP_EMPTY_MUTES
-
     if (! rc().legacy_format())                 // m_new_format???
     {
         if (! p.any_group_unmutes())
             gmutesz = 0;
     }
-
-#endif
-
     if (m_new_format)                           /* calculate track size     */
     {
         tracklength += seq_number_size();       /* bogus sequence number    */

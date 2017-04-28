@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-04-02
+ * \updates       2017-04-28
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -452,6 +452,21 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
  *
  *  Otherwise, we create a "MIDI event parser" and decode the MIDI event.
  *
+ *  We've beefed up the error-checking in this function due to crashes we got
+ *  when connected to VMPK and suddenly getting a rush of ghost notes, then a
+ *  seqfault.  This also occurs in legacy seq24.  To reproduce, run VMPK and
+ *  make it the input source.  Open a new pattern, turn on recording, and
+ *  start the ALSA transport.  Record one note.  Then activate the button for
+ *  "dump input to MIDI bus".  You will here the note through VMPK, then ghost
+ *  notes start appearing and seq64/seq24 eventually crash.  A bug in VMPK, or
+ *  our processing?  At any rate, we catch the bug now, and don't crash, but
+ *  eventually processing gets swamped until we kill VMPK.  And we now have a
+ *  note sounding even though neither app is running.  Really screws up ALSA!
+ *
+ * \todo
+ *      Also, we need to consider using the new remcount return code to loop
+ *      on receiving events as long as we are getting them.
+ *
  * \param inev
  *      The event to be set based on the found input event.
  *
@@ -469,7 +484,12 @@ midi_alsa_info::api_get_midi_event (event * inev)
     bool sysex = false;
     bool result = false;
     midibyte buffer[0x1000];                /* temporary buffer for MIDI data */
-    snd_seq_event_input(m_alsa_seq, &ev);
+    int remcount = snd_seq_event_input(m_alsa_seq, &ev);
+    if (remcount < 0 || is_nullptr(ev))
+    {
+        errprint("snd_seq_event_input() failure");
+        return false;
+    }
     if (! rc().manual_alsa_ports())
     {
         switch (ev->type)
@@ -479,9 +499,10 @@ midi_alsa_info::api_get_midi_event (event * inev)
             /*
              * TODO:  figure out how to best do this.  It has way too many
              * parameters now, and is currently meant to be called from
-             * mastermidibus.
-
-            port_start(masterbus, ev->data.addr.client, ev->data.addr.port);
+             * mastermidibus.  See mastermidibase::port_start().
+             *
+             * port_start(masterbus, ev->data.addr.client, ev->data.addr.port);
+             * api_port_start (mastermidibus & masterbus, int bus, int port)
              */
 
             result = true;
@@ -490,8 +511,8 @@ midi_alsa_info::api_get_midi_event (event * inev)
         case SND_SEQ_EVENT_PORT_EXIT:
         {
             /*
-             * TODO:  figure out how to best do this.  port_exit() is defined
-             * in mastermidibase and in businfo.
+             * The port_exit() function is defined in mastermidibase and in
+             * businfo.  They seem to cover this functionality.
              *
              * port_exit(masterbus, ev->data.addr.client, ev->data.addr.port);
              */
@@ -511,8 +532,14 @@ midi_alsa_info::api_get_midi_event (event * inev)
     if (result)
         return false;
 
-    snd_midi_event_t * midi_ev;                     /* for ALSA MIDI parser  */
-    snd_midi_event_new(sizeof(buffer), &midi_ev);   /* make ALSA MIDI parser */
+    snd_midi_event_t * midi_ev;                     /* make ALSA MIDI parser */
+    int rc = snd_midi_event_new(sizeof(buffer), &midi_ev);
+    if (rc < 0 || is_nullptr(midi_ev))
+    {
+        errprint("snd_midi_event_new() failed");
+        return false;
+    }
+
     long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
     if (bytes <= 0)
     {
@@ -546,15 +573,18 @@ midi_alsa_info::api_get_midi_event (event * inev)
          *  Some keyboards send Note On with velocity 0 for Note Off, so we
          *  take care of that situation here by creating a Note Off event,
          *  with the channel nybble preserved. Note that we call
-         *  event :: set_status_keep_channel() instead of using stazed's
-         *  set_status function with the "record" parameter.  A little more
-         *  confusing, but faster.
+         *  event::set_status_keep_channel() instead of using stazed's
+         *  set_status function with the "record" parameter.  We do need to
+         *  mask in the actual channel number!
          */
 
         inev->set_data(buffer[1], buffer[2]);
         if (inev->is_note_off_recorded())
-            inev->set_status_keep_channel(EVENT_NOTE_OFF);
-
+        {
+            midibyte channel = buffer[0] & EVENT_GET_CHAN_MASK;
+            midibyte status = EVENT_NOTE_OFF | channel;
+            inev->set_status_keep_channel(status);
+        }
         sysex = false;
 
 #ifdef USE_SYSEX_PROCESSING

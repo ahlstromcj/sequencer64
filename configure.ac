@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-04-25
+dnl \update        2017-04-28
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -20,7 +20,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.90$)dnl
-AC_INIT(Sequencer64, [0.90.4], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.90.5], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl Do we need the following?  No, but it cleans up a lot of warning messages.
@@ -51,7 +51,7 @@ AC_SUBST(PACKAGE)
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
 
-VERSION="0.90.3"
+VERSION="0.90.5"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -628,23 +628,6 @@ else
     AC_MSG_WARN([Global seq32 transpose not enabled.]);
 fi
 
-dnl Support for stripping unused mute-group specifications from the output MIDI
-dnl file.  They are still left in the "rc" configuration file, but can be
-dnl manually disabled by setting the mute-group size to 0 in that file.
-
-AC_ARG_ENABLE(mutestrip,
-    [AS_HELP_STRING(--disable-mutestrip,
-        [Disable stripping empty mute groups from MIDI files])],
-    [mutestrip=$enableval],
-    [mutestrip=yes])
-
-if test "$mutestrip" != "no"; then
-    AC_DEFINE(STRIP_EMPTY_MUTES, 1, [Define to enable empty mute-group stripping])
-    AC_MSG_RESULT(Empty mute-strip enabled.)
-else
-    AC_MSG_WARN([Empty mute-strip not enabled.]);
-fi
-
 dnl 6.0  Top portion of the config.h/sequencer64-config.h header files.
 dnl      The sequencer64-config.h header file has "SEQUENCER64_" prepended
 dnl      to these automatically for us.  Also, we can't use
@@ -656,8 +639,8 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-04-25"
-#define VERSION "0.90.4"
+#define VERSION_DATE_SHORT "2017-04-28"
+#define VERSION "0.90.5"
 
 )
 

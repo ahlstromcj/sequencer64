@@ -709,12 +709,8 @@ optionsfile::parse_mute_group_section (perform & p)
     bool result = next_data_line(file);
     if (result)
     {
-#ifdef SEQ64_STRIP_EMPTY_MUTES
         result = gtrack == 0 ||
             gtrack == SEQ64_DEFAULT_SET_MAX * SEQ64_SET_KEYS_MAX;   /* 1024 */
-#else
-        result = gtrack == SEQ64_DEFAULT_SET_MAX * SEQ64_SET_KEYS_MAX;  /* 1024 */
-#endif
     }
     if (! result)
         (void) error_message("mute-group");         /* abort the parsing!   */

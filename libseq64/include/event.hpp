@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-19
+ * \updates       2017-04-26
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -530,12 +530,15 @@ public:
 
     void set_status_keep_channel (midibyte eventcode)
     {
-        m_status = eventcode;
-
         // EXPERIMENTAL:  we need to set the channel here, otherwise it ends
-        // up as 0xFF, which is itself suspect.
+        // up as 0xFF, which is itself suspect.  We also need to keep the
+        // status byte clean of the channel bits.  But this makes it almost
+        // identical to set_status().  Still suspicious!
+        //
+        // m_status = eventcode & EVENT_CLEAR_CHAN_MASK;
 
-        set_channel(eventcode & EVENT_GET_CHAN_MASK);
+        m_status = eventcode;
+        m_channel = eventcode & EVENT_GET_CHAN_MASK;
     }
 
     /**
@@ -957,7 +960,6 @@ public:
     /**
      *  Some keyboards send Note On with velocity 0 for Note Off, so we
      *  provide this function to test that during recording.
-     *
      *  The channel nybble is masked off before the test, but this is
      *  unnecessary since the velocity byte doesn't contain the channel!
      *  And it is a nasty bug!
@@ -974,6 +976,29 @@ public:
     bool is_note_off_recorded () const
     {
         return is_note_off_velocity(m_status, m_data[1]);
+    }
+
+    /**
+     *  Indicates if the m_status value is a one-byte message (Program Change
+     *  or Channel Pressure.  Channel is stripped, because sometimes we keep
+     *  the channel.
+     */
+
+    bool is_one_byte ()
+    {
+        return is_one_byte_msg(m_status);   // && 0xF0);
+    }
+
+    /**
+     *  Indicates if the m_status value is a two-byte message (everything
+     *  except Program Change, Channel Pressure, and ).
+     *  Channel is stripped, because sometimes we keep
+     *  the channel.
+     */
+
+    bool is_two_bytes ()
+    {
+        return is_two_byte_msg(m_status);   // && 0xF0);
     }
 
     void print () const;

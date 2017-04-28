@@ -621,6 +621,11 @@ mastermidibus::api_port_start (int bus, int port)
  *
  * \param inev
  *      The event to be set based on the found input event.
+ *
+ * \return
+ *      Returns true if a normal MIDI event was received, and false if either
+ *      an ALSA MIDI Start, Change, or Exit event was received, or decoding
+ *      the MIDI event failed.
  */
 
 bool

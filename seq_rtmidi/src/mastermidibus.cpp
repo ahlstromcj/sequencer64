@@ -224,7 +224,7 @@ mastermidibus::api_init (int ppqn, midibpm bpm)
  *      Provides a string label indicate the context of this list.
  */
 
-#ifdef PLATFORM_DEBUG_XXX
+#ifdef PLATFORM_DEBUG   // _TMI
 
 void
 mastermidibus::port_list (const std::string & tag)
@@ -245,7 +245,7 @@ mastermidibus::port_list (const std::string & )
     // No code if not debugging
 }
 
-#endif
+#endif  // PLATFORM_DEBUG_TMI
 
 /**
  *  Activates the mastermidibase code and the rtmidi_info object via its

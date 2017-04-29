@@ -1,14 +1,16 @@
-INSTALL for Sequencer64 v. 0.90.3
+INSTALL for Sequencer64 v. 0.90.5 and above
 Chris Ahlstrom
-2015-09-10 to 2017-04-19
+2015-09-10 to 2017-04-29
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
-With version 0.90.0, three different versions of the program can be build:
+With version 0.90.4, four different versions of the program can be build:
 
     -   seq64. Native JACK; the default build after a simple bootstrap.
         command; JACK MIDI with optional JACK transport; fall-back to ALSA.
     -   sequencer64. ALSA with JACK transport; the original version.
+    -   seq64cli.  An in-progress version of a GUI-less version of
+        Sequencer64, which can run from the console or as a daemon.
     -   seq64portmidi. PortMIDI implementation; has issues, deprecated.
 
 Steps:
@@ -379,18 +381,18 @@ MANUALLY-DEFINED MACROS IN CODE:
     SEQ64_xxxxxx_TMI:
 
         This category of macro are usually undefined values that let us keep
-        old code around in case we decide it was the better code after all.
-        Generally, you do not want to change the status of these macros unless
-        you are very familiar with the code and willing to temporarily break
-        stuff.
-
+        old or experimental code around in case we decide it was the better
+        code after all.  Generally, you do not want to change the status of
+        these macros unless you are very familiar with the code and willing to
+        temporarily break stuff or add annoying console output.
         The "TMI" in some denotes debug code that dumps too much information
         (TMI) to the console, so has to be enabled by editing it on those
-        occasions where.
+        occasions where.  The "XXX" is similar, disabling the macro no matter
+        what.
 
-        We are incorporated some very useful code from the Seq32 project
+        We have incorporated some very useful code from the Seq32 project
         of the user "stazed".  He includes some new features and some bug
-        fixes that we have overlooked.  At present, we are not enabling this
+        fixes that we had overlooked.  At present, we are not enabling this
         functionality, just adding it, macroed out by the following macros:
 
         USE_STAZED_RANDOMIZE_SUPPORT

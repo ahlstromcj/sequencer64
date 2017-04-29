@@ -2426,7 +2426,7 @@ private:
         keys().set_key_group(keycode, group_slot);
     }
 
-#ifdef PLATFORM_DEBUG_XXX
+#ifdef PLATFORM_DEBUG_TMI
     void dump_mute_statuses (const std::string & tag);
 #endif
 
@@ -2483,7 +2483,7 @@ private:
     }
 
     /**
-     *
+     * \getter master_bus().get_input(bus)
      */
 
     bool get_input (int bus)
@@ -2492,7 +2492,7 @@ private:
     }
 
     /**
-     *
+     * \getter master_bus().is_input_system_port(bus)
      */
 
     bool is_input_system_port (int bus)

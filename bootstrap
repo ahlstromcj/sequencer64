@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2017-04-07
+# \update     	2017-04-29
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -88,7 +88,7 @@ M4DIR="m4"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.90-2017-04-19)
+Usage: ./bootstrap [options]                                 (0.90-2017-04-29)
 
    'bootstrap' sets up GNU automake support and libtool support for the
    Sequencer64 project, creating the 'configure' script.  It can also
@@ -106,7 +106,7 @@ Usage: ./bootstrap [options]                                 (0.90-2017-04-19)
  -am                 Configure to build sequencer64 (original ALSA version).
  -pm                 Configure to build seq64portmidi.
  -rm                 Configure to build seq64rtmidi (JACK version, the default).
- -rc, -cli           Configure to build seq64cli (command-line rtmidi version).
+ -cli, -rc           Configure to build seq64cli (command-line rtmidi version).
  --help              Show this help text.
 
    The default bootstraps the projects.  Then one should run 'configure',

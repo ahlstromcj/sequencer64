@@ -1,6 +1,6 @@
 README for Sequencer64 0.90.4 (Native JACK and CLI)
 Chris Ahlstrom
-2015-09-10 to 2017-04-25 (initial work started in July of 2015)
+2015-09-10 to 2017-04-28 (initial work started in July of 2015)
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot to see some visible
@@ -46,6 +46,10 @@ that can be built, as noted above.
 
 Major new updates:
 
+    -   Version 0.90.5:
+        -   Made the strip-mutes option permanent.
+        -   Fixed a crash in ALSA when input goes to output to input (MIDI
+            feedback) with an app like VMPK.
     -   Version 0.90.4:
         -   Replaces 0.91.0 for now.
         -   Fixed issue #75 where program-change and channel-pressure were

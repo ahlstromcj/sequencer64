@@ -1346,7 +1346,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                     }
                 }
             }
-#ifdef PLATFORM_DEBUG_XXX
+#ifdef PLATFORM_DEBUG_TMI
             printf("%ld mute groups\n", len);
             p.print_group_unmutes();
 #endif

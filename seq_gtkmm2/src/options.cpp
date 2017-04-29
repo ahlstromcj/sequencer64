@@ -161,21 +161,50 @@ options::options
 void
 options::add_midi_clock_page ()
 {
-    int buses = perf().master_bus().get_num_out_buses();
     Gtk::VBox * vbox = manage(new Gtk::VBox());
     vbox->set_border_width(6);
     m_notebook->append_page(*vbox, "MIDI _Clock", true);
+
 #if GTK_MINOR_VERSION < 12
     manage(new Gtk::Tooltips());
 #endif
-    for (int i = 0; i < buses; ++i)
+
+    int buses = perf().master_bus().get_num_out_buses();
+    for (int bus = 0; bus < buses; ++bus)
     {
         Gtk::HBox * hbox2 = manage(new Gtk::HBox());
+
+#ifdef USE_MIDI_CLOCK_CONNECT_BUTTON        // NOT YET READY
+
+        Gtk::CheckButton * check = manage
+        (
+            new Gtk::CheckButton
+            (
+                perf().master_bus().get_midi_out_bus_name(bus), 0
+            )
+        );
+        add_tooltip
+        (
+            check,
+            "Select (click/space-bar) to connect/disconnect this MIDI output."
+        );
+        check->signal_toggled().connect
+        (
+            bind(mem_fun(*this, &options::output_callback), bus, check)
+        );
+        check->set_active(perf().get_output(bus));      // ???
+        // check->set_sensitive(! perf().is_output_system_port(bus));
+        check->set_sensitive(false);                    // FOR NOW
+
+#else
+
         Gtk::Label * label = manage
         (
-            new Gtk::Label(perf().master_bus().get_midi_out_bus_name(i), 0)
+            new Gtk::Label(perf().master_bus().get_midi_out_bus_name(bus), 0)
         );
         hbox2->pack_start(*label, false, false);
+
+#endif  // USE_MIDI_CLOCK_CONNECT_BUTTON
 
         Gtk::RadioButton * rb_off = manage(new Gtk::RadioButton("Off"));
         add_tooltip
@@ -213,21 +242,21 @@ options::add_midi_clock_page ()
 
         rb_off->signal_toggled().connect
         (
-            sigc::bind(mem_fun(*this, &options::clock_callback_off), i, rb_off)
+            sigc::bind(mem_fun(*this, &options::clock_callback_off), bus, rb_off)
         );
         rb_on->signal_toggled().connect
         (
-            sigc::bind(mem_fun(*this, &options::clock_callback_on),  i, rb_on)
+            sigc::bind(mem_fun(*this, &options::clock_callback_on),  bus, rb_on)
         );
         rb_mod->signal_toggled().connect
         (
-            sigc::bind(mem_fun(*this, &options::clock_callback_mod), i, rb_mod)
+            sigc::bind(mem_fun(*this, &options::clock_callback_mod), bus, rb_mod)
         );
         hbox2->pack_end(*rb_mod, false, false);
         hbox2->pack_end(*rb_on, false, false);
         hbox2->pack_end(*rb_off, false, false);
         vbox->pack_start(*hbox2, false, false);
-        switch (perf().master_bus().get_clock(i))
+        switch (perf().master_bus().get_clock(bus))
         {
         case e_clock_off:
             rb_off->set_active(1);
@@ -1264,12 +1293,28 @@ options::clock_mod_callback (Gtk::Adjustment * adj)
  */
 
 void
-options::input_callback (int bus, Gtk::Button * i_button)
+options::input_callback (int bus, Gtk::Button * b)
 {
-    Gtk::CheckButton * button = (Gtk::CheckButton *) i_button;
+    Gtk::CheckButton * button = (Gtk::CheckButton *) b;
     bool input = button->get_active();
     perf().set_input_bus(bus, input);
 }
+
+#ifdef USE_MIDI_CLOCK_CONNECT_BUTTON        // NOT YET READY
+
+/**
+ *  Sets the output status.  NOT YET READY
+ */
+
+void
+options::output_callback (int bus, Gtk::Button * button)
+{
+    // Gtk::CheckButton * button = (Gtk::CheckButton *) button;
+    // bool input = button->get_active();
+    // perf().set_output_bus(bus, input);
+}
+
+#endif  // USE_MIDI_CLOCK_CONNECT_BUTTON
 
 /**
  *  Sets the ability to filter incoming MIDI events by MIDI channel.

@@ -106,7 +106,7 @@ mastermidibus::api_init (int ppqn, midibpm /*bpm*/)
     {
         dev_info = Pm_GetDeviceInfo(i);
 
-#ifdef PLATFORM_DEBUG_XXX
+#ifdef PLATFORM_DEBUG_TMI
         fprintf
         (
             stderr, "[%s device %d: %s in:%d out:%d\n",

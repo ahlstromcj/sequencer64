@@ -1772,7 +1772,7 @@ perform::swap_screenset_queues (int ss0, int ss1)
         }
         set_playing_screenset();
 
-#ifdef PLATFORM_DEBUG_XXX
+#ifdef PLATFORM_DEBUG_TMI
         dump_mute_statuses("screen-set change");
 #endif
     }
@@ -4819,7 +4819,7 @@ perform::FF_RW_timeout ()
 
 #endif  // SEQ64_STAZED_JACK_SUPPORT
 
-#ifdef PLATFORM_DEBUG_XXX
+#ifdef PLATFORM_DEBUG_TMI
 
 /**
  *  Dumps the status of all tracks in all active sets in a compact format.
@@ -4878,7 +4878,7 @@ perform::dump_mute_statuses (const std::string & tag)
     puts(" ================================");      /* includes the newline */
 }
 
-#endif      // PLATFORM_DEBUG_XXX
+#endif      // PLATFORM_DEBUG_TMI
 
 }           // namespace seq64
 

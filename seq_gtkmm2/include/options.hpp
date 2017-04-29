@@ -28,9 +28,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-13
+ * \updates       2017-04-29
  * \license       GNU GPLv2 or above
  *
+ *  This class support most of the configuration options that are supported by
+ *  the optionsfile and rc_settings modules.  It provides a tabbed dialog that
+ *  the user can use to edit many of the settings in the "rc" file.  Notably
+ *  missing are graphical interfaces to the "[midi-control]" and
+ *  "[mute-groups]" sections.
  */
 
 #include <gtkmm/dialog.h>
@@ -198,14 +203,14 @@ private:
      *  some additional safety.
      */
 
-    Gtk::Button * m_button_jack_connect;
+    Gtk::ToggleButton * m_button_jack_connect;
 
     /**
      *  JACK Disonnect button, which we need to enable/disable for clarity and
      *  some additional safety.
      */
 
-    Gtk::Button * m_button_jack_disconnect;
+    Gtk::ToggleButton * m_button_jack_disconnect;
 
     /**
      *  Not sure yet what this notebook is for.  Must be a GTK thang.

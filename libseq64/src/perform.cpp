@@ -117,7 +117,7 @@ namespace seq64
  *      -#  When the key is released, this bit is AND'd out of
  *          perform::m_control_status.
  *
- *      Both the MIDI control and the keystoke set the sequence to be
+ *      Both the MIDI control and the keystroke set the sequence to be
  *      "replaced".
  */
 
@@ -4202,6 +4202,31 @@ perform::lookup_keyevent_key (int seqnum)
  *
  *  Keys not handled here are handled in mainwnd:  bpm up & down; screenset up
  *  & down.
+ *
+ * seq24 handles the following keys in two "on_key" events:
+ *
+ *  Release:
+ *
+ *      -   Replace unset
+ *      -   Queue unset
+ *      -   Snapshot 1 and snapshot 2 unset
+ *      -   Group learn unset
+ *
+ *  Press:
+ *
+ *      -   BPM dn and BMP up *
+ *      -   Replace set
+ *      -   Queue and keep-queue set
+ *      -   Snapshot 1 and snapshot 2 set
+ *      -   Screen-set dn and screen-set up *
+ *      -   Set playing screen-set
+ *      -   Group on and group off
+ *      -   Group learn set
+ *      -   Select and mute the group *
+ *      -   Start and stop keys *
+ *      -   Pattern mute/unmute keys *
+ *
+ *  Note that the asterisk indicates we handle it elsewhere.
  *
  * \param k
  *      The keystroke object to be handled.

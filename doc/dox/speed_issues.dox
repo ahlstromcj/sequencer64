@@ -9,11 +9,14 @@
 This document describes some speed issues and how they can be handled.
 
 \page       speed_issues_page Speed Issue of Sequencer64
-\author     Chris Ahlstrom 2017-03-27
+\author     Chris Ahlstrom 2017-04-30
 
 \section speed_issues_intro Introduction
 
 This section describes some speed issues of Sequencer64.
+A new issue, reported by users, concerning the native JACK MIDI support,
+needs to be addressed, but has not been addressed yet.
+
 Early on in our reboot of <i>seq24</i>, we noticed
 that some of our larger files took a noticeable time to load.
 It was only a few seconds, but seemed like a long time for such

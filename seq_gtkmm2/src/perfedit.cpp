@@ -212,7 +212,7 @@ perfedit::perfedit
         *manage(new Gtk::Arrow(Gtk::ARROW_RIGHT, Gtk::SHADOW_OUT))
     );
     m_button_grow->signal_clicked().connect(mem_fun(*this, &perfedit::grow));
-    add_tooltip(m_button_grow, "Increase size of grid.");
+    add_tooltip(m_button_grow, "Increase number of measures in grid.");
 
     /*
      * Fill the table
@@ -324,7 +324,7 @@ perfedit::perfedit
             mem_fun(*this, &perfedit::popup_menu), m_menu_xpose
         )
     );
-    add_tooltip(m_button_xpose, "Song-transpose all transposable sequences.");
+    add_tooltip(m_button_xpose, "Song-transpose all transposable patterns.");
     m_entry_xpose->set_size_request(30, -1);
     m_entry_xpose->set_editable(false);
 

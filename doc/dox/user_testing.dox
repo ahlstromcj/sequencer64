@@ -10,7 +10,7 @@ This document describes basic user testing of Sequencer64 using the
 Yoshimi software synthesizer.
 
 \page       user_testing_page User Testing of Sequencer64 with Yoshimi
-\author     Chris Ahlstrom 2016-03-04
+\author     Chris Ahlstrom 2017-05-01
 
 \section user_testing_intro Introduction
 
@@ -22,11 +22,15 @@ Please note that the most advanced and recent testing can be found currently in
 the document <code>contrib/notes/jack-testing.txt</code>.  We will eventually
 merge the final tests here... someday.
 
+Also note that the default executable is no long <tt>sequencer64</tt>... it is
+now <tt>seq64</tt>.  Furthermore, this new version has a native JACK MIDI
+feature that is not yet part of the testing!  So much to catch up with!
+
 \section user_testing_smoke Smoke Test
 
 Every so often we run Sequencer64 with a software synthesizer to make sure we
 haven't broken any functionality via our major refactoring efforts.  We call it
-a "smoke test".  We fire up the two application, and see if anything smokes.
+a "smoke test".  We fire up the two applications, and see if anything smokes.
 
 This smoke test sets up Yoshimi with a very simple ALSA setup, and no
 instruments are loaded.  Instead, only the "Simple Sound" is used on all
@@ -42,7 +46,7 @@ After getting the application build and installed, the next step is to run
 it, using ALSA for MIDI and for audio:
 
 \verbatim
-   $ yoshimi -a -A &
+   $ yoshimi -a -A
 \endverbatim
 
 Next, fix up the configuration files for Sequencer64,

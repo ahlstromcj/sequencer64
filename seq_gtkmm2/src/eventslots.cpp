@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-10-08
+ * \updates       2017-04-01
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -280,8 +280,11 @@ eventslots::insert_event (const editable_event & edev)
              */
 
             editable_events::iterator nev = m_event_container.current_event();
-            m_parent.set_dirty();
-            page_topper(nev);
+            if (m_event_container.is_valid_iterator(nev))
+            {
+                m_parent.set_dirty();
+                page_topper(nev);
+            }
         }
     }
     return result;
@@ -456,10 +459,11 @@ eventslots::delete_current_event ()
 
         /*
          * Has to be done after the adjustment, otherwise iterators are
-         * invalid and cannot be adjusted.
+         * invalid and cannot be adjusted.  The remove() function validates
+         * the iterator before trying to delete it.
          */
 
-        m_event_container.remove(oldcurrent);   /* wrapper for erase()      */
+        m_event_container.remove(oldcurrent);       /* wrapper for erase()  */
 
         int newcount = m_event_container.count();
         if (newcount == 0)
@@ -1385,7 +1389,6 @@ eventslots::on_frame_end ()
         --ei;
         page_topper(ei);
     }
-    
 }
 
 }           // namespace seq64

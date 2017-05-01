@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-05-29
+ * \updates       2017-04-30
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Event Editor window.
@@ -230,6 +230,15 @@ public:
      */
 
     int event_count () const
+    {
+        return m_event_count;
+    }
+
+    /**
+     * \getter m_event_count
+     */
+
+    int count () const
     {
         return m_event_count;
     }

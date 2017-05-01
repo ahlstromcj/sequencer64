@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-04-26
+2016-12-03 to 2017-04-30
 
 Debian packaging:
 
@@ -256,6 +256,39 @@ Active GitHub Issues:
 
  *  71 milkmuruki : On start; activated patterns become inactive on play
     (once)
+
+    72 Animtim : ghost mute group always coming back in rc
+
+ *  Fixed, not yet closed.
+
+    73 Animtim : Jack midi less precise than alsa midi
+
+    Oh, I just noticed this timing issue is highly depending on jack buffer
+    size.  I initially had it set to 1024 (and 3 periods). Issue is subtle but
+    can be heard.  Then I tested with 256, and couldn nott really hear the issue
+    (but then I have occasional xruns, very few but still).  Then I tested
+    with 2048, and the issue gets really worse, really easy to hear it.
+
+    74 georgkrause : cant use replace in queue mode
+
+	-	start queue mode with \ (keep-queue, not queue, which is Ctrl-R)
+	-	try to replace running pattern with replace_mod + pattern_key.  This
+        should be Ctrl-L + pattern key.
+    -	expected: after the current cycle, only the toggled pattern should run
+	-	what happens: all running pattern still run + the toggled pattern
+
+    It works the same way in seq24.
+
+ *  75 Animtim : jack midi: Program Change events not sent
+
+    Fixed, but not yet closed.  Was due to filtering 1-data-byte events
+    inadvertently.
+
+ *  76 layk : latest wip -ed -er seq64 crash when button 'Jack Transport
+    Connect' is used.
+
+    Fixed, but not yet closed.
+
 
 Upgrades:
 

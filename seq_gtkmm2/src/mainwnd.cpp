@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-25
+ * \updates       2017-04-30
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -269,14 +269,17 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_call_seq_edit         (false),                /* new ca 2016-05-15    */
     m_call_seq_eventedit    (false)                 /* new ca 2016-05-19    */
 {
+
+#ifdef PLATFORM_DEBUG_XXX
+
     /*
      * Trying to debug a way out of a weird GTK freeze-up that occurs if
      * Alt-F (or other menu hotkeys) is pressed before clicking in the GUI.
      */
 
-#ifdef PLATFORM_DEBUG
     GLogLevelFlags f = GLogLevelFlags(G_LOG_LEVEL_CRITICAL|G_LOG_LEVEL_WARNING);
     g_log_set_always_fatal(f);
+
 #endif
 
     /*
@@ -1035,9 +1038,13 @@ mainwnd::on_realize ()
     gui_window_gtk2::on_realize();
 
     /*
-     * Does not fix the Alt-F issue.
+     * None of these linesfix the Alt-F issue.
      *
-     * test_widget_click(m_button_tap->get_child()->gobj());
+     *  test_widget_click(m_button_tap->get_child()->gobj());
+     *  m_main_wid->grab_focus();
+     *  grab_focus();
+     *  set_focus(*this);
+     *  present();
      */
 }
 

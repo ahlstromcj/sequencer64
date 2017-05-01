@@ -1,0 +1,404 @@
+/*
+ *    This module provides no code.  It provides only a Doxygen "Doxygen
+ *    information" page.
+ */
+/**
+
+\file       osc_support.dox
+
+This document describes how we might implement OSC support
+
+\page       osc_support_page OSC Support in Sequencer64
+\author     Chris Ahlstrom 2017-04-30
+
+\section osc_support_intro Introduction
+
+This section describes how we might support OSC.
+One of the first things we need to do is get an idea of how it
+works.  The next thing is a long list of commands to implement, such as various
+MIDI controls and the loading of specific MIDI files upon command.
+
+We do have some things to think about:
+
+   -  Should this command set be adapted with the exact same format, for
+      compatibility with Renoise, or should we make our own format that better
+      fits the Sequencer64 model?
+   -  What other commands will we need?  Should we support every GUI control
+      and keystroke control that Sequencer64 supports?
+   -  Which OSC library will we use?
+      -  oscpack
+      -  liblo
+      -  lopack
+      -  loscpack??? (rolling our own)
+
+
+
+\section osc_support_commands Prospective Commands
+
+The following set of commands was copped from the <i>Renoise</i> project.
+We have changed "renoise" to "sequencer64", and have indicated how or if we
+might implement the command.  This information comes from the chapter
+<i>The Default OSC Implementation of Renoise</i>, from the link
+
+   http://tutorials.renoise.com/wiki/Open_Sound_Control
+
+\subsection osc_support_evaluate /sequencer64/evaluate(string)
+
+Evaluate a custom Lua expression (e.g. renoise.song().transport.bpm = 234).
+We doubt we will implement this command.
+
+\subsection osc_support_bpm /sequencer64/song/bpm(number)
+
+Set the song's current BPM value [32 - 999].
+We will implement this command and make it fit the range allowed by
+<i>Sequencer64</i>.
+
+We will also add to that four commands for BPM increment coarse and fine and
+BPM decrement coarse and fine.
+
+\subsection osc_support_edit_mode /sequencer64/song/edit/mode(boolean)
+
+Set the song's global Edit Mode on or off.
+Does not apply to <i>Sequencer64</i>.
+
+\subsection osc_support_transpose /sequencer64/song/edit/octave(number)
+
+Set the song's current octave value [0 - 8].
+This will likely be implemented as a "transpose" command, which is already
+supported by <i>Sequencer64</i>.  It transposes all of the patterns that are
+flagged as transposable.
+
+\verbatim
+   /sequencer64/song/edit/transpose(number)
+\endverbatim
+
+\subsection osc_support_pattern_follow /sequencer64/song/edit/pattern_follow(boolean)
+
+Enable or disable the global Pattern Follow mode.
+Need to do some research into this one.
+
+\subsection osc_support_step /sequencer64/song/edit/step(number)
+
+Set the song's current Edit Step value [0 - 8].
+We will not implement this command.
+
+\subsection osc_support_macro /sequencer64/song/instrument/XXX/macro1-8(number)
+
+Set instrument XXX's macro parameter value [0 - 1]. XXX is the instrument
+index, -1 the currently selected one.
+We will not implement this command.
+
+However, if we do implement commands that follow the pattern of selecting the
+number of a pattern, the name of a pattern, or all patters, it would probably
+look like the format
+
+\verbatim
+   /sequencer64/song/pattern/command_function(pattern_tag, parameter_value)
+\endverbatim
+
+where \a pattern_tag is a name, a number, or "all", and
+\a parameter_value is the value to apply to the command.
+
+\subsection osc_support_mono_trigger /sequencer64/song/instrument/XXX/monophonic(boolean)
+
+Set instrument XXX's trigger mono mode [True/False]. XXX is the instrument
+index, -1 the currently selected one.
+We will not implement this command.
+
+\subsection osc_support_mono_glide /sequencer64/song/instrument/XXX/monophonic_glide(number)
+
+Set instrument XXX's trigger mono glide amount [0-255]. XXX is the instrument
+index, -1 the currently selected one.
+We will not implement this command.
+
+\subsection osc_support_phraseplay /sequencer64/song/instrument/XXX/phrase_playback(string)
+
+Set instrument XXX's phrase playback mode [Off, Program, Keymap]. XXX is the
+instrument index, -1 the currently selected one.
+We will not implement this command.
+
+\subsection osc_support_phraseprog /sequencer64/song/instrument/XXX/phrase_program(number)
+
+Set instrument XXX's phrase program [0 - 127]. XXX is the instrument index, -1
+the currently selected one.
+We will not implement this command.
+
+\subsection osc_support_quantize /sequencer64/song/instrument/XXX/quantize(string)
+
+Set instrument XXX's trigger quantization [Note, Line, Beat, Bar]. XXX is the
+instrument index, -1 the currently selected one.
+
+We will probably implement a similar command to quantize a numbered pattern, a
+named pattern, or all patterns.
+
+\subsection osc_support_key /sequencer64/song/instrument/XXX/scale_key(string)
+
+Set instrument XXX's note scaling key [C, C#... B]. XXX is the instrument
+index, -1 the currently selected one.
+We will probably implement a similar command to set the key of
+a numbered pattern, a named pattern, or all patterns.
+
+\subsection osc_support_scale /sequencer64/song/instrument/XXX/scale_mode(string)
+
+Set instrument XXX's note scaling mode. XXX is the instrument index, -1 the
+currently selected one.
+We will probably implement a similar command to set the scale of
+a numbered pattern, a named pattern, or all patterns.
+
+\subsection osc_support_tspose /sequencer64/song/instrument/XXX/transpose(number)
+
+Set instrument XXX's global transpose [-120 - 120]. XXX is the instrument
+index, -1 the currently selected one.
+We won't implement this one, it is covered above.
+
+\subsection osc_support_volume /sequencer64/song/instrument/XXX/volume(number)
+
+Set instrument XXX's global volume [0 - db2lin(6)]. XXX is the instrument
+index, -1 the currently selected one.
+We will probably implement a similar command to set the scale of
+a numbered pattern, a named pattern, or all patterns.
+
+\subsection osc_support_volumedb /sequencer64/song/instrument/XXX/volume_db(number)
+
+Set instrument XXX's global volume in dB [0 - 6]. XXX is the instrument index,
+-1 the currently selected one.
+We will probably implement a similar command to set the scale of
+a numbered pattern, a named pattern, or all patterns.
+
+\subsection osc_support_lpb /sequencer64/song/lpb(number)
+
+Set the song's current Lines Per Beat value [1 - 255].
+We will probably implement a similar command to set the visible grid-lines per
+beat setting.  Probably for
+a numbered pattern, a named pattern, or all patterns.  Most likely just "all".
+
+\subsection osc_support_metronome /sequencer64/song/record/metronome
+
+Enable or disable the metronome.
+This one is something to think about.  Not yet a feature of Sequencer64.
+
+\subsection osc_support_met_precount /sequencer64/song/record/metronome_precount
+
+Enable or disable the global metronome precount.
+This one is something to think about.  Not yet a feature of Sequencer64.
+
+\subsection osc_support_quant_on /sequencer64/song/record/quantization(boolean)
+
+Enable or disable the global Record Quantization.
+We will probably implement this one.
+
+\subsection osc_support_quant_step /sequencer64/song/record/quantization_step(number)
+
+Set the global Record Quantization step value [1 - 32].
+We will probably implement this one.
+
+\subsection osc_support_sched_add /sequencer64/song/sequence/schedule_add(number)
+
+Add a scheduled sequence playback position.
+Not sure what this one means, need to research it.
+
+\subsection osc_support_sched_set /sequencer64/song/sequence/schedule_set(number)
+
+Replace the currently scheduled sequence playback position.
+Not sure what this one means, need to research it.
+
+\subsection osc_support_mute /sequencer64/song/sequence/slot_mute(number, number)
+
+Mute the specified track at the specified sequence slot in the matrix.
+We will implment this, and provide a number, name, or "all" variant.
+We will also provide a variant the uses the defined mute/unmute keys.
+
+\subsection osc_support_unmute /sequencer64/song/sequence/slot_unmute(number, number)
+
+Unmute the specified track at the specified sequence slot in the matrix.
+We will implment this, and provide a number, name, or "all" variant.
+We will also provide a variant the uses the defined mute/unmute keys.
+
+\subsection osc_support_trigger /sequencer64/song/sequence/trigger(number)
+
+Set the playback position to the specified sequence position.
+We will implement this one, and it will probably apply to the Song Editor.
+
+\subsection osc_support_tpl /sequencer64/song/tpl(number)
+
+Set the song's current Ticks Per Line value [1 - 16].
+
+If adding a track action, then Renoise helps. For track actions Renoise assumes
+the OSC address pattern will begin with /renoise/track/XXX, where XXX is the
+track index. Action-handling code then needs to specify the remaining part
+of the address pattern.
+
+More research to do.
+
+\subsection osc_support_bypass /sequencer64/song/track/XXX/device/XXX/bypass(boolean)
+
+Set the bypass status of a device [true or false].
+(XXX is the device index, -1 chooses the currently selected device)
+We will not implement this one.
+
+\subsection osc_support_setparm /sequencer64/song/track/XXX/device/XXX/set_parameter_by_index(number, number)
+
+Set the parameter value of a device [0 - 1].
+(XXX is the device index, -1 chooses the currently selected device)
+This one will require a lot of thought and some more details, like how to
+specify the desired parameter to set.
+
+\subsection osc_support_setparmn /sequencer64/song/track/XXX/device/XXX/set_parameter_by_name(string, number)
+
+Set the parameter value of a device [0 - 1].
+(XXX is the device index, -1 chooses the currently selected device)
+Similar to the previous setting.
+
+\subsection osc_support_mute_single /sequencer64/song/track/XXX/mute
+
+Mute track XXX.
+(XXX is the device index, -1 chooses the currently selected device)
+Similar to the mute command above.  Redundant?
+
+\subsection osc_support_delay /sequencer64/song/track/XXX/output_delay(number)
+
+Set track XXX's delay in ms [-100 - 100].
+(XXX is the device index, -1 chooses the currently selected device)
+This is not yet a feature of Sequencer64.
+
+\subsection osc_support_pan /sequencer64/song/track/XXX/postfx_panning(number)
+
+Set track XXX's post FX panning [-50 - 50].
+(XXX is the device index, -1 chooses the currently selected device)
+We could add this as an OSC-only parameter that can be applied to patterns by
+number, name, or "all".
+
+\subsection osc_support_postfxvol /sequencer64/song/track/XXX/postfx_volume(number)
+
+Set track XXX's post FX volume [0 - db2lin(3)].
+(XXX is the device index, -1 chooses the currently selected device)
+We will not implement this one.
+
+\subsection osc_support_postfxvoldb /sequencer64/song/track/XXX/postfx_volume_db(number)
+
+Set track XXX's post FX volume in dB [-200 - 3].
+(XXX is the device index, -1 chooses the currently selected device)
+We will not implement this one.
+
+\subsection osc_support_prefxpan /sequencer64/song/track/XXX/prefx_panning(number)
+
+Set track XXX's pre FX panning [-50 - 50].
+(XXX is the device index, -1 chooses the currently selected device)
+We will not implement this one.
+
+\subsection osc_support_prefxvol /sequencer64/song/track/XXX/prefx_volume(number)
+
+Set track XXX's pre FX volume [0 - db2lin(3)].
+(XXX is the device index, -1 chooses the currently selected device)
+We will not implement this one.
+
+\subsection osc_support_prefxvoldb /sequencer64/song/track/XXX/prefx_volume_db(number)
+
+Set track XXX's pre FX volume in dB [-200 - 3].
+(XXX is the device index, -1 chooses the currently selected device)
+We will not implement this one.
+
+\subsection osc_support_prefxwiddb /sequencer64/song/track/XXX/prefx_width(number)
+
+Set track XXX's pre FX width [0, 1].
+(XXX is the device index, -1 chooses the currently selected device)
+We will not implement this one.
+
+\subsection osc_support_solo /sequencer64/song/track/XXX/solo
+
+Solo track XXX.
+(XXX is the device index, -1 chooses the currently selected device)
+This will be a good one to implement.
+
+\subsection osc_support_unmute2 /sequencer64/song/track/XXX/unmute
+
+Unmute track XXX.
+(XXX is the device index, -1 chooses the currently selected device)
+This will be a good one to implement.  Similar to the version defined above.
+
+\subsection osc_support_continue /sequencer64/transport/continue
+
+Continue playback.
+This might be better as an implementation of the existing pause functionality.
+
+\subsection osc_support_loop /sequencer64/transport/loop/block(boolean)
+
+Enable or disable pattern Block Loop.
+Will need to see if this a useful feature for Sequencer64.
+
+\subsection osc_support_mov_back /sequencer64/transport/loop/block_move_backwards
+
+Move the Block Loop one segment backwards
+Not yet sure what this might mean.
+
+\subsection osc_support_mov_forw /sequencer64/transport/loop/block_move_forwards
+
+Move the Block Loop one segment forwards
+Not yet sure what this might mean.
+
+\subsection osc_support_loop /sequencer64/transport/loop/pattern(boolean)
+
+Enable or disable looping the current pattern.
+Not sure how this would differ from muting/unmuting a pattern.
+
+\subsection osc_support_seqrange /sequencer64/transport/loop/sequence(number, number)
+
+Disable or set a new sequence loop range.
+Not sure what this would mean in Sequencer64.
+
+\subsection osc_support_panic /sequencer64/transport/panic
+
+Stop playback and silence all playing instruments and effects.
+This needs to be a new feature for Sequencer64, as well as an OSC
+command.
+
+\subsection osc_support_start /sequencer64/transport/start
+
+Start playback or restart playing the current pattern.
+We will implement this one.
+
+\subsection osc_support_stop /sequencer64/transport/stop
+
+Stop playback.
+We will implement this one.
+
+\subsection osc_support_raw_midi /sequencer64/trigger/midi(number)
+
+Trigger a raw MIDI event.
+arg#1: the MIDI event as number
+
+Sounds like a useful function.
+
+\subsection osc_support_noteoff /sequencer64/trigger/note_off(number, number, number)
+
+Trigger a Note OFF.
+
+arg#1: instrument (-1 chooses the currently selected one)
+arg#2: track (-1 for the current one)
+arg#3: note value (0-119)
+
+Sounds like a useful function.
+
+\subsection osc_support_noteon /sequencer64/trigger/note_on(number, number, number, number)
+
+Trigger a Note-On.
+
+arg#1: instrument (-1 for the currently selected one)
+arg#2: track (-1 for the current one)
+arg#3: note value (0-119)
+arg#4: velocity (0-127)
+
+Sounds like a useful function.
+
+Note that the default OSC implementation [in Renoise]
+can be extended by editing the file
+"GlobalOscActions.lua" in the "Scripts" folder, found within the directory
+where you installed Renoise (on OSX this is found in the app bundle).
+
+ */
+
+/*
+ * osc_support.dox
+ *
+ * vim: ts=3 sw=3 et syntax=doxygen
+ */

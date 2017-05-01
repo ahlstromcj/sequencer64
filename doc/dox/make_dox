@@ -8,7 +8,7 @@
 # \library    	generic
 # \author     	Chris Ahlstrom
 # \date       	2015-08-08
-# \update     	2016-11-05
+# \update     	2017-04-30
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -81,7 +81,7 @@ if [ "$1" == "clean" ] ; then
 fi
 
 if [ "$1" == "help" ] || [ "$1" == "--help" ]; then
-   echo "Usage: ./make_dox [dirname] [clean | reference | install | uninstall]"
+   echo "Usage: ./make_dox [dirname] [clean | reference | notes | install | uninstall]"
    exit 0
 fi
 
@@ -146,6 +146,50 @@ if [ "$TARGET" == "reference" ] ; then
 
    fi
 
+elif [ "$TARGET" == "notes" ] ; then
+
+   echo "Running Doxygen on the notes target, in the make_dox script."
+	echo "$DOXYGEN doxy-notes.cfg > dox-progress.log 2> dox-errors.log ..."
+	$DOXYGEN doxy-notes.cfg > dox-progress.log 2> dox-errors.log
+	sed -e 's/letterpaper,/letterpaper,margin=2cm,/' -i latex/refman.tex
+
+#  This breaks too easily, so now we descend and run the commands a few
+#  times, similar to what the latex/Makefile does.  Bleh!
+#
+#	make --directory=latex pdf
+
+   pushd latex
+	pdflatex refman
+	makeindex refman.idx
+	pdflatex refman
+	makeindex refman.idx
+	pdflatex refman
+	makeindex refman.idx
+	pdflatex refman
+	makeindex refman.idx
+	pdflatex refman
+	makeindex refman.idx
+   popd
+	cp latex/refman.pdf ../developer_notes.pdf
+
+   if [ $? == 0 ] ; then
+
+      if [ $DOCOPY == "yes" ] ; then
+
+         cp -r html/ $LASTDIR
+         cp -r latex/ $LASTDIR
+         mv dox-progress.log  dox-errors.log $LASTDIR
+         rm -rf html/
+         rm -rf latex/
+
+      fi
+
+   else
+
+      echo "? doxygen on target '$TARGET' failed!"
+
+   fi
+
 elif [ "$TARGET" == "userman" ] ; then
 
 	echo "Option 'userman' not supported in this project."
@@ -157,7 +201,7 @@ elif [ "$TARGET" == "install" ] ; then
 
 elif [ "$TARGET" == "uninstall" ] ; then
 
-   rm -rf /usr/local/doc/sequencer64-0.9
+   rm -rf /usr/local/doc/sequencer64-0.90
 
 fi
 

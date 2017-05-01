@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-04-28
+dnl \update        2017-04-30
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -14,7 +14,7 @@ dnl   This script is for the Sequencer64 project, a repacking and fixing
 dnl   of seq24 v0.9.2 and a direct fork from sequencer24.
 dnl
 dnl   Process this file with bootstrap (autoconf) to produce a configure
-dnl   script.
+dnl   script.  Run "./bootstrap --help" for more information.
 dnl
 dnl ---------------------------------------------------------------------------
 
@@ -639,7 +639,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-04-28"
+#define VERSION_DATE_SHORT "2017-04-30"
 #define VERSION "0.90.5"
 
 )

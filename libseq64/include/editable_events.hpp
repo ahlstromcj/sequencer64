@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2016-03-21
+ * \updates       2017-04-30
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -97,7 +97,9 @@ private:
 #endif  // SEQ64_USE_EVENT_MAP
 
     /**
-     *  Holds the editable_events.
+     *  Holds the editable_events.  Just to be clear, since we currently do
+     *  not define SEQ64_USE_EVENT_MAP, this is an std::list container, not a
+     *  multimap.
      */
 
     Events m_events;
@@ -279,7 +281,9 @@ public:
 
     bool replace (iterator ie, const editable_event & e)
     {
-        m_events.erase(ie);
+        if (ie != m_events.end())           /* \change ca 2017-04-30    */
+            m_events.erase(ie);
+
         return add(e);
     }
 
@@ -290,7 +294,8 @@ public:
 
     void remove (iterator ie)
     {
-        m_events.erase(ie);
+        if (ie != m_events.end())           /* \change ca 2017-04-30    */
+            m_events.erase(ie);
     }
 
     /**
@@ -310,6 +315,15 @@ public:
     iterator current_event () const
     {
         return m_current_event;
+    }
+
+    /**
+     *  Validates the given iterator.
+     */
+
+    bool is_valid_iterator (iterator & cit) const
+    {
+        return cit != m_events.end();
     }
 
 private:

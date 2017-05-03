@@ -30,10 +30,53 @@ We do have some things to think about:
       -  liblo
       -  lopack
       -  loscpack??? (rolling our own)
+   -  Test applications
+      -  MidiOSC https://github.com/jstutters/MidiOSC
 
 
 
-\section osc_support_commands Prospective Commands
+\section osc_support_format OSC Format
+
+This section is a condensation of the descriptions at the following URL.
+
+   http://opensoundcontrol.org/book/export/html/1
+
+OSC data used these data types. All numbers are big-endian. The atomic size
+unit is 32-bits.  All values are padded, if necessary, to a multiple of 32
+bits (i.e. a multiple of 4 bytes).
+
+   -  <tt>int32</tt>.
+      Two's complement integer.
+   -  <tt>timetag</tt>.
+      64-bit fixed point.
+   -  <tt>float32</tt>.
+      IEEE 754 float value.
+   -  <tt>string</tt>.
+      ASCII characters, 0 terminated, padded.
+   -  <tt>blob</tt>.
+      An <tt>int32</tt> count of bytes, followed by data bytes, padded.
+
+An application that sends OSC packets is a client.
+An application that receives OSC packets is a server.
+An OSC packet is one of the following items, distinguished by the first byte of
+the packet.
+
+   -  <tt>OSC Message</tt>.
+      -  <i>Address pattern</i>.
+      -  <i>Type tag string</i>.
+         Older implementations might omit this one.
+         There are four: i = int32, f = float32, s = string, and b = blob, but
+         some applications may add a bunch of non-standard types.
+      -  <i>Arguments</i>.
+         Zero or more values, represented of a contiguous
+         sequence of binary bytes.
+   -  <tt>OSC Bundle</tt>.
+      -  <i>"#bundle"</i>.
+      -  <i>Time tag</i>.
+      -  <i>Bundle elements</i>.  
+         Zero or more elements consisting of size and contents.
+
+\section osc_support_commands Prospective Commands Via Renoise
 
 The following set of commands was copped from the <i>Renoise</i> project.
 We have changed "renoise" to "sequencer64", and have indicated how or if we
@@ -394,6 +437,47 @@ Note that the default OSC implementation [in Renoise]
 can be extended by editing the file
 "GlobalOscActions.lua" in the "Scripts" folder, found within the directory
 where you installed Renoise (on OSX this is found in the app bundle).
+
+\section osc_support_midiosc MidiOSC Messages
+
+The <i>MidiOSC</i> application converts MIDI input to OSC messages with the
+following address.
+
+\verbatim
+   /midi/devicename/channel
+\endverbatim
+
+where "devicename" and "channel" present the parameters of the MIDI message.
+It can convert the following OSC messages to MIDI.
+
+\verbatim
+Message type        MIDI byte   Arguments
+note_off            0x80        2
+note_on             0x90        2
+key_pressure        0xa0        2
+controller_change   0xb0        2
+program_change      0xc0        2
+channel_pressure    0xd0        2
+pitch_bend          0xe0        2
+song_position       0xf2        2
+song_select         0xf3        2
+tune_request        0xf6        2
+timing_tick         0xf8        0
+start_song          0xfa        0
+continue_song       0xfb        0
+stop_song           0xfc        0
+Sysex messages (input only)
+\endverbatim
+
+\verbatim
+Sysex Message type  MIDI byte
+mmc_stop            0x01
+mmc_play            0x02
+mmc_fast_forward    0x04
+mmc_rewind          0x05
+mmc_record          0x06
+mmc_pause           0x09
+\endverbatim
 
  */
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-04-25
+ * \updates       2017-05-03
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -89,8 +89,9 @@ namespace seq64
 
 /**
  *  Purely internal constants used with the functions that implement MIDI
- *  control for the application.  Note how they specify different bit values,
- *  as it they could be masked together to signal multiple functions.
+ *  control (and also some keystroke control) for the application.  Note how
+ *  they specify different bit values, as it they could be masked together to
+ *  signal multiple functions.
  *
  *  This value signals the "replace" functionality.  If this bit is set, then
  *  perform::sequence_playing_toggle() unsets this status and calls
@@ -127,7 +128,6 @@ static const int c_status_replace  = 0x01;
  *  This value signals the "snapshot" functionality.  By default,
  *  perform::sequence_playing_toggle() calls sequence::toggle_playing() on the
  *  given sequence number, plus what is noted for c_status_snapshot.
- *
  *  It works like this:
  *
  *      -#  The user presses the Snapshot key.
@@ -145,7 +145,10 @@ static const int c_status_snapshot = 0x02;
 /**
  *  This value signals the "queue" functionality.  If this bit is set, then
  *  perform::sequence_playing_toggle() calls sequence::toggle_queued() on the
- *  given sequence number.
+ *  given sequence number.  The regular queue key (configurable in File /
+ *  Options / Keyboard) sets this bit when pressed, and unsets it when
+ *  released.  The keep-queue key sets it, but it is not unset until...
+ *  when???
  */
 
 static const int c_status_queue    = 0x04;
@@ -1687,7 +1690,7 @@ perform::get_screen_set_notepad (int screenset) const
  *
  *  As a new feature, we would like to queue-mute the previous screenset,
  *  and queue-unmute the newly-selected screenset.  Still working on getting
- *  it right.
+ *  it right.  Still #undef SEQ64_USE_AUTO_SCREENSET_QUEUE.
  *
  * \param ss
  *      The index of the desired new screen set.  It is forced to range from
@@ -2455,6 +2458,41 @@ perform::off_sequences ()
     {
         if (is_active(s))
             m_seqs[s]->set_playing(false);
+    }
+}
+
+/**
+ *  Does a toggle-queueing for all of the sequences in the current screenset,
+ *  for all sequences that are on, and for the currently hot-keyed sequence.
+ *
+ *  This function supports the new queued-replace feature.  This feature is
+ *  activated when the keep-queue feature is turned on via its hot-key, and
+ *  then the replace hot-key is used on a pattern.  When that happens, the
+ *  current sequence is queued to be toggled, and all unmuted sequences are
+ *  queued to toggle off at the same time.  Thus, this is a kind of
+ *  queued-solo feature.
+ *
+ * \todo
+ *      A potential upgrade is to call save_playing_state() before calling
+ *      this function, so that the soloing can be exactly done; note that we
+ *      really need to save only the current screen-set, a partial save, and
+ *      note that save_playing_state() is also used by the snapshot feature.
+ *
+ * \param current_seq
+ *      This number is that of the sequence/pattern whose hot-key was struck.
+ */
+
+void
+perform::unqueue_sequences (int current_seq)
+{
+    for (int s = 0; s < m_seqs_in_set; ++s)
+    {
+        int seq = m_playscreen_offset + s;          /* m_screenset?     */
+        if (is_active(seq))
+        {
+            if (seq == current_seq || m_seqs[seq]->get_playing())
+                m_seqs[seq]->toggle_queued();
+        }
     }
 }
 
@@ -3892,6 +3930,10 @@ perform::set_sequence_control_status (int status)
  *  If the given status is present in the c_status_snapshot, the playing state
  *  is restored.  Then the given status is reversed in m_control_status.
  *
+ *  If the given status includes c_status_queue, this is a signal to stop
+ *  queuing (which is already in place elsewhere).  It also unsets the new
+ *  queue-replace feature.
+ *
  * \param status
  *      The status to be used.
  */
@@ -3901,6 +3943,17 @@ perform::unset_sequence_control_status (int status)
 {
     if (status & c_status_snapshot)
         restore_playing_state();
+
+#ifdef USE_SOLO_RESTORE
+    if (status & c_status_queue)
+    {
+        if (m_replace_queued)
+        {
+            m_replace_queued = false;
+            save_playing_state();           // need partial version
+        }
+    }
+#endif
 
     m_control_status &= ~status;
 }
@@ -3925,6 +3978,9 @@ perform::unset_sequence_control_status (int status)
  *  31.  This value is offset by the current screen-set number, m_offset
  *  before passing it to this function.
  *
+ *  This function now also supports the new queued-replace (queued-solo)
+ *  feature.
+ *
  * \param seq
  *      The sequence number of the sequence to be potentially toggled.
  *      This value must be a valid and active sequence number.
@@ -3935,13 +3991,23 @@ perform::sequence_playing_toggle (int seq)
 {
     if (is_active(seq))
     {
-        if ((m_control_status & c_status_queue) != 0)
+        bool is_queue = (m_control_status & c_status_queue) != 0;
+        bool is_replace = (m_control_status & c_status_replace) != 0;
+        if (is_queue && is_replace)
+        {
+#ifdef USE_SOLO_RESTORE
+            if (! m_replace_queued)
+                save_playing_state();           // NEED PARTIAL SAVE
+#endif
+            unqueue_sequences(seq);
+        }
+        else if (is_queue)
         {
             m_seqs[seq]->toggle_queued();
         }
         else
         {
-            if ((m_control_status & c_status_replace) != 0)
+            if (is_replace)
             {
                 unset_sequence_control_status(c_status_replace);
                 off_sequences();

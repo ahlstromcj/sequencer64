@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-25
+ * \updates       2017-05-03
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2202,6 +2202,7 @@ private:
 
     void position_jack (bool state, midipulse tick = 0);
     void off_sequences ();
+    void unqueue_sequences (int current_seq);
     void all_notes_off ();
     void set_active (int seq, bool active);
     void set_was_active (int seq);

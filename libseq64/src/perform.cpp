@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-05-03
+ * \updates       2017-05-05
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -53,6 +53,30 @@
  *
  *  "Waiting OSC avaibility, I use
  *  https://github.com/Excds/seq24-launchpad-mapper for my Launchpad Mini."
+ *
+ *  We summarize the these state-saving buffers.
+ *
+ *      -   m_armed_statuses[c_max_sequence].
+ *          Used in perform::toggle_playing_tracks(), a feature copped from
+ *          the Seq32 project. Flagged by m_armed_saved.
+ *      -   m_seqs_active[c_max_sequence] (seq24).
+ *          Indicates if a pattern has any data in it, i.e. it is not empty,
+ *          whether it is muted or not.
+ *      -   m_was_active_main[c_max_sequence] (seq24).
+ *          Used in perform::is_dirty_main().
+ *      -   m_was_active_edit[c_max_sequence] (seq24).
+ *          Used in perform::is_dirty_edit().
+ *      -   m_was_active_perf[c_max_sequence] (seq24).
+ *          Used in perform::is_dirty_perf().
+ *      -   m_was_active_names[c_max_sequence] (seq24).
+ *          Used in perform::is_dirty_names().
+ *      -   m_sequence_state[c_max_sequence] (seq24).
+ *          Used in unsetting the snapshot status (c_status_snapshot).
+ *          perform::save_playing_state() uses this to preserve the playing
+ *          status.
+ *      -   m_screenset_state[c_seqs_in_set]
+ *          Holds the state of playing in the current screen-set, to determine
+ *          which patterns follow the queued-replace (queued-solo) feature,
  */
 
 #include <sched.h>
@@ -224,6 +248,8 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_was_active_perf           (),         // boolean array [c_max_sequence]
     m_was_active_names          (),         // boolean array [c_max_sequence]
     m_sequence_state            (),         // boolean array [c_max_sequence]
+    m_screenset_state           (),         // boolean array [c_seqs_in_set]
+    m_queued_replace            (false),    // in queued-solo mode?
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_transpose                 (0),
 #endif
@@ -258,7 +284,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_midiclocktick             (0),
     m_midiclockpos              (-1),
     m_dont_reset_ticks          (false),
-    m_screen_set_notepad        (),         // string array [c_max_sets]
+    m_screenset_notepad         (),         // string array [c_max_sets]
     m_midi_cc_toggle            (),         // midi_control []
     m_midi_cc_on                (),         // midi_control []
     m_midi_cc_off               (),         // midi_control []
@@ -312,11 +338,13 @@ perform::perform (gui_assistant & mygui, int ppqn)
 #endif
     }
 
-    for (int i = 0; i < c_seqs_in_set; ++i)
-        m_tracks_mute_state[i] = false;
+    for (int i = 0; i < m_seqs_in_set; ++i)
+    {
+        m_tracks_mute_state[i] = m_screenset_state[i] = false;
+    }
 
     for (int i = 0; i < m_max_sets; ++i)
-        m_screen_set_notepad[i].clear();
+        m_screenset_notepad[i].clear();
 
     midi_control zero;                          /* all members false or 0   */
     for (int i = 0; i < c_midi_controls_extended; ++i)
@@ -781,8 +809,9 @@ perform::toggle_all_tracks ()
 
 /**
  *  Toggles the mutes status of all playing (currently unmuted) tracks in the
- *  current set of active patterns/sequences.  Covers tracks from 0 to
- *  m_sequence_max.  The statuses are preserved for restoration.
+ *  current set of active patterns/sequences on all screen-sets.  Covers
+ *  tracks from 0 to m_sequence_max.  The statuses are preserved for
+ *  restoration.
  *
  *  Note that this function operates only in Live mode; it is too confusing to
  *  use in Song mode.
@@ -1636,11 +1665,11 @@ perform::midi_control_off (int ctl)
 }
 
 /**
- *  Copies the given string into m_screen_set_notepad[].
+ *  Copies the given string into m_screenset_notepad[].
  *
  * \param screenset
  *      The ID number of the screen set, an index into the
- *      m_screen_set_notepad[] array.
+ *      m_screenset_notepad[] array.
  *
  * \param notepad
  *      Provides the string date to copy into the notepad.  Not sure why a
@@ -1653,20 +1682,20 @@ perform::set_screen_set_notepad (int screenset, const std::string & notepad)
 {
     if (is_screenset_valid(screenset))
     {
-        if (notepad != m_screen_set_notepad[screenset])
+        if (notepad != m_screenset_notepad[screenset])
         {
-            m_screen_set_notepad[screenset] = notepad;
+            m_screenset_notepad[screenset] = notepad;
             modify();
         }
     }
 }
 
 /**
- *  Retrieves the given string from m_screen_set_notepad[].
+ *  Retrieves the given string from m_screenset_notepad[].
  *
  * \param screenset
  *      The ID number of the screen set, an index into the
- *      m_screen_set_notepad[] array.  This value is validated.
+ *      m_screenset_notepad[] array.  This value is validated.
  *
  * \return
  *      Returns a reference to the desired string, or to an empty string
@@ -1678,7 +1707,7 @@ perform::get_screen_set_notepad (int screenset) const
 {
     static std::string s_empty;
     if (is_screenset_valid(screenset))
-        return m_screen_set_notepad[screenset];
+        return m_screenset_notepad[screenset];
     else
         return s_empty;
 }
@@ -2472,14 +2501,13 @@ perform::off_sequences ()
  *  queued to toggle off at the same time.  Thus, this is a kind of
  *  queued-solo feature.
  *
- * \todo
- *      A potential upgrade is to call save_playing_state() before calling
- *      this function, so that the soloing can be exactly done; note that we
- *      really need to save only the current screen-set, a partial save, and
- *      note that save_playing_state() is also used by the snapshot feature.
+ *  This function assumes we have called save_playing_screen() first,
+ *  so that the soloing can be exactly toggled.  Only sequences that were
+ *  initially on should be toggled.
  *
  * \param current_seq
  *      This number is that of the sequence/pattern whose hot-key was struck.
+ *      We don't want to toggle this one off, just on.
  */
 
 void
@@ -2490,7 +2518,12 @@ perform::unqueue_sequences (int current_seq)
         int seq = m_playscreen_offset + s;          /* m_screenset?     */
         if (is_active(seq))
         {
-            if (seq == current_seq || m_seqs[seq]->get_playing())
+            if (seq == current_seq)
+            {
+                if (! m_seqs[seq]->get_playing())
+                    m_seqs[seq]->toggle_queued();
+            }
+            else if (m_screenset_state[seq])
                 m_seqs[seq]->toggle_queued();
         }
     }
@@ -3910,6 +3943,54 @@ perform::restore_playing_state ()
 }
 
 /**
+ *  For all active patterns/sequences in the current (playing) screen-set,
+ *  this function gets the playing status and saves it in m_sequence_state[i].
+ *  Inactive patterns get the value set to false.  Used in saving the
+ *  screen-set state during the queued-replace (queued-sol) operation, which
+ *  occurs when the c_status_replace is performed while c_status_queue is
+ *  active.
+ *
+ * \param repseq
+ *      Provides the number of the pattern for which the replace functionality
+ *      is invoked.  This pattern will set to "playing" whether it is on or
+ *      off, so that it can stay active while toggling between "solo" and
+ *      "playing with the rest of the patterns".
+ */
+
+void
+perform::save_playing_screen (int repseq)
+{
+    for (int s = 0; s < m_seqs_in_set; ++s)
+    {
+        int source = m_playscreen_offset + s;       /* m_screenset?     */
+        if (is_active(source))
+        {
+            bool on = m_seqs[source]->get_playing() || (source == repseq);
+            m_screenset_state[source] = on;
+        }
+        else
+            m_screenset_state[source] = false;
+    }
+}
+
+/**
+ *  For all active patterns/sequences, this function gets the playing
+ *  status from m_sequence_state[i] and sets it for the sequence.  Used in
+ *  unsetting the snapshot status (c_status_snapshot).
+ */
+
+void
+perform::restore_playing_screen ()
+{
+    for (int s = 0; s < m_seqs_in_set; ++s)
+    {
+        int source = m_playscreen_offset + s;       /* m_screenset?     */
+        if (is_active(source))
+            m_seqs[s]->set_playing(m_screenset_state[source]);
+    }
+}
+
+/**
  *  If the given status is present in the c_status_snapshot, the playing state
  *  is saved.  Then the given status is OR'd into the m_control_status.
  *
@@ -3944,17 +4025,15 @@ perform::unset_sequence_control_status (int status)
     if (status & c_status_snapshot)
         restore_playing_state();
 
-#ifdef USE_SOLO_RESTORE
     if (status & c_status_queue)
     {
-        if (m_replace_queued)
+        if (m_queued_replace)
         {
-            m_replace_queued = false;
-            save_playing_state();           // need partial version
+            m_queued_replace = false;
+            restore_playing_screen();       /* not really necessary */
+            printf("turned off queued-replace\n");
         }
     }
-#endif
-
     m_control_status &= ~status;
 }
 
@@ -3995,11 +4074,11 @@ perform::sequence_playing_toggle (int seq)
         bool is_replace = (m_control_status & c_status_replace) != 0;
         if (is_queue && is_replace)
         {
-#ifdef USE_SOLO_RESTORE
-            if (! m_replace_queued)
-                save_playing_state();           // NEED PARTIAL SAVE
-#endif
+            if (! m_queued_replace)
+                save_playing_screen(seq);
+
             unqueue_sequences(seq);
+            m_queued_replace = ! m_queued_replace;  /// iffy
         }
         else if (is_queue)
         {

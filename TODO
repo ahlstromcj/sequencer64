@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-04-30
+2016-12-03 to 2017-05-05
 
 Debian packaging:
 
@@ -29,6 +29,12 @@ Puzzles:
     -   No song, press Space to start.  The buttons disable.  Press space
         again, and the buttons enable, though app is still playing (the pill
         is moving.).
+
+Tests:
+
+    -   Test the assertion that queuing also works for "groups".
+    -   Test how seq24 handles screen-sets and playback; does it restrict
+        playing to the current screen-set only?
 
 Active GitHub Issues:
 

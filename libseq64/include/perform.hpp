@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-03
+ * \updates       2017-05-05
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -423,6 +423,20 @@ private:
 
     bool m_sequence_state[c_max_sequence];
 
+    /**
+     *  Saves the current playing state only for the current set.
+     *  This is used in the new queue-replace (queue-solo) feature.
+     */
+
+    bool m_screenset_state[c_seqs_in_set];
+
+    /**
+     *  Indicates if we're now using the saved screen-set state to control the
+     *  queue-replace (queue-solo) status of sequence toggling.
+     */
+
+    bool m_queued_replace;
+
     /*
      * \change ca 2016-12-29.  Found via the "rtmidi" branch that this
      * was getting passed a bad PPQN value, so moved the m_master_bus value
@@ -677,7 +691,7 @@ private:
      *  Used in the mainwnd class to set the notepad text for the given set.
      */
 
-    std::string m_screen_set_notepad[c_max_sets];
+    std::string m_screenset_notepad[c_max_sets];
 
     /**
      *  Provides the settings of MIDI Toggle, as read from the "rc" file.
@@ -1677,6 +1691,8 @@ public:
 
     void save_playing_state ();
     void restore_playing_state ();
+    void save_playing_screen (int repseq);
+    void restore_playing_screen ();
 
     /**
      * Here follows a few forwarding functions for the keys_perform-derived
@@ -2108,7 +2124,7 @@ private:
     void midi_control_event (const event & ev);
     void handle_midi_control (int control, bool state);
     bool handle_midi_control_ex (int control, midi_control::action a);
-    const std::string & get_screen_set_notepad (int screen_set) const;
+    const std::string & get_screen_set_notepad (int screenset) const;
 
     /**
      *  Returns the notepad text for the current screen-set.

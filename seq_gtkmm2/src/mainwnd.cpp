@@ -1045,6 +1045,11 @@ mainwnd::on_realize ()
      *  grab_focus();
      *  set_focus(*this);
      *  present();
+     *
+     *  m_timeout_connect = Glib::signal_timeout().connect
+     *  (
+     *      mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
+     *  );
      */
 }
 

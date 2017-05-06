@@ -1,6 +1,6 @@
-README for Sequencer64 0.90.4 (Native JACK and CLI)
+README for Sequencer64 0.90.5 (Native JACK and CLI)
 Chris Ahlstrom
-2015-09-10 to 2017-05-01 (initial work started in July of 2015)
+2015-09-10 to 2017-05-06
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot to see some visible
@@ -47,6 +47,7 @@ that can be built, as noted above.
 Major new updates:
 
     -   Version 0.90.5:
+        -   Added a queued-replace (queued-solo) feature.
         -   Made the strip-mutes option permanent.
         -   Fixed a crash in ALSA when input goes to output to input (MIDI
             feedback) with an app like VMPK.
@@ -204,6 +205,8 @@ Major new updates:
 This package is currently oriented to developers.  It is fairly well
 organized, fairly well documented, and less mysterious (to us, anyway) than
 before.  Please see the INSTALL file for a brief description of installation.
+
+Initial work/thought/documentation started in July of 2015.
 
 See the ROADMAP file for more information and a kind of TODO list.  Also see
 contrib/notes/bugs_to_investigate.  Sequencer64 is well-documented by the

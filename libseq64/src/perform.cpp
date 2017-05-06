@@ -2597,7 +2597,7 @@ perform::unqueue_sequences (int current_seq)
                 if (! m_seqs[seq]->get_playing())
                     m_seqs[seq]->toggle_queued();
             }
-            else if (m_screenset_state[seq])
+            else if (m_screenset_state[s])
                 m_seqs[seq]->toggle_queued();
         }
     }
@@ -4159,7 +4159,7 @@ perform::sequence_playing_toggle (int seq)
                 save_current_screenset(seq);
 
             unqueue_sequences(seq);
-            m_queued_replace = ! m_queued_replace;  /// iffy
+            m_queued_replace = true;
         }
         else if (is_queue)
         {

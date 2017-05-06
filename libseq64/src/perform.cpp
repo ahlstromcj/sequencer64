@@ -4110,9 +4110,9 @@ perform::unset_sequence_control_status (int status)
 void
 perform::unset_queued_replace ()
 {
-    m_control_status &= ~c_status_queue;
     if (m_queued_replace)
     {
+        m_control_status &= ~c_status_queue;
         m_queued_replace = false;
         clear_current_screenset();
     }

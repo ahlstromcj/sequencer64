@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-05
+ * \updates       2017-05-06
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -338,23 +338,6 @@ private:
      */
 
     int m_mute_group_selected;
-
-    /**
-     *  Playing screen support.  In seq24, this value is altered by
-     *  set_playing_screenset(), which is called by
-     *  handle_midi_control(c_midi_control_play_ss, state).
-     */
-
-    int m_playing_screen;
-
-    /**
-     *  Playing screen sequence number offset.  Saves some multiplications,
-     *  should make the code easier to grok, and centralizes the use of
-     *  c_seqs_in_set, which we want to be able to change at run-time, as a
-     *  future enhancement.
-     */
-
-    int m_playscreen_offset;
 
     /**
      *  Provides a "vector" of patterns/sequences.
@@ -734,6 +717,30 @@ private:
      */
 
     int m_screenset;
+
+    /**
+     *  Holds the offset for the current screen-set.  Just saves some
+     *  multiplcations.
+     */
+
+    int m_screenset_offset;
+
+    /**
+     *  Playing screen support.  In seq24, this value is altered by
+     *  set_playing_screenset(), which is called by
+     *  handle_midi_control(c_midi_control_play_ss, state).
+     */
+
+    int m_playscreen;
+
+    /**
+     *  Playing screen sequence number offset.  Saves some multiplications,
+     *  should make the code easier to grok, and centralizes the use of
+     *  c_seqs_in_set/m_seqs_in_set, which we want to be able to change at
+     *  run-time, as a future enhancement.
+     */
+
+    int m_playscreen_offset;
 
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
 
@@ -1578,6 +1585,7 @@ public:
 
     void set_sequence_control_status (int status);
     void unset_sequence_control_status (int status);
+    void unset_queued_replace ();
     void sequence_playing_toggle (int seq);
     void sequence_playing_change (int seq, bool on);
 
@@ -1670,6 +1678,8 @@ public:
     /**
      *  Calculates the offset into the screen sets.
      *  Sets <code>m_offset = offset * c_mainwnd_rows * c_mainwnd_cols</code>.
+     *  However, this hard-wiring, so we use the (new) screenset_offset()
+     *  function.
      *
      * \param offset
      *      The desired offset.
@@ -1677,7 +1687,7 @@ public:
 
     void set_offset (int offset)
     {
-        m_offset = offset * c_mainwnd_rows * c_mainwnd_cols;
+        m_offset = screenset_offset(offset);
     }
 
     /**
@@ -1691,8 +1701,8 @@ public:
 
     void save_playing_state ();
     void restore_playing_state ();
-    void save_playing_screen (int repseq);
-    void restore_playing_screen ();
+    void save_current_screenset (int repseq);
+    void clear_current_screenset ();
 
     /**
      * Here follows a few forwarding functions for the keys_perform-derived
@@ -1884,28 +1894,8 @@ public:
     midibpm increment_beats_per_minute ();
     midibpm page_decrement_beats_per_minute ();
     midibpm page_increment_beats_per_minute ();
-
-    /**
-     *  Encapsulates some calls used in mainwnd.
-     */
-
-    int decrement_screenset ()
-    {
-        int result = get_screenset() - 1;
-        set_screenset(result);
-        return result;
-    }
-
-    /**
-     *  Encapsulates some calls used in mainwnd.
-     */
-
-    int increment_screenset ()
-    {
-        int result = get_screenset() + 1;
-        set_screenset(result);
-        return result;
-    }
+    int decrement_screenset ();
+    int increment_screenset ();
 
     /**
      *  True if a sequence is empty and should be highlighted.  This setting
@@ -2029,12 +2019,12 @@ public:
     }
 
     /**
-     * \getter m_playing_screen
+     * \getter m_playscreen
      */
 
     int get_playing_screenset () const
     {
-        return m_playing_screen;
+        return m_playscreen;
     }
 
     bool toggle_other_seqs (int seqnum, bool isshiftkey);   /* mainwid      */
@@ -2396,6 +2386,22 @@ private:
     int mute_group_offset (int track)
     {
         return clamp_track(track) + m_mute_group_selected * m_seqs_in_set;
+    }
+
+    /**
+     *  Calculates the screen-set offset index.
+     *
+     * \param ss
+     *      Provides the screen-set number, ranging from 0 to c_seqs_in_set-1.
+     *      This value is not validatd, for speed.
+     *
+     * \return
+     *      Returns the product of \a ss and m_seqs_in_set.
+     */
+
+    int screenset_offset (int ss)
+    {
+        return ss * m_seqs_in_set;
     }
 
     bool is_seq_valid (int seq) const;

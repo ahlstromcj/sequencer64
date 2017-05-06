@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-05-05
+ * \updates       2017-05-06
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -77,6 +77,45 @@
  *      -   m_screenset_state[c_seqs_in_set]
  *          Holds the state of playing in the current screen-set, to determine
  *          which patterns follow the queued-replace (queued-solo) feature,
+ *
+ *  m_playscreen.  In seq24, this value (called m_playing_screen) is used for
+ *
+ *          -   select_group_mute(), to get the sequence/pattern offset for
+ *              copying the pattern playing status into the mute-group array.
+ *          -   select_mute_group(), very similar.  In sequencer64, this is
+ *              called set_and_copy_mute_group() to avoid confusion.
+ *              Also, tdeagan's code swaps m_screenset for this value.
+ *          -   mute_group_tracks(), to implement the mute-group operation.
+ *              Also, tdeagan's code swaps m_screenset for this value.
+ *          -   sequence_playing_on()/_off().  If this value equals
+ *              m_screenset and the sequence is within the playing screen,
+ *              then its mute state is set to true/false (on/off).
+ *          -   set_playing_screenset(), where this value is set to
+ *              m_screenset.  This function is called when
+ *              -   c_midi_control_play_ss is performed.
+ *              -   The main window hot-key for screen-set is pressed.
+ *
+ *  m_screenset.  In seq24, this value (called m_screen_set) is used for
+ *
+ *          -   In set_screenset().  The value is clipped to 0 to 31.
+ *          -   set_playing_screenset(), as noted above.
+ *          -   sequence_playing_on()/_off(), as noted above.
+ *
+ *  set_playing_screenset().  This function is called when
+ *
+ *      -   c_midi_control_play_ss is performed.
+ *      -   The main window hot-key for screen-set is pressed.
+ *
+ *      I think we may need to call this after calling set_screenset(seq),
+ *      where a number is available.
+ *
+ *  set_screenset().  This function is called
+ *
+ *      -   In decrement_ and increment_screenset().
+ *
+ *      In mainwnd::timer_callback(), the mainwid screen-set is set to match
+ *      the new value, which can be altered by the screen-set up and down
+ *      hot-keys.
  */
 
 #include <sched.h>
@@ -239,8 +278,6 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_mode_group                (true),
     m_mode_group_learn          (false),
     m_mute_group_selected       (0),
-    m_playing_screen            (0),        // vice m_screenset
-    m_playscreen_offset         (0),
     m_seqs                      (),         // pointer array [c_max_sequence]
     m_seqs_active               (),         // boolean array [c_max_sequence]
     m_was_active_main           (),         // boolean array [c_max_sequence]
@@ -290,7 +327,10 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_midi_cc_off               (),         // midi_control []
     m_offset                    (0),
     m_control_status            (0),
-    m_screenset                 (0),        // vice m_playing_screen
+    m_screenset                 (0),        // vice m_playscreen
+    m_screenset_offset          (0),
+    m_playscreen                (0),        // vice m_screenset
+    m_playscreen_offset         (0),
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
     m_auto_screenset_queue      (false),
 #endif
@@ -593,10 +633,8 @@ perform::print_group_unmutes () const
 /**
  *  If we're in group-learn mode, then this function gets the playing statuses
  *  of all of the sequences in the current play-screen, and copies them into
- *  the desired mute-group.
- *
- *  Then, no matter what, it makes the desired mute-group the selected
- *  mute-group.  Compare to set_and_copy_mute_group().
+ *  the desired mute-group.  Then, no matter what, it makes the desired
+ *  mute-group the selected mute-group.  Compare to set_and_copy_mute_group().
  *
  *  One thing to note is that, once saved, then, if used, it is applied
  *  to the current screen-set, even if it is not the screen-set whose
@@ -614,7 +652,7 @@ perform::select_group_mute (int mutegroup)
     mutegroup = clamp_track(mutegroup);
     if (m_mode_group_learn)
     {
-        int groupbase = mutegroup * m_seqs_in_set;      /* 1st seq in group */
+        int groupbase = screenset_offset(mutegroup);    /* 1st seq in group */
         for (int s = 0; s < m_seqs_in_set; ++s)
         {
             int source = m_playscreen_offset + s;       /* m_screenset?     */
@@ -688,9 +726,9 @@ void
 perform::set_and_copy_mute_group (int mutegroup)
 {
     mutegroup = clamp_track(mutegroup);
-    int groupbase = mutegroup * m_seqs_in_set;
+    int groupbase = screenset_offset(mutegroup);
 #ifdef SEQ64_USE_TDEAGAN_CODE
-    int setbase = m_screenset * m_seqs_in_set;  /* was m_playscreen_offset! */
+    int setbase = screenset_offset(m_screenset);
 #else
     int setbase = m_playscreen_offset;          /* includes m_seqs_in_set   */
 #endif
@@ -711,11 +749,11 @@ perform::set_and_copy_mute_group (int mutegroup)
  *  If m_mode_group is true, then this function operates.  It loops through
  *  every screen-set.  In each screen-set, it acts on each active sequence.
  *  If the active sequence is in the current "in-view" screen-set (m_screenset
- *  as opposed to m_playing_screen), and its m_track_mute_state[] is true,
+ *  as opposed to m_playscreen, and its m_track_mute_state[] is true,
  *  then the sequence is turned on, otherwise it is turned off.
  *
  * \change tdeagan 2015-12-22 via git pull.
- *      Replaced m_playing_screen with m_screenset.
+ *      Replaced m_playscreen with m_screenset.
  *
  *  It seems to us that the for (g) clause should have g range from 0 to
  *  m_max_sets, not m_seqs_in_set.
@@ -728,7 +766,7 @@ perform::mute_group_tracks ()
     {
         for (int g = 0; g < m_seqs_in_set; ++g)         /* was m_max_sets!! */
         {
-            int seqoffset = g * m_seqs_in_set;
+            int seqoffset = screenset_offset(g);
             for (int s = 0; s < m_seqs_in_set; ++s)
             {
                 int seqnum = seqoffset + s;
@@ -737,7 +775,7 @@ perform::mute_group_tracks ()
 #ifdef SEQ64_USE_TDEAGAN_CODE
                     bool on = (g == m_screenset) && m_tracks_mute_state[s];
 #else
-                    bool on = (g == m_playing_screen) && m_tracks_mute_state[s];
+                    bool on = (g == m_playscreen) && m_tracks_mute_state[s];
 #endif
                     sequence_playing_change(seqnum, on);
                 }
@@ -903,7 +941,7 @@ perform::set_song_mute (mute_op_t op)
 void
 perform::mute_screenset (int ss, bool flag)
 {
-    int seq = ss * m_seqs_in_set;
+    int seq = screenset_offset(ss);
     for (int i = 0; i < m_seqs_in_set; ++i, ++seq)
     {
         if (is_active(seq))
@@ -1486,6 +1524,36 @@ perform::page_increment_beats_per_minute ()
 }
 
 /**
+ *  Encapsulates some calls used in mainwnd.
+ *
+ * \return
+ *      Returns the decremented screen-set value.
+ */
+
+int
+perform::decrement_screenset ()
+{
+    int result = get_screenset() - 1;
+    set_screenset(result);
+    return result;
+}
+
+/**
+ *  Encapsulates some calls used in mainwnd.
+ *
+ * \return
+ *      Returns the incremented screen-set value.
+ */
+
+int
+perform::increment_screenset ()
+{
+    int result = get_screenset() + 1;
+    set_screenset(result);
+    return result;
+}
+
+/**
  *  Provides common code to check for the bounds of a sequence number.
  *  Also see the function is_mseq_valid(), which also checks the pointer
  *  stored in the m_seq[] array.
@@ -1717,6 +1785,10 @@ perform::get_screen_set_notepad (int screenset) const
  *  It's not clear that we need to set the "is modified" flag just because we
  *  changed the screen set, so we don't.
  *
+ *  This function is called when incrementing and decrementing the screenset.
+ *  Its counterpart, set_playing_screenset(), is called when the hot-key or the
+ *  MIDI control for setting the screenset is called.
+ *
  *  As a new feature, we would like to queue-mute the previous screenset,
  *  and queue-unmute the newly-selected screenset.  Still working on getting
  *  it right.  Still #undef SEQ64_USE_AUTO_SCREENSET_QUEUE.
@@ -1746,8 +1818,10 @@ perform::set_screenset (int ss)
 #else
         m_screenset = ss;
 #endif
+        m_screenset_offset = screenset_offset(ss);
+        unset_queued_replace();                 /* clear this new feature   */
     }
-    set_offset(ss);             /* was called in mainwid::set_screenset() */
+    set_offset(ss);                             /* mainwid::set_screenset() */
 }
 
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
@@ -1788,14 +1862,14 @@ perform::swap_screenset_queues (int ss0, int ss1)
 {
     if (is_pattern_playing())
     {
-        int seq0 = ss0 * m_seqs_in_set;
+        int seq0 = screenset_offset(ss0);
         for (int s = 0; s < m_seqs_in_set; ++s, ++seq0)
         {
             if (is_active(seq0))
                 m_seqs[seq0]->off_queued();         // toggle_queued();
         }
 
-        int seq1 = ss1 * m_seqs_in_set;
+        int seq1 = screenset_offset(ss1);
         m_screenset = ss1;
         for (int s = 0; s < m_seqs_in_set; ++s, ++seq1)
         {
@@ -1817,11 +1891,11 @@ perform::swap_screenset_queues (int ss0, int ss1)
  *  This function is called when one of the snapshot keys is pressed.
  *
  *  For each value up to m_seqs_in_set (32), the index of the current sequence
- *  in the current screen set (m_playing_screen) is obtained.  If the sequence
+ *  in the current screen set (m_playscreen) is obtained.  If the sequence
  *  is active and the sequence actually exists, it is processed; null
  *  sequences are no longer flagged as an error, they are just ignored.
  *
- *  Modifies m_playing_screen, m_playscreen_offset, stores the current
+ *  Modifies m_playscreen, m_playscreen_offset, stores the current
  *  playing-status of each sequence in m_tracks_mute_state[], and then calls
  *  mute_group_tracks(), turns on unmuted tracks in the current screen-set.
  *
@@ -1847,8 +1921,8 @@ perform::set_playing_screenset ()
             m_tracks_mute_state[s] = m_seqs[source]->get_playing();
         }
     }
-    m_playing_screen = m_screenset;
-    m_playscreen_offset = m_screenset * m_seqs_in_set;
+    m_playscreen = m_screenset;
+    m_playscreen_offset = screenset_offset(m_playscreen);
     mute_group_tracks();
 }
 
@@ -2501,7 +2575,7 @@ perform::off_sequences ()
  *  queued to toggle off at the same time.  Thus, this is a kind of
  *  queued-solo feature.
  *
- *  This function assumes we have called save_playing_screen() first,
+ *  This function assumes we have called save_current_screenset() first,
  *  so that the soloing can be exactly toggled.  Only sequences that were
  *  initially on should be toggled.
  *
@@ -2515,7 +2589,7 @@ perform::unqueue_sequences (int current_seq)
 {
     for (int s = 0; s < m_seqs_in_set; ++s)
     {
-        int seq = m_playscreen_offset + s;          /* m_screenset?     */
+        int seq = m_screenset_offset + s;           /* not playscreen   */
         if (is_active(seq))
         {
             if (seq == current_seq)
@@ -3958,35 +4032,32 @@ perform::restore_playing_state ()
  */
 
 void
-perform::save_playing_screen (int repseq)
+perform::save_current_screenset (int repseq)
 {
     for (int s = 0; s < m_seqs_in_set; ++s)
     {
-        int source = m_playscreen_offset + s;       /* m_screenset?     */
+        int source = m_screenset_offset + s;
         if (is_active(source))
         {
             bool on = m_seqs[source]->get_playing() || (source == repseq);
-            m_screenset_state[source] = on;
+            m_screenset_state[s] = on;
         }
         else
-            m_screenset_state[source] = false;
+            m_screenset_state[s] = false;
     }
 }
 
 /**
- *  For all active patterns/sequences, this function gets the playing
- *  status from m_sequence_state[i] and sets it for the sequence.  Used in
- *  unsetting the snapshot status (c_status_snapshot).
+ *  Clears the m_screenset_state[] array.  Needed when disabling the queue
+ *  mode.
  */
 
 void
-perform::restore_playing_screen ()
+perform::clear_current_screenset ()
 {
     for (int s = 0; s < m_seqs_in_set; ++s)
     {
-        int source = m_playscreen_offset + s;       /* m_screenset?     */
-        if (is_active(source))
-            m_seqs[s]->set_playing(m_screenset_state[source]);
+        m_screenset_state[s] = false;
     }
 }
 
@@ -4026,15 +4097,25 @@ perform::unset_sequence_control_status (int status)
         restore_playing_state();
 
     if (status & c_status_queue)
-    {
-        if (m_queued_replace)
-        {
-            m_queued_replace = false;
-            restore_playing_screen();       /* not really necessary */
-            printf("turned off queued-replace\n");
-        }
-    }
+        unset_queued_replace();
+
     m_control_status &= ~status;
+}
+
+/**
+ *  Helper function that clears the queued-replace feature.  This also clears
+ *  the queue mode; we shall see if this disrupts any user's workflow.
+ */
+
+void
+perform::unset_queued_replace ()
+{
+    m_control_status &= ~c_status_queue;
+    if (m_queued_replace)
+    {
+        m_queued_replace = false;
+        clear_current_screenset();
+    }
 }
 
 /**
@@ -4075,7 +4156,7 @@ perform::sequence_playing_toggle (int seq)
         if (is_queue && is_replace)
         {
             if (! m_queued_replace)
-                save_playing_screen(seq);
+                save_current_screenset(seq);
 
             unqueue_sequences(seq);
             m_queued_replace = ! m_queued_replace;  /// iffy
@@ -4114,7 +4195,7 @@ perform::seq_in_playing_screen (int seq)
     int next_offset = m_playscreen_offset + m_seqs_in_set;
     return
     (
-        m_mode_group && (m_playing_screen == m_screenset) &&
+        m_mode_group && (m_playscreen == m_screenset) &&
         (seq >= m_playscreen_offset) && (seq < next_offset)
     );
 }
@@ -4179,7 +4260,7 @@ perform::sequence_playing_change (int seq, bool on)
 void
 perform::sequence_key (int seq)
 {
-    seq += m_screenset * m_seqs_in_set;     /* m_playscreen_offset !!!  */
+    seq += screenset_offset(m_screenset);   /* m_playscreen_offset !!!  */
     if (is_active(seq))
         sequence_playing_toggle(seq);
 }
@@ -4371,7 +4452,10 @@ perform::lookup_keyevent_key (int seqnum)
  *      -   Start and stop keys *
  *      -   Pattern mute/unmute keys *
  *
- *  Note that the asterisk indicates we handle it elsewhere.
+ *  Note that the asterisk indicates we handle it elsewhere. Screen-set down
+ *  and up are handled in mainwnd by calling decrement_screenset() and
+ *  increment_screenset(), and mainwid::set_screenset().  But that latter call
+ *  is not made when MIDI control is in force, which might be an ISSUE.
  *
  * \param k
  *      The keystroke object to be handled.
@@ -4889,7 +4973,7 @@ perform::max_active_set () const
             result = s;
     }
     if (result >= 0)
-        result = result / m_seqs_in_set;
+        result /= m_seqs_in_set;
 
     return result;
 }

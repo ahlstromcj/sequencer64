@@ -1,53 +1,36 @@
 README for Sequencer64 0.90.5 (Native JACK and CLI)
 Chris Ahlstrom
-2015-09-10 to 2017-05-06
+2015-09-10 to 2017-05-07
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
-the heart of seq24 remains intact.  See the screenshot to see some visible
-change.  It is an old friend, we hope.  It maintains some
-backward-compatibility with seq24, with the --legacy option.  See
-https://github.com/ahlstromcj/sequencer64-doc.git.  Also see
-https://github.com/ahlstromcj/sequencer64-packages.git for prebuilt
-Debian packages for 32-bit and 64-bit systems.
+the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
+and maintains more backward-compatibility with the --legacy option.  See
+https://github.com/ahlstromcj/sequencer64-doc.git.  For prebuilt Debian
+packages, see https://github.com/ahlstromcj/sequencer64-packages.git.
 
 Native JACK support: Seq64rtmidi/seq64
 
-    Sequencer64 can now be built with native JACK support:  It has
-    virtual/manual ports and auto-connect like the ALSA build.  It is based on
-    a massively refactored RtMidi library; it falls back to ALSA support if
-    JACK is not running.  See the INSTALL file for options.  See README.jack
-    for basic instructions on native JACK until we can get the Sequencer64
-    manual up-to-date.
+    Sequencer64 now has native JACK MIDI support, with virtual/manual ports
+    and auto-connect like ALSA, based on RtMidi massively refactored. It falls
+    back to ALSA support if JACK is not running.  See README.jack for basic
+    instructions on native JACK.
 
 GUI-less native JACK support: Seq64rtmidi/seq64cli
 
-    This is the version above with no GUI code included.  Currently
-    controllable only via MIDI control events (start and stop in particular
-    must be set up), it relies on a good working configuration generated via
-    the GUI version (or edited by hand).  Also, currently the only way to load
-    the desired MIDI file is as the last argument on the command line.  We are
-    looking to add an OSC harness and command application eventually.
-    Also supports a "daemonize" option, and dumping information to a log-file
-    in the user configuration directory.
-
-Legacy Sequencer64: Sequencer64/sequencer64
-
-    This is the original version of the project, which we are preserving until
-    the bug reports for the native-JACK version slow down to a trickle.
-
-PortMIDI: Seq64portmidi/seq64portmidi
-
-    Builds and runs via the portmidi library in a Linux distro.  Has issues
-    and is deprecated.
+    The JACK version without a GUI.  Currently controlled only via MIDI
+    control events (start and stop events must be set up), it relies on a good
+    working configuration generated via the GUI or edited by hand.  Currently
+    the only way to load a MIDI file is as the last argument on the command
+    line.  We hope to add an OSC harness and command application eventually.
+    Supports a "daemonize" option and dumping status to a log-file in the
+    user-configuration directory.
 
 With the big version jump from 0.9 to 0.90, the install process has changed.
-See the INSTALL file.  There are now three different versions of Sequencer64
-that can be built, as noted above.
-
-Major new updates:
+See the INSTALL file.
 
     -   Version 0.90.5:
-        -   Added a queued-replace (queued-solo) feature.
+        -   Added a queued-replace (queued-solo) feature.  It works only with
+            the current (in-view) screen-set.  See issue #74.
         -   Made the strip-mutes option permanent.
         -   Fixed a crash in ALSA when input goes to output to input (MIDI
             feedback) with an app like VMPK.
@@ -98,6 +81,7 @@ Major new updates:
         -   Fixes a long-standing (back to seq24) issue where the Free
             selection in the pattern editor would still set the MIDI input to
             a fixed velocity.
+        -   Double-precision tempo added.
     -   Version 0.90.0:
         -   Initial support for using a heavily-refactored RtMidi spinoff
             library to support native JACK MIDI (as opposed to just JACK
@@ -107,99 +91,6 @@ Major new updates:
         -   PortMidi has been activated!  Builds and runs in Linux, still
             need to set up Gtk for Windows.  However, it has issues currently,
             and we are going to eventually deprecate it.
-    -   Version 0.9.21:
-        -   Returning to the std::list operation, but with sorting occurring
-            after loading.  This buys speed of loading of a large MIDI file
-            and better throughput during playback.  Other implementations can
-            be activate (see INSTALL).
-            Try the large
-            b4uacuse-stress.midi file and experiment for yourself.
-        -   The LFO window is now built-in by default.  Use --disable-lfo
-            if you do not like it.
-        -   Added a JACK/ALSA button to show status and bring up a JACK
-            connection dialog.
-    -   Particular changes since the seq64 fork:
-        -   Sequencer64 loads SMF 0 files and splits the channels into separate
-            tracks/sequences.
-        -   JACK support has been improved, thanks in part to seq32.
-        -   Pause functionality added to playback under ALSA.  Pause leaves
-            playback where it is, and resumes when playback restarts.  Stop
-            rewinds the sequences.  Also added is a Pause key (the period).
-            Pause can be disabled at configure time.
-        -   Long sequences/patterns auto-scroll horizontally during playback
-            to keep up with the progress bar in the sequence/pattern editor.
-        -   Highlighting of the current sequence brought up for editing.
-        -   MIDI Clock support has been fixed.  Sequencer64 interacts better with
-            QJackCtl, Hydrogen, and Klick (command-line metronome).  See the
-            testing described in contrib/notes/jack-testing.txt.
-        -   An event-editing window has been added, for viewing and editing a
-            list of events, regardless of event type.  Viewing is fine, editing
-            basics work.
-        -   Two synchronized song-editor windows can be shown on screen, to
-            better arrange songs with a large number of tracks.
-        -   Added a more modern-looking, bolder font to the graphical user
-            interface, selectable at run-time, in the "user" configuration file.
-        -   Added an ALSA --bus option for easier testing against a specific
-            hardware/software synthesizer.
-        -   Added a --ppqn option to try to play files at the right speed.  Still
-            in progress, as the Seq24 PPQN value of 192 affects a lot of code!
-            It basically works, but bugs may still lurk.
-        -   Added support for keeping performance and sequence user-interfaces in
-            editing mode, very helpful for certain crappy laptop trackpads.
-        -   Shift-left-click on the pattern slot in the pattern editor toggles
-            the playing state of all other patterns.  This works across
-            screen-sets.  Shift-left-click on the pattern name or M in the
-            song editor toggles the mute state of all other tracks.
-        -   Added arrow key support to some of the windows and panes.
-            -   The "l" and "r" keys initiate arrow movement of the performance
-                markers.
-            -   If notes are selected in the pattern editor, the arrow keys can
-                be used to move the notes in time and in pitch.
-            -   If selected notes are copied-and-pasted, the selection box that
-                indicates where they will be dropped can be moved with the arrow
-                keys.  Hitting "Enter" drops the notes just like a left-click.
-            -   In the performance editor, a pattern can be selected with the
-                mouse and moved right/left with the arrow keys.
-        -   Added support for using special keys to manipulate some of the
-            user-interface elements:
-            -   The "l" and "r" keys initiate arrow movement of the performance
-                markers, with "x" to escape this mode.
-            -   Also supplemented the mouse with "p" to start paint/draw mode, and
-                "x" to escape it, in the sequence and song editors.
-            -   Add "z" and "Z" keys to zoom out and zoom in the pattern and song
-                piano rolls.  "0" restores the default zoom.
-        -   Configurable progress bar, font, redraw timeouts, colors, and more.
-            More coloring to help show various editing elements.
-        -   The "rc" configuration file has been upgraded to support a couple
-            more options, including the enabling/disabling of LASH session
-            support.
-        -   The "user" configuration file is now written, as well as being read.
-            It contains more extensive run-time configuration for
-            the user-interface.
-            -   [user-interface-setting]
-                -   Style of the main-window grid
-                -   Control height
-                -   Allowing two performance editors onscreen
-                -   The page settings of scrollbar.
-            -   [user-midi-settings]
-                -   Global PPQN value
-                -   Global beats per bar and per minute, beat width
-                -   Global MIDI buss override
-        -   Fixed a long-standing (back to seq24) bug that caused the main window
-            buttons to grab focus, causing the space bar to press the button, as
-            well as doing its start function.
-        -   Internal (invisible) work:
-            -   The code has been broken up into libraries, for better separation
-                between GUI support and the files, MIDI, JACK, and LASH support.
-            -   A wide range of MIDI files have been tested, to find bugs that
-                can crash the application.  A nice increase in robustness.
-            -   Centralized dirtiness-handling to the perform module, and
-                improving its accuracy and comprehensiveness.
-            -   Set Tempo and Time Signature events are now read from
-                non-Sequencer64 MIDI files, and are also saved in the normal
-                MIDI format, for compatibility with other sequencers.
-            -   Sequencer64 now loads large MIDI files quickly, and plays
-                with throughput comparable to seq24.
     -   For more version information, see the NEWS file.
 
 This package is currently oriented to developers.  It is fairly well
@@ -210,9 +101,19 @@ Initial work/thought/documentation started in July of 2015.
 
 See the ROADMAP file for more information and a kind of TODO list.  Also see
 contrib/notes/bugs_to_investigate.  Sequencer64 is well-documented by the
-following project, which provides a 100+-page PDF file and its LaTeX source
+following project, which provides a 170+-page PDF file and its LaTeX source
 code:
 
    https://github.com/ahlstromcj/sequencer64-doc.git
+
+Legacy Sequencer64: Sequencer64/sequencer64
+
+    This is the original version of the project, which we are preserving until
+    the bug reports for the native-JACK version slow down to a trickle.
+
+PortMIDI: Seq64portmidi/seq64portmidi
+
+    Builds and runs via the portmidi library in a Linux distro.  Has issues
+    and is deprecated.
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

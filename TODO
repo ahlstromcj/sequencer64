@@ -263,7 +263,7 @@ Active GitHub Issues:
  *  71 milkmuruki : On start; activated patterns become inactive on play
     (once)
 
-    72 Animtim : ghost mute group always coming back in rc
+ *  72 Animtim : ghost mute group always coming back in rc
 
  *  Fixed, not yet closed.
 
@@ -292,9 +292,6 @@ Active GitHub Issues:
 
  *  76 layk : latest wip -ed -er seq64 crash when button 'Jack Transport
     Connect' is used.
-
-    Fixed, but not yet closed.
-
 
 Upgrades:
 

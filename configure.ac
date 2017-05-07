@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-05-06
+dnl \update        2017-05-07
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -639,7 +639,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-05-06"
+#define VERSION_DATE_SHORT "2017-05-07"
 #define VERSION "0.90.5"
 
 )

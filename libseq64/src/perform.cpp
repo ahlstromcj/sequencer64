@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-05-06
+ * \updates       2017-05-07
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -286,7 +286,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_was_active_names          (),         // boolean array [c_max_sequence]
     m_sequence_state            (),         // boolean array [c_max_sequence]
     m_screenset_state           (),         // boolean array [c_seqs_in_set]
-    m_queued_replace            (false),    // in queued-solo mode?
+    m_queued_replace_slot       (SEQ64_NO_QUEUED_SOLO),
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_transpose                 (0),
 #endif
@@ -1912,14 +1912,7 @@ perform::set_playing_screenset ()
     {
         int source = m_playscreen_offset + s;
         if (is_active(source))
-        {
-            /*
-             * \tricky
-             *      These indices are what we want, don't change them.
-             */
-
             m_tracks_mute_state[s] = m_seqs[source]->get_playing();
-        }
     }
     m_playscreen = m_screenset;
     m_playscreen_offset = screenset_offset(m_playscreen);
@@ -4056,9 +4049,7 @@ void
 perform::clear_current_screenset ()
 {
     for (int s = 0; s < m_seqs_in_set; ++s)
-    {
         m_screenset_state[s] = false;
-    }
 }
 
 /**
@@ -4105,16 +4096,22 @@ perform::unset_sequence_control_status (int status)
 /**
  *  Helper function that clears the queued-replace feature.  This also clears
  *  the queue mode; we shall see if this disrupts any user's workflow.
+ *
+ * \param clearbits
+ *      If true (the default), then clear the queue and replace status bits.
+ *      If the user is simply replacing the current replace pattern with
+ *      another pattern, we pass false for this parameter.
  */
 
 void
-perform::unset_queued_replace ()
+perform::unset_queued_replace (bool clearbits)
 {
-    if (m_queued_replace)
+    if (m_queued_replace_slot != SEQ64_NO_QUEUED_SOLO)
     {
-        m_control_status &= ~c_status_queue;
-        m_queued_replace = false;
+        m_queued_replace_slot = SEQ64_NO_QUEUED_SOLO;
         clear_current_screenset();
+        if (clearbits)
+            m_control_status &= ~(c_status_queue|c_status_replace);
     }
 }
 
@@ -4143,7 +4140,10 @@ perform::unset_queued_replace ()
  *
  * \param seq
  *      The sequence number of the sequence to be potentially toggled.
- *      This value must be a valid and active sequence number.
+ *      This value must be a valid and active sequence number. If in
+ *      queued-replace mode, and if this pattern number is different from the
+ *      currently-stored number (m_queued_replace_slot), then we clear the
+ *      currently stored set of patterns and set new stored patterns.
  */
 
 void
@@ -4155,11 +4155,19 @@ perform::sequence_playing_toggle (int seq)
         bool is_replace = (m_control_status & c_status_replace) != 0;
         if (is_queue && is_replace)
         {
-            if (! m_queued_replace)
+            if (m_queued_replace_slot != SEQ64_NO_QUEUED_SOLO)
+            {
+                if (seq != m_queued_replace_slot)
+                {
+                    unset_queued_replace(false);    /* do not clear bits    */
+                    save_current_screenset(seq);
+                }
+            }
+            else
                 save_current_screenset(seq);
 
             unqueue_sequences(seq);
-            m_queued_replace = true;
+            m_queued_replace_slot = seq;
         }
         else if (is_queue)
         {

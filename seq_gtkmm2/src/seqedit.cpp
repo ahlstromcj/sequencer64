@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-18
+ * \updates       2017-05-07
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -110,7 +110,9 @@
 #endif
 
 /*
- * Saves some typing.
+ * Saves some typing.  We could, like Stazed, limit the scope of this to
+ * popup_sequence_menu(), popup_event_menu(), popup_record_menu(),
+ * create_menus(), popup_tool_menu(), etc.
  */
 
 using namespace Gtk::Menu_Helpers;
@@ -268,6 +270,9 @@ seqedit::seqedit
     m_menu_bpm          (manage(new Gtk::Menu())),
     m_menu_bw           (manage(new Gtk::Menu())),
     m_menu_rec_vol      (manage(new Gtk::Menu())),
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    m_menu_rec_type     (nullptr),
+#endif
     m_vadjust           (manage(new Gtk::Adjustment(55, 0, c_num_keys, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll_new       (manage(new Gtk::VScrollbar(*m_vadjust))),
@@ -335,6 +340,9 @@ seqedit::seqedit
     m_button_bw         (nullptr),
     m_entry_bw          (nullptr),
     m_button_rec_vol    (manage(new Gtk::Button())),
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    m_button_rec_type   (manage(new Gtk::Button())),
+#endif
     m_toggle_play       (manage(new Gtk::ToggleButton())),
     m_toggle_record     (manage(new Gtk::ToggleButton())),
     m_toggle_q_rec      (manage(new Gtk::ToggleButton())),
@@ -460,6 +468,28 @@ seqedit::seqedit
     );
     add_tooltip(m_toggle_q_rec, "If active, quantized record.");
 
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+
+    /*
+     * Provides a button to set the recording style to "legacy" (when looping,
+     * merge new incoming events into the patter), "overwrite" (replace events
+     * with incoming events), and "expand" (increase the size of the loop to
+     * accomodate new events).
+     */
+
+    m_button_rec_type = manage(new Gtk::Button("Merge"));
+    m_button_rec_type->signal_clicked().connect
+    (
+        mem_fun(*this, &seqedit::popup_record_menu)
+    );
+    add_tooltip
+    (
+        m_button_rec_type,
+        "Select recording type for patterns: merge events; overwrite events; "
+        "or expand the pattern size while recording."
+    );
+#endif  // SEQ64_STAZED_EXPAND_RECORD
+
 #define SET_POPUP   mem_fun(*this, &seqedit::popup_menu)
 
     m_button_rec_vol->add(*manage(new Gtk::Label("Vol")));
@@ -482,6 +512,9 @@ seqedit::seqedit
     m_toggle_record->set_active(m_seq.get_recording());
     m_toggle_thru->set_active(m_seq.get_thru());
     dhbox->pack_end(*m_button_rec_vol, false, false, 4);
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    dhbox->pack_end(*m_button_rec_type, false, false, 4);
+#endif
     dhbox->pack_end(*m_toggle_q_rec, false, false, 4);
     dhbox->pack_end(*m_toggle_record, false, false, 4);
     dhbox->pack_end(*m_toggle_thru, false, false, 4);
@@ -530,6 +563,11 @@ seqedit::seqedit
     set_zoom(zoom);
     set_beats_per_bar(m_seq.get_beats_per_bar());
     set_beat_width(m_seq.get_beat_width());
+
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    m_seq.set_unit_measure();              /* must precede set_measures()  */
+#endif
+
     set_measures(get_measures());
     set_midi_channel(m_seq.get_midi_channel());
 
@@ -594,7 +632,6 @@ seqedit::~seqedit()
 void
 seqedit::create_menus ()
 {
-    using namespace Gtk::Menu_Helpers;
     char b[8];
     for (int z = usr().min_zoom(); z <= usr().max_zoom(); z *= 2)
     {
@@ -1786,6 +1823,60 @@ seqedit::popup_event_menu ()
     m_menu_data->popup(0, 0);
 }
 
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+
+void
+seqedit::popup_record_menu()
+{
+    bool legacy = !
+    (
+        m_seq.get_overwrite_rec() ||
+        m_seqroll_wid->get_expanded_record()
+    );
+    m_menu_rec_type = manage(new Gtk::Menu());
+    m_menu_rec_type->items().push_back
+    (
+        ImageMenuElem
+        (
+            "Legacy merge-looped recording",
+            *create_menu_image(legacy),
+            sigc::bind
+            (
+                mem_fun(*this, &seqedit::set_rec_type), LOOP_RECORD_LEGACY
+            )
+        )
+    );
+
+    m_menu_rec_type->items().push_back
+    (
+        ImageMenuElem
+        (
+            "Overwrite looped recording",
+            *create_menu_image(m_seq.get_overwrite_rec()),
+            sigc::bind
+            (
+                mem_fun(*this, &seqedit::set_rec_type), LOOP_RECORD_OVERWRITE
+            )
+        )
+    );
+
+    m_menu_rec_type->items().push_back
+    (
+        ImageMenuElem
+        (
+            "Expand sequence length to fit recording",
+            *create_menu_image(m_seqroll_wid->get_expanded_record()),
+            sigc::bind
+            (
+                mem_fun(*this, &seqedit::set_rec_type), LOOP_RECORD_EXPAND
+            )
+        )
+    );
+    m_menu_rec_type->popup(0, 0);
+}
+
+#endif  // SEQ64_STAZED_EXPAND_RECORD
+
 /**
  *  Selects the given MIDI channel parameter in the main sequence object,
  *  so that it will use that channel.
@@ -2012,6 +2103,9 @@ void
 seqedit::apply_length (midibpm bpm, int bw, int measures)
 {
     m_seq.set_length(measures_to_ticks(bpm, m_ppqn, bw, measures));
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    m_seq.set_unit_measure();           /* for progress and redrawing   */
+#endif
     m_seqroll_wid->reset();
     m_seqtime_wid->reset();
     m_seqdata_wid->reset();
@@ -2031,13 +2125,17 @@ seqedit::apply_length (midibpm bpm, int bw, int measures)
 long
 seqedit::get_measures ()
 {
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    midipulse units = m_seq.get_unit_measure();
+#else
     midipulse units = measures_to_ticks
     (
         m_seq.get_beats_per_bar(), m_ppqn, m_seq.get_beat_width()
     );
+#endif
     long measures = m_seq.get_length() / units;
     if (m_seq.get_length() % units != 0)
-        measures++;
+        ++measures;
 
     return measures;
 }
@@ -2199,12 +2297,19 @@ seqedit::record_change_callback ()
 
 /**
  *  Passes the quantized-recording status to the sequence object.
+ *
+ * Stazed fix:
+ *
+ *      If we set Quantized recording, then also set recording, but do not
+ *      unset recording if we unset Quantized recording.
  */
 
 void
 seqedit::q_rec_change_callback ()
 {
     m_seq.set_quantized_rec(m_toggle_q_rec->get_active());
+    if (m_toggle_q_rec->get_active() && ! m_toggle_record->get_active())
+        m_toggle_record->activate();
 }
 
 /**
@@ -2288,6 +2393,55 @@ seqedit::set_rec_vol (int recvol)
     usr().velocity_override(recvol);    /* save to the "usr" config file    */
 }
 
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+
+void
+seqedit::set_rec_type (loop_record_t rectype)
+{
+    std::string label = "Merge";
+    switch (rectype)
+    {
+    case LOOP_RECORD_LEGACY:
+
+        m_seq.set_overwrite_rec(false);
+        m_seqroll_wid->set_expanded_recording(false);
+        break;
+
+    case LOOP_RECORD_OVERWRITE:
+
+        m_seq.set_overwrite_rec(true);
+        m_seqroll_wid->set_expanded_recording(false);
+        label = "Replace";
+        break;
+
+    case LOOP_RECORD_EXPAND:
+
+        m_seq.set_overwrite_rec(false);
+        m_seqroll_wid->set_expanded_recording(true);
+        label = "Expand";
+        break;
+
+    default:
+
+        /*
+         * We could also offer a true-true setting to overwrite and expand.
+         * :-)
+         */
+
+        break;
+    }
+
+    Gtk::Label * ptr(dynamic_cast<Gtk::Label *>(m_button_rec_type->get_child()));
+    if (not_nullptr(ptr))
+    {
+        char temp[8];
+        snprintf(temp, sizeof(temp), "%s", label.c_str());
+        ptr->set_text(temp);
+    }
+}
+
+#endif  // SEQ64_STAZED_EXPAND_RECORD
+
 /**
  *  Sets the data type based on the given parameters.  This function uses the
  *  hardwired array c_controller_names.
@@ -2360,6 +2514,34 @@ seqedit::timeout ()
         m_seq.set_raise(false);
         raise();
     }
+
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+
+    m_seqroll_wid->draw_progress_on_window();
+    if
+    (
+        m_seq.get_recording() &&
+        m_seqroll_wid->get_expanded_record() &&
+        (
+            m_seq.get_last_tick() >=
+            (m_seq.get_length() - m_seq.get_unit_measure() / 4)
+        )
+    )
+    {
+        set_measures(get_measures() + 1);
+        m_seqroll_wid->follow_progress();
+    }
+    if
+    (
+        perf().is_running() && perf().get_follow_transport() &&
+        ! (m_seqroll_wid->get_expanded_record() && m_seq.get_recording())
+    )
+    {
+        m_seqroll_wid->follow_progress();       /* keep up with progress    */
+    }
+
+#else
+
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
     /*
@@ -2368,8 +2550,11 @@ seqedit::timeout ()
      */
 
     if (perf().is_running() && perf().get_follow_transport())
-#endif
+#endif  // SEQ64_STAZED_JACK_SUPPORT
+
         m_seqroll_wid->follow_progress();       /* keep up with progress    */
+
+#endif  // SEQ64_STAZED_EXPAND_RECORD
 
     if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */
     {

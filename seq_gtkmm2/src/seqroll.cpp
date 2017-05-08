@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-24
+ * \updates       2017-05-07
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -195,6 +195,9 @@ seqroll::seqroll
 #endif
     m_background_sequence   (0),
     m_drawing_background_seq(false),
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    m_expanded_recording    (false),
+#endif
     m_status                (0),
     m_cc                    (0)
 {
@@ -667,6 +670,10 @@ seqroll::update_pixmap ()
 void
 seqroll::draw_progress_on_window ()
 {
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    static int s_last_scroll = 0;
+#endif
+
     if (perf().is_running())
     {
         if (usr().progress_bar_thick())
@@ -677,16 +684,36 @@ seqroll::draw_progress_on_window ()
         else
             draw_drawable(m_progress_x, 0, m_progress_x, 0, 1, m_window_y);
 
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+        long last_progress = m_progress_x;
+        if (s_last_scroll < m_scroll_offset_x)
+        {
+            last_progress -= m_scroll_offset_x;
+            s_last_scroll = m_scroll_offset_x;
+        }
+#endif
+
         m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
+
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+        if (m_progress_x < last_progress)
+        {
+            m_seq.set_loop_reset(true);     /* for overwrite recording  */
+            s_last_scroll = 0;
+        }
+#endif
 
         /*
          * Ensure that the occasional slightly negative value still allows the
          * progress bar to be drawn.
          */
 
-        if (m_progress_x > -16)             // if (m_progress_x >= 0)
+        if (m_progress_x > -16)             /* if (m_progress_x >= 0)   */
         {
-            draw_line(progress_color(), m_progress_x, 0, m_progress_x, m_window_y);
+            draw_line
+            (
+                progress_color(), m_progress_x, 0, m_progress_x, m_window_y
+            );
             if (usr().progress_bar_thick())
                 set_line(Gdk::LINE_SOLID, 1);
         }
@@ -714,18 +741,36 @@ seqroll::draw_progress_on_window ()
 void
 seqroll::follow_progress ()
 {
-    midipulse progress_tick = m_seq.get_last_tick();
-    if (progress_tick > 0)
+
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    if (m_expanded_recording && m_seq.get_recording())
     {
-        int progress_x = progress_tick / m_zoom + SEQ64_PROGRESS_PAGE_OVERLAP;
-        int page = progress_x / m_window_x;
-        if (page != m_scroll_page)
-        {
-            midipulse left_tick = page * m_window_x * m_zoom;
-            m_scroll_page = page;
-            m_hadjust.set_value(double(left_tick));
-        }
+        double h_max_value = m_seq.get_length() - m_window_x * m_zoom;
+        m_hadjust.set_value(h_max_value);
     }
+    else                                        /* use for non-recording */
+    {
+#endif // SEQ64_STAZED_EXPAND_RECORD
+
+        midipulse progress_tick = m_seq.get_last_tick();
+        if (progress_tick > 0)
+        {
+            int progress_x = progress_tick / m_zoom + SEQ64_PROGRESS_PAGE_OVERLAP;
+            int page = progress_x / m_window_x;
+            if
+            (
+                page != m_scroll_page ||
+                (page == 0 && m_hadjust.get_value() != 0)  // NEW CHECK
+            )
+            {
+                midipulse left_tick = page * m_window_x * m_zoom;
+                m_scroll_page = page;
+                m_hadjust.set_value(double(left_tick));
+            }
+        }
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    }
+#endif
 }
 
 #else

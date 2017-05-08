@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-02-20
+ * \updates       2017-05-07
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -49,6 +49,14 @@
 #include "mutex.hpp"                    /* seq64::mutex, automutex  */
 #include "scales.h"                     /* key and scale constants  */
 #include "triggers.hpp"                 /* seq64::triggers, etc.    */
+
+/**
+ *  EXPERIMENTAL.
+ *  Enables the Stazed/Seq32 code for adding overwrite and expand looping
+ *  modes to the legacy merge looping recording mode.
+ */
+
+#define SEQ64_STAZED_EXPAND_RECORD
 
 /**
  * \obsolete
@@ -86,6 +94,21 @@ enum draw_type_t
     DRAW_NOTE_ON,           /**< For starting the drawing of a note.        */
     DRAW_NOTE_OFF           /**< For finishing the drawing of a note.       */
 };
+
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+
+/**
+ *  Provides the supported looping recording modes.
+ */
+
+enum loop_record_t
+{
+    LOOP_RECORD_LEGACY = 0, /**< Incoming events are merged into the loop.  */
+    LOOP_RECORD_OVERWRITE,  /**< Incomfing events overwrite the loop.       */
+    LOOP_RECORD_EXPAND      /**< Incoming events increase size of loop.     */
+};
+
+#endif  // SEQ64_STAZED_EXPAND_RECORD
 
 /**
  *  The sequence class is firstly a receptable for a single track of MIDI
@@ -310,6 +333,23 @@ private:
 
     bool m_queued;
 
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+
+    /**
+     *  Indicates if overwrite recording more is in force.
+     */
+
+    bool m_overwrite_recording;
+
+    /**
+     *  Indicates if the play marker has gone to the beginning of the sequence
+     *  upon looping.
+     */
+
+    bool m_loop_reset;
+
+#endif  // SEQ64_STAZED_EXPAND_RECORD
+
     /**
      *  These flags indicate that the content of the sequence has changed due
      *  to recording, editing, performance management, or even (?) a
@@ -385,6 +425,16 @@ private:
      */
 
     midipulse m_snap_tick;
+
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+
+    /**
+     *  Hold the current unit for a measure.  Need to clarifiy this one.
+     */
+
+    midipulse m_unit_measure;
+
+#endif  // SEQ64_STAZED_EXPAND_RECORD
 
     /**
      *  Provides the number of beats per bar used in this sequence.  Defaults
@@ -1372,6 +1422,44 @@ public:
         return m_note_off_margin;
     }
 
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+
+    void set_unit_measure ();
+
+    /**
+     * \getter m_unit_measure
+     */
+
+    midipulse get_unit_measure ()
+    {
+        return m_unit_measure;
+    }
+
+    void set_overwrite_rec (bool ovwr);
+
+    /**
+     * \getter m_overwrite_recording
+     */
+
+    bool get_overwrite_rec ()
+    {
+        return m_overwrite_recording;
+    }
+
+    void set_loop_reset (bool reset);
+
+    /**
+     * \getter m_loop_reset
+     */
+
+    bool get_loop_reset ()
+    {
+        return m_loop_reset;
+    }
+
+
+#endif  // SEQ64_STAZED_EXPAND_RECORD
+
 private:
 
     /**
@@ -1410,6 +1498,9 @@ private:
 
     void set_parent (perform * p);
     void put_event_on_bus (event & ev);
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    void reset_loop ();
+#endif
     void set_trigger_offset (midipulse trigger_offset);
     void adjust_trigger_offsets_to_length (midipulse newlen);
     midipulse adjust_offset (midipulse offset);

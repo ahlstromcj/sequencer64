@@ -1,4 +1,4 @@
-README for Sequencer64 0.90.5 (Native JACK and CLI)
+README for Sequencer64 0.90.6 (Native JACK and CLI)
 Chris Ahlstrom
 2015-09-10 to 2017-05-07
 
@@ -28,6 +28,10 @@ GUI-less native JACK support: Seq64rtmidi/seq64cli
 With the big version jump from 0.9 to 0.90, the install process has changed.
 See the INSTALL file.
 
+    -   Version 0.90.6:
+        -   Added the Stazed Seq32 upgrade to allow, in addition to
+            merge-on-record, overwrite-on-record and expand-measures on
+            record.
     -   Version 0.90.5:
         -   Added a queued-replace (queued-solo) feature.  It works only with
             the current (in-view) screen-set.  See issue #74.

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-21
+ * \updates       2017-05-07
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -243,6 +243,10 @@ private:
     Gtk::Menu * m_menu_bw;              /**< Beat-width denominator menu.   */
     Gtk::Menu * m_menu_rec_vol;         /**< Recording level "Vol" button.  */
 
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    Gtk::Menu * m_menu_rec_type;        /**< Recording type menu.           */
+#endif
+
     /**
      *  Scrollbar and adjustment objects for horizontal and vertical panning.
      */
@@ -354,6 +358,11 @@ private:
     Gtk::Button * m_button_bw;          /**< Button for Beat-Width menu.    */
     Gtk::Entry * m_entry_bw;            /**< Text for chosen Beat-Width.    */
     Gtk::Button * m_button_rec_vol;     /**< Button for recording volume.   */
+
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    Gtk::Button * m_button_rec_type;    /**< Button for recording type.     */
+#endif
+
     Gtk::ToggleButton * m_toggle_play;  /**< Pattern-to-MIDI record button. */
     Gtk::ToggleButton * m_toggle_record; /**< MIDI-port-to-pattern button.  */
     Gtk::ToggleButton * m_toggle_q_rec; /**< Quantized-record MIDI button.  */
@@ -403,6 +412,10 @@ private:
     void set_beat_width (int bw);
     void set_transpose_image (bool istransposable);
     void set_rec_vol (int recvol);
+
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    void set_rec_type (loop_record_t rectype);
+#endif
 
     /**
      *  This function provides optimization for the on_scroll_event() function.
@@ -489,6 +502,11 @@ private:
     void create_menus ();
     void popup_menu (Gtk::Menu * menu);
     void popup_event_menu ();
+
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    void popup_record_menu ();
+#endif
+
     void popup_midibus_menu ();
     void popup_sequence_menu ();
     void popup_tool_menu ();

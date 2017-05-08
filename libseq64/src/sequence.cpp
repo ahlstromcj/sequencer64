@@ -102,6 +102,10 @@ sequence::sequence (int ppqn)
     m_quantized_rec             (false),
     m_thru                      (false),
     m_queued                    (false),
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    m_overwrite_recording       (false),
+    m_loop_reset                (false),
+#endif
     m_dirty_main                (true),
     m_dirty_edit                (true),
     m_dirty_perf                (true),
@@ -117,6 +121,9 @@ sequence::sequence (int ppqn)
     m_seq_number                (-1),           /* may be set later          */
     m_length                    (0),            /* set in constructor body   */
     m_snap_tick                 (0),            /* set in constructor body   */
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+    m_unit_measure              (0),
+#endif
     m_time_beats_per_measure    (4),
     m_time_beat_width           (4),
     m_clocks_per_metronome      (24),
@@ -363,6 +370,17 @@ sequence::pop_trigger_redo ()
     automutex locker(m_mutex);
     m_triggers.pop_redo();
 }
+
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+
+void
+sequence::set_unit_measure ()
+{
+    automutex locker(m_mutex);
+    m_unit_measure = get_beats_per_bar() * (m_ppqn * 4) / get_beat_width();
+}
+
+#endif  // SEQ64_STAZED_EXPAND_RECORD
 
 /**
  * \setter m_masterbus
@@ -2938,6 +2956,18 @@ sequence::stream_event (event & ev)
     bool result = channel_match(ev);            /* set if channel matches   */
     if (result)
     {
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+        /*
+         * If in overwrite record more, any events after reset should clear
+         * the old items from the previous pass through the loop.
+         */
+
+        if (m_overwrite_recording && m_loop_reset)
+        {
+            m_loop_reset = false;
+            remove_all();                       /* clear old items          */
+        }
+#endif
         ev.set_status(ev.get_status());         /* clear the channel nybble */
         ev.mod_timestamp(m_length);             /* adjust the tick          */
         if (m_recording)
@@ -4269,6 +4299,36 @@ sequence::set_quantized_rec (bool qr)
     automutex locker(m_mutex);
     m_quantized_rec = qr;
 }
+
+#ifdef SEQ64_STAZED_EXPAND_RECORD
+
+/**
+ * \setter m_overwrite_recording
+ *
+ * \threadsafe
+ */
+
+void
+sequence::set_overwrite_rec (bool ovwr)
+{
+    automutex locker(m_mutex);
+    m_overwrite_recording = ovwr;
+}
+
+/**
+ * \setter m_loop_reset
+ *
+ * \threadsafe
+ */
+
+void
+sequence::set_loop_reset (bool reset)
+{
+    automutex locker(m_mutex);
+    m_loop_reset = reset;
+}
+
+#endif  // SEQ64_STAZED_EXPAND_RECORD
 
 /**
  * \setter m_thru

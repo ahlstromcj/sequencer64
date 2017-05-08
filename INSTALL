@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.90.5 and above
+INSTALL for Sequencer64 v. 0.90.6 and above
 Chris Ahlstrom
-2015-09-10 to 2017-05-01
+2015-09-10 to 2017-05-07
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -218,6 +218,17 @@ MANUALLY-DEFINED MACROS IN CODE:
     experiment-happy people will normally want to change the define-state of
     these macros.  We have consolidated them into a single file,
     libseq64/include/seq64_features.h, to make them easier to find and edit.
+
+    SEQ64_STAZED_EXPAND_RECORD:
+
+        This macro, defined by default, turns on the ability to specify
+        different behavior in recording.  Normally, when a pattern loops to
+        the beginning, and new events are received, then these new events are
+        added to the events already there.  If this macro is defined, then
+        the seqedit window provides a record modification button which lets
+        the user select "Overwrite", which deletes the events in the pattern
+        at the beginning of the loop, and "Expand", which adds measures to the
+        pattern as the progress of recording moves forward.
 
     SEQ64_EDIT_SEQUENCE_HIGHLIGHT:
 

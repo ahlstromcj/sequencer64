@@ -400,6 +400,7 @@ private:
     void set_snap (int snap);
     void set_note_length (int note_length);
     void set_beats_per_bar (int bpm);
+    void set_beats_per_bar_manual ();
     void set_beat_width (int bw);
     void set_transpose_image (bool istransposable);
     void set_rec_vol (int recvol);
@@ -461,6 +462,7 @@ private:
     }
 
     void set_measures (int lim);
+    void set_measures_manual ();
     void apply_length (midibpm bpm, int bw, int measures);
     long get_measures ();
     void set_midi_channel (int midichannel, bool user_change = false);

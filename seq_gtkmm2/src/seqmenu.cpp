@@ -76,14 +76,15 @@ seqmenu::SeqeditMap seqmenu::sm_seqedit_list;
 
 seqmenu::seqmenu (perform & p)
  :
-    m_menu          (nullptr),
-    m_mainperf      (p),
-    m_clipboard     (),
-    m_seqedit       (nullptr),
-    m_eventedit     (nullptr),
-    m_current_seq   (SEQ64_ALL_TRACKS)  /* (0) is not really current yet    */
+    m_menu              (nullptr),
+    m_mainperf          (p),
+    m_clipboard         (),
+    m_clipboard_empty   (true),
+    m_seqedit           (nullptr),
+    m_eventedit         (nullptr),
+    m_current_seq       (SEQ64_ALL_TRACKS)  /* (0) is not really current yet    */
 {
-    m_clipboard.set_master_midi_bus(&m_mainperf.master_bus());
+
 }
 
 /**
@@ -579,7 +580,12 @@ void
 seqmenu::seq_copy ()
 {
     if (is_current_seq_active())        /* also checks sequence pointer */
+    {
         m_clipboard.partial_assign(*get_current_sequence());
+
+        if (m_clipboard_empty)
+            m_clipboard_empty = false;
+    }
 }
 
 /**
@@ -620,7 +626,7 @@ seqmenu::seq_paste ()
     {
         new_current_sequence();
         sequence * s = get_current_sequence();
-        if (not_nullptr(s))
+        if (not_nullptr(s) && !m_clipboard_empty)
         {
             s->partial_assign(m_clipboard);
             s->set_dirty();

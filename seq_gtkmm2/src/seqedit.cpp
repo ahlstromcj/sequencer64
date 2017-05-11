@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-18
+ * \updates       2017-05-10
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1178,12 +1178,12 @@ seqedit::fill_top_bar ()
     m_entry_bpm->set_editable(true);
     m_entry_bpm->signal_activate().connect
     (
-        mem_fun(*this, &seqedit::set_beats_per_bar_manual)
+        mem_fun(*this, &seqedit::set_beats_per_bar_manual)  /* issue #77    */
     );
     m_hbox->pack_start(*m_button_bpm , false, false);
     m_hbox->pack_start(*m_entry_bpm , false, false);
     m_hbox->pack_start(*(manage(new Gtk::Label("/"))), false, false, 4);
-    m_button_bw = manage(new Gtk::Button());            /* beat width        */
+    m_button_bw = manage(new Gtk::Button());                /* beat width   */
     m_button_bw->add(*manage(new PIXBUF_IMAGE(down_xpm)));
     m_button_bw->signal_clicked().connect
     (
@@ -1195,7 +1195,7 @@ seqedit::fill_top_bar ()
     m_entry_bw->set_editable(false);
     m_hbox->pack_start(*m_button_bw , false, false);
     m_hbox->pack_start(*m_entry_bw , false, false);
-    m_button_length = manage(new Gtk::Button());        /* length of pattern */
+    m_button_length = manage(new Gtk::Button());            /* pattern length */
     m_button_length->add(*manage(new PIXBUF_IMAGE(length_short_xpm)));
     m_button_length->signal_clicked().connect
     (
@@ -1207,7 +1207,7 @@ seqedit::fill_top_bar ()
     m_entry_length->set_editable(true);
     m_entry_length->signal_activate().connect
     (
-        mem_fun(*this, &seqedit::set_measures_manual)
+        mem_fun(*this, &seqedit::set_measures_manual)       /* issue #77    */
     );
     m_hbox->pack_start(*m_button_length , false, false);
     m_hbox->pack_start(*m_entry_length , false, false);
@@ -2069,21 +2069,22 @@ seqedit::set_measures (int lim)
     m_entry_length->set_text(b);
     m_measures = lim;
     apply_length(m_seq.get_beats_per_bar(), m_seq.get_beat_width(), lim);
+
+    printf("measures = %d\n", lim);
 }
 
 /**
- *  Set the measures value manually
+ *  Set the measures value manually.  For issue #77, pulled from the
+ *  jean-emmanual-manul-bpm-and-measure branch.
  */
 
 void
 seqedit::set_measures_manual ()
 {
-    int lim = atoi( m_entry_length->get_text().c_str() );
-
-    if (lim > 0 && lim < 1025)
-        this->set_measures(lim);
+    int lim = atoi(m_entry_length->get_text().c_str());
+    if (lim > 0 && lim <= 1024)
+        set_measures(lim);
 }
-
 
 /**
  *  Set the bpm (beats per measure) value, using the given parameter, and
@@ -2107,22 +2108,23 @@ seqedit::set_beats_per_bar (int bpm)
         long len = get_measures();
         m_seq.set_beats_per_bar(bpm);
         apply_length(bpm, m_seq.get_beat_width(), len);
+
+        printf("beats/bar = %d\n", bpm);
     }
 }
 
 /**
- *  Set the bpm (beats per measure) value manually
+ *  Set the bpm (beats per measure) value manually.  For issue #77, pulled
+ *  from the jean-emmanual-manul-bpm-and-measure branch.
  */
 
 void
 seqedit::set_beats_per_bar_manual ()
 {
-    int bpm = atoi( m_entry_bpm->get_text().c_str() );
-
-    if (bpm > 0 && bpm < 129)
-        this->set_beats_per_bar(bpm);
+    int bpm = atoi(m_entry_bpm->get_text().c_str());
+    if (bpm > 0 && bpm <= 128)
+        set_beats_per_bar(bpm);
  }
-
 
 /**
  *  Set the bw (beat width) value, using the given parameter, and

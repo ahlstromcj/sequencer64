@@ -8,7 +8,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-03-21
+ * \updates       2017-05-08
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the JACK information of
@@ -26,7 +26,8 @@
  *  We've tried this false, now trying it true.  And vice versa.
  */
 
-#define SEQ64_RTMIDI_MULTICLIENT        false
+#define SEQ64_RTMIDI_MULTICLIENT        true
+#define SEQ64_RTMIDI_NO_MULTICLIENT     false
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -55,17 +56,11 @@ private:
      *  they will use the JACK client created here.  And this class will have
      *  to close out its own client so it will not persist in the JACK
      *  client list (e.g. in QJackCtl).
+     *
+     *  To be changed to use one input client, and one output client.
      */
 
     bool m_multi_client;
-
-    /*
-     *  Holds the data needed for JACK processing.  Please do not confuse this
-     *  item with m_jack_client or the m_midi_handle of the base class.
-     *  However, this object does hold a copy of the m_jack_client pointer.
-     *
-     *      midi_jack_data m_jack_data;
-     */
 
     /**
      *  Holds the port data.  Not for use with the multi-client option.
@@ -81,9 +76,18 @@ private:
      *  no way to get the actual fields in this structure; they can only be
      *  accessed through functions in the JACK API.  Note that it is also
      *  stored as a void pointer in midi_info::m_midi_handle.
+     *
+     *  In multi-client mode, this pointer is the output client pointer.
      */
 
     jack_client_t * m_jack_client;
+
+    /**
+     *  Holds the JACK input client pointer if multi-client mode is in force.
+     *  Otherwise, it is an unused null pointer.
+     */
+
+    jack_client_t * m_jack_client_2;
 
 public:
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2017-03-27
+ * \updates       2017-05-08
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -310,8 +310,8 @@ jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
  *
  *  # ifdef SEQ64_JACK_SESSION
  *  # else
- *      jack_status_t * pstatus = NULL;
- *      result = jack_client_open(name, JackNullOption, pstatus);
+ *      jack_status_t * ps = NULL;
+ *      result = jack_client_open(name, JackNullOption, ps);
  *  # endif
  *
  * \param clientname
@@ -340,41 +340,34 @@ create_jack_client
     jack_client_t * result = nullptr;
     const char * name = clientname.c_str();
     jack_status_t status;
-    jack_status_t * pstatus = &status;
+    jack_status_t * ps = &status;
+    jack_options_t options = JackNoStartServer;
     if (uuid.empty())
     {
-        result = jack_client_open(name, JackNoStartServer, pstatus);
+        result = jack_client_open(name, options, ps);
     }
     else
     {
         const char * uid = uuid.c_str();
-        result = jack_client_open
-        (
-            name, (jack_options_t)(JackNoStartServer|JackSessionID), pstatus, uid
-        );
+        options = (jack_options_t) (JackNoStartServer | JackSessionID);
+        result = jack_client_open(name, options, ps, uid);
     }
     apiprint("jack_client_open", clientname.c_str());
     if (not_nullptr(result))
     {
-        if (not_nullptr(pstatus))
-        {
-            if (status & JackServerStarted)
-                (void) info_message("JACK server started now");
-            else
-                (void) info_message("JACK server already started");
+        if (status & JackServerStarted)
+            (void) info_message("JACK server started now");
+        else
+            (void) info_message("JACK server already started");
 
-            if (status & JackNameNotUnique)
-            {
-                char temp[80];
-                snprintf
-                (
-                    temp, sizeof temp, "JACK client-name '%s' not unique", name
-                );
-                (void) info_message(temp);
-            }
-            else
-                show_jack_statuses(status);
+        if (status & JackNameNotUnique)
+        {
+            char t[80];
+            snprintf(t, sizeof t, "JACK client-name '%s' not unique", name);
+            (void) info_message(t);
         }
+        else
+            show_jack_statuses(status);
     }
     else
         (void) error_message("JACK server not running?");
@@ -1702,7 +1695,6 @@ jack_assistant::show_position (const jack_position_t & pos) const
 jack_client_t *
 jack_assistant::client_open (const std::string & clientname)
 {
-
     jack_client_t * result = create_jack_client
     (
         clientname, rc().jack_session_uuid()

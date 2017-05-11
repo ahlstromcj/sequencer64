@@ -86,7 +86,7 @@
  *  jack_port_get_buffer() returns a pointer to the memory area associated with
  *  the specified port. For an output port, it will be a memory area that can be
  *  written to; for an input port, it will be an area containing the data from
- *  the port's connection(s), or zero-filled. if there are multiple inbound
+ *  the port's connection(s), or zero-filled. If there are multiple inbound
  *  connections, the data will be mixed appropriately.  Do not cache the
  *  returned address across process() callbacks. Port buffers have to be
  *  retrieved in each callback for proper functionning.
@@ -407,7 +407,9 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
  *  We still need to figure out if we want a "master" client handle, or a
  *  handle to each port.  Same for the JACK data item.  Currently, we provide
  *  the m_multi_client member so that we can experiment, but "multi-client"
- *  mode is currently incompletely implemented.
+ *  mode is currently incompletely implemented.  Plus, we may want to use it
+ *  to choose between handling input/output both in the callback, as done
+ *  currently, or separating input and output into separate JACK clients.
  *
  *  Note that this constructor also adds its object to the midi_jack_info port
  *  list, so that the JACK callback functions can iterate through all of the
@@ -419,15 +421,19 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
  * \param masterinfo
  *      Provides a reference to the midi_jack_info object that may provide
  *      extra informatino that is needed by this port.  Too many entities!
+ *
+ * \param multiclient
+ *      If true, use multiple JACK clients.  EXPERIMENTAL.
  */
 
 midi_jack::midi_jack
 (
     midibus & parentbus,
-    midi_info & masterinfo
+    midi_info & masterinfo,
+    bool multiclient
 ) :
     midi_api            (parentbus, masterinfo),
-    m_multi_client      (SEQ64_RTMIDI_MULTICLIENT),
+    m_multi_client      (multiclient),  // (SEQ64_RTMIDI_NO_MULTICLIENT),
     m_remote_port_name  (),
     m_jack_info         (dynamic_cast<midi_jack_info &>(masterinfo)),
     m_jack_data         ()
@@ -456,6 +462,10 @@ midi_jack::~midi_jack ()
 {
     if (multi_client())
     {
+        /*
+         * We may be changing the potential usage of multi-client.
+         */
+
         close_port();
         close_client();
     }
@@ -493,8 +503,13 @@ midi_jack::api_init_out ()
     std::string remoteportname = connect_name();    /* "bus:port"   */
     remote_port_name(remoteportname);
     if (multi_client())
-        result = open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
+    {
+        /*
+         * We may be changing the potential usage of multi-client.
+         */
 
+        result = open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
+    }
     if (result)
     {
         result = create_ringbuffer(JACK_RINGBUFFER_SIZE);
@@ -565,6 +580,10 @@ midi_jack::api_init_in ()
     remote_port_name(remoteportname);
     if (multi_client())
     {
+        /*
+         * We may be changing the potential usage of multi-client.
+         */
+
         result = open_client_impl(SEQ64_MIDI_INPUT_PORT);
     }
     else
@@ -612,7 +631,13 @@ midi_jack::api_connect ()
     std::string localname = connect_name();     /* modified!    */
     bool result;
     if (multi_client())
+    {
+        /*
+         * We may be changing the potential usage of multi-client.
+         */
+
         jack_activate(client_handle());
+    }
 
     if (is_input_port())
         result = connect_port(SEQ64_MIDI_INPUT_PORT, remotename, localname);
@@ -676,7 +701,13 @@ midi_jack::api_init_out_sub ()
     bool result = true;
     master_midi_mode(SEQ64_MIDI_OUTPUT_PORT);    /* this is necessary */
     if (multi_client())
+    {
+        /*
+         * We may be changing the potential usage of multi-client.
+         */
+
         result = open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
+    }
 
     if (result)
     {
@@ -722,8 +753,13 @@ midi_jack::api_init_in_sub ()
     bool result = true;
     master_midi_mode(SEQ64_MIDI_INPUT_PORT);
     if (multi_client())
-        result = open_client_impl(SEQ64_MIDI_INPUT_PORT);
+    {
+        /*
+         * We may be changing the potential usage of multi-client.
+         */
 
+        result = open_client_impl(SEQ64_MIDI_INPUT_PORT);
+    }
     if (result)
     {
         int portid = parent_bus().get_port_id();
@@ -1010,8 +1046,6 @@ midi_jack::api_get_port_name ()
  *      -   jack_set_process_callback(), to set jack_process_rtmidi_input() or
  *          jack_process_rtmidi_output().
  *
- *  Note that jack_activate() is no longer called here.
- *
  *  For output, connects the MIDI output port.  The following calls are made:
  *
  *      -   jack_ringbuffer_create(), called twice, to initialize the
@@ -1019,16 +1053,13 @@ midi_jack::api_get_port_name ()
  *      -   jack_client_open(), to initialize JACK client
  *      -   jack_set_process_callback(), to set jack_process_inpu()
  *
- *  Note that jack_activate() is no longer called here.
- *
+ *  Note that jack_activate() is no longer called for input or output.
+ *  The call to jack_connect() is made in other functions.
  *  If the midi_jack_data client member is already set, this function returns
  *  immediately.  Only one client needs to be open for each midi_jack object.
  *
  *  Let's replace JackNullOption with JackNoStartServer.  We might also want to
  *  OR in the JackUseExactName option.
- *
- *  The former name of this function was a bit of a misnomer, since it does not
- *  actually call jack_connect().  That call is made in other functions.
  *
  *  Which "client" name?  Let's start with the full name, connect_name().
  *  Is UUID an output-only, input-only option, or both?
@@ -1071,10 +1102,6 @@ midi_jack::open_client_impl (bool input)
             client_handle(clipointer);          // midi_handle() too???
             if (input)
             {
-                /*
-                 * TODO:  MAKE SURE THE m_jack_data PORT VALUE IS NOT NULL!!!
-                 */
-
                 int rc = jack_set_process_callback
                 (
                     clipointer, jack_process_rtmidi_input, &m_jack_data
@@ -1083,8 +1110,7 @@ midi_jack::open_client_impl (bool input)
                 {
                     m_error_string = func_message
                     (
-                        "JACK error setting multi-client "
-                        "process-input callback"
+                        "JACK error setting multi-client input callback"
                     );
                     error(rterror::WARNING, m_error_string);
                 }
@@ -1102,8 +1128,7 @@ midi_jack::open_client_impl (bool input)
                     {
                         m_error_string = func_message
                         (
-                            "JACK error setting multi-client "
-                            "process-output callback"
+                            "JACK error setting multi-client output callback"
                         );
                         error(rterror::WARNING, m_error_string);
                     }

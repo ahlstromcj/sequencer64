@@ -11,6 +11,24 @@
  *  This class is meant to collect a whole bunch of JACK information
  *  about client number, port numbers, and port names, and hold them
  *  for usage when creating JACK midibus objects and midi_jack API objects.
+ *
+ * Multi-client mode:
+ *
+ *  As noted in issue #73 on GitHub, JACK MIDI timing can be a bit off:
+ *
+ *      I always notice small "timing drops" ...  when using jack midi. There
+ *      is no xrun, but just playing a regular kick with a high bpm, it's easy
+ *      to notice the time between kicks is not perfectly regular. Using alsa
+ *      midi, it always works as expected.  Oh, I just noticed this timing
+ *      issue is highly depending on jack buffer size.  I initially had it set
+ *      to 1024 (and 3 periods). Issue is subtle but can be heard.  Then I
+ *      tested with 256, and couldn't really hear the issue (but then I have
+ *      occasional xruns, very few but still).  Then I tested with 2048, and
+ *      the issue gets really worse, really easy to hear it.  A TimeTest.midi
+ *      file is provided to demonstrate this issue.
+ *
+ *  So we're going to try to put MIDI input and output on separate clients, as
+ *  an option.
  */
 
 #include "calculations.hpp"             /* extract_port_names()             */
@@ -37,7 +55,18 @@ extern int jack_process_rtmidi_output (jack_nframes_t nframes, void * arg);
 
 /**
  *  Provides a JACK callback function that uses the callbacks defined in the
- *  midi_jack module.
+ *  midi_jack module.  This function calls both the input callback and
+ *  the output callback, depending on the port type.  This may lead to
+ *  delays, depending on the size of the JACK MIDI buffer.
+ *
+ * \param nframes
+ *      The frame number from the JACK API.
+ *
+ * \param arg
+ *      The putative pointer to the midi_jack_info structure.
+ *
+ * \return
+ *      Always returns 0.
  */
 
 int
@@ -99,9 +128,10 @@ midi_jack_info::midi_jack_info
     midibpm bpm
 ) :
     midi_info               (appname, ppqn, bpm),
-    m_multi_client          (SEQ64_RTMIDI_MULTICLIENT),
+    m_multi_client          (SEQ64_RTMIDI_NO_MULTICLIENT),
     m_jack_ports            (),
-    m_jack_client           (nullptr)               /* inited for connect() */
+    m_jack_client           (nullptr),              /* inited for connect() */
+    m_jack_client_2         (nullptr)
 {
     silence_jack_info();
     m_jack_client = connect();
@@ -144,7 +174,13 @@ midi_jack_info::connect ()
 
         const char * clientname = rc().app_client_name().c_str();
         if (multi_client())
+        {
+            /*
+             * We may be changing the potential usage of multi-client.
+             */
+
             clientname = "midi_jack_info";
+        }
 
         result = create_jack_client(clientname);
         if (not_nullptr(result))
@@ -378,8 +414,13 @@ midi_jack_info::get_all_port_info ()
         result = -1;
 
     if (multi_client())
-        disconnect();
+    {
+        /*
+         * We may be changing the potential usage of multi-client.
+         */
 
+        disconnect();
+    }
     return result;
 }
 
@@ -417,7 +458,7 @@ bool
 midi_jack_info::api_connect ()
 {
     bool result = true;
-    if (! multi_client())
+    if (! multi_client())           /* CAREFUL IF WE ENABLE IT! */
     {
         result = not_nullptr(client_handle());
         if (result)
@@ -513,6 +554,10 @@ midi_jack_info::api_port_start (mastermidibus & masterbus, int bus, int port)
 {
     if (multi_client())
     {
+        /*
+         * We may be changing the potential usage of multi-client.
+         */
+
         int bus_slot = masterbus.m_outbus_array.count();
         int test = masterbus.m_outbus_array.replacement_port(bus, port);
         if (test >= 0)

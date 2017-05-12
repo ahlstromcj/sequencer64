@@ -620,13 +620,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     bottomhbox->pack_end(*m_button_perfedit, Gtk::PACK_SHRINK);
 
     /*
-     * Vertical layout container for window content.  Letting Gtk manage it
-     * does not improve leaks:
-     *
-     * Gtk::VBox * contentvbox = manage(new Gtk::VBox());
+     * Pattern panel scrollable wrapper
      */
-
-    Gtk::VBox * contentvbox = new Gtk::VBox();
 
     Gtk::Viewport * m_main_wid_viewport = new Gtk::Viewport(*m_hadjust, *m_vadjust);
     m_main_wid_viewport->set_shadow_type(Gtk::SHADOW_NONE);
@@ -648,6 +643,14 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         mem_fun(*this, &mainwnd::on_vscroll_resize)
     );
 
+    /*
+     * Vertical layout container for window content.  Letting Gtk manage it
+     * does not improve leaks:
+     *
+     * Gtk::VBox * contentvbox = manage(new Gtk::VBox());
+     */
+
+    Gtk::VBox * contentvbox = new Gtk::VBox();
     contentvbox->set_spacing(10);
     contentvbox->set_border_width(10);
     contentvbox->pack_start(*tophbox, Gtk::PACK_SHRINK);
@@ -671,6 +674,15 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
     );
     show_all();                             /* works here as well           */
+
+    /*
+     * Prevent window size jumps when resizing near scrollbars' appearance point
+     */
+    set_size_request(
+        mainvbox->get_allocation().get_width(),
+        mainvbox->get_allocation().get_height()
+    );
+
     install_signal_handlers();
 }
 

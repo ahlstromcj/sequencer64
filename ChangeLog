@@ -1,3 +1,339 @@
+2017-05-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* NEWS, README, TODO, configure.ac, libseq64/include/perform.hpp,
+	libseq64/src/perform.cpp: Added ability to change the queue-replace
+	pattern easily.
+	* README: Stamping 0.90.5 for supporting queued-solo feature.
+
+2017-05-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/perform.cpp: Made sure that regular queuing is not
+	disabled by changing screenset, to preserve seq24 behavior.
+	* README, configure.ac, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Another fix to queue-replace mode issue
+	#74.
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp: Fixed the
+	queue-replace feature for screenset changes in issue #74.
+
+2017-05-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, libseq64/include/perform.hpp, libseq64/src/perform.cpp: 
+	Finished the queued-replace functionality.
+
+2017-05-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/osc_support.dox, libseq64/include/perform.hpp,
+	libseq64/src/perform.cpp: Initial rudimentary implementation of
+	queued-replace.
+
+2017-05-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, TODO, configure.ac,
+	contrib/notes/dependencies.txt, doc/dox/doxy-notes.cfg,
+	doc/dox/doxy-reference.cfg, doc/dox/jack_modes.dox,
+	doc/dox/license.dox, doc/dox/mainpage-notes.dox,
+	doc/dox/mainpage-reference.dox, doc/dox/make_dox,
+	doc/dox/osc_support.dox, doc/dox/speed_issues.dox,
+	doc/dox/user_testing.dox, libseq64/include/editable_events.hpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/eventslots.hpp,
+	seq_gtkmm2/src/eventslots.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp: Updated documentation, updated event
+	editor, added dev-notes PDF.
+
+2017-04-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/options.hpp, seq_gtkmm2/src/options.cpp: Fixed
+	issue #76 by converting JACK buttons to toggle-buttons.
+	* INSTALL, README, bootstrap, libseq64/include/perform.hpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/options.cpp, seq_portmidi/src/mastermidibus.cpp,
+	seq_rtmidi/src/mastermidibus.cpp: Interim check-in.
+
+2017-04-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, TODO, configure.ac, doc/dox/doxy-reference.cfg,
+	libseq64/include/event.hpp, libseq64/include/seq64_features.h,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/optionsfile.cpp, seq_alsamidi/src/mastermidibus.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_jack.cpp: 
+	Made strip-mutes permanent, protect against VMPK feedback bug.
+
+2017-04-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, man/seq64.1, man/seq64cli.1, man/sequencer64.1: Updated
+	documentation for 0.90.4.
+
+2017-04-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, Seq64rtmidi/seq64rtmidi.cpp, configure.ac,
+	libseq64/include/cmdlineopts.hpp, libseq64/include/optionsfile.hpp,
+	libseq64/include/perform.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwnd.cpp: Added new menu entries to clear and
+	reload mute-groups.
+	* libseq64/include/event.hpp, libseq64/include/perform.hpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	seq_rtmidi/src/combined_jack_callbacks.cpp,
+	seq_rtmidi/src/jack_callbacks.cpp, seq_rtmidi/src/midi_jack.cpp: 
+	Fixed issue #75, accidentally filtering 2-byte MIDI events in
+	midi_jack module.
+
+2017-04-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/git.txt, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp: Fixed a bug in optionsfile related to
+	issue #72.
+
+2017-04-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, Seq64cli/seq64rtcli.cpp, Seq64rtmidi/seq64rtmidi.cpp,
+	TODO, configure.ac, libseq64/include/cmdlineopts.hpp,
+	libseq64/include/daemonize.hpp, libseq64/include/rc_settings.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/daemonize.cpp, libseq64/src/rc_settings.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp: Got
+	daemonization and log-file options working.
+
+2017-04-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : Merged wip to incorporate fixes for 0.90.3.
+
+2017-04-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, seq_gtkmm2/src/seqedit.cpp: Tentative fix to issue #69, MIDI
+	thru not working.
+	* README, TODO, contrib/configs/animtim/AKAI_APC40.map,
+	contrib/configs/animtim/AKAI_APC40.txt,
+	contrib/configs/animtim/sequencer64.rc, libseq64/include/event.hpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/mainwnd.cpp: Tentatively
+	fixed issue #71 where armed patterns become unarmed when starting
+	play in Live mode.
+
+2017-04-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/configfile.cpp: Ported over the configfile fix made
+	in master.
+	* libseq64/src/configfile.cpp: Fixed weird parsing bug when checking
+	for obsolete New-keys section.
+	* README, libseq64/include/event.hpp, seq_rtmidi/src/midi_jack.cpp: 
+	Backported note on velocity 0 fixes to master.
+	* README, configure.ac, contrib/notes/git.txt,
+	libseq64/include/event.hpp, libseq64/include/midi_control.hpp,
+	libseq64/src/event.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	seq_rtmidi/src/midi_jack.cpp: Importand fixes for detecting Note On
+	with velocity 0.
+
+2017-04-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64cli/seq64rtcli.cpp, TODO, libseq64/include/businfo.hpp,
+	libseq64/include/mastermidibase.hpp, libseq64/include/perform.hpp,
+	libseq64/include/rc_settings.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/businfo.cpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/daemonize.cpp,
+	libseq64/src/mastermidibase.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp: Interim check-in, getting daemonization
+	to work still in progress.
+
+2017-04-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/cmdlineopts.cpp, seq_gtkmm2/src/mainwnd.cpp: Added
+	more hotkeys for the File menu.
+
+2017-04-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, TODO, configure.ac, libseq64/include/Makefile.am,
+	libseq64/include/daemonize.hpp, libseq64/include/platform_macros.h,
+	libseq64/src/Makefile.am, libseq64/src/daemonize.cpp: Added the
+	daemonize module, to be used in the no-gui application.
+
+2017-04-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Makefile.am, Seq64cli/Makefile.am, Seq64cli/seq64rtcli.cpp,
+	Seq64rtmidi/seq64rtmidi.cpp, Sequencer64/sequencer64.cpp,
+	bootstrap, configure.ac, libseq64/include/gui_assistant.hpp,
+	libseq64/include/rc_settings.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Rough draft of 0.91.0 with an additional
+	app without a gui, seq64cli, working towards issue #64.
+
+2017-04-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, seq_gtkmm2/src/mainwnd.cpp: Made the ALSA/JACK button
+	disabled when playing, to match the other buttons and prevent trying
+	to set ALSA/JACK while playing :-D.
+	* README, TODO, configure.ac, libseq64/include/midibyte.hpp,
+	seq_alsamidi/src/midibus.cpp, seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/src/midi_alsa.cpp, seq_rtmidi/src/midi_jack.cpp: 
+	Preparation for release 0.90.2.
+
+2017-04-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/src/midi_alsa.cpp, seq_rtmidi/src/midi_jack.cpp: Re issue
+	#67, added stop, start, song-pos, and continue events missing from
+	the midi_jack module.
+
+2017-04-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, TODO, contrib/configs/sequencer64.rc.example,
+	libseq64/include/mastermidibase.hpp,
+	libseq64/src/mastermidibase.cpp, libseq64/src/midibase.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_jack.cpp: An
+	attempt to fix issue #67, where a call to the wrong overload of
+	clock() prevented MIDI clock data being sent.
+
+2017-04-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/doxy-reference.cfg, libseq64/include/mastermidibase.hpp,
+	libseq64/include/midibase.hpp, libseq64/src/businfo.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/mastermidibase.cpp,
+	libseq64/src/midibase.cpp, libseq64/src/perform.cpp,
+	seq_rtmidi/include/rtmidi.hpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_info.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp,
+	seq_rtmidi/src/midibus.cpp, seq_rtmidi/src/rtmidi.cpp: Fixed the
+	Doxygen programmer reference manual in a lot of the modules.
+	* INSTALL, README, configure.ac, contrib/midi/README,
+	doc/dox/doxy-reference.cfg, doc/dox/jack_modes.dox,
+	doc/dox/speed_issues.dox, libseq64/include/midibus.hpp,
+	libseq64/include/seq64_features.h, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_alsamidi/src/mastermidibus.cpp,
+	seq_gtkmm2/include/gui_key_tests.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/gui_key_tests.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfroll_input.cpp,
+	seq_gtkmm2/src/seqtime.cpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midi_jack.hpp, seq_rtmidi/src/midi_alsa.cpp: 
+	Interim check-in, updating code documentation.
+
+2017-03-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfnames.cpp: Interim
+	check-in, working on Shift-click pattern toggle.
+
+2017-03-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* NEWS, TODO, configure.ac, configure.help, debian/README,
+	debian/changelog, debian/compat, debian/control, debian/copyright,
+	debian/menu, debian/rules, debian/sequencer64.desktop,
+	doc/dox/speed_issues.dox, libseq64/src/easy_macros.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/sequence.cpp: Upgraded Debian packaging to the new
+	version.
+
+2017-03-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_alsamidi/src/mastermidibus.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_rtmidi/src/midi_alsa.cpp: Fixed BPM page up/down MIDI control
+	handling.
+
+2017-03-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, libseq64/src/perform.cpp, seq_gtkmm2/src/seqedit.cpp: Fixed
+	synch between seqedit dump button and mainwid mute state, and
+	enabled stazed fix for record/thru, needed to partly resolve issue
+	#56.
+	* TODO, contrib/configs/sequencer64.rc.example,
+	contrib/configs/sequencer64.usr.example,
+	libseq64/include/app_limits.h, libseq64/include/calculations.hpp,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/include/mastermidibase.hpp,
+	libseq64/include/midi_control.hpp, libseq64/include/midibyte.hpp,
+	libseq64/include/perform.hpp, libseq64/include/user_settings.hpp,
+	libseq64/src/calculations.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_alsamidi/src/mastermidibus.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_portmidi/src/mastermidibus.cpp: Added BPM page up/down MIDI
+	control and increment settings.
+
+2017-03-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, libseq64/include/app_limits.h,
+	libseq64/include/calculations.hpp,
+	libseq64/include/editable_events.hpp,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/include/mastermidibase.hpp, libseq64/include/midibase.hpp,
+	libseq64/include/midibyte.hpp, libseq64/include/perform.hpp,
+	libseq64/include/seq64_features.h,
+	libseq64/include/user_settings.hpp,
+	libseq64/src/editable_events.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/mastermidibase.cpp, libseq64/src/midibase.cpp,
+	libseq64/src/midibyte.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, man/Makefile.am, man/seq64.1,
+	man/sequencer64.1, seq_alsamidi/include/mastermidibus_am.hpp,
+	seq_alsamidi/include/midibus_am.hpp,
+	seq_alsamidi/src/mastermidibus.cpp, seq_alsamidi/src/midibus.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/seqedit.cpp,
+	seq_portmidi/include/mastermidibus_pm.hpp,
+	seq_portmidi/src/mastermidibus.cpp,
+	seq_rtmidi/include/mastermidibus_rm.hpp,
+	seq_rtmidi/include/midi_alsa.hpp,
+	seq_rtmidi/include/midi_alsa_info.hpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midi_jack_info.hpp,
+	seq_rtmidi/include/rtmidi.hpp, seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_info.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp,
+	seq_rtmidi/src/rtmidi_info.cpp: Interim check-in, changed BPM from
+	int to double for issue #63, 2 decimal places, almost done.
+
+2017-03-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, ROADMAP, TODO, configure.ac,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp: 
+	Stop/pause/start MIDI control now works in the wip branch.
+
+2017-03-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/midi-control-notes.txt,
+	contrib/notes/midi_control.dot, libseq64/include/midi_control.hpp,
+	libseq64/include/perform.hpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp: Reworked the extended MIDI controls a bit,
+	still in progress.
+
+2017-03-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/midi_control.hpp, libseq64/include/perform.hpp,
+	libseq64/src/Makefile.am, libseq64/src/midi_control.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp: Extended
+	MIDI control values in place, only read/written from rc file at
+	present.
+
+2017-03-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, Seq64rtmidi/Makefile.am, TODO, configure.ac,
+	contrib/scripts/issues-github, libseq64/include/midibase.hpp,
+	libseq64/include/rc_settings.hpp,
+	libseq64/include/seq64_features.h, libseq64/src/Makefile.am,
+	libseq64/src/c.cpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/seq64_features.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/src/jack_callbacks.cpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midibus.cpp: Added functions for app/client name,
+	with linker issues, and added to code log actual ALSA client ID
+	properly for virtual ports.
+
+2017-02-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, libseq64/src/cmdlineopts.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Paperwork for version 0.90.1.
+
 2017-02-26  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* README, README.jack, TODO, configure.ac, contrib/notes/git.txt,

@@ -188,6 +188,7 @@ seqroll::seqroll
     m_scroll_offset_y       (0),
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_scroll_page           (0),
+    m_progress_follow       (true),
 #endif
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     m_transport_follow      (true),
@@ -753,7 +754,7 @@ seqroll::follow_progress ()
 #endif // SEQ64_STAZED_EXPAND_RECORD
 
         midipulse progress_tick = m_seq.get_last_tick();
-        if (progress_tick > 0)
+        if (progress_tick > 0 && m_progress_follow)
         {
             int progress_x = progress_tick / m_zoom + SEQ64_PROGRESS_PAGE_OVERLAP;
             int page = progress_x / m_window_x;

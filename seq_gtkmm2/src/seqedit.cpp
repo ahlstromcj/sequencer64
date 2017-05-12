@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-10
+ * \updates       2017-05-11
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1180,6 +1180,10 @@ seqedit::fill_top_bar ()
     (
         mem_fun(*this, &seqedit::set_beats_per_bar_manual)  /* issue #77    */
     );
+    m_entry_bpm->signal_changed().connect                   /* issue #77    */
+    (
+        mem_fun(*this, &seqedit::set_beats_per_bar_manual)
+    );
     m_hbox->pack_start(*m_button_bpm , false, false);
     m_hbox->pack_start(*m_entry_bpm , false, false);
     m_hbox->pack_start(*(manage(new Gtk::Label("/"))), false, false, 4);
@@ -1206,6 +1210,10 @@ seqedit::fill_top_bar ()
     m_entry_length->set_width_chars(3);
     m_entry_length->set_editable(true);
     m_entry_length->signal_activate().connect
+    (
+        mem_fun(*this, &seqedit::set_measures_manual)       /* issue #77    */
+    );
+    m_entry_length->signal_changed().connect
     (
         mem_fun(*this, &seqedit::set_measures_manual)       /* issue #77    */
     );

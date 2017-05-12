@@ -686,6 +686,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     /*
      * Prevent window size jumps when resizing near scrollbars' appearance point
      * Add scrollbars only after to make sure their size are not added
+     *
+     * If set_size_request() is not called, the window will request its natural
+     * size (determined by its content) when scrollbars appear or disappear
      */
 
     set_size_request(

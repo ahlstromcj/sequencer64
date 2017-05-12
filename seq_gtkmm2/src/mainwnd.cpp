@@ -626,11 +626,19 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     Gtk::Layout * mainwid_wrapper = new Gtk::Layout(*m_hadjust, *m_vadjust);
     mainwid_wrapper->add(*m_main_wid);
     mainwid_wrapper->set_size(m_main_wid->m_mainwid_x,m_main_wid->m_mainwid_y);
-    mainwid_wrapper->set_size_request(m_main_wid->m_mainwid_x,m_main_wid->m_mainwid_y);
+    mainwid_wrapper->set_size_request
+    (
+        m_main_wid->m_mainwid_x,
+        m_main_wid->m_mainwid_y
+    );
 
     Gtk::HBox * mainwid_vscroll_wrapper = new Gtk::HBox();
     mainwid_vscroll_wrapper->set_spacing(10);
-    mainwid_vscroll_wrapper->pack_start(*mainwid_wrapper, Gtk::PACK_EXPAND_WIDGET);
+    mainwid_vscroll_wrapper->pack_start
+    (
+        *mainwid_wrapper,
+        Gtk::PACK_EXPAND_WIDGET
+    );
 
     Gtk::VBox * mainwid_hscroll_wrapper = new Gtk::VBox();
     mainwid_hscroll_wrapper->set_spacing(10);
@@ -645,11 +653,11 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     );
     m_hadjust->signal_changed().connect
     (
-        mem_fun(*this, &mainwnd::on_hscroll_resize)
+        mem_fun(*this, &mainwnd::on_scrollbar_resize)
     );
     m_vadjust->signal_changed().connect
     (
-        mem_fun(*this, &mainwnd::on_vscroll_resize)
+        mem_fun(*this, &mainwnd::on_scrollbar_resize)
     );
 
     /*
@@ -2319,19 +2327,18 @@ mainwnd::on_scroll_event (GdkEventScroll * ev)
 }
 
 void
-mainwnd::on_hscroll_resize ()
+mainwnd::on_scrollbar_resize ()
 {
-    bool visible = m_hadjust->get_page_size() != m_hadjust->get_upper();
-    if (m_hscroll->get_visible() != visible)
-        m_hscroll->set_visible(visible);
-}
+    int bar = m_vscroll->get_allocation().get_width() + 10;
 
-void
-mainwnd::on_vscroll_resize ()
-{
-    bool visible = m_vadjust->get_page_size() != m_vadjust->get_upper();
-    if (m_vscroll->get_visible() != visible)
-        m_vscroll->set_visible(visible);
+    bool h_visible = (m_vscroll->get_visible() ? bar : 0) < m_hadjust->get_upper() - m_hadjust->get_page_size();
+    bool v_visible = (m_hscroll->get_visible() ? bar : 0) < m_vadjust->get_upper() - m_vadjust->get_page_size();
+
+    if (m_hscroll->get_visible() != h_visible)
+        m_hscroll->set_visible(h_visible);
+
+    if (m_vscroll->get_visible() != v_visible)
+        m_vscroll->set_visible(v_visible);
 }
 
 /**

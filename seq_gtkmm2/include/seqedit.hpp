@@ -363,6 +363,10 @@ private:
     Gtk::Button * m_button_rec_type;    /**< Button for recording type.     */
 #endif
 
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+    Gtk::ToggleButton * m_toggle_follow; /**< Follow progress bar button.   */
+#endif
+
     Gtk::ToggleButton * m_toggle_play;  /**< Pattern-to-MIDI record button. */
     Gtk::ToggleButton * m_toggle_record; /**< MIDI-port-to-pattern button.  */
     Gtk::ToggleButton * m_toggle_q_rec; /**< Quantized-record MIDI button.  */
@@ -492,6 +496,9 @@ private:
     void transpose_change_callback ();
 #endif
     void name_change_callback ();
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+    void follow_change_callback ();
+#endif
     void play_change_callback ();
     void record_change_callback ();
     void q_rec_change_callback ();

@@ -354,6 +354,12 @@ private:
 
     int m_scroll_page;
 
+    /**
+     *  Progress bar follow state.
+     */
+
+    bool m_progress_follow;
+
 #endif
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
@@ -568,6 +574,28 @@ public:
     }
 
 #endif  // SEQ64_STAZED_EXPAND_RECORD
+
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+
+    /**
+     * \getter m_progress_follow
+     */
+
+    void set_progress_follow (bool follow)
+    {
+        m_progress_follow = follow;
+    }
+
+    /**
+     * \setter m_progress_follow
+     */
+
+    bool get_progress_follow ()
+    {
+        return m_progress_follow;
+    }
+
+#endif
 
 private:
 

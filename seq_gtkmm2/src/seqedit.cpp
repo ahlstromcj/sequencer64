@@ -78,6 +78,7 @@
 #include "lfownd.hpp"
 #endif
 
+#include "pixmaps/follow.xpm"
 #include "pixmaps/play.xpm"
 #include "pixmaps/q_rec.xpm"
 #include "pixmaps/rec.xpm"
@@ -342,6 +343,9 @@ seqedit::seqedit
     m_button_rec_vol    (manage(new Gtk::Button())),
 #ifdef SEQ64_STAZED_EXPAND_RECORD
     m_button_rec_type   (manage(new Gtk::Button())),
+#endif
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+    m_toggle_follow     (manage(new Gtk::ToggleButton())),
 #endif
     m_toggle_play       (manage(new Gtk::ToggleButton())),
     m_toggle_record     (manage(new Gtk::ToggleButton())),
@@ -1334,6 +1338,22 @@ seqedit::fill_top_bar ()
     );
     m_tooltips->set_tip(*m_button_tools, "Tools");
     m_hbox2->pack_start(*m_button_tools , false, false);
+
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+    m_toggle_follow->set_image(*manage(new PIXBUF_IMAGE(follow_xpm)));
+    add_tooltip
+    (
+        m_toggle_follow,
+        "If active, the piano roll will follow the progress bar while playing."
+    );
+    m_toggle_follow->signal_clicked().connect
+    (
+        mem_fun(*this, &seqedit::follow_change_callback)
+    );
+    m_button_redo->set_can_focus(false);
+    m_toggle_follow->set_active(m_seqroll_wid->get_progress_follow());
+    m_hbox2->pack_start(*m_toggle_follow, false, false);
+#endif
 
 #if ! defined SEQ64_STAZED_CHORD_GENERATOR
     m_hbox2->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
@@ -2404,6 +2424,16 @@ seqedit::thru_change_callback ()
         perf().master_bus().set_sequence_input(thru_active, &m_seq);
 
     m_seq.set_thru(thru_active);        /* issue #69 fixed here */
+}
+
+/**
+ *  Passes the Follow status to the seqroll object.
+ */
+
+void
+seqedit::follow_change_callback ()
+{
+    m_seqroll_wid->set_progress_follow(m_toggle_follow->get_active());
 }
 
 /**

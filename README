@@ -1,6 +1,6 @@
 README for Sequencer64 0.90.6 (Native JACK and CLI)
 Chris Ahlstrom
-2015-09-10 to 2017-05-07
+2015-09-10 to 2017-05-12
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
@@ -32,6 +32,10 @@ See the INSTALL file.
         -   Added the Stazed Seq32 upgrade to allow, in addition to
             merge-on-record, overwrite-on-record and expand-measures on
             record.
+        -   Added Jean-Emmanuel beats-per-measure and measure text-editing
+            support to support arbitrary values, issue #xx.
+        -   Added Jean-Emmanuel seqmenu crash when pasting empty clipboard,
+            issue #80.
     -   Version 0.90.5:
         -   Added a queued-replace (queued-solo) feature.  It works only with
             the current (in-view) screen-set.  See issue #74.

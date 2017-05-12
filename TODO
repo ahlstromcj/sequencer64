@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-05-05
+2016-12-03 to 2017-05-12
 
 Debian packaging:
 
@@ -292,6 +292,18 @@ Active GitHub Issues:
 
  *  76 layk : latest wip -ed -er seq64 crash when button 'Jack Transport
     Connect' is used.
+
+ *  77 jean-emmanuel : [Feature request] Editable BPM and measures-count
+
+    78 jean-emmanuel : [Feature request] Scrollable pattern panels
+
+    79 jean-emmanuel : Song Editor crash with higher number of pattern
+
+ *  80 jean-emmanuel : seqmenu: paste: do not assign from clipboard when its
+    empty
+
+    81 jean-emmanuel : [seqmenu] segfault when playing a sequence pasted from
+    initial clipboard
 
 Upgrades:
 

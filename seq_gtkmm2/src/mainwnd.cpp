@@ -83,7 +83,7 @@
 #include <gtkmm/spinbutton.h>
 #include <gtkmm/stock.h>
 #include <gtkmm/tooltips.h>
-#include <gtkmm/viewport.h>
+#include <gtkmm/layout.h>
 #include <gtkmm/scrollbar.h>
 
 #include "globals.h"
@@ -192,8 +192,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
     m_ppqn                  (choose_ppqn(ppqn)),
-    m_hadjust               (manage(new Gtk::Adjustment(0,0,1,1,1,1))),
-    m_vadjust               (manage(new Gtk::Adjustment(0,0,1,1,1,1))),
+    m_hadjust               (manage(new Gtk::Adjustment(0,0,1,10,100,0))),
+    m_vadjust               (manage(new Gtk::Adjustment(0,0,1,10,100,0))),
     m_hscroll               (manage(new Gtk::HScrollbar(*m_hadjust))),
     m_vscroll               (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_main_wid              (manage(new mainwid(p))),
@@ -623,13 +623,14 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      * Pattern panel scrollable wrapper
      */
 
-    Gtk::Viewport * viewport = new Gtk::Viewport(*m_hadjust, *m_vadjust);
-    viewport->set_shadow_type(Gtk::SHADOW_NONE);
-    viewport->add(*m_main_wid);
+    Gtk::Layout * mainwid_wrapper = new Gtk::Layout(*m_hadjust, *m_vadjust);
+    mainwid_wrapper->add(*m_main_wid);
+    mainwid_wrapper->set_size(m_main_wid->m_mainwid_x,m_main_wid->m_mainwid_y);
+    mainwid_wrapper->set_size_request(m_main_wid->m_mainwid_x,m_main_wid->m_mainwid_y);
 
     Gtk::HBox * mainwid_vscroll_wrapper = new Gtk::HBox();
     mainwid_vscroll_wrapper->set_spacing(10);
-    mainwid_vscroll_wrapper->pack_start(*viewport, Gtk::PACK_EXPAND_WIDGET);
+    mainwid_vscroll_wrapper->pack_start(*mainwid_wrapper, Gtk::PACK_EXPAND_WIDGET);
 
     Gtk::VBox * mainwid_hscroll_wrapper = new Gtk::VBox();
     mainwid_hscroll_wrapper->set_spacing(10);
@@ -1753,6 +1754,7 @@ mainwnd::adj_callback_bpm ()
     perf().set_beats_per_minute(midibpm(m_adjust_bpm->get_value()));
 }
 
+
 /**
  *  A callback function for handling an edit to the screen-set notepad.
  *  Let the perform object keep track of modifications.
@@ -2317,9 +2319,8 @@ void
 mainwnd::on_hscroll_resize ()
 {
     bool visible = m_hadjust->get_page_size() != m_hadjust->get_upper();
-    if (m_hscroll->get_visible() != visible) {
+    if (m_hscroll->get_visible() != visible)
         m_hscroll->set_visible(visible);
-    }
 }
 
 void

@@ -83,6 +83,8 @@
 #include <gtkmm/spinbutton.h>
 #include <gtkmm/stock.h>
 #include <gtkmm/tooltips.h>
+#include <gtkmm/viewport.h>
+#include <gtkmm/scrollbar.h>
 
 #include "globals.h"
 #include "gtk_helpers.h"
@@ -190,6 +192,10 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
     m_ppqn                  (choose_ppqn(ppqn)),
+    m_hadjust               (manage(new Gtk::Adjustment(0,0,1,1,1,1))),
+    m_vadjust               (manage(new Gtk::Adjustment(0,0,1,1,1,1))),
+    m_hscroll               (manage(new Gtk::HScrollbar(*m_hadjust))),
+    m_vscroll               (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_main_wid              (manage(new mainwid(p))),
     m_main_time             (manage(new maintime(p, ppqn))),
     m_perf_edit             (new perfedit(p, false /*allowperf2*/, ppqn)),
@@ -621,11 +627,33 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      */
 
     Gtk::VBox * contentvbox = new Gtk::VBox();
+
+    Gtk::Viewport * m_main_wid_viewport = new Gtk::Viewport(*m_hadjust, *m_vadjust);
+    m_main_wid_viewport->set_shadow_type(Gtk::SHADOW_NONE);
+    m_main_wid_viewport->add(*m_main_wid);
+    m_main_wid->signal_scroll_event().connect
+    (
+        mem_fun(*this, &mainwnd::on_scroll_event)
+    );
+    Gtk::HBox * m_main_wid_hbox = new Gtk::HBox();
+    m_main_wid_hbox->set_spacing(10);
+    m_main_wid_hbox->pack_start(*m_main_wid_viewport, Gtk::PACK_EXPAND_WIDGET);
+    m_main_wid_hbox->pack_start(*m_vscroll, false, false);
+    m_hadjust->signal_changed().connect
+    (
+        mem_fun(*this, &mainwnd::on_hscroll_resize)
+    );
+    m_vadjust->signal_changed().connect
+    (
+        mem_fun(*this, &mainwnd::on_vscroll_resize)
+    );
+
     contentvbox->set_spacing(10);
     contentvbox->set_border_width(10);
     contentvbox->pack_start(*tophbox, Gtk::PACK_SHRINK);
-    contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
-    contentvbox->pack_start(*bottomhbox, Gtk::PACK_SHRINK);
+    contentvbox->pack_start(*m_main_wid_hbox, true, true);
+    contentvbox->pack_start(*m_hscroll, false, false);
+    contentvbox->pack_start(*bottomhbox, false, false);
     m_main_wid->set_can_focus();            /* from stazed */
     m_main_wid->grab_focus();
 
@@ -637,7 +665,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     mainvbox->pack_start(*m_menubar, false, false);
     mainvbox->pack_start(*contentvbox);
     add(*mainvbox);                         /* add main layout box (this->) */
-    add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
+    add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK | Gdk::SCROLL_MASK);
     m_timeout_connect = Glib::signal_timeout().connect
     (
         mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
@@ -2228,6 +2256,54 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
     }
     (void) Gtk::Window::on_key_press_event(ev);
     return result;
+}
+
+/**
+ *  Handles scroll events
+ */
+
+bool
+mainwnd::on_scroll_event (GdkEventScroll * ev)
+{
+    if (ev->direction == GDK_SCROLL_UP ||
+        ev->direction == GDK_SCROLL_DOWN) {
+
+        double v = ev->direction == GDK_SCROLL_UP ?
+                m_vadjust->get_value() - m_vadjust->get_step_increment():
+                m_vadjust->get_value() + m_vadjust->get_step_increment();
+
+        m_vadjust->clamp_page(v, v + m_vadjust->get_page_size());
+
+
+    } else if (ev->direction == GDK_SCROLL_LEFT ||
+               ev->direction == GDK_SCROLL_RIGHT) {
+
+        double v = ev->direction == GDK_SCROLL_LEFT ?
+                m_hadjust->get_value() - m_hadjust->get_step_increment():
+                m_hadjust->get_value() + m_hadjust->get_step_increment();
+
+        m_hadjust->clamp_page(v, v + m_hadjust->get_page_size());
+
+    }
+
+    return true;
+}
+
+void
+mainwnd::on_hscroll_resize ()
+{
+    bool visible = m_hadjust->get_page_size() != m_hadjust->get_upper();
+    if (m_hscroll->get_visible() != visible) {
+        m_hscroll->set_visible(visible);
+    }
+}
+
+void
+mainwnd::on_vscroll_resize ()
+{
+    bool visible = m_vadjust->get_page_size() != m_vadjust->get_upper();
+    if (m_vscroll->get_visible() != visible)
+        m_vscroll->set_visible(visible);
 }
 
 /**

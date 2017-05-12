@@ -127,6 +127,7 @@ private:
      */
 
     sequence m_clipboard;
+    bool m_clipboard_empty;
 
     /**
      *  Points to the latest seqedit object, if created.

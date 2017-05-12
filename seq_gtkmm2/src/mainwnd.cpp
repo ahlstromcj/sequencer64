@@ -623,17 +623,25 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      * Pattern panel scrollable wrapper
      */
 
-    Gtk::Viewport * m_main_wid_viewport = new Gtk::Viewport(*m_hadjust, *m_vadjust);
-    m_main_wid_viewport->set_shadow_type(Gtk::SHADOW_NONE);
-    m_main_wid_viewport->add(*m_main_wid);
+    Gtk::Viewport * viewport = new Gtk::Viewport(*m_hadjust, *m_vadjust);
+    viewport->set_shadow_type(Gtk::SHADOW_NONE);
+    viewport->add(*m_main_wid);
+
+    Gtk::HBox * mainwid_vscroll_wrapper = new Gtk::HBox();
+    mainwid_vscroll_wrapper->set_spacing(10);
+    mainwid_vscroll_wrapper->pack_start(*viewport, Gtk::PACK_EXPAND_WIDGET);
+
+    Gtk::VBox * mainwid_hscroll_wrapper = new Gtk::VBox();
+    mainwid_hscroll_wrapper->set_spacing(10);
+    mainwid_hscroll_wrapper->pack_start
+    (
+        *mainwid_vscroll_wrapper, Gtk::PACK_EXPAND_WIDGET
+    );
+
     m_main_wid->signal_scroll_event().connect
     (
         mem_fun(*this, &mainwnd::on_scroll_event)
     );
-    Gtk::HBox * m_main_wid_hbox = new Gtk::HBox();
-    m_main_wid_hbox->set_spacing(10);
-    m_main_wid_hbox->pack_start(*m_main_wid_viewport, Gtk::PACK_EXPAND_WIDGET);
-    m_main_wid_hbox->pack_start(*m_vscroll, false, false);
     m_hadjust->signal_changed().connect
     (
         mem_fun(*this, &mainwnd::on_hscroll_resize)
@@ -654,8 +662,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     contentvbox->set_spacing(10);
     contentvbox->set_border_width(10);
     contentvbox->pack_start(*tophbox, Gtk::PACK_SHRINK);
-    contentvbox->pack_start(*m_main_wid_hbox, true, true);
-    contentvbox->pack_start(*m_hscroll, false, false);
+    contentvbox->pack_start(*mainwid_hscroll_wrapper, true, true);
     contentvbox->pack_start(*bottomhbox, false, false);
     m_main_wid->set_can_focus();            /* from stazed */
     m_main_wid->grab_focus();
@@ -677,11 +684,16 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     /*
      * Prevent window size jumps when resizing near scrollbars' appearance point
+     * Add scrollbars only after to make sure their size are not added
      */
+
     set_size_request(
         mainvbox->get_allocation().get_width(),
         mainvbox->get_allocation().get_height()
     );
+    mainwid_hscroll_wrapper->pack_start(*m_hscroll, false, false);
+    mainwid_vscroll_wrapper->pack_start(*m_vscroll, false, false);
+
 
     install_signal_handlers();
 }

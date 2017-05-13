@@ -924,7 +924,10 @@ optionsfile::write (const perform & p)
             file << "# bpm page down:\n";
             break;
 
-        case c_midi_control_16:             // 80
+        case c_midi_control_ss_set:         // 80
+            file << "# screen set by number:\n";
+            break;
+
         case c_midi_control_17:             // 81
         case c_midi_control_18:             // 82
         case c_midi_control_19:             // 83

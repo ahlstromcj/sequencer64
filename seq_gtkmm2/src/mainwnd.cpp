@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-30
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -83,8 +83,6 @@
 #include <gtkmm/spinbutton.h>
 #include <gtkmm/stock.h>
 #include <gtkmm/tooltips.h>
-#include <gtkmm/layout.h>
-#include <gtkmm/scrollbar.h>
 
 #include "globals.h"
 #include "gtk_helpers.h"
@@ -98,6 +96,11 @@
 #include "options.hpp"
 #include "perfedit.hpp"
 #include "cmdlineopts.hpp"              /* for build info function  */
+
+#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+#include <gtkmm/layout.h>
+#include <gtkmm/scrollbar.h>
+#endif
 
 #include "pixmaps/pause.xpm"
 #include "pixmaps/play2.xpm"
@@ -192,10 +195,12 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
     m_ppqn                  (choose_ppqn(ppqn)),
-    m_hadjust               (manage(new Gtk::Adjustment(0,0,1,10,100,0))),
-    m_vadjust               (manage(new Gtk::Adjustment(0,0,1,10,100,0))),
+#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+    m_hadjust               (manage(new Gtk::Adjustment(0, 0, 1, 10, 100, 0))),
+    m_vadjust               (manage(new Gtk::Adjustment(0, 0, 1, 10, 100, 0))),
     m_hscroll               (manage(new Gtk::HScrollbar(*m_hadjust))),
     m_vscroll               (manage(new Gtk::VScrollbar(*m_vadjust))),
+#endif
     m_main_wid              (manage(new mainwid(p))),
     m_main_time             (manage(new maintime(p, ppqn))),
     m_perf_edit             (new perfedit(p, false /*allowperf2*/, ppqn)),
@@ -619,6 +624,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     );
     bottomhbox->pack_end(*m_button_perfedit, Gtk::PACK_SHRINK);
 
+#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+
     /*
      * Pattern panel scrollable wrapper
      */
@@ -628,8 +635,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     mainwid_wrapper->set_size(m_main_wid->m_mainwid_x,m_main_wid->m_mainwid_y);
     mainwid_wrapper->set_size_request
     (
-        m_main_wid->m_mainwid_x,
-        m_main_wid->m_mainwid_y
+        m_main_wid->m_mainwid_x, m_main_wid->m_mainwid_y
     );
 
     Gtk::HBox * mainwid_vscroll_wrapper = new Gtk::HBox();
@@ -660,6 +666,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         mem_fun(*this, &mainwnd::on_scrollbar_resize)
     );
 
+#endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+
     /*
      * Vertical layout container for window content.  Letting Gtk manage it
      * does not improve leaks:
@@ -671,8 +679,15 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     contentvbox->set_spacing(10);
     contentvbox->set_border_width(10);
     contentvbox->pack_start(*tophbox, Gtk::PACK_SHRINK);
+
+#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
     contentvbox->pack_start(*mainwid_hscroll_wrapper, true, true);
     contentvbox->pack_start(*bottomhbox, false, false);
+#else
+    contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
+    contentvbox->pack_start(*bottomhbox, Gtk::PACK_SHRINK);
+#endif
+
     m_main_wid->set_can_focus();            /* from stazed */
     m_main_wid->grab_focus();
 
@@ -684,12 +699,20 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     mainvbox->pack_start(*m_menubar, false, false);
     mainvbox->pack_start(*contentvbox);
     add(*mainvbox);                         /* add main layout box (this->) */
+
+#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK | Gdk::SCROLL_MASK);
+#else
+    add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
+#endif
+
     m_timeout_connect = Glib::signal_timeout().connect
     (
         mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
     );
     show_all();                             /* works here as well           */
+
+#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
     /*
      * Prevent window size jumps when resizing near scrollbars' appearance point
@@ -699,13 +722,15 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      * size (determined by its content) when scrollbars appear or disappear
      */
 
-    set_size_request(
+    set_size_request
+    (
         mainvbox->get_allocation().get_width(),
         mainvbox->get_allocation().get_height()
     );
     mainwid_hscroll_wrapper->pack_start(*m_hscroll, false, false);
     mainwid_vscroll_wrapper->pack_start(*m_vscroll, false, false);
 
+#endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
     install_signal_handlers();
 }
@@ -1765,7 +1790,6 @@ mainwnd::adj_callback_bpm ()
     perf().set_beats_per_minute(midibpm(m_adjust_bpm->get_value()));
 }
 
-
 /**
  *  A callback function for handling an edit to the screen-set notepad.
  *  Let the perform object keep track of modifications.
@@ -2295,43 +2319,62 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
     return result;
 }
 
+#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+
 /**
- *  Handles scroll events
+ *  Handles left, right, up, and down scroll events.
+ *
+ * \param ev
+ *      Provides the event to process.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
 mainwnd::on_scroll_event (GdkEventScroll * ev)
 {
-    if (ev->direction == GDK_SCROLL_LEFT  ||
-        ev->direction == GDK_SCROLL_RIGHT || is_shift_key(ev))
+    if
+    (
+        ev->direction == GDK_SCROLL_LEFT  ||
+        ev->direction == GDK_SCROLL_RIGHT || is_shift_key(ev)
+    )
     {
-        double v = ev->direction == GDK_SCROLL_LEFT ||
-                   ev->direction == GDK_SCROLL_UP ?
-            m_hadjust->get_value() - m_hadjust->get_step_increment():
-            m_hadjust->get_value() + m_hadjust->get_step_increment();
+        double v =
+            ev->direction == GDK_SCROLL_LEFT || ev->direction == GDK_SCROLL_UP ?
+                m_hadjust->get_value() - m_hadjust->get_step_increment() :
+                m_hadjust->get_value() + m_hadjust->get_step_increment() ;
 
         m_hadjust->clamp_page(v, v + m_hadjust->get_page_size());
     }
-    else if (ev->direction == GDK_SCROLL_UP ||
-             ev->direction == GDK_SCROLL_DOWN)
+    else if (ev->direction == GDK_SCROLL_UP || ev->direction == GDK_SCROLL_DOWN)
     {
-        double v = ev->direction == GDK_SCROLL_UP ?
-                m_vadjust->get_value() - m_vadjust->get_step_increment():
-                m_vadjust->get_value() + m_vadjust->get_step_increment();
+        double v =
+            ev->direction == GDK_SCROLL_UP ?
+                m_vadjust->get_value() - m_vadjust->get_step_increment() :
+                m_vadjust->get_value() + m_vadjust->get_step_increment() ;
 
         m_vadjust->clamp_page(v, v + m_vadjust->get_page_size());
     }
-
     return true;
 }
+
+/**
+ *  Handles the resizing of the scroll-bars when the main window is resized.
+ *
+ * \param ev
+ *      Provides the event to process.
+ */
 
 void
 mainwnd::on_scrollbar_resize ()
 {
     int bar = m_vscroll->get_allocation().get_width() + 5;
+    bool h_visible = (m_vscroll->get_visible() ? bar : 0) <
+        m_hadjust->get_upper() - m_hadjust->get_page_size();
 
-    bool h_visible = (m_vscroll->get_visible() ? bar : 0) < m_hadjust->get_upper() - m_hadjust->get_page_size();
-    bool v_visible = (m_hscroll->get_visible() ? bar : 0) < m_vadjust->get_upper() - m_vadjust->get_page_size();
+    bool v_visible = (m_hscroll->get_visible() ? bar : 0) <
+        m_vadjust->get_upper() - m_vadjust->get_page_size();
 
     if (m_hscroll->get_visible() != h_visible)
         m_hscroll->set_visible(h_visible);
@@ -2339,6 +2382,8 @@ mainwnd::on_scrollbar_resize ()
     if (m_vscroll->get_visible() != v_visible)
         m_vscroll->set_visible(v_visible);
 }
+
+#endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
 /**
  *  Updates the title shown in the title bar of the window.  Note that the

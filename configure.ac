@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-05-12
+dnl \update        2017-05-13
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -608,7 +608,7 @@ AC_ARG_ENABLE(chords,
 
 if test "$chords" != "no"; then
     AC_DEFINE(STAZED_CHORD_GENERATOR, 1, [Define to enable the chord generator])
-    AC_MSG_RESULT(Chord generator enabled.)
+    AC_MSG_RESULT([Chord generator enabled.])
 else
     AC_MSG_WARN([Chord generator not enabled.]);
 fi
@@ -623,9 +623,25 @@ AC_ARG_ENABLE(transpose,
 
 if test "$transpose" != "no"; then
     AC_DEFINE(STAZED_TRANSPOSE, 1, [Define to enable global transpose])
-    AC_MSG_RESULT(Global seq32 transpose enabled.)
+    AC_MSG_RESULT([Global seq32 transpose enabled.])
 else
     AC_MSG_WARN([Global seq32 transpose not enabled.]);
+fi
+
+dnl Support for using jean-emmanuel's scrollbars in the patterns panel.  We will
+dnl call this panel "main" for short.
+
+AC_ARG_ENABLE(mainscroll,
+    [AS_HELP_STRING(--disable-mainscroll, [Disable main pattern scrollbars])],
+    [mainscroll=$enableval],
+    [mainscroll=yes])
+
+if test "$mainscroll" != "no"; then
+    AC_DEFINE(JE_PATTERN_PANEL_SCROLLBARS,
+        1, [Define to enable main pattern scrollbars])
+    AC_MSG_RESULT([Main patterns-panel scrollbars enabled.])
+else
+    AC_MSG_WARN([Main patterns-panel scrollbars not enabled.]);
 fi
 
 dnl 6.0  Top portion of the config.h/sequencer64-config.h header files.
@@ -639,7 +655,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-05-12"
+#define VERSION_DATE_SHORT "2017-05-13"
 #define VERSION "0.90.6"
 
 )

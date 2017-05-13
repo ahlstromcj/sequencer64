@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.90.6 and above
 Chris Ahlstrom
-2015-09-10 to 2017-05-07
+2015-09-10 to 2017-05-13
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -102,6 +102,7 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         SEQ64_PAUSE_SUPPORT
         SEQ64_STAZED_CHORD_GENERATOR
         SEQ64_STAZED_TRANSPOSE
+        SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
     --enable-rtmidi
 
@@ -210,6 +211,12 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         SEQ64_RTMIDI_SUPPORT
 
         They are used only in the --version output.
+
+    --disable-mainscroll
+
+        Undefines SEQ64_JE_PATTERN_PANEL_SCROLLBARS.  This macro enables
+        a new scroll-bar feature in the main window, from user jean-emmanuel,
+        in preparation for a larger number of patterns in the main window.
 
 MANUALLY-DEFINED MACROS IN CODE:
 

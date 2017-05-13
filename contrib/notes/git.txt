@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2017-04-24
+2015-09-09 to 2017-05-13
 
 Creating a GitHub Repository:
 
@@ -156,7 +156,7 @@ Pulls and merges:
     Step 1: From your project repository, check out a new branch and test
             the changes.
 
-    $ git checkout -b TDeagan-mute_groups master
+    $ git checkout -b TDeagan-mute_groups master        [or a branch]
     $ git pull https://github.com/TDeagan/sequencer64.git mute_groups
 
     Step 2: Merge the changes and update on GitHub.

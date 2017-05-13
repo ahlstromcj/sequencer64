@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-25
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -64,13 +64,16 @@ namespace Gtk
     class Button;
     class Cursor;
     class Entry;
-    class HScrollbar;
     class Label;
     class MenuBar;
     class Menu;
     class SpinButton;
     class Tooltips;
+
+#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+    class HScrollbar;
     class VScrollbar;
+#endif
 
 #if defined SEQ64_STAZED_MENU_BUTTONS
     class ToggleButton;
@@ -131,14 +134,19 @@ private:
 
     int m_ppqn;
 
+#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+
     /**
-     *  Patterns Panel scrollable wrapper
+     *  Patterns Panel scrollable wrapper objects for jean-emmanual's pull
+     *  request #83.
      */
 
      Gtk::Adjustment * m_hadjust;
      Gtk::Adjustment * m_vadjust;
      Gtk::HScrollbar * m_hscroll;
      Gtk::VScrollbar * m_vscroll;
+
+#endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
     /**
      *  The biggest sub-components of mainwnd.  The first is the Patterns
@@ -508,10 +516,15 @@ private:
     bool on_delete_event (GdkEventAny * ev);
     bool on_key_press_event (GdkEventKey * ev);
     bool on_key_release_event (GdkEventKey * ev);
-    bool on_scroll_event (GdkEventScroll * ev);
-    void on_hscroll_resize ();
-    void on_vscroll_resize ();
+
     void on_realize ();
+
+#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+
+    bool on_scroll_event (GdkEventScroll * ev);
+    void on_scrollbar_resize ();
+
+#endif
 
 private:
 

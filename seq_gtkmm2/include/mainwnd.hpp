@@ -64,11 +64,13 @@ namespace Gtk
     class Button;
     class Cursor;
     class Entry;
+    class HScrollbar;
     class Label;
     class MenuBar;
     class Menu;
     class SpinButton;
     class Tooltips;
+    class VScrollbar;
 
 #if defined SEQ64_STAZED_MENU_BUTTONS
     class ToggleButton;
@@ -128,6 +130,15 @@ private:
      */
 
     int m_ppqn;
+
+    /**
+     *  Patterns Panel scrollable wrapper
+     */
+
+     Gtk::Adjustment * m_hadjust;
+     Gtk::Adjustment * m_vadjust;
+     Gtk::HScrollbar * m_hscroll;
+     Gtk::VScrollbar * m_vscroll;
 
     /**
      *  The biggest sub-components of mainwnd.  The first is the Patterns
@@ -497,6 +508,9 @@ private:
     bool on_delete_event (GdkEventAny * ev);
     bool on_key_press_event (GdkEventKey * ev);
     bool on_key_release_event (GdkEventKey * ev);
+    bool on_scroll_event (GdkEventScroll * ev);
+    void on_hscroll_resize ();
+    void on_vscroll_resize ();
     void on_realize ();
 
 private:

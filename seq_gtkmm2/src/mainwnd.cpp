@@ -83,6 +83,8 @@
 #include <gtkmm/spinbutton.h>
 #include <gtkmm/stock.h>
 #include <gtkmm/tooltips.h>
+#include <gtkmm/layout.h>
+#include <gtkmm/scrollbar.h>
 
 #include "globals.h"
 #include "gtk_helpers.h"
@@ -190,6 +192,10 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
     m_ppqn                  (choose_ppqn(ppqn)),
+    m_hadjust               (manage(new Gtk::Adjustment(0,0,1,10,100,0))),
+    m_vadjust               (manage(new Gtk::Adjustment(0,0,1,10,100,0))),
+    m_hscroll               (manage(new Gtk::HScrollbar(*m_hadjust))),
+    m_vscroll               (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_main_wid              (manage(new mainwid(p))),
     m_main_time             (manage(new maintime(p, ppqn))),
     m_perf_edit             (new perfedit(p, false /*allowperf2*/, ppqn)),
@@ -614,6 +620,47 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     bottomhbox->pack_end(*m_button_perfedit, Gtk::PACK_SHRINK);
 
     /*
+     * Pattern panel scrollable wrapper
+     */
+
+    Gtk::Layout * mainwid_wrapper = new Gtk::Layout(*m_hadjust, *m_vadjust);
+    mainwid_wrapper->add(*m_main_wid);
+    mainwid_wrapper->set_size(m_main_wid->m_mainwid_x,m_main_wid->m_mainwid_y);
+    mainwid_wrapper->set_size_request
+    (
+        m_main_wid->m_mainwid_x,
+        m_main_wid->m_mainwid_y
+    );
+
+    Gtk::HBox * mainwid_vscroll_wrapper = new Gtk::HBox();
+    mainwid_vscroll_wrapper->set_spacing(5);
+    mainwid_vscroll_wrapper->pack_start
+    (
+        *mainwid_wrapper,
+        Gtk::PACK_EXPAND_WIDGET
+    );
+
+    Gtk::VBox * mainwid_hscroll_wrapper = new Gtk::VBox();
+    mainwid_hscroll_wrapper->set_spacing(5);
+    mainwid_hscroll_wrapper->pack_start
+    (
+        *mainwid_vscroll_wrapper, Gtk::PACK_EXPAND_WIDGET
+    );
+
+    m_main_wid->signal_scroll_event().connect
+    (
+        mem_fun(*this, &mainwnd::on_scroll_event)
+    );
+    m_hadjust->signal_changed().connect
+    (
+        mem_fun(*this, &mainwnd::on_scrollbar_resize)
+    );
+    m_vadjust->signal_changed().connect
+    (
+        mem_fun(*this, &mainwnd::on_scrollbar_resize)
+    );
+
+    /*
      * Vertical layout container for window content.  Letting Gtk manage it
      * does not improve leaks:
      *
@@ -624,8 +671,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     contentvbox->set_spacing(10);
     contentvbox->set_border_width(10);
     contentvbox->pack_start(*tophbox, Gtk::PACK_SHRINK);
-    contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
-    contentvbox->pack_start(*bottomhbox, Gtk::PACK_SHRINK);
+    contentvbox->pack_start(*mainwid_hscroll_wrapper, true, true);
+    contentvbox->pack_start(*bottomhbox, false, false);
     m_main_wid->set_can_focus();            /* from stazed */
     m_main_wid->grab_focus();
 
@@ -637,12 +684,29 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     mainvbox->pack_start(*m_menubar, false, false);
     mainvbox->pack_start(*contentvbox);
     add(*mainvbox);                         /* add main layout box (this->) */
-    add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
+    add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK | Gdk::SCROLL_MASK);
     m_timeout_connect = Glib::signal_timeout().connect
     (
         mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
     );
     show_all();                             /* works here as well           */
+
+    /*
+     * Prevent window size jumps when resizing near scrollbars' appearance point
+     * Add scrollbars only after to make sure their size are not added
+     *
+     * If set_size_request() is not called, the window will request its natural
+     * size (determined by its content) when scrollbars appear or disappear
+     */
+
+    set_size_request(
+        mainvbox->get_allocation().get_width(),
+        mainvbox->get_allocation().get_height()
+    );
+    mainwid_hscroll_wrapper->pack_start(*m_hscroll, false, false);
+    mainwid_vscroll_wrapper->pack_start(*m_vscroll, false, false);
+
+
     install_signal_handlers();
 }
 
@@ -1701,6 +1765,7 @@ mainwnd::adj_callback_bpm ()
     perf().set_beats_per_minute(midibpm(m_adjust_bpm->get_value()));
 }
 
+
 /**
  *  A callback function for handling an edit to the screen-set notepad.
  *  Let the perform object keep track of modifications.
@@ -2228,6 +2293,51 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
     }
     (void) Gtk::Window::on_key_press_event(ev);
     return result;
+}
+
+/**
+ *  Handles scroll events
+ */
+
+bool
+mainwnd::on_scroll_event (GdkEventScroll * ev)
+{
+    if (ev->direction == GDK_SCROLL_LEFT  ||
+        ev->direction == GDK_SCROLL_RIGHT || is_shift_key(ev))
+    {
+        double v = ev->direction == GDK_SCROLL_LEFT ||
+                   ev->direction == GDK_SCROLL_UP ?
+            m_hadjust->get_value() - m_hadjust->get_step_increment():
+            m_hadjust->get_value() + m_hadjust->get_step_increment();
+
+        m_hadjust->clamp_page(v, v + m_hadjust->get_page_size());
+    }
+    else if (ev->direction == GDK_SCROLL_UP ||
+             ev->direction == GDK_SCROLL_DOWN)
+    {
+        double v = ev->direction == GDK_SCROLL_UP ?
+                m_vadjust->get_value() - m_vadjust->get_step_increment():
+                m_vadjust->get_value() + m_vadjust->get_step_increment();
+
+        m_vadjust->clamp_page(v, v + m_vadjust->get_page_size());
+    }
+
+    return true;
+}
+
+void
+mainwnd::on_scrollbar_resize ()
+{
+    int bar = m_vscroll->get_allocation().get_width() + 5;
+
+    bool h_visible = (m_vscroll->get_visible() ? bar : 0) < m_hadjust->get_upper() - m_hadjust->get_page_size();
+    bool v_visible = (m_hscroll->get_visible() ? bar : 0) < m_vadjust->get_upper() - m_vadjust->get_page_size();
+
+    if (m_hscroll->get_visible() != h_visible)
+        m_hscroll->set_visible(h_visible);
+
+    if (m_vscroll->get_visible() != v_visible)
+        m_vscroll->set_visible(v_visible);
 }
 
 /**

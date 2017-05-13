@@ -1,0 +1,22 @@
+Idea:
+
+0.  Instead of a single mainwid, allow a grid of them starting from the normal
+    1 x 1 setting up to 3 x 2, where the first number is the row count, and the
+    second number is the column count.
+
+1.  Each mainwid is associated with a set, starting from set 1 through set 32.
+
+    1.  Each mainwid has its own set-spinner.  Just like the original single
+        set spinner, this will alter the m_screenset member.
+
+    2.  The following arrays are large (sizeof long x c_max_sequence),
+        so duplicating them will add an extra 4K per array.
+
+    3.  c_mainwnd_rows and c_mainwnd_cols (and the corresponding mainwid
+        members) will remain at 4 and 8, respectively.
+
+    4.  m_mainwid_x and _y will depend on the mainwid position.
+
+
+x.  Operations like move will probably start out restricted to be within the
+    same mainwid.

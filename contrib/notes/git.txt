@@ -133,16 +133,17 @@ into your branch, if you intend to do further work in that branch:
 
 Delete a branch on your local filesystem, use -d or -D (to force):
 
-    $ git branch -d [name_of_your_branch]
+    $ git branch -d [name_of_branch]
 
 Delete the branch on github:
 
-    $ git push origin :[name_of_your_branch]   -or-
-    $ git push origin --delete [name_of_your_branch]
+    $ git push origin :[name_of_branch]   -or-
+    $ git push origin --delete [name_of_branch]
 
 Follow that up with this command on all your local copies:
 
-    $ git fetch --all --prune
+    $ git fetch --all --prune                  -or-
+    $ git branch -d name_of_branch             (as noted above)
 
 Caching your credentials (be careful!):
 
@@ -275,6 +276,10 @@ Listing files:
     In bash, one can pass the list to vi(m):
 
         $ vi $(git ls-files -m)
+
+    To list only untracked files:
+
+        $ git ls-files --others --exclude-standard
 
 Listing issues:
 

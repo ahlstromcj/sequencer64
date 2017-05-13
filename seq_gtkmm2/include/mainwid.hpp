@@ -139,7 +139,7 @@ private:
     int m_mainwid_spacing;      /**< Main-window spacing, unused setting.       */
     int m_text_size_x;          /**< Text width, varies with font in use.       */
     int m_text_size_y;          /**< Text height, varies with font in use.      */
-    int m_max_sets;             /**< The maximum number of sets, use all over.  */
+    int m_max_sets;             /**< Maximum number of sets, used all over.     */
 
     /**
      *  Provides a convenience variable for avoiding multiplications.

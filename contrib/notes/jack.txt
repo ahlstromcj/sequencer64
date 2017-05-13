@@ -1,206 +1,171 @@
-Notes About JACK and RtMidi
-Chris Ahlstrom
-2016-01-14 to 2017-01-21
+Qjackctl:
 
-Also be sure to read through the source code, especially the jack_assistant
-module.  The following is a note about seq24:
+   Readable/Output:
 
-   https://community.ardour.org/node/3165
+      jack-keyboard:midi out --------------> K        seq64 output port  A
+      seq64:jack-keyboard midi_in ---------> J
+      seq64:yoshimi midi in ---------------> Y
 
-    Ardour-Setup:
+   Writeable/Input:
 
-    * Positional Sync Source = JACK
-    * Time Master = ON/Green
+      jack-keyboard:midi in <--------------- J        seq64 input port
+      seq64:jack-keyboard midi_out <-------- K
+      yoshimi:midi in <--------------------- Y        seq64 input port
 
-    seq24-Setup:
+Options:
 
-    * File -> Options -> Jack Sync
-    * checked Jack Transport & Song Mode, then hit CONNECT and then OK
+   MIDI Clock:
 
-    By doing that i "enslaved" seq24 with Ardour, and can control it via
-    Ardour-Transport-Buttons ;)
+      jack_keyboard:midi_out
 
-    . . .
+   MIDI Input:
 
-    What I had to do is set seq24 options like this:
+      yoshimi:midi in          Cannot activate/connect I/O
+      jack_keyboard:midi_in
 
-    Enable Jack Transport
-    Enable Transport Master
-    Enable Master Conditional
-    Enable Song Mode
+   seqedit bus dropdown:
 
-    Then hit connect after firing and setting up ardour the way you did
-    above.
+      jack_keyboard:midi_out   A
 
-    Master Conditional will make it be Master only if no other JACK
-    Transport application is running at the moment. For me that worked well,
-    used to be offbeat also.
+      Why is yoshimi:midi in not an output????
 
-However, for Sequencer64, only one of the three needs to be set
+   Commenting out the perform's swap() call changed nothing!!!!!
 
-    Enable Jack Transport (selects slave mode)
-    Enable Transport Master
-    Enable Master Conditional
+midi_jack_info::get_all_port_info():
 
-We still have some work to do to improve our JACK handling.  In addition,
-the JACK reference manual recommends handling JackBBTFrameOffset as well,
-but does not really say enough about it.  Information on this topic is
-very difficult to find elsewhere, and it seems that not a lot of MIDI
-projects use it.  So we are experimenting with that.  See the
-jack_testing.txt file.
+      out:  jack-keyboard:midi_out
 
-Now, Hydrogen as JACK Master handles the situation where we tell QJackCtl
-to stop, then rewind, then continue.  Hydrogen gives back the information
-needed to tell QJackCtl where the transport is in terms of BBT.
-Sequencer64 and Seq24 do not.  So let us analyze Hydrogen.
+      in:   yoshimi:midi in
+      in:   jack-keyboard:midi in
 
-First, Hydrogen sets a timebase callback (as JACK Master) and a process
-callback.  We think the former is the key.
+Connect issues with JACK, jack-keyboard, yoshimi, and seq64:
 
-Hydrogen maintains a value call bbt_frame_offset:
+   midibus jack-keyboard:midi_in (is input port):
 
-    void JackOutput::calculateFrameOffset()
-    {
-        bbt_frame_offset = m_JackTransportPos.frame - m_transport.m_nFrames;
-    }
+      midibus::api_connect() has null m_rt_midi pointer.  Fixed as a
+      configuration-related issue.
 
-When the last two values are set equal, bbt_frame_offset is 0, and
-indicates to stop re-syncing in every cycled when stopped.
+      Clicking on jack-keyboard:midi_out in the MIDI Input tab is meant to
+      connect the output of the jack-keyboard application to seq64's
+      selected MIDI input port.
 
-In the timebase callback:
-   
-    unsigned long PlayTick = ( pos->frame - me->bbt_frame_offset ) /
-        me->m_transport.m_nTickSize;
+      mmbus::set_input(0, true)
 
-    pos->bar = H->getPosForTick ( PlayTick );
+         m_inbus_array[0].m_bus is  jack-keyboard:midi_out
 
-Duhhhh....
+   Back to the beginning:
 
-RtMidi JACK:
+      At startup, we register "jack-keyboard midi_out".
+      When we click ...., we try to register it again!  Why
+      does it get registered at startup???  It is set to off
+      in the "rc" configuration!
 
-    Here, we summarize how RtMidi sets up and connects JACK ports.  First,
-    what the constructor does, via a number of member functions not named
-    here.
-
-    1.  If it is an input port, allocate a midi-queue structure.  Also,
-        in test code, add a midi-message.
-    2.  Allocate a new midi-data structure to act as a scratchpad for the
-        port.
-    3.  Call jack_client_open() with the desired client name.  This is
-        something like "RtMidi Input Client".
-    4.  Call jack_set_process_callback() with the JACK client pointer,
-        the desired process-input callback, currently the stock callback
-        provided with RtMidi.
-    5.  Call jack_activate() with the JACK client pointer.
-    6.  Call getPortCount().  This calls:
-        1.  Call connect() again, which does nothing because already
-            connected.
-        2.  Call jack_get_ports() to get a listing of the ports.  This
-            yields an array of string pointers such as "qmidiarp:out 1"
-            and "qmidiarp:out 2".
-    7.  Now call openPort() [here, MidiInJack::openPort()] with the
-        desired port number re 0 and the desired port name, such as
-        "RtMidi Input".
-        1.  Call connect() again, which does nothing because already
-            connected.
-        2.  Call jack_port_register() with the JACK client pointer, the
-            port name ("RtMidi Input"), and the JackPortIsInput flag.
-            Take note that this flag means we are a local input port
-            representing a connection to a remote output port.
-            If we are setting up a local output port, then we would register
-            with a JackPortIsOutput, to connect to s remote input port.
-        3.  Call getPortName(portnumber = 0), which again uselessly calls
-            connect(), then calls jack_get_ports() with the JACK client
-            pointer.  Since we are setting up a local input port, we want
-            to find the names of output ports, that is, ports with the
-            JackPortIsOutput flag.  If we are setting up a MidiInJack
-            port, we get the list of "JackPortIsOutput" ports from the
-            system.  This gets us strings like "qmidiarp:out 1" and
-            "qmidiarp:out 2", and we pick one via the port number.  If we
-            are setting up a MidiOutJack port, we get the list of
-            "JackPortIsIntput" ports from the system.  This gets us
-            strings like "qmidiarp:in 1" and "qmidiarp:in 2", and we pick
-            one via the port number.
-        4.  Finally, call jack_connect() with the JACK client pointer,
-            the name of the source port ("qmidiarp:out 1") which has
-            (and must have) the flag JackPortIsOutput, and the name of the
-            (local) destination port, which is obtained by
-
-                jack_port_name(data->port)  // pointer to local port
-
-            and is, here, "RtMidi Input Client:RtMidi Input", and has the
-            flag JackPortIsInput.  In qjackctl, one sees that the "out 1"
-            port of "qmidiarp" is connected to the "RtMidi input" port of
-            "RtMidi Input Client".
-        5.  Then set the input callback function, which has the function
-            signature "void (double ts, vector<char> message, void * userdata)".
-        6.  Call ignoreTypes() as desired.
-
-    The take-away from this is that an RtMidi input port is one that is
-    meant to connect to a JACK output port set up by another application or
-    piece of MIDI hardware.  The local port is JackPortIsInput, and the
-    remote port is JackPortIsOutput.
-
-    In our case, we will create local ports in one-to-one correspondence with
-    remote ports.
-
-Normal general use case:
-
-    1.  Open a connection to the JACK client server with
-        jack_client_open().
-    2.  Examine the status and bail out if needed.
-    3.  Install a handler to manage I/O with jack_set_process_callback().
-    4.  Install a shutdown handler with jack_on_shutdown().  **********
-    5.  Register the ports with jack_port_register().
-    6.  Activate the ports with jack_activate().
-    7.  Connect the ports to the pipeline with jack_connect().
-    8.  Sit there and wait for stuff to happen (e.g. stay in the GUI).
-
-http://quod.lib.umich.edu/i/icmc/bbp2372.2005.016/--jack-audio-server-for-multi-processor-machines?rgn=main;view=fulltext
-
-    This link discusses JACK internals.
-
-Read/write conflicts:
-
-    -   jack_client_open() internals, even if a mutex is used in
-        create_jack_client().
-    -   perform::m_start_from_perfedit between jack_transport_callback()
-        and perform::start_playing().
-    -   perform::m_song_start_mode between jack_transport_callback() and
-        perform::song_start_mode() called from mainwnd::set_song_mode().
-    -   perform::set_running() and is_running() between
-        jack_transport_callback() and perform::output_func().
-    -   perform::play() from perform::output_func() and
-        perform::get_tick() from mainwnd::timer_callback().  This
-        read/write conflict occurs in both directions.
-    -   jack_assistant::position(), jack_transport_locate() and
-        jack_timebase_callback().
-    -   perform::m_start_from_perfedit between jack_transport_callback()
-        and perform::stop_playing().  WHERE THE CORRUPTION of the JACK
-        client pointer in jack_assistant occurs???
-    -   perform::set_reposition() from jack_transport_callback() and
-        perform::start_playing().
-    -   perform::set_start_tick() from jack_transport_callback() and
-    -   perform::set_start_tick() from perform::set_jack_mode().
-    -   jack_transport_callback() has conflicts in itself from two
-        different threads.
-    -   jack_assistant::set_jack_stop_tick() from
-        jack_transport_callback() and from perform::set_jack_stop_tick().
-    -   jack_assistant::client() from jack_transport_callback() and
-        jack_assistant::get_current_jack_position().  ANOTHER ONE!
-    -   jack_assistant::get_jack_stop_tick() and set_jack_stop_tick().
-    -   Many others near exit time.
-
-void * jack_port_get_buffer	(jack_port_t *, jack_nframes_t)		
-
-    This returns a pointer to the memory area associated with the
-    specified port. For an output port, it will be a memory area that can
-    be written to; for an input port, it will be an area containing the
-    data from the port connection(s), or zero-filled. if there are
-    multiple inbound connections, the data will be mixed appropriately.
-    Do not cache the returned address across process() callbacks. Port
-    buffers have to be retrieved in each callback for proper functionning.
+         jack-keyboard:midi_out is a Readable Client/Output port
+         jack-keyboard:midi_in is a Writable Client/Input port
 
 
-   
-# vim: sw=4 ts=4 wm=8 et ft=sh
+
+Latest run:
+
+rtmidi % ./Seq64rtmidi/seq64 -J
+[Reading rc configuration /home/ahlstrom/.config/sequencer64/sequencer64.rc]
+[Reading user configuration /home/ahlstrom/.config/sequencer64/sequencer64.usr]
+= jack_client_open(seq64)
+[JACK server already started]
+= jack_set_process_callback(info)
+= jack_client_open(seq64-transport)
+[JACK server already started]
+= jack_get_client_name(sync)
+= jack_get_uuid_for_client_name(sync)
+[JACK client:uuid is seq64-transport:4]
+= jack_on_shutdown(sync)
+= jack_set_process_callback(sync)
+= jack_set_session_callback(sync)
+= jack_set_timebase_callback(sync)
+[JACK sync master]
+5 rtmidi ports created:
+Input ports (3):
+  [0] 0:0 system:midi_playback_1
+  [1] 1:1 jack-keyboard:midi_in
+  [2] 2:2 yoshimi:midi in
+Output ports (2):
+  [0] 0:0 system:midi_capture_1
+  [1] 1:1 jack-keyboard:midi_out
+
+midibus '[0] 0:0 system:midi_playback_1' created
+midibus '[1] 1:1 jack-keyboard:midi_in' created
+midibus '[2] 2:2 yoshimi:midi in' created
+midibus '[0] 0:0 system:midi_capture_1' created
+midibus '[1] 1:1 jack-keyboard:midi_out' created
+= jack_port_register(system midi_capture_1)
+= jack_port_register(jack-keyboard midi_out)
+= jack_activate(info)
+= jack_connect(jack)
+= jack_connect(jack)
+= jack_activate(sync)
+
+MIDI Options:
+
+   Clocks:
+
+      0 system:midi_playback_1
+      1 jack-keyboard:midi_in
+      2 yoshimi:midi in
+
+   Inputs:
+
+      0 system:midi_capture_1
+      1 jack-keyboard:midi_out
+
+sequencer64.rc:
+
+   [midi-clock]
+
+   3    # number of MIDI clocks/busses
+
+   # Output buss name: [0] 0:0 system:midi_playback_1
+   0 0  # buss number, clock status
+   # Output buss name: [1] 1:1 jack-keyboard:midi_in
+   1 0  # buss number, clock status
+   # Output buss name: [2] 2:2 yoshimi:midi in
+   2 0  # buss number, clock status
+
+[midi-input]
+
+   2   # number of input MIDI busses
+
+   # [0] 0:0 system:midi_capture_1
+   0 0
+   # [1] 1:1 jack-keyboard:midi_out
+   1 0
+
+Qjackctl:
+
+	Readable/Output =
+
+	 	jack-keyboard:midi_out <-------------------
+		system:midi_capture_1 (nanoKey) <--------- | ------
+                                                 |       |
+	Writable/Input =                              |       |
+      jack-keyboard:midi_in                      |       |
+      seq64:jack-keyboard midi_out <-------------        |
+      seq64:system midi_capture_1  <---------------------
+      system:midi_playback_1 (nanoKey)
+      yoshimi:midi in
+
+If we click on MIDI Input jack-keyboard:midi_out, we get:
+
+   = jack_port_register(jack-keyboard midi_out)
+   register_port: JACK error registering port jack-keyboard midi_out
+
+Similarly for the virtual keyboard:
+
+   = jack_port_register(system midi_capture_1)
+   register_port: JACK error registering port system midi_capture_1
+
+Seq64 shows an output for yoshimi:midi in, but there is no
+"seq64:yoshimi midi in" shown in the Readable/Output tab.
+
+BEEF UP THE OUTPUT.
+
+

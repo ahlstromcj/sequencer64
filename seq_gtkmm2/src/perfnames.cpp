@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-28
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -307,10 +307,13 @@ void
 perfnames::on_realize ()
 {
     gui_drawingarea_gtk2::on_realize();
+
+#if ! defined USE_ISSUE_79_FIX          // a reminder to look at this issue
     m_pixmap = Gdk::Pixmap::create
     (
         m_window, m_names_x, m_names_y * m_sequence_max + 1, -1
     );
+#endif
 
     /*
      * Moved from the constructor to see if it behaves better on someone

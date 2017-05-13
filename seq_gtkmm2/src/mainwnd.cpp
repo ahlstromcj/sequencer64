@@ -2302,25 +2302,24 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 bool
 mainwnd::on_scroll_event (GdkEventScroll * ev)
 {
-    if (ev->direction == GDK_SCROLL_UP ||
-        ev->direction == GDK_SCROLL_DOWN) {
+    if (ev->direction == GDK_SCROLL_LEFT  ||
+        ev->direction == GDK_SCROLL_RIGHT || is_shift_key(ev))
+    {
+        double v = ev->direction == GDK_SCROLL_LEFT ||
+                   ev->direction == GDK_SCROLL_UP ?
+            m_hadjust->get_value() - m_hadjust->get_step_increment():
+            m_hadjust->get_value() + m_hadjust->get_step_increment();
 
+        m_hadjust->clamp_page(v, v + m_hadjust->get_page_size());
+    }
+    else if (ev->direction == GDK_SCROLL_UP ||
+             ev->direction == GDK_SCROLL_DOWN)
+    {
         double v = ev->direction == GDK_SCROLL_UP ?
                 m_vadjust->get_value() - m_vadjust->get_step_increment():
                 m_vadjust->get_value() + m_vadjust->get_step_increment();
 
         m_vadjust->clamp_page(v, v + m_vadjust->get_page_size());
-
-
-    } else if (ev->direction == GDK_SCROLL_LEFT ||
-               ev->direction == GDK_SCROLL_RIGHT) {
-
-        double v = ev->direction == GDK_SCROLL_LEFT ?
-                m_hadjust->get_value() - m_hadjust->get_step_increment():
-                m_hadjust->get_value() + m_hadjust->get_step_increment();
-
-        m_hadjust->clamp_page(v, v + m_hadjust->get_page_size());
-
     }
 
     return true;

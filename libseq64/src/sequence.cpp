@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-27
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -619,14 +619,13 @@ sequence::select_note_events
                         {
                             e.unselect();
                             ev->unselect();
-                            ++result;
                         }
                         else
                         {
                             e.select();
                             ev->select();
-                            ++result;
                         }
+                        ++result;
                     }
                     if (action == e_remove_one)
                     {
@@ -818,7 +817,7 @@ sequence::select_event_handle
                                 {
                                     /*
                                      * If we have a marked (unselected) one,
-                                     * then clear it.
+                                     * clear it.
                                      */
 
                                     for

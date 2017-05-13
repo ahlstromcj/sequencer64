@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-07
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -65,6 +65,9 @@
  *  With --ppqn 384 option:
  *
  *	    seqroll scroll progress=648; value=0; step=192; page=1388; upper=133632
+ *
+ *  User jean-emmanual added support for disabling the following of the
+ *  progress bar during playback.
  */
 
 #include <gdkmm/cursor.h>

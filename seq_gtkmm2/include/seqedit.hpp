@@ -28,11 +28,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-10
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
  *  seqdata, and seqevent object.
+ *
+ *  User jean-emmanual added support for disabling the following of the
+ *  progress bar during playback, which is useful in working on a small part
+ *  of a longer pattern.  Marked with the SEQ64_FOLLOW_PROGRESS_BAR macro.
  */
 
 #include <list>

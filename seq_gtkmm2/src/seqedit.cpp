@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-11
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -38,6 +38,9 @@
  *
  *  We've made the Stazed thru/record fix permanent.  See issue #56 re MIDI
  *  control.  We weren't turning off thru!
+ *
+ *  User jean-emmanual added support for disabling the following of the
+ *  progress bar during playback.  See the seqroll::m_progress_follow member.
  */
 
 #include <gtkmm/adjustment.h>
@@ -1344,7 +1347,7 @@ seqedit::fill_top_bar ()
     add_tooltip
     (
         m_toggle_follow,
-        "If active, the piano roll will follow the progress bar while playing."
+        "If active, the piano roll follows the progress bar while playing."
     );
     m_toggle_follow->signal_clicked().connect
     (

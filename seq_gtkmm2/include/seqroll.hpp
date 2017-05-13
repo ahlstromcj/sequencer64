@@ -28,10 +28,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-07
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
+ *
+ *  User jean-emmanual added support for disabling the following of the
+ *  progress bar during playback.  See the seqroll::m_progress_follow member.
  */
 
 #include "globals.h"
@@ -101,9 +104,9 @@ public:
 class seqroll : public gui_drawingarea_gtk2
 {
     /**
-     *  This friend implements fruity interaction-specific behavior.
-     *  We've absorbed the Seq24SeqRollInput class functionality back into 
-     *  seqroll, to save code.
+     *  This friend implements fruity interaction-specific behavior.  We've
+     *  absorbed the Seq24SeqRollInput class functionality back into seqroll,
+     *  to save code.
      */
 
     friend class FruitySeqRollInput;

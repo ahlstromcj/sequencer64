@@ -633,7 +633,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     );
 
     Gtk::HBox * mainwid_vscroll_wrapper = new Gtk::HBox();
-    mainwid_vscroll_wrapper->set_spacing(10);
+    mainwid_vscroll_wrapper->set_spacing(5);
     mainwid_vscroll_wrapper->pack_start
     (
         *mainwid_wrapper,
@@ -641,7 +641,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     );
 
     Gtk::VBox * mainwid_hscroll_wrapper = new Gtk::VBox();
-    mainwid_hscroll_wrapper->set_spacing(10);
+    mainwid_hscroll_wrapper->set_spacing(5);
     mainwid_hscroll_wrapper->pack_start
     (
         *mainwid_vscroll_wrapper, Gtk::PACK_EXPAND_WIDGET
@@ -2329,7 +2329,7 @@ mainwnd::on_scroll_event (GdkEventScroll * ev)
 void
 mainwnd::on_scrollbar_resize ()
 {
-    int bar = m_vscroll->get_allocation().get_width() + 10;
+    int bar = m_vscroll->get_allocation().get_width() + 5;
 
     bool h_visible = (m_vscroll->get_visible() ? bar : 0) < m_hadjust->get_upper() - m_hadjust->get_page_size();
     bool v_visible = (m_hscroll->get_visible() ? bar : 0) < m_vadjust->get_upper() - m_vadjust->get_page_size();

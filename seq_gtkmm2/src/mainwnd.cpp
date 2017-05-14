@@ -299,7 +299,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      */
 
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq64_xpm));
+#if ! defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
     set_resizable(false);
+#endif
     perf().enregister(this);                        /* register for notify  */
     update_window_title();                          /* main window          */
 
@@ -633,10 +635,6 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     Gtk::Layout * mainwid_wrapper = new Gtk::Layout(*m_hadjust, *m_vadjust);
     mainwid_wrapper->add(*m_main_wid);
     mainwid_wrapper->set_size(m_main_wid->m_mainwid_x,m_main_wid->m_mainwid_y);
-    mainwid_wrapper->set_size_request
-    (
-        m_main_wid->m_mainwid_x, m_main_wid->m_mainwid_y
-    );
 
     Gtk::HBox * mainwid_vscroll_wrapper = new Gtk::HBox();
     mainwid_vscroll_wrapper->set_spacing(5);
@@ -645,6 +643,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         *mainwid_wrapper,
         Gtk::PACK_EXPAND_WIDGET
     );
+    mainwid_vscroll_wrapper->pack_start(*m_vscroll, false, false);
 
     Gtk::VBox * mainwid_hscroll_wrapper = new Gtk::VBox();
     mainwid_hscroll_wrapper->set_spacing(5);
@@ -652,6 +651,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         *mainwid_vscroll_wrapper, Gtk::PACK_EXPAND_WIDGET
     );
+    mainwid_hscroll_wrapper->pack_start(*m_hscroll, false, false);
 
     m_main_wid->signal_scroll_event().connect
     (
@@ -715,20 +715,19 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
     /*
-     * Prevent window size jumps when resizing near scrollbars' appearance point
-     * Add scrollbars only after to make sure their size are not added
-     *
-     * If set_size_request() is not called, the window will request its natural
-     * size (determined by its content) when scrollbars appear or disappear
+     * Set window initial size: mainwid doesn't require any space because it's
+     * wrapped in a Layout object, so we must add the window's children sizes
+     * and spacings
      */
 
-    set_size_request
+    resize
     (
-        mainvbox->get_allocation().get_width(),
-        mainvbox->get_allocation().get_height()
+        m_main_wid->m_mainwid_x + 20,
+        tophbox->get_allocation().get_height() +
+        bottomhbox->get_allocation().get_height() +
+        m_menubar->get_allocation().get_height() +
+        m_main_wid->m_mainwid_y + 40
     );
-    mainwid_hscroll_wrapper->pack_start(*m_hscroll, false, false);
-    mainwid_vscroll_wrapper->pack_start(*m_vscroll, false, false);
 
 #endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 

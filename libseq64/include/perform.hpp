@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-07
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -59,7 +59,6 @@
 #include "midi_control.hpp"             /* seq64::midi_control "struct"     */
 #include "sequence.hpp"                 /* seq64::sequence                  */
 
-
 /**
  *  This value is used to indicated that the queued-replace (queued-solo)
  *  feature is reset and not in force.
@@ -69,10 +68,10 @@
 
 /**
  *  A new option to improve how the main window's new Mute button
- *  works.  It works, this is now a normal option.
+ *  works.  It works, this is now a permanent option.
+ *
+ *      #define SEQ64_TOGGLE_PLAYING
  */
-
-#define SEQ64_TOGGLE_PLAYING
 
 /**
  *  We have offloaded the keybinding support to another class, derived
@@ -295,8 +294,6 @@ private:
 
     bool m_mute_group[c_max_sequence];              /* c_gmute_tracks */
 
-#ifdef SEQ64_TOGGLE_PLAYING
-
     /**
      *  Indicates if the m_saved_armed_statuses[] values are the saved state
      *  of the sequences, and can be restored.
@@ -310,8 +307,6 @@ private:
      */
 
     bool m_armed_statuses[c_max_sequence];
-
-#endif  // SEQ64_TOGGLE_PLAYING
 
     /**
      *  Holds the current mute states of each track.  Unlike the
@@ -1627,8 +1622,6 @@ public:
 
     void toggle_all_tracks ();
 
-#ifdef SEQ64_TOGGLE_PLAYING
-
     /**
      * \getter m_armed_saved
      */
@@ -1639,9 +1632,6 @@ public:
     }
 
     void toggle_playing_tracks ();
-
-#endif
-
     void mute_screenset (int ss, bool flag = true);
     void output_func ();
     void input_func ();

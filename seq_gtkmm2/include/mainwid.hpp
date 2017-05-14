@@ -133,8 +133,8 @@ private:
     int m_seqarea_y;            /**< Roughly with height of the main window.    */
     int m_seqarea_seq_x;        /**< To be determined.                          */
     int m_seqarea_seq_y;        /**< To be determined.                          */
-    int m_mainwid_x;            /**< To be determined.                          */
-    int m_mainwid_y;            /**< To be determined.                          */
+    int m_mainwid_x;            /**< The calculated width of the window.        */
+    int m_mainwid_y;            /**< The calculated height of the window.       */
     int m_mainwid_border;       /**< Main-window border, unused setting.        */
     int m_mainwid_spacing;      /**< Main-window spacing, unused setting.       */
     int m_text_size_x;          /**< Text width, varies with font in use.       */
@@ -164,7 +164,7 @@ private:
 
 public:
 
-    mainwid (perform & p);
+    mainwid (perform & p, int ss = 0);
     virtual ~mainwid ();
 
     void set_screenset (int ss, bool setperf = false);
@@ -211,6 +211,24 @@ private:
     void fill_background_window ()
     {
         draw_normal_rectangle_on_pixmap(0, 0, m_window_x, m_window_y);
+    }
+
+    /**
+     * \getter m_mainwid_x
+     */
+
+    int nominal_width () const
+    {
+        return m_mainwid_x;
+    }
+
+    /**
+     * \getter m_mainwid_y
+     */
+
+    int nominal_height () const
+    {
+        return m_mainwid_y;
     }
 
     virtual void redraw (int seq);              /* override seqmenu's       */

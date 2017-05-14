@@ -65,6 +65,11 @@
  *      realized we'd have to do the same for the perfedit/perfnames class,
  *      and that's just too much.  We now add a global/free function to the
  *      mainwid module to access the update function we need.
+ *
+ * Toggle playing:
+ *
+ *      This feature was keyed by SEQ64_TOGGLE_PLAYING, but is now permanent.
+ *      See the INSTALL file for more information.
  */
 
 #include <cctype>
@@ -100,6 +105,10 @@
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 #include <gtkmm/layout.h>
 #include <gtkmm/scrollbar.h>
+#endif
+
+#if defined SEQ64_MULTI_MAINWID
+#include <gtkmm/table.h>        /* <gtkmm/grid.h> does not exist in 2.4 */
 #endif
 
 #include "pixmaps/pause.xpm"
@@ -177,6 +186,14 @@ int mainwnd::m_sigpipe[2];
  * \param ppqn
  *      An optional PPQN value to use in the song.
  *
+ * \param mainwid_rows
+ *      The number of rows of mainwids to create vertically.  The default
+ *      value is one.  Used only if SEQ64_MULTI_MAINWID is defined.
+ *
+ * \param mainwid_cols
+ *      The number of columns of mainwids to create horizontally.  The default
+ *      value is one.  Used only if SEQ64_MULTI_MAINWID is defined.
+ *
  * \todo
  *      Offload most of the work into an initialization function like
  *      options does; make the perform parameter a reference;
@@ -184,8 +201,13 @@ int mainwnd::m_sigpipe[2];
  *      ourselves, many more leaks occur.
  */
 
-mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
- :
+mainwnd::mainwnd
+(
+    perform & p, bool allowperf2, int ppqn
+#if defined SEQ64_MULTI_MAINWID
+    , int mainwid_rows, int mainwid_cols
+#endif
+) :
     gui_window_gtk2         (p),
     performcallback         (),
     m_tooltips              (manage(new Gtk::Tooltips())),  /* valgrind bitches */
@@ -201,7 +223,17 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_hscroll               (manage(new Gtk::HScrollbar(*m_hadjust))),
     m_vscroll               (manage(new Gtk::VScrollbar(*m_vadjust))),
 #endif
+
+#if defined SEQ64_MULTI_MAINWID
+    m_mainwid_grid          (nullptr),
+    m_mainwid_blocks        (),                         /* a 3 x 2 array    */
+    m_mainwid_rows          (mainwid_rows),             /* assumed valid    */
+    m_mainwid_columns       (mainwid_cols),             /* assumed valid    */
+    m_mainwid_count         (mainwid_rows * mainwid_cols),
+    m_main_wid              (nullptr),
+#else
     m_main_wid              (manage(new mainwid(p))),
+#endif
     m_main_time             (manage(new maintime(p, ppqn))),
     m_perf_edit             (new perfedit(p, false /*allowperf2*/, ppqn)),
     m_perf_edit_2           (allowperf2 ? new perfedit(p, true, ppqn) : nullptr),
@@ -223,13 +255,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_mute
     (
         usr().use_more_icons() ?
-#ifdef SEQ64_TOGGLE_PLAYING
             manage(new Gtk::ToggleButton()) :
             manage(new Gtk::ToggleButton("Mute"))
-#else
-            manage(new Gtk::Button()) :
-            manage(new Gtk::Button("Mute"))
-#endif
     ),
     m_button_menu
     (
@@ -363,7 +390,40 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     m_button_mute->set_can_focus(false);
 
-#ifdef SEQ64_TOGGLE_PLAYING
+#if defined SEQ64_MULTI_MAINWID
+
+    int row_max = SEQ64_MAINWID_BLOCK_ROWS_MAX;
+    int col_max = SEQ64_MAINWID_BLOCK_COLS_MAX;
+    for (int row = 0; row < row_max; ++row)
+    {
+        for (int col = 0; col < col_max; ++col)
+        {
+            m_mainwid_blocks[row][col] = nullptr;
+        }
+    }
+
+    /**
+     *  For multiple mainwids, the numbering of the sets is like that of the
+     *  patterns...  increasing downward and increasing to the right.
+     */
+
+    int set_number = 0;
+    for (int col = 0; col < m_mainwid_columns; ++col)
+    {
+        for (int row = 0; row < m_mainwid_rows; ++row)
+        {
+            m_mainwid_blocks[row][col] = manage(new mainwid(p, set_number));
+            ++set_number;
+        }
+    }
+    m_main_wid = m_mainwid_blocks[0][0];        /* to start with */
+
+#endif  // SEQ64_MULTI_MAINWID
+
+    /*
+     * TODO:  For SEQ64_MULTI_MAINWID, we may have to disconnect from the last
+     *        mainwid selected, and connect to the current one selected.
+     */
 
     m_button_mute->signal_clicked().connect
     (
@@ -376,20 +436,6 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         "mode.  Affects only tracks that are currently armed. Muted tracks "
         "are remembered even if the mode is toggled to Song and back to Live."
     );
-
-#else
-
-    /*
-     * \deprecated
-     */
-
-    m_button_mute->signal_clicked().connect
-    (
-        sigc::mem_fun(*m_main_wid, &seqmenu::toggle_all_tracks)
-    );
-    add_tooltip(m_button_mute, "Toggle the mute status of all tracks.");
-
-#endif
 
     tophbox->pack_start(*m_button_mute, false, false);
 
@@ -627,7 +673,13 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
     /*
-     * Pattern panel scrollable wrapper
+     * Pattern panel scrollable wrapper.
+     *
+     * TODO:    Note that, if we have SEQ64_MULTI_MAINWND enabled, we could
+     *          repurpose these scrollbars for layouts larger than the main
+     *          window size.  Right now, these two features are not
+     *          compatible, and so the patterns-panel scrollbars are disabled
+     *          at configure time by default.
      */
 
     Gtk::Layout * mainwid_wrapper = new Gtk::Layout(*m_hadjust, *m_vadjust);
@@ -675,18 +727,67 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      * Gtk::VBox * contentvbox = manage(new Gtk::VBox());
      */
 
-    Gtk::VBox * contentvbox = new Gtk::VBox();
+    Gtk::VBox * contentvbox = manage(new Gtk::VBox());
     contentvbox->set_spacing(10);
     contentvbox->set_border_width(10);
     contentvbox->pack_start(*tophbox, Gtk::PACK_SHRINK);
 
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+
     contentvbox->pack_start(*mainwid_hscroll_wrapper, true, true);
     contentvbox->pack_start(*bottomhbox, false, false);
+
 #else
+
+#if defined SEQ64_MULTI_MAINWID
+
+//  int width = m_main_wid->get_allocation().get_width();
+//  int height = m_main_wid->get_allocation().get_height();
+//  int menuheight = m_menubar->get_allocation().get_height();
+//  int topheight = tophbox->get_allocation().get_height();
+//  int bottomheight = bottomhbox->get_allocation().get_height();
+
+    /*
+     * This could perhaps be replaced with jean-emmanuel's scrollbar code that
+     * uses a Gtk::Layout object.
+     */
+
+    int wpadding = 20;
+    int hpadding = 20;
+    if (m_mainwid_count > 1)
+    {
+        m_mainwid_grid = manage
+        (
+            new Gtk::Table(guint(m_mainwid_rows), guint(m_mainwid_columns), true)
+        );
+        for (int col = 0; col < m_mainwid_columns; ++col)
+        {
+            for (int row = 0; row < m_mainwid_rows; ++row)
+            {
+                mainwid * mwp = m_mainwid_blocks[row][col];
+                m_mainwid_grid->attach
+                (
+                    *mwp, col, col+1, row, row+1,
+                    Gtk::FILL | Gtk::EXPAND,
+                    Gtk::FILL | Gtk::EXPAND,
+                    guint(wpadding),
+                    guint(hpadding)
+                );
+            }
+        }
+        contentvbox->pack_start(*m_mainwid_grid, Gtk::PACK_SHRINK);
+    }
+    else
+        contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
+#else
+
     contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
+
+#endif  // SEQ64_MULTI_MAINWID
+
     contentvbox->pack_start(*bottomhbox, Gtk::PACK_SHRINK);
-#endif
+
+#endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
     m_main_wid->set_can_focus();            /* from stazed */
     m_main_wid->grab_focus();
@@ -711,6 +812,24 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
     );
     show_all();                             /* works here as well           */
+
+#if defined SEQ64_MULTI_MAINWID
+
+    if (m_mainwid_count > 1)
+    {
+        int width = m_main_wid->nominal_width();
+        int height = m_main_wid->nominal_height();
+        int menuheight = 32;
+        int topheight = 100;
+        int bottomheight = 80;
+        height += menuheight + topheight + bottomheight;
+        height += hpadding * (m_mainwid_rows - 1);
+        width += wpadding * (m_mainwid_columns - 1);
+        printf("(width, height) = (%d, %d)\n", width, height);
+        set_size_request(width, height);
+    }
+
+#endif  // SEQ64_MULTI_MAINWID
 
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
@@ -870,10 +989,8 @@ bool
 mainwnd::timer_callback ()
 {
     midipulse tick = perf().get_tick();         /* use no get_start_tick()! */
-    m_main_time->idle_progress(tick);
-    m_main_wid->update_markers(tick);           /* tick ignored for pause   */
-
     midibpm bpm = perf().get_beats_per_minute();
+    update_markers(tick);
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT_XXX               /* TMI */
     static midibpm s_bpm = 0.0;
@@ -895,7 +1012,7 @@ mainwnd::timer_callback ()
          * note below?
          */
 
-        m_main_wid->set_screenset(screenset);
+        set_screenset(screenset);
 
         /*
          * Shouldn't we call this here?  No matter, we are going to fold this
@@ -1022,6 +1139,72 @@ mainwnd::timer_callback ()
 }
 
 /**
+ *  New function to consolidate screen-set handling.
+ *
+ * \param screenset
+ *      The new prospective screen-set value.
+ *
+ * \param setperf
+ *      If true, the perform object's screen-set is modified as well.
+ *      The default value is false.
+ */
+
+void
+mainwnd::set_screenset (int screenset, bool setperf)
+{
+
+#if defined SEQ64_MULTI_MAINWID
+    mainwid ** widptr = &m_mainwid_blocks[0][0];
+    int ss = screenset;
+    for (int wid = 0; wid < m_mainwid_count; ++wid, ++widptr, ++ss)
+        (*widptr)->set_screenset(ss, wid == 0);
+#else
+    m_main_wid->set_screenset(screenset, setperf);
+#endif
+}
+
+/**
+ *  Updates the markers on one (or more, if multi-mainwid is enabled) mainwid
+ *  objects.
+ *
+ * \param tick
+ *      The current tick number for playback, etc.
+ */
+
+void
+mainwnd::update_markers (midipulse tick)
+{
+
+#if defined SEQ64_MULTI_MAINWID
+    mainwid ** widptr = &m_mainwid_blocks[0][0];
+    for (int wid = 0; wid < m_mainwid_count; ++wid, ++widptr)
+        (*widptr)->update_markers(tick);        /* tick ignored for pause   */
+#else
+    m_main_wid->update_markers(tick);           /* tick ignored for pause   */
+#endif
+
+    m_main_time->idle_progress(tick);
+}
+
+/**
+ *  Resets one (or more, if multi-mainwid is enabled) mainwid objects.
+ */
+
+void
+mainwnd::reset ()
+{
+
+#if defined SEQ64_MULTI_MAINWID
+    mainwid ** widptr = &m_mainwid_blocks[0][0];
+    for (int wid = 0; wid < m_mainwid_count; ++wid, ++widptr)
+        (*widptr)->reset();
+#else
+    m_main_wid->reset();
+#endif
+
+}
+
+/**
  *  Opens the Performance Editor (Song Editor).
  *
  *  We will let perform keep track of modifications, and not just set an
@@ -1140,6 +1323,9 @@ mainwnd::on_realize ()
      *      mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
      *  );
      */
+
+    /////// CAUSES SEGTFAULT        //////////////////////
+    /////// set_screenset(0);       //////////////////////
 }
 
 /**
@@ -1173,7 +1359,7 @@ mainwnd::new_file ()
          *
          */
 
-        m_main_wid->reset();
+        reset();                                // m_main_wid->reset();
         m_entry_notes->set_text(perf().current_screen_set_notepad());
         rc().filename("");
         update_window_title();
@@ -1404,7 +1590,7 @@ mainwnd::open_file (const std::string & fn)
     rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
     rc().filename(fn);
     update_window_title();
-    m_main_wid->reset();
+    reset();                                // m_main_wid->reset();
     m_entry_notes->set_text(perf().current_screen_set_notepad());
     m_adjust_bpm->set_value(perf().get_beats_per_minute());
 }
@@ -1624,7 +1810,7 @@ mainwnd::file_import_dialog ()
         }
         rc().filename(std::string(dlg.get_filename()));
         update_window_title();
-        m_main_wid->reset();
+        reset();                                // m_main_wid->reset();
         m_entry_notes->set_text(perf().current_screen_set_notepad());
         m_adjust_bpm->set_value(perf().get_beats_per_minute());
         break;
@@ -1775,7 +1961,7 @@ mainwnd::build_info_dialog ()
 void
 mainwnd::adj_callback_ss ()
 {
-    m_main_wid->set_screenset(int(m_adjust_ss->get_value()), true);
+    set_screenset(int(m_adjust_ss->get_value()), true);
     m_entry_notes->set_text(perf().current_screen_set_notepad());
 }
 
@@ -1954,7 +2140,14 @@ void
 mainwnd::stop_playing ()                        /* Stop!                    */
 {
     perf().stop_key();                          /* make sure it's seq32able */
+
+#if defined SEQ64_MULTI_MAINWID
+    mainwid ** widptr = &m_mainwid_blocks[0][0];
+    for (int wid = 0; wid < m_mainwid_count; ++wid, ++widptr)
+        (*widptr)->update_sequences_on_window();
+#else
     m_main_wid->update_sequences_on_window();   /* update_mainwid_sequences() */
+#endif
 }
 
 /**
@@ -2135,14 +2328,14 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             if (k.key() == PREFKEY(screenset_dn))
             {
                 int newss = perf().decrement_screenset();
-                m_main_wid->set_screenset(newss);
+                set_screenset(newss);
                 m_adjust_ss->set_value(newss);
                 m_entry_notes->set_text(perf().current_screen_set_notepad());
             }
             else if (k.key() == PREFKEY(screenset_up))
             {
                 int newss = perf().increment_screenset();
-                m_main_wid->set_screenset(newss);
+                set_screenset(newss);
                 m_adjust_ss->set_value(newss);
                 m_entry_notes->set_text(perf().current_screen_set_notepad());
             }
@@ -2155,11 +2348,10 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 #ifdef SEQ64_STAZED_MENU_BUTTONS
             else if (k.key() == PREFKEY(toggle_mutes))
             {
-#ifdef SEQ64_TOGGLE_PLAYING
+                /*
+                 * TODO: SEQ64_MULTI_MAINWND
+                 */
                 m_main_wid->toggle_playing_tracks();
-#else
-                m_main_wid->toggle_all_tracks();    /* \deprecated */
-#endif
             }
             else if (k.key() == PREFKEY(song_mode))
             {
@@ -2267,11 +2459,17 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                     if (m_call_seq_edit)
                     {
                         m_call_seq_edit = false;
+                        /*
+                         * TODO: SEQ64_MULTI_MAINWND
+                         */
                         m_main_wid->seq_set_and_edit(seqnum);
                         result = true;
                     }
                     else if (m_call_seq_eventedit)
                     {
+                        /*
+                         * TODO: SEQ64_MULTI_MAINWND
+                         */
                         m_call_seq_eventedit = false;
                         m_main_wid->seq_set_and_eventedit(seqnum);
                         result = true;

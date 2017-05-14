@@ -20,3 +20,5 @@ Idea:
 
 x.  Operations like move will probably start out restricted to be within the
     same mainwid.
+
+y.  Feature macro:  SEQ64_MULTI_MAINWID

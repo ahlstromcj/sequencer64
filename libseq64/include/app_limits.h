@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2017-03-25
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -178,8 +178,26 @@
  *  columns in the main window.
  */
 
-#define SQ64_DEFAULT_SEQS_IN_SET \
+#define SEQ64_DEFAULT_SEQS_IN_SET \
    (SEQ64_DEFAULT_MAINWND_ROWS * SEQ64_DEFAULT_MAINWND_COLUMNS)
+
+#if defined SEQ64_MULTI_MAINWID
+
+/**
+ *  The maximum number of rows of mainwids we will support, regardless of
+ *  screen resolution.
+ */
+
+#define SEQ64_MAINWID_BLOCK_ROWS_MAX       3
+
+/**
+ *  The maximum number of columns of mainwids we will support, regardless of
+ *  screen resolution.
+ */
+
+#define SEQ64_MAINWID_BLOCK_COLS_MAX       2
+
+#endif  // SEQ64_MULTI_MAINWID
 
 /**
  *  This constant indicates that a configuration file numeric value is

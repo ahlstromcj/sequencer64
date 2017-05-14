@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-04-22
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -388,8 +388,44 @@ class user_settings
 
     bool m_use_more_icons;
 
+#if defined SEQ64_MULTI_MAINWID
+
     /**
-     *  Constants for the mainwid class.  The m_text_x and m_text_y
+     *  New section [user-main-window]
+     *
+     *  This section adds to the [user-interface-settings] configuration
+     *  section.  That section is big enough, and the new section is for newer
+     *  features.
+     *
+     *  Currently these value are not saved; we want to test the viability of
+     *  the concept, first.
+     */
+
+    /**
+     *  This value specifies the number of rows of main windows.  The default
+     *  is the legacy value, 1, to support the original paradigm of one set
+     *  shown in the user interface.  For now, we will restrict this value to
+     *  range from 1 to 3, which will fit onto a 1920 x 1080 screen.
+     */
+
+    int m_mainwid_block_rows;
+
+    /**
+     *  This value specifies the number of columns of main windows.  The default
+     *  is the legacy value, 1, to support the original paradigm of one set
+     *  shown in the user interface.  For now, we will restrict this value to
+     *  range from 1 to 2, which will fit onto a 1920 x 1080 screen.
+     */
+
+    int m_mainwid_block_cols;
+
+#endif  // SEQ64_MULTI_MAINWID
+
+    /**
+     *  Constants for the mainwid class.  These items are not read from the
+     *  "usr", and are not currently part of any configuration section.
+     *
+     *  The m_text_x and m_text_y
      *  constants help define the "seqarea" size.  It looks like these two
      *  values are the character width (x) and height (y) in pixels.
      *  Thus, these values would be dependent on the font chosen.  But
@@ -1245,6 +1281,28 @@ public:
         return m_use_more_icons;
     }
 
+#if defined SEQ64_MULTI_MAINWID
+
+    /**
+     * \getter m_mainwid_block_rows
+     */
+
+    int main_block_rows () const
+    {
+        return m_mainwid_block_rows;
+    }
+
+    /**
+     * \getter m_mainwid_block_cols
+     */
+
+    int main_block_columns () const
+    {
+        return m_mainwid_block_cols;
+    }
+
+#endif  // SEQ64_MULTI_MAINWID
+
     /**
      * \getter m_save_user_config
      */
@@ -1493,6 +1551,13 @@ public:         // used in main application module and the userfile class
     {
         m_use_more_icons = flag;
     }
+
+#if defined SEQ64_MULTI_MAINWID
+
+    void main_block_rows (int count);
+    void main_block_columns (int count);
+
+#endif  // SEQ64_MULTI_MAINWID
 
     /**
      * \setter m_user_option_daemonize

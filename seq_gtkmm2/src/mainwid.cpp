@@ -115,9 +115,15 @@ const int c_mainwid_y =
  *
  * \param p
  *      Provides the reference to the all-important perform object.
+ *
+ * \param ss
+ *      Indicates the screen we start out at.  This is really only useful if
+ *      SEQ64_MULTI_MAINWND is defined, but doesn't hurt much to have it
+ *      hardwired here, and it could be a good feature independent of
+ *      multi-mainwid support.  The default value is 0.
  */
 
-mainwid::mainwid (perform & p)
+mainwid::mainwid (perform & p, int ss)
  :
     gui_drawingarea_gtk2    (p, c_mainwid_x, c_mainwid_y),
     seqmenu                 (p),
@@ -151,6 +157,12 @@ mainwid::mainwid (perform & p)
     m_screenset_offset      (m_screenset * m_screenset_slots),
     m_progress_height       (m_seqarea_seq_y + 3)
 {
+
+#if defined SEQ64_MULTI_MAINWID_XXX     // will crash
+    if (ss > 0)
+        set_screenset(0, true);         /* update perform's screen-set, too */
+#endif
+
     if (is_nullptr(gs_mainwid_pointer))
         gs_mainwid_pointer = this;
 }
@@ -810,7 +822,7 @@ mainwid::seq_from_xy (int x, int y)
  *      Provides the screen-set number to set.
  *
  * \param setperf
- *      If true, then also call perfrom::set_screenset().  Defaults to false.
+ *      If true, then also call perform::set_screenset().  Defaults to false.
  *      It might be better if it defaults to true.
  */
 

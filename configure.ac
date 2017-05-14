@@ -400,7 +400,7 @@ if test "$jack" != "no"; then
         AC_MSG_WARN([Could not find JACK library, disabling JACK support])
     fi
 else
-    AC_MSG_WARN([JACK support not enabled.]);
+    AC_MSG_WARN([JACK support disabled.]);
 fi
 
 dnl LASH support
@@ -421,7 +421,7 @@ if test "$lash" != "no"; then
         AC_MSG_WARN([LASH not found, session support will not be built.])
     fi
 else
-    AC_MSG_WARN([LASH support not enabled.]);
+    AC_MSG_WARN([LASH support disabled.]);
 fi
 
 dnl "RtMidi" support.  This is now the default build for Sequencer64.
@@ -444,7 +444,7 @@ if test "$rtmidi" != "no"; then
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xyes])
     AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
 else
-    AC_MSG_WARN([rtmidi build not enabled.]);
+    AC_MSG_WARN([rtmidi build disabled.]);
 fi
 
 AC_ARG_ENABLE(cli,
@@ -461,7 +461,7 @@ if test "$cli" != "no"; then
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTCLI], [test x$cli = xyes])
 else
-    AC_MSG_WARN([rtmidi command-line build not enabled.]);
+    AC_MSG_WARN([rtmidi command-line build disabled.]);
 fi
 
 dnl ALSA MIDI (legacy) support.
@@ -480,7 +480,7 @@ if test "$alsamidi" != "no"; then
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
 else
-    AC_MSG_WARN([Standard ALSA build not enabled.]);
+    AC_MSG_WARN([Standard ALSA build disabled.]);
 fi
 
 dnl PortMidi support.  Deprecated.
@@ -499,7 +499,7 @@ if test "$portmidi" != "no"; then
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
 else
-    AC_MSG_WARN([PortMidi build not enabled.]);
+    AC_MSG_WARN([PortMidi build disabled.]);
 fi
 
 AC_SUBST(APP_NAME)
@@ -517,7 +517,7 @@ if test "$highlight" != "no"; then
     AC_DEFINE(HIGHLIGHT_EMPTY_SEQS, 1, [Define to enable highlighting empty sequences])
     AC_MSG_RESULT([Highlighting empty sequences enabled.]);
 else
-    AC_MSG_WARN([Highlighting empty sequences not enabled.]);
+    AC_MSG_WARN([Highlighting empty sequences disabled.]);
 fi
 
 dnl Support for using the event editor.  It can cause issues if used, and adds
@@ -535,7 +535,7 @@ if test "$eveditor" != "no"; then
     AC_DEFINE(ENABLE_EVENT_EDITOR, 1, [Define to enable the event editor])
     AC_MSG_RESULT([Event editor enabled.]);
 else
-    AC_MSG_WARN([Event editor not enabled.]);
+    AC_MSG_WARN([Event editor disabled.]);
 fi
 
 dnl Support for pausing playback in ALSA mode, including a pause button.
@@ -550,7 +550,7 @@ if test "$pause" != "no"; then
     AC_DEFINE(PAUSE_SUPPORT, 1, [Define to enable pausing and pause button])
     AC_MSG_RESULT([Pausing sequences and pause-button enabled.]);
 else
-    AC_MSG_WARN([Pausing sequences and pause-button not enabled.]);
+    AC_MSG_WARN([Pausing sequences and pause-button disabled.]);
 fi
 
 dnl Support for re-enabling the "statistics" code.  If enabled, macro
@@ -565,7 +565,7 @@ if test "$statistics" != "no"; then
     AC_DEFINE(STATISTICS_SUPPORT, 1, [Define to enable statistics gathering])
     AC_MSG_RESULT([Statistics gathering enabled.]);
 else
-    AC_MSG_WARN([Statistics gathering not enabled.]);
+    AC_MSG_WARN([Statistics gathering disabled.]);
 fi
 
 dnl Support for using the stazed JACK support.  Now enabled by default.
@@ -582,7 +582,7 @@ if test "$seq32jack" != "no"; then
     AC_DEFINE(JACK_SUPPORT, 1, [Define to enable JACK driver])
     AC_MSG_RESULT([Seq32 JACK support enabled.]);
 else
-    AC_MSG_WARN([Seq32 JACK support not enabled.]);
+    AC_MSG_WARN([Seq32 JACK support disabled.]);
 fi
 
 dnl Support for using the stazed LFO window support.  Now enabled by default.
@@ -596,7 +596,7 @@ if test "$lfo" != "no"; then
     AC_DEFINE(STAZED_LFO_SUPPORT, 1, [Define to enable Seq32 LFO window support])
     AC_MSG_RESULT([Seq32 LFO window support enabled.]);
 else
-    AC_MSG_WARN([Seq32 LFO window support not enabled.]);
+    AC_MSG_WARN([Seq32 LFO window support disabled.]);
 fi
 
 dnl Support for using the stazed chord generator.
@@ -610,7 +610,7 @@ if test "$chords" != "no"; then
     AC_DEFINE(STAZED_CHORD_GENERATOR, 1, [Define to enable the chord generator])
     AC_MSG_RESULT([Chord generator enabled.])
 else
-    AC_MSG_WARN([Chord generator not enabled.]);
+    AC_MSG_WARN([Chord generator disabled.]);
 fi
 
 dnl Support for using the stazed transpose feature.  This affects sequence and
@@ -625,23 +625,23 @@ if test "$transpose" != "no"; then
     AC_DEFINE(STAZED_TRANSPOSE, 1, [Define to enable global transpose])
     AC_MSG_RESULT([Global seq32 transpose enabled.])
 else
-    AC_MSG_WARN([Global seq32 transpose not enabled.]);
+    AC_MSG_WARN([Global seq32 transpose disabled.]);
 fi
 
 dnl Support for using jean-emmanuel's scrollbars in the patterns panel.  We will
 dnl call this panel "main" for short.
 
 AC_ARG_ENABLE(mainscroll,
-    [AS_HELP_STRING(--disable-mainscroll, [Disable main pattern scrollbars])],
+    [AS_HELP_STRING(--enable-mainscroll, [Enable main pattern scrollbars])],
     [mainscroll=$enableval],
-    [mainscroll=yes])
+    [mainscroll=no])
 
 if test "$mainscroll" != "no"; then
     AC_DEFINE(JE_PATTERN_PANEL_SCROLLBARS,
         1, [Define to enable main pattern scrollbars])
     AC_MSG_RESULT([Main patterns-panel scrollbars enabled.])
 else
-    AC_MSG_WARN([Main patterns-panel scrollbars not enabled.]);
+    AC_MSG_WARN([Main patterns-panel scrollbars disabled.]);
 fi
 
 dnl 6.0  Top portion of the config.h/sequencer64-config.h header files.

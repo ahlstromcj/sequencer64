@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-02
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -196,19 +196,13 @@ seqmenu::popup_menu ()
     (
         MenuElem("Toggle All Tracks", mem_fun(*this, &seqmenu::toggle_all_tracks))
     );
-
-#ifdef SEQ64_TOGGLE_PLAYING
-
     menu_song->items().push_back
     (
         MenuElem
         (
-            "Toggle Live Tracks",
-            mem_fun(*this, &seqmenu::toggle_playing_tracks)
+            "Toggle Live Tracks", mem_fun(*this, &seqmenu::toggle_playing_tracks)
         )
     );
-
-#endif  // SEQ64_TOGGLE_PLAYING
 
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE       // currently doesn't work well
 

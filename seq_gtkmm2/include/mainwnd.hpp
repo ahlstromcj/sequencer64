@@ -75,6 +75,10 @@ namespace Gtk
     class VScrollbar;
 #endif
 
+#if defined SEQ64_MULTI_MAINWID
+    class Table;    // Grid;
+#endif
+
 #if defined SEQ64_STAZED_MENU_BUTTONS
     class ToggleButton;
 #endif
@@ -148,12 +152,55 @@ private:
 
 #endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
+#if defined SEQ64_MULTI_MAINWID
+
+    /**
+     *  Provides a place in which to array multiple mainwid objects.
+     *  This item is not used if only one mainwid is configured.
+     */
+
+    Gtk::Table * m_mainwid_grid;
+
+    /**
+     *  Holds from 1 x 1 to up to 3 x 2 (1 to 6) pointers for mainwid objects.
+     *  It's only 6 pointers, no need to fret over dynamic allocation.
+     */
+
+    mainwid * m_mainwid_blocks
+        [SEQ64_MAINWID_BLOCK_ROWS_MAX]
+        [SEQ64_MAINWID_BLOCK_COLS_MAX];
+
+    /**
+     *  The number of mainwids vertically.  Defaults to 1.
+     */
+
+    int m_mainwid_rows;
+
+    /**
+     *  The number of mainwids horizontally.  Defaults to 1.
+     */
+
+    int m_mainwid_columns;
+
+    /**
+     *  The number of mainwids.  Saves multiplications and static value
+     *  checks.
+     */
+
+    int m_mainwid_count;
+
+#endif  // SEQ64_MULTI_MAINWID
+
     /**
      *  The biggest sub-components of mainwnd.  The first is the Patterns
      *  Panel, which the mainwid helps implement.  We end up sharing this
      *  object with perfedit, perfnames, and seqedit in order to allow the
      *  seqedit object to notify the mainwid (indirectly) of the
      *  currently-edited sequence.
+     *
+     *  If the SEQ64_MULTI_MAINWID build option is in force, this pointer is
+     *  used for highlighting and activating the mainwid that was last
+     *  clicked.  It starts out as the upper left mainwid.
      */
 
     mainwid * m_main_wid;
@@ -231,11 +278,7 @@ private:
 
     Gtk::Image * m_image_songlive;
     Gtk::ToggleButton * m_button_mode;  /**< Live/Song mode button.         */
-#ifdef SEQ64_TOGGLE_PLAYING
     Gtk::ToggleButton * m_button_mute;  /**< Mute toggle button.            */
-#else
-    Gtk::Button * m_button_mute;        /**< Mute button, sort of a toggle. */
-#endif
     Gtk::ToggleButton * m_button_menu;  /**< Menu enable/disable button.    */
 
 #endif
@@ -355,6 +398,11 @@ public:
         perform & p,
         bool allowperf2 = true,
         int ppqn        = SEQ64_USE_DEFAULT_PPQN
+#if defined SEQ64_MULTI_MAINWID
+        ,
+        int mainwid_rows = 1,
+        int mainwid_cols = 1
+#endif
     );
     virtual ~mainwnd ();
 
@@ -391,6 +439,9 @@ private:
     void adj_callback_bpm ();
     void edit_callback_notepad ();
     bool timer_callback ();
+    void update_markers (midipulse tick);
+    void reset ();
+    void set_screenset (int screenset, bool setperf = false);
     void set_play_image (bool isrunning);
     void set_songlive_image (bool issong);
     void start_playing ();

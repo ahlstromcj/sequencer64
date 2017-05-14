@@ -1,4 +1,4 @@
-INSTALL for Sequencer64 v. 0.90.6 and above
+INSTALL for Sequencer64 v. 0.91.0 and above
 Chris Ahlstrom
 2015-09-10 to 2017-05-13
 
@@ -383,6 +383,9 @@ MANUALLY-DEFINED MACROS IN CODE:
             And more...
 
     SEQ64_TOGGLE_PLAYING:
+
+        This is now a PERMANENT option.  The macro is removed, the
+        functionality remains.
 
         If defined (in the perform module), this macro makes the Mute button
         of the Main window toggle only the tracks that are armed.  The

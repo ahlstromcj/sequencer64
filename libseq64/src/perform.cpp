@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-05-07
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -270,10 +270,8 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_FF_RW_button_type         (FF_RW_NONE),
 #endif
     m_mute_group                (),         // boolean array, size 32 * 32
-#ifdef SEQ64_TOGGLE_PLAYING
     m_armed_saved               (false),
     m_armed_statuses            (),         // boolean array, size 1024
-#endif
     m_tracks_mute_state         (),         // set's tracks [c_seqs_in_set]
     m_mode_group                (true),
     m_mode_group_learn          (false),
@@ -371,11 +369,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     }
     for (int i = 0; i < m_sequence_max; ++i)    /* not c_gmute_tracks now   */
     {
-#ifdef SEQ64_TOGGLE_PLAYING
         m_mute_group[i] = m_armed_statuses[i] = false;
-#else
-        m_mute_group[i] = false;
-#endif
     }
 
     for (int i = 0; i < m_seqs_in_set; ++i)
@@ -843,8 +837,6 @@ perform::toggle_all_tracks ()
     }
 }
 
-#ifdef SEQ64_TOGGLE_PLAYING
-
 /**
  *  Toggles the mutes status of all playing (currently unmuted) tracks in the
  *  current set of active patterns/sequences on all screen-sets.  Covers
@@ -892,8 +884,6 @@ perform::toggle_playing_tracks ()
     }
 }
 
-#endif  // SEQ64_TOGGLE_PLAYING
-
 /**
  *  Provides for various settings of the song-mute status of all sequences in
  *  the song. The sequence::set_song_mute() and toggle_song_mute() functions
@@ -902,6 +892,10 @@ perform::toggle_playing_tracks ()
  *  We've modified this function to call mute_all_tracks() and
  *  toggle_all_tracks() in order to consolidate the code and (cough cough) fix
  *  a bug in this functionality from the mainwnd menu.
+ *
+ * \question
+ *      Do we want to replace the call to toggle_all_tracks() with a call to
+ *      toggle_playing_tracks()?
  *
  * \param op
  *      Provides the "flag" that indicates if this function is to set mute on,

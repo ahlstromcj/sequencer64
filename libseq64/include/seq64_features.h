@@ -28,11 +28,13 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-03-20
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
- *    unimplemented features.
+ *    unimplemented features.  Some options (the "SEQ64_xxx" options)
+ *    might be experimental, or not, but are definitely supported, if defined,
+ *    and may become configure-time options.
  *
  *    Some options are available (or can be disabled) by running the
  *    "configure" script generated using the configure.ac file.  These
@@ -121,6 +123,14 @@
  *
  *  #define SEQ64_STAZED_LFO_SUPPORT
  */
+
+/**
+ *  EXPERIMENTAL
+ *
+ *  Provides support for up to a 3 x 2 array of mainwids.
+ */
+
+#define SEQ64_MULTI_MAINWID
 
 /**
  *  Adds a button to disable the main menu in the main window.  Adds a button

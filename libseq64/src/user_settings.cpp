@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2017-04-22
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -153,6 +153,11 @@ user_settings::user_settings ()
     m_inverse_colors            (false),
     m_window_redraw_rate_ms     (c_redraw_ms),  // 40 ms or 20 ms; 25 ms
     m_use_more_icons            (false),
+
+#if defined SEQ64_MULTI_MAINWID
+    m_mainwid_block_rows        (2),
+    m_mainwid_block_cols        (2),
+#endif
 
     /*
      * The members that follow are not yet part of the .usr file.
@@ -1038,6 +1043,31 @@ user_settings::option_logfile () const
     return result;
 }
 
+#if defined SEQ64_MULTI_MAINWID
+
+/**
+ * \setter m_mainwid_block_rows
+ */
+
+void
+user_settings::main_block_rows (int count)
+{
+    if (count > 0 && count <= SEQ64_MAINWID_BLOCK_ROWS_MAX)
+        m_mainwid_block_rows = count;
+}
+
+/**
+ * \setter m_mainwid_block_cols
+ */
+
+void
+user_settings::main_block_columns (int count)
+{
+    if (count > 0 && count <= SEQ64_MAINWID_BLOCK_COLS_MAX)
+        m_mainwid_block_cols = count;
+}
+
+#endif  // SEQ64_MULTI_MAINWID
 
 /**
  *  Provides a debug dump of basic information to help debug a

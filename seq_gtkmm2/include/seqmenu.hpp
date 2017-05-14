@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-02
+ * \updates       2017-05-13
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
@@ -389,8 +389,6 @@ private:
         m_mainperf.toggle_all_tracks();
     }
 
-#ifdef SEQ64_TOGGLE_PLAYING
-
     /**
      *  Toggles the mute-status of only the playing tracks in the main perform
      *  object.  Note that the perform object will do this action only in Live
@@ -401,8 +399,6 @@ private:
     {
         m_mainperf.toggle_playing_tracks();
     }
-
-#endif
 
 private:        // callback
 

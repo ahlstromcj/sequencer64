@@ -150,7 +150,7 @@ private:
 
     /**
      *  Provides a convenience variable for avoiding multiplications.
-     *  It is equally to m_screenset_slots * m_screenset.
+     *  It is equal to m_screenset_slots * m_screenset.
      */
 
     int m_screenset_offset;
@@ -170,6 +170,23 @@ public:
     void set_screenset (int ss, bool setperf = false);
 
 private:
+
+#if defined SEQ64_MULTI_MAINWID
+
+    /**
+     * \setter m_screenset
+     *      This function is used for altering the current screen-set
+     *      displayed by a single mainwid in multi-mainwid mode.
+     */
+
+    void log_screenset (int ss)
+    {
+        m_screenset = ss;
+        m_screenset_offset = m_screenset_slots * ss;
+        reset();
+    }
+
+#endif
 
     /**
      *  This function redraws everything and queues up a redraw operation.

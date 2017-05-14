@@ -76,7 +76,8 @@ namespace Gtk
 #endif
 
 #if defined SEQ64_MULTI_MAINWID
-    class Table;    // Grid;
+    class Frame;
+    class Table;                /* Grid is not available in gtkmm-2.4   */
 #endif
 
 #if defined SEQ64_STAZED_MENU_BUTTONS
@@ -175,8 +176,34 @@ private:
     Gtk::Table * m_mainwid_grid;
 
     /**
+     *  Holds from 1 x 1 to up to 3 x 2 (1 to 6) pointers for Frame objects.
+     *  Each frame will hold a mainwid object, and the text part of the frame
+     *  will show the set number for that mainwid.  It's only 6 pointers, no
+     *  need to fret over dynamic allocation.
+     */
+
+    Gtk::Frame * m_mainwid_frames
+        [SEQ64_MAINWID_BLOCK_ROWS_MAX]
+        [SEQ64_MAINWID_BLOCK_COLS_MAX];
+
+    /**
+     *  Holds from 1 x 1 to up to 3 x 2 (1 to 6) pointers.
+     */
+
+    Gtk::Adjustment * m_mainwid_adjustors
+        [SEQ64_MAINWID_BLOCK_ROWS_MAX]
+        [SEQ64_MAINWID_BLOCK_COLS_MAX];
+
+    /**
+     *  Holds from 1 x 1 to up to 3 x 2 (1 to 6) pointers.
+     */
+
+    Gtk::SpinButton * m_mainwid_spinners
+        [SEQ64_MAINWID_BLOCK_ROWS_MAX]
+        [SEQ64_MAINWID_BLOCK_COLS_MAX];
+
+    /**
      *  Holds from 1 x 1 to up to 3 x 2 (1 to 6) pointers for mainwid objects.
-     *  It's only 6 pointers, no need to fret over dynamic allocation.
      */
 
     mainwid * m_mainwid_blocks
@@ -459,6 +486,11 @@ private:
 
     void adj_callback_ss ();
     void adj_callback_bpm ();
+
+#if defined SEQ64_MULTI_MAINWID
+    void adj_callback_mainwid (int mainwid_slot);
+#endif
+
     void edit_callback_notepad ();
     bool timer_callback ();
     bool update_markers (midipulse tick);

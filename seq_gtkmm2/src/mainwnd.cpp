@@ -100,7 +100,7 @@
 #include "midifile.hpp"
 #include "options.hpp"
 #include "perfedit.hpp"
-#include "cmdlineopts.hpp"              /* for build info function  */
+#include "cmdlineopts.hpp"              /* for build info function          */
 
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 #include <gtkmm/layout.h>
@@ -108,7 +108,9 @@
 #endif
 
 #if defined SEQ64_MULTI_MAINWID
-#include <gtkmm/table.h>        /* <gtkmm/grid.h> does not exist in 2.4 */
+#include <gtkmm/frame.h>
+#include <gtkmm/separator.h>
+#include <gtkmm/table.h>                /* <gtkmm-2.4/grid.h> doesn't exist */
 #endif
 
 #include "pixmaps/pause.xpm"
@@ -226,6 +228,9 @@ mainwnd::mainwnd
 
 #if defined SEQ64_MULTI_MAINWID
     m_mainwid_grid          (nullptr),
+    m_mainwid_frames        (),                         /* a 3 x 2 array    */
+    m_mainwid_adjustors     (),                         /* a 3 x 2 array    */
+    m_mainwid_spinners      (),                         /* a 3 x 2 array    */
     m_mainwid_blocks        (),                         /* a 3 x 2 array    */
     m_mainwid_rows          (mainwid_rows),             /* assumed valid    */
     m_mainwid_columns       (mainwid_cols),             /* assumed valid    */
@@ -408,12 +413,20 @@ mainwnd::mainwnd
     for (int row = 0; row < row_max; ++row)
     {
         for (int col = 0; col < col_max; ++col)
+        {
+            m_mainwid_adjustors[row][col] = nullptr;
+            m_mainwid_spinners[row][col] = nullptr;
+            m_mainwid_frames[row][col] = nullptr;
             m_mainwid_blocks[row][col] = nullptr;
+        }
     }
 
     /**
      *  For multiple mainwids, the numbering of the sets is like that of the
      *  patterns...  increasing downward and increasing to the right.
+     *  We're trying to add a frame for each set.  However, although attaching
+     *  a Frame by itself works, when the mainwid is added to the frame,
+     *  attaching the frame to the table causes a segfault!
      */
 
     int set_number = 0;
@@ -421,11 +434,45 @@ mainwnd::mainwnd
     {
         for (int row = 0; row < m_mainwid_rows; ++row)
         {
+            std::string label = "Set ";
+            label += std::to_string(set_number);
             m_mainwid_blocks[row][col] = manage(new mainwid(p, set_number));
+            if (multi_wid())
+            {
+                m_mainwid_adjustors[row][col] = manage
+                (
+                    new Gtk::Adjustment(set_number, 0, c_max_sets-1, 1)
+                );
+                m_mainwid_spinners[row][col] = manage
+                (
+                    new Gtk::SpinButton(*m_mainwid_adjustors[row][col])
+                );
+                m_mainwid_spinners[row][col]->set_sensitive(true);
+                m_mainwid_spinners[row][col]->set_editable(true);
+                m_mainwid_spinners[row][col]->set_wrap(false);
+                m_mainwid_frames[row][col] = manage(new Gtk::Frame(label));
+                m_mainwid_frames[row][col]->set_border_width(4);
+
+                /*
+                 * We get more control if we add the frame and mainwid
+                 * separately to the table.
+                 *
+                 * m_mainwid_frames[row][col]->add(*m_mainwid_blocks[row][col]);
+                 *
+                 * Try adding it to table instead.
+                 *
+                 * m_mainwid_frames[row][col]->add(*m_mainwid_spinners[row][col]);
+                 */
+            }
             ++set_number;
         }
     }
-    m_main_wid = m_mainwid_blocks[0][0];        /* to start with */
+    m_main_wid = m_mainwid_blocks[0][0];            /* to start with */
+    if (multi_wid())
+    {
+        m_mainwid_frames[0][0]->set_shadow_type(Gtk::SHADOW_OUT);
+        m_mainwid_frames[0][0]->set_label("Set 0 [active]");
+    }
 
 #endif  // SEQ64_MULTI_MAINWID
 
@@ -658,11 +705,52 @@ mainwnd::mainwnd
     sethbox->pack_start(*setlabel, Gtk::PACK_SHRINK);
     sethbox->pack_start(*m_spinbutton_ss, Gtk::PACK_SHRINK);
 
+#if defined SEQ64_MULTI_MAINWID
+
+    if (multi_wid())
+    {
+        int mainwid_offset = 0;
+        for (int col = 0; col < m_mainwid_columns; ++col)
+        {
+            sethbox->pack_start
+            (
+                *(manage(new Gtk::VSeparator())), false, false, 4
+            );
+            for (int row = 0; row < m_mainwid_rows; ++row, ++mainwid_offset)
+            {
+                Gtk::Adjustment * mwap = m_mainwid_adjustors[row][col];
+                Gtk::SpinButton * sbp = m_mainwid_spinners[row][col];
+                if (not_nullptr(sbp) && not_nullptr(mwap))
+                {
+                    add_tooltip
+                    (
+                        sbp,
+                        "Change screen-set of corresponding set window."
+                    );
+                    mwap->signal_value_changed().connect
+                    (
+                        sigc::bind          /* bind parameter to function   */
+                        (
+                            mem_fun(*this, &mainwnd::adj_callback_mainwid),
+                            mainwid_offset
+                        )
+                    );
+                    sethbox->pack_start(*sbp, Gtk::PACK_SHRINK);
+                }
+            }
+        }
+        sethbox->pack_start
+        (
+            *(manage(new Gtk::VSeparator())), false, false, 4
+        );
+    }
+
+#endif  // SEQ64_MULTI_MAINWID
+
     /*
      * Song editor button.  Although there can be two of them brought
-     * on-screen, only one has a button devoted to it.  Also, we prevent
-     * this button from grabbing focus, as it interacts "badly" with the space
-     * bar.
+     * on-screen, only one has a button devoted to it.  Also, we prevent this
+     * button from grabbing focus, as it interacts "badly" with the space bar.
      */
 
     m_button_perfedit->set_focus_on_click(false);
@@ -750,12 +838,6 @@ mainwnd::mainwnd
 
 #if defined SEQ64_MULTI_MAINWID
 
-//  int width = m_main_wid->get_allocation().get_width();
-//  int height = m_main_wid->get_allocation().get_height();
-//  int menuheight = m_menubar->get_allocation().get_height();
-//  int topheight = tophbox->get_allocation().get_height();
-//  int bottomheight = bottomhbox->get_allocation().get_height();
-
     /*
      * This could perhaps be replaced with jean-emmanuel's scrollbar code that
      * uses a Gtk::Layout object.
@@ -773,15 +855,25 @@ mainwnd::mainwnd
         {
             for (int row = 0; row < m_mainwid_rows; ++row)
             {
+                Gtk::Frame * frp = m_mainwid_frames[row][col];
+                ////// Gtk::SpinButton * sbp = m_mainwid_spinners[row][col];
                 mainwid * mwp = m_mainwid_blocks[row][col];
-                m_mainwid_grid->attach
-                (
-                    *mwp, col, col+1, row, row+1,
-                    Gtk::FILL | Gtk::EXPAND,
-                    Gtk::FILL | Gtk::EXPAND,
-                    guint(wpadding),
-                    guint(hpadding)
-                );
+                if (not_nullptr(mwp))
+                {
+                    m_mainwid_grid->attach(*frp, col, col+1, row, row+1);
+                    m_mainwid_grid->attach
+                    (
+                        *mwp, col, col+1, row, row+1,
+                        Gtk::FILL | Gtk::EXPAND,
+                        Gtk::FILL | Gtk::EXPAND,
+                        guint(wpadding),
+                        guint(hpadding)
+                    );
+                    ////////
+                    // Ugly
+                    // m_mainwid_grid->attach(*sbp, col, col+1, row, row+1);
+                    ////////
+                }
             }
         }
         contentvbox->pack_start(*m_mainwid_grid, Gtk::PACK_SHRINK);
@@ -1153,11 +1245,12 @@ mainwnd::timer_callback ()
 }
 
 /**
- *  New function to consolidate screen-set handling.  Sets the screenset to
- *  the given value.
+ *  New function to consolidate screen-set handling.  Sets the active
+ *  screenset to the given value.  This is use by the main Set spin-button.
  *
  * \param screenset
- *      The new prospective screen-set value.
+ *      The new prospective screen-set value.  This will become the active
+ *      screen-set.
  *
  * \param setperf
  *      If true, the perform object's screen-set is modified as well.
@@ -1178,8 +1271,10 @@ mainwnd::set_screenset (int screenset, bool setperf)
     }
 
     /*
-     * TODO
-     * Then we need to set the active screen-set.
+     * TODO: Then we need to set the active screen-set.  This might have to
+     * wait until the GUI is fully realized.
+     *  m_main_wid = m_mainwid_blocks[0][0];
+     *  m_mainwid_frames[0][0]->set_shadow_type(Gtk::SHADOW_OUT);
      */
 #else
     m_main_wid->set_screenset(screenset, setperf);
@@ -2003,11 +2098,11 @@ mainwnd::build_info_dialog ()
 }
 
 /**
- *  This function is the callback for adjusting the screen-set value.  Its
- *  sets the screen-set value in the Performance/Song window, the Patterns,
- *  and something about setting the text based on a screen-set notepad from
- *  the Performance/Song window.  We let the perform object keep track of
- *  modifications.
+ *  This function is the callback for adjusting the active screen-set value.
+ *  Its sets the active screen-set value in the Performance/Song window, the
+ *  Patterns, and something about setting the text based on a screen-set
+ *  notepad from the Performance/Song window.  We let the perform object keep
+ *  track of modifications.
  */
 
 void
@@ -2027,6 +2122,56 @@ mainwnd::adj_callback_bpm ()
 {
     perf().set_beats_per_minute(midibpm(m_adjust_bpm->get_value()));
 }
+
+#if defined SEQ64_MULTI_MAINWID
+
+/**
+ *  This function is the callback for adjusting the screen-set value of a
+ *  particular mainwid.
+ *
+ * \param mainwid_slot
+ *      This parameter ranges from 0 to 5, depending on how many mainwids are
+ *      created.  This function operates only when multiple mainwids are
+ *      active.
+ */
+
+void
+mainwnd::adj_callback_mainwid (int mainwid_slot)
+{
+    if (multi_wid())
+    {
+        mainwid ** widptr = &m_mainwid_blocks[0][0];
+        mainwid * mslot = widptr[mainwid_slot];
+        if (not_nullptr(mslot))
+        {
+            Gtk::Adjustment ** adjptr = &m_mainwid_adjustors[0][0];
+            Gtk::Adjustment * aslot = adjptr[mainwid_slot];
+            if (not_nullptr(aslot))
+            {
+                int ss = aslot->get_value();
+                mslot->log_screenset(ss);
+                if (multi_wid())
+                {
+                    Gtk::Frame ** frptr = &m_mainwid_frames[0][0];
+                    Gtk::Frame * fslot = frptr[mainwid_slot];
+                    if (not_nullptr(fslot))
+                    {
+                        std::string label = "Set ";
+                        label += std::to_string(ss);
+                        if (ss == perf().get_screenset())
+                        {
+                            fslot->set_shadow_type(Gtk::SHADOW_OUT);
+                            label += " [active]";
+                            fslot->set_label(label);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+#endif  // SEQ64_MULTI_MAINWID
 
 /**
  *  A callback function for handling an edit to the screen-set notepad.

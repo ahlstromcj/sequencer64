@@ -1518,7 +1518,8 @@ perform::page_increment_beats_per_minute ()
 }
 
 /**
- *  Encapsulates some calls used in mainwnd.
+ *  Encapsulates some calls used in mainwnd.  The value set here will
+ *  represent the "active" screen-set in multi-window mode.
  *
  * \return
  *      Returns the decremented screen-set value.
@@ -1533,7 +1534,8 @@ perform::decrement_screenset ()
 }
 
 /**
- *  Encapsulates some calls used in mainwnd.
+ *  Encapsulates some calls used in mainwnd.  The value set here will
+ *  represent the "active" screen-set in multi-window mode.
  *
  * \return
  *      Returns the incremented screen-set value.
@@ -1791,7 +1793,8 @@ perform::get_screen_set_notepad (int screenset) const
  *      The index of the desired new screen set.  It is forced to range from
  *      0 to m_max_sets - 1.  The clamping seems weird, but hews to seq24.
  *      What it does is let the user wrap around the screen-sets in the user
- *      interface.
+ *      interface.  The value set here will represent the "active" screen-set
+ *      in multi-window mode.
  */
 
 void

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2017-05-13
+ * \updates       2017-05-14
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -155,8 +155,8 @@ user_settings::user_settings ()
     m_use_more_icons            (false),
 
 #if defined SEQ64_MULTI_MAINWID
-    m_mainwid_block_rows        (2),
-    m_mainwid_block_cols        (2),
+    m_mainwid_block_rows        (1),
+    m_mainwid_block_cols        (1),
 #endif
 
     /*
@@ -255,6 +255,11 @@ user_settings::user_settings (const user_settings & rhs)
     m_inverse_colors            (rhs.m_inverse_colors),
     m_window_redraw_rate_ms     (rhs.m_window_redraw_rate_ms),
     m_use_more_icons            (rhs.m_use_more_icons),
+
+#if defined SEQ64_MULTI_MAINWID
+    m_mainwid_block_rows        (rhs.m_mainwid_block_rows),
+    m_mainwid_block_cols        (rhs.m_mainwid_block_cols),
+#endif
 
     /*
      * The members that follow are not yet part of the .usr file.
@@ -356,6 +361,11 @@ user_settings::operator = (const user_settings & rhs)
         m_window_redraw_rate_ms     = rhs.m_window_redraw_rate_ms;
         m_use_more_icons            = rhs.m_use_more_icons;
 
+#if defined SEQ64_MULTI_MAINWID
+        m_mainwid_block_rows        = rhs.m_mainwid_block_rows;
+        m_mainwid_block_cols        = rhs.m_mainwid_block_cols;
+#endif
+
         /*
          * The members that follow are not yet part of the .usr file.
          */
@@ -446,6 +456,12 @@ user_settings::set_defaults ()
     m_inverse_colors = false;
     m_window_redraw_rate_ms = c_redraw_ms;
     m_use_more_icons = false;
+
+#if defined SEQ64_MULTI_MAINWID
+    m_mainwid_block_rows = 1;
+    m_mainwid_block_cols = 1;
+#endif
+
     m_text_x =  6;                          // range: 6-6
     m_text_y = 12;                          // range: 12-12
     m_seqchars_x = 15;                      // range: 15-15
@@ -1050,7 +1066,7 @@ user_settings::option_logfile () const
  */
 
 void
-user_settings::main_block_rows (int count)
+user_settings::set_block_rows (int count)
 {
     if (count > 0 && count <= SEQ64_MAINWID_BLOCK_ROWS_MAX)
         m_mainwid_block_rows = count;
@@ -1061,7 +1077,7 @@ user_settings::main_block_rows (int count)
  */
 
 void
-user_settings::main_block_columns (int count)
+user_settings::set_block_columns (int count)
 {
     if (count > 0 && count <= SEQ64_MAINWID_BLOCK_COLS_MAX)
         m_mainwid_block_cols = count;

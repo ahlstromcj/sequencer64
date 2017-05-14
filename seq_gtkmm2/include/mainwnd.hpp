@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-13
+ * \updates       2017-05-14
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -111,7 +111,20 @@ private:
      *  down gracefully when aborted.
      */
 
-    static int m_sigpipe[2];
+    static int sm_sigpipe[2];
+
+#if defined SEQ64_MULTI_MAINWID
+
+    /**
+     *  We iterate through multi-mainwids using a linear array and checking
+     *  for null pointers.  More checks, but less incrementing and
+     *  array-offset calculations.
+     */
+
+    static const int sm_widmax =
+        SEQ64_MAINWID_BLOCK_ROWS_MAX * SEQ64_MAINWID_BLOCK_COLS_MAX;
+
+#endif
 
     /**
      *  A repository for tooltips.
@@ -435,11 +448,20 @@ private:
 
     static void handle_signal (int sig);
 
+    /**
+     * \getter m_mainwid_count > 1
+     */
+
+    bool multi_wid () const
+    {
+        return m_mainwid_count > 1;
+    }
+
     void adj_callback_ss ();
     void adj_callback_bpm ();
     void edit_callback_notepad ();
     bool timer_callback ();
-    void update_markers (midipulse tick);
+    bool update_markers (midipulse tick);
     void reset ();
     void set_screenset (int screenset, bool setperf = false);
     void set_play_image (bool isrunning);

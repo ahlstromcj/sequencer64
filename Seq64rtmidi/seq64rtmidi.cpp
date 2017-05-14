@@ -24,7 +24,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2017-05-13
+ * \updates       2017-05-14
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -44,6 +44,7 @@
 #include <gtkmm/main.h>
 
 #include "cmdlineopts.hpp"              /* command-line functions           */
+#include "daemonize.hpp"                /* seqg4::reroute_stdio() only      */
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "gui_assistant_gtk2.hpp"       /* seq64::gui_assistant_gtk2        */
 #include "gui_palette_gtk2.hpp"         /* colors and "inverse" colors      */
@@ -82,8 +83,24 @@ int
 main (int argc, char * argv [])
 {
     Gtk::Main kit(argc, argv);              /* strip GTK+ parameters        */
+    bool stdio_rerouted = false;            /* used only in log-file option */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
+    if (seq64::process_o_options(argc, argv))
+    {
+        /*
+         * The user may have specified the "set-rows" or "set-cols" options.
+         * We don't support the "daemonize" option for the GUI, but it is
+         * probably useful to support the "log" option.
+         */
+
+        std::string logfile = seq64::usr().option_logfile();
+        if (! logfile.empty())
+        {
+            (void) seq64::reroute_stdio(logfile);
+            stdio_rerouted = true;
+        }
+    }
 
     /**
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to the
@@ -104,6 +121,12 @@ main (int argc, char * argv [])
     bool is_help = seq64::help_check(argc, argv);
     bool ok = true;
     int optionindex = SEQ64_NULL_OPTION_INDEX;
+    if (! stdio_rerouted)                       /* not done already?        */
+    {
+        std::string logfile = seq64::usr().option_logfile();
+        if (! logfile.empty())
+            (void) seq64::reroute_stdio(logfile);
+    }
     if (! is_help)
     {
         /*
@@ -130,7 +153,7 @@ main (int argc, char * argv [])
         (
             p, seq64::usr().allow_two_perfedits(), seq64::usr().midi_ppqn()
 #if defined SEQ64_MULTI_MAINWID
-            , seq64::usr().main_block_rows(), seq64::usr().main_block_columns()
+            , seq64::usr().set_block_rows(), seq64::usr().set_block_columns()
 #endif
         );
         if (ok)

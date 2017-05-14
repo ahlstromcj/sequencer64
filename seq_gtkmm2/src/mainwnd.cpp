@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-13
+ * \updates       2017-05-14
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -168,7 +168,7 @@ namespace seq64
  *  This static member provides a couple of pipes for signalling/messaging.
  */
 
-int mainwnd::m_sigpipe[2];
+int mainwnd::sm_sigpipe[2];
 
 /**
  *  The constructor the main window of the application.
@@ -326,7 +326,18 @@ mainwnd::mainwnd
      */
 
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq64_xpm));
+
+    /*
+     * Setting this to true allows the main window to resize to its contents.
+     * Needed to display multiple mainwids easily.
+     */
+
+#if defined SEQ64_MULTI_MAINWID
+    set_resizable(multi_wid());
+#else
     set_resizable(false);
+#endif
+
     perf().enregister(this);                        /* register for notify  */
     update_window_title();                          /* main window          */
 
@@ -397,9 +408,7 @@ mainwnd::mainwnd
     for (int row = 0; row < row_max; ++row)
     {
         for (int col = 0; col < col_max; ++col)
-        {
             m_mainwid_blocks[row][col] = nullptr;
-        }
     }
 
     /**
@@ -754,7 +763,7 @@ mainwnd::mainwnd
 
     int wpadding = 20;
     int hpadding = 20;
-    if (m_mainwid_count > 1)
+    if (multi_wid())
     {
         m_mainwid_grid = manage
         (
@@ -811,25 +820,8 @@ mainwnd::mainwnd
     (
         mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
     );
+
     show_all();                             /* works here as well           */
-
-#if defined SEQ64_MULTI_MAINWID
-
-    if (m_mainwid_count > 1)
-    {
-        int width = m_main_wid->nominal_width();
-        int height = m_main_wid->nominal_height();
-        int menuheight = 32;
-        int topheight = 100;
-        int bottomheight = 80;
-        height += menuheight + topheight + bottomheight;
-        height += hpadding * (m_mainwid_rows - 1);
-        width += wpadding * (m_mainwid_columns - 1);
-        printf("(width, height) = (%d, %d)\n", width, height);
-        set_size_request(width, height);
-    }
-
-#endif  // SEQ64_MULTI_MAINWID
 
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
@@ -848,6 +840,24 @@ mainwnd::mainwnd
     );
     mainwid_hscroll_wrapper->pack_start(*m_hscroll, false, false);
     mainwid_vscroll_wrapper->pack_start(*m_vscroll, false, false);
+
+#else
+
+    int width = m_main_wid->nominal_width();
+    int height = m_main_wid->nominal_height();
+    int menuheight = 32;
+    int bottomheight = 80;
+#if defined SEQ64_MULTI_MAINWID
+    int topheight = 100;
+    if (! multi_wid())
+        topheight = 20;
+#else
+    int topheight = 0;
+#endif
+    height += menuheight + topheight + bottomheight;
+    height += hpadding * (m_mainwid_rows - 1);
+    width += wpadding * (m_mainwid_columns - 1);
+    set_size_request(width, height);
 
 #endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
@@ -869,11 +879,11 @@ mainwnd::~mainwnd ()
     if (not_nullptr(m_options))
         delete m_options;
 
-    if (m_sigpipe[0] != -1)
-        close(m_sigpipe[0]);
+    if (sm_sigpipe[0] != -1)
+        close(sm_sigpipe[0]);
 
-    if (m_sigpipe[1] != -1)
-        close(m_sigpipe[1]);
+    if (sm_sigpipe[1] != -1)
+        close(sm_sigpipe[1]);
 }
 
 /**
@@ -1012,7 +1022,11 @@ mainwnd::timer_callback ()
          * note below?
          */
 
+#if defined SEQ64_MULTI_MAINWID
+        set_screenset(screenset, true);
+#else
         set_screenset(screenset);
+#endif
 
         /*
          * Shouldn't we call this here?  No matter, we are going to fold this
@@ -1139,7 +1153,8 @@ mainwnd::timer_callback ()
 }
 
 /**
- *  New function to consolidate screen-set handling.
+ *  New function to consolidate screen-set handling.  Sets the screenset to
+ *  the given value.
  *
  * \param screenset
  *      The new prospective screen-set value.
@@ -1156,8 +1171,16 @@ mainwnd::set_screenset (int screenset, bool setperf)
 #if defined SEQ64_MULTI_MAINWID
     mainwid ** widptr = &m_mainwid_blocks[0][0];
     int ss = screenset;
-    for (int wid = 0; wid < m_mainwid_count; ++wid, ++widptr, ++ss)
-        (*widptr)->set_screenset(ss, wid == 0);
+    for (int wid = 0; wid < sm_widmax; ++wid, ++widptr, ++ss)
+    {
+        if (not_nullptr(*widptr))               /* not all might be active  */
+            (*widptr)->set_screenset(ss, false);
+    }
+
+    /*
+     * TODO
+     * Then we need to set the active screen-set.
+     */
 #else
     m_main_wid->set_screenset(screenset, setperf);
 #endif
@@ -1169,21 +1192,47 @@ mainwnd::set_screenset (int screenset, bool setperf)
  *
  * \param tick
  *      The current tick number for playback, etc.
+ *
+ * \return
+ *      Returns true if the mainwid object(s) exist(s).  The nullptr checks
+ *      add some annoying overhead.
  */
 
-void
+bool
 mainwnd::update_markers (midipulse tick)
 {
+    bool result = true;
 
 #if defined SEQ64_MULTI_MAINWID
-    mainwid ** widptr = &m_mainwid_blocks[0][0];
-    for (int wid = 0; wid < m_mainwid_count; ++wid, ++widptr)
-        (*widptr)->update_markers(tick);        /* tick ignored for pause   */
+    if (multi_wid())
+    {
+        mainwid ** widptr = &m_mainwid_blocks[0][0];
+        if (not_nullptr(*widptr))               /* need at least one!       */
+        {
+            for (int wid = 0; wid < sm_widmax; ++wid, ++widptr)
+            {
+                if (not_nullptr(*widptr))       /* not all might be active  */
+                    (*widptr)->update_markers(tick);
+            }
+        }
+        else
+            result = false;
+    }
+    else if (not_nullptr(m_main_wid))
+        m_main_wid->update_markers(tick);       /* tick ignored for pause   */
+    else
+        result = false;
 #else
-    m_main_wid->update_markers(tick);           /* tick ignored for pause   */
+    if (not_nullptr(m_main_wid))
+        m_main_wid->update_markers(tick);       /* tick ignored for pause   */
+    else
+        result = false;
 #endif
 
-    m_main_time->idle_progress(tick);
+    if (result && not_nullptr(m_main_time))
+        m_main_time->idle_progress(tick);
+
+    return result;
 }
 
 /**
@@ -1196,8 +1245,11 @@ mainwnd::reset ()
 
 #if defined SEQ64_MULTI_MAINWID
     mainwid ** widptr = &m_mainwid_blocks[0][0];
-    for (int wid = 0; wid < m_mainwid_count; ++wid, ++widptr)
-        (*widptr)->reset();
+    for (int wid = 0; wid < sm_widmax; ++wid, ++widptr)
+    {
+        if (not_nullptr(*widptr))
+            (*widptr)->reset();
+    }
 #else
     m_main_wid->reset();
 #endif
@@ -2143,8 +2195,11 @@ mainwnd::stop_playing ()                        /* Stop!                    */
 
 #if defined SEQ64_MULTI_MAINWID
     mainwid ** widptr = &m_mainwid_blocks[0][0];
-    for (int wid = 0; wid < m_mainwid_count; ++wid, ++widptr)
-        (*widptr)->update_sequences_on_window();
+    for (int wid = 0; wid < sm_widmax; ++wid, ++widptr)
+    {
+        if (not_nullptr(*widptr))               /* not all might be active  */
+            (*widptr)->update_sequences_on_window();
+    }
 #else
     m_main_wid->update_sequences_on_window();   /* update_mainwid_sequences() */
 #endif
@@ -2619,7 +2674,7 @@ mainwnd::update_window_title ()
 void
 mainwnd::handle_signal (int sig)
 {
-    if (write(m_sigpipe[1], &sig, sizeof(sig)) == -1)
+    if (write(sm_sigpipe[1], &sig, sizeof(sig)) == -1)
         printf("signal write() failed: %s\n", std::strerror(errno));
 }
 
@@ -2630,16 +2685,16 @@ mainwnd::handle_signal (int sig)
 bool
 mainwnd::install_signal_handlers ()
 {
-    m_sigpipe[0] = -1;          /* initialize this static array             */
-    m_sigpipe[1] = -1;
-    if (pipe(m_sigpipe) < 0)    /* pipe to forward received system signals  */
+    sm_sigpipe[0] = -1;         /* initialize this static array             */
+    sm_sigpipe[1] = -1;
+    if (pipe(sm_sigpipe) < 0)   /* pipe to forward received system signals  */
     {
         printf("pipe() failed: %s\n", std::strerror(errno));
         return false;
     }
     Glib::signal_io().connect   /* notifier to handle pipe messages         */
     (
-        sigc::mem_fun(*this, &mainwnd::signal_action), m_sigpipe[0], Glib::IO_IN
+        sigc::mem_fun(*this, &mainwnd::signal_action), sm_sigpipe[0], Glib::IO_IN
     );
 
     struct sigaction action;    /* install signal handlers                  */
@@ -2678,7 +2733,7 @@ mainwnd::signal_action (Glib::IOCondition condition)
     else
     {
         int message;
-        if (read(m_sigpipe[0], &message, sizeof(message)) == -1)
+        if (read(sm_sigpipe[0], &message, sizeof(message)) == -1)
         {
             printf("read() failed: %s\n", std::strerror(errno));
             result = false;

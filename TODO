@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-05-13
+2016-12-03 to 2017-05-14
 
 Debian packaging:
 
@@ -15,6 +15,12 @@ Rtmidi implementation issues to work out:
     -   Add Windows implementation and build files.
     -   Remove PortMidi implementation after Windows implementation.
     -   Make the STRIP_MUTES option permanent.
+
+Hot ideas (from GitHub):
+    
+    -   Separate tempo for each pattern
+    -   Tempo track
+    -   Larger number of visible sets.
 
 Puzzles:
 

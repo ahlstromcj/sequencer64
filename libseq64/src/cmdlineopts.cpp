@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-05-13
+ * \updates       2017-05-14
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -121,7 +121,7 @@ static struct option long_options [] =
     {"jack-start-mode",     required_argument, 0, 'M'},
     {"jack-session-uuid",   required_argument, 0, 'U'},
     {"no-jack-midi",        0, 0, 'N'},
-    {"jack-midi",      0, 0, 't'},
+    {"jack-midi",           0, 0, 't'},
 #endif
     {"manual-alsa-ports",   0, 0, 'm'},
     {"auto-alsa-ports",     0, 0, 'a'},
@@ -282,18 +282,32 @@ static const char * const s_help_3 =
 "   -o, --option optoken     Provides app-specific options for expansion.  The\n"
 "                            options supported are:\n"
 "\n"
+    ;
+
+/**
+ *  Still still more help text.
+ */
+
+static const char * const s_help_4 =
 " seq64cli:    daemonize     Makes this application fork to the background.\n"
 "              no-daemonize  Makes this application not fork to the background.\n"
 "              log=filename  Redirect console output to a log file in the\n"
 "                            --home directory [$HOME/.config/sequencer64].\n"
+"              set-rows=n    Show n rows of sets in the main window.  Can range\n"
+"                            from 1 to 3, defaults to 1.\n"
+"              set-cols=n    Show n columns of sets in the main window.  Can\n"
+"                            range only from 1 to 2, defaults to 1.\n"
+"\n"
+"The daemonize option works only in the CLI build. The set options work only\n"
+"in the 'rtmidi' GUI build.\n"
 "\n"
     ;
 
 /**
- *  Still more help text.
+ *  Still still still more help text.
  */
 
-static const char * const s_help_4 =
+static const char * const s_help_5 =
 "--ppqn works pretty well. Saving a MIDI file also saves the PPQN value.\n"
 "If no JACK/LASH options are shown above, they were disabled in the build\n"
 "configuration. Command-line options can be sticky; most of them\n"
@@ -397,6 +411,7 @@ help_check (int argc, char * argv [])
             printf(s_help_2);
             printf(s_help_3);
             printf(s_help_4);
+            printf(s_help_5);
             result = true;
             break;
         }
@@ -462,6 +477,16 @@ process_o_options (int argc, char * argv [])
                             {
                                 result = true;
                                 usr().option_logfile(arg);
+                            }
+                            else if (optionname == "set-rows")
+                            {
+                                result = true;
+                                usr().set_block_rows(atoi(arg.c_str()));
+                            }
+                            else if (optionname == "set-cols")
+                            {
+                                result = true;
+                                usr().set_block_columns(atoi(arg.c_str()));
                             }
                         }
                         if (! result)
@@ -786,21 +811,10 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 'o':
 
-        /*
-         * We now handle this processing separately and first, in the
-         * process_o_option() function.
-         *
-            optionval = get_compound_option(std::string(optarg), optionname);
-            if (optionval == "daemonize")
-                usr().option_daemonize(true);
-            else if (optionval == "no-daemonize")
-                usr().option_daemonize(false);
-            else if (optionname == "log")
-                usr().option_logfile(optionval);
-            else
-                printf("Non-fatal error:  unsupported --option value\n");
-         *
-         */
+            /*
+             * We now handle this processing separately and first, in the
+             * process_o_option() function.
+             */
             break;
 
         case 'P':

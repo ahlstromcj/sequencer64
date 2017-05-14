@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-05-13
+ * \updates       2017-05-14
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -1287,7 +1287,7 @@ public:
      * \getter m_mainwid_block_rows
      */
 
-    int main_block_rows () const
+    int set_block_rows () const
     {
         return m_mainwid_block_rows;
     }
@@ -1296,7 +1296,7 @@ public:
      * \getter m_mainwid_block_cols
      */
 
-    int main_block_columns () const
+    int set_block_columns () const
     {
         return m_mainwid_block_cols;
     }
@@ -1554,8 +1554,8 @@ public:         // used in main application module and the userfile class
 
 #if defined SEQ64_MULTI_MAINWID
 
-    void main_block_rows (int count);
-    void main_block_columns (int count);
+    void set_block_rows (int count);
+    void set_block_columns (int count);
 
 #endif  // SEQ64_MULTI_MAINWID
 

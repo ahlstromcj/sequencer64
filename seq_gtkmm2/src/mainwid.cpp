@@ -135,7 +135,7 @@ mainwid::mainwid (perform & p, int ss)
     m_button_down           (false),
     m_moving                (false),
     m_old_seq               (0),
-    m_screenset             (0),
+    m_screenset             ((ss > 0 && ss < SEQ64_DEFAULT_SET_MAX) ? ss : 0),
     m_last_tick_x           (),                 // array of size c_max_sequence
 #ifdef USE_LAST_PLAYING_LOGGING
     m_last_playing          (),                 // array of size c_max_sequence

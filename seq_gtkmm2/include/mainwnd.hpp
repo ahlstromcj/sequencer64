@@ -183,32 +183,32 @@ private:
      */
 
     Gtk::Frame * m_mainwid_frames
-        [SEQ64_MAINWID_BLOCK_ROWS_MAX]
-        [SEQ64_MAINWID_BLOCK_COLS_MAX];
+        [SEQ64_MAINWID_BLOCK_COLS_MAX]
+        [SEQ64_MAINWID_BLOCK_ROWS_MAX];
 
     /**
      *  Holds from 1 x 1 to up to 3 x 2 (1 to 6) pointers.
      */
 
     Gtk::Adjustment * m_mainwid_adjustors
-        [SEQ64_MAINWID_BLOCK_ROWS_MAX]
-        [SEQ64_MAINWID_BLOCK_COLS_MAX];
+        [SEQ64_MAINWID_BLOCK_COLS_MAX]
+        [SEQ64_MAINWID_BLOCK_ROWS_MAX];
 
     /**
      *  Holds from 1 x 1 to up to 3 x 2 (1 to 6) pointers.
      */
 
     Gtk::SpinButton * m_mainwid_spinners
-        [SEQ64_MAINWID_BLOCK_ROWS_MAX]
-        [SEQ64_MAINWID_BLOCK_COLS_MAX];
+        [SEQ64_MAINWID_BLOCK_COLS_MAX]
+        [SEQ64_MAINWID_BLOCK_ROWS_MAX];
 
     /**
      *  Holds from 1 x 1 to up to 3 x 2 (1 to 6) pointers for mainwid objects.
      */
 
     mainwid * m_mainwid_blocks
-        [SEQ64_MAINWID_BLOCK_ROWS_MAX]
-        [SEQ64_MAINWID_BLOCK_COLS_MAX];
+        [SEQ64_MAINWID_BLOCK_COLS_MAX]
+        [SEQ64_MAINWID_BLOCK_ROWS_MAX];
 
     /**
      *  The number of mainwids vertically.  Defaults to 1.
@@ -481,7 +481,11 @@ private:
 
     bool multi_wid () const
     {
+#if defined SEQ64_MULTI_MAINWID
         return m_mainwid_count > 1;
+#else
+        return false;
+#endif
     }
 
     void adj_callback_ss ();
@@ -589,6 +593,11 @@ private:
     {
         perf().set_song_mute(op);       // and modifies
     }
+
+#if defined SEQ64_MULTI_MAINWID
+    int wid_box_to_slot (int col, int row) const;
+    bool wid_slot_to_box (int slot, int & col, int & row) const;
+#endif
 
 private:
 

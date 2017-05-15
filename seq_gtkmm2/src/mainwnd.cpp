@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-14
+ * \updates       2017-05-15
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -410,14 +410,14 @@ mainwnd::mainwnd
 
     int row_max = SEQ64_MAINWID_BLOCK_ROWS_MAX;
     int col_max = SEQ64_MAINWID_BLOCK_COLS_MAX;
-    for (int row = 0; row < row_max; ++row)
+    for (int col = 0; col < col_max; ++col)
     {
-        for (int col = 0; col < col_max; ++col)
+        for (int row = 0; row < row_max; ++row)
         {
-            m_mainwid_adjustors[row][col] = nullptr;
-            m_mainwid_spinners[row][col] = nullptr;
-            m_mainwid_frames[row][col] = nullptr;
-            m_mainwid_blocks[row][col] = nullptr;
+            m_mainwid_adjustors[col][row] = nullptr;
+            m_mainwid_spinners[col][row] = nullptr;
+            m_mainwid_frames[col][row] = nullptr;
+            m_mainwid_blocks[col][row] = nullptr;
         }
     }
 
@@ -434,34 +434,35 @@ mainwnd::mainwnd
     {
         for (int row = 0; row < m_mainwid_rows; ++row)
         {
-            std::string label = "Set ";
+            std::string label = "   Set ";
             label += std::to_string(set_number);
-            m_mainwid_blocks[row][col] = manage(new mainwid(p, set_number));
+            m_mainwid_blocks[col][row] = manage(new mainwid(p, set_number));
             if (multi_wid())
             {
-                m_mainwid_adjustors[row][col] = manage
+                m_mainwid_adjustors[col][row] = manage
                 (
                     new Gtk::Adjustment(set_number, 0, c_max_sets-1, 1)
                 );
-                m_mainwid_spinners[row][col] = manage
+                m_mainwid_spinners[col][row] = manage
                 (
-                    new Gtk::SpinButton(*m_mainwid_adjustors[row][col])
+                    new Gtk::SpinButton(*m_mainwid_adjustors[col][row])
                 );
-                m_mainwid_spinners[row][col]->set_sensitive(true);
-                m_mainwid_spinners[row][col]->set_editable(true);
-                m_mainwid_spinners[row][col]->set_wrap(false);
-                m_mainwid_frames[row][col] = manage(new Gtk::Frame(label));
-                m_mainwid_frames[row][col]->set_border_width(4);
+                m_mainwid_spinners[col][row]->set_sensitive(true);
+                m_mainwid_spinners[col][row]->set_editable(true);
+                m_mainwid_spinners[col][row]->set_wrap(false);
+                m_mainwid_frames[col][row] = manage(new Gtk::Frame(label));
+                m_mainwid_frames[col][row]->set_border_width(4);
+                m_mainwid_frames[col][row]->set_shadow_type(Gtk::SHADOW_NONE);
 
                 /*
                  * We get more control if we add the frame and mainwid
                  * separately to the table.
                  *
-                 * m_mainwid_frames[row][col]->add(*m_mainwid_blocks[row][col]);
+                 * m_mainwid_frames[col][row]->add(*m_mainwid_blocks[col][row]);
                  *
                  * Try adding it to table instead.
                  *
-                 * m_mainwid_frames[row][col]->add(*m_mainwid_spinners[row][col]);
+                 * m_mainwid_frames[col][row]->add(*m_mainwid_spinners[col][row]);
                  */
             }
             ++set_number;
@@ -471,7 +472,7 @@ mainwnd::mainwnd
     if (multi_wid())
     {
         m_mainwid_frames[0][0]->set_shadow_type(Gtk::SHADOW_OUT);
-        m_mainwid_frames[0][0]->set_label("Set 0 [active]");
+        m_mainwid_frames[0][0]->set_label("   Set 0 [active]");
     }
 
 #endif  // SEQ64_MULTI_MAINWID
@@ -718,8 +719,8 @@ mainwnd::mainwnd
             );
             for (int row = 0; row < m_mainwid_rows; ++row, ++mainwid_offset)
             {
-                Gtk::Adjustment * mwap = m_mainwid_adjustors[row][col];
-                Gtk::SpinButton * sbp = m_mainwid_spinners[row][col];
+                Gtk::Adjustment * mwap = m_mainwid_adjustors[col][row];
+                Gtk::SpinButton * sbp = m_mainwid_spinners[col][row];
                 if (not_nullptr(sbp) && not_nullptr(mwap))
                 {
                     add_tooltip
@@ -855,9 +856,8 @@ mainwnd::mainwnd
         {
             for (int row = 0; row < m_mainwid_rows; ++row)
             {
-                Gtk::Frame * frp = m_mainwid_frames[row][col];
-                ////// Gtk::SpinButton * sbp = m_mainwid_spinners[row][col];
-                mainwid * mwp = m_mainwid_blocks[row][col];
+                Gtk::Frame * frp = m_mainwid_frames[col][row];
+                mainwid * mwp = m_mainwid_blocks[col][row];
                 if (not_nullptr(mwp))
                 {
                     m_mainwid_grid->attach(*frp, col, col+1, row, row+1);
@@ -869,10 +869,6 @@ mainwnd::mainwnd
                         guint(wpadding),
                         guint(hpadding)
                     );
-                    ////////
-                    // Ugly
-                    // m_mainwid_grid->attach(*sbp, col, col+1, row, row+1);
-                    ////////
                 }
             }
         }
@@ -1260,25 +1256,7 @@ mainwnd::timer_callback ()
 void
 mainwnd::set_screenset (int screenset, bool setperf)
 {
-
-#if defined SEQ64_MULTI_MAINWID
-    mainwid ** widptr = &m_mainwid_blocks[0][0];
-    int ss = screenset;
-    for (int wid = 0; wid < sm_widmax; ++wid, ++widptr, ++ss)
-    {
-        if (not_nullptr(*widptr))               /* not all might be active  */
-            (*widptr)->set_screenset(ss, false);
-    }
-
-    /*
-     * TODO: Then we need to set the active screen-set.  This might have to
-     * wait until the GUI is fully realized.
-     *  m_main_wid = m_mainwid_blocks[0][0];
-     *  m_mainwid_frames[0][0]->set_shadow_type(Gtk::SHADOW_OUT);
-     */
-#else
     m_main_wid->set_screenset(screenset, setperf);
-#endif
 }
 
 /**
@@ -2103,13 +2081,102 @@ mainwnd::build_info_dialog ()
  *  Patterns, and something about setting the text based on a screen-set
  *  notepad from the Performance/Song window.  We let the perform object keep
  *  track of modifications.
+ *
+ * Multi-mainwid mode:
+ *
+ *  This status is flagged by the multi_wid() function.  If true, the we want
+ *  the Set spin-button to affect the active sequence and all sequences.
+ *  Let's start Seq64 in 2 columns x 3 rows mode.  The mainwid slots are set
+ *  up so that, like the screen-sets, the row index varies fastest.  Here is
+ *  the layout:
+ *
+\verbatim
+        Column          0          1
+        Row     0     [0,0]      [1,0]
+        Row     1     [0,1]      [1,1]
+        Row     2     [0,2]      [1,2]
+\endverbatim
+ *
+ *  This two-dimensional array can be access by stepping along a
+ *  one-dimensional array, with the one-dimensional array having an index we
+ *  will call "slot number" for this description:
+ *
+\verbatim
+      1-D index       2-D indices
+        [0]             [0,0]
+        [1]             [0,1]
+        [2]             [0,2]
+        [3]             [1,0]
+        [4]             [1,1]
+        [5]             [1,2]
+\endverbatim
+ *
+ *  When the application starts, the "slot numbers" in the left column
+ *  correspond exactly to set numbers.  The 0th set is the "active" set.
+ *  When the Set spinner is incremented, the 1st set should become the active
+ *  one.  As it is incremented, the active slot will move from top-to-bottom
+ *  and then left-to-right, until the number of visible mainwids is reached.
+ *  In that case, we want to then increment the set number for all of the
+ *  mainwids in the matrix, so that they move down one row, and slot 0 now
+ *  holds the active set.  Or, for a direct edit, move that set directly to
+ *  slot 0.
+ *
+ *  For now, let's just start from slot 0 and set the values of all slots, and
+ *  worry about preserving relative set-numbers later.
  */
 
 void
 mainwnd::adj_callback_ss ()
 {
-    set_screenset(int(m_adjust_ss->get_value()), true);
-    m_entry_notes->set_text(perf().current_screen_set_notepad());
+    if (multi_wid())
+    {
+        int screenset = perf().get_screenset();
+        int newset = int(m_adjust_ss->get_value());
+
+#if defined SEQ64_MULTI_MAINWID
+
+        Gtk::Frame ** frmptr = &m_mainwid_frames[0][0];
+        mainwid ** widptr = &m_mainwid_blocks[0][0];
+        int ss = newset;
+        for (int wid = 0; wid < sm_widmax; ++wid, ++widptr, ++frmptr)
+        {
+            if (not_nullptr(*widptr))               /* may be unnecessary?  */
+            {
+                mainwid & m = **widptr;             /* get better notation  */
+                m.set_screenset(ss, false);
+                if (not_nullptr(*frmptr))
+                {
+                    Gtk::Frame & f = **frmptr;      /* get better notation  */
+                    std::string label = "   Set ";
+                    label += std::to_string(ss);
+                    if (ss == screenset)
+                    {
+                        label += " [active]";
+                        f.set_shadow_type(Gtk::SHADOW_OUT);
+                    }
+                    else
+                    {
+                        f.set_shadow_type(Gtk::SHADOW_NONE);
+                    }
+                    f.set_label(label);
+                }
+                ++ss;
+            }
+        }
+
+#endif
+
+        /*
+         * Set the perform's active screenset.
+         */
+
+        perf().set_screenset(newset);
+    }
+    else
+    {
+        set_screenset(int(m_adjust_ss->get_value()), true);
+        m_entry_notes->set_text(perf().current_screen_set_notepad());
+    }
 }
 
 /**
@@ -2126,13 +2193,79 @@ mainwnd::adj_callback_bpm ()
 #if defined SEQ64_MULTI_MAINWID
 
 /**
+ *  Converts a two-dimensional mainwid box coordinate to a one-dimensional
+ *  slot number.
+ *
+ * \param col
+ *      Provides the column number.  This value is the first 2-D index,
+ *      and varies the slowest.  It potentially ranges from 0 to 1.
+ *
+ * \param row
+ *      Provides the row number.  This value is the second 2-D index, and
+ *      varies the fastest.  It potentially ranges from 0 to 2.
+ *
+ * \return
+ *      Returns the 1-D slot number.  It potentially ranges from 0 to 5.
+ *      If parameters put it outside the range, then -1 is returned.
+ */
+
+/*
+ * CURRENTLY INCORRECT
+ */
+
+int
+mainwnd::wid_box_to_slot (int col, int row) const
+{
+    int result = col * m_mainwid_rows + row;
+    if (result < 0 || result >= m_mainwid_count)
+        result = -1;
+
+    return result;
+}
+
+/**
+ *  Provides the inverse of wid_box_to_slot().
+ *
+ * \param slot
+ *      Provides the 1-D slot number to be converted to two dimensions.
+ *
+ * \param [out] col
+ *      Provides the return-parameter for the column number.
+ *
+ * \param [out] row
+ *      Provides return-parameter for the row number.
+ *
+ * \return
+ *      Returns true if the slot number was legal, and the return
+ *      parameters can be reliably used.
+ */
+
+/*
+ * CURRENTLY INCORRECT
+ */
+
+bool
+mainwnd::wid_slot_to_box (int slot, int & col, int & row) const
+{
+    bool result = (slot >= 0 || slot < m_mainwid_count);
+    if (result)
+    {
+        col = slot / m_mainwid_rows;
+        row = slot % m_mainwid_rows;
+    }
+    return result;
+}
+
+/**
  *  This function is the callback for adjusting the screen-set value of a
  *  particular mainwid.
  *
  * \param mainwid_slot
  *      This parameter ranges from 0 to 5, depending on how many mainwids are
  *      created.  This function operates only when multiple mainwids are
- *      active.
+ *      active.  Just to be clear, index 0 is slot [0, 0], 1 is slot [0, 1],
+ *      etc.  The row index varies fastest, just like the seq-number does in a
+ *      set.
  */
 
 void
@@ -2156,7 +2289,7 @@ mainwnd::adj_callback_mainwid (int mainwid_slot)
                     Gtk::Frame * fslot = frptr[mainwid_slot];
                     if (not_nullptr(fslot))
                     {
-                        std::string label = "Set ";
+                        std::string label = "   Set ";
                         label += std::to_string(ss);
                         if (ss == perf().get_screenset())
                         {
@@ -2659,9 +2792,11 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                     if (m_call_seq_edit)
                     {
                         m_call_seq_edit = false;
+
                         /*
                          * TODO: SEQ64_MULTI_MAINWND
                          */
+
                         m_main_wid->seq_set_and_edit(seqnum);
                         result = true;
                     }
@@ -2670,6 +2805,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                         /*
                          * TODO: SEQ64_MULTI_MAINWND
                          */
+
                         m_call_seq_eventedit = false;
                         m_main_wid->seq_set_and_eventedit(seqnum);
                         result = true;

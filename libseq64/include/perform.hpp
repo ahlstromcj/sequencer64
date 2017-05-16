@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-07
+ * \updates       2017-05-16
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -46,6 +46,10 @@
  *      -   m_master_bus
  *      -   m_beats_per_bar
  *      -   m_beat_width
+ *
+ *  User jean-emmanuel added a new MIDI control for setting the screen-set
+ *  directly by number.  To handle this, a value parameter was added to
+ *  handle_midi_control_ex().
  */
 
 #include <vector>                       /* std::vector                      */

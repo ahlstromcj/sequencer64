@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-25
+ * \updates       2017-05-16
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -60,6 +60,9 @@
  *      "stop sequencer" line:
  *
  *      46   # period pause sequencer
+ *
+ *  User jean-emmanuel added a new MIDI control for setting the screen-set
+ *  directly by number.
  */
 
 #include <string.h>                     /* memset()                         */
@@ -924,7 +927,7 @@ optionsfile::write (const perform & p)
             file << "# bpm page down:\n";
             break;
 
-        case c_midi_control_ss_set:         // 80
+        case c_midi_control_ss_set:         // 80, pull #85
             file << "# screen set by number:\n";
             break;
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-05-07
+ * \updates       2017-05-16
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -116,6 +116,9 @@
  *      In mainwnd::timer_callback(), the mainwid screen-set is set to match
  *      the new value, which can be altered by the screen-set up and down
  *      hot-keys.
+ *
+ *  User jean-emmanuel added a new MIDI control for setting the screen-set
+ *  directly by number.
  */
 
 #include <sched.h>

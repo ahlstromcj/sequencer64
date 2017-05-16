@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-13
+ * \updates       2017-05-16
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -65,6 +65,11 @@
  *      realized we'd have to do the same for the perfedit/perfnames class,
  *      and that's just too much.  We now add a global/free function to the
  *      mainwid module to access the update function we need.
+ *
+ *  User jean-emmanuel made the main window resizable if his scroll-bar
+ *  feature is enable, pull #84.  We might eventually make resizability
+ *  enabled only if the larger screen-sets or multi-mainwid features are
+ *  enabled, just to preserve expected "legacy" behavior under "legacy" usage.
  */
 
 #include <cctype>

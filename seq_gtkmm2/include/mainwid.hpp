@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-01
+ * \updates       2017-05-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -75,6 +75,16 @@ private:
      */
 
     sequence m_moving_seq;
+
+#if defined SEQ64_MULTI_MAINWID
+
+    /**
+     *  Indicates if multi-wid support is active.
+     */
+
+    bool m_is_multi_wid;
+
+#endif
 
     /**
      *  Indicates that the mouse button is still down.  Used in the
@@ -164,7 +174,11 @@ private:
 
 public:
 
+#if defined SEQ64_MULTI_MAINWID
+    mainwid (perform & p, int ss = 0, bool multiwid = false);
+#else
     mainwid (perform & p, int ss = 0);
+#endif
     virtual ~mainwid ();
 
     void set_screenset (int ss, bool setperf = false);

@@ -436,7 +436,10 @@ mainwnd::mainwnd
         {
             std::string label = "   Set ";
             label += std::to_string(set_number);
-            m_mainwid_blocks[col][row] = manage(new mainwid(p, set_number));
+            m_mainwid_blocks[col][row] = manage
+            (
+                new mainwid(p, set_number, multi_wid())
+            );
             if (multi_wid())
             {
                 m_mainwid_adjustors[col][row] = manage

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-30
+ * \updates       2017-05-15
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -121,10 +121,20 @@ const int c_mainwid_y =
  *      SEQ64_MULTI_MAINWND is defined, but doesn't hurt much to have it
  *      hardwired here, and it could be a good feature independent of
  *      multi-mainwid support.  The default value is 0.
+ *
+ * \param multiwid
+ *      If multi-mainwid support is built in, and is in force, then this
+ *      parameter is true.
  */
 
-mainwid::mainwid (perform & p, int ss)
- :
+mainwid::mainwid
+(
+    perform & p, int ss
+#if defined SEQ64_MULTI_MAINWID
+    ,
+    bool multiwid
+#endif
+) :
     gui_drawingarea_gtk2    (p, c_mainwid_x, c_mainwid_y),
     seqmenu                 (p),
     m_armed_progress_color
@@ -132,6 +142,9 @@ mainwid::mainwid (perform & p, int ss)
         progress_color() == black() ? white() : progress_color()
     ),
     m_moving_seq            (),                 // a moving sequence object
+#if defined SEQ64_MULTI_MAINWID
+    m_is_multi_wid          (multiwid),
+#endif
     m_button_down           (false),
     m_moving                (false),
     m_old_seq               (0),
@@ -829,8 +842,13 @@ mainwid::seq_from_xy (int x, int y)
 void
 mainwid::set_screenset (int ss, bool setperf)
 {
+#if defined SEQ64_MULTI_MAINWID
+    if (m_is_multi_wid || setperf)
+        perf().set_screenset(ss);
+#else
     if (setperf)
         perf().set_screenset(ss);
+#endif
 
     m_screenset = perf().get_screenset();
     m_screenset_offset = perf().get_offset();

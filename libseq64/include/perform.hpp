@@ -2123,7 +2123,7 @@ private:
     midi_control & midi_control_off (int ctl);
     void midi_control_event (const event & ev);
     void handle_midi_control (int control, bool state);
-    bool handle_midi_control_ex (int control, midi_control::action a);
+    bool handle_midi_control_ex (int control, midi_control::action a, int v);
     const std::string & get_screen_set_notepad (int screenset) const;
 
     /**

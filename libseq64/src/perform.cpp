@@ -3464,7 +3464,8 @@ input_thread_func (void * myperf)
         c_midi_control_thru
         c_midi_control_bpm_page_up
         c_midi_control_bpm_page_dn
-        c_midi_control_16 to _19    (reserved for expansion)
+        c_midi_control_ss_set
+        c_midi_control_17 to _19    (reserved for expansion)
 \endverbatim
  *
  *  The extended values will actually be handled by a new function,
@@ -3588,12 +3589,15 @@ perform::handle_midi_control (int ctl, bool state)
  * \param a
  *      The action of the control.
  *
+ * \param v
+ *      The value of the control (ie: note velocity / control change value).
+ *
  * \return
  *      Returns true if the control was an extended control and was acted on.
  */
 
 bool
-perform::handle_midi_control_ex (int ctl, midi_control::action a)
+perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 {
     bool result = false;
     switch (ctl)
@@ -3658,6 +3662,11 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a)
         }
         break;
 
+    case c_midi_control_ss_set:
+        set_screenset(v);
+        result = true;
+        break;
+
     default:
 
         break;
@@ -3708,7 +3717,7 @@ perform::midi_control_event (const event & ev)
                 }
                 else if (is_extended)
                 {
-                    if (handle_midi_control_ex(ctl, midi_control::action_toggle))
+                    if (handle_midi_control_ex(ctl, midi_control::action_toggle, data[1]))
                         break;
                 }
             }
@@ -3723,7 +3732,7 @@ perform::midi_control_event (const event & ev)
                 }
                 else if (is_extended)
                 {
-                    if (handle_midi_control_ex(ctl, midi_control::action_on))
+                    if (handle_midi_control_ex(ctl, midi_control::action_on, data[1]))
                         break;
                 }
                 else
@@ -3737,7 +3746,7 @@ perform::midi_control_event (const event & ev)
                 }
                 else if (is_extended)
                 {
-                    if (handle_midi_control_ex(ctl, midi_control::action_off))
+                    if (handle_midi_control_ex(ctl, midi_control::action_off, data[1]))
                         break;
                 }
                 else
@@ -3754,7 +3763,7 @@ perform::midi_control_event (const event & ev)
                 }
                 else if (is_extended)
                 {
-                    if (handle_midi_control_ex(ctl, midi_control::action_off))
+                    if (handle_midi_control_ex(ctl, midi_control::action_off, data[1]))
                         break;
                 }
                 else
@@ -3768,7 +3777,7 @@ perform::midi_control_event (const event & ev)
                 }
                 else if (is_extended)
                 {
-                    if (handle_midi_control_ex(ctl, midi_control::action_on))
+                    if (handle_midi_control_ex(ctl, midi_control::action_on, data[1]))
                         break;
                 }
                 else

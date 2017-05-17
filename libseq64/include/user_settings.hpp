@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-05-14
+ * \updates       2017-05-16
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -418,6 +418,17 @@ class user_settings
      */
 
     int m_mainwid_block_cols;
+
+    /**
+     *  If true, this value will enable individual set-controls for the
+     *  multiple mainwid objects shown in the main window.  If false, then the
+     *  main set spinner is the only one shown, and it takes all sets track
+     *  the main set, which is always shown in the upper-right mainwid slot.
+     *  If there is only a single window, this value is set to true, but it
+     *  really doesn't matter what behavior is enabled for a single mainwid.
+     */
+
+    bool m_mainwid_block_independent;
 
 #endif  // SEQ64_MULTI_MAINWID
 
@@ -1287,7 +1298,7 @@ public:
      * \getter m_mainwid_block_rows
      */
 
-    int set_block_rows () const
+    int block_rows () const
     {
         return m_mainwid_block_rows;
     }
@@ -1296,9 +1307,18 @@ public:
      * \getter m_mainwid_block_cols
      */
 
-    int set_block_columns () const
+    int block_columns () const
     {
         return m_mainwid_block_cols;
+    }
+
+    /**
+     * \getter m_mainwid_block_independent
+     */
+
+    int block_independent () const
+    {
+        return m_mainwid_block_independent;
     }
 
 #endif  // SEQ64_MULTI_MAINWID
@@ -1554,8 +1574,17 @@ public:         // used in main application module and the userfile class
 
 #if defined SEQ64_MULTI_MAINWID
 
-    void set_block_rows (int count);
-    void set_block_columns (int count);
+    void block_rows (int count);
+    void block_columns (int count);
+
+    /**
+     * \setter m_mainwid_block_independent
+     */
+
+    void block_independence (bool flag)
+    {
+        m_mainwid_block_independent = flag;
+    }
 
 #endif  // SEQ64_MULTI_MAINWID
 

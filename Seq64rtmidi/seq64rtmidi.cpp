@@ -24,7 +24,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2017-05-14
+ * \updates       2017-05-16
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -151,9 +151,14 @@ main (int argc, char * argv [])
 
         seq64::mainwnd seq24_window
         (
-            p, seq64::usr().allow_two_perfedits(), seq64::usr().midi_ppqn()
+            p,
+            seq64::usr().allow_two_perfedits(),
+            seq64::usr().midi_ppqn()
 #if defined SEQ64_MULTI_MAINWID
-            , seq64::usr().set_block_rows(), seq64::usr().set_block_columns()
+            ,
+            seq64::usr().block_rows(),
+            seq64::usr().block_columns(),
+            seq64::usr().block_independent()
 #endif
         );
         if (ok)

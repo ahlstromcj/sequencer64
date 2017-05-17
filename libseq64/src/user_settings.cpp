@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2017-05-14
+ * \updates       2017-05-16
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -157,6 +157,7 @@ user_settings::user_settings ()
 #if defined SEQ64_MULTI_MAINWID
     m_mainwid_block_rows        (1),
     m_mainwid_block_cols        (1),
+    m_mainwid_block_independent (false),
 #endif
 
     /*
@@ -259,6 +260,7 @@ user_settings::user_settings (const user_settings & rhs)
 #if defined SEQ64_MULTI_MAINWID
     m_mainwid_block_rows        (rhs.m_mainwid_block_rows),
     m_mainwid_block_cols        (rhs.m_mainwid_block_cols),
+    m_mainwid_block_independent (rhs.m_mainwid_block_independent),
 #endif
 
     /*
@@ -364,6 +366,7 @@ user_settings::operator = (const user_settings & rhs)
 #if defined SEQ64_MULTI_MAINWID
         m_mainwid_block_rows        = rhs.m_mainwid_block_rows;
         m_mainwid_block_cols        = rhs.m_mainwid_block_cols;
+        m_mainwid_block_independent = rhs.m_mainwid_block_independent;
 #endif
 
         /*
@@ -460,6 +463,7 @@ user_settings::set_defaults ()
 #if defined SEQ64_MULTI_MAINWID
     m_mainwid_block_rows = 1;
     m_mainwid_block_cols = 1;
+    m_mainwid_block_independent = false;
 #endif
 
     m_text_x =  6;                          // range: 6-6
@@ -1066,7 +1070,7 @@ user_settings::option_logfile () const
  */
 
 void
-user_settings::set_block_rows (int count)
+user_settings::block_rows (int count)
 {
     if (count > 0 && count <= SEQ64_MAINWID_BLOCK_ROWS_MAX)
         m_mainwid_block_rows = count;
@@ -1077,7 +1081,7 @@ user_settings::set_block_rows (int count)
  */
 
 void
-user_settings::set_block_columns (int count)
+user_settings::block_columns (int count)
 {
     if (count > 0 && count <= SEQ64_MAINWID_BLOCK_COLS_MAX)
         m_mainwid_block_cols = count;

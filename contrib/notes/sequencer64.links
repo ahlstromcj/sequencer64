@@ -1,0 +1,52 @@
+Interesting Links to Sequencer64
+Chris Ahlstrom
+2016-06-22 to 2016-06-23
+
+From Lassi Ylikojola:
+
+   Sequencer64, zynaddsubfx, hydrogen, carla - YouTube
+   https://www.youtube.com/watch?v=4gG8SvJxJkA
+
+   Sequencer64 midi recording, hydrogen, zynaddsubfx. - YouTube
+   https://www.youtube.com/watch?v=-yO7W10H1D4
+
+   hydrogen, carla, sequencer64, zynaddsubfx, volca bass - YouTube
+   https://www.youtube.com/watch?v=V6Xsb3i1aD0
+
+   Sequencer64, zaquencer, zynaddsubfx, hydrogen. - YouTube
+   https://www.youtube.com/watch?v=uNjU4kmImwI
+
+   Midi sync check. Sequencer64, jack, zaquencer, microbrute, vbass ...
+   https://www.youtube.com/watch?v=U8hrGpU6Qds
+
+   Sequencer64 driving hydrogen with exported midi file from hydrogen ...
+   https://www.youtube.com/watch?v=01sxFcl2GLs
+
+   Zaquencer, axoloti, carla, sequencer64, hydrogen - YouTube
+   https://www.youtube.com/watch?v=0GDvMzm8r20
+
+   Jack 48000/64/4 5,33 ms zero xruns with ext midi clock out/midi in.
+   https://www.youtube.com/watch?v=p28BQCil6oY
+   Published on May 29, 2016
+   No xruns over 40 minutes.
+   Sequencer64 seems to like 4 Periods/Buffer setting on my system.
+
+   Sequencer64, hydrogen, zynaddsubfx, carla saturday jam.
+   https://www.youtube.com/watch?v=35tJlX4E2AY
+
+   Sooperlooper midi binding tests. Excellent.
+   https://www.youtube.com/watch?v=hUPdFg7Jru0
+   Published on May 30, 2016
+   I used guitarix to record guitar loops. Sequencer64 running other loops
+   for hydrogen and one zynaddsubfx. Carla doing routing and effects.
+
+   Linux, zaquencer and microbrute.
+   https://www.youtube.com/watch?v=jLdea4wwq18
+
+Other:
+
+   Sequencer64 question: song mode - LinuxMusicians
+   pathalpizer.bzzt.net › Software Support & Discussion › Recorders &
+   Sequencers
+
+# vim: ts=3 sw=3 et ft=sh

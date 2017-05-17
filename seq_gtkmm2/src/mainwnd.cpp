@@ -201,6 +201,10 @@ int mainwnd::sm_sigpipe[2];
  *      The number of columns of mainwids to create horizontally.  The default
  *      value is one.  Used only if SEQ64_MULTI_MAINWID is defined.
  *
+ * \param mainwid_indep
+ *      If true, indicates that the mainwids in multi-wid mode can have their
+ *      set-numbers controller independently.
+ *
  * \todo
  *      Offload most of the work into an initialization function like
  *      options does; make the perform parameter a reference;
@@ -210,9 +214,14 @@ int mainwnd::sm_sigpipe[2];
 
 mainwnd::mainwnd
 (
-    perform & p, bool allowperf2, int ppqn
+    perform & p,
+    bool allowperf2,
+    int ppqn
 #if defined SEQ64_MULTI_MAINWID
-    , int mainwid_rows, int mainwid_cols
+    ,
+    int mainwid_rows,
+    int mainwid_cols,
+    bool mainwid_indep
 #endif
 ) :
     gui_window_gtk2         (p),
@@ -240,6 +249,7 @@ mainwnd::mainwnd
     m_mainwid_rows          (mainwid_rows),             /* assumed valid    */
     m_mainwid_columns       (mainwid_cols),             /* assumed valid    */
     m_mainwid_count         (mainwid_rows * mainwid_cols),
+    m_mainwid_independent   (mainwid_indep),
     m_main_wid              (nullptr),
 #else
     m_main_wid              (manage(new mainwid(p))),
@@ -449,17 +459,20 @@ mainwnd::mainwnd
             );
             if (multi_wid())
             {
-                m_mainwid_adjustors[col][row] = manage
-                (
-                    new Gtk::Adjustment(set_number, 0, c_max_sets-1, 1)
-                );
-                m_mainwid_spinners[col][row] = manage
-                (
-                    new Gtk::SpinButton(*m_mainwid_adjustors[col][row])
-                );
-                m_mainwid_spinners[col][row]->set_sensitive(true);
-                m_mainwid_spinners[col][row]->set_editable(true);
-                m_mainwid_spinners[col][row]->set_wrap(false);
+                if (mainwid_independent() || (col == 0 && row == 0))
+                {
+                    m_mainwid_adjustors[col][row] = manage
+                    (
+                        new Gtk::Adjustment(set_number, 0, c_max_sets-1, 1)
+                    );
+                    m_mainwid_spinners[col][row] = manage
+                    (
+                        new Gtk::SpinButton(*m_mainwid_adjustors[col][row])
+                    );
+                    m_mainwid_spinners[col][row]->set_sensitive(true);
+                    m_mainwid_spinners[col][row]->set_editable(true);
+                    m_mainwid_spinners[col][row]->set_wrap(false);
+                }
                 m_mainwid_frames[col][row] = manage(new Gtk::Frame(label));
                 m_mainwid_frames[col][row]->set_border_width(4);
                 m_mainwid_frames[col][row]->set_shadow_type(Gtk::SHADOW_NONE);
@@ -729,24 +742,29 @@ mainwnd::mainwnd
             );
             for (int row = 0; row < m_mainwid_rows; ++row, ++mainwid_offset)
             {
-                Gtk::Adjustment * mwap = m_mainwid_adjustors[col][row];
-                Gtk::SpinButton * sbp = m_mainwid_spinners[col][row];
-                if (not_nullptr(sbp) && not_nullptr(mwap))
+                bool indep = mainwid_independent() || (col == 0 && row == 0);
+                if (indep)
                 {
-                    add_tooltip
-                    (
-                        sbp,
-                        "Change screen-set of corresponding set window."
-                    );
-                    mwap->signal_value_changed().connect
-                    (
-                        sigc::bind          /* bind parameter to function   */
+                    Gtk::Adjustment * mwap = m_mainwid_adjustors[col][row];
+                    Gtk::SpinButton * sbp = m_mainwid_spinners[col][row];
+                    if (not_nullptr(sbp) && not_nullptr(mwap))
+                    {
+                        std::string tip = mainwid_independent() ?
+                            "Change screen-set of corresponding set window." :
+                            "Change screen-set of all set windows in sync." ;
+
+                        tip += " Top left mainwid is the active screen-set.";
+                        add_tooltip(sbp, tip);
+                        mwap->signal_value_changed().connect
                         (
-                            mem_fun(*this, &mainwnd::adj_callback_mainwid),
-                            mainwid_offset
-                        )
-                    );
-                    sethbox->pack_start(*sbp, Gtk::PACK_SHRINK);
+                            sigc::bind          /* bind parameter to function   */
+                            (
+                                mem_fun(*this, &mainwnd::adj_callback_mainwid),
+                                mainwid_offset
+                            )
+                        );
+                        sethbox->pack_start(*sbp, Gtk::PACK_SHRINK);
+                    }
                 }
             }
         }

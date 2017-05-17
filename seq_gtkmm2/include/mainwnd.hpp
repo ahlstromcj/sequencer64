@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-14
+ * \updates       2017-05-16
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -228,6 +228,13 @@ private:
      */
 
     int m_mainwid_count;
+
+    /**
+     *  Indicates if we want to control the set-number of each mainwid
+     *  separately or not.
+     */
+
+    bool m_mainwid_independent;
 
 #endif  // SEQ64_MULTI_MAINWID
 
@@ -436,12 +443,13 @@ public:
     mainwnd
     (
         perform & p,
-        bool allowperf2 = true,
-        int ppqn        = SEQ64_USE_DEFAULT_PPQN
+        bool allowperf2     = true,
+        int ppqn            = SEQ64_USE_DEFAULT_PPQN
 #if defined SEQ64_MULTI_MAINWID
         ,
-        int mainwid_rows = 1,
-        int mainwid_cols = 1
+        int mainwid_rows    = 1,
+        int mainwid_cols    = 1,
+        bool mainwid_indep  = false
 #endif
     );
     virtual ~mainwnd ();
@@ -483,6 +491,19 @@ private:
     {
 #if defined SEQ64_MULTI_MAINWID
         return m_mainwid_count > 1;
+#else
+        return false;
+#endif
+    }
+
+    /**
+     * \getter m_mainwid_independent
+     */
+
+    bool mainwid_independent () const
+    {
+#if defined SEQ64_MULTI_MAINWID
+        return m_mainwid_independent;
 #else
         return false;
 #endif

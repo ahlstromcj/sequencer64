@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-05-14
+ * \updates       2017-05-16
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -297,6 +297,11 @@ static const char * const s_help_4 =
 "                            from 1 to 3, defaults to 1.\n"
 "              set-cols=n    Show n columns of sets in the main window.  Can\n"
 "                            range only from 1 to 2, defaults to 1.\n"
+"              set-sync=f    Sets the multiple windows so that they stay in\n"
+"                            step with each other.  The default is false, which\n"
+"                            makes multi-windows have arbitrary set numbers.\n"
+"                            The upper left mainwid is always the active one.\n"
+"                            'f' is either 'true' or 'false', or 1 or 0.\n"
 "\n"
 "The daemonize option works only in the CLI build. The set options work only\n"
 "in the 'rtmidi' GUI build.\n"
@@ -481,12 +486,24 @@ process_o_options (int argc, char * argv [])
                             else if (optionname == "set-rows")
                             {
                                 result = true;
-                                usr().set_block_rows(atoi(arg.c_str()));
+                                usr().block_rows(atoi(arg.c_str()));
                             }
                             else if (optionname == "set-cols")
                             {
                                 result = true;
-                                usr().set_block_columns(atoi(arg.c_str()));
+                                usr().block_columns(atoi(arg.c_str()));
+                            }
+                            else if (optionname == "set-sync")
+                            {
+                                bool on = arg == "true";
+                                if (! on)
+                                    on = arg == "1";
+
+                                if (! on)
+                                    on = arg == "yes";
+
+                                result = true;
+                                usr().block_independence(on);
                             }
                         }
                         if (! result)

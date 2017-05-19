@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-16
+ * \updates       2017-05-19
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -146,7 +146,7 @@
  *  box containing the Sequencer64 label and some extra buttons.
  */
 
-#define HBOX_PADDING        10
+#define HBOX_PADDING                  10
 
 /**
  *  The amount of time to wait for inaction before clearing the tap-button
@@ -242,10 +242,10 @@ mainwnd::mainwnd
 
 #if defined SEQ64_MULTI_MAINWID
     m_mainwid_grid          (nullptr),
-    m_mainwid_frames        (),                         /* a 3 x 2 array    */
-    m_mainwid_adjustors     (),                         /* a 3 x 2 array    */
-    m_mainwid_spinners      (),                         /* a 3 x 2 array    */
-    m_mainwid_blocks        (),                         /* a 3 x 2 array    */
+    m_mainwid_frames        (),                         /* a 2 x 3 array    */
+    m_mainwid_adjustors     (),                         /* a 2 x 3 array    */
+    m_mainwid_spinners      (),                         /* a 2 x 3 array    */
+    m_mainwid_blocks        (),                         /* a 2 x 3 array    */
     m_mainwid_rows          (mainwid_rows),             /* assumed valid    */
     m_mainwid_columns       (mainwid_cols),             /* assumed valid    */
     m_mainwid_count         (mainwid_rows * mainwid_cols),
@@ -327,6 +327,8 @@ mainwnd::mainwnd
     m_call_seq_edit         (false),                /* new ca 2016-05-15    */
     m_call_seq_eventedit    (false)                 /* new ca 2016-05-19    */
 {
+    if (! multi_wid())
+        m_mainwid_independent = true;
 
 #ifdef PLATFORM_DEBUG_XXX
 
@@ -459,7 +461,12 @@ mainwnd::mainwnd
             );
             if (multi_wid())
             {
-                if (mainwid_independent() || (col == 0 && row == 0))
+                if (col == 0 && row == 0)
+                {
+                    m_mainwid_adjustors[0][0] = m_adjust_ss;    // main one
+                    m_mainwid_spinners[0][0] = m_spinbutton_ss; // ditto
+                }
+                else if (independent())     // if (need_set_spinner(col, row))
                 {
                     m_mainwid_adjustors[col][row] = manage
                     (
@@ -742,27 +749,29 @@ mainwnd::mainwnd
             );
             for (int row = 0; row < m_mainwid_rows; ++row, ++mainwid_offset)
             {
-                bool indep = mainwid_independent() || (col == 0 && row == 0);
-                if (indep)
+                if (need_set_spinner(col, row))
                 {
                     Gtk::Adjustment * mwap = m_mainwid_adjustors[col][row];
                     Gtk::SpinButton * sbp = m_mainwid_spinners[col][row];
                     if (not_nullptr(sbp) && not_nullptr(mwap))
                     {
-                        std::string tip = mainwid_independent() ?
+                        std::string tip = independent() ?
                             "Change screen-set of corresponding set window." :
                             "Change screen-set of all set windows in sync." ;
 
                         tip += " Top left mainwid is the active screen-set.";
                         add_tooltip(sbp, tip);
-                        mwap->signal_value_changed().connect
-                        (
-                            sigc::bind          /* bind parameter to function   */
+                        if (row > 0 || col > 0)
+                        {
+                            mwap->signal_value_changed().connect
                             (
-                                mem_fun(*this, &mainwnd::adj_callback_mainwid),
-                                mainwid_offset
-                            )
-                        );
+                                sigc::bind  /* bind parameter to function   */
+                                (
+                                    mem_fun(*this, &mainwnd::adj_callback_wid),
+                                    mainwid_offset
+                                )
+                            );
+                        }
                         sethbox->pack_start(*sbp, Gtk::PACK_SHRINK);
                     }
                 }
@@ -2155,6 +2164,12 @@ mainwnd::adj_callback_ss ()
 {
     if (multi_wid())
     {
+        if (independent())
+        {
+            adj_callback_wid(0);
+            return;
+        }
+
         int screenset = perf().get_screenset();
         int newset = int(m_adjust_ss->get_value());
 
@@ -2219,7 +2234,14 @@ mainwnd::adj_callback_bpm ()
 
 /**
  *  Converts a two-dimensional mainwid box coordinate to a one-dimensional
- *  slot number.
+ *  slot number.  To "save time", the mainwid-related slot pointers are
+ *  allocated as a 2 x 3 (row x column) array:
+ *
+ *      col     row
+ *               0   1   2
+ *       0       x
+ *       1
+ *        
  *
  * \param col
  *      Provides the column number.  This value is the first 2-D index,
@@ -2294,7 +2316,7 @@ mainwnd::wid_slot_to_box (int slot, int & col, int & row) const
  */
 
 void
-mainwnd::adj_callback_mainwid (int mainwid_slot)
+mainwnd::adj_callback_wid (int mainwid_slot)
 {
     if (multi_wid())
     {

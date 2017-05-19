@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-16
+ * \updates       2017-05-19
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -176,7 +176,7 @@ private:
     Gtk::Table * m_mainwid_grid;
 
     /**
-     *  Holds from 1 x 1 to up to 3 x 2 (1 to 6) pointers for Frame objects.
+     *  Holds from 1 x 1 to up to 2 x 3 (1 to 6) pointers for Frame objects.
      *  Each frame will hold a mainwid object, and the text part of the frame
      *  will show the set number for that mainwid.  It's only 6 pointers, no
      *  need to fret over dynamic allocation.
@@ -187,7 +187,7 @@ private:
         [SEQ64_MAINWID_BLOCK_ROWS_MAX];
 
     /**
-     *  Holds from 1 x 1 to up to 3 x 2 (1 to 6) pointers.
+     *  Holds from 1 x 1 to up to 2 x 3 (1 to 6) pointers.
      */
 
     Gtk::Adjustment * m_mainwid_adjustors
@@ -195,7 +195,7 @@ private:
         [SEQ64_MAINWID_BLOCK_ROWS_MAX];
 
     /**
-     *  Holds from 1 x 1 to up to 3 x 2 (1 to 6) pointers.
+     *  Holds from 1 x 1 to up to 2 x 3 (1 to 6) pointers.
      */
 
     Gtk::SpinButton * m_mainwid_spinners
@@ -203,7 +203,7 @@ private:
         [SEQ64_MAINWID_BLOCK_ROWS_MAX];
 
     /**
-     *  Holds from 1 x 1 to up to 3 x 2 (1 to 6) pointers for mainwid objects.
+     *  Holds from 1 x 1 to up to 2 x 3 (1 to 6) pointers for mainwid objects.
      */
 
     mainwid * m_mainwid_blocks
@@ -496,24 +496,31 @@ private:
 #endif
     }
 
-    /**
-     * \getter m_mainwid_independent
-     */
-
-    bool mainwid_independent () const
-    {
-#if defined SEQ64_MULTI_MAINWID
-        return m_mainwid_independent;
-#else
-        return false;
-#endif
-    }
-
     void adj_callback_ss ();
     void adj_callback_bpm ();
 
 #if defined SEQ64_MULTI_MAINWID
-    void adj_callback_mainwid (int mainwid_slot);
+
+    void adj_callback_wid (int mainwid_slot);
+
+    /**
+     * \getter m_mainwid_independent
+     */
+
+    bool independent () const
+    {
+        return m_mainwid_independent;
+    }
+
+    /**
+     * \getter m_mainwid_independent
+     */
+
+    bool need_set_spinner (int col, int row) const
+    {
+        return m_mainwid_independent || (col == 0 && row == 0);
+    }
+
 #endif
 
     void edit_callback_notepad ();

@@ -422,7 +422,7 @@ class user_settings
     /**
      *  If true, this value will enable individual set-controls for the
      *  multiple mainwid objects shown in the main window.  If false, then the
-     *  main set spinner is the only one shown, and it takes all sets track
+     *  main set spinner is the only one shown, and it makes all sets track
      *  the main set, which is always shown in the upper-right mainwid slot.
      *  If there is only a single window, this value is set to true, but it
      *  really doesn't matter what behavior is enabled for a single mainwid.

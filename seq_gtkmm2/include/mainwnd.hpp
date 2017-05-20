@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-19
+ * \updates       2017-05-20
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -53,6 +53,13 @@
  */
 
 #define SEQ64_SHOW_JACK_STATUS
+
+/**
+ *  A constant for the maximum number of mainwid blocks supported.
+ */
+
+#define SEQ64_MAINWIDS_MAX \
+    SEQ64_MAINWID_BLOCK_ROWS_MAX * SEQ64_MAINWID_BLOCK_COLS_MAX
 
 /*
  *  Easier access to Gtk-2 classes.
@@ -122,8 +129,7 @@ private:
      *  array-offset calculations.
      */
 
-    static const int sm_widmax =
-        SEQ64_MAINWID_BLOCK_ROWS_MAX * SEQ64_MAINWID_BLOCK_COLS_MAX;
+    static const int sm_widmax = SEQ64_MAINWIDS_MAX;
 
 #endif
 
@@ -182,33 +188,27 @@ private:
      *  need to fret over dynamic allocation.
      */
 
-    Gtk::Frame * m_mainwid_frames
-        [SEQ64_MAINWID_BLOCK_COLS_MAX]
-        [SEQ64_MAINWID_BLOCK_ROWS_MAX];
+    Gtk::Frame * m_mainwid_frames [SEQ64_MAINWIDS_MAX];
 
     /**
-     *  Holds from 1 x 1 to up to 2 x 3 (1 to 6) pointers.
+     *  Holds from 1 x 1 to up to 2 x 3 (1 to 6) pointers to spinner
+     *  adjustment objects.
      */
 
-    Gtk::Adjustment * m_mainwid_adjustors
-        [SEQ64_MAINWID_BLOCK_COLS_MAX]
-        [SEQ64_MAINWID_BLOCK_ROWS_MAX];
+    Gtk::Adjustment * m_mainwid_adjustors [SEQ64_MAINWIDS_MAX];
 
     /**
-     *  Holds from 1 x 1 to up to 2 x 3 (1 to 6) pointers.
+     *  Holds from 1 x 1 to up to 2 x 3 (1 to 6) pointers to spinner
+     *  objects.
      */
 
-    Gtk::SpinButton * m_mainwid_spinners
-        [SEQ64_MAINWID_BLOCK_COLS_MAX]
-        [SEQ64_MAINWID_BLOCK_ROWS_MAX];
+    Gtk::SpinButton * m_mainwid_spinners [SEQ64_MAINWIDS_MAX];
 
     /**
      *  Holds from 1 x 1 to up to 2 x 3 (1 to 6) pointers for mainwid objects.
      */
 
-    mainwid * m_mainwid_blocks
-        [SEQ64_MAINWID_BLOCK_COLS_MAX]
-        [SEQ64_MAINWID_BLOCK_ROWS_MAX];
+    mainwid * m_mainwid_blocks [SEQ64_MAINWIDS_MAX];
 
     /**
      *  The number of mainwids vertically.  Defaults to 1.
@@ -501,7 +501,7 @@ private:
 
 #if defined SEQ64_MULTI_MAINWID
 
-    void adj_callback_wid (int mainwid_slot);
+    void adj_callback_wid (int mainwid_block);
 
     /**
      * \getter m_mainwid_independent
@@ -516,9 +516,9 @@ private:
      * \getter m_mainwid_independent
      */
 
-    bool need_set_spinner (int col, int row) const
+    bool need_set_spinner (int block) const
     {
-        return m_mainwid_independent || (col == 0 && row == 0);
+        return m_mainwid_independent || block == 0;
     }
 
 #endif
@@ -565,6 +565,20 @@ private:
     void sequence_key (int seq)
     {
         perf().sequence_key(seq);
+    }
+
+    /**
+     *  Returns the maximum value we can allow for a spinner.  Remember that
+     *  set numbers go from 0 to 31, both internally and visually, for a total
+     *  of 32 sets.
+     */
+
+    int spinner_max () const
+    {
+        if (independent())
+            return perf().max_sets() - 1;
+        else
+            return perf().max_sets() - m_mainwid_count;
     }
 
 #ifdef SEQ64_STAZED_TRANSPOSE

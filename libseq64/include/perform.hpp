@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-16
+ * \updates       2017-05-20
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2328,6 +2328,15 @@ private:
     bool valid_midi_control_seq (int seq) const
     {
         return seq < c_midi_controls_extended;
+    }
+
+    /**
+     * \getter m_max_sets
+     */
+
+    int max_sets () const
+    {
+        return m_max_sets;
     }
 
     /**

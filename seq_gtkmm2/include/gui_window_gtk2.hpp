@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-07-15
+ * \updates       2017-05-20
  * \license       GNU GPLv2 or above
  *
  *  This module declares/defines the base class for main window of the
@@ -125,6 +125,15 @@ protected:
      */
 
     perform & perf ()
+    {
+        return m_mainperf;
+    }
+
+    /**
+     * \getter m_mainperf, const version
+     */
+
+    const perform & perf () const
     {
         return m_mainperf;
     }

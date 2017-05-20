@@ -503,7 +503,7 @@ process_o_options (int argc, char * argv [])
                                     on = arg == "yes";
 
                                 result = true;
-                                usr().block_independence(on);
+                                usr().block_independence(! on); /* tricky */
                             }
                         }
                         if (! result)

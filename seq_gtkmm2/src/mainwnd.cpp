@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-19
+ * \updates       2017-05-20
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -427,17 +427,12 @@ mainwnd::mainwnd
 
 #if defined SEQ64_MULTI_MAINWID
 
-    int row_max = SEQ64_MAINWID_BLOCK_ROWS_MAX;
-    int col_max = SEQ64_MAINWID_BLOCK_COLS_MAX;
-    for (int col = 0; col < col_max; ++col)
+    for (int block = 0; block < SEQ64_MAINWIDS_MAX; ++block)
     {
-        for (int row = 0; row < row_max; ++row)
-        {
-            m_mainwid_adjustors[col][row] = nullptr;
-            m_mainwid_spinners[col][row] = nullptr;
-            m_mainwid_frames[col][row] = nullptr;
-            m_mainwid_blocks[col][row] = nullptr;
-        }
+        m_mainwid_adjustors[block] = nullptr;
+        m_mainwid_spinners[block] = nullptr;
+        m_mainwid_frames[block] = nullptr;
+        m_mainwid_blocks[block] = nullptr;
     }
 
     /**
@@ -448,61 +443,54 @@ mainwnd::mainwnd
      *  attaching the frame to the table causes a segfault!
      */
 
-    int set_number = 0;
-    for (int col = 0; col < m_mainwid_columns; ++col)
+    for (int block = 0; block < m_mainwid_count; ++block)
     {
-        for (int row = 0; row < m_mainwid_rows; ++row)
+        std::string label = "   Set ";
+        label += std::to_string(block);
+        m_mainwid_blocks[block] = manage(new mainwid(p, block, multi_wid()));
+        if (multi_wid())
         {
-            std::string label = "   Set ";
-            label += std::to_string(set_number);
-            m_mainwid_blocks[col][row] = manage
-            (
-                new mainwid(p, set_number, multi_wid())
-            );
-            if (multi_wid())
+            if (block == 0)
             {
-                if (col == 0 && row == 0)
-                {
-                    m_mainwid_adjustors[0][0] = m_adjust_ss;    // main one
-                    m_mainwid_spinners[0][0] = m_spinbutton_ss; // ditto
-                }
-                else if (independent())     // if (need_set_spinner(col, row))
-                {
-                    m_mainwid_adjustors[col][row] = manage
-                    (
-                        new Gtk::Adjustment(set_number, 0, c_max_sets-1, 1)
-                    );
-                    m_mainwid_spinners[col][row] = manage
-                    (
-                        new Gtk::SpinButton(*m_mainwid_adjustors[col][row])
-                    );
-                    m_mainwid_spinners[col][row]->set_sensitive(true);
-                    m_mainwid_spinners[col][row]->set_editable(true);
-                    m_mainwid_spinners[col][row]->set_wrap(false);
-                }
-                m_mainwid_frames[col][row] = manage(new Gtk::Frame(label));
-                m_mainwid_frames[col][row]->set_border_width(4);
-                m_mainwid_frames[col][row]->set_shadow_type(Gtk::SHADOW_NONE);
-
-                /*
-                 * We get more control if we add the frame and mainwid
-                 * separately to the table.
-                 *
-                 * m_mainwid_frames[col][row]->add(*m_mainwid_blocks[col][row]);
-                 *
-                 * Try adding it to table instead.
-                 *
-                 * m_mainwid_frames[col][row]->add(*m_mainwid_spinners[col][row]);
-                 */
+                m_mainwid_adjustors[0] = m_adjust_ss;       /* main one */
+                m_mainwid_spinners[0] = m_spinbutton_ss;    /* ditto    */
             }
-            ++set_number;
+            else if (independent())
+            {
+                m_mainwid_adjustors[block] = manage
+                (
+                    new Gtk::Adjustment(block, 0, c_max_sets-1, 1)
+                );
+                m_mainwid_spinners[block] = manage
+                (
+                    new Gtk::SpinButton(*m_mainwid_adjustors[block])
+                );
+                m_mainwid_spinners[block]->set_sensitive(true);
+                m_mainwid_spinners[block]->set_editable(true);
+                m_mainwid_spinners[block]->set_wrap(false);
+                m_mainwid_spinners[block]->set_width_chars(3);
+            }
+            m_mainwid_frames[block] = manage(new Gtk::Frame(label));
+            m_mainwid_frames[block]->set_border_width(4);
+            m_mainwid_frames[block]->set_shadow_type(Gtk::SHADOW_NONE);
+
+            /*
+             * We get more control if we add the frame and mainwid
+             * separately to the table.
+             *
+             *  m_mainwid_frames[block]->add(*m_mainwid_blocks[block]);
+             *
+             * Try adding it to table instead.
+             *
+             *  m_mainwid_frames[block]->add(*m_mainwid_spinners[block]);
+             */
         }
     }
-    m_main_wid = m_mainwid_blocks[0][0];            /* to start with */
+    m_main_wid = m_mainwid_blocks[0];               /* to start with */
     if (multi_wid())
     {
-        m_mainwid_frames[0][0]->set_shadow_type(Gtk::SHADOW_OUT);
-        m_mainwid_frames[0][0]->set_label("   Set 0 [active]");
+        m_mainwid_frames[0]->set_shadow_type(Gtk::SHADOW_OUT);
+        m_mainwid_frames[0]->set_label("   Set 0 [active]");
     }
 
 #endif  // SEQ64_MULTI_MAINWID
@@ -716,6 +704,8 @@ mainwnd::mainwnd
     bottomhbox->pack_start(*sethbox, Gtk::PACK_SHRINK);
     m_spinbutton_ss->set_sensitive(true);
     m_spinbutton_ss->set_editable(true);
+    m_spinbutton_ss->set_wrap(false);
+    m_spinbutton_ss->set_width_chars(3);
 
     /*
      * @note ca 2016-09-26
@@ -740,40 +730,36 @@ mainwnd::mainwnd
 
     if (multi_wid())
     {
-        int mainwid_offset = 0;
+        int block = 0;
         for (int col = 0; col < m_mainwid_columns; ++col)
         {
             sethbox->pack_start
             (
                 *(manage(new Gtk::VSeparator())), false, false, 4
             );
-            for (int row = 0; row < m_mainwid_rows; ++row, ++mainwid_offset)
+            for (int row = 0; row < m_mainwid_rows; ++row, ++block)
             {
-                if (need_set_spinner(col, row))
+                if (need_set_spinner(block))
                 {
-                    Gtk::Adjustment * mwap = m_mainwid_adjustors[col][row];
-                    Gtk::SpinButton * sbp = m_mainwid_spinners[col][row];
-                    if (not_nullptr(sbp) && not_nullptr(mwap))
-                    {
-                        std::string tip = independent() ?
-                            "Change screen-set of corresponding set window." :
-                            "Change screen-set of all set windows in sync." ;
+                    Gtk::Adjustment * mwap = m_mainwid_adjustors[block];
+                    Gtk::SpinButton * sbp = m_mainwid_spinners[block];
+                    std::string tip = independent() ?
+                        "Change screen-set of corresponding set window." :
+                        "Change screen-set of all set windows in sync." ;
 
-                        tip += " Top left mainwid is the active screen-set.";
-                        add_tooltip(sbp, tip);
-                        if (row > 0 || col > 0)
-                        {
-                            mwap->signal_value_changed().connect
+                    tip += " Top left mainwid is the active screen-set.";
+                    add_tooltip(sbp, tip);
+                    if (block > 0)
+                    {
+                        mwap->signal_value_changed().connect
+                        (
+                            sigc::bind      /* bind parameter to function   */
                             (
-                                sigc::bind  /* bind parameter to function   */
-                                (
-                                    mem_fun(*this, &mainwnd::adj_callback_wid),
-                                    mainwid_offset
-                                )
-                            );
-                        }
-                        sethbox->pack_start(*sbp, Gtk::PACK_SHRINK);
+                                mem_fun(*this, &mainwnd::adj_callback_wid), block
+                            )
+                        );
                     }
+                    sethbox->pack_start(*sbp, Gtk::PACK_SHRINK);
                 }
             }
         }
@@ -887,24 +873,21 @@ mainwnd::mainwnd
         (
             new Gtk::Table(guint(m_mainwid_rows), guint(m_mainwid_columns), true)
         );
+        int block = 0;
         for (int col = 0; col < m_mainwid_columns; ++col)
         {
-            for (int row = 0; row < m_mainwid_rows; ++row)
+            for (int row = 0; row < m_mainwid_rows; ++row, ++block)
             {
-                Gtk::Frame * frp = m_mainwid_frames[col][row];
-                mainwid * mwp = m_mainwid_blocks[col][row];
-                if (not_nullptr(mwp))
-                {
-                    m_mainwid_grid->attach(*frp, col, col+1, row, row+1);
-                    m_mainwid_grid->attach
-                    (
-                        *mwp, col, col+1, row, row+1,
-                        Gtk::FILL | Gtk::EXPAND,
-                        Gtk::FILL | Gtk::EXPAND,
-                        guint(wpadding),
-                        guint(hpadding)
-                    );
-                }
+                Gtk::Frame * frp = m_mainwid_frames[block];
+                mainwid * mwp = m_mainwid_blocks[block];
+                m_mainwid_grid->attach(*frp, col, col+1, row, row+1);
+                m_mainwid_grid->attach
+                (
+                    *mwp, col, col+1, row, row+1,
+                    Gtk::FILL | Gtk::EXPAND,
+                    Gtk::FILL | Gtk::EXPAND,
+                    guint(wpadding), guint(hpadding)
+                );
             }
         }
         contentvbox->pack_start(*m_mainwid_grid, Gtk::PACK_SHRINK);
@@ -1313,10 +1296,10 @@ mainwnd::update_markers (midipulse tick)
 #if defined SEQ64_MULTI_MAINWID
     if (multi_wid())
     {
-        mainwid ** widptr = &m_mainwid_blocks[0][0];
+        mainwid ** widptr = &m_mainwid_blocks[0];
         if (not_nullptr(*widptr))               /* need at least one!       */
         {
-            for (int wid = 0; wid < sm_widmax; ++wid, ++widptr)
+            for (int wid = 0; wid < m_mainwid_count; ++wid, ++widptr)
             {
                 if (not_nullptr(*widptr))       /* not all might be active  */
                     (*widptr)->update_markers(tick);
@@ -1351,8 +1334,8 @@ mainwnd::reset ()
 {
 
 #if defined SEQ64_MULTI_MAINWID
-    mainwid ** widptr = &m_mainwid_blocks[0][0];
-    for (int wid = 0; wid < sm_widmax; ++wid, ++widptr)
+    mainwid ** widptr = &m_mainwid_blocks[0];
+    for (int wid = 0; wid < m_mainwid_count; ++wid, ++widptr)
     {
         if (not_nullptr(*widptr))
             (*widptr)->reset();
@@ -2164,53 +2147,48 @@ mainwnd::adj_callback_ss ()
 {
     if (multi_wid())
     {
-        if (independent())
-        {
-            adj_callback_wid(0);
-            return;
-        }
-
-        int screenset = perf().get_screenset();
         int newset = int(m_adjust_ss->get_value());
+        if (newset <= spinner_max())
+        {
+            if (independent())
+            {
+                adj_callback_wid(newset);
+                return;
+            }
 
 #if defined SEQ64_MULTI_MAINWID
 
-        Gtk::Frame ** frmptr = &m_mainwid_frames[0][0];
-        mainwid ** widptr = &m_mainwid_blocks[0][0];
-        int ss = newset;
-        for (int wid = 0; wid < sm_widmax; ++wid, ++widptr, ++frmptr)
-        {
-            if (not_nullptr(*widptr))               /* may be unnecessary?  */
+            Gtk::Frame ** frmptr = &m_mainwid_frames[0];
+            mainwid ** widptr = &m_mainwid_blocks[0];
+            int ss = newset;
+            for (int wid = 0; wid < m_mainwid_count; ++wid, ++widptr, ++frmptr)
             {
                 mainwid & m = **widptr;             /* get better notation  */
                 m.set_screenset(ss, false);
-                if (not_nullptr(*frmptr))
+                Gtk::Frame & f = **frmptr;          /* get better notation  */
+                std::string label = "   Set ";
+                label += std::to_string(ss);
+                if (ss == newset)
                 {
-                    Gtk::Frame & f = **frmptr;      /* get better notation  */
-                    std::string label = "   Set ";
-                    label += std::to_string(ss);
-                    if (ss == screenset)
-                    {
-                        label += " [active]";
-                        f.set_shadow_type(Gtk::SHADOW_OUT);
-                    }
-                    else
-                    {
-                        f.set_shadow_type(Gtk::SHADOW_NONE);
-                    }
-                    f.set_label(label);
+                    label += " [active]";
+                    f.set_shadow_type(Gtk::SHADOW_OUT);
                 }
+                else
+                {
+                    f.set_shadow_type(Gtk::SHADOW_NONE);
+                }
+                f.set_label(label);
                 ++ss;
             }
-        }
 
 #endif
 
-        /*
-         * Set the perform's active screenset.
-         */
+            /*
+             * Set the perform's newly-active screenset.
+             */
 
-        perf().set_screenset(newset);
+            perf().set_screenset(newset);
+        }
     }
     else
     {
@@ -2233,81 +2211,10 @@ mainwnd::adj_callback_bpm ()
 #if defined SEQ64_MULTI_MAINWID
 
 /**
- *  Converts a two-dimensional mainwid box coordinate to a one-dimensional
- *  slot number.  To "save time", the mainwid-related slot pointers are
- *  allocated as a 2 x 3 (row x column) array:
- *
- *      col     row
- *               0   1   2
- *       0       x
- *       1
- *        
- *
- * \param col
- *      Provides the column number.  This value is the first 2-D index,
- *      and varies the slowest.  It potentially ranges from 0 to 1.
- *
- * \param row
- *      Provides the row number.  This value is the second 2-D index, and
- *      varies the fastest.  It potentially ranges from 0 to 2.
- *
- * \return
- *      Returns the 1-D slot number.  It potentially ranges from 0 to 5.
- *      If parameters put it outside the range, then -1 is returned.
- */
-
-/*
- * CURRENTLY INCORRECT
- */
-
-int
-mainwnd::wid_box_to_slot (int col, int row) const
-{
-    int result = col * m_mainwid_rows + row;
-    if (result < 0 || result >= m_mainwid_count)
-        result = -1;
-
-    return result;
-}
-
-/**
- *  Provides the inverse of wid_box_to_slot().
- *
- * \param slot
- *      Provides the 1-D slot number to be converted to two dimensions.
- *
- * \param [out] col
- *      Provides the return-parameter for the column number.
- *
- * \param [out] row
- *      Provides return-parameter for the row number.
- *
- * \return
- *      Returns true if the slot number was legal, and the return
- *      parameters can be reliably used.
- */
-
-/*
- * CURRENTLY INCORRECT
- */
-
-bool
-mainwnd::wid_slot_to_box (int slot, int & col, int & row) const
-{
-    bool result = (slot >= 0 || slot < m_mainwid_count);
-    if (result)
-    {
-        col = slot / m_mainwid_rows;
-        row = slot % m_mainwid_rows;
-    }
-    return result;
-}
-
-/**
  *  This function is the callback for adjusting the screen-set value of a
  *  particular mainwid.
  *
- * \param mainwid_slot
+ * \param mainwid_block
  *      This parameter ranges from 0 to 5, depending on how many mainwids are
  *      created.  This function operates only when multiple mainwids are
  *      active.  Just to be clear, index 0 is slot [0, 0], 1 is slot [0, 1],
@@ -2316,38 +2223,21 @@ mainwnd::wid_slot_to_box (int slot, int & col, int & row) const
  */
 
 void
-mainwnd::adj_callback_wid (int mainwid_slot)
+mainwnd::adj_callback_wid (int mainwid_block)
 {
-    if (multi_wid())
+    if (multi_wid() && mainwid_block < m_mainwid_count)
     {
-        mainwid ** widptr = &m_mainwid_blocks[0][0];
-        mainwid * mslot = widptr[mainwid_slot];
-        if (not_nullptr(mslot))
+        Gtk::Frame * fslot = m_mainwid_frames[mainwid_block];
+        int ss = m_mainwid_adjustors[mainwid_block]->get_value();
+        std::string label = "   Set ";
+        label += std::to_string(ss);
+        m_mainwid_blocks[mainwid_block]->log_screenset(ss);
+        if (ss == perf().get_screenset())
         {
-            Gtk::Adjustment ** adjptr = &m_mainwid_adjustors[0][0];
-            Gtk::Adjustment * aslot = adjptr[mainwid_slot];
-            if (not_nullptr(aslot))
-            {
-                int ss = aslot->get_value();
-                mslot->log_screenset(ss);
-                if (multi_wid())
-                {
-                    Gtk::Frame ** frptr = &m_mainwid_frames[0][0];
-                    Gtk::Frame * fslot = frptr[mainwid_slot];
-                    if (not_nullptr(fslot))
-                    {
-                        std::string label = "   Set ";
-                        label += std::to_string(ss);
-                        if (ss == perf().get_screenset())
-                        {
-                            fslot->set_shadow_type(Gtk::SHADOW_OUT);
-                            label += " [active]";
-                            fslot->set_label(label);
-                        }
-                    }
-                }
-            }
+            fslot->set_shadow_type(Gtk::SHADOW_OUT);
+            label += " [active]";
         }
+        fslot->set_label(label);
     }
 }
 
@@ -2519,11 +2409,10 @@ mainwnd::stop_playing ()                        /* Stop!                    */
     perf().stop_key();                          /* make sure it's seq32able */
 
 #if defined SEQ64_MULTI_MAINWID
-    mainwid ** widptr = &m_mainwid_blocks[0][0];
-    for (int wid = 0; wid < sm_widmax; ++wid, ++widptr)
+    mainwid ** widptr = &m_mainwid_blocks[0];
+    for (int wid = 0; wid < m_mainwid_count; ++wid, ++widptr)
     {
-        if (not_nullptr(*widptr))               /* not all might be active  */
-            (*widptr)->update_sequences_on_window();
+        (*widptr)->update_sequences_on_window();
     }
 #else
     m_main_wid->update_sequences_on_window();   /* update_mainwid_sequences() */

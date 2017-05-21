@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2017-05-08
+ * \updates       2017-05-21
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -225,9 +225,6 @@ jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
     jack_assistant * j = (jack_assistant *)(arg);
     if (not_nullptr(j))
     {
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
         perform & p = j->m_jack_parent;
         if (! p.is_running())
         {
@@ -260,9 +257,6 @@ jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
                 }
             }
         }
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
-
     }
     return 0;
 }
@@ -527,11 +521,9 @@ jack_assistant::jack_assistant
 #endif
     m_jack_running              (false),
     m_jack_master               (false),
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_jack_frame_rate           (0),
     m_toggle_jack               (false),
     m_jack_stop_tick            (0),
-#endif
     m_ppqn                      (0),
     m_beats_per_measure         (bpmeasure),    // m_bp_measure
     m_beat_width                (beatwidth),    // m_bw
@@ -552,8 +544,6 @@ jack_assistant::~jack_assistant ()
      * Anything to do?  Call deinit()?
      */
 }
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 /**
  * \setter parent().toggle_song_start_mode()
@@ -584,8 +574,6 @@ jack_assistant::set_start_from_perfedit (bool start)
 {
     parent().start_from_perfedit(start);
 }
-
-#endif
 
 /**
  *  Common-code for console messages.  Adds markers and a newline.
@@ -741,16 +729,12 @@ jack_assistant::init ()
             m_jack_master = false;
             return error_message("JACK server not running, JACK sync disabled");
         }
-#ifdef SEQ64_STAZED_JACK_SUPPORT
         else
             m_jack_frame_rate = jack_get_sample_rate(m_jack_client);
-#endif
 
         get_jack_client_info();
         jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
         apiprint("jack_on_shutdown", "sync");
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
 
         /*
          * Stazed JACK support uses only the jack_transport_callback().  Makes
@@ -762,32 +746,6 @@ jack_assistant::init ()
             m_jack_client, jack_transport_callback, (void *) this
         );
         apiprint("jack_set_process_callback", "sync");
-#else
-        int jackcode = jack_set_sync_callback
-        (
-            m_jack_client, jack_sync_callback, (void *) this
-        );
-
-        apiprint("jack_set_sync_callback", "sync");
-        if (jackcode != 0)
-        {
-            m_jack_running = false;
-            m_jack_master = false;
-            return error_message("jack_set_sync_callback() failed");
-        }
-
-        /*
-         * Although they say this code is needed to get JACK transport to work
-         * properly, seq24 doesn't use this.  But it doesn't hurt to set it up.
-         * The Stazed code does use it.
-         */
-
-        jackcode = jack_set_process_callback        /* see notes in banner  */
-        (
-            m_jack_client, jack_transport_callback, NULL
-        );
-        apiprint("jack_set_process_callback", "sync");
-#endif
         if (jackcode != 0)
         {
             m_jack_running = false;
@@ -903,18 +861,9 @@ jack_assistant::deinit ()
     if (m_jack_running)
     {
         m_jack_running = false;
-#ifdef SEQ64_STAZED_JACK_SUPPORT
         m_jack_master = false;
         if (jack_release_timebase(m_jack_client) != 0)
             (void) error_message("Cannot release JACK timebase");
-#else
-        if (m_jack_master)
-        {
-            m_jack_master = false;
-            if (jack_release_timebase(m_jack_client) != 0)
-                (void) error_message("Cannot release JACK timebase");
-        }
-#endif
 
         /*
          * New:  Simply to be symmetric with the startup flow.  Not yet sure
@@ -1079,8 +1028,6 @@ jack_assistant::stop ()
  *      then this parameter is set to 0 before being used.
  */
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
 void
 jack_assistant::position (bool songmode, midipulse tick)
 {
@@ -1111,37 +1058,6 @@ jack_assistant::position (bool songmode, midipulse tick)
 #endif  // SEQ64_JACK_SUPPORT
 
 }
-
-#else   // SEQ64_STAZED_JACK_SUPPORT
-
-void
-jack_assistant::position (bool to_left_tick, midipulse tick)
-{
-    if (m_jack_running)
-    {
-        if (is_null_midipulse(tick))
-        {
-            /*
-             * This seems to be needed to prevent klick from aborting.
-             * Otherwise, it has no effect on klick.
-             */
-
-            tick = 0;
-            if (to_left_tick)
-                tick = parent().get_left_tick();
-
-            set_position(tick);                 // doesn't quite work
-        }
-        else
-        {
-            apiprint("jack_transport_locate", "sync");
-            if (jack_transport_locate(m_jack_client, 0) != 0)
-                (void) info_message("jack_transport_locate() failed");
-        }
-    }
-}
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Provides the code that was effectively commented out in the
@@ -1522,11 +1438,7 @@ jack_assistant::output (jack_scratchpad & pad)
                  * Not sure that either of these lines have any effect!
                  */
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
                 m_jack_parent.off_sequences();
-#else
-                m_jack_parent.reset_sequences();            /* seq24 */
-#endif
                 m_jack_parent.set_orig_ticks(long(pad.js_current_tick));
             }
         }
@@ -1917,8 +1829,6 @@ jack_shutdown_callback (void * arg)
     }
 }
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
 /**
  * \warning
  *      Currently valgrind flags j->client() as uninitialized.
@@ -1946,8 +1856,6 @@ get_current_jack_position (void * arg)
         return 0;
     }
 }
-
-#endif      // SEQ64_STAZED_JACK_SUPPORT
 
 }           // namespace seq64
 

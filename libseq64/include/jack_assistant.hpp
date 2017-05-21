@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2017-03-23
+ * \updates       2017-05-21
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -95,14 +95,10 @@ public:
     bool js_init_clock;                 /**< We now have a good JACK lock.  */
     bool js_looping;                    /**< seqedit loop button is active. */
     bool js_playback_mode;              /**< Song mode (versus live mode).  */
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     double js_ticks_converted;          /**< Keeps track of ...?            */
     double js_ticks_delta;              /**< Minor difference in tick.      */
-#endif
     double js_ticks_converted_last;     /**< Keeps track of position?       */
-#if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
     long js_delta_tick_frac;            /**< More precision for seq24 0.9.3 */
-#endif
 
 };
 
@@ -153,9 +149,7 @@ class jack_assistant
         void * arg
     );
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     friend long get_current_jack_position (void * arg);
-#endif
 
 #ifdef SEQ64_JACK_SESSION
     friend void jack_session_callback (jack_session_event_t * ev, void * arg);
@@ -265,8 +259,6 @@ private:
 
     bool m_jack_master;
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     /**
      *  Holds the current frame rate.  Just in case.  QJackCtl does not always
      *  set pos.frame_rate, so we get garbage and some strange BBT
@@ -294,8 +286,6 @@ private:
      */
 
     bool m_follow_transport;
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
 
     /**
      *  Holds the global PPQN value for the Sequencer64 session.  It is used
@@ -517,8 +507,6 @@ public:
         return m_jack_pos;
     }
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     /**
      * \setter m_toggle_jack
      */
@@ -604,8 +592,6 @@ public:
     bool toggle_song_start_mode ();
     bool song_start_mode () const;
     void set_start_from_perfedit (bool start);
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 #ifdef PLATFORM_DEBUG
 
@@ -716,9 +702,7 @@ extern jack_client_t * create_jack_client
 );
 extern void show_jack_statuses (unsigned bits);
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
 extern long get_current_jack_position (void * arg);
-#endif
 
 #ifdef SEQ64_JACK_SESSION
 extern void jack_session_callback (jack_session_event_t * ev, void * arg);

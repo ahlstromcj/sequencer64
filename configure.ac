@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-05-13
+dnl \update        2017-05-21
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -568,22 +568,9 @@ else
     AC_MSG_WARN([Statistics gathering not enabled.]);
 fi
 
-dnl Support for using the stazed JACK support.  Now enabled by default.
-dnl It works well, no complaints recently by user layk.  Also enables stazed
-dnl transport features, tightly coupled to stazed JACK support.
+dnl Support for using the stazed JACK support is now permanent.
 
-AC_ARG_ENABLE(seq32jack,
-    [AS_HELP_STRING(--disable-seq32jack, [Disable JACK and Seq32 JACK support])],
-    [seq32jack=$enableval],
-    [seq32jack=yes])
-
-if test "$seq32jack" != "no"; then
-    AC_DEFINE(STAZED_JACK_SUPPORT, 1, [Define to enable Seq32 JACK support])
-    AC_DEFINE(JACK_SUPPORT, 1, [Define to enable JACK driver])
-    AC_MSG_RESULT([Seq32 JACK support enabled.]);
-else
-    AC_MSG_WARN([Seq32 JACK support not enabled.]);
-fi
+AC_MSG_RESULT([Seq32 JACK support permanently enabled.]);
 
 dnl Support for using the stazed LFO window support.  Now enabled by default.
 
@@ -655,7 +642,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-05-13"
+#define VERSION_DATE_SHORT "2017-05-21"
 #define VERSION "0.90.6"
 
 )

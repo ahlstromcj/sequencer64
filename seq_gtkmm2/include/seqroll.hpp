@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-13
+ * \updates       2017-05-21
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -365,10 +365,9 @@ private:
 
 #endif
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     /**
-     *  TBD.
+     *  Indicates if we are going to follow the transport in the GUI.
+     *  Progress follow?
      */
 
     bool m_transport_follow;
@@ -378,8 +377,6 @@ private:
      */
 
     bool m_trans_button_press;
-
-#endif
 
     /**
      *  Holds the value of the musical background sequence that is shown in

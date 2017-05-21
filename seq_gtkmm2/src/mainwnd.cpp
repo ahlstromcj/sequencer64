@@ -981,8 +981,6 @@ mainwnd::timer_callback ()
 
 #endif  // SEQ64_SHOW_JACK_STATUS
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     /*
      * For seqroll keybinding, this is needed here instead of perfedit
      * timeout(), since perfedit may not be open all the time.
@@ -990,8 +988,6 @@ mainwnd::timer_callback ()
 
     if (m_perf_edit->get_toggle_jack() != perf().get_toggle_jack())
         m_perf_edit->toggle_jack();
-
-#endif
 
     if (perf().is_running() != m_is_running)
     {

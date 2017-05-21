@@ -179,7 +179,6 @@ class perform
         void * arg
     );
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     friend int jack_transport_callback (jack_nframes_t nframes, void * arg);
     friend void jack_shutdown (void * arg);
     friend void jack_timebase_callback
@@ -188,7 +187,6 @@ class perform
         jack_position_t * pos, int new_pos, void * arg
     );
     friend long get_current_jack_position (void * arg);
-#endif
 
 #endif  // SEQ64_JACK_SUPPORT
 
@@ -254,8 +252,6 @@ private:
 
     bool m_song_start_mode;
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     /**
      *  Indicates that, no matter what the current Song/Live setting, the
      *  playback was started from the perfedit window.
@@ -286,8 +282,6 @@ private:
      */
 
     ff_rw_button_t m_FF_RW_button_type;
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
 
     /**
      *  Mute group support.  This value determines whether a particular track
@@ -1271,8 +1265,6 @@ public:
             m_notify.push_back(pfcb);
     }
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     void toggle_jack_mode ()
     {
         m_jack_asst.toggle_jack_mode();
@@ -1401,8 +1393,6 @@ public:
     }
 
     void reposition (midipulse tick);
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 public:
 

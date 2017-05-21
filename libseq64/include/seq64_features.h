@@ -125,8 +125,6 @@
  */
 
 /**
- *  EXPERIMENTAL
- *
  *  Provides support for up to a 3 x 2 array of mainwids.
  */
 

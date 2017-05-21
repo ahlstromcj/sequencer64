@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-20
+ * \updates       2017-05-21
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -253,6 +253,13 @@ private:
     mainwid * m_main_wid;
 
     /**
+     *  The spin/adjustment controls for the screenset value.
+     */
+
+    Gtk::Adjustment * m_adjust_ss;      /**< Screenset adjustment.          */
+    Gtk::SpinButton * m_spinbutton_ss;  /**< Screenset adjustment.          */
+
+    /**
      *  Is this the bar at the top that shows moving squares, also known as
      *  "pills"?  Why yes, it is.
      */
@@ -351,13 +358,6 @@ private:
 #ifdef SEQ64_MAINWND_TAP_BUTTON
     Gtk::Button * m_button_tap;         /**< Tap-for-tempo button.          */
 #endif
-
-    /**
-     *  The spin/adjustment controls for the screenset value.
-     */
-
-    Gtk::Adjustment * m_adjust_ss;      /**< Screenset adjustment.          */
-    Gtk::SpinButton * m_spinbutton_ss;  /**< Screenset adjustment.          */
 
     /**
      *  The spin/adjustment controls for the load offset value.
@@ -496,9 +496,6 @@ private:
 #endif
     }
 
-    void adj_callback_ss ();
-    void adj_callback_bpm ();
-
 #if defined SEQ64_MULTI_MAINWID
 
     void adj_callback_wid (int mainwid_block);
@@ -521,11 +518,16 @@ private:
         return m_mainwid_independent || block == 0;
     }
 
+#else
+
+    void adj_callback_ss ();
+
 #endif
 
+    void adj_callback_bpm ();
     void edit_callback_notepad ();
     bool timer_callback ();
-    bool update_markers (midipulse tick);
+    void update_markers (midipulse tick);
     void reset ();
     void set_screenset (int screenset, bool setperf = false);
     void set_play_image (bool isrunning);
@@ -575,10 +577,14 @@ private:
 
     int spinner_max () const
     {
+#if defined SEQ64_MULTI_MAINWID
         if (independent())
             return perf().max_sets() - 1;
         else
             return perf().max_sets() - m_mainwid_count;
+#else
+        return perf().max_sets() - 1;
+#endif
     }
 
 #ifdef SEQ64_STAZED_TRANSPOSE

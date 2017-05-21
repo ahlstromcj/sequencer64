@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-05-16
+ * \updates       2017-05-21
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -302,6 +302,7 @@ static const char * const s_help_4 =
 "                            makes multi-windows use adjacent set numbers.\n"
 "                            The upper left mainwid is always the active one.\n"
 "                            'flag' is either 'true' or 'false', or 1 or 0.\n"
+"              wid=r,c,f     Combins the previous 3 options; strict format.\n"
 "\n"
 "The daemonize option works only in the CLI build. The set options work only\n"
 "in the 'rtmidi' GUI build.\n"
@@ -483,6 +484,7 @@ process_o_options (int argc, char * argv [])
                                 result = true;
                                 usr().option_logfile(arg);
                             }
+#if defined SEQ64_MULTI_MAINWID
                             else if (optionname == "set-rows")
                             {
                                 result = true;
@@ -495,16 +497,38 @@ process_o_options (int argc, char * argv [])
                             }
                             else if (optionname == "set-sync")
                             {
-                                bool on = arg == "true";
-                                if (! on)
-                                    on = arg == "1";
-
-                                if (! on)
-                                    on = arg == "yes";
+                                bool nosync = arg == "false" ||
+                                    arg == "0" || arg == "no";
 
                                 result = true;
-                                usr().block_independence(! on); /* tricky */
+                                usr().block_independence(nosync);   /* tricky */
                             }
+                            else if (optionname == "wid")
+                            {
+                                /*
+                                 * The arg should be of the form "r,c[,b]",
+                                 * stricty. This is a short-cut.
+                                 */
+
+                                if (arg.length() >= 3)
+                                {
+                                    int rows = atoi(arg.c_str());
+                                    int cols = atoi(arg.substr(2, 1).c_str());
+                                    char flag = arg[4];
+                                    result = true;
+                                    if (rows > 0)
+                                        usr().block_rows(rows);
+
+                                    if (cols > 0)
+                                        usr().block_columns(cols);
+
+                                    bool nosync = flag == 'f' ||
+                                        flag == '0' || flag == 'n';
+
+                                    usr().block_independence(nosync);
+                                }
+                            }
+#endif  // SEQ64_MULTI_MAINWID
                         }
                         if (! result)
                         {

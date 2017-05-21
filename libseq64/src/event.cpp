@@ -136,7 +136,6 @@ event::event (const event & rhs)
     m_status        (rhs.m_status),
     m_channel       (rhs.m_channel),
     m_data          (),                     /* a two-element array      */
-/// m_sysex         (),                     /* copies a vector of data  */
     m_sysex         (rhs.m_sysex),          /* copies a vector of data  */
     m_sysex_size    (rhs.m_sysex_size),
     m_linked        (nullptr),              /* pointer, not yet handled */

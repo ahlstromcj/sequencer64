@@ -4477,7 +4477,6 @@ sequence::off_playing_notes ()
             e.set_status(EVENT_NOTE_OFF);
             e.set_data(x, 0);
             m_masterbus->play(m_bus, &e, m_midi_channel);
-//          --m_playing_notes[x];
             m_playing_notes[x]--;
         }
     }

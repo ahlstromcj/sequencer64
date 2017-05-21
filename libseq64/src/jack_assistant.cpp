@@ -93,6 +93,8 @@
 #undef  SEQ64_USE_DEBUG_OUTPUT          /* define for experiments only  */
 #define USE_JACK_BBT_OFFSET             /* another EXPERIMENT           */
 
+#undef  USE_MODIFIABLE_JACK_TEMPO       // EXPERIMENTAL EXPERIMENTAL EXPERIMENTAL
+
 #ifdef SEQ64_JACK_SUPPORT
 
 /*
@@ -234,8 +236,25 @@ jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
              * marker.
              */
 
-            jack_transport_state_t s =
-                jack_transport_query(j->client(), nullptr);
+#ifdef USE_MODIFIABLE_JACK_TEMPO                    // EXPERIMENTAL
+            jack_position_t pos;
+            jack_transport_state_t s = jack_transport_query(j->client(), &pos);
+            if (! j->m_jack_master)
+            {
+                if (pos.beats_per_minute > 1.0)
+                {
+                    static double s_old_bpm = 0.0;
+                    if (pos.beats_per_minute != s_old_bpm)
+                    {
+                        s_old_bpm = pos.beats_per_minute;
+                        infoprintf("BPM = %f\n", pos.beats_per_minute);
+                        j->parent().set_beats_per_minute(pos.beats_per_minute);
+                    }
+                }
+            }
+#else
+            jack_transport_state_t s = jack_transport_query(j->client(), nullptr);
+#endif
 
             if (s == JackTransportRolling || s == JackTransportStarting)
             {
@@ -971,6 +990,45 @@ jack_assistant::stop ()
 }
 
 /**
+ * \setter m_beats_per_minute
+ *      For the future, changing the BPM (beats/minute) internally.  We
+ *      should consider adding validation.  However,
+ *      perform::set_beats_per_minute() does validate already.
+ *
+ * \param bpminute
+ *      Provides the beats/minute value to set.
+ */
+
+void
+jack_assistant::set_beats_per_minute (midibpm bpminute)
+{
+    if (bpminute != m_beats_per_minute)
+    {
+        m_beats_per_minute = bpminute;
+
+        // EXPERIMENTAL
+
+#ifdef USE_MODIFIABLE_JACK_TEMPO_XXX                // EXPERIMENTAL
+
+        if (m_jack_master)
+        {
+            jack_position_t pos;
+            jack_transport_state_t s = jack_transport_query(m_jack_client, &pos);
+            jack_transport_state_t s = jack_transport_query(m_jack_client, &m_jack_pos);
+            int jackcode = jack_transport_reposition(m_jack_client, &pos);
+            apiprint("jack_transport_reposition", "sync");
+            if (jackcode != 0)
+            {
+                errprint("jack_assistant::set_position(): bad position structure");
+            }
+        }
+
+#endif
+
+    }
+}
+
+/**
  *  If JACK is supported and running, sets the position of the transport to
  *  the new frame number, frame 0.  This new position takes effect in two
  *  process cycles. If there are slow-sync clients and the transport is
@@ -1636,6 +1694,10 @@ jack_assistant::client () const
 }
 
 #endif  // PLATFORM_DEBUG
+
+/*
+ *  JACK callbacks.
+ */
 
 /**
  *  The JACK timebase function defined here sets the JACK position structure.

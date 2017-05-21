@@ -428,20 +428,7 @@ public:
         return m_beats_per_minute;
     }
 
-    /**
-     * \setter m_beats_per_minute
-     *      For the future, changing the BPM (beats/minute) internally.  We
-     *      should consider adding validation.  However,
-     *      perform::set_beats_per_minute() does validate already.
-     *
-     * \param bpminute
-     *      Provides the beats/minute value to set.
-     */
-
-    void set_beats_per_minute (midibpm bpminute)
-    {
-        m_beats_per_minute = bpminute;
-    }
+    void set_beats_per_minute (midibpm bpminute);
 
     /**
      * \getter m_jack_transport_state

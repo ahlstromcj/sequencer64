@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2017-05-21
+ * \updates       2017-05-22
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -41,7 +41,12 @@
  *
  *  -   JackPositionBBT = 0x10. Bar, Beat, Tick.  The fields managed are bar,
  *      beat, tick, bar_start_tick, beats_per_bar, beat_type, ticks_per_beat,
- *      beats_per_minute.
+ *      beats_per_minute.  Applications that support JackPositionBBT are
+ *      encouraged to also fill the JackBBTFrameOffset.  Note that the BPM is
+ *      quantized to block-size. This means when the tempo is not constant
+ *      within this block, the BPM value should adapted to compensate for
+ *      this. This is different from most fields in the struct, which specify
+ *      the value at the beginning of the block, rather than an average.
  *  -   JackPositionTimecode = 0x20. External timecode.  The fields managed
  *      are frame_time and next_time.
  *  -   JackBBTFrameOffset = 0x40. Offset of BBT information. The sole field
@@ -711,7 +716,7 @@ jack_assistant::get_jack_client_info ()
  *      then seq24 will apparently follow it).
  *
  *  STAZED:
- *      The call to jack_timebase_callback() to supply jack with BBT, etc would
+ *      The call to jack_timebase_callback() to supply jack with BBT, etc. would
  *      occasionally fail when the *pos information had zero or some garbage in
  *      the pos.frame_rate variable. This would occur when there was a rapid
  *      change of frame position by another client... i.e.  qjackctl.  From the
@@ -870,6 +875,10 @@ jack_assistant::init ()
 /**
  *  Tears down the JACK infrastructure.
  *
+ * \todo
+ *      Note that we still need a way to call jack_release_timebase()  when
+ *      the user turns off the "JACK Master" status of Sequencer64.
+ *
  * \return
  *      Returns the value of m_jack_running, which should be false.
  */
@@ -880,9 +889,13 @@ jack_assistant::deinit ()
     if (m_jack_running)
     {
         m_jack_running = false;
-        m_jack_master = false;
-        if (jack_release_timebase(m_jack_client) != 0)
-            (void) error_message("Cannot release JACK timebase");
+        if (m_jack_master)
+        {
+            if (jack_release_timebase(m_jack_client) != 0)
+                (void) error_message("Cannot release JACK timebase");
+
+            m_jack_master = false;
+        }
 
         /*
          * New:  Simply to be symmetric with the startup flow.  Not yet sure
@@ -1712,7 +1725,7 @@ jack_assistant::client () const
  *  the JACK position is moved (new_pos == true).  If this is true, and the
  *  JackPositionBBT bit is off in pos->valid, then the new BBT value is set.
  *
- *  The seconds set of differences are in the "else" clause.  In the new code,
+ *  The second set of differences are in the "else" clause.  In the new code,
  *  it is very simple: calculate the new tick value, back it off by the number
  *  of ticks in a beat, and perhaps go to the first beat of the next bar.
  *
@@ -1736,26 +1749,23 @@ jack_assistant::client () const
  *          -   New code:  Calculations are made by increments and decrements
  *              in a while loop.
  *
- *  Stazed:
+ * Stazed:
  *
- *      The call to jack_timebase_callback() to supply JACK with BBT, etc. would
- *      occasionally fail when the pos information had zero or some garbage in
- *      the pos.frame_rate variable. This would occur when there was a rapid
- *      change of frame position by another client... i.e. qjackctl.  From the
- *      JACK API:
+ *  The call to jack_timebase_callback() to supply JACK with BBT, etc. would
+ *  occasionally fail when the pos information had zero or some garbage in the
+ *  pos.frame_rate variable. This would occur when there was a rapid change of
+ *  frame position by another client... i.e. qjackctl.  From the JACK API:
  *
- *          pos	address of the position structure for the next cycle;
- *          pos->frame will be its frame number. If new_pos is FALSE, this
- *          structure contains extended position information from the current
- *          cycle.  If TRUE, it contains whatever was set by the requester.
- *          The timebase_callback's task is to update the extended information
- *          here."
+ *      pos	address of the position structure for the next cycle; pos->frame
+ *      will be its frame number. If new_pos is FALSE, this structure contains
+ *      extended position information from the current cycle.  If TRUE, it
+ *      contains whatever was set by the requester.  The timebase_callback's
+ *      task is to update the extended information here."
  *
- *          The "If TRUE" line seems to be the issue. It seems that qjackctl
- *          does not always set pos.frame_rate so we get garbage and some
- *          strange BBT calculations that display in qjackctl. So we need to
- *          set it here and just use m_jack_frame_rate for calculations instead
- *          of pos.frame_rate.
+ *  The "If TRUE" line seems to be the issue. It seems that qjackctl does not
+ *  always set pos.frame_rate so we get garbage and some strange BBT
+ *  calculations that display in qjackctl. So we need to set it here and just
+ *  use m_jack_frame_rate for calculations instead of pos.frame_rate.
  *
  * \param state
  *      Indicates the current state of JACK transport.
@@ -1784,7 +1794,7 @@ jack_assistant::client () const
 void
 jack_timebase_callback
 (
-    jack_transport_state_t state,
+    jack_transport_state_t state,           // currently unused !!!
     jack_nframes_t nframes,
     jack_position_t * pos,
     int new_pos,
@@ -1798,8 +1808,7 @@ jack_timebase_callback
     }
 
     /*
-     * @change ca 2016-02-09
-     *      Code from sooperlooper that we left out!
+     *  Code from sooperlooper that we left out!
      */
 
     jack_assistant * jack = (jack_assistant *)(arg);
@@ -1810,16 +1819,22 @@ jack_timebase_callback
 
     long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
     long ticks_per_minute = long(pos->beats_per_minute * pos->ticks_per_beat);
+    double framerate = double(pos->frame_rate * 60.0);
+
+    /**
+     * \todo
+     *      Shouldn't we process the first clause ONLY if new_pos is true?
+     */
+
     if (new_pos || ! (pos->valid & JackPositionBBT))    // try the NEW code
     {
-        double minute = pos->frame / (double(pos->frame_rate * 60.0));
+        double minute = pos->frame / framerate;
         long abs_tick = long(minute * ticks_per_minute);
         long abs_beat = 0;
 
         /*
-         * @change ca 2016-02-09
-         *      Handle 0 values of pos->ticks_per_beat and pos->beats_per_bar
-         *      that occur at startup as JACK Master.
+         *  Handle 0 values of pos->ticks_per_beat and pos->beats_per_bar that
+         *  occur at startup as JACK Master.
          */
 
         if (pos->ticks_per_beat > 0)                    // 0 at startup!
@@ -1837,13 +1852,15 @@ jack_timebase_callback
     }
     else
     {
+        infoprint("old pos");                           // DEBUGGING
+
         /*
          * Try this code, which computes the BBT (beats/bars/ticks) based on
          * the previous period.  It works!  "klick -j -P" follows Sequencer64
          * when the latter is JACK Master!  Note that the tick is delta'ed.
          */
 
-        int delta_tick = int(nframes * ticks_per_minute / (pos->frame_rate * 60));
+        int delta_tick = int(nframes * ticks_per_minute / framerate);
         pos->tick += delta_tick;
         while (pos->tick >= pos->ticks_per_beat)
         {

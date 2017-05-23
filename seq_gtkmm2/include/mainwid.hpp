@@ -133,8 +133,8 @@ private:
     int m_seqarea_y;            /**< Roughly with height of the main window.    */
     int m_seqarea_seq_x;        /**< To be determined.                          */
     int m_seqarea_seq_y;        /**< To be determined.                          */
-    int m_mainwid_x;            /**< To be determined.                          */
-    int m_mainwid_y;            /**< To be determined.                          */
+    int m_mainwid_x;            /**< Horizontal size of the ain window grid.    */
+    int m_mainwid_y;            /**< Vertical size of the main window grid.     */
     int m_mainwid_border;       /**< Main-window border, unused setting.        */
     int m_mainwid_spacing;      /**< Main-window spacing, unused setting.       */
     int m_text_size_x;          /**< Text width, varies with font in use.       */

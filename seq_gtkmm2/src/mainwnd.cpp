@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-16
+ * \updates       2017-05-22
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -304,7 +304,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      */
 
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq64_xpm));
-#if ! defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+    set_resizable(! usr().is_default_mainwid_size());
+#else
     set_resizable(false);
 #endif
     perf().enregister(this);                        /* register for notify  */
@@ -637,39 +639,43 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      * Pattern panel scrollable wrapper
      */
 
-    Gtk::Layout * mainwid_wrapper = new Gtk::Layout(*m_hadjust, *m_vadjust);
-    mainwid_wrapper->add(*m_main_wid);
-    mainwid_wrapper->set_size(m_main_wid->m_mainwid_x,m_main_wid->m_mainwid_y);
+    Gtk::VBox * mainwid_hscroll_wrapper = nullptr;
+    if (! usr().is_default_mainwid_size())
+    {
+        Gtk::Layout * mainwid_wrapper = new Gtk::Layout(*m_hadjust, *m_vadjust);
+        mainwid_wrapper->add(*m_main_wid);
+        mainwid_wrapper->set_size(m_main_wid->m_mainwid_x, m_main_wid->m_mainwid_y);
 
-    Gtk::HBox * mainwid_vscroll_wrapper = new Gtk::HBox();
-    mainwid_vscroll_wrapper->set_spacing(5);
-    mainwid_vscroll_wrapper->pack_start
-    (
-        *mainwid_wrapper,
-        Gtk::PACK_EXPAND_WIDGET
-    );
-    mainwid_vscroll_wrapper->pack_start(*m_vscroll, false, false);
+        Gtk::HBox * mainwid_vscroll_wrapper = new Gtk::HBox();
+        mainwid_vscroll_wrapper->set_spacing(5);
+        mainwid_vscroll_wrapper->pack_start
+        (
+            *mainwid_wrapper,
+            Gtk::PACK_EXPAND_WIDGET
+        );
+        mainwid_vscroll_wrapper->pack_start(*m_vscroll, false, false);
 
-    Gtk::VBox * mainwid_hscroll_wrapper = new Gtk::VBox();
-    mainwid_hscroll_wrapper->set_spacing(5);
-    mainwid_hscroll_wrapper->pack_start
-    (
-        *mainwid_vscroll_wrapper, Gtk::PACK_EXPAND_WIDGET
-    );
-    mainwid_hscroll_wrapper->pack_start(*m_hscroll, false, false);
+        Gtk::VBox * mainwid_hscroll_wrapper = new Gtk::VBox();
+        mainwid_hscroll_wrapper->set_spacing(5);
+        mainwid_hscroll_wrapper->pack_start
+        (
+            *mainwid_vscroll_wrapper, Gtk::PACK_EXPAND_WIDGET
+        );
+        mainwid_hscroll_wrapper->pack_start(*m_hscroll, false, false);
 
-    m_main_wid->signal_scroll_event().connect
-    (
-        mem_fun(*this, &mainwnd::on_scroll_event)
-    );
-    m_hadjust->signal_changed().connect
-    (
-        mem_fun(*this, &mainwnd::on_scrollbar_resize)
-    );
-    m_vadjust->signal_changed().connect
-    (
-        mem_fun(*this, &mainwnd::on_scrollbar_resize)
-    );
+        m_main_wid->signal_scroll_event().connect
+        (
+            mem_fun(*this, &mainwnd::on_scroll_event)
+        );
+        m_hadjust->signal_changed().connect
+        (
+            mem_fun(*this, &mainwnd::on_scrollbar_resize)
+        );
+        m_vadjust->signal_changed().connect
+        (
+            mem_fun(*this, &mainwnd::on_scrollbar_resize)
+        );
+    }
 
 #endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
@@ -686,8 +692,16 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     contentvbox->pack_start(*tophbox, Gtk::PACK_SHRINK);
 
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
-    contentvbox->pack_start(*mainwid_hscroll_wrapper, true, true);
-    contentvbox->pack_start(*bottomhbox, false, false);
+    if (! usr().is_default_mainwid_size())
+    {
+        contentvbox->pack_start(*mainwid_hscroll_wrapper, true, true);
+        contentvbox->pack_start(*bottomhbox, false, false);
+    }
+    else
+    {
+        contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
+        contentvbox->pack_start(*bottomhbox, Gtk::PACK_SHRINK);
+    }
 #else
     contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
     contentvbox->pack_start(*bottomhbox, Gtk::PACK_SHRINK);
@@ -725,14 +739,17 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      * and spacings
      */
 
-    resize
-    (
-        m_main_wid->m_mainwid_x + 20,
-        tophbox->get_allocation().get_height() +
-        bottomhbox->get_allocation().get_height() +
-        m_menubar->get_allocation().get_height() +
-        m_main_wid->m_mainwid_y + 40
-    );
+    if (! usr().is_default_mainwid_size())
+    {
+        resize
+        (
+            m_main_wid->m_mainwid_x + 20,
+            tophbox->get_allocation().get_height() +
+                bottomhbox->get_allocation().get_height() +
+                m_menubar->get_allocation().get_height() +
+                m_main_wid->m_mainwid_y + 40
+        );
+    }
 
 #endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
@@ -963,6 +980,10 @@ mainwnd::timer_callback ()
     if (rc().with_jack_midi())
         label = "Native";
 #endif
+
+    /*
+     * We should make this a member and optimize the change as well.
+     */
 
     Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>(m_button_jack->get_child()));
     if (not_nullptr(lblptr))

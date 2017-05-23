@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2017-05-22
+ * \updates       2017-05-23
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -81,6 +81,14 @@
  *  field (bbt_offset).  We are experimenting with this for now; there's not a
  *  lot of material out there on the Web.
  *
+ * JACK clients and BPM:
+ *
+ *  Does a JACK client need to be JACK Master before it can foist BPM changes on
+ *  other clients?  What are the conventions?
+ *
+ *      -   https://linuxmusicians.com/viewtopic.php?t=14913&start=15
+ *      -   http://jackaudio.org/api/transport-design.html
+ *
  *  Lastly, one might be curious as to the origin of the name
  *  "jack_assistant".  Well, it is simply so this class can be called
  *  "jack_ass" for short :-D.
@@ -97,8 +105,6 @@
 
 #undef  SEQ64_USE_DEBUG_OUTPUT          /* define for experiments only  */
 #define USE_JACK_BBT_OFFSET             /* another EXPERIMENT           */
-
-#undef  USE_MODIFIABLE_JACK_TEMPO       // EXPERIMENTAL EXPERIMENTAL EXPERIMENTAL
 
 #ifdef SEQ64_JACK_SUPPORT
 
@@ -246,7 +252,7 @@ jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
             jack_transport_state_t s = jack_transport_query(j->client(), &pos);
             if (! j->m_jack_master)
             {
-                if (pos.beats_per_minute > 1.0)
+                if (pos.beats_per_minute > 1.0)     /* a sanity check   */
                 {
                     static double s_old_bpm = 0.0;
                     if (pos.beats_per_minute != s_old_bpm)
@@ -1021,19 +1027,19 @@ jack_assistant::set_beats_per_minute (midibpm bpminute)
 
         // EXPERIMENTAL
 
-#ifdef USE_MODIFIABLE_JACK_TEMPO_XXX                // EXPERIMENTAL
+#ifdef USE_MODIFIABLE_JACK_TEMPO    // _XXX                // EXPERIMENTAL
 
         if (m_jack_master)
         {
-            jack_position_t pos;
-            jack_transport_state_t s = jack_transport_query(m_jack_client, &pos);
-            jack_transport_state_t s = jack_transport_query(m_jack_client, &m_jack_pos);
-            int jackcode = jack_transport_reposition(m_jack_client, &pos);
-            apiprint("jack_transport_reposition", "sync");
+            /*jack_transport_state_t s = */ (void) jack_transport_query
+            (
+                m_jack_client, &m_jack_pos
+            );
+            m_jack_pos.beats_per_minute = bpminute;
+            int jackcode = jack_transport_reposition(m_jack_client, &m_jack_pos);
+            apiprint("jack_transport_reposition", "set bpm");
             if (jackcode != 0)
-            {
-                errprint("jack_assistant::set_position(): bad position structure");
-            }
+                errprint("jack_transport_reposition(): bad position structure");
         }
 
 #endif
@@ -1469,7 +1475,25 @@ jack_assistant::output (jack_scratchpad & pad)
         m_jack_pos.beats_per_bar = m_beats_per_measure;
         m_jack_pos.beat_type = m_beat_width;
         m_jack_pos.ticks_per_beat = m_ppqn * 10;
-        m_jack_pos.beats_per_minute = parent().get_beats_per_minute();
+
+        /*
+         * MAYBE USE set_beats_per_minute() here???????????????
+         * Let's try it!
+         */
+
+#ifdef USE_MODIFIABLE_JACK_TEMPO       // EXPERIMENTAL EXPERIMENTAL EXPERIMENTAL
+
+        /*
+         *  The macroed out code below keeps resetting the user's new BPM.
+         *  We want to force a change in BPM only if we are JACK Master.
+         */
+
+        if (m_jack_master)
+            m_jack_pos.beats_per_minute = parent().get_beats_per_minute();
+#else
+        parent().set_beats_per_minute(m_jack_pos.beats_per_minute);
+#endif
+
         if
         (
             m_jack_transport_state_last == JackTransportStarting &&     // OR?
@@ -1852,8 +1876,6 @@ jack_timebase_callback
     }
     else
     {
-        infoprint("old pos");                           // DEBUGGING
-
         /*
          * Try this code, which computes the BBT (beats/bars/ticks) based on
          * the previous period.  It works!  "klick -j -P" follows Sequencer64
@@ -1872,6 +1894,17 @@ jack_timebase_callback
                 pos->bar_start_tick += ticks_per_bar;
             }
         }
+
+        /*
+         * CAN WE SET pos->beats_per_minute HERE???????
+         */
+
+#ifdef USE_MODIFIABLE_JACK_TEMPO       // EXPERIMENTAL EXPERIMENTAL EXPERIMENTAL
+        if (jack->m_jack_master)
+        {
+            pos->beats_per_minute = jack->parent().get_beats_per_minute();
+        }
+#endif
     }
 #ifdef USE_JACK_BBT_OFFSET
     pos->bbt_offset = 0;

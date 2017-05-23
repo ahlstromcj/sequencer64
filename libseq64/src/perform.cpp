@@ -1420,26 +1420,35 @@ perform::set_beats_per_minute (midibpm bpm)
     else if (bpm > SEQ64_MAXIMUM_BPM)
         bpm = SEQ64_MAXIMUM_BPM;
 
+    if (bpm != m_bpm)
+    {
+
 #ifdef SEQ64_JACK_SUPPORT
 
-    /*
-     * This logic matches the original seq24, but is it really correct?
-     */
+        /*
+         * This logic matches the original seq24, but is it really correct?
+         */
 
-    bool ok = ! (is_jack_running() && m_running);
-    if (ok)
-        m_jack_asst.set_beats_per_minute(bpm);
+#ifdef USE_MODIFIABLE_JACK_TEMPO                    // EXPERIMENTAL
+        bool ok = is_jack_running();
+#else
+        bool ok = ! (is_jack_running() && m_running);
+#endif
+
+        if (ok)
+            m_jack_asst.set_beats_per_minute(bpm);
 #else
 
-    bool ok = ! m_running;
+        bool ok = ! m_running;
 
 #endif
 
-    if (ok)
-    {
-        master_bus().set_beats_per_minute(bpm);
-        m_us_per_quarter_note = tempo_us_from_bpm(bpm);
-        m_bpm = bpm;
+        if (ok)
+        {
+            master_bus().set_beats_per_minute(bpm);
+            m_us_per_quarter_note = tempo_us_from_bpm(bpm);
+            m_bpm = bpm;
+        }
     }
 }
 

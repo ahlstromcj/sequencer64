@@ -2617,16 +2617,12 @@ seqedit::timeout ()
 
 #else
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     /*
      * This is needed only when in JACK mode, we think.  But progress
      * is still followed in ALSA mode.
      */
 
     if (perf().is_running() && perf().get_follow_transport())
-#endif  // SEQ64_STAZED_JACK_SUPPORT
-
         m_seqroll_wid->follow_progress();       /* keep up with progress    */
 
 #endif  // SEQ64_STAZED_EXPAND_RECORD

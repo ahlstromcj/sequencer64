@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.91.0 and above
 Chris Ahlstrom
-2015-09-10 to 2017-05-13
+2015-09-10 to 2017-05-21
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -178,14 +178,13 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         ability to select notes and transpose them individually.  It doe
         affect Aftertouch events.
 
-    --disable-seq32jack
+    --disable-seq32jack (obsolete, removed)
 
-        Undefines the SEQ64_STAZED_JACK_SUPPORT macro, which is now
-        defined by default.  Take note!
-
-        Enables Seq32 JACK handling, which incorporates many improvements to
-        JACK transport, including the MIDI clock fix from Seq24 v. 0.9.3.
-        It is now working pretty well, and probably the best option now.
+        The code that used to be marked with the SEQ64_STAZED_JACK_SUPPORT
+        macro is now permanent.  It enables Seq32 JACK handling, which
+        incorporates many improvements to JACK transport, including the MIDI
+        clock fix from Seq24 v. 0.9.3.  It is now working pretty well, and
+        probably the best option now.
 
     --disable-lfo
 
@@ -353,15 +352,6 @@ MANUALLY-DEFINED MACROS IN CODE:
         that one can choose the mode directly, rather than focussing the
         main window versus the song-editor window.  Comes from the Seq32
         project.
-
-    SEQ64_STAZED_TRANSPORT:
-
-        OBSOLETE.  Now rolled into SEQ64_STAZED_JACK_SUPPORT.
-
-        Adds some transport features from the Seq32 project.  These include
-        fast-forward and rewind support, storage of the song editor time
-        signature, and more.  Some features also depend upon Seq32 JACK suport
-        being enabled.
 
     SEQ64_STAZED_LFO_SUPPORT:
 

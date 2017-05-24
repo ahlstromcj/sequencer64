@@ -22,15 +22,16 @@
 /**
  * \file          mainwid.hpp
  *
- *  This module declares/defines the base class for drawing patterns/sequences in
- *  the Patterns Panel grid.
+ *  This module declares/defines the base class for drawing patterns/sequences
+ *  in the Patterns Panel grid.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-15
+ * \updates       2017-05-24
  * \license       GNU GPLv2 or above
  *
+ *  Wonder where the name "wid" came from....
  */
 
 #include "globals.h"                    /* c_max_sequence, etc.     */
@@ -143,8 +144,8 @@ private:
     int m_seqarea_y;            /**< Roughly with height of the main window.    */
     int m_seqarea_seq_x;        /**< To be determined.                          */
     int m_seqarea_seq_y;        /**< To be determined.                          */
-    int m_mainwid_x;            /**< The calculated width of the window.        */
-    int m_mainwid_y;            /**< The calculated height of the window.       */
+    int m_mainwid_x;            /**< Horizontal size of the ain window grid.    */
+    int m_mainwid_y;            /**< Vertical size of the main window grid.     */
     int m_mainwid_border;       /**< Main-window border, unused setting.        */
     int m_mainwid_spacing;      /**< Main-window spacing, unused setting.       */
     int m_text_size_x;          /**< Text width, varies with font in use.       */

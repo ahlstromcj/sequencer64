@@ -1089,18 +1089,6 @@ const static std::string s_statistics_support = "ON";
 const static std::string s_statistics_support = "off";
 #endif
 
-/*
- * Right now Stazed JACK support is the preferred support for JACK transport.
- */
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-const static std::string s_seq32_jack_support = "ON";
-const static std::string s_seq32_transport = "ON";
-#else
-const static std::string s_seq32_jack_support = "off";
-const static std::string s_seq32_transport = "off";
-#endif
-
 #ifdef SEQ64_STAZED_TRANSPOSE
 const static std::string s_seq32_transpose = "ON";
 #else
@@ -1160,10 +1148,8 @@ build_details ()
 << "Pause support * = "          << s_build_pause_support         << std::endl
 << "Save time-sig/tempo = "      << s_build_timesig_tempo         << std::endl
 << "Seq32 chord generator * = "  << s_build_chord_generator       << std::endl
-<< "Seq32 JACK support * = "     << s_seq32_jack_support          << std::endl
 << "Seq32 LFO support * = "      << s_seq32_lfo_support           << std::endl
 << "Seq32 menu buttons = "       << s_seq32_menu_buttons          << std::endl
-<< "Seq32 transport = "          << s_seq32_transport             << std::endl
 << "Seq32 transpose * = "        << s_seq32_transpose             << std::endl
 << "Solid piano-roll grid = "    << s_build_solid_grid            << std::endl
 << "Main window scroll-bars = "  << s_je_pattern_scrollbars       << std::endl

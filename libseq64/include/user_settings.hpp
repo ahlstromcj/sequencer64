@@ -970,6 +970,19 @@ public:
     }
 
     /**
+     * \getter m_mainwnd_rows and m_mainwnd_cols
+     */
+
+    bool is_default_mainwid_size () const
+    {
+        return
+        (
+            m_mainwnd_cols == SEQ64_DEFAULT_MAINWND_COLUMNS &&
+            m_mainwnd_rows == SEQ64_DEFAULT_MAINWND_ROWS
+        );
+    }
+
+    /**
      * \getter m_seqs_in_set, dependent member
      */
 

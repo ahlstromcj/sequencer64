@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-05-16
+ * \updates       2017-05-21
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -266,12 +266,10 @@ midi_control perform::sm_mc_dummy;
 perform::perform (gui_assistant & mygui, int ppqn)
  :
     m_song_start_mode           (false),    // set later during options read
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_start_from_perfedit       (false),
     m_reposition                (false),
     m_excell_FF_RW              (1.0f),
     m_FF_RW_button_type         (FF_RW_NONE),
-#endif
     m_mute_group                (),         // boolean array, size 32 * 32
     m_armed_saved               (false),
     m_armed_statuses            (),         // boolean array, size 1024
@@ -975,17 +973,12 @@ perform::set_left_tick (midipulse tick, bool setstart)
     if (setstart)
         set_start_tick(tick);
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     if (is_jack_master())                       /* don't use in slave mode  */
         m_jack_asst.position(true, tick);       /* position_jack()          */
     else if (! is_jack_running())
         set_tick(tick);
 
     m_reposition = false;
-
-#endif
-
     if (m_left_tick >= m_right_tick)
         m_right_tick = m_left_tick + m_one_measure;
 }
@@ -1015,8 +1008,6 @@ perform::set_right_tick (midipulse tick, bool setstart)
         if (m_right_tick <= m_left_tick)
         {
             m_left_tick = m_right_tick - m_one_measure;
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
             if (setstart)
             {
                 set_start_tick(m_left_tick);
@@ -1027,10 +1018,6 @@ perform::set_right_tick (midipulse tick, bool setstart)
 
                 m_reposition = false;
             }
-#else
-            if (setstart)
-                set_start_tick(m_left_tick);
-#endif
         }
     }
 }
@@ -1427,26 +1414,35 @@ perform::set_beats_per_minute (midibpm bpm)
     else if (bpm > SEQ64_MAXIMUM_BPM)
         bpm = SEQ64_MAXIMUM_BPM;
 
+    if (bpm != m_bpm)
+    {
+
 #ifdef SEQ64_JACK_SUPPORT
 
-    /*
-     * This logic matches the original seq24, but is it really correct?
-     */
+        /*
+         * This logic matches the original seq24, but is it really correct?
+         */
 
-    bool ok = ! (is_jack_running() && m_running);
-    if (ok)
-        m_jack_asst.set_beats_per_minute(bpm);
+#ifdef USE_MODIFIABLE_JACK_TEMPO                    // EXPERIMENTAL
+        bool ok = is_jack_running();
+#else
+        bool ok = ! (is_jack_running() && m_running);
+#endif
+
+        if (ok)
+            m_jack_asst.set_beats_per_minute(bpm);
 #else
 
-    bool ok = ! m_running;
+        bool ok = ! m_running;
 
 #endif
 
-    if (ok)
-    {
-        master_bus().set_beats_per_minute(bpm);
-        m_us_per_quarter_note = tempo_us_from_bpm(bpm);
-        m_bpm = bpm;
+        if (ok)
+        {
+            master_bus().set_beats_per_minute(bpm);
+            m_us_per_quarter_note = tempo_us_from_bpm(bpm);
+            m_bpm = bpm;
+        }
     }
 }
 
@@ -2185,8 +2181,6 @@ perform::copy_triggers ()
  *      not the m_song_start_mode member (which replaces the global flag now).
  */
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
 void
 perform::start_playing (bool songmode)
 {
@@ -2215,50 +2209,6 @@ perform::start_playing (bool songmode)
     start_jack();
     start(songmode);                                    /* song mode       */
 }
-
-#else   // SEQ64_STAZED_JACK_SUPPORT
-
-/*
- *  In this legacy version, the songmode parameter simply indicates which GUI,
- *  mainwnd ("live", false) or perfedit ("song", true) started the playback.
- *  However, if the song-mode is false, then we fall back to the value of
- *  song_start_mode(), in order not to violate user expectations from the
- *  setting on of the song-sart mode on mainwnd.
- *
- *  For cosmetic reasons, to stop transport line flicker on start, we tell
- *  position_jack() to position to the left tick, and tell start() to use the
- *  perfedit rewind.  Calling start() with false disables the perfedit mute
- *  control.  Calling start() with true causes a perfedit rewind.
- */
-
-void
-perform::start_playing (bool songmode)
-{
-    songmode = songmode || song_start_mode();
-    position_jack(songmode);
-    start_jack();
-    start(songmode);
-
-    /*
-     * Let's let the output() function clear this, so that we can use this
-     * flag in that function to control the next tick to play at resume time.
-     *
-     *      m_dont_reset_ticks = false;
-     *
-     * Shouldn't this be needed as well?  It is set in ALSA mode, but not JACK
-     * mode. But DO NOT call set_running() here in JACK mode, it prevents
-     * Sequencer64 from starting JACK transport!
-     */
-
-    if (! is_jack_running())
-        set_running(true);
-
-    is_pattern_playing(true);
-}
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Encapsulates behavior needed by perfedit.  Note that we moved some of the
@@ -2299,8 +2249,6 @@ perform::set_jack_mode (bool jack_button_active)
     return is_jack_running();
 }
 
-#endif  // SEQ64_STAZED_JACK_SUPPORT
-
 /**
  *  Pause playback, so that progress bars stay where they are, and playback
  *  always resumes where it left off, at least in ALSA mode, which doesn't
@@ -2335,18 +2283,14 @@ perform::pause_playing (bool songmode)
     stop_jack();
     if (is_jack_running())
     {
-#ifdef SEQ64_STAZED_JACK_SUPPORT
         m_start_from_perfedit = songmode;   /* act like start_playing()     */
-#endif
     }
     else
     {
         set_running(false);
         reset_sequences(true);              /* don't reset "last-tick"      */
         m_usemidiclock = false;
-#ifdef SEQ64_STAZED_JACK_SUPPORT
         m_start_from_perfedit = false;      /* act like stop_playing()      */
-#endif
     }
 }
 
@@ -2362,10 +2306,7 @@ perform::stop_playing ()
 {
     stop_jack();
     stop();
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_start_from_perfedit = false;
-#endif
 }
 
 /**
@@ -2383,18 +2324,7 @@ void
 perform::position_jack (bool songmode, midipulse tick)
 {
 #ifdef SEQ64_JACK_SUPPORT
-
-#if ! defined SEQ64_STAZED_JACK_SUPPORT
-    if (rc().with_jack_master())
-        tick = SEQ64_NULL_MIDIPULSE;
-#endif
-
-    /*
-     * TMI: printf("jack-ass position tick = %ld\n",tick);
-     */
-
     m_jack_asst.position(songmode, tick);
-
 #endif
 }
 
@@ -2527,18 +2457,10 @@ perform::inner_start (bool songmode)
 void
 perform::inner_stop (bool midiclock)
 {
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     start_from_perfedit(false);
-    set_running(false);                 // rc().global_is_running() = false;
+    set_running(false);
     reset_sequences();
     m_usemidiclock = midiclock;
-#else
-    set_running(false);
-    if (! is_jack_running())
-        reset_sequences();              /* sets the "last-tick" value   */
-
-    m_usemidiclock = midiclock;
-#endif
 }
 
 /**
@@ -2827,11 +2749,7 @@ perform::output_func ()
 
         jack_scratchpad pad;
         pad.js_total_tick = 0.0;            // double
-#if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
         pad.js_clock_tick = 0;              // long probably offers more ticks
-#else
-        pad.js_clock_tick = 0.0;            // double
-#endif
         if (m_dont_reset_ticks)
         {
             pad.js_current_tick = get_jack_tick();
@@ -2854,14 +2772,9 @@ perform::output_func ()
         pad.js_looping = m_looping;
         pad.js_playback_mode = m_playback_mode;
         pad.js_ticks_converted_last = 0.0;
-#ifdef SEQ64_STAZED_JACK_SUPPORT
         pad.js_ticks_converted = 0.0;
         pad.js_ticks_delta = 0.0;
-#endif
-
-#if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
         pad.js_delta_tick_frac = 0L;        // from seq24 0.9.3, long value
-#endif
 
         /*
          * Not sure that we really need this feature.  Will have to see if
@@ -2974,17 +2887,13 @@ perform::output_func ()
             midibpm bpm  = master_bus().get_beats_per_minute();
 
             /*
-             * Delta time to ticks; get delta ticks.
-             *
-             * seq24 0.9.3 changes delta_tick's type and adds some code --
-             * delta_ticks_frac is in 1000th of a tick.  This code is meant to
-             * correct for some clock drift.  However, this code breaks the
-             * MIDI clock speed.  So let's try the "Stazed" version of the
-             * code, from his seq32 project.  We get delta ticks,
-             * delta_ticks_f is in 1000th of a tick.
+             * Delta time to ticks; get delta ticks.  seq24 0.9.3 changes
+             * delta_tick's type and adds code -- delta_ticks_frac is in
+             * 1000th of a tick.  This code is meant to correct for clock
+             * drift.  However, this code breaks the MIDI clock speed.  So we
+             * use the "Stazed" version of the code, from seq32.  We get delta
+             * ticks, delta_ticks_f is in 1000th of a tick.
              */
-
-#if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
 
             long long delta_tick_denom = 60000000LL;
             long long delta_tick_num = bpm * ppqn * delta_us +
@@ -2992,11 +2901,6 @@ perform::output_func ()
 
             long delta_tick = long(delta_tick_num / delta_tick_denom);
             pad.js_delta_tick_frac = long(delta_tick_num % delta_tick_denom);
-
-#else
-            double delta_tick = delta_time_us_to_ticks(delta_us, bpm, ppqn);
-#endif
-
             if (m_usemidiclock)
             {
                 delta_tick = m_midiclocktick;       /* int to double */
@@ -3033,8 +2937,6 @@ perform::output_func ()
             }
 #endif
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
             /*
              * If we reposition key-p from perfroll, reset to adjusted
              * start.
@@ -3053,7 +2955,6 @@ perform::output_func ()
                 m_reposition = false;
             }
 
-#endif
             /*
              * pad.js_init_clock will be true when we run for the first time,
              * or as soon as JACK gets a good lock on playback.
@@ -3074,11 +2975,7 @@ perform::output_func ()
                 bool perfloop = m_looping;
                 if (perfloop)
                 {
-                    perfloop =
-                        m_playback_mode ||
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-                        start_from_perfedit() ||
-#endif
+                    perfloop = m_playback_mode || start_from_perfedit() ||
                         song_start_mode();
                 }
                 if (perfloop)
@@ -3123,8 +3020,6 @@ perform::output_func ()
                         jack_position_once = false;
                 }
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
                 /*
                  * Don't play during JackTransportStarting to avoid xruns on
                  * FF or RW.
@@ -3137,13 +3032,10 @@ perform::output_func ()
                 }
                 else
                     play(midipulse(pad.js_current_tick));           // play!
-#else
-                play(midipulse(pad.js_current_tick));               // play!
-#endif
 
                 /*
                  * The next line enables proper pausing in both old and seq32
-                 * JACK builds.  Now unmacroed by SEQ64_STAZED_JACK_SUPPORT.
+                 * JACK builds.
                  */
 
                 set_jack_tick(pad.js_current_tick);
@@ -3328,8 +3220,6 @@ perform::output_func ()
          * play tick that displays the progress bar.
          */
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
         if (m_playback_mode)
         {
             if (is_jack_master())                       // running Song Master
@@ -3369,16 +3259,6 @@ perform::output_func ()
         if (is_jack_running())
             set_jack_stop_tick(get_current_jack_position((void *) this));
 #endif
-
-#else  // SEQ64_STAZED_JACK_SUPPORT
-
-        if (is_jack_running())
-            set_tick(0);
-
-        master_bus().flush();
-        master_bus().stop();
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
 
     }
     pthread_exit(0);
@@ -3824,12 +3704,7 @@ perform::input_func ()
 
                     if (ev.get_status() == EVENT_MIDI_START) // MIDI Time Clock
                     {
-#ifdef SEQ64_STAZED_JACK_SUPPORT
                         start(song_start_mode());
-#else
-                        stop();
-                        start(false);
-#endif
                         m_midiclockrunning = true;
                         m_usemidiclock = true;
                         m_midiclocktick = 0;
@@ -3846,11 +3721,7 @@ perform::input_func ()
                          */
 
                         m_midiclockrunning = true;
-#ifdef SEQ64_STAZED_JACK_SUPPORT
                         start(song_start_mode());
-#else
-                        start(false);
-#endif
                     }
                     else if (ev.get_status() == EVENT_MIDI_STOP)
                     {
@@ -3866,8 +3737,6 @@ perform::input_func ()
                         m_midiclockrunning = false;
                         all_notes_off();
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
                         /*
                          * inner_stop(true) = m_usemidiclock = true, i.e.
                          * hold m_tick position(output_func).  Set the
@@ -3876,7 +3745,6 @@ perform::input_func ()
 
                         inner_stop(true);
                         m_midiclockpos = m_tick;
-#endif
                     }
                     else if (ev.get_status() == EVENT_MIDI_CLOCK)
                     {
@@ -3887,13 +3755,8 @@ perform::input_func ()
                     {
                         midibyte a, b;
                         ev.get_data(a, b);
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT                      /* see notes in banner */
                         m_midiclockpos = combine_bytes(a,b);
                         m_midiclockpos *= 48;
-#else
-                        m_midiclockpos = (int(a) << 7) && int(b);
-#endif
                     }
 
                     /*
@@ -3946,8 +3809,6 @@ perform::input_func ()
     pthread_exit(0);
 }
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
 /**
  *  Combines bytes into an unsigned-short value.
  *
@@ -3980,8 +3841,6 @@ perform::combine_bytes (midibyte b0, midibyte b1)
    short_14bit |= (unsigned short)(b0);
    return short_14bit;
 }
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  For all active patterns/sequences, this function gets the playing
@@ -4995,8 +4854,6 @@ perform::max_active_set () const
     return result;
 }
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
 /**
  *  Implements the fast-forward or rewind functionality imported from seq32.
  *  It changes m_tick by a quarter of the number of ticks in a standard measure,
@@ -5087,8 +4944,6 @@ perform::FF_RW_timeout ()
     m_excell_FF_RW = 1.0;
     return false;
 }
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 #ifdef PLATFORM_DEBUG_TMI
 

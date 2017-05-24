@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-05-13
+ * \updates       2017-05-24
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -105,12 +105,7 @@
 
 /**
  *  This is a big one, bringing in some massive changes to how JACK is
- *  handled.  It looks good, but it is complex enough that we'll leave this
- *  until about last to officially activate; it will need a lot of testing,
- *  mostly because of the possibility of errors in porting this code from
- *  Seq32.  Now a SEQ64_STAZED_JACK_SUPPORT option, settable at configure
- *  time, currently disabled by default in the configure script (until we have
- *  it fully tested).
+ *  handled.  It looks good, complex, but now proven, and the only option.
  *
  *  #define USE_STAZED_JACK_SUPPORT
  */
@@ -200,14 +195,6 @@
 #undef  USE_STAZED_SHIFT_SUPPORT
 
 /**
- *  Adds support for various transport features, more to come.  Now a
- *  configure-time option, but now rolled into SEQ64_STAZED_JACK_SUPPORT
- *  because the two features are really co-mingled.
- *
- * #define SEQ64_STAZED_TRANSPORT
- */
-
-/**
  *  Stazed implementation of auto-scroll.
  */
 
@@ -224,7 +211,6 @@
  *    - SEQ64_HIGHLIGHT_EMPTY_SEQS
  *    - SEQ64_JACK_SESSION
  *    - SEQ64_JACK_SUPPORT
- *    - SEQ64_STAZED_JACK_SUPPORT (now includes SEQ64_STAZED_TRANSPORT code)
  *    - SEQ64_LASH_SUPPORT
  *    - SEQ64_PAUSE_SUPPORT
  *    - SEQ64_STAZED_CHORD_GENERATOR

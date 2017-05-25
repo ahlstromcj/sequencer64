@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-21
+ * \updates       2017-05-24
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -417,7 +417,8 @@ private:
 
     /**
      *  Indicates if the menu bar is to be greyed out or not.  This is a
-     *  "stazed" feature that might be generally useful.
+     *  "stazed" feature that might be generally useful.  This value is true
+     *  if the menu-bar is to be enabled.
      */
 
     bool m_menu_mode;

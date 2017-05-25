@@ -325,7 +325,7 @@ mainwnd::mainwnd
     m_base_time_ms          (0),
     m_last_time_ms          (0),
 #endif
-    m_menu_mode             (false),                /* stazed 2016-07-30    */
+    m_menu_mode             (true),                 /* stazed 2016-07-30    */
     m_call_seq_edit         (false),                /* new ca 2016-05-15    */
     m_call_seq_eventedit    (false)                 /* new ca 2016-05-19    */
 {
@@ -377,6 +377,7 @@ mainwnd::mainwnd
     populate_menu_view();
     m_menubar->items().push_back(MenuElem("_Help", *m_menu_help));
     populate_menu_help();
+    m_menubar->set_sensitive(m_menu_mode);
 
     /**
      * Top panel items, including the logo (updated for the new version of
@@ -528,7 +529,9 @@ mainwnd::mainwnd
         "Toggle to disable/enable the menu when sequencer is not running. "
         "The menu is automatically disabled when the sequencer is running."
     );
+    m_button_menu->set_sensitive(true);
     m_button_menu->set_can_focus(false);
+    m_button_menu->set_active(true);
     m_button_menu->signal_toggled().connect
     (
         sigc::mem_fun(*this, &mainwnd::set_menu_mode)
@@ -912,8 +915,9 @@ mainwnd::mainwnd
         contentvbox->pack_start(*m_mainwid_grid, Gtk::PACK_SHRINK);
     }
     else
+    {
         contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
-
+    }
 
 #endif
 
@@ -971,9 +975,16 @@ mainwnd::mainwnd
     int bottomheight = 70;
     int topheight = 20;
     if (multi_wid())
+    {
         topheight = 100;
-
+    }
+    else
+    {
+        width += 24;
+    }
     height += menuheight + topheight + bottomheight;
+
+#endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
 #if defined SEQ64_MULTI_MAINWID
     height += hpadding * (m_mainwid_rows - 1);
@@ -981,9 +992,6 @@ mainwnd::mainwnd
 #endif
 
     set_size_request(width, height);
-
-#endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
-
     install_signal_handlers();
 }
 
@@ -1183,23 +1191,38 @@ mainwnd::timer_callback ()
         if (m_button_mode->get_sensitive())
             m_button_mode->set_sensitive(false);
 
-        if (m_button_menu->get_sensitive())
-            m_button_menu->set_sensitive(false);
+        /*
+         * There is no need to disable this button.
+         *
+         * if (m_button_menu->get_sensitive())
+         *    m_button_menu->set_sensitive(false);
+         */
 
-        if (m_menubar->get_sensitive())
-            m_menubar->set_sensitive(false);
+        /*
+         * We need to make this setting and option or something that comes
+         * into effect only if there's a key combination using Ctrl or Alt in
+         * the Keyboard settings.  Let's let the user decide what to do.
+         *
+         * if (m_menubar->get_sensitive())
+         *     m_menubar->set_sensitive(false);
+         */
     }
     else
     {
         if (! m_button_mode->get_sensitive())
             m_button_mode->set_sensitive(true);
 
-        if (! m_button_menu->get_sensitive())
-            m_button_menu->set_sensitive(true);
-
-        if (m_menubar->get_sensitive() == m_menu_mode)
-            m_menubar->set_sensitive(! m_menu_mode);
+        /*
+         * This button will now always remain enabled.
+         *
+         * if (! m_button_menu->get_sensitive())
+         *    m_button_menu->set_sensitive(true);
+         *
+         * if (m_menubar->get_sensitive() == m_menu_mode)
+         *    m_menubar->set_sensitive(! m_menu_mode);
+         */
     }
+    m_menubar->set_sensitive(m_menu_mode);
 
 #endif
 
@@ -2596,6 +2619,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 /*
                  * TODO: SEQ64_MULTI_MAINWND
                  */
+
                 m_main_wid->toggle_playing_tracks();
             }
             else if (k.key() == PREFKEY(song_mode))

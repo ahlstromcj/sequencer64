@@ -51,7 +51,6 @@
 #include "triggers.hpp"                 /* seq64::triggers, etc.    */
 
 /**
- *  EXPERIMENTAL.
  *  Enables the Stazed/Seq32 code for adding overwrite and expand looping
  *  modes to the legacy merge looping recording mode.
  */

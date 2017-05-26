@@ -84,6 +84,12 @@ seqmenu::seqmenu (perform & p)
     m_eventedit         (nullptr),
     m_current_seq       (SEQ64_ALL_TRACKS)  /* (0) is not really current yet    */
 {
+    /*
+     * Why did we remove this?  I believe it was a pull request.  But let's
+     * restore it for some testing of copy/paste, at least.
+     */
+
+    m_clipboard.set_master_midi_bus(&m_mainperf.master_bus());
 
 }
 
@@ -576,9 +582,7 @@ seqmenu::seq_copy ()
     if (is_current_seq_active())        /* also checks sequence pointer */
     {
         m_clipboard.partial_assign(*get_current_sequence());
-
-        if (m_clipboard_empty)
-            m_clipboard_empty = false;
+        m_clipboard_empty = false;
     }
 }
 
@@ -599,6 +603,7 @@ seqmenu::seq_cut ()
     {
         m_clipboard.partial_assign(*get_current_sequence());
         m_mainperf.delete_sequence(current_seq());
+        m_clipboard_empty = false;                  /* ca 2017-05-25    */
         redraw(current_seq());
     }
 }
@@ -620,7 +625,7 @@ seqmenu::seq_paste ()
     {
         new_current_sequence();
         sequence * s = get_current_sequence();
-        if (not_nullptr(s) && !m_clipboard_empty)
+        if (not_nullptr(s) && ! m_clipboard_empty)
         {
             s->partial_assign(m_clipboard);
             s->set_dirty();

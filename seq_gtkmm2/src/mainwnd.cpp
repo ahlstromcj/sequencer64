@@ -710,23 +710,33 @@ mainwnd::mainwnd
 
     Gtk::HBox * sethbox = manage(new Gtk::HBox(false, 4));
     bottomhbox->pack_start(*sethbox, Gtk::PACK_SHRINK);
-#if defined SEQ64_MULTI_MAINWID
-#else
-    m_spinbutton_ss->set_sensitive(true);
-    m_spinbutton_ss->set_editable(true);
-    m_spinbutton_ss->set_wrap(false);
-    m_spinbutton_ss->set_width_chars(3);
-    m_spinbutton_ss->set_wrap(false);
-    m_adjust_ss->signal_value_changed().connect
-    (
-        mem_fun(*this, &mainwnd::adj_callback_ss)
-    );
-    add_tooltip(m_spinbutton_ss, "Select screen-set from one of 32 sets.");
-    Gtk::Label * setlabel = manage(new Gtk::Label("_Set", true));
-    setlabel->set_mnemonic_widget(*m_spinbutton_ss);
-    sethbox->pack_start(*setlabel, Gtk::PACK_SHRINK);
-    sethbox->pack_start(*m_spinbutton_ss, Gtk::PACK_SHRINK);
+    if (! multi_wid())
+    {
+        m_spinbutton_ss->set_sensitive(true);
+        m_spinbutton_ss->set_editable(true);
+        m_spinbutton_ss->set_wrap(false);
+        m_spinbutton_ss->set_width_chars(3);
+        m_spinbutton_ss->set_wrap(false);
+
+#if ! defined SEQ64_MULTI_MAINWID
+
+        /*
+         * If built for multi-wid, this control is connected to
+         * xxxxxx instead.
+         */
+
+        m_adjust_ss->signal_value_changed().connect
+        (
+            mem_fun(*this, &mainwnd::adj_callback_ss)
+        );
 #endif
+
+        add_tooltip(m_spinbutton_ss, "Select screen-set from one of 32 sets.");
+        Gtk::Label * setlabel = manage(new Gtk::Label("_Set", true));
+        setlabel->set_mnemonic_widget(*m_spinbutton_ss);
+        sethbox->pack_start(*setlabel, Gtk::PACK_SHRINK);
+        sethbox->pack_start(*m_spinbutton_ss, Gtk::PACK_SHRINK);
+    }
 
 #if defined SEQ64_MULTI_MAINWID
 
@@ -1134,20 +1144,23 @@ mainwnd::timer_callback ()
 
     /*
      * Any way to avoid this call except at the beginning and when actually
-     * playing?
+     * playing?  This code disables toggline patterns via their hotkeys until
+     * play starts.  Rather have that than slightly less flickery tooltips.
+     *
+     * static bool s_startup_done = false;
+     * if (s_startup_done)
+     * {
+     *     if (perf().is_pattern_playing())
+     *         update_markers(tick);
+     * }
+     * else
+     * {
+     *     s_startup_done = true;
+     *     update_markers(tick);
+     * }
      */
 
-    static bool s_startup_done = false;
-    if (s_startup_done)
-    {
-        if (perf().is_pattern_playing())
-            update_markers(tick);
-    }
-    else
-    {
-        s_startup_done = true;
-        update_markers(tick);
-    }
+    update_markers(tick);
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT_XXX               /* TMI */
     static midibpm s_bpm = 0.0;

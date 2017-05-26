@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-13
+ * \updates       2017-05-26
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -66,6 +66,18 @@ namespace seq64
 seqmenu::SeqeditMap seqmenu::sm_seqedit_list;
 
 /**
+ *  Current saved sequence data.
+ */
+
+sequence seqmenu::sm_clipboard;
+
+/**
+ *  Indicates if sequence data is present or not.
+ */
+
+bool seqmenu::sm_clipboard_empty = true;
+
+/**
  *  Principal constructor.  Apart from filling in some of the members,
  *  this function initializes the clipboard, so that we don't get a crash
  *  on a paste with no previous copy.
@@ -78,8 +90,6 @@ seqmenu::seqmenu (perform & p)
  :
     m_menu              (nullptr),
     m_mainperf          (p),
-    m_clipboard         (),
-    m_clipboard_empty   (true),
     m_seqedit           (nullptr),
     m_eventedit         (nullptr),
     m_current_seq       (SEQ64_ALL_TRACKS)  /* (0) is not really current yet    */
@@ -89,7 +99,7 @@ seqmenu::seqmenu (perform & p)
      * restore it for some testing of copy/paste, at least.
      */
 
-    m_clipboard.set_master_midi_bus(&m_mainperf.master_bus());
+    sm_clipboard.set_master_midi_bus(&m_mainperf.master_bus());
 
 }
 
@@ -581,8 +591,8 @@ seqmenu::seq_copy ()
 {
     if (is_current_seq_active())        /* also checks sequence pointer */
     {
-        m_clipboard.partial_assign(*get_current_sequence());
-        m_clipboard_empty = false;
+        sm_clipboard.partial_assign(*get_current_sequence());
+        sm_clipboard_empty = false;
     }
 }
 
@@ -601,9 +611,9 @@ seqmenu::seq_cut ()
 {
     if (is_current_seq_active() && ! is_current_seq_in_edit())
     {
-        m_clipboard.partial_assign(*get_current_sequence());
+        sm_clipboard.partial_assign(*get_current_sequence());
         m_mainperf.delete_sequence(current_seq());
-        m_clipboard_empty = false;                  /* ca 2017-05-25    */
+        sm_clipboard_empty = false;                  /* ca 2017-05-25    */
         redraw(current_seq());
     }
 }
@@ -625,9 +635,9 @@ seqmenu::seq_paste ()
     {
         new_current_sequence();
         sequence * s = get_current_sequence();
-        if (not_nullptr(s) && ! m_clipboard_empty)
+        if (not_nullptr(s) && ! sm_clipboard_empty)
         {
-            s->partial_assign(m_clipboard);
+            s->partial_assign(sm_clipboard);
             s->set_dirty();
         }
     }

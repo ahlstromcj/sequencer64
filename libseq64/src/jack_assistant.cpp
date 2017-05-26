@@ -1039,7 +1039,9 @@ jack_assistant::set_beats_per_minute (midibpm bpminute)
             int jackcode = jack_transport_reposition(m_jack_client, &m_jack_pos);
             apiprint("jack_transport_reposition", "set bpm");
             if (jackcode != 0)
+            {
                 errprint("jack_transport_reposition(): bad position structure");
+            }
         }
 
 #endif

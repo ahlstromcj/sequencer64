@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-13
+ * \updates       2017-05-26
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
@@ -108,6 +108,19 @@ private:
     static SeqeditMap sm_seqedit_list;
 
     /**
+     *  Holds a copy of data concerning a sequence, which can then be pasted
+     *  into another pattern slot.
+     */
+
+    static sequence sm_clipboard;
+
+    /**
+     *  Indicates if the common clipboard is empty.
+     */
+
+    static bool sm_clipboard_empty;
+
+    /**
      *  The menu to pop up when the right-click action is used either on a
      *  mainwid pattern slot or on a perfedit pattern name.
      */
@@ -120,14 +133,6 @@ private:
      */
 
     perform & m_mainperf;
-
-    /**
-     *  Holds a copy of data concerning a sequence, which can then be pasted
-     *  into another pattern slot.
-     */
-
-    sequence m_clipboard;
-    bool m_clipboard_empty;
 
     /**
      *  Points to the latest seqedit object, if created.

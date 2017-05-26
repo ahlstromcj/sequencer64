@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-05-16
+ * \updates       2017-05-26
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -1594,7 +1594,7 @@ public:         // used in main application module and the userfile class
      * \setter m_mainwid_block_independent
      */
 
-    void block_independence (bool flag)
+    void block_independent (bool flag)
     {
         m_mainwid_block_independent = flag;
     }

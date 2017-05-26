@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-05-21
+ * \updates       2017-05-26
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -299,9 +299,9 @@ static const char * const s_help_4 =
 "                            range only from 1 to 2, defaults to 1.\n"
 "              set-sync=flag Sets the multiple windows so that they stay in\n"
 "                            step with each other.  The default, 'true',\n"
-"                            makes multi-windows use adjacent set numbers.\n"
+"                            makes multi-windows use consecutive set numbers.\n"
 "                            The upper left mainwid is always the active one.\n"
-"                            'flag' is either 'true' or 'false', or 1 or 0.\n"
+"                            'flag' is either 'true'/'false', 1/0, or 'indep'.\n"
 "              wid=r,c,f     Combins the previous 3 options; strict format.\n"
 "\n"
 "The daemonize option works only in the CLI build. The set options work only\n"
@@ -498,10 +498,11 @@ process_o_options (int argc, char * argv [])
                             else if (optionname == "set-sync")
                             {
                                 bool nosync = arg == "false" ||
-                                    arg == "0" || arg == "no";
+                                    arg == "0" || arg == "no" ||
+                                    arg == "indep";
 
                                 result = true;
-                                usr().block_independence(nosync);   /* tricky */
+                                usr().block_independent(nosync);   /* tricky */
                             }
                             else if (optionname == "wid")
                             {
@@ -523,9 +524,10 @@ process_o_options (int argc, char * argv [])
                                         usr().block_columns(cols);
 
                                     bool nosync = flag == 'f' ||
-                                        flag == '0' || flag == 'n';
+                                        flag == '0' || flag == 'n' ||
+                                        flag == 'i';
 
-                                    usr().block_independence(nosync);
+                                    usr().block_independent(nosync);
                                 }
                             }
 #endif  // SEQ64_MULTI_MAINWID

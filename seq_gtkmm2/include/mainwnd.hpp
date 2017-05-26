@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-24
+ * \updates       2017-05-26
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -519,11 +519,9 @@ private:
         return m_mainwid_independent || block == 0;
     }
 
-#else
+#endif
 
     void adj_callback_ss ();
-
-#endif
 
     void adj_callback_bpm ();
     void edit_callback_notepad ();

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-24
+ * \updates       2017-05-26
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -722,7 +722,7 @@ mainwnd::mainwnd
 
         /*
          * If built for multi-wid, this control is connected to
-         * xxxxxx instead.
+         * adj_callback_wid() instead.
          */
 
         m_adjust_ss->signal_value_changed().connect
@@ -2135,8 +2135,6 @@ mainwnd::build_info_dialog ()
     dialog.run();
 }
 
-#if ! defined SEQ64_MULTI_MAINWID
-
 /**
  *  This function is the callback for adjusting the active screen-set value.
  *  Its sets the active screen-set value in the Performance/Song window, the
@@ -2194,7 +2192,11 @@ mainwnd::adj_callback_ss ()
     {
         int newset = int(m_adjust_ss->get_value());
         if (newset <= spinner_max())
+        {
             perf().set_screenset(newset);   /* set active screen-set    */
+            for (int block = 0; block < m_mainwid_count; ++block)
+                m_mainwid_blocks[block]->set_screenset(newset + block);
+        }
     }
     else
     {
@@ -2202,8 +2204,6 @@ mainwnd::adj_callback_ss ()
         m_entry_notes->set_text(perf().current_screen_set_notepad());
     }
 }
-
-#endif  // ! SEQ64_MULTI_MAINWID
 
 /**
  *  This function is the callback for adjusting the BPM value.
@@ -2235,21 +2235,26 @@ mainwnd::adj_callback_wid (int widblock)
 {
     if (widblock < m_mainwid_count)
     {
-        Gtk::Frame * fslot = m_mainwid_frames[widblock];
-        int newset = m_mainwid_adjustors[widblock]->get_value();
-        std::string label = "   Set ";
-        label += std::to_string(newset);
-        m_mainwid_blocks[widblock]->log_screenset(newset);
-        if (widblock == 0)
+        if (independent())
         {
-            perf().set_screenset(newset);
+            Gtk::Frame * fslot = m_mainwid_frames[widblock];
+            int newset = m_mainwid_adjustors[widblock]->get_value();
+            std::string label = "   Set ";
+            label += std::to_string(newset);
+            m_mainwid_blocks[widblock]->log_screenset(newset);
+            if (widblock == 0)
+            {
+                perf().set_screenset(newset);
+            }
+            if (newset == perf().get_screenset())
+            {
+                fslot->set_shadow_type(Gtk::SHADOW_OUT);
+                label += " [active]";
+            }
+            fslot->set_label(label);
         }
-        if (newset == perf().get_screenset())
-        {
-            fslot->set_shadow_type(Gtk::SHADOW_OUT);
-            label += " [active]";
-        }
-        fslot->set_label(label);
+        else
+            adj_callback_ss();
     }
 }
 

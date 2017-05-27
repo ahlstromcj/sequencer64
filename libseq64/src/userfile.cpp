@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-23
+ * \updates       2017-05-27
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -366,6 +366,26 @@ userfile::parse (perform & /* a_perf */)
                     if (scratch <= 1)                       /* boolean?     */
                         usr().use_more_icons(scratch != 0);
                 }
+
+#if defined SEQ64_MULTI_MAINWID
+                if (next_data_line(file))
+                {
+                    sscanf(m_line, "%d", &scratch);
+                    if (scratch > 0 && scratch <= SEQ64_MAINWID_BLOCK_ROWS_MAX)
+                        usr().block_rows(scratch);
+                }
+                if (next_data_line(file))
+                {
+                    sscanf(m_line, "%d", &scratch);
+                    if (scratch > 0 && scratch <= SEQ64_MAINWID_BLOCK_COLS_MAX)
+                        usr().block_columns(scratch);
+                }
+                if (next_data_line(file))
+                {
+                    sscanf(m_line, "%d", &scratch);
+                    usr().block_independent(scratch != 0);
+                }
+#endif  // SEQ64_MULTI_MAINWID
             }
         }
         usr().normalize();    /* calculate derived values */
@@ -900,6 +920,44 @@ userfile::write (const perform & /* a_perf */ )
             << usr().use_more_icons()
             << "      # use_more_icons (currently affects only main window)\n"
             ;
+
+#if defined SEQ64_MULTI_MAINWID
+
+        file << "\n"
+            "# Specifies the number of set window ('wid') rows to show.\n"
+            "# The long-standing default is 1, but 2 or 3 may also be set.\n"
+            "# Corresponds to 'r' in the '-o wid=rxc,f' option.\n"
+            "\n"
+            << usr().block_rows()
+            << "      # block_rows (number of rows of set blocks/wids\n"
+            ;
+
+        file << "\n"
+            "# Specifies the number of set window ('wid') columns to show.\n"
+            "# The long-standing default is 1, but 2 may also be set.\n"
+            "# Corresponds to 'c' in the '-o wid=rxc,f' option.\n"
+            "\n"
+            << usr().block_columns()
+            << "      # block_rows (number of rows of set blocks/wids\n"
+            ;
+
+        file << "\n"
+            "# Specifies if the multiple set windows are 'in sync' or can\n"
+            "# be set to arbitrary set numbers independently.\n"
+            "# The default is false (0), means that there is a single set\n"
+            "# spinner, which controls the set number of the upper-left 'wid',\n"
+            "# and the rest of the set numbers follow sequentially.  If true\n"
+            "# (1), then each 'wid' can be set to any set-number.\n"
+            "# Corresponds to the 'f' (true, false, or 'indep') in the\n"
+            "# '-o wid=rxc,f' option.  Here, 1 is the same as 'indep' or false,\n"
+            "# and 0 is the same as f = true.  Backwards, so be careful.\n"
+            "\n"
+            << (usr().block_independent() ? "1" : "0")
+            << "      # block_rows (number of rows of set blocks/wids\n"
+            ;
+
+#endif  // SEQ64_MULTI_MAINWID
+
     }
 
     /*

@@ -981,9 +981,9 @@ mainwnd::mainwnd
 
     int width = m_main_wid->nominal_width();
     int height = m_main_wid->nominal_height();
-    int menuheight = 32;
-    int bottomheight = 70;
-    int topheight = 20;
+    int menuheight = 22;
+    int bottomheight = 48;
+    int topheight = 64;     // 52;
     if (multi_wid())
     {
         topheight = 100;

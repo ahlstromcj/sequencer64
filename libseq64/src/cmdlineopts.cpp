@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-05-26
+ * \updates       2017-05-27
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -291,21 +291,21 @@ static const char * const s_help_3 =
 static const char * const s_help_4 =
 " seq64cli:    daemonize     Makes this application fork to the background.\n"
 "              no-daemonize  Makes this application not fork to the background.\n"
+" any:\n"
 "              log=filename  Redirect console output to a log file in the\n"
 "                            --home directory [$HOME/.config/sequencer64].\n"
-"              set-rows=n    Show n rows of sets in the main window.  Can range\n"
-"                            from 1 to 3, defaults to 1.\n"
-"              set-cols=n    Show n columns of sets in the main window.  Can\n"
-"                            range only from 1 to 2, defaults to 1.\n"
-"              set-sync=flag Sets the multiple windows so that they stay in\n"
-"                            step with each other.  The default, 'true',\n"
-"                            makes multi-windows use consecutive set numbers.\n"
+"              wid=rxc,f     Show r rows of sets, c columns of sets, and set\n"
+"                            the sync-status of the set blocks. r can range\n"
+"              (e.g          from 1 to 3, c can range from 1 to 2, and the sync\n"
+"               'wid=3x2,t') flag can be 'true', 'false', or 'indep' (the same\n"
+"                            as false).  The flag sets the multiple windows so\n"
+"                            that they stay in step with each other, and the\n"
+"                            multi-windows use consecutive set numbers.\n"
 "                            The upper left mainwid is always the active one.\n"
-"                            'flag' is either 'true'/'false', 1/0, or 'indep'.\n"
-"              wid=r,c,f     Combins the previous 3 options; strict format.\n"
 "\n"
 "The daemonize option works only in the CLI build. The set options work only\n"
-"in the 'rtmidi' GUI build.\n"
+"in the 'rtmidi' GUI build.  Remember to specify option '--user-save' to make\n"
+"these 'user-file' options permanent in the sequencer64.usr configuration file.\n"
 "\n"
     ;
 
@@ -485,29 +485,10 @@ process_o_options (int argc, char * argv [])
                                 usr().option_logfile(arg);
                             }
 #if defined SEQ64_MULTI_MAINWID
-                            else if (optionname == "set-rows")
-                            {
-                                result = true;
-                                usr().block_rows(atoi(arg.c_str()));
-                            }
-                            else if (optionname == "set-cols")
-                            {
-                                result = true;
-                                usr().block_columns(atoi(arg.c_str()));
-                            }
-                            else if (optionname == "set-sync")
-                            {
-                                bool nosync = arg == "false" ||
-                                    arg == "0" || arg == "no" ||
-                                    arg == "indep";
-
-                                result = true;
-                                usr().block_independent(nosync);   /* tricky */
-                            }
                             else if (optionname == "wid")
                             {
                                 /*
-                                 * The arg should be of the form "r,c[,b]",
+                                 * The arg should be of the form "rxc[,b]",
                                  * stricty. This is a short-cut.
                                  */
 
@@ -523,10 +504,7 @@ process_o_options (int argc, char * argv [])
                                     if (cols > 0)
                                         usr().block_columns(cols);
 
-                                    bool nosync = flag == 'f' ||
-                                        flag == '0' || flag == 'n' ||
-                                        flag == 'i';
-
+                                    bool nosync = flag == 'f' || flag == 'i';
                                     usr().block_independent(nosync);
                                 }
                             }

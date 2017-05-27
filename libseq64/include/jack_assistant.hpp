@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2017-05-22
+ * \updates       2017-05-27
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -45,12 +45,6 @@
 #ifdef SEQ64_JACK_SESSION
 #include <jack/session.h>
 #endif
-
-/*
- * Trying to get Sequencer64 to be able to change tempo as JACK master.
- */
-
-#define USE_MODIFIABLE_JACK_TEMPO       // EXPERIMENTAL EXPERIMENTAL EXPERIMENTAL
 
 #else       // ! SEQ64_JACK_SUPPORT
 

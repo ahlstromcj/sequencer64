@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2017-03-21
+ * \updates       2017-05-27
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -241,8 +241,17 @@ midibase::set_name
     }
     else
     {
+        /*
+         * Bus IDs range from 14 to over 128; this code is wrong:
+         * std::string bussname = usr().bus_name(get_bus_id()).
+         *
+         * We want to see if the user has configured a port name.  If not,
+         * then a default and invalid static bus object with an empty
+         * buss-name is accessed.   This code needs more testing, however.
+         */
+
         char alias[128];
-        std::string bussname = usr().bus_name(get_bus_id()); // WHY usr()???
+        std::string bussname = usr().bus_name(get_port_id());
         if (! bussname.empty())
         {
             snprintf

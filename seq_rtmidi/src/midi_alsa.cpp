@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-18
- * \updates       2017-03-26
+ * \updates       2017-05-27
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -117,6 +117,16 @@ namespace seq64
  *  Also, note that the optionsfile module uses the master buss to get the
  *  buss names when it writes the file.
  *
+ *  We get the actual user-client ID from ALSA, then rebuild the descriptive
+ *  name for this port. Also have to do it for the parent midibus.  We'd like
+ *  to use seq_client_name(), but it comes up unresolved by the damned GNU
+ *  linker!  The obvious fixes don't work!
+ *
+ *  Another issue (2017-05-27):  ALSA returns "130" as the client ID.  That is
+ *  our ALSA ID, not the ID of the client we are representing.  Thus, we
+ *  should not set the buss ID and name of the parentbus, these have already
+ *  been determined.
+ *
  * \param parentbus
  *      Provides much of the infor about this ALSA buss.
  *
@@ -133,25 +143,16 @@ midi_alsa::midi_alsa (midibus & parentbus, midi_info & masterinfo)
     ),
     m_dest_addr_client  (parentbus.get_bus_id()),
     m_dest_addr_port    (parentbus.get_port_id()),
-    m_local_addr_client (snd_seq_client_id(m_seq)),         // localclient
+    m_local_addr_client (snd_seq_client_id(m_seq)),     /* our client ID    */
     m_local_addr_port   (-1),
     m_input_port_name   (rc().app_client_name() + " in")
 {
-    /*
-     * Get the actual user-client ID from ALSA, then rebuild the descriptive
-     * name for this port. Also have to do it for the parent midibus.  We'd
-     * like to use seq_client_name(), but it comes up unresolved by the damned
-     * GNU linker!  The obvious fixes don't work!
-     */
-
     set_bus_id(m_local_addr_client);
     set_name(SEQ64_CLIENT_NAME, bus_name(), port_name());
-    parentbus.set_bus_id(m_local_addr_client);
-    parentbus.set_name(SEQ64_CLIENT_NAME, bus_name(), port_name());
 }
 
 /**
- *  A rote empty destructor.
+ *  A rote empty virtual destructor.
  */
 
 midi_alsa::~midi_alsa ()

@@ -1424,17 +1424,16 @@ perform::set_beats_per_minute (midibpm bpm)
          */
 
 #ifdef USE_MODIFIABLE_JACK_TEMPO                    // EXPERIMENTAL
-        bool ok = is_jack_running();
+        bool ok = true;
+        m_jack_asst.set_beats_per_minute(bpm);
 #else
         bool ok = ! (is_jack_running() && m_running);
-#endif
-
         if (ok)
             m_jack_asst.set_beats_per_minute(bpm);
+#endif
+
 #else
-
         bool ok = ! m_running;
-
 #endif
 
         if (ok)

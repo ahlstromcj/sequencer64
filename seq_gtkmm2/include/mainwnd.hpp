@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-26
+ * \updates       2017-05-28
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -360,6 +360,13 @@ private:
 #endif
 
     /**
+     *  It seems convenient to have a button that can show that status
+     *  of keep queue.
+     */
+
+    Gtk::ToggleButton * m_button_queue;
+
+    /**
      *  The spin/adjustment controls for the load offset value.
      *  These controls are used in the File / Import dialog to change where
      *  the imported file will be loaded in the sequences space, which ranges
@@ -543,6 +550,8 @@ private:
     midibpm update_bpm ();
 
 #endif
+
+    void queue_it ();
 
     /**
      *  Toggle the group-learn status.  Simply forwards the call to

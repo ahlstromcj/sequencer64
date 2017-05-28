@@ -167,12 +167,6 @@ mainwid::mainwid
     m_screenset_offset      (m_screenset * m_screenset_slots),
     m_progress_height       (m_seqarea_seq_y + 3)
 {
-
-#if defined SEQ64_MULTI_MAINWID_XXX     // will crash
-    if (ss > 0)
-        set_screenset(0, true);         /* update perform's screen-set, too */
-#endif
-
     if (is_nullptr(gs_mainwid_pointer))
         gs_mainwid_pointer = this;
 }
@@ -836,8 +830,9 @@ mainwid::set_screenset (int ss, bool setperf)
 #endif
 
     m_screenset = perf().get_screenset();
-    m_screenset_offset = perf().get_offset();
-    reset();
+    m_screenset_offset = perf().get_screenset_offset();
+printf("m_screenset_offset = %d\n", m_screenset_offset);
+    reset();                                    /* redraws the window   */
 }
 
 /**

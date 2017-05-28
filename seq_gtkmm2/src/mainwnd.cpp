@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-26
+ * \updates       2017-05-28
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -307,6 +307,8 @@ mainwnd::mainwnd
 #ifdef SEQ64_MAINWND_TAP_BUTTON
     m_button_tap            (manage(new Gtk::Button("0"))),
 #endif
+
+    m_button_queue          (manage(new Gtk::ToggleButton("Q"))),
 
     /*
      * \change ca 2016-05-15
@@ -657,6 +659,9 @@ mainwnd::mainwnd
 
 #endif
 
+    m_button_queue->signal_clicked().connect(mem_fun(*this, &mainwnd::queue_it));
+    add_tooltip(m_button_queue, "Shows and toggles the keep-queue status.");
+
     m_adjust_bpm->signal_value_changed().connect
     (
         mem_fun(*this, &mainwnd::adj_callback_bpm)
@@ -679,6 +684,8 @@ mainwnd::mainwnd
 #ifdef SEQ64_MAINWND_TAP_BUTTON
     bpmhbox->pack_start(*m_button_tap, Gtk::PACK_SHRINK);
 #endif
+
+    bpmhbox->pack_start(*m_button_queue, Gtk::PACK_SHRINK);
 
     /*
      * Screen set name edit line.
@@ -885,8 +892,9 @@ mainwnd::mainwnd
     }
 
     // contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
-    // m_main_wid->set_can_focus();            /* from stazed */
-    // m_main_wid->grab_focus();
+
+    m_main_wid->set_can_focus();            /* from stazed */
+    m_main_wid->grab_focus();
 
 #else
 
@@ -925,9 +933,18 @@ mainwnd::mainwnd
         contentvbox->pack_start(*m_mainwid_grid, Gtk::PACK_SHRINK);
     }
     else
-    {
         contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
-    }
+
+    m_main_wid->set_can_focus(true);            /* from stazed */
+    m_main_wid->grab_focus();
+
+    /*
+     * Setting this allows other hot-keys to work, but then the user cannot
+     * edit the spinbutton numeric value!
+     *
+    m_spinbutton_ss->set_can_focus(false);
+     *
+     */
 
 #endif
 
@@ -1162,6 +1179,9 @@ mainwnd::timer_callback ()
 
     update_markers(tick);
 
+    if (m_button_queue->get_active() != perf().is_keep_queue())
+        m_button_queue->set_active(perf().is_keep_queue());
+
 #ifdef SEQ64_USE_DEBUG_OUTPUT_XXX               /* TMI */
     static midibpm s_bpm = 0.0;
     if (bpm != s_bpm)
@@ -1338,6 +1358,7 @@ void
 mainwnd::set_screenset (int screenset, bool setperf)
 {
     m_main_wid->set_screenset(screenset, setperf);
+//  m_main_wid->grab_focus();
 }
 
 /**
@@ -1495,22 +1516,20 @@ mainwnd::on_realize ()
     gui_window_gtk2::on_realize();
 
     /*
-     * None of these linesfix the Alt-F issue.
+     * None of these lines fix the Alt-F issue.
      *
      *  test_widget_click(m_button_tap->get_child()->gobj());
      *  m_main_wid->grab_focus();
      *  grab_focus();
      *  set_focus(*this);
      *  present();
-     *
      *  m_timeout_connect = Glib::signal_timeout().connect
      *  (
      *      mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
      *  );
+     *
+     * set_screenset(0);           // causes a segfault
      */
-
-    /////// CAUSES SEGTFAULT        //////////////////////
-    /////// set_screenset(0);       //////////////////////
 }
 
 /**
@@ -2203,6 +2222,7 @@ mainwnd::adj_callback_ss ()
         set_screenset(int(m_adjust_ss->get_value()), true);
         m_entry_notes->set_text(perf().current_screen_set_notepad());
     }
+    m_main_wid->grab_focus();               /* allows hot-keys to work  */
 }
 
 /**
@@ -2220,7 +2240,9 @@ mainwnd::adj_callback_bpm ()
 
 /**
  *  This function is the callback for adjusting the screen-set value of a
- *  particular mainwid.
+ *  particular mainwid.  Note that we have to actually set the perform
+ *  object's screen-set, to get its screen-set offsets in place, before
+ *  logging the changes to the mainwid.
  *
  * \param widblock
  *      This parameter ranges from 0 to 5, depending on how many mainwids are
@@ -2241,17 +2263,17 @@ mainwnd::adj_callback_wid (int widblock)
             int newset = m_mainwid_adjustors[widblock]->get_value();
             std::string label = "   Set ";
             label += std::to_string(newset);
-            m_mainwid_blocks[widblock]->log_screenset(newset);
             if (widblock == 0)
-            {
-                perf().set_screenset(newset);
-            }
+                perf().set_screenset(newset);                   /* first    */
+
+            m_mainwid_blocks[widblock]->log_screenset(newset);  /* second   */
             if (newset == perf().get_screenset())
             {
                 fslot->set_shadow_type(Gtk::SHADOW_OUT);
                 label += " [active]";
             }
             fslot->set_label(label);
+            m_main_wid->grab_focus();           /* allows hot-keys to work  */
         }
         else
             adj_callback_ss();
@@ -2520,6 +2542,17 @@ mainwnd::update_bpm ()
 }
 
 #endif      // SEQ64_MAINWND_TAP_BUTTON
+
+/**
+ *  Implements the keep-queue button.
+ */
+
+void
+mainwnd::queue_it ()
+{
+    bool is_active = m_button_queue->get_active();
+    perf().set_keep_queue(is_active);
+}
 
 /**
  *  This callback function handles a delete event from ...?

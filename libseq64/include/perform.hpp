@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-20
+ * \updates       2017-05-28
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -698,15 +698,6 @@ private:
     midi_control m_midi_cc_off[c_midi_controls_extended];
 
     /**
-     *  Holds the current offset into the screen-sets.  It is used in the MIDI
-     *  control of the playback status of the sequences in the current
-     *  screen-set.  It is also used to offset the sequence numbers so that
-     *  the control (mute/unmute) keys can be shown on any screen-set.
-     */
-
-    int m_offset;
-
-    /**
      *  Holds the OR'ed control status values.  Need to learn more about this
      *  one.  It is used in the replace, snapshot, and queue functionality.
      */
@@ -722,8 +713,11 @@ private:
     int m_screenset;
 
     /**
-     *  Holds the offset for the current screen-set.  Just saves some
-     *  multiplcations.
+     *  Holds the current sequence-number offset for the current screen-set.
+     *  Saves some multiplications.  It is used in the MIDI control of the
+     *  playback status of the sequences in the current screen-set.  It is
+     *  also used to offset the sequence numbers so that the control
+     *  (mute/unmute) keys can be shown on any screen-set.
      */
 
     int m_screenset_offset;
@@ -1588,6 +1582,9 @@ public:
     void sequence_playing_toggle (int seq);
     void sequence_playing_change (int seq, bool on);
 
+    void set_keep_queue (bool activate);
+    bool is_keep_queue () const;
+
     /**
      *  Calls sequence_playing_change() with a value of true.
      *
@@ -1670,27 +1667,12 @@ public:
     }
 
     /**
-     *  Calculates the offset into the screen sets.
-     *  Sets <code>m_offset = offset * c_mainwnd_rows * c_mainwnd_cols</code>.
-     *  However, this hard-wiring, so we use the (new) screenset_offset()
-     *  function.
-     *
-     * \param offset
-     *      The desired offset.
+     * \getter m_screenset_offset
      */
 
-    void set_offset (int offset)
+    int get_screenset_offset () const
     {
-        m_offset = screenset_offset(offset);
-    }
-
-    /**
-     * \getter m_offset
-     */
-
-    int get_offset () const
-    {
-        return m_offset;
+        return m_screenset_offset;
     }
 
     void save_playing_state ();
@@ -2395,8 +2377,8 @@ private:
      *  Calculates the screen-set offset index.
      *
      * \param ss
-     *      Provides the screen-set number, ranging from 0 to c_seqs_in_set-1.
-     *      This value is not validatd, for speed.
+     *      Provides the screen-set number, ranging from 0 to c_max_sets-1.
+     *      This value is not validated, for speed.
      *
      * \return
      *      Returns the product of \a ss and m_seqs_in_set.

@@ -2,66 +2,66 @@ Qjackctl:
 
    Readable/Output:
 
-      jack-keyboard:midi out --------------> K        seq64 output port  A
-      seq64:jack-keyboard midi_in ---------> J
-      seq64:yoshimi midi in ---------------> Y
+jack-keyboard:midi out --------------> K        seq64 output port  A
+seq64:jack-keyboard midi_in ---------> J
+seq64:yoshimi midi in ---------------> Y
 
    Writeable/Input:
 
-      jack-keyboard:midi in <--------------- J        seq64 input port
-      seq64:jack-keyboard midi_out <-------- K
-      yoshimi:midi in <--------------------- Y        seq64 input port
+jack-keyboard:midi in <--------------- J        seq64 input port
+seq64:jack-keyboard midi_out <-------- K
+yoshimi:midi in <--------------------- Y        seq64 input port
 
 Options:
 
    MIDI Clock:
 
-      jack_keyboard:midi_out
+jack_keyboard:midi_out
 
    MIDI Input:
 
-      yoshimi:midi in          Cannot activate/connect I/O
-      jack_keyboard:midi_in
+yoshimi:midi in          Cannot activate/connect I/O
+jack_keyboard:midi_in
 
    seqedit bus dropdown:
 
-      jack_keyboard:midi_out   A
+jack_keyboard:midi_out   A
 
-      Why is yoshimi:midi in not an output????
+Why is yoshimi:midi in not an output????
 
    Commenting out the perform's swap() call changed nothing!!!!!
 
 midi_jack_info::get_all_port_info():
 
-      out:  jack-keyboard:midi_out
+out:  jack-keyboard:midi_out
 
-      in:   yoshimi:midi in
-      in:   jack-keyboard:midi in
+in:   yoshimi:midi in
+in:   jack-keyboard:midi in
 
 Connect issues with JACK, jack-keyboard, yoshimi, and seq64:
 
    midibus jack-keyboard:midi_in (is input port):
 
-      midibus::api_connect() has null m_rt_midi pointer.  Fixed as a
-      configuration-related issue.
+midibus::api_connect() has null m_rt_midi pointer.  Fixed as a
+configuration-related issue.
 
-      Clicking on jack-keyboard:midi_out in the MIDI Input tab is meant to
-      connect the output of the jack-keyboard application to seq64's
-      selected MIDI input port.
+Clicking on jack-keyboard:midi_out in the MIDI Input tab is meant to
+connect the output of the jack-keyboard application to seq64's
+selected MIDI input port.
 
-      mmbus::set_input(0, true)
+mmbus::set_input(0, true)
 
-         m_inbus_array[0].m_bus is  jack-keyboard:midi_out
+m_inbus_array[0].m_bus is  jack-keyboard:midi_out
 
    Back to the beginning:
 
-      At startup, we register "jack-keyboard midi_out".
-      When we click ...., we try to register it again!  Why
-      does it get registered at startup???  It is set to off
-      in the "rc" configuration!
+At startup, we register "jack-keyboard midi_out".
+When we click ...., we try to register it again!  Why
+does it get registered at startup???  It is set to off
+in the "rc" configuration!
 
-         jack-keyboard:midi_out is a Readable Client/Output port
-         jack-keyboard:midi_in is a Writable Client/Input port
+jack-keyboard:midi_out is a Readable Client/Output port
+jack-keyboard:midi_in is a Writable Client/Input port
 
 
 
@@ -108,14 +108,14 @@ MIDI Options:
 
    Clocks:
 
-      0 system:midi_playback_1
-      1 jack-keyboard:midi_in
-      2 yoshimi:midi in
+0 system:midi_playback_1
+1 jack-keyboard:midi_in
+2 yoshimi:midi in
 
    Inputs:
 
-      0 system:midi_capture_1
-      1 jack-keyboard:midi_out
+0 system:midi_capture_1
+1 jack-keyboard:midi_out
 
 sequencer64.rc:
 
@@ -145,13 +145,13 @@ Qjackctl:
 
 	 	jack-keyboard:midi_out <-------------------
 		system:midi_capture_1 (nanoKey) <--------- | ------
-                                                 |       |
-	Writable/Input =                              |       |
-      jack-keyboard:midi_in                      |       |
-      seq64:jack-keyboard midi_out <-------------        |
-      seq64:system midi_capture_1  <---------------------
-      system:midi_playback_1 (nanoKey)
-      yoshimi:midi in
+|       |
+	Writable/Input =|       |
+jack-keyboard:midi_in                      |       |
+seq64:jack-keyboard midi_out <-------------        |
+seq64:system midi_capture_1  <---------------------
+system:midi_playback_1 (nanoKey)
+yoshimi:midi in
 
 If we click on MIDI Input jack-keyboard:midi_out, we get:
 
@@ -168,4 +168,81 @@ Seq64 shows an output for yoshimi:midi in, but there is no
 
 BEEF UP THE OUTPUT.
 
+Date: Tue, 25 Apr 2017 04:16:58 -0700
+From: Animtim <notifications@github.com>
+Subject: Re: [ahlstromcj/sequencer64] Jack midi less precise than alsa midi (#73) 
+
+Oh, I just noticed this timing issue is highly depending on jack buffer size.
+I initially had it set to 1024 (and 3 periods). Issue is subtle but can be
+heard.  Then I tested with 256, and couldn't really hear the issue (but then I
+have occasional xruns, very few but still).  Then I tested with 2048, and the
+issue gets really worse, really easy to hear it.
+
+Date: Fri, 19 May 2017 02:30:07 -0700
+From: Animtim <notifications@github.com>
+Subject: Re: [ahlstromcj/sequencer64] Any mechanism for live tempo control? (#86) 
+
+I see what he means: for now, when using jack transport, the bpm seems to be
+locked in seq64 while playing. That is both true as master and as slave.For now
+my workaround is to use "old school" sync with midi clock, and not use jack
+transport.
+																	 
+Note that in my case, as I want to sync seq64 with ardour5 and the latter
+doesn't seem to support getting external tempo, so I define/change the tempo in
+ardour and send its midi clock to seq64.. but that is more an issue from the
+ardour side.
+
+Date: Wed, 24 May 2017 06:16:53 -0700
+From: Animtim <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] Any mechanism for live tempo control? (#86) 
+
+I started quickly testing the wip branch, changing bpm seems to work now with
+jack transport, at least correctly as slave.  When using seq64 as jack
+transport master, changing bpm does some weird time-position shift, both when
+using numeric input or the tap bpm button.  And also, when using it like this
+with ardour, ardour does some weird stop/play at every bpm change from seq64.
+
+. . .
+
+after testing again launching only seq64 as transport master and carla as
+plugin host, changing bpm in seq64 doesn't make weird time-position shift, so
+it was probably a kind of transport-position conflict from launching ardour
+before.
+ 
+
+ate: Mon, 22 May 2017 06:12:17 -0700
+From: jean-emmanuel <notifications@github.com>
+Subject: [ahlstromcj/sequencer64] [Jack Transport] Seq64 doesn't reposition jack
+        transport (#88)
+
+Jack transport repositioning function is only called when seq64 is set as
+transport master, this doesn't conform to common usage : clients can
+relocate, the transport master's only privilegied controls are related to 
+bpm and cycles lengths. Hydrogen's handling of jack transport is a good
+example we could follow, what do you think ?
+
+. . .
+
+     I still thinking that "JACK slaves" should not change tempo;
+
+I agree, it's the transport's position that's supposed to be changeable by
+slaves.
+
+
+http://www.jackaudio.org/files/docs/html/transport-design.html
+
+     Transport Control
+     The JACK engine itself manages stopping and starting of the transport.
+     Any client can make transport control requests at any time.
+
+     Repositioning
+     These request a new transport position. They can be called at any time
+     by any client. Even the timebase master must use them
+
+. . .
+
+Also, when testing seq64's jack related things, note that there is a bug
+that currently prevents any jack-related change to actually work when done
+from the gui, you have to relaunch the app...
 

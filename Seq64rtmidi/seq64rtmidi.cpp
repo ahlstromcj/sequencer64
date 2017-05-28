@@ -24,7 +24,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2017-05-16
+ * \updates       2017-05-28
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -32,11 +32,7 @@
  *
  * \todo
  *      "I don't like seq24's pianoroll editor, the way you do CC envelopes
- *      isn't ideal, it uses alsa-midi, there's unnecessary complexity in
- *      switching from pattern-trigger mode to song mode, and its insistence
- *      on being transport master while not even being able to adjust tempo
- *      when live is annoying."  The JACK support may need updating/upgrading
- *      as well.
+ *      isn't ideal, it uses alsa-midi, ... [the rest are now fixed]".
  */
 
 #include <stdio.h>
@@ -89,9 +85,7 @@ main (int argc, char * argv [])
     if (seq64::process_o_options(argc, argv))
     {
         /*
-         * The user may have specified the "set-rows" or "set-cols" options.
-         * We don't support the "daemonize" option for the GUI, but it is
-         * probably useful to support the "log" option.
+         * We need to process the "log" option early.
          */
 
         std::string logfile = seq64::usr().option_logfile();
@@ -138,6 +132,16 @@ main (int argc, char * argv [])
         std::string errmessage;                     /* just in case!        */
         ok = seq64::parse_options_files(p, errmessage, argc, argv);
         optionindex = seq64::parse_command_line_options(p, argc, argv);
+        if (seq64::process_o_options(argc, argv))
+        {
+            /*
+             * The user may have specified the "wid" or other -o options that
+             * are also set up in the "usr" file.  The command line needs to
+             * take precedence.  Nothing to do in here, though, the "log"
+             * option is processed above.
+             */
+        }
+
         p.launch(seq64::usr().midi_ppqn());         /* set up performance   */
         if (seq64::usr().inverse_colors())
             seq64::gui_palette_gtk2::load_inverse_palette(true);

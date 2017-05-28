@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-05-27
+ * \updates       2017-05-28
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -324,7 +324,6 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_midi_cc_toggle            (),         // midi_control []
     m_midi_cc_on                (),         // midi_control []
     m_midi_cc_off               (),         // midi_control []
-    m_offset                    (0),
     m_control_status            (0),
     m_screenset                 (0),        // vice m_playscreen
     m_screenset_offset          (0),
@@ -1807,7 +1806,6 @@ perform::set_screenset (int ss)
         m_screenset_offset = screenset_offset(ss);
         unset_queued_replace();                 /* clear this new feature   */
     }
-    set_offset(ss);                             /* mainwid::set_screenset() */
 }
 
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
@@ -3533,6 +3531,7 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
         break;
 
     case c_midi_control_ss_set:
+
         set_screenset(v);
         result = true;
         break;
@@ -3569,7 +3568,7 @@ perform::midi_control_event (const event & ev)
 {
     midibyte data[2] = { 0, 0 };
     midibyte status = ev.get_status();
-    int offset = m_offset;
+    int offset = m_screenset_offset;
     ev.get_data(data[0], data[1]);
     for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)
     {
@@ -3587,8 +3586,16 @@ perform::midi_control_event (const event & ev)
                 }
                 else if (is_extended)
                 {
-                    if (handle_midi_control_ex(ctl, midi_control::action_toggle, data[1]))
+                    if
+                    (
+                        handle_midi_control_ex
+                        (
+                            ctl, midi_control::action_toggle, data[1]
+                        )
+                    )
+                    {
                         break;
+                    }
                 }
             }
         }
@@ -3990,8 +3997,8 @@ perform::unset_queued_replace (bool clearbits)
  *
  *  This function is also called in midi_control_event() if the control number
  *  represents a sequence number in a screen-set, that is, it ranges from 0 to
- *  31.  This value is offset by the current screen-set number, m_offset
- *  before passing it to this function.
+ *  31.  This value should be offset by the current screen-set number,
+ *  m_screenset_offset, before passing it to this function.
  *
  *  This function now also supports the new queued-replace (queued-solo)
  *  feature.
@@ -4112,6 +4119,30 @@ perform::sequence_playing_change (int seq, bool on)
 /*
  * Non-inline encapsulation functions start here.
  */
+
+/**
+ *  Sets or unsets the keep-queue functionality, to be used by the new "Q"
+ *  button in the main window.
+ */
+
+void
+perform::set_keep_queue (bool activate)
+{
+    if (activate)
+        set_sequence_control_status(c_status_queue);
+    else
+        unset_sequence_control_status(c_status_queue);
+}
+
+/**
+ *  Returns true if the c_status_queue bit is set.
+ */
+
+bool
+perform::is_keep_queue () const
+{
+    return (m_control_status & c_status_queue) != 0;
+}
 
 /**
  *  Handle a sequence key to toggle the playing of an active pattern in
@@ -4275,12 +4306,10 @@ perform::lookup_keyevent_key (int seqnum)
 {
     unsigned int result = (unsigned int)('?');
     if (! rc().legacy_format())
-        seqnum -= m_offset;
+        seqnum -= m_screenset_offset;
 
     if (get_key_events_rev().count(seqnum) > 0)
         result = get_key_events_rev()[seqnum];
-    else
-        result = '?';                 /* '.' */
 
     return result;
 }

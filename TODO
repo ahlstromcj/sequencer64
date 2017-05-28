@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-05-14
+2016-12-03 to 2017-05-28
 
 Debian packaging:
 
@@ -24,6 +24,14 @@ Hot ideas (from GitHub):
 
 Puzzles:
 
+    -   In multi-wid indep mode, when set 1 (second set) is showing in slots 1
+        and 2, clicking on pattern-slot 0 (pattern 32) in slot 1 toggles only
+        the pattern in pattern slot 0, but clicking on the same pattern-slot
+        is the second mainwid slot properly toggles both.  Actually, the rule
+        is that only the one clicked, and the top-right one, toggle.  The
+        reason this happens is that sequence::is_dirty_main() turns off the
+        flag after the call, so only the current and first sets see the dirty
+        status (how does the first see it, though?)
     -   The Shift Key processing of Seq64 is different from Seq24.  For
         example, implementing Mod Replace with "{" (Shift-[) in Seq24
         basically works, but in Seq64 it unmutes all other patterns!

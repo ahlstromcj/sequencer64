@@ -28,13 +28,16 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-21
- * \updates       2017-03-25
+ * \updates       2017-05-16
  * \license       GNU GPLv2 or above
  *
  *  This module defines a number of constants relating to control of the 32
  *  sequences in a set, plus additional controls that shipped with seq24, plus
  *  new controls to help make Sequencer64 controllable without a graphical
  *  user interface.
+ *
+ *  User jean-emmanuel added a new MIDI control for setting the screen-set
+ *  directly by number.
  */
 
 #include "globals.h"                    /* c_seqs_in_set, and more          */
@@ -92,7 +95,7 @@ const int c_midi_control_solo         = c_midi_track_ctrl + 12;
 const int c_midi_control_thru         = c_midi_track_ctrl + 13;
 const int c_midi_control_bpm_page_up  = c_midi_track_ctrl + 14;
 const int c_midi_control_bpm_page_dn  = c_midi_track_ctrl + 15;
-const int c_midi_control_16           = c_midi_track_ctrl + 16;
+const int c_midi_control_ss_set       = c_midi_track_ctrl + 16; /* pull #85 */
 const int c_midi_control_17           = c_midi_track_ctrl + 17;
 const int c_midi_control_18           = c_midi_track_ctrl + 18;
 const int c_midi_control_19           = c_midi_track_ctrl + 19;

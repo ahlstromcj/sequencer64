@@ -58,7 +58,7 @@ x  Need an alternate icon for the transposable button in seqedit.  Done, see
      JACK Transport plus JACK Connect options.
    - Make the perfedit JACK icon look less phallic.   :-D
    - Add this icon and functionality to the main window.
-   - Make Pause functionality work properly in ALSA and JACK mode when
+   x Make Pause functionality work properly in ALSA and JACK mode when
      SEQ64_STAZED_JACK_SUPPORT is active.
    - Make JACK functionality work properly when JACK Master is *not* selected,
      when SEQ64_STAZED_JACK_SUPPORT is *not* active.

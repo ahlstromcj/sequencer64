@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-28
+ * \updates       2017-05-21
  * \license       GNU GPLv2 or above
  *
  *  When the Song/Performance editor has focus, Sequencer64 is automatically
@@ -71,11 +71,8 @@
 #include "pixmaps/undo.xpm"
 #include "pixmaps/down.xpm"
 #include "pixmaps/perfedit.xpm"
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
 #include "pixmaps/jack_black.xpm"       /* #include "pixmaps/jack.xpm"  */
 #include "pixmaps/transport_follow.xpm"
-#endif
 
 #ifdef SEQ64_STAZED_TRANSPOSE
 #include "pixmaps/transpose.xpm"
@@ -177,10 +174,8 @@ perfedit::perfedit
     m_button_grow       (manage(new Gtk::Button())),
     m_button_undo       (manage(new Gtk::Button())),
     m_button_redo       (manage(new Gtk::Button())),    // stazed
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_button_jack       (manage(new Gtk::ToggleButton())),
     m_button_follow     (manage(new Gtk::ToggleButton())),
-#endif
     m_button_bpm        (manage(new Gtk::Button())),
     m_entry_bpm         (manage(new Gtk::Entry())),
     m_button_bw         (manage(new Gtk::Button())),
@@ -407,7 +402,6 @@ perfedit::perfedit
     add_tooltip(m_button_play, "Begin playback at the L marker.");
     m_button_play->set_sensitive(true);
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_button_jack->add(*manage(new PIXBUF_IMAGE(jack_black_xpm)));
     m_button_jack->signal_clicked().connect
     (
@@ -424,7 +418,6 @@ perfedit::perfedit
     );
     add_tooltip(m_button_follow, "Toggle the following of JACK transport.");
     m_button_follow->set_active(true);
-#endif
 
     m_hlbox->pack_end(*m_button_copy , false, false);
     m_hlbox->pack_end(*m_button_expand , false, false);
@@ -448,11 +441,8 @@ perfedit::perfedit
     m_hlbox->pack_start(*m_entry_xpose , false, false);
 #endif
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_hlbox->pack_start(*m_button_jack, false, false);
     m_hlbox->pack_start(*m_button_follow, false, false);
-#endif
-
     add(*m_table);
 
     /*
@@ -596,8 +586,6 @@ perfedit::popup_menu (Gtk::Menu * menu)
     menu->popup(0, 0);
 }
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
 /**
  *  Sets the transport status when compiled for seq32 JACK support.
  *  Note that this will trigger the button signal callback.
@@ -659,8 +647,6 @@ perfedit::toggle_jack ()
 {
     m_button_jack->set_active(! m_button_jack->get_active());
 }
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Sets the guides, which are the L and R user-interface elements.
@@ -819,8 +805,6 @@ perfedit::timeout ()
     m_perfroll->follow_progress();          /* keep up with progress        */
     m_perfroll->redraw_progress();
     m_perfnames->redraw_dirty_sequences();
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     if (m_button_follow->get_active() != perf().get_follow_transport())
         m_button_follow->set_active(perf().get_follow_transport());
 
@@ -828,7 +812,6 @@ perfedit::timeout ()
         m_button_jack->set_sensitive(false);
     else
         m_button_jack->set_sensitive(true);
-#endif
 
     m_button_undo->set_sensitive(perf().have_undo());
     m_button_redo->set_sensitive(perf().have_redo());
@@ -1023,7 +1006,6 @@ perfedit::on_key_press_event (GdkEventKey * ev)
         }
         else
         {
-#ifdef SEQ64_STAZED_JACK_SUPPORT
             const keys_perform & kp = perf().keys();
             if (k.is(kp.follow_transport()))
             {
@@ -1045,7 +1027,6 @@ perfedit::on_key_press_event (GdkEventKey * ev)
                 perf().toggle_jack_mode();
                 return true;
             }
-#endif
         }
     }
     (void) m_perftime->key_press_event(ev);
@@ -1066,8 +1047,6 @@ perfedit::on_key_release_event (GdkEventKey * ev)
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_RELEASE))
     {
         keystroke k(ev->keyval, SEQ64_KEYSTROKE_RELEASE, ev->state);
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
         const keys_perform & kp = perf().keys();
         if (k.is(kp.fast_forward()))
         {
@@ -1079,7 +1058,6 @@ perfedit::on_key_release_event (GdkEventKey * ev)
             rewind(false);
             return true;
         }
-#endif
     }
     return Gtk::Window::on_key_release_event(ev);   // necessary?
 }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-13
+ * \updates       2017-05-22
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -65,6 +65,11 @@
  *      realized we'd have to do the same for the perfedit/perfnames class,
  *      and that's just too much.  We now add a global/free function to the
  *      mainwid module to access the update function we need.
+ *
+ *  User jean-emmanuel made the main window resizable if his scroll-bar
+ *  feature is enable, pull #84.  We might eventually make resizability
+ *  enabled only if the larger screen-sets or multi-mainwid features are
+ *  enabled, just to preserve expected "legacy" behavior under "legacy" usage.
  */
 
 #include <cctype>
@@ -299,7 +304,11 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      */
 
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq64_xpm));
+#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+    set_resizable(! usr().is_default_mainwid_size());
+#else
     set_resizable(false);
+#endif
     perf().enregister(this);                        /* register for notify  */
     update_window_title();                          /* main window          */
 
@@ -630,41 +639,43 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      * Pattern panel scrollable wrapper
      */
 
-    Gtk::Layout * mainwid_wrapper = new Gtk::Layout(*m_hadjust, *m_vadjust);
-    mainwid_wrapper->add(*m_main_wid);
-    mainwid_wrapper->set_size(m_main_wid->m_mainwid_x,m_main_wid->m_mainwid_y);
-    mainwid_wrapper->set_size_request
-    (
-        m_main_wid->m_mainwid_x, m_main_wid->m_mainwid_y
-    );
+    Gtk::VBox * mainwid_hscroll_wrapper = nullptr;
+    if (! usr().is_default_mainwid_size())
+    {
+        Gtk::Layout * mainwid_wrapper = new Gtk::Layout(*m_hadjust, *m_vadjust);
+        mainwid_wrapper->add(*m_main_wid);
+        mainwid_wrapper->set_size(m_main_wid->m_mainwid_x, m_main_wid->m_mainwid_y);
 
-    Gtk::HBox * mainwid_vscroll_wrapper = new Gtk::HBox();
-    mainwid_vscroll_wrapper->set_spacing(5);
-    mainwid_vscroll_wrapper->pack_start
-    (
-        *mainwid_wrapper,
-        Gtk::PACK_EXPAND_WIDGET
-    );
+        Gtk::HBox * mainwid_vscroll_wrapper = new Gtk::HBox();
+        mainwid_vscroll_wrapper->set_spacing(5);
+        mainwid_vscroll_wrapper->pack_start
+        (
+            *mainwid_wrapper,
+            Gtk::PACK_EXPAND_WIDGET
+        );
+        mainwid_vscroll_wrapper->pack_start(*m_vscroll, false, false);
 
-    Gtk::VBox * mainwid_hscroll_wrapper = new Gtk::VBox();
-    mainwid_hscroll_wrapper->set_spacing(5);
-    mainwid_hscroll_wrapper->pack_start
-    (
-        *mainwid_vscroll_wrapper, Gtk::PACK_EXPAND_WIDGET
-    );
+        Gtk::VBox * mainwid_hscroll_wrapper = new Gtk::VBox();
+        mainwid_hscroll_wrapper->set_spacing(5);
+        mainwid_hscroll_wrapper->pack_start
+        (
+            *mainwid_vscroll_wrapper, Gtk::PACK_EXPAND_WIDGET
+        );
+        mainwid_hscroll_wrapper->pack_start(*m_hscroll, false, false);
 
-    m_main_wid->signal_scroll_event().connect
-    (
-        mem_fun(*this, &mainwnd::on_scroll_event)
-    );
-    m_hadjust->signal_changed().connect
-    (
-        mem_fun(*this, &mainwnd::on_scrollbar_resize)
-    );
-    m_vadjust->signal_changed().connect
-    (
-        mem_fun(*this, &mainwnd::on_scrollbar_resize)
-    );
+        m_main_wid->signal_scroll_event().connect
+        (
+            mem_fun(*this, &mainwnd::on_scroll_event)
+        );
+        m_hadjust->signal_changed().connect
+        (
+            mem_fun(*this, &mainwnd::on_scrollbar_resize)
+        );
+        m_vadjust->signal_changed().connect
+        (
+            mem_fun(*this, &mainwnd::on_scrollbar_resize)
+        );
+    }
 
 #endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
@@ -681,8 +692,16 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     contentvbox->pack_start(*tophbox, Gtk::PACK_SHRINK);
 
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
-    contentvbox->pack_start(*mainwid_hscroll_wrapper, true, true);
-    contentvbox->pack_start(*bottomhbox, false, false);
+    if (! usr().is_default_mainwid_size())
+    {
+        contentvbox->pack_start(*mainwid_hscroll_wrapper, true, true);
+        contentvbox->pack_start(*bottomhbox, false, false);
+    }
+    else
+    {
+        contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
+        contentvbox->pack_start(*bottomhbox, Gtk::PACK_SHRINK);
+    }
 #else
     contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
     contentvbox->pack_start(*bottomhbox, Gtk::PACK_SHRINK);
@@ -715,20 +734,22 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
     /*
-     * Prevent window size jumps when resizing near scrollbars' appearance point
-     * Add scrollbars only after to make sure their size are not added
-     *
-     * If set_size_request() is not called, the window will request its natural
-     * size (determined by its content) when scrollbars appear or disappear
+     * Set window initial size: mainwid doesn't require any space because it's
+     * wrapped in a Layout object, so we must add the window's children sizes
+     * and spacings
      */
 
-    set_size_request
-    (
-        mainvbox->get_allocation().get_width(),
-        mainvbox->get_allocation().get_height()
-    );
-    mainwid_hscroll_wrapper->pack_start(*m_hscroll, false, false);
-    mainwid_vscroll_wrapper->pack_start(*m_vscroll, false, false);
+    if (! usr().is_default_mainwid_size())
+    {
+        resize
+        (
+            m_main_wid->m_mainwid_x + 20,
+            tophbox->get_allocation().get_height() +
+                bottomhbox->get_allocation().get_height() +
+                m_menubar->get_allocation().get_height() +
+                m_main_wid->m_mainwid_y + 40
+        );
+    }
 
 #endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
@@ -960,6 +981,10 @@ mainwnd::timer_callback ()
         label = "Native";
 #endif
 
+    /*
+     * We should make this a member and optimize the change as well.
+     */
+
     Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>(m_button_jack->get_child()));
     if (not_nullptr(lblptr))
         lblptr->set_text(label);
@@ -977,8 +1002,6 @@ mainwnd::timer_callback ()
 
 #endif  // SEQ64_SHOW_JACK_STATUS
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     /*
      * For seqroll keybinding, this is needed here instead of perfedit
      * timeout(), since perfedit may not be open all the time.
@@ -986,8 +1009,6 @@ mainwnd::timer_callback ()
 
     if (m_perf_edit->get_toggle_jack() != perf().get_toggle_jack())
         m_perf_edit->toggle_jack();
-
-#endif
 
     if (perf().is_running() != m_is_running)
     {

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-29
+ * \updates       2017-05-21
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -689,9 +689,6 @@ options::add_extended_keys_page ()
     );
     controltable->attach(*label, 0, 1, 1, 2);
     controltable->attach(*entry, 1, 2, 1, 2);
-#if ! defined SEQ64_STAZED_JACK_SUPPORT
-    entry->set_sensitive(false);
-#endif
 
     label = manage(new Gtk::Label("Menu mode", Gtk::ALIGN_RIGHT));
     entry = manage
@@ -711,9 +708,6 @@ options::add_extended_keys_page ()
     );
     controltable->attach(*label, 2, 3, 0, 1);
     controltable->attach(*entry, 3, 4, 0, 1);
-#if ! defined SEQ64_STAZED_JACK_SUPPORT
-    entry->set_sensitive(false);
-#endif
 
     label = manage(new Gtk::Label("Rewind", Gtk::ALIGN_RIGHT));
     entry = manage
@@ -722,9 +716,6 @@ options::add_extended_keys_page ()
     );
     controltable->attach(*label, 2, 3, 1, 2);
     controltable->attach(*entry, 3, 4, 1, 2);
-#if ! defined SEQ64_STAZED_JACK_SUPPORT
-    entry->set_sensitive(false);
-#endif
 
     label = manage(new Gtk::Label("Fast forward", Gtk::ALIGN_RIGHT));
     entry = manage
@@ -733,9 +724,6 @@ options::add_extended_keys_page ()
     );
     controltable->attach(*label, 2, 3, 2, 3);
     controltable->attach(*entry, 3, 4, 2, 3);
-#if ! defined SEQ64_STAZED_JACK_SUPPORT
-    entry->set_sensitive(false);
-#endif
 
     label = manage(new Gtk::Label("Pointer position", Gtk::ALIGN_RIGHT));
     entry = manage
@@ -744,9 +732,6 @@ options::add_extended_keys_page ()
     );
     controltable->attach(*label, 2, 3, 3, 4);
     controltable->attach(*entry, 3, 4, 3, 4);
-#if ! defined SEQ64_STAZED_JACK_SUPPORT
-    entry->set_sensitive(false);
-#endif
 
     label = manage(new Gtk::Label("Toggle mutes", Gtk::ALIGN_RIGHT));
     entry = manage

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-06
+ * \updates       2017-05-21
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -118,10 +118,8 @@ perfroll::perfroll
     m_scroll_page           (0),
 #endif
     m_have_button_press     (false),                        // stazed
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_transport_follow      (true),
     m_trans_button_press    (false),
-#endif
     m_4bar_offset           (0),                            // now a full offset
     m_sequence_offset       (0),
     m_roll_length_ticks     (0),
@@ -1028,8 +1026,6 @@ perfroll::on_expose_event (GdkEventExpose * ev)
 bool
 perfroll::on_button_press_event (GdkEventButton * ev)
 {
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     /*
      *  To avoid double button press on normal seq42 method...
      */
@@ -1040,8 +1036,6 @@ perfroll::on_button_press_event (GdkEventButton * ev)
         perf().set_follow_transport(false);
         m_trans_button_press = true;
     }
-
-#endif
 
     bool result = m_interaction.on_button_press_event(ev, *this);
     if (result)
@@ -1064,13 +1058,8 @@ perfroll::on_button_release_event (GdkEventButton * ev)
     if (result)
         perf().modify();
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     perf().set_follow_transport(m_transport_follow);
     m_trans_button_press = false;
-
-#endif
-
     enqueue_draw();
     return result;
 }
@@ -1185,8 +1174,6 @@ perfroll::on_key_press_event (GdkEventKey * ev)
 {
     keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     /*
      * If this keystroke is clicked, move the song position to the location of
      * the mouse pointer.  Stazed used p, but we need an alternative.  The
@@ -1209,8 +1196,6 @@ perfroll::on_key_press_event (GdkEventKey * ev)
         perf().reposition(tick);
         return true;
     }
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
 
     /*
      * Add this call to try to make seqroll and perfroll act the same for

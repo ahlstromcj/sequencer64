@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-07
+ * \updates       2017-05-16
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -46,6 +46,10 @@
  *      -   m_master_bus
  *      -   m_beats_per_bar
  *      -   m_beat_width
+ *
+ *  User jean-emmanuel added a new MIDI control for setting the screen-set
+ *  directly by number.  To handle this, a value parameter was added to
+ *  handle_midi_control_ex().
  */
 
 #include <vector>                       /* std::vector                      */
@@ -175,7 +179,6 @@ class perform
         void * arg
     );
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     friend int jack_transport_callback (jack_nframes_t nframes, void * arg);
     friend void jack_shutdown (void * arg);
     friend void jack_timebase_callback
@@ -184,7 +187,6 @@ class perform
         jack_position_t * pos, int new_pos, void * arg
     );
     friend long get_current_jack_position (void * arg);
-#endif
 
 #endif  // SEQ64_JACK_SUPPORT
 
@@ -250,8 +252,6 @@ private:
 
     bool m_song_start_mode;
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     /**
      *  Indicates that, no matter what the current Song/Live setting, the
      *  playback was started from the perfedit window.
@@ -282,8 +282,6 @@ private:
      */
 
     ff_rw_button_t m_FF_RW_button_type;
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
 
     /**
      *  Mute group support.  This value determines whether a particular track
@@ -1267,8 +1265,6 @@ public:
             m_notify.push_back(pfcb);
     }
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     void toggle_jack_mode ()
     {
         m_jack_asst.toggle_jack_mode();
@@ -1397,8 +1393,6 @@ public:
     }
 
     void reposition (midipulse tick);
-
-#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 public:
 
@@ -2123,7 +2117,7 @@ private:
     midi_control & midi_control_off (int ctl);
     void midi_control_event (const event & ev);
     void handle_midi_control (int control, bool state);
-    bool handle_midi_control_ex (int control, midi_control::action a);
+    bool handle_midi_control_ex (int control, midi_control::action a, int v);
     const std::string & get_screen_set_notepad (int screenset) const;
 
     /**

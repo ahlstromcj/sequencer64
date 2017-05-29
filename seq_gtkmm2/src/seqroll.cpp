@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-13
+ * \updates       2017-05-21
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -193,10 +193,8 @@ seqroll::seqroll
     m_scroll_page           (0),
     m_progress_follow       (true),
 #endif
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_transport_follow      (true),
     m_trans_button_press    (false),
-#endif
     m_background_sequence   (0),
     m_drawing_background_seq(false),
 #ifdef SEQ64_STAZED_EXPAND_RECORD
@@ -1993,9 +1991,6 @@ seqroll::on_expose_event (GdkEventExpose * ev)
 bool
 seqroll::on_button_press_event (GdkEventButton * ev)
 {
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     /*
      *  In order to avoid a double button press on a normal seq32 method.
      */
@@ -2006,8 +2001,6 @@ seqroll::on_button_press_event (GdkEventButton * ev)
         perf().set_follow_transport(false);
         m_trans_button_press = true;
     }
-
-#endif
 
     bool result;
     if (rc().interaction_method() == e_seq24_interaction)
@@ -2052,13 +2045,8 @@ seqroll::on_button_release_event (GdkEventButton * ev)
     else
         result = m_fruity_interaction.on_button_release_event(ev, *this);
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
     perf().set_follow_transport(m_transport_follow);
     m_trans_button_press = false;
-
-#endif
-
     return result;
 }
 

@@ -1,0 +1,58 @@
+Testing Queues
+Chris Ahlstrom
+2017-05-29 to 2017-05-29
+
+In this document we explore how queuing should work.
+
+Keep-Queue:
+
+    Simple use case:
+
+        -   Start seq64 with one main window.
+        -   Load the file "horse.midi".
+        -   Start playback.
+        -   Press (and release) the keep-queue key:
+
+            -   Press the hot-keys 1, q, a, and z during playback, slowly
+                one after the other.  Observe that each pattern is queued
+                on in its turn, while previous patterns are unaffected and
+                keep
+
+            -   Press the hot-keys 1, q, a, and z again during playback,
+                slowly one after the other.  Observe that each pattern is
+                queued off in its turn, while previous patterns are
+                unaffected and keep playing (until un-queue).
+
+Replace/Solo:
+
+    Simple use case:
+
+        -   Start seq64 with one main window.
+        -   Load the file "horse.midi".
+        -   Start playback.
+        -   Turn on some patterns (if desired).
+        -   Press and hold the Replace/Solo key.
+
+            -   Press one of the hot-keys 1, q, a, or z.  Observe that
+                only that pattern will play, no matter what patterns were
+                playing before.
+
+        Need to release the Replace key, the press it again,
+        before trying to solo another pattern.
+
+Queued Replace/Solo:
+
+    Simple use case:
+
+        -   Start seq64 with one main window.
+        -   Load the file "horse.midi".
+        -   Start playback.
+        -   Turn on some patterns.
+        -   Press (and release) the keep-queue key.
+        -   Press and hold the Replace/Solo key.
+
+            -   Press one of the hot-keys 1, q, a, or z.  Observe that
+                the pattern selected is queued up to be on, while any
+                other patterns that are played are queued up to turn off.
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

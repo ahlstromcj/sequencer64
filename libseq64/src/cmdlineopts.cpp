@@ -294,6 +294,7 @@ static const char * const s_help_4 =
 " any:\n"
 "              log=filename  Redirect console output to a log file in the\n"
 "                            --home directory [$HOME/.config/sequencer64].\n"
+#if defined SEQ64_MULTI_MAINWID
 "              wid=rxc,f     Show r rows of sets, c columns of sets, and set\n"
 "                            the sync-status of the set blocks. r can range\n"
 "              (e.g          from 1 to 3, c can range from 1 to 2, and the sync\n"
@@ -302,6 +303,7 @@ static const char * const s_help_4 =
 "                            that they stay in step with each other, and the\n"
 "                            multi-windows use consecutive set numbers.\n"
 "                            The upper left mainwid is always the active one.\n"
+#endif
 "\n"
 "The daemonize option works only in the CLI build. The set options work only\n"
 "in the 'rtmidi' GUI build.  Remember to specify option '--user-save' to make\n"

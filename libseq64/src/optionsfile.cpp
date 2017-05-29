@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-16
+ * \updates       2017-05-29
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -982,15 +982,12 @@ optionsfile::write (const perform & p)
      */
 
     file <<
-        "# All mute-group values are saved, even if the all are zero, and will\n"
+        "# All mute-group values are saved, even if they all are zero, and will\n"
         "# be stripped out from the MIDI file by the new strip-empty-mutes\n"
         "# functionality (a build option).  This is less confusing to the user.\n"
         "\n"
         << c_max_sequence << "       # group mute count\n"
         ;
-
-    ////// WHAT TO DO IF USER CLEARED THEM FROM SONG (ONLY)?
-    ////// if (! p.any_group_unmutes())
 
     for (int seqj = 0; seqj < c_seqs_in_set; ++seqj)
     {

@@ -803,7 +803,8 @@ mainwnd::mainwnd
     );
     bottomhbox->pack_end(*m_button_perfedit, Gtk::PACK_SHRINK);
 
-#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS && ! defined SEQ64_MULTI_MAINWID
+#if ! defined SEQ64_MULTI_MAINWID
+#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
     /*
      * Pattern panel scrollable wrapper.
@@ -854,6 +855,7 @@ mainwnd::mainwnd
     }
 
 #endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+#endif  // ! SEQ64_MULTI_WID
 
     /*
      * Vertical layout container for window content.  Letting Gtk manage it
@@ -867,7 +869,8 @@ mainwnd::mainwnd
     contentvbox->set_border_width(10);
     contentvbox->pack_start(*tophbox, Gtk::PACK_SHRINK);
 
-#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS && ! defined SEQ64_MULTI_MAINWID
+#if ! defined SEQ64_MULTI_MAINWID
+#if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 
     // contentvbox->pack_start(*mainwid_hscroll_wrapper, true, true);
     // contentvbox->pack_start(*bottomhbox, false, false);
@@ -892,7 +895,8 @@ mainwnd::mainwnd
     m_main_wid->set_can_focus();            /* from stazed */
     m_main_wid->grab_focus();
 
-#else
+#endif
+#endif
 
 #if defined SEQ64_MULTI_MAINWID
 
@@ -938,15 +942,16 @@ mainwnd::mainwnd
      * Setting this allows other hot-keys to work, but then the user cannot
      * edit the spinbutton numeric value!
      *
-    m_spinbutton_ss->set_can_focus(false);
+     *  m_spinbutton_ss->set_can_focus(false);
      *
      */
 
-#endif
+#endif  // SEQ64_MULTI_WID
 
+    contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
     contentvbox->pack_start(*bottomhbox, Gtk::PACK_SHRINK);
-
-#endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+    m_main_wid->set_can_focus();            /* from stazed */
+    m_main_wid->grab_focus();
 
     /*
      * Main container for menu and window content.
@@ -995,7 +1000,7 @@ mainwnd::mainwnd
     int width = m_main_wid->nominal_width();
     int height = m_main_wid->nominal_height();
     int menuheight = 22;
-    int bottomheight = 48;
+    int bottomheight = 52;  // 48;
     int topheight = 64;     // 52;
     if (multi_wid())
     {
@@ -2209,8 +2214,10 @@ mainwnd::adj_callback_ss ()
         if (newset <= spinner_max())
         {
             perf().set_screenset(newset);   /* set active screen-set    */
+#if defined SEQ64_MULTI_MAINWID
             for (int block = 0; block < m_mainwid_count; ++block)
                 m_mainwid_blocks[block]->set_screenset(newset + block);
+#endif
         }
     }
     else

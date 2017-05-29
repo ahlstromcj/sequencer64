@@ -213,8 +213,8 @@ static const int c_status_snapshot = 0x02;
  *  perform::sequence_playing_toggle() calls sequence::toggle_queued() on the
  *  given sequence number.  The regular queue key (configurable in File /
  *  Options / Keyboard) sets this bit when pressed, and unsets it when
- *  released.  The keep-queue key sets it, but it is not unset until...
- *  when???
+ *  released.  The keep-queue key sets it, but it is not unset until the
+ *  regular queue key is pressed and released.
  */
 
 static const int c_status_queue    = 0x04;
@@ -4298,13 +4298,13 @@ perform::set_clock_bus (int bus, clock_e clocktype)
  *
  * \return
  *      Returns the desired key.  If there is no such value, then the
- *      period ('?') character is returned.
+ *      space (' ') character is returned.  It used to be the question mark.
  */
 
 unsigned int
 perform::lookup_keyevent_key (int seqnum)
 {
-    unsigned int result = (unsigned int)('?');
+    unsigned int result = (unsigned int)(' ');
     if (! rc().legacy_format())
         seqnum -= m_screenset_offset;
 

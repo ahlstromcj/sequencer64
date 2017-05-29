@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-05-21
+ * \updates       2017-05-29
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1427,27 +1427,18 @@ perform::set_beats_per_minute (midibpm bpm)
 
         /*
          * This logic matches the original seq24, but is it really correct?
+         * Well, we fixed it so that, whether JACK transport is in force or
+         * not, we can modify the BPM and have it stick.  No test for JACK
+         * Master or for JACK and normal running status needed.
          */
 
-#ifdef USE_MODIFIABLE_JACK_TEMPO                    // EXPERIMENTAL
-        bool ok = true;
         m_jack_asst.set_beats_per_minute(bpm);
-#else
-        bool ok = ! (is_jack_running() && m_running);
-        if (ok)
-            m_jack_asst.set_beats_per_minute(bpm);
+
 #endif
 
-#else
-        bool ok = ! m_running;
-#endif
-
-        if (ok)
-        {
-            master_bus().set_beats_per_minute(bpm);
-            m_us_per_quarter_note = tempo_us_from_bpm(bpm);
-            m_bpm = bpm;
-        }
+        master_bus().set_beats_per_minute(bpm);
+        m_us_per_quarter_note = tempo_us_from_bpm(bpm);
+        m_bpm = bpm;
     }
 }
 

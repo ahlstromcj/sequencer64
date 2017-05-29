@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2017-05-23
+ * \updates       2017-05-29
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -247,7 +247,6 @@ jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
              * marker.
              */
 
-#ifdef USE_MODIFIABLE_JACK_TEMPO                    // EXPERIMENTAL
             jack_position_t pos;
             jack_transport_state_t s = jack_transport_query(j->client(), &pos);
             if (! j->m_jack_master)
@@ -263,10 +262,6 @@ jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
                     }
                 }
             }
-#else
-            jack_transport_state_t s = jack_transport_query(j->client(), nullptr);
-#endif
-
             if (s == JackTransportRolling || s == JackTransportStarting)
             {
                 j->m_jack_transport_state_last = JackTransportStarting;
@@ -1024,11 +1019,6 @@ jack_assistant::set_beats_per_minute (midibpm bpminute)
     if (bpminute != m_beats_per_minute)
     {
         m_beats_per_minute = bpminute;
-
-        // EXPERIMENTAL
-
-#ifdef USE_MODIFIABLE_JACK_TEMPO    // _XXX                // EXPERIMENTAL
-
         if (m_jack_master)
         {
             /*jack_transport_state_t s = */ (void) jack_transport_query
@@ -1039,11 +1029,10 @@ jack_assistant::set_beats_per_minute (midibpm bpminute)
             int jackcode = jack_transport_reposition(m_jack_client, &m_jack_pos);
             apiprint("jack_transport_reposition", "set bpm");
             if (jackcode != 0)
+            {
                 errprint("jack_transport_reposition(): bad position structure");
+            }
         }
-
-#endif
-
     }
 }
 
@@ -1477,22 +1466,11 @@ jack_assistant::output (jack_scratchpad & pad)
         m_jack_pos.ticks_per_beat = m_ppqn * 10;
 
         /*
-         * MAYBE USE set_beats_per_minute() here???????????????
-         * Let's try it!
-         */
-
-#ifdef USE_MODIFIABLE_JACK_TEMPO       // EXPERIMENTAL EXPERIMENTAL EXPERIMENTAL
-
-        /*
-         *  The macroed out code below keeps resetting the user's new BPM.
          *  We want to force a change in BPM only if we are JACK Master.
          */
 
         if (m_jack_master)
             m_jack_pos.beats_per_minute = parent().get_beats_per_minute();
-#else
-        parent().set_beats_per_minute(m_jack_pos.beats_per_minute);
-#endif
 
         if
         (
@@ -1895,16 +1873,8 @@ jack_timebase_callback
             }
         }
 
-        /*
-         * CAN WE SET pos->beats_per_minute HERE???????
-         */
-
-#ifdef USE_MODIFIABLE_JACK_TEMPO       // EXPERIMENTAL EXPERIMENTAL EXPERIMENTAL
         if (jack->m_jack_master)
-        {
             pos->beats_per_minute = jack->parent().get_beats_per_minute();
-        }
-#endif
     }
 #ifdef USE_JACK_BBT_OFFSET
     pos->bbt_offset = 0;

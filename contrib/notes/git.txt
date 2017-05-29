@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2017-05-13
+2015-09-09 to 2017-05-29
 
 Creating a GitHub Repository:
 
@@ -248,8 +248,7 @@ Pull Requests:
 
 Diffs:
 
-    Just a quick note on summarizing differences between commits.  This
-    command summarizes the changes between commits, much like
+    Summarizing differences between commits, much like
     "svn diff --summarize":
 
         $ git diff --name-status <commit1> <commit2>
@@ -265,6 +264,10 @@ Diffs:
     of the best diff viewers ever:
 
         $ git difftool <commit1> <commit2>
+
+    Getting a list of files that have conflicts:
+
+        $ git diff --name-only --diff-filter=U
 
 Listing files:
 

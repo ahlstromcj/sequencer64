@@ -8,7 +8,7 @@
 # \library    	generic
 # \author     	Chris Ahlstrom
 # \date       	2015-08-08
-# \update     	2017-04-30
+# \update     	2017-05-27
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -126,7 +126,13 @@ if [ "$TARGET" == "reference" ] ; then
 	pdflatex refman
 	makeindex refman.idx
    popd
-	cp latex/refman.pdf ../reference_manual.pdf
+
+# Optimize the PDF to cut down on its size.
+
+   gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dNOPAUSE -dQUIET -dBATCH \
+ -sOutputFile=../reference_manual.pdf latex/refman.pdf
+
+	# cp latex/refman.pdf ../reference_manual.pdf
 
    if [ $? == 0 ] ; then
 
@@ -170,7 +176,13 @@ elif [ "$TARGET" == "notes" ] ; then
 	pdflatex refman
 	makeindex refman.idx
    popd
-	cp latex/refman.pdf ../developer_notes.pdf
+
+# Optimize the PDF to cut down on its size.
+
+   gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dNOPAUSE -dQUIET -dBATCH \
+ -sOutputFile=../developer_notes.pdf latex/refman.pdf
+
+	# cp latex/refman.pdf ../developer_notes.pdf
 
    if [ $? == 0 ] ; then
 

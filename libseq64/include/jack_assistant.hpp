@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2017-05-27
+ * \updates       2017-05-29
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-28
+ * \updates       2017-05-29
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -779,10 +779,6 @@ mainwnd::mainwnd
                 }
             }
         }
-        sethbox->pack_start
-        (
-            *(manage(new Gtk::VSeparator())), false, false, 4
-        );
     }
 
 #endif  // SEQ64_MULTI_MAINWID

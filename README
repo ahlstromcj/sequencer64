@@ -1,6 +1,6 @@
-README for Sequencer64 0.90.6 (Native JACK and CLI)
+README for Sequencer64 0.91.0 (Native JACK and CLI, multiple main windows)
 Chris Ahlstrom
-2015-09-10 to 2017-05-13
+2015-09-10 to 2017-05-29
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
@@ -28,7 +28,9 @@ GUI-less native JACK support: Seq64rtmidi/seq64cli
 With the big version jump from 0.9 to 0.90, the install process has changed.
 See the INSTALL file.
 
+    -   Version 0.91.0:
     -   Version 0.90.6:
+        -   BPM (tempo) can now be altered in JACK mode.
         -   Added the Stazed Seq32 upgrade to allow, in addition to
             merge-on-record, overwrite-on-record and expand-measures on
             record.

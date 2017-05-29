@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-05-24
+ * \updates       2017-05-29
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -120,10 +120,11 @@
  */
 
 /**
- *  Provides support for up to a 3 x 2 array of mainwids.
+ *  Provides support for up to a 3 x 2 array of mainwids.  Now a configure
+ *  option.
+ *
+ * #define SEQ64_MULTI_MAINWID
  */
-
-#define SEQ64_MULTI_MAINWID
 
 /**
  *  Adds a button to disable the main menu in the main window.  Adds a button

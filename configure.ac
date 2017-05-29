@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-05-24
+dnl \update        2017-05-29
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -486,7 +486,7 @@ fi
 dnl PortMidi support.  Deprecated.
 
 AC_ARG_ENABLE(portmidi,
-    [AS_HELP_STRING(--enable-portmidi, [Enable PortMidi build])],
+    [AS_HELP_STRING(--enable-portmidi, [Enable PortMidi build (deprecated)])],
     [portmidi=$enableval],
     [portmidi=no])
 
@@ -505,8 +505,7 @@ fi
 AC_SUBST(APP_NAME)
 
 dnl Support for highlighting empty sequences (in yellow).  If enabled, the
-dnl macro SEQ64_HIGHLIGHT_EMPTY_SEQS is defined.  All macros produced by
-dnl this configuration start with "SEQ64_".
+dnl macro SEQ64_HIGHLIGHT_EMPTY_SEQS is defined.
 
 AC_ARG_ENABLE(highlight,
     [AS_HELP_STRING(--disable-highlight, [Disable highlighting empty sequences])],
@@ -551,6 +550,21 @@ if test "$pause" != "no"; then
     AC_MSG_RESULT([Pausing sequences and pause-button enabled.]);
 else
     AC_MSG_WARN([Pausing sequences and pause-button disabled.]);
+fi
+
+dnl Support for multiple main windows. If enabled, the
+dnl macro SEQ64_MULTI_MAINWID macro is defined.
+
+AC_ARG_ENABLE(multiwid,
+    [AS_HELP_STRING(--disable-multiwid, [Disable multiple main window support])],
+    [multiwid=$enableval],
+    [multiwid=yes])
+
+if test "$multiwid" != "no"; then
+    AC_DEFINE(MULTI_MAINWID, 1, [Define to enable multiple main windows])
+    AC_MSG_RESULT([Multiple main windows enabled.]);
+else
+    AC_MSG_WARN([Multiple main windows disabled.]);
 fi
 
 dnl Support for re-enabling the "statistics" code.  If enabled, macro
@@ -642,7 +656,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-05-24"
+#define VERSION_DATE_SHORT "2017-05-29"
 #define VERSION "0.91.0"
 
 )

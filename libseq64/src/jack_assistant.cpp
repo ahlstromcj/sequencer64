@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2017-05-27
+ * \updates       2017-05-29
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -1450,8 +1450,8 @@ jack_assistant::output (jack_scratchpad & pad)
 {
     if (m_jack_running)
     {
-        double jack_ticks_converted;
-        double jack_ticks_delta;
+        double jack_ticks_converted;                // MAY NEED long typedef
+        double jack_ticks_delta;                    // MAY NEED long typedef
         pad.js_init_clock = false;                  // no init until a good lock
         m_jack_transport_state = jack_transport_query(m_jack_client, &m_jack_pos);
 
@@ -1466,7 +1466,6 @@ jack_assistant::output (jack_scratchpad & pad)
         m_jack_pos.ticks_per_beat = m_ppqn * 10;
 
         /*
-         *  The macroed out code below keeps resetting the user's new BPM.
          *  We want to force a change in BPM only if we are JACK Master.
          */
 
@@ -1475,7 +1474,7 @@ jack_assistant::output (jack_scratchpad & pad)
 
         if
         (
-            m_jack_transport_state_last == JackTransportStarting &&     // OR?
+            m_jack_transport_state_last == JackTransportStarting &&
             m_jack_transport_state == JackTransportRolling
         )
         {

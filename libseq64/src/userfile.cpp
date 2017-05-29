@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-27
+ * \updates       2017-05-29
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -535,7 +535,7 @@ userfile::write (const perform & /* a_perf */ )
            "# Sequencer64 user configuration file (legacy Seq24 0.9.2 format)\n";
     }
     else
-        file << "# Sequencer64 0.90.4 (and above) user configuration file\n";
+        file << "# Sequencer64 0.91.0 (and above) user configuration file\n";
 
     file << "#\n"
         "# Created by reading the following file and writing it out via the\n"
@@ -929,7 +929,7 @@ userfile::write (const perform & /* a_perf */ )
             "# Corresponds to 'r' in the '-o wid=rxc,f' option.\n"
             "\n"
             << usr().block_rows()
-            << "      # block_rows (number of rows of set blocks/wids\n"
+            << "      # block_rows (number of rows of set blocks/wids)\n"
             ;
 
         file << "\n"
@@ -938,7 +938,7 @@ userfile::write (const perform & /* a_perf */ )
             "# Corresponds to 'c' in the '-o wid=rxc,f' option.\n"
             "\n"
             << usr().block_columns()
-            << "      # block_rows (number of rows of set blocks/wids\n"
+            << "      # block_columns (number of columns of set blocks/wids)\n"
             ;
 
         file << "\n"
@@ -953,7 +953,7 @@ userfile::write (const perform & /* a_perf */ )
             "# and 0 is the same as f = true.  Backwards, so be careful.\n"
             "\n"
             << (usr().block_independent() ? "1" : "0")
-            << "      # block_rows (number of rows of set blocks/wids\n"
+            << "      # block_independent (set spinners for each block/wid)\n"
             ;
 
 #endif  // SEQ64_MULTI_MAINWID

@@ -1,5 +1,145 @@
+2017-05-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/perform.cpp: Fixed unchangable ALSA tempo due to JACK
+	tempo fix.
+	* libseq64/src/midibase.cpp, seq_rtmidi/src/midi_alsa.cpp: Fixed an
+	ALSA bus-numbering bug in rtmidi version.
+
+2017-05-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/include/user_settings.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/mainwid.hpp, seq_gtkmm2/src/mainwnd.cpp: JACK
+	Master tempo changes tentatively working, see
+	USE_MODIFIABLE_JACK_TEMPO macro, defined in jack_assistant module.
+
+2017-05-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/jack_assistant.cpp: Still have an odd issue or two
+	related to JACK playback.
+
+2017-05-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp: Got seq64 to seemingly change BPM
+	if it is JACK slave.
+	* INSTALL, configure.ac, contrib/notes/bugs_to_investigate.txt,
+	doc/dox/doxy-notes.cfg, doc/dox/doxy-reference.cfg,
+	libseq64/include/jack_assistant.hpp, libseq64/include/perform.hpp,
+	libseq64/include/seq64_features.h, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/include/perfroll.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqroll.cpp: Made Stazed
+	JACK support permanent, removed the macro for good.
+
+2017-05-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/mainwnd.cpp: Annoted pull #84 to make the main
+	window resizable.
+	* : commit b1a7e97a7c58c6478b38b37bdabb691ae00d6cdc Merge: 8948886
+	509aaa4 Author: C. Ahlstrom <ahlstromcj@gmail.com> Date:   Tue May
+	16 05:44:24 2017 -0400
+	* libseq64/include/midi_control.hpp, libseq64/include/perform.hpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp: Annotated
+	additions for pull #85.
+	* : Merge pull request #85 from jean-emmanuel/midi-new-controls Extend midi callback to handle control value, add "screenset by
+	number" control.
+
+2017-05-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* FixLog, TODO, contrib/notes/aplaymidi.txt, contrib/notes/git.txt,
+	contrib/notes/jack.txt, contrib/notes/multiple-mainwids.txt,
+	seq_gtkmm2/include/mainwid.hpp, seq_gtkmm2/src/perfnames.cpp: Mostly
+	just text-file edits for notes.
+
+2017-05-13  jean-emmanuel <jean-emmanuel.doucet@groolot.net>
+
+	* libseq64/include/midi_control.hpp, libseq64/include/perform.hpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp: midi: extend
+	midi callback to handle control value, add "screenset by number"
+	control
+
+2017-05-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, configure.ac, contrib/notes/git.txt,
+	libseq64/src/cmdlineopts.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwnd.cpp: Added jean-emmanual scroll-bars for main
+	window, still some issues.
+	* : Merge pull request #83 from
+	jean-emmanuel/pattern-panel-scrollbars Pattern panel scrollbars.  I am going to merge this (to wip), but I
+	am going to make it a build option,
+	SEQ64_JE_PATTERN_PANEL_SCROLLBARS, because it is a big change, and I
+	do want to give the option to build without them.
+
+2017-05-13  jean-emmanuel <jean-emmanuel.doucet@groolot.net>
+
+	* seq_gtkmm2/src/mainwnd.cpp: mainwnd: scroll horizontally when
+	shift key is pressed
+	* seq_gtkmm2/src/mainwnd.cpp: mainwnd: reduce scrollbars padding
+	* seq_gtkmm2/src/mainwnd.cpp: mainwnd: handle scrollbar resize in a
+	single deadlock-safe handler
+	* seq_gtkmm2/src/mainwnd.cpp: mainwnd: more comment to the
+	scrollable pattern panel mod
+	* seq_gtkmm2/src/mainwnd.cpp: mainwnd: use GtkLayout instead of
+	GtkViewport to make mainwid scrollable without glitch
+
+2017-05-12  C. Ahlstrom <ahlstromcj@gmail.com>
+
+	* : Merge pull request #82 from
+	jean-emmanuel/progress-follow-option-toggle seqroll: add a toggle in the top toolbar to make progress follow
+	optionnal
+	* README, TODO, configure.ac: Adding notes about recent merges and
+	fixes.
+	* : commit c3bcff42e899b34b7d0bf30b0c8cd10a1838d0dd Merge: b07d383
+	aa08790 Author: C. Ahlstrom <ahlstromcj@gmail.com> Date:   Fri May
+	12 05:45:44 2017 -0400
+	* : commit b07d3830fd6ec57f159386f47cebe7a767568134 Merge: da7d034
+	829a3c3 Author: C. Ahlstrom <ahlstromcj@gmail.com> Date:   Fri May
+	12 05:35:51 2017 -0400
+
+2017-05-12  jean-emmanuel <jean-emmanuel.doucet@groolot.net>
+
+	* seq_gtkmm2/src/mainwnd.cpp: mainwnd: request size based on main
+	container's to avoid window size jumps when resizing near
+	scrollbars' appearance point
+	* seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwnd.cpp: 
+	mainwnd: wrap the pattern panel in a scrollable viewport
+	* resources/pixmaps/follow.xpm, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqroll.cpp: seqroll: add a toggle in the top toolbar
+	to make progress follow optionnal
+
+2017-05-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : Merged jean-emmanuel-manual-bpm-and-measure branch after adding
+	signal-changed callback, issue #77.
+	* seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/seqedit.cpp: Added
+	some temporary output to see if the callbacks are working.
+
+2017-05-11  jean-emmanuel <jean-emmanuel.doucet@groolot.net>
+
+	* seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/src/seqmenu.cpp: 
+	seqmenu: paste: don't assign from clipboard when its empty (fixes
+	crash when playing sequences pasted that way)
+
+2017-05-10  jean-emmanuel <jean-emmanuel.doucet@groolot.net>
+
+	* seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/seqedit.cpp: Make
+	measure and beat_per_measure entries editable to allow setting these
+	parameters manually
+
 2017-05-07  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* INSTALL, README, configure.ac, libseq64/include/sequence.hpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Incorporated Stazed/Seq32 enhanced
+	loop-recording feature.
+	* ChangeLog: Checking in version 0.90.5.
 	* NEWS, README, TODO, configure.ac, libseq64/include/perform.hpp,
 	libseq64/src/perform.cpp: Added ability to change the queue-replace
 	pattern easily.

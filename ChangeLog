@@ -1,5 +1,36 @@
+2017-05-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, seq_gtkmm2/src/mainwnd.cpp: Fixed minor bug in
+    mainwnd, made version 0.91.0 official.
+
+2017-05-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/queuing.txt, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp: Fixes to
+	multiwnd related to queuing and options.
+	* : Merged 0.90.6 master and updated docs for upcoming 0.91.0
+	version with multi-wid support.
+	* ChangeLog, README, configure.ac,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: Finally
+	fix, BPM modification, for 0.90.6.
+
+2017-05-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64rtmidi/seq64rtmidi.cpp, TODO, contrib/notes/jack.txt,
+	libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Getting multiwid screen-set handling to
+	work.
+
 2017-05-27  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/perform.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Add storage of multi-mainwid option to
+	the user file.
 	* libseq64/src/perform.cpp: Fixed unchangable ALSA tempo due to JACK
 	tempo fix.
 	* libseq64/src/midibase.cpp, seq_rtmidi/src/midi_alsa.cpp: Fixed an

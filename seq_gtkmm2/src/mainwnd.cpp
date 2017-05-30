@@ -336,7 +336,7 @@ mainwnd::mainwnd
         m_mainwid_independent = true;
 #endif
 
-#ifdef PLATFORM_DEBUG_XXX
+#ifdef PLATFORM_DEBUG
 
     /*
      * Trying to debug a way out of a weird GTK freeze-up that occurs if
@@ -932,8 +932,8 @@ mainwnd::mainwnd
         }
         contentvbox->pack_start(*m_mainwid_grid, Gtk::PACK_SHRINK);
     }
-    else
-        contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
+//  else
+//      contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
 
     m_main_wid->set_can_focus(true);            /* from stazed */
     m_main_wid->grab_focus();
@@ -948,7 +948,9 @@ mainwnd::mainwnd
 
 #endif  // SEQ64_MULTI_WID
 
-    contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
+    if (! multi_wid())
+        contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
+
     contentvbox->pack_start(*bottomhbox, Gtk::PACK_SHRINK);
     m_main_wid->set_can_focus();            /* from stazed */
     m_main_wid->grab_focus();

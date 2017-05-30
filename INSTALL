@@ -4,7 +4,8 @@ Chris Ahlstrom
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
-With version 0.90.4, four different versions of the program can be build:
+Starting with version 0.90.4, four different versions of the program can be
+build:
 
     -   seq64. Native JACK; the default build after a simple bootstrap.
         command; JACK MIDI with optional JACK transport; fall-back to ALSA.

@@ -1,6 +1,6 @@
 README for Sequencer64 0.91.0 (Native JACK and CLI, multiple main windows)
 Chris Ahlstrom
-2015-09-10 to 2017-05-29
+2015-09-10 to 2017-05-30
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
@@ -29,13 +29,15 @@ With the big version jump from 0.9 to 0.90, the install process has changed.
 See the INSTALL file.
 
     -   Version 0.91.0:
+        -   Added option to show a grid of sets, with one set spinner per
+            main window.  Set from command-line or the "usr" configuration.
     -   Version 0.90.6:
         -   BPM (tempo) can now be altered in JACK mode.
         -   Added the Stazed Seq32 upgrade to allow, in addition to
             merge-on-record, overwrite-on-record and expand-measures on
             record.
         -   Added Jean-Emmanuel beats-per-measure and measure text-editing
-            support to support arbitrary values, issue #xx.
+            support to support arbitrary values, issue #77.
         -   Added Jean-Emmanuel seqmenu crash when pasting empty clipboard,
             issue #80.
         -   Added Jean-Emmanuel feature of a scrollable main window,

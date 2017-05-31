@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-05-26
+ * \updates       2017-05-31
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -192,22 +192,22 @@ class user_settings
     int m_grid_brackets;
 
     /**
-     *  Number of rows in the Patterns Panel.  The current value is 4, and
-     *  if changed, many other values depend on it.  Together with
-     *  m_mainwnd_cols, this value fixes the patterns grid into a 4 x 8
-     *  set of patterns known as a "screen set".  We would like to be able to
-     *  change this value from 4 to 8, and maybe allow the values of 5, 6, and 7
-     *  as well.  But if we could just get 8 working, then well would
-     *  Sequencer64 deserve the 64 in its name.
+     *  Number of rows in the Patterns Panel.  The current value is 4, and if
+     *  changed, many other values depend on it.  Together with
+     *  m_mainwnd_cols, this value fixes the patterns grid into a 4 x 8 set of
+     *  patterns known as a "screen set".  We would like to be able to change
+     *  this value from 4 to 8, and maybe allow the values of 5, 6, and 7 as
+     *  well.  But if we could just get 8 working, then well would Sequencer64
+     *  deserve the 64 in its name.
      */
 
     int m_mainwnd_rows;
 
     /**
-     *  Number of columns in the Patterns Panel.  The current value is 4,
-     *  and probably won't change, since other values depend on it.
-     *  Together with m_mainwnd_rows, this value fixes the patterns grid
-     *  into a 4 x 8 set of patterns known as a "screen set".
+     *  Number of columns in the Patterns Panel.  The current value is 4, and
+     *  probably won't change, since other values depend on it.  Together with
+     *  m_mainwnd_rows, this value fixes the patterns grid into a 4 x 8 set of
+     *  patterns known as a "screen set".
      */
 
     int m_mainwnd_cols;
@@ -1369,7 +1369,14 @@ protected:
     void grid_style (int gridstyle);
     void mainwnd_rows (int value);
     void mainwnd_cols (int value);
+
+    /*
+     * This is a derived value, not settable by the user.  We will need to fix
+     * this at some point; it is currently a userfile option!
+     */
+
     void max_sets (int value);
+
     void text_x (int value);
     void text_y (int value);
     void seqchars_x (int value);
@@ -1625,6 +1632,13 @@ public:         // used in main application module and the userfile class
     void bpm_precision (int precision);
     void bpm_step_increment (midibpm increment);
     void bpm_page_increment (midibpm increment);
+
+    /*
+     * Derived calculations
+     */
+
+    int mainwid_width () const;
+    int mainwid_height () const;
 
 protected:
 

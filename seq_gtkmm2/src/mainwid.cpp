@@ -86,25 +86,27 @@ update_mainwid_sequences ()
 
 /**
  * The width of the main pattern/sequence grid, in pixels.  Affected by
- * the c_mainwid_border and c_mainwid_spacing values.
+ * the c_mainwid_border and c_mainwid_spacing values.  Moved to the
+ * user_settings::mainwid_width() function.
+ *
+ *  const int c_mainwid_x =
+ *  (
+ *      2 + (c_seqarea_x + c_mainwid_spacing) * c_mainwnd_cols -
+ *          c_mainwid_spacing + c_mainwid_border * 2
+ *  );
  */
-
-const int c_mainwid_x =
-(
-    2 + (c_seqarea_x + c_mainwid_spacing) * c_mainwnd_cols -
-        c_mainwid_spacing + c_mainwid_border * 2
-);
 
 /*
  * The height of the main pattern/sequence grid, in pixels.  Affected by
- * the c_mainwid_border and c_control_height values.
+ * the c_mainwid_border and c_control_height values.  Moved to the
+ * user_settings::mainwid_width() function.
+ *
+ *  const int c_mainwid_y =
+ *  (
+ *      (c_seqarea_y + c_mainwid_spacing) * c_mainwnd_rows +
+ *           c_control_height + c_mainwid_border * 2
+ *  );
  */
-
-const int c_mainwid_y =
-(
-    (c_seqarea_y + c_mainwid_spacing) * c_mainwnd_rows +
-         c_control_height + c_mainwid_border * 2
-);
 
 /**
  *  This constructor sets all of the members.  And it asks for a size of
@@ -135,7 +137,11 @@ mainwid::mainwid
     bool multiwid
 #endif
 ) :
-    gui_drawingarea_gtk2    (p, c_mainwid_x, c_mainwid_y),
+    gui_drawingarea_gtk2
+    (
+//      p, c_mainwid_x, c_mainwid_y
+        p, usr().mainwid_width(), usr().mainwid_height()
+    ),
     seqmenu                 (p),
     m_armed_progress_color
     (
@@ -150,14 +156,14 @@ mainwid::mainwid
     m_old_seq               (0),
     m_screenset             ((ss > 0 && ss < SEQ64_DEFAULT_SET_MAX) ? ss : 0),
     m_last_tick_x           (),                 // array of size c_max_sequence
-    m_mainwnd_rows          (c_mainwnd_rows),
-    m_mainwnd_cols          (c_mainwnd_cols),
+    m_mainwnd_rows          (usr().mainwnd_rows()),
+    m_mainwnd_cols          (usr().mainwnd_cols()),
     m_seqarea_x             (c_seqarea_x),
     m_seqarea_y             (c_seqarea_y),
     m_seqarea_seq_x         (c_seqarea_seq_x),
     m_seqarea_seq_y         (c_seqarea_seq_y),
-    m_mainwid_x             (c_mainwid_x),
-    m_mainwid_y             (c_mainwid_y),
+    m_mainwid_x             (usr().mainwid_width()),
+    m_mainwid_y             (usr().mainwid_height()),
     m_mainwid_border        (c_mainwid_border),
     m_mainwid_spacing       (c_mainwid_spacing),
     m_text_size_x           (font_render().char_width()),       // c_text_x

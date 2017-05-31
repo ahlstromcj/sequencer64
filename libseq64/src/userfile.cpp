@@ -276,7 +276,7 @@ userfile::parse (perform & /* a_perf */)
 
             (void) next_data_line(file);
             sscanf(m_line, "%d", &scratch);
-            usr().max_sets(scratch);
+            usr().max_sets(scratch);            /* should ignore this setting */
 
             (void) next_data_line(file);
             sscanf(m_line, "%d", &scratch);
@@ -400,7 +400,7 @@ userfile::parse (perform & /* a_perf */)
         usr().grid_brackets(1);
         usr().mainwnd_rows(4);
         usr().mainwnd_cols(8);
-        usr().max_sets(32);
+        usr().max_sets(SEQ64_DEFAULT_SET_MAX);
         usr().mainwid_border(0);
         usr().mainwid_spacing(2);
         usr().control_height(0);
@@ -758,7 +758,8 @@ userfile::write (const perform & /* a_perf */ )
 
         file << "\n"
             "# Specifies the maximum number of sets, which defaults to 32.\n"
-            "# It is currently never necessary to change this value.\n"
+            "# It is currently never necessary to change this value. In fact,\n"
+            "# it should be a derived value.\n"
             "\n"
             << usr().max_sets() << "      # max_sets\n"
             ;

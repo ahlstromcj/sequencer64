@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2017-05-16
+ * \updates       2017-05-31
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -133,9 +133,9 @@ user_settings::user_settings ()
 
     m_grid_style                (grid_style_normal),
     m_grid_brackets             (1),
-    m_mainwnd_rows              (0),
-    m_mainwnd_cols              (0),
-    m_max_sets                  (0),
+    m_mainwnd_rows              (SEQ64_DEFAULT_MAINWND_ROWS),
+    m_mainwnd_cols              (SEQ64_DEFAULT_MAINWND_COLUMNS),
+    m_max_sets                  (SEQ64_DEFAULT_SET_MAX),
     m_mainwid_border            (0),
     m_mainwid_spacing           (0),
     m_control_height            (0),
@@ -188,7 +188,7 @@ user_settings::user_settings ()
      */
 
     m_total_seqs                (0),
-    m_seqs_in_set               (0),
+    m_seqs_in_set               (0),            // set correctly in normalize()
     m_gmute_tracks              (0),
     m_max_sequence              (0),
     m_seqarea_x                 (0),
@@ -439,9 +439,9 @@ user_settings::set_defaults ()
 
     m_grid_style = grid_style_normal;       // range: 0-2
     m_grid_brackets = 1;                    // range: -30 to 0 to 30
-    m_mainwnd_rows = 4;                     // range: 4-8
-    m_mainwnd_cols = 8;                     // range: 8-10
-    m_max_sets = 32;                        // range: 32-64
+    m_mainwnd_rows = SEQ64_DEFAULT_MAINWND_ROWS;    // range: 4-8
+    m_mainwnd_cols = SEQ64_DEFAULT_MAINWND_COLUMNS; // range: 8-8
+    m_max_sets = SEQ64_DEFAULT_SET_MAX;     // range: 32-64
     m_mainwid_border = 0;                   // range: 0-3, try 2 or 3
     m_mainwid_spacing = 2;                  // range: 2-6, try 4 or 6
     m_control_height = 0;                   // range: 0-4?
@@ -504,6 +504,7 @@ void
 user_settings::normalize ()
 {
     m_seqs_in_set = m_mainwnd_rows * m_mainwnd_cols;
+    m_max_sets = SEQ64_SEQUENCE_MAXIMUM / m_seqs_in_set;    /* 16 to 32?    */
     m_gmute_tracks = m_seqs_in_set * m_seqs_in_set;
     m_total_seqs = m_seqs_in_set * m_max_sets;
     m_max_sequence = m_seqs_in_set * m_max_sets;
@@ -654,7 +655,7 @@ user_settings::grid_style (int gridstyle)
 void
 user_settings::mainwnd_rows (int value)
 {
-    if (value >= 4 && value <= 8)
+    if (value >= SEQ64_MIN_MAINWND_ROWS && value <= SEQ64_MAX_MAINWND_ROWS)
     {
         m_mainwnd_rows = value;
         normalize();
@@ -664,14 +665,14 @@ user_settings::mainwnd_rows (int value)
 /**
  * \setter m_mainwnd_cols
  *      This value is not modified unless the value parameter is
- *      between 8 and 10, inclusive.  The default value is 8.
+ *      between 8 and 8, inclusive.  The default value is 8.
  *      Dependent values are recalculated after the assignment.
  */
 
 void
 user_settings::mainwnd_cols (int value)
 {
-    if (value >= 8 && value <= 10)
+    if (value >= SEQ64_MIN_MAINWND_COLUMNS && value <= SEQ64_MAX_MAINWND_COLUMNS)
     {
         m_mainwnd_cols = value;
         normalize();
@@ -680,28 +681,30 @@ user_settings::mainwnd_cols (int value)
 
 /**
  * \setter m_max_sets
- *      This value is not modified unless the value parameter is
- *      between 32 and 64, inclusive.  The default value is 32.
- *      Dependent values are recalculated after the assignment.
+ *      This value is not modified unless the value parameter is between 32
+ *      and 64, inclusive.  The default value is 32.  Dependent values are
+ *      recalculated after the assignment.
+ *
+ * \param value
+ *      Provides the desired setting.  It might be modified by the call to
+ *      normalize().
  */
 
 void
 user_settings::max_sets (int value)
 {
-    if (value >= 32 && value <= 64)
-    {
+    if (value >= SEQ64_DEFAULT_SET_MAX && value <= SEQ64_MAX_SET_MAX)
         m_max_sets = value;
-        normalize();
-    }
+
+    normalize();
 }
 
 /**
  * \setter m_text_x
- *      This value is not modified unless the value parameter is
- *      between 6 and 6, inclusive.  The default value is 6.
- *      Dependent values are recalculated after the assignment.
- *      This value is currently restricted, until we can code up a bigger
- *      font.
+ *      This value is not modified unless the value parameter is between 6 and
+ *      6, inclusive.  The default value is 6.  Dependent values are
+ *      recalculated after the assignment.  This value is currently
+ *      restricted, until we can code up a bigger font.
  */
 
 void
@@ -716,11 +719,10 @@ user_settings::text_x (int value)
 
 /**
  * \setter m_text_y
- *      This value is not modified unless the value parameter is
- *      between 12 and 12, inclusive.  The default value is 12.
- *      Dependent values are recalculated after the assignment.
- *      This value is currently restricted, until we can code up a bigger
- *      font.
+ *      This value is not modified unless the value parameter is between 12
+ *      and 12, inclusive.  The default value is 12.  Dependent values are
+ *      recalculated after the assignment.  This value is currently
+ *      restricted, until we can code up a bigger font.
  */
 
 void
@@ -1086,6 +1088,47 @@ user_settings::block_columns (int count)
     if (count > 0 && count <= SEQ64_MAINWID_BLOCK_COLS_MAX)
         m_mainwid_block_cols = count;
 }
+
+/*
+ *  Derived calculations
+ */
+
+/**
+ *  Replaces the hard-wired calculation in the mainwid module.
+ *  Affected by the c_mainwid_border and c_mainwid_spacing values.
+ *
+ * \return
+ *      Returns the width, in pixels, of a mainwid grid.
+ */
+
+int
+user_settings::mainwid_width () const
+{
+    return
+    (
+        2 + (c_seqarea_x + c_mainwid_spacing) * m_mainwnd_cols -
+            c_mainwid_spacing + c_mainwid_border * 2
+    );
+}
+
+/**
+ *  Replaces the hard-wired calculation in the mainwid module.
+ *  Affected by the c_mainwid_border and c_control_height values.
+ *
+ * \return
+ *      Returns the height, in pixels, of a mainwid grid.
+ */
+
+int
+user_settings::mainwid_height () const
+{
+    return
+    (
+        (c_seqarea_y + c_mainwid_spacing) * m_mainwnd_rows +
+             c_control_height + c_mainwid_border * 2
+    );
+}
+
 
 #endif  // SEQ64_MULTI_MAINWID
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2017-05-13
+ * \updates       2017-05-30
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -66,10 +66,30 @@
 #define SEQ64_MIDI_CHANNEL_MAX            16
 
 /**
- *  Default value for c_max_sets.
+ *  Default value for c_max_sets.  The actual maximum number of sets will be
+ *  reduced if we add rows (or columns) to each mainwid grid.  This is
+ *  actually a derived value, but we still support a macro for it.
  */
 
 #define SEQ64_DEFAULT_SET_MAX             32
+
+/**
+ *  Maximum value for c_max_sets.  The actual maximum number of sets will be
+ *  reduced if we add rows (or columns) to each mainwid grid.  This is
+ *  actually a derived value, but we still support a macro for it.
+ */
+
+#define SEQ64_MAX_SET_MAX                 64
+
+/**
+ *  Defines the constant number of sequences/patterns.  This value has
+ *  historically been 1024, which is 32 patterns per set times 32 sets.  But
+ *  we don't want to support any more than this value, based on trials with
+ *  the b4uacuse-stress.midi file, which has only about 4 sets (128 patterns)
+ *  and pretty much loads up a CPU.
+ */
+
+#define SEQ64_SEQUENCE_MAXIMUM          1024
 
 /**
  *  Default value of number of slot toggle keys (shortcut keys) that
@@ -168,10 +188,40 @@
 #define SEQ64_DEFAULT_MAINWND_ROWS         4
 
 /**
+ *  Minimum number of rows in the main-window's grid.  This will remain
+ *  the same as the default number of rows; we will not reduce the number of
+ *  sequences per set, at least at this time.
+ */
+
+#define SEQ64_MIN_MAINWND_ROWS             4
+
+/**
+ *  Maximum number of rows in the main-window's grid.  With the default number
+ *  of columns, this will double the number of sequences per set from 32 to
+ *  64, hence the name "seq64".
+ */
+
+#define SEQ64_MAX_MAINWND_ROWS             8
+
+/**
  *  Default number of columns in the main-window's grid.
  */
 
 #define SEQ64_DEFAULT_MAINWND_COLUMNS      8
+
+/**
+ *  Minimum number of columns in the main-window's grid.  Currently the same
+ *  as the default number.
+ */
+
+#define SEQ64_MIN_MAINWND_COLUMNS          8
+
+/**
+ *  Maximum number of columns in the main-window's grid.  Currently the same
+ *  as the default number.
+ */
+
+#define SEQ64_MAX_MAINWND_COLUMNS          8
 
 /**
  *  Default number of sequences in a set, controlled by the number of rows and

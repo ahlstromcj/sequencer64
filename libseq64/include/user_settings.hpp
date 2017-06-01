@@ -664,26 +664,16 @@ class user_settings
 
     /**
      * The width of the main pattern/sequence grid, in pixels.  Affected
-     * by the m_mainwid_border and m_mainwid_spacing values.
-     *
-     *      c_mainwid_x =
-     *      (
-     *          (c_seqarea_x + c_mainwid_spacing) * c_mainwnd_cols -
-     *              c_mainwid_spacing + c_mainwid_border * 2
-     *      );
+     * by the m_mainwid_border and m_mainwid_spacing values.  Replaces
+     * c_mainwid_x.
      */
 
     int m_mainwid_x;
 
     /*
      * The height of the main pattern/sequence grid, in pixels.  Affected by
-     * the m_mainwid_border and m_control_height values.
-     *
-     *      c_mainwid_y =
-     *      (
-     *          (c_seqarea_y + c_mainwid_spacing) * c_mainwnd_rows +
-     *               c_control_height + c_mainwid_border * 2
-     *      );
+     * the m_mainwid_border and m_control_height values. Replaces
+     * c_mainwid_y.
      */
 
     int m_mainwid_y;

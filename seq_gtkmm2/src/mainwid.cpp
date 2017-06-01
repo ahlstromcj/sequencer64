@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-24
+ * \updates       2017-05-31
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -84,28 +84,14 @@ update_mainwid_sequences ()
         gs_mainwid_pointer->update_sequences_on_window();
 }
 
-/**
- * The width of the main pattern/sequence grid, in pixels.  Affected by
- * the c_mainwid_border and c_mainwid_spacing values.  Moved to the
- * user_settings::mainwid_width() function.
- *
- *  const int c_mainwid_x =
- *  (
- *      2 + (c_seqarea_x + c_mainwid_spacing) * c_mainwnd_cols -
- *          c_mainwid_spacing + c_mainwid_border * 2
- *  );
- */
-
 /*
- * The height of the main pattern/sequence grid, in pixels.  Affected by
- * the c_mainwid_border and c_control_height values.  Moved to the
- * user_settings::mainwid_width() function.
+ * c_mainwnd_x was the width of the main pattern/sequence grid, in pixels.
+ * Affected by the c_mainwid_border and c_mainwid_spacing values.  Moved to
+ * the user_settings::mainwid_width() function, replaces c_mainwid_x.
  *
- *  const int c_mainwid_y =
- *  (
- *      (c_seqarea_y + c_mainwid_spacing) * c_mainwnd_rows +
- *           c_control_height + c_mainwid_border * 2
- *  );
+ * c_mainwnd_y was the height of the main pattern/sequence grid, in pixels.
+ * Affected by the c_mainwid_border and c_control_height values.  Moved to the
+ * user_settings::mainwid_width() function, replaces c_mainwid_y.
  */
 
 /**
@@ -139,7 +125,6 @@ mainwid::mainwid
 ) :
     gui_drawingarea_gtk2
     (
-//      p, c_mainwid_x, c_mainwid_y
         p, usr().mainwid_width(), usr().mainwid_height()
     ),
     seqmenu                 (p),

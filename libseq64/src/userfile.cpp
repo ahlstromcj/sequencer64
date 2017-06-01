@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-29
+ * \updates       2017-05-31
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -398,8 +398,8 @@ userfile::parse (perform & /* a_perf */)
 
         usr().grid_style(0);
         usr().grid_brackets(1);
-        usr().mainwnd_rows(4);
-        usr().mainwnd_cols(8);
+        usr().mainwnd_rows(SEQ64_MIN_MAINWND_ROWS);
+        usr().mainwnd_cols(SEQ64_DEFAULT_MAINWND_COLUMNS);
         usr().max_sets(SEQ64_DEFAULT_SET_MAX);
         usr().mainwid_border(0);
         usr().mainwid_spacing(2);

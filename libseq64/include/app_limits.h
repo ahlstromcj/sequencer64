@@ -74,6 +74,13 @@
 #define SEQ64_DEFAULT_SET_MAX             32
 
 /**
+ *  Default value for c_seqs_in_set.
+ */
+
+#define SEQ64_DEFAULT_SEQS_IN_SET \
+    (SEQ64_DEFAULT_MAINWND_ROWS * SEQ64_DEFAULT_MAINWND_COLUMNS)
+
+/**
  *  Maximum value for c_max_sets.  The actual maximum number of sets will be
  *  reduced if we add rows (or columns) to each mainwid grid.  This is
  *  actually a derived value, but we still support a macro for it.

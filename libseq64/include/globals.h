@@ -84,29 +84,32 @@
 #undef  SEQ64_USE_DEBUG_OUTPUT          /* off by default... TMI        */
 
 /**
- *  Number of rows in the Patterns Panel.  The current value is 4, and
- *  probably won't change, since other values depend on it.  Together with
- *  c_mainwnd_cols, this value fixes the patterns grid into a 4 x 8 set of
- *  patterns known as a "screen set".
- */
+ *  Default number of rows in the Patterns Panel.  The current default value
+ *  is 4, and probably won't change, until no other values depend on it, as we
+ *  support a varying number of rows.  Together with c_mainwnd_cols, this
+ *  value fixes the patterns grid into a 4 x 8 set of patterns known as a
+ *  "screen set", but now, only by default.
 
 const int c_mainwnd_rows = SEQ64_DEFAULT_MAINWND_ROWS;
-
-/**
- *  Number of columns in the Patterns Panel.  The current value is 4, and
- *  probably won't change, since other values depend on it.  Together with
- *  c_mainwnd_rows, this value fixes the patterns grid into a 4 x 8 set of
- *  patterns known as a "screen set".
  */
 
+/**
+ *  Default umber of columns in the Patterns Panel.  The current default value
+ *  is 8, and probably won't change, until no other values depend on it.
+ *  Together with c_mainwnd_rows, this value fixes the patterns grid into a 4
+ *  x 8 set of patterns known as a "screen set", but now, only by default.
+
 const int c_mainwnd_cols = SEQ64_DEFAULT_MAINWND_COLUMNS;
+ */
 
 /**
  *  Number of patterns/sequences in the Patterns Panel, also known as a
- *  "set" or "screen set".  This value is 4 x 8 = 32 by default.
+ *  "set" or "screen set".  This value is 4 x 8 = 32 by default.  We
+ *  have a few arrays that are allocated to this size, at present. Was
+ *  c_mainwnd_rows * c_mainwnd_cols.
  */
 
-const int c_seqs_in_set = c_mainwnd_rows * c_mainwnd_cols;
+const int c_seqs_in_set = SEQ64_DEFAULT_SEQS_IN_SET;
 
 /**
  *  Maximum number of screen sets that can be supported.  Basically, that
@@ -119,10 +122,14 @@ const int c_max_sets = SEQ64_DEFAULT_SET_MAX;
 /**
  *  The maximum number of patterns supported is given by the number of
  *  patterns supported in the panel (32) times the maximum number of sets
- *  (32), or 1024 patterns.
+ *  (32), or 1024 patterns.  However, this value is now independent of the
+ *  maximum number of sets and the number of sequences in a set.  Instead,
+ *  we limit them to a constant value, which seems to be well above the
+ *  number of simultaneous playing sequences the application can support.
+ *  See SEQ64_SEQUENCE_MAXIMUM.
  */
 
-const int c_max_sequence = c_max_sets * c_seqs_in_set;
+const int c_max_sequence = SEQ64_SEQUENCE_MAXIMUM; // c_max_sets*c_seqs_in_set;
 
 /*
  *  Number of group-mute tracks that can be support, which is

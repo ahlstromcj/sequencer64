@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-29
+ * \updates       2017-06-02
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -370,7 +370,7 @@ optionsfile::parse (perform & p)
     line_after(file, "[keyboard-control]");
     long keys = 0;
     sscanf(m_line, "%ld", &keys);
-    ok = next_data_line(file) && keys > 0 && keys <= SEQ64_SET_KEYS_MAX;
+    ok = next_data_line(file) && keys > 0 && keys <= c_max_keys;
     if (! ok)
         return error_message("keyboard-control");
 
@@ -398,7 +398,7 @@ optionsfile::parse (perform & p)
     line_after(file, "[keyboard-group]");
     long groups = 0;
     sscanf(m_line, "%ld", &groups);
-    ok = next_data_line(file) && groups > 0 && groups <= SEQ64_SET_KEYS_MAX;
+    ok = next_data_line(file) && groups > 0 && groups <= c_max_keys;
     if (! ok)
         return error_message("keyboard-group");
 
@@ -712,15 +712,14 @@ optionsfile::parse_mute_group_section (perform & p)
     bool result = next_data_line(file);
     if (result)
     {
-        result = gtrack == 0 ||
-            gtrack == SEQ64_DEFAULT_SET_MAX * SEQ64_SET_KEYS_MAX;   /* 1024 */
+        result = gtrack == 0 || gtrack == (c_max_sets * c_max_keys); /* 1024 */
     }
     if (! result)
         (void) error_message("mute-group");         /* abort the parsing!   */
 
     if (result && gtrack > 0)
     {
-        int gm[c_seqs_in_set];
+        int gm[c_max_groups];
 
         /*
          * This loop is a bit odd.  We set groupmute, read it, increment it,
@@ -728,9 +727,9 @@ optionsfile::parse_mute_group_section (perform & p)
          */
 
         int groupmute = 0;
-        for (int i = 0; i < c_seqs_in_set; ++i) /* for all groups, not seqs! */
+        for (int g = 0; g < c_max_groups; ++g)
         {
-            p.select_group_mute(i);             /* too iffy: groupmute       */
+            p.select_group_mute(g);             /* too iffy: groupmute       */
             sscanf
             (
                 m_line,
@@ -748,16 +747,16 @@ optionsfile::parse_mute_group_section (perform & p)
                 &gm[24], &gm[25], &gm[26], &gm[27],
                 &gm[28], &gm[29], &gm[30], &gm[31]
             );
-            if (groupmute < 0 || groupmute >= c_seqs_in_set)
+            if (groupmute < 0 || groupmute >= c_max_groups)
             {
                 return error_message("group-mute number out of range");
             }
-            for (int k = 0; k < c_seqs_in_set; ++k)
+            for (int k = 0; k < c_max_groups; ++k)
                 p.set_group_mute_state(k, gm[k] != 0);
 
             ++groupmute;                    /* get set for next group   */
             result = next_data_line(file);
-            if (! result && i < (c_seqs_in_set - 1))
+            if (! result && g < (c_max_groups - 1))
                 return error_message("mute-group data line");
             else
                 result = true;
@@ -858,7 +857,7 @@ optionsfile::write (const perform & p)
 
         switch (mcontrol)
         {
-        case c_seqs_in_set:                 // 32
+        case c_max_groups:                  // 32
             file << "# Mute-in group section:\n";
             break;
 
@@ -969,7 +968,7 @@ optionsfile::write (const perform & p)
      */
 
     file << "\n[mute-group]\n\n";
-    int gm[c_seqs_in_set];
+    int gm[c_max_groups];
 
     /*
      * We might as well save the empty mutes in the "rc" configuration file,
@@ -989,10 +988,10 @@ optionsfile::write (const perform & p)
         << c_max_sequence << "       # group mute count\n"
         ;
 
-    for (int seqj = 0; seqj < c_seqs_in_set; ++seqj)
+    for (int seqj = 0; seqj < c_max_groups; ++seqj)
     {
         ucperf.select_group_mute(seqj);
-        for (int seqi = 0; seqi < c_seqs_in_set; ++seqi)
+        for (int seqi = 0; seqi < c_max_groups; ++seqi)
             gm[seqi] = ucperf.get_group_mute_state(seqi);
 
         snprintf

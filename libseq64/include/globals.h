@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2016-10-08
+ * \updates       2017-06-02
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -83,23 +83,23 @@
 
 #undef  SEQ64_USE_DEBUG_OUTPUT          /* off by default... TMI        */
 
-/**
+/*
  *  Default number of rows in the Patterns Panel.  The current default value
  *  is 4, and probably won't change, until no other values depend on it, as we
  *  support a varying number of rows.  Together with c_mainwnd_cols, this
  *  value fixes the patterns grid into a 4 x 8 set of patterns known as a
  *  "screen set", but now, only by default.
-
-const int c_mainwnd_rows = SEQ64_DEFAULT_MAINWND_ROWS;
+ *
+ *      const int c_mainwnd_rows = SEQ64_DEFAULT_MAINWND_ROWS;
  */
 
-/**
+/*
  *  Default umber of columns in the Patterns Panel.  The current default value
  *  is 8, and probably won't change, until no other values depend on it.
  *  Together with c_mainwnd_rows, this value fixes the patterns grid into a 4
  *  x 8 set of patterns known as a "screen set", but now, only by default.
-
-const int c_mainwnd_cols = SEQ64_DEFAULT_MAINWND_COLUMNS;
+ *
+ *      const int c_mainwnd_cols = SEQ64_DEFAULT_MAINWND_COLUMNS;
  */
 
 /**
@@ -112,12 +112,26 @@ const int c_mainwnd_cols = SEQ64_DEFAULT_MAINWND_COLUMNS;
 const int c_seqs_in_set = SEQ64_DEFAULT_SEQS_IN_SET;
 
 /**
- *  Maximum number of screen sets that can be supported.  Basically, that
- *  the number of times the Patterns Panel can be filled.  32 sets can be
- *  created.
+ *  Maximum number of screen sets that can be supported.  Basically, the
+ *  number of times the Patterns Panel can be filled.  32 sets can be created.
  */
 
 const int c_max_sets = SEQ64_DEFAULT_SET_MAX;
+
+/**
+ *  Maximum number of set keys that can be supported.  32 keys can be assigned
+ *  in the Options / Keyboard tab and "rc" file.  This value applies to the
+ *  "[keyboard-group]" and "[keyboard-control]" sections.
+ */
+
+const int c_max_keys = SEQ64_SET_KEYS_MAX;
+
+/**
+ *  Maximum number of groups that can be supported.  Basically, the number of
+ *  groups set in the "rc" file.  32 groups can be filled.
+ */
+
+const int c_max_groups = SEQ64_DEFAULT_GROUP_MAX;
 
 /**
  *  The maximum number of patterns supported is given by the number of

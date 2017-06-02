@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2017-05-30
+ * \updates       2017-06-02
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -87,6 +87,14 @@
  */
 
 #define SEQ64_MAX_SET_MAX                 64
+
+/**
+ *  Default value for c_max_groups.  This value replaces c_seqs_in_set for
+ *  usage in obtaining mute-group information from the "rc" file.  Its value
+ *  is only "coincidentally" equal to 32.
+ */
+
+#define SEQ64_DEFAULT_GROUP_MAX           32
 
 /**
  *  Defines the constant number of sequences/patterns.  This value has

@@ -106,7 +106,7 @@
  *  Number of patterns/sequences in the Patterns Panel, also known as a
  *  "set" or "screen set".  This value is 4 x 8 = 32 by default.  We
  *  have a few arrays that are allocated to this size, at present. Was
- *  c_mainwnd_rows * c_mainwnd_cols.
+ *  c_mainwnd_rows * c_mainwnd_cols.  On its way to obsolescence.
  */
 
 const int c_seqs_in_set = SEQ64_DEFAULT_SEQS_IN_SET;
@@ -143,7 +143,7 @@ const int c_max_groups = SEQ64_DEFAULT_GROUP_MAX;
  *  See SEQ64_SEQUENCE_MAXIMUM.
  */
 
-const int c_max_sequence = SEQ64_SEQUENCE_MAXIMUM; // c_max_sets*c_seqs_in_set;
+const int c_max_sequence = SEQ64_SEQUENCE_MAXIMUM;
 
 /*
  *  Number of group-mute tracks that can be support, which is

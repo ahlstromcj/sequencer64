@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2017-05-31
+ * \updates       2017-06-03
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -498,16 +498,26 @@ user_settings::set_defaults ()
  *
  *  Should we normalize the BPM increment values here, in case they
  *  are irregular?
+ *
+ * TODO:  Make sure gmute_tracks() is viable with variable set sizes.
+ *
+ *  m_max_sequence is now actually a constant (1024), so we enforce that here
+ *  now.
  */
 
 void
 user_settings::normalize ()
 {
     m_seqs_in_set = m_mainwnd_rows * m_mainwnd_cols;
-    m_max_sets = SEQ64_SEQUENCE_MAXIMUM / m_seqs_in_set;    /* 16 to 32?    */
-    m_gmute_tracks = m_seqs_in_set * m_seqs_in_set;
+    m_max_sets = c_max_sequence / m_seqs_in_set;            /* 16 to 32...  */
+    m_gmute_tracks = m_seqs_in_set * m_seqs_in_set;         /* TODO!        */
     m_total_seqs = m_seqs_in_set * m_max_sets;
-    m_max_sequence = m_seqs_in_set * m_max_sets;
+
+    /*
+     * m_max_sequence = m_seqs_in_set * m_max_sets;
+     */
+
+    m_max_sequence = c_max_sequence;
     m_seqarea_x = m_text_x * m_seqchars_x;
     m_seqarea_y = m_text_y * m_seqchars_y;
     m_seqarea_seq_x = m_text_x * 13;

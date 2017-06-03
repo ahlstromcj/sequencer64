@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-29
+ * \updates       2017-06-03
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -136,6 +136,7 @@ private:
 
     /**
      *  The number of sequences in a set, currently still hardwired to 32.
+     *  Belay that, we now get it from user_settings.
      */
 
     const int m_seqs_in_set;

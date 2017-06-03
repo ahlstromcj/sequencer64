@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-13
+ * \updates       2017-06-03
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1603,14 +1603,15 @@ seqedit::popup_sequence_menu ()
         MenuElem("Off", sigc::bind(SET_BG_SEQ, SEQ64_SEQUENCE_LIMIT))
     );
     m_menu_sequences->items().push_back(SeparatorElem());
+    int seqsinset = usr().seqs_in_set();
     for (int ss = 0; ss < c_max_sets; ++ss)
     {
         Gtk::Menu * menuss = nullptr;
         bool inserted = false;
-        for (int seq = 0; seq < c_seqs_in_set; ++seq)
+        for (int seq = 0; seq < seqsinset; ++seq)
         {
             char name[32];
-            int i = ss * c_seqs_in_set + seq;
+            int i = ss * seqsinset + seq;
             if (perf().is_active(i))
             {
                 if (! inserted)

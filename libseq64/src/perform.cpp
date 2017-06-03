@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-05-29
+ * \updates       2017-06-03
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -74,7 +74,7 @@
  *          Used in unsetting the snapshot status (c_status_snapshot).
  *          perform::save_playing_state() uses this to preserve the playing
  *          status.
- *      -   m_screenset_state[c_seqs_in_set]
+ *      -   m_screenset_state[m_seqs_in_set].
  *          Holds the state of playing in the current screen-set, to determine
  *          which patterns follow the queued-replace (queued-solo) feature,
  *
@@ -273,7 +273,8 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_mute_group                (),         // boolean array, size 32 * 32
     m_armed_saved               (false),
     m_armed_statuses            (),         // boolean array, size 1024
-    m_tracks_mute_state         (),         // set's tracks [c_seqs_in_set]
+    m_seqs_in_set               (usr().seqs_in_set()),  // c_seqs_in_set
+    m_tracks_mute_state         (m_seqs_in_set, false),    // a set's track state
     m_mode_group                (true),
     m_mode_group_learn          (false),
     m_mute_group_selected       (0),
@@ -284,7 +285,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_was_active_perf           (),         // boolean array [c_max_sequence]
     m_was_active_names          (),         // boolean array [c_max_sequence]
     m_sequence_state            (),         // boolean array [c_max_sequence]
-    m_screenset_state           (),         // boolean array [c_seqs_in_set]
+    m_screenset_state           (m_seqs_in_set, false),    // boolean vector
     m_queued_replace_slot       (SEQ64_NO_QUEUED_SOLO),
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_transpose                 (0),
@@ -332,7 +333,6 @@ perform::perform (gui_assistant & mygui, int ppqn)
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
     m_auto_screenset_queue      (false),
 #endif
-    m_seqs_in_set               (c_seqs_in_set),
     m_max_sets                  (c_max_sets),
     m_sequence_count            (0),
     m_sequence_max              (c_max_sequence),
@@ -372,10 +372,15 @@ perform::perform (gui_assistant & mygui, int ppqn)
         m_mute_group[i] = m_armed_statuses[i] = false;
     }
 
-    for (int i = 0; i < m_seqs_in_set; ++i)
-    {
-        m_tracks_mute_state[i] = m_screenset_state[i] = false;
-    }
+    /*
+     * Now that these are vector<bool>, they are initialized in the
+     * constructor.
+     *
+     *  for (int i = 0; i < m_seqs_in_set; ++i)
+     *  {
+     *      m_tracks_mute_state[i] = m_screenset_state[i] = false;
+     *  }
+     */
 
     for (int i = 0; i < m_max_sets; ++i)
         m_screenset_notepad[i].clear();
@@ -3439,6 +3444,8 @@ perform::handle_midi_control (int ctl, bool state)
          * Based on the value of c_midi_track_crl (32 * 2) versus
          * m_seqs_in_set (32), maybe the first comparison should be
          * "ctl >= 2 * m_seqs_in_set".
+         *
+         * TODO: This can now vary, so we need to re-evaluate here!
          */
 
         if ((ctl >= m_seqs_in_set) && (ctl < c_midi_track_ctrl))
@@ -3572,6 +3579,10 @@ perform::midi_control_event (const event & ev)
     ev.get_data(data[0], data[1]);
     for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)
     {
+        /*
+         * TODO: This can now vary, so we need to re-evaluate here!
+         */
+
         bool is_a_sequence = ctl < m_seqs_in_set;
         bool is_extended = ctl >= c_midi_controls &&
             ctl < c_midi_controls_extended;

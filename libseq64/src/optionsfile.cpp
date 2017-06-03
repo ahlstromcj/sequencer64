@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-02
+ * \updates       2017-06-03
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1173,9 +1173,10 @@ optionsfile::write (const perform & p)
         << "   # allow_click_edit\n"
         ;
 
-    size_t kevsize = ucperf.get_key_events().size() < size_t(c_seqs_in_set) ?
-         ucperf.get_key_events().size() : size_t(c_seqs_in_set)
+    size_t kevsize = ucperf.get_key_events().size() < size_t(c_max_keys) ?
+         ucperf.get_key_events().size() : size_t(c_max_keys)
          ;
+
     file
         << "\n[keyboard-control]\n\n"
         << kevsize << "     # number of keys\n\n"
@@ -1197,8 +1198,8 @@ optionsfile::write (const perform & p)
         file << std::string(outs) << "\n";
     }
 
-    size_t kegsize = ucperf.get_key_groups().size() < size_t(c_seqs_in_set) ?
-         ucperf.get_key_groups().size() : size_t(c_seqs_in_set)
+    size_t kegsize = ucperf.get_key_groups().size() < size_t(c_max_keys) ?
+         ucperf.get_key_groups().size() : size_t(c_max_keys)
          ;
     file
         << "\n[keyboard-group]\n\n"

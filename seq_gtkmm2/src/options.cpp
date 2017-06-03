@@ -590,8 +590,12 @@ options::add_keyboard_page ()
     toggletable->set_border_width(4);
     toggletable->set_spacings(4);
     toggleframe->add(*toggletable);
-    for (int i = 0; i < c_max_keys; ++i)    // 32 = c_seqs_in_set ?
+    for (int i = 0; i < c_max_keys; ++i)            // not c_seqs_in_set
     {
+        /*
+         * TODO:  evaluate viability against a variable column count.
+         */
+
         int x = i % SEQ64_SET_KEYS_COLUMNS * 2;     // 8 = c_mainwnd_cols ?
         int y = i / SEQ64_SET_KEYS_COLUMNS;
         int slot = x * 2 + y;           // count this way: 0, 4, 8, 16...

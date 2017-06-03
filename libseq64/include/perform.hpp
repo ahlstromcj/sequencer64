@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-28
+ * \updates       2017-06-03
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -307,13 +307,28 @@ private:
     bool m_armed_statuses[c_max_sequence];
 
     /**
+     *  We have replaced c_seqs_in_set with this member, which defaults to the
+     *  value of c_seqs_in_set, but is grabbed from user_settings now.  This
+     *  change requires some arrays to be dynamically allocated (vectors).
+     */
+
+    const int m_seqs_in_set;        /* replaces global c_seqs_in_set    */
+
+    /**
      *  Holds the current mute states of each track.  Unlike the
      *  m_mute_group[] array, this holds the current state, rather than the
      *  state desired by activating a mute group, and it applies to only one
      *  screen-set.
+     *
+     *      bool m_tracks_mute_state[c_seqs_in_set];
+     *
+     *  Please be aware that vector<bool> might be optimized to use bits,
+     *  and so taking the address of an element of this vector will not work.
+     *  But we don't need that kind of access, so we are safe here.  We might
+     *  try using a char at some point, to see how performance is affected.
      */
 
-    bool m_tracks_mute_state[c_seqs_in_set];
+    std::vector<bool> m_tracks_mute_state;
 
     /**
      *  If true, indicates that a mode group is selected, and playing statuses
@@ -410,9 +425,11 @@ private:
     /**
      *  Saves the current playing state only for the current set.
      *  This is used in the new queue-replace (queue-solo) feature.
+     *
+     *      bool m_screenset_state[c_seqs_in_set];
      */
 
-    bool m_screenset_state[c_seqs_in_set];
+    std::vector<bool> m_screenset_state;
 
     /**
      *  A value not equal to -1 (it ranges from 0 to 32) ndicates we're now
@@ -751,14 +768,6 @@ private:
     bool m_auto_screenset_queue;
 
 #endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
-
-    /**
-     *  We will eventually replace c_seqs_in_set with this member, which
-     *  defaults to the value of c_seqs_in_set.  This change will require some
-     *  arrays to be dynamically allocated (vectors).
-     */
-
-    int m_seqs_in_set;                  /* replaces global c_seqs_in_set    */
 
     /**
      *  A replacement for the c_max_sets constant.  Again, currently set to

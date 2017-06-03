@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-13
+ * \updates       2017-06-03
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -51,6 +51,7 @@
 #include "perfedit.hpp"
 #include "perform.hpp"
 #include "perfnames.hpp"
+#include "settings.hpp"                 /* user_settings::seqs_in_set() */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -94,7 +95,7 @@ perfnames::perfnames
     m_names_x               (m_names_chars * m_char_w),     /* c_names_x    */
     m_names_y               (c_names_y),
     m_xy_offset             (2),
-    m_seqs_in_set           (c_seqs_in_set),
+    m_seqs_in_set           (usr().seqs_in_set()),          /* c_seqs_in_set*/
     m_sequence_max          (c_max_sequence),
     m_sequence_offset       (0),
     m_sequence_active       ()                              /* an array     */

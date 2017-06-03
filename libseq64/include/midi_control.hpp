@@ -51,8 +51,8 @@ namespace seq64
 {
 
 /**
- *  Pseudo control values for associating MIDI events (I think)
- *  with automation of some of the controls in seq24.  The lowest value is
+ *  Pseudo control values for associating MIDI events (I think) with
+ *  automation of some of the controls in seq24.  The lowest value is
  *  c_seqs_in_set * 2 = 64.
  *
  *  I think the reason for that value is to perhaps handle two sets or

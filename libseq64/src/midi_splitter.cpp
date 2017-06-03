@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-24
- * \updates       2016-05-17
+ * \updates       2017-06-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -189,9 +189,10 @@ midi_splitter::split (perform & p, int screenset)
     bool result = not_nullptr(m_smf0_main_sequence);
     if (result)
     {
+        int seqs = usr().seqs_in_set();
         if (m_smf0_channels_count > 0)
         {
-            int seqnum = screenset * c_seqs_in_set;
+            int seqnum = screenset * seqs;
             for (int chan = 0; chan < SEQ64_MIDI_CHANNEL_MAX; ++chan, ++seqnum)
             {
                 if (m_smf0_channels[chan])

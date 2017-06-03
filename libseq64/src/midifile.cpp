@@ -997,7 +997,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
              */
 
             if (is_smf0)
+            {
                 (void) m_smf0_splitter.log_main_sequence(seq, seqnum);
+            }
             else
             {
                 /*
@@ -1021,7 +1023,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                 seq.sort_events();              /* sort the events now      */
                 seq.set_length();               /* final verify_and_link    */
-                p.add_sequence(&seq, seqnum + (screenset * c_seqs_in_set));
+                p.add_sequence(&seq, seqnum + (screenset * usr().seqs_in_set()));
             }
         }
         else
@@ -1114,8 +1116,7 @@ midifile::parse_prop_header (int file_size)
             {
                 fprintf
                 (
-                    stderr,
-                    "Bad meta type '%x' in prop section near offset %x\n",
+                    stderr, "Bad meta type '%x' in prop section near offset %x\n",
                     int(type), m_pos
                 );
             }
@@ -1335,11 +1336,18 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                     errdump(m_error_message.c_str());
                     result = false;                     /* but keep going   */
                 }
-                for (int i = 0; i < c_seqs_in_set; ++i)
+
+                /*
+                 * TODO:  Determine if this is viable under variable
+                 * seqs-in-set.  See user_settings::gmute_tracks().
+                 */
+
+                int seqsinset = usr().seqs_in_set();
+                for (int i = 0; i < seqsinset; ++i)
                 {
                     midilong groupmute = read_long();
                     p.select_group_mute(int(groupmute));
-                    for (int k = 0; k < c_seqs_in_set; ++k)
+                    for (int k = 0; k < seqsinset; ++k)
                     {
                         midilong gmutestate = read_long();
                         p.set_group_mute_state(k, gmutestate != 0);
@@ -2005,9 +2013,12 @@ midifile::write_proprietary_track (perform & p)
     /*
      * We need a way to make the group mute data optional.  Why write 4096
      * bytes of zeroes?
+     *
+     * TODO: get the mute size from user_settings.
      */
 
-    int gmutesz = 4 + c_seqs_in_set * (4 + c_seqs_in_set * 4);
+    int seqsinset = usr().seqs_in_set();
+    int gmutesz = 4 + seqsinset * (4 + seqsinset * 4);
     if (! rc().legacy_format())                 // m_new_format???
     {
         if (! p.any_group_unmutes())
@@ -2073,11 +2084,11 @@ midifile::write_proprietary_track (perform & p)
          */
 
         write_long(c_max_sequence);                 /* data, not a tag      */
-        for (int j = 0; j < c_seqs_in_set; ++j)     /* now is optional      */
+        for (int j = 0; j < seqsinset; ++j)         /* now is optional      */
         {
             p.select_group_mute(j);
             write_long(j);
-            for (int i = 0; i < c_seqs_in_set; ++i)
+            for (int i = 0; i < seqsinset; ++i)
                 write_long(p.get_group_mute_state(i));
         }
     }

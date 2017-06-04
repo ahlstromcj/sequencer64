@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-03
+ * \updates       2017-06-04
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -168,6 +168,7 @@ class perform
     friend class perfroll;
     friend void * input_thread_func (void * myperf);
     friend void * output_thread_func (void * myperf);
+    friend bool parse_options_files (perform &, std::string &, int, char *[]);
 
 #ifdef SEQ64_JACK_SUPPORT
 
@@ -310,9 +311,11 @@ private:
      *  We have replaced c_seqs_in_set with this member, which defaults to the
      *  value of c_seqs_in_set, but is grabbed from user_settings now.  This
      *  change requires some arrays to be dynamically allocated (vectors).
+     *  This cannot be a constant, because we may need to change it after
+     *  creating the perform object.
      */
 
-    const int m_seqs_in_set;        /* replaces global c_seqs_in_set    */
+    int m_seqs_in_set;        /* replaces global c_seqs_in_set    */
 
     /**
      *  Holds the current mute states of each track.  Unlike the
@@ -2014,6 +2017,7 @@ public:
 
     bool toggle_other_seqs (int seqnum, bool isshiftkey);   /* mainwid      */
     bool toggle_other_names (int seqnum, bool isshiftkey);  /* perfnames    */
+    bool are_any_armed ();
 
 private:
 
@@ -2318,6 +2322,29 @@ private:
     int max_sets () const
     {
         return m_max_sets;
+    }
+
+    /**
+     * \setter m_max_sets
+     *      This setter is needed to modify the value after reading the "user"
+     *      file.  Other than that, it should not be used.  We may find a way
+     *      to enforce that, later.
+     */
+
+    void max_sets (int sets)
+    {
+        m_max_sets = sets;
+    }
+
+    /**
+     * \setter m_seqs_in_set
+     *      This setter modifies the current value based on the current values
+     *      of the settings found in the user_settings module.
+     */
+
+    void seqs_in_set (int seqs)
+    {
+        m_seqs_in_set = seqs;
     }
 
     /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-31
+ * \updates       2017-06-04
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -807,9 +807,13 @@ mainwid::seq_from_xy (int x, int y)
  * \param setperf
  *      If true, then also call perform::set_screenset().  Defaults to false.
  *      It might be better if it defaults to true.
+ *
+ * \return
+ *      Returns the (new) value of m_screenset so that the main window can set
+ *      the set-number in the Set spinner.
  */
 
-void
+int
 mainwid::set_screenset (int ss, bool setperf)
 {
 #if defined SEQ64_MULTI_MAINWID
@@ -822,8 +826,8 @@ mainwid::set_screenset (int ss, bool setperf)
 
     m_screenset = perf().get_screenset();
     m_screenset_offset = perf().get_screenset_offset();
-printf("m_screenset_offset = %d\n", m_screenset_offset);
     reset();                                    /* redraws the window   */
+    return m_screenset;
 }
 
 /**

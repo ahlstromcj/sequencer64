@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-05-28
+2016-12-03 to 2017-06-04
 
 Debian packaging:
 
@@ -18,12 +18,20 @@ Rtmidi implementation issues to work out:
 
 Hot ideas (from GitHub):
     
+    -   Mute button should be inactive unless there are armed sequences.  The
+        name is a bit misleading.  Maybe it should toggle them all on if none
+        are armed.
     -   Separate tempo for each pattern
     -   Tempo track
     -   Larger number of visible sets.
+    -   Any way to make playback multicore?  The "stress" file maxes out a
+        core.
 
 Puzzles:
 
+    -   Tooltips are too flicker with unclutter enabled.
+    -   When reading the "stress" file, we get this message: "Near offset
+        0x16aca9: 'End-of-file', further MIDI reading disabled".
     -   In multi-wid indep mode, when set 1 (second set) is showing in slots 1
         and 2, clicking on pattern-slot 0 (pattern 32) in slot 1 toggles only
         the pattern in pattern slot 0, but clicking on the same pattern-slot

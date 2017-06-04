@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-28
+ * \updates       2017-06-04
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -529,19 +529,19 @@ private:
 #endif
 
     void adj_callback_ss ();
-
     void adj_callback_bpm ();
     void edit_callback_notepad ();
-    bool timer_callback ();
     void update_markers (midipulse tick);
     void reset ();
-    void set_screenset (int screenset, bool setperf = false);
     void set_play_image (bool isrunning);
     void set_songlive_image (bool issong);
     void start_playing ();
     void pause_playing ();
     void stop_playing ();
     void toggle_playing ();
+
+    bool timer_callback ();
+    int set_screenset (int screenset, bool setperf = false);
 
 #ifdef SEQ64_MAINWND_TAP_BUTTON
 

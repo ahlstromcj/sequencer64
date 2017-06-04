@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-05-31
+ * \updates       2017-06-04
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -84,6 +84,7 @@ namespace seq64
 class user_settings
 {
     friend class userfile;      /* allow protected access to file parser */
+    friend bool process_o_options (int, char *[]);
 
     /**
      *  Provides a setting to control the overall style of grid-drawing for

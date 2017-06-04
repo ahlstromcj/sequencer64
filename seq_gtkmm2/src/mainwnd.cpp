@@ -517,7 +517,7 @@ mainwnd::mainwnd
         m_button_mute,
         "Toggle the mute status of playing tracks. Effective only in Live "
         "mode.  Affects only tracks that are currently armed. Muted tracks "
-        "are remembered even if the mode is toggled to Song and back to Live."
+        "are remembered even if the mode is toggled to Song and back to Live. "
     );
 
     tophbox->pack_start(*m_button_mute, false, false);
@@ -1201,19 +1201,16 @@ mainwnd::timer_callback ()
     int newset = m_adjust_ss->get_value();
     if (newset != screenset)
     {
-        /*
-         * Why are not we passing a second parameter, "true", here, given the
-         * note below?
-         */
 
 #if defined SEQ64_MULTI_MAINWID
-        set_screenset(newset, true);
+        screenset = set_screenset(newset, true);    // handles wrap-around
+        m_adjust_ss->set_value(screenset);
 #else
-        set_screenset(screenset);               // newset ????
-        m_adjust_ss->set_value(screenset);      // newset ????
-        m_entry_notes->set_text(perf().current_screen_set_notepad());
+        (void) set_screenset(screenset);            // newset ????
+        m_adjust_ss->set_value(screenset);          // newset ????
 #endif
 
+        m_entry_notes->set_text(perf().current_screen_set_notepad());
     }
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS
@@ -1357,11 +1354,10 @@ mainwnd::timer_callback ()
  *      The default value is false.
  */
 
-void
+int
 mainwnd::set_screenset (int screenset, bool setperf)
 {
-    m_main_wid->set_screenset(screenset, setperf);
-//  m_main_wid->grab_focus();
+    return m_main_wid->set_screenset(screenset, setperf);
 }
 
 /**

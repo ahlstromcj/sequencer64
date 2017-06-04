@@ -216,7 +216,7 @@ seqmenu::popup_menu ()
     (
         MenuElem
         (
-            "Toggle Live Tracks", mem_fun(*this, &seqmenu::toggle_playing_tracks)
+            "Toggle Playing Tracks", mem_fun(*this, &seqmenu::toggle_playing_tracks)
         )
     );
 

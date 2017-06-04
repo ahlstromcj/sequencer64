@@ -691,19 +691,19 @@ user_settings::mainwnd_cols (int value)
 
 /**
  * \setter m_max_sets
- *      This value is not modified unless the value parameter is between 32
- *      and 64, inclusive.  The default value is 32.  Dependent values are
- *      recalculated after the assignment.
+ *      This value is not modified unless the value parameter is between 16
+ *      and 32.  The default value is 32.  Dependent values are recalculated
+ *      after the assignment.
  *
  * \param value
  *      Provides the desired setting.  It might be modified by the call to
- *      normalize().
+ *      normalize().  Not sure we really need this function.
  */
 
 void
 user_settings::max_sets (int value)
 {
-    if (value >= SEQ64_DEFAULT_SET_MAX && value <= SEQ64_MAX_SET_MAX)
+    if (value >= SEQ64_MIN_SET_MAX && value <= SEQ64_DEFAULT_SET_MAX)
         m_max_sets = value;
 
     normalize();

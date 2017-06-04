@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-31
+ * \updates       2017-06-04
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -743,8 +743,8 @@ userfile::write (const perform & /* a_perf */ )
 
         file << "\n"
             "# Specifies the number of rows in the main window.\n"
-            "# At present, only a value of 4 is supportable.\n"
-            "# In the future, we hope to support an alternate value of 8.\n"
+            "# Value of 4 (the default) through 8 (the best alternative value)\n"
+            "# are allowed.\n"
             "\n"
             << usr().mainwnd_rows() << "       # mainwnd_rows\n"
             ;

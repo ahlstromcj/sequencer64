@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-05-29
+ * \updates       2017-06-04
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -304,6 +304,9 @@ static const char * const s_help_4 =
 "                            multi-windows use consecutive set numbers.\n"
 "                            The upper left mainwid is always the active one.\n"
 #endif
+"              set=rxc       Modifies the rows and columns in the set from the\n"
+"                            default of 4x8.  Supported values of rows are 4\n"
+"                            to 8, but currently only 8 columns are tested.\n"
 "\n"
 "The daemonize option works only in the CLI build. The set options work only\n"
 "in the 'rtmidi' GUI build.  Remember to specify option '--user-save' to make\n"
@@ -511,6 +514,20 @@ process_o_options (int argc, char * argv [])
                                 }
                             }
 #endif  // SEQ64_MULTI_MAINWID
+                            else if (optionname == "set")
+                            {
+                                if (arg.length() == 3)
+                                {
+                                    int rows = atoi(arg.c_str());
+                                    int cols = atoi(arg.substr(2, 1).c_str());
+                                    result = true;
+                                    if (rows > 0)
+                                        usr().mainwnd_rows(rows);
+
+                                    if (cols > 0)
+                                        usr().mainwnd_cols(cols);
+                                }
+                            }
                         }
                         if (! result)
                         {
@@ -627,7 +644,14 @@ parse_options_files
             seq64::userfile ufile(rcname);
             if (ufile.parse(p))
             {
-                // Nothing to do?
+                /*
+                 * Since we are parsing this file after the creation of the
+                 * perform object, we may need to modify some perform members
+                 * here.
+                 */
+
+                p.seqs_in_set(usr().seqs_in_set());
+                p.max_sets(usr().max_sets());
             }
             else
             {

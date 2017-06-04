@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-24
+ * \updates       2017-06-04
  * \license       GNU GPLv2 or above
  *
  *  Wonder where the name "wid" came from....
@@ -133,7 +133,7 @@ private:
     int m_seqarea_y;            /**< Roughly with height of the main window.    */
     int m_seqarea_seq_x;        /**< To be determined.                          */
     int m_seqarea_seq_y;        /**< To be determined.                          */
-    int m_mainwid_x;            /**< Horizontal size of the ain window grid.    */
+    int m_mainwid_x;            /**< Horizontal size of the main window grid.   */
     int m_mainwid_y;            /**< Vertical size of the main window grid.     */
     int m_mainwid_border;       /**< Main-window border, unused setting.        */
     int m_mainwid_spacing;      /**< Main-window spacing, unused setting.       */
@@ -171,7 +171,7 @@ public:
 #endif
     virtual ~mainwid ();
 
-    void set_screenset (int ss, bool setperf = false);
+    int set_screenset (int ss, bool setperf = false);
 
 private:
 

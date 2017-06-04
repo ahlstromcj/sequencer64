@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2017-06-02
+ * \updates       2017-06-04
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -66,9 +66,17 @@
 #define SEQ64_MIDI_CHANNEL_MAX            16
 
 /**
- *  Default value for c_max_sets.  The actual maximum number of sets will be
+ *  Minimum value for c_max_sets.  The actual maximum number of sets will be
  *  reduced if we add rows (or columns) to each mainwid grid.  This is
  *  actually a derived value, but we still support a macro for it.
+ */
+
+#define SEQ64_MIN_SET_MAX                 16
+
+/**
+ *  Default (and maximum) value for c_max_sets.  The actual maximum number of
+ *  sets will be reduced if we add rows (or columns) to each mainwid grid.
+ *  This is actually a derived value, but we still support a macro for it.
  */
 
 #define SEQ64_DEFAULT_SET_MAX             32
@@ -79,14 +87,6 @@
 
 #define SEQ64_DEFAULT_SEQS_IN_SET \
     (SEQ64_DEFAULT_MAINWND_ROWS * SEQ64_DEFAULT_MAINWND_COLUMNS)
-
-/**
- *  Maximum value for c_max_sets.  The actual maximum number of sets will be
- *  reduced if we add rows (or columns) to each mainwid grid.  This is
- *  actually a derived value, but we still support a macro for it.
- */
-
-#define SEQ64_MAX_SET_MAX                 64
 
 /**
  *  Default value for c_max_groups.  This value replaces c_seqs_in_set for
@@ -237,14 +237,6 @@
  */
 
 #define SEQ64_MAX_MAINWND_COLUMNS          8
-
-/**
- *  Default number of sequences in a set, controlled by the number of rows and
- *  columns in the main window.
- */
-
-#define SEQ64_DEFAULT_SEQS_IN_SET \
-   (SEQ64_DEFAULT_MAINWND_ROWS * SEQ64_DEFAULT_MAINWND_COLUMNS)
 
 #if defined SEQ64_MULTI_MAINWID
 

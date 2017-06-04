@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-06-03
+ * \updates       2017-06-04
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -273,8 +273,8 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_mute_group                (),         // boolean array, size 32 * 32
     m_armed_saved               (false),
     m_armed_statuses            (),         // boolean array, size 1024
-    m_seqs_in_set               (usr().seqs_in_set()),  // c_seqs_in_set
-    m_tracks_mute_state         (m_seqs_in_set, false),    // a set's track state
+    m_seqs_in_set               (usr().seqs_in_set()),      // c_seqs_in_set
+    m_tracks_mute_state         (m_seqs_in_set, false),     // set's track state
     m_mode_group                (true),
     m_mode_group_learn          (false),
     m_mute_group_selected       (0),
@@ -333,10 +333,10 @@ perform::perform (gui_assistant & mygui, int ppqn)
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
     m_auto_screenset_queue      (false),
 #endif
-    m_max_sets                  (c_max_sets),
+    m_max_sets                  (usr().max_sets()),     // c_max_sets
     m_sequence_count            (0),
     m_sequence_max              (c_max_sequence),
-    m_sequence_high             (0),
+    m_sequence_high             (-1),
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
     m_edit_sequence             (-1),
 #endif
@@ -575,7 +575,7 @@ perform::clamp_track (int track) const
     else if (track >= m_seqs_in_set)
     {
         track = m_seqs_in_set - 1;
-        errprint("clamped track to maximum");
+        errprintf("clamped track number to %d\n", track);
     }
     return track;
 }
@@ -861,32 +861,64 @@ perform::toggle_playing_tracks ()
     if (m_armed_saved)
     {
         m_armed_saved = false;
-        for (int i = 0; i < m_sequence_max; ++i)    /* m_sequence_high  */
+        for (int i = 0; i < m_sequence_high; ++i)   /* m_sequence_max       */
         {
             if (m_armed_statuses[i])
             {
                 m_seqs[i]->toggle_song_mute();
-                m_seqs[i]->toggle_playing();    /* needed to show mute status */
+                m_seqs[i]->toggle_playing();        /* to show mute status  */
             }
         }
     }
     else
     {
-        for (int i = 0; i < m_sequence_max; ++i)    /* m_sequence_high  */
+        bool armed_status = false;
+        for (int i = 0; i < m_sequence_high; ++i)   /* m_sequence_max       */
         {
-            bool armed_status = false;
             if (is_active(i))
-                armed_status = m_seqs[i]->get_playing();
-
-            m_armed_statuses[i] = armed_status;
-            if (armed_status)
             {
-                m_armed_saved = true;           /* at least one was armed     */
-                m_seqs[i]->toggle_song_mute();
-                m_seqs[i]->toggle_playing();    /* needed to show mute status */
+                armed_status = m_seqs[i]->get_playing();
+                m_armed_statuses[i] = armed_status;
+                if (armed_status)
+                {
+                    m_armed_saved = true;           /* one was armed        */
+                    m_seqs[i]->toggle_song_mute();  /* toggle the arming    */
+                    m_seqs[i]->toggle_playing();    /* to show mute status  */
+                }
             }
         }
+
+        /*
+         * EXPERIMENTAL.  It remembers the two playing tracks, but then
+         * toggles all the other tracks back on.
+         *
+        if (! armed_status)
+            toggle_all_tracks();
+         */
     }
+}
+
+/**
+ *  Indicates if any sequences are armed (playing).
+ *
+ * \return
+ *      Returns true if even one sequence is armed.
+ */
+
+bool
+perform::are_any_armed ()
+{
+    bool result = false;
+    for (int i = 0; i < m_sequence_high; ++i)   /* m_sequence_max       */
+    {
+        if (is_active(i))
+        {
+            result = m_seqs[i]->get_playing();
+            if (result)
+                break;                          /* one armed is enough  */
+        }
+    }
+    return result;
 }
 
 /**
@@ -1809,6 +1841,7 @@ perform::set_screenset (int ss)
         m_screenset = ss;
 #endif
         m_screenset_offset = screenset_offset(ss);
+        printf("m_screenset_offset = %d\n", m_screenset_offset);
         unset_queued_replace();                 /* clear this new feature   */
     }
 }

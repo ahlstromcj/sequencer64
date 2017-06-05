@@ -1841,7 +1841,6 @@ perform::set_screenset (int ss)
         m_screenset = ss;
 #endif
         m_screenset_offset = screenset_offset(ss);
-        printf("m_screenset_offset = %d\n", m_screenset_offset);
         unset_queued_replace();                 /* clear this new feature   */
     }
 }

@@ -226,7 +226,9 @@
 
 /**
  *  Minimum number of columns in the main-window's grid.  Currently the same
- *  as the default number.
+ *  as the default number.  We currently cannot support more sets than 32,
+ *  which would happen if we let rows or columns go below the default 4 x 8
+ *  settings.
  */
 
 #define SEQ64_MIN_MAINWND_COLUMNS          8
@@ -236,7 +238,7 @@
  *  as the default number.
  */
 
-#define SEQ64_MAX_MAINWND_COLUMNS          8
+#define SEQ64_MAX_MAINWND_COLUMNS          12   // 8
 
 #if defined SEQ64_MULTI_MAINWID
 

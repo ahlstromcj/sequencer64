@@ -24,7 +24,7 @@
  * \library       seq64rtcli application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-04-07
- * \updates       2017-04-23
+ * \updates       2017-06-04
  * \license       GNU GPLv2 or above
  *
  *  This application is seq64 without a GUI, control must be done via MIDI.
@@ -117,7 +117,7 @@ main (int argc, char * argv [])
     bool stdio_rerouted = false;            /* used only in log-file option */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
-    if (seq64::process_o_options(argc, argv))
+    if (seq64::parse_o_options(argc, argv))
     {
         std::string logfile = seq64::usr().option_logfile();
         if (! logfile.empty())

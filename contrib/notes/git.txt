@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2017-05-29
+2015-09-09 to 2017-06-04
 
 Creating a GitHub Repository:
 
@@ -268,6 +268,18 @@ Diffs:
     Getting a list of files that have conflicts:
 
         $ git diff --name-only --diff-filter=U
+
+Log information:
+
+    We add to our ChangeLog using the perl script "git2cl":
+
+        $ git2cl > cl.txt
+        $ gvim -O cl.txt ChangeLog
+          (copy stuff from cl.txt to ChangeLog and clean it up)
+
+    A quick way to summarize the files edited in the last few commits is:
+
+        $ git log --pretty --numstat --summary
 
 Listing files:
 

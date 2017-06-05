@@ -84,7 +84,7 @@ namespace seq64
 class user_settings
 {
     friend class userfile;      /* allow protected access to file parser */
-    friend bool process_o_options (int, char *[]);
+    friend bool parse_o_options (int, char *[]);
 
     /**
      *  Provides a setting to control the overall style of grid-drawing for

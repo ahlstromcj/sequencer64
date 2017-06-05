@@ -82,7 +82,7 @@ main (int argc, char * argv [])
     bool stdio_rerouted = false;            /* used only in log-file option */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
-    if (seq64::process_o_options(argc, argv))
+    if (seq64::parse_o_options(argc, argv))
     {
         /*
          * We need to process the "log" option early.
@@ -132,14 +132,17 @@ main (int argc, char * argv [])
         std::string errmessage;                     /* just in case!        */
         ok = seq64::parse_options_files(p, errmessage, argc, argv);
         optionindex = seq64::parse_command_line_options(p, argc, argv);
-        if (seq64::process_o_options(argc, argv))
+        if (seq64::parse_o_options(argc, argv))
         {
             /*
              * The user may have specified the "wid" or other -o options that
              * are also set up in the "usr" file.  The command line needs to
-             * take precedence.  Nothing to do in here, though, the "log"
-             * option is processed above.
+             * take precedence.  The "log" option is processed above.
+             * These same settings are made in the cmdlineopts module.
              */
+
+            p.seqs_in_set(seq64::usr().seqs_in_set());
+            p.max_sets(seq64::usr().max_sets());
         }
 
         p.launch(seq64::usr().midi_ppqn());         /* set up performance   */

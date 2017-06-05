@@ -535,7 +535,7 @@ userfile::write (const perform & /* a_perf */ )
            "# Sequencer64 user configuration file (legacy Seq24 0.9.2 format)\n";
     }
     else
-        file << "# Sequencer64 0.91.0 (and above) user configuration file\n";
+        file << "# Sequencer64 0.92.0 (and above) user configuration file\n";
 
     file << "#\n"
         "# Created by reading the following file and writing it out via the\n"
@@ -743,7 +743,7 @@ userfile::write (const perform & /* a_perf */ )
 
         file << "\n"
             "# Specifies the number of rows in the main window.\n"
-            "# Value of 4 (the default) through 8 (the best alternative value)\n"
+            "# Values of 4 (the default) through 8 (the best alternative value)\n"
             "# are allowed.\n"
             "\n"
             << usr().mainwnd_rows() << "       # mainwnd_rows\n"
@@ -751,7 +751,7 @@ userfile::write (const perform & /* a_perf */ )
 
         file << "\n"
             "# Specifies the number of columns in the main window.\n"
-            "# At present, only a value of 8 is supportable.\n"
+            "# At present, values from 8 (the default) to 12 are supported.\n"
             "\n"
             << usr().mainwnd_cols() << "       # mainwnd_cols\n"
             ;

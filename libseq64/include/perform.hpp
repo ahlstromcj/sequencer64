@@ -168,7 +168,6 @@ class perform
     friend class perfroll;
     friend void * input_thread_func (void * myperf);
     friend void * output_thread_func (void * myperf);
-    friend bool parse_options_files (perform &, std::string &, int, char *[]);
 
 #ifdef SEQ64_JACK_SUPPORT
 
@@ -2019,6 +2018,29 @@ public:
     bool toggle_other_names (int seqnum, bool isshiftkey);  /* perfnames    */
     bool are_any_armed ();
 
+    /**
+     * \setter m_max_sets
+     *      This setter is needed to modify the value after reading the "user"
+     *      file.  Other than that, it should not be used.  We may find a way
+     *      to enforce that, later.
+     */
+
+    void max_sets (int sets)
+    {
+        m_max_sets = sets;
+    }
+
+    /**
+     * \setter m_seqs_in_set
+     *      This setter modifies the current value based on the current values
+     *      of the settings found in the user_settings module.
+     */
+
+    void seqs_in_set (int seqs)
+    {
+        m_seqs_in_set = seqs;
+    }
+
 private:
 
     /**
@@ -2322,29 +2344,6 @@ private:
     int max_sets () const
     {
         return m_max_sets;
-    }
-
-    /**
-     * \setter m_max_sets
-     *      This setter is needed to modify the value after reading the "user"
-     *      file.  Other than that, it should not be used.  We may find a way
-     *      to enforce that, later.
-     */
-
-    void max_sets (int sets)
-    {
-        m_max_sets = sets;
-    }
-
-    /**
-     * \setter m_seqs_in_set
-     *      This setter modifies the current value based on the current values
-     *      of the settings found in the user_settings module.
-     */
-
-    void seqs_in_set (int seqs)
-    {
-        m_seqs_in_set = seqs;
     }
 
     /**

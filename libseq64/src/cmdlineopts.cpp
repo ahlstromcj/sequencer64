@@ -295,18 +295,18 @@ static const char * const s_help_4 =
 "              log=filename  Redirect console output to a log file in the\n"
 "                            --home directory [$HOME/.config/sequencer64].\n"
 #if defined SEQ64_MULTI_MAINWID
-"              wid=rxc,f     Show r rows of sets, c columns of sets, and set\n"
-"                            the sync-status of the set blocks. r can range\n"
-"              (e.g          from 1 to 3, c can range from 1 to 2, and the sync\n"
-"               'wid=3x2,t') flag can be 'true', 'false', or 'indep' (the same\n"
+"              wid=RxC,F     Show R rows of sets, C columns of sets, and set\n"
+"                            the sync-status of the set blocks. R can range\n"
+"              (e.g          from 1 to 3, C can range from 1 to 2, and the sync\n"
+"               'wid=3x2,t') flag F can be true, false, or 'indep' (the same\n"
 "                            as false).  The flag sets the multiple windows so\n"
 "                            that they stay in step with each other, and the\n"
 "                            multi-windows use consecutive set numbers.\n"
 "                            The upper left mainwid is always the active one.\n"
 #endif
-"              set=rxc       Modifies the rows and columns in the set from the\n"
-"                            default of 4x8.  Supported values of rows are 4\n"
-"                            to 8, but currently only 8 columns are tested.\n"
+"              sets=RxC      Modifies the rows and columns in a set from the\n"
+"                            default of 4x8.  Supported values of R are 4 to 8,\n"
+"                            and C can range from 8 to 12.\n"
 "\n"
 "The daemonize option works only in the CLI build. The set options work only\n"
 "in the 'rtmidi' GUI build.  Remember to specify option '--user-save' to make\n"
@@ -450,7 +450,7 @@ help_check (int argc, char * argv [])
  */
 
 bool
-process_o_options (int argc, char * argv [])
+parse_o_options (int argc, char * argv [])
 {
     bool result = false;
     if (argc > 1 && not_nullptr(argv))
@@ -494,7 +494,7 @@ process_o_options (int argc, char * argv [])
                             {
                                 /*
                                  * The arg should be of the form "rxc[,b]",
-                                 * stricty. This is a short-cut.
+                                 * stricty, 1 digit max each number.
                                  */
 
                                 if (arg.length() >= 3)
@@ -514,18 +514,21 @@ process_o_options (int argc, char * argv [])
                                 }
                             }
 #endif  // SEQ64_MULTI_MAINWID
-                            else if (optionname == "set")
+                            else if (optionname == "sets")
                             {
-                                if (arg.length() == 3)
+                                if (arg.length() >= 3)
                                 {
                                     int rows = atoi(arg.c_str());
-                                    int cols = atoi(arg.substr(2, 1).c_str());
-                                    result = true;
-                                    if (rows > 0)
-                                        usr().mainwnd_rows(rows);
+                                    std::string::size_type p =
+                                        arg.find_first_of("x");
 
-                                    if (cols > 0)
+                                    if (p != std::string::npos)
+                                    {
+                                        int cols = atoi(arg.substr(p+1).c_str());
+                                        usr().mainwnd_rows(rows);
                                         usr().mainwnd_cols(cols);
+                                        result = true;
+                                    }
                                 }
                             }
                         }
@@ -647,7 +650,8 @@ parse_options_files
                 /*
                  * Since we are parsing this file after the creation of the
                  * perform object, we may need to modify some perform members
-                 * here.
+                 * here.  These changes must also be made after parsing the
+                 * command line in the main module (e.g. in seq64rtmidi.cpp).
                  */
 
                 p.seqs_in_set(usr().seqs_in_set());
@@ -860,7 +864,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
             /*
              * We now handle this processing separately and first, in the
-             * process_o_option() function.
+             * parse_o_option() function.
              */
             break;
 

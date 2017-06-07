@@ -495,11 +495,11 @@ user_settings::set_defaults ()
 
 /**
  *  Calculate the derived values from the already-set values.
- *
  *  Should we normalize the BPM increment values here, in case they
  *  are irregular?
  *
- * TODO:  Make sure gmute_tracks() is viable with variable set sizes.
+ *  gmute_tracks() is viable with variable set sizes only if we stick with the
+ *  32 sets by 32 patterns, at this time.
  *
  *  m_max_sequence is now actually a constant (1024), so we enforce that here
  *  now.

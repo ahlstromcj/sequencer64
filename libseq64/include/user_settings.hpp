@@ -623,8 +623,8 @@ class user_settings
     int m_seqs_in_set;                  /* not include in .usr file     */
 
     /**
-     *  Number of group-mute tracks that can be supported, which is
-     *  m_seqs_in_set squared, or 1024.  This value is <i> not </i>
+     *  Number of group-mute tracks/sequences/patterns that can be supported,
+     *  which is m_seqs_in_set squared, or 1024.  This value is <i> not </i>
      *  part of the "user" configuration file; it is calculated by the
      *  normalize() function.
      */

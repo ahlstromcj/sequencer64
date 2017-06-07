@@ -1339,11 +1339,18 @@ midifile::parse_proprietary_track (perform & p, int file_size)
 
                 /*
                  * TODO:  Determine if this is viable under variable
-                 * seqs-in-set.  See user_settings::gmute_tracks().
+                 * seqs-in-set.  See user_settings::gmute_tracks().  For now,
+                 * we get warnings here because MIDI files can contain only
+                 * 32x32 mutes.  And its not really seqs-in-set by
+                 * segs-in-set, more like groups-allowed by seqs-in-set.
+                 *
+                 * int seqsinset = usr().seqs_in_set();
+                 *
                  */
 
-                int seqsinset = usr().seqs_in_set();
-                for (int i = 0; i < seqsinset; ++i)
+                int groupcount = c_max_groups;
+                int seqsinset = c_seqs_in_set;
+                for (int i = 0; i < groupcount; ++i)
                 {
                     midilong groupmute = read_long();
                     p.select_group_mute(int(groupmute));
@@ -2014,11 +2021,12 @@ midifile::write_proprietary_track (perform & p)
      * We need a way to make the group mute data optional.  Why write 4096
      * bytes of zeroes?
      *
-     * TODO: get the mute size from user_settings.
+     * int seqsinset = usr().seqs_in_set();
      */
 
-    int seqsinset = usr().seqs_in_set();
-    int gmutesz = 4 + seqsinset * (4 + seqsinset * 4);
+    int groupcount = c_max_groups;
+    int seqsinset = c_seqs_in_set;
+    int gmutesz = 4 + groupcount * (4 + seqsinset * 4);
     if (! rc().legacy_format())                 // m_new_format???
     {
         if (! p.any_group_unmutes())

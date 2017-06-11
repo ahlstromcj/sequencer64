@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-04-14
+ * \updates       2017-06-11
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -239,19 +239,17 @@ busarray::busarray ()
 /**
  *  Removes components from the container.
  *
+ * \question
  *  However, now that we swap containers, we cannot call this functionality,
  *  because it deletes the bus's midibus pointer and nullifies it.
- *
- *  DISABLED, BUT WE NEED A WAY TO CLEAN UP AT EXIT TIME!!!
+ *  But we do call it, and it seems to work.
  */
 
 busarray::~busarray ()
 {
-#if 0
     std::vector<businfo>::iterator bi;
     for (bi = m_container.begin(); bi != m_container.end(); ++bi)
         bi->remove();
-#endif
 }
 
 /**

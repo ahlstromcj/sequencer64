@@ -669,6 +669,16 @@ parse_options_files
 
 /**
  *  Like parse_options_files(), but reads only the [mute-group] section.
+ *
+ * \param p
+ *      The perform object to alter by reading the mute-groups.
+ *
+ * \param errmessage
+ *      A return parameter for any error message that might occur.
+ *
+ * \return
+ *      Returns true if no errors occurred in reading the mute-groups.
+ *      If not true, the caller should output the error message.
  */
 
 bool

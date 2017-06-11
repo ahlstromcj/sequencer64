@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-29
+ * \updates       2017-06-11
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -2391,13 +2391,22 @@ mainwnd::reload_mute_groups ()
 }
 
 /**
- *  Clear all mute-group settings.  Sets all values to false/zero.
+ *  Clear all mute-group settings.  Sets all values to false/zero.  Also,
+ *  since the intent might be to clean up the MIDI file, the user is prompted
+ *  to save.
  */
 
 void
 mainwnd::clear_mute_groups ()
 {
-    perf().clear_mute_groups();
+    if (perf().clear_mute_groups())     /* did any mute statuses change?    */
+    {
+        if (is_save())
+        {
+            if (perf().is_running())    /* \change ca 2016-03-19            */
+                stop_playing();
+        }
+    }
 }
 
 /**

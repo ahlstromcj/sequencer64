@@ -10,7 +10,7 @@ This document describes basic user testing of Sequencer64 using the
 Yoshimi software synthesizer.
 
 \page       user_testing_page User Testing of Sequencer64 with Yoshimi
-\author     Chris Ahlstrom 2017-05-01
+\author     Chris Ahlstrom 2017-06-11
 
 \section user_testing_intro Introduction
 
@@ -223,15 +223,17 @@ Here's how to capture errors, while suppressing the system errors and while
 generating a log file:
 
 \verbatim
-   $ valgrind --suppressions=contrib/seq64.supp --leak-check=full \
+   $ valgrind --suppressions=contrib/valgrind/seq64.supp \
+      --leak-check=full --leak-resolution=high \
       --track-origins=yes --log-file=valgrind.log --show-leak-kinds=all \
-      ./Sequencer64/sequencer64
+      ./Seq64rtmidi/seq64
 \endverbatim
 
 The errors can be also be re-routed to a log-file via the
 "2> valgrind.log" shell redirection.
 
-Another idea is to precede the valgrind command with the following construct:
+Another good idea is to precede the valgrind command with the following
+construct:
 
 \verbatim
    $ G_SLICE=debug-blocks valgrind ...

@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-04-28
+ * \updates       2017-06-11
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -547,6 +547,7 @@ midi_alsa_info::api_get_midi_event (event * inev)
          * This happens even at startup, before anything is really happening.
          */
 
+        snd_midi_event_free(midi_ev);
         return false;
     }
 

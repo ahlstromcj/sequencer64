@@ -748,10 +748,13 @@ perform::set_and_copy_mute_group (int mutegroup)
 #else
     int setbase = m_playscreen_offset;          /* includes m_seqs_in_set   */
 #endif
+
     m_mute_group_selected = mutegroup;          /* must set it before loop  */
+
 #ifdef PLATFORM_DEBUG_TMI
     printf("mute-group %d selection\n", mutegroup);
 #endif
+
     for (int s = 0; s < m_seqs_in_set; ++s)     /* VARISET ISSUE!   */
     {
         int source = setbase + s;
@@ -833,6 +836,35 @@ perform::select_and_mute_group (int group)
 {
     set_and_copy_mute_group(group);
     mute_group_tracks();
+}
+
+/**
+ *  Clears all the group-mute items, whether they came from the "rc" file
+ *  or from the most recently-loaded Sequencer64 MIDI file.
+ *
+ * \sideeffect
+ *      If true is returned, the modify flag is set, so that the user has the
+ *      option to save a MIDI file that contained mute-groups that are no
+ *      longer wanted.
+ *
+ * \return
+ *      Returns true if any of the statuses changed from true to false.
+ */
+
+bool
+perform::clear_mute_groups ()
+{
+    bool result = false;
+    for (int seq = 0; seq < c_max_sequence; ++seq)
+    {
+        if (m_mute_group[seq])
+        {
+            result = true;
+            modify();
+        }
+        m_mute_group[seq] = false;
+    }
+    return result;
 }
 
 /**
@@ -4912,7 +4944,7 @@ perform::apply_song_transpose ()
 #endif      // SEQ64_STAZED_TRANSPOSE
 
 /**
- *  Reloads the mute groups from the "rc" file.  NOT READY.
+ *  Reloads the mute groups from the "rc" file.
  *
  * \param errmessage
  *      A pass-back parameter for any error message the file-processing might

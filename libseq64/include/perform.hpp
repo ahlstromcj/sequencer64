@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-04
+ * \updates       2017-06-11
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1574,19 +1574,8 @@ public:
         return master_bus().get_beats_per_minute();
     }
 
-    /**
-     *  Clears all the group-mute items, whether they came from the "rc" file
-     *  or from the most recently-loaded Sequencer64 MIDI file.
-     */
-
-    void clear_mute_groups ()
-    {
-        for (int i = 0; i < c_max_sequence; ++i)
-            m_mute_group[i] = false;
-    }
-
     bool reload_mute_groups (std::string & errmessage);
-
+    bool clear_mute_groups ();
     void set_sequence_control_status (int status);
     void unset_sequence_control_status (int status);
     void unset_queued_replace (bool clearbits = true);

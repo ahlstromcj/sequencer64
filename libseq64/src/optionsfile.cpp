@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-03
+ * \updates       2017-06-10
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -719,13 +719,13 @@ optionsfile::parse_mute_group_section (perform & p)
 
     if (result && gtrack > 0)
     {
-        int gm[c_max_groups];
-
         /*
          * This loop is a bit odd.  We set groupmute, read it, increment it,
          * and then read it again.  We could just use the i variable, I think.
+         * Note that this layout is STILL dependent on c_seqs_in_set = 32.
          */
 
+        int gm[c_max_groups];
         int groupmute = 0;
         for (int g = 0; g < c_max_groups; ++g)
         {
@@ -968,7 +968,6 @@ optionsfile::write (const perform & p)
      */
 
     file << "\n[mute-group]\n\n";
-    int gm[c_max_groups];
 
     /*
      * We might as well save the empty mutes in the "rc" configuration file,
@@ -983,15 +982,17 @@ optionsfile::write (const perform & p)
     file <<
         "# All mute-group values are saved, even if they all are zero, and will\n"
         "# be stripped out from the MIDI file by the new strip-empty-mutes\n"
-        "# functionality (a build option).  This is less confusing to the user.\n"
+        "# functionality (a build option).  This is less confusing to the user\n"
+        "# expects that section to be intact.\n"
         "\n"
         << c_max_sequence << "       # group mute count\n"
         ;
 
-    for (int seqj = 0; seqj < c_max_groups; ++seqj)
+    int gm[c_max_groups];
+    for (int group = 0; group < c_max_groups; ++group)
     {
-        ucperf.select_group_mute(seqj);
-        for (int seqi = 0; seqi < c_max_groups; ++seqi)
+        ucperf.select_group_mute(group);
+        for (int seqi = 0; seqi < c_seqs_in_set; ++seqi)
             gm[seqi] = ucperf.get_group_mute_state(seqi);
 
         snprintf
@@ -1001,7 +1002,7 @@ optionsfile::write (const perform & p)
             " [%1d %1d %1d %1d %1d %1d %1d %1d]"
             " [%1d %1d %1d %1d %1d %1d %1d %1d]"
             " [%1d %1d %1d %1d %1d %1d %1d %1d]",
-            seqj,
+            group,
             gm[0],  gm[1],  gm[2],  gm[3],  gm[4],  gm[5],  gm[6],  gm[7],
             gm[8],  gm[9],  gm[10], gm[11], gm[12], gm[13], gm[14], gm[15],
             gm[16], gm[17], gm[18], gm[19], gm[20], gm[21], gm[22], gm[23],

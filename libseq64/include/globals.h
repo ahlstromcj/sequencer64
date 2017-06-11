@@ -107,6 +107,8 @@
  *  "set" or "screen set".  This value is 4 x 8 = 32 by default.  We
  *  have a few arrays that are allocated to this size, at present. Was
  *  c_mainwnd_rows * c_mainwnd_cols.  On its way to obsolescence.
+ *  HOWEVER, it is still IMPORTANT in saving and retrieving the [mute-group]
+ *  section.
  */
 
 const int c_seqs_in_set = SEQ64_DEFAULT_SEQS_IN_SET;

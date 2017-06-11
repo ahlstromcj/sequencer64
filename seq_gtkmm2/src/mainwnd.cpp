@@ -2626,6 +2626,11 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             printf("key_press[%d]\n", k.key());
             fflush(stdout);
         }
+
+        /*
+         * TODO:  Why is this called on both press and release???
+         */
+
         if (! perf().mainwnd_key_event(k))
         {
             if (k.key() == PREFKEY(bpm_dn))

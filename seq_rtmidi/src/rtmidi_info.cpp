@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2017-03-20
+ * \updates       2017-06-11
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -161,7 +161,8 @@ rtmidi_info::rtmidi_info
 
 rtmidi_info::~rtmidi_info ()
 {
-    // see base class
+    if (not_nullptr(m_info_api))
+        delete m_info_api;
 }
 
 /**

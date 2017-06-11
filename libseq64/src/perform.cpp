@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-06-04
+ * \updates       2017-06-11
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -54,7 +54,7 @@
  *  "Waiting OSC avaibility, I use
  *  https://github.com/Excds/seq24-launchpad-mapper for my Launchpad Mini."
  *
- *  We summarize the these state-saving buffers.
+ *  Summarizing these state-saving buffers:
  *
  *      -   m_armed_statuses[c_max_sequence].
  *          Used in perform::toggle_playing_tracks(), a feature copped from
@@ -80,26 +80,26 @@
  *
  *  m_playscreen.  In seq24, this value (called m_playing_screen) is used for
  *
- *          -   select_group_mute(), to get the sequence/pattern offset for
- *              copying the pattern playing status into the mute-group array.
- *          -   select_mute_group(), very similar.  In sequencer64, this is
- *              called set_and_copy_mute_group() to avoid confusion.
- *              Also, tdeagan's code swaps m_screenset for this value.
- *          -   mute_group_tracks(), to implement the mute-group operation.
- *              Also, tdeagan's code swaps m_screenset for this value.
- *          -   sequence_playing_on()/_off().  If this value equals
- *              m_screenset and the sequence is within the playing screen,
- *              then its mute state is set to true/false (on/off).
- *          -   set_playing_screenset(), where this value is set to
- *              m_screenset.  This function is called when
- *              -   c_midi_control_play_ss is performed.
- *              -   The main window hot-key for screen-set is pressed.
+ *      -   select_group_mute(), to get the sequence/pattern offset for
+ *          copying the pattern playing status into the mute-group array.
+ *      -   select_mute_group(), very similar.  In sequencer64, this is
+ *          called set_and_copy_mute_group() to avoid confusion.
+ *          Also, tdeagan's code swaps m_screenset for this value.
+ *      -   mute_group_tracks(), to implement the mute-group operation.
+ *          Also, tdeagan's code swaps m_screenset for this value.
+ *      -   sequence_playing_on()/_off().  If this value equals
+ *          m_screenset and the sequence is within the playing screen,
+ *          then its mute state is set to true/false (on/off).
+ *      -   set_playing_screenset(), where this value is set to
+ *          m_screenset.  This function is called when
+ *          -   c_midi_control_play_ss is performed.
+ *          -   The main window hot-key for screen-set is pressed.
  *
  *  m_screenset.  In seq24, this value (called m_screen_set) is used for
  *
- *          -   In set_screenset().  The value is clipped to 0 to 31.
- *          -   set_playing_screenset(), as noted above.
- *          -   sequence_playing_on()/_off(), as noted above.
+ *      -   In set_screenset().  The value is clipped to 0 to 31.
+ *      -   set_playing_screenset(), as noted above.
+ *      -   sequence_playing_on()/_off(), as noted above.
  *
  *  set_playing_screenset().  This function is called when
  *
@@ -141,7 +141,8 @@
  *  Indicates if the playing-screenset code is in force or not, for
  *  experimenting.  Without this patch, ignoring snapshots, it seems like
  *  mute-groups only work on screen-set 0, where as with the patch (again
- *  ignoring snapshots), they apply to the "in-view" screen-set.
+ *  ignoring snapshots), they apply to the "in-view" (or "current", or
+ *  "active") screen-set.
  */
 
 #define SEQ64_USE_TDEAGAN_CODE
@@ -426,6 +427,9 @@ perform::~perform ()
             m_seqs[seq] = nullptr;              /* not strictly necessary   */
         }
     }
+
+    if (not_nullptr(m_master_bus))
+        delete(m_master_bus);
 }
 
 /**
@@ -652,15 +656,28 @@ perform::select_group_mute (int mutegroup)
     if (m_mode_group_learn)
     {
         int groupbase = screenset_offset(mutegroup);    /* 1st seq in group */
-        for (int s = 0; s < m_seqs_in_set; ++s)
+        for (int s = 0; s < m_seqs_in_set; ++s)         /* VARISET ISSUE!   */
         {
             int source = m_playscreen_offset + s;       /* m_screenset?     */
             int dest = groupbase + s;
             if (is_active(source))
-                m_mute_group[dest] = m_seqs[source]->get_playing();
+            {
+                bool status = m_seqs[source]->get_playing();
+                m_mute_group[dest] = status;
+#ifdef PLATFORM_DEBUG_TMI
+                printf
+                (
+                    "1: setting m_mute_group[%d] to seq #%d status %s\n",
+                    dest, source, status ? "true" : "false"
+                );
+#endif
+            }
         }
     }
     m_mute_group_selected = mutegroup;
+#ifdef PLATFORM_DEBUG_TMI
+    printf("mute-group %d selection\n", mutegroup);
+#endif
 }
 
 /**
@@ -732,15 +749,35 @@ perform::set_and_copy_mute_group (int mutegroup)
     int setbase = m_playscreen_offset;          /* includes m_seqs_in_set   */
 #endif
     m_mute_group_selected = mutegroup;          /* must set it before loop  */
-    for (int s = 0; s < m_seqs_in_set; ++s)
+#ifdef PLATFORM_DEBUG_TMI
+    printf("mute-group %d selection\n", mutegroup);
+#endif
+    for (int s = 0; s < m_seqs_in_set; ++s)     /* VARISET ISSUE!   */
     {
         int source = setbase + s;
         if (m_mode_group_learn && is_active(source))
         {
+            bool status = m_seqs[source]->get_playing();
             int dest = groupbase + s;
-            m_mute_group[dest] = m_seqs[source]->get_playing();
+            m_mute_group[dest] = status;
+#ifdef PLATFORM_DEBUG_TMI
+            printf
+            (
+                "2: setting m_mute_group[%d] to seq #%d status %s\n",
+                dest, source, status ? "true" : "false"
+            );
+#endif
         }
-        m_tracks_mute_state[s] = m_mute_group[mute_group_offset(s)];
+        int offset = mute_group_offset(s);
+        int mmg = m_mute_group[offset];
+        m_tracks_mute_state[s] = mmg;
+#ifdef PLATFORM_DEBUG_TMI
+        printf
+        (
+            "setting m_tracks_mute_states[%d] to m_mute_group[%d] = %d\n",
+            s, offset, mmg
+        );
+#endif
     }
 }
 
@@ -4331,7 +4368,7 @@ perform::set_clock_bus (int bus, clock_e clocktype)
 /**
  *  Gets the event key for the given sequence.  If we're not in legacy mode,
  *  then we adjust for the screenset, so that screensets greater than 0 can
- *  also show the correct key name, instead of a question mark.
+ *  also show the correct key name, instead of a question mark (or blank).
  *
  *  Legacy seq24 already responds to the toggling of the mute state via the
  *  shortcut keys even if screenset > 0, but it shows the question mark.

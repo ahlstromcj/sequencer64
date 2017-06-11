@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-29
+ * \updates       2017-06-06
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -488,7 +488,7 @@ options::add_keyboard_page ()
     controltable->attach(*label, 2, 3, 1, 2);
     controltable->attach(*entry, 3, 4, 1, 2);
 
-    label = manage(new Gtk::Label("BPM up", Gtk::ALIGN_RIGHT));
+    label = manage(new Gtk::Label("BPM Up", Gtk::ALIGN_RIGHT));
     entry = manage
     (
         new keybindentry(keybindentry::location, PREFKEY_ADDR(bpm_up))
@@ -496,7 +496,7 @@ options::add_keyboard_page ()
     controltable->attach(*label, 2, 3, 2, 3);
     controltable->attach(*entry, 3, 4, 2, 3);
 
-    label = manage(new Gtk::Label("BPM down", Gtk::ALIGN_RIGHT));
+    label = manage(new Gtk::Label("BPM Down", Gtk::ALIGN_RIGHT));
     entry = manage
     (
         new keybindentry(keybindentry::location, PREFKEY_ADDR(bpm_dn))

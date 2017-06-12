@@ -4416,14 +4416,10 @@ perform::set_clock_bus (int bus, clock_e clocktype)
 unsigned int
 perform::lookup_keyevent_key (int seqnum)
 {
-    unsigned int result = (unsigned int)(' ');
     if (! rc().legacy_format())
         seqnum -= m_screenset_offset;
 
-    if (get_key_events_rev().count(seqnum) > 0)
-        result = get_key_events_rev()[seqnum];
-
-    return result;
+    return keys().lookup_keyevent_key(seqnum);
 }
 
 /**

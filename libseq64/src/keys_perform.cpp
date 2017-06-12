@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-10-06
+ * \updates       2017-06-11
  * \license       GNU GPLv2 or above
  *
  *  Added pattern-edit and event-edit keys which change the pattern slot
@@ -221,7 +221,7 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
  */
 
 void
-keys_perform::set_key_event (unsigned int keycode, long sequence_slot)
+keys_perform::set_key_event (unsigned int keycode, int sequence_slot)
 {
     SlotMap::iterator it1 = m_key_events.find(keycode);
     if (it1 != m_key_events.end())
@@ -259,7 +259,7 @@ keys_perform::set_key_event (unsigned int keycode, long sequence_slot)
  */
 
 void
-keys_perform::set_key_group (unsigned int keycode, long group_slot)
+keys_perform::set_key_group (unsigned int keycode, int group_slot)
 {
     SlotMap::iterator it1 = m_key_groups.find(keycode);
     if (it1 != m_key_groups.end())

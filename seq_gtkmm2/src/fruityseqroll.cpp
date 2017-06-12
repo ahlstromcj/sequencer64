@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-11
+ * \updates       2017-06-11
  * \license       GNU GPLv2 or above
  *
  *  This module handles "fruity" interactions only in the piano roll
@@ -211,14 +211,20 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                 );
                 if (eventcount > 0)
                 {
+                    /*
+                     * Context sensitive mouse handling for fruity mode.
+                     * In seq24, context handling for the left side of the
+                     * event was not yet supported; the same here.
+                     */
+
                     bool right_mouse_handle = false;
                     bool center_mouse_handle = false;
                     {
-                        midipulse drop_tick;
-                        int drop_note;              // midibyte
+                        midipulse droptick;
+                        int dropnote;              // midibyte
                         sroll.convert_xy
                         (
-                            sroll.m_drop_x, sroll.m_drop_y, drop_tick, drop_note
+                            sroll.m_drop_x, sroll.m_drop_y, droptick, dropnote
                         );
                         midipulse start, end;
                         int note;                   // midibyte
@@ -226,22 +232,22 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                         (
                             seq.intersect_notes
                             (
-                                drop_tick, drop_note, start, end, note
-                            ) && note == drop_note
+                                droptick, dropnote, start, end, note
+                            ) && note == dropnote
                         )
                         {
-                            long handle_size = clamp // 16 wide unless very small
+                            long hndlsz = clamp // 16 wide unless very small
                             (
                                 s_handlesize, 0, (end - start) / 3
                             );
-                            bool center = start <= drop_tick &&
-                                    drop_tick <= (start + handle_size);
-                            bool right = end - handle_size <= drop_tick &&
-                                    drop_tick <= end;
-                            if (center)
+                            if (start <= droptick && droptick <= (start + hndlsz))
+                            {
                                 center_mouse_handle = true;
-                            else if (right)
+                            }
+                            else if ((end - hndlsz) <= droptick && droptick <= end)
+                            {
                                 right_mouse_handle = true;
+                            }
                             else
                                 center_mouse_handle = true;
                         }
@@ -263,6 +269,19 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                         needs_update = true;
                         sroll.m_moving_init = true;
                         sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
+
+                        /*
+                         * Done in the call above.
+                         *
+                         *  sroll.convert_tn_box_to_rect
+                         *  (
+                         *      tick_s, tick_f, note_h, note_l,
+                         *      sroll.m_selected.x,
+                         *      sroll.m_selected.y,
+                         *      sroll.m_selected.width,
+                         *      sroll.m_selected.height
+                         *  );
+                         */
 
                         int adjusted_selected_x = sroll.m_selected.x;
                         sroll.snap_x(adjusted_selected_x);
@@ -306,6 +325,18 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 
                         sroll.m_growing = true;
                         sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
+
+                        /*
+                         * This call is folded into the above call.
+                         *
+                         *  sroll.convert_tn_box_to_rect
+                         *  (
+                         *      tick_s, tick_f, note_h, note_l,
+                         *      sroll.m_selected.x, sroll.m_selected.y,
+                         *      sroll.m_selected.width, sroll.m_selected.height
+                         *  );
+                         */
+
                     }
                 }
             }
@@ -378,9 +409,9 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
             }
         }
     }
-    update_mouse_pointer(sroll);    /* context sensitive mouse pointer... */
-    if (needs_update)               /* if they clicked, something changed */
-        seq.set_dirty();    /* redraw_events();                   */
+    update_mouse_pointer(sroll);        /* context sensitive mouse pointer... */
+    if (needs_update)                   /* if they clicked, something changed */
+        seq.set_dirty();                /* redraw_events();                   */
 
     return needs_update;
 }
@@ -432,11 +463,14 @@ FruitySeqRollInput::on_button_release_event
 
     if (SEQ64_CLICK_LEFT_MIDDLE(ev->button))
     {
-        if (sroll.m_growing)
+        if (sroll.m_growing)        /* convert deltas into screen coordinates */
         {
-            /* convert deltas into screen coordinates */
-
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
+
+            /*
+             * sroll.m_seq->push_undo();
+             */
+
             if (is_shift_key(ev))
                 seq.stretch_selected(delta_tick);
             else
@@ -454,8 +488,8 @@ FruitySeqRollInput::on_button_release_event
     );
 
     /*
-     * -    ctrl-left click button up for select/drag copy/paste
-     * -    left click button up for ending a move of selected notes
+     *  -   ctrl-left click button up for select/drag copy/paste
+     *  -   left click button up for ending a move of selected notes
      */
 
     if (SEQ64_CLICK_LEFT(ev->button))
@@ -517,12 +551,17 @@ FruitySeqRollInput::on_button_release_event
             delta_x -= sroll.m_move_snap_offset_x;      /* adjust for snap */
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
             delta_note -= c_num_keys - 1;
+
+            /*
+             * sroll.m_seq->push_undo();
+             */
+
             seq.move_selected_notes(delta_tick, delta_note);
             needs_update = true;
         }
     }
 
-    /* right click or left ctrl (???) click button up for selection box */
+    /* right click or left click button up for selection box */
 
     if (SEQ64_CLICK_LEFT_RIGHT(ev->button))
     {

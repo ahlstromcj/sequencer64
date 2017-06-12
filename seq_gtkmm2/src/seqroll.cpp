@@ -1294,6 +1294,11 @@ seqroll::complete_paste (int x, int y)
     int note;
     convert_xy(m_current_x, m_current_y, tick, note);
     m_paste = false;
+
+    /*
+     * m_seq.push_undo();
+     */
+
     m_seq.paste_selected(tick, note);
 }
 

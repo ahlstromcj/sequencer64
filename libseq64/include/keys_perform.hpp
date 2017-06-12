@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-10-06
+ * \updates       2017-06-11
  * \license       GNU GPLv2 or above
  *
  * Stazed:
@@ -795,24 +795,23 @@ public:
      */
 
     /**
-     * \getter m_key_events_rev[seqnum];
+     * \getter m_key_events_rev[seqnum]
      *
      * \param seqnum
      *      Provides the sequence number to look up in the reverse key map for
      *      patterns/sequences.  If the count for this value is 0, then a
-     *      question mark character is returned.  Not checked for maximum!
+     *      space (was question mark) character is returned.  Not checked for
+     *      maximum!
      */
 
-    unsigned int lookup_keyevent_key (long seqnum)
+    unsigned int lookup_keyevent_key (int seqnum)
     {
-        if (m_key_events_rev.count(seqnum) > 0)
-            return m_key_events_rev[seqnum];
-        else
-            return '?';
+        return (m_key_events_rev.count(seqnum) > 0) ?
+            m_key_events_rev[seqnum] : ' ' ;
     }
 
     /**
-     * \getter m_key_events_rev[keycode];
+     * \getter m_key_events_rev[keycode]
      *
      * \param keycode
      *      Provides the keycode to look up in the (forward) key map for
@@ -820,45 +819,39 @@ public:
      *      0 is returned.
      */
 
-    long lookup_keyevent_seq (unsigned int keycode)
+    int lookup_keyevent_seq (unsigned int keycode)
     {
-        if (m_key_events.count(keycode) > 0)
-            return m_key_events[keycode];
-        else
-            return 0;
+        return (m_key_events.count(keycode) > 0) ?
+            m_key_events[keycode] : 0 ;
     }
 
     /**
-     * \getter m_key_events_rev[groupnum];
+     * \getter m_key_events_rev[groupnum]
      *
      * \param groupnum
      *      Provides the group number to look up in the reverse key map for
-     *      groups.  If the count for this value is 0, then a question mark
-     *      character is returned.
+     *      groups.  If the count for this value is 0, then a space (was a
+     *      question mark) character is returned.
      */
 
-    unsigned int lookup_keygroup_key (long groupnum)
+    unsigned int lookup_keygroup_key (int groupnum)
     {
-        if (m_key_groups_rev.count(groupnum) > 0)
-            return m_key_groups_rev[groupnum];
-        else
-            return '?';
+        return (m_key_groups_rev.count(groupnum) > 0) ?
+            m_key_groups_rev[groupnum] : ' ' ;
     }
 
     /**
-     * \getter m_key_events_rev[keycode];
+     * \getter m_key_events_rev[keycode]
      *
      * \param keycode
      *      Provides the sequence number to look up in the reverse key map for
      *      groups.  If the count for this value is 0, then a 0 is returned.
      */
 
-    long lookup_keygroup_group (unsigned int keycode)
+    int lookup_keygroup_group (unsigned int keycode)
     {
-        if (m_key_groups.count(keycode) > 0)
-            return m_key_groups[keycode];
-        else
-            return 0;
+        return (m_key_groups.count(keycode) > 0) ?
+            m_key_groups[keycode] : 0 ;
     }
 
     virtual std::string key_name (unsigned int key) const;
@@ -885,8 +878,8 @@ public:
         m_key_groups_rev.clear();
     }
 
-    void set_key_event (unsigned int keycode, long sequence_slot);
-    void set_key_group (unsigned int keycode, long group_slot);
+    void set_key_event (unsigned int keycode, int sequence_slot);
+    void set_key_group (unsigned int keycode, int group_slot);
 
 protected:
 

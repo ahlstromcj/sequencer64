@@ -1796,33 +1796,25 @@ public:
      *      a sequence number of 0 is returned.
      */
 
-    long lookup_keyevent_seq (unsigned int keycode)
+    int lookup_keyevent_seq (unsigned int keycode)
     {
-        long result = 0;
-        if (get_key_events().count(keycode) > 0)
-            result = get_key_events()[keycode];
-
-        return result;
+        return keys().lookup_keyevent_seq(keycode);
     }
 
     /**
      *  Gets the group key for the given sequence.
      *
      * \param groupnum
-     *      The number of the sequence for which to return the group key.
+     *      The number of the group for which to return the group key.
      *
      * \return
      *      Returns the desired key.  If there is no such value, then the
-     *      period ('.') character is returned.
+     *      default character is returned.
      */
 
-    unsigned int lookup_keygroup_key (long groupnum)
+    unsigned int lookup_keygroup_key (int groupnum)
     {
-        unsigned int result = '.';                      /* '?' */
-        if (get_key_groups_rev().count(groupnum) > 0)
-            result = get_key_groups_rev()[groupnum];
-
-        return result;
+        return keys().lookup_keygroup_key(groupnum);    /* '.' or ' ' */
     }
 
     /**
@@ -1838,13 +1830,9 @@ public:
      *      a group number of 0 is returned.
      */
 
-    long lookup_keygroup_group (unsigned int keycode)
+    int lookup_keygroup_group (unsigned int keycode)
     {
-        long result = 0;
-        if (get_key_groups().count(keycode))
-            result = get_key_groups()[keycode];
-
-        return result;
+        return keys().lookup_keygroup_group(keycode);
     }
 
     void start_playing (bool songmode = false);

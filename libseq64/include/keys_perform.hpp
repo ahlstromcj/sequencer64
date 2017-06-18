@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2017-06-11
+ * \updates       2017-06-17
  * \license       GNU GPLv2 or above
  *
  * Stazed:
@@ -99,6 +99,7 @@ struct keys_perform_transfer
 
     bool kpt_show_ui_sequence_number;
     unsigned int kpt_pattern_edit;
+    unsigned int kpt_pattern_shift;     /* variset support  */
     unsigned int kpt_event_edit;
     unsigned int kpt_tap_bpm;
     unsigned int kpt_pause;
@@ -225,6 +226,7 @@ private:
     unsigned int m_key_toggle_mutes;            /**< Toggle all patterns.   */
     unsigned int m_key_tap_bpm;                 /**< To tap out the BPM.    */
     unsigned int m_key_pattern_edit;            /**< Show pattern editor.   */
+    unsigned int m_key_pattern_shift;           /**< Shift pattern hotkey.  */
     unsigned int m_key_event_edit;              /**< Show event editor.     */
     unsigned int m_key_stop;                    /**< Stop play, Escape.     */
 
@@ -573,6 +575,27 @@ public:
     }
 
     /**
+     * \getter m_key_pattern_shift
+     */
+
+    unsigned int pattern_shift () const
+    {
+        return m_key_pattern_shift;
+    }
+
+    /**
+     * \setter m_key_pattern_shift
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
+    void pattern_shift (unsigned int x)
+    {
+        m_key_pattern_shift = x;
+    }
+
+    /**
      * \getter m_key_event_edit
      */
 
@@ -892,7 +915,6 @@ protected:
 
     /**
      * \getter m_key_bpm_up
-     *
      *  Address getter for the bpm_up operation.
      */
 
@@ -903,7 +925,6 @@ protected:
 
     /**
      * \getter m_key_bpm_dn
-     *
      *  Address getter for the bpm_dn operation.
      */
 
@@ -914,7 +935,6 @@ protected:
 
     /**
      * \getter m_key_replace
-     *
      *  Address getter for the replace operation.
      */
 
@@ -925,7 +945,6 @@ protected:
 
     /**
      * \getter m_key_queue
-     *
      *  Address getter for the queue operation.
      */
 
@@ -936,7 +955,6 @@ protected:
 
     /**
      * \getter m_key_keep_queue
-     *
      *  Address getter for the keep_queue operation.
      */
 
@@ -947,7 +965,6 @@ protected:
 
     /**
      * \getter m_key_snapshot_1
-     *
      *  Address getter for the snapshot_1 operation.
      */
 
@@ -958,7 +975,6 @@ protected:
 
     /**
      * \getter m_key_snapshot_2
-     *
      *  Address getter for the snapshot_2 operation.
      */
 
@@ -969,7 +985,6 @@ protected:
 
     /**
      * \getter m_key_screenset_up
-     *
      *  Address getter for the screenset_up operation.
      */
 
@@ -980,7 +995,6 @@ protected:
 
     /**
      * \getter m_key_screenset_dn
-     *
      *  Address getter for the screenset_dn operation.
      */
 
@@ -991,7 +1005,6 @@ protected:
 
     /**
      * \getter m_key_playing_screenset
-     *
      *  Address getter for the set_playing_screenset operation.
      */
 
@@ -1002,7 +1015,6 @@ protected:
 
     /**
      * \getter m_key_group_on
-     *
      *  Address getter for the group_on operation.
      */
 
@@ -1013,7 +1025,6 @@ protected:
 
     /**
      * \getter m_key_group_off
-     *
      *  Address getter for the group_off operation.
      */
 
@@ -1024,7 +1035,6 @@ protected:
 
     /**
      * \getter m_key_group_learn
-     *
      *  Address getter for the group_learn operation.
      */
 
@@ -1035,7 +1045,6 @@ protected:
 
     /**
      * \getter m_key_start
-     *
      *  Address getter for the start operation.
      */
 
@@ -1046,7 +1055,6 @@ protected:
 
     /**
      * \getter m_key_pause
-     *
      *  Address getter for the pause operation.
      */
 
@@ -1057,7 +1065,6 @@ protected:
 
     /**
      * \getter m_key_song_mode
-     *
      *  Address getter for the song-mode operation.
      */
 
@@ -1068,7 +1075,6 @@ protected:
 
     /**
      * \getter m_key_toggle_jack
-     *
      *  Address getter for the toggle-jack operation.
      */
 
@@ -1079,7 +1085,6 @@ protected:
 
     /**
      * \getter m_key_menu_mode
-     *
      *  Address getter for the menu-mode operation.
      */
 
@@ -1090,7 +1095,6 @@ protected:
 
     /**
      * \getter m_key_follow_transport
-     *
      *  Address getter for the follow-transport operation.
      */
 
@@ -1101,7 +1105,6 @@ protected:
 
     /**
      * \getter m_key_fast_forward
-     *
      *  Address getter for the fast-forward operation.
      */
 
@@ -1112,7 +1115,6 @@ protected:
 
     /**
      * \getter m_key_rewind
-     *
      *  Address getter for the rewind operation.
      */
 
@@ -1123,7 +1125,6 @@ protected:
 
     /**
      * \getter m_key_pointer_position
-     *
      *  Address getter for the pointer operation.
      */
 
@@ -1134,7 +1135,6 @@ protected:
 
     /**
      * \getter m_key_toggle_mutes
-     *
      *  Address getter for the toggle-mutes operation.
      */
 
@@ -1145,7 +1145,6 @@ protected:
 
     /**
      * \getter m_key_tap_bpm
-     *
      *  Address getter for the tap_bpm operation.
      */
 
@@ -1156,7 +1155,6 @@ protected:
 
     /**
      * \getter m_key_pattern_edit
-     *
      *  Address getter for the pattern-edit operation.
      */
 
@@ -1166,8 +1164,17 @@ protected:
     }
 
     /**
+     * \getter m_key_pattern_shift
+     *  Address getter for the pattern-shift operation.
+     */
+
+    unsigned int * at_pattern_shift ()
+    {
+        return &m_key_pattern_shift;
+    }
+
+    /**
      * \getter m_key_event_edit
-     *
      *  Address getter for the event-edit operation.
      */
 
@@ -1178,7 +1185,6 @@ protected:
 
     /**
      * \getter m_key_stop
-     *
      *  Address getter for the stop operation.
      */
 
@@ -1189,7 +1195,6 @@ protected:
 
     /**
      * \getter m_key_show_ui_sequence_key
-     *
      *  Address getter for the show_ui_sequence_key value.
      */
 
@@ -1200,7 +1205,6 @@ protected:
 
     /**
      * \getter m_key_show_ui_sequence_number
-     *
      *  Address getter for the show_ui_sequence_number value.
      */
 
@@ -1211,10 +1215,10 @@ protected:
 
 };          // class keys_perform
 
-/*
- * Free functions.  The implementation of this function will ultimately
- * depend on the GUI environment; currently it is GTK 2.x, so the
- * implementation is in seq_gtkmm2/src/keys_perform_gtk2.cpp.
+/**
+ * Free functions for keyboard support.  The implementation of this function
+ * will ultimately depend on the GUI environment; currently it is GTK 2.x, so
+ * the implementation is in seq_gtkmm2/src/keys_perform_gtk2.cpp.
  */
 
 inline bool invalid_key (unsigned int key)

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-06-04
+ * \updates       2017-06-17
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -962,6 +962,20 @@ public:
 
     /**
      * \getter m_mainwnd_rows and m_mainwnd_cols
+     *      Returns true if either value is not the default.  This function is
+     *      the inverse of is_default_m.inwid_size().
+     */
+
+    bool is_variset () const
+    {
+        return (m_mainwnd_rows != SEQ64_DEFAULT_MAINWND_ROWS) ||
+            (m_mainwnd_cols != SEQ64_DEFAULT_MAINWND_COLUMNS);
+    }
+
+    /**
+     * \getter m_mainwnd_rows and m_mainwnd_cols
+     *      Returns true if both values are the default.  This function is
+     *      the inverse of is_variset().
      */
 
     bool is_default_mainwid_size () const

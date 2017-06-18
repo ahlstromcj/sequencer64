@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-06-11
+ * \updates       2017-06-18
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -275,7 +275,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_armed_saved               (false),
     m_armed_statuses            (),         // boolean array, size 1024
     m_seqs_in_set               (usr().seqs_in_set()),      // c_seqs_in_set
-    m_tracks_mute_state         (m_seqs_in_set, false),     // set's track state
+    m_tracks_mute_state         (m_seqs_in_set, false),     // sets track state
     m_mode_group                (true),
     m_mode_group_learn          (false),
     m_mute_group_selected       (0),
@@ -378,9 +378,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
      * constructor.
      *
      *  for (int i = 0; i < m_seqs_in_set; ++i)
-     *  {
      *      m_tracks_mute_state[i] = m_screenset_state[i] = false;
-     *  }
      */
 
     for (int i = 0; i < m_max_sets; ++i)
@@ -389,14 +387,6 @@ perform::perform (gui_assistant & mygui, int ppqn)
     midi_control zero;                          /* all members false or 0   */
     for (int i = 0; i < c_midi_controls_extended; ++i)
         m_midi_cc_toggle[i] = m_midi_cc_on[i] = m_midi_cc_off[i] = zero;
-
-    /*
-     * Not sure why we need to this, since it is done by the
-     * keys_perform-derived object.
-     *
-     * set_all_key_events();
-     * set_all_key_groups();
-     */
 }
 
 /**
@@ -411,20 +401,23 @@ perform::perform (gui_assistant & mygui, int ppqn)
 
 perform::~perform ()
 {
-    m_inputing = m_outputing = m_running = false;
-    m_condition_var.signal();                   /* signal the end of play   */
+    // m_inputing = m_outputing = m_running = false;
+    m_condition_var.lock();                         // EXPERIMENTAL
+    m_inputing = m_outputing = m_running = false;   // EXPERIMENTAL
+    m_condition_var.signal();                       /* signal end of play   */
+    m_condition_var.unlock();                       // EXPERIMENTAL
     if (m_out_thread_launched)
         pthread_join(m_out_thread, NULL);
 
     if (m_in_thread_launched)
         pthread_join(m_in_thread, NULL);
 
-    for (int seq = 0; seq < m_sequence_max; ++seq)      /* m_sequence_high  */
+    for (int seq = 0; seq < m_sequence_max; ++seq)  /* m_sequence_high?     */
     {
         if (not_nullptr(m_seqs[seq]))
         {
             delete m_seqs[seq];
-            m_seqs[seq] = nullptr;              /* not strictly necessary   */
+            m_seqs[seq] = nullptr;                  /* not really necessary */
         }
     }
 
@@ -457,7 +450,7 @@ perform::create_master_bus ()
     m_master_bus = new (std::nothrow) mastermidibus();
     bool result = not_nullptr(m_master_bus);
     if (result)
-        master_bus().port_settings(m_master_clocks, m_master_inputs);
+        m_master_bus->port_settings(m_master_clocks, m_master_inputs);
 
     return result;
 }
@@ -489,7 +482,7 @@ perform::launch (int ppqn)
         init_jack_transport();
 #endif
 
-        master_bus().init(ppqn, m_bpm);     /* calls api_init() per API */
+        m_master_bus->init(ppqn, m_bpm);     /* calls api_init() per API */
 
         /*
          * We may need to copy the actually input buss settings back to here,
@@ -560,6 +553,9 @@ perform::clear_all ()
  *  found, where we checked for track > m_seqs_in_set, instead of using
  *  the >= operator.
  *
+ * \obsolete
+ *      Is it?
+ *
  * \param track
  *      The track value to be checked and rectified as necessary.
  *
@@ -582,6 +578,41 @@ perform::clamp_track (int track) const
         errprintf("clamped track number to %d\n", track);
     }
     return track;
+}
+
+/**
+ *  Provides common code to keep the group value valid.  Fixed the bug we
+ *  found, where we checked for track > m_seqs_in_set, instead of using
+ *  the >= operator.  We now compare against the new c_max_groups value (32).
+ *
+ * \param group
+ *      The group value to be checked and rectified as necessary.
+ *
+ * \return
+ *      Returns the group parameter, clamped between 0 and c_max_sets-1,
+ *      inclusive.  We use c_max_groups rather than m_max_sets because the new
+ *      varisets feature reduces the number of sets (in general); this check
+ *      is basically a sanity check.
+ */
+
+int
+perform::clamp_group (int group) const
+{
+    if (group < 0)
+    {
+        group = 0;
+        errprint("clamped group to 0");
+    }
+    else if (group >= c_max_groups)     /* m_max_sets   */
+    {
+        group = c_max_groups - 1;
+        errprintf("clamped group number to %d\n", group);
+    }
+    int maxgroups = c_max_sequence / m_seqs_in_set;
+    if (group > maxgroups)
+        group = maxgroups;
+
+    return group;
 }
 
 /**
@@ -618,14 +649,14 @@ perform::print_group_unmutes () const
 {
     const bool * mp = &m_mute_group[0];
     int set_number = 0;
-    for (int i = 0; i < m_sequence_max; ++i, ++mp)      /* c_gmute_tracks */
+    for (int i = 0; i < m_sequence_max; ++i, ++mp)      /* c_gmute_tracks   */
     {
         if ((i % m_seqs_in_set) == 0)
         {
             printf("\n[%2d]", set_number);
             ++set_number;
         }
-        if ((i % 8) == 0)
+        if ((i % SEQ64_SET_KEYS_COLUMNS) == 0)          /* 8                */
             printf(" ");
 
         printf("%d", *mp ? 1 : 0);
@@ -652,11 +683,11 @@ perform::print_group_unmutes () const
 void
 perform::select_group_mute (int mutegroup)
 {
-    mutegroup = clamp_track(mutegroup);
+    mutegroup = clamp_group(mutegroup);
     if (m_mode_group_learn)
     {
         int groupbase = screenset_offset(mutegroup);    /* 1st seq in group */
-        for (int s = 0; s < m_seqs_in_set; ++s)         /* VARISET ISSUE!   */
+        for (int s = 0; s < m_seqs_in_set; ++s)         /* variset issue    */
         {
             int source = m_playscreen_offset + s;       /* m_screenset?     */
             int dest = groupbase + s;
@@ -678,6 +709,80 @@ perform::select_group_mute (int mutegroup)
 #ifdef PLATFORM_DEBUG_TMI
     printf("mute-group %d selection\n", mutegroup);
 #endif
+}
+
+/**
+ *  This function sets the mute state of an element in the m_mute_group
+ *  array.  The index value is the track number offset by the number of
+ *  the selected mute group (which is equivalent to a set number) times
+ *  the number of sequences in a set.  This function is used in midifile
+ *  and optionsfile when parsing the file to get the initial mute-groups.
+ *
+ * \param gtrack
+ *      The number of the track to be muted/unmuted.
+ *
+ * \param muted
+ *      This boolean indicates the state to which the track should be set.
+ */
+
+void
+perform::set_group_mute_state (int gtrack, bool muted)
+{
+    int grouptrack = mute_group_offset(gtrack);
+    if (grouptrack > 0)
+        m_mute_group[grouptrack] = muted;
+}
+
+/**
+ *  The opposite of set_group_mute_state(), it gets the value of the
+ *  desired track.  Uses the mute_group_offset() function.  This function
+ *  is used in midifile and optionsfile when writing the file to get the
+ *  initial mute-groups.
+ *
+ * \param gtrack
+ *      The number of the track for which the state is to be obtained.
+ *      Like set_group_mute_state(), this value is offset by adding
+ *      m_mute_group_selected * m_seqs_in_set.
+ *
+ * \return
+ *      Returns the desired m_mute_group[] value.
+ */
+
+bool
+perform::get_group_mute_state (int gtrack)
+{
+    bool result = false;
+    int grouptrack = mute_group_offset(gtrack);
+    if (grouptrack > 0)
+        result = m_mute_group[grouptrack];
+
+    return result;
+}
+
+/**
+ *  A helper function to calculate the index into the mute-group array,
+ *  based on the desired track.  Remember that the mute-group array,
+ *  m_mute_group[c_max_sequence], determines which tracks are muted/unmuted.
+ *
+ * \param group
+ *      The number of the desired group.
+ *
+ * \return
+ *      Returns a track value from 0 to 1023 if the group is valid for the
+ *      current seqs-in-set count.  Otherwise, a -1 is returned.  The caller
+ *      must check this value before using it.
+ */
+
+int
+perform::mute_group_offset (int group)
+{
+    int result = m_mute_group_selected * m_seqs_in_set;
+    if (result > c_max_sequence)                /* see m_mute_group[] */
+        result = -1;
+    else
+        result = clamp_group(group) + result;
+
+    return result;
 }
 
 /**
@@ -741,7 +846,7 @@ perform::unset_mode_group_learn ()
 void
 perform::set_and_copy_mute_group (int mutegroup)
 {
-    mutegroup = clamp_track(mutegroup);
+    mutegroup = clamp_group(mutegroup);             // clamp_track(mutegroup);
     int groupbase = screenset_offset(mutegroup);
 #ifdef SEQ64_USE_TDEAGAN_CODE
     int setbase = screenset_offset(m_screenset);
@@ -755,7 +860,7 @@ perform::set_and_copy_mute_group (int mutegroup)
     printf("mute-group %d selection\n", mutegroup);
 #endif
 
-    for (int s = 0; s < m_seqs_in_set; ++s)     /* VARISET ISSUE!   */
+    for (int s = 0; s < m_seqs_in_set; ++s)     /* variset issue            */
     {
         int source = setbase + s;
         if (m_mode_group_learn && is_active(source))
@@ -772,15 +877,20 @@ perform::set_and_copy_mute_group (int mutegroup)
 #endif
         }
         int offset = mute_group_offset(s);
-        int mmg = m_mute_group[offset];
-        m_tracks_mute_state[s] = mmg;
+        if (offset >= 0)
+        {
+            int mmg = m_mute_group[offset];
+            m_tracks_mute_state[s] = mmg;
 #ifdef PLATFORM_DEBUG_TMI
-        printf
-        (
-            "setting m_tracks_mute_states[%d] to m_mute_group[%d] = %d\n",
-            s, offset, mmg
-        );
+            printf
+            (
+                "setting m_tracks_mute_states[%d] to m_mute_group[%d] = %d\n",
+                s, offset, mmg
+            );
 #endif
+        }
+        else
+            break;
     }
 }
 
@@ -803,7 +913,8 @@ perform::mute_group_tracks ()
 {
     if (m_mode_group)
     {
-        for (int g = 0; g < m_seqs_in_set; ++g)         /* was m_max_sets!! */
+//      for (int g = 0; g < m_seqs_in_set; ++g)         /* was m_max_sets!! */
+        for (int g = 0; g < m_max_sets; ++g)
         {
             int seqoffset = screenset_offset(g);
             for (int s = 0; s < m_seqs_in_set; ++s)
@@ -956,14 +1067,6 @@ perform::toggle_playing_tracks ()
                 }
             }
         }
-
-        /*
-         * EXPERIMENTAL.  It remembers the two playing tracks, but then
-         * toggles all the other tracks back on.
-         *
-        if (! armed_status)
-            toggle_all_tracks();
-         */
     }
 }
 
@@ -1280,7 +1383,7 @@ perform::new_sequence (int seq)
                      */
 
                     char buss_override = usr().midi_buss_override();
-                    m_seqs[seq]->set_master_midi_bus(&master_bus());
+                    m_seqs[seq]->set_master_midi_bus(m_master_bus);
                     modify();
                     if (buss_override != SEQ64_BAD_BUSS)
                         m_seqs[seq]->set_midi_bus(buss_override);
@@ -1535,7 +1638,7 @@ perform::set_beats_per_minute (midibpm bpm)
 
 #endif
 
-        master_bus().set_beats_per_minute(bpm);
+        m_master_bus->set_beats_per_minute(bpm);
         m_us_per_quarter_note = tempo_us_from_bpm(bpm);
         m_bpm = bpm;
     }
@@ -2035,7 +2138,8 @@ perform::play (midipulse tick)
         if (is_active(s))
             m_seqs[s]->play_queue(tick, m_playback_mode);
     }
-    master_bus().flush();                           /* flush MIDI buss  */
+    if (not_nullptr(m_master_bus))
+        m_master_bus->flush();                       /* flush MIDI buss  */
 }
 
 /**
@@ -2431,7 +2535,7 @@ perform::position_jack (bool songmode, midipulse tick)
 bool
 perform::activate ()
 {
-    bool result = master_bus().activate();      // make it initialize too!!!!!
+    bool result = m_master_bus->activate();      // make it initialize too!!!!!
     if (result)
         result = m_jack_asst.activate();
 
@@ -2625,7 +2729,8 @@ perform::all_notes_off ()
         if (is_active(s))
             m_seqs[s]->off_playing_notes();
     }
-    master_bus().flush();               /* flush the MIDI buss  */
+    if (not_nullptr(m_master_bus))
+        m_master_bus->flush();               /* flush the MIDI buss  */
 }
 
 /**
@@ -2659,7 +2764,7 @@ perform::reset_sequences (bool pause)
                 m_seqs[s]->stop(m_playback_mode);
         }
     }
-    master_bus().flush();                           /* flush the MIDI buss  */
+    m_master_bus->flush();                           /* flush the MIDI buss  */
 }
 
 /**
@@ -2812,7 +2917,7 @@ output_thread_func (void * myperf)
 void
 perform::output_func ()
 {
-    while (m_outputing)
+    while (m_outputing)         /* PERHAPS we should LOCK this variable */
     {
         m_condition_var.lock();
         while (! is_running())
@@ -2919,7 +3024,7 @@ perform::output_func ()
             set_orig_ticks(m_starting_tick);                // what member?
         }
 
-        int ppqn = master_bus().get_ppqn();
+        int ppqn = m_master_bus->get_ppqn();
 
 #ifdef SEQ64_STATISTICS_SUPPORT
 
@@ -2978,7 +3083,7 @@ perform::output_func ()
             delta.tv_nsec = current.tv_nsec - last.tv_nsec;     // delta!
             long delta_us = (delta.tv_sec * 1000000) + (delta.tv_nsec / 1000);
 #endif
-            midibpm bpm  = master_bus().get_beats_per_minute();
+            midibpm bpm  = m_master_bus->get_beats_per_minute();
 
             /*
              * Delta time to ticks; get delta ticks.  seq24 0.9.3 changes
@@ -3056,7 +3161,7 @@ perform::output_func ()
 
             if (pad.js_init_clock)
             {
-                master_bus().init_clock(midipulse(pad.js_clock_tick));
+                m_master_bus->init_clock(midipulse(pad.js_clock_tick));
                 pad.js_init_clock = false;
             }
             if (pad.js_dumping)
@@ -3139,10 +3244,10 @@ perform::output_func ()
                  * Somehow we are calling the wrong function, not the one we
                  * need to emit the MIDI clock.
                  *
-                 * master_bus().clock(midipulse(pad.js_clock_tick));
+                 * m_master_bus->clock(midipulse(pad.js_clock_tick));
                  */
 
-                master_bus().emit_clock(midipulse(pad.js_clock_tick));
+                m_master_bus->emit_clock(midipulse(pad.js_clock_tick));
 
 #ifdef SEQ64_STATISTICS_SUPPORT
                 if (rc().stats())
@@ -3294,7 +3399,7 @@ perform::output_func ()
             }
             printf("\n\n-- clock width --\n");
 
-            midibpm bpm  = master_bus().get_beats_per_minute();
+            midibpm bpm  = m_master_bus->get_beats_per_minute();
             printf
             (
                 "optimal: [%d us]\n", int(clock_tick_duration_bogus(bpm, m_ppqn))
@@ -3340,8 +3445,8 @@ perform::output_func ()
          * if m_usemidiclock == true.
          */
 
-        master_bus().flush();
-        master_bus().stop();
+        m_master_bus->flush();
+        m_master_bus->stop();
 
         /*
          * In the new rtmidi version of the application (seq64), enabling this
@@ -3547,9 +3652,11 @@ perform::handle_midi_control (int ctl, bool state)
          * "ctl >= 2 * m_seqs_in_set".
          *
          * TODO: This can now vary, so we need to re-evaluate here!
+         *
+         * if ((ctl >= m_seqs_in_set) && (ctl < c_midi_track_ctrl))
          */
 
-        if ((ctl >= m_seqs_in_set) && (ctl < c_midi_track_ctrl))
+        if ((ctl >= c_max_sets) && (ctl < c_midi_track_ctrl))
             select_and_mute_group(ctl - m_seqs_in_set);
 
         break;
@@ -3798,13 +3905,13 @@ void
 perform::input_func ()
 {
     event ev;
-    while (m_inputing)
+    while (m_inputing)          /* PERHAPS we should LOCK this variable */
     {
-        if (master_bus().poll_for_midi() > 0)
+        if (m_master_bus->poll_for_midi() > 0)
         {
             do
             {
-                if (master_bus().get_midi_event(&ev))
+                if (m_master_bus->get_midi_event(&ev))
                 {
                     /*
                      * Used when starting from the beginning of the song.  Obey
@@ -3889,13 +3996,13 @@ perform::input_func ()
                          * handle an incoming MIDI control event.
                          */
 
-                        if (master_bus().is_dumping())
+                        if (m_master_bus->is_dumping())
                         {
                             ev.set_timestamp(m_tick);
 #ifdef USE_STAZED_MIDI_DUMP
-                            master_bus().dump_midi_input(ev);
+                            m_master_bus->dump_midi_input(ev);
 #else
-                            master_bus().get_sequence()->stream_event(ev);
+                            m_master_bus->get_sequence()->stream_event(ev);
 #endif
                         }
                         else            /* use it to control our sequencer */
@@ -3909,10 +4016,10 @@ perform::input_func ()
                             ev.print();
 
                         if (rc().pass_sysex())
-                            master_bus().sysex(&ev);
+                            m_master_bus->sysex(&ev);
                     }
                 }
-            } while (master_bus().is_more_input());
+            } while (m_master_bus->is_more_input());
         }
     }
     pthread_exit(0);
@@ -4372,7 +4479,7 @@ perform::set_input_bus (int bus, bool active)
     }
     else if (bus >= 0)
     {
-        if (master_bus().set_input(bus, active))
+        if (m_master_bus->set_input(bus, active))
             set_input(bus, active);
     }
 }
@@ -4393,7 +4500,7 @@ perform::set_input_bus (int bus, bool active)
 void
 perform::set_clock_bus (int bus, clock_e clocktype)
 {
-    if (master_bus().set_clock(bus, clocktype))     /* checks bus index, too */
+    if (m_master_bus->set_clock(bus, clocktype))     /* checks bus index, too */
         set_clock(bus, clocktype);
 }
 

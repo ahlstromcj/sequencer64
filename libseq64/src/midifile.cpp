@@ -1019,11 +1019,14 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                 /*
                  * Add sorting after reading all the events for the sequence.
+                 * Then add the sequence with it's preferred location as a
+                 * hint.
                  */
 
+                int preferred_seqnum = seqnum + screenset * usr().seqs_in_set();
                 seq.sort_events();              /* sort the events now      */
                 seq.set_length();               /* final verify_and_link    */
-                p.add_sequence(&seq, seqnum + (screenset * usr().seqs_in_set()));
+                p.add_sequence(&seq, preferred_seqnum);
             }
         }
         else
@@ -1189,14 +1192,14 @@ bool
 midifile::parse_proprietary_track (perform & p, int file_size)
 {
     bool result = true;
-    midilong ID = read_long();                 /* Get ID + Length      */
+    midilong ID = read_long();                      /* Get ID + Length      */
     if (ID == PROPRIETARY_CHUNK_TAG)                /* magic number 'MTrk'  */
     {
         midilong tracklength = read_long();
         if (tracklength > 0)
         {
             int seqnum = read_seq_number();
-            if (seqnum == PROPRIETARY_SEQ_NUMBER)   /* sanity check         */
+            if (seqnum == PROPRIETARY_SEQ_NUMBER)   /* sanity check, 0x7777 */
             {
                 std::string trackname = read_track_name();
                 result = ! trackname.empty();
@@ -1326,7 +1329,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         seqspec = parse_prop_header(file_size);
         if (seqspec == c_mutegroups)
         {
-            long len = read_long();
+            long len = read_long();                     /* always 1024      */
             if (len > 0)
             {
                 if (c_max_sequence != len)              /* c_gmute_tracks   */
@@ -1338,18 +1341,19 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                 }
 
                 /*
-                 * TODO:  Determine if this is viable under variable
-                 * seqs-in-set.  See user_settings::gmute_tracks().  For now,
-                 * we get warnings here because MIDI files can contain only
-                 * 32x32 mutes.  And its not really seqs-in-set by
-                 * segs-in-set, more like groups-allowed by seqs-in-set.
+                 * Determine if this is viable under variable seqs-in-set.
+                 * See user_settings::gmute_tracks().  For now, we get
+                 * warnings here because MIDI files can contain only 32x32
+                 * mutes.  And its not really seqs-in-set by segs-in-set, more
+                 * like groups-allowed by seqs-in-set.  We will likely stick
+                 * with the 32x32 paradigm and overlay it onto top of whatever
+                 * seqs-in-set size is in force.
                  *
                  * int seqsinset = usr().seqs_in_set();
-                 *
                  */
 
-                int groupcount = c_max_groups;
-                int seqsinset = c_seqs_in_set;
+                int groupcount = c_max_groups;          /* 32 */
+                int seqsinset = c_seqs_in_set;          /* 32 */
                 for (int i = 0; i < groupcount; ++i)
                 {
                     midilong groupmute = read_long();
@@ -2020,14 +2024,12 @@ midifile::write_proprietary_track (perform & p)
     /*
      * We need a way to make the group mute data optional.  Why write 4096
      * bytes of zeroes?
-     *
-     * int seqsinset = usr().seqs_in_set();
      */
 
-    int groupcount = c_max_groups;
-    int seqsinset = c_seqs_in_set;
+    int groupcount = c_max_groups;              /* 32 */
+    int seqsinset = c_seqs_in_set;              /* 32 */
     int gmutesz = 4 + groupcount * (4 + seqsinset * 4);
-    if (! rc().legacy_format())                 // m_new_format???
+    if (! rc().legacy_format())
     {
         if (! p.any_group_unmutes())
             gmutesz = 0;

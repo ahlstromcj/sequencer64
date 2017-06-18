@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-11
+ * \updates       2017-06-17
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -329,6 +329,7 @@ mainwnd::mainwnd
 #endif
     m_menu_mode             (true),                 /* stazed 2016-07-30    */
     m_call_seq_edit         (false),                /* new ca 2016-05-15    */
+    m_call_seq_shift        (0),                    /* new ca 2017-06-17    */
     m_call_seq_eventedit    (false)                 /* new ca 2016-05-19    */
 {
 #if defined SEQ64_MULTI_MAINWID
@@ -932,8 +933,6 @@ mainwnd::mainwnd
         }
         contentvbox->pack_start(*m_mainwid_grid, Gtk::PACK_SHRINK);
     }
-//  else
-//      contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
 
     m_main_wid->set_can_focus(true);            /* from stazed */
     m_main_wid->grab_focus();
@@ -974,7 +973,6 @@ mainwnd::mainwnd
     (
         mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
     );
-
     show_all();                             /* works here as well           */
 
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
@@ -1039,6 +1037,10 @@ mainwnd::~mainwnd ()
 
     if (not_nullptr(m_options))
         delete m_options;
+
+    /*
+     * delete m_tooltips;
+     */
 
     if (sm_sigpipe[0] != -1)
         close(sm_sigpipe[0]);
@@ -1389,7 +1391,9 @@ mainwnd::update_markers (midipulse tick)
 }
 
 /**
- *  Resets one (or more, if multi-mainwid is enabled) mainwid objects.
+ *  Resets one (or more, if multi-mainwid is enabled) mainwid objects.  The
+ *  reset function draws the patterns on the pixmap, and then draws the pixmap
+ *  on the window.
  */
 
 void
@@ -1556,13 +1560,16 @@ mainwnd::new_file ()
         /*
          * TODO
          *
-        m_perf_edit->set_bp_measure(4);
-        m_perf_edit->set_bw(4);
-        m_perf_edit->set_transpose(0);
+         *  m_perf_edit->set_bp_measure(4);
+         *  m_perf_edit->set_bw(4);
+         *  m_perf_edit->set_transpose(0);
          *
+         * Also not sure if the reset() call is really necessary.  Commented
+         * out for now.
+         *
+         * reset();                                // m_main_wid->reset();
          */
 
-        reset();                                // m_main_wid->reset();
         m_entry_notes->set_text(perf().current_screen_set_notepad());
         rc().filename("");
         update_window_title();
@@ -1793,7 +1800,13 @@ mainwnd::open_file (const std::string & fn)
     rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
     rc().filename(fn);
     update_window_title();
-    reset();                                // m_main_wid->reset();
+
+    /*
+     * Also not sure if the reset() call is really necessary.
+     *
+     * reset();                                // m_main_wid->reset();
+     */
+
     m_entry_notes->set_text(perf().current_screen_set_notepad());
     m_adjust_bpm->set_value(perf().get_beats_per_minute());
 }
@@ -2013,7 +2026,13 @@ mainwnd::file_import_dialog ()
         }
         rc().filename(std::string(dlg.get_filename()));
         update_window_title();
-        reset();                                // m_main_wid->reset();
+
+        /*
+         * Doesn't seem to be necessary.
+         *
+         * reset();                                // m_main_wid->reset();
+         */
+
         m_entry_notes->set_text(perf().current_screen_set_notepad());
         m_adjust_bpm->set_value(perf().get_beats_per_minute());
         break;
@@ -2659,14 +2678,14 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
              * perform function.
              */
 
-            if (k.key() == PREFKEY(screenset_dn))
+            if (k.key() == PREFKEY(screenset_dn) || k.key() == SEQ64_Page_Down)
             {
                 int newss = perf().decrement_screenset();
                 set_screenset(newss);
                 m_adjust_ss->set_value(newss);
                 m_entry_notes->set_text(perf().current_screen_set_notepad());
             }
-            else if (k.key() == PREFKEY(screenset_up))
+            else if (k.key() == PREFKEY(screenset_up) || k.key() == SEQ64_Page_Up)
             {
                 int newss = perf().increment_screenset();
                 set_screenset(newss);
@@ -2777,6 +2796,11 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
              *  default) are enabled and have been pressed, then bring up one
              *  of the editors (pattern or event) when the slot shortcut key
              *  is pressed.
+             *
+             *  Finally, as a new feature, if the pattern-shift key (the
+             *  forward slash by default) is pressed, toggle the flag that
+             *  indicates an extended sequence (value + 32 [c_seqs_in_set])
+             *  will be toggled, instead of the normal sequence.
              */
 
             if (perf().get_key_events().count(k.key()) != 0)
@@ -2812,9 +2836,15 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                         m_main_wid->seq_set_and_eventedit(seqnum);
                         result = true;
                     }
+                    else if (m_call_seq_shift > 0)  /* variset support  */
+                    {
+                        sequence_key(seqnum + m_call_seq_shift * c_seqs_in_set);
+                        m_call_seq_shift = 0;   /* flag now done    */
+                        result = true;
+                    }
                     else
                     {
-                        sequence_key(seqnum);   /* toggle the sequence  */
+                        sequence_key(seqnum);       /* toggle sequence  */
                         result = true;
                     }
                 }
@@ -2824,6 +2854,12 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 if (k.key() == PREFKEY(pattern_edit))
                 {
                     m_call_seq_edit = ! m_call_seq_edit;
+                }
+                else if (k.key() == PREFKEY(pattern_shift))
+                {
+                    ++m_call_seq_shift;
+                    if (m_call_seq_shift == 3) // (m_seqs_in_set / c_seqs_in_set))
+                        m_call_seq_shift = 0;
                 }
                 else if (k.key() == PREFKEY(event_edit))
                 {

@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-06-04
+2016-12-03 to 2017-06-17
 
 Debian packaging:
 
@@ -26,6 +26,9 @@ Hot ideas (from GitHub):
     -   Larger number of visible sets.
     -   Any way to make playback multicore?  The "stress" file maxes out a
         core.
+    -   Can we use page-up/down in mainwid to change the set?  DONE!!!
+    -   Issue: With sets=8x12, the stress MIDI file will crash at load or
+        exit, with bad sequence #108 (out of 128 loaded).
 
 Puzzles:
 

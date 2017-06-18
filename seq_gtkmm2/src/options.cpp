@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-06
+ * \updates       2017-06-17
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -470,6 +470,17 @@ options::add_keyboard_page ()
         );
         controltable->attach(*label, 0, 1, 2, 3);
         controltable->attach(*entry, 1, 2, 2, 3);
+    }
+
+    if (! rc().legacy_format())                 /* variset support  */
+    {
+        label = manage(new Gtk::Label("Slot Shift", Gtk::ALIGN_RIGHT));
+        entry = manage
+        (
+            new keybindentry(keybindentry::location, PREFKEY_ADDR(pattern_shift))
+        );
+        controltable->attach(*label, 0, 1, 3, 4);
+        controltable->attach(*entry, 1, 2, 3, 4);
     }
 
     label = manage(new Gtk::Label("Snapshot 1", Gtk::ALIGN_RIGHT));

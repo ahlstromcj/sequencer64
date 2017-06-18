@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2017-06-11
+ * \updates       2017-06-17
  * \license       GNU GPLv2 or above
  *
  *  Added pattern-edit and event-edit keys which change the pattern slot
@@ -85,6 +85,7 @@ keys_perform::keys_perform ()
     m_key_toggle_mutes              (SEQ64_F8),
     m_key_tap_bpm                   (SEQ64_F9),
     m_key_pattern_edit              (SEQ64_equal),
+    m_key_pattern_shift             (SEQ64_slash),
     m_key_event_edit                (SEQ64_minus),
     m_key_stop                      (SEQ64_Escape)
 {
@@ -160,6 +161,7 @@ keys_perform::set_keys (const keys_perform_transfer & kpt)
     m_key_toggle_mutes              = kpt.kpt_toggle_mutes;
     m_key_tap_bpm                   = kpt.kpt_tap_bpm;
     m_key_pattern_edit              = kpt.kpt_pattern_edit;
+    m_key_pattern_shift             = kpt.kpt_pattern_shift;
     m_key_event_edit                = kpt.kpt_event_edit;
     m_key_stop                      = kpt.kpt_stop;
     m_key_show_ui_sequence_key      = kpt.kpt_show_ui_sequence_key;
@@ -202,6 +204,7 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
      kpt.kpt_toggle_mutes           = m_key_toggle_mutes;
      kpt.kpt_tap_bpm                = m_key_tap_bpm;
      kpt.kpt_pattern_edit           = m_key_pattern_edit;
+     kpt.kpt_pattern_shift          = m_key_pattern_shift;
      kpt.kpt_event_edit             = m_key_event_edit;
      kpt.kpt_stop                   = m_key_stop;
      kpt.kpt_show_ui_sequence_key   = m_key_show_ui_sequence_key;
@@ -381,6 +384,9 @@ keyval_normalize (keys_perform_transfer & k)
 
     if (invalid_key(k.kpt_pattern_edit))
         k.kpt_pattern_edit = SEQ64_equal;               /* =        */
+
+    if (invalid_key(k.kpt_pattern_shift))
+        k.kpt_pattern_edit = SEQ64_slash;               /* /        */
 
     if (invalid_key(k.kpt_event_edit))
         k.kpt_event_edit = SEQ64_minus;                 /* -        */

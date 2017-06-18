@@ -74,51 +74,6 @@ STATIC_COLOR gui_palette_gtk2::m_blk_key            = Color("black");
 STATIC_COLOR gui_palette_gtk2::m_wht_key            = Color("white");
 
 /**
- *  Provides an alternate color palette, somewhat constrained by the colors
- *  in the font bitmaps.
- *
- *  Inverse is not a complete inverse.  It is more like a "night" mode.
- *  However, there are still some bright colors even in this mode.  Some
- *  colors, such as the selection color (orange) are the same in either mode.
- *
- * \param inverse
- *      If true, load the alternate palette.  Otherwise, load the default
- *      palette.
- */
-
-void
-gui_palette_gtk2::load_inverse_palette (bool inverse)
-{
-    if (inverse)
-    {
-        m_grey        = Color("grey");
-        m_dk_grey     = Color("light grey");
-        m_lt_grey     = Color("grey50");
-        m_blk_paint   = Color("white");
-        m_wht_paint   = Color("black");
-#ifdef USE_ALTERNATE_KEY_COLOR                  /* which looks better?      */
-        m_blk_key     = Color("light grey");    /* too difficult to grok    */
-        m_wht_key     = Color("black");
-#else
-        m_blk_key     = Color("black");
-        m_wht_key     = Color("grey");
-#endif
-        m_is_inverse  = true;
-    }
-    else
-    {
-        m_grey        = Color("grey");
-        m_dk_grey     = Color("grey50");
-        m_lt_grey     = Color("light grey");
-        m_blk_paint   = Color("black");
-        m_wht_paint   = Color("white");
-        m_blk_key     = Color("black");
-        m_wht_key     = Color("white");
-        m_is_inverse  = false;
-    }
-}
-
-/**
  *  Principal constructor.  In the constructor one can only allocate colors;
  *  get_window() returns 0 because this window has not yet been realized.
  *  Also note that the possible color names that can be used are found in
@@ -205,6 +160,51 @@ gui_palette_gtk2::gui_palette_gtk2 ()
 gui_palette_gtk2::~gui_palette_gtk2 ()
 {
     // Anything to do?
+}
+
+/**
+ *  Provides an alternate color palette, somewhat constrained by the colors
+ *  in the font bitmaps.
+ *
+ *  Inverse is not a complete inverse.  It is more like a "night" mode.
+ *  However, there are still some bright colors even in this mode.  Some
+ *  colors, such as the selection color (orange) are the same in either mode.
+ *
+ * \param inverse
+ *      If true, load the alternate palette.  Otherwise, load the default
+ *      palette.
+ */
+
+void
+gui_palette_gtk2::load_inverse_palette (bool inverse)
+{
+    if (inverse)
+    {
+        m_grey        = Color("grey");
+        m_dk_grey     = Color("light grey");
+        m_lt_grey     = Color("grey50");
+        m_blk_paint   = Color("white");
+        m_wht_paint   = Color("black");
+#ifdef USE_ALTERNATE_KEY_COLOR                  /* which looks better?      */
+        m_blk_key     = Color("light grey");    /* too difficult to grok    */
+        m_wht_key     = Color("black");
+#else
+        m_blk_key     = Color("black");
+        m_wht_key     = Color("grey");
+#endif
+        m_is_inverse  = true;
+    }
+    else
+    {
+        m_grey        = Color("grey");
+        m_dk_grey     = Color("grey50");
+        m_lt_grey     = Color("light grey");
+        m_blk_paint   = Color("black");
+        m_wht_paint   = Color("white");
+        m_blk_key     = Color("black");
+        m_wht_key     = Color("white");
+        m_is_inverse  = false;
+    }
 }
 
 }           // namespace seq64

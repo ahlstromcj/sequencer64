@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-04
+ * \updates       2017-06-18
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -437,6 +437,15 @@ private:
      */
 
     bool m_call_seq_edit;
+
+    /**
+     *  A new flag to indicate if the next pattern hot-key will reach into the
+     *  extended part of the set.  It causes 32 (c_seqs_in_set) to be added to
+     *  the hot key.  Actually, let's make it an integer that can range from 0
+     *  (off) to 1 to 2 (m_seqs_in_set / c_seqs_in_set).
+     */
+
+    int m_call_seq_shift;
 
     /**
      *  Indicates that this object is in a mode where the usual mute/unmute

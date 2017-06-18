@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-06-04
+ * \updates       2017-06-18
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -289,9 +289,6 @@ static const char * const s_help_3 =
  */
 
 static const char * const s_help_4 =
-" seq64cli:    daemonize     Makes this application fork to the background.\n"
-"              no-daemonize  Makes this application not fork to the background.\n"
-" any:\n"
 "              log=filename  Redirect console output to a log file in the\n"
 "                            --home directory [$HOME/.config/sequencer64].\n"
 #if defined SEQ64_MULTI_MAINWID
@@ -306,11 +303,15 @@ static const char * const s_help_4 =
 #endif
 "              sets=RxC      Modifies the rows and columns in a set from the\n"
 "                            default of 4x8.  Supported values of R are 4 to 8,\n"
-"                            and C can range from 8 to 12.\n"
+"                            and C can range from 8 to 12. If not 4x8, seq64 is\n"
+"                            in 'variset' mode. Affects mute groups, too.\n"
 "\n"
-"The daemonize option works only in the CLI build. The set options work only\n"
-"in the 'rtmidi' GUI build.  Remember to specify option '--user-save' to make\n"
-"these 'user-file' options permanent in the sequencer64.usr configuration file.\n"
+" seq64cli:    daemonize     Makes this application fork to the background.\n"
+"              no-daemonize  Or not.\n"
+"\n"
+"The 'daemonize' option works only in the CLI build. The 'sets' option works in\n"
+"the CLI build as well.  Specify the '--user-save' option to make these options\n"
+"permanent in the sequencer64.usr configuration file.\n"
 "\n"
     ;
 

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-10
+ * \updates       2017-06-13
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -457,6 +457,7 @@ optionsfile::parse (perform & p)
     {
         ktx.kpt_show_ui_sequence_number = false;
         ktx.kpt_pattern_edit = 0;
+        ktx.kpt_pattern_shift = 0;
         ktx.kpt_event_edit = 0;
         ktx.kpt_pause = 0;
     }
@@ -503,6 +504,11 @@ optionsfile::parse (perform & p)
 
         next_data_line(file);
         sscanf(m_line, "%u", &ktx.kpt_event_edit);
+
+        if (next_data_line(file))
+            sscanf(m_line, "%u", &ktx.kpt_pattern_shift);   /* variset support */
+        else
+            ktx.kpt_pattern_shift = SEQ64_slash;            /* variset support */
 
         if (line_after(file, "[New-keys]"))
         {
@@ -723,13 +729,14 @@ optionsfile::parse_mute_group_section (perform & p)
          * This loop is a bit odd.  We set groupmute, read it, increment it,
          * and then read it again.  We could just use the i variable, I think.
          * Note that this layout is STILL dependent on c_seqs_in_set = 32.
+         * However, though we keep this layout, the boundaries for a
+         * non-default value of seqs-in-set will be used internally.
          */
 
         int gm[c_max_groups];
         int groupmute = 0;
         for (int g = 0; g < c_max_groups; ++g)
         {
-            p.select_group_mute(g);             /* too iffy: groupmute       */
             sscanf
             (
                 m_line,
@@ -751,10 +758,21 @@ optionsfile::parse_mute_group_section (perform & p)
             {
                 return error_message("group-mute number out of range");
             }
-            for (int k = 0; k < c_max_groups; ++k)
-                p.set_group_mute_state(k, gm[k] != 0);
+            else
+            {
+                /*
+                 * What's up with this call?  Because we're not in learn-mode
+                 * at this time, it only sets perform::m_mute_group_selected.
+                 */
 
-            ++groupmute;                    /* get set for next group   */
+                p.select_group_mute(g);
+                for (int k = 0; k < c_max_groups; ++k)
+                    p.set_group_mute_state(k, gm[k] != 0);
+            }
+
+            // I seriously doubt this is used or usable.
+            // ++groupmute;                 /* get set for next group?? */
+
             result = next_data_line(file);
             if (! result && g < (c_max_groups - 1))
                 return error_message("mute-group data line");
@@ -998,10 +1016,10 @@ optionsfile::write (const perform & p)
         snprintf
         (
             outs, sizeof outs,
-            "%d [%1d %1d %1d %1d %1d %1d %1d %1d]"
-            " [%1d %1d %1d %1d %1d %1d %1d %1d]"
-            " [%1d %1d %1d %1d %1d %1d %1d %1d]"
-            " [%1d %1d %1d %1d %1d %1d %1d %1d]",
+            "%d [%d %d %d %d %d %d %d %d]"
+            " [%d %d %d %d %d %d %d %d]"
+            " [%d %d %d %d %d %d %d %d]"
+            " [%d %d %d %d %d %d %d %d]",
             group,
             gm[0],  gm[1],  gm[2],  gm[3],  gm[4],  gm[5],  gm[6],  gm[7],
             gm[8],  gm[9],  gm[10], gm[11], gm[12], gm[13], gm[14], gm[15],
@@ -1312,6 +1330,12 @@ optionsfile::write (const perform & p)
             << " is the shortcut key to bring up the event editor\n"
             ;
 
+        file
+            << ktx.kpt_pattern_shift << "    # "
+            << ucperf.key_name(ktx.kpt_pattern_shift)
+            << " shifts the hot-key so that it toggles pattern + 32\n"
+            ;
+
         /*
          * This section writes all of the new additional keystrokes created by
          * seq32 (stazed) and sequencer64.  Eventually we will provide a
@@ -1321,7 +1345,7 @@ optionsfile::write (const perform & p)
 
         file
             << "\n[extended-keys]\n\n"
-            << "# Currently there is no user interface for this section.\n\n"
+            << "# The user interface for this section is Options / Ext Keys.\n\n"
             << ktx.kpt_song_mode << "    # "
             << ucperf.key_name(ktx.kpt_song_mode)
             << " handles the Song/Live mode\n"

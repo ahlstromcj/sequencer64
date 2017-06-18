@@ -145,7 +145,8 @@ main (int argc, char * argv [])
             p.max_sets(seq64::usr().max_sets());
         }
 
-        p.launch(seq64::usr().midi_ppqn());         /* set up performance   */
+        ////// EXPERIMENTAL, MOVED TO BELOW
+        ////// p.launch(seq64::usr().midi_ppqn());         /* set up performance   */
         if (seq64::usr().inverse_colors())
             seq64::gui_palette_gtk2::load_inverse_palette(true);
 
@@ -168,6 +169,8 @@ main (int argc, char * argv [])
             seq64::usr().block_independent()
 #endif
         );
+        ////// EXPERIMENTAL, MOVED FROM ABOVE
+        p.launch(seq64::usr().midi_ppqn());         /* set up performance   */
         if (ok)
         {
             if (optionindex < argc)                 /* MIDI filename given? */

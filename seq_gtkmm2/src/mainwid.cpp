@@ -378,10 +378,37 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
             if (perf().show_ui_sequence_key())
             {
-                char key = char(perf().lookup_keyevent_key(seqnum));
                 int charx = base_x + m_seqarea_x - 3;
                 int chary = base_y + m_text_size_y * 4 - 2;
-                snprintf(temp, sizeof temp, "%c", key);
+                if (seqnum >= c_seqs_in_set && seqnum < (3 * c_seqs_in_set))
+                {
+                    char key = char
+                    (
+                        perf().lookup_keyevent_key(seqnum - c_seqs_in_set)
+                    );
+                    char shiftkey = char(PREFKEY(pattern_shift));
+                    if ((shiftkey > 0) && usr().is_variset())
+                    {
+                        if (seqnum >= (2 * c_seqs_in_set))
+                        {
+                            snprintf
+                            (
+                                temp, sizeof temp, "%c%c%c",
+                                shiftkey, shiftkey, key
+                            );
+                        }
+                        else
+                            snprintf(temp, sizeof temp, "%c%c", shiftkey, key);
+                    }
+                    else
+                        snprintf(temp, sizeof temp, "%c", key);
+                }
+                else
+                {
+                    char key = char(perf().lookup_keyevent_key(seqnum));
+                    snprintf(temp, sizeof temp, "%c", key);
+                }
+
                 charx -= strlen(temp) * m_text_size_x;
                 render_string_on_pixmap(charx, chary, temp, col);
             }
@@ -787,26 +814,23 @@ mainwid::seq_from_xy (int x, int y)
 }
 
 /**
- *  Set the current screen-set.  The clamping algorithm for the screeset is a
- *  bit weird:  if less than 0, we set m_screenset to its maximum, and if
- *  greater than the maximum, we set it to its minimum.  Not sure if this
- *  matters.
+ *  Set the current screen-set.  Note that m_screenset_slots =
+ *  m_mainwnd_rows * m_mainwnd_cols.
  *
- *  Note that m_screenset_slots = m_mainwnd_rows * m_mainwnd_cols.
- *
- *  We will likely replace this with perform::set_screenset(), which
- *  recapitulates the code above completely, whereas perform::set-offset()
- *  recapitulates only the line of code immediately above it.  However,
- *  note that there is a back-and-forth between setting the screenset via
- *  perform (using MIDI control) versus the GUI in the mainwnd class.
- *  Probably useful to add a default boolean to prevent circular manipulation.
+ *  This function calls perform::set_screenset(), which recapitulates the old
+ *  code above completely, whereas perform::set-offset() recapitulates only
+ *  the line of code immediately above it.  However, note that there is a
+ *  back-and-forth between setting the screenset via perform (using MIDI
+ *  control) versus the GUI in the mainwnd class.  Probably useful to add a
+ *  default boolean to prevent circular manipulation.
  *
  * \param ss
  *      Provides the screen-set number to set.
  *
  * \param setperf
- *      If true, then also call perform::set_screenset().  Defaults to false.
- *      It might be better if it defaults to true.
+ *      If true, then also call perform::set_screenset(), even if multi-wid
+ *      mode is not in force.  Defaults to false.  It might be better if it
+ *      defaults to true.
  *
  * \return
  *      Returns the (new) value of m_screenset so that the main window can set

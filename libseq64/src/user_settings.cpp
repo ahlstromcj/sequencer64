@@ -189,7 +189,7 @@ user_settings::user_settings ()
 
     m_total_seqs                (0),
     m_seqs_in_set               (0),            // set correctly in normalize()
-    m_gmute_tracks              (0),
+    m_gmute_tracks              (0),            // same as max-tracks
     m_max_sequence              (0),
     m_seqarea_x                 (0),
     m_seqarea_y                 (0),
@@ -499,7 +499,7 @@ user_settings::set_defaults ()
  *  are irregular?
  *
  *  gmute_tracks() is viable with variable set sizes only if we stick with the
- *  32 sets by 32 patterns, at this time.
+ *  32 sets by 32 patterns, at this time. It's semantic meaning is... TODO!!
  *
  *  m_max_sequence is now actually a constant (1024), so we enforce that here
  *  now.
@@ -514,6 +514,8 @@ user_settings::normalize ()
     m_total_seqs = m_seqs_in_set * m_max_sets;
 
     /*
+     * This is probably a good idea to do this; still under investigation.
+     *
      * m_max_sequence = m_seqs_in_set * m_max_sets;
      */
 

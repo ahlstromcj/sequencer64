@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-11
+ * \updates       2017-06-18
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1172,7 +1172,8 @@ public:
 
     void filter_by_channel (bool flag)
     {
-        master_bus().filter_by_channel(flag);
+        if (not_nullptr(m_master_bus))
+            m_master_bus->filter_by_channel(flag);
     }
 
     /**
@@ -1571,7 +1572,8 @@ public:
 
     midibpm get_beats_per_minute ()
     {
-        return master_bus().get_beats_per_minute();
+        return not_nullptr(m_master_bus) ?
+            m_master_bus->get_beats_per_minute() : 0.0 ;
     }
 
     bool reload_mute_groups (std::string & errmessage);
@@ -1626,45 +1628,9 @@ public:
     void mute_screenset (int ss, bool flag = true);
     void output_func ();
     void input_func ();
-
-    /**
-     *  This function sets the mute state of an element in the m_mute_group
-     *  array.  The index value is the track number offset by the number of
-     *  the selected mute group (which is equivalent to a set number) times
-     *  the number of sequences in a set.  This function is used in midifile
-     *  and optionsfile when parsing the file to get the initial mute-groups.
-     *
-     * \param gtrack
-     *      The number of the track to be muted/unmuted.
-     *
-     * \param muted
-     *      This boolean indicates the state to which the track should be set.
-     */
-
-    void set_group_mute_state (int gtrack, bool muted)
-    {
-        m_mute_group[mute_group_offset(gtrack)] = muted;
-    }
-
-    /**
-     *  The opposite of set_group_mute_state(), it gets the value of the
-     *  desired track.  Uses the mute_group_offset() function.  This function
-     *  is used in midifile and optionsfile when writing the file to get the
-     *  initial mute-groups.
-     *
-     * \param gtrack
-     *      The number of the track for which the state is to be obtained.
-     *      Like set_group_mute_state(), this value is offset by adding
-     *      m_mute_group_selected * m_seqs_in_set.
-     *
-     * \return
-     *      Returns the desired m_mute_group[] value.
-     */
-
-    bool get_group_mute_state (int gtrack)
-    {
-        return m_mute_group[mute_group_offset(gtrack)];
-    }
+    void set_group_mute_state (int gtrack, bool muted);
+    bool get_group_mute_state (int gtrack);
+    int mute_group_offset (int track);
 
     /**
      * \getter m_screenset_offset
@@ -2373,19 +2339,6 @@ private:
     }
 
     /**
-     *  A helper function to calculate the index into the mute-group array,
-     *  based on the desired track.
-     *
-     * \param track
-     *      The number of the desired track.
-     */
-
-    int mute_group_offset (int track)
-    {
-        return clamp_track(track) + m_mute_group_selected * m_seqs_in_set;
-    }
-
-    /**
      *  Calculates the screen-set offset index.
      *
      * \param ss
@@ -2407,6 +2360,7 @@ private:
     void inner_start (bool state);
     void inner_stop (bool midiclock = false);
     int clamp_track (int track) const;
+    int clamp_group (int group) const;
 
     /**
      *  At construction time, this function sets up one keycode and one event
@@ -2503,21 +2457,23 @@ private:
     }
 
     /**
-     * \getter master_bus().get_input(bus)
+     * \getter m_master_bus->get_input(bus)
      */
 
     bool get_input (int bus)
     {
-        return master_bus().get_input(bus);
+        return not_nullptr(m_master_bus) ?
+            m_master_bus->get_input(bus) : false ;
     }
 
     /**
-     * \getter master_bus().is_input_system_port(bus)
+     * \getter m_master_bus->is_input_system_port(bus)
      */
 
     bool is_input_system_port (int bus)
     {
-        return master_bus().is_input_system_port(bus);
+        return not_nullptr(m_master_bus) ?
+            m_master_bus->is_input_system_port(bus) : false ;
     }
 
 };

@@ -391,6 +391,11 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     {
                         if (seqnum >= (2 * c_seqs_in_set))
                         {
+                            key = char
+                            (
+                                perf().lookup_keyevent_key(seqnum -
+                                    2*c_seqs_in_set)
+                            );
                             snprintf
                             (
                                 temp, sizeof temp, "%c%c%c",

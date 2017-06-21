@@ -1,4 +1,4 @@
-/*
+    /*
  *  This file is part of seq24/sequencer64.
  *
  *  seq24 is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-06-18
+ * \updates       2017-06-21
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -278,7 +278,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_tracks_mute_state         (m_seqs_in_set, false),     // sets track state
     m_mode_group                (true),
     m_mode_group_learn          (false),
-    m_mute_group_selected       (0),
+    m_mute_group_selected       (SEQ64_NO_MUTE_GROUP_SELECTED),
     m_seqs                      (),         // pointer array [c_max_sequence]
     m_seqs_active               (),         // boolean array [c_max_sequence]
     m_was_active_main           (),         // boolean array [c_max_sequence]
@@ -581,9 +581,10 @@ perform::clamp_track (int track) const
 }
 
 /**
- *  Provides common code to keep the group value valid.  Fixed the bug we
- *  found, where we checked for track > m_seqs_in_set, instead of using
- *  the >= operator.  We now compare against the new c_max_groups value (32).
+ *  Provides common code to keep the group value valid even in variset mode.
+ *  Fixed the bug we found, where we checked for track > m_seqs_in_set,
+ *  instead of using the >= operator.  We now compare against the new
+ *  c_max_groups value (32).
  *
  * \param group
  *      The group value to be checked and rectified as necessary.
@@ -592,7 +593,9 @@ perform::clamp_track (int track) const
  *      Returns the group parameter, clamped between 0 and c_max_sets-1,
  *      inclusive.  We use c_max_groups rather than m_max_sets because the new
  *      varisets feature reduces the number of sets (in general); this check
- *      is basically a sanity check.
+ *      is basically a sanity check.  Additionally, if varisets mode is in
+ *      force (i.e. there are more than 32 sequences in a set), the group
+ *      number is clamped to the maximum number of sets under that constraint.
  */
 
 int
@@ -603,7 +606,7 @@ perform::clamp_group (int group) const
         group = 0;
         errprint("clamped group to 0");
     }
-    else if (group >= c_max_groups)     /* m_max_sets   */
+    else if (group >= c_max_groups)
     {
         group = c_max_groups - 1;
         errprintf("clamped group number to %d\n", group);
@@ -712,11 +715,73 @@ perform::select_group_mute (int mutegroup)
 }
 
 /**
+ *  Combines select_group_mute() and set_group_mute_state() so that the
+ *  optionsfile class can load the groups without altering the
+ *  m_mute_group_selected item; doing that is a bit misleading.
+ *
+ *  It also uses the constant c_seqs_in_set instead of the variable
+ *  m_seqs_in_set so that the loading always handles 32 x 32 = 1024 settings.
+ *
+ *  Replaces "set_group_mute_state(g, gm[s] != 0)" and mute_group_offset(),
+ *  which depend on the configured "seqs-in-set" value.  Here, we are always
+ *  tied to the legacy 32 x 32 sizes, to load and save to the configuration.
+ *
+ * \param gmute
+ *      The mute-group to load.  If out-of-range (0 to c_max_groups), no
+ *      setting is made.  There's no need to call clamp_group(); it is useful
+ *      in playing, not in loading the configuration.
+ *
+ * \param gm
+ *      The array of c_max_groups values to be use for the load.  The pointer
+ *      is not checked.
+ *
+ * \return
+ *      Returns true if the group was valid.
+ */
+
+bool
+perform::load_mute_group (int gmute, int gm [c_max_groups])
+{
+    bool result = (gmute >= 0 && gmute < c_max_groups);
+    if (result)
+    {
+        int groupoffset = gmute * c_seqs_in_set;
+        for (int s = 0; s < c_seqs_in_set; ++s)
+            m_mute_group[groupoffset + s] = gm[s] != 0;
+    }
+    return result;
+}
+
+/**
+ *  The converse of load_mute_group().
+ *
+ * \return
+ *      Returns true if the group was valid.
+ */
+
+bool
+perform::get_mute_group (int gmute, int gm [c_max_groups]) const
+{
+    bool result = (gmute >= 0 && gmute < c_max_groups);
+    if (result)
+    {
+        int groupoffset = gmute * c_seqs_in_set;
+        for (int s = 0; s < c_seqs_in_set; ++s)
+            gm[s] = m_mute_group[groupoffset + s];
+    }
+    return result;
+}
+
+/**
  *  This function sets the mute state of an element in the m_mute_group
  *  array.  The index value is the track number offset by the number of
  *  the selected mute group (which is equivalent to a set number) times
  *  the number of sequences in a set.  This function is used in midifile
  *  and optionsfile when parsing the file to get the initial mute-groups.
+ *
+ * \bug
+ *      We were not using the group track value if it was zero, but that is a
+ *      legitimate value.
  *
  * \param gtrack
  *      The number of the track to be muted/unmuted.
@@ -729,7 +794,7 @@ void
 perform::set_group_mute_state (int gtrack, bool muted)
 {
     int grouptrack = mute_group_offset(gtrack);
-    if (grouptrack > 0)
+    if (grouptrack >= 0)
         m_mute_group[grouptrack] = muted;
 }
 
@@ -739,9 +804,13 @@ perform::set_group_mute_state (int gtrack, bool muted)
  *  is used in midifile and optionsfile when writing the file to get the
  *  initial mute-groups.
  *
+ * \bug
+ *      We were not using the group track value if it was zero, but that is a
+ *      legitimate value.
+ *
  * \param gtrack
- *      The number of the track for which the state is to be obtained.
- *      Like set_group_mute_state(), this value is offset by adding
+ *      The number of the track for which the state is to be obtained.  Like
+ *      set_group_mute_state(), this value is offset by adding
  *      m_mute_group_selected * m_seqs_in_set.
  *
  * \return
@@ -753,7 +822,7 @@ perform::get_group_mute_state (int gtrack)
 {
     bool result = false;
     int grouptrack = mute_group_offset(gtrack);
-    if (grouptrack > 0)
+    if (grouptrack >= 0)
         result = m_mute_group[grouptrack];
 
     return result;
@@ -763,25 +832,28 @@ perform::get_group_mute_state (int gtrack)
  *  A helper function to calculate the index into the mute-group array,
  *  based on the desired track.  Remember that the mute-group array,
  *  m_mute_group[c_max_sequence], determines which tracks are muted/unmuted.
+ *  Also remember that m_mute_group_selected now determines which
+ *  "seqs-in-set" set is selected.
  *
  * \param group
- *      The number of the desired group.
+ *      The number of the desired group.  Must range from 0 to c_max_groups-1.
  *
  * \return
  *      Returns a track value from 0 to 1023 if the group is valid for the
- *      current seqs-in-set count.  Otherwise, a -1 is returned.  The caller
- *      must check this value before using it.
+ *      current seqs-in-set count.  Otherwise, a SEQ64_NO_MUTE_GROUP_SELECTED
+ *      (-1) is returned.  The caller must check this value before using it.
  */
 
 int
 perform::mute_group_offset (int group)
 {
-    int result = m_mute_group_selected * m_seqs_in_set;
-    if (result > c_max_sequence)                /* see m_mute_group[] */
-        result = -1;
-    else
-        result = clamp_group(group) + result;
-
+    int result = SEQ64_NO_MUTE_GROUP_SELECTED;
+    if (group >= 0 && group < c_max_groups)
+    {
+        result = m_mute_group_selected * m_seqs_in_set;
+        if (result < c_max_sequence)                /* see m_mute_group[]   */
+            result = clamp_group(group) + result;
+    }
     return result;
 }
 

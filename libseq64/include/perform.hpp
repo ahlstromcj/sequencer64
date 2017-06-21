@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-18
+ * \updates       2017-06-21
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -71,6 +71,24 @@
 #define SEQ64_NO_QUEUED_SOLO            (-1)
 
 /**
+ *  This value indicates that the value of perform::m_mute_group_selected
+ *  should not be used.
+ */
+
+#define SEQ64_NO_MUTE_GROUP_SELECTED    (-1)
+
+/**
+ *  A parameter value for track/sequence number incorporated from
+ *  Stazed's seq32 project.
+ */
+
+#define SEQ64_ALL_TRACKS                (-1)
+
+/*
+ *  All Sequencer64 library code is in the seq64 namespace.
+ */
+
+/**
  *  A new option to improve how the main window's new Mute button
  *  works.  It works, this is now a permanent option.
  *
@@ -104,17 +122,6 @@
 
 #define PERFORM_KEY_LABELS_ON_SEQUENCE  9998
 #define PERFORM_NUM_LABELS_ON_SEQUENCE  9999
-
-/**
- *  A new parameter value for track/sequence number incorporated from
- *  Stazed's seq32 project.
- */
-
-#define SEQ64_ALL_TRACKS                (-1)
-
-/*
- *  All Sequencer64 library code is in the seq64 namespace.
- */
 
 namespace seq64
 {
@@ -350,9 +357,11 @@ private:
     bool m_mode_group_learn;
 
     /**
-     *  Selects a group to mute.  It seems like a "group" is essentially a
-     *  "set" that is selected for the saving and restoring of the status of
-     *  all patterns in that set.
+     *  Selects a group to mute.  A "group" is essentially a "set" that is
+     *  selected for the saving and restoring of the status of all patterns in
+     *  that set.  We're going to add a value of -1
+     *  (SEQ64_NO_MUTE_GROUP_SELECTED) to indicate the value should not be
+     *  used.
      */
 
     int m_mute_group_selected;
@@ -2120,9 +2129,11 @@ private:
         m_mode_group = false;
     }
 
-    void select_group_mute (int g_mute);
+    void select_group_mute (int gmute);
     void set_mode_group_learn ();
     void unset_mode_group_learn ();
+    bool load_mute_group (int gmute, int gm [c_max_groups]);
+    bool get_mute_group (int gmute, int gm [c_max_groups]) const;
 
     /**
      * \getter m_mode_group_learn

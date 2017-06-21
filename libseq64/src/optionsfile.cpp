@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-13
+ * \updates       2017-06-20
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -644,7 +644,7 @@ optionsfile::parse (perform & p)
 
     line_after(file, "[last-used-dir]");
     if (strlen(m_line) > 0)
-        rc().last_used_dir(m_line); // FIXME: check for valid path
+        rc().last_used_dir(m_line);                 // FIXME: check for valid path
 
     long method = 0;
     line_after(file, "[interaction-method]");
@@ -730,7 +730,7 @@ optionsfile::parse_mute_group_section (perform & p)
          * and then read it again.  We could just use the i variable, I think.
          * Note that this layout is STILL dependent on c_seqs_in_set = 32.
          * However, though we keep this layout, the boundaries for a
-         * non-default value of seqs-in-set will be used internally.
+         * non-default value of seqs-in-set may be used internally.
          */
 
         int gm[c_max_groups];
@@ -763,11 +763,16 @@ optionsfile::parse_mute_group_section (perform & p)
                 /*
                  * What's up with this call?  Because we're not in learn-mode
                  * at this time, it only sets perform::m_mute_group_selected.
+                 * It might be better to combine the two function calls here,
+                 * rather than have a side-effect on the private member
+                 * perform::m_mute_group_selected.
+                 *
+                 * p.select_group_mute(g);
+                 * for (int k = 0; k < c_max_groups; ++k)   // c_seqs_in_set!!!
+                 *      p.set_group_mute_state(k, gm[k] != 0);
                  */
 
-                p.select_group_mute(g);
-                for (int k = 0; k < c_max_groups; ++k)
-                    p.set_group_mute_state(k, gm[k] != 0);
+                p.load_mute_group(g, gm);
             }
 
             // I seriously doubt this is used or usable.
@@ -998,10 +1003,11 @@ optionsfile::write (const perform & p)
      */
 
     file <<
-        "# All mute-group values are saved, even if they all are zero, and will\n"
-        "# be stripped out from the MIDI file by the new strip-empty-mutes\n"
-        "# functionality (a build option).  This is less confusing to the user\n"
-        "# expects that section to be intact.\n"
+        "# All mute-group values are saved in this 'rc' file, even if they\n"
+        "# all are zero; but if all are zero, they will be stripped out from\n"
+        "# the MIDI file by the new strip-empty-mutes functionality (a build\n"
+        "# option).  This is less confusing to the user, who expects that\n"
+        "# section to be intact.\n"
         "\n"
         << c_max_sequence << "       # group mute count\n"
         ;
@@ -1009,10 +1015,17 @@ optionsfile::write (const perform & p)
     int gm[c_max_groups];
     for (int group = 0; group < c_max_groups; ++group)
     {
+
+        /*
+         *
+         *
         ucperf.select_group_mute(group);
         for (int seqi = 0; seqi < c_seqs_in_set; ++seqi)
             gm[seqi] = ucperf.get_group_mute_state(seqi);
+         *
+         */
 
+        p.get_mute_group(group, gm);
         snprintf
         (
             outs, sizeof outs,
@@ -1440,8 +1453,8 @@ optionsfile::write (const perform & p)
 
     file << "\n"
         "[last-used-dir]\n\n"
-        "# Last used directory:\n\n"
-        << rc().last_used_dir() << "      # last_used_dir and current dir\n\n"
+        "# Last-used and currently-active directory:\n\n"
+        << rc().last_used_dir() << "\n\n"
         ;
 
     file

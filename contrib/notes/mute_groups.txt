@@ -1,6 +1,6 @@
 Mute-Group Explorations
 Chris Ahlstrom
-2015-12-23 to 2016-10-08
+2015-12-23 to 2017-06-20
 
 In this document we explore mute-groups, how they might work, and
 Tim fixes to them.  The primary module under discussion is the
@@ -339,6 +339,135 @@ Horse:
 
     So a mute-group is not associate with a particular set, though it can
     turn off other sets.
+
+perform::lookup_keyevent_key()
+perform::mainwnd_key_event()
+
+[keyboard-group]
+
+Start                     space
+Stop                      escape
+Pause                   . period
+Snapshot 1                Alt_L
+Snapshot 2                Alt_R
+BPM Up                  ' apostrophe
+BPM Down                ; semicolon
+Replace/Solo              F12
+Queue                     F11
+Keep Queue              \ backslash
+Pattern Edit            = equal
+Screenset Up            [ bracketright
+Screenset Down          ] bracketleft
+Set Playing Screenset     home
+Event Edit              - minus
+Pattern Shift           / slash (new)
+
+Still available:
+
+    Shifted:
+
+        { curlyleft (?)
+        } curlyright (?)
+        | pipe (?)
+
+[keyboard-control]
+
+[ 1 ] [ 2 ] [ 3 ] [ 4 ] [ 5 ] [ 6 ] [ 7 ] [ 8 ]     9   0
+[ q ] [ w ] [ e ] [ r ] [ t ] [ y ] [ u ] [ i ]     o   p
+[ a ] [ s ] [ d ] [ f ] [ g ] [ h ] [ j ] [ k ]     l   ;   (see above)
+[ z ] [ x ] [ c ] [ v ] [ b ] [ n ] [ m ] [ , ]     .   /   (see above)
+
+[mute-group] (rational version)
+
+[ ! ] [ " ] [ # ] [ $ ] [ % ] [ ^ ] [ & ] [ * ]     (   )
+[ Q ] [ W ] [ E ] [ R ] [ T ] [ Y ] [ U ] [ I ]     O   P
+[ A ] [ S ] [ D ] [ F ] [ G ] [ H ] [ J ] [ K ]     L   :
+[ Z ] [ X ] [ C ] [ V ] [ B ] [ N ] [ M ] [ , ]     >   ?
+
+Mute-group array:  32 x 32 (Armed status is same size)
+
+    -   If any are active, the whole set is saved to the MIDI file.
+    -   They are grouped by sets, and then patterns in each set.
+        This is an issue when sets or patterns differ from a count of 32.
+    -   select_group_mute(): saves the statuses of the current play-set
+        (m_playscreen_offset), and copies them to the mute-group selected by
+        the pressed key.  Must be in group-learn mode.  m_seqs_in_set pattern
+        statuses are copied.  CAN BE AN ISSUE with varisets!
+    -   select_and_copy_mute_group(): similar but different!
+        Sets m_tracks_mute_state[].
+
+Test:
+
+    -#  Load b4uacuse-GM-format.midi
+    -#  Don't start play.
+        lookup_key_event() gets hit on two occasions for each sequence, on load.
+        mainwnd_key_event() gets hit a number of times after that during load.
+    -#  Unmute seq #2 ('a') by clicking it with the mouse.
+        lookup_key_event() gets hit on two occasions for each sequence, on load.
+        Then two more times for #2!
+    -#  Same for unmuting #3, #4, #5.  (These events happen when muting as
+        well; and a number of similar events when bringing up the Options
+        dialog!).
+    -#  Now press Shift-E (slot #10 in [mute-group]).
+        -   Shift hits mainwnd_key_event(), no action, it returns false.
+        -   e (ascii 69)  hits mainwnd_key_event(), no action, it returns false.
+        -   lookup_keyevent_key(seqnum == 2) is hit; a 0 screen offset;
+            get_key_events_rev().count(2) > 0, so 97 is the result.
+            [0] = 49, [1] = 113, [2] = 97 *, [3] = 122, [4] = 50, ...
+            This is used to show the 'a' as the hot-key for seq #2.
+        -   Previous step for all other seqs.
+        -   e (ascii 69)  hits mainwnd_key_event() again, this time as release.
+            No action.
+        -   Ascii 65505 (???) hits, no action.
+        On another trial, Shift-E calls set_and_copy_mute_group(10).
+        This sets m_mute_group_selected to 10.  Then, for m_seqs_in_set (!!)
+        it sets:
+        -   Adds the screen offset to the seq number.
+        -   If in m_mode_group_learn mode, takes the active sequences and sets
+            the destination sequence of the given mutegroup (10) to the playing
+            state of the source sequence.
+        -   Irregardless of learn mode, it sets m_tracks_mute_state[source]
+            to m_mute_group[ m_mute_group_selected * m_seqs_in_set]. 
+
+            Still can't find where a couple patters get set in the following!
+
+    -#  Exit the app.  In optionsfile.cpp#991, the following calls occur for 32
+        groups:
+        -   perform::select_group_mute(group).  m_mode_group_learn is FALSE,
+            so getting the playing seqs is skipped.  m_mute_group_selected is
+            10 (E!), but it gets changed to 0.
+        -   Then we loop through 32 patterns.
+            NOTE:  The loop counter goes to c_max_groups, but this is wrong.
+            It should either be 32 (c_seqs_in_set) OR the current
+            m_seqs_in_set!!!
+            Calls perform::get_group_state(seq = 0 to 31) which gets
+            m_mute_group [ mute_group_offset(seq) ].
+            This value is 0 for all except (group 0, seq 4) and
+            (group 0, seq 5).  Why those two?
+            Also, shouldn't perform::m_mute_group_selected be -1 instead of 0
+            if not yet active?
+    -#  In sequencer64.rc, section [mute-group], we now have 1 for
+        row 0, block 1, items 4 and 5.
+
+Check out gmute_tracks!  What does it do in full?
+
+
+
+
+OLD STUFF:
+
+[mute-group]
+
+[ ! ] [ " ] [ # ] [ $ ] [ % ] [ & ] [ / ] [ ( ] 
+[ Q ] [ W ] [ E ] [ R ] [ T ] [ Y ] [ U ] [ I ] 
+[ A ] [ S ] [ D ] [ F ] [ G ] [ H ] [ J ] [ K ] 
+[ Z ] [ X ] [ C ] [ V ] [ B ] [ N ] [ M ] [ ; ]     (not <)
+
+" should be @
+& should be ^
+/ should be &
+( should be *
+; should be ,
 
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

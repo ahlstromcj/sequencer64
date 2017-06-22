@@ -1,9 +1,9 @@
 Mute-Group Explorations
 Chris Ahlstrom
-2015-12-23 to 2017-06-20
+2015-12-23 to 2017-06-21
 
 In this document we explore mute-groups, how they might work, and
-Tim fixes to them.  The primary module under discussion is the
+the fixes of Tim to them.  The primary module under discussion is the
 perform module.
 
    m_play_screen_offset:
@@ -71,16 +71,23 @@ From another source:
         * Replace
 
     Holding down 'Left Ctrl' while selecting a sequence will mute all
-    other sequences and turn on the selected sequences.
+    other sequences and turn on the selected sequences.  This is the
+    default with seq24 as can be seen by removing ~/.seq24rc and
+    then opening the Options / Keyboard tab.
 
         * Restore
 
     Holding 'Alt' will save the state of playing sequences and restore
-    them when 'Alt' is lifted.
+    them when 'Alt' is lifted.  This works with both Alt-Left and
+    Alt-Right keys, and is called the "Snapshot 1" and "Snapshot 2"
+    functionality.
 
     Holding 'Left Ctrl' and 'Alt' at the same time will enable you to flip
     over to new sequences briefly and then flip right back upon lifting
     'Alt'.
+
+    This is not a configurable item, as far as we can tell, and we may
+    need to make it so in Sequencer64.
 
         * Queue
 
@@ -89,11 +96,13 @@ From another source:
     this case every sequence will toggle its status after its individual
     loop end. 
 
-        * keep queue
+        * Keep queue
 
     Pressing the 'keep queue' key assigned in the .seq24rc file activates
     permanent queue mode until you use the temporary Queue function again
     pressing 'Right Ctrl'. 
+
+    Sequencer64 likes the backslash for this functionality.
 
 ---------
 
@@ -451,8 +460,23 @@ Test:
 
 Check out gmute_tracks!  What does it do in full?
 
+In seq24, mute-groups seem to act only on set 0.  If another set is the
+active set, nothing happens.  This seems limiting.
 
+IMPORTANT DIFFERENCE!
 
+In Sequencer64, mute-groups act on the active set.  Also, they may need to
+be cleared from the loaded MIDI song, if it has mute groups.  And they
+will (or can?) unmute the patterns on the inactive sets.
+
+Idea:  mute-groups that turn on the pattern/mute group for the set that
+       matches the hot-key, even if the set is not active.
+
+Idea:  mute-groups that control ALL patterns in all sets.
+
+Weirdness to fix if not in "legacy" mode:  While the hot-keys layout
+matches the patterns layout, the mute-group-keys do not.  Is this a real
+issue?
 
 OLD STUFF:
 

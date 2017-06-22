@@ -401,11 +401,8 @@ perform::perform (gui_assistant & mygui, int ppqn)
 
 perform::~perform ()
 {
-    // m_inputing = m_outputing = m_running = false;
-    m_condition_var.lock();                         // EXPERIMENTAL
-    m_inputing = m_outputing = m_running = false;   // EXPERIMENTAL
+    m_inputing = m_outputing = m_running = false;
     m_condition_var.signal();                       /* signal end of play   */
-    m_condition_var.unlock();                       // EXPERIMENTAL
     if (m_out_thread_launched)
         pthread_join(m_out_thread, NULL);
 
@@ -767,7 +764,7 @@ perform::get_mute_group (int gmute, int gm [c_max_groups]) const
     {
         int groupoffset = gmute * c_seqs_in_set;
         for (int s = 0; s < c_seqs_in_set; ++s)
-            gm[s] = m_mute_group[groupoffset + s];
+            gm[s] = m_mute_group[groupoffset + s] ? 1 : 0 ;
     }
     return result;
 }
@@ -835,8 +832,13 @@ perform::get_group_mute_state (int gtrack)
  *  Also remember that m_mute_group_selected now determines which
  *  "seqs-in-set" set is selected.
  *
- * \param group
- *      The number of the desired group.  Must range from 0 to c_max_groups-1.
+ *  Old definition:
+ *
+ *      return clamp_track(track) + m_mute_group_selected * m_seqs_in_set;
+ *
+ * \param trackoffset
+ *      The number of the desired track.  This is basically one of the hot-key
+ *      related values.
  *
  * \return
  *      Returns a track value from 0 to 1023 if the group is valid for the
@@ -845,14 +847,18 @@ perform::get_group_mute_state (int gtrack)
  */
 
 int
-perform::mute_group_offset (int group)
+perform::mute_group_offset (int trackoffset)
 {
     int result = SEQ64_NO_MUTE_GROUP_SELECTED;
-    if (group >= 0 && group < c_max_groups)
+    if (m_mute_group_selected != SEQ64_NO_MUTE_GROUP_SELECTED)
     {
-        result = m_mute_group_selected * m_seqs_in_set;
-        if (result < c_max_sequence)                /* see m_mute_group[]   */
-            result = clamp_group(group) + result;
+        if (trackoffset >= 0 && trackoffset < c_seqs_in_set) // m_seqs_in_set ??
+        {
+            int offset = m_mute_group_selected * m_seqs_in_set;
+            result = trackoffset + offset;
+            if (result >= c_max_sequence)
+                result = SEQ64_NO_MUTE_GROUP_SELECTED;
+        }
     }
     return result;
 }
@@ -918,8 +924,9 @@ perform::unset_mode_group_learn ()
 void
 perform::set_and_copy_mute_group (int mutegroup)
 {
-    mutegroup = clamp_group(mutegroup);             // clamp_track(mutegroup);
+    mutegroup = clamp_group(mutegroup);
     int groupbase = screenset_offset(mutegroup);
+
 #ifdef SEQ64_USE_TDEAGAN_CODE
     int setbase = screenset_offset(m_screenset);
 #else
@@ -927,11 +934,6 @@ perform::set_and_copy_mute_group (int mutegroup)
 #endif
 
     m_mute_group_selected = mutegroup;          /* must set it before loop  */
-
-#ifdef PLATFORM_DEBUG_TMI
-    printf("mute-group %d selection\n", mutegroup);
-#endif
-
     for (int s = 0; s < m_seqs_in_set; ++s)     /* variset issue            */
     {
         int source = setbase + s;
@@ -940,26 +942,12 @@ perform::set_and_copy_mute_group (int mutegroup)
             bool status = m_seqs[source]->get_playing();
             int dest = groupbase + s;
             m_mute_group[dest] = status;
-#ifdef PLATFORM_DEBUG_TMI
-            printf
-            (
-                "2: setting m_mute_group[%d] to seq #%d status %s\n",
-                dest, source, status ? "true" : "false"
-            );
-#endif
         }
         int offset = mute_group_offset(s);
         if (offset >= 0)
         {
             int mmg = m_mute_group[offset];
             m_tracks_mute_state[s] = mmg;
-#ifdef PLATFORM_DEBUG_TMI
-            printf
-            (
-                "setting m_tracks_mute_states[%d] to m_mute_group[%d] = %d\n",
-                s, offset, mmg
-            );
-#endif
         }
         else
             break;
@@ -985,7 +973,6 @@ perform::mute_group_tracks ()
 {
     if (m_mode_group)
     {
-//      for (int g = 0; g < m_seqs_in_set; ++g)         /* was m_max_sets!! */
         for (int g = 0; g < m_max_sets; ++g)
         {
             int seqoffset = screenset_offset(g);
@@ -1071,7 +1058,7 @@ perform::mute_all_tracks (bool flag)
         if (is_active(i))
         {
             m_seqs[i]->set_song_mute(flag);
-            m_seqs[i]->set_playing(! flag); /* needed to show mute status!  */
+            m_seqs[i]->set_playing(! flag);     /* needed to show mute status */
         }
     }
 }
@@ -1291,7 +1278,7 @@ perform::set_right_tick (midipulse tick, bool setstart)
             if (setstart)
             {
                 set_start_tick(m_left_tick);
-                if (is_jack_master())                   // && is_jack_running())
+                if (is_jack_master())
                     position_jack(true, m_left_tick);
                 else
                     set_tick(m_left_tick);

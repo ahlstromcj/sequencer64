@@ -1,6 +1,6 @@
 Mute-Group Explorations
 Chris Ahlstrom
-2015-12-23 to 2017-06-21
+2015-12-23 to 2017-06-22
 
 In this document we explore mute-groups, how they might work, and
 the fixes of Tim to them.  The primary module under discussion is the
@@ -477,6 +477,30 @@ Idea:  mute-groups that control ALL patterns in all sets.
 Weirdness to fix if not in "legacy" mode:  While the hot-keys layout
 matches the patterns layout, the mute-group-keys do not.  Is this a real
 issue?
+
+TEST:
+
+    $ seq64 -o sets=8x8 contrib/midi/b4uacuse-stress.midi
+
+    Change to set 1 (the second set of 64 patterns, and turn on the active
+    patterns in the first two columns.  Hit the Learn button, and press Q.
+
+    The originally loaded mute groups are kept, and then added to
+    sequencer64.rc are:
+
+	16 [1 0 1 1 0 1 1 1] [0 1 1 1 1 1 1 1] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+
+	'Q' is the 8th (re 0) mute-group, so this looks correct.
+
+    However, it does not change the patterns.  BUG!  And then exiting
+    seq64 changes that line back to all zeros.  In fact all mute-groups
+    end up zeroed.  If we just start the run and exit without doing
+    anything, the mute-groups are zeroed then, too.  They seem to be read
+    in, but are then cleared!
+
+    Another BUG:  when we go from set 0 to set 1, the first 32 hot-keys
+    are shown simply as '//'.
+
 
 OLD STUFF:
 

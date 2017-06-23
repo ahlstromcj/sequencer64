@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-20
+ * \updates       2017-06-23
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -733,7 +733,7 @@ optionsfile::parse_mute_group_section (perform & p)
          * non-default value of seqs-in-set may be used internally.
          */
 
-        int gm[c_max_groups];
+        int gm[c_seqs_in_set];
         int groupmute = 0;
         for (int g = 0; g < c_max_groups; ++g)
         {
@@ -1015,17 +1015,7 @@ optionsfile::write (const perform & p)
     int gm[c_max_groups];
     for (int group = 0; group < c_max_groups; ++group)
     {
-
-        /*
-         *
-         *
-        ucperf.select_group_mute(group);
-        for (int seqi = 0; seqi < c_seqs_in_set; ++seqi)
-            gm[seqi] = ucperf.get_group_mute_state(seqi);
-         *
-         */
-
-        p.get_mute_group(group, gm);
+        p.save_mute_group(group, gm);       /* saves mute-group state to gm */
         snprintf
         (
             outs, sizeof outs,

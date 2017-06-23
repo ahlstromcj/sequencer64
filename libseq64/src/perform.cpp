@@ -1,4 +1,4 @@
-    /*
+/*
  *  This file is part of seq24/sequencer64.
  *
  *  seq24 is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-06-21
+ * \updates       2017-06-23
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -548,10 +548,7 @@ perform::clear_all ()
 /**
  *  Provides common code to keep the track value valid.  Fixed the bug we
  *  found, where we checked for track > m_seqs_in_set, instead of using
- *  the >= operator.
- *
- * \obsolete
- *      Is it?
+ *  the >= operator.  Supports variset mode.
  *
  * \param track
  *      The track value to be checked and rectified as necessary.
@@ -674,6 +671,9 @@ perform::print_group_unmutes () const
  *  to the current screen-set, even if it is not the screen-set whose
  *  playing status were saved.
  *
+ *  Also note that this function now supports variset mode, via
+ *  screen_offset().
+ *
  * \param mutegroup
  *      The number of the desired mute group, clamped to be between 0 and
  *      m_seqs_in_set-1.  Obviously, it is the set whose state is to be
@@ -729,7 +729,7 @@ perform::select_group_mute (int mutegroup)
  *      in playing, not in loading the configuration.
  *
  * \param gm
- *      The array of c_max_groups values to be use for the load.  The pointer
+ *      The array of c_seqs_in_set values to be used for the load.  The pointer
  *      is not checked.
  *
  * \return
@@ -737,7 +737,7 @@ perform::select_group_mute (int mutegroup)
  */
 
 bool
-perform::load_mute_group (int gmute, int gm [c_max_groups])
+perform::load_mute_group (int gmute, int gm [c_seqs_in_set])
 {
     bool result = (gmute >= 0 && gmute < c_max_groups);
     if (result)
@@ -752,12 +752,20 @@ perform::load_mute_group (int gmute, int gm [c_max_groups])
 /**
  *  The converse of load_mute_group().
  *
+ * \param gmute
+ *      The mute-group to save.  If out-of-range (0 to c_max_groups), no
+ *      saving is done.
+ *
+ * \param gm
+ *      The array of c_seqs_in_set values to be used for the save.  The
+ *      pointer is not checked.
+ *
  * \return
  *      Returns true if the group was valid.
  */
 
 bool
-perform::get_mute_group (int gmute, int gm [c_max_groups]) const
+perform::save_mute_group (int gmute, int gm [c_seqs_in_set]) const
 {
     bool result = (gmute >= 0 && gmute < c_max_groups);
     if (result)
@@ -838,12 +846,14 @@ perform::get_group_mute_state (int gtrack)
  *
  * \param trackoffset
  *      The number of the desired track.  This is basically one of the hot-key
- *      related values.
+ *      related values.  Traditionally, this value ranges from 0 to 31
+ *      (c_seqs_in_set-1), but now the variset mode is supported.
  *
  * \return
  *      Returns a track value from 0 to 1023 if the group is valid for the
- *      current seqs-in-set count.  Otherwise, a SEQ64_NO_MUTE_GROUP_SELECTED
- *      (-1) is returned.  The caller must check this value before using it.
+ *      current seqs-in-set count and a mute-group has been selected.
+ *      Otherwise, a SEQ64_NO_MUTE_GROUP_SELECTED (-1) is returned.  The
+ *      caller must check this value before using it.
  */
 
 int
@@ -852,7 +862,7 @@ perform::mute_group_offset (int trackoffset)
     int result = SEQ64_NO_MUTE_GROUP_SELECTED;
     if (m_mute_group_selected != SEQ64_NO_MUTE_GROUP_SELECTED)
     {
-        if (trackoffset >= 0 && trackoffset < c_seqs_in_set) // m_seqs_in_set ??
+        if (trackoffset >= 0 && trackoffset < m_seqs_in_set)
         {
             int offset = m_mute_group_selected * m_seqs_in_set;
             result = trackoffset + offset;
@@ -934,14 +944,14 @@ perform::set_and_copy_mute_group (int mutegroup)
 #endif
 
     m_mute_group_selected = mutegroup;          /* must set it before loop  */
-    for (int s = 0; s < m_seqs_in_set; ++s)     /* variset issue            */
+    for (int s = 0; s < m_seqs_in_set; ++s)     /* variset support          */
     {
         int source = setbase + s;
         if (m_mode_group_learn && is_active(source))
         {
             bool status = m_seqs[source]->get_playing();
             int dest = groupbase + s;
-            m_mute_group[dest] = status;
+            m_mute_group[dest] = status;        /* learn the pattern state  */
         }
         int offset = mute_group_offset(s);
         if (offset >= 0)

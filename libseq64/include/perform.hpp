@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-21
+ * \updates       2017-06-23
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2133,7 +2133,7 @@ private:
     void set_mode_group_learn ();
     void unset_mode_group_learn ();
     bool load_mute_group (int gmute, int gm [c_max_groups]);
-    bool get_mute_group (int gmute, int gm [c_max_groups]) const;
+    bool save_mute_group (int gmute, int gm [c_max_groups]) const;
 
     /**
      * \getter m_mode_group_learn
@@ -2350,7 +2350,8 @@ private:
     }
 
     /**
-     *  Calculates the screen-set offset index.
+     *  Calculates the screen-set offset index.  It supports variset mode
+     *  (which is active if m_seqs_in_set != c_seq_in_set).
      *
      * \param ss
      *      Provides the screen-set number, ranging from 0 to c_max_sets-1.

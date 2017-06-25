@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-23
+ * \updates       2017-06-24
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -297,7 +297,15 @@ private:
      *  herein as the desired state for the track.
      */
 
-    bool m_mute_group[c_max_sequence];              /* c_gmute_tracks */
+    bool m_mute_group[c_max_sequence];
+
+    /**
+     *  Preserves the mute groups from the "rc" file, so that they won't
+     *  necessarily be overwritten by the mute groups contained in a
+     *  Sequencer64 MIDI file.
+     */
+
+    bool m_mute_group_rc[c_max_sequence];
 
     /**
      *  Indicates if the m_saved_armed_statuses[] values are the saved state
@@ -365,6 +373,14 @@ private:
      */
 
     int m_mute_group_selected;
+
+    /**
+     *  If true, indicates that non-zero mute-groups were present in this MIDI
+     *  file.  We need to know if valid mute-groups are present when deciding
+     *  whether or not to write them to the "rc" file.
+     */
+
+    bool m_midi_mute_group_present;
 
     /**
      *  Provides a "vector" of patterns/sequences.
@@ -972,6 +988,15 @@ public:
     bool is_control_status () const
     {
         return m_control_status != 0;
+    }
+
+    /**
+     * \getter m_midi_mute_group_present
+     */
+
+    bool midi_mute_group_present () const
+    {
+        return m_midi_mute_group_present;
     }
 
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
@@ -2486,6 +2511,15 @@ private:
     {
         return not_nullptr(m_master_bus) ?
             m_master_bus->is_input_system_port(bus) : false ;
+    }
+
+    /**
+     * \setter m_midi_mute_group_present
+     */
+
+    void midi_mute_group_present (bool flag)
+    {
+        m_midi_mute_group_present = flag;
     }
 
 };

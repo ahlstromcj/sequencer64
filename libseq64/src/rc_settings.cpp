@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-04-22
+ * \updates       2017-06-24
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -100,6 +100,7 @@ rc_settings::rc_settings ()
     m_device_ignore             (false),
     m_device_ignore_num         (0),
     m_interaction_method        (e_seq24_interaction),
+    m_mute_group_saving         (e_mute_group_preserve),
     m_filename                  (),
     m_jack_session_uuid         (),
     m_last_used_dir             (),
@@ -143,6 +144,7 @@ rc_settings::rc_settings (const rc_settings & rhs)
     m_device_ignore             (rhs.m_device_ignore),
     m_device_ignore_num         (rhs.m_device_ignore_num),
     m_interaction_method        (rhs.m_interaction_method),
+    m_mute_group_saving         (rhs.m_mute_group_saving),
     m_filename                  (rhs.m_filename),
     m_jack_session_uuid         (rhs.m_jack_session_uuid),
     m_last_used_dir             (rhs.m_last_used_dir),
@@ -191,7 +193,7 @@ rc_settings::operator = (const rc_settings & rhs)
         m_print_keys                = rhs.m_print_keys;
         m_device_ignore             = rhs.m_device_ignore;
         m_device_ignore_num         = rhs.m_device_ignore_num;
-        m_interaction_method        = rhs.m_interaction_method;
+        m_mute_group_saving         = rhs.m_mute_group_saving;
         m_filename                  = rhs.m_filename;
         m_jack_session_uuid         = rhs.m_jack_session_uuid;
         m_last_used_dir             = rhs.m_last_used_dir;
@@ -371,17 +373,22 @@ rc_settings::device_ignore_num (int value)
  *
  * \param value
  *      The value to use to make the setting.
+ *
+ * \return
+ *      Returns true if the value was legal.
  */
 
-void
+bool
 rc_settings::interaction_method (interaction_method_t value)
 {
+    bool result = false;
     switch (value)
     {
     case e_seq24_interaction:
     case e_fruity_interaction:
 
         m_interaction_method = value;
+        result = true;
         break;
 
     default:
@@ -389,6 +396,23 @@ rc_settings::interaction_method (interaction_method_t value)
         errprint("illegal interaction-method value");
         break;
     }
+    return result;
+}
+
+/**
+ * \setter m_mute_group_saving
+ */
+
+bool
+rc_settings::mute_group_saving (mute_group_handling_t mgh)
+{
+    if (mgh >= e_mute_group_stomp && mgh < e_mute_group_max)
+    {
+        m_mute_group_saving = mgh;
+        return true;
+    }
+    else
+        return false;
 }
 
 /**

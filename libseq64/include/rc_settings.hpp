@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-04-22
+ * \updates       2017-06-24
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -53,8 +53,8 @@ namespace seq64
     class perform;                      /* forward declaration          */
 
 /**
- *  Provides codes for the mouse-handling used by the application.  Moved
- *  here from the globals.h module.
+ *  Provides mutually-exclusive codes for the mouse-handling used by the
+ *  application.  Moved here from the globals.h module.
  */
 
 enum interaction_method_t
@@ -62,6 +62,38 @@ enum interaction_method_t
     e_seq24_interaction,            /**< Use the normal mouse interactions. */
     e_fruity_interaction,           /**< The "fruity" mouse interactions.   */
     e_number_of_interactions        /**< Keep this last... a size value.    */
+};
+
+/**
+ *  Provides mutually-exclusive codes for handling the reading of mute-groups
+ *  from the "rc" file versus the "MIDI" file.
+ *
+ *  e_mute_group_stomp:
+ *  This is the legacy (seq24) option, which reads the mute-groups from the
+ *  MIDI file, and saves them back to the "rc" file and to the MIDI file.
+ *  However, for Sequencer64 MIDI files such as b4uacuse-stress.midi, seq24
+ *  never reads the mute-groups in that MIDI file!  In any case, this can be
+ *  considered a corruption of the "rc" file.
+ *
+ *  e_mute_group_prompt:
+ *  In the GUI versions of Sequencer64, this asks the user if the mute-groups
+ *  are to be written to the "rc".  The application detects if the MIDI file
+ *  contained a c_mutegroup specification, and that it had some non-zero
+ *  entries.  If so, then the user is prompted to decide what to do.
+ *
+ *  e_mute_group_preserve:
+ *  In this option, the mute groups are only written to the "rc" file if the
+ *  MIDI file did not contain non-zero mute groups.  This option prevents the
+ *  contamination of the "rc" mute-groups by the MIDI file's mute-groups.
+ *  We're going to make this the default option.
+ */
+
+enum mute_group_handling_t
+{
+    e_mute_group_stomp,         /**< Save main group to "rc"/MIDI files.    */
+    e_mute_group_prompt,        /**< Ask to overwrite the "rc"groups.       */
+    e_mute_group_preserve,      /**< Write new groups only to MIDI file.    */
+    e_mute_group_max            /**< Keep this last... a size value.        */
 };
 
 /**
@@ -108,6 +140,7 @@ private:
     bool m_device_ignore;           /**< From seq24 module, unused!         */
     int m_device_ignore_num;        /**< From seq24 module, unused!         */
     interaction_method_t m_interaction_method;  /**< [interaction-method]   */
+    mute_group_handling_t m_mute_group_saving;  /**< Handling of mutes.     */
 
     /**
      *  Provides the name of current MIDI file.
@@ -392,6 +425,15 @@ public:
     }
 
     /**
+     * \getter m_mute_group_saving
+     */
+
+    mute_group_handling_t mute_group_saving () const
+    {
+        return m_mute_group_saving;
+    }
+
+    /**
      * \getter m_filename
      */
 
@@ -639,11 +681,12 @@ protected:
 
     /*
      * The setters for non-bool values, defined in the cpp file because
-     * they do some validation.
+     * they do some heavier validation.
      */
 
     void device_ignore_num (int value);
-    void interaction_method (interaction_method_t value);
+    bool interaction_method (interaction_method_t value);
+    bool mute_group_saving (mute_group_handling_t mgh);
     void jack_session_uuid (const std::string & value);
     void config_directory (const std::string & value);
     void set_config_files (const std::string & value);

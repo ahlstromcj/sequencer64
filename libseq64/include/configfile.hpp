@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-04
+ * \updates       2017-06-25
  * \license       GNU GPLv2 or above
  *
  *  This is actually an elegant little parser, and works well as long as one
@@ -97,6 +97,20 @@ protected:
 
     bool next_data_line (std::ifstream & file);
     bool line_after (std::ifstream & file, const std::string & tag);
+
+    /**
+     *  Sometimes we need to know if there are new data lines at the end of an
+     *  existing section.  One clue that there is not is that we're at the
+     *  next section marker.  This function tests for that condition.
+     *
+     * \return
+     *      Returns true if m_line[0] is the left-bracket character.
+     */
+
+    bool at_section_start () const
+    {
+        return m_line[0] == '[';
+    }
 
 public:
 

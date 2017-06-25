@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-06-23
+ * \updates       2017-06-24
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -272,6 +272,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_excell_FF_RW              (1.0f),
     m_FF_RW_button_type         (FF_RW_NONE),
     m_mute_group                (),         // boolean array, size 32 * 32
+    m_mute_group_rc             (),         // boolean array, size 32 * 32
     m_armed_saved               (false),
     m_armed_statuses            (),         // boolean array, size 1024
     m_seqs_in_set               (usr().seqs_in_set()),      // c_seqs_in_set
@@ -279,6 +280,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_mode_group                (true),
     m_mode_group_learn          (false),
     m_mute_group_selected       (SEQ64_NO_MUTE_GROUP_SELECTED),
+    m_midi_mute_group_present   (false),
     m_seqs                      (),         // pointer array [c_max_sequence]
     m_seqs_active               (),         // boolean array [c_max_sequence]
     m_was_active_main           (),         // boolean array [c_max_sequence]
@@ -368,9 +370,9 @@ perform::perform (gui_assistant & mygui, int ppqn)
             m_was_active_main[i] = m_was_active_edit[i] =
             m_was_active_perf[i] = m_was_active_names[i] = false;
     }
-    for (int i = 0; i < m_sequence_max; ++i)    /* not c_gmute_tracks now   */
+    for (int i = 0; i < c_max_sequence; ++i)    /* not c_gmute_tracks now   */
     {
-        m_mute_group[i] = m_armed_statuses[i] = false;
+        m_mute_group[i] = m_mute_group_rc[i] = m_armed_statuses[i] = false;
     }
 
     /*
@@ -714,7 +716,9 @@ perform::select_group_mute (int mutegroup)
 /**
  *  Combines select_group_mute() and set_group_mute_state() so that the
  *  optionsfile class can load the groups without altering the
- *  m_mute_group_selected item; doing that is a bit misleading.
+ *  m_mute_group_selected item; doing that is a bit misleading. In addition, a
+ *  copy is saved in a second mute-group array in case we want to avoid
+ *  "corrupting" the "rc" mute-groups with mute-groups from the MIDI file.
  *
  *  It also uses the constant c_seqs_in_set instead of the variable
  *  m_seqs_in_set so that the loading always handles 32 x 32 = 1024 settings.
@@ -744,13 +748,23 @@ perform::load_mute_group (int gmute, int gm [c_seqs_in_set])
     {
         int groupoffset = gmute * c_seqs_in_set;
         for (int s = 0; s < c_seqs_in_set; ++s)
-            m_mute_group[groupoffset + s] = gm[s] != 0;
+        {
+            int track = groupoffset + s;
+            m_mute_group[track] = m_mute_group_rc[track] = gm[s] != 0;
+        }
     }
     return result;
 }
 
 /**
- *  The converse of load_mute_group().
+ *  The converse of load_mute_group().  However, it has a wrinkle in what it
+ *  saves.  First, if there are no unmuted patterns in any of the mute-groups,
+ *  then the original mute-groups read from the "rc" file are saved back.
+ *  Second, this saving is also done if the e_mute_group_preserve flag is
+ *  set.  If the e_mute_group_stomp flag is set, then the active mute-group
+ *  statuses are written to the "rc" file.
+ *
+ *  This function still doesn't handle the e_mute_group_prompt optin, though.
  *
  * \param gmute
  *      The mute-group to save.  If out-of-range (0 to c_max_groups), no
@@ -770,9 +784,19 @@ perform::save_mute_group (int gmute, int gm [c_seqs_in_set]) const
     bool result = (gmute >= 0 && gmute < c_max_groups);
     if (result)
     {
+        mute_group_handling_t mgh = rc().mute_group_saving();
         int groupoffset = gmute * c_seqs_in_set;
-        for (int s = 0; s < c_seqs_in_set; ++s)
-            gm[s] = m_mute_group[groupoffset + s] ? 1 : 0 ;
+        bool savemaingroup = (mgh == e_mute_group_stomp) && any_group_unmutes();
+        if (savemaingroup)
+        {
+            for (int s = 0; s < c_seqs_in_set; ++s)
+                gm[s] = m_mute_group[groupoffset + s] ? 1 : 0 ;
+        }
+        else
+        {
+            for (int s = 0; s < c_seqs_in_set; ++s)
+                gm[s] = m_mute_group_rc[groupoffset + s] ? 1 : 0 ;
+        }
     }
     return result;
 }

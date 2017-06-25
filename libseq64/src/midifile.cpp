@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-21
+ * \updates       2017-06-24
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -179,20 +179,20 @@ midifile::midifile
     bool oldformat,
     bool globalbgs
 ) :
-    m_mutex                 (),         /* new ca 2016-08-01 */
-    m_file_size             (0),
-    m_error_message         (),
-    m_error_is_fatal        (false),
-    m_disable_reported      (false),
-    m_pos                   (0),
-    m_name                  (name),
-    m_data                  (),
-    m_char_list             (),
-    m_new_format            (! oldformat),
-    m_global_bgsequence     (globalbgs),
-    m_ppqn                  (0),
-    m_use_default_ppqn      (ppqn == SEQ64_USE_DEFAULT_PPQN),
-    m_smf0_splitter         (ppqn)
+    m_mutex                     (),         /* new ca 2016-08-01 */
+    m_file_size                 (0),
+    m_error_message             (),
+    m_error_is_fatal            (false),
+    m_disable_reported          (false),
+    m_pos                       (0),
+    m_name                      (name),
+    m_data                      (),
+    m_char_list                 (),
+    m_new_format                (! oldformat),
+    m_global_bgsequence         (globalbgs),
+    m_ppqn                      (0),
+    m_use_default_ppqn          (ppqn == SEQ64_USE_DEFAULT_PPQN),
+    m_smf0_splitter             (ppqn)
 {
     m_ppqn = choose_ppqn(ppqn);
 }
@@ -1361,7 +1361,10 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                     for (int k = 0; k < seqsinset; ++k)
                     {
                         midilong gmutestate = read_long();
-                        p.set_group_mute_state(k, gmutestate != 0);
+                        bool status = gmutestate != 0;
+                        p.set_group_mute_state(k, status);
+                        if (status)
+                            p.midi_mute_group_present(true);
                     }
                 }
             }

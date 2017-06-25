@@ -24,7 +24,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2017-05-28
+ * \updates       2017-06-25
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -145,8 +145,6 @@ main (int argc, char * argv [])
             p.max_sets(seq64::usr().max_sets());
         }
 
-        ////// EXPERIMENTAL, MOVED TO BELOW
-        ////// p.launch(seq64::usr().midi_ppqn());         /* set up performance   */
         if (seq64::usr().inverse_colors())
             seq64::gui_palette_gtk2::load_inverse_palette(true);
 
@@ -169,7 +167,6 @@ main (int argc, char * argv [])
             seq64::usr().block_independent()
 #endif
         );
-        ////// EXPERIMENTAL, MOVED FROM ABOVE
         p.launch(seq64::usr().midi_ppqn());         /* set up performance   */
         if (ok)
         {

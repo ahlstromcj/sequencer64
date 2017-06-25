@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-23
+ * \updates       2017-06-25
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -322,11 +322,20 @@ optionsfile::parse (perform & p)
         warnprint("[midi-controls] specifies a count of 0, so skipped");
     }
 
-    long buses = 0;
-    ok = parse_mute_group_section(p);       /* "[mute-group]" */
+    /*
+     * [mute-group] plus some additional data about how to save them.  After
+     * we parse the mute group, we need to see if there is another value for
+     * the mute_group_handling_t enumeration.  One little issue... the
+     * parse_mute_group_section() function actually re-opens the file itself,
+     * and once it exits, it's as if the section never existed.  So we also
+     * have to pase the new mute-group handling feature there as well.
+     */
+
+    ok = parse_mute_group_section(p);
     if (ok)
         ok = line_after(file, "[midi-clock]");
 
+    long buses = 0;
     if (ok)
     {
         sscanf(m_line, "%ld", &buses);
@@ -649,7 +658,14 @@ optionsfile::parse (perform & p)
     long method = 0;
     line_after(file, "[interaction-method]");
     sscanf(m_line, "%ld", &method);
-    rc().interaction_method(interaction_method_t(method));
+
+    /*
+     * This now returns true if the value was correct, we should check it.
+     */
+
+    if (! rc().interaction_method(interaction_method_t(method)))
+        return error_message("interaction-method", "illegal value");
+
     if (! rc().legacy_format())
     {
         if (next_data_line(file))                   /* a new option */
@@ -775,14 +791,24 @@ optionsfile::parse_mute_group_section (perform & p)
                 p.load_mute_group(g, gm);
             }
 
-            // I seriously doubt this is used or usable.
-            // ++groupmute;                 /* get set for next group?? */
-
             result = next_data_line(file);
             if (! result && g < (c_max_groups - 1))
                 return error_message("mute-group data line");
             else
                 result = true;
+        }
+        if (result)
+        {
+            bool present = ! at_section_start();    /* ok if not present    */
+            if (present)
+            {
+                // present = next_data_line(file);
+                int v = 0;
+                sscanf(m_line, "%d", &v);
+                result = rc().mute_group_saving((mute_group_handling_t) v);
+                if (! result)
+                    return error_message("mute-group", "handling value bad");
+            }
         }
     }
     return true;
@@ -988,6 +1014,21 @@ optionsfile::write (const perform & p)
 
     /*
      * Group MIDI control
+     *
+     *  We want to save mute-groups only under certain circumstances:
+     *
+     *      -   They don't exist in sequencer64.rc yet.
+     *      -   There are no MIDI mute-group settings to save.
+     *      -   The user said to save them.
+     *      -   The configuration said to save them if ...
+
+    bool mutegroup_write_zeroes = false;
+    bool mutegroup_write_mutes = true;
+    bool midimutegroup = p.midi_mute_group_present();
+    if ()
+    {
+        // TODO
+    }
      */
 
     file << "\n[mute-group]\n\n";
@@ -1030,6 +1071,29 @@ optionsfile::write (const perform & p)
             gm[24], gm[25], gm[26], gm[27], gm[28], gm[29], gm[30], gm[31]
         );
         file << std::string(outs) << "\n";
+    }
+
+    if (! rc().legacy_format())
+    {
+        mute_group_handling_t mgh = rc().mute_group_saving();
+        int v = int(mgh);
+        file
+            << "\n"
+            << "# Handling of mute-groups.  If set to 0, a legacy value, then\n"
+            << "# any mute-groups read from the MIDI file (whether modified or\n"
+            << "# not) are saved to the 'rc' file as well.  If set to 1, the\n"
+            << "# user is prompted to ask if 'rc' mute-groups should be\n"
+            << "# overwritten.  If set to 2, 'rc' mute-groups are overwritten\n"
+            << "# only if they were not read from the MIDI file.\n"
+            << "\n"
+            << v
+            ;
+        if (mgh == e_mute_group_stomp)
+            file << "     # save mute-groups to both the MIDI and 'rc' file\n";
+        else if (mgh == e_mute_group_prompt)
+            file << "     # ask use about saving mute-groups to both files\n";
+        else if (mgh == e_mute_group_preserve)
+            file << "     # preserve 'rc' mute-groups from MIDI mute groups\n";
     }
 
     /*

@@ -1082,16 +1082,13 @@ optionsfile::write (const perform & p)
             << "# Handling of mute-groups.  If set to 0, a legacy value, then\n"
             << "# any mute-groups read from the MIDI file (whether modified or\n"
             << "# not) are saved to the 'rc' file as well.  If set to 1, the\n"
-            << "# user is prompted to ask if 'rc' mute-groups should be\n"
-            << "# overwritten.  If set to 2, 'rc' mute-groups are overwritten\n"
-            << "# only if they were not read from the MIDI file.\n"
+            << "# 'rc' mute-groups are overwritten only if they were not read\n"
+            << "# from the MIDI file.\n"
             << "\n"
             << v
             ;
         if (mgh == e_mute_group_stomp)
             file << "     # save mute-groups to both the MIDI and 'rc' file\n";
-        else if (mgh == e_mute_group_prompt)
-            file << "     # ask use about saving mute-groups to both files\n";
         else if (mgh == e_mute_group_preserve)
             file << "     # preserve 'rc' mute-groups from MIDI mute groups\n";
     }

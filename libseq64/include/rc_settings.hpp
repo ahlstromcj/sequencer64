@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-06-24
+ * \updates       2017-06-26
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -66,7 +66,8 @@ enum interaction_method_t
 
 /**
  *  Provides mutually-exclusive codes for handling the reading of mute-groups
- *  from the "rc" file versus the "MIDI" file.
+ *  from the "rc" file versus the "MIDI" file.  There's no GUI way to set this
+ *  item yet.
  *
  *  e_mute_group_stomp:
  *  This is the legacy (seq24) option, which reads the mute-groups from the
@@ -74,12 +75,6 @@ enum interaction_method_t
  *  However, for Sequencer64 MIDI files such as b4uacuse-stress.midi, seq24
  *  never reads the mute-groups in that MIDI file!  In any case, this can be
  *  considered a corruption of the "rc" file.
- *
- *  e_mute_group_prompt:
- *  In the GUI versions of Sequencer64, this asks the user if the mute-groups
- *  are to be written to the "rc".  The application detects if the MIDI file
- *  contained a c_mutegroup specification, and that it had some non-zero
- *  entries.  If so, then the user is prompted to decide what to do.
  *
  *  e_mute_group_preserve:
  *  In this option, the mute groups are only written to the "rc" file if the
@@ -91,7 +86,6 @@ enum interaction_method_t
 enum mute_group_handling_t
 {
     e_mute_group_stomp,         /**< Save main group to "rc"/MIDI files.    */
-    e_mute_group_prompt,        /**< Ask to overwrite the "rc"groups.       */
     e_mute_group_preserve,      /**< Write new groups only to MIDI file.    */
     e_mute_group_max            /**< Keep this last... a size value.        */
 };

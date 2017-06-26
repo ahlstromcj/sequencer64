@@ -764,8 +764,6 @@ perform::load_mute_group (int gmute, int gm [c_seqs_in_set])
  *  set.  If the e_mute_group_stomp flag is set, then the active mute-group
  *  statuses are written to the "rc" file.
  *
- *  This function still doesn't handle the e_mute_group_prompt optin, though.
- *
  * \param gmute
  *      The mute-group to save.  If out-of-range (0 to c_max_groups), no
  *      saving is done.

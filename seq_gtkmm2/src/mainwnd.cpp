@@ -1199,7 +1199,7 @@ mainwnd::timer_callback ()
     if (m_adjust_bpm->get_value() != bpm)
         m_adjust_bpm->set_value(bpm);
 
-    int screenset = perf().get_screenset();
+    int screenset = perf().screenset();
     int newset = m_adjust_ss->get_value();
     if (newset != screenset)
     {
@@ -2287,7 +2287,7 @@ mainwnd::adj_callback_wid (int widblock)
                 perf().set_screenset(newset);                   /* first    */
 
             m_mainwid_blocks[widblock]->log_screenset(newset);  /* second   */
-            if (newset == perf().get_screenset())
+            if (newset == perf().screenset())
             {
                 fslot->set_shadow_type(Gtk::SHADOW_OUT);
                 label += " [active]";

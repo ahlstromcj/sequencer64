@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-24
+ * \updates       2017-06-27
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1670,9 +1670,26 @@ public:
      * \getter m_screenset_offset
      */
 
-    int get_screenset_offset () const
+    int screenset_offset () const
     {
         return m_screenset_offset;
+    }
+
+    /**
+     *  Translates a pattern number to a slot number re the current screenset
+     *  offset.
+     *
+     * \param s
+     *      Provides the sequence number of interest.  This value should range
+     *      from 0 to 1023 (c_max_seqs).
+     *
+     * \return
+     *      Returns the "normalized" value.  Do not use it if less than zero.
+     */
+
+    int slot_number (int s)
+    {
+        return s - m_screenset_offset;
     }
 
     void save_playing_state ();
@@ -1977,7 +1994,7 @@ public:
      * \getter m_screenset
      */
 
-    int get_screenset () const
+    int screenset () const
     {
         return m_screenset;
     }

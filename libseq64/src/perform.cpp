@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-06-24
+ * \updates       2017-06-27
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1816,7 +1816,7 @@ perform::page_increment_beats_per_minute ()
 int
 perform::decrement_screenset ()
 {
-    int result = get_screenset() - 1;
+    int result = screenset() - 1;
     set_screenset(result);
     return result;
 }
@@ -1832,7 +1832,7 @@ perform::decrement_screenset ()
 int
 perform::increment_screenset ()
 {
-    int result = get_screenset() + 1;
+    int result = screenset() + 1;
     set_screenset(result);
     return result;
 }
@@ -4491,6 +4491,8 @@ perform::sequence_key (int seq)
  *  displayed re 1, unless it is an SMF 0 null channel (0xFF), in which case
  *  it is 0.
  *
+ *          "%-3d%d-%d %d/%d"  (old)
+ *
  * \note
  *      Later, we could add the sequence hot-key to this string, though
  *      showing that is not much use in perfnames.  Also, this function is a
@@ -4518,7 +4520,7 @@ perform::sequence_label (const sequence & seq)
         int bpb = int(seq.get_beats_per_bar());
         int bw = int(seq.get_beat_width());
         if (show_ui_sequence_number())                  /* new feature! */
-            snprintf(tmp, sizeof tmp, "%-3d%d-%d %d/%d", sn, bus, chan, bpb, bw);
+            snprintf(tmp, sizeof tmp, "%-3d %d-%d %d/%d", sn, bus, chan, bpb, bw);
         else
             snprintf(tmp, sizeof tmp, "%d-%d %d/%d", bus, chan, bpb, bw);
 
@@ -4603,6 +4605,10 @@ perform::set_clock_bus (int bus, clock_e clocktype)
  *  Legacy seq24 already responds to the toggling of the mute state via the
  *  shortcut keys even if screenset > 0, but it shows the question mark.
  *
+ * \todo
+ *      In the context of pattern keys, we should replace c_seqs_in_set with a
+ *      better-named value.
+ *
  * \param seqnum
  *      The number of the sequence for which to return the event key.
  *
@@ -4614,10 +4620,17 @@ perform::set_clock_bus (int bus, clock_e clocktype)
 unsigned int
 perform::lookup_keyevent_key (int seqnum)
 {
+    unsigned int result = (unsigned int)(' ');
     if (! rc().legacy_format())
         seqnum -= m_screenset_offset;
 
-    return keys().lookup_keyevent_key(seqnum);
+    if (seqnum >= c_seqs_in_set)
+        seqnum -= c_seqs_in_set;
+
+    if (seqnum < c_seqs_in_set)
+        result = keys().lookup_keyevent_key(seqnum);
+
+    return result;
 }
 
 /**

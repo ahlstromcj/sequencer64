@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-04
+ * \updates       2017-06-27
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -366,7 +366,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
             char temp[32];
             snprintf(temp, sizeof temp, "%.13s", seq->get_name());
-            render_string_on_pixmap                 // seqnum:name of pattern
+            render_string_on_pixmap             /* seqnum:name of pattern */
             (
                 base_x + m_text_size_x - 3, base_y + 4, temp, col
             );
@@ -382,28 +382,20 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 int chary = base_y + m_text_size_y * 4 - 2;
                 if (seqnum >= c_seqs_in_set && seqnum < (3 * c_seqs_in_set))
                 {
-                    char key = char
-                    (
-                        perf().lookup_keyevent_key(seqnum - c_seqs_in_set)
-                    );
-                    char shiftkey = char(PREFKEY(pattern_shift));
-                    if ((shiftkey > 0) && usr().is_variset())
+                    int keyindex = perf().slot_number(seqnum);
+                    char key = char(perf().lookup_keyevent_key(keyindex));
+                    char shift = char(PREFKEY(pattern_shift));
+                    if ((shift > 0) && usr().is_variset())
                     {
                         if (seqnum >= (2 * c_seqs_in_set))
                         {
-                            key = char
-                            (
-                                perf().lookup_keyevent_key(seqnum -
-                                    2*c_seqs_in_set)
-                            );
                             snprintf
                             (
-                                temp, sizeof temp, "%c%c%c",
-                                shiftkey, shiftkey, key
+                                temp, sizeof temp, "%c%c%c", shift, shift, key
                             );
                         }
                         else
-                            snprintf(temp, sizeof temp, "%c%c", shiftkey, key);
+                            snprintf(temp, sizeof temp, "%c%c", shift, key);
                     }
                     else
                         snprintf(temp, sizeof temp, "%c", key);
@@ -853,8 +845,8 @@ mainwid::set_screenset (int ss, bool setperf)
         perf().set_screenset(ss);
 #endif
 
-    m_screenset = perf().get_screenset();
-    m_screenset_offset = perf().get_screenset_offset();
+    m_screenset = perf().screenset();
+    m_screenset_offset = perf().screenset_offset();
     reset();                                    /* redraws the window   */
     return m_screenset;
 }

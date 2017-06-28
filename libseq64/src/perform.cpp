@@ -4634,6 +4634,29 @@ perform::lookup_keyevent_key (int seqnum)
 }
 
 /**
+ *  Like lookup_keyevent_key(), but assumes the slot number has already been
+ *  correctly calculated.
+ *
+ * \param slotnum
+ *      The number of the pattern/sequence slot for which to return the event
+ *      key.  This value can range from 0 to c_seqs_in_set - 1 up to
+ *      (3 * c_seqs_in_set) - 1, since we can support 32 hotkeys, plus these
+ *      hot-keys "shifted" once and twice.
+ *
+ * \return
+ *      Returns the desired key. This will always work, due to the mod
+ *      operator.
+ */
+
+unsigned int
+perform::lookup_slot_key (int seqnum)
+{
+    seqnum -= m_screenset_offset;
+    seqnum = seqnum % c_seqs_in_set;
+    return keys().lookup_keyevent_key(seqnum);
+}
+
+/**
  *  Provided for mainwnd :: on_key_press_event() and mainwnd ::
  *  on_key_release_event() to call.  This function handles the keys for the
  *  functions of replace, queue, keep-queue, snapshots, toggling mute groups,

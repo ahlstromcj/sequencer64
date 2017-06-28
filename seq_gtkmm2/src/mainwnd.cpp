@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-17
+ * \updates       2017-06-28
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -2535,7 +2535,7 @@ mainwnd::set_tap_button (int beats)
     if (not_nullptr(tapptr))
     {
         char temp[8];
-        snprintf(temp, sizeof(temp), "%d", beats);
+        snprintf(temp, sizeof temp, "%d", beats);
         tapptr->set_text(temp);
     }
 }
@@ -2581,6 +2581,25 @@ mainwnd::queue_it ()
 {
     bool is_active = m_button_queue->get_active();
     perf().set_keep_queue(is_active);
+}
+
+/**
+ *  Overwrites the text in the set-notes field, for debugging purposes only.
+ *
+ * \param tag
+ *      Human-readable text to show the context of the message.  Keep it well
+ *      under 80 characters.
+ *
+ * \param value
+ *      An integer value to be shown.
+ */
+
+void
+mainwnd::debug_text (const std::string & tag, int value)
+{
+    char temp[80];
+    snprintf(temp, sizeof temp, "%s: %d", tag.c_str(), value);
+    m_entry_notes->set_text(temp);
 }
 
 /**
@@ -2798,9 +2817,9 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
              *  is pressed.
              *
              *  Finally, as a new feature, if the pattern-shift key (the
-             *  forward slash by default) is pressed, toggle the flag that
-             *  indicates an extended sequence (value + 32 [c_seqs_in_set])
-             *  will be toggled, instead of the normal sequence.
+             *  forward slash by default) is pressed, increment the flag that
+             *  indicates an extended sequence (value + 32 [c_seqs_in_set] or
+             *  value + 64) will be toggled, instead of the normal sequence.
              */
 
             if (perf().get_key_events().count(k.key()) != 0)
@@ -2818,33 +2837,24 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                     if (m_call_seq_edit)
                     {
                         m_call_seq_edit = false;
-
-                        /*
-                         * TODO: SEQ64_MULTI_MAINWND
-                         */
-
                         m_main_wid->seq_set_and_edit(seqnum);
                         result = true;
                     }
                     else if (m_call_seq_eventedit)
                     {
-                        /*
-                         * TODO: SEQ64_MULTI_MAINWND
-                         */
-
                         m_call_seq_eventedit = false;
                         m_main_wid->seq_set_and_eventedit(seqnum);
                         result = true;
                     }
-                    else if (m_call_seq_shift > 0)  /* variset support  */
+                    else if (m_call_seq_shift > 0)      /* variset support  */
                     {
-                        sequence_key(seqnum + m_call_seq_shift * c_seqs_in_set);
-                        m_call_seq_shift = 0;   /* flag now done    */
+                        int keynum = seqnum + m_call_seq_shift * c_seqs_in_set;
+                        sequence_key(keynum);
                         result = true;
                     }
                     else
                     {
-                        sequence_key(seqnum);       /* toggle sequence  */
+                        sequence_key(seqnum);           /* toggle sequence  */
                         result = true;
                     }
                 }
@@ -2858,7 +2868,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 else if (k.key() == PREFKEY(pattern_shift))
                 {
                     ++m_call_seq_shift;
-                    if (m_call_seq_shift == 3) // (m_seqs_in_set / c_seqs_in_set))
+                    if (m_call_seq_shift == 3)
                         m_call_seq_shift = 0;
                 }
                 else if (k.key() == PREFKEY(event_edit))
@@ -2975,7 +2985,7 @@ mainwnd::update_window_title ()
     std::string itemname = "unnamed";
     int ppqn = choose_ppqn(m_ppqn);
     char temp[16];
-    snprintf(temp, sizeof(temp), " (%d ppqn) ", ppqn);
+    snprintf(temp, sizeof temp, " (%d ppqn) ", ppqn);
     if (! rc().filename().empty())
     {
         std::string name = shorten_file_spec(rc().filename(), 56);

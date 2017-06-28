@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-18
+ * \updates       2017-06-28
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -500,6 +500,8 @@ private:
 
     static void handle_signal (int sig);
 
+    void debug_text (const std::string & tag, int value);
+
     /**
      * \getter m_mainwid_count > 1
      */
@@ -583,6 +585,7 @@ private:
 
     void sequence_key (int seq)
     {
+        m_call_seq_shift = 0;               /* flag now done, if in force   */
         perf().sequence_key(seq);
     }
 

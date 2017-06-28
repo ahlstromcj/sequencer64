@@ -1799,6 +1799,7 @@ public:
      */
 
     unsigned int lookup_keyevent_key (int seqnum);
+    unsigned int lookup_slot_key (int slotnum);
 
     /**
      *  Gets the sequence number for the given event key.  The inverse of

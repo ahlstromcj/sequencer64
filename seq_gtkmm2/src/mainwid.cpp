@@ -378,33 +378,30 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
             if (perf().show_ui_sequence_key())
             {
+                /*
+                 * Here, we want to show the hot-keys for each pattern in the
+                 * current set.  The default number of sequences in a set is
+                 * c_seqs_in_set, but we can support up to 3 times that value
+                 * depending on the varisets setting.  Here, c_seqs_in_set is
+                 * really "number of hot-keys supported" value.
+                 */
+
                 int charx = base_x + m_seqarea_x - 3;
                 int chary = base_y + m_text_size_y * 4 - 2;
-                if (seqnum >= c_seqs_in_set && seqnum < (3 * c_seqs_in_set))
+                int slot = perf().slot_number(seqnum);
+                char key = perf().lookup_slot_key(seqnum);
+                char shift = char(PREFKEY(pattern_shift));
+                if ((shift > 0) && usr().is_variset())
                 {
-                    int keyindex = perf().slot_number(seqnum);
-                    char key = char(perf().lookup_keyevent_key(keyindex));
-                    char shift = char(PREFKEY(pattern_shift));
-                    if ((shift > 0) && usr().is_variset())
-                    {
-                        if (seqnum >= (2 * c_seqs_in_set))
-                        {
-                            snprintf
-                            (
-                                temp, sizeof temp, "%c%c%c", shift, shift, key
-                            );
-                        }
-                        else
-                            snprintf(temp, sizeof temp, "%c%c", shift, key);
-                    }
+                    if (slot >= (2 * c_seqs_in_set) && slot < (3 * c_seqs_in_set))
+                        snprintf(temp, sizeof temp, "%c%c%c", shift, shift, key);
+                    else if (slot >= c_seqs_in_set && slot < (2 * c_seqs_in_set))
+                        snprintf(temp, sizeof temp, "%c%c", shift, key);
                     else
                         snprintf(temp, sizeof temp, "%c", key);
                 }
                 else
-                {
-                    char key = char(perf().lookup_keyevent_key(seqnum));
                     snprintf(temp, sizeof temp, "%c", key);
-                }
 
                 charx -= strlen(temp) * m_text_size_x;
                 render_string_on_pixmap(charx, chary, temp, col);

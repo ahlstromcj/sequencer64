@@ -1,7 +1,159 @@
+2017-06-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/optionsfile.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwnd.cpp: Added status label to show shift-seq
+	status.
+
+2017-06-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Monkeying around trying to get hot-key
+	shift to work.
+
+2017-06-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp: Working on
+	getting shift-hotkeys correct for varisets.
+
+2017-06-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/rc_settings.hpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp: Removed the group-prompt option as
+	unnecessary/problematic.
+
+2017-06-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64rtmidi/seq64rtmidi.cpp, libseq64/include/configfile.hpp,
+	libseq64/include/perform.hpp, libseq64/include/rc_settings.hpp,
+	libseq64/src/midifile.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/rc_settings.cpp: Added a
+	feature to keep MIDI mutes from clobbering rc mutes.
+
+2017-06-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/mute_groups.txt, libseq64/include/perform.hpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp: Minor tweaks
+	to mute groups.
+
+2017-06-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, contrib/notes/mute_groups.txt,
+	libseq64/src/perform.cpp: Fixes to variset mute-groups, interim
+	check-in.
+
+2017-06-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/mute_groups.txt, contrib/scripts/valgrind-leaks.sh,
+	libseq64/include/perform.hpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp: Fixes to mute-group handling in varisets
+	mode.
+
+2017-06-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/mainwid.cpp: Fixed display of slash-slash-hotkey
+	for varisets.
+	* Seq64rtmidi/seq64rtmidi.cpp, TODO, libseq64/include/globals.h,
+	libseq64/include/keys_perform.hpp, libseq64/include/perform.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/keys_perform.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/user_settings.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp: Fixed issues
+	with sets=8x9, page up/down in mainwid changes sets.
+
+2017-06-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/keys_perform.hpp, libseq64/include/perform.hpp,
+	libseq64/src/keys_perform.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/fruityseqroll.cpp, seq_gtkmm2/src/seqroll.cpp: 
+	Streamlining keys support a bit, poking around on issue #90, no
+	progress.
+
+2017-06-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/user_testing.dox, libseq64/include/perform.hpp,
+	libseq64/src/businfo.cpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp: More leak fixes and improvement
+	to mute-groups.
+	* contrib/configs/sequencer64.rc.example,
+	libseq64/include/globals.h, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_rtmidi/src/rtmidi_info.cpp: Probing
+	for mute-group issues, and fixed master-bus and rtmidi info memory
+	leaks at exit.
+
+2017-06-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/user_settings.hpp, libseq64/src/midifile.cpp,
+	libseq64/src/user_settings.cpp: Reverting mute support to use 32 x
+	32 so that existing MIDI files can be read without an error message.
+
+2017-06-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/midi/README, contrib/midi/sets.asc: Added diagnostic info
+	from sets.midi loading under varisets 6x8 setting.
+
+2017-06-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, Seq64cli/seq64rtcli.cpp,
+	Seq64rtmidi/seq64rtmidi.cpp, configure.ac,
+	contrib/configs/sequencer64.usr.example, contrib/notes/git.txt,
+	libseq64/include/app_limits.h, libseq64/include/cmdlineopts.hpp,
+	libseq64/include/perform.hpp, libseq64/include/user_settings.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/perform.cpp,
+	libseq64/src/userfile.cpp: More progress, multi-wid and vari-sets
+	together, more testing.
+
+2017-06-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, libseq64/include/app_limits.h,
+	libseq64/include/perform.hpp, libseq64/include/user_settings.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/perform.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/mainwid.hpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Improving support for variable set-rows,
+	still in progress.
+
+2017-06-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/include/midi_control.hpp,
+	libseq64/include/perform.hpp, libseq64/src/midi_splitter.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/user_settings.cpp,
+	seq_gtkmm2/include/perfnames.hpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/seqedit.cpp: Replaced
+	all usage of c_seqs_in_set with user_settings, but not yet viable.
+
+2017-06-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/app_limits.h, libseq64/include/globals.h,
+	libseq64/src/optionsfile.cpp, seq_gtkmm2/src/options.cpp: Added
+	max-groups and max-keys constants, replaces some uses of
+	c_seqs_in_set.
+
+2017-06-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/app_limits.h, libseq64/include/globals.h,
+	libseq64/include/user_settings.hpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/src/mainwid.cpp: Adding more row/column macros for
+	additional patters per set.
+
+2017-05-31  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/app_limits.h,
+	libseq64/include/user_settings.hpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, seq_gtkmm2/src/mainwid.cpp: Embarking on
+	making mainwid rows/columns variable.
+
 2017-05-30  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* INSTALL, README, seq_gtkmm2/src/mainwnd.cpp: Fixed minor bug in
-    mainwnd, made version 0.91.0 official.
+	mainwnd, made version 0.91.0 official.
 
 2017-05-29  Chris Ahlstrom <ahlstromcj@gmail.com>
 
@@ -77,7 +229,8 @@
 	* libseq64/include/midi_control.hpp, libseq64/include/perform.hpp,
 	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp: Annotated
 	additions for pull #85.
-	* : Merge pull request #85 from jean-emmanuel/midi-new-controls Extend midi callback to handle control value, add "screenset by
+	* : Merge pull request #85 from jean-emmanuel/midi-new-controls Extend midi
+	callback to handle control value, add "screenset by
 	number" control.
 
 2017-05-13  Chris Ahlstrom <ahlstromcj@gmail.com>
@@ -93,18 +246,15 @@
 	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp: midi: extend
 	midi callback to handle control value, add "screenset by number"
 	control
-
-2017-05-13  Chris Ahlstrom <ahlstromcj@gmail.com>
-
 	* INSTALL, README, configure.ac, contrib/notes/git.txt,
 	libseq64/src/cmdlineopts.cpp, seq_gtkmm2/include/mainwnd.hpp,
 	seq_gtkmm2/src/mainwnd.cpp: Added jean-emmanual scroll-bars for main
 	window, still some issues.
 	* : Merge pull request #83 from
-	jean-emmanuel/pattern-panel-scrollbars Pattern panel scrollbars.  I am going to merge this (to wip), but I
-	am going to make it a build option,
-	SEQ64_JE_PATTERN_PANEL_SCROLLBARS, because it is a big change, and I
-	do want to give the option to build without them.
+	jean-emmanuel/pattern-panel-scrollbars Pattern panel scrollbars.  I am going
+	to merge this (to wip), but I am going to make it a build option,
+	SEQ64_JE_PATTERN_PANEL_SCROLLBARS, because it is a big change, and I do want
+	to give the option to build without them.
 
 2017-05-13  jean-emmanuel <jean-emmanuel.doucet@groolot.net>
 

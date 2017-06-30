@@ -2,7 +2,10 @@ Sequencer64 Roadmap
 Chris Ahlstrom
 2015-09-10 to 2017-04-19
 
-Latest version: 0.90.3
+Latest version: 0.92.0
+
+This roadmap is a bit old.  Lots of good suggestions have come in from users,
+and we have tended to give them what they want.  :-)
 
 The starting point for the Sequencer64 project is version 0.9.2 of Seq24 from
 Debian.  The initial work for this Seq24 reboot started in late July of 2015,
@@ -22,14 +25,14 @@ contrib/bugs-to-investigate.txt file!  And some unexpected new features have
 been added along the way, thanks to user requests.
 
    -  User-Interface:
-      y  Separate the GUI functionality from setting and operational
+      x  Separate the GUI functionality from setting and operational
          classes.
       -  Upgrade the GUI to Gtk3 or Qt5.
       x  Add support for native JACK MIDI.
       -  Provide a sequencer engine that can be driven by, for example
          OSC.
-      -  Add scripting support or command-line access to playback.
-      -  Provide a no-GUI running mode for Sequencer64, for usage with
+      y  Add scripting support or command-line access to playback.
+      y  Provide a no-GUI running mode for Sequencer64, for usage with
          tight hardware like the Raspberry Pi, and for keystroke and MIDI
          control only (no GUI controls).
    y  Unit test each element as appropriate using xpccutxx library.
@@ -46,10 +49,10 @@ been added along the way, thanks to user requests.
       For version 2.0:
       -  Convert to gtkmm-3 (maybe).
       -  Add optional build using Qt 5.
-      -  Flesh out the support for PortMidi.
+      -  Flesh out the support for PortMidi.  Nope, deprecated.
       -  Support MingW builds in Windows a la the Subatomic Glue port.
    y  Fix the JACK support.  Mostly done, but there are a number of legacy
       issues to deal with.
-   -  An option to override the proprietary section with data from a file.
+   y  An option to override the proprietary section with data from a file.
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

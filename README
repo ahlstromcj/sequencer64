@@ -1,6 +1,6 @@
-README for Sequencer64 0.92.0 (Native JACK and CLI, multiple main windows)
+README for Sequencer64 0.92.0 (Native JACK, CLI, multiple main windows, varisets)
 Chris Ahlstrom
-2015-09-10 to 2017-06-05
+2015-09-10 to 2017-06-30
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
@@ -29,8 +29,9 @@ With the big version jump from 0.9 to 0.90, the install process has changed.
 See the INSTALL file.
 
     -   Version 0.92.0:
-        -   Added provisional support for variable set-size, from the default
+        -   Added support for variable set-size, from the default
             4x8 (rows x columns) to 8x12.  Can be combined with multi-wid.
+        -   Up to 96 hot-keys via a shift/double-shift feature.
     -   Version 0.91.0:
         -   Added option to show a grid of sets, with one set spinner per
             main window.  Set from command-line or the "usr" configuration.

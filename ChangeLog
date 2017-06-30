@@ -3,6 +3,8 @@
 	* libseq64/src/optionsfile.cpp, seq_gtkmm2/include/mainwnd.hpp,
 	seq_gtkmm2/src/mainwnd.cpp: Added status label to show shift-seq
 	status.
+	* ChangeLog, INSTALL, README, ROADMAP, configure.ac: Getting ready
+	for version 0.92.0
 
 2017-06-28  Chris Ahlstrom <ahlstromcj@gmail.com>
 

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-28
+ * \updates       2017-06-30
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -148,6 +148,12 @@ private:
     Gtk::Menu * m_menu_edit;            /**< The (new) Edit menu entry. */
     Gtk::Menu * m_menu_view;            /**< The View menu entry.       */
     Gtk::Menu * m_menu_help;            /**< The Help menu entry.       */
+
+    /**
+     *  Seamless status label next to the "ALSA/JACK/Native" button.
+     */
+
+    Gtk::Label * m_status_label;
 
     /**
      *  Saves the PPQN value obtained from the MIDI file (or the default
@@ -577,17 +583,7 @@ private:
     void open_performance_edit ();
     void open_performance_edit_2 ();
     void enregister_perfedits ();
-
-    /**
-     *  Use the sequence key to toggle the playing of an active pattern in
-     *  the current screen-set.
-     */
-
-    void sequence_key (int seq)
-    {
-        m_call_seq_shift = 0;               /* flag now done, if in force   */
-        perf().sequence_key(seq);
-    }
+    void sequence_key (int seq);
 
     /**
      *  Returns the maximum value we can allow for a spinner.  Remember that
@@ -692,6 +688,7 @@ private:
     void populate_menu_edit ();
     void populate_menu_help ();
     void populate_menu_view ();
+    void set_status_text (const std::string & text);
 
 private:
 

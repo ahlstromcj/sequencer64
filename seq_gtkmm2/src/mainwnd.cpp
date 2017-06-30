@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-28
+ * \updates       2017-06-30
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -232,6 +232,7 @@ mainwnd::mainwnd
     m_menu_edit             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
+    m_status_label          (manage(new Gtk::Label(" ", true))),
     m_ppqn                  (choose_ppqn(ppqn)),
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
     m_hadjust               (manage(new Gtk::Adjustment(0, 0, 1, 10, 100, 0))),
@@ -556,6 +557,9 @@ mainwnd::mainwnd
     );
     tophbox->pack_start(*m_button_jack, false, false);
 #endif
+
+    tophbox->pack_start(*(manage(new Gtk::HSeparator())), false, false, 4);
+    tophbox->pack_start(*m_status_label, false, false);  /* new */
 
 #endif  // SEQ64_STAZED_MENU_BUTTONS
 
@@ -2741,12 +2745,15 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
          * Need to change ev->keyvalue to k.key() in all of these.
          */
 
-        if (perf().get_key_groups().count(k.key()) != 0)
+        int count = perf().get_key_groups().count(k.key());
+        if (count != 0)
         {
-            perf().select_and_mute_group        /* activate mute group key  */
-            (
-                perf().lookup_keygroup_group(k.key())
-            );
+            /*
+             * activate mute group key
+             */
+
+            int group = perf().lookup_keygroup_group(k.key());
+            perf().select_and_mute_group(group);
         }
 
         bool mgl = perf().is_group_learning() && k.key() != PREFKEY(group_learn);
@@ -2870,6 +2877,12 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                     ++m_call_seq_shift;
                     if (m_call_seq_shift == 3)
                         m_call_seq_shift = 0;
+
+                    std::string temp = "";
+                    for (int i = 0; i < m_call_seq_shift; ++i)
+                        temp += '/';
+
+                    set_status_text(temp);
                 }
                 else if (k.key() == PREFKEY(event_edit))
                 {
@@ -3295,6 +3308,33 @@ mainwnd::populate_menu_help ()
             "_Build Info...", mem_fun(*this, &mainwnd::build_info_dialog)
         )
     );
+}
+
+/**
+ *  Use the sequence key to toggle the playing of an active pattern in
+ *  the current screen-set.
+ */
+
+void
+mainwnd::sequence_key (int seq)
+{
+    m_call_seq_shift = 0;               /* flag now done, if in force   */
+    set_status_text(std::string(""));
+    perf().sequence_key(seq);
+}
+
+/**
+ *  Sets the text on the new status label.
+ *
+ * \param text
+ *      Provides the short (6 characters in the default state) string to 
+ *      set the label.
+ */
+
+void
+mainwnd::set_status_text (const std::string & text)
+{
+    m_status_label->set_text(text);
 }
 
 }           /* namespace seq64 */

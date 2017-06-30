@@ -802,7 +802,6 @@ optionsfile::parse_mute_group_section (perform & p)
             bool present = ! at_section_start();    /* ok if not present    */
             if (present)
             {
-                // present = next_data_line(file);
                 int v = 0;
                 sscanf(m_line, "%d", &v);
                 result = rc().mute_group_saving((mute_group_handling_t) v);

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-03-23
+ * \updates       2017-07-03
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -144,6 +144,30 @@ extern bool strings_match (const std::string & target, const std::string & x);
 extern int log2_time_sig_value (int tsd);
 extern void tempo_us_to_bytes (midibyte t[3], int tempo_us);
 extern int zoom_power_of_2 (int ppqn);
+extern long beat_pow2 (int logbase2);
+extern midibyte beat_log2 (int value);
+
+/**
+ *  Calculates the tempo in microseconds from the bytes read from a Tempo
+ *  event in the MIDI file.
+ *
+ *  Is it correct to simply cast the bytes to a double value?
+ *
+ * \param tt
+ *      Provides the 3-byte array of values making up the raw tempo data.
+ *
+ * \return
+ *      Returns the result of converting the bytes to a double value.
+ */
+
+inline double
+tempo_us_from_bytes (const midibyte tt[3])
+{
+    double result = double(tt[0]);
+    result = (result * 256) + double(tt[1]);
+    result = (result * 256) + double(tt[2]);
+    return result;
+}
 
 /**
  *  This function calculates the effective beats-per-minute based on the value
@@ -159,7 +183,7 @@ extern int zoom_power_of_2 (int ppqn);
  *      returned.
  */
 
-inline double
+inline midibpm
 bpm_from_tempo_us (double tempous)
 {
     return tempous > 0.0 ? (60000000.0 / tempous) : 0.0 ;

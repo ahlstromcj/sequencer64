@@ -236,9 +236,10 @@ midi_container::fill_meta_track_end (midipulse deltatime)
 
 /**
  *  Fill in the time-signature and tempo information.  This function is used
- *  only for the first track,  The sizes of these meta events are defined as
- *  SEQ64_TIME_TEMPO_SIZE.  However, we do not have to add that value in, as
- *  it is already counted in the intrinsic size of the container.
+ *  only for the first track, and only for the first of these events,  The
+ *  sizes of these meta events are defined as SEQ64_TIME_TEMPO_SIZE.  However,
+ *  we do not have to add that value in, as it is already counted in the
+ *  intrinsic size of the container.
  *
  *  We now make sure that the proper values are part of the perform object for
  *  usage in this particular track.  For export, we cannot guarantee that the
@@ -573,6 +574,11 @@ midi_container::song_fill_seq_trigger
  *      number of triggers at 3 long integers per trigger, plus the 4-byte
  *      code for triggers, c_triggers_new = 0x24240008.
  *
+ * Meta and SysEx Events:
+ *
+ *      TODO TODO TODO
+ *      We need to be able to detect these events and add them.
+ *
  * \threadunsafe
  *      The sequence object bound to this container needs to provide the
  *      locking mechanism when calling this function.
@@ -597,6 +603,9 @@ midi_container::fill (int tracknumber, const perform & p)
      * provide the Time Signature and Tempo meta events, in the 0th (first)
      * track (sequence).  These events must precede any "real" MIDI events.
      * They are not included if the legacy-format option is in force.
+     * We also need to skip this if tempo track support is in force.
+     *
+     * TODO TODO TODO
      */
 
     if (tracknumber == 0)

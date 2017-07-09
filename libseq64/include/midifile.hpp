@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-25
+ * \updates       2017-07-04
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -256,7 +256,6 @@ private:
     bool parse_smf_1 (perform & p, int screenset, bool is_smf0 = false);
     midilong parse_prop_header (int file_size);
     bool parse_proprietary_track (perform & a_perf, int file_size);
-    int pow2 (int logbase2);
     bool checklen (midilong len, midibyte type);
     void add_trigger (sequence & seq, midishort ppqn);
     midilong read_long ();
@@ -264,6 +263,7 @@ private:
     midibyte read_byte ();
     midilong read_varinum ();
     void write_long (midilong value);
+    void write_triple (midilong value);
     void write_short (midishort value);
 
     /**
@@ -303,6 +303,8 @@ private:
     int read_seq_number ();
     void write_track_end ();
     bool write_header (int numtracks);
+    void write_start_tempo (midibpm start_tempo);
+    void write_time_sig (int beatsperbar, int beatwidth);
     void write_prop_header (midilong tag, long len);
     bool write_proprietary_track (perform & a_perf);
     long varinum_size (long len) const;

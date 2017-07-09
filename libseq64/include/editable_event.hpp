@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-28
- * \updates       2015-12-14
+ * \updates       2017-07-05
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -105,7 +105,9 @@ public:
          *  Indicates a system event, with a value ranging from 0xF0 through
          *  0xFF.  Some examples are SysEx start/end, song position, and
          *  stop/start/continue/reset.  Values are looked up in
-         *  sm_system_event_names[].
+         *  sm_system_event_names[].  These values are "real" only in MIDI
+         *  data coming in "over the wire".  In MIDI files, they represent
+         *  Meta events.
          */
 
         category_system_message,    /* sm_system_event_names[]      */
@@ -113,6 +115,10 @@ public:
         /**
          *  Indicates a meta event, and there is a second value that is used
          *  to look up the name of the meta event, in sm_meta_event_names[].
+         *  Meta messages are message that are stored in a MIDI file.
+         *  Although they start with 0xFF, they are not to be confused with
+         *  the 0xFF message that can be sent "over the wire", which denotes a
+         *  Reset event.
          */
 
         category_meta_event,        /* sm_meta_event_names[]        */

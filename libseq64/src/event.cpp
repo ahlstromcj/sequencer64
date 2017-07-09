@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-12
+ * \updates       2017-07-08
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -78,6 +78,7 @@
 
 #include "app_limits.h"
 #include "easy_macros.h"
+#include "calculations.hpp"
 #include "event.hpp"
 
 /*
@@ -397,7 +398,50 @@ event::append_sysex (midibyte * data, int dsize)
 }
 
 /**
- *  An overload for obtaining SYSEX data byte-by-byte.
+ *  Appends Meta-event data to a new buffer.  Similar to append_sysex(), but
+ *  useful for holding the data for a Meta event.
+ *
+ * \warning
+ *      Currently does not clear the "sysex" buffer first.
+ *
+ * \param metatype
+ *      Provides the type of the Meta event, which is stored in the m_channel
+ *      member.
+ *
+ * \param data
+ *      Provides the Meta event's data.  If not provided, nothing is done,
+ *      and false is returned.
+ *
+ * \param dsize
+ *      Provides the size of the data.  If not provided, nothing is done.
+ *
+ * \return
+ *      Returns false if an error occurred, and the caller needs to stop
+ *      trying to process the data.
+ */
+
+bool
+event::append_meta_data (midibyte metatype, midibyte * data, int dsize)
+{
+    bool result = false;
+    if (not_nullptr(data) && (dsize > 0))
+    {
+        for (int i = 0; i < dsize; ++i)
+            m_sysex.push_back(data[i]);
+
+        m_channel = metatype;
+        m_sysex_size = int(m_sysex.size());
+        result = true;
+    }
+    else
+    {
+        errprint("event::append_meta_data(): null parameters");
+    }
+    return result;
+}
+
+/**
+ *  An overload for logging SYSEX data byte-by-byte.
  *
  * \param data
  *      A single MIDI byte of data, assumed to be part of a SYSEX message
@@ -475,6 +519,32 @@ event::get_rank () const
     default:
         return 0;
     }
+}
+
+/**
+ *  Calculates the tempo from the stored event bytes, if the event is a Tempo
+ *  meta-event and has valid data.  Remember that we are overloading the SysEx
+ *  support to hold Meta-event data.  Also note that we're treating the vector
+ *  like an array, which is supposed to work.
+ *
+ * \return
+ *      Returns the result of calculating the tempo from the three data bytes.
+ *      If an error occurs, 0.0 is returned.
+ */
+
+midibpm
+event::tempo () const
+{
+    midibpm result = 0.0;
+    if (is_tempo() && m_sysex_size == 3)
+    {
+        midibyte b[3];
+        b[0] = m_sysex[0];
+        b[1] = m_sysex[1];
+        b[2] = m_sysex[2];
+        result = tempo_us_from_bytes(b);
+    }
+    return result;
 }
 
 /**

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-24
+ * \updates       2017-07-08
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -44,12 +44,12 @@
  *
  *      -   MIDI header.
  *      -   Tracks.
+ *          These items are then written, preceded by the "MTrk" tag and
+ *          the track size.
  *          -   Sequence number.
  *          -   Sequence name.
  *          -   Time-signature and tempo (sequence 0 only)
  *          -   Sequence events.
- *          These items are then written, preceded by the "MTrk" tag and
- *          the track size.
  */
 
 #include <fstream>
@@ -478,34 +478,6 @@ midifile::parse_smf_0 (perform & p, int screenset)
 }
 
 /**
- *  Internal function for simple calculation of a power of 2 without a lot of
- *  math.  Use for calculating the denominator of a time signature.
- *
- * \param logbase2
- *      Provides the power to which 2 is to be raised.  This integer is
- *      probably only rarely greater than 4 (which represents a denominator of
- *      16).
- *
- * \return
- *      Returns 2 raised to the logbase2 power.
- */
-
-int
-midifile::pow2 (int logbase2)
-{
-    int result;
-    if (logbase2 == 0)
-        result = 1;
-    else
-    {
-        result = 2;
-        for (int c = 1; c < logbase2; ++c) 
-            result *= 2;
-    }
-    return result;
-}
-
-/**
  *  Internal function to check for and report a bad length value.
  *  A length of zero is now considered legal, but a "warning" message is shown.
  *  The largest value allowed within a MIDI file is 0x0FFFFFFF. This limit is
@@ -732,9 +704,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                     if (status == 0xFF)
                     {
-                        midibyte type = read_byte();      /* get meta type    */
+                        midibyte mtype = read_byte();     /* get meta type    */
                         len = read_varinum();             /* if 0 catch later */
-                        switch (type)
+                        switch (mtype)
                         {
                         case 0x7F:                        /* "proprietary"    */
 
@@ -743,7 +715,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 seqspec = read_long();
                                 len -= 4;
                             }
-                            else if (! checklen(len, type))
+                            else if (! checklen(len, mtype))
                                 return false;
 
                             if (seqspec == c_midibus)
@@ -828,14 +800,14 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                         case 0x58:                      /* Time Signature   */
 
-                            if (! checklen(len, type))
+                            if (! checklen(len, mtype))
                                 return false;
 
                             if ((len == 4) && ! timesig_set)
                             {
                                 int bpm = int(read_byte());         // nn
                                 int logbase2 = int(read_byte());    // dd
-                                long bw = long(pow2(logbase2));
+                                long bw = beat_pow2(logbase2);
 
                                 int cc = read_byte();               // cc
                                 int bb = read_byte();               // bb
@@ -857,29 +829,47 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                         case 0x51:                      /* Set Tempo        */
 
-                            if (! checklen(len, type))
+                            if (! checklen(len, mtype))
                                 return false;
 
                             if (len == 3)
                             {
-                                midibpm tt = midibpm(read_byte());  // unsigned
-                                tt = (tt * 256) + midibpm(read_byte());
-                                tt = (tt * 256) + midibpm(read_byte());
+                                midibyte bt[3];
+                                bt[0] = read_byte();                // tt
+                                bt[1] = read_byte();                // tt
+                                bt[2] = read_byte();                // tt
 
                                 /*
-                                 * If valid, set.  Bad tempos do occur, and
-                                 * stick around, munging exported songs.
+                                 * If valid, set.  Bad tempos occur and stick
+                                 * around, munging exported songs.  We log
+                                 * only the first tempo officially; the rest
+                                 * are stored as events if in the first track.
                                  */
 
+                                double tt = tempo_us_from_bytes(bt);
                                 if (tt > 0)
                                 {
+                                    static bool gotfirst = false;
                                     if (curtrack == 0)
                                     {
                                         midibpm bpm = bpm_from_tempo_us(tt);
-                                        p.set_beats_per_minute(bpm);
-                                        p.us_per_quarter_note(int(tt));
+                                        if (! gotfirst)
+                                        {
+                                            gotfirst = true;
+                                            p.set_beats_per_minute(bpm);
+                                            p.us_per_quarter_note(int(tt));
+
+                                            /*
+                                             * MAY CHANGE DURING PLAYBACK.
+                                             */
+
+                                            seq.us_per_quarter_note(int(tt));
+                                        }
                                     }
-                                    seq.us_per_quarter_note(int(tt));
+
+                                    bool ok = e.append_meta_data(mtype, bt, 3);
+                                    if (ok)
+                                        seq.append_event(e);    /* new 0.93 */
                                 }
                             }
                             else
@@ -907,7 +897,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                         case 0x03:                      /* Track name       */
 
-                            if (! checklen(len, type))
+                            if (! checklen(len, mtype))
                                 return false;
 
                             if (len > SEQ64_TRACKNAME_MAX)
@@ -922,7 +912,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                         case 0x00:                      /* sequence number  */
 
-                            if (! checklen(len, type))
+                            if (! checklen(len, mtype))
                                 return false;
 
                             seqnum = read_short();
@@ -930,7 +920,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                         default:
 
-                            if (! checklen(len, type))
+                            if (! checklen(len, mtype))
                                 return false;
 
                             for (int i = 0; i < int(len); ++i)
@@ -1445,6 +1435,28 @@ midifile::write_long (midilong x)
 }
 
 /**
+ *  Writes 3 bytes, each extracted from the long value and shifted rightward
+ *  down to byte size, using the write_byte() function.
+ *
+ *  This function is kind of the reverse of tempo_us_to_bytes() defined in the
+ *  calculations.cpp module.
+ *
+ * \warning
+ *      This code looks endian-dependent.
+ *
+ * \param x
+ *      The long value to be written to the MIDI file.
+ */
+
+void
+midifile::write_triple (midilong x)
+{
+    write_byte((x & 0x00FF0000) >> 16);
+    write_byte((x & 0x0000FF00) >> 8);
+    write_byte((x & 0x000000FF));
+}
+
+/**
  *  Writes 2 bytes, each extracted from the long value and shifted rightward
  *  down to byte size, using the write_byte() function.
  *
@@ -1599,6 +1611,45 @@ midifile::write_header (int numtracks)
     write_short(numtracks);                 /* number of tracks             */
     write_short(m_ppqn);                    /* parts per quarter note       */
     return numtracks > 0;
+}
+
+/**
+ *  Writes the initial or only tempo, occurring at the beginning of a MIDI
+ *  song.  Compare this function to midi_container::fill_time_sig_and_tempo().
+ *
+ * \param start_tempo
+ *      The beginning tempo value.
+ */
+
+void
+midifile::write_start_tempo (midibpm start_tempo)
+{
+    write_byte(0x00);                       /* delta time at beginning      */
+    write_short(0xFF51);
+    write_byte(0x03);                       /* message length, must be 3    */
+    write_triple(midilong(60000000.0 / start_tempo));
+}
+
+/**
+ *  Writes the main time signature, in a more simplistic manner than
+ *  midi_container::fill_time_sig_and_tempo().
+ *
+ * \param beatsperbar
+ *      The numerator of the time signature.
+ *
+ * \param beatwidth
+ *      The denominator of the time signature.
+ */
+
+void
+midifile::write_time_sig (int beatsperbar, int beatwidth)
+{
+    write_byte(0x00);                       /* delta time at beginning      */
+    write_short(0xFF58);
+    write_byte(0x04);                       /* the message length           */
+    write_byte(beatsperbar);                /* nn                           */
+    write_byte(beat_log2(beatwidth));       /* dd                           */
+    write_short(0x1808);                    /* cc bb                        */
 }
 
 /**

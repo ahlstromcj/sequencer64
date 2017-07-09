@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-07
+ * \updates       2017-07-08
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_event
@@ -115,10 +115,10 @@ editable_event::sm_meta_event_names [] =
     { 0x00, "Sequence number"           },
     { 0x01, "Text event"                },
     { 0x02, "Copyright notice"          },
-    { 0x03, "Track name"                },
+    { 0x03, "Track name"                },      // FF 03 len text
     { 0x04, "Instrument name"           },
     { 0x05, "Lyrics"                    },
-    { 0x06, "Marker"                    },
+    { 0x06, "Marker"                    },      // FF 06 len text
     { 0x07, "Cue point"                 },
     { 0x08, "Program name"              },
     { 0x09, "Device name"               },
@@ -131,11 +131,12 @@ editable_event::sm_meta_event_names [] =
     { 0x20, "MIDI channel"              },      // obsolete in MIDI
     { 0x21, "MIDI port"                 },      // obsolete in MIDI
     { 0x2F, "End of track"              },
-    { 0x51, "Set tempo"                 },
-    { 0x54, "SMPTE offset"              },
-    { 0x58, "Time signature"            },
-    { 0x59, "Key signature"             },
+    { 0x51, "Set tempo"                 },      // FF 51 03 tt tt tt
+    { 0x54, "SMPTE offset"              },      // FF 54 05 hh mm ss fr ff
+    { 0x58, "Time signature"            },      // FF 58 04 nn dd cc bb
+    { 0x59, "Key signature"             },      // FF 59 02 sf mi
     { 0x7F, "Sequencer specific"        },      // includes seq24 prop values
+    { 0xFF, "Illegal meta event"        },      // indicator of problem
     { SEQ64_END_OF_MIDIBYTE_TABLE, ""   }       // terminator
 };
 
@@ -269,35 +270,13 @@ editable_event::name_to_value
     return result;
 }
 
-/*
- * We will get the default controller name from the controllers module.
- * We should also be able to look up the selected buss's entries for a
- * sequence, and load up the CC/name pairs on the fly.
- */
-
-/**
- *  This constructor simply initializes all of the class members.
- *
- *  editable_event::editable_event ()
- *   :
- *      event               (),
- *      m_category          (category_name),
- *      m_name_category     (),
- *      m_format_timestamp  (timestamp_measures),
- *      m_name_timestamp    (),
- *      m_name_status       (),
- *      m_name_meta         (),
- *      m_name_seqspec      (),
- *      m_name_channel      (),
- *      m_name_data         ()
- *  {
- *      // Empty body
- *  }
- *
- */
-
 /**
  *  Principal constructor.
+ *
+ *  The default constructor is hidden and unimplemented.  We will get the
+ *  default controller name from the controllers module.  We should also be
+ *  able to look up the selected buss's entries for a sequence, and load up
+ *  the CC/name pairs on the fly.
  *
  * \param parent
  *      Provides the overall editable-events object that manages the whole set
@@ -414,7 +393,7 @@ editable_event::operator = (const editable_event & rhs)
 /**
  * \setter m_category by value
  *      Also keeps the m_name_category member in synchrony.  Note that a bad
- *      value is translated to the value of category_name.
+ *      value is translated to the enum value category_name.
  *
  * \param c
  *      Provides the category value to set.
@@ -428,7 +407,9 @@ editable_event::category (category_t c)
     else
         m_category = category_name;
 
-    m_name_category = value_to_name(c, category_name);
+    std::string name = value_to_name(c, category_name);
+    if (! name.empty())
+        m_name_category = name;
 }
 
 /**
@@ -683,17 +664,35 @@ editable_event::analyze ()
         }
         m_name_data = std::string(tmp);
     }
-    else if (status >= EVENT_MIDI_SYSEX)    //  && status <= EVENT_MIDI_RESET
+    else if (status >= EVENT_MIDI_SYSEX)
     {
-        category(category_system_message);
-
         /*
-         * Get system message name (e.g. "SysEx start");
+         * \new ca 2017-07-05
+         *  The 0xFF byte represents a Meta event, not a Reset event, when
+         *  we're dealing with data from a MIDI file, as we are here. And we
+         *  need to get the next byte after the status byte.
          */
 
-        m_name_status = value_to_name(status, category_system_message);
-        m_name_channel.clear();
-        m_name_data.clear();
+        if (status == EVENT_MIDI_META)      /* value == EVENT_MIDI_RESET    */
+        {
+            midibyte metatype = get_channel();  /* \tricky */
+            category(category_meta_event);
+            m_name_status = value_to_name(metatype, category_meta_event);
+            m_name_channel.clear();
+            m_name_data.clear();
+        }
+        else
+        {
+            category(category_system_message);
+
+            /*
+             * Get system message name (e.g. "SysEx start");
+             */
+
+            m_name_status = value_to_name(status, category_system_message);
+            m_name_channel.clear();
+            m_name_data.clear();
+        }
     }
     else
     {

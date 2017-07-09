@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-02-23
+ * \updates       2017-07-03
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -70,7 +70,7 @@
  */
 
 #include <cctype>                       /* std::isspace(), std::isdigit()   */
-#include <math.h>                       /* C::floor()                       */
+#include <math.h>                       /* C::floor(), C::log()             */
 #include <stdlib.h>                     /* C::atoi(), C::strtol()           */
 #include <time.h>                       /* C::strftime()                    */
 
@@ -812,6 +812,52 @@ zoom_power_of_2 (int ppqn)
             result = SEQ64_MAXIMUM_ZOOM;
     }
     return result;
+}
+
+/**
+ *  Internal function for simple calculation of a power of 2 without a lot of
+ *  math.  Use for calculating the denominator of a time signature.
+ *
+ * \param logbase2
+ *      Provides the power to which 2 is to be raised.  This integer is
+ *      probably only rarely greater than 4 (which represents a denominator of
+ *      16).
+ *
+ * \return
+ *      Returns 2 raised to the logbase2 power.
+ */
+
+long
+beat_pow2 (int logbase2)
+{
+    long result;
+    if (logbase2 == 0)
+        result = 1;
+    else
+    {
+        result = 2;
+        for (int c = 1; c < logbase2; ++c)
+            result *= 2;
+    }
+    return result;
+}
+
+/**
+ *  Calculates the base-2 log of a number. This number is truncated to an
+ *  integer byte value, as it is used in calculating values to be written to a
+ *  MIDI file.
+ *
+ * \param value
+ *      The integer value for which log2(value) is needed.
+ *
+ * \return
+ *      Returns log2(value).
+ */
+
+midibyte
+beat_log2 (int value)
+{
+    return midibyte(log(double(value)) / log(2.0));
 }
 
 /**

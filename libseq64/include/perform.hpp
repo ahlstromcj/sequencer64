@@ -1062,7 +1062,7 @@ public:
      *      beats/measure in the JACK assistant object.
      */
 
-    void set_beats_per_bar (midibpm bpm)
+    void set_beats_per_bar (int bpm)
     {
         m_beats_per_bar = bpm;
 #ifdef SEQ64_JACK_SUPPORT

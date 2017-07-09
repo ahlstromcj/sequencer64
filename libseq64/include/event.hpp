@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-26
+ * \updates       2017-07-08
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -36,6 +36,10 @@
  *  so that we can manage "editable events".
  *
  *  Note the new inline free function is_note_off_velocity().
+ *
+ *  One thing we need to add to this event class is a way to encapsulate
+ *  Meta events.  First, we use the existing event::SysexContainer to hold
+ *  this data.
  */
 
 #include <string>                       /* used in to_string()          */
@@ -125,10 +129,19 @@ const midibyte EVENT_MIDI_RESET          = 0xFF;      // not used in seq24
 
 /**
  *  0xFF is a MIDI "escape code" used in MIDI files to introduce a MIDI meta
- *  event.
+ *  event.  Note that it has the same code (0xFF) as the Reset message, but
+ *  the Meta message is read from a MIDI file, while the Reset message is sent
+ *  to the sequencer by other MIDI participants.
  */
 
 const midibyte EVENT_MIDI_META         = 0xFF;      // an escape code
+
+/**
+ *  As a "type" ("channel" value for a Meta event, 0xFF indicates an illegal
+ *  meta type.
+ */
+
+const midibyte EVENT_META_ILLEGAL      = 0xFF;      // a problem code
 
 /**
  *  This value of 0xFF is Sequencer64's channel value that indicates that
@@ -194,7 +207,9 @@ class event
 public:
 
     /**
-     *  Provides a type definition for a vector of midibytes.
+     *  Provides a type definition for a vector of midibytes.  This type will
+     *  also hold the generally small amounts of data needed for Meta events,
+     *  but doesn't help us encapsulate derived values, such as tempo.
      */
 
     typedef std::vector<midibyte> SysexContainer;
@@ -215,6 +230,11 @@ private:
      *  added back on the MIDI bus upon playback.  The high nybble = type of
      *  event; The low nybble = channel.  Bit 7 is present in all status
      *  bytes.
+     *
+     *  Note that, for status values of 0xF0 (Sysex) or 0xFF (Meta), special
+     *  handling of the event can occur.  We would like to eventually use
+     *  inheritance to keep the event class simple.  For now, search for
+     *  "tempo" and "sysex" to tease out their implementations. Sigh.
      */
 
     midibyte m_status;
@@ -224,6 +244,11 @@ private:
      *  we need to store the channel, even if we override it when playing the
      *  MIDI data.  This member adds another 4 bytes to the event object, most
      *  likely.
+     *
+     *  Overload:  For Meta events, where is_meta() is true, this value holds
+     *  the type of Meta event. See the editable_event::sm_meta_event_names[]
+     *  array.  Note that EVENT_META_ILLEGAL (0xFF) indicates and illegal Meta
+     *  event.
      */
 
     midibyte m_channel;
@@ -238,13 +263,15 @@ private:
 
     /**
      *  The data buffer for SYSEX messages.  Adapted from Stazed's Seq32
-     *  project on GitHub.
+     *  project on GitHub.  This object will also hold the generally small
+     *  amounts of data needed for Meta events.
      */
 
     SysexContainer m_sysex;
 
     /**
-     *  Gives the size of the SYSEX message.  Perhaps redundant.
+     *  Gives the size of the SYSEX message.  Perhaps redundant.  Now also
+     *  applies to meta events.
      */
 
     int m_sysex_size;
@@ -687,6 +714,7 @@ public:
 
     bool append_sysex (midibyte * data, int len);
     bool append_sysex (midibyte data);
+    bool append_meta_data (midibyte metatype, midibyte * data, int len);
     void restart_sysex ();
 
     /**
@@ -984,7 +1012,7 @@ public:
      *  the channel.
      */
 
-    bool is_one_byte ()
+    bool is_one_byte () const
     {
         return is_one_byte_msg(m_status);   // && 0xF0);
     }
@@ -996,10 +1024,42 @@ public:
      *  the channel.
      */
 
-    bool is_two_bytes ()
+    bool is_two_bytes () const
     {
         return is_two_byte_msg(m_status);   // && 0xF0);
     }
+
+    /**
+     *  Indicates if the event is a System Exclusive event or not.
+     *  We're overloading the SysEx support to handle Meta events as well.
+     *  Perhaps we need to split this support out at some point.
+     */
+
+    bool is_sysex () const
+    {
+        return m_status == EVENT_MIDI_SYSEX;
+    }
+
+    /**
+     *  Indicates if the event is a Meta event or not.
+     *  We're overloading the SysEx support to handle Meta events as well.
+     */
+
+    bool is_meta () const
+    {
+        return m_status == EVENT_MIDI_META;
+    }
+
+    /**
+     *  Indicates if the event is a tempo event.
+     */
+
+    bool is_tempo () const
+    {
+        return is_meta() && m_channel == 0x51;  /* sm_meta_event_names[] */
+    }
+
+    midibpm tempo () const;
 
     void print () const;
 

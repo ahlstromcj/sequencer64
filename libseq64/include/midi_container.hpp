@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-08-25
+ * \updates       2017-07-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -140,7 +140,7 @@ namespace seq64
             c_transpose
 \endverbatim
  *
- * Footer ("proprietary") data:
+ * Footer ("proprietary", whole-song) data:
  *
 \verbatim
             c_midictrl
@@ -150,6 +150,7 @@ namespace seq64
             c_mutegroups
             c_perf_bp_mes (perfedit's beats-per-measure setting)
             c_perf_bw     (perfedit's beat-width setting)
+            c_tempo_map   (seq32's tempo map)
 \endverbatim
  *
  *  Also see the PDF file in the following project for more information about
@@ -199,6 +200,7 @@ const midilong c_backsequence = 0x24240013; /**< Track background sequence. */
 const midilong c_transpose =    0x24240014; /**< Track transpose value.     */
 const midilong c_perf_bp_mes =  0x24240015; /**< Perfedit beats/measure.    */
 const midilong c_perf_bw     =  0x24240016; /**< Perfedit beat-width.       */
+const midilong c_tempo_map   =  0x24240017; /**< Reserve seq32 tempo map.   */
 
 /**
  *    This class is the abstract base class for a container of MIDI track

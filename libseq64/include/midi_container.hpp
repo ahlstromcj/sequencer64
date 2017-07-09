@@ -28,9 +28,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2017-07-01
+ * \updates       2017-07-09
  * \license       GNU GPLv2 or above
  *
+ *  This class is meant to hold the bytes that represent MIDI events and other
+ *  MIDI data, which can then be dumped to a MIDI file.
  */
 
 #include <cstddef>                      /* std::size_t          */
@@ -322,6 +324,7 @@ private:
     void add_long (midipulse x);
     void add_short (midishort x);
     void add_event (const event & e, midipulse deltatime);
+    void add_ex_event (const event & e, midipulse deltatime);
     void fill_seq_number (int seq);
     void fill_seq_name (const std::string & name);
     void fill_meta_track_end (midipulse deltatime);
@@ -333,7 +336,7 @@ private:
         const trigger & trig, midipulse len, midipulse prev_timestamp
     );
 
-};
+};          // class midi_container
 
 }           // namespace seq64
 

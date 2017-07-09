@@ -503,7 +503,8 @@ midifile::checklen (midilong len, midibyte type)
     bool result = len <= SEQ64_VARLENGTH_MAX;               /* 0x0FFFFFFF */
     if (result)
     {
-        if (len == 0)
+        result = len > 0;
+        if (! result)
         {
             char m[40];
             snprintf(m, sizeof m, "0 data length for meta type 0x%02X", type);

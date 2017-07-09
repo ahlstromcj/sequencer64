@@ -275,6 +275,41 @@ This file documents (belatedly) GitHub issues raised and pull-requests made.
  *  83 jean-emmanuel : [Pull request] Pattern panel scrollbars.
     I cannot resize my version, so some code from j-e might be missing?
 
+ *  86 sirjohndfox : Any mechanism for live pattern control?
+
+ *  88 jean-emmanuel : [Jack Transport] Seq64 does not reposition JACK
+    transport.
+
+ *  89 Animtim : underlinking issues
+
+ *  90 yousefamar : resizing notes not possible in fruity mode
+
+ *  91 ahlstromcj : need help testing variset....
+
+ *  92 milkmiruku : indep mainwids issue.
+
+    The default arrangement of set 0 as the top set, 1 as middle and 3 as
+    bottom seems sensible, though scrolling up to increase the visible set
+    number feels the wrong direction.
+
+    On load, the gray box around the second and third setviews does not appear
+    until the set is changed to 0.
+
+    The "Set 2" etc. text is aligned slightly to far to the right.
+
+    If I set the first setview to set 1, which makes it "[active]", then
+    change the second setview to 1, it gets the same title (including
+    "[active]"), then I change setview 1 to set 0, the second setview with 1
+    still has the "[active]" text. Moving that setview away from one and back
+    updates it to not have "[active]".
+
+    The first indep mainwind set number input wraps around to 0 after 20. The
+    other two stop at 31.
+
+ *  93 milkmiruku : [Feature request] pattern color/grouping
+
+ *  94 milkmiruku : [Feature request] set management - naming and reordering
+
 Upgrades:
 
     -o, --options:

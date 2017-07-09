@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-08-25
+ * \updates       2017-07-09
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -127,45 +127,77 @@ midi_container::add_short (midishort x)
 }
 
 /**
- *  Adds an event to the container.  If the sequence's MIDI channel is
+ *  Adds an event to the container.  It handles regular MIDI events separately
+ *  from "extended" (our term) MIDI events (SysEx and Meta events).
+ *
+ *  For normal MIDI events, if the sequence's MIDI channel is
  *  EVENT_NULL_CHANNEL == 0xFF, then it is the copy of an SMF 0 sequence that
  *  the midi_splitter created.  We want to be able to save it along with the
  *  other tracks, but won't be able to read it back if all the channels are
  *  bad.  So we just use the channel from the event.
+ *
+ *  SysEx and Meta events are detected and passed to the new add_ex_event()
+ *  function for proper dumping.
  */
 
 void
 midi_container::add_event (const event & e, midipulse deltatime)
 {
-    midibyte d0 = e.data(0);                    /* encode status & data */
-    midibyte d1 = e.data(1);
+    if (e.is_ex_data())
+    {
+        add_ex_event(e, deltatime);
+    }
+    else
+    {
+        midibyte d0 = e.data(0);                    /* encode status & data */
+        midibyte d1 = e.data(1);
+        midibyte channel = m_sequence.get_midi_channel();
+        add_variable(deltatime);                    /* encode delta_time    */
+        if (channel == EVENT_NULL_CHANNEL)
+            put(e.get_status() | e.get_channel());  /* channel from event   */
+        else
+            put(e.get_status() | channel);          /* the sequence channel */
+
+        switch (e.get_status() & EVENT_CLEAR_CHAN_MASK)         /* 0xF0 */
+        {
+        case EVENT_NOTE_OFF:                                    /* 0x80 */
+        case EVENT_NOTE_ON:                                     /* 0x90 */
+        case EVENT_AFTERTOUCH:                                  /* 0xA0 */
+        case EVENT_CONTROL_CHANGE:                              /* 0xB0 */
+        case EVENT_PITCH_WHEEL:                                 /* 0xE0 */
+            put(d0);
+            put(d1);
+            break;
+
+        case EVENT_PROGRAM_CHANGE:                              /* 0xC0 */
+        case EVENT_CHANNEL_PRESSURE:                            /* 0xD0 */
+            put(d0);
+            break;
+
+        default:
+            break;
+        }
+    }
+}
+
+/**
+ *  Adds the bytes of a SysEx or Meta MIDI event.
+ *
+ * \param e
+ *      Provides the MIDI event to add.  The caller must ensure that this is
+ *      either SysEx or Meta event, using the event::is_ex_data() function.
+ */
+
+void
+midi_container::add_ex_event (const event & e, midipulse deltatime)
+{
+    // CURRENTLY DOES NOTHING, as a test.
+
+#ifdef THIS_CODE_IS_ENABLED
     add_variable(deltatime);                    /* encode delta_time    */
 
-    midibyte channel = m_sequence.get_midi_channel();
-    if (channel == EVENT_NULL_CHANNEL)
-        put(e.get_status() | e.get_channel());  /* channel from event   */
-    else
-        put(e.get_status() | channel);          /* the sequence channel */
-
-    switch (e.get_status() & EVENT_CLEAR_CHAN_MASK)         /* 0xF0     */
-    {
-    case EVENT_NOTE_OFF:                                    /* 0x80     */
-    case EVENT_NOTE_ON:                                     /* 0x90     */
-    case EVENT_AFTERTOUCH:                                  /* 0xA0     */
-    case EVENT_CONTROL_CHANGE:                              /* 0xB0     */
-    case EVENT_PITCH_WHEEL:                                 /* 0xE0     */
-        put(d0);
-        put(d1);
-        break;
-
-    case EVENT_PROGRAM_CHANGE:                              /* 0xC0     */
-    case EVENT_CHANNEL_PRESSURE:                            /* 0xD0     */
-        put(d0);
-        break;
-
-    default:
-        break;
-    }
+    //  Then add the actual event bytes.
+#endif
 }
 
 /**
@@ -576,8 +608,12 @@ midi_container::song_fill_seq_trigger
  *
  * Meta and SysEx Events:
  *
- *      TODO TODO TODO
- *      We need to be able to detect these events and add them.
+ *      These events can now be detected and added to the list of bytes to
+ *      dump.  However, historically Seq24 has forced Time Signature and Set
+ *      Tempo events to be written to the container, and has ignored these
+ *      events (after the first occurrence).  So we need to figure out what to
+ *      do here yet; we need to distinguish between forcing these events and
+ *      them being part of the edit.
  *
  * \threadunsafe
  *      The sequence object bound to this container needs to provide the

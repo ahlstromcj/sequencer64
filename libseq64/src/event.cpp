@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-08
+ * \updates       2017-07-09
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -456,8 +456,9 @@ event::append_sysex (midibyte data)
 }
 
 /**
- *  Prints out the timestamp, data size, the current status byte, any SYSEX
- *  data if present, or the two data bytes for the status byte.
+ *  Prints out the timestamp, data size, the current status byte, channel
+ *  (which is the type value for Meta events), any SysEx or
+ *  Meta data if present, or the two data bytes for the status byte.
  */
 
 void
@@ -465,15 +466,17 @@ event::print () const
 {
     printf
     (
-        "[%06ld] [%04d] %02X ",
-        m_timestamp, m_sysex_size, unsigned(m_status)
+        "[%06ld] status %02X chan/type %02X ",
+        m_timestamp, unsigned(m_status), unsigned(m_channel)
     );
-    if (m_status == EVENT_MIDI_SYSEX)
+    if (is_sysex() || is_meta())
     {
+        bool use_linefeeds = m_sysex_size > 8;
+        printf("ex[%d]:   ", m_sysex_size);
         for (int i = 0; i < m_sysex_size; ++i)
         {
-            if (i % 16 == 0)
-                printf("\n    ");
+            if (use_linefeeds && (i % 16) == 0)
+                printf("\n         ");
 
             printf("%02X ", m_sysex[i]);
         }
@@ -481,7 +484,7 @@ event::print () const
     }
     else
     {
-        printf("%02X %02X\n", m_data[0], m_data[1]);
+        printf("data[2]: %02X %02X\n", m_data[0], m_data[1]);
     }
 }
 

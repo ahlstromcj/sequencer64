@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2017-03-21
+ * \updates       2017-07-09
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_events
@@ -142,13 +142,14 @@ editable_events::add (const event & e)
 }
 
 /**
- *  Adds an editable event to the internal event list.
+ *  Adds an editable event to the internal event list.  For the std::multimap
+ *  implementation, this is an option if we want to make sure the insertion
+ *  succeed:
  *
- *  For the std::multimap implementation, This is an option if we want to make
- *  sure the insertion succeed.
- *
+\verbatim
  *      std::pair<Events::iterator, bool> result = m_events.insert(p);
  *      return result.second;
+\endverbatim
  *
  * \param e
  *      Provides the regular event to be added to the list of editable events.
@@ -187,7 +188,7 @@ editable_events::add (const editable_event & e)
 
     m_events.push_front(e);
     bool result = m_events.size() == (count + 1);
-    
+
 #endif  // SEQ64_USE_EVENT_MAP
 
     return result;
@@ -213,6 +214,7 @@ editable_events::load_events ()
 {
     bool result;
     int original_count = m_sequence.events().count();
+
     for
     (
         event_list::const_iterator ei = m_sequence.events().begin();
@@ -223,10 +225,20 @@ editable_events::load_events ()
             break;
     }
     result = count() == original_count;
+#ifndef SEQ64_USE_EVENT_MAP
+    if (result)
+        m_events.sort();
+
+#endif
 
 #ifdef USE_VERIFY_AND_LINK                  /* not yet ready */
     if (result && count() > 1)
         m_events.verify_and_link();
+#endif
+
+#ifdef PLATFORM_DEBUG_TMI
+    m_sequence.events().print();
+    print();
 #endif
 
     return result;
@@ -266,6 +278,18 @@ editable_events::save_events ()
     return result;
 }
 
+/**
+ *  Prints a list of the currently-held events.  Useful for debugging.
+ */
+
+void
+editable_events::print () const
+{
+    printf("editable_events[%d]:\n", count());
+    for (Events::const_iterator i = m_events.begin(); i != m_events.end(); ++i)
+        dref(i).print();
+}
+
 #ifdef USE_VERIFY_AND_LINK                  /* not yet ready */
 
 /*
@@ -301,7 +325,7 @@ editable_events::clear_links ()
  */
 
 void
-event_list::verify_and_link (midipulse slength)
+editable_events::verify_and_link (midipulse slength)
 {
     clear_links();
     for (event_list::iterator on = m_events.begin(); on != m_events.end(); on++)
@@ -366,7 +390,7 @@ event_list::verify_and_link (midipulse slength)
  */
 
 void
-event_list::mark_all ()
+editable_events::mark_all ()
 {
     for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
         dref(i).mark();
@@ -377,7 +401,7 @@ event_list::mark_all ()
  */
 
 void
-event_list::unmark_all ()
+editable_events::unmark_all ()
 {
     for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
         dref(i).unmark();
@@ -400,7 +424,7 @@ event_list::unmark_all ()
  */
 
 void
-event_list::mark_out_of_range (midipulse slength)
+editable_events::mark_out_of_range (midipulse slength)
 {
     for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {

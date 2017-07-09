@@ -206,6 +206,7 @@ event_list::append (const event & e)
 #else
     EventsPair p = std::make_pair<event_key, event>(key, e);
 #endif
+
     m_events.insert(p);                 /* std::multimap operation  */
 
 #else
@@ -664,31 +665,15 @@ event_list::unselect_all ()
 }
 
 /**
- *  Prints a list of the currently-held events.
+ *  Prints a list of the currently-held events.  Useful for debugging.
  */
 
 void
 event_list::print () const
 {
-    printf("events[%lud]\n\n", (unsigned long)(m_events.size()));
+    printf("events[%d]:\n", count());
     for (Events::const_iterator i = m_events.begin(); i != m_events.end(); ++i)
         dref(i).print();
-
-    printf("events[%d]\n\n", count());
-}
-
-/**
- * TEMPORARILY HERE for gdb.
- *
- */
-void 
-event_list::sort ()
-{
-#ifdef SEQ64_USE_EVENT_MAP
-    // we need nothin' for sorting a multimap
-#else
-    m_events.sort();
-#endif
 }
 
 }           // namespace seq64

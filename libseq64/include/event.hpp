@@ -1051,6 +1051,15 @@ public:
     }
 
     /**
+     *  Indicates if we need to use extended data (SysEx or Meta).
+     */
+
+    bool is_ex_data () const
+    {
+        return m_status == EVENT_MIDI_META || m_status == EVENT_MIDI_SYSEX;
+    }
+
+    /**
      *  Indicates if the event is a tempo event.
      */
 

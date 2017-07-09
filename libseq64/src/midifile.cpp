@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-08
+ * \updates       2017-07-09
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -671,9 +671,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                     e.set_data(d0, d1);                   /* set data and add */
 
                     /*
-                     * We will replace seq.add_event() with
-                     * seq.append_event().  The latter won't bother sorting
-                     * events; they'll be sorted after we get them all.
+                     * Replaced seq.add_event() with seq.append_event().  The
+                     * latter doesn't sort events; we sort after we get them
+                     * all.
                      */
 
                     seq.append_event(e);                  /* does not sort    */
@@ -1018,6 +1018,11 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                 seq.set_length();               /* final verify_and_link    */
                 p.add_sequence(&seq, preferred_seqnum);
             }
+
+#ifdef PLATFORM_DEBUG_TMI
+            seq.print();
+#endif
+
         }
         else
         {

@@ -338,7 +338,19 @@ public:
     }
 
     void merge (event_list & el, bool presort = true);
-    void sort ();
+
+    /**
+     *  Sorts the event list; active only for the std::list implementation.
+     */
+
+    void sort ()
+    {
+#ifdef SEQ64_USE_EVENT_MAP
+        // we need nothin' for sorting a multimap
+#else
+        m_events.sort();
+#endif
+    }
 
     /**
      *  Dereference access for list or map.

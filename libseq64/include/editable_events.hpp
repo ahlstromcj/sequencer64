@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2017-04-30
+ * \updates       2017-07-09
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -325,6 +325,8 @@ public:
     {
         return cit != m_events.end();
     }
+
+    void print () const;
 
 private:
 

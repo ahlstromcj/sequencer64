@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-13
+ * \updates       2017-07-09
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1048,15 +1048,6 @@ sequence::play (midipulse end_tick, bool playback_mode)
         {
             event & er = DREF(e);
             midipulse stamp = er.get_timestamp() + offset_base;
-
-#if 0
-            printf
-            (
-                "stamp = %ld; start = %ld; end = %ld\n",
-                stamp, start_tick_offset, end_tick_offset
-            );
-#endif
-
             if (stamp >= start_tick_offset && stamp <= end_tick_offset)
             {
 #ifdef SEQ64_STAZED_TRANSPOSE
@@ -2389,7 +2380,7 @@ sequence::paste_selected (midipulse tick, int note)
 #else
 
         m_events.merge(clipbd, false);          /* don't presort clipboard  */
-        m_events.sort();                        /* uh, does nothing in map  */
+        m_events.sort();                        /* does nothing in map      */
 
 #endif      // SEQ64_USE_EVENT_MAP
 
@@ -4403,6 +4394,7 @@ sequence::set_midi_channel (midibyte ch, bool user_change)
 void
 sequence::print () const
 {
+    printf("Seq %d '%s':\n", number(), name().c_str());
     m_events.print();
 }
 

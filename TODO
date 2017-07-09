@@ -1,11 +1,15 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-06-30
+2016-12-03 to 2017-07-09
 
 Debian packaging:
 
     *   Need a Sequencer64-debian project to hold packages for convenience.
     -   Update documentation for the build processes.
+
+Tempo Track:
+
+    -   Need to get event editor to display, insert, or update Meta data.
 
 Rtmidi implementation issues to work out:
 

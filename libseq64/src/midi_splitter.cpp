@@ -25,9 +25,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-24
- * \updates       2017-06-03
+ * \updates       2017-07-09
  * \license       GNU GPLv2 or above
  *
+ *  We have recently updated this module to put Set Tempo events into the
+ *  first track (channel 0).
  */
 
 #include <fstream>
@@ -144,6 +146,7 @@ midi_splitter::log_main_sequence (sequence & seq, int seqnum)
     bool result;
     if (is_nullptr(m_smf0_main_sequence))
     {
+        seq.sort_events();
         m_smf0_main_sequence = &seq;
         m_smf0_seq_number = seqnum;
         infoprint("SMF 0 main sequence logged");
@@ -224,8 +227,9 @@ midi_splitter::split (perform & p, int screenset)
 }
 
 /**
- *  This function splits the given sequence into new sequences, one for each
- *  channel found in the SMF 0 track.
+ *  This function splits the given sequence into a new sequence, for the given
+ *  channel found in the SMF 0 track.  It is called for each possible channel,
+ *  resulting in multiple passes over the SMF 0 track.
  *
  *  Note that the events that are read from the MIDI file have delta times.
  *  Sequencer64 converts these delta times to cumulative times.    We
@@ -253,7 +257,9 @@ midi_splitter::split (perform & p, int screenset)
  *
  * \param channel
  *      Provides the MIDI channel number (re 0) that marks the channel data
- *      the needs to be extracted and added to the new sequence.
+ *      the needs to be extracted and added to the new sequence.  If this
+ *      channel is 0, then we need to add certain Meta events to this
+ *      sequence, as well.  So far we support only Tempo Meta events.
  *
  * \return
  *      Returns true if at least one event got added.   If none were added,
@@ -293,7 +299,16 @@ midi_splitter::split_channel
     for (event_list::const_iterator i = evl.begin(); i != evl.end(); ++i)
     {
         const event & er = DREF(i);
-        if (er.check_channel(channel))
+        if (er.is_ex_data())
+        {
+            if (channel == 0 || er.is_sysex())
+            {
+                length_in_ticks = er.get_timestamp();
+                if (s->add_event(er))
+                    result = true;          /* an event got added               */
+            }
+        }
+        else if (er.check_channel(channel))
         {
             length_in_ticks = er.get_timestamp();
             if (s->add_event(er))
@@ -302,10 +317,12 @@ midi_splitter::split_channel
     }
 
     /*
-     * No triggers to add.  Whew!  And setting the length is now a no-brainer.
+     * No triggers to add.  Whew!  And setting the length is now a no-brainer,
+     * since the tick value is that of the last logged event in the sequence.
      */
 
     s->set_length(length_in_ticks);
+    s->sort_events();
     return result;
 }
 

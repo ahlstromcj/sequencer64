@@ -70,9 +70,9 @@ editable_event::sm_channel_event_names [] =
     { (unsigned short)(EVENT_NOTE_OFF),         "Note Off"          },  // 0x80
     { (unsigned short)(EVENT_NOTE_ON),          "Note On"           },  // 0x90
     { (unsigned short)(EVENT_AFTERTOUCH),       "Aftertouch"        },  // 0xA0
-    { (unsigned short)(EVENT_CONTROL_CHANGE),   "Control Change"    },  // 0xB0
-    { (unsigned short)(EVENT_PROGRAM_CHANGE),   "Program Change"    },  // 0xC0
-    { (unsigned short)(EVENT_CHANNEL_PRESSURE), "Channel Pressure"  },  // 0xD0
+    { (unsigned short)(EVENT_CONTROL_CHANGE),   "Control"           },  // 0xB0
+    { (unsigned short)(EVENT_PROGRAM_CHANGE),   "Program"           },  // 0xC0
+    { (unsigned short)(EVENT_CHANNEL_PRESSURE), "Ch Pressure"       },  // 0xD0
     { (unsigned short)(EVENT_PITCH_WHEEL),      "Pitch Wheel"       },  // 0xE0
     { SEQ64_END_OF_MIDIBYTE_TABLE,              ""                  }   // end
 };
@@ -131,7 +131,7 @@ editable_event::sm_meta_event_names [] =
     { 0x20, "MIDI channel"              },      // obsolete in MIDI
     { 0x21, "MIDI port"                 },      // obsolete in MIDI
     { 0x2F, "End of track"              },
-    { 0x51, "Set tempo"                 },      // FF 51 03 tt tt tt
+    { 0x51, "Tempo"                     },      // FF 51 03 tt tt tt (set tempo)
     { 0x54, "SMPTE offset"              },      // FF 54 05 hh mm ss fr ff
     { 0x58, "Time signature"            },      // FF 58 04 nn dd cc bb
     { 0x59, "Key signature"             },      // FF 59 02 sf mi

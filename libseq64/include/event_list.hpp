@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-11-05
+ * \updates       2017-07-09
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -152,13 +152,31 @@ private:
     Events m_events;
 
     /**
-     *  A new flag to indicate if an event was added or removed.
-     *  We may need to give client code a way to reload the sequence.
-     *  This is currently an issue when a seqroll and an eventedit/eventslots
-     *  are active for the same sequence.
+     *  A flag to indicate if an event was added or removed.  We may need to
+     *  give client code a way to reload the sequence.  This is currently an
+     *  issue when a seqroll and an eventedit/eventslots are active for the
+     *  same sequence.
      */
 
     bool m_is_modified;
+
+    /**
+     *  A new flag to indicate that a tempo event has been added.  Legacy
+     *  behavior forces the tempo to be written to the track-0 sequence,
+     *  but we don't want to do that if the MIDI file (or the current event
+     *  list) contains a tempo event.
+     */
+
+    bool m_has_tempo;
+
+    /**
+     *  A new flag to indicate that a time-signature event has been added.
+     *  Legacy behavior forces the time-signature to be written to the track-0
+     *  sequence, but we don't want to do that if the MIDI file (or the
+     *  current event list) contains a time-signature event.
+     */
+
+    bool m_has_time_signature;
 
 public:
 
@@ -299,6 +317,24 @@ public:
     bool is_modified () const
     {
         return m_is_modified;
+    }
+
+    /**
+     * \getter m_has_tempo
+     */
+
+    bool has_tempo () const
+    {
+        return m_has_tempo;
+    }
+
+    /**
+     * \getter m_has_time_signature
+     */
+
+    bool has_time_signature () const
+    {
+        return m_has_time_signature;
     }
 
     /**

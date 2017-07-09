@@ -191,13 +191,15 @@ midi_container::add_event (const event & e, midipulse deltatime)
 void
 midi_container::add_ex_event (const event & e, midipulse deltatime)
 {
-    // CURRENTLY DOES NOTHING, as a test.
+    add_variable(deltatime);                    /* encode delta_time        */
+    put(e.get_status());                        /* indicates SysEx/Meta     */
+    if (e.is_meta())
+        put(e.get_channel());                   /* indicates meta type      */
 
-#ifdef THIS_CODE_IS_ENABLED
-    add_variable(deltatime);                    /* encode delta_time    */
-
-    //  Then add the actual event bytes.
-#endif
+    int count = e.get_sysex_size();             /* applies for meta, too    */
+    put(count);
+    for (int i = 0; i < count; ++i)
+        put(e.get_sysex()[i]);
 }
 
 /**
@@ -267,11 +269,28 @@ midi_container::fill_meta_track_end (midipulse deltatime)
 }
 
 /**
- *  Fill in the time-signature and tempo information.  This function is used
- *  only for the first track, and only for the first of these events,  The
- *  sizes of these meta events are defined as SEQ64_TIME_TEMPO_SIZE.  However,
- *  we do not have to add that value in, as it is already counted in the
- *  intrinsic size of the container.
+ *  Combines the two functions.  Legacy.  Deprecated. We need to fix.
+ */
+
+void
+midi_container::fill_time_sig_and_tempo
+(
+    const perform & p,
+    bool has_time_sig,
+    bool has_tempo
+)
+{
+    if (! has_tempo)
+        fill_tempo(p);
+
+    if (! has_time_sig)
+        fill_time_sig(p);
+}
+
+
+/**
+ *  Fill in the time-signature information.  This function is used only for
+ *  the first track, and only if no such event is in the track data.
  *
  *  We now make sure that the proper values are part of the perform object for
  *  usage in this particular track.  For export, we cannot guarantee that the
@@ -283,36 +302,49 @@ midi_container::fill_meta_track_end (midipulse deltatime)
  */
 
 void
-midi_container::fill_time_sig_and_tempo (const perform & p)
+midi_container::fill_time_sig (const perform & p)
 {
-    if (! rc().legacy_format())
-    {
-        int beatwidth = p.get_beat_width();
-        int usperqn = p.us_per_quarter_note();
-        int bpb = p.get_beats_per_bar();;
-        int cpm = p.clocks_per_metronome();
-        int get32pq = p.get_32nds_per_quarter();
-        int bw = log2_time_sig_value(beatwidth);
-        midibyte t[4];                              /* hold tempo bytes */
-        tempo_us_to_bytes(t, usperqn);
+    int beatwidth = p.get_beat_width();
+    int bpb = p.get_beats_per_bar();;
+    int cpm = p.clocks_per_metronome();
+    int get32pq = p.get_32nds_per_quarter();
+    int bw = log2_time_sig_value(beatwidth);
+    add_variable(0);                            /* delta time       */
+    put(0xFF);                                  /* meta event       */
+    put(0x58);                                  /* time sig event   */
+    put(0x04);                                  /* data length      */
+    put(bpb);
+    put(bw);
+    put(cpm);
+    put(get32pq);
+}
 
-        add_variable(0);                            /* delta time       */
-        put(0xFF);                                  /* meta event       */
-        put(0x58);                                  /* time sig event   */
-        put(0x04);                                  /* data length      */
-        put(bpb);
-        put(bw);
-        put(cpm);
-        put(get32pq);
+/**
+ *  Fill in the tempo information.  This function is used only for the first
+ *  track, and only if no such event is int the track data.
+ *
+ *  We now make sure that the proper values are part of the perform object for
+ *  usage in this particular track.  For export, we cannot guarantee that the
+ *  first (0th) track/sequence is exportable.
+ *
+ * \param p
+ *      Provides the performance object from which we get some global MIDI
+ *      parameters.
+ */
 
-        add_variable(0);                            /* delta time       */
-        put(0xFF);                                  /* meta event       */
-        put(0x51);                                  /* tempo event      */
-        put(0x03);                                  /* data length      */
-        put(t[2]);
-        put(t[1]);
-        put(t[0]);
-    }
+void
+midi_container::fill_tempo (const perform & p)
+{
+    midibyte t[4];                              /* hold tempo bytes */
+    int usperqn = p.us_per_quarter_note();
+    tempo_us_to_bytes(t, usperqn);
+    add_variable(0);                            /* delta time       */
+    put(0xFF);                                  /* meta event       */
+    put(0x51);                                  /* tempo event      */
+    put(0x03);                                  /* data length      */
+    put(t[2]);
+    put(t[1]);
+    put(t[0]);
 }
 
 /**
@@ -631,6 +663,7 @@ midi_container::song_fill_seq_trigger
 void
 midi_container::fill (int tracknumber, const perform & p)
 {
+    event_list evl = m_sequence.events();           /* used below */
     fill_seq_number(tracknumber);
     fill_seq_name(m_sequence.name());
 
@@ -640,17 +673,16 @@ midi_container::fill (int tracknumber, const perform & p)
      * track (sequence).  These events must precede any "real" MIDI events.
      * They are not included if the legacy-format option is in force.
      * We also need to skip this if tempo track support is in force.
-     *
-     * TODO TODO TODO
      */
 
-    if (tracknumber == 0)
-        fill_time_sig_and_tempo(p);
+    if (tracknumber == 0 && ! rc().legacy_format())
+    {
+        fill_time_sig_and_tempo(p, evl.has_time_signature(), evl.has_tempo());
+    }
 
     midipulse timestamp = 0;
     midipulse deltatime = 0;
     midipulse prevtimestamp = 0;
-    event_list evl = m_sequence.events();
     for (event_list::iterator i = evl.begin(); i != evl.end(); ++i)
     {
         event & er = DREF(i);

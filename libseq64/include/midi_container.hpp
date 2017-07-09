@@ -329,8 +329,18 @@ private:
     void fill_seq_name (const std::string & name);
     void fill_meta_track_end (midipulse deltatime);
     void fill_proprietary ();
-    void fill_time_sig_and_tempo (const perform & p);
-    midipulse song_fill_seq_event (const trigger & trig, midipulse prev_timestamp);
+    void fill_time_sig_and_tempo
+    (
+        const perform & p,
+        bool has_time_sig = false,
+        bool has_tempo    = false
+    );
+    void fill_time_sig (const perform & p);
+    void fill_tempo (const perform & p);
+    midipulse song_fill_seq_event
+    (
+        const trigger & trig, midipulse prev_timestamp
+    );
     void song_fill_seq_trigger
     (
         const trigger & trig, midipulse len, midipulse prev_timestamp

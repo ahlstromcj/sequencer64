@@ -1809,15 +1809,10 @@ midifile::write (perform & p)
 #endif
 
             /*
-             * The following function calls fill_container(), and adds only
-             * locking.  The locking should be in the container or in this
-             * midifile class, perhaps.  Done.
-             *
-             *      seq.fill_container(lst, curtrack);
-             *
-             * midi_container.fill() also handles the time-signature and tempo
-             * meta events.  All the events are put into the container, and then
-             * the container's bytes are written out below.
+             * midi_container::fill() also handles the time-signature and
+             * tempo meta events, if they are not part of the file's MIDI
+             * data.  All the events are put into the container, and then the
+             * container's bytes are written out below.
              */
 
             lst.fill(curtrack, p);
@@ -1965,8 +1960,14 @@ midifile::write_song (perform & p)
 
                 lst.fill_seq_number(track_number);
                 lst.fill_seq_name(seq.name());
-                if (track_number == 0)
-                    lst.fill_time_sig_and_tempo(p);
+                if (track_number == 0 && ! rc().legacy_format())
+                {
+                    lst.fill_time_sig_and_tempo
+                    (
+                        p, seq.events().has_time_signature(),
+                        seq.events().has_tempo()
+                    );
+                }
 
                 /*
                  * Add each trigger as described in the function banner.

@@ -399,7 +399,9 @@ event::append_sysex (midibyte * data, int dsize)
 
 /**
  *  Appends Meta-event data to a new buffer.  Similar to append_sysex(), but
- *  useful for holding the data for a Meta event.
+ *  useful for holding the data for a Meta event.  Please note that Meta
+ *  events and SysEx events shared the same "extended" data buffer that
+ *  originated to support SysEx.
  *
  * \warning
  *      Currently does not clear the "sysex" buffer first.

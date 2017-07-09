@@ -19,15 +19,17 @@
 /**
  * \file          event_list.cpp
  *
- *  This module declares/defines a class for handling
- *  MIDI events in a list container.
+ *  This module declares/defines a class for handling MIDI events in a list
+ *  container.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-09-10
+ * \updates       2017-07-09
  * \license       GNU GPLv2 or above
  *
+ *  This container now can indicate if certain Meta events (time-signaure or
+ *  tempo) have been added to the container.
  */
 
 #include <stdio.h>                      // printf()
@@ -118,7 +120,10 @@ event_list::event_key::operator < (const event_key & rhs) const
 
 event_list::event_list ()
  :
-    m_events    ()
+    m_events                (),
+    m_is_modified           (false),
+    m_has_tempo             (false),
+    m_has_time_signature    (false)
 {
     // No code needed
 }
@@ -132,7 +137,10 @@ event_list::event_list ()
 
 event_list::event_list (const event_list & rhs)
  :
-    m_events    (rhs.m_events)
+    m_events                (rhs.m_events),
+    m_is_modified           (rhs.m_is_modified),
+    m_has_tempo             (rhs.m_has_tempo),
+    m_has_time_signature    (rhs.m_has_time_signature)
 {
     // No code needed
 }
@@ -150,7 +158,10 @@ event_list::operator = (const event_list & rhs)
 {
     if (this != &rhs)
     {
-        m_events = rhs.m_events;
+        m_events                = rhs.m_events;
+        m_is_modified           = rhs.m_is_modified;
+        m_has_tempo             = rhs.m_has_tempo;
+        m_has_time_signature    = rhs.m_has_time_signature;
     }
     return *this;
 }
@@ -176,7 +187,11 @@ event_list::~event_list ()
  *  sure the insertion succeed.
  *
  *  If the std::list implementation has been built in, then the event list is
- *  sorted after the addition.  This is a time-consuming operation.
+ *  not sorted after the addition.  This is a time-consuming operation.
+ *
+ *  We also have to raise some new flags if the event is a Set Tempo or
+ *  Time Signature event, so that we do not force the current tempo and
+ *  time-signature when writing the MIDI file.
  *
  * \warning
  *      This pushing (and, in writing the MIDI file, the popping),
@@ -209,13 +224,19 @@ event_list::append (const event & e)
 
     m_events.insert(p);                 /* std::multimap operation  */
 
-#else
+#else   // SEQ64_USE_EVENT_MAP
 
     m_events.push_front(e);             /* std::list operation      */
 
 #endif
 
     m_is_modified = true;
+    if (e.is_tempo())
+        m_has_tempo = true;
+
+    if (e.is_time_signature())
+        m_has_time_signature = true;
+
     return true;
 }
 

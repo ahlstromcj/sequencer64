@@ -137,8 +137,8 @@ const midibyte EVENT_MIDI_RESET          = 0xFF;      // not used in seq24
 const midibyte EVENT_MIDI_META         = 0xFF;      // an escape code
 
 /**
- *  As a "type" ("channel" value for a Meta event, 0xFF indicates an illegal
- *  meta type.
+ *  As a "type" (overloaded on channel) value for a Meta event, 0xFF indicates
+ *  an illegal meta type.
  */
 
 const midibyte EVENT_META_ILLEGAL      = 0xFF;      // a problem code
@@ -1069,6 +1069,15 @@ public:
     }
 
     midibpm tempo () const;
+
+    /**
+     *  Indicates if the event is a tempo event.
+     */
+
+    bool is_time_signature () const
+    {
+        return is_meta() && m_channel == 0x58;  /* sm_meta_event_names[] */
+    }
 
     void print () const;
 

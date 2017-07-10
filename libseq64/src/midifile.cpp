@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-09
+ * \updates       2017-07-10
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -591,7 +591,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
      */
 
     char buss_override = usr().midi_buss_override();
-    for (int curtrack = 0; curtrack < NumTracks; ++curtrack)
+    for (int track = 0; track < NumTracks; ++track)
     {
         midipulse Delta;                            /* MIDI delta time      */
         midipulse RunningTime;
@@ -816,13 +816,23 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 seq.set_beat_width(bw);
                                 seq.clocks_per_metronome(cc);
                                 seq.set_32nds_per_quarter(bb);
-                                if (curtrack == 0)
+                                if (track == 0)
                                 {
                                     p.set_beats_per_bar(bpm);
                                     p.set_beat_width(bw);
                                     p.clocks_per_metronome(cc);
                                     p.set_32nds_per_quarter(bb);
                                 }
+
+                                midibyte bt[4];
+                                bt[0] = midibyte(bpm);
+                                bt[1] = midibyte(logbase2);
+                                bt[2] = midibyte(cc);
+                                bt[4] = midibyte(bb);
+
+                                bool ok = e.append_meta_data(mtype, bt, 4);
+                                if (ok)
+                                    seq.append_event(e);        /* new 0.93 */
                             }
                             else
                                 m_pos += len;           /* eat it           */
@@ -835,10 +845,11 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                             if (len == 3)
                             {
-                                midibyte bt[3];
+                                midibyte bt[4];
                                 bt[0] = read_byte();                // tt
                                 bt[1] = read_byte();                // tt
                                 bt[2] = read_byte();                // tt
+                                bt[3] = 0;
 
                                 /*
                                  * If valid, set.  Bad tempos occur and stick
@@ -851,7 +862,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 if (tt > 0)
                                 {
                                     static bool gotfirst = false;
-                                    if (curtrack == 0)
+                                    if (track == 0)
                                     {
                                         midibpm bpm = bpm_from_tempo_us(tt);
                                         if (! gotfirst)
@@ -1033,7 +1044,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
              * happened on the first track, it is a fatal error.
              */
 
-            if (curtrack > 0)                           /* non-fatal later  */
+            if (track > 0)                              /* non-fatal later  */
             {
                 errdump("Unsupported MIDI track ID, skipping...", ID);
             }
@@ -1796,11 +1807,11 @@ midifile::write (perform & p)
      * Note that we don't need to check the sequence pointer.
      */
 
-    for (int curtrack = 0; curtrack < c_max_sequence; ++curtrack)
+    for (int track = 0; track < c_max_sequence; ++track)
     {
-        if (p.is_active(curtrack))
+        if (p.is_active(track))
         {
-            sequence & seq = *p.get_sequence(curtrack);
+            sequence & seq = *p.get_sequence(track);
 
 #if defined SEQ64_USE_MIDI_VECTOR
             midi_vector lst(seq);
@@ -1815,7 +1826,7 @@ midifile::write (perform & p)
              * container's bytes are written out below.
              */
 
-            lst.fill(curtrack, p);
+            lst.fill(track, p);
             write_track(lst);
         }
     }
@@ -1945,7 +1956,6 @@ midifile::write_song (perform & p)
          * fill() function for normal Sequencer64 file writing.
          */
 
-        int track_number = 0;
         for (int track = 0; track < c_max_sequence; ++track)
         {
             if (p.is_exportable(track))
@@ -1958,9 +1968,9 @@ midifile::write_song (perform & p)
                 midi_list lst(seq);
 #endif
 
-                lst.fill_seq_number(track_number);
+                lst.fill_seq_number(track);
                 lst.fill_seq_name(seq.name());
-                if (track_number == 0 && ! rc().legacy_format())
+                if (track == 0 && ! rc().legacy_format())
                 {
                     lst.fill_time_sig_and_tempo
                     (
@@ -1998,7 +2008,6 @@ midifile::write_song (perform & p)
                     lst.song_fill_seq_trigger(end_trigger, seqend, previous_ts);
                 }
                 write_track(lst);
-                ++track_number;
             }
         }
     }

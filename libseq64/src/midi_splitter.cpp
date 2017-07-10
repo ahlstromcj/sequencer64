@@ -305,7 +305,7 @@ midi_splitter::split_channel
             {
                 length_in_ticks = er.get_timestamp();
                 if (s->add_event(er))
-                    result = true;          /* an event got added               */
+                    result = true;      /* an event got added               */
             }
         }
         else if (er.check_channel(channel))

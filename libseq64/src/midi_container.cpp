@@ -651,8 +651,8 @@ midi_container::song_fill_seq_trigger
  *      The sequence object bound to this container needs to provide the
  *      locking mechanism when calling this function.
  *
- * \param tracknumber
- *      Provides the track number.  This number is masked into the track
+ * \param track
+ *      Provides the track number, re 0.  This number is masked into the track
  *      information.
  *
  * \param p
@@ -661,10 +661,10 @@ midi_container::song_fill_seq_trigger
  */
 
 void
-midi_container::fill (int tracknumber, const perform & p)
+midi_container::fill (int track, const perform & p)
 {
     event_list evl = m_sequence.events();           /* used below */
-    fill_seq_number(tracknumber);
+    fill_seq_number(track);
     fill_seq_name(m_sequence.name());
 
     /**
@@ -675,7 +675,7 @@ midi_container::fill (int tracknumber, const perform & p)
      * We also need to skip this if tempo track support is in force.
      */
 
-    if (tracknumber == 0 && ! rc().legacy_format())
+    if (track == 0 && ! rc().legacy_format())
     {
         fill_time_sig_and_tempo(p, evl.has_time_signature(), evl.has_tempo());
     }

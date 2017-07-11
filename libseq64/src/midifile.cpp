@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-10
+ * \updates       2017-07-11
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -808,7 +808,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             {
                                 int bpm = int(read_byte());         // nn
                                 int logbase2 = int(read_byte());    // dd
-                                long bw = beat_pow2(logbase2);
+                                int bw = beat_pow2(logbase2);
 
                                 int cc = read_byte();               // cc
                                 int bb = read_byte();               // bb
@@ -828,7 +828,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 bt[0] = midibyte(bpm);
                                 bt[1] = midibyte(logbase2);
                                 bt[2] = midibyte(cc);
-                                bt[4] = midibyte(bb);
+                                bt[3] = midibyte(bb);
 
                                 bool ok = e.append_meta_data(mtype, bt, 4);
                                 if (ok)
@@ -1650,6 +1650,10 @@ midifile::write_start_tempo (midibpm start_tempo)
 /**
  *  Writes the main time signature, in a more simplistic manner than
  *  midi_container::fill_time_sig_and_tempo().
+ *
+ *  Note that the cc value (MIDI ticks per metronome click) is hardwired to
+ *  0x18 (24) and the bb value (32nd notes per quarter note) is hardwired
+ *  to 0x08 (8).
  *
  * \param beatsperbar
  *      The numerator of the time signature.

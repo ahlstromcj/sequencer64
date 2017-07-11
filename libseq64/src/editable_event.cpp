@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-08
+ * \updates       2017-07-11
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_event
@@ -112,30 +112,30 @@ editable_event::sm_system_event_names [] =
 const editable_event::name_value_t
 editable_event::sm_meta_event_names [] =
 {
-    { 0x00, "Sequence number"           },
-    { 0x01, "Text event"                },
-    { 0x02, "Copyright notice"          },
-    { 0x03, "Track name"                },      // FF 03 len text
-    { 0x04, "Instrument name"           },
+    { 0x00, "Seq Number"                },
+    { 0x01, "Text Event"                },
+    { 0x02, "Copyright"                 },
+    { 0x03, "Track Name"                },      // FF 03 len text
+    { 0x04, "Instrument Name"           },
     { 0x05, "Lyrics"                    },
     { 0x06, "Marker"                    },      // FF 06 len text
-    { 0x07, "Cue point"                 },
-    { 0x08, "Program name"              },
-    { 0x09, "Device name"               },
-    { 0x0A, "Text event 0A"             },
-    { 0x0B, "Text event 0B"             },
-    { 0x0C, "Text event 0C"             },
-    { 0x0D, "Text event 0D"             },
-    { 0x0E, "Text event 0E"             },
-    { 0x0F, "Text event 0F"             },
-    { 0x20, "MIDI channel"              },      // obsolete in MIDI
-    { 0x21, "MIDI port"                 },      // obsolete in MIDI
-    { 0x2F, "End of track"              },
+    { 0x07, "Cue Point"                 },
+    { 0x08, "Program Name"              },
+    { 0x09, "Device Name"               },
+    { 0x0A, "Text Event 0A"             },
+    { 0x0B, "Text Event 0B"             },
+    { 0x0C, "Text Event 0C"             },
+    { 0x0D, "Text Event 0D"             },
+    { 0x0E, "Text Event 0E"             },
+    { 0x0F, "Text Event 0F"             },
+    { 0x20, "MIDI Channel"              },      // obsolete in MIDI
+    { 0x21, "MIDI Port"                 },      // obsolete in MIDI
+    { 0x2F, "Track End"                 },
     { 0x51, "Tempo"                     },      // FF 51 03 tt tt tt (set tempo)
-    { 0x54, "SMPTE offset"              },      // FF 54 05 hh mm ss fr ff
-    { 0x58, "Time signature"            },      // FF 58 04 nn dd cc bb
-    { 0x59, "Key signature"             },      // FF 59 02 sf mi
-    { 0x7F, "Sequencer specific"        },      // includes seq24 prop values
+    { 0x54, "SMPTE Offset"              },      // FF 54 05 hh mm ss fr ff
+    { 0x58, "Time Sig"                  },      // FF 58 04 nn dd cc bb
+    { 0x59, "Key Sig"                   },      // FF 59 02 sf mi
+    { 0x7F, "SeqSpec"                   },      // includes seq24 prop values
     { 0xFF, "Illegal meta event"        },      // indicator of problem
     { SEQ64_END_OF_MIDIBYTE_TABLE, ""   }       // terminator
 };
@@ -376,7 +376,7 @@ editable_event::operator = (const editable_event & rhs)
     if (this != &rhs)
     {
         event::operator =(rhs);
-    //  m_parent            = rhs.m_parent;
+    //  m_parent            = rhs.m_parent;         // cannot copy a reference
         m_category          = rhs.m_category;
         m_name_category     = rhs.m_name_category;
         m_format_timestamp  = rhs.m_format_timestamp;
@@ -593,15 +593,37 @@ editable_event::set_status_from_string
 std::string
 editable_event::stock_event_string ()
 {
-    char temp[80];
+    char temp[64];
     std::string ts = format_timestamp();
     analyze();
-    snprintf
-    (
-        temp, sizeof temp, "%9s %-11s %-10s %-20s",
-        ts.c_str(), m_name_status.c_str(),
-        m_name_channel.c_str(), m_name_data.c_str()
-    );
+    if (is_ex_data())
+    {
+        if (is_tempo() || is_time_signature())
+        {
+            snprintf
+            (
+                temp, sizeof temp, "%9s %-11s %-10s",
+                ts.c_str(), m_name_status.c_str(), m_name_data.c_str()
+            );
+        }
+        else
+        {
+            snprintf
+            (
+                temp, sizeof temp, "%9s %-11s %-12s",
+                ts.c_str(), m_name_status.c_str(), m_name_data.c_str()
+            );
+        }
+    }
+    else
+    {
+        snprintf
+        (
+            temp, sizeof temp, "%9s %-11s %-10s %-20s",
+            ts.c_str(), m_name_status.c_str(),
+            m_name_channel.c_str(), m_name_data.c_str()
+        );
+    }
     return std::string(temp);
 }
 
@@ -624,15 +646,28 @@ editable_event::stock_event_string ()
  *
  *      We distinguish between channel and system messages, and then one- and
  *      two-byte messages, but don't yet distinguish the data values fully.
+ *
+ * Sysex and Meta events:
+ *
+ *      We are starting to support events with statuses ranging from 0xF0 to
+ *      0xFF, with a concentration on Set Tempo and Time Signature events.
+ *      We want them to be full-fledged Sequencer64 events.
+ *
+ *      The 0xFF byte represents a Meta event, not a Reset event, when we're
+ *      dealing with data from a MIDI file, as we are here. And we need to get
+ *      the next byte after the status byte.
+ *
+ *      We want Set Tempo events to appear as "Tempo 120.0" and Time Signature
+ *      events to appear as "Time Sig 4/4".
  */
 
 void
 editable_event::analyze ()
 {
     midibyte status = get_status();
+    char tmp[32];
     if (status >= EVENT_NOTE_OFF && status <= EVENT_PITCH_WHEEL)
     {
-        char tmp[32];
         midibyte channel = get_channel();
         midibyte d0, d1;
         get_data(d0, d1);
@@ -666,20 +701,44 @@ editable_event::analyze ()
     }
     else if (status >= EVENT_MIDI_SYSEX)
     {
-        /*
-         * \new ca 2017-07-05
-         *  The 0xFF byte represents a Meta event, not a Reset event, when
-         *  we're dealing with data from a MIDI file, as we are here. And we
-         *  need to get the next byte after the status byte.
-         */
-
-        if (status == EVENT_MIDI_META)      /* value == EVENT_MIDI_RESET    */
+        if (status == EVENT_MIDI_META)          /* not EVENT_MIDI_RESET */
         {
-            midibyte metatype = get_channel();  /* \tricky */
+            midibyte metatype = get_channel();  /* \tricky              */
             category(category_meta_event);
             m_name_status = value_to_name(metatype, category_meta_event);
-            m_name_channel.clear();
-            m_name_data.clear();
+            m_name_channel.clear();             /* will not be output   */
+            if (is_tempo())
+            {
+                snprintf(tmp, sizeof tmp, "%6.2f", tempo());
+                m_name_data = tmp;
+            }
+            else if (is_time_signature())
+            {
+                int bw = beat_pow2(get_sysex()[1]);
+                snprintf(tmp, sizeof tmp, "%d/%d", get_sysex()[0], bw);
+                m_name_data = tmp;
+                snprintf
+                (
+                    tmp, sizeof tmp, "%2X %2X", get_sysex()[2], get_sysex()[3]
+                );
+                m_name_data += " ";
+                m_name_data += tmp;
+            }
+            else
+            {
+                std::string data;
+                int limit = get_sysex_size();
+                if (limit > 4)
+                    limit = 4;                  /* we have space limits */
+
+                for (int i = 0; i < limit; ++i)
+                {
+                    snprintf(tmp, sizeof tmp, "%2X ", get_sysex()[i]);
+                    m_name_data += tmp;
+                }
+                if (get_sysex_size() > 4)
+                    m_name_data += "...";
+            }
         }
         else
         {

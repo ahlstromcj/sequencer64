@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2017-04-01
+ * \updates       2017-07-11
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -167,12 +167,39 @@ eventslots::set_current_event
 {
     char tmp[32];
     midibyte d0, d1;
+    std::string data_0;
+    std::string data_1;
     const editable_event & ev = EEDREF(ei);
-    ev.get_data(d0, d1);
-    snprintf(tmp, sizeof tmp, "%d (0x%02x)", int(d0), int(d0));
-    std::string data_0(tmp);
-    snprintf(tmp, sizeof tmp, "%d (0x%02x)", int(d1), int(d1));
-    std::string data_1(tmp);
+    if (ev.is_ex_data())
+    {
+        // From editable_event::analyze (), we need to make functions for
+        // these string constructions.
+
+        if (ev.is_tempo())
+        {
+            snprintf(tmp, sizeof tmp, "%6.2f", ev.tempo());
+            data_0 = tmp;
+        }
+        else if (ev.is_time_signature())
+        {
+            int bw = beat_pow2(ev.get_sysex()[1]);
+            snprintf(tmp, sizeof tmp, "%d/%d", ev.get_sysex()[0], bw);
+            data_0 = tmp;
+            snprintf
+            (
+                tmp, sizeof tmp, "%2X %2X", ev.get_sysex()[2], ev.get_sysex()[3]
+            );
+            data_1 = tmp;
+        }
+    }
+    else
+    {
+        ev.get_data(d0, d1);
+        snprintf(tmp, sizeof tmp, "%d (0x%02x)", int(d0), int(d0));
+        data_0 = tmp;
+        snprintf(tmp, sizeof tmp, "%d (0x%02x)", int(d1), int(d1));
+        data_1 = tmp;
+    }
     set_text
     (
         ev.category_string(), ev.timestamp_string(), ev.status_string(),

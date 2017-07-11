@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-09
+ * \updates       2017-07-11
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -99,7 +99,6 @@ event::event ()
     m_channel       (EVENT_NULL_CHANNEL),
     m_data          (),                     /* a two-element array  */
     m_sysex         (),                     /* an std::vector       */
-    m_sysex_size    (0),
     m_linked        (nullptr),
     m_has_link      (false),
     m_selected      (false),
@@ -138,7 +137,6 @@ event::event (const event & rhs)
     m_channel       (rhs.m_channel),
     m_data          (),                     /* a two-element array      */
     m_sysex         (rhs.m_sysex),          /* copies a vector of data  */
-    m_sysex_size    (rhs.m_sysex_size),
     m_linked        (nullptr),              /* pointer, not yet handled */
     m_has_link      (false),                /* must indicate that fact  */
     m_selected      (rhs.m_selected),
@@ -191,7 +189,6 @@ event::operator = (const event & rhs)
         m_data[0]       = rhs.m_data[0];
         m_data[1]       = rhs.m_data[1];
         m_sysex         = rhs.m_sysex;
-        m_sysex_size    = rhs.m_sysex_size;
         m_linked        = nullptr;
         m_has_link      = false;                    /* rhs.m_has_link       */
         m_selected      = rhs.m_selected;           /* false instead?       */
@@ -305,10 +302,10 @@ event::transpose_note (int tn)
 void
 event::set_status (midibyte status)
 {
-    if (status >= 0xF0)
+    if (status >= EVENT_MIDI_SYSEX)         /* 0xF0             */
     {
         m_status = status;
-        m_channel = EVENT_NULL_CHANNEL;     /* i.e. "not applicable"    */
+        m_channel = EVENT_NULL_CHANNEL;     /* "not applicable" */
     }
     else
     {
@@ -348,7 +345,6 @@ void
 event::restart_sysex ()
 {
     m_sysex.clear();
-    m_sysex_size = 0;
 }
 
 /**
@@ -388,7 +384,6 @@ event::append_sysex (midibyte * data, int dsize)
                 break;                  /* is this the right think to do? */
             }
         }
-        m_sysex_size = int(m_sysex.size());
     }
     else
     {
@@ -432,7 +427,6 @@ event::append_meta_data (midibyte metatype, midibyte * data, int dsize)
             m_sysex.push_back(data[i]);
 
         m_channel = metatype;
-        m_sysex_size = int(m_sysex.size());
         result = true;
     }
     else
@@ -473,9 +467,9 @@ event::print () const
     );
     if (is_sysex() || is_meta())
     {
-        bool use_linefeeds = m_sysex_size > 8;
-        printf("ex[%d]:   ", m_sysex_size);
-        for (int i = 0; i < m_sysex_size; ++i)
+        bool use_linefeeds = get_sysex_size() > 8;
+        printf("ex[%d]:   ", get_sysex_size());
+        for (int i = 0; i < get_sysex_size(); ++i)
         {
             if (use_linefeeds && (i % 16) == 0)
                 printf("\n         ");
@@ -541,13 +535,13 @@ midibpm
 event::tempo () const
 {
     midibpm result = 0.0;
-    if (is_tempo() && m_sysex_size == 3)
+    if (is_tempo() && get_sysex_size() == 3)
     {
         midibyte b[3];
-        b[0] = m_sysex[0];
+        b[0] = m_sysex[0];                  /* convert vector to array type */
         b[1] = m_sysex[1];
         b[2] = m_sysex[2];
-        result = tempo_us_from_bytes(b);
+        result = bpm_from_bytes(b);
     }
     return result;
 }

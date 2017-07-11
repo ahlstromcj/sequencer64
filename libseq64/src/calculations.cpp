@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-07-03
+ * \updates       2017-07-11
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -827,10 +827,10 @@ zoom_power_of_2 (int ppqn)
  *      Returns 2 raised to the logbase2 power.
  */
 
-long
+int
 beat_pow2 (int logbase2)
 {
-    long result;
+    int result;
     if (logbase2 == 0)
         result = 1;
     else
@@ -858,6 +858,28 @@ midibyte
 beat_log2 (int value)
 {
     return midibyte(log(double(value)) / log(2.0));
+}
+
+/**
+ *  Calculates the tempo in microseconds from the bytes read from a Tempo
+ *  event in the MIDI file.
+ *
+ *  Is it correct to simply cast the bytes to a double value?
+ *
+ * \param tt
+ *      Provides the 3-byte array of values making up the raw tempo data.
+ *
+ * \return
+ *      Returns the result of converting the bytes to a double value.
+ */
+
+double
+tempo_us_from_bytes (const midibyte tt[3])
+{
+    double result = double(tt[0]);
+    result = (result * 256) + double(tt[1]);
+    result = (result * 256) + double(tt[2]);
+    return result;
 }
 
 /**

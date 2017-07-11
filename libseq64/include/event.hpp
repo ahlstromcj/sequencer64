@@ -270,13 +270,6 @@ private:
     SysexContainer m_sysex;
 
     /**
-     *  Gives the size of the SYSEX message.  Perhaps redundant.  Now also
-     *  applies to meta events.
-     */
-
-    int m_sysex_size;
-
-    /**
      *  This event is used to link Note Ons and Offs together.
      */
 
@@ -736,22 +729,21 @@ public:
     }
 
     /**
-     * \setter m_sysex and m_sysex_size from stazed
+     * \setter m_sysex from stazed
      */
 
     void set_sysex_size (int len)
     {
         m_sysex.resize(len);
-        m_sysex_size = len;
     }
 
     /**
-     * \getter m_sysex_size
+     * \getter m_sysex.size()
      */
 
     int get_sysex_size () const
     {
-        return m_sysex_size;
+        return int(m_sysex.size());
     }
 
     /**

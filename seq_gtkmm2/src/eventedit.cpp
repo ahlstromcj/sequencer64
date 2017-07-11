@@ -381,7 +381,8 @@ eventedit::eventedit (perform & p, sequence & seq)
     (
         m_entry_ev_name,
         "Event name field.  Recognized events: Note On, Note Off, Aftertouch, "
-        "Control Change, Program Change, Channel Pressure, and Pitch Wheel."
+        "Control Change, Program Change, Channel Pressure, Pitch Wheel, "
+        "Time Sig, and Tempo."
     );
     m_editbox->pack_start(*m_entry_ev_name, false, false);
 

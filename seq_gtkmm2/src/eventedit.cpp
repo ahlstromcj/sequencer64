@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-10-12
+ * \updates       2017-07-11
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -395,8 +395,8 @@ eventedit::eventedit (perform & p, sequence & seq)
         m_entry_ev_data_0,
         "Type the numeric (hex or decimal) value of the first data byte here. "
         "Digits are converted until a non-digit is encountered."
-        "The events that support only one value are Program Change and "
-        "Channel Pressure."
+        "The events that support only one value are Program Change, "
+        "Channel Pressure, and Tempo."
     );
     m_editbox->pack_start(*m_entry_ev_data_0, false, false);
 
@@ -678,17 +678,20 @@ eventedit::handle_delete ()
 void
 eventedit::handle_insert ()
 {
-    std::string ts = m_entry_ev_timestamp->get_text();
-    std::string name = m_entry_ev_name->get_text();
-    std::string data0 = m_entry_ev_data_0->get_text();
-    std::string data1 = m_entry_ev_data_1->get_text();
-    bool has_events = m_eventslots->insert_event(ts, name, data0, data1);
-    set_seq_count();
-    if (has_events)
+    if (not_nullptr(m_eventslots))
     {
-        m_button_del->set_sensitive(true);
-        m_button_modify->set_sensitive(true);
-        v_adjustment(m_eventslots->pager_index());
+        std::string ts = m_entry_ev_timestamp->get_text();
+        std::string name = m_entry_ev_name->get_text();
+        std::string data0 = m_entry_ev_data_0->get_text();
+        std::string data1 = m_entry_ev_data_1->get_text();
+        bool has_events = m_eventslots->insert_event(ts, name, data0, data1);
+        set_seq_count();
+        if (has_events)
+        {
+            m_button_del->set_sensitive(true);
+            m_button_modify->set_sensitive(true);
+            v_adjustment(m_eventslots->pager_index());
+        }
     }
 }
 

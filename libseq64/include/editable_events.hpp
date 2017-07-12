@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2017-07-09
+ * \updates       2017-07-11
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -305,6 +305,19 @@ public:
     void clear ()
     {
         m_events.clear();
+    }
+
+    /**
+     *  Sorts the event list; active only for the std::list implementation.
+     */
+
+    void sort ()
+    {
+#ifdef SEQ64_USE_EVENT_MAP
+        // we need nothin' for sorting a multimap
+#else
+        m_events.sort();
+#endif
     }
 
     /**

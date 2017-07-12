@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-07-11
+ * \updates       2017-07-12
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -900,15 +900,16 @@ tempo_us_from_bytes (const midibyte tt[3])
  *      Provides a small array of 3 elements to hold each tempo byte.
  *
  * \param tempo_us
- *      Provides the temp value in microseconds per quarter note.
+ *      Provides the temp value in microseconds per quarter note.  This is
+ *      always an integer, not a double, so do not get confused here.
  */
 
 void
 tempo_us_to_bytes (midibyte t[3], int tempo_us)
 {
-    t[0] = midibyte(tempo_us & 0x0000FF);
+    t[2] = midibyte(tempo_us & 0x0000FF);
     t[1] = midibyte((tempo_us & 0x00FF00) >> 8);
-    t[2] = midibyte((tempo_us & 0xFF0000) >> 16);
+    t[0] = midibyte((tempo_us & 0xFF0000) >> 16);
 }
 
 /**

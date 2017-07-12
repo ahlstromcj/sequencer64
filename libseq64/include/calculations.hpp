@@ -142,11 +142,30 @@ extern bool string_not_void (const std::string & s);
 extern bool string_is_void (const std::string & s);
 extern bool strings_match (const std::string & target, const std::string & x);
 extern int log2_time_sig_value (int tsd);
-extern void tempo_us_to_bytes (midibyte t[3], int tempo_us);
 extern int zoom_power_of_2 (int ppqn);
 extern int beat_pow2 (int logbase2);
 extern midibyte beat_log2 (int value);
 extern double tempo_us_from_bytes (const midibyte tt[3]);
+extern void tempo_us_to_bytes (midibyte t[3], int tempo_us);
+
+/**
+ *  Converts tempo (e.g. 120 beats/minute) to microseconds.
+ *  This function is the inverse of bpm_from_tempo_us().
+ *
+ * \param bpm
+ *      The value of beats-per-minute.  If this value is 0, we'll get an
+ *      arithmetic exception.
+ *
+ * \return
+ *      Returns the tempo in qn/us.  If the bpm value is 0, then 0 is
+ *      returned.
+ */
+
+inline double
+tempo_us_from_bpm (midibpm bpm)
+{
+    return bpm > 0.0 ? (60000000.0 / bpm) : 0.0 ;
+}
 
 /**
  *  This function calculates the effective beats-per-minute based on the value
@@ -182,25 +201,6 @@ inline midibpm
 bpm_from_bytes (midibyte t[3])
 {
     return bpm_from_tempo_us(tempo_us_from_bytes(t));
-}
-
-/**
- *  Converts tempo (e.g. 120 beats/minute) to microseconds.
- *  This function is the inverse of bpm_from_tempo_us().
- *
- * \param bpm
- *      The value of beats-per-minute.  If this value is 0, we'll get an
- *      arithmetic exception.
- *
- * \return
- *      Returns the tempo in qn/us.  If the bpm value is 0, then 0 is
- *      returned.
- */
-
-inline double
-tempo_us_from_bpm (midibpm bpm)
-{
-    return bpm > 0.0 ? (60000000.0 / bpm) : 0.0 ;
 }
 
 /**

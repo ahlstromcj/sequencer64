@@ -188,6 +188,8 @@ editable_events::add (const editable_event & e)
 
     m_events.push_front(e);
     bool result = m_events.size() == (count + 1);
+    if (result)
+        m_events.sort();
 
 #endif  // SEQ64_USE_EVENT_MAP
 

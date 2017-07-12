@@ -536,11 +536,14 @@ editable_event::time_as_minutes ()
  *      Provides the name of the event, such as "Program Change".
  *
  * \param sd0
- *      Provides the string defining the first data byte of the event.
+ *      Provides the string defining the first data byte of the event.  For
+ *      Meta events, this might have multiple values, though we support only
+ *      Set Tempo and Time Signature at present.
  *
  * \param sd1
  *      Provides the string defining the second data byte of the event, if
- *      applicable to the event.
+ *      applicable to the event.  Some meta event may provide multiple values
+ *      in this string.
  */
 
 void
@@ -571,12 +574,78 @@ editable_event::set_status_from_string
     }
     else
     {
-        value = name_to_value(s, category_channel_message);
+        /*
+         * WEIRD, THIS CODE SHOULD BE USELESS, already checked above!!!
+         *
+         * value = name_to_value(s, category_channel_message);
+         * if (value != SEQ64_END_OF_MIDIBYTE_TABLE)
+         * {
+         *     midibyte newstatus = midibyte(value);
+         *     set_status(newstatus);
+         * }
+         * else
+         * {
+         */
+
+        value = name_to_value(s, category_meta_event);
         if (value != SEQ64_END_OF_MIDIBYTE_TABLE)
         {
-            midibyte newstatus = midibyte(value);
-            set_status(newstatus);
+            // handle meta events, filling in m_sysex based on the field(s)
+            // values.
+
+            if (value == 0x51)                      /* Set Tempo event      */
+            {
+                /*
+                 * The Tempo data 0 field consists of one double BPM value.
+                 * We convert it to a tempo-in-microseconds value, then
+                 * populate a 3-byte array with it.  Then we need to create an
+                 * event from it.
+                 */
+
+                double bpm = atof(sd0.c_str());
+                if (bpm > 0.0f)
+                {
+                    midibyte t[4];
+                    double tempo_us = tempo_us_from_bpm(bpm);
+                    tempo_us_to_bytes(t, tempo_us);
+                    set_sysex_size(0);              /* clear the vector     */
+                    (void) append_sysex(t, 3);
+                }
+            }
+            else if (value == 0x58)                 /* Time Signature event */
+            {
+                /*
+                 * The Time Signature data 0 field consists of a string like
+                 * "4/4".  The data 1 field has two values for metronome
+                 * support, but we will implement that LATER.  First, parse
+                 * the "nn/dd" string.  Then parcel out the parts and hardwire
+                 * the metronome values to 0x1808.
+                 */
+
+                int nn = atoi(sd0.c_str());
+                int dd = nn;
+                std::string::size_type slash = sd0.find_first_of("/");
+                if (slash != std::string::npos)
+                {
+                    ++slash;
+                    std::string sd0_partial = sd0.substr(slash);
+                    dd = atoi(sd0_partial.c_str());
+                }
+                set_sysex_size(0);                  /* clear the vector     */
+
+                // append the nn and dd bytes to the vector.
+
+                // TODO:  handle the two bytes in the second data field.
+            }
+            else
+            {
+                // TODO
+            }
         }
+
+        /*
+         * }
+         */
     }
     analyze();                          /* create the strings   */
 }

@@ -42,6 +42,13 @@
 #include "editable_event.hpp"           /* seq64::editable_event        */
 
 /**
+ *  We think the std::list implementation breaks editing, so we're going back
+ *  to the std::map implementation.
+ */
+
+#undef SEQ64_USE_EVENTEDIT_MAP          // STILL HAS ISSUES
+
+/**
  *  Provides a brief, searchable notation for the use of the
  *  editable_events::dref() function.  Comparable to the DREF() macro in the
  *  event_list module.
@@ -68,7 +75,7 @@ class editable_events
 
 private:
 
-#ifdef SEQ64_USE_EVENT_MAP
+#ifdef SEQ64_USE_EVENTEDIT_MAP
 
     /**
      *  Types to use to with the multimap implementation.  These typenames are
@@ -94,12 +101,12 @@ private:
     typedef std::list<editable_event>::iterator iterator;
     typedef std::list<editable_event>::const_iterator const_iterator;
 
-#endif  // SEQ64_USE_EVENT_MAP
+#endif  // SEQ64_USE_EVENTEDIT_MAP
 
     /**
      *  Holds the editable_events.  Just to be clear, since we currently do
      *  not define SEQ64_USE_EVENT_MAP, this is an std::list container, not a
-     *  multimap.
+     *  multimap.  BELAY THAT!
      */
 
     Events m_events;
@@ -237,7 +244,7 @@ public:
 
     static editable_event & dref (iterator ie)
     {
-#ifdef SEQ64_USE_EVENT_MAP
+#ifdef SEQ64_USE_EVENTEDIT_MAP
         return ie->second;
 #else
         return *ie;
@@ -253,7 +260,7 @@ public:
 
     static const editable_event & dref (const_iterator ie)
     {
-#ifdef SEQ64_USE_EVENT_MAP
+#ifdef SEQ64_USE_EVENTEDIT_MAP
         return ie->second;
 #else
         return *ie;
@@ -313,7 +320,7 @@ public:
 
     void sort ()
     {
-#ifdef SEQ64_USE_EVENT_MAP
+#ifdef SEQ64_USE_EVENTEDIT_MAP
         // we need nothin' for sorting a multimap
 #else
         m_events.sort();

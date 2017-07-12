@@ -48,7 +48,7 @@ namespace seq64
  * Section: event_key
  */
 
-#ifdef SEQ64_USE_EVENT_MAP
+// #ifdef SEQ64_USE_EVENT_MAP       // EXPERIMENT
 
 /**
  *  Principal event_key constructor.
@@ -107,6 +107,8 @@ event_list::event_key::operator < (const event_key & rhs) const
     else
         return (m_timestamp < rhs.m_timestamp);
 }
+
+#ifdef SEQ64_USE_EVENT_MAP
 
 #endif  // SEQ64_USE_EVENT_MAP
 

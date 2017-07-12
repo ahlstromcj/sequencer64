@@ -96,7 +96,12 @@ class event_list
 
 private:
 
-#ifdef SEQ64_USE_EVENT_MAP
+    /*
+     * We're trying the std::map in the event editor to fix some bugs,
+     * so we always need this key class.
+     */
+
+// #ifdef SEQ64_USE_EVENT_MAP
 
     /**
      *  Provides a key value for an event map.  Its types match the
@@ -125,6 +130,8 @@ private:
          */
 
     };
+
+#ifdef SEQ64_USE_EVENT_MAP
 
     /**
      *  Types to use to swap between list and multimap implementations.

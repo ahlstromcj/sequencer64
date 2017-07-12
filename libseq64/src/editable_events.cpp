@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2017-07-09
+ * \updates       2017-07-11
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_events
@@ -169,7 +169,7 @@ editable_events::add (const editable_event & e)
 {
     size_t count = m_events.size();         /* save initial size            */
 
-#ifdef SEQ64_USE_EVENT_MAP
+#ifdef SEQ64_USE_EVENTEDIT_MAP
 
     event_list::event_key key(e);           /* create the key value         */
 
@@ -191,7 +191,7 @@ editable_events::add (const editable_event & e)
     if (result)
         m_events.sort();
 
-#endif  // SEQ64_USE_EVENT_MAP
+#endif  // SEQ64_USE_EVENTEDIT_MAP
 
     return result;
 }
@@ -227,7 +227,7 @@ editable_events::load_events ()
             break;
     }
     result = count() == original_count;
-#ifndef SEQ64_USE_EVENT_MAP
+#ifndef SEQ64_USE_EVENTEDIT_MAP
     if (result)
         m_events.sort();
 

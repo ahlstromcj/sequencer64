@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2017-07-12
+ * \updates       2017-07-13
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -182,6 +182,10 @@ eventslots::set_current_event
         }
         else if (ev.is_time_signature())
         {
+            // TODO:  there are no bytes!  And these need to be robust
+            // functions in editable_event.  And that module uses the same
+            // code!!!!
+
             int bw = beat_pow2(ev.get_sysex()[1]);
             snprintf(tmp, sizeof tmp, "%d/%d", ev.get_sysex()[0], bw);
             data_0 = tmp;
@@ -190,6 +194,10 @@ eventslots::set_current_event
                 tmp, sizeof tmp, "%2X %2X", ev.get_sysex()[2], ev.get_sysex()[3]
             );
             data_1 = tmp;
+        }
+        else
+        {
+            // TODO:  handle not-yet-supported Meta events here
         }
     }
     else
@@ -303,15 +311,15 @@ eventslots::insert_event (const editable_event & edev)
         {
             /*
              * This iterator is a short-lived [changed after the next add()
-             * call] pointer to the added event.
+             * call] pointer to the added event.  This check somehow breaks
+             * the redisplay of the modified event list.
+             *
+             * if (m_event_container.is_valid_iterator(nev))
              */
 
             editable_events::iterator nev = m_event_container.current_event();
-            if (m_event_container.is_valid_iterator(nev))
-            {
-                m_parent.set_dirty();
-                page_topper(nev);
-            }
+            m_parent.set_dirty();
+            page_topper(nev);
         }
     }
     return result;
@@ -356,8 +364,14 @@ eventslots::insert_event
 {
     seq64::event e;                                 /* new default event    */
     editable_event edev(m_event_container, e);
-    edev.set_channel(m_seq.get_midi_channel());
     edev.set_status_from_string(evtimestamp, evname, evdata0, evdata1);
+
+    /*
+     * Don't set the channel for "Tempo", "Time Sig", and other Meta events.
+     */
+
+    // TODO
+    edev.set_channel(m_seq.get_midi_channel());
     return insert_event(edev);
 }
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-11
+ * \updates       2017-07-13
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -134,14 +134,24 @@ const midibyte EVENT_MIDI_RESET          = 0xFF;      // not used in seq24
  *  to the sequencer by other MIDI participants.
  */
 
-const midibyte EVENT_MIDI_META         = 0xFF;      // an escape code
+const midibyte EVENT_MIDI_META           = 0xFF;      // an escape code
+
+/**
+ *  Provides values for the currently-supported Meta events:
+ *
+ *      -   Set Tempo (0x51)
+ *      -   Time Signature (0x58)
+ */
+
+const midibyte EVENT_META_SET_TEMPO      = 0x51;
+const midibyte EVENT_META_TIME_SIGNATURE = 0x58;
 
 /**
  *  As a "type" (overloaded on channel) value for a Meta event, 0xFF indicates
  *  an illegal meta type.
  */
 
-const midibyte EVENT_META_ILLEGAL      = 0xFF;      // a problem code
+const midibyte EVENT_META_ILLEGAL        = 0xFF;      // a problem code
 
 /**
  *  This value of 0xFF is Sequencer64's channel value that indicates that
@@ -154,23 +164,23 @@ const midibyte EVENT_META_ILLEGAL      = 0xFF;      // a problem code
  *  event is played or is written to a MIDI file.
  */
 
-const midibyte EVENT_NULL_CHANNEL      = 0xFF;
+const midibyte EVENT_NULL_CHANNEL        = 0xFF;
 
 /**
  *  These file masks are used to obtain or to mask off the channel data from a
  *  status byte.
  */
 
-const midibyte EVENT_GET_CHAN_MASK     = 0x0F;
-const midibyte EVENT_CLEAR_CHAN_MASK   = 0xF0;
+const midibyte EVENT_GET_CHAN_MASK       = 0x0F;
+const midibyte EVENT_CLEAR_CHAN_MASK     = 0xF0;
 
 /**
  *  Variable from the "stazed" extras.  We reversed the parts of each token
  *  for consistency with the macros defined above.
  */
 
-const int EVENTS_ALL                    = -1;
-const int EVENTS_UNSELECTED             =  0;
+const int EVENTS_ALL                     = -1;
+const int EVENTS_UNSELECTED              =  0;
 
 /**
  *  This free function is used in the midifile module and in the
@@ -1055,23 +1065,23 @@ public:
     }
 
     /**
-     *  Indicates if the event is a tempo event.
+     *  Indicates if the event is a tempo event.  See sm_meta_event_names[].
      */
 
     bool is_tempo () const
     {
-        return is_meta() && m_channel == 0x51;  /* sm_meta_event_names[] */
+        return is_meta() && m_channel == EVENT_META_SET_TEMPO;      /* 0x51 */
     }
 
     midibpm tempo () const;
 
     /**
-     *  Indicates if the event is a tempo event.
+     *  Indicates if the event is a tempo event.  See sm_meta_event_names[].
      */
 
     bool is_time_signature () const
     {
-        return is_meta() && m_channel == 0x58;  /* sm_meta_event_names[] */
+        return is_meta() && m_channel == EVENT_META_TIME_SIGNATURE; /* 0x58 */
     }
 
     void print () const;

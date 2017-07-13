@@ -656,7 +656,8 @@ editable_event::set_status_from_string
  *  items and strings are set correctly.
  *
  * \return
- *      Returns a human-readable string describing this event.
+ *      Returns a human-readable string describing this event.  This string is
+ *      displayed in an event list, such as in the eventedit module.
  */
 
 std::string
@@ -776,6 +777,10 @@ editable_event::analyze ()
             category(category_meta_event);
             m_name_status = value_to_name(metatype, category_meta_event);
             m_name_channel.clear();             /* will not be output   */
+
+            // TODO:  Pull these string generators out into robust re-usable
+            //        functions.
+
             if (is_tempo())
             {
                 snprintf(tmp, sizeof tmp, "%6.2f", tempo());

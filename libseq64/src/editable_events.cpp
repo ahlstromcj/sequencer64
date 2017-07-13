@@ -230,7 +230,6 @@ editable_events::load_events ()
 #ifndef SEQ64_USE_EVENTEDIT_MAP
     if (result)
         m_events.sort();
-
 #endif
 
 #ifdef USE_VERIFY_AND_LINK                  /* not yet ready */

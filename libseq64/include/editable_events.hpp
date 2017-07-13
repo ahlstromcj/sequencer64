@@ -46,7 +46,7 @@
  *  to the std::map implementation.
  */
 
-#undef SEQ64_USE_EVENTEDIT_MAP          // STILL HAS ISSUES
+#define SEQ64_USE_EVENTEDIT_MAP
 
 /**
  *  Provides a brief, searchable notation for the use of the

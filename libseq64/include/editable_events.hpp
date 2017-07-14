@@ -80,7 +80,9 @@ private:
     /**
      *  Types to use to with the multimap implementation.  These typenames are
      *  identical to those used in event_list, but of course they are in the
-     *  editable_events scope instead.  See the event_list class.
+     *  editable_events scope instead.  See the event_list class; that class
+     *  once again uses std::list, but still defines event_list::event_key for
+     *  use here.  See SEQ64_USE_EVENT_MAP versus SEQ64_USE_EVENTEDIT_MAP.
      */
 
     typedef event_list::event_key Key;

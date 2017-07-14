@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-13
+ * \updates       2017-07-14
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -718,7 +718,27 @@ public:
     bool append_sysex (midibyte * data, int len);
     bool append_sysex (midibyte data);
     bool append_meta_data (midibyte metatype, midibyte * data, int len);
-    void restart_sysex ();
+    void restart_sysex ();              // kind of useless
+
+    /**
+     *  Resets and adds ex data.
+     *
+     * \param data
+     *      Provides the SysEx/Meta data.  If not provided, nothing is done,
+     *      and false is returned.
+     *
+     * \param len
+     *      The number of bytes to set.
+     *
+     * \return
+     *      Returns true if the function succeeded.
+     */
+
+    bool set_sysex (midibyte * data, int len)
+    {
+        m_sysex.clear();
+        return append_sysex(data, len);
+    }
 
     /**
      * \getter m_sysex from stazed, non-const version for use by midibus.

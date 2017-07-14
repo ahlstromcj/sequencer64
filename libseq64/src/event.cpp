@@ -354,8 +354,8 @@ event::restart_sysex ()
  *  data buffer.
  *
  * \param data
- *      Provides the additional SYSEX data.  If not provided, nothing is done,
- *      and false is returned.
+ *      Provides the additional SysEx/Meta data.  If not provided, nothing is
+ *      done, and false is returned.
  *
  * \param dsize
  *      Provides the size of the additional SYSEX data.  If not provided,

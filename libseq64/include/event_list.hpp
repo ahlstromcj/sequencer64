@@ -99,9 +99,9 @@ private:
     /*
      * We're trying the std::map in the event editor to fix some bugs,
      * so we always need this key class.
+     *
+     * #ifdef SEQ64_USE_EVENT_MAP
      */
-
-// #ifdef SEQ64_USE_EVENT_MAP
 
     /**
      *  Provides a key value for an event map.  Its types match the

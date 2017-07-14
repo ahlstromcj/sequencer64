@@ -165,43 +165,17 @@ eventslots::set_current_event
     bool full_redraw
 )
 {
-    char tmp[32];
-    midibyte d0, d1;
     std::string data_0;
     std::string data_1;
     const editable_event & ev = EEDREF(ei);
     if (ev.is_ex_data())
     {
-        // From editable_event::analyze (), we need to make functions for
-        // these string constructions.
-
-        if (ev.is_tempo())
-        {
-            snprintf(tmp, sizeof tmp, "%6.2f", ev.tempo());
-            data_0 = tmp;
-        }
-        else if (ev.is_time_signature())
-        {
-            // TODO:  there are no bytes!  And these need to be robust
-            // functions in editable_event.  And that module uses the same
-            // code!!!!
-
-            int bw = beat_pow2(ev.get_sysex()[1]);
-            snprintf(tmp, sizeof tmp, "%d/%d", ev.get_sysex()[0], bw);
-            data_0 = tmp;
-            snprintf
-            (
-                tmp, sizeof tmp, "%2X %2X", ev.get_sysex()[2], ev.get_sysex()[3]
-            );
-            data_1 = tmp;
-        }
-        else
-        {
-            // TODO:  handle not-yet-supported Meta events here
-        }
+        data_0 = ev.ex_data_string();
     }
     else
     {
+        char tmp[32];
+        midibyte d0, d1;
         ev.get_data(d0, d1);
         snprintf(tmp, sizeof tmp, "%d (0x%02x)", int(d0), int(d0));
         data_0 = tmp;

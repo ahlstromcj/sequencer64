@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.93.0 and above
 Chris Ahlstrom
-2015-09-10 to 2017-07-03
+2015-09-10 to 2017-07-14
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -302,6 +302,11 @@ MANUALLY-DEFINED MACROS IN CODE:
         for even better throughput; the former still has node pointers to deal
         with, which slows simple iteration down.  There are many
         complications, though.
+
+    SEQ64_USE_EVENTEDIT_MAP:
+
+        For the event editor (editable_events, etc.), this macro replaces the
+        std::list with std::multimap.
 
     SEQ64_PRESORT_EVENT_CONTAINER (obsolete):
 

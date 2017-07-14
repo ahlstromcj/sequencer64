@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-28
- * \updates       2017-07-05
+ * \updates       2017-07-13
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -419,6 +419,7 @@ public:
     );
     std::string format_timestamp ();
     std::string stock_event_string ();
+    std::string ex_data_string () const;
 
     /**
      * \getter m_name_status

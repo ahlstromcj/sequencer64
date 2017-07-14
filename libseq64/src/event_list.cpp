@@ -25,11 +25,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2017-07-09
+ * \updates       2017-07-14
  * \license       GNU GPLv2 or above
  *
  *  This container now can indicate if certain Meta events (time-signaure or
  *  tempo) have been added to the container.
+ *
+ *  This module also defines the  event_list::event_key object.  Although the
+ *  main MIDI container are now back to using std::list (with sorting after
+ *  loading), the editable_events object is now back to using std::multimap,
+ *  for easier management and automatic sorting of events.  See
+ *  SEQ64_USE_EVENT_MAP versus SEQ64_USE_EVENTEDIT_MAP.
  */
 
 #include <stdio.h>                      // printf()
@@ -43,12 +49,6 @@
 
 namespace seq64
 {
-
-/*
- * Section: event_key
- */
-
-// #ifdef SEQ64_USE_EVENT_MAP       // EXPERIMENT
 
 /**
  *  Principal event_key constructor.
@@ -107,10 +107,6 @@ event_list::event_key::operator < (const event_key & rhs) const
     else
         return (m_timestamp < rhs.m_timestamp);
 }
-
-#ifdef SEQ64_USE_EVENT_MAP
-
-#endif  // SEQ64_USE_EVENT_MAP
 
 /*
  * Section: event_list

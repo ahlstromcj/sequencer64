@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-11
+ * \updates       2017-07-14
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_event
@@ -574,26 +574,15 @@ editable_event::set_status_from_string
     }
     else
     {
-        /*
-         * WEIRD, THIS CODE SHOULD BE USELESS, already checked above!!!
-         *
-         * value = name_to_value(s, category_channel_message);
-         * if (value != SEQ64_END_OF_MIDIBYTE_TABLE)
-         * {
-         *     midibyte newstatus = midibyte(value);
-         *     set_status(newstatus);
-         * }
-         * else
-         * {
-         */
-
         value = name_to_value(s, category_meta_event);
         if (value != SEQ64_END_OF_MIDIBYTE_TABLE)
         {
-            // handle meta events, filling in m_sysex based on the field(s)
-            // values.
+            /*
+             * Handle Meta or SysEx events, filling in m_sysex based on the field
+             * values in the sd0 parameter.
+             */
 
-            if (value == 0x51)                      /* Set Tempo event      */
+            if (value == EVENT_META_SET_TEMPO)                      /* 0x51 */
             {
                 /*
                  * The Tempo data 0 field consists of one double BPM value.
@@ -608,44 +597,73 @@ editable_event::set_status_from_string
                     midibyte t[4];
                     double tempo_us = tempo_us_from_bpm(bpm);
                     tempo_us_to_bytes(t, tempo_us);
-                    set_sysex_size(0);              /* clear the vector     */
-                    (void) append_sysex(t, 3);
+                    (void) set_sysex(t, 3);         /* add ex-data bytes    */
                 }
             }
-            else if (value == 0x58)                 /* Time Signature event */
+            else if (value == EVENT_META_TIME_SIGNATURE)            /* 0x51 */
             {
                 /*
                  * The Time Signature data 0 field consists of a string like
                  * "4/4".  The data 1 field has two values for metronome
-                 * support, but we will implement that LATER.  First, parse
-                 * the "nn/dd" string.  Then parcel out the parts and hardwire
-                 * the metronome values to 0x1808.
+                 * support.  First, parse the "nn/dd" string; the slash
+                 * (solidus) is required.  Then get the cc and bb metronome
+                 * values, if present.  Otherwise, hardwired them to values of
+                 * 0x18 and 0x08.
                  */
 
-                int nn = atoi(sd0.c_str());
-                int dd = nn;
-                std::string::size_type slash = sd0.find_first_of("/");
-                if (slash != std::string::npos)
+                std::string::size_type pos = sd0.find_first_of("/");
+                if (pos != std::string::npos)
                 {
-                    ++slash;
-                    std::string sd0_partial = sd0.substr(slash);
+                    int nn = atoi(sd0.c_str());
+                    int dd = nn;
+                    int cc = 0x18;
+                    int bb = 0x08;
+                    ++pos;
+
+                    std::string sd0_partial = sd0.substr(pos);
                     dd = atoi(sd0_partial.c_str());
+                    if (dd > 0)
+                    {
+                        pos = sd0.find_first_of("0123456789x");
+                        if (pos != std::string::npos)
+                        {
+                            cc = int(strtol(&sd0[pos], NULL, 0));
+                            pos = sd0.find_first_of(" ");
+                            if (pos != std::string::npos)
+                            {
+                                pos = sd0.find_first_of("0123456789x");
+                                if (pos != std::string::npos)
+                                    bb = int(strtol(&sd0[pos], NULL, 0));
+                            }
+                        }
+                        midibyte t[4];
+                        t[0] = midibyte(nn);
+                        t[1] = midibyte(dd);
+                        t[2] = midibyte(cc);
+                        t[3] = midibyte(bb);
+                        (void) set_sysex(t, 4);     /* add ex-data bytes    */
+                    }
                 }
-                set_sysex_size(0);                  /* clear the vector     */
-
-                // append the nn and dd bytes to the vector.
-
-                // TODO:  handle the two bytes in the second data field.
             }
             else
             {
-                // TODO
+                /*
+                 * Parse the string of (potentially) hex digits.
+                 *
+                 * TODO:
+                 *
+                 * However, we still need to determine the length
+                 * value and allocate the midibyte array ahead of time, or add
+                 * a function to set sysex.
+                 */
+
+                std::string::size_type pos = sd0.find_first_of("0123456789x");
+                while (pos != std::string::npos)
+                {
+                    // TODO
+                }
             }
         }
-
-        /*
-         * }
-         */
     }
     analyze();                          /* create the strings   */
 }
@@ -777,42 +795,7 @@ editable_event::analyze ()
             category(category_meta_event);
             m_name_status = value_to_name(metatype, category_meta_event);
             m_name_channel.clear();             /* will not be output   */
-
-            // TODO:  Pull these string generators out into robust re-usable
-            //        functions.
-
-            if (is_tempo())
-            {
-                snprintf(tmp, sizeof tmp, "%6.2f", tempo());
-                m_name_data = tmp;
-            }
-            else if (is_time_signature())
-            {
-                int bw = beat_pow2(get_sysex()[1]);
-                snprintf(tmp, sizeof tmp, "%d/%d", get_sysex()[0], bw);
-                m_name_data = tmp;
-                snprintf
-                (
-                    tmp, sizeof tmp, "%2X %2X", get_sysex()[2], get_sysex()[3]
-                );
-                m_name_data += " ";
-                m_name_data += tmp;
-            }
-            else
-            {
-                std::string data;
-                int limit = get_sysex_size();
-                if (limit > 4)
-                    limit = 4;                  /* we have space limits */
-
-                for (int i = 0; i < limit; ++i)
-                {
-                    snprintf(tmp, sizeof tmp, "%2X ", get_sysex()[i]);
-                    m_name_data += tmp;
-                }
-                if (get_sysex_size() > 4)
-                    m_name_data += "...";
-            }
+            m_name_data = ex_data_string();
         }
         else
         {
@@ -831,8 +814,58 @@ editable_event::analyze ()
     {
         // Would try to detect SysEx versus Meta message versus SeqSpec here.
         // Then set either m_name_meta and/or m_name_seqspec.
+        // ALso see eventslots::set_current_event().
     }
+}
 
+/**
+ *  Assuming the event is a Meta event or a SysEx, this function returns a
+ *  short string representation of the event data, usable in the eventeditor
+ *  class or elsewhere.
+ *
+ * \return
+ *      Returns the data string.  If empty, the data is bad in some way, or
+ *      the event is not a Meta event.
+ */
+
+std::string
+editable_event::ex_data_string () const
+{
+    std::string result;
+    char tmp[32];
+    if (is_tempo())
+    {
+        snprintf(tmp, sizeof tmp, "%6.2f", tempo());
+        result = tmp;
+    }
+    else if (is_time_signature())
+    {
+        if (get_sysex_size() > 0)
+        {
+            int bw = beat_pow2(get_sysex()[1]);
+            snprintf(tmp, sizeof tmp, "%d/%d", get_sysex()[0], bw);
+            result = tmp;
+            snprintf(tmp, sizeof tmp, "%2X %2X", get_sysex()[2], get_sysex()[3]);
+            result += " ";
+            result += tmp;
+        }
+    }
+    else
+    {
+        std::string data;
+        int limit = get_sysex_size();
+        if (limit > 4)
+            limit = 4;                  /* we have space limits */
+
+        for (int i = 0; i < limit; ++i)
+        {
+            snprintf(tmp, sizeof tmp, "%2X ", get_sysex()[i]);
+            result += tmp;
+        }
+        if (get_sysex_size() > 4)
+            result += "...";
+    }
+    return result;
 }
 
 }           // namespace seq64

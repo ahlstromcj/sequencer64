@@ -1177,6 +1177,28 @@ bool
 sequence::remove_marked ()
 {
     automutex locker(m_mutex);
+
+#ifdef LAYK_PULL_REQUEST_95
+
+    /*
+     * We have to make note off before moving and cutting. Here or in event_list?
+     */
+
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    {
+        const event & e = m_events.dref(i);
+        if (e.is_marked())
+        {
+            if (e.is_note_on())         /* or maybe just e.is_note()?   */
+            {
+                midibyte note_to_play = e.get_note();
+                play_note_off(int(note_to_play));
+            }
+        }
+    }
+
+#endif
+
     bool result = m_events.remove_marked();
     reset_draw_marker();
     return result;

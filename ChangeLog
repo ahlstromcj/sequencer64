@@ -9,6 +9,7 @@
 	meta-event insertion display is still wrong.
 	* libseq64/src/sequence.cpp: Merge layk pull request #95 enabled by
 	macro.
+	* INSTALL: Stamped for version 0.93.0.
 
 2017-07-14  Chris Ahlstrom <ahlstromcj@gmail.com>
 

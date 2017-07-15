@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.93.0 and above
 Chris Ahlstrom
-2015-09-10 to 2017-07-14
+2015-09-10 to 2017-07-15
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -8,8 +8,9 @@ Starting with version 0.90.4, four different versions of the program can be
 build:
 
     -   seq64. Native JACK; the default build after a simple bootstrap.
-        command; JACK MIDI with optional JACK transport; fall-back to ALSA.
-        Now the most official version of Sequencer64.
+        command; JACK MIDI with optional JACK transport; fall-back to ALSA;
+        Better support for Meta events (specifically Set Tempo and Time
+        Signature).  Now the most official version of Sequencer64.
     -   seq64cli.  An in-progress version of a GUI-less version of
         Sequencer64, which can run from the console or as a daemon.
     -   sequencer64. ALSA with JACK transport; the original version.

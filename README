@@ -1,6 +1,6 @@
 README for Sequencer64 0.93.0 (Native JACK, CLI, multiple main windows, varisets)
 Chris Ahlstrom
-2015-09-10 to 2017-07-03
+2015-09-10 to 2017-07-15
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
@@ -29,7 +29,16 @@ With the big version jump from 0.9 to 0.90, the install process has changed.
 See the INSTALL file.
 
     -   Version 0.93.0:
-        -   Support for the tempo track.
+        -   Initial support for the tempo track.  It currently includes making
+            Meta events have full support in Sequencer64, including in the
+            event editor (only Set Tempo and Time Signature are fully
+            supported at this time, and share code with SysEx support).
+            Version 0.93.1 will hopefully fully support the management of a
+            native MIDI tempo track.
+        -   Merged pull request #95 of user layk to fix an issue with
+            manipulating long notes while playing.
+        -   Fixes a bug where the event editor is not updating properly.
+            A long-time regression!
     -   Version 0.92.0:
         -   Added support for variable set-size, from the default
             4x8 (rows x columns) to 8x12.  Can be combined with multi-wid.

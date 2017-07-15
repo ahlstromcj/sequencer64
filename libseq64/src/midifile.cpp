@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-11
+ * \updates       2017-07-15
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -870,11 +870,6 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                             gotfirst = true;
                                             p.set_beats_per_minute(bpm);
                                             p.us_per_quarter_note(int(tt));
-
-                                            /*
-                                             * MAY CHANGE DURING PLAYBACK.
-                                             */
-
                                             seq.us_per_quarter_note(int(tt));
                                         }
                                     }

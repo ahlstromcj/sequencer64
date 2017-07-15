@@ -1,3 +1,95 @@
+2017-07-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/event.hpp, libseq64/src/editable_event.cpp,
+	libseq64/src/event.cpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Fixed insertion of meta events in
+	event editor.
+	* libseq64/include/editable_event.hpp,
+	libseq64/src/editable_event.cpp: Fixed time sig editing, but
+	meta-event insertion display is still wrong.
+	* libseq64/src/sequence.cpp: Merge layk pull request #95 enabled by
+	macro.
+
+2017-07-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : commit d03cd396b684399ab9ad2019a1da7e4787d10a3e Merge: 3c5ec4f
+	46e2afd Author: Chris Ahlstrom <ahlstromcj@gmail.com> Date:   Fri
+	Jul 14 19:41:50 2017 -0400
+	* libseq64/src/sequence.cpp: Added marked for layk pull request #95,
+	still needs heavy testing.
+	* libseq64/src/sequence.cpp: Fix for note off not being played when
+	cutting or moving notes.
+	* INSTALL, libseq64/include/editable_event.hpp,
+	libseq64/include/editable_events.hpp, libseq64/include/event.hpp,
+	libseq64/include/event_list.hpp, libseq64/src/editable_event.cpp,
+	libseq64/src/event.cpp, libseq64/src/event_list.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Ongoing improvements to meta-event
+	editing.
+
+2017-07-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/editable_events.hpp, libseq64/include/event.hpp,
+	libseq64/src/editable_event.cpp, libseq64/src/editable_events.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Fixed breakage in the event editor.
+
+2017-07-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/editable_events.hpp,
+	libseq64/include/event_list.hpp, libseq64/src/editable_events.cpp,
+	libseq64/src/event_list.cpp: Interim check-in for eventedit fixes.
+	* libseq64/include/calculations.hpp,
+	libseq64/include/editable_events.hpp, libseq64/include/event.hpp,
+	libseq64/src/calculations.cpp, libseq64/src/editable_event.cpp,
+	libseq64/src/editable_events.cpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Still upgrading event editor,
+	insert/modify has been broken for quite awhile, is still broken.
+
+2017-07-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/calculations.hpp, libseq64/include/event.hpp,
+	libseq64/src/calculations.cpp, libseq64/src/editable_event.cpp,
+	libseq64/src/event.cpp, libseq64/src/midifile.cpp,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/eventslots.cpp: 
+	Finished display of time-sig and tempo in eventedit, next comes
+	parsing.
+
+2017-07-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/midi/example1.asc, libseq64/src/midi_container.cpp,
+	libseq64/src/midi_splitter.cpp, libseq64/src/midifile.cpp: Added
+	time-signature event support.
+
+2017-07-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/event.hpp, libseq64/include/event_list.hpp,
+	libseq64/include/midi_container.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/event.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/midi_container.cpp, libseq64/src/midifile.cpp: Improved
+	tempo event handling, still some oddities.
+	* FixLog, libseq64/include/midi_container.hpp,
+	libseq64/src/midi_container.cpp, libseq64/src/midifile.cpp: Fixed
+	bug saving tempo events, still more to do.
+	* TODO, libseq64/include/editable_events.hpp,
+	libseq64/include/event.hpp, libseq64/include/event_list.hpp,
+	libseq64/src/editable_event.cpp, libseq64/src/editable_events.cpp,
+	libseq64/src/event.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/midi_splitter.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/sequence.cpp: Upgraded SMF 0 splitter to handle
+	Meta/SysEx events.
+
+2017-07-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, configure.ac, libseq64/include/calculations.hpp,
+	libseq64/include/editable_event.hpp, libseq64/include/event.hpp,
+	libseq64/include/midi_container.hpp, libseq64/include/midifile.hpp,
+	libseq64/include/perform.hpp, libseq64/src/calculations.cpp,
+	libseq64/src/editable_event.cpp, libseq64/src/event.cpp,
+	libseq64/src/midi_container.cpp, libseq64/src/midifile.cpp: In
+	progress making tempo events full-fledged track events.
+
+2017-07-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+	* README: vacation with the grandsons, Eli and Graham!
+
 2017-06-30  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/src/optionsfile.cpp, seq_gtkmm2/include/mainwnd.hpp,

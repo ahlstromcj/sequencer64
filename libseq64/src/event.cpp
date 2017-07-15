@@ -417,6 +417,12 @@ event::append_sysex (midibyte * data, int dsize)
  *  events and SysEx events shared the same "extended" data buffer that
  *  originated to support SysEx.
  *
+ *  Also see set_meta_status(), which, like this function, sets the
+ *  event::m_channel_member to indicate the type of Meta event, but, unlike
+ *  this function, leaves the data alone.  Also note that the set_status()
+ *  call in midifile flags the event as a Meta event.  The handling of Meta
+ *  events is not yet uniform between all the modules.
+ *
  * \warning
  *      Currently does not clear the "sysex" buffer first.
  *

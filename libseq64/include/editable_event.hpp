@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-28
- * \updates       2017-07-13
+ * \updates       2017-07-15
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -178,7 +178,8 @@ public:
         /**
          *  Holds a midibyte value (0x00 to 0xFF) or
          *  SEQ64_END_OF_MIDIBYTE_TABLE to indicate the end of an array of
-         *  name_value_t items.
+         *  name_value_t items.  This field can be considered a "key" value,
+         *  as it is often looked up to find the event name.
          */
 
         unsigned short event_value;
@@ -191,6 +192,31 @@ public:
         std::string event_name;
 
     } name_value_t;
+
+    /**
+     *  Provides a type that contains the pair of values needed to get the
+     *  Meta event's data length.
+     */
+
+    typedef struct
+    {
+        /**
+         *  Holds a midibyte value (0x00 to 0xFF) or
+         *  SEQ64_END_OF_MIDIBYTE_TABLE to indicate the end of an array of
+         *  name_value_t items.  This field has the same meaning as the
+         *  event_value of the name_value_t type.
+         */
+
+        unsigned short event_value;
+
+        /**
+         *  Holds the length expected for the Meta event, or 0 if it does not
+         *  apply to the Meta event.
+         */
+
+        unsigned short event_length;
+
+    } meta_length_t;
 
     /**
      *  An array of event categories and their names.
@@ -233,6 +259,13 @@ public:
 
     static const name_value_t * const sm_category_arrays [];
 
+    /**
+     *  Provides a list of meta-event numbers and their expected lengths (if
+     *  any).
+     */
+
+    static const meta_length_t sm_meta_lengths [];
+
     /*
      *  Static lookup functions, described in the cpp module.
      */
@@ -243,6 +276,7 @@ public:
         const std::string & name,
         category_t cat
     );
+    static unsigned short meta_event_length (midibyte value);
 
 private:
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-14
+ * \updates       2017-07-15
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_event
@@ -112,32 +112,88 @@ editable_event::sm_system_event_names [] =
 const editable_event::name_value_t
 editable_event::sm_meta_event_names [] =
 {
-    { 0x00, "Seq Number"                },
-    { 0x01, "Text Event"                },
-    { 0x02, "Copyright"                 },
+    { 0x00, "Seq Number"                },      // FF 00 02 ss ss (16-bit)
+    { 0x01, "Text Event"                },      // FF 01 len text
+    { 0x02, "Copyright"                 },      // FF 02 len text
     { 0x03, "Track Name"                },      // FF 03 len text
-    { 0x04, "Instrument Name"           },
-    { 0x05, "Lyrics"                    },
+    { 0x04, "Instrument Name"           },      // FF 04 len text
+    { 0x05, "Lyric"                     },      // FF 05 len text
     { 0x06, "Marker"                    },      // FF 06 len text
-    { 0x07, "Cue Point"                 },
-    { 0x08, "Program Name"              },
-    { 0x09, "Device Name"               },
-    { 0x0A, "Text Event 0A"             },
-    { 0x0B, "Text Event 0B"             },
-    { 0x0C, "Text Event 0C"             },
-    { 0x0D, "Text Event 0D"             },
-    { 0x0E, "Text Event 0E"             },
-    { 0x0F, "Text Event 0F"             },
-    { 0x20, "MIDI Channel"              },      // obsolete in MIDI
-    { 0x21, "MIDI Port"                 },      // obsolete in MIDI
-    { 0x2F, "Track End"                 },
+    { 0x07, "Cue Point"                 },      // FF 07 len text
+    { 0x08, "Program Name"              },      // FF 08 len text
+    { 0x09, "Device Name"               },      // FF 09 len text
+
+    /*
+     * The following events are normally not documented, so let's save some
+     * lookup time.
+     *
+     * { 0x0A, "Text Event 0A"          },
+     * { 0x0B, "Text Event 0B"          },
+     * { 0x0C, "Text Event 0C"          },
+     * { 0x0D, "Text Event 0D"          },
+     * { 0x0E, "Text Event 0E"          },
+     * { 0x0F, "Text Event 0F"          },
+     */
+
+    { 0x20, "MIDI Channel"              },      // FF 20 01 cc (obsolete)
+    { 0x21, "MIDI Port"                 },      // FF 21 01 pp (obsolete)
+    { 0x2F, "Track End"                 },      // FF 2F 00 (mandatory event)
     { 0x51, "Tempo"                     },      // FF 51 03 tt tt tt (set tempo)
     { 0x54, "SMPTE Offset"              },      // FF 54 05 hh mm ss fr ff
     { 0x58, "Time Sig"                  },      // FF 58 04 nn dd cc bb
     { 0x59, "Key Sig"                   },      // FF 59 02 sf mi
-    { 0x7F, "SeqSpec"                   },      // includes seq24 prop values
+    { 0x7F, "Seq Spec"                  },      // FF 7F len id data (seq24 prop)
     { 0xFF, "Illegal meta event"        },      // indicator of problem
     { SEQ64_END_OF_MIDIBYTE_TABLE, ""   }       // terminator
+};
+
+/**
+ *  Initializes the array of event/length pairs for all of the Meta events.
+ *  Terminated only by the empty string.
+ */
+
+const editable_event::meta_length_t
+editable_event::sm_meta_lengths [] =
+{
+    { 0x00, 2   },                              // "Seq Number"
+
+    /*
+     * Since meta_event_length() returns 0 by default, we can save some lookup
+     * time.
+     *
+     * { 0x01, 0   },                           // "Text Event"
+     * { 0x02, 0   },                           // "Copyright"
+     * { 0x03, 0   },                           // "Track Name"
+     * { 0x04, 0   },                           // "Instrument Name"
+     * { 0x05, 0   },                           // "Lyric"
+     * { 0x06, 0   },                           // "Marker"
+     * { 0x07, 0   },                           // "Cue Point"
+     * { 0x08, 0   },                           // "Program Name"
+     * { 0x09, 0   },                           // "Device Name"
+     */
+
+    /*
+     * The following events are normally not documented, so let's save some
+     * more lookup time.
+     *
+     * { 0x0A, 0    },                          // "Text Event 0A"
+     * { 0x0B, 0    },                          // "Text Event 0B"
+     * { 0x0C, 0    },                          // "Text Event 0C"
+     * { 0x0D, 0    },                          // "Text Event 0D"
+     * { 0x0E, 0    },                          // "Text Event 0E"
+     * { 0x0F, 0    },                          // "Text Event 0F"
+     */
+
+    { 0x20, 1   },                              // "MIDI Channel"
+    { 0x21, 1   },                              // "MIDI Port"
+    { 0x2F, 0   },                              // "Track End"
+    { 0x51, 3   },                              // "Tempo"
+    { 0x54, 5   },                              // "SMPTE Offset"
+    { 0x58, 4   },                              // "Time Sig"
+    { 0x59, 2   },                              // "Key Sig"
+    { 0x7F, 0   },                              // "Seq Spec"
+    { 0xFF, 0   },                              // "Illegal meta event"
+    { SEQ64_END_OF_MIDIBYTE_TABLE, 0 }          // terminator
 };
 
 /**
@@ -266,6 +322,35 @@ editable_event::name_to_value
             }
             ++counter;
         }
+    }
+    return result;
+}
+
+/**
+ *  Provides a static lookup function that takes a meta-event number and
+ *  returns the expected length of the data for that event.
+ *
+ * \param value
+ *      The MIDI byte value to look up.
+ *
+ *  \return
+ *      Returns the length associated with the meta event.  If the expected
+ *      length is actually 0, or is variable, then 0 is returned.
+ */
+
+unsigned short
+editable_event::meta_event_length (midibyte value)
+{
+    unsigned short result = 0;
+    midibyte counter = 0;
+    while (sm_meta_lengths[counter].event_value != SEQ64_END_OF_MIDIBYTE_TABLE)
+    {
+        if (value == sm_meta_lengths[counter].event_value)
+        {
+            result = sm_meta_lengths[counter].event_length;
+            break;
+        }
+        ++counter;
     }
     return result;
 }
@@ -620,20 +705,24 @@ editable_event::set_status_from_string
                     int bb = 0x08;
                     ++pos;
 
-                    std::string sd0_partial = sd0.substr(pos);
-                    dd = atoi(sd0_partial.c_str());
+                    std::string sd0_partial = sd0.substr(pos);  // drop "nn/"
+                    dd = atoi(sd0_partial.c_str());             // get dd
                     if (dd > 0)
                     {
-                        pos = sd0.find_first_of("0123456789x");
+                        pos = sd0.find_first_of(" ", pos);      // bypass dd
                         if (pos != std::string::npos)
                         {
-                            cc = int(strtol(&sd0[pos], NULL, 0));
-                            pos = sd0.find_first_of(" ");
+                            pos = sd0.find_first_of("0123456789x", pos);
                             if (pos != std::string::npos)
                             {
-                                pos = sd0.find_first_of("0123456789x");
+                                cc = int(strtol(&sd0[pos], NULL, 0));
+                                pos = sd0.find_first_of(" ", pos);
                                 if (pos != std::string::npos)
-                                    bb = int(strtol(&sd0[pos], NULL, 0));
+                                {
+                                    pos = sd0.find_first_of("0123456789x", pos);
+                                    if (pos != std::string::npos)
+                                        bb = int(strtol(&sd0[pos], NULL, 0));
+                                }
                             }
                         }
                         midibyte t[4];
@@ -821,7 +910,8 @@ editable_event::analyze ()
 /**
  *  Assuming the event is a Meta event or a SysEx, this function returns a
  *  short string representation of the event data, usable in the eventeditor
- *  class or elsewhere.
+ *  class or elsewhere.  Most SysEx events will only show the first few bytes;
+ *  we could make a SysEx viewer/editor for handling long events.
  *
  * \return
  *      Returns the data string.  If empty, the data is bad in some way, or
@@ -842,11 +932,11 @@ editable_event::ex_data_string () const
     {
         if (get_sysex_size() > 0)
         {
-            int bw = beat_pow2(get_sysex()[1]);
-            snprintf(tmp, sizeof tmp, "%d/%d", get_sysex()[0], bw);
-            result = tmp;
-            snprintf(tmp, sizeof tmp, "%2X %2X", get_sysex()[2], get_sysex()[3]);
-            result += " ";
+            int nn = get_sysex()[0];
+            int dd = get_sysex()[1];            /* hopefully a power of 2   */
+            int cc = get_sysex()[2];
+            int bb = get_sysex()[3];
+            snprintf(tmp, sizeof tmp, "%d/%d 0x%X 0x%X", nn, dd, cc, bb);
             result += tmp;
         }
     }
@@ -855,7 +945,7 @@ editable_event::ex_data_string () const
         std::string data;
         int limit = get_sysex_size();
         if (limit > 4)
-            limit = 4;                  /* we have space limits */
+            limit = 4;                          /* we have space limits     */
 
         for (int i = 0; i < limit; ++i)
         {

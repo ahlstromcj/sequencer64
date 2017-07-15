@@ -663,10 +663,13 @@ editable_event::set_status_from_string
         if (value != SEQ64_END_OF_MIDIBYTE_TABLE)
         {
             /*
-             * Handle Meta or SysEx events, filling in m_sysex based on the field
-             * values in the sd0 parameter.
+             * Handle Meta or SysEx events, setting that status to 0xFF and
+             * the meta-type (in the m_channel member) to the meta event
+             * type-value, then filling in m_sysex based on the field values
+             * in the sd0 parameter.
              */
 
+            set_meta_status(value);
             if (value == EVENT_META_SET_TEMPO)                      /* 0x51 */
             {
                 /*

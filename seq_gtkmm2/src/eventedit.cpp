@@ -205,7 +205,7 @@ eventedit::eventedit (perform & p, sequence & seq)
     /**
      *  The seqedit class indirectly sets the sequence dirty flags, and this
      *  allows the sequence's pattern slot to be updated, which, for example,
-     *  allows the new experimental in-edit-highlight feature to work.  To get
+     *  allows the new optional in-edit-highlight feature to work.  To get
      *  the eventedit to also show the in-edit highlighting, we can make the
      *  sequence::set_dirty_mp() call.  This call does not cause a prompt for
      *  saving the file when exiting.

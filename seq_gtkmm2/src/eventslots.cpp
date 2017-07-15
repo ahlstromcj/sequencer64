@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2017-07-13
+ * \updates       2017-07-15
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -344,8 +344,9 @@ eventslots::insert_event
      * Don't set the channel for "Tempo", "Time Sig", and other Meta events.
      */
 
-    // TODO
-    edev.set_channel(m_seq.get_midi_channel());
+    if (! edev.is_ex_data())
+        edev.set_channel(m_seq.get_midi_channel());
+
     return insert_event(edev);
 }
 
@@ -548,8 +549,6 @@ eventslots::modify_current_event
         /*
          * We need to make a copy here, because the iterator will get
          * modified during the deletion-and-insertion process.
-         *
-         * editable_event & ev = EEDREF(m_current_iterator);
          */
 
         editable_event ev = EEDREF(m_current_iterator);
@@ -559,7 +558,7 @@ eventslots::modify_current_event
         ev.set_status_from_string(evtimestamp, evname, evdata0, evdata1);
         result = delete_current_event();
         if (result)
-            result = insert_event(ev);              /* full karaoke add */
+            result = insert_event(ev);                  /* full karaoke add */
     }
     return result;
 }

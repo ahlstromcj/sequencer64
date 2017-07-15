@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-14
+ * \updates       2017-07-15
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -546,6 +546,7 @@ public:
 
     void set_status (midibyte status);
     void set_status (midibyte eventcode, midibyte channel);
+    void set_meta_status (midibyte metatype);
 
     /**
      *  This function is used in recording to preserve the input channel

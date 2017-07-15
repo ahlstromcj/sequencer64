@@ -337,6 +337,25 @@ event::set_status (midibyte eventcode, midibyte channel)
 }
 
 /**
+ *  Sets a Meta event.  Meta events have a status byte of EVENT_MIDI_META ==
+ *  0xff and a channel value that reflects the type of Meta event (e.g. 0x51
+ *  for a "Set Tempo" event.
+ *
+ *  Note that the data bytes (if any) for this event will still need to be
+ *  added to the event via the append_sysex() or set_sysex() function.
+ *
+ * \param metatype
+ *      Indicates the type of meta event.
+ */
+
+void
+event::set_meta_status (midibyte metatype)
+{
+    m_status = EVENT_MIDI_META;
+    m_channel = metatype;
+}
+
+/**
  *  Deletes and clears out the SYSEX buffer.  (The m_sysex member used to be a
  *  pointer.)
  */

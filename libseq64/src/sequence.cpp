@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-09
+ * \updates       2017-07-15
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -52,6 +52,8 @@
 #ifdef SEQ64_STAZED_LFO_SUPPORT
 #include "calculations.hpp"
 #endif
+
+#define LAYK_PULL_REQUEST_95
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

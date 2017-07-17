@@ -385,13 +385,14 @@
 #define SEQ64_DEFAULT_BPM_PRECISION        0
 
 /**
- *  Provides a minimum value for the BPM precision.
+ *  Provides a minimum value for the BPM precision.  That is, no decimal
+ *  point.
  */
 
 #define SEQ64_MINIMUM_BPM_PRECISION        0
 
 /**
- *  Provides a maximum value for the BPM precision.
+ *  Provides a maximum value for the BPM precision, two decimal points.
  */
 
 #define SEQ64_MAXIMUM_BPM_PRECISION        2
@@ -506,7 +507,7 @@
 #define SEQ64_PRESERVE_VELOCITY         (-1)
 
 /**
- *  Defines the maximum MIDI data value
+ *  Defines the maximum MIDI data value.  This applies to note values as well.
  */
 
 #define SEQ64_MAX_DATA_VALUE             127

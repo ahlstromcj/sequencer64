@@ -437,6 +437,12 @@ private:                                // functions for friend sequence
     void link_new ();
     void clear_links ();
     void verify_and_link (midipulse slength);
+
+#ifdef SEQ64_TEMPO_DRAW
+    void link_tempos ();
+    void clear_tempo_links ();
+#endif
+
     bool mark_selected ();
     void mark_out_of_range (midipulse slength);
     void mark_all ();

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-07-12
+ * \updates       2017-07-16
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -76,6 +76,7 @@
 
 #include "app_limits.h"
 #include "calculations.hpp"
+#include "settings.hpp"
 
 #if ! defined PI
 #define PI     3.14159265359
@@ -910,6 +911,39 @@ tempo_us_to_bytes (midibyte t[3], int tempo_us)
     t[2] = midibyte(tempo_us & 0x0000FF);
     t[1] = midibyte((tempo_us & 0x00FF00) >> 8);
     t[0] = midibyte((tempo_us & 0xFF0000) >> 16);
+}
+
+/**
+ *  Converts a tempo value to a MIDI note value for the purpose of displaying
+ *  a tempo value in the mainwid, seqdata section (hopefully!), and the
+ *  perfroll.  It implements the following linear equation, with clamping just
+ *  in case.
+ *
+\verbatim
+                           N1 - N0
+        N = N0 + (B - B0) ---------
+                           B1 - B0
+\endverbatim
+ *
+ *  where N0 = 0 (MIDI note 0 is the minimum), N1 = 127 (the maximum MIDI
+ *  note), B0 is the value of usr().midi_bpm_minimum(),
+ *  B1 is the value of usr().midi_bpm_maximum(), B is the input beats/minute,
+ *  and N is the resulting note value.  As a precaution due to rounding error,
+ *  we clamp the values between 0 and 127.
+ */
+
+midibyte
+tempo_to_note_value (midibpm tempovalue)
+{
+    double slope = double(SEQ64_MAX_DATA_VALUE);
+    slope /= usr().midi_bpm_maximum() - usr().midi_bpm_minimum();
+    double note = (tempovalue - usr().midi_bpm_minimum()) * slope;
+    if (note < 0.0)
+        note = 0.0;
+    else if (note > double(SEQ64_MAX_DATA_VALUE))
+        note = double(SEQ64_MAX_DATA_VALUE);
+
+    return midibyte(note);
 }
 
 /**

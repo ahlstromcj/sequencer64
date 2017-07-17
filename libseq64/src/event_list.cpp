@@ -444,6 +444,17 @@ event_list::verify_and_link (midipulse slength)
     unmark_all();
     mark_out_of_range(slength);
     remove_marked();                        /* prune out-of-range events    */
+
+#ifdef SEQ64_TEMPO_DRAW
+
+    /*
+     * New:  link the tempos in a separate pass (it makes the logic easier and
+     *       the amount of time should be unnoticeable to the user.
+     */
+
+    link_tempos();
+
+#endif
 }
 
 /**
@@ -460,6 +471,62 @@ event_list::clear_links ()
         e.unmark();
     }
 }
+
+#ifdef SEQ64_TEMPO_DRAW
+
+/**
+ *  This function tries to link tempo events.  Native support for temp teacks
+ *  is a new feature of seq64.  These links are only in one direction: forward
+ *  in time, to the next tempo event, if any.
+ *
+ *  Also, at present, tempo events are not markable.
+ *
+ * \threadunsafe
+ *      As in most case, the caller will use an automutex to call this
+ *      function safely.
+ */
+
+void
+event_list::link_tempos ()
+{
+    clear_tempo_links();
+    for (event_list::iterator t = m_events.begin(); t != m_events.end(); ++t)
+    {
+        event & e = dref(t);
+        if (e.is_tempo())
+        {
+            event_list::iterator t2 = t;    /* next possible Set Tempo...   */
+            ++t2;                           /* ...starting here             */
+            while (t2 != m_events.end())
+            {
+                event & et2 = dref(t2);
+                if (et2.is_tempo())
+                {
+                    e.link(&et2);                   /* link + mark          */
+                    break;                          /* tempos link one way  */
+                }
+                ++t2;
+            }
+        }
+    }
+}
+
+/**
+ *  Clears all tempo event links.
+ */
+
+void
+event_list::clear_tempo_links ()
+{
+    for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    {
+        event & e = dref(i);
+        if (e.is_tempo())
+            e.clear_link();
+    }
+}
+
+#endif  // SEQ64_TEMPO_DRAW
 
 /**
  *  Marks all selected events.

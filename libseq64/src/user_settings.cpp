@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2017-06-03
+ * \updates       2017-07-16
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -175,7 +175,9 @@ user_settings::user_settings ()
 
     m_midi_ppqn                 (0),
     m_midi_beats_per_measure    (0),
+    m_midi_bpm_minimum          (0),
     m_midi_beats_per_minute     (0),
+    m_midi_bpm_maximum          (SEQ64_MAX_DATA_VALUE),
     m_midi_beat_width           (0),
     m_midi_buss_override        (0),
     m_velocity_override         (SEQ64_PRESERVE_VELOCITY),
@@ -278,7 +280,9 @@ user_settings::user_settings (const user_settings & rhs)
 
     m_midi_ppqn                 (rhs.m_midi_ppqn),
     m_midi_beats_per_measure    (rhs.m_midi_beats_per_measure),
+    m_midi_bpm_minimum          (rhs.m_midi_bpm_minimum),
     m_midi_beats_per_minute     (rhs.m_midi_beats_per_minute),
+    m_midi_bpm_maximum          (rhs.m_midi_bpm_maximum),
     m_midi_beat_width           (rhs.m_midi_beat_width),
     m_midi_buss_override        (rhs.m_midi_buss_override),
     m_velocity_override         (rhs.m_velocity_override),
@@ -384,7 +388,9 @@ user_settings::operator = (const user_settings & rhs)
 
         m_midi_ppqn                 = rhs.m_midi_ppqn;
         m_midi_beats_per_measure    = rhs.m_midi_beats_per_measure;
+        m_midi_bpm_minimum          = rhs.m_midi_bpm_minimum;
         m_midi_beats_per_minute     = rhs.m_midi_beats_per_minute;
+        m_midi_bpm_maximum          = rhs.m_midi_bpm_maximum;
         m_midi_beat_width           = rhs.m_midi_beat_width;
         m_midi_buss_override        = rhs.m_midi_buss_override;
         m_velocity_override         = rhs.m_velocity_override;
@@ -472,7 +478,9 @@ user_settings::set_defaults ()
     m_seqchars_y =  5;                      // range: 5-5
     m_midi_ppqn = SEQ64_DEFAULT_PPQN;       // range: 96 to 960, default 192
     m_midi_beats_per_measure = SEQ64_DEFAULT_BEATS_PER_MEASURE; // range: 1-16
+    m_midi_bpm_minimum = 0;                 // range: 0 to ???
     m_midi_beats_per_minute = SEQ64_DEFAULT_BPM;    // range: 20-500
+    m_midi_bpm_maximum = SEQ64_MAX_DATA_VALUE;      // range: ? to ???
     m_midi_beat_width = SEQ64_DEFAULT_BEAT_WIDTH;   // range: 1-16, powers of 2
     m_midi_buss_override = SEQ64_BAD_BUSS;          // range: 1 to 32
     m_velocity_override = SEQ64_PRESERVE_VELOCITY;  // -1, range: 0 to 127
@@ -913,6 +921,18 @@ user_settings::midi_beats_per_bar (int value)
 }
 
 /**
+ * \setter m_midi_bpm_minimum
+ *      This value can be set from 20 to 500.  The default value is 120.
+ */
+
+void
+user_settings::midi_bpm_minimum (midibpm value)
+{
+    if (value >= SEQ64_MINIMUM_BPM && value <= SEQ64_MAXIMUM_BPM)
+        m_midi_bpm_minimum = value;
+}
+
+/**
  * \setter m_midi_beats_minute
  *      This value can be set from 20 to 500.  The default value is 120.
  */
@@ -922,6 +942,18 @@ user_settings::midi_beats_per_minute (midibpm value)
 {
     if (value >= SEQ64_MINIMUM_BPM && value <= SEQ64_MAXIMUM_BPM)
         m_midi_beats_per_minute = value;
+}
+
+/**
+ * \setter m_midi_bpm_maximum
+ *      This value can be set from 20 to 500.  The default value is 120.
+ */
+
+void
+user_settings::midi_bpm_maximum (midibpm value)
+{
+    if (value >= SEQ64_MINIMUM_BPM && value <= SEQ64_MAXIMUM_BPM)
+        m_midi_bpm_maximum = value;
 }
 
 /**

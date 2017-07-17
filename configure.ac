@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-07-15
+dnl \update        2017-07-16
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -20,7 +20,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.90$)dnl
-AC_INIT(Sequencer64, [0.93.0], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.93.1], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl Do we need the following?  No, but it cleans up a lot of warning messages.
@@ -291,8 +291,8 @@ AC_C_CONST
 dnl ALSA test, performed by m4/alsa.m4.  Note that all original ALSA code
 dnl has been moved to the new seq_alsamidi directory, to distinguish it from
 dnl the new rtmidi code.
-
-AM_PATH_ALSA(0.9.0)
+dnl
+dnl AM_PATH_ALSA(0.9.0)
 
 dnl Check for the presence of Doxygen.  Not an error to be missing, but
 dnl we don't want to try to build documentation if it is not present.
@@ -443,6 +443,10 @@ if test "$rtmidi" != "no"; then
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xyes])
     AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
+
+dnl Eventually we want to make ALSA optional for the user/developer.
+
+    AM_PATH_ALSA(0.9.0)
 else
     AC_MSG_WARN([rtmidi build disabled.]);
 fi
@@ -460,6 +464,7 @@ if test "$cli" != "no"; then
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTCLI], [test x$cli = xyes])
+    AM_PATH_ALSA(0.9.0)
 else
     AC_MSG_WARN([rtmidi command-line build disabled.]);
 fi
@@ -479,6 +484,7 @@ if test "$alsamidi" != "no"; then
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
+    AM_PATH_ALSA(0.9.0)
 else
     AC_MSG_WARN([Standard ALSA build disabled.]);
 fi
@@ -656,8 +662,8 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-07-15"
-#define VERSION "0.93.0"
+#define VERSION_DATE_SHORT "2017-07-16"
+#define VERSION "0.93.1"
 
 )
 

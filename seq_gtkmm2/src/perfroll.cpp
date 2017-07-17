@@ -658,15 +658,15 @@ perfroll::draw_sequence_on (int seqnum)
                         );
                     }
 
-                    int lowest_note;                        // for side-effect
-                    int highest_note;                       // ditto
+                    int low_note;                       // for side-effect
+                    int high_note;                      // ditto
                     bool have_notes = seq->get_minmax_note_events
                     (
-                        lowest_note, highest_note           // side-effects
+                        low_note, high_note             // side-effects
                     );
                     if (have_notes)
                     {
-                        int height = highest_note - lowest_note + 2;
+                        int height = high_note - low_note + 2;
                         int length = seq->get_length();
                         midipulse tick_s;
                         midipulse tick_f;
@@ -703,7 +703,7 @@ perfroll::draw_sequence_on (int seqnum)
                             int mny = m_names_y - 6;        // ????
                             int note_y =
                             (
-                                mny - (mny * (note - lowest_note)) / height
+                                mny - (mny * (note - low_note)) / height
                             ) + 1;
                             int tick_s_x =
                                 ((tick_s * length_w) / length) + tickmarker_x;

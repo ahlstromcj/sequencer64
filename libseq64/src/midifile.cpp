@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-15
+ * \updates       2017-07-16
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -561,6 +561,15 @@ midifile::add_trigger (sequence & seq, midishort ppqn)
  *  type is parsed first (because it is listed first) then it gets overwritten
  *  by the proprietary, above.
  *
+ * Tempo events:
+ *
+ *      If valid, set the global tempo to the first encountered tempo; this is
+ *      legacy behavior.  Bad tempos occur and stick around, munging exported
+ *      songs.  We log only the first tempo officially; the rest are stored as
+ *      events if in the first track.  We also adjust the upper draw-tempo
+ *      range value to about twice this value, to give some headroom... it
+ *      will not be saved unless the --user-save option is in force.
+ *
  * \param p
  *      Provides a reference to the perform object into which sequences/tracks
  *      are to be added.
@@ -808,10 +817,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             {
                                 int bpm = int(read_byte());         // nn
                                 int logbase2 = int(read_byte());    // dd
-                                int bw = beat_pow2(logbase2);
-
                                 int cc = read_byte();               // cc
                                 int bb = read_byte();               // bb
+                                int bw = beat_pow2(logbase2);
                                 seq.set_beats_per_bar(bpm);
                                 seq.set_beat_width(bw);
                                 seq.clocks_per_metronome(cc);
@@ -845,18 +853,15 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                             if (len == 3)
                             {
+                                /*
+                                 * See "Tempo events" in the function banner.
+                                 */
+
                                 midibyte bt[4];
                                 bt[0] = read_byte();                // tt
                                 bt[1] = read_byte();                // tt
                                 bt[2] = read_byte();                // tt
                                 bt[3] = 0;
-
-                                /*
-                                 * If valid, set.  Bad tempos occur and stick
-                                 * around, munging exported songs.  We log
-                                 * only the first tempo officially; the rest
-                                 * are stored as events if in the first track.
-                                 */
 
                                 double tt = tempo_us_from_bytes(bt);
                                 if (tt > 0)
@@ -871,6 +876,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                             p.set_beats_per_minute(bpm);
                                             p.us_per_quarter_note(int(tt));
                                             seq.us_per_quarter_note(int(tt));
+                                            usr().midi_bpm_maximum(2.1 * bpm);
                                         }
                                     }
 

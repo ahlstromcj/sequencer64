@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-27
+ * \updates       2017-07-16
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -268,7 +268,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
         ++base_y;                                       /* overall fix-up   */
         draw_rectangle_on_pixmap                        /* filled black box */
         (
-            black(), base_x, base_y, m_seqarea_x, m_seqarea_y   // black()
+            black(), base_x, base_y, m_seqarea_x, m_seqarea_y
         );
         if (perf().is_active(seqnum))
         {
@@ -439,15 +439,12 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             }
             draw_rectangle_on_pixmap(fg_color(), x, y, lx, ly, false);
 
-            int lowest_note;                                // for side-effect
-            int highest_note;                               // ditto
-            bool have_notes = seq->get_minmax_note_events   // new, optimized
-            (
-                lowest_note, highest_note                   // side-effects
-            );
+            int low_note;                                // for side-effect
+            int high_note;                               // ditto
+            bool have_notes = seq->get_minmax_note_events(low_note, high_note);
             if (have_notes)
             {
-                int height = highest_note - lowest_note + 2;
+                int height = high_note - low_note + 2;    // 2-pixel border
                 int len = seq->get_length();
                 midipulse tick_s;
                 midipulse tick_f;
@@ -455,14 +452,16 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 bool selected;
                 int velocity;
                 draw_type_t dt;
+                Color drawcolor = fg_color();
+                Color eventcolor = fg_color();
 
-                Color eventcolor;
 #ifdef SEQ64_STAZED_TRANSPOSE
                 if (! seq->get_transposable())
+                {
                     eventcolor = red();
-                else
+                    drawcolor = red();
+                }
 #endif
-                    eventcolor = fg_color();
 
                 seq->reset_draw_marker();       /* reset container iterator */
                 do
@@ -477,14 +476,15 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     int tick_s_x = tick_s * m_seqarea_seq_x / len;
                     int tick_f_x = tick_f * m_seqarea_seq_x / len;
                     int note_y = m_seqarea_seq_y -
-                         m_seqarea_seq_y * (note + 1 - lowest_note) / height;
+                         m_seqarea_seq_y * (note + 1 - low_note) / height;
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT
                     printf
                     (
-                        "note %x: s=%4ld, f=%4ld, s_x=%4d f_x=%4d, f-s=%d\n",
-                        note, tick_s, tick_f, tick_s_x, tick_f_x,
-                        tick_f_x - tick_s_x
+                        "note %x: y=%4d,s=%4ld, f=%4ld, s_x=%4d "
+                        "f_x=%4d, f-s=%d, low=%d, high=%d\n",
+                        note, note_y, tick_s, tick_f, tick_s_x,
+                        tick_f_x, tick_f_x - tick_s_x, low_note, height
                     );
 #endif
 
@@ -494,12 +494,30 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     if (tick_f_x <= tick_s_x)
                         tick_f_x = tick_s_x + 1;
 
+#ifdef SEQ64_TEMPO_DRAW        // PURELY EXPERIMENTAL
+                    if (dt == DRAW_TEMPO)
+                    {
+                        set_line(Gdk::LINE_ON_OFF_DASH, 2);
+                        drawcolor = dark_cyan();
+                        note_y = m_seqarea_seq_y -
+                             m_seqarea_seq_y * (note + 1) / 127;
+                    }
+#endif
+
                     draw_line_on_pixmap
                     (
-                        eventcolor,
+                        drawcolor,
                         rectangle_x + tick_s_x, rectangle_y + note_y,
                         rectangle_x + tick_f_x, rectangle_y + note_y
                     );
+
+#ifdef SEQ64_TEMPO_DRAW        // PURELY EXPERIMENTAL
+                    if (dt == DRAW_TEMPO)
+                    {
+                        set_line(Gdk::LINE_SOLID, 1);
+                        drawcolor = eventcolor;
+                    }
+#endif
 
                 } while (dt != DRAW_FIN);
             }

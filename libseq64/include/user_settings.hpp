@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-06-17
+ * \updates       2017-07-16
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -83,6 +83,7 @@ namespace seq64
 
 class user_settings
 {
+    friend class midifile;      /* allow access to midi_bpm_maximum()    */
     friend class userfile;      /* allow protected access to file parser */
     friend bool parse_o_options (int, char *[]);
 
@@ -511,6 +512,13 @@ class user_settings
     int m_midi_beats_per_measure;        /* BPB, or beats per bar       */
 
     /**
+     *  Provides the minimum beats per minute, purely for providing the scale
+     *  for drawing the tempo.  Defaults to 0.
+     */
+
+    midibpm m_midi_bpm_minimum;
+
+    /**
      *  Provides the universal and unambiguous MIDI value for beats per minute
      *  (BPM).  This variable will replace the global beats per minute.  The
      *  default value of this variable is DEFAULT_BPM (120).  This variable
@@ -520,7 +528,14 @@ class user_settings
      *  "BPM", and use "bpm" in any accessor function names.
      */
 
-    int m_midi_beats_per_minute;         /* BPM, or beats per minute    */
+    midibpm m_midi_beats_per_minute;        /* BPM, or beats per minute    */
+
+    /**
+     *  Provides the maximum beats per minute, purely for providing the scale
+     *  for drawing the tempo.  Defaults to 127.
+     */
+
+    midibpm m_midi_bpm_maximum;
 
     /**
      *  Provides the universal MIDI value for beats width (BW).  This variable
@@ -1428,12 +1443,30 @@ public:
     }
 
     /**
+     * \getter m_midi_bpm_minimum
+     */
+
+    midibpm midi_bpm_minimum () const
+    {
+        return m_midi_bpm_minimum;
+    }
+
+    /**
      * \getter m_midi_beats_per_minute
      */
 
     midibpm midi_beats_per_minute () const
     {
         return m_midi_beats_per_minute;
+    }
+
+    /**
+     * \getter m_midi_bpm_maximum
+     */
+
+    midibpm midi_bpm_maximum () const
+    {
+        return m_midi_bpm_maximum;
     }
 
     /**
@@ -1648,7 +1681,9 @@ public:         // used in main application module and the userfile class
 protected:
 
     void midi_beats_per_bar (int beatsperbar);
+    void midi_bpm_minimum (midibpm beatsperminute);
     void midi_beats_per_minute (midibpm beatsperminute);
+    void midi_bpm_maximum (midibpm beatsperminute);
     void midi_beat_width (int beatwidth);
 
 private:

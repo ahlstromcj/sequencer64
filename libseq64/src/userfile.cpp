@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-04
+ * \updates       2017-07-16
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -467,6 +467,16 @@ userfile::parse (perform & /* a_perf */)
                 sscanf(m_line, "%f", &inc);
                 usr().bpm_page_increment(midibpm(inc));
             }
+            if (next_data_line(file))
+            {
+                sscanf(m_line, "%f", &beatspm);
+                usr().midi_bpm_minimum(midibpm(beatspm));
+            }
+            if (next_data_line(file))
+            {
+                sscanf(m_line, "%f", &beatspm);
+                usr().midi_bpm_maximum(midibpm(beatspm));
+            }
         }
 
         /*
@@ -485,7 +495,7 @@ userfile::parse (perform & /* a_perf */)
             {
                 sscanf(m_line, "%s", temp);
                 std::string logfile = std::string(temp);
-/**/            printf("logfile = '%s'\n", logfile.c_str());
+                printf("logfile = '%s'\n", logfile.c_str());
                 if (logfile == "\"\"")
                     logfile.clear();
 
@@ -990,7 +1000,8 @@ userfile::write (const perform & /* a_perf */ )
 
         file << "\n"
             "# Specifies the default beats per minute.  The default value\n"
-            "# is 120, and the legal range is 20 to 600.\n"
+            "# is 120, and the legal range is 20 to 600. Also see the value of\n"
+            "# midi_bpm_minimum and midi_bpm_maximum below.\n"
             "\n"
             << usr().midi_beats_per_minute() << "       # midi_beats_per_minute\n"
             ;
@@ -1061,6 +1072,26 @@ userfile::write (const perform & /* a_perf */ )
 
         increment = usr().bpm_page_increment();
         file << increment << "       # bpm_page_increment\n";
+
+        file << "\n"
+            "# Specifies the minimum value of beats/minute in tempo graphing.\n"
+            "# By default, the tempo graph ranges from 0.0 to 127.0.\n"
+            "# This value can be increased to give a magnified view of tempo.\n"
+            "\n"
+            ;
+
+        increment = usr().midi_bpm_minimum();
+        file << increment << "       # midi_bpm_minimum\n";
+
+        file << "\n"
+            "# Specifies the maximum value of beats/minute in tempo graphing.\n"
+            "# By default, the tempo graph ranges from 0.0 to 127.0.\n"
+            "# This value can be increased to give a magnified view of tempo.\n"
+            "\n"
+            ;
+
+        increment = usr().midi_bpm_maximum();
+        file << increment << "       # midi_bpm_maximum\n";
 
         /*
          * [user-options]

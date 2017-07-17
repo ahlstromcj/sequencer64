@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-15
+ * \updates       2017-07-16
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -2016,7 +2016,7 @@ sequence::grow_selected (midipulse delta)
             }
             else if (er.is_marked())                /* non-Note event?      */
             {
-#ifdef USE_NON_NOTE_EVENT_ADJUSTMENT                /* currenty defined     */
+#ifdef SEQ64_NON_NOTE_EVENT_ADJUSTMENT              /* currenty defined     */
                 event e = er;                       /* copy original event  */
                 midipulse ontime = er.get_timestamp();
                 midipulse newtime = clip_timestamp(ontime, ontime + delta);
@@ -3841,15 +3841,17 @@ sequence::reset_draw_trigger_marker ()
  *
  * \param lowest
  *      A reference parameter to return the note with the lowest value.
- *      if there are no notes, then it is set to SEQ64_MIDI_COUNT_MAX-1.
+ *      if there are no notes, then it is set to SEQ64_MAX_DATA_VALUE, and
+ *      false is returned.
  *
  * \param highest
  *      A reference parameter to return the note with the highest value.
- *      if there are no notes, then it is set to -1.
+ *      if there are no notes, then it is set to 0, and false is returned.
  *
  * \return
- *      If there are no notes in the list, then false is returned, and the
- *      results should be disregarded.
+ *      If there are no notes or tempo events in the list, then false is
+ *      returned, and the results should be disregarded.  If true is returned,
+ *      but there are only tempo events, then the low/high range is 0 to 127.
  */
 
 bool
@@ -3857,7 +3859,7 @@ sequence::get_minmax_note_events (int & lowest, int & highest)
 {
     automutex locker(m_mutex);
     bool result = false;
-    int low = SEQ64_MIDI_COUNT_MAX-1;
+    int low = SEQ64_MAX_DATA_VALUE;
     int high = -1;
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
@@ -3875,6 +3877,18 @@ sequence::get_minmax_note_events (int & lowest, int & highest)
                 result = true;
             }
         }
+#ifdef SEQ64_TEMPO_DRAW        // PURELY EXPERIMENTAL
+        else if (er.is_tempo())
+        {
+            midibyte notebyte = tempo_to_note_value(er.tempo());
+            if (notebyte < low)
+                low = notebyte;
+            else if (notebyte > high)
+                high = notebyte;
+
+            result = true;
+        }
+#endif
     }
     lowest = low;
     highest = high;
@@ -3905,6 +3919,10 @@ sequence::get_minmax_note_events (int & lowest, int & highest)
  * \param [out] velocity
  *      Provides a pointer destination for the note velocity.
  *      Probably should be a midibyte value.
+ *
+ * \return
+ *      Returns a draw_type_t value:  DRAW_NORMAL_LINKED, DRAW_NOTE_ON,
+ *      DRAW_NOTE_OFF, or DRAW_FIN.
  */
 
 draw_type_t
@@ -3938,6 +3956,26 @@ sequence::get_next_note_event
         {
             return DRAW_NOTE_OFF;
         }
+#ifdef SEQ64_TEMPO_DRAW
+        else if (drawevent.is_tempo())
+        {
+            midibpm bpm = drawevent.tempo();
+            midibyte notebyte = tempo_to_note_value(bpm);
+            *note = int(notebyte);
+            if (islinked)
+                *tick_f = drawevent.get_linked()->get_timestamp();
+            else
+                *tick_f = get_length();
+
+            /*
+             * Tempo needs to be attained.  This is good only for drawing a
+             * horizontal tempo line; we need a way to return both a starting
+             * tempo and ending tempo.  Return the latter in velocity?
+             */
+
+            return DRAW_TEMPO;
+        }
+#endif
     }
     return DRAW_FIN;
 }
@@ -3946,12 +3984,18 @@ sequence::get_next_note_event
  *  Get the next event in the event list.  Then set the status and control
  *  character parameters using that event.
  *
+ * Note: This overload is used only in seqedit::popup_event_menu().
+ *
  * \param status
  *      Provides a pointer to the MIDI status byte to be set, as a way to
  *      retrieve the event.
  *
  * \param cc
  *      The return pointer for the control value.
+ *
+ * \return
+ *      Returns true if the data is useable, and false if there are no more
+ *      events.
  */
 
 bool
@@ -3968,6 +4012,8 @@ sequence::get_next_event (midibyte * status, midibyte * cc)
     }
     return false;
 }
+
+#ifdef USE_STAZED_SELECTION_EXTENSIONS
 
 /**
  *  Get the next event in the event list that matches the given status and
@@ -4001,8 +4047,6 @@ sequence::get_next_event (midibyte * status, midibyte * cc)
  * \param evtype
  *      A stazed parameter for picking either all event or unselected events.
  */
-
-#ifdef USE_STAZED_SELECTION_EXTENSIONS
 
 bool
 sequence::get_next_event
@@ -4044,6 +4088,39 @@ sequence::get_next_event
 
 #else   // USE_STAZED_SELECTION_EXTENSIONS
 
+/**
+ *  Get the next event in the event list that matches the given status and
+ *  control character.  Then set the rest of the parameters parameters
+ *  using that event.  If the status is the new value EVENT_ANY, then any
+ *  event will be obtained.
+ *
+ *  Note the usage of event::is_desired_cc_or_not_cc(status, cc, *d0); Either
+ *  we have a control change with the right CC or it's a different type of
+ *  event.
+ *
+ * \param status
+ *      The type of event to be obtained.  The special value EVENT_ANY can be
+ *      provided so that no event statuses are filtered.
+ *
+ * \param cc
+ *      The continuous controller value that might be desired.
+ *
+ * \param tick
+ *      A pointer return value for the tick value of the next event found.
+ *
+ * \param d0
+ *      A pointer return value for the first data value of the event.
+ *
+ * \param d1
+ *      A pointer return value for the second data value of the event.
+ *
+ * \param selected
+ *      A pointer return value for the is-selected status of the event.
+ *
+ * \return
+ *      Returns true if the current event was one of the desired ones.
+ */
+
 bool
 sequence::get_next_event
 (
@@ -4073,6 +4150,62 @@ sequence::get_next_event
     }
     return false;
 }
+
+#ifdef USE_NON_SILLY_VERSION_OF_GET_NEXT_EVENT
+
+/**
+ *  A more rational version of get_next_event(), that returns the whole event.
+ *  In addition, it always allows Tempo events to be found.
+ *
+ * \param status
+ *      The type of event to be obtained.  The special value EVENT_ANY can be
+ *      provided so that no event statuses are filtered.
+ *
+ * \param cc
+ *      The continuous controller value that might be desired.
+ *
+ * \param ev
+ *      An iterator return value for the next event found.  The caller might
+ *      want to check if it is a Tempo event.  Do not use this iterator if
+ *      false is returned!
+ *
+ * \return
+ *      Returns true if the current event was one of the desired ones, or was
+ *      a Tempo event.
+ */
+
+bool
+sequence::get_next_event
+(
+    midibyte status, midibyte cc, event_list::const_iterator * ev
+)
+{
+    ev = m_events.end();
+    while (m_iterator_draw != m_events.end())
+    {
+        const event & drawev = DREF(m_iterator_draw);
+        bool ok = drawev.get_status() == status;
+        if (! ok)
+            ok = status == EVENT_ANY;
+
+        if (ok)
+        {
+            ok = drawev.is_tempo() ||
+                (event::is_desired_cc_or_not_cc(status, cc, *d0))
+
+            if (ok)
+            {
+                ev = m_iterator_draw;
+                ++m_iterator_draw;          /* good one, update and return  */
+                return true;
+            }
+        }
+        ++m_iterator_draw;                  /* keep going                   */
+    }
+    return false;
+}
+
+#endif  // USE_NON_SILLY_VERSION_OF_GET_NEXT_EVENT
 
 #endif  // USE_STAZED_SELECTION_EXTENSIONS
 

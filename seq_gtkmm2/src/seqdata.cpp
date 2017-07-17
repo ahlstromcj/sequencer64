@@ -237,9 +237,9 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
     m_gc->set_foreground(black_paint());
 
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS
-    int numselected = EVENTS_ALL;                   // -1
+    int numselected = EVENTS_ALL;
     int seltype = numselected;
-    if (m_status == EVENT_NOTE_ON)                  // ??????? iffy.
+    if (m_status == EVENT_NOTE_ON)                  // iffy
     {
         numselected = m_seq.get_num_selected_events(m_status, m_cc);
         if (numselected > 0)

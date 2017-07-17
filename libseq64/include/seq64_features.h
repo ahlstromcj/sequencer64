@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-05-29
+ * \updates       2017-07-16
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -61,11 +61,17 @@
 #endif
 
 /**
+ *  Experimental feature for tempo tracks.
+ */
+
+#define SEQ64_TEMPO_DRAW        // PURELY EXPERIMENTAL
+
+/**
  * Odds and ends that we missed.  This value allows non-notes to be included
  * in a selection for movement or other adjustment.
  */
 
-#define USE_NON_NOTE_EVENT_ADJUSTMENT   /* see sequence.cpp                 */
+#define SEQ64_NON_NOTE_EVENT_ADJUSTMENT     /* see sequence.cpp             */
 
 /**
  * Currently, many macros are undefined as tentative or experimental.

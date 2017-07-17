@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-07-09
+2016-12-03 to 2017-07-16
 
 Debian packaging:
 
@@ -10,6 +10,7 @@ Debian packaging:
 Tempo Track:
 
     -   Need to get event editor to display, insert, or update Meta data.
+    -   Separate tempo for each pattern.
 
 Rtmidi implementation issues to work out:
 
@@ -25,12 +26,8 @@ Hot ideas (from GitHub):
     -   Mute button should be inactive unless there are armed sequences.  The
         name is a bit misleading.  Maybe it should toggle them all on if none
         are armed.
-    -   Separate tempo for each pattern
-    -   Tempo track
-    -   Larger number of visible sets.
     -   Any way to make playback multicore?  The "stress" file maxes out a
         core.
-    -   Can we use page-up/down in mainwid to change the set?  DONE!!!
     -   Issue: With sets=8x12, the stress MIDI file will crash at load or
         exit, with bad sequence #108 (out of 128 loaded).
     -   Display sequence number in sequence and event editors.

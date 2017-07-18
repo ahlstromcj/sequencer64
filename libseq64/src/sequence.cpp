@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-16
+ * \updates       2017-07-17
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -4013,13 +4013,13 @@ sequence::get_next_event (midibyte * status, midibyte * cc)
     return false;
 }
 
-#ifdef USE_STAZED_SELECTION_EXTENSIONS
-
 /**
- *  Get the next event in the event list that matches the given status and
- *  control character.  Then set the rest of the parameters parameters
- *  using that event.  If the status is the new value EVENT_ANY, then any
- *  event will be obtained.
+ *  A more rational version of get_next_event(), that returns the whole event.
+ *  In addition, it always allows Tempo events to be found.  Gets the next
+ *  event in the event list that matches the given status and control
+ *  character.  Then set the rest of the parameters parameters using that
+ *  event.  If the status is the new value EVENT_ANY, then any event will be
+ *  obtained.
  *
  *  Note the usage of event::is_desired_cc_or_not_cc(status, cc, *d0); Either
  *  we have a control change with the right CC or it's a different type of
@@ -4032,34 +4032,36 @@ sequence::get_next_event (midibyte * status, midibyte * cc)
  * \param cc
  *      The continuous controller value that might be desired.
  *
- * \param tick
- *      A pointer return value for the tick value of the next event found.
- *
- * \param d0
- *      A pointer return value for the first data value of the event.
- *
- * \param d1
- *      A pointer return value for the second data value of the event.
- *
- * \param selected
- *      A pointer return value for the is-selected status of the event.
+ * \param [out] ev
+ *      An iterator return value for the next event found.  The caller might
+ *      want to check if it is a Tempo event.  Do not use this iterator if
+ *      false is returned!
  *
  * \param evtype
  *      A stazed parameter for picking either all event or unselected events.
+ *
+ * \return
+ *      Returns true if the current event was one of the desired ones, or was
+ *      a Tempo event.
  */
 
 bool
 sequence::get_next_event
 (
     midibyte status, midibyte cc,
-    midipulse * tick, midibyte * d0, midibyte * d1, bool * selected,
+    event_list::const_iterator & ev,
     int evtype
 )
 {
+    ev = m_events.end();
     while (m_iterator_draw != m_events.end())
     {
-        event & drawevent = DREF(m_iterator_draw);
+        const event & drawevent = DREF(m_iterator_draw);
         bool ok = drawevent.get_status() == status;
+        if (! ok)
+            ok = status == EVENT_ANY;
+
+#ifdef USE_STAZED_SELECTION_EXTENSIONS
         if (ok)
         {
             if (evtype == EVENTS_UNSELECTED && drawevent.is_selected())
@@ -4072,126 +4074,16 @@ sequence::get_next_event
                 ++m_iterator_draw;
                 continue;           /* keep trying to find one              */
             }
-            drawevent.get_data(*d0, *d1);
-            *tick = drawevent.get_timestamp();
-            *selected = drawevent.is_selected();
-            if (event::is_desired_cc_or_not_cc(status, cc, *d0))
-            {
-                ++m_iterator_draw;  /* good one, so update and return       */
-                return true;
-            }
         }
-        ++m_iterator_draw;          /* keep going until null or a Note On   */
-    }
-    return false;
-}
+#endif  // USE_STAZED_SELECTION_EXTENSIONS
 
-#else   // USE_STAZED_SELECTION_EXTENSIONS
-
-/**
- *  Get the next event in the event list that matches the given status and
- *  control character.  Then set the rest of the parameters parameters
- *  using that event.  If the status is the new value EVENT_ANY, then any
- *  event will be obtained.
- *
- *  Note the usage of event::is_desired_cc_or_not_cc(status, cc, *d0); Either
- *  we have a control change with the right CC or it's a different type of
- *  event.
- *
- * \param status
- *      The type of event to be obtained.  The special value EVENT_ANY can be
- *      provided so that no event statuses are filtered.
- *
- * \param cc
- *      The continuous controller value that might be desired.
- *
- * \param tick
- *      A pointer return value for the tick value of the next event found.
- *
- * \param d0
- *      A pointer return value for the first data value of the event.
- *
- * \param d1
- *      A pointer return value for the second data value of the event.
- *
- * \param selected
- *      A pointer return value for the is-selected status of the event.
- *
- * \return
- *      Returns true if the current event was one of the desired ones.
- */
-
-bool
-sequence::get_next_event
-(
-    midibyte status, midibyte cc,
-    midipulse * tick, midibyte * d0, midibyte * d1, bool * selected
-)
-{
-    while (m_iterator_draw != m_events.end())
-    {
-        event & drawevent = DREF(m_iterator_draw);
-        bool ok = drawevent.get_status() == status;
-        if (! ok)
-            ok = status == EVENT_ANY;
 
         if (ok)
         {
-            drawevent.get_data(*d0, *d1);
-            *tick = drawevent.get_timestamp();
-            *selected = drawevent.is_selected();
-            if (event::is_desired_cc_or_not_cc(status, cc, *d0))
-            {
-                ++m_iterator_draw;  /* good one, so update and return       */
-                return true;
-            }
-        }
-        ++m_iterator_draw;          /* keep going until null or a Note On   */
-    }
-    return false;
-}
-
-#ifdef USE_NON_SILLY_VERSION_OF_GET_NEXT_EVENT
-
-/**
- *  A more rational version of get_next_event(), that returns the whole event.
- *  In addition, it always allows Tempo events to be found.
- *
- * \param status
- *      The type of event to be obtained.  The special value EVENT_ANY can be
- *      provided so that no event statuses are filtered.
- *
- * \param cc
- *      The continuous controller value that might be desired.
- *
- * \param ev
- *      An iterator return value for the next event found.  The caller might
- *      want to check if it is a Tempo event.  Do not use this iterator if
- *      false is returned!
- *
- * \return
- *      Returns true if the current event was one of the desired ones, or was
- *      a Tempo event.
- */
-
-bool
-sequence::get_next_event
-(
-    midibyte status, midibyte cc, event_list::const_iterator * ev
-)
-{
-    ev = m_events.end();
-    while (m_iterator_draw != m_events.end())
-    {
-        const event & drawev = DREF(m_iterator_draw);
-        bool ok = drawev.get_status() == status;
-        if (! ok)
-            ok = status == EVENT_ANY;
-
-        if (ok)
-        {
-            ok = drawev.is_tempo() ||
-                (event::is_desired_cc_or_not_cc(status, cc, *d0))
+            midibyte d0, d1;
+            drawevent.get_data(d0, d1);
+            ok = drawevent.is_tempo() ||
+                event::is_desired_cc_or_not_cc(status, cc, d0);
 
             if (ok)
             {
@@ -4204,10 +4096,6 @@ sequence::get_next_event
     }
     return false;
 }
-
-#endif  // USE_NON_SILLY_VERSION_OF_GET_NEXT_EVENT
-
-#endif  // USE_STAZED_SELECTION_EXTENSIONS
 
 /**
  *  Get the next trigger in the trigger list, and set the parameters based

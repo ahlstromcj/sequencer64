@@ -93,6 +93,8 @@ class event_list
     friend class midi_container;        // access to event_list::iterator
     friend class midi_splitter;         // ditto
     friend class sequence;              // tritto
+    friend class seqdata;               // quaditto
+    friend class seqevent;              // quintitto
 
 private:
 

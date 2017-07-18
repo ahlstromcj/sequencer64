@@ -1310,30 +1310,13 @@ public:
         bool * selected, int * velocity
     );
     bool get_minmax_note_events (int & lowest, int & highest);
-
-#ifdef USE_STAZED_SELECTION_EXTENSIONS
+    bool get_next_event (midibyte * status, midibyte * cc);
     bool get_next_event
     (
         midibyte status, midibyte cc,
-        midipulse * tick, midibyte * d0, midibyte * d1, bool * selected,
+        event_list::const_iterator & ev,
         int evtype = EVENTS_ALL
     );
-#else
-    bool get_next_event
-    (
-        midibyte status, midibyte cc,
-        midipulse * tick, midibyte * d0, midibyte * d1, bool * selected
-    );
-#endif
-
-#ifdef USE_NON_SILLY_VERSION_OF_GET_NEXT_EVENT
-    bool get_next_event
-    (
-        midibyte status, midibyte cc, event_list::const_iterator * ev
-    );
-#endif
-
-    bool get_next_event (midibyte * status, midibyte * cc);
     bool get_next_trigger
     (
         midipulse * tick_on, midipulse * tick_off,

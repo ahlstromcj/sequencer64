@@ -349,15 +349,22 @@ seqevent::update_pixmap ()
 void
 seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 {
-    midipulse tick;
-    midibyte d0, d1;
-    bool selected;
+//  midipulse tick;
+//  midibyte d0, d1;
+//  bool selected;
     int starttick = m_scroll_offset_ticks;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     m_gc->set_foreground(black());              /* draw boxes from sequence */
     m_seq.reset_draw_marker();
-    while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
+// #ifdef USE_NON_SILLY_VERSION_OF_GET_NEXT_EVENT
+    event_list::const_iterator ev;
+    while (m_seq.get_next_event(m_status, m_cc, ev))    // no evtype arg
+//  while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
     {
+        midibyte d0, d1;
+        midipulse tick = ev->get_timestamp();
+        bool selected = ev->is_selected();
+        ev->get_data(d0, d1);
         if (tick >= starttick && tick <= endtick)
         {
             int x = tick / m_zoom - m_scroll_offset_x;  /* screen coordinate */

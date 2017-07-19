@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-22
+ * \updates       2017-07-18
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -228,9 +228,6 @@ seqdata::update_pixmap ()
 void
 seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 {
-//  midipulse tick;
-//  midibyte d0, d1;
-//  bool selected;
     int starttick = m_scroll_offset_ticks;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     draw_rectangle(drawable, white_paint(), 0, 0, m_window_x, m_window_y);
@@ -250,36 +247,55 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 #endif
 
         m_seq.reset_draw_marker();
-#ifdef USE_STAZED_SEQDATA_EXTENSIONS
-        while
-        (
-            m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected, seltype)
-        )
-#else
-// #ifdef USE_NON_SILLY_VERSION_OF_GET_NEXT_EVENT
         event_list::const_iterator ev;
-        while (m_seq.get_next_event(m_status, m_cc, ev))    // no evtype arg
-//      while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
-#endif
+        while (m_seq.get_next_event(m_status, m_cc, ev))
         {
-            midibyte d0, d1;
             midipulse tick = ev->get_timestamp();
             bool selected = ev->is_selected();
+            midibyte d0, d1;
             ev->get_data(d0, d1);
             if (tick >= starttick && tick <= endtick)
             {
-                int event_x = tick / m_zoom;            /* screen coordinate    */
-                int event_height = event::is_one_byte_msg(m_status) ? d0 : d1 ;
+                int event_x = tick / m_zoom;        /* screen coordinate    */
                 int x = event_x - m_scroll_offset_x + 1;
-                set_line(Gdk::LINE_SOLID, 2);           /* vertical event line  */
-                draw_line
-                (
-                    drawable, selected ? dark_orange() : black_paint(),
-                    x, c_dataarea_y - event_height, x, c_dataarea_y
-                );
+                int event_height;
+                if (ev->is_tempo())
+                {
+                    event_height = int(tempo_to_note_value(ev->tempo()));
+                    set_line(Gdk::LINE_ON_OFF_DASH, 2);
+                    set_line(Gdk::LINE_SOLID, 2);   /* vertical event line  */
+
+                    printf
+                    (
+                        "%ld: tempo %f, height %d\n",
+                        tick, ev->tempo(), event_height
+                    );
+
+                    draw_line
+                    (
+                        drawable, selected ? dark_orange() : dark_cyan(),
+                        x, c_dataarea_y - event_height, x, c_dataarea_y
+                    );
+                }
+                else if (ev->is_ex_data())
+                {
+                    /*
+                     * Do nothing for other Meta events at this time.
+                     */
+                }
+                else
+                {
+                    event_height = event::is_one_byte_msg(m_status) ? d0 : d1 ;
+                    set_line(Gdk::LINE_SOLID, 2);   /* vertical event line  */
+                    draw_line
+                    (
+                        drawable, selected ? dark_orange() : black_paint(),
+                        x, c_dataarea_y - event_height, x, c_dataarea_y
+                    );
+                }
 
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS
-                draw_rectangle                          /* draw handle          */
+                draw_rectangle                      /* draw handle          */
                 (
                     drawable, selected ? dark_orange() : black_paint(), // true,
                     event_x - m_scroll_offset_x - 3,

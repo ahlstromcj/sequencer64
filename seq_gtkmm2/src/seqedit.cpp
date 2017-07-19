@@ -1706,7 +1706,7 @@ seqedit::popup_event_menu ()
     int channel = m_seq.get_midi_channel();
     memset(ccs, false, sizeof(bool) * SEQ64_MIDI_COUNT_MAX);
     m_seq.reset_draw_marker();
-    while (m_seq.get_next_event(&status, &cc))
+    while (m_seq.get_next_event(&status, &cc))      /* used only here!  */
     {
         switch (status)
         {

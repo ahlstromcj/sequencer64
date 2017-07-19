@@ -3911,7 +3911,9 @@ sequence::get_minmax_note_events (int & lowest, int & highest)
  *
  * \param [out] note
  *      Provides a pointer destination for the note pitch value
- *      Probably should be a midibyte value.
+ *      Probably should be a midibyte value.  If the event is the special case
+ *      of a tempo event, then this value is the tempo value scaled to 0 to
+ *      127 for display purposes.
  *
  * \param [out] selected
  *      Provides a pointer destination for the selection status of the note.
@@ -3922,7 +3924,8 @@ sequence::get_minmax_note_events (int & lowest, int & highest)
  *
  * \return
  *      Returns a draw_type_t value:  DRAW_NORMAL_LINKED, DRAW_NOTE_ON,
- *      DRAW_NOTE_OFF, or DRAW_FIN.
+ *      DRAW_NOTE_OFF, or DRAW_FIN. If the SEQ64_TEMPO_DRAW macro is defined,
+ *      then it is possible that the new value DRAW_TEMPO could be returned.
  */
 
 draw_type_t

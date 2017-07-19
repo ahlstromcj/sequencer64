@@ -921,8 +921,14 @@ tempo_us_to_bytes (midibyte t[3], int tempo_us)
  *
 \verbatim
                            N1 - N0
-        N = N0 + (B - B0) ---------
+        N = N0 + (B - B0) ---------     where (N1 - N0) is always 127
                            B1 - B0
+\endverbatim
+ *
+\verbatim
+                        127
+        N = (B - B0) ---------
+                      B1 - B0
 \endverbatim
  *
  *  where N0 = 0 (MIDI note 0 is the minimum), N1 = 127 (the maximum MIDI
@@ -930,6 +936,13 @@ tempo_us_to_bytes (midibyte t[3], int tempo_us)
  *  B1 is the value of usr().midi_bpm_maximum(), B is the input beats/minute,
  *  and N is the resulting note value.  As a precaution due to rounding error,
  *  we clamp the values between 0 and 127.
+ *
+ * \param tempovalue
+ *      The tempo in beats/minute.
+ *
+ * \return
+ *      Returns the tempo value scaled to the range 0 to 127, based on the
+ *      configured BPM minimum and maximum values.
  */
 
 midibyte
@@ -944,6 +957,39 @@ tempo_to_note_value (midibpm tempovalue)
         note = double(SEQ64_MAX_DATA_VALUE);
 
     return midibyte(note);
+}
+
+/**
+ *  The inverse of tempo_to_note_value().
+ *
+\verbatim
+                  (N - N0) (B1 - B0)
+        B = B0 + --------------------
+                       N1 - N0
+\endverbatim
+ *
+\verbatim
+                    (B1 - B0)
+        B = B0 + N -----------
+                       127
+\endverbatim
+ *
+ * \param note
+ *      The note value used for displaying the tempo in the seqdata pane, the
+ *      perfroll, and in a mainwid slot.
+ *
+ * \return
+ *      Returns the tempo in beats/minute.
+ */
+
+midibpm
+note_value_to_temp (midibyte note)
+{
+    double slope = usr().midi_bpm_maximum() - usr().midi_bpm_minimum();
+    slope *= double(note);
+    slope /= double(SEQ64_MAX_DATA_VALUE);
+    slope += usr().midi_bpm_minimum();
+    return slope;
 }
 
 /**

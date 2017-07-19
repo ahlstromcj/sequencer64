@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-16
+ * \updates       2016-07-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -349,37 +349,35 @@ seqevent::update_pixmap ()
 void
 seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 {
-//  midipulse tick;
-//  midibyte d0, d1;
-//  bool selected;
     int starttick = m_scroll_offset_ticks;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     m_gc->set_foreground(black());              /* draw boxes from sequence */
     m_seq.reset_draw_marker();
-// #ifdef USE_NON_SILLY_VERSION_OF_GET_NEXT_EVENT
     event_list::const_iterator ev;
-    while (m_seq.get_next_event(m_status, m_cc, ev))    // no evtype arg
-//  while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
+    while (m_seq.get_next_event(m_status, m_cc, ev))
     {
-        midibyte d0, d1;
-        midipulse tick = ev->get_timestamp();
-        bool selected = ev->is_selected();
-        ev->get_data(d0, d1);
-        if (tick >= starttick && tick <= endtick)
+        if (! ev->is_ex_data())
         {
-            int x = tick / m_zoom - m_scroll_offset_x;  /* screen coordinate */
-            draw_rectangle
-            (
-                drawable, black(),
-                x, (c_eventarea_y - c_eventevent_y) / 2,
-                c_eventevent_x, c_eventevent_y
-            );
-            draw_rectangle
-            (
-                drawable, selected ? orange() : white(),
-                x, (c_eventarea_y - c_eventevent_y) / 2 + 1,
-                c_eventevent_x - 3, c_eventevent_y - 3
-            );
+            midipulse tick = ev->get_timestamp();
+            bool selected = ev->is_selected();
+            midibyte d0, d1;
+            ev->get_data(d0, d1);
+            if (tick >= starttick && tick <= endtick)
+            {
+                int x = tick / m_zoom - m_scroll_offset_x;  /* screen coord */
+                draw_rectangle
+                (
+                    drawable, black(),
+                    x, (c_eventarea_y - c_eventevent_y) / 2,
+                    c_eventevent_x, c_eventevent_y
+                );
+                draw_rectangle
+                (
+                    drawable, selected ? orange() : white(),
+                    x, (c_eventarea_y - c_eventevent_y) / 2 + 1,
+                    c_eventevent_x - 3, c_eventevent_y - 3
+                );
+            }
         }
     }
 }

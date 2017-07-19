@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-07-16
+ * \updates       2017-07-18
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -148,6 +148,7 @@ extern midibyte beat_log2 (int value);
 extern double tempo_us_from_bytes (const midibyte tt[3]);
 extern void tempo_us_to_bytes (midibyte t[3], int tempo_us);
 extern midibyte tempo_to_note_value (midibpm tempo);
+extern midibpm note_value_to_temp (midibyte note);
 
 /**
  *  Converts tempo (e.g. 120 beats/minute) to microseconds.

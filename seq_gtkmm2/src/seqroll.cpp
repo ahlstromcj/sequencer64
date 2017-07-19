@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-21
+ * \updates       2017-07-19
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -830,12 +830,15 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
             ) != DRAW_FIN
         )
         {
-            if
-            (
-                (tick_s >= starttick && tick_s <= endtick) ||
-                ((dt == DRAW_NORMAL_LINKED) &&
-                    (tick_f >= starttick && tick_f <= endtick))
-            )
+            bool do_draw = dt != DRAW_TEMPO;
+            if (do_draw)
+            {
+                do_draw = tick_s >= starttick && tick_s <= endtick;
+                if (! do_draw)
+                    do_draw = (dt == DRAW_NORMAL_LINKED) &&
+                        tick_f >= starttick && tick_f <= endtick;
+            }
+            if (do_draw)
             {
                 int note_width;
                 int note_off_width = 0;             /* for wrapped Note Off    */

@@ -341,12 +341,6 @@ process_midi_output (jack_nframes_t nframes)
       if (t < 0)
          t = 0;
 
-   //    assert
-   //    (
-   //       event->track->track_number >= 0 &&
-   //       event->track->track_number <= MAX_NUMBER_OF_TRACKS
-   //    );
-
       /*
        * We will send this event; remove it from the queue.  First, send it via
        * midi_out.

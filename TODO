@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-07-16
+2016-12-03 to 2017-07-19
 
 Debian packaging:
 
@@ -11,6 +11,16 @@ Tempo Track:
 
     -   Need to get event editor to display, insert, or update Meta data.
     -   Separate tempo for each pattern.
+
+    1:1 Program         C0 (192), seqdata tries to draw it (height == 0)
+    1:1 Tempo           seqdata tries to draw it
+    1:1 Time Sig        seqdata skips all other "ex-data" events
+    1:3 Note on         90 (144)
+    2:1 Note off        80 (128)
+
+    This whole set of get_next_event() calls occurs multiple (11) times!
+
+    In seqedit, the Event popup menu shows too many black squares.  Investigate!
 
 Rtmidi implementation issues to work out:
 

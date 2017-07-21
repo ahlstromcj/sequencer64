@@ -1673,7 +1673,7 @@ seqedit::set_background_sequence (int seqnum)
 
 /**
  *  Sets the menu pixmap depending on the given state, where true is a
- *  full menu (black backgroun), and empty menu (gray background).
+ *  full menu (black background), and empty menu (gray background).
  */
 
 Gtk::Image *
@@ -1748,8 +1748,7 @@ seqedit::popup_event_menu ()
             "Note On Velocity", *create_menu_image(note_on),
             sigc::bind
             (
-                mem_fun(*this, &seqedit::set_data_type),
-                EVENT_NOTE_ON, 0
+                mem_fun(*this, &seqedit::set_data_type), EVENT_NOTE_ON, 0
             )
         )
     );
@@ -1761,8 +1760,7 @@ seqedit::popup_event_menu ()
             "Note Off Velocity", *create_menu_image(note_off),
            sigc::bind
            (
-                mem_fun(*this, &seqedit::set_data_type),
-                EVENT_NOTE_OFF, 0
+                mem_fun(*this, &seqedit::set_data_type), EVENT_NOTE_OFF, 0
             )
         )
     );
@@ -1773,8 +1771,7 @@ seqedit::popup_event_menu ()
             "AfterTouch", *create_menu_image(aftertouch),
             sigc::bind
             (
-                mem_fun(*this, &seqedit::set_data_type),
-                EVENT_AFTERTOUCH, 0
+                mem_fun(*this, &seqedit::set_data_type), EVENT_AFTERTOUCH, 0
             )
         )
     );
@@ -1785,8 +1782,7 @@ seqedit::popup_event_menu ()
             "Program Change", *create_menu_image(program_change),
             sigc::bind
             (
-                mem_fun(*this, &seqedit::set_data_type),
-                EVENT_PROGRAM_CHANGE, 0
+                mem_fun(*this, &seqedit::set_data_type), EVENT_PROGRAM_CHANGE, 0
             )
         )
     );
@@ -1797,8 +1793,7 @@ seqedit::popup_event_menu ()
             "Channel Pressure", *create_menu_image(channel_pressure),
             sigc::bind
             (
-                mem_fun(*this, &seqedit::set_data_type),
-               EVENT_CHANNEL_PRESSURE, 0
+                mem_fun(*this, &seqedit::set_data_type), EVENT_CHANNEL_PRESSURE, 0
             )
         )
     );
@@ -1809,8 +1804,7 @@ seqedit::popup_event_menu ()
             "Pitch Wheel", *create_menu_image(pitch_wheel),
             sigc::bind
             (
-                mem_fun(*this, &seqedit::set_data_type),
-               EVENT_PITCH_WHEEL , 0
+                mem_fun(*this, &seqedit::set_data_type), EVENT_PITCH_WHEEL , 0
             )
         )
     );

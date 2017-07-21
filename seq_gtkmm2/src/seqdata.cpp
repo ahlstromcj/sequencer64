@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-18
+ * \updates       2017-07-20
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -134,7 +134,6 @@ seqdata::reset ()
 
     m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
-
     update_sizes();
 
     /*
@@ -182,9 +181,11 @@ seqdata::set_zoom (int z)
 void
 seqdata::set_data_type (midibyte status, midibyte control)
 {
+    bool doredraw = (status != m_status) || (control != m_cc);
     m_status = status;
     m_cc = control;
-    redraw();
+    if (doredraw)           // EXPERIMENTAL
+        redraw();
 }
 
 /**
@@ -259,40 +260,38 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
                 int event_x = tick / m_zoom;        /* screen coordinate    */
                 int x = event_x - m_scroll_offset_x + 1;
                 int event_height;
+                Color paint = black_paint();
                 if (ev->is_tempo())
                 {
                     event_height = int(tempo_to_note_value(ev->tempo()));
-                    set_line(Gdk::LINE_ON_OFF_DASH, 2);
-                    set_line(Gdk::LINE_SOLID, 2);   /* vertical event line  */
+                    paint = dark_cyan();
 
-                    printf
-                    (
-                        "%ld: tempo %f, height %d\n",
-                        tick, ev->tempo(), event_height
-                    );
-
-                    draw_line
-                    (
-                        drawable, selected ? dark_orange() : dark_cyan(),
-                        x, c_dataarea_y - event_height, x, c_dataarea_y
-                    );
+                    /*
+                     * printf("tempo %d-->%d\n", int(ev->tempo()), event_height);
+                     */
                 }
                 else if (ev->is_ex_data())
                 {
                     /*
                      * Do nothing for other Meta events at this time.
                      */
+
+                    continue;
                 }
                 else
                 {
                     event_height = event::is_one_byte_msg(m_status) ? d0 : d1 ;
-                    set_line(Gdk::LINE_SOLID, 2);   /* vertical event line  */
-                    draw_line
-                    (
-                        drawable, selected ? dark_orange() : black_paint(),
-                        x, c_dataarea_y - event_height, x, c_dataarea_y
-                    );
+
+                    /*
+                     * printf("note %d --> %d\n", d0, event_height);
+                     */
                 }
+                set_line(Gdk::LINE_SOLID, 2);       /* vertical event line  */
+                draw_line
+                (
+                    drawable, selected ? dark_orange() : paint,
+                    x, c_dataarea_y - event_height, x, c_dataarea_y
+                );
 
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS
                 draw_rectangle                      /* draw handle          */
@@ -646,8 +645,8 @@ seqdata::on_scroll_event (GdkEventScroll * ev)
 
 /**
  *  Implements a mouse button-press event.  This function pushes the undo
- *  information for the sequence, sets the drop-point, 
- *  resets the box that holds dirty redraw spot, and sets m_dragging to true.
+ *  information for the sequence, sets the drop-point, resets the box that
+ *  holds dirty redraw spot, and sets m_dragging to true.
  *
  * \param ev
  *      Provides the button-press event.

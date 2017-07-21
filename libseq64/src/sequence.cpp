@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-17
+ * \updates       2017-07-20
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -4042,6 +4042,8 @@ sequence::get_next_event (midibyte * status, midibyte * cc)
  *
  * \param evtype
  *      A stazed parameter for picking either all event or unselected events.
+ *      Defaults to EVENTS_ALL.  Not used unless the macro
+ *      USE_STAZED_SELECTION_EXTENSIONS is defined.
  *
  * \return
  *      Returns true if the current event was one of the desired ones, or was
@@ -4079,7 +4081,6 @@ sequence::get_next_event
             }
         }
 #endif  // USE_STAZED_SELECTION_EXTENSIONS
-
 
         if (ok)
         {

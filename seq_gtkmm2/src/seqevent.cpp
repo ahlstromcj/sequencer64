@@ -351,34 +351,30 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 {
     int starttick = m_scroll_offset_ticks;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
-    m_gc->set_foreground(black());              /* draw boxes from sequence */
-    m_seq.reset_draw_marker();
     event_list::const_iterator ev;
+    m_gc->set_foreground(black_paint());
+    m_seq.reset_draw_marker();
     while (m_seq.get_next_event(m_status, m_cc, ev))
     {
-        Color paint = ev->is_ex_data() ? dark_cyan() : black() ;
-        if (true)   // (! ev->is_ex_data())
+        midipulse tick = ev->get_timestamp();
+        bool selected = ev->is_selected();
+        if (ev->is_tempo())
         {
-            midipulse tick = ev->get_timestamp();
-            bool selected = ev->is_selected();
-//          midibyte d0, d1;
-//          ev->get_data(d0, d1);
-            if (tick >= starttick && tick <= endtick)
-            {
-                int x = tick / m_zoom - m_scroll_offset_x;  /* screen coord */
-                draw_rectangle
-                (
-                    drawable, paint,                        // black(),
-                    x, (c_eventarea_y - c_eventevent_y) / 2,
-                    c_eventevent_x, c_eventevent_y
-                );
-                draw_rectangle
-                (
-                    drawable, selected ? orange() : white(),
-                    x, (c_eventarea_y - c_eventevent_y) / 2 + 1,
-                    c_eventevent_x - 3, c_eventevent_y - 3
-                );
-            }
+            printf("tempo\n");
+        }
+        if (tick >= starttick && tick <= endtick)
+        {
+            int x = tick / m_zoom - m_scroll_offset_x;  /* screen coord */
+            draw_rectangle                              /* outer border */
+            (
+                drawable, ev->is_ex_data() ? dark_cyan() : black(),
+                x, c_eventpadding_y, c_eventevent_x, c_eventevent_y
+            );
+            draw_rectangle                              /* inner color  */
+            (
+                drawable, selected ? orange() : white(),
+                x, c_eventpadding_y+1, c_eventevent_x-3, c_eventevent_y-3
+            );
         }
     }
 }

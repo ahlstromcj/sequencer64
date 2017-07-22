@@ -830,7 +830,8 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
             ) != DRAW_FIN
         )
         {
-            bool do_draw = dt != DRAW_TEMPO;
+            bool do_tempo = dt == DRAW_TEMPO;
+            bool do_draw = true;                    /* dt != DRAW_TEMPO;    */
             if (do_draw)
             {
                 do_draw = tick_s >= starttick && tick_s <= endtick;
@@ -888,8 +889,10 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                  * background sequence.
                  */
 
-                if (method == 0)
+                if (method == 0 || do_tempo)
                      m_gc->set_foreground(dark_cyan());     /* vs dark_grey() */
+                else if (do_tempo)
+                     m_gc->set_foreground(dark_cyan());
                 else
                     m_gc->set_foreground(black_paint());
 

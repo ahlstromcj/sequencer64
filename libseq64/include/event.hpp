@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-15
+ * \updates       2017-07-22
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -657,6 +657,19 @@ public:
     {
         m_data[0] = d1 & 0x7F;
         m_data[1] = d2 & 0x7F;
+    }
+
+    /**
+     *  Retrieves only the first  data byte from m_data[] and copies it into
+     *  the parameter.
+     *
+     * \param d0 [out]
+     *      The return reference for the first byte.
+     */
+
+    void get_data (midibyte & d0) const
+    {
+        d0 = m_data[0];
     }
 
     /**

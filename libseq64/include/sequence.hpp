@@ -1303,6 +1303,7 @@ public:
     void stop (bool song_mode = false);
     void pause (bool song_mode = false);
     void reset_draw_marker ();
+    void inc_draw_marker ();
     void reset_draw_trigger_marker ();
     draw_type_t get_next_note_event
     (

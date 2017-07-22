@@ -313,8 +313,8 @@ const int c_keyarea_y = c_key_y * c_num_keys + 1;
 const int c_rollarea_y = c_keyarea_y;
 
 /**
- *  The dimensions of the little squares that represent the position of
- *  each event, in pixels.
+ *  The dimensions of the little rectangles, in pixels, that represent the
+ *  position of each event.
  */
 
 const int c_eventevent_x =  5;

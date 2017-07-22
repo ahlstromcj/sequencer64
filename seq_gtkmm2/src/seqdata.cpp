@@ -247,14 +247,12 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
     {
 #endif
 
-        m_seq.reset_draw_marker();
         event_list::const_iterator ev;
+        m_seq.reset_draw_marker();
         while (m_seq.get_next_event(m_status, m_cc, ev))
         {
             midipulse tick = ev->get_timestamp();
             bool selected = ev->is_selected();
-            midibyte d0, d1;
-            ev->get_data(d0, d1);
             if (tick >= starttick && tick <= endtick)
             {
                 int event_x = tick / m_zoom;        /* screen coordinate    */
@@ -280,6 +278,8 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
                 }
                 else
                 {
+                    midibyte d0, d1;
+                    ev->get_data(d0, d1);
                     event_height = event::is_one_byte_msg(m_status) ? d0 : d1 ;
 
                     /*

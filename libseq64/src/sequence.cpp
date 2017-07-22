@@ -3803,8 +3803,12 @@ sequence::pause (bool song_mode)
 }
 
 /**
- *  This refreshes the play marker to the last tick. It resets the draw marker
+ *  This refreshes the draw marker to the first event. It resets the draw marker
  *  so that calls to get_next_note_event() will start from the first event.
+ *
+ * \warning
+ *      This iterator is shared by about four GUI object, and they might
+ *      interfere with each other!
  *
  * \threadsafe
  */
@@ -3814,6 +3818,23 @@ sequence::reset_draw_marker ()
 {
     automutex locker(m_mutex);
     m_iterator_draw = m_events.begin();
+}
+
+/**
+ *  This increments the draw marker.
+ *
+ * \warning
+ *      This iterator is shared by about four GUI object, and they might
+ *      interfere with each other!
+ *
+ * \threadsafe
+ */
+
+void
+sequence::inc_draw_marker ()
+{
+    automutex locker(m_mutex);
+    ++m_iterator_draw;
 }
 
 /**
@@ -3936,7 +3957,7 @@ sequence::get_next_note_event
 )
 {
     *tick_f = 0;
-    while (m_iterator_draw != m_events.end())
+    while (m_iterator_draw != m_events.end())   /* NOT THREADSAFE!!!!!      */
     {
         event & drawevent = DREF(m_iterator_draw);
         bool isnoteon = drawevent.is_note_on();
@@ -3945,7 +3966,7 @@ sequence::get_next_note_event
         *note     = drawevent.get_note();
         *selected = drawevent.is_selected();
         *velocity = drawevent.get_note_velocity();
-        ++m_iterator_draw;                      /* go until null or Note-On */
+        inc_draw_marker();                      /* go until null or Note-On */
         if (isnoteon && islinked)
         {
             *tick_f = drawevent.get_linked()->get_timestamp();
@@ -4004,13 +4025,13 @@ sequence::get_next_note_event
 bool
 sequence::get_next_event (midibyte * status, midibyte * cc)
 {
-    while (m_iterator_draw != m_events.end())
+    while (m_iterator_draw != m_events.end())       /* NOT THREADSAFE!!!    */
     {
         midibyte j;
         event & drawevent = DREF(m_iterator_draw);
         *status = drawevent.get_status();
         drawevent.get_data(*cc, j);
-        ++m_iterator_draw;
+        inc_draw_marker();
         return true;                /* we have a good one; update and return */
     }
     return false;
@@ -4071,12 +4092,12 @@ sequence::get_next_event
         {
             if (evtype == EVENTS_UNSELECTED && drawevent.is_selected())
             {
-                ++m_iterator_draw;
+                inc_draw_marker();
                 continue;           /* keep trying to find one              */
             }
             if (evtype > EVENTS_UNSELECTED && ! drawevent.is_selected())
             {
-                ++m_iterator_draw;
+                inc_draw_marker();
                 continue;           /* keep trying to find one              */
             }
         }
@@ -4092,11 +4113,11 @@ sequence::get_next_event
             if (ok)
             {
                 ev = m_iterator_draw;
-                ++m_iterator_draw;          /* good one, update and return  */
+                inc_draw_marker();          /* good one, update and return  */
                 return true;
             }
         }
-        ++m_iterator_draw;                  /* keep going                   */
+        inc_draw_marker();                  /* keep going                   */
     }
     return false;
 }

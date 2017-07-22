@@ -726,7 +726,18 @@ perfroll::draw_sequence_on (int seqnum)
                             if (tick_f_x >= x && tick_s_x <= x + w)
                             {
                                 int ny = y + note_y;
-                                draw_line_on_pixmap(tick_s_x, ny, tick_f_x, ny);
+                                Color paint = black();
+                                if (dt == DRAW_TEMPO)
+                                {
+                                    set_line(Gdk::LINE_ON_OFF_DASH, 2);
+                                    paint = dark_cyan();
+                                }
+                                draw_line_on_pixmap
+                                (
+                                    paint, tick_s_x, ny, tick_f_x, ny
+                                );
+                                if (dt == DRAW_TEMPO)
+                                    set_line(Gdk::LINE_SOLID);
                             }
                         }
                     }

@@ -119,7 +119,7 @@ private:                            /* use the accessor functions           */
     static const Color m_dk_green;  /**< Provides a dark green color.       */
     static const Color m_dk_orange; /**< Provides a dark orange color.      */
     static const Color m_dk_blue;   /**< Provides the dark blue color.      */
-    static const Color m_dk_magenta; /**< Provides the dark cyan color.     */
+    static const Color m_dk_magenta; /**< Provides a dark magenta color.    */
     static const Color m_dk_cyan;   /**< Provides the dark cyan color.      */
 
     /*

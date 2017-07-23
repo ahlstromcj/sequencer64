@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2017-07-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -163,7 +163,10 @@ private:
 
 private:        // callbacks
 
-    void on_realize ();
+    /*
+     * void on_realize ();
+     */
+
     bool on_expose_event (GdkEventExpose * ev);
 
 };

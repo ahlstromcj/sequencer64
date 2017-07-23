@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-20
+ * \updates       2017-07-23
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -3898,7 +3898,6 @@ sequence::get_minmax_note_events (int & lowest, int & highest)
                 result = true;
             }
         }
-#ifdef SEQ64_TEMPO_DRAW        // PURELY EXPERIMENTAL
         else if (er.is_tempo())
         {
             midibyte notebyte = tempo_to_note_value(er.tempo());
@@ -3909,7 +3908,6 @@ sequence::get_minmax_note_events (int & lowest, int & highest)
 
             result = true;
         }
-#endif
     }
     lowest = low;
     highest = high;
@@ -3945,8 +3943,8 @@ sequence::get_minmax_note_events (int & lowest, int & highest)
  *
  * \return
  *      Returns a draw_type_t value:  DRAW_NORMAL_LINKED, DRAW_NOTE_ON,
- *      DRAW_NOTE_OFF, or DRAW_FIN. If the SEQ64_TEMPO_DRAW macro is defined,
- *      then it is possible that the new value DRAW_TEMPO could be returned.
+ *      DRAW_NOTE_OFF, or DRAW_FIN.  Note that the new value DRAW_TEMPO could
+ *      be returned, as well.
  */
 
 draw_type_t
@@ -3980,7 +3978,6 @@ sequence::get_next_note_event
         {
             return DRAW_NOTE_OFF;
         }
-#ifdef SEQ64_TEMPO_DRAW
         else if (drawevent.is_tempo())
         {
             midibpm bpm = drawevent.tempo();
@@ -3999,7 +3996,6 @@ sequence::get_next_note_event
 
             return DRAW_TEMPO;
         }
-#endif
     }
     return DRAW_FIN;
 }
@@ -4118,6 +4114,97 @@ sequence::get_next_event
             }
         }
         inc_draw_marker();                  /* keep going                   */
+    }
+    return false;
+}
+
+/**
+ *  Reset the caller's iterator.
+ */
+
+void
+sequence::reset_ex_iterator (event_list::const_iterator & evi)
+{
+    evi = m_events.begin();
+}
+
+/**
+ *  New version in progress.  This version makes the caller responsible for
+ *  providing and maintaining the iterator, so that there are no conflicting
+ *  operations on m_draw_iterator from seqdata, seqevent, seqroll, and
+ *  perfroll.
+ *
+ *  This rational version of get_next_event() returns the whole event, rather
+ *  than filling in a bunch of parameters.  In addition, it always allows
+ *  Tempo events to be found.  Gets the next event in the event list that
+ *  matches the given status and control character.  Then set the rest of the
+ *  parameters parameters using that event.  If the status is the new value
+ *  EVENT_ANY, then any event will be obtained.
+ *
+ *  Note the usage of event::is_desired_cc_or_not_cc(status, cc, *d0); Either
+ *  we have a control change with the right CC or it's a different type of
+ *  event.
+ *
+ * \param status
+ *      The type of event to be obtained.  The special value EVENT_ANY can be
+ *      provided so that no event statuses are filtered.
+ *
+ * \param cc
+ *      The continuous controller value that might be desired.
+ *
+ * \param [out] ev
+ *      An iterator return value for the next event found.  The caller might
+ *      want to check if it is a Tempo event.  Do not use this iterator if
+ *      false is returned!
+ *
+ * \param evtype
+ *      A stazed parameter for picking either all event or unselected events.
+ *      Defaults to EVENTS_ALL.  Not used unless the macro
+ *      USE_STAZED_SELECTION_EXTENSIONS is defined.
+ *
+ * \return
+ *      Returns true if the current event was one of the desired ones, or was
+ *      a Tempo event.  In this case, the caller <i> must </i> increment the
+ *      iterator.
+ */
+
+bool
+sequence::get_next_event_ex
+(
+    midibyte status, midibyte cc,
+    event_list::const_iterator & evi,
+    int evtype
+)
+{
+    while (evi != m_events.end())
+    {
+        const event & drawevent = DREF(evi);
+        bool istempo = drawevent.is_tempo();
+        bool ok = drawevent.get_status() == status || istempo;
+        if (! ok)
+            ok = status == EVENT_ANY;
+
+#ifdef USE_STAZED_SELECTION_EXTENSIONS          // LATER
+#endif  // USE_STAZED_SELECTION_EXTENSIONS
+
+        if (ok)
+        {
+            midibyte d0, d1;
+            drawevent.get_data(d0, d1);
+            ok = istempo || event::is_desired_cc_or_not_cc(status, cc, d0);
+            if (ok)
+            {
+                /*
+                 * The caller needs to use the current iterator, and so must
+                 * perform the increment afterwards itself.
+                 *
+                 * ++evi;
+                 */
+
+                return true;
+            }
+        }
+        ++evi;                              /* keep going                   */
     }
     return false;
 }

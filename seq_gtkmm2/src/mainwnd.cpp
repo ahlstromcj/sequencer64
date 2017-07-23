@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-30
+ * \updates       2017-07-23
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1390,8 +1390,14 @@ mainwnd::update_markers (midipulse tick)
     m_main_wid->update_markers(tick);           /* tick ignored for pause   */
 #endif
 
-    if (not_nullptr(m_main_time))
-        m_main_time->idle_progress(tick);
+    /*
+     * If this is null, all bets are off.  Let's save some time.  We can
+     * re-enable this check if we make the pill bar optional.
+     *
+     * if (not_nullptr(m_main_time))
+     */
+
+    m_main_time->idle_progress(tick);
 }
 
 /**

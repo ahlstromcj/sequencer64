@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-07-16
+ * \updates       2017-07-23
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -92,9 +92,7 @@ enum draw_type_t
     DRAW_NORMAL_LINKED,     /**< Used for drawing linked notes.             */
     DRAW_NOTE_ON,           /**< For starting the drawing of a note.        */
     DRAW_NOTE_OFF,          /**< For finishing the drawing of a note.       */
-#ifdef SEQ64_TEMPO_DRAW
-    DRAW_TEMPO              /**< For drawing a tempo line.                  */
-#endif
+    DRAW_TEMPO              /**< For drawing tempo meta events.             */
 };
 
 #ifdef SEQ64_STAZED_EXPAND_RECORD
@@ -1318,6 +1316,15 @@ public:
         event_list::const_iterator & ev,
         int evtype = EVENTS_ALL
     );
+
+    void reset_ex_iterator (event_list::const_iterator & evi);
+    bool get_next_event_ex
+    (
+        midibyte status, midibyte cc,
+        event_list::const_iterator & ev,
+        int evtype = EVENTS_ALL
+    );
+
     bool get_next_trigger
     (
         midipulse * tick_on, midipulse * tick_off,

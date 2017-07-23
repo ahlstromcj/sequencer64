@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-07-16
+ * \updates       2017-07-23
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -59,12 +59,6 @@
 #else
 #include "seq64-config.h"
 #endif
-
-/**
- *  Experimental feature for tempo tracks.
- */
-
-#define SEQ64_TEMPO_DRAW        // PURELY EXPERIMENTAL
 
 /**
  * Odds and ends that we missed.  This value allows non-notes to be included

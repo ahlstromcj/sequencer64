@@ -701,10 +701,27 @@ perfroll::draw_sequence_on (int seqnum)
                         )
                         {
                             int mny = m_names_y - 6;        // ????
-                            int note_y =
-                            (
-                                mny - (mny * (note - low_note)) / height
-                            ) + 1;
+
+                            /*
+                             * For tempo(), we do not want to scale by the
+                             * range of notes in the track!
+                             */
+
+                            int note_y;
+                            if (dt == DRAW_TEMPO)
+                            {
+                                note_y =
+                                (
+                                    mny - (mny * note) / SEQ64_MAX_DATA_VALUE
+                                ) + 1;
+                            }
+                            else
+                            {
+                                note_y =
+                                (
+                                    mny - (mny * (note - low_note)) / height
+                                ) + 1;
+                            }
                             int tick_s_x =
                                 ((tick_s * length_w) / length) + tickmarker_x;
 

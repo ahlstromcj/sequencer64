@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2017-07-14
+ * \updates       2017-07-23
  * \license       GNU GPLv2 or above
  *
  *  This container now can indicate if certain Meta events (time-signaure or
@@ -445,16 +445,12 @@ event_list::verify_and_link (midipulse slength)
     mark_out_of_range(slength);
     remove_marked();                        /* prune out-of-range events    */
 
-#ifdef SEQ64_TEMPO_DRAW
-
     /*
-     * New:  link the tempos in a separate pass (it makes the logic easier and
-     *       the amount of time should be unnoticeable to the user.
+     *  Link the tempos in a separate pass (it makes the logic easier and the
+     *  amount of time should be unnoticeable to the user.
      */
 
     link_tempos();
-
-#endif
 }
 
 /**
@@ -471,8 +467,6 @@ event_list::clear_links ()
         e.unmark();
     }
 }
-
-#ifdef SEQ64_TEMPO_DRAW
 
 /**
  *  This function tries to link tempo events.  Native support for temp teacks
@@ -525,8 +519,6 @@ event_list::clear_tempo_links ()
             e.clear_link();
     }
 }
-
-#endif  // SEQ64_TEMPO_DRAW
 
 /**
  *  Marks all selected events.

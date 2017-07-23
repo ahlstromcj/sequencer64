@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-10
+ * \updates       2017-07-23
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
@@ -88,21 +88,23 @@ maintime::maintime (perform & p, int ppqn)
  *  on_realize() function.  It then allocates some additional resources: a
  *  window, a GC (?), and it clears the window.  Then it sets the default
  *  size of the window, specified by GUI constructor parameters.
- */
+ *
+ *  Odd, we now notice that the pill bar isn't showing until the tune starts
+ *  to play.  Let's make sure it appears.  Doesn't work.  Something else fixed
+ *  it, and we forgot to document it.
+ *
+ *      (void) idle_progress(0);
+ *
+ *  Since this function now only calls the base-class function, we comment it
+ *  out.
 
 void
 maintime::on_realize ()
 {
     gui_drawingarea_gtk2::on_realize();
-
-    /*
-     * Odd, we now notice that the pill bar isn't showing until the tune
-     * starts to play.  Let's make sure it appears.  Doesn't work.  Something
-     * else fixed it, and we forgot to document it.
-     *
-     * (void) idle_progress(0);
-     */
 }
+ *
+ */
 
 /**
  *  This function clears the window, sets the foreground to black, draws
@@ -142,16 +144,6 @@ maintime::idle_progress (midipulse ticks)
     return true;
 }
 
-/*
- * ca 2015-07-25
- * Eliminate this annoying warning.  Will do it for Microsoft's bloddy
- * compiler later.
- */
-
-#ifdef PLATFORM_GNU
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif
-
 /**
  *  This function merely idles.  We don't need the m_tick member, the function
  *  works as well if 0 is passed in.  We've removed m_tick permanently.
@@ -162,7 +154,7 @@ maintime::idle_progress (midipulse ticks)
  */
 
 bool
-maintime::on_expose_event (GdkEventExpose * a_e)
+maintime::on_expose_event (GdkEventExpose * /* ev */ )
 {
     idle_progress(m_tick);               /* idle_progress(0); */
     return true;

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-20
+ * \updates       2017-07-23
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -231,7 +231,16 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 {
     int starttick = m_scroll_offset_ticks;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
-    draw_rectangle(drawable, white_paint(), 0, 0, m_window_x, m_window_y);
+
+    /*
+     * Add a black border.  However, not sure yet why we can't get a black
+     * line at the bottom; what else is painting down there?
+     *
+     * draw_rectangle(drawable, white_paint(), 0, 0, m_window_x, m_window_y);
+     */
+
+    draw_rectangle(drawable, black_paint(), 0, 0, m_window_x, m_window_y);
+    draw_rectangle(drawable, white_paint(), 1, 1, m_window_x-2, m_window_y-1);
     m_gc->set_foreground(black_paint());
 
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS
@@ -248,8 +257,8 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 #endif
 
         event_list::const_iterator ev;
-        m_seq.reset_draw_marker();
-        while (m_seq.get_next_event(m_status, m_cc, ev))
+        m_seq.reset_ex_iterator(ev);
+        while (m_seq.get_next_event_ex(m_status, m_cc, ev))
         {
             midipulse tick = ev->get_timestamp();
             bool selected = ev->is_selected();
@@ -271,9 +280,11 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
                 else if (ev->is_ex_data())
                 {
                     /*
-                     * Do nothing for other Meta events at this time.
+                     * Do nothing for other Meta events at this time.  Don't
+                     * forget to increment the iterator now!
                      */
 
+                    ++ev;                           /* now a must-do        */
                     continue;
                 }
                 else
@@ -296,7 +307,7 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS
                 draw_rectangle                      /* draw handle          */
                 (
-                    drawable, selected ? dark_orange() : black_paint(), // true,
+                    drawable, selected ? dark_orange() : black_paint(),
                     event_x - m_scroll_offset_x - 3,
                     c_dataarea_y - event_height,
                     c_data_handle_x,
@@ -311,6 +322,7 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
                     m_number_w, m_number_h
                 );
             }
+            ++ev;                                   /* now a must-do        */
         }
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS
         if (seltype == EVENTS_UNSELECTED)

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-16
+ * \updates       2017-07-23
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -494,7 +494,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     if (tick_f_x <= tick_s_x)
                         tick_f_x = tick_s_x + 1;
 
-#ifdef SEQ64_TEMPO_DRAW        // PURELY EXPERIMENTAL
                     if (dt == DRAW_TEMPO)
                     {
                         set_line(Gdk::LINE_ON_OFF_DASH, 2);
@@ -502,22 +501,20 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                         note_y = m_seqarea_seq_y -
                              m_seqarea_seq_y * (note + 1) / 127;
                     }
-#endif
 
+                    int rectnote_y = rectangle_y + note_y;
                     draw_line_on_pixmap
                     (
                         drawcolor,
-                        rectangle_x + tick_s_x, rectangle_y + note_y,
-                        rectangle_x + tick_f_x, rectangle_y + note_y
+                        rectangle_x + tick_s_x, rectnote_y,
+                        rectangle_x + tick_f_x, rectnote_y
                     );
 
-#ifdef SEQ64_TEMPO_DRAW        // PURELY EXPERIMENTAL
                     if (dt == DRAW_TEMPO)
                     {
                         set_line(Gdk::LINE_SOLID, 1);
                         drawcolor = eventcolor;
                     }
-#endif
 
                 } while (dt != DRAW_FIN);
             }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-25
+ * \updates       2017-07-23
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -184,7 +184,14 @@ seqtime::redraw ()
 void
 seqtime::update_pixmap ()
 {
-    draw_rectangle_on_pixmap(white_paint(), 0, 0, m_window_x, m_window_y);
+    /*
+     * Add a black border.
+     *
+     * draw_rectangle_on_pixmap(white_paint(), 0, 0, m_window_x, m_window_y);
+     */
+
+    draw_rectangle_on_pixmap(black_paint(), 0, 0, m_window_x, m_window_y);
+    draw_rectangle_on_pixmap(white_paint(), 1, 1, m_window_x-2, m_window_y-1);
 
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
     set_line(Gdk::LINE_SOLID, 2);

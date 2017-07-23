@@ -24,9 +24,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-18
+ * \updates       2016-07-23
  * \license       GNU GPLv2 or above
  *
+ *  We are currently trying to get event processing to accomodate tempo
+ *  events.
  */
 
 #include <gtkmm/accelkey.h>
@@ -342,6 +344,10 @@ seqevent::update_pixmap ()
  *  Draws events on the given drawable object.  Very similar to
  *  seqdata::draw_events_on().
  *
+ *  This function exercises the new version of get_nexxt_event(),
+ *  get_next_event_ex(), which allows (and forces) the caller to provide the
+ *  event iterator.
+ *
  * \param drawable
  *      The given drawable object.
  */
@@ -349,34 +355,42 @@ seqevent::update_pixmap ()
 void
 seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 {
+    /*
+    static bool s_thread_guard = false;
+    if (! s_thread_guard)
+    {
+        s_thread_guard = true;
+        */
+
     int starttick = m_scroll_offset_ticks;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     event_list::const_iterator ev;
+    m_seq.reset_ex_iterator(ev);
     m_gc->set_foreground(black_paint());
-    m_seq.reset_draw_marker();
-    while (m_seq.get_next_event(m_status, m_cc, ev))
+    while (m_seq.get_next_event_ex(m_status, m_cc, ev))
     {
         midipulse tick = ev->get_timestamp();
         bool selected = ev->is_selected();
-        if (ev->is_tempo())
-        {
-            printf("tempo\n");
-        }
         if (tick >= starttick && tick <= endtick)
         {
-            int x = tick / m_zoom - m_scroll_offset_x;  /* screen coord */
-            draw_rectangle                              /* outer border */
+            int x = tick / m_zoom - m_scroll_offset_x;  /* screen coord     */
+            draw_rectangle                              /* outer border     */
             (
                 drawable, ev->is_ex_data() ? dark_cyan() : black(),
                 x, c_eventpadding_y, c_eventevent_x, c_eventevent_y
             );
-            draw_rectangle                              /* inner color  */
+            draw_rectangle                              /* inner color      */
             (
                 drawable, selected ? orange() : white(),
                 x, c_eventpadding_y+1, c_eventevent_x-3, c_eventevent_y-3
             );
         }
+        ++ev;                                           /* now a must-do    */
     }
+    /*
+        s_thread_guard = false;
+    }
+    */
 }
 
 /**

@@ -475,8 +475,22 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
                     int tick_s_x = tick_s * m_seqarea_seq_x / len;
                     int tick_f_x = tick_f * m_seqarea_seq_x / len;
-                    int note_y = m_seqarea_seq_y -
-                         m_seqarea_seq_y * (note + 1 - low_note) / height;
+
+                    /*
+                     * For tempo, do not scale by the range of notes in track!
+                     */
+
+                    int note_y;
+                    if (dt == DRAW_TEMPO)
+                    {
+                        note_y = m_seqarea_seq_y -
+                             m_seqarea_seq_y * (note + 1) / SEQ64_MAX_DATA_VALUE;
+                    }
+                    else
+                    {
+                        note_y = m_seqarea_seq_y -
+                             m_seqarea_seq_y * (note + 1 - low_note) / height;
+                    }
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT
                     printf

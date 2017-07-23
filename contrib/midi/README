@@ -1,6 +1,6 @@
 Contributed MIDI/Test Files
 Chris Ahlstrom
-2015-09-11 to 2017-06-06
+2015-09-11 to 2017-07-23
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
@@ -154,6 +154,10 @@ the "example1" file.
         Then we put a gap in the middle of the second repetition of the 4
         measures.  Export this file and verify that it simply adds a gap
         into the consolidate performance.
+
+   example3.midi:
+
+        Adds some tempo events to test the new handling of tempos.
 
    Hapwandr.mid
 

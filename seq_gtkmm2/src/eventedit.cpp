@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2017-07-11
+ * \updates       2017-07-23
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -163,7 +163,7 @@ namespace seq64
 
 eventedit::eventedit (perform & p, sequence & seq)
  :
-    gui_window_gtk2     (p, 660, 666),      /* make sure it is wide enough! */
+    gui_window_gtk2     (p, 700, 666),      /* make sure it is wide enough! */
     m_table             (manage(new Gtk::Table(14, 4, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
@@ -229,7 +229,7 @@ eventedit::eventedit (perform & p, sequence & seq)
     m_table->attach(*m_editbox,  2, 3,  3,  9, Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_optsbox,  2, 3,  9, 12, Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_bottbox,  2, 3, 12, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_rightbox, 3, 4,  0, 13, Gtk::SHRINK, Gtk::SHRINK, 2, 2);
+    m_table->attach(*m_rightbox, 3, 4,  0, 13, Gtk::SHRINK, Gtk::SHRINK, 8, 8);
     add_tooltip
     (
         m_eventslots,
@@ -413,7 +413,6 @@ eventedit::eventedit (perform & p, sequence & seq)
         "Control Change, and Pitch Wheel."
     );
     m_editbox->pack_start(*m_entry_ev_data_1, false, false);
-
     m_editbox->pack_start(*m_button_del, false, false);
     m_editbox->pack_start(*m_button_ins, false, false);
     m_editbox->pack_start(*m_button_modify, false, false);

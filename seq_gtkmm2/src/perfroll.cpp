@@ -700,11 +700,11 @@ perfroll::draw_sequence_on (int seqnum)
                             ) != DRAW_FIN
                         )
                         {
-                            int mny = m_names_y - 6;        // ????
+                            int mny = m_names_y - 6;
 
                             /*
-                             * For tempo(), we do not want to scale by the
-                             * range of notes in the track!
+                             * For tempo, do not to scale by the range of
+                             * notes in the track!
                              */
 
                             int note_y;

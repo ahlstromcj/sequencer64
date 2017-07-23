@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-19
- * \updates       2017-07-16
+ * \updates       2017-07-23
  * \license       GNU GPLv2 or above
  *
  *  For now, this header file enables only the JACK interface.  That is our
@@ -52,16 +52,12 @@
 #ifdef PLATFORM_LINUX
 #define SEQ64_BUILD_UNIX_JACK
 
-/*
+/**
  * Currently the SEQ64_BUILD_LINUX_ALSA macro must be defined.  It isn't
  * needed to build, but it is needed to run (on Linux).
  */
 
-// #ifdef ALSAMIDI_SUPPORT                 /* EXPERIMENTAL, allow non-ALSA     */
-
 #define SEQ64_BUILD_LINUX_ALSA          /* an alternative for Linux         */
-
-// #endif
 
 #define SEQ64_BUILD_RTMIDI_DUMMY        /* an alternative for Linux, etc.   */
 #undef  SEQ64_AVOID_TIMESTAMPING        /* a feaure of the ALSA rtmidi API  */

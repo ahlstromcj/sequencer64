@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-16
+ * \updates       2017-07-23
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -876,7 +876,13 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                             p.set_beats_per_minute(bpm);
                                             p.us_per_quarter_note(int(tt));
                                             seq.us_per_quarter_note(int(tt));
-                                            usr().midi_bpm_maximum(2.1 * bpm);
+
+                                            /*
+                                             * Let's not override the settings
+                                             * in the "usr" file.
+                                             *
+                                             * usr().midi_bpm_maximum(2.1 * bpm);
+                                             */
                                         }
                                     }
 

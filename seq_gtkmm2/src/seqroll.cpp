@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-19
+ * \updates       2017-07-24
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -830,8 +830,12 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
             ) != DRAW_FIN
         )
         {
-            bool do_tempo = dt == DRAW_TEMPO;
+#ifdef SEQ64_SEQROLL_DRAW_TEMPO
+            bool istempo = dt == DRAW_TEMPO;
             bool do_draw = true;                    /* dt != DRAW_TEMPO;    */
+#else
+            bool do_draw = dt != DRAW_TEMPO;
+#endif
             if (do_draw)
             {
                 do_draw = tick_s >= starttick && tick_s <= endtick;
@@ -889,10 +893,12 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                  * background sequence.
                  */
 
-                if (method == 0 || do_tempo)
+                if (method == 0)
                      m_gc->set_foreground(dark_cyan());     /* vs dark_grey() */
-                else if (do_tempo)
+#ifdef SEQ64_SEQROLL_DRAW_TEMPO
+                else if (istempo)
                      m_gc->set_foreground(dark_cyan());
+#endif
                 else
                     m_gc->set_foreground(black_paint());
 

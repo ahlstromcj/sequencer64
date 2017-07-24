@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-23
+ * \updates       2017-07-24
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -315,12 +315,41 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
                 );
 #endif
 
-                drawable->draw_drawable
-                (
-                    m_gc, m_numbers[event_height], 0, 0,
-                    x + 2, c_dataarea_y - m_number_h + 3,
-                    m_number_w, m_number_h
-                );
+                if (ev->is_tempo())
+                {
+                    /*
+                     * Display the actual tempo numbers.
+                     * It works, but there's still a little smudge on the
+                     * right.
+                     */
+
+                    static Glib::RefPtr<Gdk::Pixmap> px = Gdk::Pixmap::create
+                    (
+                        m_window, m_number_w, m_number_h, -1
+                    );
+
+                    char val[4];
+                    snprintf(val, sizeof val, "%3d", int(ev->tempo()));
+                    m_gc->set_foreground(white_paint());
+                    render_number(px, 0, 0, &val[0]);
+                    render_number(px, 0, m_number_offset_y,     &val[1]);
+                    render_number(px, 0, m_number_offset_y * 2, &val[2]);
+                    drawable->draw_drawable
+                    (
+                        m_gc, px, 0, 0,
+                        x + 2, c_dataarea_y - m_number_h + 3,
+                        m_number_w, m_number_h
+                    );
+                }
+                else
+                {
+                    drawable->draw_drawable
+                    (
+                        m_gc, m_numbers[event_height], 0, 0,
+                        x + 2, c_dataarea_y - m_number_h + 3,
+                        m_number_w, m_number_h
+                    );
+                }
             }
             ++ev;                                   /* now a must-do        */
         }

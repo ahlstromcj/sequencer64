@@ -355,13 +355,6 @@ seqevent::update_pixmap ()
 void
 seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 {
-    /*
-    static bool s_thread_guard = false;
-    if (! s_thread_guard)
-    {
-        s_thread_guard = true;
-        */
-
     int starttick = m_scroll_offset_ticks;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     event_list::const_iterator ev;
@@ -376,7 +369,7 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
             int x = tick / m_zoom - m_scroll_offset_x;  /* screen coord     */
             draw_rectangle                              /* outer border     */
             (
-                drawable, ev->is_ex_data() ? dark_cyan() : black(),
+                drawable, ev->is_tempo() ? dark_cyan() : black(),
                 x, c_eventpadding_y, c_eventevent_x, c_eventevent_y
             );
             draw_rectangle                              /* inner color      */
@@ -387,10 +380,6 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
         }
         ++ev;                                           /* now a must-do    */
     }
-    /*
-        s_thread_guard = false;
-    }
-    */
 }
 
 /**

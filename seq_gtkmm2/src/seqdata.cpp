@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-24
+ * \updates       2017-07-25
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -86,7 +86,7 @@ seqdata::seqdata
     m_number_offset_y       (font_render().char_height()-1),     // was 8
     m_status                (0),
     m_cc                    (0),
-    m_numbers               (),             // an array
+    m_numbers               (),             // an array of Gdk::Pixmaps
     m_old                   (),
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS
     m_drag_handle           (false),
@@ -317,29 +317,7 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 
                 if (ev->is_tempo())
                 {
-                    /*
-                     * Display the actual tempo numbers.
-                     * It works, but there's still a little smudge on the
-                     * right.
-                     */
-
-                    static Glib::RefPtr<Gdk::Pixmap> px = Gdk::Pixmap::create
-                    (
-                        m_window, m_number_w, m_number_h, -1
-                    );
-
-                    char val[4];
-                    snprintf(val, sizeof val, "%3d", int(ev->tempo()));
-                    m_gc->set_foreground(white_paint());
-                    render_number(px, 0, 0, &val[0]);
-                    render_number(px, 0, m_number_offset_y,     &val[1]);
-                    render_number(px, 0, m_number_offset_y * 2, &val[2]);
-                    drawable->draw_drawable
-                    (
-                        m_gc, px, 0, 0,
-                        x + 2, c_dataarea_y - m_number_h + 3,
-                        m_number_w, m_number_h
-                    );
+                    render_digits(drawable, int(ev->tempo()), x);
                 }
                 else
                 {
@@ -605,13 +583,13 @@ void
 seqdata::on_realize ()
 {
     gui_drawingarea_gtk2::on_realize();
+    char num[8];                                /* pulled this out of loop  */
+    memset(num, 0, sizeof num);                 /* only need this once!     */
     m_hadjust.signal_value_changed().connect
     (
         mem_fun(*this, &seqdata::change_horz)
     );
     m_gc->set_foreground(white_paint());        /* works for all drawing    */
-    char num[8];                                /* pulled this out of loop  */
-    memset(num, 0, sizeof num);                 /* only need this once!     */
     for (int i = 0; i < c_dataarea_y; ++i)      /* MIDI_COUNT_MAX; 128      */
     {
         char val[8];
@@ -812,6 +790,48 @@ seqdata::on_size_allocate (Gtk::Allocation & r)
     m_window_x = r.get_width();
     m_window_y = r.get_height();
     update_sizes();
+}
+
+/**
+ *  Renders an up to 3-digit string vertically to represent a data value.
+ *
+ */
+
+void
+seqdata::render_digits
+(
+    Glib::RefPtr<Gdk::Drawable> drawable,
+    int digits, int x
+)
+{
+    static Glib::RefPtr<Gdk::Pixmap> s_pixmap = Gdk::Pixmap::create
+    (
+        m_window, m_number_w, m_number_h, -1
+    );
+    static char s_num[8];
+    static bool s_needs_init = true;
+    if (s_needs_init)
+    {
+        s_needs_init = false;
+        memset(s_num, 0, sizeof s_num);
+    }
+        memset(s_num, 0, sizeof s_num);
+
+    char val[4];
+    snprintf(val, sizeof val, "%3d", digits);
+    m_gc->set_foreground(white_paint());
+    s_num[0] = val[0];
+    s_num[2] = val[1];
+    s_num[4] = val[2];
+    draw_rectangle(s_pixmap, 0, 0, m_number_w, m_number_h);
+    render_number(s_pixmap, 0, 0, &s_num[0]);
+    render_number(s_pixmap, 0, m_number_offset_y,     &s_num[2]);
+    render_number(s_pixmap, 0, m_number_offset_y * 2, &s_num[4]);
+    drawable->draw_drawable                     /* m_window vs m_pixmap */
+    (
+        m_gc, s_pixmap, 0, 0,
+        x + 2, c_dataarea_y - m_number_h + 3, m_number_w, m_number_h
+    );
 }
 
 }           // namespace seq64

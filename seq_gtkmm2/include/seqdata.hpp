@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-08
+ * \updates       2017-07-25
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -139,7 +139,9 @@ private:
     /**
      *  Holds the pixmaps for each number (0 to 127) that can be drawn for a
      *  data value in the data pane.  This array is filled only once, in the
-     *  on_realize() function.
+     *  on_realize() function.  We could actually just make 10 pixmaps, one for
+     *  each digit, or just use one and rerender the pixmaps every time, as is
+     *  done in the new render_digits() function.
      */
 
     Glib::RefPtr<Gdk::Pixmap> m_numbers[c_dataarea_y];
@@ -251,6 +253,12 @@ private:
             m_gc, x, y, pixmap, num, font::BLACK, true
         );
     }
+
+    void render_digits
+    (
+        Glib::RefPtr<Gdk::Drawable> drawable,
+        int digits, int x
+    );
 
     /**
      *  Simply calls draw_events_on() for this object's built-in pixmap.

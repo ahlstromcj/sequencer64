@@ -717,17 +717,18 @@ jack_assistant::get_jack_client_info ()
  *      then seq24 will apparently follow it).
  *
  *  STAZED:
- *      The call to jack_timebase_callback() to supply jack with BBT, etc. would
- *      occasionally fail when the *pos information had zero or some garbage in
- *      the pos.frame_rate variable. This would occur when there was a rapid
- *      change of frame position by another client... i.e.  qjackctl.  From the
- *      jack API:
+ *      The call to jack_timebase_callback() to supply jack with BBT, etc.
+ *      would occasionally fail when the *pos information had zero or some
+ *      garbage in the pos.frame_rate variable. This would occur when there
+ *      was a rapid change of frame position by another client... i.e.
+ *      qjackctl.  From the jack API:
  *
- *      "pos address of the position structure for the next cycle; pos->frame
- *      will be its frame number. If new_pos is FALSE, this structure contains
- *      extended position information from the current cycle.  If TRUE, it
- *      contains whatever was set by the requester.  The timebase_callback's
- *      task is to update the extended information here."
+ *          "pos address of the position structure for the next cycle;
+ *          pos->frame will be its frame number. If new_pos is FALSE, this
+ *          structure contains extended position information from the current
+ *          cycle.  If TRUE, it contains whatever was set by the requester.
+ *          The timebase_callback's task is to update the extended information
+ *          here."
  *
  *      The "If TRUE" line seems to be the issue. It seems that qjackctl does
  *      not always set pos.frame_rate so we get garbage and some strange BBT
@@ -1155,6 +1156,11 @@ jack_assistant::set_position (midipulse currenttick)
     pos.beat_type = m_beat_width;
     pos.ticks_per_beat = m_ppqn * 10;
     pos.beats_per_minute = get_beats_per_minute();
+
+    /*
+     * pos.frame = frame;
+     */
+
     currenttick *= 10;              /* compute BBT info from frame number */
     pos.bar = int32_t
     (
@@ -1163,8 +1169,10 @@ jack_assistant::set_position (midipulse currenttick)
     pos.beat = int32_t(((currenttick / long(pos.ticks_per_beat)) % m_beat_width));
     pos.tick = int32_t((currenttick % (m_ppqn * 10)));
     pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
-    pos.bar++;
-    pos.beat++;
+//  pos.bar++;
+//  pos.beat++;
+    ++pos.bar;
+    ++pos.beat;
 
     /*
      * Modifying frame rate and frame cannot be set from clients, the server

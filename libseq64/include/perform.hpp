@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-27
+ * \updates       2017-07-27
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -173,6 +173,7 @@ class perform
     friend class options;
     friend class perfedit;
     friend class perfroll;
+    friend class sequence;              // for setting tempo from events
     friend void * input_thread_func (void * myperf);
     friend void * output_thread_func (void * myperf);
 

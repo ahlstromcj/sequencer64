@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-07-23
+ * \updates       2017-07-26
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1300,9 +1300,10 @@ public:
     void off_playing_notes ();
     void stop (bool song_mode = false);
     void pause (bool song_mode = false);
-    void reset_draw_marker ();
     void inc_draw_marker ();
+    void reset_draw_marker ();
     void reset_draw_trigger_marker ();
+    void reset_ex_iterator (event_list::const_iterator & evi);
     draw_type_t get_next_note_event
     (
         midipulse * tick_s, midipulse * tick_f, int * note,
@@ -1310,14 +1311,6 @@ public:
     );
     bool get_minmax_note_events (int & lowest, int & highest);
     bool get_next_event (midibyte * status, midibyte * cc);
-    bool get_next_event
-    (
-        midibyte status, midibyte cc,
-        event_list::const_iterator & ev,
-        int evtype = EVENTS_ALL
-    );
-
-    void reset_ex_iterator (event_list::const_iterator & evi);
     bool get_next_event_ex
     (
         midibyte status, midibyte cc,

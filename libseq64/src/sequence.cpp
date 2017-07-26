@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-23
+ * \updates       2017-07-26
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1062,7 +1062,13 @@ sequence::play (midipulse end_tick, bool playback_mode)
                 else
                 {
 #endif
-                    put_event_on_bus(er);           /* frame still going    */
+                    if (er.is_tempo())
+                    {
+                        if (not_nullptr(m_parent))
+                            m_parent->set_beats_per_minute(er.tempo());
+                    }
+                    else if (! er.is_ex_data())
+                        put_event_on_bus(er);       /* frame still going    */
 #ifdef SEQ64_STAZED_TRANSPOSE
                 }
 #endif
@@ -4034,91 +4040,6 @@ sequence::get_next_event (midibyte * status, midibyte * cc)
 }
 
 /**
- *  A more rational version of get_next_event(), that returns the whole event.
- *  In addition, it always allows Tempo events to be found.  Gets the next
- *  event in the event list that matches the given status and control
- *  character.  Then set the rest of the parameters parameters using that
- *  event.  If the status is the new value EVENT_ANY, then any event will be
- *  obtained.
- *
- *  Note the usage of event::is_desired_cc_or_not_cc(status, cc, *d0); Either
- *  we have a control change with the right CC or it's a different type of
- *  event.
- *
- * \param status
- *      The type of event to be obtained.  The special value EVENT_ANY can be
- *      provided so that no event statuses are filtered.
- *
- * \param cc
- *      The continuous controller value that might be desired.
- *
- * \param [out] ev
- *      An iterator return value for the next event found.  The caller might
- *      want to check if it is a Tempo event.  Do not use this iterator if
- *      false is returned!
- *
- * \param evtype
- *      A stazed parameter for picking either all event or unselected events.
- *      Defaults to EVENTS_ALL.  Not used unless the macro
- *      USE_STAZED_SELECTION_EXTENSIONS is defined.
- *
- * \return
- *      Returns true if the current event was one of the desired ones, or was
- *      a Tempo event.
- */
-
-bool
-sequence::get_next_event
-(
-    midibyte status, midibyte cc,
-    event_list::const_iterator & ev,
-    int evtype
-)
-{
-    ev = m_events.end();
-    while (m_iterator_draw != m_events.end())
-    {
-        const event & drawevent = DREF(m_iterator_draw);
-        bool ok = drawevent.get_status() == status;
-        if (! ok)
-            ok = status == EVENT_ANY;
-
-#ifdef USE_STAZED_SELECTION_EXTENSIONS
-        if (ok)
-        {
-            if (evtype == EVENTS_UNSELECTED && drawevent.is_selected())
-            {
-                inc_draw_marker();
-                continue;           /* keep trying to find one              */
-            }
-            if (evtype > EVENTS_UNSELECTED && ! drawevent.is_selected())
-            {
-                inc_draw_marker();
-                continue;           /* keep trying to find one              */
-            }
-        }
-#endif  // USE_STAZED_SELECTION_EXTENSIONS
-
-        if (ok)
-        {
-            midibyte d0, d1;
-            drawevent.get_data(d0, d1);
-            ok = drawevent.is_tempo() ||
-                event::is_desired_cc_or_not_cc(status, cc, d0);
-
-            if (ok)
-            {
-                ev = m_iterator_draw;
-                inc_draw_marker();          /* good one, update and return  */
-                return true;
-            }
-        }
-        inc_draw_marker();                  /* keep going                   */
-    }
-    return false;
-}
-
-/**
  *  Reset the caller's iterator.
  */
 
@@ -4185,18 +4106,31 @@ sequence::get_next_event_ex
             ok = status == EVENT_ANY;
 
 #ifdef USE_STAZED_SELECTION_EXTENSIONS          // LATER
+        if (ok)
+        {
+            if (evtype == EVENTS_UNSELECTED && drawevent.is_selected())
+            {
+                ++evi;
+                continue;           /* keep trying to find one              */
+            }
+            if (evtype > EVENTS_UNSELECTED && ! drawevent.is_selected())
+            {
+                ++evi;
+                continue;           /* keep trying to find one              */
+            }
+        }
 #endif  // USE_STAZED_SELECTION_EXTENSIONS
 
         if (ok)
         {
-            midibyte d0, d1;
-            drawevent.get_data(d0, d1);
+            midibyte d0;
+            drawevent.get_data(d0);
             ok = istempo || event::is_desired_cc_or_not_cc(status, cc, d0);
             if (ok)
             {
                 /*
-                 * The caller needs to use the current iterator, and so must
-                 * perform the increment afterwards itself.
+                 * The caller needs to use this iterator, and so must perform
+                 * the increment afterwards itself.
                  *
                  * ++evi;
                  */

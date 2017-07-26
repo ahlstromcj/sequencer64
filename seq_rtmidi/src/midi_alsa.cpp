@@ -784,9 +784,10 @@ midi_alsa::api_clock (midipulse /*tick*/)
     snd_seq_event_output(m_seq, &ev);               /* pump it into queue   */
 }
 
-/*
+/**
  * Currently, this code is implemented in the midi_alsa_info module, since
- * it is a mastermidibus function.
+ * it is a mastermidibus function.  Note the implementation here, though.
+ * Which actually gets used?
  */
 
 void

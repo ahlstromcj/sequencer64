@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2017-07-23
+ * \updates       2017-07-28
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -184,6 +184,7 @@ eventedit::eventedit (perform & p, sequence & seq)
     m_label_ppqn        (manage(new Gtk::Label())),
     m_label_channel     (manage(new Gtk::Label())),
     m_label_ev_count    (manage(new Gtk::Label())),
+    m_label_seq_length  (manage(new Gtk::Label())),
     m_label_spacer      (manage(new Gtk::Label())),
     m_label_modified    (manage(new Gtk::Label())),
     m_label_category    (manage(new Gtk::Label())),
@@ -330,6 +331,10 @@ eventedit::eventedit (perform & p, sequence & seq)
     m_label_ev_count->set_width_chars(32);
     set_seq_count();
     m_showbox->pack_start(*m_label_ev_count, false, false);
+
+    m_label_seq_length->set_width_chars(32);
+    set_seq_length();
+    m_showbox->pack_start(*m_label_seq_length, false, false);
 
     m_label_spacer->set_width_chars(1);
     m_showbox->pack_start(*m_label_spacer, false, false);
@@ -493,6 +498,22 @@ eventedit::set_seq_count ()
         m_eventslots->event_count()
     );
     m_label_ev_count->set_text(temptext);
+}
+
+/**
+ *  Sets m_label_seq_length to the number-of-events string.
+ */
+
+void
+eventedit::set_seq_length ()
+{
+    char temptext[48];
+    snprintf
+    (
+        temptext, sizeof temptext, "Sequence Length: %d measures",
+        m_eventslots->seq().get_measures()
+    );
+    m_label_seq_length->set_text(temptext);
 }
 
 /**

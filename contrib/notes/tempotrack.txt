@@ -1,0 +1,68 @@
+Tempo Track Notes
+Chris Ahlstrom
+2017-07-01 to 2017-07-26
+
+Some of these notes are taken from:
+
+   .....
+
+Sequencer64 has hitherto not directly supported a tempo track, though that
+has been a long-standing request.  We want to do it right.
+
+Currently, the first track of a Sequencer64 or Seq24 contains the main tempo,
+the main time signature, and usually the notes of the first
+pattern/sequence as well.
+
+The MIDI standard specifies that the first track ("MTrk") is the "Tempo
+Map".  It is not entirely clear, but this standard seems to indicate that
+the first track should contain only such events, and should not contain
+notes.  But we need to support both old and new styles for this track.
+
+One idea is to add an initial, bogus Tempo or Time Signature event.  If
+present, and specifying an obviously bad value of 1 or 99/99 that can be
+easily ignored by other sequencers, then the track is purely a tempo
+track, and will be stored as a special sequence.
+
+If the track has notes, they are still read from the Tempo track.  And we
+should have an option to save in the old format vice the new format.
+
+MIDI Tempo Rules:
+
+    1.  If the tempo event specifies 0, a tempo of 120 BPM is assumed.   
+
+Seq32:
+
+    These rules apply to Time Signature, Tempo events.
+
+    1.  If the value of the event read from the MIDI file differs from the
+        configured values, prompt the user.  See
+        midifile::verify_change_tempo_timesig().  Also see
+        midifile::verify_tempo_map().
+    2.  If the tempo event is not on the first track, we should ignore it
+        because Sequencer64 does not support tempo change (so far).
+
+Seq32 adds a c_tempo_map event.  This really is not necessary, but we will
+at least reserve that value for compatibility.  It also provides a BPM
+"scale factor".
+
+Seq32 adds functions to MIDI file:
+
+    -   write_tempo()
+    -   write_time_signature()
+
+It properly writes these only to the first track.  This is done during
+normal MIDI writes and during MIDI export.
+
+The perform object now has a "tempo_mark" structure.  These items are
+placed into three std::lists, for triggering BPM, saving and loading, and
+playing.  Also include undo and redo stacks.  There is also Seq32
+infrastructure for tempo changes and JACK coordination in the perform
+module.
+
+However, I am thinking of the Tempo track as simply being a special
+sequence.
+
+Currently, Set Tempo events will not be effective unless Sequencer64 is
+JACK Master, even if running in ALSA mode.
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

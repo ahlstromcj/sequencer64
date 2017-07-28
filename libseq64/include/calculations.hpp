@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-07-18
+ * \updates       2017-07-28
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -443,6 +443,19 @@ inline midipulse
 measures_to_ticks (midibpm bpm, int ppqn, int bw, int measures = 1)
 {
     return (bw > 0) ? (4 * ppqn * measures * bpm / bw) : 0 ;
+}
+
+/**
+ *  The inverse of measures_to_ticks.
+ *
+ *  TO FILL OUT LATER!
+ */
+
+inline int
+ticks_to_measures (midibpm bpm, int ppqn, int bw, midipulse ticks = 192)
+{
+    return (ppqn > 0 && bpm > 0.0) ?
+        (ticks * bw) / (4.0 * ppqn * bpm) : 192 ;
 }
 
 /*

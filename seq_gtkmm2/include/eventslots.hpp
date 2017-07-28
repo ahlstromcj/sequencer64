@@ -305,6 +305,15 @@ public:
 
 private:
 
+    /**
+     * \getter m_seq const version
+     */
+
+    const sequence & seq () const
+    {
+        return m_seq;
+    }
+
     bool load_events ();
     void set_current_event
     (

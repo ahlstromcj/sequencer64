@@ -119,6 +119,8 @@
  *
  *  User jean-emmanuel added a new MIDI control for setting the screen-set
  *  directly by number.
+ *
+ * TODO: seq32's tick_to_jack_frame () etc. for tempo.
  */
 
 #include <sched.h>

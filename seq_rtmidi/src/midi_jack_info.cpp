@@ -511,7 +511,7 @@ midi_jack_info::api_set_ppqn (int p)
 
 /**
  *  Sets the BPM numeric value, then makes JACK calls to set up the BPM
- *  tempo.
+ *  tempo.  These calls might need to be done in a JACK callback.
  *
  * \param b
  *      The desired new BPM value to set.
@@ -521,6 +521,8 @@ void
 midi_jack_info::api_set_beats_per_minute (midibpm b)
 {
     midi_info::api_set_beats_per_minute(b);
+
+    // Need JACK specific tempo-setting here if applicable.
 }
 
 /**

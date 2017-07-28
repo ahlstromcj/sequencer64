@@ -893,10 +893,9 @@ jack_assistant::deinit ()
         m_jack_running = false;
         if (m_jack_master)
         {
+            m_jack_master = false;
             if (jack_release_timebase(m_jack_client) != 0)
                 (void) error_message("Cannot release JACK timebase");
-
-            m_jack_master = false;
         }
 
         /*
@@ -944,8 +943,7 @@ jack_assistant::activate ()
         apiprint("jack_activate", "sync");
         if (! result)
         {
-            m_jack_running = false;
-            m_jack_master = false;
+            m_jack_running = m_jack_master = false;
             (void) error_message("Can't activate JACK sync client");
         }
         else
@@ -1022,10 +1020,7 @@ jack_assistant::set_beats_per_minute (midibpm bpminute)
         m_beats_per_minute = bpminute;
         if (m_jack_master)
         {
-            /*jack_transport_state_t s = */ (void) jack_transport_query
-            (
-                m_jack_client, &m_jack_pos
-            );
+            (void) jack_transport_query(m_jack_client, &m_jack_pos);
             m_jack_pos.beats_per_minute = bpminute;
             int jackcode = jack_transport_reposition(m_jack_client, &m_jack_pos);
             apiprint("jack_transport_reposition", "set bpm");

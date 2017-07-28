@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-26
+ * \updates       2017-07-28
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -122,6 +122,7 @@ sequence::sequence (int ppqn)
     m_ppqn                      (0),            /* set in constructor body   */
     m_seq_number                (-1),           /* may be set later          */
     m_length                    (0),            /* set in constructor body   */
+    m_measures                  (0),
     m_snap_tick                 (0),            /* set in constructor body   */
 #ifdef SEQ64_STAZED_EXPAND_RECORD
     m_unit_measure              (0),

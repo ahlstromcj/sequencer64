@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-06-02
+ * \updates       2016-07-28
  * \license       GNU GPLv2 or above
  *
  *  The Event Editor complements the Pattern (Sequence) Editor by allowing the
@@ -116,6 +116,7 @@ private:
     Gtk::Label * m_label_ppqn;          /**< Shows the parts per quarter note.  */
     Gtk::Label * m_label_channel;       /**< Shows channel number of pattern.   */
     Gtk::Label * m_label_ev_count;      /**< Shows the count of pattern events. */
+    Gtk::Label * m_label_seq_length;    /**< Shows the length of the pattern.   */
     Gtk::Label * m_label_spacer;        /**< Spacer for the showbox elements.   */
     Gtk::Label * m_label_modified;      /**< Shows "[Modified]" if edited.      */
 
@@ -158,6 +159,7 @@ private:                                // functions used by friend eventslots
     void set_seq_time_sig (const std::string & sig);
     void set_seq_ppqn (const std::string & p);
     void set_seq_count ();
+    void set_seq_length ();
     void set_event_category (const std::string & c);
     void set_event_timestamp (const std::string & ts);
     void set_event_name (const std::string & n);

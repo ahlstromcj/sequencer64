@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-03
+ * \updates       2017-07-28
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -2137,6 +2137,7 @@ void
 seqedit::apply_length (midibpm bpm, int bw, int measures)
 {
     m_seq.set_length(measures_to_ticks(bpm, m_ppqn, bw, measures));
+    m_seq.set_measures(measures);
 #ifdef SEQ64_STAZED_EXPAND_RECORD
     m_seq.set_unit_measure();           /* for progress and redrawing   */
 #endif

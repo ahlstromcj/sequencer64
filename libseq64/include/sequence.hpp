@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-07-26
+ * \updates       2017-07-28
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -414,10 +414,19 @@ private:
 
     /**
      *  Holds the length of the sequence in pulses (ticks).  This value should
-     *  be a power of two when used as a bar unit.
+     *  be a power of two when used as a bar unit.  This value depends on the
+     *  settings of beats/minute, pulses/quarter-note, the beat width, and the
+     *  number of measures.
      */
 
     midipulse m_length;
+
+    /**
+     *  Holds the length of the sequences in measures.  This value is more for
+     *  show; m_length is the fundamental measure.
+     */
+
+    int m_measures;
 
     /**
      *  The size of snap in units of pulses (ticks).  It starts out as the
@@ -718,8 +727,24 @@ public:
 
     void set_name (const std::string & name);
     void set_name (char * name);
-    void set_measures (int lengthmeasures);
-    int get_measures ();
+
+    /*
+     * Amazingly, these functions have had no definitions (just declarations)
+     * since seq24!
+     *
+     * Note that seqedit uses the set_length() function to indirectly set the
+     * measures.
+     */
+
+    void set_measures (int lengthmeasures)  // CAREFUL!  MAKE PRIVATE!
+    {
+        m_measures = lengthmeasures;
+    }
+
+    int get_measures () const
+    {
+        return m_measures;
+    }
 
     /**
      * \getter m_ppqn

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-27
+ * \updates       2017-07-29
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1373,6 +1373,15 @@ public:
     void toggle_follow_transport ()
     {
         m_jack_asst.toggle_follow_transport();
+    }
+
+    /**
+     *  Convenience function for following progress in seqedit.
+     */
+
+    bool follow_progress () const
+    {
+        return m_running && m_jack_asst.get_follow_transport();
     }
 
     /**

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-07-28
+ * \updates       2017-07-29
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -98,13 +98,15 @@ enum draw_type_t
 #ifdef SEQ64_STAZED_EXPAND_RECORD
 
 /**
- *  Provides the supported looping recording modes.
+ *  Provides the supported looping recording modes.  These values are used by
+ *  the seqedit class, which provides a button with a popup menu to select one
+ *  of these recording modes.
  */
 
 enum loop_record_t
 {
     LOOP_RECORD_LEGACY = 0, /**< Incoming events are merged into the loop.  */
-    LOOP_RECORD_OVERWRITE,  /**< Incomfing events overwrite the loop.       */
+    LOOP_RECORD_OVERWRITE,  /**< Incoming events overwrite the loop.        */
     LOOP_RECORD_EXPAND      /**< Incoming events increase size of loop.     */
 };
 
@@ -351,6 +353,12 @@ private:
 #endif  // SEQ64_STAZED_EXPAND_RECORD
 
     /**
+     *  Hold the current unit for a measure.  Need to clarifiy this one.
+     */
+
+    midipulse m_unit_measure;
+
+    /**
      *  These flags indicate that the content of the sequence has changed due
      *  to recording, editing, performance management, or even (?) a
      *  name change.
@@ -422,28 +430,11 @@ private:
     midipulse m_length;
 
     /**
-     *  Holds the length of the sequences in measures.  This value is more for
-     *  show; m_length is the fundamental measure.
-     */
-
-    int m_measures;
-
-    /**
      *  The size of snap in units of pulses (ticks).  It starts out as the
      *  value m_ppqn / 4.
      */
 
     midipulse m_snap_tick;
-
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-
-    /**
-     *  Hold the current unit for a measure.  Need to clarifiy this one.
-     */
-
-    midipulse m_unit_measure;
-
-#endif  // SEQ64_STAZED_EXPAND_RECORD
 
     /**
      *  Provides the number of beats per bar used in this sequence.  Defaults
@@ -729,22 +720,12 @@ public:
     void set_name (char * name);
 
     /*
-     * Amazingly, these functions have had no definitions (just declarations)
-     * since seq24!
-     *
-     * Note that seqedit uses the set_length() function to indirectly set the
-     * measures.
+     * Amazingly, these functions, set_measures() and get_measures(),  have
+     * had no definitions (just declarations) since seq24!  We don't store the
+     * measures, but calculate them when needed.
      */
 
-    void set_measures (int lengthmeasures)  // CAREFUL!  MAKE PRIVATE!
-    {
-        m_measures = lengthmeasures;
-    }
-
-    int get_measures () const
-    {
-        return m_measures;
-    }
+    int calculate_measures () const;
 
     /**
      * \getter m_ppqn
@@ -963,6 +944,7 @@ public:
         bool adjust_triggers = true,
         bool verify = true
     );
+    void apply_length (midibpm bpm, int ppqn, int bw, int measures);
 
     /**
      * \getter m_length
@@ -973,7 +955,7 @@ public:
         return m_length;
     }
 
-    midipulse get_last_tick ();
+    midipulse get_last_tick () const;
     void set_last_tick (midipulse tick);
 
     /**
@@ -1053,6 +1035,18 @@ public:
     bool get_recording () const
     {
         return m_recording;
+    }
+
+    /**
+     *  Makes a calculation for expanded recording, used in seqedit.
+     */
+
+    bool recording_next_measure () const
+    {
+        return
+        (
+            m_recording && (get_last_tick() >= m_length - m_unit_measure / 4)
+        );
     }
 
     void set_snap_tick (int st);
@@ -1440,8 +1434,6 @@ public:
         return m_note_off_margin;
     }
 
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-
     void set_unit_measure ();
 
     /**
@@ -1452,6 +1444,8 @@ public:
     {
         return m_unit_measure;
     }
+
+#ifdef SEQ64_STAZED_EXPAND_RECORD
 
     void set_overwrite_rec (bool ovwr);
 

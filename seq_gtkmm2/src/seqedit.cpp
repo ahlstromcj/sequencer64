@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-28
+ * \updates       2017-07-29
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -570,11 +570,7 @@ seqedit::seqedit
     set_zoom(zoom);
     set_beats_per_bar(m_seq.get_beats_per_bar());
     set_beat_width(m_seq.get_beat_width());
-
-#ifdef SEQ64_STAZED_EXPAND_RECORD
     m_seq.set_unit_measure();              /* must precede set_measures()  */
-#endif
-
     set_measures(get_measures());
     set_midi_channel(m_seq.get_midi_channel());
 
@@ -2128,19 +2124,24 @@ seqedit::set_chord (int chord)
 /**
  *  Sets the sequence length based on the three given parameters.  There's an
  *  implicit "adjust-triggers = true" parameter used in
- *  sequence::set_length().
+ *  sequence::set_length().  Then the seqroll, seqtime, seqdata, and seqevent
+ *  objects are reset(), to cause redraw operations.
  *
- *  Then the seqroll, seqtime, seqdata, and seqevent objects are reset().
+ * \param bpm
+ *      Provides the beats per minute, a floating value.
+ *
+ * \param bw
+ *      Provides the beatwidth (typically 4) from the time signature.
+ *
+ * \param measures
+ *      Provides the number of measures the sequence should cover, obtained
+ *      from the user-interface.
  */
 
 void
 seqedit::apply_length (midibpm bpm, int bw, int measures)
 {
-    m_seq.set_length(measures_to_ticks(bpm, m_ppqn, bw, measures));
-    m_seq.set_measures(measures);
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-    m_seq.set_unit_measure();           /* for progress and redrawing   */
-#endif
+    m_seq.apply_length(bpm, m_ppqn, bw, measures);
     m_seqroll_wid->reset();
     m_seqtime_wid->reset();
     m_seqdata_wid->reset();
@@ -2157,22 +2158,10 @@ seqedit::apply_length (midibpm bpm, int bw, int measures)
  *      sequence::get_measures() function to forward to.
  */
 
-long
+int
 seqedit::get_measures ()
 {
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-    midipulse units = m_seq.get_unit_measure();
-#else
-    midipulse units = measures_to_ticks
-    (
-        m_seq.get_beats_per_bar(), m_ppqn, m_seq.get_beat_width()
-    );
-#endif
-    long measures = m_seq.get_length() / units;
-    if (m_seq.get_length() % units != 0)
-        ++measures;
-
-    return measures;
+    return m_seq.calculate_measures();
 }
 
 /**
@@ -2198,7 +2187,8 @@ seqedit::set_measures (int lim)
 
 /**
  *  Set the measures value manually.  For issue #77, pulled from the
- *  jean-emmanual-manul-bpm-and-measure branch.
+ *  jean-emmanual-manul-bpm-and-measure branch.  The setting is limited to 0
+ *  to 1024.
  */
 
 void
@@ -2217,14 +2207,14 @@ seqedit::set_measures_manual ()
  *      Check if verification is needed at this point.
  *
  * \param bpm
- *      Provides the BPM (beats per measure) value to set.
+ *      Provides the BPM (beats per measure) value to set.  Not beats/minute!
  */
 
 void
 seqedit::set_beats_per_bar (int bpm)
 {
     char b[8];
-    snprintf(b, sizeof b, "%d", int(bpm));
+    snprintf(b, sizeof b, "%d", int(bpm));      // WHY CAST TO INT?
     m_entry_bpm->set_text(b);
     if (bpm != m_seq.get_beats_per_bar())
     {
@@ -2236,7 +2226,8 @@ seqedit::set_beats_per_bar (int bpm)
 
 /**
  *  Set the bpm (beats per measure) value manually.  For issue #77, pulled
- *  from the jean-emmanual-manul-bpm-and-measure branch.
+ *  from the jean-emmanual-manul-bpm-and-measure branch.  The setting is
+ *  limited to 0 to 128.
  */
 
 void
@@ -2586,42 +2577,20 @@ seqedit::timeout ()
         raise();
     }
 
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-
     m_seqroll_wid->draw_progress_on_window();
-    if
-    (
-        m_seq.get_recording() &&
-        m_seqroll_wid->get_expanded_record() &&
-        (
-            m_seq.get_last_tick() >=
-            (m_seq.get_length() - m_seq.get_unit_measure() / 4)
-        )
-    )
+    if (m_seq.recording_next_measure() && m_seqroll_wid->get_expanded_record())
     {
         set_measures(get_measures() + 1);
         m_seqroll_wid->follow_progress();
     }
     if
     (
-        perf().is_running() && perf().get_follow_transport() &&
+        perf().follow_progress() &&
         ! (m_seqroll_wid->get_expanded_record() && m_seq.get_recording())
     )
     {
         m_seqroll_wid->follow_progress();       /* keep up with progress    */
     }
-
-#else
-
-    /*
-     * This is needed only when in JACK mode, we think.  But progress
-     * is still followed in ALSA mode.
-     */
-
-    if (perf().is_running() && perf().get_follow_transport())
-        m_seqroll_wid->follow_progress();       /* keep up with progress    */
-
-#endif  // SEQ64_STAZED_EXPAND_RECORD
 
     if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */
     {

@@ -442,20 +442,37 @@ pulses_per_measure (int ppqn = SEQ64_DEFAULT_PPQN)
 inline midipulse
 measures_to_ticks (midibpm bpm, int ppqn, int bw, int measures = 1)
 {
-    return (bw > 0) ? (4 * ppqn * measures * bpm / bw) : 0 ;
+    return (bw > 0) ? midipulse(4 * ppqn * measures * bpm / bw) : 0 ;
 }
 
 /**
  *  The inverse of measures_to_ticks.
  *
- *  TO FILL OUT LATER!
+ * \param bpm
+ *      The B value in the equation, beats/measure.
+ *
+ * \param ppqn
+ *      The P value in the equation, pulses/qn.
+ *
+ * \param bw
+ *      The W value in the equation, the denominator of the time signature.
+ *      If this value is 0, we'll get an arithmetic exception (crash), so we
+ *      just return 0 in this case.
+ *
+ * \param ticks
+ *      The p (pulses) value in the equation.  It defaults to 192, in case one
+ *      desires a default "ticks per measure" number.
+ *
+ * \return
+ *      Returns the M value (measures or bars) as calculated via the inverse
+ *      equation.  If ppqn or bpm are 0, then 0 is returned.
  */
 
 inline int
 ticks_to_measures (midibpm bpm, int ppqn, int bw, midipulse ticks = 192)
 {
     return (ppqn > 0 && bpm > 0.0) ?
-        (ticks * bw) / (4.0 * ppqn * bpm) : 192 ;
+        (ticks * bw) / (4.0 * ppqn * bpm) : 0 ;
 }
 
 /*

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-28
+ * \updates       2017-07-29
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -43,15 +43,12 @@
 
 #include <stdlib.h>
 
+#include "calculations.hpp"
 #include "mastermidibus.hpp"
 #include "perform.hpp"
 #include "scales.h"
 #include "sequence.hpp"
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
-
-#ifdef SEQ64_STAZED_LFO_SUPPORT
-#include "calculations.hpp"
-#endif
 
 #define LAYK_PULL_REQUEST_95
 
@@ -108,6 +105,7 @@ sequence::sequence (int ppqn)
     m_overwrite_recording       (false),
     m_loop_reset                (false),
 #endif
+    m_unit_measure              (0),
     m_dirty_main                (true),
     m_dirty_edit                (true),
     m_dirty_perf                (true),
@@ -122,11 +120,7 @@ sequence::sequence (int ppqn)
     m_ppqn                      (0),            /* set in constructor body   */
     m_seq_number                (-1),           /* may be set later          */
     m_length                    (0),            /* set in constructor body   */
-    m_measures                  (0),
     m_snap_tick                 (0),            /* set in constructor body   */
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-    m_unit_measure              (0),
-#endif
     m_time_beats_per_measure    (4),
     m_time_beat_width           (4),
     m_clocks_per_metronome      (24),
@@ -374,17 +368,6 @@ sequence::pop_trigger_redo ()
     m_triggers.pop_redo();
 }
 
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-
-void
-sequence::set_unit_measure ()
-{
-    automutex locker(m_mutex);
-    m_unit_measure = get_beats_per_bar() * (m_ppqn * 4) / get_beat_width();
-}
-
-#endif  // SEQ64_STAZED_EXPAND_RECORD
-
 /**
  * \setter m_masterbus
  *      Do we need to call set_dirty_mp() here?  It doesn't affect any
@@ -436,6 +419,42 @@ sequence::set_beat_width (int beatwidth)
     automutex locker(m_mutex);
     m_time_beat_width = beatwidth;
     set_dirty_mp();
+}
+
+/**
+ *  Calculates and sets u = 4BP/W, where u is m_unit_measure, B is the
+ *  beats/bar, P is the PPQN, and W is the beat-width.
+ */
+
+void
+sequence::set_unit_measure ()
+{
+    automutex locker(m_mutex);
+    m_unit_measure = get_beats_per_bar() * (m_ppqn * 4) / get_beat_width();
+}
+
+/**
+ *  Calculates the number of measures in the sequence based on the
+ *  unit-measure and the current length, in pulses, of the sequence.  Used by
+ *  seqedit.
+ *
+ * \return
+ *      Returns the sequence length divided by the measure length, adding one
+ *      measure if there are pulses left over.  0 is returned if
+ *      m_unit_measure is 0.
+ */
+
+int
+sequence::calculate_measures () const
+{
+    int result = 0;
+    if (m_unit_measure > 0)
+    {
+        result = int(m_length / m_unit_measure);
+        if ((m_length % m_unit_measure) != 0)
+            ++result;
+    }
+    return result;
 }
 
 #ifdef USE_STAZED_ODD_EVEN_SELECTION
@@ -4197,7 +4216,7 @@ sequence::set_last_tick (midipulse tick)
  */
 
 midipulse
-sequence::get_last_tick ()
+sequence::get_last_tick () const
 {
     if (m_length > 0)
         return (m_last_tick + m_length - m_trigger_offset) % m_length;
@@ -4304,6 +4323,11 @@ sequence::set_length (midipulse len, bool adjust_triggers, bool verify)
     else
         len = m_length;
 
+    /*
+     * We should set the measures count here.  But we do not have the BPM
+     * value at this time.
+     */
+
     m_triggers.set_length(len);         /* must precede adjust call         */
     if (adjust_triggers)
         m_triggers.adjust_offsets_to_length(len);
@@ -4315,6 +4339,36 @@ sequence::set_length (midipulse len, bool adjust_triggers, bool verify)
     }
     if (was_playing)                    /* start up and refresh             */
         set_playing(true);
+}
+
+/**
+ *  Sets the sequence length based on the three given parameters.  There's an
+ *  implicit "adjust-triggers = true" parameter used in this function.
+ *
+ * \warning
+ *      The measures calculation is useless if the BPM (beats/minute) varies
+ *      throughout the song.
+ *
+ * \param bpm
+ *      Provides the beats per minute, a floating value.
+ *
+ * \param bw
+ *      Provides the beatwidth (typically 4) from the time signature.
+ *
+ * \param measures
+ *      Provides the number of measures the sequence should cover, obtained
+ *      from the user-interface.
+ */
+
+void
+sequence::apply_length (midibpm bpm, int ppqn, int bw, int measures)
+{
+    if (ppqn != m_ppqn)
+    {
+        // what to do?
+    }
+    set_length(seq64::measures_to_ticks(bpm, ppqn, bw, measures));
+    set_unit_measure();                 /* for progress and redrawing   */
 }
 
 /**

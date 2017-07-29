@@ -197,9 +197,7 @@ seqroll::seqroll
     m_trans_button_press    (false),
     m_background_sequence   (0),
     m_drawing_background_seq(false),
-#ifdef SEQ64_STAZED_EXPAND_RECORD
     m_expanded_recording    (false),
-#endif
     m_status                (0),
     m_cc                    (0)
 {
@@ -743,8 +741,6 @@ seqroll::draw_progress_on_window ()
 void
 seqroll::follow_progress ()
 {
-
-#ifdef SEQ64_STAZED_EXPAND_RECORD
     if (m_expanded_recording && m_seq.get_recording())
     {
         double h_max_value = m_seq.get_length() - m_window_x * m_zoom;
@@ -752,8 +748,6 @@ seqroll::follow_progress ()
     }
     else                                        /* use for non-recording */
     {
-#endif // SEQ64_STAZED_EXPAND_RECORD
-
         midipulse progress_tick = m_seq.get_last_tick();
         if (progress_tick > 0 && m_progress_follow)
         {
@@ -770,9 +764,7 @@ seqroll::follow_progress ()
                 m_hadjust.set_value(double(left_tick));
             }
         }
-#ifdef SEQ64_STAZED_EXPAND_RECORD
     }
-#endif
 }
 
 #else

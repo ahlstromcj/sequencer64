@@ -1734,6 +1734,12 @@ perform::set_beats_per_minute (midibpm bpm)
         m_master_bus->set_beats_per_minute(bpm);
         m_us_per_quarter_note = tempo_us_from_bpm(bpm);
         m_bpm = bpm;
+
+        /*
+         * Do we need to adjust the BPM of all of the sequences, including the
+         * potential tempo track???  It is "merely" the putative main tempo of
+         * the MIDI tune.
+         */
     }
 }
 

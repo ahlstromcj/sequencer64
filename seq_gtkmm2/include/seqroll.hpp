@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-21
+ * \updates       2017-07-29
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -400,8 +400,6 @@ private:
      * bool m_ignore_redraw;
      */
 
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-
     /**
      *  Provides an option for expanding the number of measures while
      *  recording.  In essence, the "infinite" track we've wanted, thanks
@@ -409,8 +407,6 @@ private:
      */
 
     bool m_expanded_recording;
-
-#endif  // SEQ64_STAZED_EXPAND_RECORD
 
     /**
      *  The current status/event selected in the seqedit.  Not used in seqroll
@@ -553,8 +549,6 @@ public:
     void complete_paste (int x, int y);
     void follow_progress ();
 
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-
     /**
      * \getter m_expanded_recording
      */
@@ -572,8 +566,6 @@ public:
     {
         return m_expanded_recording;
     }
-
-#endif  // SEQ64_STAZED_EXPAND_RECORD
 
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
 

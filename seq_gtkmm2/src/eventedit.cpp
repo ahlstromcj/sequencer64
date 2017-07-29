@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2017-07-28
+ * \updates       2017-07-29
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -511,7 +511,7 @@ eventedit::set_seq_length ()
     snprintf
     (
         temptext, sizeof temptext, "Sequence Length: %d measures",
-        m_eventslots->seq().get_measures()
+        m_eventslots->seq().calculate_measures()
     );
     m_label_seq_length->set_text(temptext);
 }

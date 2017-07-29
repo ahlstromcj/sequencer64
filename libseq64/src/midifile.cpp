@@ -907,6 +907,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                              *
                              *  if (Delta == 0)
                              *      ++CurrentTime;
+                             *
+                             * Question:  What if BPM is set *after* this
+                             *            event?
                              */
 
                             seq.set_length(CurrentTime, false);
@@ -1034,7 +1037,11 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                 int preferred_seqnum = seqnum + screenset * usr().seqs_in_set();
                 seq.sort_events();              /* sort the events now      */
+#if USE_NEW_VERSION
+                seq.apply_length(tempo, ppqn, bw, measures);
+#else
                 seq.set_length();               /* final verify_and_link    */
+#endif
                 p.add_sequence(&seq, preferred_seqnum);
             }
 

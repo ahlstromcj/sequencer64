@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-07-16
+ * \updates       2017-07-30
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -990,6 +990,42 @@ note_value_to_temp (midibyte note)
     slope /= double(SEQ64_MAX_DATA_VALUE);
     slope += usr().midi_bpm_minimum();
     return slope;
+}
+
+/**
+ *  Calculates the quotient and remainder of a midipulse division, which is a
+ *  common operation in Sequencer64.  This function also avoids division by
+ *  zero (and currently ignores negative denominators, which are still
+ *  possible with the current definition of the midipulse typedef.
+ *
+ * \param numerator
+ *      Provides the numerator in the division operation.
+ *
+ * \param denominator
+ *      Provides the denominator in the division operation.
+ *
+ * \param [out] remainder
+ *      The remainder is written here.  If the division cannot be done, it is
+ *      set to 0.
+ *
+ * \return
+ *      Returns the result of the division.
+ */
+
+midipulse
+pulse_divide (midipulse numerator, midipulse denominator, midipulse & remainder)
+{
+    midipulse result = 0;
+    if (denominator > 0)
+    {
+        ldiv_t temp = ldiv(numerator, denominator);
+        result = temp.quot;
+        remainder = temp.rem;
+    }
+    else
+        remainder = 0;
+
+    return result;
 }
 
 /**

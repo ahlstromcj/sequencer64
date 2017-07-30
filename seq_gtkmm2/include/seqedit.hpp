@@ -485,7 +485,7 @@ private:
     int get_measures ();
     void set_measures (int lim);
     void set_measures_manual ();                            /* issue #77    */
-    void apply_length (midibpm bpm, int bw, int measures);
+    void apply_length (int bpb, int bw, int measures);
     void set_midi_channel (int midichannel, bool user_change = false);
     void set_midi_bus (int midibus, bool user_change = false);
     void set_scale (int scale);

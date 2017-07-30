@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2017-07-11
+ * \updates       2017-07-30
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_events
@@ -124,6 +124,23 @@ editable_events::operator = (const editable_events & rhs)
 }
 
 /**
+ *  Provides the length of the events in MIDI pulses.  This function gets the
+ *  iterator for the last element and returns its length value.
+ */
+
+midipulse
+editable_events::get_length () const
+{
+    midipulse result = 0;
+    if (count() > 0)
+    {
+        const_reverse_iterator lci = m_events.rbegin(); /* get last element */
+        result = lci->second.timestamp();               /* get length value */
+    }
+    return result;
+}
+
+/**
  *  Adds an event, converted to an editable_event, to the internal event list.
  *
  * \param e
@@ -168,9 +185,6 @@ bool
 editable_events::add (const editable_event & e)
 {
     size_t count = m_events.size();         /* save initial size            */
-
-#ifdef SEQ64_USE_EVENTEDIT_MAP
-
     event_list::event_key key(e);           /* create the key value         */
 
 #if __cplusplus >= 201103L                  /* C++11                        */
@@ -183,15 +197,6 @@ editable_events::add (const editable_event & e)
     bool result = m_events.size() == (count + 1);
     if (result)
         current_event(ei);
-
-#else                                       /* std::list implementation     */
-
-    m_events.push_front(e);
-    bool result = m_events.size() == (count + 1);
-    if (result)
-        m_events.sort();
-
-#endif  // SEQ64_USE_EVENTEDIT_MAP
 
     return result;
 }
@@ -227,10 +232,6 @@ editable_events::load_events ()
             break;
     }
     result = count() == original_count;
-#ifndef SEQ64_USE_EVENTEDIT_MAP
-    if (result)
-        m_events.sort();
-#endif
 
 #ifdef USE_VERIFY_AND_LINK                  /* not yet ready */
     if (result && count() > 1)

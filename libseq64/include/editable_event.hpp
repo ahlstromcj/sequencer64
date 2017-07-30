@@ -421,7 +421,7 @@ public:
     /**
      * \getter event::get_timestamp()
      *      Implemented to allow a uniform naming convention that is not
-     *      slavish to the get/set crowd [this ain't Java].
+     *      slavish to the get/set crowd [this ain't Java or, chuckle, C#].
      */
 
     midipulse timestamp () const

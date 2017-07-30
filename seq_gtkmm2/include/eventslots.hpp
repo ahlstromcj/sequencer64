@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2017-04-30
+ * \updates       2017-07-30
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Event Editor window.
@@ -88,7 +88,9 @@ private:
     sequence & m_seq;
 
     /**
-     *  Holds the editable events for this sequence.
+     *  Holds the editable events for this sequence.  This container is what
+     *  is edited, and any changes made to it are not saved to the container
+     *  until the user pushes the "save" button.
      */
 
     editable_events m_event_container;
@@ -136,6 +138,19 @@ private:
      */
 
     int m_event_count;
+
+    /**
+     *  Holds the previous length of the edited sequence, in MIDI pulses, so
+     *  that we can detect changes in the length of the sequence.
+     */
+
+    midipulse m_last_max_timestamp;
+
+    /**
+     *  Holds the current number of measures, for display purposes.
+     */
+
+    int m_measures;
 
     /**
      *  Counts the number of displayed events, which depends on how many
@@ -221,6 +236,15 @@ public:
     virtual ~eventslots ()
     {
         // I got nothin'
+    }
+
+    /**
+     * \getter m_event_container.get_length()
+     */
+
+    midipulse get_length () const
+    {
+        return m_event_container.get_length();
     }
 
     /**
@@ -365,6 +389,7 @@ private:
     int increment_current ();
     int decrement_bottom ();
     int increment_bottom ();
+    int calculate_measures () const;
 
 private:    // Gtk callbacks
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-07-28
+ * \updates       2017-07-30
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -419,8 +419,8 @@ pulses_per_measure (int ppqn = SEQ64_DEFAULT_PPQN)
  *  Note that 4 * P is a constraint encapsulated by the inline function
  *  pulses_per_measure().
  *
- * \param bpm
- *      The B value in the equation, beats/measure.
+ * \param bpb
+ *      The B value in the equation, beats/measure or beats/bar.
  *
  * \param ppqn
  *      The P value in the equation, pulses/qn.
@@ -440,16 +440,16 @@ pulses_per_measure (int ppqn = SEQ64_DEFAULT_PPQN)
  */
 
 inline midipulse
-measures_to_ticks (midibpm bpm, int ppqn, int bw, int measures = 1)
+measures_to_ticks (int bpb, int ppqn, int bw, int measures = 1)
 {
-    return (bw > 0) ? midipulse(4 * ppqn * measures * bpm / bw) : 0 ;
+    return (bw > 0) ? midipulse(4 * ppqn * measures * bpb / bw) : 0 ;
 }
 
 /**
  *  The inverse of measures_to_ticks.
  *
- * \param bpm
- *      The B value in the equation, beats/measure.
+ * \param bpb
+ *      The B value in the equation, beats/measure or beats/bar.
  *
  * \param ppqn
  *      The P value in the equation, pulses/qn.
@@ -465,20 +465,24 @@ measures_to_ticks (midibpm bpm, int ppqn, int bw, int measures = 1)
  *
  * \return
  *      Returns the M value (measures or bars) as calculated via the inverse
- *      equation.  If ppqn or bpm are 0, then 0 is returned.
+ *      equation.  If ppqn or bpb are 0, then 0 is returned.
  */
 
 inline int
-ticks_to_measures (midibpm bpm, int ppqn, int bw, midipulse ticks = 192)
+ticks_to_measures (int bpb, int ppqn, int bw, midipulse ticks = 192)
 {
-    return (ppqn > 0 && bpm > 0.0) ?
-        (ticks * bw) / (4.0 * ppqn * bpm) : 0 ;
+    return (ppqn > 0 && bpb > 0.0) ?
+        (ticks * bw) / (4.0 * ppqn * bpb) : 0 ;
 }
 
 /*
  *  Free functions in the seq64 namespace.
  */
 
+extern midipulse pulse_divide
+(
+    midipulse numerator, midipulse denominator, midipulse & remainder
+);
 extern double wave_func (double angle, wave_type_t wavetype);
 extern bool extract_port_names
 (

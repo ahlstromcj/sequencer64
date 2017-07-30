@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-29
+ * \updates       2017-07-30
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -171,13 +171,11 @@ sequence::modify ()
 }
 
 /**
- *  A cut-down version of principal assignment operator.
- *  We're replacing that incomplete function (many members are not assigned)
- *  with the more accurately-named partial_assign() function.
- *
- *  It did not assign them all, so we created this partial_assign()
- *  function to do this work, and replaced operator =() with this function in
- *  client code.
+ *  A cut-down version of principal assignment operator.  We're replacing that
+ *  incomplete seq24 function (many members are not assigned) with the more
+ *  accurately-named partial_assign() function.  It did not assign them all,
+ *  so we created this partial_assign() function to do this work, and replaced
+ *  operator =() with this function in client code.
  *
  * \threadsafe
  *
@@ -427,7 +425,7 @@ sequence::set_beat_width (int beatwidth)
  */
 
 void
-sequence::set_unit_measure ()
+sequence::set_unit_measure () const
 {
     automutex locker(m_mutex);
     m_unit_measure = get_beats_per_bar() * (m_ppqn * 4) / get_beat_width();
@@ -436,25 +434,21 @@ sequence::set_unit_measure ()
 /**
  *  Calculates the number of measures in the sequence based on the
  *  unit-measure and the current length, in pulses, of the sequence.  Used by
- *  seqedit.
+ *  seqedit.  If m_unit_measure hasn't been calculated yet, it is calculated
+ *  here.
  *
  * \return
- *      Returns the sequence length divided by the measure length, adding one
- *      measure if there are pulses left over.  0 is returned if
- *      m_unit_measure is 0.
+ *      Returns the sequence length divided by the measure length, roughly.
+ *      m_unit_measure is 0.  The lowest valid measure is 1.
  */
 
 int
 sequence::calculate_measures () const
 {
-    int result = 0;
-    if (m_unit_measure > 0)
-    {
-        result = int(m_length / m_unit_measure);
-        if ((m_length % m_unit_measure) != 0)
-            ++result;
-    }
-    return result;
+    if (m_unit_measure == 0)
+        set_unit_measure();
+
+    return 1 + m_length / m_unit_measure;
 }
 
 #ifdef USE_STAZED_ODD_EVEN_SELECTION
@@ -4324,8 +4318,7 @@ sequence::set_length (midipulse len, bool adjust_triggers, bool verify)
         len = m_length;
 
     /*
-     * We should set the measures count here.  But we do not have the BPM
-     * value at this time.
+     * We should set the measures count here.
      */
 
     m_triggers.set_length(len);         /* must precede adjust call         */
@@ -4343,7 +4336,11 @@ sequence::set_length (midipulse len, bool adjust_triggers, bool verify)
 
 /**
  *  Sets the sequence length based on the three given parameters.  There's an
- *  implicit "adjust-triggers = true" parameter used in this function.
+ *  implicit "adjust-triggers = true" parameter used in this function.  Please
+ *  note that there is an overload that takes only a measure number and uses
+ *  the current beats/bar, PPQN, and beat-width values of this sequence.  The
+ *  set_unit_measure() function is called, but won't change any values just
+ *  because the length (number of measures) changed.
  *
  * \warning
  *      The measures calculation is useless if the BPM (beats/minute) varies
@@ -4361,14 +4358,32 @@ sequence::set_length (midipulse len, bool adjust_triggers, bool verify)
  */
 
 void
-sequence::apply_length (midibpm bpm, int ppqn, int bw, int measures)
+sequence::apply_length (int bpb, int ppqn, int bw, int measures)
 {
     if (ppqn != m_ppqn)
     {
         // what to do?
     }
-    set_length(seq64::measures_to_ticks(bpm, ppqn, bw, measures));
+    set_length(seq64::measures_to_ticks(bpb, ppqn, bw, measures));
     set_unit_measure();                 /* for progress and redrawing   */
+}
+
+/**
+ *  Extends the length of the sequence.  Calls set_length() with the new
+ *  length and its default parameters.  Not sure how useful this function is.
+ *
+ * \param len
+ *      The new length of the sequence.
+ *
+ * \return
+ *      Returns the new number of measures.
+ */
+
+int
+sequence::extend (midipulse len)
+{
+    set_length(len);
+    return calculate_measures();
 }
 
 /**

@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2017-07-11
+ * \updates       2017-07-30
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -40,13 +40,6 @@
 
 #include "event_list.hpp"               /* seq64::event_list::event_key */
 #include "editable_event.hpp"           /* seq64::editable_event        */
-
-/**
- *  We think the std::list implementation breaks editing, so we're going back
- *  to the std::map implementation.
- */
-
-#define SEQ64_USE_EVENTEDIT_MAP
 
 /**
  *  Provides a brief, searchable notation for the use of the
@@ -75,40 +68,27 @@ class editable_events
 
 private:
 
-#ifdef SEQ64_USE_EVENTEDIT_MAP
-
     /**
      *  Types to use to with the multimap implementation.  These typenames are
      *  identical to those used in event_list, but of course they are in the
      *  editable_events scope instead.  See the event_list class; that class
      *  once again uses std::list, but still defines event_list::event_key for
-     *  use here.  See SEQ64_USE_EVENT_MAP versus SEQ64_USE_EVENTEDIT_MAP.
+     *  use here.  We think the std::list implementation breaks editing, so
+     *  we're going back to the std::map implementation for the event-editor.
      */
 
     typedef event_list::event_key Key;
     typedef std::pair<Key, editable_event> EventsPair;
     typedef std::multimap<Key, editable_event> Events;
-    typedef std::multimap<Key, editable_event>::iterator iterator;
-    typedef std::multimap<Key, editable_event>::const_iterator const_iterator;
-
-#else
-
-    /**
-     *  Types to use to with the list implementation.  These typenames are
-     *  identical to those used in event_list, but of course they are in the
-     *  editable_events scope instead.  See the event_list class.
-     */
-
-    typedef std::list<editable_event> Events;
-    typedef std::list<editable_event>::iterator iterator;
-    typedef std::list<editable_event>::const_iterator const_iterator;
-
-#endif  // SEQ64_USE_EVENTEDIT_MAP
+    typedef Events::iterator iterator;
+    typedef Events::const_iterator const_iterator;
+    typedef Events::reverse_iterator reverse_iterator;
+    typedef Events::const_reverse_iterator const_reverse_iterator;
 
     /**
      *  Holds the editable_events.  Just to be clear, since we currently do
      *  not define SEQ64_USE_EVENT_MAP, this is an std::list container, not a
-     *  multimap.  BELAY THAT!
+     *  multimap.  BELAY THAT!  The multimap works better here.
      */
 
     Events m_events;
@@ -246,11 +226,7 @@ public:
 
     static editable_event & dref (iterator ie)
     {
-#ifdef SEQ64_USE_EVENTEDIT_MAP
         return ie->second;
-#else
-        return *ie;
-#endif
     }
 
     /**
@@ -262,11 +238,7 @@ public:
 
     static const editable_event & dref (const_iterator ie)
     {
-#ifdef SEQ64_USE_EVENTEDIT_MAP
         return ie->second;
-#else
-        return *ie;
-#endif
     }
 
     /**
@@ -279,6 +251,8 @@ public:
     {
         return int(m_events.size());
     }
+
+    midipulse get_length () const;
 
     bool add (const event & e);
     bool add (const editable_event & e);
@@ -322,11 +296,9 @@ public:
 
     void sort ()
     {
-#ifdef SEQ64_USE_EVENTEDIT_MAP
-        // we need nothin' for sorting a multimap
-#else
-        m_events.sort();
-#endif
+        /*
+         * we need nothin' for sorting a multimap.
+         */
     }
 
     /**

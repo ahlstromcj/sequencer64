@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2017-07-15
+ * \updates       2017-07-30
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -59,6 +59,19 @@ namespace seq64
 
 /**
  *  Principal constructor for this user-interface object.
+ *
+ * \param p
+ *      The parent perform object.
+ *
+ * \param parent
+ *      The parent event-editor object.
+ *
+ * \param seq
+ *      Provides the sequence represented by this event-editing object.
+ *
+ * \param vadjust
+ *      Provides the vertical-adjustment object, used in updating the window
+ *      that represents the events being edited.
  */
 
 eventslots::eventslots
@@ -78,6 +91,8 @@ eventslots::eventslots
     m_slots_x               (m_slots_chars * m_char_w),
     m_slots_y               (font_render().char_height() + 4),
     m_event_count           (0),
+    m_last_max_timestamp    (0),
+    m_measures              (0),
     m_line_count            (0),
     m_line_maximum          (43),   /* need a way to calculate this value   */
     m_line_overlap          (5),
@@ -232,10 +247,11 @@ eventslots::set_text
 }
 
 /**
- *  Inserts an event.
- *
- *  What actually happens here depends if the new event is before the frame,
- *  within the frame, or after the frame, based on the timestamp.
+ *  Inserts an event.  What actually happens here depends if the new event is
+ *  before the frame, within the frame, or after the frame, based on the
+ *  timestamp.  Also, we want to allow the lengthening of a sequence by
+ *  inserting an event past its current length.  Especially useful for the
+ *  tempo track.
  *
  *  If before the frame: To keep the previous events visible, we do not need
  *  to increment the iterators (insertion does not affect multimap iterators),
@@ -294,6 +310,19 @@ eventslots::insert_event (const editable_event & edev)
             editable_events::iterator nev = m_event_container.current_event();
             m_parent.set_dirty();
             page_topper(nev);
+        }
+
+        /*
+         * Now see if the timestamp of the new event is past the end of the
+         * sequence.  In this case, we will allow the sequence to increase in
+         * length.  We also need to account for any change in length.
+         */
+
+        if (get_length() != m_last_max_timestamp)
+        {
+            m_last_max_timestamp = get_length();
+
+            // m_parent.set_dirty();
         }
     }
     return result;
@@ -513,7 +542,8 @@ eventslots::delete_current_event ()
  *
  *  This function always copies the original event, modifiies the copy,
  *  deletes the original event, and inserts the "new" event into the
- *  editable-event container.
+ *  editable-event container.  The insertion takes care of updating any length
+ *  increase of the sequence.
  *
  * \param evtimestamp
  *      Provides the new event time-stamp as edited by the user.
@@ -1389,6 +1419,21 @@ eventslots::on_frame_end ()
         --ei;
         page_topper(ei);
     }
+}
+
+/**
+ *  This function basically duplicates sequence::calculate_measures().
+ *
+ * \return
+ *      Returns the number of measures needed to cover the full length of the
+ *      current events in the container.  The lowest valid measure is 1.
+ */
+
+int
+eventslots::calculate_measures () const
+{
+    midipulse unitmeasure = seq().get_unit_measure();
+    return 1 + get_length() / unitmeasure;
 }
 
 }           // namespace seq64

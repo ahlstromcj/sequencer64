@@ -2127,8 +2127,8 @@ seqedit::set_chord (int chord)
  *  sequence::set_length().  Then the seqroll, seqtime, seqdata, and seqevent
  *  objects are reset(), to cause redraw operations.
  *
- * \param bpm
- *      Provides the beats per minute, a floating value.
+ * \param bpb
+ *      Provides the beats per bar.
  *
  * \param bw
  *      Provides the beatwidth (typically 4) from the time signature.
@@ -2139,9 +2139,9 @@ seqedit::set_chord (int chord)
  */
 
 void
-seqedit::apply_length (midibpm bpm, int bw, int measures)
+seqedit::apply_length (int bpb, int bw, int measures)
 {
-    m_seq.apply_length(bpm, m_ppqn, bw, measures);
+    m_seq.apply_length(bpb, m_ppqn, bw, measures);
     m_seqroll_wid->reset();
     m_seqtime_wid->reset();
     m_seqdata_wid->reset();
@@ -2171,18 +2171,29 @@ seqedit::get_measures ()
  * \todo
  *      Check if verification is needed at this point.
  *
- * \param lim
+ * \param len
  *      Provides the sequence length, in measures.
  */
 
 void
-seqedit::set_measures (int lim)
+seqedit::set_measures (int len)
 {
     char b[8];
-    snprintf(b, sizeof b, "%d", lim);
+    snprintf(b, sizeof b, "%d", len);
     m_entry_length->set_text(b);
-    m_measures = lim;
-    apply_length(m_seq.get_beats_per_bar(), m_seq.get_beat_width(), lim);
+    m_measures = len;
+
+    /*
+     * In lieu of:
+     *
+     * apply_length(m_seq.get_beats_per_bar(), m_seq.get_beat_width(), len);
+     */
+
+    m_seq.apply_length(len);
+    m_seqroll_wid->reset();                 /* see seqedit::apply_length()  */
+    m_seqtime_wid->reset();
+    m_seqdata_wid->reset();
+    m_seqevent_wid->reset();
 }
 
 /**
@@ -2194,9 +2205,9 @@ seqedit::set_measures (int lim)
 void
 seqedit::set_measures_manual ()
 {
-    int lim = atoi(m_entry_length->get_text().c_str());
-    if (lim > 0 && lim <= 1024)
-        set_measures(lim);
+    int len = atoi(m_entry_length->get_text().c_str());
+    if (len > 0 && len <= 1024)
+        set_measures(len);
 }
 
 /**
@@ -2206,21 +2217,28 @@ seqedit::set_measures_manual ()
  * \todo
  *      Check if verification is needed at this point.
  *
- * \param bpm
+ * \param bpb
  *      Provides the BPM (beats per measure) value to set.  Not beats/minute!
  */
 
 void
-seqedit::set_beats_per_bar (int bpm)
+seqedit::set_beats_per_bar (int bpb)
 {
     char b[8];
-    snprintf(b, sizeof b, "%d", int(bpm));      // WHY CAST TO INT?
+    snprintf(b, sizeof b, "%d", bpb);
     m_entry_bpm->set_text(b);
-    if (bpm != m_seq.get_beats_per_bar())
+    if (bpb != m_seq.get_beats_per_bar())
     {
         long len = get_measures();
-        m_seq.set_beats_per_bar(bpm);
-        apply_length(bpm, m_seq.get_beat_width(), len);
+        m_seq.set_beats_per_bar(bpb);
+
+        /*
+         * In lieu of:
+         *
+         * apply_length(bpb, m_seq.get_beat_width(), len);
+         */
+
+        m_seq.apply_length(len);
     }
 }
 

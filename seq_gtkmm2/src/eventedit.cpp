@@ -502,6 +502,8 @@ eventedit::set_seq_count ()
 
 /**
  *  Sets m_label_seq_length to the number-of-events string.
+ *
+ *      m_eventslots->seq().calculate_measures()
  */
 
 void
@@ -511,7 +513,7 @@ eventedit::set_seq_length ()
     snprintf
     (
         temptext, sizeof temptext, "Sequence Length: %d measures",
-        m_eventslots->seq().calculate_measures()
+        m_eventslots->calculate_measures()
     );
     m_label_seq_length->set_text(temptext);
 }
@@ -670,6 +672,10 @@ eventedit::set_dirty (bool flag)
         m_label_modified->set_text("[ Saved ]");
         m_button_save->set_sensitive(false);
     }
+
+// WIll this update the window properly??????????????
+    set_seq_count();
+    set_seq_length();
 }
 
 /**
@@ -693,6 +699,9 @@ eventedit::handle_delete ()
  *  will be determined by the timestamp and existing events.  Note that we
  *  have to recalibrate the scroll-bar when we insert/delete events by calling
  *  v_adjustment().
+ *
+ *  As a new feature, we will allow events to extend the official length of
+ *  the sequence.
  */
 
 void
@@ -755,15 +764,7 @@ eventedit::handle_save ()
     {
         bool ok = m_eventslots->save_events();
         if (ok)
-        {
             m_button_save->set_sensitive(false);
-
-            /*
-             * Now happens in save_events() which calls sequence::copy_events().
-             *
-             * perf_modify();
-             */
-        }
     }
 }
 

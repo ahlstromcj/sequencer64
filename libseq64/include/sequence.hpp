@@ -354,9 +354,10 @@ private:
 
     /**
      *  Hold the current unit for a measure.  Need to clarifiy this one.
+     *  It is calculated when needed (lazy evaluation).
      */
 
-    midipulse m_unit_measure;
+    mutable midipulse m_unit_measure;
 
     /**
      *  These flags indicate that the content of the sequence has changed due
@@ -944,7 +945,17 @@ public:
         bool adjust_triggers = true,
         bool verify = true
     );
-    void apply_length (midibpm bpm, int ppqn, int bw, int measures);
+    void apply_length (int bpb, int ppqn, int bw, int measures = 1);
+    int extend (midipulse len);
+
+    /**
+     *  An overload that gets its values from this sequence object.
+     */
+
+    void apply_length (int measures = 1)
+    {
+        apply_length(get_beats_per_bar(), m_ppqn, get_beat_width(), measures);
+    }
 
     /**
      * \getter m_length
@@ -1434,14 +1445,17 @@ public:
         return m_note_off_margin;
     }
 
-    void set_unit_measure ();
+    void set_unit_measure () const;
 
     /**
      * \getter m_unit_measure
      */
 
-    midipulse get_unit_measure ()
+    midipulse get_unit_measure () const
     {
+        if (m_unit_measure == 0)
+            set_unit_measure();
+
         return m_unit_measure;
     }
 

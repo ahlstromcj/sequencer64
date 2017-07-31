@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2017-07-23
+ * \updates       2017-07-30
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -141,16 +141,17 @@ private:
 
     typedef std::multimap<event_key, event> Events;
     typedef std::pair<event_key, event> EventsPair;
-    typedef std::multimap<event_key, event>::iterator iterator;
-    typedef std::multimap<event_key, event>::const_iterator const_iterator;
 
 #else   // use std::list here:
 
     typedef std::list<event> Events;
-    typedef std::list<event>::iterator iterator;
-    typedef std::list<event>::const_iterator const_iterator;
 
 #endif  // SEQ64_USE_EVENT_MAP
+
+    typedef Events::iterator iterator;
+    typedef Events::const_iterator const_iterator;
+    typedef Events::reverse_iterator reverse_iterator;
+    typedef Events::const_reverse_iterator const_reverse_iterator;
 
 private:
 
@@ -253,6 +254,8 @@ public:
     {
         return int(m_events.size());
     }
+
+    midipulse get_length () const;
 
     /**
      *  Returns true if there are no events.
@@ -463,7 +466,7 @@ private:                                // functions for friend sequence
         return m_events;
     }
 
-};
+};          // class event_list
 
 }           // namespace seq64
 

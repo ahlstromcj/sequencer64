@@ -5072,7 +5072,8 @@ sequence::show_events () const
  *  Copies an external container of events into the current container,
  *  effectively replacing all of its events.  Compare this function to the
  *  remove_all() function.  Copying the container is a lot of work, but
- *  fairly fast, even with an std::multimap as the container.
+ *  fairly fast, even with an std::multimap as the container.  Also note that
+ *  we have to recalculate the length of the sequence.
  *
  * \threadsafe
  *      Note that we had to consolidate the replacement of all the events in
@@ -5097,17 +5098,25 @@ sequence::copy_events (const event_list & newevents)
     m_events.clear();
     m_events = newevents;
     if (m_events.empty())
+    {
         m_events.unmodify();
+        m_length = 0;
+    }
+    else
+    {
+    }
 
     m_iterator_draw = m_events.begin();     /* same as in reset_draw_marker */
     if (! m_events.empty())                 /* need at least 1 (2?) events  */
     {
         /*
          * Another option, if we have a new sequence length value (in pulses)
-         * would be to call sequence::set_length(len, adjust_triggers).
+         * would be to call sequence::set_length(len, adjust_triggers).  We do
+         * need to re-evaluate the length (last timestamp) of the sequence.
          */
 
-        verify_and_link();
+        m_length = m_events.get_length();   /* get potentially new length   */
+        verify_and_link();                  /* function uses m_length       */
     }
     set_dirty();
     modify();

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-07-30
+ * \updates       2017-07-31
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -72,6 +72,7 @@
 #include <cctype>                       /* std::isspace(), std::isdigit()   */
 #include <math.h>                       /* C::floor(), C::log()             */
 #include <stdlib.h>                     /* C::atoi(), C::strtol()           */
+#include <string.h>                     /* C::memset()                      */
 #include <time.h>                       /* C::strftime()                    */
 
 #include "app_limits.h"
@@ -93,9 +94,13 @@ namespace seq64
  *  Extracts up to 4 numbers from a colon-delimited string.
  *
  *      -   measures : beats : divisions
- *          -   "213:4:920"
- *          -   "0:1:0"
- *      -   hours : minutes : seconds . fraction
+ *          -   "8" represents solely the number of pulses.  That is, if the
+ *              user enters a single number, it is treated as the number of
+ *              pulses.
+ *          -   "8:1" represents a measure and a beat.
+ *          -   "213:4:920"  represents a measure, a beat, and pulses.
+ *      -   hours : minutes : seconds . fraction.  We really don't support
+ *          this concept at present.  Beware!
  *          -   "2:04:12.14"
  *          -   "0:1:2"
  *
@@ -103,6 +108,7 @@ namespace seq64
  *      This is not the most efficient implementation you'll ever see.
  *      At some point we will tighten it up.  This function is tested in the
  *      seq64-tests project, in the "calculations_unit_test" module.
+ *      At present this test is surely BROKEN!
  *
  * \param s
  *      Provides the input time string, in measures or time format,
@@ -110,6 +116,8 @@ namespace seq64
  *
  * \param [out] part_1
  *      The destination reference for the first part of the time.
+ *      In some contexts, this number alone is a pulse (ticks) value;
+ *      in other contexts, it is a measures value.
  *
  * \param [out] part_2
  *      The destination reference for the second part of the time.
@@ -121,12 +129,10 @@ namespace seq64
  *      The destination reference for the fractional part of the time.
  *
  * \return
- *      Returns true if a reasonable portion (3 numbers) was good for
- *      extraction.  The fraction part will start with a period for easier
- *      conversion to fractional seconds.
+ *      Returns the number of parts provided, ranging from 0 to 4.
  */
 
-bool
+int
 extract_timing_numbers
 (
     const std::string & s,
@@ -136,44 +142,79 @@ extract_timing_numbers
     std::string & fraction
 )
 {
-    bool result = false;
-    std::size_t colon_1_pos = s.find_first_of(":");
+    std::vector<std::string> tokens;
+    int count = tokenize_string(s, tokens);
     part_1.clear();
     part_2.clear();
     part_3.clear();
     fraction.clear();
-    if (colon_1_pos != std::string::npos)
+    if (count > 0)
+        part_1 = tokens[0];
+
+    if (count > 1)
+        part_2 = tokens[1];
+
+    if (count > 2)
+        part_3 = tokens[2];
+
+    if (count > 3)
+        fraction = tokens[3];
+
+    return count;
+}
+
+/**
+ *  Tokenizes a string using the colon, space, or period as delimiters.  They
+ *  are treated equally, and the caller must determine what to do with the
+ *  parts.  Here are the steps:
+ *
+ *      -#  Skip any delimiters found at the beginning.  The position will
+ *          either exist, or there will be nothing to parse.
+ *      -#  Get to the next delimiter.  This will exist, or not.  Get all
+ *          non-delimiters until the next delimiter or the end of the string.
+ *      -#  Repeat until no more delimiters exist.
+ *
+ * \param source
+ *      The string to be parsed and tokenized.
+ *
+ * \param tokens
+ *      Provides a vector into which to push the tokens.
+ *
+ * \return
+ *      Returns the number of tokens pushed (i.e. the final size of the tokens
+ *      vector.
+ */
+
+int
+tokenize_string
+(
+    const std::string & source,
+    std::vector<std::string> & tokens
+)
+{
+    static std::string s_delims = ":. ";
+    int result = 0;
+    tokens.clear();
+    std::string::size_type pos = source.find_first_not_of(s_delims);
+    if (pos != std::string::npos)
     {
-        std::size_t colon_2_pos = s.find_first_of(":", colon_1_pos + 1);
-        if (colon_2_pos != std::string::npos)
+        for (;;)
         {
-            std::size_t period_pos = s.find_first_of(".", colon_2_pos + 1);
-            if (period_pos != std::string::npos)
+            std::string::size_type depos = source.find_first_of(s_delims, pos);
+            if (depos != std::string::npos)
             {
-                fraction = s.substr(period_pos);
-                std::size_t len = period_pos - colon_2_pos - 1;
-                if (len > 0)
-                {
-                    part_3 = s.substr(colon_2_pos + 1, len);
-                    result = true;
-                }
+                tokens.push_back(source.substr(pos, depos - pos));
+                pos = source.find_first_not_of(s_delims, depos +1);
+                if (pos == std::string::npos)
+                    break;
             }
             else
             {
-                part_3 = s.substr(colon_2_pos + 1);
-                result = true;
+                tokens.push_back(source.substr(pos));
+                break;
             }
-            std::size_t len = colon_2_pos - colon_1_pos - 1;
-            if (len > 0)
-                part_2 = s.substr(colon_1_pos + 1, len);
         }
-        std::size_t number_pos = s.find_first_of("0123456789");
-        if (number_pos != std::string::npos)
-        {
-            std::size_t len = colon_1_pos - number_pos;
-            if (len > 0)
-                part_1 = s.substr(number_pos, len);
-        }
+        result = int(tokens.size());
     }
     return result;
 }
@@ -224,10 +265,10 @@ pulses_to_string (midipulse p)
 std::string
 pulses_to_measurestring (midipulse p, const midi_timing & seqparms)
 {
-    midi_measures measures;
+    midi_measures measures;                 /* measures, beats, divisions   */
     char tmp[32];
     if (is_null_midipulse(p))
-        p = 0;                                      /* punt!                */
+        p = 0;                              /* punt the runt!               */
 
     pulses_to_midi_measures(p, seqparms, measures); /* fill measures struct */
     snprintf
@@ -384,6 +425,10 @@ pulses_to_timestring (midipulse p, midibpm bpm, int ppqn)
  *  Converts a string that represents "measures:beats:division" to a MIDI
  *  pulse/ticks/clock value.
  *
+ * \warning
+ *      If only one number is provided, it is treated in this function like
+ *      a measures value, not a pulses value.
+ *
  * \param measures
  *      Provides the current MIDI song time in "measures:beats:divisions"
  *      format, where divisions are the MIDI pulses in
@@ -409,12 +454,18 @@ measurestring_to_pulses
     if (! measures.empty())
     {
         std::string m, b, d, dummy;
-        if (extract_timing_numbers(measures, m, b, d, dummy))
+        int valuecount = extract_timing_numbers(measures, m, b, d, dummy);
+        if (valuecount >= 1)
         {
             midi_measures meas_values;
+            memset(&meas_values, 0, sizeof meas_values);
             meas_values.measures(atoi(m.c_str()));
-            meas_values.beats(atoi(b.c_str()));
-            meas_values.divisions(atoi(d.c_str()));
+            if (valuecount > 1)
+            {
+                meas_values.beats(atoi(b.c_str()));
+                if (valuecount > 2)
+                    meas_values.divisions(atoi(d.c_str()));
+            }
             result = midi_measures_to_pulses(meas_values, seqparms);
         }
     }
@@ -434,7 +485,10 @@ measurestring_to_pulses
  *
  *  Note that the 0-pulse MIDI measure is "1:1:0", which means "at the
  *  beginning of the first beat of the first measure, no pulses'.  It is not
- *  "0:0:0" as one might expect.
+ *  "0:0:0" as one might expect.  If we get a 0 for measures or for beats, we
+ *  treat them as if they were 1.  It is too easy for the user to mess up.
+ *
+ *  We should consider clamping the beats to the beat-width value as well.
  *
  * \param measures
  *      Provides the current MIDI song time structure holding the
@@ -460,19 +514,22 @@ midi_measures_to_pulses
     midipulse result = SEQ64_NULL_MIDIPULSE;
     int m = measures.measures() - 1;                /* true measure count   */
     int b = measures.beats() - 1;
-    if (m >= 0 && b >= 0)
-    {
-        double qn_per_beat = 4.0 / seqparms.beat_width();
-        result = 0;
-        if (m > 0)
-            result += int(m * seqparms.beats_per_measure() * qn_per_beat);
+    if (m < 0)
+        m = 0;
 
-        if (b > 0)
-            result += int(b * qn_per_beat);
+    if (b < 0)
+        b = 0;
 
-        result *= seqparms.ppqn();
-        result += measures.divisions();
-    }
+    double qn_per_beat = 4.0 / seqparms.beat_width();
+    result = 0;
+    if (m > 0)
+        result += int(m * seqparms.beats_per_measure() * qn_per_beat);
+
+    if (b > 0)
+        result += int(b * qn_per_beat);
+
+    result *= seqparms.ppqn();
+    result += measures.divisions();
     return result;
 }
 
@@ -482,7 +539,8 @@ midi_measures_to_pulses
  *
  * \param timestring
  *      The time value to be converted, which must be of the form
- *      "hh:mm:ss" or "hh:mm:ss.fraction".
+ *      "hh:mm:ss" or "hh:mm:ss.fraction".  That is, all four parts must
+ *      be found.
  *
  * \param bpm
  *      The beats-per-minute tempo (e.g. 120) of the current MIDI song.
@@ -503,7 +561,7 @@ timestring_to_pulses (const std::string & timestring, midibpm bpm, int ppqn)
     if (! timestring.empty())
     {
         std::string sh, sm, ss, us;
-        if (extract_timing_numbers(timestring, sh, sm, ss, us))
+        if (extract_timing_numbers(timestring, sh, sm, ss, us) >= 4)
         {
             /**
              * This conversion assumes that the fractional parts of the
@@ -527,7 +585,8 @@ timestring_to_pulses (const std::string & timestring, midibpm bpm, int ppqn)
  *  Converts a time string to pulses.  First, the type of string is deduced by
  *  the characters in the string.  If the string contains two colons and a
  *  decimal point, it is assumed to be a time-string ("hh:mm:ss.frac"); in
- *  addition ss will have to be less than 60.
+ *  addition ss will have to be less than 60. ???  Actually, now we only care if
+ *  four numbers are provided.
  *
  *  If the string just contains two colons, then it is assumed to be a
  *  measure-string ("measures:beats:divisions").
@@ -559,10 +618,10 @@ string_to_pulses
     std::string s2;
     std::string s3;
     std::string fraction;
-    bool three_numbers = extract_timing_numbers(s, s1, s2, s3, fraction);
-    if (three_numbers)
+    int count = extract_timing_numbers(s, s1, s2, s3, fraction);
+    if (count > 1)
     {
-        if (fraction.empty() || atoi(s3.c_str()) >= 60)
+        if (fraction.empty() || atoi(s3.c_str()) >= 60)     // why???
             result = measurestring_to_pulses(s, mt);
         else
             result = timestring_to_pulses(s, mt.beats_per_minute(), mt.ppqn());

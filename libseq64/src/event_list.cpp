@@ -174,6 +174,30 @@ event_list::~event_list ()
 }
 
 /**
+ *  Provides the length of the events in MIDI pulses.  This function gets the
+ *  iterator for the last element and returns its length value.
+ *
+ * \return
+ *      Returns the timestamp of the latest event in the container.
+ */
+
+midipulse
+event_list::get_length () const
+{
+    midipulse result = 0;
+    if (count() > 0)
+    {
+        const_reverse_iterator lci = m_events.rbegin(); /* get last element */
+#ifdef SEQ64_USE_EVENT_MAP
+        result = lci->second.get_timestamp();           /* get length value */
+#else
+        result = lci->get_timestamp();                  /* get length value */
+#endif
+    }
+    return result;
+}
+
+/**
  *  Adds an event to the internal event list without sorting.  It is a
  *  wrapper, wrapper for insert() or push_front(), with an option to call
  *  sort().

@@ -299,7 +299,7 @@ eventedit::eventedit (perform & p, sequence & seq)
         m_button_cancel,
         "Abort the edit and close the dialog.  Any changes made in this "
         "window are thrown away (without prompting), unless the Save button "
-        "was pressed earlier."
+        "was pressed."
     );
 
     char temptext[36];
@@ -653,7 +653,8 @@ eventedit::perf_modify ()
 
 /**
  *  Sets the "modified" status of the user-interface.  This includes changing
- *  a label and enabling/disabling the Save button.
+ *  a label, enabling/disabling the Save button, and modifying the event count
+ *  and sequence length (in measures).
  *
  * \param flag
  *      If true, the modified status is indicated, otherwise it is cleared.
@@ -672,8 +673,6 @@ eventedit::set_dirty (bool flag)
         m_label_modified->set_text("[ Saved ]");
         m_button_save->set_sensitive(false);
     }
-
-// WIll this update the window properly??????????????
     set_seq_count();
     set_seq_length();
 }

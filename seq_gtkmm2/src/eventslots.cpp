@@ -622,13 +622,6 @@ eventslots::save_events ()
 
     if (result)
     {
-        /*
-         * Replaced with a function that locks the sequence.
-         *
-         * event_list & seqevents = m_seq.events();
-         * seqevents.clear();
-         */
-
         event_list newevents;
         for
         (
@@ -642,9 +635,13 @@ eventslots::save_events ()
              */
 
             seq64::event e = EEDREF(ei);        /* actually a conversion    */
-            newevents.add(e);
+            result = newevents.add(e);
+            if (! result)
+                break;
         }
-        result = newevents.count() == m_event_count;
+        if (result)
+            result = newevents.count() == m_event_count;
+
         if (result)
         {
             m_seq.copy_events(newevents);                   /* new function */

@@ -126,6 +126,9 @@ editable_events::operator = (const editable_events & rhs)
 /**
  *  Provides the length of the events in MIDI pulses.  This function gets the
  *  iterator for the last element and returns its length value.
+ *
+ * \return
+ *      Returns the timestamp of the latest event in the container.
  */
 
 midipulse

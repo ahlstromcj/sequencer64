@@ -39,6 +39,7 @@
  */
 
 #include <string>
+#include <vector>
 
 #include "app_limits.h"                 /* SEQ64_DEFAULT_PPQN           */
 #include "easy_macros.h"                /* with platform_macros.h, too  */
@@ -90,13 +91,18 @@ enum wave_type_t
  */
 
 extern std::string wave_type_name (wave_type_t wv);
-extern bool extract_timing_numbers
+extern int extract_timing_numbers
 (
     const std::string & s,
     std::string & part_1,
     std::string & part_2,
     std::string & part_3,
     std::string & fraction
+);
+extern int tokenize_string
+(
+    const std::string & source,
+    std::vector<std::string> & tokens
 );
 extern std::string pulses_to_string (midipulse p);
 extern std::string pulses_to_measurestring

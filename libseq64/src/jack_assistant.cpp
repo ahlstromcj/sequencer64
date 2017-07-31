@@ -1164,8 +1164,6 @@ jack_assistant::set_position (midipulse currenttick)
     pos.beat = int32_t(((currenttick / long(pos.ticks_per_beat)) % m_beat_width));
     pos.tick = int32_t((currenttick % (m_ppqn * 10)));
     pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
-//  pos.bar++;
-//  pos.beat++;
     ++pos.bar;
     ++pos.beat;
 

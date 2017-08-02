@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-07-15
- * \updates       2016-07-16
+ * \updates       2018-08-02
  * \license       GNU GPLv2 or above
  *
  *  A little encapsulation never hurt anyone.  Too bad that the GdkEventAny
@@ -54,6 +54,9 @@ namespace seq64
  *
  * \param ev
  *      The keystroke event to be tested.
+ *
+ * \return
+ *      Returns true if the event state includes SEQ64_CONTROL_MASK.
  */
 
 bool
@@ -68,6 +71,9 @@ is_ctrl_key (GdkEventKey * ev)
  *
  * \param ev
  *      The keystroke event to be tested.
+ *
+ * \return
+ *      Returns true if the event state includes SEQ64_SHIFT_MASK.
  */
 
 bool
@@ -82,6 +88,9 @@ is_shift_key (GdkEventKey * ev)
  *
  * \param ev
  *      The scroll event to be tested.
+ *
+ * \return
+ *      Returns true if there are no modifiers in force.
  */
 
 bool
@@ -96,6 +105,9 @@ is_no_modifier (GdkEventScroll * ev)
  *
  * \param ev
  *      The keystroke event to be tested.
+ *
+ * \return
+ *      Returns true if the event state includes SEQ64_CONTROL_MASK.
  */
 
 bool
@@ -110,6 +122,9 @@ is_ctrl_key (GdkEventScroll * ev)
  *
  * \param ev
  *      The keystroke event to be tested.
+ *
+ * \return
+ *      Returns true if the event state includes SEQ64_SHIFT_MASK.
  */
 
 bool
@@ -124,6 +139,9 @@ is_shift_key (GdkEventScroll * ev)
  *
  * \param ev
  *      The keystroke event to be tested.
+ *
+ * \return
+ *      Returns true if the event state includes SEQ64_CONTROL_MASK.
  */
 
 bool
@@ -138,6 +156,9 @@ is_ctrl_key (GdkEventButton * ev)
  *
  * \param ev
  *      The keystroke event to be tested.
+ *
+ * \return
+ *      Returns true if the event state includes SEQ64_SHIFT_MASK.
  */
 
 bool
@@ -152,6 +173,10 @@ is_shift_key (GdkEventButton * ev)
  *
  * \param ev
  *      The keystroke event to be tested.
+ *
+ * \return
+ *      Returns true if the event state includes SEQ64_SHIFT_MASK and
+ *      SEQ64_CONTROL_MASK.
  */
 
 bool
@@ -168,6 +193,9 @@ is_ctrl_shift_key (GdkEventButton * ev)
  *
  * \param ev
  *      The keystroke event to be tested.
+ *
+ * \return
+ *      Returns true if the event state includes SEQ64_MOD4_MASK.
  */
 
 bool
@@ -177,7 +205,10 @@ is_super_key (GdkEventButton * ev)
 }
 
 /**
+ *      Not sure where I was going with this one!
  *
+ * \param w
+ *      Points to the widget being clicked.
  */
 
 void

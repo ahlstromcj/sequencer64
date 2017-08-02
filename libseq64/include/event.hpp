@@ -1108,9 +1108,11 @@ public:
     }
 
     midibpm tempo () const;
+    void set_tempo (midibpm tempo);
 
     /**
-     *  Indicates if the event is a tempo event.  See sm_meta_event_names[].
+     *  Indicates if the event is a Time Signature event.  See
+     *  sm_meta_event_names[].
      */
 
     bool is_time_signature () const

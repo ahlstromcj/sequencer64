@@ -572,6 +572,21 @@ event::tempo () const
 }
 
 /**
+ *  The inverse of tempo().  First, we convert beats/minute to a tempo
+ *  microseconds value.  Then we convert the microseconds to threee tempo
+ *  bytes.
+ */
+
+void
+event::set_tempo (midibpm tempo)
+{
+    double us = tempo_us_from_bpm(tempo);
+    midibyte t[3];
+    tempo_us_to_bytes(t, us);
+    set_sysex(t, 3);
+}
+
+/**
  *  A free function to convert an event into an informative string, just
  *  enough to save some debugging time.  Nothing fancy.  If you want that, use
  *  the midicvt project.

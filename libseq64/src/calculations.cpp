@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-07-31
+ * \updates       2017-08-01
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -425,6 +425,10 @@ pulses_to_timestring (midipulse p, midibpm bpm, int ppqn)
  *  Converts a string that represents "measures:beats:division" to a MIDI
  *  pulse/ticks/clock value.
  *
+ *  If the third value (the MIDI pulses or ticks value) is set to the dollar
+ *  sign ("$"), then the pulses are set to PPQN-1, as a handy shortcut to
+ *  indicate the end of the beat.
+ *
  * \warning
  *      If only one number is provided, it is treated in this function like
  *      a measures value, not a pulses value.
@@ -464,7 +468,12 @@ measurestring_to_pulses
             {
                 meas_values.beats(atoi(b.c_str()));
                 if (valuecount > 2)
-                    meas_values.divisions(atoi(d.c_str()));
+                {
+                    if (d == "$")
+                        meas_values.divisions(seqparms.ppqn() - 1);
+                    else
+                        meas_values.divisions(atoi(d.c_str()));
+                }
             }
             result = midi_measures_to_pulses(meas_values, seqparms);
         }
@@ -1042,7 +1051,7 @@ tempo_to_note_value (midibpm tempovalue)
  */
 
 midibpm
-note_value_to_temp (midibyte note)
+note_value_to_tempo (midibyte note)
 {
     double slope = usr().midi_bpm_maximum() - usr().midi_bpm_minimum();
     slope *= double(note);

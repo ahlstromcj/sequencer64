@@ -137,8 +137,15 @@ Seq24SeqEventInput::on_button_press_event
                 );
                 if (eventcount == 0)
                 {
+                    /*
+                     * Add the event at the appropriate place.  As a new
+                     * feature, if the Ctrl key is held, make it a Set Tempo
+                     * event.
+                     */
+
+                    bool maketempo = is_ctrl_key(ev);
                     seqev.m_seq.push_undo();
-                    seqev.drop_event(tick_s);           // CHECK!
+                    seqev.drop_event(tick_s, maketempo);
                     result = true;
                 }
             }

@@ -2497,12 +2497,23 @@ sequence::change_event_data_range
         midibyte d0, d1;
         event & er = DREF(i);
         er.get_data(d0, d1);
+
+        /*
+         * We should also match tempo events here.  But we have to treat them
+         * differently from the matched status events.
+         */
+
         bool match = er.get_status() == status;
         bool good;                          /* event::is_desired_cc_or_not_cc */
         if (status == EVENT_CONTROL_CHANGE)
-            good = match && d0 == cc;       /* correct status and correct cc */
+            good = match && d0 == cc;       /* correct status & correct cc  */
         else
-            good = match;                   /* correct status and not a cc   */
+        {
+            if (er.is_tempo())
+                good = true;                /* Set tempo always editable    */
+            else
+                good = match;               /* correct status and not a cc  */
+        }
 
         midipulse tick = er.get_timestamp();
         if (! (tick >= tick_s && tick <= tick_f))       /* in range?         */
@@ -2513,12 +2524,11 @@ sequence::change_event_data_range
 
         if (good)
         {
-
             if (! get_hold_undo())                      /* stazed           */
                 set_hold_undo(true);
 
             if (tick_f == tick_s)
-                tick_f = tick_s + 1;                    /* avoid divide-by-0 */
+                tick_f = tick_s + 1;                    /* no divide-by-0   */
 
             int newdata =
             (
@@ -2533,15 +2543,24 @@ sequence::change_event_data_range
 
             /*
              * I think we can assume, at this point, that this is a good
-             * channel-message status byte.
+             * channel-message status byte.  However, we must treat tempo
+             * events differently.
              */
 
-            if (event::is_one_byte_msg(status))         /* patch or pressure */
-                d0 = newdata;
+            if (er.is_tempo())
+            {
+                midibpm tempo = note_value_to_tempo(midibyte(newdata));
+                er.set_tempo(tempo);
+            }
             else
-                d1 = newdata;
+            {
+                if (event::is_one_byte_msg(status))     /* patch or pressure */
+                    d0 = newdata;
+                else
+                    d1 = newdata;
 
-            er.set_data(d0, d1);
+                er.set_data(d0, d1);
+            }
             result = true;
         }
     }

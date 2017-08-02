@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-23
+ * \updates       2017-08-02
  * \license       GNU GPLv2 or above
  *
  *  We are currently trying to get event processing to accomodate tempo
@@ -556,23 +556,36 @@ seqevent::snap_x (int & x)
  */
 
 void
-seqevent::drop_event (midipulse tick)
+seqevent::drop_event (midipulse tick, bool istempo)
 {
     midibyte status = m_status;
     if (! event::is_strict_note_msg(status))            /* a stazed fix     */
     {
-        midibyte d0 = m_cc;
-        midibyte d1 = 0x40;
-        if (status == EVENT_AFTERTOUCH)
-            d0 = 0;
-        else if (status == EVENT_PROGRAM_CHANGE)
-            d0 = 0;                                     /* d0 == new patch  */
-        else if (status == EVENT_CHANNEL_PRESSURE)
-            d0 = 0x40;                                  /* d0 == pressure   */
-        else if (status == EVENT_PITCH_WHEEL)
-            d0 = 0;
+        if (istempo)
+        {
+            /////////////////////////////////////////////////////////////
+            // WE STILL NEED TO ELEGANTLY ADD AND LINK A TEMPO EVENT!!!
+            /////////////////////////////////////////////////////////////
 
-        m_seq.add_event(tick, status, d0, d1, true);
+            seq64::event e;
+            midibpm tempo = 120.0;                      /* initial value    */
+            e.set_tempo(tempo);
+        }
+        else
+        {
+            midibyte d0 = m_cc;
+            midibyte d1 = 0x40;
+            if (status == EVENT_AFTERTOUCH)
+                d0 = 0;
+            else if (status == EVENT_PROGRAM_CHANGE)
+                d0 = 0;                                 /* d0 == new patch  */
+            else if (status == EVENT_CHANNEL_PRESSURE)
+                d0 = 0x40;                              /* d0 == pressure   */
+            else if (status == EVENT_PITCH_WHEEL)
+                d0 = 0;
+
+            m_seq.add_event(tick, status, d0, d1, true);
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-07-19
+2016-12-03 to 2017-08-01
 
 Debian packaging:
 
@@ -10,7 +10,7 @@ Debian packaging:
 Tempo Track:
 
     -   Need to get event editor to display, insert, or update Meta data.
-    -   Separate tempo for each pattern.
+    -   Separate tempo for each pattern (a feature request)?
 
     1:1 Program         C0 (192), seqdata tries to draw it (height == 0)
     1:1 Tempo           seqdata tries to draw it
@@ -20,7 +20,12 @@ Tempo Track:
 
     This whole set of get_next_event() calls occurs multiple (11) times!
 
-    In seqedit, the Event popup menu shows too many black squares.  Investigate!
+    -   Provide a key or press to insert a tempo event at current mouse
+        position in time and tempo-height.
+    -   Make tempo height editable in seqdata.
+    -   Make it possible to add tempo events in seqdata or seqevent.
+        Make sure that it dirties the sequence to prompt for a save of the
+        MIDI file.
 
 Rtmidi implementation issues to work out:
 
@@ -45,7 +50,7 @@ Hot ideas (from GitHub):
 Puzzles:
 
     -   Need to catch up the man pages with the --help option!!!
-    -   Tooltips are too flicker with unclutter enabled.
+    -   Tooltips are too flickery with unclutter enabled.
     -   When reading the "stress" file, we get this message: "Near offset
         0x16aca9: 'End-of-file', further MIDI reading disabled".
     -   In multi-wid indep mode, when set 1 (second set) is showing in slots 1

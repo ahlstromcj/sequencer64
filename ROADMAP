@@ -1,8 +1,8 @@
 Sequencer64 Roadmap
 Chris Ahlstrom
-2015-09-10 to 2017-04-19
+2015-09-10 to 2017-08-01
 
-Latest version: 0.92.0
+Latest version: 0.93.0
 
 This roadmap is a bit old.  Lots of good suggestions have come in from users,
 and we have tended to give them what they want.  :-)
@@ -13,7 +13,8 @@ when I was laid up for awhile, and had basically finished documenting the
 Yoshimi software synthesizer.
 
 Also see the contrib/notes/bugs-to-investigate.txt file; I keep that one
-a lot more up-to-date.  This ROADMAP is of "historical" signficance.
+a lot more up-to-date.  This ROADMAP is of "historical" signficance.  Also see
+the TODO file, which is even "hotter".
 
 The following changes are planned, while accomplished changes can be found in
 the change-log and README files.

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-01
+ * \updates       2017-08-02
  * \license       GNU GPLv2 or above
  *
  *  The event pane is the thin gridded drawing-area below the seqedit's piano
@@ -259,7 +259,7 @@ private:
 
     int idle_redraw ();
     void x_to_w (int x1, int x2, int & x, int & w);
-    void drop_event (midipulse tick);
+    void drop_event (midipulse tick, bool istempo = false);
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> draw);
     void start_paste ();
     void change_horz ();

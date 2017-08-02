@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2017-07-29
+ * \updates       2017-08-01
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -374,7 +374,9 @@ eventedit::eventedit (perform & p, sequence & seq)
     (
         m_entry_ev_timestamp,
         "Timestamp field.  Currently only the 'measures:beats:divisions' "
-        "format is supported. Measure and beat numbers start at 1, not 0."
+        "format is supported. Measure and beat numbers start at 1, not 0. "
+        "As a shortcut, the divisions number can be a dollar sign ($), "
+        "to indicate the PPQN value minus 1."
     );
     m_editbox->pack_start(*m_entry_ev_timestamp, false, false);
 

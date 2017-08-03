@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-02
+ * \updates       2017-08-03
  * \license       GNU GPLv2 or above
  *
  *  We are currently trying to get event processing to accomodate tempo
@@ -369,7 +369,7 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
             int x = tick / m_zoom - m_scroll_offset_x;  /* screen coord     */
             draw_rectangle                              /* outer border     */
             (
-                drawable, ev->is_tempo() ? dark_cyan() : black(),
+                drawable, ev->is_tempo() ? dark_magenta() : black(),
                 x, c_eventpadding_y, c_eventevent_x, c_eventevent_y
             );
             draw_rectangle                              /* inner color      */
@@ -558,20 +558,16 @@ seqevent::snap_x (int & x)
 void
 seqevent::drop_event (midipulse tick, bool istempo)
 {
-    midibyte status = m_status;
-    if (! event::is_strict_note_msg(status))            /* a stazed fix     */
+    if (istempo)
     {
-        if (istempo)
-        {
-            /////////////////////////////////////////////////////////////
-            // WE STILL NEED TO ELEGANTLY ADD AND LINK A TEMPO EVENT!!!
-            /////////////////////////////////////////////////////////////
-
-            seq64::event e;
-            midibpm tempo = 120.0;                      /* initial value    */
-            e.set_tempo(tempo);
-        }
-        else
+        seq64::event e = create_tempo_event(tick, 120.0);   /* event.cpp    */
+        m_seq.add_event(e);
+        m_seq.link_tempos();
+    }
+    else
+    {
+        midibyte status = m_status;
+        if (! event::is_strict_note_msg(status))        /* a stazed fix     */
         {
             midibyte d0 = m_cc;
             midibyte d1 = 0x40;

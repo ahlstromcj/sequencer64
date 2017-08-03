@@ -448,10 +448,10 @@ event::append_meta_data (midibyte metatype, midibyte * data, int dsize)
     bool result = false;
     if (not_nullptr(data) && (dsize > 0))
     {
+        set_meta_status(metatype);          // m_channel = metatype;
         for (int i = 0; i < dsize; ++i)
             m_sysex.push_back(data[i]);
 
-        m_channel = metatype;
         result = true;
     }
     else
@@ -613,6 +613,20 @@ to_string (const event & ev)
     );
     result += std::string(temp);
     return result;
+}
+
+/**
+ *  Creates and returns a tempo event.
+ */
+
+event
+create_tempo_event (midipulse tick, midibpm tempo)
+{
+    event e;
+    e.set_meta_status(EVENT_META_SET_TEMPO);
+    e.set_timestamp(tick);
+    e.set_tempo(tempo);
+    return e;
 }
 
 }           // namespace seq64

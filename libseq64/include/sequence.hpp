@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-07-29
+ * \updates       2017-08-03
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1313,6 +1313,15 @@ public:
     void unselect ();
     void verify_and_link ();
     void link_new ();
+
+    /**
+     *  A new function to re-link the tempo events added by the user.
+     */
+
+    void link_tempos ()
+    {
+        m_events.link_tempos();
+    }
 
     /**
      *  Resets everything to zero.  This function is used when the sequencer

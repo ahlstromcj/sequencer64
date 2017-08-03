@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-21
+ * \updates       2017-08-03
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -746,8 +746,8 @@ perfroll::draw_sequence_on (int seqnum)
                                 Color paint = black();
                                 if (dt == DRAW_TEMPO)
                                 {
-                                    set_line(Gdk::LINE_ON_OFF_DASH, 2);
-                                    paint = dark_cyan();
+                                    set_line(Gdk::LINE_SOLID, 2);
+                                    paint = dark_magenta();
                                 }
                                 draw_line_on_pixmap
                                 (

@@ -1137,6 +1137,7 @@ public:
  */
 
 extern std::string to_string (const event & ev);
+extern event create_tempo_event (midipulse tick, midibpm tempo);
 
 }           // namespace seq64
 

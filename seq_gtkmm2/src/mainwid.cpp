@@ -510,18 +510,24 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
                     if (dt == DRAW_TEMPO)
                     {
-                        set_line(Gdk::LINE_ON_OFF_DASH, 2);
-                        drawcolor = dark_cyan();
+                        set_line(Gdk::LINE_SOLID, 2);
+                        drawcolor = dark_magenta();
                         note_y = m_seqarea_seq_y -
                              m_seqarea_seq_y * (note + 1) / 127;
                     }
 
-                    int rectnote_y = rectangle_y + note_y;
+                    int rectnote_s_y = rectangle_y + note_y;
+                    int rectnote_f_y = rectnote_s_y;  // TODO, get linked tempo
+                    if (dt == DRAW_TEMPO)
+                    {
+                        // WE NEED SOMETHING BETTER THAN GET NEXT NOTE EVENT
+                    }
+
                     draw_line_on_pixmap
                     (
                         drawcolor,
-                        rectangle_x + tick_s_x, rectnote_y,
-                        rectangle_x + tick_f_x, rectnote_y
+                        rectangle_x + tick_s_x, rectnote_s_y,
+                        rectangle_x + tick_f_x, rectnote_f_y
                     );
 
                     if (dt == DRAW_TEMPO)

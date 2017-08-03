@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-25
+ * \updates       2017-08-03
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -271,11 +271,7 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
                 if (ev->is_tempo())
                 {
                     event_height = int(tempo_to_note_value(ev->tempo()));
-                    paint = dark_cyan();
-
-                    /*
-                     * printf("tempo %d-->%d\n", int(ev->tempo()), event_height);
-                     */
+                    paint = dark_magenta();
                 }
                 else if (ev->is_ex_data())
                 {
@@ -292,10 +288,6 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
                     midibyte d0, d1;
                     ev->get_data(d0, d1);
                     event_height = event::is_one_byte_msg(m_status) ? d0 : d1 ;
-
-                    /*
-                     * printf("note %d --> %d\n", d0, event_height);
-                     */
                 }
                 set_line(Gdk::LINE_SOLID, 2);       /* vertical event line  */
                 draw_line

@@ -26,9 +26,10 @@ Tempo Track:
     *   Make it possible to add tempo events in seqdata or seqevent.
         Make sure that it dirties the sequence to prompt for a save of the
         MIDI file.
-    -   Reconsider the cyan color, dashed line style, and line thickness
+    *   Reconsider the cyan color, dashed line style, and line thickness
         of the tempo events.  Consider drawing non-horizontal lines between
         tempo events.  Consider having a tempo_color().
+    *   Need alternative to the tempo xpm to indicate auto-recording mode.
 
 Rtmidi implementation issues to work out:
 

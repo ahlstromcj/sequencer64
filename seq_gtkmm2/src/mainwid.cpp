@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-23
+ * \updates       2017-08-03
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -466,9 +466,9 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 seq->reset_draw_marker();       /* reset container iterator */
                 do
                 {
-                    dt = seq->get_next_note_event
+                    dt = seq->get_next_note_event   /* side-effects */
                     (
-                        &tick_s, &tick_f, &note, &selected, &velocity
+                        tick_s, tick_f, note, selected, velocity
                     );
                     if (dt == DRAW_FIN)
                         break;
@@ -511,27 +511,29 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     if (dt == DRAW_TEMPO)
                     {
                         set_line(Gdk::LINE_SOLID, 2);
-                        drawcolor = dark_magenta();
+                        drawcolor = tempo_paint();
                         note_y = m_seqarea_seq_y -
-                             m_seqarea_seq_y * (note + 1) / 127;
+                             m_seqarea_seq_y * (note + 1) / SEQ64_MAX_DATA_VALUE;
                     }
 
-                    int rectnote_s_y = rectangle_y + note_y;
-                    int rectnote_f_y = rectnote_s_y;  // TODO, get linked tempo
-                    if (dt == DRAW_TEMPO)
-                    {
-                        // WE NEED SOMETHING BETTER THAN GET NEXT NOTE EVENT
-                    }
-
-                    draw_line_on_pixmap
-                    (
-                        drawcolor,
-                        rectangle_x + tick_s_x, rectnote_s_y,
-                        rectangle_x + tick_f_x, rectnote_f_y
-                    );
+                    int sx = rectangle_x + tick_s_x;            /* start x  */
+                    int fx = rectangle_x + tick_f_x;            /* finish x */
+                    int sy = rectangle_y + note_y;              /* start y  */
+                    int fy = sy;                                /* finish y */
+                    draw_line_on_pixmap(drawcolor, sx, sy, fx, fy);
 
                     if (dt == DRAW_TEMPO)
                     {
+                        /*
+                         * We would like to also draw a line from the end of
+                         * the current tempo to the start of the next one.
+                         * But we currently have only the x value of the next
+                         * tempo.
+                         *
+                         * sx = fx;
+                         * fy = next tempo value scaled to 127;
+                         */
+
                         set_line(Gdk::LINE_SOLID, 1);
                         drawcolor = eventcolor;
                     }

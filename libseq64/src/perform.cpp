@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-06-27
+ * \updates       2017-08-04
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1812,6 +1812,33 @@ perform::page_increment_beats_per_minute ()
     set_beats_per_minute(result);
     return result;
 }
+
+#ifdef USE_RECORD_TEMPO
+
+/**
+ *  Used by callers to insert tempo events.
+ *
+ * \return
+ *      Returns true if sequence 0 exists.
+ */
+
+bool
+perform::log_current_tempo ()
+{
+	sequence * seq = get_sequence(0);
+	bool result = not_nullptr(seq);
+	if (not_nullptr(seq))
+	{
+		midipulse tick = get_tick();
+		midibpm bpm = get_beats_per_minute();
+		seq64::event e = create_tempo_event(tick, bpm);   /* event.cpp */
+		seq->add_event(e);
+		seq->link_tempos();
+	}
+	return result;
+}
+
+#endif  // USE_RECORD_TEMPO
 
 /**
  *  Encapsulates some calls used in mainwnd.  The value set here will

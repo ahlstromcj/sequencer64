@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-30
+ * \updates       2017-08-03
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -3989,24 +3989,24 @@ sequence::get_minmax_note_events (int & lowest, int & highest)
 draw_type_t
 sequence::get_next_note_event
 (
-    midipulse * tick_s, midipulse * tick_f,
-    int * note, bool * selected, int * velocity
+    midipulse & tick_s, midipulse & tick_f,
+    int & note, bool & selected, int & velocity
 )
 {
-    *tick_f = 0;
+    tick_f = 0;
     while (m_iterator_draw != m_events.end())   /* NOT THREADSAFE!!!!!      */
     {
         event & drawevent = DREF(m_iterator_draw);
         bool isnoteon = drawevent.is_note_on();
         bool islinked = drawevent.is_linked();  /* not get_linked(), idiot! */
-        *tick_s   = drawevent.get_timestamp();
-        *note     = drawevent.get_note();
-        *selected = drawevent.is_selected();
-        *velocity = drawevent.get_note_velocity();
+        tick_s   = drawevent.get_timestamp();
+        note     = drawevent.get_note();
+        selected = drawevent.is_selected();
+        velocity = drawevent.get_note_velocity();
         inc_draw_marker();                      /* go until null or Note-On */
         if (isnoteon && islinked)
         {
-            *tick_f = drawevent.get_linked()->get_timestamp();
+            tick_f = drawevent.get_linked()->get_timestamp();
             return DRAW_NORMAL_LINKED;
         }
         else if (isnoteon && ! islinked)
@@ -4021,11 +4021,11 @@ sequence::get_next_note_event
         {
             midibpm bpm = drawevent.tempo();
             midibyte notebyte = tempo_to_note_value(bpm);
-            *note = int(notebyte);
+            note = int(notebyte);
             if (islinked)
-                *tick_f = drawevent.get_linked()->get_timestamp();
+                tick_f = drawevent.get_linked()->get_timestamp();
             else
-                *tick_f = get_length();
+                tick_f = get_length();
 
             /*
              * Tempo needs to be attained.  This is good only for drawing a
@@ -4058,14 +4058,14 @@ sequence::get_next_note_event
  */
 
 bool
-sequence::get_next_event (midibyte * status, midibyte * cc)
+sequence::get_next_event (midibyte & status, midibyte & cc)
 {
     while (m_iterator_draw != m_events.end())       /* NOT THREADSAFE!!!    */
     {
         midibyte j;
         event & drawevent = DREF(m_iterator_draw);
-        *status = drawevent.get_status();
-        drawevent.get_data(*cc, j);
+        status = drawevent.get_status();
+        drawevent.get_data(cc, j);
         inc_draw_marker();
         return true;                /* we have a good one; update and return */
     }
@@ -4184,8 +4184,8 @@ sequence::get_next_event_ex
 bool
 sequence::get_next_trigger
 (
-    midipulse * tick_on, midipulse * tick_off, bool * selected,
-    midipulse * offset
+    midipulse & tick_on, midipulse & tick_off, bool & selected,
+    midipulse & offset
 )
 {
     return m_triggers.next(tick_on, tick_off, selected, offset);

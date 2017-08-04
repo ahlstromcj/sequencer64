@@ -603,7 +603,7 @@ perfroll::draw_sequence_on (int seqnum)
         midipulse tick_off;
         midipulse offset;
         bool selected;
-        while (seq->get_next_trigger(&tick_on, &tick_off, &selected, &offset))
+        while (seq->get_next_trigger(tick_on, tick_off, selected, offset))
         {
             if (tick_off > 0)
             {
@@ -695,7 +695,7 @@ perfroll::draw_sequence_on (int seqnum)
                             (
                                 dt = seq->get_next_note_event
                                 (
-                                    &tick_s, &tick_f, &note, &selected, &velocity
+                                    tick_s, tick_f, note, selected, velocity
                                 )
                             ) != DRAW_FIN
                         )
@@ -747,14 +747,25 @@ perfroll::draw_sequence_on (int seqnum)
                                 if (dt == DRAW_TEMPO)
                                 {
                                     set_line(Gdk::LINE_SOLID, 2);
-                                    paint = dark_magenta();
+                                    paint = tempo_paint();
                                 }
                                 draw_line_on_pixmap
                                 (
                                     paint, tick_s_x, ny, tick_f_x, ny
                                 );
                                 if (dt == DRAW_TEMPO)
-                                    set_line(Gdk::LINE_SOLID);
+                                {
+
+                                    /*
+                                     * We would like to also draw a line from
+                                     * the end of the current tempo to the
+                                     * start of the next one.  But we
+                                     * currently have only the x value of the
+                                     * next tempo.
+                                     */
+
+                                    set_line(Gdk::LINE_SOLID, 1);
+                                }
                             }
                         }
                     }

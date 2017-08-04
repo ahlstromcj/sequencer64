@@ -271,7 +271,7 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
                 if (ev->is_tempo())
                 {
                     event_height = int(tempo_to_note_value(ev->tempo()));
-                    paint = dark_magenta();
+                    paint = tempo_paint();
                 }
                 else if (ev->is_ex_data())
                 {

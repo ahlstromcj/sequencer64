@@ -369,7 +369,7 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
             int x = tick / m_zoom - m_scroll_offset_x;  /* screen coord     */
             draw_rectangle                              /* outer border     */
             (
-                drawable, ev->is_tempo() ? dark_magenta() : black(),
+                drawable, ev->is_tempo() ? tempo_paint() : black(),
                 x, c_eventpadding_y, c_eventevent_x, c_eventevent_y
             );
             draw_rectangle                              /* inner color      */
@@ -560,7 +560,7 @@ seqevent::drop_event (midipulse tick, bool istempo)
 {
     if (istempo)
     {
-        seq64::event e = create_tempo_event(tick, 120.0);   /* event.cpp    */
+        seq64::event e = create_tempo_event(tick, 120.0);   /* event.cpp */
         m_seq.add_event(e);
         m_seq.link_tempos();
     }

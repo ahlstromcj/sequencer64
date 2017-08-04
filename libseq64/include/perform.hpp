@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-29
+ * \updates       2017-08-04
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -62,6 +62,12 @@
 #include "mastermidibus.hpp"            /* seq64::mastermidibus for ALSA    */
 #include "midi_control.hpp"             /* seq64::midi_control "struct"     */
 #include "sequence.hpp"                 /* seq64::sequence                  */
+
+/**
+ *  EXPERIMENTAL
+ */
+
+#define USE_RECORD_TEMPO
 
 /**
  *  This value is used to indicated that the queued-replace (queued-solo)
@@ -198,6 +204,21 @@ class perform
 #endif  // SEQ64_JACK_SUPPORT
 
 public:
+
+#ifdef USE_RECORD_TEMPO
+
+    /**
+     *  Provides settings for tempo recording.
+     */
+
+    enum record_tempo_op_t
+    {
+        RECORD_TEMPO_LOG_EVENT,
+        RECORD_TEMPO_ON,
+        RECORD_TEMPO_OFF
+    };
+
+#endif      // USE_RECORD_TEMPO
 
     /**
      *  Provides settings for muting.
@@ -2470,6 +2491,10 @@ private:
 #endif
 
 private:
+
+#ifdef USE_RECORD_TEMPO
+    bool log_current_tempo ();
+#endif
 
     bool create_master_bus ();
 

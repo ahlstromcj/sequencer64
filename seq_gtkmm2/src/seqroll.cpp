@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-24
+ * \updates       2017-08-03
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -817,8 +817,8 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
         while
         (
             (
-                dt = seq->get_next_note_event(&tick_s, &tick_f,
-                   &note, &selected, &velocity)
+                dt = seq->get_next_note_event(tick_s, tick_f,
+                   note, selected, velocity)
             ) != DRAW_FIN
         )
         {

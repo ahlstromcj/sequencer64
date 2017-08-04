@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-08-27
+ * \updates       2017-08-03
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -465,8 +465,8 @@ public:
 
     bool next
     (
-        midipulse * tick_on, midipulse * tick_off,
-        bool * selected, midipulse * tick_offset
+        midipulse & tick_on, midipulse & tick_off,
+        bool & selected, midipulse & tick_offset
     );
     trigger next_trigger ();
 

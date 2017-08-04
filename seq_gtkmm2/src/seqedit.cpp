@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-29
+ * \updates       2017-08-03
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1702,7 +1702,7 @@ seqedit::popup_event_menu ()
     int channel = m_seq.get_midi_channel();
     memset(ccs, false, sizeof(bool) * SEQ64_MIDI_COUNT_MAX);
     m_seq.reset_draw_marker();
-    while (m_seq.get_next_event(&status, &cc))      /* used only here!  */
+    while (m_seq.get_next_event(status, cc))      /* used only here!  */
     {
         switch (status)
         {

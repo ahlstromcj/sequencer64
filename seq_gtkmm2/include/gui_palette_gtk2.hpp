@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-09-07
+ * \updates       2017-08-03
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -144,6 +144,7 @@ private:                            /* use the accessor functions           */
     static Color m_wht_paint;       /**< An invertible white color.         */
     static Color m_blk_key;         /**< Provides the color of a black key. */
     static Color m_wht_key;         /**< Provides the color of a white key. */
+    static Color m_tempo_paint;     /**< The color of a tempo line.         */
 
     /*
      * Non-static member colors.
@@ -375,6 +376,15 @@ public:
     const Color & white_key () const
     {
         return m_wht_key;
+    }
+
+    /**
+     * \getter m_tempo_paint
+     */
+
+    const Color & tempo_paint () const
+    {
+        return m_tempo_paint;
     }
 
     /**

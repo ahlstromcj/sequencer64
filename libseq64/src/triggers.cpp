@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-08-18
+ * \updates       2017-08-03
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -1111,18 +1111,18 @@ triggers::paste (midipulse paste_tick)
 bool
 triggers::next
 (
-    midipulse * tick_on,
-    midipulse * tick_off,
-    bool * selected,
-    midipulse * offset
+    midipulse & tick_on,
+    midipulse & tick_off,
+    bool & selected,
+    midipulse & offset
 )
 {
     while (m_iterator_draw_trigger != m_triggers.end())
     {
-        *tick_on  = m_iterator_draw_trigger->tick_start();
-        *selected = m_iterator_draw_trigger->selected();
-        *offset = m_iterator_draw_trigger->offset();
-        *tick_off = m_iterator_draw_trigger->tick_end();
+        tick_on  = m_iterator_draw_trigger->tick_start();
+        selected = m_iterator_draw_trigger->selected();
+        offset = m_iterator_draw_trigger->offset();
+        tick_off = m_iterator_draw_trigger->tick_end();
         ++m_iterator_draw_trigger;
         return true;
     }

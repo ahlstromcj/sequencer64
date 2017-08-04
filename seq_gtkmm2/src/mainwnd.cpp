@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-23
+ * \updates       2017-08-04
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -139,6 +139,10 @@
 #include "pixmaps/menu.xpm"
 #include "pixmaps/muting.xpm"
 #include "pixmaps/song_mode.xpm"
+#endif
+
+#ifdef USE_RECORD_TEMPO
+#include "pixmaps/tempo_record.xpm"
 #endif
 
 /**
@@ -268,6 +272,11 @@ mainwnd::mainwnd
     m_button_learn          (manage(new Gtk::Button())),    /* group learn (L) */
     m_button_stop           (manage(new Gtk::Button())),
     m_button_play           (manage(new Gtk::Button())),    /* also for pause  */
+#ifdef USE_RECORD_TEMPO
+    m_button_tempo_record   (manage(new Gtk::Button())),
+    m_menu_tempo_record     (manage(new Gtk::Menu())),
+    m_is_tempo_recording    (false),
+#endif
     m_button_perfedit       (manage(new Gtk::Button())),
 #ifdef SEQ64_STAZED_MENU_BUTTONS
     m_image_songlive        (),
@@ -664,6 +673,24 @@ mainwnd::mainwnd
 
 #endif
 
+#ifdef USE_RECORD_TEMPO
+
+    m_button_tempo_record->set_focus_on_click(false);
+    m_button_tempo_record->add(*manage(new PIXBUF_IMAGE(tempo_record_xpm)));
+    m_button_tempo_record->signal_clicked().connect
+    (
+        mem_fun(*this, &mainwnd::popup_tempo_menu)
+    );
+    add_tooltip
+    (
+        m_button_tempo_record,
+        "Select a menu option to add the current tempo as an event, "
+        "or to enter or exit a mode where live changes to the "
+        "tempo are automatically recorded."
+    );
+
+#endif      // USE_RECORD_TEMPO
+
     m_button_queue->signal_clicked().connect(mem_fun(*this, &mainwnd::queue_it));
     add_tooltip(m_button_queue, "Shows and toggles the keep-queue status.");
 
@@ -677,7 +704,7 @@ mainwnd::mainwnd
     add_tooltip
     (
         m_spinbutton_bpm,
-        "Adjusts the beats per minute (BPM) value. Once clicked, "
+        "Adjusts the beats per minute (BPM) value. Once it has focus, "
         "the Up/Down arrows adjust by the step size, and the Page-Up/Page-Down "
         "keys adjust by the page size, as configured in the 'usr' file."
     );
@@ -688,6 +715,10 @@ mainwnd::mainwnd
 
 #ifdef SEQ64_MAINWND_TAP_BUTTON
     bpmhbox->pack_start(*m_button_tap, Gtk::PACK_SHRINK);
+#endif
+
+#ifdef USE_RECORD_TEMPO
+    bpmhbox->pack_start(*m_button_tempo_record, Gtk::PACK_SHRINK);
 #endif
 
     bpmhbox->pack_start(*m_button_queue, Gtk::PACK_SHRINK);
@@ -2261,6 +2292,8 @@ void
 mainwnd::adj_callback_bpm ()
 {
     perf().set_beats_per_minute(midibpm(m_adjust_bpm->get_value()));
+    if (m_is_tempo_recording)
+        (void) perf().log_current_tempo();
 }
 
 #if defined SEQ64_MULTI_MAINWID
@@ -2578,6 +2611,60 @@ mainwnd::update_bpm ()
 }
 
 #endif      // SEQ64_MAINWND_TAP_BUTTON
+
+#ifdef USE_RECORD_TEMPO
+
+#define DO_TEMPO        mem_fun(*this, &mainwnd::do_tempo)
+
+void
+mainwnd::popup_tempo_menu ()
+{
+    m_menu_tempo_record->items().push_back
+    (
+        MenuElem
+        (
+            "Log current tempo",
+            sigc::bind(DO_TEMPO, perform::RECORD_TEMPO_LOG_EVENT)
+        )
+    );
+    m_menu_tempo_record->items().push_back
+    (
+        MenuElem
+        (
+            "Record all tempo changes",
+            sigc::bind(DO_TEMPO, perform::RECORD_TEMPO_ON)
+        )
+    );
+    m_menu_tempo_record->items().push_back
+    (
+        MenuElem
+        (
+            "Stop recording tempo changes",
+            sigc::bind(DO_TEMPO, perform::RECORD_TEMPO_OFF)
+        )
+    );
+    m_menu_tempo_record->popup(0, 0);
+}
+
+void
+mainwnd::do_tempo (perform::record_tempo_op_t action)
+{
+    if (action == perform::RECORD_TEMPO_LOG_EVENT)
+    {
+        (void) perf().log_current_tempo();  // TODO:  check the return value
+    }
+    else if (action == perform::RECORD_TEMPO_ON)
+    {
+        m_is_tempo_recording = true;
+    }
+    else if (action == perform::RECORD_TEMPO_OFF)
+    {
+        m_is_tempo_recording = false;
+    }
+}
+
+#endif      // USE_RECORD_TEMPO
+
 
 /**
  *  Implements the keep-queue button.

@@ -1345,11 +1345,11 @@ public:
     void reset_ex_iterator (event_list::const_iterator & evi);
     draw_type_t get_next_note_event
     (
-        midipulse * tick_s, midipulse * tick_f, int * note,
-        bool * selected, int * velocity
+        midipulse & tick_s, midipulse & tick_f, int & note,
+        bool & selected, int & velocity
     );
     bool get_minmax_note_events (int & lowest, int & highest);
-    bool get_next_event (midibyte * status, midibyte * cc);
+    bool get_next_event (midibyte & status, midibyte & cc);
     bool get_next_event_ex
     (
         midibyte status, midibyte cc,
@@ -1359,8 +1359,8 @@ public:
 
     bool get_next_trigger
     (
-        midipulse * tick_on, midipulse * tick_off,
-        bool * selected, midipulse * tick_offset
+        midipulse & tick_on, midipulse & tick_off,
+        bool & selected, midipulse & tick_offset
     );
     void quantize_events
     (

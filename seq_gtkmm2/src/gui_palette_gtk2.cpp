@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-09-11
+ * \updates       2017-08-03
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -72,6 +72,7 @@ STATIC_COLOR gui_palette_gtk2::m_blk_paint          = Color("black");
 STATIC_COLOR gui_palette_gtk2::m_wht_paint          = Color("white");
 STATIC_COLOR gui_palette_gtk2::m_blk_key            = Color("black");
 STATIC_COLOR gui_palette_gtk2::m_wht_key            = Color("white");
+STATIC_COLOR gui_palette_gtk2::m_tempo_paint        = Color("dark magenta");
 
 /**
  *  Principal constructor.  In the constructor one can only allocate colors;
@@ -111,6 +112,7 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     colormap->alloc_color(const_cast<Color &>(m_wht_paint));
     colormap->alloc_color(const_cast<Color &>(m_blk_key));
     colormap->alloc_color(const_cast<Color &>(m_wht_key));
+    colormap->alloc_color(const_cast<Color &>(m_tempo_paint));
 
     /*
      * Not sure we need these variable colors need to be pre-allocated.
@@ -192,6 +194,7 @@ gui_palette_gtk2::load_inverse_palette (bool inverse)
         m_blk_key     = Color("black");
         m_wht_key     = Color("grey");
 #endif
+        m_tempo_paint = Color("magenta");
         m_is_inverse  = true;
     }
     else
@@ -203,6 +206,7 @@ gui_palette_gtk2::load_inverse_palette (bool inverse)
         m_wht_paint   = Color("white");
         m_blk_key     = Color("black");
         m_wht_key     = Color("white");
+        m_tempo_paint = Color("dark magenta");
         m_is_inverse  = false;
     }
 }

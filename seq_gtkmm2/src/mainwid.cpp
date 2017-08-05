@@ -364,9 +364,9 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     col = font::WHITE;
             }
 
-            char temp[32];
-            snprintf(temp, sizeof temp, "%.13s", seq->get_name());
-            render_string_on_pixmap             /* seqnum:name of pattern */
+            char temp[16];                      /* was 13, now 14           */
+            snprintf(temp, sizeof temp, "%.14s", seq->title().c_str());
+            render_string_on_pixmap             /* seqnum:name of pattern   */
             (
                 base_x + m_text_size_x - 3, base_y + 4, temp, col
             );

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2017-08-01
+ * \updates       2017-08-05
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -198,7 +198,7 @@ eventedit::eventedit (perform & p, sequence & seq)
     m_have_focus        (false)
 {
     std::string title = "Sequencer64 - Event Editor -\"";
-    title += m_seq.get_name();
+    title += m_seq.name();
     title += "\"";
     set_title(title);                                       /* caption bar  */
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
@@ -303,7 +303,7 @@ eventedit::eventedit (perform & p, sequence & seq)
     );
 
     char temptext[36];
-    snprintf(temptext, sizeof temptext, "\"%s\"", seq.get_name());
+    snprintf(temptext, sizeof temptext, "\"%s\"", seq.name().c_str());
     m_label_seq_name->set_width_chars(32);
     m_label_seq_name->set_text(temptext);
     m_showbox->pack_start(*m_label_seq_name, false, false); /* expand and fill */

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2017-07-30
+ * \updates       2017-08-05
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -318,11 +318,9 @@ eventslots::insert_event (const editable_event & edev)
          * length.  We also need to account for any change in length.
          */
 
-        if (get_length() != m_last_max_timestamp)
+        if (get_length() > m_last_max_timestamp)
         {
-            m_last_max_timestamp = get_length();
-
-            // m_parent.set_dirty();
+            m_last_max_timestamp = get_length(); // m_parent.set_dirty();
         }
     }
     return result;
@@ -646,6 +644,8 @@ eventslots::save_events ()
         {
             m_seq.copy_events(newevents);                   /* new function */
             result = m_seq.event_count() == m_event_count;
+            if (result && m_last_max_timestamp > m_seq.get_length())
+                m_seq.set_length(m_last_max_timestamp);
         }
     }
     return result;

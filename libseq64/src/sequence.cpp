@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-03
+ * \updates       2017-08-05
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -41,7 +41,7 @@
  *      point, and add better locking coverage if necessary.
  */
 
-#include <stdlib.h>
+#include <string.h>                     /* C::memset()                      */
 
 #include "calculations.hpp"
 #include "mastermidibus.hpp"
@@ -2713,15 +2713,19 @@ sequence::change_event_data_lfo
  *      set to this value.  Otherwise, it is hard-wired to the stored note-on
  *      velocity.  The name of this macro is counter-intuitive here.
  *      Currently, the note-off velocity is HARD-WIRED!
+ *
+ * \return
+ *      Returns true if the event was added.
  */
 
-void
+bool
 sequence::add_note
 (
     midipulse tick, midipulse len, int note,
     bool paint, int velocity
 )
 {
+    bool result = false;
     if (tick >= 0 && note >= 0 && note < c_num_keys)
     {
         automutex locker(m_mutex);
@@ -2729,6 +2733,7 @@ sequence::add_note
         bool ignore = false;
         if (paint)                        /* see the banner above */
         {
+            result = true;
             for
             (
                 event_list::iterator i = m_events.begin();
@@ -2770,10 +2775,12 @@ sequence::add_note
             e.set_status(EVENT_NOTE_OFF);
             e.set_data(note, m_note_off_velocity);      /* HARD-WIRED */
             e.set_timestamp(tick + len);
-            add_event(e);
+            result = add_event(e);
         }
-        verify_and_link();
+        if (result)
+            verify_and_link();
     }
+    return result;
 }
 
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
@@ -2801,11 +2808,15 @@ sequence::add_note
  *
  * \param note
  *      The pitch destination of the new note.
+ *
+ * \return
+ *      Returns true if the events were added.
  */
 
-void
+bool
 sequence::add_chord (int chord, midipulse tick, midipulse len, int note)
 {
+    bool result = false;
     push_undo();
     if (chord > 0 && chord < c_chord_number)
     {
@@ -2815,11 +2826,15 @@ sequence::add_chord (int chord, midipulse tick, midipulse len, int note)
             if (cnote == -1)
                 break;
 
-            add_note(tick, len, note + cnote, false);
+            result = add_note(tick, len, note + cnote, false);
+            if (! result)
+                break;
         }
     }
     else
-        add_note(tick, len, note, true);
+        result = add_note(tick, len, note, true);
+
+    return result;
 }
 
 #endif
@@ -2887,7 +2902,7 @@ sequence::add_event (const event & er)
  *      the events container.
  *
  * \return
- *      Returns true if the event was added.
+ *      Returns true if the event was appended.
  */
 
 bool
@@ -2923,7 +2938,7 @@ sequence::append_event (const event & er)
  *      If true, the inserted event is marked for painting.
  */
 
-void
+bool
 sequence::add_event
 (
     midipulse tick, midibyte status,
@@ -2931,6 +2946,7 @@ sequence::add_event
 )
 {
     automutex locker(m_mutex);
+    bool result = false;
     if (tick >= 0)
     {
         if (paint)
@@ -2957,9 +2973,12 @@ sequence::add_event
         e.set_status(status);
         e.set_data(d0, d1);
         e.set_timestamp(tick);
-        add_event(e);
+        result = add_event(e);
     }
-    verify_and_link();
+    if (result)
+        verify_and_link();
+
+    return result;
 }
 
 /**
@@ -4514,25 +4533,60 @@ sequence::set_thru (bool r)
 }
 
 /**
- *  Sets the sequence name member, m_name.
- */
-
-void
-sequence::set_name (char * name)
-{
-    m_name = name;
-    set_dirty_mp();
-}
-
-/**
- *  Sets the sequence name member, m_name.
+ *  Sets the sequence name member, m_name.  This is the name shown in the top
+ *  of a mainwid pattern slot.
+ *
+ *  We now try to include the length of the sequences in measures at the end
+ *  of the name, and limit the length of the entire string.  As noted in the
+ *  printing of sequence::get_name() in mainwid, this length is 13 characters.
  */
 
 void
 sequence::set_name (const std::string & name)
 {
-    m_name = name;
+    m_name = name;                                      /* legacy behavior  */
     set_dirty_mp();
+}
+
+/**
+ *  Gets the title of the pattern, to show in the pattern slot.  This function
+ *  differs from name, which just returns the value of m_name.  Here, we to
+ *  include the length of the sequences in measures at the end of the name,
+ *  and limit the length of the entire string.  As noted in the printing of
+ *  sequence::get_name() in mainwid, this length is 13 characters.
+ *
+ * \return
+ *      Returns the name of the sequence, with the length in measures of the
+ *      pattern wedged in at the end, if non-zero.
+ */
+
+std::string
+sequence::title () const
+{
+    int measures = calculate_measures();
+    if (measures > 0)
+    {
+        char mtemp[8];
+        char fulltemp[16];
+        memset(fulltemp, ' ', sizeof fulltemp);
+        snprintf(mtemp, sizeof mtemp, " %d", measures);
+        for (int i = 0; i < int(m_name.size()); ++i)
+        {
+            if (i <= (14 - 1))              /* max size fittable in slot    */
+                fulltemp[i] = m_name[i];
+            else
+                break;
+        }
+        int mlen = int(strlen(mtemp));
+        int offset = 14 - mlen;
+        for (int i = 0; i < mlen; ++i)
+            fulltemp[i + offset] = mtemp[i];
+
+        fulltemp[14] = 0;
+        return std::string(fulltemp);
+    }
+    else
+        return m_name;
 }
 
 /**

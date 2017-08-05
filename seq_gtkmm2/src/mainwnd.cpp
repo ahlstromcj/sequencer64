@@ -142,6 +142,7 @@
 #endif
 
 #ifdef USE_RECORD_TEMPO
+#include "pixmaps/tempo_autorecord.xpm"
 #include "pixmaps/tempo_record.xpm"
 #endif
 
@@ -1198,27 +1199,7 @@ mainwnd::timer_callback ()
 {
     midipulse tick = perf().get_tick();         /* use no get_start_tick()! */
     midibpm bpm = perf().get_beats_per_minute();
-
-    /*
-     * Any way to avoid this call except at the beginning and when actually
-     * playing?  This code disables toggline patterns via their hotkeys until
-     * play starts.  Rather have that than slightly less flickery tooltips.
-     *
-     * static bool s_startup_done = false;
-     * if (s_startup_done)
-     * {
-     *     if (perf().is_pattern_playing())
-     *         update_markers(tick);
-     * }
-     * else
-     * {
-     *     s_startup_done = true;
-     *     update_markers(tick);
-     * }
-     */
-
     update_markers(tick);
-
     if (m_button_queue->get_active() != perf().is_keep_queue())
         m_button_queue->set_active(perf().is_keep_queue());
 
@@ -1260,37 +1241,11 @@ mainwnd::timer_callback ()
     {
         if (m_button_mode->get_sensitive())
             m_button_mode->set_sensitive(false);
-
-        /*
-         * There is no need to disable this button.
-         *
-         * if (m_button_menu->get_sensitive())
-         *    m_button_menu->set_sensitive(false);
-         */
-
-        /*
-         * We need to make this setting and option or something that comes
-         * into effect only if there's a key combination using Ctrl or Alt in
-         * the Keyboard settings.  Let's let the user decide what to do.
-         *
-         * if (m_menubar->get_sensitive())
-         *     m_menubar->set_sensitive(false);
-         */
     }
     else
     {
         if (! m_button_mode->get_sensitive())
             m_button_mode->set_sensitive(true);
-
-        /*
-         * This button will now always remain enabled.
-         *
-         * if (! m_button_menu->get_sensitive())
-         *    m_button_menu->set_sensitive(true);
-         *
-         * if (m_menubar->get_sensitive() == m_menu_mode)
-         *    m_menubar->set_sensitive(! m_menu_mode);
-         */
     }
     m_menubar->set_sensitive(m_menu_mode);
 
@@ -2355,7 +2310,7 @@ mainwnd::edit_callback_notepad ()
 }
 
 /**
- *  Changes the image used for the pause/play button
+ *  Changes the image used for the pause/play button.  Is this a memory leak?
  *
  * \param isrunning
  *      If true, set the image to the "Pause" icon, since playback is running.
@@ -2619,30 +2574,35 @@ mainwnd::update_bpm ()
 void
 mainwnd::popup_tempo_menu ()
 {
-    m_menu_tempo_record->items().push_back
-    (
-        MenuElem
+    static bool s_not_populated = true;
+    if (s_not_populated)
+    {
+        s_not_populated = false;
+        m_menu_tempo_record->items().push_back
         (
-            "Log current tempo",
-            sigc::bind(DO_TEMPO, perform::RECORD_TEMPO_LOG_EVENT)
-        )
-    );
-    m_menu_tempo_record->items().push_back
-    (
-        MenuElem
+            MenuElem
+            (
+                "Log current tempo",
+                sigc::bind(DO_TEMPO, perform::RECORD_TEMPO_LOG_EVENT)
+            )
+        );
+        m_menu_tempo_record->items().push_back
         (
-            "Record all tempo changes",
-            sigc::bind(DO_TEMPO, perform::RECORD_TEMPO_ON)
-        )
-    );
-    m_menu_tempo_record->items().push_back
-    (
-        MenuElem
+            MenuElem
+            (
+                "Record all tempo changes",
+                sigc::bind(DO_TEMPO, perform::RECORD_TEMPO_ON)
+            )
+        );
+        m_menu_tempo_record->items().push_back
         (
-            "Stop recording tempo changes",
-            sigc::bind(DO_TEMPO, perform::RECORD_TEMPO_OFF)
-        )
-    );
+            MenuElem
+            (
+                "Stop recording tempo changes",
+                sigc::bind(DO_TEMPO, perform::RECORD_TEMPO_OFF)
+            )
+        );
+    }
     m_menu_tempo_record->popup(0, 0);
 }
 
@@ -2652,14 +2612,20 @@ mainwnd::do_tempo (perform::record_tempo_op_t action)
     if (action == perform::RECORD_TEMPO_LOG_EVENT)
     {
         (void) perf().log_current_tempo();  // TODO:  check the return value
+        Gtk::Image * image_tempo = manage(new PIXBUF_IMAGE(tempo_record_xpm));
+        m_button_tempo_record->set_image(*image_tempo);
     }
     else if (action == perform::RECORD_TEMPO_ON)
     {
         m_is_tempo_recording = true;
+        Gtk::Image * image_tempo = manage(new PIXBUF_IMAGE(tempo_autorecord_xpm));
+        m_button_tempo_record->set_image(*image_tempo);
     }
     else if (action == perform::RECORD_TEMPO_OFF)
     {
         m_is_tempo_recording = false;
+        Gtk::Image * image_tempo = manage(new PIXBUF_IMAGE(tempo_record_xpm));
+        m_button_tempo_record->set_image(*image_tempo);
     }
 }
 

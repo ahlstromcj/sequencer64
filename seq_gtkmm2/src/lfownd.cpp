@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq42 team; modifications by Chris Ahlstrom
  * \date          2016-07-30
- * \updates       2016-10-30
+ * \updates       2017-08-05
  * \license       GNU GPLv2 or above
  *
  *  Created on: 22 mar 2013
@@ -88,7 +88,7 @@ lfownd::lfownd (perform & p, sequence & seq, seqdata & sdata)
     m_wave          (WAVE_SINE)
 {
     std::string title = "Sequencer64 - LFO Editor - ";
-    title.append(m_seq.get_name());
+    title.append(m_seq.name());
     set_title(title);
     set_size_request(400, 300); // set_size_request(150, 200);
     m_scale_value->set_tooltip_text

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-03
+ * \updates       2017-08-05
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -41,6 +41,27 @@
  *
  *  User jean-emmanual added support for disabling the following of the
  *  progress bar during playback.  See the seqroll::m_progress_follow member.
+ *
+ * Menu refinements.  We are fixing the popup menus so that they are created
+ * only once.  Here is the progress:
+ *
+ *      -   m_menu_bpm.
+ *      -   m_menu_bw.
+ *      -   m_menu_chords.
+ *      -   m_menu_data.
+ *      -   m_menu_key.
+ *      -   m_menu_length.
+ *      -   m_menu_midibus.  Done.
+ *      -   m_menu_midich.  Done.
+ *      -   m_menu_note_length.
+ *      -   m_menu_rec_type.
+ *      -   m_menu_rec_vol.
+ *      -   m_menu_scale.
+ *      -   m_menu_scale.
+ *      -   m_menu_sequences.  Done.
+ *      -   m_menu_snap.
+ *      -   m_menu_tools.  Done.
+ *      -   m_menu_zoom.
  */
 
 #include <gtkmm/adjustment.h>
@@ -253,7 +274,7 @@ seqedit::seqedit
 #endif
     m_seq               (seq),
     m_menubar           (manage(new Gtk::MenuBar())),
-    m_menu_tools        (manage(new Gtk::Menu())),
+    m_menu_tools        (nullptr),              // (manage(new Gtk::Menu())),
     m_menu_zoom         (manage(new Gtk::Menu())),
     m_menu_snap         (manage(new Gtk::Menu())),
     m_menu_note_length  (manage(new Gtk::Menu())),
@@ -365,7 +386,7 @@ seqedit::seqedit
     m_have_focus        (false)
 {
     std::string title = "Sequencer64 - \"";                 /* main window */
-    title += m_seq.get_name();
+    title += m_seq.name();
     title += "\"";
     set_title(title);
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq_editor_xpm));
@@ -531,7 +552,7 @@ seqedit::seqedit
     set_rec_vol(usr().velocity_override());
 
 #ifdef USE_STAZED_EXTRAS
-    if (m_seq.get_name() != std::string("Untitled"))
+    if (m_seq.name() != std::string("Untitled"))
     {
         m_seqroll_wid->set_can_focus();
         m_seqroll_wid->grab_focus();
@@ -857,6 +878,12 @@ seqedit::create_menus ()
 void
 seqedit::popup_tool_menu ()
 {
+    if (not_nullptr(m_menu_tools))
+    {
+        m_menu_tools->popup(0, 0);
+        return;
+    }
+
     Gtk::Menu * holder = manage(new Gtk::Menu());
     m_menu_tools = manage(new Gtk::Menu());             // swapped
 
@@ -1172,7 +1199,7 @@ seqedit::fill_top_bar ()
     m_entry_name = manage(new Gtk::Entry());            /* name             */
     m_entry_name->set_max_length(32);                   /* was 26           */
     m_entry_name->set_width_chars(32);                  /* was 26           */
-    m_entry_name->set_text(m_seq.get_name());
+    m_entry_name->set_text(m_seq.name());
     m_entry_name->signal_changed().connect
     (
         mem_fun(*this, &seqedit::name_change_callback)
@@ -1186,7 +1213,7 @@ seqedit::fill_top_bar ()
      * Esc by default) can be used immediately to control playback.
      */
 
-    if (m_seq.get_name() != std::string("Untitled"))
+    if (m_seq.name() != std::string("Untitled"))
     {
         m_entry_name->set_position(-1);                 /* unselect text    */
         m_seqroll_wid->set_can_focus();
@@ -1504,7 +1531,9 @@ seqedit::fill_top_bar ()
 }
 
 /**
- *  Pops up the given pop-up menu.
+ *  Pops up the given pop-up menu.  At construction, this function is set as
+ *  the signal handler for each Gtk::Menu object, and that function is bound
+ *  with the Menu object as a parameter.
  */
 
 void
@@ -1526,8 +1555,14 @@ seqedit::popup_menu (Gtk::Menu * menu)
 void
 seqedit::popup_midibus_menu ()
 {
-    m_menu_midibus = manage(new Gtk::Menu());
+    if (not_nullptr(m_menu_midibus))
+    {
+        m_menu_midibus->popup(0, 0);
+        return;
+    }
+
     mastermidibus & masterbus = perf().master_bus();
+    m_menu_midibus = manage(new Gtk::Menu());
 
 #define SET_BUS         mem_fun(*this, &seqedit::set_midi_bus)
 
@@ -1551,6 +1586,12 @@ seqedit::popup_midibus_menu ()
 void
 seqedit::popup_midich_menu ()
 {
+    if (not_nullptr(m_menu_midich))
+    {
+        m_menu_midich->popup(0, 0);
+        return;
+    }
+
     m_menu_midich = manage(new Gtk::Menu());
     int bus = m_seq.get_midi_bus();
     for (int channel = 0; channel < SEQ64_MIDI_BUS_CHANNEL_MAX; ++channel)
@@ -1590,6 +1631,12 @@ seqedit::popup_midich_menu ()
 void
 seqedit::popup_sequence_menu ()
 {
+    if (not_nullptr(m_menu_sequences))
+    {
+        m_menu_sequences->popup(0, 0);
+        return;
+    }
+
     m_menu_sequences = manage(new Gtk::Menu());
 
 #define SET_BG_SEQ     mem_fun(*this, &seqedit::set_background_sequence)
@@ -1618,7 +1665,7 @@ seqedit::popup_sequence_menu ()
                     m_menu_sequences->items().push_back(MenuElem(name, *menuss));
                 }
                 sequence * seq = perf().get_sequence(i);
-                snprintf(name, sizeof name, "[%d] %.13s", i, seq->get_name());
+                snprintf(name, sizeof name, "[%d] %.13s", i, seq->name().c_str());
                 menuss->items().push_back
                 (
                     MenuElem(name, sigc::bind(SET_BG_SEQ, i))
@@ -1659,7 +1706,7 @@ seqedit::set_background_sequence (int seqnum)
     {
         char name[24];
         sequence * seq = perf().get_sequence(seqnum);
-        snprintf(name, sizeof name, "[%d] %.13s", seqnum, seq->get_name());
+        snprintf(name, sizeof name, "[%d] %.13s", seqnum, seq->name().c_str());
         m_entry_sequence->set_text(name);
         m_seqroll_wid->set_background_sequence(true, seqnum);
         if (seqnum < usr().max_sequence())      /* even more restrictive */

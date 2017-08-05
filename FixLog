@@ -1,6 +1,6 @@
 Fixes To Issue Reported at GitHub
 Chris Ahlstrom
-2017-05-13 to 2017-07-21
+2017-05-13 to 2017-08-05
 
 This file documents (belatedly) GitHub issues raised and pull-requests made.
 
@@ -226,19 +226,19 @@ This file documents (belatedly) GitHub issues raised and pull-requests made.
 
 	Simon van der Veldt: Hmmmm, it might be nice to make all the windows
 	dockable into the main window with tabs to switch between them, as a start.
-                                                                                  
+
 	This would be so nice! Not sure how feasible it would be though. All those
     separate windows are a bit annoying to work with :)
 
-	Milk brewster: 
+	Milk brewster:
 
     66 milkmuruku : [Feature request] 'Focus' an 'Close' options in right
 uld it be possible to centre sets?
 
     With a maximised window, I get [1]seq64_left; Fullscreen is [2]seq_full
-	click menu for sequences with opened edit windows 
+	click menu for sequences with opened edit windows
 
-1. https://user-images.githubusercontent.com/108225/27773992-45f98cd0-5f7f-11e7-8812-8d9dbabc0c18.png                                                            
+1. https://user-images.githubusercontent.com/108225/27773992-45f98cd0-5f7f-11e7-8812-8d9dbabc0c18.png
 2. https://user-images.githubusercontent.com/108225/27773997-6a65a900-5f7f-11e7-88f9-7477ab755fd3.png
 
  *  67 no midiclock output on rtmidi 0.90.1
@@ -286,6 +286,15 @@ uld it be possible to centre sets?
 
  *  77 jean-emmanuel : [Feature request] Editable BPM and measures-count
 
+    Also: can the new version run each track at a separate tempo.  also, if
+    user could entera few characters to left of each note it would make
+    microtonal composing easy, for example, where it says 'C2' one could input
+    a Hz value instead, or anything.  also, if it could overlay colors of
+    tracks over eachother like MidiSwing0.3.6 that would be amazing.  also, if
+    one could fold away unused notes this would be very helpful.  if you are
+    willing an able to make these options it would make it the best piece of
+    software in the world in my opinion, would do everything i dream of.
+
     78 jean-emmanuel : [Feature request] Scrollable pattern panels
 
     79 jean-emmanuel : Song Editor crash with higher number of pattern
@@ -308,7 +317,7 @@ uld it be possible to centre sets?
     transport.
 
  *  89 Animtim : underlinking issues
- 
+
     Good point: the package of sequencer64 0.9.5 is ready and in the pipes for
     mageia6 :)
 
@@ -317,21 +326,21 @@ uld it be possible to centre sets?
     (see error sample below). It would be appreciated if those could be fixed
     upstream ;)
 
-    In function seq64::perform::create_master_bus():                           
+    In function seq64::perform::create_master_bus():
     /home/user/rpmbuild/sequencer64/BUILD/sequencer64-0.90.5/libseq64/
         src/perform.cpp
     :454: undefined reference to
-    seq64::mastermidibus::mastermidibus(int, double)   
-    collect2: error: ld returned 1 exit status                                  
-    Makefile:608: recipe for target 'libseq64.la' failed                         
-    make[2]: *** [libseq64.la] Error 1      
+    seq64::mastermidibus::mastermidibus(int, double)
+    collect2: error: ld returned 1 exit status
+    Makefile:608: recipe for target 'libseq64.la' failed
+    make[2]: *** [libseq64.la] Error 1
 
-    You can see all the info in the spec file:                                
+    You can see all the info in the spec file:
 
     http://svnweb.mageia.org/packages/cauldron/sequencer64/current/
-       SPECS/sequencer64.spec?revision=1104462&view=markup                                            
+       SPECS/sequencer64.spec?revision=1104462&view=markup
     Again, the issue appears only when using the %configure2_5x macro, which
-    contains all this:                                                             
+    contains all this:
         rpm --eval %configure2_5x . . .
 
  *  90 yousefamar : resizing notes not possible in fruity mode
@@ -343,7 +352,7 @@ uld it be possible to centre sets?
     much appreciated.
 
  *  91 ahlstromcj : need help testing variset....
- 
+
     layk :
 
     FYI i noticed is that sets do not go backwards from 0 to MAX or from
@@ -414,7 +423,7 @@ uld it be possible to centre sets?
  *  93 milkmiruku : [Feature request] pattern color/grouping
 
     A button in the pattern window that gives a dialog to select an existing
-    or new colour that then appears as a thin bar at the top of the pattern 
+    or new colour that then appears as a thin bar at the top of the pattern
     box in the main window.
 
     For parts with the same colour setting, that constitutes a form of group,
@@ -445,19 +454,25 @@ uld it be possible to centre sets?
 
  * 97 F0rth : another seq24 fork
 
-    I just found another seq24 fork [1]https://github.com/oli-kester/kepler34 
+    I just found another seq24 fork [1]https://github.com/oli-kester/kepler34
     ( screenshots here [2]http://imgur.com/a/wN2AA )
-    There are perhaps some ideas or code to borrow.                         
+    There are perhaps some ideas or code to borrow.
 
  * 98 Simon van der Veldt : ALSA still required even if using JACK?
- 
- * 99 Simon Hickinbotham : make fails with: cc1plus: error:                
+
+ * 99 Simon Hickinbotham : make fails with: cc1plus: error:
         -Werror=date-time: no option -Wdate-time
 
     I am running ubuntu 14.04, I have checked my dependencies, ./bootstrap and
     ./configure seem to run ok, but make fails with this error:
-                                                                                  
-        cc1plus: error: -Werror=date-time: no option -Wdate-time                
+
+        cc1plus: error: -Werror=date-time: no option -Wdate-time
+
+ * 100 Simon van der Veldt : seq64 no longer shows up as jack client in a    
+       ladish room
+
+   This turned out to be caused by moving perform::launch() later in the
+   startup process; an easy fix, once understood.
 
 More:
 

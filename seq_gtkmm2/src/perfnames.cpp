@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-03
+ * \updates       2017-08-05
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -239,7 +239,10 @@ perfnames::draw_sequence (int seqnum)
         {
             char temp[32];
             m_sequence_active[seqnum] = true;
-            snprintf(temp, sizeof temp, "%-14.14s   %2d", seq->get_name(), chan);
+            snprintf
+            (
+                temp, sizeof temp, "%-14.14s   %2d", seq->name().c_str(), chan
+            );
             render_string(5 + m_setbox_w, yloc + 2, temp, col);
 
             std::string label = perf().sequence_label(*seq);

@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-08-03
+2016-12-03 to 2017-08-05
 
 Debian packaging:
 
@@ -30,6 +30,9 @@ Tempo Track:
         of the tempo events.  Consider drawing non-horizontal lines between
         tempo events.  Consider having a tempo_color().
     *   Need alternative to the tempo xpm to indicate auto-recording mode.
+    -   Large numbers of tempos are not drawn in mainwid (and presumably
+        perfroll).  They are drawn in the event editor.  Are they drawn in the
+        seqroll?  NO!!!
 
 Rtmidi implementation issues to work out:
 

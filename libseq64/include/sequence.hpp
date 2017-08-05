@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-08-03
+ * \updates       2017-08-05
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -718,7 +718,6 @@ public:
     void pop_trigger_redo ();
 
     void set_name (const std::string & name);
-    void set_name (char * name);
 
     /*
      * Amazingly, these functions, set_measures() and get_measures(),  have
@@ -880,15 +879,7 @@ public:
 
 #endif
 
-    /**
-     * \getter m_name pointer
-     * \deprecated
-     */
-
-    const char * get_name () const
-    {
-        return m_name.c_str();
-    }
+    std::string title () const;
 
     /**
      * \getter m_name
@@ -1113,17 +1104,17 @@ public:
     void print_triggers () const;
     void play (midipulse tick, bool playback_mode);
     void play_queue (midipulse tick, bool playbackmode);
-    void add_note
+    bool add_note
     (
         midipulse tick, midipulse len, int note,
         bool paint = false,
         int velocity = SEQ64_PRESERVE_VELOCITY
     );
-    bool add_event (const event & er);      /* another one declared below */
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
-    void add_chord (int chord, midipulse tick, midipulse len, int note);
+    bool add_chord (int chord, midipulse tick, midipulse len, int note);
 #endif
-    void add_event
+    bool add_event (const event & er);      /* another one declared below */
+    bool add_event
     (
         midipulse tick, midibyte status,
         midibyte d0, midibyte d1, bool paint = false

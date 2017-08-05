@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-04
+ * \updates       2017-08-05
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -141,9 +141,13 @@
 #include "pixmaps/song_mode.xpm"
 #endif
 
-#ifdef USE_RECORD_TEMPO
+#ifdef USE_RECORD_TEMPO_MENU
 #include "pixmaps/tempo_autorecord.xpm"
 #include "pixmaps/tempo_record.xpm"
+#else
+#include "pixmaps/tempo_log.xpm"
+#include "pixmaps/tempo_rec_off.xpm"
+#include "pixmaps/tempo_rec_on.xpm"
 #endif
 
 /**
@@ -273,11 +277,9 @@ mainwnd::mainwnd
     m_button_learn          (manage(new Gtk::Button())),    /* group learn (L) */
     m_button_stop           (manage(new Gtk::Button())),
     m_button_play           (manage(new Gtk::Button())),    /* also for pause  */
-#ifdef USE_RECORD_TEMPO
-    m_button_tempo_record   (manage(new Gtk::Button())),
-    m_menu_tempo_record     (manage(new Gtk::Menu())),
+    m_button_tempo_log      (manage(new Gtk::Button())),
+    m_button_tempo_record   (manage(new Gtk::ToggleButton())),
     m_is_tempo_recording    (false),
-#endif
     m_button_perfedit       (manage(new Gtk::Button())),
 #ifdef SEQ64_STAZED_MENU_BUTTONS
     m_image_songlive        (),
@@ -674,23 +676,33 @@ mainwnd::mainwnd
 
 #endif
 
-#ifdef USE_RECORD_TEMPO
+    m_button_tempo_log->set_focus_on_click(false);
+    m_button_tempo_log->add(*manage(new PIXBUF_IMAGE(tempo_log_xpm)));
+    m_button_tempo_log->signal_clicked().connect
+    (
+        mem_fun(*this, &mainwnd::tempo_log)
+    );
+    add_tooltip
+    (
+        m_button_tempo_log,
+        "Click this button to add the current tempo as an event at the current "
+        "time.  Recording a tempo event can extend the length of the tempo "
+        "track, which is always pattern 0."
+    );
 
     m_button_tempo_record->set_focus_on_click(false);
-    m_button_tempo_record->add(*manage(new PIXBUF_IMAGE(tempo_record_xpm)));
-    m_button_tempo_record->signal_clicked().connect
+    m_button_tempo_record->add(*manage(new PIXBUF_IMAGE(tempo_rec_off_xpm)));
+    m_button_tempo_record->signal_toggled().connect
     (
-        mem_fun(*this, &mainwnd::popup_tempo_menu)
+        mem_fun(*this, &mainwnd::toggle_tempo_record)
     );
     add_tooltip
     (
         m_button_tempo_record,
-        "Select a menu option to add the current tempo as an event, "
-        "or to enter or exit a mode where live changes to the "
-        "tempo are automatically recorded."
+        "Click this button to toggle the recording of live changes to the "
+        "tempo. Recording tempo events can extend the length of the tempo "
+        "track, which is always pattern 0."
     );
-
-#endif      // USE_RECORD_TEMPO
 
     m_button_queue->signal_clicked().connect(mem_fun(*this, &mainwnd::queue_it));
     add_tooltip(m_button_queue, "Shows and toggles the keep-queue status.");
@@ -718,10 +730,8 @@ mainwnd::mainwnd
     bpmhbox->pack_start(*m_button_tap, Gtk::PACK_SHRINK);
 #endif
 
-#ifdef USE_RECORD_TEMPO
+    bpmhbox->pack_start(*m_button_tempo_log, Gtk::PACK_SHRINK);
     bpmhbox->pack_start(*m_button_tempo_record, Gtk::PACK_SHRINK);
-#endif
-
     bpmhbox->pack_start(*m_button_queue, Gtk::PACK_SHRINK);
 
     /*
@@ -2567,70 +2577,35 @@ mainwnd::update_bpm ()
 
 #endif      // SEQ64_MAINWND_TAP_BUTTON
 
-#ifdef USE_RECORD_TEMPO
-
-#define DO_TEMPO        mem_fun(*this, &mainwnd::do_tempo)
+/**
+ *  Logs the current tempo/tick value as a Set Tempo event.
+ */
 
 void
-mainwnd::popup_tempo_menu ()
+mainwnd::tempo_log ()
 {
-    static bool s_not_populated = true;
-    if (s_not_populated)
-    {
-        s_not_populated = false;
-        m_menu_tempo_record->items().push_back
-        (
-            MenuElem
-            (
-                "Log current tempo",
-                sigc::bind(DO_TEMPO, perform::RECORD_TEMPO_LOG_EVENT)
-            )
-        );
-        m_menu_tempo_record->items().push_back
-        (
-            MenuElem
-            (
-                "Record all tempo changes",
-                sigc::bind(DO_TEMPO, perform::RECORD_TEMPO_ON)
-            )
-        );
-        m_menu_tempo_record->items().push_back
-        (
-            MenuElem
-            (
-                "Stop recording tempo changes",
-                sigc::bind(DO_TEMPO, perform::RECORD_TEMPO_OFF)
-            )
-        );
-    }
-    m_menu_tempo_record->popup(0, 0);
+    (void) perf().log_current_tempo();  // TODO:  check the return value
 }
 
+/**
+ *  Toggles the recording of the tempo.
+ */
+
 void
-mainwnd::do_tempo (perform::record_tempo_op_t action)
+mainwnd::toggle_tempo_record ()
 {
-    if (action == perform::RECORD_TEMPO_LOG_EVENT)
+    m_is_tempo_recording = ! m_is_tempo_recording;
+    if (m_is_tempo_recording)
     {
-        (void) perf().log_current_tempo();  // TODO:  check the return value
-        Gtk::Image * image_tempo = manage(new PIXBUF_IMAGE(tempo_record_xpm));
+        Gtk::Image * image_tempo = manage(new PIXBUF_IMAGE(tempo_rec_on_xpm));
         m_button_tempo_record->set_image(*image_tempo);
     }
-    else if (action == perform::RECORD_TEMPO_ON)
+    else
     {
-        m_is_tempo_recording = true;
-        Gtk::Image * image_tempo = manage(new PIXBUF_IMAGE(tempo_autorecord_xpm));
-        m_button_tempo_record->set_image(*image_tempo);
-    }
-    else if (action == perform::RECORD_TEMPO_OFF)
-    {
-        m_is_tempo_recording = false;
-        Gtk::Image * image_tempo = manage(new PIXBUF_IMAGE(tempo_record_xpm));
+        Gtk::Image * image_tempo = manage(new PIXBUF_IMAGE(tempo_rec_off_xpm));
         m_button_tempo_record->set_image(*image_tempo);
     }
 }
-
-#endif      // USE_RECORD_TEMPO
-
 
 /**
  *  Implements the keep-queue button.

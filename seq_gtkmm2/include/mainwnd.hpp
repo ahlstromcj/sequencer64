@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-04
+ * \updates       2017-08-05
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -75,6 +75,7 @@ namespace Gtk
     class MenuBar;
     class Menu;
     class SpinButton;
+    class ToggleButton;
     class Tooltips;
 
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
@@ -324,30 +325,26 @@ private:
 
     Gtk::Button * m_button_play;
 
-#ifdef USE_RECORD_TEMPO
+    /**
+     *  Implements the new magenta tempo-log button.  The user clicks on it to
+     *  log the current tempo value at the current time as a Set Tempo event.
+     */
+
+    Gtk::Button * m_button_tempo_log;
 
     /**
-     *  Implements the new red tempo-tecord button.  One should be able to
+     *  Implements the new red tempo-record button.  One should be able to
      *  left click on it to record the current tempo as a tempo event, and
      *  right-click to enable auto-record.
      */
 
-    Gtk::Button * m_button_tempo_record;
-
-    /**
-     *  A menu is easier to do than the right/left click detection... and we
-     *  can add more functions.
-     */
-
-    Gtk::Menu * m_menu_tempo_record;
+    Gtk::ToggleButton * m_button_tempo_record;
 
     /**
      *  Indicates if tempo recording is active.
      */
 
     bool m_is_tempo_recording;
-
-#endif      // USE_RECORD_TEMPO
 
     /**
      *  The button for bringing up the Song Editor (Performance Editor).
@@ -593,11 +590,8 @@ private:
 
 #endif
 
-#ifdef USE_RECORD_TEMPO
-    void popup_tempo_menu ();
-    void do_tempo (perform::record_tempo_op_t action);
-#endif
-
+    void tempo_log ();
+    void toggle_tempo_record ();
     void queue_it ();
 
     /**

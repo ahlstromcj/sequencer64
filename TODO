@@ -30,9 +30,8 @@ Tempo Track:
         of the tempo events.  Consider drawing non-horizontal lines between
         tempo events.  Consider having a tempo_color().
     *   Need alternative to the tempo xpm to indicate auto-recording mode.
-    -   Large numbers of tempos are not drawn in mainwid (and presumably
-        perfroll).  They are drawn in the event editor.  Are they drawn in the
-        seqroll?  NO!!!
+    -   Tempos added via the main window do not cause a prompt for a save when
+        closing the application.
 
 Rtmidi implementation issues to work out:
 

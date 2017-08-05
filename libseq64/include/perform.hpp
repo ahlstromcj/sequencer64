@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-04
+ * \updates       2017-08-05
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -205,10 +205,9 @@ class perform
 
 public:
 
-#ifdef USE_RECORD_TEMPO
-
     /**
-     *  Provides settings for tempo recording.
+     *  Provides settings for tempo recording.  Currently not used, though the
+     *  functionality of logging and recording tempo is in place.
      */
 
     enum record_tempo_op_t
@@ -217,8 +216,6 @@ public:
         RECORD_TEMPO_ON,
         RECORD_TEMPO_OFF
     };
-
-#endif      // USE_RECORD_TEMPO
 
     /**
      *  Provides settings for muting.

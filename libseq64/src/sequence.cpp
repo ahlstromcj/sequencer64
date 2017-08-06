@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-05
+ * \updates       2017-08-06
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -277,7 +277,7 @@ sequence::push_undo (bool hold)
  *  If there are items on the undo list, this function pushes the
  *  event-list into the redo-list, puts the top of the undo-list into the
  *  event-list, pops from the undo-list, calls verify_and_link(), and then
- *  calls unselect.
+ *  calls unselect().
  *
  *  We would like to be able to set perform's modify flag to false here, but
  *  other sequences might still be in a modified state.  We could add a modify
@@ -504,10 +504,6 @@ sequence::select_even_or_odd_notes (int note_len, bool even)
     return result;
 }
 
-#endif
-
-#ifdef USE_STAZED_SELECTION_EXTENSIONS
-
 /**
  *  Selects events in range provided: tick start, note high, tick end, and
  *  note low.
@@ -554,7 +550,7 @@ sequence::select_note_events
 (
     midipulse tick_s, int note_h,
     midipulse tick_f, int note_l,
-    select_action_e action
+    select_action_t action
 )
 {
     int result = 0;
@@ -720,51 +716,6 @@ sequence::select_note_events
 }
 
 /**
- *  Used with seqevent when selecting Note On or Note Off, this function will
- *  select the opposite linked event.
- *
- * \param tick_s
- *      Provides the starting tick.
- *
- * \param tick_f
- *      Provides the ending (finishing) tick.
- *
- * \param status
- *      Provides the desired MIDI event to be selected.
- *
- * \return
- *      Returns the number of notes selected.
- */
-
-int
-sequence::select_linked (midipulse tick_s, midipulse tick_f, midibyte status)
-{
-    int result = 0;
-    automutex locker(m_mutex);
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
-    {
-        event & e = DREF(i);
-        if
-        (
-            e.get_status() == status &&
-            e.get_timestamp() >= tick_s && e.get_timestamp() <= tick_f
-        )
-        {
-            if (e.is_linked())
-            {
-                if (e.is_selected())
-                    e.get_linked()->select();
-                else
-                    e.get_linked()->unselect();
-
-                ++result;
-            }
-        }
-    }
-    return result;
-}
-
-/**
  *  Use selected note ons if any.
  *
  * \param tick_s
@@ -920,6 +871,52 @@ sequence::select_event_handle
 }
 
 #endif  // USE_STAZED_SELECTION_EXTENSIONS
+
+/**
+ *  Used with seqevent when selecting Note On or Note Off, this function will
+ *  select the opposite linked event.  This is a Stazed selection fix we have
+ *  activated unilaterally.
+ *
+ * \param tick_s
+ *      Provides the starting tick.
+ *
+ * \param tick_f
+ *      Provides the ending (finishing) tick.
+ *
+ * \param status
+ *      Provides the desired MIDI event to be selected.
+ *
+ * \return
+ *      Returns the number of notes selected.
+ */
+
+int
+sequence::select_linked (midipulse tick_s, midipulse tick_f, midibyte status)
+{
+    int result = 0;
+    automutex locker(m_mutex);
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    {
+        event & e = DREF(i);
+        if
+        (
+            e.get_status() == status &&
+            e.get_timestamp() >= tick_s && e.get_timestamp() <= tick_f
+        )
+        {
+            if (e.is_linked())
+            {
+                if (e.is_selected())
+                    e.get_linked()->select();
+                else
+                    e.get_linked()->unselect();
+
+                ++result;
+            }
+        }
+    }
+    return result;
+}
 
 /**
  * \setter m_rec_vol
@@ -1463,7 +1460,7 @@ int
 sequence::select_note_events
 (
     midipulse tick_s, int note_h,
-    midipulse tick_f, int note_l, select_action_e action
+    midipulse tick_f, int note_l, select_action_t action
 )
 {
     int result = 0;
@@ -1599,6 +1596,43 @@ sequence::select_note_events
 #endif  // ! definded USE_STAZED_SELECTION_EXTENSIONS
 
 /**
+ *  A convenience function used a couple of times.  Makes if-clauses
+ *  easier to read.
+ *
+ * \param e
+ *      Provides the event to be checked.
+ *
+ * \param status
+ *      Provides the event type that must be matched.  However, Set Tempo
+ *      events will always be matched.
+ *
+ * \param tick_s
+ *      The lower end of the range of timestamps that the event must fall
+ *      within.
+ *
+ * \param tick_f
+ *      The upper end of the range of timestamps that the event must fall
+ *      within.
+ *
+ * \return
+ *      Returns true if the event matchs all of the restrictions noted.
+ */
+
+bool
+sequence::event_in_range
+(
+    const event & e, midibyte status,
+    midipulse tick_s, midipulse tick_f
+) const
+{
+    bool result = e.is_tempo() || e.get_status() == status;
+    if (result)
+        result = e.get_timestamp() >= tick_s && e.get_timestamp() <= tick_f;
+
+    return result;
+}
+
+/**
  *  Select all events in the given range, and returns the number
  *  selected.  Note that there is also an overloaded version of this
  *  function.
@@ -1612,7 +1646,9 @@ sequence::select_note_events
  *      The finish time of the selection.
  *
  * \param status
- *      The desired event in the selection.
+ *      The desired event in the selection.  Now, as a new feature, tempo
+ *      events are also selectable, in addition to events selected by this
+ *      parameter.
  *
  * \param cc
  *      The desired control-change in the selection, if the event is a
@@ -1630,7 +1666,7 @@ sequence::select_events
 (
     midipulse tick_s, midipulse tick_f,
     midibyte status, midibyte cc,
-    select_action_e action
+    select_action_t action
 )
 {
     int result = 0;
@@ -1642,7 +1678,7 @@ sequence::select_events
         {
             midibyte d0, d1;
             er.get_data(d0, d1);
-            if (event::is_desired_cc_or_not_cc(status, cc, d0))
+            if (er.is_tempo() || event::is_desired_cc_or_not_cc(status, cc, d0))
             {
                 if (action == e_select || action == e_select_one)
                 {
@@ -1898,8 +1934,8 @@ sequence::clip_timestamp (midipulse ontime, midipulse offtime)
 /**
  *  Performs a stretch operation on the selected events.  This should move
  *  a note off event, according to old comments, but it doesn't seem to do
- *  that.  See the grow_selected() function.  Rather, it moves any event in the
- *  selection.
+ *  that.  See the grow_selected() function.  Rather, it moves any event in
+ *  the selection.
  *
  *  Also, we've moved external calls to push_undo() into this function.
  *  The caller shouldn't have to do that.
@@ -4060,9 +4096,8 @@ sequence::get_next_note_event
 
 /**
  *  Get the next event in the event list.  Then set the status and control
- *  character parameters using that event.
- *
- * Note: This overload is used only in seqedit::popup_event_menu().
+ *  character parameters using that event.  This overload is used only in
+ *  seqedit::popup_event_menu().
  *
  * \param status
  *      Provides a pointer to the MIDI status byte to be set, as a way to
@@ -4564,7 +4599,11 @@ std::string
 sequence::title () const
 {
     int measures = calculate_measures();
-    if (measures > 0)
+    bool showmeasures = true;
+    if (not_nullptr(m_parent))
+        showmeasures = m_parent->show_ui_sequence_key();
+
+    if (measures > 0 && showmeasures)
     {
         char mtemp[8];
         char fulltemp[16];

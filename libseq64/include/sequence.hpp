@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-08-05
+ * \updates       2017-08-06
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -130,7 +130,7 @@ public:
      *  select_note_events() and select_events() functions.
      */
 
-    enum select_action_e
+    enum select_action_t
     {
         e_select,               /**< Selection in progress.                 */
         e_select_one,           /**< To select a single event.              */
@@ -1196,12 +1196,12 @@ public:
     int select_note_events
     (
         midipulse tick_s, int note_h,
-        midipulse tick_f, int note_l, select_action_e action
+        midipulse tick_f, int note_l, select_action_t action
     );
     int select_events
     (
         midipulse tick_s, midipulse tick_f,
-        midibyte status, midibyte cc, select_action_e action
+        midibyte status, midibyte cc, select_action_t action
     );
     int select_events
     (
@@ -1216,9 +1216,10 @@ public:
         midipulse tick_s, midipulse tick_f, midibyte status,
         midibyte cc, int data_s
     );
-    int select_linked (long tick_s, long tick_f, midibyte status);
 
 #endif
+
+    int select_linked (long tick_s, long tick_f, midibyte status);
 
 #ifdef USE_STAZED_ODD_EVEN_SELECTION
 
@@ -1483,44 +1484,14 @@ public:
         return m_loop_reset;
     }
 
-
 #endif  // SEQ64_STAZED_EXPAND_RECORD
 
 private:
 
-    /**
-     *  A convenience function used a couple of times.  Makes if-clauses
-     *  easier to read.
-     *
-     * \param e
-     *      Provides the event to be checked.
-     *
-     * \param status
-     *      Provides the event type that must be matched.
-     *
-     * \param tick_s
-     *      The lower end of the range of timestamps that the event must fall
-     *      within.
-     *
-     * \param tick_f
-     *      The upper end of the range of timestamps that the event must fall
-     *      within.
-     *
-     * \return
-     *      Returns true if the event matchs all of the restrictions noted.
-     */
-
     bool event_in_range
     (
         const event & e, midibyte status, midipulse tick_s, midipulse tick_f
-    ) const
-    {
-        return
-        (
-            e.get_status() == status &&
-            e.get_timestamp() >= tick_s && e.get_timestamp() <= tick_f
-        );
-    }
+    ) const;
 
     void set_parent (perform * p);
     void put_event_on_bus (event & ev);

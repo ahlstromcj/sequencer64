@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2017-07-23
+ * \updates       2017-08-06
  * \license       GNU GPLv2 or above
  *
  *  This container now can indicate if certain Meta events (time-signaure or
@@ -38,7 +38,7 @@
  *  SEQ64_USE_EVENT_MAP versus SEQ64_USE_EVENTEDIT_MAP.
  */
 
-#include <stdio.h>                      // printf()
+#include <stdio.h>                      /* C::printf()                  */
 
 #include "easy_macros.h"
 #include "event_list.hpp"
@@ -686,7 +686,7 @@ event_list::count_selected_notes () const
 /**
  *  Indicates that at least one note is selected.  Acts like
  *  event_list::count_selected_notes(), but stops after finding a selected
- *  note. We could add a flag to count_selected_notes() to break, I suppose.
+ *  note.
  *
  * \return
  *      Returns true if at least one note is selected.
@@ -710,7 +710,8 @@ event_list::any_selected_notes () const
 /**
  *  Counts the selected events, with the given status, in the event list.
  *  If the event is a control change (CC), then it must also match the
- *  given CC value.
+ *  given CC value.  The one exception is tempo events, which are always
+ *  selectable.
  *
  * \param status
  *      The desired status value to count.
@@ -730,7 +731,12 @@ event_list::count_selected_events (midibyte status, midibyte cc) const
     for (Events::const_iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         const event & e = dref(i);
-        if (e.get_status() == status)
+        if (e.is_tempo())
+        {
+            if (e.is_selected())
+                ++result;
+        }
+        else if (e.get_status() == status)
         {
             midibyte d0, d1;
             e.get_data(d0, d1);                 /* get the two data bytes */

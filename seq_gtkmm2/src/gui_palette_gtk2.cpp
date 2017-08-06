@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2017-08-03
+ * \updates       2017-08-06
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -63,6 +63,7 @@ const STATIC_COLOR gui_palette_gtk2::m_red          = Color("red");
 const STATIC_COLOR gui_palette_gtk2::m_orange       = Color("orange");
 const STATIC_COLOR gui_palette_gtk2::m_yellow       = Color("yellow");
 const STATIC_COLOR gui_palette_gtk2::m_green        = Color("green");
+const STATIC_COLOR gui_palette_gtk2::m_magenta      = Color("magenta");
 const STATIC_COLOR gui_palette_gtk2::m_blue         = Color("blue");
 
 STATIC_COLOR gui_palette_gtk2::m_grey               = Color("grey");
@@ -72,7 +73,12 @@ STATIC_COLOR gui_palette_gtk2::m_blk_paint          = Color("black");
 STATIC_COLOR gui_palette_gtk2::m_wht_paint          = Color("white");
 STATIC_COLOR gui_palette_gtk2::m_blk_key            = Color("black");
 STATIC_COLOR gui_palette_gtk2::m_wht_key            = Color("white");
-STATIC_COLOR gui_palette_gtk2::m_tempo_paint        = Color("dark magenta");
+STATIC_COLOR gui_palette_gtk2::m_tempo_paint        = Color("magenta"); // dark
+#ifdef SEQ64_USE_BLACK_SELECTION_BOX
+STATIC_COLOR gui_palette_gtk2::m_sel_paint          = Color("black");
+#else
+STATIC_COLOR gui_palette_gtk2::m_sel_paint          = Color("dark_orange");
+#endif
 
 /**
  *  Principal constructor.  In the constructor one can only allocate colors;
@@ -103,6 +109,7 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     colormap->alloc_color(const_cast<Color &>(m_orange));
     colormap->alloc_color(const_cast<Color &>(m_yellow));
     colormap->alloc_color(const_cast<Color &>(m_green));
+    colormap->alloc_color(const_cast<Color &>(m_magenta));
     colormap->alloc_color(const_cast<Color &>(m_blue));
 
     colormap->alloc_color(const_cast<Color &>(m_grey));
@@ -113,12 +120,11 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     colormap->alloc_color(const_cast<Color &>(m_blk_key));
     colormap->alloc_color(const_cast<Color &>(m_wht_key));
     colormap->alloc_color(const_cast<Color &>(m_tempo_paint));
+    colormap->alloc_color(const_cast<Color &>(m_sel_paint));
 
-    /*
-     * Not sure we need these variable colors need to be pre-allocated.
-     *
-     * colormap->alloc_color(const_cast<Color &>(m_line_color));
-     * colormap->alloc_color(const_cast<Color &>(m_progress_color));
+    /**
+     * \todo
+     *      Use an array of colors instead of this switch.
      */
 
     int colorcode = usr().progress_bar_colored();
@@ -151,7 +157,6 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     case 6:
         m_progress_color = m_dk_cyan;
         break;
-
     }
 }
 
@@ -195,6 +200,11 @@ gui_palette_gtk2::load_inverse_palette (bool inverse)
         m_wht_key     = Color("grey");
 #endif
         m_tempo_paint = Color("magenta");
+#ifdef SEQ64_USE_BLACK_SELECTION_BOX
+        m_sel_paint   = Color("white");
+#else
+        m_sel_paint   = Color("orange");
+#endif
         m_is_inverse  = true;
     }
     else
@@ -206,7 +216,12 @@ gui_palette_gtk2::load_inverse_palette (bool inverse)
         m_wht_paint   = Color("white");
         m_blk_key     = Color("black");
         m_wht_key     = Color("white");
-        m_tempo_paint = Color("dark magenta");
+        m_tempo_paint = Color("magenta");       /* or dark magenta          */
+#ifdef SEQ64_USE_BLACK_SELECTION_BOX
+        m_sel_paint   = Color("black");
+#else
+        m_sel_paint   = Color("dark orange");
+#endif
         m_is_inverse  = false;
     }
 }

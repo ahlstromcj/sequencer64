@@ -462,22 +462,28 @@ seqevent::draw_selection_on_window ()
         x -= m_scroll_offset_x;
         m_old.x = x;
         m_old.width = w;
+#if 0
 #ifdef SEQ64_USE_BLACK_SELECTION_BOX
         draw_rectangle(black(), x, y, w, h, false);
 #else
         draw_rectangle(dark_orange(), x, y, w, h, false);
 #endif
+#endif
+        draw_rectangle(sel_paint(), x, y, w, h, false);
     }
     if (m_moving || m_paste)
     {
         int delta_x = m_current_x - m_drop_x;
         x = m_selected.x + delta_x;
         x -= m_scroll_offset_x;
+#if 0
 #ifdef SEQ64_USE_BLACK_SELECTION_BOX
         draw_rectangle(black(), x, y, m_selected.width, h, false);
 #else
         draw_rectangle(dark_orange(), x, y, m_selected.width, h, false);
 #endif
+#endif
+        draw_rectangle(sel_paint(), x, y, m_selected.width, h, false);
         m_old.x = x;
         m_old.width = m_selected.width;
     }
@@ -629,12 +635,11 @@ seqevent::on_size_allocate (Gtk::Allocation & a)
  */
 
 bool
-seqevent::on_expose_event (GdkEventExpose * ev)
+seqevent::on_expose_event (GdkEventExpose * e)
 {
     draw_drawable
     (
-        ev->area.x, ev->area.y,
-        ev->area.x, ev->area.y, ev->area.width, ev->area.height
+        e->area.x, e->area.y, e->area.x, e->area.y, e->area.width, e->area.height
     );
     draw_selection_on_window();
     return true;
@@ -808,13 +813,10 @@ seqevent::on_focus_out_event (GdkEventFocus * /*ev*/)
 }
 
 /**
- *  Implements the key-press event callback function.
- *
- *  It handles deleted a selection via the Backspace or Delete keys,
- *  cut via Ctrl-X, copy via Ctrl-C, paste via Ctrl-V, and undo via
- *  Ctrl-Z.
- *
- *  Would be nice to provide redo functionality via Ctrl-Y.  :-)
+ *  Implements the key-press event callback function.  It handles deleting a
+ *  selection via the Backspace or Delete keys, cut via Ctrl-X, copy via
+ *  Ctrl-C, paste via Ctrl-V, and undo via Ctrl-Z.  Would be nice to provide
+ *  redo functionality via Ctrl-Y.  :-)
  *
  * \param ev
  *      The key-press event.

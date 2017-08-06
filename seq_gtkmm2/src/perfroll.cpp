@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-03
+ * \updates       2017-08-06
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -690,26 +690,25 @@ perfroll::draw_sequence_on (int seqnum)
 #else
                         m_gc->set_foreground(black_paint());
 #endif
-                        while
-                        (
-                            (
-                                dt = seq->get_next_note_event
-                                (
-                                    tick_s, tick_f, note, selected, velocity
-                                )
-                            ) != DRAW_FIN
-                        )
+
+                        seq->reset_draw_marker();       /* container iterator */
+                        do
                         {
+                            dt = seq->get_next_note_event   /* side-effects */
+                            (
+                                tick_s, tick_f, note, selected, velocity
+                            );
+                            if (dt == DRAW_FIN)
+                                break;
+
                             int mny = m_names_y - 6;
-
-                            /*
-                             * For tempo, do not to scale by the range of
-                             * notes in the track!
-                             */
-
                             int note_y;
                             if (dt == DRAW_TEMPO)
                             {
+                                /*
+                                 * Do not to scale by the note range here.
+                                 */
+
                                 note_y =
                                 (
                                     mny - (mny * note) / SEQ64_MAX_DATA_VALUE
@@ -755,7 +754,6 @@ perfroll::draw_sequence_on (int seqnum)
                                 );
                                 if (dt == DRAW_TEMPO)
                                 {
-
                                     /*
                                      * We would like to also draw a line from
                                      * the end of the current tempo to the
@@ -767,7 +765,7 @@ perfroll::draw_sequence_on (int seqnum)
                                     set_line(Gdk::LINE_SOLID, 1);
                                 }
                             }
-                        }
+                        } while (dt != DRAW_FIN);
                     }
                     tickmarker += sequence_length;
                 }

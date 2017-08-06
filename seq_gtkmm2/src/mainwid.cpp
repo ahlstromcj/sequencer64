@@ -273,9 +273,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
         if (perf().is_active(seqnum))
         {
             sequence * seq = perf().get_sequence(seqnum);
-            if (is_nullptr(seq))                        /* non-existent?    */
-                return;                                 /* yes, ignore it   */
-
             bool empty_highlight = perf().highlight(*seq);
             bool smf_0 = perf().is_smf_0(*seq);
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
@@ -475,14 +472,13 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
                     int tick_s_x = tick_s * m_seqarea_seq_x / len;
                     int tick_f_x = tick_f * m_seqarea_seq_x / len;
-
-                    /*
-                     * For tempo, do not scale by the range of notes in track!
-                     */
-
                     int note_y;
                     if (dt == DRAW_TEMPO)
                     {
+                        /*
+                         * Do not to scale by the note range here.
+                         */
+
                         note_y = m_seqarea_seq_y -
                              m_seqarea_seq_y * (note + 1) / SEQ64_MAX_DATA_VALUE;
                     }
@@ -491,17 +487,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                         note_y = m_seqarea_seq_y -
                              m_seqarea_seq_y * (note + 1 - low_note) / height;
                     }
-
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-                    printf
-                    (
-                        "note %x: y=%4d,s=%4ld, f=%4ld, s_x=%4d "
-                        "f_x=%4d, f-s=%d, low=%d, high=%d\n",
-                        note, note_y, tick_s, tick_f, tick_s_x,
-                        tick_f_x, tick_f_x - tick_s_x, low_note, height
-                    );
-#endif
-
                     if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
                         tick_f_x = tick_s_x + 1;
 

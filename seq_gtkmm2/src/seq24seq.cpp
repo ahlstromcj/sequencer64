@@ -92,11 +92,7 @@ Seq24SeqEventInput::set_adding (bool adding, seqevent & seqev)
  */
 
 bool
-Seq24SeqEventInput::on_button_press_event
-(
-    GdkEventButton * ev,
-    seqevent & seqev
-)
+Seq24SeqEventInput::on_button_press_event (GdkEventButton * ev, seqevent & seqev)
 {
     bool result = false;
     midipulse tick_s, tick_w;
@@ -157,8 +153,6 @@ Seq24SeqEventInput::on_button_press_event
                     seqev.m_cc, sequence::e_is_selected
                 );
 
-#ifdef USE_STAZED_SELECTION_EXTENSIONS
-
                 /*
                  * Stazed fix: if we didn't select anything (user clicked empty
                  * space), then unselect all notes, and start selecting.
@@ -169,7 +163,6 @@ Seq24SeqEventInput::on_button_press_event
                     seqev.m_seq.select_linked(tick_s, tick_f, seqev.m_status);
                     seqev.m_seq.set_dirty();
                 }
-#endif
 
                 if (eventcount == 0)
                 {
@@ -300,7 +293,7 @@ Seq24SeqEventInput::on_button_release_event
             {
                 seqev.m_seq.select_linked(tick_s, tick_f, seqev.m_status);
             }
-            seqev.m_seq.set_dirty();    // ??????????? Why not in brackets?
+            seqev.m_seq.set_dirty();
 #endif
 
         }
@@ -325,7 +318,7 @@ Seq24SeqEventInput::on_button_release_event
     seqev.m_seq.unpaint_all();
     seqev.update_pixmap();                  /* if a click, something changed */
     seqev.draw_pixmap_on_window();
-    return result;                          // true;
+    return result;
 }
 
 /**

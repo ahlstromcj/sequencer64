@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-08-05
+2016-12-03 to 2017-08-06
 
 Debian packaging:
 
@@ -32,6 +32,10 @@ Tempo Track:
     *   Need alternative to the tempo xpm to indicate auto-recording mode.
     -   Tempos added via the main window do not cause a prompt for a save when
         closing the application.
+    -   The sequence draw marker still can get messed up by seqedit, and
+        mess up the drawing of the tempo track in perfroll.
+    -   Encountered tempo events need to change the perform BPM value and have
+        it shown in the BPM spinner.
 
 Rtmidi implementation issues to work out:
 

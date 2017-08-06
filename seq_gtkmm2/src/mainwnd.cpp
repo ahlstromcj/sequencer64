@@ -249,7 +249,6 @@ mainwnd::mainwnd
     m_hscroll               (manage(new Gtk::HScrollbar(*m_hadjust))),
     m_vscroll               (manage(new Gtk::VScrollbar(*m_vadjust))),
 #endif
-
 #if defined SEQ64_MULTI_MAINWID
     m_mainwid_grid          (nullptr),
     m_mainwid_frames        (),                         /* a 2 x 3 array    */
@@ -320,7 +319,6 @@ mainwnd::mainwnd
 #ifdef SEQ64_MAINWND_TAP_BUTTON
     m_button_tap            (manage(new Gtk::Button("0"))),
 #endif
-
     m_button_queue          (manage(new Gtk::ToggleButton("Q"))),
 
     /*

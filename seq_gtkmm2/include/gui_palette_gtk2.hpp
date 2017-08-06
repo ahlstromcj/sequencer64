@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2017-08-03
+ * \updates       2017-08-06
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -131,6 +131,7 @@ private:                            /* use the accessor functions           */
     static const Color m_orange;    /**< Provides the orange color.         */
     static const Color m_yellow;    /**< Provides the yellow color.         */
     static const Color m_green;     /**< Provides the green color.          */
+    static const Color m_magenta;   /**< Provides the magenta color.        */
     static const Color m_blue;      /**< Provides the blue color.           */
 
     /*
@@ -145,6 +146,7 @@ private:                            /* use the accessor functions           */
     static Color m_blk_key;         /**< Provides the color of a black key. */
     static Color m_wht_key;         /**< Provides the color of a white key. */
     static Color m_tempo_paint;     /**< The color of a tempo line.         */
+    static Color m_sel_paint;       /**< The color of a selection box.      */
 
     /*
      * Non-static member colors.
@@ -334,6 +336,15 @@ public:
     }
 
     /**
+     * \getter m_magenta
+     */
+
+    const Color & magenta () const
+    {
+        return m_magenta;
+    }
+
+    /**
      * \getter m_blue
      */
 
@@ -385,6 +396,15 @@ public:
     const Color & tempo_paint () const
     {
         return m_tempo_paint;
+    }
+
+    /**
+     * \getter m_sel_paint
+     */
+
+    const Color & sel_paint () const
+    {
+        return m_sel_paint;
     }
 
     /**

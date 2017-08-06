@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-25
+ * \updates       2017-08-05
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1348,7 +1348,7 @@ optionsfile::write (const perform & p)
 
     file
         << (ktx.kpt_show_ui_sequence_key ? 1 : 0)
-        << "     # show_ui_sequence_key (1 = true / 0 = false)\n"
+        << "     # show_ui_sequence_key and seq measures (1 = true / 0 = false)\n"
         ;
 
     file

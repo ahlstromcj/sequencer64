@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-08-01
+ * \updates       2017-08-06
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -1151,9 +1151,6 @@ wave_func (double angle, wave_type_t wavetype)
     default:
         break;
     }
-    /*
-     * printf("y[%s](%f)=%f\n", wave_type_name(wavetype).c_str(), angle, result);
-     */
     return result;
 }
 
@@ -1179,11 +1176,11 @@ wave_type_name (wave_type_t wavetype)
         break;
 
     case WAVE_SAWTOOTH:
-        result = "Ramp";
+        result = "Ramp Up Saw";
         break;
 
     case WAVE_REVERSE_SAWTOOTH:
-        result = "Decay";
+        result = "Decay Saw";
         break;
 
     case WAVE_TRIANGLE:

@@ -22,20 +22,14 @@ Tempo Track:
 
     -   Provide a key or press to insert a tempo event at current mouse
         position in time and tempo-height.
-    *   Make tempo height editable in seqdata.
-    *   Make it possible to add tempo events in seqdata or seqevent.
-        Make sure that it dirties the sequence to prompt for a save of the
-        MIDI file.
-    *   Reconsider the cyan color, dashed line style, and line thickness
-        of the tempo events.  Consider drawing non-horizontal lines between
-        tempo events.  Consider having a tempo_color().
-    *   Need alternative to the tempo xpm to indicate auto-recording mode.
-    -   Tempos added via the main window do not cause a prompt for a save when
-        closing the application.
     -   The sequence draw marker still can get messed up by seqedit, and
         mess up the drawing of the tempo track in perfroll.
-    -   Encountered tempo events need to change the perform BPM value and have
-        it shown in the BPM spinner.
+
+Hot bugs:
+
+    -   Pressing the keep-queue activates the Q button, but pressing another
+        key, or the temporary queue key, or changing the current screen set,
+        does *not* de-activate the keep-queue status.
 
 Rtmidi implementation issues to work out:
 

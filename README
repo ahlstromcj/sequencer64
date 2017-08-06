@@ -1,10 +1,10 @@
-README for Sequencer64 0.93.1 (Native JACK, CLI, multiple main windows, varisets)
+README for Sequencer64 0.93.1 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2017-07-16
+2015-09-10 to 2017-08-06
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
-and maintains more backward-compatibility with the --legacy option.  See
+and maintains some backward-compatibility with the --legacy option.  See
 https://github.com/ahlstromcj/sequencer64-doc.git.  For prebuilt Debian
 packages, see https://github.com/ahlstromcj/sequencer64-packages.git.
 
@@ -29,8 +29,10 @@ With the big version jump from 0.9 to 0.90, the install process has changed.
 See the INSTALL file.
 
     -   Version 0.93.1:
-        -   Version 0.93.1 will hopefully fully support the management of a
-            native MIDI tempo track.
+        -   Version 0.93.1 supports the management of a native MIDI tempo
+            track, adhering to MIDI specs..
+        -   Tempo events are mostly editable like normal events.  No separate
+            "tempo track" editor needed at present.
     -   Version 0.93.0:
         -   Initial support for the tempo track.  It currently includes making
             Meta events have full support in Sequencer64, including in the

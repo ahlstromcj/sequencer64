@@ -84,29 +84,6 @@ maintime::maintime (perform & p, int ppqn)
 }
 
 /**
- *  Handles realization of the window.  It performs the base class's
- *  on_realize() function.  It then allocates some additional resources: a
- *  window, a GC (?), and it clears the window.  Then it sets the default
- *  size of the window, specified by GUI constructor parameters.
- *
- *  Odd, we now notice that the pill bar isn't showing until the tune starts
- *  to play.  Let's make sure it appears.  Doesn't work.  Something else fixed
- *  it, and we forgot to document it.
- *
- *      (void) idle_progress(0);
- *
- *  Since this function now only calls the base-class function, we comment it
- *  out.
-
-void
-maintime::on_realize ()
-{
-    gui_drawingarea_gtk2::on_realize();
-}
- *
- */
-
-/**
  *  This function clears the window, sets the foreground to black, draws
  *  the "time" window's rectangle, and then draws a rectangle for noting the
  *  progress of the beat, and the progress for a bar.

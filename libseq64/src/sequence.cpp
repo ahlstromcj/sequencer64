@@ -4048,6 +4048,7 @@ sequence::get_next_note_event
     int & note, bool & selected, int & velocity
 )
 {
+    // automutex locker(m_mutex);               // WILL IT HELP???? No.
     tick_f = 0;
     while (m_iterator_draw != m_events.end())   /* NOT THREADSAFE!!!!!      */
     {
@@ -4114,6 +4115,7 @@ sequence::get_next_note_event
 bool
 sequence::get_next_event (midibyte & status, midibyte & cc)
 {
+    // automutex locker(m_mutex);                   // WILL IT HELP?? No.
     while (m_iterator_draw != m_events.end())       /* NOT THREADSAFE!!!    */
     {
         midibyte j;
@@ -5216,6 +5218,7 @@ sequence::copy_events (const event_list & newevents)
     }
     else
     {
+        // WTF?
     }
 
     m_iterator_draw = m_events.begin();     /* same as in reset_draw_marker */

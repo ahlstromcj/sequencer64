@@ -25,13 +25,38 @@
  * \library       sequencer64 application
  * \author        Seq42 team; modifications by Chris Ahlstrom
  * \date          2016-07-30
- * \updates       2017-08-05
+ * \updates       2017-08-06
  * \license       GNU GPLv2 or above
  *
  *  Created on: 22 mar 2013
  *      Author: mattias
  *
- *  The main window holds the menu and the main controls of the application,
+ *  The LFO window provides a way to apply various kinds of low-frequency
+ *  oscillators to the existing events.
+ *
+ *  This window provides the following parametric controls:
+ *
+ *      -   Value.  Provides the "mean" value of the LFO, a kind of "DC
+ *          offset" for the waveform.  Ranges from 0 to
+ *          127, and defaults to 64.
+ *      -   Range.  Provides the range about the mean, a kind of "depth of
+ *          modulation" value.  Ranges from 0 to 127, and defaults to 64.
+ *      -   Speed.  Provides the number of periods of oscillation per pattern.
+ *          So the frequency of the oscillation depends on this parameter and
+ *          the legnth of the pattern.  To get the same frequency for a longer
+ *          pattern, this parameter would have to be increased.
+ *      -   Phase. Provides the phase shift of the oscillation, range from 0
+ *          to 1, which represents a true phase shift of 0 to 360 degrees.  We
+ *          shoulda made it "radians" :-D.
+ *      -   Type.  Indicates the type of waveform for the low-frequency
+ *          oscillation.
+ *          -@  Sine.
+ *          -#  Ramp-up Sawtooth.
+ *          -#  Decay Sawtooth.
+ *          -#  Triangle.
+ *
+ *  Note that a certain amount of playing with the sliders in this window is
+ *  necessary to completely understand what it does.
  */
 
 #include <string>
@@ -71,7 +96,7 @@ namespace seq64
 
 lfownd::lfownd (perform & p, sequence & seq, seqdata & sdata)
  :
-    gui_window_gtk2 (p),
+    gui_window_gtk2 (p),    // , 500, 400),
     m_seq           (seq),
     m_seqdata       (sdata),
     m_hbox          (manage(new Gtk::HBox(true, 8))),          // (false, 2))),
@@ -149,23 +174,27 @@ lfownd::lfownd (perform & p, sequence & seq, seqdata & sdata)
     Gtk::VBox * vbox3 = manage(new Gtk::VBox(false, 2));
     Gtk::VBox * vbox4 = manage(new Gtk::VBox(false, 2));
     Gtk::VBox * vbox5 = manage(new Gtk::VBox(false, 2));
-    Gtk::Label * label1 = manage(new Gtk::Label("Value"));
-    Gtk::Label * label2 = manage(new Gtk::Label("Range"));
-    Gtk::Label * label3 = manage(new Gtk::Label("Speed"));
-    Gtk::Label * label4 = manage(new Gtk::Label("Phase"));
-    Gtk::Label * label5 = manage(new Gtk::Label("Type"));
+    Gtk::Label * label1 = manage(new Gtk::Label("DC Value"));
+    Gtk::Label * label2 = manage(new Gtk::Label("Mod Range"));
+    Gtk::Label * label3 = manage(new Gtk::Label("Periods"));
+    Gtk::Label * label4 = manage(new Gtk::Label("Phase Shift"));
+    Gtk::Label * label5 = manage(new Gtk::Label("Waveform"));
     m_wave_name->set_width_chars(12);
-    vbox1->pack_start(*label1,  false, false, 8);
+    vbox1->pack_start(*label1,  false, false, 16);           // 8
     vbox1->pack_start(*m_scale_value,  true, true, 0);
-    vbox2->pack_start(*label2,  false, false, 8);
+    vbox1->pack_start(*manage(new Gtk::Label(" ")), false, false, 0);   ////
+    vbox2->pack_start(*label2,  false, false, 16);
     vbox2->pack_start(*m_scale_range,  true, true, 0);
-    vbox3->pack_start(*label3,  false, false, 8);
+    vbox2->pack_start(*manage(new Gtk::Label(" ")), false, false, 0);   ////
+    vbox3->pack_start(*label3,  false, false, 16);
     vbox3->pack_start(*m_scale_speed,  true, true, 0);
-    vbox4->pack_start(*label4,  false, false, 8);
+    vbox3->pack_start(*manage(new Gtk::Label(" ")), false, false, 0);   ////
+    vbox4->pack_start(*label4,  false, false, 16);
     vbox4->pack_start(*m_scale_phase,  true, true, 0);
-    vbox5->pack_start(*label5,  false, false, 8);
-    vbox5->pack_start(*m_scale_wave,  true, true, 0);
-    vbox5->pack_start(*m_wave_name, false, false, 0);
+    vbox4->pack_start(*manage(new Gtk::Label(" ")), false, false, 0);   ////
+    vbox5->pack_start(*label5,  false, false, 16);
+    vbox5->pack_start(*m_scale_wave, true, true, 0);
+    vbox5->pack_start(*m_wave_name, false, false, 8);       // 0
     vbox5->pack_start(*manage(new Gtk::Label(" ")), false, false, 0);
     m_hbox->pack_start(*vbox1);
     m_hbox->pack_start(*vbox2);
@@ -175,10 +204,18 @@ lfownd::lfownd (perform & p, sequence & seq, seqdata & sdata)
     add(*m_hbox);
 }
 
+/**
+ *  Provides a rote destructor.
+ */
+
 lfownd::~lfownd ()
 {
     // no code
 }
+
+/**
+ *  Toggles the visibility of the LFO window.
+ */
 
 void
 lfownd::toggle_visible ()
@@ -186,6 +223,11 @@ lfownd::toggle_visible ()
     show_all();
     raise();
 }
+
+/**
+ *  Changes the scaling provided by this window.  Changes take place right
+ *  away in this callback.
+ */
 
 void
 lfownd::scale_lfo_change ()
@@ -207,6 +249,13 @@ lfownd::scale_lfo_change ()
     m_seqdata.draw_pixmap_on_window();
 #endif
 }
+
+/**
+ *  Undoes the LFO changes if there is undo available.
+ *
+ * \return
+ *      Always returns true.
+ */
 
 bool
 lfownd::on_focus_out_event (GdkEventFocus * /* p0 */)

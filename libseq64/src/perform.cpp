@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-08-05
+ * \updates       2017-08-06
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1738,7 +1738,9 @@ perform::set_beats_per_minute (midibpm bpm)
         /*
          * Do we need to adjust the BPM of all of the sequences, including the
          * potential tempo track???  It is "merely" the putative main tempo of
-         * the MIDI tune.
+         * the MIDI tune.  Actually, this value can now be recorded as a Set
+         * Tempo event by user action in the main window (and, later, by
+         * incoming MIDI Set Tempo events).
          */
     }
 }
@@ -1813,8 +1815,6 @@ perform::page_increment_beats_per_minute ()
     return result;
 }
 
-#ifdef USE_RECORD_TEMPO
-
 /**
  *  Used by callers to insert tempo events.  Note that, if the current tick
  *  position is past the end of pattern 0's length, then the length of pattern
@@ -1838,14 +1838,13 @@ perform::log_current_tempo ()
         {
             seq->link_tempos();
             seq->set_dirty();
+            modify();
             if (tick > seq->get_length())
                 seq->set_length(tick);
         }
 	}
 	return result;
 }
-
-#endif  // USE_RECORD_TEMPO
 
 /**
  *  Encapsulates some calls used in mainwnd.  The value set here will

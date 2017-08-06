@@ -55,7 +55,6 @@ namespace seq64
 
 class maintime : public gui_drawingarea_gtk2
 {
-
     friend class mainwnd;               /* it calls idle_progress()     */
 
 private:

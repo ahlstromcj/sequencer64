@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-06
+ * \updates       2017-08-07
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -46,8 +46,6 @@
 #include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
 #include "gui_window_gtk2.hpp"          /* seq64::qui_window_gtk2       */
 #include "perform.hpp"                  /* seq64::perform and callback  */
-
-#define USE_SHOW_TICK_TIME //  EXPERIMENTAL
 
 /**
  *  A new feature for showing whether JACK is connected or not in the main
@@ -378,15 +376,12 @@ private:
 
 #endif
 
-#ifdef USE_SHOW_TICK_TIME
-
     /**
-     *  EXPERIMENTAL
+     *  This new item shows the current time into the song performance.
+     *  Long overdue, actually!
      */
 
     Gtk::Label * m_tick_time;
-
-#endif      // USE_SHOW_TICK_TIME
 
     /**
      *  The spin/adjustment controls for the BPM (beats-per-minute) value.

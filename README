@@ -30,7 +30,7 @@ See the INSTALL file.
 
     -   Version 0.93.1:
         -   Version 0.93.1 supports the management of a native MIDI tempo
-            track, adhering to MIDI specs..
+            track, adhering to MIDI specs.
         -   Tempo events are mostly editable like normal events.  No separate
             "tempo track" editor needed at present.
     -   Version 0.93.0:
@@ -49,80 +49,6 @@ See the INSTALL file.
     -   Version 0.91.0:
         -   Added option to show a grid of sets, with one set spinner per
             main window.  Set from command-line or the "usr" configuration.
-    -   Version 0.90.6:
-        -   BPM (tempo) can now be altered in JACK mode.
-        -   Added the Stazed Seq32 upgrade to allow, in addition to
-            merge-on-record, overwrite-on-record and expand-measures on
-            record.
-        -   Added Jean-Emmanuel beats-per-measure and measure text-editing
-            support to support arbitrary values, issue #77.
-        -   Added Jean-Emmanuel seqmenu crash when pasting empty clipboard,
-            issue #80.
-        -   Added Jean-Emmanuel feature of a scrollable main window,
-            conditionally built, pull request #82.
-    -   Version 0.90.5:
-        -   Added a queued-replace (queued-solo) feature.  It works only with
-            the current (in-view) screen-set.  See issue #74.
-        -   Made the strip-mutes option permanent.
-        -   Fixed a crash in ALSA when input goes to output to input (MIDI
-            feedback) with an app like VMPK.
-        -   Fixed issue #76 where the JACK Connect Button was the wrong kind
-            of button, and we had enabled making Gtk warnings fatal.
-        -   Tightened up the event editor, but it is still easy to make it
-            crash by adding multiple duplicate events; and they all are shown
-            only as a single event.
-    -   Version 0.90.4:
-        -   Replaces 0.91.0 for now.
-        -   Fixed issue #75 where program-change and channel-pressure were
-            stripped.
-        -   Fixed issue #72 where "ghost" mute-groups were appearing due
-            to an error in scanning the mute-group section.
-        -   Added a menu command to clear mute groups.  This affects MIDI
-            files that contain mute group information.
-        -   Added a menu command to reload the mute groups from the "rc" file.
-        -   Improved the CLI version, still MIDI control only.  Still handles
-            only one MIDI file, passed on the command-line.  Added usable
-            "daemonize" and "log=file" options.
-    -   Version 0.90.3:
-        -   Added a console/daemon (no GUI) version, seq64cli. Configure this
-            one with "./bootstrap -er -cli".  Still a work in progress, many
-            issues remain.
-        -   Fixed a bug in detecting Note On events with 0 velocity.
-        -   Fixed issue #69, pass-thru button not working correctly
-        -   Fixed issue #71, bad handling of Live mode pattern clicks.
-        -   Updated the Debian package-creation "code".
-    -   Version 0.90.2:
-        -   BACKPORTED a BUG FIX from wip 0.91.0 to fix issue with
-            detecting Note On velocity 0!
-        -   Fixed weird parsing bug in configfile module.
-        -   Fixed incomplete implementation of MIDI stop, start, continue, and
-            song-position events, issue #67.
-        -   Extended MIDI controls for Stop / Pause / Start, and coarse BPM
-            settings.  Precursor to issue #64 ("no GUI").  Partial fix for
-            issue #56 ("more midi control").
-        -   Converted BPM to a double-precision value, and made the number of
-            digits of precision for beats/minute configurable to 0, 1, or 2.
-            Takes care of issue #63.
-        -   Some minor bugs, such as mute status (mainwid) and playback status
-            (seqedit) not being in synch.
-        -   Functions for SEQ64_APP_NAME and SEQ64_CLIENT_NAME.
-        -   Upgraded the Debian packaging setup.
-    -   Version 0.90.1:
-        -   Fixes a JACK naming and connection issue when accessing ports
-            exposed by a2jmidid.
-        -   Fixes a long-standing (back to seq24) issue where the Free
-            selection in the pattern editor would still set the MIDI input to
-            a fixed velocity.
-        -   Double-precision tempo added.
-    -   Version 0.90.0:
-        -   Initial support for using a heavily-refactored RtMidi spinoff
-            library to support native JACK MIDI (as opposed to just JACK
-            transport).  RtMidi turned out not to match the model of
-            Sequencer64 very well, so to call it an "RtMidi" version is very
-            misleading.
-        -   PortMidi has been activated!  Builds and runs in Linux, still
-            need to set up Gtk for Windows.  However, it has issues currently,
-            and we are going to eventually deprecate it.
     -   For more version information, see the NEWS file.
 
 This package is currently oriented to developers.  It is fairly well
@@ -133,15 +59,16 @@ Initial work/thought/documentation started in July of 2015.
 
 See the ROADMAP file for more information and a kind of TODO list.  Also see
 contrib/notes/bugs_to_investigate.  Sequencer64 is well-documented by the
-following project, which provides a 170+-page PDF file and its LaTeX source
+following project, which provides a 180+-page PDF file and its LaTeX source
 code:
 
    https://github.com/ahlstromcj/sequencer64-doc.git
 
 Legacy Sequencer64: Sequencer64/sequencer64
 
-    This is the original version of the project, which we are preserving until
-    the bug reports for the native-JACK version slow down to a trickle.
+    This is the original (ALSA) version of the project, which we are
+    preserving until the bug reports for the native-JACK version slow down to
+    a trickle.
 
 PortMIDI: Seq64portmidi/seq64portmidi
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-06
+ * \updates       2017-08-07
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -106,10 +106,7 @@
 #include "options.hpp"
 #include "perfedit.hpp"
 #include "cmdlineopts.hpp"              /* for build info function          */
-
-#ifdef USE_SHOW_TICK_TIME
 #include "calculations.hpp"             /* pulse_to_measurestring()         */
-#endif
 
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 #include <gtkmm/layout.h>
@@ -308,9 +305,7 @@ mainwnd::mainwnd
 #ifdef SEQ64_SHOW_JACK_STATUS
     m_button_jack           (manage(new Gtk::Button("ALSA"))),
 #endif
-#ifdef USE_SHOW_TICK_TIME
     m_tick_time             (manage(new Gtk::Label("**:**:****"))),
-#endif
     m_adjust_bpm
     (
         manage
@@ -585,7 +580,9 @@ mainwnd::mainwnd
     Gtk::VBox * vbox_b = manage(new Gtk::VBox(true,  0));
     Gtk::HBox * hbox3 = manage(new Gtk::HBox(false, 0));
     vbox_b->pack_start(*hbox3, false, false);
-#ifdef USE_SHOW_TICK_TIME
+
+    /* Add the time-line and the time-clock */
+
     Gtk::HBox * hbox4 = manage(new Gtk::HBox(false, 0));
     Gtk::Label * timedummy = manage(new Gtk::Label(" "));
     m_tick_time->set_justify(Gtk::JUSTIFY_LEFT);
@@ -593,11 +590,7 @@ mainwnd::mainwnd
     hbox4->pack_start(*timedummy, false, false, 0);
     vbox_b->pack_start(*hbox4, false, false, 0);
     tophbox->pack_end(*vbox_b, false, false);
-    hbox3->pack_start(*m_main_time, false, false, 8);  /* pill timeline    */
-#else
-    tophbox->pack_end(*vbox_b, false, false);
-    hbox3->pack_start(*m_main_time, false, false);  /* pill timeline    */
-#endif
+    hbox3->pack_start(*m_main_time, false, false, 8);   /* pill time-line   */
 
     m_button_learn->set_focus_on_click(false);
     m_button_learn->set_flags(m_button_learn->get_flags() & ~Gtk::CAN_FOCUS);
@@ -1229,17 +1222,17 @@ mainwnd::timer_callback ()
     if (m_button_queue->get_active() != perf().is_keep_queue())
         m_button_queue->set_active(perf().is_keep_queue());
 
-#ifdef USE_SHOW_TICK_TIME
+    /*
+     * Calculate the current time, and display it.
+     */
+
     midi_timing mt
     (
-        perf().get_beats_per_minute(),
-        perf().get_beats_per_bar(),
-        perf().get_beat_width(),
-        perf().ppqn()
+        perf().get_beats_per_minute(), perf().get_beats_per_bar(),
+        perf().get_beat_width(), perf().ppqn()
     );
     std::string t = pulses_to_measurestring(tick, mt);
     m_tick_time->set_text(t);
-#endif
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT_XXX               /* TMI */
     static midibpm s_bpm = 0.0;

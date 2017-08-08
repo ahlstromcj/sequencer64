@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-03
+ * \updates       2017-08-08
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -125,7 +125,11 @@ mainwid::mainwid
 ) :
     gui_drawingarea_gtk2
     (
+#if defined SEQ64_MULTI_MAINWID
         p, usr().mainwid_width(), usr().mainwid_height()
+#else
+        p
+#endif
     ),
     seqmenu                 (p),
     m_armed_progress_color
@@ -147,8 +151,21 @@ mainwid::mainwid
     m_seqarea_y             (c_seqarea_y),
     m_seqarea_seq_x         (c_seqarea_seq_x),
     m_seqarea_seq_y         (c_seqarea_seq_y),
+#if defined SEQ64_MULTI_MAINWID
     m_mainwid_x             (usr().mainwid_width()),
     m_mainwid_y             (usr().mainwid_height()),
+#else
+    m_mainwid_x
+    (
+        2 + (c_seqarea_x + c_mainwid_spacing) * m_mainwnd_cols -
+            c_mainwid_spacing + c_mainwid_border * 2
+    ),
+    m_mainwid_y
+    (
+        (c_seqarea_y + c_mainwid_spacing) * m_mainwnd_rows +
+             c_control_height + c_mainwid_border * 2
+    ),
+#endif
     m_mainwid_border        (c_mainwid_border),
     m_mainwid_spacing       (c_mainwid_spacing),
     m_text_size_x           (font_render().char_width()),       // c_text_x

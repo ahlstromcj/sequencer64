@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-08-06
+ * \updates       2017-08-08
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1274,10 +1274,14 @@ perform::set_left_tick (midipulse tick, bool setstart)
     if (setstart)
         set_start_tick(tick);
 
+#ifdef SEQ64_JACK_SUPPORT
     if (is_jack_master())                       /* don't use in slave mode  */
         m_jack_asst.position(true, tick);       /* position_jack()          */
     else if (! is_jack_running())
         set_tick(tick);
+#else
+    set_tick(tick);
+#endif
 
     m_reposition = false;
     if (m_left_tick >= m_right_tick)
@@ -2561,7 +2565,9 @@ perform::set_jack_mode (bool jack_button_active)
         else
             deinit_jack_transport();
     }
+#ifdef SEQ64_JACK_SUPPORT
     m_jack_asst.set_jack_mode(is_jack_running());    /* seqroll keybinding  */
+#endif
 
     /*
      *  For setting the transport tick to display in the correct location.
@@ -2667,9 +2673,12 @@ perform::position_jack (bool songmode, midipulse tick)
 bool
 perform::activate ()
 {
-    bool result = m_master_bus->activate();      // make it initialize too!!!!!
+    bool result = m_master_bus->activate();
+
+#ifdef SEQ64_JACK_SUPPORT
     if (result)
         result = m_jack_asst.activate();
+#endif
 
     return result;
 }
@@ -3358,7 +3367,9 @@ perform::output_func ()
 
                 if (is_jack_running())
                 {
+#ifdef SEQ64_JACK_SUPPORT
                     if (m_jack_asst.transport_not_starting())
+#endif
                         play(midipulse(pad.js_current_tick));       // play!
                 }
                 else

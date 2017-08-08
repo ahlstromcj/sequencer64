@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-06
+ * \updates       2017-08-08
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1315,7 +1315,9 @@ public:
 
     void toggle_jack_mode ()
     {
+#ifdef SEQ64_JACK_SUPPORT
         m_jack_asst.toggle_jack_mode();
+#endif
     }
 
     bool set_jack_mode (bool mode);
@@ -1326,7 +1328,11 @@ public:
 
     bool get_toggle_jack () const
     {
+#ifdef SEQ64_JACK_SUPPORT
         return m_jack_asst.get_jack_mode();          // m_toggle_jack;
+#else
+        return false;
+#endif
     }
 
     /**
@@ -1335,7 +1341,9 @@ public:
 
     void set_jack_stop_tick (midipulse tick)
     {
+#ifdef SEQ64_JACK_SUPPORT
         m_jack_asst.set_jack_stop_tick(tick);
+#endif
     }
 
     unsigned short combine_bytes (midibyte b0, midibyte b1);
@@ -1366,7 +1374,9 @@ public:
 
     void set_follow_transport (bool flag)
     {
+#ifdef SEQ64_JACK_SUPPORT
         m_jack_asst.set_follow_transport(flag);
+#endif
     }
 
     /**
@@ -1375,7 +1385,11 @@ public:
 
     bool get_follow_transport () const
     {
+#ifdef SEQ64_JACK_SUPPORT
         return m_jack_asst.get_follow_transport();
+#else
+        return false;
+#endif
     }
 
     /**
@@ -1384,7 +1398,9 @@ public:
 
     void toggle_follow_transport ()
     {
+#ifdef SEQ64_JACK_SUPPORT
         m_jack_asst.toggle_follow_transport();
+#endif
     }
 
     /**
@@ -1393,7 +1409,11 @@ public:
 
     bool follow_progress () const
     {
+#ifdef SEQ64_JACK_SUPPORT
         return m_running && m_jack_asst.get_follow_transport();
+#else
+        return m_running;
+#endif
     }
 
     /**

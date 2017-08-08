@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-07
+ * \updates       2017-08-08
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -305,7 +305,7 @@ mainwnd::mainwnd
 #ifdef SEQ64_SHOW_JACK_STATUS
     m_button_jack           (manage(new Gtk::Button("ALSA"))),
 #endif
-    m_tick_time             (manage(new Gtk::Label("**:**:****"))),
+    m_tick_time             (manage(new Gtk::Label(""))),
     m_adjust_bpm
     (
         manage
@@ -570,8 +570,10 @@ mainwnd::mainwnd
     tophbox->pack_start(*m_button_jack, false, false);
 #endif
 
+#if defined SEQ64_MULTI_MAINWID
     tophbox->pack_start(*(manage(new Gtk::HSeparator())), false, false, 4);
     tophbox->pack_start(*m_status_label, false, false);  /* new */
+#endif
 
 #endif  // SEQ64_STAZED_MENU_BUTTONS
 
@@ -579,18 +581,18 @@ mainwnd::mainwnd
 
     Gtk::VBox * vbox_b = manage(new Gtk::VBox(true,  0));
     Gtk::HBox * hbox3 = manage(new Gtk::HBox(false, 0));
+    hbox3->pack_start(*m_main_time, false, false, 8);   /* pill time-line   */
     vbox_b->pack_start(*hbox3, false, false);
 
     /* Add the time-line and the time-clock */
 
     Gtk::HBox * hbox4 = manage(new Gtk::HBox(false, 0));
-    Gtk::Label * timedummy = manage(new Gtk::Label(" "));
+    Gtk::Label * timedummy = manage(new Gtk::Label("   "));
     m_tick_time->set_justify(Gtk::JUSTIFY_LEFT);
-    hbox4->pack_start(*m_tick_time, false, false, 0);
     hbox4->pack_start(*timedummy, false, false, 0);
+    hbox4->pack_start(*m_tick_time, false, false, 0);
     vbox_b->pack_start(*hbox4, false, false, 0);
     tophbox->pack_end(*vbox_b, false, false);
-    hbox3->pack_start(*m_main_time, false, false, 8);   /* pill time-line   */
 
     m_button_learn->set_focus_on_click(false);
     m_button_learn->set_flags(m_button_learn->get_flags() & ~Gtk::CAN_FOCUS);

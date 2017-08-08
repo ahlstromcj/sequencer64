@@ -1173,7 +1173,6 @@ user_settings::mainwid_height () const
     );
 }
 
-
 #endif  // SEQ64_MULTI_MAINWID
 
 /**

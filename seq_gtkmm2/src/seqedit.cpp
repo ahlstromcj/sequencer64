@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-05
+ * \updates       2017-08-08
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1286,7 +1286,9 @@ seqedit::fill_top_bar ()
     );
     m_hbox->pack_start(*m_button_length , false, false);
     m_hbox->pack_start(*m_entry_length , false, false);
+#ifdef SEQ64_STAZED_TRANSPOSE
     m_hbox->pack_start(*m_toggle_transpose, false, false, 4);
+#endif
     m_hbox->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
     m_button_bus = manage(new Gtk::Button());           /* MIDI output bus   */
     m_button_bus->add(*manage(new PIXBUF_IMAGE(bus_xpm)));

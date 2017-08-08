@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.93.1 and above
 Chris Ahlstrom
-2015-09-10 to 2017-07-16
+2015-09-10 to 2017-08-08
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -143,7 +143,8 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
     --disable-jack
     
         Undefines the SEQ64_JACK_SUPPORT macro, which is otherwise defined
-        by default.
+        by default.  This option is not viable for the "rtmidi" version of
+        Sequencer64, which incorporates a couple of JACK modules.
 
     --disable-jack-session
 

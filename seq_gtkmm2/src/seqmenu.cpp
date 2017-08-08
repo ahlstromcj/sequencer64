@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-26
+ * \updates       2017-08-08
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -251,6 +251,7 @@ seqmenu::popup_menu ()
     {
         m_menu->items().push_back(SeparatorElem());
 
+#ifdef SEQ64_STAZED_TRANSPOSE
 #define SET_TRANS   mem_fun(*this, &seqmenu::set_transposable)
 
         sequence * s = get_current_sequence();
@@ -268,6 +269,7 @@ seqmenu::popup_menu ()
                 MenuElem("Enable Transpose", sigc::bind(SET_TRANS, true))
             );
         }
+#endif
 
         Gtk::Menu * menu_buses = manage(new Gtk::Menu());
         m_menu->items().push_back(MenuElem("MIDI Bus", *menu_buses));
@@ -378,11 +380,13 @@ seqmenu::set_transposable (bool flag)
 {
     if (is_current_seq_active())        /* also checks sequence pointer */
     {
+#ifdef SEQ64_STAZED_TRANSPOSE
         sequence * s = get_current_sequence();
         if (s->get_transposable() != flag)
             s->set_dirty();
 
         s->set_transposable(flag);
+#endif
     }
 }
 

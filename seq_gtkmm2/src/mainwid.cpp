@@ -84,7 +84,7 @@ update_mainwid_sequences ()
         gs_mainwid_pointer->update_sequences_on_window();
 }
 
-/*
+/**
  * c_mainwnd_x was the width of the main pattern/sequence grid, in pixels.
  * Affected by the c_mainwid_border and c_mainwid_spacing values.  Moved to
  * the user_settings::mainwid_width() function, replaces c_mainwid_x.
@@ -92,7 +92,27 @@ update_mainwid_sequences ()
  * c_mainwnd_y was the height of the main pattern/sequence grid, in pixels.
  * Affected by the c_mainwid_border and c_control_height values.  Moved to the
  * user_settings::mainwid_width() function, replaces c_mainwid_y.
+ *
+ * The width of the main pattern/sequence grid, in pixels.  Affected by
+ * the c_mainwid_border and c_mainwid_spacing values.
  */
+
+#if ! defined SEQ64_MULTI_MAINWID
+
+const int c_mainwid_x =
+    2 + (c_seqarea_x + c_mainwid_spacing) * SEQ64_DEFAULT_MAINWND_COLUMNS -
+        c_mainwid_spacing + c_mainwid_border * 2;
+
+/*
+ * The height of the main pattern/sequence grid, in pixels.  Affected by
+ * the c_mainwid_border and c_control_height values.
+ */
+
+const int c_mainwid_y =
+    (c_seqarea_y + c_mainwid_spacing) * SEQ64_DEFAULT_MAINWND_ROWS +
+         (c_control_height + c_mainwid_border * 2) - 16;
+
+#endif  // not defined SEQ64_MULTI_MAINWID
 
 /**
  *  This constructor sets all of the members.  And it asks for a size of
@@ -128,7 +148,7 @@ mainwid::mainwid
 #if defined SEQ64_MULTI_MAINWID
         p, usr().mainwid_width(), usr().mainwid_height()
 #else
-        p
+        p, c_mainwid_x, c_mainwid_y
 #endif
     ),
     seqmenu                 (p),

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-06-24
+ * \updates       2017-08-09
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -110,7 +110,8 @@ rc_settings::rc_settings ()
     m_config_filename_alt       (),
     m_user_filename_alt         (),
     m_application_name          (SEQ64_APP_NAME),
-    m_app_client_name           (SEQ64_CLIENT_NAME)
+    m_app_client_name           (SEQ64_CLIENT_NAME),
+    m_tempo_track_number        (0)
 {
     // Empty body
 }
@@ -154,7 +155,8 @@ rc_settings::rc_settings (const rc_settings & rhs)
     m_config_filename_alt       (rhs.m_config_filename_alt),
     m_user_filename_alt         (rhs.m_user_filename_alt),
     m_application_name          (rhs.m_application_name),
-    m_app_client_name           (rhs.m_app_client_name)
+    m_app_client_name           (rhs.m_app_client_name),
+    m_tempo_track_number        (rhs.m_tempo_track_number)
 {
     // Empty body
 }
@@ -208,6 +210,7 @@ rc_settings::operator = (const rc_settings & rhs)
          */
 
         m_app_client_name           = rhs.m_app_client_name;
+        m_tempo_track_number        = rhs.m_tempo_track_number;
     }
     return *this;
 }
@@ -257,6 +260,7 @@ rc_settings::set_defaults ()
      */
 
     m_app_client_name           = SEQ64_CLIENT_NAME;
+    m_tempo_track_number        = 0;
 }
 
 /**
@@ -366,6 +370,21 @@ rc_settings::device_ignore_num (int value)
 {
     if (value >= 0)
         m_device_ignore_num = value;
+}
+
+/**
+ *  \setter m_tempo_track_number
+ */
+
+void
+rc_settings::tempo_track_number (int track)
+{
+    if (track < 0)
+        track = 0;
+    else if (track >= SEQ64_SEQUENCE_MAXIMUM)
+        track = SEQ64_SEQUENCE_MAXIMUM - 1;
+
+    m_tempo_track_number = track;
 }
 
 /**

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-05
+ * \updates       2017-08-09
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -630,34 +630,44 @@ optionsfile::parse (perform & p)
             rc().filter_by_channel(bool(flag));
         }
     }
-    line_after(file, "[midi-clock-mod-ticks]");
+    if (line_after(file, "[midi-clock-mod-ticks]"))
+    {
+        long ticks = 64;
+        sscanf(m_line, "%ld", &ticks);
+        midibus::set_clock_mod(ticks);
+    }
+    if (line_after(file, "[midi-meta-events]"))
+    {
+        int track = 0;
+        sscanf(m_line, "%d", &track);
+        rc().tempo_track_number(track);
+    }
+    if (line_after(file, "[manual-alsa-ports]"))
+    {
+        sscanf(m_line, "%ld", &flag);
+        rc().manual_alsa_ports(bool(flag));
+    }
+    if (line_after(file, "[reveal-alsa-ports]"))
+    {
+        /*
+         * If this flag is already raised, it was raised on the command line,
+         * and we don't want to change it.  An ugly special case.
+         */
 
-    long ticks = 64;
-    sscanf(m_line, "%ld", &ticks);
-    midibus::set_clock_mod(ticks);
+        sscanf(m_line, "%ld", &flag);
+        if (! rc().reveal_alsa_ports())
+            rc().reveal_alsa_ports(bool(flag));
+    }
 
-    line_after(file, "[manual-alsa-ports]");
-    sscanf(m_line, "%ld", &flag);
-    rc().manual_alsa_ports(bool(flag));
-
-    line_after(file, "[reveal-alsa-ports]");
-    sscanf(m_line, "%ld", &flag);
-
-    /*
-     * If this flag is already raised, it was raised on the command line, and
-     * we don't want to change it.  An ugly special case.
-     */
-
-    if (! rc().reveal_alsa_ports())
-        rc().reveal_alsa_ports(bool(flag));
-
-    line_after(file, "[last-used-dir]");
-    if (strlen(m_line) > 0)
-        rc().last_used_dir(m_line);                 // FIXME: check for valid path
+    if (line_after(file, "[last-used-dir]"))
+    {
+        if (strlen(m_line) > 0)
+            rc().last_used_dir(m_line); // FIXME: check for valid path
+    }
 
     long method = 0;
-    line_after(file, "[interaction-method]");
-    sscanf(m_line, "%ld", &method);
+    if (line_after(file, "[interaction-method]"))
+        sscanf(m_line, "%ld", &method);
 
     /*
      * This now returns true if the value was correct, we should check it.
@@ -849,7 +859,7 @@ optionsfile::write (const perform & p)
     else
     {
         file <<
-            "# Sequencer64 0.90.0 (and above) rc configuration file\n"
+            "# Sequencer64 0.93.1 (and above) rc configuration file\n"
             "#\n"
             "# This file holds the main configuration options for Sequencer64.\n"
             "# It follows the format of the legacy seq24 'rc' configuration\n"
@@ -1133,11 +1143,27 @@ optionsfile::write (const perform & p)
 
     file
         << "\n[midi-clock-mod-ticks]\n\n"
-        << "# The Song Position (in 16th notes) at which clocking will begin\n"
-        << "# if the buss is set to MIDI Clock mod setting.\n"
-        << "\n"
+           "# The Song Position (in 16th notes) at which clocking will begin\n"
+           "# if the buss is set to MIDI Clock mod setting.\n"
+           "\n"
         << midibus::get_clock_mod() << "\n"
         ;
+
+    /*
+     * New section for MIDI meta events.
+     */
+
+    file
+        << "\n[midi-meta-events]\n\n"
+           "# This section defines some features of MIDI meta-event handling.\n"
+           "# Normally, tempo events are supposed to occur in the first track\n"
+           "# (pattern 0).  But one can move this track elsewhere to accomodate\n"
+           "# one's existing body of tunes.  If affects where tempo events are\n"
+           "# recorded.  The default value is 0, the maximum is 1023.\n"
+           "\n"
+        << rc().tempo_track_number() << "      # tempo_track_number\n"
+        ;
+
 
     /*
      * Bus input data

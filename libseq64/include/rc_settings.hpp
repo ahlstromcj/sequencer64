@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-06-26
+ * \updates       2017-08-09
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -50,7 +50,8 @@
 
 namespace seq64
 {
-    class perform;                      /* forward declaration          */
+
+class perform;                      /* forward declaration                  */
 
 /**
  *  Provides mutually-exclusive codes for the mouse-handling used by the
@@ -103,8 +104,8 @@ class rc_settings
     friend class options;
     friend class mainwnd;
     friend class rtmidi_info;
-    friend int parse_command_line_options (perform & p, int argc, char * argv []);
-    friend bool help_check (int argc, char * argv []);
+    friend int parse_command_line_options (perform &, int , char * []);
+    friend bool help_check (int, char * []);
 
 private:
 
@@ -204,6 +205,13 @@ private:
      */
 
     std::string m_app_client_name;
+
+    /**
+     *  New value to allow the user to violate the MIDI specification and use a
+     *  track other than the first track (#0) as the MIDI tempo track.
+     */
+
+    int m_tempo_track_number;
 
 public:
 
@@ -523,6 +531,15 @@ public:
         return m_app_client_name;
     }
 
+    /**
+     * \getter m_tempo_track_number
+     */
+
+    int tempo_track_number () const
+    {
+        return m_tempo_track_number;
+    }
+
 protected:
 
     /**
@@ -678,6 +695,7 @@ protected:
      * they do some heavier validation.
      */
 
+    void tempo_track_number (int track);
     void device_ignore_num (int value);
     bool interaction_method (interaction_method_t value);
     bool mute_group_saving (mute_group_handling_t mgh);

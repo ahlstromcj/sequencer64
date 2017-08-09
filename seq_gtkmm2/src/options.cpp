@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-17
+ * \updates       2017-08-09
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -165,6 +165,18 @@ options::add_midi_clock_page ()
     vbox->set_border_width(6);
     m_notebook->append_page(*vbox, "MIDI _Clock", true);
 
+#ifdef USE_MIDI_CLOCK_FRAME
+
+    Gtk::Frame * inputframe = manage(new Gtk::Frame("Clocks"));
+    inputframe->set_border_width(4);
+    vbox->pack_start(*inputframe, Gtk::PACK_SHRINK);
+
+    Gtk::VBox * inputbox = manage(new Gtk::VBox());
+    inputbox->set_border_width(4);
+    inputframe->add(*inputbox);
+
+#endif  // USE_MIDI_CLOCK_FRAME
+
 #if GTK_MINOR_VERSION < 12
     manage(new Gtk::Tooltips());
 #endif
@@ -190,7 +202,7 @@ options::add_midi_clock_page ()
         );
         check->signal_toggled().connect
         (
-            bind(mem_fun(*this, &options::output_callback), bus, check)
+            sigc::bind(mem_fun(*this, &options::output_callback), bus, check)
         );
         check->set_active(perf().get_output(bus));      // ???
         // check->set_sensitive(! perf().is_output_system_port(bus));
@@ -255,7 +267,11 @@ options::add_midi_clock_page ()
         hbox2->pack_end(*rb_mod, false, false);
         hbox2->pack_end(*rb_on, false, false);
         hbox2->pack_end(*rb_off, false, false);
+#ifdef USE_MIDI_CLOCK_FRAME
+        inputbox->pack_start(*hbox2, false, false);
+#else
         vbox->pack_start(*hbox2, false, false);
+#endif
         switch (perf().master_bus().get_clock(bus))
         {
         case e_clock_off:
@@ -284,11 +300,44 @@ options::add_midi_clock_page ()
         false, false, 4
     );
     hbox2->pack_start(*clock_mod_spin, false, false);
+#ifdef USE_MIDI_CLOCK_FRAME
+    inputbox->pack_start(*hbox2, false, false);
+#else
     vbox->pack_start(*hbox2, false, false);
+#endif
     clock_mod_adj->signal_value_changed().connect
     (
         sigc::bind(mem_fun(*this, &options::clock_mod_callback), clock_mod_adj)
     );
+
+#ifdef USE_MIDI_CLOCK_FRAME
+    Gtk::Frame * midimetaframe = manage(new Gtk::Frame("Meta Events"));
+    midimetaframe->set_border_width(4);
+    vbox->pack_start(*midimetaframe, Gtk::PACK_SHRINK);
+    Gtk::HBox * hboxmeta = manage(new Gtk::HBox());
+    Gtk::Entry * entry = manage(new Gtk::Entry());
+    Gtk::Label * label = manage
+    (
+        new Gtk::Label
+        (
+            " Pattern number for tempo track, from 0 to 1023 "
+            "(0 is recommended)",
+            Gtk::ALIGN_LEFT
+        )
+    );
+    entry->set_width_chars(4);
+    entry->signal_changed().connect
+    (
+        sigc::bind
+        (
+            mem_fun(*this, &options::edit_tempo_track_number), entry
+        )
+    );
+    entry->set_text("0");               // DO WE NEED A MEMBER?????
+    hboxmeta->pack_start(*entry, Gtk::PACK_SHRINK);
+    hboxmeta->pack_start(*label, Gtk::PACK_SHRINK);
+    midimetaframe->add(*hboxmeta);
+#endif
 }
 
 /**
@@ -1264,6 +1313,24 @@ options::clock_mod_callback (Gtk::Adjustment * adj)
 {
     midibus::set_clock_mod(int(adj->get_value()));
 }
+
+#ifdef USE_MIDI_CLOCK_FRAME
+
+/**
+ *  EXPERIMENTAL
+ */
+
+void
+options::edit_tempo_track_number (Gtk::Entry * text)
+{
+    std::string number = text->get_text();
+    rc().tempo_track_number(atoi(number.c_str()));
+    int track = rc().tempo_track_number();              /* now validated    */
+    number = std::to_string(track);
+    text->set_text(number);
+}
+
+#endif  // USE_MIDI_CLOCK_FRAME
 
 /**
  *  Input callback function.  This is kind of a weird function, but it allows

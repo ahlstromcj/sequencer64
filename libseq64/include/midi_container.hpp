@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2017-07-09
+ * \updates       2017-08-10
  * \license       GNU GPLv2 or above
  *
  *  This class is meant to hold the bytes that represent MIDI events and other
@@ -153,6 +153,8 @@ namespace seq64
             c_perf_bp_mes (perfedit's beats-per-measure setting)
             c_perf_bw     (perfedit's beat-width setting)
             c_tempo_map   (seq32's tempo map)
+            c_reserved_1 and c_reserved_2
+            c_tempo_track (holds the song's particular tempo track)
 \endverbatim
  *
  *  Also see the PDF file in the following project for more information about
@@ -179,30 +181,33 @@ namespace seq64
  *  preferences.
  *
  * \note
- *      The new value c_transpose value is from Stazed's seq32 project.
+ *      The value c_transpose value is from Stazed's seq32 project.
  *      The code to support this option is turned on via the
  *      build-configurable SEQ64_STAZED_TRANSPOSE macro, but here we
  *      reserved the value even if that option is not enabled by the user.
  *      There are additional values from Stazed/seq32, not yet used.
  */
 
-const midilong c_midibus =      0x24240001; /**< Track buss number.         */
-const midilong c_midich =       0x24240002; /**< Track channel number.      */
-const midilong c_midiclocks =   0x24240003; /**< Track clocking.            */
-const midilong c_triggers =     0x24240004; /**< See c_triggers_new.        */
-const midilong c_notes =        0x24240005; /**< Song data.                 */
-const midilong c_timesig =      0x24240006; /**< Track time signature.      */
-const midilong c_bpmtag =       0x24240007; /**< Song beats/minute.         */
+const midilong c_midibus     =  0x24240001; /**< Track buss number.         */
+const midilong c_midich      =  0x24240002; /**< Track channel number.      */
+const midilong c_midiclocks  =  0x24240003; /**< Track clocking.            */
+const midilong c_triggers    =  0x24240004; /**< See c_triggers_new.        */
+const midilong c_notes       =  0x24240005; /**< Song data.                 */
+const midilong c_timesig     =  0x24240006; /**< Track time signature.      */
+const midilong c_bpmtag      =  0x24240007; /**< Song beats/minute.         */
 const midilong c_triggers_new = 0x24240008; /**< Track trigger data.        */
-const midilong c_mutegroups =   0x24240009; /**< Song mute group data.      */
-const midilong c_midictrl =     0x24240010; /**< Song MIDI control.         */
-const midilong c_musickey =     0x24240011; /**< The track's key.           */
-const midilong c_musicscale =   0x24240012; /**< The track's scale.         */
+const midilong c_mutegroups  =  0x24240009; /**< Song mute group data.      */
+const midilong c_midictrl    =  0x24240010; /**< Song MIDI control.         */
+const midilong c_musickey    =  0x24240011; /**< The track's key.           */
+const midilong c_musicscale  =  0x24240012; /**< The track's scale.         */
 const midilong c_backsequence = 0x24240013; /**< Track background sequence. */
-const midilong c_transpose =    0x24240014; /**< Track transpose value.     */
+const midilong c_transpose   =  0x24240014; /**< Track transpose value.     */
 const midilong c_perf_bp_mes =  0x24240015; /**< Perfedit beats/measure.    */
 const midilong c_perf_bw     =  0x24240016; /**< Perfedit beat-width.       */
 const midilong c_tempo_map   =  0x24240017; /**< Reserve seq32 tempo map.   */
+const midilong c_reserved_1  =  0x24240018; /**< Reserved for expansion.    */
+const midilong c_reserved_2  =  0x24240019; /**< Reserved for expansion.    */
+const midilong c_tempo_track =  0x2424001A; /**< Reserved for expansion.    */
 
 /**
  *    This class is the abstract base class for a container of MIDI track

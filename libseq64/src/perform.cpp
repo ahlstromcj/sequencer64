@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-08-08
+ * \updates       2017-08-09
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1821,17 +1821,22 @@ perform::page_increment_beats_per_minute ()
 
 /**
  *  Used by callers to insert tempo events.  Note that, if the current tick
- *  position is past the end of pattern 0's length, then the length of pattern
- *  0 is increased in order to hold the tempo event.
+ *  position is past the end of pattern 0's length, then the length of the
+ *  tempo track pattern (0 by default) is increased in order to hold the tempo
+ *  event.
+ *
+ *  Note that we allow the user to change the tempo track from the default of
+ *  0 to any pattern from 0 to 1023.  This is done in the File / Options /
+ *  MIDI Clock tab, and is saved to the "rc" file.
  *
  * \return
- *      Returns true if sequence 0 exists.
+ *      Returns true if the tempo-track sequence exists.
  */
 
 bool
 perform::log_current_tempo ()
 {
-	sequence * seq = get_sequence(0);
+	sequence * seq = get_sequence(rc().tempo_track_number());
 	bool result = not_nullptr(seq);
 	if (result)
 	{

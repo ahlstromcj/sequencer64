@@ -165,8 +165,6 @@ options::add_midi_clock_page ()
     vbox->set_border_width(6);
     m_notebook->append_page(*vbox, "MIDI _Clock", true);
 
-#ifdef USE_MIDI_CLOCK_FRAME
-
     Gtk::Frame * inputframe = manage(new Gtk::Frame("Clocks"));
     inputframe->set_border_width(4);
     vbox->pack_start(*inputframe, Gtk::PACK_SHRINK);
@@ -174,8 +172,6 @@ options::add_midi_clock_page ()
     Gtk::VBox * inputbox = manage(new Gtk::VBox());
     inputbox->set_border_width(4);
     inputframe->add(*inputbox);
-
-#endif  // USE_MIDI_CLOCK_FRAME
 
 #if GTK_MINOR_VERSION < 12
     manage(new Gtk::Tooltips());
@@ -267,11 +263,7 @@ options::add_midi_clock_page ()
         hbox2->pack_end(*rb_mod, false, false);
         hbox2->pack_end(*rb_on, false, false);
         hbox2->pack_end(*rb_off, false, false);
-#ifdef USE_MIDI_CLOCK_FRAME
         inputbox->pack_start(*hbox2, false, false);
-#else
-        vbox->pack_start(*hbox2, false, false);
-#endif
         switch (perf().master_bus().get_clock(bus))
         {
         case e_clock_off:
@@ -300,17 +292,12 @@ options::add_midi_clock_page ()
         false, false, 4
     );
     hbox2->pack_start(*clock_mod_spin, false, false);
-#ifdef USE_MIDI_CLOCK_FRAME
     inputbox->pack_start(*hbox2, false, false);
-#else
-    vbox->pack_start(*hbox2, false, false);
-#endif
     clock_mod_adj->signal_value_changed().connect
     (
         sigc::bind(mem_fun(*this, &options::clock_mod_callback), clock_mod_adj)
     );
 
-#ifdef USE_MIDI_CLOCK_FRAME
     Gtk::Frame * midimetaframe = manage(new Gtk::Frame("Meta Events"));
     midimetaframe->set_border_width(4);
     vbox->pack_start(*midimetaframe, Gtk::PACK_SHRINK);
@@ -333,11 +320,10 @@ options::add_midi_clock_page ()
             mem_fun(*this, &options::edit_tempo_track_number), entry
         )
     );
-    entry->set_text("0");               // DO WE NEED A MEMBER?????
+    entry->set_text(std::to_string(rc().tempo_track_number()));
     hboxmeta->pack_start(*entry, Gtk::PACK_SHRINK);
     hboxmeta->pack_start(*label, Gtk::PACK_SHRINK);
     midimetaframe->add(*hboxmeta);
-#endif
 }
 
 /**
@@ -1314,8 +1300,6 @@ options::clock_mod_callback (Gtk::Adjustment * adj)
     midibus::set_clock_mod(int(adj->get_value()));
 }
 
-#ifdef USE_MIDI_CLOCK_FRAME
-
 /**
  *  EXPERIMENTAL
  */
@@ -1329,8 +1313,6 @@ options::edit_tempo_track_number (Gtk::Entry * text)
     number = std::to_string(track);
     text->set_text(number);
 }
-
-#endif  // USE_MIDI_CLOCK_FRAME
 
 /**
  *  Input callback function.  This is kind of a weird function, but it allows

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2017-07-09
+ * \updates       2017-08-10
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -440,7 +440,7 @@ midi_container::fill_proprietary ()
         if (! transpose)                                /* save only false  */
         {
 #endif
-            add_variable(0);                            /* transposition    */
+            add_variable(0);                            /* no delta time    */
             put(0xFF);
             put(0x7F);
             put(0x05);                                  /* long + midibyte  */
@@ -450,6 +450,22 @@ midi_container::fill_proprietary ()
         }
 #endif
 
+#endif  // SEQ64_STAZED_TRANSPOSE
+
+#ifdef USE_THIS_NEW_EXPERIMENTAL_CODE
+
+        /**
+         *  If the song or rc() file has defined an alternate number for the
+         *  tempo track, then store it here.  Actually, always store it now.
+         */
+
+        midipulse tempotrack = rc().tempo_track_number();
+        add_variable(0);                                /* no delta time    */
+        put(0xFF);
+        put(0x7F);
+        put(0x05);                                      /* long + midibyte  */
+        add_long(c_tempo_track);
+        add_long(tempotrack);
 #endif
 
     }

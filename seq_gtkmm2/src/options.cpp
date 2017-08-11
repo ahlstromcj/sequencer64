@@ -317,6 +317,12 @@ options::add_midi_clock_page ()
         sigc::bind(mem_fun(*this, &options::edit_tempo_track_number), entry)
     );
     entry->set_text(std::to_string(rc().tempo_track_number()));
+    add_tooltip
+    (
+        entry,
+        "Sets the number of the tempo track, and it is saved to the 'rc' file. "
+        "A very interactive control; play with it to understand how it works."
+    );
     hboxmeta->pack_start(*entry, Gtk::PACK_SHRINK, 4);
     hboxmeta->pack_start(*label, Gtk::PACK_SHRINK, 4);
     vboxmeta->pack_start(*hboxmeta, Gtk::PACK_SHRINK, 4);
@@ -325,7 +331,7 @@ options::add_midi_clock_page ()
 #define LOG_LABEL "Set as Song Tempo Track"
 
     Gtk::Button * log_to_song = manage(new Gtk::Button(LOG_LABEL));
-    hboxmeta->pack_start(*log_to_song, Gtk::PACK_EXPAND_WIDGET, 4);
+    hboxmeta->pack_start(*log_to_song, Gtk::PACK_EXPAND_WIDGET, 8);
     log_to_song->signal_clicked().connect
     (
         mem_fun(*this, &options::log_tempo_track_number)
@@ -333,8 +339,10 @@ options::add_midi_clock_page ()
     add_tooltip
     (
         log_to_song,
-        "Saves the current tempo track as a song parameter. "
-        "Reset the value to 0 to make the default the recommended value."
+        "Saves the current tempo track number as a song parameter, saved "
+        "to the MIDI file, as "
+        "opposed to a global Sequencer64 value. However, remember that "
+        "the given value will be save to the 'rc' file when exiting."
     );
 }
 

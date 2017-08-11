@@ -1,3 +1,237 @@
+2017-08-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/options.cpp: Tweaking Options / MIDI / Meta
+	interface.
+	* libseq64/include/perform.hpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/options.hpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perftime.cpp, seq_gtkmm2/src/seqevent.cpp: Added
+	SeqSpec to save a song-specific tempo-track number.
+
+2017-08-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/midi_container.hpp,
+	libseq64/src/midi_container.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/options.hpp, seq_gtkmm2/src/options.cpp: Adding
+	options for tempo-track number.
+
+2017-08-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, libseq64/include/rc_settings.hpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/rc_settings.cpp,
+	seq_gtkmm2/include/options.hpp, seq_gtkmm2/src/options.cpp: Added
+	ability to specify alternate tempo track number.
+
+2017-08-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/mainwid.cpp: Interim.
+	* INSTALL, configure.ac, configure.help,
+	libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	libseq64/src/user_settings.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Fixes for building with a lot of stuff
+	disabled.
+
+2017-08-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* NEWS, README, configure.ac, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwnd.cpp: Interim check-in minor tweaks.
+
+2017-08-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, TODO, configure.ac, libseq64/include/perform.hpp,
+	libseq64/src/calculations.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/maintime.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/lfownd.cpp,
+	seq_gtkmm2/src/maintime.cpp, seq_gtkmm2/src/mainwnd.cpp: Added
+	display of current position under maintime.
+	* TODO, libseq64/include/sequence.hpp, libseq64/src/event_list.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/sequence.cpp,
+	resources/pixmaps/tempo_autorecord.xpm,
+	resources/pixmaps/tempo_log.xpm,
+	resources/pixmaps/tempo_rec_off.xpm,
+	resources/pixmaps/tempo_rec_on.xpm,
+	resources/pixmaps/tempo_record.xpm,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seq24seq.cpp, seq_gtkmm2/src/seqevent.cpp: Still more
+	improvements to tempo support, select and delete in seqevent.
+
+2017-08-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, libseq64/include/perform.hpp,
+	resources/pixmaps/tempo_log.xpm,
+	resources/pixmaps/tempo_rec_off.xpm,
+	resources/pixmaps/tempo_rec_on.xpm, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwnd.cpp: Interim check-in, improvements to tempo
+	recording.
+	* FixLog, TODO, libseq64/include/sequence.hpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	resources/pixmaps/tempo_autorecord.xpm,
+	resources/pixmaps/tempo_record.xpm, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp, seq_gtkmm2/src/lfownd.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/seqedit.cpp: Tempo
+	additions extend lenght, now shown on pattern slot.
+
+2017-08-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/include/triggers.hpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/triggers.cpp, resources/pixmaps/tempo_autorecord.xpm,
+	resources/pixmaps/tempo_record.xpm,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqroll.cpp: Interim
+	check-in of tempo recording, untested.
+
+2017-08-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, libseq64/include/event.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/event.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqevent.cpp: Can now edit tempo events in seqdata.
+
+2017-08-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ROADMAP, TODO, libseq64/include/calculations.hpp,
+	libseq64/include/event.hpp, libseq64/src/calculations.cpp,
+	libseq64/src/event.cpp, libseq64/src/sequence.cpp,
+	resources/pixmaps/tempo_record.xpm,
+	seq_gtkmm2/include/seqevent.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/gui_key_tests.cpp, seq_gtkmm2/src/seq24seq.cpp,
+	seq_gtkmm2/src/seqevent.cpp: Adding tempo events via seqevent, still
+	in progress.
+
+2017-07-31  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/calculations.hpp,
+	libseq64/include/event_list.hpp, libseq64/src/calculations.cpp,
+	libseq64/src/editable_events.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/eventslots.cpp: Cleaned
+	up conversion of MIDI time values to pulses in event-editor.
+
+2017-07-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/calculations.hpp,
+	libseq64/include/editable_event.hpp,
+	libseq64/include/editable_events.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/calculations.cpp,
+	libseq64/src/editable_events.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/eventslots.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Further progress on extending sequence
+	length in event editor.
+
+2017-07-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/calculations.hpp, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Interim check-in, improved measures
+	handling.
+
+2017-07-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, contrib/notes/tempotrack.txt,
+	libseq64/include/calculations.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp: Interim check-in for tempo and
+	measure-setting.
+
+2017-07-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/sequence.cpp,
+	seq_rtmidi/src/midi_alsa.cpp: Adding initial processing of tempo
+	events.
+
+2017-07-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/src/seqdata.cpp: Better
+	rendering of tempo on seqdata.
+
+2017-07-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Displaying actual tempo in seqdata,
+	smudgy.
+
+2017-07-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/midi/README, libseq64/src/midifile.cpp,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/perfroll.cpp,
+	seq_rtmidi/include/seq64_rtmidi_features.h: More fixes for
+	displaying tempo.
+	* configure.ac, libseq64/include/event_list.hpp,
+	libseq64/include/seq64_features.h, libseq64/include/sequence.hpp,
+	libseq64/src/event_list.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/maintime.hpp, seq_gtkmm2/src/maintime.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqtime.cpp: Got display
+	of tempo basically worked out in all windows.
+
+2017-07-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/event.hpp, libseq64/include/globals.h,
+	libseq64/include/sequence.hpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqroll.cpp: More tweaks
+	related to tempo.
+	* Seq64rtmidi/seq64rtmidi.cpp: Fix for issue #100, ladish no longer
+	detecting JACK ports, fixed in tempo_track branch.
+
+2017-07-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* FixLog, libseq64/src/sequence.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp: Still
+	struggling with showing tempo events.
+
+2017-07-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, contrib/code/jack-smf-player.c,
+	libseq64/include/calculations.hpp, libseq64/src/calculations.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Trying to get seqdata to draw tempo
+	events.
+
+2017-07-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/event_list.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqevent.cpp: Interim check-in, revamping
+	get_next_event() for tempo events.
+
+2017-07-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, TODO, configure.ac,
+	libseq64/include/app_limits.h, libseq64/include/calculations.hpp,
+	libseq64/include/event_list.hpp, libseq64/include/seq64_features.h,
+	libseq64/include/sequence.hpp, libseq64/include/user_settings.hpp,
+	libseq64/src/calculations.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqdata.cpp,
+	seq_rtmidi/include/seq64_rtmidi_features.h: Ongoing updates to
+	support tempo drawing.
+
 2017-07-15  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/event.hpp, libseq64/src/editable_event.cpp,

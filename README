@@ -1,6 +1,6 @@
 README for Sequencer64 0.93.1 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2017-08-06
+2015-09-10 to 2017-08-11
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
@@ -32,7 +32,8 @@ See the INSTALL file.
         -   Version 0.93.1 supports the management of a native MIDI tempo
             track, adhering to MIDI specs.
         -   Tempo events are mostly editable like normal events.  No separate
-            "tempo track" editor needed at present.
+            "tempo track" editor needed at present.  A lot of work has
+            occurred to get Tempo events supported.
     -   Version 0.93.0:
         -   Initial support for the tempo track.  It currently includes making
             Meta events have full support in Sequencer64, including in the

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-09
+ * \updates       2017-08-10
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -641,6 +641,7 @@ optionsfile::parse (perform & p)
         int track = 0;
         sscanf(m_line, "%d", &track);
         rc().tempo_track_number(track);
+        p.set_tempo_track_number(track);    /* MIDI file can override this  */
     }
     if (line_after(file, "[manual-alsa-ports]"))
     {
@@ -1161,7 +1162,7 @@ optionsfile::write (const perform & p)
            "# one's existing body of tunes.  If affects where tempo events are\n"
            "# recorded.  The default value is 0, the maximum is 1023.\n"
            "\n"
-        << rc().tempo_track_number() << "      # tempo_track_number\n"
+        << rc().tempo_track_number() << "    # tempo_track_number\n"
         ;
 
 

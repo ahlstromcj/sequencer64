@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-16
+ * \updates       2017-08-10
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -88,8 +88,8 @@ userfile::~userfile ()
 static std::string
 make_section_name (const std::string & label, int value)
 {
-    char temp[8];
-    snprintf(temp, sizeof(temp), "%d", value);
+    char temp[16];
+    snprintf(temp, sizeof temp, "%d", value);
     std::string result = "[";
     result += label;
     result += "-";

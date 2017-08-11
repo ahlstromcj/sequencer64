@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-08-09
+ * \updates       2017-08-10
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1836,7 +1836,7 @@ perform::page_increment_beats_per_minute ()
 bool
 perform::log_current_tempo ()
 {
-	sequence * seq = get_sequence(rc().tempo_track_number());
+	sequence * seq = get_sequence(get_tempo_track_number());
 	bool result = not_nullptr(seq);
 	if (result)
 	{
@@ -3770,6 +3770,7 @@ perform::handle_midi_control (int ctl, bool state)
             set_sequence_control_status(c_status_queue);
         else
             unset_sequence_control_status(c_status_queue);
+        break;
 
     case c_midi_control_mod_gmute:
 

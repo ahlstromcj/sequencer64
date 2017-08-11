@@ -28,7 +28,8 @@
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
- *  MIDI file.
+ *  MIDI file.  The data handled here are specific to a single
+ *  sequence/pattern/track.
  */
 
 #include "globals.h"                    /* c_timesig and other flags        */
@@ -451,22 +452,6 @@ midi_container::fill_proprietary ()
 #endif
 
 #endif  // SEQ64_STAZED_TRANSPOSE
-
-#ifdef USE_THIS_NEW_EXPERIMENTAL_CODE
-
-        /**
-         *  If the song or rc() file has defined an alternate number for the
-         *  tempo track, then store it here.  Actually, always store it now.
-         */
-
-        midipulse tempotrack = rc().tempo_track_number();
-        add_variable(0);                                /* no delta time    */
-        put(0xFF);
-        put(0x7F);
-        put(0x05);                                      /* long + midibyte  */
-        add_long(c_tempo_track);
-        add_long(tempotrack);
-#endif
 
     }
 }

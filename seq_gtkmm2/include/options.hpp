@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-09
+ * \updates       2017-08-10
  * \license       GNU GPLv2 or above
  *
  *  This class support most of the configuration options that are supported by
@@ -238,6 +238,7 @@ private:
     void clock_callback_mod (int bus, Gtk::RadioButton * button);
     void clock_mod_callback (Gtk::Adjustment * adj);
     void edit_tempo_track_number (Gtk::Entry * text);
+    void log_tempo_track_number ();
     void input_callback (int bus, Gtk::Button * button);
     void filter_callback (Gtk::Button * button);
     void transport_callback (button type, Gtk::Button * button);

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-09
+ * \updates       2017-08-11
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -201,7 +201,6 @@ options::add_midi_clock_page ()
             sigc::bind(mem_fun(*this, &options::output_callback), bus, check)
         );
         check->set_active(perf().get_output(bus));      // ???
-        // check->set_sensitive(! perf().is_output_system_port(bus));
         check->set_sensitive(false);                    // FOR NOW
 
 #else
@@ -301,29 +300,42 @@ options::add_midi_clock_page ()
     Gtk::Frame * midimetaframe = manage(new Gtk::Frame("Meta Events"));
     midimetaframe->set_border_width(4);
     vbox->pack_start(*midimetaframe, Gtk::PACK_SHRINK);
+    Gtk::VBox * vboxmeta = manage(new Gtk::VBox());
     Gtk::HBox * hboxmeta = manage(new Gtk::HBox());
     Gtk::Entry * entry = manage(new Gtk::Entry());
     Gtk::Label * label = manage
     (
         new Gtk::Label
         (
-            " Pattern number for tempo track, from 0 to 1023 "
-            "(0 is recommended)",
+            " Pattern number for tempo track, from 0 to 1023 (0 recommended)",
             Gtk::ALIGN_LEFT
         )
     );
     entry->set_width_chars(4);
     entry->signal_changed().connect
     (
-        sigc::bind
-        (
-            mem_fun(*this, &options::edit_tempo_track_number), entry
-        )
+        sigc::bind(mem_fun(*this, &options::edit_tempo_track_number), entry)
     );
     entry->set_text(std::to_string(rc().tempo_track_number()));
-    hboxmeta->pack_start(*entry, Gtk::PACK_SHRINK);
-    hboxmeta->pack_start(*label, Gtk::PACK_SHRINK);
-    midimetaframe->add(*hboxmeta);
+    hboxmeta->pack_start(*entry, Gtk::PACK_SHRINK, 4);
+    hboxmeta->pack_start(*label, Gtk::PACK_SHRINK, 4);
+    vboxmeta->pack_start(*hboxmeta, Gtk::PACK_SHRINK, 4);
+    midimetaframe->add(*vboxmeta);
+
+#define LOG_LABEL "Set as Song Tempo Track"
+
+    Gtk::Button * log_to_song = manage(new Gtk::Button(LOG_LABEL));
+    hboxmeta->pack_start(*log_to_song, Gtk::PACK_EXPAND_WIDGET, 4);
+    log_to_song->signal_clicked().connect
+    (
+        mem_fun(*this, &options::log_tempo_track_number)
+    );
+    add_tooltip
+    (
+        log_to_song,
+        "Saves the current tempo track as a song parameter. "
+        "Reset the value to 0 to make the default the recommended value."
+    );
 }
 
 /**
@@ -1301,7 +1313,12 @@ options::clock_mod_callback (Gtk::Adjustment * adj)
 }
 
 /**
- *  EXPERIMENTAL
+ *  Provides an option (not recommended, but may be necessary for legacy
+ *  tunes) to change the default tempo track from the MIDI-specified 0 (first
+ *  track) to some other track.
+ *
+ * \param text
+ *      Provides the text-edit control to change the tempo-track number.
  */
 
 void
@@ -1312,6 +1329,16 @@ options::edit_tempo_track_number (Gtk::Entry * text)
     int track = rc().tempo_track_number();              /* now validated    */
     number = std::to_string(track);
     text->set_text(number);
+}
+
+/**
+ *  EXPERIMENTAL
+ */
+
+void
+options::log_tempo_track_number ()
+{
+    perf().set_tempo_track_number(rc().tempo_track_number());
 }
 
 /**

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-03
+ * \updates       2017-08-10
  * \license       GNU GPLv2 or above
  *
  *  We are currently trying to get event processing to accomodate tempo
@@ -675,8 +675,7 @@ seqevent::on_button_press_event (GdkEventButton * ev)
     {
     case e_fruity_interaction:
         result = m_fruity_interaction.on_button_press_event(ev, *this);
-
-        // break;              // removed the FALL THROUGH
+        break;
 
     case e_seq24_interaction:
         if (m_seq24_interaction.on_button_press_event(ev, *this))
@@ -716,12 +715,7 @@ seqevent::on_button_release_event (GdkEventButton * ev)
     {
     case e_fruity_interaction:
         result = m_fruity_interaction.on_button_release_event(ev, *this);
-
-        /*
-         * FALL THROUGH.  Is this correct behavior?
-         *
-         * break;              // removed the FALL THROUGH
-         */
+        break;
 
     case e_seq24_interaction:
         if (m_seq24_interaction.on_button_release_event(ev, *this))
@@ -761,12 +755,7 @@ seqevent::on_motion_notify_event (GdkEventMotion * ev)
     {
     case e_fruity_interaction:
         result = m_fruity_interaction.on_motion_notify_event(ev, *this);
-
-        /*
-         * FALL THROUGH.  Is this correct behavior?
-         *
-         * break;              // removed the FALL THROUGH
-         */
+        break;
 
     case e_seq24_interaction:
         if (m_seq24_interaction.on_motion_notify_event(ev, *this))

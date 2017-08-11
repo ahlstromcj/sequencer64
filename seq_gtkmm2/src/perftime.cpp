@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-14
+ * \updates       2017-08-10
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -294,8 +294,8 @@ perftime::draw_background ()
         int x_pos = tick_to_pixel(i * m_measure_length);
 #endif
 
-        char bar[8];
-        snprintf(bar, sizeof(bar), "%ld", i + 1);       /* bar numbers      */
+        char bar[16];
+        snprintf(bar, sizeof bar, "%ld", i + 1);        /* bar numbers      */
         draw_line(x_pos, 0, x_pos, m_window_y);         /* beat             */
         render_string(x_pos + 2, 0, bar, font::BLACK, true);
     }

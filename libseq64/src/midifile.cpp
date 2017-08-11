@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-23
+ * \updates       2017-08-11
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -122,7 +122,9 @@
 /**
  *  Provides the track name for the "proprietary" data when using the new
  *  format.  (There is no track-name for the "proprietary" footer track when
- *  the legacy format is in force.)
+ *  the legacy format is in force.)  This is more useful for examining a hex
+ *  dump of a Sequencer64 song than for checking its validity.  It's overkill
+ *  that causes needless error messages.
  */
 
 #define PROPRIETARY_TRACK_NAME      "Sequencer64-S"
@@ -1254,6 +1256,13 @@ midifile::parse_proprietary_track (perform & p, int file_size)
 
     if (result)
     {
+        /*
+         * This section depends on the ordering and presence of all supported
+         * SeqSpecs, and hence is kind of brittle.  It would be better to loop
+         * here and use a switch-statement to figure out which code to
+         * execute.
+         */
+
         midilong seqspec = parse_prop_header(file_size);
         if (seqspec == c_midictrl)
         {
@@ -1280,10 +1289,8 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             {
                 read_byte_array(a, 6);
                 p.midi_control_toggle(i).set(a);
-
                 read_byte_array(a, 6);
                 p.midi_control_on(i).set(a);
-
                 read_byte_array(a, 6);
                 p.midi_control_off(i).set(a);
             }
@@ -1291,13 +1298,11 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         seqspec = parse_prop_header(file_size);
         if (seqspec == c_midiclocks)
         {
-            int busscount = int(read_long());
-
             /*
-             * Some old code wrote some bad files, we need to work around that
-             * and fix it.
+             * Some old code wrote some bad files, we work around and fix it.
              */
 
+            int busscount = int(read_long());
             if (busscount > SEQ64_DEFAULT_BUSS_MAX)
             {
                 errdump("bad buss count, fixing; please save the file now");
@@ -1397,7 +1402,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
 
         /*
          * We let Sequencer64 read this new stuff even if legacy mode or the
-         * global-background sequence is in force.  These two flags affect
+         * global-background sequence is in force.  Those two flags affect
          * only the writing of the MIDI file, not the reading.
          */
 
@@ -1438,8 +1443,48 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             p.set_beat_width(bw);
         }
 
+#ifdef USE_THESE_SEQSPECS
+
+        if (seqspec == c_tempo_map)
+        {
+            /*
+             * A stazed feature not implemented.
+             */
+        }
+
+        if (seqspec == c_reserved_1)
+        {
+            /*
+             * Reserved for other projects to use.
+             */
+        }
+
+        if (seqspec == c_reserved_2)
+        {
+            /*
+             * Reserved for other projects to use.
+             */
+        }
+
+#endif  // USE_THESE_SEQSPECS
+
         /*
-         * ADD NEW CONTROL TAGS AT THE END OF THE LIST HERE.
+         * If this value is present and greater than 0, set it into the
+         * performance.  It might override the value specified in the "rc"
+         * configuration file.
+         */
+
+        seqspec = parse_prop_header(file_size);
+        if (seqspec == c_tempo_track)
+        {
+            int tempotrack = int(read_long());
+            if (tempotrack > 0)
+                p.set_tempo_track_number(tempotrack);
+        }
+
+        /*
+         * ADD NEW CONTROL TAGS AT THE END OF THE LIST HERE.  Don't forget to
+         * fill in any blanks with new code above, if need be.
          */
     }
     return result;
@@ -2140,6 +2185,7 @@ midifile::write_proprietary_track (perform & p)
             tracklength += prop_item_size(4);   /* c_backsequence           */
             tracklength += prop_item_size(4);   /* c_perf_bp_mes            */
             tracklength += prop_item_size(4);   /* c_perf_bw                */
+            tracklength += prop_item_size(4);   /* c_tempo_track            */
         }
         tracklength += track_end_size();        /* Meta TrkEnd              */
     }
@@ -2205,6 +2251,8 @@ midifile::write_proprietary_track (perform & p)
         write_long(long(p.get_beats_per_bar()));            /* perfedit BPM  */
         write_prop_header(c_perf_bw, 4);                    /* control tag+4 */
         write_long(long(p.get_beat_width()));               /* perfedit BW   */
+        write_prop_header(c_tempo_track, 4);                /* control tag+4 */
+        write_long(long(p.get_tempo_track_number()));       /* perfedit BW   */
         write_track_end();
     }
     return true;

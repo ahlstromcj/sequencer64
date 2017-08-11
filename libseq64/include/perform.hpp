@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-08
+ * \updates       2017-08-10
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -46,6 +46,7 @@
  *      -   m_master_bus
  *      -   m_beats_per_bar
  *      -   m_beat_width
+ *      -   m_tempo_track_number
  *
  *  User jean-emmanuel added a new MIDI control for setting the screen-set
  *  directly by number.  To handle this, a value parameter was added to
@@ -601,6 +602,15 @@ private:
     int m_beat_width;
 
     /**
+     *  Holds the number of the official tempo track for this performance.
+     *  Normally 0, it can be changed to any value from 1 to 1023 via the
+     *  tempo-track-number setting in the "rc" file, and that can be overriden
+     *  by the c_tempo_track SeqSpec possibly present in the song's MIDI file.
+     */
+
+    int m_tempo_track_number;
+
+    /**
      *  Augments the beats/bar and beat-width with the additional values
      *  included in a Time Signature meta event.  This value provides the
      *  number of MIDI clocks between metronome clicks.  The default value of
@@ -1106,6 +1116,29 @@ public:
 #ifdef SEQ64_JACK_SUPPORT
         m_jack_asst.set_beat_width(bw);
 #endif
+    }
+
+    /**
+     * \getter m_tempo_track_number
+     */
+
+    int get_tempo_track_number () const
+    {
+        return m_tempo_track_number;
+    }
+
+    /**
+     * \setter m_tempo_track_number
+     *
+     * \param bw
+     *      Provides the value for beat-width.  Also used to set the
+     *      beat-width in the JACK assistant object.
+     */
+
+    void set_tempo_track_number (int tempotrack)
+    {
+        if (tempotrack >= 0 && tempotrack < SEQ64_SEQUENCE_MAXIMUM)
+            m_tempo_track_number = tempotrack;
     }
 
     /**

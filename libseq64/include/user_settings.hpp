@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-07-16
+ * \updates       2017-08-13
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -66,6 +66,20 @@
 #include "scales.h"                     /* SEQ64_KEY_OF_C etc.          */
 #include "user_instrument.hpp"
 #include "user_midi_bus.hpp"
+
+/**
+ *  Provides a visible tweak for the seq64::user_settings::mainwid_height()
+ *  function.
+ */
+
+#define MAINWID_WIDTH_FUDGE         2
+
+/**
+ *  Provides a visible tweak for the seq64::user_settings::mainwid_height()
+ *  function.
+ */
+
+#define MAINWID_HEIGHT_FUDGE        4
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -1677,6 +1691,16 @@ public:         // used in main application module and the userfile class
 
     int mainwid_width () const;
     int mainwid_height () const;
+
+    int mainwid_width_fudge () const
+    {
+        return MAINWID_WIDTH_FUDGE / 2;
+    }
+
+    int mainwid_height_fudge () const
+    {
+        return MAINWID_HEIGHT_FUDGE / 2;
+    }
 
 protected:
 

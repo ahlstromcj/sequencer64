@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-08
+ * \updates       2017-08-13
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -186,10 +186,11 @@ mainwid::mainwid
              c_control_height + c_mainwid_border * 2
     ),
 #endif
-    m_mainwid_border        (c_mainwid_border),
+    m_mainwid_border_x      (c_mainwid_border + usr().mainwid_width_fudge()),
+    m_mainwid_border_y      (c_mainwid_border + usr().mainwid_width_fudge()),
     m_mainwid_spacing       (c_mainwid_spacing),
-    m_text_size_x           (font_render().char_width()),       // c_text_x
-    m_text_size_y           (font_render().padded_height()),    // c_text_y
+    m_text_size_x           (font_render().char_width()),
+    m_text_size_y           (font_render().padded_height()),
     m_max_sets              (c_max_sets),
     m_screenset_slots       (m_mainwnd_rows * m_mainwnd_cols),
     m_screenset_offset      (m_screenset * m_screenset_slots),
@@ -689,8 +690,8 @@ mainwid::calculate_base_sizes (int seqnum, int & basex, int & basey)
 {
     int i = (seqnum / m_mainwnd_rows) % m_mainwnd_cols;
     int j =  seqnum % m_mainwnd_rows;
-    basex = m_mainwid_border + (m_seqarea_x + m_mainwid_spacing) * i;
-    basey = m_mainwid_border + (m_seqarea_y + m_mainwid_spacing) * j;
+    basex = m_mainwid_border_x + (m_seqarea_x + m_mainwid_spacing) * i;
+    basey = m_mainwid_border_y + (m_seqarea_y + m_mainwid_spacing) * j;
 }
 
 /**
@@ -846,8 +847,8 @@ mainwid::seq_from_xy (int x, int y)
     int sequence = -1;
     int slot_x = m_seqarea_x + m_mainwid_spacing;
     int slot_y = m_seqarea_y + m_mainwid_spacing;
-    x -= m_mainwid_border;                      // adjust for border
-    y -= m_mainwid_border;
+    x -= m_mainwid_border_x;                    // adjust for border
+    y -= m_mainwid_border_y;
     if                                          // is it in the box?
     (
         x >= 0 && x < (slot_x * m_mainwnd_cols) &&

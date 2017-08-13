@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-08
+ * \updates       2017-08-13
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -60,7 +60,7 @@
  *      get a reference to the mainwid object into the seqedit object by
  *      passing down through the following constructors:  mainwnd, mainwid,
  *      perfedit, perfnames (derived from seqmenu), seqmenu, and seqedit.  We
- *      thought it was  preferable to making a global object, because at least
+ *      thought it was preferable to making a global object, because at least
  *      the provenance of the mainwid reference is now clearcut, but then we
  *      realized we'd have to do the same for the perfedit/perfnames class,
  *      and that's just too much.  We now add a global/free function to the
@@ -156,7 +156,30 @@
  *  box containing the Sequencer64 label and some extra buttons.
  */
 
-#define HBOX_PADDING                  10
+#define TOP_HBOX_PADDING            10
+
+/**
+ *  Padding for the pill time-line.
+ */
+
+#define TIMELINE_PILL_PADDING        8
+
+/**
+ *  Provides the value of padding, in pixels, to use for the bottom horizontal
+ *  box containing the Sequencer64 start, stop, BPM, and set elements.
+ *  Increasing this value basically shrinks the Name field to compensate.
+ */
+
+#define BOTTOM_HBOX_PADDING         10
+
+/**
+ *  Provides the vertical padding between elements.  Increasing this value
+ *  requires the mainwnd height to be increased.  For testing, the Gtk 2 theme
+ *  "Breeze" provides overly-tall buttons to test.  Also see the
+ *  user_settings::mainwid_height() function.
+ */
+
+#define VBOX_PADDING                 8  // 10
 
 /**
  *  The amount of time to wait for inaction before clearing the tap-button
@@ -412,7 +435,7 @@ mainwnd::mainwnd
 
     tophbox->pack_start
     (
-        *manage(new PIXBUF_IMAGE(bitmap)), false, false, HBOX_PADDING
+        *manage(new PIXBUF_IMAGE(bitmap)), false, false, TOP_HBOX_PADDING
     );
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS            /* also enables muting button */
@@ -433,7 +456,7 @@ mainwnd::mainwnd
 
     add_tooltip(m_button_mode, modetext);
     m_button_mode->set_active(perf().song_start_mode());
-    tophbox->pack_start(*m_button_mode, false, false, HBOX_PADDING/2);
+    tophbox->pack_start(*m_button_mode, false, false, TOP_HBOX_PADDING/2);
 
     /*
      * We bind the muting button to the mainwid's toggle_all_tracks()
@@ -534,7 +557,7 @@ mainwnd::mainwnd
         "are remembered even if the mode is toggled to Song and back to Live. "
     );
 
-    tophbox->pack_start(*m_button_mute, false, false);
+    tophbox->pack_start(*m_button_mute, false, false);  /* no extra padding */
 
     if (usr().use_more_icons())
         m_button_menu->add(*manage(new PIXBUF_IMAGE(menu_xpm)));
@@ -552,7 +575,7 @@ mainwnd::mainwnd
     (
         sigc::mem_fun(*this, &mainwnd::set_menu_mode)
     );
-    tophbox->pack_start(*m_button_menu, false, false, HBOX_PADDING/2);
+    tophbox->pack_start(*m_button_menu, false, false, TOP_HBOX_PADDING/2);
 
 #ifdef SEQ64_SHOW_JACK_STATUS
     add_tooltip
@@ -567,7 +590,7 @@ mainwnd::mainwnd
     (
         sigc::mem_fun(*this, &mainwnd::jack_dialog)
     );
-    tophbox->pack_start(*m_button_jack, false, false);
+    tophbox->pack_start(*m_button_jack, false, false);  /* no extra padding */
 #endif
 
 #if defined SEQ64_MULTI_MAINWID
@@ -581,7 +604,7 @@ mainwnd::mainwnd
 
     Gtk::VBox * vbox_b = manage(new Gtk::VBox(true,  0));
     Gtk::HBox * hbox3 = manage(new Gtk::HBox(false, 0));
-    hbox3->pack_start(*m_main_time, false, false, 8);   /* pill time-line   */
+    hbox3->pack_start(*m_main_time, false, false, TIMELINE_PILL_PADDING);
     vbox_b->pack_start(*hbox3, false, false);
 
     /* Add the time-line and the time-clock */
@@ -625,7 +648,7 @@ mainwnd::mainwnd
      *  the container that groups them.
      */
 
-    Gtk::HBox * bottomhbox = manage(new Gtk::HBox(false, 10));   /* bottom */
+    Gtk::HBox * bottomhbox = manage(new Gtk::HBox(false, BOTTOM_HBOX_PADDING));
     Gtk::HBox * startstophbox = manage(new Gtk::HBox(false, 4)); /* button */
     bottomhbox->pack_start(*startstophbox, Gtk::PACK_SHRINK);
 
@@ -917,21 +940,16 @@ mainwnd::mainwnd
 
     /*
      * Vertical layout container for window content.  Letting Gtk manage it
-     * does not improve leaks:
-     *
-     * Gtk::VBox * contentvbox = manage(new Gtk::VBox());
+     * does not improve leaks.
      */
 
     Gtk::VBox * contentvbox = manage(new Gtk::VBox());
-    contentvbox->set_spacing(10);
+    contentvbox->set_spacing(VBOX_PADDING);
     contentvbox->set_border_width(10);
     contentvbox->pack_start(*tophbox, Gtk::PACK_SHRINK);
 
 #if ! defined SEQ64_MULTI_MAINWID
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
-
-    // contentvbox->pack_start(*mainwid_hscroll_wrapper, true, true);
-    // contentvbox->pack_start(*bottomhbox, false, false);
 
     /*
      * Make sure this is correct after the merge.
@@ -1536,7 +1554,7 @@ mainwnd::jack_dialog ()
  *  64-bit Debian Sid laptop, but not on my 32-bit Debian Jessie laptop) that
  *  causes Sequencer64 to freeze, emitting Gtk errors, if one tries to access
  *  the main menu via Alt-F, Alt-E, etc. without first moving the mouse to
- *  the main window.  Weird with a beard!
+ *  the main window.  Weird with a beard!  Might be a Fluxbox-related issue.
  */
 
 void

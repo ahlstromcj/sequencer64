@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2017-07-16
+ * \updates       2017-08-13
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -1150,14 +1150,19 @@ user_settings::mainwid_width () const
 {
     return
     (
-        2 + (c_seqarea_x + c_mainwid_spacing) * m_mainwnd_cols -
-            c_mainwid_spacing + c_mainwid_border * 2
+        (c_seqarea_x + c_mainwid_spacing) * m_mainwnd_cols -
+            (c_mainwid_spacing + c_mainwid_border * 2) + MAINWID_WIDTH_FUDGE
     );
 }
 
 /**
  *  Replaces the hard-wired calculation in the mainwid module.
  *  Affected by the c_mainwid_border and c_control_height values.
+ *
+ * \change ca 2017-08-13 Issue #104.
+ *      Add 8 to the height calculation until we can figure out how to adjust
+ *      for button height increases due to adding the main-window time-stamp
+ *      field.
  *
  * \return
  *      Returns the height, in pixels, of a mainwid grid.
@@ -1169,7 +1174,7 @@ user_settings::mainwid_height () const
     return
     (
         (c_seqarea_y + c_mainwid_spacing) * m_mainwnd_rows +
-             c_control_height + c_mainwid_border * 2
+             (c_control_height + c_mainwid_border * 2) + MAINWID_HEIGHT_FUDGE
     );
 }
 

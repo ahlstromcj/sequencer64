@@ -26,10 +26,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-10
+ * \updates       2017-08-13
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
+ *  Also note that, unlike the "rc" settings, these settings have no
+ *  user-interface.  One must use a text editor to modify its settings.
  */
 
 #include <iostream>
@@ -706,7 +708,7 @@ userfile::write (const perform & /* a_perf */ )
             file << "? This instrument specification is invalid\n";
         }
         file << "\n# End of instrument/controllers definition "
-            << inst << "\n"
+            << inst << "\n\n""
             ;
     }
 
@@ -734,7 +736,7 @@ userfile::write (const perform & /* a_perf */ )
             "#\n"
             "# 0 = Normal style, matches the GTK theme, has brackets.\n"
             "# 1 = White grid boxes that have brackets.\n"
-            "# 2 = Black grid boxes (no brackets).\n"
+            "# 2 = Black grid boxes (no brackets, our favorite).\n"
             "\n"
             << usr().grid_style() << "       # grid_style\n"
             ;

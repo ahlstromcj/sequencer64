@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-04
+ * \updates       2017-08-13
  * \license       GNU GPLv2 or above
  *
  *  Wonder where the name "wid" came from....
@@ -135,7 +135,8 @@ private:
     int m_seqarea_seq_y;        /**< To be determined.                          */
     int m_mainwid_x;            /**< Horizontal size of the main window grid.   */
     int m_mainwid_y;            /**< Vertical size of the main window grid.     */
-    int m_mainwid_border;       /**< Main-window border, unused setting.        */
+    int m_mainwid_border_x;     /**< Main-window border offset fudge factor, x. */
+    int m_mainwid_border_y;     /**< Main-window border offset fudge factor, y. */
     int m_mainwid_spacing;      /**< Main-window spacing, unused setting.       */
     int m_text_size_x;          /**< Text width, varies with font in use.       */
     int m_text_size_y;          /**< Text height, varies with font in use.      */

@@ -179,7 +179,7 @@
  *  user_settings::mainwid_height() function.
  */
 
-#define VBOX_PADDING                 8  // 10
+#define VBOX_PADDING                 7  // 8
 
 /**
  *  The amount of time to wait for inaction before clearing the tap-button
@@ -600,7 +600,7 @@ mainwnd::mainwnd
 
 #endif  // SEQ64_STAZED_MENU_BUTTONS
 
-    /* Adjust placement of the logo. */
+    /* Placement of the logo and time-line. */
 
     Gtk::VBox * vbox_b = manage(new Gtk::VBox(true,  0));
     Gtk::HBox * hbox3 = manage(new Gtk::HBox(false, 0));

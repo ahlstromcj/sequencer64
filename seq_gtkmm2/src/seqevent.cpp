@@ -675,6 +675,11 @@ seqevent::on_button_press_event (GdkEventButton * ev)
     {
     case e_fruity_interaction:
         result = m_fruity_interaction.on_button_press_event(ev, *this);
+
+        // TODO: FOLLOWUP!
+
+        if (m_seq24_interaction.on_button_press_event(ev, *this))
+            result = true;
         break;
 
     case e_seq24_interaction:
@@ -714,7 +719,11 @@ seqevent::on_button_release_event (GdkEventButton * ev)
     switch (interactionmethod)
     {
     case e_fruity_interaction:
+
+        // FOLLOWUP !!!
         result = m_fruity_interaction.on_button_release_event(ev, *this);
+        if (m_seq24_interaction.on_button_release_event(ev, *this))
+            result = true;
         break;
 
     case e_seq24_interaction:
@@ -754,7 +763,12 @@ seqevent::on_motion_notify_event (GdkEventMotion * ev)
     switch (interactionmethod)
     {
     case e_fruity_interaction:
+
+        // FOLLOWUP !!!
+
         result = m_fruity_interaction.on_motion_notify_event(ev, *this);
+        if (m_seq24_interaction.on_motion_notify_event(ev, *this))
+            result = true;
         break;
 
     case e_seq24_interaction:

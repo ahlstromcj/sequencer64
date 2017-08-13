@@ -181,6 +181,8 @@ private:
 
     bool m_have_button_press;
 
+#ifdef USE_UNNECESSARY_TRANSPORT_FOLLOW_CALLBACK
+
     /**
      *  Indicates that the application should follow JACK transport.
      *  The alternative is ...?
@@ -193,6 +195,8 @@ private:
      */
 
     bool m_trans_button_press;
+
+#endif
 
     /**
      *  Holds the horizontal offset related to the horizontal scroll-bar
@@ -341,8 +345,8 @@ private:
     void draw_progress ();                  /* called by perfedit       */
     void redraw_dirty_sequences ();         /* called by perfedit       */
     void set_ppqn (int ppqn);
-    void convert_xy (int x, int y, midipulse & ticks, int & seq);
-    void convert_x (int x, midipulse & ticks);
+    void convert_xy (int x, int y, midipulse & tick, int & seq);
+    void convert_x (int x, midipulse & tick);
     void snap_x (int & x);
     void draw_sequence_on (int seqnum);
     void draw_background_on (int seqnum);

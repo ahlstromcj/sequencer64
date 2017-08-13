@@ -708,7 +708,7 @@ userfile::write (const perform & /* a_perf */ )
             file << "? This instrument specification is invalid\n";
         }
         file << "\n# End of instrument/controllers definition "
-            << inst << "\n\n""
+            << inst << "\n\n"
             ;
     }
 

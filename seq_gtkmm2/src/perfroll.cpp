@@ -118,8 +118,10 @@ perfroll::perfroll
     m_scroll_page           (0),
 #endif
     m_have_button_press     (false),                        // stazed
+#ifdef USE_UNNECESSARY_TRANSPORT_FOLLOW_CALLBACK
     m_transport_follow      (true),
     m_trans_button_press    (false),
+#endif
     m_4bar_offset           (0),                            // now a full offset
     m_sequence_offset       (0),
     m_roll_length_ticks     (0),
@@ -1063,8 +1065,12 @@ perfroll::on_expose_event (GdkEventExpose * ev)
 bool
 perfroll::on_button_press_event (GdkEventButton * ev)
 {
+#ifdef USE_UNNECESSARY_TRANSPORT_FOLLOW_CALLBACK
+
     /*
-     *  To avoid double button press on normal seq42 method...
+     *  To avoid double button press on normal seq42 method...  Shouldn't we
+     *  only do this if the transport button was the one that was pressed?
+     *  And shouldn't perform have all the flags we need?
      */
 
     if (! m_trans_button_press)
@@ -1073,6 +1079,8 @@ perfroll::on_button_press_event (GdkEventButton * ev)
         perf().set_follow_transport(false);
         m_trans_button_press = true;
     }
+
+#endif
 
     bool result = m_interaction.on_button_press_event(ev, *this);
     if (result)
@@ -1086,6 +1094,10 @@ perfroll::on_button_press_event (GdkEventButton * ev)
  *  This callback function handles a button release by forwarding it to the
  *  interaction object's button-release function.  This gives us Seq24
  *  versus Fruity behavior.
+ *
+ * \todo
+ *      We seem to be hitting this button event on any click in the perfroll
+ *      itself.
  */
 
 bool
@@ -1095,8 +1107,14 @@ perfroll::on_button_release_event (GdkEventButton * ev)
     if (result)
         perf().modify();
 
-    perf().set_follow_transport(m_transport_follow);
-    m_trans_button_press = false;
+#ifdef USE_UNNECESSARY_TRANSPORT_FOLLOW_CALLBACK
+    if (m_trans_button_press)
+    {
+        perf().set_follow_transport(m_transport_follow);
+        m_trans_button_press = false;
+    }
+#endif
+
     enqueue_draw();
     return result;
 }
@@ -1168,12 +1186,6 @@ perfroll::on_motion_notify_event (GdkEventMotion * ev)
     bool result = m_interaction.on_motion_notify_event(ev, *this);
     if (result)
     {
-        /*
-         * \change ca 2016-06-19
-         *  Why do we modify here?
-         *  perf().modify();
-         */
-
         enqueue_draw();     /* put in if() to reduce flickering */
     }
     return result;

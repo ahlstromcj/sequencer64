@@ -91,7 +91,7 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
 {
     bool result = false;
     perform & p = roll.perf();
-    int & dropseq = roll.m_drop_sequence;
+    int & dropseq = roll.m_drop_sequence;               /* an "alias", kind of */
     sequence * seq = p.get_sequence(dropseq);
     bool dropseq_active = p.is_active(dropseq);
     roll.grab_focus();
@@ -102,6 +102,12 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     }
     roll.m_drop_x = int(ev->x);
     roll.m_drop_y = int(ev->y);
+
+    /*
+     * This function uses the m_drop_x and m_drop_y set above, which sets
+     * m_drop_tick and m_drop_sequence.
+     */
+
     roll.convert_drop_xy();                             /* affects dropseq  */
     seq = p.get_sequence(dropseq);
     dropseq_active = p.is_active(dropseq);

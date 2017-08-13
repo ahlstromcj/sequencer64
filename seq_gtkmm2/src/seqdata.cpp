@@ -296,15 +296,30 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
                     x, c_dataarea_y - event_height, x, c_dataarea_y
                 );
 
+                if (ev->is_tempo())
+                {
+                    draw_rectangle                  /* draw handle          */
+                    (
+                        drawable, selected ? dark_orange() : tempo_paint(),
+                        event_x - m_scroll_offset_x - 3,
+                        c_dataarea_y - event_height,
+                        c_data_handle_x,
+                        c_data_handle_y
+                    );
+                }
+
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS
-                draw_rectangle                      /* draw handle          */
-                (
-                    drawable, selected ? dark_orange() : black_paint(),
-                    event_x - m_scroll_offset_x - 3,
-                    c_dataarea_y - event_height,
-                    c_data_handle_x,
-                    c_data_handle_y
-                );
+                else
+                {
+                    draw_rectangle                  /* draw handle          */
+                    (
+                        drawable, selected ? dark_orange() : black_paint(),
+                        event_x - m_scroll_offset_x - 3,
+                        c_dataarea_y - event_height,
+                        c_data_handle_x,
+                        c_data_handle_y
+                    );
+                }
 #endif
 
                 if (ev->is_tempo())

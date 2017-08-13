@@ -398,7 +398,7 @@ FruitySeqEventInput::on_button_release_event
                 seqev.m_seq.select_events
                 (
                     t_s, t_f, seqev.m_status, seqev.m_cc, sequence::e_is_selected
-                ) 
+                )
             )
             {
                 (void) seqev.m_seq.select_events

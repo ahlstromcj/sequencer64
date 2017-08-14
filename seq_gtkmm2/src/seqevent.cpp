@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-10
+ * \updates       2017-08-14
  * \license       GNU GPLv2 or above
  *
  *  We are currently trying to get event processing to accomodate tempo
@@ -663,7 +663,8 @@ seqevent::on_expose_event (GdkEventExpose * e)
  *      The button event.
  *
  * \return
- *      Returns true if the button-press was handled.
+ *      Returns true if the button-press was handled.  Not sure the return
+ *      code is meaningful.
  */
 
 bool
@@ -674,17 +675,12 @@ seqevent::on_button_press_event (GdkEventButton * ev)
     switch (interactionmethod)
     {
     case e_fruity_interaction:
-        result = m_fruity_interaction.on_button_press_event(ev, *this);
-
-        // TODO: FOLLOWUP!
-
-        if (m_seq24_interaction.on_button_press_event(ev, *this))
-            result = true;
+        (void) m_fruity_interaction.on_button_press_event(ev, *this);
+        result = m_seq24_interaction.on_button_press_event(ev, *this);
         break;
 
     case e_seq24_interaction:
-        if (m_seq24_interaction.on_button_press_event(ev, *this))
-            result = true;
+        result = m_seq24_interaction.on_button_press_event(ev, *this);
         break;
 
     default:
@@ -719,16 +715,12 @@ seqevent::on_button_release_event (GdkEventButton * ev)
     switch (interactionmethod)
     {
     case e_fruity_interaction:
-
-        // FOLLOWUP !!!
-        result = m_fruity_interaction.on_button_release_event(ev, *this);
-        if (m_seq24_interaction.on_button_release_event(ev, *this))
-            result = true;
+        (void) m_fruity_interaction.on_button_release_event(ev, *this);
+        result = m_seq24_interaction.on_button_release_event(ev, *this);
         break;
 
     case e_seq24_interaction:
-        if (m_seq24_interaction.on_button_release_event(ev, *this))
-            result = true;
+        result = m_seq24_interaction.on_button_release_event(ev, *this);
         break;
 
     default:
@@ -763,17 +755,12 @@ seqevent::on_motion_notify_event (GdkEventMotion * ev)
     switch (interactionmethod)
     {
     case e_fruity_interaction:
-
-        // FOLLOWUP !!!
-
-        result = m_fruity_interaction.on_motion_notify_event(ev, *this);
-        if (m_seq24_interaction.on_motion_notify_event(ev, *this))
-            result = true;
+        (void) m_fruity_interaction.on_motion_notify_event(ev, *this);
+        result = m_seq24_interaction.on_motion_notify_event(ev, *this);
         break;
 
     case e_seq24_interaction:
-        if (m_seq24_interaction.on_motion_notify_event(ev, *this))
-            result = true;
+        result = m_seq24_interaction.on_motion_notify_event(ev, *this);
         break;
 
     default:

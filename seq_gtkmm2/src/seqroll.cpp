@@ -1300,7 +1300,7 @@ seqroll::complete_paste (int x, int y)
     m_paste = false;
 
     /*
-     * m_seq.push_undo();
+     * m_seq.push_undo();       // Why commented out?
      */
 
     m_seq.paste_selected(tick, note);

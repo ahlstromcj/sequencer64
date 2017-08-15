@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2017-08-10
+ * \updates       2017-08-15
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -328,6 +328,9 @@ midi_container::fill_time_sig (const perform & p)
  *  usage in this particular track.  For export, we cannot guarantee that the
  *  first (0th) track/sequence is exportable.
  *
+ * \change ca 2017-08-15
+ *      Fixed issue #103, was writing tempo bytes in the wrong order here.
+ *
  * \param p
  *      Provides the performance object from which we get some global MIDI
  *      parameters.
@@ -343,9 +346,9 @@ midi_container::fill_tempo (const perform & p)
     put(0xFF);                                  /* meta event       */
     put(0x51);                                  /* tempo event      */
     put(0x03);                                  /* data length      */
-    put(t[2]);
+    put(t[0]);                                  /* NOT 2, 1, 0!     */
     put(t[1]);
-    put(t[0]);
+    put(t[2]);
 }
 
 /**

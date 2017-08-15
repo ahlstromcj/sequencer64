@@ -1474,13 +1474,10 @@ clamp (long val, long low, long hi)
 void
 seqroll::update_mouse_pointer (bool adding)
 {
-    midipulse drop_tick;
-    int drop_note;
-    convert_xy
-    (
-        current_x(), current_y(), drop_tick, drop_note
-    );
-    midipulse start, end;
+    midipulse droptick;
+    int dropnote;
+    convert_xy(current_x(), current_y(), droptick, dropnote);
+    midipulse s, f;                     // start, end;
     int note;                           // midibyte
     if (normal_action())
     {
@@ -1490,16 +1487,17 @@ seqroll::update_mouse_pointer (bool adding)
     {
         get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
     }
-    else if
+//  else if         // COMMENTED OUT AS EXPERIMENT
+    if
     (
-         m_seq.intersect_notes(drop_tick, drop_note, start, end, note) &&
-         note == drop_note
+         m_seq.intersect_notes(droptick, dropnote, s, f, note) &&
+         note == dropnote
     )
     {
-        long handle_size = clamp(s_handlesize, 0, (end - start) / 3);
-        if (start <= drop_tick && drop_tick <= start + handle_size)
-            get_window()->set_cursor(Gdk::Cursor(Gdk::CENTER_PTR));
-        else if (end - handle_size <= drop_tick && drop_tick <= end)
+        long hsize = m_seq.handle_size(s, f);
+        if (droptick >= (f - hsize) && droptick <= f)
+            get_window()->set_cursor(Gdk::Cursor(Gdk::RIGHT_PTR));
+        else if (droptick >= s && droptick <= (s + hsize))
             get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
         else
             get_window()->set_cursor(Gdk::Cursor(Gdk::CENTER_PTR));

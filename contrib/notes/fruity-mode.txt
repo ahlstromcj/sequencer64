@@ -18,11 +18,12 @@ We found the following resource as well, which saves us a lot of research:
 
      - Left click on empty space adds a note
      - Left click on note toggles note selection
-     - Left click move from empty space draw many notes while moving ptr
+     - Left click move from empty space draw many notes while moving
+       pointer
 	 - Left click move on a note moves/grows the selected note depending on
 	   where pointer is
 
-    Think of Ctrl like a selection modifier to default pencil ptr
+    Think of Ctrl like a selection modifier to default pencil pointer:
 
      - Left Ctrl click on empty space deselect all selected notes
      - Left Ctrl click on note adds to selection

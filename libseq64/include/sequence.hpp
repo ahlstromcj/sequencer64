@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-08-06
+ * \updates       2017-08-14
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1148,7 +1148,7 @@ public:
     );
     bool intersect_notes
     (
-        midipulse position, midipulse position_note,
+        midipulse position, int position_note,
         midipulse & start, midipulse & ender, int & note
     );
     bool intersect_events
@@ -1485,6 +1485,8 @@ public:
     }
 
 #endif  // SEQ64_STAZED_EXPAND_RECORD
+
+    midipulse handle_size (midipulse start, midipulse finish);
 
 private:
 

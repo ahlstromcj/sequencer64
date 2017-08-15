@@ -179,7 +179,7 @@
  *  user_settings::mainwid_height() function.
  */
 
-#define VBOX_PADDING                 7  // 8
+#define VBOX_PADDING                 5  // 7  // 8
 
 /**
  *  The amount of time to wait for inaction before clearing the tap-button
@@ -444,6 +444,14 @@ mainwnd::mainwnd
         m_button_mode->add(*manage(new PIXBUF_IMAGE(live_mode_xpm)));
 
     m_button_mode->set_focus_on_click(false);
+
+    /*
+     * Tried this to reduce the damn large vertical size of the button under
+     * the Adwaita theme, but only the horizontal size seems to be respected!
+     *
+     * m_button_mode->set_size_request(24, 24); // Adwaita ignores height!
+     */
+
     m_button_mode->signal_toggled().connect
     (
         sigc::mem_fun(*this, &mainwnd::set_song_mode)

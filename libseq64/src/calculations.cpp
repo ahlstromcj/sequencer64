@@ -963,7 +963,8 @@ tempo_us_from_bytes (const midibyte tt[3])
  *  <code> ((t2 * 256) + t1) * 256 + t0 </code>.
  *
  *  As a test case, note that the default tempo is 120 beats/minute, which is
- *  equivalent to tttttt=500000 (0x07A120).
+ *  equivalent to tttttt=500000 (0x07A120).  The output of this function will
+ *  be t[] = { 0x07, 0xa1, 0x20 } [the indices go 0, 1, 2].
  *
  * \param t
  *      Provides a small array of 3 elements to hold each tempo byte.

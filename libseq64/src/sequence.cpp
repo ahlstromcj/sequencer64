@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-06
+ * \updates       2017-08-14
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -3380,10 +3380,12 @@ sequence::intersect_triggers
  * \threadsafe
  *
  * \param position
- *      The position to examine.
+ *      The tick position to examine; where the mouse pointer is horizontally,
+ *      already converted to a tick number.
  *
  * \param position_note
- *      I think this is the note value we might be looking for ???
+ *      This is the position of the mouse pointer vertically, already
+ *      converted to a note number.
  *
  * \param [out] start
  *      The destination for the starting timestamp of the matching note.
@@ -3393,10 +3395,9 @@ sequence::intersect_triggers
  *
  * \param [out] note
  *      The destination for the note of the matching event.
- *      Why is this an int value???
  *
  * \return
- *      Returns true if a event was found whose start/end ticks
+ *      Returns true if a note-on event was found whose start/end ticks
  *      contained the position.  Otherwise, false is returned, and the
  *      start and end return parameters should not be used.
  */
@@ -3404,7 +3405,7 @@ sequence::intersect_triggers
 bool
 sequence::intersect_notes
 (
-    midipulse position, midipulse position_note,
+    midipulse position, int position_note,
     midipulse & start, midipulse & ender, int & note
 )
 {
@@ -5281,6 +5282,38 @@ sequence::play_queue (midipulse tick, bool playbackmode)
         toggle_playing();
     }
     play(tick, playbackmode);
+}
+
+/**
+ *  Actually, useful mainly for the user-interface, this function calculates
+ *  the size of the left and right handles of a note.  The s_handlesize value
+ *  is n internal variable for handle size.  Note that, with the default PPQN
+ *  of 192, a sixteenth note (a typical snap value) is 48 pulses (ticks), so
+ *  that a sixteenth note is broken into equal left, center, and right sides.
+ *  However, for a PPQN of, say, 960, 16 pulses is 5 times smaller in width.
+ *  We really need to scale the handle size.
+ *
+ * \param start
+ *      The starting tick of the note event.
+ *
+ * \param start
+ *      The ending tick of the note event.
+ *
+ * \return
+ *      Returns 16 or one-third of the note length.  This value is scaled
+ *      according to PPQN if different from 192.
+ */
+
+midipulse
+sequence::handle_size (midipulse start, midipulse finish)
+{
+    static const long s_handlesize = 16;
+    midipulse result = s_handlesize * m_ppqn / SEQ64_DEFAULT_PPQN;
+    midipulse notelength = finish - start;
+    if (notelength < result / 3)
+        result = notelength / 3;
+
+    return result;
 }
 
 }           // namespace seq64

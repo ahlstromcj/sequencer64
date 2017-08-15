@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-11
+ * \updates       2017-08-14
  * \license       GNU GPLv2 or above
  *
  *  This module handles "fruity" interactions only in the piano roll
@@ -50,26 +50,10 @@ namespace seq64
 {
 
 /**
- *  An internal variable for handle size.
- */
-
-static const long s_handlesize = 16;
-
-/**
  *  An internal variable for user-jitter control.
  */
 
 static const int s_jitter_amount = 6;
-
-/**
- *  An internal function used by the FruitySeqRollInput class.
- */
-
-inline static long
-clamp (long val, long low, long hi)
-{
-    return val < low ? low : (hi < val ? hi : val) ;
-}
 
 /**
  *  Updates the mouse pointer, implementing a context-sensitive mouse.
@@ -214,53 +198,46 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                     /*
                      * Context sensitive mouse handling for fruity mode.
                      * In seq24, context handling for the left side of the
-                     * event was not yet supported; the same here.
+                     * event was not yet supported; we're going to try to
+                     * rectify that.
                      */
 
-                    bool right_mouse_handle = false;
-                    bool center_mouse_handle = false;
+                    bool left_handle = false;
+                    bool right_handle = false;
+                    bool center_handle = false;
                     {
-                        midipulse droptick;
-                        int dropnote;              // midibyte
-                        sroll.convert_xy
-                        (
-                            sroll.m_drop_x, sroll.m_drop_y, droptick, dropnote
-                        );
-                        midipulse start, end;
-                        int note;                   // midibyte
-                        if
-                        (
-                            seq.intersect_notes
-                            (
-                                droptick, dropnote, start, end, note
-                            ) && note == dropnote
-                        )
+                        midipulse tick;                 // drop tick
+                        int note;                       // drop note
+                        midipulse s, f;                 // start & finish ticks
+                        int n;                          // note number
+                        sroll.convert_drop_xy(tick, note);
+                        bool found = seq.intersect_notes(tick, note, s, f, n);
+printf("drop tick, note = %ld, %d, found = %s\n", tick, note, found ? "T" : "F");
+                        if (found && n == note)
                         {
-                            long hndlsz = clamp // 16 wide unless very small
-                            (
-                                s_handlesize, 0, (end - start) / 3
-                            );
-                            if (start <= droptick && droptick <= (start + hndlsz))
+                            midipulse hsize = seq.handle_size(s, f);
+                            if (tick >= (f - hsize) && tick <= f)
                             {
-                                center_mouse_handle = true;
+                                right_handle = true;
+printf("right\n");
                             }
-                            else if ((end - hndlsz) <= droptick && droptick <= end)
+                            else if (tick >= s && tick <= (s + hsize))
                             {
-                                right_mouse_handle = true;
+                                left_handle = true;
+printf("left\n");
                             }
                             else
-                                center_mouse_handle = true;
+                            {
+                                center_handle = true;
+printf("center\n");
+                            }
                         }
                     }
-                    if                              /* grab/move the note */
-                    (
-                        center_mouse_handle && SEQ64_CLICK_LEFT(ev->button) &&
-                        ! is_ctrl_key(ev)
-                    )
+                    bool grabmovenote = ! is_ctrl_key(ev) && center_handle;
+                    if (grabmovenote)       /* grab/move the note           */
                     {
                         /*
                          * seqroll::align_selection() [proposed]:
-                         *
                          * Get the box that selected elements are in.  Save
                          * offset that we get from the snap above.  Align
                          * selection for drawing.
@@ -270,37 +247,22 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                         sroll.m_moving_init = true;
                         sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
 
-                        /*
-                         * Done in the call above.
-                         *
-                         *  sroll.convert_tn_box_to_rect
-                         *  (
-                         *      tick_s, tick_f, note_h, note_l,
-                         *      sroll.m_selected.x,
-                         *      sroll.m_selected.y,
-                         *      sroll.m_selected.width,
-                         *      sroll.m_selected.height
-                         *  );
-                         */
-
                         int adjusted_selected_x = sroll.m_selected.x;
                         sroll.snap_x(adjusted_selected_x);
                         sroll.m_move_snap_offset_x =
                             sroll.m_selected.x - adjusted_selected_x;
 
-                        sroll.snap_x(sroll.m_selected.x);
+                        sroll.snap_x(sroll.m_selected.x);   /* align to draw */
                         sroll.set_current_drop_x(snapped_x);
 
                         /*
-                         * Stazed fix, forwards the event to play the hint
-                         * note.
+                         * Stazed fix, forward the event to play hint note.
                          */
 
                         sroll.m_seqkeys_wid.set_listen_button_press(ev);
                     }
-                    else if /* ctrl left click when stuff is already selected */
+                    else if     /* Ctrl-L-click when stuff already selected */
                     (
-                        SEQ64_CLICK_LEFT(ev->button) &&
                         is_ctrl_key(ev) && seq.select_note_events
                         (
                             tick_s, note_h, tick_s, note_h,
@@ -312,36 +274,26 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                         m_drag_paste_start_pos[0] = int(ev->x);
                         m_drag_paste_start_pos[1] = int(ev->y);
                     }
-                    if /* left click on the right handle = grow/resize event  */
+                    if  /* left click on the right handle = grow/resize event  */
                     (
-                        SEQ64_CLICK_MIDDLE(ev->button) ||
-                        (
-                            right_mouse_handle &&
-                            SEQ64_CLICK_LEFT(ev->button) && ! is_ctrl_key(ev)
-                        )
+                        (left_handle || right_handle) && ! is_ctrl_key(ev)
                     )
                     {
                         /* get the box that selected elements are in */
 
                         sroll.m_growing = true;
                         sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
-
-                        /*
-                         * This call is folded into the above call.
-                         *
-                         *  sroll.convert_tn_box_to_rect
-                         *  (
-                         *      tick_s, tick_f, note_h, note_l,
-                         *      sroll.m_selected.x, sroll.m_selected.y,
-                         *      sroll.m_selected.width, sroll.m_selected.height
-                         *  );
-                         */
-
                     }
                 }
             }
         }
+        if (SEQ64_CLICK_MIDDLE(ev->button))
+        {
+            /* get the box that selected elements are in */
 
+            sroll.m_growing = true;
+            sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
+        }
         if (SEQ64_CLICK_RIGHT(ev->button))
         {
             sroll.set_current_drop_x(norm_x);           /* selection normal x */

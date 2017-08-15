@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-29
+ * \updates       2017-08-14
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -636,8 +636,25 @@ private:
     }
 
     void snap_x (int & x);
-    void convert_xy (int x, int y, midipulse & ticks, int & note);
-    void convert_tn (midipulse ticks, int note, int & x, int & y);
+    void convert_xy (int x, int y, midipulse & tick, int & note);
+
+    /**
+     *  Convenience function that calls convert_xy() for the drop and y
+     *  values.
+     *
+     * \param tick
+     *      The horizontal location of the drop.
+     *
+     * \param note
+     *      The vertical location of the drop.
+     */
+
+    void convert_drop_xy (midipulse & tick, int & note)
+    {
+        convert_xy(m_drop_x, m_drop_y, tick, note);
+    }
+
+    void convert_tn (midipulse tick, int note, int & x, int & y);
     void xy_to_rect
     (
         int x1, int y1, int x2, int y2,

@@ -330,6 +330,8 @@ midi_container::fill_time_sig (const perform & p)
  *
  * \change ca 2017-08-15
  *      Fixed issue #103, was writing tempo bytes in the wrong order here.
+ *      Accidentally committed along with fruity changes, sigh, so go back a
+ *      couple of commits to see the changes.
  *
  * \param p
  *      Provides the performance object from which we get some global MIDI

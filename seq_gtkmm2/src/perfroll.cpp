@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-06
+ * \updates       2017-08-16
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -676,7 +676,6 @@ perfroll::draw_sequence_on (int seqnum)
                         bool selected;
                         int velocity;
                         draw_type_t dt;
-                        seq->reset_draw_marker();
 
 #ifdef SEQ64_STAZED_TRANSPOSE
 
@@ -685,11 +684,13 @@ perfroll::draw_sequence_on (int seqnum)
                          * instead of black.
                          */
 
-                        if (seq->get_transposable())
+                        bool transposable = seq->get_transposable();
+                        if (transposable)
                             m_gc->set_foreground(black_paint());
                         else
                             m_gc->set_foreground(red());
 #else
+                        bool transposable = false;
                         m_gc->set_foreground(black_paint());
 #endif
 
@@ -744,7 +745,7 @@ perfroll::draw_sequence_on (int seqnum)
                             if (tick_f_x >= x && tick_s_x <= x + w)
                             {
                                 int ny = y + note_y;
-                                Color paint = black();
+                                Color paint = transposable ? black() : red();
                                 if (dt == DRAW_TEMPO)
                                 {
                                     set_line(Gdk::LINE_SOLID, 2);

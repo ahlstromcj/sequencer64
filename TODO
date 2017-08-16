@@ -30,8 +30,6 @@ Hot bugs:
     -   Pressing the keep-queue activates the Q button, but pressing another
         key, or the temporary queue key, or changing the current screen set,
         does *not* de-activate the keep-queue status.
-    -   Consider making Sequencer64 resizable again.
-    -   Why is performance editor not drawing non-transposable events red?
 
 Rtmidi implementation issues to work out:
 

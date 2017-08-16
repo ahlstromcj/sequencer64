@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-13
+ * \updates       2017-08-16
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -398,7 +398,7 @@ mainwnd::mainwnd
      */
 
 #if defined SEQ64_MULTI_MAINWID
-    set_resizable(multi_wid());
+    set_resizable(true);                        // set_resizable(multi_wid());
 #elif defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
     set_resizable(! usr().is_default_mainwid_size());
 #else

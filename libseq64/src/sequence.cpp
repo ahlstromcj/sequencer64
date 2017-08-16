@@ -3377,9 +3377,9 @@ sequence::intersect_triggers
 
 /**
  *  This function examines each note in the event list.  If the given position
- *  is between the current notes on and off time values, values, the these
- *  values are copied to the start and end parameters, respectively, the note
- *  value is copied to the note parameter, and then we exit.
+ *  is between the current note's on and off time values, the these
+ *  values are copied to the start and end parameters, respectively, and the
+ *  note value is copied to the note parameter, and then we exit.
  *
  * \threadsafe
  *
@@ -3421,29 +3421,38 @@ sequence::intersect_notes
         event & eon = DREF(on);
         if (position_note == eon.get_note() && eon.is_note_on())
         {
-            off = on;               /* find next "off" event for the note   */
-            ++off;
-            event & eoff = DREF(off);
-            while
-            (
-                off != m_events.end() &&
-                (eon.get_note() != eoff.get_note() || eoff.is_note_on())
-            )
+            off = on;                   /* find next "off" event for note   */
+            ++off;                      /* hopefully, this is it!           */
+            event & eoff = DREF(off);   /* access the event itself          */
+
+            /*
+             *  (eon.get_note() != eoff.get_note() || eoff.is_note_on())
+             *
+             *  Not quite De Morgan's Law below.  It sounds like we want to
+             *  find the next Note Off event for the current Note On that
+             *  matches the mouse position.
+             */
+
+            bool notematch = false;
+            for ( ; off != m_events.end(); ++off)
             {
-                ++off;
+                if (eon.get_note() == eoff.get_note() && eoff.is_note_off())
+                {
+                    notematch = true;
+                    break;
+                }
             }
-            if
-            (
-                eon.get_note() == eoff.get_note() &&
-                eoff.is_note_off() &&
-                eon.get_timestamp() <= position &&
-                position <= eoff.get_timestamp()
-            )
+            if (notematch)
             {
-                start = eon.get_timestamp();
-                ender = eoff.get_timestamp();
-                note = eon.get_note();
-                return true;
+                midipulse ontime = eon.get_timestamp();
+                midipulse offtime = eoff.get_timestamp();
+                if (ontime <= position && position <= offtime)
+                {
+                    start = eon.get_timestamp();
+                    ender = eoff.get_timestamp();
+                    note = eon.get_note();
+                    return true;
+                }
             }
         }
         ++on;

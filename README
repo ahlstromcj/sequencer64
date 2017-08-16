@@ -1,6 +1,6 @@
 README for Sequencer64 0.93.2 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2017-08-13
+2015-09-10 to 2017-08-16
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
@@ -31,6 +31,9 @@ See the INSTALL file.
     -   Version 0.93.2:
         -   Tweaking the sizing of main window to avoid bottom clipping found
             with some Gnome themes.  Just fudging it, unfortunately.
+        -   Fixed issue #103 which wrote global tempo bytes backwards.
+        -   Fixed issue #106, an off-by-one error in calculating measures that
+            causes edited patterns to grow.
     -   Version 0.93.1:
         -   Version 0.93.1 supports the management of a native MIDI tempo
             track, adhering to MIDI specs.

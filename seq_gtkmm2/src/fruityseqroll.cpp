@@ -121,18 +121,17 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                  */
 
                 sroll.m_seqkeys_wid.set_listen_button_press(ev);
-
                 eventcount = seq.select_note_events /* note already there?  */
                 (
                     tick_s, note_h, tick_s, note_h, sequence::e_would_select
                 );
                 if (eventcount == 0)
                 {
-                    sroll.add_note(tick_s, note_h); /* also does chords */
+                    sroll.add_note(tick_s, note_h); /* also does chords     */
                     needs_update = true;
                 }
             }
-            else                                            /* selecting */
+            else                                            /* selecting    */
             {
                 /*
                  * If under the cursor is not a selected note...
@@ -212,24 +211,20 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                         int n;                          // note number
                         sroll.convert_drop_xy(tick, note);
                         bool found = seq.intersect_notes(tick, note, s, f, n);
-printf("drop tick, note = %ld, %d, found = %s\n", tick, note, found ? "T" : "F");
                         if (found && n == note)
                         {
                             midipulse hsize = seq.handle_size(s, f);
                             if (tick >= (f - hsize) && tick <= f)
                             {
                                 right_handle = true;
-printf("right\n");
                             }
                             else if (tick >= s && tick <= (s + hsize))
                             {
                                 left_handle = true;
-printf("left\n");
                             }
                             else
                             {
                                 center_handle = true;
-printf("center\n");
                             }
                         }
                     }

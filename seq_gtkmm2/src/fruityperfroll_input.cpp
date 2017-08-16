@@ -218,16 +218,16 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * ev, perfroll & roll)
         if (p.is_active(dropseq))
         {
             midipulse droptick = roll.m_drop_tick;
-            droptick -= droptick % roll.m_snap;                 /* stazed: grid snap    */
+            droptick -= droptick % roll.m_snap;         /* stazed: grid snap    */
             bool state = seq->get_trigger_state(droptick);
             if (state)
             {
                 roll.split_trigger(dropseq, droptick);
                 result = true;
             }
-            else                                                /* track, paste trig    */
+            else                                        /* track, paste trig    */
             {
-                p.push_trigger_undo(dropseq);                   /* stazed code          */
+                p.push_trigger_undo(dropseq);           /* stazed code          */
                 seq->paste_trigger(droptick);
             }
         }
@@ -242,8 +242,8 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * ev, perfroll & roll)
          *
          * set_adding_pressed(true);
          *
-         *      The code below seems somewhat different from the seq24 original, but
-         *      somwwhat seems to work.
+         *      The code below seems somewhat different from the seq24
+         *      original, but somwwhat seems to work.
          */
 
         if (p.is_active(dropseq))
@@ -251,7 +251,7 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * ev, perfroll & roll)
             midipulse seqlength = seq->get_length();
             bool state = seq->get_trigger_state(droptick);
             set_adding_pressed(true);
-            if (state)                  /* resize or move event based on where clicked  */
+            if (state)      /* resize or move event based on where clicked  */
             {
                 set_adding_pressed(false);
 

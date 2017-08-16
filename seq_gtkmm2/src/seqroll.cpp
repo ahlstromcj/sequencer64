@@ -1487,7 +1487,6 @@ seqroll::update_mouse_pointer (bool adding)
     {
         get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
     }
-//  else if         // COMMENTED OUT AS EXPERIMENT
     if
     (
          m_seq.intersect_notes(droptick, dropnote, s, f, note) &&

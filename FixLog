@@ -1,8 +1,18 @@
 Fixes To Issue Reported at GitHub
 Chris Ahlstrom
-2017-05-13 to 2017-08-05
+2017-05-13 to 2017-08-16
 
 This file documents (belatedly) GitHub issues raised and pull-requests made.
+
+ *  90 yousefamar : resizing notes not possible in fruity mode
+ *  91 ahlstromcj : need help testing variset....
+ *  92 milkmiruku : indep mainwids issue.
+ *  95 layk : [Pull request] Fix for note off not being played when cutting
+              or moving notes.
+ * 105 pixelrust : Pattern Editor / Piano Roll: new notes are played, but
+       there is no Note Off if Interaction Method is set to Fruity
+
+The hot issues at this date:  
 
  *  Actually, some of these are fixed, need to update them.
 
@@ -439,8 +449,8 @@ uld it be possible to centre sets?
     patterns with another mainwind. Otherwise, a 'swap set with' submenu
     populated by options for other sets with patterns in them?
 
- * 95 layk : [Pull request] Fix for note off not being played when cutting
-             or moving notes.
+ *  95 layk : [Pull request] Fix for note off not being played when cutting
+              or moving notes.
 
     The code plays note off for all events that are marked and is_note_on when
     cutting or moving.
@@ -451,6 +461,8 @@ uld it be possible to centre sets?
 
     To test this make a long note and cut it. Note stays on and is never shut
     down.
+
+    STILL NEEDS TESTING!
 
  * 97 F0rth : another seq24 fork
 
@@ -473,6 +485,18 @@ uld it be possible to centre sets?
 
    This turned out to be caused by moving perform::launch() later in the
    startup process; an easy fix, once understood.
+
+ * 101 DevanWolf : Needs support for Windows and Mac OSX
+
+ * 102 pixelrust : Clicking in tracks without patterns breaks Song Editor if
+       Interaction Method is set to Fruity
+
+ * 103 : redacted
+
+ * 104 Simon van der Veldt : Bottom of main window cut off 
+
+ * 105 pixelrust : Pattern Editor / Piano Roll: new notes are played, but
+       there is no Note Off if Interaction Method is set to Fruity
 
 More:
 

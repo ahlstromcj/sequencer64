@@ -30,6 +30,8 @@ Hot bugs:
     -   Pressing the keep-queue activates the Q button, but pressing another
         key, or the temporary queue key, or changing the current screen set,
         does *not* de-activate the keep-queue status.
+    -   "seq64 --option sets=8x12 file.midi" yields error "? MIDI file not
+        found: sets=8x12".
 
 Rtmidi implementation issues to work out:
 

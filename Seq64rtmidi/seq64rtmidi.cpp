@@ -24,7 +24,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2017-07-22
+ * \updates       2017-08-16
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -141,6 +141,7 @@ main (int argc, char * argv [])
              * These same settings are made in the cmdlineopts module.
              */
 
+            ++optionindex;
             p.seqs_in_set(seq64::usr().seqs_in_set());
             p.max_sets(seq64::usr().max_sets());
         }

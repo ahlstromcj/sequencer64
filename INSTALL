@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.93.2 and above
 Chris Ahlstrom
-2015-09-10 to 2017-08-13
+2015-09-10 to 2017-08-16
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -43,18 +43,21 @@ Steps:
        If you do not want to see a lot of output, the stock autotools
        option "--enable-silent-rules" can be added to the ./configure command.
 
+       For building in release mode without seeing a ton of compiler output,
+       the following command will configure for the "silent rules" of Automake:
+
+       $ ./bootstrap --enable-release [ -rm | -cli | -am | -pm ]
+       $ ./bootstrap -er
+
+       The additional options select the kind of Sequencer64 to build.
+       The default is -rm, which is most likely what you want.
+
        For debugging without libtool getting in the way, just run the
        following command, which will add the --enable-debug and
        --disable-shared options to a configure run:
 
        $ ./bootstrap --enable-debug [ -rm | -cli | -am | -pm ]
-       $ ./bootstrap -ed [ -rm | -cli | -am | -pm ]
-
-       For building in release mode without seeing a ton of compiler output,
-       the following command will configure for the "silent rules" of Automake:
-
-       $ ./bootstrap --enable-release [ -rm | -cli | -am | -pm ]
-       $ ./bootstrap -er [ -rm | -cli | -am | -pm ]
+       $ ./bootstrap -ed
 
        If desired, there are also configure options as described below,
        and also conditional macros in the code.  The configure options can be 

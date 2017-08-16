@@ -1,5 +1,46 @@
+2017-08-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure.ac, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/fruityseqroll.cpp, seq_gtkmm2/src/seqroll.cpp: Tweaks
+	to fruity mode, version 0.93.2 pending.
+
+2017-08-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/sequence.cpp: Fixed issue #106, an off-by-one error
+	in sequence::calculate_measures().
+	* libseq64/src/midi_container.cpp: Fixed issue #103 which wrote
+	global tempo bytes backwards.
+	* contrib/notes/fruity-mode.txt, libseq64/include/sequence.hpp,
+	libseq64/src/calculations.cpp, libseq64/src/midi_container.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/fruityseqroll.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Working through issues with fruity
+	interactions.
+
+2017-08-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqroll.cpp: Minor fix
+	to fruity interaction, more to investigate.
+
+2017-08-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, configure.ac, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/fruityseq.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perfroll_input.cpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqevent.cpp: Fixes
+	related to issues #103 and #102.
+	* README, libseq64/include/user_settings.hpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/mainwid.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Issue #104, fixed clipping using fudge
+	factors.
+
 2017-08-11  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* ChangeLog, INSTALL, README, configure.ac: Version 0.93.1 pending.
 	* seq_gtkmm2/src/options.cpp: Tweaking Options / MIDI / Meta
 	interface.
 	* libseq64/include/perform.hpp, libseq64/src/midi_container.cpp,

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-08-10
+ * \updates       2017-08-16
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -2141,7 +2141,12 @@ perform::set_screenset (int ss)
     if (ss < 0)
         ss = m_max_sets - 1;
     else if (ss >= m_max_sets)
-        ss = 0;
+    {
+        if (m_screenset == 0)
+            ss = m_max_sets - 1;    /* at zero, dropping to largest value   */
+        else
+            ss = 0;                 /* moving up from maximum back to 0     */
+    }
 
     if (ss != m_screenset)
     {

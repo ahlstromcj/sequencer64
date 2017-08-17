@@ -361,7 +361,7 @@ uld it be possible to centre sets?
     middle-mouse drag. Is this a bug or am I doing something wrong? Any tips
     much appreciated.
 
- *  91 ahlstromcj : need help testing variset....
+ x  91 ahlstromcj : need help testing variset....
 
     layk :
 
@@ -369,11 +369,16 @@ uld it be possible to centre sets?
     MAX to 0 in add_sets branch using default 4x8 but goes from MAX to 0 using
     8x8 and 8x12.
 
+        [ Not sure this qualifies as a bug.  Will check it out. FIXED! ]
+
     1. One thing i noticed now on add_sets and in wip branch is that
        cut/paste does not work. It loses the sequence on both.
        Many times on 8x12 matrix making a sequence on bottom right corner i
        could not cut it at all and move it to the left. I could copy it
        though.
+
+       [ So far, cannot duplicate.  Can also drag and drop properly.]
+
     2. On 8x12 I was trying to sort of build up sequence starting from two,
        adding two and then adding two but i could not go further than 6
        sequences or the third addition to the sequences. I have to retest

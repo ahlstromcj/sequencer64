@@ -810,9 +810,8 @@ mainwnd::mainwnd
     {
         m_spinbutton_ss->set_sensitive(true);
         m_spinbutton_ss->set_editable(true);
-        m_spinbutton_ss->set_wrap(false);
         m_spinbutton_ss->set_width_chars(3);
-        m_spinbutton_ss->set_wrap(false);
+        m_spinbutton_ss->set_wrap(true);    // m_spinbutton_ss->set_wrap(false);
 
 #if ! defined SEQ64_MULTI_MAINWID
 
@@ -827,7 +826,7 @@ mainwnd::mainwnd
         );
 #endif
 
-        add_tooltip(m_spinbutton_ss, "Select screen-set from one of 32 sets.");
+        add_tooltip(m_spinbutton_ss, "Select screen-set from one of (up to) 32 sets.");
         Gtk::Label * setlabel = manage(new Gtk::Label("_Set", true));
         setlabel->set_mnemonic_widget(*m_spinbutton_ss);
         sethbox->pack_start(*setlabel, Gtk::PACK_SHRINK);

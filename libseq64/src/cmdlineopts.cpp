@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-06-18
+ * \updates       2017-08-17
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -157,10 +157,14 @@ static struct option long_options [] =
     {"showmidi",            0, 0, '@'},                 /* no separator!    */
 
     /*
-     * New app-specific options, for easier expansion.
+     * New app-specific options, for easier expansion.  The -o/--option
+     * processing has to be handled outside of the get-opt setup, because it
+     * can disable detection of a MIDI file-name argument.
      */
 
+#if 0
     {"option",              0, 0, 'o'},                 /* expansion!       */
+#endif
 
     {0, 0, 0, 0}                                        /* terminator       */
 };
@@ -181,10 +185,13 @@ static struct option long_options [] =
 \endverbatim
  *
  *  Previous arg-list, items missing! "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"
+ *
+ *  Also note that 'o' cannot be included here due to issues involving
+ *  parse_o_options(), but it is *reserved*.
  */
 
 static const std::string s_arg_list =
-    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNno:Ppq:RrtSsU:uVvx:"   /* modern args      */
+    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNn:Ppq:RrtSsU:uVvx:"    /* modern args      */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -871,13 +878,16 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             printf("Deactivating LASH support.\n");
             break;
 
+#if 0
         case 'o':
 
             /*
              * We now handle this processing separately and first, in the
-             * parse_o_option() function.
+             * parse_o_option() function.  Doing it here can mess up parsing.
              */
+
             break;
+#endif
 
         case 'P':
         case '9':

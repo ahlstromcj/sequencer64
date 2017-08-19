@@ -853,8 +853,12 @@ public:
      *
      * \param groupnum
      *      Provides the group number to look up in the reverse key map for
-     *      groups.  If the count for this value is 0, then a space (was a
-     *      question mark) character is returned.
+     *      groups.
+     *
+     * \return
+     *      Returns the key for the desired group.  If the count for the
+     *      desired group is 0, then a space (was a question mark) character
+     *      is returned.
      */
 
     unsigned int lookup_keygroup_key (int groupnum)

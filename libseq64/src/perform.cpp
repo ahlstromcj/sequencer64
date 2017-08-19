@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-08-16
+ * \updates       2017-08-17
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -278,8 +278,9 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_armed_saved               (false),
     m_armed_statuses            (),         // boolean array, size 1024
     m_seqs_in_set               (usr().seqs_in_set()),      // c_seqs_in_set
+    m_max_groups                (c_max_sequence / m_seqs_in_set),
     m_tracks_mute_state         (m_seqs_in_set, false),     // sets track state
-    m_mode_group                (true),
+    m_mode_group                (true),     // why true????
     m_mode_group_learn          (false),
     m_mute_group_selected       (SEQ64_NO_MUTE_GROUP_SELECTED),
     m_midi_mute_group_present   (false),
@@ -379,7 +380,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
 
     /*
      * Now that these are vector<bool>, they are initialized in the
-     * constructor.
+     * constructor's initializer list.
      *
      *  for (int i = 0; i < m_seqs_in_set; ++i)
      *      m_tracks_mute_state[i] = m_screenset_state[i] = false;
@@ -582,7 +583,8 @@ perform::clamp_track (int track) const
  *  Provides common code to keep the group value valid even in variset mode.
  *  Fixed the bug we found, where we checked for track > m_seqs_in_set,
  *  instead of using the >= operator.  We now compare against the new
- *  c_max_groups value (32).
+ *  c_max_groups value (32).  But, if the set-size is larger, then we have
+ *  fewer mute groups available.
  *
  * \param group
  *      The group value to be checked and rectified as necessary.
@@ -609,9 +611,8 @@ perform::clamp_group (int group) const
         group = c_max_groups - 1;
         errprintf("clamped group number to %d\n", group);
     }
-    int maxgroups = c_max_sequence / m_seqs_in_set;
-    if (group > maxgroups)
-        group = maxgroups;
+    if (group >= m_max_groups)
+        group = m_max_groups - 1;
 
     return group;
 }
@@ -745,7 +746,7 @@ perform::select_group_mute (int mutegroup)
 bool
 perform::load_mute_group (int gmute, int gm [c_seqs_in_set])
 {
-    bool result = (gmute >= 0 && gmute < c_max_groups);
+    bool result = gmute >= 0 && gmute < c_max_groups;
     if (result)
     {
         int groupoffset = gmute * c_seqs_in_set;
@@ -993,13 +994,15 @@ perform::set_and_copy_mute_group (int mutegroup)
  *  every screen-set.  In each screen-set, it acts on each active sequence.
  *  If the active sequence is in the current "in-view" screen-set (m_screenset
  *  as opposed to m_playscreen, and its m_track_mute_state[] is true,
- *  then the sequence is turned on, otherwise it is turned off.
+ *  then the sequence is turned on, otherwise it is turned off.  The result is
+ *  that the in-view screen-set is activate as per the mute states, while all
+ *  other screen-sets are muted.
  *
  * \change tdeagan 2015-12-22 via git pull.
  *      Replaced m_playscreen with m_screenset.
  *
  *  It seems to us that the for (g) clause should have g range from 0 to
- *  m_max_sets, not m_seqs_in_set.
+ *  m_max_sets, not m_seqs_in_set.  Done.
  */
 
 void
@@ -1013,7 +1016,7 @@ perform::mute_group_tracks ()
             for (int s = 0; s < m_seqs_in_set; ++s)
             {
                 int seqnum = seqoffset + s;
-                if (is_active(seqnum))
+                if (is_active(seqnum))          /* semi-redundant check */
                 {
 #ifdef SEQ64_USE_TDEAGAN_CODE
                     bool on = (g == m_screenset) && m_tracks_mute_state[s];
@@ -2853,7 +2856,7 @@ perform::unqueue_sequences (int current_seq)
 {
     for (int s = 0; s < m_seqs_in_set; ++s)
     {
-        int seq = m_screenset_offset + s;           /* not playscreen   */
+        int seq = m_screenset_offset + s;           /* not play-screen      */
         if (is_active(seq))
         {
             if (seq == current_seq)
@@ -2861,7 +2864,7 @@ perform::unqueue_sequences (int current_seq)
                 if (! m_seqs[seq]->get_playing())
                     m_seqs[seq]->toggle_queued();
             }
-            else if (m_screenset_state[s])
+            else if (m_screenset_state[s])          /* state of current set */
                 m_seqs[seq]->toggle_queued();
         }
     }
@@ -2875,13 +2878,13 @@ perform::unqueue_sequences (int current_seq)
 void
 perform::all_notes_off ()
 {
-    for (int s = 0; s < m_sequence_high; ++s)   /* modest speed-up  */
+    for (int s = 0; s < m_sequence_high; ++s)   /* a modest speed-up    */
     {
         if (is_active(s))
             m_seqs[s]->off_playing_notes();
     }
     if (not_nullptr(m_master_bus))
-        m_master_bus->flush();               /* flush the MIDI buss  */
+        m_master_bus->flush();                  /* flush the MIDI buss  */
 }
 
 /**
@@ -2891,6 +2894,9 @@ perform::all_notes_off ()
  *  folded into one member function of the sequence class.  Finally, flush the
  *  master MIDI buss.
  *
+ *  Could use a member function pointer to avoid having to code two loops.
+ *  See the non-disabled code below.
+ *
  * \param pause
  *      Try to prevent notes from lingering on pause if true.  By default, it
  *      is false.
@@ -2899,6 +2905,14 @@ perform::all_notes_off ()
 void
 perform::reset_sequences (bool pause)
 {
+    void (sequence::* f) (bool) = pause ? &sequence::pause : &sequence::stop ;
+    for (int s = 0; s < m_sequence_max; ++s)            /* m_sequence_high  */
+    {
+        if (is_active(s))
+            (m_seqs[s]->*f)(m_playback_mode);           /* (new parameter)  */
+    }
+
+#if 0
     if (pause)
     {
         for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high  */
@@ -2915,6 +2929,8 @@ perform::reset_sequences (bool pause)
                 m_seqs[s]->stop(m_playback_mode);
         }
     }
+#endif
+
     m_master_bus->flush();                           /* flush the MIDI buss  */
 }
 
@@ -3941,14 +3957,8 @@ perform::midi_control_event (const event & ev)
     ev.get_data(data[0], data[1]);
     for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)
     {
-        /*
-         * TODO: This can now vary, so we need to re-evaluate here!
-         */
-
         bool is_a_sequence = ctl < m_seqs_in_set;
-        bool is_extended = ctl >= c_midi_controls &&
-            ctl < c_midi_controls_extended;
-
+        bool is_extended = ctl >= c_midi_controls && ctl < c_midi_controls_extended;
         if (midi_control_toggle(ctl).match(status, data[0]))
         {
             if (midi_control_toggle(ctl).in_range(data[1]))
@@ -3959,16 +3969,8 @@ perform::midi_control_event (const event & ev)
                 }
                 else if (is_extended)
                 {
-                    if
-                    (
-                        handle_midi_control_ex
-                        (
-                            ctl, midi_control::action_toggle, data[1]
-                        )
-                    )
-                    {
+                    if (handle_midi_control_ex(ctl, midi_control::action_toggle, data[1]))
                         break;
-                    }
                 }
             }
         }
@@ -4447,8 +4449,8 @@ perform::seq_in_playing_screen (int seq)
 }
 
 /**
- *  Turn the playing of a sequence on or off, if it is active.  Used for the
- *  implementation of sequence_playing_on() and sequence_playing_off().
+ *  Turn the playing of a sequence on or off.  Used for the implementation of
+ *  sequence_playing_on() and sequence_playing_off().
  *
  * \param seq
  *      The number of the sequence to be turned off.
@@ -4726,8 +4728,13 @@ perform::lookup_slot_key (int seqnum)
  *  group learn, and playing screenset.  For further keystroke processing, see
  *  mainwnd :: on_key_press_event().
  *
- *  Keys not handled here are handled in mainwnd:  bpm up & down; screenset up
- *  & down.
+ *  Keys not handled here are handled in mainwnd, where GUI elements exist to
+ *  manage these items:
+ *
+ *      -   bpm up & down
+ *      -   screenset up & down
+ *      -   mute group key
+ *      -   mute group learn
  *
  * seq24 handles the following keys in two "on_key" events:
  *
@@ -4771,10 +4778,6 @@ perform::mainwnd_key_event (const keystroke & k)
     unsigned int key = k.key();
     if (k.is_press())
     {
-        /*
-         * Also not handled here:  mute group key and mute group learn.
-         */
-
         if (key == keys().replace())
             set_sequence_control_status(c_status_replace);
         else if (key == keys().queue() || key == keys().keep_queue())
@@ -4784,7 +4787,7 @@ perform::mainwnd_key_event (const keystroke & k)
         else if (key == keys().set_playing_screenset())
             set_playing_screenset();
         else if (key == keys().group_on())
-            set_mode_group_mute();              /* m_mode_group = true */
+            set_mode_group_mute();                  /* m_mode_group = true */
         else if (key == keys().group_off())
             unset_mode_group_mute();
         else if (key == keys().group_learn())

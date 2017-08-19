@@ -136,10 +136,10 @@
 #endif
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS
-#include "pixmaps/live_mode.xpm"
-#include "pixmaps/menu.xpm"
-#include "pixmaps/muting.xpm"
-#include "pixmaps/song_mode.xpm"
+#include "pixmaps/live_mode.xpm"            // anything better than a mike icon?
+#include "pixmaps/menu.xpm"                 // any better image of a "menu"?
+#include "pixmaps/muting.xpm"               // need better/smaller icon
+#include "pixmaps/song_mode.xpm"            // need better/smaller icon
 #endif
 
 #ifdef USE_RECORD_TEMPO_MENU                // too clumsy
@@ -1253,13 +1253,16 @@ mainwnd::timer_callback ()
      * Calculate the current time, and display it.
      */
 
-    midi_timing mt
-    (
-        perf().get_beats_per_minute(), perf().get_beats_per_bar(),
-        perf().get_beat_width(), perf().ppqn()
-    );
-    std::string t = pulses_to_measurestring(tick, mt);
-    m_tick_time->set_text(t);
+    if (perf().is_pattern_playing())            // EXPERIMENTAL
+    {
+        midi_timing mt
+        (
+            perf().get_beats_per_minute(), perf().get_beats_per_bar(),
+            perf().get_beat_width(), perf().ppqn()
+        );
+        std::string t = pulses_to_measurestring(tick, mt);
+        m_tick_time->set_text(t);
+    }
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT_XXX               /* TMI */
     static midibpm s_bpm = 0.0;
@@ -2739,12 +2742,6 @@ bool
 mainwnd::on_key_press_event (GdkEventKey * ev)
 {
     bool result = false;
-
-    /*
-     * We need to do this near the end of this function:
-     * Gtk::Window::on_key_press_event(ev);
-     */
-
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
         keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS);
@@ -2820,29 +2817,21 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 #endif
         }
 
-        /*
-         * Need to change ev->keyvalue to k.key() in all of these.
-         */
-
         int count = perf().get_key_groups().count(k.key());
         if (count != 0)
         {
-            /*
-             * activate mute group key
-             */
-
             int group = perf().lookup_keygroup_group(k.key());
-            perf().select_and_mute_group(group);
+            perf().select_and_mute_group(group);    /* use mute group key   */
         }
 
         bool mgl = perf().is_group_learning() && k.key() != PREFKEY(group_learn);
-        if (mgl)                                /* mute group learn         */
+        if (mgl)                                    /* mute group learn     */
         {
-            if (perf().get_key_groups().count(k.key()) != 0)
+            if (count != 0)
             {
                 std::ostringstream os;
                 os
-                    << "Key '" << keyval_name(k.key())   // gdk_
+                    << "Mute group key '" << keyval_name(k.key())
                     << "' (code = " << k.key() << ") successfully mapped."
                    ;
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-10
+ * \updates       2017-08-17
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -343,7 +343,19 @@ private:
      *  creating the perform object.
      */
 
-    int m_seqs_in_set;        /* replaces global c_seqs_in_set    */
+    int m_seqs_in_set;                  /* replaces global c_seqs_in_set    */
+
+    /**
+     *  Since we can increase the number of sequences in a set, we need to be
+     *  able to decrease the number of sets or groups we can store.  This
+     *  value is the maximum number of sequences we can store (c_max_sequence)
+     *  divided by the number of sequences in a set.
+     *
+     *  Groups are a set of sequence-states.  They are held in a linear array
+     *  of size c_max_sequence, subdivided into groups of size m_seqs_in_set.
+     */
+
+    int m_max_groups;
 
     /**
      *  Holds the current mute states of each track.  Unlike the
@@ -1692,7 +1704,6 @@ public:
     void unset_queued_replace (bool clearbits = true);
     void sequence_playing_toggle (int seq);
     void sequence_playing_change (int seq, bool on);
-
     void set_keep_queue (bool activate);
     bool is_keep_queue () const;
 

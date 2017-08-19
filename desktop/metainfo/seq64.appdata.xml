@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2015-2017 Sequencer project <ahlstromcj@gmail.com> -->
+<component type="desktop">
+  <id>seq64.desktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0+</project_license>
+  <name>Sequencer64</name>
+  <summary>A Software Synthesizer for Linux</summary>
+  <description>
+    <p>
+    Sequencer64 is a MIDI software sequencer for Linux. ....
+    </p>
+    <p>
+    Originally based on the 0.9.2 version of seq24 (Copyright 200x-2010 Rob Buse), development of Sequencer64 has continued for quite a while now in its own direction, with many new features, bug-fixes, and ongoing optimizations.
+    </p>
+  </description>
+  <releases>
+    <release version="0.93.2" date="2017-08-18" />
+    </releases>
+  <provides>
+    <binary>seq64</binary>
+  </provides>
+
+  <screenshots>
+    <screenshot type="default">
+       <image>https://a.fsdn.com/con/app/proj/seq64/screenshots/Main.png</image>
+       <caption>The main window showing Sequencer64 running</caption>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">https://github.com/ahlstromcj/sequencer64/</url>
+  <updatecontact>ahlstromcj@gmail.com</updatecontact>
+</component>

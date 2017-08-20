@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-14
+ * \updates       2017-08-20
  * \license       GNU GPLv2 or above
  *
  *  This module handles "fruity" interactions only in the piano roll
@@ -401,10 +401,11 @@ FruitySeqRollInput::on_button_release_event
     int delta_note;
 
     /*
-     * Stazed fix, forwards the event to turn off the hint note.
+     * Stazed fix, forwards the event to turn off the hint note.  We had this
+     * wrong, which lead to issue #105.
      */
 
-    sroll.m_seqkeys_wid.set_listen_button_press(ev);
+    sroll.m_seqkeys_wid.set_listen_button_release(ev);
 
     /* middle click, or ctrl- (???) left click button up */
 

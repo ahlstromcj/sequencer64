@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2017-08-19
+ * \updates       2017-08-20
  * \license       GNU GPLv2 or above
  *
  * Stazed:
@@ -827,74 +827,10 @@ public:
      * there first]
      */
 
-    /**
-     * \getter m_key_events_rev[seqnum]
-     *
-     * \param seqnum
-     *      Provides the sequence number to look up in the reverse key map for
-     *      patterns/sequences.  If the count for this value is 0, then a
-     *      space (was question mark) character is returned.  Not checked for
-     *      maximum!
-     */
-
-    unsigned lookup_keyevent_key (int seqnum)
-    {
-        return (m_key_events_rev.count(seqnum) > 0) ?
-            m_key_events_rev[seqnum] : ' ' ;
-    }
-
-    /**
-     * \getter m_key_events_rev[keycode]
-     *
-     * \param keycode
-     *      Provides the keycode to look up in the (forward) key map for
-     *      patterns/sequences.  If the count for this value is 0, then a
-     *      0 is returned.
-     */
-
-    int lookup_keyevent_seq (unsigned keycode)
-    {
-        return (m_key_events.count(keycode) > 0) ?
-            m_key_events[keycode] : 0 ;
-    }
-
-    /**
-     * \getter m_key_events_rev[groupnum]
-     *
-     * \param groupnum
-     *      Provides the group number to look up in the reverse key map for
-     *      groups.
-     *
-     * \return
-     *      Returns the key for the desired group.  If the count for the
-     *      desired group is 0, then a space (was a question mark) character
-     *      is returned.
-     */
-
-    unsigned lookup_keygroup_key (int groupnum)
-    {
-        bool valid = m_key_groups_rev.count(groupnum) > 0 &&
-            groupnum < group_max();
-
-        return valid ? m_key_groups_rev[groupnum] : ' ' ;
-    }
-
-    /**
-     * \getter m_key_events_rev[keycode]
-     *
-     * \param keycode
-     *      Provides the sequence number to look up in the reverse key map for
-     *      groups.  If the count for this value is 0, then a 0 is returned.
-     *      We might consider returning (-1) as an error code at some point.
-     */
-
-    int lookup_keygroup_group (unsigned keycode)
-    {
-        bool valid = (m_key_groups.count(keycode) > 0) &&
-            m_key_groups[keycode] < group_max();
-
-        return valid ? m_key_groups[keycode] : (-1) ;
-    }
+    unsigned lookup_keyevent_key (int seqnum);
+    unsigned lookup_keygroup_key (int groupnum);
+    int lookup_keyevent_seq (unsigned keycode);
+    int lookup_keygroup_group (unsigned keycode);
 
     virtual std::string key_name (unsigned key) const;
 

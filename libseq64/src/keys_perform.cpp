@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2017-08-19
+ * \updates       2017-08-20
  * \license       GNU GPLv2 or above
  *
  *  Added pattern-edit and event-edit keys which change the pattern slot
@@ -35,10 +35,10 @@
  *  Simplification, at a small space cost.
  */
 
-#include <stdio.h>                      /* snprintf()   */
+#include <stdio.h>                      /* snprintf()       */
 
-#include "globals.h"                    /* c_max_groups */
-#include "gdk_basic_keys.h"
+#include "gdk_basic_keys.h"             /* SEQ64 key set    */
+#include "globals.h"                    /* c_max_groups     */
 #include "keys_perform.hpp"
 
 /*
@@ -287,8 +287,79 @@ keys_perform::set_key_group (unsigned keycode, int group_slot)
     m_key_groups_rev[group_slot] = keycode;
 }
 
+/**
+ * \getter m_key_events_rev[seqnum]
+ *
+ * \param seqnum
+ *      Provides the sequence number to look up in the reverse key map for
+ *      patterns/sequences.  If the count for this value is 0, then a
+ *      SEQ64_Clear character is returned.
+ */
+
+unsigned
+keys_perform::lookup_keyevent_key (int seqnum)
+{
+    return (seqnum < c_max_keys && m_key_events_rev.count(seqnum) > 0) ?
+        m_key_events_rev[seqnum] : SEQ64_Clear ;
+}
+
+/**
+ * \getter m_key_events_rev[keycode]
+ *
+ * \param keycode
+ *      Provides the keycode to look up in the (forward) key map for
+ *      patterns/sequences.  If the count for this value is 0, then a
+ *      0 is returned.
+ */
+
+int
+keys_perform::lookup_keyevent_seq (unsigned keycode)
+{
+    return (m_key_events.count(keycode) > 0) ?
+        m_key_events[keycode] : 0 ;
+}
+
+/**
+ * \getter m_key_events_rev[groupnum]
+ *
+ * \param groupnum
+ *      Provides the group number to look up in the reverse key map for
+ *      groups.
+ *
+ * \return
+ *      Returns the key for the desired group.  If the count for the
+ *      desired group is 0, then a SEQ64_Clear character is returned.
+ */
+
+unsigned
+keys_perform::lookup_keygroup_key (int groupnum)
+{
+    bool valid = m_key_groups_rev.count(groupnum) > 0 &&
+        groupnum < group_max();
+
+    return valid ? m_key_groups_rev[groupnum] : SEQ64_Clear ;
+}
+
+/**
+ * \getter m_key_events_rev[keycode]
+ *
+ * \param keycode
+ *      Provides the sequence number to look up in the reverse key map for
+ *      groups.  If the count for this value is 0, then a 0 is returned.
+ *      We might consider returning (-1) as an error code at some point.
+ */
+
+int
+keys_perform::lookup_keygroup_group (unsigned keycode)
+{
+    bool valid = (m_key_groups.count(keycode) > 0) &&
+        m_key_groups[keycode] < group_max();
+
+    return valid ? m_key_groups[keycode] : (-1) ;
+}
+
 /*
- * Functions for the key-transfer structure.
+ *  Free functions for the key-transfer structure.
  */
 
 /**

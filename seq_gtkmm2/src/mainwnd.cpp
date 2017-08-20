@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-19
+ * \updates       2017-08-20
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -2466,6 +2466,7 @@ mainwnd::reload_mute_groups ()
             *this, "reload of mute groups", false,
             Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
         );
+        dialog.set_title("Mute Groups");
         dialog.set_secondary_text("Failed", false);
         dialog.run();
     }
@@ -2731,7 +2732,7 @@ mainwnd::on_key_release_event (GdkEventKey * ev)
     if (perf().is_group_learning())
         k.shift_lock();
 
-    (void) perf().mainwnd_key_event(k);
+    (void) perf().mainwnd_key_event(k);     // already called in key-press!!!
     return false;
 }
 
@@ -2834,23 +2835,21 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             {
                 mgl = false;
                 std::ostringstream os;
-                os << "Due to larger set-size, groups limited.";
+                os
+                    << "Due to larger set-size, only " << perf().group_max()
+                    << " groups available.  See File / Options / Keyboard."
+                    ;
                 Gtk::MessageDialog dialog
                 (
                     *this, "Mute group out of range, ignored", false,
                     Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true
                 );
+                dialog.set_title("Group Learn");
                 dialog.set_secondary_text(os.str(), false);
                 dialog.run();
                 perf().unset_mode_group_learn();
             }
         }
-
-        /*
-         * TODO: figure out if the key is outside of the range of groups
-         * available based on the set-size and the maximum number of groups
-         * available.  If outside, we need a special warning.  HOW TO DO IT?
-         */
 
         if (mgl)                                    /* mute group learn     */
         {
@@ -2867,6 +2866,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                     *this, "MIDI mute group learn success", false,
                     Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true
                 );
+                dialog.set_title("Group Learn");
                 dialog.set_secondary_text(os.str(), false);
                 dialog.run();
 
@@ -2882,8 +2882,8 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 os
                     << "Key '" << keyval_name(k.key())
                     << "' (code = " << k.key()
-                    << ") is not one of the configured mute-group keys. "
-                    << "To change it, see File/Options menu or the rc file."
+                    << ") is not a configured mute-group key. "
+                    << "To add it, see File/Options menu or the 'rc' file."
                    ;
 
                 Gtk::MessageDialog dialog
@@ -2891,6 +2891,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                     *this, "MIDI mute group learn failed", false,
                     Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
                 );
+                dialog.set_title("Group Learn");
                 dialog.set_secondary_text(os.str(), false);
                 dialog.run();
 

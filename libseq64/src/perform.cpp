@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-08-19
+ * \updates       2017-08-20
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -4693,10 +4693,10 @@ perform::lookup_keyevent_key (int seqnum)
     if (! rc().legacy_format())
         seqnum -= m_screenset_offset;
 
-    if (seqnum >= c_seqs_in_set)
-        seqnum -= c_seqs_in_set;
+    if (seqnum >= c_max_keys)
+        seqnum -= c_max_keys;
 
-    if (seqnum < c_seqs_in_set)
+    if (seqnum < c_max_keys)
         result = keys().lookup_keyevent_key(seqnum);
 
     return result;

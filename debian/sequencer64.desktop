@@ -2,6 +2,7 @@
 Name=Sequencer64
 GenericName=
 Comment=MIDI Loop Sequencer derived from seq24
+Comment[fr]=Séquenceur de boucle MIDI dérivé de seq24
 Icon=/usr/share/pixmaps/sequencer64.xpm
 
 Type=Application

@@ -1,9 +1,8 @@
 [Desktop Entry]
 Name=seq64
-Comment=Live MIDI Pattern Sequencer
-Comment[fr]=Vive la Sequencer!
-GenericName=Sequencer
-GenericName[fr]=Sequencer
+GenericName=Sequencer64
+Comment=MIDI Loop Sequencer derived from seq24
+Comment[fr]=Séquenceur de boucle MIDI dérivé de seq24
 Type=Application
 Categories=Music;Midi;AudioVideo;X-Sound;Audio;X-Multitrack;X-Alsa;X-Jack;
 Keywords=music;synthesiser;multichannel;midi;alsa;jack;live;standalone;lash;

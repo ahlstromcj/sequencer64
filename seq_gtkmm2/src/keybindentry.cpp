@@ -19,12 +19,12 @@
 /**
  * \file          keybindentry.cpp
  *
- *  This module declares/defines the base class for keybinding entries.
+ *  This module declares/defines the base class for key-binding entries.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-23
+ * \updates       2017-08-19
  * \license       GNU GPLv2 or above
  *
  *  This module defines a GTK text-edit widget for getting keyboard button
@@ -57,24 +57,26 @@ namespace seq64
  *
  * \param location_to_write
  *      The location that holds the value of the key associated with
- *      the key-binding.  The default value of this parameter is the null
- *      pointer.
+ *      the key-binding.
  *
  * \param p
  *      Points to the performance object used with this key-binding.  The
- *      default value of this parameter is the null pointer.
+ *      default value of this parameter is the null pointer, but it is needed
+ *      for the pattern hot-keys frame and the mute-group frame of the Options
+ *      dialog.
  *
  * \param s
  *      Provides the slot value for this key-binding.  The default value
- *      of this parameter is zero.
+ *      of this parameter is zero, but it is needed to provide numeric labels
+ *      for the hot-keys and mute-group frames of the Options dialog.
  */
 
 keybindentry::keybindentry
 (
     type t,
-    unsigned int * location_to_write,
+    unsigned * location_to_write,
     perform * p,
-    long s
+    int s
 ) :
     Gtk::Entry  (),
     m_key       (location_to_write),
@@ -90,11 +92,13 @@ keybindentry::keybindentry
         break;
 
     case events:
-        set(m_perf->lookup_keyevent_key(m_slot));
+        if (not_nullptr(m_perf))
+            set(m_perf->lookup_keyevent_key(m_slot));
         break;
 
     case groups:
-        set(m_perf->lookup_keygroup_key(m_slot));
+        if (not_nullptr(m_perf))
+            set(m_perf->lookup_keygroup_key(m_slot));
         break;
     }
 }
@@ -109,7 +113,7 @@ keybindentry::keybindentry
  */
 
 void
-keybindentry::set (unsigned int val)
+keybindentry::set (unsigned val)
 {
     char buf[64] = "";
     std::string special = keyval_name(val);

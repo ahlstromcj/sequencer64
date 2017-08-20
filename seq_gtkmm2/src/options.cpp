@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-11
+ * \updates       2017-08-19
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -96,7 +96,7 @@ options::options
 #if GTK_MINOR_VERSION < 12
     m_tooltips                      (manage(new Gtk::Tooltips()),
 #endif
-    m_mainperf                      (p),        /* accessed via perf() */
+    m_mainperf                      (p),            /* accessed via perf() */
     m_button_ok                     (manage(new Gtk::Button(Gtk::Stock::OK))),
     m_button_jack_transport
     (
@@ -659,7 +659,9 @@ options::add_keyboard_page ()
     for (int i = 0; i < c_max_keys; ++i)            // not c_seqs_in_set
     {
         /*
-         * TODO:  evaluate viability against a variable column count.
+         * TODO:  evaluate viability against a variable column count.  Also,
+         * this stuff could be moved to the nearly identical loop starting
+         * around line 693 below!
          */
 
         int x = i % SEQ64_SET_KEYS_COLUMNS * 2;     // 8 = c_mainwnd_cols ?
@@ -700,6 +702,11 @@ options::add_keyboard_page ()
         (
             new keybindentry(keybindentry::groups, NULL, &perf(), i)
         );
+#ifdef USE_MUTE_GROUP_COUNT_CHECK
+        if (i >= perf().group_max())
+            entry->set_sensitive(false);
+#endif
+
         mutegrouptable->attach(*numlabel, x, x+1, y, y+1);
         mutegrouptable->attach(*entry, x+1, x+2, y, y+1);
     }
@@ -1125,7 +1132,7 @@ options::add_jack_sync_page ()
 
     Gtk::RadioButton::Group group = rb_live->get_group();
     rb_perform->set_group(group);
-    if (m_mainperf.song_start_mode())
+    if (perf().song_start_mode())
         rb_perform->set_active(true);
     else
         rb_live->set_active(true);
@@ -1507,10 +1514,10 @@ options::lash_support_callback (Gtk::CheckButton * btn)
  * \warning
  *      These CheckButtons really need to be radio buttons (along with some
  *      changes in how the various JACK transport flags of Sequencer64 are
- *      juxtaposed).  However, what we do instead is make sure that the 
+ *      juxtaposed).  However, what we do instead is make sure that the
  *      buttons are coordinated properly:
  *
- *          -   JACK Transport (makes Sequencer64 a JACK slave).  Always 
+ *          -   JACK Transport (makes Sequencer64 a JACK slave).  Always
  *              active if one of the other two are set, or if set on its own.
  *          -   Transport Master (makes Sequencer64 a JACK master).  Forces
  *              the Master Conditional button off, and the JACK Transport
@@ -1590,7 +1597,7 @@ options::transport_callback (button type, Gtk::Button * acheck)
     case e_jack_start_mode_live:
     case e_jack_start_mode_song:
 
-        m_mainperf.song_start_mode(is_active);
+        perf().song_start_mode(is_active);
         break;
 
     case e_jack_connect:

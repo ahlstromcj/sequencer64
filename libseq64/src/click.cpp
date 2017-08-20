@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2016-05-17
+ * \updates       2017-08-19
  * \license       GNU GPLv2 or above
  *
  *  Provides the implementation of the seq64::click class.
@@ -98,8 +98,8 @@ click::click (int x, int y, int button, bool press, seq_modifier_t modkey)
     if (button < SEQ64_CLICK_BUTTON_MIN || button > SEQ64_CLICK_BUTTON_MAX)
         m_button = SEQ64_CLICK_BAD_VALUE;
 
-    unsigned int um = static_cast<unsigned int>(modkey);
-    if (um > static_cast<unsigned int>(SEQ64_MASK_MAX))
+    unsigned um = static_cast<unsigned>(modkey);
+    if (um > static_cast<unsigned>(SEQ64_MASK_MAX))
         m_modifier = SEQ64_MASK_MAX;
 }
 

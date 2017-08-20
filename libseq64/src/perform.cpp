@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-08-17
+ * \updates       2017-08-19
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -365,6 +365,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_notify                    (),          // vector of callback pointers
     m_gui_support               (mygui)
 {
+    keys().group_max(m_max_groups);
     for (int i = 0; i < m_sequence_max; ++i)
     {
         m_seqs[i] = nullptr;
@@ -4672,7 +4673,10 @@ perform::set_clock_bus (int bus, clock_e clocktype)
  *
  * \todo
  *      In the context of pattern keys, we should replace c_seqs_in_set with a
- *      better-named value.
+ *      better-named value; if sets are actually larger than that, due to the
+ *      "sets" option, then we simply repeat the pattern here using a modifier
+ *      key ["shifted", see lookup_slot_key()]; in other words, we're stuck on
+ *      using 32 pattern hot-keys.
  *
  * \param seqnum
  *      The number of the sequence for which to return the event key.
@@ -4682,10 +4686,10 @@ perform::set_clock_bus (int bus, clock_e clocktype)
  *      space (' ') character is returned.  It used to be the question mark.
  */
 
-unsigned int
+unsigned
 perform::lookup_keyevent_key (int seqnum)
 {
-    unsigned int result = (unsigned int)(' ');
+    unsigned result = unsigned(' ');
     if (! rc().legacy_format())
         seqnum -= m_screenset_offset;
 
@@ -4702,22 +4706,29 @@ perform::lookup_keyevent_key (int seqnum)
  *  Like lookup_keyevent_key(), but assumes the slot number has already been
  *  correctly calculated.
  *
- * \param slotnum
- *      The number of the pattern/sequence slot for which to return the event
+ * \param seqnum
+ *      The number of the pattern/sequence for which to return the event
  *      key.  This value can range from 0 to c_seqs_in_set - 1 up to
  *      (3 * c_seqs_in_set) - 1, since we can support 32 hotkeys, plus these
- *      hot-keys "shifted" once and twice.
+ *      hot-keys "shifted" once and twice.  This value is relative to
+ *      m_screeset_offset, and then is modded re c_seqs_in_set, so that it
+ *      always ranges from 0 to 31.
  *
  * \return
  *      Returns the desired key. This will always work, due to the mod
- *      operator.
+ *      operation.
  */
 
-unsigned int
+unsigned
 perform::lookup_slot_key (int seqnum)
 {
     seqnum -= m_screenset_offset;
-    seqnum = seqnum % c_seqs_in_set;
+    if (seqnum >= 0)
+        seqnum = seqnum % c_seqs_in_set;
+    else
+    {
+        errprintf("perform::lookup_slot_key(%d) error", seqnum);
+    }
     return keys().lookup_keyevent_key(seqnum);
 }
 
@@ -4775,7 +4786,7 @@ bool
 perform::mainwnd_key_event (const keystroke & k)
 {
     bool result = true;
-    unsigned int key = k.key();
+    unsigned key = k.key();
     if (k.is_press())
     {
         if (key == keys().replace())

@@ -226,10 +226,6 @@ mainwid::draw_sequences_on_pixmap ()
 /**
  *  Provides a stock callback, because some kind of callback is needed.
  *
- * \todo
- *      We should use this callback to display the current time in the
- *      playback.
- *
  * \return
  *      Always returns true.
  */
@@ -358,9 +354,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     fg_color(white());                  /* ditto            */
                 }
                 else
-                {
                     select_fg_bg_colors(seqnum);
-                }
             }
 
             /*

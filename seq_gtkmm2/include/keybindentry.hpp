@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2017-08-19
  * \license       GNU GPLv2 or above
  *
  *  This module define a GTK text-edit widget for getting keyboard button
@@ -95,7 +95,7 @@ private:
      *  It can be a null pointer, as well.
      */
 
-    unsigned int * m_key;
+    unsigned * m_key;
 
     /**
      *  Stores the type of key-binding.
@@ -111,23 +111,22 @@ private:
 
     /**
      *  Provides an index into a set of group-keys or event-keys.  (This item
-     *  should be changed to unsigned int, though.)
+     *  should be changed to unsigned, though.)
      */
 
-    long m_slot;
+    int m_slot;
 
 public:
 
     keybindentry
     (
         type t,
-        unsigned int * location_to_write = nullptr,
+        unsigned * location_to_write,
         perform * p = nullptr,
-        long s = 0
+        int s       = 0
     );
 
-    void set (unsigned int val);
-
+    void set (unsigned val);
     virtual bool on_key_press_event (GdkEventKey * event);
 };
 

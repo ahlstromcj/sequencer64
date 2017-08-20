@@ -25,9 +25,10 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2016-05-15
+ * \updates       2017-08-19
  * \license       GNU GPLv2 or above
  *
+ *  This class makes access to keystroke features simpler.
  */
 
 #include <ctype.h>
@@ -70,7 +71,7 @@ keystroke::keystroke ()
  *      SEQ64_MOD4_MASK.  If no modifier, this value is SEQ64_NO_MASK.
  */
 
-keystroke::keystroke (unsigned int key, bool press, int modkey)
+keystroke::keystroke (unsigned key, bool press, int modkey)
  :
     m_is_press  (press),
     m_key       (key),
@@ -132,7 +133,7 @@ keystroke::operator = (const keystroke & rhs)
  */
 
 bool
-keystroke::is_letter (unsigned int ch) const
+keystroke::is_letter (unsigned ch) const
 {
     if (ch == SEQ64_KEYSTROKE_BAD_VALUE)
         return bool(isalpha(m_key));
@@ -146,8 +147,8 @@ keystroke::is_letter (unsigned int ch) const
 
 struct charpair_t
 {
-    unsigned int m_character;   /**< The input character.               */
-    unsigned int m_shift;       /**< The shift of the input character.  */
+    unsigned m_character;       /**< The input character.               */
+    unsigned m_shift;           /**< The shift of the input character.  */
 };
 
 /**

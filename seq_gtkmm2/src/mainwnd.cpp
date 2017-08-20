@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-16
+ * \updates       2017-08-19
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -637,7 +637,7 @@ mainwnd::mainwnd
         m_button_learn,
         "Mute Group Learn. "
         "Click the 'L' button, then press a mute-group key to store "
-        "the mute state of the sequences in that key. "
+        "the mute state of the sequences in the Shift of that key. "
         "See File / Options / Keyboard for available mute-group keys "
         "and the hotkey for the 'L' button. Ctrl-L also causes this action."
     );
@@ -2461,7 +2461,13 @@ mainwnd::reload_mute_groups ()
     bool result = perf().reload_mute_groups(errmessage);
     if (! result)
     {
-        // display the error-message
+        Gtk::MessageDialog dialog           /* display the error-message    */
+        (
+            *this, "reload of mute groups", false,
+            Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
+        );
+        dialog.set_secondary_text("Failed", false);
+        dialog.run();
     }
 }
 
@@ -2817,14 +2823,35 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 #endif
         }
 
+        bool mgl = perf().is_group_learning() && k.key() != PREFKEY(group_learn);
         int count = perf().get_key_groups().count(k.key());
         if (count != 0)
         {
             int group = perf().lookup_keygroup_group(k.key());
-            perf().select_and_mute_group(group);    /* use mute group key   */
+            if (group >= 0)
+                perf().select_and_mute_group(group);    /* use mute group key */
+            else
+            {
+                mgl = false;
+                std::ostringstream os;
+                os << "Due to larger set-size, groups limited.";
+                Gtk::MessageDialog dialog
+                (
+                    *this, "Mute group out of range, ignored", false,
+                    Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true
+                );
+                dialog.set_secondary_text(os.str(), false);
+                dialog.run();
+                perf().unset_mode_group_learn();
+            }
         }
 
-        bool mgl = perf().is_group_learning() && k.key() != PREFKEY(group_learn);
+        /*
+         * TODO: figure out if the key is outside of the range of groups
+         * available based on the set-size and the maximum number of groups
+         * available.  If outside, we need a special warning.  HOW TO DO IT?
+         */
+
         if (mgl)                                    /* mute group learn     */
         {
             if (count != 0)
@@ -2876,7 +2903,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
         }
         if (! perf().playback_key_event(k))
         {
-            /*
+            /**
              *  Toggle the sequence mute/unmute setting using keyboard keys.
              *  However, do not do this if the Ctrl key is being pressed.
              *  Ctrl-E, for example, brings up the Song Editor, and should not

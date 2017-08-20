@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-07-09
+ * \updates       2017-08-19
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -88,7 +88,7 @@ private:
      *  are a bit generous.
      */
 
-    unsigned int m_key;
+    unsigned m_key;
 
     /**
      *  The optional modifier value.  Note that SEQ64_NO_MASK is our word
@@ -102,7 +102,7 @@ public:
     keystroke ();
     keystroke
     (
-        unsigned int key,
+        unsigned key,
         bool press = SEQ64_KEYSTROKE_PRESS,         /* true */
         int modkey = int(SEQ64_NO_MASK)
     );
@@ -118,7 +118,7 @@ public:
         return m_is_press;
     }
 
-    bool is_letter (unsigned int ch = SEQ64_KEYSTROKE_BAD_VALUE) const;
+    bool is_letter (unsigned ch = SEQ64_KEYSTROKE_BAD_VALUE) const;
 
     /**
      *  Tests the key value to see if it matches the given character exactly
@@ -131,7 +131,7 @@ public:
      *      Returns true if m_key == ch.
      */
 
-    bool is (unsigned int ch) const
+    bool is (unsigned ch) const
     {
         return m_key == ch;
     }
@@ -149,7 +149,7 @@ public:
      * \getter m_key
      */
 
-    unsigned int key () const
+    unsigned key () const
     {
         return m_key;
     }

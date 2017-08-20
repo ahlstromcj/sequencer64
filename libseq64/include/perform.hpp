@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-17
+ * \updates       2017-08-19
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1012,6 +1012,15 @@ public:
     }
 
     /**
+     * \getter m_max_groups
+     */
+
+    int group_max () const
+    {
+        return m_max_groups;
+    }
+
+    /**
      * \getter m_control_status
      *
      * \return
@@ -1791,7 +1800,7 @@ public:
      *      The key number for which to return the string name of the key.
      */
 
-    std::string key_name (unsigned int k) const
+    std::string key_name (unsigned k) const
     {
         return keys().key_name(k);
     }
@@ -1884,8 +1893,8 @@ public:
      * to see if it's there first]
      */
 
-    unsigned int lookup_keyevent_key (int seqnum);
-    unsigned int lookup_slot_key (int slotnum);
+    unsigned lookup_keyevent_key (int seqnum);
+    unsigned lookup_slot_key (int slotnum);
 
     /**
      *  Gets the sequence number for the given event key.  The inverse of
@@ -1900,7 +1909,7 @@ public:
      *      a sequence number of 0 is returned.
      */
 
-    int lookup_keyevent_seq (unsigned int keycode)
+    int lookup_keyevent_seq (unsigned keycode)
     {
         return keys().lookup_keyevent_seq(keycode);
     }
@@ -1916,7 +1925,7 @@ public:
      *      default character is returned.
      */
 
-    unsigned int lookup_keygroup_key (int groupnum)
+    unsigned lookup_keygroup_key (int groupnum)
     {
         return keys().lookup_keygroup_key(groupnum);    /* '.' or ' ' */
     }
@@ -1934,7 +1943,7 @@ public:
      *      a group number of 0 is returned.
      */
 
-    int lookup_keygroup_group (unsigned int keycode)
+    int lookup_keygroup_group (unsigned keycode)
     {
         return keys().lookup_keygroup_group(keycode);
     }
@@ -2519,7 +2528,7 @@ private:
      *      The sequence slot to be set.
      */
 
-    void set_key_event (unsigned int keycode, long sequence_slot)
+    void set_key_event (unsigned keycode, int sequence_slot)
     {
         keys().set_key_event(keycode, sequence_slot);
     }
@@ -2536,7 +2545,7 @@ private:
      *      The group slot to be set.
      */
 
-    void set_key_group (unsigned int keycode, long group_slot)
+    void set_key_group (unsigned keycode, int group_slot)
     {
         keys().set_key_group(keycode, group_slot);
     }

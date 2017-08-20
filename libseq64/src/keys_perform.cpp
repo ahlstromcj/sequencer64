@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2017-06-17
+ * \updates       2017-08-19
  * \license       GNU GPLv2 or above
  *
  *  Added pattern-edit and event-edit keys which change the pattern slot
@@ -35,8 +35,9 @@
  *  Simplification, at a small space cost.
  */
 
-#include <stdio.h>                      /* snprintf() */
+#include <stdio.h>                      /* snprintf()   */
 
+#include "globals.h"                    /* c_max_groups */
 #include "gdk_basic_keys.h"
 #include "keys_perform.hpp"
 
@@ -60,6 +61,7 @@ keys_perform::keys_perform ()
     m_key_groups                    (),
     m_key_events_rev                (),
     m_key_groups_rev                (),
+    m_group_max                     (c_max_groups),     /* this can change  */
     m_key_bpm_up                    (SEQ64_apostrophe),
     m_key_bpm_dn                    (SEQ64_semicolon),
     m_key_replace                   (SEQ64_Control_L),
@@ -93,9 +95,7 @@ keys_perform::keys_perform ()
 }
 
 /**
- *  The destructor sets some running flags to false, signals this
- *  condition, then joins the input and output threads if the were
- *  launched. Finally, any active patterns/sequences are deleted.
+ *  The destructor is a rote empty virtual destructor.
  */
 
 keys_perform::~keys_perform ()
@@ -116,7 +116,7 @@ keys_perform::~keys_perform ()
  */
 
 std::string
-keys_perform::key_name (unsigned int key) const
+keys_perform::key_name (unsigned key) const
 {
     char temp[32];
     snprintf(temp, sizeof(temp), "Key 0x%X", key);
@@ -224,7 +224,7 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
  */
 
 void
-keys_perform::set_key_event (unsigned int keycode, int sequence_slot)
+keys_perform::set_key_event (unsigned keycode, int sequence_slot)
 {
     SlotMap::iterator it1 = m_key_events.find(keycode);
     if (it1 != m_key_events.end())
@@ -262,7 +262,7 @@ keys_perform::set_key_event (unsigned int keycode, int sequence_slot)
  */
 
 void
-keys_perform::set_key_group (unsigned int keycode, int group_slot)
+keys_perform::set_key_group (unsigned keycode, int group_slot)
 {
     SlotMap::iterator it1 = m_key_groups.find(keycode);
     if (it1 != m_key_groups.end())
@@ -293,8 +293,8 @@ keys_perform::set_key_group (unsigned int keycode, int group_slot)
 
 /**
  *  For the case in which the "rc" file is missing or corrupt, this function
- *  makes sure that each control key has a reasonable value.  Otherwise, random
- *  values, unchecked, can cause the application to crash.
+ *  makes sure that each control key has a reasonable value.  Otherwise,
+ *  random values, unchecked, can cause the application to crash.
  *
  *  Any field that is 0 or greater than 65536 is fixed.  Not perfect, but
  *  better than allowing random values to be used.

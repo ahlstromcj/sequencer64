@@ -1300,7 +1300,7 @@ optionsfile::write (const perform & p)
     {
         snprintf
         (
-            outs, sizeof(outs), "%u  %ld   # %s",
+            outs, sizeof(outs), "%u  %d   # %s",
             i->first, i->second,
             ucperf.key_name(i->first).c_str()   // gdk_keyval_name(i->first)
         );
@@ -1324,7 +1324,7 @@ optionsfile::write (const perform & p)
     {
         snprintf
         (
-            outs, sizeof(outs), "%u  %ld   # %s",
+            outs, sizeof(outs), "%u  %d   # %s",
             i->first, i->second,
             ucperf.key_name(i->first).c_str()   // gdk_keyval_name(i->first)
         );

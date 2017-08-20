@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2017-06-17
+ * \updates       2017-08-19
  * \license       GNU GPLv2 or above
  *
  * Stazed:
@@ -76,21 +76,21 @@ namespace seq64
 
 struct keys_perform_transfer
 {
-    unsigned int kpt_bpm_up;
-    unsigned int kpt_bpm_dn;
-    unsigned int kpt_screenset_up;
-    unsigned int kpt_screenset_dn;
-    unsigned int kpt_set_playing_screenset;
-    unsigned int kpt_group_on;
-    unsigned int kpt_group_off;
-    unsigned int kpt_group_learn;
-    unsigned int kpt_replace;
-    unsigned int kpt_queue;
-    unsigned int kpt_keep_queue;
-    unsigned int kpt_snapshot_1;
-    unsigned int kpt_snapshot_2;
-    unsigned int kpt_start;
-    unsigned int kpt_stop;
+    unsigned kpt_bpm_up;
+    unsigned kpt_bpm_dn;
+    unsigned kpt_screenset_up;
+    unsigned kpt_screenset_dn;
+    unsigned kpt_set_playing_screenset;
+    unsigned kpt_group_on;
+    unsigned kpt_group_off;
+    unsigned kpt_group_learn;
+    unsigned kpt_replace;
+    unsigned kpt_queue;
+    unsigned kpt_keep_queue;
+    unsigned kpt_snapshot_1;
+    unsigned kpt_snapshot_2;
+    unsigned kpt_start;
+    unsigned kpt_stop;
     bool kpt_show_ui_sequence_key;
 
     /*
@@ -98,24 +98,24 @@ struct keys_perform_transfer
      */
 
     bool kpt_show_ui_sequence_number;
-    unsigned int kpt_pattern_edit;
-    unsigned int kpt_pattern_shift;     /* variset support  */
-    unsigned int kpt_event_edit;
-    unsigned int kpt_tap_bpm;
-    unsigned int kpt_pause;
+    unsigned kpt_pattern_edit;
+    unsigned kpt_pattern_shift;     /* variset support  */
+    unsigned kpt_event_edit;
+    unsigned kpt_tap_bpm;
+    unsigned kpt_pause;
 
     /*
      * Seq32 (stazed) additions
      */
 
-    unsigned int kpt_song_mode;
-    unsigned int kpt_toggle_jack;
-    unsigned int kpt_menu_mode;
-    unsigned int kpt_follow_transport;
-    unsigned int kpt_fast_forward;
-    unsigned int kpt_rewind;
-    unsigned int kpt_pointer_position;
-    unsigned int kpt_toggle_mutes;
+    unsigned kpt_song_mode;
+    unsigned kpt_toggle_jack;
+    unsigned kpt_menu_mode;
+    unsigned kpt_follow_transport;
+    unsigned kpt_fast_forward;
+    unsigned kpt_rewind;
+    unsigned kpt_pointer_position;
+    unsigned kpt_toggle_mutes;
 };
 
 /**
@@ -137,14 +137,14 @@ protected:
      *  pattern/sequence number or slot.
      */
 
-    typedef std::map<unsigned int, long> SlotMap;       // lookup
+    typedef std::map<unsigned, int> SlotMap;        // lookup
 
     /**
      *  This typedef is like SlotMap, but used for lookup in the other
      *  direction.
      */
 
-    typedef std::map<long, unsigned int> RevSlotMap;    // reverse lookup
+    typedef std::map<int, unsigned> RevSlotMap;     // reverse lookup
 
 private:
 
@@ -193,6 +193,16 @@ private:
     RevSlotMap m_key_groups_rev;        // reverse lookup, keep in sync!!
 
     /**
+     *  With larger set sizes, we have to support fewer mute-groups (unless we
+     *  decide to allow 32 sets even for larger sets, upping the pattern count
+     *  from 1024 to 3072 or 4096).  This number is logged by the perform
+     *  object to allow us to know that we can actually use the desired mute
+     *  group.
+     */
+
+    int m_group_max;
+
+    /**
      *  Provides key assignments for some key sequencer features.  Used in
      *  mainwnd, options, optionsfile, perfedit, seqroll, userfile, and
      *  perform.
@@ -201,34 +211,34 @@ private:
      *  all these individual members.
      */
 
-    unsigned int m_key_bpm_up;                  /**< BPM up, apostrophe!!!  */
-    unsigned int m_key_bpm_dn;                  /**< BPM down, semicolon.   */
-    unsigned int m_key_replace;                 /**< Replace, Ctrl-L.       */
-    unsigned int m_key_queue;                   /**< Queue, Ctrl-R.         */
-    unsigned int m_key_keep_queue;              /**< Keep queue, backslash. */
-    unsigned int m_key_snapshot_1;              /**< Snapshot 1, Alt-L.     */
-    unsigned int m_key_snapshot_2;              /**< Snapshot 1, Alt-R.     */
-    unsigned int m_key_screenset_up;            /**< Set up, Right-].       */
-    unsigned int m_key_screenset_dn;            /**< Set down, Left-[.      */
-    unsigned int m_key_set_playing_screenset;   /**< Set set, Home key.     */
-    unsigned int m_key_group_on;                /**< Group on, igrave key.  */
-    unsigned int m_key_group_off;               /**< Group off, apostrophe! */
-    unsigned int m_key_group_learn;             /**< Group learn, Insert.   */
-    unsigned int m_key_start;                   /**< Start play, Space key. */
-    unsigned int m_key_pause;                   /**< Pause play, Period.    */
-    unsigned int m_key_song_mode;               /**< Song versus Live mode. */
-    unsigned int m_key_toggle_jack;             /**< Toggle JACK connect.   */
-    unsigned int m_key_menu_mode;               /**< Menu enabled/disabled. */
-    unsigned int m_key_follow_transport;        /**< Toggle following JACK. */
-    unsigned int m_key_rewind;                  /**< Start rewind.          */
-    unsigned int m_key_fast_forward;            /**< Start fast-forward.    */
-    unsigned int m_key_pointer_position;        /**< Set progress to mouse. */
-    unsigned int m_key_toggle_mutes;            /**< Toggle all patterns.   */
-    unsigned int m_key_tap_bpm;                 /**< To tap out the BPM.    */
-    unsigned int m_key_pattern_edit;            /**< Show pattern editor.   */
-    unsigned int m_key_pattern_shift;           /**< Shift pattern hotkey.  */
-    unsigned int m_key_event_edit;              /**< Show event editor.     */
-    unsigned int m_key_stop;                    /**< Stop play, Escape.     */
+    unsigned m_key_bpm_up;                  /**< BPM up, apostrophe!!!  */
+    unsigned m_key_bpm_dn;                  /**< BPM down, semicolon.   */
+    unsigned m_key_replace;                 /**< Replace, Ctrl-L.       */
+    unsigned m_key_queue;                   /**< Queue, Ctrl-R.         */
+    unsigned m_key_keep_queue;              /**< Keep queue, backslash. */
+    unsigned m_key_snapshot_1;              /**< Snapshot 1, Alt-L.     */
+    unsigned m_key_snapshot_2;              /**< Snapshot 1, Alt-R.     */
+    unsigned m_key_screenset_up;            /**< Set up, Right-].       */
+    unsigned m_key_screenset_dn;            /**< Set down, Left-[.      */
+    unsigned m_key_set_playing_screenset;   /**< Set set, Home key.     */
+    unsigned m_key_group_on;                /**< Group on, igrave key.  */
+    unsigned m_key_group_off;               /**< Group off, apostrophe! */
+    unsigned m_key_group_learn;             /**< Group learn, Insert.   */
+    unsigned m_key_start;                   /**< Start play, Space key. */
+    unsigned m_key_pause;                   /**< Pause play, Period.    */
+    unsigned m_key_song_mode;               /**< Song versus Live mode. */
+    unsigned m_key_toggle_jack;             /**< Toggle JACK connect.   */
+    unsigned m_key_menu_mode;               /**< Menu enabled/disabled. */
+    unsigned m_key_follow_transport;        /**< Toggle following JACK. */
+    unsigned m_key_rewind;                  /**< Start rewind.          */
+    unsigned m_key_fast_forward;            /**< Start fast-forward.    */
+    unsigned m_key_pointer_position;        /**< Set progress to mouse. */
+    unsigned m_key_toggle_mutes;            /**< Toggle all patterns.   */
+    unsigned m_key_tap_bpm;                 /**< To tap out the BPM.    */
+    unsigned m_key_pattern_edit;            /**< Show pattern editor.   */
+    unsigned m_key_pattern_shift;           /**< Shift pattern hotkey.  */
+    unsigned m_key_event_edit;              /**< Show event editor.     */
+    unsigned m_key_stop;                    /**< Stop play, Escape.     */
 
 public:
 
@@ -242,7 +252,7 @@ public:
      * \getter m_key_bpm_up
      */
 
-    unsigned int bpm_up () const
+    unsigned bpm_up () const
     {
         return m_key_bpm_up;
     }
@@ -254,7 +264,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void bpm_up (unsigned int x)
+    void bpm_up (unsigned x)
     {
         m_key_bpm_up = x;
     }
@@ -263,7 +273,7 @@ public:
      * \getter m_key_bpm_dn
      */
 
-    unsigned int bpm_dn () const
+    unsigned bpm_dn () const
     {
         return m_key_bpm_dn;
     }
@@ -275,7 +285,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void bpm_dn (unsigned int x)
+    void bpm_dn (unsigned x)
     {
         m_key_bpm_dn = x;
     }
@@ -284,7 +294,7 @@ public:
      * \getter m_key_replace
      */
 
-    unsigned int replace () const
+    unsigned replace () const
     {
         return m_key_replace;
     }
@@ -296,7 +306,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void replace (unsigned int x)
+    void replace (unsigned x)
     {
         m_key_replace = x;
     }
@@ -305,7 +315,7 @@ public:
      * \getter m_key_queue
      */
 
-    unsigned int queue () const
+    unsigned queue () const
     {
         return m_key_queue;
     }
@@ -317,7 +327,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void queue (unsigned int x)
+    void queue (unsigned x)
     {
         m_key_queue = x;
     }
@@ -326,7 +336,7 @@ public:
      * \getter m_key_keep_queue
      */
 
-    unsigned int keep_queue () const
+    unsigned keep_queue () const
     {
         return m_key_keep_queue;
     }
@@ -338,7 +348,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void keep_queue (unsigned int x)
+    void keep_queue (unsigned x)
     {
         m_key_keep_queue = x;
     }
@@ -347,7 +357,7 @@ public:
      * \getter m_key_snapshot_1
      */
 
-    unsigned int snapshot_1 () const
+    unsigned snapshot_1 () const
     {
         return m_key_snapshot_1;
     }
@@ -359,7 +369,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void snapshot_1 (unsigned int x)
+    void snapshot_1 (unsigned x)
     {
         m_key_snapshot_1 = x;
     }
@@ -368,7 +378,7 @@ public:
      * \getter m_key_snapshot_2
      */
 
-    unsigned int snapshot_2 () const
+    unsigned snapshot_2 () const
     {
         return m_key_snapshot_2;
     }
@@ -380,7 +390,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void snapshot_2 (unsigned int x)
+    void snapshot_2 (unsigned x)
     {
         m_key_snapshot_2 = x;
     }
@@ -389,7 +399,7 @@ public:
      * \getter m_key_screenset_up
      */
 
-    unsigned int screenset_up () const
+    unsigned screenset_up () const
     {
         return m_key_screenset_up;
     }
@@ -401,7 +411,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void screenset_up (unsigned int x)
+    void screenset_up (unsigned x)
     {
         m_key_screenset_up = x;
     }
@@ -410,7 +420,7 @@ public:
      * \getter m_key_screenset_dn
      */
 
-    unsigned int screenset_dn () const
+    unsigned screenset_dn () const
     {
         return m_key_screenset_dn;
     }
@@ -422,7 +432,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void screenset_dn (unsigned int x)
+    void screenset_dn (unsigned x)
     {
         m_key_screenset_dn = x;
     }
@@ -431,7 +441,7 @@ public:
      * \getter m_key_playing_screenset
      */
 
-    unsigned int set_playing_screenset () const
+    unsigned set_playing_screenset () const
     {
         return m_key_set_playing_screenset;
     }
@@ -443,7 +453,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void set_playing_screenset (unsigned int x)
+    void set_playing_screenset (unsigned x)
     {
         m_key_set_playing_screenset = x;
     }
@@ -452,7 +462,7 @@ public:
      * \getter m_key_group_on
      */
 
-    unsigned int group_on () const
+    unsigned group_on () const
     {
         return m_key_group_on;
     }
@@ -464,7 +474,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void group_on (unsigned int x)
+    void group_on (unsigned x)
     {
         m_key_group_on = x;
     }
@@ -473,7 +483,7 @@ public:
      * \getter m_key_group_off
      */
 
-    unsigned int group_off () const
+    unsigned group_off () const
     {
         return m_key_group_off;
     }
@@ -485,7 +495,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void group_off (unsigned int x)
+    void group_off (unsigned x)
     {
         m_key_group_off = x;
     }
@@ -494,7 +504,7 @@ public:
      * \getter m_key_group_learn
      */
 
-    unsigned int group_learn () const
+    unsigned group_learn () const
     {
         return m_key_group_learn;
     }
@@ -506,7 +516,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void group_learn (unsigned int x)
+    void group_learn (unsigned x)
     {
         m_key_group_learn = x;
     }
@@ -515,7 +525,7 @@ public:
      * \getter m_key_start
      */
 
-    unsigned int start () const
+    unsigned start () const
     {
         return m_key_start;
     }
@@ -527,7 +537,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void start (unsigned int x)
+    void start (unsigned x)
     {
         m_key_start = x;
     }
@@ -536,7 +546,7 @@ public:
      * \getter m_key_pause
      */
 
-    unsigned int pause () const
+    unsigned pause () const
     {
         return m_key_pause;
     }
@@ -548,7 +558,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void pause (unsigned int x)
+    void pause (unsigned x)
     {
         m_key_pause = x;
     }
@@ -557,7 +567,7 @@ public:
      * \getter m_key_pattern_edit
      */
 
-    unsigned int pattern_edit () const
+    unsigned pattern_edit () const
     {
         return m_key_pattern_edit;
     }
@@ -569,7 +579,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void pattern_edit (unsigned int x)
+    void pattern_edit (unsigned x)
     {
         m_key_pattern_edit = x;
     }
@@ -578,7 +588,7 @@ public:
      * \getter m_key_pattern_shift
      */
 
-    unsigned int pattern_shift () const
+    unsigned pattern_shift () const
     {
         return m_key_pattern_shift;
     }
@@ -590,7 +600,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void pattern_shift (unsigned int x)
+    void pattern_shift (unsigned x)
     {
         m_key_pattern_shift = x;
     }
@@ -599,7 +609,7 @@ public:
      * \getter m_key_event_edit
      */
 
-    unsigned int event_edit () const
+    unsigned event_edit () const
     {
         return m_key_event_edit;
     }
@@ -611,7 +621,7 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void event_edit (unsigned int x)
+    void event_edit (unsigned x)
     {
         m_key_event_edit = x;
     }
@@ -620,7 +630,7 @@ public:
      * \getter m_key_stop
      */
 
-    unsigned int stop () const
+    unsigned stop () const
     {
         return m_key_stop;
     }
@@ -632,97 +642,97 @@ public:
      *      The key value to assign to the operation.
      */
 
-    void stop (unsigned int x)
+    void stop (unsigned x)
     {
         m_key_stop = x;
     }
 
-    unsigned int song_mode () const
+    unsigned song_mode () const
     {
         return m_key_song_mode;
     }
 
-    void song_mode (unsigned int key)
+    void song_mode (unsigned key)
     {
         m_key_song_mode = key;
     }
 
-    unsigned int menu_mode () const
+    unsigned menu_mode () const
     {
         return m_key_menu_mode;
     }
 
-    void menu_mode (unsigned int key)
+    void menu_mode (unsigned key)
     {
         m_key_menu_mode = key;
     }
 
-    unsigned int follow_transport () const
+    unsigned follow_transport () const
     {
         return m_key_follow_transport;
     }
 
-    void follow_transport (unsigned int key)
+    void follow_transport (unsigned key)
     {
         m_key_follow_transport = key;
     }
 
-    unsigned int fast_forward () const
+    unsigned fast_forward () const
     {
         return m_key_fast_forward;
     }
 
-    void fast_forward (unsigned int key)
+    void fast_forward (unsigned key)
     {
         m_key_fast_forward = key;
     }
 
-    unsigned int rewind () const
+    unsigned rewind () const
     {
         return m_key_rewind;
     }
 
-    void rewind (unsigned int key)
+    void rewind (unsigned key)
     {
         m_key_rewind = key;
     }
 
-    unsigned int pointer_position () const
+    unsigned pointer_position () const
     {
         return m_key_pointer_position;
     }
 
-    void pointer_position (unsigned int key)
+    void pointer_position (unsigned key)
     {
         m_key_pointer_position = key;
     }
 
-    unsigned int toggle_mutes () const
+    unsigned toggle_mutes () const
     {
         return m_key_toggle_mutes;
     }
 
-    void toggle_mutes (unsigned int key)
+    void toggle_mutes (unsigned key)
     {
         m_key_toggle_mutes = key;
     }
 
-    unsigned int toggle_jack () const
+    unsigned toggle_jack () const
     {
         return m_key_toggle_jack;
     }
 
-    void toggle_jack (unsigned int key)
+    void toggle_jack (unsigned key)
     {
         m_key_toggle_jack = key;
     }
 
-    unsigned int tap_bpm () const
+    unsigned tap_bpm () const
     {
         return m_key_tap_bpm;
     }
 
-    void tap_bpm (unsigned int key)
+    void tap_bpm (unsigned key)
     {
         m_key_tap_bpm = key;
     }
@@ -827,7 +837,7 @@ public:
      *      maximum!
      */
 
-    unsigned int lookup_keyevent_key (int seqnum)
+    unsigned lookup_keyevent_key (int seqnum)
     {
         return (m_key_events_rev.count(seqnum) > 0) ?
             m_key_events_rev[seqnum] : ' ' ;
@@ -842,7 +852,7 @@ public:
      *      0 is returned.
      */
 
-    int lookup_keyevent_seq (unsigned int keycode)
+    int lookup_keyevent_seq (unsigned keycode)
     {
         return (m_key_events.count(keycode) > 0) ?
             m_key_events[keycode] : 0 ;
@@ -861,10 +871,12 @@ public:
      *      is returned.
      */
 
-    unsigned int lookup_keygroup_key (int groupnum)
+    unsigned lookup_keygroup_key (int groupnum)
     {
-        return (m_key_groups_rev.count(groupnum) > 0) ?
-            m_key_groups_rev[groupnum] : ' ' ;
+        bool valid = m_key_groups_rev.count(groupnum) > 0 &&
+            groupnum < group_max();
+
+        return valid ? m_key_groups_rev[groupnum] : ' ' ;
     }
 
     /**
@@ -873,15 +885,18 @@ public:
      * \param keycode
      *      Provides the sequence number to look up in the reverse key map for
      *      groups.  If the count for this value is 0, then a 0 is returned.
+     *      We might consider returning (-1) as an error code at some point.
      */
 
-    int lookup_keygroup_group (unsigned int keycode)
+    int lookup_keygroup_group (unsigned keycode)
     {
-        return (m_key_groups.count(keycode) > 0) ?
-            m_key_groups[keycode] : 0 ;
+        bool valid = (m_key_groups.count(keycode) > 0) &&
+            m_key_groups[keycode] < group_max();
+
+        return valid ? m_key_groups[keycode] : (-1) ;
     }
 
-    virtual std::string key_name (unsigned int key) const;
+    virtual std::string key_name (unsigned key) const;
 
     /**
      *  Provides base class functionality.  Must be called by the
@@ -905,10 +920,28 @@ public:
         m_key_groups_rev.clear();
     }
 
-    void set_key_event (unsigned int keycode, int sequence_slot);
-    void set_key_group (unsigned int keycode, int group_slot);
+    void set_key_event (unsigned keycode, int sequence_slot);
+    void set_key_group (unsigned keycode, int group_slot);
+
+    /**
+     * \getter m_group_max
+     */
+
+    int group_max () const
+    {
+        return m_group_max;
+    }
 
 protected:
+
+    /**
+     * \setter m_group_max
+     */
+
+    void group_max (int groupcount)
+    {
+        m_group_max = groupcount;
+    }
 
     /**
      * The following are tricky ways to get at address of the key and group
@@ -922,7 +955,7 @@ protected:
      *  Address getter for the bpm_up operation.
      */
 
-    unsigned int * at_bpm_up ()
+    unsigned * at_bpm_up ()
     {
         return &m_key_bpm_up;
     }
@@ -932,7 +965,7 @@ protected:
      *  Address getter for the bpm_dn operation.
      */
 
-    unsigned int * at_bpm_dn ()
+    unsigned * at_bpm_dn ()
     {
         return & m_key_bpm_dn;
     }
@@ -942,7 +975,7 @@ protected:
      *  Address getter for the replace operation.
      */
 
-    unsigned int * at_replace ()
+    unsigned * at_replace ()
     {
         return &m_key_replace;
     }
@@ -952,7 +985,7 @@ protected:
      *  Address getter for the queue operation.
      */
 
-    unsigned int * at_queue ()
+    unsigned * at_queue ()
     {
         return &m_key_queue;
     }
@@ -962,7 +995,7 @@ protected:
      *  Address getter for the keep_queue operation.
      */
 
-    unsigned int * at_keep_queue ()
+    unsigned * at_keep_queue ()
     {
         return &m_key_keep_queue;
     }
@@ -972,7 +1005,7 @@ protected:
      *  Address getter for the snapshot_1 operation.
      */
 
-    unsigned int * at_snapshot_1 ()
+    unsigned * at_snapshot_1 ()
     {
         return &m_key_snapshot_1;
     }
@@ -982,7 +1015,7 @@ protected:
      *  Address getter for the snapshot_2 operation.
      */
 
-    unsigned int * at_snapshot_2 ()
+    unsigned * at_snapshot_2 ()
     {
         return &m_key_snapshot_2;
     }
@@ -992,7 +1025,7 @@ protected:
      *  Address getter for the screenset_up operation.
      */
 
-    unsigned int * at_screenset_up ()
+    unsigned * at_screenset_up ()
     {
         return &m_key_screenset_up;
     }
@@ -1002,7 +1035,7 @@ protected:
      *  Address getter for the screenset_dn operation.
      */
 
-    unsigned int * at_screenset_dn ()
+    unsigned * at_screenset_dn ()
     {
         return &m_key_screenset_dn;
     }
@@ -1012,7 +1045,7 @@ protected:
      *  Address getter for the set_playing_screenset operation.
      */
 
-    unsigned int * at_set_playing_screenset ()
+    unsigned * at_set_playing_screenset ()
     {
         return &m_key_set_playing_screenset;
     }
@@ -1022,7 +1055,7 @@ protected:
      *  Address getter for the group_on operation.
      */
 
-    unsigned int * at_group_on ()
+    unsigned * at_group_on ()
     {
         return &m_key_group_on;
     }
@@ -1032,7 +1065,7 @@ protected:
      *  Address getter for the group_off operation.
      */
 
-    unsigned int * at_group_off ()
+    unsigned * at_group_off ()
     {
         return &m_key_group_off;
     }
@@ -1042,7 +1075,7 @@ protected:
      *  Address getter for the group_learn operation.
      */
 
-    unsigned int * at_group_learn ()
+    unsigned * at_group_learn ()
     {
         return &m_key_group_learn;
     }
@@ -1052,7 +1085,7 @@ protected:
      *  Address getter for the start operation.
      */
 
-    unsigned int * at_start ()
+    unsigned * at_start ()
     {
         return &m_key_start;
     }
@@ -1062,7 +1095,7 @@ protected:
      *  Address getter for the pause operation.
      */
 
-    unsigned int * at_pause ()
+    unsigned * at_pause ()
     {
         return &m_key_pause;
     }
@@ -1072,7 +1105,7 @@ protected:
      *  Address getter for the song-mode operation.
      */
 
-    unsigned int * at_song_mode ()
+    unsigned * at_song_mode ()
     {
         return &m_key_song_mode;
     }
@@ -1082,7 +1115,7 @@ protected:
      *  Address getter for the toggle-jack operation.
      */
 
-    unsigned int * at_toggle_jack ()
+    unsigned * at_toggle_jack ()
     {
         return &m_key_toggle_jack;
     }
@@ -1092,7 +1125,7 @@ protected:
      *  Address getter for the menu-mode operation.
      */
 
-    unsigned int * at_menu_mode ()
+    unsigned * at_menu_mode ()
     {
         return &m_key_menu_mode;
     }
@@ -1102,7 +1135,7 @@ protected:
      *  Address getter for the follow-transport operation.
      */
 
-    unsigned int * at_follow_transport ()
+    unsigned * at_follow_transport ()
     {
         return &m_key_follow_transport;
     }
@@ -1112,7 +1145,7 @@ protected:
      *  Address getter for the fast-forward operation.
      */
 
-    unsigned int * at_fast_forward ()
+    unsigned * at_fast_forward ()
     {
         return &m_key_fast_forward;
     }
@@ -1122,7 +1155,7 @@ protected:
      *  Address getter for the rewind operation.
      */
 
-    unsigned int * at_rewind ()
+    unsigned * at_rewind ()
     {
         return &m_key_rewind;
     }
@@ -1132,7 +1165,7 @@ protected:
      *  Address getter for the pointer operation.
      */
 
-    unsigned int * at_pointer_position ()
+    unsigned * at_pointer_position ()
     {
         return &m_key_pointer_position;
     }
@@ -1142,7 +1175,7 @@ protected:
      *  Address getter for the toggle-mutes operation.
      */
 
-    unsigned int * at_toggle_mutes ()
+    unsigned * at_toggle_mutes ()
     {
         return &m_key_toggle_mutes;
     }
@@ -1152,7 +1185,7 @@ protected:
      *  Address getter for the tap_bpm operation.
      */
 
-    unsigned int * at_tap_bpm ()
+    unsigned * at_tap_bpm ()
     {
         return &m_key_tap_bpm;
     }
@@ -1162,7 +1195,7 @@ protected:
      *  Address getter for the pattern-edit operation.
      */
 
-    unsigned int * at_pattern_edit ()
+    unsigned * at_pattern_edit ()
     {
         return &m_key_pattern_edit;
     }
@@ -1172,7 +1205,7 @@ protected:
      *  Address getter for the pattern-shift operation.
      */
 
-    unsigned int * at_pattern_shift ()
+    unsigned * at_pattern_shift ()
     {
         return &m_key_pattern_shift;
     }
@@ -1182,7 +1215,7 @@ protected:
      *  Address getter for the event-edit operation.
      */
 
-    unsigned int * at_event_edit ()
+    unsigned * at_event_edit ()
     {
         return &m_key_event_edit;
     }
@@ -1192,7 +1225,7 @@ protected:
      *  Address getter for the stop operation.
      */
 
-    unsigned int * at_stop ()
+    unsigned * at_stop ()
     {
         return &m_key_stop;
     }
@@ -1225,12 +1258,12 @@ protected:
  * the implementation is in seq_gtkmm2/src/keys_perform_gtk2.cpp.
  */
 
-inline bool invalid_key (unsigned int key)
+inline bool invalid_key (unsigned key)
 {
     return (key == 0) || (key > 0xffff);
 }
 
-extern std::string keyval_name (unsigned int key);
+extern std::string keyval_name (unsigned key);
 extern void keyval_normalize (keys_perform_transfer & k);
 
 }           // namespace seq64

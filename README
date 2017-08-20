@@ -1,6 +1,6 @@
-README for Sequencer64 0.93.2 (Native JACK, CLI, multiple sets, varisets, tempo)
+README for Sequencer64 0.93.3 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2017-08-16
+2015-09-10 to 2017-08-20
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
@@ -28,6 +28,12 @@ GUI-less native JACK support: Seq64rtmidi/seq64cli
 With the big version jump from 0.9 to 0.90, the install process has changed.
 See the INSTALL file.
 
+    -   Version 0.93.3:
+        -   Fixes to issue #105 relating to fruity interactions.
+        -   Made it obvious when a nute-group cannot be supported due to
+            larger set sizes with the --option sets=RxC setting.
+        -   Desktop-settings updates.
+        -   Other fixes to unreported problems we found.
     -   Version 0.93.2:
         -   Tweaking the sizing of main window to avoid bottom clipping found
             with some Gnome themes.  Just fudging it, unfortunately.

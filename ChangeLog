@@ -1,5 +1,54 @@
+2017-08-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/fruity-mode.txt, seq_gtkmm2/src/fruityseqroll.cpp: 
+	Fixed issue #105, fruity note add not sending note off.
+	* libseq64/include/keys_perform.hpp, libseq64/src/keys_perform.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/mainwnd.cpp: Added warnings
+	about mute-group limits when set size is greater than 32.
+	* debian/sequencer64.desktop, desktop/seq64.desktop.in: Merged FR
+	language fix contributed by trebmuh.
+	* : commit 95a4b60fc0062ee60b1e75fbd6bd3d73692ab5e2 Merge: 809b5da
+	54d0398 Author: Chris Ahlstrom <ahlstromcj@gmail.com> Date:   Sun
+	Aug 20 06:56:44 2017 -0400
+
+2017-08-20  Olivier Humbert <trebmuh@users.noreply.github.com>
+
+	* debian/sequencer64.desktop: Update sequencer64.desktop Add a FR menu item comment for desktop using FR locale.  Hope that
+	helps.
+
+2017-08-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/keys_perform.hpp,
+	libseq64/include/keystroke.hpp, libseq64/include/perform.hpp,
+	libseq64/src/click.cpp, libseq64/src/keys_perform.cpp,
+	libseq64/src/keystroke.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/keybindentry.hpp,
+	seq_gtkmm2/src/keybindentry.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp: Interim
+	check-in, trying to flag out-of-range mute groups if set-size > 32.
+	* libseq64/include/keys_perform.hpp, libseq64/include/perform.hpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/mainwnd.cpp: Interim
+	check-in, fixed minor bug in variset mute group limit setting.
+	* desktop/metainfo/seq64.appdata.xml, desktop/seq64.desktop.in: 
+	Added initial desktop-support directory.
+
+2017-08-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/cmdlineopts.cpp: Fixed a bug in processing --option
+	argument.
+
 2017-08-16  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* FixLog, libseq64/src/perform.cpp, seq_gtkmm2/src/mainwnd.cpp: 
+	Fixed issue noted in #91 where screenset wraparound in main window
+	was not consistent with non -o sets=8x12 setup.
+	* FixLog, Seq64rtmidi/seq64rtmidi.cpp, TODO: Fixed bug in processing
+	options string that treats argument like a MIDI filename.
+	* TODO, seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfroll.cpp: 
+	Fixed perf drawing of drum events, made seq64 resizable
+	experimentally.
+	* ChangeLog, INSTALL, TODO, man/seq64.1, man/seq64cli.1,
+	man/sequencer64.1: Version 0.93.2 bug-fix.
 	* README, configure.ac, libseq64/src/sequence.cpp,
 	seq_gtkmm2/src/fruityperfroll_input.cpp,
 	seq_gtkmm2/src/fruityseqroll.cpp, seq_gtkmm2/src/seqroll.cpp: Tweaks

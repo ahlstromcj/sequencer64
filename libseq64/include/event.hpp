@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-22
+ * \updates       2017-08-21
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -451,6 +451,18 @@ public:
     }
 
     /**
+     *  Static test for a SysEx message.
+     *
+     * \param m
+     *      The status/message byte to test, with the channel bits masked off.
+     */
+
+    static bool is_sysex_msg (midibyte m)
+    {
+        return m == EVENT_MIDI_SYSEX;
+    }
+
+    /**
      *  Static test for messages that involve notes and velocity: Note On,
      *  Note Off, and Aftertouch.  This function requires that the channel
      *  nybble has already been masked off.
@@ -561,13 +573,6 @@ public:
 
     void set_status_keep_channel (midibyte eventcode)
     {
-        // EXPERIMENTAL:  we need to set the channel here, otherwise it ends
-        // up as 0xFF, which is itself suspect.  We also need to keep the
-        // status byte clean of the channel bits.  But this makes it almost
-        // identical to set_status().  Still suspicious!
-        //
-        // m_status = eventcode & EVENT_CLEAR_CHAN_MASK;
-
         m_status = eventcode;
         m_channel = eventcode & EVENT_GET_CHAN_MASK;
     }

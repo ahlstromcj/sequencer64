@@ -21,8 +21,6 @@
 #define WIN_RT_SYSEX_BUFFER_SIZE    1024
 #define WIN_RT_SYSEX_BUFFER_COUNT      4
 
-// #include "midibyte.hpp"                 /* seq64::midibyte              */
-
 /*
  * Do not document the namespace; it breaks Doxygen.
  */
@@ -90,6 +88,12 @@ private:
     rtmidi_in_data * m_win_rtmidiin;
 
     /**
+     *  Easy flag for creation errors.
+     */
+
+    bool m_is_error;
+
+    /**
      * \ctor midi_win_data
      */
 
@@ -99,19 +103,21 @@ private:
         m_win_lasttime      (0),
         m_win_message       (),
         m_sysex_buffer      (),         // array
-        m_win_mutex         ()
+        m_win_mutex         (),
+        m_win_rtmidiin      (nullptr),
+        m_is_error          (false)
     {
-        CRITICAL_SECTION m_win_mutex;               // _mutex;
         if (! InitializeCriticalSectionAndSpinCount(&m_win_mutex, 0x00000400)
         {
-            m_error_string = func_message("Win MM can't create mutex");
-            error(rterror::WARNING, m_error_string);
+            // m_error_string = func_message("Win MM can't create mutex");
+            // error(rterror::WARNING, m_error_string);
+
+            m_is_error = true;
         }
     }
 
     /**
-     *  This destructor currently does nothing.  We rely on the enclosing class
-     *  to close out the things that it created.
+     *  This destructor deletes the critical section.
      */
 
     ~midi_win_data ()
@@ -120,12 +126,21 @@ private:
     }
 
     /**
-     *  Tests that the buffer is good.
+     *  Tests that the buffers are good.
      */
 
     bool valid_buffer () const
     {
         return false;
+    }
+
+    /**
+     * \getter m_is_error
+     */
+
+    bool is_error () const
+    {
+        return m_is_error;
     }
 
 };          // class midi_win_data

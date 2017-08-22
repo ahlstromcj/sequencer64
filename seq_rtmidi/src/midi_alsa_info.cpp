@@ -166,6 +166,12 @@ midi_alsa_info::~midi_alsa_info ()
  *  input, the first item added is the ALSA MIDI system "announce" buss.
  *  It has the client:port value of "0:1", denoted by the ALSA macros
  *  SND_SEQ_CLIENT_SYSTEM:SND_SEQ_PORT_SYSTEM_ANNOUNCE.
+ *  The information obtained is:
+ *
+ *      -   Client name
+ *      -   Port number
+ *      -   Port name
+ *      -   Port capabilities
  *
  * \return
  *      Returns the total number of ports found.  For an ALSA setup, finding

@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2017-08-20
- * \updates       2017-08-20
+ * \updates       2017-08-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -154,39 +154,28 @@ midi_win::api_init_in ()
     bool result = true;
     std::string remoteportname = connect_name();    /* "bus:port"       */
     remote_port_name(remoteportname);
-    if (multi_client())
-    {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
+    set_alt_name
+    (
+        rc().application_name(), rc().app_client_name(), remoteportname
+    );
+    parent_bus().set_alt_name           // TENTATIVE
+    (
+        rc().application_name(), rc().app_client_name(), remoteportname
+    );
 
-        result = open_client_impl(SEQ64_MIDI_INPUT_PORT);
-    }
-    else
-    {
-        set_alt_name
-        (
-            rc().application_name(), rc().app_client_name(), remoteportname
-        );
-        parent_bus().set_alt_name           // TENTATIVE
-        (
-            rc().application_name(), rc().app_client_name(), remoteportname
-        );
-    }
+
+
+
+
+
+
     if (result)
     {
         result = register_port(SEQ64_MIDI_INPUT_PORT, port_name());
 
         /*
-         * Note that we cannot connect ports until we are activated, and we
-         * cannot be activated until all ports are properly set up.
-         * Otherwise, we'd call:
-         *
-         *  std::string localname = connect_name();
-         *  result = connect_port(SEQ64_MIDI_INPUT, localname, remoteportname);
-         *  if (result) set_port_open();
-         *
-         * We also need to fill in the m_jack_data member here.
+         * Note that we cannot call connect_port() until activated, and cannot
+         * be activated until all ports are properly set up.
          */
     }
     return result;
@@ -809,8 +798,8 @@ midi_win::connect_port
 }
 
 /**
- *  Registers a named Windows MM port.  We made this function to encapsulate some
- *  otherwise cut-and-paste functionality.
+ *  Registers a named Windows MM port.  We made this function to encapsulate
+ *  some otherwise cut-and-paste functionality.
  *
  *  For jack_port_register(), the port-name must be the actual port-name, not
  *  the full-port name ("busname:portname").
@@ -1113,9 +1102,7 @@ midi_out_win::~midi_out_win ()
  *  the message itself to the Windows MM ring buffer.
  *
  * \param message
- *      Provides the vector of message bytes to send.  We could pass the MIDI
- *      message itself more productively, and do that for JACK and ALSA as
- *      well.
+ *      Provides the MIDI message object, which contains the bytes to send.
  *
  * \return
  *      Returns true if the buffer message and buffer size seem to be written
@@ -1123,7 +1110,7 @@ midi_out_win::~midi_out_win ()
  */
 
 bool
-midi_out_win::send_message (const midi_message::container & message)
+midi_out_win::send_message (const midi_message & message)
 {
     bool result = false;
     if (connected())
@@ -1135,78 +1122,101 @@ midi_out_win::send_message (const midi_message::container & message)
             int count = ....
             apiprint("send_message", "winmm");
 
-            MMRESULT result;
+            MMRESULT mmresult;
             midi_win_data * data = reinterpret_cast<midi_win_data *>
             (
                 apidata ????
             );
-            if (message->at(0) == 0xF0 ) { // Sysex message
+            if (message.is_sysex())
+            {
+                char * buffer = malloc(nbytes);     /* for SysEx data   */
+                if (is_nullptr(buffer)
+                {
+                    m_error_string = func_message("SysEx allocation failed");
+                    error(rterror::MEMORY_ERROR, m_error_string);
+                    return;
+                }
 
-            // Allocate buffer for sysex data.
-            char *buffer = (char *) malloc( nBytes );
-            if ( buffer == NULL ) {
-            errorString_ = "MidiOutWinMM::sendMessage: error allocating sysex message memory!";
-            error( RtMidiError::MEMORY_ERROR, errorString_ );
-            return;
+                // Copy data to buffer.  Why?  Already an array accessor.
+
+                for (unsigned i = 0; i < nbytes; ++i)
+                    buffer[i] = message[i];
+
+                // Create and prepare MIDIHDR structure.
+
+                MIDIHDR sysex;
+                sysex.lpData = (LPSTR) buffer;
+                sysex.dwBufferLength = nbytes;
+                sysex.dwFlags = 0;
+                mmresult = midiOutPrepareHeader
+                (
+                    data->m_win_out_handle,  &sysex, sizeof MIDIHDR
+                );
+                if (mmresult != MMSYSERR_NOERROR)
+                {
+                    free(buffer);
+                    m_error_string = func_message("SysEx header prep failed");
+                    error(rterror::DRIVER_ERROR, m_error_string);
+                    return;
+                }
+
+                mmresult = midiOutLongMsg   // Send the message.
+                (
+                    data->m_win_out_handle, &sysex, sizeof MIDIHDR
+                );
+                if (result != MMSYSERR_NOERROR)
+                {
+                    free(buffer);
+                    m_error_string = func_message("SysEx send failed");
+                    error(rterror::DRIVER_ERROR, m_error_string);
+                    return;
+                }
+
+                // Unprepare the buffer and MIDIHDR.
+
+                while
+                (
+                    MIDIERR_STILLPLAYING == midiOutUnprepareHeader
+                    (
+                        data->m_win_out_handle, &sysex, sizeof MIDIHDR
+                    )
+                )
+                {
+                    Sleep(1);
+                }
+                free(buffer);
             }
+            else
+            {
+                // Channel or system message.
+                // Make sure the message size isn't too big.
 
-            // Copy data to buffer.
-            for ( unsigned int i=0; i<nBytes; ++i ) buffer[i] = message->at(i);
+                if (nbytes > 3)
+                {
+                    m_error_string = func_message("Illegal MIDI message size");
+                    error(rterror::DRIVER_ERROR, m_error_string);
+                    return;
+                }
 
-            // Create and prepare MIDIHDR structure.
-            MIDIHDR sysex;
-            sysex.lpData = (LPSTR) buffer;
-            sysex.dwBufferLength = nBytes;
-            sysex.dwFlags = 0;
-            result = midiOutPrepareHeader( data->outHandle,  &sysex, sizeof(MIDIHDR) ); 
-            if ( result != MMSYSERR_NOERROR ) {
-            free( buffer );
-            errorString_ = "MidiOutWinMM::sendMessage: error preparing sysex header.";
-            error( RtMidiError::DRIVER_ERROR, errorString_ );
-            return;
+                // Pack MIDI bytes into double word.
+                // Then send the message immediately.
+
+                DWORD packet;
+                unsigned char * ptr = (unsigned char *) &packet;
+                for (unsigned i = 0; i < nbytes; ++i)
+                {
+                    *ptr = message[i];
+                    ++ptr;
+                }
+
+                mmresult = midiOutShortMsg(data->m_win_out_handle, packet);
+                if (result != MMSYSERR_NOERROR)
+                {
+                    m_error_string = func_message("error sending MIDI message");
+                    error(rterror::DRIVER_ERROR, m_error_string);
+                }
             }
-
-            // Send the message.
-            result = midiOutLongMsg( data->outHandle, &sysex, sizeof(MIDIHDR) );
-            if ( result != MMSYSERR_NOERROR ) {
-            free( buffer );
-            errorString_ = "MidiOutWinMM::sendMessage: error sending sysex message.";
-            error( RtMidiError::DRIVER_ERROR, errorString_ );
-            return;
-            }
-
-            // Unprepare the buffer and MIDIHDR.
-            while ( MIDIERR_STILLPLAYING == midiOutUnprepareHeader( data->outHandle, &sysex, sizeof (MIDIHDR) ) ) Sleep( 1 );
-            free( buffer );
-            }
-            else { // Channel or system message.
-
-            // Make sure the message size isn't too big.
-            if ( nBytes > 3 ) {
-            errorString_ = "MidiOutWinMM::sendMessage: message size is greater than 3 bytes (and not sysex)!";
-            error( RtMidiError::WARNING, errorString_ );
-            return;
-            }
-
-            // Pack MIDI bytes into double word.
-            DWORD packet;
-            unsigned char *ptr = (unsigned char *) &packet;
-            for ( unsigned int i=0; i<nBytes; ++i ) {
-            *ptr = message->at(i);
-            ++ptr;
-            }
-
-            // Send the message immediately.
-            result = midiOutShortMsg( data->outHandle, packet );
-            if ( result != MMSYSERR_NOERROR ) {
-            errorString_ = "MidiOutWinMM::sendMessage: error sending MIDI message.";
-            error( RtMidiError::DRIVER_ERROR, errorString_ );
-            }
-            }
-
-
-
-            result =  (count1 > 0) && (count2 > 0);
+            // result = (count1 > 0) && (count2 > 0);
         }
         else
         {

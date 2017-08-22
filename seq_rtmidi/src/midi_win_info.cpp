@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2017-08-20
- * \updates       2017-08-20
+ * \updates       2017-08-21
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of Windows MM information
@@ -47,7 +47,7 @@ void CALLBACK
 win_process_rtmidi_input
 (
     HMIDIIN /*hmin*/,
-    UINT inputStatus,
+    UINT instatus,
     DWORD_PTR instance,
     DWORD_PTR midimsg,
     DWORD timestamp
@@ -121,14 +121,10 @@ win_process_rtmidi_input
             return;         // MIDI active-sensing message; we ignore it
         }
 
-        // Copy bytes to our MIDI message.
-
         unsigned char * ptr = (unsigned char *) &midimsg;
         midi_message & mm = api_data->message();
-        for (int i = 0; i < nbytes; ++i)
+        for (int i = 0; i < nbytes; ++i)    // copy bytes to MIDI message
             mm.push(*ptr++);
-
-//          api_data->message.bytes.push_back(*ptr++);
     }
     else
     {
@@ -155,12 +151,12 @@ win_process_rtmidi_input
      * suddenly reboots after one or two minutes.  :-D
      */
 
-    if (api_data->sysexBuffer[sysex->dwUser]->dwBytesRecorded > 0)
+    if (api_data->m_sysex_buffer[sysex->dwUser]->dwBytesRecorded > 0)
     {
         EnterCriticalSection(&(api_data->m_win_mutex));
         MMRESULT result = midiInAddBuffer
         (
-            api_data->m_win_in_handle, api_data->sysexBuffer[sysex->dwUser],
+            api_data->m_win_in_handle, api_data->m_sysex_buffer[sysex->dwUser],
             sizeof MIDIHDR
         );
         LeaveCriticalSection(&(api_data->m_win_mutex));
@@ -169,7 +165,6 @@ win_process_rtmidi_input
             m_error_string = func_message("error sending SysEx to MIDI device");
             error(rterror::DRIVER_ERROR, m_error_string);
         }
-
         if (data->test_ignore_flags(0x01))
             return;
     }
@@ -194,7 +189,7 @@ win_process_rtmidi_input
             if (data->queue.back == data->queue.ringSize)
                 data->queue.back = 0;
 
-            data->queue.size++;
+            data->queue.size++;     //
         }
         else
             std::cerr << "\nRtMidiIn: message queue limit reached!!\n\n";
@@ -238,18 +233,17 @@ midi_win_info::midi_win_info
     midibpm bpm
 ) :
     midi_info               (appname, ppqn, bpm),
+    m_win_handles           ()
 {
-    // open the handle(s) and then save them
-    if (bad!)
+    if (m_win_handles.is_error())
     {
-        m_error_string = func_message("error opening ALSA sequencer client");
+        m_error_string = func_message("error opening Win MM sequencer client");
         error(rterror::DRIVER_ERROR, m_error_string);
     }
     else
     {
-    //
-    // midi_handle(m_win_xxxxx);                 /* void version         */
-    // client_handle(win_xxxxx);               /* winmm version         */
+        midi_handle(&m_win_handles);                /* void version         */
+        // client_handle(win_xxxxx);                /* winmm version        */
     }
 }
 
@@ -273,44 +267,21 @@ midi_win_info::~midi_win_info ()
 void
 midi_win_info::connect ()
 {
+#if 0
     if (is_nullptr(result))
     {
-        /*
-         * int jacksize = jack_port_name_size();
-         * infoprintf("Windows MM PORT NAME SIZE = %d\n", jacksize); // = 320
-         */
-
         const char * clientname = rc().app_client_name().c_str();
-        if (multi_client())
-        {
-            /*
-             * We may be changing the potential usage of multi-client.
-             */
-
-            clientname = "midi_win_info";
-        }
-
-        result = create_jack_client(clientname);
+        result = create_win_client(clientname);
         if (not_nullptr(result))
         {
-            int rc = jack_set_process_callback(result, jack_process_io, this);
-            m_jack_client = result;
+            int rc = set_process_callback(...);
+            m_win_client = result;
             if (rc == 0)
             {
-                /**
-                 * We need to add a call to jack_on_shutdown() to set up a
-                 * shutdown callback.  We also need to wait on the activation
-                 * call until we have registered all the ports.  Then we
-                 * (actually the mastermidibus) can call the api_connect()
-                 * function to activate this Windows MM client and connect all the
-                 * ports.
-                 *
-                 * jack_activate(result);
-                 */
             }
             else
             {
-                m_error_string = func_message("Windows MM can't set I/O callback");
+                m_error_string = func_message("can't set I/O callback");
                 error(rterror::WARNING, m_error_string);
             }
         }
@@ -321,6 +292,7 @@ midi_win_info::connect ()
         }
     }
     return result;
+#endif
 }
 
 /**
@@ -330,30 +302,14 @@ midi_win_info::connect ()
 void
 midi_win_info::disconnect ()
 {
+#if 0
     if (not_nullptr(m_jack_client))
     {
-        jack_deactivate(m_jack_client);
-        jack_client_close(m_jack_client);
-        m_jack_client = nullptr;
-        apiprint("jack_deactivate", "info");
-        apiprint("jack_client_close", "info");
+        // jack_deactivate(m_jack_client);
+        // jack_client_close(m_jack_client);
+        // m_win_client = nullptr;
     }
-}
-
-/**
- *  Extracts the two names from the Windows MM port-name format,
- *  "clientname:portname".
- */
-
-void
-midi_win_info::extract_names
-(
-    const std::string & fullname,
-    std::string & clientname,
-    std::string & portname
-)
-{
-    (void) extract_port_names(fullname, clientname, portname);
+#endif
 }
 
 /**
@@ -362,8 +318,8 @@ midi_win_info::extract_names
  *
  * \return
  *      Returns the total number of ports found.  Note that 0 ports is not
- *      necessarily an error; there may be no JACK apps running with exposed
- *      ports.  If there is no JACK client, then -1 is returned.
+ *      necessarily an error; there may be no apps running with exposed
+ *      ports.  If there is no client, then -1 is returned.
  */
 
 int
@@ -372,97 +328,90 @@ midi_win_info::get_all_port_info ()
     int result = 0;
     if (not_nullptr(m_win_client))
     {
+        unsigned numdevices = unsigned(midiInGetNumDevs());  /* Win MM API   */
         input_ports().clear();
-        output_ports().clear();
-
-        unsigned numdevices = unsigned(midiInGetNumDevs()); /* Win MM API   */
         if (numdevices > 0)
         {
-            std::vector<std::string> client_name_list;
-            int client = -1;
             int count = 0;
-            while (not_nullptr(inports[count]))
+            for (int in = 0; in < numdevices; ++in)
             {
-                std::string fullname = inports[count];
-                std::string clientname;
-                std::string portname;
-                extract_names(fullname, clientname, portname);
-                if (client == -1 || clientname != client_name_list.back())
+                MIDIINCAPS incaps;
+                MMRESULT mmr = midiInGetDevCaps(in, &incaps, sizeof incaps);
+                if (mmr == MMSYSERR_NOERROR)
                 {
-                    client_name_list.push_back(clientname);
-                    ++client;
+                    std::string clientname = incaps.szPname; /* product name */
+                    std::string portname = std::to_string(in);
+                    input_ports().add
+                    (
+                        in, clientname, count, portname,
+                        SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_NORMAL_PORT,
+                        SEQ64_MIDI_INPUT_PORT
+                    );
+                    ++count;
                 }
-                input_ports().add
-                (
-                    client, clientname, count, portname,
-                    SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_NORMAL_PORT,
-                    SEQ64_MIDI_INPUT_PORT
-                );
-                ++count;
+                else
+                {
+                    // ERROR
+                }
             }
-            jack_free(inports);
             result += count;
         }
 
-        const char ** outports = jack_get_ports    /* list of JACK ports   */
-        (
-            m_jack_client, NULL,
-            JACK_DEFAULT_MIDI_TYPE,
-            JackPortIsOutput                       /* tricky   */
-        );
-
-        numdevices = unsigned(midiOutGetNumDevs()); /* Win MM API   */
+        numdevices = unsigned(midiOutGetNumDevs());          /* Win MM API   */
+        output_ports().clear();
         if (numdevices > 0)
         {
-            std::vector<std::string> client_name_list;
-            int client = -1;
             int count = 0;
-            while (not_nullptr(outports[count]))
+            for (int out = 0; out < numdevices; ++out)
             {
-                std::string fullname = outports[count];
-                std::string clientname;
-                std::string portname;
-                extract_names(fullname, clientname, portname);
-                if (client == -1 || clientname != client_name_list.back())
+                MIDIOUTCAPS outcaps;
+                MMRESULT mmr = midiOutGetDevCaps(out, &outcaps, sizeof outcaps);
+                if (mmr == MMSYSERR_NOERROR)
                 {
-                    client_name_list.push_back(clientname);
-                    ++client;
+                    std::string clientname = outcaps.szPname;   /* prod name */
+                    std::string portname = std::to_string(out);
+                    output_ports().add
+                    (
+                        out, clientname, count, portname,
+                        SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_NORMAL_PORT,
+                        SEQ64_MIDI_OUTPUT_PORT
+                    );
+                    ++count;
                 }
-                output_ports().add
-                (
-                    client, clientname, count, portname,
-                    SEQ64_MIDI_NORMAL_PORT, SEQ64_MIDI_NORMAL_PORT,
-                    SEQ64_MIDI_OUTPUT_PORT
-                );
-                ++count;
+                else
+                {
+                    // ERROR
+                }
             }
-            jack_free(outports);
             result += count;
         }
     }
     else
         result = -1;
 
-    if (multi_client())
-    {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        disconnect();
-    }
     return result;
 }
 
 /**
- *  Flushes our local queue events out into JACK.  This is also a midi_win
- *  function.
+ *  Flushes our ...
+ *
+ *      midiOutPrepareHeader() prepares a SysEx or stream buffer for output.
  */
 
 void
 midi_win_info::api_flush ()
 {
-    // No code yet
+#if 0
+    // No code yet; write-flush adapted from PortMidi.
+
+    MMRESULT mmr = midiOutPrepareHeader
+    (
+        m_win_handles.m_win_out_handle, m_win_handles.m_sysex_buffer,
+        sizeof MIDIHDR // [WIN_RT_SYSEX_BUFFER_COUNT] ????
+    );
+
+    // There seems to be more to it than this, though.
+#endif
 }
 
 /**
@@ -487,17 +436,8 @@ midi_win_info::api_flush ()
 bool
 midi_win_info::api_connect ()
 {
-    bool result = true;
-    if (! multi_client())           /* CAREFUL IF WE ENABLE IT! */
-    {
-        result = not_nullptr(client_handle());
-        if (result)
-        {
-            int rc = jack_activate(client_handle());
-            apiprint("jack_activate", "info");
-            result = rc == 0;
-        }
-    }
+#if 0
+    bool result = not_nullptr(client_handle());
     if (result)
     {
         for
@@ -523,11 +463,13 @@ midi_win_info::api_connect ()
         error(rterror::WARNING, m_error_string);
     }
     return result;
+#else
+    return true;
+#endif
 }
 
 /**
- *  Sets the PPQN numeric value, then makes JACK calls to set up the PPQ
- *  tempo.
+ *  Sets the PPQN numeric value.
  *
  * \param p
  *      The desired new PPQN value to set.
@@ -540,8 +482,7 @@ midi_win_info::api_set_ppqn (int p)
 }
 
 /**
- *  Sets the BPM numeric value, then makes JACK calls to set up the BPM
- *  tempo.  These calls might need to be done in a JACK callback.
+ *  Sets the BPM numeric value (tempo).
  *
  * \param b
  *      The desired new BPM value to set.
@@ -551,34 +492,20 @@ void
 midi_win_info::api_set_beats_per_minute (midibpm b)
 {
     midi_info::api_set_beats_per_minute(b);
-
-    // Need JACK specific tempo-setting here if applicable.
 }
 
 /**
- *  Start the given JACK MIDI port.  This function is called by
- *  api_get_midi_event() when an JACK event SND_SEQ_EVENT_PORT_START is
- *  received.
- *
- *  -   Get the API's client and port information.
- *  -   Do some capability checks.
- *  -   Find the client/port combination among the set of input/output busses.
- *      If it exists and is not active, then mark it as a replacement.  If it
- *      is not a replacement, it will increment the number of input/output
- *      busses.
- *
- *  We can simplify this code a bit by using elements already present in
- *  midi_win_info.
+ *  Start the given MIDI port.
  *
  * \param masterbus
  *      Provides the object needed to get access to the array of input and
  *      output buss objects.
  *
  * \param bus
- *      Provides the JACK bus/client number.
+ *      Provides the bus/client number.
  *
  * \param port
- *      Provides the JACK client port.
+ *      Provides the client port.
  */
 
 void
@@ -640,46 +567,6 @@ midi_win_info::api_get_midi_event (event * /*inev*/)
     return false;
 }
 
-/**
- *  This function merely eats the string passed as a parameter.
- */
-
-static void
-jack_message_bit_bucket (const char *)
-{
-    // Into the bit-bucket with ye ya scalliwag!
-}
-
-/**
- *  This function silences JACK error output to the console.  Probably not
- *  good to silence this output, but let's provide the option, for the sake of
- *  symmetry, consistency, what have you.
- */
-
-void
-silence_jack_errors (bool silent)
-{
-    if (silent)
-        jack_set_error_function(jack_message_bit_bucket);
-}
-
-/**
- *  This function silences JACK info output to the console.  We were getting
- *  way too many informational message, to the point of obscuring the debug
- *  and error output.
- */
-
-void
-silence_jack_info (bool silent)
-{
-    if (silent)
-    {
-#ifndef SEQ64_SHOW_API_CALLS
-        jack_set_info_function(jack_message_bit_bucket);
-#endif
-    }
-}
-
 /*
  * Utility functions for the Window MM API.
  */
@@ -731,19 +618,66 @@ silence_jack_info (bool silent)
 bool
 open_win_input_port (midi_win_data & data, unsigned portnumber)
 {
-    MMRESULT result = midiInOpen
-    (
-        data->m_win_in_handle, portnumber,
-        (DWORD_PTR) &win_process_rtmidi_input,
-        (DWORD_PTR) &input_data,                    // what data is this???
-        CALLBACK_FUNCTION
-    );
-    if (result != MMSYSERR_NOERROR)
+    unsigned ndevices = unsigned(midiInGetNumDevs());
+    bool result = portnumber < ndevices;            // 0 to ndevices - 1
+    if (result)
     {
-        m_error_string = func_message("error creating Win MM MIDI input port");
+        MMRESULT mmresult = midiInOpen
+        (
+            data->m_win_in_handle, portnumber,
+            (DWORD_PTR) &win_process_rtmidi_input,
+            (DWORD_PTR) &input_data,                    // what data is this???
+            CALLBACK_FUNCTION
+        );
+        if (mmresult != MMSYSERR_NOERROR)
+        {
+            m_error_string = func_message("error creating MIDI input port");
+            error(rterror::DRIVER_ERROR, m_error_string);
+        }
+
+        // Allocate and init the sysex buffers.
+        // We use the dwUser parameter as a buffer indicator.
+
+        for (int i = 0; i < WIN_RT_SYSEX_BUFFER_COUNT; ++i)
+        {
+            data->m_sysex_buffer[i] = (MIDIHDR *) new char[sizeof(MIDIHDR)];
+            data->m_sysex_buffer[i]->lpData = new char[WIN_RT_SYSEX_BUFFER_SIZE];
+            data->m_sysex_buffer[i]->dwBufferLength = WIN_RT_SYSEX_BUFFER_SIZE;
+            data->m_sysex_buffer[i]->dwUser = i;
+            data->m_sysex_buffer[i]->dwFlags = 0;
+            mmresult = midiInPrepareHeader
+            (
+                data->m_win_in_handle, data->m_sysex_buffer[i], sizeof MIDIHDR
+            );
+            if (mmresult != MMSYSERR_NOERROR)
+            {
+                close_win_input_on_error(data, "MIDI in prepare-header failed");
+                return;
+            }
+            mmresult = midiInAddBuffer        // Register the SysEx buffer.
+            (
+                data->m_win_in_handle, data->m_sysex_buffer[i], sizeof MIDIHDR
+            );
+            if (mmresult != MMSYSERR_NOERROR)
+            {
+                close_win_input_on_error(data, "MIDI in buffer register failed");
+                return;
+            }
+        }
+        mmresult = midiInStart(data->m_win_in_handle);
+        if (mmresult != MMSYSERR_NOERROR)
+        {
+            close_win_input_on_error(data, "MIDI input start failed");
+            return;
+        }
+        result = mmresult == MMSYSERR_NOERROR;
+    }
+    else
+    {
+        m_error_string = func_message("MIDI input port number does not exist");
         error(rterror::DRIVER_ERROR, m_error_string);
     }
-    return result == MMSYSERR_NOERROR;
+    return result;
 }
 
 /**
@@ -777,9 +711,7 @@ open_win_output_port (midi_win_data & data, unsigned portnumber)
         );
         if (rc != MMSYSERR_NOERROR)
         {
-            m_error_string =
-                func_message("error creating Win MM MIDI output port");
-
+            m_error_string = func_message("error creating MIDI output port");
             error(rterror::DRIVER_ERROR, m_error_string);
         }
         result = rc == MMSYSERR_NOERROR;
@@ -805,24 +737,42 @@ close_win_output_port (midi_win_data & data)
             rc = midiOutClose(data->m_win_out_handle);
             if (rc != MMSYSERR_NOERROR)
             {
-                m_error_string =
-                    func_message("error in Win MM MIDI API midiOutClose()");
-
+                m_error_string = func_message("error in midiOutClose()");
                 error(rterror::DRIVER_ERROR, m_error_string);
             }
-
         }
         else
         {
-            m_error_string =
-                func_message("error in Win MM MIDI API midiOutReset()");
-
+            m_error_string = func_message("error in midiOutReset()");
             error(rterror::DRIVER_ERROR, m_error_string);
         }
         result = rc == MMSYSERR_NOERROR;
     }
     return result;
+}
 
+/**
+ *  Error-handling wrapper.
+ */
+
+void
+close_win_input_on_error (midi_win_data & data, const std::string & msg)
+{
+    (void) midiInClose(data->m_win_out_handle);
+    m_error_string = func_message(msg);
+    error(rterror::DRIVER_ERROR, m_error_string);
+}
+
+/**
+ *  Error-handling wrapper.
+ */
+
+void
+close_win_output_on_error (midi_win_data & data, const std::string & msg)
+{
+    (void) midiOutClose(data->m_win_out_handle);
+    m_error_string = func_message(msg);
+    error(rterror::DRIVER_ERROR, m_error_string);
 }
 
 }           // namespace seq64

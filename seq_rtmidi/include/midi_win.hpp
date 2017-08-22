@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2017-08-20
- * \updates       2017-08-20
+ * \updates       2017-08-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring, we've stripped out most of the original RtMidi
@@ -278,7 +278,7 @@ public:
      *  Note that midi_message::container is a vector<midibyte> object.
      */
 
-    virtual bool send_message (const midi_message::container & message);
+    virtual bool send_message (const midi_message & message);
 
 private:
 

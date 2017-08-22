@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-04-26
+ * \updates       2017-08-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -1580,7 +1580,7 @@ midi_out_jack::~midi_out_jack ()
  *  the message itself to the JACK ring buffer.
  *
  * \param message
- *      Provides the vector of message bytes to send.
+ *      Provides the MIDI message object, which contains the bytes to send.
  *
  * \return
  *      Returns true if the buffer message and buffer size seem to be written
@@ -1588,12 +1588,12 @@ midi_out_jack::~midi_out_jack ()
  */
 
 bool
-midi_out_jack::send_message (const midi_message::container & message)
+midi_out_jack::send_message (const midi_message & message)
 {
-    int nbytes = message.size();
+    int nbytes = message.count();
     int count1 = jack_ringbuffer_write
     (
-        m_jack_data.m_jack_buffmessage, (const char *) &message[0], message.size()
+        m_jack_data.m_jack_buffmessage, message.array(), message.count()
     );
     int count2 = jack_ringbuffer_write
     (

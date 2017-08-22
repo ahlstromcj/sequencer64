@@ -39,6 +39,13 @@ class midi_win_info : public midi_info
 
 private:
 
+    /**
+     *  Holds data needed for enumerating and setting up Win MM MIDI input
+     *  and output ports.
+     */
+
+    midi_win_data m_win_handles;
+
 public:
 
     midi_win_info
@@ -48,15 +55,6 @@ public:
         midibpm bpm = SEQ64_DEFAULT_BPM         /* 120.0  */
     );
     virtual ~midi_win_info ();
-
-    /**
-     * \getter m_multi_client
-     */
-
-    bool multi_client () const
-    {
-        return m_multi_client;
-    }
 
     /**
      * \getter m_jack_client

@@ -157,6 +157,8 @@ public:
         return (i >= 0 && i < int(m_bytes.size())) ? m_bytes[i] : 0 ;
     }
 
+#ifdef USE_MIDI_MESSAGE_AT_ACCESS
+
     midibyte & at (int i)
     {
         return m_bytes.at(i);       /* can throw an exception */
@@ -166,6 +168,8 @@ public:
     {
         return m_bytes.at(i);       /* can throw an exception */
     }
+
+#endif
 
     const char * array () const
     {
@@ -195,6 +199,11 @@ public:
     void timestamp (double t)
     {
         m_timestamp = t;
+    }
+
+    bool is_sysex () const
+    {
+        return m_bytes.size() > 0 ? event::is_sysex_msg(m_bytes[0]) : false ;
     }
 
 };          // class midi_message

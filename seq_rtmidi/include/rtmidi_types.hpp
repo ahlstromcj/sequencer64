@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2017-02-21
+ * \updates       2017-08-22
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -157,6 +157,8 @@ public:
         return (i >= 0 && i < int(m_bytes.size())) ? m_bytes[i] : 0 ;
     }
 
+#ifdef USE_MIDI_MESSAGE_AT_ACCESS
+
     midibyte & at (int i)
     {
         return m_bytes.at(i);       /* can throw an exception */
@@ -166,6 +168,8 @@ public:
     {
         return m_bytes.at(i);       /* can throw an exception */
     }
+
+#endif
 
     const char * array () const
     {

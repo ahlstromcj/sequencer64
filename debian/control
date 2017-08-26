@@ -3,17 +3,11 @@ Section: sound
 Priority: optional
 Maintainer: Chris Ahlstrom <ahlstromcj@gmail.com>
 Uploaders: Chris Ahlstrom <ahlstromcj@gmail.com>
-Build-Depends: debhelper (>= 9),
- automake,
- autoconf,
- autotools-dev (>= 20100122.1~),
- libgtkmm-2.4-dev,
- libasound2-dev,
- libjack-dev | libjack-jackd2-dev
-Standards-Version: 3.9.1
-Homepage: http://github.com/ahlstromcj/sequencer64.git
+Build-Depends: debhelper (>= 9), autotools-dev
+Standards-Version: 3.9.8
+Homepage: https://github.com/ahlstromcj/sequencer64.git
 Vcs-Git: git://github.com/ahlstromcj/sequencer64.git
-Vcs-Browser: http://github.com/ahlstromcj/sequencer64.git
+Vcs-Browser: https://github.com/ahlstromcj/sequencer64.git
 
 Package: sequencer64
 Architecture: any

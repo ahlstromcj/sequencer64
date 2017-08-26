@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-08-22
+dnl \update        2017-08-25
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -19,7 +19,7 @@ dnl
 dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
-AC_REVISION($Revision: 0.90$)dnl
+AC_REVISION($Revision: 0.93$)dnl
 AC_INIT(Sequencer64, [0.93.4], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
@@ -93,7 +93,7 @@ dnl      incremented.
 SEQUENCER64_API_MAJOR="0"
 AC_SUBST([SEQUENCER64_API_MAJOR])
 
-SEQUENCER64_API_MINOR="90"
+SEQUENCER64_API_MINOR="93"
 AC_SUBST([SEQUENCER64_API_MINOR])
 
 SEQUENCER64_API_PATCH="0"
@@ -684,10 +684,6 @@ APIDEF="-DAPI_VERSION=\"$SEQUENCER64_API_VERSION\""
 WARNFLAGS="-Wall -Wextra -pedantic -Wno-error=date-time $WARNINGS"
 SPEEDFLAGS="-ffast-math"
 COMMONFLAGS="$WARNFLAGS -D_REENTRANT $APIDEF $DBGFLAGS $STACKCHK $NOERRLOG $NOTHISPTR"
-
-dnl Add $WARNINGS_ENABLED to CXXFLAGS if you want to see all warnings, all
-dnl the time.  WARNINGS_ENABLED="-Wall"
-
 WARNINGS_DISABLED="-Wno-unused-parameter -Wno-non-virtual-dtor"
 
 dnl We added -std=c++11 for g++ 4.8, and -Wno-deprecated-declarations to
@@ -697,9 +693,11 @@ dnl 2015-10-02:  After a Debian Sid update, the configfile module wouldn't
 dnl compile because, we think, the sigc++ now required C++11 support.
 dnl So we put that requirement back, and had to fix some issues with
 dnl conditional compilation.
+dnl
+dnl 2017-08-25:  Removed the already-configured (above) -Wl,--as-needed option.
 
 CFLAGS="$CFLAGS $COMMONFLAGS"
-CXXFLAGS="$CFLAGS -std=c++11 -Wno-variadic-macros -Wno-deprecated-declarations -Wl,--no-as-needed"
+CXXFLAGS="$CFLAGS -std=c++11 -Wno-variadic-macros -Wno-deprecated-declarations"
 
 AH_BOTTOM(
    /* Bottom of header config */

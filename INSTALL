@@ -442,7 +442,9 @@ DEPENDENCIES:
    Code:
 
 	  -  libasound2-dev
-      -  libgtkmm-2.4-dev (dev is the header-file package)
+      -  libatkmm-1.6-dev (dev is the header-file package)
+      -  libgtkmm-2.4-dev
+      -  libglibmm-2.4-dev
 	  -  libgtk2.0-dev
       -  libsigc++-2.0-dev
       -  libjack-jackd2-dev

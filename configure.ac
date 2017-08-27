@@ -679,9 +679,12 @@ dnl      --enable-profiling
 AC_XPC_DEBUGGING
 
 dnl 8.  Set up other options in the compiler macros.
+dnl
+dnl -Wno-error=date-time breaks the build on KX Studio (gcc 4.8)
+dnl WARNFLAGS="-Wall -Wextra -pedantic -Wno-error=date-time $WARNINGS"
 
 APIDEF="-DAPI_VERSION=\"$SEQUENCER64_API_VERSION\""
-WARNFLAGS="-Wall -Wextra -pedantic -Wno-error=date-time $WARNINGS"
+WARNFLAGS="-Wall -Wextra -pedantic $WARNINGS"
 SPEEDFLAGS="-ffast-math"
 COMMONFLAGS="$WARNFLAGS -D_REENTRANT $APIDEF $DBGFLAGS $STACKCHK $NOERRLOG $NOTHISPTR"
 

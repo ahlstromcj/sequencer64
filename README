@@ -85,6 +85,7 @@ Legacy Sequencer64: Sequencer64/sequencer64
 PortMIDI: Seq64portmidi/seq64portmidi
 
     Builds and runs via the portmidi library in a Linux distro.  Has issues
-    and is deprecated.
+    and is deprecated for Linux, but might be used in the upcoming Windows
+    implementation.
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

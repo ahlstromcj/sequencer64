@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-08-25
+dnl \update        2017-08-27
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -436,7 +436,7 @@ AC_ARG_ENABLE(rtmidi,
     [rtmidi=yes])
 
 if test "$rtmidi" != "no"; then
-    AC_MSG_RESULT([RtMidi build enabled.]);
+    AC_MSG_RESULT([rtmidi native build enabled.]);
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi support is enabled])
     AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
     AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$disable = no])
@@ -452,7 +452,7 @@ else
 fi
 
 AC_ARG_ENABLE(cli,
-    [AS_HELP_STRING(--enable-cli, [Enable RtMidi command-line build])],
+    [AS_HELP_STRING(--enable-cli, [Enable rtmidi command-line build])],
     [cli=$enableval],
     [cli=no])
 
@@ -489,7 +489,7 @@ else
     AC_MSG_WARN([Standard ALSA build disabled.]);
 fi
 
-dnl PortMidi support.  Deprecated.
+dnl PortMidi support.  Deprecated for Linux.
 
 AC_ARG_ENABLE(portmidi,
     [AS_HELP_STRING(--enable-portmidi, [Enable PortMidi build (deprecated)])],
@@ -662,7 +662,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-08-22"
+#define VERSION_DATE_SHORT "2017-08-27"
 #define VERSION "0.93.4"
 
 )
@@ -699,7 +699,21 @@ dnl 2017-08-25:  Removed the already-configured (above) -Wl,--as-needed option.
 CFLAGS="$CFLAGS $COMMONFLAGS"
 CXXFLAGS="$CFLAGS -std=c++11 -Wno-variadic-macros -Wno-deprecated-declarations"
 
+dnl Try to fix  the  build flags; we enable RTMIDI by default, but have to
+dnl disable it when ALSA or PortMIDI builds are specified.  We have to
+dnl use a trick to fool configure, which will strip out any bare #undef
+dnl statement it sees.
+
 AH_BOTTOM(
+
+#ifdef SEQ64_ALSAMIDI_SUPPORT
+#/**/undef/**/ SEQ64_RTMIDI_SUPPORT
+#endif
+
+#ifdef SEQ64_PORTMIDI_SUPPORT
+#/**/undef/**/ SEQ64_RTMIDI_SUPPORT
+#endif
+
    /* Bottom of header config */
 )
 

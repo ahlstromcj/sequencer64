@@ -19,16 +19,21 @@
 /**
  * \file          seq64portmidi.cpp
  *
- *  This module declares/defines the main module for the application.
+ *  This module declares/defines the main module for the PortMIDI
+ *  implementation of this application.
  *
  * \library       seq64portmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2017-02-13
+ * \updates       2017-08-27
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
  *  here, since other header files include them.
+ *
+ *  Also note that this version of Sequencer64 is deprecated for Linux (no
+ *  support for virtual ports), but will likely be used in the upcoming
+ *  Windows implementation.
  */
 
 #include <stdio.h>
@@ -76,6 +81,7 @@ main (int argc, char * argv [])
     Gtk::Main kit(argc, argv);              /* strip GTK+ parameters        */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
+    (void) seq64::parse_log_option(argc, argv);    /* -o log=file.ext early */
 
     /*
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to the
@@ -102,6 +108,13 @@ main (int argc, char * argv [])
         std::string errmessage;                     /* just in case!        */
         ok = seq64::parse_options_files(p, errmessage, argc, argv);
         optionindex = seq64::parse_command_line_options(p, argc, argv);
+        if (seq64::parse_o_options(argc, argv))
+        {
+            ++optionindex;
+            p.seqs_in_set(seq64::usr().seqs_in_set());
+            p.max_sets(seq64::usr().max_sets());
+        }
+
         p.launch(seq64::usr().midi_ppqn());     /* set up performance       */
         if (seq64::usr().inverse_colors())
             seq64::gui_palette_gtk2::load_inverse_palette(true);
@@ -115,7 +128,14 @@ main (int argc, char * argv [])
 
         seq64::mainwnd seq24_window
         (
-            p, seq64::usr().allow_two_perfedits(), seq64::usr().midi_ppqn()
+            p, seq64::usr().allow_two_perfedits(),
+            seq64::usr().midi_ppqn()
+#if defined SEQ64_MULTI_MAINWID
+            ,
+            seq64::usr().block_rows(),
+            seq64::usr().block_columns(),
+            seq64::usr().block_independent()
+#endif
         );
         if (ok)
         {
@@ -128,8 +148,10 @@ main (int argc, char * argv [])
                     printf("? MIDI file not found: %s\n", midifilename.c_str());
             }
 
+#ifdef PLATFORM_LINUX
             if (seq64::rc().lash_support())
                 seq64::create_lash_driver(p, argc, argv);
+#endif
 
             kit.run(seq24_window);                  /* run until user quits  */
             p.finish();                             /* tear down performance */
@@ -141,7 +163,9 @@ main (int argc, char * argv [])
             else
                 printf("[auto-option-save is off, so not saving config files]\n");
 
+#ifdef PLATFORM_LINUX
             seq64::delete_lash_driver();            /* deletes only if exists   */
+#endif
         }
         else
             seq24_window.rc_error_dialog(errmessage);

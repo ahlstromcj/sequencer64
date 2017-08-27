@@ -679,9 +679,13 @@ dnl      --enable-profiling
 AC_XPC_DEBUGGING
 
 dnl 8.  Set up other options in the compiler macros.
+dnl
+dnl Not present on gcc 4.8: -Wno-error=date-time
+dnl WARNFLAGS="-Wall -Wextra -pedantic -Wno-error=date-time $WARNINGS"
+
+WARNFLAGS="-Wall -Wextra -pedantic $WARNINGS"
 
 APIDEF="-DAPI_VERSION=\"$SEQUENCER64_API_VERSION\""
-WARNFLAGS="-Wall -Wextra -pedantic -Wno-error=date-time $WARNINGS"
 SPEEDFLAGS="-ffast-math"
 COMMONFLAGS="$WARNFLAGS -D_REENTRANT $APIDEF $DBGFLAGS $STACKCHK $NOERRLOG $NOTHISPTR"
 WARNINGS_DISABLED="-Wno-unused-parameter -Wno-non-virtual-dtor"

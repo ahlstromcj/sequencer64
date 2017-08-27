@@ -1,6 +1,6 @@
-README for Sequencer64 0.93.3 (Native JACK, CLI, multiple sets, varisets, tempo)
+README for Sequencer64 0.93.4 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2017-08-20
+2015-09-10 to 2017-08-27
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,

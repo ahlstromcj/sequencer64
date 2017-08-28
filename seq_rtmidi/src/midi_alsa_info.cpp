@@ -5,7 +5,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-06-11
+ * \updates       2017-08-22
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:

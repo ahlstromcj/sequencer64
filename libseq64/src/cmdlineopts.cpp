@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-08-17
+ * \updates       2017-08-27
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -57,6 +57,7 @@
 
 #include "app_limits.h"                 /* macros for build_details()       */
 #include "cmdlineopts.hpp"
+#include "daemonize.hpp"                /* seqg4::reroute_stdio()           */
 #include "file_functions.hpp"           /* file_accessible()                */
 #include "optionsfile.hpp"
 #include "perform.hpp"
@@ -186,7 +187,7 @@ static struct option long_options [] =
  *
  *  Previous arg-list, items missing! "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"
  *
- *  Also note that 'o' cannot be included here due to issues involving
+ *  * Also note that 'o' cannot be included here due to issues involving
  *  parse_o_options(), but it is *reserved*.
  */
 
@@ -552,6 +553,38 @@ parse_o_options (int argc, char * argv [])
                 break;
 
             ++argn;
+        }
+    }
+    return result;
+}
+
+/**
+ *  Checks the putative command-line arguments for the "log" option.  Generally,
+ *  this function needs to be called near the beginning of main().  See the
+ *  rtmidi version of the main() function, for example.
+ *
+ * \param argc
+ *      The number of command-line parameters, including the name of the
+ *      application as parameter 0.
+ *
+ * \param argv
+ *      The array of pointers to the command-line parameters.
+ *
+ * \return
+ *      Returns true if stdio was rerouted to the "usr"-specified log-file.
+ */
+
+bool
+parse_log_option (int argc, char * argv [])
+{
+    bool result = false;
+    if (parse_o_options(argc, argv))
+    {
+        std::string logfile = usr().option_logfile();
+        if (! logfile.empty())
+        {
+            (void) reroute_stdio(logfile);
+            result = true;
         }
     }
     return result;

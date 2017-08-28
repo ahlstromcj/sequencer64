@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-20
+ * \updates       2017-08-27
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -125,7 +125,7 @@
 #include "pixmaps/learn.xpm"
 #include "pixmaps/learn2.xpm"
 #include "pixmaps/perfedit.xpm"
-#include "pixmaps/seq64.xpm"
+#include "pixmaps/route64rwb-32x32.xpm" /* #include "pixmaps/seq64.xpm"     */
 
 #ifdef SEQ64_RTMIDI_SUPPORT
 #include "pixmaps/seq64_logo.xpm"
@@ -387,10 +387,10 @@ mainwnd::mainwnd
 
     /*
      * This provides the application icon, seen in the title bar of the
-     * window decoration.
+     * window decoration. seq64_xpm is the old icon.
      */
 
-    set_icon(Gdk::Pixbuf::create_from_xpm_data(seq64_xpm));
+    set_icon(Gdk::Pixbuf::create_from_xpm_data(route64rwb_32x32_xpm));
 
     /*
      * Setting this to true allows the main window to resize to its contents.

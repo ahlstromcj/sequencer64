@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-21
+ * \updates       2017-08-26
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -575,9 +575,20 @@ midibus::api_flush ()
  *      The beats value calculated by midibase::continue_from().
  */
 
+#ifdef USE_THIS_SEQ24_CODE
+
 void
 midibus::api_continue_from (midipulse tick, midipulse beats)
 {
+
+#else
+
+void
+midibus::api_continue_from (midipulse /*tick*/, midipulse beats)
+{
+
+#endif
+
 #ifdef USE_THIS_SEQ24_CODE
     /*
      * Tell the device that we are going to start at a certain position.

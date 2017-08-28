@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-22
+ * \updates       2017-08-22
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -448,6 +448,18 @@ public:
             m == EVENT_CONTROL_CHANGE || m == EVENT_AFTERTOUCH ||
             m == EVENT_PITCH_WHEEL
         );
+    }
+
+    /**
+     *  Static test for a SysEx message.
+     *
+     * \param m
+     *      The status/message byte to test, with the channel bits masked off.
+     */
+
+    static bool is_sysex_msg (midibyte m)
+    {
+        return m == EVENT_MIDI_SYSEX;
     }
 
     /**

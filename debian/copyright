@@ -1,14 +1,10 @@
 Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=135
 Name: Sequencer64
-Maintainer:
- Chris Ahlstrom <ahlstromcj@gmail.com>
+Maintainer: Chris Ahlstrom <ahlstromcj@gmail.com>
 Source: https://github.com/ahlstromc/sequencer64.git
 
-Copyright: No copyright holder
-License: GPL-2+
-
 Files: ./debian/*
-Copyright: 2016 Chris Ahlstrom <ahlstromcj@gmail.com>
+Copyright: 2016-2017 Chris Ahlstrom <ahlstromcj@gmail.com>
 License: GPL-2+
 
 License: GPL-2+

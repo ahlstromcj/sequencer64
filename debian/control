@@ -3,24 +3,19 @@ Section: sound
 Priority: optional
 Maintainer: Chris Ahlstrom <ahlstromcj@gmail.com>
 Uploaders: Chris Ahlstrom <ahlstromcj@gmail.com>
-Build-Depends: debhelper (>= 9),
- automake,
- autoconf,
- autotools-dev (>= 20100122.1~),
- libgtkmm-2.4-dev,
- libasound2-dev,
- libjack-dev | libjack-jackd2-dev
-Standards-Version: 3.9.1
-Homepage: http://github.com/ahlstromcj/sequencer64.git
+Build-Depends: debhelper (>= 9), autotools-dev
+Standards-Version: 3.9.8
+Homepage: https://github.com/ahlstromcj/sequencer64.git
 Vcs-Git: git://github.com/ahlstromcj/sequencer64.git
-Vcs-Browser: http://github.com/ahlstromcj/sequencer64.git
+Vcs-Browser: https://github.com/ahlstromcj/sequencer64.git
 
 Package: sequencer64
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: libasound2 (>= 1.0.16), libc6 (>= 2.14), libgcc1 (>= 1:3.0), libglib2.0-0 (>= 2.12.0), libgtk2.0-0 (>= 2.8.0), libjack-jackd2-0 (>= 1.9.5~dfsg-14) | libjack-0.116
+Recommends: jackd
 Description: Native JACK/ALSA MIDI live sequencer refactored from seq24.
- The seq64 application provides a major upgrade to seq24, including support for
+ The seq64 application provides major upgrades to seq24: support for
  native JACK MIDI, SMF 0 files, a range of PPQN values, more MIDI controls,
  more scales, chord-generation, expanded configuration options, pause,
- event-editing window, tap-tempo, improved keystroke control, and many other
+ event-editing window, tap-tempo, more keystroke control, and many other
  enhancements and fixes.

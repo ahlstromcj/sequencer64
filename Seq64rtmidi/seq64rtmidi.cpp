@@ -19,12 +19,13 @@
 /**
  * \file          seq64rtmidi.cpp
  *
- *  This module declares/defines the main module for the application.
+ *  This module declares/defines the main module for the JACK/ALSA "rtmidi"
+ *  implementation of this application.
  *
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2017-08-16
+ * \updates       2017-08-27
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -40,7 +41,6 @@
 #include <gtkmm/main.h>
 
 #include "cmdlineopts.hpp"              /* command-line functions           */
-#include "daemonize.hpp"                /* seqg4::reroute_stdio() only      */
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "gui_assistant_gtk2.hpp"       /* seq64::gui_assistant_gtk2        */
 #include "gui_palette_gtk2.hpp"         /* colors and "inverse" colors      */
@@ -79,22 +79,9 @@ int
 main (int argc, char * argv [])
 {
     Gtk::Main kit(argc, argv);              /* strip GTK+ parameters        */
-    bool stdio_rerouted = false;            /* used only in log-file option */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
-    if (seq64::parse_o_options(argc, argv))
-    {
-        /*
-         * We need to process the "log" option early.
-         */
-
-        std::string logfile = seq64::usr().option_logfile();
-        if (! logfile.empty())
-        {
-            (void) seq64::reroute_stdio(logfile);
-            stdio_rerouted = true;
-        }
-    }
+    (void) seq64::parse_log_option(argc, argv);    /* -o log=file.ext early */
 
     /**
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to the
@@ -115,12 +102,6 @@ main (int argc, char * argv [])
     bool is_help = seq64::help_check(argc, argv);
     bool ok = true;
     int optionindex = SEQ64_NULL_OPTION_INDEX;
-    if (! stdio_rerouted)                       /* not done already?        */
-    {
-        std::string logfile = seq64::usr().option_logfile();
-        if (! logfile.empty())
-            (void) seq64::reroute_stdio(logfile);
-    }
     if (! is_help)
     {
         /*
@@ -134,11 +115,12 @@ main (int argc, char * argv [])
         optionindex = seq64::parse_command_line_options(p, argc, argv);
         if (seq64::parse_o_options(argc, argv))
         {
-            /*
+            /**
              * The user may have specified the "wid" or other -o options that
              * are also set up in the "usr" file.  The command line needs to
-             * take precedence.  The "log" option is processed above.
-             * These same settings are made in the cmdlineopts module.
+             * take precedence.  The "log" option is processed early in the
+             * startup sequence.  These same settings are made in the
+             * cmdlineopts module.
              */
 
             ++optionindex;
@@ -148,6 +130,8 @@ main (int argc, char * argv [])
 
         /*
          * Issue #100, moved this call to before creating the mainwnd.
+         * Otherwise, seq64 will not register with LASH (if enabled) in a
+         * timely fashion.
          */
 
         p.launch(seq64::usr().midi_ppqn());         /* set up performance   */
@@ -163,8 +147,7 @@ main (int argc, char * argv [])
 
         seq64::mainwnd seq24_window
         (
-            p,
-            seq64::usr().allow_two_perfedits(),
+            p, seq64::usr().allow_two_perfedits(),
             seq64::usr().midi_ppqn()
 #if defined SEQ64_MULTI_MAINWID
             ,

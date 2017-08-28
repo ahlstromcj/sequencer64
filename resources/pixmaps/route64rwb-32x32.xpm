@@ -1,5 +1,5 @@
 /* XPM */
-static char * route64rwb_32x32_xpm[] = {
+static const char * route64rwb_32x32_xpm[] = {
 "32 32 465 2",
 "  	c None",
 ". 	c #373637",

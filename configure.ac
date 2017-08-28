@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-08-20
+dnl \update        2017-08-28
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -19,8 +19,8 @@ dnl
 dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
-AC_REVISION($Revision: 0.90$)dnl
-AC_INIT(Sequencer64, [0.93.3], [ahlstromcj@gmail.com])
+AC_REVISION($Revision: 0.93$)dnl
+AC_INIT(Sequencer64, [0.93.4], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl Do we need the following?  No, but it cleans up a lot of warning messages.
@@ -51,7 +51,7 @@ AC_SUBST(PACKAGE)
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
 
-VERSION="0.93.3"
+VERSION="0.93.4"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -93,7 +93,7 @@ dnl      incremented.
 SEQUENCER64_API_MAJOR="0"
 AC_SUBST([SEQUENCER64_API_MAJOR])
 
-SEQUENCER64_API_MINOR="90"
+SEQUENCER64_API_MINOR="93"
 AC_SUBST([SEQUENCER64_API_MINOR])
 
 SEQUENCER64_API_PATCH="0"
@@ -436,7 +436,7 @@ AC_ARG_ENABLE(rtmidi,
     [rtmidi=yes])
 
 if test "$rtmidi" != "no"; then
-    AC_MSG_RESULT([RtMidi build enabled.]);
+    AC_MSG_RESULT([rtmidi native build enabled.]);
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi support is enabled])
     AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
     AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$disable = no])
@@ -452,7 +452,7 @@ else
 fi
 
 AC_ARG_ENABLE(cli,
-    [AS_HELP_STRING(--enable-cli, [Enable RtMidi command-line build])],
+    [AS_HELP_STRING(--enable-cli, [Enable rtmidi command-line build])],
     [cli=$enableval],
     [cli=no])
 
@@ -489,7 +489,7 @@ else
     AC_MSG_WARN([Standard ALSA build disabled.]);
 fi
 
-dnl PortMidi support.  Deprecated.
+dnl PortMidi support.  Deprecated for Linux.
 
 AC_ARG_ENABLE(portmidi,
     [AS_HELP_STRING(--enable-portmidi, [Enable PortMidi build (deprecated)])],
@@ -662,8 +662,8 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-08-20"
-#define VERSION "0.93.3"
+#define VERSION_DATE_SHORT "2017-08-27"
+#define VERSION "0.93.4"
 
 )
 
@@ -681,16 +681,14 @@ AC_XPC_DEBUGGING
 dnl 8.  Set up other options in the compiler macros.
 dnl
 dnl -Wno-error=date-time breaks the build on KX Studio (gcc 4.8)
+dnl
+dnl Not present on gcc 4.8: -Wno-error=date-time
 dnl WARNFLAGS="-Wall -Wextra -pedantic -Wno-error=date-time $WARNINGS"
 
-APIDEF="-DAPI_VERSION=\"$SEQUENCER64_API_VERSION\""
 WARNFLAGS="-Wall -Wextra -pedantic $WARNINGS"
+APIDEF="-DAPI_VERSION=\"$SEQUENCER64_API_VERSION\""
 SPEEDFLAGS="-ffast-math"
 COMMONFLAGS="$WARNFLAGS -D_REENTRANT $APIDEF $DBGFLAGS $STACKCHK $NOERRLOG $NOTHISPTR"
-
-dnl Add $WARNINGS_ENABLED to CXXFLAGS if you want to see all warnings, all
-dnl the time.  WARNINGS_ENABLED="-Wall"
-
 WARNINGS_DISABLED="-Wno-unused-parameter -Wno-non-virtual-dtor"
 
 dnl We added -std=c++11 for g++ 4.8, and -Wno-deprecated-declarations to
@@ -700,11 +698,27 @@ dnl 2015-10-02:  After a Debian Sid update, the configfile module wouldn't
 dnl compile because, we think, the sigc++ now required C++11 support.
 dnl So we put that requirement back, and had to fix some issues with
 dnl conditional compilation.
+dnl
+dnl 2017-08-25:  Removed the already-configured (above) -Wl,--as-needed option.
 
 CFLAGS="$CFLAGS $COMMONFLAGS"
-CXXFLAGS="$CFLAGS -std=c++11 -Wno-variadic-macros -Wno-deprecated-declarations -Wl,--no-as-needed"
+CXXFLAGS="$CFLAGS -std=c++11 -Wno-variadic-macros -Wno-deprecated-declarations"
+
+dnl Try to fix  the  build flags; we enable RTMIDI by default, but have to
+dnl disable it when ALSA or PortMIDI builds are specified.  We have to
+dnl use a trick to fool configure, which will strip out any bare #undef
+dnl statement it sees.
 
 AH_BOTTOM(
+
+#ifdef SEQ64_ALSAMIDI_SUPPORT
+#/**/undef/**/ SEQ64_RTMIDI_SUPPORT
+#endif
+
+#ifdef SEQ64_PORTMIDI_SUPPORT
+#/**/undef/**/ SEQ64_RTMIDI_SUPPORT
+#endif
+
    /* Bottom of header config */
 )
 

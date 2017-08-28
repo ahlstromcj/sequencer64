@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.93.3 and above
+INSTALL for Sequencer64 v. 0.93.4 and above
 Chris Ahlstrom
-2015-09-10 to 2017-08-20
+2015-09-10 to 2017-08-27
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -14,7 +14,8 @@ build:
     -   seq64cli.  An in-progress version of a GUI-less version of
         Sequencer64, which can run from the console or as a daemon.
     -   sequencer64. ALSA with JACK transport; the original version.
-    -   seq64portmidi. PortMIDI implementation; has issues, deprecated.
+    -   seq64portmidi. PortMIDI implementation; has issues, deprecated for
+        Linux, may still be used for the upcoming Windows implementation.
 
 Steps:
 
@@ -441,7 +442,9 @@ DEPENDENCIES:
    Code:
 
 	  -  libasound2-dev
-      -  libgtkmm-2.4-dev (dev is the header-file package)
+      -  libatkmm-1.6-dev (dev is the header-file package)
+      -  libgtkmm-2.4-dev
+      -  libglibmm-2.4-dev
 	  -  libgtk2.0-dev
       -  libsigc++-2.0-dev
       -  libjack-jackd2-dev

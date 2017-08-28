@@ -305,6 +305,10 @@ undaemonize (uint32_t previous_umask)
  *      Just closes the standard file descriptors, rather than rerouting them
  *      to /dev/null.  Defaults to false.  This is the value needed if the
  *      \a logfile parameter is not empty.
+ *
+ * \return
+ *      Returns true if the log-file functionality has been enabled.
+ *      I think :-D.
  */
 
 bool
@@ -327,7 +331,9 @@ reroute_stdio (const std::string & logfile, bool closem)
     }
     else
     {
+        result = true;
         (void) close(STDIN_FILENO);
+
         int fd = open("/dev/null", O_RDWR);
         if (fd != STDIN_FILENO)
         {
@@ -353,14 +359,6 @@ reroute_stdio (const std::string & logfile, bool closem)
                 {
                     if (dup2(STDOUT_FILENO, STDERR_FILENO) != STDERR_FILENO)
                         result = false;
-
-/*
-                    if (result)
-                    {
-                        if (dup2(STDOUT_FILENO, STDOUT_FILENO) != STDOUT_FILENO)
-                            result = false;
-                    }
-*/
                 }
                 else
                     result = false;

@@ -6,7 +6,7 @@
 # \library    	libseq_portmidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-11-28
+# \update      2017-08-29
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -98,12 +98,17 @@ version = $(SEQUENCER64_API_MAJOR):$(SEQUENCER64_API_MINOR):$(SEQUENCER64_API_PA
 # Compiler and linker flags (later, PortMidi)
 #------------------------------------------------------------------------------
 
+AM_CFLAGS = \
+ -I../include \
+ -I$(top_srcdir)/include \
+ -I$(top_srcdir)/libseq64/include \
+ $(MM_WFLAGS)
+
 AM_CXXFLAGS = \
  -I../include \
  -I$(top_srcdir)/include \
  -I$(top_srcdir)/libseq64/include \
- -I$(top_srcdir)/seq_portmidi/include \
- -Wall $(MM_WFLAGS)
+ $(MM_WFLAGS)
 
 #******************************************************************************
 # The library to build, a libtool-based library
@@ -114,10 +119,22 @@ lib_LTLIBRARIES = libseq_portmidi.la
 #******************************************************************************
 # Source files
 #----------------------------------------------------------------------------
+#
+# pmwin.c
+# pmwinmm.c
+#
+#----------------------------------------------------------------------------
 
 libseq_portmidi_la_SOURCES = \
 	mastermidibus.cpp \
-	midibus.cpp
+	midibus.cpp \
+	finddefault.c \
+	pmlinuxalsa.c \
+	pmlinux.c \
+	pmutil.c \
+	portmidi.c \
+	porttime.c \
+	ptlinux.c
 
 libseq_portmidi_la_LDFLAGS = -version-info $(version)
 libseq_portmidi_la_LIBADD = $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)

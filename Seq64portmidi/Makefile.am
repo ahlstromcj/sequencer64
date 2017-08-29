@@ -104,7 +104,7 @@ AM_CXXFLAGS = \
  $(GTKMM_CFLAGS) \
  $(JACK_CFLAGS) \
  $(LASH_CFLAGS) \
- -Wall $(MM_WFLAGS)
+ $(MM_WFLAGS)
 
 #******************************************************************************
 # libmath
@@ -139,8 +139,9 @@ libmath = -lm
 libraries = \
  -L$(libseq_gtkmm2dir) -lseq_gtkmm2 \
  -L$(libseq64dir) -lseq64 \
- -L$(libseq_portmididir) -lseq_portmidi \
- -L$(libportmididir) -lportmidi
+ -L$(libseq_portmididir) -lseq_portmidi
+
+#  -L$(libportmididir) -lportmidi
 
 #****************************************************************************
 # Project-specific dependency files

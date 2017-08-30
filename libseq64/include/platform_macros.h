@@ -11,7 +11,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-09
+ * \updates       2017-08-29
  * \license       GNU GPLv2 or above
  *
  *  Copyright (C) 2013-2015 Chris Ahlstrom <ahlstromcj@gmail.com>
@@ -238,6 +238,40 @@
 #if defined __CYGWIN32__
 #define PLATFORM_CYGWIN
 #endif
+
+/**
+ *	Provides a way to flag unused parameters at each "usage", without disabling
+ *	them globally.  Use it like this:
+ *
+ *     void foo(int UNUSED(bar)) { ... }
+ *     static void UNUSED_FUNCTION(foo)(int bar) { ... }
+ *
+ *  The UNUSED macro won't work for arguments which contain parenthesis,
+ *  so an argument like float (*coords)[3] one cannot do,
+ *
+ *      float UNUSED((*coords)[3]) or float (*UNUSED(coords))[3].
+ *
+ *  This is the only downside to the UNUSED macro; in these cases fall back to
+ *
+ *      (void) coords;
+ *
+ *  Another possible definition is casting the unused value to void in the
+ *  function body.
+ */
+
+#ifdef __GNUC__
+#define UNUSED(x)               UNUSED_ ## x __attribute__((__unused__))
+#else
+#define UNUSED(x)               UNUSED_ ## x
+#endif
+
+#ifdef __GNUC__
+#define UNUSED_FUNCTION(x)      __attribute__((__unused__)) UNUSED_ ## x
+#else
+#define UNUSED_FUNCTION(x)      UNUSED_ ## x
+#endif
+
+#define UNUSED_VOID(x)          (void) (x)
 
 /**
  *  Provides macros to indicate the level standards support for some key

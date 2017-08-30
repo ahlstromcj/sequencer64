@@ -1,15 +1,22 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-08-16
+2016-12-03 to 2017-08-30
 
 Debian packaging:
 
     *   Need a Sequencer64-debian project to hold packages for convenience.
     -   Update documentation for the build processes.
 
+Windows:
+
+    -   Implement api_sysex() in PortMIDI
+    -   Implement api_flush() in PortMIDI
+    -   Master MingW.
+    -   Add Windows implementation and build files.
+    -   Add NSIS installer creation.
+
 Tempo Track:
 
-    -   Need to get event editor to display, insert, or update Meta data.
     -   Separate tempo for each pattern (a feature request)?
 
     1:1 Program         C0 (192), seqdata tries to draw it (height == 0)
@@ -30,16 +37,12 @@ Hot bugs:
     -   Pressing the keep-queue activates the Q button, but pressing another
         key, or the temporary queue key, or changing the current screen set,
         does *not* de-activate the keep-queue status.
-    -   "seq64 --option sets=8x12 file.midi" yields error "? MIDI file not
-        found: sets=8x12".
 
 Rtmidi implementation issues to work out:
 
     -   Support for passing along the BPM and PPQN
         -   At startup time
         -   When changed in the GUI
-    -   Add Windows implementation and build files.
-    -   Remove PortMidi implementation after Windows implementation.
     -   Make the STRIP_MUTES option permanent.
 
 Hot ideas (from GitHub):

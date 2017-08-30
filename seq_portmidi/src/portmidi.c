@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "platform_macros.h"        /* seq64 library UNUSED() macro */
 #include "portmidi.h"
 #include "porttime.h"
 #include "pmutil.h"
@@ -278,7 +279,7 @@ Pm_GetDeviceInfo (PmDeviceID id)
  */
 
 PmError
-pm_success_fn (PmInternal * midi)
+pm_success_fn (PmInternal * UNUSED(midi))
 {
     return pmNoError;
 }
@@ -288,7 +289,7 @@ pm_success_fn (PmInternal * midi)
  */
 
 PmError
-none_write_short (PmInternal * midi, PmEvent * buffer)
+none_write_short (PmInternal * UNUSED(midi), PmEvent * UNUSED(buffer))
 {
     return pmBadPtr;
 }
@@ -297,7 +298,8 @@ none_write_short (PmInternal * midi, PmEvent * buffer)
  * pm_fail_timestamp_fn -- placeholder for begin_sysex and flush
  */
 
-PmError pm_fail_timestamp_fn (PmInternal * midi, PmTimestamp timestamp)
+PmError
+pm_fail_timestamp_fn (PmInternal * UNUSED(midi), PmTimestamp UNUSED(timestamp))
 {
     return pmBadPtr;
 }
@@ -307,7 +309,12 @@ PmError pm_fail_timestamp_fn (PmInternal * midi, PmTimestamp timestamp)
  */
 
 PmError
-none_write_byte (PmInternal * midi, unsigned char byte, PmTimestamp timestamp)
+none_write_byte
+(
+    PmInternal * UNUSED(midi),
+    unsigned char UNUSED(byte),
+    PmTimestamp UNUSED(timestamp)
+)
 {
     return pmBadPtr;
 }
@@ -317,7 +324,7 @@ none_write_byte (PmInternal * midi, unsigned char byte, PmTimestamp timestamp)
  */
 
 PmError
-pm_fail_fn (PmInternal * midi)
+pm_fail_fn (PmInternal * UNUSED(midi))
 {
     return pmBadPtr;
 }
@@ -327,7 +334,7 @@ pm_fail_fn (PmInternal * midi)
  */
 
 static PmError
-none_open (PmInternal * midi, void * driverInfo)
+none_open (PmInternal * UNUSED(midi), void * UNUSED(driverinfo))
 {
     return pmBadPtr;
 }
@@ -337,7 +344,12 @@ none_open (PmInternal * midi, void * driverInfo)
  */
 
 static void
-none_get_host_error (PmInternal * midi, char * msg, unsigned int len)
+none_get_host_error
+(
+    PmInternal * UNUSED(midi),
+    char * msg,
+    unsigned int UNUSED(len)
+)
 {
     *msg = 0;       // empty string
 }
@@ -347,7 +359,7 @@ none_get_host_error (PmInternal * midi, char * msg, unsigned int len)
  */
 
 static unsigned int
-none_has_host_error (PmInternal * midi)
+none_has_host_error (PmInternal * UNUSED(midi))
 {
     return FALSE;
 }
@@ -357,7 +369,7 @@ none_has_host_error (PmInternal * midi)
  */
 
 PmTimestamp
-none_synchronize (PmInternal * midi)
+none_synchronize (PmInternal * UNUSED(midi))
 {
     return 0;
 }
@@ -387,7 +399,7 @@ pm_fns_node pm_none_dictionary =
     none_close,
     none_poll,
     none_has_host_error,
-    none_get_host_error
+    none_get_host_error         /* incompatible function signature! */
 };
 
 /**

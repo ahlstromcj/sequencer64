@@ -28,6 +28,11 @@ GUI-less native JACK support: Seq64rtmidi/seq64cli
 With the big version jump from 0.9 to 0.90, the install process has changed.
 See the INSTALL file.
 
+    -   Version 0.94.0:
+        -   Building for Windows, still in progress in the "windows" branch.
+    -   Version 0.93.4:
+        -   Merging a miniature version of the PortMIDI library, called
+            "portmini", into the code base.
     -   Version 0.93.3:
         -   Fixes to issue #105 relating to fruity interactions.
         -   Made it obvious when a nute-group cannot be supported due to

@@ -24,6 +24,12 @@
  *
  *  This file is included by files that implement library internals.
  *
+ * \library       sequencer64 application
+ * \author        PortMIDI team; modifications by Chris Ahlstrom
+ * \date          2017-08-21
+ * \updates       2017-08-29
+ * \license       GNU GPLv2 or above
+ *
  * Here is a guide to implementers:
  *
  *  -   Provide an initialization function similar to pm_winmm_init().
@@ -303,7 +309,7 @@ typedef struct pm_internal_struct
 
     /* how many sysex bytes to write */
 
-    int32_t fill_length;
+    uint32_t fill_length;                   /* changed from int32_t */
 
 } PmInternal;
 

@@ -1,12 +1,12 @@
 dnl ***************************************************************************
-dnl xpc_mingw32.m4
+dnl xpc_mingw.m4
 dnl ---------------------------------------------------------------------------
 dnl
-dnl \file          xpc_mingw32.m4
+dnl \file          xpc_mingw.m4
 dnl \library       XPC
 dnl \author        Chris Ahlstrom
 dnl \date          2008-03-04
-dnl \update        2015-10-07
+dnl \update        2017-08-31
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -14,17 +14,16 @@ dnl   Sets up for using MingW.
 dnl
 dnl ---------------------------------------------------------------------------
 
-AC_DEFUN([AC_XPC_MINGW32],
+AC_DEFUN([AC_XPC_MINGW],
 [
-   dnl AC_CANONICAL_HOST
-   dnl AC_EXEEXT
-
    AC_MSG_CHECKING([for target system])
    CYGWIN=
+   MINGW=
    MINGW32=
+   MINGW64=
    case $host_os in
       *cygwin* ) CYGWIN=1 ;;
-      *mingw* ) MINGW32=1 ;;
+      *mingw* ) MINGW=1 ; MINGW32=1 ; MINGW64=1 ;;
    esac
 
    AR=ar
@@ -43,6 +42,7 @@ AC_DEFUN([AC_XPC_MINGW32],
          OBJDUMP="/usr/i586-mingw32msvc/bin/objdump"
          RANLIB="/usr/i586-mingw32msvc/bin/ranlib"
          STRIP="/usr/i586-mingw32msvc/bin/strip"
+         MINGW32=1
       fi
 
       # Fix for the gentoo distribution of mingw.  Gentoo as of 2012 sets
@@ -82,6 +82,7 @@ AC_DEFUN([AC_XPC_MINGW32],
          OBJDUMP="/usr/bin/i686-pc-mingw32-objdump"
          RANLIB="/usr/bin/i686-pc-mingw32-ranlib"
          STRIP="/usr/bin/i686-pc-mingw32-strip"
+         MINGW32=1
       fi
    fi
    AC_SUBST(AR)
@@ -89,24 +90,24 @@ AC_DEFUN([AC_XPC_MINGW32],
    dnl Checks for system services
 
    if test "x${CYGWIN}" = "xyes"; then
-      AC_DEFINE([CYGWIN], [1], [Define on cygwin])
+      AC_DEFINE([CYGWIN], [1], [Define on Cygwin])
       AC_MSG_RESULT(cygwin)
    else
       if test "x${MINGW}" = "xyes"; then
          AC_DEFINE([MINGW], [1], [Define on Mingw])
          WIN32=1
-         AC_DEFINE([WIN32], [1], [Define on windows])
+         AC_DEFINE([WIN32], [1], [Define on Windows])
          LIBS="$LIBS -lws2_32 -lgdi32"
          AC_MSG_RESULT([mingw])
       else
          LINUX=1
          export LINUX
-         AC_DEFINE([LINUX], [1], [Define if not on cygwin or mingw])
+         AC_DEFINE([LINUX], [1], [Define if not on Cygwin or MingW])
          AC_MSG_RESULT()
       fi
    fi
 ])
 
-dnl xpc_mingw32.m4
+dnl xpc_mingw.m4
 dnl
 dnl vim: ts=3 sw=3 et ft=config

@@ -11,7 +11,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-29
+ * \updates       2017-08-31
  * \license       GNU GPLv2 or above
  *
  *  Copyright (C) 2013-2015 Chris Ahlstrom <ahlstromcj@gmail.com>
@@ -229,7 +229,7 @@
 #define PLATFORM_GNU
 #endif
 
-#if defined __MINGW32__
+#if defined __MINGW32__ || defined __MINGW64__
 #define PLATFORM_MINGW
 #define PLATFORM_WINDOWS
 #define PLATFORM_WINDOWS_API

@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2017-04-29
+# \update     	2017-08-30
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -36,9 +36,9 @@ export LANG
 CYGWIN=binmode
 export CYGWIN
 
-export SEQUENCER64_SCRIPT_EDIT_DATE="2017-08-27"
-export SEQUENCER64_LIBRARY_API_VERSION="0.93"
-export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.93.0"
+export SEQUENCER64_SCRIPT_EDIT_DATE="2017-08-30"
+export SEQUENCER64_LIBRARY_API_VERSION="0.94"
+export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.94.0"
 
 #******************************************************************************
 #  Version info
@@ -88,11 +88,11 @@ M4DIR="m4"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.93-2017-08-27)
+Usage: ./bootstrap [options]                                 (0.94-2017-08-30)
 
-   'bootstrap' sets up GNU automake support and libtool support for the
-   Sequencer64 project, creating the 'configure' script.  It can also
-   super-clean the project (which removes all generated files and directories).
+    'bootstrap' sets up GNU automake support and libtool support for the
+    Sequencer64 project, creating the 'configure' script.  It can also
+    super-clean the project (which removes all generated files and directories).
 
  --clean             Delete the usual junk files from the project.
  --full-clean        Also delete all configure-related files.  The bootstrap
@@ -107,14 +107,15 @@ Usage: ./bootstrap [options]                                 (0.93-2017-08-27)
  -pm                 Configure to build seq64portmidi.
  -rm                 Configure to build seq64rtmidi (JACK version, the default).
  -cli, -rc           Configure to build seq64cli (command-line rtmidi version).
+ --windows, -win     Configure for Windows.  Currently supports only the -cli
+                     option.
  --help              Show this help text.
 
-   The default bootstraps the projects.  Then one should run 'configure',
-   which sets up for a normal release build.  A common option for
-   'bootstrap' is --enable-debug (-ed), which adds --disable-shared and sets
-   --configure, to configure for debugging without the need to use
-   
-      $ libtool --mode=execute gdb sequencer64
+    The default bootstraps the projects.  Then one should run 'configure',
+    which sets up for a normal release build.  A common option for
+    'bootstrap' is --enable-debug (-ed), which adds --disable-shared and sets
+    --configure, to configure for debugging without the need to use
+    "libtool --mode=execute gdb seq64"
 E_O_F
 
    exit 1
@@ -177,6 +178,11 @@ if [ $# -ge 1 ] ; then
          --cli | -cli | -rc)
             DORTCLI="yes"
             EXTRAFLAGS="--enable-cli"
+            ;;
+
+         --windows | -win )
+            DORTCLI="yes"
+            EXTRAFLAGS="--with-mingw32"
             ;;
 
          --version)

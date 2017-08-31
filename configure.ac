@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-08-29
+dnl \update        2017-08-31
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -324,21 +324,21 @@ dnl     [AC_DEFINE(HAVE_SYSLOG_H) LIBS="$LIBS $lib"; break]
 
 dnl 5.c. Mingw support.
 dnl
-dnl Checks for the MingW32 compiler environment. If present, sets shell
-dnl variable MINGW32 to 'yes'. If not present, sets MINGW32 to the
+dnl Checks for the MingW32/64 compiler environment. If present, sets shell
+dnl variable MINGW32/64 to 'yes'. If not present, sets MINGW32/64 to the
 dnl empty string.
 dnl
-dnl Also check to see if the user specified the MingW32 installation
+dnl Also check to see if the user specified the MingW32/64 installation
 dnl location.  On Debian, the installation is in /usr/i586-mingw32msvc/.
 dnl The Mingw versions of the executables start with "i586".  For example,
-dnl the compiler is "i586-mingw32msvc-gcc-3.4.5".
+dnl the compiler is "i586-mingw32msvc-gcc-3.4.5".  For MingW64, ......
 dnl
 dnl http://www.wxwidgets.org/wiki/index.php/Cross-Compiling_Under_Linux
 dnl
 dnl is a good place to start learning about building Windows applications.
 
-AC_XPC_MINGW32
-AC_ARG_WITH(mingw32,[ --with-mingw32[=DIR] MingW32 installation location])
+AC_XPC_MINGW
+AC_ARG_WITH(mingw,[ --with-mingw[=DIR] MingW32/64 installation location])
 
 dnl gtkmm
 dnl
@@ -356,7 +356,7 @@ AC_CYGWIN
 dnl Clear out the X11 flags for the case where we are cross-compiling
 dnl for i586-mingw32 targets, under UNIX.
 
-if test "x$CYGWIN" = "xyes" -o "x$MINGW32" = "xyes" ; then
+if test "x$CYGWIN" = "xyes" -o "x$MINGW" = "xyes" ; then
    X_CFLAGS=""
    X_LIBS=""
 fi
@@ -662,7 +662,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-08-29"
+#define VERSION_DATE_SHORT "2017-08-31"
 #define VERSION "0.94.0"
 
 )

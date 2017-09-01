@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-11-29
+# \update      2017-09-01
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -120,8 +120,7 @@ AM_CXXFLAGS = \
  $(GTKMM_CFLAGS) \
  $(JACK_CFLAGS) \
  $(LASH_CFLAGS) \
- -DSEQ64_GIT_VERSION=\"$(git_info)\" \
- -Wall $(MM_WFLAGS)
+ -DSEQ64_GIT_VERSION=\"$(git_info)\"
 
 #******************************************************************************
 # The library to build, a libtool-based library

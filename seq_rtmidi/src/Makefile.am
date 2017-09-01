@@ -113,8 +113,7 @@ AM_CXXFLAGS = \
  -I$(top_srcdir)/seq_rtmidi/include \
  $(ALSA_CFLAGS) \
  $(JACK_CFLAGS) \
- -DSEQ64_GIT_VERSION=\"$(git_info)\" \
- -Wall $(MM_WFLAGS)
+ -DSEQ64_GIT_VERSION=\"$(git_info)\"
 
 #******************************************************************************
 # The library to build, a libtool-based library

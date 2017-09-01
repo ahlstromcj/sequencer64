@@ -6,7 +6,7 @@
 # \library    	libseq_alsamidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-09-18
+# \update      2017-09-01
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -101,8 +101,7 @@ version = $(SEQUENCER64_API_MAJOR):$(SEQUENCER64_API_MINOR):$(SEQUENCER64_API_PA
 AM_CXXFLAGS = \
  -I../include \
  -I$(top_srcdir)/include \
- -I$(top_srcdir)/libseq64/include \
- -Wall $(MM_WFLAGS)
+ -I$(top_srcdir)/libseq64/include
 
 #******************************************************************************
 # The library to build, a libtool-based library

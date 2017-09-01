@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2017-04-04
+# \update      2017-09-01
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -121,8 +121,7 @@ AM_CXXFLAGS = \
  $(ALSA_CFLAGS) \
  $(JACK_CFLAGS) \
  $(LASH_CFLAGS) \
- -DSEQ64_GIT_VERSION=\"$(git_info)\" \
- -Wall $(MM_WFLAGS)
+ -DSEQ64_GIT_VERSION=\"$(git_info)\"
 
 #******************************************************************************
 # The library to build, a libtool-based library

@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-08-31
+dnl \update        2017-09-01
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -19,8 +19,8 @@ dnl
 dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
-AC_REVISION($Revision: 0.94$)dnl
-AC_INIT(Sequencer64, [0.94.0], [ahlstromcj@gmail.com])
+AC_REVISION($Revision: 0.93$)dnl
+AC_INIT(Sequencer64, [0.93.4], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl Do we need the following?  No, but it cleans up a lot of warning messages.
@@ -51,7 +51,7 @@ AC_SUBST(PACKAGE)
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
 
-VERSION="0.94.0"
+VERSION="0.93.4"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -93,7 +93,7 @@ dnl      incremented.
 SEQUENCER64_API_MAJOR="0"
 AC_SUBST([SEQUENCER64_API_MAJOR])
 
-SEQUENCER64_API_MINOR="94"
+SEQUENCER64_API_MINOR="93"
 AC_SUBST([SEQUENCER64_API_MINOR])
 
 SEQUENCER64_API_PATCH="0"
@@ -338,7 +338,8 @@ dnl
 dnl is a good place to start learning about building Windows applications.
 
 AC_XPC_MINGW
-AC_ARG_WITH(mingw,[ --with-mingw[=DIR] MingW32/64 installation location])
+
+dnl AC_ARG_WITH(mingw,[ --with-mingw[=DIR] MingW32/64 installation location])
 
 dnl gtkmm
 dnl
@@ -384,8 +385,6 @@ if test "$jack" != "no"; then
         AC_DEFINE(JACK_SUPPORT, 1, [Define to enable JACK driver])
         AC_SUBST(JACK_CFLAGS)
         AC_SUBST(JACK_LIBS)
-
-        dnl JACK session        
         if test "$jack_session" != "no"; then
             AC_CHECK_HEADER(jack/session.h, jack_session_found="yes",
                             jack_session_found="no")
@@ -457,7 +456,7 @@ AC_ARG_ENABLE(cli,
     [cli=no])
 
 if test "$cli" != "no"; then
-    AC_MSG_RESULT([rtmidi CLI build enabled.]);
+    AC_MSG_RESULT([rtmidi command-line build enabled.]);
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi support is enabled])
     AC_DEFINE(APP_NAME, ["seq64cli"], [Names the CLI version of application])
     AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$disable = no])
@@ -662,8 +661,8 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-08-31"
-#define VERSION "0.94.0"
+#define VERSION_DATE_SHORT "2017-09-01"
+#define VERSION "0.93.4"
 
 )
 

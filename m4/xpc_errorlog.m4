@@ -6,7 +6,7 @@ dnl \file       	xpc_errorlog.m4
 dnl \library    	xpc_suite subproject
 dnl \author     	Chris Ahlstrom
 dnl \date       	2008-03-04
-dnl \updates      2015-10-07
+dnl \updates      2017-08-31
 dnl \version    	$Revision$
 dnl \license    	$XPC_SUITE_GPL_LICENSE$
 dnl
@@ -59,9 +59,9 @@ AC_DEFUN([AC_XPC_ERRORLOG],
       if test "x$errorlog" = "xno" ; then
          NOERRLOG="-DXPC_NO_ERRORLOG"
          WARNINGS="$WARNINGS -Wno-unused -Wno-extra"
-         AC_MSG_RESULT(yes)
-      else
          AC_MSG_RESULT(no)
+      else
+         AC_MSG_RESULT(yes)
       fi
    fi
    AC_SUBST([NOERRLOG])

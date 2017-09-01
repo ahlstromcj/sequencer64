@@ -211,7 +211,7 @@
 
 /**
  *  Provides macros that indicate if Microsoft C/C++ versus GNU are being
- *  used.
+ *  used.  THe compiler being used normally provides test macros for itself.
  *
  *      -  PLATFORM_MSVC (replaces _MSC_VER)
  *      -  PLATFORM_GNU (replaces __GNUC__)

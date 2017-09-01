@@ -1,6 +1,6 @@
-README for Sequencer64 0.93.4 (Native JACK, CLI, multiple sets, varisets, tempo)
+README for Sequencer64 0.93.5 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2017-08-27
+2015-09-10 to 2017-09-01
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
@@ -28,11 +28,11 @@ GUI-less native JACK support: Seq64rtmidi/seq64cli
 With the big version jump from 0.9 to 0.90, the install process has changed.
 See the INSTALL file.
 
-    -   Version 0.94.0:
-        -   Building for Windows, still in progress in the "windows" branch.
     -   Version 0.93.4:
         -   Merging a miniature version of the PortMIDI library, called
-            "portmini", into the code base.
+            "portmini", into the code base ("windows" branch).
+        -   Building for Windows, still in progress in the "windows" branch.
+            Currently supports only the command-line build.
     -   Version 0.93.3:
         -   Fixes to issue #105 relating to fruity interactions.
         -   Made it obvious when a nute-group cannot be supported due to

@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.93.4 and above
 Chris Ahlstrom
-2015-09-10 to 2017-08-30
+2015-09-10 to 2017-09-01
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -500,6 +500,22 @@ DEPENDENCIES:
       -  debhelper
       -  fakeroot
       -  More?
+
+   MingW:
+
+    Avoid use of AC_CYGWIN and AC_MINGW32:
+
+        https://mail.gnome.org/archives/commits-list/2013-January/msg03009.html
+        https://www.gnu.org/software/autoconf/manual/autoconf-2.69/html_node/Obsolete-Macros.html
+
+        https://www.tinc-vpn.org/examples/cross-compiling-windows-binary/
+
+        https://wiki.wxwidgets.org/Compiling_wxWidgets_with_MinGW
+
+        https://github.com/Alexpux/MINGW-packages/blob/master/mingw-w64-gimp/PKGBUILD
+
+        https://mail.gnome.org/archives/gimp-developer-list/2016-March/msg00014.html
+
 
    JACK Testing (optional):
 

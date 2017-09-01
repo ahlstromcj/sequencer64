@@ -24,8 +24,18 @@ AC_INIT(Sequencer64, [0.93.4], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl Do we need the following?  No, but it cleans up a lot of warning messages.
+dnl Let's try the HOST variant instead.  There are also BUILD and TARGET
+dnl variants.
+dnl
+dnl AC_CANONICAL_SYSTEM
 
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_HOST
+
+dnl
+dnl AC_CANONICAL_TARGET
+dnl
+dnl m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+dnl
 
 dnl See http://www.delorie.com/gnu/docs/automake/automake_24.html
 
@@ -36,6 +46,10 @@ dnl Prepends "SEQ64_" to a lot of the macro definitions, for a better
 dnl guarantee of avoiding naming conflicts in macros.
 
 AX_PREFIX_CONFIG_H([include/seq64-config.h], [seq64])
+
+dnl See mingw support below.
+
+AC_DEFINE_UNQUOTED(TARGET, "${target}", [Configured target name.])
 
 dnl New for autoconf 2.60, prevents spurious datarootdir warnings.
 
@@ -328,18 +342,30 @@ dnl Checks for the MingW32/64 compiler environment. If present, sets shell
 dnl variable MINGW32/64 to 'yes'. If not present, sets MINGW32/64 to the
 dnl empty string.
 dnl
-dnl Also check to see if the user specified the MingW32/64 installation
-dnl location.  On Debian, the installation is in /usr/i586-mingw32msvc/.
-dnl The Mingw versions of the executables start with "i586".  For example,
-dnl the compiler is "i586-mingw32msvc-gcc-3.4.5".  For MingW64, ......
+dnl Let's use AC_CANONICAL_HOST
 dnl
-dnl http://www.wxwidgets.org/wiki/index.php/Cross-Compiling_Under_Linux
-dnl
-dnl is a good place to start learning about building Windows applications.
-
-AC_XPC_MINGW
-
+dnl AC_XPC_MINGW
 dnl AC_ARG_WITH(mingw,[ --with-mingw[=DIR] MingW32/64 installation location])
+dnl
+dnl configure generates an invalid config for MinGW because of the type checks
+dnl so we only run them on non MinGW-Systems. For MinGW we also need to link
+dnl against ws2_32.
+
+case $host_os in
+
+	mingw*)
+		LDFLAGS="-lws2_32"
+		;;
+
+	*)
+		AC_TYPE_OFF_T
+		AC_TYPE_SIZE_T
+		AC_TYPE_SSIZE_T
+		AC_TYPE_UINT8_T
+		AC_TYPE_UINT32_T
+		AC_TYPE_UINT64_T
+		;;
+esac
 
 dnl gtkmm
 dnl
@@ -702,6 +728,15 @@ dnl 2017-08-25:  Removed the already-configured (above) -Wl,--as-needed option.
 
 CFLAGS="$CFLAGS $COMMONFLAGS"
 CXXFLAGS="$CFLAGS -std=c++11 -Wno-variadic-macros -Wno-deprecated-declarations"
+
+dnl Check for MinGW. Workaround for libtool's DLL_EXPORT stupidity.
+
+case "$target" in
+	*-*-cygwin* | *-*-mingw*)
+		gnuwin=yes;;
+esac
+
+AM_CONDITIONAL(GNU_WIN, test x$gnuwin = xyes)
 
 dnl Try to fix  the  build flags; we enable RTMIDI by default, but have to
 dnl disable it when ALSA or PortMIDI builds are specified.  We have to

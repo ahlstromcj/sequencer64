@@ -21,10 +21,17 @@ AC_DEFUN([AC_XPC_MINGW],
       [  --enable-mingw=(no/w32/w64) Turn on MingW32/64 support (default=no)],
       [
        case "${enableval}" in
-        w32) mingw="yes" ;;
-        w64) mingw="yes" ;;
-         no) mingw="no"  ;;
-          *) AC_MSG_ERROR(bad value ${enableval} for --enable-mingw) ;;
+        w32)
+            mingw="yes"
+            ;;
+        w64)
+            mingw="yes"
+            ;;
+         no)
+            mingw="no"
+            ;;
+          *)
+            AC_MSG_ERROR(bad value ${enableval} for --enable-mingw) ;;
        esac
       ],
       [
@@ -34,8 +41,13 @@ AC_DEFUN([AC_XPC_MINGW],
    CYGWIN=
    MINGW32=
    case $host_os in
-      *cygwin* ) CYGWIN=1 ; mingw="no" ;;
-      *mingw* ) MINGW32=1 ;;
+      *cygwin*)
+            CYGWIN=1 ;
+            mingw="no"
+            ;;
+      *mingw*)
+            MINGW32=1
+            ;;
    esac
 
    AR="ar"                # why???
@@ -114,10 +126,10 @@ dnl What about mingflavor?
       AC_MSG_RESULT(no)
    else
       if test "x$mingflavor" != "xnone" ; then
+         AC_MSG_RESULT(yes)
+      else
          AC_MSG_RESULT(no)
          AC_MSG_ERROR(MingW support not found for --enable-mingw)
-      else
-         AC_MSG_RESULT(yes)
       fi
    fi
 

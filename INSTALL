@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.93.4 and above
 Chris Ahlstrom
-2015-09-10 to 2017-09-01
+2015-09-10 to 2017-09-02
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -466,7 +466,12 @@ DEPENDENCIES:
       -  g++
       -  make
       -  libtool
-      -  More?
+      -  mingw Windows builds (Debian flavor)
+         -  binutils-mingw-w64
+         -  gcc-mingw-w64
+         -  g++-mingw-w64
+         -  gdb-mingw-w64 (for debugging on Linux)
+         -  mingw-w64-tools (mingw32-pkgconfig on other systems)
 
    Documentation (now optional, must be built manually):
 
@@ -503,10 +508,11 @@ DEPENDENCIES:
 
    MingW:
 
-    Avoid use of AC_CYGWIN and AC_MINGW32:
+    Avoid use of AC_CYGWIN and AC_MINGW32.
 
-        https://mail.gnome.org/archives/commits-list/2013-January/msg03009.html
-        https://www.gnu.org/software/autoconf/manual/autoconf-2.69/html_node/Obsolete-Macros.html
+    https://mail.gnome.org/archives/commits-list/2013-January/msg03009.html
+    https://www.gnu.org/software/autoconf/manual/autoconf-2.69/html_node/Obsolete-Macros.html
+    http://mingw-cross.sourceforge.net/hello_autotools.html#mingw
 
         https://www.tinc-vpn.org/examples/cross-compiling-windows-binary/
 

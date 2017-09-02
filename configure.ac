@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-09-01
+dnl \update        2017-09-02
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -19,23 +19,26 @@ dnl
 dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
-AC_REVISION($Revision: 0.93$)dnl
+AC_REVISION($Revision: 0.93$)
+AC_CONFIG_MACRO_DIRS([m4])
 AC_INIT(Sequencer64, [0.93.4], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
+
+dnl See AC_CONFIG_SRCDIR
 
 dnl Do we need the following?  No, but it cleans up a lot of warning messages.
 dnl Let's try the HOST variant instead.  There are also BUILD and TARGET
 dnl variants.
 dnl
-dnl AC_CANONICAL_SYSTEM
+dnl Obsolete: AC_CANONICAL_SYSTEM
+dnl
+dnl Is AC_CANONICAL_TARGET better?
 
 AC_CANONICAL_HOST
 
-dnl
 dnl AC_CANONICAL_TARGET
 dnl
 dnl m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
-dnl
 
 dnl See http://www.delorie.com/gnu/docs/automake/automake_24.html
 
@@ -47,9 +50,78 @@ dnl guarantee of avoiding naming conflicts in macros.
 
 AX_PREFIX_CONFIG_H([include/seq64-config.h], [seq64])
 
+dnl gcc support.
+
+AC_GCC_VERSION
+
+dnl C++ support.  Run tests in C++.  Note the order; avoids messy warnings.
+dnl AC_LANG([C++])
+
+AC_LANG([C])
+AC_LANG([C++])
+
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_CXXCPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+
+dnl     [AC_DEFINE(HAVE_SYSLOG_H) LIBS="$LIBS $lib"; break]
+
+dnl 5.c. Mingw support.
+dnl
+dnl Checks for the MingW32/64 compiler environment. If present, sets shell
+dnl variable MINGW32/64 to 'yes'. If not present, sets MINGW32/64 to the
+dnl empty string.
+dnl
+dnl Let's use AC_CANONICAL_HOST
+dnl
+dnl AC_XPC_MINGW
+dnl AC_ARG_WITH(mingw,[ --with-mingw[=DIR] MingW32/64 installation location])
+dnl
+dnl configure generates an invalid config for MinGW because of the type checks
+dnl so we only run them on non MinGW-Systems. For MinGW we also need to link
+dnl against ws2_32.
+dnl
+dnl case $host_os in
+dnl 
+dnl 	mingw*)
+dnl 		LDFLAGS="-lws2_32"
+dnl 		;;
+dnl 
+dnl 	*)
+dnl 		AC_TYPE_OFF_T
+dnl 		AC_TYPE_SIZE_T
+dnl 		AC_TYPE_SSIZE_T
+dnl 		AC_TYPE_UINT8_T
+dnl 		AC_TYPE_UINT32_T
+dnl 		AC_TYPE_UINT64_T
+dnl 		;;
+dnl esac
+
 dnl See mingw support below.
 
 AC_DEFINE_UNQUOTED(TARGET, "${target}", [Configured target name.])
+
+dnl Handle cross-compiling with mingw32.
+
+AC_MSG_CHECKING([whether to build with mingw32 for a Windows host])
+
+AS_CASE([$host_os], [*mingw*], [windows_host=yes], [windows_host=no])
+
+dnl Flaky, the AR macro is set well after this test, but the GCC macro
+dnl is set before it.
+dnl AC_MSG_RESULT([TESTING HOST OS])
+
+if test x"$windows_host" = x"yes" ; then
+    if test x"$CC" = x"gcc" ; then
+        AC_MSG_ERROR([MingW build enabled, but MingW packages not installed])
+    else
+        AC_DEFINE(WINDOWS_SUPPORT, 1, [Indicates limited Windows support])
+        AC_MSG_RESULT([$windows_host])
+        AM_CONDITIONAL([WINDOWS_HOST], [test "x$windows_host" = "xyes"])
+    fi
+fi
 
 dnl New for autoconf 2.60, prevents spurious datarootdir warnings.
 
@@ -69,8 +141,8 @@ VERSION="0.93.4"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
-SEQUENCER64_SUITE_NAME="SEQUENCER64"
-AC_SUBST([SEQUENCER64_SUITE_NAME])
+SEQ64_SUITE_NAME="SEQ64"
+AC_SUBST([SEQ64_SUITE_NAME])
 
 dnl For now, the code to set this up is in the libseq64 and seq_gtkmm2
 dnl Makefiles:
@@ -104,52 +176,54 @@ dnl      The age must the less than or equal to 'current'.  If the new
 dnl      interface is a superset of the preceding interface, 'age' must be
 dnl      incremented.
 
-SEQUENCER64_API_MAJOR="0"
-AC_SUBST([SEQUENCER64_API_MAJOR])
+SEQ64_API_MAJOR="0"
+AC_SUBST([SEQ64_API_MAJOR])
 
-SEQUENCER64_API_MINOR="93"
-AC_SUBST([SEQUENCER64_API_MINOR])
+SEQ64_API_MINOR="93"
+AC_SUBST([SEQ64_API_MINOR])
 
-SEQUENCER64_API_PATCH="0"
-AC_SUBST([SEQUENCER64_API_PATCH])
+SEQ64_API_PATCH="0"
+AC_SUBST([SEQ64_API_PATCH])
 
-SEQUENCER64_OFFICIAL_VERSION="$SEQUENCER64_API_MAJOR.$SEQUENCER64_API_MINOR.$SEQUENCER64_API_PATCH"
+SEQ64_OFFICIAL_VERSION="$SEQ64_API_MAJOR.$SEQ64_API_MINOR.$SEQ64_API_PATCH"
 
 dnl For version 1.0.0, we will reset the libtool version information.
 
-SEQUENCER64_LT_CURRENT="0"
-AC_SUBST([SEQUENCER64_LT_CURRENT])
+SEQ64_LT_CURRENT="0"
+AC_SUBST([SEQ64_LT_CURRENT])
 
-SEQUENCER64_LT_REVISION="0"
-AC_SUBST([SEQUENCER64_LT_REVISION])
+SEQ64_LT_REVISION="0"
+AC_SUBST([SEQ64_LT_REVISION])
 
-SEQUENCER64_LT_AGE="0"
-AC_SUBST([SEQUENCER64_LT_AGE])
+SEQ64_LT_AGE="0"
+AC_SUBST([SEQ64_LT_AGE])
 
-SEQUENCER64_LIBTOOL_VERSION="$SEQUENCER64_LT_CURRENT.$SEQUENCER64_LT_REVISION.$SEQUENCER64_LT_AGE"
+SEQ64_LIBTOOL_VERSION="$SEQ64_LT_CURRENT.$SEQ64_LT_REVISION.$SEQ64_LT_AGE"
 
 dnl 1.b. Set up the version strings.  The primary version string of interest
-dnl      is SEQUENCER64_API_VERSION.
+dnl      is SEQ64_API_VERSION.
 
-dnl API_VERSION="$SEQUENCER64_API_MAJOR.$SEQUENCER64_API_MINOR"
+dnl API_VERSION="$SEQ64_API_MAJOR.$SEQ64_API_MINOR"
 dnl AC_SUBST([API_VERSION])
 
-SEQUENCER64_API_VERSION="$SEQUENCER64_API_MAJOR.$SEQUENCER64_API_MINOR"
-AC_SUBST([SEQUENCER64_API_VERSION])
+SEQ64_API_VERSION="$SEQ64_API_MAJOR.$SEQ64_API_MINOR"
+AC_SUBST([SEQ64_API_VERSION])
 
 dnl 1.c. Report the version information in the progress output.
 
 AC_MSG_CHECKING(major version)
-AC_MSG_RESULT($SEQUENCER64_API_MAJOR)
+AC_MSG_RESULT($SEQ64_API_MAJOR)
 AC_MSG_CHECKING(minor version)
-AC_MSG_RESULT($SEQUENCER64_API_MINOR)
+AC_MSG_RESULT($SEQ64_API_MINOR)
 AC_MSG_CHECKING(patchlevel)
-AC_MSG_RESULT($SEQUENCER64_API_PATCH)
+AC_MSG_RESULT($SEQ64_API_PATCH)
 
 dnl 1.d. Set up the suite name and current-project name.
 
-SEQUENCER64_PROJECT_NAME="SEQUENCER64"
-AC_SUBST([SEQUENCER64_PROJECT_NAME])
+SEQ64_PROJECT_NAME="SEQ64"
+AC_SUBST([SEQ64_PROJECT_NAME])
+
+dnl Still useful?
 
 AC_DEFINE(_GNU_SOURCE, 1, [gnu source])
 
@@ -177,16 +251,16 @@ dnl AC_DISABLE_SHARED
 
 AC_PROG_LIBTOOL
 
-LT_RELEASE="$SEQUENCER64_API_MAJOR.$SEQUENCER64_API_MINOR"
+LT_RELEASE="$SEQ64_API_MAJOR.$SEQ64_API_MINOR"
 AC_SUBST([LT_RELEASE])
 
-LT_CURRENT="$SEQUENCER64_API_MAJOR"
+LT_CURRENT="$SEQ64_API_MAJOR"
 AC_SUBST([LT_CURRENT])
 
-LT_REVISION="$SEQUENCER64_API_MINOR"
+LT_REVISION="$SEQ64_API_MINOR"
 AC_SUBST([LT_REVISION])
 
-LT_AGE="$SEQUENCER64_API_PATCH"
+LT_AGE="$SEQ64_API_PATCH"
 AC_SUBST([LT_AGE])
 
 dnl 3. Set up expandable installation directory(ies).
@@ -202,19 +276,19 @@ dnl      /usr/lib/sequencer64-0.9
 dnl      /usr/man/man1
 dnl      /usr/share/doc/sequencer64-0.9/doc/dox/html
 
-sequencer64includedir="${includedir}/sequencer64-${SEQUENCER64_API_VERSION}"
+sequencer64includedir="${includedir}/sequencer64-${SEQ64_API_VERSION}"
 AC_SUBST(sequencer64includedir)
 
-sequencer64libdir="${libdir}/sequencer64-${SEQUENCER64_API_VERSION}"
+sequencer64libdir="${libdir}/sequencer64-${SEQ64_API_VERSION}"
 AC_SUBST(sequencer64libdir)
 
-sequencer64docdir="${datadir}/doc/sequencer64-${SEQUENCER64_API_VERSION}"
+sequencer64docdir="${datadir}/doc/sequencer64-${SEQ64_API_VERSION}"
 AC_SUBST(sequencer64docdir)
 
 sequencer64datadir="${datadir}/sequencer64-${MIDICVT_API_VERSION}"
 AC_SUBST(sequencer64datadir)
 
-sequencer64doxygendir="${datadir}/doc/sequencer64-${SEQUENCER64_API_VERSION}"
+sequencer64doxygendir="${datadir}/doc/sequencer64-${SEQ64_API_VERSION}"
 AC_SUBST(sequencer64doxygendir)
 
 dnl Do we have -Wl,--as-needed?  This option allows the linker to ignore, i.e.,
@@ -227,17 +301,17 @@ dnl not be linked against.
 AC_MSG_CHECKING(if --as-needed works)
 AC_ARG_ENABLE(as_needed,
     [AS_HELP_STRING(--enable-as-needed,
-         [Enable linker option -Wl,--as-needed (default=yes)])],
+         [Enable linker options -Wl,--as-needed (default=yes)])],
     [
     case "${enableval}" in
-         yes) as_needed="1";;
-         no) as_needed="";;
-         *) AC_MSG_ERROR(bad value ${enableval} for --enable-as_needed);;
+         yes) as_needed="1" ;;
+         no) as_needed="" ;;
+         *) AC_MSG_ERROR([bad value ${enableval} for --enable-as_needed]) ;;
     esac
     ],[
         as_needed="unknown"
     ])
-if test x"${as_needed}" = x"unknown"; then
+if test x"${as_needed}" = x"unknown" ; then
     ac_old_ldflags="${LDFLAGS}"
     LDFLAGS="-Wl,--as-needed"
     AC_TRY_LINK(
@@ -271,22 +345,23 @@ CFLAGS="${CFLAGS}"
 
 dnl Checks for libraries.
 
-AC_CHECK_LIB(rt, main, ,
-    AC_MSG_ERROR([POSIX.1b Realtime library missing librt]))
+dnl DO WE NEED THIS REALLY?  Comment it out for now.
+dnl
+dnl AC_CHECK_LIB(rt, main,, AC_MSG_ERROR([POSIX.1b Realtime library missing librt]))
 
 dnl Convert from gtkmm-2.4 to gtkmm-3.0.  It currently builds either way.
 dnl No! I was mistaken, because I had left some 2.4 paths in place below.
 
 AC_CHECK_LIB(gtkmm-2.4, _init,,
-    AC_MSG_ERROR(Essential library libgtkmm-2.4 not found))
+    AC_MSG_ERROR([Essential library libgtkmm-2.4 not found]))
 
 dnl LATER:
 dnl
 dnl AC_CHECK_LIB(gtkmm-3.0, _init,,
-dnl     AC_MSG_ERROR(Essential library libgtkmm-3.0 not found))
+dnl     AC_MSG_ERROR([Essential library libgtkmm-3.0 not found]))
 
 AC_CHECK_LIB(sigc-2.0, main,,
-    AC_MSG_ERROR(Essential library libsigc++-2.0 not found))
+    AC_MSG_ERROR([Essential library libsigc++-2.0 not found]))
 
 dnl Checks for header files.  Added some more to support daemonization.
 
@@ -319,54 +394,6 @@ if test -z "$DOXYGEN";
    then AC_MSG_WARN([Doxygen not found, continuing without Doxygen support])
 fi
 
-dnl 5.b. gcc support.
-
-AC_GCC_VERSION
-
-dnl C++ support.  Run tests in C++.  Note the order; avoids messy warnings.
-dnl AC_LANG([C++])
-
-AC_LANG_C
-AC_PROG_CC
-AC_LANG_CPLUSPLUS
-AC_PROG_CXX
-AC_PROG_CXXCPP
-AC_PROG_INSTALL
-AC_PROG_LN_S
-
-dnl     [AC_DEFINE(HAVE_SYSLOG_H) LIBS="$LIBS $lib"; break]
-
-dnl 5.c. Mingw support.
-dnl
-dnl Checks for the MingW32/64 compiler environment. If present, sets shell
-dnl variable MINGW32/64 to 'yes'. If not present, sets MINGW32/64 to the
-dnl empty string.
-dnl
-dnl Let's use AC_CANONICAL_HOST
-dnl
-dnl AC_XPC_MINGW
-dnl AC_ARG_WITH(mingw,[ --with-mingw[=DIR] MingW32/64 installation location])
-dnl
-dnl configure generates an invalid config for MinGW because of the type checks
-dnl so we only run them on non MinGW-Systems. For MinGW we also need to link
-dnl against ws2_32.
-
-case $host_os in
-
-	mingw*)
-		LDFLAGS="-lws2_32"
-		;;
-
-	*)
-		AC_TYPE_OFF_T
-		AC_TYPE_SIZE_T
-		AC_TYPE_SSIZE_T
-		AC_TYPE_UINT8_T
-		AC_TYPE_UINT32_T
-		AC_TYPE_UINT64_T
-		;;
-esac
-
 dnl gtkmm
 dnl
 dnl PKG_CHECK_MODULES(GTKMM, gtkmm-3.0 >= 3.0.0)
@@ -377,13 +404,24 @@ AC_SUBST(GTKMM_LIBS)
 
 dnl Checks for the Cygwin environment. If present, sets shell variable
 dnl CYGWIN to 'yes'; if not present, sets CYGWIN to the empty string.
+dnl
+dnl Commented out, use AC_CANONICAL_HOST instead.
+dnl
+dnl Obsolete: AC_CYGWIN
 
-AC_CYGWIN
+dnl Windows support in Linux.  Might be unnecessary though, though.
+
+AC_ARG_ENABLE(mingw,
+    [AS_HELP_STRING(--enable-mingw, [Enable MingW support])],
+    [mingw=$enableval],
+    [mingw=no])
 
 dnl Clear out the X11 flags for the case where we are cross-compiling
 dnl for i586-mingw32 targets, under UNIX.
+dnl
+dnl if test "x$CYGWIN" = "xyes" -o "x$MINGW" = "xyes" ; then
 
-if test "x$CYGWIN" = "xyes" -o "x$MINGW" = "xyes" ; then
+if test "x$mingw" = "xyes" ; then
    X_CFLAGS=""
    X_LIBS=""
 fi
@@ -489,9 +527,12 @@ if test "$cli" != "no"; then
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTCLI], [test x$cli = xyes])
-    AM_PATH_ALSA(0.9.0)
+    if test "x$mingw" != "xyes" ; then
+        AC_MSG_ERROR([enabling ALSA for MingW makes no sense])
+        AM_PATH_ALSA(0.9.0)
+    fi
 else
-    AC_MSG_WARN([rtmidi command-line build disabled.]);
+    AC_MSG_WARN([rtmidi command-line build disabled.])
 fi
 
 dnl ALSA MIDI (legacy) support.
@@ -676,18 +717,18 @@ else
     AC_MSG_WARN([Main patterns-panel scrollbars disabled.]);
 fi
 
-dnl 6.0  Top portion of the config.h/sequencer64-config.h header files.
-dnl      The sequencer64-config.h header file has "SEQUENCER64_" prepended
-dnl      to these automatically for us.  Also, we can't use
-dnl      #define SEQUENCER64_API_VERSION "${SEQUENCER64_API_VERSION}",
+dnl 6.0  Top portion of the config.h/seq64-config.h header files.  The
+dnl      seq64-config.h header file has "SEQ64_" prepended to these
+dnl      automatically for us.  Also, we can't use
+dnl      #define SEQ64_API_VERSION "${SEQ64_API_VERSION}",
 dnl      since the macro call in quotes does /not/ get expanded.
 dnl
 dnl Note: The AX_PREFIX_CONFIG_H macro called way above prepends
-dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
+dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-09-01"
+#define VERSION_DATE_SHORT "2017-09-02"
 #define VERSION "0.93.4"
 
 )
@@ -711,7 +752,7 @@ dnl Not present on gcc 4.8: -Wno-error=date-time
 dnl WARNFLAGS="-Wall -Wextra -pedantic -Wno-error=date-time $WARNINGS"
 
 WARNFLAGS="-Wall -Wextra -pedantic $WARNINGS"
-APIDEF="-DAPI_VERSION=\"$SEQUENCER64_API_VERSION\""
+APIDEF="-DAPI_VERSION=\"$SEQ64_API_VERSION\""
 SPEEDFLAGS="-ffast-math"
 COMMONFLAGS="$WARNFLAGS -D_REENTRANT $APIDEF $DBGFLAGS $STACKCHK $NOERRLOG $NOTHISPTR"
 WARNINGS_DISABLED="-Wno-unused-parameter -Wno-non-virtual-dtor"
@@ -741,7 +782,7 @@ AM_CONDITIONAL(GNU_WIN, test x$gnuwin = xyes)
 dnl Try to fix  the  build flags; we enable RTMIDI by default, but have to
 dnl disable it when ALSA or PortMIDI builds are specified.  We have to
 dnl use a trick to fool configure, which will strip out any bare #undef
-dnl statement it sees.
+dnl statement it sees.  Don't like this one bit.
 
 AH_BOTTOM(
 
@@ -753,7 +794,10 @@ AH_BOTTOM(
 #/**/undef/**/ SEQ64_RTMIDI_SUPPORT
 #endif
 
-   /* Bottom of header config */
+#ifdef SEQ64_WINDOWS_SUPPORT
+#/**/undef/**/ SEQ64_RTMIDI_SUPPORT
+#endif
+
 )
 
 dnl Set up the Makefiles.  First, add Doxygen support conditionally, not using
@@ -803,6 +847,8 @@ AC_CONFIG_FILES([
  Seq64cli/Makefile
  man/Makefile
 ])
+
+dnl See AC_CONFIG_COMMANDS
 
 AC_OUTPUT
 

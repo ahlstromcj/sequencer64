@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-09-02
+dnl \update        2017-09-04
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -99,10 +99,6 @@ dnl 		AC_TYPE_UINT64_T
 dnl 		;;
 dnl esac
 
-dnl See mingw support below.
-
-AC_DEFINE_UNQUOTED(TARGET, "${target}", [Configured target name.])
-
 dnl Handle cross-compiling with mingw32.
 
 AC_MSG_CHECKING([whether to build with mingw32 for a Windows host])
@@ -111,7 +107,11 @@ AS_CASE([$host_os], [*mingw*], [windows_host=yes], [windows_host=no])
 
 dnl Flaky, the AR macro is set well after this test, but the GCC macro
 dnl is set before it.
+dnl
 dnl AC_MSG_RESULT([TESTING HOST OS])
+dnl
+dnl Note that the BUILD_XXXX macros "merely" select which subdirectories we
+dnl descend into during the build.
 
 if test x"$windows_host" = x"yes" ; then
     if test x"$CC" = x"gcc" ; then
@@ -119,6 +119,11 @@ if test x"$windows_host" = x"yes" ; then
     else
         AC_DEFINE(WINDOWS_SUPPORT, 1, [Indicates limited Windows support])
         AC_MSG_RESULT([$windows_host])
+        AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$disable = no])
+        AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
+        AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
+        AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
+        AM_CONDITIONAL([BUILD_WINDOWS], [test "x$windows_host" = "xyes"])
         AM_CONDITIONAL([WINDOWS_HOST], [test "x$windows_host" = "xyes"])
     fi
 fi
@@ -234,11 +239,13 @@ dnl libraries if available, and enable static libraries if they do not conflict
 dnl with shared libraries.  Also sets the shell variable LIBTOOL_DEPS.
 dnl
 dnl The latest GNU documentation specifies version 2 of libtool, but Debian
-dnl testing provides only 1.5 (Debian unstable now provides 2.2).  So we don't
+dnl testing provides only 1.5 (Debian unstable now provides 2.4).  So we don't
 dnl use these new macros, just the older, deprecated macros.
 dnl
-dnl LT_PREREQ([1.5])
-dnl LT_INIT
+
+LT_PREREQ([2.4.6])
+LT_INIT([win32-dll])
+
 dnl AC_SUBST([LIBTOOL_DEPS])
 dnl
 dnl See <http://www.delorie.com/gnu/docs/libtool/libtool_27.html> for the
@@ -249,7 +256,7 @@ dnl alternative is to specify --disable-shared when running 'configure'.
 dnl
 dnl AC_DISABLE_SHARED
 
-AC_PROG_LIBTOOL
+dnl dnl dnl AC_PROG_LIBTOOL
 
 LT_RELEASE="$SEQ64_API_MAJOR.$SEQ64_API_MINOR"
 AC_SUBST([LT_RELEASE])
@@ -351,17 +358,24 @@ dnl AC_CHECK_LIB(rt, main,, AC_MSG_ERROR([POSIX.1b Realtime library missing libr
 
 dnl Convert from gtkmm-2.4 to gtkmm-3.0.  It currently builds either way.
 dnl No! I was mistaken, because I had left some 2.4 paths in place below.
+dnl Not supported in a Windows build at this time.
 
-AC_CHECK_LIB(gtkmm-2.4, _init,,
-    AC_MSG_ERROR([Essential library libgtkmm-2.4 not found]))
+if test x"$windows_host" = x"no" ; then
+    AC_CHECK_LIB(gtkmm-2.4, _init,,
+        AC_MSG_ERROR([Essential library libgtkmm-2.4 not found]))
+fi
 
 dnl LATER:
 dnl
 dnl AC_CHECK_LIB(gtkmm-3.0, _init,,
 dnl     AC_MSG_ERROR([Essential library libgtkmm-3.0 not found]))
 
-AC_CHECK_LIB(sigc-2.0, main,,
-    AC_MSG_ERROR([Essential library libsigc++-2.0 not found]))
+dnl Not supported in a Windows build at this time.
+
+if test x"$windows_host" = x"no" ; then
+    AC_CHECK_LIB(sigc-2.0, main,,
+        AC_MSG_ERROR([Essential library libsigc++-2.0 not found]))
+fi
 
 dnl Checks for header files.  Added some more to support daemonization.
 
@@ -398,9 +412,11 @@ dnl gtkmm
 dnl
 dnl PKG_CHECK_MODULES(GTKMM, gtkmm-3.0 >= 3.0.0)
 
-PKG_CHECK_MODULES(GTKMM, gtkmm-2.4 >= 2.4.0)
-AC_SUBST(GTKMM_CFLAGS)
-AC_SUBST(GTKMM_LIBS)
+if test x"$windows_host" = x"no" ; then
+    PKG_CHECK_MODULES(GTKMM, gtkmm-2.4 >= 2.4.0)
+    AC_SUBST(GTKMM_CFLAGS)
+    AC_SUBST(GTKMM_LIBS)
+fi
 
 dnl Checks for the Cygwin environment. If present, sets shell variable
 dnl CYGWIN to 'yes'; if not present, sets CYGWIN to the empty string.
@@ -506,6 +522,7 @@ if test "$rtmidi" != "no"; then
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xyes])
     AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
+    AM_CONDITIONAL([BUILD_WINDOWS], [test x$disable = no])
 
 dnl Eventually we want to make ALSA optional for the user/developer.
 
@@ -520,16 +537,19 @@ AC_ARG_ENABLE(cli,
     [cli=no])
 
 if test "$cli" != "no"; then
-    AC_MSG_RESULT([rtmidi command-line build enabled.]);
+    AC_MSG_RESULT([portmidi/rtmidi command-line build enabled.]);
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi support is enabled])
     AC_DEFINE(APP_NAME, ["seq64cli"], [Names the CLI version of application])
     AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$disable = no])
-    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
-    AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
-    AM_CONDITIONAL([BUILD_RTCLI], [test x$cli = xyes])
     if test "x$mingw" != "xyes" ; then
-        AC_MSG_ERROR([enabling ALSA for MingW makes no sense])
+        AM_CONDITIONAL([BUILD_RTMIDI], [test x$cli = xyes])
+        AM_CONDITIONAL([BUILD_RTCLI], [test x$cli = xyes])
+        AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
         AM_PATH_ALSA(0.9.0)
+    else
+        AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates if PortMidi support is enabled])
+        AM_CONDITIONAL([BUILD_PORTMIDI], [test x$cli = xyes])
+        AM_CONDITIONAL([BUILD_WINDOWS], [test "x$windows_host" = "xyes"])
     fi
 else
     AC_MSG_WARN([rtmidi command-line build disabled.])
@@ -550,6 +570,7 @@ if test "$alsamidi" != "no"; then
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
+    AM_CONDITIONAL([BUILD_WINDOWS], [test x$disable = no])
     AM_PATH_ALSA(0.9.0)
 else
     AC_MSG_WARN([Standard ALSA build disabled.]);
@@ -570,6 +591,11 @@ if test "$portmidi" != "no"; then
     AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xyes])
     AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
     AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
+
+dnl We do need PortMIDI for Windows at this time, but it is enabled
+dnl elsewhere.
+
+    AM_CONDITIONAL([BUILD_WINDOWS], [test x$disable = no])
 else
     AC_MSG_WARN([PortMidi build disabled.]);
 fi
@@ -728,7 +754,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-09-02"
+#define VERSION_DATE_SHORT "2017-09-04"
 #define VERSION "0.93.4"
 
 )
@@ -757,6 +783,23 @@ SPEEDFLAGS="-ffast-math"
 COMMONFLAGS="$WARNFLAGS -D_REENTRANT $APIDEF $DBGFLAGS $STACKCHK $NOERRLOG $NOTHISPTR"
 WARNINGS_DISABLED="-Wno-unused-parameter -Wno-non-virtual-dtor"
 
+dnl Check for MinGW. Workaround for libtool's DLL_EXPORT stupidity.
+dnl Temporarily, we add the -v option to gcc, so that we can see
+dnl what GCC options are in force for MingW builds.
+
+VERBCFLAGS=""
+
+case "$host_os" in
+	*cygwin*)
+		gnuwin=yes
+        ;;
+
+	*mingw*)
+		gnuwin=yes
+dnl     VERBCFLAGS="-v"
+        ;;
+esac
+
 dnl We added -std=c++11 for g++ 4.8, and -Wno-deprecated-declarations to
 dnl stop g++ 5.2 from griping about usage of std::auto_ptr<>.
 dnl
@@ -767,15 +810,8 @@ dnl conditional compilation.
 dnl
 dnl 2017-08-25:  Removed the already-configured (above) -Wl,--as-needed option.
 
-CFLAGS="$CFLAGS $COMMONFLAGS"
+CFLAGS="$CFLAGS $COMMONFLAGS $VERBCFLAGS"
 CXXFLAGS="$CFLAGS -std=c++11 -Wno-variadic-macros -Wno-deprecated-declarations"
-
-dnl Check for MinGW. Workaround for libtool's DLL_EXPORT stupidity.
-
-case "$target" in
-	*-*-cygwin* | *-*-mingw*)
-		gnuwin=yes;;
-esac
 
 AM_CONDITIONAL(GNU_WIN, test x$gnuwin = xyes)
 

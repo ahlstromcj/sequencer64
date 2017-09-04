@@ -24,7 +24,7 @@
  * \library       seq64rtcli application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-04-07
- * \updates       2017-06-04
+ * \updates       2017-09-04
  * \license       GNU GPLv2 or above
  *
  *  This application is seq64 without a GUI, control must be done via MIDI.
@@ -122,15 +122,19 @@ main (int argc, char * argv [])
         std::string logfile = seq64::usr().option_logfile();
         if (! logfile.empty())
         {
+#ifdef PLATFORM_LINUX
             (void) seq64::reroute_stdio(logfile);
+#endif
             stdio_rerouted = true;
         }
 
+#ifdef PLATFORM_LINUX
         if (seq64::usr().option_daemonize())
         {
             printf("Forking to background...\n");
             usermask = seq64::daemonize(SEQ64_APP_NAME, ".");
         }
+#endif
     }
 
     /**
@@ -151,7 +155,11 @@ main (int argc, char * argv [])
     {
         std::string logfile = seq64::usr().option_logfile();
         if (! logfile.empty())
+        {
+#ifdef PLATFORM_LINUX
             (void) seq64::reroute_stdio(logfile);
+#endif
+        }
     }
     if (! is_help)
     {
@@ -235,12 +243,10 @@ main (int argc, char * argv [])
             }
         }
 
-        /*
-         * EXPERIMENTAL:
-         */
-
+#ifdef PLATFORM_LINUX
         if (seq64::usr().option_daemonize())
             seq64::undaemonize(usermask);
+#endif
     }
     return ok ? EXIT_SUCCESS : EXIT_FAILURE ;
 }

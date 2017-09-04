@@ -6,7 +6,7 @@
 # \library    	libseq_portmidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2017-09-01
+# \update      2017-09-04
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -123,6 +123,16 @@ lib_LTLIBRARIES = libseq_portmidi.la
 #
 #----------------------------------------------------------------------------
 
+if BUILD_WINDOWS
+libseq_portmidi_la_SOURCES = \
+	mastermidibus.cpp \
+	midibus.cpp \
+	finddefault.c \
+	pmwinmm.c \
+	pmutil.c \
+	portmidi.c \
+	porttime.c
+else
 libseq_portmidi_la_SOURCES = \
 	mastermidibus.cpp \
 	midibus.cpp \
@@ -133,6 +143,7 @@ libseq_portmidi_la_SOURCES = \
 	portmidi.c \
 	porttime.c \
 	ptlinux.c
+endif
 
 libseq_portmidi_la_LDFLAGS = -version-info $(version)
 libseq_portmidi_la_LIBADD = $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)

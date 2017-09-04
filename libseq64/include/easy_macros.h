@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2017-02-26
+ * \updates       2017-09-02
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -32,11 +32,19 @@
 
 #include "platform_macros.h"
 
+/*
+ * For now, let's see if we can get MingW to create a Windows-appropriate
+ * header file.
+ *
 #ifdef PLATFORM_WINDOWS
-#include "configwin32.h"
+#include "win32-seq64-config.h"
 #else
 #include "seq64-config.h"
 #endif
+ *
+ */
+
+#include "seq64-config.h"
 
 #undef  SEQ64_SHOW_API_CALLS
 

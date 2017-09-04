@@ -21,14 +21,16 @@
  *
  *  find_default_device() implementation.
  *
- *  Roger Dannenberg, Jan 2009
+ *  Roger Dannenberg, Jan 2009, some fixes and reformatting by Chris Ahlstrom.
  */
 
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "portmidi.h"
+#include "pminternal.h"
 
 /**
  *

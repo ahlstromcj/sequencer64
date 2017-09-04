@@ -25,12 +25,18 @@
  *  Some helpful utilities for building MIDI applications that use PortMidi.
  */
 
+#include "pminternal.h"                 /* they all include this one anyway */
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+/*
+ *
 typedef void PmQueue;
+ *
+ */
 
 /**
  *  A single-reader, single-writer queue is created by Pm_QueueCreate(), which

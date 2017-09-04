@@ -36,7 +36,7 @@
  *  -   Add your initialization function to pm_init().  Note that your init
  *      function should never require non-standard libraries or fail in any
  *      way. If the interface is not available, simply do not call
- *      pm_add_device. This means that non-standard libraries should try to do
+ *      pm_add_device(). This means that non-standard libraries should try to do
  *      dynamic linking at runtime using a DLL and return without error if the
  *      DLL cannot be found or if there is any other failure.
  *  -   Implement functions as indicated in pm_fns_type to open, read, write,
@@ -52,6 +52,12 @@ extern "C"
 {
 #endif
 
+/**
+ *  Provides an obvious declaration for PortMIDI queues.
+ */
+
+typedef void PmQueue;
+
 extern int pm_initialized;                  /* see note in portmidi.c */
 
 /*
@@ -66,9 +72,9 @@ extern void pm_free (void * ptr);
  */
 
 extern int pm_hosterror;
-extern char pm_hosterror_text[PM_HOST_ERROR_MSG_LEN];
+extern char pm_hosterror_text [PM_HOST_ERROR_MSG_LEN];
 
-struct pm_internal_struct;
+struct pm_internal_struct;                  /* forward declaration  */
 
 /*
  *  These do not use PmInternal because it is not defined yet....
@@ -231,9 +237,13 @@ typedef struct pm_internal_struct
 
     int32_t buffer_len;
 
+    /**
+     *
+     */
+
     PmQueue * queue;
 
-    /*
+    /**
      *  Time delay in ms between timestamps and actual output set to zero to
      *  get immediate, simple blocking output if latency is zero, timestamps
      *  will be ignored; if midi input device, this field ignored.
@@ -241,7 +251,8 @@ typedef struct pm_internal_struct
 
     int32_t latency;
 
-    /*  When sysex status is seen, this flag becomes true until EOX is seen.
+    /**
+     *  When sysex status is seen, this flag becomes true until EOX is seen.
      *  When true, new data is appended to the stream of outgoing bytes. When
      *  overflow occurs, sysex data is dropped (until an EOX or non-real-timei
      *  status byte is seen) so that, if the overflow condition is cleared, we

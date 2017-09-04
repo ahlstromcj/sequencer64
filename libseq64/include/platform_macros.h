@@ -104,12 +104,15 @@
 #endif
 
 #if defined PLATFORM_LINUX
+
 #if ! defined POSIX
-#define POSIX                          /* defined for legacy code purposes    */
+#define POSIX                          /* defined for legacy code purposes  */
 #endif
+
 #define PLATFORM_UNIX
 #define PLATFORM_POSIX_API
-#endif
+
+#endif                                  /* PLATFORM_LINUX                   */
 
 /**
  *  Provides a "MacOSX" macro, in case the environment doesn't provide it.
@@ -117,10 +120,10 @@
  *  __MACH__ are encountered.
  */
 
-#if defined MacOSX                     /* defined by the nar-maven-plugin     */
+#if defined MacOSX                     /* defined by the nar-maven-plugin   */
 #define PLATFORM_MACOSX
 #else
-#if defined __APPLE__ && defined __MACH__    /* defined by the Apple compiler */
+#if defined __APPLE__ && defined __MACH__    /* defined by Apple compiler   */
 #define PLATFORM_MACOSX
 #define MacOSX
 #endif
@@ -227,6 +230,7 @@
 
 #if defined __GNUC__
 #define PLATFORM_GNU
+#define _GNU_SOURCE                             /* \new ca 2017-09-03       */
 #endif
 
 #if defined __MINGW32__ || defined __MINGW64__

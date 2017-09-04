@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-07-23
+ * \updates       2017-09-02
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -54,11 +54,19 @@
 
 #include <string>
 
+/*
+ * For now, let's see if we can get MingW to create a Windows-appropriate
+ * header file.
+ *
 #ifdef PLATFORM_WINDOWS
 #include "configwin32.h"
 #else
 #include "seq64-config.h"
 #endif
+ *
+ */
+
+#include "seq64-config.h"
 
 /**
  * Odds and ends that we missed.  This value allows non-notes to be included

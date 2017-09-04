@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-08-20
+ * \updates       2017-09-04
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -135,7 +135,10 @@
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
-#if ! defined PLATFORM_WINDOWS
+#if defined PLATFORM_WINDOWS
+#include <windows.h>                    /* Muahhhahahahahah!                */
+#include <mmsystem.h>                   /* Windows timeBeginPeriod()        */
+#else
 #include <time.h>                       /* struct timespec                  */
 #endif
 
@@ -3035,11 +3038,11 @@ output_thread_func (void * myperf)
     perform * p = (perform *) myperf;
 
 #ifdef PLATFORM_WINDOWS
-    timeBeginPeriod(1);
+    timeBeginPeriod(1);                         /* WinMM.dll function   */
     p->output_func();
     timeEndPeriod(1);
 #else
-    if (rc().priority())                        /* Not in MinGW RCB */
+    if (rc().priority())                        /* Not in MinGW RCB     */
     {
         struct sched_param schp;
         memset(&schp, 0, sizeof(sched_param));

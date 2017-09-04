@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-08-27
+ * \updates       2017-09-04
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -51,7 +51,7 @@
 #include <string.h>                     /* strlen() <gasp!>                 */
 #include "easy_macros.h"
 
-#ifdef PLATFORM_UNIX
+#if defined PLATFORM_UNIX || defined PLATFORM_MINGW
 #include <getopt.h>
 #endif
 
@@ -314,8 +314,9 @@ static const char * const s_help_4 =
 "                            and C can range from 8 to 12. If not 4x8, seq64 is\n"
 "                            in 'variset' mode. Affects mute groups, too.\n"
 "\n"
-" seq64cli:    daemonize     Makes this application fork to the background.\n"
-"              no-daemonize  Or not.\n"
+" seq64cli:\n"
+"              daemonize     Makes this application fork to the background.\n"
+"              no-daemonize  Or not.  These options do not apply to Windows.\n"
 "\n"
 "The 'daemonize' option works only in the CLI build. The 'sets' option works in\n"
 "the CLI build as well.  Specify the '--user-save' option to make these options\n"
@@ -583,7 +584,9 @@ parse_log_option (int argc, char * argv [])
         std::string logfile = usr().option_logfile();
         if (! logfile.empty())
         {
+#ifdef PLATFORM_LINUX
             (void) reroute_stdio(logfile);
+#endif
             result = true;
         }
     }

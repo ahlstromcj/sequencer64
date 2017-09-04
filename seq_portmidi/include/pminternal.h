@@ -143,7 +143,7 @@ typedef PmError (* pm_poll_fn) (struct pm_internal_struct * midi);
 
 typedef void (* pm_host_error_fn)
 (
-    struct pm_internal_struct * midi,
+    struct pm_internal_struct * midi,   // PmInternal * not defined until below
     char * msg,
     int len
 );

@@ -124,6 +124,7 @@ lib_LTLIBRARIES = libseq_portmidi.la
 #----------------------------------------------------------------------------
 
 if BUILD_WINDOWS
+
 libseq_portmidi_la_SOURCES = \
 	mastermidibus.cpp \
 	midibus.cpp \
@@ -132,7 +133,12 @@ libseq_portmidi_la_SOURCES = \
 	pmutil.c \
 	portmidi.c \
 	porttime.c
+
+libseq_portmidi_la_LDFLAGS = -version-info $(version)
+libseq_portmidi_la_LIBADD =
+
 else
+
 libseq_portmidi_la_SOURCES = \
 	mastermidibus.cpp \
 	midibus.cpp \
@@ -143,10 +149,13 @@ libseq_portmidi_la_SOURCES = \
 	portmidi.c \
 	porttime.c \
 	ptlinux.c
-endif
+
+# libseq_portmidi_la_LDFLAGS = -no-undefined -version-info $(version)
 
 libseq_portmidi_la_LDFLAGS = -version-info $(version)
 libseq_portmidi_la_LIBADD = $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)
+
+endif
 
 #******************************************************************************
 # uninstall-hook

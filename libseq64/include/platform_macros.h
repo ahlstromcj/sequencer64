@@ -230,7 +230,7 @@
 
 #if defined __GNUC__
 #define PLATFORM_GNU
-#define _GNU_SOURCE                             /* \new ca 2017-09-03       */
+// #define _GNU_SOURCE     /* \new ca 2017-09-03       */
 #endif
 
 #if defined __MINGW32__ || defined __MINGW64__

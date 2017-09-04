@@ -1,0 +1,80 @@
+Paths Under MingW
+Chris Ahlstrom
+2017-09-03 to 2017-09-03
+
+We are trying to figure out what we need to do to get a basic MingW
+cross-compile to work under Linux.
+
+The following code is emitted when we add the "-v" option to gcc (CFLAGS)
+and do "./bootstrap -win -er/-ed".  Modified for readability.
+
+COLLECT_GCC=x86_64-w64-mingw32-g++       
+Target: x86_64-w64-mingw32               
+
+Configured with: ../../src/configure --build=x86_64-linux-gnu --prefix=/usr
+--incl udedir='/usr/include' --mandir='/usr/share/man'
+--infodir='/usr/share/info' --sysc onfdir=/etc --localstatedir=/var
+--disable-silent-rules --libdir='/usr/lib/x86_64- linux-gnu'
+--libexecdir='/usr/lib/x86_64-linux-gnu' --disable-maintainer-mode
+--disable-dependency-tracking --prefix=/usr --enable-shared --enable-static
+--disable-multilib --with-system-zlib --libexecdir=/usr/lib
+--without-included-gettext --lib dir=/usr/lib --enable-libstdcxx-time=yes
+--with-tune=generic --enable-version-spec ific-runtime-libs
+--enable-fully-dynamic-string --enable-libgomp --enable-language
+s=c,c++,fortran,objc,obj-c++ --enable-lto --with-plugin-ld
+--enable-threads=win32 --program-suffix=-win32
+--program-prefix=x86_64-w64-mingw32- --target=x86_64-w64-m ingw32
+--with-as=/usr/bin/x86_64-w64-mingw32-as
+--with-ld=/usr/bin/x86_64-w64-mingw32-ld --enable-libatomic                                                         
+Thread model: win32                                                               
+gcc version 6.3.0 20170516 (GCC)                                                  
+
+COLLECT_GCC_OPTIONS='-D' 'LOCALEDIR="/usr/local/share/locale"' '-D'
+'HAVE_CONFIG_H ' '-I' '.' '-I' '../../include' '-I' '../include' '-I'
+'../../include' '-I' '../../seq_alsamidi/include' '-I'
+'../../seq_portmidi/include' '-I' '../../seq_rtmidi/in clude' '-D'
+'SEQ64_GIT_VERSION="0.93.3-18-gb654aec * windows"' '-g' '-O2' '-Wall' '-Wextra'
+'-Wpedantic' '-D' '_REENTRANT' '-D' 'API_VERSION=0.93' '-ggdb' '-O0' '-D '
+'DEBUG' '-D' '_DEBUG' '-fno-inline' '-v' '-std=c++11' '-Wno-variadic-macros'
+'-W no-deprecated-declarations' '-MT' 'daemonize.lo' '-MD' '-MP' '-MF'
+'.deps/daemoniz e.Tpo' '-c' '-o' 'daemonize.o' '-shared-libgcc'
+'-mtune=generic' '-march=x86-64'
+
+/usr/lib/gcc/x86_64-w64-mingw32/6.3-win32/cc1plus -quiet -v -I . -I
+../../include -I ../include -I ../../include -I ../../seq_alsamidi/include -I
+../../seq_portmid i/include -I ../../seq_rtmidi/include -MD daemonize.d -MF
+.deps/daemonize.Tpo -MP -MT daemonize.lo -U_REENTRANT -D
+LOCALEDIR="/usr/local/share/locale" -D HAVE_CONFIG_H -D
+SEQ64_GIT_VERSION="0.93.3-18-gb654aec * windows" -D _REENTRANT -D API_VERSI
+ON=0.93 -D DEBUG -D _DEBUG daemonize.cpp -quiet -dumpbase daemonize.cpp
+-mtune=gen eric -march=x86-64 -auxbase-strip daemonize.o -g -ggdb -O2 -O0 -Wall
+-Wextra -Wped antic -Wno-variadic-macros -Wno-deprecated-declarations
+-std=c++11 -version -fno-i nline -o /tmp/cc9JCqZv.s                                                          
+GNU C++11 (GCC) version 6.3.0 20170516 (x86_64-w64-mingw32)                       
+        compiled by GNU C version 6.3.0 20170516, GMP version 6.1.2, MPFR version 
+3.1.5, MPC version 1.0.3, isl version 0.15                                        
+warning: MPFR header version 3.1.5 differs from library version 3.1.6-rc1.        
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072        
+
+Ignoring nonexistent directory
+"/usr/lib/gcc/x86_64-w64-mingw32/6.3-win32/../../..
+/../x86_64-w64-mingw32/sys-include"
+
+ignoring duplicate directory "../../include"
+#include "..." search starts here:
+#include <...> search starts here:
+ .
+ ../../include
+ ../include
+ ../../seq_alsamidi/include
+ ../../seq_portmidi/include
+ ../../seq_rtmidi/include
+ /usr/lib/gcc/x86_64-w64-mingw32/6.3-win32/include/c++
+ /usr/lib/gcc/x86_64-w64-mingw32/6.3-win32/include/c++/x86_64-w64-mingw32
+ /usr/lib/gcc/x86_64-w64-mingw32/6.3-win32/include/c++/backward
+ /usr/lib/gcc/x86_64-w64-mingw32/6.3-win32/include
+ /usr/lib/gcc/x86_64-w64-mingw32/6.3-win32/include-fixed
+ /usr/lib/gcc/x86_64-w64-mingw32/6.3-win32/../../../../x86_64-w64-mingw32/include
+End of search list.
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

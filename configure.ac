@@ -105,26 +105,27 @@ AC_MSG_CHECKING([whether to build with mingw32 for a Windows host])
 
 AS_CASE([$host_os], [*mingw*], [windows_host=yes], [windows_host=no])
 
+dnl Note that the BUILD_XXXX macros "merely" select which subdirectories we
+dnl descend into during the build.
+
+build_alsamidi="no"
+build_rtmidi="no"
+build_portmidi="no"
+build_rtcli="no"
+build_windows="no"
+
 dnl Flaky, the AR macro is set well after this test, but the GCC macro
 dnl is set before it.
 dnl
 dnl AC_MSG_RESULT([TESTING HOST OS])
-dnl
-dnl Note that the BUILD_XXXX macros "merely" select which subdirectories we
-dnl descend into during the build.
 
 if test x"$windows_host" = x"yes" ; then
     if test x"$CC" = x"gcc" ; then
-        AC_MSG_ERROR([MingW build enabled, but MingW packages not installed])
+        AC_MSG_ERROR([MingW build enabled, but MingW packages not installed.])
     else
+        build_windows="yes"
         AC_DEFINE(WINDOWS_SUPPORT, 1, [Indicates limited Windows support])
-        AC_MSG_RESULT([$windows_host])
-        AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$disable = no])
-        AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
-        AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
-        AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
-        AM_CONDITIONAL([BUILD_WINDOWS], [test "x$windows_host" = "xyes"])
-        AM_CONDITIONAL([WINDOWS_HOST], [test "x$windows_host" = "xyes"])
+        AC_MSG_RESULT([MingW Windows CLI build enabled.])
     fi
 fi
 
@@ -305,6 +306,8 @@ dnl For example, if you supply the -lm option on the command line to the linker
 dnl but do not actually use any maths functions then the libm.so library will
 dnl not be linked against.
 
+if test x"$use_as_needed" = x"yes" ; then
+
 AC_MSG_CHECKING(if --as-needed works)
 AC_ARG_ENABLE(as_needed,
     [AS_HELP_STRING(--enable-as-needed,
@@ -322,10 +325,10 @@ if test x"${as_needed}" = x"unknown" ; then
     ac_old_ldflags="${LDFLAGS}"
     LDFLAGS="-Wl,--as-needed"
     AC_TRY_LINK(
-                [],
-                [],
-                [as_needed="1"],
-                [as_needed=""])
+        [],
+        [],
+        [as_needed="1"],
+        [as_needed=""])
     LDFLAGS="${ac_old_ldflags}" 
 fi
 if test -n "$as_needed"; then
@@ -333,6 +336,8 @@ if test -n "$as_needed"; then
     LDFLAGS="${LDFLAGS} -Wl,--as-needed"
 else
     AC_MSG_RESULT(no)
+fi
+
 fi
 
 dnl Check for deprecated GTK constructs as per
@@ -405,7 +410,7 @@ dnl AC_PROG_DOXYGEN
 
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN";
-   then AC_MSG_WARN([Doxygen not found, continuing without Doxygen support])
+   then AC_MSG_WARN([Doxygen not found, continuing without Doxygen])
 fi
 
 dnl gtkmm
@@ -428,7 +433,7 @@ dnl Obsolete: AC_CYGWIN
 dnl Windows support in Linux.  Might be unnecessary though, though.
 
 AC_ARG_ENABLE(mingw,
-    [AS_HELP_STRING(--enable-mingw, [Enable MingW support])],
+    [AS_HELP_STRING(--enable-mingw, [Enable MingW Windows support])],
     [mingw=$enableval],
     [mingw=no])
 
@@ -469,17 +474,16 @@ if test "$jack" != "no"; then
             AC_CHECK_HEADER(jack/session.h, jack_session_found="yes",
                             jack_session_found="no")
             if test "$jack_session_found" = "yes"; then
-                AC_DEFINE(JACK_SESSION, 1,
-                          [Define to enable JACK session support])
+                AC_DEFINE(JACK_SESSION, 1, [Define to enable JACK session])
             fi
         fi
         AC_MSG_RESULT([JACK support enabled.]);
 
     else
-        AC_MSG_WARN([Could not find JACK library, disabling JACK support])
+        AC_MSG_WARN([Could not find JACK library, disabling JACK.])
     fi
 else
-    AC_MSG_WARN([JACK support disabled.]);
+    AC_MSG_WARN([JACK disabled.]);
 fi
 
 dnl LASH support
@@ -492,7 +496,7 @@ AC_ARG_ENABLE(lash,
 if test "$lash" != "no"; then
     PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.5.0, lash_found="yes", lash_found="no")
     if test "$lash_found" = "yes"; then
-        AC_DEFINE(LASH_SUPPORT, 1, [Define to enable LASH support])
+        AC_DEFINE(LASH_SUPPORT, 1, [Define to enable LASH])
         AC_SUBST(LASH_CFLAGS)
         AC_SUBST(LASH_LIBS)
         AC_MSG_RESULT([LASH support enabled.]);
@@ -508,27 +512,23 @@ dnl This section defines a variable that is used only in the
 dnl top-level Makefile to determine what directories are included in the
 dnl SUBDIRS variable.  Also see the latest versions of the midibus.hpp and
 dnl mastermidibus.hpp files in libseq64/include.
+dnl
+dnl Note that no MIDI framework, not even rtmidi, is enabled by default now.
+dnl Eventually we want to make ALSA optional for the user/developer.
 
 AC_ARG_ENABLE(rtmidi,
     [AS_HELP_STRING(--enable-rtmidi, [Enable rtmidi build])],
     [rtmidi=$enableval],
-    [rtmidi=yes])
+    [rtmidi=no])
 
 if test "$rtmidi" != "no"; then
-    AC_MSG_RESULT([rtmidi native build enabled.]);
-    AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi support is enabled])
+    build_rtmidi="yes"
     AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
-    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$disable = no])
-    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
-    AM_CONDITIONAL([BUILD_RTMIDI], [test x$rtmidi = xyes])
-    AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
-    AM_CONDITIONAL([BUILD_WINDOWS], [test x$disable = no])
-
-dnl Eventually we want to make ALSA optional for the user/developer.
-
+    AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi is enabled])
     AM_PATH_ALSA(0.9.0)
+    AC_MSG_RESULT([rtmidi native build enabled.]);
 else
-    AC_MSG_WARN([rtmidi build disabled.]);
+    AC_MSG_WARN([rtmidi native build disabled.]);
 fi
 
 AC_ARG_ENABLE(cli,
@@ -538,18 +538,14 @@ AC_ARG_ENABLE(cli,
 
 if test "$cli" != "no"; then
     AC_MSG_RESULT([portmidi/rtmidi command-line build enabled.]);
-    AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi support is enabled])
     AC_DEFINE(APP_NAME, ["seq64cli"], [Names the CLI version of application])
-    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$disable = no])
     if test "x$mingw" != "xyes" ; then
-        AM_CONDITIONAL([BUILD_RTMIDI], [test x$cli = xyes])
-        AM_CONDITIONAL([BUILD_RTCLI], [test x$cli = xyes])
-        AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
+        build_rtcli="yes"
+        AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates that rtmidi is enabled])
         AM_PATH_ALSA(0.9.0)
     else
-        AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates if PortMidi support is enabled])
-        AM_CONDITIONAL([BUILD_PORTMIDI], [test x$cli = xyes])
-        AM_CONDITIONAL([BUILD_WINDOWS], [test "x$windows_host" = "xyes"])
+        build_windows="yes"
+        AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates that PortMidi is enabled])
     fi
 else
     AC_MSG_WARN([rtmidi command-line build disabled.])
@@ -563,20 +559,17 @@ AC_ARG_ENABLE(alsamidi,
     [alsamidi=no])
 
 if test "$alsamidi" != "no"; then
-    AC_MSG_RESULT([Standard ALSA build enabled.]);
+    build_alsamidi="yes"
     AC_DEFINE(ALSAMIDI_SUPPORT, 1, [Indicates if ALSA MIDI support is enabled])
     AC_DEFINE(APP_NAME, ["sequencer64"], [Names legacy version of application])
-    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$alsamidi = xyes])
-    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$disable = no])
-    AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
-    AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
-    AM_CONDITIONAL([BUILD_WINDOWS], [test x$disable = no])
     AM_PATH_ALSA(0.9.0)
+    AC_MSG_RESULT([Standard ALSA build enabled.]);
 else
     AC_MSG_WARN([Standard ALSA build disabled.]);
 fi
 
-dnl PortMidi support.  Deprecated for Linux, but will still build it.
+dnl PortMidi support.  Deprecated for Linux, but will still build it. It needs
+dnl the ALSA libraries to work.
 
 AC_ARG_ENABLE(portmidi,
     [AS_HELP_STRING(--enable-portmidi, [Enable PortMidi build (deprecated)])],
@@ -584,18 +577,11 @@ AC_ARG_ENABLE(portmidi,
     [portmidi=no])
 
 if test "$portmidi" != "no"; then
-    AC_MSG_RESULT([PortMidi build enabled.]);
+    build_portmidi="yes"
     AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates if PortMidi support is enabled])
     AC_DEFINE(APP_NAME, ["seq64portmidi"], [Names this version of application])
-    AM_CONDITIONAL([BUILD_ALSAMIDI], [test x$disable = no])
-    AM_CONDITIONAL([BUILD_PORTMIDI], [test x$portmidi = xyes])
-    AM_CONDITIONAL([BUILD_RTMIDI], [test x$disable = no])
-    AM_CONDITIONAL([BUILD_RTCLI], [test x$disable = no])
-
-dnl We do need PortMIDI for Windows at this time, but it is enabled
-dnl elsewhere.
-
-    AM_CONDITIONAL([BUILD_WINDOWS], [test x$disable = no])
+    AM_PATH_ALSA(0.9.0)
+    AC_MSG_RESULT([PortMidi build enabled.]);
 else
     AC_MSG_WARN([PortMidi build disabled.]);
 fi
@@ -742,6 +728,12 @@ if test "$mainscroll" != "no"; then
 else
     AC_MSG_WARN([Main patterns-panel scrollbars disabled.]);
 fi
+
+AM_CONDITIONAL([BUILD_ALSAMIDI], [test "$build_alsamidi" = "yes"])
+AM_CONDITIONAL([BUILD_RTMIDI], [test "$build_rtmidi" = "yes"])
+AM_CONDITIONAL([BUILD_RTCLI], [test "$build_rtcli" = "yes"])
+AM_CONDITIONAL([BUILD_PORTMIDI], [test "$build_portmidi" = "yes"])
+AM_CONDITIONAL([BUILD_WINDOWS], [test "$build_windows" = "yes"])
 
 dnl 6.0  Top portion of the config.h/seq64-config.h header files.  The
 dnl      seq64-config.h header file has "SEQ64_" prepended to these

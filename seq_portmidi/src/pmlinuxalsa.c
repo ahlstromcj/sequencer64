@@ -28,6 +28,9 @@
  *  -   Jason Cohen, Rico Colon, Matt Filippone (Alsa 0.5.x implementation)
  */
 
+#include <alsa/asoundlib.h>
+
+#include "platform_macros.h"            /* UNUSED() parameter macro         */
 #include "stdlib.h"
 #include "portmidi.h"
 #include "pmutil.h"
@@ -36,8 +39,6 @@
 #include "string.h"
 #include "porttime.h"
 #include "pmlinux.h"
-
-#include <alsa/asoundlib.h>
 
 /*
  * I used many print statements to debug this code. I left them in the
@@ -54,23 +55,47 @@
 #error needs ALSA 0.9.0 or later
 #endif
 
-/* to store client/port in the device descriptor */
+/*
+ *  These defines are added to help store client/port information in the
+ *  device descriptor.  One issue with the existing PortMidi library is that
+ *  we're casting from a pointer to an integer of different size.  So we add
+ *  an intprt_t cast into the mix.
+ *
+ *  Weird:  In C macros, the arguments in parentheses must have no space
+ *  beefore the opening parenthesis.
+ */
 
-#define MAKE_DESCRIPTOR(client, port) ((void*)(((client) << 8) | (port)))
-#define GET_DESCRIPTOR_CLIENT(info) ((((int)(info)) >> 8) & 0xff)
-#define GET_DESCRIPTOR_PORT(info) (((int)(info)) & 0xff)
+#define MAKE_DESCRIPTOR(client, port) \
+    ( (void *) (intptr_t) ( ((client) << 8) | (port)) )
+
+#define MASK_DESCRIPTOR_CLIENT(x)       ( (((int) (intptr_t) (x)) >> 8) & 0xff )
+
+#define MASK_DESCRIPTOR_PORT(x)         ( ((int) (intptr_t) (x)) & 0xff )
+
+/*
+ * should be a typedef
+ */
 
 #define BYTE unsigned char
 
 extern pm_fns_node pm_linuxalsa_in_dictionary;
 extern pm_fns_node pm_linuxalsa_out_dictionary;
 
-/*
+/**
  * all input comes here, output queue allocated on seq
  */
 
 static snd_seq_t * s_seq = NULL;
+
+/**
+ *
+ */
+
 static int s_queue, s_queue_used;       /* one for all ports, reference counted */
+
+/**
+ *
+ */
 
 typedef struct alsa_descriptor_struct
 {
@@ -190,7 +215,7 @@ midi_message_length (PmMessage message)
  */
 
 static PmError
-alsa_out_open (PmInternal * midi, void * driverInfo)
+alsa_out_open (PmInternal * midi, void * UNUSED(driverinfo))
 {
     void * client_port = descriptors[midi->device_id].descriptor;
     alsa_descriptor_type desc = (alsa_descriptor_type)
@@ -217,8 +242,12 @@ alsa_out_open (PmInternal * midi, void * driverInfo)
     /* fill in fields of desc, which is passed to pm_write routines */
 
     midi->descriptor = desc;
-    desc->client = GET_DESCRIPTOR_CLIENT(client_port);
-    desc->port = GET_DESCRIPTOR_PORT(client_port);
+
+//                 ((((int) (intptr_t) (x)) >> 8) & 0xff)
+    desc->client = ((((int) (intptr_t) (client_port)) >> 8) & 0xff);
+
+    desc->client = MASK_DESCRIPTOR_CLIENT(client_port);
+    desc->port = MASK_DESCRIPTOR_PORT(client_port);
     desc->this_port = midi->device_id;
     desc->in_sysex = 0;
     desc->error = 0;
@@ -366,11 +395,10 @@ alsa_out_close (PmInternal * midi)
     if (! desc)
         return pmBadPtr;
 
-    if
-    (
-        pm_hosterror =
-        snd_seq_disconnect_to(s_seq, desc->this_port, desc->client, desc->port)
-    )
+    pm_hosterror =
+        snd_seq_disconnect_to(s_seq, desc->this_port, desc->client, desc->port);
+
+    if (pm_hosterror)
     {
         // if there's an error, try to delete the port anyway, but don't
         // change the pm_hosterror value so we retain the first error
@@ -405,7 +433,7 @@ alsa_out_close (PmInternal * midi)
  */
 
 static PmError
-alsa_in_open (PmInternal * midi, void * driverInfo)
+alsa_in_open (PmInternal * midi, void * UNUSED(driverinfo))
 {
     void * client_port = descriptors[midi->device_id].descriptor;
     alsa_descriptor_type desc = (alsa_descriptor_type)
@@ -438,8 +466,8 @@ alsa_in_open (PmInternal * midi, void * driverInfo)
     /* fill in fields of desc, which is passed to pm_write routines */
 
     midi->descriptor = desc;
-    desc->client = GET_DESCRIPTOR_CLIENT(client_port);
-    desc->port = GET_DESCRIPTOR_PORT(client_port);
+    desc->client = MASK_DESCRIPTOR_CLIENT(client_port);
+    desc->port = MASK_DESCRIPTOR_PORT(client_port);
     desc->this_port = midi->device_id;
     desc->in_sysex = 0;
     desc->error = 0;
@@ -499,13 +527,13 @@ alsa_in_close (PmInternal * midi)
     if (! desc)
         return pmBadPtr;
 
-    if
+    pm_hosterror = snd_seq_disconnect_from
     (
-        pm_hosterror = snd_seq_disconnect_from(s_seq, desc->this_port,
-           desc->client, desc->port)
-    )
+        s_seq, desc->this_port, desc->client, desc->port
+    );
+    if (pm_hosterror)
     {
-        snd_seq_delete_port(s_seq, desc->this_port); /* try to close port */
+        snd_seq_delete_port(s_seq, desc->this_port);    /* try to close port */
     }
     else
     {
@@ -535,7 +563,7 @@ alsa_in_close (PmInternal * midi)
  */
 
 static PmError
-alsa_abort (PmInternal * midi)
+alsa_abort (PmInternal * UNUSED(midi))
 {
     /*
     alsa_descriptor_type desc = (alsa_descriptor_type) midi->descriptor;
@@ -553,7 +581,7 @@ alsa_abort (PmInternal * midi)
     }
     */
 
-    printf("WARNING: alsa_abort not implemented\n");
+    printf("WARNING: alsa_abort() not implemented\n");
     return pmNoError;
 }
 
@@ -566,10 +594,12 @@ alsa_abort (PmInternal * midi)
  */
 
 static PmError
-alsa_write_flush (PmInternal * midi, PmTimestamp timestamp)
+alsa_write_flush (PmInternal * midi, PmTimestamp UNUSED(timestamp))
 {
     alsa_descriptor_type desc = (alsa_descriptor_type) midi->descriptor;
-    VERBOSE printf("snd_seq_drain_output: 0x%x\n", (unsigned int) s_seq);
+
+    // VERBOSE printf("snd_seq_drain_output: 0x%x\n", (unsigned int) s_seq);
+
     desc->error = snd_seq_drain_output(s_seq);
     if (desc->error < 0)
         return pmHostError;
@@ -611,7 +641,7 @@ alsa_write_short (PmInternal * midi, PmEvent * event)
  */
 
 PmError
-alsa_sysex (PmInternal * midi, PmTimestamp timestamp)
+alsa_sysex (PmInternal * UNUSED(midi), PmTimestamp UNUSED(timestamp))
 {
     return pmNoError;
 }
@@ -625,7 +655,7 @@ alsa_sysex (PmInternal * midi, PmTimestamp timestamp)
  */
 
 static PmTimestamp
-alsa_synchronize (PmInternal * midi)
+alsa_synchronize (PmInternal * UNUSED(midi))
 {
     return 0;
 }
@@ -804,7 +834,7 @@ handle_event (snd_seq_event_t * ev)
 
     case SND_SEQ_EVENT_SYSEX:
         {
-            const BYTE *ptr = (const BYTE *) ev->data.ext.ptr;
+            const BYTE * ptr = (const BYTE *) ev->data.ext.ptr;
 
             /* assume there is one sysex byte to process */
 
@@ -827,7 +857,7 @@ handle_event (snd_seq_event_t * ev)
  */
 
 static PmError
-alsa_poll (PmInternal * midi)
+alsa_poll (PmInternal * UNUSED(midi))
 {
     snd_seq_event_t * ev;
 
@@ -991,11 +1021,15 @@ pm_linuxalsa_init (void)
                 if (pm_default_output_device_id == -1)
                     pm_default_output_device_id = pm_descriptor_index;
 
-                pm_add_device("ALSA",
-                    pm_strdup(snd_seq_port_info_get_name(pinfo)),
+                pm_add_device
+                (
+                    "ALSA", pm_strdup(snd_seq_port_info_get_name(pinfo)),
                     FALSE,
-                    MAKE_DESCRIPTOR(snd_seq_port_info_get_client(pinfo),
-                        snd_seq_port_info_get_port(pinfo)),
+                    MAKE_DESCRIPTOR
+                    (
+                        snd_seq_port_info_get_client(pinfo),
+                        snd_seq_port_info_get_port(pinfo)
+                    ),
                     &pm_linuxalsa_out_dictionary);
             }
             if (caps & SND_SEQ_PORT_CAP_SUBS_READ)

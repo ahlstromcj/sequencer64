@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.93.4 and above
 Chris Ahlstrom
-2015-09-10 to 2017-09-02
+2015-09-10 to 2017-09-05
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -30,10 +30,10 @@ Steps:
    2.  The first thing to do is decide what version of Sequencer64 you want to
        build.  There are now 4 versions:
 
-       1.   Seq64rtmidi/seq64:           ./bootstrap [ -er -rm ]
+       1.   Seq64rtmidi/seq64:           ./bootstrap [ -er | -ed] -rm
        2.   Seq64cli/seq64cli:           ./bootstrap -er -cli
        3.   Sequencer64/sequencer64:     ./bootstrap -er -am
-       4.   Seq64portmidi/seq64portmidi: ./bootstrap -er -pm (not recommended)
+       4.   Seq64portmidi/seq64portmidi: ./bootstrap -er -pm
    
        From the top project directory, run one of the commands above (they
        auto-configure) or run the following commands, which set up a release
@@ -52,7 +52,7 @@ Steps:
        $ ./bootstrap -er
 
        The additional options select the kind of Sequencer64 to build.
-       The default is -rm, which is most likely what you want.
+       There is now no default, but -rm is most likely what you want.
 
        For debugging without libtool getting in the way, just run the
        following command, which will add the --enable-debug and

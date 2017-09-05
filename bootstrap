@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2017-09-02
+# \update     	2017-09-05
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -36,7 +36,7 @@ export LANG
 CYGWIN=binmode
 export CYGWIN
 
-export SEQ64_SCRIPT_EDIT_DATE="2017-09-02"
+export SEQ64_SCRIPT_EDIT_DATE="2017-09-05"
 export SEQ64_LIBRARY_API_VERSION="0.93"
 export SEQ64_LIBRARY_VERSION="$SEQ64_LIBRARY_API_VERSION.93.0"
 
@@ -73,14 +73,19 @@ DODEBUG="no"
 DORELEASE="no"
 DOTESTONLY="no"
 DOVERSION="no"
-DOALSAMIDI="yes"
+DOALSAMIDI="no"
 DOPORTMIDI="no"
-DORTMIDI="no"
 DORTCLI="no"
 DOMINGW="no"
-EXTRAFLAGS=""
 LOGFILENAME=""
 M4DIR="m4"
+
+#******************************************************************************
+#  Default boostrap build
+#------------------------------------------------------------------------------
+
+DORTMIDI="yes"
+EXTRAFLAGS="--enable-rtmidi"
 
 #******************************************************************************
 #  Help
@@ -89,7 +94,7 @@ M4DIR="m4"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.93.4-2017-09-02)
+Usage: ./bootstrap [options]                                 (0.93.4-2017-09-05)
 
     'bootstrap' sets up GNU automake support and libtool support for the
     Sequencer64 projects, creating the 'configure' script.  It can also

@@ -311,8 +311,11 @@ dnl they are not actually used by the shared library that is being created.
 dnl For example, if you supply the -lm option on the command line to the linker
 dnl but do not actually use any maths functions then the libm.so library will
 dnl not be linked against.
+dnl
+dnl We have disabled this test for now, by testing against a non-existent
+dnl macro.
 
-if test x"$use_as_needed" = x"yes" ; then
+if test x"$use_as_needed" = x"yes" ; then       # disables this code
 
 AC_MSG_CHECKING(if --as-needed works)
 AC_ARG_ENABLE(as_needed,
@@ -376,8 +379,6 @@ if test x"$windows_host" = x"no" ; then
         AC_MSG_ERROR([Essential library libgtkmm-2.4 not found]))
 fi
 
-dnl LATER:
-dnl
 dnl AC_CHECK_LIB(gtkmm-3.0, _init,,
 dnl     AC_MSG_ERROR([Essential library libgtkmm-3.0 not found]))
 
@@ -433,7 +434,6 @@ dnl Checks for the Cygwin environment. If present, sets shell variable
 dnl CYGWIN to 'yes'; if not present, sets CYGWIN to the empty string.
 dnl
 dnl Commented out, use AC_CANONICAL_HOST instead.
-dnl
 dnl Obsolete: AC_CYGWIN
 
 dnl Windows support in Linux.  Might be unnecessary though, though.
@@ -466,9 +466,6 @@ AC_ARG_ENABLE(jack-session,
     [AS_HELP_STRING(--disable-jack-session, [Disable JACK session support])],
     [jack_session=$enableval],
     [jack_session=yes])
-
-dnl USER_LDFLAGS="${USER_LDFLAGS} $(pkg-config --libs jack )"
-dnl features_list="${features_list} (Jack)"
 
 if test "$jack" != "no"; then
     PKG_CHECK_MODULES(JACK, jack >= 0.90.0, jack_found="yes", jack_found="no")
@@ -752,7 +749,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-09-04"
+#define VERSION_DATE_SHORT "2017-09-05"
 #define VERSION "0.93.4"
 
 )

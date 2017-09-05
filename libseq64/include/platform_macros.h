@@ -178,7 +178,7 @@
 #define WIN64
 #endif
 
-#if ! defined  PLATFORM_64_BIT
+#if ! defined PLATFORM_64_BIT
 #define PLATFORM_64_BIT
 #endif
 

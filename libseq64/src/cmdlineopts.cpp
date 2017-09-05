@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-09-04
+ * \updates       2017-09-05
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -1192,6 +1192,18 @@ const static std::string s_debug_mode = "ON";
 const static std::string s_debug_mode = "off";
 #endif
 
+#ifdef PLATFORM_WINDOW
+const static std::string s_windows = "ON";
+#else
+const static std::string s_windows = "off";
+#endif
+
+#ifdef PLATFORM_32_BIT
+const static std::string s_bitness = "32-bit";
+#else
+const static std::string s_bitness = "64-bit";
+#endif
+
 /**
  *  Generates a string describing the features of the build.
  *
@@ -1228,7 +1240,9 @@ build_details ()
 << "Main window scroll-bars = "  << s_je_pattern_scrollbars       << std::endl
 << "Multiple main windows * = "  << s_multiple_mainwids           << std::endl
 << "Statistics support * = "     << s_statistics_support          << std::endl
+<< "Windows support * = "        << s_windows                     << std::endl
 << "Debug code * = "             << s_debug_mode                  << std::endl
+<< s_bitness << " support enabled"                                << std::endl
 << std::endl
 << "* option is enabled/disabled via the configure script." << std::endl
 << "Otherwise, libseq64/include/seq64_features.h sets it." << std::endl

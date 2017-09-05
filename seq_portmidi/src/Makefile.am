@@ -118,8 +118,7 @@ lib_LTLIBRARIES = libseq_portmidi.la
 # Source files
 #----------------------------------------------------------------------------
 #
-# pmwin.c
-# pmwinmm.c
+#	porttime.c is currently an empty module.
 #
 #----------------------------------------------------------------------------
 
@@ -129,10 +128,10 @@ libseq_portmidi_la_SOURCES = \
 	mastermidibus.cpp \
 	midibus.cpp \
 	finddefault.c \
+	pmwin.c \
 	pmwinmm.c \
 	pmutil.c \
-	portmidi.c \
-	porttime.c
+	portmidi.c
 
 libseq_portmidi_la_LDFLAGS = -version-info $(version)
 libseq_portmidi_la_LIBADD =
@@ -147,12 +146,11 @@ libseq_portmidi_la_SOURCES = \
 	pmlinux.c \
 	pmutil.c \
 	portmidi.c \
-	porttime.c \
 	ptlinux.c
 
-# libseq_portmidi_la_LDFLAGS = -no-undefined -version-info $(version)
+# libseq_portmidi_la_LDFLAGS = -version-info $(version)
 
-libseq_portmidi_la_LDFLAGS = -version-info $(version)
+libseq_portmidi_la_LDFLAGS = -no-undefined -version-info $(version)
 libseq_portmidi_la_LIBADD = $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)
 
 endif

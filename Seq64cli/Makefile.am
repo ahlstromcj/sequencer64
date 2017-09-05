@@ -179,7 +179,7 @@ seq64cli_SOURCES = seq64rtcli.cpp
 seq64cli_DEPENDENCIES = $(dependencies)
 
 if BUILD_WINDOWS
-seq64cli_LDADD = $(libraries) $(AM_LDFLAGS)
+seq64cli_LDADD = $(libraries) $(AM_LDFLAGS) $(PTHREAD_LIBS)
 else
 seq64cli_LDADD = $(libraries) $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
 endif

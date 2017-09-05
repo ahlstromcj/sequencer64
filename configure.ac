@@ -66,6 +66,8 @@ AC_PROG_CXXCPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 
+AX_PTHREAD
+
 dnl     [AC_DEFINE(HAVE_SYSLOG_H) LIBS="$LIBS $lib"; break]
 
 dnl 5.c. Mingw support.

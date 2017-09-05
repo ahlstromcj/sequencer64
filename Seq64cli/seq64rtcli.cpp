@@ -24,7 +24,7 @@
  * \library       seq64rtcli application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-04-07
- * \updates       2017-09-04
+ * \updates       2017-09-05
  * \license       GNU GPLv2 or above
  *
  *  This application is seq64 without a GUI, control must be done via MIDI.
@@ -113,7 +113,9 @@ seq64_signal_handler (int signalnumber)
 int
 main (int argc, char * argv [])
 {
+#ifdef PLATFORM_LINUX
     uint32_t usermask = 0;                  /* used only in daemonization   */
+#endif
     bool stdio_rerouted = false;            /* used only in log-file option */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */

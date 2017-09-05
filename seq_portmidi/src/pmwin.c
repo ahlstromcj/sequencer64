@@ -17,6 +17,7 @@
 #include "pmutil.h"
 #include "pminternal.h"
 #include "pmwinmm.h"
+
 #ifdef DEBUG
 #include "stdio.h"
 #endif
@@ -26,7 +27,9 @@
    It calls pm_term to make sure PortMidi is properly closed.
    If DEBUG is on, we prompt for input to avoid losing error messages.
  */
-static void pm_exit(void)
+
+static void
+pm_exit(void)
 {
     pm_term();
 #ifdef DEBUG

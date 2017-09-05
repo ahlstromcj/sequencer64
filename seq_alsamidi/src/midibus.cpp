@@ -335,7 +335,8 @@ midibus::set_virtual_name (int portid, const std::string & portname)
 
 /**
  *  Initialize the output in a different way.  This version of initialization is
- *  used by mastermidibus in the "manual ALSA ports" clause.
+ *  used by mastermidibus in the "manual ALSA ports" clause.  The "sub" in the
+ *  function name is short for "subscription".
  *
  * \return
  *      Returns true unless setting up the ALSA port failed in some way.
@@ -401,7 +402,8 @@ midibus::api_init_in_sub ()
 
 /**
  *  Deinitialize the MIDI input.  Set the input and the output ports.
- *  The destination port is actually our local port.
+ *  The destination port is actually our local port.  This function is called
+ *  in midibase::set_input() when input on the port is turned off.
  *
  * \return
  *      Returns true, unless an error occurs.

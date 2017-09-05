@@ -43,14 +43,14 @@ PACKAGE = @PACKAGE@
 VERSION = @VERSION@
 GIT_VERSION = @GIT_VERSION@
 
-SEQUENCER64_API_MAJOR = @SEQUENCER64_API_MAJOR@
-SEQUENCER64_API_MINOR = @SEQUENCER64_API_MINOR@
-SEQUENCER64_API_PATCH = @SEQUENCER64_API_PATCH@
-SEQUENCER64_API_VERSION = @SEQUENCER64_API_VERSION@
+SEQ64_API_MAJOR = @SEQ64_API_MAJOR@
+SEQ64_API_MINOR = @SEQ64_API_MINOR@
+SEQ64_API_PATCH = @SEQ64_API_PATCH@
+SEQ64_API_VERSION = @SEQ64_API_VERSION@
 
-SEQUENCER64_LT_CURRENT = @SEQUENCER64_LT_CURRENT@
-SEQUENCER64_LT_REVISION = @SEQUENCER64_LT_REVISION@
-SEQUENCER64_LT_AGE = @SEQUENCER64_LT_AGE@
+SEQ64_LT_CURRENT = @SEQ64_LT_CURRENT@
+SEQ64_LT_REVISION = @SEQ64_LT_REVISION@
+SEQ64_LT_AGE = @SEQ64_LT_AGE@
 
 #******************************************************************************
 # Install directories
@@ -87,7 +87,7 @@ builddir = @abs_top_builddir@
 # libtool
 #-----------------------------------------------------------------------------
 
-version = $(SEQUENCER64_API_MAJOR):$(SEQUENCER64_API_MINOR):$(SEQUENCER64_API_PATCH)
+version = $(SEQ64_API_MAJOR):$(SEQ64_API_MINOR):$(SEQ64_API_PATCH)
 
 #*****************************************************************************
 # git_version
@@ -113,8 +113,7 @@ AM_CXXFLAGS = \
  -I$(top_srcdir)/seq_rtmidi/include \
  $(ALSA_CFLAGS) \
  $(JACK_CFLAGS) \
- -DSEQ64_GIT_VERSION=\"$(git_info)\" \
- -Wall $(MM_WFLAGS)
+ -DSEQ64_GIT_VERSION=\"$(git_info)\"
 
 #******************************************************************************
 # The library to build, a libtool-based library

@@ -6,7 +6,7 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2017-04-08
+# \updates     2017-09-02
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -43,14 +43,14 @@ EXTRA_DIST = bootstrap pack README VERSION COPYING AUTHORS INSTALL NEWS ChangeLo
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
 
-SEQUENCER64_API_MAJOR = @SEQUENCER64_API_MAJOR@
-SEQUENCER64_API_MINOR = @SEQUENCER64_API_MINOR@
-SEQUENCER64_API_PATCH = @SEQUENCER64_API_PATCH@
-SEQUENCER64_API_VERSION = @SEQUENCER64_API_VERSION@
+SEQ64_API_MAJOR = @SEQ64_API_MAJOR@
+SEQ64_API_MINOR = @SEQ64_API_MINOR@
+SEQ64_API_PATCH = @SEQ64_API_PATCH@
+SEQ64_API_VERSION = @SEQ64_API_VERSION@
 
-SEQUENCER64_LT_CURRENT = @SEQUENCER64_LT_CURRENT@
-SEQUENCER64_LT_REVISION = @SEQUENCER64_LT_REVISION@
-SEQUENCER64_LT_AGE = @SEQUENCER64_LT_AGE@
+SEQ64_LT_CURRENT = @SEQ64_LT_CURRENT@
+SEQ64_LT_REVISION = @SEQ64_LT_REVISION@
+SEQ64_LT_AGE = @SEQ64_LT_AGE@
 
 #*****************************************************************************
 # Installed directories
@@ -147,6 +147,10 @@ if BUILD_RTCLI
 SUBDIRS = resources/pixmaps libseq64 seq_rtmidi Seq64cli man
 endif
 
+if BUILD_WINDOWS
+SUBDIRS = resources/pixmaps libseq64 seq_portmidi Seq64cli man
+endif
+
 #*****************************************************************************
 # DIST_SUBDIRS
 #-----------------------------------------------------------------------------
@@ -188,13 +192,13 @@ show:
 showver:
 	@echo "PACKAGE                   = $(PACKAGE)"
 	@echo "VERSION                   = $(VERSION)"
-	@echo "SEQUENCER64_API_MAJOR     = $(SEQUENCER64_API_MAJOR)"
-	@echo "SEQUENCER64_API_MINOR     = $(SEQUENCER64_API_MINOR)"
-	@echo "SEQUENCER64_API_PATCH     = $(SEQUENCER64_API_PATCH)"
-	@echo "SEQUENCER64_API_VERSION   = $(SEQUENCER64_API_VERSION)"
-	@echo "SEQUENCER64_LT_CURRENT    = $(SEQUENCER64_LT_CURRENT)"
-	@echo "SEQUENCER64_LT_REVISION   = $(SEQUENCER64_LT_REVISION)"
-	@echo "SEQUENCER64_LT_AGE        = $(SEQUENCER64_LT_AGE)"
+	@echo "SEQ64_API_MAJOR           = $(SEQ64_API_MAJOR)"
+	@echo "SEQ64_API_MINOR           = $(SEQ64_API_MINOR)"
+	@echo "SEQ64_API_PATCH           = $(SEQ64_API_PATCH)"
+	@echo "SEQ64_API_VERSION         = $(SEQ64_API_VERSION)"
+	@echo "SEQ64_LT_CURRENT          = $(SEQ64_LT_CURRENT)"
+	@echo "SEQ64_LT_REVISION         = $(SEQ64_LT_REVISION)"
+	@echo "SEQ64_LT_AGE              = $(SEQ64_LT_AGE)"
 
 #****************************************************************************
 # Makefile.am (sequencer64 top-level)

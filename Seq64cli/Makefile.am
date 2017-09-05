@@ -6,7 +6,7 @@
 # \library    	seq64cli application
 # \author     	Chris Ahlstrom
 # \date       	2017-04-07
-# \update      2017-04-07
+# \update      2017-09-05
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -82,8 +82,7 @@ builddir = @abs_top_builddir@
 
 libseq64dir = $(builddir)/libseq64/src/.libs
 libseq_rtmididir = $(builddir)/seq_rtmidi/src/.libs
-
-# libseq_gtkmm2dir = $(builddir)/seq_gtkmm2/src/.libs
+libseq_portmididir = $(builddir)/seq_portmidi/src/.libs
 
 #******************************************************************************
 # AM_CPPFLAGS [formerly "INCLUDES"]
@@ -96,13 +95,17 @@ libseq_rtmididir = $(builddir)/seq_rtmidi/src/.libs
 #
 #------------------------------------------------------------------------------
 
+if BUILD_WINDOWS
+AM_CXXFLAGS = \
+ -I$(top_srcdir)/libseq64/include \
+ -I$(top_srcdir)/seq_portmidi/include
+else
 AM_CXXFLAGS = \
  -I$(top_srcdir)/libseq64/include \
  -I$(top_srcdir)/seq_rtmidi/include \
- $(GTKMM_CFLAGS) \
  $(JACK_CFLAGS) \
- $(LASH_CFLAGS) \
- -Wall $(MM_WFLAGS)
+ $(LASH_CFLAGS)
+endif
 
 #******************************************************************************
 # libmath
@@ -132,9 +135,16 @@ libmath = -lm
 #
 #----------------------------------------------------------------------------
 
+if BUILD_WINDOWS
+libraries = \
+ -L$(libseq64dir) -lseq64 \
+ -L$(libseq_portmididir) -lseq_portmidi \
+ -lwinmm
+else
 libraries = \
  -L$(libseq64dir) -lseq64 \
  -L$(libseq_rtmididir) -lseq_rtmidi
+endif
 
 #****************************************************************************
 # Project-specific dependency files
@@ -146,9 +156,15 @@ libraries = \
 #  $(libseq_gtkmm2dir)/libseq_gtkmm2.la \
 #----------------------------------------------------------------------------
 
+if BUILD_WINDOWS
+dependencies = \
+ $(libseq_portmididir)/libseq_portmidi.la \
+ $(libseq64dir)/libseq64.la
+else
 dependencies = \
  $(libseq_rtmididir)/libseq_rtmidi.la \
  $(libseq64dir)/libseq64.la
+endif
 
 #******************************************************************************
 # The programs to build
@@ -162,7 +178,12 @@ bin_PROGRAMS = seq64cli
 
 seq64cli_SOURCES = seq64rtcli.cpp
 seq64cli_DEPENDENCIES = $(dependencies)
+
+if BUILD_WINDOWS
+seq64cli_LDADD = $(libraries) $(AM_LDFLAGS) $(PTHREAD_LIBS)
+else
 seq64cli_LDADD = $(libraries) $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
+endif
 
 #******************************************************************************
 # Testing

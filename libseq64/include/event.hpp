@@ -573,13 +573,6 @@ public:
 
     void set_status_keep_channel (midibyte eventcode)
     {
-        // EXPERIMENTAL:  we need to set the channel here, otherwise it ends
-        // up as 0xFF, which is itself suspect.  We also need to keep the
-        // status byte clean of the channel bits.  But this makes it almost
-        // identical to set_status().  Still suspicious!
-        //
-        // m_status = eventcode & EVENT_CLEAR_CHAN_MASK;
-
         m_status = eventcode;
         m_channel = eventcode & EVENT_GET_CHAN_MASK;
     }

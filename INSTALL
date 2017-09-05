@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.93.4 and above
 Chris Ahlstrom
-2015-09-10 to 2017-08-27
+2015-09-10 to 2017-09-02
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -14,8 +14,9 @@ build:
     -   seq64cli.  An in-progress version of a GUI-less version of
         Sequencer64, which can run from the console or as a daemon.
     -   sequencer64. ALSA with JACK transport; the original version.
-    -   seq64portmidi. PortMIDI implementation; has issues, deprecated for
-        Linux, may still be used for the upcoming Windows implementation.
+    -   seq64portmidi. PortMIDI implementation; has issues, a less effective
+        option for Linux; might still be used for the upcoming Windows
+        implementation.
 
 Steps:
 
@@ -32,7 +33,7 @@ Steps:
        1.   Seq64rtmidi/seq64:           ./bootstrap [ -er -rm ]
        2.   Seq64cli/seq64cli:           ./bootstrap -er -cli
        3.   Sequencer64/sequencer64:     ./bootstrap -er -am
-       4.   Seq64portmidi/seq64portmidi: ./bootstrap -er -pm (deprecated)
+       4.   Seq64portmidi/seq64portmidi: ./bootstrap -er -pm (not recommended)
    
        From the top project directory, run one of the commands above (they
        auto-configure) or run the following commands, which set up a release
@@ -130,8 +131,8 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         Defines SEQ64_PORTMIDI_SUPPORT to build the PortMIDI version of
         Sequencer64, using the Linux version of this library.  Builds
         Seq64portmidi/seq64portmidi.  We have tested only playback.  When we
-        eventually get to Windows MIDI support, we will use the "rtmidi" build
-        to do it.
+        eventually get to Windows MIDI support, we have to decide whether to
+        use the "portmidi" build or to use the "rtmidi" build.
         
     --disable-highlight
 
@@ -203,13 +204,12 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         data (in the data pane) by simple periodic waveforms.  This feature
         was adopted and improved from the Seq32 project.
 
-    --enable-all
     --enable-portmidi
     --enable-rtmidi
-    --disable-alsamidi
+    --enable-alsamidi
 
-        We are starting to get alternate implementations to work.  The normal
-        build is effectively --enable-alsamidi.  The --enable-portmidi flag
+        We have gotten a few alternate implementations to work.  The normal
+        build is effectively --enable-rtmidi.  The --enable-portmidi flag
         creates a new application, seq64portmidi, that is based on using ALSA
         on Linux via the PortMidi application.  If we get a nice
         implementation of gtkmm2 for Windows working, we ought to have the
@@ -466,7 +466,12 @@ DEPENDENCIES:
       -  g++
       -  make
       -  libtool
-      -  More?
+      -  mingw Windows builds (Debian flavor)
+         -  binutils-mingw-w64
+         -  gcc-mingw-w64
+         -  g++-mingw-w64
+         -  gdb-mingw-w64 (for debugging on Linux)
+         -  mingw-w64-tools (mingw32-pkgconfig on other systems)
 
    Documentation (now optional, must be built manually):
 
@@ -500,6 +505,23 @@ DEPENDENCIES:
       -  debhelper
       -  fakeroot
       -  More?
+
+   MingW:
+
+    Avoid use of AC_CYGWIN and AC_MINGW32.
+
+    https://mail.gnome.org/archives/commits-list/2013-January/msg03009.html
+    https://www.gnu.org/software/autoconf/manual/autoconf-2.69/html_node/Obsolete-Macros.html
+    http://mingw-cross.sourceforge.net/hello_autotools.html#mingw
+
+        https://www.tinc-vpn.org/examples/cross-compiling-windows-binary/
+
+        https://wiki.wxwidgets.org/Compiling_wxWidgets_with_MinGW
+
+        https://github.com/Alexpux/MINGW-packages/blob/master/mingw-w64-gimp/PKGBUILD
+
+        https://mail.gnome.org/archives/gimp-developer-list/2016-March/msg00014.html
+
 
    JACK Testing (optional):
 

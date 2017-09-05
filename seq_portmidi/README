@@ -1,0 +1,14 @@
+README for seq_portmidi Library
+Chris Ahlstrom
+2017-08-28 to 2017-08-29
+
+This directory provides library code that I call "portmini" to myself.
+The Seq24 project could use the PortMIDI library in Linux or Windows.
+However, for our port to Windows, we want to use our own cut-down version of
+PortMIDI, so we do not have to deal with Java, CMake, and other stuff the
+Sequencer64 does not need.  So we have removed the pm_csharp, pm_dylib, and
+pm_java directories, cleaned up the code a bit, and added automake support.
+
+More to come!
+
+# vim: sw=4 ts=4 wm=4 et ft=sh

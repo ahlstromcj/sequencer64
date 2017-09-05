@@ -3,7 +3,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2005-07-03 to 2007-08-21
- * \updates       2017-04-22
+ * \updates       2017-09-03
  * \license       GNU GPLv2 or above
  *
  *  Daemonization module of the POSIX C Wrapper (PSXC) library
@@ -59,8 +59,11 @@
  */
 
 #include <string.h>                 /* strlen() etc.                        */
-#include "daemonize.hpp"            /* daemonization functions & macros     */
 #include "platform_macros.h"        /* TBD                                  */
+
+#if ! defined PLATFORM_WINDOWS
+
+#include "daemonize.hpp"            /* daemonization functions & macros     */
 #include "easy_macros.h"            /* used in the following macro call     */
 
 #if SEQ64_HAVE_LIMITS_H
@@ -150,7 +153,7 @@ get_current_directory ()
    return result;
 }
 
-#ifdef PLATFORM_POSIX_API
+#if defined PLATFORM_POSIX_API
 
 /**
  *
@@ -368,10 +371,6 @@ reroute_stdio (const std::string & logfile, bool closem)
     return result;
 }
 
-#else                               /* Win32                                  */
-
-#error The daemonize module is currently not supported under Win32
-
 /**
  * \todo
  *    Implement "daemonizing" for Windows, including redirection to the
@@ -379,9 +378,11 @@ reroute_stdio (const std::string & logfile, bool closem)
  *    simply, a la' Microsoft's 'svchost' executable.
  */
 
-#endif   // PLATFORM_POSIX vs Win32
+#endif      // PLATFORM_POSIX vs Win32
 
-}        // namespace seq64
+}           // namespace seq64
+
+#endif      // ! defined PLATFORM_WINDOWS
 
 /*
  * vim: ts=4 sw=4 et ft=cpp

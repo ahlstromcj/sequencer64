@@ -11,7 +11,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-09
+ * \updates       2017-08-31
  * \license       GNU GPLv2 or above
  *
  *  Copyright (C) 2013-2015 Chris Ahlstrom <ahlstromcj@gmail.com>
@@ -104,12 +104,15 @@
 #endif
 
 #if defined PLATFORM_LINUX
+
 #if ! defined POSIX
-#define POSIX                          /* defined for legacy code purposes    */
+#define POSIX                          /* defined for legacy code purposes  */
 #endif
+
 #define PLATFORM_UNIX
 #define PLATFORM_POSIX_API
-#endif
+
+#endif                                  /* PLATFORM_LINUX                   */
 
 /**
  *  Provides a "MacOSX" macro, in case the environment doesn't provide it.
@@ -117,10 +120,10 @@
  *  __MACH__ are encountered.
  */
 
-#if defined MacOSX                     /* defined by the nar-maven-plugin     */
+#if defined MacOSX                     /* defined by the nar-maven-plugin   */
 #define PLATFORM_MACOSX
 #else
-#if defined __APPLE__ && defined __MACH__    /* defined by the Apple compiler */
+#if defined __APPLE__ && defined __MACH__    /* defined by Apple compiler   */
 #define PLATFORM_MACOSX
 #define MacOSX
 #endif
@@ -175,7 +178,7 @@
 #define WIN64
 #endif
 
-#if ! defined  PLATFORM_64_BIT
+#if ! defined PLATFORM_64_BIT
 #define PLATFORM_64_BIT
 #endif
 
@@ -211,7 +214,7 @@
 
 /**
  *  Provides macros that indicate if Microsoft C/C++ versus GNU are being
- *  used.
+ *  used.  THe compiler being used normally provides test macros for itself.
  *
  *      -  PLATFORM_MSVC (replaces _MSC_VER)
  *      -  PLATFORM_GNU (replaces __GNUC__)
@@ -227,9 +230,10 @@
 
 #if defined __GNUC__
 #define PLATFORM_GNU
+// #define _GNU_SOURCE     /* \new ca 2017-09-03       */
 #endif
 
-#if defined __MINGW32__
+#if defined __MINGW32__ || defined __MINGW64__
 #define PLATFORM_MINGW
 #define PLATFORM_WINDOWS
 #define PLATFORM_WINDOWS_API
@@ -238,6 +242,40 @@
 #if defined __CYGWIN32__
 #define PLATFORM_CYGWIN
 #endif
+
+/**
+ *	Provides a way to flag unused parameters at each "usage", without disabling
+ *	them globally.  Use it like this:
+ *
+ *     void foo(int UNUSED(bar)) { ... }
+ *     static void UNUSED_FUNCTION(foo)(int bar) { ... }
+ *
+ *  The UNUSED macro won't work for arguments which contain parenthesis,
+ *  so an argument like float (*coords)[3] one cannot do,
+ *
+ *      float UNUSED((*coords)[3]) or float (*UNUSED(coords))[3].
+ *
+ *  This is the only downside to the UNUSED macro; in these cases fall back to
+ *
+ *      (void) coords;
+ *
+ *  Another possible definition is casting the unused value to void in the
+ *  function body.
+ */
+
+#ifdef __GNUC__
+#define UNUSED(x)               UNUSED_ ## x __attribute__((__unused__))
+#else
+#define UNUSED(x)               UNUSED_ ## x
+#endif
+
+#ifdef __GNUC__
+#define UNUSED_FUNCTION(x)      __attribute__((__unused__)) UNUSED_ ## x
+#else
+#define UNUSED_FUNCTION(x)      UNUSED_ ## x
+#endif
+
+#define UNUSED_VOID(x)          (void) (x)
 
 /**
  *  Provides macros to indicate the level standards support for some key

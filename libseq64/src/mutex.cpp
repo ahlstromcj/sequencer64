@@ -24,11 +24,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-08
+ * \updates       2017-09-03
  * \license       GNU GPLv2 or above
  *
+ *  Sequencer64 needs a mutex for sequencer operations.
  */
 
+#include "platform_macros.h"
 #include "mutex.hpp"
 
 /*
@@ -49,8 +51,13 @@ namespace seq64
  *  Define the static recursive mutex and its condition variable.
  */
 
+#ifdef PLATFORM_MINGW
+const pthread_mutex_t mutex::sm_recursive_mutex =
+    PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
+#else
 const pthread_mutex_t mutex::sm_recursive_mutex =
     PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+#endif
 
 /**
  *  Define the static condition variable used by all mutex locks.

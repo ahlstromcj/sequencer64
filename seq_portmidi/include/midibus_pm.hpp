@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-12-04
+ * \updates       2017-08-30
  * \license       GNU GPLv2 or above
  *
  *  This midibus module is the Windows (PortMidi) version of the midibus
@@ -89,6 +89,24 @@ protected:
     virtual void api_stop ();
     virtual void api_clock (midipulse tick);
     virtual void api_play (event * e24, midibyte channel);
+
+    /*
+     * Functions not implemented in PortMIDI.  For example, the "sub"
+     * functions, which subscribe the application to a "virtual" port, can
+     * be implemented in ALSA, but not in Windows.
+     *
+     * virtual bool api_init_out_sub ();        // subscribe to output
+     * virtual bool api_init_in_sub ();         // subscribe to input
+     * virtual bool api_deinit_in ();           // unsubscribe a port
+     *
+     * We should be able to implement this in a "sysex_fix" branch:
+     *
+     * virtual void api_sysex (event * e24);
+     *
+     * This function should be able to be implemented in Windows and ALSA:
+     *
+     * virtual void api_flush ();
+     */
 
 };          // class midibus (portmidi)
 

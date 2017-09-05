@@ -6,7 +6,7 @@
 # \library    	libseq_portmidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-11-28
+# \update      2017-09-04
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -65,10 +65,31 @@ sequencer64libdir = @sequencer64libdir@
 #******************************************************************************
 # Source files
 #----------------------------------------------------------------------------
+#
+# pmwinmm.h
+#
+#----------------------------------------------------------------------------
 
+if BUILD_WINDOWS
 pkginclude_HEADERS = \
 	mastermidibus_pm.hpp \
-	midibus_pm.hpp
+	midibus_pm.hpp \
+	pminternal.h \
+	pmutil.h \
+	pmwinmm.h \
+	portmidi.h \
+	porttime.h
+else
+pkginclude_HEADERS = \
+	mastermidibus_pm.hpp \
+	midibus_pm.hpp \
+	pminternal.h \
+	pmlinuxalsa.h \
+	pmlinux.h \
+	pmutil.h \
+	portmidi.h \
+	porttime.h
+endif
 
 #******************************************************************************
 # uninstall-hook

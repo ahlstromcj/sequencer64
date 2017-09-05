@@ -6,7 +6,7 @@
 # \library    	seq64cli application
 # \author     	Chris Ahlstrom
 # \date       	2017-04-07
-# \update      2017-09-04
+# \update      2017-09-05
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -138,7 +138,8 @@ libmath = -lm
 if BUILD_WINDOWS
 libraries = \
  -L$(libseq64dir) -lseq64 \
- -L$(libseq_portmididir) -lseq_portmidi
+ -L$(libseq_portmididir) -lseq_portmidi \
+ -lwinmm
 else
 libraries = \
  -L$(libseq64dir) -lseq64 \

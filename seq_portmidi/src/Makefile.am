@@ -6,7 +6,7 @@
 # \library    	libseq_portmidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2017-09-04
+# \update      2017-09-05
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -131,7 +131,8 @@ libseq_portmidi_la_SOURCES = \
 	pmwin.c \
 	pmwinmm.c \
 	pmutil.c \
-	portmidi.c
+	portmidi.c \
+   ptwinmm.c
 
 libseq_portmidi_la_LDFLAGS = -version-info $(version)
 libseq_portmidi_la_LIBADD =

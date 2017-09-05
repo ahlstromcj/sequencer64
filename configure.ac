@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-09-04
+dnl \update        2017-09-05
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -15,6 +15,12 @@ dnl   of seq24 v0.9.2 and a direct fork from sequencer24.
 dnl
 dnl   Process this file with bootstrap (autoconf) to produce a configure
 dnl   script.  Run "./bootstrap --help" for more information.
+dnl
+dnl MingW:
+dnl
+dnl     /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll
+dnl     /usr/lib/gcc/x86_64-w64-mingw32/6.3-win32/libgcc_s_seh-1.dll
+dnl     /usr/lib/gcc/x86_64-w64-mingw32/6.3-win32/libstdc++-6.dll
 dnl
 dnl ---------------------------------------------------------------------------
 
@@ -65,8 +71,6 @@ AC_PROG_CXX
 AC_PROG_CXXCPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
-
-AX_PTHREAD
 
 dnl     [AC_DEFINE(HAVE_SYSLOG_H) LIBS="$LIBS $lib"; break]
 
@@ -780,17 +784,45 @@ WARNINGS_DISABLED="-Wno-unused-parameter -Wno-non-virtual-dtor"
 dnl Check for MinGW. Workaround for libtool's DLL_EXPORT stupidity.
 dnl Temporarily, we add the -v option to gcc, so that we can see
 dnl what GCC options are in force for MingW builds.
+dnl
+dnl AX_PTHREAD leaves PTHREADS_LIBS empty for gcc, and sets PTHREADS_CFLAGS
+dnl to -pthread, which causes problems if we need -lpthread to appear in
+dnl pkgconfig files.
+
+dnl AX_PTHREAD
+
+dnl VERBCFLAGS="-v"
+dnl That macro will cause output of just what tools are being used to build
+dnl code.
 
 VERBCFLAGS=""
 
 case "$host_os" in
 	*cygwin*)
 		gnuwin=yes
+        AX_PTHREAD
         ;;
 
 	*mingw*)
 		gnuwin=yes
-dnl     VERBCFLAGS="-v"
+        AC_MSG_NOTICE([Setting up MingW pthreads support])
+        CFLAGS="$CFLAGS -mthreads -pthread "
+        CPPFLAGS="-DPTW32_STATIC_LIB $CPPFLAGS "
+        CXXFLAGS="$CXXFLAGS -mthreads -pthread "
+        LDFLAGS="$LDFLAGS -mthreads -pthread "
+        AC_DEFINE(HAVE_PTHREAD,1,[Defined to POSIX threads for mingw])
+        ;;
+
+    *)
+        AC_MSG_NOTICE([normal pthreads support])
+        AC_MSG_CHECKING([Running normal PTHREAD test.])
+        AX_PTHREAD([
+            echo Using settings from AX_PTHREAD
+            LIBS="$PTHREAD_LIBS $LIBS"
+            CFLAGS="  $PTHREAD_CFLAGS $CFLAGS"
+            CXXFLAGS="$PTHREAD_CFLAGS $CXXFLAGS "
+            CC="$PTHREAD_CC"],
+            [AC_MSG_ERROR(Sequencer64 requires pthreads)])
         ;;
 esac
 

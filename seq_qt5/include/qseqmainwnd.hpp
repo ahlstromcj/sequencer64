@@ -27,9 +27,9 @@
  *  editor.
  *
  * \library       sequencer64 application
- * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2015-07-24
- * \updates       2017-07-25
+ * \author        Chris Ahlstrom
+ * \date          2017-09-06
+ * \updates       2017-09-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -141,7 +141,19 @@ private slots:
 
 public:
 
-    explicit qseqmainwnd (QWidget * parent = 0, perform * p = 0);
+    /* explicit */ qseqmainwnd
+    (
+        perform & p,
+        bool allowperf2     = true,
+        int ppqn            = SEQ64_USE_DEFAULT_PPQN
+#if defined SEQ64_MULTI_MAINWID
+        ,
+        int mainwid_rows    = 1,
+        int mainwid_cols    = 1,
+        bool mainwid_indep  = false,
+#endif
+        QWidget * parent = nullptr
+    );
     ~qseqmainwnd ();
 
     // open the file at the given path

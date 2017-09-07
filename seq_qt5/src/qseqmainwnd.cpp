@@ -23,9 +23,9 @@
  *  application.
  *
  * \library       sequencer64 application
- * \author        Seq24 team; modifications by Chris Ahlstrom
+ * \author        Chris Ahlstrom
  * \date          2017-09-06
- * \updates       2017-09-06
+ * \updates       2017-09-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -49,17 +49,32 @@ namespace seq64
 
 bool is_pattern_playing = false;
 
-qseqmainwnd::qseqmainwnd (QWidget * parent, perform * p)
- :
+qseqmainwnd::qseqmainwnd
+(
+    perform & p,
+    bool allowperf2,
+    int ppqn
+#if defined SEQ64_MULTI_MAINWID
+    ,
+    int mainwid_rows,
+    int mainwid_cols,
+    bool mainwid_indep,
+#endif
+    QWidget * parent
+) :
     QMainWindow (parent) // ,
     // ui          (new Ui::qseqmainwnd)
 {
-    show();
+    // show();
 }
 
 qseqmainwnd::~qseqmainwnd()
 {
+    /*
+     * TODO
+     *
     delete ui;
+     */
 }
 
 /*

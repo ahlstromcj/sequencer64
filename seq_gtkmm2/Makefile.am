@@ -10,8 +10,8 @@
 # \version       $Revision$
 # \license       $MIDICVT_SUITE_GPL_LICENSE$
 #
-#  	This file is a makefile for the libseq64 library project.  This
-#  	makefile provides the skeleton needed to build the libseq64 project
+#  	This file is a makefile for the seq_gtkmm2 library project.  This
+#  	makefile provides the skeleton needed to build the seq_gtkmm2 project
 #  	directory using GNU autotools.
 #
 #-----------------------------------------------------------------------------

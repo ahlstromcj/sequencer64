@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2017-09-05
+# \update     	2017-09-06
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -36,7 +36,7 @@ export LANG
 CYGWIN=binmode
 export CYGWIN
 
-export SEQ64_SCRIPT_EDIT_DATE="2017-09-05"
+export SEQ64_SCRIPT_EDIT_DATE="2017-09-06"
 export SEQ64_LIBRARY_API_VERSION="0.93"
 export SEQ64_LIBRARY_VERSION="$SEQ64_LIBRARY_API_VERSION.93.0"
 
@@ -77,6 +77,8 @@ DOALSAMIDI="no"
 DOPORTMIDI="no"
 DORTCLI="no"
 DOMINGW="no"
+DOGTKMMUI="yes"
+DOQT5UI="no"
 LOGFILENAME=""
 M4DIR="m4"
 
@@ -94,7 +96,7 @@ EXTRAFLAGS="--enable-rtmidi"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.93.4-2017-09-05)
+Usage: ./bootstrap [options]                                 (0.93.4-2017-09-06)
 
     'bootstrap' sets up GNU automake support and libtool support for the
     Sequencer64 projects, creating the 'configure' script.  It can also
@@ -113,9 +115,10 @@ Usage: ./bootstrap [options]                                 (0.93.4-2017-09-05)
    --enable-release  a 'silent' build, as well.  Note that configuring requires
                      either --debug or --release to be specified.
  -am                 Configure to build sequencer64 (original ALSA version).
- -pm                 Configure to build seq64portmidi.
- -rm                 Configure to build seq64rtmidi (JACK version, the default).
- -cli, -rc           Configure to build seq64cli (command-line rtmidi version).
+ -pm                 Configure for seq64portmidi.
+ -rm                 Configure for seq64rtmidi (JACK version, the default).
+ -qm, -qt            Configure for Qt5 user-interface, still utterly unusable.
+ -cli, -rc           Configure for seq64cli (command-line rtmidi version).
  --windows, -win     Configure for Windows.  Currently implies only the -cli
  -w64, --win32, -w32 option now, enables MingW build.  IMPORTANT: specify
                      --enable-debug or --enable-release to allow 'configure'
@@ -186,13 +189,19 @@ if [ $# -ge 1 ] ; then
             EXTRAFLAGS="--enable-rtmidi"
             ;;
 
+         --qtmidi | -qt | -qm | --qt | --rm)
+            DORTMIDI="yes"
+            DOGTKMMUI="no"
+            DOQT5UI="yes"
+            EXTRAFLAGS="--enable-qtmidi"
+            ;;
+
          --cli | -cli | -rc)
             DORTCLI="yes"
             EXTRAFLAGS="--enable-cli"
             ;;
 
          --windows | -win | -w64)
-#           DORTMIDI="yes"
             DORTMIDI="no"
             DORTCLI="yes"
             DOMINGW="yes"
@@ -200,7 +209,6 @@ if [ $# -ge 1 ] ; then
             ;;
 
          --win32 | -w32)
-#           DORTMIDI="yes"
             DORTMIDI="no"
             DORTCLI="yes"
             DOMINGW="yes"

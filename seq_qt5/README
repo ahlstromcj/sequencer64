@@ -1,0 +1,16 @@
+README for Sequencer64 Qt Support
+Chris Ahlstrom
+2017-09-06 to 2017-09-06
+
+No need to install QtCreator and multiple versions of Qt dev-tools.
+
+    qtdeclarative5-dev
+    qtbase5-dev-tools
+    qtchooser
+
+And be sure to prefix header-file names with their sub-directory:
+
+    #include <QtCore/QString>               // not just "<QString>".
+
+
+# vim: sw=4 ts=4 wm=4 et ft=sh

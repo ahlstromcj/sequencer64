@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.93.4 and above
+INSTALL for Sequencer64 v. 0.94.0 and above
 Chris Ahlstrom
-2015-09-10 to 2017-09-05
+2015-09-10 to 2017-09-06
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -17,6 +17,8 @@ build:
     -   seq64portmidi. PortMIDI implementation; has issues, a less effective
         option for Linux; might still be used for the upcoming Windows
         implementation.
+    -   qseq64.  The seq64 (rtmidi) version of the application, with a Qt5
+        user interface.  Still a LONG WAY from usability.
 
 Steps:
 

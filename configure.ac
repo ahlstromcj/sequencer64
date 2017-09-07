@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-09-05
+dnl \update        2017-09-06
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -27,7 +27,7 @@ dnl ---------------------------------------------------------------------------
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.93$)
 AC_CONFIG_MACRO_DIRS([m4])
-AC_INIT(Sequencer64, [0.93.4], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.94.0], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl See AC_CONFIG_SRCDIR
@@ -121,9 +121,7 @@ build_rtcli="no"
 build_windows="no"
 
 dnl Flaky, the AR macro is set well after this test, but the GCC macro
-dnl is set before it.
-dnl
-dnl AC_MSG_RESULT([TESTING HOST OS])
+dnl is set before it, so that is what we use.  Odd.
 
 if test x"$windows_host" = x"yes" ; then
     if test x"$CC" = x"gcc" ; then
@@ -149,7 +147,7 @@ AC_SUBST(PACKAGE)
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
 
-VERSION="0.93.4"
+VERSION="0.94.0"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -349,30 +347,11 @@ fi
 
 fi
 
-dnl Check for deprecated GTK constructs as per
-dnl http://www.murrayc.com/permalink/2011/01/18/avoiding-use-of-deprecated-api/
-dnl
-dnl Looks too difficult, errors in gtk headers. Try gtkmm-3 directly instead.
-dnl That is unworkable at this time, though.
-dnl
-dnl MM_ARG_ENABLE_WARNINGS([MM_WFLAGS],
-dnl  [-Wall],
-dnl  [-Wall -Wextra -Wno-missing-field-initializers -DGSEAL_ENABLE],
-dnl  [G GDK GDK_PIXBUF PANGO GTK])
-
 dnl 4. Get external flags, if any.
 
 CFLAGS="${CFLAGS}"
 
 dnl Checks for libraries.
-
-dnl DO WE NEED THIS REALLY?  Comment it out for now.
-dnl
-dnl AC_CHECK_LIB(rt, main,, AC_MSG_ERROR([POSIX.1b Realtime library missing librt]))
-
-dnl Convert from gtkmm-2.4 to gtkmm-3.0.  It currently builds either way.
-dnl No! I was mistaken, because I had left some 2.4 paths in place below.
-dnl Not supported in a Windows build at this time.
 
 if test x"$windows_host" = x"no" ; then
     AC_CHECK_LIB(gtkmm-2.4, _init,,
@@ -533,6 +512,30 @@ if test "$rtmidi" != "no"; then
 else
     AC_MSG_WARN([rtmidi native build disabled.]);
 fi
+
+dnl "QtMidi" support.  This is support for the "RtMidi" configuration plus
+dnl using the Qt5 API.  It will be supported for Windows (MingW) or Linux, but
+dnl is currently only vestigially implemented.  The AX_HAVE_QT macro exports
+dnl QT_CXXFLAGS, QT_LIBS, QT_MOC, QT_UIC, QT_LRELEASE, QT_LUPDATE, QT_DIR.
+
+AC_ARG_ENABLE(qtmidi,
+    [AS_HELP_STRING(--enable-qtmidi, [Enable rtmidi build])],
+    [qtmidi=$enableval],
+    [qtmidi=no])
+
+if test "$qtmidi" != "no"; then
+    build_qtmidi="yes"
+    AC_DEFINE(APP_NAME, ["qseq64"], [Names the Qt/JACK/ALSA version of application])
+    AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi is enabled])
+    AC_DEFINE(QTMIDI_SUPPORT, 1, [Indicates if Qt5 is enabled])
+    AM_PATH_ALSA(0.9.0)
+    AX_HAVE_QT
+    AC_MSG_RESULT([qtmidi native build enabled.]);
+else
+    AC_MSG_WARN([qtmidi native build disabled.]);
+fi
+
+dnl "CLI" or "Command-line" support.  This is enable for Windows or Linux.
 
 AC_ARG_ENABLE(cli,
     [AS_HELP_STRING(--enable-cli, [Enable rtmidi command-line build])],
@@ -733,6 +736,7 @@ else
 fi
 
 AM_CONDITIONAL([BUILD_ALSAMIDI], [test "$build_alsamidi" = "yes"])
+AM_CONDITIONAL([BUILD_QTMIDI], [test "$build_qtmidi" = "yes"])
 AM_CONDITIONAL([BUILD_RTMIDI], [test "$build_rtmidi" = "yes"])
 AM_CONDITIONAL([BUILD_RTCLI], [test "$build_rtcli" = "yes"])
 AM_CONDITIONAL([BUILD_PORTMIDI], [test "$build_portmidi" = "yes"])
@@ -749,8 +753,8 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-09-05"
-#define VERSION "0.93.4"
+#define VERSION_DATE_SHORT "2017-09-06"
+#define VERSION "0.94.0"
 
 )
 
@@ -893,6 +897,9 @@ AC_CONFIG_FILES([
  seq_gtkmm2/Makefile
  seq_gtkmm2/include/Makefile
  seq_gtkmm2/src/Makefile
+ seq_qt5/Makefile
+ seq_qt5/include/Makefile
+ seq_qt5/src/Makefile
  seq_portmidi/Makefile
  seq_portmidi/include/Makefile
  seq_portmidi/src/Makefile
@@ -902,6 +909,7 @@ AC_CONFIG_FILES([
  resources/pixmaps/Makefile
  Sequencer64/Makefile
  Seq64portmidi/Makefile
+ Seq64qt5/Makefile
  Seq64rtmidi/Makefile
  Seq64cli/Makefile
  man/Makefile

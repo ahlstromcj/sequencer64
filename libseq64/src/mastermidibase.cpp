@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-03-21
+ * \updates       2017-09-09
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -244,6 +244,30 @@ mastermidibase::flush ()
 {
     automutex locker(m_mutex);
     api_flush();
+}
+
+/**
+ *  Stops all notes on all channels on all busses.  Adapted from Oli Kester's
+ *  Kepler34 project.
+ */
+
+void
+mastermidibase::panic ()
+{
+    event e;
+    e.set_status(EVENT_NOTE_OFF);
+    flush();
+    for (int bus = 0; bus < SEQ64_DEFAULT_BUSS_MAX; ++bus)
+    {
+        for (int channel = 0; channel < SEQ64_MIDI_CHANNEL_MAX; ++channel)
+        {
+            for (int note = 0; note < SEQ64_MIDI_COUNT_MAX; ++note)
+            {
+                e.set_data(note, SEQ64_MAX_NOTE_ON_VELOCITY);
+                play (bus, &e, channel);
+            }
+        }
+    }
 }
 
 /**

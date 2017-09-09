@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-19
+ * \updates       2017-09-09
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2313,6 +2313,7 @@ private:
     void off_sequences ();
     void unqueue_sequences (int current_seq);
     void all_notes_off ();
+    void panic ();                              /* from kepler43        */
     void set_active (int seq, bool active);
     void set_was_active (int seq);
     void reset_sequences (bool pause = false);

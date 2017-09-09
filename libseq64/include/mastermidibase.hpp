@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-03-20
+ * \updates       2017-09-09
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibase module is the base-class version of the mastermidibus
@@ -283,8 +283,9 @@ public:
     void sysex (event * event);
     void print () const;
     void flush ();
+    void panic ();                                          /* kepler34 func  */
     void set_sequence_input (bool state, sequence * seq);
-    void dump_midi_input (event in);                    /* seq32 function */
+    void dump_midi_input (event in);                        /* seq32 function */
     bool initialize_buses ();
 
     std::string get_midi_out_bus_name (bussbyte bus);

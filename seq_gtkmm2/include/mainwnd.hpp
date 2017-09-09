@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-07
+ * \updates       2017-09-09
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -304,6 +304,13 @@ private:
      */
 
     Gtk::Image * m_image_play;
+
+    /**
+     *  This button is the panic button, which is adapted from Oli Kester's
+     *  kepler34 project.
+     */
+
+    Gtk::Button * m_button_panic;
 
     /**
      *  This button is the learn button, otherwise known as the "L"
@@ -600,6 +607,15 @@ private:
     void tempo_log ();
     void toggle_tempo_record ();
     void queue_it ();
+
+    /**
+     *  Pushes the panic button.
+     */
+
+    void panic ()
+    {
+        perf().panic();
+    }
 
     /**
      *  Toggle the group-learn status.  Simply forwards the call to

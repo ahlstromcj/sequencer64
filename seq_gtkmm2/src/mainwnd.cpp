@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-27
+ * \updates       2017-09-09
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -119,13 +119,14 @@
 #include <gtkmm/table.h>                /* <gtkmm-2.4/grid.h> doesn't exist */
 #endif
 
-#include "pixmaps/pause.xpm"
-#include "pixmaps/play2.xpm"
-#include "pixmaps/stop.xpm"
 #include "pixmaps/learn.xpm"
 #include "pixmaps/learn2.xpm"
+#include "pixmaps/pause.xpm"
+#include "pixmaps/panic.xpm"
 #include "pixmaps/perfedit.xpm"
+#include "pixmaps/play2.xpm"
 #include "pixmaps/route64rwb-32x32.xpm" /* #include "pixmaps/seq64.xpm"     */
+#include "pixmaps/stop.xpm"
 
 #ifdef SEQ64_RTMIDI_SUPPORT
 #include "pixmaps/seq64_logo.xpm"
@@ -297,6 +298,7 @@ mainwnd::mainwnd
     m_options               (nullptr),
     m_main_cursor           (),
     m_image_play            (),
+    m_button_panic          (manage(new Gtk::Button())),    /* from kepler34   */
     m_button_learn          (manage(new Gtk::Button())),    /* group learn (L) */
     m_button_stop           (manage(new Gtk::Button())),
     m_button_play           (manage(new Gtk::Button())),    /* also for pause  */
@@ -625,6 +627,10 @@ mainwnd::mainwnd
     vbox_b->pack_start(*hbox4, false, false, 0);
     tophbox->pack_end(*vbox_b, false, false);
 
+    /*
+     * Learn ("L")  button
+     */
+
     m_button_learn->set_focus_on_click(false);
     m_button_learn->set_flags(m_button_learn->get_flags() & ~Gtk::CAN_FOCUS);
     m_button_learn->set_image(*manage(new PIXBUF_IMAGE(learn_xpm)));
@@ -661,6 +667,24 @@ mainwnd::mainwnd
     bottomhbox->pack_start(*startstophbox, Gtk::PACK_SHRINK);
 
     /*
+     * Panic button
+     */
+
+    m_button_panic->set_focus_on_click(false);
+    m_button_panic->set_flags(m_button_panic->get_flags() & ~Gtk::CAN_FOCUS);
+    m_button_panic->set_image(*manage(new PIXBUF_IMAGE(panic_xpm)));
+    m_button_panic->signal_clicked().connect(mem_fun(*this, &mainwnd::panic));
+    add_tooltip
+    (
+        m_button_panic,
+        "Panic button.  A guaranteed stop-all for notes on all busses, "
+        "channels, and keys.  Adapted from Kepler34."
+    );
+    startstophbox->pack_start(*m_button_panic, Gtk::PACK_SHRINK);
+
+    /*
+     * Stop button.
+     *
      * If we don't call this function, then clicking the stop button makes
      * it steal focus, and be "clicked" when the space bar is hit, which is
      * very confusing.

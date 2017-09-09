@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-08-20
+ * \updates       2017-09-09
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -2885,7 +2885,29 @@ perform::all_notes_off ()
             m_seqs[s]->off_playing_notes();
     }
     if (not_nullptr(m_master_bus))
+    {
         m_master_bus->flush();                  /* flush the MIDI buss  */
+    }
+}
+
+/**
+ *  Similar to all_notes_off(), but also sends Note Off events directly to the
+ *  active busses.  Adapted from Oli Kester's Kepler34 project.
+ */
+
+void
+perform::panic ()
+{
+    stop_playing();
+    for (int s = 0; s < m_sequence_high; ++s)   /* a modest speed-up    */
+    {
+        if (is_active(s))
+            m_seqs[s]->off_playing_notes();
+    }
+    if (not_nullptr(m_master_bus))
+    {
+        m_master_bus->panic();                  /* flush the MIDI buss  */
+    }
 }
 
 /**

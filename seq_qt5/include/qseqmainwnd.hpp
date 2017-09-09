@@ -43,6 +43,14 @@
 // #include <QtWidgets/QMessageBox>
 // #include <QtWidgets/QDesktopWidget>
 
+#include "seq64_features.h"             /* feature macros for the app   */
+#include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
+#include "perform.hpp"                  /* seq64::perform and callback  */
+
+/*
+ *  The main namespace for the Sequencer64 libraries. Do not enable Doxygen
+ *  documentation here, it will break the document build.
+ */
 
 namespace Ui
 {
@@ -79,7 +87,7 @@ private:
     // update the recent files menu
     // void updateRecentFilesMenu();
 
-    Ui::qseqmainwnd * ui;
+    Ui::qseqmainwnd * m_ui;
 
     // LiveFrame           * m_live_frame;
     // SongFrame           * m_song_frame;
@@ -141,7 +149,7 @@ private slots:
 
 public:
 
-    /* explicit */ qseqmainwnd
+    explicit qseqmainwnd
     (
         perform & p,
         bool allowperf2     = true,
@@ -162,7 +170,11 @@ public:
 protected:
 
     // override keyboard events for interaction
-    // void keyPressEvent(QKeyEvent * event);
+
+    void keyPressEvent (QKeyEvent * event)
+    {
+        // must override
+    }
 
 };          // qseqmainwnd
 

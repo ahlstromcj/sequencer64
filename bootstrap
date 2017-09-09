@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2017-09-06
+# \update     	2017-09-08
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -36,7 +36,7 @@ export LANG
 CYGWIN=binmode
 export CYGWIN
 
-export SEQ64_SCRIPT_EDIT_DATE="2017-09-06"
+export SEQ64_SCRIPT_EDIT_DATE="2017-09-08"
 export SEQ64_LIBRARY_API_VERSION="0.93"
 export SEQ64_LIBRARY_VERSION="$SEQ64_LIBRARY_API_VERSION.93.0"
 
@@ -96,7 +96,7 @@ EXTRAFLAGS="--enable-rtmidi"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.93.4-2017-09-06)
+Usage: ./bootstrap [options]                                 (0.93.4-2017-09-08)
 
     'bootstrap' sets up GNU automake support and libtool support for the
     Sequencer64 projects, creating the 'configure' script.  It can also
@@ -246,6 +246,8 @@ if [ $DOCLEAN == "yes" ] ; then
    clean_gnufiles
    clean_tempfiles
    clean_m4
+   clean_qt5files
+   echo "   Config, GNU, temp, m4, and Qt 5 generated files removed."
 fi
 
 if [ $DOFULLCLEAN == "yes" ] ; then

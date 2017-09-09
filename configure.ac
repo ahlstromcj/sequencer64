@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-09-06
+dnl \update        2017-09-08
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -71,6 +71,7 @@ AC_PROG_CXX
 AC_PROG_CXXCPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
+AC_PROG_MKDIR_P
 
 dnl     [AC_DEFINE(HAVE_SYSLOG_H) LIBS="$LIBS $lib"; break]
 
@@ -517,17 +518,27 @@ dnl "QtMidi" support.  This is support for the "RtMidi" configuration plus
 dnl using the Qt5 API.  It will be supported for Windows (MingW) or Linux, but
 dnl is currently only vestigially implemented.  The AX_HAVE_QT macro exports
 dnl QT_CXXFLAGS, QT_LIBS, QT_MOC, QT_UIC, QT_LRELEASE, QT_LUPDATE, QT_DIR.
+dnl
+dnl If this does not work on Debian (empty QT macros are shown in config.log
+dnl after bootstrap), then add the following to your ~/.bashrc file:
+dnl
+dnl     export QT_SELECT=qt5-x86_64-linux-gnu
+dnl
+dnl Or, better still, install the qt5-default package.
+dnl
+dnl PKG_CHECK_MODULES([Qt5Svg], [Qt5Svg], [], [
+dnl     AC_CHECK_LIB([Qt5Svg], [main], [], [exit 1])
 
 AC_ARG_ENABLE(qtmidi,
-    [AS_HELP_STRING(--enable-qtmidi, [Enable rtmidi build])],
+    [AS_HELP_STRING(--enable-qtmidi, [Enable Qt5/rtmidi build])],
     [qtmidi=$enableval],
     [qtmidi=no])
 
 if test "$qtmidi" != "no"; then
     build_qtmidi="yes"
-    AC_DEFINE(APP_NAME, ["qseq64"], [Names the Qt/JACK/ALSA version of application])
-    AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi is enabled])
-    AC_DEFINE(QTMIDI_SUPPORT, 1, [Indicates if Qt5 is enabled])
+    AC_DEFINE(APP_NAME, ["qseq64"], [Names the Qt/rtmidi version of application])
+    AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates that rtmidi is enabled])
+    AC_DEFINE(QTMIDI_SUPPORT, 1, [Indicates that Qt5 is enabled])
     AM_PATH_ALSA(0.9.0)
     AX_HAVE_QT
     AC_MSG_RESULT([qtmidi native build enabled.]);
@@ -753,7 +764,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-09-06"
+#define VERSION_DATE_SHORT "2017-09-08"
 #define VERSION "0.94.0"
 
 )

@@ -8,7 +8,7 @@
 # \library    	Any project
 # \author     	Chris Ahlstrom
 # \date       	2015-07-24
-# \update     	2015-10-17
+# \update     	2017-09-08
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -248,7 +248,8 @@ run_cmd()
 #  clean_tree
 #------------------------------------------------------------------------------
 #
-#     Cleans out the whole project tree of garbage.
+#     Cleans out the whole project tree of garbage.  Currently unused.  See the
+#     usage of DOCLEAN and DOFULLCLEAN in the bootstrap script.
 #
 #------------------------------------------------------------------------------
 
@@ -479,6 +480,16 @@ function clean_doxfiles()
    find . -name "latex" -exec rm -rf '{}' \; 2> /dev/null
    find . -name "pdf" -exec rm -rf '{}' \; 2> /dev/null
    clean_by_ext "pdf"
+}
+
+#******************************************************************************
+#  clean_qt5files
+#------------------------------------------------------------------------------
+
+function clean_qt5files()
+{
+   echo "* Cleaning Qt 5 build artifacts..."
+   find . -name "qt" -exec rm -rf '{}' \; 2> /dev/null
 }
 
 #******************************************************************************

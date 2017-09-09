@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2017-09-06
+# \update      2017-09-08
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -25,8 +25,12 @@ MAINTAINERCLEANFILES = Makefile.in Makefile $(AUX_DIST)
 #******************************************************************************
 # CLEANFILES
 #------------------------------------------------------------------------------
+#
+#  Do not forget to clean the moc/uic generated files.
+#
+#------------------------------------------------------------------------------
 
-CLEANFILES = *.gc*
+CLEANFILES = *.gc* qt/*
 MOSTLYCLEANFILES = *~
 
 #******************************************************************************
@@ -51,6 +55,10 @@ SEQ64_API_VERSION = @SEQ64_API_VERSION@
 SEQ64_LT_CURRENT = @SEQ64_LT_CURRENT@
 SEQ64_LT_REVISION = @SEQ64_LT_REVISION@
 SEQ64_LT_AGE = @SEQ64_LT_AGE@
+
+CXXFLAGS = @QT_CXXFLAGS@
+QT_MOC = @QT_MOC@
+QT_UIC = @QT_UIC@
 
 #******************************************************************************
 # Install directories
@@ -84,6 +92,20 @@ top_srcdir = @top_srcdir@
 builddir = @abs_top_builddir@
 
 #*****************************************************************************
+# Qt 5 results directories (avoid polluting the src directory)
+#-----------------------------------------------------------------------------
+#
+#  The UI forms are stored in the "forms" directory, while the generated files
+#  are stored in the "qt" directory, for both moc'ing and uic'ing.
+#
+#-----------------------------------------------------------------------------
+
+formsdir = $(top_srcdir)/seq_qt5/forms
+hppdir = ../include
+uicdir = $(top_srcdir)/seq_qt5/qt
+mocdir = $(top_srcdir)/seq_qt5/qt
+
+#*****************************************************************************
 # libtool
 #-----------------------------------------------------------------------------
 
@@ -96,7 +118,7 @@ version = $(SEQ64_API_MAJOR):$(SEQ64_API_MINOR):$(SEQ64_API_PATCH)
 #-----------------------------------------------------------------------------
 
 git_version = $(shell git describe --tags --long)
-git_branch =$(shell git branch | grep -e ^*)
+git_branch = $(shell git branch | grep -e ^*)
 git_info = "$(git_version) $(git_branch)"
 
 #******************************************************************************
@@ -106,11 +128,16 @@ git_info = "$(git_version) $(git_branch)"
 #	because we include the perform module in some modules, and it includes
 #	the platform-specific stuff.
 #
-# Note: None of ALSA, JACK, or LASH CFLAGS seem to be defined.
+# Notes:
+#
+#     -  None of ALSA, JACK, or LASH CFLAGS seem to be defined.
+#     -  We include "-I.." and require that the Qt5-generated modules be
+#        included as:   "#include "qt/generated_module.h".
 #
 #------------------------------------------------------------------------------
 
 AM_CXXFLAGS = \
+ -I.. \
  -I../include \
  -I$(top_srcdir)/include \
  -I$(top_srcdir)/libseq64/include \
@@ -125,6 +152,27 @@ AM_CXXFLAGS = \
  -DSEQ64_GIT_VERSION=\"$(git_info)\"
 
 #******************************************************************************
+# Qt 5 rules
+#------------------------------------------------------------------------------
+
+SUFFIXES = .hpp .cpp .moc.cpp .ui .ui.h
+
+#	$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS)
+#	$(CPPFLAGS) $(MOC_CPPFLAGS) $<
+
+%.moc.cpp: %.hpp
+	$(MKDIR_P) $(mocdir)
+	$(QT_MOC) $< -o $(mocdir)/$(notdir $@)
+
+%.ui.h: %.ui
+	$(MKDIR_P) $(uicdir)
+	$(QT_UIC) $< -o $(uicdir)/$(notdir $@)
+
+# .ui.cpp:
+# 	$(MKDIR_P) $(uicdir)
+# 	$(QT_UIC) -o $(uicdir)/$@ -impl $*.h $<
+
+#******************************************************************************
 # The library to build, a libtool-based library
 #------------------------------------------------------------------------------
 
@@ -134,15 +182,25 @@ lib_LTLIBRARIES = libseq_qt5.la
 # Source files
 #----------------------------------------------------------------------------
 #
-# seq24seqroll.cpp now obsolete, removed from the build.
+#  We don't want to put Qt5-generated files into the "include" or "src"
+#  directory; we want them in the "qt5" directory.
 #
 #----------------------------------------------------------------------------
 
+moc_qt_headers = $(hppdir)/qseqmainwnd.hpp
+moc_sources = $(moc_qt_headers:.hpp=.moc.cpp)
+
+uic_qt_forms = $(formsdir)/qseqmainwnd.ui
+uic_sources = $(uic_qt_forms:.ui=.ui.h)
+
+BUILT_SOURCES = $(uic_sources) $(moc_sources)
+
 libseq_qt5_la_SOURCES = \
-	qseqmainwnd.cpp
+	qseqmainwnd.cpp \
+   $(moc_sources)
 
 libseq_qt5_la_LDFLAGS = -version-info $(version)
-libseq_qt5_la_LIBADD = $(QT5_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)
+libseq_qt5_la_LIBADD = $(QT_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)
 
 #******************************************************************************
 # uninstall-hook

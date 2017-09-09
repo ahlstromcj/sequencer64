@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2017-09-06
+ * \updates       2017-09-08
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -165,6 +165,7 @@ main (int argc, char * argv [])
             seq64::usr().block_independent()
 #endif
         );
+        seq24_window.show();
 
         /*
          * Having this here after creating the main window may cause issue

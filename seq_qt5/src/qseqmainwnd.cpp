@@ -25,19 +25,14 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-09-06
- * \updates       2017-09-07
+ * \updates       2017-09-08
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "perform.hpp"                  /* seq64::perform                   */
 #include "qseqmainwnd.hpp"              /* Qt5 version of seq64::mainwnd    */
-
-/*
- * Not ready yet.
- *
- * #include "ui_qseqmainwnd.h"
- */
+#include "qt/qseqmainwnd.ui.h"          /* UIC-generated header file        */
 
 /*
  *  All library code for this project is in the "seq64" namespace.  Do not
@@ -47,7 +42,9 @@
 namespace seq64
 {
 
-bool is_pattern_playing = false;
+/**
+ *
+ */
 
 qseqmainwnd::qseqmainwnd
 (
@@ -62,19 +59,19 @@ qseqmainwnd::qseqmainwnd
 #endif
     QWidget * parent
 ) :
-    QMainWindow (parent) // ,
-    // ui          (new Ui::qseqmainwnd)
+    QMainWindow (parent),
+    m_ui        (new Ui::qseqmainwnd)
 {
     // show();
 }
 
+/**
+ *
+ */
+
 qseqmainwnd::~qseqmainwnd()
 {
-    /*
-     * TODO
-     *
-    delete ui;
-     */
+    delete m_ui;
 }
 
 /*

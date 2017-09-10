@@ -63,7 +63,6 @@ namespace Ui
 
 namespace seq64
 {
-
     class perform;
 
 /**

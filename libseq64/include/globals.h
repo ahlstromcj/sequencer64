@@ -148,7 +148,7 @@ const int c_max_groups = SEQ64_DEFAULT_GROUP_MAX;
 const int c_max_sequence = SEQ64_SEQUENCE_MAXIMUM;
 
 /*
- *  Number of group-mute tracks that can be support, which is
+ *  Number of group-mute tracks that can be supported, which is
  *  c_seqs_in_set squared, or 1024.  This value is the same size as
  *  c_max_sequence, and actually conceptually the same value (it covers all
  *  sequences), and so we're going to optimize this value out.

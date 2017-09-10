@@ -3,10 +3,10 @@
 
 #include <QCommonStyle>
 
-class QseqStyle : public QCommonStyle
+class qseqstyle : public QCommonStyle
 {
 public:
-    QseqStyle();
+    qseqstyle();
 };
 
 #endif // STYLE_HPP

@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2017-09-06
+# \update       2017-09-10
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -66,8 +66,27 @@ sequencer64libdir = @sequencer64libdir@
 # Source files
 #----------------------------------------------------------------------------
 
+# qseqmainwnd.hpp
+
 pkginclude_HEADERS = \
-	qseqmainwnd.hpp
+ qperfeditframe.hpp \
+ qperfnames.hpp \
+ qperfroll.hpp \
+ qperftime.hpp \
+ qsabout.hpp \
+ qseditoptions.hpp \
+ qseqdata.hpp \
+ qseqeditframe.hpp \
+ qseqkeys.hpp \
+ qseqmainwnd.hpp \
+ qseqroll.hpp \
+ qseqstyle.hpp \
+ qseqtime.hpp \
+ qsliveframe.hpp \
+ qsmaintime.hpp \
+ qsmainwnd.hpp \
+ qstriggereditor.hpp \
+ seq24Rect.hpp
 
 #******************************************************************************
 # uninstall-hook

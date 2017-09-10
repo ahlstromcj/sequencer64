@@ -6,7 +6,7 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2017-09-06
+# \updates     2017-09-09
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -21,7 +21,7 @@
 # Packing targets
 #-----------------------------------------------------------------------------
 
-AUTOMAKE_OPTIONS = foreign dist-zip dist-bzip2
+AUTOMAKE_OPTIONS = foreign dist-zip dist-bzip2 subdir-objects
 MAINTAINERCLEANFILES = Makefile.in Makefile $(AUX_DIST)
 MOSTLYCLEANFILES = *~
 

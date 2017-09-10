@@ -1,6 +1,6 @@
-#include "QseqStyle.hpp"
+#include "qseqstyle.hpp"
 
-QseqStyle::QseqStyle()
+qseqstyle::qseqstyle()
 {
 
 }

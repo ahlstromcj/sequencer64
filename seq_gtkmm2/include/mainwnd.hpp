@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-09
+ * \updates       2017-09-10
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -146,6 +146,7 @@ private:
 
     Gtk::MenuBar * m_menubar;           /**< The whole menu bar.        */
     Gtk::Menu * m_menu_file;            /**< The File menu entry.       */
+    Gtk::Menu * m_menu_recent;          /**< File/Recent menu popup.    */
     Gtk::Menu * m_menu_edit;            /**< The (new) Edit menu entry. */
     Gtk::Menu * m_menu_view;            /**< The View menu entry.       */
     Gtk::Menu * m_menu_help;            /**< The Help menu entry.       */
@@ -665,6 +666,8 @@ private:
 #endif
 
     void update_window_title ();
+    void update_recent_files_menu ();
+    void load_recent_file (int index);
     void toLower (std::string &);       // isn't this part of std::string?
 
     /**

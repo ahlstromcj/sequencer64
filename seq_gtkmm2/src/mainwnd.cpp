@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-09
+ * \updates       2017-09-10
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -263,6 +263,7 @@ mainwnd::mainwnd
     m_tooltips              (manage(new Gtk::Tooltips())),  /* valgrind bitches */
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
+    m_menu_recent           (nullptr),
     m_menu_edit             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
@@ -1877,13 +1878,9 @@ mainwnd::open_file (const std::string & fn)
     ppqn(f.ppqn());                     /* get and save the actual PPQN     */
     rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
     rc().filename(fn);
+    rc().add_recent_file(fn);           /* from Oli Kester's Kepler34       */
+    update_recent_files_menu();
     update_window_title();
-
-    /*
-     * Also not sure if the reset() call is really necessary.
-     *
-     * reset();                                // m_main_wid->reset();
-     */
 
     m_entry_notes->set_text(perf().current_screen_set_notepad());
     m_adjust_bpm->set_value(perf().get_beats_per_minute());
@@ -1946,7 +1943,12 @@ mainwnd::save_file ()
         rc().legacy_format(), usr().global_seq_feature()
     );
     result = f.write(perf());
-    if (! result)
+    if (result)
+    {
+        rc().add_recent_file(rc().filename());
+        update_recent_files_menu();
+    }
+    else
     {
         std::string errmsg = f.error_message();
         Gtk::MessageDialog errdialog
@@ -3129,6 +3131,81 @@ mainwnd::update_window_title ()
 }
 
 /**
+ *  Sets up the recent MIDI files menu.  If the menu already exists, delete it.
+ *  Then recreate the new menu named "&Recent MIDI files...".  Add all of the
+ *  entries present in the rc().recent_files_count() list.  Hook each entry up
+ *  to the open_file() function with each file-name as a parameter.  If there
+ *  are none, just add a disabled "<none>" entry.
+ */
+
+#define SET_FILE    mem_fun(*this, &mainwnd::load_recent_file)
+
+void
+mainwnd::update_recent_files_menu ()
+{
+    if (not_nullptr(m_menu_recent))
+    {
+        /*
+         * Causes a crash:
+         *
+         *      m_menu_file->items().remove(*m_menu_recent);    // crash!
+         *      delete m_menu_recent;
+         */
+
+        m_menu_recent->items().clear();
+    }
+    else
+    {
+        m_menu_recent = manage(new Gtk::Menu());
+        m_menu_file->items().push_back
+        (
+            MenuElem("_Recent MIDI files...", *m_menu_recent)
+        );
+    }
+
+    if (rc().recent_file_count() > 0)
+    {
+        for (int i = 0; i < rc().recent_file_count(); ++i)
+        {
+            std::string filepath = rc().recent_file(i);     // shortened name
+            m_menu_recent->items().push_back
+            (
+                MenuElem(filepath, sigc::bind(SET_FILE, i))
+            );
+        }
+    }
+    else
+    {
+        m_menu_recent->items().push_back
+        (
+            MenuElem("<none>", sigc::bind(SET_FILE, (-1)))
+        );
+    }
+}
+
+/**
+ *  Looks up the desired recent MIDI file and opens it.  This function passes
+ *  false as the shorten parameter of rc_settings::recent_file().
+ *
+ * \param index
+ *      Indicates which file in the list to open, ranging from 0 to the number
+ *      of recent files minus 1.  If set to -1, then nothing is done.
+ */
+
+void
+mainwnd::load_recent_file (int index)
+{
+    if (index >= 0 and index < rc().recent_file_count())
+    {
+        if (is_save())
+        {
+            std::string filepath = rc().recent_file(index, false);
+            open_file(filepath);
+        }
+    }
+}
+
+/**
  *  This function is the handler for system signals (SIGUSR1, SIGINT...)
  *  It writes a message to the pipe and leaves as soon as possible.
  */
@@ -3245,6 +3322,9 @@ mainwnd::populate_menu_file ()
             mem_fun(*this, &mainwnd::file_open)
         )
     );
+    m_menu_file->items().push_back(SeparatorElem());
+    update_recent_files_menu();                     /* copped from Kepler34 */
+    m_menu_file->items().push_back(SeparatorElem());
     m_menu_file->items().push_back
     (
         MenuElem

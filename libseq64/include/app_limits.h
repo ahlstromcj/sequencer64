@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2017-06-04
+ * \updates       2017-09-09
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -538,6 +538,13 @@
 
 #define SEQ64_TRANSPOSE_UP_LIMIT        (SEQ64_MIDI_COUNT_MAX / 2)
 #define SEQ64_TRANSPOSE_DOWN_LIMIT      (-SEQ64_MIDI_COUNT_MAX / 2)
+
+/**
+ *  Indicates the maximum number of recently-opened MIDI file-names we will
+ *  store.
+ */
+
+#define SEQ64_RECENT_FILES_MAX          10
 
 #endif      // SEQ64_APP_LIMITS_H
 

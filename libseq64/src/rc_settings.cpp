@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-08-09
+ * \updates       2017-09-10
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -35,9 +35,16 @@
  *      We're making the "statistics" support a configure-time option.  The
  *      run-time option will be left here, but the actual usage of it will be
  *      disabled unless configured with the --enable-statistics option.
+ *
+ * \todo
+ *      Kepler34 has two more settings values: [midi-clock-mod-ticks],
+ *      [note-resume] and [key-height].  The latter sounds more like a "usr"
+ *      setting.
  */
 
+#include <algorithm>                    /* std::find()                  */
 #include <stdlib.h>                     /* getenv()                     */
+
 #include "globals.h"                    /* to support legacy variables  */
 
 #ifdef PLATFORM_UNIX
@@ -111,7 +118,8 @@ rc_settings::rc_settings ()
     m_user_filename_alt         (),
     m_application_name          (SEQ64_APP_NAME),
     m_app_client_name           (SEQ64_CLIENT_NAME),
-    m_tempo_track_number        (0)
+    m_tempo_track_number        (0),
+    m_recent_files              ()                      /* std::list    */
 {
     // Empty body
 }
@@ -156,7 +164,8 @@ rc_settings::rc_settings (const rc_settings & rhs)
     m_user_filename_alt         (rhs.m_user_filename_alt),
     m_application_name          (rhs.m_application_name),
     m_app_client_name           (rhs.m_app_client_name),
-    m_tempo_track_number        (rhs.m_tempo_track_number)
+    m_tempo_track_number        (rhs.m_tempo_track_number),
+    m_recent_files              (rhs.m_recent_files)
 {
     // Empty body
 }
@@ -211,6 +220,7 @@ rc_settings::operator = (const rc_settings & rhs)
 
         m_app_client_name           = rhs.m_app_client_name;
         m_tempo_track_number        = rhs.m_tempo_track_number;
+        m_recent_files              = rhs.m_recent_files;
     }
     return *this;
 }
@@ -261,6 +271,7 @@ rc_settings::set_defaults ()
 
     m_app_client_name           = SEQ64_CLIENT_NAME;
     m_tempo_track_number        = 0;
+    m_recent_files.clear();
 }
 
 /**
@@ -385,6 +396,63 @@ rc_settings::tempo_track_number (int track)
         track = SEQ64_SEQUENCE_MAXIMUM - 1;
 
     m_tempo_track_number = track;
+}
+
+/**
+ * \getter m_recent_files
+ *
+ *  Gets the desired recent MIDI file-name, if present.
+ *
+ * \param index
+ *      Provides the desired index into the recent-files vector.
+ *
+ * \param shorten
+ *      If true, remove the path-name from the file-name.  True by default.
+ *
+ * \return
+ *      Returns m_recent_files[index], perhaps shortened.  An empty string is
+ *      returned if there is no such animal.
+ */
+
+std::string
+rc_settings::recent_file (int index, bool shorten) const
+{
+    std::string result;
+    if (index >= 0 && index < recent_file_count())
+        result = m_recent_files[index];
+
+    if (shorten)
+    {
+        std::string::size_type slashpos = result.find_last_of("/\\");
+        result = result.substr(slashpos + 1, std::string::npos);
+    }
+    return result;
+}
+
+/**
+ * \setter m_recent_files
+ *
+ *  First makes sure the filename is not already present, before adding it.
+ *
+ * \param fname
+ *      Provides the full path to the MIDI file that is to be added to the
+ *      recent-files list.
+ */
+
+void
+rc_settings::add_recent_file (const std::string & fname)
+{
+    bool found =
+        std::find(m_recent_files.begin(), m_recent_files.end(), fname) !=
+            m_recent_files.end();
+
+    if (! found)
+    {
+        if (m_recent_files.size() >= SEQ64_RECENT_FILES_MAX)
+            m_recent_files.pop_back();
+
+        m_recent_files.insert(m_recent_files.begin(), fname);
+    }
 }
 
 /**

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-10
+ * \updates       2017-09-10
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -664,6 +664,22 @@ optionsfile::parse (perform & p)
     {
         if (strlen(m_line) > 0)
             rc().last_used_dir(m_line); // FIXME: check for valid path
+    }
+
+    if (line_after(file, "[recent-files]"))
+    {
+        int count;
+        sscanf(m_line, "%d", &count);
+        for (int i = 0; i < count; ++i)
+        {
+            if (next_data_line(file))
+            {
+                if (strlen(m_line) > 0)
+                    rc().add_recent_file(std::string(m_line));
+            }
+            else
+                break;
+        }
     }
 
     long method = 0;
@@ -1531,8 +1547,27 @@ optionsfile::write (const perform & p)
     file << "\n"
         "[last-used-dir]\n\n"
         "# Last-used and currently-active directory:\n\n"
-        << rc().last_used_dir() << "\n\n"
+        << rc().last_used_dir() << "\n"
         ;
+
+    /*
+     *  New feature from Kepler34.
+     */
+
+    int count = rc().recent_file_count();
+    file << "\n"
+        "[recent-files]\n\n"
+        "# Holds a list of the last few recently-loaded MIDI files.\n\n"
+        << count << "\n\n"
+        ;
+
+    if (count > 0)
+    {
+        for (int i = 0; i < count; ++i)
+            file << rc().recent_file(i, false) << "\n";
+
+        file << "\n";
+    }
 
     file
         << "# End of " << m_name << "\n#\n"

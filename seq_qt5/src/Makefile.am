@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2017-09-10
+# \update      2017-09-11
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -19,7 +19,7 @@
 # Packing/cleaning targets
 #-----------------------------------------------------------------------------
 
-AUTOMAKE_OPTIONS = foreign dist-zip dist-bzip2 subdir-objects
+AUTOMAKE_OPTIONS = foreign dist-zip dist-bzip2 # subdir-objects
 MAINTAINERCLEANFILES = Makefile.in Makefile $(AUX_DIST)
 
 #******************************************************************************
@@ -30,7 +30,7 @@ MAINTAINERCLEANFILES = Makefile.in Makefile $(AUX_DIST)
 #
 #------------------------------------------------------------------------------
 
-CLEANFILES = *.gc* qt/*
+CLEANFILES = *.gc* *.moc.cpp ../forms/*.ui.h
 MOSTLYCLEANFILES = *~
 
 #******************************************************************************
@@ -102,8 +102,6 @@ builddir = @abs_top_builddir@
 
 formsdir = $(top_srcdir)/seq_qt5/forms
 hppdir = ../include
-uicdir = $(top_srcdir)/seq_qt5/qt
-mocdir = $(top_srcdir)/seq_qt5/qt
 
 #*****************************************************************************
 # libtool
@@ -157,17 +155,15 @@ AM_CXXFLAGS = \
 
 SUFFIXES = .hpp .cpp .moc.cpp .ui .ui.h
 
-$(mocdir)/qseqmaindwnd.moc.cpp: $(hppdir)/qseqmainwnd.hpp
-	$(MKDIR_P) $(mocdir)
-	$(QT_MOC) $< -o $(mocdir)/$(notdir $@)
+# The moc.cpp files are normally deposited in the include directory!
 
 %.moc.cpp: %.hpp
-	$(MKDIR_P) $(mocdir)
-	$(QT_MOC) $< -o $(mocdir)/$(notdir $@)
+	$(QT_MOC) $< -o ../src/$(notdir $@)
+
+# The ui.h files are deposited in the forms directory.
 
 %.ui.h: %.ui
-	$(MKDIR_P) $(uicdir)
-	$(QT_UIC) $< -o $(uicdir)/$(notdir $@)
+	$(QT_UIC) $< -o $@
 
 #******************************************************************************
 # The library to build, a libtool-based library
@@ -189,29 +185,23 @@ lib_LTLIBRARIES = libseq_qt5.la
 moc_qt_headers = \
  $(hppdir)/qseditoptions.hpp \
  $(hppdir)/qperfeditframe.hpp \
- $(hppdir)/qabout.hpp \
- $(hppdir)/qseditframe.hpp \
+ $(hppdir)/qsabout.hpp \
+ $(hppdir)/qseqeditframe.hpp \
  $(hppdir)/qsliveframe.hpp \
  $(hppdir)/qsmainwnd.hpp
 
 # $(hppdir)/qseqmainwnd.hpp
 # $(mocdir)/qseqmaindwnd.moc.cpp
-
-moc_sources = \
- $(mocdir)/qseditoptions.moc.cpp \
- $(mocdir)/qperfeditframe.moc.cpp \
- $(mocdir)/qabout.moc.cpp \
- $(mocdir)/qseditframe.moc.cpp \
- $(mocdir)/qsliveframe.moc.cpp \
- $(mocdir)/qsmainwnd.moc.cpp
-
 # $(formsdir)/qseqmainwnd.ui
+#	qseqmainwnd.cpp
+
+moc_sources = $(moc_qt_headers:.hpp=.moc.cpp)
 
 uic_qt_forms = \
  $(formsdir)/qseditoptions.ui \
  $(formsdir)/qperfeditframe.ui \
- $(formsdir)/qabout.ui \
- $(formsdir)/qseditframe.ui \
+ $(formsdir)/qsabout.ui \
+ $(formsdir)/qseqeditframe.ui \
  $(formsdir)/qsliveframe.ui \
  $(formsdir)/qsmainwnd.ui
 
@@ -219,10 +209,7 @@ uic_sources = $(uic_qt_forms:.ui=.ui.h)
 
 BUILT_SOURCES = $(uic_sources) $(moc_sources)
 
-#  qseqmainwnd.cpp
-
 libseq_qt5_la_SOURCES = \
- colormap.cpp \
  qperfeditframe.cpp \
  qperfnames.cpp \
  qperfroll.cpp \
@@ -240,8 +227,6 @@ libseq_qt5_la_SOURCES = \
  qsmainwnd.cpp \
  qstriggereditor.cpp \
  $(moc_sources)
-
-#	qseqmainwnd.cpp
 
 libseq_qt5_la_LDFLAGS = -version-info $(version)
 libseq_qt5_la_LIBADD = $(QT_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)

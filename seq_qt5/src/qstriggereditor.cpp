@@ -1,5 +1,13 @@
 #include "qstriggereditor.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
+namespace seq64
+{
+    class perform;
+
 qstriggereditor::qstriggereditor(sequence *a_seq,
                                  qseqdata *a_seqdata_wid,
                                  QWidget *parent, int keyHeight):
@@ -626,3 +634,5 @@ void qstriggereditor::set_data_type(midibyte a_status,
     m_status = a_status;
     m_cc = a_control;
 }
+
+}           // namespace seq64

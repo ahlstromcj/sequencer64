@@ -1,5 +1,13 @@
 #include "qseqdata.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
+namespace seq64
+{
+    class perform;
+
 qseqdata::qseqdata(sequence *a_seq,
                    QWidget *parent):
     QWidget(parent),
@@ -319,3 +327,5 @@ void qseqdata::convert_x(int a_x, long *a_tick)
     *a_tick = a_x * m_zoom;
 }
 
+
+}           // namespace seq64

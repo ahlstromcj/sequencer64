@@ -1,5 +1,13 @@
 #include "qseqkeys.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
+namespace seq64
+{
+    class perform;
+
 qseqkeys::qseqkeys(sequence *a_seq, QWidget *parent, int keyHeight, int keyAreaHeight):
     m_seq(a_seq),
     QWidget(parent),
@@ -174,4 +182,6 @@ void qseqkeys::convert_y(int a_y, int *a_note)
 {
     *a_note = (keyAreaY - a_y - 2) / keyY;
 }
+
+}           // namespace seq64
 

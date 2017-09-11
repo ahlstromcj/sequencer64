@@ -1,14 +1,6 @@
 #ifndef EDITFRAME_HPP
 #define EDITFRAME_HPP
 
-#include "perform.hpp"
-#include "sequence.hpp"
-#include "qseqkeys.hpp"
-#include "qseqtime.hpp"
-#include "qseqroll.hpp"
-#include "qseqdata.hpp"
-#include "qstriggereditor.hpp"
-
 #include <QFrame>
 #include <QLayout>
 #include <qmath.h>
@@ -17,15 +9,22 @@
 #include <QPalette>
 #include <QMenu>
 
+#include "perform.hpp"
+#include "sequence.hpp"
+#include "qseqkeys.hpp"
+#include "qseqtime.hpp"
+#include "qseqroll.hpp"
+#include "qseqdata.hpp"
+#include "qstriggereditor.hpp"
+
 namespace Ui
 {
-class qseqeditframe;
+    class qseqeditframe;
 }
 
+/**
+ * Holds tools for editing an individual MIDI sequence
  */
- */ \brief The qseqeditframe class
- */
- */ Holds tools for editing an individual MIDI sequence
 
 class qseqeditframe : public QFrame
 {
@@ -33,7 +32,7 @@ class qseqeditframe : public QFrame
 
 public:
     explicit qseqeditframe(QWidget *parent,
-                           perform *perf,
+                           seq64::perform *perf,
                            int mSeqId);
     ~qseqeditframe();
 
@@ -51,14 +50,14 @@ private:
     QPalette        *m_palette;
     QMenu           *mPopup;
 
-    sequence    * const mSeq;
-    perform * const mPerformance;
+    seq64::sequence    * const mSeq;
+    seq64::perform * const mPerformance;
 
-    qseqkeys          *mKeyboard;
-    qseqtime       *mTimeBar;
-    qseqroll      *mNoteGrid;
-    qseqdata   *mEventValues;
-    qstriggereditor *mEventTriggers;
+    seq64::qseqkeys          *mKeyboard;
+    seq64::qseqtime       *mTimeBar;
+    seq64::qseqroll      *mNoteGrid;
+    seq64::qseqdata   *mEventValues;
+    seq64::qstriggereditor *mEventTriggers;
 
     /* set snap to in pulses, off = 1 */
     int         mSnap;

@@ -1,9 +1,6 @@
 #ifndef SONGTIMEBAR_HPP
 #define SONGTIMEBAR_HPP
 
-#include "globals.h"
-#include "perform.hpp"
-
 #include <QWidget>
 #include <QTimer>
 #include <QPainter>
@@ -11,14 +8,25 @@
 #include <QPen>
 #include <QMouseEvent>
 
+#include "globals.h"
+#include "perform.hpp"
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
  */
- */ \brief The qperftime class
+
+namespace seq64
+{
+    class perform;
+
+/**
+ * The time bar for the song editor
  */
- */ The time bar for the song editor
 
 class qperftime : public QWidget
 {
     Q_OBJECT
+
 public:
     explicit qperftime(perform *a_perf,
                        QWidget *parent);
@@ -59,5 +67,7 @@ signals:
 
 public slots:
 };
+
+}           // namespace seq64
 
 #endif // SONGTIMEBAR_HPP

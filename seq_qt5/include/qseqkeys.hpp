@@ -1,8 +1,6 @@
 #ifndef EDITKEYS_HPP
 #define EDITKEYS_HPP
 
-#include "sequence.hpp"
-
 #include <QWidget>
 #include <QTimer>
 #include <QPainter>
@@ -10,7 +8,19 @@
 #include <QSizePolicy>
 #include <QMouseEvent>
 
- *draws the piano keys in the sequence editor
+#include "sequence.hpp"
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
+namespace seq64
+{
+    class perform;
+
+/**
+ * draws the piano keys in the sequence editor
+ */
 
 class qseqkeys : public QWidget
 {
@@ -59,5 +69,7 @@ private:
     int  mPreviewKey;
 
 };
+
+}           // namespace seq64
 
 #endif // EDITKEYS_HPP

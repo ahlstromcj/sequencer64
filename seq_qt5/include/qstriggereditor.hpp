@@ -1,20 +1,27 @@
 #ifndef EDITEVENTTRIGGERS_HPP
 #define EDITEVENTTRIGGERS_HPP
 
-#include "sequence.hpp"
-#include "qseqdata.hpp"
-
 #include <QWidget>
 #include <QPainter>
 #include <QMouseEvent>
 #include <QTimer>
 #include <QPen>
 
+#include "sequence.hpp"
+#include "qseqdata.hpp"
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
  */
- */ \brief The qstriggereditor class
+
+namespace seq64
+{
+    class perform;
+
+/**
+ * Displays the triggers for MIDI events
+ * e.g. Modwheel, pitchbend etc
  */
- */ Displays the triggers for MIDI events
- */ e.g. Modwheel, pitchbend etc
 
 class qstriggereditor : public QWidget
 {
@@ -102,5 +109,7 @@ private:
     midibyte m_status;
     midibyte m_cc;
 };
+
+}           // namespace seq64
 
 #endif // EDITEVENTTRIGGERS_HPP

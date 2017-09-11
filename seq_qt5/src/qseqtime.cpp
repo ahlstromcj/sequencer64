@@ -1,5 +1,13 @@
 #include "qseqtime.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
+namespace seq64
+{
+    class perform;
+
 qseqtime::qseqtime(sequence *a_seq, QWidget *parent):
     QWidget(parent),
     m_seq(a_seq)
@@ -126,3 +134,5 @@ void qseqtime::zoom_out()
     if (m_zoom < 32)
         m_zoom *= 2;
 }
+
+}           // namespace seq64

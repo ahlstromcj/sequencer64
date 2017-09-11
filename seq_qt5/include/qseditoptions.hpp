@@ -7,7 +7,7 @@
 
 namespace Ui
 {
-class qseditoptions;
+    class qseditoptions;
 }
 
 class qseditoptions : public QDialog
@@ -15,7 +15,7 @@ class qseditoptions : public QDialog
     Q_OBJECT
 
 public:
-    explicit qseditoptions(perform *perf,
+    explicit qseditoptions(seq64::perform *perf,
                            QWidget *parent = 0);
     ~qseditoptions();
 
@@ -32,7 +32,7 @@ private:
 
     Ui::qseditoptions *ui;
 
-    perform *mPerf;
+    seq64::perform *mPerf;
 
     //backup variables for settings
     bool backupJackTransport;

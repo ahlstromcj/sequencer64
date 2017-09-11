@@ -1,10 +1,6 @@
 #ifndef SONGSEQUENCEGRID_HPP
 #define SONGSEQUENCEGRID_HPP
 
-#include "globals.h"
-#include "perform.hpp"
-#include "seq24Rect.hpp"
-
 #include <QWidget>
 #include <QTimer>
 #include <QObject>
@@ -12,19 +8,33 @@
 #include <QPen>
 #include <QMouseEvent>
 
+#include "Globals.hpp"
+
+#include "globals.h"
+#include "perform.hpp"
+#include "seq24Rect.hpp"
+
 const int c_perfroll_background_x = (c_ppqn * 4 * 16) / c_perf_scale_x;
 const int c_perfroll_size_box_w = 3;
 const int c_perfroll_size_box_click_w = c_perfroll_size_box_w + 1 ;
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
  */
- */ \brief The qperfroll class
+
+namespace seq64
+{
+    class perform;
+
+/**
+ * The grid in the song editor
+ * for setting out sequences
  */
- */ The grid in the song editor
- */ for setting out sequences
 
 class qperfroll : public QWidget
 {
     Q_OBJECT
+
 public:
     explicit qperfroll(perform *a_perf,
                        QWidget *parent);
@@ -99,7 +109,7 @@ private:
     long    m_drop_tick_trigger_offset; //how far in ticks we clicked from
     //the start of this trigger
     long    mLastTick; //tick we we're using at last mouse event
-    bool    m_sequence_active[c_total_seqs];
+    bool    m_sequence_active[qc_total_seqs];
     bool    m_moving;
     bool    mBoxSelect;
     bool    m_growing;
@@ -108,5 +118,7 @@ private:
     bool    m_adding_pressed;
 
 };
+
+}           // namespace seq64
 
 #endif // SONGSEQUENCEGRID_HPP

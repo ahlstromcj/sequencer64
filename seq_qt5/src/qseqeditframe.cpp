@@ -1,5 +1,5 @@
 #include "qseqeditframe.hpp"
-#include "ui_qseqeditframe.h"
+#include "forms/qseqeditframe.ui.h"
 
 qseqeditframe::qseqeditframe(QWidget *parent,
                              perform *perf,

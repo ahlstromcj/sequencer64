@@ -1,6 +1,6 @@
 #include "qsliveframe.hpp"
 #include "globals.h"
-#include "ui_qsliveframe.h"
+#include "forms/qsliveframe.ui.h"
 
 qsliveframe::qsliveframe(QWidget *parent, perform *perf) :
     QFrame(parent),

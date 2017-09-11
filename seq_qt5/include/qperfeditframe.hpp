@@ -1,32 +1,28 @@
 #ifndef SONGFRAME_HPP
 #define SONGFRAME_HPP
 
-#include "perform.hpp"
-#include "qperfroll.hpp"
-#include "qperfnames.hpp"
-#include "qperftime.hpp"
-
 #include <QFrame>
 #include <QGridLayout>
 #include <QScrollArea>
 #include <qmath.h>
 
+#include "perform.hpp"
+#include "qperfroll.hpp"
+#include "qperfnames.hpp"
+#include "qperftime.hpp"
+
 namespace Ui
 {
-class qperfeditframe;
+    class qperfeditframe;
 }
 
- */
- */ \brief The qperfeditframe class
- */
- */ Holds the song editing elements
 
 class qperfeditframe : public QFrame
 {
     Q_OBJECT
 
 public:
-    explicit qperfeditframe(perform *a_perf,
+    explicit qperfeditframe(seq64::perform *a_perf,
                             QWidget *parent);
     ~qperfeditframe();
 
@@ -60,11 +56,10 @@ private:
     QWidget         *mContainer;
     QPalette        *m_palette;
 
-    perform   *m_mainperf;
-
-    qperfroll  *m_perfroll;
-    qperfnames *m_perfnames;
-    qperftime       *m_perftime;
+    seq64::perform   *m_mainperf;
+    seq64::qperfroll  *m_perfroll;
+    seq64::qperfnames *m_perfnames;
+    seq64::qperftime       *m_perftime;
 
 private slots:
     void updateGridSnap(int snapIndex);

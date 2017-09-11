@@ -2131,6 +2131,21 @@ public:
         m_seqs_in_set = seqs;
     }
 
+public:     // TEMPORARY
+
+    /**
+     * \setter m_looping
+     *
+     * \param looping
+     *      The boolean value to set for looping, used in the performance
+     *      editor.
+     */
+
+    void set_looping (bool looping)
+    {
+        m_looping = looping;
+    }
+
 private:
 
     /**
@@ -2324,20 +2339,6 @@ private:
     void play (midipulse tick);
     void set_orig_ticks (midipulse tick);
     void set_beats_per_minute (midibpm bpm);    /* more than just a setter  */
-
-    /**
-     * \setter m_looping
-     *
-     * \param looping
-     *      The boolean value to set for looping, used in the performance
-     *      editor.
-     */
-
-    void set_looping (bool looping)
-    {
-        m_looping = looping;
-    }
-
     int max_active_set () const;
 
     /*

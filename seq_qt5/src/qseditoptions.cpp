@@ -1,5 +1,5 @@
 #include "qseditoptions.hpp"
-#include "ui_qseditoptions.h"
+#include "forms/qseditoptions.ui.h"
 
 qseditoptions::qseditoptions(perform *perf,
                              QWidget *parent):

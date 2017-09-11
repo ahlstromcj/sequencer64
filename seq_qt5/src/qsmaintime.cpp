@@ -1,5 +1,13 @@
 #include "qsmaintime.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
+namespace seq64
+{
+    class perform;
+
 qsmaintime::qsmaintime(QWidget *parent,
                        perform *perf,
                        int beats_per_measure,
@@ -127,3 +135,5 @@ QSize qsmaintime::sizeHint() const
 {
     return QSize(150, mFont.pointSize() * 2.4);
 }
+
+}           // namespace seq64

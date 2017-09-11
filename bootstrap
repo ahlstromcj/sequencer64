@@ -189,7 +189,7 @@ if [ $# -ge 1 ] ; then
             EXTRAFLAGS="--enable-rtmidi"
             ;;
 
-         --qtmidi | -qt | -qm | --qt | --rm)
+         --qtmidi | -qt | -qm | --qt | --qm)
             DORTMIDI="yes"
             DOGTKMMUI="no"
             DOQT5UI="yes"

@@ -1,9 +1,6 @@
 #ifndef LIVEFRAME_HPP
 #define LIVEFRAME_HPP
 
-#include "perform.hpp"
-#include "sequence.hpp"
-
 #include <QFrame>
 #include <QPainter>
 #include <QDebug>
@@ -11,9 +8,12 @@
 #include <QTimer>
 #include <QMessageBox>
 
+#include "perform.hpp"
+#include "sequence.hpp"
+
 namespace Ui
 {
-class qsliveframe;
+    class qsliveframe;
 }
 
 class qsliveframe : public QFrame
@@ -64,9 +64,9 @@ private:
 
     Ui::qsliveframe *ui;
 
-    perform *mPerf;
-    sequence    m_moving_seq;
-    sequence    mSeqClipboard;
+    seq64::perform *mPerf;
+    seq64::sequence    m_moving_seq;
+    seq64::sequence    mSeqClipboard;
 
     QPainter    *mPainter;
     QBrush      *mBrush;

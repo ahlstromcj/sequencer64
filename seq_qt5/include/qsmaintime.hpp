@@ -8,10 +8,17 @@
 
 #include "perform.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
  */
- */ \brief The qsmaintime class
+
+namespace seq64
+{
+    class perform;
+
+/**
+ * A beat indicator widget
  */
- */ A beat indicator widget
 
 class qsmaintime : public QWidget
 {
@@ -60,4 +67,7 @@ private:
 
 };
 
+}           // namespace seq64
+
 #endif // BEATINDICATOR_HPP
+

@@ -1,5 +1,13 @@
 #include "qseqroll.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
+namespace seq64
+{
+    class perform;
+
 qseqroll::qseqroll(perform *a_perf,
                    sequence *a_seq,
                    QWidget *parent,
@@ -1083,3 +1091,5 @@ void qseqroll::updateEditMode(edit_mode_e mode)
 {
     editMode = mode;
 }
+
+}           // namespace seq64

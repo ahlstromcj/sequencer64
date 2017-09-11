@@ -1,5 +1,13 @@
 #include "qperftime.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
+namespace seq64
+{
+    class perform;
+
 qperftime::qperftime(perform *a_perf,
                      QWidget *parent) :
     QWidget(parent),
@@ -174,3 +182,5 @@ void qperftime::set_guides(int a_snap, int a_measure)
     m_snap = a_snap;
     m_measure_length = a_measure;
 }
+
+}           // namespace seq64

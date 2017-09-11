@@ -1,9 +1,16 @@
 #include "qperfnames.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
  */
- */ \brief The qperfnames class
+
+namespace seq64
+{
+    class perform;
+
+/**
+ * Sequence labels for the side of the song editor
  */
- */ Sequence labels for the side of the song editor
 
 qperfnames::qperfnames(perform *a_perf,
                        QWidget *parent) :
@@ -13,7 +20,7 @@ qperfnames::qperfnames(perform *a_perf,
     setSizePolicy(QSizePolicy::Fixed,
                   QSizePolicy::MinimumExpanding);
 
-    for (int i = 0; i < c_total_seqs; ++i)
+    for (int i = 0; i < qc_total_seqs; ++i)
         m_sequence_active[i] = false;
 }
 
@@ -44,7 +51,7 @@ void qperfnames::paintEvent(QPaintEvent *)
     {
         int seqId = y;
 
-        if (seqId < c_total_seqs)
+        if (seqId < qc_total_seqs)
         {
             int i = seqId;
             //if first seq in bank
@@ -201,3 +208,5 @@ qperfnames::~qperfnames()
 {
     delete mPen, mPainter, mBrush;
 }
+
+}           // namespace seq64

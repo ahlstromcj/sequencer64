@@ -32,7 +32,7 @@
 
 #include "perform.hpp"                  /* seq64::perform                   */
 #include "qseqmainwnd.hpp"              /* Qt5 version of seq64::mainwnd    */
-#include "qt/qseqmainwnd.ui.h"          /* UIC-generated header file        */
+#include "forms/qseqmainwnd.ui.h"       /* UIC-generated header file        */
 
 /*
  *  All library code for this project is in the "seq64" namespace.  Do not

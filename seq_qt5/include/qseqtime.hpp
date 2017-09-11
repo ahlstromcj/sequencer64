@@ -1,17 +1,24 @@
 #ifndef EDITTIMEBAR_HPP
 #define EDITTIMEBAR_HPP
 
-#include "sequence.hpp"
-
 #include <QWidget>
 #include <QTimer>
 #include <QPainter>
 #include <QPen>
 
+#include "sequence.hpp"
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
  */
- */ \brief The qseqtime class
+
+namespace seq64
+{
+    class perform;
+
+/**
+ * The timebar for the sequence editor
  */
- */ The timebar for the sequence editor
 
 class qseqtime : public QWidget
 {
@@ -51,5 +58,7 @@ private:
     int m_zoom;
 
 };
+
+}           // namespace seq64
 
 #endif // EDITTIMEBAR_HPP

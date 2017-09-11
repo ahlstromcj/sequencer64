@@ -3,6 +3,10 @@
 
 #include <QCommonStyle>
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 class qseqstyle : public QCommonStyle
 {
 public:

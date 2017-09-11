@@ -1,5 +1,5 @@
 #include "qsmainwnd.hpp"
-#include "ui_qsmainwnd.h"
+#include "forms/qsmainwnd.ui.h"
 
 bool is_pattern_playing = false;
 

@@ -1,23 +1,34 @@
 #ifndef SONGSEQUENCENAMES_HPP
 #define SONGSEQUENCENAMES_HPP
 
-#include <perform.hpp>
-#include <sequence.hpp>
-#include <globals.h>
-
 #include <QWidget>
 #include <QPainter>
 #include <QPen>
 
+#include "Globals.hpp"
+
+#include "perform.hpp"
+#include "sequence.hpp"
+#include "globals.h"
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
  */
- */ \brief The qperfnames class
+
+namespace seq64
+{
+    class perform;
+
+/**
+ * Sequence labels for the side of the song editor
  */
- */ Sequence labels for the side of the song editor
 
 class qperfnames : public QWidget
 {
     Q_OBJECT
+
 public:
+
     explicit qperfnames(perform *a_perf,
                         QWidget *parent);
     ~qperfnames();
@@ -47,7 +58,9 @@ private:
     QPainter    *mPainter;
     QFont        mFont;
 
-    bool         m_sequence_active[c_total_seqs];
+    bool         m_sequence_active[qc_total_seqs];
 };
+
+}           // namespace seq64
 
 #endif // SONGSEQUENCENAMES_HPP

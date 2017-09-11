@@ -1,19 +1,26 @@
 #ifndef EDITEVENTVALUES_HPP
 #define EDITEVENTVALUES_HPP
 
-#include "sequence.hpp"
-
 #include <QWidget>
 #include <QTimer>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPen>
 
+#include "sequence.hpp"
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
  */
- */ \brief The qseqdata class
+
+namespace seq64
+{
+    class perform;
+
+/**
+ * Displays the values for MIDI events
+ * e.g. Modwheel, pitchbend etc
  */
- */ Displays the values for MIDI events
- */ e.g. Modwheel, pitchbend etc
 
 class qseqdata : public QWidget
 {
@@ -80,5 +87,7 @@ private:
     friend class qseqroll;
     friend class qstriggereditor;
 };
+
+}           // namespace seq64
 
 #endif // EDITEVENTVALUES_HPP

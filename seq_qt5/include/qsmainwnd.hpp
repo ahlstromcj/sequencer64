@@ -2,7 +2,7 @@
 #define MAINWINDOW_HPP
 
 #include <QMainWindow>
- * #include <QDebug>
+// #include <QDebug>
 #include <QFileDialog>
 #include <QErrorMessage>
 #include <QTimer>
@@ -21,13 +21,12 @@
 
 namespace Ui
 {
-class qsmainwnd;
+    class qsmainwnd;
 }
 
+/**
+ * The main window of kepler34
  */
- */ \brief The qsmainwnd class
- */
- */ The main window of kepler34
 
 class qsmainwnd : public QMainWindow
 {

@@ -1,7 +1,7 @@
 #include "qperfeditframe.hpp"
-#include "ui_qperfeditframe.h"
+#include "forms/qperfeditframe.ui.h"
 
-qperfeditframe::qperfeditframe(perform *a_perf,
+qperfeditframe::qperfeditframe(seq64::perform *a_perf,
                                QWidget *parent):
     QFrame(parent),
     ui(new Ui::qperfeditframe),
@@ -31,9 +31,9 @@ qperfeditframe::qperfeditframe(perform *a_perf,
     m_palette->setColor(QPalette::Background, Qt::darkGray);
     mContainer->setPalette(*m_palette);
 
-    m_perfnames = new qperfnames(m_mainperf, mContainer);
-    m_perfroll = new qperfroll(m_mainperf, mContainer);
-    m_perftime = new qperftime(m_mainperf, mContainer);
+    m_perfnames = new seq64::qperfnames(m_mainperf, mContainer);
+    m_perfroll = new seq64::qperfroll(m_mainperf, mContainer);
+    m_perftime = new seq64::qperftime(m_mainperf, mContainer);
 
     m_layout_grid->setSpacing(0);
     m_layout_grid->addWidget(m_perfnames, 1, 0, 1, 1);

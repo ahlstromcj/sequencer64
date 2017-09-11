@@ -1,5 +1,5 @@
 #include "qsabout.hpp"
-#include "ui_qsabout.h"
+#include "forms/qsabout.ui.h"
 
 qsabout::qsabout(QWidget *parent) :
     QDialog(parent),

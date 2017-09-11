@@ -1,5 +1,13 @@
 #include "qperfroll.hpp"
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
+namespace seq64
+{
+    class perform;
+
 qperfroll::qperfroll(perform *a_perf,
                      QWidget *parent):
     QWidget(parent),
@@ -20,7 +28,7 @@ qperfroll::qperfroll(perform *a_perf,
 
     setFocusPolicy(Qt::StrongFocus);
 
-    for (int i = 0; i < c_total_seqs; ++i)
+    for (int i = 0; i < qc_total_seqs; ++i)
         m_sequence_active[i] = false;
 
     m_roll_length_ticks = mPerf->get_max_trigger();
@@ -114,7 +122,7 @@ void qperfroll::paintEvent(QPaintEvent *)
     {
         int seqId = y;
 
-        if (seqId < c_total_seqs)
+        if (seqId < qc_total_seqs)
         {
             if (mPerf->is_active(seqId))
             {
@@ -715,8 +723,8 @@ void qperfroll::convert_xy(int a_x, int a_y, long *a_tick, int *a_seq)
 
     *a_tick += tick_offset;
 
-    if (*a_seq >= c_total_seqs)
-        *a_seq = c_total_seqs - 1;
+    if (*a_seq >= qc_total_seqs)
+        *a_seq = qc_total_seqs - 1;
 
     if (*a_seq < 0)
         *a_seq = 0;
@@ -799,3 +807,5 @@ void qperfroll::xy_to_rect(int a_x1, int a_y1, int a_x2, int a_y2,
         *a_h = a_y1 - a_y2;
     }
 }
+
+}           // namespace seq64

@@ -1,20 +1,26 @@
 #ifndef EDITNOTEROLL_HPP
 #define EDITNOTEROLL_HPP
 
-#include "perform.hpp"
-#include "sequence.hpp"
-#include "seq24Rect.hpp"
-
 #include <QWidget>
 #include <QPainter>
 #include <QPen>
 #include <QTimer>
 #include <QMouseEvent>
 
+#include "perform.hpp"
+#include "sequence.hpp"
+#include "seq24Rect.hpp"
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
  */
- */ \brief The qseqroll class
- */
- */ The MIDI note grid in the sequence editor
+
+namespace seq64
+{
+    class perform;
+
+/**
+ * The MIDI note grid in the sequence editor
  */
 
 class qseqroll : public QWidget
@@ -143,5 +149,7 @@ signals:
 public slots:
     void updateEditMode(edit_mode_e mode);
 };
+
+}           // namespace seq64
 
 #endif // EDITNOTEROLL_HPP

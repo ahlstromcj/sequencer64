@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-10
+ * \updates       2017-09-12
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -141,6 +141,11 @@
 #include "pixmaps/menu.xpm"                 // any better image of a "menu"?
 #include "pixmaps/muting.xpm"               // need better/smaller icon
 #include "pixmaps/song_mode.xpm"            // need better/smaller icon
+#endif
+
+#ifdef USE_SONG_RECORDING
+#include "pixmaps/song_rec_off.xpm"
+#include "pixmaps/song_rec_on.xpm"
 #endif
 
 #ifdef USE_RECORD_TEMPO_MENU                // too clumsy
@@ -330,6 +335,11 @@ mainwnd::mainwnd
 #endif
 #ifdef SEQ64_SHOW_JACK_STATUS
     m_button_jack           (manage(new Gtk::Button("ALSA"))),
+#endif
+#ifdef USE_SONG_RECORDING
+    m_button_song_record    (manage(new Gtk::ToggleButton())),
+    m_button_song_snap      (manage(new Gtk::Button("S"))),
+    m_is_song_recording     (false),
 #endif
     m_tick_time             (manage(new Gtk::Label(""))),
     m_adjust_bpm
@@ -602,6 +612,26 @@ mainwnd::mainwnd
         sigc::mem_fun(*this, &mainwnd::jack_dialog)
     );
     tophbox->pack_start(*m_button_jack, false, false);  /* no extra padding */
+#endif
+
+#ifdef USE_SONG_RECORDING
+
+    m_button_song_record->set_focus_on_click(false);
+    m_button_song_record->add(*manage(new PIXBUF_IMAGE(song_rec_on_xpm)));
+    m_button_song_record->signal_toggled().connect
+    (
+        mem_fun(*this, &mainwnd::toggle_song_record)
+    );
+    add_tooltip
+    (
+        m_button_song_record,
+        "Click this button to toggle the recording of live changes to the "
+        "song performance."
+    );
+    tophbox->pack_start(*m_button_song_record, false, false);  /* no padding */
+
+    TODO:  add and pack the song-snap button as well.
+
 #endif
 
 #if defined SEQ64_MULTI_MAINWID
@@ -1583,6 +1613,30 @@ mainwnd::jack_dialog ()
     m_options = new options(*this, perf(), true);
     m_options->show_all();
 }
+
+#ifdef USE_SONG_RECORDING
+
+/**
+ *  Toggles the recording of the tempo.
+ */
+
+void
+mainwnd::toggle_song_record ()
+{
+    m_is_song_recording = ! m_is_song_recording;
+    if (m_is_song_recording)
+    {
+        Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_on_xpm));
+        m_button_song_record->set_image(*image_song);
+    }
+    else
+    {
+        Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_off_xpm));
+        m_button_song_record->set_image(*image_song);
+    }
+}
+
+#endif  // USE_SONG_RECORDING
 
 /**
  *  We are trying to work around an apparent Gtk+ bug (which occurs on my

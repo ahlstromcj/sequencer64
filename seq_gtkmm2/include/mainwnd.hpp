@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-10
+ * \updates       2017-09-12
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -384,6 +384,28 @@ private:
 
 #endif
 
+#ifdef USE_SONG_RECORDING
+
+    /**
+     *  Implements Oli Kester's Kepler34 Song-recording feature.
+     */
+
+    Gtk::ToggleButton * m_button_song_record;
+
+    /**
+     *  Implements Oli Kester's Kepler34 Song-recording snap feature.
+     */
+
+    Gtk::Button * m_button_song_snap;
+
+    /**
+     *  Indicates if song recording is active.
+     */
+
+    bool m_is_song_recording;
+
+#endif  // USE_SONG_RECORDING
+
     /**
      *  This new item shows the current time into the song performance.
      *  Long overdue, actually!
@@ -608,6 +630,10 @@ private:
     void tempo_log ();
     void toggle_tempo_record ();
     void queue_it ();
+
+#ifdef USE_SONG_RECORDING
+    void toggle_song_record ();
+#endif
 
     /**
      *  Pushes the panic button.

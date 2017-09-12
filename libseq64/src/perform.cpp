@@ -305,6 +305,11 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_inputing                  (true),
     m_outputing                 (true),
     m_looping                   (false),
+#ifdef USE_SONG_RECORDING
+    m_song_recording            (false),
+    m_song_record_snap          (false),
+    m_resume_note_ons           (false),
+#endif
     m_playback_mode             (false),
     m_ppqn                      (choose_ppqn(ppqn)),
     m_bpm                       (SEQ64_DEFAULT_BPM),    /* now a double     */

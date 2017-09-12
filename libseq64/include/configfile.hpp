@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-06-25
+ * \updates       2017-09-10
  * \license       GNU GPLv2 or above
  *
  *  This is actually an elegant little parser, and works well as long as one
@@ -37,7 +37,6 @@
 
 #include <fstream>
 #include <string>
-#include <list>
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

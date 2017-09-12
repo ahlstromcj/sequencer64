@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2017-08-03
+ * \updates       2017-09-11
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -230,10 +230,26 @@ triggers::pop_redo ()
  */
 
 bool
-triggers::play (midipulse & start_tick, midipulse & end_tick)
+triggers::play
+(
+    midipulse & start_tick,
+    midipulse & end_tick
+#ifdef USE_SONG_RECORDING
+    , bool resume_note_ons
+#endif
+)
 {
     bool result = false;                    /* turns off after frame play */
     bool trigger_state = false;
+
+#ifdef USE_SONG_RECORDING
+    if (get_song_recording())
+    {
+        grow_trigger(m_parent.song_recording_tick(), end_tick, 10);
+        set_dirty_mp();
+    }
+#endif
+
     midipulse trigger_offset = 0;
     midipulse trigger_tick = 0;
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
@@ -258,7 +274,13 @@ triggers::play (midipulse & start_tick, midipulse & end_tick)
      * Had triggers in the slice, not equal to current state.
      */
 
-    if (trigger_state != m_parent.get_playing())
+    bool ok = trigger_state != m_parent.get_playing();
+#ifdef USE_SONG_RECORDING
+    if (ok)
+        ok = ! m_parent.song_playback_block();
+#endif
+
+    if (ok)
     {
         if (trigger_state)                              /* turning on   */
         {
@@ -268,6 +290,18 @@ triggers::play (midipulse & start_tick, midipulse & end_tick)
                 start_tick = trigger_tick;              /* side-effect  */
 
             m_parent.set_playing(true);
+
+#ifdef USE_SONG_RECORDING
+
+            /*
+             * If we have triggered between a Note On and a Note Off, then
+             * play it.
+             */
+
+            if (resume_note_ons)
+                m_parent.resume_note_ons(tick);
+#endif
+
         }
         else
         {

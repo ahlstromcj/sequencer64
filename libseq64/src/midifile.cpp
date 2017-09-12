@@ -1445,6 +1445,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
 
 #ifdef USE_THESE_SEQSPECS
 
+        seqspec = parse_prop_header(file_size);
         if (seqspec == c_tempo_map)
         {
             /*
@@ -1452,6 +1453,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
              */
         }
 
+        seqspec = parse_prop_header(file_size);
         if (seqspec == c_reserved_1)
         {
             /*
@@ -1459,6 +1461,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
              */
         }
 
+        seqspec = parse_prop_header(file_size);
         if (seqspec == c_reserved_2)
         {
             /*
@@ -1481,6 +1484,44 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             if (tempotrack > 0)
                 p.set_tempo_track_number(tempotrack);
         }
+
+#ifdef USE_SEQUENCE_COLOR
+
+        /**
+         * Kepler34 (see Oli Kester's project on GitHub) supports coloring
+         * the sequence slots in the "mainwid". We want to support something
+         * similar.  However, we might reserve this feature for coloring mute
+         * groups.
+         */
+
+        seqspec = parse_prop_header(file_size);
+        if (seqspec == c_seq_colours)
+        {
+            int colour = int(read_long());      /* read_short() or byte!    */
+            if (colour > 0)
+                p.set_seq_colour(seqnum);       /* will pass to sequence    */
+        }
+
+#endif  // USE_SEQUENCE_COLOR
+
+#ifdef USE_SEQUENCE_EDIT_MODE
+
+        /*
+         * Sequence editing mode are a feature of Kepler34.  We don't know
+         * what these modes do, yet, but let's leave room for them.
+         */
+
+        seqspec = parse_prop_header(file_size);
+        if (seqspec == c_seq_edit_mode)
+        {
+            for (int track = 0; track < c_max_sequence; ++track)
+            {
+                if (p.is_active(track))
+                    p.set_seq_edit_mode(track, edit_mode_t(read_long());
+            }
+        }
+
+#endif  // USE_SEQUENCE_EDIT_MODE
 
         /*
          * ADD NEW CONTROL TAGS AT THE END OF THE LIST HERE.  Don't forget to

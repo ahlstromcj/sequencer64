@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2017-08-10
+ * \updates       2017-09-11
  * \license       GNU GPLv2 or above
  *
  *  This class is meant to hold the bytes that represent MIDI events and other
@@ -155,6 +155,8 @@ namespace seq64
             c_tempo_map   (seq32's tempo map)
             c_reserved_1 and c_reserved_2
             c_tempo_track (holds the song's particular tempo track)
+            c_seq_colors (holds performance colors for a sequence).
+            c_seq_edit_mode (a potential future feature from Kepler34).
 \endverbatim
  *
  *  Also see the PDF file in the following project for more information about
@@ -207,7 +209,9 @@ const midilong c_perf_bw     =  0x24240016; /**< Perfedit beat-width.       */
 const midilong c_tempo_map   =  0x24240017; /**< Reserve seq32 tempo map.   */
 const midilong c_reserved_1  =  0x24240018; /**< Reserved for expansion.    */
 const midilong c_reserved_2  =  0x24240019; /**< Reserved for expansion.    */
-const midilong c_tempo_track =  0x2424001A; /**< Reserved for expansion.    */
+const midilong c_tempo_track =  0x2424001A; /**< Alternate tempo track no.  */
+const midilong c_seq_colours =  0x2424001B; /**< Future feature Kepler34.   */
+const midilong c_seq_edit_mode = 0x2424001C; /**< Future feature Kepler34.  */
 
 /**
  *    This class is the abstract base class for a container of MIDI track

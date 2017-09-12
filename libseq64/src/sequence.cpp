@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-15
+ * \updates       2017-09-11
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -101,6 +101,15 @@ sequence::sequence (int ppqn)
     m_quantized_rec             (false),
     m_thru                      (false),
     m_queued                    (false),
+#ifdef USE_SONG_RECORDING
+    m_one_shot                  (false),
+    m_one_shot_tick             (0),
+    m_off_from_snap             (false),
+    m_song_playback_block       (false),
+    m_song_recording            (false),
+    m_song_recording_snap       (false),
+    m_song_recording_tick       (0),
+#endif
 #ifdef SEQ64_STAZED_EXPAND_RECORD
     m_overwrite_recording       (false),
     m_loop_reset                (false),
@@ -119,6 +128,12 @@ sequence::sequence (int ppqn)
     m_maxbeats                  (c_maxbeats),
     m_ppqn                      (0),            /* set in constructor body   */
     m_seq_number                (-1),           /* may be set later          */
+#ifdef USE_SEQUENCE_COLOR
+    m_seq_colour                (0),
+#endif
+#ifdef USE_SEQUENCE_EDIT_MODE
+    m_seq_edit_mode             (TODO),         /* edit_mode_t              */
+#endif
     m_length                    (0),            /* set in constructor body   */
     m_snap_tick                 (0),            /* set in constructor body   */
     m_time_beats_per_measure    (4),
@@ -136,9 +151,9 @@ sequence::sequence (int ppqn)
     m_note_off_margin           (2)
 {
     m_ppqn = choose_ppqn(ppqn);
-    m_length = 4 * m_ppqn;                      /* one bar's worth of ticks */
-    m_snap_tick = m_ppqn / 4;
-    m_triggers.set_ppqn(m_ppqn);
+    m_length = 4 * int(m_ppqn);                 /* one bar's worth of ticks */
+    m_snap_tick = int(m_ppqn) / 4;
+    m_triggers.set_ppqn(int(m_ppqn));
     m_triggers.set_length(m_length);
     for (int i = 0; i < c_midi_notes; ++i)      /* no notes are playing now */
         m_playing_notes[i] = 0;
@@ -398,8 +413,11 @@ void
 sequence::set_beats_per_bar (int beatspermeasure)
 {
     automutex locker(m_mutex);
-    m_time_beats_per_measure = beatspermeasure;
-    set_dirty_mp();
+    if (beatspermeasure <= int(USHRT_MAX))
+    {
+        m_time_beats_per_measure = (unsigned short)(beatspermeasure);
+        set_dirty_mp();
+    }
 }
 
 /**
@@ -415,8 +433,11 @@ void
 sequence::set_beat_width (int beatwidth)
 {
     automutex locker(m_mutex);
-    m_time_beat_width = beatwidth;
-    set_dirty_mp();
+    if (beatwidth <= int(USHRT_MAX))
+    {
+        m_time_beat_width = (unsigned short)(beatwidth);
+        set_dirty_mp();
+    }
 }
 
 /**
@@ -939,12 +960,12 @@ void
 sequence::set_rec_vol (int recvol)
 {
     automutex locker(m_mutex);
-    bool valid = m_rec_vol >= 0;
+    bool valid = recvol >= 0;                       /* not "m_rec_vol >= 0"! */
     if (valid)
-        valid = m_rec_vol <= SEQ64_MAX_NOTE_ON_VELOCITY;
+        valid = recvol <= SEQ64_MAX_NOTE_ON_VELOCITY;
 
     if (! valid)
-        valid = m_rec_vol == SEQ64_PRESERVE_VELOCITY;
+        valid = recvol == SEQ64_PRESERVE_VELOCITY;
 
     if (valid)
     {
@@ -1036,7 +1057,14 @@ sequence::on_queued ()
  */
 
 void
-sequence::play (midipulse end_tick, bool playback_mode)
+sequence::play
+(
+    midipulse end_tick,
+    bool playback_mode
+#ifdef USE_SONG_RECORDING
+    , bool resume_note_ons
+#endif
+)
 {
     automutex locker(m_mutex);
     bool trigger_turning_off = false;       /* turn off after frame play    */
@@ -1049,6 +1077,9 @@ sequence::play (midipulse end_tick, bool playback_mode)
     {
         if (playback_mode)                  /* song mode: on/off triggers   */
             trigger_turning_off = m_triggers.play(start_tick, end_tick);
+
+
+        // USE_SONG_RECORDING
     }
     if (m_playing)                          /* play notes in frame  */
     {
@@ -2808,12 +2839,12 @@ sequence::add_note
                 e.paint();
 
             e.set_status(EVENT_NOTE_ON);
-            e.set_data(note, hardwire ? m_note_on_velocity : velocity);
+            e.set_data(note, hardwire ? int(m_note_on_velocity) : velocity);
             e.set_timestamp(tick);
             add_event(e);
 
             e.set_status(EVENT_NOTE_OFF);
-            e.set_data(note, m_note_off_velocity);      /* HARD-WIRED */
+            e.set_data(note, int(m_note_off_velocity));    /* HARD-WIRED */
             e.set_timestamp(tick + len);
             result = add_event(e);
         }
@@ -3273,7 +3304,7 @@ sequence::play_note_on (int note)
     automutex locker(m_mutex);
     event e;
     e.set_status(EVENT_NOTE_ON);
-    e.set_data(note, m_note_on_velocity);           // SEQ64_MIDI_COUNT_MAX-1
+    e.set_data(note, int(m_note_on_velocity));      // SEQ64_MIDI_COUNT_MAX-1
     m_masterbus->play(m_bus, &e, m_midi_channel);
     m_masterbus->flush();
 }
@@ -3295,7 +3326,7 @@ sequence::play_note_off (int note)
     automutex locker(m_mutex);
     event e;
     e.set_status(EVENT_NOTE_OFF);
-    e.set_data(note, m_note_off_velocity);          // SEQ64_MIDI_COUNT_MAX-1
+    e.set_data(note, int(m_note_off_velocity));     // SEQ64_MIDI_COUNT_MAX-1
     m_masterbus->play(m_bus, &e, m_midi_channel);
     m_masterbus->flush();
 }
@@ -5328,6 +5359,72 @@ sequence::handle_size (midipulse start, midipulse finish)
 
     return result;
 }
+
+#ifdef USE_SONG_RECORDING
+
+/**
+ *
+ */
+
+void
+sequence::off_oneshot ()
+{
+    automutex locker(m_mutex);
+    set_dirty_mp();
+    m_queued = false;
+    m_off_from_snap = true;
+}
+
+/**
+ *  Starts the growing of the sequence for Song recording.  This process
+ *  starts by adding a chunk of 10 ticks, which allows the rest of the threads
+ *  to notice the change.
+ *
+ * \param tick
+ *      Provides the current tiack, which helps set the recorded block's
+ *      boundaries.
+ *
+ * \param snap
+ *      Indicates if we are to snap the recording to the configured boundary.
+ */
+
+void
+sequence::song_recording_start (midipulse tick, bool snap)
+{
+    add_trigger(tick, 10);
+    m_song_recording_snap = snap;
+    m_song_recording_tick = tick;
+    m_song_recording = true;
+}
+
+/**
+ *  Stops the growing of the sequence for Song recording.  If we have been
+ *  recording, we snap the end of the trigger block to the next whole sequence
+ *  interval.
+ *
+ * \param tick
+ *      Provides the current tiack, which helps set the recorded block's
+ *      boundaries.
+ */
+
+void
+sequence::song_recording_stop (midipulse tick)
+{
+    m_song_playback_block = m_song_recording = false;
+    if (m_song_recording_snap)
+    {
+        grow_triggers(m_song_recording_tick, tick, m_length - (tick % m_length));
+        m_off_from_snap = true;
+    }
+}
+
+void
+sequence::resume_note_ons (midipulse tick)
+{
+    TODO:  See MidiSequence::resumeNoteOns()
+}
+
+#endif  // USE_SONG_RECORDING
 
 }           // namespace seq64
 

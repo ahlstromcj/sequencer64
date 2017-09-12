@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-09
+ * \updates       2017-09-11
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -573,6 +573,28 @@ private:
      */
 
     bool m_looping;
+
+#ifdef USE_SONG_RECORDING
+
+    /**
+     *  Indicates to record live sequence-trigger changes into the Song data.
+     */
+
+    bool m_song_recording;
+
+    /**
+     *  Snap recorded playback changes to the sequence length.
+     */
+
+    bool m_song_record_snap;
+
+    /**
+     *  Indicates to resume notes if the sequence is toggled after a Note On.
+     */
+
+    bool m_resume_note_ons;
+
+#endif
 
     /**
      *  Specifies the playback mode.  There are two, "live" and "song",
@@ -2247,6 +2269,40 @@ private:
     void mute_group_tracks ();
     void select_and_mute_group (int g_group);
     void set_song_mute (mute_op_t op);
+
+#ifdef USE_SEQUENCE_COLOR
+
+    /*
+     * Deals with the colors used to represent specific sequences.
+     */
+
+    seq_colour_t get_seq_color () const;
+    void set_seq_color (seq_colour_t f);
+
+#endif  // USE_EQUENCE_COLOR
+
+#ifdef USE_SEQUENCE_EDIT_MODE
+
+    /*
+     * Deals with the editing mode of the specific sequence.
+     */
+
+    edit_mode_t get_seq_edit_mode () const;
+    void set_seq_edit_mode (edit_mode_t f);
+
+#endif  // USE_SEQUENCE_EDIT_MODE
+
+#ifdef USE_SONG_RECORDING
+
+    /*
+     * This is a long-standing request from user's, adapted from Kepler34.
+     */
+
+    bool get_song_recording () const;
+    void set_song_recording (bool f);
+
+#endif  // USE_SONG_RECORDING
+
 
     /**
      * \setter m_mode_group

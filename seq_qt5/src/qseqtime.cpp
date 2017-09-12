@@ -43,14 +43,14 @@ void qseqtime::paintEvent(QPaintEvent *)
                         size().width(),
                         size().height() - 1);
 
-    int measure_length_32nds =  m_seq->get_beats_per_measure() * 32 /
+    int measure_length_32nds =  m_seq->get_beats_per_bar() * 32 /
                                 m_seq->get_beat_width();
 
     int measures_per_line = (128 / measure_length_32nds) / (32 / m_zoom);
     if (measures_per_line <= 0)
         measures_per_line = 1;
 
-    int ticks_per_measure =  m_seq->get_beats_per_measure() * (4 * c_ppqn) / m_seq->get_beat_width();
+    int ticks_per_measure =  m_seq->get_beats_per_bar() * (4 * c_ppqn) / m_seq->get_beat_width();
     int ticks_per_beat =  ticks_per_measure * measures_per_line;
     int start_tick = 0;
     int end_tick = (m_seq->getLength());

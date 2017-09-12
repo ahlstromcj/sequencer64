@@ -25,7 +25,7 @@ qsliveframe::qsliveframe(QWidget *parent, perform *perf) :
 
     setBank(0);
 
-    QString bankName = (*mPerf->getBankName(m_bank_id)).c_str();
+    QString bankName = (*mPerf->get_bank_name(m_bank_id)).c_str();
     ui->txtBankName->setPlainText(bankName);
 
     connect(ui->spinBank,
@@ -189,7 +189,7 @@ void qsliveframe::drawSequence(int a_seq)
             mPen->setStyle(Qt::SolidLine);
             mPainter->setPen(*mPen);
             char name[20];
-            snprintf(name, sizeof name, "%.13s", seq->get_name());
+            snprintf(name, sizeof name, "%.13s", seq->name());
             mPainter->drawText(base_x + c_text_x,
                                base_y + 4,
                                80,
@@ -361,7 +361,7 @@ void qsliveframe::setBank(int newBank)
 
     mPerf->set_offset(m_bank_id);
 
-    QString bankName = (*mPerf->getBankName(m_bank_id)).c_str();
+    QString bankName = (*mPerf->get_bank_name(m_bank_id)).c_str();
     ui->txtBankName->setPlainText(bankName);
 
     ui->spinBank->setValue(m_bank_id);

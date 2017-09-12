@@ -70,8 +70,8 @@ const int qc_control_height = 0;
 
 const int c_mainwid_x = ((qc_seqarea_x + qc_mainwid_spacing)
                          * qc_mainwnd_cols - qc_mainwid_spacing
-                         +  c_mainwid_border * 2);
-const int c_mainwid_y = ((c_seqarea_y  + c_mainwid_spacing)
+                         +  qc_mainwid_border * 2);
+const int c_mainwid_y = ((qc_seqarea_y  + qc_mainwid_spacing)
                          * qc_mainwnd_rows
                          +  qc_mainwid_border * 2
                          +  qc_control_height);

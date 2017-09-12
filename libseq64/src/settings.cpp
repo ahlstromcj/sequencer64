@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-05-17
- * \updates       2016-12-29
+ * \updates       2017-09-11
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -106,10 +106,10 @@ int
 choose_ppqn (int ppqn)
 {
     int result = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? usr().midi_ppqn() : ppqn ;
-    if (result == SEQ64_USE_DEFAULT_PPQN)
+    if (result == SEQ64_USE_DEFAULT_PPQN || result >= int(USHRT_MAX))
     {
         result = SEQ64_DEFAULT_PPQN;
-        warnprint("Setting PPQN = 192");
+        warnprint("Returning chosen PPQN = 192");
     }
     return result;
 }

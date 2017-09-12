@@ -83,7 +83,7 @@ void qperfnames::paintEvent(QPaintEvent *)
                 mPen->setColor(Qt::black);
                 mPainter->setPen(*mPen);
                 mPainter->save();
-                QString bankName(mPerf->getBankName(bankId)->c_str());
+                QString bankName(mPerf->get_bank_name(bankId)->c_str());
                 mPainter->translate(12,
                                     (c_names_y * i) +
                                     (c_names_y * c_seqs_in_set * 0.5)
@@ -132,7 +132,7 @@ void qperfnames::paintEvent(QPaintEvent *)
                 //draw seq info on label
                 char name[50];
                 snprintf(name, sizeof(name), "%-14.14s                        %2d",
-                         mPerf->get_sequence(seqId)->get_name(),
+                         mPerf->get_sequence(seqId)->name(),
                          mPerf->get_sequence(seqId)->get_midi_channel() + 1);
 
                 //seq name
@@ -147,7 +147,7 @@ void qperfnames::paintEvent(QPaintEvent *)
                          "%d-%d %ld/%ld",
                          mPerf->get_sequence(seqId)->get_midi_bus(),
                          mPerf->get_sequence(seqId)->get_midi_channel() + 1,
-                         mPerf->get_sequence(seqId)->get_beats_per_measure(),
+                         mPerf->get_sequence(seqId)->get_beats_per_bar(),
                          mPerf->get_sequence(seqId)->get_beat_width());
 
                 //seq info
@@ -180,7 +180,9 @@ void qperfnames::paintEvent(QPaintEvent *)
             }
         }
     }
-    delete mPen, mPainter, mBrush;
+    delete mPen;
+    delete mPainter;
+    delete mBrush;
 }
 
 

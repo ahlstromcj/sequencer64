@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-19
+ * \updates       2017-09-11
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2231,6 +2231,15 @@ private:
     void handle_midi_control (int control, bool state);
     bool handle_midi_control_ex (int control, midi_control::action a, int v);
     const std::string & get_screen_set_notepad (int screenset) const;
+
+    /**
+     *  A better name for get_screen_set_notepad(), adapted from Kepler34.
+     */
+
+    const std::string & get_bank_name (int bank) const
+    {
+        return get_screen_set_notepad(bank);
+    }
 
     /**
      *  Returns the notepad text for the current screen-set.

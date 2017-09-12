@@ -70,7 +70,7 @@ qseqeditframe::qseqeditframe(QWidget *parent,
     ui->cmbmidibus->setCurrentText(QString::fromStdString(masterbus->get_midi_out_bus_name(mSeq->get_midi_bus())));
 
     /* pull data from sequence object */
-    ui->txtSeqName->setPlainText(mSeq->get_name());
+    ui->txtSeqName->setPlainText(mSeq->name());
     ui->cmbMidiChan->setCurrentIndex(mSeq->get_midi_channel());
 
     QString snapText("1/");

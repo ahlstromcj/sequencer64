@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-11
+ * \updates       2017-09-13
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -990,6 +990,9 @@ sequence::toggle_queued ()
     set_dirty_mp();
     m_queued = ! m_queued;
     m_queued_tick = m_last_tick - mod_last_tick() + m_length;
+#ifdef USE_SONG_RECORDING
+    m_off_from_snap = true;
+#endif
 }
 
 /**
@@ -1007,6 +1010,9 @@ sequence::off_queued ()
     automutex locker(m_mutex);
     set_dirty_mp();
     m_queued = false;
+#ifdef USE_SONG_RECORDING
+    m_off_from_snap = true;
+#endif
 }
 
 /**
@@ -1025,6 +1031,37 @@ sequence::on_queued ()
     m_queued = true;
     set_dirty_mp();
 }
+
+#ifdef USE_SONG_RECORDING
+
+/**
+ *
+ */
+
+void
+sequence::toggle_one_shot ()
+{
+    automutex locker(m_mutex);
+    set_dirty_mp();
+    m_one_shot = ! m_one_shot;
+    m_one_shot_tick = m_last_tick - (m_last_tick % m_length) + m_length;
+    m_off_from_snap = true;
+}
+
+/**
+ *
+ */
+
+void
+sequence::off_one_shot ()
+{
+    automutex locker(m_mutex);
+    set_dirty_mp();
+    m_one_shot = false;
+    m_off_from_snap = true;
+}
+
+#endif  // USE_SONG_RECORDING
 
 /**
  *  The play() function dumps notes starting from the given tick, and it
@@ -1056,6 +1093,14 @@ sequence::on_queued ()
  * \threadsafe
  */
 
+/*
+ * TODO  match up with MidiSequence::play()
+ * TODO
+ * TODO
+ * TODO
+ * TODO
+ */
+
 void
 sequence::play
 (
@@ -1075,13 +1120,15 @@ sequence::play
     }
     else
     {
+        /*
+         * If we are playing the song data (sequence on/off triggers, we are in
+         * playback mode.
+         */
+
         if (playback_mode)                  /* song mode: on/off triggers   */
             trigger_turning_off = m_triggers.play(start_tick, end_tick);
-
-
-        // USE_SONG_RECORDING
     }
-    if (m_playing)                          /* play notes in frame  */
+    if (m_playing)                          /* play notes in frame          */
     {
         midipulse offset = m_length - m_trigger_offset;
         midipulse start_tick_offset = start_tick + offset;
@@ -5317,16 +5364,39 @@ sequence::set_parent (perform * p)
  *      Indicates if the playback is in live mode (false) or song mode (true).
  */
 
+#ifdef USE_SONG_RECORDING
+
+void
+sequence::play_queue (midipulse tick, bool playbackmode, bool resume_note_ons)
+{
+    if (check_queued_tick(tick))
+    {
+        play(get_queued_tick() - 1, playbackmode /* , resume_note_ons */ );
+        toggle_playing(tick, resume_note_ons);
+    }
+    if (one_shot() && one_shot_tick() <= tick)
+    {
+        play(one_shot_tick() - 1, m_playback_mode, resume_note_ons);
+        toggle_playing(tick, resume_note_ons);
+        toggle_queued();
+    }
+    play(tick, playbackmode, resume_note_ons);
+}
+
+#else
+
 void
 sequence::play_queue (midipulse tick, bool playbackmode)
 {
     if (check_queued_tick(tick))
     {
-        play(get_queued_tick() - 1, playbackmode);
+        play(get_queued_tick() - 1, playbackmode /* , resume_note_ons */ );
         toggle_playing();
     }
     play(tick, playbackmode);
 }
+
+#endif  // USE_SONG_RECORDING
 
 /**
  *  Actually, useful mainly for the user-interface, this function calculates
@@ -5367,7 +5437,7 @@ sequence::handle_size (midipulse start, midipulse finish)
  */
 
 void
-sequence::off_oneshot ()
+sequence::off_one_shot ()
 {
     automutex locker(m_mutex);
     set_dirty_mp();
@@ -5418,10 +5488,37 @@ sequence::song_recording_stop (midipulse tick)
     }
 }
 
+/**
+ *
+ */
+
 void
 sequence::resume_note_ons (midipulse tick)
 {
     TODO:  See MidiSequence::resumeNoteOns()
+    list<MidiEvent>::iterator e = m_list_event.begin();
+    while (e != m_list_event.end())
+    {
+        if ((*e).is_note_on())
+        {
+            MidiEvent *l = (*e).get_linked();
+
+            //if the note on event is after the note off
+            //(seq wraps around)
+            //play it now to resume
+            long onTime = (*e).get_timestamp();
+            long offTime = (*l).get_timestamp();
+            if (onTime < tick % m_length &&
+                    offTime > tick % m_length)
+            {
+                put_event_on_bus(&(*e));
+            }
+        }
+
+        /* advance */
+        e++;
+    }
+
 }
 
 #endif  // USE_SONG_RECORDING

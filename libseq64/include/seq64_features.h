@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-07-23
+ * \updates       2017-09-13
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -59,6 +59,24 @@
 #else
 #include "seq64-config.h"
 #endif
+
+/**
+ *  Kepler34 has a drum edit mode that we are still exploring and adding,
+ *  marked by the following macro to keep it out of the way until the feature
+ *  is ready for prime time.
+ */
+
+#undef  USE_SEQUENCE_EDIT_MODE
+
+/**
+ *  Kepler34 has a song-recording mode that we are still exploring and adding,
+ *  marked by the following macro to keep it out of the way until the feature
+ *  is ready for prime time.  This feature has been requested by some users of
+ *  Sequencer64.
+ */
+
+#undef  USE_SONG_RECORDING
+
 
 /**
  * Odds and ends that we missed.  This value allows non-notes to be included

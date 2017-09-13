@@ -1624,6 +1624,7 @@ void
 mainwnd::toggle_song_record ()
 {
     m_is_song_recording = ! m_is_song_recording;
+    perf().set_song_recording(m_is_song_recording);
     if (m_is_song_recording)
     {
         Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_on_xpm));
@@ -1633,6 +1634,22 @@ mainwnd::toggle_song_record ()
     {
         Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_off_xpm));
         m_button_song_record->set_image(*image_song);
+    }
+}
+
+void
+mainwnd::set_song_playback (bool playsong)
+{
+    perf().set_playback_mode(playsong);
+    if (playsong)
+    {
+        m_button_song_record->set_active(true);
+    }
+    else
+    {
+        perf().set_song_recording(false);
+        m_button_song_record->set_active(false);
+        m_button_song_record->set_checked(false);
     }
 }
 

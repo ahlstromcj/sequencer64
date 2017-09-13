@@ -254,6 +254,25 @@ triggers::play
     midipulse trigger_tick = 0;
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
+
+#ifdef USE_SONG_RECORDING
+
+        /*
+         * If we've reached a new chunk of drawn sequences in the song data,
+         * and we're not recording, unset the block on this sequence's events.
+         */
+
+        if
+        (
+            start_tick == i->tick_start() || end_tick == i->tick_start() ||
+            start_tick == i->tick_end() || end_tick == i->tick_end()
+        )
+        {
+            m_song_playback_block = false;
+        }
+
+#endif  // USE_SONG_RECORDING
+
         if (i->tick_start() <= end_tick)
         {
             trigger_state = true;
@@ -309,7 +328,14 @@ triggers::play
             result = true;                              /* done             */
         }
     }
-    if (m_triggers.size() == 0 && m_parent.get_playing())
+
+    bool offplay = m_triggers.size() == 0 && m_parent.get_playing();
+#ifdef USE_SONG_RECORDING
+    if (offplay)
+        offplay = ! m_song_playback_block;
+#endif
+
+    if (offplay)
         m_parent.set_playing(false);                    /* stop playing     */
 
     m_parent.set_trigger_offset(trigger_offset);

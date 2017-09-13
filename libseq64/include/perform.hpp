@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-11
+ * \updates       2017-09-12
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -593,6 +593,13 @@ private:
      */
 
     bool m_resume_note_ons;
+
+    /**
+     *  The global current tick, moved out from the output fucntion so that
+     *  position can be set.
+     */
+
+    double m_current_tick;
 
 #endif
 
@@ -1585,6 +1592,13 @@ public:
     void set_tick (midipulse tick)
     {
         m_tick = tick;              /* printf("tick = %ld\n", m_tick); */
+#ifdef USE_SONG_RECORDING
+        if (m_jack_running)
+            position_jack(tick);
+
+        get_master_midi_bus()->continue_from(tick);
+        m_current_tick = tick;
+#endif
     }
 
     /**
@@ -2287,8 +2301,19 @@ private:
      * Deals with the editing mode of the specific sequence.
      */
 
-    edit_mode_t get_seq_edit_mode () const;
-    void set_seq_edit_mode (edit_mode_t f);
+    edit_mode_t get_edit_mode (int seq) const
+    {
+        if (not_nullptr(get_sequence(seq))
+            return get_sequence(seq)->edit_mode();
+        else
+            return edit_mode_t(0);
+    }
+
+    void set_edit_mode (int seq, edit_mode_t ed)
+    {
+        if (not_nullptr(get_sequence(seq))
+            return get_sequence(seq)->edit_mode(ed);
+    }
 
 #endif  // USE_SEQUENCE_EDIT_MODE
 
@@ -2298,10 +2323,49 @@ private:
      * This is a long-standing request from user's, adapted from Kepler34.
      */
 
-    bool get_song_recording () const;
-    void set_song_recording (bool f);
+    bool get_song_recording () const
+    {
+        return m_song_recording;
+    }
+
+    void set_song_recording (bool f)
+    {
+        m_song_recording = f;
+        if (! f)
+            song_recording_stop();
+    }
+
+    bool get_song_record_snap () const
+    {
+        return m_song_record_snap;
+    }
+
+    void set_song_record_snap (bool f)
+    {
+        m_song_record_snap = f;
+    }
+
+    bool get_resume_note_ons () const
+    {
+        return m_resume_note_ons;
+    }
+
+    void set_resume_note_ons (bool f)
+    {
+        m_resume_note_ons = f;
+    }
 
 #endif  // USE_SONG_RECORDING
+
+#ifdef USE_SONG_RECORDING_EXTRA
+
+    void select_triggers_in_range
+    (
+        int seq_low, int seq_high, long tick_start, long tick_finish
+    );
+    void unselect_all_triggers ();
+
+#endif  // USE_SONG_RECORDING_EXTRA
 
 
     /**

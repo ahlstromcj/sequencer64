@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-09-11
+ * \updates       2017-09-13
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -789,6 +789,30 @@ public:
 
 #endif  // USE_SEQUENCE_COLOR
 
+#ifdef USE_SEQUENCE_EDIT_MODE
+
+    /**
+     * \getter m_seq_edit_mode
+     *      A feature adapted from Kepler34.
+     */
+
+    edit_mode_t edit_mode () const
+    {
+        return m_seq_edit_mode;
+    }
+
+    /**
+     * \setter m_seq_edit_mode
+     *      A feature adapted from Kepler34.
+     */
+
+    void edit_mode (edit_mode_t mode)
+    {
+        m_seq_edit_mode = mode;
+    }
+
+#endif  // USE_SEQUENCE_EDIT_MODE
+
     void modify ();
     int event_count () const;
 
@@ -1148,6 +1172,8 @@ public:
     }
 
     void resume_note_ons (midipulse tick);
+    void toggle_one_shot ();
+    void off_one_shot ();
 
 #endif
 
@@ -1230,15 +1256,24 @@ public:
 
 #ifdef USE_SONG_RECORDING
 
-    void off_oneshot ();
+    void off_one_shot ();
     void song_recording_start (midipulse tick, bool snap);
     void song_recording_stop (midipulse tick);
+
+    /**
+     * \getter m_one_shot_tick
+     */
+
+    midipulse one_shot_tick () const
+    {
+        return m_one_shot_tick;
+    }
 
     /**
      * \getter m_song_recording
      */
 
-    bool get_song_recording () const
+    bool song_recording () const
     {
         return m_song_recording
     }

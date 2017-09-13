@@ -116,6 +116,17 @@ struct keys_perform_transfer
     unsigned kpt_rewind;
     unsigned kpt_pointer_position;
     unsigned kpt_toggle_mutes;
+
+#ifdef USE_SONG_RECORDING
+
+    /*
+     * Kepler34 additions
+     */
+
+    unsigned kpt_song_record;       // still thinking about this one.
+
+#endif
+
 };
 
 /**

@@ -633,6 +633,12 @@ private:
 
 #ifdef USE_SONG_RECORDING
     void toggle_song_record ();
+    void set_song_playback (bool playsong);
+
+    void set_song_record_snap (bool snap)
+    {
+        perf().set_song_record_snap(snap);
+    }
 #endif
 
     /**

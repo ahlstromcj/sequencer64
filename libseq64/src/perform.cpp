@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-09-09
+ * \updates       2017-09-12
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -222,6 +222,18 @@ static const int c_status_snapshot = 0x02;
 
 static const int c_status_queue    = 0x04;
 
+#ifdef USE_SONG_RECORDING
+
+/**
+ *  This value signals the Kepler34 "one-shot" functionality.  If this bit
+ *  is set, then perform::sequence_playing_toggle() calls
+ *  sequence::toggle_oneshot() on the given sequence number.
+ */
+
+static const int c_status_oneshot  = 0x08;
+
+#endif  // USE_SONG_RECORDING
+
 /**
  *  Instantiate the dummy midi_control object, which is used in lieu
  *  of a null pointer.  We're taking code that basically works already, in the
@@ -309,6 +321,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_song_recording            (false),
     m_song_record_snap          (false),
     m_resume_note_ons           (false),
+    m_current_tick              (false), TODO: find where set in out func!
 #endif
     m_playback_mode             (false),
     m_ppqn                      (choose_ppqn(ppqn)),
@@ -721,6 +734,36 @@ perform::select_group_mute (int mutegroup)
     printf("mute-group %d selection\n", mutegroup);
 #endif
 }
+
+#ifdef USE_SONG_RECORDING_EXTRA
+
+void
+perform::select_triggers_in_range
+(
+    int seq_low, int seq_high, long tick_start, long tick_finish
+)
+{
+    for (int seq = seq_low; seq <= seq_high; ++seq)
+    {
+        for (long tick = tick_start; tick <= tick_finish; ++tick)
+        {
+            if (is_active(seq))
+                get_sequence(seq)->select_trigger(tick);
+        }
+    }
+}
+
+void
+perform::unselect_all_triggers ()
+{
+    for (int seq = 0; seq < c_max_sequence; ++seq)  // high?
+    {
+        if (is_active(seq))
+            get_sequence(seq)->unselect_triggers();
+    }
+}
+
+#endif  // USE_SONG_RECORDING_EXTRA
 
 /**
  *  Combines select_group_mute() and set_group_mute_state() so that the
@@ -2290,8 +2333,13 @@ perform::play (midipulse tick)
     m_tick = tick;
     for (int s = 0; s < m_sequence_high; ++s)       /* modest speed up  */
     {
+#ifdef USE_SONG_RECORDING
+        if (is_active(s))
+            m_seqs[s]->play_queue(tick, m_playback_mode, m_resume_note_ons);
+#else
         if (is_active(s))
             m_seqs[s]->play_queue(tick, m_playback_mode);
+#endif
     }
     if (not_nullptr(m_master_bus))
         m_master_bus->flush();                       /* flush MIDI buss  */
@@ -3158,6 +3206,9 @@ perform::output_func ()
         {
             pad.js_current_tick = 0.0;      // tick and tick fraction
             pad.js_total_tick = 0.0;
+#ifdef USE_SONG_RECORDING
+            m_current_tick = 0.0;
+#endif
         }
 
         pad.js_jack_stopped = false;
@@ -3214,6 +3265,9 @@ perform::output_func ()
         m_dont_reset_ticks = false;
         if (ok)
         {
+#ifdef USE_SONG_RECORDING
+            m_current_tick = double(m_starting_tick);
+#endif
             pad.js_current_tick = long(m_starting_tick);    // midipulse
             pad.js_clock_tick = m_starting_tick;
             set_orig_ticks(m_starting_tick);                // what member?
@@ -3303,6 +3357,9 @@ perform::output_func ()
             if (m_midiclockpos >= 0)
             {
                 delta_tick = 0;
+#ifdef USE_SONG_RECORDING
+                m_current_tick = double(m_midiclockpos);
+#endif
                 pad.js_clock_tick = pad.js_current_tick = pad.js_total_tick =
                     m_midiclockpos;
 
@@ -3327,6 +3384,9 @@ perform::output_func ()
                 pad.js_current_tick += delta_tick;
                 pad.js_total_tick += delta_tick;
                 pad.js_dumping = true;
+#ifdef USE_SONG_RECORDING
+                m_current_tick = double(pad.js_current_tick);
+#endif
 #ifdef SEQ64_JACK_SUPPORT
             }
 #endif
@@ -3408,6 +3468,9 @@ perform::output_func ()
                         midipulse ltick = get_left_tick();
                         reset_sequences();                          // reset!
                         set_orig_ticks(ltick);
+#ifdef USE_SONG_RECORDING
+                        m_current_tick = double(ltick) + leftover_tick;
+#endif
                         pad.js_current_tick = double(ltick) + leftover_tick;
                     }
                     else
@@ -4421,6 +4484,22 @@ perform::sequence_playing_toggle (int seq)
     {
         bool is_queue = (m_control_status & c_status_queue) != 0;
         bool is_replace = (m_control_status & c_status_replace) != 0;
+
+#ifdef USE_SONG_RECORDING
+
+        /*
+         * One-shots are allowed only if we are not playing this sequence.
+         */
+
+        bool is_oneshot = (m_control_status & c_status_oneshot) != 0;
+        if (is_oneshot && ! m_seqs[seq]->get_playing())
+        {
+            m_seqs[seq]->toggle_oneshot();
+        }
+        else
+
+#endif
+
         if (is_queue && is_replace)
         {
             if (m_queued_replace_slot != SEQ64_NO_QUEUED_SOLO)
@@ -4450,6 +4529,48 @@ perform::sequence_playing_toggle (int seq)
             }
             m_seqs[seq]->toggle_playing();
         }
+
+#ifdef USE_SONG_RECORDING
+
+        /*
+         * If we're recording, add sequence playback changes to the Song
+         * data.
+         */
+
+        if (get_song_recording())
+        {
+            sequence * seqp = get_sequence(seq);
+            midipulse seq_length = seqp->getLength();
+            midipulse tick = get_tick();
+            bool trigger_state = seqp->get_trigger_state(tick);
+            if (trigger_state)          /* if sequence already playing  */
+            {
+                /*
+                 * If this play is us recording live, end the new trigger
+                 * block here.
+                 */
+
+                if (seqp->get_song_recording())
+                {
+                    seqp->song_recording_stop(tick);
+                }
+                else    /* ...else need to trim block already in place  */
+                {
+                    seqp->exact_split_trigger(tick);
+                    seqp->del_trigger(tick);
+                }
+            }
+            else        /* if not playing, start recording a new strip  */
+            {
+                if (m_song_record_snap)     /* snap to length of sequence */
+                    tick = tick - (tick % seq_length);
+
+                push_trigger_undo();
+                seqp->song_recording_start(tick, m_song_record_snap);
+            }
+        }
+#endif  // USE_SONG_RECORDING
+
     }
 }
 
@@ -4479,6 +4600,8 @@ perform::seq_in_playing_screen (int seq)
 /**
  *  Turn the playing of a sequence on or off.  Used for the implementation of
  *  sequence_playing_on() and sequence_playing_off().
+ *
+ *  Kepler34's version seems slightly different, may need more study.
  *
  * \param seq
  *      The number of the sequence to be turned off.
@@ -5409,6 +5532,25 @@ perform::FF_RW_timeout ()
     m_excell_FF_RW = 1.0;
     return false;
 }
+
+#ifdef USE_SONG_RECORDING
+
+/**
+ *  Should be called only when not recording.
+ *  Kepler34 feature.
+ */
+
+void
+perform::song_recording_stop ()
+{
+    for (int i = 0; i < m_sequence_high; ++i)   /* m_sequence_max       */
+    {
+        if (is_active(i))
+            m_seqs[i]->song_recording_stop(m_current_tick);     // TODO!!!!
+    }
+}
+
+#endif  // USE_SONG_RECORDING
 
 #ifdef PLATFORM_DEBUG_TMI
 

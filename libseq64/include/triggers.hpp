@@ -452,6 +452,11 @@ public:
     (
         midipulse tick, bool adjustoffset, grow_edit_t which = GROW_MOVE
     );
+
+#ifdef USE_SEQUENCE_EDIT_MODE
+    void offset_selected (midipulse tick, grow_edit_t editmode); // trigger_edit
+#endif
+
     midipulse get_selected_start ();
     midipulse get_selected_end ();
     midipulse get_maximum ();

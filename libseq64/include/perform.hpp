@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-12
+ * \updates       2017-09-14
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2290,8 +2290,16 @@ private:
      * Deals with the colors used to represent specific sequences.
      */
 
-    seq_colour_t get_seq_color () const;
-    void set_seq_color (seq_colour_t f);
+    seq_colour_t get_seq_colour (int seqnum) const
+    {
+        return is_active(seqnum) ? m_seqs[seqnum]->colour() : 0 ;
+    }
+
+    void set_seq_colour (int seqnum, seq_colour_t c)
+    {
+        if (is_active(seqnum))
+            m_seqs[seqnum]->colour(c);
+    }
 
 #endif  // USE_EQUENCE_COLOR
 
@@ -2301,7 +2309,7 @@ private:
      * Deals with the editing mode of the specific sequence.
      */
 
-    edit_mode_t get_edit_mode (int seq) const
+    edit_mode_t edit_mode (int seq) const
     {
         if (not_nullptr(get_sequence(seq))
             return get_sequence(seq)->edit_mode();
@@ -2309,10 +2317,10 @@ private:
             return edit_mode_t(0);
     }
 
-    void set_edit_mode (int seq, edit_mode_t ed)
+    void edit_mode (int seq, edit_mode_t ed)
     {
         if (not_nullptr(get_sequence(seq))
-            return get_sequence(seq)->edit_mode(ed);
+            get_sequence(seq)->edit_mode(ed);
     }
 
 #endif  // USE_SEQUENCE_EDIT_MODE

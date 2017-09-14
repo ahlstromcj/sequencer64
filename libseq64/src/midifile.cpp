@@ -1497,9 +1497,15 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         seqspec = parse_prop_header(file_size);
         if (seqspec == c_seq_colours)
         {
-            int colour = int(read_long());      /* read_short() or byte!    */
-            if (colour > 0)
-                p.set_seq_colour(seqnum);       /* will pass to sequence    */
+            for (int track = 0; track < c_max_sequence; ++track)
+            {
+                if (p.is_active(track))
+                {
+                    int colour = int(read_byte());  /* read_short() or byte! */
+                    if (colour > 0)
+                        p.set_seq_colour(track, colour);
+                }
+            }
         }
 
 #endif  // USE_SEQUENCE_COLOR

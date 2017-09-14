@@ -69,6 +69,16 @@
 #undef  USE_SEQUENCE_EDIT_MODE
 
 /**
+ *  Kepler34 has a feature for coloring sequence patterns.  Not supportable in
+ *  our current Gtkmm implementation, but we're making room for it now.
+ *
+ *  Compiles, but don't enable until we decide it's worth storing an extra
+ *  1024 bytes in the MIDI file.
+ */
+
+#undef   USE_SEQUENCE_COLOR
+
+/**
  *  Kepler34 has a song-recording mode that we are still exploring and adding,
  *  marked by the following macro to keep it out of the way until the feature
  *  is ready for prime time.  This feature has been requested by some users of
@@ -76,7 +86,6 @@
  */
 
 #undef  USE_SONG_RECORDING
-
 
 /**
  * Odds and ends that we missed.  This value allows non-notes to be included

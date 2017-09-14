@@ -132,7 +132,7 @@ sequence::sequence (int ppqn)
     m_seq_colour                (0),
 #endif
 #ifdef USE_SEQUENCE_EDIT_MODE
-    m_seq_edit_mode             (TODO),         /* edit_mode_t              */
+    m_seq_edit_mode             (EDIT_MODE_NOTE),   /* edit_mode_t           */
 #endif
     m_length                    (0),            /* set in constructor body   */
     m_snap_tick                 (0),            /* set in constructor body   */
@@ -1093,14 +1093,6 @@ sequence::off_one_shot ()
  * \threadsafe
  */
 
-/*
- * TODO  match up with MidiSequence::play()
- * TODO
- * TODO
- * TODO
- * TODO
- */
-
 void
 sequence::play
 (
@@ -1126,7 +1118,17 @@ sequence::play
          */
 
         if (playback_mode)                  /* song mode: on/off triggers   */
+        {
+
+#ifdef USE_SONG_RECORDING
+            if (get_song_recording())
+            {
+                grow_trigger(m_parent.song_recording_tick(), end_tick, 10);
+                set_dirty_mp();
+            }
+#endif
             trigger_turning_off = m_triggers.play(start_tick, end_tick);
+        }
     }
     if (m_playing)                          /* play notes in frame          */
     {
@@ -3810,6 +3812,29 @@ sequence::move_selected_triggers_to
     return m_triggers.move_selected(tick, adjustoffset, which);
 }
 
+#ifdef USE_SEQUENCE_EDIT_MODE
+
+/**
+ *  Used in the song-sequence grid TODO TODO TODO
+ */
+
+void
+offset_selected_triggers_by
+(
+    midipulse tick, triggers::grow_edit_t editmode  //trigger_edit
+)
+{
+    automutex locker(m_mutex);
+    m_triggers.offset_selected_triggers_by(tick, editmode);
+}
+
+#endif
+
+/**
+ *
+ */
+
+
 /**
  *  Get the ending value of the last trigger in the trigger-list.
  *
@@ -5490,35 +5515,29 @@ sequence::song_recording_stop (midipulse tick)
 
 /**
  *
+ *  If the Note-On event is after the Note-Off event, the pattern wraps around,
+ *  so that we play it no to resume.
  */
 
 void
 sequence::resume_note_ons (midipulse tick)
 {
-    TODO:  See MidiSequence::resumeNoteOns()
-    list<MidiEvent>::iterator e = m_list_event.begin();
+    std::list<MidiEvent>::iterator e = m_list_event.begin();
     while (e != m_list_event.end())
     {
-        if ((*e).is_note_on())
+        if (e->is_note_on())
         {
-            MidiEvent *l = (*e).get_linked();
-
-            //if the note on event is after the note off
-            //(seq wraps around)
-            //play it now to resume
-            long onTime = (*e).get_timestamp();
-            long offTime = (*l).get_timestamp();
-            if (onTime < tick % m_length &&
-                    offTime > tick % m_length)
+            MidiEvent * link = e->get_linked();
+            if (not_nullptr(link))
             {
-                put_event_on_bus(&(*e));
+                midipulse on = e->get_timestamp();      /* see banner notes */
+                midipulse off = link->get_timestamp();
+                if (on < (tick % m_length) && off > (tick % m_length))
+                    put_event_on_bus(e);
             }
         }
-
-        /* advance */
-        e++;
+        ++e;                                            /* advance          */
     }
-
 }
 
 #endif  // USE_SONG_RECORDING

@@ -306,13 +306,18 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
     }
     if (is_adding() && is_adding_pressed())
     {
-        midipulse seqlength = seq->get_length();
         midipulse tick;
         roll.convert_x(x, tick);
-        tick -= (tick % seqlength);
 
-        midipulse length = seqlength;
-        seq->grow_trigger(roll.m_drop_tick, tick, length);
+        midipulse seqlength = seq->get_length();
+#ifdef USE_SONG_RECORDING
+        if (perf().get_song_record_snap())          /* snap to seq length   */
+#endif
+            tick -= (tick % seqlength);
+
+        // midipulse length = seqlength;
+
+        seq->grow_trigger(roll.m_drop_tick, tick, seqlength);
         roll.draw_all();
         result = true;
     }
@@ -332,26 +337,77 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
         midipulse tick;
         roll.convert_x(x, tick);
         tick -= roll.m_drop_tick_trigger_offset;
-        tick -= tick % roll.m_snap;
+#ifdef USE_SONG_RECORDING
+        if (perf().get_song_record_snap())          /* snap to seq length   */
+#endif
+            tick -= tick % roll.m_snap;
+
         if (roll.m_moving)
         {
+#ifdef USE_SONG_RECORDING
+            for (int seqid = m_seq_l; seqid < m_seq_h; ++seqid)
+            {
+                if (perf().is_active(seqid)
+                {
+                    if (m_last_tick != 0)
+                        perf().get_sequence(seqid) ->
+                            offset_selected_triggers_by(-(m_last_tick - tick));
+                }
+            }
+#else
             seq->move_selected_triggers_to(tick, true);
+#endif
             result = true;
         }
         if (roll.m_growing)
         {
             if (roll.m_grow_direction)
             {
+#ifdef USE_SONG_RECORDING
+                for (int seqid = m_seq_l; seqid < m_seq_h; ++seqid)
+                {
+                    if (perf().is_active(seqid)
+                    {
+                        if (m_last_tick != 0)
+                        {
+                            perf().get_sequence(seqid) ->
+                                offset_selected_triggers_by
+                                (
+                                    -(m_last_tick - tick), GROW_START
+                                );
+                        }
+                    }
+                }
+#else
                 seq->move_selected_triggers_to
                 (
                     tick, false, triggers::GROW_START
                 );
+#endif
             }
             else
             {
+#ifdef USE_SONG_RECORDING
+                for (int seqid = m_seq_l; seqid < m_seq_h; ++seqid)
+                {
+                    if (perf().is_active(seqid)
+                    {
+                        if (m_last_tick != 0)
+                        {
+                            perf().get_sequence(seqid) ->
+                                offset_selected_triggers_by
+                                (
+                                    -(m_last_tick - tick), GROW_END
+                                );
+                        }
+                    }
+                }
+#else
                 seq->move_selected_triggers_to
                 (
-                    tick - 1, false, triggers::GROW_END);
+                    tick - 1, false, triggers::GROW_END
+                );
+#endif
             }
             result = true;
         }

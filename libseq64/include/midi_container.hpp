@@ -188,6 +188,10 @@ namespace seq64
  *      build-configurable SEQ64_STAZED_TRANSPOSE macro, but here we
  *      reserved the value even if that option is not enabled by the user.
  *      There are additional values from Stazed/seq32, not yet used.
+ *
+ * \note
+ *      These values are compatible with Seq32, but they are not compatible
+ *      with Kepler34.
  */
 
 const midilong c_midibus     =  0x24240001; /**< Track buss number.         */

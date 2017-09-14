@@ -104,8 +104,8 @@ enum draw_type_t
 
 enum edit_mode_t
 {
-    EDIT_MODE_NOTE,         /**< Edit as Note input.  TODO.                 */
-    EDIT_MODE_DRUM          /**< Edit as Drum input.  TODO.                 */
+    EDIT_MODE_NOTE,         /**< Edit as Note input, the normal edit mode.  */
+    EDIT_MODE_DRUM          /**< Edit as Drum input, using short notes.     */
 };
 
 #endif  // USE_SEQUENCE_EDIT_MODE
@@ -115,6 +115,8 @@ enum edit_mode_t
  *  be used in the current versions of Sequencer64, because their color is
  *  determined by the font bitmap.  The color will be a number pointing to an
  *  RGB entry in a palette.  A future feature, we're making room for it here.
+ *
+ *  TODO:  Add a value for an invalid color code.
  */
 
 typedef unsigned char seq_colour_t;
@@ -1429,6 +1431,12 @@ public:
         midipulse tick, bool adjust_offset,
         triggers::grow_edit_t which = triggers::GROW_MOVE
     );
+#ifdef USE_SEQUENCE_EDIT_MODE
+    void offset_selected_triggers_by
+    (
+        midipulse tick, triggers::grow_edit_t editmode  //trigger_edit
+    );
+#endif
     midipulse selected_trigger_start ();
     midipulse selected_trigger_end ();
     midipulse get_max_trigger ();

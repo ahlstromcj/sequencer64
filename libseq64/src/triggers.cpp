@@ -137,11 +137,6 @@ triggers::operator = (const triggers & rhs)
         m_iterator_play_trigger = rhs.m_iterator_play_trigger;
         m_iterator_draw_trigger = rhs.m_iterator_draw_trigger;
         m_trigger_copied = rhs.m_trigger_copied;
-        
-        /*
-         * \new ca 2016-02-14
-         */
-
         m_ppqn = rhs.m_ppqn;
         m_length = rhs.m_length;
     }
@@ -240,9 +235,8 @@ triggers::play
 )
 {
     bool result = false;                    /* turns off after frame play */
-    bool trigger_state = false;
 
-#ifdef USE_SONG_RECORDING
+#ifdef USE_SONG_RECORDING_XXX
     if (get_song_recording())
     {
         grow_trigger(m_parent.song_recording_tick(), end_tick, 10);
@@ -252,6 +246,7 @@ triggers::play
 
     midipulse trigger_offset = 0;
     midipulse trigger_tick = 0;
+    bool trigger_state = false;
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
 
@@ -326,6 +321,9 @@ triggers::play
         {
             end_tick = trigger_tick;                    /* on, turning off  */
             result = true;                              /* done             */
+#ifdef USE_SONG_RECORDING_XXXX
+            trigger_turning_off = true;
+#endif
         }
     }
 
@@ -972,6 +970,37 @@ triggers::move_selected (midipulse tick, bool fixoffset, grow_edit_t which)
     }
     return result;
 }
+
+#ifdef USE_SEQUENCE_EDIT_MODE
+
+void
+triggers::offset_selected_triggers_by
+(
+    midipulse tick, grow_edit_t editmode  //trigger_edit
+)
+{
+    // List<MidiTrigger>::iterator i = m_list_trigger.begin();
+    // List<MidiTrigger>::iterator s = m_list_trigger.begin();
+
+    List::iterator i = m_triggers.begin();
+    List::iterator s = m_triggers.begin();
+    while (i != m_triggers.end())
+    {
+        if (i->m_selected)
+        {
+            if (editmode == GROW_START || editmode == MOVE)
+                i->m_tick_start += tick;
+
+            if (editmode == GROW_END || editmode == MOVE)
+                i->m_tick_end += tick;
+
+            if (editmode == MOVE)
+                i->m_offset += tick;
+        }
+        ++i;
+    }
+}
+#endif  // USE_SEQUENCE_EDIT_MODE
 
 /**
  *  Get the ending value of the last trigger in the trigger-list.

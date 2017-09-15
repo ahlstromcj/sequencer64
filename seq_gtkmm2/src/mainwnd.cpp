@@ -630,7 +630,9 @@ mainwnd::mainwnd
     );
     tophbox->pack_start(*m_button_song_record, false, false);  /* no padding */
 
-    TODO:  add and pack the song-snap button as well.
+    ///////////////////////////////////////////////
+    // TODO:  add and pack the song-snap button as well.
+    ///////////////////////////////////////////////
 
 #endif
 
@@ -1637,10 +1639,14 @@ mainwnd::toggle_song_record ()
     }
 }
 
+/**
+ *
+ */
+
 void
 mainwnd::set_song_playback (bool playsong)
 {
-    perf().set_playback_mode(playsong);
+    perf().playback_mode(playsong);
     if (playsong)
     {
         m_button_song_record->set_active(true);
@@ -1648,8 +1654,10 @@ mainwnd::set_song_playback (bool playsong)
     else
     {
         perf().set_song_recording(false);
-        m_button_song_record->set_active(false);
-        m_button_song_record->set_checked(false);
+        ////////////////////
+        // TODO: m_button_song_record->set_active(false);
+        //       m_button_song_record->set_checked(false);
+        ////////////////////
     }
 }
 

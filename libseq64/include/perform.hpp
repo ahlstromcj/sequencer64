@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-14
+ * \updates       2017-09-15
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1593,10 +1593,10 @@ public:
     {
         m_tick = tick;              /* printf("tick = %ld\n", m_tick); */
 #ifdef USE_SONG_RECORDING
-        if (m_jack_running)
+        if (m_jack_asst.is_running())
             position_jack(tick);
 
-        get_master_midi_bus()->continue_from(tick);
+        master_bus().continue_from(tick);
         m_current_tick = tick;
 #endif
     }
@@ -2066,6 +2066,7 @@ public:
 
     /**
      *  Retrieves the actual sequence, based on the pattern/sequence number.
+     *  This is the non-const version.
      *
      * \param seq
      *      The prospective sequence number.
@@ -2309,18 +2310,20 @@ private:
      * Deals with the editing mode of the specific sequence.
      */
 
-    edit_mode_t edit_mode (int seq) const
+    edit_mode_t seq_edit_mode (int seq) const
     {
-        if (not_nullptr(get_sequence(seq))
-            return get_sequence(seq)->edit_mode();
+        const sequence * sp = get_sequence(seq);
+        if (not_nullptr(sp))
+            return sp->edit_mode();
         else
             return edit_mode_t(0);
     }
 
-    void edit_mode (int seq, edit_mode_t ed)
+    void seq_edit_mode (int seq, edit_mode_t ed)
     {
-        if (not_nullptr(get_sequence(seq))
-            get_sequence(seq)->edit_mode(ed);
+        sequence * sp = get_sequence(seq);
+        if (not_nullptr(sp))
+            sp->edit_mode(ed);
     }
 
 #endif  // USE_SEQUENCE_EDIT_MODE
@@ -2342,6 +2345,8 @@ private:
         if (! f)
             song_recording_stop();
     }
+
+    void song_recording_stop ();
 
     bool get_song_record_snap () const
     {
@@ -2605,13 +2610,22 @@ private:
     }
 
     /**
+     * \getter m_playback_mode
+     */
+
+    bool playback_mode ()
+    {
+        return m_playback_mode;
+    }
+
+    /**
      * \setter m_playback_mode
      *
      * \param playbackmode
      *      The value of the playback mode flag to be set.
      */
 
-    void set_playback_mode (bool playbackmode)
+    void playback_mode (bool playbackmode)
     {
         m_playback_mode = playbackmode;
     }

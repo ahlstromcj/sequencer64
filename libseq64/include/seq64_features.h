@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-09-13
+ * \updates       2017-09-14
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -66,7 +66,7 @@
  *  is ready for prime time.
  */
 
-#undef  USE_SEQUENCE_EDIT_MODE
+#define USE_SEQUENCE_EDIT_MODE
 
 /**
  *  Kepler34 has a feature for coloring sequence patterns.  Not supportable in
@@ -76,7 +76,7 @@
  *  1024 bytes in the MIDI file.
  */
 
-#undef   USE_SEQUENCE_COLOR
+#undef  USE_SEQUENCE_COLOR
 
 /**
  *  Kepler34 has a song-recording mode that we are still exploring and adding,
@@ -85,7 +85,7 @@
  *  Sequencer64.
  */
 
-#undef  USE_SONG_RECORDING
+#define USE_SONG_RECORDING
 
 /**
  * Odds and ends that we missed.  This value allows non-notes to be included

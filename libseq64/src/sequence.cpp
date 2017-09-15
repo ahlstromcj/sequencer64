@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-13
+ * \updates       2017-09-14
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1032,37 +1032,6 @@ sequence::on_queued ()
     set_dirty_mp();
 }
 
-#ifdef USE_SONG_RECORDING
-
-/**
- *
- */
-
-void
-sequence::toggle_one_shot ()
-{
-    automutex locker(m_mutex);
-    set_dirty_mp();
-    m_one_shot = ! m_one_shot;
-    m_one_shot_tick = m_last_tick - (m_last_tick % m_length) + m_length;
-    m_off_from_snap = true;
-}
-
-/**
- *
- */
-
-void
-sequence::off_one_shot ()
-{
-    automutex locker(m_mutex);
-    set_dirty_mp();
-    m_one_shot = false;
-    m_off_from_snap = true;
-}
-
-#endif  // USE_SONG_RECORDING
-
 /**
  *  The play() function dumps notes starting from the given tick, and it
  *  pre-buffers ahead.  This function is called by the sequencer thread,
@@ -1121,9 +1090,10 @@ sequence::play
         {
 
 #ifdef USE_SONG_RECORDING
-            if (get_song_recording())
+            if (song_recording())
             {
-                grow_trigger(m_parent.song_recording_tick(), end_tick, 10);
+//              grow_trigger(m_parent->song_recording_tick(), end_tick, 10);
+                grow_trigger(song_recording_tick(), end_tick, 10);
                 set_dirty_mp();
             }
 #endif
@@ -3671,6 +3641,33 @@ sequence::split_trigger (midipulse splittick)
     m_triggers.split(splittick);
 }
 
+#ifdef USE_SONG_RECORDING
+
+/**
+ *
+ */
+
+void
+sequence::half_split_trigger (midipulse splittick)
+{
+    automutex locker(m_mutex);
+    m_triggers.half_split(splittick);
+}
+
+/**
+ *
+ */
+
+void
+sequence::exact_split_trigger (midipulse splittick)
+{
+    automutex locker(m_mutex);
+    m_triggers.exact_split(splittick);
+}
+
+#endif  // USE_SONG_RECORDING
+
+
 /**
  *  Adjusts trigger offsets to the length specified for all triggers, and undo
  *  triggers.
@@ -3819,13 +3816,13 @@ sequence::move_selected_triggers_to
  */
 
 void
-offset_selected_triggers_by
+sequence::offset_selected_triggers_by
 (
     midipulse tick, triggers::grow_edit_t editmode  //trigger_edit
 )
 {
     automutex locker(m_mutex);
-    m_triggers.offset_selected_triggers_by(tick, editmode);
+    m_triggers.offset_selected_by(tick, editmode);
 }
 
 #endif
@@ -5391,21 +5388,26 @@ sequence::set_parent (perform * p)
 
 #ifdef USE_SONG_RECORDING
 
+/**
+ *  Why don't we see this in kepler34???
+ */
+
 void
-sequence::play_queue (midipulse tick, bool playbackmode, bool resume_note_ons)
+sequence::play_queue (midipulse tick, bool playbackmode, bool resumenoteons)
 {
     if (check_queued_tick(tick))
     {
-        play(get_queued_tick() - 1, playbackmode /* , resume_note_ons */ );
-        toggle_playing(tick, resume_note_ons);
+        play(get_queued_tick() - 1, playbackmode /* , resumenoteons */ );
+        toggle_playing(tick, resumenoteons);
     }
     if (one_shot() && one_shot_tick() <= tick)
     {
-        play(one_shot_tick() - 1, m_playback_mode, resume_note_ons);
-        toggle_playing(tick, resume_note_ons);
+//      play(one_shot_tick() - 1, m_parent->playback_mode, resumenoteons);
+        play(one_shot_tick() - 1, playbackmode, resumenoteons);
+        toggle_playing(tick, resumenoteons);
         toggle_queued();
     }
-    play(tick, playbackmode, resume_note_ons);
+    play(tick, playbackmode, resumenoteons);
 }
 
 #else
@@ -5462,11 +5464,25 @@ sequence::handle_size (midipulse start, midipulse finish)
  */
 
 void
+sequence::toggle_one_shot ()
+{
+    automutex locker(m_mutex);
+    set_dirty_mp();
+    m_one_shot = ! m_one_shot;
+    m_one_shot_tick = m_last_tick - (m_last_tick % m_length) + m_length;
+    m_off_from_snap = true;
+}
+
+/**
+ *
+ */
+
+void
 sequence::off_one_shot ()
 {
     automutex locker(m_mutex);
     set_dirty_mp();
-    m_queued = false;
+    m_one_shot = false;
     m_off_from_snap = true;
 }
 
@@ -5508,7 +5524,8 @@ sequence::song_recording_stop (midipulse tick)
     m_song_playback_block = m_song_recording = false;
     if (m_song_recording_snap)
     {
-        grow_triggers(m_song_recording_tick, tick, m_length - (tick % m_length));
+        midipulse len = m_length - (tick % m_length);
+        m_triggers.grow(m_song_recording_tick, tick, len);
         m_off_from_snap = true;
     }
 }
@@ -5522,18 +5539,18 @@ sequence::song_recording_stop (midipulse tick)
 void
 sequence::resume_note_ons (midipulse tick)
 {
-    std::list<MidiEvent>::iterator e = m_list_event.begin();
-    while (e != m_list_event.end())
+    event_list::iterator e = m_events.begin();
+    while (e != m_events.end())
     {
         if (e->is_note_on())
         {
-            MidiEvent * link = e->get_linked();
+            event * link = e->get_linked();
             if (not_nullptr(link))
             {
                 midipulse on = e->get_timestamp();      /* see banner notes */
                 midipulse off = link->get_timestamp();
                 if (on < (tick % m_length) && off > (tick % m_length))
-                    put_event_on_bus(e);
+                    put_event_on_bus(*e);
             }
         }
         ++e;                                            /* advance          */

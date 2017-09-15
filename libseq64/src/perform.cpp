@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-09-12
+ * \updates       2017-09-15
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -321,7 +321,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_song_recording            (false),
     m_song_record_snap          (false),
     m_resume_note_ons           (false),
-    m_current_tick              (false), TODO: find where set in out func!
+    m_current_tick              (false), // TODO: find where set in out func!
 #endif
     m_playback_mode             (false),
     m_ppqn                      (choose_ppqn(ppqn)),
@@ -2835,7 +2835,7 @@ perform::inner_start (bool songmode)
     m_condition_var.lock();
     if (! is_running())
     {
-        set_playback_mode(songmode);
+        playback_mode(songmode);
         if (songmode)
             off_sequences();
 
@@ -4494,7 +4494,7 @@ perform::sequence_playing_toggle (int seq)
         bool is_oneshot = (m_control_status & c_status_oneshot) != 0;
         if (is_oneshot && ! m_seqs[seq]->get_playing())
         {
-            m_seqs[seq]->toggle_oneshot();
+            m_seqs[seq]->toggle_one_shot();
         }
         else
 
@@ -4540,7 +4540,7 @@ perform::sequence_playing_toggle (int seq)
         if (get_song_recording())
         {
             sequence * seqp = get_sequence(seq);
-            midipulse seq_length = seqp->getLength();
+            midipulse seq_length = seqp->get_length();
             midipulse tick = get_tick();
             bool trigger_state = seqp->get_trigger_state(tick);
             if (trigger_state)          /* if sequence already playing  */
@@ -4550,7 +4550,7 @@ perform::sequence_playing_toggle (int seq)
                  * block here.
                  */
 
-                if (seqp->get_song_recording())
+                if (seqp->song_recording())
                 {
                     seqp->song_recording_stop(tick);
                 }

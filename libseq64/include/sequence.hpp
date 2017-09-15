@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-09-13
+ * \updates       2017-09-14
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1162,23 +1162,6 @@ public:
         set_playing(! get_playing());
     }
 
-#ifdef USE_SONG_RECORDING
-
-    void toggle_playing (midipulse tick, bool resume_note_ons = false)
-    {
-        toggle_playing();
-        if (get_playing() && resume_note_ons)
-            resume_note_ons(tick);
-
-        m_off_from_snap = false;
-    }
-
-    void resume_note_ons (midipulse tick);
-    void toggle_one_shot ();
-    void off_one_shot ();
-
-#endif
-
     void toggle_queued ();
     void off_queued ();
     void on_queued ();
@@ -1277,7 +1260,7 @@ public:
 
     bool song_recording () const
     {
-        return m_song_recording
+        return m_song_recording;
     }
 
     /**
@@ -1308,15 +1291,6 @@ public:
     }
 
     /**
-     * \getter m_song_recording
-     */
-
-    bool song_recording () const
-    {
-        return m_song_recording;
-    }
-
-    /**
      * \getter m_song_recording_snap
      */
 
@@ -1333,6 +1307,18 @@ public:
     {
         return m_song_recording_tick;
     }
+
+    void toggle_playing (midipulse tick, bool resumenoteons = false)
+    {
+        toggle_playing();
+        if (get_playing() && resumenoteons)
+            resume_note_ons(tick);
+
+        m_off_from_snap = false;
+    }
+
+    void resume_note_ons (midipulse tick);
+    void toggle_one_shot ();
 
 #endif  // USE_SONG_RECORDING
 
@@ -1364,12 +1350,15 @@ public:
     void set_midi_channel (midibyte ch, bool user_change = false);
     void print () const;
     void print_triggers () const;
+
 #ifdef USE_SONG_RECORDING
     void play (midipulse tick, bool playback_mode, bool resume = false);
+    void play_queue (midipulse tick, bool playbackmode, bool resume);
 #else
     void play (midipulse tick, bool playback_mode);
-#endif
     void play_queue (midipulse tick, bool playbackmode);
+#endif
+
     bool add_note
     (
         midipulse tick, midipulse len, int note,
@@ -1402,6 +1391,8 @@ public:
         midipulse offset = 0, bool adjust_offset = true
     );
     void split_trigger (midipulse tick);
+    void half_split_trigger (midipulse tick);
+    void exact_split_trigger (midipulse tick);
     void grow_trigger (midipulse tick_from, midipulse tick_to, midipulse len);
     void del_trigger (midipulse tick);
     bool get_trigger_state (midipulse tick);

@@ -1510,11 +1510,14 @@ midifile::parse_proprietary_track (perform & p, int file_size)
 
 #endif  // USE_SEQUENCE_COLOR
 
-#ifdef USE_SEQUENCE_EDIT_MODE
+#ifdef USE_SEQUENCE_EDIT_MODE_XXX
 
         /*
          * Sequence editing mode are a feature of Kepler34.  We don't know
          * what these modes do, yet, but let's leave room for them.
+         *
+         * Consider storing this in the MIDI file. Also the current code below
+         * will SKIP DATA!!!  So we are disabling it!!!
          */
 
         seqspec = parse_prop_header(file_size);
@@ -1523,7 +1526,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             for (int track = 0; track < c_max_sequence; ++track)
             {
                 if (p.is_active(track))
-                    p.set_seq_edit_mode(track, edit_mode_t(read_long());
+                    p.seq_edit_mode(track, edit_mode_t(read_long()));
             }
         }
 

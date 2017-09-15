@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2017-09-11
+ * \updates       2017-09-15
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -234,9 +234,12 @@ triggers::play
 #endif
 )
 {
-    bool result = false;                    /* turns off after frame play */
+    bool result = false;                    /* turns off after frame play   */
+#ifdef USE_SONG_RECORDING
+    midipulse tick = start_tick;            /* saved for later              */
+#endif
 
-#ifdef USE_SONG_RECORDING_XXX
+#ifdef USE_SONG_RECORDING_XXX               // INVESTIGATE...
     if (get_song_recording())
     {
         grow_trigger(m_parent.song_recording_tick(), end_tick, 10);
@@ -263,7 +266,7 @@ triggers::play
             start_tick == i->tick_end() || end_tick == i->tick_end()
         )
         {
-            m_song_playback_block = false;
+            m_parent.song_playback_block(false);
         }
 
 #endif  // USE_SONG_RECORDING
@@ -309,7 +312,8 @@ triggers::play
 
             /*
              * If we have triggered between a Note On and a Note Off, then
-             * play it.
+             * play it.  Make sure it is right to use the saved start-tick
+             * here!
              */
 
             if (resume_note_ons)
@@ -330,7 +334,7 @@ triggers::play
     bool offplay = m_triggers.size() == 0 && m_parent.get_playing();
 #ifdef USE_SONG_RECORDING
     if (offplay)
-        offplay = ! m_song_playback_block;
+        offplay = ! m_parent.song_playback_block();
 #endif
 
     if (offplay)
@@ -603,6 +607,51 @@ triggers::split (midipulse splittick)
         }
     }
 }
+
+#ifdef USE_SONG_RECORDING
+
+/**
+ *  If the tick is between the start and end of this trigger...
+ */
+
+void
+triggers::half_split (midipulse splittick)
+{
+    List::iterator i = m_triggers.begin();
+    while (i != m_triggers.end())
+	{
+        if ( i->tick_start() <= splittick && i->tick_end() >= splittick )
+        {
+            long tick = i->tick_end() - i->tick_start();
+            tick += 1;
+            tick /= 2;
+            split(*i, i->tick_start() + tick);
+            break;
+        }
+        ++i;
+    }
+}
+
+/**
+ *  If the tick is between the start and end of this trigger...
+ */
+
+void
+triggers::exact_split (midipulse splittick)
+{
+    List::iterator i = m_triggers.begin();
+    while (i != m_triggers.end())
+	{
+        if (i->tick_start() <= splittick && i->tick_end() >= splittick)
+        {
+            split(*i, splittick);
+            break;
+        }
+        ++i;
+    }
+}
+
+#endif	// USE_SONG_RECORDING
 
 /**
  *  Adjusts trigger offsets to the length specified for all triggers, and undo
@@ -974,32 +1023,26 @@ triggers::move_selected (midipulse tick, bool fixoffset, grow_edit_t which)
 #ifdef USE_SEQUENCE_EDIT_MODE
 
 void
-triggers::offset_selected_triggers_by
-(
-    midipulse tick, grow_edit_t editmode  //trigger_edit
-)
+triggers::offset_selected_by (midipulse tick, grow_edit_t editmode)
 {
-    // List<MidiTrigger>::iterator i = m_list_trigger.begin();
-    // List<MidiTrigger>::iterator s = m_list_trigger.begin();
-
     List::iterator i = m_triggers.begin();
-    List::iterator s = m_triggers.begin();
     while (i != m_triggers.end())
     {
-        if (i->m_selected)
+        if (i->selected())
         {
-            if (editmode == GROW_START || editmode == MOVE)
-                i->m_tick_start += tick;
+            if (editmode == GROW_START || editmode == GROW_MOVE)
+                i->increment_tick_start(tick);
 
-            if (editmode == GROW_END || editmode == MOVE)
-                i->m_tick_end += tick;
+            if (editmode == GROW_END || editmode == GROW_MOVE)
+                i->increment_tick_end(tick);
 
-            if (editmode == MOVE)
-                i->m_offset += tick;
+            if (editmode == GROW_MOVE)
+                i->increment_offset(tick);
         }
         ++i;
     }
 }
+
 #endif  // USE_SEQUENCE_EDIT_MODE
 
 /**

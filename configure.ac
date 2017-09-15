@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-09-09
+dnl \update        2017-09-15
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -662,7 +662,7 @@ dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-09-09"
+#define VERSION_DATE_SHORT "2017-09-15"
 #define VERSION "0.93.5"
 
 )
@@ -699,9 +699,11 @@ dnl So we put that requirement back, and had to fix some issues with
 dnl conditional compilation.
 dnl
 dnl 2017-08-25:  Removed the already-configured (above) -Wl,--as-needed option.
+dnl
+dnl 2017-09-14:  Replaced c++11 with c++14 to support glibmm-2.24 update.
 
 CFLAGS="$CFLAGS $COMMONFLAGS"
-CXXFLAGS="$CFLAGS -std=c++11 -Wno-variadic-macros -Wno-deprecated-declarations"
+CXXFLAGS="$CFLAGS -std=c++14 -Wno-variadic-macros -Wno-deprecated-declarations"
 
 dnl Try to fix  the  build flags; we enable RTMIDI by default, but have to
 dnl disable it when ALSA or PortMIDI builds are specified.  We have to

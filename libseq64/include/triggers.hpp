@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2017-09-11
+ * \updates       2017-09-14
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -439,6 +439,12 @@ public:
     );
     void adjust_offsets_to_length (midipulse newlen);
     void split (midipulse tick);
+
+#ifdef USE_SONG_RECORDING
+    void half_split (midipulse tick);
+    void exact_split (midipulse tick);
+#endif
+
     void grow (midipulse tickfrom, midipulse tickto, midipulse length);
     void remove (midipulse tick);
     bool get_state (midipulse tick);
@@ -452,10 +458,6 @@ public:
     (
         midipulse tick, bool adjustoffset, grow_edit_t which = GROW_MOVE
     );
-
-#ifdef USE_SEQUENCE_EDIT_MODE
-    void offset_selected (midipulse tick, grow_edit_t editmode); // trigger_edit
-#endif
 
     midipulse get_selected_start ();
     midipulse get_selected_end ();
@@ -499,6 +501,10 @@ public:
     }
 
 private:
+
+#ifdef USE_SEQUENCE_EDIT_MODE
+    void offset_selected_by (midipulse tick, grow_edit_t editmode);
+#endif
 
     midipulse adjust_offset (midipulse offset);
     void split (trigger & trig, midipulse splittick);

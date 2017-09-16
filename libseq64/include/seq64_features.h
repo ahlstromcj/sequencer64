@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-09-14
+ * \updates       2017-09-15
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -86,6 +86,13 @@
  */
 
 #define USE_SONG_RECORDING
+
+/**
+ *  Kepler34 allows the user to select (and move) more than one sequence in
+ *  the Song Editor.
+ */
+
+#define  USE_SONG_BOX_SELECT
 
 /**
  * Odds and ends that we missed.  This value allows non-notes to be included

@@ -1626,7 +1626,7 @@ void
 mainwnd::toggle_song_record ()
 {
     m_is_song_recording = ! m_is_song_recording;
-    perf().set_song_recording(m_is_song_recording);
+    perf().song_recording(m_is_song_recording);
     if (m_is_song_recording)
     {
         Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_on_xpm));
@@ -1653,7 +1653,7 @@ mainwnd::set_song_playback (bool playsong)
     }
     else
     {
-        perf().set_song_recording(false);
+        perf().song_recording(false);
         ////////////////////
         // TODO: m_button_song_record->set_active(false);
         //       m_button_song_record->set_checked(false);

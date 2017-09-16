@@ -2168,6 +2168,39 @@ public:
         m_seqs_in_set = seqs;
     }
 
+#ifdef USE_SONG_RECORDING
+
+    /*
+     * This is a long-standing request from user's, adapted from Kepler34.
+     */
+
+    bool song_recording () const
+    {
+        return m_song_recording;
+    }
+
+    bool song_record_snap () const
+    {
+        return m_song_record_snap;
+    }
+
+    bool resume_note_ons () const
+    {
+        return m_resume_note_ons;
+    }
+
+#endif  // USE_SONG_RECORDING
+
+#ifdef USE_SONG_BOX_SELECT
+
+    void select_triggers_in_range
+    (
+        int seq_low, int seq_high, long tick_start, long tick_finish
+    );
+    void unselect_all_triggers ();
+
+#endif  // USE_SONG_RECORDING_EXTRA
+
 private:
 
     /**
@@ -2330,56 +2363,26 @@ private:
 
 #ifdef USE_SONG_RECORDING
 
-    /*
-     * This is a long-standing request from user's, adapted from Kepler34.
-     */
+    void song_recording_stop ();
 
-    bool get_song_recording () const
-    {
-        return m_song_recording;
-    }
-
-    void set_song_recording (bool f)
+    void song_recording (bool f)
     {
         m_song_recording = f;
         if (! f)
             song_recording_stop();
     }
 
-    void song_recording_stop ();
-
-    bool get_song_record_snap () const
-    {
-        return m_song_record_snap;
-    }
-
-    void set_song_record_snap (bool f)
+    void song_record_snap (bool f)
     {
         m_song_record_snap = f;
     }
 
-    bool get_resume_note_ons () const
-    {
-        return m_resume_note_ons;
-    }
-
-    void set_resume_note_ons (bool f)
+    void resume_note_ons (bool f)
     {
         m_resume_note_ons = f;
     }
 
 #endif  // USE_SONG_RECORDING
-
-#ifdef USE_SONG_RECORDING_EXTRA
-
-    void select_triggers_in_range
-    (
-        int seq_low, int seq_high, long tick_start, long tick_finish
-    );
-    void unselect_all_triggers ();
-
-#endif  // USE_SONG_RECORDING_EXTRA
-
 
     /**
      * \setter m_mode_group

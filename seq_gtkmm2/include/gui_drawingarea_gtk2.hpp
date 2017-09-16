@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-08-14
+ * \updates       2017-09-16
  * \license       GNU GPLv2 or above
  *
  *  We've added a number of wrapper functions for the "draw-rectangle",
@@ -86,7 +86,7 @@ public:
      *  A small helper structure representing a rectangle.
      */
 
-    struct rect
+    struct rect_obsolete
     {
         public: int x, y, height, width;
     };
@@ -207,10 +207,30 @@ public:
     }
 
     /**
+     * \getter m_window_x
+     *      This one matches what Qt 5 calls it.
+     */
+
+    int width () const
+    {
+        return m_window_x;
+    }
+
+    /**
      * \getter m_window_y
      */
 
     int window_y () const
+    {
+        return m_window_y;
+    }
+
+    /**
+     * \getter m_window_y
+     *      This one matches what Qt 5 calls it.
+     */
+
+    int height () const
     {
         return m_window_y;
     }

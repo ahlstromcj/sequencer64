@@ -240,7 +240,7 @@ triggers::play
 #endif
 
 #ifdef USE_SONG_RECORDING_XXX               // INVESTIGATE...
-    if (get_song_recording())
+    if (song_recording())
     {
         grow_trigger(m_parent.song_recording_tick(), end_tick, 10);
         set_dirty_mp();

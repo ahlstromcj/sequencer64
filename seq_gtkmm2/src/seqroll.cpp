@@ -997,6 +997,11 @@ seqroll::draw_selection_on_window ()
     set_line(Gdk::LINE_SOLID, thickness);   /* set_line_attributes()    */
     if (select_action())                    /* select, grow, drop       */
     {
+        /*
+         * \todo
+         *      Use rect::get().
+         */
+
         x = m_old.x;
         y = m_old.y;
         w = m_old.width;
@@ -1106,6 +1111,10 @@ seqroll::convert_tn (midipulse tick, int note, int & x, int & y)
  *
  *  We should refactor this function to use the utility class seqroll::rect as
  *  the destination for the conversion.
+ *
+ * \todo
+ *      Currently a duplicate of perfroll::xy_to_rect().  Needs to be moved
+ *      to the calculations module.
  *
  * \param x1
  *      The x value of the first corner.

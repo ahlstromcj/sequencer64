@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-16
+ * \updates       2017-09-16
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -138,6 +138,14 @@ perfroll::perfroll
             dynamic_cast<AbstractPerfInput &>(m_seq24_interaction) :
             dynamic_cast<AbstractPerfInput &>(m_fruity_interaction)
     ),
+#ifdef USE_SONG_BOX_SELECT
+    m_old                   (),
+    m_selected              (),
+    m_box_select            (false),
+    m_box_select_low        (SEQ64_NULL_SEQUENCE),
+    m_box_select_high       (SEQ64_NULL_SEQUENCE),
+    m_last_tick             (0),
+#endif
     m_moving                (false),
     m_growing               (false),
     m_grow_direction        (false)
@@ -773,8 +781,50 @@ perfroll::draw_sequence_on (int seqnum)
                     tickmarker += sequence_length;
                 }
             }
-        }
+        } // while (seq->get_next_trigger(tick_on, tick_off, selected, offset))
+    } // if (perf().is_active(seqnum))
+
+#ifdef USE_SONG_BOX_SELECT
+    if (m_box_select)
+    {
+        /*
+         * Set up to draw a solid black-lined selection box.
+         */
+
+        set_line(Gdk::LINE_SOLID, 1);
+
+        int x, y, w, h;
+        xy_to_rect
+        (
+            m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h
+        );
+
+        m_old.x = x;
+        m_old.y = y;
+        m_old.width = w;
+        m_old.height = h + c_names_y;
+        draw_rectangle_on_pixmap(black(), x, y, w, h + c_names_y);
     }
+
+    /*
+     * Draw border in black, then the "play-head" in orange.
+     */
+
+    draw_rectangle_on_pixmap(black(), 0, 0, width(), height() - 1);
+
+    long tick = perf().get_tick();
+    int progress_x = tick / (c_perf_scale_x * m_zoom);
+
+    /*
+     * Which one??
+     */
+
+    draw_line_on_pixmap(orange(), progress_x, 0, progress_x, m_window_y);
+//  draw_line(orange(), progress_x, 0, progress_x, m_window_y);
+//  draw_line(m_background, orange(), progress_x, 1, progress_x, height()-1);
+
+#endif  //  USE_SONG_BOX_SELECT
+
 }
 
 /**
@@ -846,7 +896,7 @@ perfroll::draw_drawable_row (long y)
     if (y >= 0)             /* make sure user didn't scroll up off window */
     {
         int s = y / m_names_y;
-        draw_drawable(0, s * m_names_y, 0, s * m_names_y, m_window_x, m_names_y);
+        draw_drawable(0, s*m_names_y, 0, s*m_names_y, m_window_x, m_names_y);
     }
 }
 
@@ -899,6 +949,97 @@ perfroll::snap_x (int & x)
 
     x -= (x % mod);
 }
+
+#ifdef USE_SONG_BOX_SELECT
+
+/**
+ *  This function performs a 'snap' action on y.
+ *
+ * \todo
+ *      For now it is a no-op, just to get the box-selection code to build.
+ *
+ * \param y
+ *      The y value to convert.
+ */
+
+void
+perfroll::snap_y (int & y)
+{
+#if 0
+    int mod = m_snap_y / m_perf_scale_y;
+    if (mod <= 0)
+        mod = 1;
+
+    x -= (x % mod);
+#endif
+}
+
+/**
+ *  Converts rectangle corner coordinates to a starting coordinate, plus a
+ *  width and height.  This function checks the mins / maxes, and then fills
+ *  in the x, y, width, and height values.
+ *
+ *  We should refactor this function to use the utility class seqroll::rect as
+ *  the destination for the conversion.
+ *
+ * \todo
+ *      Currently a duplicate of seqroll::xy_to_rect().  Needs to be moved
+ *      to the calculations module.
+ *
+ * \param x1
+ *      The x value of the first corner.
+ *
+ * \param y1
+ *      The y value of the first corner.
+ *
+ * \param x2
+ *      The x value of the second corner.
+ *
+ * \param y2
+ *      The y value of the second corner.
+ *
+ * \param [out] x
+ *      The destination for the x value in pixels.
+ *
+ * \param [out] y
+ *      The destination for the y value in pixels.
+ *
+ * \param [out] w
+ *      The destination for the rectangle width in pixels.
+ *
+ * \param [out] h
+ *      The destination for the rectangle height value in pixels.
+ */
+
+void
+perfroll::xy_to_rect
+(
+    int x1, int y1, int x2, int y2,
+    int & x, int & y, int & w, int & h
+)
+{
+    if (x1 < x2)
+    {
+        x = x1;
+        w = x2 - x1;
+    }
+    else
+    {
+        x = x2;
+        w = x1 - x2;
+    }
+    if (y1 < y2)
+    {
+        y = y1;
+        h = y2 - y1;
+    }
+    else
+    {
+        y = y2;
+        h = y1 - y2;
+    }
+}
+#endif  // USE_SONG_BOX_SELECT
 
 /**
  *  Converts an x-coordinate to a tick-offset on the x axis.
@@ -956,8 +1097,8 @@ perfroll::convert_xy (int x, int y, midipulse & d_tick, int & d_seq)
  *  Implements the horizontal zoom feature.
  *
  * \change ca 2016-04-05
- *      The initial zoom value is c_perf_scale_x (32).  We allow it to 
- *      range from 1 to 128, for now.  Smaller values zoom in.
+ *      The initial zoom value is c_perf_scale_x (32).  We allow it to range
+ *      from 1 to 128, for now.  Smaller values zoom in.
  */
 
 void

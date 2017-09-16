@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-02
+ * \updates       2017-09-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -55,6 +55,28 @@ class AbstractPerfInput
 
 private:
 
+#ifdef USE_SONG_BOX_SELECT_XXX
+
+    /**
+     *  Set to true if the song editor is in box-selection mode.
+     */
+
+    bool m_box_select;
+
+    /**
+     *  The lower sequence number for the box-select mode.
+     */
+
+    int m_box_select_low;
+
+    /**
+     *  The upper sequence number for the box-select mode.
+     */
+
+    int m_box_select_high;
+
+#endif  // USE_SONG_BOX_SELECT
+
     /**
      *  Indicates we are in the middle of adding a sequence segment to the
      *  performance.
@@ -75,6 +97,11 @@ public:
      */
 
     AbstractPerfInput () :
+#ifdef USE_SONG_BOX_SELECT_XXX
+        m_box_select        (false),
+        m_box_select_low    (SEQ64_NULL_SEQUENCE),
+        m_box_select_high   (SEQ64_NULL_SEQUENCE),
+#endif
         m_adding            (false),
         m_adding_pressed    (false)
     {

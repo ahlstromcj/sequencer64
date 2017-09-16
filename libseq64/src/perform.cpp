@@ -735,7 +735,7 @@ perform::select_group_mute (int mutegroup)
 #endif
 }
 
-#ifdef USE_SONG_RECORDING_EXTRA
+#ifdef USE_SONG_BOX_SELECT
 
 void
 perform::select_triggers_in_range
@@ -763,7 +763,7 @@ perform::unselect_all_triggers ()
     }
 }
 
-#endif  // USE_SONG_RECORDING_EXTRA
+#endif  // USE_SONG_BOX_SELECT
 
 /**
  *  Combines select_group_mute() and set_group_mute_state() so that the
@@ -4537,7 +4537,7 @@ perform::sequence_playing_toggle (int seq)
          * data.
          */
 
-        if (get_song_recording())
+        if (song_recording())
         {
             sequence * seqp = get_sequence(seq);
             midipulse seq_length = seqp->get_length();

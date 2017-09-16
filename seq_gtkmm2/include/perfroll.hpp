@@ -221,7 +221,7 @@ private:
      *  init_before_show() based on the maximum trigger found in the perform
      *  object, the ticks/bar, the PPQN, and the page factor.  Also can be
      *  increased in size in the increment_size() function [tied to the Grow
-     *  button].  Used in update_sizes().  
+     *  button].  Used in update_sizes().
      */
 
     int m_roll_length_ticks;
@@ -267,9 +267,6 @@ private:
      *  needed to handle our new keystroke support for the perfroll.  We need
      *  both objects to exist all the time, similar to the Fruity/Seq24 roles
      *  in the seqroll object.
-     *
-     * \obsolete
-     *      AbstractPerfInput * m_interaction
      */
 
     FruityPerfInput m_fruity_interaction;
@@ -287,6 +284,46 @@ private:
      */
 
     AbstractPerfInput & m_interaction;
+
+#ifdef USE_SONG_BOX_SELECT
+
+    /**
+     *  The previous selection rectangle, used for undrawing it.
+     */
+
+    rect_obsolete m_old;
+
+    /**
+     *  The previous selection rectangle, used for undrawing it.
+     */
+
+    rect_obsolete m_selected;
+
+    /**
+     *  Set to true if the song editor is in box-selection mode.
+     */
+
+    bool m_box_select;
+
+    /**
+     *  The lower sequence number for the box-select mode.
+     */
+
+    int m_box_select_low;
+
+    /**
+     *  The upper sequence number for the box-select mode.
+     */
+
+    int m_box_select_high;
+
+    /**
+     *
+     */
+
+    midipulse m_last_tick;
+
+#endif  // USE_SONG_BOX_SELECT
 
     /**
      *  Used in the Seq24 or Fruity processing when moving a section of
@@ -348,6 +385,14 @@ private:
     void convert_xy (int x, int y, midipulse & tick, int & seq);
     void convert_x (int x, midipulse & tick);
     void snap_x (int & x);
+#ifdef USE_SONG_BOX_SELECT
+    void snap_y (int & y);
+    void xy_to_rect
+    (
+        int x1, int y1, int x2, int y2,
+        int & x, int & y, int & w, int & h
+    );
+#endif
     void draw_sequence_on (int seqnum);
     void draw_background_on (int seqnum);
     void draw_drawable_row (long y);

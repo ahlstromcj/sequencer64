@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-14
+ * \updates       2017-09-16
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -67,7 +67,7 @@ namespace seq64
  *  A small helper class representing a rectangle.
  */
 
-class rect
+class rect_obsolete_2
 {
 
 public:
@@ -142,13 +142,13 @@ private:
      *  The previous selection rectangle, used for undrawing it.
      */
 
-    rect m_old;
+    rect_obsolete_2 m_old;
 
     /**
      *  Used in moving and pasting notes.
      */
 
-    rect m_selected;
+    rect_obsolete_2 m_selected;
 
     /**
      *  Provides a reference to the seqeunce represented by piano roll.

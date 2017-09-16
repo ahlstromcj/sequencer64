@@ -1425,7 +1425,8 @@ public:
 #ifdef USE_SEQUENCE_EDIT_MODE
     void offset_selected_triggers_by
     (
-        midipulse tick, triggers::grow_edit_t editmode  //trigger_edit
+        midipulse tick, triggers::grow_edit_t editmode = triggers::GROW_MOVE
+        // trigger_edit
     );
 #endif
     midipulse selected_trigger_start ();

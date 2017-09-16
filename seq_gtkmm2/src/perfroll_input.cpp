@@ -141,7 +141,12 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     if (SEQ64_CLICK_LEFT(ev->button))
     {
         midipulse droptick = roll.m_drop_tick;
-        if (is_adding())                /* add new note if nothing selected */
+
+        /*
+         * Add a new sequence if nothing is selected.
+         */
+
+        if (is_adding())
         {
             set_adding_pressed(true);
             midipulse seqlength = seq->get_length();
@@ -153,7 +158,12 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
             }
             else
             {
+#ifdef USE_SONG_RECORDING
+                if (p.song_record_snap())
+                    droptick -= (droptick % seqlength); /* snap         */
+#else
                 droptick -= (droptick % seqlength);     /* snap         */
+#endif
                 p.push_trigger_undo(dropseq);           /* stazed fix   */
                 seq->add_trigger(droptick, seqlength);
                 roll.draw_all();
@@ -184,7 +194,7 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
                 roll.m_drop_tick_trigger_offset = droptick -
                      seq->selected_trigger_start();
             }
-            else if
+            else if                     /* we are moving the sequence   */
             (
                 droptick >= (tick1 - wscalex) && droptick <= tick1 &&
                 ydrop >= c_names_y - s_perfroll_size_box_click_w - 1
@@ -203,12 +213,27 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
             }
             roll.draw_all();
         }
+#ifdef USE_SONG_BOX_SELECT
+        if (! roll.m_box_select)                 /* select with a box    */
+        {
+            p.unselect_all_triggers();
+            roll.snap_y(roll.m_drop_y);          /* y snapped to rows    */
+            roll.m_current_x = roll.m_drop_x;
+            roll.m_current_y = roll.m_drop_y;
+            roll.m_box_select = true;
+        }
+#endif
     }
     else if (SEQ64_CLICK_RIGHT(ev->button))
     {
         activate_adding(true, roll);
-        // Should we add this?
-        // result = true;
+
+#ifdef USE_SONG_BOX_SELECT
+        roll.perf().unselect_all_triggers();
+        roll.m_box_select = false;
+#endif
+
+        // Should we add this:  result = true;
     }
     else if (SEQ64_CLICK_MIDDLE(ev->button))                   /* split    */
     {
@@ -217,18 +242,26 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
          * the triggers or for setting the paste location of copy/paste.
          */
 
-        bool state = seq->get_trigger_state(roll.m_drop_tick);
-        if (state)
+        if (p.is_active(roll.m_drop_sequence))
         {
-            roll.split_trigger(dropseq, roll.m_drop_tick);
-            result = true;
-        }
-        else
-        {
-            p.push_trigger_undo(dropseq);
-            seq->paste_trigger(roll.m_drop_tick);
-            // Should we add this?
-            // result = true;
+            bool state = seq->get_trigger_state(roll.m_drop_tick);
+            if (state)
+            {
+#ifdef USE_SONG_BOX_SELECT      // odd difference in interface !!!
+                seq->half_split_trigger(roll.m_drop_tick);
+#else
+                // roll.split_trigger(dropseq, roll.m_drop_tick);
+                seq->split_trigger(roll.m_drop_tick);
+#endif
+                result = true;
+            }
+            else
+            {
+                p.push_trigger_undo(dropseq);
+                seq->paste_trigger(roll.m_drop_tick);
+
+                // Should we add this:  result = true;
+            }
         }
     }
     return result;
@@ -250,6 +283,32 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
     {
         if (is_adding())
             set_adding_pressed(false);
+
+#ifdef USE_SONG_BOX_SELECT
+
+        if (roll.m_box_select)      /* calculate selected seqs in box   */
+        {
+            int x, y, w, h;         /* window dimensions                */
+            midipulse tick_s;
+            midipulse tick_f;
+            roll.m_current_x = ev->x;
+            roll.m_current_y = ev->y;
+            roll.snap_y(roll.m_current_y);
+            roll.xy_to_rect
+            (
+                roll.m_drop_x, roll.m_drop_y,
+                roll.m_current_x, roll.m_current_y, x, y, w, h
+            );
+            roll.convert_xy(x,     y, tick_s, roll.m_box_select_low);
+            roll.convert_xy(x+w, y+h, tick_f, roll.m_box_select_high);
+            roll.perf().select_triggers_in_range
+            (
+                roll.m_box_select_low, roll.m_box_select_high, tick_s, tick_f
+            );
+        }
+
+#endif  // USE_SONG_BOX_SELECT
+
     }
     else if (SEQ64_CLICK_RIGHT(ev->button))
     {
@@ -258,7 +317,7 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
          * pressed when release, keep the adding-state in force.  One
          * can then use the unadorned left-click key to add material.  Right
          * click to reset the adding mode.  This feature is enabled only
-         * if allowed by Options / Mouse  (but is true by default).
+         * if allowed by Options / Mouse (but is true by default).
          * See the same code in seq24seqroll.cpp.
          */
 
@@ -277,6 +336,12 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
     roll.m_moving = roll.m_growing = false;
     set_adding_pressed(false);
     m_effective_tick = 0;
+
+#ifdef USE_SONG_BOX_SELECT
+    roll.m_box_select = false;
+    roll.m_last_tick = 0;
+#endif
+
     if (p.is_active(roll.m_drop_sequence))
     {
         roll.draw_all();
@@ -304,14 +369,16 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
     {
         return false;
     }
+
+    midipulse tick;
     if (is_adding() && is_adding_pressed())
     {
-        midipulse tick;
         roll.convert_x(x, tick);
 
         midipulse seqlength = seq->get_length();
+
 #ifdef USE_SONG_RECORDING
-        if (perf().get_song_record_snap())          /* snap to seq length   */
+        if (roll.perf().song_record_snap())         /* snap to seq length   */
 #endif
             tick -= (tick % seqlength);
 
@@ -337,21 +404,29 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
         midipulse tick;
         roll.convert_x(x, tick);
         tick -= roll.m_drop_tick_trigger_offset;
+
 #ifdef USE_SONG_RECORDING
-        if (perf().get_song_record_snap())          /* snap to seq length   */
+        if (roll.perf().song_record_snap())         /* snap to seq length   */
 #endif
             tick -= tick % roll.m_snap;
 
         if (roll.m_moving)
         {
-#ifdef USE_SONG_RECORDING
-            for (int seqid = m_seq_l; seqid < m_seq_h; ++seqid)
+#ifdef USE_SONG_BOX_SELECT
+            for
+            (
+                int seqid = roll.m_box_select_low;
+                seqid < roll.m_box_select_high; ++seqid
+            )
             {
-                if (perf().is_active(seqid)
+                if (roll.perf().is_active(seqid))
                 {
-                    if (m_last_tick != 0)
-                        perf().get_sequence(seqid) ->
-                            offset_selected_triggers_by(-(m_last_tick - tick));
+                    if (roll.m_last_tick != 0)
+                        roll.perf().get_sequence(seqid) ->
+                            offset_selected_triggers_by
+                            (
+                                -(roll.m_last_tick - tick)
+                            );
                 }
             }
 #else
@@ -363,17 +438,21 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
         {
             if (roll.m_grow_direction)
             {
-#ifdef USE_SONG_RECORDING
-                for (int seqid = m_seq_l; seqid < m_seq_h; ++seqid)
+#ifdef USE_SONG_BOX_SELECT
+                for
+                (
+                    int seqid = roll.m_box_select_low;
+                    seqid < roll.m_box_select_high; ++seqid
+                )
                 {
-                    if (perf().is_active(seqid)
+                    if (roll.perf().is_active(seqid))
                     {
-                        if (m_last_tick != 0)
+                        if (roll.m_last_tick != 0)
                         {
-                            perf().get_sequence(seqid) ->
+                            roll.perf().get_sequence(seqid) ->
                                 offset_selected_triggers_by
                                 (
-                                    -(m_last_tick - tick), GROW_START
+                                    -(roll.m_last_tick - tick), triggers::GROW_START
                                 );
                         }
                     }
@@ -387,17 +466,21 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
             }
             else
             {
-#ifdef USE_SONG_RECORDING
-                for (int seqid = m_seq_l; seqid < m_seq_h; ++seqid)
+#ifdef USE_SONG_BOX_SELECT
+                for
+                (
+                    int seqid = roll.m_box_select_low;
+                    seqid < roll.m_box_select_high; ++seqid
+                )
                 {
-                    if (perf().is_active(seqid)
+                    if (roll.perf().is_active(seqid))
                     {
-                        if (m_last_tick != 0)
+                        if (roll.m_last_tick != 0)
                         {
-                            perf().get_sequence(seqid) ->
+                            roll.perf().get_sequence(seqid) ->
                                 offset_selected_triggers_by
                                 (
-                                    -(m_last_tick - tick), GROW_END
+                                    -(roll.m_last_tick - tick), triggers::GROW_END
                                 );
                         }
                     }
@@ -413,6 +496,17 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
         }
         roll.draw_all();
     }
+#ifdef USE_SONG_BOX_SELECT
+    else if (roll.m_box_select)
+    {
+        roll.m_current_x = ev->x;
+        roll.m_current_y = ev->y;
+        roll.snap_y(roll.m_current_y);
+        roll.convert_xy(0, roll.m_current_y, tick, roll.m_drop_sequence);
+    }
+    roll.m_last_tick = tick;
+#endif
+
     return result;
 }
 

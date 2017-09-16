@@ -271,7 +271,7 @@ class triggers
     friend class Seq24PerfInput;        /* we need better encapsulation */
     friend class FruityPerfInput;       /* we need better encapsulation */
 
-private:
+public:
 
     /**
      *  Provides a typedef introduced by Stazed to make the trigger grow/move
@@ -284,6 +284,8 @@ private:
         GROW_END    = 1,    /**< Grow the end of the trigger.           */
         GROW_MOVE   = 2     /**< Move the entire trigger block.         */
     };
+
+private:
 
     /**
      *  Exposes the triggers type, currently needed for midi_container only.

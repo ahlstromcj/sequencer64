@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2017-04-04
+# \update      2017-09-16
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -173,6 +173,7 @@ libseq64_la_SOURCES = \
 	optionsfile.cpp \
    perform.cpp \
 	rc_settings.cpp \
+   rect.cpp \
 	sequence.cpp \
 	seq64_features.cpp \
 	settings.cpp \

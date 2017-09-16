@@ -635,9 +635,9 @@ private:
     void toggle_song_record ();
     void set_song_playback (bool playsong);
 
-    void set_song_record_snap (bool snap)
+    void song_record_snap (bool snap)
     {
-        perf().set_song_record_snap(snap);
+        perf().song_record_snap(snap);
     }
 #endif
 

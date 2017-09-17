@@ -39,6 +39,7 @@
 #include "gui_drawingarea_gtk2.hpp"
 #include "fruityperfroll_input.hpp"     /* FruityPerfInput      */
 #include "perfroll_input.hpp"           /* Seq24PerfInput       */
+#include "rect.hpp"                     /* seq64::rect class    */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -243,6 +244,11 @@ private:
     /**
      *  Holds the currently-selected sequence being moved.  Used for redrawing
      *  the sequence.
+     *
+     * Extension?
+     *
+     *  We would like to extend this to a list of sequencens so that we could
+     *  move more than one sequence at once.
      */
 
     int m_drop_sequence;
@@ -291,13 +297,13 @@ private:
      *  The previous selection rectangle, used for undrawing it.
      */
 
-    rect_obsolete m_old;
+    rect m_old;
 
     /**
      *  The previous selection rectangle, used for undrawing it.
      */
 
-    rect_obsolete m_selected;
+    rect m_selected;
 
     /**
      *  Set to true if the song editor is in box-selection mode.
@@ -387,11 +393,6 @@ private:
     void snap_x (int & x);
 #ifdef USE_SONG_BOX_SELECT
     void snap_y (int & y);
-    void xy_to_rect
-    (
-        int x1, int y1, int x2, int y2,
-        int & x, int & y, int & w, int & h
-    );
 #endif
     void draw_sequence_on (int seqnum);
     void draw_background_on (int seqnum);

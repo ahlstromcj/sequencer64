@@ -5,7 +5,7 @@ Chris Ahlstrom
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
 Starting with version 0.90.4, four different versions of the program can be
-build:
+built:
 
     -   seq64. Native JACK; the default build after a simple bootstrap.
         command; JACK MIDI with optional JACK transport; fall-back to ALSA;
@@ -24,7 +24,9 @@ Steps:
        or, at worst, a build error will tell you.
 
    1.  Check-out the branch you want.  Make a branch if you want to make
-       changes.  The current branches are "master", "fixups", and "rtmidi".
+       changes.  The current branches are "master", "tempo_track", and
+       "qt5_support".  There are some other branches not yet deleted.
+       See GitHub.
 
    2.  The first thing to do is decide what version of Sequencer64 you want to
        build.  There are now 4 versions:
@@ -32,7 +34,7 @@ Steps:
        1.   Seq64rtmidi/seq64:           ./bootstrap [ -er -rm ]
        2.   Seq64cli/seq64cli:           ./bootstrap -er -cli
        3.   Sequencer64/sequencer64:     ./bootstrap -er -am
-       4.   Seq64portmidi/seq64portmidi: ./bootstrap -er -pm (deprecated)
+       4.   Seq64portmidi/seq64portmidi: ./bootstrap -er -pm (fewer features)
    
        From the top project directory, run one of the commands above (they
        auto-configure) or run the following commands, which set up a release
@@ -45,11 +47,12 @@ Steps:
        option "--enable-silent-rules" can be added to the ./configure command.
 
        For building in release mode without seeing a ton of compiler output,
-       the following command will configure for the "silent rules" of Automake:
+       the following command will configure for the "silent rules" of Automake.
 
        $ ./bootstrap --enable-release [ -rm | -cli | -am | -pm ]
-       $ ./bootstrap -er
+       $ ./bootstrap -er [ -rm | -cli | -am | -pm ]
 
+       Note that the options in brackets are option and mutually exclusive.
        The additional options select the kind of Sequencer64 to build.
        The default is -rm, which is most likely what you want.
 
@@ -58,7 +61,7 @@ Steps:
        --disable-shared options to a configure run:
 
        $ ./bootstrap --enable-debug [ -rm | -cli | -am | -pm ]
-       $ ./bootstrap -ed
+       $ ./bootstrap -ed [ -rm | -cli | -am | -pm ]
 
        If desired, there are also configure options as described below,
        and also conditional macros in the code.  The configure options can be 
@@ -437,6 +440,7 @@ MANUALLY-DEFINED MACROS IN CODE:
         USE_SEQUENCE_COLOR
         USE_SEQUENCE_EDIT_MODE
         USE_SONG_RECORDING
+        USE_BOX_SONG_SELECT
 
         Some of these are defined (or undefined) in
         libseq64/include/seq64_features.h.

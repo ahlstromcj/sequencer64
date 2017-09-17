@@ -992,55 +992,69 @@ seqroll::idle_redraw ()
 void
 seqroll::draw_selection_on_window ()
 {
-    const int thickness = 1;                /* normally 1               */
-    int x = 0, y = 0, w = 0, h = 0;         /* used throughout          */
-    set_line(Gdk::LINE_SOLID, thickness);   /* set_line_attributes()    */
-    if (select_action())                    /* select, grow, drop       */
+    const int thickness = 1;                    /* normally 1               */
+    int x = 0, y = 0, w = 0, h = 0;             /* used throughout          */
+    set_line(Gdk::LINE_SOLID, thickness);       /* set_line_attributes()    */
+    if (select_action())                        /* select, grow, drop       */
     {
-        /*
-         * \todo
-         *      Use rect::get().
-         */
+        // x = m_old.x;
+        // y = m_old.y;
+        // w = m_old.width;
+        // h = m_old.height;
 
-        x = m_old.x;
-        y = m_old.y;
-        w = m_old.width;
-        h = m_old.height;
-        draw_drawable(x, y, x, y, w + 1, h + 1);    /* erase old rectangle */
+        m_old.get(x, y, w, h);                      /* get rectangle        */
+        draw_drawable(x, y, x, y, w + 1, h + 1);    /* erase old rectangle  */
     }
     if (selecting())
     {
-        xy_to_rect(m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h);
+        rect::xy_to_rect_values
+        (
+            m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h
+        );
         x -= m_scroll_offset_x;
         y -= m_scroll_offset_y;
         h += c_key_y;
     }
-    if (drop_action())                      /* move, paste              */
+    if (drop_action())                              /* move, paste          */
     {
-        x = m_selected.x + m_current_x - m_drop_x - m_scroll_offset_x;
-        y = m_selected.y + m_current_y - m_drop_y - m_scroll_offset_y;
-        w = m_selected.width;
-        h = m_selected.height;
+        m_selected.get(x, y, w, h);                 /* selected rectangle   */
+        x += m_current_x - m_drop_x - m_scroll_offset_x;
+        y += m_current_y - m_drop_y - m_scroll_offset_y;
+
+        // x = m_selected.x() + m_current_x - m_drop_x - m_scroll_offset_x;
+        // y = m_selected.y() + m_current_y - m_drop_y - m_scroll_offset_y;
+        // w = m_selected.width();
+        // h = m_selected.height();
     }
     if (growing())
     {
         int delta_x = m_current_x - m_drop_x;
-        x = m_selected.x - m_scroll_offset_x;
-        y = m_selected.y - m_scroll_offset_y;
-        w = delta_x + m_selected.width;
-        h = m_selected.height;
+        m_selected.get(x, y, w, h);                 /* selected rectangle   */
+        x -= m_scroll_offset_x;
+        y -= m_scroll_offset_y;
+        w += delta_x;
+
+        // x = m_selected.x() - m_scroll_offset_x;
+        // y = m_selected.y() - m_scroll_offset_y;
+        // w = delta_x + m_selected.width();
+        // h = m_selected.height();
+
         if (w < 1)
             w = 1;
     }
+
 #ifdef SEQ64_USE_BLACK_SELECTION_BOX
     draw_rectangle(black_paint(), x, y, w, h, false);
 #else
     draw_rectangle(dark_orange(), x, y, w, h, false);
 #endif
-    m_old.x = x;
-    m_old.y = y;
-    m_old.width = w;
-    m_old.height = h;
+
+    // m_old.x = x;
+    // m_old.y = y;
+    // m_old.width = w;
+    // m_old.height = h;
+
+    m_old.set(x, y, w, h);
 }
 
 /**
@@ -1103,6 +1117,8 @@ seqroll::convert_tn (midipulse tick, int note, int & x, int & y)
     x = tick / m_zoom;
     y = c_rollarea_y - ((note + 1) * c_key_y) - 1;
 }
+
+#if 0
 
 /**
  *  Converts rectangle corner coordinates to a starting coordinate, plus a
@@ -1170,6 +1186,8 @@ seqroll::xy_to_rect
     }
 }
 
+#endif  // 0
+
 /**
  *  Converts a tick/note box to an x/y rectangle.
  *
@@ -1211,8 +1229,45 @@ seqroll::convert_tn_box_to_rect
     int x1, y1, x2, y2;
     convert_tn(tick_s, note_h, x1, y1);     /* convert box to X,Y values */
     convert_tn(tick_f, note_l, x2, y2);
-    xy_to_rect(x1, y1, x2, y2, x, y, w, h);
+//  rect::xy_to_rect(x1, y1, x2, y2, x, y, w, h);
+    rect::xy_to_rect_values(x1, y1, x2, y2, x, y, w, h);
     h += c_key_y;
+}
+
+/**
+ *  Converts a tick/note box to an x/y rectangle.
+ *
+ *  We should refactor this function to use the utility class seqroll::rect as
+ *  the destination for the conversion.
+ *
+ * \param tick_s
+ *      The starting tick of the rectangle.
+ *
+ * \param tick_f
+ *      The finishing tick of the rectangle.
+ *
+ * \param note_h
+ *      The high note of the rectangle.
+ *
+ * \param note_l
+ *      The low note of the rectangle.
+ *
+ * \param [out] r
+ *      The destination rectangle for the values in pixels.
+ */
+
+void
+seqroll::convert_tn_box_to_rect
+(
+    midipulse tick_s, midipulse tick_f, int note_h, int note_l, rect & r
+)
+{
+    int x1, y1, x2, y2;
+    convert_tn(tick_s, note_h, x1, y1);     /* convert box to X,Y values */
+    convert_tn(tick_f, note_l, x2, y2);
+//  rect::xy_to_rect(x1, y1, x2, y2, x, y, w, h);
+    rect::xy_to_rect(x1, y1, x2, y2, r);
+    r.incr_height(c_key_y);
 }
 
 /**
@@ -1237,10 +1292,15 @@ seqroll::convert_sel_box_to_rect
     midipulse tick_s, midipulse tick_f, int note_h, int note_l
 )
 {
+    /*
+     * \todo
+     *      We could make a version taking a reference to a rect.
+     */
+
     convert_tn_box_to_rect
     (
-        tick_s, tick_f, note_h, note_l,
-        m_selected.x, m_selected.y, m_selected.width, m_selected.height
+        tick_s, tick_f, note_h, note_l, m_selected
+//      m_selected.x(), m_selected.y(), m_selected.width(), m_selected.height()
     );
 }
 
@@ -1292,8 +1352,11 @@ seqroll::start_paste ()
     int note_h, note_l;
     m_seq.get_clipboard_box(tick_s, note_h, tick_f, note_l);
     convert_sel_box_to_rect(tick_s, tick_f, note_h, note_l);
-    m_selected.x += m_drop_x;
-    m_selected.y = m_drop_y;
+    m_selected.x_incr(m_drop_x);
+    m_selected.y(m_drop_y);
+
+    // m_selected.x += m_drop_x;
+    // m_selected.y = m_drop_y;
 }
 
 /**
@@ -1363,8 +1426,8 @@ seqroll::snap_x (int & x)
 void
 seqroll::move_selection_box (int dx, int dy)
 {
-    int x = m_old.x + dx * m_snap / m_zoom;
-    int y = m_old.y + dy * c_key_y;
+    int x = m_old.x() + dx * m_snap / m_zoom;
+    int y = m_old.y() + dy * c_key_y;
     set_current_offset_x_y(x, y);
 
 	int note;
@@ -1603,10 +1666,17 @@ seqroll::align_selection
     m_moving_init = true;
     get_selected_box(tick_s, note_h, tick_f, note_l);
 
-    int adjusted_selected_x = m_selected.x;
+    int adjusted_selected_x = m_selected.x();
     snap_x(adjusted_selected_x);
-    m_move_snap_offset_x = m_selected.x - adjusted_selected_x;
-    snap_x(m_selected.x);
+    m_move_snap_offset_x = m_selected.x() - adjusted_selected_x;
+
+    /*
+     * Slightly clumsy.
+     */
+
+    int sx = m_selected.x();
+    snap_x(sx);
+    m_selected.x(sx);
     set_current_drop_x(snapped_x);
 }
 
@@ -1776,10 +1846,9 @@ seqroll::button_release (GdkEventButton * ev)
         if (m_selecting)
         {
             int x, y, w, h;
-            xy_to_rect
+            rect::xy_to_rect_values
             (
-                m_drop_x, m_drop_y,
-                m_current_x, m_current_y,
+                m_drop_x, m_drop_y, m_current_x, m_current_y,
                 x, y, w, h
             );
             convert_xy(x, y, tick_s, note_h);

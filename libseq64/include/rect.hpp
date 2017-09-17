@@ -70,15 +70,158 @@ public:
 
     void get (int & x, int & y, int & width, int & height) const;
     void set (int x, int y, int width, int height);
-    void xy_to_rect (int x1, int y1, int x2, int y2, rect & r);
 
+    /**
+     *
+     */
+
+    void clear ()
+    {
+        m_x = m_y = m_width = m_height = 0;
+    }
+
+    static void xy_to_rect (int x1, int y1, int x2, int y2, rect & r);
     static void xy_to_rect_values
     (
         int x1, int y1, int x2, int y2,
         int & x, int & y, int & w, int & h
     );
 
+    /**
+     * \getter m_x
+     */
+
+    int x () const
+    {
+        return m_x;
+    }
+
+    /**
+     * \setter m_x
+     *      The width is assumed to be unchanged by this function.
+     */
+
+    void x (int v)
+    {
+        m_x = v;
+    }
+
+    /**
+     * \setter m_x
+     *      Provides a setter that uses the parameter to increment the member.
+     *      The width is assumed to be unchanged by this function.
+     */
+
+    void x_incr (int v)
+    {
+        m_x += v;
+    }
+
+    /**
+     * \getter m_y
+     */
+
+    int y () const
+    {
+        return m_y;
+    }
+
+    /**
+     * \setter m_y
+     *      The height is assumed to be unchanged by this function.
+     */
+
+    void y (int v)
+    {
+        m_y = v;
+    }
+
+    /**
+     * \setter m_y
+     *      Provides a setter that uses the parameter to increment the member.
+     *      The height is assumed to be unchanged by this function.
+     */
+
+    void y_incr (int v)
+    {
+        m_y += v;
+    }
+
+    /**
+     * \getter m_width
+     */
+
+    int width () const
+    {
+        return m_width;
+    }
+
+    /**
+     * \setter m_width
+     */
+
+    void width (int w)
+    {
+        m_width = w;
+    }
+
+    /**
+     * \setter m_width
+     */
+
+    void incr_width (int w)
+    {
+        m_width += w;
+    }
+
+    /**
+     * \getter m_height
+     */
+
+    int height () const
+    {
+        return m_height;
+    }
+
+    /**
+     * \setter m_height
+     */
+
+    void height (int h)
+    {
+        m_height = h;
+    }
+
+    /**
+     * \setter m_height
+     */
+
+    void incr_height (int h)
+    {
+        m_height += h;
+    }
+
 private:
+
+    /**
+     *  The calculated width is always positive.  Follows the conventions of
+     *  the xy_to_rect_values() function.
+     */
+
+    static int calculated_width (int x1, int x2)
+    {
+        return (x1 < x2) ? (x2 - x1) : (x1 - x2) ;
+    }
+
+    /**
+     *  The calculated height is always positive.  Follows the conventions of
+     *  the xy_to_rect_values() function.
+     */
+
+    static int calculated_height (int y1, int y2)
+    {
+        return (y1 < y2) ? (y2 - y1) : (y1 - y2) ;
+    }
 
 };
 

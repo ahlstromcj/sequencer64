@@ -625,21 +625,22 @@ perfroll::draw_sequence_on (int seqnum)
                 int h = m_names_y - 2;                  // - 4
                 x -= x_offset;                  /* adjust to screen coords  */
 
-                /*
-                 * Items drawn:
+                /**
+                 * Items drawn on the Song editor piano roll:
                  *
-                 *  1. Main trigger box
-                 *  2. Trigger outline
-                 *  3. The left hand side of the little sequence grab handle
-                 *  4. Its right side.
+                 *  -# Main trigger box (also called a "segment") background.
+                 *  -# Trigger outline (the rectangle around a "segment").
+                 *  -# The left hand side little sequence grab handle,
+                 *     or segment handle.
+                 *  -# The right-side segment handle.
                  */
 
-                draw_rectangle_on_pixmap
+                draw_rectangle_on_pixmap        /* fill segment background  */
                 (
                     selected ? grey() : white_paint(), x, y, w, h
                 );
                 draw_rectangle_on_pixmap(black_paint(), x, y, w, h, false);
-                draw_rectangle_on_pixmap
+                draw_rectangle_on_pixmap        /* draw the segment handle  */
                 (
                     dark_cyan(),                /* try instead of black()   */
                     x, y, m_size_box_w, m_size_box_w, false
@@ -781,47 +782,14 @@ perfroll::draw_sequence_on (int seqnum)
                     tickmarker += sequence_length;
                 }
             }
-        } // while (seq->get_next_trigger(tick_on, tick_off, selected, offset))
-    } // if (perf().is_active(seqnum))
-
-#ifdef USE_SONG_BOX_SELECT
-    if (m_box_select)
-    {
-        /*
-         * Set up to draw a solid black-lined selection box.
-         */
-
-        set_line(Gdk::LINE_SOLID, 1);
-
-        int x, y, w, h;
-        xy_to_rect
-        (
-            m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h
-        );
-
-        m_old.x = x;
-        m_old.y = y;
-        m_old.width = w;
-        m_old.height = h + c_names_y;
-        draw_rectangle_on_pixmap(black(), x, y, w, h + c_names_y);
+        }
     }
 
-    /*
-     * Draw border in black, then the "play-head" in orange.
-     */
+#ifdef USE_SONG_BOX_SELECT_BAD_STUFF
 
-    draw_rectangle_on_pixmap(black(), 0, 0, width(), height() - 1);
-
-    long tick = perf().get_tick();
-    int progress_x = tick / (c_perf_scale_x * m_zoom);
-
-    /*
-     * Which one??
-     */
-
-    draw_line_on_pixmap(orange(), progress_x, 0, progress_x, m_window_y);
-//  draw_line(orange(), progress_x, 0, progress_x, m_window_y);
-//  draw_line(m_background, orange(), progress_x, 1, progress_x, height()-1);
+    if (m_box_select)
+    {
+    }
 
 #endif  //  USE_SONG_BOX_SELECT
 
@@ -974,72 +942,7 @@ perfroll::snap_y (int & y)
 #endif
 }
 
-/**
- *  Converts rectangle corner coordinates to a starting coordinate, plus a
- *  width and height.  This function checks the mins / maxes, and then fills
- *  in the x, y, width, and height values.
- *
- *  We should refactor this function to use the utility class seqroll::rect as
- *  the destination for the conversion.
- *
- * \todo
- *      Currently a duplicate of seqroll::xy_to_rect().  Needs to be moved
- *      to the calculations module.
- *
- * \param x1
- *      The x value of the first corner.
- *
- * \param y1
- *      The y value of the first corner.
- *
- * \param x2
- *      The x value of the second corner.
- *
- * \param y2
- *      The y value of the second corner.
- *
- * \param [out] x
- *      The destination for the x value in pixels.
- *
- * \param [out] y
- *      The destination for the y value in pixels.
- *
- * \param [out] w
- *      The destination for the rectangle width in pixels.
- *
- * \param [out] h
- *      The destination for the rectangle height value in pixels.
- */
-
-void
-perfroll::xy_to_rect
-(
-    int x1, int y1, int x2, int y2,
-    int & x, int & y, int & w, int & h
-)
-{
-    if (x1 < x2)
-    {
-        x = x1;
-        w = x2 - x1;
-    }
-    else
-    {
-        x = x2;
-        w = x1 - x2;
-    }
-    if (y1 < y2)
-    {
-        y = y1;
-        h = y2 - y1;
-    }
-    else
-    {
-        y = y2;
-        h = y1 - y2;
-    }
-}
-#endif  // USE_SONG_BOX_SELECT
+#endif
 
 /**
  *  Converts an x-coordinate to a tick-offset on the x axis.

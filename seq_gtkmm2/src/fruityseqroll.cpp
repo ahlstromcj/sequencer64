@@ -242,12 +242,18 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                         sroll.m_moving_init = true;
                         sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
 
-                        int adjusted_selected_x = sroll.m_selected.x;
+                        int adjusted_selected_x = sroll.m_selected.x();
                         sroll.snap_x(adjusted_selected_x);
                         sroll.m_move_snap_offset_x =
-                            sroll.m_selected.x - adjusted_selected_x;
+                            sroll.m_selected.x() - adjusted_selected_x;
 
-                        sroll.snap_x(sroll.m_selected.x);   /* align to draw */
+                        /*
+                         * Slightly clumsy.
+                         */
+
+                        int sx = sroll.m_selected.x();
+                        sroll.snap_x(sx);                   /* align to draw */
+                        sroll.m_selected.x(sx);
                         sroll.set_current_drop_x(snapped_x);
 
                         /*
@@ -515,7 +521,9 @@ FruitySeqRollInput::on_button_release_event
     {
         if (sroll.m_selecting)
         {
-            sroll.xy_to_rect
+            // sroll.xy_to_rect
+
+            rect::xy_to_rect_values
             (
                 sroll.drop_x(), sroll.drop_y(),
                 sroll.current_x(), sroll.current_y(), x, y, w, h

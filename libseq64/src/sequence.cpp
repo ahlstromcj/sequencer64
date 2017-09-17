@@ -3641,7 +3641,7 @@ sequence::split_trigger (midipulse splittick)
     m_triggers.split(splittick);
 }
 
-#ifdef USE_SONG_RECORDING
+#ifdef USE_SONG_BOX_SELECT
 
 /**
  *
@@ -3665,7 +3665,7 @@ sequence::exact_split_trigger (midipulse splittick)
     m_triggers.exact_split(splittick);
 }
 
-#endif  // USE_SONG_RECORDING
+#endif  // USE_SONG_BOX_SELECT
 
 
 /**
@@ -3809,7 +3809,7 @@ sequence::move_selected_triggers_to
     return m_triggers.move_selected(tick, adjustoffset, which);
 }
 
-#ifdef USE_SEQUENCE_EDIT_MODE
+#ifdef USE_SONG_BOX_SELECT
 
 /**
  *  Used in the song-sequence grid TODO TODO TODO
@@ -3826,11 +3826,6 @@ sequence::offset_selected_triggers_by
 }
 
 #endif
-
-/**
- *
- */
-
 
 /**
  *  Get the ending value of the last trigger in the trigger-list.

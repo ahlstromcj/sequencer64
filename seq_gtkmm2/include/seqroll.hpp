@@ -40,6 +40,7 @@
 #include "globals.h"
 #include "gui_drawingarea_gtk2.hpp"
 #include "fruityseqroll.hpp"
+#include "rect.hpp"                     /* seq64::rect class        */
 #include "sequence.hpp"
 #include "scales.h"                     /* STAZED chord support     */
 
@@ -62,40 +63,6 @@ namespace seq64
     class seqdata;
     class seqevent;
     class seqkeys;
-
-/**
- *  A small helper class representing a rectangle.
- */
-
-class rect_obsolete_2
-{
-
-public:
-
-    /**
-     *  The x-coordinate of the origin of the rectangle.
-     */
-
-    int x;
-
-    /**
-     *  The y-coordinate of the origin of the rectangle.
-     */
-
-    int y;
-
-    /**
-     *  The height of the rectangle, in units of pixels.
-     */
-
-    int height;
-
-    /**
-     *  The width of the rectangle, in units of pixels.
-     */
-
-    int width;
-};
 
 /**
  *  Implements the piano roll section of the pattern editor.
@@ -142,16 +109,16 @@ private:
      *  The previous selection rectangle, used for undrawing it.
      */
 
-    rect_obsolete_2 m_old;
+    rect m_old;
 
     /**
      *  Used in moving and pasting notes.
      */
 
-    rect_obsolete_2 m_selected;
+    rect m_selected;
 
     /**
-     *  Provides a reference to the seqeunce represented by piano roll.
+     *  Provides a reference to the sequence represented by piano roll.
      */
 
     sequence & m_seq;
@@ -274,7 +241,7 @@ private:
     bool m_painting;
 
     /**
-     *  Indicates that we are in the process of painting notes.
+     *  Indicates that we are in the process of pasting notes.
      */
 
     bool m_paste;
@@ -665,6 +632,10 @@ private:
         midipulse tick_s, midipulse tick_f, int note_h, int note_l,
         int & x, int & y, int & w, int & h
     );
+    void convert_tn_box_to_rect
+    (
+        midipulse tick_s, midipulse tick_f, int note_h, int note_l, rect & r
+    );
     void convert_sel_box_to_rect
     (
         midipulse tick_s, midipulse tick_f, int note_h, int note_l
@@ -711,7 +682,8 @@ private:            // new internal/friend functions
 
     void clear_selected ()
     {
-        m_selected.x = m_selected.y = m_selected.width = m_selected.height = 0;
+        // m_selected.x = m_selected.y = m_selected.width = m_selected.height = 0;
+        m_selected.clear();
     }
 
     /**
@@ -720,7 +692,8 @@ private:            // new internal/friend functions
 
     void clear_old ()
     {
-        m_old.x = m_old.y = m_old.width = m_old.height = 0;
+        // m_old.x = m_old.y = m_old.width = m_old.height = 0;
+        m_old.clear();
     }
 
     /**

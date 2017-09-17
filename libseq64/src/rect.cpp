@@ -177,7 +177,9 @@ rect::xy_to_rect (int x1, int y1, int x2, int y2, rect & r)
 /**
  *  Converts rectangle corner coordinates to a starting coordinate, plus a
  *  width and height.  This function checks the mins / maxes, and then fills
- *  in the x, y, width, and height values.
+ *  in the x, y, width, and height values.  It picks the lowest x and y
+ *  coordinate to use as the corner coordinate, so that the width and height
+ *  are always positive.
  *
  * \param x1
  *      The x value of the first corner.

@@ -95,11 +95,21 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     sequence * seq = p.get_sequence(dropseq);
     bool dropseq_active = p.is_active(dropseq);
     roll.grab_focus();
+
+    /*
+     * This code causes the un-greying of the previously selected trigger
+     * segment.  If commented out, then we can seemingly selected more than
+     * one segment, but only the last one "selected" can be move.  We'd like
+     * to be able to select and move a bunch at once by holding a modifier
+     * key.  For now, leave this code as is.
+     */
+
     if (dropseq_active)
     {
         seq->unselect_triggers();
         roll.draw_all();
     }
+
     roll.m_drop_x = int(ev->x);
     roll.m_drop_y = int(ev->y);
 
@@ -116,8 +126,9 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
 
     /*
      *  Let's make better use of the Ctrl key here.  First, let Ctrl-Left be
-     *  handled exactly like the Middle click, then bug out.  Note that this
-     *  middle-click code ought to be folded into a function.
+     *  handled exactly like the Middle click (it causes the segment/trigger
+     *  to be split), then bug out.  Note that this middle-click code ought to
+     *  be folded into a function.
      */
 
     if (is_ctrl_key(ev))
@@ -194,7 +205,7 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
                 roll.m_drop_tick_trigger_offset = droptick -
                      seq->selected_trigger_start();
             }
-            else if                     /* we are moving the sequence   */
+            else if                         /* we are moving the segment    */
             (
                 droptick >= (tick1 - wscalex) && droptick <= tick1 &&
                 ydrop >= c_names_y - s_perfroll_size_box_click_w - 1
@@ -213,7 +224,13 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
             }
             roll.draw_all();
         }
+
 #ifdef USE_SONG_BOX_SELECT
+
+        /*
+         * Doesn't seem to do anything at this point.
+         */
+
         if (! roll.m_box_select)                 /* select with a box    */
         {
             p.unselect_all_triggers();
@@ -222,7 +239,9 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
             roll.m_current_y = roll.m_drop_y;
             roll.m_box_select = true;
         }
+
 #endif
+
     }
     else if (SEQ64_CLICK_RIGHT(ev->button))
     {
@@ -294,7 +313,8 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
             roll.m_current_x = ev->x;
             roll.m_current_y = ev->y;
             roll.snap_y(roll.m_current_y);
-            roll.xy_to_rect
+//          roll.xy_to_rect
+            rect::xy_to_rect_values
             (
                 roll.m_drop_x, roll.m_drop_y,
                 roll.m_current_x, roll.m_current_y, x, y, w, h

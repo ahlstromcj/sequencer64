@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-09-15
+ * \updates       2017-09-16
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -63,10 +63,11 @@
 /**
  *  Kepler34 has a drum edit mode that we are still exploring and adding,
  *  marked by the following macro to keep it out of the way until the feature
- *  is ready for prime time.
+ *  is ready for prime time.  Currently builds but is incomplete and not
+ *  tested.
  */
 
-#define USE_SEQUENCE_EDIT_MODE
+#undef USE_SEQUENCE_EDIT_MODE
 
 /**
  *  Kepler34 has a feature for coloring sequence patterns.  Not supportable in
@@ -82,27 +83,29 @@
  *  Kepler34 has a song-recording mode that we are still exploring and adding,
  *  marked by the following macro to keep it out of the way until the feature
  *  is ready for prime time.  This feature has been requested by some users of
- *  Sequencer64.
+ *  Sequencer64.  Currently builds but is incomplete and not tested.
  */
 
-#define USE_SONG_RECORDING
+#undef  USE_SONG_RECORDING
 
 /**
  *  Kepler34 allows the user to select (and move) more than one sequence in
- *  the Song Editor.
+ *  the Song Editor.  Currently builds but is incomplete and not tested.
+ *
+ *  Currently broken.
  */
 
-#define  USE_SONG_BOX_SELECT
+#undef  USE_SONG_BOX_SELECT
 
 /**
- * Odds and ends that we missed.  This value allows non-notes to be included
- * in a selection for movement or other adjustment.
+ *  Odds and ends that we missed.  This value allows non-notes to be included
+ *  in a selection for movement or other adjustment.
  */
 
 #define SEQ64_NON_NOTE_EVENT_ADJUSTMENT     /* see sequence.cpp             */
 
 /**
- * Currently, many macros are undefined as tentative or experimental.
+ *  Currently, many macros are undefined as tentative or experimental.
  */
 
 /**

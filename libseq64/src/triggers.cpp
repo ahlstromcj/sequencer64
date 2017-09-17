@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2017-09-15
+ * \updates       2017-09-16
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -608,7 +608,7 @@ triggers::split (midipulse splittick)
     }
 }
 
-#ifdef USE_SONG_RECORDING
+#ifdef USE_SONG_BOX_SELECT
 
 /**
  *  If the tick is between the start and end of this trigger...
@@ -1020,7 +1020,7 @@ triggers::move_selected (midipulse tick, bool fixoffset, grow_edit_t which)
     return result;
 }
 
-#ifdef USE_SEQUENCE_EDIT_MODE
+#ifdef USE_SONG_BOX_SELECT
 
 void
 triggers::offset_selected_by (midipulse tick, grow_edit_t editmode)

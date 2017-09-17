@@ -837,10 +837,11 @@ options::add_extended_keys_page ()
 void
 options::add_mouse_page ()
 {
+    const std::string msg = "Interaction method (a change requires a restart)";
     Gtk::VBox * vbox = manage(new Gtk::VBox());
     m_notebook->append_page(*vbox, "_Mouse", true);
 
-    Gtk::Frame * interactionframe = manage(new Gtk::Frame("Interaction method"));
+    Gtk::Frame * interactionframe = manage(new Gtk::Frame(msg));
     interactionframe->set_border_width(4);
     vbox->pack_start(*interactionframe, Gtk::PACK_SHRINK);
 

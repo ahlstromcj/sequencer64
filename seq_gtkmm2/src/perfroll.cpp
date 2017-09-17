@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-16
+ * \updates       2017-09-17
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -59,25 +59,6 @@
 #include "sequence.hpp"
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
 
-/**
- *  Static (private) convenience values.  We need to be able to adjust
- *  s_perfroll_background_x per the selected PPQN value.  This adjustment is
- *  made in the constructor, and assigned to the perfroll::m_background_x
- *  member.  We need named values for 4 and for 16 here.
- *
- *  FIXME:
- *  The 1200 added to background_x is necessary for proper display of zoomed
- *  grid on high bp_measure (5 and above) with low bw (1) - the amount should
- *  probably be "c_perf_scale_x/m_perf_scale_x". The 1200 is the max needed
- *  for full zoom of 8 with 16 bp_mes and 1 bw.  Without the adjustment the
- *  grid display gets truncated on zoom.  Figure this out when you are really
- *  bored!
- */
-
-static int s_perfroll_size_box_w = 6;               /* 3; */
-static int s_perfroll_background_x =
-    (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_max_zoom; /* stazed */
-
 /*
  * Do not document the namespace; it breaks Doxygen.
  */
@@ -86,7 +67,41 @@ namespace seq64
 {
 
 /**
+ *  Static (private) convenience values.  We need to be able to adjust
+ *  sm_perfroll_background_x per the selected PPQN value.  This adjustment is
+ *  made in the constructor, and assigned to the perfroll::m_background_x
+ *  member.
+ *
+ *  FIXME: We need named values for 4 and for 16 here.
+ */
+
+int perfroll::sm_perfroll_size_box_w = 6;
+int perfroll::sm_perfroll_background_x =
+    (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_max_zoom;        /* stazed */
+
+/**
+ *  Provides sizing information for the perfroll-derived classes.
+ */
+
+int perfroll::sm_perfroll_size_box_click_w = 4;
+
+/**
  *  Principal constructor.
+ *
+ * \param p
+ *      The perform object that this class will affect via user interaction.
+ *
+ * \param parent
+ *      The perfedit object that holds this user-interface class.
+ *
+ * \param hadjust
+ *      A horizontal adjustment object, used here to control scrolling.
+ *
+ * \param vadjust
+ *      A vertical adjustment object, used here to control scrolling.
+ *
+ * \param ppqn
+ *      The "resolution" of the MIDI file, used in zooming and scaling.
  */
 
 perfroll::perfroll
@@ -99,6 +114,8 @@ perfroll::perfroll
 ) :
     gui_drawingarea_gtk2    (p, hadjust, vadjust, 10, 10),
     m_parent                (parent),
+    m_adding                (false),
+    m_adding_pressed        (false),
     m_h_page_increment      (usr().perf_h_page_increment()),
     m_v_page_increment      (usr().perf_v_page_increment()),
     m_snap                  (0),
@@ -109,8 +126,8 @@ perfroll::perfroll
     m_perf_scale_x          (c_perf_scale_x),               // 32 ticks per pixel
     m_zoom                  (c_perf_scale_x),               // 32 ticks per pixel
     m_names_y               (c_names_y),
-    m_background_x          (s_perfroll_background_x),      // gets adjusted!
-    m_size_box_w            (s_perfroll_size_box_w),        // 3
+    m_background_x          (sm_perfroll_background_x),      // gets adjusted!
+    m_size_box_w            (sm_perfroll_size_box_w),       // 3
     m_measure_length        (0),
     m_beat_length           (0),
     m_old_progress_ticks    (0),
@@ -130,14 +147,6 @@ perfroll::perfroll
     m_drop_sequence         (0),
     m_sequence_max          (c_max_sequence),
     m_sequence_active       (),                             // [c_max_sequence]
-    m_fruity_interaction    (),
-    m_seq24_interaction     (),
-    m_interaction
-    (
-        rc().interaction_method() == e_seq24_interaction ?
-            dynamic_cast<AbstractPerfInput &>(m_seq24_interaction) :
-            dynamic_cast<AbstractPerfInput &>(m_fruity_interaction)
-    ),
 #ifdef USE_SONG_BOX_SELECT
     m_old                   (),
     m_selected              (),
@@ -359,7 +368,7 @@ perfroll::fill_background_pixmap ()
 
         int beat_x = i * m_beat_length / m_perf_scale_x;
         draw_line(m_background, beat_x, 0, beat_x, m_names_y);
-        if (m_beat_length < m_ppqn / 2)             /* jump 2 if 16th notes   */
+        if (m_beat_length < m_ppqn / 2)             /* jump 2 if 16th notes */
             i += (m_ppqn / m_beat_length);
         else
             ++i;
@@ -447,7 +456,7 @@ void
 perfroll::draw_progress ()
 {
     midipulse tick = perf().get_tick();
-    midipulse tick_offset = m_4bar_offset;              //  * m_ticks_per_bar;
+    midipulse tick_offset = m_4bar_offset;
     int progress_x = (tick - tick_offset) / m_perf_scale_x;
     int old_progress_x = (m_old_progress_ticks - tick_offset) / m_perf_scale_x;
     if (usr().progress_bar_thick())
@@ -1127,10 +1136,7 @@ perfroll::on_button_press_event (GdkEventButton * ev)
 
 #endif
 
-    bool result = m_interaction.on_button_press_event(ev, *this);
-    if (result)
-        perf().modify();
-
+    bool result = gui_drawingarea_gtk2::on_button_press_event(ev);
     enqueue_draw();
     return result;
 }
@@ -1148,9 +1154,7 @@ perfroll::on_button_press_event (GdkEventButton * ev)
 bool
 perfroll::on_button_release_event (GdkEventButton * ev)
 {
-    bool result = m_interaction.on_button_release_event(ev, *this);
-    if (result)
-        perf().modify();
+    bool result = gui_drawingarea_gtk2::on_button_release_event(ev);
 
 #ifdef USE_UNNECESSARY_TRANSPORT_FOLLOW_CALLBACK
     if (m_trans_button_press)
@@ -1228,11 +1232,10 @@ perfroll::on_scroll_event (GdkEventScroll * ev)
 bool
 perfroll::on_motion_notify_event (GdkEventMotion * ev)
 {
-    bool result = m_interaction.on_motion_notify_event(ev, *this);
+    bool result = gui_drawingarea_gtk2::on_motion_notify_event(ev);
     if (result)
-    {
         enqueue_draw();     /* put in if() to reduce flickering */
-    }
+
     return result;
 }
 
@@ -1384,12 +1387,12 @@ perfroll::on_key_press_event (GdkEventKey * ev)
             {
                 if (ev->keyval == SEQ64_p)
                 {
-                    m_interaction.activate_adding(true, *this);
+                    activate_adding(true);
                     result = true;
                 }
                 else if (ev->keyval == SEQ64_x)     /* "x-scape" the mode   */
                 {
-                    m_interaction.activate_adding(false, *this);
+                    activate_adding(false);
                     result = true;
                 }
                 else if (ev->keyval == SEQ64_0)     /* reset to normal zoom */
@@ -1404,18 +1407,18 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                 }
                 else if (ev->keyval == SEQ64_Left)
                 {
-                    if (m_interaction.is_adding())
+                    if (is_adding())
                     {
-                        result = m_interaction.handle_motion_key(true, *this);
+                        result = handle_motion_key(true);
                         if (result)
                             perf().modify();
                     }
                 }
                 else if (ev->keyval == SEQ64_Right)
                 {
-                    if (m_interaction.is_adding())
+                    if (is_adding())
                     {
-                        result = m_interaction.handle_motion_key(false, *this);
+                        result = handle_motion_key(false);
                         if (result)
                             perf().modify();
                     }

@@ -25,27 +25,22 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-11-06
+ * \updates       2017-09-17
  * \license       GNU GPLv2 or above
  *
+ *  Now derived directly from perfroll.  No more AbstractPerfInput and no more
+ *  passing a perfroll parameter around.
  */
 
 #include <gtkmm/button.h>
 #include <gdkmm/cursor.h>
 
-#include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.    */
-#include "gui_key_tests.hpp"            /* seq64::is_super_key()       */
-#include "perform.hpp"
-#include "perfroll_input.hpp"
-#include "perfroll.hpp"
-#include "sequence.hpp"
+#include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.     */
+#include "gui_key_tests.hpp"            /* seq64::is_super_key()        */
+#include "perform.hpp"                  /* seq64::perform class         */
+#include "perfroll_input.hpp"           /* seq64::Seq24PerfInput class  */
+#include "sequence.hpp"                 /* seq64::sequence class        */
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
-
-/**
- *  Duplicates what is at the top of the perfroll.cpp module.  FIX LATER.
- */
-
-static int s_perfroll_size_box_click_w = 4; /* s_perfroll_size_box_w + 1 */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -55,16 +50,50 @@ namespace seq64
 {
 
 /**
+ *  Principal constructor.
+ *
+ * \param p
+ *      The perform object that this class will affect via user interaction.
+ *
+ * \param parent
+ *      The perfedit object that holds this user-interface class.
+ *
+ * \param hadjust
+ *      A horizontal adjustment object, passed along to the perfroll class.
+ *
+ * \param vadjust
+ *      A vertical adjustment object, passed along to the perfroll class.
+ *
+ * \param ppqn
+ *      The "resolution" of the MIDI file, used in zooming and scaling.
+ *
+ */
+
+Seq24PerfInput::Seq24PerfInput
+(
+    perform & p,
+    perfedit & parent,
+    Gtk::Adjustment & hadjust,
+    Gtk::Adjustment & vadjust,
+    int ppqn
+) :
+    perfroll            (p, parent, hadjust, vadjust, ppqn),
+    m_effective_tick    (0)
+{
+    // Empty body
+}
+
+/**
  *  A popup menu (which one?) calls this.  What does it mean?
  */
 
 void
-Seq24PerfInput::activate_adding (bool adding, perfroll & roll)
+Seq24PerfInput::activate_adding (bool adding)
 {
     if (adding)
-        roll.get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
+        get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
     else
-        roll.get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
+        get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
 
     set_adding(adding);
 }
@@ -75,7 +104,7 @@ Seq24PerfInput::activate_adding (bool adding, perfroll & roll)
  *
  * Stazed:
  *
- *      roll.m_drop_y will be adjusted by perfroll::change_vert() for any scroll
+ *      m_drop_y will be adjusted by perfroll::change_vert() for any scroll
  *      after it was originally selected. The call here to draw_drawable_row()
  *      [now folded into draw_all()] will have the wrong y location and
  *      un-select will not occur (or the wrong sequence will be unselected) if
@@ -87,14 +116,14 @@ Seq24PerfInput::activate_adding (bool adding, perfroll & roll)
  */
 
 bool
-Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
+Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
 {
     bool result = false;
-    perform & p = roll.perf();
-    int & dropseq = roll.m_drop_sequence;               /* an "alias", kind of */
+    perform & p = perf();
+    int & dropseq = m_drop_sequence;               /* an "alias", kind of */
     sequence * seq = p.get_sequence(dropseq);
     bool dropseq_active = p.is_active(dropseq);
-    roll.grab_focus();
+    grab_focus();
 
     /*
      * This code causes the un-greying of the previously selected trigger
@@ -107,18 +136,18 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     if (dropseq_active)
     {
         seq->unselect_triggers();
-        roll.draw_all();
+        draw_all();
     }
 
-    roll.m_drop_x = int(ev->x);
-    roll.m_drop_y = int(ev->y);
+    m_drop_x = int(ev->x);
+    m_drop_y = int(ev->y);
 
     /*
      * This function uses the m_drop_x and m_drop_y set above, which sets
      * m_drop_tick and m_drop_sequence.
      */
 
-    roll.convert_drop_xy();                             /* affects dropseq  */
+    convert_drop_xy();                             /* affects dropseq  */
     seq = p.get_sequence(dropseq);
     dropseq_active = p.is_active(dropseq);
     if (! dropseq_active)
@@ -135,15 +164,15 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     {
         if (SEQ64_CLICK_LEFT(ev->button))
         {
-            bool state = seq->get_trigger_state(roll.m_drop_tick);
+            bool state = seq->get_trigger_state(m_drop_tick);
             if (state)
             {
-                roll.split_trigger(dropseq, roll.m_drop_tick);
+                split_trigger(dropseq, m_drop_tick);
             }
             else
             {
                 p.push_trigger_undo(dropseq);
-                seq->paste_trigger(roll.m_drop_tick);
+                seq->paste_trigger(m_drop_tick);
             }
         }
         return true;
@@ -151,7 +180,7 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
 
     if (SEQ64_CLICK_LEFT(ev->button))
     {
-        midipulse droptick = roll.m_drop_tick;
+        midipulse droptick = m_drop_tick;
 
         /*
          * Add a new sequence if nothing is selected.
@@ -177,7 +206,7 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
 #endif
                 p.push_trigger_undo(dropseq);           /* stazed fix   */
                 seq->add_trigger(droptick, seqlength);
-                roll.draw_all();
+                draw_all();
             }
             result = true;
         }
@@ -188,41 +217,41 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
              * p.push_trigger_undo().
              */
 
-            roll.m_have_button_press = seq->select_trigger(droptick);
+            m_have_button_press = seq->select_trigger(droptick);
 
             midipulse tick0 = seq->selected_trigger_start();
             midipulse tick1 = seq->selected_trigger_end();
-            int wscalex = s_perfroll_size_box_click_w * c_perf_scale_x;
-            int ydrop = roll.m_drop_y % c_names_y;
+            int wscalex = sm_perfroll_size_box_click_w * c_perf_scale_x;
+            int ydrop = m_drop_y % c_names_y;
             if
             (
                 droptick >= tick0 && droptick <= (tick0 + wscalex) &&
-                ydrop <= s_perfroll_size_box_click_w + 1
+                ydrop <= sm_perfroll_size_box_click_w + 1
             )
             {
-                roll.m_growing = true;
-                roll.m_grow_direction = true;
-                roll.m_drop_tick_trigger_offset = droptick -
+                m_growing = true;
+                m_grow_direction = true;
+                m_drop_tick_trigger_offset = droptick -
                      seq->selected_trigger_start();
             }
             else if                         /* we are moving the segment    */
             (
                 droptick >= (tick1 - wscalex) && droptick <= tick1 &&
-                ydrop >= c_names_y - s_perfroll_size_box_click_w - 1
+                ydrop >= c_names_y - sm_perfroll_size_box_click_w - 1
             )
             {
-                roll.m_growing = true;
-                roll.m_grow_direction = false;
-                roll.m_drop_tick_trigger_offset = droptick -
+                m_growing = true;
+                m_grow_direction = false;
+                m_drop_tick_trigger_offset = droptick -
                     seq->selected_trigger_end();
             }
             else
             {
-                roll.m_moving = true;
-                roll.m_drop_tick_trigger_offset = droptick -
+                m_moving = true;
+                m_drop_tick_trigger_offset = droptick -
                      seq->selected_trigger_start();
             }
-            roll.draw_all();
+            draw_all();
         }
 
 #ifdef USE_SONG_BOX_SELECT
@@ -231,13 +260,13 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
          * Doesn't seem to do anything at this point.
          */
 
-        if (! roll.m_box_select)                 /* select with a box    */
+        if (! m_box_select)                 /* select with a box    */
         {
             p.unselect_all_triggers();
-            roll.snap_y(roll.m_drop_y);          /* y snapped to rows    */
-            roll.m_current_x = roll.m_drop_x;
-            roll.m_current_y = roll.m_drop_y;
-            roll.m_box_select = true;
+            snap_y(m_drop_y);          /* y snapped to rows    */
+            m_current_x = m_drop_x;
+            m_current_y = m_drop_y;
+            m_box_select = true;
         }
 
 #endif
@@ -245,11 +274,11 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     }
     else if (SEQ64_CLICK_RIGHT(ev->button))
     {
-        activate_adding(true, roll);
+        activate_adding(true);
 
 #ifdef USE_SONG_BOX_SELECT
-        roll.perf().unselect_all_triggers();
-        roll.m_box_select = false;
+        perf().unselect_all_triggers();
+        m_box_select = false;
 #endif
 
         // Should we add this:  result = true;
@@ -261,28 +290,29 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
          * the triggers or for setting the paste location of copy/paste.
          */
 
-        if (p.is_active(roll.m_drop_sequence))
+        if (p.is_active(m_drop_sequence))
         {
-            bool state = seq->get_trigger_state(roll.m_drop_tick);
+            bool state = seq->get_trigger_state(m_drop_tick);
             if (state)
             {
 #ifdef USE_SONG_BOX_SELECT      // odd difference in interface !!!
-                seq->half_split_trigger(roll.m_drop_tick);
+                seq->half_split_trigger(m_drop_tick);
 #else
-                // roll.split_trigger(dropseq, roll.m_drop_tick);
-                seq->split_trigger(roll.m_drop_tick);
+                // split_trigger(dropseq, m_drop_tick);
+                seq->split_trigger(m_drop_tick);
 #endif
                 result = true;
             }
             else
             {
                 p.push_trigger_undo(dropseq);
-                seq->paste_trigger(roll.m_drop_tick);
+                seq->paste_trigger(m_drop_tick);
 
                 // Should we add this:  result = true;
             }
         }
     }
+    (void) perfroll::on_button_press_event(ev);
     return result;
 }
 
@@ -295,7 +325,7 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
  */
 
 bool
-Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
+Seq24PerfInput::on_button_release_event (GdkEventButton * ev)
 {
     bool result = false;
     if (SEQ64_CLICK_LEFT(ev->button))
@@ -305,25 +335,25 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
 
 #ifdef USE_SONG_BOX_SELECT
 
-        if (roll.m_box_select)      /* calculate selected seqs in box   */
+        if (m_box_select)      /* calculate selected seqs in box   */
         {
             int x, y, w, h;         /* window dimensions                */
             midipulse tick_s;
             midipulse tick_f;
-            roll.m_current_x = ev->x;
-            roll.m_current_y = ev->y;
-            roll.snap_y(roll.m_current_y);
-//          roll.xy_to_rect
+            m_current_x = ev->x;
+            m_current_y = ev->y;
+            snap_y(m_current_y);
+//          xy_to_rect
             rect::xy_to_rect_values
             (
-                roll.m_drop_x, roll.m_drop_y,
-                roll.m_current_x, roll.m_current_y, x, y, w, h
+                m_drop_x, m_drop_y,
+                m_current_x, m_current_y, x, y, w, h
             );
-            roll.convert_xy(x,     y, tick_s, roll.m_box_select_low);
-            roll.convert_xy(x+w, y+h, tick_f, roll.m_box_select_high);
-            roll.perf().select_triggers_in_range
+            convert_xy(x,     y, tick_s, m_box_select_low);
+            convert_xy(x+w, y+h, tick_f, m_box_select_high);
+            perf().select_triggers_in_range
             (
-                roll.m_box_select_low, roll.m_box_select_high, tick_s, tick_f
+                m_box_select_low, m_box_select_high, tick_s, tick_f
             );
         }
 
@@ -338,7 +368,7 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
          * can then use the unadorned left-click key to add material.  Right
          * click to reset the adding mode.  This feature is enabled only
          * if allowed by Options / Mouse (but is true by default).
-         * See the same code in seq24seqroll.cpp.
+         * See the same code in seq24seqcpp.
          */
 
         bool addmode_exit = ! rc().allow_mod4_mode();
@@ -348,24 +378,25 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
         if (addmode_exit)
         {
             set_adding_pressed(false);
-            activate_adding(false, roll);
+            activate_adding(false);
         }
     }
 
-    perform & p = roll.perf();
-    roll.m_moving = roll.m_growing = false;
+    perform & p = perf();
+    m_moving = m_growing = false;
     set_adding_pressed(false);
     m_effective_tick = 0;
 
 #ifdef USE_SONG_BOX_SELECT
-    roll.m_box_select = false;
-    roll.m_last_tick = 0;
+    m_box_select = false;
+    m_last_tick = 0;
 #endif
 
-    if (p.is_active(roll.m_drop_sequence))
+    if (p.is_active(m_drop_sequence))
     {
-        roll.draw_all();
+        draw_all();
     }
+    (void) perfroll::on_button_release_event( ev);
     return result;
 }
 
@@ -378,12 +409,12 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
  */
 
 bool
-Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
+Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
 {
     bool result = false;
     int x = int(ev->x);
-    perform & p = roll.perf();
-    int dropseq = roll.m_drop_sequence;
+    perform & p = perf();
+    int dropseq = m_drop_sequence;
     sequence * seq = p.get_sequence(dropseq);
     if (! p.is_active(dropseq))
     {
@@ -393,59 +424,59 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
     midipulse tick;
     if (is_adding() && is_adding_pressed())
     {
-        roll.convert_x(x, tick);
+        convert_x(x, tick);
 
         midipulse seqlength = seq->get_length();
 
 #ifdef USE_SONG_RECORDING
-        if (roll.perf().song_record_snap())         /* snap to seq length   */
+        if (perf().song_record_snap())         /* snap to seq length   */
 #endif
             tick -= (tick % seqlength);
 
         // midipulse length = seqlength;
 
-        seq->grow_trigger(roll.m_drop_tick, tick, seqlength);
-        roll.draw_all();
+        seq->grow_trigger(m_drop_tick, tick, seqlength);
+        draw_all();
         result = true;
     }
-    else if (roll.m_moving || roll.m_growing)
+    else if (m_moving || m_growing)
     {
         /*
          * This code is necessary to insure that there is no push unless
          * we have a motion notification.
          */
 
-        if (roll.m_have_button_press)
+        if (m_have_button_press)
         {
             p.push_trigger_undo(dropseq);
-            roll.m_have_button_press = false;
+            m_have_button_press = false;
         }
 
         midipulse tick;
-        roll.convert_x(x, tick);
-        tick -= roll.m_drop_tick_trigger_offset;
+        convert_x(x, tick);
+        tick -= m_drop_tick_trigger_offset;
 
 #ifdef USE_SONG_RECORDING
-        if (roll.perf().song_record_snap())         /* snap to seq length   */
+        if (perf().song_record_snap())         /* snap to seq length   */
 #endif
-            tick -= tick % roll.m_snap;
+            tick -= tick % m_snap;
 
-        if (roll.m_moving)
+        if (m_moving)
         {
 #ifdef USE_SONG_BOX_SELECT
             for
             (
-                int seqid = roll.m_box_select_low;
-                seqid < roll.m_box_select_high; ++seqid
+                int seqid = m_box_select_low;
+                seqid < m_box_select_high; ++seqid
             )
             {
-                if (roll.perf().is_active(seqid))
+                if (perf().is_active(seqid))
                 {
-                    if (roll.m_last_tick != 0)
-                        roll.perf().get_sequence(seqid) ->
+                    if (m_last_tick != 0)
+                        perf().get_sequence(seqid) ->
                             offset_selected_triggers_by
                             (
-                                -(roll.m_last_tick - tick)
+                                -(m_last_tick - tick)
                             );
                 }
             }
@@ -454,25 +485,25 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
 #endif
             result = true;
         }
-        if (roll.m_growing)
+        if (m_growing)
         {
-            if (roll.m_grow_direction)
+            if (m_grow_direction)
             {
 #ifdef USE_SONG_BOX_SELECT
                 for
                 (
-                    int seqid = roll.m_box_select_low;
-                    seqid < roll.m_box_select_high; ++seqid
+                    int seqid = m_box_select_low;
+                    seqid < m_box_select_high; ++seqid
                 )
                 {
-                    if (roll.perf().is_active(seqid))
+                    if (perf().is_active(seqid))
                     {
-                        if (roll.m_last_tick != 0)
+                        if (m_last_tick != 0)
                         {
-                            roll.perf().get_sequence(seqid) ->
+                            perf().get_sequence(seqid) ->
                                 offset_selected_triggers_by
                                 (
-                                    -(roll.m_last_tick - tick), triggers::GROW_START
+                                    -(m_last_tick - tick), triggers::GROW_START
                                 );
                         }
                     }
@@ -489,18 +520,18 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
 #ifdef USE_SONG_BOX_SELECT
                 for
                 (
-                    int seqid = roll.m_box_select_low;
-                    seqid < roll.m_box_select_high; ++seqid
+                    int seqid = m_box_select_low;
+                    seqid < m_box_select_high; ++seqid
                 )
                 {
-                    if (roll.perf().is_active(seqid))
+                    if (perf().is_active(seqid))
                     {
-                        if (roll.m_last_tick != 0)
+                        if (m_last_tick != 0)
                         {
-                            roll.perf().get_sequence(seqid) ->
+                            perf().get_sequence(seqid) ->
                                 offset_selected_triggers_by
                                 (
-                                    -(roll.m_last_tick - tick), triggers::GROW_END
+                                    -(m_last_tick - tick), triggers::GROW_END
                                 );
                         }
                     }
@@ -514,19 +545,20 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
             }
             result = true;
         }
-        roll.draw_all();
+        draw_all();
     }
 #ifdef USE_SONG_BOX_SELECT
-    else if (roll.m_box_select)
+    else if (m_box_select)
     {
-        roll.m_current_x = ev->x;
-        roll.m_current_y = ev->y;
-        roll.snap_y(roll.m_current_y);
-        roll.convert_xy(0, roll.m_current_y, tick, roll.m_drop_sequence);
+        m_current_x = ev->x;
+        m_current_y = ev->y;
+        snap_y(m_current_y);
+        convert_xy(0, m_current_y, tick, m_drop_sequence);
     }
-    roll.m_last_tick = tick;
+    m_last_tick = tick;
 #endif
 
+    (void) perfroll::on_motion_notify_event(ev);
     return result;
 }
 
@@ -535,19 +567,19 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
  *  forth in the performance.
  *
  *  What happens when the mouse is used to drag the pattern is that, first,
- *  roll.m_drop_tick is set by left-clicking into the pattern to select it.
+ *  m_drop_tick is set by left-clicking into the pattern to select it.
  *  As the pattern is dragged, the drop-tick value does not change, but the
  *  tick (converted from the moving x value) does.
  *
- *  Then the button-handler sets roll.m_moving = true, and calculates
- *  roll.m_drop_tick_trigger_offset = roll.m_drop_tick -
+ *  Then the button-handler sets m_moving = true, and calculates
+ *  m_drop_tick_trigger_offset = m_drop_tick -
  *  p.get_sequence(dropseq)->selected_trigger_start();
  *
- *  The motion handler sees that roll.m_moving is true, gets the new tick
+ *  The motion handler sees that m_moving is true, gets the new tick
  *  value from the new x value, offsets it, and calls
  *  p.get_sequence(dropseq)->move_selected_triggers_to(tick, true).
  *
- *  When the user releases the left button, then roll.m_growing is turned of
+ *  When the user releases the left button, then m_growing is turned of
  *  and the roll draw_all()'s.
  *
  * \param is_left
@@ -568,15 +600,15 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
  */
 
 bool
-Seq24PerfInput::handle_motion_key (bool is_left, perfroll & roll)
+Seq24PerfInput::handle_motion_key (bool is_left)
 {
     bool result = false;
-    bool ok = roll.m_drop_sequence >= 0;        /* need ">=" here!  */
+    bool ok = m_drop_sequence >= 0;        /* need ">=" here!  */
     if (ok)
     {
-        perform & p = roll.perf();
-        int dropseq = roll.m_drop_sequence;
-        midipulse droptick = roll.m_drop_tick;
+        perform & p = perf();
+        int dropseq = m_drop_sequence;
+        midipulse droptick = m_drop_tick;
         if (m_effective_tick == 0)
             m_effective_tick = droptick;
 
@@ -593,16 +625,16 @@ Seq24PerfInput::handle_motion_key (bool is_left, perfroll & roll)
              */
 
             midipulse tick = m_effective_tick;
-            m_effective_tick -= roll.m_snap;
+            m_effective_tick -= m_snap;
             if (m_effective_tick <= 0)
-                m_effective_tick += roll.m_snap;    /* retrench */
+                m_effective_tick += m_snap;    /* retrench */
 
             if (m_effective_tick != tick)
                 result = true;
         }
         else
         {
-            m_effective_tick += roll.m_snap;
+            m_effective_tick += m_snap;
             result = true;
 
             /*
@@ -610,8 +642,8 @@ Seq24PerfInput::handle_motion_key (bool is_left, perfroll & roll)
              */
         }
 
-        midipulse tick = m_effective_tick - roll.m_drop_tick_trigger_offset;
-        tick -= tick % roll.m_snap;
+        midipulse tick = m_effective_tick - m_drop_tick_trigger_offset;
+        tick -= tick % m_snap;
 
         /*
          * Hmmmm, this overrides any result setting above.  Due to issues with

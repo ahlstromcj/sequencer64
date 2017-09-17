@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-21
+ * \updates       2017-09-17
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -36,10 +36,9 @@
  *
  */
 
-#include "gui_drawingarea_gtk2.hpp"
-#include "fruityperfroll_input.hpp"     /* FruityPerfInput      */
-#include "perfroll_input.hpp"           /* Seq24PerfInput       */
-#include "rect.hpp"                     /* seq64::rect class    */
+#include "globals.h"                    /* seq64::c_max_sequence        */
+#include "gui_drawingarea_gtk2.hpp"     /* seq64::gui_drawingarea_gtk2  */
+#include "rect.hpp"                     /* seq64::rect class            */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -56,7 +55,6 @@ namespace Gtk
 
 namespace seq64
 {
-    class AbstractPerfInput;
     class perform;
     class perfedit;
 
@@ -74,11 +72,13 @@ class perfroll : public gui_drawingarea_gtk2
      *  function.
      */
 
-    friend class FruityPerfInput;
-    friend class Seq24PerfInput;
     friend class perfedit;
 
-private:
+protected:
+
+    static int sm_perfroll_size_box_w;
+    static int sm_perfroll_background_x;
+    static int sm_perfroll_size_box_click_w;
 
     /**
      *  Provides a link to the perfedit that created this object.  We want to
@@ -87,6 +87,20 @@ private:
      */
 
     perfedit & m_parent;
+
+    /**
+     *  Indicates we are in the middle of adding a sequence segment to the
+     *  performance.  Moved from AbstractPerfInput.
+     */
+
+    bool m_adding;
+
+    /**
+     *  Indicates if the left mouse button is pressed while in adding mode.
+     *  Moved from AbstractPerfInput.
+     */
+
+    bool m_adding_pressed;
 
     /**
      *  Provides the horizontal page increment for the horizontal scrollbar.
@@ -267,30 +281,6 @@ private:
 
     bool m_sequence_active[c_max_sequence];
 
-    /**
-     *  We need both styles of interaction object present.  Even if the user
-     *  specifies the fruity interaction, the Seq24 interaction is still
-     *  needed to handle our new keystroke support for the perfroll.  We need
-     *  both objects to exist all the time, similar to the Fruity/Seq24 roles
-     *  in the seqroll object.
-     */
-
-    FruityPerfInput m_fruity_interaction;
-
-    /**
-     *  Provides support for standard Seq24 mouse handling, plus the keystroke
-     *  handlers.
-     */
-
-    Seq24PerfInput m_seq24_interaction;
-
-    /**
-     *  Provides a reference to the selected (at startup time) method of mouse
-     *  interaction.
-     */
-
-    AbstractPerfInput & m_interaction;
-
 #ifdef USE_SONG_BOX_SELECT
 
     /**
@@ -383,7 +373,7 @@ public:
         draw_progress();
     }
 
-private:
+protected:
 
     void draw_progress ();                  /* called by perfedit       */
     void redraw_dirty_sequences ();         /* called by perfedit       */
@@ -473,24 +463,65 @@ private:
         scroll_vset(m_vadjust, value);
     }
 
-private:        // callbacks
+protected:
 
-    void on_realize ();
-    bool on_expose_event (GdkEventExpose * ev);
-    bool on_button_press_event (GdkEventButton * ev);
-    bool on_button_release_event (GdkEventButton * ev);
-    bool on_motion_notify_event (GdkEventMotion * ev);
-    bool on_scroll_event (GdkEventScroll * ev) ;
-    bool on_focus_in_event (GdkEventFocus * ev);
-    bool on_focus_out_event (GdkEventFocus * ev);
-    void on_size_allocate (Gtk::Allocation & al);
-    bool on_key_press_event (GdkEventKey * ev);
+    virtual void activate_adding (bool adding) = 0;
+    virtual bool handle_motion_key (bool is_left) = 0;
+
+    /**
+     * \getter m_adding
+     */
+
+    bool is_adding () const
+    {
+        return m_adding;
+    }
+
+    /**
+     * \setter m_adding
+     */
+
+    void set_adding (bool flag)
+    {
+        m_adding = flag;
+    }
+
+    /**
+     * \getter m_adding_pressed
+     */
+
+    bool is_adding_pressed () const
+    {
+        return m_adding_pressed;
+    }
+
+    /**
+     * \setter m_adding_pressed
+     */
+
+    void set_adding_pressed (bool flag)
+    {
+        m_adding_pressed = flag;
+    }
+
+protected:        // callbacks
+
+    virtual void on_realize ();
+    virtual bool on_expose_event (GdkEventExpose * ev);
+    virtual bool on_button_press_event (GdkEventButton * ev);
+    virtual bool on_button_release_event (GdkEventButton * ev);
+    virtual bool on_motion_notify_event (GdkEventMotion * ev);
+    virtual bool on_scroll_event (GdkEventScroll * ev) ;
+    virtual bool on_focus_in_event (GdkEventFocus * ev);
+    virtual bool on_focus_out_event (GdkEventFocus * ev);
+    virtual void on_size_allocate (Gtk::Allocation & al);
+    virtual bool on_key_press_event (GdkEventKey * ev);
 
     /**
      *  This do-nothing callback effectively throws away a size request.
      */
 
-    void on_size_request (GtkRequisition *)
+    virtual void on_size_request (GtkRequisition *)
     {
         // Empty body
     }

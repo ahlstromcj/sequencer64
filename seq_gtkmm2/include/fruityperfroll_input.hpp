@@ -28,15 +28,23 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-02
+ * \updates       2017-09-17
  * \license       GNU GPLv2 or above
  *
  *  Note that this class doesn't handle keystrokes (directly), so even if the
  *  user chooses it, the Seq24 input object is also needed, to handle those
  *  keystrokes.
+ *
+ *  Now refactored to be derived from perfroll directly; no more passing
+ *  events along via a "roll" parameter.
  */
 
-#include "perfroll_input.hpp"           /* ABC and Seq24 input class    */
+#include "perfroll_input.hpp"           /* seq64::Seq24Input class      */
+
+namespace Gtk
+{
+    class Adjustment;
+}
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -44,66 +52,60 @@
 
 namespace seq64
 {
-    class perfroll;
+    class perform;
+    class perfedit;
 
 /**
  *  Implements the performance input of that certain fruity sequencer that
  *  people seem to like.
  */
 
-class FruityPerfInput : public AbstractPerfInput
+class FruityPerfInput : public Seq24PerfInput
 {
-    friend class perfroll;
-
-private:
-
-    /**
-     *  The current x value of the mouse.
-     */
-
-    long m_current_x;
-
-    /**
-     *  The current y value of the mouse.
-     */
-
-    long m_current_y;
 
 public:
 
+    FruityPerfInput
+    (
+        perform & perf,
+        perfedit & parent,
+        Gtk::Adjustment & hadjust,
+        Gtk::Adjustment & vadjust,
+        int ppqn = SEQ64_USE_DEFAULT_PPQN
+    );
+
     /**
-     *  Default constructor.
+     * virtual destructor
      */
 
-    FruityPerfInput () :
-        AbstractPerfInput   (),
-        m_current_x         (0),
-        m_current_y         (0)
+    ~FruityPerfInput ()
     {
-        // Empty body
+        // no code
     }
-
-    bool on_button_press_event (GdkEventButton * ev, perfroll & roll);
-    bool on_button_release_event (GdkEventButton * ev, perfroll & roll);
-    bool on_motion_notify_event (GdkEventMotion * ev, perfroll & roll);
 
 private:
 
-    void update_mouse_pointer (perfroll & roll);
-    bool on_left_button_pressed (GdkEventButton * ev, perfroll & roll);
-    bool on_right_button_pressed (GdkEventButton * ev, perfroll & roll);
+    void update_mouse_pointer ();
 
-    virtual void activate_adding (bool /*adding*/, perfroll & /*roll*/)
+    virtual void activate_adding (bool /*adding*/)
     {
         // No action in fruity method
     }
 
-    virtual bool handle_motion_key (bool /*is_left*/, perfroll & /*roll*/)
+    virtual bool handle_motion_key (bool /*is_left*/)
     {
         return false;                   /* No action in fruity method   */
     }
 
-};          // FruityPerfInput
+private:
+
+    virtual bool on_button_press_event (GdkEventButton * ev);
+    virtual bool on_button_release_event (GdkEventButton * ev);
+    virtual bool on_motion_notify_event (GdkEventMotion * ev);
+    virtual bool on_left_button_pressed (GdkEventButton * ev);
+    virtual bool on_right_button_pressed (GdkEventButton * ev);
+
+};          // class FruityPerfInput
 
 }           // namespace seq64
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-17
+ * \updates       2017-09-18
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -39,6 +39,10 @@
 #include "globals.h"                    /* seq64::c_max_sequence        */
 #include "gui_drawingarea_gtk2.hpp"     /* seq64::gui_drawingarea_gtk2  */
 #include "rect.hpp"                     /* seq64::rect class            */
+
+#ifdef USE_SONG_BOX_SELECT
+#include <set>                          /* std::set, arbitary selection */
+#endif
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -64,6 +68,17 @@ namespace seq64
 
 class perfroll : public gui_drawingarea_gtk2
 {
+
+#ifdef USE_SONG_BOX_SELECT
+
+    /**
+     *  Provides a type to hold the unique shift-selected sequence numbers.
+     */
+
+    typedef std::set<int> Selection;
+
+#endif
+
     /**
      *  These friend implement interaction-specific behavior, although only
      *  the Seq24 interactions support full keyboard processing, except for
@@ -284,7 +299,15 @@ protected:
 #ifdef USE_SONG_BOX_SELECT
 
     /**
-     *  The previous selection rectangle, used for undrawing it.
+     *  Provides a set holding all of the sequences numbers that have been
+     *  shift-selected.
+     */
+
+    Selection m_selected_seqs;
+
+    /**
+     *  The previous selection rectangle, used for undrawing it.  Not yet
+     *  ready, first starting Shift-Select methods.
      */
 
     rect m_old;

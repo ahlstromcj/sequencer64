@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-17
+ * \updates       2017-09-18
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -148,8 +148,9 @@ perfroll::perfroll
     m_sequence_max          (c_max_sequence),
     m_sequence_active       (),                             // [c_max_sequence]
 #ifdef USE_SONG_BOX_SELECT
-    m_old                   (),
-    m_selected              (),
+    m_selected_seqs         (),                             // std::set
+    m_old                   (),                             // seq64::rect
+    m_selected              (),                             // seq64::rect
     m_box_select            (false),
     m_box_select_low        (SEQ64_NULL_SEQUENCE),
     m_box_select_high       (SEQ64_NULL_SEQUENCE),

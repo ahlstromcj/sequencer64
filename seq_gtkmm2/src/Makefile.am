@@ -134,6 +134,7 @@ lib_LTLIBRARIES = libseq_gtkmm2.la
 #----------------------------------------------------------------------------
 #
 # seq24seqroll.cpp now obsolete, removed from the build.
+# seq24seq.cpp, ditto
 #
 #----------------------------------------------------------------------------
 
@@ -161,7 +162,6 @@ libseq_gtkmm2_la_SOURCES = \
 	perfroll.cpp \
 	perfroll_input.cpp \
 	perftime.cpp \
-	seq24seq.cpp \
 	seqdata.cpp \
 	seqedit.cpp \
 	seqevent.cpp \

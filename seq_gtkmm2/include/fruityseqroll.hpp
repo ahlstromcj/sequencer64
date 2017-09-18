@@ -28,10 +28,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-03
+ * \updates       2017-09-17
  * \license       GNU GPLv2 or above
  *
  */
+
+#include "seqroll.hpp"                  /* seq64::seqroll class         */
+
+namespace Gtk
+{
+    class Adjustment;
+}
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -39,13 +46,15 @@
 
 namespace seq64
 {
-    class seqroll;
+    class perform;
+    class seqkeys;
+    class sequence;
 
 /**
  *  Implements the fruity mouse interaction paradigm for the seqroll.
  */
 
-class FruitySeqRollInput
+class FruitySeqRollInput : public seqroll
 {
 
 private:
@@ -72,18 +81,25 @@ public:
      * Default constructor.
      */
 
-    FruitySeqRollInput () : m_erase_painting(false)
-    {
-        // Empty body
-    }
+    FruitySeqRollInput
+    (
+        perform & perf,
+        sequence & seq,
+        int zoom,
+        int snap,
+        seqkeys & seqkeys_wid,
+        int pos,
+        Gtk::Adjustment & hadjust,
+        Gtk::Adjustment & vadjust
+    );
 
-    void update_mouse_pointer (seqroll & ths);
+    virtual void update_mouse_pointer ();
 
 public:         // callbacks
 
-    bool on_button_press_event (GdkEventButton * ev, seqroll & ths);
-    bool on_button_release_event (GdkEventButton * ev, seqroll & ths);
-    bool on_motion_notify_event (GdkEventMotion * ev, seqroll & ths);
+    virtual bool on_button_press_event (GdkEventButton * ev);
+    virtual bool on_button_release_event (GdkEventButton * ev);
+    virtual bool on_motion_notify_event (GdkEventMotion * ev);
 
 };          // FruitySeqRollInput
 

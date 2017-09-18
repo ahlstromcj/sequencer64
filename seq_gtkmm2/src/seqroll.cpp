@@ -160,7 +160,7 @@ seqroll::seqroll
     m_selected              (),
     m_seq                   (seq),
     m_seqkeys_wid           (seqkeys_wid),
-    m_fruity_interaction    (),
+//  m_fruity_interaction    (),
     m_pos                   (pos),
     m_zoom                  (zoom),
     m_snap                  (snap),
@@ -2087,10 +2087,10 @@ seqroll::on_button_press_event (GdkEventButton * ev)
     }
 
     bool result;
-    if (rc().interaction_method() == e_seq24_interaction)
+//  if (rc().interaction_method() == e_seq24_interaction)
         result = button_press(ev);
-    else
-        result = m_fruity_interaction.on_button_press_event(ev, *this);
+//  else
+//      result = m_fruity_interaction.on_button_press_event(ev, *this);
 
     /*
      * MODIFY FIX?  Why modify just because of a button_press?  If we leave this
@@ -2124,10 +2124,10 @@ bool
 seqroll::on_button_release_event (GdkEventButton * ev)
 {
     bool result;
-    if (rc().interaction_method() == e_seq24_interaction)
+//  if (rc().interaction_method() == e_seq24_interaction)
         result = button_release(ev);
-    else
-        result = m_fruity_interaction.on_button_release_event(ev, *this);
+//  else
+//      result = m_fruity_interaction.on_button_release_event(ev, *this);
 
     perf().set_follow_transport(m_transport_follow);
     m_trans_button_press = false;
@@ -2150,10 +2150,10 @@ bool
 seqroll::on_motion_notify_event (GdkEventMotion * ev)
 {
     bool result;
-    if (rc().interaction_method() == e_seq24_interaction)
+//  if (rc().interaction_method() == e_seq24_interaction)
         result = motion_notify(ev);
-    else
-        result = m_fruity_interaction.on_motion_notify_event(ev, *this);
+//  else
+//      result = m_fruity_interaction.on_motion_notify_event(ev, *this);
 
     /*
      * MODIFY FIX?  If we leave this active, then even just selecting notes

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-16
+ * \updates       2017-09-17
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -39,7 +39,7 @@
 
 #include "globals.h"
 #include "gui_drawingarea_gtk2.hpp"
-#include "fruityseqroll.hpp"
+// #include "fruityseqroll.hpp"
 #include "rect.hpp"                     /* seq64::rect class        */
 #include "sequence.hpp"
 #include "scales.h"                     /* STAZED chord support     */
@@ -71,14 +71,6 @@ namespace seq64
 class seqroll : public gui_drawingarea_gtk2
 {
     /**
-     *  This friend implements fruity interaction-specific behavior.  We've
-     *  absorbed the Seq24SeqRollInput class functionality back into seqroll,
-     *  to save code.
-     */
-
-    friend class FruitySeqRollInput;
-
-    /**
      *  For accessing on_key_press_event().  It would be good to be able to
      *  avoid this access!
      *
@@ -89,7 +81,7 @@ class seqroll : public gui_drawingarea_gtk2
      * friend class seqedit;
      */
 
-private:
+protected:
 
     /**
      *  We need direct access to the horizontal scrollbar if we want to be
@@ -136,12 +128,6 @@ private:
      */
 
     seqkeys & m_seqkeys_wid;
-
-    /**
-     *  Provides a fruity input object, whether it is needed or not.
-     */
-
-    FruitySeqRollInput m_fruity_interaction;
 
     /**
      *  A position value.  Need to clarify what exactly this member is used
@@ -393,9 +379,14 @@ public:
 
     seqroll
     (
-        perform & perf, sequence & seq, int zoom, int snap,
-        seqkeys & seqkeys_wid, int pos,
-        Gtk::Adjustment & hadjust, Gtk::Adjustment & vadjust,
+        perform & perf,
+        sequence & seq,
+        int zoom,
+        int snap,
+        seqkeys & seqkeys_wid,
+        int pos,
+        Gtk::Adjustment & hadjust,
+        Gtk::Adjustment & vadjust,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
     virtual ~seqroll ();
@@ -556,7 +547,7 @@ public:
 
 #endif
 
-private:
+protected:
 
     virtual void force_draw ();
 
@@ -674,7 +665,7 @@ private:
     void add_snapped_note ();
 #endif
 
-private:            // new internal/friend functions
+protected:            // new internal/friend functions
 
     /**
      * \setter m_old
@@ -847,22 +838,22 @@ private:            // new internal/friend functions
         return m_moving;
     }
 
-private:            // callbacks
+protected:            // callbacks
 
-    void on_realize ();
-    bool on_expose_event (GdkEventExpose * ev);
-    bool on_button_press_event (GdkEventButton * ev);
-    bool on_button_release_event (GdkEventButton * ev);
-    bool on_motion_notify_event (GdkEventMotion * ev);
-    bool on_focus_in_event (GdkEventFocus *);
-    bool on_focus_out_event (GdkEventFocus *);
-    bool on_key_press_event (GdkEventKey * ev);
-    bool on_scroll_event (GdkEventScroll * a_ev);
-    void on_size_allocate (Gtk::Allocation &);
-    bool on_leave_notify_event (GdkEventCrossing * p0);
-    bool on_enter_notify_event (GdkEventCrossing * p0);
+    virtual void on_realize ();
+    virtual bool on_expose_event (GdkEventExpose * ev);
+    virtual bool on_button_press_event (GdkEventButton * ev);
+    virtual bool on_button_release_event (GdkEventButton * ev);
+    virtual bool on_motion_notify_event (GdkEventMotion * ev);
+    virtual bool on_focus_in_event (GdkEventFocus *);
+    virtual bool on_focus_out_event (GdkEventFocus *);
+    virtual bool on_key_press_event (GdkEventKey * ev);
+    virtual bool on_scroll_event (GdkEventScroll * a_ev);
+    virtual void on_size_allocate (Gtk::Allocation &);
+    virtual bool on_leave_notify_event (GdkEventCrossing * p0);
+    virtual bool on_enter_notify_event (GdkEventCrossing * p0);
 
-};
+};          // class seqroll
 
 }           // namespace seq64
 

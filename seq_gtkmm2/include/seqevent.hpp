@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-02
+ * \updates       2017-09-17
  * \license       GNU GPLv2 or above
  *
  *  The event pane is the thin gridded drawing-area below the seqedit's piano
@@ -40,9 +40,9 @@
 
 #include "globals.h"
 #include "gui_drawingarea_gtk2.hpp"
-#include "fruityseq.hpp"
+// #include "fruityseq.hpp"
 #include "midibyte.hpp"                 /* seq64::midibyte, etc.        */
-#include "seq24seq.hpp"
+// #include "seq24seq.hpp"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -69,24 +69,8 @@ namespace seq64
 
 class seqevent : public gui_drawingarea_gtk2
 {
-    friend struct FruitySeqEventInput;      /* module fruitseq  */
-    friend struct Seq24SeqEventInput;       /* module seq24seq  */
 
-private:
-
-    /**
-     *  Provides the mouse-handling paradigm for the fruity interaction.  Why
-     *  should we need both at the same time?  Just load the one that is
-     *  specified in the configuration.
-     */
-
-    FruitySeqEventInput m_fruity_interaction;
-
-    /**
-     *  Provides the normal mouse-handling for Sequencer64.
-     */
-
-    Seq24SeqEventInput m_seq24_interaction;
+protected:
 
     /**
      *  Provides a reference to the sequence whose data is represented in this
@@ -148,6 +132,12 @@ private:
      */
 
     seqdata & m_seqdata_wid;
+
+    /**
+     *  True if we're adding events via the mouse.
+     */
+
+    bool m_adding;
 
     /**
      *  Used when highlighting a bunch of events.
@@ -217,8 +207,12 @@ public:
 
     seqevent
     (
-        perform & p, sequence & seq, int zoom, int snap,
-        seqdata & seqdata_wid, Gtk::Adjustment & hadjust,
+        perform & p,
+        sequence & seq,
+        int zoom,
+        int snap,
+        seqdata & seqdata_wid,
+        Gtk::Adjustment & hadjust,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
 
@@ -234,6 +228,7 @@ public:
     void reset ();
     void redraw ();
     void set_zoom (int zoom);
+    void set_adding (bool adding);
 
     /**
      * \setter m_snap
@@ -253,7 +248,7 @@ public:
     void draw_selection_on_window ();
     void update_pixmap ();
 
-private:
+protected:
 
     virtual void force_draw ();
 
@@ -315,15 +310,15 @@ private:
 
 private:        // callbacks
 
-    void on_realize ();
-    bool on_expose_event (GdkEventExpose * ev);
-    bool on_button_press_event (GdkEventButton * ev);
-    bool on_button_release_event (GdkEventButton * ev);
-    bool on_motion_notify_event (GdkEventMotion * ev);
-    bool on_focus_in_event (GdkEventFocus *);
-    bool on_focus_out_event (GdkEventFocus *);
-    bool on_key_press_event (GdkEventKey * p0);
-    void on_size_allocate (Gtk::Allocation &);
+    virtual void on_realize ();
+    virtual bool on_expose_event (GdkEventExpose * ev);
+    virtual bool on_button_press_event (GdkEventButton * ev);
+    virtual bool on_button_release_event (GdkEventButton * ev);
+    virtual bool on_motion_notify_event (GdkEventMotion * ev);
+    virtual bool on_focus_in_event (GdkEventFocus *);
+    virtual bool on_focus_out_event (GdkEventFocus *);
+    virtual bool on_key_press_event (GdkEventKey * p0);
+    virtual void on_size_allocate (Gtk::Allocation &);
 
 };
 

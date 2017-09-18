@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-14
+ * \updates       2017-09-17
  * \license       GNU GPLv2 or above
  *
  *  We are currently trying to get event processing to accomodate tempo
@@ -33,8 +33,10 @@
 
 #include <gtkmm/accelkey.h>
 #include <gtkmm/adjustment.h>
+#include <gdkmm/cursor.h>               /* Gdk::Cursor(Gdk::PENCIL)     */
 
 #include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
+#include "click.hpp"                    /* SEQ64_CLICK_LEFT, etc.       */
 #include "event.hpp"
 #include "gdk_basic_keys.h"
 #include "gui_key_tests.hpp"            /* seq64::is_no_modifier()      */
@@ -86,27 +88,26 @@ seqevent::seqevent
     Gtk::Adjustment & hadjust,
     int ppqn
 ) :
-    gui_drawingarea_gtk2     (p, hadjust, adjustment_dummy(), 10, c_eventarea_y),
-    m_fruity_interaction     (),
-    m_seq24_interaction      (),
-    m_seq                    (seq),
-    m_zoom                   (zoom),
-    m_snap                   (snap),
-    m_ppqn                   (0),
-    m_old                    (),
-    m_selected               (),
-    m_scroll_offset_ticks    (0),
-    m_scroll_offset_x        (0),
-    m_seqdata_wid            (seqdata_wid),
-    m_selecting              (false),
-    m_moving_init            (false),
-    m_moving                 (false),
-    m_growing                (false),
-    m_painting               (false),
-    m_paste                  (false),
-    m_move_snap_offset_x     (0),
-    m_status                 (EVENT_NOTE_ON),
-    m_cc                     (0)
+    gui_drawingarea_gtk2    (p, hadjust, adjustment_dummy(), 10, c_eventarea_y),
+    m_seq                   (seq),
+    m_zoom                  (zoom),
+    m_snap                  (snap),
+    m_ppqn                  (0),
+    m_old                   (),
+    m_selected              (),
+    m_scroll_offset_ticks   (0),
+    m_scroll_offset_x       (0),
+    m_seqdata_wid           (seqdata_wid),
+    m_adding                (false),
+    m_selecting             (false),
+    m_moving_init           (false),
+    m_moving                (false),
+    m_growing               (false),
+    m_painting              (false),
+    m_paste                 (false),
+    m_move_snap_offset_x    (0),
+    m_status                (EVENT_NOTE_ON),
+    m_cc                    (0)
 {
     m_ppqn = choose_ppqn(ppqn);
     memset(&m_old, 0, sizeof m_old);        /* from seq24 0.9.3 */
@@ -305,6 +306,26 @@ seqevent::set_zoom (int z)
         m_zoom = z;
         reset();
     }
+}
+
+/**
+ *  Changes the mouse cursor to a pencil or a left pointer in the given
+ *  seqevent object, depending on the first parameter.  Modifies m_adding
+ *  as well.
+ *
+ * \param adding
+ *      The value to set m_adding to, and if true, sets the mouse cursor to a
+ *      pencil icon, otherwise sets it to a standard mouse-pointer icon.
+ */
+
+void
+seqevent::set_adding (bool adding)
+{
+    m_adding = adding;
+    if (adding)
+        get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
+    else
+        get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
 }
 
 /**
@@ -671,24 +692,176 @@ bool
 seqevent::on_button_press_event (GdkEventButton * ev)
 {
     bool result = false;
+
+#if 0
     interaction_method_t interactionmethod = rc().interaction_method();
     switch (interactionmethod)
     {
     case e_fruity_interaction:
+
+        // WE NEED TO WORK THIS OUT!!!!
+
         (void) m_fruity_interaction.on_button_press_event(ev, *this);
         result = m_seq24_interaction.on_button_press_event(ev, *this);
         break;
 
     case e_seq24_interaction:
+
+        // WE NEED TO WORK THIS OUT!!!!
+
         result = m_seq24_interaction.on_button_press_event(ev, *this);
         break;
 
     default:
         break;
     }
-    if (result)
-        perf().modify();
+#endif  // 0
 
+    midipulse tick_s, tick_w;
+    grab_focus();                 // NEW: I think this would be helpful
+    convert_x(c_eventevent_x, tick_w);
+    set_current_drop_x(int(ev->x + m_scroll_offset_x));
+    m_old.x = m_old.y = m_old.width = m_old.height = 0;
+    if (m_paste)
+    {
+        snap_x(m_current_x);
+        convert_x(m_current_x, tick_s);
+        m_paste = false;
+        m_seq.paste_selected(tick_s, 0);      /* handles undo & modify    */
+        result = true;
+    }
+    else
+    {
+        int x, w;
+        midipulse tick_f;
+        if (SEQ64_CLICK_LEFT(ev->button))
+        {
+            convert_x(m_drop_x, tick_s); /* x,y in to tick/note     */
+            tick_f = tick_s + m_zoom;          /* shift back a few ticks  */
+            tick_s -= tick_w;
+            if (tick_s < 0)
+                tick_s = 0;
+
+            int eventcount = 0;
+            if (m_adding)
+            {
+                m_painting = true;
+                snap_x(m_drop_x);
+                convert_x(m_drop_x, tick_s); /* x,y to tick/note    */
+                eventcount = m_seq.select_events
+                (
+                    tick_s, tick_f, m_status, m_cc,
+                    sequence::e_would_select
+                );
+                if (eventcount == 0)
+                {
+                    /*
+                     * Add the event at the appropriate place.  As a new
+                     * feature, if the Ctrl key is held, make it a Set Tempo
+                     * event.
+                     */
+
+                    bool maketempo = is_ctrl_key(ev);
+                    m_seq.push_undo();
+                    drop_event(tick_s, maketempo);
+                    result = true;
+                }
+            }
+            else                                        /* selecting */
+            {
+                eventcount = m_seq.select_events
+                (
+                    tick_s, tick_f, m_status,
+                    m_cc, sequence::e_is_selected
+                );
+
+                /*
+                 * Stazed fix: if we didn't select anything (user clicked empty
+                 * space), then unselect all notes, and start selecting.
+                 */
+
+                if (event::is_strict_note_msg(m_status))
+                {
+                    m_seq.select_linked(tick_s, tick_f, m_status);
+                    m_seq.set_dirty();
+                }
+
+                if (eventcount == 0)
+                {
+                    if (! is_ctrl_key(ev))
+                        m_seq.unselect();
+
+                    eventcount = m_seq.select_events
+                    (
+                        tick_s, tick_f, m_status,
+                        m_cc, sequence::e_select_one
+                    );
+
+                    /*
+                     * If nothing selected (user clicked empty space),
+                     * unselect all notes, and start selecting with a new
+                     * selection box.
+                     */
+
+                    if (eventcount == 0)
+                    {
+                        m_selecting = true;
+                    }
+                    else
+                    {
+                        /**
+                         * Needs update.
+                         * m_seq.unselect();  ???????
+                         */
+                    }
+                }
+                eventcount = m_seq.select_events
+                (
+                    tick_s, tick_f, m_status,
+                    m_cc, sequence::e_is_selected
+                );
+                if (eventcount > 0)             /* get box selections are in */
+                {
+                    m_moving_init = true;
+                    int note;
+                    m_seq.get_selected_box(tick_s, note, tick_f, note);
+                    tick_f += tick_w;
+                    convert_t(tick_s, x); /* convert box to X,Y values */
+                    convert_t(tick_f, w);
+                    w -= x;                     /* w is coordinate now       */
+
+                    /* set the m_selected rectangle for x,y,w,h */
+
+                    m_selected.x = x;
+                    m_selected.width = w;
+                    m_selected.y = (c_eventarea_y - c_eventevent_y) / 2;
+                    m_selected.height = c_eventevent_y;
+
+                    /* save offset that we get from the snap above */
+
+                    int adjusted_selected_x = m_selected.x;
+                    snap_x(adjusted_selected_x);
+                    m_move_snap_offset_x =
+                        m_selected.x - adjusted_selected_x;
+
+                    /* align selection for drawing */
+
+                    snap_x(m_selected.x);
+                    snap_x(m_current_x);
+                    snap_x(m_drop_x);
+                }
+            }
+        }
+        if (SEQ64_CLICK_RIGHT(ev->button))
+            set_adding(true);
+    }
+
+    if (result)
+    {
+        update_pixmap();          /* if they clicked, something changed */
+        draw_pixmap_on_window();
+        perf().modify();
+    }
     return result;
 }
 
@@ -711,13 +884,21 @@ bool
 seqevent::on_button_release_event (GdkEventButton * ev)
 {
     bool result = false;
+
+#if 0
     interaction_method_t interactionmethod = rc().interaction_method();
     switch (interactionmethod)
     {
+
+        // WE NEED TO WORK THIS OUT!!!!
+
     case e_fruity_interaction:
         (void) m_fruity_interaction.on_button_release_event(ev, *this);
         result = m_seq24_interaction.on_button_release_event(ev, *this);
         break;
+
+        // WE NEED TO WORK THIS OUT!!!!
+
 
     case e_seq24_interaction:
         result = m_seq24_interaction.on_button_release_event(ev, *this);
@@ -726,8 +907,68 @@ seqevent::on_button_release_event (GdkEventButton * ev)
     default:
         break;
     }
-    if (result)
-        perf().modify();
+
+#endif  // 0
+
+    midipulse tick_s;
+    midipulse tick_f;
+    grab_focus();
+    m_current_x = int(ev->x) + m_scroll_offset_x;
+    if (m_moving)
+        snap_x(m_current_x);
+
+    int delta_x = m_current_x - m_drop_x;
+    midipulse delta_tick;
+    if (SEQ64_CLICK_LEFT(ev->button))
+    {
+        if (m_selecting)
+        {
+            int x, w;
+            x_to_w(m_drop_x, m_current_x, x, w);
+            convert_x(x, tick_s);
+            convert_x(x + w, tick_f);
+            (void) m_seq.select_events
+            (
+                tick_s, tick_f, m_status, m_cc, sequence::e_select
+            );
+
+#ifdef USE_STAZED_SELECTION_EXTENSIONS
+
+            /*
+             * Stazed fix: if we did'nt select anything (user clicked empty
+             * space), then unselect all notes, and start selecting.
+             */
+
+            if (event::is_strict_note_msg(m_status))
+            {
+                m_seq.select_linked(tick_s, tick_f, m_status);
+            }
+            m_seq.set_dirty();
+#endif
+
+        }
+        if (m_moving)
+        {
+            delta_x -= m_move_snap_offset_x;  /* adjust for snap       */
+            convert_x(delta_x, delta_tick);   /* to screen coordinates */
+            m_seq.move_selected_notes(delta_tick, 0);
+            result = true;
+        }
+        set_adding(m_adding);
+    }
+    if (SEQ64_CLICK_RIGHT(ev->button))
+    {
+        set_adding(false);
+    }
+    m_selecting = false;                      /* turn off              */
+    m_moving = false;
+    m_growing = false;
+    m_moving_init = false;
+    m_painting = false;
+    m_seq.unpaint_all();
+
+    update_pixmap();                  /* if a click, something changed */
+    draw_pixmap_on_window();
 
     return result;
 }
@@ -751,13 +992,22 @@ bool
 seqevent::on_motion_notify_event (GdkEventMotion * ev)
 {
     bool result = false;
+
+#if 0
+
     interaction_method_t interactionmethod = rc().interaction_method();
     switch (interactionmethod)
     {
+
+        // WE NEED TO WORK THIS OUT!!!!
+
     case e_fruity_interaction:
         (void) m_fruity_interaction.on_motion_notify_event(ev, *this);
         result = m_seq24_interaction.on_motion_notify_event(ev, *this);
         break;
+
+
+        // WE NEED TO WORK THIS OUT!!!!
 
     case e_seq24_interaction:
         result = m_seq24_interaction.on_motion_notify_event(ev, *this);
@@ -765,6 +1015,31 @@ seqevent::on_motion_notify_event (GdkEventMotion * ev)
 
     default:
         break;
+    }
+
+#endif  // 0
+
+    midipulse tick = 0;
+    if (m_moving_init)
+    {
+        m_moving_init = false;
+        m_moving = true;
+    }
+    if (m_selecting || m_moving || m_paste)
+    {
+        m_current_x = int(ev->x) + m_scroll_offset_x;
+        if (m_moving || m_paste)
+            snap_x(m_current_x);
+
+        draw_selection_on_window();
+    }
+    if (m_painting)
+    {
+        m_current_x = int(ev->x) + m_scroll_offset_x;
+        snap_x(m_current_x);
+        convert_x(m_current_x, tick);
+        drop_event(tick);
+        result = true;
     }
     if (result)
         perf().modify();
@@ -862,12 +1137,16 @@ seqevent::on_key_press_event (GdkEventKey * ev)
         {
             if (ev->keyval == SEQ64_p)
             {
-                m_seq24_interaction.set_adding(true, *this);
+                // WORK THIS OUT !!!!!!!!!!!
+                // m_seq24_interaction.set_adding(true, *this);
+                set_adding(true);
                 result = true;
             }
             else if (ev->keyval == SEQ64_x)         /* "x-scape" the mode   */
             {
-                m_seq24_interaction.set_adding(false, *this);
+                // WORK THIS OUT !!!!!!!!!!!
+                // m_seq24_interaction.set_adding(false, *this);
+                set_adding(true);
                 result = true;
             }
         }

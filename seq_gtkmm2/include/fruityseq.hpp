@@ -28,26 +28,29 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-09-13
+ * \updates       2017-09-17
  * \license       GNU GPLv2 or above
  *
  */
 
+#include "seqevent.hpp"                 /* seq64::seqevent class        */
 /*
  * Do not document the namespace; it breaks Doxygen.
  */
 
 namespace seq64
 {
-    class seqevent;
 
 /**
- *  This structure implements the interaction methods for the "fruity"
- *  mode of operation.
+ *  This class implements the interaction methods for the "fruity"
+ *  mode of operation in the event panel of the seqroll.
  */
 
-struct FruitySeqEventInput
+class FruitySeqEventInput : public seqevent
 {
+
+private:
+
     /**
      *  Indicates that the left mouse button was click to start a selection.
      */
@@ -69,23 +72,29 @@ struct FruitySeqEventInput
 
     bool m_is_drag_pasting;
 
-    /**
-     * Default constructor.
-     */
+public:
 
-    FruitySeqEventInput () :
-        m_justselected_one      (false),
-        m_is_drag_pasting_start (false),
-        m_is_drag_pasting       (false)
-    {
-        // Empty body
-    }
+    FruitySeqEventInput
+    (
+        perform & p,
+        sequence & seq,
+        int zoom,
+        int snap,
+        seqdata & seqdata_wid,
+        Gtk::Adjustment & hadjust
+    );
 
-    void update_mouse_pointer (seqevent & ths);
-    bool on_button_press_event (GdkEventButton * ev, seqevent & ths);
-    bool on_button_release_event (GdkEventButton * ev, seqevent & ths);
-    bool on_motion_notify_event (GdkEventMotion * ev, seqevent & ths);
-};
+private:
+
+    virtual void update_mouse_pointer ();
+
+private:
+
+    virtual bool on_button_press_event (GdkEventButton * ev);
+    virtual bool on_button_release_event (GdkEventButton * ev);
+    virtual bool on_motion_notify_event (GdkEventMotion * ev);
+
+};          // class FruitySeqEventInput
 
 }           // namespace seq64
 

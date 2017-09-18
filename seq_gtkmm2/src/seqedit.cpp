@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-08
+ * \updates       2017-09-17
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -79,6 +79,8 @@
 #include "calculations.hpp"             /* measures_to_ticks()          */
 #include "controllers.hpp"
 #include "event.hpp"
+#include "fruityseq.hpp"                /* seq64::FruitySeqEventInput   */
+#include "fruityseqroll.hpp"            /* seq64::FruitySeqRollInput    */
 #include "gdk_basic_keys.h"
 #include "globals.h"
 #include "gtk_helpers.h"
@@ -307,17 +309,36 @@ seqedit::seqedit
     m_seqdata_wid       (manage(new seqdata(m_seq, p, m_zoom, *m_hadjust))),
     m_seqevent_wid
     (
-        manage(new seqevent(p, m_seq, m_zoom, m_snap, *m_seqdata_wid, *m_hadjust))
+        manage
+        (
+            (rc().interaction_method() == e_fruity_interaction) ?
+                new FruitySeqEventInput
+                (
+                    p, m_seq, m_zoom, m_snap, *m_seqdata_wid, *m_hadjust
+                )
+                  :
+                new seqevent    // Seq24SeqEventInput
+                (
+                    p, m_seq, m_zoom, m_snap, *m_seqdata_wid, *m_hadjust
+                )
+        )
     ),
     m_seqroll_wid
     (
         manage
         (
-            new seqroll
-            (
-                p, m_seq, m_zoom, m_snap, *m_seqkeys_wid, pos,
-                *m_hadjust, *m_vadjust
-            )
+            (rc().interaction_method() == e_fruity_interaction) ?
+                new FruitySeqRollInput
+                (
+                    p, m_seq, m_zoom, m_snap, *m_seqkeys_wid, pos,
+                    *m_hadjust, *m_vadjust
+                )
+                 :
+                new seqroll
+                (
+                    p, m_seq, m_zoom, m_snap, *m_seqkeys_wid, pos,
+                    *m_hadjust, *m_vadjust
+                )
         )
     ),
 #ifdef SEQ64_STAZED_LFO_SUPPORT
@@ -2903,7 +2924,7 @@ seqedit::on_scroll_event (GdkEventScroll * ev)
  *          capabilities of scrolling up and down with the mouse while the
  *          Ctrl key is pressed.
  *
- *  The Keypad-End key is an issue on our ASUS "gaming" laptop.  Whether it is 
+ *  The Keypad-End key is an issue on our ASUS "gaming" laptop.  Whether it is
  *  seen as a "1" or an "End" key depends on an interaction between the Shift
  *  and the Num Lock key.  Annoying, takes some time to get used to.
  *

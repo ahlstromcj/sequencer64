@@ -35,6 +35,9 @@
  *  One thing to note is that the seqevent user-interface isn't very high, so
  *  that y values don't mean anything in it.  It's just high enough to be
  *  visible and move the mouse horizontally in it.
+ *
+ * \obsolete
+ *      This module has been "merged" into seqevent.
  */
 
 #include <gdkmm/cursor.h>
@@ -54,26 +57,22 @@ namespace seq64
 {
 
 /**
- *  Changes the mouse cursor to a pencil or a left pointer in the given
- *  seqevent object, depending on the first parameter.  Modifies m_adding
- *  as well.
  *
- * \param adding
- *      The value to set m_adding to, and if true, sets the mouse cursor to a
- *      pencil icon, otherwise sets it to a standard mouse-pointer icon.
- *
- * \param seqev
- *      The seqevent whose window will be set to "adding" mode.
  */
 
-void
-Seq24SeqEventInput::set_adding (bool adding, seqevent & seqev)
+Seq24SeqEventInput::Seq24SeqEventInput
+(
+    perform & p,
+    sequence & seq,
+    int zoom,
+    int snap,
+    seqdata & seqdata_wid,
+    Gtk::Adjustment & hadjust
+) :
+    seqevent    (p, seq, zoom, snap, seqdata_wid, hadjust),
+    m_adding    (false)
 {
-    m_adding = adding;
-    if (adding)
-        seqev.get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
-    else
-        seqev.get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
+    //
 }
 
 /**
@@ -83,159 +82,15 @@ Seq24SeqEventInput::set_adding (bool adding, seqevent & seqev)
  * \param ev
  *      The button event for the press of a mouse button.
  *
- * \param seqev
- *      Provides the seqevent strip to be affected by this button event.
- *
  * \return
  *      Returns true if a likely modification was made.  This function used to
  *      return true all the time.
  */
 
 bool
-Seq24SeqEventInput::on_button_press_event (GdkEventButton * ev, seqevent & seqev)
+Seq24SeqEventInput::on_button_press_event (GdkEventButton * ev)
 {
-    bool result = false;
-    midipulse tick_s, tick_w;
-    seqev.grab_focus();                 // NEW: I think this would be helpful
-    seqev.convert_x(c_eventevent_x, tick_w);
-    seqev.set_current_drop_x(int(ev->x + seqev.m_scroll_offset_x));
-    seqev.m_old.x = seqev.m_old.y = seqev.m_old.width = seqev.m_old.height = 0;
-    if (seqev.m_paste)
-    {
-        seqev.snap_x(seqev.m_current_x);
-        seqev.convert_x(seqev.m_current_x, tick_s);
-        seqev.m_paste = false;
-        seqev.m_seq.paste_selected(tick_s, 0);      /* handles undo & modify    */
-        result = true;
-    }
-    else
-    {
-        int x, w;
-        midipulse tick_f;
-        if (SEQ64_CLICK_LEFT(ev->button))
-        {
-            seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y in to tick/note     */
-            tick_f = tick_s + seqev.m_zoom;          /* shift back a few ticks  */
-            tick_s -= tick_w;
-            if (tick_s < 0)
-                tick_s = 0;
-
-            int eventcount = 0;
-            if (m_adding)
-            {
-                seqev.m_painting = true;
-                seqev.snap_x(seqev.m_drop_x);
-                seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y to tick/note    */
-                eventcount = seqev.m_seq.select_events
-                (
-                    tick_s, tick_f, seqev.m_status, seqev.m_cc,
-                    sequence::e_would_select
-                );
-                if (eventcount == 0)
-                {
-                    /*
-                     * Add the event at the appropriate place.  As a new
-                     * feature, if the Ctrl key is held, make it a Set Tempo
-                     * event.
-                     */
-
-                    bool maketempo = is_ctrl_key(ev);
-                    seqev.m_seq.push_undo();
-                    seqev.drop_event(tick_s, maketempo);
-                    result = true;
-                }
-            }
-            else                                        /* selecting */
-            {
-                eventcount = seqev.m_seq.select_events
-                (
-                    tick_s, tick_f, seqev.m_status,
-                    seqev.m_cc, sequence::e_is_selected
-                );
-
-                /*
-                 * Stazed fix: if we didn't select anything (user clicked empty
-                 * space), then unselect all notes, and start selecting.
-                 */
-
-                if (event::is_strict_note_msg(seqev.m_status))
-                {
-                    seqev.m_seq.select_linked(tick_s, tick_f, seqev.m_status);
-                    seqev.m_seq.set_dirty();
-                }
-
-                if (eventcount == 0)
-                {
-                    if (! is_ctrl_key(ev))
-                        seqev.m_seq.unselect();
-
-                    eventcount = seqev.m_seq.select_events
-                    (
-                        tick_s, tick_f, seqev.m_status,
-                        seqev.m_cc, sequence::e_select_one
-                    );
-
-                    /*
-                     * If nothing selected (user clicked empty space),
-                     * unselect all notes, and start selecting with a new
-                     * selection box.
-                     */
-
-                    if (eventcount == 0)
-                    {
-                        seqev.m_selecting = true;
-                    }
-                    else
-                    {
-                        /**
-                         * Needs update.
-                         * seqev.m_seq.unselect();  ???????
-                         */
-                    }
-                }
-                eventcount = seqev.m_seq.select_events
-                (
-                    tick_s, tick_f, seqev.m_status,
-                    seqev.m_cc, sequence::e_is_selected
-                );
-                if (eventcount > 0)             /* get box selections are in */
-                {
-                    seqev.m_moving_init = true;
-                    int note;
-                    seqev.m_seq.get_selected_box(tick_s, note, tick_f, note);
-                    tick_f += tick_w;
-                    seqev.convert_t(tick_s, x); /* convert box to X,Y values */
-                    seqev.convert_t(tick_f, w);
-                    w -= x;                     /* w is coordinate now       */
-
-                    /* set the m_selected rectangle for x,y,w,h */
-
-                    seqev.m_selected.x = x;
-                    seqev.m_selected.width = w;
-                    seqev.m_selected.y = (c_eventarea_y - c_eventevent_y) / 2;
-                    seqev.m_selected.height = c_eventevent_y;
-
-                    /* save offset that we get from the snap above */
-
-                    int adjusted_selected_x = seqev.m_selected.x;
-                    seqev.snap_x(adjusted_selected_x);
-                    seqev.m_move_snap_offset_x =
-                        seqev.m_selected.x - adjusted_selected_x;
-
-                    /* align selection for drawing */
-
-                    seqev.snap_x(seqev.m_selected.x);
-                    seqev.snap_x(seqev.m_current_x);
-                    seqev.snap_x(seqev.m_drop_x);
-                }
-            }
-        }
-        if (SEQ64_CLICK_RIGHT(ev->button))
-            set_adding(true, seqev);
-    }
-    seqev.update_pixmap();              /* if they clicked, something changed */
-    seqev.draw_pixmap_on_window();
-    return result;                      // true;
+    return true;
 }
 
 /**
@@ -244,81 +99,15 @@ Seq24SeqEventInput::on_button_press_event (GdkEventButton * ev, seqevent & seqev
  * \param ev
  *      The button event for the release of a mouse button.
  *
- * \param seqev
- *      Provides the seqevent strip to be affected by this button event.
- *
  * \return
  *      Returns true if a likely modification was made.  This function used to
  *      return true all the time.
  */
 
 bool
-Seq24SeqEventInput::on_button_release_event
-(
-    GdkEventButton * ev,
-    seqevent & seqev
-)
+Seq24SeqEventInput::on_button_release_event (GdkEventButton * ev)
 {
-    bool result = false;
-    midipulse tick_s;
-    midipulse tick_f;
-    seqev.grab_focus();
-    seqev.m_current_x = int(ev->x) + seqev.m_scroll_offset_x;
-    if (seqev.m_moving)
-        seqev.snap_x(seqev.m_current_x);
-
-    int delta_x = seqev.m_current_x - seqev.m_drop_x;
-    midipulse delta_tick;
-    if (SEQ64_CLICK_LEFT(ev->button))
-    {
-        if (seqev.m_selecting)
-        {
-            int x, w;
-            seqev.x_to_w(seqev.m_drop_x, seqev.m_current_x, x, w);
-            seqev.convert_x(x, tick_s);
-            seqev.convert_x(x + w, tick_f);
-            (void) seqev.m_seq.select_events
-            (
-                tick_s, tick_f, seqev.m_status, seqev.m_cc, sequence::e_select
-            );
-
-#ifdef USE_STAZED_SELECTION_EXTENSIONS
-
-            /*
-             * Stazed fix: if we did'nt select anything (user clicked empty
-             * space), then unselect all notes, and start selecting.
-             */
-
-            if (event::is_strict_note_msg(seqev.m_status))
-            {
-                seqev.m_seq.select_linked(tick_s, tick_f, seqev.m_status);
-            }
-            seqev.m_seq.set_dirty();
-#endif
-
-        }
-        if (seqev.m_moving)
-        {
-            delta_x -= seqev.m_move_snap_offset_x;  /* adjust for snap       */
-            seqev.convert_x(delta_x, delta_tick);   /* to screen coordinates */
-            seqev.m_seq.move_selected_notes(delta_tick, 0);
-            result = true;
-        }
-        set_adding(m_adding, seqev);
-    }
-    if (SEQ64_CLICK_RIGHT(ev->button))
-    {
-        set_adding(false, seqev);
-    }
-    seqev.m_selecting = false;                      /* turn off              */
-    seqev.m_moving = false;
-    seqev.m_growing = false;
-    seqev.m_moving_init = false;
-    seqev.m_painting = false;
-    seqev.m_seq.unpaint_all();
-    seqev.update_pixmap();                  /* if a click, something changed */
-    seqev.draw_pixmap_on_window();
-    return result;
+    return true;
 }
 
 /**
@@ -327,45 +116,15 @@ Seq24SeqEventInput::on_button_release_event
  * \param ev
  *      The button event for the motion of the mouse cursor.
  *
- * \param seqev
- *      Provides the seqevent strip to be affected by this button event.
- *
  * \return
  *      Returns true if a likely modification was made.  This function used to
  *      return true all the time.
  */
 
 bool
-Seq24SeqEventInput::on_motion_notify_event
-(
-   GdkEventMotion * ev,
-   seqevent & seqev
-)
+Seq24SeqEventInput::on_motion_notify_event (GdkEventMotion * ev)
 {
-    bool result = false;
-    midipulse tick = 0;
-    if (seqev.m_moving_init)
-    {
-        seqev.m_moving_init = false;
-        seqev.m_moving = true;
-    }
-    if (seqev.m_selecting || seqev.m_moving || seqev.m_paste)
-    {
-        seqev.m_current_x = int(ev->x) + seqev.m_scroll_offset_x;
-        if (seqev.m_moving || seqev.m_paste)
-            seqev.snap_x(seqev.m_current_x);
-
-        seqev.draw_selection_on_window();
-    }
-    if (seqev.m_painting)
-    {
-        seqev.m_current_x = int(ev->x) + seqev.m_scroll_offset_x;
-        seqev.snap_x(seqev.m_current_x);
-        seqev.convert_x(seqev.m_current_x, tick);
-        seqev.drop_event(tick);
-        result = true;
-    }
-    return result;
+    return true;
 }
 
 }           // namespace seq64

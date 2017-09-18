@@ -28,10 +28,23 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2016-06-07
+ * \updates       2017-09-17
  * \license       GNU GPLv2 or above
  *
+ * \obsolete
+ *      This module has been "merged" into seqevent.
  */
+
+#include "seqevent.hpp"                 /* seq64::seqevent class        */
+
+/*
+ * Gtk
+ */
+
+namespace Gtk
+{
+    class Adjustment;
+}
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -39,34 +52,38 @@
 
 namespace seq64
 {
-    class seqevent;
+    class perform;
+    class seqdata;
+    class sequence;
 
 /**
  *  This structure implement the normal interaction methods for Seq24.
  */
 
-struct Seq24SeqEventInput
+class Seq24SeqEventInput : public seqevent
 {
-    /**
-     *  True if we're adding events via the mouse.
-     */
 
-    bool m_adding;
+private:
 
-    /**
-     * Default constructor.
-     */
+public:
 
-    Seq24SeqEventInput () : m_adding (false)
-    {
-        // Empty body
-    }
+    Seq24SeqEventInput
+    (
+        perform & p,
+        sequence & seq,
+        int zoom,
+        int snap,
+        seqdata & seqdata_wid,
+        Gtk::Adjustment & hadjust,
+    );
 
-    void set_adding (bool adding, seqevent & ths);
-    bool on_button_press_event (GdkEventButton * ev, seqevent & ths);
-    bool on_button_release_event (GdkEventButton * ev, seqevent & ths);
-    bool on_motion_notify_event (GdkEventMotion * ev, seqevent & ths);
-};
+private:
+
+    virtual bool on_button_press_event (GdkEventButton * ev);
+    virtual bool on_button_release_event (GdkEventButton * ev);
+    virtual bool on_motion_notify_event (GdkEventMotion * ev);
+
+};          // class Seq24EventInput
 
 }           // namespace seq64
 

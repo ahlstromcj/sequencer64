@@ -84,7 +84,11 @@ Seq24PerfInput::Seq24PerfInput
 }
 
 /**
- *  A popup menu (which one?) calls this.  What does it mean?
+ *  Turns on/off the mode of adding triggers to the song performance.  Changes
+ *  both the flag and the mouse cursor icon.
+ *
+ * \param adding
+ *      Indicates the adding-triggers state to be set.
  */
 
 void
@@ -128,15 +132,18 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
     /*
      * This code causes the un-greying of the previously selected trigger
      * segment.  If commented out, then we can seemingly selected more than
-     * one segment, but only the last one "selected" can be move.  We'd like
+     * one segment, but only the last one "selected" can be moved.  We'd like
      * to be able to select and move a bunch at once by holding a modifier
      * key.  For now, leave this code as is.
      */
 
     if (dropseq_active)
     {
-        seq->unselect_triggers();
-        draw_all();
+        if (! is_shift_key(ev))                     // EXPERIMENTAL
+        {
+            seq->unselect_triggers();
+            draw_all();
+        }
     }
 
     m_drop_x = int(ev->x);
@@ -147,10 +154,19 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
      * m_drop_tick and m_drop_sequence.
      */
 
-    convert_drop_xy();                             /* affects dropseq  */
+    convert_drop_xy();                              /* affects dropseq  */
     seq = p.get_sequence(dropseq);
     dropseq_active = p.is_active(dropseq);
-    if (! dropseq_active)
+    if (dropseq_active)
+    {
+        if (is_shift_key(ev))
+        {
+            // Will also need to implement unselect if already selected.
+
+            m_selected_seqs.insert(dropseq);            // EXPERIMENTAL
+        }
+    }
+    else
         return false;
 
     /*
@@ -295,7 +311,7 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
             bool state = seq->get_trigger_state(m_drop_tick);
             if (state)
             {
-#ifdef USE_SONG_BOX_SELECT      // odd difference in interface !!!
+#ifdef USE_SONG_BOX_SELECT
                 seq->half_split_trigger(m_drop_tick);
 #else
                 // split_trigger(dropseq, m_drop_tick);
@@ -343,7 +359,6 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev)
             m_current_x = ev->x;
             m_current_y = ev->y;
             snap_y(m_current_y);
-//          xy_to_rect
             rect::xy_to_rect_values
             (
                 m_drop_x, m_drop_y,
@@ -351,6 +366,11 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev)
             );
             convert_xy(x,     y, tick_s, m_box_select_low);
             convert_xy(x+w, y+h, tick_f, m_box_select_high);
+
+            /*
+             * May need a "shift-select" version of this function as well.
+             */
+
             perf().select_triggers_in_range
             (
                 m_box_select_low, m_box_select_high, tick_s, tick_f

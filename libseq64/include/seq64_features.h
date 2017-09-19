@@ -95,7 +95,7 @@
  *  Currently broken.
  */
 
-#undef  USE_SONG_BOX_SELECT
+#undef   USE_SONG_BOX_SELECT
 
 /**
  *  Odds and ends that we missed.  This value allows non-notes to be included

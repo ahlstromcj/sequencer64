@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-18
+ * \updates       2017-09-19
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -147,8 +147,8 @@ perfroll::perfroll
     m_drop_sequence         (0),
     m_sequence_max          (c_max_sequence),
     m_sequence_active       (),                             // [c_max_sequence]
-#ifdef USE_SONG_BOX_SELECT
     m_selected_seqs         (),                             // std::set
+#ifdef USE_SONG_BOX_SELECT
     m_old                   (),                             // seq64::rect
     m_selected              (),                             // seq64::rect
     m_box_select            (false),
@@ -794,15 +794,6 @@ perfroll::draw_sequence_on (int seqnum)
             }
         }
     }
-
-#ifdef USE_SONG_BOX_SELECT_BAD_STUFF
-
-    if (m_box_select)
-    {
-    }
-
-#endif  //  USE_SONG_BOX_SELECT
-
 }
 
 /**
@@ -890,9 +881,19 @@ perfroll::draw_drawable_row (long y)
 void
 perfroll::draw_all ()
 {
+#ifdef ENABLE_BOX_SET
+    Selection::iterator si;
+    for (si = m_selected_seqs.begin(); si != m_selected_seqs.end(); ++si)
+    {
+        draw_background_on(*si);
+        draw_sequence_on(*si);
+    }
+#else
     draw_background_on(m_drop_sequence);
     draw_sequence_on(m_drop_sequence);
+#endif
     draw_drawable_row(m_drop_y);
+
 }
 
 /**

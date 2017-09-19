@@ -915,8 +915,8 @@ options::add_mouse_page ()
     (
         new Gtk::CheckButton
         (
-            "Middle click splits song triggers at nearest snap "
-            "(instead of halfway point)", true
+            "Middle click (or Ctrl-left-click) splits song trigger "
+            "at nearest snap instead of halfway point.", true
         )
     );
     chk_snap_split->set_active(rc().allow_snap_split());

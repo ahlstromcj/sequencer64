@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-13
- * \updates       2017-09-17
+ * \updates       2017-09-20
  * \license       GNU GPLv2 or above
  *
  *  Now derived directly Seq24PerfInput.  No more AbstractPerfInput and no
@@ -103,11 +103,10 @@ FruityPerfInput::update_mouse_pointer ()
         midipulse end;
         if (seq->intersect_triggers(droptick, start, end))
         {
-            int wscalex = sm_perfroll_size_box_click_w * c_perf_scale_x;
             int ymod = m_current_y % c_names_y;
             if
             (
-                start <= droptick && droptick <= (start + wscalex) &&
+                start <= droptick && droptick <= (start + m_w_scale_x) &&
                 (ymod <= sm_perfroll_size_box_click_w + 1)
             )
             {
@@ -115,7 +114,7 @@ FruityPerfInput::update_mouse_pointer ()
             }
             else if
             (
-                droptick <= end && (end - wscalex) <= droptick &&
+                droptick <= end && (end - m_w_scale_x) <= droptick &&
                 ymod >= (c_names_y - sm_perfroll_size_box_click_w - 1)
             )
             {
@@ -279,34 +278,34 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * ev)
 
                 midipulse starttick = seq->selected_trigger_start();
                 midipulse endtick = seq->selected_trigger_end();
-                int wscalex = sm_perfroll_size_box_click_w * c_perf_scale_x;
                 int ydrop = m_drop_y % c_names_y;
                 if
                 (
-                    droptick >= starttick && droptick <= (starttick + wscalex) &&
+                    droptick >= starttick && droptick <= (starttick +
+                    m_w_scale_x) &&
                     ydrop <= (sm_perfroll_size_box_click_w + 1)
                 )
                 {           /* clicked left side: grow/shrink left side     */
                     m_growing = true;
                     m_grow_direction = true;
-                    m_drop_tick_trigger_offset = m_drop_tick -
+                    m_drop_tick_offset = m_drop_tick -
                         seq->selected_trigger_start();
                 }
                 else if
                 (
-                    droptick >= (endtick - wscalex) && droptick <= endtick &&
+                    droptick >= (endtick - m_w_scale_x) && droptick <= endtick &&
                     ydrop >= (c_names_y - sm_perfroll_size_box_click_w - 1)
                 )
                 {           /* clicked right side: grow/shrink right side   */
                     m_growing = true;
                     m_grow_direction = false;
-                    m_drop_tick_trigger_offset = m_drop_tick -
+                    m_drop_tick_offset = m_drop_tick -
                         seq->selected_trigger_end();
                 }
                 else        /* clicked in the middle - move it              */
                 {
                     m_moving = true;
-                    m_drop_tick_trigger_offset = m_drop_tick -
+                    m_drop_tick_offset = m_drop_tick -
                          seq->selected_trigger_start();
                 }
             }
@@ -446,7 +445,7 @@ FruityPerfInput::on_motion_notify_event (GdkEventMotion * ev)
                 m_have_button_press = false;
             }
             convert_x(x, tick);                    /* side-effect  */
-            tick -= m_drop_tick_trigger_offset;
+            tick -= m_drop_tick_offset;
             tick -= tick % m_snap;
             if (m_moving)
             {

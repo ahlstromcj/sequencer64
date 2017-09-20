@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-19
+ * \updates       2017-09-20
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -72,15 +72,25 @@ namespace seq64
  *  made in the constructor, and assigned to the perfroll::m_background_x
  *  member.
  *
- *  FIXME: We need named values for 4 and for 16 here.
+ *  sm_perfroll_size_box_w is copied into the m_size_box_w member, and is the
+ *  width of the small square handle in the corner of each trigger segment.
+ *  It gets adjusted in perfroll::set_ppqn().
  */
 
 int perfroll::sm_perfroll_size_box_w = 6;
+
+/**
+ *
+ *  sm_perfroll_background_x is copied into m_background_x; it gets adjusted
+ *  in perfroll::set_ppqn().
+ */
+
 int perfroll::sm_perfroll_background_x =
     (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_max_zoom;        /* stazed */
 
 /**
- *  Provides sizing information for the perfroll-derived classes.
+ *  Provides sizing information for the perfroll-derived classes, using in the
+ *  Seq24PerfInput and FruityPerfInput classes.
  */
 
 int perfroll::sm_perfroll_size_box_click_w = 4;
@@ -124,10 +134,11 @@ perfroll::perfroll
     m_divs_per_beat         (SEQ64_PERFROLL_DIVS_PER_BEAT), // 16
     m_ticks_per_bar         (0),                            // set in the body
     m_perf_scale_x          (c_perf_scale_x),               // 32 ticks per pixel
+    m_w_scale_x             (sm_perfroll_size_box_click_w * m_perf_scale_x),
     m_zoom                  (c_perf_scale_x),               // 32 ticks per pixel
     m_names_y               (c_names_y),
-    m_background_x          (sm_perfroll_background_x),      // gets adjusted!
-    m_size_box_w            (sm_perfroll_size_box_w),       // 3
+    m_background_x          (sm_perfroll_background_x),     // gets adjusted!
+    m_size_box_w            (sm_perfroll_size_box_w),       // 6
     m_measure_length        (0),
     m_beat_length           (0),
     m_old_progress_ticks    (0),
@@ -143,7 +154,7 @@ perfroll::perfroll
     m_sequence_offset       (0),
     m_roll_length_ticks     (0),
     m_drop_tick             (0),
-    m_drop_tick_trigger_offset (0),
+    m_drop_tick_offset      (0),
     m_drop_sequence         (0),
     m_sequence_max          (c_max_sequence),
     m_sequence_active       (),                             // [c_max_sequence]
@@ -199,6 +210,7 @@ perfroll::set_ppqn (int ppqn)
         m_ticks_per_bar = m_ppqn * m_divs_per_beat;             /* 16 */
         m_background_x = (m_ppqn * 4 * 16) / c_perf_scale_x;
         m_perf_scale_x = m_zoom * m_ppqn / SEQ64_DEFAULT_PPQN;
+        m_w_scale_x = sm_perfroll_size_box_click_w * m_perf_scale_x;
         if (m_perf_scale_x == 0)
             m_perf_scale_x = 1;
     }

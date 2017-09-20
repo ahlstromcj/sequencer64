@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-19
+ * \updates       2017-09-20
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -68,13 +68,6 @@ namespace seq64
 
 class perfroll : public gui_drawingarea_gtk2
 {
-
-    /**
-     *  Provides a type to hold the unique shift-selected sequence numbers.
-     */
-
-    typedef std::set<int> Selection;
-
     /**
      *  These friend implement interaction-specific behavior, although only
      *  the Seq24 interactions support full keyboard processing, except for
@@ -86,6 +79,16 @@ class perfroll : public gui_drawingarea_gtk2
     friend class perfedit;
 
 protected:
+
+    /**
+     *  Provides a type to hold the unique shift-selected sequence numbers.
+     */
+
+    typedef std::set<int> Selection;
+
+    /**
+     *  Static sizing members for initial zoom of the perfroll.
+     */
 
     static int sm_perfroll_size_box_w;
     static int sm_perfroll_background_x;
@@ -137,6 +140,7 @@ protected:
     int m_divs_per_beat;            /**< Holds current tick scaling value.  */
     midipulse m_ticks_per_bar;      /**< Holds current bar scaling value.   */
     int m_perf_scale_x;             /**< Scaling based on zoom and PPQN.    */
+    int m_w_scale_x;                /**< Scaling based on zoom and PPQN.    */
 
     /**
      *  New value to attempt a rudimentary time-zoom feature.  It seems to
@@ -261,10 +265,10 @@ protected:
 
     /**
      *  The horizontal trigger location for section movement.  Used only by
-     *  the friend modules perfroll_input and fruityperfroll_input.
+     *  the modules perfroll_input and fruityperfroll_input.
      */
 
-    midipulse m_drop_tick_trigger_offset;
+    midipulse m_drop_tick_offset;
 
     /**
      *  Holds the currently-selected sequence being moved.  Used for redrawing

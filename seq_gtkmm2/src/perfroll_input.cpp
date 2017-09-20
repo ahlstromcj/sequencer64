@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-17
+ * \updates       2017-09-20
  * \license       GNU GPLv2 or above
  *
  *  Now derived directly from perfroll.  No more AbstractPerfInput and no more
@@ -131,10 +131,10 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
 
     /*
      * This code causes the un-greying of the previously selected trigger
-     * segment.  If commented out, then we can seemingly selected more than
-     * one segment, but only the last one "selected" can be moved.  We'd like
-     * to be able to select and move a bunch at once by holding a modifier
-     * key.  For now, leave this code as is.
+     * segment.  If commented out, then we can seemingly selecte more than one
+     * segment, but only the last one "selected" can be moved.  We'd like to
+     * be able to select and move a bunch at once by holding a modifier key.
+     * WHY IS THIS NOT IN THE SEQ64_CLICK_LEFT() clause?
      */
 
     if (dropseq_active)
@@ -146,14 +146,14 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
         }
     }
 
-    m_drop_x = int(ev->x);
-    m_drop_y = int(ev->y);
-
     /*
-     * This function uses the m_drop_x and m_drop_y set above, which sets
-     * m_drop_tick and m_drop_sequence.
+     * convert_drop_xy() uses m_drop_x and m_drop_y, and sets m_drop_tick and
+     * m_drop_sequence.
+     * WHY IS THIS NOT IN THE SEQ64_CLICK_LEFT() clause?
      */
 
+    m_drop_x = int(ev->x);
+    m_drop_y = int(ev->y);
     convert_drop_xy();                              /* affects dropseq  */
     seq = p.get_sequence(dropseq);
     dropseq_active = p.is_active(dropseq);
@@ -161,9 +161,16 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
     {
         if (is_shift_key(ev))
         {
-            // Will also need to implement unselect if already selected.
-
-            m_selected_seqs.insert(dropseq);            // EXPERIMENTAL
+            Selection::const_iterator s = m_selected_seqs.find(dropseq);
+            if (s != m_selected_seqs.end())
+            {
+                sequence * found = p.get_sequence(*s);
+                m_selected_seqs.erase(s);                   // EXPERIMENTAL
+                found->unselect_triggers();
+                draw_all();                                 // delay this???
+            }
+            else
+                m_selected_seqs.insert(dropseq);            // EXPERIMENTAL
         }
     }
     else
@@ -199,7 +206,8 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
         midipulse droptick = m_drop_tick;
 
         /*
-         * Add a new sequence if nothing is selected.
+         * Add a new sequence if nothing is selected.  The adding flag is set
+         * on a right-click where there is not trigger under the mouse.
          */
 
         if (is_adding())
@@ -230,42 +238,48 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
         {
             /*
              * Set this flag to tell on_motion_notify() to call
-             * p.push_trigger_undo().
+             * p.push_trigger_undo().  This section handles motions of the
+             * held mouse that grow or shrink the selected trigger, or else
+             * the moving of the selected trigger.
+             *
+             * Now how can we affect all of the shift-selected triggers? TBD.
+             *
+             * wscalex is 4 * 32 ticks/pixel.  What about zoom?  See perfroll;
+             * it sets m_perf_scale_x and m_zoom to c_perf_scale_x.  Let's use
+             * m_perf_scale_x instead and make it a memmber, m_w_scale_x.
+             * This section is almost common code with the
+             * fruityperfrol_input.cpp module.
              */
 
             m_have_button_press = seq->select_trigger(droptick);
 
             midipulse tick0 = seq->selected_trigger_start();
             midipulse tick1 = seq->selected_trigger_end();
-            int wscalex = sm_perfroll_size_box_click_w * c_perf_scale_x;
             int ydrop = m_drop_y % c_names_y;
             if
             (
-                droptick >= tick0 && droptick <= (tick0 + wscalex) &&
+                droptick >= tick0 && droptick <= (tick0 + m_w_scale_x) &&
                 ydrop <= sm_perfroll_size_box_click_w + 1
             )
             {
                 m_growing = true;
                 m_grow_direction = true;
-                m_drop_tick_trigger_offset = droptick -
-                     seq->selected_trigger_start();
+                m_drop_tick_offset = droptick - seq->selected_trigger_start();
             }
             else if                         /* we are moving the segment    */
             (
-                droptick >= (tick1 - wscalex) && droptick <= tick1 &&
+                droptick >= (tick1 - m_w_scale_x) && droptick <= tick1 &&
                 ydrop >= c_names_y - sm_perfroll_size_box_click_w - 1
             )
             {
                 m_growing = true;
                 m_grow_direction = false;
-                m_drop_tick_trigger_offset = droptick -
-                    seq->selected_trigger_end();
+                m_drop_tick_offset = droptick - seq->selected_trigger_end();
             }
             else
             {
                 m_moving = true;
-                m_drop_tick_trigger_offset = droptick -
-                     seq->selected_trigger_start();
+                m_drop_tick_offset = droptick - seq->selected_trigger_start();
             }
             draw_all();
         }
@@ -296,8 +310,6 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
         perf().unselect_all_triggers();
         m_box_select = false;
 #endif
-
-        // Should we add this:  result = true;
     }
     else if (SEQ64_CLICK_MIDDLE(ev->button))                   /* split    */
     {
@@ -474,7 +486,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
 
         midipulse tick;
         convert_x(x, tick);
-        tick -= m_drop_tick_trigger_offset;
+        tick -= m_drop_tick_offset;
 
 #ifdef USE_SONG_RECORDING
         if (perf().song_record_snap())         /* snap to seq length   */
@@ -592,7 +604,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
  *  tick (converted from the moving x value) does.
  *
  *  Then the button-handler sets m_moving = true, and calculates
- *  m_drop_tick_trigger_offset = m_drop_tick -
+ *  m_drop_tick_offset = m_drop_tick -
  *  p.get_sequence(dropseq)->selected_trigger_start();
  *
  *  The motion handler sees that m_moving is true, gets the new tick
@@ -662,7 +674,7 @@ Seq24PerfInput::handle_motion_key (bool is_left)
              */
         }
 
-        midipulse tick = m_effective_tick - m_drop_tick_trigger_offset;
+        midipulse tick = m_effective_tick - m_drop_tick_offset;
         tick -= tick % m_snap;
 
         /*

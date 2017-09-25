@@ -1,4 +1,4 @@
-INSTALL for Sequencer64 v. 0.94.0 and above
+INSTALL for Sequencer64 v. 0.95.0 and above
 Chris Ahlstrom
 2015-09-10 to 2017-09-08
 
@@ -482,7 +482,7 @@ DEPENDENCIES:
          -  qtdeclarative-dev-tools
          -  qtchooser
          -  qtdesigner; optional if you want to tweak the GUIs, not huge,
-            provided by the qtttools5-dev-tools package.
+            provided by the qtttools5-dev-tools package in Debian.
 
    Documentation (now optional, must be built manually):
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-20
+ * \updates       2017-09-23
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -58,6 +58,10 @@
 #include "perfroll_input.hpp"
 #include "sequence.hpp"
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
+
+#ifdef USE_ENABLE_BOX_SET
+#include <functional>
+#endif
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -158,7 +162,6 @@ perfroll::perfroll
     m_drop_sequence         (0),
     m_sequence_max          (c_max_sequence),
     m_sequence_active       (),                             // [c_max_sequence]
-    m_selected_seqs         (),                             // std::set
 #ifdef USE_SONG_BOX_SELECT
     m_old                   (),                             // seq64::rect
     m_selected              (),                             // seq64::rect
@@ -620,12 +623,12 @@ perfroll::auto_scroll_horz ()
 void
 perfroll::draw_sequence_on (int seqnum)
 {
-    if (perf().is_active(seqnum))
+    sequence * seq = perf().get_sequence(seqnum);
+    if (not_nullptr(seq))                           // (perf().is_active(seqnum))
     {
-        midipulse tick_offset = m_4bar_offset;          //  * m_ticks_per_bar;
+        midipulse tick_offset = m_4bar_offset;      //  * m_ticks_per_bar;
         midipulse x_offset = tick_offset / m_perf_scale_x;
         m_sequence_active[seqnum] = true;
-        sequence * seq = perf().get_sequence(seqnum);
         seq->reset_draw_trigger_marker();
         seqnum -= m_sequence_offset;
 
@@ -852,8 +855,7 @@ perfroll::redraw_dirty_sequences ()
         int seq = y + m_sequence_offset;
         if (seq < m_sequence_max && perf().is_dirty_perf(seq))  /* see note */
         {
-            draw_background_on(seq);
-            draw_sequence_on(seq);
+            draw_sequence(seq);
             draw = true;
         }
     }
@@ -888,24 +890,36 @@ perfroll::draw_drawable_row (long y)
  *  was originally selected. The call below to draw_drawable_row() will have
  *  the wrong y location and un-select will not occur if the user scrolls the
  *  track up or down to a new y location, if not adjusted.
+ *
+ *  For the box set, we create a perform::Operation functor by binding
+ *  &perfroll::draw_sequence to this object and passing it to
+ *  perform::selection_operation();  The whole set of operations replaces the
+ *  single operation of the "drop" sequence.
  */
 
 void
 perfroll::draw_all ()
 {
-#ifdef ENABLE_BOX_SET
-    Selection::iterator si;
-    for (si = m_selected_seqs.begin(); si != m_selected_seqs.end(); ++si)
-    {
-        draw_background_on(*si);
-        draw_sequence_on(*si);
-    }
-#else
-    draw_background_on(m_drop_sequence);
-    draw_sequence_on(m_drop_sequence);
-#endif
-    draw_drawable_row(m_drop_y);
+#ifdef USE_ENABLE_BOX_SET
 
+    perform::Operation f = std::bind
+    (
+        &perfroll::draw_sequence, std::ref(*this), std::placeholders::_1
+    );
+    perf().selection_operation(f);
+
+    // Test:  This is needed to get the selected and moved sequence to update
+    // as dragged.
+
+    (void) draw_sequence(m_drop_sequence);  /* draw seq background & events */
+
+#else
+
+    (void) draw_sequence(m_drop_sequence);  /* draw seq background & events */
+
+#endif
+
+    draw_drawable_row(m_drop_y);
 }
 
 /**
@@ -916,8 +930,7 @@ void
 perfroll::split_trigger (int seqnum, midipulse tick)
 {
     perf().split_trigger(seqnum, tick);     /* consolidates perform actions */
-    draw_background_on(seqnum);
-    draw_sequence_on(seqnum);
+    (void) draw_sequence(seqnum);           /* draw seq background & events */
     draw_drawable_row(m_drop_y);
 }
 
@@ -1057,7 +1070,6 @@ perfroll::set_zoom (int z)
  *      adjusted by zoom with a substituted variable. Not sure if there is any
  *      benefit to doing the adjustment...  Perhaps a small benefit in speed?
  *      Maybe FIXME if really, really bored...
- *
  */
 
 void
@@ -1108,10 +1120,7 @@ perfroll::on_expose_event (GdkEventExpose * ev)
     {
         int seq = y + m_sequence_offset;
         if (seq < m_sequence_max)           /* see note in banner */
-        {
-            draw_background_on(seq);
-            draw_sequence_on(seq);
-        }
+            (void) draw_sequence(seq);
     }
     m_window->draw_drawable
     (
@@ -1309,23 +1318,23 @@ perfroll::on_key_press_event (GdkEventKey * ev)
     }
 
     /*
-     * Add this call to try to make seqroll and perfroll act the same for
-     * start/stop/play.  Doesn't work, but doesn't break anything.  Turns out
-     * perfedit handles this event.  Added the "true" parameter to force
-     * song mode when starting from perfedit.
+     *  Add this call to try to make seqroll and perfroll act the same for
+     *  start/stop/play.  Doesn't work, but doesn't break anything.  Turns out
+     *  perfedit handles this event.  Added the "true" parameter to force song
+     *  mode when starting from perfedit.
+     *
+     *  Note m_drop_sequence.  We might want the action to apply to the whole
+     *  set of shift-selected sequences, if compiled for that feature.
      */
 
     bool result = perf().playback_key_event(k, true);
-    if (result)
-    {
-        /*
-         * How can we restore the tick at which the song paused?
-         *
-         * perf().set_start_tick(perf().get_jack_tick());
-         */
-    }
-    else
+#ifdef USE_ENABLE_BOX_SET
+    if (! result)       // TODO TODO TODO
         result = perf().perfroll_key_event(k, m_drop_sequence);
+#else
+    if (! result)
+        result = perf().perfroll_key_event(k, m_drop_sequence);
+#endif
 
     if (result)
     {

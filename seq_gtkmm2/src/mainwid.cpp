@@ -304,9 +304,11 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
         (
             black(), base_x, base_y, m_seqarea_x, m_seqarea_y
         );
-        if (perf().is_active(seqnum))
+        sequence * seq = perf().get_sequence(seqnum);
+        if (not_nullptr(seq))                       // perf().is_active(seqnum)
         {
-            sequence * seq = perf().get_sequence(seqnum);
+            // sequence * seq = perf().get_sequence(seqnum);
+
             bool empty_highlight = perf().highlight(*seq);
             bool smf_0 = perf().is_smf_0(*seq);
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT

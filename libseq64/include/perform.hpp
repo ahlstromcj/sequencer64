@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-15
+ * \updates       2017-09-25
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -52,6 +52,18 @@
  *  directly by number.  To handle this, a value parameter was added to
  *  handle_midi_control_ex().
  */
+
+/*
+ * If enabled, this makes perfroll segment drag not update until the mouse is
+ * released.
+ */
+
+#undef  USE_ENABLE_BOX_SET              // NOT READY FOR PRIME TIME
+
+#ifdef USE_ENABLE_BOX_SET
+#include <functional>                   /* std::function, function objects  */
+#include <set>                          /* std::set, arbitary selection     */
+#endif
 
 #include <vector>                       /* std::vector                      */
 #include <pthread.h>                    /* pthread_t C structure            */
@@ -199,6 +211,26 @@ class perform
 #endif  // SEQ64_JACK_SUPPORT
 
 public:
+
+#ifdef USE_ENABLE_BOX_SET
+
+    /**
+     *  Provides a type to hold the unique shift-selected sequence numbers.
+     *  Although this can be considered a GUI function, it makes sense to
+     *  let perform manage it and encapsulate it.
+     */
+
+    typedef std::set<int> Selection;
+
+    /**
+     *  Provides a function type that can be applied to each sequence number
+     *  in a Selection.  Generally, the caller will bind a member function to
+     *  use in operate_on_set().
+     */
+
+    typedef std::function<void(int)> Operation;
+
+#endif
 
     /**
      *  Provides settings for tempo recording.  Currently not used, though the
@@ -412,7 +444,7 @@ private:
      *  Provides a "vector" of patterns/sequences.
      *
      * \todo
-     *      First, make the sequence array a vector, and second, put allof
+     *      First, make the sequence array a vector, and second, put all of
      *      these flags into a structure and access those members indirectly.
      */
 
@@ -917,6 +949,18 @@ private:
      */
 
     bool m_is_modified;
+
+#ifdef USE_ENABLE_BOX_SET
+
+    /**
+     *  Provides a set holding all of the sequences numbers that have been
+     *  shift-selected.  If we ever enable box-selection, this container will
+     *  support that as well.
+     */
+
+    Selection m_selected_seqs;
+
+#endif
 
     /**
      *  A condition variable to protect playback.  It is signalled if playback
@@ -1556,6 +1600,15 @@ public:
 
 public:
 
+#ifdef USE_ENABLE_BOX_SET
+    bool selection_operation (Operation func);
+    void box_insert (int dropseq);
+    void box_delete (int dropseq);
+    void box_reselect_sequence (int dropseq);
+    void box_deselect_sequences (int dropseq);
+    void box_move_selected_triggers (midipulse tick);
+#endif
+
     bool clear_all ();
     void launch (int ppqn);
     void new_sequence (int seq);                    /* seqmenu & mainwid    */
@@ -2049,7 +2102,9 @@ public:
 
     /**
      *  Retrieves the actual sequence, based on the pattern/sequence number.
-     *  This is the const version.
+     *  This is the const version.  Note that it is more efficient to call
+     *  this function and check the result than to call is_active() and then
+     *  call this function.
      *
      * \param seq
      *      The prospective sequence number.
@@ -2066,7 +2121,9 @@ public:
 
     /**
      *  Retrieves the actual sequence, based on the pattern/sequence number.
-     *  This is the non-const version.
+     *  This is the non-const version.  Note that it is more efficient to call
+     *  this function and check the result than to call is_active() and then
+     *  call this function.
      *
      * \param seq
      *      The prospective sequence number.
@@ -2197,11 +2254,12 @@ public:
     (
         int seq_low, int seq_high, long tick_start, long tick_finish
     );
+
+#endif  // USE_SONG_BOX_SELECT
+
     void unselect_all_triggers ();
 
-#endif  // USE_SONG_RECORDING_EXTRA
-
-private:
+public:
 
     /**
      * \getter m_have_undo
@@ -2244,8 +2302,11 @@ private:
         m_have_redo = redo;
     }
 
+    bool get_trigger_state (int seqnum, midipulse tick) const;
     void split_trigger (int seqnum, midipulse tick);
     midipulse get_max_trigger ();
+
+private:
 
     /**
      *  Convenience function for perfedit's collapse functionality.

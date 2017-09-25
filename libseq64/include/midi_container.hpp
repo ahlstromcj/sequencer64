@@ -63,7 +63,7 @@
  *  background sequence value has been assigned yet.  See the value
  *  seqedit::m_initial_sequence, which was originally set to -1 directly.
  *  However, we have issues saving a negative number in MIDI, so we will use
- *  the "proprietary" track's bogus sequence number, which double the 1024
+ *  the "proprietary" track's bogus sequence number, which doubles the 1024
  *  sequences we can support.  Values between 0 (inclusive) and
  *  SEQ64_SEQUENCE_LIMIT (exclusive) are valid.  But SEQ64_SEQUENCE_LIMIT is a
  *  <i> legal</i> value, used only for disabling the selection of a background

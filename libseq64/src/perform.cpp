@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-09-15
+ * \updates       2017-09-23
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -365,6 +365,9 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_edit_sequence             (-1),
 #endif
     m_is_modified               (false),
+#ifdef USE_ENABLE_BOX_SET
+    m_selected_seqs             (),                     // Selection, std::set
+#endif
     m_condition_var             (),
 #ifdef SEQ64_JACK_SUPPORT
     m_jack_asst
@@ -433,7 +436,7 @@ perform::~perform ()
     if (m_in_thread_launched)
         pthread_join(m_in_thread, NULL);
 
-    for (int seq = 0; seq < m_sequence_max; ++seq)  /* m_sequence_high?     */
+    for (int seq = 0; seq < m_sequence_high; ++seq) /* m_sequence_max       */
     {
         if (not_nullptr(m_seqs[seq]))
         {
@@ -520,6 +523,104 @@ perform::launch (int ppqn)
     }
 }
 
+#ifdef USE_ENABLE_BOX_SET
+
+/**
+ *  A prosaic implementation of calling a function on the set of stored
+ *  sequences.  Used for redrawing selected sequences in the graphical user
+ *  interface.
+ *
+ * \param func
+ *      The (bound) function to call for each sequence in the set.
+ *
+ * \return
+ *      Returns true if at least one set item was found to operate on.
+ */
+
+bool
+perform::selection_operation (Operation func)
+{
+    bool result = false;
+    Selection::iterator s;
+    for (s = m_selected_seqs.begin(); s != m_selected_seqs.end(); ++s)
+        func(*s);
+
+    return result;
+}
+
+/**
+ *
+ */
+
+void
+perform::box_insert (int dropseq)
+{
+    m_selected_seqs.insert(dropseq);
+}
+
+/**
+ *
+ */
+
+void
+perform::box_delete (int dropseq)
+{
+    m_selected_seqs.erase(dropseq);
+}
+
+/**
+ *  If the sequence is not in the list, add it.  Otherwise, we are
+ *  "reselecting" the sequence, so remove it from the list of selections.
+ *  Used in the performance windows on-button-press event.
+ */
+
+void
+perform::box_reselect_sequence (int dropseq)
+{
+    Selection::const_iterator s = m_selected_seqs.find(dropseq);
+    if (s != m_selected_seqs.end())
+    {
+        sequence * found = get_sequence(*s);        // should be good
+        found->unselect_triggers();
+        m_selected_seqs.erase(s);                   // EXPERIMENTAL
+    }
+    else
+        m_selected_seqs.insert(dropseq);            // EXPERIMENTAL
+}
+
+/**
+ *  If the current sequence is not part of the selection, then we need to
+ *  unselect all sequences.
+ */
+
+void
+perform::box_deselect_sequences (int dropseq)
+{
+    if (m_selected_seqs.find(dropseq) == m_selected_seqs.end())
+    {
+         unselect_all_triggers();
+         m_selected_seqs.clear();
+    }
+}
+
+/**
+ *
+ */
+
+void
+perform::box_move_selected_triggers (midipulse tick)
+{
+    Selection::const_iterator s;
+    for (s = m_selected_seqs.begin(); s != m_selected_seqs.end(); ++s)
+    {
+        sequence * selseq = get_sequence(*s);
+        if (not_nullptr(selseq))
+            selseq->move_selected_triggers_to(tick, true);
+    }
+}
+
+#endif  // USE_ENABLE_BOX_SET
+
 /**
  *  Clears all of the patterns/sequences.  The mainwnd module calls this
  *  function.  Note that perform now handles the "is modified" flag on behalf
@@ -541,7 +642,7 @@ bool
 perform::clear_all ()
 {
     bool result = true;
-    for (int s = 0; s < m_sequence_max; ++s)            /* m_sequence_high  */
+    for (int s = 0; s < m_sequence_high; ++s)           /* m_sequence_max   */
     {
         if (is_active(s) && m_seqs[s]->get_editing())   /* stazed check     */
         {
@@ -552,7 +653,7 @@ perform::clear_all ()
     if (result)
     {
         reset_sequences();
-        for (int s = 0; s < m_sequence_max; ++s)        /* m_sequence_high  */
+        for (int s = 0; s < m_sequence_high; ++s)       /* m_sequence_max   */
             if (is_active(s))
                 delete_sequence(s);             /* can set "is modified"    */
 
@@ -745,25 +846,48 @@ perform::select_triggers_in_range
 {
     for (int seq = seq_low; seq <= seq_high; ++seq)
     {
-        for (long tick = tick_start; tick <= tick_finish; ++tick)
+        sequence * s = get_sequence(seq);
+        if (not_nullptr(s))
         {
-            if (is_active(seq))
-                get_sequence(seq)->select_trigger(tick);
+            for (long tick = tick_start; tick <= tick_finish; ++tick)
+            {
+                s->select_trigger(tick);
+
+                /*
+                 * if (is_active(seq))
+                 *    get_sequence(seq)->select_trigger(tick);
+                 */
+            }
+        }
+        else
+        {
+            errprintf("select_triggers_in_range(): null sequence %d\n", seq);
+            break;
         }
     }
 }
 
+#endif  // USE_SONG_BOX_SELECT
+
+/**
+ *  Calls sequence::unselect_triggers() for all active sequences.
+ */
+
 void
 perform::unselect_all_triggers ()
 {
-    for (int seq = 0; seq < c_max_sequence; ++seq)  // high?
+    for (int seq = 0; seq < m_sequence_high; ++seq)     // c_max_sequence
     {
-        if (is_active(seq))
-            get_sequence(seq)->unselect_triggers();
+        sequence * s = get_sequence(seq);
+        if (not_nullptr(s))
+            s->unselect_triggers();
+
+        /*
+         * if (is_active(seq))
+         *    get_sequence(seq)->unselect_triggers();
+         */
     }
 }
-
-#endif  // USE_SONG_BOX_SELECT
 
 /**
  *  Combines select_group_mute() and set_group_mute_state() so that the
@@ -1139,12 +1263,12 @@ perform::clear_mute_groups ()
 void
 perform::mute_all_tracks (bool flag)
 {
-    for (int i = 0; i < m_sequence_max; ++i)    /* m_sequence_high  */
+    for (int i = 0; i < m_sequence_high; ++i)       /* m_sequence_max       */
     {
         if (is_active(i))
         {
             m_seqs[i]->set_song_mute(flag);
-            m_seqs[i]->set_playing(! flag);     /* needed to show mute status */
+            m_seqs[i]->set_playing(! flag);         /* to show mute status  */
         }
     }
 }
@@ -1157,7 +1281,7 @@ perform::mute_all_tracks (bool flag)
 void
 perform::toggle_all_tracks ()
 {
-    for (int i = 0; i < m_sequence_max; ++i)    /* m_sequence_high  */
+    for (int i = 0; i < m_sequence_high; ++i)       /* m_sequence_max       */
     {
         if (is_active(i))
         {
@@ -1616,10 +1740,8 @@ perform::set_was_active (int seq)
 {
     if (is_seq_valid(seq))
     {
-        m_was_active_main[seq] =
-            m_was_active_edit[seq] =
-            m_was_active_perf[seq] =
-            m_was_active_names[seq] = true;
+        m_was_active_main[seq] = m_was_active_edit[seq] =
+            m_was_active_perf[seq] = m_was_active_names[seq] = true;
     }
 }
 
@@ -1960,7 +2082,7 @@ perform::increment_screenset ()
 bool
 perform::is_seq_valid (int seq) const
 {
-    if (seq >= 0 && seq < m_sequence_max)   /* m_sequence_high  */
+    if (seq >= 0 && seq < m_sequence_max)   /* do not use m_sequence_high   */
         return true;
     else
     {
@@ -1990,12 +2112,11 @@ perform::is_seq_valid (int seq) const
 bool
 perform::is_exportable (int seq) const
 {
-    bool ok = is_active(seq);
+    const sequence * s = get_sequence(seq);     //  bool ok = is_active(seq);
+    bool ok = not_nullptr(s);
     if (ok)
-    {
-        const sequence * s = get_sequence(seq);
         ok = ! s->get_song_mute() && s->get_trigger_count() > 0;
-    }
+
     return ok;
 }
 
@@ -2358,7 +2479,7 @@ perform::play (midipulse tick)
 void
 perform::set_orig_ticks (midipulse tick)
 {
-    for (int s = 0; s < m_sequence_max; ++s)        /* m_sequence_high  */
+    for (int s = 0; s < m_sequence_high; ++s)       /* m_sequence_max   */
     {
         if (is_active(s))
             m_seqs[s]->set_last_tick(tick);         /* set_orig_tick()  */
@@ -2376,8 +2497,14 @@ perform::set_orig_ticks (midipulse tick)
 void
 perform::clear_sequence_triggers (int seq)
 {
-    if (is_active(seq))
-        m_seqs[seq]->clear_triggers();
+    sequence * s = get_sequence(seq);
+    if (not_nullptr(s))
+        s->clear_triggers();
+
+    /*
+     * if (is_active(seq))
+     *     m_seqs[seq]->clear_triggers();
+     */
 }
 
 /**
@@ -2395,7 +2522,7 @@ perform::move_triggers (bool direction)
     if (m_left_tick < m_right_tick)
     {
         midipulse distance = m_right_tick - m_left_tick;
-        for (int i = 0; i < m_sequence_max; ++i)        /* m_sequence_high  */
+        for (int i = 0; i < m_sequence_high; ++i)       /* m_sequence_max   */
         {
             if (is_active(i))
                 m_seqs[i]->move_triggers(m_left_tick, distance, direction);
@@ -2427,7 +2554,7 @@ perform::push_trigger_undo (int track)
     m_undo_vect.push_back(track);                       /* stazed   */
     if (track == SEQ64_ALL_TRACKS)
     {
-        for (int i = 0; i < m_sequence_max; ++i)        /* m_sequence_high  */
+        for (int i = 0; i < m_sequence_high; ++i)       /* m_sequence_max   */
         {
             if (is_active(i))
                 m_seqs[i]->push_trigger_undo();
@@ -2463,7 +2590,7 @@ perform::pop_trigger_undo ()
         m_redo_vect.push_back(track);
         if (track == SEQ64_ALL_TRACKS)
         {
-            for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high  */
+            for (int s = 0; s < m_sequence_high; ++s)   /* m_sequence_max   */
             {
                 if (is_active(s))
                     m_seqs[s]->pop_trigger_undo();
@@ -2494,9 +2621,9 @@ perform::pop_trigger_redo ()
         m_undo_vect.push_back(track);
         if (track == SEQ64_ALL_TRACKS)
         {
-            for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high */
+            for (int s = 0; s < m_sequence_high; ++s)   /* m_sequence_max  */
             {
-                if (is_active(s))                   /* oops, was "track"!   */
+                if (is_active(s))                       /* oops, was "track"! */
                     m_seqs[s]->pop_trigger_redo();
             }
         }
@@ -2523,7 +2650,7 @@ perform::copy_triggers ()
     if (m_left_tick < m_right_tick)
     {
         midipulse distance = m_right_tick - m_left_tick;
-        for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high */
+        for (int s = 0; s < m_sequence_high; ++s)       /* m_sequence_max   */
         {
             if (is_active(s))
                 m_seqs[s]->copy_triggers(m_left_tick, distance);
@@ -2982,7 +3109,7 @@ void
 perform::reset_sequences (bool pause)
 {
     void (sequence::* f) (bool) = pause ? &sequence::pause : &sequence::stop ;
-    for (int s = 0; s < m_sequence_max; ++s)            /* m_sequence_high  */
+    for (int s = 0; s < m_sequence_high; ++s)           /* m_sequence_max   */
     {
         if (is_active(s))
             (m_seqs[s]->*f)(m_playback_mode);           /* (new parameter)  */
@@ -2991,15 +3118,15 @@ perform::reset_sequences (bool pause)
 #if 0
     if (pause)
     {
-        for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high  */
+        for (int s = 0; s < m_sequence_max; ++s)        /* m_sequence_high  */
         {
             if (is_active(s))
-                m_seqs[s]->pause(m_playback_mode);  /* (new parameter)  */
+                m_seqs[s]->pause(m_playback_mode);      /* (new parameter)  */
         }
     }
     else
     {
-        for (int s = 0; s < m_sequence_max; ++s)    /* m_sequence_high  */
+        for (int s = 0; s < m_sequence_high; ++s)       /* m_sequence_max   */
         {
             if (is_active(s))
                 m_seqs[s]->stop(m_playback_mode);
@@ -3007,7 +3134,7 @@ perform::reset_sequences (bool pause)
     }
 #endif
 
-    m_master_bus->flush();                           /* flush the MIDI buss  */
+    m_master_bus->flush();                              /* flush MIDI buss  */
 }
 
 /**
@@ -3042,6 +3169,23 @@ perform::launch_input_thread ()
     }
     else
         m_in_thread_launched = true;
+}
+
+/**
+ *  Pass-along to sequence::get_trigger_state().
+ *
+ * \param seqnum
+ *      The index to the desired sequence.
+ *
+ * \param tick
+ *      The time-location at which to get the trigger state.
+ */
+
+bool
+perform::get_trigger_state (int seqnum, midipulse tick) const
+{
+    const sequence * s = get_sequence(seqnum);
+    return not_nullptr(s) ? s->get_trigger_state(tick) : false ;
 }
 
 /**
@@ -4480,7 +4624,8 @@ perform::unset_queued_replace (bool clearbits)
 void
 perform::sequence_playing_toggle (int seq)
 {
-    if (is_active(seq))
+    sequence * s = get_sequence(seq);
+    if (not_nullptr(s))                     // if (is_active(seq))
     {
         bool is_queue = (m_control_status & c_status_queue) != 0;
         bool is_replace = (m_control_status & c_status_replace) != 0;
@@ -4492,9 +4637,9 @@ perform::sequence_playing_toggle (int seq)
          */
 
         bool is_oneshot = (m_control_status & c_status_oneshot) != 0;
-        if (is_oneshot && ! m_seqs[seq]->get_playing())
+        if (is_oneshot && ! s->get_playing())
         {
-            m_seqs[seq]->toggle_one_shot();
+            s->toggle_one_shot();
         }
         else
 
@@ -4518,7 +4663,7 @@ perform::sequence_playing_toggle (int seq)
         }
         else if (is_queue)
         {
-            m_seqs[seq]->toggle_queued();
+            s->toggle_queued();
         }
         else
         {
@@ -4527,7 +4672,7 @@ perform::sequence_playing_toggle (int seq)
                 unset_sequence_control_status(c_status_replace);
                 off_sequences();
             }
-            m_seqs[seq]->toggle_playing();
+            s->toggle_playing();
         }
 
 #ifdef USE_SONG_RECORDING
@@ -4539,34 +4684,33 @@ perform::sequence_playing_toggle (int seq)
 
         if (song_recording())
         {
-            sequence * seqp = get_sequence(seq);
-            midipulse seq_length = seqp->get_length();
+            midipulse seq_length = s->get_length();
             midipulse tick = get_tick();
-            bool trigger_state = seqp->get_trigger_state(tick);
-            if (trigger_state)          /* if sequence already playing  */
+            bool trigger_state = s->get_trigger_state(tick);
+            if (trigger_state)              /* if sequence already playing  */
             {
                 /*
                  * If this play is us recording live, end the new trigger
                  * block here.
                  */
 
-                if (seqp->song_recording())
+                if (s->song_recording())
                 {
-                    seqp->song_recording_stop(tick);
+                    s->song_recording_stop(tick);
                 }
-                else    /* ...else need to trim block already in place  */
+                else        /* ...else need to trim block already in place  */
                 {
-                    seqp->exact_split_trigger(tick);
-                    seqp->del_trigger(tick);
+                    s->exact_split_trigger(tick);
+                    s->del_trigger(tick);
                 }
             }
-            else        /* if not playing, start recording a new strip  */
+            else            /* if not playing, start recording a new strip  */
             {
-                if (m_song_record_snap)     /* snap to length of sequence */
+                if (m_song_record_snap)     /* snap to length of sequence   */
                     tick = tick - (tick % seq_length);
 
                 push_trigger_undo();
-                seqp->song_recording_start(tick, m_song_record_snap);
+                s->song_recording_start(tick, m_song_record_snap);
             }
         }
 #endif  // USE_SONG_RECORDING
@@ -4779,7 +4923,7 @@ perform::set_input_bus (int bus, bool active)
         else if (bus == PERFORM_NUM_LABELS_ON_SEQUENCE)
             show_ui_sequence_number(active);
 
-        for (int seq = 0; seq < m_sequence_max; seq++)  /* m_sequence_high */
+        for (int seq = 0; seq < m_sequence_high; seq++)  /* m_sequence_max  */
         {
             sequence * s = get_sequence(seq);
             if (not_nullptr(s))
@@ -4999,9 +5143,9 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
     bool result = false;
     if (k.is_press())
     {
-        if (is_active(drop_sequence))
+        sequence * s = get_sequence(drop_sequence);
+        if (not_nullptr(s))
         {
-            sequence * s = get_sequence(drop_sequence);
             if (k.is_delete())
             {
                 push_trigger_undo();
@@ -5121,10 +5265,9 @@ perform::toggle_other_names (int seqnum, bool isshiftkey)
     bool result = is_active(seqnum);
     if (result)
     {
-        result = isshiftkey;
-        if (result)
+        if (isshiftkey)
         {
-            for (int s = 0; s < m_sequence_max; ++s)
+            for (int s = 0; s < m_sequence_high; ++s)    // m_sequence_max
             {
                 if (s != seqnum)
                 {
@@ -5136,12 +5279,7 @@ perform::toggle_other_names (int seqnum, bool isshiftkey)
         }
         else
         {
-            sequence * seq = get_sequence(seqnum);
-            if (not_nullptr(seq))
-            {
-                seq->toggle_song_mute();
-                result = true;
-            }
+            get_sequence(seqnum)->toggle_song_mute();   /* already tested   */
         }
     }
     return result;
@@ -5393,8 +5531,9 @@ perform::apply_song_transpose ()
 {
     for (int s = 0; s < m_sequence_high; ++s)       /* modest speed-up */
     {
-        if (is_active(s))
-            get_sequence(s)->apply_song_transpose();
+        sequence * seq = get_sequence(s);
+        if (not_nullptr(seq))
+            seq->apply_song_transpose();
     }
 }
 

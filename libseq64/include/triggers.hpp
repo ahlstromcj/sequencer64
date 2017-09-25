@@ -449,7 +449,7 @@ public:
 
     void grow (midipulse tickfrom, midipulse tickto, midipulse length);
     void remove (midipulse tick);
-    bool get_state (midipulse tick);
+    bool get_state (midipulse tick) const;
     bool select (midipulse tick);
     bool unselect ();
     bool intersect (midipulse position, midipulse & start, midipulse & end);

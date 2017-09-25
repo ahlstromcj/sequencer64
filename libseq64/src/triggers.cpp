@@ -920,9 +920,9 @@ triggers::get_selected_end ()
  *
  *  The \a which parameter has three possible values:
  *
- *  -#  If we are moving the 0, use first as offset.
- *  -#  If we are moving the 1, use the last as the offset.
- *  -#  If we are moving both (2), use first as offset.
+ *  -#  If we are moving 0 (GROW_START), use first as offset.
+ *  -#  If we are moving the 1 (GROW_END), use the last as the offset.
+ *  -#  If we are moving both, 2 (GROW_MOVE), use first as offset.
  *
  * \param tick
  *      The tick at which the trigger starts.
@@ -1075,10 +1075,10 @@ triggers::get_maximum ()
  */
 
 bool
-triggers::get_state (midipulse tick)
+triggers::get_state (midipulse tick) const
 {
     bool result = false;
-    for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
+    for (List::const_iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
         if (i->tick_start() <= tick && tick <= i->tick_end())
         {

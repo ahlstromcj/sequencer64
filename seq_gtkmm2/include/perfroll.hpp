@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-20
+ * \updates       2017-09-23
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -36,13 +36,9 @@
  *
  */
 
-#include <set>                          /* std::set, arbitary selection */
-
-#include "globals.h"                    /* seq64::c_max_sequence        */
-#include "gui_drawingarea_gtk2.hpp"     /* seq64::gui_drawingarea_gtk2  */
-#include "rect.hpp"                     /* seq64::rect class            */
-
-#undef ENABLE_BOX_SET
+#include "globals.h"                    /* seq64::c_max_sequence            */
+#include "gui_drawingarea_gtk2.hpp"     /* seq64::gui_drawingarea_gtk2      */
+#include "rect.hpp"                     /* seq64::rect class                */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -79,12 +75,6 @@ class perfroll : public gui_drawingarea_gtk2
     friend class perfedit;
 
 protected:
-
-    /**
-     *  Provides a type to hold the unique shift-selected sequence numbers.
-     */
-
-    typedef std::set<int> Selection;
 
     /**
      *  Static sizing members for initial zoom of the perfroll.
@@ -296,14 +286,6 @@ protected:
 
     bool m_sequence_active[c_max_sequence];
 
-    /**
-     *  Provides a set holding all of the sequences numbers that have been
-     *  shift-selected.  If we ever enable box-selection, this container will
-     *  support that as well.
-     */
-
-    Selection m_selected_seqs;
-
 #ifdef USE_SONG_BOX_SELECT
 
     /**
@@ -408,9 +390,20 @@ protected:
 #ifdef USE_SONG_BOX_SELECT
     void snap_y (int & y);
 #endif
-    void draw_sequence_on (int seqnum);
+    void draw_sequence_on (int seqnum);         // perform::Operation
     void draw_background_on (int seqnum);
-    void draw_drawable_row (long y);
+    void draw_drawable_row (long y);            // WHY long?
+
+    /**
+     *  To be used in iterating through a set.
+     */
+
+    void draw_sequence (int seqnum)
+    {
+        draw_background_on(seqnum);
+        draw_sequence_on(seqnum);
+    }
+
     void change_horz ();
 
 #ifdef USE_STAZED_PERF_AUTO_SCROLL

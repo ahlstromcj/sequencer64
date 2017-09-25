@@ -3855,7 +3855,7 @@ sequence::get_max_trigger ()
  */
 
 bool
-sequence::get_trigger_state (midipulse tick)
+sequence::get_trigger_state (midipulse tick) const
 {
     automutex locker(m_mutex);
     return m_triggers.get_state(tick);

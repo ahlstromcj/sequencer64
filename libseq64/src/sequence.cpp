@@ -3595,7 +3595,7 @@ sequence::grow_trigger (midipulse tickfrom, midipulse tickto, midipulse len)
  */
 
 void
-sequence::del_trigger (midipulse tick)
+sequence::delete_trigger (midipulse tick)
 {
     automutex locker(m_mutex);
     m_triggers.remove(tick);

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-09-23
+ * \updates       2017-09-27
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -569,23 +569,27 @@ perform::box_delete (int dropseq)
 }
 
 /**
- *  If the sequence is not in the list, add it.  Otherwise, we are
+ *  If the sequence is not in the "box set", add it.  Otherwise, we are
  *  "reselecting" the sequence, so remove it from the list of selections.
  *  Used in the performance windows on-button-press event.
+ *
+ * \param dropseq
+ *      The number of the sequence where "the mouse was clicked", in the
+ *      performance roll.
  */
 
 void
-perform::box_reselect_sequence (int dropseq)
+perform::box_toggle_sequence (int dropseq)
 {
     Selection::const_iterator s = m_selected_seqs.find(dropseq);
     if (s != m_selected_seqs.end())
     {
-        sequence * found = get_sequence(*s);        // should be good
+        sequence * found = get_sequence(*s);        /* should be good   */
         found->unselect_triggers();
-        m_selected_seqs.erase(s);                   // EXPERIMENTAL
+        m_selected_seqs.erase(s);
     }
     else
-        m_selected_seqs.insert(dropseq);            // EXPERIMENTAL
+        m_selected_seqs.insert(dropseq);
 }
 
 /**
@@ -604,7 +608,10 @@ perform::box_deselect_sequences (int dropseq)
 }
 
 /**
+ *  Moves the box-selected set of triggers to the given tick.
  *
+ * \param tick
+ *      The destination location for the trigger.
  */
 
 void
@@ -614,9 +621,31 @@ perform::box_move_selected_triggers (midipulse tick)
     for (s = m_selected_seqs.begin(); s != m_selected_seqs.end(); ++s)
     {
         sequence * selseq = get_sequence(*s);
-        if (not_nullptr(selseq))
+        if (not_nullptr(selseq))                            /* not needed */
             selseq->move_selected_triggers_to(tick, true);
     }
+}
+
+/**
+ *
+ */
+
+bool
+perform::selected_trigger
+(
+    int seqnum, midipulse droptick,
+    midipulse & tick0, midipulse & tick1
+)
+{
+    bool result = false;
+    sequence * s = get_sequence(seqnum);
+    if (not_nullptr(s))
+    {
+        result = s->select_trigger(droptick);
+        tick0 = s->selected_trigger_start();
+        tick1 = s->selected_trigger_end();
+    }
+    return result;
 }
 
 #endif  // USE_ENABLE_BOX_SET
@@ -838,10 +867,21 @@ perform::select_group_mute (int mutegroup)
 
 #ifdef USE_SONG_BOX_SELECT
 
+#ifdef USE_ENABLE_BOX_SET
+
+void
+perform::box_select_triggers (midipulse tick_start, midipulse tick_finish)
+{
+    // TODO
+}
+
+#else
+
 void
 perform::select_triggers_in_range
 (
-    int seq_low, int seq_high, long tick_start, long tick_finish
+    int seq_low, int seq_high,
+    midipulse tick_start, midipulse tick_finish
 )
 {
     for (int seq = seq_low; seq <= seq_high; ++seq)
@@ -867,7 +907,9 @@ perform::select_triggers_in_range
     }
 }
 
-#endif  // USE_SONG_BOX_SELECT
+#endif      // USE_ENABLE_BOX_SET
+
+#endif      // USE_SONG_BOX_SELECT
 
 /**
  *  Calls sequence::unselect_triggers() for all active sequences.
@@ -3179,6 +3221,10 @@ perform::launch_input_thread ()
  *
  * \param tick
  *      The time-location at which to get the trigger state.
+ *
+ * \return
+ *      Returns true if the sequence indicated by \a seqnum exists and it's
+ *      trigger state is true.
  */
 
 bool
@@ -3186,6 +3232,88 @@ perform::get_trigger_state (int seqnum, midipulse tick) const
 {
     const sequence * s = get_sequence(seqnum);
     return not_nullptr(s) ? s->get_trigger_state(tick) : false ;
+}
+
+/**
+ *  Adds a trigger on behalf of a sequence.
+ *
+ * \param seqnum
+ *      Indicates the sequence that needs to have its trigger handled.
+ *
+ * \param tick
+ *      The MIDI pulse number at which the trigger should be handled.
+ */
+
+void
+perform::add_trigger (int seqnum, midipulse tick)
+{
+    sequence * s = get_sequence(seqnum);
+    if (not_nullptr(s))
+    {
+        midipulse seqlength = s->get_length();
+#ifdef USE_SONG_RECORDING
+        if (song_record_snap())         /* snap to the length of sequence   */
+#endif
+            tick -= tick % seqlength;
+
+        push_trigger_undo(seqnum);
+        s->add_trigger(tick, seqlength);
+        modify();
+    }
+}
+
+/**
+ *	Delete the existing specified trigger.
+ *
+ * \param seqnum
+ *      Indicates the sequence that needs to have its trigger handled.
+ *
+ * \param tick
+ *      The MIDI pulse number at which the trigger should be handled.
+ */
+
+void
+perform::delete_trigger (int seqnum, midipulse tick)
+{
+    sequence * s = get_sequence(seqnum);
+    if (not_nullptr(s))
+    {
+        push_trigger_undo(seqnum);
+        s->delete_trigger(tick);
+        modify();
+    }
+}
+
+/**
+ *	Add a new trigger if nothing is selected, otherwise delete the existing
+ *	trigger.
+ *
+ * \param seqnum
+ *      Indicates the sequence that needs to have its trigger handled.
+ *
+ * \param tick
+ *      The MIDI pulse number at which the trigger should be handled.
+ */
+
+void
+perform::add_or_delete_trigger (int seqnum, midipulse tick)
+{
+    sequence * s = get_sequence(seqnum);
+    if (not_nullptr(s))
+    {
+        bool state = s->get_trigger_state(tick);
+        push_trigger_undo(seqnum);
+        if (state)
+        {
+            s->delete_trigger(tick);
+        }
+        else
+        {
+            midipulse seqlength = s->get_length();
+            s->add_trigger(tick, seqlength);
+        }
+        modify();
+    }
 }
 
 /**
@@ -3204,8 +3332,61 @@ perform::split_trigger (int seqnum, midipulse tick)
     sequence * s = get_sequence(seqnum);
     if (not_nullptr(s))
     {
-        push_trigger_undo();
+        push_trigger_undo(seqnum);
+#ifdef USE_SONG_BOX_SELECT
+        s->half_split_trigger(tick);
+#else
         s->split_trigger(tick);
+#endif
+        modify();
+    }
+}
+
+/**
+ *  Convenience function for perfroll's paste-trigger functionality.
+ *
+ * \param seqnum
+ *      Indicates the sequence that needs to have its trigger pasted.
+ *
+ * \param tick
+ *      The MIDI pulse number at which the trigger should be pasted.
+ */
+
+void
+perform::paste_trigger (int seqnum, midipulse tick)
+{
+    sequence * s = get_sequence(seqnum);
+    if (not_nullptr(s))
+    {
+        push_trigger_undo(seqnum);
+        s->paste_trigger(tick);
+        modify();
+    }
+}
+
+/**
+ *  Convenience function for perfroll's paste-or-split-trigger functionality.
+ *
+ * \param seqnum
+ *      Indicates the sequence that needs to have its trigger handled.
+ *
+ * \param tick
+ *      The MIDI pulse number at which the trigger should be handled.
+ */
+
+void
+perform::paste_or_split_trigger (int seqnum, midipulse tick)
+{
+    sequence * s = get_sequence(seqnum);
+    if (not_nullptr(s))
+    {
+        bool state = s->get_trigger_state(tick);
+        push_trigger_undo(seqnum);
+        if (state)
+            s->split_trigger(tick);
+        else
+            s->paste_trigger(tick);
+
         modify();
     }
 }
@@ -4701,7 +4882,7 @@ perform::sequence_playing_toggle (int seq)
                 else        /* ...else need to trim block already in place  */
                 {
                     s->exact_split_trigger(tick);
-                    s->del_trigger(tick);
+                    s->delete_trigger(tick);
                 }
             }
             else            /* if not playing, start recording a new strip  */

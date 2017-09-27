@@ -351,7 +351,7 @@ FruityPerfInput::on_right_button_pressed (GdkEventButton * ev)
         if (state)
         {
             p.push_trigger_undo(dropseq);       /* stazed fix */
-            seq->del_trigger(droptick);
+            seq->delete_trigger(droptick);
             result = true;
         }
     }

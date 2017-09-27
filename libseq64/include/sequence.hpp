@@ -1394,7 +1394,7 @@ public:
     void half_split_trigger (midipulse tick);
     void exact_split_trigger (midipulse tick);
     void grow_trigger (midipulse tick_from, midipulse tick_to, midipulse len);
-    void del_trigger (midipulse tick);
+    void delete_trigger (midipulse tick);
     bool get_trigger_state (midipulse tick) const;
     bool select_trigger (midipulse tick);
     triggers::List get_triggers () const;

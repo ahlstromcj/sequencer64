@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-25
+ * \updates       2017-09-27
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -58,7 +58,7 @@
  * released.
  */
 
-#undef  USE_ENABLE_BOX_SET              // NOT READY FOR PRIME TIME
+#define USE_ENABLE_BOX_SET              // NOT READY FOR PRIME TIME
 
 #ifdef USE_ENABLE_BOX_SET
 #include <functional>                   /* std::function, function objects  */
@@ -174,6 +174,8 @@ struct performcallback
  *  This class supports the performance mode.  It has way too many data
  *  members, one of them public.  Might be ripe for refactoring.  That has its
  *  own dangers, of course.
+ *
+ *  One thing to do soon is remove the need to having GUI classes as friends.
  */
 
 class perform
@@ -1604,9 +1606,14 @@ public:
     bool selection_operation (Operation func);
     void box_insert (int dropseq);
     void box_delete (int dropseq);
-    void box_reselect_sequence (int dropseq);
+    void box_toggle_sequence (int dropseq);
     void box_deselect_sequences (int dropseq);
     void box_move_selected_triggers (midipulse tick);
+    bool selected_trigger
+    (
+        int seqnum, midipulse droptick,
+        midipulse & tick0, midipulse & tick1
+    );
 #endif
 
     bool clear_all ();
@@ -1615,8 +1622,6 @@ public:
     void add_sequence (sequence * seq, int perf);   /* midifile             */
     void delete_sequence (int seq);                 /* seqmenu & mainwid    */
     bool is_sequence_in_edit (int seq);
-    void clear_sequence_triggers (int seq);
-    void print_triggers () const;
     void print_busses () const;
 
     /**
@@ -2166,11 +2171,25 @@ public:
     bool playback_action (playback_action_t p, bool songmode = false);
 #endif
 
+    /*
+     * Trigger functions.
+     */
+
+    void clear_sequence_triggers (int seq);
+    void print_triggers () const;
     void move_triggers (bool direction);
     void copy_triggers ();
     void push_trigger_undo (int track = SEQ64_ALL_TRACKS);
     void pop_trigger_undo ();
     void pop_trigger_redo ();
+    bool get_trigger_state (int seqnum, midipulse tick) const;
+    void add_trigger (int seqnum, midipulse tick);
+    void delete_trigger (int seqnum, midipulse tick);
+    void add_or_delete_trigger (int seqnum, midipulse tick);
+    void split_trigger (int seqnum, midipulse tick);
+    void paste_trigger (int seqnum, midipulse tick);
+    void paste_or_split_trigger (int seqnum, midipulse tick);
+    midipulse get_max_trigger ();
 
     bool is_dirty_main (int seq);
     bool is_dirty_edit (int seq);
@@ -2250,10 +2269,19 @@ public:
 
 #ifdef USE_SONG_BOX_SELECT
 
+#ifdef USE_ENABLE_BOX_SET
+
+    void box_select_triggers (midipulse tick_start, midipulse tick_finish);
+
+#else
+
     void select_triggers_in_range
     (
-        int seq_low, int seq_high, long tick_start, long tick_finish
+        int seq_low, int seq_high,
+        midipulse tick_start, midipulse tick_finish
     );
+
+#endif      // USE_ENABLE_BOX_SET
 
 #endif  // USE_SONG_BOX_SELECT
 
@@ -2301,10 +2329,6 @@ public:
     {
         m_have_redo = redo;
     }
-
-    bool get_trigger_state (int seqnum, midipulse tick) const;
-    void split_trigger (int seqnum, midipulse tick);
-    midipulse get_max_trigger ();
 
 private:
 

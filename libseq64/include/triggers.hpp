@@ -453,6 +453,8 @@ public:
     bool select (midipulse tick);
     bool unselect ();
     bool intersect (midipulse position, midipulse & start, midipulse & end);
+    bool intersect (midipulse position);
+
     void remove_selected ();
     void copy_selected ();
     void paste (midipulse paste_tick = SEQ64_NO_PASTE_TRIGGER);

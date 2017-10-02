@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-09-16
+ * \updates       2017-09-28
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1399,10 +1399,8 @@ public:
     bool select_trigger (midipulse tick);
     triggers::List get_triggers () const;
     bool unselect_triggers ();
-    bool intersect_triggers
-    (
-        midipulse position, midipulse & start, midipulse & ender
-    );
+    bool intersect_triggers (midipulse pos, midipulse & start, midipulse & end);
+    bool intersect_triggers (midipulse pos);
     bool intersect_notes
     (
         midipulse position, int position_note,
@@ -1413,7 +1411,7 @@ public:
         midipulse posstart, midipulse posend,
         midibyte status, midipulse & start
     );
-    void del_selected_trigger ();
+    void delete_selected_trigger ();
     void cut_selected_trigger ();
     void copy_selected_trigger ();
     void paste_trigger (midipulse paste_tick = SEQ64_NO_PASTE_TRIGGER);

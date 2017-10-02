@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-23
+ * \updates       2017-10-02
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -58,10 +58,6 @@
 #include "perfroll_input.hpp"
 #include "sequence.hpp"
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
-
-#ifdef USE_ENABLE_BOX_SET
-#include <functional>
-#endif
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -132,7 +128,8 @@ perfroll::perfroll
     m_adding_pressed        (false),
     m_h_page_increment      (usr().perf_h_page_increment()),
     m_v_page_increment      (usr().perf_v_page_increment()),
-    m_snap                  (0),
+    m_snap_x                (0),
+    m_snap_y                (0),
     m_ppqn                  (0),                            // set in the body
     m_page_factor           (SEQ64_PERFROLL_PAGE_FACTOR),   // 4096
     m_divs_per_beat         (SEQ64_PERFROLL_DIVS_PER_BEAT), // 16
@@ -284,8 +281,8 @@ perfroll::init_before_show ()
  *      Ignoring the numbers, the units come out to:
  *
 \verbatim
-                pixels * ticks / pixel
-        bars = --------------------------------
+                  pixels * ticks / pixel
+        bars = ----------------------------
                 ticks / beat * beats / bar
 \endverbatim
  *
@@ -393,7 +390,7 @@ perfroll::fill_background_pixmap ()
 }
 
 /**
- *  This function sets the m_snap, m_measure_length, and m_beat_length
+ *  This function sets the m_snap_x, m_measure_length, and m_beat_length
  *  members directly from the function parameters, which are in units of
  *  pulses (sometimes misleadingly called "ticks".)
  *
@@ -417,7 +414,7 @@ perfroll::fill_background_pixmap ()
 void
 perfroll::set_guides (int snap, int measure, int beat)
 {
-    m_snap = snap;
+    m_snap_x = snap;
     m_measure_length = measure;
     m_beat_length = beat;
     if (is_realized())
@@ -658,6 +655,12 @@ perfroll::draw_sequence_on (int seqnum)
                  *  -# The left hand side little sequence grab handle,
                  *     or segment handle.
                  *  -# The right-side segment handle.
+                 *
+                 *  printf
+                 *  (
+                 *      "seq %d trigger: %s\n",
+                 *      seqnum, selected ? "selected" : "unselected"
+                 *  );
                  */
 
                 draw_rectangle_on_pixmap        /* fill segment background  */
@@ -667,7 +670,7 @@ perfroll::draw_sequence_on (int seqnum)
                 draw_rectangle_on_pixmap(black_paint(), x, y, w, h, false);
                 draw_rectangle_on_pixmap        /* draw the segment handle  */
                 (
-                    dark_cyan(),                /* try instead of black()   */
+                    dark_cyan(),                /* instead of black()       */
                     x, y, m_size_box_w, m_size_box_w, false
                 );
                 draw_rectangle_on_pixmap        /* color set previous call  */
@@ -694,8 +697,7 @@ perfroll::draw_sequence_on (int seqnum)
                         );
                     }
 
-                    int low_note;                       // for side-effect
-                    int high_note;                      // ditto
+                    int low_note, high_note;            // for side-effects
                     bool have_notes = seq->get_minmax_note_events
                     (
                         low_note, high_note             // side-effects
@@ -874,12 +876,12 @@ perfroll::redraw_dirty_sequences ()
  */
 
 void
-perfroll::draw_drawable_row (long y)
+perfroll::draw_drawable_row (int y)
 {
     if (y >= 0)             /* make sure user didn't scroll up off window */
     {
         int s = y / m_names_y;
-        draw_drawable(0, s*m_names_y, 0, s*m_names_y, m_window_x, m_names_y);
+        draw_drawable(0, s * m_names_y, 0, s * m_names_y, m_window_x, m_names_y);
     }
 }
 
@@ -891,8 +893,8 @@ perfroll::draw_drawable_row (long y)
  *  the wrong y location and un-select will not occur if the user scrolls the
  *  track up or down to a new y location, if not adjusted.
  *
- *  For the box set, we create a perform::Operation functor by binding
- *  &perfroll::draw_sequence to this object and passing it to
+ *  For the box set/selections, we create a perform::Operation functor by
+ *  binding &perfroll::draw_sequence to this object and passing it to
  *  perform::selection_operation();  The whole set of operations replaces the
  *  single operation of the "drop" sequence.
  */
@@ -900,23 +902,15 @@ perfroll::draw_drawable_row (long y)
 void
 perfroll::draw_all ()
 {
-#ifdef USE_ENABLE_BOX_SET
 
+#ifdef SEQ64_SONG_BOX_SELECT
     perform::Operation f = std::bind
     (
         &perfroll::draw_sequence, std::ref(*this), std::placeholders::_1
     );
-    perf().selection_operation(f);
-
-    // Test:  This is needed to get the selected and moved sequence to update
-    // as dragged.
-
-    (void) draw_sequence(m_drop_sequence);  /* draw seq background & events */
-
+    perf().selection_operation(f);          /* works with sets of sequences */
 #else
-
     (void) draw_sequence(m_drop_sequence);  /* draw seq background & events */
-
 #endif
 
     draw_drawable_row(m_drop_y);
@@ -937,48 +931,39 @@ perfroll::split_trigger (int seqnum, midipulse tick)
 /**
  *  This function performs a 'snap' action on x.
  *
- *      -   m_snap = number pulses to snap to
+ *      -   m_snap_x = number pulses to snap to
  *      -   m_perf_scale_x = number of pulses per pixel
  *
- *  Therefore mod = m_snap/m_perf_scale_x equals the number pixels to snap
+ *  Therefore mod = m_snap_x/m_perf_scale_x equals the number pixels to snap
  *  to.
+ *
+ * \param [out] x
+ *      The destination for the x-snap calculation.
  */
 
 void
 perfroll::snap_x (int & x)
 {
-    int mod = m_snap / m_perf_scale_x;
+    int mod = m_snap_x / m_perf_scale_x;
     if (mod <= 0)
         mod = 1;
 
     x -= (x % mod);
 }
 
-#ifdef USE_SONG_BOX_SELECT
-
 /**
- *  This function performs a 'snap' action on y.
+ *  This function performs a 'snap' action on y.  We don't do vertical
+ *  zoom, so this function is simpler than snap_x().
  *
- * \todo
- *      For now it is a no-op, just to get the box-selection code to build.
- *
- * \param y
- *      The y value to convert.
+ * \param [out] y
+ *      The destination for the y-snap calculation.
  */
 
 void
 perfroll::snap_y (int & y)
 {
-#if 0
-    int mod = m_snap_y / m_perf_scale_y;
-    if (mod <= 0)
-        mod = 1;
-
-    x -= (x % mod);
-#endif
+    y -= (y % m_names_y);
 }
-
-#endif
 
 /**
  *  Converts an x-coordinate to a tick-offset on the x axis.
@@ -1322,19 +1307,11 @@ perfroll::on_key_press_event (GdkEventKey * ev)
      *  start/stop/play.  Doesn't work, but doesn't break anything.  Turns out
      *  perfedit handles this event.  Added the "true" parameter to force song
      *  mode when starting from perfedit.
-     *
-     *  Note m_drop_sequence.  We might want the action to apply to the whole
-     *  set of shift-selected sequences, if compiled for that feature.
      */
 
     bool result = perf().playback_key_event(k, true);
-#ifdef USE_ENABLE_BOX_SET
-    if (! result)       // TODO TODO TODO
-        result = perf().perfroll_key_event(k, m_drop_sequence);
-#else
     if (! result)
         result = perf().perfroll_key_event(k, m_drop_sequence);
-#endif
 
     if (result)
     {
@@ -1430,21 +1407,15 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                 }
                 else if (ev->keyval == SEQ64_Left)
                 {
-                    if (is_adding())
-                    {
-                        result = handle_motion_key(true);
-                        if (result)
-                            perf().modify();
-                    }
+                    result = handle_motion_key(true);
+                    if (result)
+                        perf().modify();
                 }
                 else if (ev->keyval == SEQ64_Right)
                 {
-                    if (is_adding())
-                    {
-                        result = handle_motion_key(false);
-                        if (result)
-                            perf().modify();
-                    }
+                    result = handle_motion_key(false);
+                    if (result)
+                        perf().modify();
                 }
                 else if (ev->keyval == SEQ64_Up)    /* vertical movement    */
                 {

@@ -491,6 +491,21 @@ triggers::intersect (midipulse position, midipulse & start, midipulse & ender)
 }
 
 /**
+ *
+ */
+
+bool
+triggers::intersect (midipulse position)
+{
+    for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
+    {
+        if (i->tick_start() <= position && position <= i->tick_end())
+            return true;
+    }
+    return false;
+}
+
+/**
  *  Grows a trigger.  This function looks for the first trigger where
  *  the tickfrom parameter is between the trigger's tick-start and tick-end
  *  values.  If found then the trigger's start is moved back to tickto, if
@@ -949,19 +964,18 @@ triggers::move_selected (midipulse tick, bool fixoffset, grow_edit_t which)
 {
     bool result = true;
     midipulse mintick = 0;
-    midipulse maxtick = 0x7ffffff;
+    midipulse maxtick = 0x7ffffff;                          /* 0x7fffffff ? */
     List::iterator s = m_triggers.begin();
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
         if (i->selected())
         {
             /*
-             * Too tricky.  Beware the side-effect of incrementing the
-             * i iterator.
+             * Too tricky.  Beware the side-effect of incrementing i.
              */
 
             s = i;
-            if (++i != m_triggers.end())
+            if (++i != m_triggers.end())                    /* side-effect  */
                 maxtick = i->tick_start() - 1;
 
             midipulse deltatick = 0;

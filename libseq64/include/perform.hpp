@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-27
+ * \updates       2017-09-30
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -53,21 +53,6 @@
  *  handle_midi_control_ex().
  */
 
-/*
- * If enabled, this makes perfroll segment drag not update until the mouse is
- * released.
- */
-
-#define USE_ENABLE_BOX_SET              // NOT READY FOR PRIME TIME
-
-#ifdef USE_ENABLE_BOX_SET
-#include <functional>                   /* std::function, function objects  */
-#include <set>                          /* std::set, arbitary selection     */
-#endif
-
-#include <vector>                       /* std::vector                      */
-#include <pthread.h>                    /* pthread_t C structure            */
-
 #include "globals.h"                    /* globals, nullptr, & more         */
 #include "jack_assistant.hpp"           /* optional seq64::jack_assistant   */
 #include "gui_assistant.hpp"            /* seq64::gui_assistant             */
@@ -75,6 +60,14 @@
 #include "mastermidibus.hpp"            /* seq64::mastermidibus for ALSA    */
 #include "midi_control.hpp"             /* seq64::midi_control "struct"     */
 #include "sequence.hpp"                 /* seq64::sequence                  */
+
+#ifdef SEQ64_SONG_BOX_SELECT
+#include <functional>                   /* std::function, function objects  */
+#include <set>                          /* std::set, arbitary selection     */
+#endif
+
+#include <vector>                       /* std::vector                      */
+#include <pthread.h>                    /* pthread_t C structure            */
 
 /**
  *  This value is used to indicated that the queued-replace (queued-solo)
@@ -214,7 +207,7 @@ class perform
 
 public:
 
-#ifdef USE_ENABLE_BOX_SET
+#ifdef SEQ64_SONG_BOX_SELECT
 
     /**
      *  Provides a type to hold the unique shift-selected sequence numbers.
@@ -629,7 +622,7 @@ private:
     bool m_resume_note_ons;
 
     /**
-     *  The global current tick, moved out from the output fucntion so that
+     *  The global current tick, moved out from the output function so that
      *  position can be set.
      */
 
@@ -892,7 +885,7 @@ private:
 
     bool m_auto_screenset_queue;
 
-#endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
+#endif
 
     /**
      *  A replacement for the c_max_sets constant.  Again, currently set to
@@ -952,7 +945,7 @@ private:
 
     bool m_is_modified;
 
-#ifdef USE_ENABLE_BOX_SET
+#ifdef SEQ64_SONG_BOX_SELECT
 
     /**
      *  Provides a set holding all of the sequences numbers that have been
@@ -1602,18 +1595,29 @@ public:
 
 public:
 
-#ifdef USE_ENABLE_BOX_SET
-    bool selection_operation (Operation func);
-    void box_insert (int dropseq);
-    void box_delete (int dropseq);
-    void box_toggle_sequence (int dropseq);
-    void box_deselect_sequences (int dropseq);
-    void box_move_selected_triggers (midipulse tick);
     bool selected_trigger
     (
         int seqnum, midipulse droptick,
         midipulse & tick0, midipulse & tick1
     );
+
+#ifdef SEQ64_SONG_BOX_SELECT
+    bool selection_operation (Operation func);
+    void box_insert (int dropseq, midipulse droptick);
+    void box_delete (int dropseq);
+    void box_toggle_sequence (int dropseq, midipulse droptick);
+    void box_deselect_sequences (int dropseq);
+    void box_move_selected_triggers (midipulse tick);
+
+    /**
+     * \getter m_selected_seqs.empty()
+     */
+
+    bool box_selection_empty () const
+    {
+        return m_selected_seqs.empty();
+    }
+
 #endif
 
     bool clear_all ();
@@ -1647,17 +1651,14 @@ public:
      * \setter m_tick
      */
 
+#ifdef USE_SONG_RECORDING
+    void set_tick (midipulse tick);
+#else
     void set_tick (midipulse tick)
     {
-        m_tick = tick;              /* printf("tick = %ld\n", m_tick); */
-#ifdef USE_SONG_RECORDING
-        if (m_jack_asst.is_running())
-            position_jack(tick);
-
-        master_bus().continue_from(tick);
-        m_current_tick = tick;
-#endif
+        m_tick = tick;
     }
+#endif
 
     /**
      * \getter m_jack_tick
@@ -2172,7 +2173,7 @@ public:
 #endif
 
     /*
-     * Trigger functions.
+     * More trigger functions.
      */
 
     void clear_sequence_triggers (int seq);
@@ -2189,6 +2190,7 @@ public:
     void split_trigger (int seqnum, midipulse tick);
     void paste_trigger (int seqnum, midipulse tick);
     void paste_or_split_trigger (int seqnum, midipulse tick);
+    bool intersect_triggers (int seqnum, midipulse tick);
     midipulse get_max_trigger ();
 
     bool is_dirty_main (int seq);
@@ -2267,23 +2269,11 @@ public:
 
 #endif  // USE_SONG_RECORDING
 
-#ifdef USE_SONG_BOX_SELECT
-
-#ifdef USE_ENABLE_BOX_SET
-
-    void box_select_triggers (midipulse tick_start, midipulse tick_finish);
-
-#else
-
     void select_triggers_in_range
     (
         int seq_low, int seq_high,
         midipulse tick_start, midipulse tick_finish
     );
-
-#endif      // USE_ENABLE_BOX_SET
-
-#endif  // USE_SONG_BOX_SELECT
 
     void unselect_all_triggers ();
 

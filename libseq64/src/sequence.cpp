@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-14
+ * \updates       2017-09-29
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -3426,6 +3426,17 @@ sequence::intersect_triggers
 }
 
 /**
+ *
+ */
+
+bool
+sequence::intersect_triggers (midipulse position)
+{
+    automutex locker(m_mutex);
+    return m_triggers.intersect(position);
+}
+
+/**
  *  This function examines each note in the event list.  If the given position
  *  is between the current note's on and off time values, the these
  *  values are copied to the start and end parameters, respectively, and the
@@ -3915,7 +3926,7 @@ sequence::unselect_triggers ()
  */
 
 void
-sequence::del_selected_trigger ()
+sequence::delete_selected_trigger ()
 {
     automutex locker(m_mutex);
     m_triggers.remove_selected();

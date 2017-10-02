@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-27
+ * \updates       2017-10-02
  * \license       GNU GPLv2 or above
  *
  *  Now derived directly from perfroll.  No more AbstractPerfInput and no more
@@ -107,7 +107,7 @@ Seq24PerfInput::activate_adding (bool adding)
  *
  *  convert_drop_xy() uses m_drop_x and m_drop_y, and sets m_drop_tick and
  *  m_drop_sequence.  It gets the sequence number of the pattern clicked.  It
- *  doesn't matter which button was clicked here.
+ *  doesn't matter which button was clicked.
  *
  * Stazed:
  *
@@ -120,9 +120,14 @@ Seq24PerfInput::activate_adding (bool adding)
  *
  * Box set selection:
  *
- *      This setup is meant to support selecting multiple sequences in the
+ *      This new setup is meant to support selecting multiple sequences in the
  *      perfroll, and later to support Kepler34's box-selection of multiple
  *      sequences for movement.  Here are the rules we want to implement:
+ *
+ *      -   Nothing selected.
+ *          -   Outside a trigger segment (determined by the "intersect"
+ *              function.)
+ *          -   Inside a trigger segment.
  *
  *      -   Click or Shift-Click with nothing already selected will select the
  *          current drop sequence and add it to the set.
@@ -133,10 +138,10 @@ Seq24PerfInput::activate_adding (bool adding)
  *          the current drop sequence.
  *
  * \return
- *      Returns true if a modification occurred.
+ *      Returns true if a modification occurred, necessitating a redraw.
  */
 
-#ifdef USE_ENABLE_BOX_SET
+#ifdef SEQ64_SONG_BOX_SELECT
 
 bool
 Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
@@ -145,165 +150,125 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
     m_drop_x = int(ev->x);
     m_drop_y = int(ev->y);
     convert_drop_xy();
+    grab_focus();                               /* needed to get keystrokes */
 
-    bool dropseq_active = perf().is_active(m_drop_sequence);
-    if (dropseq_active)
-    {
-        if (is_shift_key(ev))
-        {
-            perf().box_toggle_sequence(m_drop_sequence);
-        }
-        else
-        {
-            perf().unselect_all_triggers();
-            perf().box_insert(m_drop_sequence);
-        }
-    }
-//  else
-//      return false;
+    if (! perf().is_active(m_drop_sequence))
+        return false;
 
-    /*
-     *  Let's make better use of the Ctrl key here.  First, let Ctrl-Left be
-     *  handled exactly like the Middle click (it causes the segment/trigger
-     *  to be split), then bug out.  The middle click in seq24 interaction
-     *  mode is either for splitting the triggers or for setting the paste
-     *  location of copy/paste.  Note that the "aaa_or_bbb_trigger()"
-     *  functions will check the trigger status of the sequence to decide what
-     *  to do.
-     */
-
+    bool in_trigger = perf().intersect_triggers(m_drop_sequence, m_drop_tick);
     if (SEQ64_CLICK_LEFT(ev->button))
     {
-        if (is_ctrl_key(ev))
+        if (is_adding())
         {
-            perf().paste_or_split_trigger(m_drop_sequence, m_drop_tick);
-            // ?? set_adding_pressed(false);
+            /*
+             * Add a trigger if none exists, otherwise delete it.  is_adding()
+             * is set on a right-click with no trigger under the mouse, and
+             * unset when the right-click is released.
+             */
+
+            perf().add_or_delete_trigger(m_drop_sequence, m_drop_tick);
+            set_adding_pressed(true);
             result = true;
         }
         else
         {
             /*
-             * Add a new trigger if nothing is selected, otherwise delete it.
-             * The adding flag is set on a right-click where there is no
-             * trigger under the mouse, and is unset when the right-click is
-             * released [if not in allow_mod4_mode()].
+             *  Let's make better use of the Ctrl key here.  Let Ctrl-left be
+             *  handled exactly like the middle click (split the
+             *  segment/trigger), then bug out.  Middle click in seq24 mouse
+             *  mode is either for splitting the triggers or for setting the
+             *  paste location of copy/paste.  The "a_or_b_trigger()" functions
+             *  check the trigger status of the sequence to decide what to do.
              */
 
-            if (is_adding())
+            if (is_ctrl_key(ev))
             {
-                perf().add_or_delete_trigger(m_drop_sequence, m_drop_tick);
-                set_adding_pressed(true);
+                perf().paste_or_split_trigger(m_drop_sequence, m_drop_tick);
+                // set_adding_pressed(false);   // ???
                 result = true;
+            }
+            else if (is_shift_key(ev))
+            {
+                if (in_trigger)
+                {
+                    perf().box_toggle_sequence(m_drop_sequence, m_drop_tick);
+                    perf().box_insert(m_drop_sequence, m_drop_tick);
+                    result = true;
+                }
             }
             else
             {
-                /*
-                 * Set this flag to tell on_motion_notify_event() to call
-                 * perf().push_trigger_undo().  This section handles motions
-                 * of the held mouse that grow or shrink the selected trigger,
-                 * or else the moving of the selected trigger.
-                 *
-                 * Now how can we affect all of the shift-selected triggers?
-                 * TBD.
-                 *
-                 * wscalex is 4 * 32 ticks/pixel.  What about zoom?  See
-                 * perfroll; it sets m_perf_scale_x and m_zoom to
-                 * c_perf_scale_x.  Let's use m_perf_scale_x instead and make
-                 * it a memmber, m_w_scale_x.  This section is almost common
-                 * code with the fruityperfrol_input.cpp module.
-                 *
-                 * If the current sequence is not part of the selection, then
-                 * we need to unselect all sequences.
-                 */
-
                 perf().box_deselect_sequences(m_drop_sequence);
-
-                midipulse tick0, tick1;
-                m_have_button_press = perf().selected_trigger
-                (
-                    m_drop_sequence, m_drop_tick, tick0, tick1  /* side-effects */
-                );
-
-                int ydrop = m_drop_y % c_names_y;
-
-                /*
-                 * Check for a corner drag (on the small box at the left of
-                 * the trigger segment) to "grow" the sequence start.
-                 * Otherwise, check for a corner drag (on the small box at the
-                 * right of the sequence) to "grow" the sequence end.
-                 * Otherwise, we are moving the sequence.
-                 */
-
-                if
-                (
-                    m_drop_tick >= tick0 &&
-                    m_drop_tick <= (tick0 + m_w_scale_x) &&
-                    ydrop <= (sm_perfroll_size_box_click_w + 1)
-                )
+                check_handles();
+                if (! m_growing)
                 {
-                    m_growing = true;
-                    m_grow_direction = true;
-                    m_drop_tick_offset = m_drop_tick - tick0;
+                    // We don't want to unselect unless this trigger is
+                    // already selected and the shift-key is used.
+                    //
+                    // perf().unselect_all_triggers();
+
+                    if (in_trigger)
+                        perf().box_insert(m_drop_sequence, m_drop_tick);
                 }
-                else if
-                (
-                    m_drop_tick >= (tick1 - m_w_scale_x) &&
-                    m_drop_tick <= tick1 &&
-                    ydrop >= (c_names_y - sm_perfroll_size_box_click_w - 1)
-                )
-                {
-                    m_growing = true;
-                    m_grow_direction = false;
-                    m_drop_tick_offset = m_drop_tick - tick1;
-                }
-                else // if (m_drop_tick >= start_tick && m_drop_tick <= end_tick)
-                {
-                    m_moving = true;
-                    m_drop_tick_offset = m_drop_tick - tick0;
-                }
-                draw_all();
-            }
-        }
 
 #ifdef USE_SONG_BOX_SELECT
-
-        /*
-         * Doesn't seem to do anything at this point.
-         */
-
-        if (! m_box_select)                 /* select with a box    */
-        {
-            perf().unselect_all_triggers();
-            snap_y(m_drop_y);          /* y snapped to rows    */
-            m_current_x = m_drop_x;
-            m_current_y = m_drop_y;
-            m_box_select = true;
-        }
-
+                if (! m_box_select)                 /* select with a box    */
+                {
+                    perf().unselect_all_triggers();
+                    snap_y(m_drop_y);               /* y snapped to rows    */
+                    m_current_x = m_drop_x;
+                    m_current_y = m_drop_y;
+                    m_box_select = true;
+                }
 #endif
+                result = true;              // do we need a redraw yet?
+            }
+        }
+    }
+    else if (SEQ64_CLICK_MIDDLE(ev->button))
+    {
+        if (is_ctrl_key(ev))
+        {
+        }
+        else if (is_shift_key(ev))
+        {
+        }
+        else
+        {
+            /*
+             * Same treatment as Ctrl-Left click above.
+             */
 
+            perf().paste_or_split_trigger(m_drop_sequence, m_drop_tick);
+            result = true;
+        }
     }
     else if (SEQ64_CLICK_RIGHT(ev->button))
     {
-        activate_adding(true);
+        if (is_ctrl_key(ev))
+        {
+            if (! in_trigger)
+                perf().unselect_all_triggers();
+        }
+        else if (is_shift_key(ev))
+        {
+            if (! in_trigger)
+                perf().unselect_all_triggers();
+        }
+        else
+        {
+            activate_adding(true);
+            perf().unselect_all_triggers();
 
 #ifdef USE_SONG_BOX_SELECT
-        perf().unselect_all_triggers();
-        m_box_select = false;
+            m_box_select = false;
 #endif
-    }
-    else if (SEQ64_CLICK_MIDDLE(ev->button))                   /* split    */
-    {
-        /*
-         * Same treatment as Ctrl-Left click above.  HOWEVER, the code for
-         * that currently does more than is done here !!!!!
-         * TODO!!! Sad! :-D
-         */
-
-        perf().paste_or_split_trigger(m_drop_sequence, m_drop_tick);
-        result = true;
+        }
     }
     (void) perfroll::on_button_press_event(ev);
+    if (result)
+        draw_all();
+
     return result;
 }
 
@@ -396,12 +361,12 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
             if (state)
             {
                 perf().push_trigger_undo(m_drop_sequence);   /* stazed fix   */
-                seq->del_trigger(m_drop_tick);
+                seq->delete_trigger(m_drop_tick);
             }
             else
             {
-                m_drop_tick -= (m_drop_tick % seqlength);         /* snap         */
-                perf().push_trigger_undo(m_drop_sequence);       /* stazed fix   */
+                m_drop_tick -= (m_drop_tick % seqlength);    /* snap         */
+                perf().push_trigger_undo(m_drop_sequence);   /* stazed fix   */
                 seq->add_trigger(m_drop_tick, seqlength);
                 draw_all();
             }
@@ -490,7 +455,7 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
     return result;
 }
 
-#endif  // USE_ENABLE_BOX_SET
+#endif  // SEQ64_SONG_BOX_SELECT
 
 /**
  *  Handles various button-release events.
@@ -510,14 +475,10 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev)
             set_adding_pressed(false);
 
 #ifdef USE_SONG_BOX_SELECT
-
-#ifdef USE_ENABLE_BOX_SET
             perf().select_triggers_in_range
             (
                 m_box_select_low, m_box_select_high, tick_s, tick_f
             );
-
-#else
 
         if (m_box_select)      /* calculate selected seqs in box   */
         {
@@ -540,11 +501,7 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev)
              */
 
         }
-
-#endif  // USE_ENABLE_BOX_SET
-
-#endif  // USE_SONG_BOX_SELECT
-
+#endif  // SEQ64_SONG_BOX_SELECT
     }
     else if (SEQ64_CLICK_RIGHT(ev->button))
     {
@@ -553,8 +510,7 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev)
          * pressed when release, keep the adding-state in force.  One
          * can then use the unadorned left-click key to add material.  Right
          * click to reset the adding mode.  This feature is enabled only
-         * if allowed by Options / Mouse (but is true by default).
-         * See the same code in seq24seqcpp.
+         * if allowed by Options / Mouse. See the same code in seq24seq.cpp.
          */
 
         bool addmode_exit = ! rc().allow_mod4_mode();
@@ -639,7 +595,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
 #ifdef USE_SONG_RECORDING
         if (perf().song_record_snap())         /* snap to seq length   */
 #endif
-            tick -= tick % m_snap;
+            tick -= tick % m_snap_x;
 
         if (m_moving)
         {
@@ -660,7 +616,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
                 }
             }
 #else
-#ifdef USE_ENABLE_BOX_SET
+#ifdef SEQ64_SONG_BOX_SELECT
             /////// perf().move_selected_triggers(tick);
             ///////
             /////// Currently this is needed to get the single trigger to
@@ -759,14 +715,11 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
  *  tick (converted from the moving x value) does.
  *
  *  Then the button-handler sets m_moving = true, and calculates
- *  m_drop_tick_offset = m_drop_tick -
- *  perf().get_sequence(m_drop_sequence)->selected_trigger_start();
- *
+ *  m_drop_tick_offset = m_drop_tick - (drop sequence)->selected_trigger_start().
  *  The motion handler sees that m_moving is true, gets the new tick
  *  value from the new x value, offsets it, and calls
- *  perf().get_sequence(m_drop_sequence)->move_selected_triggers_to(tick, true).
- *
- *  When the user releases the left button, then m_growing is turned of
+ *  (drop sequence)->move_selected_triggers_to(tick, true).
+ *  When the user releases the left button, then m_growing is turned off
  *  and the roll draw_all()'s.
  *
  * \param is_left
@@ -793,6 +746,10 @@ Seq24PerfInput::handle_motion_key (bool is_left)
     bool ok = m_drop_sequence >= 0;
     if (ok)
     {
+        /*
+         * This value is set back to zero in the button-release callback.
+         */
+
         if (m_effective_tick == 0)
             m_effective_tick = m_drop_tick;
 
@@ -809,27 +766,32 @@ Seq24PerfInput::handle_motion_key (bool is_left)
              */
 
             midipulse tick = m_effective_tick;
-            m_effective_tick -= m_snap;
+            m_effective_tick -= m_snap_x;
+
+            /*
+             * Should we set to 0 instead of undoing snap?
+             */
+
             if (m_effective_tick <= 0)
-                m_effective_tick += m_snap;    /* retrench */
+                m_effective_tick += m_snap_x;    /* retrench */
 
             if (m_effective_tick != tick)
                 result = true;
         }
         else
         {
-            m_effective_tick += m_snap;
-            result = true;
-
             /*
              * What is the upper boundary here?
              */
+
+            m_effective_tick += m_snap_x;
+            result = true;
         }
 
         midipulse tick = m_effective_tick - m_drop_tick_offset;
-        tick -= tick % m_snap;
+        tick -= tick % m_snap_x;
 
-#ifdef USE_ENABLE_BOX_SET
+#ifdef SEQ64_SONG_BOX_SELECT
 
         perf().box_move_selected_triggers(tick);
 
@@ -848,6 +810,69 @@ Seq24PerfInput::handle_motion_key (bool is_left)
 
     }
     return result;
+}
+
+/**
+ *  Pulled this function out to simplify the on-button-press callback.
+ *
+ *  Set this flag to tell on_motion_notify_event() to call
+ *  perf().push_trigger_undo().  This section handles motions of the held mouse
+ *  that grow or shrink the selected trigger, or else the moving of the
+ *  selected trigger.
+ *
+ *  wscalex is 4 * 32 ticks/pixel.  What about zoom?  See perfroll; it sets
+ *  m_perf_scale_x and m_zoom to c_perf_scale_x.  Let's use m_perf_scale_x
+ *  instead and make it a memmber, m_w_scale_x.  This section is almost common
+ *  code with the fruityperfrol_input.cpp module.
+ *
+ *  Check for a corner drag (on the small box at the left of the trigger
+ *  segment) to "grow" the sequence start.  Otherwise, check for a corner drag
+ *  (on the small box at the right of the sequence) to "grow" the sequence end.
+ *  Otherwise, we are moving the sequence.
+ */
+
+void
+Seq24PerfInput::check_handles ()
+{
+    midipulse tick0, tick1;
+    m_have_button_press = perf().selected_trigger
+    (
+        m_drop_sequence, m_drop_tick, tick0, tick1  /* side-effects */
+    );
+
+    int ydrop = m_drop_y % c_names_y;
+
+    /*
+     * Check for a corner drag (on the small box at the left of
+     */
+
+    if
+    (
+        m_drop_tick >= tick0 &&
+        m_drop_tick <= (tick0 + m_w_scale_x) &&
+        ydrop <= (sm_perfroll_size_box_click_w + 1)
+    )
+    {
+        m_growing = true;
+        m_grow_direction = true;
+        m_drop_tick_offset = m_drop_tick - tick0;
+    }
+    else if
+    (
+        m_drop_tick >= (tick1 - m_w_scale_x) &&
+        m_drop_tick <= tick1 &&
+        ydrop >= (c_names_y - sm_perfroll_size_box_click_w - 1)
+    )
+    {
+        m_growing = true;
+        m_grow_direction = false;
+        m_drop_tick_offset = m_drop_tick - tick1;
+    }
+    else // if (m_drop_tick >= start_tick && m_drop_tick <= end_tick)
+    {
+        m_moving = true;                            // how can we know this?
+        m_drop_tick_offset = m_drop_tick - tick0;
+    }
 }
 
 }           // namespace seq64

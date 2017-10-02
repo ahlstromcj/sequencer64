@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-23
+ * \updates       2017-10-02
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -124,7 +124,8 @@ protected:
 
     int m_v_page_increment;
 
-    int m_snap;                     /**< The amount of horizontal snap.     */
+    int m_snap_x;                   /**< Amount of horizontal snap, pulses. */
+    int m_snap_y;                   /**< The amount of vertical snap.       */
     int m_ppqn;                     /**< Parts-per-quarter-note value.      */
     int m_page_factor;              /**< 4096, horizonal page sizing.       */
     int m_divs_per_beat;            /**< Holds current tick scaling value.  */
@@ -140,7 +141,7 @@ protected:
     int m_zoom;
 
     /**
-     *  The maximum height of the perfroll names box, in pixes.  This is
+     *  The maximum height of the perfroll names box, in pixels.  This is
      *  currently semantically a constant set to c_names_y = 24.
      */
 
@@ -387,12 +388,10 @@ protected:
     void convert_xy (int x, int y, midipulse & tick, int & seq);
     void convert_x (int x, midipulse & tick);
     void snap_x (int & x);
-#ifdef USE_SONG_BOX_SELECT
     void snap_y (int & y);
-#endif
     void draw_sequence_on (int seqnum);         // perform::Operation
     void draw_background_on (int seqnum);
-    void draw_drawable_row (long y);            // WHY long?
+    void draw_drawable_row (int y);
 
     /**
      *  To be used in iterating through a set.

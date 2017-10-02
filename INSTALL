@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.94.0 and above
 Chris Ahlstrom
-2015-09-10 to 2017-09-16
+2015-09-10 to 2017-10-01
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -244,6 +244,15 @@ MANUALLY-DEFINED MACROS IN CODE:
     these macros.  We have consolidated them into a single file,
     libseq64/include/seq64_features.h, to make them easier to find and edit.
 
+    SEQ64_SONG_BOX_SELECT:
+
+        This feature is meant to become a permanent part of Sequencer64
+        eventually.  If defined, it allows selecting multiple patterns in the
+        Song editor.  Currently, this can be done by selecting a pattern, then
+        holding the Shift key while selecting more patterns.  Eventually,
+        the ability to box-select mutliple patterns, like Kepler34, will be
+        added.
+
     SEQ64_STAZED_EXPAND_RECORD:
 
         This macro, defined by default, turns on the ability to specify
@@ -440,7 +449,7 @@ MANUALLY-DEFINED MACROS IN CODE:
         USE_SEQUENCE_COLOR
         USE_SEQUENCE_EDIT_MODE
         USE_SONG_RECORDING
-        USE_BOX_SONG_SELECT
+        USE_SONG_BOX_SELECT
 
         Some of these are defined (or undefined) in
         libseq64/include/seq64_features.h.

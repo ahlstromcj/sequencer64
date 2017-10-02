@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-09-27
+ * \updates       2017-10-01
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -365,7 +365,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_edit_sequence             (-1),
 #endif
     m_is_modified               (false),
-#ifdef USE_ENABLE_BOX_SET
+#ifdef SEQ64_SONG_BOX_SELECT
     m_selected_seqs             (),                     // Selection, std::set
 #endif
     m_condition_var             (),
@@ -523,7 +523,7 @@ perform::launch (int ppqn)
     }
 }
 
-#ifdef USE_ENABLE_BOX_SET
+#ifdef SEQ64_SONG_BOX_SELECT
 
 /**
  *  A prosaic implementation of calling a function on the set of stored
@@ -553,9 +553,14 @@ perform::selection_operation (Operation func)
  */
 
 void
-perform::box_insert (int dropseq)
+perform::box_insert (int dropseq, midipulse droptick)
 {
-    m_selected_seqs.insert(dropseq);
+    sequence * s = get_sequence(dropseq);
+    if (not_nullptr(s))
+    {
+        (void) s->select_trigger(droptick);
+        m_selected_seqs.insert(dropseq);
+    }
 }
 
 /**
@@ -565,7 +570,12 @@ perform::box_insert (int dropseq)
 void
 perform::box_delete (int dropseq)
 {
-    m_selected_seqs.erase(dropseq);
+    sequence * s = get_sequence(dropseq);
+    if (not_nullptr(s))
+    {
+        s->unselect_triggers();
+        m_selected_seqs.erase(dropseq);
+    }
 }
 
 /**
@@ -579,17 +589,19 @@ perform::box_delete (int dropseq)
  */
 
 void
-perform::box_toggle_sequence (int dropseq)
+perform::box_toggle_sequence (int dropseq, midipulse droptick)
 {
     Selection::const_iterator s = m_selected_seqs.find(dropseq);
     if (s != m_selected_seqs.end())
     {
-        sequence * found = get_sequence(*s);        /* should be good   */
-        found->unselect_triggers();
-        m_selected_seqs.erase(s);
+        // sequence * found = get_sequence(*s);        /* should be good   */
+        // found->unselect_triggers();
+        // m_selected_seqs.erase(s);
+
+        box_delete(*s);
     }
     else
-        m_selected_seqs.insert(dropseq);
+        box_insert(dropseq, droptick);
 }
 
 /**
@@ -626,8 +638,26 @@ perform::box_move_selected_triggers (midipulse tick)
     }
 }
 
+#endif  // SEQ64_SONG_BOX_SELECT
+
 /**
+ *  Encapsulates getting the trigger limits without putting the burden on the
+ *  caller.  The more code moved out of the user-interface, the better.
  *
+ * \param seqnum
+ *      The number of the sequence of interest.
+ *
+ * \param droptick
+ *      The tick location, basically where the mouse was clicked.
+ *
+ * \param [out] tick0
+ *      The output location for the start of the trigger.
+ *
+ * \param [out] tick1
+ *      The output location for the end of the trigger.
+ *
+ * \return
+ *      Returns true if the sequence is valid and we can select the trigger.
  */
 
 bool
@@ -647,8 +677,6 @@ perform::selected_trigger
     }
     return result;
 }
-
-#endif  // USE_ENABLE_BOX_SET
 
 /**
  *  Clears all of the patterns/sequences.  The mainwnd module calls this
@@ -867,16 +895,6 @@ perform::select_group_mute (int mutegroup)
 
 #ifdef USE_SONG_BOX_SELECT
 
-#ifdef USE_ENABLE_BOX_SET
-
-void
-perform::box_select_triggers (midipulse tick_start, midipulse tick_finish)
-{
-    // TODO
-}
-
-#else
-
 void
 perform::select_triggers_in_range
 (
@@ -906,8 +924,6 @@ perform::select_triggers_in_range
         }
     }
 }
-
-#endif      // USE_ENABLE_BOX_SET
 
 #endif      // USE_SONG_BOX_SELECT
 
@@ -3392,6 +3408,21 @@ perform::paste_or_split_trigger (int seqnum, midipulse tick)
 }
 
 /**
+ *
+ */
+
+bool
+perform::intersect_triggers (int seqnum, midipulse tick)
+{
+    bool result = false;
+    sequence * s = get_sequence(seqnum);
+    if (not_nullptr(s))
+        result = s->intersect_triggers(tick);
+
+    return result;
+}
+
+/**
  *  Locates the largest trigger value among the active sequences.
  *
  * \return
@@ -5330,7 +5361,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
             if (k.is_delete())
             {
                 push_trigger_undo();
-                s->del_selected_trigger();
+                s->delete_selected_trigger();
                 modify();
                 result = true;
             }
@@ -5825,6 +5856,24 @@ perform::reposition (midipulse tick)
     if (is_jack_running())
         position_jack(true, tick);
 }
+
+#ifdef USE_SONG_RECORDING
+
+/**
+ *
+ */
+
+void set_tick (midipulse tick)
+{
+    m_tick = tick;
+    if (m_jack_asst.is_running())
+        position_jack(tick);
+
+    master_bus().continue_from(tick);
+    m_current_tick = tick;
+}
+
+#endif
 
 /**
  *  Convenience function.  This function is used in the free function version

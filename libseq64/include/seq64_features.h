@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-09-16
+ * \updates       2017-10-01
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -95,7 +95,15 @@
  *  Currently broken.
  */
 
-#undef   USE_SONG_BOX_SELECT
+#undef  USE_SONG_BOX_SELECT
+
+/**
+ *  This is our version, which currently supports only the "Shift-select"
+ *  option, where the user holds the shift key while clicking triggers to
+ *  select more than one.
+ */
+
+#define SEQ64_SONG_BOX_SELECT
 
 /**
  *  Odds and ends that we missed.  This value allows non-notes to be included

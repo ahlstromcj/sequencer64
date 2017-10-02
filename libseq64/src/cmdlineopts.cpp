@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-08-27
+ * \updates       2017-10-01
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -1183,6 +1183,12 @@ const static std::string s_multiple_mainwids = "ON";
 const static std::string s_multiple_mainwids = "off";
 #endif
 
+#ifdef SEQ64_SONG_BOX_SELECT
+const static std::string s_song_box_select = "ON";
+#else
+const static std::string s_song_box_select = "off";
+#endif
+
 #ifdef DEBUG
 const static std::string s_debug_mode = "ON";
 #else
@@ -1224,6 +1230,7 @@ build_details ()
 << "Solid piano-roll grid = "    << s_build_solid_grid            << std::endl
 << "Main window scroll-bars = "  << s_je_pattern_scrollbars       << std::endl
 << "Multiple main windows * = "  << s_multiple_mainwids           << std::endl
+<< "Box song selection = "       << s_song_box_select             << std::endl
 << "Statistics support * = "     << s_statistics_support          << std::endl
 << "Debug code * = "             << s_debug_mode                  << std::endl
 << std::endl

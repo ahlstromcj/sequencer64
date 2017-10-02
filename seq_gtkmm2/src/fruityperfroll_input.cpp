@@ -178,7 +178,7 @@ FruityPerfInput::on_button_press_event (GdkEventButton * ev)
         if (p.is_active(dropseq))               /* redundant check?         */
         {
             midipulse droptick = m_drop_tick;
-            droptick -= droptick % m_snap;      /* stazed fix: grid snap    */
+            droptick -= droptick % m_snap_x;    /* stazed fix: grid snap    */
             bool state = seq->get_trigger_state(droptick);
             if (state)                          /* trigger click, split it  */
             {
@@ -232,21 +232,21 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * ev)
         if (p.is_active(dropseq))
         {
             midipulse droptick = m_drop_tick;
-            droptick -= droptick % m_snap;         /* stazed: grid snap    */
+            droptick -= droptick % m_snap_x;            /* stazed grid snap  */
             bool state = seq->get_trigger_state(droptick);
             if (state)
             {
                 split_trigger(dropseq, droptick);
                 result = true;
             }
-            else                                        /* track, paste trig    */
+            else                                        /* track, paste trig */
             {
-                p.push_trigger_undo(dropseq);           /* stazed code          */
+                p.push_trigger_undo(dropseq);           /* stazed code       */
                 seq->paste_trigger(droptick);
             }
         }
     }
-    else                    /* add a new note if we didn't select anything  */
+    else                    /* add a new note if we didn't select anything   */
     {
         midipulse droptick = m_drop_tick;
 
@@ -446,7 +446,7 @@ FruityPerfInput::on_motion_notify_event (GdkEventMotion * ev)
             }
             convert_x(x, tick);                    /* side-effect  */
             tick -= m_drop_tick_offset;
-            tick -= tick % m_snap;
+            tick -= tick % m_snap_x;
             if (m_moving)
             {
                 seq->move_selected_triggers_to(tick, true);

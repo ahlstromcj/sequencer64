@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-30
+ * \updates       2017-10-15
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -220,10 +220,12 @@ public:
     /**
      *  Provides a function type that can be applied to each sequence number
      *  in a Selection.  Generally, the caller will bind a member function to
-     *  use in operate_on_set().
+     *  use in operate_on_set().  The first parameter is a sequence number
+     *  (obtained from the Selection).  The caller can bind additional
+     *  placeholders or parameters, if desired.
      */
 
-    typedef std::function<void(int)> Operation;
+    typedef std::function<void(int)> SeqOperation;
 
 #endif
 
@@ -1602,7 +1604,8 @@ public:
     );
 
 #ifdef SEQ64_SONG_BOX_SELECT
-    bool selection_operation (Operation func);
+
+    bool selection_operation (SeqOperation func);
     void box_insert (int dropseq, midipulse droptick);
     void box_delete (int dropseq);
     void box_toggle_sequence (int dropseq, midipulse droptick);
@@ -1616,6 +1619,15 @@ public:
     bool box_selection_empty () const
     {
         return m_selected_seqs.empty();
+    }
+
+    /**
+     *
+     */
+
+    void box_selection_clear ()
+    {
+        m_selected_seqs.clear();
     }
 
 #endif
@@ -2269,12 +2281,15 @@ public:
 
 #endif  // USE_SONG_RECORDING
 
+#ifdef USE_SONG_BOX_SELECT
     void select_triggers_in_range
     (
         int seq_low, int seq_high,
         midipulse tick_start, midipulse tick_finish
     );
+#endif
 
+    bool select_trigger (int dropseq, midipulse droptick);
     void unselect_all_triggers ();
 
 public:

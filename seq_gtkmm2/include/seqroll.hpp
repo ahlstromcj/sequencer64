@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-17
+ * \updates       2017-10-08
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -39,7 +39,6 @@
 
 #include "globals.h"
 #include "gui_drawingarea_gtk2.hpp"
-// #include "fruityseqroll.hpp"
 #include "rect.hpp"                     /* seq64::rect class        */
 #include "sequence.hpp"
 #include "scales.h"                     /* STAZED chord support     */
@@ -114,13 +113,6 @@ protected:
      */
 
     sequence & m_seq;
-
-    /*
-     *  Provides a sequence object to hold a copy of the .... sequence.
-     *  Not used at all.
-     *
-     *  sequence * m_clipboard;
-     */
 
     /**
      *  Holds a reference to the seqkeys pane that is associated with the
@@ -343,15 +335,6 @@ protected:
      */
 
     bool m_drawing_background_seq;
-
-    /**
-     *  Set to true to avoid the call to update_and_draw().  Used in
-     *  set_background_sequence(), change_horz(), change_vert(), reset()....
-     *  Never set to true, except in seq24, let's just comment it out for now.
-     *  It hasn't been used in sequencer64 for awhile now.
-     *
-     * bool m_ignore_redraw;
-     */
 
     /**
      *  Provides an option for expanding the number of measures while
@@ -668,26 +651,6 @@ protected:
 protected:            // new internal/friend functions
 
     /**
-     * \setter m_old
-     */
-
-    void clear_selected ()
-    {
-        // m_selected.x = m_selected.y = m_selected.width = m_selected.height = 0;
-        m_selected.clear();
-    }
-
-    /**
-     * \setter m_old
-     */
-
-    void clear_old ()
-    {
-        // m_old.x = m_old.y = m_old.width = m_old.height = 0;
-        m_old.clear();
-    }
-
-    /**
      *  Clears all the mouse-action flags.
      */
 
@@ -696,6 +659,9 @@ protected:            // new internal/friend functions
 		m_selecting = m_moving = m_growing = m_paste = m_moving_init =
 			 m_painting = false;
     }
+
+    void set_scroll_x ();
+    void set_scroll_y ();
 
     /**
      *  Useful x calculation.  Offsets the x value by the x origin of the
@@ -722,32 +688,6 @@ protected:            // new internal/friend functions
     {
         return y + m_scroll_offset_y;
     }
-
-    /**
-     *  Useful x calculation.  Offsets the current x value by the x origin of
-     *  the current page.
-     *
-     * \param x
-     *      The x value to offset.
-
-    void set_current_offset_x (int x)
-    {
-        m_current_x = x + m_scroll_offset_x;
-    }
-     */
-
-    /**
-     *  Useful y calculation.  Offsets the current y value by the y origin of
-     *  the current page.
-     *
-     * \param y
-     *      The y value to offset.
-
-    void set_current_offset_y (int y)
-    {
-        m_current_y = y + m_scroll_offset_y;
-    }
-     */
 
     /**
      *  Useful x and y calculation.  Offsets the current x and y values by the
@@ -814,7 +754,7 @@ protected:            // new internal/friend functions
 
     bool select_action () const
     {
-        return m_selecting || m_growing || drop_action();
+        return selecting() || growing() || drop_action();
     }
 
     /**

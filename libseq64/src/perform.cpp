@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-10-01
+ * \updates       2017-10-14
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -531,14 +531,17 @@ perform::launch (int ppqn)
  *  interface.
  *
  * \param func
- *      The (bound) function to call for each sequence in the set.
+ *      The (bound) function to call for each sequence in the set.  It has two
+ *      parameters, the sequence number and a pulse value.  The sequence
+ *      number parameter is a place-holder and it obtained here.  The pulse
+ *      parameter is bound by the caller to create func().
  *
  * \return
  *      Returns true if at least one set item was found to operate on.
  */
 
 bool
-perform::selection_operation (Operation func)
+perform::selection_operation (SeqOperation func)
 {
     bool result = false;
     Selection::iterator s;
@@ -895,6 +898,24 @@ perform::select_group_mute (int mutegroup)
 
 #ifdef USE_SONG_BOX_SELECT
 
+/**
+ *  Selects the set of triggers bounded by a low and high sequence number and
+ *  a low and high tick selection.  If there is an inactive sequence in this
+ *  range, it is simply ignored.
+ *
+ * \param seq_low
+ *      The low sequence number in the pattern range.
+ *
+ * \param seq_high
+ *      The high sequence number in the pattern range.
+ *
+ * \param tick_start
+ *      The earliest tick in the time range.
+ *
+ * \param tick_finish
+ *      The last tick in the time range.
+ */
+
 void
 perform::select_triggers_in_range
 (
@@ -908,24 +929,27 @@ perform::select_triggers_in_range
         if (not_nullptr(s))
         {
             for (long tick = tick_start; tick <= tick_finish; ++tick)
-            {
                 s->select_trigger(tick);
-
-                /*
-                 * if (is_active(seq))
-                 *    get_sequence(seq)->select_trigger(tick);
-                 */
-            }
-        }
-        else
-        {
-            errprintf("select_triggers_in_range(): null sequence %d\n", seq);
-            break;
         }
     }
 }
 
 #endif      // USE_SONG_BOX_SELECT
+
+/**
+ *
+ */
+
+bool
+perform::select_trigger (int dropseq, midipulse droptick)
+{
+    sequence * s = get_sequence(dropseq);
+    bool result = not_nullptr(s);
+    if (result)
+        result = s->select_trigger(droptick);
+
+    return result;
+}
 
 /**
  *  Calls sequence::unselect_triggers() for all active sequences.
@@ -939,11 +963,6 @@ perform::unselect_all_triggers ()
         sequence * s = get_sequence(seq);
         if (not_nullptr(s))
             s->unselect_triggers();
-
-        /*
-         * if (is_active(seq))
-         *    get_sequence(seq)->unselect_triggers();
-         */
     }
 }
 
@@ -2170,7 +2189,7 @@ perform::is_seq_valid (int seq) const
 bool
 perform::is_exportable (int seq) const
 {
-    const sequence * s = get_sequence(seq);     //  bool ok = is_active(seq);
+    const sequence * s = get_sequence(seq);
     bool ok = not_nullptr(s);
     if (ok)
         ok = ! s->get_song_mute() && s->get_trigger_count() > 0;
@@ -5479,7 +5498,7 @@ perform::toggle_other_names (int seqnum, bool isshiftkey)
     {
         if (isshiftkey)
         {
-            for (int s = 0; s < m_sequence_high; ++s)    // m_sequence_max
+            for (int s = 0; s < m_sequence_high; ++s)
             {
                 if (s != seqnum)
                 {

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-02
+ * \updates       2017-10-15
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -55,7 +55,6 @@
 #include "perfedit.hpp"
 #include "perform.hpp"
 #include "perfroll.hpp"
-#include "perfroll_input.hpp"
 #include "sequence.hpp"
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
 
@@ -166,6 +165,8 @@ perfroll::perfroll
     m_box_select_low        (SEQ64_NULL_SEQUENCE),
     m_box_select_high       (SEQ64_NULL_SEQUENCE),
     m_last_tick             (0),
+    m_scroll_offset_x       (0),        // m_4bar_offset already in place!
+    m_scroll_offset_y       (0),
 #endif
     m_moving                (false),
     m_growing               (false),
@@ -229,6 +230,9 @@ perfroll::change_horz ()
     long current_offset = long(m_hadjust.get_value()) * m_ticks_per_bar;
     if (m_4bar_offset != current_offset)
     {
+#ifdef USE_SONG_BOX_SELECT
+        m_scroll_offset_x = int(m_hadjust.get_value()) / m_zoom;
+#endif
         m_4bar_offset = current_offset;
         enqueue_draw();
     }
@@ -253,6 +257,9 @@ perfroll::change_vert ()
     {
         m_drop_y += (m_sequence_offset - vvalue) * m_names_y;
         m_sequence_offset = vvalue;
+#ifdef USE_SONG_BOX_SELECT
+        m_scroll_offset_y = int(m_vadjust.get_value()) * m_names_y;
+#endif
         enqueue_draw();
     }
 }
@@ -435,6 +442,10 @@ perfroll::set_guides (int snap, int measure, int beat)
 void
 perfroll::enqueue_draw ()
 {
+#ifdef USE_SONG_BOX_SELECT
+    if (m_box_select)
+        draw_selection_on_window();
+#endif
     m_parent.enqueue_draw();
 }
 
@@ -621,7 +632,7 @@ void
 perfroll::draw_sequence_on (int seqnum)
 {
     sequence * seq = perf().get_sequence(seqnum);
-    if (not_nullptr(seq))                           // (perf().is_active(seqnum))
+    if (not_nullptr(seq))
     {
         midipulse tick_offset = m_4bar_offset;      //  * m_ticks_per_bar;
         midipulse x_offset = tick_offset / m_perf_scale_x;
@@ -819,7 +830,7 @@ perfroll::draw_sequence_on (int seqnum)
 
 void perfroll::draw_background_on (int seqnum)
 {
-    midipulse tick_offset = m_4bar_offset ;             // * m_ticks_per_bar;
+    midipulse tick_offset = m_4bar_offset;              // * m_ticks_per_bar;
     long first_measure = tick_offset / m_measure_length;
     long last_measure = first_measure +
         (m_window_x * m_perf_scale_x / m_measure_length) + 1;
@@ -885,6 +896,46 @@ perfroll::draw_drawable_row (int y)
     }
 }
 
+#ifdef USE_SONG_BOX_SELECT
+
+/**
+ *  Draws the current mouse-selection box on the main perfroll window.  Note
+ *  the parameters of draw_drawable(), which we need to be sure of to draw
+ *  thicker boxes.
+ *
+ *      -   x and y position of rectangle to draw
+ *      -   x and y position in drawable where rectangle should be drawn
+ *      -   width and height of rectangle to draw
+ *
+ *  A final parameter of false draws an unfilled rectangle.  Orange makes it a
+ *  little more clear that we're selecting, I think.  We also want to try to
+ *  thicken the lines somehow.
+ *
+ *  Compare this function to seqroll's more sophisticated version.
+ */
+
+void
+perfroll::draw_selection_on_window ()
+{
+    const int thickness = 1;                    /* normally 1               */
+    int x = 0, y = 0, w = 0, h = 0;             /* used throughout          */
+    set_line(Gdk::LINE_SOLID, thickness);       /* set_line_attributes()    */
+    if (selecting())
+    {
+        m_old.get(x, y, w, h);                      /* get rectangle        */
+        draw_drawable(x, y, x, y, w + 1, h + 1);    /* erase old rectangle  */
+        m_selected.get(x, y, w, h);
+    }
+
+#ifdef SEQ64_USE_BLACK_SELECTION_BOX
+    draw_rectangle(black_paint(), x, y, w, h, false);
+#else
+    draw_rectangle(dark_orange(), x, y, w, h, false);
+#endif
+}
+
+#endif  // USE_SONG_BOX_SELECT
+
 /**
  *  Provides a very common sequence of calls used in perfroll_input.
  *
@@ -893,10 +944,15 @@ perfroll::draw_drawable_row (int y)
  *  the wrong y location and un-select will not occur if the user scrolls the
  *  track up or down to a new y location, if not adjusted.
  *
- *  For the box set/selections, we create a perform::Operation functor by
- *  binding &perfroll::draw_sequence to this object and passing it to
- *  perform::selection_operation();  The whole set of operations replaces the
+ *  For the box set/selections, we create a perform::SeqOperation functor by
+ *  binding &perfroll::draw_sequence() to this object and passing it to
+ *  perform::selection_operation().  The whole set of operations replaces the
  *  single operation of the "drop" sequence.
+ *
+ * Note:
+ *
+ *  We could bind additional parameters as needed, either as place-holders or
+ *  constant parameter values.
  */
 
 void
@@ -904,7 +960,7 @@ perfroll::draw_all ()
 {
 
 #ifdef SEQ64_SONG_BOX_SELECT
-    perform::Operation f = std::bind
+    perform::SeqOperation f = std::bind
     (
         &perfroll::draw_sequence, std::ref(*this), std::placeholders::_1
     );
@@ -1116,9 +1172,9 @@ perfroll::on_expose_event (GdkEventExpose * ev)
 }
 
 /**
- *  This callback function handles a button press by forwarding it to the
- *  interaction object's button-press function.  This gives us Seq24
- *  versus Fruity behavior.
+ *  This callback function handles the follow-on work of a button press, and
+ *  is called by overridden versions such as Seq24PerfInput ::
+ *  on_button_press_event()
  *
  *  One minor issue:  Fruity behavior doesn't yet provide the keystroke
  *  behavior we now handle for the Seq24 mode of operation.
@@ -1127,6 +1183,7 @@ perfroll::on_expose_event (GdkEventExpose * ev)
 bool
 perfroll::on_button_press_event (GdkEventButton * ev)
 {
+
 #ifdef USE_UNNECESSARY_TRANSPORT_FOLLOW_CALLBACK
 
     /*
@@ -1153,10 +1210,6 @@ perfroll::on_button_press_event (GdkEventButton * ev)
  *  This callback function handles a button release by forwarding it to the
  *  interaction object's button-release function.  This gives us Seq24
  *  versus Fruity behavior.
- *
- * \todo
- *      We seem to be hitting this button event on any click in the perfroll
- *      itself.
  */
 
 bool
@@ -1234,16 +1287,16 @@ perfroll::on_scroll_event (GdkEventScroll * ev)
 
 /**
  *  Handles motion notification by forwarding it to the interaction
- *  object's motion-notification callback function.
+ *  object's motion-notification callback function.  Actually, this is
+ *  backwards; this function is called within the derived object's override.
  */
 
 bool
 perfroll::on_motion_notify_event (GdkEventMotion * ev)
 {
-    bool result = gui_drawingarea_gtk2::on_motion_notify_event(ev);
-    if (result)
-        enqueue_draw();     /* put in if() to reduce flickering */
+    enqueue_draw();                 /* put in if() to reduce flickering */
 
+    bool result = gui_drawingarea_gtk2::on_motion_notify_event(ev);
     return result;
 }
 

@@ -28,9 +28,10 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-07-15
- * \updates       2016-07-16
+ * \updates       2017-10-15
  * \license       GNU GPLv2 or above
  *
+ *  This module applies only to GtkMM.
  */
 
 #include <gdk/gdkevents.h>
@@ -52,6 +53,8 @@ namespace seq64
     extern bool is_ctrl_shift_key (GdkEventButton * ev);
     extern bool is_super_key (GdkEventButton * ev);
     extern void test_widget_click (GtkWidget * w);
+    extern bool is_left_drag (GdkEventMotion * ev);
+    extern bool is_drag_motion (GdkEventMotion * ev);
 }
 
 #endif          // SEQ64_GUI_KEY_TESTS_HPP

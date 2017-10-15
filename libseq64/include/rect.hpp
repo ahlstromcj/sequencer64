@@ -81,11 +81,20 @@ public:
     }
 
     static void xy_to_rect (int x1, int y1, int x2, int y2, rect & r);
-    static void xy_to_rect_values
+    static void xy_to_rect_get
     (
         int x1, int y1, int x2, int y2,
         int & x, int & y, int & w, int & h
     );
+
+    /**
+     *
+     */
+
+    void xy_to_rect (int x1, int y1, int x2, int y2)
+    {
+        xy_to_rect(x1, y1, x2, y2, *this);
+    }
 
     /**
      * \getter m_x
@@ -205,7 +214,7 @@ private:
 
     /**
      *  The calculated width is always positive.  Follows the conventions of
-     *  the xy_to_rect_values() function.
+     *  the xy_to_rect_get() function.
      */
 
     static int calculated_width (int x1, int x2)
@@ -215,7 +224,7 @@ private:
 
     /**
      *  The calculated height is always positive.  Follows the conventions of
-     *  the xy_to_rect_values() function.
+     *  the xy_to_rect_get() function.
      */
 
     static int calculated_height (int y1, int y2)

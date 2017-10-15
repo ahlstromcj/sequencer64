@@ -95,7 +95,7 @@
  *  Currently broken.
  */
 
-#undef  USE_SONG_BOX_SELECT
+#undef   USE_SONG_BOX_SELECT        // TENTATIVE, EXPERIMENTAL
 
 /**
  *  This is our version, which currently supports only the "Shift-select"
@@ -103,7 +103,7 @@
  *  select more than one.
  */
 
-#define SEQ64_SONG_BOX_SELECT
+#undef  SEQ64_SONG_BOX_SELECT
 
 /**
  *  Odds and ends that we missed.  This value allows non-notes to be included

@@ -28,12 +28,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-02
+ * \updates       2017-10-15
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
  *  performance/song editor.
- *
  */
 
 #include "globals.h"                    /* seq64::c_max_sequence            */
@@ -287,7 +286,7 @@ protected:
 
     bool m_sequence_active[c_max_sequence];
 
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
 
     /**
      *  The previous selection rectangle, used for undrawing it.  Not yet
@@ -326,7 +325,19 @@ protected:
 
     midipulse m_last_tick;
 
-#endif  // USE_SONG_BOX_SELECT
+    /**
+     *  The horizontal value of the scroll window in units of pixels.
+     */
+
+    int m_scroll_offset_x;
+
+    /**
+     *  The vertical value of the scroll window in units of pixels.
+     */
+
+    int m_scroll_offset_y;
+
+#endif  // SEQ64_SONG_BOX_SELECT
 
     /**
      *  Used in the Seq24 or Fruity processing when moving a section of
@@ -389,9 +400,88 @@ protected:
     void convert_x (int x, midipulse & tick);
     void snap_x (int & x);
     void snap_y (int & y);
-    void draw_sequence_on (int seqnum);         // perform::Operation
+    void draw_sequence_on (int seqnum);         /* perform::SeqOperation    */
     void draw_background_on (int seqnum);
     void draw_drawable_row (int y);
+
+#ifdef SEQ64_SONG_BOX_SELECT
+
+    void draw_selection_on_window ();
+
+    /**
+     *  Useful x calculation.  Offsets the x value by the x origin of the
+     *  current page.
+     *
+     * \param x
+     *      The x value to offset.
+     */
+
+    int scroll_offset_x (int x) const
+    {
+        return x + m_scroll_offset_x;
+    }
+
+    /**
+     *  Useful y calculation.  Offsets the y value by the y origin of the
+     *  current page.
+     *
+     * \param y
+     *      The y value to offset.
+     */
+
+    int scroll_offset_y (int y) const
+    {
+        return y + m_scroll_offset_y;
+    }
+
+    /**
+     *  Useful x and y calculation.  Offsets the current x and y values by the
+     *  x and y origin of the current page.
+     *
+     * \param x
+     *      The y value to offset.
+     *
+     * \param y
+     *      The y value to offset.
+     */
+
+    void set_current_offset_x_y (int x, int y)
+    {
+        m_current_x = x + m_scroll_offset_x;
+        m_current_y = y + m_scroll_offset_y;
+    }
+
+    /**
+     * \getter m_selecting
+     */
+
+    bool selecting () const
+    {
+        return m_box_select;
+    }
+
+    /**
+     * \setter m_selecting
+     */
+
+    void selecting (bool flag)
+    {
+        m_box_select = flag;
+    }
+
+    /**
+     *  Indicates if we're selecting or moving.
+     *
+     * \return
+     *      Returns true if one of those four flags are set.
+     */
+
+    bool select_action () const
+    {
+        return selecting() || drop_action();
+    }
+
+#endif  // SEQ64_SONG_BOX_SELECT
 
     /**
      *  To be used in iterating through a set.
@@ -403,6 +493,7 @@ protected:
         draw_sequence_on(seqnum);
     }
 
+    void offset_sequence (int seqnum, midipulse offset);
     void change_horz ();
 
 #ifdef USE_STAZED_PERF_AUTO_SCROLL
@@ -518,6 +609,36 @@ protected:
     void set_adding_pressed (bool flag)
     {
         m_adding_pressed = flag;
+    }
+
+    /**
+     * \getter m_growing
+     */
+
+    bool growing () const
+    {
+        return m_growing;
+    }
+
+    /**
+     * \getter m_moving
+     */
+
+    bool moving () const
+    {
+        return m_moving;
+    }
+
+    /**
+     *  Indicates if we're moving.
+     *
+     * \return
+     *      Returns true if one of those two flags are set.
+     */
+
+    bool drop_action () const
+    {
+        return moving();
     }
 
 protected:        // callbacks

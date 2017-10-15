@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-07-15
- * \updates       2018-08-02
+ * \updates       2017-10-15
  * \license       GNU GPLv2 or above
  *
  *  A little encapsulation never hurt anyone.  Too bad that the GdkEventAny
@@ -215,6 +215,40 @@ void
 test_widget_click (GtkWidget * w)
 {
     gtk_test_widget_click(w, SEQ64_CLICK_BUTTON_LEFT, GDK_BUTTON1_MASK);
+}
+
+/**
+ *  Tests for a left-drag motion being in force.
+ *
+ * \param ev
+ *      Points to the event-motion structure.
+ *
+ * \return
+ *      Returns true if the SEQ64_BUTTON1_MASK bit is active.
+ */
+
+bool
+is_left_drag (GdkEventMotion * ev)
+{
+    return (ev->state & SEQ64_BUTTON1_MASK) != 0;
+}
+
+/**
+ *  Tests for a left-, right-, and middle-drag motion being in force.
+ *
+ * \param ev
+ *      Points to the event-motion structure.
+ *
+ * \return
+ *      Returns true if one of the SEQ64_BUTTON1_MASK, SEQ64_BUTTON2_MASK, or
+ *      SEQ64_BUTTON3_MASK bits are active.
+ */
+
+bool
+is_drag_motion (GdkEventMotion * ev)
+{
+    const guint m = SEQ64_BUTTON1_MASK | SEQ64_BUTTON2_MASK | SEQ64_BUTTON3_MASK;
+    return (ev->state & m) != 0;
 }
 
 }           // namespace seq64

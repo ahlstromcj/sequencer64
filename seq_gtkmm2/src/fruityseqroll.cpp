@@ -537,9 +537,7 @@ FruitySeqRollInput::on_button_release_event (GdkEventButton * ev)
     {
         if (m_selecting)
         {
-            // xy_to_rect
-
-            rect::xy_to_rect_values
+            rect::xy_to_rect_get
             (
                 drop_x(), drop_y(),
                 current_x(), current_y(), x, y, w, h
@@ -556,19 +554,18 @@ FruitySeqRollInput::on_button_release_event (GdkEventButton * ev)
     if (SEQ64_CLICK_RIGHT(ev->button))
         m_erase_painting = false;
 
-    m_selecting = false;          /* turn it all off */
+    m_selecting = false;            /* turn it all off */
     m_moving = false;
     m_growing = false;
     m_paste = false;
     m_moving_init = false;
     m_painting = false;
     seq.unpaint_all();
-    update_mouse_pointer();        /* context sensitive mouse pointer... */
-    if (needs_update)                   /* if they clicked, something changed */
-        seq.set_dirty();        /* redraw_events();                   */
+    update_mouse_pointer();         /* context sensitive mouse pointer... */
+    if (needs_update)               /* if they clicked, something changed */
+        seq.set_dirty();            /* redraw_events();                   */
 
     (void) seqroll::on_button_release_event(ev);
-
     return needs_update;
 }
 

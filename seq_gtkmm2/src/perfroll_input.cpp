@@ -109,6 +109,16 @@ Seq24PerfInput::activate_adding (bool adding)
  *  m_drop_sequence.  It gets the sequence number of the pattern clicked.  It
  *  doesn't matter which button was clicked.
  *
+ *  The is_adding() status is set on a right-click with no trigger under the
+ *  mouse, and unset when the right-click is released.
+ *
+ *  Note the is_ctrl_key() test.  We make better use of the Ctrl key here.  Let
+ *  Ctrl-left be handled exactly like the middle click (split the
+ *  segment/trigger), then bug out.  Middle click in seq24 mouse mode is either
+ *  for splitting the triggers or for setting the paste location of copy/paste.
+ *  The "a_or_b_trigger()" functions check the trigger status of the sequence to
+ *  decide what to do, so that the caller doesn't have to do those checks.
+ *
  * Stazed:
  *
  *      m_drop_y will be adjusted by perfroll::change_vert() for any scroll
@@ -128,7 +138,6 @@ Seq24PerfInput::activate_adding (bool adding)
  *          -   Outside a trigger segment (determined by the "intersect"
  *              function.)
  *          -   Inside a trigger segment.
- *
  *      -   Click or Shift-Click with nothing already selected will select the
  *          current drop sequence and add it to the set.
  *      -   Click with at least one *other* sequence selected will unselect
@@ -149,21 +158,17 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
     bool result = false;
     m_drop_x = int(ev->x);
     m_drop_y = int(ev->y);
-    convert_drop_xy();
-    grab_focus();                               /* needed to get keystrokes */
+    convert_drop_xy();                      /* drop x, y to tick, sequence  */
+    grab_focus();                           /* needed to get keystrokes     */
 
-    if (! perf().is_active(m_drop_sequence))
-        return false;
-
+    bool in_seq = perf().is_active(m_drop_sequence);
     bool in_trigger = perf().intersect_triggers(m_drop_sequence, m_drop_tick);
     if (SEQ64_CLICK_LEFT(ev->button))
     {
-        if (is_adding())
+        if (is_adding())                    /* are we in "paint" mode?      */
         {
             /*
-             * Add a trigger if none exists, otherwise delete it.  is_adding()
-             * is set on a right-click with no trigger under the mouse, and
-             * unset when the right-click is released.
+             * Add a trigger if none exists, otherwise delete it.
              */
 
             perf().add_or_delete_trigger(m_drop_sequence, m_drop_tick);
@@ -173,18 +178,12 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
         else
         {
             /*
-             *  Let's make better use of the Ctrl key here.  Let Ctrl-left be
-             *  handled exactly like the middle click (split the
-             *  segment/trigger), then bug out.  Middle click in seq24 mouse
-             *  mode is either for splitting the triggers or for setting the
-             *  paste location of copy/paste.  The "a_or_b_trigger()" functions
-             *  check the trigger status of the sequence to decide what to do.
+             *  See main notes in banner about Ctrl and Shift click support.
              */
 
             if (is_ctrl_key(ev))
             {
                 perf().paste_or_split_trigger(m_drop_sequence, m_drop_tick);
-                // set_adding_pressed(false);   // ???
                 result = true;
             }
             else if (is_shift_key(ev))
@@ -196,32 +195,38 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
                     result = true;
                 }
             }
+            else if (! in_seq && ! in_trigger)
+            {
+                /*
+                 * Turn on selection mode and clear the selection and boxes.
+                 */
+
+                selecting(true);
+                m_old.set(m_drop_x, m_drop_y, 0, 0);
+                m_selected.set(m_drop_x, m_drop_y, 0, 0);
+
+                // NOT YET WRITTEN
+                //
+                // box_selection_clear();
+            }
             else
             {
                 perf().box_deselect_sequences(m_drop_sequence);
+                m_have_button_press =
+                    perf().select_trigger(m_drop_sequence, m_drop_tick);
+
                 check_handles();
                 if (! m_growing)
                 {
-                    // We don't want to unselect unless this trigger is
-                    // already selected and the shift-key is used.
-                    //
-                    // perf().unselect_all_triggers();
+                    /*
+                     * We don't want to unselect unless this trigger is
+                     * already selected and the shift-key (???) is used.
+                     */
 
                     if (in_trigger)
                         perf().box_insert(m_drop_sequence, m_drop_tick);
                 }
-
-#ifdef USE_SONG_BOX_SELECT
-                if (! m_box_select)                 /* select with a box    */
-                {
-                    perf().unselect_all_triggers();
-                    snap_y(m_drop_y);               /* y snapped to rows    */
-                    m_current_x = m_drop_x;
-                    m_current_y = m_drop_y;
-                    m_box_select = true;
-                }
-#endif
-                result = true;              // do we need a redraw yet?
+                result = true;              /* do we need a redraw yet? */
             }
         }
     }
@@ -229,9 +234,15 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
     {
         if (is_ctrl_key(ev))
         {
+            /*
+             * No action at this time.
+             */
         }
         else if (is_shift_key(ev))
         {
+            /*
+             * No action at this time.
+             */
         }
         else
         {
@@ -259,10 +270,6 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
         {
             activate_adding(true);
             perf().unselect_all_triggers();
-
-#ifdef USE_SONG_BOX_SELECT
-            m_box_select = false;
-#endif
         }
     }
     (void) perfroll::on_button_press_event(ev);
@@ -471,35 +478,33 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev)
     bool result = false;
     if (SEQ64_CLICK_LEFT(ev->button))
     {
-        if (is_adding())
-            set_adding_pressed(false);
+        if (is_adding())                    /* we are in "paint" mode...    */
+            set_adding_pressed(false);      /* ... and now we are not       */
 
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
+        selecting(false);
+        m_last_tick = 0;                    // ????
+#endif
+
+#ifdef USE_SONG_BOX_SELECT              /// STILL DISABLED, too complex
+
+        if (selecting())               /* calculate selected seqs in box   */
+        {
+            int x, y, w, h;             /* window dimension side-effects    */
+            midipulse tick_s, tick_f;
+            m_current_x = ev->x;
+            m_current_y = ev->y;
+            snap_y(m_current_y);
+            rect::xy_to_rect_get
+            (
+                m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h
+            );
+            convert_xy(x,     y, tick_s, m_box_select_low);
+            convert_xy(x+w, y+h, tick_f, m_box_select_high);
             perf().select_triggers_in_range
             (
                 m_box_select_low, m_box_select_high, tick_s, tick_f
             );
-
-        if (m_box_select)      /* calculate selected seqs in box   */
-        {
-            int x, y, w, h;         /* window dimensions                */
-            midipulse tick_s;
-            midipulse tick_f;
-            m_current_x = ev->x;
-            m_current_y = ev->y;
-            snap_y(m_current_y);
-            rect::xy_to_rect_values
-            (
-                m_drop_x, m_drop_y,
-                m_current_x, m_current_y, x, y, w, h
-            );
-            convert_xy(x,     y, tick_s, m_box_select_low);
-            convert_xy(x+w, y+h, tick_f, m_box_select_high);
-
-            /*
-             * May need a "shift-select" version of this function as well.
-             */
-
         }
 #endif  // SEQ64_SONG_BOX_SELECT
     }
@@ -528,11 +533,6 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev)
     set_adding_pressed(false);
     m_effective_tick = 0;
 
-#ifdef USE_SONG_BOX_SELECT
-    m_box_select = false;
-    m_last_tick = 0;
-#endif
-
     if (perf().is_active(m_drop_sequence))
         draw_all();
 
@@ -541,7 +541,12 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev)
 }
 
 /**
- *  Handles the normal motion-notify event.
+ *  Handles the normal motion-notify event.  We now check to see if it is a
+ *  drag-motion (left/middle/right-click-drag) to avoid flickering when just
+ *  moving the mouse across the surface.
+ *
+ * \param ev
+ *      Provides a pointer to the motion event.
  *
  * \return
  *      Returns true if a modification occurs.  This function used to always
@@ -551,157 +556,178 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev)
 bool
 Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
 {
-    bool result = false;
-    int x = int(ev->x);
-    sequence * seq = perf().get_sequence(m_drop_sequence);
-    if (is_nullptr(seq))
-        return false;
-
-    midipulse tick;
-    if (is_adding() && is_adding_pressed())
+    bool result = is_drag_motion(ev);                   /* left click-drag  */
+    if (result)
     {
-        convert_x(x, tick);
+        int x = int(ev->x);
 
-        midipulse seqlength = seq->get_length();
+#ifdef SEQ64_SONG_BOX_SELECT
 
-#ifdef USE_SONG_RECORDING
-        if (perf().song_record_snap())         /* snap to seq length   */
-#endif
-            tick -= (tick % seqlength);
+        int y = int(ev->y);
 
-        // midipulse length = seqlength;
-
-        seq->grow_trigger(m_drop_tick, tick, seqlength);
-        draw_all();
-        result = true;
-    }
-    else if (m_moving || m_growing)
-    {
-        /*
-         * This code is necessary to insure that there is no push unless
-         * we have a motion notification.
-         */
-
-        if (m_have_button_press)
+        set_current_offset_x_y(int(ev->x), int(ev->y)); /* adj for scroll   */
+        if (is_left_drag(ev) && selecting())
         {
-            perf().push_trigger_undo(m_drop_sequence);
-            m_have_button_press = false;
+            m_selected.xy_to_rect(m_old.x(), m_old.y(), x, y);
+            draw_selection_on_window();
+            return true;
         }
+
+#endif
+
+        sequence * seq = perf().get_sequence(m_drop_sequence);
+        if (is_nullptr(seq))
+            return false;           // Do we want to clear m_selected here?
 
         midipulse tick;
-        convert_x(x, tick);
-        tick -= m_drop_tick_offset;
+        if (is_adding() && is_adding_pressed())
+        {
+            convert_x(x, tick);
+
+            midipulse seqlength = seq->get_length();
 
 #ifdef USE_SONG_RECORDING
-        if (perf().song_record_snap())         /* snap to seq length   */
+            if (perf().song_record_snap())         /* snap to seq length   */
 #endif
-            tick -= tick % m_snap_x;
+                tick -= (tick % seqlength);
 
-        if (m_moving)
+            // midipulse length = seqlength;
+
+            seq->grow_trigger(m_drop_tick, tick, seqlength);
+            draw_all();
+            result = true;
+        }
+        else if (m_moving || m_growing)
         {
-#ifdef USE_SONG_BOX_SELECT
-            if (m_last_tick != 0)
+            /*
+             * This code is necessary to insure that there is no push unless
+             * we have a motion notification.
+             */
+
+            if (m_have_button_press)
             {
-                for
-                (
-                    int seqid = m_box_select_low;
-                    seqid < m_box_select_high; ++seqid
-                )
+                perf().push_trigger_undo(m_drop_sequence);
+                m_have_button_press = false;
+            }
+
+            midipulse tick;
+            convert_x(x, tick);
+            tick -= m_drop_tick_offset;
+
+#ifdef USE_SONG_RECORDING
+            if (perf().song_record_snap())         /* snap to seq length   */
+#endif
+                tick -= tick % m_snap_x;
+
+            if (m_moving)
+            {
+#ifdef USE_SONG_BOX_SELECT
+                if (m_last_tick != 0)
                 {
-                    sequence * sq = perf().get_sequence(seqid);
-                    if (not_nullptr(sq))
+                    midipulse offset = -(m_last_tick - tick);
+
+                    /*
+                     * Move this loop to perform!
+                     */
+
+                    for
+                    (
+                        int seqid = m_box_select_low;
+                        seqid < m_box_select_high; ++seqid
+                    )
                     {
-                        seq->offset_selected_triggers_by(-(m_last_tick - tick));
+                        sequence * sq = perf().get_sequence(seqid);
+                        if (not_nullptr(sq))
+                        {
+                            seq->offset_selected_triggers_by(offset);
+                        }
                     }
                 }
-            }
 #else
 #ifdef SEQ64_SONG_BOX_SELECT
-            /////// perf().move_selected_triggers(tick);
-            ///////
-            /////// Currently this is needed to get the single trigger to
-            /////// move, albeit only after the mouse is released.
-            seq->move_selected_triggers_to(tick, true);
+                /////// perf().move_selected_triggers(tick);
+                ///////
+                /////// Currently this is needed to get the single trigger to
+                /////// move, albeit only after the mouse is released.
+                seq->move_selected_triggers_to(tick, true);
 #else
-            seq->move_selected_triggers_to(tick, true);
+                seq->move_selected_triggers_to(tick, true);
 #endif
 #endif
-            result = true;
+                result = true;
+            }
+            if (m_growing)
+            {
+                if (m_grow_direction)
+                {
+#ifdef USE_SONG_BOX_SELECT
+                    if (m_last_tick != 0)
+                    {
+                        for
+                        (
+                            int seqid = m_box_select_low;
+                            seqid < m_box_select_high; ++seqid
+                        )
+                        {
+                            sequence * sq = perf().get_sequence(seqid);
+                            if (not_nullptr(sq))
+                            {
+                                sq->offset_selected_triggers_by
+                                (
+                                    -(m_last_tick - tick), triggers::GROW_START
+                                );
+                            }
+                        }
+                    }
+#else
+                    seq->move_selected_triggers_to(tick, false, triggers::GROW_START);
+#endif
+                }
+                else
+                {
+#ifdef USE_SONG_BOX_SELECT
+                    if (m_last_tick != 0)
+                    {
+                        for
+                        (
+                            int seqid = m_box_select_low;
+                            seqid < m_box_select_high; ++seqid
+                        )
+                        {
+                            sequence * sq = perf().get_sequence(seqid);
+                            if (not_nullptr(sq))
+                            {
+                                sq->offset_selected_triggers_by
+                                (
+                                    -(m_last_tick - tick), triggers::GROW_END
+                                );
+                            }
+                        }
+                    }
+#else
+                    seq->move_selected_triggers_to
+                    (
+                        tick - 1, false, triggers::GROW_END
+                    );
+#endif
+                }
+                result = true;
+            }
+            draw_all();
         }
-        if (m_growing)
+#ifdef USE_SONG_BOX_SELECT
+        else if (selecting())
         {
-            if (m_grow_direction)
-            {
-#ifdef USE_SONG_BOX_SELECT
-                if (m_last_tick != 0)
-                {
-                    for
-                    (
-                        int seqid = m_box_select_low;
-                        seqid < m_box_select_high; ++seqid
-                    )
-                    {
-                        sequence * sq = get_sequence(seqid);
-                        if (not_nullptr(sq))
-                        {
-                            sq->offset_selected_triggers_by
-                            (
-                                -(m_last_tick - tick), triggers::GROW_START
-                            );
-                        }
-                    }
-                }
-#else
-                seq->move_selected_triggers_to
-                (
-                    tick, false, triggers::GROW_START
-                );
-#endif
-            }
-            else
-            {
-#ifdef USE_SONG_BOX_SELECT
-                if (m_last_tick != 0)
-                {
-                    for
-                    (
-                        int seqid = m_box_select_low;
-                        seqid < m_box_select_high; ++seqid
-                    )
-                    {
-                        sequence * sq = get_sequence(seqid);
-                        if (not_nullptr(sq))
-                        {
-                            sq->offset_selected_triggers_by
-                            (
-                                -(m_last_tick - tick), triggers::GROW_END
-                            );
-                        }
-                    }
-                }
-#else
-                seq->move_selected_triggers_to
-                (
-                    tick - 1, false, triggers::GROW_END
-                );
-#endif
-            }
-            result = true;
+            m_current_x = ev->x;
+            m_current_y = ev->y;
+            snap_y(m_current_y);
+            convert_xy(0, m_current_y, tick, m_drop_sequence);
         }
-        draw_all();
-    }
-#ifdef USE_SONG_BOX_SELECT
-    else if (m_box_select)
-    {
-        m_current_x = ev->x;
-        m_current_y = ev->y;
-        snap_y(m_current_y);
-        convert_xy(0, m_current_y, tick, m_drop_sequence);
-    }
-    m_last_tick = tick;
+        m_last_tick = tick;
 #endif
 
-    (void) perfroll::on_motion_notify_event(ev);
+        (void) perfroll::on_motion_notify_event(ev);
+    }
     return result;
 }
 
@@ -843,13 +869,13 @@ Seq24PerfInput::check_handles ()
     int ydrop = m_drop_y % c_names_y;
 
     /*
-     * Check for a corner drag (on the small box at the left of
+     * Check for a corner drag (on the small box at the left of the trigger
+     * segment.
      */
 
     if
     (
-        m_drop_tick >= tick0 &&
-        m_drop_tick <= (tick0 + m_w_scale_x) &&
+        m_drop_tick >= tick0 && m_drop_tick <= (tick0 + m_w_scale_x) &&
         ydrop <= (sm_perfroll_size_box_click_w + 1)
     )
     {
@@ -859,8 +885,7 @@ Seq24PerfInput::check_handles ()
     }
     else if
     (
-        m_drop_tick >= (tick1 - m_w_scale_x) &&
-        m_drop_tick <= tick1 &&
+        m_drop_tick >= (tick1 - m_w_scale_x) && m_drop_tick <= tick1 &&
         ydrop >= (c_names_y - sm_perfroll_size_box_click_w - 1)
     )
     {

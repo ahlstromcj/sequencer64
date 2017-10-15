@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-03
+ * \updates       2017-10-08
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -160,7 +160,6 @@ seqroll::seqroll
     m_selected              (),
     m_seq                   (seq),
     m_seqkeys_wid           (seqkeys_wid),
-//  m_fruity_interaction    (),
     m_pos                   (pos),
     m_zoom                  (zoom),
     m_snap                  (snap),
@@ -202,7 +201,7 @@ seqroll::seqroll
     m_cc                    (0)
 {
     m_ppqn = choose_ppqn(ppqn);
-    clear_old();
+    m_old.clear();
 
     /*
      * These calls don't seem to work in the constructor.  They do in
@@ -303,6 +302,30 @@ seqroll::update_sizes ()
 }
 
 /**
+ *  Sets the horizontal scroll value according to the current value of the
+ *  horizontal scroll-bar.
+ */
+
+void
+seqroll::set_scroll_x ()
+{
+    m_scroll_offset_ticks = int(m_hadjust.get_value());
+    m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+}
+
+/**
+ *  Sets the vertical scroll value according to the current value of the
+ *  vertical scroll-bar.
+ */
+
+void
+seqroll::set_scroll_y ()
+{
+    m_scroll_offset_key = int(m_vadjust.get_value());
+    m_scroll_offset_y = m_scroll_offset_key * c_key_y;
+}
+
+/**
  *  Change the horizontal scrolling offset and redraw.  Roughly similar to
  *  seqevent::change_horz().
  */
@@ -310,16 +333,7 @@ seqroll::update_sizes ()
 void
 seqroll::change_horz ()
 {
-    m_scroll_offset_ticks = int(m_hadjust.get_value());
-    m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
-
-    /*
-     * Not needed:
-     *
-     * if (m_ignore_redraw)
-     *     return;
-     */
-
+    set_scroll_x();
     update_and_draw(true);
 }
 
@@ -330,16 +344,7 @@ seqroll::change_horz ()
 void
 seqroll::change_vert ()
 {
-    m_scroll_offset_key = int(m_vadjust.get_value());
-    m_scroll_offset_y = m_scroll_offset_key * c_key_y;
-
-    /*
-     * Not needed:
-     *
-     * if (m_ignore_redraw)
-     *     return;
-     */
-
+    set_scroll_y();
     update_and_draw(true);
 }
 
@@ -352,16 +357,7 @@ seqroll::change_vert ()
 void
 seqroll::reset ()
 {
-    m_scroll_offset_ticks = int(m_hadjust.get_value());
-    m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
-
-    /*
-     * Not needed:
-     *
-     * if (m_ignore_redraw)
-     *     return;
-     */
-
+    set_scroll_x();
     update_sizes();
     update_and_draw();
 }
@@ -376,8 +372,7 @@ seqroll::reset ()
 void
 seqroll::redraw ()
 {
-    m_scroll_offset_ticks = int(m_hadjust.get_value());
-    m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+    set_scroll_x();
     update_and_draw(true);
 }
 
@@ -408,13 +403,6 @@ seqroll::update_and_draw (int force)
 void
 seqroll::redraw_events ()
 {
-    /*
-     * Not needed:
-     *
-     * if (m_ignore_redraw)
-     *     return;
-     */
-
     update_pixmap();
     force_draw();
 }
@@ -997,17 +985,12 @@ seqroll::draw_selection_on_window ()
     set_line(Gdk::LINE_SOLID, thickness);       /* set_line_attributes()    */
     if (select_action())                        /* select, grow, drop       */
     {
-        // x = m_old.x;
-        // y = m_old.y;
-        // w = m_old.width;
-        // h = m_old.height;
-
         m_old.get(x, y, w, h);                      /* get rectangle        */
         draw_drawable(x, y, x, y, w + 1, h + 1);    /* erase old rectangle  */
     }
     if (selecting())
     {
-        rect::xy_to_rect_values
+        rect::xy_to_rect_get
         (
             m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h
         );
@@ -1020,11 +1003,6 @@ seqroll::draw_selection_on_window ()
         m_selected.get(x, y, w, h);                 /* selected rectangle   */
         x += m_current_x - m_drop_x - m_scroll_offset_x;
         y += m_current_y - m_drop_y - m_scroll_offset_y;
-
-        // x = m_selected.x() + m_current_x - m_drop_x - m_scroll_offset_x;
-        // y = m_selected.y() + m_current_y - m_drop_y - m_scroll_offset_y;
-        // w = m_selected.width();
-        // h = m_selected.height();
     }
     if (growing())
     {
@@ -1033,12 +1011,6 @@ seqroll::draw_selection_on_window ()
         x -= m_scroll_offset_x;
         y -= m_scroll_offset_y;
         w += delta_x;
-
-        // x = m_selected.x() - m_scroll_offset_x;
-        // y = m_selected.y() - m_scroll_offset_y;
-        // w = delta_x + m_selected.width();
-        // h = m_selected.height();
-
         if (w < 1)
             w = 1;
     }
@@ -1048,11 +1020,6 @@ seqroll::draw_selection_on_window ()
 #else
     draw_rectangle(dark_orange(), x, y, w, h, false);
 #endif
-
-    // m_old.x = x;
-    // m_old.y = y;
-    // m_old.width = w;
-    // m_old.height = h;
 
     m_old.set(x, y, w, h);
 }
@@ -1118,76 +1085,6 @@ seqroll::convert_tn (midipulse tick, int note, int & x, int & y)
     y = c_rollarea_y - ((note + 1) * c_key_y) - 1;
 }
 
-#if 0
-
-/**
- *  Converts rectangle corner coordinates to a starting coordinate, plus a
- *  width and height.  This function checks the mins / maxes, and then fills
- *  in the x, y, width, and height values.
- *
- *  We should refactor this function to use the utility class seqroll::rect as
- *  the destination for the conversion.
- *
- * \todo
- *      Currently a duplicate of perfroll::xy_to_rect().  Needs to be moved
- *      to the calculations module.
- *
- * \param x1
- *      The x value of the first corner.
- *
- * \param y1
- *      The y value of the first corner.
- *
- * \param x2
- *      The x value of the second corner.
- *
- * \param y2
- *      The y value of the second corner.
- *
- * \param [out] x
- *      The destination for the x value in pixels.
- *
- * \param [out] y
- *      The destination for the y value in pixels.
- *
- * \param [out] w
- *      The destination for the rectangle width in pixels.
- *
- * \param [out] h
- *      The destination for the rectangle height value in pixels.
- */
-
-void
-seqroll::xy_to_rect
-(
-    int x1, int y1, int x2, int y2,
-    int & x, int & y, int & w, int & h
-)
-{
-    if (x1 < x2)
-    {
-        x = x1;
-        w = x2 - x1;
-    }
-    else
-    {
-        x = x2;
-        w = x1 - x2;
-    }
-    if (y1 < y2)
-    {
-        y = y1;
-        h = y2 - y1;
-    }
-    else
-    {
-        y = y2;
-        h = y1 - y2;
-    }
-}
-
-#endif  // 0
-
 /**
  *  Converts a tick/note box to an x/y rectangle.
  *
@@ -1229,8 +1126,7 @@ seqroll::convert_tn_box_to_rect
     int x1, y1, x2, y2;
     convert_tn(tick_s, note_h, x1, y1);     /* convert box to X,Y values */
     convert_tn(tick_f, note_l, x2, y2);
-//  rect::xy_to_rect(x1, y1, x2, y2, x, y, w, h);
-    rect::xy_to_rect_values(x1, y1, x2, y2, x, y, w, h);
+    rect::xy_to_rect_get(x1, y1, x2, y2, x, y, w, h);
     h += c_key_y;
 }
 
@@ -1265,13 +1161,13 @@ seqroll::convert_tn_box_to_rect
     int x1, y1, x2, y2;
     convert_tn(tick_s, note_h, x1, y1);     /* convert box to X,Y values */
     convert_tn(tick_f, note_l, x2, y2);
-//  rect::xy_to_rect(x1, y1, x2, y2, x, y, w, h);
     rect::xy_to_rect(x1, y1, x2, y2, r);
     r.incr_height(c_key_y);
 }
 
 /**
  *  A convenience function wrapping a common call to convert_tn_box_to_rect().
+ *  We made a version taking a reference to an seq64::rect.
  *
  * \param tick_s
  *      The starting tick of the rectangle.
@@ -1292,16 +1188,7 @@ seqroll::convert_sel_box_to_rect
     midipulse tick_s, midipulse tick_f, int note_h, int note_l
 )
 {
-    /*
-     * \todo
-     *      We could make a version taking a reference to a rect.
-     */
-
-    convert_tn_box_to_rect
-    (
-        tick_s, tick_f, note_h, note_l, m_selected
-//      m_selected.x(), m_selected.y(), m_selected.width(), m_selected.height()
-    );
+    convert_tn_box_to_rect(tick_s, tick_f, note_h, note_l, m_selected);
 }
 
 /**
@@ -1354,9 +1241,6 @@ seqroll::start_paste ()
     convert_sel_box_to_rect(tick_s, tick_f, note_h, note_l);
     m_selected.x_incr(m_drop_x);
     m_selected.y(m_drop_y);
-
-    // m_selected.x += m_drop_x;
-    // m_selected.y = m_drop_y;
 }
 
 /**
@@ -1552,18 +1436,11 @@ seqroll::update_mouse_pointer (bool adding)
     midipulse s, f;                     // start, end;
     int note;                           // midibyte
     if (normal_action())
-    {
         get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
-    }
     else if (adding)
-    {
         get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
-    }
-    if
-    (
-         m_seq.intersect_notes(droptick, dropnote, s, f, note) &&
-         note == dropnote
-    )
+
+    if (m_seq.intersect_notes(droptick, dropnote, s, f, note) && note == dropnote)
     {
         long hsize = m_seq.handle_size(s, f);
         if (droptick >= (f - hsize) && droptick <= f)
@@ -1634,14 +1511,14 @@ seqroll::button_press_initial
 )
 {
     bool needs_update = false;
-    snapped_x = scroll_offset_x(int(ev->x));
-    snapped_y = scroll_offset_y(int(ev->y));
+    snapped_x = scroll_offset_x(int(ev->x));        /* side-effect          */
+    snapped_y = scroll_offset_y(int(ev->y));        /* side-effect          */
     norm_x = snapped_x;                             /* side-effect          */
     grab_focus();
     snap_x(snapped_x);                              /* side-effect          */
     snap_y(snapped_y);                              /* side-effect          */
     set_current_drop_y(snapped_y);                  /* y is always snapped  */
-    clear_old();
+    m_old.clear();
     if (m_paste)                /* ctrl-v pressed, ready for click to paste */
     {
         complete_paste(snapped_x, snapped_y);
@@ -1846,7 +1723,7 @@ seqroll::button_release (GdkEventButton * ev)
         if (m_selecting)
         {
             int x, y, w, h;
-            rect::xy_to_rect_values
+            rect::xy_to_rect_get
             (
                 m_drop_x, m_drop_y, m_current_x, m_current_y,
                 x, y, w, h
@@ -2085,23 +1962,7 @@ seqroll::on_button_press_event (GdkEventButton * ev)
         perf().set_follow_transport(false);
         m_trans_button_press = true;
     }
-
-    bool result;
-//  if (rc().interaction_method() == e_seq24_interaction)
-        result = button_press(ev);
-//  else
-//      result = m_fruity_interaction.on_button_press_event(ev, *this);
-
-    /*
-     * MODIFY FIX?  Why modify just because of a button_press?  If we leave this
-     * active, then even just selecting notes makes the application prompt for
-     * saving upon exit.
-     *
-     * if (result)
-     *     perf().modify();
-     */
-
-    return result;
+    return button_press(ev);
 }
 
 /**
@@ -2123,12 +1984,7 @@ seqroll::on_button_press_event (GdkEventButton * ev)
 bool
 seqroll::on_button_release_event (GdkEventButton * ev)
 {
-    bool result;
-//  if (rc().interaction_method() == e_seq24_interaction)
-        result = button_release(ev);
-//  else
-//      result = m_fruity_interaction.on_button_release_event(ev, *this);
-
+    bool result = button_release(ev);
     perf().set_follow_transport(m_transport_follow);
     m_trans_button_press = false;
     return result;
@@ -2149,21 +2005,7 @@ seqroll::on_button_release_event (GdkEventButton * ev)
 bool
 seqroll::on_motion_notify_event (GdkEventMotion * ev)
 {
-    bool result;
-//  if (rc().interaction_method() == e_seq24_interaction)
-        result = motion_notify(ev);
-//  else
-//      result = m_fruity_interaction.on_motion_notify_event(ev, *this);
-
-    /*
-     * MODIFY FIX?  If we leave this active, then even just selecting notes
-     * makes the application prompt for saving upon exit.
-     *
-     * if (result)
-     *    perf().modify();
-     */
-
-    return result;
+    return motion_notify(ev);
 }
 
 /**
@@ -2370,23 +2212,8 @@ seqroll::on_key_press_event (GdkEventKey * ev)
                 if (m_paste)
                     complete_paste(m_current_x, m_current_y);
 
-                /*
-                 * Do we just want to call clear_flags() here?
-                 *
-                 *  if (m_growing)
-                 *      m_growing = false;
-                 *
-                 *  if (m_moving)
-                 *      m_moving = false;
-                 *
-                 *  m_selecting = false;
-                 *
-                 * Do we want to clear the selection?  We could paste them
-                 * again somewhere else.
-                 */
-
                 clear_flags();
-                clear_selected();
+                m_selected.clear();
                 m_seq.unselect();
                 result = true;
             }

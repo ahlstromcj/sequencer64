@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-10-14
+ * \updates       2017-10-15
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -896,7 +896,7 @@ perform::select_group_mute (int mutegroup)
 #endif
 }
 
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
 
 /**
  *  Selects the set of triggers bounded by a low and high sequence number and
@@ -934,7 +934,7 @@ perform::select_triggers_in_range
     }
 }
 
-#endif      // USE_SONG_BOX_SELECT
+#endif      // SEQ64_SONG_BOX_SELECT
 
 /**
  *
@@ -3368,7 +3368,7 @@ perform::split_trigger (int seqnum, midipulse tick)
     if (not_nullptr(s))
     {
         push_trigger_undo(seqnum);
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
         s->half_split_trigger(tick);
 #else
         s->split_trigger(tick);

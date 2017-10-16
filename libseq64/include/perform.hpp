@@ -2281,12 +2281,14 @@ public:
 
 #endif  // USE_SONG_RECORDING
 
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
+
     void select_triggers_in_range
     (
         int seq_low, int seq_high,
         midipulse tick_start, midipulse tick_finish
     );
+
 #endif
 
     bool select_trigger (int dropseq, midipulse droptick);

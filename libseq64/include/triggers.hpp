@@ -442,7 +442,7 @@ public:
     void adjust_offsets_to_length (midipulse newlen);
     void split (midipulse tick);
 
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
     void half_split (midipulse tick);
     void exact_split (midipulse tick);
 #endif
@@ -506,7 +506,7 @@ public:
 
 private:
 
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
     void offset_selected_by (midipulse tick, grow_edit_t editmode);
 #endif
 

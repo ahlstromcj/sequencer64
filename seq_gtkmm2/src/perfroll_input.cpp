@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-02
+ * \updates       2017-10-16
  * \license       GNU GPLv2 or above
  *
  *  Now derived directly from perfroll.  No more AbstractPerfInput and no more
@@ -149,137 +149,6 @@ Seq24PerfInput::activate_adding (bool adding)
  * \return
  *      Returns true if a modification occurred, necessitating a redraw.
  */
-
-#ifdef SEQ64_SONG_BOX_SELECT
-
-bool
-Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
-{
-    bool result = false;
-    m_drop_x = int(ev->x);
-    m_drop_y = int(ev->y);
-    convert_drop_xy();                      /* drop x, y to tick, sequence  */
-    grab_focus();                           /* needed to get keystrokes     */
-
-    bool in_seq = perf().is_active(m_drop_sequence);
-    bool in_trigger = perf().intersect_triggers(m_drop_sequence, m_drop_tick);
-    if (SEQ64_CLICK_LEFT(ev->button))
-    {
-        if (is_adding())                    /* are we in "paint" mode?      */
-        {
-            /*
-             * Add a trigger if none exists, otherwise delete it.
-             */
-
-            perf().add_or_delete_trigger(m_drop_sequence, m_drop_tick);
-            set_adding_pressed(true);
-            result = true;
-        }
-        else
-        {
-            /*
-             *  See main notes in banner about Ctrl and Shift click support.
-             */
-
-            if (is_ctrl_key(ev))
-            {
-                perf().paste_or_split_trigger(m_drop_sequence, m_drop_tick);
-                result = true;
-            }
-            else if (is_shift_key(ev))
-            {
-                if (in_trigger)
-                {
-                    perf().box_toggle_sequence(m_drop_sequence, m_drop_tick);
-                    perf().box_insert(m_drop_sequence, m_drop_tick);
-                    result = true;
-                }
-            }
-            else if (! in_seq && ! in_trigger)
-            {
-                /*
-                 * Turn on selection mode and clear the selection and boxes.
-                 */
-
-                selecting(true);
-                m_old.set(m_drop_x, m_drop_y, 0, 0);
-                m_selected.set(m_drop_x, m_drop_y, 0, 0);
-
-                // NOT YET WRITTEN
-                //
-                // box_selection_clear();
-            }
-            else
-            {
-                perf().box_deselect_sequences(m_drop_sequence);
-                m_have_button_press =
-                    perf().select_trigger(m_drop_sequence, m_drop_tick);
-
-                check_handles();
-                if (! m_growing)
-                {
-                    /*
-                     * We don't want to unselect unless this trigger is
-                     * already selected and the shift-key (???) is used.
-                     */
-
-                    if (in_trigger)
-                        perf().box_insert(m_drop_sequence, m_drop_tick);
-                }
-                result = true;              /* do we need a redraw yet? */
-            }
-        }
-    }
-    else if (SEQ64_CLICK_MIDDLE(ev->button))
-    {
-        if (is_ctrl_key(ev))
-        {
-            /*
-             * No action at this time.
-             */
-        }
-        else if (is_shift_key(ev))
-        {
-            /*
-             * No action at this time.
-             */
-        }
-        else
-        {
-            /*
-             * Same treatment as Ctrl-Left click above.
-             */
-
-            perf().paste_or_split_trigger(m_drop_sequence, m_drop_tick);
-            result = true;
-        }
-    }
-    else if (SEQ64_CLICK_RIGHT(ev->button))
-    {
-        if (is_ctrl_key(ev))
-        {
-            if (! in_trigger)
-                perf().unselect_all_triggers();
-        }
-        else if (is_shift_key(ev))
-        {
-            if (! in_trigger)
-                perf().unselect_all_triggers();
-        }
-        else
-        {
-            activate_adding(true);
-            perf().unselect_all_triggers();
-        }
-    }
-    (void) perfroll::on_button_press_event(ev);
-    if (result)
-        draw_all();
-
-    return result;
-}
-
-#else               // all old stuff, no new features
 
 bool
 Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
@@ -462,11 +331,12 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
     return result;
 }
 
-#endif  // SEQ64_SONG_BOX_SELECT
-
 /**
  *  Handles various button-release events.
  *  Any use for the middle-button or ctrl-left-click we can add?
+ *
+ * \param ev
+ *      The button event to be handles as a button-release.
  *
  * \return
  *      Returns true if any modification occurred.
@@ -478,17 +348,12 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev)
     bool result = false;
     if (SEQ64_CLICK_LEFT(ev->button))
     {
-        if (is_adding())                    /* we are in "paint" mode...    */
-            set_adding_pressed(false);      /* ... and now we are not       */
+        if (is_adding())                /* we were in "paint" mode...       */
+            set_adding_pressed(false);  /* ... and now we are not           */
 
-#ifdef SEQ64_SONG_BOX_SELECT
-        selecting(false);
-        m_last_tick = 0;                    // ????
-#endif
+#ifdef SEQ64_SONG_BOX_SELECT_XXX
 
-#ifdef USE_SONG_BOX_SELECT              /// STILL DISABLED, too complex
-
-        if (selecting())               /* calculate selected seqs in box   */
+        if (selecting())                /* calculate selected seqs in box   */
         {
             int x, y, w, h;             /* window dimension side-effects    */
             midipulse tick_s, tick_f;
@@ -505,8 +370,10 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev)
             (
                 m_box_select_low, m_box_select_high, tick_s, tick_f
             );
+            m_last_tick = 0;                    // ????
+            selecting(false);
         }
-#endif  // SEQ64_SONG_BOX_SELECT
+#endif  // SEQ64_SONG_BOX_SELECT_XXX
     }
     else if (SEQ64_CLICK_RIGHT(ev->button))
     {
@@ -561,7 +428,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
     {
         int x = int(ev->x);
 
-#ifdef SEQ64_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT_XXX
 
         int y = int(ev->y);
 
@@ -570,7 +437,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
         {
             m_selected.xy_to_rect(m_old.x(), m_old.y(), x, y);
             draw_selection_on_window();
-            return true;
+            // return true;
         }
 
 #endif
@@ -590,8 +457,6 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
             if (perf().song_record_snap())         /* snap to seq length   */
 #endif
                 tick -= (tick % seqlength);
-
-            // midipulse length = seqlength;
 
             seq->grow_trigger(m_drop_tick, tick, seqlength);
             draw_all();
@@ -621,7 +486,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
 
             if (m_moving)
             {
-#ifdef USE_SONG_BOX_SELECT
+#ifdef USE_SONG_BOX_SELECT                          // TODO
                 if (m_last_tick != 0)
                 {
                     midipulse offset = -(m_last_tick - tick);
@@ -638,21 +503,11 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
                     {
                         sequence * sq = perf().get_sequence(seqid);
                         if (not_nullptr(sq))
-                        {
                             seq->offset_selected_triggers_by(offset);
-                        }
                     }
                 }
 #else
-#ifdef SEQ64_SONG_BOX_SELECT
-                /////// perf().move_selected_triggers(tick);
-                ///////
-                /////// Currently this is needed to get the single trigger to
-                /////// move, albeit only after the mouse is released.
                 seq->move_selected_triggers_to(tick, true);
-#else
-                seq->move_selected_triggers_to(tick, true);
-#endif
 #endif
                 result = true;
             }
@@ -660,7 +515,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
             {
                 if (m_grow_direction)
                 {
-#ifdef USE_SONG_BOX_SELECT
+#ifdef USE_SONG_BOX_SELECT                      // TODO
                     if (m_last_tick != 0)
                     {
                         for
@@ -685,7 +540,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
                 }
                 else
                 {
-#ifdef USE_SONG_BOX_SELECT
+#ifdef USE_SONG_BOX_SELECT                      // TODO
                     if (m_last_tick != 0)
                     {
                         for
@@ -715,7 +570,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
             }
             draw_all();
         }
-#ifdef USE_SONG_BOX_SELECT
+#ifdef USE_SONG_BOX_SELECT                      // TODO
         else if (selecting())
         {
             m_current_x = ev->x;
@@ -817,7 +672,7 @@ Seq24PerfInput::handle_motion_key (bool is_left)
         midipulse tick = m_effective_tick - m_drop_tick_offset;
         tick -= tick % m_snap_x;
 
-#ifdef SEQ64_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT_XXX
 
         perf().box_move_selected_triggers(tick);
 

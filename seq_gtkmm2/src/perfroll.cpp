@@ -158,7 +158,7 @@ perfroll::perfroll
     m_drop_sequence         (0),
     m_sequence_max          (c_max_sequence),
     m_sequence_active       (),                             // [c_max_sequence]
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
     m_old                   (),                             // seq64::rect
     m_selected              (),                             // seq64::rect
     m_box_select            (false),
@@ -230,7 +230,7 @@ perfroll::change_horz ()
     long current_offset = long(m_hadjust.get_value()) * m_ticks_per_bar;
     if (m_4bar_offset != current_offset)
     {
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
         m_scroll_offset_x = int(m_hadjust.get_value()) / m_zoom;
 #endif
         m_4bar_offset = current_offset;
@@ -257,7 +257,7 @@ perfroll::change_vert ()
     {
         m_drop_y += (m_sequence_offset - vvalue) * m_names_y;
         m_sequence_offset = vvalue;
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
         m_scroll_offset_y = int(m_vadjust.get_value()) * m_names_y;
 #endif
         enqueue_draw();
@@ -442,7 +442,7 @@ perfroll::set_guides (int snap, int measure, int beat)
 void
 perfroll::enqueue_draw ()
 {
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
     if (m_box_select)
         draw_selection_on_window();
 #endif
@@ -896,7 +896,7 @@ perfroll::draw_drawable_row (int y)
     }
 }
 
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
 
 /**
  *  Draws the current mouse-selection box on the main perfroll window.  Note
@@ -934,7 +934,7 @@ perfroll::draw_selection_on_window ()
 #endif
 }
 
-#endif  // USE_SONG_BOX_SELECT
+#endif  // SEQ64_SONG_BOX_SELECT
 
 /**
  *  Provides a very common sequence of calls used in perfroll_input.

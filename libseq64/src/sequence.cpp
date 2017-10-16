@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-29
+ * \updates       2017-10-15
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -3652,7 +3652,7 @@ sequence::split_trigger (midipulse splittick)
     m_triggers.split(splittick);
 }
 
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
 
 /**
  *
@@ -3676,7 +3676,7 @@ sequence::exact_split_trigger (midipulse splittick)
     m_triggers.exact_split(splittick);
 }
 
-#endif  // USE_SONG_BOX_SELECT
+#endif  // SEQ64_SONG_BOX_SELECT
 
 
 /**
@@ -3820,7 +3820,7 @@ sequence::move_selected_triggers_to
     return m_triggers.move_selected(tick, adjustoffset, which);
 }
 
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
 
 /**
  *  Used in the song-sequence grid TODO TODO TODO

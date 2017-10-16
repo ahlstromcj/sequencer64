@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.94.0 and above
 Chris Ahlstrom
-2015-09-10 to 2017-10-01
+2015-09-10 to 2017-10-15
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -449,7 +449,6 @@ MANUALLY-DEFINED MACROS IN CODE:
         USE_SEQUENCE_COLOR
         USE_SEQUENCE_EDIT_MODE
         USE_SONG_RECORDING
-        USE_SONG_BOX_SELECT
 
         Some of these are defined (or undefined) in
         libseq64/include/seq64_features.h.

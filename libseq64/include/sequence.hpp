@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-09-28
+ * \updates       2017-10-15
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1420,7 +1420,7 @@ public:
         midipulse tick, bool adjust_offset,
         triggers::grow_edit_t which = triggers::GROW_MOVE
     );
-#ifdef USE_SONG_BOX_SELECT
+#ifdef SEQ64_SONG_BOX_SELECT
     void offset_selected_triggers_by
     (
         midipulse tick, triggers::grow_edit_t editmode = triggers::GROW_MOVE

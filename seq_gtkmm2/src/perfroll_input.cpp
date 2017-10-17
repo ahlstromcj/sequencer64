@@ -250,52 +250,7 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
         }
         else
         {
-            /*
-             * Set this flag to tell on_motion_notify_event() to call
-             * perf().push_trigger_undo().  This section handles motions of the
-             * held mouse that grow or shrink the selected trigger, or else
-             * the moving of the selected trigger.
-             */
-
-            m_have_button_press = seq->select_trigger(m_drop_tick);
-
-            midipulse tick0 = seq->selected_trigger_start();
-            midipulse tick1 = seq->selected_trigger_end();
-            int ydrop = m_drop_y % c_names_y;
-
-            /*
-             * Check for a corner drag (on the small box at the left of the
-             * trigger segment) to "grow" the sequence start.  Otherwise,
-             * check for a corner drag (on the small box at the right of the
-             * sequence) to "grow" the sequence end.  Otherwise, we are moving
-             * the sequence.
-             */
-
-            if
-            (
-                m_drop_tick >= tick0 && m_drop_tick <= (tick0 + m_w_scale_x) &&
-                ydrop <= sm_perfroll_size_box_click_w + 1
-            )
-            {
-                m_growing = true;
-                m_grow_direction = true;
-                m_drop_tick_offset = m_drop_tick - seq->selected_trigger_start();
-            }
-            else if
-            (
-                m_drop_tick >= (tick1 - m_w_scale_x) && m_drop_tick <= tick1 &&
-                ydrop >= c_names_y - sm_perfroll_size_box_click_w - 1
-            )
-            {
-                m_growing = true;
-                m_grow_direction = false;
-                m_drop_tick_offset = m_drop_tick - seq->selected_trigger_end();
-            }
-            else    // if (m_drop_tick >= start_tick && m_drop_tick <= end_tick)
-            {
-                m_moving = true;
-                m_drop_tick_offset = m_drop_tick - seq->selected_trigger_start();
-            }
+            check_handles();
             draw_all();
         }
     }

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2017-09-16
+ * \updates       2017-10-22
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -316,6 +316,13 @@ private:
     List m_triggers;
 
     /**
+     *  Holds a count of the selected triggers, for better control over
+     *  selections.
+     */
+
+    int m_number_selected;
+
+    /**
      *  This item holds a single copied trigger, to be pasted later.
      */
 
@@ -425,6 +432,24 @@ public:
         return m_triggers;
     }
 
+    /**
+     * \getter m_triggers.size()
+     */
+
+    int count () const
+    {
+        return int(m_triggers.size());
+    }
+
+    /**
+     * \getter m_number_selected
+     */
+
+    int number_selected () const
+    {
+        return m_number_selected;
+    }
+
     void push_undo ();
     void pop_undo ();
     void pop_redo ();
@@ -451,6 +476,7 @@ public:
     void remove (midipulse tick);
     bool get_state (midipulse tick) const;
     bool select (midipulse tick);
+    bool unselect (midipulse tick);
     bool unselect ();
     bool intersect (midipulse position, midipulse & start, midipulse & end);
     bool intersect (midipulse position);
@@ -470,12 +496,13 @@ public:
     void copy (midipulse starttick, midipulse distance);
 
     /**
-     *  Clears the whole list of triggers.
+     *  Clears the whole list of triggers, and zeroes the number selected.
      */
 
     void clear ()
     {
         m_triggers.clear();
+        m_number_selected = 0;
     }
 
     bool next
@@ -511,7 +538,9 @@ private:
 #endif
 
     midipulse adjust_offset (midipulse offset);
-    void split (trigger & trig, midipulse splittick);
+    void split (trigger & t, midipulse splittick);
+    void select (trigger & t);
+    void unselect (trigger & t);
 
 };          // class triggers
 

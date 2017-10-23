@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2017-10-15
+ * \updates       2017-10-22
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -83,6 +83,7 @@ triggers::triggers (sequence & parent)
  :
     m_parent                    (parent),
     m_triggers                  (),
+    m_number_selected           (0),
     m_clipboard                 (),
     m_undo_stack                (),
     m_redo_stack                (),
@@ -158,7 +159,7 @@ triggers::push_undo ()                  // was push_trigger_undo ()
         i != m_undo_stack.top().end(); ++i
     )
     {
-        i->selected(false);
+        unselect(*i);                   // i->selected(false);
     }
 }
 
@@ -416,7 +417,7 @@ triggers::add
 {
     trigger t;
     t.offset(fixoffset ? adjust_offset(offset) : offset);
-    t.selected(false);
+    unselect(t);                            // t.selected(false);
     t.tick_start(tick);
     t.tick_end(tick + len - 1);
 
@@ -432,8 +433,9 @@ triggers::add
     {
         if (i->tick_start() >= t.tick_start() && i->tick_end() <= t.tick_end())
         {
-            m_triggers.erase(i);                /* inside the new one? erase  */
-            i = m_triggers.begin();             /* THERE IS A BETTER WAY      */
+            unselect(*i);                       /* adjust selection count    */
+            m_triggers.erase(i);                /* inside the new one? erase */
+            i = m_triggers.begin();             /* THERE IS A BETTER WAY     */
             continue;
         }
         else if (i->tick_end() >= t.tick_end() && i->tick_start() <= t.tick_end())
@@ -561,6 +563,7 @@ triggers::remove (midipulse tick)
     {
         if (i->tick_start() <= tick && tick <= i->tick_end())
         {
+            unselect(*i);                       /* adjust selection count    */
             m_triggers.erase(i);
             break;
         }
@@ -784,7 +787,7 @@ triggers::copy (midipulse starttick, midipulse distance)
             midipulse tickend = i->tick_end();
             trigger t;
             t.offset(i->offset());
-            t.selected(false);
+            // unnecessary: unselect(t);     // t.selected(false);
             t.tick_start(tickstart - distance);
             if (tickend <= from_end_tick)
                 t.tick_end(tickend - distance);
@@ -844,6 +847,7 @@ triggers::move (midipulse starttick, midipulse distance, bool direction)
             i->tick_end() <= endtick && ! direction
         )
         {
+            unselect(*i);                       /* adjust selection count    */
             m_triggers.erase(i);
             i = m_triggers.begin();                     /* A BETTER WAY? */
         }
@@ -1104,9 +1108,9 @@ triggers::get_state (midipulse tick) const
 }
 
 /**
- *  Checks the list of triggers against the given tick.  If any
- *  trigger is found to bracket that tick, then true is returned, and
- *  the trigger is marked as selected.
+ *  Selects the desired trigger.  Checks the list of triggers against the given
+ *  tick.  If any trigger is found to bracket that tick, then true is returned,
+ *  and the trigger is marked as selected.
  *
  * \param tick
  *      Provides the tick of interest.
@@ -1123,7 +1127,7 @@ triggers::select (midipulse tick)
     {
         if (i->tick_start() <= tick && tick <= i->tick_end())
         {
-            i->selected(true);
+            select(*i);                     // i->selected(true);
             result = true;
         }
     }
@@ -1131,7 +1135,34 @@ triggers::select (midipulse tick)
 }
 
 /**
- *      Unselects all triggers.
+ *  Unselects the desired trigger.  Checks the list of triggers against the
+ *  given tick.  If any trigger is found to bracket that tick, then true is
+ *  returned, and the trigger is marked as unselected.
+ *
+ * \param tick
+ *      Provides the tick of interest.
+ *
+ * \return
+ *      Returns true if a trigger is found that brackets the given tick.
+ */
+
+bool
+triggers::unselect (midipulse tick)
+{
+    bool result = false;
+    for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
+    {
+        if (i->tick_start() <= tick && tick <= i->tick_end())
+        {
+            unselect(*i);                   // i->selected(false);
+            result = true;
+        }
+    }
+    return result;
+}
+
+/**
+ *      Unselects all triggers for the sequence.
  *
  * \return
  *      Always returns false.
@@ -1141,7 +1172,7 @@ bool
 triggers::unselect ()
 {
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
-        i->selected(false);
+        unselect(*i);                       // i->selected(false);
 
     return false;
 }
@@ -1157,6 +1188,7 @@ triggers::remove_selected ()
     {
         if (i->selected())
         {
+            unselect(*i);               /* this adjusts the selection count */
             m_triggers.erase(i);
             break;
         }
@@ -1296,6 +1328,49 @@ triggers::next_trigger ()
 }
 
 /**
+ *  Selects the given trigger and increments the count of selected triggers if
+ *  appropriate.  Don't confuse this function with select(midipulse).
+ *
+ * \param t
+ *      Provides a reference to the desired trigger.
+ */
+
+void
+triggers::select (trigger & t)
+{
+    if (! t.selected())
+    {
+        t.selected(true);
+        ++m_number_selected;
+    }
+}
+
+/**
+ *  Unselects the given trigger and decrements the count of selected triggers if
+ *  appropriate.  Don't confuse this function with unselect(midipulse).
+ *
+ * \param t
+ *      Provides a reference to the desired trigger.
+ */
+
+void
+triggers::unselect (trigger & t)
+{
+    if (t.selected())
+    {
+        t.selected(false);
+        if (m_number_selected > 0)
+        {
+            --m_number_selected;
+        }
+        else
+        {
+            errprint("trigger unselect yields count error");
+        }
+    }
+}
+
+/**
  *  Prints a list of the currently-held triggers.
  *
  * \param seqname
@@ -1305,7 +1380,11 @@ triggers::next_trigger ()
 void
 triggers::print (const std::string & seqname) const
 {
-    printf("sequence '%s' triggers:\n", seqname.c_str());
+    printf
+    (
+        "sequence '%s' triggers (%d selected):\n",
+        seqname.c_str(), number_selected()
+    );
     for (List::const_iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
         printf

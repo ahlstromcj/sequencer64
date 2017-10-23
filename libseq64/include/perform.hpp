@@ -1606,8 +1606,9 @@ public:
 #ifdef SEQ64_SONG_BOX_SELECT
 
     bool selection_operation (SeqOperation func);
+    void box_insert (int dropseq);
     void box_insert (int dropseq, midipulse droptick);
-    void box_delete (int dropseq);
+    void box_delete (int dropseq, midipulse droptick);
     void box_toggle_sequence (int dropseq, midipulse droptick);
     void box_deselect_sequences (int dropseq);
     void box_move_selected_triggers (midipulse tick);

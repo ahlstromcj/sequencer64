@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-10-15
+ * \updates       2017-10-23
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -552,7 +552,31 @@ perform::selection_operation (SeqOperation func)
 }
 
 /**
+ *  Unconditionally inserts the sequence into the box container.  Used for
+ *  actions that have already selected the trigger.  It does not change the
+ *  trigger count.
  *
+ * \param dropseq
+ *      The sequence to operate on.
+ */
+
+void
+perform::box_insert (int dropseq)
+{
+    sequence * s = get_sequence(dropseq);
+    if (not_nullptr(s))
+        m_selected_seqs.insert(dropseq);
+}
+
+/**
+ *  Selects the desired trigger for this sequence.  If this is the first
+ *  selection, then the sequence is inserted into the box container.
+ *
+ * \param dropseq
+ *      The sequence to operate on.
+ *
+ * \param droptick
+ *      Indicates the trigger to be selected.
  */
 
 void
@@ -561,23 +585,36 @@ perform::box_insert (int dropseq, midipulse droptick)
     sequence * s = get_sequence(dropseq);
     if (not_nullptr(s))
     {
-        (void) s->select_trigger(droptick);
-        m_selected_seqs.insert(dropseq);
+        bool can_add_seq = s->selected_trigger_count() == 0;
+        if (s->select_trigger(droptick))            /* able to select?      */
+        {
+            if (can_add_seq)
+                m_selected_seqs.insert(dropseq);
+        }
     }
 }
 
 /**
+ *  Unselects only the desired trigger for this sequence.  If there are no
+ *  more selected triggers for this sequence, then the sequence is erased from
+ *  the box container.
  *
+ * \param dropseq
+ *      The sequence to operate on.
+ *
+ * \param droptick
+ *      Indicates the trigger to be unselected.
  */
 
 void
-perform::box_delete (int dropseq)
+perform::box_delete (int dropseq, midipulse droptick)
 {
     sequence * s = get_sequence(dropseq);
     if (not_nullptr(s))
     {
-        s->unselect_triggers();
-        m_selected_seqs.erase(dropseq);
+        s->unselect_trigger(droptick);
+        if (s->trigger_count() == 0)
+            m_selected_seqs.erase(dropseq);
     }
 }
 
@@ -596,13 +633,7 @@ perform::box_toggle_sequence (int dropseq, midipulse droptick)
 {
     Selection::const_iterator s = m_selected_seqs.find(dropseq);
     if (s != m_selected_seqs.end())
-    {
-        // sequence * found = get_sequence(*s);        /* should be good   */
-        // found->unselect_triggers();
-        // m_selected_seqs.erase(s);
-
-        box_delete(*s);
-    }
+        box_delete(*s, droptick);
     else
         box_insert(dropseq, droptick);
 }
@@ -2192,7 +2223,7 @@ perform::is_exportable (int seq) const
     const sequence * s = get_sequence(seq);
     bool ok = not_nullptr(s);
     if (ok)
-        ok = ! s->get_song_mute() && s->get_trigger_count() > 0;
+        ok = ! s->get_song_mute() && s->trigger_count() > 0;
 
     return ok;
 }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-16
+ * \updates       2017-10-23
  * \license       GNU GPLv2 or above
  *
  *  Now derived directly from perfroll.  No more AbstractPerfInput and no more
@@ -102,22 +102,49 @@ Seq24PerfInput::activate_adding (bool adding)
 }
 
 /**
- *  Handles the normal variety of button-press event.  Is there any easy way
- *  to use ctrl-left-click as the middle button here?
+ *  Initial unselection:
  *
- *  convert_drop_xy() uses m_drop_x and m_drop_y, and sets m_drop_tick and
- *  m_drop_sequence.  It gets the sequence number of the pattern clicked.  It
- *  doesn't matter which button was clicked.
+ *      This code causes the un-greying of the previously selected trigger
+ *      segment.  If commented out, then we can seemingly select more than one
+ *      trigger segment, but only the last one "selected" can be moved.  We'd
+ *      like to be able to select and move a bunch at once by holding a modifier
+ *      key.
  *
- *  The is_adding() status is set on a right-click with no trigger under the
- *  mouse, and unset when the right-click is released.
+ *  convert_drop_xy():
  *
- *  Note the is_ctrl_key() test.  We make better use of the Ctrl key here.  Let
- *  Ctrl-left be handled exactly like the middle click (split the
- *  segment/trigger), then bug out.  Middle click in seq24 mouse mode is either
- *  for splitting the triggers or for setting the paste location of copy/paste.
- *  The "a_or_b_trigger()" functions check the trigger status of the sequence to
- *  decide what to do, so that the caller doesn't have to do those checks.
+ *      convert_drop_xy() uses m_drop_x and m_drop_y, and sets m_drop_tick and
+ *      m_drop_sequence.  It gets the sequence number of the pattern clicked.
+ *      It doesn't matter which button was clicked.
+ *
+ *  is_adding():
+ *
+ *      The is_adding() status is set on a right-click with no trigger under the
+ *      mouse, and unset when the right-click is released.
+ *
+ *  Ctrl key:
+ *
+ *      Note the is_ctrl_key() test.  We make better use of the Ctrl key here.
+ *      Let Ctrl-left be handled exactly like the middle click (split the
+ *      segment/trigger), then bug out.  Middle click in seq24 mouse mode is
+ *      either for splitting the triggers or for setting the paste location of
+ *      copy/paste.  The "a_or_b_trigger()" functions check the trigger status
+ *      of the sequence to decide what to do, so that the caller doesn't have to
+ *      do those checks.
+ *
+ *  Shift key:
+ *
+ *      TODO.
+ *
+ *  No modifier key:
+ *
+ *      Add a new sequence if nothing is selected.  The adding flag is set on a
+ *      right-click where there is no trigger under the mouse, and is unset when
+ *      the right-click is released [if not in allow_mod4_mode()].
+ *
+ *  Mouse buttons:
+ *
+ *      The middle click in seq24 interaction mode is either for splitting the
+ *      triggers or for setting the paste location of copy/paste.
  *
  * Stazed:
  *
@@ -157,132 +184,107 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
     sequence * seq = perf().get_sequence(m_drop_sequence);
     bool dropseq_active = not_nullptr(seq);
     grab_focus();
-
-    /*
-     * This code causes the un-greying of the previously selected trigger
-     * segment.  If commented out, then we can seemingly select more than one
-     * trigger segment, but only the last one "selected" can be moved.  We'd
-     * like to be able to select and move a bunch at once by holding a
-     * modifier key.
-     */
-
-    if (dropseq_active)
+    if (dropseq_active && ! is_shift_key(ev))       /* initial unselection  */
     {
         seq->unselect_triggers();
-        draw_all();
+        result = true;                      ////////// draw_all();
     }
-
-    /*
-     * convert_drop_xy() uses m_drop_x and m_drop_y, and sets m_drop_tick and
-     * m_drop_sequence.  It gets the sequence number of the pattern clicked.
-     * It doesn't matter which button was clicked here.
-     */
-
     m_drop_x = int(ev->x);
     m_drop_y = int(ev->y);
-
-    /*
-     * This call can change m_drop_sequence, so we have to make the checks
-     * again.
-     */
-
-    convert_drop_xy();
+    convert_drop_xy();                              /* set the m_drop_xxx's */
     seq = perf().get_sequence(m_drop_sequence);
     dropseq_active = not_nullptr(seq);
-    if (! dropseq_active)
-        return false;
 
-    /*
-     *  Let's make better use of the Ctrl key here.  First, let Ctrl-Left be
-     *  handled exactly like the Middle click (it causes the segment/trigger
-     *  to be split), then bug out.  Note that this middle-click code ought to
-     *  be folded into a function.
-     */
+#ifdef SEQ64_SONG_BOX_SELECT
+    bool in_seq = perf().is_active(m_drop_sequence);
+    bool in_trigger = perf().intersect_triggers(m_drop_sequence, m_drop_tick);
+#else
+    if (! dropseq_active)
+        return result;
+#endif
 
     if (is_ctrl_key(ev))
     {
         if (SEQ64_CLICK_LEFT(ev->button))
         {
-            bool state = seq->get_trigger_state(m_drop_tick);
-            if (state)
-            {
-                perf().split_trigger(m_drop_sequence, m_drop_tick);  // perf()!
-            }
-            else
-            {
-                perf().push_trigger_undo(m_drop_sequence);
-                seq->paste_trigger(m_drop_tick);
-            }
-        }
-        return true;
-    }
-
-    if (SEQ64_CLICK_LEFT(ev->button))
-    {
-        /*
-         * Add a new sequence if nothing is selected.  The adding flag is set
-         * on a right-click where there is no trigger under the mouse, and is
-         * unset when the right-click is released [if not in
-         * allow_mod4_mode()].
-         */
-
-        if (is_adding())
-        {
-            set_adding_pressed(true);
-
-            // MAKE SURE that seq cannot be nullptr!!
-
-            midipulse seqlength = seq->get_length();
-            bool state = seq->get_trigger_state(m_drop_tick);
-            if (state)
-            {
-                perf().push_trigger_undo(m_drop_sequence);   /* stazed fix   */
-                seq->delete_trigger(m_drop_tick);
-            }
-            else
-            {
-                m_drop_tick -= (m_drop_tick % seqlength);    /* snap         */
-                perf().push_trigger_undo(m_drop_sequence);   /* stazed fix   */
-                seq->add_trigger(m_drop_tick, seqlength);
-                draw_all();
-            }
+            perf().paste_or_split_trigger(m_drop_sequence, m_drop_tick);
             result = true;
         }
-        else
+#ifdef SEQ64_SONG_BOX_SELECT_XXX
+        else if (SEQ64_CLICK_RIGHT(ev->button) && ! in_trigger)
         {
-            check_handles();
-            draw_all();
+            perf().unselect_all_triggers();
+            result = true;                      // may cause "modify()" !!!
         }
+#endif
     }
-    else if (SEQ64_CLICK_RIGHT(ev->button))
+    else if (is_shift_key(ev))
     {
-        activate_adding(true);
-    }
-    else if (SEQ64_CLICK_MIDDLE(ev->button))                   /* split    */
-    {
-        /*
-         * The middle click in seq24 interaction mode is either for splitting
-         * the triggers or for setting the paste location of copy/paste.
-         */
+        // CURRENT ISSUES:
+        //
+        //  - Shift-click sometimes doesn't toggle a trigger segment.
+        //  - Regular click doesn't unselect all the other selected segments.
 
-        if (perf().is_active(m_drop_sequence))
+#ifdef SEQ64_SONG_BOX_SELECT
+        if (SEQ64_CLICK_LEFT(ev->button))
         {
-            bool state = seq->get_trigger_state(m_drop_tick);
-            if (state)
+            if (in_trigger)
             {
-                seq->split_trigger(m_drop_tick);
+                perf().box_toggle_sequence(m_drop_sequence, m_drop_tick);
+//              perf().box_insert(m_drop_sequence, m_drop_tick);
+                result = true;
+            }
+        }
+        else if (SEQ64_CLICK_RIGHT(ev->button))
+        {
+            if (! in_trigger)
+            {
+                perf().unselect_all_triggers();
+                result = true;
+            }
+        }
+#endif
+    }
+    else                                /* no modifier key pressed  */
+    {
+        if (SEQ64_CLICK_LEFT(ev->button))
+        {
+            if (is_adding())
+            {
+                set_adding_pressed(true);
+                perf().add_or_delete_trigger(m_drop_sequence, m_drop_tick);
+                draw_all();
                 result = true;
             }
             else
             {
-                perf().push_trigger_undo(m_drop_sequence);
-                seq->paste_trigger(m_drop_tick);
-
-                // Should we add this:  result = true;
+                if (check_handles())                /* can select trigger!  */
+                {
+                    draw_all();
+                    result = true;                  /* sequence inserted    */
+                }
             }
+        }
+        else if (SEQ64_CLICK_MIDDLE(ev->button))    /* split like Ctrl-left */
+        {
+            perf().paste_or_split_trigger(m_drop_sequence, m_drop_tick);
+            result = true;
+        }
+        else if (SEQ64_CLICK_RIGHT(ev->button))
+        {
+            activate_adding(true);
+#ifdef SEQ64_SONG_BOX_SELECT_XXX
+            perf().unselect_all_triggers();
+#endif
+            result = true;
         }
     }
     (void) perfroll::on_button_press_event(ev);
+#ifdef SEQ64_SONG_BOX_SELECT_XXX
+    if (result)
+        draw_all();
+#endif
+
     return result;
 }
 
@@ -627,7 +629,7 @@ Seq24PerfInput::handle_motion_key (bool is_left)
         midipulse tick = m_effective_tick - m_drop_tick_offset;
         tick -= tick % m_snap_x;
 
-#ifdef SEQ64_SONG_BOX_SELECT_XXX
+#ifdef SEQ64_SONG_BOX_SELECT
 
         perf().box_move_selected_triggers(tick);
 
@@ -665,16 +667,22 @@ Seq24PerfInput::handle_motion_key (bool is_left)
  *  segment) to "grow" the sequence start.  Otherwise, check for a corner drag
  *  (on the small box at the right of the sequence) to "grow" the sequence end.
  *  Otherwise, we are moving the sequence.
+ *
+ * \return
+ *      Returns true if the mouse pointer is inside a trigger handle.
  */
 
-void
+bool
 Seq24PerfInput::check_handles ()
 {
+    bool result = false;
     midipulse tick0, tick1;
     m_have_button_press = perf().selected_trigger
     (
         m_drop_sequence, m_drop_tick, tick0, tick1  /* side-effects */
     );
+    if (m_have_button_press)
+        perf().box_insert(m_drop_sequence);
 
     int ydrop = m_drop_y % c_names_y;
 
@@ -692,6 +700,7 @@ Seq24PerfInput::check_handles ()
         m_growing = true;
         m_grow_direction = true;
         m_drop_tick_offset = m_drop_tick - tick0;
+        result = true;
     }
     else if
     (
@@ -702,12 +711,14 @@ Seq24PerfInput::check_handles ()
         m_growing = true;
         m_grow_direction = false;
         m_drop_tick_offset = m_drop_tick - tick1;
+        result = true;
     }
     else // if (m_drop_tick >= start_tick && m_drop_tick <= end_tick)
     {
         m_moving = true;                            // how can we know this?
         m_drop_tick_offset = m_drop_tick - tick0;
     }
+    return result;
 }
 
 }           // namespace seq64

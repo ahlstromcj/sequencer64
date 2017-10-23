@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-30
+ * \updates       2017-10-20
  * \license       GNU GPLv2 or above
  *
  *  Now refactored to be derived from perfroll directly; no more passing
@@ -97,7 +97,7 @@ protected:
     virtual void activate_adding (bool a_adding);
     virtual bool handle_motion_key (bool is_left);
 
-    void check_handles ();
+    bool check_handles ();
 
 protected:
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-15
+ * \updates       2017-10-22
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -3805,7 +3805,7 @@ sequence::selected_trigger_end ()
  *      Selects which movement will be done, as discussed above.
  *
  * \return
- *      Returns the value of triggers::move_selected(), which indicate
+ *      Returns the value of triggers::move_selected(), which indicates
  *      that the movement could be made.  Used in
  *      Seq24PerfInput::handle_motion_key().
  */
@@ -3908,6 +3908,22 @@ sequence::select_trigger (midipulse tick)
 }
 
 /**
+ *  Unselects the desired trigger.
+ *
+ * \param tick
+ *      Indicates the trigger to be unselected.
+ */
+
+bool
+sequence::unselect_trigger (midipulse tick)
+{
+    automutex locker(m_mutex);
+    return m_triggers.unselect(tick);
+}
+
+
+
+/**
  *  Unselects all triggers.
  *
  * \return
@@ -3939,9 +3955,8 @@ sequence::delete_selected_trigger ()
 void
 sequence::cut_selected_trigger ()
 {
-    copy_selected_trigger();            /* locks itself */
-
     automutex locker(m_mutex);
+    copy_selected_trigger();                    /* locks itself (recursive) */
     m_triggers.remove_selected();
 }
 

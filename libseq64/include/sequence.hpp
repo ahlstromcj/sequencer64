@@ -205,7 +205,7 @@ private:
     event_list m_events;
 
     /**
-     *  The triggers associated with the sequence, used in the
+     *  Holds the list of triggers associated with the sequence, used in the
      *  performance/song editor.
      */
 
@@ -716,9 +716,19 @@ public:
      *  Gets the trigger count, useful for exporting a sequence.
      */
 
-    int get_trigger_count () const
+    int trigger_count () const
     {
-        return int(m_triggers.triggerlist().size());
+        return int(m_triggers.count());
+    }
+
+    /**
+     *  Gets the number of selected triggers.  That is, selected in the
+     *  perfroll.
+     */
+
+    int selected_trigger_count () const
+    {
+        return m_triggers.number_selected();
     }
 
     /**
@@ -1398,6 +1408,7 @@ public:
     bool get_trigger_state (midipulse tick) const;
     bool select_trigger (midipulse tick);
     triggers::List get_triggers () const;
+    bool unselect_trigger (midipulse tick);
     bool unselect_triggers ();
     bool intersect_triggers (midipulse pos, midipulse & start, midipulse & end);
     bool intersect_triggers (midipulse pos);
@@ -1420,13 +1431,14 @@ public:
         midipulse tick, bool adjust_offset,
         triggers::grow_edit_t which = triggers::GROW_MOVE
     );
+
 #ifdef SEQ64_SONG_BOX_SELECT
     void offset_selected_triggers_by
     (
         midipulse tick, triggers::grow_edit_t editmode = triggers::GROW_MOVE
-        // trigger_edit
     );
 #endif
+
     midipulse selected_trigger_start ();
     midipulse selected_trigger_end ();
     midipulse get_max_trigger ();

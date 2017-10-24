@@ -169,7 +169,7 @@ Seq24PerfInput::activate_adding (bool adding)
  *          current drop sequence and add it to the set.
  *      -   Click with at least one *other* sequence selected will unselect
  *          the others and select the current sequence.
- *      -   Click or Shift-Click outside a sequence will deselect them all.
+ *      -   Click or Shift-Click outside a sequence will unselect them all.
  *      -   Shift-Click will leave the other selected sequences alone and add
  *          the current drop sequence.
  *
@@ -184,11 +184,14 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
     sequence * seq = perf().get_sequence(m_drop_sequence);
     bool dropseq_active = not_nullptr(seq);
     grab_focus();
+#ifdef SEQ64_SONG_BOX_SELECT
+#else
     if (dropseq_active && ! is_shift_key(ev))       /* initial unselection  */
     {
         seq->unselect_triggers();
         result = true;                      ////////// draw_all();
     }
+#endif
     m_drop_x = int(ev->x);
     m_drop_y = int(ev->y);
     convert_drop_xy();                              /* set the m_drop_xxx's */
@@ -410,7 +413,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
 
             midipulse seqlength = seq->get_length();
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
             if (perf().song_record_snap())         /* snap to seq length   */
 #endif
                 tick -= (tick % seqlength);
@@ -436,7 +439,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
             convert_x(x, tick);
             tick -= m_drop_tick_offset;
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
             if (perf().song_record_snap())         /* snap to seq length   */
 #endif
                 tick -= tick % m_snap_x;
@@ -460,11 +463,11 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
                     {
                         sequence * sq = perf().get_sequence(seqid);
                         if (not_nullptr(sq))
-                            seq->offset_selected_triggers_by(offset);
+                            seq->offset_triggers(offset);
                     }
                 }
 #else
-                seq->move_selected_triggers_to(tick, true);
+                seq->move_triggers(tick, true);
 #endif
                 result = true;
             }
@@ -484,7 +487,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
                             sequence * sq = perf().get_sequence(seqid);
                             if (not_nullptr(sq))
                             {
-                                sq->offset_selected_triggers_by
+                                sq->offset_triggers
                                 (
                                     -(m_last_tick - tick), triggers::GROW_START
                                 );
@@ -492,14 +495,17 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
                         }
                     }
 #else
-                    seq->move_selected_triggers_to(tick, false, triggers::GROW_START);
+                    seq->move_triggers(tick, false, triggers::GROW_START);
 #endif
                 }
                 else
                 {
+                    triggers::grow_edit_t growend = triggers::GROW_END;
+
 #ifdef USE_SONG_BOX_SELECT                      // TODO
                     if (m_last_tick != 0)
                     {
+                        midipulse offset = tick - m_last_tick;
                         for
                         (
                             int seqid = m_box_select_low;
@@ -508,19 +514,11 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
                         {
                             sequence * sq = perf().get_sequence(seqid);
                             if (not_nullptr(sq))
-                            {
-                                sq->offset_selected_triggers_by
-                                (
-                                    -(m_last_tick - tick), triggers::GROW_END
-                                );
-                            }
+                                sq->offset_triggers(offset, growend);
                         }
                     }
 #else
-                    seq->move_selected_triggers_to
-                    (
-                        tick - 1, false, triggers::GROW_END
-                    );
+                    seq->move_triggers(tick - 1, false, growend);
 #endif
                 }
                 result = true;
@@ -556,7 +554,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
  *  m_drop_tick_offset = m_drop_tick - (drop sequence)->selected_trigger_start().
  *  The motion handler sees that m_moving is true, gets the new tick
  *  value from the new x value, offsets it, and calls
- *  (drop sequence)->move_selected_triggers_to(tick, true).
+ *  (drop sequence)->move_triggers(tick, true).
  *  When the user releases the left button, then m_growing is turned off
  *  and the roll draw_all()'s.
  *
@@ -570,7 +568,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
  *
  * \return
  *      Returns true if there was some action able to happen that would
- *      necessitate a window update.  We've updated triggers::move_selected()
+ *      necessitate a window update.  We've updated triggers::move_triggers()
  *      [called indirectly near the end of this routine] to return false if no
  *      more movement could be made.  This prevents this routine from moving
  *      way ahead after movement of the selected (in the user-interface)
@@ -631,19 +629,19 @@ Seq24PerfInput::handle_motion_key (bool is_left)
 
 #ifdef SEQ64_SONG_BOX_SELECT
 
-        perf().box_move_selected_triggers(tick);
+        perf().box_move_triggers(tick);
 
 #else
 
         /*
          * Hmmmm, this overrides any result setting above.  Due to issues with
-         * triggers::move_selected(), this always returns true.  Let's ignore
+         * triggers::move_triggers(), this always returns true.  Let's ignore
          * the return value for now.
          */
 
         sequence * sq = perf().get_sequence(m_drop_sequence);
         if (not_nullptr(sq))
-            (void) sq->move_selected_triggers_to(tick, true);
+            (void) sq->move_triggers(tick, true);
 #endif
 
     }

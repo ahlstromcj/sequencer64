@@ -86,7 +86,7 @@
  *  Sequencer64.  Currently builds but is incomplete and not tested.
  */
 
-#undef  USE_SONG_RECORDING
+#define SEQ64_SONG_RECORDING
 
 /**
  *  Kepler34 allows the user to select (and move) more than one sequence in

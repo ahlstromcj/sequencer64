@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2017-10-22
+ * \updates       2017-10-23
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -230,17 +230,17 @@ triggers::play
 (
     midipulse & start_tick,
     midipulse & end_tick
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
     , bool resume_note_ons
 #endif
 )
 {
     bool result = false;                    /* turns off after frame play   */
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
     midipulse tick = start_tick;            /* saved for later              */
 #endif
 
-#ifdef USE_SONG_RECORDING_XXX               // INVESTIGATE...
+#ifdef SEQ64_SONG_RECORDING_XXX               // INVESTIGATE...
     if (song_recording())
     {
         grow_trigger(m_parent.song_recording_tick(), end_tick, 10);
@@ -254,7 +254,7 @@ triggers::play
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 
         /*
          * If we've reached a new chunk of drawn sequences in the song data,
@@ -270,7 +270,7 @@ triggers::play
             m_parent.song_playback_block(false);
         }
 
-#endif  // USE_SONG_RECORDING
+#endif  // SEQ64_SONG_RECORDING
 
         if (i->tick_start() <= end_tick)
         {
@@ -293,7 +293,7 @@ triggers::play
      */
 
     bool ok = trigger_state != m_parent.get_playing();
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
     if (ok)
         ok = ! m_parent.song_playback_block();
 #endif
@@ -309,7 +309,7 @@ triggers::play
 
             m_parent.set_playing(true);
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 
             /*
              * If we have triggered between a Note On and a Note Off, then
@@ -333,7 +333,7 @@ triggers::play
     }
 
     bool offplay = m_triggers.size() == 0 && m_parent.get_playing();
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
     if (offplay)
         offplay = ! m_parent.song_playback_block();
 #endif
@@ -669,7 +669,7 @@ triggers::exact_split (midipulse splittick)
     }
 }
 
-#endif	// USE_SONG_RECORDING
+#endif	// SEQ64_SONG_RECORDING
 
 /**
  *  Adjusts trigger offsets to the length specified for all triggers, and undo
@@ -1041,7 +1041,7 @@ triggers::move_selected (midipulse tick, bool fixoffset, grow_edit_t which)
 #ifdef SEQ64_SONG_BOX_SELECT
 
 void
-triggers::offset_selected_by (midipulse tick, grow_edit_t editmode)
+triggers::offset_selected (midipulse tick, grow_edit_t editmode)
 {
     List::iterator i = m_triggers.begin();
     while (i != m_triggers.end())

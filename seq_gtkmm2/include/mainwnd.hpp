@@ -384,7 +384,7 @@ private:
 
 #endif
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 
     /**
      *  Implements Oli Kester's Kepler34 Song-recording feature.
@@ -396,7 +396,7 @@ private:
      *  Implements Oli Kester's Kepler34 Song-recording snap feature.
      */
 
-    Gtk::Button * m_button_song_snap;
+    Gtk::ToggleButton * m_button_song_snap;
 
     /**
      *  Indicates if song recording is active.
@@ -404,7 +404,7 @@ private:
 
     bool m_is_song_recording;
 
-#endif  // USE_SONG_RECORDING
+#endif  // SEQ64_SONG_RECORDING
 
     /**
      *  This new item shows the current time into the song performance.
@@ -631,8 +631,9 @@ private:
     void toggle_tempo_record ();
     void queue_it ();
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
     void toggle_song_record ();
+    void toggle_song_snap ();
     void set_song_playback (bool playsong);
 
     void song_record_snap (bool snap)

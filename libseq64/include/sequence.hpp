@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-10-15
+ * \updates       2017-10-23
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -363,7 +363,7 @@ private:
 
     bool m_queued;
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 
     /**
      *  A member from the Kepler34 project ?
@@ -411,7 +411,7 @@ private:
 
     midipulse m_song_recording_tick;
 
-#endif  // USE_SONG_RECORDING
+#endif  // SEQ64_SONG_RECORDING
 
 #ifdef SEQ64_STAZED_EXPAND_RECORD
 
@@ -1249,7 +1249,7 @@ public:
         return m_thru;
     }
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 
     void off_one_shot ();
     void song_recording_start (midipulse tick, bool snap);
@@ -1330,7 +1330,7 @@ public:
     void resume_note_ons (midipulse tick);
     void toggle_one_shot ();
 
-#endif  // USE_SONG_RECORDING
+#endif  // SEQ64_SONG_RECORDING
 
     bool is_dirty_main ();
     bool is_dirty_edit ();
@@ -1361,7 +1361,7 @@ public:
     void print () const;
     void print_triggers () const;
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
     void play (midipulse tick, bool playback_mode, bool resume = false);
     void play_queue (midipulse tick, bool playbackmode, bool resume);
 #else
@@ -1426,16 +1426,17 @@ public:
     void cut_selected_trigger ();
     void copy_selected_trigger ();
     void paste_trigger (midipulse paste_tick = SEQ64_NO_PASTE_TRIGGER);
-    bool move_selected_triggers_to
+    bool move_triggers
     (
         midipulse tick, bool adjust_offset,
         triggers::grow_edit_t which = triggers::GROW_MOVE
     );
 
 #ifdef SEQ64_SONG_BOX_SELECT
-    void offset_selected_triggers_by
+    void offset_triggers
     (
-        midipulse tick, triggers::grow_edit_t editmode = triggers::GROW_MOVE
+        midipulse offset,
+        triggers::grow_edit_t editmode = triggers::GROW_MOVE
     );
 #endif
 
@@ -1802,7 +1803,7 @@ private:
             return true;
     }
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 
     /**
      * \setter m_one_shot
@@ -1858,7 +1859,7 @@ private:
         m_song_recording_tick = t;
     }
 
-#endif  // USE_SONG_RECORDING
+#endif      // SEQ64_SONG_RECORDING
 
 };          // class sequence
 

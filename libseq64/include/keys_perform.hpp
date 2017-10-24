@@ -117,7 +117,7 @@ struct keys_perform_transfer
     unsigned kpt_pointer_position;
     unsigned kpt_toggle_mutes;
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 
     /*
      * Kepler34 additions

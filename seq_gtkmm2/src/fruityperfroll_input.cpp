@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-13
- * \updates       2017-09-20
+ * \updates       2017-10-23
  * \license       GNU GPLv2 or above
  *
  *  Now derived directly Seq24PerfInput.  No more AbstractPerfInput and no
@@ -449,26 +449,16 @@ FruityPerfInput::on_motion_notify_event (GdkEventMotion * ev)
             tick -= tick % m_snap_x;
             if (m_moving)
             {
-                seq->move_selected_triggers_to(tick, true);
+                seq->move_triggers(tick, true);
                 result = true;
             }
             if (m_growing)
             {
                 result = true;
                 if (m_grow_direction)
-                {
-                    seq->move_selected_triggers_to
-                    (
-                        tick, false, triggers::GROW_START
-                    );
-                }
+                    seq->move_triggers(tick, false, triggers::GROW_START);
                 else
-                {
-                    seq->move_selected_triggers_to
-                    (
-                        tick - 1, false, triggers::GROW_END
-                    );
-                }
+                    seq->move_triggers(tick - 1, false, triggers::GROW_END);
             }
             draw_all();
         }

@@ -143,7 +143,7 @@
 #include "pixmaps/song_mode.xpm"            // need better/smaller icon
 #endif
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 #include "pixmaps/song_rec_off.xpm"
 #include "pixmaps/song_rec_on.xpm"
 #endif
@@ -336,9 +336,9 @@ mainwnd::mainwnd
 #ifdef SEQ64_SHOW_JACK_STATUS
     m_button_jack           (manage(new Gtk::Button("ALSA"))),
 #endif
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
     m_button_song_record    (manage(new Gtk::ToggleButton())),
-    m_button_song_snap      (manage(new Gtk::Button("S"))),
+    m_button_song_snap      (manage(new Gtk::ToggleButton("S"))),
     m_is_song_recording     (false),
 #endif
     m_tick_time             (manage(new Gtk::Label(""))),
@@ -614,28 +614,6 @@ mainwnd::mainwnd
     tophbox->pack_start(*m_button_jack, false, false);  /* no extra padding */
 #endif
 
-#ifdef USE_SONG_RECORDING
-
-    m_button_song_record->set_focus_on_click(false);
-    m_button_song_record->add(*manage(new PIXBUF_IMAGE(song_rec_on_xpm)));
-    m_button_song_record->signal_toggled().connect
-    (
-        mem_fun(*this, &mainwnd::toggle_song_record)
-    );
-    add_tooltip
-    (
-        m_button_song_record,
-        "Click this button to toggle the recording of live changes to the "
-        "song performance."
-    );
-    tophbox->pack_start(*m_button_song_record, false, false);  /* no padding */
-
-    ///////////////////////////////////////////////
-    // TODO:  add and pack the song-snap button as well.
-    ///////////////////////////////////////////////
-
-#endif
-
 #if defined SEQ64_MULTI_MAINWID
     tophbox->pack_start(*(manage(new Gtk::HSeparator())), false, false, 4);
     tophbox->pack_start(*m_status_label, false, false);  /* new */
@@ -748,6 +726,36 @@ mainwnd::mainwnd
     add_tooltip(m_button_play, "Start playback from the current location.");
     startstophbox->pack_start(*m_button_play, Gtk::PACK_SHRINK);
     m_button_play->set_sensitive(true);
+
+#ifdef SEQ64_SONG_RECORDING
+
+    m_button_song_record->set_focus_on_click(false);
+    m_button_song_record->add(*manage(new PIXBUF_IMAGE(song_rec_on_xpm)));
+    m_button_song_record->signal_toggled().connect
+    (
+        mem_fun(*this, &mainwnd::toggle_song_record)
+    );
+    add_tooltip
+    (
+        m_button_song_record,
+        "Click this button to toggle the recording of live changes to the "
+        "song performance."
+    );
+    startstophbox->pack_start(*m_button_song_record, false, false);
+
+    m_button_song_snap->set_focus_on_click(false);
+    m_button_song_snap->signal_toggled().connect
+    (
+        mem_fun(*this, &mainwnd::toggle_song_snap)
+    );
+    add_tooltip
+    (
+        m_button_song_snap,
+        "Click this button to toggle the snapping of live recording."
+    );
+    startstophbox->pack_start(*m_button_song_snap, false, false);
+
+#endif
 
     /*
      * BPM spin button with label.  Be sure to document that right-clicking on
@@ -1616,10 +1624,10 @@ mainwnd::jack_dialog ()
     m_options->show_all();
 }
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 
 /**
- *  Toggles the recording of the tempo.
+ *  Toggles the recording of the live song control done by the musician.
  */
 
 void
@@ -1637,6 +1645,18 @@ mainwnd::toggle_song_record ()
         Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_off_xpm));
         m_button_song_record->set_image(*image_song);
     }
+}
+
+/**
+ *  Toggles the recording of the live song control done by the musician.
+ */
+
+void
+mainwnd::toggle_song_snap ()
+{
+    // // TODO
+    // // TODO
+    // // TODO
 }
 
 /**
@@ -1661,7 +1681,7 @@ mainwnd::set_song_playback (bool playsong)
     }
 }
 
-#endif  // USE_SONG_RECORDING
+#endif  // SEQ64_SONG_RECORDING
 
 /**
  *  We are trying to work around an apparent Gtk+ bug (which occurs on my

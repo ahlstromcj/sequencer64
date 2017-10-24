@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-15
+ * \updates       2017-10-23
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -603,7 +603,7 @@ private:
 
     bool m_looping;
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 
     /**
      *  Indicates to record live sequence-trigger changes into the Song data.
@@ -1610,8 +1610,9 @@ public:
     void box_insert (int dropseq, midipulse droptick);
     void box_delete (int dropseq, midipulse droptick);
     void box_toggle_sequence (int dropseq, midipulse droptick);
-    void box_deselect_sequences (int dropseq);
-    void box_move_selected_triggers (midipulse tick);
+    void box_unselect_sequences (int dropseq);
+    void box_move_triggers (midipulse tick);
+    void box_offset_triggers (midipulse offset);
 
     /**
      * \getter m_selected_seqs.empty()
@@ -1664,7 +1665,7 @@ public:
      * \setter m_tick
      */
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
     void set_tick (midipulse tick);
 #else
     void set_tick (midipulse tick)
@@ -2259,7 +2260,7 @@ public:
         m_seqs_in_set = seqs;
     }
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 
     /*
      * This is a long-standing request from user's, adapted from Kepler34.
@@ -2280,7 +2281,7 @@ public:
         return m_resume_note_ons;
     }
 
-#endif  // USE_SONG_RECORDING
+#endif  // SEQ64_SONG_RECORDING
 
 #ifdef SEQ64_SONG_BOX_SELECT
 
@@ -2454,7 +2455,7 @@ private:
 
 #endif  // USE_SEQUENCE_EDIT_MODE
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 
     void song_recording_stop ();
 
@@ -2475,7 +2476,7 @@ private:
         m_resume_note_ons = f;
     }
 
-#endif  // USE_SONG_RECORDING
+#endif  // SEQ64_SONG_RECORDING
 
     /**
      * \setter m_mode_group

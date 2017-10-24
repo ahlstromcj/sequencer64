@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-22
+ * \updates       2017-10-23
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -101,7 +101,7 @@ sequence::sequence (int ppqn)
     m_quantized_rec             (false),
     m_thru                      (false),
     m_queued                    (false),
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
     m_one_shot                  (false),
     m_one_shot_tick             (0),
     m_off_from_snap             (false),
@@ -990,7 +990,7 @@ sequence::toggle_queued ()
     set_dirty_mp();
     m_queued = ! m_queued;
     m_queued_tick = m_last_tick - mod_last_tick() + m_length;
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
     m_off_from_snap = true;
 #endif
 }
@@ -1010,7 +1010,7 @@ sequence::off_queued ()
     automutex locker(m_mutex);
     set_dirty_mp();
     m_queued = false;
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
     m_off_from_snap = true;
 #endif
 }
@@ -1067,7 +1067,7 @@ sequence::play
 (
     midipulse end_tick,
     bool playback_mode
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
     , bool resume_note_ons
 #endif
 )
@@ -1089,7 +1089,7 @@ sequence::play
         if (playback_mode)                  /* song mode: on/off triggers   */
         {
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
             if (song_recording())
             {
 //              grow_trigger(m_parent->song_recording_tick(), end_tick, 10);
@@ -3811,7 +3811,7 @@ sequence::selected_trigger_end ()
  */
 
 bool
-sequence::move_selected_triggers_to
+sequence::move_triggers
 (
     midipulse tick, bool adjustoffset, triggers::grow_edit_t which
 )
@@ -3827,13 +3827,10 @@ sequence::move_selected_triggers_to
  */
 
 void
-sequence::offset_selected_triggers_by
-(
-    midipulse tick, triggers::grow_edit_t editmode  //trigger_edit
-)
+sequence::offset_triggers (midipulse tick, triggers::grow_edit_t editmode)
 {
     automutex locker(m_mutex);
-    m_triggers.offset_selected_by(tick, editmode);
+    m_triggers.offset_selected(tick, editmode);
 }
 
 #endif
@@ -5407,7 +5404,7 @@ sequence::set_parent (perform * p)
  *      Indicates if the playback is in live mode (false) or song mode (true).
  */
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 
 /**
  *  Why don't we see this in kepler34???
@@ -5444,7 +5441,7 @@ sequence::play_queue (midipulse tick, bool playbackmode)
     play(tick, playbackmode);
 }
 
-#endif  // USE_SONG_RECORDING
+#endif  // SEQ64_SONG_RECORDING
 
 /**
  *  Actually, useful mainly for the user-interface, this function calculates
@@ -5478,7 +5475,7 @@ sequence::handle_size (midipulse start, midipulse finish)
     return result;
 }
 
-#ifdef USE_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 
 /**
  *
@@ -5578,7 +5575,7 @@ sequence::resume_note_ons (midipulse tick)
     }
 }
 
-#endif  // USE_SONG_RECORDING
+#endif      // SEQ64_SONG_RECORDING
 
 }           // namespace seq64
 

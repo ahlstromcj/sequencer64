@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-10
+ * \updates       2017-10-29
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1177,6 +1177,7 @@ optionsfile::write (const perform & p)
            "# (pattern 0).  But one can move this track elsewhere to accomodate\n"
            "# one's existing body of tunes.  If affects where tempo events are\n"
            "# recorded.  The default value is 0, the maximum is 1023.\n"
+           "# A pattern must exist at this number for it to work.\n"
            "\n"
         << rc().tempo_track_number() << "    # tempo_track_number\n"
         ;

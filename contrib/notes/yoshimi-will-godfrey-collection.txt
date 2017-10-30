@@ -65,5 +65,3 @@ Now we can explore the instruments in this bank.
 
 # vim: sw=4 ts=4 wm=8 et ft=sh
 
-
-

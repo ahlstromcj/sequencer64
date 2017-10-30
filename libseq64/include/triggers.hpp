@@ -455,7 +455,7 @@ public:
     void pop_redo ();
     void print (const std::string & seqname) const;
 #ifdef SEQ64_SONG_RECORDING
-    bool play (midipulse & starttick, midipulse & endtick, bool resume = false );
+    bool play (midipulse & starttick, midipulse & endtick, bool resume = false);
 #else
     bool play (midipulse & starttick, midipulse & endtick);
 #endif

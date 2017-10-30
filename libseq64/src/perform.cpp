@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-10-24
+ * \updates       2017-10-29
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -321,7 +321,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_song_recording            (false),
     m_song_record_snap          (false),
     m_resume_note_ons           (false),
-    m_current_tick              (false), // TODO: find where set in out func!
+    m_current_tick              (0.0),
 #endif
     m_playback_mode             (false),
     m_ppqn                      (choose_ppqn(ppqn)),
@@ -1403,12 +1403,15 @@ perform::mute_all_tracks (bool flag)
 /**
  *  Toggles the mutes status of all tracks in the current set of active
  *  patterns/sequences.  Covers tracks from 0 to m_sequence_max.
+ *
+ *  Note that toggle_playing() now has two default parameters used by the new
+ *  song-recording feature, which are currently not used here.
  */
 
 void
 perform::toggle_all_tracks ()
 {
-    for (int i = 0; i < m_sequence_high; ++i)       /* m_sequence_max       */
+    for (int i = 0; i < m_sequence_high; ++i)
     {
         if (is_active(i))
         {
@@ -1425,7 +1428,9 @@ perform::toggle_all_tracks ()
  *  restoration.
  *
  *  Note that this function operates only in Live mode; it is too confusing to
- *  use in Song mode.
+ *  use in Song mode.  Also note that toggle_playing() now has two default
+ *  parameters used by the new song-recording feature, which are currently not
+ *  used here.
  */
 
 void
@@ -1437,7 +1442,7 @@ perform::toggle_playing_tracks ()
     if (m_armed_saved)
     {
         m_armed_saved = false;
-        for (int i = 0; i < m_sequence_high; ++i)   /* m_sequence_max       */
+        for (int i = 0; i < m_sequence_high; ++i)
         {
             if (m_armed_statuses[i])
             {
@@ -2590,7 +2595,7 @@ perform::play (midipulse tick)
 #endif
     }
     if (not_nullptr(m_master_bus))
-        m_master_bus->flush();                       /* flush MIDI buss  */
+        m_master_bus->flush();                      /* flush MIDI buss  */
 }
 
 /**
@@ -3006,6 +3011,9 @@ perform::activate ()
 
 /**
  *  If JACK is not running, call inner_start() with the given state.
+ *
+ * \question
+ *      Should we also call song_start_mode(songmode) here?
  *
  * \param songmode
  *      If true, playback is to be in Song mode.  Otherwise, it is to be in
@@ -4467,40 +4475,42 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 void
 perform::midi_control_event (const event & ev)
 {
-    midibyte data[2] = { 0, 0 };
     midibyte status = ev.get_status();
     int offset = m_screenset_offset;
-    ev.get_data(data[0], data[1]);
+//  midibyte data[2] = { 0, 0 };
+//  ev.get_data(data[0], data[1]);
+    midibyte d0 = 0, d1 = 0;
+    ev.get_data(d0, d1);
     for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)
     {
         bool is_a_sequence = ctl < m_seqs_in_set;
-        bool is_extended = ctl >= c_midi_controls && ctl < c_midi_controls_extended;
-        if (midi_control_toggle(ctl).match(status, data[0]))
+        bool is_ext = ctl >= c_midi_controls && ctl < c_midi_controls_extended;
+        if (midi_control_toggle(ctl).match(status, d0))
         {
-            if (midi_control_toggle(ctl).in_range(data[1]))
+            if (midi_control_toggle(ctl).in_range(d1))
             {
                 if (is_a_sequence)
                 {
                     sequence_playing_toggle(offset);
                 }
-                else if (is_extended)
+                else if (is_ext)
                 {
-                    if (handle_midi_control_ex(ctl, midi_control::action_toggle, data[1]))
+                    if (handle_midi_control_ex(ctl, midi_control::action_toggle, d1))
                         break;
                 }
             }
         }
-        if (midi_control_on(ctl).match(status, data[0]))
+        if (midi_control_on(ctl).match(status, d0))
         {
-            if (midi_control_on(ctl).in_range(data[1]))
+            if (midi_control_on(ctl).in_range(d1))
             {
                 if (is_a_sequence)
                 {
                     sequence_playing_on(offset);
                 }
-                else if (is_extended)
+                else if (is_ext)
                 {
-                    if (handle_midi_control_ex(ctl, midi_control::action_on, data[1]))
+                    if (handle_midi_control_ex(ctl, midi_control::action_on, d1))
                         break;
                 }
                 else
@@ -4512,26 +4522,26 @@ perform::midi_control_event (const event & ev)
                 {
                     sequence_playing_off(offset);
                 }
-                else if (is_extended)
+                else if (is_ext)
                 {
-                    if (handle_midi_control_ex(ctl, midi_control::action_off, data[1]))
+                    if (handle_midi_control_ex(ctl, midi_control::action_off, d1))
                         break;
                 }
                 else
                     handle_midi_control(ctl, false);
             }
         }
-        if (midi_control_off(ctl).match(status, data[0]))
+        if (midi_control_off(ctl).match(status, d0))
         {
-            if (midi_control_off(ctl).in_range(data[1]))  /* Issue #35 */
+            if (midi_control_off(ctl).in_range(d1))  /* Issue #35 */
             {
                 if (is_a_sequence)
                 {
                     sequence_playing_off(offset);
                 }
-                else if (is_extended)
+                else if (is_ext)
                 {
-                    if (handle_midi_control_ex(ctl, midi_control::action_off, data[1]))
+                    if (handle_midi_control_ex(ctl, midi_control::action_off, d1))
                         break;
                 }
                 else
@@ -4543,9 +4553,9 @@ perform::midi_control_event (const event & ev)
                 {
                     sequence_playing_on(offset);
                 }
-                else if (is_extended)
+                else if (is_ext)
                 {
-                    if (handle_midi_control_ex(ctl, midi_control::action_on, data[1]))
+                    if (handle_midi_control_ex(ctl, midi_control::action_on, d1))
                         break;
                 }
                 else
@@ -4556,7 +4566,8 @@ perform::midi_control_event (const event & ev)
 }
 
 /**
- *  This function is called by input_thread_func().
+ *  This function is called by input_thread_func().  It handles certain MIDI
+ *  input events.
  *
  * Stazed:
  *
@@ -4571,6 +4582,77 @@ perform::midi_control_event (const event & ev)
  *      MIDI Clock).
  *
  *      8 MIDI beats * 6 MIDI clocks per MIDI beat = 48 MIDI Clocks.
+ *
+ * EVENT_MIDI_START:
+ *
+ *      Starts the MIDI Time Clock.  Kepler34 does "stop();
+ *      set_playback_mode(false); start();" in its version of this event.
+ *      This sets the playback mode to Live mode. This behavior seems
+ *      reasonable, though function names Sequencer64 uses are different.
+ *
+ * EVENT_MIDI_CONTINUE:
+ *
+ *      MIDI continue: start from current position.  This is sent immediately
+ *      after EVENT_MIDI_SONG_POS, and is used for starting from other than
+ *      beginning of the song, or for starting from previous location at
+ *      EVENT_MIDI_STOP. Again, converted to Kepler34 mode of setting the
+ *      playback mode to Live mode.
+ *
+ * EVENT_MIDI_STOP:
+ *
+ *      Do nothing, just let the system pause.  Since we're not getting ticks
+ *      after the stop, the song won't advance when start is received, we'll
+ *      reset the position. Or, when continue is received, we won't reset the
+ *      position.  We do an inner_stop(); the m_midiclockpos member holds the
+ *      stop position in case the next event is "continue".  This feature is
+ *      not in Kepler34.
+ *
+ * EVENT_MIDI_CLOCK:
+ *
+ *      MIDI beat clock (MIDI timing clock or simply MIDI clock) is a clock
+ *      signal broadcast via MIDI to ensure that MIDI-enabled devices stay in
+ *      synchronization. It is not MIDI timecode.  Unlike MIDI timecode, MIDI
+ *      beat clock is tempo-dependent. Clock events are sent at a rate of 24
+ *      ppqn (pulses per quarter note). Those pulses maintain a synchronized
+ *      tempo for synthesizers that have BPM-dependent voices and for
+ *      arpeggiator synchronization.  Location information can be specified
+ *      using MIDI Song Position Pointer.  Many simple MIDI devices ignore
+ *      this message.
+ *
+ * EVENT_MIDI_SONG_POS:
+ *
+ *      MIDI song position pointer message tells a MIDI device to cue to a
+ *      point in the MIDI sequence to be ready to play.  This message consists
+ *      of three bytes of data. The first byte, the status byte, is 0xF2 to
+ *      flag a song position pointer message. Two bytes follow the status
+ *      byte.  These two bytes are combined in a 14-bit value to show the
+ *      position in the song to cue to. The top bit of each of the two bytes
+ *      is not used.  Thus, the value of the position to cue to is between
+ *      0x0000 and 0x3FFF. The position represents the MIDI beat, where a
+ *      sequence always starts on beat zero and each beat is a 16th note.
+ *      Thus, the device will cue to a specific 16th note.  Also see the
+ *      combine_bytes() function.
+ *
+ * EVENT_MIDI_SYSEX:
+ *
+ *      These messages are system-wide messages.  We filter system-wide
+ *      messages.  If the master MIDI buss is dumping, set the timestamp of
+ *      the event and stream it on the sequence.  Otherwise, use the event
+ *      data to control the sequencer, if it is valid for that action.
+ *
+ *      "Dumping" is set when a seqedit window is open and the user has
+ *      clicked the "record MIDI" or "thru MIDI" button.  In this case, if the
+ *      seq32 support is in force, dump to it, else stream the event, with
+ *      possibly multiple sequences set.  Otherwise, handle an incoming MIDI
+ *      control event.
+ *
+ *      Also available (but macroed out) is Stazed's parse_sysex() function.
+ *      It seems specific to certain Yamaha devices, but might prove useful
+ *      later.
+ *
+ *  For events less than or equal to SysEx, we call midi_control_event()
+ *  to handle the MIDI controls that Sequencer64 supports.  (These are
+ *  configurable in the "rc" configuration file.)
  */
 
 void
@@ -4587,86 +4669,50 @@ perform::input_func ()
                 {
                     /*
                      * Used when starting from the beginning of the song.  Obey
-                     * the MIDI time clock.
+                     * the MIDI time clock.  Comments moved to the banner.
                      */
 
-                    if (ev.get_status() == EVENT_MIDI_START) // MIDI Time Clock
+                    if (ev.get_status() == EVENT_MIDI_START)
                     {
+                        stop();                             // Kepler34
+                        song_start_mode(false);             // Kepler34
                         start(song_start_mode());
-                        m_midiclockrunning = true;
-                        m_usemidiclock = true;
-                        m_midiclocktick = 0;
-                        m_midiclockpos = 0;
+                        m_midiclockrunning = m_usemidiclock = true;
+                        m_midiclocktick = m_midiclockpos = 0;
                     }
                     else if (ev.get_status() == EVENT_MIDI_CONTINUE)
                     {
-                        /*
-                         * MIDI continue: start from current position.  This
-                         * is sent immediately after EVENT_MIDI_SONG_POS, and
-                         * is used for starting from other than beginning of
-                         * the song, or to starting from previous location at
-                         * EVENT_MIDI_STOP.
-                         */
-
                         m_midiclockrunning = true;
+                        song_start_mode(false);             // Kepler34
                         start(song_start_mode());
                     }
                     else if (ev.get_status() == EVENT_MIDI_STOP)
                     {
-                        /*
-                         * Just let the system pause.  Since we're not getting
-                         * ticks after the stop, the song won't advance when
-                         * start is received, we'll reset the position, or when
-                         * continue is received, we won't reset the position.
-                         * Should hold the stop position in case the next event
-                         * is "continue".
-                         */
-
                         m_midiclockrunning = false;
                         all_notes_off();
-
-                        /*
-                         * inner_stop(true) = m_usemidiclock = true, i.e.
-                         * hold m_tick position(output_func).  Set the
-                         * position to last location on stop, for continue.
-                         */
-
                         inner_stop(true);
                         m_midiclockpos = m_tick;
                     }
                     else if (ev.get_status() == EVENT_MIDI_CLOCK)
                     {
                         if (m_midiclockrunning)
-                            m_midiclocktick += 8;   // a true constant?
+                            m_midiclocktick += 8;       // manifest constant?
                     }
                     else if (ev.get_status() == EVENT_MIDI_SONG_POS)
                     {
-                        midibyte a, b;
-                        ev.get_data(a, b);
-                        m_midiclockpos = combine_bytes(a,b);
-                        m_midiclockpos *= 48;
+                        midibyte d0, d1;                // see note in banner
+                        ev.get_data(d0, d1);
+                        m_midiclockpos = combine_bytes(d0, d1);
                     }
 
                     /*
-                     *  Filter system-wide messages.  If the master MIDI buss
-                     *  is dumping, set the timestamp of the event and stream
-                     *  it on the sequence.  Otherwise, use the event data to
-                     *  control the sequencer, if it is valid for that action.
+                     * Send out the current event, if "dumping".
                      */
 
                     if (ev.get_status() <= EVENT_MIDI_SYSEX)
                     {
                         if (rc().show_midi())
                             ev.print();
-
-                        /*
-                         * "Dumping" is set when a seqedit window is open and
-                         * the user has clicked the "record MIDI" or "thru
-                         * MIDI" button.  In this case, if the seq32 support
-                         * is in force, dump to it, else stream the event,
-                         * with possibly multiple sequences set.  Otherwise,
-                         * handle an incoming MIDI control event.
-                         */
 
                         if (m_master_bus->is_dumping())
                         {
@@ -4681,9 +4727,32 @@ perform::input_func ()
                         {
                             midi_control_event(ev);     /* replaces big block */
                         }
+
+#ifdef USE_STAZED_PARSE_SYSEX               // more code to incorporate!!!
+                        if (global_use_sysex)
+                        {
+                            if (FF_RW_button_type != FF_RW_RELEASE)
+                            {
+                                if (ev.is_note_off())
+                                {
+                                    /*
+                                     * Notes 91 G5 & 96 C6 on YPT = FF/RW keys
+                                     */
+
+                                    midibyte n = ev.get_note();
+                                    if (n == 91 || n == 96)
+                                        FF_RW_button_type = FF_RW_RELEASE;
+                                }
+                            }
+                        }
+#endif
                     }
                     if (ev.get_status() == EVENT_MIDI_SYSEX)
                     {
+#ifdef USE_STAZED_PARSE_SYSEX               // more code to incorporate!!!
+                        if (global_use_sysex)
+                            parse_sysex(ev);
+#endif
                         if (rc().show_midi())
                             ev.print();
 
@@ -4711,6 +4780,8 @@ perform::input_func ()
  *  value (actually 16-bit since most computer CPUs deal with 16-bit, not
  *  14-bit, integers).
  *
+ *  I think Kepler64 got the bytes backward.
+ *
  * \param b0
  *      The first byte to be combined.
  *
@@ -4727,8 +4798,117 @@ perform::combine_bytes (midibyte b0, midibyte b1)
    unsigned short short_14bit = (unsigned short)(b1);
    short_14bit <<= 7;
    short_14bit |= (unsigned short)(b0);
-   return short_14bit;
+   return short_14bit * 48;
 }
+
+                        // m_midiclockpos *= 48;
+                        // OLD m_midiclockpos = (int(a) << 7) && int(b);
+
+#ifdef USE_STAZED_PARSE_SYSEX               // more code to incorporate!!!
+
+/**
+ *
+ */
+
+enum sysex_YPT
+{
+    SYS_YPT300_START,
+    SYS_YPT300_STOP,
+    SYS_YPT300_TOP,             //  Beginning of song
+    SYS_YPT300_FAST_FORWARD,
+    SYS_YPT300_REWIND,
+    SYS_YPT300_METRONOME        //  or anything else
+};
+
+/**
+ *  http://www.indiana.edu/~emusic/etext/MIDI/chapter3_MIDI9.shtml
+ *
+ *  A System Exclusive code set begins with 11110000 (240 decimal or F0 hex),
+ *  followed by the manufacturer ID#, then by an unspecified number of data
+ *  bytes of any ranges from 0-127), and then ends with 11110111 (decimal 247
+ *  or F7 hex), meaning End of SysEx message.
+ *
+ *  No other codes are to be transmitted during a SysEx message (except a
+ *  system real time message). Normally, after the manufacturer ID, each maker
+ *  will have its own instrument model subcode, so a Yamaha DX7 will ignore a
+ *  Yamaha SY77's patch dump. In addition, most instruments have a SysEx ID #
+ *  setting so more than one of the same instruments can be on a network but
+ *  not necessarily respond to a patch dump not intended for it.
+ *
+ * Layout of YPT-300 sysex messages (EVENT_SYSEX):
+ *
+ *      -   Byte 0          0xF0
+ *      -   Byte 1          0x43        Yamaha_ID
+ *      -   Bytes 2-5       0x73015015  YPT_model_subcode
+ *      -   Byte 6          0x00
+ *      -   Byte 7          0xnn        Message we look for, enum 0 to 5
+ *      -   Byte 8          0x00
+ *      -   Byte 9          0xF7
+ */
+
+void
+perform::parse_sysex (event a_e)            // copy, or reference???
+{
+    const unsigned char c_yamaha_ID         = 0x43;         // byte 1
+    const unsigned long c_YPT_model_subcode = 0x73015015;   // bytes 2 - 5
+    unsigned char * data = a_e.get_sysex();
+    long data_size = a_e.get_size();
+    if (data_size < 10)                     // sanity check
+        return;
+
+    if (data[1] != c_yamaha_ID) /* check manufacturer ID, could use others. */
+        return;
+
+    unsigned long subcode = 0;              /* Check the model subcode */
+    subcode += (data[2] << 24);
+    subcode += (data[3] << 16);
+    subcode += (data[4] << 8);
+    subcode += (data[5]);
+    if (subcode != c_YPT_model_subcode)
+        return;
+
+    switch(data[7])                         /* We are good to go */
+    {
+    case SYS_YPT300_START:
+        m_start_from_perfedit = true;       // assume song mode start
+        start_playing();
+        break;
+
+    case SYS_YPT300_STOP:
+        set_reposition(true);               // allow to continue where stopped
+        stop_playing();
+        break;
+
+    case SYS_YPT300_TOP:                    // beginning of song or left marker
+        if (is_jack_running())
+        {
+            set_reposition();
+            set_starting_tick(m_left_tick);
+            position_jack(true, m_left_tick);
+        }
+        else
+        {
+            set_reposition();
+            set_starting_tick(m_left_tick);
+        }
+        break;
+
+    case SYS_YPT300_FAST_FORWARD:
+        FF_RW_button_type = FF_RW_FORWARD;
+        gtk_timeout_add(120,FF_RW_timeout,this);
+        break;
+
+    case SYS_YPT300_REWIND:
+        FF_RW_button_type = FF_RW_REWIND;
+        gtk_timeout_add(120,FF_RW_timeout,this);
+        break;
+
+    default:
+        break;
+    }
+}
+
+#endif  // USE_STAZED_PARSE_SYSEX
 
 /**
  *  For all active patterns/sequences, this function gets the playing
@@ -4911,7 +5091,7 @@ perform::sequence_playing_toggle (int seq)
         bool is_queue = (m_control_status & c_status_queue) != 0;
         bool is_replace = (m_control_status & c_status_replace) != 0;
 
-#ifdef SEQ64_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING                 // enables one-shot as well
 
         /*
          * One-shots are allowed only if we are not playing this sequence.
@@ -4959,9 +5139,13 @@ perform::sequence_playing_toggle (int seq)
 #ifdef SEQ64_SONG_RECORDING
 
         /*
-         * If we're recording, add sequence playback changes to the Song
-         * data.
+         * If we're in song playback, temporarily block the events until the
+         * next sequence boundary. And if we're recording, add "Live" sequence
+         * playback changes to the Song/Performance data as triggers.
          */
+
+        if (m_playback_mode)
+            s->song_playback_block(true);
 
         if (song_recording())
         {
@@ -5929,7 +6113,12 @@ perform::reposition (midipulse tick)
 #ifdef SEQ64_SONG_RECORDING
 
 /**
+ *  This version for song-recording not only logs m_tick, it also does JACK
+ *  positioning (if applicable), calls the master bus's continue_from()
+ *  function, and sets m_current_tick as well.
  *
+ * \todo
+ *      Do we really need m_current_tick???
  */
 
 void
@@ -5975,7 +6164,8 @@ perform::FF_RW_timeout ()
 #ifdef SEQ64_SONG_RECORDING
 
 /**
- *  Should be called only when not recording.
+ *  Calls sequence::song_recording_stop(m_current_tick) for all sequences.
+ *  Should be called only when not recording the performance data.  This is a
  *  Kepler34 feature.
  */
 

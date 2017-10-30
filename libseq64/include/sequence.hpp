@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-10-23
+ * \updates       2017-10-28
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -366,7 +366,8 @@ private:
 #ifdef SEQ64_SONG_RECORDING
 
     /**
-     *  A member from the Kepler34 project ?
+     *  A member from the Kepler34 project to indicate we are in one-shot mode
+     *  for triggering.
      */
 
     bool m_one_shot;
@@ -1162,9 +1163,9 @@ public:
         return m_playing;
     }
 
-    /**
-     *  Toggles the playing status of this sequence.  How exactly does this
-     *  differ from toggling the mute status?
+    /*
+     * The midipulse and bool parameters of the overload of this function are
+     * new, to support song-recording.
      */
 
     void toggle_playing ()
@@ -1172,6 +1173,7 @@ public:
         set_playing(! get_playing());
     }
 
+    void toggle_playing (midipulse tick, bool resumenoteons);
     void toggle_queued ();
     void off_queued ();
     void on_queued ();
@@ -1316,15 +1318,6 @@ public:
     midipulse song_recording_tick () const
     {
         return m_song_recording_tick;
-    }
-
-    void toggle_playing (midipulse tick, bool resumenoteons = false)
-    {
-        toggle_playing();
-        if (get_playing() && resumenoteons)
-            resume_note_ons(tick);
-
-        m_off_from_snap = false;
     }
 
     void resume_note_ons (midipulse tick);

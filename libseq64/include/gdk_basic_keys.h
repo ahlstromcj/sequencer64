@@ -325,8 +325,8 @@ typedef enum
  *
  *  Since we're getting events from, say Gtk-2.4, but using our (matching)
  *  values for comparison, use the CAST_EQUIVALENT() macro to compare them.
- *  Note that we might still end up having to a remapping (e.g. if trying to
- *  get the code to work with the Qt framework).
+ *  Note that we might still end up having to do a remapping (e.g. if trying
+ *  to get the code to work with the Qt framework).
  */
 
 typedef enum

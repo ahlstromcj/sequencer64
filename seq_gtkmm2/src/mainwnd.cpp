@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-12
+ * \updates       2017-10-27
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -125,7 +125,7 @@
 #include "pixmaps/panic.xpm"
 #include "pixmaps/perfedit.xpm"
 #include "pixmaps/play2.xpm"
-#include "pixmaps/route64rwb-32x32.xpm" /* #include "pixmaps/seq64.xpm"     */
+#include "pixmaps/route64rwb-32x32.xpm"     // #include "pixmaps/seq64.xpm"
 #include "pixmaps/stop.xpm"
 
 #ifdef SEQ64_RTMIDI_SUPPORT
@@ -144,7 +144,13 @@
 #endif
 
 #ifdef SEQ64_SONG_RECORDING
-#include "pixmaps/song_rec_off.xpm"
+
+/*
+ *  No longer used.
+ *
+ * #include "pixmaps/song_rec_off.xpm"
+ */
+
 #include "pixmaps/song_rec_on.xpm"
 #endif
 
@@ -837,8 +843,22 @@ mainwnd::mainwnd
     bpmhbox->pack_start(*m_button_tap, Gtk::PACK_SHRINK);
 #endif
 
+#define TRY_TEMPO_VBOX
+#ifdef TRY_TEMPO_VBOX
+
+    Gtk::VBox * tempovbox = manage(new Gtk::VBox(true,  0));
+
+    tempovbox->pack_start(*m_button_tempo_log, Gtk::PACK_SHRINK);
+    tempovbox->pack_start(*m_button_tempo_record, Gtk::PACK_SHRINK);
+    bpmhbox->pack_start(*tempovbox, Gtk::PACK_SHRINK);
+
+#else
+
     bpmhbox->pack_start(*m_button_tempo_log, Gtk::PACK_SHRINK);
     bpmhbox->pack_start(*m_button_tempo_record, Gtk::PACK_SHRINK);
+
+#endif
+
     bpmhbox->pack_start(*m_button_queue, Gtk::PACK_SHRINK);
 
     /*
@@ -1635,6 +1655,11 @@ mainwnd::toggle_song_record ()
 {
     m_is_song_recording = ! m_is_song_recording;
     perf().song_recording(m_is_song_recording);
+
+    /*
+     * There is no need to change the button color, as the control itself
+     * indicates when song-recording is on.
+     *
     if (m_is_song_recording)
     {
         Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_on_xpm));
@@ -1645,6 +1670,8 @@ mainwnd::toggle_song_record ()
         Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_off_xpm));
         m_button_song_record->set_image(*image_song);
     }
+    *
+    */
 }
 
 /**
@@ -2762,12 +2789,18 @@ mainwnd::update_bpm ()
 
 /**
  *  Logs the current tempo/tick value as a Set Tempo event.
+ *
+ * \todo
+ *      Upgrade this so that a Ctrl-click calls toggle_tempo_record, so that
+ *      we can eliminate a tempo button; there are too many buttons.
  */
 
 void
 mainwnd::tempo_log ()
 {
     (void) perf().log_current_tempo();  // TODO:  check the return value
+
+printf("tempo logged\n");
 }
 
 /**
@@ -2835,30 +2868,6 @@ mainwnd::on_delete_event (GdkEventAny * /*ev*/)
         stop_playing();
 
     return ! result;
-}
-
-/**
- *  Handles a key release event.  Is this worth turning into a switch
- *  statement?  Or offloading to a perform member function?  The latter.
- *  Also, we now effectively press the CAPS LOCK key for the user if in
- *  group-learn mode.  The function that does this is keystroke::shift_lock().
- *
- * \todo
- *      Test this functionality in old and new application.
- *
- * \return
- *      Always returns false.  This matches seq24 behavior.
- */
-
-bool
-mainwnd::on_key_release_event (GdkEventKey * ev)
-{
-    keystroke k(ev->keyval, SEQ64_KEYSTROKE_RELEASE);
-    if (perf().is_group_learning())
-        k.shift_lock();
-
-    (void) perf().mainwnd_key_event(k);     // already called in key-press!!!
-    return false;
 }
 
 /**
@@ -3133,6 +3142,30 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
     }
     (void) Gtk::Window::on_key_press_event(ev);
     return result;
+}
+
+/**
+ *  Handles a key release event.  Is this worth turning into a switch
+ *  statement?  Or offloading to a perform member function?  The latter.
+ *  Also, we now effectively press the CAPS LOCK key for the user if in
+ *  group-learn mode.  The function that does this is keystroke::shift_lock().
+ *
+ * \todo
+ *      Test this functionality in old and new application.
+ *
+ * \return
+ *      Always returns false.  This matches seq24 behavior.
+ */
+
+bool
+mainwnd::on_key_release_event (GdkEventKey * ev)
+{
+    keystroke k(ev->keyval, SEQ64_KEYSTROKE_RELEASE);
+    if (perf().is_group_learning())
+        k.shift_lock();
+
+    (void) perf().mainwnd_key_event(k);     // already called in key-press!!!
+    return false;
 }
 
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS

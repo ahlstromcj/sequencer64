@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-23
+ * \updates       2017-10-28
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -976,6 +976,25 @@ sequence::set_rec_vol (int recvol)
 }
 
 /**
+ *  Toggles the playing status of this sequence.  How exactly does this
+ *  differ from toggling the mute status?
+ *
+ * \param tick
+ *      The position from which to resume Note Ons, if appplicable. Resuming
+ *      is a song-recording feature.
+ */
+
+void
+sequence::toggle_playing (midipulse tick, bool resumenoteons)
+{
+    toggle_playing();
+    if (get_playing() && resumenoteons)
+        resume_note_ons(tick);
+
+    m_off_from_snap = false;
+}
+
+/**
  * \setter m_queued and m_queued_tick
  *      Toggles the queued flag and sets the dirty-mp flag.  Also calculates
  *      the queued tick based on m_last_tick.
@@ -1044,9 +1063,13 @@ sequence::on_queued ()
  *      stop button.  Works with JACK, with issues, but we'd like to have
  *      the stop button do a rewind in JACK, too.
  *
+ *  If we are playing the song data (sequence on/off triggers, we are in
+ *  playback mode.  And if we are song-recording, we then keep growing the
+ *  sequence's song-data triggers.
+ *
  *  The trigger calculations have been offloaded to the triggers::play()
- *  function.  It's return value and side-effects tell if there's a change in
- *  playing based on triggers and tells the ticks that bracket it.
+ *  function.  Its return value and side-effects tell if there's a change in
+ *  playing based on triggers, and provides the ticks that bracket it.
  *
  * \param end_tick
  *      Provides the current end-tick value.  The tick comes in as a global
@@ -1073,7 +1096,7 @@ sequence::play
 )
 {
     automutex locker(m_mutex);
-    bool trigger_turning_off = false;       /* turn off after frame play    */
+    bool trigger_turning_off = false;       /* turn off after in-frame play */
     midipulse start_tick = m_last_tick;     /* modified in triggers::play() */
     if (m_song_mute)
     {
@@ -1081,20 +1104,14 @@ sequence::play
     }
     else
     {
-        /*
-         * If we are playing the song data (sequence on/off triggers, we are in
-         * playback mode.
-         */
-
         if (playback_mode)                  /* song mode: on/off triggers   */
         {
 
 #ifdef SEQ64_SONG_RECORDING
             if (song_recording())
             {
-//              grow_trigger(m_parent->song_recording_tick(), end_tick, 10);
                 grow_trigger(song_recording_tick(), end_tick, 10);
-                set_dirty_mp();
+                set_dirty_mp();             /* force redraws                */
             }
 #endif
             trigger_turning_off = m_triggers.play(start_tick, end_tick);
@@ -1254,7 +1271,8 @@ sequence::remove_marked ()
 #ifdef LAYK_PULL_REQUEST_95
 
     /*
-     * We have to make note off before moving and cutting. Here or in event_list?
+     * We have to make Note Offs before moving and cutting. Here or in
+     * event_list?
      */
 
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
@@ -4616,6 +4634,9 @@ sequence::set_playing (bool p)
         set_dirty();
     }
     m_queued = false;
+#ifdef SEQ64_SONG_RECORDING
+    m_one_shot = false;
+#endif
 }
 
 /**
@@ -5407,7 +5428,17 @@ sequence::set_parent (perform * p)
 #ifdef SEQ64_SONG_RECORDING
 
 /**
- *  Why don't we see this in kepler34???
+ *  Why don't we see this in kepler34?  We do, in the MidiPerformance::play()
+ *  function.  We refactored this, Chris.  Remember?  :-D
+ *
+ * \param tick
+ *      Provides the current active pulse position.
+ *
+ * \param playbackmode
+ *      If true, we are in Song mode.  Otherwise, Live mode.
+ *
+ * \param resumenoteons
+ *      Indicates if we are to resume Note Ons.  Used by perform::play().
  */
 
 void
@@ -5415,12 +5446,11 @@ sequence::play_queue (midipulse tick, bool playbackmode, bool resumenoteons)
 {
     if (check_queued_tick(tick))
     {
-        play(get_queued_tick() - 1, playbackmode /* , resumenoteons */ );
+        play(get_queued_tick() - 1, playbackmode, resumenoteons);
         toggle_playing(tick, resumenoteons);
     }
     if (one_shot() && one_shot_tick() <= tick)
     {
-//      play(one_shot_tick() - 1, m_parent->playback_mode, resumenoteons);
         play(one_shot_tick() - 1, playbackmode, resumenoteons);
         toggle_playing(tick, resumenoteons);
         toggle_queued();
@@ -5478,7 +5508,8 @@ sequence::handle_size (midipulse start, midipulse finish)
 #ifdef SEQ64_SONG_RECORDING
 
 /**
- *
+ *  Toggles the m_one_shot flag, sets m_off_from_snap to true, and adjust
+ *  m_one_shot_tick according to m_last_tick and m_length.
  */
 
 void
@@ -5492,7 +5523,8 @@ sequence::toggle_one_shot ()
 }
 
 /**
- *
+ *  Sets the dirty flag, sets m_one_shot to false, and m_off_from_snap to
+ *  true.
  */
 
 void
@@ -5506,15 +5538,16 @@ sequence::off_one_shot ()
 
 /**
  *  Starts the growing of the sequence for Song recording.  This process
- *  starts by adding a chunk of 10 ticks, which allows the rest of the threads
- *  to notice the change.
+ *  starts by adding a chunk of 10 ticks to the trigger, which allows the rest
+ *  of the threads to notice the change.
  *
  * \param tick
- *      Provides the current tiack, which helps set the recorded block's
- *      boundaries.
+ *      Provides the current tick, which helps set the recorded block's
+ *      boundaries, and is copied into m_song_recording_tick.
  *
  * \param snap
- *      Indicates if we are to snap the recording to the configured boundary.
+ *      Indicates if we are to snap the recording to the configured boundary,
+ *      and is copied into m_song_recording_snap.
  */
 
 void
@@ -5528,8 +5561,8 @@ sequence::song_recording_start (midipulse tick, bool snap)
 
 /**
  *  Stops the growing of the sequence for Song recording.  If we have been
- *  recording, we snap the end of the trigger block to the next whole sequence
- *  interval.
+ *  recording, we snap the end of the trigger segment to the next whole
+ *  sequence interval.
  *
  * \param tick
  *      Provides the current tiack, which helps set the recorded block's
@@ -5549,29 +5582,32 @@ sequence::song_recording_stop (midipulse tick)
 }
 
 /**
- *
  *  If the Note-On event is after the Note-Off event, the pattern wraps around,
- *  so that we play it no to resume.
+ *  so that we play it now to resume.
+ *
+ * \param tick
+ *      The current tick-time, in MIDI pulses.
  */
 
 void
 sequence::resume_note_ons (midipulse tick)
 {
-    event_list::iterator e = m_events.begin();
-    while (e != m_events.end())
+    for         /* would like a const_iterator, but put_event_on_bus()...   */
+    (
+        event_list::iterator ei = m_events.begin(); ei != m_events.end(); ++ei
+    )
     {
-        if (e->is_note_on())
+        if (ei->is_note_on())
         {
-            event * link = e->get_linked();
+            event * link = ei->get_linked();
             if (not_nullptr(link))
             {
-                midipulse on = e->get_timestamp();      /* see banner notes */
+                midipulse on = ei->get_timestamp();      /* see banner notes */
                 midipulse off = link->get_timestamp();
                 if (on < (tick % m_length) && off > (tick % m_length))
-                    put_event_on_bus(*e);
+                    put_event_on_bus(*ei);
             }
         }
-        ++e;                                            /* advance          */
     }
 }
 

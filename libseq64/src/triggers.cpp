@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2017-10-23
+ * \updates       2017-10-28
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -209,6 +209,15 @@ triggers::pop_redo ()
  *  The first start or end trigger that is past the end tick cause the search
  *  to end.
  *
+ *                  -------------------------------------
+ *      tick_start |                                     | tick_end
+ *                  -------------------------------------
+ *                 start_tick     ||                     start_tick ||
+ *                 end_tick       ||                     end_tick
+ *
+ *  If we've reached a new chunk of drawn sequences in the song data,
+ *  and we're not recording, unset the block on this sequence's events.
+ *
  *  If the trigger state has changed, then the start/end ticks are passed back
  *  to the sequence, and the trigger offset is adjusted.
  *
@@ -235,19 +244,11 @@ triggers::play
 #endif
 )
 {
-    bool result = false;                    /* turns off after frame play   */
 #ifdef SEQ64_SONG_RECORDING
     midipulse tick = start_tick;            /* saved for later              */
 #endif
 
-#ifdef SEQ64_SONG_RECORDING_XXX               // INVESTIGATE...
-    if (song_recording())
-    {
-        grow_trigger(m_parent.song_recording_tick(), end_tick, 10);
-        set_dirty_mp();
-    }
-#endif
-
+    bool result = false;                    /* turns off after frame play   */
     midipulse trigger_offset = 0;
     midipulse trigger_tick = 0;
     bool trigger_state = false;
@@ -255,13 +256,7 @@ triggers::play
     {
 
 #ifdef SEQ64_SONG_RECORDING
-
-        /*
-         * If we've reached a new chunk of drawn sequences in the song data,
-         * and we're not recording, unset the block on this sequence's events.
-         */
-
-        if
+        if                              /* touching a trigger transition?   */
         (
             start_tick == i->tick_start() || end_tick == i->tick_start() ||
             start_tick == i->tick_end() || end_tick == i->tick_end()
@@ -269,8 +264,7 @@ triggers::play
         {
             m_parent.song_playback_block(false);
         }
-
-#endif  // SEQ64_SONG_RECORDING
+#endif
 
         if (i->tick_start() <= end_tick)
         {
@@ -289,10 +283,13 @@ triggers::play
     }
 
     /*
-     * Had triggers in the slice, not equal to current state.
+     * Had triggers in the slice, not equal to current state.  Therefore, it
+     * is time to change the sequence trigger state.  We only change state if
+     * we are not improvising.
      */
 
     bool ok = trigger_state != m_parent.get_playing();
+
 #ifdef SEQ64_SONG_RECORDING
     if (ok)
         ok = ! m_parent.song_playback_block();
@@ -325,14 +322,12 @@ triggers::play
         else
         {
             end_tick = trigger_tick;                    /* on, turning off  */
-            result = true;                              /* done             */
-#ifdef USE_SONG_RECORDING_XXXX
-            trigger_turning_off = true;
-#endif
+            result = true;                              /* done, ditto      */
         }
     }
 
     bool offplay = m_triggers.size() == 0 && m_parent.get_playing();
+
 #ifdef SEQ64_SONG_RECORDING
     if (offplay)
         offplay = ! m_parent.song_playback_block();
@@ -641,7 +636,7 @@ triggers::half_split (midipulse splittick)
         if ( i->tick_start() <= splittick && i->tick_end() >= splittick )
         {
             long tick = i->tick_end() - i->tick_start();
-            tick += 1;
+            ++tick;
             tick /= 2;
             split(*i, i->tick_start() + tick);
             break;
@@ -669,7 +664,7 @@ triggers::exact_split (midipulse splittick)
     }
 }
 
-#endif	// SEQ64_SONG_RECORDING
+#endif  // SEQ64_SONG_BOX_SELECT
 
 /**
  *  Adjusts trigger offsets to the length specified for all triggers, and undo

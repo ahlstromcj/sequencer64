@@ -1372,7 +1372,7 @@ public:
 
     bool toggle_song_start_mode ()
     {
-        m_song_start_mode = ! m_song_start_mode; // m_playback_mode?
+        m_song_start_mode = ! m_song_start_mode;    // m_playback_mode
         return m_song_start_mode;
     }
 
@@ -1661,17 +1661,21 @@ public:
         return m_tick;
     }
 
+#ifdef SEQ64_SONG_RECORDING
+
+    void set_tick (midipulse tick);
+
+#else
+
     /**
      * \setter m_tick
      */
 
-#ifdef SEQ64_SONG_RECORDING
-    void set_tick (midipulse tick);
-#else
     void set_tick (midipulse tick)
     {
         m_tick = tick;
     }
+
 #endif
 
     /**
@@ -2798,6 +2802,9 @@ private:
 
     bool log_current_tempo ();
     bool create_master_bus ();
+#ifdef USE_STAZED_PARSE_SYSEX               // more code to incorporate!!!
+    void parse_sysex (event a_e);           // copy, or reference???
+#endif
 
     /**
      *  Saves the clock settings read from the "rc" file so that they can be

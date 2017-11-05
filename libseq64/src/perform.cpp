@@ -152,6 +152,13 @@
 
 #define SEQ64_USE_TDEAGAN_CODE
 
+/**
+ *  The amount to increment the MIDI clock pulses.  MIDI clock normal comes
+ *  out at 24 PPQN, so I am not sure why this is 8.
+ */
+
+#define SEQ64_MIDI_CLOCK_INCREMENT      8
+
 /*
  *  Do not document a namespace; it breaks Doxygen.
  */
@@ -4125,7 +4132,9 @@ perform::input_func ()
                     else if (ev.get_status() == EVENT_MIDI_CLOCK)
                     {
                         if (m_midiclockrunning)
-                            m_midiclocktick += 8;   // a true constant?
+                            m_midiclocktick += SEQ64_MIDI_CLOCK_INCREMENT;  // 8
+
+                        // Are these being put on bus as NOTES?????
                     }
                     else if (ev.get_status() == EVENT_MIDI_SONG_POS)
                     {
@@ -4134,6 +4143,22 @@ perform::input_func ()
                         m_midiclockpos = combine_bytes(a,b);
                         m_midiclockpos *= 48;
                     }
+#if 0   // new code disabled to try to verify the bug
+                    else if
+                    (
+                        ev.get_status() == EVENT_MIDI_ACTIVE_SENSE ||
+                        ev.get_status() == EVENT_MIDI_RESET
+                    )
+                    {
+                        /*
+                         * For now, we ignore these events on input. See
+                         * GitHub sequencer64-packages/issues/4.  MIGHT NOT BE
+                         * A VALID FIX.  STILL INVESTIGATING.
+                         */
+
+                        return;
+                    }
+#endif
 
                     /*
                      *  Filter system-wide messages.  If the master MIDI buss

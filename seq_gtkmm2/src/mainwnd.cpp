@@ -589,8 +589,8 @@ mainwnd::mainwnd
     add_tooltip
     (
         m_button_jack,
-        "Shows the current transport mode:  JACK, Master, or ALSA. Click "
-        "this button to bring up the JACK connection options page. Ctrl-P "
+        "The current MIDI mode: JACK (slave), Master, Native (JACK), or ALSA. "
+        "Click this button to bring up the JACK connection options page. Ctrl-P "
         "also brings up this page."
     );
     m_button_jack->set_focus_on_click(false);

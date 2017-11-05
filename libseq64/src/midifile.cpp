@@ -684,8 +684,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                     /*
                      * Replaced seq.add_event() with seq.append_event().  The
-                     * latter doesn't sort events; we sort after we get them
-                     * all.
+                     * latter doesn't sort events; sort after we get them all.
                      */
 
                     seq.append_event(e);                  /* does not sort    */

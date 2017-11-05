@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-22
+ * \updates       2017-11-04
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -109,23 +109,23 @@ const midibyte EVENT_PITCH_WHEEL        = 0xE0;      // 0lllllll 0mmmmmmm
  *  ended by an F7.
  */
 
-const midibyte EVENT_MIDI_SYSEX          = 0xF0;      // redundant, see below
-const midibyte EVENT_MIDI_QUARTER_FRAME  = 0xF1;      // undefined?
-const midibyte EVENT_MIDI_SONG_POS       = 0xF2;
-const midibyte EVENT_MIDI_SONG_SELECT    = 0xF3;      // not used
-const midibyte EVENT_MIDI_SONG_F4        = 0xF4;      // undefined
-const midibyte EVENT_MIDI_SONG_F5        = 0xF5;      // undefined
-const midibyte EVENT_MIDI_TUNE_SELECT    = 0xF6;      // not used in seq24
-const midibyte EVENT_MIDI_SYSEX_END      = 0xF7;      // redundant, see below
-const midibyte EVENT_MIDI_SYSEX_CONTINUE = 0xF7;      // redundant, see below
-const midibyte EVENT_MIDI_CLOCK          = 0xF8;
-const midibyte EVENT_MIDI_SONG_F9        = 0xF9;      // undefined
-const midibyte EVENT_MIDI_START          = 0xFA;
-const midibyte EVENT_MIDI_CONTINUE       = 0xFB;
-const midibyte EVENT_MIDI_STOP           = 0xFC;
-const midibyte EVENT_MIDI_SONG_FD        = 0xFD;      // undefined
-const midibyte EVENT_MIDI_ACTIVE_SENS    = 0xFE;      // not used in seq24
-const midibyte EVENT_MIDI_RESET          = 0xFF;      // not used in seq24
+const midibyte EVENT_MIDI_SYSEX          = 0xF0;    // redundant, see below
+const midibyte EVENT_MIDI_QUARTER_FRAME  = 0xF1;    // system common > 0 bytes
+const midibyte EVENT_MIDI_SONG_POS       = 0xF2;    // 2 data bytes
+const midibyte EVENT_MIDI_SONG_SELECT    = 0xF3;    // 1 data byte, not used
+const midibyte EVENT_MIDI_SONG_F4        = 0xF4;    // undefined
+const midibyte EVENT_MIDI_SONG_F5        = 0xF5;    // undefined
+const midibyte EVENT_MIDI_TUNE_SELECT    = 0xF6;    // 0 data bytes, not used
+const midibyte EVENT_MIDI_SYSEX_END      = 0xF7;    // redundant, see below
+const midibyte EVENT_MIDI_SYSEX_CONTINUE = 0xF7;    // redundant, see below
+const midibyte EVENT_MIDI_CLOCK          = 0xF8;    // no data bytes
+const midibyte EVENT_MIDI_SONG_F9        = 0xF9;    // undefined
+const midibyte EVENT_MIDI_START          = 0xFA;    // no data bytes
+const midibyte EVENT_MIDI_CONTINUE       = 0xFB;    // no data bytes
+const midibyte EVENT_MIDI_STOP           = 0xFC;    // no data bytes
+const midibyte EVENT_MIDI_SONG_FD        = 0xFD;    // undefined
+const midibyte EVENT_MIDI_ACTIVE_SENSE   = 0xFE;    // 0 data bytes, not used
+const midibyte EVENT_MIDI_RESET          = 0xFF;    // 0 data bytes, not used
 
 /**
  *  0xFF is a MIDI "escape code" used in MIDI files to introduce a MIDI meta
@@ -134,7 +134,7 @@ const midibyte EVENT_MIDI_RESET          = 0xFF;      // not used in seq24
  *  to the sequencer by other MIDI participants.
  */
 
-const midibyte EVENT_MIDI_META           = 0xFF;      // an escape code
+const midibyte EVENT_MIDI_META           = 0xFF;    // an escape code
 
 /**
  *  Provides values for the currently-supported Meta events:
@@ -156,12 +156,12 @@ const midibyte EVENT_META_ILLEGAL        = 0xFF;      // a problem code
 /**
  *  This value of 0xFF is Sequencer64's channel value that indicates that
  *  the event's m_channel value is bogus.  However, it also means that the
- *  channel is encoded in the m_status byte itself.  This is our work around
- *  to be able to hold a multi-channel SMF 0 track in a sequence.  In a
- *  Sequencer64 SMF 0 track, every event has a channel.  In a Sequencer64 SMF
- *  1 track, the events do not have a channel.  Instead, the channel is a
- *  global value of the sequence, and is stuffed into each event when the
- *  event is played or is written to a MIDI file.
+ *  channel, if applicable to the event, is encoded in the m_status byte
+ *  itself.  This is our work around to be able to hold a multi-channel SMF 0
+ *  track in a sequence.  In a Sequencer64 SMF 0 track, every event has a
+ *  channel.  In a Sequencer64 SMF 1 track, the events do not have a channel.
+ *  Instead, the channel is a global value of the sequence, and is stuffed
+ *  into each event when the event is played or is written to a MIDI file.
  */
 
 const midibyte EVENT_NULL_CHANNEL        = 0xFF;
@@ -559,23 +559,7 @@ public:
     void set_status (midibyte status);
     void set_status (midibyte eventcode, midibyte channel);
     void set_meta_status (midibyte metatype);
-
-    /**
-     *  This function is used in recording to preserve the input channel
-     *  information for deciding what to do with an incoming MIDI event.
-     *  It replaces stazed's set_status() that had an optional "record"
-     *  parameter.  This call allows channel to be detected and used in MIDI
-     *  control events.
-     *
-     * \param eventcode
-     *      The status byte, generally read from the MIDI buss.
-     */
-
-    void set_status_keep_channel (midibyte eventcode)
-    {
-        m_status = eventcode;
-        m_channel = eventcode & EVENT_GET_CHAN_MASK;
-    }
+    void set_status_keep_channel (midibyte eventcode);
 
     /**
      *  Sets the channel "nybble", without modifying the status "nybble".
@@ -583,16 +567,20 @@ public:
      *  channel generally overrides this value in the usage of the event.
      *
      * \param channel
-     *      The channel byte to be set.
+     *      The channel byte to be set.  It is masked to ensure the value
+     *      ranges from 0x0 to 0xF.  This update should be safe, but we could
+     *      allow EVENT_NULL_CHANNEL if issues are uncovered.
      */
 
     void set_channel (midibyte channel)
     {
-        m_channel = channel;
+        m_channel = (channel == EVENT_NULL_CHANNEL) ?
+            EVENT_NULL_CHANNEL : (channel & EVENT_GET_CHAN_MASK) ;
     }
 
     /**
      * \getter m_status
+     *      Note that we have ensured that status ranges from 0x80 to 0xFF.
      */
 
     midibyte get_status () const
@@ -1049,6 +1037,8 @@ public:
     {
         return is_note_off_velocity(m_status, m_data[1]);
     }
+
+    void adjust_note_off ();
 
     /**
      *  Indicates if the m_status value is a one-byte message (Program Change

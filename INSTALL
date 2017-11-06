@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.93.4 and above
+INSTALL for Sequencer64 v. 0.93.5 and above
 Chris Ahlstrom
-2015-09-10 to 2017-09-05
+2015-09-10 to 2017-11-05
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -39,7 +39,7 @@ Steps:
        auto-configure) or run the following commands, which set up a release
        build of seq64 (native JACK, native ALSA fallback).
 
-       $ ./bootstrap
+       $ ./bootstrap    (needed only if the configure script does not exist)
        $ ./configure
 
        If you do not want to see a lot of output, the stock autotools

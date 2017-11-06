@@ -469,6 +469,14 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
  *  eventually processing gets swamped until we kill VMPK.  And we now have a
  *  note sounding even though neither app is running.  Really screws up ALSA!
  *
+ * Events:
+ *
+ *      -  SND_SEQ_EVENT_PORT_START
+ *      -  SND_SEQ_EVENT_PORT_EXIT
+ *      -  SND_SEQ_EVENT_PORT_CHANGE
+ *      -  SND_SEQ_EVENT_PORT_SUBSCRIBED (not handled)
+ *      -  SND_SEQ_EVENT_PORT_UNSUBSCRIBED (not handled)
+ *
  * \todo
  *      Also, we need to consider using the new remcount return code to loop
  *      on receiving events as long as we are getting them.

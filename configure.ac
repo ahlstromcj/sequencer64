@@ -27,7 +27,7 @@ dnl ---------------------------------------------------------------------------
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.93$)
 AC_CONFIG_MACRO_DIRS([m4])
-AC_INIT(Sequencer64, [0.93.4], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.93.5], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl See AC_CONFIG_SRCDIR
@@ -149,7 +149,7 @@ AC_SUBST(PACKAGE)
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
 
-VERSION="0.93.4"
+VERSION="0.93.5"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -522,7 +522,7 @@ dnl Eventually we want to make ALSA optional for the user/developer.
 AC_ARG_ENABLE(rtmidi,
     [AS_HELP_STRING(--enable-rtmidi, [Enable rtmidi build])],
     [rtmidi=$enableval],
-    [rtmidi=no])
+    [rtmidi=yes])
 
 if test "$rtmidi" != "no"; then
     build_rtmidi="yes"
@@ -749,8 +749,8 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-09-05"
-#define VERSION "0.93.4"
+#define VERSION_DATE_SHORT "2017-11-05"
+#define VERSION "0.93.5"
 
 )
 

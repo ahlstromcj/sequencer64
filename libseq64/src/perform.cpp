@@ -4133,8 +4133,6 @@ perform::input_func ()
                     {
                         if (m_midiclockrunning)
                             m_midiclocktick += SEQ64_MIDI_CLOCK_INCREMENT;  // 8
-
-                        // Are these being put on bus as NOTES?????
                     }
                     else if (ev.get_status() == EVENT_MIDI_SONG_POS)
                     {
@@ -4143,7 +4141,7 @@ perform::input_func ()
                         m_midiclockpos = combine_bytes(a,b);
                         m_midiclockpos *= 48;
                     }
-#if 0   // new code disabled to try to verify the bug
+#if 0               // currently filtered in midi_jack
                     else if
                     (
                         ev.get_status() == EVENT_MIDI_ACTIVE_SENSE ||

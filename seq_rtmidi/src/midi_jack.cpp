@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-08-22
+ * \updates       2017-11-06
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -893,12 +893,13 @@ midi_jack::api_continue_from (midipulse tick, midipulse /*beats*/)
 
     /*
      * New code to work like the ALSA version, needs testing.  Related to
-     * issue #67.
+     * issue #67.  However, the ALSA version sends Continue, flushes, and
+     * then sends Song Position, so we will match that here.
      */
 
-    send_byte(EVENT_MIDI_SONG_POS);
-    api_flush();
     send_byte(EVENT_MIDI_CONTINUE);
+    api_flush();
+    send_byte(EVENT_MIDI_SONG_POS);
     apiprint("api_continue_from", "jack");
 }
 
@@ -1526,10 +1527,20 @@ midi_in_jack::api_get_midi_event (event * inev)
             }
 #else
             /*
-             * For now, ignore these messages.
+             * For now, ignore certain messages; they're not handled by the
+             * perform object.  Could be handled there, but saves some
+             * processing time if done here.
              */
 
-            result = false;                 /* sequencer64-packages #4      */
+            midibyte st = mm[0];
+            if (st == EVENT_MIDI_ACTIVE_SENSE || st == EVENT_MIDI_RESET)
+            {
+                result = false;             /* sequencer64-packages #4      */
+            }
+            else
+            {
+                inev->set_status(st);
+            }
 #endif
         }
     }

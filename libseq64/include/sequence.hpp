@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-08-14
+ * \updates       2017-11-11
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -250,7 +250,8 @@ private:
     /**
      *  Contains the proper MIDI channel for this sequence.  However, if this
      *  value is EVENT_NULL_CHANNEL (0xFF), then this sequence is an SMF 0
-     *  track, and has no single channel.
+     *  track, and has no single channel.  Please note that this is the output
+     *  channel.
      */
 
     midibyte m_midi_channel;
@@ -1460,6 +1461,18 @@ public:
         return m_unit_measure;
     }
 
+    /**
+     * \getter m_channel_match
+     *      The master bus needs to know if the match feature is truly in
+     *      force, otherwise it must pass the incoming events to all recording
+     *      sequences.  Compare this function to channels_match().
+     */
+
+    bool channel_match () const
+    {
+        return m_channel_match;
+    }
+
 #ifdef SEQ64_STAZED_EXPAND_RECORD
 
     void set_overwrite_rec (bool ovwr);
@@ -1515,12 +1528,12 @@ private:
      *      The event whose channel nybble is to be checked.
      *
      * \return
-     *      Returns true if the channel-matching feature is enable and the
-     *      channels match, or true if the channel-matching feature is turned
-     *      off.
+     *      Returns true if the channel-matching feature is enabled and the
+     *      channel matches, or true if the channel-matching feature is turned
+     *      off, in which case the sequence accepts events on any channel.
      */
 
-    bool channel_match (const event & e) const
+    bool channels_match (const event & e) const
     {
         if (m_channel_match)
             return (e.get_status() & 0x0F) == m_midi_channel;

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-09-05
+ * \updates       2017-11-10
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -99,6 +99,7 @@ static struct option long_options [] =
 {
     {"help",                0, 0, 'h'},
     {"version",             0, 0, 'V'},
+    {"verbose",             0, 0, 'v'},
     {"home",                required_argument, 0, 'H'}, /* new */
 #ifdef SEQ64_LASH_SUPPORT
     {"lash",                0, 0, 'L'},                 /* new */
@@ -182,7 +183,7 @@ static struct option long_options [] =
  *
 \verbatim
         0123456789 @AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz
-         ooooooooo oxxxxxx x  xx  xx xxx xxxxxxx *xx xxxxx xxxxa   x
+         ooooooooo oxxxxxx x  xx  xx xxx xxxxxxx *xx xxxxx xxxxx   x
 \endverbatim
  *
  *  Previous arg-list, items missing! "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"
@@ -206,7 +207,8 @@ SEQ64_APP_NAME " v " SEQ64_VERSION
 "Usage: " SEQ64_APP_NAME " [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message and exit.\n"
-"   -v, -V, --version        Show program version/build  information and exit.\n"
+"   -V, --version            Show program version/build  information and exit.\n"
+"   -v, --verbose            Verbose mode, show more data to the console.\n"
 "   -H, --home dir           Set the directory to hold the configuration files,\n"
 "                            always relative to $HOME.  The default is\n"
 "                            .config/sequencer64.\n"
@@ -415,8 +417,8 @@ help_check (int argc, char * argv [])
         if
         (
             (arg == "-h") || (arg == "--help") ||
-            (arg == "-v") || (arg == "-V") || (arg == "--version") ||
-            (arg == "--v") || (arg == "--V")
+            (arg == "-V") || (arg == "--version") || (arg == "--V")
+            /* (arg == "-v") || (arg == "--v") */
         )
         {
             result = true;
@@ -829,10 +831,12 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 'D':                           /* --legacy-record option       */
             seq64::rc().filter_by_channel(false);
+            p.filter_by_channel(false);     /* important! */
             break;
 
         case 'd':                           /* --record-by-channel option   */
             seq64::rc().filter_by_channel(true);
+            p.filter_by_channel(true);      /* important! */
             break;
 
         case 'F':                           /* --usr option                 */
@@ -891,6 +895,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
         case 'l':
             seq64::rc().legacy_format(true);
             seq64::rc().filter_by_channel(false);
+            p.filter_by_channel(false);     /* important! */
             printf("[Setting legacy seq24 format/operation]\n");
             break;
 
@@ -971,6 +976,9 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             break;
 
         case 'v':
+            seq64::rc().verbose_option(true);
+            break;
+
         case 'V':
             printf("%s", versiontext.c_str());
             printf("%s", build_details().c_str());

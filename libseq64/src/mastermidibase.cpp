@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-03-21
+ * \updates       2017-11-11
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -683,15 +683,17 @@ mastermidibase::set_sequence_input (bool state, sequence * seq)
             if (state)
             {
                 /*
-                 * We might have a sequence in the vector; add the sequence if
-                 * not already added.
+                 * Add the sequence if not already added.
                  */
 
                 bool have_seq_already = false;
                 for (size_t i = 0; i < m_vector_sequence.size(); ++i)
                 {
                     if (m_vector_sequence[i] == seq)
+                    {
                         have_seq_already = true;
+                        break;
+                    }
                 }
                 if (! have_seq_already)
                     m_vector_sequence.push_back(seq);
@@ -699,14 +701,16 @@ mastermidibase::set_sequence_input (bool state, sequence * seq)
             else
             {
                 /*
-                 * If we have a sequence that is in the vector, remove the
-                 * sequence.
+                 * If the sequence is already in the vector, remove it.
                  */
 
                 for (size_t i = 0; i < m_vector_sequence.size(); ++i)
                 {
                     if (m_vector_sequence[i] == seq)
+                    {
                         m_vector_sequence.erase(m_vector_sequence.begin() + i);
+                        break;
+                    }
                 }
             }
             if (m_vector_sequence.size() != 0)
@@ -732,30 +736,48 @@ mastermidibase::set_sequence_input (bool state, sequence * seq)
 /**
  *  This function augments the recording functionality by looking for a
  *  sequence that has a matching channel number, logging the event to that
- *  sequence, and then immediately exiting.
+ *  sequence, and then immediately exiting.  It should be called only if
+ *  m_filter_by_channel is set.
+ *
+ *  If we have more than one sequence recording, and the channel-match feature
+ *  [the sequence::channels_match() function] is disabled, then only the first
+ *  sequence will get the events.  So now we add an addition call to the new
+ *  sequence::channel_match() function.
  *
  * \param ev
- *      The event that was recorded, passed as a copy.
+ *      The event that was recorded, passed as a copy.  (Do we really need a
+ *      copy?)
  */
 
 void
 mastermidibase::dump_midi_input (event ev)
 {
-    for (size_t i = 0; i < m_vector_sequence.size(); ++i)
+    size_t sz = m_vector_sequence.size();
+    if (sz > 0)
     {
-        if (is_nullptr(m_vector_sequence[i]))          // error check
+        for (size_t i = 0; i < sz; ++i)
         {
-            break;
-        }
-        else if (m_vector_sequence[i]->stream_event(ev))
-        {
-            /*
-             * Did we find a match to the sequence channel?  Then don't bother
-             * with the remaining sequences.
-             */
+            if (is_nullptr(m_vector_sequence[i]))          // error check
+            {
+                errprint("dump_midi_input(): bad sequence");
+                continue;
+            }
+            else if (m_vector_sequence[i]->stream_event(ev))
+            {
+                /*
+                 * Did we find a match to the sequence channel?  Then don't bother
+                 * with the remaining sequences.  Otherwise, pass the event to any
+                 * other recording sequences.
+                 */
 
-            break;
+                if (m_vector_sequence[i]->channel_match())
+                    break;
+            }
         }
+    }
+    else
+    {
+        errprint("dump_midi_input(): no sequences");
     }
 }
 

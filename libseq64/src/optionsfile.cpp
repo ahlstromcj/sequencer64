@@ -613,7 +613,12 @@ optionsfile::parse (perform & p)
                     ++b;
                 }
                 else if (count == 1)
-                    rc().filter_by_channel(bool(bus));
+                {
+                    bool flag = bool(bus);
+                    rc().filter_by_channel(flag);
+                    p.filter_by_channel(flag);      /* important! */
+                    infoprintf("filter-by-channel %s\n", flag ? "on" : "off");
+                }
             }
             if (b < buses)
                 return error_message("midi-input", "too few buses");
@@ -622,7 +627,16 @@ optionsfile::parse (perform & p)
     else
         return error_message("midi-input");
 
-    if (rc().legacy_format())
+#ifdef USE_THIS_CODE
+
+    /*
+     * This is not right; it is already handled above, irregardless of legacy
+     * status, and the next section is [manual-alsa-ports], which is handled
+     * further on.  The handling here is out of order, but configfile ::
+     * line_after() starts from the beginning every time.
+     */
+
+    if (! rc().legacy_format())
     {
         if (next_data_line(file))                       /* new 2016-08-20 */
         {
@@ -630,6 +644,9 @@ optionsfile::parse (perform & p)
             rc().filter_by_channel(bool(flag));
         }
     }
+
+#endif  // USE_THIS_CODE
+
     if (line_after(file, "[midi-clock-mod-ticks]"))
     {
         long ticks = 64;

@@ -1,11 +1,11 @@
 INSTALL for Sequencer64 v. 0.93.5 and above
 Chris Ahlstrom
-2015-09-10 to 2017-11-05
+2015-09-10 to 2017-11-10
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
 Starting with version 0.90.4, four different versions of the program can be
-build:
+built:
 
     -   seq64. Native JACK; the default build after a simple bootstrap.
         command; JACK MIDI with optional JACK transport; fall-back to ALSA;

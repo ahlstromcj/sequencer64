@@ -482,7 +482,8 @@ midi_alsa_info::api_port_start (mastermidibus & masterbus, int bus, int port)
  *      on receiving events as long as we are getting them.
  *
  * \param inev
- *      The event to be set based on the found input event.
+ *      The event to be set based on the found input event.  It is the
+ *      destination for the incoming event.
  *
  * \return
  *      This function returns false if we are not using virtual/manual ports

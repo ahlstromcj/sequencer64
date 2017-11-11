@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-09-04
+ * \updates       2017-11-11
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -324,6 +324,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_32nds_per_quarter         (8),
     m_us_per_quarter_note       (tempo_us_from_bpm(SEQ64_DEFAULT_BPM)),
     m_master_bus                (nullptr),
+    m_filter_by_channel         (false),                /* "rc" option      */
     m_master_clocks             (),                     /* vector<clock_e>  */
     m_master_inputs             (),                     /* vector<bool>     */
     m_one_measure               (m_ppqn * 4),
@@ -463,8 +464,10 @@ perform::create_master_bus ()
     m_master_bus = new (std::nothrow) mastermidibus();
     bool result = not_nullptr(m_master_bus);
     if (result)
+    {
+        m_master_bus->filter_by_channel(m_filter_by_channel);
         m_master_bus->port_settings(m_master_clocks, m_master_inputs);
-
+    }
     return result;
 }
 
@@ -4182,15 +4185,14 @@ perform::input_func ()
                         if (m_master_bus->is_dumping())
                         {
                             ev.set_timestamp(m_tick);
-#ifdef USE_STAZED_MIDI_DUMP
-                            m_master_bus->dump_midi_input(ev);
-#else
-                            m_master_bus->get_sequence()->stream_event(ev);
-#endif
+                            if (m_filter_by_channel)
+                                m_master_bus->dump_midi_input(ev);
+                            else
+                                m_master_bus->get_sequence()->stream_event(ev);
                         }
-                        else            /* use it to control our sequencer */
+                        else
                         {
-                            midi_control_event(ev);     /* replaces big block */
+                            midi_control_event(ev);  /* seq control event */
                         }
                     }
                     if (ev.get_status() == EVENT_MIDI_SYSEX)

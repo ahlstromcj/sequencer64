@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-19
+ * \updates       2017-11-11
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -657,6 +657,14 @@ private:
     mastermidibus * m_master_bus;
 
     /**
+     *  Provides storage for this "rc" configuration option so that the
+     *  perform object can set it in the master buss once that has been
+     *  created.
+     */
+
+    bool m_filter_by_channel;
+
+    /**
      *  Saves the clock settings obtained from the "rc" (options) file so that
      *  they can be loaded into the mastermidibus once it is created.
      */
@@ -928,7 +936,7 @@ private:
 
     std::vector<int> m_undo_vect;
 
-    /*
+    /**
      * Used for redo track modification support.
      */
 
@@ -1273,6 +1281,7 @@ public:
 
     void filter_by_channel (bool flag)
     {
+        m_filter_by_channel = flag;
         if (not_nullptr(m_master_bus))
             m_master_bus->filter_by_channel(flag);
     }

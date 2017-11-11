@@ -23,7 +23,7 @@
  * \file          midibus_rm.hpp
  *
  *  This module declares/defines the base class for MIDI I/O for Linux, Mac,
- *  and Windows, using a refactored RtMidi library..
+ *  and Windows, using a refactored "RtMidi" library.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom

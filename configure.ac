@@ -90,11 +90,11 @@ dnl so we only run them on non MinGW-Systems. For MinGW we also need to link
 dnl against ws2_32.
 dnl
 dnl case $host_os in
-dnl 
+dnl
 dnl 	mingw*)
 dnl 		LDFLAGS="-lws2_32"
 dnl 		;;
-dnl 
+dnl
 dnl 	*)
 dnl 		AC_TYPE_OFF_T
 dnl 		AC_TYPE_SIZE_T
@@ -338,7 +338,7 @@ if test x"${as_needed}" = x"unknown" ; then
         [],
         [as_needed="1"],
         [as_needed=""])
-    LDFLAGS="${ac_old_ldflags}" 
+    LDFLAGS="${ac_old_ldflags}"
 fi
 if test -n "$as_needed"; then
     AC_MSG_RESULT(yes)
@@ -813,13 +813,7 @@ case "$host_os" in
     *)
         AC_MSG_NOTICE([normal pthreads support])
         AC_MSG_CHECKING([Running normal PTHREAD test.])
-        AX_PTHREAD([
-            echo Using settings from AX_PTHREAD
-            LIBS="$PTHREAD_LIBS $LIBS"
-            CFLAGS="  $PTHREAD_CFLAGS $CFLAGS"
-            CXXFLAGS="$PTHREAD_CFLAGS $CXXFLAGS "
-            CC="$PTHREAD_CC"],
-            [AC_MSG_ERROR(Sequencer64 requires pthreads)])
+        AX_PTHREAD
         ;;
 esac
 

@@ -461,7 +461,7 @@ perform::~perform ()
 bool
 perform::create_master_bus ()
 {
-    m_master_bus = new (std::nothrow) mastermidibus();
+    m_master_bus = new (std::nothrow) mastermidibus();  /* default args */
     bool result = not_nullptr(m_master_bus);
     if (result)
     {

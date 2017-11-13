@@ -1,16 +1,16 @@
 #******************************************************************************
-# Makefile.am (seq64cli)
+# Makefile.am (midiclocker64)
 #------------------------------------------------------------------------------
 ##
 # \file       	Makefile.am
-# \library    	seq64cli application
+# \library    	midiclocker64 application
 # \author     	Chris Ahlstrom
-# \date       	2017-04-07
-# \update      2017-11-12
+# \date       	2017-11-11
+# \update      2017-11-11
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
-# 		This module provides an Automake makefile for the seq64cli C/C++
+# 		This module provides an Automake makefile for the midiclocker64 C/C++
 # 		application.
 #
 #------------------------------------------------------------------------------
@@ -27,17 +27,6 @@ MAINTAINERCLEANFILES = Makefile.in Makefile $(AUX_DIST)
 #------------------------------------------------------------------------------
 
 CLEANFILES = *.gc*
-
-#******************************************************************************
-#  EXTRA_DIST
-#------------------------------------------------------------------------------
-#
-#  getopt_test.c is not ready and is not included at this time.
-#	$(TESTS) is not included because it is derived files.
-#
-#------------------------------------------------------------------------------
-
-# EXTRA_DIST = dl_leaks.supp make-tests README
 
 #******************************************************************************
 # Items from configure.ac
@@ -96,9 +85,9 @@ libseq_portmididir = $(builddir)/seq_portmidi/src/.libs
 #------------------------------------------------------------------------------
 
 if BUILD_WINDOWS
-AM_CXXFLAGS = -I$(top_srcdir)/libseq64/include -I$(top_srcdir)/seq_portmidi/include
+AM_CXXFLAGS = -I$(top_srcdir)/libseq64/include
 else
-AM_CXXFLAGS = -I$(top_srcdir)/libseq64/include -I$(top_srcdir)/seq_rtmidi/include $(JACK_CFLAGS) $(LASH_CFLAGS)
+AM_CXXFLAGS = -I$(top_srcdir)/libseq64/include $(JACK_CFLAGS)
 endif
 
 #******************************************************************************
@@ -119,18 +108,13 @@ libmath = -lm
 # Project-specific library files
 #----------------------------------------------------------------------------
 #
-#	These files are the ones built in the source tree, not the installed
-#	ones.
-#
-#  Sometimes one has to change the order of the libraries in this list.
-#
-#  $(libmath)
-#  -L$(libseq_gtkmm2dir) -lseq_gtkmm2 \
+#	These files are the ones built in the source tree, not the installed ones.
+#	Sometimes one has to change the order of the libraries in this list.
 #
 #----------------------------------------------------------------------------
 
 if BUILD_WINDOWS
-libraries = -L$(libseq64dir) -lseq64 -L$(libseq_portmididir) -lseq_portmidi -lwinmm
+libraries = -L$(libseq64dir) -lseq64 -lwinmm
 else
 libraries = -L$(libseq64dir) -lseq64 -L$(libseq_rtmididir) -lseq_rtmidi
 endif
@@ -146,45 +130,31 @@ endif
 #----------------------------------------------------------------------------
 
 if BUILD_WINDOWS
-dependencies = $(libseq_portmididir)/libseq_portmidi.la $(libseq64dir)/libseq64.la
+dependencies = $(libseq_portmididir)/libseq_portmidi.la \
+ $(libseq64dir)/libseq64.la
 else
-dependencies = $(libseq_rtmididir)/libseq_rtmidi.la $(libseq64dir)/libseq64.la
+dependencies = $(libseq_rtmididir)/libseq_rtmidi.la \
+ $(libseq64dir)/libseq64.la
 endif
 
 #******************************************************************************
 # The programs to build
 #------------------------------------------------------------------------------
 
-bin_PROGRAMS = seq64cli
+bin_PROGRAMS = midiclocker64
 
 #******************************************************************************
-# seq64cli
+# midiclocker64
 #----------------------------------------------------------------------------
 
-seq64cli_SOURCES = seq64rtcli.cpp
-seq64cli_DEPENDENCIES = $(dependencies)
+midiclocker64_SOURCES = midiclocker64.cpp midi_clocker.cpp midi_clocker.hpp
+midiclocker64_DEPENDENCIES = $(dependencies)
 
 if BUILD_WINDOWS
-seq64cli_LDADD = $(libraries) $(AM_LDFLAGS) $(PTHREAD_LIBS)
+midiclocker64_LDADD = $(libraries) $(AM_LDFLAGS) $(PTHREAD_LIBS)
 else
-seq64cli_LDADD = $(libraries) $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
+midiclocker64_LDADD = $(libraries) $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
 endif
-
-#******************************************************************************
-# Testing
-#------------------------------------------------------------------------------
-#
-# 	   http://www.gnu.org/software/hello/manual/automake/Simple-Tests.html
-#
-#     Not supported for this application.  We supply a bogus test script.
-#
-#------------------------------------------------------------------------------
-
-# .PHONY: test_script
-# 
-# TESTS = test_script
-# 
-# test: check
 
 #******************************************************************************
 #  distclean
@@ -194,7 +164,7 @@ distclean-local:
 	-rm -rf $(testsubdir)
 
 #******************************************************************************
-# Makefile.am (seq64cli)
+# Makefile.am (midiclocker64)
 #------------------------------------------------------------------------------
 # 	vim: ts=3 sw=3 ft=automake
 #------------------------------------------------------------------------------

@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-11-10
+dnl \update        2017-11-13
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -91,18 +91,18 @@ dnl against ws2_32.
 dnl
 dnl case $host_os in
 dnl 
-dnl 	mingw*)
-dnl 		LDFLAGS="-lws2_32"
-dnl 		;;
+dnl     mingw*)
+dnl         LDFLAGS="-lws2_32"
+dnl         ;;
 dnl 
-dnl 	*)
-dnl 		AC_TYPE_OFF_T
-dnl 		AC_TYPE_SIZE_T
-dnl 		AC_TYPE_SSIZE_T
-dnl 		AC_TYPE_UINT8_T
-dnl 		AC_TYPE_UINT32_T
-dnl 		AC_TYPE_UINT64_T
-dnl 		;;
+dnl     *)
+dnl         AC_TYPE_OFF_T
+dnl         AC_TYPE_SIZE_T
+dnl         AC_TYPE_SSIZE_T
+dnl         AC_TYPE_UINT8_T
+dnl         AC_TYPE_UINT32_T
+dnl         AC_TYPE_UINT64_T
+dnl         ;;
 dnl esac
 
 dnl Handle cross-compiling with mingw32.
@@ -749,7 +749,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-11-10"
+#define VERSION_DATE_SHORT "2017-11-13"
 #define VERSION "0.93.5"
 
 )
@@ -785,7 +785,7 @@ dnl
 dnl AX_PTHREAD leaves PTHREADS_LIBS empty for gcc, and sets PTHREADS_CFLAGS
 dnl to -pthread, which causes problems if we need -lpthread to appear in
 dnl pkgconfig files.
-
+dnl
 dnl AX_PTHREAD
 
 dnl VERBCFLAGS="-v"
@@ -795,13 +795,13 @@ dnl code.
 VERBCFLAGS=""
 
 case "$host_os" in
-	*cygwin*)
-		gnuwin=yes
+    *cygwin*)
+        gnuwin=yes
         AX_PTHREAD
         ;;
 
-	*mingw*)
-		gnuwin=yes
+    *mingw*)
+        gnuwin=yes
         AC_MSG_NOTICE([Setting up MingW pthreads support])
         CFLAGS="$CFLAGS -mthreads -pthread "
         CPPFLAGS="-DPTW32_STATIC_LIB $CPPFLAGS "
@@ -811,15 +811,9 @@ case "$host_os" in
         ;;
 
     *)
-        AC_MSG_NOTICE([normal pthreads support])
-        AC_MSG_CHECKING([Running normal PTHREAD test.])
-        AX_PTHREAD([
-            echo Using settings from AX_PTHREAD
-            LIBS="$PTHREAD_LIBS $LIBS"
-            CFLAGS="  $PTHREAD_CFLAGS $CFLAGS"
-            CXXFLAGS="$PTHREAD_CFLAGS $CXXFLAGS "
-            CC="$PTHREAD_CC"],
-            [AC_MSG_ERROR(Sequencer64 requires pthreads)])
+        AC_MSG_NOTICE([Normal pthreads support])
+        AC_MSG_CHECKING([Running normal PTHREAD test])
+        AX_PTHREAD
         ;;
 esac
 
@@ -904,6 +898,7 @@ AC_CONFIG_FILES([
  Seq64portmidi/Makefile
  Seq64rtmidi/Makefile
  Seq64cli/Makefile
+ Midiclocker64/Makefile
  man/Makefile
 ])
 

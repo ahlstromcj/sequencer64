@@ -338,7 +338,7 @@ if test x"${as_needed}" = x"unknown" ; then
         [],
         [as_needed="1"],
         [as_needed=""])
-    LDFLAGS="${ac_old_ldflags}" 
+    LDFLAGS="${ac_old_ldflags}"
 fi
 if test -n "$as_needed"; then
     AC_MSG_RESULT(yes)

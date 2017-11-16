@@ -522,7 +522,7 @@ dnl Eventually we want to make ALSA optional for the user/developer.
 AC_ARG_ENABLE(rtmidi,
     [AS_HELP_STRING(--enable-rtmidi, [Enable rtmidi build])],
     [rtmidi=$enableval],
-    [rtmidi=no])
+    [rtmidi=yes])
 
 if test "$rtmidi" != "no"; then
     build_rtmidi="yes"

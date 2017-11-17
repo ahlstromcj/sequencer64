@@ -1,4 +1,4 @@
-`configure' configures Sequencer64 0.93.1 to adapt to many kinds of systems.
+`configure' configures Sequencer64 0.93.5 to adapt to many kinds of systems.
 
 Usage: ./configure [OPTION]... [VAR=VALUE]...
 
@@ -61,7 +61,6 @@ Program names:
 System types:
   --build=BUILD     configure for building on BUILD [guessed]
   --host=HOST       cross-compile to build programs to run on HOST [BUILD]
-  --target=TARGET   configure for building compilers for TARGET [HOST]
 
 Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
@@ -69,22 +68,23 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
-  --enable-shared[=PKGS]  build shared libraries [default=yes]
-  --enable-static[=PKGS]  build static libraries [default=yes]
-  --enable-fast-install[=PKGS]
-                          optimize for fast installation [default=yes]
   --enable-dependency-tracking
                           do not reject slow dependency extractors
   --disable-dependency-tracking
                           speeds up one-time build
+  --enable-shared[=PKGS]  build shared libraries [default=yes]
+  --enable-static[=PKGS]  build static libraries [default=yes]
+  --enable-fast-install[=PKGS]
+                          optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --enable-as-needed      Enable linker option -Wl,--as-needed (default=yes)
+  --enable-as-needed      Enable linker options -Wl,--as-needed (default=yes)
+  --enable-mingw          Enable MingW Windows support
   --disable-jack          Disable JACK support
   --disable-jack-session  Disable JACK session support
   --enable-lash           Enable LASH support (deprecated)
-  --enable-rtmidi         Enable rtmidi build
+  --enable-rtmidi         Enable rtmidi build, which is the default
   --disable-alsatest      Do not try to compile and run a test Alsa program
-  --enable-cli            Enable RtMidi command-line build
+  --enable-cli            Enable rtmidi command-line build
   --enable-alsamidi       Enable standard ALSA build
   --enable-portmidi       Enable PortMidi build (deprecated)
   --disable-highlight     Disable highlighting empty sequences
@@ -112,7 +112,6 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-sysroot[=DIR]    Search for dependent libraries within DIR (or the
                           compiler's sysroot if not specified).
- --with-mingw32=DIR MingW32 installation location
   --with-alsa-prefix=PFX  Prefix where Alsa library is installed(optional)
   --with-alsa-inc-prefix=PFX  Prefix where include libraries are (optional)
 
@@ -124,12 +123,12 @@ Some influential environment variables:
   LIBS        libraries to pass to the linker, e.g. -l<library>
   CPPFLAGS    (Objective) C/C++ preprocessor flags, e.g. -I<include dir> if
               you have headers in a nonstandard directory <include dir>
-  LT_SYS_LIBRARY_PATH
-              User-defined run-time library search path.
-  CPP         C preprocessor
   CXX         C++ compiler command
   CXXFLAGS    C++ compiler flags
   CXXCPP      C++ preprocessor
+  LT_SYS_LIBRARY_PATH
+              User-defined run-time library search path.
+  CPP         C preprocessor
   PKG_CONFIG  path to pkg-config utility
   PKG_CONFIG_PATH
               directories to add to pkg-config's search path

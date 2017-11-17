@@ -1,7 +1,7 @@
 # .gitignore for sequencer64
 #
 # Chris Ahlstrom
-# Updates: 2015-09-12 to 2017-11-13
+# Updates: 2015-09-12 to 2017-11-16
 #
 # Compiled application
 
@@ -15,7 +15,6 @@ Seq64rtmidi/seq64
 Seq64rtmidi/seq64-static
 aclocal.m4
 bootstrap.stamp
-configure
 core
 dox-stamp
 doxygen_sqlite3.db

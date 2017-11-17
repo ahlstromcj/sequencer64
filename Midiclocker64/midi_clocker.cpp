@@ -297,8 +297,8 @@ midi_clocker::remember_pos (jack_position_t * xp0, jack_position_t * xp1)
  *  transport.
  *
  *      -   MIDI Beat Clock: 24 ticks per quarter note
- *      -   One MIDI-beat = six MIDI clocks ->
- *          4 MIDI-beats per quarter note (JACK beat)
+ *      -   One MIDI-beat = six MIDI clocks -> 4 MIDI-beats per quarter note
+ *          (JACK beat)
  *
  *  JACK counts bars and beats starting at 1.
  */
@@ -414,17 +414,15 @@ midi_clocker::send_rt_message
  *
  *  Viz. https://community.ardour.org/node/1433 and
  *  http://www.steinberg.net/forums/viewtopic.php?t=56065
+ *
+ *  This function retrieves the midi_clocker pointer that was set up for this
+ *  callback, and passed it to midi_clock::clock_process() so that we don't
+ *  have to redirect to "mc" so often.
  */
 
 int
 jack_process (jack_nframes_t nframes, void * arg)
 {
-    /*
-     * Retrieve the midi_clocker pointer that was set up for this callback.
-     * Note that we can (later) make this function more efficient by creating
-     * a function or two so that we don't have to redirect to "mc" so often.
-     */
-
     midi_clocker * mc = (midi_clocker *) arg;
     return not_nullptr(mc) ? mc->clock_process(nframes) : -1 ;
 }
@@ -434,7 +432,13 @@ jack_process (jack_nframes_t nframes, void * arg)
 #endif
 
 /**
+ *  Does the actual work of the JACK process callback.
  *
+ * \param nframes
+ *      The frame number provided by JACK.
+ *
+ * \return
+ *      Always returns 0.  This may be a bit too simplistic.
  */
 
 int
@@ -617,7 +621,7 @@ midi_clocker::clock_process (jack_nframes_t nframes)
     const double clock_ticks = samples_per_qn / 24.0;
 
     int ticks_this_cycle = 0;      /* sent clock ticks for this cycle */
-    while (1)
+    for (;;)
     {
         const double next_tick =
             m_clk_last_tick + clock_ticks + m_jitter_rand;

@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-11-13
+dnl \update        2017-11-16
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -516,11 +516,11 @@ dnl top-level Makefile to determine what directories are included in the
 dnl SUBDIRS variable.  Also see the latest versions of the midibus.hpp and
 dnl mastermidibus.hpp files in libseq64/include.
 dnl
-dnl Note that no MIDI framework, not even rtmidi, is enabled by default now.
+dnl Note that rtmidi is enabled by default now.
 dnl Eventually we want to make ALSA optional for the user/developer.
 
 AC_ARG_ENABLE(rtmidi,
-    [AS_HELP_STRING(--enable-rtmidi, [Enable rtmidi build])],
+    [AS_HELP_STRING(--enable-rtmidi, [Enable rtmidi build, which is the default])],
     [rtmidi=$enableval],
     [rtmidi=yes])
 
@@ -749,7 +749,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-11-13"
+#define VERSION_DATE_SHORT "2017-11-16"
 #define VERSION "0.93.5"
 
 )

@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.93.5 and above
 Chris Ahlstrom
-2015-09-10 to 2017-11-12
+2015-09-10 to 2017-11-17
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -20,14 +20,25 @@ built:
         option for Linux; might still be used for the upcoming Windows
         implementation.
 
-Steps:
+Quick Install:
+
+    This project finally provides a "configure" script for the normal
+    build process:
+
+        ./configure [options] ; make ; sudo make install
+
+    This build results in the first executable described above, seq64.
+
+Advanced Steps:
 
    0.  Preload any DEPENDENCIES, as listed at the end of this document.
        However, if some are missing, the configure script will tell you,
        or, at worst, a build error will tell you.
 
-   1.  Check-out the branch you want.  Make a branch if you want to make
-       changes.  The current branches are "master", "fixups", and "rtmidi".
+   1.  Check-out the branch you want, if you do not want "master".  Make a
+       branch if you want to make changes.  The active branches are
+       "tempo_track", and "qt5-support".  The comand "git branch -a" will
+       show other branches not yet deleted.
 
    2.  The first thing to do is decide what version of Sequencer64 you want to
        build.  There are now 4 versions:

@@ -1,7 +1,7 @@
 # .gitignore for sequencer64
 #
 # Chris Ahlstrom
-# Updates: 2015-09-12 to 2017-11-16
+# Updates: 2015-09-12 to 2017-11-17
 #
 # Compiled application
 
@@ -38,8 +38,6 @@ stamp-h1
 *.status
 latex
 autom4te.cache/
-aux-files/
-compile/
 scratch/
 i18n/
 .deps/

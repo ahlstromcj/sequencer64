@@ -25,7 +25,7 @@
  * \library       midiclocker64 application
  * \author        TODO team; refactoring by Chris Ahlstrom
  * \date          2017-11-10
- * \updates       2017-11-12
+ * \updates       2017-11-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -136,13 +136,17 @@ static const std::string s_help_version_info =
 static void
 usage (int status)
 {
-    printf(s_help_intro.c_str());
-    printf(s_help_options.c_str());
-    printf(s_help_paragraph_1.c_str());
-    printf(s_help_paragraph_2.c_str());
-    printf(s_help_paragraph_3.c_str());
-    printf(s_help_paragraph_4.c_str());
-    printf(s_help_bug_reports.c_str());
+    printf
+    (
+        "%s%s%s%s%s%s%s",
+        s_help_intro.c_str(),
+        s_help_options.c_str(),
+        s_help_paragraph_1.c_str(),
+        s_help_paragraph_2.c_str(),
+        s_help_paragraph_3.c_str(),
+        s_help_paragraph_4.c_str(),
+        s_help_bug_reports.c_str()
+    );
     exit(status);
 }
 

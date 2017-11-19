@@ -250,7 +250,7 @@ dnl testing provides only 1.5 (Debian unstable now provides 2.4).  So we don't
 dnl use these new macros, just the older, deprecated macros.
 dnl
 
-LT_PREREQ([2.4.6])
+LT_PREREQ([2.4.2])
 LT_INIT([win32-dll])
 
 dnl AC_SUBST([LIBTOOL_DEPS])

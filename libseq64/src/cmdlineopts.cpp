@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-11-10
+ * \updates       2017-11-18
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -182,8 +182,8 @@ static struct option long_options [] =
  *  seq64cli application.
  *
 \verbatim
-        0123456789 @AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz
-         ooooooooo oxxxxxx x  xx  xx xxx xxxxxxx *xx xxxxx xxxxx   x
+        0123456789 @AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz#
+         ooooooooo oxxxxxx x  xx  xx xxx xxxxxxx *xx xxxxx xxxxx   x    x
 \endverbatim
  *
  *  Previous arg-list, items missing! "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"
@@ -193,7 +193,7 @@ static struct option long_options [] =
  */
 
 static const std::string s_arg_list =
-    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNn:Ppq:RrtSsU:uVvx:"    /* modern args      */
+    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNn:Ppq:RrtSsU:uVvx:#"   /* modern args      */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -401,7 +401,7 @@ get_compound_option
  *      The array of command-line argument pointers.
  *
  * \return
- *      Returns true only if -v, -V, --version, -h, --help, or "?" were
+ *      Returns true only if -v, -V, --version, -#, -h, --help, or "?" were
  *      encountered.  If the legacy options occurred, then
  *      rc().legacy_format(true) is called, as a side effect, because it will
  *      be needed before we parse the options.
@@ -417,8 +417,8 @@ help_check (int argc, char * argv [])
         if
         (
             (arg == "-h") || (arg == "--help") ||
-            (arg == "-V") || (arg == "--version") || (arg == "--V")
-            /* (arg == "-v") || (arg == "--v") */
+            (arg == "-V") || (arg == "--version") || (arg == "--V") ||
+            (arg == "-#")       /*  || (arg == "-v") || (arg == "--v")  */
         )
         {
             result = true;
@@ -991,6 +991,11 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             (
                 seq64::interaction_method_t(atoi(optarg))
             );
+            break;
+
+        case '#':
+            printf("%s\n", SEQ64_VERSION);
+            result = SEQ64_NULL_OPTION_INDEX;
             break;
 
         default:

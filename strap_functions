@@ -8,7 +8,7 @@
 # \library    	Any project
 # \author     	Chris Ahlstrom
 # \date       	2015-07-24
-# \update     	2015-10-17
+# \update     	2017-11-17
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -374,19 +374,21 @@ function clean_tempfiles()
 #------------------------------------------------------------------------------
 #
 #     Cleans out the project tree of GNU configure files.  Used for a
-#     full cleaning.
+#     full cleaning.  The aux-files are now kept around for the configure
+#     script, as well as configure and depcomp.
+#
+#        rm -rf aux-files 
 #
 #------------------------------------------------------------------------------
 
 function clean_cfgfiles()
 {
-   local CFGFILES="configure libtool depcomp Makefile.in ltmain.sh"
+   local CFGFILES="libtool Makefile.in ltmain.sh"
    echo "* Cleaning configure-related files..."
    for FILE in $CFGFILES
    do
       find . -name $FILE -exec rm -f '{}' \; 2> /dev/null
    done
-   rm -rf aux-files 
 }
 
 #******************************************************************************
@@ -555,7 +557,6 @@ function clean_project()
          rm -rf debian/lib$1
          rm -f install-sh mkinstalldirs missing
          rm -f Makefile.in
-         rm -f aux-files/*
          rm -rf config
          rm -f include/Makefile.in
          rm -f include/stamp-h.in

@@ -17074,8 +17074,8 @@ fi
 done
 
 if test -z "$DOXYGEN";
-   then { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Doxygen not found, continuing without Doxygen" >&5
-$as_echo "$as_me: WARNING: Doxygen not found, continuing without Doxygen" >&2;}
+   then { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Doxygen not found, FYI only" >&5
+$as_echo "$as_me: WARNING: Doxygen not found, FYI only" >&2;}
 fi
 
 

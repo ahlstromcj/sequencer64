@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-11-16
+dnl \update        2017-11-22
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -412,12 +412,13 @@ dnl AM_PATH_ALSA(0.9.0)
 dnl Check for the presence of Doxygen.  Not an error to be missing, but
 dnl we don't want to try to build documentation if it is not present.
 dnl See http://www.gnu.org/software/autoconf-archive/ax_prog_doxygen.html
+dnl Note the building the documentation also requires graphviz to be installed.
 dnl
 dnl AC_PROG_DOXYGEN
 
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN";
-   then AC_MSG_WARN([Doxygen not found, continuing without Doxygen])
+   then AC_MSG_WARN([Doxygen not found, FYI only])
 fi
 
 dnl gtkmm
@@ -749,7 +750,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-11-16"
+#define VERSION_DATE_SHORT "2017-11-22"
 #define VERSION "0.93.5"
 
 )

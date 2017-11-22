@@ -26,7 +26,7 @@
  * \library       midiclocker64 application
  * \author        TODO team; refactoring by Chris Ahlstrom
  * \date          2017-11-10
- * \updates       2017-11-13
+ * \updates       2017-11-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -207,7 +207,11 @@ midi_clocker::wake_main_now ()
 {
 #ifndef PLATFORM_WINDOWS
     char c = 0;
-    (void) write(m_wake_main_write, &c, sizeof c);
+    ssize_t count = write(m_wake_main_write, &c, sizeof c);
+    if (count == (-1))
+    {
+        errprint("wake_main_now(): write() failed");
+    }
 #endif
 }
 
@@ -224,12 +228,14 @@ midi_clocker::wake_main_wait ()
     if (m_wake_main_read != -1)
     {
         char c = 0;
-        (void) read(m_wake_main_read, &c, sizeof c);
+        ssize_t count = read(m_wake_main_read, &c, sizeof c);
+        if (count == (-1))
+        {
+            errprint("wake_main_wait(): read() failed");
+        }
     }
     else
-    {
-        sleep(1); /* fall back on using sleep if pipe fd is invalid */
-    }
+        sleep(1);   /* fall back to using sleep() if pipe fd is invalid */
 #else
     sleep(1);
 #endif

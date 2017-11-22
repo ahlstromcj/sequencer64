@@ -423,7 +423,8 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
  *      extra informatino that is needed by this port.  Too many entities!
  *
  * \param multiclient
- *      If true, use multiple JACK clients.  EXPERIMENTAL.
+ *      If true, use multiple JACK clients.  Experimental, not really ready
+ *      for prime time.
  */
 
 midi_jack::midi_jack

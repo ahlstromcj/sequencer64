@@ -1,6 +1,6 @@
 README for Sequencer64 0.93.5 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2017-11-11
+2015-09-10 to 2017-11-22
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
@@ -37,6 +37,8 @@ See the INSTALL file.
         -   Added (WE HOPE) the missing start/stop/continue functionality in
             the "rtmidi" ALSA and JACK implementations.
         -   Some improvements to set_status() functions.
+        -   Minor cleanup, and investigation into an issue with triggers and
+            the pause functionality in Song mode.
     -   Version 0.93.4:
         -   Merging a miniature version of the PortMIDI library, called
             "portmini", into the code base ("windows" branch).

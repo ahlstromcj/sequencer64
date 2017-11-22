@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-11
+ * \updates       2017-11-21
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1565,6 +1565,8 @@ public:
         return m_tick;
     }
 
+#ifndef PLATFORM_DEBUG_TMI
+
     /**
      * \setter m_tick
      */
@@ -1573,6 +1575,12 @@ public:
     {
         m_tick = tick;              /* printf("tick = %ld\n", m_tick); */
     }
+
+#else
+
+    void set_tick (midipulse tick);
+
+#endif  // PLATFORM_DEBUG_TMI
 
     /**
      * \getter m_jack_tick
@@ -1626,10 +1634,6 @@ public:
     {
         return m_starting_tick;
     }
-
-    /*
-     * Obsolete:  midipulse get_max_tick () const;
-     */
 
     void set_right_tick (midipulse tick, bool setstart = true);
 

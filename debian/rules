@@ -5,7 +5,7 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2017-08-25
+# \updates     2017-11-19
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -38,7 +38,8 @@ override_dh_shlibdeps:
 
 #	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info -l$(shell pwd)/lib/$(shell uname -m)
 
-LDFLAGS+=-Wl,--as-needed
+LDFLAGS+=-Wl,--as-needed,-static
 
 %:
 	dh $@ --with=autotools_dev
+

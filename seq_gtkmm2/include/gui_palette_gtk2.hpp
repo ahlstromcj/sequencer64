@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2017-08-06
+ * \updates       2017-11=20
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -48,6 +48,21 @@
 
 namespace seq64
 {
+
+/**
+ *  Progress bar colors.
+ */
+
+enum progress_colors_t
+{
+    PROG_COLOR_BLACK        = 0,
+    PROG_COLOR_DARK_RED,
+    PROG_COLOR_DARK_GREEN,
+    PROG_COLOR_DARK_ORANGE,
+    PROG_COLOR_DARK_BLUE,
+    PROG_COLOR_DARK_MAGENTA,
+    PROG_COLOR_DARK_CYAN
+};
 
 /**
  *  Implements a stock palette of Gdk::Color elements.  Note that this

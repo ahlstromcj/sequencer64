@@ -184,7 +184,7 @@ seqdata::set_data_type (midibyte status, midibyte control)
     bool doredraw = (status != m_status) || (control != m_cc);
     m_status = status;
     m_cc = control;
-    if (doredraw)           // EXPERIMENTAL
+    if (doredraw)
         redraw();
 }
 

@@ -1,3 +1,9 @@
+sequencer64 (0.93.5-0) unstable; urgency=medium
+
+  * Fixed a sequencer64-packages bug, bad handling of active sensing events.
+
+ -- Chris Ahlstrom <ahlstromcj@gmail.com>  Sun, 19 Nov 2017 12:00:00 +0400
+
 sequencer64 (0.93.3-0) unstable; urgency=low
 
   * Innumerable improvements and features.

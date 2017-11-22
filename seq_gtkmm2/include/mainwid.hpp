@@ -127,27 +127,27 @@ private:
      *  counterparts in the user_settings class.
      */
 
-    int m_mainwnd_rows;         /**< Number of rows, unused part of settings.   */
-    int m_mainwnd_cols;         /**< Number of columns, unused in settings.     */
-    int m_seqarea_x;            /**< Roughly with width of the main window.     */
-    int m_seqarea_y;            /**< Roughly with height of the main window.    */
-    int m_seqarea_seq_x;        /**< To be determined.                          */
-    int m_seqarea_seq_y;        /**< To be determined.                          */
-    int m_mainwid_x;            /**< Horizontal size of the main window grid.   */
-    int m_mainwid_y;            /**< Vertical size of the main window grid.     */
-    int m_mainwid_border_x;     /**< Main-window border offset fudge factor, x. */
-    int m_mainwid_border_y;     /**< Main-window border offset fudge factor, y. */
-    int m_mainwid_spacing;      /**< Main-window spacing, unused setting.       */
-    int m_text_size_x;          /**< Text width, varies with font in use.       */
-    int m_text_size_y;          /**< Text height, varies with font in use.      */
-    int m_max_sets;             /**< Maximum number of sets, used all over.     */
+    const int m_mainwnd_rows;   /**< Number of rows, unused part of settings.   */
+    const int m_mainwnd_cols;   /**< Number of columns, unused in settings.     */
+    const int m_seqarea_x;      /**< Roughly with width of the main window.     */
+    const int m_seqarea_y;      /**< Roughly with height of the main window.    */
+    const int m_seqarea_seq_x;  /**< To be determined.                          */
+    const int m_seqarea_seq_y;  /**< To be determined.                          */
+    const int m_mainwid_x;      /**< Horizontal size of the main window grid.   */
+    const int m_mainwid_y;      /**< Vertical size of the main window grid.     */
+    const int m_mainwid_border_x;   /**< Border offset fudge factor, x. */
+    const int m_mainwid_border_y;   /**< Border offset fudge factor, y. */
+    const int m_mainwid_spacing;    /**< Spacing, unused setting.       */
+    const int m_text_size_x;    /**< Text width, varies with font in use.       */
+    const int m_text_size_y;    /**< Text height, varies with font in use.      */
+    const int m_max_sets;       /**< Maximum number of sets, used all over.     */
 
     /**
      *  Provides a convenience variable for avoiding multiplications.
      *  It is equal to m_mainwnd_rows * m_mainwnd_cols.
      */
 
-    int m_screenset_slots;
+    const int m_screenset_slots;
 
     /**
      *  Provides a convenience variable for avoiding multiplications.
@@ -161,7 +161,7 @@ private:
      *  consistency between drawing and erasing the progress bar.
      */
 
-    int m_progress_height;
+    const int m_progress_height;
 
 public:
 

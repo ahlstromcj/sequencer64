@@ -13,8 +13,7 @@ mastermidibus:
       }
    }
 
-First client in ALSA is 0; it's 2 ports do not pass the client check.
-
+First client in ALSA is 0; its 2 ports do not pass the client check.
 Second client is 14.  The first port (unnumbered) has write (output)
 capability.  The call is
 

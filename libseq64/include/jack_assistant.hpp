@@ -329,6 +329,9 @@ public:
     );
     ~jack_assistant ();
 
+    static void show_position (const jack_position_t & pos);
+    static std::string get_state_name (const jack_transport_state_t & state);
+
     /**
      * \getter m_jack_parent
      *      Needed for external callbacks.
@@ -646,7 +649,6 @@ private:
 
     jack_client_t * client_open (const std::string & clientname);
     void get_jack_client_info ();
-    void show_position (const jack_position_t & pos) const;
     int sync (jack_transport_state_t state = (jack_transport_state_t)(-1));
     void set_position (midipulse currenttick);
 

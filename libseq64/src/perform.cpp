@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-11-07
+ * \updates       2017-11-23
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -342,6 +342,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_32nds_per_quarter         (8),
     m_us_per_quarter_note       (tempo_us_from_bpm(SEQ64_DEFAULT_BPM)),
     m_master_bus                (nullptr),
+    m_filter_by_channel         (false),                /* "rc" option      */
     m_master_clocks             (),                     /* vector<clock_e>  */
     m_master_inputs             (),                     /* vector<bool>     */
     m_one_measure               (m_ppqn * 4),
@@ -481,11 +482,13 @@ perform::~perform ()
 bool
 perform::create_master_bus ()
 {
-    m_master_bus = new (std::nothrow) mastermidibus();
+    m_master_bus = new (std::nothrow) mastermidibus();  /* default args */
     bool result = not_nullptr(m_master_bus);
     if (result)
+    {
+        m_master_bus->filter_by_channel(m_filter_by_channel);
         m_master_bus->port_settings(m_master_clocks, m_master_inputs);
-
+    }
     return result;
 }
 
@@ -1566,13 +1569,39 @@ perform::mute_screenset (int ss, bool flag)
     }
 }
 
+#ifdef PLATFORM_DEBUG_TMI
+
+/**
+ * \setter m_tick
+ *      This version is used for debugging/troubleshooting only.  Normally it
+ *      is wayyyy toooooo muuuuch information.
+ */
+
+void
+perform::set_tick (midipulse tick)
+{
+    static midipulse s_last_tick = 0;
+    m_tick = tick;
+    midipulse difference = tick - s_last_tick;
+    if (difference > 100)
+    {
+        s_last_tick = tick;
+        printf("perform tick = %ld\n", m_tick);
+        fflush(stdout);
+    }
+    if (tick == 0)
+        s_last_tick = 0;
+}
+
+#endif
+
 /**
  *  Set the left marker at the given tick.  We let the caller determine if
  *  this setting is a modification.  If the left tick is later than the right
  *  tick, the right tick is move to one measure past the left tick.
  *
  * \todo
- *      The perform::m_one_measure member is currently hardwired to PPQN * 4.
+ *      The perform::m_one_measure member is currently hardwired to m_ppqn*4.
  *
  * \param tick
  *      The tick (MIDI pulse) at which to place the left tick.  If the left
@@ -1632,15 +1661,19 @@ perform::set_right_tick (midipulse tick, bool setstart)
         {
             m_left_tick = m_right_tick - m_one_measure;
             if (setstart)
-            {
                 set_start_tick(m_left_tick);
-                if (is_jack_master())
-                    position_jack(true, m_left_tick);
-                else
-                    set_tick(m_left_tick);
 
-                m_reposition = false;
-            }
+            /*
+             * Do this no matter the value of setstart, to match stazed's
+             * implementation.
+             */
+
+            if (is_jack_master())
+                position_jack(true, m_left_tick);
+            else
+                set_tick(m_left_tick);
+
+            m_reposition = false;
         }
     }
 }
@@ -2483,7 +2516,7 @@ perform::set_screenset (int ss)
 /**
  *  EXPERIMENTAL.  Doesn't quite work.  This may be due to a bug we found in
  *  mute_screenset(), on 2016-10-05, so we will revisit this functionality for
- *  0.9.19.
+ *  0.9.19.  Or maybe not :-(.
  *
  * \param flag
  *      If the flag is true:
@@ -2593,7 +2626,7 @@ perform::set_playing_screenset ()
 void
 perform::play (midipulse tick)
 {
-    m_tick = tick;
+    set_tick(tick);
     for (int s = 0; s < m_sequence_high; ++s)       /* modest speed up  */
     {
 #ifdef SEQ64_SONG_RECORDING
@@ -4701,7 +4734,7 @@ perform::input_func ()
                         m_midiclockrunning = false;
                         all_notes_off();
                         inner_stop(true);
-                        m_midiclockpos = m_tick;
+                        m_midiclockpos = get_tick();
                     }
                     else if (ev.get_status() == EVENT_MIDI_CLOCK)
                     {
@@ -4742,16 +4775,15 @@ perform::input_func ()
 
                         if (m_master_bus->is_dumping())
                         {
-                            ev.set_timestamp(m_tick);
-#ifdef USE_STAZED_MIDI_DUMP
-                            m_master_bus->dump_midi_input(ev);
-#else
-                            m_master_bus->get_sequence()->stream_event(ev);
-#endif
+                            ev.set_timestamp(get_tick());
+                            if (m_filter_by_channel)
+                                m_master_bus->dump_midi_input(ev);
+                            else
+                                m_master_bus->get_sequence()->stream_event(ev);
                         }
-                        else            /* use it to control our sequencer */
+                        else
                         {
-                            midi_control_event(ev);     /* replaces big block */
+                            midi_control_event(ev);  /* seq control event */
                         }
 
 #ifdef USE_STAZED_PARSE_SYSEX               // more code to incorporate!!!
@@ -6096,12 +6128,12 @@ perform::FF_rewind ()
         measure_ticks = long(measure_ticks * 1.00 * m_excell_FF_RW);
         if (m_FF_RW_button_type == FF_RW_REWIND)
         {
-            tick = m_tick - measure_ticks;
+            tick = get_tick() - measure_ticks;
             if (tick < 0)
                 tick = 0;
         }
         else                    // if (m_FF_RW_button_type == FF_RW_FORWARD)
-            tick = m_tick + measure_ticks;
+            tick = get_tick() + measure_ticks;
     }
     else
     {

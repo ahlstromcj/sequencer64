@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2017-08-06
+ * \updates       2017-11-20
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -130,31 +130,31 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     int colorcode = usr().progress_bar_colored();
     switch (colorcode)
     {
-    case 0:
+    case int(PROG_COLOR_BLACK):
         m_progress_color = m_black;
         break;
 
-    case 1:
+    case int(PROG_COLOR_DARK_RED):
         m_progress_color = m_dk_red;
         break;
 
-    case 2:
+    case int(PROG_COLOR_DARK_GREEN):
         m_progress_color = m_dk_green;
         break;
 
-    case 3:
+    case int(PROG_COLOR_DARK_ORANGE):
         m_progress_color = m_dk_orange;
         break;
 
-    case 4:
+    case int(PROG_COLOR_DARK_BLUE):
         m_progress_color = m_dk_blue;
         break;
 
-    case 5:
+    case int(PROG_COLOR_DARK_MAGENTA):
         m_progress_color = m_dk_magenta;
         break;
 
-    case 6:
+    case int(PROG_COLOR_DARK_CYAN):
         m_progress_color = m_dk_cyan;
         break;
     }

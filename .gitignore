@@ -1,19 +1,20 @@
 # .gitignore for sequencer64
 #
 # Chris Ahlstrom
-# Updates: 2015-09-12 to 2017-01-01
+# Updates: 2015-09-12 to 2017-11-17
 #
 # Compiled application
 
 Makefile
 Makefile.in
+Midiclocker64/midiclocker64
 Seq64cli/seq64cli
 Sequencer64/sequencer64
 Seq64portmidi/seq64portmidi
 Seq64rtmidi/seq64
+Seq64rtmidi/seq64-static
 aclocal.m4
 bootstrap.stamp
-configure
 core
 dox-stamp
 doxygen_sqlite3.db
@@ -37,8 +38,6 @@ stamp-h1
 *.status
 latex
 autom4te.cache/
-aux-files/
-compile/
 scratch/
 i18n/
 .deps/

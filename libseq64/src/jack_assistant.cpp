@@ -1634,7 +1634,7 @@ JackBBTFrameOffset:
  */
 
 void
-jack_assistant::show_position (const jack_position_t & pos) const
+jack_assistant::show_position (const jack_position_t & pos)
 {
     char temp[80];
     std::string nnnnn = "00000";
@@ -1663,6 +1663,44 @@ jack_assistant::show_position (const jack_position_t & pos) const
         int(pos.bbt_offset)
     );
     infoprint(temp);                    /* no output in release mode */
+}
+
+/**
+ *
+ */
+
+std::string
+jack_assistant::get_state_name (const jack_transport_state_t & state)
+{
+    std::string result;
+    switch (state)
+    {
+    case JackTransportStopped:
+
+        result = "[JackTransportStopped]";
+        break;
+
+    case JackTransportRolling:
+
+        result = "[JackTransportRolling]";
+        break;
+
+    case JackTransportStarting:
+
+        result = "[JackTransportStarting]";
+        break;
+
+    case JackTransportLooping:
+
+        result = "[JackTransportLooping]";
+        break;
+
+    default:
+
+        errprint("[JackTransportUnknown]");
+        break;
+    }
+    return result;
 }
 
 /**

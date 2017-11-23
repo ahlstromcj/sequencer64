@@ -1338,7 +1338,7 @@ mainwnd::timer_callback ()
      * Calculate the current time, and display it.
      */
 
-    if (perf().is_pattern_playing())            // EXPERIMENTAL
+    if (perf().is_pattern_playing())
     {
         midi_timing mt
         (
@@ -1349,7 +1349,7 @@ mainwnd::timer_callback ()
         m_tick_time->set_text(t);
     }
 
-#ifdef SEQ64_USE_DEBUG_OUTPUT_XXX               /* TMI */
+#ifdef SEQ64_USE_DEBUG_OUTPUT_TMI
     static midibpm s_bpm = 0.0;
     if (bpm != s_bpm)
     {

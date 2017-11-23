@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-11-07
+ * \updates       2017-11-23
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -202,10 +202,10 @@
  *
  *  Unlike in Seq32, however, this is currently a member option in the sequence
  *  class.  We will want to make it a run-time option and then remove this
- *  macro here.
+ *  macro here.  Done.  See the rc_settings::filter_by_channel() option.
+ *
+ * #define  USE_STAZED_MIDI_DUMP
  */
-
-#undef  USE_STAZED_MIDI_DUMP
 
 /**
  *  Adds the ability to select odd/even notes in seqedit.

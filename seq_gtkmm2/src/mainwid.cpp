@@ -740,7 +740,8 @@ mainwid::update_markers (int tick)
  *      compiled in (i.e. no --disable-pause in the configuration), then this
  *      parameter is ignored, and is replaced by the sequences'
  *      get_lask_tick() value.  This causes correct stop/pause/play
- *      progress-bar behavior in each pattern slot.
+ *      progress-bar behavior in each pattern slot.  Note: This is now
+ *      independent of the --disable-pause option!
  */
 
 void
@@ -763,19 +764,18 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         if (seq->event_count() == 0)        /* an event-free track          */
             return;                         /* new 2015-08-23 don't update  */
 
-        tick = seq->get_last_tick();        /* seems to work, see banner    */
-
         int base_x, base_y;
         calculate_base_sizes(seqnum, base_x, base_y);    /* side-effects    */
 
         int rect_x = base_x + m_text_size_x - 1;
         int rect_y = base_y + m_text_size_y + m_text_size_x - 1;
         int len = seq->get_length();
+        tick = int(seq->get_last_tick());   /* seems to work, see banner    */
         tick += len - seq->get_trigger_offset();
         tick %= len;
 
-        midipulse tick_x = tick * m_seqarea_seq_x / len;
-        int bar_x = rect_x + m_last_tick_x[seqnum];
+        long tick_x = tick * m_seqarea_seq_x / len;
+        int bar_x = rect_x + int(m_last_tick_x[seqnum]);
         int thickness = 1;
         if (usr().progress_bar_thick())
         {

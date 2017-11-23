@@ -1348,7 +1348,8 @@ options::edit_tempo_track_number (Gtk::Entry * text)
 }
 
 /**
- *  EXPERIMENTAL
+ *  Sets the tempo-track (normally 0) that will be used in runs of
+ *  Sequencer64.
  */
 
 void

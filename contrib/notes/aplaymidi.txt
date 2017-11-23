@@ -1,7 +1,0 @@
- Port    Client name                      Port name
- 14:0    Midi Through                     Midi Through Port-0
- 24:0    nanoKEY2                         nanoKEY2 MIDI 1
-128:0    TiMidity                         TiMidity port 0
-128:1    TiMidity                         TiMidity port 1
-128:2    TiMidity                         TiMidity port 2
-128:3    TiMidity                         TiMidity port 3

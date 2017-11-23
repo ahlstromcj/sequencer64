@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-11-07
+dnl \update        2017-11-23
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -90,18 +90,18 @@ dnl against ws2_32.
 dnl
 dnl case $host_os in
 dnl 
-dnl 	mingw*)
-dnl 		LDFLAGS="-lws2_32"
-dnl 		;;
+dnl     mingw*)
+dnl         LDFLAGS="-lws2_32"
+dnl         ;;
 dnl 
-dnl 	*)
-dnl 		AC_TYPE_OFF_T
-dnl 		AC_TYPE_SIZE_T
-dnl 		AC_TYPE_SSIZE_T
-dnl 		AC_TYPE_UINT8_T
-dnl 		AC_TYPE_UINT32_T
-dnl 		AC_TYPE_UINT64_T
-dnl 		;;
+dnl     *)
+dnl         AC_TYPE_OFF_T
+dnl         AC_TYPE_SIZE_T
+dnl         AC_TYPE_SSIZE_T
+dnl         AC_TYPE_UINT8_T
+dnl         AC_TYPE_UINT32_T
+dnl         AC_TYPE_UINT64_T
+dnl         ;;
 dnl esac
 
 dnl Handle cross-compiling with mingw32.
@@ -249,7 +249,7 @@ dnl testing provides only 1.5 (Debian unstable now provides 2.4).  So we don't
 dnl use these new macros, just the older, deprecated macros.
 dnl
 
-LT_PREREQ([2.4.6])
+LT_PREREQ([2.4.2])
 LT_INIT([win32-dll])
 
 dnl AC_SUBST([LIBTOOL_DEPS])
@@ -337,7 +337,7 @@ if test x"${as_needed}" = x"unknown" ; then
         [],
         [as_needed="1"],
         [as_needed=""])
-    LDFLAGS="${ac_old_ldflags}" 
+    LDFLAGS="${ac_old_ldflags}"
 fi
 if test -n "$as_needed"; then
     AC_MSG_RESULT(yes)
@@ -411,12 +411,13 @@ dnl AM_PATH_ALSA(0.9.0)
 dnl Check for the presence of Doxygen.  Not an error to be missing, but
 dnl we don't want to try to build documentation if it is not present.
 dnl See http://www.gnu.org/software/autoconf-archive/ax_prog_doxygen.html
+dnl Note the building the documentation also requires graphviz to be installed.
 dnl
 dnl AC_PROG_DOXYGEN
 
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN";
-   then AC_MSG_WARN([Doxygen not found, continuing without Doxygen])
+   then AC_MSG_WARN([Doxygen not found, FYI only])
 fi
 
 dnl gtkmm
@@ -515,11 +516,11 @@ dnl top-level Makefile to determine what directories are included in the
 dnl SUBDIRS variable.  Also see the latest versions of the midibus.hpp and
 dnl mastermidibus.hpp files in libseq64/include.
 dnl
-dnl Note that no MIDI framework, not even rtmidi, is enabled by default now.
+dnl Note that rtmidi is enabled by default now.
 dnl Eventually we want to make ALSA optional for the user/developer.
 
 AC_ARG_ENABLE(rtmidi,
-    [AS_HELP_STRING(--enable-rtmidi, [Enable rtmidi build])],
+    [AS_HELP_STRING(--enable-rtmidi, [Enable rtmidi build, which is the default])],
     [rtmidi=$enableval],
     [rtmidi=yes])
 
@@ -748,7 +749,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-11-07"
+#define VERSION_DATE_SHORT "2017-11-23"
 #define VERSION "0.94.0"
 
 )
@@ -784,7 +785,7 @@ dnl
 dnl AX_PTHREAD leaves PTHREADS_LIBS empty for gcc, and sets PTHREADS_CFLAGS
 dnl to -pthread, which causes problems if we need -lpthread to appear in
 dnl pkgconfig files.
-
+dnl
 dnl AX_PTHREAD
 
 dnl VERBCFLAGS="-v"
@@ -794,13 +795,13 @@ dnl code.
 VERBCFLAGS=""
 
 case "$host_os" in
-	*cygwin*)
-		gnuwin=yes
+    *cygwin*)
+        gnuwin=yes
         AX_PTHREAD
         ;;
 
-	*mingw*)
-		gnuwin=yes
+    *mingw*)
+        gnuwin=yes
         AC_MSG_NOTICE([Setting up MingW pthreads support])
         CFLAGS="$CFLAGS -mthreads -pthread "
         CPPFLAGS="-DPTW32_STATIC_LIB $CPPFLAGS "
@@ -810,15 +811,9 @@ case "$host_os" in
         ;;
 
     *)
-        AC_MSG_NOTICE([normal pthreads support])
-        AC_MSG_CHECKING([Running normal PTHREAD test.])
-        AX_PTHREAD([
-            echo Using settings from AX_PTHREAD
-            LIBS="$PTHREAD_LIBS $LIBS"
-            CFLAGS="  $PTHREAD_CFLAGS $CFLAGS"
-            CXXFLAGS="$PTHREAD_CFLAGS $CXXFLAGS "
-            CC="$PTHREAD_CC"],
-            [AC_MSG_ERROR(Sequencer64 requires pthreads)])
+        AC_MSG_NOTICE([Normal pthreads support])
+        AC_MSG_CHECKING([Running normal PTHREAD test])
+        AX_PTHREAD
         ;;
 esac
 
@@ -905,6 +900,7 @@ AC_CONFIG_FILES([
  Seq64portmidi/Makefile
  Seq64rtmidi/Makefile
  Seq64cli/Makefile
+ Midiclocker64/Makefile
  man/Makefile
 ])
 

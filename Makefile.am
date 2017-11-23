@@ -6,14 +6,26 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2017-09-02
+# \updates     2017-11-12
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
 #     This is the top-level project makefile for the sequencer64 project.
 #
 #     This makefile provides the skeleton needed to build the library
-#     and application directories using GNU autotools.
+#     and application directories using GNU autotools.  It supports the
+#     following sub-projects, depending on configuration options:
+#
+#        resources/pixmaps
+#        libseq64
+#        seq_alsamidi
+#        seq_gtkmm2
+#        Sequencer64
+#        Seq64portmidi
+#        Seq64rtmidi
+#        Seq64cli
+#        Midiclocker64
+#        man
 #
 #-----------------------------------------------------------------------------
 
@@ -140,11 +152,11 @@ SUBDIRS = resources/pixmaps libseq64 seq_portmidi seq_gtkmm2 Seq64portmidi man
 endif
 
 if BUILD_RTMIDI
-SUBDIRS = resources/pixmaps libseq64 seq_rtmidi seq_gtkmm2 Seq64rtmidi man
+SUBDIRS = resources/pixmaps libseq64 seq_rtmidi seq_gtkmm2 Seq64rtmidi Midiclocker64 man
 endif
 
 if BUILD_RTCLI
-SUBDIRS = resources/pixmaps libseq64 seq_rtmidi Seq64cli man
+SUBDIRS = resources/pixmaps libseq64 seq_rtmidi Seq64cli Midiclocker64 man
 endif
 
 if BUILD_WINDOWS

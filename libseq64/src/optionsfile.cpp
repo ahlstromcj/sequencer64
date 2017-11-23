@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-29
+ * \updates       2017-11-23
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -613,7 +613,12 @@ optionsfile::parse (perform & p)
                     ++b;
                 }
                 else if (count == 1)
-                    rc().filter_by_channel(bool(bus));
+                {
+                    bool flag = bool(bus);
+                    rc().filter_by_channel(flag);
+                    p.filter_by_channel(flag);      /* important! */
+                    infoprintf("filter-by-channel %s\n", flag ? "on" : "off");
+                }
             }
             if (b < buses)
                 return error_message("midi-input", "too few buses");
@@ -622,7 +627,16 @@ optionsfile::parse (perform & p)
     else
         return error_message("midi-input");
 
-    if (rc().legacy_format())
+#ifdef USE_THIS_CODE
+
+    /*
+     * This is not right; it is already handled above, irregardless of legacy
+     * status, and the next section is [manual-alsa-ports], which is handled
+     * further on.  The handling here is out of order, but configfile ::
+     * line_after() starts from the beginning every time.
+     */
+
+    if (! rc().legacy_format())
     {
         if (next_data_line(file))                       /* new 2016-08-20 */
         {
@@ -630,6 +644,9 @@ optionsfile::parse (perform & p)
             rc().filter_by_channel(bool(flag));
         }
     }
+
+#endif  // USE_THIS_CODE
+
     if (line_after(file, "[midi-clock-mod-ticks]"))
     {
         long ticks = 64;
@@ -876,7 +893,7 @@ optionsfile::write (const perform & p)
     else
     {
         file <<
-            "# Sequencer64 0.93.1 (and above) rc configuration file\n"
+            "# Sequencer64 0.94.0 (and above) rc configuration file\n"
             "#\n"
             "# This file holds the main configuration options for Sequencer64.\n"
             "# It follows the format of the legacy seq24 'rc' configuration\n"

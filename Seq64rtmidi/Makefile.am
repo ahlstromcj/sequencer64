@@ -29,17 +29,6 @@ MAINTAINERCLEANFILES = Makefile.in Makefile $(AUX_DIST)
 CLEANFILES = *.gc*
 
 #******************************************************************************
-#  EXTRA_DIST
-#------------------------------------------------------------------------------
-#
-#  getopt_test.c is not ready and is not included at this time.
-#	$(TESTS) is not included because it is derived files.
-#
-#------------------------------------------------------------------------------
-
-# EXTRA_DIST = dl_leaks.supp make-tests README
-
-#******************************************************************************
 # Items from configure.ac
 #-------------------------------------------------------------------------------
 
@@ -119,12 +108,8 @@ libmath = -lm
 # Project-specific library files
 #----------------------------------------------------------------------------
 #
-#	These files are the ones built in the source tree, not the installed
-#	ones.
-#
-#  Sometimes one has to change the order of the libraries in this list.
-#
-# $(libmath)
+#	These files are the ones built in the source tree, not the installed ones.
+#	Sometimes one has to change the order of the libraries in this list.
 #
 #----------------------------------------------------------------------------
 

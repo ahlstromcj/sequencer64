@@ -57,7 +57,7 @@ namespace seq64
  *      extra informatino that is needed by this port.  Too many entities!
  *
  * \param multiclient
- *      If true, use multiple Windows MM clients.  EXPERIMENTAL.
+ *      If true, use multiple Windows MM clients.
  */
 
 midi_win::midi_win

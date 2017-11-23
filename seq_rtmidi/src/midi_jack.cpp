@@ -5,19 +5,19 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-11-06
+ * \updates       2017-11-10
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
  *  Gary Scavone, April 2011.
  *
- *  In this refactoring, we have to warp the RtMidi model, where ports are
- *  opened directly by the application, to the Sequencer64 midibus model,
- *  where the port object is created, but initialized after creation.  This
- *  proved very challenging -- it took a long time to get the midi_alsa
- *  implementation working, and still more time to get the midi_jack
- *  implementation solid.  So to call this code "rtmidi" code is slightly
- *  misleading.
+ *  In this Sequencer64 refactoring of RtMidi, we have to warp the RtMidi
+ *  model, where ports are opened directly by the application, to the
+ *  Sequencer64 midibus model, where the port object is created, but
+ *  initialized after creation.  This proved very challenging -- it took a
+ *  long time to get the midi_alsa implementation working, and still more time
+ *  to get the midi_jack implementation solid.  So to call this code "rtmidi"
+ *  code is slightly misleading.
  *
  *  There is an additional issue with JACK ports.  First, think of our ALSA
  *  implementation.  We have two modes:  manual (virtual) and real (normal)
@@ -423,7 +423,8 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
  *      extra informatino that is needed by this port.  Too many entities!
  *
  * \param multiclient
- *      If true, use multiple JACK clients.  EXPERIMENTAL.
+ *      If true, use multiple JACK clients.  Experimental, not really ready
+ *      for prime time.
  */
 
 midi_jack::midi_jack
@@ -1529,10 +1530,36 @@ midi_in_jack::api_get_midi_event (event * inev)
             /*
              * For now, ignore certain messages; they're not handled by the
              * perform object.  Could be handled there, but saves some
-             * processing time if done here.
+             * processing time if done here.  Also could move the output code
+             * to perform so it is available for frameworks beside JACK.
              */
 
             midibyte st = mm[0];
+            if (rc().verbose_option())
+            {
+                static int s_count = 0;
+                char c = '.';
+                if (st == EVENT_MIDI_CLOCK)
+                    c = 'C';
+                else if (st == EVENT_MIDI_ACTIVE_SENSE)
+                    c = 'S';
+                else if (st == EVENT_MIDI_RESET)
+                    c = 'R';
+                else if (st == EVENT_MIDI_START)
+                    c = '>';
+                else if (st == EVENT_MIDI_CONTINUE)
+                    c = '|';
+                else if (st == EVENT_MIDI_STOP)
+                    c = '<';
+
+                (void) putchar(c);
+                if (++s_count == 80)
+                {
+                    s_count = 0;
+                    (void) putchar('\n');
+                }
+                fflush(stdout);
+            }
             if (st == EVENT_MIDI_ACTIVE_SENSE || st == EVENT_MIDI_RESET)
             {
                 result = false;             /* sequencer64-packages #4      */

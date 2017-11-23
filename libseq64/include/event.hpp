@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-04
+ * \updates       2017-11-10
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -107,6 +107,11 @@ const midibyte EVENT_PITCH_WHEEL        = 0xE0;      // 0lllllll 0mmmmmmm
  *  A MIDI System Exclusive (SYSEX) message starts with F0, followed
  *  by the manufacturer ID (how many? bytes), a number of data bytes, and
  *  ended by an F7.
+ *
+ * MIDI System Real-Time Messages:
+ *
+ *      -   https://en.wikipedia.org/wiki/MIDI_beat_clock
+ *      -   http://www.midi.org/techspecs/midimessages.php
  */
 
 const midibyte EVENT_MIDI_SYSEX          = 0xF0;    // redundant, see below

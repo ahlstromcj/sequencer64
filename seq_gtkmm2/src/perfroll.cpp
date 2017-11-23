@@ -464,16 +464,8 @@ perfroll::enqueue_draw ()
  *  perform::get_tick() with perform::get_start_tick() and
  *  perform::get_last_tick() [a new experimental function].  But those
  *  replacements here always return 0, even as perform::get_tick() increases.
- *  Now were are trying a newer function, perform::get_max_tick(), which seems
- *  to do the trick for resuming (instead of rewinding) the progress bar.
- *  It's still a tiny bit laggy, so we have to find a faster way to get the
- *  maximum.  (Note that the draw_progress function is called at every
- *  timeout, that is, constantly.)
- *
- *  The perform::get_max_tick() call doesn't work with JACK: the progress bar
- *  rewinds to the beginning when playback is paused, though it does resume
- *  where it left off.  It also may cause the progress bar to backtrack
- *  through any gap.  Let's restore the get_tick() call.
+ *  (Note that the draw_progress function is called at every timeout, that is,
+ *  constantly.)
  */
 
 void

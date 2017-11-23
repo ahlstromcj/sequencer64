@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-09-10
+ * \updates       2017-11-23
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -115,6 +115,7 @@ private:
      * sequencer64.rc file.
      */
 
+    bool m_verbose_option;          /**< [auto-option-save] setting.        */
     bool m_auto_option_save;        /**< [auto-option-save] setting.        */
     bool m_legacy_format;           /**< Write files in legacy format.      */
     bool m_lash_support;            /**< Enable LASH, if compiled in.       */
@@ -232,6 +233,15 @@ public:
     std::string config_filespec () const;
     std::string user_filespec () const;
     void set_defaults ();
+
+    /**
+     * \getter m_verbose_option
+     */
+
+    bool verbose_option () const
+    {
+        return m_verbose_option;
+    }
 
     /**
      * \getter m_auto_option_save
@@ -562,6 +572,15 @@ public:
     }
 
 protected:
+
+    /**
+     * \setter m_verbose_option
+     */
+
+    void verbose_option (bool flag)
+    {
+        m_verbose_option = flag;
+    }
 
     /**
      * \setter m_auto_option_save

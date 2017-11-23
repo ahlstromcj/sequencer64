@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-28
+ * \updates       2017-11-23
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -175,7 +175,7 @@ sequence::~sequence ()
  *  to keep a count/stack of modifications over all sequences in the
  *  performance.  Probably not practical, in general.  We will probably keep
  *  track of the modification of the buss (port) and channel numbers, as per
- *  GitHub Issue #47..
+ *  GitHub Issue #47.
  */
 
 void
@@ -3133,7 +3133,7 @@ bool
 sequence::stream_event (event & ev)
 {
     automutex locker(m_mutex);
-    bool result = channel_match(ev);            /* set if channel matches   */
+    bool result = channels_match(ev);           /* set if channel matches   */
     if (result)
     {
 #ifdef SEQ64_STAZED_EXPAND_RECORD
@@ -4784,12 +4784,14 @@ sequence::title () const
 }
 
 /**
- *  Sets the m_midi_channel number>
+ *  Sets the m_midi_channel number, which is the output channel for this
+ *  sequence.
  *
  * \threadsafe
  *
  * \param ch
- *      The MIDI channel to set as the channel number for this sequence.
+ *      The MIDI channel to set as the output channel number for this
+ *      sequence.
  *
  * \param user_change
  *      If true (the default value is false), the user has decided to change

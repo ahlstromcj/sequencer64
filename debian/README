@@ -1,6 +1,6 @@
 Sequencer64 Debian Instructions
 Chris Ahlstrom
-2015-09-10 to 2017-08-25
+2015-09-10 to 2017-11-23
 
 There is a concise, recent, and fairly complete guide to creating a "deb"
 package in the Debian package called "maint-guide", which stores different
@@ -15,6 +15,8 @@ of seq24, the process of creating a "deb" file is very simple.
 
    a. ./bootstrap --full-clean
    b. ./bootstrap -er -rm   # enable & configure an "rtmidi" Release build
+            - or -
+      ./bootstrap --static  # same, but also do a static Release build
    c. make                  # optional, checks for build issues
 
    If a build is not necessary, command b. is still necessary, because the
@@ -32,7 +34,7 @@ of seq24, the process of creating a "deb" file is very simple.
 
         -- Chris Ahlstrom <ahlstromcj@gmail.com>  Thu, 06 Oct 2016 12:00:00 +0400
 
-3. Run the following commands (they can be useful error checks):
+3. Run the following optional commands (they can be useful error checks):
 
    $ debian/rules clean
    $ debian/rules build

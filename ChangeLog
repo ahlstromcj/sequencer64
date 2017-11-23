@@ -1,3 +1,223 @@
+2017-11-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Midiclocker64/midi_clocker.cpp, README, configure, configure.ac,
+	debian/changelog, debian/rules, libseq64/include/event_list.hpp,
+	libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_win.cpp: Much
+	cleanup preparatory to 0.93.5.
+
+2017-11-19  ahlstromcj <ahlstromcj@gmail.com>
+
+	* Midiclocker64/midiclocker64.cpp, configure.ac: Minor fixes found
+	building with gcc 4.8.4.
+	* bootstrap, libseq64/src/cmdlineopts.cpp, m4/ax_pthread.m4,
+	strap_functions: Added simple version option for the future.
+
+2017-11-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, aux-files/compile, aux-files/config.guess,
+	aux-files/config.sub, aux-files/depcomp, aux-files/install-sh,
+	aux-files/missing: Added the necessary aux files for configure.
+	* .gitignore, INSTALL, Midiclocker64/midi_clocker.cpp, configure,
+	configure.ac, configure.help: Added a configure script, finally.
+
+2017-11-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : commit 045aa2cf27051ccb72f8a9ded71689b74d252ffa Merge: 1f6f5fb
+	ff93822 Author: C. Ahlstrom <ahlstromcj@gmail.com> Date:   Thu Nov
+	16 05:41:02 2017 -0500
+
+2017-11-15  Simon van der Veldt <simon.vanderveldt@gmail.com>
+
+	* configure.ac: Fix configure.ac: use rtmidi as default backend Fixes #116
+
+2017-11-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : Fixed minor conflicts in configure file.
+
+2017-11-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, INSTALL, Makefile.am, Midiclocker64/Makefile.am,
+	Midiclocker64/midi_clocker.cpp, Midiclocker64/midi_clocker.hpp,
+	Midiclocker64/midiclocker64.cpp, Seq64cli/Makefile.am,
+	Seq64rtmidi/Makefile.am, configure.ac, contrib/notes/aplaymidi.txt,
+	contrib/notes/evlist.txt, contrib/notes/evmap.txt,
+	contrib/notes/evsortlist.txt, contrib/notes/io-seq64.txt,
+	contrib/notes/seq64-busses.txt, doc/dia/seq64/rtbusses.dia,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: Cleanup
+	and midiclocker improvements.
+
+2017-11-13  Simon van der Veldt <simon.vanderveldt@gmail.com>
+
+	* configure.ac: Fix configure.ac AX_PTHREAD error Fixes #117
+
+2017-11-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, configure.ac, libseq64/include/event.hpp,
+	libseq64/include/perform.hpp, libseq64/include/rc_settings.hpp,
+	libseq64/include/seq64_features.h, libseq64/include/sequence.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/mastermidibase.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/sequence.cpp,
+	man/seq64.1, man/seq64cli.1, man/sequencer64.1,
+	seq_gtkmm2/src/seqedit.cpp, seq_rtmidi/include/midibus_rm.hpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_jack.cpp: For
+	0.93.5, fixed channel filtering and active sensing.
+
+2017-11-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, README.jack, VERSION, bootstrap, configure.ac,
+	libseq64/src/perform.cpp, pack, seq_rtmidi/src/midi_alsa_info.cpp,
+	seq_rtmidi/src/midi_jack.cpp: Interim check-in, more fixes for
+	system message issues for upcoming 0.93.5 release.
+
+2017-11-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/event.hpp, libseq64/src/editable_event.cpp,
+	libseq64/src/event.cpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	seq_alsamidi/src/mastermidibus.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_jack.cpp: 
+	Interim check-in for quick fix of system-message handling.
+
+2017-09-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, bootstrap: Minimal Windows build.
+	* : commit 2b45778a11fd12aa0bc8e81dc5a4838d16513662 Author: Chris
+	Ahlstrom <ahlstromcj@gmail.com> Date:   Tue Sep 5 18:48:43 2017
+	-0400
+	* Seq64cli/Makefile.am, configure.ac, seq_portmidi/src/Makefile.am,
+	seq_portmidi/src/ptwinmm.c: Got win32 build for cli version working.
+	* Seq64cli/Makefile.am, Seq64cli/seq64rtcli.cpp, configure.ac,
+	seq_portmidi/src/Makefile.am, seq_portmidi/src/pmwin.c,
+	seq_portmidi/src/porttime.c: Still trying to link to pthreads and
+	winmm.
+
+2017-09-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* FixLog, README.jack, Seq64portmidi/Makefile.am, configure.ac,
+	contrib/code/mutex_mingw.h, contrib/mingw/paths.txt,
+	contrib/win32-seq64-config.h, libseq64/include/platform_macros.h,
+	seq_portmidi/include/pminternal.h, seq_portmidi/src/Makefile.am,
+	seq_portmidi/src/pmlinuxalsa.c: Fixing issues in portmidi and mingw
+	builds, still ongoing.
+	* Makefile.am, Seq64cli/Makefile.am, Seq64cli/seq64rtcli.cpp,
+	configure.ac, libseq64/include/easy_macros.h,
+	libseq64/include/mastermidibus.hpp, libseq64/include/midibus.hpp,
+	libseq64/include/platform_macros.h,
+	libseq64/include/seq64_features.h, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/daemonize.cpp, libseq64/src/easy_macros.cpp,
+	libseq64/src/file_functions.cpp, libseq64/src/midibase.cpp,
+	libseq64/src/mutex.cpp, libseq64/src/perform.cpp, m4/xpc_debug.m4,
+	seq_portmidi/include/Makefile.am,
+	seq_portmidi/include/pminternal.h, seq_portmidi/include/pmutil.h,
+	seq_portmidi/src/Makefile.am, seq_portmidi/src/finddefault.c,
+	seq_portmidi/src/pmwinmm.c: Still getting CLI/WINDOWS build working,
+	many issues remain.
+
+2017-09-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, Makefile.am, bootstrap, configure.ac,
+	libseq64/src/Makefile.am, seq_alsamidi/src/Makefile.am,
+	seq_gtkmm2/src/Makefile.am, seq_portmidi/src/Makefile.am,
+	seq_rtmidi/src/Makefile.am: Got configure to detect MingW not
+	installed.
+
+2017-09-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, configure.ac, contrib/mfour/mingw-aclocal.m4,
+	m4/xpc_mingw.m4: More mingw ideas to try....
+	* README, Seq64cli/Makefile.am, Seq64portmidi/Makefile.am,
+	Seq64rtmidi/Makefile.am, Sequencer64/Makefile.am, configure.ac,
+	libseq64/include/platform_macros.h, libseq64/src/Makefile.am,
+	m4/xpc_errorlog.m4, m4/xpc_mingw.m4, seq_alsamidi/src/Makefile.am,
+	seq_gtkmm2/src/Makefile.am, seq_portmidi/src/Makefile.am,
+	seq_rtmidi/include/rtmidi_types.hpp, seq_rtmidi/src/Makefile.am: 
+	MingW32 support testing, makefile cleanup in progress.
+
+2017-08-31  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* bootstrap, configure.ac, libseq64/include/platform_macros.h,
+	m4/seq64_mingw_dll.m4, m4/{xpc_mingw32.m4 => xpc_mingw.m4}: Starting
+	to beef up MingW support.
+
+2017-08-30  C. Ahlstrom <ahlstromcj@gmail.com>
+
+	* : Merge pull request #112 from Animtim/master add copyright and licence for the new icon
+
+2017-08-29  Timothée Giet <animtim@gmail.com>
+
+	* resources/icons/sequencer64.svg: add copyright and licence for the
+	new icon add copyright and licence infos in the new icon svg file
+	* Seq64portmidi/Makefile.am, configure.ac, seq_portmidi/README,
+	seq_portmidi/include/Makefile.am,
+	seq_portmidi/include/pminternal.h, seq_portmidi/include/pmlinux.h,
+	seq_portmidi/include/pmlinuxalsa.h, seq_portmidi/include/pmutil.h,
+	seq_portmidi/include/pmwinmm.h, seq_portmidi/include/portmidi.h,
+	seq_portmidi/include/porttime.h, seq_portmidi/src/Makefile.am,
+	seq_portmidi/src/finddefault.c, seq_portmidi/src/pmlinux.c,
+	seq_portmidi/src/pmlinuxalsa.c, seq_portmidi/src/pmutil.c,
+	seq_portmidi/src/pmwin.c, seq_portmidi/src/pmwinmm.c,
+	seq_portmidi/src/portmidi.c, seq_portmidi/src/porttime.c,
+	seq_portmidi/src/ptlinux.c: Added partly clean portmidi modules,
+	builds, untested, redundant include specs.
+
+2017-08-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : Back-merge from master to catch up for the windows build.
+
+2017-08-27  ahlstromcj <ahlstromcj@gmail.com>
+
+	* debian/control: Removed dependencies from debian/control that
+	prevented installation on KX Studio.
+	* README, VERSION, bootstrap, configure.ac: Tweaks trying to get a
+	build in KX studio.
+	* configure.ac: Built on KX Studio, gcc 4.8 yields the date-time
+	error, so removed that option.
+	* INSTALL, debian/control, debian/sequencer64.xpm,
+	desktop/seq64.xpm, resources/pixmaps/route64rwb-32x32.xpm,
+	resources/pixmaps/route64rwb-64x64.xpm, resources/pixmaps/seq.xpm,
+	seq_gtkmm2/src/mainwnd.cpp: More work on debian packaging.
+	* INSTALL, README, Seq64portmidi/seq64portmidi.cpp,
+	Seq64rtmidi/seq64rtmidi.cpp, Sequencer64/sequencer64.cpp,
+	configure.ac, libseq64/include/cmdlineopts.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/daemonize.cpp,
+	seq_alsamidi/src/midibus.cpp: Fixing more build issues with all
+	versions of Sequencer64.
+
+2017-08-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, debian/README, debian/changelog, debian/control,
+	debian/copyright, debian/rules, m4/ax_prefix_config_h.m4: Trying to
+	tighten up creation of deb packages.
+
+2017-08-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* debian/control: Updated current debian/control file, but want to
+	save it before further edits.
+
+2017-08-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, libseq64/include/event.hpp,
+	seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_jack.cpp: 
+	Minor change to rtmidi-style interface.
+	* libseq64/include/event.hpp, seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midi_win.hpp,
+	seq_rtmidi/include/midi_win_data.hpp,
+	seq_rtmidi/include/midi_win_info.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_win.cpp, seq_rtmidi/src/midi_win_info.cpp: Still
+	trying to figure out Win MM architecture.
+
 2017-08-20  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* contrib/notes/fruity-mode.txt, seq_gtkmm2/src/fruityseqroll.cpp: 
@@ -13,8 +233,7 @@
 
 2017-08-20  Olivier Humbert <trebmuh@users.noreply.github.com>
 
-	* debian/sequencer64.desktop: Update sequencer64.desktop Add a FR menu item comment for desktop using FR locale.  Hope that
-	helps.
+	* debian/sequencer64.desktop: Update sequencer64.desktop Add a FR menu item comment for desktop using FR locale.  Hope that helps.
 
 2017-08-19  Chris Ahlstrom <ahlstromcj@gmail.com>
 

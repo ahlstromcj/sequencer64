@@ -31,6 +31,8 @@ See the INSTALL file.
     -   Version 0.93.5:
         -   Fixes an issue where incoming Active Sensing events are treated
             incorrectly.  Also update handling for similar events.
+        -   Added configure and helper files to the official checkout so that
+            users do not have to install so much dev software.
         -   Changed "-v" to be a new "--verbose" option for trouble-shooting.
         -   Fixed the setting of the "stazed" filter-by-channel functionality,
             which was disabled.

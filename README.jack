@@ -1,14 +1,9 @@
-README.jack for Sequencer64 0.90.0 (Native JACK)
+README.jack for Sequencer64 0.93.5 (Native JACK)
 Chris Ahlstrom
-2017-02-21 to 2017-02-26 (initial work started in July of 2015)
+2017-02-21 to 2017-11-05
 
-Until we can update the following document...
-
-   https://github.com/ahlstromcj/sequencer64-doc.git
-
-... this README file provides the things you need to know to run
-the new native JACK implmentation of sequencer64, called seq64.
-
+This README file provides the things you need to know to run
+the new native JACK implmentation of sequencer64, an executable called seq64.
 The first thing to note about seq64 is that it supports both ALSA and JACK
 MIDI.  If you run it to support JACK, and JACK is not present, then seq64
 falls back to ALSA support.
@@ -29,11 +24,9 @@ To enable the JACK MIDI support, the -t/--jack-midi options are available.
 When enabled, the "transport" button in the main window will show the word
 "Native" (even when JACK transport is also enabled).  Please note that, if you
 select the jack-midi option and JACK is not available, seq64 will start in
-ALSA mode and save that mode when exiting.
-
-The JACK options are sticky options.  That is, they are saved to the "rc"
-configuration file, so one does not have to specify them in subsequent seq64
-sessions.
+ALSA mode and save that mode when exiting.  The JACK options are sticky
+options.  That is, they are saved to the "rc" configuration file, so one does
+not have to specify them in subsequent seq64 sessions.
 
 The manual-versus-normal port support for JACK MIDI is essentially the same as
 that for ALSA.  The -m/--manual-alsa-ports option actually provides what are
@@ -59,11 +52,11 @@ with the actual velocity provided by the MIDI keyboard used to generate the
 notes.  Previously, even in seq24, the "Free" "Vol" option did not work.  this
 is fixed.
 
-Also, do not forget the step option.  If one paints notes with the mouse, the
+Also, do not forget the "step" option.  If one paints notes with the mouse, the
 note is previewed, and the note position advances with each click.  If one
 paints notes via an external MIDI keyboard, the notes are painted and
 advanced, but they are not previewed.  To preview them, click the "pass MIDI
-in to output" button to activate so that they will be passed to your sound
+in to output" button to activate it so that they will be passed to your sound
 generator.
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

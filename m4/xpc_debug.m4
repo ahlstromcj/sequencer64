@@ -6,7 +6,7 @@ dnl \file       	xpc_debug.m4
 dnl \library    	xpc_suite subproject
 dnl \author     	Chris Ahlstrom
 dnl \date       	2008-03-04
-dnl \updates      2015-11-09
+dnl \updates      2017-09-02
 dnl \version    	$Revision$
 dnl \license    	$XPC_SUITE_GPL_LICENSE$
 dnl
@@ -22,7 +22,9 @@ dnl   to the configure script (./configure --enable-debug)
 dnl   
 dnl   It defines the symbol DBGFLAGS, which you should add to the COMMONFLAGS
 dnl   for the compiler call.  Optimization is turned off, and the symbols
-dnl   DEBUG, _DEBUG, and NWIN32 are defined.
+dnl   DEBUG, _DEBUG, and NWIN32 are defined.  Actually, we now do not define
+dnl   any macros related to Windows in this file.  It's for debugging, not OS
+dnl   detection!
 dnl
 dnl   In addition, the WARNINGS setting is changed to make sure all warnings
 dnl   are shown.
@@ -124,9 +126,9 @@ AC_DEFUN([AC_XPC_DEBUGGING],
 dnl Handle the --enable-debug option.  First set the DBGFLAGS value, in case
 dnl the coverage or profile options were processed above.
 dnl
-dnl DBGFLAGS="$DBGFLAGS -ggdb -O0 -DDEBUG -D_DEBUG -DNWIN32 -fno-inline"
+dnl DBGFLAGS="$DBGFLAGS -ggdb -O0 -DDEBUG -D_DEBUG -fno-inline"
 
-   MORFLAGS="-DDEBUG -D_DEBUG -DNWIN32 -fno-inline"
+   MORFLAGS="-DDEBUG -D_DEBUG -fno-inline"
    if test -n "$GCC"; then
       DBGFLAGS="$COVFLAGS $PROFLAGS"
       AC_MSG_CHECKING([whether to enable gdb debugging])
@@ -163,14 +165,13 @@ yes=gdb)],
          if test "x$OPTFLAGS" = "x" ; then
             OPTFLAGS="-O3"
          fi
-         MORFLAGS="-DNWIN32"
          AC_MSG_RESULT(no)
       fi
       DBGFLAGS="$DBGFLAGS $GDBFLAGS $OPTFLAGS $MORFLAGS"
    fi
    AC_SUBST([DBGFLAGS])
    AC_DEFINE_UNQUOTED([DBGFLAGS], [$DBGFLAGS],
-   [Define DBGFLAGS=-ggdb -O0 -DDEBUG -NWIN32 -fno-inline if debug support is wanted.])
+   [Define DBGFLAGS=-ggdb -O0 -DDEBUG -fno-inline if debug support is wanted.])
 
 ])
 

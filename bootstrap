@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2017-04-29
+# \update     	2017-11-07
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -35,8 +35,7 @@ LANG=C
 export LANG
 CYGWIN=binmode
 export CYGWIN
-
-export SEQUENCER64_SCRIPT_EDIT_DATE="2017-10-07"
+export SEQUENCER64_SCRIPT_EDIT_DATE="2017-11-07"
 export SEQUENCER64_LIBRARY_API_VERSION="0.94"
 export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.94.0"
 
@@ -45,7 +44,7 @@ export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.94.0"
 #------------------------------------------------------------------------------
 
 if [ "$1" == "--version" ] || [ "$1" == "-v" ] ; then
-   echo "Sequencer64 version $SEQUENCER64_LIBRARY_VERSION $SEQUENCER64_SCRIPT_EDIT_DATE"
+   echo "Sequencer64 version $SEQ64_LIBRARY_VERSION $SEQ64_SCRIPT_EDIT_DATE"
    exit 0
 fi
 
@@ -73,13 +72,19 @@ DODEBUG="no"
 DORELEASE="no"
 DOTESTONLY="no"
 DOVERSION="no"
-DOALSAMIDI="yes"
+DOALSAMIDI="no"
 DOPORTMIDI="no"
-DORTMIDI="no"
 DORTCLI="no"
-EXTRAFLAGS=""
+DOMINGW="no"
 LOGFILENAME=""
 M4DIR="m4"
+
+#******************************************************************************
+#  Default boostrap build
+#------------------------------------------------------------------------------
+
+DORTMIDI="yes"
+EXTRAFLAGS="--enable-rtmidi"
 
 #******************************************************************************
 #  Help
@@ -88,11 +93,13 @@ M4DIR="m4"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.94-2017-10-07)
+Usage: ./bootstrap [options]                                 (0.94-2017-11-07)
 
-   'bootstrap' sets up GNU automake support and libtool support for the
-   Sequencer64 project, creating the 'configure' script.  It can also
-   super-clean the project (which removes all generated files and directories).
+    'bootstrap' sets up GNU automake support and libtool support for the
+    Sequencer64 projects, creating the 'configure' script.  It can also
+    super-clean the project (which removes all generated files and directories).
+    It provides some stock options to save trouble passing multiple options to the
+    configure script.
 
  --clean             Delete the usual junk files from the project.
  --full-clean        Also delete all configure-related files.  The bootstrap
@@ -102,19 +109,23 @@ Usage: ./bootstrap [options]                                 (0.94-2017-10-07)
    --enable-debug    shared libraries/libtool for easier debugging.
    --enable-debug=gdb
  --release, -er,     Also configure for release, to save a little time.  Sets up
-   --enable-release  a 'silent' build, as well.
+   --enable-release  a 'silent' build, as well.  Note that configuring requires
+                     either --debug or --release to be specified.
  -am                 Configure to build sequencer64 (original ALSA version).
  -pm                 Configure to build seq64portmidi.
  -rm                 Configure to build seq64rtmidi (JACK version, the default).
  -cli, -rc           Configure to build seq64cli (command-line rtmidi version).
+ --windows, -win     Configure for Windows.  Currently implies only the -cli
+ -w64, --win32, -w32 option now, enables MingW build.  IMPORTANT: specify
+                     --enable-debug or --enable-release to allow 'configure'
+                     to be called; this option adds a lot of flags.
  --help              Show this help text.
 
-   The default bootstraps the projects.  Then one should run 'configure',
-   which sets up for a normal release build.  A common option for
-   'bootstrap' is --enable-debug (-ed), which adds --disable-shared and sets
-   --configure, to configure for debugging without the need to use
-   
-      $ libtool --mode=execute gdb sequencer64
+    The default bootstraps the projects.  Then one should run 'configure',
+    which sets up for a normal release build.  A common option for
+    'bootstrap' is --enable-debug (-ed), which adds --disable-shared and sets
+    up the configure script for debugging without the need to use
+    "libtool --mode=execute gdb seq64".
 E_O_F
 
    exit 1
@@ -177,6 +188,22 @@ if [ $# -ge 1 ] ; then
          --cli | -cli | -rc)
             DORTCLI="yes"
             EXTRAFLAGS="--enable-cli"
+            ;;
+
+         --windows | -win | -w64)
+#           DORTMIDI="yes"
+            DORTMIDI="no"
+            DORTCLI="yes"
+            DOMINGW="yes"
+            EXTRAFLAGS="--disable-rtmidi --enable-cli --enable-mingw --build=x86_64-pc-linux-gnu --host=x86_64-w64-mingw32"
+            ;;
+
+         --win32 | -w32)
+#           DORTMIDI="yes"
+            DORTMIDI="no"
+            DORTCLI="yes"
+            DOMINGW="yes"
+            EXTRAFLAGS="--disable-rtmidi --enable-cli --enable-mingw --build=i686-pc-linux-gnu --host=i686-w64-mingw32"
             ;;
 
          --version)
@@ -464,22 +491,24 @@ E_O_F
 #************************************************************************
 # --configure
 #------------------------------------------------------------------------
-#
-#  Note the temporary addition of --enable-eveditor for our own debug
-#  purposes.
-#
-#------------------------------------------------------------------------
 
    if [ "$DOBOOTSTRAP" == "yes" ] ; then
 
+      echo "Bootstrapping enabled...."
+
       if [ "$DODEBUG" == "yes" ] ; then
+
          echo "Running './configure --enable-debug=gdb --disable-shared $EXTRAFLAGS'"
          ./configure --enable-debug=gdb --disable-shared $EXTRAFLAGS
+
       elif [ "$DORELEASE" == "yes" ] ; then
+
          echo "Running './configure --enable-silent-rules $EXTRAFLAGS'"
          ./configure --enable-silent-rules $EXTRAFLAGS
          echo "Note that running 'make V=1' will turn on full command output."
+
       else
+
          cat << E_O_F
 
 Now run './configure' to configure Sequencer64 for compilation, or './configure

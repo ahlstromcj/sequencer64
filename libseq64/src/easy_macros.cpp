@@ -25,15 +25,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-26
- * \updates       2017-03-27
+ * \updates       2017-09-03
  * \license       GNU GPLv2 or above
  *
  *  These functions are used in macros such as func_message().
  */
 
-#include <assert.h>
-
 #include "easy_macros.h"
+
+#include <assert.h>
 
 /**
  *  Provides a way to still get the benefits of assert() output in release
@@ -69,7 +69,7 @@ not_nullptr_assert (void * ptr, const std::string & context)
         fprintf(stderr, "? null pointer in context %s\n", context.c_str());
     }
 
-#ifdef PLATFORM_GNU
+#ifdef PLATFORM_GNU_XXX                         /* does not work in Mingw   */
     int errornumber = flag ? 0 : 1 ;
     assert_perror(errornumber);
 #else

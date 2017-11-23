@@ -27,13 +27,9 @@ The hot issues at this date:
 
     16 F0rth : [feature request] script language
 
-    Just thought I'd pop in here to say I'd rather all sequencer64's features
-    be exposed via OSC such that the system could be scripted from any
-    language.
-
-    Just thought I'd pop in here to say I'd rather all sequencer64's features
-    be exposed via OSC such that the system could be scripted from any
-    language.
+    Just thought I would pop in here to say I would rather all sequencer64
+    features be exposed via OSC such that the system could be scripted from
+    any language.
 
     FYI ZynAddSubFX switched to a decoupled interface which uses OSC to
     control everything in 2.5.x. Maybe you can get some useful info from

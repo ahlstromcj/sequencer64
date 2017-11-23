@@ -1,6 +1,6 @@
 README for Sequencer64 0.94.0 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2017-09-16
+2015-09-10 to 2017-11-07
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
@@ -35,8 +35,17 @@ See the INSTALL file.
                 only the base name.  Has Gtk issue with using underscore as an
                 accelerator.
             -   Support for box-selection in Song editor.
+    -   Version 0.93.5:
+        -   Fixes an issue where incoming Active Sensing events are treated
+            incorrectly.
+        -   Some improvements to set_status() functions.
     -   Version 0.93.4:
         -   Duh, I forgot to do this.  Debian packaging fixes?
+        -   Merging a miniature version of the PortMIDI library, called
+            "portmini", into the code base ("windows" branch).
+        -   Building for Windows, still in progress in the "windows" branch.
+            Currently supports only the command-line build (bootstrap option
+            -win).
     -   Version 0.93.3:
         -   Fixes to issue #105 relating to fruity interactions.
         -   Made it obvious when a nute-group cannot be supported due to

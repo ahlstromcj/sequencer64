@@ -6,12 +6,18 @@
 # \library    	seq64portmidi application
 # \author     	Chris Ahlstrom
 # \date       	2016-11-25
-# \update      2016-12-03
+# \update      2017-09-04
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
 # 		This module provides an Automake makefile for the seq64portmidi C/C++
 # 		application.
+#
+# 		Note that we no longer use the OS-installed version of the PortMidi
+# 		library.  We want to support a Mingw (Windows) build, and do not want to
+# 		worry about Java support and other side issues.  So we borrowed the C
+# 		code for the Windows and Linux parts of the PortMidi library, and
+# 		incorporated them into the extant seq_portmidi library code.
 #
 #------------------------------------------------------------------------------
 
@@ -84,9 +90,7 @@ libseq64dir = $(builddir)/libseq64/src/.libs
 libseq_portmididir = $(builddir)/seq_portmidi/src/.libs
 libseq_gtkmm2dir = $(builddir)/seq_gtkmm2/src/.libs
 
-# TEMPORARY
-
-libportmididir = /usr/lib
+# libportmididir = /usr/lib
 
 #******************************************************************************
 # AM_CPPFLAGS [formerly "INCLUDES"]
@@ -103,8 +107,7 @@ AM_CXXFLAGS = \
  -I$(top_srcdir)/seq_gtkmm2/include \
  $(GTKMM_CFLAGS) \
  $(JACK_CFLAGS) \
- $(LASH_CFLAGS) \
- -Wall $(MM_WFLAGS)
+ $(LASH_CFLAGS)
 
 #******************************************************************************
 # libmath
@@ -133,14 +136,10 @@ libmath = -lm
 #
 #----------------------------------------------------------------------------
 
-# The portmidi library directory and name is TEMPORARY just to get things to
-# build.
-
 libraries = \
  -L$(libseq_gtkmm2dir) -lseq_gtkmm2 \
  -L$(libseq64dir) -lseq64 \
- -L$(libseq_portmididir) -lseq_portmidi \
- -L$(libportmididir) -lportmidi
+ -L$(libseq_portmididir) -lseq_portmidi
 
 #****************************************************************************
 # Project-specific dependency files
@@ -168,7 +167,7 @@ bin_PROGRAMS = seq64portmidi
 
 seq64portmidi_SOURCES = seq64portmidi.cpp
 seq64portmidi_DEPENDENCIES = $(dependencies)
-seq64portmidi_LDADD = $(libraries) $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)
+seq64portmidi_LDADD = $(libraries) $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
 
 #******************************************************************************
 # Testing

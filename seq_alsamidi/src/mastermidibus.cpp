@@ -679,8 +679,8 @@ mastermidibus::api_get_midi_event (event * inev)
      *  disabled.
      */
 
-#ifdef USE_SYSEX_PROCESSING                    /* currently disabled           */
-    inev->set_sysex_size(bytes);
+#ifdef USE_SYSEX_PROCESSING                 /* currently disabled           */
+    inev->set_sysex_size(bytes);            /* why not put in the "if"?     */
     if (buffer[0] == EVENT_MIDI_SYSEX)
     {
         inev->restart_sysex();              /* set up for sysex if needed   */

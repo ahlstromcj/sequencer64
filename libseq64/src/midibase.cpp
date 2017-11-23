@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2017-05-27
+ * \updates       2017-09-03
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -52,7 +52,7 @@
 #include "midibase.hpp"                 /* seq64::midibase for ALSA         */
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
-#ifdef SEQ64_PLATFORM_WINDOWS
+#ifdef PLATFORM_WINDOWS
 #include <windows.h>                    /* Sleep()                          */
 #else
 #include <unistd.h>                     /* usleep() or select()             */
@@ -811,7 +811,7 @@ millisleep (unsigned long ms)
    tv.tv_usec = long(ms % 1000) * 1000;
    tv.tv_sec = long(ms / 1000;
    (void) select(0, 0, 0, 0, tvptr);
-#elif defined PLATFORM_WINDOWS
+#elif defined PLATFORM_WINDOWS              // or PLATFORM_MINGW
    Sleep((DWORD) ms);
 #endif
 }

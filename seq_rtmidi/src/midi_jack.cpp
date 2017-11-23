@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-08-22
+ * \updates       2017-11-06
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -893,12 +893,13 @@ midi_jack::api_continue_from (midipulse tick, midipulse /*beats*/)
 
     /*
      * New code to work like the ALSA version, needs testing.  Related to
-     * issue #67.
+     * issue #67.  However, the ALSA version sends Continue, flushes, and
+     * then sends Song Position, so we will match that here.
      */
 
-    send_byte(EVENT_MIDI_SONG_POS);
-    api_flush();
     send_byte(EVENT_MIDI_CONTINUE);
+    api_flush();
+    send_byte(EVENT_MIDI_SONG_POS);
     apiprint("api_continue_from", "jack");
 }
 
@@ -1457,12 +1458,23 @@ midi_in_jack::api_poll_for_midi ()
  *  Gets a MIDI event.  This implementation gets a midi_message off the front
  *  of the queue and converts it to a Sequencer64 event.
  *
+ * \change ca 2017-11-04
+ *      Issue #4 "Bug with Yamaha PSR in JACK native mode" in the
+ *      sequencer64-packages project has been fixed.  For now, we ignore
+ *      system messages.  Yamaha keyboards like my PSS-790 constantly emit
+ *      active sensing messages (0xfe) which are not logged, and the previous
+ *      event (typically pitch wheel 0xe0 0x0 0x40) is continually emitted.
+ *      One result (we think) is odd artifacts in the seqroll when recording
+ *      and passing through.
+ *
  * \param inev
  *      Provides the destination for the MIDI event.
  *
  * \return
  *      Returns true if a MIDI event was obtained, indicating that the return
- *      parameter can be used.
+ *      parameter can be used.  Note that we force a value of false for all
+ *      system messages at this time; they cannot yet be handled gracefully in
+ *      the native JACK implementation.
  */
 
 bool
@@ -1478,16 +1490,6 @@ midi_in_jack::api_get_midi_event (event * inev)
         {
             inev->set_status_keep_channel(mm[0]);
             inev->set_data(mm[1], mm[2]);
-
-            /*
-             *  Some keyboards send Note On with velocity 0 for Note Off, so
-             *  we take care of that situation here by creating a Note Off
-             *  event, with the channel nybble preserved. Note that we call
-             *  event::set_status_keep_channel() instead of using stazed's
-             *  set_status function with the "record" parameter.  Also, we
-             *  have to mask in the actual channel number.
-             */
-
             if (inev->is_note_off_recorded())
             {
                 midibyte channel = mm[0] & EVENT_GET_CHAN_MASK;
@@ -1502,7 +1504,11 @@ midi_in_jack::api_get_midi_event (event * inev)
         }
         else
         {
-            infoprint("SysEx information encountered?");
+            /*
+             * TMI: infoprint("No-data system information encountered?");
+             *
+             *  The Yamaha PSS-790 is constantly emitting Active Sense events.
+             */
 
 #ifdef USE_SYSEX_PROCESSING                 /* currently disabled           */
 
@@ -1518,6 +1524,22 @@ midi_in_jack::api_get_midi_event (event * inev)
             {
                 inev->restart_sysex();      /* set up for sysex if needed   */
                 sysex = inev->append_sysex(buffer, bytes);
+            }
+#else
+            /*
+             * For now, ignore certain messages; they're not handled by the
+             * perform object.  Could be handled there, but saves some
+             * processing time if done here.
+             */
+
+            midibyte st = mm[0];
+            if (st == EVENT_MIDI_ACTIVE_SENSE || st == EVENT_MIDI_RESET)
+            {
+                result = false;             /* sequencer64-packages #4      */
+            }
+            else
+            {
+                inev->set_status(st);
             }
 #endif
         }

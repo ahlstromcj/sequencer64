@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-10-29
+ * \updates       2017-11-07
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -135,7 +135,10 @@
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
-#if ! defined PLATFORM_WINDOWS
+#if defined PLATFORM_WINDOWS
+#include <windows.h>                    /* Muahhhahahahahah!                */
+#include <mmsystem.h>                   /* Windows timeBeginPeriod()        */
+#else
 #include <time.h>                       /* struct timespec                  */
 #endif
 
@@ -148,6 +151,13 @@
  */
 
 #define SEQ64_USE_TDEAGAN_CODE
+
+/**
+ *  The amount to increment the MIDI clock pulses.  MIDI clock normal comes
+ *  out at 24 PPQN, so I am not sure why this is 8.
+ */
+
+#define SEQ64_MIDI_CLOCK_INCREMENT      8
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -3543,11 +3553,11 @@ output_thread_func (void * myperf)
     perform * p = (perform *) myperf;
 
 #ifdef PLATFORM_WINDOWS
-    timeBeginPeriod(1);
+    timeBeginPeriod(1);                         /* WinMM.dll function   */
     p->output_func();
     timeEndPeriod(1);
 #else
-    if (rc().priority())                        /* Not in MinGW RCB */
+    if (rc().priority())                        /* Not in MinGW RCB     */
     {
         struct sched_param schp;
         memset(&schp, 0, sizeof(sched_param));
@@ -4696,7 +4706,7 @@ perform::input_func ()
                     else if (ev.get_status() == EVENT_MIDI_CLOCK)
                     {
                         if (m_midiclockrunning)
-                            m_midiclocktick += 8;       // manifest constant?
+                            m_midiclocktick += SEQ64_MIDI_CLOCK_INCREMENT;  // 8
                     }
                     else if (ev.get_status() == EVENT_MIDI_SONG_POS)
                     {
@@ -4704,6 +4714,22 @@ perform::input_func ()
                         ev.get_data(d0, d1);
                         m_midiclockpos = combine_bytes(d0, d1);
                     }
+#if 0               // currently filtered in midi_jack
+                    else if
+                    (
+                        ev.get_status() == EVENT_MIDI_ACTIVE_SENSE ||
+                        ev.get_status() == EVENT_MIDI_RESET
+                    )
+                    {
+                        /*
+                         * For now, we ignore these events on input. See
+                         * GitHub sequencer64-packages/issues/4.  MIGHT NOT BE
+                         * A VALID FIX.  STILL INVESTIGATING.
+                         */
+
+                        return;
+                    }
+#endif
 
                     /*
                      * Send out the current event, if "dumping".

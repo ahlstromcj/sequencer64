@@ -153,13 +153,14 @@ midi_container::add_event (const event & e, midipulse deltatime)
         midibyte d0 = e.data(0);                    /* encode status & data */
         midibyte d1 = e.data(1);
         midibyte channel = m_sequence.get_midi_channel();
+        midibyte st = e.get_status();
         add_variable(deltatime);                    /* encode delta_time    */
         if (channel == EVENT_NULL_CHANNEL)
-            put(e.get_status() | e.get_channel());  /* channel from event   */
+            put(st | e.get_channel());              /* channel from event   */
         else
-            put(e.get_status() | channel);          /* the sequence channel */
+            put(st | channel);                      /* the sequence channel */
 
-        switch (e.get_status() & EVENT_CLEAR_CHAN_MASK)         /* 0xF0 */
+        switch (st & EVENT_CLEAR_CHAN_MASK)                     /* 0xF0 */
         {
         case EVENT_NOTE_OFF:                                    /* 0x80 */
         case EVENT_NOTE_ON:                                     /* 0x90 */

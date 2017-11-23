@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-10-01
+ * \updates       2017-11-07
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -51,7 +51,7 @@
 #include <string.h>                     /* strlen() <gasp!>                 */
 #include "easy_macros.h"
 
-#ifdef PLATFORM_UNIX
+#if defined PLATFORM_UNIX || defined PLATFORM_MINGW
 #include <getopt.h>
 #endif
 
@@ -314,8 +314,9 @@ static const char * const s_help_4 =
 "                            and C can range from 8 to 12. If not 4x8, seq64 is\n"
 "                            in 'variset' mode. Affects mute groups, too.\n"
 "\n"
-" seq64cli:    daemonize     Makes this application fork to the background.\n"
-"              no-daemonize  Or not.\n"
+" seq64cli:\n"
+"              daemonize     Makes this application fork to the background.\n"
+"              no-daemonize  Or not.  These options do not apply to Windows.\n"
 "\n"
 "The 'daemonize' option works only in the CLI build. The 'sets' option works in\n"
 "the CLI build as well.  Specify the '--user-save' option to make these options\n"
@@ -583,7 +584,9 @@ parse_log_option (int argc, char * argv [])
         std::string logfile = usr().option_logfile();
         if (! logfile.empty())
         {
+#ifdef PLATFORM_LINUX
             (void) reroute_stdio(logfile);
+#endif
             result = true;
         }
     }
@@ -1195,6 +1198,18 @@ const static std::string s_debug_mode = "ON";
 const static std::string s_debug_mode = "off";
 #endif
 
+#ifdef PLATFORM_WINDOW
+const static std::string s_windows = "ON";
+#else
+const static std::string s_windows = "off";
+#endif
+
+#ifdef PLATFORM_32_BIT
+const static std::string s_bitness = "32-bit";
+#else
+const static std::string s_bitness = "64-bit";
+#endif
+
 /**
  *  Generates a string describing the features of the build.
  *
@@ -1232,7 +1247,9 @@ build_details ()
 << "Multiple main windows * = "  << s_multiple_mainwids           << std::endl
 << "Box song selection = "       << s_song_box_select             << std::endl
 << "Statistics support * = "     << s_statistics_support          << std::endl
+<< "Windows support * = "        << s_windows                     << std::endl
 << "Debug code * = "             << s_debug_mode                  << std::endl
+<< s_bitness << " support enabled"                                << std::endl
 << std::endl
 << "* option is enabled/disabled via the configure script." << std::endl
 << "Otherwise, libseq64/include/seq64_features.h sets it." << std::endl

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-11
+ * \updates       2017-11-04
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -269,12 +269,11 @@ event::transpose_note (int tn)
 /**
  *  Sets the m_status member to the value of status.  If a_status is a
  *  channel event, then the channel portion of the status is cleared using
- *  a bitwise AND against EVENT_CLEAR_CHAN_MASK.
+ *  a bitwise AND against EVENT_CLEAR_CHAN_MASK.  This version is basically
+ *  the Seq24 version with the additional setting of the Sequencer64-specific
+ *  m_channel member.
  *
- *  Found in yet another fork of seq24:
- *
- *      // ORL fait de la merde
- *
+ *  Found in yet another fork of seq24: // ORL fait de la merde
  *  He also provided a very similar routine: set_status_midibus().
  *
  *  Stazed:
@@ -302,10 +301,10 @@ event::transpose_note (int tn)
 void
 event::set_status (midibyte status)
 {
-    if (status >= EVENT_MIDI_SYSEX)         /* 0xF0             */
+    if (status >= EVENT_MIDI_SYSEX)             /* 0xF0 and above           */
     {
         m_status = status;
-        m_channel = EVENT_NULL_CHANNEL;     /* "not applicable" */
+        m_channel = EVENT_NULL_CHANNEL;         /* channel "not applicable" */
     }
     else
     {
@@ -316,7 +315,8 @@ event::set_status (midibyte status)
 
 /**
  *  This overload is useful when synthesizing events, such as converting a
- *  Note On event with a velocity of zero to a Note Off event.
+ *  Note On event with a velocity of zero to a Note Off event.  See its usage
+ *  around line 681 of midifile.cpp.
  *
  * \param eventcode
  *      The status byte, perhaps read from a MIDI file.  This byte is
@@ -325,7 +325,7 @@ event::set_status (midibyte status)
  *
  * \param channel
  *      The channel byte.  Combined with the event-code, this makes a valid
- *      MIDI "status" byte.  This byte is assume to have already had its high
+ *      MIDI "status" byte.  This byte is assumed to have already had its high
  *      nybble cleared by masking against EVENT_GET_CHAN_MASK.
  */
 
@@ -337,12 +337,34 @@ event::set_status (midibyte eventcode, midibyte channel)
 }
 
 /**
+ *  This function is used in recording to preserve the input channel
+ *  information for deciding what to do with an incoming MIDI event.
+ *  It replaces stazed's set_status() that had an optional "record"
+ *  parameter.  This call allows channel to be detected and used in MIDI
+ *  control events.  It "keeps" the channel in the status byte.
+ *
+ * \todo
+ *      THIS function WILL set a BOGUS CHANNEL on events >= SYSEX !!!!!
+ *
+ * \param eventcode
+ *      The status byte, generally read from the MIDI buss.
+ */
+
+void
+event::set_status_keep_channel (midibyte eventcode)
+{
+    m_status = eventcode;
+    m_channel = eventcode & EVENT_GET_CHAN_MASK;
+}
+
+/**
  *  Sets a Meta event.  Meta events have a status byte of EVENT_MIDI_META ==
  *  0xff and a channel value that reflects the type of Meta event (e.g. 0x51
  *  for a "Set Tempo" event.
  *
  *  Note that the data bytes (if any) for this event will still need to be
- *  added to the event via the append_sysex() or set_sysex() function.
+ *  added to the event via (for example) the append_sysex() or set_sysex()
+ *  function.
  *
  * \param metatype
  *      Indicates the type of meta event.
@@ -353,6 +375,27 @@ event::set_meta_status (midibyte metatype)
 {
     m_status = EVENT_MIDI_META;
     m_channel = metatype;
+}
+
+/**
+ *  Some keyboards send Note On with velocity 0 for Note Off, so we take care
+ *  of that situation here by creating a Note Off event, with the channel
+ *  nybble preserved. Note that we call event::set_status_keep_channel()
+ *  instead of using stazed's set_status function with the "record" parameter.
+ *  Also, we have to mask in the actual channel number.
+ *
+ *  Encapsulates some common code.  This function assumes we have already set
+ *  the status and data bytes.
+ */
+
+void
+event::adjust_note_off ()
+{
+    if (is_note_off_recorded())
+    {
+        midibyte status = EVENT_NOTE_OFF | m_channel;
+        set_status_keep_channel(status);
+    }
 }
 
 /**
@@ -448,7 +491,7 @@ event::append_meta_data (midibyte metatype, midibyte * data, int dsize)
     bool result = false;
     if (not_nullptr(data) && (dsize > 0))
     {
-        set_meta_status(metatype);          // m_channel = metatype;
+        set_meta_status(metatype);
         for (int i = 0; i < dsize; ++i)
             m_sysex.push_back(data[i]);
 

@@ -99,7 +99,7 @@ editable_event::sm_system_event_names [] =
     { (unsigned short)(EVENT_MIDI_CONTINUE),      "Continue"        },
     { (unsigned short)(EVENT_MIDI_STOP),          "Stop"            },  //   .
     { (unsigned short)(EVENT_MIDI_SONG_FD),       "FD"              },  //   .
-    { (unsigned short)(EVENT_MIDI_ACTIVE_SENS),   "Active sensing"  },  //   .
+    { (unsigned short)(EVENT_MIDI_ACTIVE_SENSE),  "Active sensing"  },  //   .
     { (unsigned short)(EVENT_MIDI_RESET),         "Reset"           },  // 0xFF
     { SEQ64_END_OF_MIDIBYTE_TABLE,                ""                }   // end
 };

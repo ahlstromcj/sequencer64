@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-10-15
+ * \updates       2017-11-07
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -54,11 +54,19 @@
 
 #include <string>
 
+/*
+ * For now, let's see if we can get MingW to create a Windows-appropriate
+ * header file.
+ *
 #ifdef PLATFORM_WINDOWS
 #include "configwin32.h"
 #else
 #include "seq64-config.h"
 #endif
+ *
+ */
+
+#include "seq64-config.h"
 
 /**
  *  Kepler34 has a drum edit mode that we are still exploring and adding,

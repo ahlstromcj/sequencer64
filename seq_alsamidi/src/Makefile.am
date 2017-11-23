@@ -6,7 +6,7 @@
 # \library    	libseq_alsamidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-09-18
+# \update      2017-09-01
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -42,14 +42,14 @@ EXTRA_DIST =
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
 
-SEQUENCER64_API_MAJOR = @SEQUENCER64_API_MAJOR@
-SEQUENCER64_API_MINOR = @SEQUENCER64_API_MINOR@
-SEQUENCER64_API_PATCH = @SEQUENCER64_API_PATCH@
-SEQUENCER64_API_VERSION = @SEQUENCER64_API_VERSION@
+SEQ64_API_MAJOR = @SEQ64_API_MAJOR@
+SEQ64_API_MINOR = @SEQ64_API_MINOR@
+SEQ64_API_PATCH = @SEQ64_API_PATCH@
+SEQ64_API_VERSION = @SEQ64_API_VERSION@
 
-SEQUENCER64_LT_CURRENT = @SEQUENCER64_LT_CURRENT@
-SEQUENCER64_LT_REVISION = @SEQUENCER64_LT_REVISION@
-SEQUENCER64_LT_AGE = @SEQUENCER64_LT_AGE@
+SEQ64_LT_CURRENT = @SEQ64_LT_CURRENT@
+SEQ64_LT_REVISION = @SEQ64_LT_REVISION@
+SEQ64_LT_AGE = @SEQ64_LT_AGE@
 
 #******************************************************************************
 # Install directories
@@ -92,7 +92,7 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 # libtool
 #-----------------------------------------------------------------------------
 
-version = $(SEQUENCER64_API_MAJOR):$(SEQUENCER64_API_MINOR):$(SEQUENCER64_API_PATCH)
+version = $(SEQ64_API_MAJOR):$(SEQ64_API_MINOR):$(SEQ64_API_PATCH)
 
 #******************************************************************************
 # Compiler and linker flags (later, PortMidi)
@@ -101,8 +101,7 @@ version = $(SEQUENCER64_API_MAJOR):$(SEQUENCER64_API_MINOR):$(SEQUENCER64_API_PA
 AM_CXXFLAGS = \
  -I../include \
  -I$(top_srcdir)/include \
- -I$(top_srcdir)/libseq64/include \
- -Wall $(MM_WFLAGS)
+ -I$(top_srcdir)/libseq64/include
 
 #******************************************************************************
 # The library to build, a libtool-based library

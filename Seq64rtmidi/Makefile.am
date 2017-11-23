@@ -6,7 +6,7 @@
 # \library    	seq64rtmidi application
 # \author     	Chris Ahlstrom
 # \date       	2016-12-03
-# \update      2017-01-01
+# \update      2017-09-01
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -99,8 +99,7 @@ AM_CXXFLAGS = \
  -I$(top_srcdir)/seq_gtkmm2/include \
  $(GTKMM_CFLAGS) \
  $(JACK_CFLAGS) \
- $(LASH_CFLAGS) \
- -Wall $(MM_WFLAGS)
+ $(LASH_CFLAGS)
 
 #******************************************************************************
 # libmath

@@ -283,7 +283,11 @@ make_directory (const std::string & pathname)
         };
         if (stat(pathname.c_str(), &st) == -1)
         {
+#ifdef PLATFORM_MINGW
+            int rcode = mkdir(pathname.c_str());
+#else
             int rcode = mkdir(pathname.c_str(), 0700);
+#endif
             result = rcode == 0;
         }
     }

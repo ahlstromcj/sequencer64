@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-09-10
+ * \updates       2017-11-07
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -258,8 +258,13 @@ rc_settings::set_defaults ()
     m_device_ignore_num         = e_seq24_interaction;
     m_filename.clear();
     m_jack_session_uuid.clear();
+#if defined PLATFORM_WINDOWS            /* but see home_config_directory()  */
+    m_last_used_dir             = "C:\\Users\\$USER";
+    m_config_directory          = "C:\\Users\\$USER";
+#else
     m_last_used_dir             = "~/";
     m_config_directory          = ".config/sequencer64";
+#endif
     m_config_filename           = "sequencer64.rc";
     m_user_filename             = "sequencer64.usr";
     m_config_filename_alt       = ".seq24rc";
@@ -285,6 +290,9 @@ rc_settings::set_defaults ()
  *  If the new format is in force, then the home directory is (in Linux)
  *  "/home/username/.config/sequencer64", and the configuration file is
  *  "sequencer64.rc".
+ *
+ *  This function should also adapt to Windows conventions automatically.
+ *  We shall see.
  *
  * \return
  *      Returns the selected home configuration directory.  If it does not

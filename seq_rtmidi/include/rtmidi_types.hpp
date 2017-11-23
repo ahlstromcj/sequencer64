@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2017-08-22
+ * \updates       2017-09-01
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -19,6 +19,7 @@
 #include <string>                           /* std::string                  */
 #include <vector>                           /* std::vector container        */
 
+#include "event.hpp"                        /* seq64::event namespace       */
 #include "midibyte.hpp"                     /* seq64::midibyte typedef      */
 
 /**
@@ -199,6 +200,11 @@ public:
     void timestamp (double t)
     {
         m_timestamp = t;
+    }
+
+    bool is_sysex () const
+    {
+        return m_bytes.size() > 0 ? event::is_sysex_msg(m_bytes[0]) : false ;
     }
 
 };          // class midi_message

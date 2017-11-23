@@ -6,7 +6,7 @@
 # \library    	sequencer64 application
 # \author     	Chris Ahlstrom
 # \date       	2014-04-19
-# \update      2016-02-21
+# \update      2017-09-01
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -99,8 +99,7 @@ AM_CXXFLAGS = \
  -I$(top_srcdir)/seq_gtkmm2/include \
  $(GTKMM_CFLAGS) \
  $(JACK_CFLAGS) \
- $(LASH_CFLAGS) \
- -Wall $(MM_WFLAGS)
+ $(LASH_CFLAGS)
 
 #******************************************************************************
 # libmath

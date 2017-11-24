@@ -1615,7 +1615,6 @@ public:
 #ifdef SEQ64_SONG_BOX_SELECT
 
     bool selection_operation (SeqOperation func);
-    void box_insert (int dropseq);
     void box_insert (int dropseq, midipulse droptick);
     void box_delete (int dropseq, midipulse droptick);
     void box_toggle_sequence (int dropseq, midipulse droptick);
@@ -1670,22 +1669,7 @@ public:
         return m_tick;
     }
 
-#ifndef PLATFORM_DEBUG_TMI
-
-    /**
-     * \setter m_tick
-     */
-
-    void set_tick (midipulse tick)
-    {
-        m_tick = tick;
-    }
-
-#else
-
     void set_tick (midipulse tick);
-
-#endif  // PLATFORM_DEBUG_TMI
 
     /**
      * \getter m_jack_tick

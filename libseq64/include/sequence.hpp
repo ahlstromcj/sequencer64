@@ -368,13 +368,20 @@ private:
 
     /**
      *  A member from the Kepler34 project to indicate we are in one-shot mode
-     *  for triggering.
+     *  for triggering.  Set to false whenever playing-state changes.  Used in
+     *  sequence :: play_queue() to maybe play from the one-shot tick, then
+     *  toggle play and toggle queuing before playing normally.
+     *
+     *  One-shot mode is entered when the MIDI control c_status_oneshot event
+     *  is received.  Kepler34 reserves the period '.' to initiate this event.
      */
 
     bool m_one_shot;
 
     /**
-     *  A Member from the Kepler34 project.
+     *  A Member from the Kepler34 project, set in sequence ::
+     *  toggle_one_shot() to m_last_tick adjusted to the length of the
+     *  sequence..  Compare this member to m_queued_tick.
      */
 
     midipulse m_one_shot_tick;
@@ -386,8 +393,10 @@ private:
     bool m_off_from_snap;
 
     /**
-     *  Used to temporarily blocking Song Mode events while recording new
-     *  ones.
+     *  Used to temporarily block Song Mode events while recording new
+     *  ones.  Set to false if at a trigger transition in trigger playback.
+     *  Otherwise, triggers are allow to be processed.  Turned off when
+     *  song-recording stops.
      */
 
     bool m_song_playback_block;
@@ -411,7 +420,7 @@ private:
      *  Saves the tick from when we started recording live song data.
      */
 
-    midipulse m_song_recording_tick;
+    midipulse m_song_record_tick;
 
 #endif  // SEQ64_SONG_RECORDING
 
@@ -475,7 +484,7 @@ private:
      */
 
     midipulse m_last_tick;          /**< Provides the last tick played.     */
-    midipulse m_queued_tick;        /**< Provides the next tick to play?    */
+    midipulse m_queued_tick;        /**< Provides the tick for queuing.     */
     midipulse m_trigger_offset;     /**< Provides the trigger offset.       */
 
     /**
@@ -1316,9 +1325,9 @@ public:
      * \getter  m_song_recording_tic
      */
 
-    midipulse song_recording_tick () const
+    midipulse song_record_tick () const
     {
-        return m_song_recording_tick;
+        return m_song_record_tick;
     }
 
     void resume_note_ons (midipulse tick);
@@ -1857,12 +1866,12 @@ private:
     }
 
     /**
-     * \getter  m_song_recording_tick
+     * \getter  m_song_record_tick
      */
 
-    void song_recording_tick (midipulse t)
+    void song_record_tick (midipulse t)
     {
-        m_song_recording_tick = t;
+        m_song_record_tick = t;
     }
 
 #endif      // SEQ64_SONG_RECORDING

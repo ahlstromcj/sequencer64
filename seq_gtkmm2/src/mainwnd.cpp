@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-27
+ * \updates       2017-11-23
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -745,7 +745,7 @@ mainwnd::mainwnd
     (
         m_button_song_record,
         "Click this button to toggle the recording of live changes to the "
-        "song performance."
+        "song performance, i.e. song recording."
     );
     startstophbox->pack_start(*m_button_song_record, false, false);
 
@@ -757,7 +757,7 @@ mainwnd::mainwnd
     add_tooltip
     (
         m_button_song_snap,
-        "Click this button to toggle the snapping of live recording."
+        "Click this button to toggle the snapping of live song recording."
     );
     startstophbox->pack_start(*m_button_song_snap, false, false);
 
@@ -798,9 +798,9 @@ mainwnd::mainwnd
     add_tooltip
     (
         m_button_tempo_log,
-        "Click this button to add the current tempo as an event at the current "
-        "time.  Recording a tempo event can extend the length of the tempo "
-        "track, which is always pattern 0."
+        "Click this button to add the current tempo as a single event at the "
+        "current time.  Recording a tempo event can extend the length of the "
+        "tempo track, which is pattern 0 by default."
     );
 
     m_button_tempo_record->set_focus_on_click(false);
@@ -814,7 +814,7 @@ mainwnd::mainwnd
         m_button_tempo_record,
         "Click this button to toggle the recording of live changes to the "
         "tempo. Recording tempo events can extend the length of the tempo "
-        "track, which is always pattern 0."
+        "track, which is pattern 0 by default."
     );
 
     m_button_queue->signal_clicked().connect(mem_fun(*this, &mainwnd::queue_it));

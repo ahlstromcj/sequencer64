@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-11-23
+ * \updates       2017-11-24
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -91,7 +91,7 @@
  *  Kepler34 has a song-recording mode that we are still exploring and adding,
  *  marked by the following macro to keep it out of the way until the feature
  *  is ready for prime time.  This feature has been requested by some users of
- *  Sequencer64.  Currently builds but is incomplete and not tested.
+ *  Sequencer64.  Currently builds but is not fully tested.
  */
 
 #define SEQ64_SONG_RECORDING
@@ -103,10 +103,12 @@
  *
  *  This is our version, which currently supports only the "Shift-select"
  *  option, where the user holds the shift key while clicking triggers to
- *  select more than one.
+ *  select more than one.  It now seems a bit off-base, so we're disabling
+ *  this feature for now.  A trigger selection can only be completely
+ *  specified by it sequence number and the start tick of the trigger.
  */
 
-#define SEQ64_SONG_BOX_SELECT
+#undef  SEQ64_SONG_BOX_SELECT               /* not ready for prime time     */
 
 /**
  *  Odds and ends that we missed.  This value allows non-notes to be included

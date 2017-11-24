@@ -150,7 +150,7 @@ triggers::operator = (const triggers & rhs)
  */
 
 void
-triggers::push_undo ()                  // was push_trigger_undo ()
+triggers::push_undo ()
 {
     m_undo_stack.push(m_triggers);
     for
@@ -159,7 +159,7 @@ triggers::push_undo ()                  // was push_trigger_undo ()
         i != m_undo_stack.top().end(); ++i
     )
     {
-        unselect(*i);                   // i->selected(false);
+        unselect(*i, false);        /* do not count this unselection    */
     }
 }
 
@@ -215,8 +215,10 @@ triggers::pop_redo ()
  *                 start_tick     ||                     start_tick ||
  *                 end_tick       ||                     end_tick
  *
- *  If we've reached a new chunk of drawn sequences in the song data,
- *  and we're not recording, unset the block on this sequence's events.
+ * Song recording:
+ *
+ *      If we've reached a new chunk of drawn sequences in the song data, and
+ *      we're not recording, unset the block on this sequence's events.
  *
  *  If the trigger state has changed, then the start/end ticks are passed back
  *  to the sequence, and the trigger offset is adjusted.
@@ -256,29 +258,26 @@ triggers::play
     {
 
 #ifdef SEQ64_SONG_RECORDING
-        if                              /* touching a trigger transition?   */
-        (
-            start_tick == i->tick_start() || end_tick == i->tick_start() ||
-            start_tick == i->tick_end() || end_tick == i->tick_end()
-        )
-        {
+        if (i->at_trigger_transition(start_tick, end_tick))
             m_parent.song_playback_block(false);
-        }
 #endif
 
-        if (i->tick_start() <= end_tick)
+        midipulse trigstart = i->tick_start();
+        midipulse trigend = i->tick_end();
+        midipulse trigoffset = i->offset();
+        if (trigstart <= end_tick)
         {
             trigger_state = true;
-            trigger_tick = i->tick_start();
-            trigger_offset = i->offset();
+            trigger_tick = trigstart;
+            trigger_offset = trigoffset;
         }
-        if (i->tick_end() <= end_tick)
+        if (trigend <= end_tick)
         {
             trigger_state = false;
-            trigger_tick = i->tick_end();
-            trigger_offset = i->offset();
+            trigger_tick = trigend;
+            trigger_offset = trigoffset;
         }
-        if (i->tick_start() > end_tick || i->tick_end() > end_tick)
+        if (trigstart > end_tick || trigend > end_tick)
             break;
     }
 
@@ -309,15 +308,12 @@ triggers::play
 #ifdef SEQ64_SONG_RECORDING
 
             /*
-             * If we have triggered between a Note On and a Note Off, then
-             * play it.  Make sure it is right to use the saved start-tick
-             * here!
+             * If triggered between a Note On and a Note Off, then play it.
              */
 
             if (resume_note_ons)
                 m_parent.resume_note_ons(tick);
 #endif
-
         }
         else
         {
@@ -412,7 +408,7 @@ triggers::add
 {
     trigger t;
     t.offset(fixoffset ? adjust_offset(offset) : offset);
-    unselect(t);                            // t.selected(false);
+    unselect(t, false);                 /* do not count this unselection    */
     t.tick_start(tick);
     t.tick_end(tick + len - 1);
 
@@ -426,20 +422,22 @@ triggers::add
 
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
-        if (i->tick_start() >= t.tick_start() && i->tick_end() <= t.tick_end())
+        midipulse tickstart = i->tick_start();
+        midipulse tickend = i->tick_end();
+        if (tickstart >= t.tick_start() && tickend <= t.tick_end())
         {
             unselect(*i);                       /* adjust selection count    */
             m_triggers.erase(i);                /* inside the new one? erase */
             i = m_triggers.begin();             /* THERE IS A BETTER WAY     */
             continue;
         }
-        else if (i->tick_end() >= t.tick_end() && i->tick_start() <= t.tick_end())
+        else if (tickend >= t.tick_end() && tickstart <= t.tick_end())
         {
             i->tick_start(t.tick_end() + 1);    /* is the event's end inside? */
         }
         else if
         (
-            i->tick_end() >= t.tick_start() && i->tick_start() <= t.tick_start()
+            tickend >= t.tick_start() && tickstart <= t.tick_start()
         )
         {
             i->tick_end(t.tick_start() - 1);    /* last start inside new end? */
@@ -525,19 +523,20 @@ triggers::intersect (midipulse position)
 void
 triggers::grow (midipulse tickfrom, midipulse tickto, midipulse len)
 {
-    for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
+    for (List::iterator it = m_triggers.begin(); it != m_triggers.end(); ++it)
     {
-        if (i->tick_start() <= tickfrom && tickfrom <= i->tick_end())
+        midipulse start = it->tick_start();
+        midipulse ender = it->tick_end();
+        if (start <= tickfrom && tickfrom <= ender)
         {
-            midipulse start = i->tick_start();
-            midipulse ender = i->tick_end();
+            midipulse calcend = tickto + len - 1;
             if (tickto < start)
                 start = tickto;
 
-            if ((tickto + len - 1) > ender)
-                ender = tickto + len - 1;
+            if (calcend > ender)
+                ender = calcend;
 
-            add(start, ender - start + 1, i->offset());
+            add(start, ender - start + 1, it->offset());
             break;
         }
     }
@@ -621,8 +620,6 @@ triggers::split (midipulse splittick)
     }
 }
 
-#ifdef SEQ64_SONG_BOX_SELECT
-
 /**
  *  If the tick is between the start and end of this trigger...
  */
@@ -663,8 +660,6 @@ triggers::exact_split (midipulse splittick)
         ++i;
     }
 }
-
-#endif  // SEQ64_SONG_BOX_SELECT
 
 /**
  *  Adjusts trigger offsets to the length specified for all triggers, and undo
@@ -782,7 +777,6 @@ triggers::copy (midipulse starttick, midipulse distance)
             midipulse tickend = i->tick_end();
             trigger t;
             t.offset(i->offset());
-            // unnecessary: unselect(t);     // t.selected(false);
             t.tick_start(tickstart - distance);
             if (tickend <= from_end_tick)
                 t.tick_end(tickend - distance);
@@ -1122,7 +1116,7 @@ triggers::select (midipulse tick)
     {
         if (i->tick_start() <= tick && tick <= i->tick_end())
         {
-            select(*i);                     // i->selected(true);
+            select(*i);
             result = true;
         }
     }
@@ -1149,7 +1143,7 @@ triggers::unselect (midipulse tick)
     {
         if (i->tick_start() <= tick && tick <= i->tick_end())
         {
-            unselect(*i);                   // i->selected(false);
+            unselect(*i);
             result = true;
         }
     }
@@ -1167,7 +1161,7 @@ bool
 triggers::unselect ()
 {
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
-        unselect(*i);                       // i->selected(false);
+        unselect(*i);
 
     return false;
 }
@@ -1328,15 +1322,24 @@ triggers::next_trigger ()
  *
  * \param t
  *      Provides a reference to the desired trigger.
+ *
+ * \param count
+ *      If true, count the selection.  This can only be done in normal
+ *      triggers, not triggers in the undo container.
  */
 
 void
-triggers::select (trigger & t)
+triggers::select (trigger & t, bool count)
 {
     if (! t.selected())
     {
+        /*
+         * TMI: infoprint("trigger selected");
+         */
+
         t.selected(true);
-        ++m_number_selected;
+        if (count)
+            ++m_number_selected;
     }
 }
 
@@ -1346,21 +1349,28 @@ triggers::select (trigger & t)
  *
  * \param t
  *      Provides a reference to the desired trigger.
+ *
+ * \param count
+ *      If true, uncount the selection.  This can only be done in normal
+ *      triggers, not triggers in the undo container.
  */
 
 void
-triggers::unselect (trigger & t)
+triggers::unselect (trigger & t, bool count)
 {
     if (t.selected())
     {
         t.selected(false);
-        if (m_number_selected > 0)
+        if (count)
         {
-            --m_number_selected;
-        }
-        else
-        {
-            errprint("trigger unselect yields count error");
+            if (m_number_selected > 0)
+            {
+                --m_number_selected;
+            }
+            else
+            {
+                 warnprint("trigger unselect yields count error");
+            }
         }
     }
 }

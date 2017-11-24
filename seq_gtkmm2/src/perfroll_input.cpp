@@ -182,14 +182,14 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
 {
     bool result = false;
     sequence * seq = perf().get_sequence(m_drop_sequence);
-    bool dropseq_active = not_nullptr(seq);
+    bool dropseq_active;
     grab_focus();
-#ifdef SEQ64_SONG_BOX_SELECT
-#else
+#ifndef SEQ64_SONG_BOX_SELECT
+    dropseq_active = not_nullptr(seq);
     if (dropseq_active && ! is_shift_key(ev))       /* initial unselection  */
     {
         seq->unselect_triggers();
-        result = true;                      ////////// draw_all();
+        result = true;                              // draw_all();
     }
 #endif
     m_drop_x = int(ev->x);
@@ -234,7 +234,6 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev)
             if (in_trigger)
             {
                 perf().box_toggle_sequence(m_drop_sequence, m_drop_tick);
-//              perf().box_insert(m_drop_sequence, m_drop_tick);
                 result = true;
             }
         }
@@ -628,9 +627,7 @@ Seq24PerfInput::handle_motion_key (bool is_left)
         tick -= tick % m_snap_x;
 
 #ifdef SEQ64_SONG_BOX_SELECT
-
         perf().box_move_triggers(tick);
-
 #else
 
         /*
@@ -679,8 +676,10 @@ Seq24PerfInput::check_handles ()
     (
         m_drop_sequence, m_drop_tick, tick0, tick1  /* side-effects */
     );
+#ifdef SEQ64_SONG_BOX_SELECT
     if (m_have_button_press)
-        perf().box_insert(m_drop_sequence);
+        perf().box_insert(m_drop_sequence, m_drop_tick);
+#endif
 
     int ydrop = m_drop_y % c_names_y;
 

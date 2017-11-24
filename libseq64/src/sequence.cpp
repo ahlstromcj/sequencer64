@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-23
+ * \updates       2017-11-24
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -50,7 +50,19 @@
 #include "sequence.hpp"
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
+/**
+ *  Enables and marks a user's patch for issue #95.
+ */
+
 #define LAYK_PULL_REQUEST_95
+
+/**
+ *  This value is used as the minimal increment for growing a trigger during
+ *  song-recording.  This value was originally 10, but let's us a power of 2.
+ *  This increment allows the rest of the threads to notice the change.
+ */
+
+#define SEQ64_SONG_RECORD_INC      16
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -108,7 +120,7 @@ sequence::sequence (int ppqn)
     m_song_playback_block       (false),
     m_song_recording            (false),
     m_song_recording_snap       (false),
-    m_song_recording_tick       (0),
+    m_song_record_tick       (0),
 #endif
 #ifdef SEQ64_STAZED_EXPAND_RECORD
     m_overwrite_recording       (false),
@@ -1071,7 +1083,7 @@ sequence::on_queued ()
  *  function.  Its return value and side-effects tell if there's a change in
  *  playing based on triggers, and provides the ticks that bracket it.
  *
- * \param end_tick
+ * \param tick
  *      Provides the current end-tick value.  The tick comes in as a global
  *      tick.
  *
@@ -1088,7 +1100,7 @@ sequence::on_queued ()
 void
 sequence::play
 (
-    midipulse end_tick,
+    midipulse tick,
     bool playback_mode
 #ifdef SEQ64_SONG_RECORDING
     , bool resume_note_ons
@@ -1098,24 +1110,40 @@ sequence::play
     automutex locker(m_mutex);
     bool trigger_turning_off = false;       /* turn off after in-frame play */
     midipulse start_tick = m_last_tick;     /* modified in triggers::play() */
+    midipulse end_tick = tick;
     if (m_song_mute)
     {
         set_playing(false);
     }
     else
     {
+        /*
+         * TODO:  should make the song_recording() clause active for both Live
+         * and Song mode.
+         */
+
         if (playback_mode)                  /* song mode: on/off triggers   */
         {
 
 #ifdef SEQ64_SONG_RECORDING
             if (song_recording())
             {
-                grow_trigger(song_recording_tick(), end_tick, 10);
-                set_dirty_mp();             /* force redraws                */
+                grow_trigger(song_record_tick(), end_tick, SEQ64_SONG_RECORD_INC);
+                set_dirty_mp();             /* force redraw                 */
             }
 #endif
             trigger_turning_off = m_triggers.play(start_tick, end_tick);
         }
+#ifdef SEQ64_SONG_RECORDING
+        else
+        {
+            if (song_recording())
+            {
+                grow_trigger(song_record_tick(), end_tick, SEQ64_SONG_RECORD_INC);
+                set_dirty_mp();             /* force redraw                 */
+            }
+        }
+#endif
     }
     if (m_playing)                          /* play notes in frame          */
     {
@@ -3651,7 +3679,10 @@ sequence::set_trigger_offset (midipulse trigger_offset)
         m_trigger_offset %= m_length;
     }
     else
+    {
+        errprint("set_trigger_offset(): seq length = 0");
         m_trigger_offset = trigger_offset;
+    }
 }
 
 /**
@@ -3669,8 +3700,6 @@ sequence::split_trigger (midipulse splittick)
     automutex locker(m_mutex);
     m_triggers.split(splittick);
 }
-
-#ifdef SEQ64_SONG_BOX_SELECT
 
 /**
  *
@@ -3693,9 +3722,6 @@ sequence::exact_split_trigger (midipulse splittick)
     automutex locker(m_mutex);
     m_triggers.exact_split(splittick);
 }
-
-#endif  // SEQ64_SONG_BOX_SELECT
-
 
 /**
  *  Adjusts trigger offsets to the length specified for all triggers, and undo
@@ -5510,7 +5536,7 @@ sequence::handle_size (midipulse start, midipulse finish)
 #ifdef SEQ64_SONG_RECORDING
 
 /**
- *  Toggles the m_one_shot flag, sets m_off_from_snap to true, and adjust
+ *  Toggles the m_one_shot flag, sets m_off_from_snap to true, and adjusts
  *  m_one_shot_tick according to m_last_tick and m_length.
  */
 
@@ -5520,13 +5546,13 @@ sequence::toggle_one_shot ()
     automutex locker(m_mutex);
     set_dirty_mp();
     m_one_shot = ! m_one_shot;
-    m_one_shot_tick = m_last_tick - (m_last_tick % m_length) + m_length;
+    m_one_shot_tick = m_last_tick - mod_last_tick() + m_length;
     m_off_from_snap = true;
 }
 
 /**
  *  Sets the dirty flag, sets m_one_shot to false, and m_off_from_snap to
- *  true.
+ *  true. This function remains unused here and in Kepler34.
  */
 
 void
@@ -5540,12 +5566,15 @@ sequence::off_one_shot ()
 
 /**
  *  Starts the growing of the sequence for Song recording.  This process
- *  starts by adding a chunk of 10 ticks to the trigger, which allows the rest
- *  of the threads to notice the change.
+ *  starts by adding a chunk of SEQ64_SONG_RECORD_INC ticks to the
+ *  trigger, which allows the rest of the threads to notice the change.
+ *
+ * \question
+ *      Do we need to call set_dirty_mp() here?
  *
  * \param tick
  *      Provides the current tick, which helps set the recorded block's
- *      boundaries, and is copied into m_song_recording_tick.
+ *      boundaries, and is copied into m_song_record_tick.
  *
  * \param snap
  *      Indicates if we are to snap the recording to the configured boundary,
@@ -5555,10 +5584,16 @@ sequence::off_one_shot ()
 void
 sequence::song_recording_start (midipulse tick, bool snap)
 {
-    add_trigger(tick, 10);
+    add_trigger(tick, SEQ64_SONG_RECORD_INC);
     m_song_recording_snap = snap;
-    m_song_recording_tick = tick;
+    m_song_record_tick = tick;
     m_song_recording = true;
+
+    /*
+     * Do we need to add this setting?
+     *
+     * m_song_recording_block = false;
+     */
 }
 
 /**
@@ -5566,8 +5601,11 @@ sequence::song_recording_start (midipulse tick, bool snap)
  *  recording, we snap the end of the trigger segment to the next whole
  *  sequence interval.
  *
+ * \question
+ *      Do we need to call set_dirty_mp() here?
+ *
  * \param tick
- *      Provides the current tiack, which helps set the recorded block's
+ *      Provides the current tick, which helps set the recorded block's
  *      boundaries.
  */
 
@@ -5578,7 +5616,7 @@ sequence::song_recording_stop (midipulse tick)
     if (m_song_recording_snap)
     {
         midipulse len = m_length - (tick % m_length);
-        m_triggers.grow(m_song_recording_tick, tick, len);
+        m_triggers.grow(m_song_record_tick, tick, len);
         m_off_from_snap = true;
     }
 }

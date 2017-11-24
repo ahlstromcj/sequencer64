@@ -565,23 +565,6 @@ perform::selection_operation (SeqOperation func)
 }
 
 /**
- *  Unconditionally inserts the sequence into the box container.  Used for
- *  actions that have already selected the trigger.  It does not change the
- *  trigger count.
- *
- * \param dropseq
- *      The sequence to operate on.
- */
-
-void
-perform::box_insert (int dropseq)
-{
-    sequence * s = get_sequence(dropseq);
-    if (not_nullptr(s))
-        m_selected_seqs.insert(dropseq);
-}
-
-/**
  *  Selects the desired trigger for this sequence.  If this is the first
  *  selection, then the sequence is inserted into the box container.
  *
@@ -634,7 +617,7 @@ perform::box_delete (int dropseq, midipulse droptick)
 /**
  *  If the sequence is not in the "box set", add it.  Otherwise, we are
  *  "reselecting" the sequence, so remove it from the list of selections.
- *  Used in the performance windows on-button-press event.
+ *  Used in the performance window's on-button-press event.
  *
  * \param dropseq
  *      The number of the sequence where "the mouse was clicked", in the
@@ -1568,32 +1551,6 @@ perform::mute_screenset (int ss, bool flag)
         }
     }
 }
-
-#ifdef PLATFORM_DEBUG_TMI
-
-/**
- * \setter m_tick
- *      This version is used for debugging/troubleshooting only.  Normally it
- *      is wayyyy toooooo muuuuch information.
- */
-
-void
-perform::set_tick (midipulse tick)
-{
-    static midipulse s_last_tick = 0;
-    m_tick = tick;
-    midipulse difference = tick - s_last_tick;
-    if (difference > 100)
-    {
-        s_last_tick = tick;
-        printf("perform tick = %ld\n", m_tick);
-        fflush(stdout);
-    }
-    if (tick == 0)
-        s_last_tick = 0;
-}
-
-#endif
 
 /**
  *  Set the left marker at the given tick.  We let the caller determine if
@@ -2611,7 +2568,7 @@ perform::set_playing_screenset ()
  *  down the list of sequences and has them dump their events.  It skips
  *  sequences that have no playable MIDI events.
  *
- *  Note how often the "s" (sequence) pointer was used.  It was worth
+ *  Note how often the "sp" (sequence) pointer was used.  It was worth
  *  offloading all these calls to a new sequence function.  Hence the new
  *  sequence::play_queue() function.
  *
@@ -2629,12 +2586,12 @@ perform::play (midipulse tick)
     set_tick(tick);
     for (int s = 0; s < m_sequence_high; ++s)       /* modest speed up  */
     {
+        sequence * sp = get_sequence(s);
+        if (not_nullptr(sp))
 #ifdef SEQ64_SONG_RECORDING
-        if (is_active(s))
-            m_seqs[s]->play_queue(tick, m_playback_mode, m_resume_note_ons);
+            sp->play_queue(tick, m_playback_mode, m_resume_note_ons);
 #else
-        if (is_active(s))
-            m_seqs[s]->play_queue(tick, m_playback_mode);
+            sp->play_queue(tick, m_playback_mode);
 #endif
     }
     if (not_nullptr(m_master_bus))
@@ -5158,7 +5115,7 @@ perform::sequence_playing_toggle (int seq)
         bool is_oneshot = (m_control_status & c_status_oneshot) != 0;
         if (is_oneshot && ! s->get_playing())
         {
-            s->toggle_one_shot();
+            s->toggle_one_shot();           // why not just turn on???
         }
         else
 
@@ -6182,15 +6139,36 @@ perform::reposition (midipulse tick)
 void
 perform::set_tick (midipulse tick)
 {
+
+#ifdef PLATFORM_DEBUG_TMI
+
+    /*
+     * Display the tick values; normally this is too much information.
+     */
+
+    static midipulse s_last_tick = 0;
+    midipulse difference = tick - s_last_tick;
+    if (difference > 100)
+    {
+        s_last_tick = tick;
+        printf("perform tick = %ld\n", m_tick);
+        fflush(stdout);
+    }
+    if (tick == 0)
+        s_last_tick = 0;
+
+#endif  // PLATFORM_DEBUG_TMI
+
     m_tick = tick;
     if (m_jack_asst.is_running())
         position_jack(tick);
 
     master_bus().continue_from(tick);
     m_current_tick = tick;
+
 }
 
-#endif
+#endif  // SEQ64_SONG_RECORDING
 
 /**
  *  Convenience function.  This function is used in the free function version
@@ -6232,8 +6210,9 @@ perform::song_recording_stop ()
 {
     for (int i = 0; i < m_sequence_high; ++i)   /* m_sequence_max       */
     {
-        if (is_active(i))
-            m_seqs[i]->song_recording_stop(m_current_tick);     // TODO!!!!
+        sequence * sp = get_sequence(i);
+        if (not_nullptr(sp))
+            sp->song_recording_stop(m_current_tick);     // TODO!!!!
     }
 }
 

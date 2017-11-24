@@ -34,8 +34,10 @@ See the INSTALL file.
             -   Recent-files menu entries; logs full path-names, but shows
                 only the base name.  Has Gtk issue with using underscore as an
                 accelerator.
-            -   Support for box-selection/multiple-trigger-selection in Song
-                editor.
+            -   Support for multiple trigger selection (but not yet
+                box-selection in the Song Editor), but incomplete/disabled.
+            -   Initial support for Song Recording, in Live mode, which writes
+                the live muting changes as triggers to the Song Editor.
     -   Version 0.93.5:
         -   Fixes an issue where incoming Active Sensing events are treated
             incorrectly.  Also update handling for similar events.

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2017-10-23
+ * \updates       2017-11-24
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -164,6 +164,26 @@ public:
     void decrement_tick_start (midipulse s)
     {
         m_tick_start -= s;
+    }
+
+    /**
+     *  Test if the input parameters indicate we are touching a trigger
+     *  transtion.
+     *
+     * \param s
+     *      The starting tick.
+     *
+     * \param e
+     *      The ending tick.
+     */
+
+    bool at_trigger_transition (midipulse s, midipulse e)
+    {
+        return
+        (
+            s == m_tick_start || e == m_tick_start ||
+            s == m_tick_end   || e == m_tick_end
+        );
     }
 
     /**
@@ -466,11 +486,8 @@ public:
     );
     void adjust_offsets_to_length (midipulse newlen);
     void split (midipulse tick);
-
-#ifdef SEQ64_SONG_BOX_SELECT
     void half_split (midipulse tick);
     void exact_split (midipulse tick);
-#endif
 
     void grow (midipulse tickfrom, midipulse tickto, midipulse length);
     void remove (midipulse tick);
@@ -539,8 +556,8 @@ private:
 
     midipulse adjust_offset (midipulse offset);
     void split (trigger & t, midipulse splittick);
-    void select (trigger & t);
-    void unselect (trigger & t);
+    void select (trigger & t, bool count = true);
+    void unselect (trigger & t, bool count = true);
 
 };          // class triggers
 

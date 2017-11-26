@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-23
+ * \updates       2017-11-25
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -550,6 +550,12 @@ optionsfile::parse (perform & p)
             next_data_line(file);
             sscanf(m_line, "%u", &ktx.kpt_toggle_mutes);
             next_data_line(file);
+#ifdef SEQ64_SONG_RECORDING
+            sscanf(m_line, "%u", &ktx.kpt_song_record);
+            next_data_line(file);
+            sscanf(m_line, "%u", &ktx.kpt_oneshot_queue);
+            next_data_line(file);
+#endif
         }
         else
         {
@@ -1497,6 +1503,14 @@ optionsfile::write (const perform & p)
             << ktx.kpt_toggle_mutes << "    # "
             << ucperf.key_name(ktx.kpt_toggle_mutes)
             << " handles the toggling-all-pattern-mutes function\n"
+#ifdef SEQ64_SONG_RECORDING
+            << ktx.kpt_song_record << "    # "
+            << ucperf.key_name(ktx.kpt_song_record)
+            << " toggles the song-record function\n"
+            << ktx.kpt_oneshot_queue << "    # "
+            << ucperf.key_name(ktx.kpt_oneshot_queue)
+            << " toggles the one-shot queue function\n"
+#endif
             ;
     }
 

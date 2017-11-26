@@ -1185,8 +1185,11 @@ public:
 
     void toggle_playing (midipulse tick, bool resumenoteons);
     void toggle_queued ();
+
+#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
     void off_queued ();
     void on_queued ();
+#endif
 
     /**
      * \getter m_queued

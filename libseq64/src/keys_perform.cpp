@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2017-08-20
+ * \updates       2017-11-25
  * \license       GNU GPLv2 or above
  *
  *  Added pattern-edit and event-edit keys which change the pattern slot
@@ -65,7 +65,7 @@ keys_perform::keys_perform ()
     m_key_bpm_up                    (SEQ64_apostrophe),
     m_key_bpm_dn                    (SEQ64_semicolon),
     m_key_replace                   (SEQ64_Control_L),
-    m_key_queue                     (SEQ64_Control_R),
+    m_key_queue                     (SEQ64_o),              // (SEQ64_Control_R)
     m_key_keep_queue                (SEQ64_backslash),
     m_key_snapshot_1                (SEQ64_Alt_L),
     m_key_snapshot_2                (SEQ64_Alt_R),
@@ -90,6 +90,11 @@ keys_perform::keys_perform ()
     m_key_pattern_shift             (SEQ64_slash),
     m_key_event_edit                (SEQ64_minus),
     m_key_stop                      (SEQ64_Escape)
+#ifdef SEQ64_SONG_RECORDING
+    ,
+    m_key_song_record               (SEQ64_P),
+    m_key_oneshot_queue             (SEQ64_p)
+#endif
 {
     // Empty body
 }
@@ -136,36 +141,40 @@ keys_perform::key_name (unsigned key) const
 void
 keys_perform::set_keys (const keys_perform_transfer & kpt)
 {
-    m_key_bpm_up                    = kpt.kpt_bpm_up;
-    m_key_bpm_dn                    = kpt.kpt_bpm_dn;
-    m_key_replace                   = kpt.kpt_replace;
-    m_key_queue                     = kpt.kpt_queue;
-    m_key_keep_queue                = kpt.kpt_keep_queue;
-    m_key_snapshot_1                = kpt.kpt_snapshot_1;
-    m_key_snapshot_2                = kpt.kpt_snapshot_2;
-    m_key_screenset_up              = kpt.kpt_screenset_up;
-    m_key_screenset_dn              = kpt.kpt_screenset_dn;
-    m_key_set_playing_screenset     = kpt.kpt_set_playing_screenset;
-    m_key_group_on                  = kpt.kpt_group_on;
-    m_key_group_off                 = kpt.kpt_group_off;
-    m_key_group_learn               = kpt.kpt_group_learn;
-    m_key_start                     = kpt.kpt_start;
-    m_key_pause                     = kpt.kpt_pause;
-    m_key_song_mode                 = kpt.kpt_song_mode;
-    m_key_toggle_jack               = kpt.kpt_toggle_jack;
-    m_key_menu_mode                 = kpt.kpt_menu_mode;
-    m_key_follow_transport          = kpt.kpt_follow_transport;
-    m_key_rewind                    = kpt.kpt_rewind;
-    m_key_fast_forward              = kpt.kpt_fast_forward;
-    m_key_pointer_position          = kpt.kpt_pointer_position;
-    m_key_toggle_mutes              = kpt.kpt_toggle_mutes;
-    m_key_tap_bpm                   = kpt.kpt_tap_bpm;
-    m_key_pattern_edit              = kpt.kpt_pattern_edit;
-    m_key_pattern_shift             = kpt.kpt_pattern_shift;
-    m_key_event_edit                = kpt.kpt_event_edit;
-    m_key_stop                      = kpt.kpt_stop;
-    m_key_show_ui_sequence_key      = kpt.kpt_show_ui_sequence_key;
-    m_key_show_ui_sequence_number   = kpt.kpt_show_ui_sequence_number;
+     m_key_bpm_up                    = kpt.kpt_bpm_up;
+     m_key_bpm_dn                    = kpt.kpt_bpm_dn;
+     m_key_replace                   = kpt.kpt_replace;
+     m_key_queue                     = kpt.kpt_queue;
+     m_key_keep_queue                = kpt.kpt_keep_queue;
+     m_key_snapshot_1                = kpt.kpt_snapshot_1;
+     m_key_snapshot_2                = kpt.kpt_snapshot_2;
+     m_key_screenset_up              = kpt.kpt_screenset_up;
+     m_key_screenset_dn              = kpt.kpt_screenset_dn;
+     m_key_set_playing_screenset     = kpt.kpt_set_playing_screenset;
+     m_key_group_on                  = kpt.kpt_group_on;
+     m_key_group_off                 = kpt.kpt_group_off;
+     m_key_group_learn               = kpt.kpt_group_learn;
+     m_key_start                     = kpt.kpt_start;
+     m_key_pause                     = kpt.kpt_pause;
+     m_key_song_mode                 = kpt.kpt_song_mode;
+     m_key_toggle_jack               = kpt.kpt_toggle_jack;
+     m_key_menu_mode                 = kpt.kpt_menu_mode;
+     m_key_follow_transport          = kpt.kpt_follow_transport;
+     m_key_rewind                    = kpt.kpt_rewind;
+     m_key_fast_forward              = kpt.kpt_fast_forward;
+     m_key_pointer_position          = kpt.kpt_pointer_position;
+     m_key_toggle_mutes              = kpt.kpt_toggle_mutes;
+     m_key_tap_bpm                   = kpt.kpt_tap_bpm;
+     m_key_pattern_edit              = kpt.kpt_pattern_edit;
+     m_key_pattern_shift             = kpt.kpt_pattern_shift;
+     m_key_event_edit                = kpt.kpt_event_edit;
+     m_key_stop                      = kpt.kpt_stop;
+#ifdef SEQ64_SONG_RECORDING
+     m_key_song_record               = kpt.kpt_song_record;
+     m_key_oneshot_queue             = kpt.kpt_oneshot_queue;
+#endif
+     m_key_show_ui_sequence_key      = kpt.kpt_show_ui_sequence_key;
+     m_key_show_ui_sequence_number   = kpt.kpt_show_ui_sequence_number;
 }
 
 /**
@@ -207,6 +216,10 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
      kpt.kpt_pattern_shift          = m_key_pattern_shift;
      kpt.kpt_event_edit             = m_key_event_edit;
      kpt.kpt_stop                   = m_key_stop;
+#ifdef SEQ64_SONG_RECORDING
+     kpt.kpt_song_record            = m_key_song_record;
+     kpt.kpt_oneshot_queue          = m_key_oneshot_queue;
+#endif
      kpt.kpt_show_ui_sequence_key   = m_key_show_ui_sequence_key;
      kpt.kpt_show_ui_sequence_number = m_key_show_ui_sequence_number;
 }

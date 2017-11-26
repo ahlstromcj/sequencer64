@@ -492,7 +492,7 @@ userfile::parse (perform & /* a_perf */)
                 sscanf(m_line, "%d", &scratch);
 
             usr().option_daemonize(scratch);
-            char temp[256];                         // TENTATIVE
+            char temp[256];
             if (next_data_line(file))
             {
                 sscanf(m_line, "%s", temp);

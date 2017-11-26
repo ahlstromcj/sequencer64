@@ -520,7 +520,7 @@ midi_jack::api_init_out ()
             (
                 rc().application_name(), rc().app_client_name(), remoteportname
             );
-            parent_bus().set_alt_name           // TENTATIVE
+            parent_bus().set_alt_name
             (
                 rc().application_name(), rc().app_client_name(), remoteportname
             );
@@ -593,7 +593,7 @@ midi_jack::api_init_in ()
         (
             rc().application_name(), rc().app_client_name(), remoteportname
         );
-        parent_bus().set_alt_name           // TENTATIVE
+        parent_bus().set_alt_name
         (
             rc().application_name(), rc().app_client_name(), remoteportname
         );

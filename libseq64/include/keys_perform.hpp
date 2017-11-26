@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2017-08-20
+ * \updates       2017-11-25
  * \license       GNU GPLv2 or above
  *
  * Stazed:
@@ -124,6 +124,7 @@ struct keys_perform_transfer
      */
 
     unsigned kpt_song_record;       // still thinking about this one.
+    unsigned kpt_oneshot_queue;     // still thinking about this one.
 
 #endif
 
@@ -250,6 +251,11 @@ private:
     unsigned m_key_pattern_shift;           /**< Shift pattern hotkey.  */
     unsigned m_key_event_edit;              /**< Show event editor.     */
     unsigned m_key_stop;                    /**< Stop play, Escape.     */
+
+#ifdef SEQ64_SONG_RECORDING
+    unsigned m_key_song_record;             /**< Turn on song-record.   */
+    unsigned m_key_oneshot_queue;           /**< Turn on 1-shot record. */
+#endif
 
 public:
 
@@ -748,6 +754,30 @@ public:
         m_key_tap_bpm = key;
     }
 
+#ifdef SEQ64_SONG_RECORDING
+
+    unsigned song_record () const
+    {
+        return m_key_song_record;
+    }
+
+    void song_record (unsigned key)
+    {
+        m_key_song_record = key;
+    }
+
+    unsigned oneshot_queue () const
+    {
+        return m_key_oneshot_queue;
+    }
+
+    void oneshot_queue (unsigned key)
+    {
+        m_key_oneshot_queue = key;
+    }
+
+#endif  // SEQ64_SONG_RECORDING
+
     /**
      * \getter m_key_show_ui_sequency_key
      *
@@ -1136,6 +1166,30 @@ protected:
     {
         return &m_key_tap_bpm;
     }
+
+#ifdef SEQ64_SONG_RECORDING
+
+    /**
+     * \getter m_key_song_record
+     *  Address getter for the song-record operation.
+     */
+
+    unsigned * at_song_record ()
+    {
+        return &m_key_song_record;
+    }
+
+    /**
+     * \getter m_key_oneshot_queue
+     *  Address getter for the oneshot-record operation.
+     */
+
+    unsigned * at_oneshot_queue ()
+    {
+        return &m_key_oneshot_queue;
+    }
+
+#endif
 
     /**
      * \getter m_key_pattern_edit

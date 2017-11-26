@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-12
+ * \updates       2017-11-25
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -404,6 +404,12 @@ private:
 
     bool m_is_song_recording;
 
+    /**
+     *  Indicates if song-recording snap is active.
+     */
+
+    bool m_is_snap_recording;
+
 #endif  // SEQ64_SONG_RECORDING
 
     /**
@@ -632,6 +638,7 @@ private:
     void queue_it ();
 
 #ifdef SEQ64_SONG_RECORDING
+    void set_song_record ();
     void toggle_song_record ();
     void toggle_song_snap ();
     void set_song_playback (bool playsong);

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-11-23
+ * \updates       2017-11-25
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -232,7 +232,7 @@ static const int c_status_snapshot = 0x02;
 
 static const int c_status_queue    = 0x04;
 
-#ifdef  SEQ64_SONG_RECORDING
+#ifdef SEQ64_SONG_RECORDING
 
 /**
  *  This value signals the Kepler34 "one-shot" functionality.  If this bit
@@ -4477,9 +4477,7 @@ perform::midi_control_event (const event & ev)
 {
     midibyte status = ev.get_status();
     int offset = m_screenset_offset;
-//  midibyte data[2] = { 0, 0 };
-//  ev.get_data(data[0], data[1]);
-    midibyte d0 = 0, d1 = 0;
+    midibyte d0 = 0, d1 = 0;                    /* do we need to zero them? */
     ev.get_data(d0, d1);
     for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)
     {
@@ -5157,6 +5155,10 @@ perform::sequence_playing_toggle (int seq)
          * If we're in song playback, temporarily block the events until the
          * next sequence boundary. And if we're recording, add "Live" sequence
          * playback changes to the Song/Performance data as triggers.
+         *
+         * \todo
+         *      Would be nice to delay song-recording start to the next queue,
+         *      if queuing is active for this sequence.
          */
 
         if (m_playback_mode)
@@ -5187,7 +5189,7 @@ perform::sequence_playing_toggle (int seq)
             else            /* if not playing, start recording a new strip  */
             {
                 if (m_song_record_snap)     /* snap to length of sequence   */
-                    tick = tick - (tick % seq_length);
+                    tick -= tick % seq_length;
 
                 push_trigger_undo();
                 s->song_recording_start(tick, m_song_record_snap);
@@ -5238,30 +5240,32 @@ perform::seq_in_playing_screen (int seq)
 void
 perform::sequence_playing_change (int seq, bool on)
 {
-    if (is_active(seq))
+    sequence * s = get_sequence(seq);
+    if (not_nullptr(s))
     {
         if (seq_in_playing_screen(seq))
             m_tracks_mute_state[seq - m_playscreen_offset] = on;
 
-        bool queued = m_seqs[seq]->get_queued();
-        bool playing = m_seqs[seq]->get_playing();
+        bool queued = s->get_queued();
+        bool playing = s->get_playing();
+        bool q_in_progress = (m_control_status & c_status_queue) != 0;
         if (on)
             playing = ! playing;
 
         if (playing)
         {
-            if ((m_control_status & c_status_queue) != 0)
+            if (q_in_progress)
             {
                 if (! queued)
-                    m_seqs[seq]->toggle_queued();
+                    s->toggle_queued();
             }
             else
-                m_seqs[seq]->set_playing(on);
+                s->set_playing(on);
         }
         else
         {
-            if (queued && (m_control_status & c_status_queue) != 0)
-                m_seqs[seq]->toggle_queued();
+            if (queued && q_in_progress)
+                s->toggle_queued();
         }
     }
 }
@@ -5577,6 +5581,10 @@ perform::mainwnd_key_event (const keystroke & k)
             unset_mode_group_mute();
         else if (key == keys().group_learn())
             set_mode_group_learn();
+#ifdef SEQ64_SONG_RECORDING
+        else if (key == keys().oneshot_queue())
+            set_sequence_control_status(c_status_oneshot);
+#endif
         else
             result = false;
     }
@@ -5590,6 +5598,10 @@ perform::mainwnd_key_event (const keystroke & k)
             unset_sequence_control_status(c_status_snapshot);
         else if (key == keys().group_learn())
             unset_mode_group_learn();
+#ifdef SEQ64_SONG_RECORDING
+        else if (key == keys().oneshot_queue())
+            unset_sequence_control_status(c_status_oneshot);
+#endif
         else
             result = false;
     }

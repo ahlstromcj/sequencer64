@@ -1018,19 +1018,21 @@ void
 sequence::toggle_queued ()
 {
     automutex locker(m_mutex);
-    set_dirty_mp();
     m_queued = ! m_queued;
     m_queued_tick = m_last_tick - mod_last_tick() + m_length;
 #ifdef SEQ64_SONG_RECORDING
     m_off_from_snap = true;
 #endif
+    set_dirty_mp();
 }
+
+#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
  * \setter m_queued
  *      Turns off (resets) the queued flag and sets the dirty-mp flag.
  *      Do we need to set m_queued_tick as in toggle_queued()?  Currently not
- *      used.
+ *      used, disabled by SEQ64_USE_AUTO_SCREENSET_QUEUE macro.
  *
  * \threadsafe
  */
@@ -1039,18 +1041,19 @@ void
 sequence::off_queued ()
 {
     automutex locker(m_mutex);
-    set_dirty_mp();
     m_queued = false;
 #ifdef SEQ64_SONG_RECORDING
     m_off_from_snap = true;
 #endif
+    set_dirty_mp();
 }
 
 /**
  * \setter m_queued
  *      Turns on (sets) the queued flag and sets the dirty-mp flag.
+ *
  *      Do we need to set m_queued_tick as in toggle_queued()?  Currently not
- *      used.
+ *      used; see disabled SEQ64_USE_AUTO_SCREENSET_QUEUE in perform.cpp.
  *
  * \threadsafe
  */
@@ -1062,6 +1065,8 @@ sequence::on_queued ()
     m_queued = true;
     set_dirty_mp();
 }
+
+#endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
  *  The play() function dumps notes starting from the given tick, and it
@@ -1118,32 +1123,22 @@ sequence::play
     else
     {
         /*
-         * TODO:  should make the song_recording() clause active for both Live
-         * and Song mode.
+         *  We make the song_recording() clause active for both Live and Song
+         *  mode now.
          */
+
+#ifdef SEQ64_SONG_RECORDING
+        if (song_recording())
+        {
+            grow_trigger(song_record_tick(), end_tick, SEQ64_SONG_RECORD_INC);
+            set_dirty_mp();             /* force redraw                 */
+        }
+#endif
 
         if (playback_mode)                  /* song mode: on/off triggers   */
         {
-
-#ifdef SEQ64_SONG_RECORDING
-            if (song_recording())
-            {
-                grow_trigger(song_record_tick(), end_tick, SEQ64_SONG_RECORD_INC);
-                set_dirty_mp();             /* force redraw                 */
-            }
-#endif
             trigger_turning_off = m_triggers.play(start_tick, end_tick);
         }
-#ifdef SEQ64_SONG_RECORDING
-        else
-        {
-            if (song_recording())
-            {
-                grow_trigger(song_record_tick(), end_tick, SEQ64_SONG_RECORD_INC);
-                set_dirty_mp();             /* force redraw                 */
-            }
-        }
-#endif
     }
     if (m_playing)                          /* play notes in frame          */
     {
@@ -3638,6 +3633,13 @@ void
 sequence::grow_trigger (midipulse tickfrom, midipulse tickto, midipulse len)
 {
     automutex locker(m_mutex);
+
+    /*
+     * This check doesn't hurt, but doesn't prevent creating the new trigger.
+     *
+     * if (! get_queued())
+     */
+
     m_triggers.grow(tickfrom, tickto, len);
 }
 
@@ -3702,7 +3704,10 @@ sequence::split_trigger (midipulse splittick)
 }
 
 /**
+ *  Half-splits a trigger.
  *
+ * \param splittick
+ *      The time location of the split.
  */
 
 void
@@ -3713,7 +3718,10 @@ sequence::half_split_trigger (midipulse splittick)
 }
 
 /**
+ *  Exact-splits a trigger.
  *
+ * \param splittick
+ *      The time location of the split.
  */
 
 void
@@ -3961,8 +3969,6 @@ sequence::unselect_trigger (midipulse tick)
     automutex locker(m_mutex);
     return m_triggers.unselect(tick);
 }
-
-
 
 /**
  *  Unselects all triggers.
@@ -5436,23 +5442,6 @@ sequence::set_parent (perform * p)
         m_parent = p;
 }
 
-/**
- *  Provides encapsulation for a series of called used in perform::play().
- *  Starts the playing of a pattern/sequence.  This function just has the
- *  sequence dump its events.  It ignores the sequence if it has no playable
- *  MIDI events.
- *
- * \change ca 2016-10-12
- *      Issue #39.  Removed the check for a non-zero event count.  This lets
- *      the seqroll show the progress bar in motion.
- *
- * \param tick
- *  Provides the tick/pulse from which to start playing.
- *
- * \param playbackmode
- *      Indicates if the playback is in live mode (false) or song mode (true).
- */
-
 #ifdef SEQ64_SONG_RECORDING
 
 /**
@@ -5460,7 +5449,8 @@ sequence::set_parent (perform * p)
  *  function.  We refactored this, Chris.  Remember?  :-D
  *
  * \param tick
- *      Provides the current active pulse position.
+ *      Provides the current active pulse position, the tick/pulse from which
+ *      to start playing.
  *
  * \param playbackmode
  *      If true, we are in Song mode.  Otherwise, Live mode.
@@ -5481,12 +5471,29 @@ sequence::play_queue (midipulse tick, bool playbackmode, bool resumenoteons)
     {
         play(one_shot_tick() - 1, playbackmode, resumenoteons);
         toggle_playing(tick, resumenoteons);
-        toggle_queued();
+        toggle_queued();        /* queue it to mute it again after one play */
     }
     play(tick, playbackmode, resumenoteons);
 }
 
 #else
+
+/**
+ *  Provides encapsulation for a series of called used in perform::play().
+ *  Starts the playing of a pattern/sequence.  This function just has the
+ *  sequence dump its events.  It ignores the sequence if it has no playable
+ *  MIDI events.
+ *
+ * \change ca 2016-10-12
+ *      Issue #39.  Removed the check for a non-zero event count.  This lets
+ *      the seqroll show the progress bar in motion.
+ *
+ * \param tick
+ *      Provides the tick/pulse from which to start playing.
+ *
+ * \param playbackmode
+ *      Indicates if the playback is in live mode (false) or song mode (true).
+ */
 
 void
 sequence::play_queue (midipulse tick, bool playbackmode)

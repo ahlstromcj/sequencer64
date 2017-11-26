@@ -1,11 +1,11 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-08-30
+2016-12-03 to 2017-11-25
 
 Debian packaging:
 
     *   Need a Sequencer64-debian project to hold packages for convenience.
-    -   Update documentation for the build processes.
+        Still need to get a static package to work.
 
 Windows:
 
@@ -14,6 +14,7 @@ Windows:
     -   Master MingW.
     -   Add Windows implementation and build files.
     -   Add NSIS installer creation.
+    -   Get basic St 5 support working.
 
 Tempo Track:
 
@@ -37,6 +38,18 @@ Hot bugs:
     -   Pressing the keep-queue activates the Q button, but pressing another
         key, or the temporary queue key, or changing the current screen set,
         does *not* de-activate the keep-queue status.
+    -   Doing "/1" to turn on queueing seems to require "1" to be struck twice.
+        sequence::set_playing() turns it off.  This was due to the "/" key
+        being defined as both the Slot Shift key and the Queue key.  We should
+        detect duplicates!  Sad!  Also note that, in the traditional
+        [keyboard-group] setup, the keys 9, 0, o, l, and p are available.
+        Kepler34 devotes the "." to the one-shot feature.  Where can we put
+        this, our main keyboard tab is filled!  Looks like [extended-keys] is
+        the only place for "One-Shot Song Record".  For the queue key, 'o' is
+        a good mnemonic choice for "queue on/off". 
+    -   Song-recording does not respect the snap setting on muting.
+    -   Song-recording does not respect the queuing feature; the trigger
+        is created as soon as queuing is turned on.
 
 Rtmidi implementation issues to work out:
 
@@ -58,7 +71,6 @@ Hot ideas (from GitHub):
 
 Puzzles:
 
-    -   Need to catch up the man pages with the --help option!!!
     -   Tooltips are too flickery with unclutter enabled.
     -   When reading the "stress" file, we get this message: "Near offset
         0x16aca9: 'End-of-file', further MIDI reading disabled".

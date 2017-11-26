@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-13
+ * \updates       2017-11-25
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -460,7 +460,8 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
             /*
              * Draw the inner rectangle containing the notes of a sequence.
-             * If queued, color the rectangle grey.
+             * If queued, color the rectangle grey.  If one-shot queued, color
+             * it light grey.
              */
 
             if (seq->get_queued())
@@ -468,14 +469,21 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 draw_rectangle_on_pixmap(grey(), x, y, lx, ly);
                 fg_color(black());
             }
+#ifdef SEQ64_SONG_RECORDING
+            else if (seq->one_shot())
+            {
+                draw_rectangle_on_pixmap(light_grey(), x, y, lx, ly);
+                fg_color(black());
+            }
+#endif
             draw_rectangle_on_pixmap(fg_color(), x, y, lx, ly, false);
 
-            int low_note;                                // for side-effect
-            int high_note;                               // ditto
+            int low_note;                                   // for side-effect
+            int high_note;                                  // ditto
             bool have_notes = seq->get_minmax_note_events(low_note, high_note);
             if (have_notes)
             {
-                int height = high_note - low_note + 2;    // 2-pixel border
+                int height = high_note - low_note + 2;      // 2-pixel border
                 int len = seq->get_length();
                 midipulse tick_s;
                 midipulse tick_f;
@@ -798,6 +806,12 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
             {
                 m_gc->set_foreground(black());
             }
+#ifdef SEQ64_SONG_RECORDING
+            else if (seq->one_shot())
+            {
+                m_gc->set_foreground(blue());
+            }
+#endif
             else
             {
                 /*

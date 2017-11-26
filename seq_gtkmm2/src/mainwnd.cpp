@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-23
+ * \updates       2017-11-25
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -346,6 +346,7 @@ mainwnd::mainwnd
     m_button_song_record    (manage(new Gtk::ToggleButton())),
     m_button_song_snap      (manage(new Gtk::ToggleButton("S"))),
     m_is_song_recording     (false),
+    m_is_snap_recording     (false),
 #endif
     m_tick_time             (manage(new Gtk::Label(""))),
     m_adjust_bpm
@@ -739,7 +740,7 @@ mainwnd::mainwnd
     m_button_song_record->add(*manage(new PIXBUF_IMAGE(song_rec_on_xpm)));
     m_button_song_record->signal_toggled().connect
     (
-        mem_fun(*this, &mainwnd::toggle_song_record)
+        mem_fun(*this, &mainwnd::set_song_record)
     );
     add_tooltip
     (
@@ -818,7 +819,12 @@ mainwnd::mainwnd
     );
 
     m_button_queue->signal_clicked().connect(mem_fun(*this, &mainwnd::queue_it));
-    add_tooltip(m_button_queue, "Shows and toggles the keep-queue status.");
+    add_tooltip
+    (
+        m_button_queue,
+        "Shows and toggles the keep-queue status. Does not show one-shot "
+        "queue status."
+    );
 
     m_adjust_bpm->signal_value_changed().connect
     (
@@ -1647,43 +1653,56 @@ mainwnd::jack_dialog ()
 #ifdef SEQ64_SONG_RECORDING
 
 /**
+ *  Sets the song-recording status.  Note that calling this function will
+ *  trigger the button signal callback.
+ */
+
+void
+mainwnd::set_song_record ()
+{
+    m_is_song_recording = m_button_song_record->get_active();
+    perf().song_recording(m_is_song_recording);
+}
+
+/**
  *  Toggles the recording of the live song control done by the musician.
+ *  This is not a saved setting at this time.
  */
 
 void
 mainwnd::toggle_song_record ()
 {
-    m_is_song_recording = ! m_is_song_recording;
-    perf().song_recording(m_is_song_recording);
+    m_button_song_record->set_active(! m_button_song_record->get_active());
 
     /*
      * There is no need to change the button color, as the control itself
      * indicates when song-recording is on.
      *
-    if (m_is_song_recording)
-    {
-        Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_on_xpm));
-        m_button_song_record->set_image(*image_song);
-    }
-    else
-    {
-        Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_off_xpm));
-        m_button_song_record->set_image(*image_song);
-    }
-    *
-    */
+     *  if (m_is_song_recording)
+     *  {
+     *      Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_on_xpm));
+     *      m_button_song_record->set_image(*image_song);
+     *  }
+     *  else
+     *  {
+     *      Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_off_xpm));
+     *      m_button_song_record->set_image(*image_song);
+     *  }
+     *
+     */
 }
 
 /**
  *  Toggles the recording of the live song control done by the musician.
+ *  This functionality currently does not have a key devoted to it, nor is it
+ *  a saved setting.
  */
 
 void
 mainwnd::toggle_song_snap ()
 {
-    // // TODO
-    // // TODO
-    // // TODO
+    m_is_snap_recording = ! m_is_snap_recording;
+    perf().song_record_snap(m_is_snap_recording);
 }
 
 /**
@@ -2956,6 +2975,21 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 toggle_menu_mode();
             }
 #endif
+#ifdef SEQ64_SONG_RECORDING
+            else if (k.key() == PREFKEY(song_record))
+            {
+                toggle_song_record();
+            }
+            /*
+             * Handle this like the queue key, in
+             * perform::mainwnd_key_event().
+             *
+            else if (k.key() == PREFKEY(oneshot_queue))
+            {
+                // TODO              toggle_menu_mode();
+            }
+             */
+#endif
         }
 
         bool mgl = perf().is_group_learning() && k.key() != PREFKEY(group_learn);
@@ -3659,8 +3693,8 @@ mainwnd::sequence_key (int seq)
  *  Sets the text on the new status label.
  *
  * \param text
- *      Provides the short (6 characters in the default state) string to 
- *      set the label.
+ *      Provides the short (6 characters in the default state) string to set
+ *      the label.
  */
 
 void

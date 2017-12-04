@@ -2873,9 +2873,8 @@ mainwnd::debug_text (const std::string & tag, int value)
 }
 
 /**
- *  This callback function handles a delete event from ...?
- *
- *  Any changed data is saved.  If the pattern is playing, then it is
+ *  This callback function handles the user requesting that the main window be
+ *  closed.  Any changed data is saved.  If the pattern is playing, then it is
  *  stopped.  We now use perform::is_pattern_playing().
  */
 

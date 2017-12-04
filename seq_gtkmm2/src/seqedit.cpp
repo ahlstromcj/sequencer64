@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-23
+ * \updates       2017-12-04
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1938,7 +1938,7 @@ seqedit::popup_record_menu()
     (
         ImageMenuElem
         (
-            "Legacy merge-looped recording",
+            "Merge notes in loop recording",
             *create_menu_image(legacy),
             sigc::bind
             (
@@ -1951,7 +1951,7 @@ seqedit::popup_record_menu()
     (
         ImageMenuElem
         (
-            "Overwrite looped recording",
+            "Replace notes in loop recording",
             *create_menu_image(m_seq.get_overwrite_rec()),
             sigc::bind
             (
@@ -1964,7 +1964,7 @@ seqedit::popup_record_menu()
     (
         ImageMenuElem
         (
-            "Expand sequence length to fit recording",
+            "Expand length in loop recording",
             *create_menu_image(m_seqroll_wid->get_expanded_record()),
             sigc::bind
             (

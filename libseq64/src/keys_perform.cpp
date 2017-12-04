@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2017-11-25
+ * \updates       2017-11-26
  * \license       GNU GPLv2 or above
  *
  *  Added pattern-edit and event-edit keys which change the pattern slot
@@ -64,8 +64,8 @@ keys_perform::keys_perform ()
     m_group_max                     (c_max_groups),     /* this can change  */
     m_key_bpm_up                    (SEQ64_apostrophe),
     m_key_bpm_dn                    (SEQ64_semicolon),
-    m_key_replace                   (SEQ64_Control_L),
-    m_key_queue                     (SEQ64_o),              // (SEQ64_Control_R)
+    m_key_replace                   (SEQ64_KP_Home),
+    m_key_queue                     (SEQ64_o),          // (SEQ64_Control_R)
     m_key_keep_queue                (SEQ64_backslash),
     m_key_snapshot_1                (SEQ64_Alt_L),
     m_key_snapshot_2                (SEQ64_Alt_R),
@@ -73,7 +73,7 @@ keys_perform::keys_perform ()
     m_key_screenset_dn              (SEQ64_bracketleft),
     m_key_set_playing_screenset     (SEQ64_Home),
     m_key_group_on                  (SEQ64_igrave),
-    m_key_group_off                 (SEQ64_apostrophe),       // a repeat
+    m_key_group_off                 (SEQ64_Delete),
     m_key_group_learn               (SEQ64_Insert),
     m_key_start                     (SEQ64_space),
     m_key_pause                     (SEQ64_period),

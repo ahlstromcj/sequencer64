@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-11-25
+2016-12-03 to 2017-12-04
 
 Debian packaging:
 
@@ -35,6 +35,9 @@ Tempo Track:
 
 Hot bugs:
 
+    -   When recording a short pattern, and holding a note across the
+        pattern end, the drawing is bad.  Probably should just delete such
+        notes.
     -   Pressing the keep-queue activates the Q button, but pressing another
         key, or the temporary queue key, or changing the current screen set,
         does *not* de-activate the keep-queue status.
@@ -57,6 +60,10 @@ Rtmidi implementation issues to work out:
         -   At startup time
         -   When changed in the GUI
     -   Make the STRIP_MUTES option permanent.
+
+Legacy Mode:
+
+    -   Does not select the legacy font!
 
 Hot ideas (from GitHub):
     

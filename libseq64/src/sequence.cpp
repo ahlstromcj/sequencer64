@@ -3160,16 +3160,21 @@ sequence::stream_event (event & ev)
     if (result)
     {
 #ifdef SEQ64_STAZED_EXPAND_RECORD
+
         /*
          * If in overwrite record more, any events after reset should clear
          * the old items from the previous pass through the loop.
+         *
+         * TODO:  If the last event was a Note Off, we should clear it here.
+         *        How?
          */
 
-        if (m_overwrite_recording && m_loop_reset)
+        if (get_overwrite_rec() && get_loop_reset())
         {
-            m_loop_reset = false;
+            set_loop_reset(false);
             remove_all();                       /* clear old items          */
         }
+
 #endif
         ev.set_status(ev.get_status());         /* clear the channel nybble */
         ev.mod_timestamp(m_length);             /* adjust the tick          */
@@ -4230,9 +4235,8 @@ sequence::get_next_note_event
     int & note, bool & selected, int & velocity
 )
 {
-    // automutex locker(m_mutex);               // WILL IT HELP???? No.
     tick_f = 0;
-    while (m_iterator_draw != m_events.end())   /* NOT THREADSAFE!!!!!      */
+    while (m_iterator_draw != m_events.end())   /* not threadsafe           */
     {
         event & drawevent = DREF(m_iterator_draw);
         bool isnoteon = drawevent.is_note_on();
@@ -5070,6 +5074,10 @@ sequence::transpose_notes (int steps, int scale)
 
 #ifdef USE_STAZED_SHIFT_SUPPORT
 
+/**
+ *  We need to look into this function.
+ */
+
 void
 sequence::shift_notes (midipulse ticks)
 {
@@ -5077,17 +5085,17 @@ sequence::shift_notes (midipulse ticks)
     {
         automutex locker(m_mutex);
         event_list shifted_events;
-        m_events_undo.push(m_events);               /* push_undo(), no lock  */
+        m_events_undo.push(m_events);               /* push_undo(), no lock */
         for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
             event & er = DREF(i);
-            if (er.is_marked() && er.is_note())     /* shiftable event?  */
+            if (er.is_marked() && er.is_note())     /* shiftable event?     */
             {
                 event e = er;
                 e.unmark();
 
                 midipulse timestamp = e.get_timestamp() + ticks;
-                if (timestamp < 0L)                     /* wraparound */
+                if (timestamp < 0L)                 /* wraparound           */
                     timestamp = m_length - ((-timestamp) % m_length);
                 else
                     timestamp %= m_length;

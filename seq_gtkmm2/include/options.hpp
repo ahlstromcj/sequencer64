@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-10
+ * \updates       2017-12-08
  * \license       GNU GPLv2 or above
  *
  *  This class support most of the configuration options that are supported by
@@ -203,14 +203,14 @@ private:
      *  some additional safety.
      */
 
-    Gtk::ToggleButton * m_button_jack_connect;
+    Gtk::Button * m_button_jack_connect;
 
     /**
      *  JACK Disonnect button, which we need to enable/disable for clarity and
      *  some additional safety.
      */
 
-    Gtk::ToggleButton * m_button_jack_disconnect;
+    Gtk::Button * m_button_jack_disconnect;
 
     /**
      *  Not sure yet what this notebook is for.  Must be a GTK thang.

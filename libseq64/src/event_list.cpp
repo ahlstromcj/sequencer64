@@ -432,6 +432,19 @@ event_list::verify_and_link (midipulse slength)
                     eoff.get_note() == eon.get_note() && ! eoff.is_marked()
                 )
                 {
+                    /*
+                     * THINK ABOUT IT:  If we're in legacy merge mode for a
+                     * loop, the Note Off is actually earlier than the Note
+                     * On.  And in replace mode, the Note On is cleared,
+                     * leaving us with a dangling Note Off event.
+                     *
+                     * We should consider, in both modes, automatically adding
+                     * the Note Off at the end of the loop and ignoring the
+                     * next note off on the same note from the keyboard.
+                     *
+                     * Careful!
+                     */
+
                     eon.link(&eoff);                    /* link + mark */
                     eoff.link(&eon);
                     eon.mark();

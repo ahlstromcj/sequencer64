@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-23
+ * \updates       2017-12-09
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -568,10 +568,10 @@ private:
     /**
      *  Indicates that playback is running.  However, this flag is conflated
      *  with some JACK support, and we have to supplement it with another
-     *  flag, m_pattern_playing.
+     *  flag, m_is_pattern_playing.
      */
 
-    bool m_running;
+    bool m_is_running;
 
     /**
      *  Indicates that a pattern is playing.  It replaces rc_settings ::
@@ -970,7 +970,7 @@ private:
     /**
      *  A condition variable to protect playback.  It is signalled if playback
      *  has been started.  The output thread function waits on this variable
-     *  until m_running and m_outputing are false.  This variable is also
+     *  until m_is_running and m_outputing are false.  This variable is also
      *  signalled in the perform destructor.
      */
 
@@ -1357,13 +1357,13 @@ public:
     }
 
     /**
-     * \getter m_running
+     * \getter m_is_running
      *      Could also be called "is_playing()".
      */
 
     bool is_running () const
     {
-        return m_running;
+        return m_is_running;
     }
 
     /**
@@ -1543,9 +1543,9 @@ public:
     bool follow_progress () const
     {
 #ifdef SEQ64_JACK_SUPPORT
-        return m_running && m_jack_asst.get_follow_transport();
+        return m_is_running && m_jack_asst.get_follow_transport();
 #else
-        return m_running;
+        return m_is_running;
 #endif
     }
 
@@ -1653,11 +1653,12 @@ public:
     /**
      *  The rough opposite of launch(); it doesn't stop the threads.  A minor
      *  simplification for the main() routine, hides the JACK support macro.
+     *  We might need to add code to stop any ongoing outputing.
      */
 
     void finish ()
     {
-        deinit_jack_transport();
+        (void) deinit_jack_transport();
     }
 
     /**
@@ -2570,48 +2571,8 @@ private:
 
     void launch_input_thread ();
     void launch_output_thread ();
-
-    /**
-     *  Initializes JACK support, if SEQ64_JACK_SUPPORT is defined.  Who calls
-     *  this routine?  The main() routine of the application [via launch()],
-     *  and the options module, when the Connect button is pressed.
-     *
-     * \return
-     *      Returns the result of the init() call; true if JACK sync is now
-     *      running.  If JACK support is not built into the application, then
-     *      this function returns false, to indicate that JACK is (definitely)
-     *      not running.
-     */
-
-    bool init_jack_transport ()
-    {
-#ifdef SEQ64_JACK_SUPPORT
-        return m_jack_asst.init();
-#else
-        return false;
-#endif
-    }
-
-    /**
-     *  Tears down the JACK infrastructure.  Called by launch() and in the
-     *  options module, when the Disconnect button is pressed.
-     *
-     * \return
-     *      Returns the result of the init() call; false if JACK sync is now
-     *      no longer running.  If JACK support is not built into the
-     *      application, then this function returns true, to indicate that
-     *      JACK is (definitely) not running.
-     */
-
-    bool deinit_jack_transport ()
-    {
-#ifdef SEQ64_JACK_SUPPORT
-        return m_jack_asst.deinit();
-#else
-        return true;
-#endif
-    }
-
+    bool init_jack_transport ();
+    bool deinit_jack_transport ();
     bool seq_in_playing_screen (int seq);
 
     /**
@@ -2679,15 +2640,15 @@ private:
     }
 
     /**
-     * \setter m_running
+     * \setter m_is_running
      *
      * \param running
      *      The value of the running flag to be set.
      */
 
-    void set_running (bool running)
+    void is_running (bool running)
     {
-        m_running = running;
+        m_is_running = running;
     }
 
     /**

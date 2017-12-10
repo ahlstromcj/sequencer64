@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-25
+ * \updates       2017-12-08
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -121,11 +121,11 @@ options::options
 #endif
     m_button_jack_connect
     (
-        manage(new Gtk::ToggleButton("JACK Transport Co_nnect", true))
+        manage(new Gtk::Button("JACK Transport Co_nnect", true))
     ),
     m_button_jack_disconnect
     (
-        manage(new Gtk::ToggleButton("JACK Transport _Disconnect", true))
+        manage(new Gtk::Button("JACK Transport _Disconnect", true))
     ),
     m_notebook                      (manage(new Gtk::Notebook()))
 {
@@ -674,8 +674,8 @@ options::add_keyboard_page ()
         (
             new keybindentry(keybindentry::events, NULL, &perf(), slot)
         );
-        toggletable->attach(*numlabel, x, x+1, y, y+1);
-        toggletable->attach(*entry, x+1, x+2, y, y+1);
+        toggletable->attach(*numlabel, x,   x+1, y, y+1);
+        toggletable->attach(*entry,    x+1, x+2, y, y+1);
     }
 
     /* Frame for mute group slots */
@@ -1546,10 +1546,20 @@ options::lash_support_callback (Gtk::CheckButton * btn)
  *              can).  Forces the Transport Master button off, and the JACK
  *              Transport button on.
  *
+ *      The buttons responded to here  can be a ToggleButton, RadioButton, or
+ *      a CheckButton!
+ *
  * \param type
- *      The type of the button that was pressed.  One of e_jack_transport,
- *      e_jack_master, e_jack_master_cond, e_jack_start_mode_live,
- *      e_jack_start_mode_song, e_jack_connect, or e_jack_disconnect.
+ *      The type of the button that was pressed.  It is one of:
+ *
+ *      -   e_jack_transport.  This is a CheckButton.
+ *      -   e_jack_master.  This is a CheckButton.
+ *      -   e_jack_master_cond.  This is a CheckButton.
+ *      -   e_jack_start_mode_live.  This is a RadioButton.
+ *      -   e_jack_start_mode_song.  This is a RadioButton.
+ *      -   e_jack_connect.  Currently a ToggleButton.
+ *      -   e_jack_disconnect.  Currently a ToggleButton.
+ *      -   e_jack_midi. This is a CheckButton.
  *
  * \param acheck
  *      Provides the status of the check-button that was clicked.
@@ -1558,12 +1568,14 @@ options::lash_support_callback (Gtk::CheckButton * btn)
 void
 options::transport_callback (button type, Gtk::Button * acheck)
 {
-    Gtk::ToggleButton * check = (Gtk::ToggleButton *) acheck;
-    bool is_active = check->get_active();
+    Gtk::CheckButton * ccheck = (Gtk::CheckButton *) acheck;
+    Gtk::RadioButton * rcheck = (Gtk::RadioButton *) acheck;
+    bool is_active = false;
     switch (type)
     {
     case e_jack_transport:
 
+        is_active = ccheck->get_active();
         if (is_active)
         {
             rc().with_jack_transport(true);
@@ -1585,6 +1597,7 @@ options::transport_callback (button type, Gtk::Button * acheck)
 
     case e_jack_master:
 
+        is_active = ccheck->get_active();
         rc().with_jack_master(is_active);
         if (is_active)
         {
@@ -1598,6 +1611,7 @@ options::transport_callback (button type, Gtk::Button * acheck)
 
     case e_jack_master_cond:
 
+        is_active = ccheck->get_active();
         rc().with_jack_master_cond(is_active);
         if (is_active)
         {
@@ -1611,12 +1625,14 @@ options::transport_callback (button type, Gtk::Button * acheck)
 
     case e_jack_midi:
 
+        is_active = ccheck->get_active();
         rc().with_jack_midi(is_active);
         break;
 
     case e_jack_start_mode_live:
     case e_jack_start_mode_song:
 
+        is_active = rcheck->get_active();
         perf().song_start_mode(is_active);
         break;
 

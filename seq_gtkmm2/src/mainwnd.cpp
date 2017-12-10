@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-25
+ * \updates       2017-12-10
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1416,12 +1416,12 @@ mainwnd::timer_callback ()
         if (rc().with_jack_master())
             label = "Master";
         else if (rc().with_jack_transport())
-            label = "JACK";
+            label = "Slave";
     }
 
 #ifdef SEQ64_RTMIDI_SUPPORT
     if (rc().with_jack_midi())
-        label = "Native";
+        label = "JACK";
 #endif
 
     /*

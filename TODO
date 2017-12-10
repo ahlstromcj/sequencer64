@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-12-04
+2016-12-03 to 2017-12-08
 
 Debian packaging:
 
@@ -78,6 +78,8 @@ Hot ideas (from GitHub):
 
 Puzzles:
 
+    -   With Sequencer64 as JACK Transport non-master, it still will not
+        follow qjackctl transport.
     -   Tooltips are too flickery with unclutter enabled.
     -   When reading the "stress" file, we get this message: "Near offset
         0x16aca9: 'End-of-file', further MIDI reading disabled".

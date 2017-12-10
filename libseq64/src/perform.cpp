@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-11-25
+ * \updates       2017-12-10
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -322,7 +322,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_in_thread                 (),
     m_out_thread_launched       (false),
     m_in_thread_launched        (false),
-    m_running                   (false),
+    m_is_running                (false),
     m_is_pattern_playing        (false),
     m_inputing                  (true),
     m_outputing                 (true),
@@ -439,7 +439,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
 
 perform::~perform ()
 {
-    m_inputing = m_outputing = m_running = false;
+    m_inputing = m_outputing = m_is_running = false;
     m_condition_var.signal();                       /* signal end of play   */
     if (m_out_thread_launched)
         pthread_join(m_out_thread, NULL);
@@ -2932,6 +2932,8 @@ perform::set_jack_mode (bool jack_button_active)
  *
  *      is_pattern_playing(false);
  *
+ *      But what about is_running()?
+ *
  * \param songmode
  *      Indicates that, if resuming play, it should play in Song mode (true)
  *      or Live mode (false).  See the comments for the start_playing()
@@ -2942,6 +2944,7 @@ void
 perform::pause_playing (bool songmode)
 {
     m_dont_reset_ticks = true;
+    is_running(! is_running());             /* a FIX, EXPERIMENTAL          */
     stop_jack();
     if (is_jack_running())
     {
@@ -2949,7 +2952,7 @@ perform::pause_playing (bool songmode)
     }
     else
     {
-        set_running(false);
+////    is_running(false);
         reset_sequences(true);              /* don't reset "last-tick"      */
         m_usemidiclock = false;
         m_start_from_perfedit = false;      /* act like stop_playing()      */
@@ -3101,7 +3104,7 @@ perform::inner_start (bool songmode)
         if (songmode)
             off_sequences();
 
-        set_running(true);
+        is_running(true);
         m_condition_var.signal();
     }
     m_condition_var.unlock();
@@ -3126,7 +3129,7 @@ void
 perform::inner_stop (bool midiclock)
 {
     start_from_perfedit(false);
-    set_running(false);
+    is_running(false);
     reset_sequences();
     m_usemidiclock = midiclock;
 }
@@ -3573,6 +3576,53 @@ output_thread_func (void * myperf)
 }
 
 /**
+ *  Initializes JACK support, if SEQ64_JACK_SUPPORT is defined.  Who calls
+ *  this routine?  The main() routine of the application [via launch()],
+ *  and the options module, when the Connect button is pressed.
+ *
+ * \return
+ *      Returns the result of the init() call; true if JACK sync is now
+ *      running.  If JACK support is not built into the application, then
+ *      this function returns false, to indicate that JACK is (definitely)
+ *      not running.
+ */
+
+bool
+perform::init_jack_transport ()
+{
+#ifdef SEQ64_JACK_SUPPORT
+    // return m_outputing ? false : m_jack_asst.init();
+    return m_jack_asst.init();
+#else
+    return false;
+#endif
+}
+
+/**
+ *  Tears down the JACK infrastructure.  Called by launch() and in the
+ *  options module, when the Disconnect button is pressed.  This function
+ *  operates only while Sequencer64 is not outputing, otherwise we have a
+ *  race condition that can lead to a crash.
+ *
+ * \return
+ *      Returns the result of the init() call; false if JACK sync is now
+ *      no longer running.  If JACK support is not built into the
+ *      application, then this function returns true, to indicate that
+ *      JACK is (definitely) not running.
+ */
+
+bool
+perform::deinit_jack_transport ()
+{
+#ifdef SEQ64_JACK_SUPPORT
+    // return m_outputing ? false : m_jack_asst.deinit();
+    return m_jack_asst.deinit();
+#else
+    return true;
+#endif
+}
+
+/**
  *  Performance output function.  This function is called by the free function
  *  output_thread_func().  Here's how it works:
  *
@@ -3730,7 +3780,7 @@ perform::output_func ()
 
 #endif  // SEQ64_STATISTICS_SUPPORT
 
-        while (m_running)
+        while (is_running())
         {
             /**
              * -# Get delta time (current - last).
@@ -3808,6 +3858,29 @@ perform::output_func ()
             else
             {
 #endif
+
+#ifdef USE_THIS_STAZED_CODE_WHEN_READY
+                /*
+                 * If we reposition key-p, FF, rewind, adjust delta_tick for
+                 * change then reset to adjusted starting.  We have to grab
+                 * the clock tick if looping is unchecked while we are
+                 * running the performance; we have to initialize the MIDI
+                 * clock (send EVENT_MIDI_SONG_POS); we have to restart at
+                 * the left marker; and reset the tempo list (which Seq64
+                 * doesn't have).
+                 */
+
+                if (m_playback_mode && && ! m_usemidiclock && m_reposition)
+                {
+                    current_tick = clock_tick;
+                    delta_tick = m_starting_tick - clock_tick;
+                    init_clock = true;
+                    m_starting_tick = m_left_tick;
+                    m_reposition = false;
+                    m_reset_tempo_list = true;
+                }
+#endif  // USE_THIS_STAZED_CODE_WHEN_READY
+
                 /*
                  * The default if JACK is not compiled in, or is not
                  * running.  Add the delta to the current ticks.
@@ -4657,7 +4730,7 @@ void
 perform::input_func ()
 {
     event ev;
-    while (m_inputing)          /* PERHAPS we should LOCK this variable */
+    while (m_inputing)              /* perhaps we should lock this variable */
     {
         if (m_master_bus->poll_for_midi() > 0)
         {
@@ -4666,8 +4739,9 @@ perform::input_func ()
                 if (m_master_bus->get_midi_event(&ev))
                 {
                     /*
-                     * Used when starting from the beginning of the song.  Obey
-                     * the MIDI time clock.  Comments moved to the banner.
+                     * Used when starting from the beginning of the song.
+                     * Obey the MIDI time clock.  Comments moved to the
+                     * banner.
                      */
 
                     if (ev.get_status() == EVENT_MIDI_START)
@@ -4725,12 +4799,12 @@ perform::input_func ()
 
                     if (ev.get_status() <= EVENT_MIDI_SYSEX)
                     {
-                        if (rc().show_midi())
-                            ev.print();
-
                         if (m_master_bus->is_dumping())
                         {
                             ev.set_timestamp(get_tick());
+                            if (rc().show_midi())
+                                ev.print();
+
                             if (m_filter_by_channel)
                                 m_master_bus->dump_midi_input(ev);
                             else
@@ -4738,6 +4812,9 @@ perform::input_func ()
                         }
                         else
                         {
+                            if (rc().show_midi())
+                                ev.print();
+
                             midi_control_event(ev);  /* seq control event */
                         }
 
@@ -5928,7 +6005,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
 #ifdef USE_CONSOLIDATED_PLAYBACK
 
 /**
- *  More rational new  function provided to unify the stop/start
+ *  A more rational new function provided to unify the stop/start
  *  (space/escape) behavior of the various windows where playback can be
  *  started, paused, or stopped.  To be used in mainwnd, perfedit, and
  *  seqroll.  We want this function to be the one maintaining the various

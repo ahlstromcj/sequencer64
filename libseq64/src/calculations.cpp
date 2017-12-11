@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-08-06
+ * \updates       2017-12-11
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -385,12 +385,15 @@ pulses_to_timestring (midipulse p, const midi_timing & timinginfo)
  * \param ppqn
  *      Provides the pulses-per-quarter-note of the song.
  *
+ * \param showus
+ *      If true (the default), shows the microseconds as well.
+ *
  * \return
  *      Returns the time-string representation of the pulse (ticks) value.
  */
 
 std::string
-pulses_to_timestring (midipulse p, midibpm bpm, int ppqn)
+pulses_to_timestring (midipulse p, midibpm bpm, int ppqn, bool showus)
 {
     unsigned long microseconds = ticks_to_delta_time_us(p, bpm, ppqn);
     int seconds = int(microseconds / 1000000UL);
@@ -401,7 +404,7 @@ pulses_to_timestring (midipulse p, midibpm bpm, int ppqn)
     microseconds -= (hours * 60 * 60 + minutes * 60 + seconds) * 1000000UL;
 
     char tmp[32];
-    if (microseconds == 0)
+    if (! showus || (microseconds == 0))
     {
         /*
          * Why the spaces?  It is inconsistent.  But see the

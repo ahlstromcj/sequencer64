@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-08-01
+ * \updates       2017-12-11
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -116,11 +116,14 @@ extern bool pulses_to_midi_measures
     const midi_timing & seqparms,
     midi_measures & measures
 );
-extern std::string pulses_to_timestring (midipulse pulses, midibpm bpm, int ppqn);
 extern std::string pulses_to_timestring
 (
     midipulse p,
     const midi_timing & timinginfo
+);
+extern std::string pulses_to_timestring
+(
+    midipulse pulses, midibpm bpm, int ppqn, bool showus = true
 );
 extern midipulse measurestring_to_pulses
 (
@@ -390,7 +393,7 @@ double_ticks_from_ppqn (int ppqn)
  *  and it provides an important constraint to pulse (ticks) calculations:
  *  the number of pulses in a measure is always 4 times the PPQN value,
  *  regardless of the time signature.  The number pulses in a 7/8 measure is the
- *  the same as in a 4/4/ measure.
+ *  the same as in a 4/4 measure.
  */
 
 inline midipulse

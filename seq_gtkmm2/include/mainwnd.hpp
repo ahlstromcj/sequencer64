@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-25
+ * \updates       2017-12-10
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -88,9 +88,6 @@ namespace Gtk
     class Table;                /* Grid is not available in gtkmm-2.4   */
 #endif
 
-#if defined SEQ64_STAZED_MENU_BUTTONS
-    class ToggleButton;
-#endif
 }
 
 /*
@@ -341,8 +338,8 @@ private:
     Gtk::Button * m_button_tempo_log;
 
     /**
-     *  Implements the new red tempo-record button.  One should be able to
-     *  left click on it to record the current tempo as a tempo event, and
+     *  Implements the new tempo-record button.  One should be able to left
+     *  click on it to record the current tempo as a tempo event, and
      *  right-click to enable auto-record.
      */
 
@@ -418,6 +415,19 @@ private:
      */
 
     Gtk::Label * m_tick_time;
+
+    /**
+     *  This button will toggle the m_tick_time_as_bbt member.
+     */
+
+    Gtk::Button * m_button_time_type;
+
+    /**
+     *  Indicates whether to show the time as bar:beats:ticks or as
+     *  hours:minutes:seconds.  The default is true:  bar:beats:ticks.
+     */
+
+    bool m_tick_time_as_bbt;
 
     /**
      *  The spin/adjustment controls for the BPM (beats-per-minute) value.
@@ -635,6 +645,7 @@ private:
 
     void tempo_log ();
     void toggle_tempo_record ();
+    void toggle_time_format ();
     void queue_it ();
 
 #ifdef SEQ64_SONG_RECORDING

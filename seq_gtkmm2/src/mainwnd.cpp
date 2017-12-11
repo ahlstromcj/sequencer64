@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-10
+ * \updates       2017-12-11
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -349,6 +349,8 @@ mainwnd::mainwnd
     m_is_snap_recording     (false),
 #endif
     m_tick_time             (manage(new Gtk::Label(""))),
+    m_button_time_type      (manage(new Gtk::Button("HMS"))),
+    m_tick_time_as_bbt      (false),
     m_adjust_bpm
     (
         manage
@@ -638,9 +640,23 @@ mainwnd::mainwnd
     /* Add the time-line and the time-clock */
 
     Gtk::HBox * hbox4 = manage(new Gtk::HBox(false, 0));
-    Gtk::Label * timedummy = manage(new Gtk::Label("   "));
     m_tick_time->set_justify(Gtk::JUSTIFY_LEFT);
+
+    m_button_time_type->set_focus_on_click(false);
+    m_button_time_type->signal_clicked().connect
+    (
+        mem_fun(*this, &mainwnd::toggle_time_format)
+    );
+    add_tooltip
+    (
+        m_button_time_type,
+        "Toggles between B:B:T and H:M:S format, showing the selected format."
+    );
+    hbox4->pack_start(*m_button_time_type, false, false);
+
+    Gtk::Label * timedummy = manage(new Gtk::Label("   "));
     hbox4->pack_start(*timedummy, false, false, 0);
+
     hbox4->pack_start(*m_tick_time, false, false, 0);
     vbox_b->pack_start(*hbox4, false, false, 0);
     tophbox->pack_end(*vbox_b, false, false);
@@ -1263,12 +1279,9 @@ mainwnd::set_song_mode ()
     else
     {
         std::string label = is_active ? "Song" : " Live ";
-        Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>
-        (
-            m_button_mode->get_child())
-        );
-        if (not_nullptr(lblptr))
-            lblptr->set_text(label);
+        Gtk::Label * lbl(dynamic_cast<Gtk::Label *>(m_button_mode->get_child()));
+        if (not_nullptr(lbl))
+            lbl->set_text(label);
     }
     perf().song_start_mode(is_active);
 }
@@ -1346,13 +1359,22 @@ mainwnd::timer_callback ()
 
     if (perf().is_pattern_playing())
     {
-        midi_timing mt
-        (
-            perf().get_beats_per_minute(), perf().get_beats_per_bar(),
-            perf().get_beat_width(), perf().ppqn()
-        );
-        std::string t = pulses_to_measurestring(tick, mt);
-        m_tick_time->set_text(t);
+        midibpm bpm = perf().get_beats_per_minute();
+        int ppqn = perf().ppqn();
+        if (m_tick_time_as_bbt)
+        {
+            midi_timing mt
+            (
+                bpm, perf().get_beats_per_bar(), perf().get_beat_width(), ppqn
+            );
+            std::string t = pulses_to_measurestring(tick, mt);
+            m_tick_time->set_text(t);
+        }
+        else
+        {
+            std::string t = pulses_to_timestring(tick, bpm, ppqn, false);
+            m_tick_time->set_text(t);
+        }
     }
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT_TMI
@@ -1703,6 +1725,22 @@ mainwnd::toggle_song_snap ()
 {
     m_is_snap_recording = ! m_is_snap_recording;
     perf().song_record_snap(m_is_snap_recording);
+}
+
+/**
+ *  Toggles the recording of the live song control done by the musician.
+ *  This functionality currently does not have a key devoted to it, nor is it
+ *  a saved setting.
+ */
+
+void
+mainwnd::toggle_time_format ()
+{
+    m_tick_time_as_bbt = ! m_tick_time_as_bbt;
+    std::string label = m_tick_time_as_bbt ? "BBT" : "HMS" ;
+    Gtk::Label * lbl(dynamic_cast<Gtk::Label *>(m_button_time_type->get_child()));
+    if (not_nullptr(lbl))
+        lbl->set_text(label);
 }
 
 /**

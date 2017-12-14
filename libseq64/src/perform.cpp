@@ -1291,7 +1291,7 @@ perform::set_and_copy_mute_group (int mutegroup)
  *  If the active sequence is in the current "in-view" screen-set (m_screenset
  *  as opposed to m_playscreen, and its m_track_mute_state[] is true,
  *  then the sequence is turned on, otherwise it is turned off.  The result is
- *  that the in-view screen-set is activate as per the mute states, while all
+ *  that the in-view screen-set is activated as per the mute states, while all
  *  other screen-sets are muted.
  *
  * \change tdeagan 2015-12-22 via git pull.

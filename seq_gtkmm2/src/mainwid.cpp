@@ -839,7 +839,7 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
 }
 
 /**
- *  Translates XY coordiinates in the Patterns Panel to a sequence number.
+ *  Translates XY coordinates in the Patterns Panel to a sequence number.
  *
  * \param x
  *      Provides the x coordinate.

@@ -629,7 +629,7 @@ class user_settings
      *  patterns supported in the panel (32) times the maximum number of
      *  sets (32), or 1024 patterns.  It is basically the same value as
      *  m_max_sequence by default.  It is a derived value, and not stored in
-     *  the "user" file.  We might make it equal to the maximum number of
+     *  the "usr" file.  We might make it equal to the maximum number of
      *  sequences the currently-loaded MIDI file.
      *
      *      m_total_seqs = m_seqs_in_set * m_max_sets;

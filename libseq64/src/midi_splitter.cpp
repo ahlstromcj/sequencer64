@@ -192,21 +192,19 @@ midi_splitter::split (perform & p, int screenset)
     bool result = not_nullptr(m_smf0_main_sequence);
     if (result)
     {
-        int seqs = usr().seqs_in_set();
         if (m_smf0_channels_count > 0)
         {
-            int seqnum = screenset * seqs;
+            int seqnum = screenset * usr().seqs_in_set();
             for (int chan = 0; chan < SEQ64_MIDI_CHANNEL_MAX; ++chan, ++seqnum)
             {
                 if (m_smf0_channels[chan])
                 {
-                    sequence * s = new sequence(m_ppqn);
-
                     /*
                      * The master MIDI buss must be set before the split,
                      * otherwise the null pointer causes a segfault.
                      */
 
+                    sequence * s = new sequence(m_ppqn);
                     s->set_master_midi_bus(&p.master_bus());
                     if (split_channel(*m_smf0_main_sequence, s, chan))
                     {

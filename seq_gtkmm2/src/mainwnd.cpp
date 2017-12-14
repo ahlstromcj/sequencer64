@@ -643,6 +643,7 @@ mainwnd::mainwnd
     m_tick_time->set_justify(Gtk::JUSTIFY_LEFT);
 
     m_button_time_type->set_focus_on_click(false);
+    m_button_time_type->set_relief(Gtk::RELIEF_NONE);
     m_button_time_type->signal_clicked().connect
     (
         mem_fun(*this, &mainwnd::toggle_time_format)

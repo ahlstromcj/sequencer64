@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-12-10
+ * \updates       2017-12-15
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -2382,17 +2382,26 @@ perform::midi_control_off (int ctl)
  *      Provides the string date to copy into the notepad.  Not sure why a
  *      pointer is used, instead of nice "const std::string &" parameter.  And
  *      this pointer isn't checked.  Fixed.
+ *
+ * \param is_load_modification
+ *      If true (the default is false), we do not want to set the modify flag,
+ *      otherwise the user is prompted to save even if no changes have
+ *      occurred.
  */
 
 void
-perform::set_screen_set_notepad (int screenset, const std::string & notepad)
+perform::set_screen_set_notepad
+(
+    int screenset, const std::string & notepad, bool is_load_modification
+)
 {
     if (is_screenset_valid(screenset))
     {
         if (notepad != m_screenset_notepad[screenset])
         {
             m_screenset_notepad[screenset] = notepad;
-            modify();
+            if (! is_load_modification)
+                modify();
         }
     }
 }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-15
+ * \updates       2017-12-15
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -784,7 +784,7 @@ perfroll::draw_sequence_on (int seqnum)
                             if (tick_f_x >= x && tick_s_x <= x + w)
                             {
                                 int ny = y + note_y;
-                                Color paint = transposable ? black() : red();
+                                Color paint = transposable ? black_paint() : red();
                                 if (dt == DRAW_TEMPO)
                                 {
                                     set_line(Gdk::LINE_SOLID, 2);

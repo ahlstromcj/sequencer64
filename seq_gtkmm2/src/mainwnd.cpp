@@ -643,7 +643,11 @@ mainwnd::mainwnd
     m_tick_time->set_justify(Gtk::JUSTIFY_LEFT);
 
     m_button_time_type->set_focus_on_click(false);
-    m_button_time_type->set_relief(Gtk::RELIEF_NONE);
+
+    /*
+     * m_button_time_type->set_relief(Gtk::RELIEF_NONE);
+     */
+
     m_button_time_type->signal_clicked().connect
     (
         mem_fun(*this, &mainwnd::toggle_time_format)
@@ -653,7 +657,8 @@ mainwnd::mainwnd
         m_button_time_type,
         "Toggles between B:B:T and H:M:S format, showing the selected format."
     );
-    hbox4->pack_start(*m_button_time_type, false, false);
+    // hbox4->pack_start(*m_button_time_type, false, false);
+    tophbox->pack_start(*m_button_time_type, false, false);
 
     Gtk::Label * timedummy = manage(new Gtk::Label("   "));
     hbox4->pack_start(*timedummy, false, false, 0);

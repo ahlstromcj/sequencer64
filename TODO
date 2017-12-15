@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-12-08
+2016-12-03 to 2017-12-15
 
 Debian packaging:
 
@@ -32,6 +32,15 @@ Tempo Track:
         position in time and tempo-height.
     -   The sequence draw marker still can get messed up by seqedit, and
         mess up the drawing of the tempo track in perfroll.
+
+Modify flag:
+
+    sequence::set_transposable() is called when loading a sequence at startup.
+    If the flag value is different from the current value (false?) then
+    sequence::modify() is called, but the perform m_parent is null, so it
+    does not take effect, which is good in this case (startup).
+    At that time, we have m_transposable == true, flag = false (!), and
+    the sequence number is (-1).
 
 Hot bugs:
 

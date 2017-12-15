@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-09
+ * \updates       2017-12-15
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2384,7 +2384,12 @@ private:
         return get_screen_set_notepad(m_screenset);
     }
 
-    void set_screen_set_notepad (int screenset, const std::string & note);
+    void set_screen_set_notepad
+    (
+        int screenset,
+        const std::string & note,
+        bool is_load_modification = false
+    );
 
     /**
      *  Sets the notepad text for the current screen-set.

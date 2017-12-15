@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-11
+ * \updates       2017-12-15
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1323,9 +1323,9 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                 midishort len = read_short();           /* length of string */
                 std::string notess;
                 for (midishort i = 0; i < len; ++i)
-                    notess += read_byte();              /* unsigned!        */
+                    notess += read_byte();                  /* unsigned!    */
 
-                p.set_screen_set_notepad(x, notess);
+                p.set_screen_set_notepad(x, notess, true);  /* load time    */
             }
         }
         seqspec = parse_prop_header(file_size);

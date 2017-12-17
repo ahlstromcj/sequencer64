@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-04
+ * \updates       2017-12-17
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1603,7 +1603,8 @@ seqedit::popup_midibus_menu ()
 }
 
 /**
- *  Populates the MIDI Channel pop-up menu.
+ *  Populates the MIDI Channel pop-up menu, if necessary, and then reveals the
+ *  menu to the user.
  */
 
 void
@@ -1614,17 +1615,51 @@ seqedit::popup_midich_menu ()
         m_menu_midich->popup(0, 0);
         return;
     }
+    else
+    {
+        repopulate_midich_menu(m_seq.get_midi_bus());
+        m_menu_midich->popup(0, 0);
+    }
+}
+
+/**
+ *  Populates the MIDI Channel pop-up menu.  This action is needed at startup
+ *  of the seqedit window, and when the user changes the active buss for the
+ *  sequence.
+ *
+ * \param buss
+ *      The new value for the buss from which to get the [user-instrument-N]
+ *      settings in the [user-instrument-definitions] section.
+ */
+
+void
+seqedit::repopulate_midich_menu (int buss)
+{
+    if (not_nullptr(m_menu_midich))
+        delete m_menu_midich;
 
     m_menu_midich = manage(new Gtk::Menu());
-    int bus = m_seq.get_midi_bus();
     for (int channel = 0; channel < SEQ64_MIDI_BUS_CHANNEL_MAX; ++channel)
     {
         char b[4];                                  /* 2 digits or less  */
         snprintf(b, sizeof b, "%d", channel + 1);
         std::string name = std::string(b);
-        std::string s = usr().instrument_name(bus, channel);
+
+        /*
+         * \change ca 2017-12-17
+         *
+         * 1.  The instrument name has nothing to do with MIDI channels.
+         * 2.  The user_settings::instrument_name() function is broken anyway.
+         *
+        std::string s = usr().instrument_name(buss, channel);
         if (! s.empty())
-            name += (std::string(" ") + s);
+        {
+            name += " [";
+            name += s;
+            name += "]";
+        }
+         *
+         */
 
 #define SET_CH         mem_fun(*this, &seqedit::set_midi_channel)
 
@@ -1633,7 +1668,6 @@ seqedit::popup_midich_menu ()
             MenuElem(name, sigc::bind(SET_CH, channel, true))
         );
     }
-    m_menu_midich->popup(0, 0);
 }
 
 /**
@@ -2012,7 +2046,8 @@ seqedit::set_midi_channel (int midichannel, bool user_change)
  *  in the field if we set it from the seqmenu.
  *
  * \param bus
- *      The buss value to set.
+ *      The buss value to set.  If this value changes the selected buss, then
+ *      the MIDI channel popup menu is repopulated.
  *
  * \param user_change
  *      True if the user made this change, and thus has potentially modified
@@ -2022,9 +2057,12 @@ seqedit::set_midi_channel (int midichannel, bool user_change)
 void
 seqedit::set_midi_bus (int bus, bool user_change)
 {
-    m_seq.set_midi_bus(bus, user_change);       /* user-modified value? */
+    int initialbus = m_seq.get_midi_bus();
+    m_seq.set_midi_bus(bus, user_change);           /* user-modified value? */
     mastermidibus & mmb = perf().master_bus();
     m_entry_bus->set_text(mmb.get_midi_out_bus_name(bus));
+    if (bus != initialbus)
+        repopulate_midich_menu(bus);
 }
 
 /**

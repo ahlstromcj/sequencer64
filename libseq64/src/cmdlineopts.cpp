@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-11-23
+ * \updates       2017-12-17
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -945,12 +945,12 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 'R':
             seq64::rc().reveal_alsa_ports(false);
-            printf("[Showing user-configured ALSA ports]\n");
+            printf("[Showing user-configured ALSA port names]\n");
             break;
 
         case 'r':
             seq64::rc().reveal_alsa_ports(true);
-            printf("[Showing native ALSA ports]\n");
+            printf("[Showing native system ALSA port names]\n");
             break;
 
         case 'S':

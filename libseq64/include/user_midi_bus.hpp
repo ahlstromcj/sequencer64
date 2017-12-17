@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2016-05-17
+ * \updates       2017-12-17
  * \license       GNU GPLv2 or above
  *
  *  This class replaces an global_user_midi_bus_definitions[] array element
@@ -152,15 +152,23 @@ public:
     /**
      * \getter m_channel_count
      * \return
-     *      This function returns the number of channels.  Basically this
-     *      value is always the same as that returned by channel_max(),
-     *      but this pair of functions is consistent with the count
-     *      functions in the user_instrument class.
+     *      This function returns the actual number of channels.  This is
+     *      different from before, when the maximum number was always
+     *      returned.
      */
 
     int channel_count () const
     {
         return m_channel_count;
+    }
+
+    /**
+     * \setter m_channel_count
+     */
+
+    void channel_count (int count)
+    {
+        m_channel_count = count;
     }
 
     /**

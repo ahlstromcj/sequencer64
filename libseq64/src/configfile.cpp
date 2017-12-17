@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-15
+ * \updates       2017-12-17
  * \license       GNU GPLv2 or above
  *
  *  We found a couple of unused members in this module and removed them.
@@ -85,16 +85,16 @@ configfile::next_data_line (std::ifstream & file)
 {
     bool result = true;
     char ch;
-    file.getline(m_line, sizeof(m_line));
+    file.getline(m_line, sizeof m_line);
     ch = m_line[0];
-    while ((ch == '#' || ch == ' ' || ch == '[' || ch == 0) && ! file.eof())
+    while ((ch == '#' || /*ch == ' ' ||*/ ch == '[' || ch == 0) && ! file.eof())
     {
         if (m_line[0] == '[')
         {
             result = false;
             break;
         }
-        file.getline(m_line, sizeof(m_line));
+        file.getline(m_line, sizeof m_line);
         ch = m_line[0];
     }
     if (file.eof())
@@ -130,7 +130,7 @@ configfile::line_after (std::ifstream & file, const std::string & tag)
     bool result = false;
     file.clear();
     file.seekg(0, std::ios::beg);
-    file.getline(m_line, sizeof(m_line));
+    file.getline(m_line, sizeof m_line);
     while (file.good())                 /* includes the EOF check           */
     {
         result = strncmp(m_line, tag.c_str(), tag.length()) == 0;
@@ -143,7 +143,7 @@ configfile::line_after (std::ifstream & file, const std::string & tag)
                 errprint("bad file stream reading config file");
             }
             else
-                file.getline(m_line, sizeof(m_line));
+                file.getline(m_line, sizeof m_line);
         }
     }
     if (result)

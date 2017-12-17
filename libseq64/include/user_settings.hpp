@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-08-13
+ * \updates       2017-12-17
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -133,7 +133,7 @@ class user_settings
     /**
      *  [user-midi-bus-definitions]
      *
-     *  Internal type for the container of user_midi_bus objects.
+     *  Internal types for the container of user_midi_bus objects.
      *  Sorry about the "confusion" about "bus" versus "buss".
      *  See Google for arguments about it.
      */
@@ -167,6 +167,15 @@ class user_settings
      */
 
     Instruments m_instruments;
+
+    /**
+     *  [comments]
+     *
+     *  Provides a way to embed comments in the "usr" file and not lose
+     *  them when the "usr" file is auto-saved.
+     */
+
+    std::string m_comments_block;
 
     /**
      *  [user-interface-settings]
@@ -923,6 +932,15 @@ public:
 public:
 
     /**
+     * \getter m_comments_block
+     */
+
+    const std::string & comments_block () const
+    {
+        return m_comments_block;
+    }
+
+    /**
      * \getter m_grid_style
      *      Checks for normal style.
      */
@@ -1187,6 +1205,24 @@ public:
     bool global_seq_feature () const
     {
         return m_global_seq_feature_save;
+    }
+
+    /**
+     * \setter m_comments_block
+     */
+
+    void clear_comments ()
+    {
+        m_comments_block.clear();
+    }
+
+    /**
+     * \setter m_comments_block
+     */
+
+    void append_comment_line (const std::string & line)
+    {
+        m_comments_block += line;
     }
 
     /**

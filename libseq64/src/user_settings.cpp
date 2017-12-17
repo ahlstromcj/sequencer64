@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2017-08-13
+ * \updates       2017-12-17
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -128,6 +128,17 @@ user_settings::user_settings ()
     m_instruments               (),             // vector
 
     /*
+     * [comments]
+     */
+
+    m_comments_block
+    (
+        "(Comments added to this section are preserved.  Lines starting with\n"
+        " a '#' or '[', or that are blank, are ignored.  Start lines that must\n"
+        " be blank with a space.)\n"
+    ),
+
+    /*
      * [user-interface-settings]
      */
 
@@ -224,13 +235,19 @@ user_settings::user_settings (const user_settings & rhs)
      * [user-midi-bus-definitions]
      */
 
-    m_midi_buses                (),                     // vector
+    m_midi_buses                (rhs.m_midi_buses),     // vector
 
     /*
      * [user-instrument-definitions]
      */
 
-    m_instruments               (),                     // vector
+    m_instruments               (rhs.m_instruments),    // vector
+
+    /*
+     * [comments]
+     */
+
+    m_comments_block            (rhs.m_comments_block),
 
     /*
      * [user-interface-settings]
@@ -339,6 +356,12 @@ user_settings::operator = (const user_settings & rhs)
          */
 
         m_instruments               = rhs.m_instruments;
+
+        /*
+         * [comments]
+         */
+
+        m_comments_block            = rhs.m_comments_block;
 
         /*
          * [user-interface-settings]

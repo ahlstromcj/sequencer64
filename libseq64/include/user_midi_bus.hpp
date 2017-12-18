@@ -82,7 +82,7 @@ struct user_midi_bus_t
      *  Provides an implicit list of MIDI channels from 0 to 15 (1 to 16) and
      *  the "instrument" number assigned to each channel.  Note that the
      *  "instrument" is not a MIDI program number.  Instead, it is the number
-     *  associated with a "user-instrument" section in the "user"
+     *  associated with a [user-instrument-definitions] section in the "user"
      *  configuration file.
      */
 

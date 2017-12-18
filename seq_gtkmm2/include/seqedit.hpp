@@ -515,6 +515,7 @@ private:
     void create_menus ();
     void popup_menu (Gtk::Menu * menu);
     void popup_event_menu ();
+    void repopulate_event_menu (int buss);
 
 #ifdef SEQ64_STAZED_EXPAND_RECORD
     void popup_record_menu ();

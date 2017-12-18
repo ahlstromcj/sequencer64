@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-17
+ * \updates       2017-12-18
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1613,7 +1613,6 @@ seqedit::popup_midich_menu ()
     if (not_nullptr(m_menu_midich))
     {
         m_menu_midich->popup(0, 0);
-        return;
     }
     else
     {
@@ -1642,24 +1641,26 @@ seqedit::repopulate_midich_menu (int buss)
     for (int channel = 0; channel < SEQ64_MIDI_BUS_CHANNEL_MAX; ++channel)
     {
         char b[4];                                  /* 2 digits or less  */
-        snprintf(b, sizeof b, "%d", channel + 1);
+        snprintf(b, sizeof b, "%2d", channel + 1);
         std::string name = std::string(b);
 
         /*
-         * \change ca 2017-12-17
-         *
-         * 1.  The instrument name has nothing to do with MIDI channels.
-         * 2.  The user_settings::instrument_name() function is broken anyway.
-         *
-        std::string s = usr().instrument_name(buss, channel);
-        if (! s.empty())
-        {
-            name += " [";
-            name += s;
-            name += "]";
-        }
-         *
+         * \todo
+         * The user_settings::instrument_name() function is broken.  What we
+         * need to do when the output buss or channel are changed is get the
+         * 16 "channels" from the new buss's definition, get the corresponding
+         * instrument, and load its name into this midich popup.  Then we need
+         * to go to the instrument/channel that has been selected, and
+         * repopulate the event menu with that item's controller values/names.
          */
+
+         std::string s = usr().instrument_name(buss, channel);
+         if (! s.empty())
+         {
+             name += " [";
+             name += s;
+             name += "]";
+         }
 
 #define SET_CH         mem_fun(*this, &seqedit::set_midi_channel)
 
@@ -1783,18 +1784,49 @@ seqedit::create_menu_image (bool state)
 }
 
 /**
- *  Populates the event-selection menu that drops from the "Event" button
- *  in the bottom row of the Pattern editor.
- *
- *  This menu has a large number of items.  I think they are filled in in
- *  code, but can also be loaded from ~/.seq24usr.  To be determined.
+ *  Populates the event-selection menu, in necessary, and then pops it up.
  */
 
 void
 seqedit::popup_event_menu ()
 {
+    if (not_nullptr(m_menu_data))
+    {
+        m_menu_data->popup(0, 0);
+    }
+    else
+    {
+        int buss = m_seq.get_midi_bus();
+        repopulate_event_menu(buss);
+        m_menu_data->popup(0, 0);
+    }
+}
+
+/**
+ *  Populates the event-selection menu that drops from the "Event" button
+ *  in the bottom row of the Pattern editor.
+ *
+ *  This menu has a large number of items.  They are filled in by
+ *  code, but can also be loaded from sequencer64.usr.
+ *
+ *  This function first loops through all of the existing events in the
+ *  sequence in order to determine what events exist in it.  If any of the
+ *  following events are found, their entry in the menu is marked by a filled
+ *  square, rather than a hollow square:
+ *
+ *      -   Note On
+ *      -   Note off
+ *      -   Aftertouch
+ *      -   Program Change
+ *      -   Channel Pressure
+ *      -   Pitch Wheel
+ *      -   Control Changes from 0 to 127
+ */
+
+void
+seqedit::repopulate_event_menu (int buss)
+{
     bool ccs[SEQ64_MIDI_COUNT_MAX];
-    char b[20];
     bool note_on = false;
     bool note_off = false;
     bool aftertouch = false;
@@ -1802,11 +1834,10 @@ seqedit::popup_event_menu ()
     bool channel_pressure = false;
     bool pitch_wheel = false;
     midibyte status, cc;
-    int bus = m_seq.get_midi_bus();
     int channel = m_seq.get_midi_channel();
     memset(ccs, false, sizeof(bool) * SEQ64_MIDI_COUNT_MAX);
     m_seq.reset_draw_marker();
-    while (m_seq.get_next_event(status, cc))      /* used only here!  */
+    while (m_seq.get_next_event(status, cc))            /* used only here!  */
     {
         switch (status)
         {
@@ -1840,16 +1871,15 @@ seqedit::popup_event_menu ()
         }
     }
 
+#define SET_DATA_TYPE(x)    mem_fun(*this, &seqedit::set_data_type), x, 0
+
     m_menu_data = manage(new Gtk::Menu());
     m_menu_data->items().push_back
     (
         ImageMenuElem
         (
             "Note On Velocity", *create_menu_image(note_on),
-            sigc::bind
-            (
-                mem_fun(*this, &seqedit::set_data_type), EVENT_NOTE_ON, 0
-            )
+            sigc::bind(SET_DATA_TYPE(EVENT_NOTE_ON))
         )
     );
     m_menu_data->items().push_back(SeparatorElem());
@@ -1858,10 +1888,7 @@ seqedit::popup_event_menu ()
         ImageMenuElem
         (
             "Note Off Velocity", *create_menu_image(note_off),
-           sigc::bind
-           (
-                mem_fun(*this, &seqedit::set_data_type), EVENT_NOTE_OFF, 0
-            )
+            sigc::bind(SET_DATA_TYPE(EVENT_NOTE_OFF))
         )
     );
     m_menu_data->items().push_back
@@ -1869,10 +1896,7 @@ seqedit::popup_event_menu ()
         ImageMenuElem
         (
             "AfterTouch", *create_menu_image(aftertouch),
-            sigc::bind
-            (
-                mem_fun(*this, &seqedit::set_data_type), EVENT_AFTERTOUCH, 0
-            )
+            sigc::bind(SET_DATA_TYPE(EVENT_AFTERTOUCH))
         )
     );
     m_menu_data->items().push_back
@@ -1880,10 +1904,7 @@ seqedit::popup_event_menu ()
         ImageMenuElem
         (
             "Program Change", *create_menu_image(program_change),
-            sigc::bind
-            (
-                mem_fun(*this, &seqedit::set_data_type), EVENT_PROGRAM_CHANGE, 0
-            )
+            sigc::bind(SET_DATA_TYPE(EVENT_PROGRAM_CHANGE))
         )
     );
     m_menu_data->items().push_back
@@ -1891,10 +1912,7 @@ seqedit::popup_event_menu ()
         ImageMenuElem
         (
             "Channel Pressure", *create_menu_image(channel_pressure),
-            sigc::bind
-            (
-                mem_fun(*this, &seqedit::set_data_type), EVENT_CHANNEL_PRESSURE, 0
-            )
+            sigc::bind(SET_DATA_TYPE(EVENT_CHANNEL_PRESSURE))
         )
     );
     m_menu_data->items().push_back
@@ -1902,10 +1920,7 @@ seqedit::popup_event_menu ()
         ImageMenuElem
         (
             "Pitch Wheel", *create_menu_image(pitch_wheel),
-            sigc::bind
-            (
-                mem_fun(*this, &seqedit::set_data_type), EVENT_PITCH_WHEEL , 0
-            )
+            sigc::bind(SET_DATA_TYPE(EVENT_PITCH_WHEEL))
         )
     );
     m_menu_data->items().push_back(SeparatorElem());
@@ -1917,6 +1932,7 @@ seqedit::popup_event_menu ()
 
     const int menucount = 8;
     const int itemcount = 16;
+    char b[32];
     for (int submenu = 0; submenu < menucount; submenu++)
     {
         int offset = submenu * itemcount;
@@ -1931,7 +1947,7 @@ seqedit::popup_event_menu ()
              */
 
             std::string controller_name(c_controller_names[offset + item]);
-            const user_midi_bus & umb = usr().bus(bus);
+            const user_midi_bus & umb = usr().bus(buss);
             int inst = umb.instrument(channel);
             const user_instrument & uin = usr().instrument(inst);
             if (uin.is_valid())         // kind of a redundant check
@@ -1954,7 +1970,6 @@ seqedit::popup_event_menu ()
         }
         m_menu_data->items().push_back(MenuElem(std::string(b), *menucc));
     }
-    m_menu_data->popup(0, 0);
 }
 
 #ifdef SEQ64_STAZED_EXPAND_RECORD
@@ -2062,7 +2077,10 @@ seqedit::set_midi_bus (int bus, bool user_change)
     mastermidibus & mmb = perf().master_bus();
     m_entry_bus->set_text(mmb.get_midi_out_bus_name(bus));
     if (bus != initialbus)
+    {
         repopulate_midich_menu(bus);
+        repopulate_event_menu(bus);
+    }
 }
 
 /**

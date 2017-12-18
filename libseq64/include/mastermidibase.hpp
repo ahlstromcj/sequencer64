@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-09-09
+ * \updates       2017-12-18
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibase module is the base-class version of the mastermidibus
@@ -73,7 +73,7 @@ protected:
     int m_max_busses;
 
     /**
-     *  MIDI buss announcer?
+     *  MIDI buss announcer.
      */
 
     midibus * m_bus_announce;
@@ -188,6 +188,20 @@ public:
         m_ppqn = ppqn;
         m_beats_per_minute = bpm;
         api_init(ppqn, bpm);
+    }
+
+    /**
+     *  Indicates that we have an announce buss entry to skip when filling in
+     *  the device list with "user" entries.  Another potentially equivalent
+     *  test is is_input_system_port(bus).
+     *
+     * \return
+     *      Returns true if m_bus_announce is not the null pointer.
+     */
+
+    bool announce_bus_exists () const
+    {
+        return not_nullptr(m_bus_announce);
     }
 
     /**

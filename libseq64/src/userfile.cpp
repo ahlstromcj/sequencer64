@@ -634,7 +634,8 @@ userfile::write (const perform & /* a_perf */ )
                 << "# Device name\n"
                 << umb.name() << "\n"
                 << "\n"
-                << umb.channel_count() << "      # number of channels\n"
+                << umb.channel_count()
+                << "      # number of instrument settings\n"
                 ;
 
             for (int channel = 0; channel < umb.channel_count(); ++channel)
@@ -643,7 +644,7 @@ userfile::write (const perform & /* a_perf */ )
                 {
                     file
                         << channel << " " << umb.instrument(channel)
-                        << "    # channel & program number\n"
+                        << "    # channel index & instrument number\n"
                         ;
                 }
 #if defined PLATFORM_DEBUG && defined SHOW_IGNORED_ITEMS

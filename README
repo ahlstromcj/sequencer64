@@ -1,6 +1,6 @@
 README for Sequencer64 0.94.0 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2017-12-17
+2015-09-10 to 2017-12-20
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
@@ -32,8 +32,8 @@ See the INSTALL file.
         -   Additions from the Oli Kester project, "Kepler34".
             -   Panic-button to stop everything!
             -   Recent-files menu entries; logs full path-names, but shows
-                only the base name.  Has Gtk issue with using underscore as an
-                accelerator.
+                only the base name.  Has Gtk issue with using underscore as
+                an accelerator.
             -   Support for multiple trigger selection in the Song Editor, but
                 incomplete and currently disabled.
             -   Initial support for Song Recording, in Live mode, which writes
@@ -49,7 +49,9 @@ See the INSTALL file.
             -   Adding a set-note caused a prompt for saving even with no
                 changes.
             -   Major major fixes for the "user" configuration file, and 
-                a new "[comments]" section for it.
+                a new "[comments]" section for it.  Also fixed ancient bug
+                in populating the seqedit event menu, and no longer apply
+                the "user" devices to the input port.
         -   The ability to toggle the time display between "B:B:T" and
             "H:M:S" has been added.
     -   Version 0.93.5:
@@ -65,46 +67,6 @@ See the INSTALL file.
         -   Some improvements to set_status() functions.
         -   Minor cleanup, and investigation into an issue with triggers and
             the pause functionality in Song mode.
-    -   Version 0.93.4:
-        -   Duh, I forgot to do this.  Debian packaging fixes?
-        -   Merging a miniature version of the PortMIDI library, called
-            "portmini", into the code base ("windows" branch).
-        -   Building for Windows, still in progress in the "windows" branch.
-            Currently supports only the command-line build (bootstrap option
-            -win).
-    -   Version 0.93.3:
-        -   Fixes to issue #105 relating to fruity interactions.
-        -   Made it obvious when a nute-group cannot be supported due to
-            larger set sizes with the --option sets=RxC setting.
-        -   Desktop-settings updates.
-        -   Other fixes to unreported problems we found.
-    -   Version 0.93.2:
-        -   Tweaking the sizing of main window to avoid bottom clipping found
-            with some Gnome themes.  Just fudging it, unfortunately.
-        -   Fixed issue #103 which wrote global tempo bytes backwards.
-        -   Fixed issue #106, an off-by-one error in calculating measures that
-            causes edited patterns to grow.
-    -   Version 0.93.1:
-        -   Version 0.93.1 supports the management of a native MIDI tempo
-            track, adhering to MIDI specs.
-        -   Tempo events are mostly editable like normal events.  No separate
-            "tempo track" editor needed at present.
-    -   Version 0.93.0:
-        -   Initial support for the tempo track.  It currently includes making
-            Meta events have full support in Sequencer64, including in the
-            event editor (only Set Tempo and Time Signature are fully
-            supported at this time, and share code with SysEx support).
-        -   Merged pull request #95 of user layk to fix an issue with
-            manipulating long notes while playing.
-        -   Fixes a bug where the event editor is not updating properly.
-            A long-time regression!
-    -   Version 0.92.0:
-        -   Added support for variable set-size, from the default
-            4x8 (rows x columns) to 8x12.  Can be combined with multi-wid.
-        -   Up to 96 hot-keys via a shift/double-shift feature.
-    -   Version 0.91.0:
-        -   Added option to show a grid of sets, with one set spinner per
-            main window.  Set from command-line or the "usr" configuration.
     -   For more version information, see the NEWS file.
 
 This package is currently oriented to developers.  It is fairly well

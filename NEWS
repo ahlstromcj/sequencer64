@@ -1,12 +1,52 @@
 NEWS for Sequencer64 0.93.3
 Chris Ahlstrom
-2015-07-10 to 2017-08-20
+2015-07-10 to 2017-12-20
 
 This file collects major changes that are older and clutter up
 the README file.  This file should be called "OLD NEWS".
 
 Older major updates:
 
+    -   Version 0.93.4:
+        -   Duh, I forgot to do this.  Debian packaging fixes?
+        -   Merging a miniature version of the PortMIDI library, called
+            "portmini", into the code base ("windows" branch).
+        -   Building for Windows, still in progress in the "windows" branch.
+            Currently supports only the command-line build (bootstrap option
+            -win).
+    -   Version 0.93.3:
+        -   Fixes to issue #105 relating to fruity interactions.
+        -   Made it obvious when a nute-group cannot be supported due to
+            larger set sizes with the --option sets=RxC setting.
+        -   Desktop-settings updates.
+        -   Other fixes to unreported problems we found.
+    -   Version 0.93.2:
+        -   Tweaking the sizing of main window to avoid bottom clipping found
+            with some Gnome themes.  Just fudging it, unfortunately.
+        -   Fixed issue #103 which wrote global tempo bytes backwards.
+        -   Fixed issue #106, an off-by-one error in calculating measures that
+            causes edited patterns to grow.
+    -   Version 0.93.1:
+        -   Version 0.93.1 supports the management of a native MIDI tempo
+            track, adhering to MIDI specs.
+        -   Tempo events are mostly editable like normal events.  No separate
+            "tempo track" editor needed at present.
+    -   Version 0.93.0:
+        -   Initial support for the tempo track.  It currently includes making
+            Meta events have full support in Sequencer64, including in the
+            event editor (only Set Tempo and Time Signature are fully
+            supported at this time, and share code with SysEx support).
+        -   Merged pull request #95 of user layk to fix an issue with
+            manipulating long notes while playing.
+        -   Fixes a bug where the event editor is not updating properly.
+            A long-time regression!
+    -   Version 0.92.0:
+        -   Added support for variable set-size, from the default
+            4x8 (rows x columns) to 8x12.  Can be combined with multi-wid.
+        -   Up to 96 hot-keys via a shift/double-shift feature.
+    -   Version 0.91.0:
+        -   Added option to show a grid of sets, with one set spinner per
+            main window.  Set from command-line or the "usr" configuration.
     -   Version 0.90.6:
         -   BPM (tempo) can now be altered in JACK mode.
         -   Added the Stazed Seq32 upgrade to allow, in addition to

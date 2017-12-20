@@ -41,6 +41,17 @@
  *  modified, an announcement is sent to subscribers from this port.  From
  *  SND_SEQ_PORT_SYSTEM_ANNOUNCE, one may receive
  *  SND_SEQ_EVENT_PORT_SUBSCRIBED events.
+ *
+ * Capability bits (FYI):
+ *
+ *      SND_SEQ_PORT_CAP_READ           0x01
+ *      SND_SEQ_PORT_CAP_WRITE          0x02
+ *      SND_SEQ_PORT_CAP_SYNC_READ      0x04
+ *      SND_SEQ_PORT_CAP_SYNC_WRITE     0x08
+ *      SND_SEQ_PORT_CAP_DUPLEX         0x10
+ *      SND_SEQ_PORT_CAP_SUBS_READ      0x20
+ *      SND_SEQ_PORT_CAP_SUBS_WRITE     0x40
+ *      SND_SEQ_PORT_CAP_NO_EXPORT      0x80
  */
 
 #include "calculations.hpp"             /* seq64::tempo_us_from_bpm()       */

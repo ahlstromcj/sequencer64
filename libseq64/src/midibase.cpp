@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2017-09-03
+ * \updates       2017-12-20
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -206,6 +206,14 @@ midibase::~midibase()
  *
  *      [0] 128:2 seq64:seq64 port 2
  *
+ *  We want to see if the user has configured a port name. If so, and this is
+ *  an output port, then the buss name is overridden by the entry in the "usr"
+ *  configuration file.  Otherwise, we fall back to the parameters.  Note that
+ *  this has been tweaked versus Seq24, where the "usr" devices were also
+ *  applied to the input ports.  Also note that the "usr" device names should
+ *  be kept short, and the actual buss name from the system is shown in
+ *  brackets.
+ *
  * \param appname
  *      This is the name of the client, or application.  Not to be confused
  *      with the ALSA client-name, which is actually a buss or subsystem name.
@@ -242,24 +250,20 @@ midibase::set_name
     else
     {
         /*
-         * Bus IDs range from 14 to over 128; this code is wrong:
-         * std::string bussname = usr().bus_name(get_bus_id()).
+         * See banner.
          *
-         * We want to see if the user has configured a port name.  If not,
-         * then a default and invalid static bus object with an empty
-         * buss-name is accessed.   This code needs more testing, however.
+         * Old: std::string bname = usr().bus_name(get_port_id());
          */
 
         char alias[128];
-        std::string bussname = usr().bus_name(get_port_id());
-        if (! bussname.empty())
+        std::string bname = usr().bus_name(m_bus_index);
+        if (is_output_port() && ! bname.empty())
         {
             snprintf
             (
-                alias, sizeof alias, "%s:%s",
-                bussname.c_str(), portname.c_str()
+                alias, sizeof alias, "%s [%s]", bname.c_str(), portname.c_str()
             );
-            bus_name(bussname);
+            bus_name(bname);
         }
         else if (! busname.empty())
         {
@@ -325,7 +329,7 @@ midibase::set_alt_name
     }
     else
     {
-        std::string bussname = busname;
+        std::string bname = busname;
         std::string pname = portname;
         std::size_t colonpos = pname.find_first_of(":");
         if (colonpos != std::string::npos)
@@ -336,9 +340,9 @@ midibase::set_alt_name
         (
             alias, sizeof alias, "[%d] %d:%d %s:%s",
             get_bus_index(), get_bus_id(), get_port_id(),
-            bussname.c_str(), pname.c_str()
+            bname.c_str(), pname.c_str()
         );
-        bus_name(bussname);
+        bus_name(bname);
         port_name(pname);
         display_name(alias);
     }
@@ -392,12 +396,12 @@ midibase::set_multi_name
     }
     else
     {
-        std::string bussname = localbusname;
+        std::string bname = localbusname;
         std::string rbname = extract_bus_name(remoteportname);
         std::string rpname = extract_port_name(remoteportname);
-        bussname += "-";
-        bussname += rbname;
-        bus_name(bussname);
+        bname += "-";
+        bname += rbname;
+        bus_name(bname);
         port_name(rpname);
 
         char alias[128];

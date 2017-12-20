@@ -1626,6 +1626,12 @@ seqedit::popup_midich_menu ()
  *  of the seqedit window, and when the user changes the active buss for the
  *  sequence.
  *
+ *  When the output buss or channel are changed, we get the 16 "channels" from
+ *  the new buss's definition, get the corresponding instrument, and load its
+ *  name into this midich popup.  Then we need to go to the instrument/channel
+ *  that has been selected, and repopulate the event menu with that item's
+ *  controller values/names.
+ *
  * \param buss
  *      The new value for the buss from which to get the [user-instrument-N]
  *      settings in the [user-instrument-definitions] section.
@@ -1643,24 +1649,13 @@ seqedit::repopulate_midich_menu (int buss)
         char b[4];                                  /* 2 digits or less  */
         snprintf(b, sizeof b, "%2d", channel + 1);
         std::string name = std::string(b);
-
-        /*
-         * \todo
-         * The user_settings::instrument_name() function is broken.  What we
-         * need to do when the output buss or channel are changed is get the
-         * 16 "channels" from the new buss's definition, get the corresponding
-         * instrument, and load its name into this midich popup.  Then we need
-         * to go to the instrument/channel that has been selected, and
-         * repopulate the event menu with that item's controller values/names.
-         */
-
-         std::string s = usr().instrument_name(buss, channel);
-         if (! s.empty())
-         {
-             name += " [";
-             name += s;
-             name += "]";
-         }
+        std::string s = usr().instrument_name(buss, channel);
+        if (! s.empty())
+        {
+            name += " [";
+            name += s;
+            name += "]";
+        }
 
 #define SET_CH         mem_fun(*this, &seqedit::set_midi_channel)
 
@@ -1943,14 +1938,17 @@ seqedit::repopulate_event_menu (int buss)
             /*
              * Do we really want the default controller name to start?
              * That's what the legacy Seq24 code does!  We need to document
-             * it in the seq24-doc and sequencer64-doc projects.
+             * it in the seq24-doc and sequencer64-doc projects.  Also, there
+             * was a bug in Seq24 where the instrument number was use re 1
+             * to get the proper instrument... it needs to be decremented to
+             * be re 0.
              */
 
             std::string controller_name(c_controller_names[offset + item]);
             const user_midi_bus & umb = usr().bus(buss);
             int inst = umb.instrument(channel);
-            const user_instrument & uin = usr().instrument(inst);
-            if (uin.is_valid())         // kind of a redundant check
+            const user_instrument & uin = usr().instrument(inst - 1);   // fixed
+            if (uin.is_valid())                             // redundant check
             {
                 if (uin.controller_active(offset + item))
                     controller_name = uin.controller_name(offset + item);

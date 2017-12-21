@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-17
+ * \updates       2017-12-21
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -154,12 +154,11 @@ userfile::parse (perform & /* p */)
     }
 
     /*
-     * \change ca 2016-04-04
-     *      Next, if we're using the manual or auto ALSA port options
-     *      specified in the RC file, we do want to override the ports that
-     *      the queries of the ALSA system find.  Otherwise, we might want to
-     *      reveal the names obtained by port detection for ALSA, and do not
-     *      want to override the names of the ports that are found.
+     *  Next, if we're using the manual or hide ALSA port options specified in
+     *  the "rc" file, do want to override the ports that the queries of the
+     *  ALSA system find.  Otherwise, we might want to reveal the names
+     *  obtained by port detection for ALSA, and do not want to override the
+     *  names of the ports that are found.
      */
 
     if (! rc().reveal_alsa_ports())
@@ -233,15 +232,28 @@ userfile::parse (perform & /* p */)
             for (int j = 0; j < ccs; ++j)
             {
                 int c = 0;
-                (void) next_data_line(file);
+                if (! next_data_line(file))
+                    break;
+
                 ccname[0] = 0;                              // clear the buffer
                 sscanf(m_line, "%d %[^\n]", &c, ccname);
                 if (c >= 0 && c < SEQ64_MIDI_CONTROLLER_MAX)      // 128
                 {
-                    usr().set_instrument_controllers
-                    (
-                        i, c, std::string(ccname), true
-                    );
+                    std::string name(ccname);
+                    if (name.empty())
+                    {
+                        /*
+                         * TMI:
+                         *
+                        fprintf
+                        (
+                            stderr, "? missing controller name for '%s'\n",
+                            label.c_str()
+                        );
+                         */
+                    }
+                    else
+                        usr().set_instrument_controllers(i, c, name, true);
                 }
                 else
                 {

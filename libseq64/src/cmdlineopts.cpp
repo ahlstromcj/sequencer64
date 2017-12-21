@@ -945,12 +945,12 @@ parse_command_line_options (perform & p, int argc, char * argv [])
 
         case 'R':
             seq64::rc().reveal_alsa_ports(false);
-            printf("[Showing user-configured ALSA port names]\n");
+            printf("[Showing user-configured port names]\n");
             break;
 
         case 'r':
             seq64::rc().reveal_alsa_ports(true);
-            printf("[Showing native system ALSA port names]\n");
+            printf("[Showing native system port names]\n");
             break;
 
         case 'S':

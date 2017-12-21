@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-18
+ * \updates       2017-12-21
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1786,15 +1786,12 @@ void
 seqedit::popup_event_menu ()
 {
     if (not_nullptr(m_menu_data))
-    {
-        m_menu_data->popup(0, 0);
-    }
-    else
-    {
-        int buss = m_seq.get_midi_bus();
-        repopulate_event_menu(buss);
-        m_menu_data->popup(0, 0);
-    }
+        delete m_menu_data;
+
+    int buss = m_seq.get_midi_bus();
+    int channel = m_seq.get_midi_channel();
+    repopulate_event_menu(buss, channel);
+    m_menu_data->popup(0, 0);
 }
 
 /**
@@ -1816,10 +1813,16 @@ seqedit::popup_event_menu ()
  *      -   Channel Pressure
  *      -   Pitch Wheel
  *      -   Control Changes from 0 to 127
+ *
+ * \param buss
+ *      The selected bus number.
+ *
+ * \param channel
+ *      The selected channel number.
  */
 
 void
-seqedit::repopulate_event_menu (int buss)
+seqedit::repopulate_event_menu (int buss, int channel)
 {
     bool ccs[SEQ64_MIDI_COUNT_MAX];
     bool note_on = false;
@@ -1829,7 +1832,6 @@ seqedit::repopulate_event_menu (int buss)
     bool channel_pressure = false;
     bool pitch_wheel = false;
     midibyte status, cc;
-    int channel = m_seq.get_midi_channel();
     memset(ccs, false, sizeof(bool) * SEQ64_MIDI_COUNT_MAX);
     m_seq.reset_draw_marker();
     while (m_seq.get_next_event(status, cc))            /* used only here!  */
@@ -1947,7 +1949,7 @@ seqedit::repopulate_event_menu (int buss)
             std::string controller_name(c_controller_names[offset + item]);
             const user_midi_bus & umb = usr().bus(buss);
             int inst = umb.instrument(channel);
-            const user_instrument & uin = usr().instrument(inst - 1);   // fixed
+            const user_instrument & uin = usr().instrument(inst);
             if (uin.is_valid())                             // redundant check
             {
                 if (uin.controller_active(offset + item))
@@ -2076,8 +2078,9 @@ seqedit::set_midi_bus (int bus, bool user_change)
     m_entry_bus->set_text(mmb.get_midi_out_bus_name(bus));
     if (bus != initialbus)
     {
+        int channel = m_seq.get_midi_channel();
         repopulate_midich_menu(bus);
-        repopulate_event_menu(bus);
+        repopulate_event_menu(bus, channel);
     }
 }
 

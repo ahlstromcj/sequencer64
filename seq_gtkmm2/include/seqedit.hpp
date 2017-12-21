@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-17
+ * \updates       2017-12-21
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -515,7 +515,7 @@ private:
     void create_menus ();
     void popup_menu (Gtk::Menu * menu);
     void popup_event_menu ();
-    void repopulate_event_menu (int buss);
+    void repopulate_event_menu (int buss, int channel);
 
 #ifdef SEQ64_STAZED_EXPAND_RECORD
     void popup_record_menu ();

@@ -1,3 +1,102 @@
+2017-12-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, TODO, bootstrap, configure.ac,
+	libseq64/include/midibus.hpp: Fixed issue #122, failing alsamidi
+	build.
+
+2017-12-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/cmdlineopts.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/seqedit.cpp: Finally
+	got user-devices event menu correct.
+
+2017-12-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* NEWS, README, libseq64/src/midibase.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_rtmidi/src/midi_alsa_info.cpp: Fixed
+	user-device usage bugs.
+
+2017-12-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/configs/sequencer64.usr,
+	libseq64/include/mastermidibase.hpp,
+	libseq64/include/user_midi_bus.hpp, libseq64/src/userfile.cpp,
+	man/seq64.1, man/seq64cli.1, man/sequencer64.1,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/seqedit.cpp: Interim
+	check-in, how to set user buss names.
+
+2017-12-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, contrib/configs/sequencer64.usr,
+	contrib/configs/sequencer64.usr.example,
+	libseq64/include/user_midi_bus.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/configfile.cpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/src/seqedit.cpp: Major fixes to the usr-configuration
+	file, still in progress.
+
+2017-12-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, TODO, configure.ac, libseq64/include/perform.hpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfroll.cpp: Fixed issue
+	with screen-set notes causing modify at load time.
+
+2017-12-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/user_settings.hpp,
+	libseq64/src/midi_splitter.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp: Interim
+	check-in.
+
+2017-12-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, contrib/notes/jack-testing.txt, ldd-seq64.lst,
+	libseq64/include/calculations.hpp, libseq64/src/calculations.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwnd.cpp: Added
+	H:M:S and a button to time display.
+
+2017-12-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, TODO, configure.ac,
+	contrib/notes/jack-testing.txt, ldd-seq64.lst,
+	libseq64/include/perform.hpp, libseq64/src/event_list.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/options.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp: Fixed
+	playback bug with non-Master JACK transport.
+
+2017-12-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, libseq64/src/keys_perform.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Interim check-in, nothing major.
+
+2017-11-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, TODO, libseq64/include/keys_perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/keys_perform.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp,
+	seq_rtmidi/src/midi_jack.cpp: Updates for one-shot queueing.
+
+2017-11-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure, debian/rules, libseq64/include/perform.hpp,
+	libseq64/include/seq64_features.h, libseq64/include/sequence.hpp,
+	libseq64/include/triggers.hpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, libseq64/src/triggers.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfroll_input.cpp: 
+	Disabled box-select, interim check-in.
+
+2017-11-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : Finished merge of 0.93.5 master to tempo_track.
+	* ChangeLog, README, bootstrap, debian/README: Version 0.93.5 at
+	last.
+
 2017-11-22  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* Midiclocker64/midi_clocker.cpp, README, configure, configure.ac,

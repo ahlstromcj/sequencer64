@@ -1,6 +1,6 @@
 README for Sequencer64 0.94.0 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2017-12-20
+2015-09-10 to 2017-12-26
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
@@ -41,6 +41,7 @@ See the INSTALL file.
                 Also has a song-recording snap mode.
             -   A one-shot queuing mode is now provided.  It works like
                 queueing, but unqueues the pattern after one playback.
+        -   Issue #122 bad alsamidi build fixed.
         -   Bug fixes to unreported issues:
             -   Seq64, when not JACK Transport Master, would not play and
                 caused other JACK clients to not play either.

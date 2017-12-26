@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-12-15
+2016-12-03 to 2017-12-22
 
 Debian packaging:
 
@@ -18,6 +18,8 @@ Windows:
 
 Tempo Track:
 
+    -   Test both versions of the CountryStrum file to make sure they play at
+        the same tempo.
     -   Separate tempo for each pattern (a feature request)?
 
     1:1 Program         C0 (192), seqdata tries to draw it (height == 0)

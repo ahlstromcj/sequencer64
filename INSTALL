@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.94.0 and above
 Chris Ahlstrom
-2015-09-10 to 2017-12-10
+2015-09-10 to 2017-12-26
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -133,20 +133,22 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         library.  This option enables the usage of native JACK MIDI which will
         fall back to ALSA if JACK is not running.  Builds Seq64rtmidi/seq64.
 
-    --enable-alsamidi
+    --enable-alsamidi --disable-rtmidi
 
         Defines SEQ64_ALSAMIDI_SUPPORT to build the original Sequencer64.
         This build is not quite the same, since we have refactored the midibus
         and mastermidibus modules, and added the businfo module.  Builds
-        Sequencer64/sequencer64.
+        Sequencer64/sequencer64.  Note that "rtmidi" must be explicitly
+        disabled at this time.
 
-    --enable-portmidi
+    --enable-portmidi --disable-rtmidi
 
         Defines SEQ64_PORTMIDI_SUPPORT to build the PortMIDI version of
         Sequencer64, using the Linux version of this library.  Builds
         Seq64portmidi/seq64portmidi.  We have tested only playback.  When we
         eventually get to Windows MIDI support, we have to decide whether to
-        use the "portmidi" build or to use the "rtmidi" build.
+        use the "portmidi" build or to use the "rtmidi" build.  Note that
+        "rtmidi" must be explicitly disabled at this time.
         
     --disable-highlight
 

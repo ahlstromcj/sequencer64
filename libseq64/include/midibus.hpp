@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-28
- * \updates       2017-09-02
+ * \updates       2017-12-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -44,7 +44,7 @@
 #elif defined SEQ64_WINDOWS_SUPPORT
 #include "midibus_pm.hpp"               /* Windows uses PortMIDI now        */
 #else
-#include "midibus_am.hpp"               /* seq64::midibus for ALSA          */
+#include "midibus_rm.hpp"               /* seq64::midibus for RtMidi        */
 #endif
 
 #endif      // SEQ64_MIDIBUS_HPP

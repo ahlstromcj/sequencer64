@@ -809,7 +809,8 @@ jack_assistant::init ()
 
         bool master_is_set = false;         /* flag to handle trickery  */
         bool cond = rc().with_jack_master_cond();
-        if (rc().with_jack_master())        /* OR with 'cond' removed   */
+        if (rc().with_jack_master() || cond)
+/////   if (rc().with_jack_master())        /* OR with 'cond' removed   */
         {
             /*
              * 'cond' is true if we want to fail if there is already a JACK
@@ -990,6 +991,7 @@ jack_assistant::stop ()
  *      perform::set_beats_per_minute() does validate already.
  *      Also, since jack_transport_reposition() can be "called at any time by
  *      any client", we have removed the check for "is master".
+ *      We do seem to see more "bad position structure" messages, though.
  *
  * \param bpminute
  *      Provides the beats/minute value to set.
@@ -1085,9 +1087,7 @@ jack_assistant::position (bool songmode, midipulse tick)
 
 #ifdef PLATFORM_DEBUG_TMI
     if (tick == 0)
-    {
-        printf("tick = 0\n");                   /* just a breakpoint    */
-    }
+        printf("jack position() tick = 0\n");
 #endif
 
     if (songmode)                               /* master in song mode  */
@@ -1098,7 +1098,7 @@ jack_assistant::position (bool songmode, midipulse tick)
             tick *= 10;
     }
     else
-        tick *= 10;                             // tick = 0;
+        tick *= 10;                             /* tick = 0             */
 
     int ticks_per_beat = m_ppqn * 10;
     int beats_per_minute = parent().get_beats_per_minute();
@@ -1108,7 +1108,7 @@ jack_assistant::position (bool songmode, midipulse tick)
     if (m_jack_master)
     {
         /*
-         * We don't want to do this unless we a JACK Master.  Otherwise
+         * We don't want to do this unless we are JACK Master.  Otherwise,
          * other JACK clients never advance if Sequencer64 won't advance.
          * However, according to JACK docs, "Any client can start or stop
          * playback, or seek to a new location."
@@ -1124,6 +1124,8 @@ jack_assistant::position (bool songmode, midipulse tick)
 #endif  // SEQ64_JACK_SUPPORT
 
 }
+
+#if 0       ///////////////////////////////////////////////////////////
 
 /**
  *  Provides the code that was effectively commented out in the
@@ -1193,6 +1195,8 @@ jack_assistant::set_position (midipulse tick)
         errprint("jack_assistant::set_position(): bad position structure");
     }
 }
+
+#endif // 0       ///////////////////////////////////////////////////////////
 
 /**
  *  A helper function for syncing up with JACK parameters.  Sequencer64 is not
@@ -1472,7 +1476,6 @@ jack_assistant::output (jack_scratchpad & pad)
         m_jack_pos.beat_type = m_beat_width;
         m_jack_pos.ticks_per_beat = m_ppqn * 10;
         m_jack_pos.beats_per_minute = parent().get_beats_per_minute();
-
         if
         (
             m_jack_transport_state_last == JackTransportStarting &&

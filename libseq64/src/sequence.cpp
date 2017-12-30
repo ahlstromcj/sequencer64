@@ -1001,9 +1001,14 @@ sequence::toggle_playing (midipulse tick, bool resumenoteons)
 {
     toggle_playing();
     if (get_playing() && resumenoteons)
+    {
+#ifdef SEQ64_SONG_RECORDING
         resume_note_ons(tick);
-
+#endif
+    }
+#ifdef SEQ64_SONG_RECORDING
     m_off_from_snap = false;
+#endif
 }
 
 /**

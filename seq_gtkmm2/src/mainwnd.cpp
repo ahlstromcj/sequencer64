@@ -1734,22 +1734,6 @@ mainwnd::toggle_song_snap ()
 }
 
 /**
- *  Toggles the recording of the live song control done by the musician.
- *  This functionality currently does not have a key devoted to it, nor is it
- *  a saved setting.
- */
-
-void
-mainwnd::toggle_time_format ()
-{
-    m_tick_time_as_bbt = ! m_tick_time_as_bbt;
-    std::string label = m_tick_time_as_bbt ? "BBT" : "HMS" ;
-    Gtk::Label * lbl(dynamic_cast<Gtk::Label *>(m_button_time_type->get_child()));
-    if (not_nullptr(lbl))
-        lbl->set_text(label);
-}
-
-/**
  *
  */
 
@@ -1772,6 +1756,22 @@ mainwnd::set_song_playback (bool playsong)
 }
 
 #endif  // SEQ64_SONG_RECORDING
+
+/**
+ *  Toggles the recording of the live song control done by the musician.
+ *  This functionality currently does not have a key devoted to it, nor is it
+ *  a saved setting.
+ */
+
+void
+mainwnd::toggle_time_format ()
+{
+    m_tick_time_as_bbt = ! m_tick_time_as_bbt;
+    std::string label = m_tick_time_as_bbt ? "BBT" : "HMS" ;
+    Gtk::Label * lbl(dynamic_cast<Gtk::Label *>(m_button_time_type->get_child()));
+    if (not_nullptr(lbl))
+        lbl->set_text(label);
+}
 
 /**
  *  We are trying to work around an apparent Gtk+ bug (which occurs on my

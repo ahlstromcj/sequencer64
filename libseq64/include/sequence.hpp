@@ -1126,12 +1126,14 @@ public:
 
     /**
      *  An overload that gets its values from this sequence object.
+     *
+     * \param meas
+     *      The number of measures to apply.  Defaults to 1.
      */
 
-    void apply_length (int measures = 1)
+    void apply_length (int meas = 1)
     {
-        apply_length(get_beats_per_bar(), int(m_ppqn),
-        get_beat_width(), measures);
+        apply_length(get_beats_per_bar(), int(m_ppqn), get_beat_width(), meas);
     }
 
     /**

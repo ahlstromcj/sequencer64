@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-25
+ * \updates       2017-12-30
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -307,8 +307,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
         sequence * seq = perf().get_sequence(seqnum);
         if (not_nullptr(seq))                       // perf().is_active(seqnum)
         {
-            // sequence * seq = perf().get_sequence(seqnum);
-
             bool empty_highlight = perf().highlight(*seq);
             bool smf_0 = perf().is_smf_0(*seq);
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT

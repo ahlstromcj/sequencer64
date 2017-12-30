@@ -650,7 +650,7 @@ private:
     jack_client_t * client_open (const std::string & clientname);
     void get_jack_client_info ();
     int sync (jack_transport_state_t state = (jack_transport_state_t)(-1));
-    void set_position (midipulse currenttick);
+    //////////////////////// void set_position (midipulse currenttick);
 
     static bool info_message (const std::string & msg);
     static bool error_message (const std::string & msg);

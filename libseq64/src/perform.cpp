@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-12-15
+ * \updates       2017-12-30
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1580,7 +1580,7 @@ perform::set_left_tick (midipulse tick, bool setstart)
 
 #ifdef SEQ64_JACK_SUPPORT
     if (is_jack_master())                       /* don't use in slave mode  */
-        m_jack_asst.position(true, tick);       /* position_jack()          */
+        position_jack(true, tick);
     else if (! is_jack_running())
         set_tick(tick);
 #else
@@ -2953,7 +2953,7 @@ void
 perform::pause_playing (bool songmode)
 {
     m_dont_reset_ticks = true;
-    is_running(! is_running());             /* a FIX, EXPERIMENTAL          */
+    is_running(! is_running());
     stop_jack();
     if (is_jack_running())
     {
@@ -2961,7 +2961,6 @@ perform::pause_playing (bool songmode)
     }
     else
     {
-////    is_running(false);
         reset_sequences(true);              /* don't reset "last-tick"      */
         m_usemidiclock = false;
         m_start_from_perfedit = false;      /* act like stop_playing()      */
@@ -3120,11 +3119,11 @@ perform::inner_start (bool songmode)
 }
 
 /**
- *  Unconditionally, and without locking, clears the running status, resets
- *  the sequences, and sets m_usemidiclock false.  Note that we do need to set
- *  the running flag to false here, even when JACK is running.  Otherwise,
- *  JACK starts ping-ponging back and forth between positions under some
- *  circumstances.
+ *  Unconditionally, and without locking, clears the running status and resets
+ *  the sequences.  Sets m_usemidiclock to the given value.  Note that we do
+ *  need to set the running flag to false here, even when JACK is running.
+ *  Otherwise, JACK starts ping-ponging back and forth between positions under
+ *  some circumstances.
  *
  *  However, if JACK is running, we do not want to reset the sequences... this
  *  causes the progress bar for each sequence to move to near the end of the
@@ -6223,8 +6222,6 @@ perform::reposition (midipulse tick)
         position_jack(true, tick);
 }
 
-#ifdef SEQ64_SONG_RECORDING
-
 /**
  *  This version for song-recording not only logs m_tick, it also does JACK
  *  positioning (if applicable), calls the master bus's continue_from()
@@ -6258,15 +6255,21 @@ perform::set_tick (midipulse tick)
 #endif  // PLATFORM_DEBUG_TMI
 
     m_tick = tick;
-    if (m_jack_asst.is_running())
-        position_jack(tick);
 
-    master_bus().continue_from(tick);
+    /*
+     * \change ca 2017-12-30 Issue #123
+     *      This code, when enabled, causes the progress to be continually
+     *      reset to 0 when JACK Transport is active.
+     *
+     *  if (m_jack_asst.is_running())
+     *      position_jack(tick);
+     *  master_bus().continue_from(tick);
+     */
+
+#ifdef SEQ64_SONG_RECORDING
     m_current_tick = tick;
-
+#endif
 }
-
-#endif  // SEQ64_SONG_RECORDING
 
 /**
  *  Convenience function.  This function is used in the free function version

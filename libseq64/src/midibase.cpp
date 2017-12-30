@@ -751,6 +751,23 @@ midibase::clock (midipulse tick)
 }
 
 /**
+ *  A static debug function, enabled only for trouble-shooting.
+ *
+ * \param context
+ *      Human readable context information (e.g. "ALSA").
+ *
+ * \param tick
+ *      Provides the current tick value.
+ */
+
+void
+midibase::show_clock (const std::string & context, midipulse tick)
+{
+    fprintf(stderr, "%s clock [%ld]\n", context.c_str(), tick);
+    fflush(stderr);
+}
+
+/**
  * Shows most midibase members.
  */
 

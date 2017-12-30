@@ -205,6 +205,8 @@ public:
 
     void show_bus_values ();
 
+    static void show_clock (const std::string & context, midipulse tick);
+
     /**
      * \getter m_display_name
      */

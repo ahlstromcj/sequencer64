@@ -831,9 +831,7 @@ midi_jack::api_play (event * e24, midibyte channel)
     {
         int count1 = jack_ringbuffer_write
         (
-            m_jack_data.m_jack_buffmessage,
-            message.array(),                    /* (const char *) &m[0] */
-            message.count()
+            m_jack_data.m_jack_buffmessage, message.array(), message.count()
         );
         int count2 = jack_ringbuffer_write
         (
@@ -936,12 +934,16 @@ midi_jack::api_stop ()
  *  Sends a MIDI clock event.
  *
  * \param tick
- *      The value of the tick to use, but currently unused.
+ *      The value of the tick to use.
  */
 
 void
 midi_jack::api_clock (midipulse tick)
 {
+#ifdef PLATFORM_DEBUG_TMI
+    midibase::show_clock("JACK", tick);
+#endif
+
     send_byte(EVENT_MIDI_CLOCK, tick);
 }
 
@@ -963,7 +965,7 @@ midi_jack::api_clock (midipulse tick)
  *      Provides one of the following values (though any byte can be sent):
  *
  *          -   EVENT_MIDI_SONG_POS
- *          -   EVENT_MIDI_CLOCK. The tick value is needed if...
+ *          -   EVENT_MIDI_CLOCK. The tick value is not needed.
  *          -   EVENT_MIDI_START.  The tick value is not needed.
  *          -   EVENT_MIDI_CONTINUE.  The tick value is needed if...
  *          -   EVENT_MIDI_STOP.  The tick value is not needed.
@@ -980,12 +982,10 @@ midi_jack::send_byte (midibyte evbyte, midipulse tick)
     midi_message message;
     message.push(evbyte);
     int nbytes = 1;
-
     if (is_null_midipulse(tick))
     {
         // TODO
     }
-
     if (m_jack_data.valid_buffer())
     {
         int count1 = jack_ringbuffer_write
@@ -1003,11 +1003,19 @@ midi_jack::send_byte (midibyte evbyte, midipulse tick)
     }
 }
 
+/**
+ *
+ */
+
 void
 midi_jack::api_set_ppqn (int /*ppqn*/)
 {
     // No code needed yet
 }
+
+/**
+ *
+ */
 
 void
 midi_jack::api_set_beats_per_minute (midibpm /*bpm*/)
@@ -1646,7 +1654,7 @@ midi_out_jack::send_message (const midi_message & message)
     );
     int count2 = jack_ringbuffer_write
     (
-        m_jack_data.m_jack_buffsize, (char *) &nbytes, sizeof(nbytes)
+        m_jack_data.m_jack_buffsize, (char *) &nbytes, sizeof nbytes
     );
     apiprint("send_message", "jack");
     return (count1 > 0) && (count2 > 0);

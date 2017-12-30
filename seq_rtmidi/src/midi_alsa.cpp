@@ -769,9 +769,17 @@ midi_alsa::api_stop ()
  *      Provides the starting tick, unused in the ALSA implementation.
  */
 
+
 void
-midi_alsa::api_clock (midipulse /*tick*/)
+midi_alsa::api_clock (midipulse tick)
 {
+    if (tick >= 0)
+    {
+#ifdef PLATFORM_DEBUG_TMI
+        midibase::show_clock("ALSA", tick);
+#endif
+    }
+
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);                          /* clear event          */
     ev.type = SND_SEQ_EVENT_CLOCK;

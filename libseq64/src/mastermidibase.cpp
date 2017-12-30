@@ -178,7 +178,7 @@ mastermidibase::stop ()
 
 /**
  *  Generates the MIDI clock for each of the output busses.  Also calls the
- *  api_clock() function, which does nothing for the original ALSA
+ *  api_clock() function, which does nothing for the <i> original </i> ALSA
  *  implementation and the PortMidi implementation.
  *
  * \threadsafe
@@ -191,7 +191,11 @@ void
 mastermidibase::emit_clock (midipulse tick)
 {
     automutex locker(m_mutex);
-    api_clock();
+
+    /*
+     * Doesn't do anything: api_clock();
+     */
+
     m_outbus_array.clock(tick);
 }
 

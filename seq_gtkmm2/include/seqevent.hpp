@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-17
+ * \updates       2017-12-30
  * \license       GNU GPLv2 or above
  *
  *  The event pane is the thin gridded drawing-area below the seqedit's piano
@@ -40,9 +40,7 @@
 
 #include "globals.h"
 #include "gui_drawingarea_gtk2.hpp"
-// #include "fruityseq.hpp"
 #include "midibyte.hpp"                 /* seq64::midibyte, etc.        */
-// #include "seq24seq.hpp"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

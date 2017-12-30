@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2017-09-17
+ * \updates       2017-12-30
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -39,7 +39,6 @@
 #include "fruityseq.hpp"
 #include "gui_key_tests.hpp"            /* seq64::is_no_modifier() etc. */
 #include "perform.hpp"
-// #include "seqevent.hpp"
 #include "sequence.hpp"                 /* for full usage of seqevent       */
 
 /*

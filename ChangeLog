@@ -1,5 +1,29 @@
+2017-12-31  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, ROADMAP, VERSION, configure.ac: Version 0.94.1 pending.
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/midibase.cpp,
+	seq_alsamidi/src/midibus.cpp, seq_portmidi/src/midibus.cpp,
+	seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/rtmidi_types.cpp: Minor cleanup while
+	trouble-shooting CLOCK generation.
+
+2017-12-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, TODO, configure, configure.ac,
+	libseq64/include/jack_assistant.hpp, libseq64/include/midibase.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/mastermidibase.cpp, libseq64/src/midibase.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/seqevent.hpp, seq_gtkmm2/src/fruityseq.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_rtmidi/src/midi_alsa.cpp, seq_rtmidi/src/midi_jack.cpp: Fixed
+	issue #123 in part, JACK Transport bug.
+
 2017-12-26  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* ChangeLog, README: Version 0.94.0 merged, many fixes and features.
 	* INSTALL, TODO, bootstrap, configure.ac,
 	libseq64/include/midibus.hpp: Fixed issue #122, failing alsamidi
 	build.

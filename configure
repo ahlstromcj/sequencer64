@@ -4877,7 +4877,7 @@ $as_echo "#define CLIENT_NAME \"seq64\"" >>confdefs.h
 
 
 
-VERSION="0.94.0"
+VERSION="0.94.1"
 cat >>confdefs.h <<_ACEOF
 #define VERSION "$VERSION"
 _ACEOF

@@ -723,7 +723,8 @@ midibase::stop ()
 }
 
 /**
- *  Generates the MIDI clock, starting at the given tick value.
+ *  Generates the MIDI clock, starting at the given tick value.  The number of
+ *  ticks needed is calculated.
  *
  * \threadsafe
  *
@@ -738,15 +739,21 @@ midibase::clock (midipulse tick)
     if (m_clock_type != e_clock_off)
     {
         bool done = m_lasttick >= tick;
-        int ct = clock_ticks_from_ppqn(m_ppqn);         /* ppqn / 24    */
+        int ct = clock_ticks_from_ppqn(m_ppqn);         /* ppqn / 24        */
         while (! done)
         {
             ++m_lasttick;
             done = m_lasttick >= tick;
-            if ((m_lasttick % ct) == 0)                 /* tick time?           */
+            if ((m_lasttick % ct) == 0)                 /* tick time yet?   */
+            {
                 api_clock(tick);
+
+                /*
+                 * TMI: printf("midibase::clock(%ld)\n", tick);
+                 */
+            }
         }
-        api_flush();            /* and send out */
+        api_flush();                                    /* and send it out  */
     }
 }
 

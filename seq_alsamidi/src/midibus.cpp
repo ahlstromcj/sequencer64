@@ -682,20 +682,25 @@ midibus::api_stop ()
 }
 
 /**
- *  Generates the MIDI clock, starting at the given tick value.
+ *  Generates the MIDI clock, starting at the given tick value.  Note that we
+ *  set the event tag to 127 so that Sequencer64 sequences/patterns won't
+ *  remove it.
  *
  * \threadsafe
  *
  * \param tick
- *      Provides the starting tick, unused in the ASLA implementation.
+ *      Provides the starting tick, unused in the ALSA implementation.
  */
 
 void
-midibus::api_clock (midipulse /* tick */)
+midibus::api_clock (midipulse tick)
 {
-    /*
-     * Set the event tag to 127 so the sequences won't remove it.
-     */
+    if (tick >= 0)
+    {
+#ifdef PLATFORM_DEBUG_TMI
+        midibase::show_clock("midibus ALSA", tick);
+#endif
+    }
 
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);                          /* clear event          */

@@ -254,7 +254,7 @@ void
 midibus::api_clock (midipulse /* tick */)
 {
     PmEvent event;
-    event.timestamp = 0;
+    event.timestamp = 0;                        // WHY NOT use 'tick' here???
     event.message = Pm_Message(EVENT_MIDI_CLOCK, 0, 0);
     Pm_Write(m_pms, &event, 1);
 }
@@ -266,3 +266,4 @@ midibus::api_clock (midipulse /* tick */)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

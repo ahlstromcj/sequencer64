@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-12-01
- * \updates       2017-02-20
+ * \updates       2017-12-31
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Provides some basic types for the (heavily-factored) rtmidi library, very
@@ -36,6 +36,34 @@ midi_message::midi_message ()
     m_timestamp (0.0)
 {
     // Empty body
+}
+
+/**
+ *  Shows the bytes in a message, for trouble-shooting.
+ */
+
+void
+midi_message::show () const
+{
+    if (m_bytes.empty())
+    {
+        fprintf(stderr, "midi_message: empty\n");
+        fflush(stderr);
+    }
+    else
+    {
+        fprintf(stderr, "midi_message:\n");
+        for
+        (
+            container::const_iterator ci = m_bytes.begin();
+            ci != m_bytes.end(); ++ci
+        )
+        {
+            fprintf(stderr, " 0x%2x", int(*ci));
+        }
+        fprintf(stderr, "\n");
+        fflush(stderr);
+    }
 }
 
 /*

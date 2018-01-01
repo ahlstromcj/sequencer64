@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2017-12-10
+ * \updates       2017-12-31
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -809,8 +809,7 @@ jack_assistant::init ()
 
         bool master_is_set = false;         /* flag to handle trickery  */
         bool cond = rc().with_jack_master_cond();
-        if (rc().with_jack_master() || cond)
-/////   if (rc().with_jack_master())        /* OR with 'cond' removed   */
+        if (rc().with_jack_master())        /* OR with 'cond' removed   */
         {
             /*
              * 'cond' is true if we want to fail if there is already a JACK
@@ -1098,7 +1097,7 @@ jack_assistant::position (bool songmode, midipulse tick)
             tick *= 10;
     }
     else
-        tick *= 10;                             /* tick = 0             */
+        tick = 0;
 
     int ticks_per_beat = m_ppqn * 10;
     int beats_per_minute = parent().get_beats_per_minute();
@@ -1125,9 +1124,11 @@ jack_assistant::position (bool songmode, midipulse tick)
 
 }
 
-#if 0       ///////////////////////////////////////////////////////////
+#ifdef USE_JACK_ASSISTANT_SET_POSITION
 
 /**
+ *  This function is currently unused, and has been macroed out.
+ *
  *  Provides the code that was effectively commented out in the
  *  perform::position_jack() function.  We might be able to use it in other
  *  functions.
@@ -1196,7 +1197,7 @@ jack_assistant::set_position (midipulse tick)
     }
 }
 
-#endif // 0       ///////////////////////////////////////////////////////////
+#endif  // USE_JACK_ASSISTANT_SET_POSITION
 
 /**
  *  A helper function for syncing up with JACK parameters.  Sequencer64 is not

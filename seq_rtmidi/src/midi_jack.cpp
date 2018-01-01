@@ -5,7 +5,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-11-10
+ * \updates       2017-12-31
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -826,9 +826,37 @@ midi_jack::api_play (event * e24, midibyte channel)
     printf("midi_jack::play()\n");
 #endif
 
-    int nbytes = message.count();               /* send_message(message) */
-    if (nbytes > 0 && m_jack_data.valid_buffer())
+    if (m_jack_data.valid_buffer())
     {
+        if (! send_message(message))
+        {
+            errprint("JACK api_play failed");
+        }
+    }
+}
+
+/**
+ *  Sends a JACK MIDI output message.  It writes the full message size and
+ *  the message itself to the JACK ring buffer.
+ *
+ * \param message
+ *      Provides the MIDI message object, which contains the bytes to send.
+ *
+ * \return
+ *      Returns true if the buffer message and buffer size seem to be written
+ *      correctly.
+ */
+
+bool
+midi_jack::send_message (const midi_message & message)
+{
+    int nbytes = message.count();
+    bool result = nbytes > 0;
+    if (result)
+    {
+#ifdef PLATFORM_DEBUG_TMI
+        message.show();
+#endif
         int count1 = jack_ringbuffer_write
         (
             m_jack_data.m_jack_buffmessage, message.array(), message.count()
@@ -837,11 +865,10 @@ midi_jack::api_play (event * e24, midibyte channel)
         (
             m_jack_data.m_jack_buffsize, (char *) &nbytes, sizeof nbytes
         );
-        if ((count1 <= 0) || (count2 <= 0))
-        {
-            errprint("JACK api_play failed");
-        }
+        apiprint("send_message", "jack");
+        result = (count1 > 0) && (count2 > 0);
     }
+    return result;
 }
 
 /**
@@ -897,7 +924,7 @@ midi_jack::api_continue_from (midipulse tick, midipulse /*beats*/)
      */
 
     send_byte(EVENT_MIDI_CONTINUE);
-    api_flush();
+    api_flush();                                /* currently does nothing   */
     send_byte(EVENT_MIDI_SONG_POS);
     apiprint("api_continue_from", "jack");
 }
@@ -940,11 +967,13 @@ midi_jack::api_stop ()
 void
 midi_jack::api_clock (midipulse tick)
 {
+    if (tick >= 0)
+    {
 #ifdef PLATFORM_DEBUG_TMI
-    midibase::show_clock("JACK", tick);
+        midibase::show_clock("JACK", tick);
 #endif
-
-    send_byte(EVENT_MIDI_CLOCK, tick);
+    }
+    send_byte(EVENT_MIDI_CLOCK);
 }
 
 /**
@@ -969,42 +998,33 @@ midi_jack::api_clock (midipulse tick)
  *          -   EVENT_MIDI_START.  The tick value is not needed.
  *          -   EVENT_MIDI_CONTINUE.  The tick value is needed if...
  *          -   EVENT_MIDI_STOP.  The tick value is not needed.
- *
- * \param tick
- *      Provides the tick value, if applicable.  We will eventually implement
- *      this, along with an "impossible" default value that means "ignore the
- *      tick".
  */
 
 void
-midi_jack::send_byte (midibyte evbyte, midipulse tick)
+midi_jack::send_byte (midibyte evbyte)
 {
-    midi_message message;
-    message.push(evbyte);
-    int nbytes = 1;
-    if (is_null_midipulse(tick))
+    midibyte b[2];
+    int n = 1;
+    b[0] = evbyte;
+    b[1] = 0;
+    int count1 = jack_ringbuffer_write
+    (
+        m_jack_data.m_jack_buffmessage, (char *)(b), n
+    );
+    int count2 = jack_ringbuffer_write
+    (
+        m_jack_data.m_jack_buffsize, (char *) &n, sizeof n
+    );
+    apiprint("send_byte", "jack");
+    bool ok = (count1 > 0) && (count2 > 0);
+    if (! ok)
     {
-        // TODO
-    }
-    if (m_jack_data.valid_buffer())
-    {
-        int count1 = jack_ringbuffer_write
-        (
-            m_jack_data.m_jack_buffmessage, message.array(), 1
-        );
-        int count2 = jack_ringbuffer_write
-        (
-            m_jack_data.m_jack_buffsize, (char *) &nbytes, sizeof nbytes
-        );
-        if ((count1 <= 0) || (count2 <= 0))
-        {
-            errprint("JACK send_byte() failed");
-        }
+        errprint("JACK send_byte() failed");
     }
 }
 
 /**
- *
+ *  Empty body for setting PPQN.
  */
 
 void
@@ -1014,7 +1034,7 @@ midi_jack::api_set_ppqn (int /*ppqn*/)
 }
 
 /**
- *
+ *  Empty body for setting BPM.
  */
 
 void
@@ -1630,34 +1650,6 @@ midi_out_jack::midi_out_jack (midibus & parentbus, midi_info & masterinfo)
 midi_out_jack::~midi_out_jack ()
 {
     // No code yet
-}
-
-/**
- *  Sends a JACK MIDI output message.  It writes the full message size and
- *  the message itself to the JACK ring buffer.
- *
- * \param message
- *      Provides the MIDI message object, which contains the bytes to send.
- *
- * \return
- *      Returns true if the buffer message and buffer size seem to be written
- *      correctly.
- */
-
-bool
-midi_out_jack::send_message (const midi_message & message)
-{
-    int nbytes = message.count();
-    int count1 = jack_ringbuffer_write
-    (
-        m_jack_data.m_jack_buffmessage, message.array(), message.count()
-    );
-    int count2 = jack_ringbuffer_write
-    (
-        m_jack_data.m_jack_buffsize, (char *) &nbytes, sizeof nbytes
-    );
-    apiprint("send_message", "jack");
-    return (count1 > 0) && (count2 > 0);
 }
 
 }           // namespace seq64

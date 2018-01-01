@@ -8,7 +8,7 @@
  *
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-20
- * \updates       2017-09-01
+ * \updates       2017-12-31
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  The lack of hiding of these types within a class is a little to be
@@ -206,6 +206,8 @@ public:
     {
         return m_bytes.size() > 0 ? event::is_sysex_msg(m_bytes[0]) : false ;
     }
+
+    void show () const;
 
 };          // class midi_message
 

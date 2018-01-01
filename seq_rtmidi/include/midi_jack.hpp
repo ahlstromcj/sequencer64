@@ -223,7 +223,8 @@ protected:
 
 private:
 
-    void send_byte (midibyte evbyte, midipulse tick = SEQ64_NULL_MIDIPULSE);
+    void send_byte (midibyte evbyte);
+    bool send_message (const midi_message & message);
     bool set_virtual_name (int portid, const std::string & portname);
 
 };          // class midi_jack
@@ -273,7 +274,7 @@ public:
 
     midi_out_jack (midibus & parentbus, midi_info & masterinfo);
     virtual ~midi_out_jack ();
-    virtual bool send_message (const midi_message & message);
+    /// virtual bool send_message (const midi_message & message);
 
 private:
 

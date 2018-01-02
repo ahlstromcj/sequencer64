@@ -1,6 +1,6 @@
 README for Sequencer64 0.94.1 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2017-12-31
+2015-09-10 to 2018-01-02
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  See the screenshot.  It is an old friend,
@@ -28,6 +28,10 @@ GUI-less native JACK support: Seq64rtmidi/seq64cli
 With the big version jump from 0.9 to 0.90, the install process has changed.
 See the INSTALL file.
 
+    -   Version 0.94.2:
+        -   Fixed issue #124, Stop button not resetting the progress bar.
+        -   Improved the panic function, and fixed an issue with it when JACK
+            native mode is in force.
     -   Version 0.94.1:
         -   Fixed a side-effect of code that kept resetting the tick position
             to 0, preventing progress if JACK transport was active.

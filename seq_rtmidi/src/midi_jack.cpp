@@ -292,11 +292,11 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
 }
 
 /**
- *  Defines the JACK process input callback.  It is the JACK process callback
- *  for a MIDI input port (a midi_in_jack object associated with, for example,
- *  "system:midi_playback_1", representing, for example, a Korg nanoKEY2 to
- *  which we can send information), also known as a "Writable Client" by
- *  qjackctl.  Here's how it works:
+ *  Defines the JACK process output callback.  It is the JACK process callback
+ *  for a MIDI output port (a midi_out_jack object associated with, for
+ *  example, "system:midi_playback_1", representing, for example, a Korg
+ *  nanoKEY2 to which we can send information), also known as a "Writable
+ *  Client" by qjackctl.  Here's how it works:
  *
  *      -#  Get the JACK port buffer, for our local jack port.  Clear it.
  *      -#  Loop while the number of bytes available for reading [via
@@ -1003,23 +1003,15 @@ midi_jack::api_clock (midipulse tick)
 void
 midi_jack::send_byte (midibyte evbyte)
 {
-    midibyte b[2];
-    int n = 1;
-    b[0] = evbyte;
-    b[1] = 0;
-    int count1 = jack_ringbuffer_write
-    (
-        m_jack_data.m_jack_buffmessage, (char *)(b), n
-    );
-    int count2 = jack_ringbuffer_write
-    (
-        m_jack_data.m_jack_buffsize, (char *) &n, sizeof n
-    );
-    apiprint("send_byte", "jack");
-    bool ok = (count1 > 0) && (count2 > 0);
-    if (! ok)
+    midi_message message;
+    message.push(evbyte);
+    if (m_jack_data.valid_buffer())
     {
-        errprint("JACK send_byte() failed");
+        bool ok = send_message(message);
+        if (! ok)
+        {
+            errprint("JACK send_byte() failed");
+        }
     }
 }
 

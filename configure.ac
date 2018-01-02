@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2017-12-31
+dnl \update        2018-01-02
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -26,7 +26,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.94$)dnl
-AC_INIT(Sequencer64, [0.94.1], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.94.2], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl See AC_CONFIG_SRCDIR
@@ -148,7 +148,7 @@ AC_SUBST(PACKAGE)
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
 
-VERSION="0.94.1"
+VERSION="0.94.2"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -749,8 +749,8 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2017-12-31"
-#define VERSION "0.94.1"
+#define VERSION_DATE_SHORT "2018-01-02"
+#define VERSION "0.94.2"
 
 )
 
@@ -826,7 +826,6 @@ dnl So we put that requirement back, and had to fix some issues with
 dnl conditional compilation.
 dnl
 dnl 2017-08-25:  Removed the already-configured (above) -Wl,--as-needed option.
-dnl
 dnl 2017-09-14:  Replaced c++11 with c++14 to support glibmm-2.24 update.
 
 CFLAGS="$CFLAGS $COMMONFLAGS"

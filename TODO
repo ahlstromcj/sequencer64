@@ -1,11 +1,18 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2017-12-22
+2016-12-03 to 2018-01-02
 
 Debian packaging:
 
     *   Need a Sequencer64-debian project to hold packages for convenience.
         Still need to get a static package to work.
+
+MIDI Format Checks:
+
+    -   Rosegarden
+    -   Ardour
+    -   QMidiArp?
+    -   Mido?
 
 Windows:
 

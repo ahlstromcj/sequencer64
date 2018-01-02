@@ -4938,9 +4938,10 @@ sequence::off_playing_notes ()
         while (m_playing_notes[x] > 0)
         {
             e.set_status(EVENT_NOTE_OFF);
-            e.set_data(x, 0);
+            e.set_data(x, 127);                         /* or is 0 better?  */
             m_masterbus->play(m_bus, &e, m_midi_channel);
-            m_playing_notes[x]--;
+            if (m_playing_notes[x] > 0)
+                m_playing_notes[x]--;
         }
     }
     m_masterbus->flush();

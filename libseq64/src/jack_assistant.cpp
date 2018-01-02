@@ -105,7 +105,7 @@
 #include "settings.hpp"                 /* "rc" and "user" settings     */
 
 #undef  SEQ64_USE_DEBUG_OUTPUT          /* define for experiments only  */
-#define USE_JACK_BBT_OFFSET             /* another EXPERIMENT           */
+#define USE_JACK_BBT_OFFSET             /* another experiment           */
 
 #ifdef SEQ64_JACK_SUPPORT
 
@@ -210,7 +210,7 @@ jack_dummy_callback (jack_nframes_t /* nframes */, void * arg)
  *
  *  The code enabled via USE_JACK_BBT_OFFSET sets the JACK
  *  position fieldl bbt_offset to 0.  It doesn't seem to have any effect,
- *  though it can be send when calling show_position() in the
+ *  though it can be seen when calling show_position() in the
  *  jack_transport_callback() function.
  *
  * Stazed:
@@ -1002,13 +1002,16 @@ jack_assistant::set_beats_per_minute (midibpm bpminute)
     if (bpminute != m_beats_per_minute)
     {
         m_beats_per_minute = bpminute;
-        (void) jack_transport_query(m_jack_client, &m_jack_pos);
-        m_jack_pos.beats_per_minute = bpminute;
-        int jackcode = jack_transport_reposition(m_jack_client, &m_jack_pos);
-        apiprint("jack_transport_reposition", "set bpm");
-        if (jackcode != 0)
+        if (not_nullptr(m_jack_client))
         {
-            errprint("jack_transport_reposition(): bad position structure");
+            (void) jack_transport_query(m_jack_client, &m_jack_pos);
+            m_jack_pos.beats_per_minute = bpminute;
+            int jackcode = jack_transport_reposition(m_jack_client, &m_jack_pos);
+            apiprint("jack_transport_reposition", "set bpm");
+            if (jackcode != 0)
+            {
+                errprint("jack_transport_reposition(): bad position structure");
+            }
         }
     }
 }

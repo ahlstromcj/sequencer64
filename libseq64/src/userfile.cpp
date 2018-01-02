@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-21
+ * \updates       2018-01-02
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -48,7 +48,7 @@
 namespace seq64
 {
 
-class perform;          // temporary forward reference
+//////// class perform;          // temporary forward reference
 
 /**
  *  Principal constructor.
@@ -590,9 +590,9 @@ userfile::write (const perform & /* a_perf */ )
         ;
 
     file << "#\n"
-        "# The comments section lets one document this file.  Lines starting\n"
+        "# The [comments] section lets one document this file.  Lines starting\n"
         "# with '#' and '[' are ignored.  Blank lines are ignored.  To show a\n"
-        "# blank line, add a space character to it.\n"
+        "# blank line, add a space character to the line.\n"
         ;
 
     /*
@@ -616,6 +616,8 @@ userfile::write (const perform & /* a_perf */ )
         "# -1 (SEQ64_GM_INSTRUMENT_FLAG) and are GM (General MIDI).\n"
         "# These replacement MIDI buss labels are shown in MIDI Clocks,\n"
         "# MIDI Inputs, and in the Pattern Editor buss drop-down.\n"
+        "#\n"
+        "# To temporarily disable the entries, set the count values to 0.\n"
         ;
 
     /*

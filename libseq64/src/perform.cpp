@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2017-12-30
+ * \updates       2018-01-02
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -2498,10 +2498,9 @@ perform::set_auto_screenset (bool flag)
 }
 
 /**
- *  EXPERIMENTAL.  Doesn't quite work.
- *
- *  Queues all of the sequences in the given screen-set.  Doesn't work, even
- *  after a lot of hacking on it, so disabled for now.
+ *  EXPERIMENTAL.  Doesn't quite work.  Queues all of the sequences in the
+ *  given screen-set.  Doesn't work, even after a lot of hacking on it, so
+ *  disabled for now.
  *
  * \param ss0
  *      The original screenset, will be unqueued.
@@ -2979,7 +2978,7 @@ perform::stop_playing ()
 {
     stop_jack();
     stop();
-    m_start_from_perfedit = false;
+    m_dont_reset_ticks = m_start_from_perfedit = false;
 }
 
 /**
@@ -3225,15 +3224,19 @@ void
 perform::panic ()
 {
     stop_playing();
+    inner_stop();                               /* EXPERIMENT           */
     for (int s = 0; s < m_sequence_high; ++s)   /* a modest speed-up    */
     {
-        if (is_active(s))
-            m_seqs[s]->off_playing_notes();
+        sequence * sptr = get_sequence(s);
+        if (not_nullptr(sptr))
+        {
+            sptr->off_playing_notes();
+        }
     }
     if (not_nullptr(m_master_bus))
-    {
         m_master_bus->panic();                  /* flush the MIDI buss  */
-    }
+
+    set_tick(0);
 }
 
 /**
@@ -3599,7 +3602,6 @@ bool
 perform::init_jack_transport ()
 {
 #ifdef SEQ64_JACK_SUPPORT
-    // return m_outputing ? false : m_jack_asst.init();
     return m_jack_asst.init();
 #else
     return false;

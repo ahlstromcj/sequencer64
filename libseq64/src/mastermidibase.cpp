@@ -267,8 +267,8 @@ mastermidibase::panic ()
         {
             for (int note = 0; note < SEQ64_MIDI_COUNT_MAX; ++note)
             {
-                e.set_data(note, SEQ64_MAX_NOTE_ON_VELOCITY);
-                play (bus, &e, channel);
+                e.set_data(note, SEQ64_MAX_NOTE_ON_VELOCITY);   /* 0 better? */
+                play(bus, &e, channel);
             }
         }
     }

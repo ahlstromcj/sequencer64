@@ -60,7 +60,7 @@
  * we're doing wrong. Do not enable it unless you are willing to test it.
  */
 
-#undef  USE_SEQ24_0_9_3_CODE            /* DEFINE ONLY FOR EXPERIMENTING!   */
+#undef  USE_SEQ24_0_9_3_CODE            /* define only for experimenting!   */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

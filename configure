@@ -16592,7 +16592,7 @@ sequencer64libdir="${libdir}/sequencer64-${SEQ64_API_VERSION}"
 sequencer64docdir="${datadir}/doc/sequencer64-${SEQ64_API_VERSION}"
 
 
-sequencer64datadir="${datadir}/sequencer64-${MIDICVT_API_VERSION}"
+sequencer64datadir="${datadir}/sequencer64-${SEQ64_API_VERSION}"
 
 
 sequencer64doxygendir="${datadir}/doc/sequencer64-${SEQ64_API_VERSION}"
@@ -20199,7 +20199,7 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile m4/Makefile libseq64/Makefile libseq64/include/Makefile libseq64/src/Makefile seq_alsamidi/Makefile seq_alsamidi/include/Makefile seq_alsamidi/src/Makefile seq_gtkmm2/Makefile seq_gtkmm2/include/Makefile seq_gtkmm2/src/Makefile seq_portmidi/Makefile seq_portmidi/include/Makefile seq_portmidi/src/Makefile seq_rtmidi/Makefile seq_rtmidi/include/Makefile seq_rtmidi/src/Makefile resources/pixmaps/Makefile Sequencer64/Makefile Seq64portmidi/Makefile Seq64rtmidi/Makefile Seq64cli/Makefile Midiclocker64/Makefile man/Makefile"
+ac_config_files="$ac_config_files Makefile m4/Makefile libseq64/Makefile libseq64/include/Makefile libseq64/src/Makefile seq_alsamidi/Makefile seq_alsamidi/include/Makefile seq_alsamidi/src/Makefile seq_gtkmm2/Makefile seq_gtkmm2/include/Makefile seq_gtkmm2/src/Makefile seq_portmidi/Makefile seq_portmidi/include/Makefile seq_portmidi/src/Makefile seq_rtmidi/Makefile seq_rtmidi/include/Makefile seq_rtmidi/src/Makefile resources/pixmaps/Makefile Sequencer64/Makefile Seq64portmidi/Makefile Seq64rtmidi/Makefile Seq64cli/Makefile Midiclocker64/Makefile man/Makefile data/Makefile"
 
 
 
@@ -21380,6 +21380,7 @@ do
     "Seq64cli/Makefile") CONFIG_FILES="$CONFIG_FILES Seq64cli/Makefile" ;;
     "Midiclocker64/Makefile") CONFIG_FILES="$CONFIG_FILES Midiclocker64/Makefile" ;;
     "man/Makefile") CONFIG_FILES="$CONFIG_FILES man/Makefile" ;;
+    "data/Makefile") CONFIG_FILES="$CONFIG_FILES data/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-01-02
+dnl \update        2018-01-03
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -298,7 +298,7 @@ AC_SUBST(sequencer64libdir)
 sequencer64docdir="${datadir}/doc/sequencer64-${SEQ64_API_VERSION}"
 AC_SUBST(sequencer64docdir)
 
-sequencer64datadir="${datadir}/sequencer64-${MIDICVT_API_VERSION}"
+sequencer64datadir="${datadir}/sequencer64-${SEQ64_API_VERSION}"
 AC_SUBST(sequencer64datadir)
 
 sequencer64doxygendir="${datadir}/doc/sequencer64-${SEQ64_API_VERSION}"
@@ -749,7 +749,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-01-02"
+#define VERSION_DATE_SHORT "2018-01-03"
 #define VERSION "0.94.2"
 
 )
@@ -901,6 +901,7 @@ AC_CONFIG_FILES([
  Seq64cli/Makefile
  Midiclocker64/Makefile
  man/Makefile
+ data/Makefile
 ])
 
 dnl See AC_CONFIG_COMMANDS

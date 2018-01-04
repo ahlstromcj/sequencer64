@@ -6,7 +6,7 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2017-11-12
+# \updates     2018-01-02
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -144,23 +144,23 @@ libtool: $(LIBTOOL_DEPS)
 #-----------------------------------------------------------------------------
 
 if BUILD_ALSAMIDI
-SUBDIRS = resources/pixmaps libseq64 seq_alsamidi seq_gtkmm2 Sequencer64 man
+SUBDIRS = resources/pixmaps libseq64 seq_alsamidi seq_gtkmm2 Sequencer64 data man
 endif
 
 if BUILD_PORTMIDI
-SUBDIRS = resources/pixmaps libseq64 seq_portmidi seq_gtkmm2 Seq64portmidi man
+SUBDIRS = resources/pixmaps libseq64 seq_portmidi seq_gtkmm2 Seq64portmidi data man
 endif
 
 if BUILD_RTMIDI
-SUBDIRS = resources/pixmaps libseq64 seq_rtmidi seq_gtkmm2 Seq64rtmidi Midiclocker64 man
+SUBDIRS = resources/pixmaps libseq64 seq_rtmidi seq_gtkmm2 Seq64rtmidi Midiclocker64 data man
 endif
 
 if BUILD_RTCLI
-SUBDIRS = resources/pixmaps libseq64 seq_rtmidi Seq64cli Midiclocker64 man
+SUBDIRS = resources/pixmaps libseq64 seq_rtmidi Seq64cli Midiclocker64 data man
 endif
 
 if BUILD_WINDOWS
-SUBDIRS = resources/pixmaps libseq64 seq_portmidi Seq64cli man
+SUBDIRS = resources/pixmaps libseq64 seq_portmidi Seq64cli data man
 endif
 
 #*****************************************************************************
@@ -189,6 +189,7 @@ show:
 	@echo "datarootdir               = $(datarootdir)"
 	@echo "libdir                    = $(libdir)"
 	@echo "sequencer64libdir         = $(sequencer64libdir)"
+	@echo "sequencer64datadir        = $(sequencer64datadir)"
 	@echo "sequencer64docdir         = $(sequencer64docdir)"
 	@echo "sequencer64doxygendir     = $(sequencer64doxygendir)"
 	@echo "sequencer64includedir     = $(sequencer64includedir)"

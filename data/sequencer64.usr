@@ -55,7 +55,7 @@ into Yoshimi.
 
 [user-midi-bus-definitions]
 
-8     # number of user-defined MIDI busses
+0     # number of user-defined MIDI busses, 8, but changed to 0 to DISABLE
 
 [user-midi-bus-0]
 
@@ -127,7 +127,7 @@ Yoshimi Port 0
 
 [user-instrument-definitions]
 
-3     # instrument list count
+0     # instrument list count, set to 3, but zeroed to DISABLE it
 
 [user-instrument-0]
 

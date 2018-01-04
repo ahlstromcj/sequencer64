@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2017-12-20
+ * \updates       2018-01-03
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -238,14 +238,31 @@ midibase::set_name
     char name[128];
     if (is_virtual_port())
     {
-        snprintf
-        (
-            name, sizeof name, "[%d] %d:%d %s:%s",
-            get_bus_index(), get_bus_id(), get_port_id(),
-            appname.c_str(), portname.c_str()
-        );
-        bus_name(appname);
-        port_name(portname);
+        /*
+         * See banner.  Let's also assign any "usr" names to the virtual ports
+         * as well.
+         */
+
+        std::string bname = usr().bus_name(m_bus_index);
+        if (is_output_port() && ! bname.empty())
+        {
+            snprintf
+            (
+                name, sizeof name, "%s [%s]", bname.c_str(), portname.c_str()
+            );
+            bus_name(bname);
+        }
+        else
+        {
+            snprintf
+            (
+                name, sizeof name, "[%d] %d:%d %s:%s",
+                get_bus_index(), get_bus_id(), get_port_id(),
+                appname.c_str(), portname.c_str()
+            );
+            bus_name(appname);
+            port_name(portname);
+        }
     }
     else
     {

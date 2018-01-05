@@ -3,6 +3,7 @@
  *
  *    A class for obtaining ALSA information.
  *
+ * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-14
  * \updates       2017-08-22

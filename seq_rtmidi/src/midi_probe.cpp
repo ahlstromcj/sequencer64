@@ -4,6 +4,7 @@
  *  Functions to check MIDI inputs and outputs, based on the RtMidi test
  *  programs.
  *
+ * \library       sequencer64 application
  * \author        Gary P. Scavone, 2003-2012; refactoring by Chris Ahlstrom
  * \date          2016-11-19
  * \updates       2017-01-14

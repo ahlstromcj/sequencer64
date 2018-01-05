@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2017-08-15
+ * \updates       2018-01-04
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -671,6 +671,14 @@ void
 midi_container::fill (int track, const perform & p)
 {
     event_list evl = m_sequence.events();           /* used below */
+
+    /*
+     * EXPERIMENTAL: We have noticed differences in saving files in sets=4x8
+     * versus sets=8x8, and this sorting gets rid of all of the differences
+     * except for the last, multi-line SeqSpec.
+     */
+
+    evl.sort();
     fill_seq_number(track);
     fill_seq_name(m_sequence.name());
 

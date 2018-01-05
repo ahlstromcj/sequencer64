@@ -6,6 +6,7 @@
  *
  *      A class for holding the current status of the MIDI system on the host.
  *
+ * \library       sequencer64 application
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-12-05
  * \updates       2017-03-21

@@ -3,6 +3,7 @@
  *
  *    A class for obtaining JACK port information.
  *
+ * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-01-01
  * \updates       2017-02-23

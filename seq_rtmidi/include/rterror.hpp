@@ -6,6 +6,7 @@
  *
  *  An abstract base class for MIDI error handling.
  *
+ * \library       sequencer64 application
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
  * \updates       2016-11-19

@@ -1,15 +1,16 @@
 /**
  * \file          midi_info.cpp
  *
- *    A class for obrtaining ALSA information
+ *    A class for obrtaining system MIDI information
  *
+ * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-12-06
  * \updates       2017-03-21
  * \license       See the rtexmidi.lic file.  Too big.
  *
- *  This class is meant to collect a whole bunch of ALSA information
- *  about client/buss number, port numbers, and port names, and hold them
+ *  This class is meant to collect a whole bunch of system MIDI information
+ *  about client/buss number, port numbers, and port names, and hold it
  *  for usage when creating midibus objects and midi_api objects.
  */
 

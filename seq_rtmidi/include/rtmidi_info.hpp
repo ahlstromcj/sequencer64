@@ -6,7 +6,8 @@
  *
  *  A base class for enumerating MIDI clients and ports.
  *
- * \author        refactoring by Chris Ahlstrom
+ * \library       sequencer64 application
+ * \author        Refactoring by Chris Ahlstrom
  * \date          2016-12-08
  * \updates       2017-03-21
  * \license       See the rtexmidi.lic file.  Too big for a header file.

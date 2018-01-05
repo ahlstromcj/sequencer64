@@ -3,15 +3,14 @@
  *
  *    A class for managing various MIDI APIs.
  *
+ * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2017-06-11
+ * \updates       2018-01-05
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
- *  An abstract base class for realtime MIDI input/output.
- *
- *  This class implements some common functionality enumerating MIDI clients
- *  and ports.
+ *  An abstract base class for realtime MIDI input/output.  This class
+ *  implements some common functionality enumerating MIDI clients and ports.
  *
  */
 
@@ -120,7 +119,7 @@ rtmidi_info::rtmidi_info
                 }
             }
         }
-        errprintfunc("no compiled support for specified API");
+        errprintfunc("no system support for specified API");
     }
 
     std::vector<rtmidi_api> apis;

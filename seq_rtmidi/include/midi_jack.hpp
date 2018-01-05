@@ -6,6 +6,7 @@
  *
  *    A class for realtime MIDI input/output via JACK.
  *
+ * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
  * \updates       2017-08-22

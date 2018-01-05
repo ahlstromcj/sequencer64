@@ -3,13 +3,16 @@
  *
  *    A class for a generic MIDI API.
  *
+ * \library       sequencer64 application
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
  * \updates       2017-02-16
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
- *  In this refactoring...
- *
+ *  In this refactoring, we had to adapt the existing Sequencer64
+ *  infrastructure to how the "RtMidi" library works.  We also had to
+ *  refactor the RtMidi library significantly to fit it within the working
+ *  mode of the Sequencer64 application and libraries.
  */
 
 #include "event.hpp"

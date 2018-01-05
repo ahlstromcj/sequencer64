@@ -6,6 +6,7 @@
  *
  *    Functions for testing and probing the MIDI support.
  *
+ * \library       sequencer64 application
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-19
  * \updates       2017-01-11

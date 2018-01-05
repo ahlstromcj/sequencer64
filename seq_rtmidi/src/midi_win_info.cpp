@@ -1,8 +1,9 @@
 /**
  * \file          midi_win_info.cpp
  *
- *    A class for obtaining JACK port information.
+ *    A class for obtaining Windows MM subsystem port information.
  *
+ * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-08-20
  * \updates       2017-08-21

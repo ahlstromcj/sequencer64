@@ -1,8 +1,9 @@
 /**
  * \file          rtmidi_types.cpp
  *
- *    Classes that use to be structs.
+ *    Classes that used to be structs.
  *
+ * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-12-01
  * \updates       2017-12-31

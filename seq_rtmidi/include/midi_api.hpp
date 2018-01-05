@@ -6,6 +6,7 @@
  *
  *  An abstract base class for realtime MIDI input/output.
  *
+ * \library       sequencer64 application
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
  * \updates       2017-03-21

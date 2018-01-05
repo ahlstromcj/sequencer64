@@ -6,6 +6,7 @@
  *
  *    A class for holding the current status of the JACK system on the host.
  *
+ * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-01-01
  * \updates       2017-05-08

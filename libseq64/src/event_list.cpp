@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2017-08-06
+ * \updates       2018-01-04
  * \license       GNU GPLv2 or above
  *
  *  This container now can indicate if certain Meta events (time-signaure or
@@ -327,7 +327,7 @@ void
 event_list::merge (event_list & el, bool presort)
 {
     if (presort)
-        el.m_events.sort();
+        el.sort();                          // el.m_events.sort();
 
     m_events.merge(el.m_events);
 }

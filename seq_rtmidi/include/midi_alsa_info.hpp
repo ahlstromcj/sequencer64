@@ -6,6 +6,7 @@
  *
  *    A class for holding the current status of the ALSA system on the host.
  *
+ * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-12-04
  * \updates       2017-03-21

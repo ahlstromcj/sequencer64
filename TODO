@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-01-03
+2016-12-03 to 2018-01-05
 
 Debian (and other) Packaging:
 
@@ -8,6 +8,8 @@ Debian (and other) Packaging:
     -   Still need to get a static package to work.
     -   Get some of the samples (MIDI and configuration files) to install to
         the /usr/local/share or /usr/share directory.
+    -   The JACK/ALSA/Slave/Master button does not update when the setup is
+        selected via the Options / JACK GUI.
 
 MIDI Format Checks:
 

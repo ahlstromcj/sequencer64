@@ -6,6 +6,7 @@
  *
  *    Object for holding the current status of JACK and JACK MIDI data.
  *
+ * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-01-02
  * \updates       2017-01-02

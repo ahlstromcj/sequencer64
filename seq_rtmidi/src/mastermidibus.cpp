@@ -20,7 +20,7 @@
  * \file          mastermidibus.cpp
  *
  *  This module declares/defines the base class for MIDI I/O under the
- *  RtMidi framework.
+ *  refactored RtMidi framework.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom

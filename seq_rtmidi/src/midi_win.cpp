@@ -1,8 +1,9 @@
 /**
  * \file          midi_win.cpp
  *
- *    A class for realtime MIDI input/output via ALSA.
+ *    A class for realtime MIDI input/output via the Window MM subsystem.
  *
+ * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2017-08-20
  * \updates       2017-08-21

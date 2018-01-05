@@ -3,9 +3,10 @@
  *
  *    A class for managing various MIDI APIs.
  *
+ * \library       sequencer64 application
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-11
+ * \updates       2018-01-05
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -78,10 +79,10 @@ rtmidi::~rtmidi ()
 /**
  *  Constructs the desired MIDI API.
  *
- *  If no compiled support for specified API value is found, we issue a warning
- *  and continue as if no API was specified.  In this case, we iterate through
- *  the compiled APIs and return as soon as we find one with at least one port
- *  or we reach the end of the list.
+ *  If no system support for the specified API value is found, we issue a
+ *  warning and continue as if no API was specified.  In this case, we iterate
+ *  through the compiled APIs and return as soon as we find one with at least
+ *  one port or we reach the end of the list.
  *
  * \param parentbus
  *      This is the midibus that the rtmidi object is going to implement, by
@@ -106,7 +107,7 @@ rtmidi_in::rtmidi_in (midibus & parentbus, rtmidi_info & info)
         openmidi_api(rtmidi_info::selected_api(), info);
         if (is_nullptr(get_api()))
         {
-            errprintfunc("no compiled support for specified API");
+            errprintfunc("no system support for specified API");
         }
     }
     else
@@ -215,8 +216,8 @@ rtmidi_in::openmidi_api (rtmidi_api api, rtmidi_info & info)
 
 /**
  *  Principal constructor.  Attempt to open the specified API.  If there is no
- *  compiled support for specified API value, then issue a warning and
- *  continue as if no API was specified.  In that case, we Iterate through the
+ *  system support for the specified API value, then issue a warning and
+ *  continue as if no API was specified.  In that case, we iterate through the
  *  compiled APIs and return as soon as we find one with at least one port or
  *  we reach the end of the list.
  *
@@ -247,7 +248,7 @@ rtmidi_out::rtmidi_out (midibus & parentbus, rtmidi_info & info)
         }
         else
         {
-            errprintfunc("no compiled support for specified API argument");
+            errprintfunc("no system support for specified API argument");
         }
     }
 

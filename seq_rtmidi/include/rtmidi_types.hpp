@@ -6,6 +6,7 @@
  *
  *  Type definitions pulled out for the needs of the refactoring.
  *
+ * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-20
  * \updates       2017-12-31

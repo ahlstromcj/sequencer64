@@ -1,8 +1,9 @@
 /**
  * \file          midi_jack.cpp
  *
- *    A class for realtime MIDI input/output via ALSA.
+ *    A class for realtime MIDI input/output via JACK.
  *
+ * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
  * \updates       2017-12-31
@@ -32,6 +33,7 @@
  *  QJackCtl or a session manager.  Use the real/normal mode to connect
  *  automatically to whatever is already present.  Currently, though, new
  *  devices that appear in the system won't be accessible until a restart.
+ *  (Or perhaps a reconnection using a JACK manager like QJackCtl.)
  *
  * Random JACK notes:
  *

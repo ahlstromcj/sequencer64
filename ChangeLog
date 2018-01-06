@@ -1,5 +1,53 @@
+2018-01-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore: Added tests directory to git-ignore.
+	* README, ROADMAP, VERSION, libseq64/include/midi_control.hpp,
+	libseq64/src/perform.cpp: Version 0.94.2 pending.
+
+2018-01-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, libseq64/src/event_list.cpp,
+	libseq64/src/midi_container.cpp,
+	seq_rtmidi/include/midi_alsa_info.hpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midi_jack_data.hpp,
+	seq_rtmidi/include/midi_jack_info.hpp,
+	seq_rtmidi/include/midi_probe.hpp, seq_rtmidi/include/midi_win.hpp,
+	seq_rtmidi/include/midi_win_data.hpp,
+	seq_rtmidi/include/midi_win_info.hpp,
+	seq_rtmidi/include/rterror.hpp, seq_rtmidi/include/rtmidi.hpp,
+	seq_rtmidi/include/rtmidi_info.hpp,
+	seq_rtmidi/include/rtmidi_types.hpp,
+	seq_rtmidi/src/mastermidibus.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_api.cpp,
+	seq_rtmidi/src/midi_info.cpp, seq_rtmidi/src/midi_jack.cpp,
+	seq_rtmidi/src/midi_jack_info.cpp, seq_rtmidi/src/midi_probe.cpp,
+	seq_rtmidi/src/midi_win.cpp, seq_rtmidi/src/midi_win_info.cpp,
+	seq_rtmidi/src/rtmidi.cpp, seq_rtmidi/src/rtmidi_info.cpp,
+	seq_rtmidi/src/rtmidi_types.cpp: Minor tweaks to rtmidi modules.
+
+2018-01-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Makefile.am, README, TODO, configure, configure.ac,
+	contrib/configs/sequencer64.conf, data/Makefile.am, data/README,
+	data/sequencer64.rc, {contrib/configs => data}/sequencer64.usr,
+	libseq64/src/midibase.cpp, man/seq64.1, man/seq64cli.1,
+	man/sequencer64.1: Showing usr devices in virtual ports.
+
+2018-01-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, TODO, configure, configure.ac,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/mastermidibase.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/userfile.cpp, man/seq64.1, man/seq64cli.1,
+	man/sequencer64.1, seq_rtmidi/src/midi_jack.cpp: Fixed Stop and
+	Panic button handling, issue #124.
+
 2017-12-31  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* ChangeLog, configure, configure.ac: Version 0.94.1 ready.
 	* README, ROADMAP, VERSION, configure.ac: Version 0.94.1 pending.
 	* libseq64/include/jack_assistant.hpp,
 	libseq64/src/jack_assistant.cpp, libseq64/src/midibase.cpp,

@@ -4551,7 +4551,6 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
  *
  *      1. Why go above the sequence numbers, why not
  *         just go up to c_midi_track_ctrl?
- *
  *      2. What about our new extended controls?
  */
 

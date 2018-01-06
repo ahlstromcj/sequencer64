@@ -126,11 +126,11 @@ extern int g_midi_control_limit;
     n [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 \endverbatim
  *
- *  where n ranges from 0 to 73 or 83.  Lines 0 to 31 provide controller values for
- *  the "pattern group", one line for each of the 32 pattern slots.  Lines 32
- *  to 63 provide controller values for the "mute in group", one line for each
- *  of the 32 pattern slots.  The rest of the lines provide entries for
- *  control of: BPM up, BPM down, Screen-set up, Screen-set down, Mod
+ *  where n ranges from 0 to 73 or 83.  Lines 0 to 31 provide controller
+ *  values for the "pattern group", one line for each of the 32 pattern slots.
+ *  Lines 32 to 63 provide controller values for the "mute in group", one line
+ *  for each of the 32 pattern slots.  The rest of the lines provide entries
+ *  for control of: BPM up, BPM down, Screen-set up, Screen-set down, Mod
  *  Replaces, Mod Snapshot, Mod Queue, Mod gmute (group mute), Mod glearn
  *  (group learn), and Screen-set Play.  Additional controls are currently in
  *  the works.

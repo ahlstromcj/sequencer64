@@ -39,6 +39,7 @@ stamp-h1
 latex
 autom4te.cache/
 scratch/
+tests/
 i18n/
 .deps/
 .libs/

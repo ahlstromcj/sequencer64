@@ -1,6 +1,6 @@
-README for Sequencer64 0.94.2 (Native JACK, CLI, multiple sets, varisets, tempo)
+README for Sequencer64 0.94.3 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2018-01-06
+2015-09-10 to 2018-01-07
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  It is an old friend, and maintains some
@@ -30,6 +30,12 @@ See the INSTALL file.
 
 Recent changes:
 
+    -   Version 0.94.3:
+        -   Changed SeqSpec proprietary track number from 0x7777 to 0x3FFF.
+            This will change existing files silently to store the new track
+            number.
+        -   Added a File / Export option to write a version of a file without
+            Sequencer64-specific SeqSpecs.
     -   Version 0.94.2:
         -   Fixed issue #124, Stop button not resetting the progress bar.
         -   Improved the panic function, and fixed an issue with it when JACK
@@ -84,9 +90,9 @@ Recent changes:
             the pause functionality in Song mode.
     -   For more version information, see the NEWS file.
 
-This package is currently oriented to developers.  It is fairly well
-organized, fairly well documented, and less mysterious (to us, anyway) than
-before.  Please see the INSTALL file for a brief description of installation.
+This package is oriented to developers and users who do not mind building from
+source, with a little help.  It is fairly well organized and well documented.
+Please see the INSTALL file for a brief description of installation.
 
 Initial work/thought/documentation started in July of 2015.
 
@@ -96,17 +102,5 @@ following project, which provides a 180+-page PDF file and its LaTeX source
 code:
 
    https://github.com/ahlstromcj/sequencer64-doc.git
-
-Legacy Sequencer64: Sequencer64/sequencer64
-
-    This is the original (ALSA) version of the project, which we are
-    preserving until the bug reports for the native-JACK version slow down to
-    a trickle.
-
-PortMIDI: Seq64portmidi/seq64portmidi
-
-    Builds and runs via the portmidi library in a Linux distro.  Has issues
-    and is deprecated for Linux, but might be used in the upcoming Windows
-    implementation.
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

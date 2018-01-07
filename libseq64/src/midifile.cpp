@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-15
+ * \updates       2018-01-07
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -114,10 +114,13 @@
  *  Can't use numbers, such as 0xFFFF, that have MIDI meta tags in them,
  *  confuses our "proprietary" track parser.  This sequence number, 0x7777, is
  *  neither a valid nor legal sequence number.  No real sequence will ever
- *  have this number in Sequencer64.
+ *  have this number in Sequencer64.  However, this number is too big, as it
+ *  turns out.  See the discussion at write_varinum().  We change it to
+ *  0x3FFF.
  */
 
-#define PROPRIETARY_SEQ_NUMBER      0x7777
+#define PROPRIETARY_SEQ_NUMBER      0x3FFF
+#define PROPRIETARY_SEQ_NUMBER_OLD  0x7777
 
 /**
  *  Provides the track name for the "proprietary" data when using the new
@@ -1220,8 +1223,18 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         midilong tracklength = read_long();
         if (tracklength > 0)
         {
+            /*
+             * The old number, 0x7777, is an illegal sequence number
+             * value, and is now 0x3FFF.  But we don't want to startle
+             * people, so we will silently ignore (and replace upon
+             * saving) this number.
+             */
+
             int seqnum = read_seq_number();
-            if (seqnum == PROPRIETARY_SEQ_NUMBER)   /* sanity check, 0x7777 */
+            bool ok = (seqnum == PROPRIETARY_SEQ_NUMBER) ||
+                (seqnum == PROPRIETARY_SEQ_NUMBER_OLD);
+
+            if (ok)                                 /* sanity check         */
             {
                 std::string trackname = read_track_name();
                 result = ! trackname.empty();
@@ -1239,13 +1252,13 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             else if (seqnum == (-1))
             {
                 m_error_is_fatal = false;
-                errdump("No sequence number in seqspec track, extra data");
+                errdump("No sequence number in SeqSpec track, extra data");
                 result = false;
             }
             else
             {
                 m_error_is_fatal = false;
-                m_error_message = "Unexpected sequence number, seqspec track";
+                m_error_message = "Unexpected sequence number, SeqSpec track";
                 result = false;
             }
         }
@@ -1496,7 +1509,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         seqspec = parse_prop_header(file_size);
         if (seqspec == c_seq_colours)
         {
-            for (int track = 0; track < c_max_sequence; ++track)
+            for (int track = 0; track < p.sequence_high(); ++track)
             {
                 if (p.is_active(track))
                 {
@@ -1522,7 +1535,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         seqspec = parse_prop_header(file_size);
         if (seqspec == c_seq_edit_mode)
         {
-            for (int track = 0; track < c_max_sequence; ++track)
+            for (int track = 0; track < p.sequence_high(); ++track)
             {
                 if (p.is_active(track))
                     p.seq_edit_mode(track, edit_mode_t(read_long()));
@@ -1626,6 +1639,9 @@ midifile::write_short (midishort x)
  *      -  Numbers between 0 and 127 (0x7F) are represented by a single
  *         byte.
  *      -  0x80 is represented as "0x81 0x00".
+ *      -  The largest two-byte MIDI value (e.g. a sequence number) is
+ *         "0xFF 0x7F", which is 127 * 128 + 127 = 16383 = 0x3FFF.
+ *         This is the (new) value of the PROPRIETARY_SEQ_NUMBER macro.
  *      -  0x0FFFFFFF (the largest number) is represented as "0xFF 0xFF
  *         0xFF 0x7F".
  *
@@ -1882,69 +1898,97 @@ midifile::prop_item_size (long data_length) const
  *  Write the whole MIDI data and Seq24 information out to the file.
  *  Also see the write_song() function, for exporting to standard MIDI.
  *
- *  Seq24 reverses the order of some events, due to popping from its
- *  container.  Not an issue here.
+ *  Sequencer64 sometimes reverses the order of some events, due to popping
+ *  from its container.  Not an issue, but can make a file slightly different
+ *  for no reason.
  *
  * \param p
  *      Provides the object that will contain and manage the entire
  *      performance.
  *
+ * \param doseqspec
+ *      If true (the default, then the Sequencer64-specific SeqSpec sections
+ *      are written to the file.  If false, we want to export the tracks as a
+ *      basic MIDI sequence (which is not the same as exporting a Song, with
+ *      triggers, as a MIDI sequence).
+ *
  * \return
- *      Returns true if the write operations succeeded.
+ *      Returns true if the write operations succeeded.  If false is returned,
+ *      then m_error_message will contain a description of the error.
  */
 
 bool
-midifile::write (perform & p)
+midifile::write (perform & p, bool doseqspec)
 {
-    automutex locker(m_mutex);          /* new ca 2016-08-01 */
-    bool result = true;
-    int numtracks = 0;
+    automutex locker(m_mutex);
+    bool result = m_ppqn >= SEQ64_MINIMUM_PPQN && m_ppqn <= SEQ64_MAXIMUM_PPQN;
     m_error_message.clear();
-    if (m_ppqn < SEQ64_MINIMUM_PPQN || m_ppqn > SEQ64_MAXIMUM_PPQN)
-    {
+    if (! result)
         m_error_message = "Error, invalid PPQN for MIDI file to write";
-        return false;
-    }
-    printf("[Writing MIDI file, %d ppqn]\n", m_ppqn);
-    for (int i = 0; i < c_max_sequence; ++i) /* get number of active tracks */
+
+    if (result)
     {
-        if (p.is_active(i))
-            ++numtracks;
+        int numtracks = 0;
+        for (int i = 0; i < p.sequence_high(); ++i)
+        {
+            if (p.is_active(i))
+                ++numtracks;             /* count number of active tracks   */
+        }
+        result = numtracks > 0;
+        if (result)
+        {
+            bool result = write_header(numtracks);
+            if (result)
+            {
+                if (doseqspec)
+                    printf("[Writing Sequencer64 MIDI file, %d ppqn]\n", m_ppqn);
+                else
+                    printf("[Writing normal MIDI file, %d ppqn]\n", m_ppqn);
+            }
+            else
+                m_error_message = "Error, failed to write header to MIDI file";
+        }
+        else
+            m_error_message = "Error, no patterns/tracks available to write";
     }
-    if (! write_header(numtracks))
-        return false;
 
     /*
      * Write out the active tracks.  The value of c_max_sequence is 1024.
      * Note that we don't need to check the sequence pointer.
      */
 
-    for (int track = 0; track < c_max_sequence; ++track)
+    if (result)
     {
-        if (p.is_active(track))
+        for (int track = 0; track < p.sequence_high(); ++track)
         {
-            sequence & seq = *p.get_sequence(track);
+            if (p.is_active(track))
+            {
+                sequence & seq = *p.get_sequence(track);
 
 #if defined SEQ64_USE_MIDI_VECTOR
-            midi_vector lst(seq);
+                midi_vector lst(seq);
 #else
-            midi_list lst(seq);
+                midi_list lst(seq);
 #endif
 
-            /*
-             * midi_container::fill() also handles the time-signature and
-             * tempo meta events, if they are not part of the file's MIDI
-             * data.  All the events are put into the container, and then the
-             * container's bytes are written out below.
-             */
+                /*
+                 * midi_container::fill() also handles the time-signature and
+                 * tempo meta events, if they are not part of the file's MIDI
+                 * data.  All the events are put into the container, and then the
+                 * container's bytes are written out below.
+                 */
 
-            lst.fill(track, p);
-            write_track(lst);
+                lst.fill(track, p, doseqspec);
+                write_track(lst);
+            }
         }
     }
-    if (result)
+    if (result && doseqspec)
+    {
         result = write_proprietary_track(p);
-
+        if (! result)
+            m_error_message = "Error, could not write SeqSpec track";
+    }
     if (result)
     {
         std::ofstream file
@@ -1970,7 +2014,7 @@ midifile::write (perform & p)
         }
     }
     if (result)
-        p.is_modified(false);      /* it worked, tell perform about it */
+        p.is_modified(false);           /* it worked, tell perform about it */
 
     return result;
 }
@@ -1985,13 +2029,13 @@ midifile::write (perform & p)
  *  We get the number of active tracks, and we don't count tracks with no
  *  triggers, or tracks that are muted.
  *
- *  The alternate version of this function, write_song(), was not included in
- *  Sequencer64 because it Sequencer64 writes standard MIDI files (with
- *  SeqSpec information that a decent sequencer should ignore).  But we now
- *  think this is a good feature for export, and created the Export command to
- *  do this.  The write_song() function doesn't count tracks that are muted or
- *  that have no triggers.  For sequences that have triggers, it adds the
- *  events in order, to create a long sequence.
+ *  This function, write_song(), was not included in Sequencer64 because it
+ *  Sequencer64 writes standard MIDI files (with SeqSpec information that a
+ *  decent sequencer should ignore).  But we believe this is a good feature
+ *  for export, and created the Export Song command to do this.  The
+ *  write_song() function doesn't count tracks that are muted or that have no
+ *  triggers.  For sequences that have triggers, it adds the events in order,
+ *  to create a long sequence that plays as if the triggers are present.
  *
  * Stazed/Seq32:
  *
@@ -2029,17 +2073,17 @@ midifile::write (perform & p)
  *      performance.
  *
  * \return
- *      Returns true if the write operations succeeded.
+ *      Returns true if the write operations succeeded.  If false is returned,
+ *      then m_error_message will contain a description of the error.
  */
 
 bool
 midifile::write_song (perform & p)
 {
-    automutex locker(m_mutex);                  /* new ca 2016-08-01 */
+    automutex locker(m_mutex);
     int numtracks = 0;
     m_error_message.clear();
-    printf("[Exporting MIDI file, %d ppqn]\n", m_ppqn);
-    for (int i = 0; i < c_max_sequence; ++i)    /* count exportable tracks  */
+    for (int i = 0; i < p.sequence_high(); ++i) /* count exportable tracks  */
     {
         if (p.is_exportable(i))                 /* do muted tracks count?   */
             ++numtracks;
@@ -2047,6 +2091,7 @@ midifile::write_song (perform & p)
     bool result = numtracks > 0;
     if (result)
     {
+        printf("[Exporting song as MIDI file, %d ppqn]\n", m_ppqn);
         result = write_header(numtracks);
     }
     else
@@ -2068,7 +2113,7 @@ midifile::write_song (perform & p)
          * fill() function for normal Sequencer64 file writing.
          */
 
-        for (int track = 0; track < c_max_sequence; ++track)
+        for (int track = 0; track < p.sequence_high(); ++track)
         {
             if (p.is_exportable(track))
             {
@@ -2183,6 +2228,9 @@ midifile::write_song (perform & p)
  *          configuration file.
  *      -#  MORE TO COME.
  *
+ *  We need a way to make the group mute data optional.  Why write 4096 bytes
+ *  of zeroes?
+ *
  * \param p
  *      Provides the object that will contain and manage the entire
  *      performance.
@@ -2202,11 +2250,6 @@ midifile::write_proprietary_track (perform & p)
         const std::string & note = p.get_screen_set_notepad(s);
         cnotesz += 2 + note.length();           /* short + note length      */
     }
-
-    /*
-     * We need a way to make the group mute data optional.  Why write 4096
-     * bytes of zeroes?
-     */
 
     int groupcount = c_max_groups;              /* 32 */
     int seqsinset = c_seqs_in_set;              /* 32 */
@@ -2274,6 +2317,8 @@ midifile::write_proprietary_track (perform & p)
 
         /*
          * write_long(c_gmute_tracks);              // data, not a tag
+         *
+         * We could write p.sequence_high() here, perhaps.  Nahhhhh.
          */
 
         write_long(c_max_sequence);                 /* data, not a tag      */

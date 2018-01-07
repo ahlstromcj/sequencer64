@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2017-09-11
+ * \updates       2018-01-06
  * \license       GNU GPLv2 or above
  *
  *  This class is meant to hold the bytes that represent MIDI events and other
@@ -255,7 +255,7 @@ public:
         // empty body
     }
 
-    void fill (int tracknumber, const perform & p);
+    void fill (int tracknumber, const perform & p, bool doseqspec = true);
 
     /**
      *  Returns the size of the container, in midibytes.  Must be overridden

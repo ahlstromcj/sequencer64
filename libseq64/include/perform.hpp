@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-15
+ * \updates       2018-01-07
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1078,6 +1078,15 @@ public:
     int sequence_count () const
     {
         return m_sequence_count;
+    }
+
+    /**
+     * \getter m_sequence_high
+     */
+
+    int sequence_high () const
+    {
+        return m_sequence_high;
     }
 
     /**

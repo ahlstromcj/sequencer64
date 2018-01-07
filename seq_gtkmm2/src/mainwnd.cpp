@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-11
+ * \updates       2018-01-07
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -420,7 +420,7 @@ mainwnd::mainwnd
      */
 
 #if defined SEQ64_MULTI_MAINWID
-    set_resizable(true);                        // set_resizable(multi_wid());
+    set_resizable(true);
 #elif defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
     set_resizable(! usr().is_default_mainwid_size());
 #else
@@ -1943,9 +1943,14 @@ mainwnd::rc_error_dialog (const std::string & message)
  */
 
 void
-mainwnd::file_save_as (bool do_export)
+mainwnd::file_save_as (SaveOption option)
 {
-    const char * const prompt = do_export ? "Export file as" : "Save file as" ;
+    const char * prompt = "Save File As" ;
+    if (option == FILE_SAVE_AS_EXPORT_SONG)
+        prompt = "Export Song As";
+    else if (option == FILE_SAVE_AS_EXPORT_MIDI)
+        prompt = "Export MIDI Only As";
+
     Gtk::FileChooserDialog dialog(prompt, Gtk::FILE_CHOOSER_ACTION_SAVE);
     dialog.set_transient_for(*this);
     dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
@@ -2000,11 +2005,38 @@ mainwnd::file_save_as (bool do_export)
                 if (response == Gtk::RESPONSE_NO)
                     return;
             }
-            if (do_export)
+            if (option == FILE_SAVE_AS_EXPORT_SONG)
             {
                 midifile f(fname, ppqn());
-                bool result = f.write_song(perf());     // f.write(perf());
+                bool result = f.write_song(perf());
                 if (! result)
+                {
+                    std::string errmsg = f.error_message();
+                    Gtk::MessageDialog errdialog
+                    (
+                        *this, errmsg, false, Gtk::MESSAGE_ERROR,
+                        Gtk::BUTTONS_OK, true
+                    );
+                    errdialog.run();
+                }
+            }
+            else if (option == FILE_SAVE_AS_EXPORT_MIDI)
+            {
+                rc().filename(fname);
+                update_window_title();
+                midifile f(rc().filename(), ppqn());
+                bool result = f.write(perf(), false);   /* no SeqSpec   */
+
+                /*
+                 * Cut'n'paste code follows :-(
+                 */
+
+                if (result)
+                {
+                    rc().add_recent_file(rc().filename());
+                    update_recent_files_menu();
+                }
+                else
                 {
                     std::string errmsg = f.error_message();
                     Gtk::MessageDialog errdialog
@@ -2070,7 +2102,6 @@ mainwnd::open_file (const std::string & fn)
     rc().add_recent_file(fn);           /* from Oli Kester's Kepler34       */
     update_recent_files_menu();
     update_window_title();
-
     m_entry_notes->set_text(perf().current_screen_set_notepad());
     m_adjust_bpm->set_value(perf().get_beats_per_minute());
 }
@@ -3547,7 +3578,10 @@ mainwnd::populate_menu_file ()
         MenuElem
         (
             "Save _as...", Gtk::AccelKey("<control><shift>S"),
-            sigc::bind(mem_fun(*this, &mainwnd::file_save_as), false)
+            sigc::bind
+            (
+                mem_fun(*this, &mainwnd::file_save_as), FILE_SAVE_AS_NORMAL
+            )
         )
     );
     m_menu_file->items().push_back(SeparatorElem());
@@ -3561,16 +3595,36 @@ mainwnd::populate_menu_file ()
     );
 
     /*
-     * Export means to write out the song as a standard MIDI file based on the
-     * triggers shown in the performance window.
+     * Export Song means to write out the song performance as a standard MIDI
+     * file based on the triggers shown in the performance window.
      */
 
     m_menu_file->items().push_back
     (
         MenuElem
         (
-            "E_xport song as MIDI...", Gtk::AccelKey("<control><shift>I"),
-            sigc::bind(mem_fun(*this, &mainwnd::file_save_as), true)
+            "E_xport Song as MIDI...", Gtk::AccelKey("<control><shift>I"),
+            sigc::bind
+            (
+                mem_fun(*this, &mainwnd::file_save_as), FILE_SAVE_AS_EXPORT_SONG
+            )
+        )
+    );
+
+    /*
+     * Export MIDI Only means to write out the MIDI data, without including
+     * any Sequencer64-specific (SeqSpec) constructs.
+     */
+
+    m_menu_file->items().push_back
+    (
+        MenuElem
+        (
+            "Export MIDI Only...", Gtk::AccelKey("<control><shift>O"),
+            sigc::bind
+            (
+                mem_fun(*this, &mainwnd::file_save_as), FILE_SAVE_AS_EXPORT_MIDI
+            )
         )
     );
     m_menu_file->items().push_back(SeparatorElem());

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2018-01-04
+ * \updates       2018-01-06
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -629,6 +629,10 @@ midi_container::song_fill_seq_trigger
  *  and the rest of the tracks then don't need a sequence number, since it is
  *  assumed to increment.  This application doesn't use that shortcut.
  *
+ *  We have noticed differences in saving files in sets=4x8 versus sets=8x8,
+ *  and pre-sorting the event list gets rid of all of the differences except
+ *  for the last, multi-line SeqSpec.
+ *
  * Stazed:
  *
  *      The "stazed" (seq32) code implements a function like this one
@@ -665,21 +669,21 @@ midi_container::song_fill_seq_trigger
  * \param p
  *      The performance object that will hold some of the parameters needed
  *      when filling the MIDI container.
+ *
+ * \param doseqspec
+ *      If true (the default), writes out the SeqSpec information.  If false,
+ *      we want to write out a regular MIDI track without this information; it
+ *      writes a smaller file.
  */
 
 void
-midi_container::fill (int track, const perform & p)
+midi_container::fill (int track, const perform & p, bool doseqspec)
 {
     event_list evl = m_sequence.events();           /* used below */
-
-    /*
-     * EXPERIMENTAL: We have noticed differences in saving files in sets=4x8
-     * versus sets=8x8, and this sorting gets rid of all of the differences
-     * except for the last, multi-line SeqSpec.
-     */
-
     evl.sort();
-    fill_seq_number(track);
+    if (doseqspec)
+        fill_seq_number(track);
+
     fill_seq_name(m_sequence.name());
 
     /**
@@ -713,36 +717,38 @@ midi_container::fill (int track, const perform & p)
         add_event(e, deltatime);
     }
 
-    /*
-     * Here, we add SeqSpec entries (specific to seq24) for triggers
-     * (c_triggers_new), the MIDI buss (c_midibus), time signature
-     * (c_timesig), and MIDI channel (c_midich).   Should we restrict this to
-     * only track 0?  Probably not; seq24 saves these events with each
-     * sequence.
-     */
-
-    triggers::List & triggerlist = m_sequence.triggerlist();
-    int triggercount = int(triggerlist.size());
-    add_variable(0);
-    put(0xFF);
-    put(0x7F);
-    add_variable((triggercount * 3 * 4) + 4);       /* 3 long ints plus...  */
-    add_long(c_triggers_new);                       /* ...the triggers code */
-    for
-    (
-        triggers::List::iterator ti = triggerlist.begin();
-        ti != triggerlist.end(); ++ti
-    )
+    if (doseqspec)
     {
         /*
-         * Similar to the code in song_fill_seq_trigger().
+         * Here, we add SeqSpec entries (specific to seq24) for triggers
+         * (c_triggers_new), the MIDI buss (c_midibus), time signature
+         * (c_timesig), and MIDI channel (c_midich).   Should we restrict this
+         * to only track 0?  No; seq24 saves these events with each sequence.
          */
 
-        add_long(ti->tick_start());
-        add_long(ti->tick_end());
-        add_long(ti->offset());
+        triggers::List & triggerlist = m_sequence.triggerlist();
+        int triggercount = int(triggerlist.size());
+        add_variable(0);
+        put(0xFF);
+        put(0x7F);
+        add_variable((triggercount * 3 * 4) + 4);       /* 3 long ints plus...  */
+        add_long(c_triggers_new);                       /* ...the triggers code */
+        for
+        (
+            triggers::List::iterator ti = triggerlist.begin();
+            ti != triggerlist.end(); ++ti
+        )
+        {
+            /*
+             * Similar to the code in song_fill_seq_trigger().
+             */
+
+            add_long(ti->tick_start());
+            add_long(ti->tick_end());
+            add_long(ti->offset());
+        }
+        fill_proprietary ();
     }
-    fill_proprietary ();
 
     /*
      * Last, but certainly not least, write the end-of-track meta-event.

@@ -311,10 +311,10 @@ midi_container::fill_time_sig (const perform & p)
     int cpm = p.clocks_per_metronome();
     int get32pq = p.get_32nds_per_quarter();
     int bw = log2_time_sig_value(beatwidth);
-    add_variable(0);                            /* delta time       */
-    put(0xFF);                                  /* meta event       */
-    put(0x58);                                  /* time sig event   */
-    put(0x04);                                  /* data length      */
+    add_variable(0);                    /* delta time                   */
+    put(0xFF);                          /* EVENT_MIDI_META              */
+    put(0x58);                          /* EVENT_MIDI_TIME_SIGNATURE    */
+    put(0x04);                          /* data length                  */
     put(bpb);
     put(bw);
     put(cpm);
@@ -610,7 +610,6 @@ midi_container::song_fill_seq_trigger
     add_long(0);                            // the start tick
     add_long(trig.tick_end());
     add_long(0);                            // offset is done in event
-
     fill_proprietary();
 
     midipulse delta_time = length - prev_timestamp;

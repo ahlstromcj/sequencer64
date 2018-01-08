@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-10
+ * \updates       2018-01-07
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -50,6 +50,33 @@
 
 /**
  *  Defines the number of data bytes in MIDI status data.
+ *
+ *  But consider this, events other than System Exclusive, which do not have
+ *  an arbitrary number of bytes, but a definite number. These events are:
+ *
+ *      -   Sequence No.:   FF 00 02 s1 s1
+ *      -   MIDI Channel:   FF 20 01 cc
+ *      -   MIDI Port:      FF 21 01 pp
+ *      -   Set Tempo:      FF 51 03 tt tt tt
+ *      -   SMPTE Offset:   FF 54 05 hh mm ss fr ff
+ *      -   Time Signature: FF 58 04 nn dd cc bb
+ *      -   Key Signature:  FF 59 02 sf mi
+ *
+ *  The arbitrarily-sized Meta events are:
+ *
+ *      -   Text:           FF 01 len text
+ *      -   Copyright:      FF 02 len text
+ *      -   Track Name:     FF 03 len name
+ *      -   Instrument:     FF 04 len name
+ *      -   Marker:         FF 05 len text
+ *      -   Cue Point:      FF 06 len text
+ *      -   Seq. Specific:  FF 7F len data
+ *
+ *  The maximum amount of constant-size data is 5 bytes.  We should aim to
+ *  increase this and use it, using event::m_status as the "meta" byte and
+ *  perhaps m_channel as the "meta-event" byte.  But curently, the tempo and
+ *  time signature events are stored as data in the sequence object, so
+ *  that's probably the best tack/tact for the future.
  */
 
 #define SEQ64_MIDI_DATA_BYTE_COUNT      2
@@ -114,6 +141,7 @@ const midibyte EVENT_PITCH_WHEEL        = 0xE0;      // 0lllllll 0mmmmmmm
  *      -   http://www.midi.org/techspecs/midimessages.php
  */
 
+const midibyte EVENT_MIDI_REALTIME       = 0xF0;    // 0xFn when masked
 const midibyte EVENT_MIDI_SYSEX          = 0xF0;    // redundant, see below
 const midibyte EVENT_MIDI_QUARTER_FRAME  = 0xF1;    // system common > 0 bytes
 const midibyte EVENT_MIDI_SONG_POS       = 0xF2;    // 2 data bytes
@@ -142,14 +170,28 @@ const midibyte EVENT_MIDI_RESET          = 0xFF;    // 0 data bytes, not used
 const midibyte EVENT_MIDI_META           = 0xFF;    // an escape code
 
 /**
- *  Provides values for the currently-supported Meta events:
+ *  Provides values for the currently-supported Meta events, and many others:
  *
  *      -   Set Tempo (0x51)
  *      -   Time Signature (0x58)
  */
 
+const midibyte EVENT_META_SEQ_NUMBER     = 0x00;
+const midibyte EVENT_META_TEXT_EVENT     = 0x01;    // not yet handled
+const midibyte EVENT_META_COPYRIGHT      = 0x02;    // not yet handled
+const midibyte EVENT_META_TRACK_NAME     = 0x03;
+const midibyte EVENT_META_INSTRUMENT     = 0x04;    // not yet handled
+const midibyte EVENT_META_LYRIC          = 0x05;    // not yet handled
+const midibyte EVENT_META_MARKER         = 0x06;    // not yet handled
+const midibyte EVENT_META_CUE_POINT      = 0x07;    // not yet handled
+const midibyte EVENT_META_MIDI_CHANNEL   = 0x20;    // not yet handled, obsolete
+const midibyte EVENT_META_MIDI_PORT      = 0x21;    // not yet handled, obsolete
+const midibyte EVENT_META_END_OF_TRACK   = 0x2F;
 const midibyte EVENT_META_SET_TEMPO      = 0x51;
+const midibyte EVENT_META_SMPTE_OFFSET   = 0x54;    // not yet handled
 const midibyte EVENT_META_TIME_SIGNATURE = 0x58;
+const midibyte EVENT_META_KEY_SIGNATURE  = 0x59;
+const midibyte EVENT_META_SEQSPEC        = 0x7F;
 
 /**
  *  As a "type" (overloaded on channel) value for a Meta event, 0xFF indicates

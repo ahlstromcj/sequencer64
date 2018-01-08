@@ -50,6 +50,14 @@
  *          -   Sequence name.
  *          -   Time-signature and tempo (sequence 0 only)
  *          -   Sequence events.
+ *
+ *  Items handled in midi_container:
+ *
+ *      -   Time signature
+ *      -   Tempo
+ *      -   Sequence number
+ *      -   Track end
+ *      -   Proprietary SeqSpec date
  */
 
 #include <fstream>
@@ -347,7 +355,7 @@ midifile::read_varinum ()
  *
  *      Currently, Sequencer64, like Se24, handles SysEx message only to the
  *      extend of passing them via MIDI Thru.  We hope to improve on that
- *      capability.
+ *      capability eventually.
  *
  * \param p
  *      Provides a reference to the perform object into which sequences/tracks
@@ -714,15 +722,15 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                         m_smf0_splitter.increment(channel);
                     break;
 
-                case 0xF0:                                /* Meta MIDI events */
+                case EVENT_MIDI_REALTIME:                 /* 0xFn MIDI events */
 
-                    if (status == 0xFF)
+                    if (status == EVENT_MIDI_META)        /* 0xFF             */
                     {
                         midibyte mtype = read_byte();     /* get meta type    */
                         len = read_varinum();             /* if 0 catch later */
                         switch (mtype)
                         {
-                        case 0x7F:                        /* "proprietary"    */
+                        case EVENT_META_SEQSPEC:          /* FF F7 = SeqSpec  */
 
                             if (len > 4)                  /* FF 7F len data   */
                             {
@@ -812,7 +820,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             m_pos += len;               /* eat the rest     */
                             break;
 
-                        case 0x58:                      /* Time Signature   */
+                        case EVENT_META_TIME_SIGNATURE: /* FF 58 04 n d c b */
 
                             if (! checklen(len, mtype))
                                 return false;
@@ -850,7 +858,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 m_pos += len;           /* eat it           */
                             break;
 
-                        case 0x51:                      /* Set Tempo        */
+                        case EVENT_META_SET_TEMPO:      /* FF 51 03 tttttt  */
 
                             if (! checklen(len, mtype))
                                 return false;
@@ -899,7 +907,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 m_pos += len;           /* eat it           */
                             break;
 
-                        case 0x2F:                      /* End of Track     */
+                        case EVENT_META_END_OF_TRACK:   /* FF 2F 00         */
 
                             /*
                              * "If Delta is 0, then another event happened at
@@ -921,7 +929,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             done = true;
                             break;
 
-                        case 0x03:                      /* Track name       */
+                        case EVENT_META_TRACK_NAME:     /* FF 03 len text   */
 
                             if (! checklen(len, mtype))
                                 return false;
@@ -936,7 +944,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             seq.set_name(TrackName);
                             break;
 
-                        case 0x00:                      /* sequence number  */
+                        case EVENT_META_SEQ_NUMBER:     /* FF 00 02 ss      */
 
                             if (! checklen(len, mtype))
                                 return false;
@@ -1636,14 +1644,14 @@ midifile::write_short (midishort x)
  *
  *  Here are some common cases:
  *
- *      -  Numbers between 0 and 127 (0x7F) are represented by a single
- *         byte.
- *      -  0x80 is represented as "0x81 0x00".
- *      -  The largest two-byte MIDI value (e.g. a sequence number) is
- *         "0xFF 0x7F", which is 127 * 128 + 127 = 16383 = 0x3FFF.
- *         This is the (new) value of the PROPRIETARY_SEQ_NUMBER macro.
- *      -  0x0FFFFFFF (the largest number) is represented as "0xFF 0xFF
- *         0xFF 0x7F".
+ *      -   Numbers between 0 and 127 are represented by a single byte:
+ *          0x00 to 7F.
+ *      -   0x80 is represented as 0x81 00.
+ *      -   The largest 2-byte MIDI value (e.g. a sequence number) is
+ *          0xFF 7F, which is 127 * 128 + 127 = 16383 = 0x3FFF.
+ *          This is the (new) value of the PROPRIETARY_SEQ_NUMBER macro.
+ *      -   The largest 3-byte MIDI value is 0xFF FF 7F = 0x1FFFFF.
+ *      -   The largest number, 4 bytes, is 0xFF FF FF 7F = 0xFFFFFFF.
  *
  *  Also see the varinum_size() function.
  *
@@ -2487,7 +2495,7 @@ void
 midifile::write_track_end ()
 {
     write_byte(0xFF);                       /* meta tag                     */
-    write_byte(0x2F);
+    write_byte(0x2F);                       /* EVENT_META_END_OF_TRACK      */
     write_byte(0x00);
 }
 

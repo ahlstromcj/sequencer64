@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-07
+ * \updates       2018-01-11
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -128,6 +128,10 @@
 
 #define PERFORM_KEY_LABELS_ON_SEQUENCE  9998
 #define PERFORM_NUM_LABELS_ON_SEQUENCE  9999
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
 
 namespace seq64
 {
@@ -1238,7 +1242,7 @@ public:
     /**
      * \setter m_tempo_track_number
      *
-     * \param bw
+     * \param tempotrack
      *      Provides the value for beat-width.  Also used to set the
      *      beat-width in the JACK assistant object.
      */

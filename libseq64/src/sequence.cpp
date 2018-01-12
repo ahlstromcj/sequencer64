@@ -994,6 +994,9 @@ sequence::set_rec_vol (int recvol)
  * \param tick
  *      The position from which to resume Note Ons, if appplicable. Resuming
  *      is a song-recording feature.
+ *
+ * \param resumenoteons
+ *      A song-recording option.
  */
 
 void
@@ -1103,6 +1106,9 @@ sequence::on_queued ()
  *      and triggers set up in that editor, and saved with the song in seq24
  *      format.  False indicates that the playback is controlled by the main
  *      window, in live mode.
+ *
+ * \param resume_note_ons
+ *      A song-recording parameter.
  *
  * \threadsafe
  */
@@ -4353,7 +4359,7 @@ sequence::reset_ex_iterator (event_list::const_iterator & evi)
  * \param cc
  *      The continuous controller value that might be desired.
  *
- * \param [out] ev
+ * \param [out] evi
  *      An iterator return value for the next event found.  The caller might
  *      want to check if it is a Tempo event.  Do not use this iterator if
  *      false is returned!
@@ -4612,8 +4618,12 @@ sequence::set_length (midipulse len, bool adjust_triggers, bool verify)
  *      The measures calculation is useless if the BPM (beats/minute) varies
  *      throughout the song.
  *
- * \param bpm
- *      Provides the beats per minute, a floating value.
+ * \param bpb
+ *      Provides the beats per bar (measure).
+ *
+ * \param ppqn
+ *      Provides the pulses-per-quarter-note to apply to the length
+ *      application.
  *
  * \param bw
  *      Provides the beatwidth (typically 4) from the time signature.
@@ -5534,7 +5544,7 @@ sequence::play_queue (midipulse tick, bool playbackmode)
  * \param start
  *      The starting tick of the note event.
  *
- * \param start
+ * \param finish
  *      The ending tick of the note event.
  *
  * \return

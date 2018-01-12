@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-07
+ * \updates       2018-01-11
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -235,6 +235,10 @@ const int EVENTS_UNSELECTED              =  0;
  *
  * \param status
  *      The type of event, which might be EVENT_NOTE_ON.
+ *
+ * \param data
+ *      The data byte to check.  It should be zero for a note-on is note-off
+ *      event.
  */
 
 inline bool

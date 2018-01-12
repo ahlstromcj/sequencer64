@@ -231,6 +231,9 @@ triggers::pop_redo ()
  *      Provides the ending tick value, and returns the modified value as a
  *      side-effect.
  *
+ * \param resume_note_ons
+ *      Indicates what to do with notes when song-recording.
+ *
  * \return
  *      Returns true if we're through playing the frame (trigger turning off),
  *      and the caller should stop the playback.

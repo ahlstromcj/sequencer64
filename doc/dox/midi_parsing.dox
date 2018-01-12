@@ -9,7 +9,7 @@
 This document describes how Sequencer64 parses a MIDI file.
 
 \page       midi_parsing_page MIDI File Parsing in Sequencer64
-\author     Chris Ahlstrom 2016-02-13
+\author     Chris Ahlstrom 2018-01-11
 
 \section midi_parsing_intro Introduction
 
@@ -28,6 +28,15 @@ the rest will contain common data and then channel data for each channel.
 After the parsing is done, all the tracks (including the original track) will
 be added to the performance.  The user then has the option of deleting the
 original track, which will be the last track.
+
+One note about the portability of <i>Sequencer64</i> MIDI files.
+The <i>Rosegarden</i> sequencer reads them well, as does <i>Ardour</i>,
+which also plays it properly (ignoring the triggers).  The <i>Python</i>
+program <i>mido3-player</i> does not handle the sequence number (0x3FFF) of the
+proprietary track, but that is really a bug in mido.
+
+Another thing to note is that the sorting of the events can vary from save to
+save, which is harmless, if annoying to the programmers.
 
 \section midi_parsing_smf_1 SMF 1 Parsing
 
@@ -329,7 +338,7 @@ piece.
 We have now added the Tempo meta event (and the Time Signature meta event) to
 the track, which allows other sequencers to obtain these values from a
 Sequencer64 MIDI file.  Here are the original headers for a normal MIDI file
-and its legacy (Seq24) conversion, as shown by the midicvt application:
+and its legacy (Seq24) conversion, as shown by the <i>midicvt</i> application:
 
 \verbatim
 hymne.asc                           hymne-ppqn-384.asc
@@ -345,6 +354,8 @@ TrkEnd                              0 SeqSpec 24 24 00 06 04 04 (beats, width)
                                     96 Meta TrkEnd
                                     TrkEnd
 \endverbatim
+
+(<i>midicvt</i> is available at https://github.com/ahlstromcj/midicvt.)
 
 Here is the header data that result from the new conversion, which is used if
 the "legacy" option is not in force:
@@ -494,8 +505,8 @@ that indicate the kind of data for a particular SeqSpec event:
 
 In <i>Seq24</i>, these events are placed at the end of the song, but are
 not marked as SeqSpec data.  Most MIDI applications handle this situation fine,
-but some (e.g. midicvt) do not.  Therefore, <i>Sequencer64</i> makes sure to
-wrap each data item in the 0xFF 0x7F wrapper.
+but some (e.g. <i>midicvt</i>) do not.  Therefore, <i>Sequencer64</i> makes
+sure to wrap each data item in the 0xFF 0x7F (SeqSpec) wrapper.
 
 Also, the last three items above (key, scale, and background sequence)
 can also be stored (by <i>Sequencer64</i>) with a particular sequence/track, as
@@ -534,7 +545,7 @@ Also, the reading of SMF 0 MIDI files is described in the
 
 \section midi_parsing_rs Running Status
 
-When we apply the <code>midicvt</code> application to a file saved by
+When we apply the <i>midicvt</i> application to a file saved by
 <i>Sequencer64</i>, we can end up with a successful ASCII conversion that ends
 with an error message:
 
@@ -544,7 +555,7 @@ with an error message:
    Error: Garbage at end 'readtrack(): unexpected running status'
 \endverbatim
 
-Is this a problem in <code>midicvt</code> or <i>Sequencer4</i>?
+Is this a problem in <i>midicvt</i> or <i>Sequencer4</i>?
 Let's learn about running status.
 
 Running status is a way to speed up the sending of MIDI bytes to a synthesizer
@@ -591,6 +602,31 @@ Here is the sequence of events for operating with running status.
       received.  RCM bytes range from 0xF8 to 0xFF.
 
 Note that some events, such as Tempo, assume that its bytes are all data bytes.
+
+\section midi_parsing_save_changes MIDI Save Changes
+
+Things have progressed over the months with the conversion and saving of MIDI
+files.  For example, when we read the <tt>CountryStrum.mid</tt> file and save
+it, in recent versions of <i>Sequencer64</i> (e.g. 0.94.0 and above),
+the new version is a lot longer (59 Kbytes) than the version saved previously
+(33 Kbytes).  What accounts for this difference?
+
+Well, converting both versions to ASCII via <i>midicvt</i> reveals that the
+newer version of <i>Sequencer64</i> adds missing Note Off events to the file.
+And there are a lot of them!  Almost doubles the size of the file, naturally.
+
+In addition, SeqSpec <code>24 24 00 02</code> (channel number has been added to
+some tracks).  SeqSpec <code>24 24 00 08</code> adds data that wasn't output
+before.  And SeqSpec <code>24 24 00 14</code> (sequence transpose) has been
+added.
+SeqSpec <code>24 24 00 07</code> (song BPM) now shows the proper BPM from the
+conversion.
+Finally, the magic number for the final, proprietary track has been changed
+from <code>0x7777</code> to the MIDI-compliant value of <code>0x3FFF</code>.
+
+Another bunch of data, <code>24 24 00 09</code> (mute groups), is still
+present, but there are now options to eliminate its 4096 bytes of data.
+
 
  */
 

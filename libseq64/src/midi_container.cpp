@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2018-01-06
+ * \updates       2018-01-11
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -139,6 +139,12 @@ midi_container::add_short (midishort x)
  *
  *  SysEx and Meta events are detected and passed to the new add_ex_event()
  *  function for proper dumping.
+ *
+ * \param e
+ *      Provides the event to be added to the container.
+ *
+ * \param deltatime
+ *      Provides the time-location of the event.
  */
 
 void
@@ -188,6 +194,9 @@ midi_container::add_event (const event & e, midipulse deltatime)
  * \param e
  *      Provides the MIDI event to add.  The caller must ensure that this is
  *      either SysEx or Meta event, using the event::is_ex_data() function.
+ *
+ * \param deltatime
+ *      Provides the time of the event, which is encoded into the event.
  */
 
 void

@@ -86,6 +86,10 @@
 #include <fcntl.h>                  /* O_RDWR flag                          */
 #endif
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
 namespace seq64
 {
 

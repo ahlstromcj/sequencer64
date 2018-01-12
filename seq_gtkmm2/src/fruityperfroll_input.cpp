@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-13
- * \updates       2017-10-23
+ * \updates       2018-01-11
  * \license       GNU GPLv2 or above
  *
  *  Now derived directly Seq24PerfInput.  No more AbstractPerfInput and no
@@ -84,9 +84,6 @@ FruityPerfInput::FruityPerfInput
  *  Updates the mouse pointer, implementing a context-sensitive mouse.
  *  Note that perform::convert_xy() returns its values via side-effects on the
  *  last two parameters.
- *
- * \param roll
- *      The song editor piano roll that is the "parent" of this class.
  */
 
 void
@@ -135,9 +132,6 @@ FruityPerfInput::update_mouse_pointer ()
  *
  * \param ev
  *      The button-press event to process.
- *
- * \param roll
- *      The song editor piano roll that is the "parent" of this class.
  *
  * \return
  *      Returns true if a modification occurred.
@@ -212,9 +206,6 @@ FruityPerfInput::on_button_press_event (GdkEventButton * ev)
  *
  * \param ev
  *      The left-button-press event to process.
- *
- * \param roll
- *      The song editor piano roll that is the "parent" of this class.
  *
  * \return
  *      Now returns true if a modification occurred.
@@ -330,9 +321,6 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * ev)
  * \param ev
  *      The right-button-press event to process.
  *
- * \param roll
- *      The song editor piano roll that is the "parent" of this class.
- *
  * \return
  *      Returns true if a modification occurred.
  */
@@ -365,9 +353,6 @@ FruityPerfInput::on_right_button_pressed (GdkEventButton * ev)
  * \param ev
  *      The button-release event to process.
  *
- * \param roll
- *      The song editor piano roll that is the "parent" of this class.
- *
  * \return
  *      Returns true if a modification occurred.
  */
@@ -396,9 +381,6 @@ FruityPerfInput::on_button_release_event (GdkEventButton * ev)
  *
  * \param ev
  *      The motion-notify event to process.
- *
- * \param roll
- *      The song editor piano roll that is the "parent" of this class.
  *
  * \return
  *      Returns true if a modification occurred, and sets the perform modified

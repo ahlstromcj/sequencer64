@@ -122,9 +122,6 @@ if [ "$TARGET" == "reference" ] ; then
 	pdflatex refman
 	makeindex refman.idx
 	pdflatex refman
-	makeindex refman.idx
-	pdflatex refman
-	makeindex refman.idx
    popd
 
 # Optimize the PDF to cut down on its size.

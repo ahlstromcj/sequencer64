@@ -901,7 +901,8 @@ midi_jack::api_flush ()
  * \param tick
  *      Provides the tick value to continue from.
  *
- *  The param beats is currently unused.
+ * \param beats
+ *      The parameter "beats" is currently unused.
  */
 
 void

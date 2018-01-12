@@ -2439,7 +2439,7 @@ perform::get_screen_set_notepad (int screenset) const
  *
  *  As a new feature, we would like to queue-mute the previous screenset,
  *  and queue-unmute the newly-selected screenset.  Still working on getting
- *  it right.  Still #undef SEQ64_USE_AUTO_SCREENSET_QUEUE.
+ *  it right.  Still undefined: SEQ64_USE_AUTO_SCREENSET_QUEUE.
  *
  * \param ss
  *      The index of the desired new screen set.  It is forced to range from

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-07
+ * \updates       2018-01-09
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -611,7 +611,7 @@ mainwnd::mainwnd
     add_tooltip
     (
         m_button_jack,
-        "The current MIDI mode: JACK (slave), Master, Native (JACK), or ALSA. "
+        "MIDI mode: JACK transport Slave or Master, JACK MIDI, or ALSA MIDI. "
         "Click this button to bring up the JACK connection options page. Ctrl-P "
         "also brings up this page."
     );
@@ -1438,7 +1438,7 @@ mainwnd::timer_callback ()
      * the JACK connection page from the Options dialog.
      */
 
-    std::string label("ALSA");
+    std::string label;
     if (perf().is_jack_running())
     {
         if (rc().with_jack_master())
@@ -1446,6 +1446,8 @@ mainwnd::timer_callback ()
         else if (rc().with_jack_transport())
             label = "Slave";
     }
+    else
+        label = "ALSA";
 
 #ifdef SEQ64_RTMIDI_SUPPORT
     if (rc().with_jack_midi())
@@ -1936,10 +1938,12 @@ mainwnd::rc_error_dialog (const std::string & message)
  *  Note that the split trigger variant of Stazed, where it doesn't just split
  *  the section in half, is not yet implemented (2016-08-05).
  *
- * \param do_export
- *      If true, then just write out the file and don't change the name of
- *      the current file based on the file-name the user selected.  The
- *      default value of this parameter is false.
+ * \param option
+ *      Indicates how to save or export the MIDI sequences.
+ *      The default value of this parameter is FILE_SAVE_AS_NORMAL.
+ *      The export options allow one to save the file as if the triggers were
+ *      employed, or with a lot of the Sequencer64-specific information
+ *      removed.
  */
 
 void

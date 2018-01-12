@@ -2561,6 +2561,8 @@ seqedit::thru_change_callback ()
     m_seq.set_thru(thru_active);        /* issue #69 fixed here */
 }
 
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+
 /**
  *  Passes the Follow status to the seqroll object.
  */
@@ -2570,6 +2572,8 @@ seqedit::follow_change_callback ()
 {
     m_seqroll_wid->set_progress_follow(m_toggle_follow->get_active());
 }
+
+#endif  // SEQ64_FOLLOW_PROGRESS_BAR
 
 /**
  *  Passes the given parameter to sequence::set_rec_vol().  This function also

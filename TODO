@@ -1,32 +1,19 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-01-05
+2016-12-03 to 2018-01-10
 
 Debian (and other) Packaging:
 
-    -   Need a Sequencer64-debian project to hold packages for convenience.
     -   Still need to get a static package to work.
-    -   Get some of the samples (MIDI and configuration files) to install to
-        the /usr/local/share or /usr/share directory.
-    -   The JACK/ALSA/Slave/Master button does not update when the setup is
-        selected via the Options / JACK GUI.
 
-MIDI Format Checks:
+MIDI Format Checks: The following files have differences we would like to
+verify:
 
-    -   Rosegarden.  Read the b4uacuse-GM-format.midi file fine.
-    -   Ardour.  Read the b4uacuse-GM-format.midi file fine.  Also plays it,
-        and it of course shows no gap, since it does not support seq64
-        triggers.
-    -   QMidiArp?
-    -   Mido?
-
-    Also, the following files have differences we would like to verify:
-
-        -   b4uacuse-GM-format.midi versus b4-4x8.midi, they vary all over the
-            place!
-        -   b4-4x8.midi versus b4-8x8.midi, they vary starting around offset
-            0x4416; the former has a bunch of 00 00 00 00 values, the latter
-            has a bunch of 00 00 00 01 values.
+    -   b4uacuse-GM-format.midi versus b4-4x8.midi, they vary all over the
+        place!
+    -   b4-4x8.midi versus b4-8x8.midi, they vary starting around offset
+        0x4416; the former has a bunch of 00 00 00 00 values, the latter
+        has a bunch of 00 00 00 01 values.
 
 Windows:
 
@@ -35,12 +22,10 @@ Windows:
     -   Master MingW.
     -   Add Windows implementation and build files.
     -   Add NSIS installer creation.
-    -   Get basic St 5 support working.
+    -   Get basic Qt 5 support working.
 
 Tempo Track:
 
-    -   Test both versions of the CountryStrum file to make sure they play at
-        the same tempo.
     -   Separate tempo for each pattern (a feature request)?
 
     1:1 Program         C0 (192), seqdata tries to draw it (height == 0)

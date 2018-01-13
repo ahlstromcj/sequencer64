@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-09
+ * \updates       2018-01-13
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -657,8 +657,8 @@ mainwnd::mainwnd
         m_button_time_type,
         "Toggles between B:B:T and H:M:S format, showing the selected format."
     );
-    // hbox4->pack_start(*m_button_time_type, false, false);
     tophbox->pack_start(*m_button_time_type, false, false);
+    tophbox->pack_start(*(manage(new Gtk::HSeparator())), false, false, 4);
 
     Gtk::Label * timedummy = manage(new Gtk::Label("   "));
     hbox4->pack_start(*timedummy, false, false, 0);

@@ -638,8 +638,9 @@ midi_container::song_fill_seq_trigger
  *  assumed to increment.  This application doesn't use that shortcut.
  *
  *  We have noticed differences in saving files in sets=4x8 versus sets=8x8,
- *  and pre-sorting the event list gets rid of all of the differences except
- *  for the last, multi-line SeqSpec.
+ *  and pre-sorting the event list gets rid of some of the differences, except
+ *  for the last, multi-line SeqSpec.  Some event-reordering still seems to
+ *  occur, though.
  *
  * Stazed:
  *

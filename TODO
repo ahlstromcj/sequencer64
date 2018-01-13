@@ -1,19 +1,10 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-01-10
+2016-12-03 to 2018-01-12
 
 Debian (and other) Packaging:
 
     -   Still need to get a static package to work.
-
-MIDI Format Checks: The following files have differences we would like to
-verify:
-
-    -   b4uacuse-GM-format.midi versus b4-4x8.midi, they vary all over the
-        place!
-    -   b4-4x8.midi versus b4-8x8.midi, they vary starting around offset
-        0x4416; the former has a bunch of 00 00 00 00 values, the latter
-        has a bunch of 00 00 00 01 values.
 
 Windows:
 
@@ -40,6 +31,9 @@ Tempo Track:
         position in time and tempo-height.
     -   The sequence draw marker still can get messed up by seqedit, and
         mess up the drawing of the tempo track in perfroll.
+
+    -   The PrCh and Tempo messages group keep swapping locations with the
+        TimeSig message.  Weird!  Sad!
 
 Modify flag:
 

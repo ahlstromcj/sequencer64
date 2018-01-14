@@ -252,9 +252,7 @@ int mainwnd::sm_sigpipe[2];
  *
  * \todo
  *      Offload most of the work into an initialization function like
- *      options does; make the perform parameter a reference;
- *      valgrind flags m_tooltips as lost data, but if we try to manage it
- *      ourselves, many more leaks occur.
+ *      options does; make the perform parameter a reference.
  */
 
 mainwnd::mainwnd
@@ -271,7 +269,6 @@ mainwnd::mainwnd
 ) :
     gui_window_gtk2         (p),
     performcallback         (),
-    m_tooltips              (manage(new Gtk::Tooltips())),  /* valgrind bitches */
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
     m_menu_recent           (nullptr),
@@ -1086,8 +1083,6 @@ mainwnd::mainwnd
         contentvbox->pack_start(*bottomhbox, Gtk::PACK_SHRINK);
     }
 
-    // contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
-
     m_main_wid->set_can_focus();            /* from stazed */
     m_main_wid->grab_focus();
 
@@ -1232,10 +1227,6 @@ mainwnd::~mainwnd ()
 
     if (not_nullptr(m_options))
         delete m_options;
-
-    /*
-     * delete m_tooltips;
-     */
 
     if (sm_sigpipe[0] != -1)
         close(sm_sigpipe[0]);

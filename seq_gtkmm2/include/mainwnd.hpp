@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-06
+ * \updates       2018-01-13
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -144,12 +144,6 @@ private:
     static const int sm_widmax = SEQ64_MAINWIDS_MAX;
 
 #endif
-
-    /**
-     *  A repository for tooltips.
-     */
-
-    Gtk::Tooltips * m_tooltips;
 
     /**
      *  Theses objects support the menu and its sub-menus.

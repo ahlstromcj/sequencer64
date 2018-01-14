@@ -10,7 +10,7 @@ This document describes some issues and scenarios involving the JACK, live, and
 song modes.
 
 \page       jack_modes_page JACK, Live, and Song Modes in Sequencer64
-\author     Chris Ahlstrom 2017-05-01
+\author     Chris Ahlstrom 2018-01-14
 
 \section jack_modes_intro Introduction
 
@@ -22,6 +22,65 @@ issues remain in Sequencer64's JACK handling.
 There is currently no description of the 0.90.x line's native JACK MIDI
 support, except what is found in the developer's reference manual and in the
 updated sequencer64-doc project at GitHub.  We will rectify that at some point.
+In the meantime, scan the documentation in the jack_assistant module.
+
+\section jack_modes_bits JACK Bits
+
+\subsection jack_modes_bits_pos JACK Position Bits
+
+JACK Position Bits to support in Sequencer64, their values, their purpose,
+and the jack_position_t field they manage:
+
+   -   JackPositionBBT = 0x10. Bar, Beat, Tick.  The fields managed are bar,
+       beat, tick, bar_start_tick, beats_per_bar, beat_type, ticks_per_beat,
+       beats_per_minute.  Applications that support JackPositionBBT are
+       encouraged to also fill the JackBBTFrameOffset.  Note that the BPM is
+       quantized to block-size. This means when the tempo is not constant
+       within this block, the BPM value should adapted to compensate for
+       this. This is different from most fields in the struct, which specify
+       the value at the beginning of the block, rather than an average.
+   -   JackPositionTimecode = 0x20. External timecode.  The fields managed
+       are frame_time and next_time.
+   -   JackBBTFrameOffset = 0x40. Offset of BBT information. The sole field
+       managed is bbt_offset, the frame offset for the BBT fields. The given
+       bar, beat, and tick values actually refer to a time frame_offset
+       frames before the start of the cycle.  It should be assumed to be 0 if
+       JackBBTFrameOffset is not set. If JackBBTFrameOffset is set and this
+       value is zero, the BBT time refers to the first frame of this cycle.
+       If the value is positive, the BBT time refers to a frame that many
+       frames before the start of the cycle.
+   -   Summary list:
+       - JackVideoFrameOffset = 0x100
+       - JackAudioVideoRatio  = 0x080
+       - JackBBTFrameOffset   = 0x040
+       - JackPositionTimecode = 0x020
+       - JackPositionBBT      = 0x010
+
+Only JackPositionBBT is supported so far.  Applications that support
+JackPositionBBT are encouraged to also fill the JackBBTFrameOffset-managed
+field (bbt_offset).  We are experimenting with this for now; there's not a
+lot of material out there on the Web.
+
+\subsection jack_modes_bits_status JACK Status Bits
+
+Jack Status Bits support diagnosing run-time issue in JACK.
+For reference, here are the enumeration values from /usr/include/jack/types.h:
+
+\verbatim
+        JackFailure         = 0x01
+        JackInvalidOption   = 0x02
+        JackNameNotUnique   = 0x04
+        JackServerStarted   = 0x08
+        JackServerFailed    = 0x10
+        JackServerError     = 0x20
+        JackNoSuchClient    = 0x40
+        JackLoadFailure     = 0x80
+        JackInitFailure     = 0x100
+        JackShmFailure      = 0x200
+        JackVersionError    = 0x400
+        JackBackendError    = 0x800
+        JackClientZombie    = 0x1000
+\endverbatim
 
 \section jack_modes_functions JACK Functions
 
@@ -145,7 +204,13 @@ sensible to create a JACK client with only one session callback.
 Tells the JACK server that the application is ready to start
 processing.
 
+\subsection jack_set_timebase_callback jack_set_timebase_callback ()
+
+   TODO
+
 \subsection jack_release_timebase jack_release_timebase ()
+
+Used in tearing down the JACK transport infrastructure.
 
    TODO
 
@@ -160,9 +225,17 @@ request at any time. It takes effect no sooner than the next
 process cycle, perhaps later if there are slow-sync clients. This
 function is realtime-safe.  No return code.
 
+Found this note in the Hydrogen code:
+
+   <i>When jack_transport_start() is called, it takes effect from the next
+   processing cycle.  The location info from the timebase_master, if
+   there is one, will not be available until the _next_ next cycle.  The
+   code must therefore wait one cycle before syncing up with
+   timebase_master.</i>
+
 \subsection jack_transport_stop jack_transport_stop ()
 
-Starts the JACK transport rolling.  Any client can make this
+Stops the JACK transport from rolling.  Any client can make this
 request at any time.  This function is realtime-safe.  No return
 code.
 
@@ -175,6 +248,10 @@ already rolling, it will enter the JackTransportStarting state and
 begin invoking their sync_callbacks until ready. This function is
 realtime-safe.
 
+   http://jackaudio.org/files/docs/html/transport-design.html
+
+jack_BBT_position() is not necessary to change jack position.
+
 \subsection jack_transport_reposition jack_transport_reposition ()
 
 Request a new transport position.  May be called at any time by any
@@ -183,6 +260,15 @@ there are slow-sync clients and the transport is already rolling,
 it will enter the JackTransportStarting state and begin invoking
 their sync_callbacks until ready. This function is realtime-safe.
 This call, made in the position() function, is currently disabled.
+
+Its \a pos parameter provides the requested new transport position.
+Fill pos->valid to specify which fields should be taken into account.
+If you mark a set of fields as valid, you are expected to fill them
+all.  Note that "frame" is always assumed, and generally needs to be
+set: http://comments.gmane.org/gmane.comp.audio.jackit/18705
+
+Returns 0 if a valid request, EINVAL if the position structure is
+rejected.
 
 \subsection jack_transport_query jack_transport_query ()
 

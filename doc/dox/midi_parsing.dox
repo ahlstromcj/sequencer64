@@ -9,7 +9,7 @@
 This document describes how Sequencer64 parses a MIDI file.
 
 \page       midi_parsing_page MIDI File Parsing in Sequencer64
-\author     Chris Ahlstrom 2018-01-11
+\author     Chris Ahlstrom 2018-01-14
 
 \section midi_parsing_intro Introduction
 
@@ -202,7 +202,7 @@ number, which is read:
    Seq number:    varies         read_short()      2 bytes
 \endverbatim
 
-Note that the sequence number might be modified latter to account for the
+Note that the sequence number might be modified later to account for the
 current screenset in force for a file import operation.
 
 Anything other SeqSpec type is simply skipped by reading the "length" number of
@@ -225,6 +225,64 @@ calls typically made while parsing a MIDI track:
       -# <code>sequence::set_name()</code>
       -# <code>sequence::set_midi_bus()</code>
    -# <code>xxxxx::yyyy()</code>
+
+\subsection midi_parsing_smf_1_meta_seq  Sequence Number Meta Event
+
+The old Seq24 application, and hence Sequencer64, add the sequence-number meta
+event to imported tunes that are then exported.  This event has the format
+<code>FF 00 02 ss ss</code>, where <code>ss ss</code> is the sequence number,
+which is a variable-length value that can range from 0 to 0x3FFF (16383).
+This code is a feature of SMF 2 files, which Seq24 and Sequencer24 don't really
+handle.  Here is the first track of a basic MIDI file:
+
+\verbatim
+   MThd 1 130 120
+   MTrk
+   0 TimeSig 4/4 24 8
+   0 KeySig 0 major
+   0 Tempo 461538
+   0 Meta TrkEnd
+   TrkEnd
+\endverbatim
+
+When written by Seq24, there are extra events emitted, and the PPQN is modified
+to the Seq24 standard of 192.  These differences are marked with an asterisk:
+
+\verbatim
+*  MThd 1 130 192
+   MTrk
+*  0 SeqNr 0
+   0 Meta SeqName "Untitled"
+*  0 SeqSpec 24 24 00 08
+*  0 SeqSpec 24 24 00 01 00
+*  0 SeqSpec 24 24 00 06 04 04
+*  0 SeqSpec 24 24 00 02 00
+*  48 Meta TrkEnd
+   TrkEnd
+\endverbatim
+
+Also note that Seq24 does not export the time-signature, tempo, and
+key-signature events.  Sequencer64 emits the time-signature and tempo events,
+but not the key-signature.  It also emits some extra SeqSpec values.
+
+\verbatim
+*  MThd 1 130 192
+   MTrk
+*  0 SeqNr 0
+   0 Meta SeqName "Untitled"
+   0 Tempo 461538
+   0 TimeSig 4/4 24 8
+*  0 SeqSpec 24 24 00 08
+*  0 SeqSpec 24 24 00 01 00
+*  0 SeqSpec 24 24 00 06 04 04
+*  0 SeqSpec 24 24 00 02 00
+*  0 SeqSpec 24 24 00 14 01
+   768 Meta TrkEnd
+   TrkEnd
+\endverbatim
+
+Again, the sequence-number is not an SMF 1 value, but SMF 2.
+So we seem to be writing a hybrid format.  More to learn!
 
 \subsection midi_parsing_smf_1_meta_sum  Meta Events Summary
 

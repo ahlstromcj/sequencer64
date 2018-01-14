@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2018-01-11
+ * \updates       2018-01-13
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -214,11 +214,19 @@ midi_container::add_ex_event (const event & e, midipulse deltatime)
 }
 
 /**
- *  Fills in the sequence number.  Writes 0xFF 0x00 0x02, and then the number.
- *  This function is used in the new midifile::write_song() function, which
- *  should be ready to go by the time you're reading this.
+ *  Fills in the sequence number.  Writes 0xFF 0x00 0x02 ss ss, where ss ss is
+ *  the variable-length value for the sequence number.  This function is used
+ *  in the new midifile::write_song() function, which should be ready to go by
+ *  the time you're reading this.  Compare this function to the beginning of
+ *  midi_container::fill().
  *
- *  Compare this function to the beginning of midi_container::fill().
+ * \warning
+ *      This is an optional event, which must occur only at the start of a
+ *      track, before any non-zero delta-time.  For Format 2 MIDI files, this
+ *      is used to identify each track. If omitted, the sequences are numbered
+ *      sequentially in the order the tracks appear.  For Format 1 files, this
+ *      event should occur on the first track only.  So, are we writing a
+ *      hybrid format?
  *
  * \param seq
  *      The sequence/track number to write.
@@ -280,7 +288,23 @@ midi_container::fill_meta_track_end (midipulse deltatime)
 }
 
 /**
- *  Combines the two functions.  Legacy.  Deprecated. We need to fix.
+ *  Combines the two functions fill_tempo() and fill_time_signature().  This
+ *  function is called only for track 0.  And it only puts out the events if
+ *  the track does not contain tempo or time-signature events; in that case,
+ *  it needs to grab the global values from the performance object and put
+ *  them out.
+ *
+ * \param p
+ *      The performance object that holds the time signature and tempo values.
+ *
+ * \param has_time_sig
+ *      Indicates whether or not the current track (usually track 0) has a
+ *      time signature event.  If so, then we do not need to fill in the
+ *      global time signature value.
+ *
+ * \param has_tempo
+ *      Indicates whether or not the current track (track 0) has a tempo
+ *      event.  If so, then we do not need to fill in the global tempo value.
  */
 
 void

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-01-02
+ * \updates       2018-01-14
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -5975,7 +5975,12 @@ perform::playback_key_event (const keystroke & k, bool songmode)
             {
                 if (is_running())
                 {
-                    pause_playing(songmode);            // why pause, not stop?
+                    /*
+                     * It is inconsistent to do this, I think:
+                     * pause_playing(songmode);  // why pause, not stop?
+                     */
+
+                    stop_playing();
                 }
                 else
                 {

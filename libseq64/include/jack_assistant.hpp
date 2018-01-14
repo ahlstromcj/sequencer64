@@ -134,12 +134,16 @@ class jack_assistant
 {
     friend int jack_transport_callback (jack_nframes_t nframes, void * arg);
     friend void jack_shutdown_callback (void * arg);
+
+#ifdef USE_JACK_SYNC_CALLBACK
     friend int jack_sync_callback
     (
         jack_transport_state_t state,
         jack_position_t * pos,
         void * arg
     );
+#endif
+
     friend void jack_timebase_callback
     (
         jack_transport_state_t state,
@@ -664,12 +668,14 @@ private:
  *  Global functions for JACK support and JACK sessions.
  */
 
+#ifdef USE_JACK_SYNC_CALLBACK
 extern int jack_sync_callback
 (
     jack_transport_state_t state,
     jack_position_t * pos,
     void * arg
 );
+#endif
 
 extern void jack_shutdown_callback (void * arg);
 extern void jack_timebase_callback

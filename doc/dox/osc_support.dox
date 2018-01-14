@@ -364,7 +364,7 @@ This will be a good one to implement.  Similar to the version defined above.
 Continue playback.
 This might be better as an implementation of the existing pause functionality.
 
-\subsection osc_support_loop /sequencer64/transport/loop/block(boolean)
+\subsection osc_support_loop_block /sequencer64/transport/loop/block(boolean)
 
 Enable or disable pattern Block Loop.
 Will need to see if this a useful feature for Sequencer64.
@@ -379,7 +379,7 @@ Not yet sure what this might mean.
 Move the Block Loop one segment forwards
 Not yet sure what this might mean.
 
-\subsection osc_support_loop /sequencer64/transport/loop/pattern(boolean)
+\subsection osc_support_loop_pattern /sequencer64/transport/loop/pattern(boolean)
 
 Enable or disable looping the current pattern.
 Not sure how this would differ from muting/unmuting a pattern.

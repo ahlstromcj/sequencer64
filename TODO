@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-01-12
+2016-12-03 to 2018-01-14
 
 Debian (and other) Packaging:
 
@@ -31,9 +31,11 @@ Tempo Track:
         position in time and tempo-height.
     -   The sequence draw marker still can get messed up by seqedit, and
         mess up the drawing of the tempo track in perfroll.
-
     -   The PrCh and Tempo messages group keep swapping locations with the
         TimeSig message.  Weird!  Sad!
+
+            midi_container::fill()
+                m_events.sort()
 
 Modify flag:
 
@@ -136,6 +138,13 @@ More issues:
 
        jack_transport_reposition called with a NULL client
        jack_transport_reposition(): bad position structure
+
+    b. Playback without a client (such as Yoshimi) proceeds fine in ALSA, but
+       not in JACK.  Turns out the reason is:
+
+        register_port: JACK error registering port seq64 midi in 0
+
+       So, at some point, ...
 
  5. Patterns panel arrow key does not snap to position, it moves a whole snap
     position.

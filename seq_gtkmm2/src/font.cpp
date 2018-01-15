@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-14
+ * \updates       2018-01-15
  * \license       GNU GPLv2 or above
  *
  *  The interesting thing about this font class is that font files are not
@@ -126,7 +126,7 @@ namespace seq64
 
 font::font ()
  :
-    m_use_new_font  (usr().use_new_font()),
+    m_use_new_font  (usr().use_new_font() && ! rc().legacy_format()),
     m_cell_w        (cf_cell_w),
     m_cell_h        (cf_cell_h),
     m_font_w        (cf_text_w),

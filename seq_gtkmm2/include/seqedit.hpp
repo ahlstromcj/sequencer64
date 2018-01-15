@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-21
+ * \updates       2018-01-15
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -380,6 +380,7 @@ private:
     Gtk::RadioButton * m_radio_grow;    /**< Unused grow button.            */
     Gtk::RadioButton * m_radio_draw;    /**< Unused selection button.       */
 #endif
+    Gtk::Entry * m_entry_seqnumber;     /**< Number of the sequence.        */
     Gtk::Entry * m_entry_name;          /**< Name of the sequence.          */
 
     /**

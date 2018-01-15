@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-01-14
+2016-12-03 to 2018-01-15
 
 Debian (and other) Packaging:
 
@@ -74,10 +74,6 @@ Rtmidi implementation issues to work out:
         -   When changed in the GUI
     -   Make the STRIP_MUTES option permanent.
 
-Legacy Mode:
-
-    -   Does not select the legacy font!
-
 Hot ideas (from GitHub):
     
     -   Mute button should be inactive unless there are armed sequences.  The
@@ -85,9 +81,6 @@ Hot ideas (from GitHub):
         are armed.
     -   Any way to make playback multicore?  The "stress" file maxes out a
         core.
-    -   Issue: With sets=8x12, the stress MIDI file will crash at load or
-        exit, with bad sequence #108 (out of 128 loaded).
-    -   Display sequence number in sequence and event editors.
 
 Puzzles:
 

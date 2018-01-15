@@ -117,21 +117,17 @@
  *  (or our midicvt program).  For now, we stick with "MTrk".
  */
 
-#define PROPRIETARY_CHUNK_TAG       SEQ64_MTRK_TAG
+#define PROP_CHUNK_TAG              SEQ64_MTRK_TAG
 
 /**
  *  Provides the sequence number for the proprietary/SeqSpec data when using
  *  the new format.  (There is no sequence number for the legacy format.)
  *  Can't use numbers, such as 0xFFFF, that have MIDI meta tags in them,
- *  confuses our "proprietary" track parser.  This sequence number, 0x7777, is
- *  neither a valid nor legal sequence number.  No real sequence will ever
- *  have this number in Sequencer64.  However, this number is too big, as it
- *  turns out.  See the discussion at write_varinum().  We change it to
- *  0x3FFF.
+ *  confuses our "proprietary" track parser.
  */
 
-#define PROPRIETARY_SEQ_NUMBER      0x3FFF
-#define PROPRIETARY_SEQ_NUMBER_OLD  0x7777
+#define PROP_SEQ_NUMBER             0x3FFF
+#define PROP_SEQ_NUMBER_OLD         0x7777
 
 /**
  *  Provides the track name for the "proprietary" data when using the new
@@ -141,7 +137,7 @@
  *  that causes needless error messages.
  */
 
-#define PROPRIETARY_TRACK_NAME      "Sequencer64-S"
+#define PROP_TRACK_NAME             "Sequencer64-S"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -1280,22 +1276,19 @@ midifile::parse_proprietary_track (perform & p, int file_size)
 {
     bool result = true;
     midilong ID = read_long();                      /* Get ID + Length      */
-    if (ID == PROPRIETARY_CHUNK_TAG)                /* magic number 'MTrk'  */
+    if (ID == PROP_CHUNK_TAG)                /* magic number 'MTrk'  */
     {
         midilong tracklength = read_long();
         if (tracklength > 0)
         {
             /*
-             * The old number, 0x7777, is an illegal sequence number
-             * value, and is now 0x3FFF.  But we don't want to startle
-             * people, so we will silently ignore (and replace upon
+             * The old number, 0x7777, is now 0x3FFF.  We don't want to
+             * startle people, so we will silently ignore (and replace upon
              * saving) this number.
              */
 
-            int seqnum = read_seq_number();
-            bool ok = (seqnum == PROPRIETARY_SEQ_NUMBER) ||
-                (seqnum == PROPRIETARY_SEQ_NUMBER_OLD);
-
+            int sn = read_seq_number();
+            bool ok = (sn == PROP_SEQ_NUMBER) || (sn == PROP_SEQ_NUMBER_OLD);
             if (ok)                                 /* sanity check         */
             {
                 std::string trackname = read_track_name();
@@ -1307,11 +1300,11 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                  * to scan in the new format.  Let the "MTrk" and 0x3FFF
                  * markers be enough.
                  *
-                 * if (trackname != PROPRIETARY_TRACK_NAME)
+                 * if (trackname != PROP_TRACK_NAME)
                  *     result = false;
                  */
             }
-            else if (seqnum == (-1))
+            else if (sn == (-1))
             {
                 m_error_is_fatal = false;
                 errdump("No sequence number in SeqSpec track, extra data");
@@ -1703,7 +1696,6 @@ midifile::write_short (midishort x)
  *      -   0x80 is represented as 0x81 00.
  *      -   The largest 2-byte MIDI value (e.g. a sequence number) is
  *          0xFF 7F, which is 127 * 128 + 127 = 16383 = 0x3FFF.
- *          This is the (new) value of the PROPRIETARY_SEQ_NUMBER macro.
  *      -   The largest 3-byte MIDI value is 0xFF FF 7F = 0x1FFFFF.
  *      -   The largest number, 4 bytes, is 0xFF FF FF 7F = 0xFFFFFFF.
  *
@@ -2324,7 +2316,7 @@ midifile::write_proprietary_track (perform & p)
     if (m_new_format)                           /* calculate track size     */
     {
         tracklength += seq_number_size();       /* bogus sequence number    */
-        tracklength += track_name_size(PROPRIETARY_TRACK_NAME);
+        tracklength += track_name_size(PROP_TRACK_NAME);
         tracklength += prop_item_size(4);       /* c_midictrl               */
         tracklength += prop_item_size(4);       /* c_midiclocks             */
         tracklength += prop_item_size(cnotesz); /* c_notes                  */
@@ -2345,10 +2337,10 @@ midifile::write_proprietary_track (perform & p)
     }
     if (m_new_format)                           /* write beginning of track */
     {
-        write_long(PROPRIETARY_CHUNK_TAG);      /* "MTrk" or something else */
+        write_long(PROP_CHUNK_TAG);             /* "MTrk" or something else */
         write_long(tracklength);
-        write_seq_number(PROPRIETARY_SEQ_NUMBER); /* bogus sequence number  */
-        write_track_name(PROPRIETARY_TRACK_NAME); /* bogus track name       */
+        write_seq_number(PROP_SEQ_NUMBER);      /* bogus sequence number    */
+        write_track_name(PROP_TRACK_NAME);      /* bogus track name         */
     }
     write_prop_header(c_midictrl, 4);           /* midi control tag + 4     */
     write_long(0);                              /* SEQ24 WRITES ZERO ONLY!  */

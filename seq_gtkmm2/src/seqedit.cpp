@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-21
+ * \updates       2018-01-15
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -135,6 +135,14 @@
 #include "pixmaps/drum.xpm"
 #include "pixmaps/transpose.xpm"
 #endif
+
+/**
+ *  Manifest constants for the top panel text sizes.
+ */
+
+#define SEQ64_ENTRY_SIZE_SEQNUMBER       4
+#define SEQ64_ENTRY_SIZE_SEQNAME        20
+#define SEQ64_ENTRY_SIZE_BUSNAME        32
 
 /*
  * Saves some typing.  We could, like Stazed, limit the scope of this to
@@ -401,12 +409,15 @@ seqedit::seqedit
     m_radio_grow        (nullptr),
     m_radio_draw        (nullptr),
 #endif
+    m_entry_seqnumber   (nullptr),
     m_entry_name        (nullptr),
     m_editing_status    (0),
     m_editing_cc        (0),
     m_have_focus        (false)
 {
-    std::string title = "Sequencer64 - \"";                 /* main window */
+    std::string title = SEQ64_APP_NAME " #";        /* main window title    */
+    title += m_seq.seq_number();
+    title += " \"";
     title += m_seq.name();
     title += "\"";
     set_title(title);
@@ -1217,9 +1228,15 @@ seqedit::fill_top_bar ()
      *  First row of top bar
      */
 
-    m_entry_name = manage(new Gtk::Entry());            /* name             */
-    m_entry_name->set_max_length(32);                   /* was 26           */
-    m_entry_name->set_width_chars(32);                  /* was 26           */
+    m_entry_seqnumber = manage(new Gtk::Entry());       /* sequence number  */
+//  m_entry_seqnumber->set_max_length(SEQ64_ENTRY_SIZE_SEQNUMBER);
+    m_entry_seqnumber->set_width_chars(SEQ64_ENTRY_SIZE_SEQNUMBER);
+    m_entry_seqnumber->set_text(m_seq.seq_number());
+    m_entry_seqnumber->set_sensitive(false);
+
+    m_entry_name = manage(new Gtk::Entry());            /* sequence name    */
+//  m_entry_name->set_max_length(SEQ64_ENTRY_SIZE_SEQNAME);
+    m_entry_name->set_width_chars(SEQ64_ENTRY_SIZE_SEQNAME);
     m_entry_name->set_text(m_seq.name());
     m_entry_name->signal_changed().connect
     (
@@ -1248,6 +1265,7 @@ seqedit::fill_top_bar ()
         m_entry_name->select_region(0, 0);              /* select text      */
     }
 
+    m_hbox->pack_start(*m_entry_seqnumber, true, true);
     m_hbox->pack_start(*m_entry_name, true, true);
     m_hbox->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
 
@@ -1307,10 +1325,16 @@ seqedit::fill_top_bar ()
     );
     m_hbox->pack_start(*m_button_length , false, false);
     m_hbox->pack_start(*m_entry_length , false, false);
+
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_hbox->pack_start(*m_toggle_transpose, false, false, 4);
 #endif
-    m_hbox->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
+
+    /*
+     * We need the space this takes up:
+     * m_hbox->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
+     */
+
     m_button_bus = manage(new Gtk::Button());           /* MIDI output bus   */
     m_button_bus->add(*manage(new PIXBUF_IMAGE(bus_xpm)));
     m_button_bus->signal_clicked().connect
@@ -1319,8 +1343,8 @@ seqedit::fill_top_bar ()
     );
     add_tooltip(m_button_bus, "Select MIDI output bus.");
     m_entry_bus = manage(new Gtk::Entry());
-    m_entry_bus->set_max_length(60);
-    m_entry_bus->set_width_chars(40);                   /* was 60, then 50  */
+//  m_entry_bus->set_max_length(SEQ64_ENTRY_SIZE_BUSNAME);
+    m_entry_bus->set_width_chars(SEQ64_ENTRY_SIZE_BUSNAME);
     m_entry_bus->set_editable(false);
     m_hbox->pack_start(*m_button_bus , false, false);
     m_hbox->pack_start(*m_entry_bus , true, true);

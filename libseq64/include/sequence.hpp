@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-11-23
+ * \updates       2018-01-15
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -764,6 +764,17 @@ public:
     midipulse get_trigger_paste_tick () const
     {
         return m_triggers.get_trigger_paste_tick();
+    }
+
+    /**
+     * \getter m_seq_number as a string
+     */
+
+    std::string seq_number () const
+    {
+        char temp[8];
+        snprintf(temp, sizeof temp, "%d", int(m_seq_number));
+        return std::string(temp);
     }
 
     /**

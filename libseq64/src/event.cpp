@@ -488,18 +488,49 @@ event::append_sysex (midibyte * data, int dsize)
 bool
 event::append_meta_data (midibyte metatype, midibyte * data, int dsize)
 {
-    bool result = false;
-    if (not_nullptr(data) && (dsize > 0))
+    bool result = not_nullptr(data) && (dsize > 0);
+    if (result)
     {
         set_meta_status(metatype);
         for (int i = 0; i < dsize; ++i)
             m_sysex.push_back(data[i]);
-
-        result = true;
     }
     else
     {
-        errprint("event::append_meta_data(): null parameters");
+        errprint("event::append_meta_data(): null data");
+    }
+    return result;
+}
+
+/**
+ *  This overload appends Meta-event data from a vector to a new buffer.
+ *
+ * \param metatype
+ *      Provides the type of the Meta event, which is stored in the m_channel
+ *      member.
+ *
+ * \param data
+ *      Provides the Meta event's data as a vector.
+ *
+ * \return
+ *      Returns false if an error occurred, and the caller needs to stop
+ *      trying to process the data.
+ */
+
+bool
+event::append_meta_data (midibyte metatype, const std::vector<midibyte> & data)
+{
+    int dsize = int(data.size());
+    bool result = dsize > 0;
+    if (result)
+    {
+        set_meta_status(metatype);
+        for (int i = 0; i < dsize; ++i)
+             m_sysex.push_back(data[i]);
+    }
+    else
+    {
+        errprint("event::append_meta_data(): no data");
     }
     return result;
 }

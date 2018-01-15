@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-11
+ * \updates       2018-01-15
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -776,6 +776,7 @@ public:
     bool append_sysex (midibyte * data, int len);
     bool append_sysex (midibyte data);
     bool append_meta_data (midibyte metatype, midibyte * data, int len);
+    bool append_meta_data (midibyte metatype, const std::vector<midibyte> & data);
     void restart_sysex ();              // kind of useless
 
     /**
@@ -1164,6 +1165,16 @@ public:
     bool is_time_signature () const
     {
         return is_meta() && m_channel == EVENT_META_TIME_SIGNATURE; /* 0x58 */
+    }
+
+    /**
+     *  Indicates if the event is a Key Signature event.  See
+     *  sm_meta_event_names[].
+     */
+
+    bool is_key_signature () const
+    {
+        return is_meta() && m_channel == EVENT_META_KEY_SIGNATURE;  /* 0x59 */
     }
 
     void print () const;

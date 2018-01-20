@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-17
+ * \updates       2018-01-20
  * \license       GNU GPLv2 or above
  *
  *  This module handles "fruity" interactions only in the piano roll
@@ -75,20 +75,47 @@ FruitySeqRollInput::FruitySeqRollInput
     (
         p, seq, zoom, snap, seqkeys_wid, pos, hadjust, vadjust
     ),
+    m_can_add               (true),         /* seq24's m_canadd */
     m_erase_painting        (false),
-    m_drag_paste_start_pos  ()              /* an array */
+    m_drag_paste_start_pos  ()              /* an array         */
 {
-    //
+    // no additional code
 }
 
 /**
  *  Updates the mouse pointer, implementing a context-sensitive mouse.
+ *  This code is very similar to the base class version.
  */
 
 void
-FruitySeqRollInput::update_mouse_pointer ()
+FruitySeqRollInput::update_mouse_pointer (bool isadding)
 {
-    seqroll::update_mouse_pointer(adding());
+    ///// seqroll::update_mouse_pointer(adding());
+
+    midipulse droptick;
+    int dropnote;
+    convert_xy(current_x(), current_y(), droptick, dropnote);
+
+    midipulse s, f;                     // start, end;
+    int note;                           // midibyte
+    bool intersect = m_seq.intersect_notes(droptick, dropnote, s, f, note);
+    if (normal_action())
+        get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
+    else if (! isadding && intersect && (note == dropnote))
+    {
+        long hsize = m_seq.handle_size(s, f);
+        if (s <= droptick && droptick <= s + hsize)
+            get_window()->set_cursor(Gdk::Cursor(Gdk::RIGHT_PTR)); // TRIAL!
+            // get_window()->set_cursor(Gdk::Cursor(Gdk::CENTER_PTR));
+        else if (f - hsize <= droptick && droptick <= f)
+            get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
+        else
+            get_window()->set_cursor(Gdk::Cursor(Gdk::CENTER_PTR));
+    }
+    else
+        get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
+
+
 }
 
 /**
@@ -109,9 +136,9 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
 {
     midipulse tick_s, tick_f;
     int note_h, note_l;
-    sequence & seq = m_seq;                   /* just do this once!   */
+    sequence & seq = m_seq;                         /* just do this once!   */
     int norm_x, snapped_x, snapped_y;
-    bool needs_update = button_press_initial  /* focus grab and more! */
+    bool needs_update = button_press_initial        /* focus grab and more! */
     (
         ev, norm_x, snapped_x, snapped_y            /* 3 side-effects       */
     );
@@ -120,21 +147,19 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
         int norm_x = snapped_x;
         if (SEQ64_CLICK_LEFT(ev->button))
         {
-            set_current_drop_x(norm_x);       /* selection normal x   */
+            set_current_drop_x(norm_x);             /* selection normal x   */
             convert_xy(m_drop_x, m_drop_y, tick_s, note_h);
             int eventcount = seq.select_note_events
             (
                 tick_s, note_h, tick_s, note_h, sequence::e_would_select
             );
-            if (eventcount == 0 && ! is_ctrl_key(ev))
+
+            if (m_can_add && (eventcount == 0) && ! is_ctrl_key(ev))
             {
                 set_adding(true);              /* not on top of event */
                 m_painting = true;             /* start the paint job */
                 set_current_drop_x(snapped_x); /* adding, snapped x   */
-                convert_xy
-                (
-                    m_drop_x, m_drop_y, tick_s, note_h
-                );
+                convert_xy(m_drop_x, m_drop_y, tick_s, note_h);
 
                 /*
                  * Stazed fix, forwards the event to play the hint note.
@@ -147,21 +172,19 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
                 );
                 if (eventcount == 0)
                 {
+                    // TODO:  make sure sequence::push_undo() is called
+
                     add_note(tick_s, note_h); /* also does chords     */
                     needs_update = true;
                 }
             }
             else                                            /* selecting    */
             {
-                /*
-                 * If under the cursor is not a selected note...
-                 */
-
                 eventcount = seq.select_note_events
                 (
                     tick_s, note_h, tick_s, note_h, sequence::e_is_selected
                 );
-                if (eventcount == 0)
+                if (eventcount == 0)    /* no selected note under cursor    */
                 {
                     eventcount = seq.select_note_events
                     (
@@ -170,7 +193,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
                     if (eventcount > 0)
                     {
                         /*
-                         * If clicking a note, unselect all if ctrl not held.
+                         * If clicking a note, unselect all if Ctrl not held.
                          */
 
                         if (! is_ctrl_key(ev))
@@ -193,20 +216,22 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
                         sequence::e_select_one  /* direct click, one event */
                     );
 
-                    /* prevent deselect in button_release() */
+                    /*
+                     * If events selected, stop deselect in button_release(),
+                     * otherwise start the selection box if Ctrl active.
+                     */
 
-                    if (eventcount)
+                    if (eventcount > 0)
                         m_justselected_one = true;
-
-                    /* if nothing selected, start the selection box */
-
-                    if (eventcount == 0 && is_ctrl_key(ev))
+                    else if (is_ctrl_key(ev))
                         m_selecting = true;
 
                     needs_update = true;
                 }
 
-                /* if note under cursor is selected */
+                /*
+                 * Check if note under cursor is selected.
+                 */
 
                 eventcount = seq.select_note_events
                 (
@@ -227,25 +252,20 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
                     {
                         midipulse tick;                 // drop tick
                         int note;                       // drop note
+                        convert_drop_xy(tick, note);
+
                         midipulse s, f;                 // start & finish ticks
                         int n;                          // note number
-                        convert_drop_xy(tick, note);
                         bool found = seq.intersect_notes(tick, note, s, f, n);
                         if (found && n == note)
                         {
                             midipulse hsize = seq.handle_size(s, f);
                             if (tick >= (f - hsize) && tick <= f)
-                            {
                                 right_handle = true;
-                            }
                             else if (tick >= s && tick <= (s + hsize))
-                            {
                                 left_handle = true;
-                            }
                             else
-                            {
                                 center_handle = true;
-                            }
                         }
                     }
                     bool grabmovenote = ! is_ctrl_key(ev) && center_handle;
@@ -295,10 +315,13 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
                         m_drag_paste_start_pos[0] = int(ev->x);
                         m_drag_paste_start_pos[1] = int(ev->y);
                     }
-                    if  /* left click on the right handle = grow/resize event  */
-                    (
-                        (left_handle || right_handle) && ! is_ctrl_key(ev)
-                    )
+
+                    /*
+                     * left click on the right handle = grow/resize event.
+                     * seq24 also allows the middle-click w/out ctrl.
+                     */
+
+                    if ((left_handle || right_handle) && ! is_ctrl_key(ev))
                     {
                         /* get the box that selected elements are in */
 
@@ -310,10 +333,13 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
         }
         if (SEQ64_CLICK_MIDDLE(ev->button))
         {
-            /* get the box that selected elements are in */
+            if (! is_ctrl_key(ev))
+            {
+                /* Get the box that selected elements are in. */
 
-            m_growing = true;
-            get_selected_box(tick_s, note_h, tick_f, note_l);
+                m_growing = true;
+                get_selected_box(tick_s, note_h, tick_f, note_l);
+            }
         }
         if (SEQ64_CLICK_RIGHT(ev->button))
         {
@@ -338,18 +364,6 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
                     (
                         tick_s, note_h, tick_s, note_h, sequence::e_select_one
                     );
-
-                    /*
-                     * Stazed fix.  TODO:  incorporated the mark-check and the
-                     * push-undo into sequence::remove_selected().  Done.
-                     *
-                     * if (seq.mark_selected())
-                     * {
-                     *     seq.push_undo();
-                     *     seq.remove_selected();
-                     * }
-                     */
-
                     seq.remove_selected();
                 }
                 else
@@ -382,11 +396,18 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
             }
         }
     }
-    update_mouse_pointer();             /* context sensitive mouse pointer... */
+    update_mouse_pointer(adding());     /* context sensitive mouse pointer... */
     if (needs_update)                   /* if they clicked, something changed */
         seq.set_dirty();                /* redraw_events();                   */
 
-    (void) seqroll::on_button_press_event(ev);
+    /*
+     * \change ca 2018-01-20
+     *      Why do we do this unconditionally?  Do it only if nothing above
+     *      was acted on.
+     */
+
+    if (! needs_update)
+        (void) seqroll::on_button_press_event(ev);
 
     return needs_update;
 }
@@ -561,7 +582,7 @@ FruitySeqRollInput::on_button_release_event (GdkEventButton * ev)
     m_moving_init = false;
     m_painting = false;
     seq.unpaint_all();
-    update_mouse_pointer();         /* context sensitive mouse pointer... */
+    update_mouse_pointer(adding()); /* context sensitive mouse pointer... */
     if (needs_update)               /* if they clicked, something changed */
         seq.set_dirty();            /* redraw_events();                   */
 
@@ -595,7 +616,7 @@ FruitySeqRollInput::on_motion_notify_event (GdkEventMotion * ev)
         m_moving_init = false;
         m_moving = true;
     }
-    update_mouse_pointer();    /* context sensitive mouse pointer... */
+    update_mouse_pointer(adding()); /* context sensitive mouse pointer... */
 
     /**
      * In "fruity" interatction mode, ctrl-left-click-drag on selected note(s)

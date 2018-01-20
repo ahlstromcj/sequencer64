@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-08
+ * \updates       2018-01-20
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -1403,10 +1403,10 @@ seqroll::grow_selected_notes (int dx)
  */
 
 void
-seqroll::set_adding (bool adding)
+seqroll::set_adding (bool isadding)
 {
-    m_adding = adding;
-    if (adding)
+    m_adding = isadding;
+    if (isadding)
         get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
     else
         get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
@@ -1428,19 +1428,21 @@ clamp (long val, long low, long hi)
  */
 
 void
-seqroll::update_mouse_pointer (bool adding)
+seqroll::update_mouse_pointer (bool isadding)
 {
     midipulse droptick;
     int dropnote;
     convert_xy(current_x(), current_y(), droptick, dropnote);
+
     midipulse s, f;                     // start, end;
     int note;                           // midibyte
     if (normal_action())
         get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
-    else if (adding)
+    else if (isadding)
         get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
 
-    if (m_seq.intersect_notes(droptick, dropnote, s, f, note) && note == dropnote)
+    bool intersect = m_seq.intersect_notes(droptick, dropnote, s, f, note);
+    if (intersect && (note == dropnote))
     {
         long hsize = m_seq.handle_size(s, f);
         if (droptick >= (f - hsize) && droptick <= f)

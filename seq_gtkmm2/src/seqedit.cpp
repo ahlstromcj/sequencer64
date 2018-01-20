@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-15
+ * \updates       2018-01-20
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -42,8 +42,42 @@
  *  User jean-emmanual added support for disabling the following of the
  *  progress bar during playback.  See the seqroll::m_progress_follow member.
  *
- * Menu refinements.  We are fixing the popup menus so that they are created
- * only once.  Here is the progress:
+ * Table.
+ *
+ *      This dialog is layed out as a Gtk::Table, which is deprecated in
+ *      preference to Gtk::Grid.  The attachment numbers have the following
+ *      meanings:
+ *
+ *      -   left_attach   Column number to attach left side of a child widget.
+ *      -   right_attach  Column number to attach right side of a child widget.
+ *      -   top_attach    Row number to attach top of a child widget.
+ *      -   bottom_attach Row number to attach bottom of a child widget.
+ *
+ *      The rows and columns of the seqedit main portion are:
+ *
+ *  Column:         0       1                                         2
+ *  Row:         -------------------------------------------------------
+ *          0   |         | seqtime  1 2 0 1                        | b |
+ *              |---------------------------------------------------|---|
+ *              |         |                                         | v |
+ *          1   | seqkeys | seqroll  1 2 1 2                        | s |
+ *              | 0 1 1 2 |                                         |   |
+ *              |---------------------------------------------------|---|
+ *          2   | blank   | seqevent 1 2 2 3                        | b |
+ *              |---------------------------------------------------|---|
+ *              |         |                                         |   |
+ *          3   | blank   | seqdata  1 2 3 4                        | b |
+ *              | 0 1 3 4 |                                         |   |
+ *              |---------------------------------------------------|---|
+ *          4   | icon??? | dhbox    1 2 4 5 event to rec-volume    | b |
+ *              |---------------------------------------------------|---|
+ *          5   | blank   | horizontal scrollbar                    | b |
+ *               -------------------------------------------------------
+ *
+ * Menu refinements.
+ *
+ *      We are fixing the popup menus so that they are created only once.
+ *      Here is the progress:
  *
  *      -   m_menu_bpm.
  *      -   m_menu_bw.
@@ -105,6 +139,8 @@
 #endif
 
 #include "pixmaps/follow.xpm"
+#include "pixmaps/fruity.xpm"
+#include "pixmaps/tux.xpm"
 #include "pixmaps/play.xpm"
 #include "pixmaps/q_rec.xpm"
 #include "pixmaps/rec.xpm"
@@ -411,6 +447,7 @@ seqedit::seqedit
 #endif
     m_entry_seqnumber   (nullptr),
     m_entry_name        (nullptr),
+    m_image_mousemode   (nullptr),
     m_editing_status    (0),
     m_editing_cc        (0),
     m_have_focus        (false)
@@ -434,7 +471,12 @@ seqedit::seqedit
     Gtk::HBox * dhbox = manage(new Gtk::HBox(false, 2));
     m_vbox->set_border_width(2);
 
-    /* fill table */
+    /*
+     * Fill the (deprecated) Table.  The numbers are the L, R, T, and B
+     * attachment locations.  See the banner notes for this module.
+     *
+     *                              L  R  T  B
+     */
 
     m_table->attach(*m_seqkeys_wid, 0, 1, 1, 2, Gtk::SHRINK, Gtk::FILL);
     m_table->attach(*m_seqtime_wid, 1, 2, 0, 1, Gtk::FILL, Gtk::SHRINK);
@@ -449,6 +491,18 @@ seqedit::seqedit
     (
         *dhbox, 1, 2, 4, 5, Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK, 0, 2
     );
+
+    m_image_mousemode = manage
+    (
+        (rc().interaction_method() == e_fruity_interaction) ?
+            new PIXBUF_IMAGE(fruity_xpm) :
+            new PIXBUF_IMAGE(tux_xpm)
+    );
+    m_table->attach
+    (
+        *m_image_mousemode, 0, 1, 4, 5, Gtk::SHRINK, Gtk::SHRINK, 0, 2
+    );
+
     m_table->attach
     (
         *m_vscroll_new, 2, 3, 1, 2, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND
@@ -664,6 +718,7 @@ seqedit::seqedit
      *
      * Not needed: m_seqroll_wid->set_ignore_redraw(false);
      */
+
 }
 
 /**
@@ -1229,13 +1284,11 @@ seqedit::fill_top_bar ()
      */
 
     m_entry_seqnumber = manage(new Gtk::Entry());       /* sequence number  */
-//  m_entry_seqnumber->set_max_length(SEQ64_ENTRY_SIZE_SEQNUMBER);
     m_entry_seqnumber->set_width_chars(SEQ64_ENTRY_SIZE_SEQNUMBER);
     m_entry_seqnumber->set_text(m_seq.seq_number());
     m_entry_seqnumber->set_sensitive(false);
 
     m_entry_name = manage(new Gtk::Entry());            /* sequence name    */
-//  m_entry_name->set_max_length(SEQ64_ENTRY_SIZE_SEQNAME);
     m_entry_name->set_width_chars(SEQ64_ENTRY_SIZE_SEQNAME);
     m_entry_name->set_text(m_seq.name());
     m_entry_name->signal_changed().connect
@@ -1343,7 +1396,6 @@ seqedit::fill_top_bar ()
     );
     add_tooltip(m_button_bus, "Select MIDI output bus.");
     m_entry_bus = manage(new Gtk::Entry());
-//  m_entry_bus->set_max_length(SEQ64_ENTRY_SIZE_BUSNAME);
     m_entry_bus->set_width_chars(SEQ64_ENTRY_SIZE_BUSNAME);
     m_entry_bus->set_editable(false);
     m_hbox->pack_start(*m_button_bus , false, false);
@@ -2461,8 +2513,8 @@ seqedit::transpose_change_callback ()
  *  Changes the image used for the transpose button.
  *
  * \param istransposable
- *      If true, set the image to the "Transpose" icon.  Otherwise, set
- *      it to the "Drum" (not transposable) icon.
+ *      If true, set the image to the "Transpose" icon.  Otherwise, set it to
+ *      the "Drum" (not transposable) icon.
  */
 
 void
@@ -2483,6 +2535,33 @@ seqedit::set_transpose_image (bool istransposable)
 }
 
 #endif
+
+/**
+ *  Changes the image used for the mouse-mode indicator.
+ *
+ * \warning
+ *      Currently can't get this to work on the fly.
+ *
+ * \param isfruity
+ *      If true, set the image to the "Fruity" icon.  Otherwise, set it to the
+ *      "Tux" icon.
+ */
+
+void
+seqedit::set_mousemode_image (bool isfruity)
+{
+    m_table->remove(*m_image_mousemode);
+    delete m_image_mousemode;
+    if (isfruity)
+        m_image_mousemode = manage(new PIXBUF_IMAGE(fruity_xpm));
+    else
+        m_image_mousemode = manage(new PIXBUF_IMAGE(tux_xpm));
+
+    m_table->attach
+    (
+        *m_image_mousemode, 0, 1, 4, 5, Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK, 0, 2
+    );
+}
 
 /**
  *  Passes the play status to the sequence object.

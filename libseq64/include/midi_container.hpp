@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2018-01-06
+ * \updates       2018-01-17
  * \license       GNU GPLv2 or above
  *
  *  This class is meant to hold the bytes that represent MIDI events and other
@@ -183,15 +183,16 @@ namespace seq64
  *  preferences.
  *
  * \note
- *      The value c_transpose value is from Stazed's seq32 project.
- *      The code to support this option is turned on via the
- *      build-configurable SEQ64_STAZED_TRANSPOSE macro, but here we
- *      reserved the value even if that option is not enabled by the user.
- *      There are additional values from Stazed/seq32, not yet used.
- *
- * \note
- *      These values are compatible with Seq32, but they are not compatible
- *      with Kepler34.
+ *      -   The value c_transpose value is from Stazed's seq32 project.
+ *          The code to support this option is turned on via the
+ *          build-configurable SEQ64_STAZED_TRANSPOSE macro, but here we
+ *          reserved the value even if that option is not enabled by the user.
+ *          There are additional values from Stazed/seq32, not yet used.
+ *      -   The values below are compatible with Seq32, but they are not
+ *          compatible with Kepler34.  It uses 0x24240011 and 0x24240012 for
+ *          difference purposes.  See the asterisks below.
+ *      -   Note the new "gap" values.  We just noticed this gap, which has
+ *          existed between 0x24240009 and 0x24240010 since Seq24!
  */
 
 const midilong c_midibus     =  0x24240001; /**< Track buss number.         */
@@ -203,9 +204,15 @@ const midilong c_timesig     =  0x24240006; /**< Track time signature.      */
 const midilong c_bpmtag      =  0x24240007; /**< Song beats/minute.         */
 const midilong c_triggers_new = 0x24240008; /**< Track trigger data.        */
 const midilong c_mutegroups  =  0x24240009; /**< Song mute group data.      */
+const midilong c_gap_A       =  0x2424000A; /**< Gap. A.                    */
+const midilong c_gap_B       =  0x2424000B; /**< Gap. B.                    */
+const midilong c_gap_C       =  0x2424000C; /**< Gap. C.                    */
+const midilong c_gap_D       =  0x2424000D; /**< Gap. D.                    */
+const midilong c_gap_E       =  0x2424000E; /**< Gap. E.                    */
+const midilong c_gap_F       =  0x2424000F; /**< Gap. F.                    */
 const midilong c_midictrl    =  0x24240010; /**< Song MIDI control.         */
-const midilong c_musickey    =  0x24240011; /**< The track's key.           */
-const midilong c_musicscale  =  0x24240012; /**< The track's scale.         */
+const midilong c_musickey    =  0x24240011; /**< The track's key. *         */
+const midilong c_musicscale  =  0x24240012; /**< The track's scale. *       */
 const midilong c_backsequence = 0x24240013; /**< Track background sequence. */
 const midilong c_transpose   =  0x24240014; /**< Track transpose value.     */
 const midilong c_perf_bp_mes =  0x24240015; /**< Perfedit beats/measure.    */
@@ -214,8 +221,8 @@ const midilong c_tempo_map   =  0x24240017; /**< Reserve seq32 tempo map.   */
 const midilong c_reserved_1  =  0x24240018; /**< Reserved for expansion.    */
 const midilong c_reserved_2  =  0x24240019; /**< Reserved for expansion.    */
 const midilong c_tempo_track =  0x2424001A; /**< Alternate tempo track no.  */
-const midilong c_seq_colours =  0x2424001B; /**< Future feature Kepler34.   */
-const midilong c_seq_edit_mode = 0x2424001C; /**< Future feature Kepler34.  */
+const midilong c_seq_colours =  0x2424001B; /**< Future feature Kepler34. * */
+const midilong c_seq_edit_mode = 0x2424001C; /**< Future feature Kepler34.* */
 
 /**
  *    This class is the abstract base class for a container of MIDI track

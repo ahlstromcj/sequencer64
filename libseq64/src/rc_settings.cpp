@@ -310,7 +310,7 @@ rc_settings::home_config_directory () const
     char * env = getenv(HOME);
     if (env != NULL)
     {
-        std::string home(getenv(HOME));
+        std::string home(env);                      // getenv(HOME);
         result = home + SLASH;                      /* e.g. /home/username/  */
         if (! rc().legacy_format())
         {

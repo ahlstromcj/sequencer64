@@ -2017,23 +2017,28 @@ midifile::write (perform & p, bool doseqspec)
         {
             if (p.is_active(track))
             {
-                sequence & seq = *p.get_sequence(track);
+                sequence * s = p.get_sequence(track);
+                if (not_nullptr(s))
+                {
+                    sequence & seq = *s;
 
 #if defined SEQ64_USE_MIDI_VECTOR
-                midi_vector lst(seq);
+                    midi_vector lst(seq);
 #else
-                midi_list lst(seq);
+                    midi_list lst(seq);
 #endif
 
-                /*
-                 * midi_container::fill() also handles the time-signature and
-                 * tempo meta events, if they are not part of the file's MIDI
-                 * data.  All the events are put into the container, and then the
-                 * container's bytes are written out below.
-                 */
+                    /*
+                     * midi_container::fill() also handles the time-signature
+                     * and tempo meta events, if they are not part of the
+                     * file's MIDI data.  All the events are put into the
+                     * container, and then the container's bytes are written
+                     * out below.
+                     */
 
-                lst.fill(track, p, doseqspec);
-                write_track(lst);
+                    lst.fill(track, p, doseqspec);
+                    write_track(lst);
+                }
             }
         }
     }
@@ -2171,54 +2176,58 @@ midifile::write_song (perform & p)
         {
             if (p.is_exportable(track))
             {
-                sequence & seq = *p.get_sequence(track);
+                sequence * s = p.get_sequence(track);
+                if (not_nullptr(s))
+                {
+                    sequence & seq = *s;
 
 #if defined SEQ64_USE_MIDI_VECTOR
-                midi_vector lst(seq);
+                    midi_vector lst(seq);
 #else
-                midi_list lst(seq);
+                    midi_list lst(seq);
 #endif
 
-                lst.fill_seq_number(track);
-                lst.fill_seq_name(seq.name());
-                if (track == 0 && ! rc().legacy_format())
-                {
-                    lst.fill_time_sig_and_tempo
-                    (
-                        p, seq.events().has_time_signature(),
-                        seq.events().has_tempo()
-                    );
-                }
-
-                /*
-                 * Add each trigger as described in the function banner.
-                 */
-
-                midipulse previous_ts = 0;
-                const triggers::List & trigs = seq.get_triggers();
-                triggers::List::const_iterator i;
-                for (i = trigs.begin(); i != trigs.end(); ++i)
-                    previous_ts = lst.song_fill_seq_event(*i, previous_ts);
-
-                if (! trigs.empty())        /* adjust the sequence length */
-                {
-                    const trigger & end_trigger = trigs.back();
+                    lst.fill_seq_number(track);
+                    lst.fill_seq_name(seq.name());
+                    if (track == 0 && ! rc().legacy_format())
+                    {
+                        lst.fill_time_sig_and_tempo
+                        (
+                            p, seq.events().has_time_signature(),
+                            seq.events().has_tempo()
+                        );
+                    }
 
                     /*
-                     * This isn't really the trigger length.  It is off by 1.
-                     * But subtracting the tick_start() value can really screw
-                     * things up.
+                     * Add each trigger as described in the function banner.
                      */
 
-                    midipulse seqend = end_trigger.tick_end();
-                    midipulse measticks = seq.measures_to_ticks();
-                    midipulse remainder = seqend % measticks;
-                    if (remainder != measticks - 1)
-                        seqend += measticks - remainder - 1;
+                    midipulse previous_ts = 0;
+                    const triggers::List & trigs = seq.get_triggers();
+                    triggers::List::const_iterator i;
+                    for (i = trigs.begin(); i != trigs.end(); ++i)
+                        previous_ts = lst.song_fill_seq_event(*i, previous_ts);
 
-                    lst.song_fill_seq_trigger(end_trigger, seqend, previous_ts);
+                    if (! trigs.empty())        /* adjust the sequence length */
+                    {
+                        const trigger & end_trigger = trigs.back();
+
+                        /*
+                         * This isn't really the trigger length.  It is off by 1.
+                         * But subtracting the tick_start() value can really screw
+                         * things up.
+                         */
+
+                        midipulse seqend = end_trigger.tick_end();
+                        midipulse measticks = seq.measures_to_ticks();
+                        midipulse remainder = seqend % measticks;
+                        if (remainder != measticks - 1)
+                            seqend += measticks - remainder - 1;
+
+                        lst.song_fill_seq_trigger(end_trigger, seqend, previous_ts);
+                    }
+                    write_track(lst);
                 }
-                write_track(lst);
             }
         }
     }

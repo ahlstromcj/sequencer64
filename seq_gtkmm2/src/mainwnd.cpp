@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-15
+ * \updates       2018-01-20
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -3598,7 +3598,7 @@ mainwnd::populate_menu_file ()
     (
         MenuElem
         (
-            "E_xport Song as MIDI...", Gtk::AccelKey("<control><shift>I"),
+            "Export _Song as MIDI...", Gtk::AccelKey("<control><shift>I"),
             sigc::bind
             (
                 mem_fun(*this, &mainwnd::file_save_as), FILE_SAVE_AS_EXPORT_SONG
@@ -3615,7 +3615,7 @@ mainwnd::populate_menu_file ()
     (
         MenuElem
         (
-            "Export MIDI Only...", Gtk::AccelKey("<control><shift>O"),
+            "Export _MIDI Only...", Gtk::AccelKey("<control><shift>O"),
             sigc::bind
             (
                 mem_fun(*this, &mainwnd::file_save_as), FILE_SAVE_AS_EXPORT_MIDI

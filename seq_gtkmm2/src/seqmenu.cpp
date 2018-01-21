@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-08
+ * \updates       2018-01-20
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -137,7 +137,8 @@ seqmenu::popup_menu ()
     m_menu = manage(new Gtk::Menu());
     if (is_current_seq_active())        /* also checks sequence pointer */
     {
-        if (! get_current_sequence()->get_editing())
+        sequence * s = get_current_sequence();
+        if (not_nullptr(s) && ! s->get_editing())
         {
             m_menu->items().push_back
             (
@@ -255,7 +256,7 @@ seqmenu::popup_menu ()
 #define SET_TRANS   mem_fun(*this, &seqmenu::set_transposable)
 
         sequence * s = get_current_sequence();
-        if (s->get_transposable())
+        if (not_nullptr(s) && s->get_transposable())
         {
             m_menu->items().push_back
             (
@@ -318,34 +319,37 @@ seqmenu::popup_menu ()
 void
 seqmenu::set_bus_and_midi_channel (int bus, int ch)
 {
-    if (is_current_seq_active())        /* also checks sequence pointer */
+    if (is_current_seq_active())            /* also checks sequence pointer */
     {
         sequence * s = get_current_sequence();
-        if (s->get_midi_bus() != bus || s->get_midi_channel() != ch)
-            s->set_dirty();
-
-        s->set_midi_bus(bus, true);       /* now can set perform's modify */
-        s->set_midi_channel(ch, true);    /* ditto                        */
-
-        /*
-         * New for 0.9.15.2:  Let's try to update the seqedit as well, if it
-         * is open.  Seems to work!  But not on all systems, as issue 50
-         * suggests.  We need a better solution.
-         *
-         * if (not_nullptr(m_seqedit))
-         * {
-         *     m_seqedit->set_midi_bus(bus);
-         *     m_seqedit->set_midi_channel(ch);
-         * }
-         */
-
-        iterator sit = sm_seqedit_list.find(s->number());
-        if (sit != sm_seqedit_list.end())
+        if (not_nullptr(s))
         {
-            if (not_nullptr(sit->second))
+            if (s->get_midi_bus() != bus || s->get_midi_channel() != ch)
+                s->set_dirty();
+
+            s->set_midi_bus(bus, true);       /* now can set perform modify */
+            s->set_midi_channel(ch, true);    /* ditto                      */
+
+            /*
+             * New for 0.9.15.2:  Let's try to update the seqedit as well, if it
+             * is open.  Seems to work!  But not on all systems, as issue 50
+             * suggests.  We need a better solution.
+             *
+             * if (not_nullptr(m_seqedit))
+             * {
+             *     m_seqedit->set_midi_bus(bus);
+             *     m_seqedit->set_midi_channel(ch);
+             * }
+             */
+
+            iterator sit = sm_seqedit_list.find(s->number());
+            if (sit != sm_seqedit_list.end())
             {
-                sit->second->set_midi_bus(bus);
-                sit->second->set_midi_channel(ch);
+                if (not_nullptr(sit->second))
+                {
+                    sit->second->set_midi_bus(bus);
+                    sit->second->set_midi_channel(ch);
+                }
             }
         }
     }
@@ -382,10 +386,13 @@ seqmenu::set_transposable (bool flag)
     {
 #ifdef SEQ64_STAZED_TRANSPOSE
         sequence * s = get_current_sequence();
-        if (s->get_transposable() != flag)
-            s->set_dirty();
+        if (not_nullptr(s))
+        {
+            if (s->get_transposable() != flag)
+                s->set_dirty();
 
-        s->set_transposable(flag);
+            s->set_transposable(flag);
+        }
 #endif
     }
 }
@@ -411,10 +418,13 @@ seqmenu::seq_edit ()
     if (is_current_seq_active())        /* also checks sequence pointer */
     {
         sequence * s = get_current_sequence();
-        if (! s->get_editing())
-            m_seqedit = create_seqedit(*s);
-        else
-            s->set_raise(true);
+        if (not_nullptr(s))
+        {
+            if (! s->get_editing())
+                m_seqedit = create_seqedit(*s);
+            else
+                s->set_raise(true);
+        }
     }
     else
     {
@@ -542,10 +552,13 @@ seqmenu::seq_event_edit ()
     if (is_current_seq_active())        /* also checks sequence pointer */
     {
         sequence * s = get_current_sequence();
-        if (! s->get_editing())
-            m_eventedit = new eventedit(m_mainperf, *s);
-        else
-            s->set_raise(true);
+        if (not_nullptr(s))
+        {
+            if (! s->get_editing())
+                m_eventedit = new eventedit(m_mainperf, *s);
+            else
+                s->set_raise(true);
+        }
     }
     else
     {
@@ -595,8 +608,12 @@ seqmenu::seq_copy ()
 {
     if (is_current_seq_active())        /* also checks sequence pointer */
     {
-        sm_clipboard.partial_assign(*get_current_sequence());
-        sm_clipboard_empty = false;
+        sequence * s = get_current_sequence();
+        if (not_nullptr(s))
+        {
+            sm_clipboard.partial_assign(*s);
+            sm_clipboard_empty = false;
+        }
     }
 }
 
@@ -615,10 +632,14 @@ seqmenu::seq_cut ()
 {
     if (is_current_seq_active() && ! is_current_seq_in_edit())
     {
-        sm_clipboard.partial_assign(*get_current_sequence());
-        m_mainperf.delete_sequence(current_seq());
-        sm_clipboard_empty = false;                  /* ca 2017-05-25    */
-        redraw(current_seq());
+        sequence * s = get_current_sequence();
+        if (not_nullptr(s))
+        {
+            sm_clipboard.partial_assign(*s);
+            m_mainperf.delete_sequence(current_seq());
+            sm_clipboard_empty = false;                  /* ca 2017-05-25    */
+            redraw(current_seq());
+        }
     }
 }
 
@@ -661,7 +682,8 @@ seqmenu::seq_clear_perf ()
         m_mainperf.push_trigger_undo(m_current_seq);        /* stazed fix   */
         m_mainperf.clear_sequence_triggers(current_seq());
         sequence * s = get_current_sequence();
-        s->set_dirty();
+        if (not_nullptr(s))
+            s->set_dirty();
     }
 }
 

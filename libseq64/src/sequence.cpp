@@ -981,7 +981,7 @@ sequence::set_rec_vol (int recvol)
 
     if (valid)
     {
-        m_rec_vol = recvol;
+        m_rec_vol = short(recvol);
         if (m_rec_vol > 0)
             m_note_on_velocity = m_rec_vol;
     }
@@ -2910,12 +2910,12 @@ sequence::add_note
                 e.paint();
 
             e.set_status(EVENT_NOTE_ON);
-            e.set_data(note, hardwire ? int(m_note_on_velocity) : velocity);
+            e.set_data(note, hardwire ? midibyte(m_note_on_velocity) : velocity);
             e.set_timestamp(tick);
             add_event(e);
 
             e.set_status(EVENT_NOTE_OFF);
-            e.set_data(note, int(m_note_off_velocity));    /* HARD-WIRED */
+            e.set_data(note, midibyte(m_note_off_velocity));    /* HARD-WIRED */
             e.set_timestamp(tick + len);
             result = add_event(e);
         }
@@ -3380,7 +3380,7 @@ sequence::play_note_on (int note)
     automutex locker(m_mutex);
     event e;
     e.set_status(EVENT_NOTE_ON);
-    e.set_data(note, int(m_note_on_velocity));      // SEQ64_MIDI_COUNT_MAX-1
+    e.set_data(note, midibyte(m_note_on_velocity));      // SEQ64_MIDI_COUNT_MAX-1
     m_masterbus->play(m_bus, &e, m_midi_channel);
     m_masterbus->flush();
 }
@@ -3402,7 +3402,7 @@ sequence::play_note_off (int note)
     automutex locker(m_mutex);
     event e;
     e.set_status(EVENT_NOTE_OFF);
-    e.set_data(note, int(m_note_off_velocity));     // SEQ64_MIDI_COUNT_MAX-1
+    e.set_data(note, midibyte(m_note_off_velocity));
     m_masterbus->play(m_bus, &e, m_midi_channel);
     m_masterbus->flush();
 }
@@ -4948,7 +4948,7 @@ sequence::off_playing_notes ()
         while (m_playing_notes[x] > 0)
         {
             e.set_status(EVENT_NOTE_OFF);
-            e.set_data(x, 127);                         /* or is 0 better?  */
+            e.set_data(x, midibyte(127));               /* or is 0 better?  */
             m_masterbus->play(m_bus, &e, m_midi_channel);
             if (m_playing_notes[x] > 0)
                 m_playing_notes[x]--;

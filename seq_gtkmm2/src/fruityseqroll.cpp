@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-20
+ * \updates       2018-01-21
  * \license       GNU GPLv2 or above
  *
  *  This module handles "fruity" interactions only in the piano roll
@@ -144,7 +144,12 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
     );
     if (! needs_update)
     {
-        int norm_x = snapped_x;
+        /*
+         * Causes GitHub issue #90!
+         *
+         * int norm_x = snapped_x;
+         */
+
         if (SEQ64_CLICK_LEFT(ev->button))
         {
             set_current_drop_x(norm_x);             /* selection normal x   */
@@ -172,9 +177,8 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
                 );
                 if (eventcount == 0)
                 {
-                    // TODO:  make sure sequence::push_undo() is called
-
-                    add_note(tick_s, note_h); /* also does chords     */
+                    seq.push_undo();                /* detect the change    */
+                    add_note(tick_s, note_h);       /* also does chords     */
                     needs_update = true;
                 }
             }
@@ -249,25 +253,24 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
                     bool left_handle = false;
                     bool right_handle = false;
                     bool center_handle = false;
-                    {
-                        midipulse tick;                 // drop tick
-                        int note;                       // drop note
-                        convert_drop_xy(tick, note);
+                    midipulse tick;                 // drop tick
+                    int note;                       // drop note
+                    convert_drop_xy(tick, note);
 
-                        midipulse s, f;                 // start & finish ticks
-                        int n;                          // note number
-                        bool found = seq.intersect_notes(tick, note, s, f, n);
-                        if (found && n == note)
-                        {
-                            midipulse hsize = seq.handle_size(s, f);
-                            if (tick >= (f - hsize) && tick <= f)
-                                right_handle = true;
-                            else if (tick >= s && tick <= (s + hsize))
-                                left_handle = true;
-                            else
-                                center_handle = true;
-                        }
+                    midipulse s, f;                 // start & finish ticks
+                    int n;                          // note number
+                    bool found = seq.intersect_notes(tick, note, s, f, n);
+                    if (found && n == note)
+                    {
+                        midipulse hsize = seq.handle_size(s, f);
+                        if (tick >= (f - hsize) && tick <= f)
+                            right_handle = true;
+                        else if (tick >= s && tick <= (s + hsize))
+                             left_handle = true;
+                        else
+                            center_handle = true;
                     }
+
                     bool grabmovenote = ! is_ctrl_key(ev) && center_handle;
                     if (grabmovenote)       /* grab/move the note           */
                     {
@@ -319,14 +322,24 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
                     /*
                      * left click on the right handle = grow/resize event.
                      * seq24 also allows the middle-click w/out ctrl.
+                     * The processing for the left_handle is not correct; it
+                     * should be a move-left and resize event.  And our
+                     * snapping somehow differs from seq24!
                      */
 
-                    if ((left_handle || right_handle) && ! is_ctrl_key(ev))
+                    if (! is_ctrl_key(ev))
                     {
-                        /* get the box that selected elements are in */
+                        if (left_handle)
+                        {
+                            // functionality disabled
+                        }
+                        else if (right_handle)
+                        {
+                            /* get the box that selected elements are in */
 
-                        m_growing = true;
-                        get_selected_box(tick_s, note_h, tick_f, note_l);
+                            m_growing = true;
+                            get_selected_box(tick_s, note_h, tick_f, note_l);
+                        }
                     }
                 }
             }
@@ -407,7 +420,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
      */
 
     if (! needs_update)
-        (void) seqroll::on_button_press_event(ev);
+        needs_update = seqroll::on_button_press_event(ev);
 
     return needs_update;
 }
@@ -425,13 +438,11 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev)
 bool
 FruitySeqRollInput::on_button_release_event (GdkEventButton * ev)
 {
-    midipulse tick_s;
-    midipulse tick_f;
-    int note_h;
-    int note_l;
+    midipulse tick_s, tick_f;
+    int note_h, note_l;
     int x, y, w, h;
-    sequence & seq = m_seq;                   /* just do this once!   */
     bool needs_update = false;
+    sequence & seq = m_seq;                   /* just do this once!   */
     m_current_x = int(ev->x + m_scroll_offset_x);
     m_current_y = int(ev->y + m_scroll_offset_y);
     snap_y(m_current_y);
@@ -449,34 +460,27 @@ FruitySeqRollInput::on_button_release_event (GdkEventButton * ev)
      */
 
     m_seqkeys_wid.set_listen_button_release(ev);
-
-    /* middle click, or ctrl- (???) left click button up */
-
-    if (SEQ64_CLICK_LEFT_MIDDLE(ev->button))
+    if (SEQ64_CLICK_LEFT_MIDDLE(ev->button))    /* left or middle click */
     {
         if (m_growing)        /* convert deltas into screen coordinates */
         {
             convert_xy(delta_x, delta_y, delta_tick, delta_note);
-
-            /*
-             * m_seq->push_undo();
-             */
-
             if (is_shift_key(ev))
-                seq.stretch_selected(delta_tick);
+                seq.stretch_selected(delta_tick);   /* does push_undo   */
             else
-                seq.grow_selected(delta_tick);
+                seq.grow_selected(delta_tick);      /* does push_undo   */
 
             needs_update = true;
         }
     }
 
-    midipulse current_tick;
-    int current_note;
-    convert_xy            /* try to eliminate this */
-    (
-        current_x(), current_y(), current_tick, current_note
-    );
+    /*
+     * \change ca 2018-01-21 Unnecessary at this point
+     *
+     * midipulse current_tick;
+     * int current_note;
+     * convert_xy(current_x(), current_y(), current_tick, current_note);
+     */
 
     /*
      *  -   ctrl-left click button up for select/drag copy/paste
@@ -501,6 +505,21 @@ FruitySeqRollInput::on_button_release_event (GdkEventButton * ev)
 
         if (m_is_drag_pasting_start)
         {
+            midipulse current_tick;
+            int current_note;
+            convert_xy(current_x(), current_y(), current_tick, current_note);
+
+            bool deselect = is_ctrl_key(ev) && ! m_justselected_one;
+            if (deselect)
+            {
+                int count = seq.select_note_events
+                (
+                    current_tick, current_note, current_tick, current_note,
+                    sequence::e_is_selected
+                );
+                if (deselect)
+                    deselect = count > 0;
+            }
             m_is_drag_pasting_start = false;
 
             /*
@@ -509,16 +528,7 @@ FruitySeqRollInput::on_button_release_event (GdkEventButton * ev)
              * just select one, then deselect the note.
              */
 
-            if
-            (
-                is_ctrl_key(ev) &&
-                ! m_justselected_one &&
-                seq.select_note_events
-                (
-                    current_tick, current_note, current_tick, current_note,
-                    sequence::e_is_selected
-                )
-            )
+            if (deselect)
             {
                 (void) seq.select_note_events
                 (
@@ -542,26 +552,18 @@ FruitySeqRollInput::on_button_release_event (GdkEventButton * ev)
             delta_x -= m_move_snap_offset_x;      /* adjust for snap */
             convert_xy(delta_x, delta_y, delta_tick, delta_note);
             delta_note -= c_num_keys - 1;
-
-            /*
-             * m_seq->push_undo();
-             */
-
             seq.move_selected_notes(delta_tick, delta_note);
             needs_update = true;
         }
     }
 
-    /* right click or left click button up for selection box */
-
-    if (SEQ64_CLICK_LEFT_RIGHT(ev->button))
+    if (SEQ64_CLICK_LEFT_RIGHT(ev->button)) /* LR button up for selection */
     {
         if (m_selecting)
         {
             rect::xy_to_rect_get
             (
-                drop_x(), drop_y(),
-                current_x(), current_y(), x, y, w, h
+                drop_x(), drop_y(), current_x(), current_y(), x, y, w, h
             );
             convert_xy(x, y, tick_s, note_h);
             convert_xy(x + w, y + h, tick_f, note_l);
@@ -586,7 +588,14 @@ FruitySeqRollInput::on_button_release_event (GdkEventButton * ev)
     if (needs_update)               /* if they clicked, something changed */
         seq.set_dirty();            /* redraw_events();                   */
 
-    (void) seqroll::on_button_release_event(ev);
+    /*
+     * We have an issue here.  We need to call this function in order to
+     * allow the grow-by-right-handle to work.  But we cannot let it
+     * affect the "needs_update" flag.  Ugh.
+     */
+
+    /* needs_update = */ seqroll::on_button_release_event(ev);
+
     return needs_update;
 }
 
@@ -670,6 +679,7 @@ FruitySeqRollInput::on_motion_notify_event (GdkEventMotion * ev)
         {
             snap_x(m_current_x);
             convert_xy(current_x(), current_y(), tick, note);
+            seq.push_undo();                        /* detect the change    */
             add_note(tick, note);
             result = true;
         }
@@ -696,7 +706,6 @@ FruitySeqRollInput::on_motion_notify_event (GdkEventMotion * ev)
     }
 
     (void) seqroll::on_motion_notify_event(ev);
-
     return result;
 }
 

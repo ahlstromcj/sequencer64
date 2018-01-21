@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-20
+ * \updates       2018-01-21
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -1254,12 +1254,7 @@ seqroll::complete_paste (int x, int y)
     int note;
     convert_xy(m_current_x, m_current_y, tick, note);
     m_paste = false;
-
-    /*
-     * m_seq.push_undo();       // Why commented out?
-     */
-
-    m_seq.paste_selected(tick, note);
+    m_seq.paste_selected(tick, note);   /* does push_undo() now */
 }
 
 /**
@@ -1478,17 +1473,22 @@ seqroll::add_note (midipulse tick, int note, bool paint)
 {
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
     if (m_chord > 0)
-        add_chord(tick, note);
+        return m_seq.add_chord(m_chord, tick, note_off_length(), note);
     else
 #endif
-        m_seq.add_note(tick, note_off_length(), note, paint);
-
-    return true;
+        return m_seq.add_note(tick, note_off_length(), note, paint);
 }
 
 /*
  *  Encapsulates some setup behavior for the fruity and seq24
  *  on_button_press_event() handlers.
+ *
+ * \warning
+ *      The snapping of the x-value means that, even if the mouse is
+ *      just to the right of the handle-size range (16 pixels) of the note,
+ *      and the "middle" pointer is shown, the left handle becomes activated,
+ *      and the note will grow in "fruity" mode.  This also affects the right
+ *      handle in many cases!  See GitHub issue #
  *
  * \param ev
  *      Provides the button-press event to process.
@@ -1713,13 +1713,7 @@ seqroll::button_release (GdkEventButton * ev)
     int delta_y = m_current_y - m_drop_y;
     midipulse delta_tick;
     int delta_note;
-
-    /*
-     * Stazed fix to turn play off.
-     */
-
-    m_seqkeys_wid.set_listen_button_release(ev);
-
+    m_seqkeys_wid.set_listen_button_release(ev);    /* stazed: turn play off */
     if (SEQ64_CLICK_LEFT(ev->button))
     {
         if (m_selecting)
@@ -1727,8 +1721,7 @@ seqroll::button_release (GdkEventButton * ev)
             int x, y, w, h;
             rect::xy_to_rect_get
             (
-                m_drop_x, m_drop_y, m_current_x, m_current_y,
-                x, y, w, h
+                m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h
             );
             convert_xy(x, y, tick_s, note_h);
             convert_xy(x + w, y + h, tick_f, note_l);

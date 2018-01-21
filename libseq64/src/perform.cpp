@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-01-02
+ * \updates       2018-01-20
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -983,7 +983,17 @@ perform::select_triggers_in_range
 #endif      // SEQ64_SONG_BOX_SELECT
 
 /**
+ *  Selectes a trigger for the given sequence.
  *
+ * \param dropseq
+ *      The sequence number that was in play for the location of the mouse in
+ *      the (for example) perfedit roll.
+ *
+ * \param droptick
+ *      The location of the mouse horizonally in the perfroll.
+ *
+ * \return
+ *      Returns true if a trigger was there to select, and was selected.
  */
 
 bool
@@ -2439,7 +2449,7 @@ perform::get_screen_set_notepad (int screenset) const
  *
  *  As a new feature, we would like to queue-mute the previous screenset,
  *  and queue-unmute the newly-selected screenset.  Still working on getting
- *  it right.  Still #undef SEQ64_USE_AUTO_SCREENSET_QUEUE.
+ *  it right.  Still undefined: SEQ64_USE_AUTO_SCREENSET_QUEUE.
  *
  * \param ss
  *      The index of the desired new screen set.  It is forced to range from
@@ -2592,14 +2602,14 @@ void
 perform::play (midipulse tick)
 {
     set_tick(tick);
-    for (int s = 0; s < m_sequence_high; ++s)       /* modest speed up  */
+    for (int seq = 0; seq < m_sequence_high; ++seq)
     {
-        sequence * sp = get_sequence(s);
-        if (not_nullptr(sp))
+        sequence * s = get_sequence(seq);
+        if (not_nullptr(s))
 #ifdef SEQ64_SONG_RECORDING
-            sp->play_queue(tick, m_playback_mode, m_resume_note_ons);
+            s->play_queue(tick, m_playback_mode, m_resume_note_ons);
 #else
-            sp->play_queue(tick, m_playback_mode);
+            s->play_queue(tick, m_playback_mode);
 #endif
     }
     if (not_nullptr(m_master_bus))
@@ -2640,11 +2650,6 @@ perform::clear_sequence_triggers (int seq)
     sequence * s = get_sequence(seq);
     if (not_nullptr(s))
         s->clear_triggers();
-
-    /*
-     * if (is_active(seq))
-     *     m_seqs[seq]->clear_triggers();
-     */
 }
 
 /**
@@ -3229,9 +3234,7 @@ perform::panic ()
     {
         sequence * sptr = get_sequence(s);
         if (not_nullptr(sptr))
-        {
             sptr->off_playing_notes();
-        }
     }
     if (not_nullptr(m_master_bus))
         m_master_bus->panic();                  /* flush the MIDI buss  */
@@ -3499,7 +3502,17 @@ perform::paste_or_split_trigger (int seqnum, midipulse tick)
 }
 
 /**
+ *  Finds the trigger intersection.
  *
+ * \param seqnum
+ *      The number of the sequence in question.
+ *
+ * \param tick
+ *      The time-location desired.
+ *
+ * \return
+ *      Returns true if the sequence exists and the
+ *      sequence::intersect_triggers() function returned true.
  */
 
 bool
@@ -5975,7 +5988,12 @@ perform::playback_key_event (const keystroke & k, bool songmode)
             {
                 if (is_running())
                 {
-                    pause_playing(songmode);            // why pause, not stop?
+                    /*
+                     * It is inconsistent to do this, I think:
+                     * pause_playing(songmode);  // why pause, not stop?
+                     */
+
+                    stop_playing();
                 }
                 else
                 {
@@ -6312,9 +6330,9 @@ perform::song_recording_stop ()
 {
     for (int i = 0; i < m_sequence_high; ++i)   /* m_sequence_max       */
     {
-        sequence * sp = get_sequence(i);
-        if (not_nullptr(sp))
-            sp->song_recording_stop(m_current_tick);     // TODO!!!!
+        sequence * s = get_sequence(i);
+        if (not_nullptr(s))
+            s->song_recording_stop(m_current_tick);     // TODO!!!!
     }
 }
 

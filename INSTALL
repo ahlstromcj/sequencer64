@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.94.0 and above
 Chris Ahlstrom
-2015-09-10 to 2017-12-26
+2015-09-10 to 2018-01-13
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -27,7 +27,7 @@ Quick Install:
         ./configure [options] ; make ; sudo make install
 
     This build results in the first executable described above, seq64,
-    the same as "./bootstrap -er -rm".
+    the same setup created by "./bootstrap -er -rm".
 
 Advanced Steps:
 
@@ -87,6 +87,9 @@ Advanced Steps:
        This procedure no longer builds the documentation. If you do care about
        programmer documentation, change to the doc/dox directory and run
        "./make_dox reference" and "./make_dox notes".
+
+       WARNING:  "./make_dox reference" is currently BROKEN, even though
+                 no errors/warnings are shown in the Doxygen log files.
       
        Do not forget that you can add options to "make", such as "V=0" (enable
        silent build), "V=1" (enable the normal verbose build), and "-j n" (use
@@ -467,6 +470,24 @@ MANUALLY-DEFINED MACROS IN CODE:
         Some of these are defined (or undefined) in
         libseq64/include/seq64_features.h.
 
+REPORTING ISSUES:
+
+   Should one be unfortunate enough to experience a segmentation fault
+   (i.e. the infamous "crash"), here is the most complete way to diagnose the
+   error, if we cannot replicate it:
+
+        $ ./bootstrap --full-clean
+        $ ./bootstrap -ed -rm
+        $ make
+        $ gdb ./Seq64rtmidi/seq64
+        (gdb) r    [add your command-line arguments here if needed]
+                   [replicate the crash]
+        (gdb) bt   [does a backtrace]
+
+    Then highlight, copy, and paste the stack trace and attach it to the bug
+    report.  Might have to Page Up to see the relevant parts of the stack
+    trace.
+
 DEPENDENCIES:
 
    With luck, the following dependencies will bring in their own dependencies
@@ -524,10 +545,10 @@ DEPENDENCIES:
       To build the documentation manually, change to the doc/dox
       directory and run:
 
-         ./make_dox reference
+         ./make_dox reference   [ CURRENTLY BROKEN!!!!!]
          ./make_dox clean
 
-      To install the documentation to /usr/local/doc/sequencer64-0.9:
+      To install the documentation to /usr/local/doc/sequencer64-0.94:
 
          ./make_dox install
       
@@ -554,7 +575,6 @@ DEPENDENCIES:
         https://github.com/Alexpux/MINGW-packages/blob/master/mingw-w64-gimp/PKGBUILD
 
         https://mail.gnome.org/archives/gimp-developer-list/2016-March/msg00014.html
-
 
    JACK Testing (optional):
 

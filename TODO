@@ -1,32 +1,10 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-01-05
+2016-12-03 to 2018-01-16
 
 Debian (and other) Packaging:
 
-    -   Need a Sequencer64-debian project to hold packages for convenience.
     -   Still need to get a static package to work.
-    -   Get some of the samples (MIDI and configuration files) to install to
-        the /usr/local/share or /usr/share directory.
-    -   The JACK/ALSA/Slave/Master button does not update when the setup is
-        selected via the Options / JACK GUI.
-
-MIDI Format Checks:
-
-    -   Rosegarden.  Read the b4uacuse-GM-format.midi file fine.
-    -   Ardour.  Read the b4uacuse-GM-format.midi file fine.  Also plays it,
-        and it of course shows no gap, since it does not support seq64
-        triggers.
-    -   QMidiArp?
-    -   Mido?
-
-    Also, the following files have differences we would like to verify:
-
-        -   b4uacuse-GM-format.midi versus b4-4x8.midi, they vary all over the
-            place!
-        -   b4-4x8.midi versus b4-8x8.midi, they vary starting around offset
-            0x4416; the former has a bunch of 00 00 00 00 values, the latter
-            has a bunch of 00 00 00 01 values.
 
 Windows:
 
@@ -35,26 +13,21 @@ Windows:
     -   Master MingW.
     -   Add Windows implementation and build files.
     -   Add NSIS installer creation.
-    -   Get basic St 5 support working.
+    -   Get basic Qt 5 support working.
 
 Tempo Track:
 
-    -   Test both versions of the CountryStrum file to make sure they play at
-        the same tempo.
-    -   Separate tempo for each pattern (a feature request)?
-
-    1:1 Program         C0 (192), seqdata tries to draw it (height == 0)
-    1:1 Tempo           seqdata tries to draw it
-    1:1 Time Sig        seqdata skips all other "ex-data" events
-    1:3 Note on         90 (144)
-    2:1 Note off        80 (128)
-
-    This whole set of get_next_event() calls occurs multiple (11) times!
-
+    -   Separate tempo for each pattern (a feature request)?  This might be
+        equivalent to supporting the rarely-implemented SMF 2.
     -   Provide a key or press to insert a tempo event at current mouse
-        position in time and tempo-height.
+        position in time and tempo-height?
     -   The sequence draw marker still can get messed up by seqedit, and
         mess up the drawing of the tempo track in perfroll.
+    -   The PrCh and Tempo messages group keep swapping locations with the
+        TimeSig message.  Weird!  Sad!
+
+            midi_container::fill()
+                m_events.sort()
 
 Modify flag:
 
@@ -93,10 +66,6 @@ Rtmidi implementation issues to work out:
         -   When changed in the GUI
     -   Make the STRIP_MUTES option permanent.
 
-Legacy Mode:
-
-    -   Does not select the legacy font!
-
 Hot ideas (from GitHub):
     
     -   Mute button should be inactive unless there are armed sequences.  The
@@ -104,17 +73,10 @@ Hot ideas (from GitHub):
         are armed.
     -   Any way to make playback multicore?  The "stress" file maxes out a
         core.
-    -   Issue: With sets=8x12, the stress MIDI file will crash at load or
-        exit, with bad sequence #108 (out of 128 loaded).
-    -   Display sequence number in sequence and event editors.
 
 Puzzles:
 
-    -   With Sequencer64 as JACK Transport non-master, it still will not
-        follow qjackctl transport.
     -   Tooltips are too flickery with unclutter enabled.
-    -   When reading the "stress" file, we get this message: "Near offset
-        0x16aca9: 'End-of-file', further MIDI reading disabled".
     -   In multi-wid indep mode, when set 1 (second set) is showing in slots 1
         and 2, clicking on pattern-slot 0 (pattern 32) in slot 1 toggles only
         the pattern in pattern slot 0, but clicking on the same pattern-slot
@@ -128,12 +90,8 @@ Puzzles:
         basically works, but in Seq64 it unmutes all other patterns!
         Using a non-shift character seems to work in both, though in Seq64 the
         repeat-key rate seems to show up as an mildly annoying jitter.
-    -   Toggle JACK keys does nothing.
-    -   Need to disable ALSA button on playback as well, and document it
-        in sequencer64-doc.
-    -   No song, press Space to start.  The buttons disable.  Press space
-        again, and the buttons enable, though app is still playing (the pill
-        is moving.).
+    -   Toggle JACK keys does nothing.  (What does this even mean?  Was I
+        drunk when I wrote it?)
 
 More issues:
 
@@ -157,6 +115,13 @@ More issues:
 
        jack_transport_reposition called with a NULL client
        jack_transport_reposition(): bad position structure
+
+    b. Playback without a client (such as Yoshimi) proceeds fine in ALSA, but
+       not in JACK.  Turns out the reason is:
+
+        register_port: JACK error registering port seq64 midi in 0
+
+       So, at some point, ...
 
  5. Patterns panel arrow key does not snap to position, it moves a whole snap
     position.

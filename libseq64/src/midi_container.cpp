@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2018-01-04
+ * \updates       2018-01-13
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -139,6 +139,12 @@ midi_container::add_short (midishort x)
  *
  *  SysEx and Meta events are detected and passed to the new add_ex_event()
  *  function for proper dumping.
+ *
+ * \param e
+ *      Provides the event to be added to the container.
+ *
+ * \param deltatime
+ *      Provides the time-location of the event.
  */
 
 void
@@ -188,6 +194,9 @@ midi_container::add_event (const event & e, midipulse deltatime)
  * \param e
  *      Provides the MIDI event to add.  The caller must ensure that this is
  *      either SysEx or Meta event, using the event::is_ex_data() function.
+ *
+ * \param deltatime
+ *      Provides the time of the event, which is encoded into the event.
  */
 
 void
@@ -205,11 +214,19 @@ midi_container::add_ex_event (const event & e, midipulse deltatime)
 }
 
 /**
- *  Fills in the sequence number.  Writes 0xFF 0x00 0x02, and then the number.
- *  This function is used in the new midifile::write_song() function, which
- *  should be ready to go by the time you're reading this.
+ *  Fills in the sequence number.  Writes 0xFF 0x00 0x02 ss ss, where ss ss is
+ *  the variable-length value for the sequence number.  This function is used
+ *  in the new midifile::write_song() function, which should be ready to go by
+ *  the time you're reading this.  Compare this function to the beginning of
+ *  midi_container::fill().
  *
- *  Compare this function to the beginning of midi_container::fill().
+ * \warning
+ *      This is an optional event, which must occur only at the start of a
+ *      track, before any non-zero delta-time.  For Format 2 MIDI files, this
+ *      is used to identify each track. If omitted, the sequences are numbered
+ *      sequentially in the order the tracks appear.  For Format 1 files, this
+ *      event should occur on the first track only.  So, are we writing a
+ *      hybrid format?
  *
  * \param seq
  *      The sequence/track number to write.
@@ -271,7 +288,23 @@ midi_container::fill_meta_track_end (midipulse deltatime)
 }
 
 /**
- *  Combines the two functions.  Legacy.  Deprecated. We need to fix.
+ *  Combines the two functions fill_tempo() and fill_time_signature().  This
+ *  function is called only for track 0.  And it only puts out the events if
+ *  the track does not contain tempo or time-signature events; in that case,
+ *  it needs to grab the global values from the performance object and put
+ *  them out.
+ *
+ * \param p
+ *      The performance object that holds the time signature and tempo values.
+ *
+ * \param has_time_sig
+ *      Indicates whether or not the current track (usually track 0) has a
+ *      time signature event.  If so, then we do not need to fill in the
+ *      global time signature value.
+ *
+ * \param has_tempo
+ *      Indicates whether or not the current track (track 0) has a tempo
+ *      event.  If so, then we do not need to fill in the global tempo value.
  */
 
 void
@@ -311,10 +344,10 @@ midi_container::fill_time_sig (const perform & p)
     int cpm = p.clocks_per_metronome();
     int get32pq = p.get_32nds_per_quarter();
     int bw = log2_time_sig_value(beatwidth);
-    add_variable(0);                            /* delta time       */
-    put(0xFF);                                  /* meta event       */
-    put(0x58);                                  /* time sig event   */
-    put(0x04);                                  /* data length      */
+    add_variable(0);                    /* delta time                   */
+    put(0xFF);                          /* EVENT_MIDI_META              */
+    put(0x58);                          /* EVENT_MIDI_TIME_SIGNATURE    */
+    put(0x04);                          /* data length                  */
     put(bpb);
     put(bw);
     put(cpm);
@@ -610,7 +643,6 @@ midi_container::song_fill_seq_trigger
     add_long(0);                            // the start tick
     add_long(trig.tick_end());
     add_long(0);                            // offset is done in event
-
     fill_proprietary();
 
     midipulse delta_time = length - prev_timestamp;
@@ -628,6 +660,11 @@ midi_container::song_fill_seq_trigger
  *  chunk is "FF 00 00".  But that format can only occur in the first track,
  *  and the rest of the tracks then don't need a sequence number, since it is
  *  assumed to increment.  This application doesn't use that shortcut.
+ *
+ *  We have noticed differences in saving files in sets=4x8 versus sets=8x8,
+ *  and pre-sorting the event list gets rid of some of the differences, except
+ *  for the last, multi-line SeqSpec.  Some event-reordering still seems to
+ *  occur, though.
  *
  * Stazed:
  *
@@ -665,21 +702,21 @@ midi_container::song_fill_seq_trigger
  * \param p
  *      The performance object that will hold some of the parameters needed
  *      when filling the MIDI container.
+ *
+ * \param doseqspec
+ *      If true (the default), writes out the SeqSpec information.  If false,
+ *      we want to write out a regular MIDI track without this information; it
+ *      writes a smaller file.
  */
 
 void
-midi_container::fill (int track, const perform & p)
+midi_container::fill (int track, const perform & p, bool doseqspec)
 {
     event_list evl = m_sequence.events();           /* used below */
-
-    /*
-     * EXPERIMENTAL: We have noticed differences in saving files in sets=4x8
-     * versus sets=8x8, and this sorting gets rid of all of the differences
-     * except for the last, multi-line SeqSpec.
-     */
-
     evl.sort();
-    fill_seq_number(track);
+    if (doseqspec)
+        fill_seq_number(track);
+
     fill_seq_name(m_sequence.name());
 
     /**
@@ -713,36 +750,38 @@ midi_container::fill (int track, const perform & p)
         add_event(e, deltatime);
     }
 
-    /*
-     * Here, we add SeqSpec entries (specific to seq24) for triggers
-     * (c_triggers_new), the MIDI buss (c_midibus), time signature
-     * (c_timesig), and MIDI channel (c_midich).   Should we restrict this to
-     * only track 0?  Probably not; seq24 saves these events with each
-     * sequence.
-     */
-
-    triggers::List & triggerlist = m_sequence.triggerlist();
-    int triggercount = int(triggerlist.size());
-    add_variable(0);
-    put(0xFF);
-    put(0x7F);
-    add_variable((triggercount * 3 * 4) + 4);       /* 3 long ints plus...  */
-    add_long(c_triggers_new);                       /* ...the triggers code */
-    for
-    (
-        triggers::List::iterator ti = triggerlist.begin();
-        ti != triggerlist.end(); ++ti
-    )
+    if (doseqspec)
     {
         /*
-         * Similar to the code in song_fill_seq_trigger().
+         * Here, we add SeqSpec entries (specific to seq24) for triggers
+         * (c_triggers_new), the MIDI buss (c_midibus), time signature
+         * (c_timesig), and MIDI channel (c_midich).   Should we restrict this
+         * to only track 0?  No; seq24 saves these events with each sequence.
          */
 
-        add_long(ti->tick_start());
-        add_long(ti->tick_end());
-        add_long(ti->offset());
+        triggers::List & triggerlist = m_sequence.triggerlist();
+        int triggercount = int(triggerlist.size());
+        add_variable(0);
+        put(0xFF);
+        put(0x7F);
+        add_variable((triggercount * 3 * 4) + 4);       /* 3 long ints plus...  */
+        add_long(c_triggers_new);                       /* ...the triggers code */
+        for
+        (
+            triggers::List::iterator ti = triggerlist.begin();
+            ti != triggerlist.end(); ++ti
+        )
+        {
+            /*
+             * Similar to the code in song_fill_seq_trigger().
+             */
+
+            add_long(ti->tick_start());
+            add_long(ti->tick_end());
+            add_long(ti->offset());
+        }
+        fill_proprietary ();
     }
-    fill_proprietary ();
 
     /*
      * Last, but certainly not least, write the end-of-track meta-event.

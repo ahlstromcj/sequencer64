@@ -981,7 +981,7 @@ sequence::set_rec_vol (int recvol)
 
     if (valid)
     {
-        m_rec_vol = recvol;
+        m_rec_vol = short(recvol);
         if (m_rec_vol > 0)
             m_note_on_velocity = m_rec_vol;
     }
@@ -994,6 +994,9 @@ sequence::set_rec_vol (int recvol)
  * \param tick
  *      The position from which to resume Note Ons, if appplicable. Resuming
  *      is a song-recording feature.
+ *
+ * \param resumenoteons
+ *      A song-recording option.
  */
 
 void
@@ -1103,6 +1106,9 @@ sequence::on_queued ()
  *      and triggers set up in that editor, and saved with the song in seq24
  *      format.  False indicates that the playback is controlled by the main
  *      window, in live mode.
+ *
+ * \param resume_note_ons
+ *      A song-recording parameter.
  *
  * \threadsafe
  */
@@ -2904,12 +2910,12 @@ sequence::add_note
                 e.paint();
 
             e.set_status(EVENT_NOTE_ON);
-            e.set_data(note, hardwire ? int(m_note_on_velocity) : velocity);
+            e.set_data(note, hardwire ? midibyte(m_note_on_velocity) : velocity);
             e.set_timestamp(tick);
             add_event(e);
 
             e.set_status(EVENT_NOTE_OFF);
-            e.set_data(note, int(m_note_off_velocity));    /* HARD-WIRED */
+            e.set_data(note, midibyte(m_note_off_velocity));    /* HARD-WIRED */
             e.set_timestamp(tick + len);
             result = add_event(e);
         }
@@ -3374,7 +3380,7 @@ sequence::play_note_on (int note)
     automutex locker(m_mutex);
     event e;
     e.set_status(EVENT_NOTE_ON);
-    e.set_data(note, int(m_note_on_velocity));      // SEQ64_MIDI_COUNT_MAX-1
+    e.set_data(note, midibyte(m_note_on_velocity));      // SEQ64_MIDI_COUNT_MAX-1
     m_masterbus->play(m_bus, &e, m_midi_channel);
     m_masterbus->flush();
 }
@@ -3396,7 +3402,7 @@ sequence::play_note_off (int note)
     automutex locker(m_mutex);
     event e;
     e.set_status(EVENT_NOTE_OFF);
-    e.set_data(note, int(m_note_off_velocity));     // SEQ64_MIDI_COUNT_MAX-1
+    e.set_data(note, midibyte(m_note_off_velocity));
     m_masterbus->play(m_bus, &e, m_midi_channel);
     m_masterbus->flush();
 }
@@ -4353,7 +4359,7 @@ sequence::reset_ex_iterator (event_list::const_iterator & evi)
  * \param cc
  *      The continuous controller value that might be desired.
  *
- * \param [out] ev
+ * \param [out] evi
  *      An iterator return value for the next event found.  The caller might
  *      want to check if it is a Tempo event.  Do not use this iterator if
  *      false is returned!
@@ -4612,8 +4618,12 @@ sequence::set_length (midipulse len, bool adjust_triggers, bool verify)
  *      The measures calculation is useless if the BPM (beats/minute) varies
  *      throughout the song.
  *
- * \param bpm
- *      Provides the beats per minute, a floating value.
+ * \param bpb
+ *      Provides the beats per bar (measure).
+ *
+ * \param ppqn
+ *      Provides the pulses-per-quarter-note to apply to the length
+ *      application.
  *
  * \param bw
  *      Provides the beatwidth (typically 4) from the time signature.
@@ -4938,7 +4948,7 @@ sequence::off_playing_notes ()
         while (m_playing_notes[x] > 0)
         {
             e.set_status(EVENT_NOTE_OFF);
-            e.set_data(x, 127);                         /* or is 0 better?  */
+            e.set_data(x, midibyte(127));               /* or is 0 better?  */
             m_masterbus->play(m_bus, &e, m_midi_channel);
             if (m_playing_notes[x] > 0)
                 m_playing_notes[x]--;
@@ -5534,7 +5544,7 @@ sequence::play_queue (midipulse tick, bool playbackmode)
  * \param start
  *      The starting tick of the note event.
  *
- * \param start
+ * \param finish
  *      The ending tick of the note event.
  *
  * \return

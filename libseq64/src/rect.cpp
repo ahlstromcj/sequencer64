@@ -58,7 +58,7 @@ rect::rect ()
  * \param x
  *      The x coordinate.
  *
- * \param x
+ * \param y
  *      The y coordinate.
  *
  * \param width
@@ -85,7 +85,7 @@ rect::rect (int x, int y, int width, int height)
  * \param [out] x
  *      The destination x coordinate.
  *
- * \param [out] x
+ * \param [out] y
  *      The destination y coordinate.
  *
  * \param [out] width
@@ -110,7 +110,7 @@ rect::get (int & x, int & y, int & width, int & height) const
  * \param x
  *      The x coordinate.
  *
- * \param x
+ * \param y
  *      The y coordinate.
  *
  * \param width

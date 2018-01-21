@@ -1,6 +1,6 @@
 Fixes To Issue Reported at GitHub
 Chris Ahlstrom
-2017-05-13 to 2017-08-16
+2017-05-13 to 2018-01-19
 
 This file documents (belatedly) GitHub issues raised and pull-requests made.
 
@@ -18,10 +18,20 @@ The hot issues at this date:
 
     1 rhetr : nsm support
 
-    2 TDeagan : Install-recursive and .seq24rc equivalent
+ *  2 TDeagan : Install-recursive and .seq24rc equivalent
 
     4 TDeagan : Would like unique set of mute groups per screen (1024 instead
                 of 32)
+
+ *  5 TDeagan : Mute Groups should be applied to active screen
+
+ *  8 funkmuscle : Segmentation fault on Arch64
+
+ *  10 danielappelt : Jack Transport Master behavior is very "jumpy"
+
+ *  11 danielappelt : Midi realtime clock messages are not in sync
+
+ *  12 danielappelt : Add a git tag for each new version
 
     14 ssj71 : [feature request] Plugin version
 
@@ -34,6 +44,23 @@ The hot issues at this date:
     FYI ZynAddSubFX switched to a decoupled interface which uses OSC to
     control everything in 2.5.x. Maybe you can get some useful info from
     their code or contact them for any tips.
+
+ *  17 muranyia : make fails in doc/dox
+
+ *  18 muranyia : Last Edited highlight disables On/Off highlight
+
+ *  19 muranyia : [feature request] note numbers
+
+ *  20 lukeoftheaura : Loops not playing when using jack [transport]
+
+ *  21 Orel : original notes not playing after copy/paste
+
+ *  23 arnaud-jacquemin : MIDI controller toggle the wrong pattern
+
+ *  25 arnaud-jacquemin : Impossible to unmute patterns when JACK Transport is
+    activated.
+
+ *  26 alejg : Segmentation Fault on event editing dialog
 
     27 teamblubee : [Question] OSS support and other things
 
@@ -357,6 +384,12 @@ uld it be possible to centre sets?
     middle-mouse drag. Is this a bug or am I doing something wrong? Any tips
     much appreciated.
 
+    [Related side issues found by CA]
+
+        -   Hmmm, I notice that just clicking on a note grows it.
+        -   In fruity mode, seq24 is automatically in insert/paint mode.
+        -   In fruity mode, seq24 resizes a note only on the right handle.
+
  x  91 ahlstromcj : need help testing variset....
 
     layk :
@@ -492,12 +525,65 @@ uld it be possible to centre sets?
  * 102 pixelrust : Clicking in tracks without patterns breaks Song Editor if
        Interaction Method is set to Fruity
 
- * 103 : redacted
+ * 103 : simonvanderveldt : bpm resets to 26 after single bar
 
  * 104 Simon van der Veldt : Bottom of main window cut off 
 
- * 105 pixelrust : Pattern Editor / Piano Roll: new notes are played, but
+    This could potentially still be an issue with some Gtk 2/3 themes, though.
+
+ ? 105 pixelrust : Pattern Editor / Piano Roll: new notes are played, but
        there is no Note Off if Interaction Method is set to Fruity
+
+ * 106 simonvanderveldt : Bar count incorrect/keeps incrementing when editing
+
+ * 107 layk : latest tempo_track midi clock stop does not reset when "On
+       (Pos)" is selected
+
+ * 109 muranyia : Segfault on startup
+
+ * 110 muranyia : seq64 vs sequencer64 command (was: -o sets not recognized)
+
+ * 116 majorx234 : cannot build for arch linux
+
+ * 117 simonvanderveldt : 0.93.4 configure.ac:130: error possibly undefined
+       macro AC_MSG_ERROR
+
+   118 ?
+
+   119 ?
+
+   120 muryania : Varisets: clips show up in the wrong set if number of sets
+   are changed
+
+   121 muryania : Cannot parse varisets MIDI file with python mido
+
+ * 122 muranyia : Make error with -er -am
+ 
+    Fixed the issue by adding a feature to bootstrap, as I recall.
+
+ * 123 y1ds : midi clock out broken
+ 
+    Fixed an error that basically kept resetting the JACK transport position
+    to 0.
+ 
+ * 124 naclander : Stop button does not reset samples to the beginning.
+ 
+    Fixed a coding error.
+
+   125 : TDeagan : Feature Request: Big buttons (touchscreen)
+
+   126 : milkmiruku : crash on trying to enter File or Edit menu (not View or
+   Help) "Invalid borders specified for theme pixmap", Breeze theme
+
+ * 127 milkmiruku : Empty pattern boxes have no number.
+ 
+   This is just a configuration-file issue; see both the "rc" and "usr" files.
+
+   128 linuxmusician : Segmentation fault (core dumped) since new version.
+
+   Happens when clicking play twice, right-clicking for "New", and clicking
+   play in qjackctl twice.  One user reports a crash in gtk_container_remove()
+   but all we can replicate is a problem with the Breeze themes.
 
 More:
 

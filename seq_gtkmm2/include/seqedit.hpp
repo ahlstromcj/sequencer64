@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-21
+ * \updates       2018-01-20
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -380,7 +380,9 @@ private:
     Gtk::RadioButton * m_radio_grow;    /**< Unused grow button.            */
     Gtk::RadioButton * m_radio_draw;    /**< Unused selection button.       */
 #endif
+    Gtk::Entry * m_entry_seqnumber;     /**< Number of the sequence.        */
     Gtk::Entry * m_entry_name;          /**< Name of the sequence.          */
+    Gtk::Image * m_image_mousemode;     /**< Image for mouse mode button.   */
 
     /**
      *  Indicates what MIDI event/status the data window currently editing.
@@ -419,7 +421,10 @@ private:
     void set_beats_per_bar (int bpm);
     void set_beats_per_bar_manual ();                       /* issue #77    */
     void set_beat_width (int bw);
+#ifdef SEQ64_STAZED_TRANSPOSE
     void set_transpose_image (bool istransposable);
+#endif
+    void set_mousemode_image (bool isfruity);
     void set_rec_vol (int recvol);
 
 #ifdef SEQ64_STAZED_EXPAND_RECORD

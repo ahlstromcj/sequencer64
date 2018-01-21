@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2017-12-31
+ * \updates       2018-01-14
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -34,53 +34,12 @@
  *
  *  For the summaries of the JACK functions used in this module, and how
  *  the code is supposed to operate, see the Sequencer64 developer's reference
- *  manual.
+ *  manual.  It discusses the following items:
  *
- * JACK Position Bits to support in Sequencer64, their values, their purpose,
- * and the jack_position_t field they manage:
+ *  -   JACK Position Bits
+ *  -   jack_transport_reposition()
  *
- *  -   JackPositionBBT = 0x10. Bar, Beat, Tick.  The fields managed are bar,
- *      beat, tick, bar_start_tick, beats_per_bar, beat_type, ticks_per_beat,
- *      beats_per_minute.  Applications that support JackPositionBBT are
- *      encouraged to also fill the JackBBTFrameOffset.  Note that the BPM is
- *      quantized to block-size. This means when the tempo is not constant
- *      within this block, the BPM value should adapted to compensate for
- *      this. This is different from most fields in the struct, which specify
- *      the value at the beginning of the block, rather than an average.
- *  -   JackPositionTimecode = 0x20. External timecode.  The fields managed
- *      are frame_time and next_time.
- *  -   JackBBTFrameOffset = 0x40. Offset of BBT information. The sole field
- *      managed is bbt_offset, the frame offset for the BBT fields. The given
- *      bar, beat, and tick values actually refer to a time frame_offset
- *      frames before the start of the cycle.  It should be assumed to be 0 if
- *      JackBBTFrameOffset is not set. If JackBBTFrameOffset is set and this
- *      value is zero, the BBT time refers to the first frame of this cycle.
- *      If the value is positive, the BBT time refers to a frame that many
- *      frames before the start of the cycle.
- *
- * jack_transport_reposition():
- *
- *      Requests a new transport position.  The new position takes effect in
- *      two process cycles. If there are slow-sync clients and the transport
- *      is already rolling, it will enter the JackTransportStarting state and
- *      begin invoking their sync_callbacks until ready. This function is
- *      realtime-safe.  It can be called by any JACK client at any time.
- *
- *      Its \a pos parameter provides the requested new transport position.
- *      Fill pos->valid to specify which fields should be taken into account.
- *      If you mark a set of fields as valid, you are expected to fill them
- *      all.  Note that "frame" is always assumed, and generally needs to be
- *      set:
- *
- *         http://comments.gmane.org/gmane.comp.audio.jackit/18705
- *
- *      Returns 0 if a valid request, EINVAL if the position structure is
- *      rejected.
- *
- *  Only JackPositionBBT is supported so far.  Applications that support
- *  JackPositionBBT are encouraged to also fill the JackBBTFrameOffset-managed
- *  field (bbt_offset).  We are experimenting with this for now; there's not a
- *  lot of material out there on the Web.
+ *  Only JackPositionBBT is supported so far.
  *
  * JACK clients and BPM:
  *
@@ -179,22 +138,28 @@ jack_debug_print
 /**
  *  Provides a dummy callback.
  *
+ * \param nframes
+ *      An unused parameter.
+ *
+ * \param arg
+ *      Provides the jack_assistant pointer.
+ *
  * \return
- *      Does nothing, always returns 0.
+ *      Does nothing, but returns nframes.  If the arg parameter is null, then
+ *      0 is returned.
  */
 
 int
-jack_dummy_callback (jack_nframes_t /* nframes */, void * arg)
+jack_dummy_callback (jack_nframes_t nframes, void * arg)
 {
     jack_assistant * j = (jack_assistant *)(arg);
-    if (not_nullptr(j))
-    {
-        // no code
-    }
-    return 0;
+    if (is_nullptr(j))
+        nframes = 0;
+
+    return nframes;
 }
 
-/*
+/**
  *  Implemented second patch for JACK Transport from freddix/seq24 GitHub
  *  project.  Added the following function.  This function is supposed to
  *  allow seq24/sequencer64 to follow JACK transport.
@@ -234,7 +199,7 @@ jack_dummy_callback (jack_nframes_t /* nframes */, void * arg)
  */
 
 int
-jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
+jack_transport_callback (jack_nframes_t nframes, void * arg)
 {
     jack_assistant * j = (jack_assistant *)(arg);
     if (not_nullptr(j))
@@ -268,7 +233,13 @@ jack_transport_callback (jack_nframes_t /* nframes */, void * arg)
             {
                 j->m_jack_transport_state_last = JackTransportStarting;
                 if (p.start_from_perfedit())
+                {
+                    if (nframes == 0)
+                    {
+                        // no code
+                    }
                     p.inner_start(true);
+                }
                 else
                     p.inner_start(p.song_start_mode());
             }
@@ -944,14 +915,6 @@ jack_assistant::activate ()
 /**
  *  If JACK is supported, starts the JACK transport.  This function assumes
  *  that m_jack_client is not null, if m_jack_running is true.
- *
- *  Found this note in the Hydrogen code:
- *
- *      When jack_transport_start() is called, it takes effect from the next
- *      processing cycle.  The location info from the timebase_master, if
- *      there is one, will not be available until the _next_ next cycle.  The
- *      code must therefore wait one cycle before syncing up with
- *      timebase_master.
  */
 
 void
@@ -1295,6 +1258,8 @@ jack_assistant::sync (jack_transport_state_t state)
     return result;
 }
 
+#ifdef USE_JACK_SYNC_CALLBACK
+
 /**
  *  This JACK synchronization callback informs the specified perform
  *  object of the current state and parameters of JACK.
@@ -1343,6 +1308,8 @@ jack_sync_callback
     }
     return result;
 }
+
+#endif  // USE_JACK_SYNC_CALLBACK
 
 #ifdef SEQ64_JACK_SESSION
 
@@ -1688,7 +1655,13 @@ jack_assistant::show_position (const jack_position_t & pos)
 }
 
 /**
+ *  Converts a JACK transport value to a human-readable string.
  *
+ * \param state
+ *      Provides the transport state value.
+ *
+ * \return
+ *      Returns the state name.
  */
 
 std::string

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-17
+ * \updates       2018-01-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -58,6 +58,13 @@ class FruitySeqRollInput : public seqroll
 {
 
 private:
+
+    /**
+     *  Indicates adding status peculiar to the fruity mode.  Currently
+     *  always true.
+     */
+
+    bool m_can_add;
 
     /**
      *  Set to tru if we hold the right mouse button down (in "fruity" mode)
@@ -93,7 +100,7 @@ public:
         Gtk::Adjustment & vadjust
     );
 
-    virtual void update_mouse_pointer ();
+    virtual void update_mouse_pointer (bool isadding);
 
 public:         // callbacks
 

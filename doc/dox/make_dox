@@ -8,7 +8,7 @@
 # \library    	generic
 # \author     	Chris Ahlstrom
 # \date       	2015-08-08
-# \update     	2017-05-27
+# \update     	2018-01-14
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -102,7 +102,7 @@ fi
 echo "Pushing to $NEWDIR"
 pushd $NEWDIR
 
-if [ "$TARGET" == "reference" ] ; then
+if [ "$TARGET" == "reference" ] || [ "$TARGET" == "ref" ] ; then
 
    echo "Running Doxygen on the reference target, in the make_dox script."
 	echo "$DOXYGEN doxy-reference.cfg > dox-progress.log 2> dox-errors.log ..."
@@ -122,17 +122,19 @@ if [ "$TARGET" == "reference" ] ; then
 	pdflatex refman
 	makeindex refman.idx
 	pdflatex refman
-	makeindex refman.idx
-	pdflatex refman
-	makeindex refman.idx
    popd
 
 # Optimize the PDF to cut down on its size.
 
-   gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dNOPAUSE -dQUIET -dBATCH \
+   if test -f latex/refman.pdf ; then
+      gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dNOPAUSE -dQUIET -dBATCH \
  -sOutputFile=../reference_manual.pdf latex/refman.pdf
+   else
+      echo "ERROR: Reference Manual PDF not generated!!!"
+      exit 1
+   fi
 
-	# cp latex/refman.pdf ../reference_manual.pdf
+#	cp latex/refman.pdf ../reference_manual.pdf
 
    if [ $? == 0 ] ; then
 
@@ -179,8 +181,13 @@ elif [ "$TARGET" == "notes" ] ; then
 
 # Optimize the PDF to cut down on its size.
 
-   gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dNOPAUSE -dQUIET -dBATCH \
+   if test -f latex/refman.pdf ; then
+      gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dNOPAUSE -dQUIET -dBATCH \
  -sOutputFile=../developer_notes.pdf latex/refman.pdf
+   else
+      echo "ERROR: Developer's Manual PDF not generated!!!"
+      exit 1
+   fi
 
 	# cp latex/refman.pdf ../developer_notes.pdf
 

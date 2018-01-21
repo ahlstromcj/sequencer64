@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-08
+ * \updates       2018-01-21
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -412,27 +412,6 @@ public:
     }
 
     bool add_note (midipulse tick, int note, bool paint = true);
-
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-
-    /**
-     * Convenience wrapper for sequence::add_chord().  Implicit parameters are
-     * the m_chord and note_off_length() members.  The latter deducts just a
-     * little from the snap value.
-     *
-     * \param tick
-     *      The tick at which to add the chord.
-     *
-     * \param note
-     *      The base (bottom) note of the chord.
-     */
-
-    void add_chord (midipulse tick, int note)
-    {
-        m_seq.add_chord(m_chord, tick, note_off_length(), note);
-    }
-
-#endif
 
     /*
      * \setter m_ignore_redraw

@@ -1,59 +1,17 @@
 Sequencer64 Roadmap
 Chris Ahlstrom
-2015-09-10 to 2018-01-06
+2015-09-10 to 2018-01-17
 
-Latest version: 0.94.2
-
-This roadmap is a bit old.  Lots of good suggestions have come in from users,
-and we have tended to give them what they want.  :-)
+Latest version: 0.94.3
 
 The starting point for the Sequencer64 project is version 0.9.2 of Seq24 from
 Debian.  The initial work for this Seq24 reboot started in late July of 2015,
 when I was laid up for awhile, and had basically finished documenting the
 Yoshimi software synthesizer.
 
-Also see the contrib/notes/bugs-to-investigate.txt file; I keep that one
-a lot more up-to-date.  This ROADMAP is of "historical" signficance.  Also see
-the TODO file, which is even "hotter".
-
-The following changes are planned, while accomplished changes can be found in
-the change-log and README files.
-
-A 'y' marker means the work is in progress, 'x' means it is basically done.
-
-Note that there is a LOT OF WORK to do that is listed in the
-contrib/bugs-to-investigate.txt file!  And some unexpected new features have
-been added along the way, thanks to user requests.
-
-   -  User-Interface:
-      x  Separate the GUI functionality from setting and operational
-         classes.
-      -  Upgrade the GUI to Gtk3 or Qt5.
-      x  Add support for native JACK MIDI.
-      -  Provide a sequencer engine that can be driven by, for example
-         OSC.
-      y  Add scripting support or command-line access to playback.
-      y  Provide a no-GUI running mode for Sequencer64, for usage with
-         tight hardware like the Raspberry Pi, and for keystroke and MIDI
-         control only (no GUI controls).
-   y  Unit test each element as appropriate using xpccutxx library.
-   y  Add some base classes and additional member functions for common
-      functionality:
-      -  Offload perform "statistics" functionality to a perfstats class.
-      -  Offload perform "mute groups" functionality to a perfmutes class.
-      -  Handle Windows vs. Linux code more cleanly.
-         -  Windows/Linux mastermidibus bases class
-         -  Windows/Linux midibus bases class
-   y  Enhance documentation and recreate it.
-   -  Branch off to an "Enhancements" branch (highly provisional).  This will
-      not be done until we have solidified Sequencer64 at version 1.0.
-      For version 2.0:
-      -  Convert to gtkmm-3 (maybe).
-      -  Add optional build using Qt 5.
-      -  Flesh out the support for PortMidi.  Nope, deprecated.
-      -  Support MingW builds in Windows a la the Subatomic Glue port.
-   y  Fix the JACK support.  Mostly done, but there are a number of legacy
-      issues to deal with.
-   y  An option to override the proprietary section with data from a file.
+This roadmap is a bit old.  Lots of good suggestions have come in from users,
+and we have tended to give them what they want.  :-)  See the TODO instead.
+Also see the contrib/notes/bugs-to-investigate.txt file, which is also a bit
+out-of-date.
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

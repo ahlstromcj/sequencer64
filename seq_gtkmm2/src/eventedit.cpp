@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2017-08-05
+ * \updates       2018-01-15
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -197,7 +197,9 @@ eventedit::eventedit (perform & p, sequence & seq)
     m_seq               (seq),
     m_have_focus        (false)
 {
-    std::string title = "Sequencer64 - Event Editor -\"";
+    std::string title = SEQ64_APP_NAME " #";        /* main window title    */
+    title += m_seq.seq_number();
+    title += " \"";
     title += m_seq.name();
     title += "\"";
     set_title(title);                                       /* caption bar  */
@@ -302,8 +304,13 @@ eventedit::eventedit (perform & p, sequence & seq)
         "was pressed."
     );
 
-    char temptext[36];
-    snprintf(temptext, sizeof temptext, "\"%s\"", seq.name().c_str());
+    char temptext[40];
+    snprintf
+    (
+        temptext, sizeof temptext, "%s: \"%s\"",
+//      seq.seq_number().c_str(), seq.name().c_str()
+        m_seq.seq_number().c_str(), m_seq.name().c_str()
+    );
     m_label_seq_name->set_width_chars(32);
     m_label_seq_name->set_text(temptext);
     m_showbox->pack_start(*m_label_seq_name, false, false); /* expand and fill */
@@ -322,7 +329,7 @@ eventedit::eventedit (perform & p, sequence & seq)
 
     snprintf
     (
-        temptext, sizeof temptext, "Sequence Channel: %d [re 0]",
+        temptext, sizeof temptext, "Channel: %d [re 0]",
         seq.get_midi_channel()          /* + 1 to show MIDI channels 1-16 */
     );
     m_label_channel->set_text(temptext);
@@ -496,7 +503,7 @@ eventedit::set_seq_count ()
     char temptext[48];
     snprintf
     (
-        temptext, sizeof temptext, "Sequence Count: %d events",
+        temptext, sizeof temptext, "Count: %d events",
         m_eventslots->event_count()
     );
     m_label_ev_count->set_text(temptext);
@@ -514,7 +521,7 @@ eventedit::set_seq_length ()
     char temptext[48];
     snprintf
     (
-        temptext, sizeof temptext, "Sequence Length: %d measures",
+        temptext, sizeof temptext, "Length: %d measures",
         m_eventslots->calculate_measures()
     );
     m_label_seq_length->set_text(temptext);

@@ -580,6 +580,10 @@ seqevent::snap_x (int & x)
  * \param tick
  *      The destination time (division, pulse, tick) for the event to be
  *      dropped at.
+ *
+ * \param istempo
+ *      Indicates if the event is a tempo event.  If so, we add a fake tempo
+ *      event of BPM = 120.
  */
 
 void
@@ -651,7 +655,7 @@ seqevent::on_size_allocate (Gtk::Allocation & a)
 /**
  *  Implements the on-expose event callback.
  *
- * \param ev
+ * \param e
  *      The expose event.
  */
 

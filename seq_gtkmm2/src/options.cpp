@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-08
+ * \updates       2018-01-21
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -855,7 +855,9 @@ options::add_extended_keys_page ()
 void
 options::add_mouse_page ()
 {
-    const std::string msg = "Interaction method (a change requires a restart)";
+    const std::string msg =
+        "Interaction method (a change requires reopening pattern editors)";
+
     Gtk::VBox * vbox = manage(new Gtk::VBox());
     m_notebook->append_page(*vbox, "_Mouse", true);
 

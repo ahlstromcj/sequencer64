@@ -561,10 +561,6 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev)
  *      False denotes the right arrow key, and true denotes the left arrow
  *      key.
  *
- * \param roll
- *      Provides a reference to the parent roll, which keeps track of most of
- *      the information about the status of the window.
- *
  * \return
  *      Returns true if there was some action able to happen that would
  *      necessitate a window update.  We've updated triggers::move_triggers()

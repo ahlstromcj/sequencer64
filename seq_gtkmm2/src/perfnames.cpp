@@ -174,6 +174,9 @@ perfnames::draw_sequence (int seqnum)
             draw_rectangle(white_paint(), 1, yloc, m_setbox_w + 1, m_names_y);
 
         sequence * seq = perf().get_sequence(seqnum);
+        if (is_nullptr(seq))
+            return;
+
         Color fg = grey();
         font::Color col = font::BLACK;
         bool is_active = perf().is_active(seqnum);
@@ -408,8 +411,11 @@ perfnames::on_button_press_event (GdkEventButton * ev)
             else
             {
                 sequence * seq = perf().get_sequence(seqnum);
-                bool muted = seq->get_song_mute();
-                seq->set_song_mute(! muted);
+                if (not_nullptr(seq))
+                {
+                    bool muted = seq->get_song_mute();
+                    seq->set_song_mute(! muted);
+                }
             }
             enqueue_draw();
         }

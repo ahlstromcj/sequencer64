@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-10
+ * \updates       2018-01-13
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -112,6 +112,20 @@ class mainwnd : public gui_window_gtk2, public performcallback
 private:
 
     /**
+     *  Instead of having two save options, we now have three.
+     */
+
+    typedef enum
+    {
+        FILE_SAVE_AS_NORMAL,
+        FILE_SAVE_AS_EXPORT_SONG,
+        FILE_SAVE_AS_EXPORT_MIDI
+
+    } SaveOption;
+
+private:
+
+    /**
      *  This small array holds the "handles" for the pipes need to intercept
      *  the system signals SIGINT and SIGUSR1, so that the application shuts
      *  down gracefully when aborted.
@@ -130,12 +144,6 @@ private:
     static const int sm_widmax = SEQ64_MAINWIDS_MAX;
 
 #endif
-
-    /**
-     *  A repository for tooltips.
-     */
-
-    Gtk::Tooltips * m_tooltips;
 
     /**
      *  Theses objects support the menu and its sub-menus.
@@ -719,7 +727,7 @@ private:
     void update_window_title ();
     void update_recent_files_menu ();
     void load_recent_file (int index);
-    void toLower (std::string &);       // isn't this part of std::string?
+    void toLower (std::string &);
 
     /**
      *  A callback function for the File / New menu entry.
@@ -756,7 +764,7 @@ private:
 
     void set_song_mute (perform::mute_op_t op)
     {
-        perf().set_song_mute(op);       // and modifies
+        perf().set_song_mute(op);
     }
 
 #if defined SEQ64_MULTI_MAINWID
@@ -773,7 +781,7 @@ private:
     void build_info_dialog ();
     int query_save_changes ();
     void new_open_error_dialog ();
-    void file_save_as (bool do_export = false);
+    void file_save_as (SaveOption option = FILE_SAVE_AS_NORMAL);
     void file_exit ();
     void new_file ();
     bool save_file ();

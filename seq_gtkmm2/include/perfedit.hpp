@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-21
+ * \updates       2018-01-13
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -172,7 +172,6 @@ private:
     Gtk::Entry * m_entry_bw;            /**< Text-edit for beat-width.          */
     Gtk::HBox * m_hbox;                 /**< Horizontal box (which?) in table.  */
     Gtk::HBox * m_hlbox;                /**< Horizontal box for buttons at top. */
-    Gtk::Tooltips * m_tooltips;         /**< Container for tool-tips.           */
 
     /**
      * Menus for time signature, beats per measure, beat width.

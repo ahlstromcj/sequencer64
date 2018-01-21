@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-11
+ * \updates       2018-01-20
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -252,9 +252,7 @@ int mainwnd::sm_sigpipe[2];
  *
  * \todo
  *      Offload most of the work into an initialization function like
- *      options does; make the perform parameter a reference;
- *      valgrind flags m_tooltips as lost data, but if we try to manage it
- *      ourselves, many more leaks occur.
+ *      options does; make the perform parameter a reference.
  */
 
 mainwnd::mainwnd
@@ -271,7 +269,6 @@ mainwnd::mainwnd
 ) :
     gui_window_gtk2         (p),
     performcallback         (),
-    m_tooltips              (manage(new Gtk::Tooltips())),  /* valgrind bitches */
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
     m_menu_recent           (nullptr),
@@ -420,7 +417,7 @@ mainwnd::mainwnd
      */
 
 #if defined SEQ64_MULTI_MAINWID
-    set_resizable(true);                        // set_resizable(multi_wid());
+    set_resizable(true);
 #elif defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
     set_resizable(! usr().is_default_mainwid_size());
 #else
@@ -611,7 +608,7 @@ mainwnd::mainwnd
     add_tooltip
     (
         m_button_jack,
-        "The current MIDI mode: JACK (slave), Master, Native (JACK), or ALSA. "
+        "MIDI mode: JACK transport Slave or Master, JACK MIDI, or ALSA MIDI. "
         "Click this button to bring up the JACK connection options page. Ctrl-P "
         "also brings up this page."
     );
@@ -657,8 +654,8 @@ mainwnd::mainwnd
         m_button_time_type,
         "Toggles between B:B:T and H:M:S format, showing the selected format."
     );
-    // hbox4->pack_start(*m_button_time_type, false, false);
     tophbox->pack_start(*m_button_time_type, false, false);
+    tophbox->pack_start(*(manage(new Gtk::HSeparator())), false, false, 4);
 
     Gtk::Label * timedummy = manage(new Gtk::Label("   "));
     hbox4->pack_start(*timedummy, false, false, 0);
@@ -1086,8 +1083,6 @@ mainwnd::mainwnd
         contentvbox->pack_start(*bottomhbox, Gtk::PACK_SHRINK);
     }
 
-    // contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
-
     m_main_wid->set_can_focus();            /* from stazed */
     m_main_wid->grab_focus();
 
@@ -1232,10 +1227,6 @@ mainwnd::~mainwnd ()
 
     if (not_nullptr(m_options))
         delete m_options;
-
-    /*
-     * delete m_tooltips;
-     */
 
     if (sm_sigpipe[0] != -1)
         close(sm_sigpipe[0]);
@@ -1438,7 +1429,7 @@ mainwnd::timer_callback ()
      * the JACK connection page from the Options dialog.
      */
 
-    std::string label("ALSA");
+    std::string label;
     if (perf().is_jack_running())
     {
         if (rc().with_jack_master())
@@ -1446,6 +1437,8 @@ mainwnd::timer_callback ()
         else if (rc().with_jack_transport())
             label = "Slave";
     }
+    else
+        label = "ALSA";
 
 #ifdef SEQ64_RTMIDI_SUPPORT
     if (rc().with_jack_midi())
@@ -1936,16 +1929,23 @@ mainwnd::rc_error_dialog (const std::string & message)
  *  Note that the split trigger variant of Stazed, where it doesn't just split
  *  the section in half, is not yet implemented (2016-08-05).
  *
- * \param do_export
- *      If true, then just write out the file and don't change the name of
- *      the current file based on the file-name the user selected.  The
- *      default value of this parameter is false.
+ * \param option
+ *      Indicates how to save or export the MIDI sequences.
+ *      The default value of this parameter is FILE_SAVE_AS_NORMAL.
+ *      The export options allow one to save the file as if the triggers were
+ *      employed, or with a lot of the Sequencer64-specific information
+ *      removed.
  */
 
 void
-mainwnd::file_save_as (bool do_export)
+mainwnd::file_save_as (SaveOption option)
 {
-    const char * const prompt = do_export ? "Export file as" : "Save file as" ;
+    const char * prompt = "Save File As" ;
+    if (option == FILE_SAVE_AS_EXPORT_SONG)
+        prompt = "Export Song As";
+    else if (option == FILE_SAVE_AS_EXPORT_MIDI)
+        prompt = "Export MIDI Only As";
+
     Gtk::FileChooserDialog dialog(prompt, Gtk::FILE_CHOOSER_ACTION_SAVE);
     dialog.set_transient_for(*this);
     dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
@@ -2000,11 +2000,38 @@ mainwnd::file_save_as (bool do_export)
                 if (response == Gtk::RESPONSE_NO)
                     return;
             }
-            if (do_export)
+            if (option == FILE_SAVE_AS_EXPORT_SONG)
             {
                 midifile f(fname, ppqn());
-                bool result = f.write_song(perf());     // f.write(perf());
+                bool result = f.write_song(perf());
                 if (! result)
+                {
+                    std::string errmsg = f.error_message();
+                    Gtk::MessageDialog errdialog
+                    (
+                        *this, errmsg, false, Gtk::MESSAGE_ERROR,
+                        Gtk::BUTTONS_OK, true
+                    );
+                    errdialog.run();
+                }
+            }
+            else if (option == FILE_SAVE_AS_EXPORT_MIDI)
+            {
+                rc().filename(fname);
+                update_window_title();
+                midifile f(rc().filename(), ppqn());
+                bool result = f.write(perf(), false);   /* no SeqSpec   */
+
+                /*
+                 * Cut'n'paste code follows :-(
+                 */
+
+                if (result)
+                {
+                    rc().add_recent_file(rc().filename());
+                    update_recent_files_menu();
+                }
+                else
                 {
                     std::string errmsg = f.error_message();
                     Gtk::MessageDialog errdialog
@@ -2070,7 +2097,6 @@ mainwnd::open_file (const std::string & fn)
     rc().add_recent_file(fn);           /* from Oli Kester's Kepler34       */
     update_recent_files_menu();
     update_window_title();
-
     m_entry_notes->set_text(perf().current_screen_set_notepad());
     m_adjust_bpm->set_value(perf().get_beats_per_minute());
 }
@@ -3325,7 +3351,7 @@ mainwnd::on_scrollbar_resize ()
 void
 mainwnd::update_window_title ()
 {
-    std::string title = (SEQ64_PACKAGE) + std::string(" - [");
+    std::string title = SEQ64_APP_NAME + std::string(" - [");
     std::string itemname = "unnamed";
     int ppqn = choose_ppqn(m_ppqn);
     char temp[16];
@@ -3547,7 +3573,10 @@ mainwnd::populate_menu_file ()
         MenuElem
         (
             "Save _as...", Gtk::AccelKey("<control><shift>S"),
-            sigc::bind(mem_fun(*this, &mainwnd::file_save_as), false)
+            sigc::bind
+            (
+                mem_fun(*this, &mainwnd::file_save_as), FILE_SAVE_AS_NORMAL
+            )
         )
     );
     m_menu_file->items().push_back(SeparatorElem());
@@ -3561,16 +3590,36 @@ mainwnd::populate_menu_file ()
     );
 
     /*
-     * Export means to write out the song as a standard MIDI file based on the
-     * triggers shown in the performance window.
+     * Export Song means to write out the song performance as a standard MIDI
+     * file based on the triggers shown in the performance window.
      */
 
     m_menu_file->items().push_back
     (
         MenuElem
         (
-            "E_xport song as MIDI...", Gtk::AccelKey("<control><shift>I"),
-            sigc::bind(mem_fun(*this, &mainwnd::file_save_as), true)
+            "Export _Song as MIDI...", Gtk::AccelKey("<control><shift>I"),
+            sigc::bind
+            (
+                mem_fun(*this, &mainwnd::file_save_as), FILE_SAVE_AS_EXPORT_SONG
+            )
+        )
+    );
+
+    /*
+     * Export MIDI Only means to write out the MIDI data, without including
+     * any Sequencer64-specific (SeqSpec) constructs.
+     */
+
+    m_menu_file->items().push_back
+    (
+        MenuElem
+        (
+            "Export _MIDI Only...", Gtk::AccelKey("<control><shift>O"),
+            sigc::bind
+            (
+                mem_fun(*this, &mainwnd::file_save_as), FILE_SAVE_AS_EXPORT_MIDI
+            )
         )
     );
     m_menu_file->items().push_back(SeparatorElem());

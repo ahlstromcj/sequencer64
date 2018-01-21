@@ -1,5 +1,88 @@
+2018-01-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/sequence.cpp, resources/pixmaps/fruity.xpm,
+	resources/pixmaps/tux.xpm, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/fruityseqroll.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Fixed issues #90 and #105 and tightened
+	fruity mode for seqroll.
+
+2018-01-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfnames.cpp: Checking
+	more sequence pointer accesses.
+	* seq_gtkmm2/src/seqmenu.cpp: Added not_nullptr() checks to sequence
+	access.
+	* FixLog, ROADMAP, TODO, contrib/notes/bugs_to_investigate.txt,
+	contrib/notes/sequencer64.links,
+	libseq64/include/midi_container.hpp, libseq64/src/rc_settings.cpp,
+	seq_rtmidi/src/rtmidi_info.cpp: Documentation updates mainly.
+	* resources/pixmaps/fruity.xpm, resources/pixmaps/tux.xpm: Ooops,
+	added the pixmaps for fruity mode.
+	* README, seq_gtkmm2/include/fruityseqroll.hpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqroll.cpp: Improvements
+	to fruity interaction mode.
+
+2018-01-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, TODO, configure.ac, libseq64/include/sequence.hpp,
+	libseq64/src/midifile.cpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/font.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/seqedit.cpp: Added seq
+	number to pattern and event editors.
+	* libseq64/include/event.hpp, libseq64/src/event.cpp,
+	libseq64/src/midifile.cpp: Unknown meta events are now preserved.
+
+2018-01-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, doc/dox/jack_modes.dox, doc/dox/mainpage-notes.dox,
+	doc/dox/mainpage-reference.dox, doc/dox/make_dox,
+	doc/dox/midi_parsing.dox, doc/dox/osc_support.dox,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/midi_container.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp: Minor fixes/optimization and
+	documentation updates.
+
+2018-01-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* arch/package/PKGBUILD, configure.ac: Added the latest version of
+	arch PKGBUILD 0.93.4.
+	* INSTALL, TODO, libseq64/src/midi_container.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Tweaks and fixing HMS button spacing.
+
+2018-01-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, doc/dox/doxy-notes.cfg, doc/dox/doxy-reference.cfg,
+	doc/dox/make_dox, doc/dox/midi_parsing.dox,
+	libseq64/include/daemonize.hpp, libseq64/include/event.hpp,
+	libseq64/include/perform.hpp, libseq64/src/daemonize.cpp,
+	libseq64/src/midi_container.cpp, libseq64/src/perform.cpp,
+	libseq64/src/rect.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/triggers.cpp, seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfroll_input.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_rtmidi/src/midi_jack.cpp: Fixes to
+	Doxygen documentation.
+
+2018-01-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/event.hpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midifile.cpp: Adding names for more meta events.
+
+2018-01-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, VERSION, configure, configure.ac,
+	libseq64/include/midi_container.hpp, libseq64/include/midifile.hpp,
+	libseq64/include/perform.hpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midifile.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwnd.cpp: Added export-plain-MIDI functionality.
+
 2018-01-06  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* ChangeLog, README: Version 0.94.2 in place.
 	* .gitignore: Added tests directory to git-ignore.
 	* README, ROADMAP, VERSION, libseq64/include/midi_control.hpp,
 	libseq64/src/perform.cpp: Version 0.94.2 pending.

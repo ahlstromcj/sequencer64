@@ -155,13 +155,14 @@ rtmidi_info::rtmidi_info
 }
 
 /**
- *  Destructor.
+ *  Destructor.  Gets rid of m_info_api and nullifies it.
  */
 
 rtmidi_info::~rtmidi_info ()
 {
-    if (not_nullptr(m_info_api))
-        delete m_info_api;
+    delete_api();
+    // if (not_nullptr(m_info_api))
+    //      delete m_info_api;
 }
 
 /**

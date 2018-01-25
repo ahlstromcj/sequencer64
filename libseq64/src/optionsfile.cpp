@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-25
+ * \updates       2018-01-25
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1252,10 +1252,10 @@ optionsfile::write (const perform & p)
     file
         << "\n[manual-alsa-ports]\n\n"
            "# Set to 1 to have sequencer64 create its own ALSA ports and not\n"
-           "# connect to other clients.  Use 1 to expose all the MIDI ports to\n"
+           "# connect to other clients.  Use 1 to expose all 16 MIDI ports to\n"
            "# JACK (e.g. via a2jmidid).  Use 0 to access the ALSA MIDI ports\n"
-           "# already running on one's computer, or to use the MIDI Through\n"
-           "# (capture) output alone in JACK.\n"
+           "# already running on one's computer, or to use the autoconnect\n"
+           "# feature (Sequencer64 connects to existing JACK ports on startup.\n"
            "\n"
         << (rc().manual_alsa_ports() ? "1" : "0")
         << "   # flag for manual ALSA ports\n"

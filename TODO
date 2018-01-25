@@ -1,10 +1,12 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-01-16
+2016-12-03 to 2018-01-25
 
 Debian (and other) Packaging:
 
     -   Still need to get a static package to work.
+    -   Refresh the verbatim examples for the "rc" and "usr" files
+        in the sequencer64-doc project.
 
 Windows:
 
@@ -40,6 +42,12 @@ Modify flag:
 
 Hot bugs:
 
+    -   JACK MIDI does not auto connect with the JACK connect button is
+        clicked.
+    -   Clicking the Stop button toggles (!) playback if Space is configured
+        to both start and stop playback!!
+    -   If the MIDI file has no performance info (triggers), make the
+        Song/Live button show "Live".
     -   When recording a short pattern, and holding a note across the
         pattern end, the drawing is bad.  Probably should just delete such
         notes.

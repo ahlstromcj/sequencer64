@@ -93,13 +93,9 @@ jack_process_io (jack_nframes_t nframes, void * arg)
                 midi_jack * mj = *mi;
                 midi_jack_data * mjp = &mj->jack_data();
                 if (mj->parent_bus().is_input_port())
-                {
                     (void) jack_process_rtmidi_input(nframes, mjp);
-                }
                 else
-                {
                     (void) jack_process_rtmidi_output(nframes, mjp);
-                }
             }
         }
     }

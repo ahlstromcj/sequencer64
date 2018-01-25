@@ -165,10 +165,8 @@ namespace seq64
  *  Defines the JACK input process callback.  It is the JACK process callback
  *  for a MIDI output port (e.g. "system:midi_capture_1", which gives us the
  *  output of the Korg nanoKEY2 MIDI controller), also known as a "Readable
- *  Client" by qjackctl. It does the following:
- *
- *  This callback receives data from JACK and gives it to our application's
- *  input port.
+ *  Client" by qjackctl.  This callback receives data from JACK and gives it
+ *  to our application's input port.
  *
  *  This function does the following:
  *
@@ -192,7 +190,7 @@ namespace seq64
  *  This function used to be static, but now we make if available to
  *  midi_jack_info.  Also note the s_null_detected flag.  It is used only to
  *  have the apiprint() debug messages appear only once, for better
- *  trouble-shooting.
+ *  trouble-shooting.  THIS CODE SHOULD BE A COMPILE-TIME OPTION.
  *
  * \param nframes
  *    The frame number to be processed.
@@ -207,9 +205,11 @@ namespace seq64
 int
 jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
 {
-    static bool s_null_detected = false;
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
     rtmidi_in_data * rtindata = jackdata->m_jack_rtmidiin;
+
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+    static bool s_null_detected = false;
     if (is_nullptr(jackdata->m_jack_port))     /* is port created?        */
     {
         if (! s_null_detected)
@@ -228,7 +228,7 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
         }
         return 0;
     }
-    s_null_detected = false;
+#endif  // SEQ64_USE_DEBUG_OUTPUT
 
     /*
      * Since this is an input port, buff is the area that contains data from
@@ -251,18 +251,19 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
                 for (int i = 0; i < eventsize; ++i)
                     message.push(jmevent.buffer[i]);
 
+                jack_time_t delta_jtime;
                 jtime = jack_get_time();            /* compute delta time   */
                 if (rtindata->first_message())
                 {
                     rtindata->first_message(false);
+                    delta_jtime = jack_time_t(0);
                 }
                 else
                 {
-                    message.timestamp
-                    (
-                        (jtime - jackdata->m_jack_lasttime) * 0.000001
-                    );
+                    jtime -= jackdata->m_jack_lasttime;
+                    delta_jtime = jack_time_t(jtime * 0.000001);
                 }
+                message.timestamp(delta_jtime);
                 jackdata->m_jack_lasttime = jtime;
                 if (! rtindata->continue_sysex())
                 {
@@ -315,8 +316,9 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
  *  ring buffer and pass it to the output buffer.
  *
  *  We were wondering if, like the JACK midiseq example program, we need to
- *  wrap out process in a for-loop over the number of frames.  In our tests,
- *  we are getting 1024 frames, and the code seems to work without that loop.
+ *  wrap the out-process in a for-loop over the number of frames.  In our
+ *  tests, we are getting 1024 frames, and the code seems to work without that
+ *  loop.
  *
  * \param nframes
  *    The frame number to be processed.
@@ -331,8 +333,10 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
 int
 jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
 {
-    static bool s_null_detected = false;
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
+
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+    static bool s_null_detected = false;
     if (is_nullptr(jackdata->m_jack_port))          /* is port created?     */
     {
         if (! s_null_detected)
@@ -342,7 +346,7 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
         }
         return 0;
     }
-    if (is_nullptr(jackdata->m_jack_buffsize))      /* port set up?        */
+    if (is_nullptr(jackdata->m_jack_buffsize))      /* port set up?         */
     {
         if (! s_null_detected)
         {
@@ -351,9 +355,11 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
         }
         return 0;
     }
+#endif  // SEQ64_USE_DEBUG_OUTPUT
 
     static size_t soffset = 0;
     void * buf = jack_port_get_buffer(jackdata->m_jack_port, nframes);
+    jack_midi_clear_buffer(buf);                    /* no nullptr test      */
 
 #ifdef SEQ64_SHOW_API_CALLS_TMI
     printf
@@ -362,8 +368,6 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
         int(nframes), (unsigned long)(jackdata->m_jack_port)
     );
 #endif
-
-    jack_midi_clear_buffer(buf);
 
     /*
      * A for-loop over the number of nframes?  See discussion above.

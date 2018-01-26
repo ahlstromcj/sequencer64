@@ -718,9 +718,7 @@ midibase::set_input (bool inputing)     // not part of portmidi
                 result = init_in();
         }
         else
-        {
             result = deinit_in();
-        }
     }
     return result;
 }

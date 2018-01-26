@@ -44,19 +44,6 @@ class midi_win : public midi_api
 private:
 
     /**
-     *  Set to true if each JACK port should be its own client.  In this case,
-     *  the functions api_init_in(), api_init_out(), api_init_in_sub(), and
-     *  api_init_out_sub() need to open their own JACK client.  Otherwise,
-     *  they will use the JACK client created in the midi_win_info class.
-     *
-     *  We may be changing this meaning.  We want to try support separate JACK
-     *  clients, one for all input ports, and one for all output ports.  So
-     *  the above comments might not apply.  Still thinking.
-     */
-
-    bool m_multi_client;
-
-    /**
      *  Preserves the original name of the remote port, so it can be used
      *  later for connection.
      */
@@ -90,15 +77,6 @@ public:
         bool multiclient = false
     );
     virtual ~midi_win ();
-
-    /**
-     * \getter m_multi_client
-     */
-
-    bool multi_client () const
-    {
-        return m_multi_client;
-    }
 
     /**
      * \getter m_jack_client

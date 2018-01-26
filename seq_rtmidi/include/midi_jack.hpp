@@ -43,6 +43,7 @@ class midi_jack : public midi_api
 
 private:
 
+#ifdef USE_MULTI_CLIENT
     /**
      *  Set to true if each JACK port should be its own client.  In this case,
      *  the functions api_init_in(), api_init_out(), api_init_in_sub(), and
@@ -55,6 +56,7 @@ private:
      */
 
     bool m_multi_client;
+#endif
 
     /**
      *  Preserves the original name of the remote port, so it can be used
@@ -91,6 +93,7 @@ public:
     );
     virtual ~midi_jack ();
 
+#ifdef USE_MULTI_CLIENT
     /**
      * \getter m_multi_client
      */
@@ -99,6 +102,7 @@ public:
     {
         return m_multi_client;
     }
+#endif
 
     /**
      * \getter m_jack_client

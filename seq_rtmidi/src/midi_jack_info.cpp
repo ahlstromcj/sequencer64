@@ -125,7 +125,9 @@ midi_jack_info::midi_jack_info
     midibpm bpm
 ) :
     midi_info               (appname, ppqn, bpm),
+#ifdef USE_MULTI_CLIENT
     m_multi_client          (SEQ64_RTMIDI_NO_MULTICLIENT),
+#endif
     m_jack_ports            (),
     m_jack_client           (nullptr),              /* inited for connect() */
     m_jack_client_2         (nullptr)
@@ -170,6 +172,7 @@ midi_jack_info::connect ()
          */
 
         const char * clientname = rc().app_client_name().c_str();
+#ifdef USE_MULTI_CLIENT
         if (multi_client())
         {
             /*
@@ -178,6 +181,7 @@ midi_jack_info::connect ()
 
             clientname = "midi_jack_info";
         }
+#endif
 
         result = create_jack_client(clientname);
         if (not_nullptr(result))
@@ -410,6 +414,7 @@ midi_jack_info::get_all_port_info ()
     else
         result = -1;
 
+#ifdef USE_MULTI_CLIENT
     if (multi_client())
     {
         /*
@@ -418,6 +423,7 @@ midi_jack_info::get_all_port_info ()
 
         disconnect();
     }
+#endif
     return result;
 }
 
@@ -455,8 +461,10 @@ bool
 midi_jack_info::api_connect ()
 {
     bool result = true;
+#ifdef USE_MULTI_CLIENT
     if (! multi_client())           /* CAREFUL IF WE ENABLE IT! */
     {
+#endif
         result = not_nullptr(client_handle());
         if (result)
         {
@@ -464,7 +472,9 @@ midi_jack_info::api_connect ()
             apiprint("jack_activate", "info");
             result = rc == 0;
         }
+#ifdef USE_MULTI_CLIENT
     }
+#endif
     if (result)
     {
         for
@@ -478,9 +488,7 @@ midi_jack_info::api_connect ()
             {
                 result = m->api_connect();
                 if (! result)
-                {
                     break;
-                }
             }
         }
     }
@@ -551,6 +559,7 @@ midi_jack_info::api_set_beats_per_minute (midibpm b)
 void
 midi_jack_info::api_port_start (mastermidibus & masterbus, int bus, int port)
 {
+#ifdef USE_MULTI_CLIENT
     if (multi_client())
     {
         /*
@@ -577,6 +586,7 @@ midi_jack_info::api_port_start (mastermidibus & masterbus, int bus, int port)
         m->is_input_port(false);
         masterbus.m_inbus_array.add(m, false);
     }
+#endif
 }
 
 /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-06-11
+ * \updates       2018-01-25
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -151,7 +151,7 @@ businfo::initialize ()
     bool result = not_nullptr(bus());
     if (result)
     {
-        if (! bus()->is_input_port())       /* not built in master bus  */
+        if (! bus()->is_input_port())           /* not built in master bus  */
         {
             if (bus()->is_virtual_port())
                 result = bus()->init_out_sub(); /* not built in master bus  */
@@ -159,7 +159,7 @@ businfo::initialize ()
                 result = bus()->init_out();
         }
         if (result)
-            activate();             /* "initialized" and "active"   */
+            activate();                         /* "initialized" & "active" */
     }
     else
     {
@@ -180,6 +180,8 @@ businfo::print () const
         flags += " virtual";
     else if (bus()->is_system_port())
         flags += " system";
+    else
+        flags += " normal";
 
     if (bus()->is_input_port())
         flags += " input";

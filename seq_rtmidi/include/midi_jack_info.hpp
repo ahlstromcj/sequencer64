@@ -50,6 +50,7 @@ class midi_jack_info : public midi_info
 
 private:
 
+#ifdef USE_MULTI_CLIENT
     /**
      *  Set to true if each JACK port should be its own client.  In this case,
      *  the functions api_init_in(), api_init_out(), api_init_in_sub(), and
@@ -62,6 +63,7 @@ private:
      */
 
     bool m_multi_client;
+#endif
 
     /**
      *  Holds the port data.  Not for use with the multi-client option.
@@ -100,6 +102,7 @@ public:
     );
     virtual ~midi_jack_info ();
 
+#ifdef USE_MULTI_CLIENT
     /**
      * \getter m_multi_client
      */
@@ -108,6 +111,7 @@ public:
     {
         return m_multi_client;
     }
+#endif
 
     /**
      * \getter m_jack_client

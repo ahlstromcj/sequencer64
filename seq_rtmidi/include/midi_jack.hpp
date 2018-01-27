@@ -9,7 +9,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-08-22
+ * \updates       2018-01-26
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring, we've stripped out most of the original RtMidi
@@ -43,21 +43,6 @@ class midi_jack : public midi_api
 
 private:
 
-#ifdef USE_MULTI_CLIENT
-    /**
-     *  Set to true if each JACK port should be its own client.  In this case,
-     *  the functions api_init_in(), api_init_out(), api_init_in_sub(), and
-     *  api_init_out_sub() need to open their own JACK client.  Otherwise,
-     *  they will use the JACK client created in the midi_jack_info class.
-     *
-     *  We may be changing this meaning.  We want to try support separate JACK
-     *  clients, one for all input ports, and one for all output ports.  So
-     *  the above comments might not apply.  Still thinking.
-     */
-
-    bool m_multi_client;
-#endif
-
     /**
      *  Preserves the original name of the remote port, so it can be used
      *  later for connection.
@@ -83,26 +68,14 @@ protected:
 
     midi_jack_data m_jack_data;
 
+private:
+
+    midi_jack ();       // EXPERIMENTAL
+
 public:
 
-    midi_jack
-    (
-        midibus & parentbus,
-        midi_info & masterinfo,
-        bool multiclient = false
-    );
+    midi_jack (midibus & parentbus, midi_info & masterinfo);
     virtual ~midi_jack ();
-
-#ifdef USE_MULTI_CLIENT
-    /**
-     * \getter m_multi_client
-     */
-
-    bool multi_client () const
-    {
-        return m_multi_client;
-    }
-#endif
 
     /**
      * \getter m_jack_client

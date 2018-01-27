@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-12-31
+ * \updates       2018-01-26
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -410,13 +410,6 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
  */
 
 /**
- *  We still need to figure out if we want a "master" client handle, or a
- *  handle to each port.  Same for the JACK data item.  Currently, we provide
- *  the m_multi_client member so that we can experiment, but "multi-client"
- *  mode is currently incompletely implemented.  Plus, we may want to use it
- *  to choose between handling input/output both in the callback, as done
- *  currently, or separating input and output into separate JACK clients.
- *
  *  Note that this constructor also adds its object to the midi_jack_info port
  *  list, so that the JACK callback functions can iterate through all of the
  *  JACK ports in use by this application, performing work on them.
@@ -436,33 +429,15 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
 midi_jack::midi_jack
 (
     midibus & parentbus,
-    midi_info & masterinfo,
-    bool multiclient
+    midi_info & masterinfo
 ) :
     midi_api            (parentbus, masterinfo),
-#ifdef USE_MULTI_CLIENT
-    m_multi_client      (multiclient),  // (SEQ64_RTMIDI_NO_MULTICLIENT),
-#endif
     m_remote_port_name  (),
     m_jack_info         (dynamic_cast<midi_jack_info &>(masterinfo)),
     m_jack_data         ()
 {
-#ifdef USE_MULTI_CLIENT
-    if (multi_client())
-    {
-        // No code needed, yet
-    }
-    else
-    {
-#endif
-        client_handle
-        (
-            reinterpret_cast<jack_client_t *>(masterinfo.midi_handle())
-        );
-        (void) m_jack_info.add(*this);
-#ifdef USE_MULTI_CLIENT
-    }
-#endif
+    client_handle(reinterpret_cast<jack_client_t *>(masterinfo.midi_handle()));
+    (void) m_jack_info.add(*this);
 }
 
 /**
@@ -473,17 +448,6 @@ midi_jack::midi_jack
 
 midi_jack::~midi_jack ()
 {
-#ifdef USE_MULTI_CLIENT
-    if (multi_client())
-    {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        close_port();
-        close_client();
-    }
-#endif
     if (not_nullptr(m_jack_data.m_jack_buffsize))
         jack_ringbuffer_free(m_jack_data.m_jack_buffsize);
 
@@ -514,44 +478,26 @@ midi_jack::~midi_jack ()
 bool
 midi_jack::api_init_out ()
 {
-    bool result = true;
     std::string remoteportname = connect_name();    /* "bus:port"   */
     remote_port_name(remoteportname);
-#ifdef USE_MULTI_CLIENT
-    if (multi_client())
-    {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
 
-        result = open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
-    }
+    bool result = create_ringbuffer(JACK_RINGBUFFER_SIZE);
     if (result)
     {
-#endif
-        result = create_ringbuffer(JACK_RINGBUFFER_SIZE);
-        if (result)
-        {
-            set_alt_name
-            (
-                rc().application_name(), rc().app_client_name(), remoteportname
-            );
-            parent_bus().set_alt_name
-            (
-                rc().application_name(), rc().app_client_name(), remoteportname
-            );
-        }
-#ifdef USE_MULTI_CLIENT
-    }
-#endif
-    if (result)
-    {
+        set_alt_name
+        (
+            rc().application_name(), rc().app_client_name(), remoteportname
+        );
+        parent_bus().set_alt_name
+        (
+            rc().application_name(), rc().app_client_name(), remoteportname
+        );
         result = register_port(SEQ64_MIDI_OUTPUT_PORT, port_name());
 
         /*
          * Note that we cannot connect ports until we are activated, and we
-         * cannot be activated until all ports are properly set up.
-         * Otherwise, we'd call:
+         * cannot activate until all ports are properly set up.  Otherwise,
+         * we'd call:
          *
          *  std::string localname = connect_name();
          *  result = connect_port(SEQ64_MIDI_OUTPUT, localname, remoteportname);
@@ -594,50 +540,30 @@ midi_jack::api_init_out ()
 bool
 midi_jack::api_init_in ()
 {
-    bool result = true;
     std::string remoteportname = connect_name();    /* "bus:port"       */
     remote_port_name(remoteportname);
-#ifdef USE_MULTI_CLIENT
-    if (multi_client())
-    {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
+    set_alt_name
+    (
+        rc().application_name(), rc().app_client_name(), remoteportname
+    );
+    parent_bus().set_alt_name
+    (
+        rc().application_name(), rc().app_client_name(), remoteportname
+    );
+    bool result = register_port(SEQ64_MIDI_INPUT_PORT, port_name());
 
-        result = open_client_impl(SEQ64_MIDI_INPUT_PORT);
-    }
-    else
-    {
-#endif
-        set_alt_name
-        (
-            rc().application_name(), rc().app_client_name(), remoteportname
-        );
-        parent_bus().set_alt_name
-        (
-            rc().application_name(), rc().app_client_name(), remoteportname
-        );
-#ifdef USE_MULTI_CLIENT
-    }
-    if (result)
-    {
-#endif
-        result = register_port(SEQ64_MIDI_INPUT_PORT, port_name());
+    /*
+     * Note that we cannot connect ports until we are activated, and we
+     * cannot be activated until all ports are properly set up.
+     * Otherwise, we'd call:
+     *
+     *  std::string localname = connect_name();
+     *  result = connect_port(SEQ64_MIDI_INPUT, localname, remoteportname);
+     *  if (result) set_port_open();
+     *
+     * We also need to fill in the m_jack_data member here.
+     */
 
-        /*
-         * Note that we cannot connect ports until we are activated, and we
-         * cannot be activated until all ports are properly set up.
-         * Otherwise, we'd call:
-         *
-         *  std::string localname = connect_name();
-         *  result = connect_port(SEQ64_MIDI_INPUT, localname, remoteportname);
-         *  if (result) set_port_open();
-         *
-         * We also need to fill in the m_jack_data member here.
-         */
-#ifdef USE_MULTI_CLIENT
-    }
-#endif
     return result;
 }
 
@@ -655,17 +581,6 @@ midi_jack::api_connect ()
     std::string remotename = remote_port_name();
     std::string localname = connect_name();     /* modified!    */
     bool result;
-#ifdef USE_MULTI_CLIENT
-    if (multi_client())
-    {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        jack_activate(client_handle());
-    }
-#endif
-
     if (is_input_port())
         result = connect_port(SEQ64_MIDI_INPUT_PORT, remotename, localname);
     else
@@ -725,49 +640,32 @@ midi_jack::set_virtual_name (int portid, const std::string & portname)
 bool
 midi_jack::api_init_out_sub ()
 {
-    bool result = true;
     master_midi_mode(SEQ64_MIDI_OUTPUT_PORT);    /* this is necessary */
-#ifdef USE_MULTI_CLIENT
-    if (multi_client())
+    int portid = parent_bus().get_port_id();
+    bool result = portid >= 0;
+    if (! result)
     {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        result = open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
+        portid = get_bus_index();
+        result = portid >= 0;
     }
+    if (result)
+        result = create_ringbuffer(JACK_RINGBUFFER_SIZE);
 
     if (result)
     {
-#endif
-        int portid = parent_bus().get_port_id();
-        result = portid >= 0;
-        if (! result)
+        std::string portname = parent_bus().port_name();
+        if (portname.empty())
         {
-            portid = get_bus_index();
-            result = portid >= 0;
+            portname = rc().app_client_name() + " midi out ";
+            portname += std::to_string(portid);
         }
-        if (result)
-            result = create_ringbuffer(JACK_RINGBUFFER_SIZE);
-
+        result = register_port(SEQ64_MIDI_OUTPUT_PORT, portname);
         if (result)
         {
-            std::string portname = parent_bus().port_name();
-            if (portname.empty())
-            {
-                portname = rc().app_client_name() + " midi out ";
-                portname += std::to_string(portid);
-            }
-            result = register_port(SEQ64_MIDI_OUTPUT_PORT, portname);
-            if (result)
-            {
-                set_virtual_name(portid, portname);
-                set_port_open();
-            }
+            set_virtual_name(portid, portname);
+            set_port_open();
         }
-#ifdef USE_MULTI_CLIENT
     }
-#endif
     return result;
 }
 
@@ -781,46 +679,30 @@ midi_jack::api_init_out_sub ()
 bool
 midi_jack::api_init_in_sub ()
 {
-    bool result = true;
     master_midi_mode(SEQ64_MIDI_INPUT_PORT);
-#ifdef USE_MULTI_CLIENT
-    if (multi_client())
+    int portid = parent_bus().get_port_id();
+    bool result = portid >= 0;
+    if (! result)
     {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        result = open_client_impl(SEQ64_MIDI_INPUT_PORT);
+        portid = get_bus_index();
+        result = portid >= 0;
     }
     if (result)
     {
-#endif
-        int portid = parent_bus().get_port_id();
-        result = portid >= 0;
-        if (! result)
+        std::string portname = master_info().get_port_name(get_bus_index());
+        std::string portname2 = parent_bus().port_name();
+        if (portname.empty())
         {
-            portid = get_bus_index();
-            result = portid >= 0;
+            portname = rc().app_client_name() + " midi in ";
+            portname += std::to_string(portid);
         }
+        result = register_port(SEQ64_MIDI_INPUT_PORT, portname);
         if (result)
         {
-            std::string portname = master_info().get_port_name(get_bus_index());
-            std::string portname2 = parent_bus().port_name();
-            if (portname.empty())
-            {
-                portname = rc().app_client_name() + " midi in ";
-                portname += std::to_string(portid);
-            }
-            result = register_port(SEQ64_MIDI_INPUT_PORT, portname);
-            if (result)
-            {
-                set_virtual_name(portid, portname);
-                set_port_open();
-            }
+            set_virtual_name(portid, portname);
+            set_port_open();
         }
-#ifdef USE_MULTI_CLIENT
     }
-#endif
     return result;
 }
 
@@ -1466,9 +1348,6 @@ midi_in_jack::midi_in_jack (midibus & parentbus, midi_info & masterinfo)
      * Currently, we cannot initialize here because the clientname is empty.
      * It is retrieved in api_init_in().
      *
-     * if (multi_client())
-     *     (void) initialize(clientname);
-     *
      * Hook in the input data.  The JACK port pointer will get set in
      * api_init_in() or api_init_out() when the port is registered.
      */
@@ -1655,9 +1534,6 @@ midi_out_jack::midi_out_jack (midibus & parentbus, midi_info & masterinfo)
     /*
      * Currently, we cannot initialize here because the clientname is empty.
      * It is retrieved in api_init_out().
-     *
-     * if (multi_client())
-     *     (void) initialize(clientname);
      */
 }
 

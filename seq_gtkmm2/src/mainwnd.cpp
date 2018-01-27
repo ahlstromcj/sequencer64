@@ -136,7 +136,7 @@
 #include "pixmaps/sequencer64_legacy.xpm"
 #endif
 
-#ifdef SEQ64_STAZED_MENU_BUTTONS
+#ifdef SEQ64_STAZED_MENU_BUTTONS            // these are too inscrutable
 #include "pixmaps/live_mode.xpm"            // anything better than a mike icon?
 #include "pixmaps/menu.xpm"                 // any better image of a "menu"?
 #include "pixmaps/muting.xpm"               // need better/smaller icon
@@ -1346,7 +1346,9 @@ mainwnd::toggle_menu_mode ()
  *      with the changes.
  *
  * \return
- *      Always returns true.
+ *      Always returns true.  This allows the callback to be called
+ *      repeatedly.  If one wants to stop the timeout callback, then return
+ *      false.
  */
 
 bool
@@ -1486,7 +1488,8 @@ mainwnd::timer_callback ()
     {
         m_is_running = perf().is_running();
 #ifdef SEQ64_PAUSE_SUPPORT
-        set_play_image(m_is_running);
+        if (! usr().work_around_play_image())
+            set_play_image(m_is_running);
 #endif
     }
 
@@ -2642,13 +2645,11 @@ mainwnd::set_play_image (bool isrunning)
     }
     if (isrunning)
     {
-        // m_image_play = manage(new PIXBUF_IMAGE(pause_xpm));
         m_image_play = new (std::nothrow) PIXBUF_IMAGE(pause_xpm);
         add_tooltip(m_button_play, "Pause playback at current location.");
     }
     else
     {
-        // m_image_play = manage(new PIXBUF_IMAGE(play2_xpm));
         m_image_play = new (std::nothrow) PIXBUF_IMAGE(play2_xpm);
         add_tooltip(m_button_play, "Resume playback from current location.");
     }

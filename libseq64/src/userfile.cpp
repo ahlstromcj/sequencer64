@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-02
+ * \updates       2018-01-27
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -515,10 +515,9 @@ userfile::parse (perform & /* p */)
         if (line_after(file, "[user-options]"))
         {
             int scratch = 0;
-            if (next_data_line(file))
-                sscanf(m_line, "%d", &scratch);
+            sscanf(m_line, "%d", &scratch);
+            usr().option_daemonize(scratch != 0);
 
-            usr().option_daemonize(scratch);
             char temp[256];
             if (next_data_line(file))
             {
@@ -530,6 +529,17 @@ userfile::parse (perform & /* p */)
 
                 usr().option_logfile(logfile);
             }
+        }
+
+        /*
+         * Work-arounds for sticky issues
+         */
+
+        if (line_after(file, "[user-work-arounds]"))
+        {
+            int scratch = 0;
+            sscanf(m_line, "%d", &scratch);
+            usr().work_around_play_image(scratch != 0);
         }
     }
 
@@ -715,7 +725,7 @@ userfile::write (const perform & /* a_perf */ )
                 << uin.name() << "\n"
                 << "\n"
                 << uin.controller_count()
-                << "    # number of MIDI controller values\n"
+                << "    # number of MIDI controller number & name pairs\n"
                 ;
 
             if (uin.controller_count() > 0)
@@ -724,10 +734,13 @@ userfile::write (const perform & /* a_perf */ )
                 {
                     if (uin.controller_active(ctlr))
                     {
-                        file
-                            << ctlr << " " << uin.controller_name(ctlr)
-                            << "# controller number & name:\n"
-                            ;
+                        file << ctlr << " " << uin.controller_name(ctlr) << "\n";
+
+                            /*
+                             * TMI
+                             *
+                             * << "# controller number & name:\n"
+                             */
                     }
 #if defined PLATFORM_DEBUG && defined SHOW_IGNORED_ITEMS
                     else
@@ -1161,6 +1174,27 @@ userfile::write (const perform & /* a_perf */ )
             file << "\"\"\n";
         else
             file << logfile << "\n";
+
+        /*
+         * [user-work-arounds]
+         */
+
+        file << "\n"
+            "[user-work-arounds]\n"
+            "\n"
+            "# These settings specify application-specific values that work\n"
+            "# around issues that we have not been able to truly fix for all\n"
+            "# users.\n"
+            "\n"
+            "# The work_around_play_image option can be set to 0 or 1.  0 is\n"
+            "# the normal setting. Set it to 1 if multiple-clicks of the play\n"
+            "# button (or the equivalent play/pause/stop actions) cause the\n"
+            "# sequencer64 application to crash.\n"
+            "\n"
+            ;
+
+        uscratch = usr().work_around_play_image() ? 1 : 0 ;
+        file << uscratch << "       # work_around_play_image\n";
     }
 
     /*

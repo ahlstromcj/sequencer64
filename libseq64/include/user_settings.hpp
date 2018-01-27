@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-12-17
+ * \updates       2018-01-27
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -765,6 +765,10 @@ class user_settings
 
     const int mc_baseline_ppqn;
 
+    /*
+     *                  [user-options]
+     */
+
     /**
      *  Indicates if the application should be daemonized.  All options that
      *  begin with "option_" are options specific to a particular version of
@@ -788,6 +792,20 @@ class user_settings
      */
 
     std::string m_user_option_logfile;
+
+    /*
+     *                  [user-work-arounds]
+     */
+
+    /**
+     *  We have an issue on some user's machines where toggling the image on
+     *  the play button from the "play" image to the "pause" images causes
+     *  segfaults.  We can't duplicate on the developer's machines, so while
+     *  we try to figure how to avoid the issue, this flag is provided
+     *  to simply leave the play-button image alone.
+     */
+
+    bool m_work_around_play_image;
 
 public:
 
@@ -1611,7 +1629,17 @@ public:
 
     std::string option_logfile () const;
 
+    /**
+     * \getter m_work_around_play_image
+     */
+
+    bool work_around_play_image () const
+    {
+        return m_work_around_play_image;
+    }
+
 public:         // used in main application module and the userfile class
+
 
     /**
      * \setter m_use_new_font
@@ -1712,6 +1740,15 @@ public:         // used in main application module and the userfile class
     void option_logfile (const std::string & logfile)
     {
         m_user_option_logfile = logfile;
+    }
+
+    /**
+     * \setter m_work_around_play_image
+     */
+
+    void work_around_play_image (bool flag)
+    {
+        m_work_around_play_image = flag;
     }
 
     void midi_ppqn (int ppqn);

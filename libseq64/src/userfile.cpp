@@ -953,7 +953,8 @@ userfile::write (const perform & /* a_perf */ )
 
         file << "\n"
             "# Specifies the window redraw rate for all windows that support\n"
-            "# that concept.  The default is 40 ms.  Some windows used 25 ms.\n"
+            "# that concept.  The default is 40 ms.  Some windows used 25 ms,\n"
+            "# which is faster.\n"
             "\n"
             << usr().window_redraw_rate()
             << "      # window_redraw_rate\n"

@@ -41,14 +41,14 @@
 #include <string>
 #include <stack>
 
-#include "seq64_features.h"             /* various feature #defines */
-#include "calculations.hpp"             /* measures_to_ticks()      */
-#include "event_list.hpp"               /* seq64::event_list        */
-#include "midi_container.hpp"           /* seq64::midi_container    */
-#include "midibus.hpp"                  /* seq64::midibus           */
-#include "mutex.hpp"                    /* seq64::mutex, automutex  */
-#include "scales.h"                     /* key and scale constants  */
-#include "triggers.hpp"                 /* seq64::triggers, etc.    */
+#include "seq64_features.h"             /* various feature #defines     */
+#include "calculations.hpp"             /* measures_to_ticks()          */
+#include "event_list.hpp"               /* seq64::event_list            */
+#include "midi_container.hpp"           /* seq64::midi_container        */
+#include "midibus.hpp"                  /* seq64::midibus               */
+#include "mutex.hpp"                    /* seq64::mutex, automutex      */
+#include "scales.h"                     /* key and scale constants      */
+#include "triggers.hpp"                 /* seq64::triggers, etc.        */
 
 /**
  *  Enables the Stazed/Seq32 code for adding overwrite and expand looping

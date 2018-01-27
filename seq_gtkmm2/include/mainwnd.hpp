@@ -45,6 +45,7 @@
 #include "seq64_features.h"             /* feature macros for the app   */
 #include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
 #include "gui_window_gtk2.hpp"          /* seq64::qui_window_gtk2       */
+#include "mutex.hpp"                    /* seq64::mutex, automutex      */
 #include "perform.hpp"                  /* seq64::perform and callback  */
 
 /**
@@ -310,6 +311,17 @@ private:
      */
 
     Gtk::Image * m_image_play;
+
+#ifdef SEQ64_PAUSE_SUPPORT
+
+    /**
+     *  Provides locking for the sequence.  Made mutable for use in
+     *  certain locked getter functions.
+     */
+
+    mutable mutex m_image_play_mutex;
+
+#endif
 
     /**
      *  This button is the panic button, which is adapted from Oli Kester's
@@ -633,7 +645,9 @@ private:
     void edit_callback_notepad ();
     void update_markers (midipulse tick);
     void reset ();
+#ifdef SEQ64_PAUSE_SUPPORT
     void set_play_image (bool isrunning);
+#endif
     void set_songlive_image (bool issong);
     void start_playing ();
     void pause_playing ();

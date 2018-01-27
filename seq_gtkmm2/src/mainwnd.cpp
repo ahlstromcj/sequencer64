@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-20
+ * \updates       2018-01-27
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -306,7 +306,12 @@ mainwnd::mainwnd
     m_perf_edit_2           (allowperf2 ? new perfedit(p, true, ppqn) : nullptr),
     m_options               (nullptr),
     m_main_cursor           (),
-    m_image_play            (),
+#ifdef SEQ64_PAUSE_SUPPORT
+    m_image_play            (nullptr),
+    m_image_play_mutex      (),
+#else
+    m_image_play            (new PIXBUF_IMAGE(play2_xpm)),
+#endif
     m_button_panic          (manage(new Gtk::Button())),    /* from kepler34   */
     m_button_learn          (manage(new Gtk::Button())),    /* group learn (L) */
     m_button_stop           (manage(new Gtk::Button())),
@@ -1219,6 +1224,9 @@ mainwnd::mainwnd
 
 mainwnd::~mainwnd ()
 {
+    if (not_nullptr(m_image_play))
+        delete m_image_play;
+
     if (not_nullptr(m_perf_edit_2))
         delete m_perf_edit_2;
 
@@ -1653,8 +1661,9 @@ mainwnd::options_dialog ()
     if (not_nullptr(m_options))
         delete m_options;
 
-    m_options = new options(*this, perf());
-    m_options->show_all();
+    m_options = new (std::nothrow) options(*this, perf());
+    if (not_nullptr(m_options))
+        m_options->show_all();
 }
 
 /**
@@ -1667,8 +1676,9 @@ mainwnd::jack_dialog ()
     if (not_nullptr(m_options))
         delete m_options;
 
-    m_options = new options(*this, perf(), true);
-    m_options->show_all();
+    m_options = new (std::nothrow) options(*this, perf(), true);
+    if (not_nullptr(m_options))
+        m_options->show_all();
 }
 
 #ifdef SEQ64_SONG_RECORDING
@@ -2611,6 +2621,8 @@ mainwnd::edit_callback_notepad ()
     perf().set_screen_set_notepad(text);
 }
 
+#ifdef SEQ64_PAUSE_SUPPORT
+
 /**
  *  Changes the image used for the pause/play button.  Is this a memory leak?
  *
@@ -2622,19 +2634,29 @@ mainwnd::edit_callback_notepad ()
 void
 mainwnd::set_play_image (bool isrunning)
 {
-    delete m_image_play;
+    automutex locker(m_image_play_mutex);
+    if (not_nullptr(m_image_play))
+    {
+        delete m_image_play;
+        m_image_play = nullptr;
+    }
     if (isrunning)
     {
-        m_image_play = manage(new PIXBUF_IMAGE(pause_xpm));
-        add_tooltip(m_button_play, "Pause playback at the current location.");
+        // m_image_play = manage(new PIXBUF_IMAGE(pause_xpm));
+        m_image_play = new (std::nothrow) PIXBUF_IMAGE(pause_xpm);
+        add_tooltip(m_button_play, "Pause playback at current location.");
     }
     else
     {
-        m_image_play = manage(new PIXBUF_IMAGE(play2_xpm));
-        add_tooltip(m_button_play, "Resume playback from the current location.");
+        // m_image_play = manage(new PIXBUF_IMAGE(play2_xpm));
+        m_image_play = new (std::nothrow) PIXBUF_IMAGE(play2_xpm);
+        add_tooltip(m_button_play, "Resume playback from current location.");
     }
-    m_button_play->set_image(*m_image_play);
+    if (not_nullptr(m_image_play))
+        m_button_play->set_image(*m_image_play);
 }
+
+#endif
 
 /**
  *  Changes the image used for the song/live mode button

@@ -807,6 +807,13 @@ class user_settings
 
     bool m_work_around_play_image;
 
+    /**
+     *  Another similar issue occurs in setting the tranposable image in
+     *  seqedit, even though there should be no thread conflicts!  Weird.
+     */
+
+    bool m_work_around_transpose_image;
+
 public:
 
     user_settings ();
@@ -1638,6 +1645,15 @@ public:
         return m_work_around_play_image;
     }
 
+    /**
+     * \getter m_work_around_transpose_image
+     */
+
+    bool work_around_transpose_image () const
+    {
+        return m_work_around_transpose_image;
+    }
+
 public:         // used in main application module and the userfile class
 
 
@@ -1749,6 +1765,15 @@ public:         // used in main application module and the userfile class
     void work_around_play_image (bool flag)
     {
         m_work_around_play_image = flag;
+    }
+
+    /**
+     * \setter m_work_around_transpose_image
+     */
+
+    void work_around_transpose_image (bool flag)
+    {
+        m_work_around_transpose_image = flag;
     }
 
     void midi_ppqn (int ppqn);

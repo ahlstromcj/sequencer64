@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-20
+ * \updates       2018-01-27
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -554,7 +554,8 @@ seqedit::seqedit
         "Sequence is allowed to be transposed if button is highighted/checked."
     );
     m_toggle_transpose->set_active(m_seq.get_transposable());
-    set_transpose_image(m_seq.get_transposable());
+    if (! usr().work_around_transpose_image())
+        set_transpose_image(m_seq.get_transposable());
 #endif
 
     /* play, rec, thru */
@@ -2505,8 +2506,9 @@ void
 seqedit::transpose_change_callback ()
 {
     bool istransposable = m_toggle_transpose->get_active();
-    set_transpose_image(istransposable);
     m_seq.set_transposable(istransposable);
+    if (! usr().work_around_transpose_image())
+        set_transpose_image(istransposable);
 }
 
 /**

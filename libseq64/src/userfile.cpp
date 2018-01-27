@@ -540,6 +540,11 @@ userfile::parse (perform & /* p */)
             int scratch = 0;
             sscanf(m_line, "%d", &scratch);
             usr().work_around_play_image(scratch != 0);
+            if (next_data_line(file))
+            {
+                sscanf(m_line, "%d", &scratch);
+                usr().work_around_transpose_image(scratch != 0);
+            }
         }
     }
 
@@ -1191,10 +1196,16 @@ userfile::write (const perform & /* a_perf */ )
             "# button (or the equivalent play/pause/stop actions) cause the\n"
             "# sequencer64 application to crash.\n"
             "\n"
+            "# The work_around_transpose_image option is similar, for an issue\n"
+            "# some users have setting the transpose button in seqedit.\n"
+            "\n"
             ;
 
         uscratch = usr().work_around_play_image() ? 1 : 0 ;
         file << uscratch << "       # work_around_play_image\n";
+
+        uscratch = usr().work_around_transpose_image() ? 1 : 0 ;
+        file << uscratch << "       # work_around_transpose_image\n";
     }
 
     /*

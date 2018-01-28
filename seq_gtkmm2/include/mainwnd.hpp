@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-13
+ * \updates       2018-01-28
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -311,17 +311,6 @@ private:
      */
 
     Gtk::Image * m_image_play;
-
-#ifdef SEQ64_PAUSE_SUPPORT
-
-    /**
-     *  Provides locking for the sequence.  Made mutable for use in
-     *  certain locked getter functions.
-     */
-
-    mutable mutex m_image_play_mutex;
-
-#endif
 
     /**
      *  This button is the panic button, which is adapted from Oli Kester's

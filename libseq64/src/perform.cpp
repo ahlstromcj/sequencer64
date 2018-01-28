@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-01-20
+ * \updates       2018-01-28
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -476,18 +476,22 @@ perform::~perform ()
  *  Sequencer64.
  *
  * \return
- *      Returns true if the creation succeeded.
+ *      Returns true if the creation succeeded, or if the buss already exists.
  */
 
 bool
 perform::create_master_bus ()
 {
-    m_master_bus = new (std::nothrow) mastermidibus();  /* default args */
     bool result = not_nullptr(m_master_bus);
-    if (result)
+    if (! result)
     {
-        m_master_bus->filter_by_channel(m_filter_by_channel);
-        m_master_bus->port_settings(m_master_clocks, m_master_inputs);
+        m_master_bus = new(std::nothrow) mastermidibus();   /* default args */
+        result = not_nullptr(m_master_bus);
+        if (result)
+        {
+            m_master_bus->filter_by_channel(m_filter_by_channel);
+            m_master_bus->port_settings(m_master_clocks, m_master_inputs);
+        }
     }
     return result;
 }

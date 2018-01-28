@@ -1,6 +1,6 @@
 README for Sequencer64 0.94.4 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2018-01-21
+2015-09-10 to 2018-01-28
 
 Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
 the heart of seq24 remains intact.  It is an old friend, and maintains some
@@ -31,6 +31,8 @@ See the INSTALL file.
 Recent changes:
 
     -   Version 0.94.4:
+        -   Fixed some mismanagement of the changing image for the transpose
+            and play buttons.
     -   Version 0.94.3:
         -   Changed SeqSpec proprietary track number from 0x7777 to 0x3FFF.
             This will change existing files silently to store the new track

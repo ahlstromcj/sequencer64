@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-27
+ * \updates       2018-01-28
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -306,12 +306,7 @@ mainwnd::mainwnd
     m_perf_edit_2           (allowperf2 ? new perfedit(p, true, ppqn) : nullptr),
     m_options               (nullptr),
     m_main_cursor           (),
-#ifdef SEQ64_PAUSE_SUPPORT
     m_image_play            (nullptr),
-    m_image_play_mutex      (),
-#else
-    m_image_play            (new PIXBUF_IMAGE(play2_xpm)),
-#endif
     m_button_panic          (manage(new Gtk::Button())),    /* from kepler34   */
     m_button_learn          (manage(new Gtk::Button())),    /* group learn (L) */
     m_button_stop           (manage(new Gtk::Button())),
@@ -321,7 +316,7 @@ mainwnd::mainwnd
     m_is_tempo_recording    (false),
     m_button_perfedit       (manage(new Gtk::Button())),
 #ifdef SEQ64_STAZED_MENU_BUTTONS
-    m_image_songlive        (),
+    m_image_songlive        (nullptr),
     m_button_mode
     (
         usr().use_more_icons() ?
@@ -1224,9 +1219,6 @@ mainwnd::mainwnd
 
 mainwnd::~mainwnd ()
 {
-    if (not_nullptr(m_image_play))
-        delete m_image_play;
-
     if (not_nullptr(m_perf_edit_2))
         delete m_perf_edit_2;
 
@@ -1664,7 +1656,7 @@ mainwnd::options_dialog ()
     if (not_nullptr(m_options))
         delete m_options;
 
-    m_options = new (std::nothrow) options(*this, perf());
+    m_options = new(std::nothrow) options(*this, perf());
     if (not_nullptr(m_options))
         m_options->show_all();
 }
@@ -1679,7 +1671,7 @@ mainwnd::jack_dialog ()
     if (not_nullptr(m_options))
         delete m_options;
 
-    m_options = new (std::nothrow) options(*this, perf(), true);
+    m_options = new(std::nothrow) options(*this, perf(), true);
     if (not_nullptr(m_options))
         m_options->show_all();
 }
@@ -1701,29 +1693,18 @@ mainwnd::set_song_record ()
 /**
  *  Toggles the recording of the live song control done by the musician.
  *  This is not a saved setting at this time.
+ *
+ *  There is no need to change the button color or the image, as the control
+ *  itself indicates when song-recording is on.
+ *
+ *      Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_off_xpm));
+ *      m_button_song_record->set_image(*image_song);
  */
 
 void
 mainwnd::toggle_song_record ()
 {
     m_button_song_record->set_active(! m_button_song_record->get_active());
-
-    /*
-     * There is no need to change the button color, as the control itself
-     * indicates when song-recording is on.
-     *
-     *  if (m_is_song_recording)
-     *  {
-     *      Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_on_xpm));
-     *      m_button_song_record->set_image(*image_song);
-     *  }
-     *  else
-     *  {
-     *      Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_off_xpm));
-     *      m_button_song_record->set_image(*image_song);
-     *  }
-     *
-     */
 }
 
 /**
@@ -1740,7 +1721,10 @@ mainwnd::toggle_song_snap ()
 }
 
 /**
+ *  Sets the playback mode (Live vs Song).
  *
+ * \param playsong
+ *      Set to true if playback (Song) mode is to be in force.
  */
 
 void
@@ -1754,10 +1738,6 @@ mainwnd::set_song_playback (bool playsong)
     else
     {
         perf().song_recording(false);
-        ////////////////////
-        // TODO: m_button_song_record->set_active(false);
-        //       m_button_song_record->set_checked(false);
-        ////////////////////
     }
 }
 
@@ -2628,6 +2608,7 @@ mainwnd::edit_callback_notepad ()
 
 /**
  *  Changes the image used for the pause/play button.  Is this a memory leak?
+ *  Some users report segfaults (all of a sudden) with this setting!
  *
  * \param isrunning
  *      If true, set the image to the "Pause" icon, since playback is running.
@@ -2637,21 +2618,15 @@ mainwnd::edit_callback_notepad ()
 void
 mainwnd::set_play_image (bool isrunning)
 {
-    automutex locker(m_image_play_mutex);
-    if (not_nullptr(m_image_play))
-    {
-        delete m_image_play;
-        m_image_play = nullptr;
-    }
     if (isrunning)
     {
-        m_image_play = new (std::nothrow) PIXBUF_IMAGE(pause_xpm);
         add_tooltip(m_button_play, "Pause playback at current location.");
+        m_image_play = manage(new(std::nothrow) PIXBUF_IMAGE(pause_xpm));
     }
     else
     {
-        m_image_play = new (std::nothrow) PIXBUF_IMAGE(play2_xpm);
         add_tooltip(m_button_play, "Resume playback from current location.");
+        m_image_play = manage(new(std::nothrow) PIXBUF_IMAGE(play2_xpm));
     }
     if (not_nullptr(m_image_play))
         m_button_play->set_image(*m_image_play);
@@ -2670,7 +2645,6 @@ mainwnd::set_play_image (bool isrunning)
 void
 mainwnd::set_songlive_image (bool issong)
 {
-    delete m_image_songlive;
     if (issong)
     {
         m_image_songlive = manage(new PIXBUF_IMAGE(song_mode_xpm));

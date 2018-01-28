@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-27
+ * \updates       2018-01-28
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -327,7 +327,7 @@ seqedit::seqedit
     m_menu_length       (manage(new Gtk::Menu())),
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_toggle_transpose  (manage(new Gtk::ToggleButton())),
-    m_image_transpose   (),
+    m_image_transpose   (nullptr),
 #endif
     m_menu_midich       (nullptr),
     m_menu_midibus      (nullptr),
@@ -2514,6 +2514,10 @@ seqedit::transpose_change_callback ()
 /**
  *  Changes the image used for the transpose button.
  *
+ *  Can we leverage this variation?
+ *
+ *      m_toggle_transpose->add_pixlabel("info.xpm", "duh");
+ *
  * \param istransposable
  *      If true, set the image to the "Transpose" icon.  Otherwise, set it to
  *      the "Drum" (not transposable) icon.
@@ -2522,27 +2526,24 @@ seqedit::transpose_change_callback ()
 void
 seqedit::set_transpose_image (bool istransposable)
 {
-    delete m_image_transpose;
     if (istransposable)
     {
-        m_image_transpose = manage(new PIXBUF_IMAGE(transpose_xpm));
         add_tooltip(m_toggle_transpose, "Sequence is transposable.");
+        m_image_transpose = manage(new(std::nothrow) PIXBUF_IMAGE(transpose_xpm));
     }
     else
     {
-        m_image_transpose = manage(new PIXBUF_IMAGE(drum_xpm));
         add_tooltip(m_toggle_transpose, "Sequence is not transposable.");
+        m_image_transpose = manage(new(std::nothrow) PIXBUF_IMAGE(drum_xpm));
     }
-    m_toggle_transpose->set_image(*m_image_transpose);
+    if (not_nullptr(m_image_transpose))
+        m_toggle_transpose->set_image(*m_image_transpose);
 }
 
 #endif
 
 /**
  *  Changes the image used for the mouse-mode indicator.
- *
- * \warning
- *      Currently can't get this to work on the fly.
  *
  * \param isfruity
  *      If true, set the image to the "Fruity" icon.  Otherwise, set it to the
@@ -2552,8 +2553,13 @@ seqedit::set_transpose_image (bool istransposable)
 void
 seqedit::set_mousemode_image (bool isfruity)
 {
-    m_table->remove(*m_image_mousemode);
-    delete m_image_mousemode;
+    /*
+     * Not necessary:
+     *
+     *      m_table->remove(*m_image_mousemode);
+     *      delete m_image_mousemode;
+     */
+
     if (isfruity)
         m_image_mousemode = manage(new PIXBUF_IMAGE(fruity_xpm));
     else

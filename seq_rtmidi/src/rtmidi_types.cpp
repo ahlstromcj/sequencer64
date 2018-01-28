@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-12-01
- * \updates       2017-12-31
+ * \updates       2018-01-28
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Provides some basic types for the (heavily-factored) rtmidi library, very
@@ -104,9 +104,10 @@ midi_queue::~midi_queue ()
 void
 midi_queue::allocate (unsigned queuesize)
 {
+    deallocate();
     if (queuesize > 0 && is_nullptr(m_ring))
     {
-        m_ring = new (std::nothrow) midi_message[queuesize];
+        m_ring = new(std::nothrow) midi_message[queuesize];
         if (not_nullptr(m_ring))
             m_ring_size = queuesize;
     }

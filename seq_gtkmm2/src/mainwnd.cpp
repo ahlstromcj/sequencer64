@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-28
+ * \updates       2018-01-29
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1173,6 +1173,8 @@ mainwnd::mainwnd
      * and spacings
      */
 
+    int width = m_main_wid->nominal_width();
+    int height = m_main_wid->nominal_height();
     if (! usr().is_default_mainwid_size())
     {
         resize

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-27
+ * \updates       2018-01-29
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -523,9 +523,10 @@ userfile::parse (perform & /* p */)
             {
                 sscanf(m_line, "%s", temp);
                 std::string logfile = std::string(temp);
-                printf("logfile = '%s'\n", logfile.c_str());
                 if (logfile == "\"\"")
                     logfile.clear();
+                else
+                    printf("[option_logfile = '%s']\n", logfile.c_str());
 
                 usr().option_logfile(logfile);
             }

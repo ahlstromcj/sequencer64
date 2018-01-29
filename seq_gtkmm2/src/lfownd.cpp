@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq42 team; modifications by Chris Ahlstrom
  * \date          2016-07-30
- * \updates       2017-08-06
+ * \updates       2018-01-29
  * \license       GNU GPLv2 or above
  *
  *  Created on: 22 mar 2013
@@ -220,8 +220,15 @@ lfownd::~lfownd ()
 void
 lfownd::toggle_visible ()
 {
-    show_all();
-    raise();
+    if (is_visible())
+    {
+        hide();
+    }
+    else
+    {
+        show_all();
+        raise();
+    }
 }
 
 /**

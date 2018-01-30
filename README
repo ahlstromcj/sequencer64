@@ -35,6 +35,8 @@ Recent changes:
             and play buttons that caused segfaults on some systems.
         -   Fix build errors with --enable-mainscroll (an unfinished feature).
         -   The LFO window button now toggles that window.
+        -   Added a pattern editor event button that shows only present
+            events.
     -   Version 0.94.3:
         -   Changed SeqSpec proprietary track number from 0x7777 to 0x3FFF.
             This will change existing files silently to store the new track
@@ -46,7 +48,7 @@ Recent changes:
         -   The sequence number is now shown in the pattern and event editors.
         -   Minor fixes and improvements to fruity interaction mode, plus
             fixing GitHub issues #90 and #105.  Also show fruity mode
-            indicator in seqedit.
+            indicator in the pattern editor.
     -   Version 0.94.2:
         -   Fixed issue #124, Stop button not resetting the progress bar.
         -   Improved the panic function, and fixed an issue with it when JACK

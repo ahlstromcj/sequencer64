@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-20
+ * \updates       2018-01-29
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -235,6 +235,7 @@ private:
     Gtk::Menu * m_menu_midich;          /**< MIDI channel DIN menu button.  */
     Gtk::Menu * m_menu_midibus;         /**< MIDI output buss menu button.  */
     Gtk::Menu * m_menu_data;            /**< "Event" button to select data. */
+    Gtk::Menu * m_menu_minidata;        /**< Mini button for actual events. */
     Gtk::Menu * m_menu_key;             /**< "Music key" menu button.       */
     Gtk::Menu * m_menu_scale;           /**< "Music scale" menu button.     */
 
@@ -356,6 +357,7 @@ private:
 #endif
     Gtk::Tooltips * m_tooltips;         /**< Tooltip collector for dialog.  */
     Gtk::Button * m_button_data;        /**< Button for Event (data) menu.  */
+    Gtk::Button * m_button_minidata;    /**< Mini button for data menu.     */
     Gtk::Entry * m_entry_data;          /**< Text for the selected Event.   */
     Gtk::Button * m_button_bpm;         /**< Button for Beats/Measure menu. */
     Gtk::Entry * m_entry_bpm;           /**< Text for chosen Beats/Measure. */
@@ -521,6 +523,8 @@ private:
     void popup_menu (Gtk::Menu * menu);
     void popup_event_menu ();
     void repopulate_event_menu (int buss, int channel);
+    void popup_mini_event_menu ();
+    void repopulate_mini_event_menu (int buss, int channel);
 
 #ifdef SEQ64_STAZED_EXPAND_RECORD
     void popup_record_menu ();

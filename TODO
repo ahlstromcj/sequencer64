@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-01-25
+2016-12-03 to 2018-01-29
 
 Debian (and other) Packaging:
 
@@ -33,12 +33,14 @@ Tempo Track:
 
 Modify flag:
 
-    sequence::set_transposable() is called when loading a sequence at startup.
-    If the flag value is different from the current value (false?) then
-    sequence::modify() is called, but the perform m_parent is null, so it
-    does not take effect, which is good in this case (startup).
-    At that time, we have m_transposable == true, flag = false (!), and
-    the sequence number is (-1).
+    -   sequence::set_transposable() is called when loading a sequence at
+        startup.  If the flag value is different from the current value
+        (false?) then sequence::modify() is called, but the perform m_parent
+        is null, so it does not take effect, which is good in this case
+        (startup).  At that time, we have m_transposable == true, flag = false
+        (!), and the sequence number is (-1).
+    -   If the velocity of notes is edited in the data panel of seqedit,
+        the modification is not detected.
 
 Hot bugs:
 

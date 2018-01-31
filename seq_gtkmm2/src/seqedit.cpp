@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-29
+ * \updates       2018-01-30
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -331,8 +331,8 @@ seqedit::seqedit
 #endif
     m_menu_midich       (nullptr),
     m_menu_midibus      (nullptr),
-    m_menu_data         (nullptr),
-    m_menu_minidata     (nullptr),
+    m_menu_data         (nullptr),                  // see m_button_data
+    m_menu_minidata     (nullptr),                  // see m_button_minidata
     m_menu_key          (manage(new Gtk::Menu())),
     m_menu_scale        (manage(new Gtk::Menu())),
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
@@ -450,6 +450,8 @@ seqedit::seqedit
     m_image_mousemode   (nullptr),
     m_editing_status    (0),
     m_editing_cc        (0),
+    m_first_event       (0),
+    m_first_event_name  ("(no events)"),
     m_have_focus        (false)
 {
     std::string title = SEQ64_APP_NAME " #";        /* main window title    */
@@ -665,7 +667,6 @@ seqedit::seqedit
      *
      * gfloat middle = m_vscroll->get_adjustment()->get_upper() / 3;
      * m_vscroll->get_adjustment()->set_value(middle);
-     *
      * m_seqroll_wid->set_ignore_draw(true);        // WE MISSED THIS!
      */
 
@@ -675,10 +676,6 @@ seqedit::seqedit
     int zoom = usr().zoom();
     if (usr().zoom() == SEQ64_USE_ZOOM_POWER_OF_2)      /* i.e. 0 */
         zoom = zoom_power_of_2(m_ppqn);
-
-    /*
-     * Not needed: m_seqroll_wid->set_ignore_redraw(true);
-     */
 
     set_zoom(zoom);
     set_beats_per_bar(m_seq.get_beats_per_bar());
@@ -693,7 +690,6 @@ seqedit::seqedit
      */
 
     set_midi_bus(m_seq.get_midi_bus());
-
     set_data_type(EVENT_NOTE_ON);
     if (m_seq.musical_scale() != int(c_scale_off))
         set_scale(m_seq.musical_scale());
@@ -1006,7 +1002,8 @@ seqedit::popup_tool_menu ()
     (
         MenuElem
         (
-            "Odd 1/4 Note Beats", sigc::bind(DO_ACTION, c_select_odd_notes, m_ppqn)
+            "Odd 1/4 Note Beats",
+            sigc::bind(DO_ACTION, c_select_odd_notes, m_ppqn)
         )
     );
     holder->items().push_back
@@ -1863,6 +1860,7 @@ seqedit::create_menu_image (bool state)
 
 /**
  *  Populates the event-selection menu, in necessary, and then pops it up.
+ *  Also see the handling of the m_button_data and m_entry_data objects.
  */
 
 void
@@ -1875,6 +1873,42 @@ seqedit::popup_event_menu ()
     int channel = m_seq.get_midi_channel();
     repopulate_event_menu(buss, channel);
     m_menu_data->popup(0, 0);
+}
+
+/**
+ *  Local define used for setting the m_entry_data textbox.
+ */
+
+#define SET_DATA_TYPE(x)    mem_fun(*this, &seqedit::set_data_type), x, 0
+
+/**
+ *  Function to create event menu entries.  Too damn big!
+ */
+
+void
+seqedit::set_event_entry
+(
+    Gtk::Menu * menu,
+    const std::string & text,
+    bool present,
+    midibyte status,
+    midibyte control    // = 0
+)
+{
+    menu->items().push_back
+    (
+        ImageMenuElem
+        (
+            text, *create_menu_image(present),
+            sigc::bind(mem_fun(*this, &seqedit::set_data_type), status, control)
+        )
+    );
+    if (present && m_first_event == 0x00)
+    {
+        m_first_event = status;
+        m_first_event_name = text;
+        set_data_type(status, 0);       // need m_first_control value!
+    }
 }
 
 /**
@@ -1951,58 +1985,20 @@ seqedit::repopulate_event_menu (int buss, int channel)
         }
     }
 
-#define SET_DATA_TYPE(x)    mem_fun(*this, &seqedit::set_data_type), x, 0
-
     m_menu_data = manage(new Gtk::Menu());
-    m_menu_data->items().push_back
-    (
-        ImageMenuElem
-        (
-            "Note On Velocity", *create_menu_image(note_on),
-            sigc::bind(SET_DATA_TYPE(EVENT_NOTE_ON))
-        )
-    );
+    set_event_entry(m_menu_data, "Note On Velocity", note_on, EVENT_NOTE_ON);
     m_menu_data->items().push_back(SeparatorElem());
-    m_menu_data->items().push_back
+    set_event_entry(m_menu_data, "Note Off Velocity", note_off, EVENT_NOTE_OFF);
+    set_event_entry(m_menu_data, "Aftertouch", aftertouch, EVENT_AFTERTOUCH);
+    set_event_entry
     (
-        ImageMenuElem
-        (
-            "Note Off Velocity", *create_menu_image(note_off),
-            sigc::bind(SET_DATA_TYPE(EVENT_NOTE_OFF))
-        )
+        m_menu_data, "Program Change", program_change, EVENT_PROGRAM_CHANGE
     );
-    m_menu_data->items().push_back
+    set_event_entry
     (
-        ImageMenuElem
-        (
-            "AfterTouch", *create_menu_image(aftertouch),
-            sigc::bind(SET_DATA_TYPE(EVENT_AFTERTOUCH))
-        )
+        m_menu_data, "Channel Pressure", channel_pressure, EVENT_CHANNEL_PRESSURE
     );
-    m_menu_data->items().push_back
-    (
-        ImageMenuElem
-        (
-            "Program Change", *create_menu_image(program_change),
-            sigc::bind(SET_DATA_TYPE(EVENT_PROGRAM_CHANGE))
-        )
-    );
-    m_menu_data->items().push_back
-    (
-        ImageMenuElem
-        (
-            "Channel Pressure", *create_menu_image(channel_pressure),
-            sigc::bind(SET_DATA_TYPE(EVENT_CHANNEL_PRESSURE))
-        )
-    );
-    m_menu_data->items().push_back
-    (
-        ImageMenuElem
-        (
-            "Pitch Wheel", *create_menu_image(pitch_wheel),
-            sigc::bind(SET_DATA_TYPE(EVENT_PITCH_WHEEL))
-        )
-    );
+    set_event_entry(m_menu_data, "Pitch Wheel", pitch_wheel, EVENT_PITCH_WHEEL);
     m_menu_data->items().push_back(SeparatorElem());
 
     /**
@@ -2038,17 +2034,10 @@ seqedit::repopulate_event_menu (int buss, int channel)
                 if (uin.controller_active(offset + item))
                     controller_name = uin.controller_name(offset + item);
             }
-            menucc->items().push_back
+            set_event_entry
             (
-                ImageMenuElem
-                (
-                    controller_name, *create_menu_image(ccs[offset + item]),
-                    sigc::bind
-                    (
-                        mem_fun(*this, &seqedit::set_data_type),
-                        EVENT_CONTROL_CHANGE, offset + item
-                    )
-                )
+                menucc, controller_name, ccs[offset+item],
+                EVENT_CONTROL_CHANGE, offset + item
             );
         }
         m_menu_data->items().push_back(MenuElem(std::string(b), *menucc));
@@ -2057,6 +2046,7 @@ seqedit::repopulate_event_menu (int buss, int channel)
 
 /**
  *  Populates the event-selection menu, in necessary, and then pops it up.
+ *  Also see the handling of the m_button_minidata and m_entry_data objects.
  */
 
 void
@@ -2135,81 +2125,51 @@ seqedit::repopulate_mini_event_menu (int buss, int channel)
     if (note_on)
     {
         any_events = true;
-        m_menu_minidata->items().push_back
-        (
-            ImageMenuElem
-            (
-                "Note On Velocity", *create_menu_image(true),
-                sigc::bind(SET_DATA_TYPE(EVENT_NOTE_ON))
-            )
-        );
+        set_event_entry(m_menu_minidata, "Note On Velocity", true, EVENT_NOTE_ON);
     }
     if (note_off)
     {
         any_events = true;
-        m_menu_minidata->items().push_back
+        set_event_entry
         (
-            ImageMenuElem
-            (
-                "Note Off Velocity", *create_menu_image(true),
-                sigc::bind(SET_DATA_TYPE(EVENT_NOTE_OFF))
-            )
+            m_menu_minidata, "Note Off Velocity", true, EVENT_NOTE_OFF
         );
     }
     if (aftertouch)
     {
         any_events = true;
-        m_menu_minidata->items().push_back
-        (
-            ImageMenuElem
-            (
-                "AfterTouch", *create_menu_image(true),
-                sigc::bind(SET_DATA_TYPE(EVENT_AFTERTOUCH))
-            )
-        );
+        set_event_entry(m_menu_minidata, "Aftertouch", true, EVENT_AFTERTOUCH);
     }
     if (program_change)
     {
         any_events = true;
-        m_menu_minidata->items().push_back
+        set_event_entry
         (
-            ImageMenuElem
-            (
-                "Program Change", *create_menu_image(true),
-                sigc::bind(SET_DATA_TYPE(EVENT_PROGRAM_CHANGE))
-            )
+            m_menu_minidata, "Program Change", true, EVENT_PROGRAM_CHANGE
         );
     }
     if (channel_pressure)
     {
         any_events = true;
-        m_menu_minidata->items().push_back
+        set_event_entry
         (
-            ImageMenuElem
-            (
-                "Channel Pressure", *create_menu_image(true),
-                sigc::bind(SET_DATA_TYPE(EVENT_CHANNEL_PRESSURE))
-            )
+            m_menu_minidata, "Channel Pressure", true, EVENT_CHANNEL_PRESSURE
         );
     }
     if (pitch_wheel)
     {
         any_events = true;
-        m_menu_minidata->items().push_back
+        set_event_entry
         (
-            ImageMenuElem
-            (
-                "Pitch Wheel", *create_menu_image(true),
-                sigc::bind(SET_DATA_TYPE(EVENT_PITCH_WHEEL))
-            )
+            m_menu_minidata, "Pitch Wheel", true, EVENT_PITCH_WHEEL
         );
     }
 
     m_menu_minidata->items().push_back(SeparatorElem());
 
     /**
-     *  Create the 8 sub-menus for the various ranges of controller
-     *  changes, shown 16 per sub-menu.
+     *  Create the one menu for the controller changes that actually exist in
+     *  the track, if any.
      */
 
     const int itemcount = SEQ64_MIDI_COUNT_MAX;             /* 128 */
@@ -2227,20 +2187,21 @@ seqedit::repopulate_mini_event_menu (int buss, int channel)
         if (ccs[item])
         {
             any_events = true;
-            m_menu_minidata->items().push_back
+            set_event_entry
             (
-                ImageMenuElem
-                (
-                    controller_name, *create_menu_image(true),
-                    sigc::bind
-                    (
-                        mem_fun(*this, &seqedit::set_data_type),
-                        EVENT_CONTROL_CHANGE, item
-                    )
-                )
+                m_menu_minidata, controller_name, true,
+                EVENT_CONTROL_CHANGE, item
             );
         }
     }
+    if (any_events)
+    {
+        // Here, we would like to pre-select the first kind of event found,
+        // somehow.
+    }
+    else
+        set_event_entry(m_menu_minidata, "(no events)", false, 0);
+
     Gtk::Image * eventflag = manage(create_menu_image(any_events));
     if (not_nullptr(eventflag))
         m_button_minidata->set_image(*eventflag);

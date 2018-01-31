@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-11
+ * \updates       2018-01-31
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1618,6 +1618,16 @@ public:
     void reposition (midipulse tick);
 
 public:
+
+    /**
+     * \getter m_master_bus->set_sequence_input()
+     */
+
+     void set_sequence_input (bool active, sequence * s)
+     {
+        if (not_nullptr_2(m_master_bus, s))
+            m_master_bus->set_sequence_input(active, s);
+     }
 
     bool selected_trigger
     (

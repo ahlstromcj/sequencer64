@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-30
+ * \updates       2018-01-31
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -2756,7 +2756,7 @@ seqedit::record_change_callback ()
     bool thru_active = m_toggle_thru->get_active();
     bool record_active = m_toggle_record->get_active();
     if (! thru_active)
-        perf().master_bus().set_sequence_input(record_active, &m_seq);
+        perf().set_sequence_input(record_active, &m_seq);
 
     m_seq.set_recording(record_active);
 }

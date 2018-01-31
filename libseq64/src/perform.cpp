@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-01-28
+ * \updates       2018-01-31
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -4331,7 +4331,7 @@ input_thread_func (void * myperf)
  *
 \verbatim
         c_midi_control_playback     (for pause/toggle, start, and stop)
-        c_midi_control_record
+        c_midi_control_record       (for performance record toggle/on/off)
         c_midi_control_solo         (for toggle, on, or off)
         c_midi_control_thru
         c_midi_control_bpm_page_up
@@ -4468,6 +4468,7 @@ perform::handle_midi_control (int ctl, bool state)
  *
  * \param v
  *      The value of the control (ie: note velocity / control change value).
+ *      Also called a "parameter" in the comments.
  *
  * \return
  *      Returns true if the control was an extended control and was acted on.
@@ -4477,6 +4478,8 @@ bool
 perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 {
     bool result = false;
+
+
     switch (ctl)
     {
     case c_midi_control_playback:
@@ -4500,17 +4503,70 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 
     case c_midi_control_record:                 /* arm for recording */
 
-        // TODO
+        if (a == midi_control::action_toggle)
+        {
+            song_recording(! song_recording());
+            result = true;
+        }
+        else if (a == midi_control::action_on)
+        {
+            song_recording(true);
+            result = true;
+        }
+        else if (a == midi_control::action_off)
+        {
+            song_recording(false);
+            result = true;
+        }
         break;
 
     case c_midi_control_solo:
 
-        // TODO
+        if (a == midi_control::action_toggle)
+        {
+            // TODO
+            result = true;
+        }
+        else if (a == midi_control::action_on)
+        {
+            // TODO
+            result = true;
+        }
+        else if (a == midi_control::action_off)
+        {
+            // TODO
+            result = true;
+        }
         break;
 
     case c_midi_control_thru:
+        {
+            sequence * s = get_sequence(v);
+            // TODO:  check against the set-size limit too
+            if (is_nullptr(s))
+                return false;
 
-        // TODO
+            if (a == midi_control::action_toggle)
+            {
+                // TODO
+                // set_sequence_input(xxxxx, s);
+                // We also need to set the actual thru status; see seqedit's
+                // record_change_callback() and thru_change_callback() !!!
+                result = true;
+            }
+            else if (a == midi_control::action_on)
+            {
+                // TODO
+                set_sequence_input(true, s);
+                result = true;
+            }
+            else if (a == midi_control::action_off)
+            {
+                // TODO
+                set_sequence_input(false, s);
+                result = true;
+            }
+        }
         break;
 
     case c_midi_control_bpm_page_up:

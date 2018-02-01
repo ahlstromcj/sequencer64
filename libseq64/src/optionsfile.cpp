@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-25
+ * \updates       2018-01-31
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -930,6 +930,17 @@ optionsfile::write (const perform & p)
         "# Example:  For a Note On for note 0, 0 and 127 indicate that any\n"
         "# Note On velocity will cause the MIDI control to take effect.\n"
         "\n"
+        "#     ------------------ on/off (indicate is the section is enabled)\n"
+        "#    | ----------------- inverse\n"
+        "#    | |  -------------- MIDI status (event) byte (e.g. note on)\n"
+        "#    | | |  ------------ data 1 (e.g. note number)\n"
+        "#    | | | |  ---------- data 2 min\n"
+        "#    | | | | |  -------- data 2 max\n"
+        "#    | | | | | |\n"
+        "#    v v v v v v\n"
+        "#   [0 0 0 0 0 0]   [0 0 0 0 0 0]   [0 0 0 0 0 0]\n"
+        "#    Toggle          On              Off\n"
+        "\n"
         <<  g_midi_control_limit << "      # MIDI controls count (74 or 84)\n"
         "\n"
         << "# Pattern-group section:\n"
@@ -956,11 +967,14 @@ optionsfile::write (const perform & p)
         switch (mcontrol)
         {
         case c_max_groups:                  // 32
-            file << "# Mute-in group section:\n";
+            file << "\n# Mute-in group section:\n";
             break;
 
         case c_midi_control_bpm_up:         // 64
-            file << "# bpm up:\n";
+            file
+                << "\n# Automation group\n\n"
+                   "# bpm up:\n"
+                ;
             break;
 
         case c_midi_control_bpm_dn:         // 65
@@ -1000,11 +1014,12 @@ optionsfile::write (const perform & p)
             break;
 
         case c_midi_control_playback:       // 74 (new values!)
-            file << "# Extended MIDI controls:\n";
-            file << "# start playback (pause, start, stop):\n";
+            file << "\n# Extended MIDI controls:\n\n"
+                    "# start playback (pause, start, stop):\n"
+                    ;
             break;
 
-        case c_midi_control_record:         // 75
+        case c_midi_control_song_record:    // 75
             file << "# performance record:\n";
             break;
 
@@ -1028,7 +1043,10 @@ optionsfile::write (const perform & p)
             file << "# screen set by number:\n";
             break;
 
-        case c_midi_control_17:             // 81
+        case c_midi_control_record:         // 81
+            file << "# MIDI RECORD (toggle, on, off):\n";
+            break;
+
         case c_midi_control_18:             // 82
         case c_midi_control_19:             // 83
             file << "# reserved for expansion:\n";

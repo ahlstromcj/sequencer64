@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-01-31
+ * \updates       2018-02-01
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -4331,7 +4331,7 @@ input_thread_func (void * myperf)
  *
 \verbatim
         c_midi_control_playback     (for pause/toggle, start, and stop)
-        c_midi_control_record       (for performance record toggle/on/off)
+        c_midi_control_song_record  (for performance record toggle/on/off)
         c_midi_control_solo         (for toggle, on, or off)
         c_midi_control_thru
         c_midi_control_bpm_page_up
@@ -4355,20 +4355,27 @@ input_thread_func (void * myperf)
  *
  * \param state
  *      The state of the control, used with the following values:
+ *
+ * \return
+ *      Returns true if the event was handled.  Mostly rote, for conformance
+ *      with the newer handle_midi_control_ex() function.
  */
 
-void
+bool
 perform::handle_midi_control (int ctl, bool state)
 {
+    bool result = false;
     switch (ctl)
     {
     case c_midi_control_bpm_up:
 
+        result = true;
         (void) increment_beats_per_minute();
         break;
 
     case c_midi_control_bpm_dn:
 
+        result = true;
         (void) decrement_beats_per_minute();
         break;
 
@@ -4380,21 +4387,25 @@ perform::handle_midi_control (int ctl, bool state)
     case c_midi_control_bpm_page_up:
     case c_midi_control_bpm_page_dn:
 
+        result = false;
         /* printf("BPM UP/DOWN ignored\n"); */
         break;
 
     case c_midi_control_ss_up:
 
+        result = true;
         (void) increment_screenset();
         break;
 
     case c_midi_control_ss_dn:
 
+        result = true;
         (void) decrement_screenset();
         break;
 
     case c_midi_control_mod_replace:
 
+        result = true;
         if (state)
             set_sequence_control_status(c_status_replace);
         else
@@ -4403,6 +4414,7 @@ perform::handle_midi_control (int ctl, bool state)
 
     case c_midi_control_mod_snapshot:
 
+        result = true;
         if (state)
             set_sequence_control_status(c_status_snapshot);
         else
@@ -4411,6 +4423,7 @@ perform::handle_midi_control (int ctl, bool state)
 
     case c_midi_control_mod_queue:
 
+        result = true;
         if (state)
             set_sequence_control_status(c_status_queue);
         else
@@ -4419,6 +4432,7 @@ perform::handle_midi_control (int ctl, bool state)
 
     case c_midi_control_mod_gmute:
 
+        result = true;
         if (state)
             set_mode_group_mute();              /* m_mode_group = true */
         else
@@ -4427,6 +4441,7 @@ perform::handle_midi_control (int ctl, bool state)
 
     case c_midi_control_mod_glearn:
 
+        result = true;
         if (state)
             set_mode_group_learn();
         else
@@ -4436,6 +4451,7 @@ perform::handle_midi_control (int ctl, bool state)
     case c_midi_control_play_ss:
 
         set_playing_screenset();
+        result = true;
         break;
 
     default:
@@ -4453,8 +4469,10 @@ perform::handle_midi_control (int ctl, bool state)
         if ((ctl >= c_max_sets) && (ctl < c_midi_track_ctrl))
             select_and_mute_group(ctl - m_seqs_in_set);
 
+        result = true;
         break;
     }
+    return result;
 }
 
 /**
@@ -4467,7 +4485,7 @@ perform::handle_midi_control (int ctl, bool state)
  *      The action of the control.
  *
  * \param v
- *      The value of the control (ie: note velocity / control change value).
+ *      The value of the control (ie.: note velocity / control change value).
  *      Also called a "parameter" in the comments.
  *
  * \return
@@ -4478,8 +4496,6 @@ bool
 perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 {
     bool result = false;
-
-
     switch (ctl)
     {
     case c_midi_control_playback:
@@ -4501,7 +4517,7 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
         }
         break;
 
-    case c_midi_control_record:                 /* arm for recording */
+    case c_midi_control_song_record:                /* arm for recording */
 
         if (a == midi_control::action_toggle)
         {
@@ -4540,32 +4556,21 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
         break;
 
     case c_midi_control_thru:
-        {
-            sequence * s = get_sequence(v);
-            // TODO:  check against the set-size limit too
-            if (is_nullptr(s))
-                return false;
 
-            if (a == midi_control::action_toggle)
-            {
-                // TODO
-                // set_sequence_input(xxxxx, s);
-                // We also need to set the actual thru status; see seqedit's
-                // record_change_callback() and thru_change_callback() !!!
-                result = true;
-            }
-            else if (a == midi_control::action_on)
-            {
-                // TODO
-                set_sequence_input(true, s);
-                result = true;
-            }
-            else if (a == midi_control::action_off)
-            {
-                // TODO
-                set_sequence_input(false, s);
-                result = true;
-            }
+        if (a == midi_control::action_toggle)
+        {
+            set_thru(false, v, true);           /* toggles */
+            result = true;
+        }
+        else if (a == midi_control::action_on)
+        {
+            set_thru(true, v);
+            result = true;
+        }
+        else if (a == midi_control::action_off)
+        {
+            set_thru(false, v);
+            result = true;
         }
         break;
 
@@ -4601,6 +4606,25 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
         result = true;
         break;
 
+    case c_midi_control_record:
+
+        if (a == midi_control::action_toggle)
+        {
+            set_recording(false, v, true);           /* toggles */
+            result = true;
+        }
+        else if (a == midi_control::action_on)
+        {
+            set_recording(true, v);
+            result = true;
+        }
+        else if (a == midi_control::action_off)
+        {
+            set_recording(false, v);
+            result = true;
+        }
+        break;
+
     default:
 
         break;
@@ -4609,10 +4633,110 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 }
 
 /**
+ *  Encapsulates code used by seqedit::record_change_callback().
+ *
+ * \param record_active
+ *      Provides the current status of the Record button.
+ *
+ * \param thru_active
+ *      Provides the current status of the Thru button.
+ *
+ * \param s
+ *      The sequence that the seqedit window represents.  This pointer is
+ *      checked.
+ */
+
+void
+perform::set_recording (bool record_active, bool thru_active, sequence * s)
+{
+    if (not_nullptr(s))
+    {
+        if (! thru_active)
+            set_sequence_input(record_active, s);
+
+        s->set_recording(record_active);
+    }
+}
+
+/**
+ *  Encapsulates code used by seqedit::record_change_callback().  However,
+ *  this function depends on the sequence, not the seqedit, for obtaining
+ *  the thru status.
+ *
+ * \param record_active
+ *      Provides the current status of the Record button.
+ *
+ * \param seq
+ *      The sequence number; the resulting pointer is checked.
+ *
+ * \param toggle
+ *      If true, ignore the first flag and let the sequence toggle its
+ *      setting.
+ */
+
+void
+perform::set_recording (bool record_active, int seq, bool toggle)
+{
+    sequence * s = get_sequence(seq);
+    if (not_nullptr(s))
+        s->set_input_recording(record_active, toggle);
+}
+
+/**
+ *  Encapsulates code used by seqedit::thru_change_callback().
+ *
+ * \param record_active
+ *      Provides the current status of the Record button.
+ *
+ * \param thru_active
+ *      Provides the current status of the Thru button.
+ *
+ * \param s
+ *      The sequence that the seqedit window represents.  This pointer is
+ *      checked.
+ */
+
+void
+perform::set_thru (bool record_active, bool thru_active, sequence * s)
+{
+    if (not_nullptr(s))
+    {
+        if (! record_active)
+            set_sequence_input(thru_active, s);
+
+        s->set_thru(thru_active);
+    }
+}
+
+/**
+ *  Encapsulates code used by seqedit::thru_change_callback().  However, this
+ *  function depends on the sequence, not the seqedit, for obtaining the
+ *  recording status.
+ *
+ * \param thru_active
+ *      Provides the current status of the Thru button.
+ *
+ * \param seq
+ *      The sequence number; the resulting pointer is checked.
+ *
+ * \param toggle
+ *      If true, ignore the first flag and let the sequence toggle its
+ *      setting.
+ */
+
+void
+perform::set_thru (bool thru_active, int seq, bool toggle)
+{
+    sequence * s = get_sequence(seq);
+    if (not_nullptr(s))
+        s->set_input_thru(thru_active, toggle);
+}
+
+/**
  *  This function encapsulates code in input_func() to make it easier to read
  *  and understand.
  *
- *  Here is the processing involved in this function ....
+ *  Here is the processing involved in this function .... TODO.
  *
  *  Incorporates pull request #24, arnaud-jacquemin, issue #23 "MIDI controller
  *  toggles wrong pattern".
@@ -4620,21 +4744,22 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
  * \change ca 2016-10-05
  *      Issue #35.  Changed "on" to "off".
  *
- *  QUESTIONS/TODO:
+ * \param ev
+ *      Provides the MIDI event to potential trigger a control action.
  *
- *      1. Why go above the sequence numbers, why not
- *         just go up to c_midi_track_ctrl?
- *      2. What about our new extended controls?
+ * \return
+ *      Returns true if the event was actually handled.  TODO.
  */
 
-void
+bool
 perform::midi_control_event (const event & ev)
 {
+    bool result = false;
     midibyte status = ev.get_status();
     int offset = m_screenset_offset;
     midibyte d0 = 0, d1 = 0;                    /* do we need to zero them? */
     ev.get_data(d0, d1);
-    for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)
+    for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)  /* 84 */
     {
         bool is_a_sequence = ctl < m_seqs_in_set;
         bool is_ext = ctl >= c_midi_controls && ctl < c_midi_controls_extended;
@@ -4716,6 +4841,7 @@ perform::midi_control_event (const event & ev)
             }
         }
     }
+    return result;
 }
 
 /**
@@ -4897,7 +5023,7 @@ perform::input_func ()
                             if (rc().show_midi())
                                 ev.print();
 
-                            midi_control_event(ev);  /* seq control event */
+                            (void) midi_control_event(ev);
                         }
 
 #ifdef USE_STAZED_PARSE_SYSEX               // more code to incorporate!!!

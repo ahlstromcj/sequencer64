@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-11-24
+ * \updates       2018-01-31
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -105,7 +105,7 @@ sequence::sequence (int ppqn)
     m_transposable              (true),
 #endif
     m_notes_on                  (0),
-    m_masterbus                 (nullptr),
+    m_master_bus                 (nullptr),
     m_playing_notes             (),             // an array
     m_was_playing               (false),
     m_playing                   (false),
@@ -224,7 +224,7 @@ sequence::partial_assign (const sequence & rhs)
         m_transposable  = rhs.m_transposable;
 #endif
         m_bus           = rhs.m_bus;
-        m_masterbus     = rhs.m_masterbus;          /* a pointer, be aware! */
+        m_master_bus     = rhs.m_master_bus;          /* a pointer, be aware! */
         m_playing       = false;
         m_name          = rhs.m_name;
         m_ppqn          = rhs.m_ppqn;
@@ -394,7 +394,7 @@ sequence::pop_trigger_redo ()
 }
 
 /**
- * \setter m_masterbus
+ * \setter m_master_bus
  *      Do we need to call set_dirty_mp() here?  It doesn't affect any
  *      user-interface elements.
  *
@@ -409,7 +409,7 @@ void
 sequence::set_master_midi_bus (mastermidibus * mmb)
 {
     automutex locker(m_mutex);
-    m_masterbus = mmb;
+    m_master_bus = mmb;
 }
 
 /**
@@ -1253,7 +1253,7 @@ sequence::remove (event_list::iterator i)
     event & er = DREF(i);
     if (er.is_note_off() && m_playing_notes[er.get_note()] > 0)
     {
-        m_masterbus->play(m_bus, &er, m_midi_channel);
+        m_master_bus->play(m_bus, &er, m_midi_channel);
         --m_playing_notes[er.get_note()];                   // ugh
     }
     m_events.remove(i);                                     // erase(i)
@@ -3381,8 +3381,8 @@ sequence::play_note_on (int note)
     event e;
     e.set_status(EVENT_NOTE_ON);
     e.set_data(note, midibyte(m_note_on_velocity));      // SEQ64_MIDI_COUNT_MAX-1
-    m_masterbus->play(m_bus, &e, m_midi_channel);
-    m_masterbus->flush();
+    m_master_bus->play(m_bus, &e, m_midi_channel);
+    m_master_bus->flush();
 }
 
 /**
@@ -3403,8 +3403,8 @@ sequence::play_note_off (int note)
     event e;
     e.set_status(EVENT_NOTE_OFF);
     e.set_data(note, midibyte(m_note_off_velocity));
-    m_masterbus->play(m_bus, &e, m_midi_channel);
-    m_masterbus->flush();
+    m_master_bus->play(m_bus, &e, m_midi_channel);
+    m_master_bus->flush();
 }
 
 /**
@@ -4705,6 +4705,30 @@ sequence::set_recording (bool r)
 }
 
 /**
+ *  Like perform::set_sequence_input(), but it uses the internal recording
+ *  status directly, rather than getting it from seqedit.
+ *
+ * \param record_active
+ *      Provides the desired status to set recording.
+ *
+ * \param toggle
+ *      If true, ignore the first parameter and toggle the flag.  The default
+ *      value is false.
+ */
+
+void
+sequence::set_input_recording (bool record_active, bool toggle)
+{
+    if (toggle)
+        record_active = ! m_recording;
+
+    if (! m_thru)
+        m_master_bus->set_sequence_input(record_active, this);
+
+    set_recording(record_active);
+}
+
+/**
  * \setter m_snap_tick
  *
  * \threadsafe
@@ -4771,6 +4795,30 @@ sequence::set_thru (bool r)
 {
     automutex locker(m_mutex);
     m_thru = r;
+}
+
+/**
+ *  Like perform::set_sequence_input(), but it uses the internal thru
+ *  status directly, rather than getting it from seqedit.
+ *
+ * \param thru_active
+ *      Provides the desired status to set the through state.
+ *
+ * \param toggle
+ *      If true, ignore the first parameter and toggle the flag.  The default
+ *      value is false.
+ */
+
+void
+sequence::set_input_thru (bool thru_active, bool toggle)
+{
+    if (toggle)
+        thru_active = ! m_thru;
+
+    if (! m_recording)
+        m_master_bus->set_sequence_input(thru_active, this);
+
+    set_thru(thru_active);
 }
 
 /**
@@ -4893,7 +4941,7 @@ sequence::print_triggers () const
 
 /**
  *  Takes an event that this sequence is holding, and places it on the MIDI
- *  buss.  This function does not bother checking if m_masterbus is a null
+ *  buss.  This function does not bother checking if m_master_bus is a null
  *  pointer.
  *
  * \param ev
@@ -4926,14 +4974,14 @@ sequence::put_event_on_bus (event & ev)
          *      actually playing an event?
          */
 
-        m_masterbus->play(m_bus, &ev, m_midi_channel);
-        m_masterbus->flush();
+        m_master_bus->play(m_bus, &ev, m_midi_channel);
+        m_master_bus->flush();
     }
 }
 
 /**
  *  Sends a note-off event for all active notes.  This function does not
- *  bother checking if m_masterbus is a null pointer.
+ *  bother checking if m_master_bus is a null pointer.
  *
  * \threadsafe
  */
@@ -4949,12 +4997,12 @@ sequence::off_playing_notes ()
         {
             e.set_status(EVENT_NOTE_OFF);
             e.set_data(x, midibyte(127));               /* or is 0 better?  */
-            m_masterbus->play(m_bus, &e, m_midi_channel);
+            m_master_bus->play(m_bus, &e, m_midi_channel);
             if (m_playing_notes[x] > 0)
                 m_playing_notes[x]--;
         }
     }
-    m_masterbus->flush();
+    m_master_bus->flush();
 }
 
 /**

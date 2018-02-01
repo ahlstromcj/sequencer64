@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-31
+ * \updates       2018-02-01
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -2755,10 +2755,7 @@ seqedit::record_change_callback ()
 {
     bool thru_active = m_toggle_thru->get_active();
     bool record_active = m_toggle_record->get_active();
-    if (! thru_active)
-        perf().set_sequence_input(record_active, &m_seq);
-
-    m_seq.set_recording(record_active);
+    perf().set_recording(record_active, thru_active, &m_seq);
 }
 
 /**
@@ -2824,10 +2821,7 @@ seqedit::thru_change_callback ()
 {
     bool thru_active = m_toggle_thru->get_active();
     bool record_active = m_toggle_record->get_active();
-    if (! record_active)
-        perf().master_bus().set_sequence_input(thru_active, &m_seq);
-
-    m_seq.set_thru(thru_active);        /* issue #69 fixed here */
+    perf().set_thru(record_active, thru_active, &m_seq);
 }
 
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
@@ -3031,12 +3025,19 @@ seqedit::timeout ()
         m_button_redo->set_sensitive(false);
 
     /*
-     * Experimental.  Let the toggle-play button track the sequence's mute
-     * state.
+     * Let the toggle-play button track the sequence's mute state. Also, since
+     * we can control recording and thru via MIDI now, make sure those buttons
+     * are correct.  Still need to handle quantized record (m_toggle_q_rec).
      */
 
     if (m_seq.get_playing() != m_toggle_play->get_active())
         m_toggle_play->set_active(m_seq.get_playing());
+
+    if (m_seq.get_recording() != m_toggle_record->get_active())
+        m_toggle_record->set_active(m_seq.get_recording());
+
+    if (m_seq.get_thru() != m_toggle_thru->get_active())
+        m_toggle_thru->set_active(m_seq.get_thru());
 
     return true;
 }
@@ -3088,7 +3089,9 @@ seqedit::handle_close ()
      * perf().master_bus().set_sequence_input(false, nullptr);
      */
 
-    perf().master_bus().set_sequence_input(false, &m_seq);
+//  perf().master_bus().set_sequence_input(false, &m_seq);
+
+    perf().set_sequence_input(false, &m_seq);
     m_seq.set_recording(false);
     m_seq.set_editing(false);
     change_focus(false);

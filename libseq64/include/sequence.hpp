@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-01-15
+ * \updates       2018-01-31
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -318,7 +318,7 @@ private:
      *  to the proper buss and MIDI channel.
      */
 
-    mastermidibus * m_masterbus;
+    mastermidibus * m_master_bus;
 
     /**
      *  Provides a "map" for Note On events.  It is used when muting, to shut
@@ -1231,7 +1231,8 @@ public:
         return get_queued() && (get_queued_tick() <= tick);
     }
 
-    void set_recording (bool);
+    void set_recording (bool record_active);
+    void set_input_recording (bool record_active, bool toggle = false);
 
     /**
      * \getter m_recording
@@ -1266,7 +1267,8 @@ public:
         return m_quantized_rec;
     }
 
-    void set_thru (bool);
+    void set_thru (bool thru_active);                               // seqedit
+    void set_input_thru (bool thru_active, bool toggle = false);    // perform
 
     /**
      * \getter m_thru

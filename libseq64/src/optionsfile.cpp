@@ -343,7 +343,7 @@ optionsfile::parse (perform & p)
     }
     if (ok)
     {
-        /*
+        /**
          * One thing about MIDI clock values.  If a device (e.g. my Korg
          * nanoKEY2) is present in a system when Sequencer64 is exited, it
          * will be saved in the [midi-clock] list.  When unplugged, it will be
@@ -1149,12 +1149,12 @@ optionsfile::write (const perform & p)
         int v = int(mgh);
         file
             << "\n"
-            << "# Handling of mute-groups.  If set to 0, a legacy value, then\n"
-            << "# any mute-groups read from the MIDI file (whether modified or\n"
-            << "# not) are saved to the 'rc' file as well.  If set to 1, the\n"
-            << "# 'rc' mute-groups are overwritten only if they were not read\n"
-            << "# from the MIDI file.\n"
-            << "\n"
+               "# Handling of mute-groups.  If set to 0, a legacy value, then\n"
+               "# any mute-groups read from the MIDI file (whether modified or\n"
+               "# not) are saved to the 'rc' file as well.  If set to 1, the\n"
+               "# 'rc' mute-groups are overwritten only if they were not read\n"
+               "# from the MIDI file.\n"
+               "\n"
             << v
             ;
         if (mgh == e_mute_group_stomp)
@@ -1171,15 +1171,15 @@ optionsfile::write (const perform & p)
 
     int buses = ucperf.master_bus().get_num_out_buses();
     file
-        << "\n[midi-clock]\n\n"
-        << "# The first line indicates the number of MIDI busses defined.\n"
         << "\n"
-        << "# Each buss line contains the buss (re 0) and the clock status of\n"
-        << "# that buss.  0 = MIDI Clock is off; 1 = MIDI Clock on, and Song\n"
-        << "# Position and MIDI Continue will be sent, if needed; and 2 = MIDI\n"
-        << "# Clock Modulo, where MIDI clocking will not begin until the song\n"
-        << "# position reaches the start modulo value [midi-clock-mod-ticks].\n"
-        << "\n"
+           "[midi-clock]\n\n"
+           "# The first line indicates the number of MIDI busses defined.\n"
+           "# Each buss line contains the buss (re 0) and the clock status of\n"
+           "# that buss.  0 = MIDI Clock is off; 1 = MIDI Clock on, and Song\n"
+           "# Position and MIDI Continue will be sent, if needed; and 2 = MIDI\n"
+           "# Clock Modulo, where MIDI clocking will not begin until the song\n"
+           "# position reaches the start modulo value [midi-clock-mod-ticks].\n"
+           "\n"
         ;
 
     file << buses << "    # number of MIDI clocks/busses\n\n";
@@ -1288,10 +1288,10 @@ optionsfile::write (const perform & p)
 
     file
         << "\n[reveal-alsa-ports]\n\n"
-        << "# Set to 1 to have sequencer64 ignore any system port names\n"
-        << "# declared in the 'user' configuration file.  Use this option if\n"
-        << "# you want to be able to see the port names as detected by ALSA.\n"
-        << "\n"
+           "# Set to 1 to have sequencer64 ignore any system port names\n"
+           "# declared in the 'user' configuration file.  Use this option if\n"
+           "# you want to be able to see the port names as detected by ALSA.\n"
+           "\n"
         << (rc().reveal_alsa_ports() ? "1" : "0")
         << "   # flag for reveal ALSA ports\n"
         ;

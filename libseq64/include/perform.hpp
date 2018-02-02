@@ -1631,6 +1631,7 @@ public:
 
     void set_recording (bool record_active, bool thru_active, sequence * s);
     void set_recording (bool record_active, int seq, bool toggle = false);
+    void set_quantized_recording (bool record_active, int seq, bool toggle = false);
     void set_thru (bool record_active, bool thru_active, sequence * s);
     void set_thru (bool thru_active, int seq, bool toggle = false);
 

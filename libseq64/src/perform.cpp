@@ -4469,7 +4469,10 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 {
     bool result = false;
 
-    //// printf("ctl %d, value = %d\n");
+    /*
+     * TMI:
+     */
+    printf("ctl %d, action %d, value %d\n", ctl, int(a), v);
 
     switch (ctl)
     {
@@ -4604,22 +4607,19 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 
     case c_midi_control_quan_record:
 
-/*
- * TODO
- */
         if (a == midi_control::action_toggle)
         {
-            ////// set_quantized_recording(false, v, true);        /* toggles */
+            set_quantized_recording(false, v, true);        /* toggles */
             result = true;
         }
         else if (a == midi_control::action_on)
         {
-            ////// set_quantized_recording(true, v);
+            set_quantized_recording(true, v);
             result = true;
         }
         else if (a == midi_control::action_off)
         {
-            ////// set_quantized_recording(false, v);
+            set_quantized_recording(false, v);
             result = true;
         }
         break;
@@ -4711,6 +4711,30 @@ perform::set_recording (bool record_active, int seq, bool toggle)
     sequence * s = get_sequence(seq);
     if (not_nullptr(s))
         s->set_input_recording(record_active, toggle);
+}
+
+/**
+ *
+ * \param record_active
+ *      Provides the current status of the Record button.
+ *
+ * \param seq
+ *      The sequence number; the resulting pointer is checked.
+ *
+ * \param toggle
+ *      If true, ignore the first flag and let the sequence toggle its
+ *      setting.  Passed along to sequence::set_input_recording().
+ */
+
+void
+perform::set_quantized_recording (bool record_active, int seq, bool toggle)
+{
+    sequence * s = get_sequence(seq);
+    if (not_nullptr(s))
+    {
+        /////// s->set_input_recording(record_active, toggle);      // TODO TODO
+        s->set_quantized_recording(record_active);
+    }
 }
 
 /**

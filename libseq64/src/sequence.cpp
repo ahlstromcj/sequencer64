@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-01
+ * \updates       2018-02-02
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -4705,6 +4705,20 @@ sequence::set_recording (bool r)
 }
 
 /**
+ * \setter m_quantized_rec
+ *
+ * \threadsafe
+ */
+
+void
+sequence::set_quantized_recording (bool qr)
+{
+    automutex locker(m_mutex);
+    m_quantized_rec = qr;
+    m_notes_on = 0;
+}
+
+/**
  *  Like perform::set_sequence_input(), but it uses the internal recording
  *  status directly, rather than getting it from seqedit.
  *
@@ -4739,19 +4753,6 @@ sequence::set_snap_tick (int st)
 {
     automutex locker(m_mutex);
     m_snap_tick = st;
-}
-
-/**
- * \setter m_quantized_rec
- *
- * \threadsafe
- */
-
-void
-sequence::set_quantized_recording (bool qr)
-{
-    automutex locker(m_mutex);
-    m_quantized_rec = qr;
 }
 
 #ifdef SEQ64_STAZED_EXPAND_RECORD

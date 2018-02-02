@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-01-31
+ * \updates       2018-02-01
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1232,6 +1232,7 @@ public:
     }
 
     void set_recording (bool record_active);
+    void set_quantized_recording (bool qr);
     void set_input_recording (bool record_active, bool toggle = false);
 
     /**
@@ -1256,7 +1257,6 @@ public:
     }
 
     void set_snap_tick (int st);
-    void set_quantized_rec (bool qr);
 
     /**
      * \getter m_quantized_rec

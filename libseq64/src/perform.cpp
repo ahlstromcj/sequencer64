@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-02-01
+ * \updates       2018-02-02
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -410,15 +410,6 @@ perform::perform (gui_assistant & mygui, int ppqn)
     {
         m_mute_group[i] = m_mute_group_rc[i] = m_armed_statuses[i] = false;
     }
-
-    /*
-     * Now that these are vector<bool>, they are initialized in the
-     * constructor's initializer list.
-     *
-     *  for (int i = 0; i < m_seqs_in_set; ++i)
-     *      m_tracks_mute_state[i] = m_screenset_state[i] = false;
-     */
-
     for (int i = 0; i < m_max_sets; ++i)
         m_screenset_notepad[i].clear();
 
@@ -3254,7 +3245,7 @@ perform::panic ()
  *  master MIDI buss.
  *
  *  Could use a member function pointer to avoid having to code two loops.
- *  See the non-disabled code below.
+ *  We did it.
  *
  * \param pause
  *      Try to prevent notes from lingering on pause if true.  By default, it
@@ -3270,26 +3261,6 @@ perform::reset_sequences (bool pause)
         if (is_active(s))
             (m_seqs[s]->*f)(m_playback_mode);           /* (new parameter)  */
     }
-
-#if 0
-    if (pause)
-    {
-        for (int s = 0; s < m_sequence_max; ++s)        /* m_sequence_high  */
-        {
-            if (is_active(s))
-                m_seqs[s]->pause(m_playback_mode);      /* (new parameter)  */
-        }
-    }
-    else
-    {
-        for (int s = 0; s < m_sequence_high; ++s)       /* m_sequence_max   */
-        {
-            if (is_active(s))
-                m_seqs[s]->stop(m_playback_mode);
-        }
-    }
-#endif
-
     m_master_bus->flush();                              /* flush MIDI buss  */
 }
 
@@ -3545,7 +3516,7 @@ perform::get_max_trigger ()
     midipulse result = 0;
     for (int s = 0; s < m_sequence_high; ++s)           /* modest speed-up */
     {
-        if (is_active(s))
+        if (is_active(s))               // sequence * s = get_sequence(seqnum);
         {
             midipulse t = m_seqs[s]->get_max_trigger();
             if (t > result)
@@ -3642,7 +3613,6 @@ bool
 perform::deinit_jack_transport ()
 {
 #ifdef SEQ64_JACK_SUPPORT
-    // return m_outputing ? false : m_jack_asst.deinit();
     return m_jack_asst.deinit();
 #else
     return true;
@@ -4333,11 +4303,13 @@ input_thread_func (void * myperf)
         c_midi_control_playback     (for pause/toggle, start, and stop)
         c_midi_control_song_record  (for performance record toggle/on/off)
         c_midi_control_solo         (for toggle, on, or off)
-        c_midi_control_thru
+        c_midi_control_thru         (see record below)
         c_midi_control_bpm_page_up
         c_midi_control_bpm_page_dn
         c_midi_control_ss_set
-        c_midi_control_17 to _19    (reserved for expansion)
+        c_midi_control_record       (see thru above)
+        c_midi_control_quan_record  (quantized record, see thru above)
+        c_midi_control_19           (reserved for expansion)
 \endverbatim
  *
  *  The extended values will actually be handled by a new function,
@@ -4496,6 +4468,9 @@ bool
 perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 {
     bool result = false;
+
+    //// printf("ctl %d, value = %d\n");
+
     switch (ctl)
     {
     case c_midi_control_playback:
@@ -4519,6 +4494,7 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 
     case c_midi_control_song_record:                /* arm for recording */
 
+#ifdef SEQ64_SONG_RECORDING
         if (a == midi_control::action_toggle)
         {
             song_recording(! song_recording());
@@ -4534,6 +4510,7 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
             song_recording(false);
             result = true;
         }
+#endif  // SEQ64_SONG_RECORDING
         break;
 
     case c_midi_control_solo:
@@ -4610,7 +4587,7 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 
         if (a == midi_control::action_toggle)
         {
-            set_recording(false, v, true);           /* toggles */
+            set_recording(false, v, true);                  /* toggles */
             result = true;
         }
         else if (a == midi_control::action_on)
@@ -4625,10 +4602,64 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
         }
         break;
 
+    case c_midi_control_quan_record:
+
+/*
+ * TODO
+ */
+        if (a == midi_control::action_toggle)
+        {
+            ////// set_quantized_recording(false, v, true);        /* toggles */
+            result = true;
+        }
+        else if (a == midi_control::action_on)
+        {
+            ////// set_quantized_recording(true, v);
+            result = true;
+        }
+        else if (a == midi_control::action_off)
+        {
+            ////// set_quantized_recording(false, v);
+            result = true;
+        }
+        break;
+
     default:
 
         break;
     }
+    return result;
+}
+
+/**
+ *  Checks the event to see if it is a c_midi_control_record event, and
+ *  performs the requested action (toggle, on, off) if so.  This function is
+ *  used for a quick check while recording, so we don't have scan 84 items
+ *  before adding a musical MIDI event, but still can detect a
+ *  recording-status change command.
+ *
+ *  We handle record, but also need to handle quan_record and thru.
+ *  midi_control_event() iterates through all values.  We need to "iterate"
+ *  between the record, quan_record, and thru values only.
+ *
+ * \param ev
+ *      Provides the MIDI event to potentially trigger a recording-control
+ *      action.
+ *
+ * \return
+ *      Returns true if the event was an active recording control event.
+ */
+
+bool
+perform::midi_control_record (const event & ev)
+{
+    bool result = handle_midi_control_event(ev, c_midi_control_record);
+    if (! result)
+        result = handle_midi_control_event(ev, c_midi_control_thru);
+
+    if (! result)
+        result = handle_midi_control_event(ev, c_midi_control_quan_record);
+
     return result;
 }
 
@@ -4671,7 +4702,7 @@ perform::set_recording (bool record_active, bool thru_active, sequence * s)
  *
  * \param toggle
  *      If true, ignore the first flag and let the sequence toggle its
- *      setting.
+ *      setting.  Passed along to sequence::set_input_recording().
  */
 
 void
@@ -4721,7 +4752,7 @@ perform::set_thru (bool record_active, bool thru_active, sequence * s)
  *
  * \param toggle
  *      If true, ignore the first flag and let the sequence toggle its
- *      setting.
+ *      setting.  Passed along to sequence::set_input_thru().
  */
 
 void
@@ -4738,14 +4769,14 @@ perform::set_thru (bool thru_active, int seq, bool toggle)
  *
  *  Here is the processing involved in this function .... TODO.
  *
- *  Incorporates pull request #24, arnaud-jacquemin, issue #23 "MIDI controller
- *  toggles wrong pattern".
+ *  Incorporates pull request #24, arnaud-jacquemin, issue #23 "MIDI
+ *  controller toggles wrong pattern".
  *
- * \change ca 2016-10-05
- *      Issue #35.  Changed "on" to "off".
+ *  Note that the event::get_status() function returns a value with the
+ *  channel nybble stripped off.
  *
  * \param ev
- *      Provides the MIDI event to potential trigger a control action.
+ *      Provides the MIDI event to potentially trigger a control action.
  *
  * \return
  *      Returns true if the event was actually handled.  TODO.
@@ -4755,90 +4786,133 @@ bool
 perform::midi_control_event (const event & ev)
 {
     bool result = false;
-    midibyte status = ev.get_status();
     int offset = m_screenset_offset;
-    midibyte d0 = 0, d1 = 0;                    /* do we need to zero them? */
-    ev.get_data(d0, d1);
     for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)  /* 84 */
     {
-        bool is_a_sequence = ctl < m_seqs_in_set;
-        bool is_ext = ctl >= c_midi_controls && ctl < c_midi_controls_extended;
-        if (midi_control_toggle(ctl).match(status, d0))
+        result = handle_midi_control_event(ev, ctl, offset);
+        if (result)
+            break;      /* differs from legacy behavior, which keeps going */
+    }
+    return result;
+}
+
+/**
+ *  Code extracted from midi_control_event() to be re-used for handling
+ *  shorter lists of events.
+ *
+ * \param ev
+ *      Provides the MIDI event to potentially trigger a control action.
+ *
+ * \param ctl
+ *      The specific MIDI control to check.
+ *
+ * \param offset
+ *      The offset into the control list, used only for changing the playing
+ *      status of a sequence/pattern in the current screen-set.
+ *
+ * \return
+ *      Returns true if the event was matched and handled.
+ */
+
+bool
+perform::handle_midi_control_event (const event & ev, int ctl, int offset)
+{
+    bool result = false;
+    bool is_a_sequence = ctl < m_seqs_in_set;
+    bool is_ext = ctl >= c_midi_controls && ctl < c_midi_controls_extended;
+    midibyte status = ev.get_status();
+    midibyte d0 = 0, d1 = 0;                    /* do we need to zero them? */
+    ev.get_data(d0, d1);
+    if (midi_control_toggle(ctl).match(status, d0))
+    {
+        if (midi_control_toggle(ctl).in_range(d1))
         {
-            if (midi_control_toggle(ctl).in_range(d1))
+            if (is_a_sequence)
             {
-                if (is_a_sequence)
-                {
-                    sequence_playing_toggle(offset);
-                }
-                else if (is_ext)
-                {
-                    if (handle_midi_control_ex(ctl, midi_control::action_toggle, d1))
-                        break;
-                }
+                sequence_playing_toggle(offset);
+                result = true;
+            }
+            else if (is_ext)
+            {
+                result = handle_midi_control_ex
+                (
+                    ctl, midi_control::action_toggle, d1
+                );
             }
         }
-        if (midi_control_on(ctl).match(status, d0))
+    }
+    if (midi_control_on(ctl).match(status, d0))
+    {
+        if (midi_control_on(ctl).in_range(d1))
         {
-            if (midi_control_on(ctl).in_range(d1))
+            if (is_a_sequence)
             {
-                if (is_a_sequence)
-                {
-                    sequence_playing_on(offset);
-                }
-                else if (is_ext)
-                {
-                    if (handle_midi_control_ex(ctl, midi_control::action_on, d1))
-                        break;
-                }
-                else
-                    handle_midi_control(ctl, true);
+                sequence_playing_on(offset);
+                result = true;
             }
-            else if (midi_control_on(ctl).inverse_active())
+            else if (is_ext)
             {
-                if (is_a_sequence)
-                {
-                    sequence_playing_off(offset);
-                }
-                else if (is_ext)
-                {
-                    if (handle_midi_control_ex(ctl, midi_control::action_off, d1))
-                        break;
-                }
-                else
-                    handle_midi_control(ctl, false);
+                result = handle_midi_control_ex
+                (
+                    ctl, midi_control::action_on, d1
+                );
             }
+            else
+                result = handle_midi_control(ctl, true);
         }
-        if (midi_control_off(ctl).match(status, d0))
+        else if (midi_control_on(ctl).inverse_active())
         {
-            if (midi_control_off(ctl).in_range(d1))  /* Issue #35 */
+            if (is_a_sequence)
             {
-                if (is_a_sequence)
-                {
-                    sequence_playing_off(offset);
-                }
-                else if (is_ext)
-                {
-                    if (handle_midi_control_ex(ctl, midi_control::action_off, d1))
-                        break;
-                }
-                else
-                    handle_midi_control(ctl, false);
+                sequence_playing_off(offset);
+                result = true;
             }
-            else if (midi_control_off(ctl).inverse_active())
+            else if (is_ext)
             {
-                if (is_a_sequence)
-                {
-                    sequence_playing_on(offset);
-                }
-                else if (is_ext)
-                {
-                    if (handle_midi_control_ex(ctl, midi_control::action_on, d1))
-                        break;
-                }
-                else
-                    handle_midi_control(ctl, true);
+                result = handle_midi_control_ex
+                (
+                    ctl, midi_control::action_off, d1
+                );
             }
+            else
+                result = handle_midi_control(ctl, false);
+        }
+    }
+    if (midi_control_off(ctl).match(status, d0))
+    {
+        if (midi_control_off(ctl).in_range(d1))  /* Issue #35 */
+        {
+            if (is_a_sequence)
+            {
+                sequence_playing_off(offset);
+                result = true;
+            }
+            else if (is_ext)
+            {
+                result = handle_midi_control_ex
+                (
+                    ctl, midi_control::action_off, d1
+                );
+            }
+            else
+                result = handle_midi_control(ctl, false);
+        }
+        else if (midi_control_off(ctl).inverse_active())
+        {
+            if (is_a_sequence)
+            {
+                sequence_playing_on(offset);
+                result = true;
+            }
+            else if (is_ext)
+            {
+                result = handle_midi_control_ex
+                (
+                    ctl, midi_control::action_on, d1
+                );
+            }
+            else
+                result = handle_midi_control(ctl, true);
         }
     }
     return result;
@@ -5007,16 +5081,27 @@ perform::input_func ()
 
                     if (ev.get_status() <= EVENT_MIDI_SYSEX)
                     {
+                        /*
+                         * Test for MIDI control events even if "dumping".
+                         * Otherwise, we cannot handle any more control events
+                         * once recording is turned on.  WARNING:  This can
+                         * slow down recording, so we check only for recording
+                         * status now.
+                         */
+
                         if (m_master_bus->is_dumping())
                         {
-                            ev.set_timestamp(get_tick());
-                            if (rc().show_midi())
-                                ev.print();
+                            if (! midi_control_record(ev))
+                            {
+                                ev.set_timestamp(get_tick());
+                                if (rc().show_midi())
+                                    ev.print();
 
-                            if (m_filter_by_channel)
-                                m_master_bus->dump_midi_input(ev);
-                            else
-                                m_master_bus->get_sequence()->stream_event(ev);
+                                if (m_filter_by_channel)
+                                    m_master_bus->dump_midi_input(ev);
+                                else
+                                    m_master_bus->get_sequence()->stream_event(ev);
+                            }
                         }
                         else
                         {
@@ -5099,13 +5184,10 @@ perform::combine_bytes (midibyte b0, midibyte b1)
    return short_14bit * 48;
 }
 
-                        // m_midiclockpos *= 48;
-                        // OLD m_midiclockpos = (int(a) << 7) && int(b);
-
 #ifdef USE_STAZED_PARSE_SYSEX               // more code to incorporate!!!
 
 /**
- *
+ *  Too hardware-specific.
  */
 
 enum sysex_YPT
@@ -5193,12 +5275,12 @@ perform::parse_sysex (event a_e)            // copy, or reference???
 
     case SYS_YPT300_FAST_FORWARD:
         FF_RW_button_type = FF_RW_FORWARD;
-        gtk_timeout_add(120,FF_RW_timeout,this);
+        gtk_timeout_add(120, FF_RW_timeout,this);
         break;
 
     case SYS_YPT300_REWIND:
         FF_RW_button_type = FF_RW_REWIND;
-        gtk_timeout_add(120,FF_RW_timeout,this);
+        gtk_timeout_add(120, FF_RW_timeout,this);
         break;
 
     default:

@@ -2770,7 +2770,7 @@ seqedit::record_change_callback ()
 void
 seqedit::q_rec_change_callback ()
 {
-    m_seq.set_quantized_rec(m_toggle_q_rec->get_active());
+    m_seq.set_quantized_recording(m_toggle_q_rec->get_active());
     if (m_toggle_q_rec->get_active() && ! m_toggle_record->get_active())
         m_toggle_record->activate();
 }

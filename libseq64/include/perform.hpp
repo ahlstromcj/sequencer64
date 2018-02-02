@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-01
+ * \updates       2018-02-02
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2399,8 +2399,10 @@ private:
     midi_control & midi_control_on (int ctl);
     midi_control & midi_control_off (int ctl);
     bool midi_control_event (const event & ev);
+    bool midi_control_record (const event & ev);
     bool handle_midi_control (int control, bool state);
     bool handle_midi_control_ex (int control, midi_control::action a, int v);
+    bool handle_midi_control_event (const event & ev, int ctrl, int offset = 0);
     const std::string & get_screen_set_notepad (int screenset) const;
 
     /**

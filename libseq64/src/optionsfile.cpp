@@ -1047,7 +1047,10 @@ optionsfile::write (const perform & p)
             file << "# MIDI RECORD (toggle, on, off):\n";
             break;
 
-        case c_midi_control_18:             // 82
+        case c_midi_control_quan_record:    // 82
+            file << "# MIDI Quantized RECORD (toggle, on, off):\n";
+            break;
+
         case c_midi_control_19:             // 83
             file << "# reserved for expansion:\n";
             break;

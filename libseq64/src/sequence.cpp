@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-31
+ * \updates       2018-02-01
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -4748,7 +4748,7 @@ sequence::set_snap_tick (int st)
  */
 
 void
-sequence::set_quantized_rec (bool qr)
+sequence::set_quantized_recording (bool qr)
 {
     automutex locker(m_mutex);
     m_quantized_rec = qr;

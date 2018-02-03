@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-28
+ * \updates       2018-02-03
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -272,6 +272,13 @@ private:
 
     Gtk::Adjustment * m_adjust_ss;      /**< Screenset adjustment.          */
     Gtk::SpinButton * m_spinbutton_ss;  /**< Screenset adjustment.          */
+
+    /**
+     *  Saves the active screenset number so that we can better detect changes
+     *  from both the perform object and the screenset spinbutton.
+     */
+
+    int m_current_screenset;
 
     /**
      *  Is this the bar at the top that shows moving squares, also known as
@@ -644,7 +651,7 @@ private:
     void toggle_playing ();
 
     bool timer_callback ();
-    int set_screenset (int screenset, bool setperf = false);
+    void set_screenset (int screenset);
 
 #ifdef SEQ64_MAINWND_TAP_BUTTON
 

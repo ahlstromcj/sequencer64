@@ -2765,12 +2765,17 @@ seqedit::record_change_callback ()
  *
  *      If we set Quantized recording, then also set recording, but do not
  *      unset recording if we unset Quantized recording.
+ *
+ *  This is not necessarily the most intuitive thing to do.  See
+ *  midi_record.txt.
  */
 
 void
 seqedit::q_rec_change_callback ()
 {
-    m_seq.set_quantized_recording(m_toggle_q_rec->get_active());
+    // m_seq.set_quantized_recording(m_toggle_q_rec->get_active());
+
+    perf().set_quantized_recording(m_toggle_q_rec->get_active(), &m_seq);
     if (m_toggle_q_rec->get_active() && ! m_toggle_record->get_active())
         m_toggle_record->activate();
 }

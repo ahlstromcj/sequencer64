@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-02
+ * \updates       2018-02-03
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -4693,6 +4693,9 @@ sequence::set_playing (bool p)
 /**
  * \setter m_recording and m_notes_on
  *
+ *  This function sets m_notes_on to 0, but this should be done only if the
+ *  recording status has changed.
+ *
  * \threadsafe
  */
 
@@ -4700,12 +4703,16 @@ void
 sequence::set_recording (bool r)
 {
     automutex locker(m_mutex);
+    m_notes_on = 0;             // should this require (r != m_recording)?
     m_recording = r;
-    m_notes_on = 0;
 }
 
 /**
  * \setter m_quantized_rec
+ *
+ *  What about doing this?
+ *
+ *      m_master_bus->set_sequence_input(record_active, this);
  *
  * \threadsafe
  */
@@ -4714,13 +4721,16 @@ void
 sequence::set_quantized_recording (bool qr)
 {
     automutex locker(m_mutex);
+    m_notes_on = 0;             // should this require (qr != m_quantized_rec)?
     m_quantized_rec = qr;
-    m_notes_on = 0;
 }
 
 /**
  *  Like perform::set_sequence_input(), but it uses the internal recording
  *  status directly, rather than getting it from seqedit.
+ *
+ *  Do we need a quantized recording version, or is setting the
+ *  quantized-recording flag sufficient?
  *
  * \param record_active
  *      Provides the desired status to set recording.

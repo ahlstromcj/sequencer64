@@ -210,9 +210,10 @@ The issues at this date:
     5. toggle recording modifier
     6. trigger a pattern
     7. now the pattern records exactly one loop, than recording stops
- *  61 georgkrause : Jack MIDI Client Naming
 
- *  62 georgkrause : Jack Midi auto connect
+ *  61 georgkrause : Jack MIDI Client Naming [closed]
+
+ *  62 georgkrause : Jack Midi auto connect [closed]
 
     63 milkmiruku : [Feature request] tempo to two decimal places
 

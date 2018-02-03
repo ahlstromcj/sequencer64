@@ -902,6 +902,12 @@ mainwid::seq_from_xy (int x, int y)
 int
 mainwid::set_screenset (int ss, bool setperf)
 {
+    /*
+     * TODO:  consider only doing this if ss != m_screenset.
+     */
+
+    if (ss != m_screenset)
+    {
 #if defined SEQ64_MULTI_MAINWID
     if (m_is_multi_wid || setperf)
         perf().set_screenset(ss);
@@ -913,6 +919,7 @@ mainwid::set_screenset (int ss, bool setperf)
     m_screenset = perf().screenset();
     m_screenset_offset = perf().screenset_offset();
     reset();                                    /* redraws the window   */
+    }
     return m_screenset;
 }
 

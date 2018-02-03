@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-02-02
+ * \updates       2018-02-03
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -121,6 +121,34 @@
  *  directly by number.
  *
  * TODO: seq32's tick_to_jack_frame () etc. for tempo.
+ *
+ * MIDI CLOCK Support:
+ *
+ *    On output:
+ *
+ *        perform::m_usemidiclock starts at false;
+ *        It is set to false in pause_playing();
+ *        It is set to the midiclock parameter of inner_stop();
+ *        If m_usemidiclock is true:
+ *            It affects m_midiclocktick in output;
+ *            The position in output cannot be repositioned;
+ *            The tick location cannot be changed;
+ *
+ *    On input:
+ *
+ *    -   If MIDI Start is received, m_midiclockrunning and m_usemidiclock
+ *        become true, and m_midiclocktick and m_midiclockpos become 0.
+ *    -   If MIDI Continue is received, m_midiclockrunning is set to true and
+ *        we start according to song-mode.
+ *    -   If MIDI Stop is received, m_midiclockrunning is set to false,
+ *        m_midiclockpos is set to the current tick (!), all_notes_off(), and
+ *        inner_stop(true) [sets m_usemidiclock = true].
+ *    -   If MIDI Clock is received, and m_midiclockrunning is true, then
+ *        m_midiclocktick += 24 [SEQ64_MIDI_CLOCK_INCREMENT];
+ *    -   If MIDI Song Position is received, then m_midiclockpos is set as per
+ *        in data in this event.
+ *    -   MIDI Active Sense and MIDI Reset are currently filtered by the JACK
+ *        implementation.
  */
 
 #include <sched.h>
@@ -4470,9 +4498,8 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
     bool result = false;
 
     /*
-     * TMI:
+     * TMI: printf("ctl %d, action %d, value %d\n", ctl, int(a), v);
      */
-    printf("ctl %d, action %d, value %d\n", ctl, int(a), v);
 
     switch (ctl)
     {
@@ -4714,6 +4741,26 @@ perform::set_recording (bool record_active, int seq, bool toggle)
 }
 
 /**
+ *  Sets quantized recording in the way used by seqedit.
+ *
+ * \param record_active
+ *      The setting desired for the quantized-recording flag.
+ *
+ * \param s
+ *      Provides the pointer to the sequence to operate upon.  Checked for
+ *      validity.
+ */
+
+void
+perform::set_quantized_recording (bool record_active, sequence * s)
+{
+    if (not_nullptr(s))
+        s->set_recording(record_active);
+}
+
+/**
+ *  Sets qauntized recording.  This isn't quite consistent with setting
+ *  regular recording, which uses sequence::set_input_recording().
  *
  * \param record_active
  *      Provides the current status of the Record button.
@@ -4732,8 +4779,10 @@ perform::set_quantized_recording (bool record_active, int seq, bool toggle)
     sequence * s = get_sequence(seq);
     if (not_nullptr(s))
     {
-        /////// s->set_input_recording(record_active, toggle);      // TODO TODO
-        s->set_quantized_recording(record_active);
+        if (toggle)
+            s->set_quantized_recording(! s->get_quantized_rec());
+        else
+            s->set_quantized_recording(record_active);
     }
 }
 

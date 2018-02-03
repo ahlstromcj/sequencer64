@@ -45,6 +45,10 @@
 #
 #           00000000001111111111222     MIDI note number
 #           01234567890123456789012
+#             ------------------------ Screen Set Down
+#            |  ---------------------- Screen Set Up
+#            | |
+#            v v
 #            B B  B B B  B B  B B B     Black keys
 #           W W WW W W WW W WW W W      White keys
 #           ^ ^ ^^ ^ ^ ^^ ^ ^^ ^ ^
@@ -63,26 +67,28 @@
 #           |  ----------------------- Pause
 #            ------------------------- Stop
 #
-# Note 0 (red) is Stop.
-# Note 2 (yellow) is Pause.
-# Note 4 (green) is Play.
-# Note 5 (light cyan) is BPM page down.
-# Note 7 (dark cyan) is BPM step down.
-# Note 9 (dark cyan) is BPM step up.
-# Note 11 (light cyan) is BPM page up.
-# Note 12, 14, and 16 are MIDI THRU toggle, on, and off.  The velocity
-# value from 0 to 31 indicates the sequence in the current set to act upon.
-# Note 17, 19, and 21 are MIDI RECORD toggle, on, and off.  The velocity
-# value from 0 to 31 indicates the sequence in the current set to act upon.
+# W: Note 0 (red) is Stop.
+# B: Note 1 (black) is screen set down.
+# W: Note 2 (yellow) is Pause.
+# B: Note 3 (black) is screen set up.
+# W: Note 4 (green) is Play.
+# W: Note 5 (light cyan) is BPM page down.
+# W: Note 7 (dark cyan) is BPM step down.
+# W: Note 9 (dark cyan) is BPM step up.
+# W: Note 11 (light cyan) is BPM page up.
+# W: Note 12, 14, and 16 are MIDI THRU toggle, on, and off.  The velocity
+#    value from 0 to 31 indicates the sequence in the current set to act upon.
+# W: Note 17, 19, and 21 are MIDI RECORD toggle, on, and off.  The velocity
+#    value from 0 to 31 indicates the sequence in the current set to act upon.
 #
 # bpm up: Note On 9
 64 [0 0   0   0   0   0] [1 0 144   9   0 127] [0 0   0   0   0   0]
 # bpm down: Note On 7
 65 [0 0   0   0   0   0] [1 0 144   7   0 127] [0 0   0   0   0   0]
 # screen set up:
-66 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+66 [0 0   0   0   0   0] [1 0 144   3   0 127] [0 0   0   0   0   0]
 # screen set down:
-67 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+67 [0 0   0   0   0   0] [1 0 144   1   0 127] [0 0   0   0   0   0]
 # mod replace:
 68 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # mod snapshot:

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-02
+ * \updates       2018-02-03
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1629,12 +1629,12 @@ public:
             m_master_bus->set_sequence_input(active, s);
      }
 
-    void set_recording (bool record_active, bool thru_active, sequence * s);
-    void set_recording (bool record_active, int seq, bool toggle = false);
-    void set_quantized_recording (bool record_active, int seq, bool toggle = false);
-    void set_thru (bool record_active, bool thru_active, sequence * s);
+    void set_recording (bool rec_active, bool thru_active, sequence * s);
+    void set_recording (bool rec_active, int seq, bool toggle = false);
+    void set_quantized_recording (bool rec_active, sequence * s);
+    void set_quantized_recording (bool rec_active, int seq, bool toggle = false);
+    void set_thru (bool rec_active, bool thru_active, sequence * s);
     void set_thru (bool thru_active, int seq, bool toggle = false);
-
     bool selected_trigger
     (
         int seqnum, midipulse droptick,

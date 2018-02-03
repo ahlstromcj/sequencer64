@@ -1,4 +1,4 @@
-README for Sequencer64 0.94.4 (Native JACK, CLI, multiple sets, varisets, tempo)
+README for Sequencer64 0.94.5 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
 2015-09-10 to 2018-02-03
 
@@ -30,6 +30,7 @@ See the INSTALL file.
 
 Recent changes:
 
+    -   Version 0.94.5:
     -   Version 0.94.4:
         -   Fixed some mismanagement of the changing image for the transpose
             and play buttons that caused segfaults on some systems.
@@ -66,47 +67,8 @@ Recent changes:
         -   Fixed a side-effect of code that kept resetting the tick position
             to 0, preventing progress if JACK transport was active.
         -   Fixed the MIDI clock issue #123.
-    -   Version 0.94.0:
-        -   Additions from the Oli Kester project, "Kepler34".
-            -   Panic-button to stop everything!
-            -   Recent-files menu entries; logs full path-names, but shows
-                only the base name.  Has Gtk issue with using underscore as
-                an accelerator.
-            -   Support for multiple trigger selection in the Song Editor, but
-                incomplete and currently disabled.
-            -   Initial support for Song Recording, in Live mode, which writes
-                the live muting changes as triggers to the Song Editor.
-                Also has a song-recording snap mode.
-            -   A one-shot queuing mode is now provided.  It works like
-                queueing, but unqueues the pattern after one playback.
-        -   Issue #122 bad alsamidi build fixed.
-        -   Bug fixes to unreported issues:
-            -   Seq64, when not JACK Transport Master, would not play and
-                caused other JACK clients to not play either.
-            -   Somehow the "night mode" was painting notes black in the
-                perfroll.
-            -   Adding a set-note caused a prompt for saving even with no
-                changes.
-            -   Major major fixes for the "user" configuration file, and 
-                a new "[comments]" section for it.  Also fixed ancient bug
-                in populating the seqedit event menu, and no longer apply
-                the "user" devices to the input port.
-        -   The ability to toggle the time display between "B:B:T" and
-            "H:M:S" has been added.
-    -   Version 0.93.5:
-        -   Fixes an issue where incoming Active Sensing events are treated
-            incorrectly.  Also update handling for similar events.
-        -   Added configure and helper files to the official checkout so that
-            users do not have to install so much dev software.
-        -   Changed "-v" to be a new "--verbose" option for trouble-shooting.
-        -   Fixed the setting of the "stazed" filter-by-channel functionality,
-            which was disabled.
-        -   Added (WE HOPE) the missing start/stop/continue functionality in
-            the "rtmidi" ALSA and JACK implementations.
-        -   Some improvements to set_status() functions.
-        -   Minor cleanup, and investigation into an issue with triggers and
-            the pause functionality in Song mode.
-    -   For more version information, see the NEWS file.
+    -   For earlier version information, see the NEWS file and the ChangeLog
+        file.
 
 This package is oriented to developers and users who do not mind building from
 source, with a little help.  It is fairly well organized and well documented.

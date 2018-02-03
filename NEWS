@@ -1,12 +1,52 @@
-NEWS for Sequencer64 0.93.3
+NEWS for Sequencer64 0.94.5
 Chris Ahlstrom
-2015-07-10 to 2017-12-20
+2015-07-10 to 2018-02-03
 
 This file collects major changes that are older and clutter up
 the README file.  This file should be called "OLD NEWS".
 
 Older major updates:
 
+    -   Version 0.94.0:
+        -   Additions from the Oli Kester project, "Kepler34".
+            -   Panic-button to stop everything!
+            -   Recent-files menu entries; logs full path-names, but shows
+                only the base name.  Has Gtk issue with using underscore as
+                an accelerator.
+            -   Support for multiple trigger selection in the Song Editor, but
+                incomplete and currently disabled.
+            -   Initial support for Song Recording, in Live mode, which writes
+                the live muting changes as triggers to the Song Editor.
+                Also has a song-recording snap mode.
+            -   A one-shot queuing mode is now provided.  It works like
+                queueing, but unqueues the pattern after one playback.
+        -   Issue #122 bad alsamidi build fixed.
+        -   Bug fixes to unreported issues:
+            -   Seq64, when not JACK Transport Master, would not play and
+                caused other JACK clients to not play either.
+            -   Somehow the "night mode" was painting notes black in the
+                perfroll.
+            -   Adding a set-note caused a prompt for saving even with no
+                changes.
+            -   Major major fixes for the "user" configuration file, and 
+                a new "[comments]" section for it.  Also fixed ancient bug
+                in populating the seqedit event menu, and no longer apply
+                the "user" devices to the input port.
+        -   The ability to toggle the time display between "B:B:T" and
+            "H:M:S" has been added.
+    -   Version 0.93.5:
+        -   Fixes an issue where incoming Active Sensing events are treated
+            incorrectly.  Also update handling for similar events.
+        -   Added configure and helper files to the official checkout so that
+            users do not have to install so much dev software.
+        -   Changed "-v" to be a new "--verbose" option for trouble-shooting.
+        -   Fixed the setting of the "stazed" filter-by-channel functionality,
+            which was disabled.
+        -   Added (WE HOPE) the missing start/stop/continue functionality in
+            the "rtmidi" ALSA and JACK implementations.
+        -   Some improvements to set_status() functions.
+        -   Minor cleanup, and investigation into an issue with triggers and
+            the pause functionality in Song mode.
     -   Version 0.93.4:
         -   Duh, I forgot to do this.  Debian packaging fixes?
         -   Merging a miniature version of the PortMIDI library, called

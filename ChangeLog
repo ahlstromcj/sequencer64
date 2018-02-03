@@ -1,5 +1,10 @@
 2018-02-03  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* : Updated user manual to 0.94.4.
+	* README, contrib/notes/git.txt: Version 0.94.4 in master.
+	* : commit 6b8d3afebfe8524637889790f6fa4c8ac28799bd Author: Chris
+	Ahlstrom <ahlstromcj@gmail.com> Date:   Sat Feb 3 15:51:26 2018
+	-0500
 	* FixLog, README, contrib/simple-midi-control-section.rc,
 	libseq64/include/perform.hpp, libseq64/src/perform.cpp,
 	libseq64/src/sequence.cpp, seq_gtkmm2/include/mainwnd.hpp,

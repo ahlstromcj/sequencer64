@@ -1,5 +1,102 @@
+2018-02-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* FixLog, README, contrib/simple-midi-control-section.rc,
+	libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Fixed issue #135, screenset changing
+	issues.
+
+2018-02-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* bootstrap: Fixed issue #133, now delete configure after a
+	full-clean to make sure pulls work.
+	* libseq64/include/midibus_common.hpp,
+	libseq64/include/perform.hpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp: Progress in
+	handling of record, quantize record, and thru via MIDI control.
+	* libseq64/include/event.hpp, libseq64/include/midi_control.hpp,
+	libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/seqedit.cpp: Interim
+	check-in, MIDI control refactoring, currently BROKEN.
+
+2018-02-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/simple-midi-control-section.rc,
+	libseq64/include/midi_control.hpp, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Progress on MIDI record, thru, interim
+	check-in.
+
+2018-01-31  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, libseq64/include/easy_macros.h,
+	libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Progress in MIDI control of record and
+	thru.
+
+2018-01-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/seqedit.cpp: 
+	Improvements as per issue #131 re showing event data in seqedit.
+
+2018-01-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, TODO, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/src/seqedit.cpp: Added event button to show only events
+	existing in a track.
+	* README, libseq64/src/userfile.cpp, seq_gtkmm2/src/lfownd.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Fixed mainscroll build and LFO toggle.
+
+2018-01-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure.ac, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_rtmidi/src/rtmidi_types.cpp: Fixed mismanagement of button
+	images causing segfaults on some systems.
+
+2018-01-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/userfile.cpp: Tweak to userfile module.
+	* libseq64/include/user_settings.hpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Added a user-file workaround for
+	transpose-button image segfault.
+	* libseq64/include/user_settings.hpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Added a usr-file workaround for
+	play-button image segfault.
+	* libseq64/include/sequence.hpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwnd.cpp: Added
+	locking to mainwnd set_play_image().
+	* seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midi_jack_info.hpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp: 
+	Removed rtmidi multi_client support for good.
+
+2018-01-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/businfo.cpp, libseq64/src/midibase.cpp,
+	seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midi_jack_info.hpp,
+	seq_rtmidi/include/midi_win.hpp, seq_rtmidi/src/midi_api.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp,
+	seq_rtmidi/src/midi_win.cpp, seq_rtmidi/src/midi_win_info.cpp: 
+	Macroed out multi-client JACK.
+
+2018-01-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* FixLog, README, ROADMAP, TODO, VERSION, configure, configure.ac,
+	contrib/scripts/Jack2, libseq64/src/optionsfile.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp: 
+	Minor tweaks to rc and JACK MIDI.
+
 2018-01-21  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* ChangeLog, README: Prep for version 0.94.3.
 	* libseq64/src/sequence.cpp, resources/pixmaps/fruity.xpm,
 	resources/pixmaps/tux.xpm, seq_gtkmm2/include/seqroll.hpp,
 	seq_gtkmm2/src/fruityseqroll.cpp, seq_gtkmm2/src/options.cpp,

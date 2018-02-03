@@ -214,9 +214,6 @@ win_mm_process_io ()
 /**
  *  Principal constructor.
  *
- *  Note the m_multi_client member.  We may want each Windows MM port to have its
- *  own client, as in the original RtMidi implementation.
- *
  * \param appname
  *      Provides the name of the application.
  *
@@ -512,32 +509,7 @@ midi_win_info::api_set_beats_per_minute (midibpm b)
 void
 midi_win_info::api_port_start (mastermidibus & masterbus, int bus, int port)
 {
-    if (multi_client())
-    {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        int bus_slot = masterbus.m_outbus_array.count();
-        int test = masterbus.m_outbus_array.replacement_port(bus, port);
-        if (test >= 0)
-            bus_slot = test;
-
-        midibus * m = new midibus(masterbus.m_midi_master, bus_slot);
-        m->is_virtual_port(false);
-        m->is_input_port(false);
-        masterbus.m_outbus_array.add(m, e_clock_off);
-
-        bus_slot = masterbus.m_inbus_array.count();
-        test = masterbus.m_inbus_array.replacement_port(bus, port);
-        if (test >= 0)
-            bus_slot = test;
-
-        m = new midibus(masterbus.m_midi_master, bus_slot);
-        m->is_virtual_port(false);
-        m->is_input_port(false);
-        masterbus.m_inbus_array.add(m, false);
-    }
+    // no code
 }
 
 /**

@@ -196,15 +196,6 @@ midi_win::api_connect ()
     std::string remotename = remote_port_name();
     std::string localname = connect_name();     /* modified!    */
     bool result;
-    if (multi_client())
-    {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        jack_activate(client_handle());
-    }
-
     if (is_input_port())
         result = connect_port(SEQ64_MIDI_INPUT_PORT, remotename, localname);
     else
@@ -264,43 +255,30 @@ midi_win::set_virtual_name (int portid, const std::string & portname)
 bool
 midi_win::api_init_out_sub ()
 {
-    bool result = true;
     master_midi_mode(SEQ64_MIDI_OUTPUT_PORT);    /* this is necessary */
-    if (multi_client())
+    int portid = parent_bus().get_port_id();
+    bool result = portid >= 0;
+    if (! result)
     {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        result = open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
+        portid = get_bus_index();
+        result = portid >= 0;
     }
+    if (result)
+        result = create_ringbuffer(JACK_RINGBUFFER_SIZE);
 
     if (result)
     {
-        int portid = parent_bus().get_port_id();
-        result = portid >= 0;
-        if (! result)
+        std::string portname = parent_bus().port_name();
+        if (portname.empty())
         {
-            portid = get_bus_index();
-            result = portid >= 0;
+            portname = rc().app_client_name() + " midi out ";
+            portname += std::to_string(portid);
         }
-        if (result)
-            result = create_ringbuffer(JACK_RINGBUFFER_SIZE);
-
+        result = register_port(SEQ64_MIDI_OUTPUT_PORT, portname);
         if (result)
         {
-            std::string portname = parent_bus().port_name();
-            if (portname.empty())
-            {
-                portname = rc().app_client_name() + " midi out ";
-                portname += std::to_string(portid);
-            }
-            result = register_port(SEQ64_MIDI_OUTPUT_PORT, portname);
-            if (result)
-            {
-                set_virtual_name(portid, portname);
-                set_port_open();
-            }
+            set_virtual_name(portid, portname);
+            set_port_open();
         }
     }
     return result;
@@ -316,40 +294,28 @@ midi_win::api_init_out_sub ()
 bool
 midi_win::api_init_in_sub ()
 {
-    bool result = true;
     master_midi_mode(SEQ64_MIDI_INPUT_PORT);
-    if (multi_client())
+    int portid = parent_bus().get_port_id();
+    bool result = portid >= 0;
+    if (! result)
     {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        result = open_client_impl(SEQ64_MIDI_INPUT_PORT);
+        portid = get_bus_index();
+        result = portid >= 0;
     }
     if (result)
     {
-        int portid = parent_bus().get_port_id();
-        result = portid >= 0;
-        if (! result)
+        std::string portname = master_info().get_port_name(get_bus_index());
+        std::string portname2 = parent_bus().port_name();
+        if (portname.empty())
         {
-            portid = get_bus_index();
-            result = portid >= 0;
+            portname = rc().app_client_name() + " midi in ";
+            portname += std::to_string(portid);
         }
+        result = register_port(SEQ64_MIDI_INPUT_PORT, portname);
         if (result)
         {
-            std::string portname = master_info().get_port_name(get_bus_index());
-            std::string portname2 = parent_bus().port_name();
-            if (portname.empty())
-            {
-                portname = rc().app_client_name() + " midi in ";
-                portname += std::to_string(portid);
-            }
-            result = register_port(SEQ64_MIDI_INPUT_PORT, portname);
-            if (result)
-            {
-                set_virtual_name(portid, portname);
-                set_port_open();
-            }
+            set_virtual_name(portid, portname);
+            set_port_open();
         }
     }
     return result;

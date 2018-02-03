@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-02-23
+ * \updates       2018-01-26
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of JACK information
@@ -93,13 +93,9 @@ jack_process_io (jack_nframes_t nframes, void * arg)
                 midi_jack * mj = *mi;
                 midi_jack_data * mjp = &mj->jack_data();
                 if (mj->parent_bus().is_input_port())
-                {
                     (void) jack_process_rtmidi_input(nframes, mjp);
-                }
                 else
-                {
                     (void) jack_process_rtmidi_output(nframes, mjp);
-                }
             }
         }
     }
@@ -108,9 +104,6 @@ jack_process_io (jack_nframes_t nframes, void * arg)
 
 /**
  *  Principal constructor.
- *
- *  Note the m_multi_client member.  We may want each JACK port to have its
- *  own client, as in the original RtMidi implementation.
  *
  * \param appname
  *      Provides the name of the application.
@@ -129,7 +122,6 @@ midi_jack_info::midi_jack_info
     midibpm bpm
 ) :
     midi_info               (appname, ppqn, bpm),
-    m_multi_client          (SEQ64_RTMIDI_NO_MULTICLIENT),
     m_jack_ports            (),
     m_jack_client           (nullptr),              /* inited for connect() */
     m_jack_client_2         (nullptr)
@@ -174,15 +166,6 @@ midi_jack_info::connect ()
          */
 
         const char * clientname = rc().app_client_name().c_str();
-        if (multi_client())
-        {
-            /*
-             * We may be changing the potential usage of multi-client.
-             */
-
-            clientname = "midi_jack_info";
-        }
-
         result = create_jack_client(clientname);
         if (not_nullptr(result))
         {
@@ -414,14 +397,6 @@ midi_jack_info::get_all_port_info ()
     else
         result = -1;
 
-    if (multi_client())
-    {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        disconnect();
-    }
     return result;
 }
 
@@ -458,16 +433,12 @@ midi_jack_info::api_flush ()
 bool
 midi_jack_info::api_connect ()
 {
-    bool result = true;
-    if (! multi_client())           /* CAREFUL IF WE ENABLE IT! */
+    bool result = not_nullptr(client_handle());
+    if (result)
     {
-        result = not_nullptr(client_handle());
-        if (result)
-        {
-            int rc = jack_activate(client_handle());
-            apiprint("jack_activate", "info");
-            result = rc == 0;
-        }
+        int rc = jack_activate(client_handle());
+        apiprint("jack_activate", "info");
+        result = rc == 0;
     }
     if (result)
     {
@@ -482,9 +453,7 @@ midi_jack_info::api_connect ()
             {
                 result = m->api_connect();
                 if (! result)
-                {
                     break;
-                }
             }
         }
     }
@@ -553,34 +522,12 @@ midi_jack_info::api_set_beats_per_minute (midibpm b)
  */
 
 void
-midi_jack_info::api_port_start (mastermidibus & masterbus, int bus, int port)
+midi_jack_info::api_port_start
+(
+    mastermidibus & /*masterbus*/, int /*bus*/, int /*port*/
+)
 {
-    if (multi_client())
-    {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        int bus_slot = masterbus.m_outbus_array.count();
-        int test = masterbus.m_outbus_array.replacement_port(bus, port);
-        if (test >= 0)
-            bus_slot = test;
-
-        midibus * m = new midibus(masterbus.m_midi_master, bus_slot);
-        m->is_virtual_port(false);
-        m->is_input_port(false);
-        masterbus.m_outbus_array.add(m, e_clock_off);
-
-        bus_slot = masterbus.m_inbus_array.count();
-        test = masterbus.m_inbus_array.replacement_port(bus, port);
-        if (test >= 0)
-            bus_slot = test;
-
-        m = new midibus(masterbus.m_midi_master, bus_slot);
-        m->is_virtual_port(false);
-        m->is_input_port(false);
-        masterbus.m_inbus_array.add(m, false);
-    }
+    // no code, was multi-client code
 }
 
 /**

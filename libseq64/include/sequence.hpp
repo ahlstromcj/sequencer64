@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-01-15
+ * \updates       2018-02-01
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -41,14 +41,14 @@
 #include <string>
 #include <stack>
 
-#include "seq64_features.h"             /* various feature #defines */
-#include "calculations.hpp"             /* measures_to_ticks()      */
-#include "event_list.hpp"               /* seq64::event_list        */
-#include "midi_container.hpp"           /* seq64::midi_container    */
-#include "midibus.hpp"                  /* seq64::midibus           */
-#include "mutex.hpp"                    /* seq64::mutex, automutex  */
-#include "scales.h"                     /* key and scale constants  */
-#include "triggers.hpp"                 /* seq64::triggers, etc.    */
+#include "seq64_features.h"             /* various feature #defines     */
+#include "calculations.hpp"             /* measures_to_ticks()          */
+#include "event_list.hpp"               /* seq64::event_list            */
+#include "midi_container.hpp"           /* seq64::midi_container        */
+#include "midibus.hpp"                  /* seq64::midibus               */
+#include "mutex.hpp"                    /* seq64::mutex, automutex      */
+#include "scales.h"                     /* key and scale constants      */
+#include "triggers.hpp"                 /* seq64::triggers, etc.        */
 
 /**
  *  Enables the Stazed/Seq32 code for adding overwrite and expand looping
@@ -318,7 +318,7 @@ private:
      *  to the proper buss and MIDI channel.
      */
 
-    mastermidibus * m_masterbus;
+    mastermidibus * m_master_bus;
 
     /**
      *  Provides a "map" for Note On events.  It is used when muting, to shut
@@ -1231,7 +1231,9 @@ public:
         return get_queued() && (get_queued_tick() <= tick);
     }
 
-    void set_recording (bool);
+    void set_recording (bool record_active);
+    void set_quantized_recording (bool qr);
+    void set_input_recording (bool record_active, bool toggle = false);
 
     /**
      * \getter m_recording
@@ -1255,7 +1257,6 @@ public:
     }
 
     void set_snap_tick (int st);
-    void set_quantized_rec (bool qr);
 
     /**
      * \getter m_quantized_rec
@@ -1266,7 +1267,8 @@ public:
         return m_quantized_rec;
     }
 
-    void set_thru (bool);
+    void set_thru (bool thru_active);                               // seqedit
+    void set_input_thru (bool thru_active, bool toggle = false);    // perform
 
     /**
      * \getter m_thru

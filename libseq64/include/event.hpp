@@ -308,7 +308,7 @@ private:
      *
      *  Overload:  For Meta events, where is_meta() is true, this value holds
      *  the type of Meta event. See the editable_event::sm_meta_event_names[]
-     *  array.  Note that EVENT_META_ILLEGAL (0xFF) indicates and illegal Meta
+     *  array.  Note that EVENT_META_ILLEGAL (0xFF) indicates an illegal Meta
      *  event.
      */
 
@@ -325,7 +325,8 @@ private:
     /**
      *  The data buffer for SYSEX messages.  Adapted from Stazed's Seq32
      *  project on GitHub.  This object will also hold the generally small
-     *  amounts of data needed for Meta events.
+     *  amounts of data needed for Meta events.  Compare is_sysex() to
+     *  is_meta() and is_ex_data() [which tests for both].
      */
 
     SysexContainer m_sysex;
@@ -1138,6 +1139,8 @@ public:
 
     /**
      *  Indicates if we need to use extended data (SysEx or Meta).
+     *  If true, then the m_channel byte is used to encode the type of meta
+     *  event.
      */
 
     bool is_ex_data () const

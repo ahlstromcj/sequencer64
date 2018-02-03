@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-20
+ * \updates       2018-01-30
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -235,6 +235,7 @@ private:
     Gtk::Menu * m_menu_midich;          /**< MIDI channel DIN menu button.  */
     Gtk::Menu * m_menu_midibus;         /**< MIDI output buss menu button.  */
     Gtk::Menu * m_menu_data;            /**< "Event" button to select data. */
+    Gtk::Menu * m_menu_minidata;        /**< Mini button for actual events. */
     Gtk::Menu * m_menu_key;             /**< "Music key" menu button.       */
     Gtk::Menu * m_menu_scale;           /**< "Music scale" menu button.     */
 
@@ -356,6 +357,7 @@ private:
 #endif
     Gtk::Tooltips * m_tooltips;         /**< Tooltip collector for dialog.  */
     Gtk::Button * m_button_data;        /**< Button for Event (data) menu.  */
+    Gtk::Button * m_button_minidata;    /**< Mini button for data menu.     */
     Gtk::Entry * m_entry_data;          /**< Text for the selected Event.   */
     Gtk::Button * m_button_bpm;         /**< Button for Beats/Measure menu. */
     Gtk::Entry * m_entry_bpm;           /**< Text for chosen Beats/Measure. */
@@ -395,6 +397,27 @@ private:
      */
 
     midibyte m_editing_cc;
+
+    /**
+     *  Indicates the first event found in the sequence while setting up the
+     *  data menu via set_event_entry().  If no events exist, the value is
+     *  0x00.
+     */
+
+    midibyte m_first_event;
+
+    /**
+     *  Provides the string describing the first event, or "(no events)".
+     */
+
+    std::string m_first_event_name;
+
+    /**
+     *
+     */
+    /*
+     midibyte m_first_control;
+     */
 
     /**
      *  Indicates that the focus has already been changed to this sequence.
@@ -514,13 +537,20 @@ private:
     void thru_change_callback ();
     void undo_callback ();
     void redo_callback ();
-    void set_data_type (midibyte status, midibyte control = 0);
     void update_all_windows ();
     void fill_top_bar ();
     void create_menus ();
+    void set_data_type (midibyte status, midibyte control = 0);
+    void set_event_entry
+    (
+        Gtk::Menu * menu, const std::string & text, bool present,
+        midibyte status, midibyte control = 0
+    );
     void popup_menu (Gtk::Menu * menu);
     void popup_event_menu ();
     void repopulate_event_menu (int buss, int channel);
+    void popup_mini_event_menu ();
+    void repopulate_mini_event_menu (int buss, int channel);
 
 #ifdef SEQ64_STAZED_EXPAND_RECORD
     void popup_record_menu ();

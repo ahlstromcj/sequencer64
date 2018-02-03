@@ -1,18 +1,13 @@
 Fixes To Issue Reported at GitHub
 Chris Ahlstrom
-2017-05-13 to 2018-01-19
+2017-05-13 to 2018-01-21
 
 This file documents (belatedly) GitHub issues raised and pull-requests made.
 
- *  90 yousefamar : resizing notes not possible in fruity mode
- *  91 ahlstromcj : need help testing variset....
- *  92 milkmiruku : indep mainwids issue.
  *  95 layk : [Pull request] Fix for note off not being played when cutting
               or moving notes.
- * 105 pixelrust : Pattern Editor / Piano Roll: new notes are played, but
-       there is no Note Off if Interaction Method is set to Fruity
 
-The hot issues at this date:  
+The issues at this date:  
 
  *  Actually, some of these are fixed, need to update them.
 
@@ -215,9 +210,10 @@ The hot issues at this date:
     5. toggle recording modifier
     6. trigger a pattern
     7. now the pattern records exactly one loop, than recording stops
- *  61 georgkrause : Jack MIDI Client Naming
 
- *  62 georgkrause : Jack Midi auto connect
+ *  61 georgkrause : Jack MIDI Client Naming [closed]
+
+ *  62 georgkrause : Jack Midi auto connect [closed]
 
     63 milkmiruku : [Feature request] tempo to two decimal places
 
@@ -382,13 +378,17 @@ uld it be possible to centre sets?
     by clicking and dragging their edges. As far as I can tell, this does not
     seem to work. The only way to do so is to switch to seq24 mode and
     middle-mouse drag. Is this a bug or am I doing something wrong? Any tips
-    much appreciated.
+    much appreciated.  
+
+    Fixed.
 
     [Related side issues found by CA]
 
-        -   Hmmm, I notice that just clicking on a note grows it.
+        -   Hmmm, I notice that just clicking on a note grows it. Fixed.
         -   In fruity mode, seq24 is automatically in insert/paint mode.
+            Fixed.
         -   In fruity mode, seq24 resizes a note only on the right handle.
+            Fixed.
 
  x  91 ahlstromcj : need help testing variset....
 
@@ -531,8 +531,8 @@ uld it be possible to centre sets?
 
     This could potentially still be an issue with some Gtk 2/3 themes, though.
 
- ? 105 pixelrust : Pattern Editor / Piano Roll: new notes are played, but
-       there is no Note Off if Interaction Method is set to Fruity
+ * 105 pixelrust : Pattern Editor / Piano Roll: new notes are played, but
+       there is no Note Off if Interaction Method is set to Fruity. Fixed.
 
  * 106 simonvanderveldt : Bar count incorrect/keeps incrementing when editing
 

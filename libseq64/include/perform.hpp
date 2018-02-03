@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-11
+ * \updates       2018-02-03
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1619,6 +1619,22 @@ public:
 
 public:
 
+    /**
+     * \getter m_master_bus->set_sequence_input()
+     */
+
+     void set_sequence_input (bool active, sequence * s)
+     {
+        if (not_nullptr_2(m_master_bus, s))
+            m_master_bus->set_sequence_input(active, s);
+     }
+
+    void set_recording (bool rec_active, bool thru_active, sequence * s);
+    void set_recording (bool rec_active, int seq, bool toggle = false);
+    void set_quantized_recording (bool rec_active, sequence * s);
+    void set_quantized_recording (bool rec_active, int seq, bool toggle = false);
+    void set_thru (bool rec_active, bool thru_active, sequence * s);
+    void set_thru (bool thru_active, int seq, bool toggle = false);
     bool selected_trigger
     (
         int seqnum, midipulse droptick,
@@ -2383,9 +2399,11 @@ private:
     midi_control & midi_control_toggle (int ctl);
     midi_control & midi_control_on (int ctl);
     midi_control & midi_control_off (int ctl);
-    void midi_control_event (const event & ev);
-    void handle_midi_control (int control, bool state);
+    bool midi_control_event (const event & ev);
+    bool midi_control_record (const event & ev);
+    bool handle_midi_control (int control, bool state);
     bool handle_midi_control_ex (int control, midi_control::action a, int v);
+    bool handle_midi_control_event (const event & ev, int ctrl, int offset = 0);
     const std::string & get_screen_set_notepad (int screenset) const;
 
     /**

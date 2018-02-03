@@ -74,17 +74,39 @@ midi_api::~midi_api ()
     // no code
 }
 
+/**
+ *  \return
+ *      Returns true if the port is an input port.
+ */
+
 bool
 midi_api::is_input_port () const
 {
     return parent_bus().is_input_port();
 }
 
+/**
+ *  A virtual port is what Seq24 called a "manual" port.  It is a MIDI port
+ *  that an application can create as if it is a real ALSA port.
+ *
+ *  \return
+ *      Returns true if the port is an input port.
+ */
+
 bool
 midi_api::is_virtual_port () const
 {
     return parent_bus().is_virtual_port();
 }
+
+/**
+ *  A system port is one that is independent of the devices and applications
+ *  that exist.  In the ALSA subsystem, the only system port is the "announce"
+ *  port.
+ *
+ *  \return
+ *      Returns true if the port is an system port.
+ */
 
 bool
 midi_api::is_system_port () const

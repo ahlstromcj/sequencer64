@@ -9,7 +9,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2017-05-08
+ * \updates       2018-01-26
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the JACK information of
@@ -22,13 +22,6 @@
 #include "midi_jack_data.hpp"           /* seq64::midi_jack_data        */
 #include "mastermidibus_rm.hpp"
 #include "midibus.hpp"                  /* seq64::midibus               */
-
-/**
- *  We've tried this false, now trying it true.  And vice versa.
- */
-
-#define SEQ64_RTMIDI_MULTICLIENT        true
-#define SEQ64_RTMIDI_NO_MULTICLIENT     false
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -49,19 +42,6 @@ class midi_jack_info : public midi_info
     friend int jack_process_io (jack_nframes_t nframes, void * arg);
 
 private:
-
-    /**
-     *  Set to true if each JACK port should be its own client.  In this case,
-     *  the functions api_init_in(), api_init_out(), api_init_in_sub(), and
-     *  api_init_out_sub() need to open their own JACK client.  Otherwise,
-     *  they will use the JACK client created here.  And this class will have
-     *  to close out its own client so it will not persist in the JACK
-     *  client list (e.g. in QJackCtl).
-     *
-     *  To be changed to use one input client, and one output client.
-     */
-
-    bool m_multi_client;
 
     /**
      *  Holds the port data.  Not for use with the multi-client option.
@@ -101,15 +81,6 @@ public:
     virtual ~midi_jack_info ();
 
     /**
-     * \getter m_multi_client
-     */
-
-    bool multi_client () const
-    {
-        return m_multi_client;
-    }
-
-    /**
      * \getter m_jack_client
      *      This is the platform-specific version of midi_handle().
      */
@@ -121,9 +92,7 @@ public:
 
     virtual bool api_get_midi_event (event * inev);
     virtual bool api_connect ();
-
     virtual int api_poll_for_midi ();
-
     virtual void api_set_ppqn (int p);
     virtual void api_set_beats_per_minute (midibpm b);
     virtual void api_port_start (mastermidibus & masterbus, int bus, int port);

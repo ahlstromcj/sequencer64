@@ -1,10 +1,12 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-01-16
+2016-12-03 to 2018-01-29
 
 Debian (and other) Packaging:
 
     -   Still need to get a static package to work.
+    -   Refresh the verbatim examples for the "rc" and "usr" files
+        in the sequencer64-doc project.
 
 Windows:
 
@@ -31,15 +33,23 @@ Tempo Track:
 
 Modify flag:
 
-    sequence::set_transposable() is called when loading a sequence at startup.
-    If the flag value is different from the current value (false?) then
-    sequence::modify() is called, but the perform m_parent is null, so it
-    does not take effect, which is good in this case (startup).
-    At that time, we have m_transposable == true, flag = false (!), and
-    the sequence number is (-1).
+    -   sequence::set_transposable() is called when loading a sequence at
+        startup.  If the flag value is different from the current value
+        (false?) then sequence::modify() is called, but the perform m_parent
+        is null, so it does not take effect, which is good in this case
+        (startup).  At that time, we have m_transposable == true, flag = false
+        (!), and the sequence number is (-1).
+    -   If the velocity of notes is edited in the data panel of seqedit,
+        the modification is not detected.
 
 Hot bugs:
 
+    -   JACK MIDI does not auto connect with the JACK connect button is
+        clicked.
+    -   Clicking the Stop button toggles (!) playback if Space is configured
+        to both start and stop playback!!
+    -   If the MIDI file has no performance info (triggers), make the
+        Song/Live button show "Live".
     -   When recording a short pattern, and holding a note across the
         pattern end, the drawing is bad.  Probably should just delete such
         notes.

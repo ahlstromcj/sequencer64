@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2017-09-02
+ * \updates       2018-01-31
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -125,13 +125,14 @@
  *    Test for being a valid pointer.
  */
 
-#define not_nullptr(x)     ((x) != nullptr)
+#define not_nullptr(x)          ((x) != nullptr)
+#define not_nullptr_2(x1, x2)   ((x1) != nullptr && (x2) != nullptr)
 
 /**
  *    Test for being an invalid pointer.
  */
 
-#define is_nullptr(x)      ((x) == nullptr)
+#define is_nullptr(x)           ((x) == nullptr)
 
 /**
  *    A more obvious boolean type.

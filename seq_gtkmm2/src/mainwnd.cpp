@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-20
+ * \updates       2018-02-03
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -136,7 +136,7 @@
 #include "pixmaps/sequencer64_legacy.xpm"
 #endif
 
-#ifdef SEQ64_STAZED_MENU_BUTTONS
+#ifdef SEQ64_STAZED_MENU_BUTTONS            // these are too inscrutable
 #include "pixmaps/live_mode.xpm"            // anything better than a mike icon?
 #include "pixmaps/menu.xpm"                 // any better image of a "menu"?
 #include "pixmaps/muting.xpm"               // need better/smaller icon
@@ -301,12 +301,13 @@ mainwnd::mainwnd
     m_adjust_ss             (manage(new Gtk::Adjustment(0, 0, c_max_sets-1, 1))),
     m_spinbutton_ss         (manage(new Gtk::SpinButton(*m_adjust_ss))),
 #endif
+    m_current_screenset     (0),
     m_main_time             (manage(new maintime(p, ppqn))),
     m_perf_edit             (new perfedit(p, false /*allowperf2*/, ppqn)),
     m_perf_edit_2           (allowperf2 ? new perfedit(p, true, ppqn) : nullptr),
     m_options               (nullptr),
     m_main_cursor           (),
-    m_image_play            (),
+    m_image_play            (nullptr),
     m_button_panic          (manage(new Gtk::Button())),    /* from kepler34   */
     m_button_learn          (manage(new Gtk::Button())),    /* group learn (L) */
     m_button_stop           (manage(new Gtk::Button())),
@@ -316,7 +317,7 @@ mainwnd::mainwnd
     m_is_tempo_recording    (false),
     m_button_perfedit       (manage(new Gtk::Button())),
 #ifdef SEQ64_STAZED_MENU_BUTTONS
-    m_image_songlive        (),
+    m_image_songlive        (nullptr),
     m_button_mode
     (
         usr().use_more_icons() ?
@@ -1173,6 +1174,8 @@ mainwnd::mainwnd
      * and spacings
      */
 
+    int width = m_main_wid->nominal_width();
+    int height = m_main_wid->nominal_height();
     if (! usr().is_default_mainwid_size())
     {
         resize
@@ -1338,7 +1341,9 @@ mainwnd::toggle_menu_mode ()
  *      with the changes.
  *
  * \return
- *      Always returns true.
+ *      Always returns true.  This allows the callback to be called
+ *      repeatedly.  If one wants to stop the timeout callback, then return
+ *      false.
  */
 
 bool
@@ -1386,20 +1391,18 @@ mainwnd::timer_callback ()
     if (m_adjust_bpm->get_value() != bpm)
         m_adjust_bpm->set_value(bpm);
 
-    int screenset = perf().screenset();
-    int newset = m_adjust_ss->get_value();
-    if (newset != screenset)
+    int perfset = perf().screenset();
+    int currset = m_adjust_ss->get_value();
+    if (currset != m_current_screenset || perfset != m_current_screenset)
     {
+        /*
+         * \change ca 2018-02-03 Fixed issue #135, was using newset!
+         */
 
-#if defined SEQ64_MULTI_MAINWID
-        screenset = set_screenset(newset, true);    // handles wrap-around
-        m_adjust_ss->set_value(screenset);
-#else
-        (void) set_screenset(screenset);            // newset ????
-        m_adjust_ss->set_value(screenset);          // newset ????
-#endif
-
-        m_entry_notes->set_text(perf().current_screen_set_notepad());
+        if (currset != m_current_screenset)
+            set_screenset(currset);                 /* handles wrap-around  */
+        else if (perfset != m_current_screenset)
+            set_screenset(perfset);                 /* handles wrap-around  */
     }
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS
@@ -1478,7 +1481,8 @@ mainwnd::timer_callback ()
     {
         m_is_running = perf().is_running();
 #ifdef SEQ64_PAUSE_SUPPORT
-        set_play_image(m_is_running);
+        if (! usr().work_around_play_image())
+            set_play_image(m_is_running);
 #endif
     }
 
@@ -1505,21 +1509,24 @@ mainwnd::timer_callback ()
 
 /**
  *  New function to consolidate screen-set handling.  Sets the active
- *  screenset to the given value.  This is use by the main Set spin-button.
+ *  screenset to the given value.  This is used by the main Set spin-button
+ *  and by the timer_callback() function if the screen set is changed via the
+ *  perform object (i.e. via MIDI control).
+ *
+ *  The perform object's screen-set is modified as well.
  *
  * \param screenset
  *      The new prospective screen-set value.  This will become the active
  *      screen-set.
- *
- * \param setperf
- *      If true, the perform object's screen-set is modified as well.
- *      The default value is false.
  */
 
-int
-mainwnd::set_screenset (int screenset, bool setperf)
+void
+mainwnd::set_screenset (int screenset)
 {
-    return m_main_wid->set_screenset(screenset, setperf);
+    m_current_screenset = screenset;
+    m_adjust_ss->set_value(screenset);
+    (void) m_main_wid->set_screenset(screenset, true);
+    m_entry_notes->set_text(perf().current_screen_set_notepad());
 }
 
 /**
@@ -1653,8 +1660,9 @@ mainwnd::options_dialog ()
     if (not_nullptr(m_options))
         delete m_options;
 
-    m_options = new options(*this, perf());
-    m_options->show_all();
+    m_options = new(std::nothrow) options(*this, perf());
+    if (not_nullptr(m_options))
+        m_options->show_all();
 }
 
 /**
@@ -1667,8 +1675,9 @@ mainwnd::jack_dialog ()
     if (not_nullptr(m_options))
         delete m_options;
 
-    m_options = new options(*this, perf(), true);
-    m_options->show_all();
+    m_options = new(std::nothrow) options(*this, perf(), true);
+    if (not_nullptr(m_options))
+        m_options->show_all();
 }
 
 #ifdef SEQ64_SONG_RECORDING
@@ -1688,29 +1697,18 @@ mainwnd::set_song_record ()
 /**
  *  Toggles the recording of the live song control done by the musician.
  *  This is not a saved setting at this time.
+ *
+ *  There is no need to change the button color or the image, as the control
+ *  itself indicates when song-recording is on.
+ *
+ *      Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_off_xpm));
+ *      m_button_song_record->set_image(*image_song);
  */
 
 void
 mainwnd::toggle_song_record ()
 {
     m_button_song_record->set_active(! m_button_song_record->get_active());
-
-    /*
-     * There is no need to change the button color, as the control itself
-     * indicates when song-recording is on.
-     *
-     *  if (m_is_song_recording)
-     *  {
-     *      Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_on_xpm));
-     *      m_button_song_record->set_image(*image_song);
-     *  }
-     *  else
-     *  {
-     *      Gtk::Image * image_song = manage(new PIXBUF_IMAGE(song_rec_off_xpm));
-     *      m_button_song_record->set_image(*image_song);
-     *  }
-     *
-     */
 }
 
 /**
@@ -1727,7 +1725,10 @@ mainwnd::toggle_song_snap ()
 }
 
 /**
+ *  Sets the playback mode (Live vs Song).
  *
+ * \param playsong
+ *      Set to true if playback (Song) mode is to be in force.
  */
 
 void
@@ -1741,10 +1742,6 @@ mainwnd::set_song_playback (bool playsong)
     else
     {
         perf().song_recording(false);
-        ////////////////////
-        // TODO: m_button_song_record->set_active(false);
-        //       m_button_song_record->set_checked(false);
-        ////////////////////
     }
 }
 
@@ -2522,21 +2519,20 @@ mainwnd::adj_callback_ss ()
 {
     if (multi_wid())
     {
-        int newset = int(m_adjust_ss->get_value());
-        if (newset <= spinner_max())
+        int currset = int(m_adjust_ss->get_value());
+        if (currset <= spinner_max())
         {
-            perf().set_screenset(newset);   /* set active screen-set    */
+            set_screenset(currset);             /* set active screen-set    */
+
 #if defined SEQ64_MULTI_MAINWID
             for (int block = 0; block < m_mainwid_count; ++block)
-                m_mainwid_blocks[block]->set_screenset(newset + block);
+                m_mainwid_blocks[block]->set_screenset(currset + block);
 #endif
         }
     }
     else
-    {
-        set_screenset(int(m_adjust_ss->get_value()), true);
-        m_entry_notes->set_text(perf().current_screen_set_notepad());
-    }
+        set_screenset(int(m_adjust_ss->get_value()));
+
     m_main_wid->grab_focus();               /* allows hot-keys to work  */
 }
 
@@ -2581,7 +2577,7 @@ mainwnd::adj_callback_wid (int widblock)
             std::string label = "   Set ";
             label += std::to_string(newset);
             if (widblock == 0)
-                perf().set_screenset(newset);                   /* first    */
+                perf().set_screenset(newset);
 
             m_mainwid_blocks[widblock]->log_screenset(newset);  /* second   */
             if (newset == perf().screenset())
@@ -2611,8 +2607,11 @@ mainwnd::edit_callback_notepad ()
     perf().set_screen_set_notepad(text);
 }
 
+#ifdef SEQ64_PAUSE_SUPPORT
+
 /**
  *  Changes the image used for the pause/play button.  Is this a memory leak?
+ *  Some users report segfaults (all of a sudden) with this setting!
  *
  * \param isrunning
  *      If true, set the image to the "Pause" icon, since playback is running.
@@ -2622,19 +2621,21 @@ mainwnd::edit_callback_notepad ()
 void
 mainwnd::set_play_image (bool isrunning)
 {
-    delete m_image_play;
     if (isrunning)
     {
-        m_image_play = manage(new PIXBUF_IMAGE(pause_xpm));
-        add_tooltip(m_button_play, "Pause playback at the current location.");
+        add_tooltip(m_button_play, "Pause playback at current location.");
+        m_image_play = manage(new(std::nothrow) PIXBUF_IMAGE(pause_xpm));
     }
     else
     {
-        m_image_play = manage(new PIXBUF_IMAGE(play2_xpm));
-        add_tooltip(m_button_play, "Resume playback from the current location.");
+        add_tooltip(m_button_play, "Resume playback from current location.");
+        m_image_play = manage(new(std::nothrow) PIXBUF_IMAGE(play2_xpm));
     }
-    m_button_play->set_image(*m_image_play);
+    if (not_nullptr(m_image_play))
+        m_button_play->set_image(*m_image_play);
 }
+
+#endif
 
 /**
  *  Changes the image used for the song/live mode button
@@ -2647,7 +2648,6 @@ mainwnd::set_play_image (bool isrunning)
 void
 mainwnd::set_songlive_image (bool issong)
 {
-    delete m_image_songlive;
     if (issong)
     {
         m_image_songlive = manage(new PIXBUF_IMAGE(song_mode_xpm));
@@ -3009,16 +3009,12 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             if (k.key() == PREFKEY(screenset_dn) || k.key() == SEQ64_Page_Down)
             {
                 int newss = perf().decrement_screenset();
-                set_screenset(newss);
-                m_adjust_ss->set_value(newss);
-                m_entry_notes->set_text(perf().current_screen_set_notepad());
+                set_screenset(newss);                     /* does it all now */
             }
             else if (k.key() == PREFKEY(screenset_up) || k.key() == SEQ64_Page_Up)
             {
                 int newss = perf().increment_screenset();
-                set_screenset(newss);
-                m_adjust_ss->set_value(newss);
-                m_entry_notes->set_text(perf().current_screen_set_notepad());
+                set_screenset(newss);                     /* does it all now */
             }
 #ifdef SEQ64_MAINWND_TAP_BUTTON
             else if (k.key() == PREFKEY(tap_bpm))

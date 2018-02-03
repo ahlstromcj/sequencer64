@@ -81,7 +81,7 @@ enum clock_e
      *  Corresponds to the "Off" selection in the MIDI Clock tab.  With this
      *  setting, the MIDI Clock is disabled for the buss using this setting.
      *  Notes will still be sent that buss, of course.  Some software
-     *  synthesizer might require this setting in order to make a sound.
+     *  synthesizers might require this setting in order to make a sound.
      */
 
     e_clock_off,

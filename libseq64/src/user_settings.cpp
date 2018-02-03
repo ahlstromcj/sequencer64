@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2017-12-17
+ * \updates       2018-01-27
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -220,7 +220,9 @@ user_settings::user_settings ()
     mc_max_zoom                 (SEQ64_MAXIMUM_ZOOM),
     mc_baseline_ppqn            (SEQ64_DEFAULT_PPQN),
     m_user_option_daemonize     (false),
-    m_user_option_logfile       ()
+    m_user_option_logfile       (),
+    m_work_around_play_image    (false),
+    m_work_around_transpose_image (false)
 {
     // Empty body; it's no use to call normalize() here, see set_defaults().
 }
@@ -331,7 +333,9 @@ user_settings::user_settings (const user_settings & rhs)
     mc_max_zoom                 (rhs.mc_max_zoom),
     mc_baseline_ppqn            (SEQ64_DEFAULT_PPQN),
     m_user_option_daemonize     (false),
-    m_user_option_logfile       ()
+    m_user_option_logfile       (),
+    m_work_around_play_image    (false),
+    m_work_around_transpose_image (false)
 {
     // Empty body; no need to call normalize() here.
 }
@@ -450,6 +454,8 @@ user_settings::operator = (const user_settings & rhs)
 
         m_user_option_daemonize = rhs.m_user_option_daemonize;
         m_user_option_logfile = rhs.m_user_option_logfile;
+        m_work_around_play_image = rhs.m_work_around_play_image;
+        m_work_around_transpose_image = rhs.m_work_around_transpose_image;
     }
     return *this;
 }
@@ -521,6 +527,8 @@ user_settings::set_defaults ()
 
     m_user_option_daemonize = false;
     m_user_option_logfile.clear();
+    m_work_around_play_image = false;
+    m_work_around_transpose_image = false;
     normalize();                            // recalculate derived values
 }
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-13
+ * \updates       2018-01-28
  * \license       GNU GPLv2 or above
  *
  *  When the Song/Performance editor has focus, Sequencer64 is automatically
@@ -849,7 +849,6 @@ perfedit::timeout ()
 void
 perfedit::set_image (bool isrunning)
 {
-    delete m_image_play;
     if (isrunning)
     {
         m_image_play = manage(new PIXBUF_IMAGE(pause_xpm));

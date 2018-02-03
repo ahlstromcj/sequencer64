@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-12-31
+ * \updates       2018-01-26
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -165,10 +165,8 @@ namespace seq64
  *  Defines the JACK input process callback.  It is the JACK process callback
  *  for a MIDI output port (e.g. "system:midi_capture_1", which gives us the
  *  output of the Korg nanoKEY2 MIDI controller), also known as a "Readable
- *  Client" by qjackctl. It does the following:
- *
- *  This callback receives data from JACK and gives it to our application's
- *  input port.
+ *  Client" by qjackctl.  This callback receives data from JACK and gives it
+ *  to our application's input port.
  *
  *  This function does the following:
  *
@@ -192,7 +190,7 @@ namespace seq64
  *  This function used to be static, but now we make if available to
  *  midi_jack_info.  Also note the s_null_detected flag.  It is used only to
  *  have the apiprint() debug messages appear only once, for better
- *  trouble-shooting.
+ *  trouble-shooting.  THIS CODE SHOULD BE A COMPILE-TIME OPTION.
  *
  * \param nframes
  *    The frame number to be processed.
@@ -207,9 +205,11 @@ namespace seq64
 int
 jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
 {
-    static bool s_null_detected = false;
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
     rtmidi_in_data * rtindata = jackdata->m_jack_rtmidiin;
+
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+    static bool s_null_detected = false;
     if (is_nullptr(jackdata->m_jack_port))     /* is port created?        */
     {
         if (! s_null_detected)
@@ -228,7 +228,7 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
         }
         return 0;
     }
-    s_null_detected = false;
+#endif  // SEQ64_USE_DEBUG_OUTPUT
 
     /*
      * Since this is an input port, buff is the area that contains data from
@@ -251,18 +251,19 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
                 for (int i = 0; i < eventsize; ++i)
                     message.push(jmevent.buffer[i]);
 
+                jack_time_t delta_jtime;
                 jtime = jack_get_time();            /* compute delta time   */
                 if (rtindata->first_message())
                 {
                     rtindata->first_message(false);
+                    delta_jtime = jack_time_t(0);
                 }
                 else
                 {
-                    message.timestamp
-                    (
-                        (jtime - jackdata->m_jack_lasttime) * 0.000001
-                    );
+                    jtime -= jackdata->m_jack_lasttime;
+                    delta_jtime = jack_time_t(jtime * 0.000001);
                 }
+                message.timestamp(delta_jtime);
                 jackdata->m_jack_lasttime = jtime;
                 if (! rtindata->continue_sysex())
                 {
@@ -315,8 +316,9 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
  *  ring buffer and pass it to the output buffer.
  *
  *  We were wondering if, like the JACK midiseq example program, we need to
- *  wrap out process in a for-loop over the number of frames.  In our tests,
- *  we are getting 1024 frames, and the code seems to work without that loop.
+ *  wrap the out-process in a for-loop over the number of frames.  In our
+ *  tests, we are getting 1024 frames, and the code seems to work without that
+ *  loop.
  *
  * \param nframes
  *    The frame number to be processed.
@@ -331,8 +333,10 @@ jack_process_rtmidi_input (jack_nframes_t nframes, void * arg)
 int
 jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
 {
-    static bool s_null_detected = false;
     midi_jack_data * jackdata = reinterpret_cast<midi_jack_data *>(arg);
+
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+    static bool s_null_detected = false;
     if (is_nullptr(jackdata->m_jack_port))          /* is port created?     */
     {
         if (! s_null_detected)
@@ -342,7 +346,7 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
         }
         return 0;
     }
-    if (is_nullptr(jackdata->m_jack_buffsize))      /* port set up?        */
+    if (is_nullptr(jackdata->m_jack_buffsize))      /* port set up?         */
     {
         if (! s_null_detected)
         {
@@ -351,9 +355,11 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
         }
         return 0;
     }
+#endif  // SEQ64_USE_DEBUG_OUTPUT
 
     static size_t soffset = 0;
     void * buf = jack_port_get_buffer(jackdata->m_jack_port, nframes);
+    jack_midi_clear_buffer(buf);                    /* no nullptr test      */
 
 #ifdef SEQ64_SHOW_API_CALLS_TMI
     printf
@@ -362,8 +368,6 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
         int(nframes), (unsigned long)(jackdata->m_jack_port)
     );
 #endif
-
-    jack_midi_clear_buffer(buf);
 
     /*
      * A for-loop over the number of nframes?  See discussion above.
@@ -406,13 +410,6 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
  */
 
 /**
- *  We still need to figure out if we want a "master" client handle, or a
- *  handle to each port.  Same for the JACK data item.  Currently, we provide
- *  the m_multi_client member so that we can experiment, but "multi-client"
- *  mode is currently incompletely implemented.  Plus, we may want to use it
- *  to choose between handling input/output both in the callback, as done
- *  currently, or separating input and output into separate JACK clients.
- *
  *  Note that this constructor also adds its object to the midi_jack_info port
  *  list, so that the JACK callback functions can iterate through all of the
  *  JACK ports in use by this application, performing work on them.
@@ -432,27 +429,15 @@ jack_process_rtmidi_output (jack_nframes_t nframes, void * arg)
 midi_jack::midi_jack
 (
     midibus & parentbus,
-    midi_info & masterinfo,
-    bool multiclient
+    midi_info & masterinfo
 ) :
     midi_api            (parentbus, masterinfo),
-    m_multi_client      (multiclient),  // (SEQ64_RTMIDI_NO_MULTICLIENT),
     m_remote_port_name  (),
     m_jack_info         (dynamic_cast<midi_jack_info &>(masterinfo)),
     m_jack_data         ()
 {
-    if (multi_client())
-    {
-        // No code needed, yet
-    }
-    else
-    {
-        client_handle
-        (
-            reinterpret_cast<jack_client_t *>(masterinfo.midi_handle())
-        );
-        (void) m_jack_info.add(*this);
-    }
+    client_handle(reinterpret_cast<jack_client_t *>(masterinfo.midi_handle()));
+    (void) m_jack_info.add(*this);
 }
 
 /**
@@ -463,15 +448,6 @@ midi_jack::midi_jack
 
 midi_jack::~midi_jack ()
 {
-    if (multi_client())
-    {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        close_port();
-        close_client();
-    }
     if (not_nullptr(m_jack_data.m_jack_buffsize))
         jack_ringbuffer_free(m_jack_data.m_jack_buffsize);
 
@@ -502,40 +478,26 @@ midi_jack::~midi_jack ()
 bool
 midi_jack::api_init_out ()
 {
-    bool result = true;
     std::string remoteportname = connect_name();    /* "bus:port"   */
     remote_port_name(remoteportname);
-    if (multi_client())
-    {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
 
-        result = open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
-    }
+    bool result = create_ringbuffer(JACK_RINGBUFFER_SIZE);
     if (result)
     {
-        result = create_ringbuffer(JACK_RINGBUFFER_SIZE);
-        if (result)
-        {
-            set_alt_name
-            (
-                rc().application_name(), rc().app_client_name(), remoteportname
-            );
-            parent_bus().set_alt_name
-            (
-                rc().application_name(), rc().app_client_name(), remoteportname
-            );
-        }
-    }
-    if (result)
-    {
+        set_alt_name
+        (
+            rc().application_name(), rc().app_client_name(), remoteportname
+        );
+        parent_bus().set_alt_name
+        (
+            rc().application_name(), rc().app_client_name(), remoteportname
+        );
         result = register_port(SEQ64_MIDI_OUTPUT_PORT, port_name());
 
         /*
          * Note that we cannot connect ports until we are activated, and we
-         * cannot be activated until all ports are properly set up.
-         * Otherwise, we'd call:
+         * cannot activate until all ports are properly set up.  Otherwise,
+         * we'd call:
          *
          *  std::string localname = connect_name();
          *  result = connect_port(SEQ64_MIDI_OUTPUT, localname, remoteportname);
@@ -578,44 +540,30 @@ midi_jack::api_init_out ()
 bool
 midi_jack::api_init_in ()
 {
-    bool result = true;
     std::string remoteportname = connect_name();    /* "bus:port"       */
     remote_port_name(remoteportname);
-    if (multi_client())
-    {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
+    set_alt_name
+    (
+        rc().application_name(), rc().app_client_name(), remoteportname
+    );
+    parent_bus().set_alt_name
+    (
+        rc().application_name(), rc().app_client_name(), remoteportname
+    );
+    bool result = register_port(SEQ64_MIDI_INPUT_PORT, port_name());
 
-        result = open_client_impl(SEQ64_MIDI_INPUT_PORT);
-    }
-    else
-    {
-        set_alt_name
-        (
-            rc().application_name(), rc().app_client_name(), remoteportname
-        );
-        parent_bus().set_alt_name
-        (
-            rc().application_name(), rc().app_client_name(), remoteportname
-        );
-    }
-    if (result)
-    {
-        result = register_port(SEQ64_MIDI_INPUT_PORT, port_name());
+    /*
+     * Note that we cannot connect ports until we are activated, and we
+     * cannot be activated until all ports are properly set up.
+     * Otherwise, we'd call:
+     *
+     *  std::string localname = connect_name();
+     *  result = connect_port(SEQ64_MIDI_INPUT, localname, remoteportname);
+     *  if (result) set_port_open();
+     *
+     * We also need to fill in the m_jack_data member here.
+     */
 
-        /*
-         * Note that we cannot connect ports until we are activated, and we
-         * cannot be activated until all ports are properly set up.
-         * Otherwise, we'd call:
-         *
-         *  std::string localname = connect_name();
-         *  result = connect_port(SEQ64_MIDI_INPUT, localname, remoteportname);
-         *  if (result) set_port_open();
-         *
-         * We also need to fill in the m_jack_data member here.
-         */
-    }
     return result;
 }
 
@@ -633,15 +581,6 @@ midi_jack::api_connect ()
     std::string remotename = remote_port_name();
     std::string localname = connect_name();     /* modified!    */
     bool result;
-    if (multi_client())
-    {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        jack_activate(client_handle());
-    }
-
     if (is_input_port())
         result = connect_port(SEQ64_MIDI_INPUT_PORT, remotename, localname);
     else
@@ -701,43 +640,30 @@ midi_jack::set_virtual_name (int portid, const std::string & portname)
 bool
 midi_jack::api_init_out_sub ()
 {
-    bool result = true;
     master_midi_mode(SEQ64_MIDI_OUTPUT_PORT);    /* this is necessary */
-    if (multi_client())
+    int portid = parent_bus().get_port_id();
+    bool result = portid >= 0;
+    if (! result)
     {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        result = open_client_impl(SEQ64_MIDI_OUTPUT_PORT);
+        portid = get_bus_index();
+        result = portid >= 0;
     }
+    if (result)
+        result = create_ringbuffer(JACK_RINGBUFFER_SIZE);
 
     if (result)
     {
-        int portid = parent_bus().get_port_id();
-        result = portid >= 0;
-        if (! result)
+        std::string portname = parent_bus().port_name();
+        if (portname.empty())
         {
-            portid = get_bus_index();
-            result = portid >= 0;
+            portname = rc().app_client_name() + " midi out ";
+            portname += std::to_string(portid);
         }
-        if (result)
-            result = create_ringbuffer(JACK_RINGBUFFER_SIZE);
-
+        result = register_port(SEQ64_MIDI_OUTPUT_PORT, portname);
         if (result)
         {
-            std::string portname = parent_bus().port_name();
-            if (portname.empty())
-            {
-                portname = rc().app_client_name() + " midi out ";
-                portname += std::to_string(portid);
-            }
-            result = register_port(SEQ64_MIDI_OUTPUT_PORT, portname);
-            if (result)
-            {
-                set_virtual_name(portid, portname);
-                set_port_open();
-            }
+            set_virtual_name(portid, portname);
+            set_port_open();
         }
     }
     return result;
@@ -753,40 +679,28 @@ midi_jack::api_init_out_sub ()
 bool
 midi_jack::api_init_in_sub ()
 {
-    bool result = true;
     master_midi_mode(SEQ64_MIDI_INPUT_PORT);
-    if (multi_client())
+    int portid = parent_bus().get_port_id();
+    bool result = portid >= 0;
+    if (! result)
     {
-        /*
-         * We may be changing the potential usage of multi-client.
-         */
-
-        result = open_client_impl(SEQ64_MIDI_INPUT_PORT);
+        portid = get_bus_index();
+        result = portid >= 0;
     }
     if (result)
     {
-        int portid = parent_bus().get_port_id();
-        result = portid >= 0;
-        if (! result)
+        std::string portname = master_info().get_port_name(get_bus_index());
+        std::string portname2 = parent_bus().port_name();
+        if (portname.empty())
         {
-            portid = get_bus_index();
-            result = portid >= 0;
+            portname = rc().app_client_name() + " midi in ";
+            portname += std::to_string(portid);
         }
+        result = register_port(SEQ64_MIDI_INPUT_PORT, portname);
         if (result)
         {
-            std::string portname = master_info().get_port_name(get_bus_index());
-            std::string portname2 = parent_bus().port_name();
-            if (portname.empty())
-            {
-                portname = rc().app_client_name() + " midi in ";
-                portname += std::to_string(portid);
-            }
-            result = register_port(SEQ64_MIDI_INPUT_PORT, portname);
-            if (result)
-            {
-                set_virtual_name(portid, portname);
-                set_port_open();
-            }
+            set_virtual_name(portid, portname);
+            set_port_open();
         }
     }
     return result;
@@ -1192,19 +1106,11 @@ midi_jack::close_client ()
 }
 
 /**
- *  Connects two named JACK ports.  First, we register the local port.  If
- *  this is nominally a local input port, it is really doing output, and this
- *  is the source-port name.  If this is nominally a local output port, it is
- *  really accepting input, and this is the destination-port name.
- *
- *  This code is disabled for now because the order of JACK setup calls that
- *  works is
- *
- *      -   jack_port_register()
- *      -   jack_activate()
- *      -   jack_connect()
- *
- *  So we have to break this up.
+ *  Connects two named JACK ports, but only if they are not virtual/manual
+ *  ports.  First, we register the local port.  If this is nominally a local
+ *  input port, it is really doing output, and this is the source-port name.
+ *  If this is nominally a local output port, it is really accepting input,
+ *  and this is the destination-port name.
  *
  * \param input
  *      Indicates true if the port to register and connect is an input port,
@@ -1442,9 +1348,6 @@ midi_in_jack::midi_in_jack (midibus & parentbus, midi_info & masterinfo)
      * Currently, we cannot initialize here because the clientname is empty.
      * It is retrieved in api_init_in().
      *
-     * if (multi_client())
-     *     (void) initialize(clientname);
-     *
      * Hook in the input data.  The JACK port pointer will get set in
      * api_init_in() or api_init_out() when the port is registered.
      */
@@ -1631,9 +1534,6 @@ midi_out_jack::midi_out_jack (midibus & parentbus, midi_info & masterinfo)
     /*
      * Currently, we cannot initialize here because the clientname is empty.
      * It is retrieved in api_init_out().
-     *
-     * if (multi_client())
-     *     (void) initialize(clientname);
      */
 }
 

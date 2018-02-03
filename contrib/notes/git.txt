@@ -178,6 +178,7 @@ Tagging:
     $ git push origin --tags
 
     Note that each tag to be published needs to be pushed as well.
+    Also note that, if the commit hash is missing, HEAD is assumed.
     A user can get the tagged code via a command like the following.
 
     $ git checkout -b version.xx 0.9.9.xx

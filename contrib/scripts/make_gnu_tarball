@@ -1,0 +1,48 @@
+#!/bin/bash
+#
+#******************************************************************************
+# make_gnu_tarball (Sequencer64)
+#------------------------------------------------------------------------------
+##
+# \file       	make_gnu_tarball
+# \library    	Sequencer64
+# \author     	Chris Ahlstrom
+# \date       	2017-11-05
+# \update     	2017-11-05
+# \version    	$Revision$
+# \license    	$XPC_SUITE_GPL_LICENSE$
+#
+#     The above is modified by the following to remove even the mild GPL
+#     restrictions:
+#
+#     Use this script in any manner whatsoever.  You don't even need to give
+#     me any credit.
+#
+#     However, keep in mind the value of the GPL in keeping software and its
+#     descendant modifications available to the community for all time.
+#     runs the configure script by default.
+#
+#     This file will make a fairly standard GNU source-code tarball to
+#     distribute to people who just want to run "configure", and not do a
+#     bootstrap.
+#
+#------------------------------------------------------------------------------
+
+#******************************************************************************
+#  Provide a sane environment, just in case it is needed.
+#------------------------------------------------------------------------------
+
+LANG=C
+export LANG
+CYGWIN=binmode
+export CYGWIN
+
+./bootstrap --full-clean
+./bootstrap
+./pack src
+
+#******************************************************************************
+# make_gnu_tarball (Sequencer64)
+#------------------------------------------------------------------------------
+# vim: ts=3 sw=3 wm=4 et ft=sh
+#------------------------------------------------------------------------------

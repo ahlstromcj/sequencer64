@@ -1,6 +1,6 @@
 User Testing of JACK in Sequencer64
 Chris Ahlstrom
-2016-01-16 to 2017-12-11
+2016-01-16 to 2018-02-24
 
 ===========================================================================
  SETTINGS TESTS
@@ -372,6 +372,31 @@ MIDI Clock Testing
         Master option stored in the "rc" configuration file.  We have to
         change the settings in the user-interface and disconnect and
         reconnect.
+
+To get midiclock64 to emit clock, we could not rely on qjackctl alone.  We also
+had to add in "seq64 -t -J", with yoshimi already running to allow seq64 to
+play and show tick progress.
+
+Once that was done, midiclock64 would yield this output:
+
+% ./Midiclocker64/midiclocker64
+init_jack()
+JACK server already started!
+jack_portsetup()
+clock_process(1024): [JackTransportRolling]
+00101   784384 010:2:1730 4/4  1920 140 0
+send_rt_message(F8)
+clock_process(1024): [JackTransportRolling]
+00101   785408 010:2:1825 4/4  1920 140 0
+send_rt_message(F8)
+clock_process(1024): [JackTransportRolling]
+00101   786432 010:3:0000 4/4  1920 140 0
+send_rt_message(F8)
+clock_process(1024): [JackTransportRolling]
+00101   787456 010:3:0095 4/4  1920 140 0
+send_rt_message(F8)
+send_rt_message(F8)
+   . . .
 
 ===========================================================================
  Seq24 JACK Behavior

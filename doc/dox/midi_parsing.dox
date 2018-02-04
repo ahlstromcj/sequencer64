@@ -9,7 +9,7 @@
 This document describes how Sequencer64 parses a MIDI file.
 
 \page       midi_parsing_page MIDI File Parsing in Sequencer64
-\author     Chris Ahlstrom 2018-01-14
+\author     Chris Ahlstrom 2018-02-02
 
 \section midi_parsing_intro Introduction
 
@@ -511,6 +511,68 @@ assumed.
 In <i>Sequencer64</i>, the c_timesig SeqSpec event is given priority.  The
 conventional time signature is used only if the c_timesig SeqSpec is not
 present in the file.  NEEDS TO BE TESTED.
+
+\subsubsection midi_parsing_smf_1_keysig Key Signature (0x59)
+
+The following is an example of a key signature meta message (all bytes are
+hex):
+
+\verbatim
+   FF 59 02 04 00
+\endverbatim
+
+The status byte is 0xFF, which shows that this is a meta message. The meta
+message type is 0x59, which shows that this is the Key Signature meta message.
+The third byte is 2, which shows that there are two remaining bytes. The fourth
+byte 0x04 signifies four sharps and the last byte signifies that this is a
+major key. Thus, this message specifies that the MIDI file is in the key of E
+major (the major scale in E is E, F#, G#, A, B, C#, D# and has four sharps).
+
+If there is no events with the key signature message, C major is assumed, which
+is equivalent to the message 0xFF 0x59 0x02 0x00 0x00.
+
+The following is an example of the number of flats and sharps in the major
+scales (last byte equal to 0x00). Each row is a different major scale and the
+first column contains the root notes of each of these scales.
+
+\verbatim
+   Cb	Db	Eb	Fb	Gb	Ab	Bb	7 flats
+   Gb	Ab	Bb	Cb	Db	Eb	F	6 flats
+   Db	Eb	F	Gb	Ab	Bb	C	5 flats
+   Ab	Bb	C	Db	Eb	F	G	4 flats
+   Eb	F	G	Ab	Bb	C	D	3 flats
+   Bb	C	D	Eb	F	G	A	2 flats
+   F	G	A	Bb	C	D	E	1 flat
+   C	D	E	F	G	A	B	no flats or sharps
+   G	A	B	C	D	E	F#	1 sharp
+   D	E	F#	G	A	B	C#	2 sharps
+   A	B	C#	D	E	F#	G#	3 sharps
+   E	F#	G#	A	B	C#	D#	4 sharps
+   B	C#	D#	E	F#	G#	A#	5 sharps
+   F#	G#	A#	B	C#	D#	E#	6 sharps
+   C#	D#	E#	F#	G#	A#	B#	7 sharps
+\endverbatim
+
+If the last byte is 0x01, then the scale is a minor scale.
+The flats and sharps in the minor scales are as follows.
+
+\verbatim
+   Ab	Bb	Cb	Db	Eb	Fb	Gb	7 flats
+   Eb	F	Gb	Ab	Bb	Cb	Db	6 flats
+   Bb	C	Db	Eb	F	Gb	Ab	5 flats
+   F	G	Ab	Bb	C	Db	Eb	4 flats
+   C	D	Eb	F	G	Ab	Bb	3 flats
+   G	A	Bb	C	D	Eb	F	2 flats
+   D	E	F	G	A	Bb	C	1 flat
+   A	B	C	D	E	F	G	no flats or sharps
+   E	F#	G	A	B	C	D	1 sharp
+   B	C#	D	E	F#	G	A	2 sharps
+   F#	G#	A	B	C#	D	E	3 sharps
+   C#	D#	E	F#	G#	A	B	4 sharps
+   G#	A#	B	C#	D#	E	F#	5 sharps
+   D#	E#	F#	G#	A#	B	C#	6 sharps
+   A#	B#	C#	D#	E#	F#	G#	7 sharps
+\endverbatim
 
 \subsubsection midi_parsing_smf_1_sysex  SysEx Event (0xF0)
 

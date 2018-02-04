@@ -1,0 +1,11 @@
+
+I know that osc is not in the short term todo list, it's just to share what
+libraries I've found:
+
+oscpp   https://github.com/kaoskorobase/oscpp
+ofxOsc  http://openframeworks.cc/documentation/ofxOsc/
+rtosc   https://github.com/fundamental/rtosc
+        https://ossia.github.io/#introduction
+        https://github.com/jcelerier/oscour
+        http://liblo.sourceforge.net/
+

@@ -63,8 +63,6 @@ in the "rc" configuration!
 jack-keyboard:midi_out is a Readable Client/Output port
 jack-keyboard:midi_in is a Writable Client/Input port
 
-
-
 Latest run:
 
 rtmidi % ./Seq64rtmidi/seq64 -J
@@ -245,4 +243,34 @@ http://www.jackaudio.org/files/docs/html/transport-design.html
 Also, when testing seq64's jack related things, note that there is a bug
 that currently prevents any jack-related change to actually work when done
 from the gui, you have to relaunch the app...
+
+Yoshimi:
+
+>Curious:  What JACK settings (frame size, etc.) do you use on your setup?        
+>I find that if I see JACK to use a fairly large latency (10 ms) qjackctrl        
+>and yoshimi bitch a lot about xruns; and I have a pretty decent i7 laptop.       
+
+That's very strange.
+
+I usually work at 48k, 64 frames/period, 2 periods/buffer which gives 2.67mS.
+Sometimes I go down to 32 frames - cos I can :)
+
+I almost always use ALSA MIDI and Jack audio.
+
+I just double checked with both 48k and 96k with 256/512 periods respectively
+giving 10.7mS and ran a reasonably complex tune (uses 10 tracks) and had no
+problems, so I'm wondering eactly what setup you have that's causing problems.
+In the Qjack messages window is it fingering Yoshimi as the problem or just a
+generic one?
+
+Also, you generally need to have Yoshimi set to the same period size as the
+jack one (for ALSA, Yoshimi *sets* the overall period/buffer size).
+
+There is no benefit at all in having Yoshimi's buffer larger, and you waste
+time handling larger (mostly empty) buffer space.
+
+Having it smaller can improve MIDI timing if you have an ALSA MIDI source, with
+Jack Audio, however it will be at a higher processer load. It's only worth doing
+if you have a lot of other stuff talking through Jack - otherwise you'd be
+better of just reducing the Jack buffer.
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2018-01-27
+ * \updates       2018-02-05
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -115,23 +115,9 @@ namespace seq64
 
 user_settings::user_settings ()
  :
-    /*
-     * [user-midi-bus-definitions]
-     */
-
-    m_midi_buses                (),             // vector
-
-    /*
-     * [user-instrument-definitions]
-     */
-
-    m_instruments               (),             // vector
-
-    /*
-     * [comments]
-     */
-
-    m_comments_block
+    m_midi_buses                (),     /* [user-midi-bus-definitions]  */
+    m_instruments               (),     /* [user-instrument-definitions] */
+    m_comments_block                    /* [comments                    */
     (
         "(Comments added to this section are preserved.  Lines starting with\n"
         " a '#' or '[', or that are blank, are ignored.  Start lines that must\n"
@@ -233,28 +219,9 @@ user_settings::user_settings ()
 
 user_settings::user_settings (const user_settings & rhs)
  :
-    /*
-     * [user-midi-bus-definitions]
-     */
-
     m_midi_buses                (rhs.m_midi_buses),     // vector
-
-    /*
-     * [user-instrument-definitions]
-     */
-
     m_instruments               (rhs.m_instruments),    // vector
-
-    /*
-     * [comments]
-     */
-
     m_comments_block            (rhs.m_comments_block),
-
-    /*
-     * [user-interface-settings]
-     */
-
     m_grid_style                (rhs.m_grid_style),
     m_grid_brackets             (rhs.m_grid_brackets),
     m_mainwnd_rows              (rhs.m_mainwnd_rows),
@@ -349,28 +316,9 @@ user_settings::operator = (const user_settings & rhs)
 {
     if (this != &rhs)
     {
-        /*
-         * [user-midi-bus-definitions]
-         */
-
         m_midi_buses                = rhs.m_midi_buses;
-
-        /*
-         * [user-instrument-definitions]
-         */
-
         m_instruments               = rhs.m_instruments;
-
-        /*
-         * [comments]
-         */
-
         m_comments_block            = rhs.m_comments_block;
-
-        /*
-         * [user-interface-settings]
-         */
-
         m_grid_style                = rhs.m_grid_style;
         m_grid_brackets             = rhs.m_grid_brackets;
         m_mainwnd_rows              = rhs.m_mainwnd_rows;
@@ -441,7 +389,6 @@ user_settings::operator = (const user_settings & rhs)
          */
 
         m_save_user_config = rhs.m_save_user_config;
-
         normalize();
 
         /*
@@ -469,6 +416,10 @@ user_settings::operator = (const user_settings & rhs)
 void
 user_settings::set_defaults ()
 {
+    /*
+     * m_comments_block.clear();
+     */
+
     m_midi_buses.clear();
     m_instruments.clear();
 

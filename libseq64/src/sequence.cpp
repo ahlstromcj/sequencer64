@@ -97,7 +97,7 @@ sequence::sequence (int ppqn)
     m_events_undo               (),
     m_events_redo               (),
     m_iterator_draw             (m_events.begin()),
-    m_channel_match             (false),        // a future stazed feature
+    m_channel_match             (false),        // stazed
     m_midi_channel              (0),
     m_bus                       (0),
     m_song_mute                 (false),
@@ -2805,7 +2805,7 @@ sequence::change_event_data_lfo
 
 /**
  *  Adds a note of a given length and  note value, at a given tick
- *  location.  It adds a single note-on / note-off pair.
+ *  location.  It adds a single Note-On/Note-Off pair.
  *
  *  The paint parameter indicates if we care about the painted event,
  *  so then the function runs though the events and deletes the painted

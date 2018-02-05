@@ -101,6 +101,8 @@ class user_settings
     friend class userfile;      /* allow protected access to file parser */
     friend bool parse_o_options (int, char *[]);
 
+private:
+
     /**
      *  Provides a setting to control the overall style of grid-drawing for
      *  the pattern slots in mainwid.  These values can be specified in the
@@ -966,6 +968,24 @@ public:
     }
 
     /**
+     * \setter m_comments_block
+     */
+
+    void clear_comments ()
+    {
+        m_comments_block.clear();
+    }
+
+    /**
+     * \setter m_comments_block
+     */
+
+    void append_comment_line (const std::string & line)
+    {
+        m_comments_block += line;
+    }
+
+    /**
      * \getter m_grid_style
      *      Checks for normal style.
      */
@@ -1230,24 +1250,6 @@ public:
     bool global_seq_feature () const
     {
         return m_global_seq_feature_save;
-    }
-
-    /**
-     * \setter m_comments_block
-     */
-
-    void clear_comments ()
-    {
-        m_comments_block.clear();
-    }
-
-    /**
-     * \setter m_comments_block
-     */
-
-    void append_comment_line (const std::string & line)
-    {
-        m_comments_block += line;
     }
 
     /**

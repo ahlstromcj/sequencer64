@@ -144,7 +144,7 @@ optionsfile::error_message
  *  section.  Ranges from 32 on up.  Then read in all of the sequence
  *  lines.  The first 32 apply to the first screen set.  There can also be
  *  a comment line "# mute in group" followed by 32 more lines.  Then
- *  there are addditional comments and single lines for BPM up, BPM down,
+ *  there are additional comments and single lines for BPM up, BPM down,
  *  Screen Set Up, Screen Set Down, Mod Replace, Mod Snapshot, Mod Queue,
  *  Mod Gmute, Mod Glearn, and Screen Set Play.  These are all forms of
  *  MIDI automation useful to control the playback while not sitting near

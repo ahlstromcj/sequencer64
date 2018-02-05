@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-11-23
+ * \updates       2018-02-05
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -38,6 +38,10 @@
  *      We're making the "statistics" support a configure-time option.  The
  *      run-time option will be left here, but the actual usage of it will be
  *      disabled unless configured with the --enable-statistics option.
+ *
+ * \todo
+ *      Consolidate the usr and rc settings classes, or at least have a base
+ *      class for common elements like "[comments]".
  */
 
 #include <string>
@@ -109,6 +113,15 @@ class rc_settings
     friend bool help_check (int, char * []);
 
 private:
+
+    /**
+     *  [comments]
+     *
+     *  Provides a way to embed comments in the "usr" file and not lose
+     *  them when the "usr" file is auto-saved.
+     */
+
+    std::string m_comments_block;
 
     /*
      * Much more complete descriptions of these options can be found in the
@@ -233,6 +246,33 @@ public:
     std::string config_filespec () const;
     std::string user_filespec () const;
     void set_defaults ();
+
+    /**
+     * \getter m_comments_block
+     */
+
+    const std::string & comments_block () const
+    {
+        return m_comments_block;
+    }
+
+    /**
+     * \setter m_comments_block
+     */
+
+    void clear_comments ()
+    {
+        m_comments_block.clear();
+    }
+
+    /**
+     * \setter m_comments_block
+     */
+
+    void append_comment_line (const std::string & line)
+    {
+        m_comments_block += line;
+    }
 
     /**
      * \getter m_verbose_option

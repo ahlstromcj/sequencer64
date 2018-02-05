@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2017-11-23
+ * \updates       2018-02-05
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -83,6 +83,12 @@ namespace seq64
 
 rc_settings::rc_settings ()
  :
+    m_comments_block                        /* [comments    */
+    (
+        "(Comments added to this section are preserved.  Lines starting with\n"
+        " a '#' or '[', or that are blank, are ignored.  Start lines that must\n"
+        " be blank with a space.)\n"
+    ),
     m_verbose_option            (false),
     m_auto_option_save          (true),     /* legacy seq24 behavior */
     m_legacy_format             (false),
@@ -134,6 +140,7 @@ rc_settings::rc_settings ()
 
 rc_settings::rc_settings (const rc_settings & rhs)
  :
+    m_comments_block            (rhs.m_comments_block),
     m_verbose_option            (rhs.m_verbose_option),
     m_auto_option_save          (rhs.m_auto_option_save),
     m_legacy_format             (rhs.m_legacy_format),
@@ -187,6 +194,7 @@ rc_settings::operator = (const rc_settings & rhs)
 {
     if (this != &rhs)
     {
+        m_comments_block            = rhs.m_comments_block;
         m_verbose_option            = rhs.m_verbose_option;
         m_auto_option_save          = rhs.m_auto_option_save;
         m_legacy_format             = rhs.m_legacy_format;
@@ -235,6 +243,10 @@ rc_settings::operator = (const rc_settings & rhs)
 void
 rc_settings::set_defaults ()
 {
+    /*
+     * m_comments_block.clear();
+     */
+
     m_verbose_option            = false;
     m_auto_option_save          = true;     /* legacy seq224 setting */
     m_legacy_format             = false;

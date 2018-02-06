@@ -1020,7 +1020,10 @@ mainwnd::mainwnd
     {
         Gtk::Layout * mainwid_wrapper = new Gtk::Layout(*m_hadjust, *m_vadjust);
         mainwid_wrapper->add(*m_main_wid);
-        mainwid_wrapper->set_size(m_main_wid->m_mainwid_x, m_main_wid->m_mainwid_y);
+        mainwid_wrapper->set_size
+        (
+            m_main_wid->m_mainwid_x, m_main_wid->m_mainwid_y
+        );
 
         Gtk::HBox * mainwid_vscroll_wrapper = new Gtk::HBox();
         mainwid_vscroll_wrapper->set_spacing(5);

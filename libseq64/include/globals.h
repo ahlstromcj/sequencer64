@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2017-06-02
+ * \updates       2018-02-06
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -395,65 +395,11 @@ const int c_names_y = 24;               /* max height of name box, pixels   */
 const int c_perf_scale_x = 32;          /* units are ticks per pixel        */
 const int c_perf_max_zoom = 8;          /* limit the amount of perf zoom    */
 
-/**
- *  Provides names for the mouse-handling used by the application.
- */
-
-const char * const c_interaction_method_names[3] =
-{
-    "seq24",
-    "fruity",
-    NULL
-};
-
-/**
- *  Provides descriptions for the mouse-handling used by the application.
- */
-
-const char * const c_interaction_method_descs[3] =
-{
-    "original seq24 method",
-    "similar to a certain fruity sequencer we like",
-    NULL
-};
-
-/*
- * Global functions in the seq64 namespace for MIDI timing calculations.
- */
-
-namespace seq64
-{
-
-extern std::string shorten_file_spec (const std::string & fpath, int leng);
-
-/**
- *  Common code for handling PPQN settings.  Validates a PPQN value.
- *
- * \param ppqn
- *      Provides the PPQN value to be used.
- *
- * \return
- *      Returns true if the ppqn parameter is between MINIMUM_PPQN and
- *      MAXIMUM_PPQN, or is set to SEQ64_USE_DEFAULT_PPQN (-1).
- */
-
-inline bool
-ppqn_is_valid (int ppqn)
-{
-    return
-    (
-        ppqn == SEQ64_USE_DEFAULT_PPQN ||
-        (ppqn >= SEQ64_MINIMUM_PPQN && ppqn <= SEQ64_MAXIMUM_PPQN)
-    );
-}
-
-}           // namespace seq64
-
 #endif      // SEQ64_GLOBALS_H
 
 /*
  * globals.h
  *
- * vim: sw=4 ts=4 wm=4 et ft=cpp
+ * vim: sw=4 ts=4 wm=4 et ft=c
  */
 

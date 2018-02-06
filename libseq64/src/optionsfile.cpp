@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-31
+ * \updates       2018-02-06
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -72,6 +72,28 @@
 #include "optionsfile.hpp"
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+
+/**
+ *  Provides names for the mouse-handling used by the application.
+ */
+
+static const char * const c_interaction_method_names[3] =
+{
+    "seq24",
+    "fruity",
+    NULL
+};
+
+/**
+ *  Provides descriptions for the mouse-handling used by the application.
+ */
+
+static const char * const c_interaction_method_descs[3] =
+{
+    "original seq24 method",
+    "similar to a certain fruity sequencer we like",
+    NULL
+};
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -257,6 +279,24 @@ optionsfile::parse (perform & p)
         return false;
     }
     file.seekg(0, std::ios::beg);                           /* seek to start */
+
+    /*
+     * [comments]
+     *
+     * Header commentary is skipped during parsing.  However, we now try to
+     * read an optional comment block.
+     */
+
+    if (line_after(file, "[comments]"))                 /* gets first line  */
+    {
+        rc().clear_comments();
+        do
+        {
+            rc().append_comment_line(m_line);
+            rc().append_comment_line("\n");
+
+        } while (next_data_line(file));
+    }
 
     /*
      * This call causes parsing to skip all of the header material.  Please note
@@ -906,6 +946,22 @@ optionsfile::write (const perform & p)
             "# file, but adds some new options, such as LASH, Mod4 interaction\n"
             "# support, an auto-save-on-exit option, and more.  Also provided\n"
             "# is a legacy mode.\n"
+            ;
+
+        file << "#\n"
+            "# The [comments] section lets one document this file.  Lines starting\n"
+            "# with '#' and '[' are ignored.  Blank lines are ignored.  To show a\n"
+            "# blank line, add a space character to the line.\n"
+            ;
+
+        /*
+         * [comments]
+         */
+
+        file << "\n"
+            << "[comments]\n"
+            << "\n"
+            << rc().comments_block() << "\n"
             ;
     }
     file << "\n"

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-12-11
+ * \updates       2018-02-06
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -158,6 +158,27 @@ extern double tempo_us_from_bytes (const midibyte tt[3]);
 extern void tempo_us_to_bytes (midibyte t[3], int tempo_us);
 extern midibyte tempo_to_note_value (midibpm tempo);
 extern midibpm note_value_to_tempo (midibyte note);
+
+/**
+ *  Common code for handling PPQN settings.  Validates a PPQN value.
+ *
+ * \param ppqn
+ *      Provides the PPQN value to be used.
+ *
+ * \return
+ *      Returns true if the ppqn parameter is between MINIMUM_PPQN and
+ *      MAXIMUM_PPQN, or is set to SEQ64_USE_DEFAULT_PPQN (-1).
+ */
+
+inline bool
+ppqn_is_valid (int ppqn)
+{
+    return
+    (
+        ppqn == SEQ64_USE_DEFAULT_PPQN ||
+        (ppqn >= SEQ64_MINIMUM_PPQN && ppqn <= SEQ64_MAXIMUM_PPQN)
+    );
+}
 
 /**
  *  Converts tempo (e.g. 120 beats/minute) to microseconds.

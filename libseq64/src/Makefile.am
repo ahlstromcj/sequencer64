@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2017-11-07
+# \update      2018-02-06
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -153,7 +153,6 @@ libseq64_la_SOURCES = \
 	event.cpp \
 	event_list.cpp \
 	file_functions.cpp \
-	globals.cpp \
    gui_assistant.cpp \
    jack_assistant.cpp \
    keys_perform.cpp \

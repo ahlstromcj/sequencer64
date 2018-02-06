@@ -1133,7 +1133,8 @@ user_settings::mainwid_width () const
     return
     (
         (c_seqarea_x + c_mainwid_spacing) * m_mainwnd_cols -
-            (c_mainwid_spacing + c_mainwid_border * 2) + MAINWID_WIDTH_FUDGE
+            (c_mainwid_spacing + c_mainwid_border * 2) + // MAINWID_WIDTH_FUDGE
+            mainwid_width_fudge() * 2
     );
 }
 
@@ -1156,7 +1157,8 @@ user_settings::mainwid_height () const
     return
     (
         (c_seqarea_y + c_mainwid_spacing) * m_mainwnd_rows +
-             (c_control_height + c_mainwid_border * 2) + MAINWID_HEIGHT_FUDGE
+             (c_control_height + c_mainwid_border * 2) + // MAINWID_HEIGHT_FUDGE
+             mainwid_height_fudge() * 2
     );
 }
 

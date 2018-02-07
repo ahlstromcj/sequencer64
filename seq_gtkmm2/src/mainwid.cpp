@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-11
+ * \updates       2018-02-06
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -139,18 +139,17 @@ mainwid::mainwid
 (
     perform & p, int ss
 #if defined SEQ64_MULTI_MAINWID
-    ,
-    bool multiwid
+    , bool multiwid
 #endif
 ) :
-    gui_drawingarea_gtk2
-    (
-#if defined SEQ64_MULTI_MAINWID
-        p, usr().mainwid_width(), usr().mainwid_height()
-#else
-        p, c_mainwid_x, c_mainwid_y
-#endif
-    ),
+    gui_drawingarea_gtk2 (p, usr().mainwid_width(), usr().mainwid_height()),
+//  (
+// #if defined SEQ64_MULTI_MAINWID
+//      p, usr().mainwid_width(), usr().mainwid_height()
+// #else
+//      p, c_mainwid_x, c_mainwid_y
+// #endif
+//  ),
     seqmenu                 (p),
     m_armed_progress_color
     (
@@ -167,34 +166,38 @@ mainwid::mainwid
     m_last_tick_x           (),                 // array of size c_max_sequence
     m_mainwnd_rows          (usr().mainwnd_rows()),
     m_mainwnd_cols          (usr().mainwnd_cols()),
-    m_seqarea_x             (c_seqarea_x),
-    m_seqarea_y             (c_seqarea_y),
-    m_seqarea_seq_x         (c_seqarea_seq_x),
-    m_seqarea_seq_y         (c_seqarea_seq_y),
+    m_seqarea_x             (usr().seqarea_x()),
+    m_seqarea_y             (usr().seqarea_y()),
+    m_seqarea_seq_x         (usr().seqarea_seq_x()),
+    m_seqarea_seq_y         (usr().seqarea_seq_y()),
 #if defined SEQ64_MULTI_MAINWID
     m_mainwid_x             (usr().mainwid_width()),
     m_mainwid_y             (usr().mainwid_height()),
 #else
-    m_mainwid_x
-    (
-        2 + (c_seqarea_x + c_mainwid_spacing) * m_mainwnd_cols -
-            c_mainwid_spacing + c_mainwid_border * 2
-    ),
-    m_mainwid_y
-    (
-        (c_seqarea_y + c_mainwid_spacing) * m_mainwnd_rows +
-             c_control_height + c_mainwid_border * 2
-    ),
+    m_mainwid_x             (usr().mainwid_x()),
+//  (
+//      2 + (c_seqarea_x + c_mainwid_spacing) * m_mainwnd_cols -
+//          c_mainwid_spacing + c_mainwid_border * 2
+//  ),
+    m_mainwid_y             (usr().mainwid_y()),
+//  (
+//      (c_seqarea_y + c_mainwid_spacing) * m_mainwnd_rows +
+//           c_control_height + c_mainwid_border * 2
+//  ),
 #endif
-    m_mainwid_border_x      (c_mainwid_border + usr().mainwid_width_fudge()),
-    m_mainwid_border_y      (c_mainwid_border + usr().mainwid_width_fudge()),
-    m_mainwid_spacing       (c_mainwid_spacing),
-    m_text_size_x           (font_render().char_width()),
-    m_text_size_y           (font_render().padded_height()),
+//  m_mainwid_border_x      (c_mainwid_border + usr().mainwid_width_fudge()),
+//  m_mainwid_border_y      (c_mainwid_border + usr().mainwid_width_fudge()),
+    m_mainwid_border_x      (usr().mainwid_border_x()),
+    m_mainwid_border_y      (usr().mainwid_border_y()),
+//  m_mainwid_spacing       (c_mainwid_spacing),
+    m_mainwid_spacing       (usr().mainwid_spacing()),
+    m_text_size_x           (usr().scale_size(font_render().char_width())),
+    m_text_size_y           (usr().scale_size(font_render().padded_height())),
     m_max_sets              (c_max_sets),
     m_screenset_slots       (m_mainwnd_rows * m_mainwnd_cols),
     m_screenset_offset      (m_screenset * m_screenset_slots),
-    m_progress_height       (m_seqarea_seq_y + 3)
+//  m_progress_height       (m_seqarea_seq_y + 3)
+    m_progress_height       (usr().seqarea_seq_y() + 3)
 {
     if (is_nullptr(gs_mainwid_pointer))
         gs_mainwid_pointer = this;

@@ -146,9 +146,7 @@
 #ifdef SEQ64_SONG_RECORDING
 
 /*
- *  No longer used.
- *
- * #include "pixmaps/song_rec_off.xpm"
+ *  No longer used: #include "pixmaps/song_rec_off.xpm"
  */
 
 #include "pixmaps/song_rec_on.xpm"
@@ -484,7 +482,10 @@ mainwnd::mainwnd
 
     add_tooltip(m_button_mode, modetext);
     m_button_mode->set_active(perf().song_start_mode());
-    tophbox->pack_start(*m_button_mode, false, false, TOP_HBOX_PADDING/2);
+    tophbox->pack_start
+    (
+        *m_button_mode, false, false, TOP_HBOX_PADDING/2
+    );
 
     /*
      * We bind the muting button to the mainwid's toggle_all_tracks()
@@ -603,7 +604,10 @@ mainwnd::mainwnd
     (
         sigc::mem_fun(*this, &mainwnd::set_menu_mode)
     );
-    tophbox->pack_start(*m_button_menu, false, false, TOP_HBOX_PADDING/2);
+    tophbox->pack_start
+    (
+        *m_button_menu, false, false, TOP_HBOX_PADDING/2
+    );
 
 #ifdef SEQ64_SHOW_JACK_STATUS
     add_tooltip
@@ -1215,6 +1219,8 @@ mainwnd::mainwnd
     width += wpadding * (m_mainwid_columns - 1);
 #endif
 
+    // width = usr().scale_size(width);
+    // height = usr().scale_size(height);
     set_size_request(width, height);
     install_signal_handlers();
 }

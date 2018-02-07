@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2018-02-05
+ * \updates       2018-02-07
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -102,6 +102,8 @@
 #include "settings.hpp"                 /* seq64::rc()                  */
 #include "user_settings.hpp"            /* seq64::user_settings         */
 
+#define SEQ64_WINDOW_SCALE_DEFAULT      1.0f
+
 /*
  *  Do not document a namespace; it breaks Doxygen.
  */
@@ -133,6 +135,7 @@ user_settings::user_settings ()
     m_mainwnd_rows              (SEQ64_DEFAULT_MAINWND_ROWS),
     m_mainwnd_cols              (SEQ64_DEFAULT_MAINWND_COLUMNS),
     m_max_sets                  (SEQ64_DEFAULT_SET_MAX),
+    m_window_scale              (SEQ64_WINDOW_SCALE_DEFAULT),
     m_mainwid_border            (0),
     m_mainwid_spacing           (0),
     m_control_height            (0),
@@ -227,6 +230,7 @@ user_settings::user_settings (const user_settings & rhs)
     m_mainwnd_rows              (rhs.m_mainwnd_rows),
     m_mainwnd_cols              (rhs.m_mainwnd_cols),
     m_max_sets                  (rhs.m_max_sets),
+    m_window_scale              (rhs.m_window_scale),
     m_mainwid_border            (rhs.m_mainwid_border),
     m_mainwid_spacing           (rhs.m_mainwid_spacing),
     m_control_height            (rhs.m_control_height),
@@ -324,6 +328,7 @@ user_settings::operator = (const user_settings & rhs)
         m_mainwnd_rows              = rhs.m_mainwnd_rows;
         m_mainwnd_cols              = rhs.m_mainwnd_cols;
         m_max_sets                  = rhs.m_max_sets;
+        m_window_scale              = rhs.m_window_scale;
         m_mainwid_border            = rhs.m_mainwid_border;
         m_mainwid_spacing           = rhs.m_mainwid_spacing;
         m_control_height            = rhs.m_control_height;
@@ -428,6 +433,7 @@ user_settings::set_defaults ()
     m_mainwnd_rows = SEQ64_DEFAULT_MAINWND_ROWS;    // range: 4-8
     m_mainwnd_cols = SEQ64_DEFAULT_MAINWND_COLUMNS; // range: 8-8
     m_max_sets = SEQ64_DEFAULT_SET_MAX;     // range: 32-64
+    m_window_scale = SEQ64_WINDOW_SCALE_DEFAULT; // range: 1.0 to 3.0
     m_mainwid_border = 0;                   // range: 0-3, try 2 or 3
     m_mainwid_spacing = 2;                  // range: 2-6, try 4 or 6
     m_control_height = 0;                   // range: 0-4?
@@ -509,6 +515,13 @@ user_settings::normalize ()
      * m_max_sequence = m_seqs_in_set * m_max_sets;
      */
 
+    /******
+     * EXPERIMENTAL!!!
+
+    m_text_x = scale_a_size(m_text_x);
+    m_text_y = scale_a_size(m_text_x);
+     */
+
     m_max_sequence = c_max_sequence;
     m_seqarea_x = m_text_x * m_seqchars_x;
     m_seqarea_y = m_text_y * m_seqchars_y;
@@ -516,7 +529,7 @@ user_settings::normalize ()
     m_seqarea_seq_y = m_text_y * 2;
     m_mainwid_x =
     (
-        (m_seqarea_x + m_mainwid_spacing) * m_mainwnd_cols -
+        2 + (m_seqarea_x + m_mainwid_spacing) * m_mainwnd_cols -
             m_mainwid_spacing + m_mainwid_border * 2
     );
     m_mainwid_y =
@@ -634,6 +647,20 @@ user_settings::set_instrument_controllers
 {
     user_instrument & mi = private_instrument(index);
     mi.set_controller(cc, ccname, isactive);
+}
+
+/**
+ * \setter m_window_scale
+ */
+
+void
+user_settings::window_scale (float winscale)
+{
+    if (winscale >= 0.75f && winscale <= 3.0f)
+    {
+        m_window_scale = winscale;
+        normalize();
+    }
 }
 
 /**
@@ -1130,12 +1157,11 @@ user_settings::block_columns (int count)
 int
 user_settings::mainwid_width () const
 {
-    return
-    (
-        (c_seqarea_x + c_mainwid_spacing) * m_mainwnd_cols -
-            (c_mainwid_spacing + c_mainwid_border * 2) + // MAINWID_WIDTH_FUDGE
-            mainwid_width_fudge() * 2
-    );
+    int result = (c_seqarea_x + c_mainwid_spacing) * m_mainwnd_cols -
+        (c_mainwid_spacing + c_mainwid_border * 2) + // MAINWID_WIDTH_FUDGE
+        mainwid_width_fudge() * 2;
+
+    return scale_size(result);
 }
 
 /**
@@ -1154,12 +1180,11 @@ user_settings::mainwid_width () const
 int
 user_settings::mainwid_height () const
 {
-    return
-    (
-        (c_seqarea_y + c_mainwid_spacing) * m_mainwnd_rows +
-             (c_control_height + c_mainwid_border * 2) + // MAINWID_HEIGHT_FUDGE
-             mainwid_height_fudge() * 2
-    );
+    int result = (c_seqarea_y + c_mainwid_spacing) * m_mainwnd_rows +
+         (c_control_height + c_mainwid_border * 2) + // MAINWID_HEIGHT_FUDGE
+         mainwid_height_fudge() * 2;
+
+    return scale_size(result);
 }
 
 #endif  // SEQ64_MULTI_MAINWID

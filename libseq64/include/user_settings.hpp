@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-01-27
+ * \updates       2018-02-06
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -250,6 +250,14 @@ private:
     int m_max_sets;
 
     /**
+     *  EXPERIMENTAL.
+     *  Provide a scale factor to increase the size of the main window
+     *  and its internals.  Should be limited from 1.0 to 3.0, probably.
+     */
+
+    float m_window_scale;
+
+    /**
      *  These control sizes.  We'll try changing them and see what
      *  happens.  Increasing these value spreads out the pattern grids a
      *  little bit and makes the Patterns panel slightly bigger.  Seems
@@ -463,12 +471,11 @@ private:
      *  Constants for the mainwid class.  These items are not read from the
      *  "usr", and are not currently part of any configuration section.
      *
-     *  The m_text_x and m_text_y
-     *  constants help define the "seqarea" size.  It looks like these two
-     *  values are the character width (x) and height (y) in pixels.
-     *  Thus, these values would be dependent on the font chosen.  But
-     *  that, currently, is hard-wired.  See the m_font_6_12[] array for
-     *  the default font specification.
+     *  The m_text_x and m_text_y constants help define the "seqarea" size.
+     *  It looks like these two values are the character width (x) and height
+     *  (y) in pixels.  Thus, these values would be dependent on the font
+     *  chosen.  But that, currently, is hard-wired.  See the m_font_6_12[]
+     *  array for the default font specification.
      *
      *  However, please not that font files are not used.  Instead, the
      *  fonts are provided by two pixmaps in the <code> src/pixmap </code>
@@ -986,6 +993,24 @@ public:
     }
 
     /**
+     * \getter m_window_scale
+     */
+
+    float window_scale () const
+    {
+        return m_window_scale;
+    }
+
+    /**
+     * \getter m_window_scale
+     */
+
+    int scale_size (int value) const
+    {
+        return int(m_window_scale * value);
+    }
+
+    /**
      * \getter m_grid_style
      *      Checks for normal style.
      */
@@ -1157,7 +1182,7 @@ public:
 
     int seqarea_x () const
     {
-        return m_seqarea_x;
+        return scale_size(m_seqarea_x);
     }
 
     /**
@@ -1166,7 +1191,7 @@ public:
 
     int seqarea_y () const
     {
-        return m_seqarea_y;
+        return scale_size(m_seqarea_y);
     }
 
     /**
@@ -1175,7 +1200,7 @@ public:
 
     int seqarea_seq_x () const
     {
-        return m_seqarea_seq_x;
+        return scale_size(m_seqarea_seq_x);
     }
 
     /**
@@ -1184,7 +1209,7 @@ public:
 
     int seqarea_seq_y () const
     {
-        return m_seqarea_seq_y;
+        return scale_size(m_seqarea_seq_y);
     }
 
     /**
@@ -1202,7 +1227,7 @@ public:
 
     int mainwid_spacing () const
     {
-        return m_mainwid_spacing;
+        return scale_size(m_mainwid_spacing);
     }
 
     /**
@@ -1211,7 +1236,7 @@ public:
 
     int mainwid_x () const
     {
-        return m_mainwid_x;
+        return scale_size(m_mainwid_x);
     }
 
     /**
@@ -1220,7 +1245,25 @@ public:
 
     int mainwid_y () const
     {
-        return m_mainwid_y;
+        return scale_size(m_mainwid_y);
+    }
+
+    /**
+     *  Returns the mainwid border thickness plus a fudge constant.
+     */
+
+    int mainwid_border_x () const
+    {
+        return scale_size(c_mainwid_border + mainwid_width_fudge());
+    }
+
+    /**
+     *  Returns the mainwid border thickness plus a fudge constant.
+     */
+
+    int mainwid_border_y () const
+    {
+        return scale_size(c_mainwid_border + mainwid_width_fudge());
     }
 
     /**
@@ -1463,6 +1506,7 @@ protected:
             m_grid_brackets = thickness;
     }
 
+    void window_scale (float winscale);
     void grid_style (int gridstyle);
     void mainwnd_rows (int value);
     void mainwnd_cols (int value);
@@ -1658,7 +1702,6 @@ public:
 
 public:         // used in main application module and the userfile class
 
-
     /**
      * \setter m_use_new_font
      */
@@ -1792,10 +1835,18 @@ public:         // used in main application module and the userfile class
     int mainwid_width () const;
     int mainwid_height () const;
 
+    /**
+     * \getter MAINWID_WIDTH_FUDGE / 2
+     */
+
     int mainwid_width_fudge () const
     {
         return MAINWID_WIDTH_FUDGE / 2;
     }
+
+    /**
+     * \getter MAINWID_HEIGTH_FUDGE / 2
+     */
 
     int mainwid_height_fudge () const
     {
@@ -1815,7 +1866,7 @@ private:
     user_midi_bus & private_bus (int buss);
     user_instrument & private_instrument (int instrum);
 
-};
+};          // class user_settings
 
 }           // namespace seq64
 

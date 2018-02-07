@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2017-12-17
+ * \updates       2018-02-07
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -193,7 +193,7 @@ static struct option long_options [] =
  */
 
 static const std::string s_arg_list =
-    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNn:Ppq:RrtSsU:uVvx:#"   /* modern args      */
+    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNno:Ppq:RrtSsU:uVvx:#"  /* modern args      */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -541,6 +541,15 @@ parse_o_options (int argc, char * argv [])
                                         usr().mainwnd_cols(cols);
                                         result = true;
                                     }
+                                }
+                            }
+                            else if (optionname == "scale")
+                            {
+                                if (arg.length() >= 1)
+                                {
+                                    float scale = atof(arg.c_str());
+                                    usr().window_scale(scale);
+                                    result = true;
                                 }
                             }
                         }

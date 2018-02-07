@@ -397,6 +397,7 @@ userfile::parse (perform & /* p */)
                 }
 
 #if defined SEQ64_MULTI_MAINWID
+
                 if (next_data_line(file))
                 {
                     sscanf(m_line, "%d", &scratch);
@@ -414,7 +415,15 @@ userfile::parse (perform & /* p */)
                     sscanf(m_line, "%d", &scratch);
                     usr().block_independent(scratch != 0);
                 }
+
 #endif  // SEQ64_MULTI_MAINWID
+
+                if (next_data_line(file))
+                {
+                    float scale = 1.0f;
+                    sscanf(m_line, "%f", &scale);
+                    usr().window_scale(scale);
+                }
             }
         }
         usr().normalize();    /* calculate derived values */
@@ -1023,6 +1032,16 @@ userfile::write (const perform & /* a_perf */ )
             "\n"
             << (usr().block_independent() ? "1" : "0")
             << "      # block_independent (set spinners for each block/wid)\n"
+            ;
+
+        file << "\n"
+            "# Specifies an enlargement of the main window of Sequencer64.\n"
+            "# The normal value is 1.0, which is the legacy sizing.  If this\n"
+            "# value is between 1.0 and 3.0, it will increase the size of all\n"
+            "# of the main window elements proportionately.\n"
+            "\n"
+            << usr().window_scale()
+            << "      # scales the main window upwards in size\n"
             ;
 
 #endif  // SEQ64_MULTI_MAINWID

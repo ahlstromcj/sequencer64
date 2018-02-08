@@ -160,6 +160,10 @@ font::font ()
  *  characters on a white background, one has yellow characters on a black
  *  background, and one has black characters on a yellow background.
  *
+ * \todo
+ *      Can we scale these images via
+ *      scale_simple(newwidth, newhight, Gtk::INTERP_BILINEAR)
+ *
  * \param wp
  *      Provides the windows pointer for the window that holds the color map.
  */

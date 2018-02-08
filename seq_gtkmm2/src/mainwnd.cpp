@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-03
+ * \updates       2018-02-07
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -172,7 +172,7 @@
  *  Padding for the pill time-line.
  */
 
-#define TIMELINE_PILL_PADDING        8
+#define TIMELINE_PILL_PADDING        4
 
 /**
  *  Provides the value of padding, in pixels, to use for the bottom horizontal
@@ -189,7 +189,15 @@
  *  user_settings::mainwid_height() function.
  */
 
-#define VBOX_PADDING                 5  // 7  // 8
+#define VBOX_PADDING                 5
+
+/**
+ *  Provides an easy way to switch between PACK_SHRINK and PACK_EXPAND_WIDGET
+ *  for experimentation.
+ */
+
+#define VBOX_PACKING                Gtk::PACK_EXPAND_WIDGET
+#define HBOX_PACKING                Gtk::PACK_EXPAND_WIDGET
 
 /**
  *  The amount of time to wait for inaction before clearing the tap-button
@@ -482,10 +490,7 @@ mainwnd::mainwnd
 
     add_tooltip(m_button_mode, modetext);
     m_button_mode->set_active(perf().song_start_mode());
-    tophbox->pack_start
-    (
-        *m_button_mode, false, false, TOP_HBOX_PADDING/2
-    );
+    tophbox->pack_start(*m_button_mode, HBOX_PACKING, TOP_HBOX_PADDING/2);
 
     /*
      * We bind the muting button to the mainwid's toggle_all_tracks()
@@ -585,9 +590,7 @@ mainwnd::mainwnd
         "mode.  Affects only tracks that are currently armed. Muted tracks "
         "are remembered even if the mode is toggled to Song and back to Live. "
     );
-
-    tophbox->pack_start(*m_button_mute, false, false);  /* no extra padding */
-
+    tophbox->pack_start(*m_button_mute, HBOX_PACKING, TOP_HBOX_PADDING/2);
     if (usr().use_more_icons())
         m_button_menu->add(*manage(new PIXBUF_IMAGE(menu_xpm)));
 
@@ -604,10 +607,7 @@ mainwnd::mainwnd
     (
         sigc::mem_fun(*this, &mainwnd::set_menu_mode)
     );
-    tophbox->pack_start
-    (
-        *m_button_menu, false, false, TOP_HBOX_PADDING/2
-    );
+    tophbox->pack_start(*m_button_menu, HBOX_PACKING, TOP_HBOX_PADDING/2);
 
 #ifdef SEQ64_SHOW_JACK_STATUS
     add_tooltip
@@ -622,11 +622,10 @@ mainwnd::mainwnd
     (
         sigc::mem_fun(*this, &mainwnd::jack_dialog)
     );
-    tophbox->pack_start(*m_button_jack, false, false);  /* no extra padding */
+    tophbox->pack_start(*m_button_jack, HBOX_PACKING, TOP_HBOX_PADDING/2);
 #endif
 
 #if defined SEQ64_MULTI_MAINWID
-    tophbox->pack_start(*(manage(new Gtk::HSeparator())), false, false, 4);
     tophbox->pack_start(*m_status_label, false, false);  /* new */
 #endif
 
@@ -636,7 +635,7 @@ mainwnd::mainwnd
 
     Gtk::VBox * vbox_b = manage(new Gtk::VBox(true,  0));
     Gtk::HBox * hbox3 = manage(new Gtk::HBox(false, 0));
-    hbox3->pack_start(*m_main_time, false, false, TIMELINE_PILL_PADDING);
+    hbox3->pack_start(*m_main_time, Gtk::PACK_SHRINK, TIMELINE_PILL_PADDING);
     vbox_b->pack_start(*hbox3, false, false);
 
     /* Add the time-line and the time-clock */
@@ -659,12 +658,10 @@ mainwnd::mainwnd
         m_button_time_type,
         "Toggles between B:B:T and H:M:S format, showing the selected format."
     );
-    tophbox->pack_start(*m_button_time_type, false, false);
-    tophbox->pack_start(*(manage(new Gtk::HSeparator())), false, false, 4);
+    tophbox->pack_start(*m_button_time_type, HBOX_PACKING, TOP_HBOX_PADDING/2);
 
     Gtk::Label * timedummy = manage(new Gtk::Label("   "));
     hbox4->pack_start(*timedummy, false, false, 0);
-
     hbox4->pack_start(*m_tick_time, false, false, 0);
     vbox_b->pack_start(*hbox4, false, false, 0);
     tophbox->pack_end(*vbox_b, false, false);
@@ -689,7 +686,7 @@ mainwnd::mainwnd
         "See File / Options / Keyboard for available mute-group keys "
         "and the hotkey for the 'L' button. Ctrl-L also causes this action."
     );
-    hbox3->pack_end(*m_button_learn, false, false);
+    hbox3->pack_end(*m_button_learn, HBOX_PACKING);
 
     /*
      *  This seems to be a dirty hack to clear the focus, not to trigger L
@@ -704,9 +701,10 @@ mainwnd::mainwnd
      *  the container that groups them.
      */
 
-    Gtk::HBox * bottomhbox = manage(new Gtk::HBox(false, BOTTOM_HBOX_PADDING));
+    int hboxpadding = usr().scale_size(BOTTOM_HBOX_PADDING);
+    Gtk::HBox * bottomhbox = manage(new Gtk::HBox(false, hboxpadding));
     Gtk::HBox * startstophbox = manage(new Gtk::HBox(false, 4)); /* button */
-    bottomhbox->pack_start(*startstophbox, Gtk::PACK_SHRINK);
+    bottomhbox->pack_start(*startstophbox, HBOX_PACKING);
 
     /*
      * Panic button
@@ -722,7 +720,7 @@ mainwnd::mainwnd
         "Panic button.  A guaranteed stop-all for notes on all busses, "
         "channels, and keys.  Adapted from Kepler34."
     );
-    startstophbox->pack_start(*m_button_panic, Gtk::PACK_SHRINK);
+    startstophbox->pack_start(*m_button_panic, HBOX_PACKING);
 
     /*
      * Stop button.
@@ -739,7 +737,7 @@ mainwnd::mainwnd
         mem_fun(*this, &mainwnd::stop_playing)
     );
     add_tooltip(m_button_stop, "Stop playing the MIDI sequences.");
-    startstophbox->pack_start(*m_button_stop, Gtk::PACK_SHRINK);
+    startstophbox->pack_start(*m_button_stop, HBOX_PACKING);
     m_button_stop->set_sensitive(true);
 
     /*
@@ -755,7 +753,7 @@ mainwnd::mainwnd
         mem_fun(*this, &mainwnd::start_playing)
     );
     add_tooltip(m_button_play, "Start playback from the current location.");
-    startstophbox->pack_start(*m_button_play, Gtk::PACK_SHRINK);
+    startstophbox->pack_start(*m_button_play, HBOX_PACKING);
     m_button_play->set_sensitive(true);
 
 #ifdef SEQ64_SONG_RECORDING
@@ -772,7 +770,7 @@ mainwnd::mainwnd
         "Click this button to toggle the recording of live changes to the "
         "song performance, i.e. song recording."
     );
-    startstophbox->pack_start(*m_button_song_record, false, false);
+    startstophbox->pack_start(*m_button_song_record, HBOX_PACKING);
 
     m_button_song_snap->set_focus_on_click(false);
     m_button_song_snap->signal_toggled().connect
@@ -784,7 +782,7 @@ mainwnd::mainwnd
         m_button_song_snap,
         "Click this button to toggle the snapping of live song recording."
     );
-    startstophbox->pack_start(*m_button_song_snap, false, false);
+    startstophbox->pack_start(*m_button_song_snap, HBOX_PACKING);
 
 #endif
 
@@ -796,7 +794,7 @@ mainwnd::mainwnd
      */
 
     Gtk::HBox * bpmhbox = manage(new Gtk::HBox(false, 4));
-    bottomhbox->pack_start(*bpmhbox, Gtk::PACK_SHRINK);
+    bottomhbox->pack_start(*bpmhbox, HBOX_PACKING);
     m_spinbutton_bpm->set_sensitive(true);
     m_spinbutton_bpm->set_editable(true);
     m_spinbutton_bpm->set_digits(usr().bpm_precision());
@@ -866,30 +864,19 @@ mainwnd::mainwnd
     );
     Gtk::Label * bpmlabel = manage(new Gtk::Label("_BPM", true));
     bpmlabel->set_mnemonic_widget(*m_spinbutton_bpm);
-    bpmhbox->pack_start(*bpmlabel, Gtk::PACK_SHRINK);
-    bpmhbox->pack_start(*m_spinbutton_bpm, Gtk::PACK_SHRINK);
+    bpmhbox->pack_start(*bpmlabel, HBOX_PACKING);
+    bpmhbox->pack_start(*m_spinbutton_bpm, HBOX_PACKING);
 
 #ifdef SEQ64_MAINWND_TAP_BUTTON
-    bpmhbox->pack_start(*m_button_tap, Gtk::PACK_SHRINK);
+    bpmhbox->pack_start(*m_button_tap, HBOX_PACKING);
 #endif
-
-#define TRY_TEMPO_VBOX
-#ifdef TRY_TEMPO_VBOX
 
     Gtk::VBox * tempovbox = manage(new Gtk::VBox(true,  0));
+    tempovbox->pack_start(*m_button_tempo_log, VBOX_PACKING);
+    tempovbox->pack_start(*m_button_tempo_record, VBOX_PACKING);
+    bpmhbox->pack_start(*tempovbox, HBOX_PACKING);
 
-    tempovbox->pack_start(*m_button_tempo_log, Gtk::PACK_SHRINK);
-    tempovbox->pack_start(*m_button_tempo_record, Gtk::PACK_SHRINK);
-    bpmhbox->pack_start(*tempovbox, Gtk::PACK_SHRINK);
-
-#else
-
-    bpmhbox->pack_start(*m_button_tempo_log, Gtk::PACK_SHRINK);
-    bpmhbox->pack_start(*m_button_tempo_record, Gtk::PACK_SHRINK);
-
-#endif
-
-    bpmhbox->pack_start(*m_button_queue, Gtk::PACK_SHRINK);
+    bpmhbox->pack_start(*m_button_queue, HBOX_PACKING);
 
     /*
      * Screen set name edit line.
@@ -913,20 +900,20 @@ mainwnd::mainwnd
     Gtk::Label * notelabel = manage(new Gtk::Label("_Name", true));
     notelabel->set_mnemonic_widget(*m_entry_notes);
     notebox->pack_start(*notelabel, Gtk::PACK_SHRINK);
-    notebox->pack_start(*m_entry_notes, Gtk::PACK_EXPAND_WIDGET);
+    notebox->pack_start(*m_entry_notes, HBOX_PACKING);
 
     /*
      * Sequence screen-set spin button.
      */
 
     Gtk::HBox * sethbox = manage(new Gtk::HBox(false, 4));
-    bottomhbox->pack_start(*sethbox, Gtk::PACK_SHRINK);
+    bottomhbox->pack_start(*sethbox, HBOX_PACKING);
     if (! multi_wid())
     {
         m_spinbutton_ss->set_sensitive(true);
         m_spinbutton_ss->set_editable(true);
         m_spinbutton_ss->set_width_chars(3);
-        m_spinbutton_ss->set_wrap(true);    // m_spinbutton_ss->set_wrap(false);
+        m_spinbutton_ss->set_wrap(true);
 
 #if ! defined SEQ64_MULTI_MAINWID
 
@@ -941,7 +928,10 @@ mainwnd::mainwnd
         );
 #endif
 
-        add_tooltip(m_spinbutton_ss, "Select screen-set from one of (up to) 32 sets.");
+        add_tooltip
+        (
+            m_spinbutton_ss, "Select screen-set from one of up to 32 sets."
+        );
         Gtk::Label * setlabel = manage(new Gtk::Label("_Set", true));
         setlabel->set_mnemonic_widget(*m_spinbutton_ss);
         sethbox->pack_start(*setlabel, Gtk::PACK_SHRINK);
@@ -978,7 +968,7 @@ mainwnd::mainwnd
                             mem_fun(*this, &mainwnd::adj_callback_wid), block
                         )
                     );
-                    sethbox->pack_start(*sbp, Gtk::PACK_SHRINK);
+                    sethbox->pack_start(*sbp, HBOX_PACKING);
                 }
             }
         }
@@ -1004,7 +994,8 @@ mainwnd::mainwnd
         "Show or hide the main song editor window. Ctrl-E also brings up "
         "the editor."
     );
-    bottomhbox->pack_end(*m_button_perfedit, Gtk::PACK_SHRINK);
+    // bottomhbox->pack_end(*m_button_perfedit, HBOX_PACKING);
+    bottomhbox->pack_start(*m_button_perfedit, Gtk::PACK_SHRINK);
 
 #if ! defined SEQ64_MULTI_MAINWID
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
@@ -1033,8 +1024,7 @@ mainwnd::mainwnd
         mainwid_vscroll_wrapper->set_spacing(5);
         mainwid_vscroll_wrapper->pack_start
         (
-            *mainwid_wrapper,
-            Gtk::PACK_EXPAND_WIDGET
+            *mainwid_wrapper, Gtk::PACK_EXPAND_WIDGET
         );
         mainwid_vscroll_wrapper->pack_start(*m_vscroll, false, false);
 
@@ -1071,7 +1061,7 @@ mainwnd::mainwnd
     Gtk::VBox * contentvbox = manage(new Gtk::VBox());
     contentvbox->set_spacing(VBOX_PADDING);
     contentvbox->set_border_width(10);
-    contentvbox->pack_start(*tophbox, Gtk::PACK_SHRINK);
+    contentvbox->pack_start(*tophbox, VBOX_PACKING);
 
 #if ! defined SEQ64_MULTI_MAINWID
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
@@ -1129,7 +1119,7 @@ mainwnd::mainwnd
                 );
             }
         }
-        contentvbox->pack_start(*m_mainwid_grid, Gtk::PACK_SHRINK);
+        contentvbox->pack_start(*m_mainwid_grid, VBOX_PACKING);
     }
 
     m_main_wid->set_can_focus(true);            /* from stazed */
@@ -1203,13 +1193,8 @@ mainwnd::mainwnd
     int bottomheight = 52;  // 48;
     int topheight = 64;     // 52;
     if (multi_wid())
-    {
         topheight = 100;
-    }
-    else
-    {
-        width += 24;
-    }
+
     height += menuheight + topheight + bottomheight;
 
 #endif  // SEQ64_JE_PATTERN_PANEL_SCROLLBARS
@@ -1219,8 +1204,6 @@ mainwnd::mainwnd
     width += wpadding * (m_mainwid_columns - 1);
 #endif
 
-    // width = usr().scale_size(width);
-    // height = usr().scale_size(height);
     set_size_request(width, height);
     install_signal_handlers();
 }

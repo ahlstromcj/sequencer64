@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-23
+ * \updates       2018-02-07
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
@@ -71,8 +71,8 @@ maintime::maintime (perform & p, int ppqn)
     (
         p, usr().scale_size(c_maintime_x), usr().scale_size(c_maintime_y)
     ),
-    m_beat_width            (usr().scale_size(4)),
-    m_bar_width             (usr().scale_size(16)),
+    m_beat_width            (4),
+    m_bar_width             (16),
     m_pill_width            (usr().scale_size(c_pill_width)),
     m_box_width             (m_window_x - 1),
     m_box_height            (m_window_y - 1),
@@ -112,8 +112,6 @@ maintime::idle_progress (midipulse ticks)
         int tick_x = (ticks % m_ppqn) * m_box_width / m_ppqn;
         int beat_x = ((ticks / m_beat_width) % m_ppqn) * m_box_less_pill / m_ppqn;
         int bar_x  = ((ticks / m_bar_width)  % m_ppqn) * m_box_less_pill / m_ppqn;
-        beat_x = usr().scale_size(beat_x);
-        bar_x = usr().scale_size(bar_x);
         m_tick = ticks;
         clear_window();
         draw_rectangle(black(), 0, yoff, m_box_width, m_box_height, false);

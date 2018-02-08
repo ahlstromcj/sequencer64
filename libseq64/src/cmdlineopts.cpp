@@ -193,7 +193,7 @@ static struct option long_options [] =
  */
 
 static const std::string s_arg_list =
-    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNno:Ppq:RrtSsU:uVvx:#"  /* modern args      */
+    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNno:Ppq:RrtSsU:uVvx:#"   /* modern args      */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-06
+ * \updates       2018-02-08
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -85,41 +85,11 @@ update_mainwid_sequences ()
 }
 
 /**
- * c_mainwnd_x was the width of the main pattern/sequence grid, in pixels.
- * Affected by the c_mainwid_border and c_mainwid_spacing values.  Moved to
- * the user_settings::mainwid_width() function, replaces c_mainwid_x.
- *
- * c_mainwnd_y was the height of the main pattern/sequence grid, in pixels.
- * Affected by the c_mainwid_border and c_control_height values.  Moved to the
- * user_settings::mainwid_width() function, replaces c_mainwid_y.
- *
- * The width of the main pattern/sequence grid, in pixels.  Affected by
- * the c_mainwid_border and c_mainwid_spacing values.
- */
-
-#if ! defined SEQ64_MULTI_MAINWID
-
-const int c_mainwid_x =
-    2 + (c_seqarea_x + c_mainwid_spacing) * SEQ64_DEFAULT_MAINWND_COLUMNS -
-        c_mainwid_spacing + c_mainwid_border * 2;
-
-/*
- * The height of the main pattern/sequence grid, in pixels.  Affected by
- * the c_mainwid_border and c_control_height values.
- */
-
-const int c_mainwid_y =
-    (c_seqarea_y + c_mainwid_spacing) * SEQ64_DEFAULT_MAINWND_ROWS +
-         (c_control_height + c_mainwid_border * 2) - 16;
-
-#endif  // not defined SEQ64_MULTI_MAINWID
-
-/**
- *  This constructor sets all of the members.  And it asks for a size of
- *  c_mainwid_x by c_mainwid_y.  It adds GDK masks for button presses,
- *  releases, motion, key presses, and focus changes.  Also logs a
- *  self-referential singleton pointer to use for the current-edit highlighting
- *  support.
+ *  This constructor sets all of the members.  And it asks for its size from
+ *  usr().mainwid_width() and usr().mainwid_height functions.  It adds GDK
+ *  masks for button presses, releases, motion, key presses, and focus
+ *  changes.  Also logs a self-referential singleton pointer to use for the
+ *  current-edit highlighting support.
  *
  * \param p
  *      Provides the reference to the all-important perform object.
@@ -143,13 +113,6 @@ mainwid::mainwid
 #endif
 ) :
     gui_drawingarea_gtk2 (p, usr().mainwid_width(), usr().mainwid_height()),
-//  (
-// #if defined SEQ64_MULTI_MAINWID
-//      p, usr().mainwid_width(), usr().mainwid_height()
-// #else
-//      p, c_mainwid_x, c_mainwid_y
-// #endif
-//  ),
     seqmenu                 (p),
     m_armed_progress_color
     (
@@ -175,28 +138,16 @@ mainwid::mainwid
     m_mainwid_y             (usr().mainwid_height()),
 #else
     m_mainwid_x             (usr().mainwid_x()),
-//  (
-//      2 + (c_seqarea_x + c_mainwid_spacing) * m_mainwnd_cols -
-//          c_mainwid_spacing + c_mainwid_border * 2
-//  ),
     m_mainwid_y             (usr().mainwid_y()),
-//  (
-//      (c_seqarea_y + c_mainwid_spacing) * m_mainwnd_rows +
-//           c_control_height + c_mainwid_border * 2
-//  ),
 #endif
-//  m_mainwid_border_x      (c_mainwid_border + usr().mainwid_width_fudge()),
-//  m_mainwid_border_y      (c_mainwid_border + usr().mainwid_width_fudge()),
     m_mainwid_border_x      (usr().mainwid_border_x()),
     m_mainwid_border_y      (usr().mainwid_border_y()),
-//  m_mainwid_spacing       (c_mainwid_spacing),
     m_mainwid_spacing       (usr().mainwid_spacing()),
     m_text_size_x           (usr().scale_size(font_render().char_width())),
     m_text_size_y           (usr().scale_size(font_render().padded_height())),
     m_max_sets              (c_max_sets),
     m_screenset_slots       (m_mainwnd_rows * m_mainwnd_cols),
     m_screenset_offset      (m_screenset * m_screenset_slots),
-//  m_progress_height       (m_seqarea_seq_y + 3)
     m_progress_height       (usr().seqarea_seq_y() + 3)
 {
     if (is_nullptr(gs_mainwid_pointer))

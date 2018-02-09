@@ -703,8 +703,10 @@ private:
     int m_seqarea_y;
 
     /**
-     * Area of what?  Doesn't look at all like it is based on the size of
-     * characters.  These are used only in the mainwid module.
+     *  These values delineate the smaller rectangle inside of a mainwid cell,
+     *  wherein the sequence events are drawn. Doesn't look at all like it is
+     *  based on the size of characters.  These values are used only in the
+     *  mainwid module.
      */
 
     int m_seqarea_seq_x;

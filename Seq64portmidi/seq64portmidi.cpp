@@ -25,7 +25,7 @@
  * \library       seq64portmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2017-08-27
+ * \updates       2018-02-09
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -110,7 +110,10 @@ main (int argc, char * argv [])
         optionindex = seq64::parse_command_line_options(p, argc, argv);
         if (seq64::parse_o_options(argc, argv))
         {
-            ++optionindex;
+            /*
+             * Now handled via optind incrementing:     ++optionindex;
+             */
+
             p.seqs_in_set(seq64::usr().seqs_in_set());
             p.max_sets(seq64::usr().max_sets());
         }

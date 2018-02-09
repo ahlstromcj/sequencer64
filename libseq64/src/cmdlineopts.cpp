@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-02-07
+ * \updates       2018-02-09
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -188,12 +188,13 @@ static struct option long_options [] =
  *
  *  Previous arg-list, items missing! "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"
  *
- *  * Also note that 'o' cannot be included here due to issues involving
- *  parse_o_options(), but it is *reserved*.
+ *  * Also note that 'o' options argument cannot be included here due to
+ *  issues involving parse_o_options(), but it is *reserved* here, without the
+ *  argument indicator.
  */
 
 static const std::string s_arg_list =
-    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNno:Ppq:RrtSsU:uVvx:#"   /* modern args      */
+    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNnoPpq:RrtSsU:uVvx:#"   /* modern args      */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -272,7 +273,7 @@ static const char * const s_help_2 =
     ;
 
 /**
- *  Still more help text.
+ *  Still still more help text.
  */
 
 static const char * const s_help_3 =
@@ -295,7 +296,7 @@ static const char * const s_help_3 =
     ;
 
 /**
- *  Still still more help text.
+ *  Still still more more help text.
  */
 
 static const char * const s_help_4 =
@@ -327,7 +328,7 @@ static const char * const s_help_4 =
     ;
 
 /**
- *  Still still still more help text.
+ *  Still still still more more more help text.
  */
 
 static const char * const s_help_5 =
@@ -555,7 +556,7 @@ parse_o_options (int argc, char * argv [])
                         }
                         if (! result)
                         {
-                            printf("Warning:  unsupported --option value\n");
+                            printf("Warning: unsupported --option value\n");
                             break;
                         }
                     }
@@ -928,16 +929,17 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             printf("Deactivating LASH support.\n");
             break;
 
-#if 0
         case 'o':
 
             /*
              * We now handle this processing separately and first, in the
              * parse_o_option() function.  Doing it here can mess up parsing.
+             * We need to skip the argument in case there are other arguments
+             * or a MIDI filename following the compound option.
              */
 
+            ++optind;
             break;
-#endif
 
         case 'P':
         case '9':

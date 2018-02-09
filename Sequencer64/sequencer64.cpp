@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-27
+ * \updates       2018-02-09
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -117,9 +117,10 @@ main (int argc, char * argv [])
         {
             /*
              * Process the -o options, also set up in the "usr" file.
+             *
+             *  Now handled via incrementing optind:    ++optionindex;
              */
 
-            ++optionindex;
             p.seqs_in_set(seq64::usr().seqs_in_set());
             p.max_sets(seq64::usr().max_sets());
         }

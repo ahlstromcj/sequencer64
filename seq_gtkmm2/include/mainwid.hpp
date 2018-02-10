@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-13
+ * \updates       2018-02-10
  * \license       GNU GPLv2 or above
  *
  *  Wonder where the name "wid" came from....
@@ -172,7 +172,7 @@ public:
 #endif
     virtual ~mainwid ();
 
-    int set_screenset (int ss, bool setperf = false);
+    int set_screenset (int ss);
 
 private:
 

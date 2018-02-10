@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-03
+ * \updates       2018-02-10
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -275,7 +275,8 @@ private:
 
     /**
      *  Saves the active screenset number so that we can better detect changes
-     *  from both the perform object and the screenset spinbutton.
+     *  from both the perform object and the screenset spinbutton, which
+     *  updates the peform object.
      */
 
     int m_current_screenset;
@@ -639,6 +640,7 @@ private:
     void adj_callback_ss ();
     void adj_callback_bpm ();
     void edit_callback_notepad ();
+    void update_screenset ();
     void update_markers (midipulse tick);
     void reset ();
 #ifdef SEQ64_PAUSE_SUPPORT

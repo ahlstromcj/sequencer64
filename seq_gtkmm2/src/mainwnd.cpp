@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-07
+ * \updates       2018-02-10
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -307,7 +307,7 @@ mainwnd::mainwnd
     m_adjust_ss             (manage(new Gtk::Adjustment(0, 0, c_max_sets-1, 1))),
     m_spinbutton_ss         (manage(new Gtk::SpinButton(*m_adjust_ss))),
 #endif
-    m_current_screenset     (0),
+    m_current_screenset     (-1),
     m_main_time             (manage(new maintime(p, ppqn))),
     m_perf_edit             (new perfedit(p, false /*allowperf2*/, ppqn)),
     m_perf_edit_2           (allowperf2 ? new perfedit(p, true, ppqn) : nullptr),
@@ -915,10 +915,8 @@ mainwnd::mainwnd
         m_spinbutton_ss->set_width_chars(3);
         m_spinbutton_ss->set_wrap(true);
 
-#if ! defined SEQ64_MULTI_MAINWID
-
         /*
-         * If built for multi-wid, this control is connected to
+         * If running in multi-wid mode, this control is connected to
          * adj_callback_wid() instead.
          */
 
@@ -926,7 +924,6 @@ mainwnd::mainwnd
         (
             mem_fun(*this, &mainwnd::adj_callback_ss)
         );
-#endif
 
         add_tooltip
         (
@@ -1383,19 +1380,7 @@ mainwnd::timer_callback ()
     if (m_adjust_bpm->get_value() != bpm)
         m_adjust_bpm->set_value(bpm);
 
-    int perfset = perf().screenset();
-    int currset = m_adjust_ss->get_value();
-    if (currset != m_current_screenset || perfset != m_current_screenset)
-    {
-        /*
-         * \change ca 2018-02-03 Fixed issue #135, was using newset!
-         */
-
-        if (currset != m_current_screenset)
-            set_screenset(currset);                 /* handles wrap-around  */
-        else if (perfset != m_current_screenset)
-            set_screenset(perfset);                 /* handles wrap-around  */
-    }
+    update_screenset();
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS
 
@@ -1510,15 +1495,49 @@ mainwnd::timer_callback ()
  * \param screenset
  *      The new prospective screen-set value.  This will become the active
  *      screen-set.
+ *
+ * \param set_adjust_ss
+ *      If true (the default), this parameter causes the m_adjust_ss control
+ *      to be updated.  If false, it is not update.  A value of false is
+ *      necessary if the spinbutton was clicked by the user.
  */
 
 void
 mainwnd::set_screenset (int screenset)
 {
-    m_current_screenset = screenset;
-    m_adjust_ss->set_value(screenset);
-    (void) m_main_wid->set_screenset(screenset, true);
-    m_entry_notes->set_text(perf().current_screen_set_notepad());
+    if (screenset != m_current_screenset)
+        perf().set_screenset(screenset);
+}
+
+/**
+ *  New function to consolidate screen-set handling and avoid contention
+ *  between various sources of screen-set changing by letting the timer
+ *  callback detect screen-set changes that would affect the user-interface.
+ *  Updates the screen-set by comparing the current screen-set to that active
+ *  in the perform object.
+ *
+ * \change ca 2018-02-03 Fixed issue #135, was using newset!
+ */
+
+void
+mainwnd::update_screenset ()
+{
+    int ss = perf().screenset();
+    if (ss != m_current_screenset)
+    {
+        m_current_screenset = ss;
+        m_adjust_ss->set_value(ss);
+        m_entry_notes->set_text(perf().current_screen_set_notepad());
+#if defined SEQ64_MULTI_MAINWID
+        if (multi_wid())
+        {
+            for (int block = 0; block < m_mainwid_count; ++block)
+                m_mainwid_blocks[block]->log_screenset(ss + block);
+        }
+        else
+#endif
+            (void) m_main_wid->set_screenset(ss);
+    }
 }
 
 /**
@@ -2509,23 +2528,32 @@ mainwnd::build_info_dialog ()
 void
 mainwnd::adj_callback_ss ()
 {
-    if (multi_wid())
+    int ssmax = spinner_max();
+    int ss = int(m_adjust_ss->get_value());
+    if (ss <= ssmax)
     {
-        int currset = int(m_adjust_ss->get_value());
-        if (currset <= spinner_max())
+        set_screenset(ss);
+        if (multi_wid())
         {
-            set_screenset(currset);             /* set active screen-set    */
-
-#if defined SEQ64_MULTI_MAINWID
             for (int block = 0; block < m_mainwid_count; ++block)
-                m_mainwid_blocks[block]->set_screenset(currset + block);
-#endif
+            {
+                Gtk::Frame * fslot = m_mainwid_frames[block];
+                int setnumber = ss + block;
+                std::string label = "   Set ";
+                label += std::to_string(setnumber);
+                if (setnumber == perf().screenset())
+                {
+                    fslot->set_shadow_type(Gtk::SHADOW_OUT);
+                    label += " [active]";
+                }
+                fslot->set_label(label);
+            }
         }
     }
     else
-        set_screenset(int(m_adjust_ss->get_value()));
+        m_adjust_ss->set_value(ssmax);
 
-    m_main_wid->grab_focus();               /* allows hot-keys to work  */
+    m_main_wid->grab_focus();               /* allows the hot-keys to work  */
 }
 
 /**
@@ -2569,7 +2597,7 @@ mainwnd::adj_callback_wid (int widblock)
             std::string label = "   Set ";
             label += std::to_string(newset);
             if (widblock == 0)
-                perf().set_screenset(newset);
+                set_screenset(newset);
 
             m_mainwid_blocks[widblock]->log_screenset(newset);  /* second   */
             if (newset == perf().screenset())

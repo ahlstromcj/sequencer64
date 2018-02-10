@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-08
+ * \updates       2018-02-10
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -834,11 +834,14 @@ mainwid::seq_from_xy (int x, int y)
  *  m_mainwnd_rows * m_mainwnd_cols.
  *
  *  This function calls perform::set_screenset(), which recapitulates the old
- *  code above completely, whereas perform::set-offset() recapitulates only
+ *  code above completely, whereas perform::set_offset() recapitulates only
  *  the line of code immediately above it.  However, note that there is a
  *  back-and-forth between setting the screenset via perform (using MIDI
  *  control) versus the GUI in the mainwnd class.  Probably useful to add a
  *  default boolean to prevent circular manipulation.
+ *
+ * \question
+ *      Can we leverage the log_screenset() function instead?
  *
  * \param ss
  *      Provides the screen-set number to set.
@@ -854,25 +857,13 @@ mainwid::seq_from_xy (int x, int y)
  */
 
 int
-mainwid::set_screenset (int ss, bool setperf)
+mainwid::set_screenset (int ss)
 {
-    /*
-     * TODO:  consider only doing this if ss != m_screenset.
-     */
-
     if (ss != m_screenset)
     {
-#if defined SEQ64_MULTI_MAINWID
-    if (m_is_multi_wid || setperf)
-        perf().set_screenset(ss);
-#else
-    if (setperf)
-        perf().set_screenset(ss);
-#endif
-
-    m_screenset = perf().screenset();
-    m_screenset_offset = perf().screenset_offset();
-    reset();                                    /* redraws the window   */
+        m_screenset = ss;                           // perf().screenset();
+        m_screenset_offset = perf().screenset_offset();
+        reset();                                    /* redraws the window   */
     }
     return m_screenset;
 }

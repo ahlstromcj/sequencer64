@@ -2660,11 +2660,14 @@ mainwnd::adj_callback_wid (int widblock)
         if (independent())
         {
             int newset = m_mainwid_adjustors[widblock]->get_value();
-            if (widblock == 0)
-                set_screenset(newset);
+            if (newset < c_max_sets)
+            {
+                if (widblock == 0)
+                    set_screenset(newset);
 
-            m_mainwid_blocks[widblock]->log_screenset(newset);  /* second   */
-            set_wid_label(newset, widblock);
+                m_mainwid_blocks[widblock]->log_screenset(newset);
+                set_wid_label(newset, widblock);
+            }
             m_main_wid->grab_focus();           /* allows hot-keys to work  */
         }
         else

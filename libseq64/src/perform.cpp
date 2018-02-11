@@ -2495,7 +2495,7 @@ perform::set_screenset (int ss)
             ss = 0;                 /* moving up from maximum back to 0     */
     }
 
-    if (ss != m_screenset)
+    if ((ss != m_screenset) && is_screenset_valid(ss))
     {
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
         if (m_auto_screenset_queue)
@@ -5924,7 +5924,7 @@ perform::lookup_keyevent_key (int seqnum)
  *  Like lookup_keyevent_key(), but assumes the slot number has already been
  *  correctly calculated.
  *
- * \param seqnum
+ * \param slot
  *      The number of the pattern/sequence for which to return the event
  *      key.  This value can range from 0 to c_seqs_in_set - 1 up to
  *      (3 * c_seqs_in_set) - 1, since we can support 32 hotkeys, plus these
@@ -5938,16 +5938,18 @@ perform::lookup_keyevent_key (int seqnum)
  */
 
 unsigned
-perform::lookup_slot_key (int seqnum)
+perform::lookup_slot_key (int slot)
 {
-    seqnum -= m_screenset_offset;
-    if (seqnum >= 0)
-        seqnum = seqnum % c_seqs_in_set;
+    if (slot >= 0 && slot < (3 * c_max_sequence))
+    {
+        slot %= c_max_keys;                         // c_seqs_in_set;
+        return keys().lookup_keyevent_key(slot);
+    }
     else
     {
-        errprintf("perform::lookup_slot_key(%d) error\n", seqnum);
+        errprintf("perform::lookup_slot_key(%d) error\n", slot);
+        return 0;
     }
-    return keys().lookup_keyevent_key(seqnum);
 }
 
 /**

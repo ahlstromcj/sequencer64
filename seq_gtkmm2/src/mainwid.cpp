@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-10
+ * \updates       2018-02-11
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -372,22 +372,38 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 int charx = base_x + m_seqarea_x - 3;
                 int chary = base_y + m_text_size_y * 4 - 2;
                 int slot = perf().slot_number(seqnum);
-                char key = perf().lookup_slot_key(seqnum);
-                char shift = char(PREFKEY(pattern_shift));
-                if ((shift > 0) && usr().is_variset())
+                char key = char(perf().lookup_slot_key(seqnum));
+                if (key > 0)
                 {
-                    if (slot >= (2 * c_seqs_in_set) && slot < (3 * c_seqs_in_set))
-                        snprintf(temp, sizeof temp, "%c%c%c", shift, shift, key);
-                    else if (slot >= c_seqs_in_set && slot < (2 * c_seqs_in_set))
-                        snprintf(temp, sizeof temp, "%c%c", shift, key);
+                    char sh = char(PREFKEY(pattern_shift));
+                    if ((sh > 0) && usr().is_variset())
+                    {
+                        if
+                        (
+                            slot >= (2 * c_seqs_in_set) &&
+                            slot < (3 * c_seqs_in_set)
+                        )
+                        {
+                            snprintf(temp, sizeof temp, "%c%c%c", sh, sh, key);
+                        }
+                        else if
+                        (
+                            slot >= c_seqs_in_set && slot < (2 * c_seqs_in_set)
+                        )
+                        {
+                            snprintf(temp, sizeof temp, "%c%c", sh, key);
+                        }
+                        else
+                        {
+                            snprintf(temp, sizeof temp, "%c", key);
+                        }
+                    }
                     else
                         snprintf(temp, sizeof temp, "%c", key);
-                }
-                else
-                    snprintf(temp, sizeof temp, "%c", key);
 
-                charx -= strlen(temp) * m_text_size_x;
-                render_string_on_pixmap(charx, chary, temp, col);
+                    charx -= strlen(temp) * m_text_size_x;
+                    render_string_on_pixmap(charx, chary, temp, col);
+                }
             }
 
             /*

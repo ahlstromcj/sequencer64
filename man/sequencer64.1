@@ -1,4 +1,4 @@
-.TH Sequencer64 "January 7 2018" "Version 0.94.5" "Sequencer64 Manual Page"
+.TH Sequencer64 "January 10 2018" "Version 0.94.5" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real-time live MIDI sequencer refactored from Seq24
@@ -226,16 +226,19 @@ Provides additional options, including the no-GUI version of
 Sequencer64.  Here are the opvalues supported:
 
 daemonize     Makes this application fork to the background.
-
 no-daemonize  Makes this application not fork to the background.
-
 log=filename  Redirect console output to a log file in the
               --home directory [$HOME/.config/sequencer64].
-
 wid=3x2,f     Sets up for multiple main windows, to show
-              multiple set in a grid of patterns panels.
-
+              multiple sets in a grid of patterns panels.
+sets=RxC      Modifies the rows and columns in a set from the
+			  default of 4x8.  Supported values of R are 4 to 8,
+			  and C can range from 8 to 12. If not 4x8, seq64 is
+			  in 'variset' mode. Affects mute groups, too.
 scale=x       Scales the main window size, from 1.0 to 3.0.
+              Actually, 0.75 will also work, and is useful
+              when using "-o wid=2x2 -o sets=8x8", though
+              the pattern labelling is mildly distorted.
 
 .SH FILES
 \fB$HOME\fP/.config/sequencer64.rc stores the main configuration settings for

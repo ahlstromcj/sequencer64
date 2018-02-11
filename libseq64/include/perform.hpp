@@ -2404,18 +2404,18 @@ private:
     bool handle_midi_control (int control, bool state);
     bool handle_midi_control_ex (int control, midi_control::action a, int v);
     bool handle_midi_control_event (const event & ev, int ctrl, int offset = 0);
-    const std::string & get_screen_set_notepad (int screenset) const;
+    const std::string & get_screenset_notepad (int screenset) const;
 
     /**
      *  Returns the notepad text for the current screen-set.
      */
 
-    const std::string & current_screen_set_notepad () const
+    const std::string & current_screenset_notepad () const
     {
-        return get_screen_set_notepad(m_screenset);
+        return get_screenset_notepad(m_screenset);
     }
 
-    void set_screen_set_notepad
+    void set_screenset_notepad
     (
         int screenset,
         const std::string & note,
@@ -2429,9 +2429,9 @@ private:
      *      The string value to set into the notepad text.
      */
 
-    void set_screen_set_notepad (const std::string & note)
+    void set_screenset_notepad (const std::string & note)
     {
-        set_screen_set_notepad(m_screenset, note);
+        set_screenset_notepad(m_screenset, note);
     }
 
     void set_playing_screenset ();

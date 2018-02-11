@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-10
+ * \updates       2018-02-11
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -505,6 +505,11 @@ mainwnd::mainwnd
 
 #if defined SEQ64_MULTI_MAINWID
 
+    /*
+     * Here, we can't "concatenate" the assignments to nullptr because all the
+     * pointers are of different types.
+     */
+
     for (int block = 0; block < SEQ64_MAINWIDS_MAX; ++block)
     {
         m_mainwid_adjustors[block] = nullptr;
@@ -546,24 +551,11 @@ mainwnd::mainwnd
             m_mainwid_frames[block] = manage(new Gtk::Frame(label));
             m_mainwid_frames[block]->set_border_width(4);
             m_mainwid_frames[block]->set_shadow_type(Gtk::SHADOW_NONE);
-
-            /*
-             * We get more control if we add the frame and mainwid
-             * separately to the table.  Try adding it to table instead.
-             *
-             *  m_mainwid_frames[block]->add(*m_mainwid_blocks[block]);
-             *  m_mainwid_frames[block]->add(*m_mainwid_spinners[block]);
-             */
         }
     }
     m_main_wid = m_mainwid_blocks[0];
     m_adjust_ss = m_mainwid_adjustors[0];
     m_spinbutton_ss = m_mainwid_spinners[0];
-    if (multi_wid())
-    {
-        m_mainwid_frames[0]->set_shadow_type(Gtk::SHADOW_OUT);
-        m_mainwid_frames[0]->set_label("   Set 0 [active]");
-    }
 
 #else
 
@@ -888,7 +880,7 @@ mainwnd::mainwnd
     (
         mem_fun(*this, &mainwnd::edit_callback_notepad)
     );
-    m_entry_notes->set_text(perf().current_screen_set_notepad());
+    m_entry_notes->set_text(perf().current_screenset_notepad());
     add_tooltip
     (
         m_entry_notes,
@@ -1527,16 +1519,65 @@ mainwnd::update_screenset ()
     {
         m_current_screenset = ss;
         m_adjust_ss->set_value(ss);
-        m_entry_notes->set_text(perf().current_screen_set_notepad());
+        m_entry_notes->set_text(perf().current_screenset_notepad());
 #if defined SEQ64_MULTI_MAINWID
         if (multi_wid())
         {
-            for (int block = 0; block < m_mainwid_count; ++block)
-                m_mainwid_blocks[block]->log_screenset(ss + block);
+            if (independent())
+            {
+                /*
+                 * Changes to existing mainwids already made.
+                 */
+            }
+            else
+            {
+                for (int block = 0; block < m_mainwid_count; ++block)
+                    m_mainwid_blocks[block]->log_screenset(ss + block);
+            }
         }
         else
-#endif
             (void) m_main_wid->set_screenset(ss);
+#else
+            (void) m_main_wid->set_screenset(ss);
+#endif
+    }
+}
+
+/**
+ *  Sets the frame label for the given mainwid, based on the set number.
+ *
+ * \param ss
+ *      Provides the number of the screen-set to use to retrieve and show the
+ *      screen-set label.  This value is not sanity-checked.
+ *
+ * \param block
+ *      Provides the number of the mainwid block for which the screen-set value
+ *      applies.  Defaults to 0.  This value is not checked, but the function
+ *      is private, so we guarantee its safety.
+ */
+
+void
+mainwnd::set_wid_label (int ss, int block)
+{
+    Gtk::Frame * fslot = m_mainwid_frames[block];
+    if (not_nullptr(fslot))
+    {
+        std::string label = "   Set ";
+        label += std::to_string(ss);
+        if (ss == perf().screenset())
+        {
+            fslot->set_shadow_type(Gtk::SHADOW_OUT);
+            label += " [active]";
+        }
+
+        std::string setname = perf().get_screenset_notepad(ss);
+        if (! setname.empty())
+        {
+            label += " \"";
+            label += setname;
+            label += "\"";
+        }
+        fslot->set_label(label);
     }
 }
 
@@ -1839,7 +1880,7 @@ mainwnd::new_file ()
          * reset();                                // m_main_wid->reset();
          */
 
-        m_entry_notes->set_text(perf().current_screen_set_notepad());
+        m_entry_notes->set_text(perf().current_screenset_notepad());
         rc().filename("");
         update_window_title();
     }
@@ -2105,8 +2146,45 @@ mainwnd::open_file (const std::string & fn)
     rc().add_recent_file(fn);           /* from Oli Kester's Kepler34       */
     update_recent_files_menu();
     update_window_title();
-    m_entry_notes->set_text(perf().current_screen_set_notepad());
+    reset_window();
+}
+
+/**
+ *  Resets the following items:
+ *
+ *      -   Active screenset
+ *      -   Screenset numbers for all of the mainwids
+ *      -   Screenset labels for all of the mainwids
+ *      -   The values in all of the spinbuttons/screenset fields TODO TODO
+ */
+
+void
+mainwnd::reset_window ()
+{
+    set_screenset(0);
+    m_entry_notes->set_text(perf().current_screenset_notepad());
     m_adjust_bpm->set_value(perf().get_beats_per_minute());
+
+    if (multi_wid())
+    {
+        int block = 0;
+        for (int col = 0; col < m_mainwid_columns; ++col)
+        {
+            for (int row = 0; row < m_mainwid_rows; ++row, ++block)
+            {
+                m_mainwid_blocks[block]->log_screenset(block);
+                if (independent())
+                    m_mainwid_adjustors[block]->set_value(block);
+
+                set_wid_label(block, block);
+            }
+        }
+//      m_adjust_ss->set_value(0);
+    }
+//  else
+//  {
+        m_adjust_ss->set_value(0);
+//  }
 }
 
 /**
@@ -2336,7 +2414,7 @@ mainwnd::file_import_dialog ()
          * reset();                                // m_main_wid->reset();
          */
 
-        m_entry_notes->set_text(perf().current_screen_set_notepad());
+        m_entry_notes->set_text(perf().current_screenset_notepad());
         m_adjust_bpm->set_value(perf().get_beats_per_minute());
         break;
     }
@@ -2536,18 +2614,7 @@ mainwnd::adj_callback_ss ()
         if (multi_wid())
         {
             for (int block = 0; block < m_mainwid_count; ++block)
-            {
-                Gtk::Frame * fslot = m_mainwid_frames[block];
-                int setnumber = ss + block;
-                std::string label = "   Set ";
-                label += std::to_string(setnumber);
-                if (setnumber == perf().screenset())
-                {
-                    fslot->set_shadow_type(Gtk::SHADOW_OUT);
-                    label += " [active]";
-                }
-                fslot->set_label(label);
-            }
+                set_wid_label(ss + block, block);
         }
     }
     else
@@ -2592,20 +2659,12 @@ mainwnd::adj_callback_wid (int widblock)
     {
         if (independent())
         {
-            Gtk::Frame * fslot = m_mainwid_frames[widblock];
             int newset = m_mainwid_adjustors[widblock]->get_value();
-            std::string label = "   Set ";
-            label += std::to_string(newset);
             if (widblock == 0)
                 set_screenset(newset);
 
             m_mainwid_blocks[widblock]->log_screenset(newset);  /* second   */
-            if (newset == perf().screenset())
-            {
-                fslot->set_shadow_type(Gtk::SHADOW_OUT);
-                label += " [active]";
-            }
-            fslot->set_label(label);
+            set_wid_label(newset, widblock);
             m_main_wid->grab_focus();           /* allows hot-keys to work  */
         }
         else
@@ -2624,7 +2683,7 @@ void
 mainwnd::edit_callback_notepad ()
 {
     const std::string & text = m_entry_notes->get_text();
-    perf().set_screen_set_notepad(text);
+    perf().set_screenset_notepad(text);
 }
 
 #ifdef SEQ64_PAUSE_SUPPORT

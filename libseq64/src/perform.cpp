@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-02-03
+ * \updates       2018-02-11
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -788,7 +788,7 @@ perform::clear_all ()
 
         std::string e;                          /* an empty string          */
         for (int sset = 0; sset < m_max_sets; ++sset)
-            set_screen_set_notepad(sset, e);
+            set_screenset_notepad(sset, e);
 
         set_have_undo(false);
         m_undo_vect.clear();                    /* ca 2016-08-16            */
@@ -2423,7 +2423,7 @@ perform::midi_control_off (int ctl)
  */
 
 void
-perform::set_screen_set_notepad
+perform::set_screenset_notepad
 (
     int screenset, const std::string & notepad, bool is_load_modification
 )
@@ -2452,7 +2452,7 @@ perform::set_screen_set_notepad
  */
 
 const std::string &
-perform::get_screen_set_notepad (int screenset) const
+perform::get_screenset_notepad (int screenset) const
 {
     static std::string s_empty;
     if (is_screenset_valid(screenset))
@@ -5945,7 +5945,7 @@ perform::lookup_slot_key (int seqnum)
         seqnum = seqnum % c_seqs_in_set;
     else
     {
-        errprintf("perform::lookup_slot_key(%d) error", seqnum);
+        errprintf("perform::lookup_slot_key(%d) error\n", seqnum);
     }
     return keys().lookup_keyevent_key(seqnum);
 }

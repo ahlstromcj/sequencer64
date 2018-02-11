@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-15
+ * \updates       2018-02-11
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1393,7 +1393,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                 for (midishort i = 0; i < len; ++i)
                     notess += read_byte();                  /* unsigned!    */
 
-                p.set_screen_set_notepad(x, notess, true);  /* load time    */
+                p.set_screenset_notepad(x, notess, true);  /* load time    */
             }
         }
         seqspec = parse_prop_header(file_size);
@@ -2310,7 +2310,7 @@ midifile::write_proprietary_track (perform & p)
     int cnotesz = 2;                            /* first value is short     */
     for (int s = 0; s < c_max_sets; ++s)
     {
-        const std::string & note = p.get_screen_set_notepad(s);
+        const std::string & note = p.get_screenset_notepad(s);
         cnotesz += 2 + note.length();           /* short + note length      */
     }
 
@@ -2359,7 +2359,7 @@ midifile::write_proprietary_track (perform & p)
     write_short(c_max_sets);                    /* data, not a tag          */
     for (int s = 0; s < c_max_sets; ++s)        /* see "cnotesz" calc       */
     {
-        const std::string & note = p.get_screen_set_notepad(s);
+        const std::string & note = p.get_screenset_notepad(s);
         write_short(note.length());
         for (unsigned n = 0; n < unsigned(note.length()); ++n)
             write_byte(note[n]);

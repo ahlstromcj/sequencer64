@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-11
+ * \updates       2018-02-13
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -2164,7 +2164,6 @@ mainwnd::reset_window ()
     set_screenset(0);
     m_entry_notes->set_text(perf().current_screenset_notepad());
     m_adjust_bpm->set_value(perf().get_beats_per_minute());
-
     if (multi_wid())
     {
         int block = 0;
@@ -2179,12 +2178,9 @@ mainwnd::reset_window ()
                 set_wid_label(block, block);
             }
         }
-//      m_adjust_ss->set_value(0);
     }
-//  else
-//  {
+    else
         m_adjust_ss->set_value(0);
-//  }
 }
 
 /**
@@ -2617,8 +2613,13 @@ mainwnd::adj_callback_ss ()
                 set_wid_label(ss + block, block);
         }
     }
-    else
-        m_adjust_ss->set_value(ssmax);
+
+    /*
+     * Not advisable to change the control's value in its callback!
+     *
+     *  else
+     *      m_adjust_ss->set_value(ssmax);
+     */
 
     m_main_wid->grab_focus();               /* allows the hot-keys to work  */
 }
@@ -3071,12 +3072,12 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 
         if (! perf().mainwnd_key_event(k))
         {
-            if (k.key() == PREFKEY(bpm_dn))
+            if (k.is(PREFKEY(bpm_dn)))
             {
                 midibpm newbpm = perf().decrement_beats_per_minute();
                 m_adjust_bpm->set_value(double(newbpm));
             }
-            else if (k.key() == PREFKEY(bpm_up))
+            else if (k.is(PREFKEY(bpm_up)))
             {
                 midibpm newbpm = perf().increment_beats_per_minute();
                 m_adjust_bpm->set_value(double(newbpm));
@@ -3088,24 +3089,24 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
              * perform function.
              */
 
-            if (k.key() == PREFKEY(screenset_dn) || k.key() == SEQ64_Page_Down)
+            if (k.is(PREFKEY(screenset_dn)) || k.is(SEQ64_Page_Down))
             {
                 int newss = perf().decrement_screenset();
                 set_screenset(newss);                     /* does it all now */
             }
-            else if (k.key() == PREFKEY(screenset_up) || k.key() == SEQ64_Page_Up)
+            else if (k.is(PREFKEY(screenset_up)) || k.is(SEQ64_Page_Up))
             {
                 int newss = perf().increment_screenset();
                 set_screenset(newss);                     /* does it all now */
             }
 #ifdef SEQ64_MAINWND_TAP_BUTTON
-            else if (k.key() == PREFKEY(tap_bpm))
+            else if (k.is(PREFKEY(tap_bpm)))
             {
                 tap();
             }
 #endif
 #ifdef SEQ64_STAZED_MENU_BUTTONS
-            else if (k.key() == PREFKEY(toggle_mutes))
+            else if (k.is(PREFKEY(toggle_mutes)))
             {
                 /*
                  * TODO: SEQ64_MULTI_MAINWND
@@ -3113,27 +3114,28 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 
                 m_main_wid->toggle_playing_tracks();
             }
-            else if (k.key() == PREFKEY(song_mode))
+            else if (k.is(PREFKEY(song_mode)))
             {
                 toggle_song_mode();
             }
-            else if (k.key() == PREFKEY(menu_mode))
+            else if (k.is(PREFKEY(menu_mode)))
             {
                 toggle_menu_mode();
             }
 #endif
 #ifdef SEQ64_SONG_RECORDING
-            else if (k.key() == PREFKEY(song_record))
+            else if (k.is(PREFKEY(song_record)))
             {
                 toggle_song_record();
             }
+
             /*
              * Handle this like the queue key, in
              * perform::mainwnd_key_event().
              *
-            else if (k.key() == PREFKEY(oneshot_queue))
+            else if (k.is(PREFKEY(oneshot_queue)))
             {
-                // TODO              toggle_menu_mode();
+                // TODO: toggle_menu_mode();
             }
              */
 #endif
@@ -3279,11 +3281,11 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             }
             else
             {
-                if (k.key() == PREFKEY(pattern_edit))
+                if (k.is(PREFKEY(pattern_edit)))
                 {
                     m_call_seq_edit = ! m_call_seq_edit;
                 }
-                else if (k.key() == PREFKEY(pattern_shift))
+                else if (k.is(PREFKEY(pattern_shift)))
                 {
                     ++m_call_seq_shift;
                     if (m_call_seq_shift == 3)
@@ -3295,7 +3297,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 
                     set_status_text(temp);
                 }
-                else if (k.key() == PREFKEY(event_edit))
+                else if (k.is(PREFKEY(event_edit)))
                 {
                     m_call_seq_eventedit = ! m_call_seq_eventedit;
                 }
@@ -3312,9 +3314,9 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                     bool ok = is_ctrl_key(ev);
                     if (ok)
                     {
-                        if (k.key() == SEQ64_l)
+                        if (k.is(SEQ64_l))
                             perf().learn_toggle();
-                        else if (k.key() == SEQ64_p)
+                        else if (k.is(SEQ64_p))
                             jack_dialog();
                     }
                 }

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-02-11
+ * \updates       2018-02-13
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -2198,14 +2198,18 @@ perform::log_current_tempo ()
  *  Encapsulates some calls used in mainwnd.  The value set here will
  *  represent the "active" screen-set in multi-window mode.
  *
+ * \param amount
+ *      Indicates the amount the screenset is to be decremented.  The default
+ *      value is 1.
+ *
  * \return
  *      Returns the decremented screen-set value.
  */
 
 int
-perform::decrement_screenset ()
+perform::decrement_screenset (int amount)
 {
-    int result = screenset() - 1;
+    int result = screenset() - amount;
     set_screenset(result);
     return result;
 }
@@ -2214,14 +2218,18 @@ perform::decrement_screenset ()
  *  Encapsulates some calls used in mainwnd.  The value set here will
  *  represent the "active" screen-set in multi-window mode.
  *
+ * \param amount
+ *      Indicates the amount the screenset is to be incremented.  The default
+ *      value is 1.
+ *
  * \return
  *      Returns the incremented screen-set value.
  */
 
 int
-perform::increment_screenset ()
+perform::increment_screenset (int amount)
 {
-    int result = screenset() + 1;
+    int result = screenset() + amount;
     set_screenset(result);
     return result;
 }
@@ -2248,7 +2256,9 @@ bool
 perform::is_seq_valid (int seq) const
 {
     if (seq >= 0 && seq < m_sequence_max)   /* do not use m_sequence_high   */
+    {
         return true;
+    }
     else
     {
         if (SEQ64_IS_NULL_SEQUENCE(seq))
@@ -2257,7 +2267,9 @@ perform::is_seq_valid (int seq) const
         }
         else if (! SEQ64_IS_DISABLED_SEQUENCE(seq))
         {
+#ifdef SEQ64_USE_DEBUG_OUTPUT
             errprintf("is_seq_valid(): seq = %d\n", seq);
+#endif
         }
         return false;
     }
@@ -2489,10 +2501,14 @@ perform::set_screenset (int ss)
         ss = m_max_sets - 1;
     else if (ss >= m_max_sets)
     {
+#if USE_THIS_DODGY_CODE
         if (m_screenset == 0)
             ss = m_max_sets - 1;    /* at zero, dropping to largest value   */
         else
             ss = 0;                 /* moving up from maximum back to 0     */
+#else
+        ss = 0;
+#endif
     }
 
     if ((ss != m_screenset) && is_screenset_valid(ss))
@@ -6298,7 +6314,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
 {
     bool result = OR_EQUIVALENT(k.key(), keys().start(), keys().stop());
     if (! result)
-        result = k.key() == keys().pause();
+        result = k.is(keys().pause());
 
     if (result)
     {
@@ -6307,7 +6323,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
 #ifdef USE_CONSOLIDATED_PLAYBACK
 
         playback_action_t action = PLAYBACK_STOP;
-        if (k.key() == keys().start())
+        if (k.is(keys().start()))
         {
             if (onekey)
             {
@@ -6319,13 +6335,13 @@ perform::playback_key_event (const keystroke & k, bool songmode)
             else if (! is_running())
                 action = PLAYBACK_START;
         }
-        else if (k.key() == keys().pause())
+        else if (k.is(keys().pause()))
             action = PLAYBACK_PAUSE;
 
 #else   // USE_CONSOLIDATED_PLAYBACK
 
         bool isplaying = false;
-        if (k.key() == keys().start())
+        if (k.is(keys().start()))
         {
             if (onekey)
             {
@@ -6350,11 +6366,11 @@ perform::playback_key_event (const keystroke & k, bool songmode)
                 isplaying = true;
             }
         }
-        else if (k.key() == keys().stop())
+        else if (k.is(keys().stop()))
         {
             stop_playing();
         }
-        else if (k.key() == keys().pause())
+        else if (k.is(keys().pause()))
         {
             if (is_running())
                 pause_playing(songmode);

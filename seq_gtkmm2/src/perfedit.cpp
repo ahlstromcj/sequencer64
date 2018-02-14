@@ -997,12 +997,12 @@ perfedit::on_key_press_event (GdkEventKey * ev)
         }
         else if (is_ctrl_key(ev))
         {
-            if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))        /* undo  */
+            if (k.is(SEQ64_z, SEQ64_Z))        /* undo  */
             {
                 undo();
                 return true;
             }
-            else if (OR_EQUIVALENT(ev->keyval, SEQ64_r, SEQ64_R))   /* redo  */
+            else if (k.is(SEQ64_r, SEQ64_R))   /* redo  */
             {
                 redo();
                 return true;

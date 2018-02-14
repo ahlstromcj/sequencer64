@@ -6312,7 +6312,7 @@ perform::stop_key ()
 bool
 perform::playback_key_event (const keystroke & k, bool songmode)
 {
-    bool result = OR_EQUIVALENT(k.key(), keys().start(), keys().stop());
+    bool result = k.is(keys().start(), keys().stop());
     if (! result)
         result = k.is(keys().pause());
 

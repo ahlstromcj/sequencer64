@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-01
+ * \updates       2018-02-13
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -115,7 +115,7 @@
 #include "event.hpp"
 #include "fruityseq.hpp"                /* seq64::FruitySeqEventInput   */
 #include "fruityseqroll.hpp"            /* seq64::FruitySeqRollInput    */
-#include "gdk_basic_keys.h"
+#include "keystroke.hpp"                /* uses "gdk_basic_keys.h"      */
 #include "globals.h"
 #include "gtk_helpers.h"
 #include "gui_key_tests.hpp"            /* is_ctrl_key(), etc.          */
@@ -3305,9 +3305,10 @@ seqedit::on_key_press_event (GdkEventKey * ev)
     bool result = false;
     std::string focus_name = get_focus()->get_name();
     bool in_name_field = focus_name == "gtkmm__GtkEntry";   /* g++ only!    */
+    keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
     if (is_ctrl_key(ev))
     {
-        if (ev->keyval == 'w')
+        if (k.is(SEQ64_w))
         {
             /*
              * Here, we must return immediately, since this function deletes
@@ -3316,18 +3317,18 @@ seqedit::on_key_press_event (GdkEventKey * ev)
 
             return on_delete_event((GdkEventAny *)(ev));
         }
-        else if (ev->keyval == SEQ64_Page_Up)   /* zoom in              */
+        else if (k.is(SEQ64_Page_Up))               /* zoom in              */
         {
             set_zoom(m_zoom / 2);
             result = true;
         }
-        else if (ev->keyval == SEQ64_Page_Down) /* zoom out             */
+        else if (k.is(SEQ64_Page_Down))             /* zoom out             */
         {
             set_zoom(m_zoom * 2);
             result = true;
         }
 #ifdef SEQ64_STAZED_LFO_SUPPORT
-        else if (ev->keyval == 'l')
+        else if (k.is(SEQ64_l))
         {
             m_lfo_wnd->toggle_visible();
         }
@@ -3335,29 +3336,29 @@ seqedit::on_key_press_event (GdkEventKey * ev)
     }
     else if (is_shift_key(ev))
     {
-        if (ev->keyval == SEQ64_Page_Down)      /* scroll rightward     */
+        if (k.is(SEQ64_Page_Down))                  /* scroll rightward     */
         {
             double step = m_hadjust->get_page_increment();
             horizontal_adjust(step);
             result = true;
         }
-        else if (OR_EQUIVALENT(ev->keyval, SEQ64_End, SEQ64_KP_End))
+        else if (k.is(SEQ64_End, SEQ64_KP_End))
         {
-            horizontal_set(9999999.0);          /* scroll to the end    */
+            horizontal_set(9999999.0);              /* scroll to the end    */
             result = true;
         }
-        else if (ev->keyval == SEQ64_Page_Up)   /* scroll leftward      */
+        else if (k.is(SEQ64_Page_Up))               /* scroll leftward      */
         {
             double step = m_hadjust->get_page_increment();
             horizontal_adjust(-step);
             result = true;
         }
-        else if (OR_EQUIVALENT(ev->keyval, SEQ64_Home, SEQ64_KP_Home))
+        else if (k.is(SEQ64_Home, SEQ64_KP_Home))
         {
-            horizontal_set(0);                  /* scroll to beginning  */
+            horizontal_set(0);                      /* scroll to beginning  */
             result = true;
         }
-        else if (ev->keyval == SEQ64_Z)        /* zoom in               */
+        else if (k.is(SEQ64_Z))                     /* zoom in               */
         {
             if (! in_name_field)
             {
@@ -3374,7 +3375,7 @@ seqedit::on_key_press_event (GdkEventKey * ev)
          * Handled in Shift key handling above now.
          */
 
-        if (ev->keyval == SEQ64_Z)              /* zoom in              */
+        if (k.is(SEQ64_Z))                          /* zoom in              */
         {
             if (! in_name_field)
             {
@@ -3384,15 +3385,15 @@ seqedit::on_key_press_event (GdkEventKey * ev)
         }
         else
 #endif
-        if (ev->keyval == SEQ64_0)              /* reset to normal zoom */
+        if (k.is(SEQ64_0))                          /* reset to normal zoom */
         {
             if (! in_name_field)
             {
-                set_zoom(m_initial_zoom);       /* not usr().zoom())    */
+                set_zoom(m_initial_zoom);           /* not usr().zoom())    */
                 result = true;
             }
         }
-        else if (ev->keyval == SEQ64_z)         /* zoom out             */
+        else if (k.is(SEQ64_z))                     /* zoom out             */
         {
             if (! in_name_field)
             {
@@ -3400,26 +3401,26 @@ seqedit::on_key_press_event (GdkEventKey * ev)
                 result = true;
             }
         }
-        else if (ev->keyval == SEQ64_Page_Down) /* scroll downward      */
+        else if (k.is(SEQ64_Page_Down))             /* scroll downward      */
         {
             double step = m_vadjust->get_page_increment();
             vertical_adjust(step);
             result = true;
         }
-        else if (OR_EQUIVALENT(ev->keyval, SEQ64_End, SEQ64_KP_End))
+        else if (k.is(SEQ64_End, SEQ64_KP_End))
         {
-            vertical_set(9999999.0);            /* scroll to the end    */
+            vertical_set(9999999.0);                /* scroll to the end    */
             result = true;
         }
-        else if (ev->keyval == SEQ64_Page_Up)   /* scroll upward        */
+        else if (k.is(SEQ64_Page_Up))               /* scroll upward        */
         {
             double step = m_vadjust->get_page_increment();
             vertical_adjust(-step);
             result = true;
         }
-        else if (OR_EQUIVALENT(ev->keyval, SEQ64_Home, SEQ64_KP_Home))
+        else if (k.is(SEQ64_Home, SEQ64_KP_Home))
         {
-            vertical_set(0);                    /* scroll to beginning  */
+            vertical_set(0);                        /* scroll to beginning  */
             result = true;
         }
     }

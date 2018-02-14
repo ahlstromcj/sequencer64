@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-15
+ * \updates       2018-02-13
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -1333,10 +1333,8 @@ perfroll::on_key_press_event (GdkEventKey * ev)
 
     if (k.is(perf().keys().pointer_position()))
     {
-        int x = 0;
-        int y = 0;
         midipulse tick = 0;
-
+        int x = 0, y = 0;
         get_pointer(x, y);
         if (x < 0)
             x = 0;
@@ -1388,41 +1386,41 @@ perfroll::on_key_press_event (GdkEventKey * ev)
             }
             else if (is_shift)
             {
-                if (ev->keyval == SEQ64_Z)          /* zoom in, "z" no go   */
+                if (k.is(SEQ64_Z))              /* zoom in, "z" no go   */
                 {
                     m_parent.set_zoom(m_zoom / 2);
                     result = true;
                 }
-                else if (ev->keyval == SEQ64_Up)    /* horizontal movement  */
+                else if (k.is(SEQ64_Up))        /* horizontal movement  */
                 {
                     double step = m_hadjust.get_step_increment();
                     horizontal_adjust(-step);
                     result = true;
                 }
-                else if (ev->keyval == SEQ64_Down)
+                else if (k.is(SEQ64_Down))
                 {
                     double step = m_hadjust.get_step_increment();
                     horizontal_adjust(step);
                     result = true;
                 }
-                else if (ev->keyval == SEQ64_Page_Up)
+                else if (k.is(SEQ64_Page_Up))
                 {
                     double step = m_hadjust.get_page_increment();
                     horizontal_adjust(-step);
                     result = true;
                 }
-                else if (OR_EQUIVALENT(ev->keyval, SEQ64_Home, SEQ64_KP_Home))
+                else if (k.is(SEQ64_Home, SEQ64_KP_Home))
                 {
                     horizontal_set(0);              /* scroll to beginning  */
                     result = true;
                 }
-                else if (ev->keyval == SEQ64_Page_Down)
+                else if (k.is(SEQ64_Page_Down))
                 {
                     double step = m_hadjust.get_page_increment();
                     horizontal_adjust(step);
                     result = true;
                 }
-                else if (OR_EQUIVALENT(ev->keyval, SEQ64_End, SEQ64_KP_End))
+                else if (k.is(SEQ64_End, SEQ64_KP_End))
                 {
                     horizontal_set(9999999.0);      /* scroll to the end    */
                     result = true;
@@ -1430,70 +1428,70 @@ perfroll::on_key_press_event (GdkEventKey * ev)
             }
             else
             {
-                if (ev->keyval == SEQ64_p)
+                if (k.is(SEQ64_p))
                 {
                     activate_adding(true);
                     result = true;
                 }
-                else if (ev->keyval == SEQ64_x)     /* "x-scape" the mode   */
+                else if (k.is(SEQ64_x))             /* "x-scape" the mode   */
                 {
                     activate_adding(false);
                     result = true;
                 }
-                else if (ev->keyval == SEQ64_0)     /* reset to normal zoom */
+                else if (k.is(SEQ64_0))             /* reset to normal zoom */
                 {
                     m_parent.set_zoom(c_perf_scale_x);
                     result = true;
                 }
-                else if (ev->keyval == SEQ64_z)     /* zoom out             */
+                else if (k.is(SEQ64_z))             /* zoom out             */
                 {
                     m_parent.set_zoom(m_zoom * 2);
                     result = true;
                 }
-                else if (ev->keyval == SEQ64_Left)
+                else if (k.is(SEQ64_Left))
                 {
                     result = handle_motion_key(true);
                     if (result)
                         perf().modify();
                 }
-                else if (ev->keyval == SEQ64_Right)
+                else if (k.is(SEQ64_Right))
                 {
                     result = handle_motion_key(false);
                     if (result)
                         perf().modify();
                 }
-                else if (ev->keyval == SEQ64_Up)    /* vertical movement    */
+                else if (k.is(SEQ64_Up))            /* vertical movement    */
                 {
                     double step = m_vadjust.get_step_increment();
                     vertical_adjust(-step);
                     result = true;
                 }
-                else if (ev->keyval == SEQ64_Down)
+                else if (k.is(SEQ64_Down))
                 {
                     double step = m_vadjust.get_step_increment();
                     vertical_adjust(step);
                     result = true;
                 }
-                else if (ev->keyval == SEQ64_Page_Up)
+                else if (k.is(SEQ64_Page_Up))
                 {
                     double step = m_hadjust.get_page_increment();
                     vertical_adjust(-step);
                     result = true;
                 }
-                else if (OR_EQUIVALENT(ev->keyval, SEQ64_Home, SEQ64_KP_Home))
+                else if (k.is(SEQ64_Home, SEQ64_KP_Home))
                 {
-                    vertical_set(0);            /* scroll to beginning  */
+                    vertical_set(0);                /* scroll to beginning  */
                     result = true;
                 }
-                else if (ev->keyval == SEQ64_Page_Down)
+                else if (k.is(SEQ64_Page_Down))
                 {
                     double step = m_hadjust.get_page_increment();
                     vertical_adjust(step);
                     result = true;
                 }
-                else if (OR_EQUIVALENT(ev->keyval, SEQ64_End, SEQ64_KP_End))
+                else if (k.is(SEQ64_End, SEQ64_KP_End))
                 {
-                    vertical_set(9999999.0);            /* scroll to the end    */
+                    vertical_set(9999999.0);        /* scroll to the end    */
                     result = true;
                 }
             }

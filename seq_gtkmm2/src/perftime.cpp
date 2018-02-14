@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-10
+ * \updates       2018-02-13
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -395,56 +395,55 @@ bool
 perftime::key_press_event (GdkEventKey * ev)
 {
     bool result = false;
+    keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS);
+    if (k.is(SEQ64_l))
     {
-        if (ev->keyval == SEQ64_l)
+        if (m_left_marker_tick == (-1))
         {
-            if (m_left_marker_tick == (-1))
-            {
-                m_right_marker_tick = (-1);
-                m_left_marker_tick = perf().get_left_tick();
-            }
+            m_right_marker_tick = (-1);
+            m_left_marker_tick = perf().get_left_tick();
         }
-        else if (ev->keyval == SEQ64_r)
+    }
+    else if (k.is(SEQ64_r))
+    {
+        if (m_right_marker_tick == (-1))
         {
-            if (m_right_marker_tick == (-1))
-            {
-                m_left_marker_tick = (-1);
-                m_right_marker_tick = perf().get_right_tick();
-            }
+            m_left_marker_tick = (-1);
+            m_right_marker_tick = perf().get_right_tick();
         }
-        else if (ev->keyval == SEQ64_x)             /* "x-scape" the modes  */
+    }
+    else if (k.is(SEQ64_x))                         /* "x-scape" the modes  */
+    {
+        m_left_marker_tick = m_right_marker_tick = (-1);
+    }
+    else if (k.is(SEQ64_Left))
+    {
+        if (m_left_marker_tick != (-1))
         {
-            m_left_marker_tick = m_right_marker_tick = (-1);
+            m_left_marker_tick -= m_snap;
+            perf().set_left_tick(m_left_marker_tick);
+            result = true;
         }
-        else if (ev->keyval == SEQ64_Left)
+        else if (m_right_marker_tick != (-1))
         {
-            if (m_left_marker_tick != (-1))
-            {
-                m_left_marker_tick -= m_snap;
-                perf().set_left_tick(m_left_marker_tick);
-                result = true;
-            }
-            else if (m_right_marker_tick != (-1))
-            {
-                m_right_marker_tick -= m_snap;
-                perf().set_right_tick(m_right_marker_tick);
-                result = true;
-            }
+            m_right_marker_tick -= m_snap;
+            perf().set_right_tick(m_right_marker_tick);
+            result = true;
         }
-        else if (ev->keyval == SEQ64_Right)
+    }
+    else if (k.is(SEQ64_Right))
+    {
+        if (m_left_marker_tick != (-1))
         {
-            if (m_left_marker_tick != (-1))
-            {
-                m_left_marker_tick += m_snap;
-                perf().set_left_tick(m_left_marker_tick);
-                result = true;
-            }
-            else if (m_right_marker_tick != (-1))
-            {
-                m_right_marker_tick += m_snap;
-                perf().set_right_tick(m_right_marker_tick);
-                result = true;
-            }
+            m_left_marker_tick += m_snap;
+            perf().set_left_tick(m_left_marker_tick);
+            result = true;
+        }
+        else if (m_right_marker_tick != (-1))
+        {
+            m_right_marker_tick += m_snap;
+            perf().set_right_tick(m_right_marker_tick);
+            result = true;
         }
     }
     if (result)

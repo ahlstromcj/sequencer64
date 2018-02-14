@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-17
+ * \updates       2018-02-13
  * \license       GNU GPLv2 or above
  *
  *  We are currently trying to get event processing to accomodate tempo
@@ -38,7 +38,7 @@
 #include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT, etc.       */
 #include "event.hpp"
-#include "gdk_basic_keys.h"
+#include "keystroke.hpp"                /* instead of gdk_basic_keys.h  */
 #include "gui_key_tests.hpp"            /* seq64::is_no_modifier()      */
 #include "perform.hpp"
 #include "seqevent.hpp"
@@ -1101,7 +1101,8 @@ seqevent::on_key_press_event (GdkEventKey * ev)
     bool result = false;
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
-        if (ev->keyval == SEQ64_Delete || ev->keyval == SEQ64_BackSpace)
+        keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS);
+        if (k.is(SEQ64_Delete, SEQ64_BackSpace))
         {
             m_seq.cut_selected(false);      /* cut events without copying   */
             result = true;
@@ -1112,22 +1113,22 @@ seqevent::on_key_press_event (GdkEventKey * ev)
              * Do we really need to test the capital letters?
              */
 
-            if (ev->keyval == SEQ64_x || ev->keyval == SEQ64_X)     /* cut  */
+            if (k.is(SEQ64_x, SEQ64_X))     /* cut  */
             {
                 m_seq.cut_selected();       /* cut events with copying      */
                 result = true;
             }
-            if (ev->keyval == SEQ64_c || ev->keyval == SEQ64_C)     /* copy */
+            if (k.is(SEQ64_c, SEQ64_C))     /* copy */
             {
                 m_seq.copy_selected();
                 result = true;
             }
-            if (ev->keyval == SEQ64_v || ev->keyval == SEQ64_V)    /* paste */
+            if (k.is(SEQ64_v, SEQ64_V))     /* paste */
             {
                 start_paste();              /* also calls perf().modify()   */
                 result = true;
             }
-            if (ev->keyval == SEQ64_z || ev->keyval == SEQ64_Z)     /* Undo */
+            if (k.is(SEQ64_z, SEQ64_Z))     /* Undo */
             {
                 m_seq.pop_undo();   // how to detect all modifications undone?
                 result = true;
@@ -1139,14 +1140,14 @@ seqevent::on_key_press_event (GdkEventKey * ev)
         }
         if (! result)
         {
-            if (ev->keyval == SEQ64_p)
+            if (k.is(SEQ64_p))
             {
                 // WORK THIS OUT !!!!!!!!!!!
                 // m_seq24_interaction.set_adding(true, *this);
                 set_adding(true);
                 result = true;
             }
-            else if (ev->keyval == SEQ64_x)         /* "x-scape" the mode   */
+            else if (k.is(SEQ64_x))         /* "x-scape" the mode   */
             {
                 // WORK THIS OUT !!!!!!!!!!!
                 // m_seq24_interaction.set_adding(false, *this);

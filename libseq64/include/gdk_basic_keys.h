@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-08-20
+ * \updates       2018-02-13
  * \license       GNU GPLv2 or above
  *
  *  This file is provided as a convenience so that we have some reasonable
@@ -49,14 +49,14 @@
 
 #define CAST_EQUIVALENT(x, y)           ((int)(x) == (int)(y))
 
+#ifdef USE_THESE_IF_NECESSARY
+#define OR_EQUIVALENT(x, y, z)          ((x) == (y) || (x) == (z))
+#define AND_EQUIVALENT(x, y, z)         ((x) == (y) && (x) == (z))
 #define CAST_AND_EQUIVALENT(x, y, z) \
  ((int)(x) == (int)(y) && (int)(x) == (int)(z))
-
 #define CAST_OR_EQUIVALENT(x, y, z) \
  ((int)(x) == (int)(y) || (int)(x) == (int)(z))
-
-#define AND_EQUIVALENT(x, y, z)         ((x) == (y) && (x) == (z))
-#define OR_EQUIVALENT(x, y, z)          ((x) == (y) || (x) == (z))
+#endif
 
 /**
  *  Defines our own names for keystrokes, so that we don't need to rely

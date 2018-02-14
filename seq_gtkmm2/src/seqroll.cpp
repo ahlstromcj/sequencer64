@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-21
+ * \updates       2018-02-13
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -2111,42 +2111,42 @@ seqroll::on_key_press_event (GdkEventKey * ev)
              * Do we really need to test for the capital letters?
              */
 
-            if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))        /* cut   */
+            if (k.is(SEQ64_x, SEQ64_X))        /* cut   */
             {
                 m_seq.cut_selected();
                 result = true;
             }
-            else if (OR_EQUIVALENT(ev->keyval, SEQ64_c, SEQ64_C))   /* copy  */
+            else if (k.is(SEQ64_c, SEQ64_C))   /* copy  */
             {
                 m_seq.copy_selected();
                 result = true;
             }
-            else if (OR_EQUIVALENT(ev->keyval, SEQ64_v, SEQ64_V))   /* paste */
+            else if (k.is(SEQ64_v, SEQ64_V))   /* paste */
             {
                 start_paste();
                 result = true;
             }
-            else if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))   /* undo  */
+            else if (k.is(SEQ64_z, SEQ64_Z))   /* undo  */
             {
                 m_seq.pop_undo();
                 result = true;
             }
-            else if (OR_EQUIVALENT(ev->keyval, SEQ64_r, SEQ64_R))   /* redo  */
+            else if (k.is(SEQ64_r, SEQ64_R))   /* redo  */
             {
                 m_seq.pop_redo();
                 result = true;
             }
-            else if (OR_EQUIVALENT(ev->keyval, SEQ64_a, SEQ64_A))   /* all   */
+            else if (k.is(SEQ64_a, SEQ64_A))   /* all   */
             {
                 m_seq.select_all();
                 result = true;
             }
-            else if (ev->keyval == SEQ64_Left)
+            else if (k.is(SEQ64_Left))
             {
                 grow_selected_notes(-1);
                 result = true;
             }
-            else if (ev->keyval == SEQ64_Right)
+            else if (k.is(SEQ64_Right))
             {
                 grow_selected_notes(1);
                 result = true;
@@ -2161,7 +2161,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
              * if (! perf().is_playing)
              */
 
-            if (OR_EQUIVALENT(ev->keyval, SEQ64_Delete, SEQ64_BackSpace))
+            if (k.is(SEQ64_Delete, SEQ64_BackSpace))
             {
                 m_seq.cut_selected(false);      /* does not copy the events */
                 result = true;
@@ -2170,39 +2170,39 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             /*
              * Handled in perform::playback_key_event().
              *
-             * else if (ev->keyval == k.is(keys().follow_transport()))
+             * else if (k.is(keys().follow_transport()))
              * {
              *     perf().toggle_follow_transport();
              *     result = true;
              * }
              */
 
-            else if (ev->keyval == SEQ64_Home)
+            else if (k.is(SEQ64_Home))
             {
                 m_seq.set_last_tick(0);         /* was set_orig_tick()      */
                 result = true;
             }
-            else if (ev->keyval == SEQ64_Left)
+            else if (k.is(SEQ64_Left))
             {
                 move_selected_notes(-1, 0);
                 result = true;
             }
-            else if (ev->keyval == SEQ64_Right)
+            else if (k.is(SEQ64_Right))
             {
                 move_selected_notes(1, 0);
                 result = true;
             }
-            else if (ev->keyval == SEQ64_Down)
+            else if (k.is(SEQ64_Down))
             {
                 move_selected_notes(0, 1);
                 result = true;
             }
-            else if (ev->keyval == SEQ64_Up)
+            else if (k.is(SEQ64_Up))
             {
                 move_selected_notes(0, -1);
                 result = true;
             }
-            else if (CAST_OR_EQUIVALENT(ev->keyval, SEQ64_Return, SEQ64_KP_Enter))
+            else if (k.is(SEQ64_Return, SEQ64_KP_Enter))
             {
                 if (m_paste)
                     complete_paste(m_current_x, m_current_y);
@@ -2212,12 +2212,12 @@ seqroll::on_key_press_event (GdkEventKey * ev)
                 m_seq.unselect();
                 result = true;
             }
-            else if (ev->keyval == SEQ64_p)
+            else if (k.is(SEQ64_p))
             {
                 set_adding(true);
                 result = true;
             }
-            else if (ev->keyval == SEQ64_x)             /* "x-scape" the mode   */
+            else if (k.is(SEQ64_x))                 /* "x-scape" the mode   */
             {
                 set_adding(false);
                 result = true;

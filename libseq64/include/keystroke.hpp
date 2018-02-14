@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2017-08-19
+ * \updates       2018-02-13
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -134,6 +134,25 @@ public:
     bool is (unsigned ch) const
     {
         return m_key == ch;
+    }
+
+    /**
+     *  Tests the key value to see if it matches the given character exactly
+     *  (no case-insensitivity).
+     *
+     * \param ch1
+     *      The first character to be tested.
+     *
+     * \param ch2
+     *      The second character to be tested.
+     *
+     * \return
+     *      Returns true if m_key == ch1 or ch2.
+     */
+
+    bool is (unsigned ch1, unsigned ch2) const
+    {
+        return m_key == ch1 || m_key == ch2;
     }
 
     /**

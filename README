@@ -1,13 +1,13 @@
 README for Sequencer64 0.94.5 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2018-02-11
+2015-09-10 to 2018-02-14
 
-Sequencer64 is a reboot of seq24.  It extends seq24 in features and bug fixes;
+Sequencer64 is a reboot of seq24, extending seq24 in features and bug fixes;
 the heart of seq24 remains intact.  It is an old friend, and maintains some
-backward-compatibility, if you wish, with the --legacy option.  See
-https://github.com/ahlstromcj/sequencer64-doc.git.  For prebuilt Debian
-packages, see https://github.com/ahlstromcj/sequencer64-packages.git.
-A number of versions are supported, here are the two main ones:
+backward-compatibility with the --legacy option.  A "book" about seq64 can be
+found at https://github.com/ahlstromcj/sequencer64-doc.git.  Prebuilt Debian
+packages are at https://github.com/ahlstromcj/sequencer64-packages.git.  A
+number of versions are supported; here are the two main ones:
 
 Native JACK support: Seq64rtmidi/seq64
 
@@ -18,15 +18,15 @@ Native JACK support: Seq64rtmidi/seq64
 
 GUI-less native JACK support: Seq64rtmidi/seq64cli
 
-    The JACK version without a GUI.  Currently controlled only via MIDI
-    control events (start and stop events must be set up), it relies on a good
-    working configuration generated via the GUI or edited by hand.  Currently
-    the only way to load a MIDI file is as the last argument on the command
-    line.  We hope to add an OSC harness and command application eventually.
-    Supports a "daemonize" option and dumping status to a log-file in the
+    The JACK version without a GUI.  Currently controlled via MIDI control
+    events (start/stop events must be set up), it relies on a good working
+    configuration generated via the GUI or edited by hand.  Currently the only
+    way to load a MIDI file is as the last argument on the command line.  We
+    hope to add an OSC harness and command application eventually.  Supports a
+    "daemonize" option and dumping status to a log-file in the
     user-configuration directory.
 
-See the INSTALL file.
+See the INSTALL file for build-from-source instructions.
 
 Recent changes:
 
@@ -38,6 +38,8 @@ Recent changes:
             open as the last command-line argument.
         -   Fixed issues #92 and #94, and other issues with multi-wid set
             selection.
+        -   Fixed issues where drawing events in the seqedit event pane did
+            not work.
     -   Version 0.94.4:
         -   Fixed some mismanagement of the changing image for the transpose
             and play buttons that caused segfaults on some systems.
@@ -81,13 +83,12 @@ This package is oriented to developers and users who do not mind building from
 source, with a little help.  It is fairly well organized and well documented.
 Please see the INSTALL file for a brief description of installation.
 
-Initial work/thought/documentation started in July of 2015.
+Initial work/thought/documentation started in July of 2015, when I was laid
+up after some old-man surgery.
 
 See the ROADMAP file for more information and a kind of TODO list.  Also see
-contrib/notes/bugs_to_investigate.  Sequencer64 is well-documented by the
-following project, which provides a 180+-page PDF file and its LaTeX source
-code:
-
-   https://github.com/ahlstromcj/sequencer64-doc.git
+contrib/notes/bugs_to_investigate.  Sequencer64 is documented by the following
+project, a 190+-page PDF file and its LaTeX source code:
+https://github.com/ahlstromcj/sequencer64-doc.git
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

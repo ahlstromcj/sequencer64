@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-13
+ * \updates       2018-02-17
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1223,6 +1223,10 @@ mainwnd::~mainwnd ()
  *  Check if one of the edit fields (BPM spinbutton, screenset spinbutton, or
  *  the Name field) has focus.
  *
+ * \todo
+ *      We may have to revisit this one to add the Adjustment objects and the
+ *      extra objects created in multi-wid mode.
+ *
  * \return
  *      Returns true if one of the three editable/modifiable fields has the
  *      keyboard focus.
@@ -1494,11 +1498,14 @@ mainwnd::timer_callback ()
  *      necessary if the spinbutton was clicked by the user.
  */
 
-void
+int
 mainwnd::set_screenset (int screenset)
 {
+    int result = m_current_screenset;
     if (screenset != m_current_screenset)
-        perf().set_screenset(screenset);
+        result = perf().set_screenset(screenset);
+
+    return result;
 }
 
 /**
@@ -2661,14 +2668,14 @@ mainwnd::adj_callback_wid (int widblock)
         if (independent())
         {
             int newset = m_mainwid_adjustors[widblock]->get_value();
-            if (newset < c_max_sets)
-            {
+//          if (newset < c_max_sets)
+//          {
                 if (widblock == 0)
                     set_screenset(newset);
 
                 m_mainwid_blocks[widblock]->log_screenset(newset);
                 set_wid_label(newset, widblock);
-            }
+//          }
             m_main_wid->grab_focus();           /* allows hot-keys to work  */
         }
         else
@@ -3092,12 +3099,12 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             if (k.is(PREFKEY(screenset_dn)) || k.is(SEQ64_Page_Down))
             {
                 int newss = perf().decrement_screenset();
-                set_screenset(newss);                     /* does it all now */
+                (void) set_screenset(newss);            /* does it all now */
             }
             else if (k.is(PREFKEY(screenset_up)) || k.is(SEQ64_Page_Up))
             {
                 int newss = perf().increment_screenset();
-                set_screenset(newss);                     /* does it all now */
+                (void) set_screenset(newss);            /* does it all now */
             }
 #ifdef SEQ64_MAINWND_TAP_BUTTON
             else if (k.is(PREFKEY(tap_bpm)))

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-11
+ * \updates       2018-02-17
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -655,7 +655,7 @@ private:
     void toggle_playing ();
 
     bool timer_callback ();
-    void set_screenset (int screenset);
+    int set_screenset (int screenset);
 
 #ifdef SEQ64_MAINWND_TAP_BUTTON
 

@@ -107,10 +107,7 @@ update_mainwid_sequences ()
 
 mainwid::mainwid
 (
-    perform & p, int ss
-#if defined SEQ64_MULTI_MAINWID
-    , bool multiwid
-#endif
+    perform & p, int ss, bool multiwid
 ) :
     gui_drawingarea_gtk2 (p, usr().mainwid_width(), usr().mainwid_height()),
     seqmenu                 (p),
@@ -119,9 +116,7 @@ mainwid::mainwid
         progress_color() == black() ? white() : progress_color()
     ),
     m_moving_seq            (),                 // a moving sequence object
-#if defined SEQ64_MULTI_MAINWID
     m_is_multi_wid          (multiwid),
-#endif
     m_button_down           (false),
     m_moving                (false),
     m_old_seq               (0),
@@ -847,7 +842,8 @@ mainwid::seq_from_xy (int x, int y)
 
 /**
  *  Set the current screen-set.  Note that m_screenset_slots =
- *  m_mainwnd_rows * m_mainwnd_cols.
+ *  m_mainwnd_rows * m_mainwnd_cols and this will also match
+ *  perform::m_seqs_in_set.
  *
  *  This function calls perform::set_screenset(), which recapitulates the old
  *  code above completely, whereas perform::set_offset() recapitulates only
@@ -876,11 +872,8 @@ int
 mainwid::set_screenset (int ss)
 {
     if (ss != m_screenset)
-    {
-        m_screenset = ss;                           // perf().screenset();
-        m_screenset_offset = perf().screenset_offset();
-        reset();                                    /* redraws the window   */
-    }
+        log_screenset(ss);          /* changes m_screenset and the offset   */
+
     return m_screenset;
 }
 
@@ -894,6 +887,20 @@ void
 mainwid::seq_set_and_edit (int seqnum)
 {
     seqmenu::seq_set_and_edit(seqnum + m_screenset_offset);
+}
+
+/**
+ * \setter m_screenset
+ *      This function is used for altering the current screen-set
+ *      displayed by a single mainwid in multi-mainwid mode.
+ */
+
+void
+mainwid::log_screenset (int ss)
+{
+    m_screenset = ss;
+    m_screenset_offset = m_screenset_slots * ss;  // perf().screenset_offset(ss);
+    reset();
 }
 
 /**

@@ -77,15 +77,11 @@ private:
 
     sequence m_moving_seq;
 
-#if defined SEQ64_MULTI_MAINWID
-
     /**
      *  Indicates if multi-wid support is active.
      */
 
     bool m_is_multi_wid;
-
-#endif
 
     /**
      *  Indicates that the mouse button is still down.  Used in the
@@ -165,33 +161,13 @@ private:
 
 public:
 
-#if defined SEQ64_MULTI_MAINWID
     mainwid (perform & p, int ss = 0, bool multiwid = false);
-#else
-    mainwid (perform & p, int ss = 0);
-#endif
     virtual ~mainwid ();
-
     int set_screenset (int ss);
 
 private:
 
-#if defined SEQ64_MULTI_MAINWID
-
-    /**
-     * \setter m_screenset
-     *      This function is used for altering the current screen-set
-     *      displayed by a single mainwid in multi-mainwid mode.
-     */
-
-    void log_screenset (int ss)
-    {
-        m_screenset = ss;
-        m_screenset_offset = m_screenset_slots * ss;
-        reset();
-    }
-
-#endif
+    void log_screenset (int ss);
 
     /**
      *  This function redraws everything and queues up a redraw operation.

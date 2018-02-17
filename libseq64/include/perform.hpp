@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-13
+ * \updates       2018-02-17
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2236,7 +2236,7 @@ public:
     bool is_dirty_names (int seq);
     bool is_exportable (int seq) const;
 
-    void set_screenset (int ss);
+    int set_screenset (int ss);
 
     /**
      * \getter m_screenset

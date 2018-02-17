@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-02-13
+ * \updates       2018-02-17
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -2210,8 +2210,7 @@ int
 perform::decrement_screenset (int amount)
 {
     int result = screenset() - amount;
-    set_screenset(result);
-    return result;
+    return set_screenset(result);
 }
 
 /**
@@ -2230,8 +2229,7 @@ int
 perform::increment_screenset (int amount)
 {
     int result = screenset() + amount;
-    set_screenset(result);
-    return result;
+    return set_screenset(result);
 }
 
 /**
@@ -2420,7 +2418,7 @@ perform::midi_control_off (int ctl)
  *  Copies the given string into m_screenset_notepad[].
  *
  * \param screenset
- *      The ID number of the screen set, an index into the
+ *      The ID number of the screen-set, an index into the
  *      m_screenset_notepad[] array.
  *
  * \param notepad
@@ -2455,7 +2453,7 @@ perform::set_screenset_notepad
  *  Retrieves the given string from m_screenset_notepad[].
  *
  * \param screenset
- *      The ID number of the screen set, an index into the
+ *      The ID number of the screen-set, an index into the
  *      m_screenset_notepad[] array.  This value is validated.
  *
  * \return
@@ -2474,9 +2472,9 @@ perform::get_screenset_notepad (int screenset) const
 }
 
 /**
- *  Sets the m_screenset value (the index or ID of the current screen set).
+ *  Sets the m_screenset value (the index or ID of the current screen-set).
  *  It's not clear that we need to set the "is modified" flag just because we
- *  changed the screen set, so we don't.
+ *  changed the screen-set, so we don't.
  *
  *  This function is called when incrementing and decrementing the screenset.
  *  Its counterpart, set_playing_screenset(), is called when the hot-key or the
@@ -2487,14 +2485,18 @@ perform::get_screenset_notepad (int screenset) const
  *  it right.  Still undefined: SEQ64_USE_AUTO_SCREENSET_QUEUE.
  *
  * \param ss
- *      The index of the desired new screen set.  It is forced to range from
+ *      The index of the desired new screen-set.  It is forced to range from
  *      0 to m_max_sets - 1.  The clamping seems weird, but hews to seq24.
  *      What it does is let the user wrap around the screen-sets in the user
  *      interface.  The value set here will represent the "active" screen-set
  *      in multi-window mode.
+ *
+ * \return
+ *      Returns the actual final value of the screen-set that was set, i.e. the
+ *      m_screenset member value.
  */
 
-void
+int
 perform::set_screenset (int ss)
 {
     if (ss < 0)
@@ -2524,6 +2526,7 @@ perform::set_screenset (int ss)
         m_screenset_offset = screenset_offset(ss);
         unset_queued_replace();                 /* clear this new feature   */
     }
+    return m_screenset;
 }
 
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
@@ -2588,11 +2591,11 @@ perform::swap_screenset_queues (int ss0, int ss1)
 #endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
- *  Sets the screen set that is active, based on the value of m_screenset.
+ *  Sets the screen-set that is active, based on the value of m_screenset.
  *  This function is called when one of the snapshot keys is pressed.
  *
  *  For each value up to m_seqs_in_set (32), the index of the current sequence
- *  in the current screen set (m_playscreen) is obtained.  If the sequence
+ *  in the current screen-set (m_playscreen) is obtained.  If the sequence
  *  is active and the sequence actually exists, it is processed; null
  *  sequences are no longer flagged as an error, they are just ignored.
  *

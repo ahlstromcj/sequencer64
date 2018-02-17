@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-01-29
+2016-12-03 to 2018-02-16
 
 Debian (and other) Packaging:
 
@@ -8,7 +8,7 @@ Debian (and other) Packaging:
     -   Refresh the verbatim examples for the "rc" and "usr" files
         in the sequencer64-doc project.
 
-Windows:
+Windows (for the Future):
 
     -   Implement api_sysex() in PortMIDI
     -   Implement api_flush() in PortMIDI

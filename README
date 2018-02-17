@@ -1,6 +1,6 @@
 README for Sequencer64 0.94.5 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2018-02-14
+2015-09-10 to 2018-02-17
 
 Sequencer64 is a reboot of seq24, extending seq24 in features and bug fixes;
 the heart of seq24 remains intact.  It is an old friend, and maintains some
@@ -38,8 +38,8 @@ Recent changes:
             open as the last command-line argument.
         -   Fixed issues #92 and #94, and other issues with multi-wid set
             selection.
-        -   Fixed issues where drawing events in the seqedit event pane did
-            not work.
+        -   Adding events in the seqedit event pane did not work. Fixed.
+        -   Importing a file wiped out existing set notes.  Fixed.
     -   Version 0.94.4:
         -   Fixed some mismanagement of the changing image for the transpose
             and play buttons that caused segfaults on some systems.

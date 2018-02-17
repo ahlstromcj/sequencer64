@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-11
+ * \updates       2018-02-17
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -99,24 +99,17 @@ update_mainwid_sequences ()
  *      SEQ64_MULTI_MAINWND is defined, but doesn't hurt much to have it
  *      hardwired here, and it could be a good feature independent of
  *      multi-mainwid support.  The default value is 0.
- *
- * \param multiwid
- *      If multi-mainwid support is built in, and is in force, then this
- *      parameter is true.
  */
 
-mainwid::mainwid
-(
-    perform & p, int ss, bool multiwid
-) :
-    gui_drawingarea_gtk2 (p, usr().mainwid_width(), usr().mainwid_height()),
+mainwid::mainwid (perform & p, int ss)
+ :
+    gui_drawingarea_gtk2    (p, usr().mainwid_width(), usr().mainwid_height()),
     seqmenu                 (p),
     m_armed_progress_color
     (
         progress_color() == black() ? white() : progress_color()
     ),
     m_moving_seq            (),                 // a moving sequence object
-    m_is_multi_wid          (multiwid),
     m_button_down           (false),
     m_moving                (false),
     m_old_seq               (0),
@@ -852,9 +845,6 @@ mainwid::seq_from_xy (int x, int y)
  *  control) versus the GUI in the mainwnd class.  Probably useful to add a
  *  default boolean to prevent circular manipulation.
  *
- * \question
- *      Can we leverage the log_screenset() function instead?
- *
  * \param ss
  *      Provides the screen-set number to set.
  *
@@ -878,18 +868,6 @@ mainwid::set_screenset (int ss)
 }
 
 /**
- *  Calculates the sequence number based on the screenset and then
- *  calls the base-class function to bring up the pattern/sequence editor.
- *  Used with the '=' key selection, by default.
- */
-
-void
-mainwid::seq_set_and_edit (int seqnum)
-{
-    seqmenu::seq_set_and_edit(seqnum + m_screenset_offset);
-}
-
-/**
  * \setter m_screenset
  *      This function is used for altering the current screen-set
  *      displayed by a single mainwid in multi-mainwid mode.
@@ -901,6 +879,18 @@ mainwid::log_screenset (int ss)
     m_screenset = ss;
     m_screenset_offset = m_screenset_slots * ss;  // perf().screenset_offset(ss);
     reset();
+}
+
+/**
+ *  Calculates the sequence number based on the screenset and then
+ *  calls the base-class function to bring up the pattern/sequence editor.
+ *  Used with the '=' key selection, by default.
+ */
+
+void
+mainwid::seq_set_and_edit (int seqnum)
+{
+    seqmenu::seq_set_and_edit(seqnum + m_screenset_offset);
 }
 
 /**

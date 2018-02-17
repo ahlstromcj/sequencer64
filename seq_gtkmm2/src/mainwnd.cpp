@@ -530,7 +530,7 @@ mainwnd::mainwnd
     {
         std::string label = "   Set ";
         label += std::to_string(block);
-        m_mainwid_blocks[block] = manage(new mainwid(p, block, multi_wid()));
+        m_mainwid_blocks[block] = manage(new mainwid(p, block));
         if (independent() || block == 0)
         {
             m_mainwid_adjustors[block] = manage
@@ -983,7 +983,6 @@ mainwnd::mainwnd
         "Show or hide the main song editor window. Ctrl-E also brings up "
         "the editor."
     );
-    // bottomhbox->pack_end(*m_button_perfedit, HBOX_PACKING);
     bottomhbox->pack_start(*m_button_perfedit, Gtk::PACK_SHRINK);
 
 #if ! defined SEQ64_MULTI_MAINWID
@@ -1179,8 +1178,8 @@ mainwnd::mainwnd
     int width = m_main_wid->nominal_width();
     int height = m_main_wid->nominal_height();
     int menuheight = 22;
-    int bottomheight = 52;  // 48;
-    int topheight = 64;     // 52;
+    int bottomheight = 52;
+    int topheight = 64;
     if (multi_wid())
         topheight = 100;
 
@@ -1195,6 +1194,7 @@ mainwnd::mainwnd
 
     set_size_request(width, height);
     install_signal_handlers();
+    reset_window();
 }
 
 /**
@@ -1539,7 +1539,14 @@ mainwnd::update_screenset ()
             else
             {
                 for (int block = 0; block < m_mainwid_count; ++block)
-                    m_mainwid_blocks[block]->log_screenset(ss + block);
+                {
+                    int sset = ss + block;
+                    if (sset >= perf().max_sets())
+                        sset = ss - perf().max_sets() + block;
+
+                    m_mainwid_blocks[block]->log_screenset(sset);
+                    set_wid_label(sset, block);
+                }
             }
         }
         else
@@ -1847,7 +1854,6 @@ mainwnd::on_realize ()
      *  (
      *      mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
      *  );
-     *
      * set_screenset(0);           // causes a segfault
      */
 }
@@ -2243,8 +2249,7 @@ mainwnd::save_file ()
 
     midifile f
     (
-        rc().filename(), ppqn(),
-        rc().legacy_format(), usr().global_seq_feature()
+        rc().filename(), ppqn(), rc().legacy_format(), usr().global_seq_feature()
     );
     result = f.write(perf());
     if (result)
@@ -2397,7 +2402,7 @@ mainwnd::file_import_dialog ()
         try
         {
             midifile f(fn);
-            f.parse(perf(), int(m_adjust_load_offset->get_value()));
+            f.parse(perf(), int(m_adjust_load_offset->get_value()), true);
         }
         catch (...)
         {
@@ -2469,7 +2474,7 @@ mainwnd::about_dialog ()
     apptag += " ";
     apptag += seq_version();
 #else
-    std::string apptag = SEQ64_APP_NAME " " SEQ64_VERSION; // "\n";
+    std::string apptag = SEQ64_APP_NAME " " SEQ64_VERSION;
 #endif
 
     dialog.set_name(apptag);
@@ -2487,7 +2492,7 @@ mainwnd::about_dialog ()
     (
         "(C) 2002-2006 Rob C. Buse (seq24)\n"
         "(C) 2008-2016 Seq24team (seq24)\n"
-        "(C) 2015-2017 Chris Ahlstrom (sequencer64/seq64)"
+        "(C) 2015-2018 Chris Ahlstrom (sequencer64/seq64)"
     );
     dialog.set_website
     (
@@ -2617,7 +2622,13 @@ mainwnd::adj_callback_ss ()
         if (multi_wid())
         {
             for (int block = 0; block < m_mainwid_count; ++block)
-                set_wid_label(ss + block, block);
+            {
+                int sset = ss + block;
+                if (sset >= perf().max_sets())
+                    sset = ss - perf().max_sets() + block;
+
+                set_wid_label(sset, block);
+            }
         }
     }
 
@@ -2668,14 +2679,11 @@ mainwnd::adj_callback_wid (int widblock)
         if (independent())
         {
             int newset = m_mainwid_adjustors[widblock]->get_value();
-//          if (newset < c_max_sets)
-//          {
-                if (widblock == 0)
-                    set_screenset(newset);
+            if (widblock == 0)
+                newset = set_screenset(newset);
 
-                m_mainwid_blocks[widblock]->log_screenset(newset);
-                set_wid_label(newset, widblock);
-//          }
+            m_mainwid_blocks[widblock]->log_screenset(newset);
+            set_wid_label(newset, widblock);
             m_main_wid->grab_focus();           /* allows hot-keys to work  */
         }
         else
@@ -2978,8 +2986,6 @@ void
 mainwnd::tempo_log ()
 {
     (void) perf().log_current_tempo();  // TODO:  check the return value
-
-printf("tempo logged\n");
 }
 
 /**

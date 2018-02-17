@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-10
+ * \updates       2018-02-17
  * \license       GNU GPLv2 or above
  *
  *  Wonder where the name "wid" came from....
@@ -76,12 +76,6 @@ private:
      */
 
     sequence m_moving_seq;
-
-    /**
-     *  Indicates if multi-wid support is active.
-     */
-
-    bool m_is_multi_wid;
 
     /**
      *  Indicates that the mouse button is still down.  Used in the
@@ -161,7 +155,7 @@ private:
 
 public:
 
-    mainwid (perform & p, int ss = 0, bool multiwid = false);
+    mainwid (perform & p, int ss = 0);
     virtual ~mainwid ();
     int set_screenset (int ss);
 

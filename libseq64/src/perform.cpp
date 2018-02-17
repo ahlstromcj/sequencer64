@@ -2265,9 +2265,7 @@ perform::is_seq_valid (int seq) const
         }
         else if (! SEQ64_IS_DISABLED_SEQUENCE(seq))
         {
-#ifdef SEQ64_USE_DEBUG_OUTPUT
             errprintf("is_seq_valid(): seq = %d\n", seq);
-#endif
         }
         return false;
     }

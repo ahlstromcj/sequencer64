@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-06
+ * \updates       2018-02-17
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -211,7 +211,7 @@ public:
     );
     ~midifile ();
 
-    bool parse (perform & p, int a_screen_set = 0);
+    bool parse (perform & p, int a_screen_set = 0, bool importing = false);
     bool write (perform & p, bool doseqspec = true);
 
 #ifdef SEQ64_STAZED_EXPORT_SONG

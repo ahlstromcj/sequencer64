@@ -176,9 +176,11 @@
  *  mute-groups only work on screen-set 0, where as with the patch (again
  *  ignoring snapshots), they apply to the "in-view" (or "current", or
  *  "active") screen-set.
+ *
+ *  Temporarily disabled for some deeper research.
  */
 
-#define SEQ64_USE_TDEAGAN_CODE
+#define SEQ64_USE_TDEAGAN_CODE_XXX
 
 /**
  *  The amount to increment the MIDI clock pulses.  MIDI clock normal comes
@@ -943,7 +945,7 @@ perform::select_group_mute (int mutegroup)
         int groupbase = screenset_offset(mutegroup);    /* 1st seq in group */
         for (int s = 0; s < m_seqs_in_set; ++s)         /* variset issue    */
         {
-            int source = m_playscreen_offset + s;       /* m_screenset?     */
+            int source = m_playscreen_offset + s;       /* m_screenset? No. */
             int dest = groupbase + s;
             if (is_active(source))
             {
@@ -1329,6 +1331,9 @@ perform::set_and_copy_mute_group (int mutegroup)
  *
  * \change tdeagan 2015-12-22 via git pull.
  *      Replaced m_playscreen with m_screenset.
+ *
+ *  We are disabling Tim's fix for a bit in order to make sure we're doing
+ *  what Seq24 does with the playing set key. (Home).
  *
  *  It seems to us that the for (g) clause should have g range from 0 to
  *  m_max_sets, not m_seqs_in_set.  Done.

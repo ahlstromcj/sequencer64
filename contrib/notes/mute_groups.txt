@@ -58,6 +58,33 @@ perform module.
         (which is the second set of numbers) - you cannot use the first set
         (used to 'toggle').
 
+Active vs Playing screen-set:
+
+    Remember: groups work with playing screen set only.  So change the
+    screenset and give the command to make it the playing one (I set the
+    HOME key for this).
+
+    Groups work with the 32 sequences in the playing screen set (see
+    after).
+
+    m_playscreen:  When the Home key (the playset key) is struck,
+    perform::set_playing_screenset() function goes to m_playscreen_offset
+    for each sequence in the play-screen, gets the playing state of that
+    sequence, and copies it into m_track_mute_state[].  This saves the
+    statuses of the current playscreen.
+
+    Then the play-screen and offset is set to the active screenset.
+    The mute_group_tracks() function turns on each track in the new
+    play-screen (or screen-set as per tdeagan below) according to the
+    previous play-screen settings.
+
+    m_screenset: tdeagan fix uses this value instead of m_playscreen to
+    select which set to apply all of the mute states.
+
+    In summary, the playscreen-set functionality takes the current
+    play screen, gets its status, and applies them to the current
+    screen-set, making it the new playscreen.
+
 From another source:
 
     You can toggle the playing status of up to 32 previously defined

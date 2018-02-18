@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-03
+ * \updates       2018-02-18
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -140,12 +140,8 @@ sequence::sequence (int ppqn)
     m_maxbeats                  (c_maxbeats),
     m_ppqn                      (0),            /* set in constructor body   */
     m_seq_number                (-1),           /* may be set later          */
-#ifdef USE_SEQUENCE_COLOR
-    m_seq_colour                (0),
-#endif
-#ifdef USE_SEQUENCE_EDIT_MODE
+    m_seq_color                 (NONE),
     m_seq_edit_mode             (EDIT_MODE_NOTE),   /* edit_mode_t           */
-#endif
     m_length                    (0),            /* set in constructor body   */
     m_snap_tick                 (0),            /* set in constructor body   */
     m_time_beats_per_measure    (4),

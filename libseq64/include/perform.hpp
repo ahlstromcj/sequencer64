@@ -2407,6 +2407,15 @@ private:
     const std::string & get_screenset_notepad (int screenset) const;
 
     /**
+     *  A better name for get_screen_set_notepad(), adapted from Kepler34.
+     */
+
+    const std::string & get_bank_name (int bank) const
+    {
+        return get_screenset_notepad(bank);
+    }
+
+    /**
      *  Returns the notepad text for the current screen-set.
      */
 
@@ -2442,26 +2451,20 @@ private:
     void select_and_mute_group (int g_group);
     void set_song_mute (mute_op_t op);
 
-#ifdef USE_SEQUENCE_COLOR
-
     /*
      * Deals with the colors used to represent specific sequences.
      */
 
-    seq_colour_t get_seq_colour (int seqnum) const
+    thumb_colors_t get_sequence_color (int seqnum) const
     {
-        return is_active(seqnum) ? m_seqs[seqnum]->colour() : 0 ;
+        return thumb_colors_t(is_active(seqnum) ? m_seqs[seqnum]->color() : 0);
     }
 
-    void set_seq_colour (int seqnum, seq_colour_t c)
+    void set_sequence_colour (int seqnum, thumb_colors_t c)
     {
         if (is_active(seqnum))
-            m_seqs[seqnum]->colour(c);
+            m_seqs[seqnum]->color(int(c));
     }
-
-#endif  // USE_EQUENCE_COLOR
-
-#ifdef USE_SEQUENCE_EDIT_MODE
 
     /*
      * Deals with the editing mode of the specific sequence.
@@ -2482,8 +2485,6 @@ private:
         if (not_nullptr(sp))
             sp->edit_mode(ed);
     }
-
-#endif  // USE_SEQUENCE_EDIT_MODE
 
 #ifdef SEQ64_SONG_RECORDING
 

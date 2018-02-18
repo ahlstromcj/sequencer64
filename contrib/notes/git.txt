@@ -117,12 +117,19 @@ Then you need to apply (merge) changes. If your branch is derived from the
 If you had set up an upstream branch, then this command will suffice: 
 
     $ git merge develop
-   
+
+One can add the --no-commit option to allow for inspecting the merge and
+doing further tweaking of the merge before committing the merge.
+
 Then make any minor tweaks or version stamping you need to make your
 master official.  Also, it is beneficial to tag the release (as discussed
 below) to make it easier for users to determine the differences between
 major/minor releases, without having to study a bunch of intermediate
 commits.
+
+One can also merge from master to a feature-branch without a checkout:
+
+    $ git merge master feature-branch
 
 You will probably also want to merge back any tweaks made to master back
 into your branch, if you intend to do further work in that branch:

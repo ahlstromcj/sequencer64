@@ -1,5 +1,99 @@
+2018-02-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, libseq64/include/midifile.hpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp: Fixes to set
+	labelling and MIDI import.
+	* TODO, libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/mainwid.hpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp: Refining
+	main-window screensets some more.
+
+2018-02-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure.ac, seq_gtkmm2/src/seqevent.cpp: Fixed issue
+	with drawing events in seqevent pane.
+	* TODO, libseq64/include/gdk_basic_keys.h,
+	libseq64/include/keystroke.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/perftime.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqroll.cpp: Using
+	keystroke object for all key events now.
+
+2018-02-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Tweaked screenset changing.
+
+2018-02-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure.ac, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp: Tweaking
+	loop slot management.
+	* contrib/midi/README, libseq64/include/perform.hpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	man/sequencer64.1, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwnd.cpp: More progress reconciling multiwid
+	handling.
+
+2018-02-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Working on issue #94 and other problems
+	with multi-wid and set selection.
+
+2018-02-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64portmidi/seq64portmidi.cpp, Seq64rtmidi/seq64rtmidi.cpp,
+	Sequencer64/sequencer64.cpp, libseq64/include/user_settings.hpp,
+	libseq64/src/cmdlineopts.cpp, seq_gtkmm2/src/font.cpp: Trying to fix
+	-o option handling.
+
+2018-02-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/cmdlineopts.cpp, man/sequencer64.1,
+	seq_gtkmm2/src/font.cpp, seq_gtkmm2/src/maintime.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp: The basics
+	of main-window scaling done.
+
+2018-02-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/user_settings.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	man/seq64.1, man/seq64cli.1, man/sequencer64.1,
+	seq_gtkmm2/src/maintime.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Added provisional scaling option, in
+	progress.
+
+2018-02-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/calculations.hpp, libseq64/include/globals.h,
+	libseq64/src/Makefile.am, libseq64/src/globals.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, seq_gtkmm2/src/mainwnd.cpp: Removed
+	globals.cpp, add comments to rc file.
+
+2018-02-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/rc_settings.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/user_settings.cpp: Adding comments to rc file, in
+	progress.
+
+2018-02-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, configure, contrib/configs/sequencer64-launchpad.rc,
+	contrib/notes/jack-testing.txt, contrib/notes/jack.txt,
+	contrib/notes/osc.txt, contrib/scripts/make_gnu_tarball,
+	doc/dox/midi_parsing.dox: Documentation, git-ignore, and configure
+	updates.
+
 2018-02-03  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* ChangeLog, NEWS, README, VERSION, bootstrap, configure.ac: Prep
+	for more fixes in upcoming 0.94.5.
 	* : Updated user manual to 0.94.4.
 	* README, contrib/notes/git.txt: Version 0.94.4 in master.
 	* : commit 6b8d3afebfe8524637889790f6fa4c8ac28799bd Author: Chris

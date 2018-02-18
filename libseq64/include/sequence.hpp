@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-02-01
+ * \updates       2018-02-18
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -43,6 +43,7 @@
 
 #include "seq64_features.h"             /* various feature #defines     */
 #include "calculations.hpp"             /* measures_to_ticks()          */
+#include "coloring.hpp"                 /* enum thumb_colors_t          */
 #include "event_list.hpp"               /* seq64::event_list            */
 #include "midi_container.hpp"           /* seq64::midi_container        */
 #include "midibus.hpp"                  /* seq64::midibus               */
@@ -95,11 +96,9 @@ enum draw_type_t
     DRAW_TEMPO              /**< For drawing tempo meta events.             */
 };
 
-#ifdef USE_SEQUENCE_EDIT_MODE
-
 /**
- *  Provides two editing modes for a sequence.
- *  A feature adapted from Kepler34.
+ *  Provides two editing modes for a sequence.  A feature adapted from
+ *  Kepler34.  Not yet ready for prime time.
  */
 
 enum edit_mode_t
@@ -108,18 +107,10 @@ enum edit_mode_t
     EDIT_MODE_DRUM          /**< Edit as Drum input, using short notes.     */
 };
 
-#endif  // USE_SEQUENCE_EDIT_MODE
-
 /**
- *  A new type to support the concept of sequence color.  This feature cannot
- *  be used in the current versions of Sequencer64, because their color is
- *  determined by the font bitmap.  The color will be a number pointing to an
- *  RGB entry in a palette.  A future feature, we're making room for it here.
  *
  *  TODO:  Add a value for an invalid color code.
  */
-
-typedef unsigned char seq_colour_t;
 
 #ifdef SEQ64_STAZED_EXPAND_RECORD
 
@@ -510,26 +501,18 @@ private:
 
     short m_seq_number;
 
-#ifdef USE_SEQUENCE_COLOR
-
     /**
      *  Reserved for a potential feature from the Kepler34 project.  It will
      *  be an index into a palette.
      */
 
-    seq_colour_t m_seq_colour;
-
-#endif  // USE_EQUENCE_COLOR
-
-#ifdef USE_SEQUENCE_EDIT_MODE
+    thumb_colors_t m_seq_color;
 
     /**
      * A feature adapted from Kepler34.
      */
 
     edit_mode_t m_seq_edit_mode;
-
-#endif  // USE_SEQUENCE_EDIT_MODE
 
     /**
      *  Holds the length of the sequence in pulses (ticks).  This value should
@@ -798,32 +781,26 @@ public:
             m_seq_number = short(seqnum);
     }
 
-#ifdef USE_SEQUENCE_COLOR
-
     /**
-     * \getter m_seq_colour
+     * \getter m_seq_color
      */
 
-    int colour () const
+    int color () const
     {
-        return int(m_seq_colour);
+        return int(m_seq_color);
     }
 
     /**
-     * \setter m_seq_colour
+     * \setter m_seq_color
      *      This setter will set the sequence number only if it has not
      *      already been set.
      */
 
-    void colour (int c)
+    void color (int c)
     {
-        if (c >= 0 && c <= int(UCHAR_MAX))
-            m_seq_colour = seq_colour_t(c);
+        if (c >= int(BLACK) && c <= int(NONE))
+            m_seq_color = thumb_colors_t(c);
     }
-
-#endif  // USE_SEQUENCE_COLOR
-
-#ifdef USE_SEQUENCE_EDIT_MODE
 
     /**
      * \getter m_seq_edit_mode
@@ -844,8 +821,6 @@ public:
     {
         m_seq_edit_mode = mode;
     }
-
-#endif  // USE_SEQUENCE_EDIT_MODE
 
     void modify ();
     int event_count () const;

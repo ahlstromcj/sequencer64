@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-17
+ * \updates       2018-02-18
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2322,6 +2322,43 @@ public:
 public:
 
     /**
+     *  A better name for get_screen_set_notepad(), adapted from Kepler34.
+     */
+
+    const std::string & get_bank_name (int bank) const
+    {
+        return get_screenset_notepad(bank);
+    }
+
+    /**
+     * \setter m_looping
+     *
+     * \param looping
+     *      The boolean value to set for looping, used in the performance
+     *      editor.
+     */
+
+    void set_looping (bool looping)
+    {
+        m_looping = looping;
+    }
+
+    /*
+     * Deals with the colors used to represent specific sequences.
+     */
+
+    thumb_colors_t get_sequence_color (int seqnum) const
+    {
+        return thumb_colors_t(is_active(seqnum) ? m_seqs[seqnum]->color() : 0);
+    }
+
+    void set_sequence_colour (int seqnum, thumb_colors_t c)
+    {
+        if (is_active(seqnum))
+            m_seqs[seqnum]->color(int(c));
+    }
+
+    /**
      * \getter m_have_undo
      */
 
@@ -2407,15 +2444,6 @@ private:
     const std::string & get_screenset_notepad (int screenset) const;
 
     /**
-     *  A better name for get_screen_set_notepad(), adapted from Kepler34.
-     */
-
-    const std::string & get_bank_name (int bank) const
-    {
-        return get_screenset_notepad(bank);
-    }
-
-    /**
      *  Returns the notepad text for the current screen-set.
      */
 
@@ -2450,21 +2478,6 @@ private:
     void mute_group_tracks ();
     void select_and_mute_group (int g_group);
     void set_song_mute (mute_op_t op);
-
-    /*
-     * Deals with the colors used to represent specific sequences.
-     */
-
-    thumb_colors_t get_sequence_color (int seqnum) const
-    {
-        return thumb_colors_t(is_active(seqnum) ? m_seqs[seqnum]->color() : 0);
-    }
-
-    void set_sequence_colour (int seqnum, thumb_colors_t c)
-    {
-        if (is_active(seqnum))
-            m_seqs[seqnum]->color(int(c));
-    }
 
     /*
      * Deals with the editing mode of the specific sequence.
@@ -2586,20 +2599,6 @@ private:
     void play (midipulse tick);
     void set_orig_ticks (midipulse tick);
     void set_beats_per_minute (midibpm bpm);    /* more than just a setter  */
-
-    /**
-     * \setter m_looping
-     *
-     * \param looping
-     *      The boolean value to set for looping, used in the performance
-     *      editor.
-     */
-
-    void set_looping (bool looping)
-    {
-        m_looping = looping;
-    }
-
     int max_active_set () const;
 
     /*

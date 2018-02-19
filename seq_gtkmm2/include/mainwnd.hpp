@@ -92,7 +92,8 @@ namespace Gtk
 }
 
 /*
- *  The main namespace for the Sequencer64 libraries.
+ *  The main namespace for the Sequencer64 libraries. Do not enable Doxygen
+ *  documentation here, it will break the document build.
  */
 
 namespace seq64

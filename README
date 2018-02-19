@@ -1,6 +1,6 @@
 README for Sequencer64 0.94.5 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2018-02-17
+2015-09-10 to 2018-02-18
 
 Sequencer64 is a reboot of seq24, extending seq24 in features and bug fixes;
 the heart of seq24 remains intact.  It is an old friend, and maintains some
@@ -30,6 +30,7 @@ See the INSTALL file for build-from-source instructions.
 
 Recent changes:
 
+    -   Version 0.94.6:
     -   Version 0.94.5:
         -   Added the ability to scale the main window from 1.0 to 3.0 times
             its normal size.  Has issues, but makes buttons bigger and the

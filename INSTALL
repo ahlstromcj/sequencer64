@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.94.0 and above
 Chris Ahlstrom
-2015-09-10 to 2018-01-13
+2015-09-10 to 2018-02-18
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -18,6 +18,8 @@ bootstrapping setup is primarily aimed at developers.  Starting with version
     -   seq64portmidi. PortMIDI implementation; has issues, a less effective
         option for Linux; might still be used for the upcoming Windows
         implementation.
+    -   qseq64.  The seq64 (rtmidi) version of the application, with a Qt5
+        user interface.  Still a LONG WAY from usability.
 
 Quick Install:
 
@@ -526,6 +528,15 @@ DEPENDENCIES:
          -  g++-mingw-w64
          -  gdb-mingw-w64 (for debugging on Linux)
          -  mingw-w64-tools (mingw32-pkgconfig on other systems)
+      -  Qt 5.  We do not want to install qtcreater, as it installs 650 Mb
+         worth of files.  Just install the bare minimum:
+         -  qt5-default
+         -  qtbase5-dev
+         -  qtbase5-dev-tools
+         -  qtdeclarative-dev-tools
+         -  qtchooser
+         -  qtdesigner; optional if you want to tweak the GUIs, not huge,
+            provided by the qtttools5-dev-tools package in Debian.
 
    Documentation (now optional, must be built manually):
 

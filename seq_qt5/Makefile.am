@@ -1,17 +1,17 @@
 #*****************************************************************************
-# Makefile.am (seq_gtkmm2)
+# Makefile.am (libseq_qt5)
 #-----------------------------------------------------------------------------
 ##
 # \file          Makefile.am
-# \library       seq_gtkmm2
+# \library       libseq_qt5
 # \author        Chris Ahlstrom
-# \date          2015-09-11
-# \updates       2015-09-11
+# \date          2017-09-05
+# \updates       2017-09-05
 # \version       $Revision$
 # \license       $MIDICVT_SUITE_GPL_LICENSE$
 #
-#  	This file is a makefile for the seq_gtkmm2 library project.  This
-#  	makefile provides the skeleton needed to build the seq_gtkmm2 project
+#  	This file is a makefile for the seq_qt5 library project.  This
+#  	makefile provides the skeleton needed to build the seq_qt5 project
 #  	directory using GNU autotools.
 #
 #-----------------------------------------------------------------------------
@@ -68,7 +68,7 @@ DIST_SUBDIRS = $(SUBDIRS)
 
 all-local:
 	@echo "Top source-directory 'top_srcdir' is $(top_srcdir)"
-	@echo "* * * * * All libseq_gtkmm2 build items completed * * * * *"
+	@echo "* * * * * All libseq_qt5 build items completed * * * * *"
 
 #******************************************************************************
 # Directories
@@ -91,7 +91,7 @@ show:
 	@echo "builddir      = $(builddir)"
 
 #*****************************************************************************
-# Makefile.am (seq_gtkmm2)
+# Makefile.am (libseq_qt5)
 #-----------------------------------------------------------------------------
 # vim: ts=3 sw=3 noet ft=automake
 #-----------------------------------------------------------------------------

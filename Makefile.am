@@ -6,7 +6,7 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2018-01-02
+# \updates     2018-02-18
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -33,7 +33,7 @@
 # Packing targets
 #-----------------------------------------------------------------------------
 
-AUTOMAKE_OPTIONS = foreign dist-zip dist-bzip2
+AUTOMAKE_OPTIONS = foreign dist-zip dist-bzip2 subdir-objects
 MAINTAINERCLEANFILES = Makefile.in Makefile $(AUX_DIST)
 MOSTLYCLEANFILES = *~
 
@@ -149,6 +149,10 @@ endif
 
 if BUILD_PORTMIDI
 SUBDIRS = resources/pixmaps libseq64 seq_portmidi seq_gtkmm2 Seq64portmidi data man
+endif
+
+if BUILD_QTMIDI
+SUBDIRS = resources/pixmaps libseq64 seq_rtmidi seq_qt5 Seq64qt5 man
 endif
 
 if BUILD_RTMIDI

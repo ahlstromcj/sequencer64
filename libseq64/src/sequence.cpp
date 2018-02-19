@@ -4308,7 +4308,6 @@ sequence::get_next_note_event
 bool
 sequence::get_next_event (midibyte & status, midibyte & cc)
 {
-    // automutex locker(m_mutex);                   // WILL IT HELP?? No.
     while (m_iterator_draw != m_events.end())       /* NOT THREADSAFE!!!    */
     {
         midibyte j;

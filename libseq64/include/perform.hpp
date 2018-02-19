@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-18
+ * \updates       2018-02-19
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2198,7 +2198,8 @@ public:
 #endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
 
     void sequence_key (int seq);                        // encapsulation
-    std::string sequence_label(const sequence & seq);
+    std::string sequence_label (const sequence & seq);
+    std::string sequence_label (int seqnumb);           // for qperfnames
     void set_input_bus (int bus, bool input_active);    // used in options
     void set_clock_bus (int bus, clock_e clocktype);    // used in options
     bool mainwnd_key_event (const keystroke & k);

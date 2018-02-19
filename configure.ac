@@ -122,6 +122,8 @@ build_windows="no"
 
 dnl Flaky, the AR macro is set well after this test, but the GCC macro
 dnl is set before it, so that is what we use.  Odd.
+dnl
+dnl AC_MSG_RESULT([TESTING HOST OS])
 
 if test x"$windows_host" = x"yes" ; then
     if test x"$CC" = x"gcc" ; then
@@ -347,11 +349,30 @@ fi
 
 fi
 
+dnl Check for deprecated GTK constructs as per
+dnl http://www.murrayc.com/permalink/2011/01/18/avoiding-use-of-deprecated-api/
+dnl
+dnl Looks too difficult, errors in gtk headers. Try gtkmm-3 directly instead.
+dnl That is unworkable at this time, though.
+dnl
+dnl MM_ARG_ENABLE_WARNINGS([MM_WFLAGS],
+dnl  [-Wall],
+dnl  [-Wall -Wextra -Wno-missing-field-initializers -DGSEAL_ENABLE],
+dnl  [G GDK GDK_PIXBUF PANGO GTK])
+
 dnl 4. Get external flags, if any.
 
 CFLAGS="${CFLAGS}"
 
 dnl Checks for libraries.
+
+dnl DO WE NEED THIS REALLY?  Comment it out for now.
+dnl
+dnl AC_CHECK_LIB(rt, main,, AC_MSG_ERROR([POSIX.1b Realtime library missing librt]))
+
+dnl Convert from gtkmm-2.4 to gtkmm-3.0.  It currently builds either way.
+dnl No! I was mistaken, because I had left some 2.4 paths in place below.
+dnl Not supported in a Windows build at this time.
 
 if test x"$windows_host" = x"no" ; then
     AC_CHECK_LIB(gtkmm-2.4, _init,,
@@ -536,6 +557,7 @@ AC_ARG_ENABLE(qtmidi,
 
 if test "$qtmidi" != "no"; then
     build_qtmidi="yes"
+    build_rtmidi="no"
     AC_DEFINE(APP_NAME, ["qseq64"], [Names the Qt/rtmidi version of application])
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates that rtmidi is enabled])
     AC_DEFINE(QTMIDI_SUPPORT, 1, [Indicates that Qt5 is enabled])

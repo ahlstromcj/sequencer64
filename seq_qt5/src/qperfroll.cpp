@@ -8,27 +8,44 @@ namespace seq64
 {
     class perform;
 
-qperfroll::qperfroll(perform *a_perf,
-                     QWidget *parent):
-    QWidget(parent),
-    mPerf(a_perf),
-    m_roll_length_ticks(0),
-    m_drop_sequence(0),
-    m_moving(false),
-    m_growing(false),
-    m_adding(false),
-    m_adding_pressed(false),
-    zoom(1),
-    mLastTick(0),
-    seq_h(-1),
-    seq_l(-1)
+qperfroll::qperfroll (perform * a_perf, QWidget * parent)
+ :
+    QWidget             (parent),
+    mPerf               (a_perf),
+    mPen                (nullptr),
+    mBrush              (nullptr),
+    mPainter            (nullptr),
+    mTimer              (nullptr),
+    mFont               (),
+    m_snap              (0),
+    m_measure_length    (0),
+    m_beat_length       (0),
+    m_roll_length_ticks (0),
+    m_drop_x            (0),
+    m_drop_y            (0),
+    m_current_x         (0),
+    m_current_y         (0),
+    m_drop_sequence     (0),
+    zoom                (1),
+    tick_s              (0),
+    tick_f              (0),
+    seq_h               (-1),
+    seq_l               (-1),
+    m_drop_tick         (0),
+    m_drop_tick_trigger_offset (0),
+    mLastTick           (0),
+    m_sequence_active   (),         // array
+    m_moving            (false),
+    mBoxSelect          (false),
+    m_growing           (false),
+    m_grow_direction    (false),
+    m_adding            (false),
+    m_adding_pressed    (false)
 {
-    setSizePolicy(QSizePolicy::Fixed,
-                  QSizePolicy::Fixed);
-
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setFocusPolicy(Qt::StrongFocus);
 
-    for (int i = 0; i < qc_total_seqs; ++i)
+    for (int i = 0; i < c_max_sequence; ++i)
         m_sequence_active[i] = false;
 
     m_roll_length_ticks = mPerf->get_max_trigger();
@@ -122,7 +139,7 @@ void qperfroll::paintEvent(QPaintEvent *)
     {
         int seqId = y;
 
-        if (seqId < qc_total_seqs)
+        if (seqId < c_max_sequence)
         {
             if (mPerf->is_active(seqId))
             {
@@ -133,10 +150,11 @@ void qperfroll::paintEvent(QPaintEvent *)
 
                 seq->reset_draw_trigger_marker();
 
-                long seq_length = seq->getLength();
+                long seq_length = seq->get_length();
                 int length_w = seq_length / (c_perf_scale_x * zoom);
 
-                while (seq->get_next_trigger(&tick_on, &tick_off, &selected, &offset))
+//              while (seq->get_next_trigger(&tick_on, &tick_off, &selected, &offset))
+                while (seq->get_next_trigger(tick_on, tick_off, selected, offset))
                 {
 
                     if (tick_off > 0)
@@ -205,13 +223,14 @@ void qperfroll::paintEvent(QPaintEvent *)
 
                             long tick_marker_x = (tick_marker / (c_perf_scale_x * zoom)) - x_offset;
 
-                            int lowest_note = seq->get_lowest_note_event();
-                            int highest_note = seq->get_highest_note_event();
+                            int lowest_note; // = seq->get_lowest_note_event();
+                            int highest_note; // = seq->get_highest_note_event();
+                            (void) seq->get_minmax_note_events(lowest_note, highest_note);
 
                             int height = highest_note - lowest_note;
                             height += 2;
 
-                            int length = seq->getLength();
+                            int length = seq->get_length();
 
                             long tick_s;
                             long tick_f;
@@ -220,7 +239,7 @@ void qperfroll::paintEvent(QPaintEvent *)
                             bool selected;
 
                             int velocity;
-                            draw_type dt;
+                            draw_type_t dt;
 
                             seq->reset_draw_marker();
 
@@ -378,7 +397,8 @@ void qperfroll::mousePressEvent(QMouseEvent *event)
 
             if (mPerf->is_active(m_drop_sequence))
             {
-                long seq_length = mPerf->get_sequence(m_drop_sequence)->getLength();
+                long seq_length =
+                mPerf->get_sequence(m_drop_sequence)->get_length();
 
                 bool trigger_state = mPerf->get_sequence(m_drop_sequence)->get_trigger_state(tick);
 
@@ -557,7 +577,7 @@ void qperfroll::mouseMoveEvent(QMouseEvent *event)
 
         if (mPerf->is_active(m_drop_sequence))
         {
-            long seq_length = mPerf->get_sequence(m_drop_sequence)->getLength();
+            long seq_length = mPerf->get_sequence(m_drop_sequence)->get_length();
 
             // snap to length of sequence
             if (mPerf->getSongRecordSnap())
@@ -723,8 +743,8 @@ void qperfroll::convert_xy(int a_x, int a_y, long *a_tick, int *a_seq)
 
     *a_tick += tick_offset;
 
-    if (*a_seq >= qc_total_seqs)
-        *a_seq = qc_total_seqs - 1;
+    if (*a_seq >= c_max_sequence)
+        *a_seq = c_max_sequence - 1;
 
     if (*a_seq < 0)
         *a_seq = 0;

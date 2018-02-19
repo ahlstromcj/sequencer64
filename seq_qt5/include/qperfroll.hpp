@@ -36,38 +36,43 @@ class qperfroll : public QWidget
     Q_OBJECT
 
 public:
-    explicit qperfroll(perform *a_perf,
-                       QWidget *parent);
+    explicit qperfroll (perform * a_perf, QWidget * parent);
 
-    int getSnap() const;
-    void set_snap(int getSnap);
+    int getSnap () const;
+    void set_snap (int getSnap);
 
-    void set_guides(int a_snap, int a_measure, int a_beat);
-    void update_sizes();
-    void increment_size();
+    void set_guides (int a_snap, int a_measure, int a_beat);
+    void update_sizes ();
+    void increment_size ();
 
-    void zoom_in();
-    void zoom_out();
+    void zoom_in ();
+    void zoom_out ();
 
 protected:
-    //override painting event to draw on the frame
-    void paintEvent(QPaintEvent *);
 
-    //override mouse events for interaction
-    void mousePressEvent(QMouseEvent * event);
-    void mouseReleaseEvent(QMouseEvent * event);
-    void mouseMoveEvent(QMouseEvent * event);
+    // override painting event to draw on the frame
 
-    //override keyboard events for interaction
-    void keyPressEvent(QKeyEvent * event);
-    void keyReleaseEvent(QKeyEvent * event);
+    void paintEvent (QPaintEvent *);
 
-    //override the sizehint to set our own defaults
-    QSize sizeHint() const;
+    // override mouse events for interaction
+
+    void mousePressEvent (QMouseEvent * event);
+    void mouseReleaseEvent (QMouseEvent * event);
+    void mouseMoveEvent (QMouseEvent * event);
+
+    // override keyboard events for interaction
+
+    void keyPressEvent (QKeyEvent * event);
+    void keyReleaseEvent (QKeyEvent * event);
+
+    // override the sizehint to set our own defaults
+
+    QSize sizeHint () const;
 
 public slots:
-    void undo();
-    void redo();
+
+    void undo ();
+    void redo ();
 
 private:
 
@@ -80,16 +85,13 @@ private:
     void half_split_trigger(int a_sequence, long a_tick);
     void set_adding(bool a_adding);
 
-    perform *mPerf;
-
-    QPen        *mPen;
-    QBrush      *mBrush;
-    QPainter    *mPainter;
-    QFont        mFont;
-    QTimer      *mTimer;
-
+    perform * mPerf;
+    QPen * mPen;
+    QBrush * mBrush;
+    QPainter* mPainter;
+    QTimer * mTimer;
+    QFont mFont;
     seq24Rect m_old;
-
     int     m_snap;
     int     m_measure_length;
     int     m_beat_length;
@@ -99,17 +101,16 @@ private:
     int     m_drop_sequence;
     int     zoom;
 
-    //sequence selection
+    // sequence selection
+
     long    tick_s; //start of tick window
     long    tick_f; //end of tick window
     int     seq_h;  //highest seq in window
     int     seq_l;  //lowest seq in window
-
     long    m_drop_tick;
-    long    m_drop_tick_trigger_offset; //how far in ticks we clicked from
-    //the start of this trigger
-    long    mLastTick; //tick we we're using at last mouse event
-    bool    m_sequence_active[qc_total_seqs];
+    long    m_drop_tick_trigger_offset; // ticks clicked from start of trigger
+    long    mLastTick;                  // tick using at last mouse event
+    bool    m_sequence_active[c_max_sequence];
     bool    m_moving;
     bool    mBoxSelect;
     bool    m_growing;

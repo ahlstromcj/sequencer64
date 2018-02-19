@@ -1,8 +1,8 @@
 #include "qperfeditframe.hpp"
 #include "forms/qperfeditframe.ui.h"
 
-qperfeditframe::qperfeditframe(seq64::perform *a_perf,
-                               QWidget *parent):
+qperfeditframe::qperfeditframe (seq64::perform *a_perf, QWidget *parent)
+ :
     QFrame(parent),
     ui(new Ui::qperfeditframe),
     m_mainperf(a_perf)
@@ -31,7 +31,7 @@ qperfeditframe::qperfeditframe(seq64::perform *a_perf,
     m_palette->setColor(QPalette::Background, Qt::darkGray);
     mContainer->setPalette(*m_palette);
 
-    m_perfnames = new seq64::qperfnames(m_mainperf, mContainer);
+    m_perfnames = new seq64::qperfnames(*m_mainperf, mContainer);
     m_perfroll = new seq64::qperfroll(m_mainperf, mContainer);
     m_perftime = new seq64::qperftime(m_mainperf, mContainer);
 
@@ -112,7 +112,8 @@ int qperfeditframe::get_beat_width() const
     return mbeat_width;
 }
 
-void qperfeditframe::updateGridSnap(int snapIndex)
+void
+qperfeditframe::updateGridSnap(int snapIndex)
 {
     int snap;
     switch (snapIndex)
@@ -135,13 +136,17 @@ void qperfeditframe::updateGridSnap(int snapIndex)
     case 5:
         snap = 32;
         break;
+    default:
+        snap = 16;
+        break;
     }
 
     m_snap = snap;
     set_guides();
 }
 
-void qperfeditframe::set_snap(int a_snap)
+void
+qperfeditframe::set_snap(int a_snap)
 {
     char b[10];
     snprintf(b, sizeof(b), "1/%d", a_snap);
@@ -151,7 +156,8 @@ void qperfeditframe::set_snap(int a_snap)
     set_guides();
 }
 
-void qperfeditframe::set_beats_per_measure(int a_beats_per_measure)
+void
+qperfeditframe::set_beats_per_measure(int a_beats_per_measure)
 {
     mbeats_per_measure = a_beats_per_measure;
     set_guides();
@@ -163,13 +169,15 @@ int qperfeditframe::get_beats_per_measure() const
 }
 
 
-void qperfeditframe::set_beat_width(int a_beat_width)
+void
+qperfeditframe::set_beat_width(int a_beat_width)
 {
     mbeat_width = a_beat_width;
     set_guides();
 }
 
-void qperfeditframe::set_guides()
+void
+qperfeditframe::set_guides()
 {
     long measure_ticks = (c_ppqn * 4) * mbeats_per_measure / mbeat_width;
     long snap_ticks =  measure_ticks / m_snap;
@@ -178,44 +186,51 @@ void qperfeditframe::set_guides()
     m_perftime->set_guides(snap_ticks, measure_ticks);
 }
 
-void qperfeditframe::zoom_in()
+void
+qperfeditframe::zoom_in()
 {
     m_perftime->zoom_in();
     m_perfroll->zoom_in();
 }
 
-void qperfeditframe::zoom_out()
+void
+qperfeditframe::zoom_out()
 {
     m_perftime->zoom_out();
     m_perfroll->zoom_out();
 }
 
-void qperfeditframe::update_sizes()
+void
+qperfeditframe::update_sizes()
 {
     m_perfroll->updateGeometry();
     m_perftime->updateGeometry();
     mContainer->adjustSize();
 }
 
-void qperfeditframe::markerCollapse()
+void
+qperfeditframe::markerCollapse()
 {
     m_mainperf->push_trigger_undo();
     m_mainperf->move_triggers(false);
 }
 
-void qperfeditframe::markerExpand()
+void
+qperfeditframe::markerExpand()
 {
     m_mainperf->push_trigger_undo();
     m_mainperf->move_triggers(true);
 }
 
-void qperfeditframe::markerExpandCopy()
+void
+qperfeditframe::markerExpandCopy()
 {
     m_mainperf->push_trigger_undo();
     m_mainperf->copy_triggers();
 }
 
-void qperfeditframe::markerLoop(bool loop)
+void
+qperfeditframe::markerLoop(bool loop)
 {
     m_mainperf->set_looping(loop);
 }

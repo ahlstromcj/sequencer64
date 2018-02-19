@@ -8,11 +8,7 @@
 # \library    	Any project
 # \author     	Chris Ahlstrom
 # \date       	2015-07-24
-<<<<<<< HEAD
-# \update     	2017-11-17
-=======
-# \update     	2017-09-08
->>>>>>> qt5-support
+# \update     	2018-02-18
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -496,6 +492,7 @@ function clean_qt5files()
 {
    echo "* Cleaning Qt 5 build artifacts..."
    find . -name "qt" -exec rm -rf '{}' \; 2> /dev/null
+   find . -name "*.moc.cpp" -exec rm -f '{}' \; 2> /dev/null
 }
 
 #******************************************************************************

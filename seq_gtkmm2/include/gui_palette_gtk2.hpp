@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2017-11=20
+ * \updates       2018-02-20
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -125,29 +125,42 @@ private:                            /* use the accessor functions           */
     static bool m_is_inverse;
 
     /*
+     *  Colors that will remain constant, providing a brighter palette.
+     */
+
+    static const Color m_black;     /**< Provides the black color.          */
+    static const Color m_red;       /**< Provides the red color.            */
+    static const Color m_green;     /**< Provides the green color.          */
+    static const Color m_yellow;    /**< Provides the yellow color.         */
+    static const Color m_blue;      /**< Provides the blue color.           */
+    static const Color m_magenta;   /**< Provides the magenta color.        */
+    static const Color m_cyan;      /**< Provides the cyan color.          */
+    static const Color m_white;     /**< Provides the white color.          */
+
+    /*
      *  Colors that will remain constant.  We now provide a darker palette.
      *  Doesn't include dark-grey, which is an "invertible" color.
      */
 
-    static const Color m_black;     /**< Provides the black color.          */
+    static const Color m_dk_black;  /**< Provides a blood-red color.        */
     static const Color m_dk_red;    /**< Provides a blood-red color.        */
     static const Color m_dk_green;  /**< Provides a dark green color.       */
-    static const Color m_dk_orange; /**< Provides a dark orange color.      */
+    static const Color m_dk_yellow; /**< Provides a dark green color.       */
     static const Color m_dk_blue;   /**< Provides the dark blue color.      */
     static const Color m_dk_magenta; /**< Provides a dark magenta color.    */
     static const Color m_dk_cyan;   /**< Provides the dark cyan color.      */
+    static const Color m_dk_white;  /**< Provides a greyish color.          */
 
     /*
-     *  Colors that will remain constant, providing a brighter palette.
+     * Extended colors in the palette.  The greys are defined separately and
+     * are invertible.
      */
 
-    static const Color m_red;       /**< Provides the red color.            */
-    static const Color m_white;     /**< Provides the white color.          */
     static const Color m_orange;    /**< Provides the orange color.         */
-    static const Color m_yellow;    /**< Provides the yellow color.         */
-    static const Color m_green;     /**< Provides the green color.          */
-    static const Color m_magenta;   /**< Provides the magenta color.        */
-    static const Color m_blue;      /**< Provides the blue color.           */
+    static const Color m_pink;      /**< Provides the pink color.           */
+
+    static const Color m_dk_orange; /**< Provides a dark orange color.      */
+    static const Color m_dk_pink;   /**< Provides a dark pink color.        */
 
     /*
      * Colors that can be "inverted" (i.e. changed for the inverse-color mode.

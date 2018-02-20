@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-02-18
- * \updates       2018-02-18
+ * \updates       2018-02-20
  * \license       GNU GPLv2 or above
  *
  *  This module is inspired by MidiPerformance::getSequenceColor() in
@@ -64,26 +64,30 @@ enum thumb_colors_t
 
  /* Seq64 */            /* Kepler34 */
 
-    BLACK,              // WHITE
-    RED,                // RED
-    GREEN,              // GREEN
-    YELLOW,             // BLUE
-    BLUE,               // YELLOW
-    MAGENTA,            // PURPLE
-    CYAN,               // PINK
-    WHITE,              // ORANGE
+    BLACK,              //  0 WHITE
+    RED,                //  1 RED
+    GREEN,              //  2 GREEN
+    YELLOW,             //  3 BLUE
+    BLUE,               //  4 YELLOW
+    MAGENTA,            //  5 PURPLE
+    CYAN,               //  6 PINK
+    WHITE,              //  7 ORANGE
+
+    DK_BLACK,           //  8 place-holder
+    DK_RED,             //  9 N/A
+    DK_GREEN,           // 10 N/A
+    DK_YELLOW,          // 11 N/A
+    DK_BLUE,            // 12 N/A
+    DK_MAGENTA,         // 13 N/A
+    DK_CYAN,            // 14 N/A
+    DK_WHITE,           // 15 N/A
 
     ORANGE,             // N/A
+    PINK,               // N/A
     GREY,               // N/A
 
-    DK_RED,             // RED
-    DK_GREEN,           // GREEN
-    DK_YELLOW,          // BLUE
-    DK_BLUE,            // YELLOW
-    DK_MAGENTA,         // PURPLE
-    DK_CYAN,            // PINK
-
     DK_ORANGE,          // N/A
+    DK_PINK,            // N/A
     DK_GREY,            // N/A
 
     NONE                // N/A

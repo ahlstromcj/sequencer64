@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2017-11-20
+ * \updates       2018-02-20
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -50,21 +50,46 @@ namespace seq64
 
 bool gui_palette_gtk2::m_is_inverse = false;
 
+/*
+ * Bright constant colors
+ */
+
 const STATIC_COLOR gui_palette_gtk2::m_black        = Color("black");
+const STATIC_COLOR gui_palette_gtk2::m_red          = Color("red");
+const STATIC_COLOR gui_palette_gtk2::m_green        = Color("green");
+const STATIC_COLOR gui_palette_gtk2::m_yellow       = Color("yellow");
+const STATIC_COLOR gui_palette_gtk2::m_blue         = Color("blue");
+const STATIC_COLOR gui_palette_gtk2::m_magenta      = Color("magenta");
+const STATIC_COLOR gui_palette_gtk2::m_cyan         = Color("cyan");
+const STATIC_COLOR gui_palette_gtk2::m_white        = Color("white");
+
+/*
+ * Dark constant colors
+ */
+
+const STATIC_COLOR gui_palette_gtk2::m_dk_black     = Color("black");
 const STATIC_COLOR gui_palette_gtk2::m_dk_red       = Color("dark red");
 const STATIC_COLOR gui_palette_gtk2::m_dk_green     = Color("dark green");
-const STATIC_COLOR gui_palette_gtk2::m_dk_orange    = Color("dark orange");
+const STATIC_COLOR gui_palette_gtk2::m_dk_yellow    = Color("dark yellow");
 const STATIC_COLOR gui_palette_gtk2::m_dk_blue      = Color("dark blue");
 const STATIC_COLOR gui_palette_gtk2::m_dk_magenta   = Color("dark magenta");
 const STATIC_COLOR gui_palette_gtk2::m_dk_cyan      = Color("dark cyan");
+const STATIC_COLOR gui_palette_gtk2::m_dk_white     = Color("grey");
 
-const STATIC_COLOR gui_palette_gtk2::m_white        = Color("white");
-const STATIC_COLOR gui_palette_gtk2::m_red          = Color("red");
+/*
+ * Extended colors in the palette.  The greys are defined separately and are
+ * invertible.
+ */
+
 const STATIC_COLOR gui_palette_gtk2::m_orange       = Color("orange");
-const STATIC_COLOR gui_palette_gtk2::m_yellow       = Color("yellow");
-const STATIC_COLOR gui_palette_gtk2::m_green        = Color("green");
-const STATIC_COLOR gui_palette_gtk2::m_magenta      = Color("magenta");
-const STATIC_COLOR gui_palette_gtk2::m_blue         = Color("blue");
+const STATIC_COLOR gui_palette_gtk2::m_pink         = Color("pink");
+
+const STATIC_COLOR gui_palette_gtk2::m_dk_orange    = Color("dark orange");
+const STATIC_COLOR gui_palette_gtk2::m_dk_pink      = Color("dark pink");
+
+/*
+ * Invertible colors
+ */
 
 STATIC_COLOR gui_palette_gtk2::m_grey               = Color("grey");
 STATIC_COLOR gui_palette_gtk2::m_dk_grey            = Color("grey50");

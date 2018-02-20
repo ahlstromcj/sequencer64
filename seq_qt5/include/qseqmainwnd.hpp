@@ -175,7 +175,7 @@ protected:
         // must override
     }
 
-};          // qseqmainwnd
+};          // class qseqmainwnd
 
 }           // namespace seq64
 

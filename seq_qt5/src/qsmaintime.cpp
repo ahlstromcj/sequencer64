@@ -1,3 +1,35 @@
+/*
+ *  This file is part of seq24/sequencer64.
+ *
+ *  seq24 is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  seq24 is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with seq24; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/**
+ * \file          qsmaintime.hpp
+ *
+ *  This module declares/defines the base class for the "time" progress
+ *  window.
+ *
+ * \library       sequencer64 application
+ * \author        Seq24 team; modifications by Chris Ahlstrom
+ * \date          2018-01-01
+ * \updates       2018-02-19
+ * \license       GNU GPLv2 or above
+ *
+ */
+
 #include "qsmaintime.hpp"
 
 /*
@@ -8,26 +40,45 @@ namespace seq64
 {
     class perform;
 
-qsmaintime::qsmaintime(QWidget *parent,
-                       perform *perf,
-                       int beats_per_measure,
-                       int beat_width):
-    QWidget(parent),
-    m_main_perf(perf),
-    m_beats_per_measure(beats_per_measure),
-    m_beat_width(beat_width)
-{
-    setSizePolicy(QSizePolicy::MinimumExpanding,
-                  QSizePolicy::Fixed);
+/**
+ *
+ */
 
+qsmaintime::qsmaintime
+(
+    perform & perf,
+    QWidget * parent,
+    int beats_per_measure,
+    int beat_width
+) :
+    QWidget             (parent),
+    m_main_perf         (perf),
+    m_beats_per_measure (beats_per_measure),
+    m_beat_width        (beat_width)
+{
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     mFont.setPointSize(9);
     mFont.setBold(true);
-
-    mColour     = new QColor(Qt::red);
+    mColour = new QColor(Qt::red);
     alpha = 0;
     lastMetro = 0;
 }
-void qsmaintime::paintEvent(QPaintEvent *)
+
+/**
+ *
+ */
+
+qsmaintime::~qsmaintime ()
+{
+    // what about the pens, brushes, etc???
+}
+
+/**
+ *
+ */
+
+void
+qsmaintime::paintEvent (QPaintEvent *)
 {
     mPainter    = new QPainter(this);
     mBrush      = new QBrush(Qt::NoBrush);
@@ -37,34 +88,30 @@ void qsmaintime::paintEvent(QPaintEvent *)
     mPainter->setFont(mFont);
     mPainter->setBrush(*mBrush);
 
-    long tick = m_main_perf->get_tick();
+    midipulse tick = m_main_perf->get_tick();
     int metro = (tick / (c_ppqn / 4 * m_beat_width)) % m_beats_per_measure;
     int divX = (width() - 1) / m_beats_per_measure;
 
-    //flash on beats
-    //(i.e. if metro has changed or we've just started playing)
+    // Flash on beats (i.e. if metro has changed or we've just started
+    // playing)
+
     if (metro != lastMetro || (tick < 50 && tick > 0))
     {
         alpha = 230;
         if (metro == 0)
         {
-            //red on first beat in bar
-            mColour->setRgb(255, 50, 50);
+            mColour->setRgb(255, 50, 50);       // red on first beat in bar
         }
         else
         {
-            //white on others
-            mColour->setRgb(255, 255, 255);
+            mColour->setRgb(255, 255, 255);     // white on others
         }
     }
 
-    //draw beat blocks
-    for (int i = 0; i < m_beats_per_measure; i++)
+    for (int i = 0; i < m_beats_per_measure; i++)   // draw beat blocks
     {
         int offsetX = divX * i;
-
-        //with flash if on current beat
-        if (i == metro && m_main_perf->is_running())
+        if (i == metro && m_main_perf->is_running()) // flash on current beat
         {
             mBrush->setStyle(Qt::SolidPattern);
             mPen->setColor(Qt::black);
@@ -73,67 +120,90 @@ void qsmaintime::paintEvent(QPaintEvent *)
         {
             mBrush->setStyle(Qt::NoBrush);
             mPen->setColor(Qt::darkGray);
-
         }
 
         mColour->setAlpha(alpha);
         mBrush->setColor(*mColour);
         mPainter->setPen(*mPen);
         mPainter->setBrush(*mBrush);
-        mPainter->drawRect(offsetX + mPen->width() - 1,
-                           mPen->width() - 1,
-                           divX - mPen->width(),
-                           height() - mPen->width());
+        mPainter->drawRect
+        (
+            offsetX + mPen->width() - 1, mPen->width() - 1,
+            divX - mPen->width(), height() - mPen->width()
+        );
     }
-
-    //draw beat number (if there's space)
-    if (m_beats_per_measure < 10)
+    if (m_beats_per_measure < 10) // draw beat number (if there's space)
     {
         mPen->setColor(Qt::black);
         mPen->setStyle(Qt::SolidLine);
         mPainter->setPen(*mPen);
-        mPainter->drawText((metro + 1) * divX - (mFont.pointSize() + 2),
-                           height() * 0.3 + mFont.pointSize(),
-                           QString::number(metro + 1));
+        mPainter->drawText
+        (
+            (metro + 1) * divX - (mFont.pointSize() + 2),
+            height() * 0.3 + mFont.pointSize(), QString::number(metro + 1)
+        );
     }
 
-    //lessen alpha on each redraw to have smooth fading
-    //done as a factor of the bpm to get useful fades
+    // lessen alpha on each redraw to have smooth fading done as a factor of
+    // the bpm to get useful fades
+
     alpha *= 0.7 - m_main_perf->get_bpm() / 300;
-
     lastMetro = metro;
-
-    delete mPainter, mBrush, mPen;
+    delete mPainter;
+    delete mBrush;
+    delete mPen;
 }
 
-int qsmaintime::get_beat_width() const
+/**
+ *
+ */
+
+int qsmaintime::get_beat_width () const
 {
     return m_beat_width;
 }
 
-void qsmaintime::setbeat_width(int beat_width)
+/**
+ *
+ */
+
+void
+qsmaintime::setbeat_width (int bw)
 {
-    m_beat_width = beat_width;
+    m_beat_width = bw;
 }
 
-int qsmaintime::get_beats_per_measure() const
+/**
+ *
+ */
+
+int
+qsmaintime::get_beats_per_measure () const
 {
     return m_beats_per_measure;
 }
 
-void qsmaintime::set_beats_per_measure(int beats_per_measure)
+void
+qsmaintime::set_beats_per_measure (int bpm)
 {
-    m_beats_per_measure = beats_per_measure;
+    m_beats_per_measure = bpm;
 }
 
-qsmaintime::~qsmaintime()
-{
+/**
+ *
+ */
 
-}
-
-QSize qsmaintime::sizeHint() const
+QSize
+qsmaintime::sizeHint () const
 {
     return QSize(150, mFont.pointSize() * 2.4);
 }
 
 }           // namespace seq64
+
+/*
+ * qsmaintime.hpp
+ *
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
+ */
+

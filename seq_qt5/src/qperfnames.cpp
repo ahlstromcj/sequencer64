@@ -42,6 +42,8 @@
  *      happens even in seq24, so this is long standing behavior.  Is it
  *      useful, and how?  Where is it done?  In perfroll?
  */
+
+#include "perform.hpp"
 #include "qperfnames.hpp"
 
 /*
@@ -94,7 +96,8 @@ qperfnames::~qperfnames()
  *
  */
 
-void qperfnames::paintEvent (QPaintEvent *)
+void
+qperfnames::paintEvent (QPaintEvent *)
 {
     mPainter = new QPainter(this);
     mPen = new QPen(Qt::black);
@@ -109,7 +112,6 @@ void qperfnames::paintEvent (QPaintEvent *)
 
     int y_s = 0;
     int y_f = height() / c_names_y;
-
     mPainter->drawRect(0, 0, width(), height() - 1);    // draw border
     for (int y = y_s; y <= y_f; ++y)
     {
@@ -119,14 +121,14 @@ void qperfnames::paintEvent (QPaintEvent *)
             int i = seqId;
             if (seqId % c_seqs_in_set == 0)     // if first seq in bank
             {
-                mPen->setColor(Qt::black);  // black boxes to mark each bank
+                mPen->setColor(Qt::black);      // black boxes to mark each bank
                 mBrush->setColor(Qt::black);
                 mBrush->setStyle(Qt::SolidPattern);
                 mPainter->setPen(*mPen);
                 mPainter->setBrush(*mBrush);
-                mPainter->drawRect(1, (c_names_y * i) + 1, 15, c_names_y - 1);
+                mPainter->drawRect(1, name_y(i) + 1, 15, c_names_y - 1);
 
-                char ss[3];
+                char ss[4];
                 int bankId = seqId / c_seqs_in_set;
                 snprintf(ss, sizeof(ss), "%2d", bankId);
 
@@ -139,7 +141,7 @@ void qperfnames::paintEvent (QPaintEvent *)
                 mPen->setColor(Qt::black);
                 mPainter->setPen(*mPen);
                 mPainter->save();
-                QString bankName(mPerf.get_bank_name(bankId).c_str());
+                QString bankName(perf().get_bank_name(bankId).c_str());
                 mPainter->translate
                 (
                     12,
@@ -156,14 +158,14 @@ void qperfnames::paintEvent (QPaintEvent *)
             }
             mPen->setStyle(Qt::SolidLine);
             mPen->setColor(Qt::black);
-            if (mPerf.is_active(seqId))
+            if (perf().is_active(seqId))
             {
                 /*
                  * Commented out until we fix the issues.
                  *
                 //get seq's assigned colour and beautify
                 QColor colourSpec =
-                    QColor(colourMap.value(mPerf.get_sequence_color(seqId)));
+                    QColor(colourMap.value(perf().get_sequence_color(seqId)));
                 QColor backColour = QColor(colourSpec);
                 if (backColour.value() != 255) //dont do this if we're white
                     backColour.setHsv(colourSpec.hue(),
@@ -183,7 +185,7 @@ void qperfnames::paintEvent (QPaintEvent *)
                 6 * 2 + 4, c_names_y * i, c_names_x - 15, c_names_y
             );
 
-            if (mPerf.is_active(seqId))
+            if (perf().is_active(seqId))
             {
                 m_sequence_active[seqId] = true;
 
@@ -193,12 +195,12 @@ void qperfnames::paintEvent (QPaintEvent *)
                 snprintf
                 (
                     name, sizeof(name), "%-14.14s                        %2d",
-                     mPerf.get_sequence(seqId)->name().c_str(),
-                     mPerf.get_sequence(seqId)->get_midi_channel() + 1
+                     perf().get_sequence(seqId)->name().c_str(),
+                     perf().get_sequence(seqId)->get_midi_channel() + 1
                 );
                  */
 
-                std::string name = mPerf.sequence_label(seqId); // seq name
+                std::string name = perf().sequence_label(seqId); // seq name
                 mPen->setColor(Qt::black);
                 mPainter->setPen(*mPen);
                 mPainter->drawText(18, c_names_y * i + 10, name.c_str());
@@ -209,15 +211,15 @@ void qperfnames::paintEvent (QPaintEvent *)
                 (
                     str, sizeof(str),
                      "%d-%d %d/%d",
-                     mPerf.get_sequence(seqId)->get_midi_bus(),
-                     mPerf.get_sequence(seqId)->get_midi_channel() + 1,
-                     mPerf.get_sequence(seqId)->get_beats_per_bar(),
-                     mPerf.get_sequence(seqId)->get_beat_width()
+                     perf().get_sequence(seqId)->get_midi_bus(),
+                     perf().get_sequence(seqId)->get_midi_channel() + 1,
+                     perf().get_sequence(seqId)->get_beats_per_bar(),
+                     perf().get_sequence(seqId)->get_beat_width()
                 );
                 mPainter->drawText(18, c_names_y * i + 20, str); // seq info
                  */
 
-                bool muted = mPerf.get_sequence(seqId)->get_song_mute();
+                bool muted = perf().get_sequence(seqId)->get_song_mute();
                 mPen->setColor(Qt::black);
                 mPainter->setPen(*mPen);
                 mPainter->drawRect(name_x(2), name_y(i), 10, m_nametext_y);

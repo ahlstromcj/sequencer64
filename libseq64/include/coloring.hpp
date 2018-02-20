@@ -61,15 +61,31 @@ namespace seq64
 
 enum thumb_colors_t
 {
+
  /* Seq64 */            /* Kepler34 */
-    BLACK,              // WHITE,
-    RED,                // RED,
-    GREEN,              // GREEN,
-    YELLOW,             // BLUE,
-    BLUE,               // YELLOW,
-    MAGENTA,            // PURPLE,
-    CYAN,               // PINK,
-    WHITE,              // ORANGE,
+
+    BLACK,              // WHITE
+    RED,                // RED
+    GREEN,              // GREEN
+    YELLOW,             // BLUE
+    BLUE,               // YELLOW
+    MAGENTA,            // PURPLE
+    CYAN,               // PINK
+    WHITE,              // ORANGE
+
+    ORANGE,             // N/A
+    GREY,               // N/A
+
+    DK_RED,             // RED
+    DK_GREEN,           // GREEN
+    DK_YELLOW,          // BLUE
+    DK_BLUE,            // YELLOW
+    DK_MAGENTA,         // PURPLE
+    DK_CYAN,            // PINK
+
+    DK_ORANGE,          // N/A
+    DK_GREY,            // N/A
+
     NONE                // N/A
 };
 

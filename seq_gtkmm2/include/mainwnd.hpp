@@ -837,7 +837,7 @@ private:
 
     virtual void on_grouplearnchange (bool state);
 
-};
+};          // class mainwnd
 
 }           // namespace seq64
 
@@ -848,3 +848,4 @@ private:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

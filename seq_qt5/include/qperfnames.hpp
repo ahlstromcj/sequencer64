@@ -36,7 +36,6 @@
 #include <QPainter>
 #include <QPen>
 
-#include "perform.hpp"
 #include "sequence.hpp"
 #include "globals.h"
 
@@ -58,7 +57,7 @@ class qperfnames : public QWidget
 
 public:
 
-    explicit qperfnames(perform & p, QWidget * parent);
+    explicit qperfnames (perform & p, QWidget * parent);
     ~qperfnames();
 
 protected:
@@ -88,6 +87,13 @@ protected:
     // override the sizehint to set our own defaults
 
     QSize sizeHint() const;
+
+private:
+
+    perform & perf ()
+    {
+        return mPerf;
+    }
 
 signals:
 

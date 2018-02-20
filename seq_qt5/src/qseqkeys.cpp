@@ -1,3 +1,38 @@
+/*
+ *  This file is part of seq24/sequencer64.
+ *
+ *  seq24 is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  seq24 is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with seq24; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/**
+ * \file          qseqkeys.cpp
+ *
+ *  This module declares/defines the base class for the left-side piano of
+ *  the pattern/sequence panel.
+ *
+ * \library       sequencer64 application
+ * \author        Seq24 team; modifications by Chris Ahlstrom
+ * \date          2018-01-01
+ * \updates       2018-02-19
+ * \license       GNU GPLv2 or above
+ *
+ *      We've added the feature of a right-click toggling between showing the
+ *      main octave values (e.g. "C1" or "C#1") versus the numerical MIDI
+ *      values of the keys.
+ */
+
 #include "qseqkeys.hpp"
 
 /*
@@ -8,21 +43,33 @@ namespace seq64
 {
     class perform;
 
-qseqkeys::qseqkeys(sequence *a_seq, QWidget *parent, int keyHeight, int keyAreaHeight):
-    m_seq(a_seq),
-    QWidget(parent),
-    m_key(0),
-    keyY(keyHeight),
-    keyAreaY(keyAreaHeight),
-    mPreviewKey(-1),
-    mPreviewing(false)
+qseqkeys::qseqkeys
+(
+    sequence & seq, QWidget *parent, int keyHeight, int keyAreaHeight
+) :
+    QWidget             (parent),
+    m_seq               (seq),
+    m_timer             (nullptr),
+    m_pen               (nullptr),
+    m_brush             (nullptr),
+    m_painter           (nullptr),
+    m_font              (),
+    m_key               (0),
+    keyY                (keyHeight),
+    keyAreaY            (keyAreaHeight),
+    mPreviewKey         (-1),
+    mPreviewing         (false)
 {
-    setSizePolicy(QSizePolicy::Fixed,
-                  QSizePolicy::MinimumExpanding);
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
     setMouseTracking(true);
 }
 
-void qseqkeys::paintEvent(QPaintEvent *)
+/**
+ *
+ */
+
+void
+qseqkeys::paintEvent (QPaintEvent *)
 {
     m_painter = new QPainter(this);
     m_pen = new QPen(Qt::black);
@@ -34,35 +81,22 @@ void qseqkeys::paintEvent(QPaintEvent *)
     m_painter->setBrush(*m_brush);
     m_painter->setFont(m_font);
 
-    //draw keyboard border
-    m_painter->drawRect(0,
-                        0,
-                        c_keyarea_x,
-                        keyAreaY);
+    // draw keyboard border
 
+    m_painter->drawRect(0, 0, c_keyarea_x, keyAreaY);
     for (int i = 0; i < c_num_keys; i++)
     {
-        //draw white keys
+        // draw white keys
         m_pen->setColor(Qt::black);
         m_pen->setStyle(Qt::SolidLine);
         m_brush->setColor(Qt::white);
         m_brush->setStyle(Qt::SolidPattern);
         m_painter->setPen(*m_pen);
         m_painter->setBrush(*m_brush);
-        m_painter->drawRect(c_keyoffset_x + 1,
-                            keyY * i + 1,
-                            c_key_x - 2,
-                            keyY - 1);
+        m_painter->drawRect(c_keyoffset_x+1, keyY*i + 1, c_key_x-2, keyY-1);
 
-
-        /* the the key in the octave */
-        int key = (c_num_keys - i - 1) % 12;
-
-        if (key == 1 ||
-                key == 3 ||
-                key == 6 ||
-                key == 8 ||
-                key == 10)
+        int key = (c_num_keys - i - 1) % 12; /* the the key in the octave */
+        if (key == 1 || key == 3 || key == 6 || key == 8 || key == 10)
         {
             if (c_num_keys - (i + 1) == mPreviewKey)
             {
@@ -75,35 +109,24 @@ void qseqkeys::paintEvent(QPaintEvent *)
                 //                                    c_key_x - 6,
                 //                                    keyY - 8);
             }
-            //draw black keys
-            m_pen->setStyle(Qt::SolidLine);
+            m_pen->setStyle(Qt::SolidLine); // draw black keys
             m_pen->setColor(Qt::black);
             m_brush->setColor(Qt::black);
             m_painter->setPen(*m_pen);
             m_painter->setBrush(*m_brush);
-            m_painter->drawRect(c_keyoffset_x + 1,
-                                keyY * i + 3,
-                                c_key_x - 4,
-                                keyY - 5);
-
-
+            m_painter->drawRect(c_keyoffset_x+1, keyY*i + 3, c_key_x-4, keyY-5);
         }
 
-        //draw highlight for note previewing
-        if (c_num_keys - (i + 1) == mPreviewKey)
+        if (c_num_keys - (i + 1) == mPreviewKey) // highlight for note previewing
         {
             m_brush->setColor(Qt::red);
             m_pen->setStyle(Qt::NoPen);
             m_painter->setPen(*m_pen);
             m_painter->setBrush(*m_brush);
-            m_painter->drawRect(c_keyoffset_x + 3,
-                                keyY * i + 3,
-                                c_key_x - 5,
-                                keyY - 4);
+            m_painter->drawRect(c_keyoffset_x+3, keyY*i + 3, c_key_x-5, keyY-4);
         }
 
         char notes[20];
-
         if (key == m_key)
         {
             /* notes */
@@ -126,14 +149,17 @@ void qseqkeys::paintEvent(QPaintEvent *)
     delete m_pen;
 }
 
-void qseqkeys::mousePressEvent(QMouseEvent *event)
+/**
+ *
+ */
+
+void
+qseqkeys::mousePressEvent (QMouseEvent * event)
 {
-    int y, note;
-
-    y = event->y();
-
     if (event->button() == Qt::LeftButton)
     {
+        int note;
+        int y = event->y();
         mPreviewing = true;
         convert_y(y, &note);
         mPreviewKey = note;
@@ -142,7 +168,12 @@ void qseqkeys::mousePressEvent(QMouseEvent *event)
     update();
 }
 
-void qseqkeys::mouseReleaseEvent(QMouseEvent *event)
+/**
+ *
+ */
+
+void
+qseqkeys::mouseReleaseEvent (QMouseEvent * event)
 {
     if (event->button() == Qt::LeftButton && mPreviewing)
     {
@@ -153,14 +184,16 @@ void qseqkeys::mouseReleaseEvent(QMouseEvent *event)
     update();
 }
 
-void qseqkeys::mouseMoveEvent(QMouseEvent *event)
+/**
+ *
+ */
+
+void
+qseqkeys::mouseMoveEvent (QMouseEvent * event)
 {
-    int y, note;
-
-    y = event->y();
-
+    int note;
+    int y = event->y();
     convert_y(y, &note);
-
     if (mPreviewing)
     {
         if (note != mPreviewKey)
@@ -173,15 +206,31 @@ void qseqkeys::mouseMoveEvent(QMouseEvent *event)
     update();
 }
 
-QSize qseqkeys::sizeHint() const
+/**
+ *
+ */
+
+QSize
+qseqkeys::sizeHint () const
 {
     return QSize(c_keyarea_x, keyAreaY);
 }
 
-void qseqkeys::convert_y(int a_y, int *a_note)
+/**
+ *
+ */
+
+void
+qseqkeys::convert_y(int y, int * note)
 {
-    *a_note = (keyAreaY - a_y - 2) / keyY;
+    *note = (keyAreaY - y - 2) / keyY;
 }
 
 }           // namespace seq64
+
+/*
+ * qseqkeys.cpp
+ *
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
+ */
 

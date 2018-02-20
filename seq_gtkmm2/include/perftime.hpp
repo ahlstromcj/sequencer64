@@ -281,7 +281,7 @@ private:        // callbacks
 
     bool key_press_event (GdkEventKey * ev);    // perftime keys processing
 
-};
+};          // class perftime
 
 }           // namespace seq64
 

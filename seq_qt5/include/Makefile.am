@@ -85,8 +85,7 @@ pkginclude_HEADERS = \
  qsliveframe.hpp \
  qsmaintime.hpp \
  qsmainwnd.hpp \
- qstriggereditor.hpp \
- seq24Rect.hpp
+ qstriggereditor.hpp
 
 #******************************************************************************
 # uninstall-hook

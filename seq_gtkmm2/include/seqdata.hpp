@@ -289,7 +289,7 @@ private:       // callbacks
     bool on_scroll_event (GdkEventScroll * ev);
     void on_size_allocate (Gtk::Allocation &);
 
-};
+};          // class seqdata
 
 }           // namespace seq64
 

@@ -144,7 +144,7 @@ private:          // callbacks
         return false;
     }
 
-};
+};          // class seqtime
 
 }           // namespace seq64
 

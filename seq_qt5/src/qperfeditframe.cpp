@@ -1,18 +1,61 @@
+/*
+ *  This file is part of seq24/sequencer64.
+ *
+ *  seq24 is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  seq24 is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with seq24; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/**
+ * \file          qperfeditframe.cpp
+ *
+ *  This module declares/defines the base class for the Performance Editor,
+ *  also known as the Song Editor.
+ *
+ * \library       sequencer64 application
+ * \author        Seq24 team; modifications by Chris Ahlstrom
+ * \date          2018-01-01
+ * \updates       2018-02-19
+ * \license       GNU GPLv2 or above
+ *
+ *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
+ *  perfroll (piano roll), will zoom the view horizontally.
+ */
+
+#include "perform.hpp"
 #include "qperfeditframe.hpp"
 #include "forms/qperfeditframe.ui.h"
 
-qperfeditframe::qperfeditframe (seq64::perform *a_perf, QWidget *parent)
+qperfeditframe::qperfeditframe (seq64::perform & a_perf, QWidget * parent)
  :
-    QFrame(parent),
-    ui(new Ui::qperfeditframe),
-    m_mainperf(a_perf)
+    QFrame                  (parent),
+    mbeats_per_measure      (4),
+    mbeat_width             (4),
+    ui                      (new Ui::qperfeditframe),
+    m_mainperf              (a_perf),
+    m_layout_grid           (nullptr),
+    m_scroll_area           (nullptr),
+    mContainer              (nullptr),
+    m_palette               (nullptr),
+    m_perfroll              (nullptr),
+    m_perfnames             (nullptr),
+    m_perftime              (nullptr)
 {
     ui->setupUi(this);
-
-    setSizePolicy(QSizePolicy::Expanding,
-                  QSizePolicy::Expanding);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     // fill options for grid snap combo box and set default
+    //
     for (int i = 0; i < 6; i++)
     {
         QString combo_text = "1/" + QString::number(pow(2, i));
@@ -31,9 +74,9 @@ qperfeditframe::qperfeditframe (seq64::perform *a_perf, QWidget *parent)
     m_palette->setColor(QPalette::Background, Qt::darkGray);
     mContainer->setPalette(*m_palette);
 
-    m_perfnames = new seq64::qperfnames(*m_mainperf, mContainer);
-    m_perfroll = new seq64::qperfroll(m_mainperf, mContainer);
-    m_perftime = new seq64::qperftime(m_mainperf, mContainer);
+    m_perfnames = new seq64::qperfnames(m_mainperf, mContainer);
+    m_perfroll = new seq64::qperfroll(m_mainperf, mContainer);  // & 
+    m_perftime = new seq64::qperftime(m_mainperf, mContainer);  // & 
 
     m_layout_grid->setSpacing(0);
     m_layout_grid->addWidget(m_perfnames, 1, 0, 1, 1);
@@ -43,55 +86,27 @@ qperfeditframe::qperfeditframe (seq64::perform *a_perf, QWidget *parent)
 
     m_scroll_area->setWidget(mContainer);
 
-    connect(ui->cmbGridSnap,
-            SIGNAL(currentIndexChanged(int)),
-            this,
-            SLOT(updateGridSnap(int)));
-
-    connect(ui->btnUndo,
-            SIGNAL(clicked(bool)),
-            m_perfroll,
-            SLOT(undo()));
-
-    connect(ui->btnRedo,
-            SIGNAL(clicked(bool)),
-            m_perfroll,
-            SLOT(redo()));
-
-    connect(ui->cmbGridSnap,
-            SIGNAL(currentIndexChanged(int)),
-            this,
-            SLOT(updateGridSnap(int)));
-
-    connect(ui->btnZoomIn,
-            SIGNAL(clicked(bool)),
-            this,
-            SLOT(zoom_in()));
-
-    connect(ui->btnZoomOut,
-            SIGNAL(clicked(bool)),
-            this,
-            SLOT(zoom_out()));
-
-    connect(ui->btnCollapse,
-            SIGNAL(clicked(bool)),
-            this,
-            SLOT(markerCollapse()));
-
-    connect(ui->btnExpand,
-            SIGNAL(clicked(bool)),
-            this,
-            SLOT(markerExpand()));
-
-    connect(ui->btnExpandCopy,
-            SIGNAL(clicked(bool)),
-            this,
-            SLOT(markerExpandCopy()));
-
-    connect(ui->btnLoop,
-            SIGNAL(clicked(bool)),
-            this,
-            SLOT(markerLoop(bool)));
+    connect
+    (
+        ui->cmbGridSnap, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(updateGridSnap(int))
+    );
+    connect(ui->btnUndo, SIGNAL(clicked(bool)), m_perfroll, SLOT(undo()));
+    connect(ui->btnRedo, SIGNAL(clicked(bool)), m_perfroll, SLOT(redo()));
+    connect
+    (
+        ui->cmbGridSnap, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(updateGridSnap(int))
+    );
+    connect(ui->btnZoomIn, SIGNAL(clicked(bool)), this, SLOT(zoom_in()));
+    connect(ui->btnZoomOut, SIGNAL(clicked(bool)), this, SLOT(zoom_out()));
+    connect(ui->btnCollapse, SIGNAL(clicked(bool)), this, SLOT(markerCollapse()));
+    connect(ui->btnExpand, SIGNAL(clicked(bool)), this, SLOT(markerExpand()));
+    connect
+    (
+        ui->btnExpandCopy, SIGNAL(clicked(bool)), this, SLOT(markerExpandCopy())
+    );
+    connect(ui->btnLoop, SIGNAL(clicked(bool)), this, SLOT(markerLoop(bool)));
 
     m_snap = 8;
     mbeats_per_measure = 4;
@@ -102,12 +117,17 @@ qperfeditframe::qperfeditframe (seq64::perform *a_perf, QWidget *parent)
     set_beat_width(4);
 }
 
+/**
+ *
+ */
+
 qperfeditframe::~qperfeditframe()
 {
     delete ui;
 }
 
-int qperfeditframe::get_beat_width() const
+int
+qperfeditframe::get_beat_width() const
 {
     return mbeat_width;
 }
@@ -151,7 +171,6 @@ qperfeditframe::set_snap(int a_snap)
     char b[10];
     snprintf(b, sizeof(b), "1/%d", a_snap);
     ui->cmbGridSnap->setCurrentText(b);
-
     m_snap = a_snap;
     set_guides();
 }
@@ -167,7 +186,6 @@ int qperfeditframe::get_beats_per_measure() const
 {
     return mbeats_per_measure;
 }
-
 
 void
 qperfeditframe::set_beat_width(int a_beat_width)
@@ -211,26 +229,33 @@ qperfeditframe::update_sizes()
 void
 qperfeditframe::markerCollapse()
 {
-    m_mainperf->push_trigger_undo();
-    m_mainperf->move_triggers(false);
+    perf().push_trigger_undo();
+    perf().move_triggers(false);
 }
 
 void
 qperfeditframe::markerExpand()
 {
-    m_mainperf->push_trigger_undo();
-    m_mainperf->move_triggers(true);
+    perf().push_trigger_undo();
+    perf().move_triggers(true);
 }
 
 void
 qperfeditframe::markerExpandCopy()
 {
-    m_mainperf->push_trigger_undo();
-    m_mainperf->copy_triggers();
+    perf().push_trigger_undo();
+    perf().copy_triggers();
 }
 
 void
 qperfeditframe::markerLoop(bool loop)
 {
-    m_mainperf->set_looping(loop);
+    perf().set_looping(loop);
 }
+
+/*
+ * qperfeditframe.cpp
+ *
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
+ */
+

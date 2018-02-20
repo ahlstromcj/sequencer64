@@ -1,5 +1,40 @@
-#ifndef EDITKEYS_HPP
-#define EDITKEYS_HPP
+#ifndef SEQ64_QSEQKEYS_HPP
+#define SEQ64_QSEQKEYS_HPP
+
+/*
+ *  This file is part of seq24/sequencer64.
+ *
+ *  seq24 is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  seq24 is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with seq24; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/**
+ * \file          qseqkeys.hpp
+ *
+ *  This module declares/defines the base class for the left-side piano of
+ *  the pattern/sequence panel.
+ *
+ * \library       sequencer64 application
+ * \author        Seq24 team; modifications by Chris Ahlstrom
+ * \date          2018-01-01
+ * \updates       2018-02-19
+ * \license       GNU GPLv2 or above
+ *
+ *      We've added the feature of a right-click toggling between showing the
+ *      main octave values (e.g. "C1" or "C#1") versus the numerical MIDI
+ *      values of the keys.
+ */
 
 #include <QWidget>
 #include <QTimer>
@@ -16,7 +51,10 @@
 
 namespace seq64
 {
-    class perform;
+
+    class sequence;
+
+//  class perform;
 
 /**
  * draws the piano keys in the sequence editor
@@ -27,21 +65,29 @@ class qseqkeys : public QWidget
     Q_OBJECT
 
 public:
-    explicit qseqkeys(sequence *a_seq,
-                      QWidget *parent = 0,
-                      int keyHeight = 12,
-                      int keyAreaHeight = 12 * c_num_keys + 1);
+
+    explicit qseqkeys
+    (
+        sequence & seq,
+        QWidget * parent = 0,
+        int keyHeight = 12,
+        int keyAreaHeight = 12 * c_num_keys + 1
+    );
 
 protected:
-    //override painting event to draw on the frame
-    void paintEvent(QPaintEvent *);
 
-    //override mouse events for interaction
-    void mousePressEvent(QMouseEvent * event);
-    void mouseReleaseEvent(QMouseEvent * event);
-    void mouseMoveEvent(QMouseEvent * event);
+    // override painting event to draw on the frame
 
-    //override the sizehint to set our own defaults
+    void paintEvent (QPaintEvent *);
+
+    // override mouse events for interaction
+
+    void mousePressEvent (QMouseEvent * event);
+    void mouseReleaseEvent (QMouseEvent * event);
+    void mouseMoveEvent (QMouseEvent * event);
+
+    // override the sizehint to set our own defaults
+
     QSize sizeHint() const;
 
 signals:
@@ -50,26 +96,33 @@ public slots:
 
 private:
 
-    //takes a y coordinate and converts it to a note value
+    // takes a y coordinate and converts it to a note value
+
     void convert_y(int a_y, int *a_note);
 
-    sequence *m_seq;
+private:
 
-    QTimer      *m_timer;
-    QPen        *m_pen;
-    QBrush      *m_brush;
-    QPainter    *m_painter;
-    QFont        m_font;
-
+    sequence  & m_seq;
+    QTimer * m_timer;
+    QPen * m_pen;
+    QBrush * m_brush;
+    QPainter * m_painter;
+    QFont m_font;
     int m_key;
     int keyY;
     int keyAreaY;
-
     bool mPreviewing;
     int  mPreviewKey;
 
-};
+};          // class qseqkeys
 
 }           // namespace seq64
 
-#endif // EDITKEYS_HPP
+#endif      // SEQ64_QSEQKEYS_HPP
+
+/*
+ * qseqkeys.hpp
+ *
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
+ */
+

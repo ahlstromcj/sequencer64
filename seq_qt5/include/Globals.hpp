@@ -1,5 +1,4 @@
-/*----------------------------------------------------------------------------
- *
+/*
  *  This file is part of seq24.
  *
  *  seq24 is free software; you can redistribute it and/or modify
@@ -15,19 +14,11 @@
  *  You should have received a copy of the GNU General Public License
  *  along with seq24; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- *-----------------------------------------------------------------------------
  */
 
-#pragma once
-
-/*****
-#ifdef __WIN32__
-#    include "configwin32.h"
-#else
-#    include "Config.hpp"
-#endif
-*****/
+/*
+ * DEPRECATED.  Migrate to globals.h.
+ */
 
 #include <QString>
 #include <QMap>

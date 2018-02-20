@@ -223,7 +223,7 @@ private:        // callbacks
     bool on_scroll_event (GdkEventScroll * ev);
     void on_size_allocate (Gtk::Allocation &);
 
-};
+};          // class seqkeys
 
 }           // namespace seq64
 

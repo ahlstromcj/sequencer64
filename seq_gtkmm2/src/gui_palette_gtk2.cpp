@@ -91,13 +91,13 @@ const STATIC_COLOR gui_palette_gtk2::m_dk_pink      = Color("dark pink");
  * Invertible colors
  */
 
-STATIC_COLOR gui_palette_gtk2::m_grey               = Color("grey");
-STATIC_COLOR gui_palette_gtk2::m_dk_grey            = Color("grey50");
-STATIC_COLOR gui_palette_gtk2::m_lt_grey            = Color("light grey");
+STATIC_COLOR gui_palette_gtk2::m_grey_paint         = Color("grey");
+STATIC_COLOR gui_palette_gtk2::m_dk_grey_paint      = Color("grey50");
+STATIC_COLOR gui_palette_gtk2::m_lt_grey_paint      = Color("light grey");
 STATIC_COLOR gui_palette_gtk2::m_blk_paint          = Color("black");
 STATIC_COLOR gui_palette_gtk2::m_wht_paint          = Color("white");
-STATIC_COLOR gui_palette_gtk2::m_blk_key            = Color("black");
-STATIC_COLOR gui_palette_gtk2::m_wht_key            = Color("white");
+STATIC_COLOR gui_palette_gtk2::m_blk_key_paint      = Color("black");
+STATIC_COLOR gui_palette_gtk2::m_wht_key_paint      = Color("white");
 STATIC_COLOR gui_palette_gtk2::m_tempo_paint        = Color("magenta"); // dark
 #ifdef SEQ64_USE_BLACK_SELECTION_BOX
 STATIC_COLOR gui_palette_gtk2::m_sel_paint          = Color("black");
@@ -137,13 +137,13 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     colormap->alloc_color(const_cast<Color &>(m_magenta));
     colormap->alloc_color(const_cast<Color &>(m_blue));
 
-    colormap->alloc_color(const_cast<Color &>(m_grey));
-    colormap->alloc_color(const_cast<Color &>(m_dk_grey));
-    colormap->alloc_color(const_cast<Color &>(m_lt_grey));
+    colormap->alloc_color(const_cast<Color &>(m_grey_paint));
+    colormap->alloc_color(const_cast<Color &>(m_dk_grey_paint));
+    colormap->alloc_color(const_cast<Color &>(m_lt_grey_paint));
     colormap->alloc_color(const_cast<Color &>(m_blk_paint));
     colormap->alloc_color(const_cast<Color &>(m_wht_paint));
-    colormap->alloc_color(const_cast<Color &>(m_blk_key));
-    colormap->alloc_color(const_cast<Color &>(m_wht_key));
+    colormap->alloc_color(const_cast<Color &>(m_blk_key_paint));
+    colormap->alloc_color(const_cast<Color &>(m_wht_key_paint));
     colormap->alloc_color(const_cast<Color &>(m_tempo_paint));
     colormap->alloc_color(const_cast<Color &>(m_sel_paint));
 
@@ -212,42 +212,42 @@ gui_palette_gtk2::load_inverse_palette (bool inverse)
 {
     if (inverse)
     {
-        m_grey        = Color("grey");
-        m_dk_grey     = Color("light grey");
-        m_lt_grey     = Color("grey50");
-        m_blk_paint   = Color("white");
-        m_wht_paint   = Color("black");
+        m_grey_paint    = Color("grey");
+        m_dk_grey_paint = Color("light grey");
+        m_lt_grey_paint = Color("grey50");
+        m_blk_paint     = Color("white");
+        m_wht_paint     = Color("black");
 #ifdef USE_ALTERNATE_KEY_COLOR                  /* which looks better?      */
-        m_blk_key     = Color("light grey");    /* too difficult to grok    */
-        m_wht_key     = Color("black");
+        m_blk_key_paint = Color("light grey");  /* too difficult to grok    */
+        m_wht_key_paint = Color("black");
 #else
-        m_blk_key     = Color("black");
-        m_wht_key     = Color("grey");
+        m_blk_key_paint = Color("black");
+        m_wht_key_paint = Color("grey");
 #endif
-        m_tempo_paint = Color("magenta");
+        m_tempo_paint   = Color("magenta");
 #ifdef SEQ64_USE_BLACK_SELECTION_BOX
-        m_sel_paint   = Color("white");
+        m_sel_paint     = Color("white");
 #else
-        m_sel_paint   = Color("orange");
+        m_sel_paint     = Color("orange");
 #endif
-        m_is_inverse  = true;
+        m_is_inverse    = true;
     }
     else
     {
-        m_grey        = Color("grey");
-        m_dk_grey     = Color("grey50");
-        m_lt_grey     = Color("light grey");
-        m_blk_paint   = Color("black");
-        m_wht_paint   = Color("white");
-        m_blk_key     = Color("black");
-        m_wht_key     = Color("white");
-        m_tempo_paint = Color("magenta");       /* or dark magenta          */
+        m_grey_paint    = Color("grey");
+        m_dk_grey_paint = Color("grey50");
+        m_lt_grey_paint = Color("light grey");
+        m_blk_paint     = Color("black");
+        m_wht_paint     = Color("white");
+        m_blk_key_paint = Color("black");
+        m_wht_key_paint = Color("white");
+        m_tempo_paint   = Color("magenta");       /* or dark magenta          */
 #ifdef SEQ64_USE_BLACK_SELECTION_BOX
-        m_sel_paint   = Color("black");
+        m_sel_paint     = Color("black");
 #else
-        m_sel_paint   = Color("dark orange");
+        m_sel_paint     = Color("dark orange");
 #endif
-        m_is_inverse  = false;
+        m_is_inverse    = false;
     }
 }
 

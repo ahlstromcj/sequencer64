@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-13
+ * \updates       2018-02-20
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -432,11 +432,11 @@ seqroll::update_background ()
 
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
     bool fruity_lines = true;
-    m_gc->set_foreground(light_grey());             /* draw horz grey lines */
+    m_gc->set_foreground(light_grey_paint());       /* draw horz grey lines */
     set_line(Gdk::LINE_SOLID);
 #else
     bool fruity_lines = rc().interaction_method() == e_fruity_interaction;
-    m_gc->set_foreground(grey());                   /* draw horz grey lines */
+    m_gc->set_foreground(grey_paint());             /* draw horz grey lines */
     set_line(Gdk::LINE_ON_OFF_DASH);
     gint8 dash = 1;
     m_gc->set_dashes(0, &dash, 1);
@@ -451,16 +451,16 @@ seqroll::update_background ()
         {
             if ((modkey % SEQ64_OCTAVE_SIZE) == 0)
             {
-                m_gc->set_foreground(dark_grey());  /* draw horz lines at C */
+                m_gc->set_foreground(dark_grey_paint()); /* horz lines at C */
                 set_line(Gdk::LINE_SOLID);
             }
             else if ((modkey % SEQ64_OCTAVE_SIZE) == (SEQ64_OCTAVE_SIZE-1))
             {
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
-                m_gc->set_foreground(light_grey()); /* lighter solid line   */
+                m_gc->set_foreground(light_grey_paint()); /* lighter line   */
                 set_line(Gdk::LINE_SOLID);
 #else
-                m_gc->set_foreground(grey());       /* lighter dashed lines */
+                m_gc->set_foreground(grey_paint());       /* lighter lines  */
                 set_line(Gdk::LINE_ON_OFF_DASH);
 #endif
             }
@@ -473,7 +473,8 @@ seqroll::update_background ()
             {
                 draw_rectangle
                 (
-                    m_background, light_grey(), 0, y + 1, m_window_x, c_key_y - 1
+                    m_background, light_grey_paint(),
+                    0, y + 1, m_window_x, c_key_y - 1
                 );
             }
         }
@@ -494,7 +495,7 @@ seqroll::update_background ()
     int starttick = m_scroll_offset_ticks -
         (m_scroll_offset_ticks % ticks_per_major);
 
-    m_gc->set_foreground(grey());
+    m_gc->set_foreground(grey_paint());
 
     /*
      * Incrementing by ticks_per_step only works for PPQN of certain
@@ -515,7 +516,7 @@ seqroll::update_background ()
         else if (tick % ticks_per_beat == 0)
         {
             set_line(Gdk::LINE_SOLID);
-            m_gc->set_foreground(dark_grey());
+            m_gc->set_foreground(dark_grey_paint());
         }
         else
         {
@@ -525,21 +526,21 @@ seqroll::update_background ()
             if (tick == tick_snap)
             {
                 set_line(Gdk::LINE_SOLID);
-                m_gc->set_foreground(light_grey());           // dark_grey());
+                m_gc->set_foreground(light_grey_paint());
             }
             else
             {
                 set_line(Gdk::LINE_ON_OFF_DASH);
-                m_gc->set_foreground(light_grey());
+                m_gc->set_foreground(light_grey_paint());
                 gint8 dash = 1;
                 m_gc->set_dashes(0, &dash, 1);
             }
 #else
             set_line(Gdk::LINE_ON_OFF_DASH);
             if (tick == tick_snap)
-                m_gc->set_foreground(dark_grey());
+                m_gc->set_foreground(dark_grey_paint());
             else
-                m_gc->set_foreground(grey());
+                m_gc->set_foreground(grey_paint());
 
             gint8 dash = 1;
             m_gc->set_dashes(0, &dash, 1);

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-05
+ * \updates       2018-02-20
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -177,7 +177,7 @@ perfnames::draw_sequence (int seqnum)
         if (is_nullptr(seq))
             return;
 
-        Color fg = grey();
+        Color fg = grey_paint();
         font::Color col = font::BLACK;
         bool is_active = perf().is_active(seqnum);
         bool muted = false;
@@ -260,7 +260,7 @@ perfnames::draw_sequence (int seqnum)
          * This "else" shouldn't legally be possible!
          */
 
-        draw_rectangle(grey(), 0, yloc + 1, m_names_x, m_names_y);
+        draw_rectangle(grey_paint(), 0, yloc + 1, m_names_x, m_names_y);
     }
 }
 

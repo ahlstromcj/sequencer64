@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-14
+ * \updates       2018-02-20
  * \license       GNU GPLv2 or above
  *
  *  We are currently trying to get event processing to accomodate tempo
@@ -207,15 +207,15 @@ seqevent::draw_background ()
 {
 
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
-    Color minor_line_color = light_grey();
+    Color minor_line_color = light_grey_paint();
 #else
-    Color minor_line_color = grey();
+    Color minor_line_color = grey_paint();
 #endif
 
     if (event::is_note_msg(m_status))
     {
-        draw_rectangle_on_pixmap(light_grey(), 0, 0, m_window_x, m_window_y);
-        minor_line_color = dark_grey();         /* or white()? black()? */
+        draw_rectangle_on_pixmap(light_grey_paint(), 0, 0, m_window_x, m_window_y);
+        minor_line_color = dark_grey_paint();         /* or white()? black()? */
     }
     else
         draw_rectangle_on_pixmap(white(), 0, 0, m_window_x, m_window_y);
@@ -229,7 +229,7 @@ seqevent::draw_background ()
     int starttick = m_scroll_offset_ticks -
         (m_scroll_offset_ticks % ticks_per_step);
 
-    m_gc->set_foreground(grey());
+    m_gc->set_foreground(grey_paint());
     for (int tick = starttick; tick < endtick; tick += ticks_per_step)
     {
         int base_line = tick / m_zoom;
@@ -245,7 +245,7 @@ seqevent::draw_background ()
         else if (tick % ticks_per_beat == 0)
         {
             set_line(Gdk::LINE_SOLID);
-            m_gc->set_foreground(grey());
+            m_gc->set_foreground(grey_paint());
         }
         else
         {
@@ -269,7 +269,7 @@ seqevent::draw_background ()
                 m_gc->set_dashes(0, &dash, 1);
             }
 #else
-            m_gc->set_foreground(grey());
+            m_gc->set_foreground(grey_paint());
             set_line(Gdk::LINE_ON_OFF_DASH);
             gint8 dash = 1;
             m_gc->set_dashes(0, &dash, 1);

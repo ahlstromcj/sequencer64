@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-13
+ * \updates       2018-02-20
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -359,23 +359,23 @@ perfroll::fill_background_pixmap ()
 
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
     set_line(Gdk::LINE_SOLID);
-    draw_line(m_background, light_grey(), 0, 0, m_background_x, 0);
+    draw_line(m_background, light_grey_paint(), 0, 0, m_background_x, 0);
 #else
     gint8 dash = 1;
     m_gc->set_dashes(0, &dash, 1);
     set_line(Gdk::LINE_ON_OFF_DASH);
-    draw_line(m_background, grey(), 0, 0, m_background_x, 0);
+    draw_line(m_background, grey_paint(), 0, 0, m_background_x, 0);
 #endif
 
     int beats = m_measure_length / m_beat_length;
-    m_gc->set_foreground(grey());
+    m_gc->set_foreground(grey_paint());
     for (int i = 0; i < beats; /* inc'd in body */) /* draw vertical lines  */
     {
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
         if (i == 0)
-            m_gc->set_foreground(dark_grey());      /* was black()          */
+            m_gc->set_foreground(dark_grey_paint());      /* was black()          */
         else
-            m_gc->set_foreground(light_grey());
+            m_gc->set_foreground(light_grey_paint());
 #else
         if (i == 0)
             set_line(Gdk::LINE_SOLID);
@@ -668,7 +668,7 @@ perfroll::draw_sequence_on (int seqnum)
 
                 draw_rectangle_on_pixmap        /* fill segment background  */
                 (
-                    selected ? grey() : white_paint(), x, y, w, h
+                    selected ? grey_paint() : white_paint(), x, y, w, h
                 );
                 draw_rectangle_on_pixmap(black_paint(), x, y, w, h, false);
                 draw_rectangle_on_pixmap        /* draw the segment handle  */
@@ -696,7 +696,8 @@ perfroll::draw_sequence_on (int seqnum)
                     {
                         draw_rectangle
                         (
-                            m_pixmap, light_grey(), tickmarker_x, y + 4, 1, h - 8
+                            m_pixmap, light_grey_paint(),
+                            tickmarker_x, y + 4, 1, h - 8
                         );
                     }
 

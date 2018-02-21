@@ -166,13 +166,13 @@ private:                            /* use the accessor functions           */
      * Colors that can be "inverted" (i.e. changed for the inverse-color mode.
      */
 
-    static Color m_grey;            /**< Provides the grey color.           */
-    static Color m_dk_grey;         /**< Provides the dark grey color.      */
-    static Color m_lt_grey;         /**< Provides the light grey color.     */
+    static Color m_grey_paint;      /**< Provides the grey color.           */
+    static Color m_dk_grey_paint;   /**< Provides the dark grey color.      */
+    static Color m_lt_grey_paint;   /**< Provides the light grey color.     */
     static Color m_blk_paint;       /**< An invertible black color.         */
     static Color m_wht_paint;       /**< An invertible white color.         */
-    static Color m_blk_key;         /**< Provides the color of a black key. */
-    static Color m_wht_key;         /**< Provides the color of a white key. */
+    static Color m_blk_key_paint;   /**< Provides the color of a black key. */
+    static Color m_wht_key_paint;   /**< Provides the color of a white key. */
     static Color m_tempo_paint;     /**< The color of a tempo line.         */
     static Color m_sel_paint;       /**< The color of a selection box.      */
 
@@ -301,30 +301,30 @@ public:
     }
 
     /**
-     * \getter m_grey
+     * \getter m_grey_paint
      */
 
-    const Color & grey () const
+    const Color & grey_paint () const
     {
-        return m_grey;
+        return m_grey_paint;
     }
 
     /**
-     * \getter m_dk_grey
+     * \getter m_dk_grey_paint
      */
 
-    const Color & dark_grey () const
+    const Color & dark_grey_paint () const
     {
-        return m_dk_grey;
+        return m_dk_grey_paint;
     }
 
     /**
-     * \getter m_lt_grey
+     * \getter m_lt_grey_paint
      */
 
-    const Color & light_grey () const
+    const Color & light_grey_paint () const
     {
-        return m_lt_grey;
+        return m_lt_grey_paint;
     }
 
     /**
@@ -400,21 +400,21 @@ public:
     }
 
     /**
-     * \getter m_blk_key
+     * \getter m_blk_key_paint
      */
 
-    const Color & black_key () const
+    const Color & black_key_paint () const
     {
-        return m_blk_key;
+        return m_blk_key_paint;
     }
 
     /**
-     * \getter m_wht_key
+     * \getter m_wht_key_paint
      */
 
-    const Color & white_key () const
+    const Color & white_key_paint () const
     {
-        return m_wht_key;
+        return m_wht_key_paint;
     }
 
     /**

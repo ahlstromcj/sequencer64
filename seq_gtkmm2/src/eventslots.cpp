@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2017-08-05
+ * \updates       2018-02-20
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -899,7 +899,7 @@ eventslots::draw_event (editable_events::iterator ei, int index)
     std::string temp = tmp;
     temp += evp.stock_event_string();
     temp += "   ";                                          /* coloring */
-    draw_rectangle(light_grey(), 0, yloc, m_slots_x, 1);
+    draw_rectangle(light_grey_paint(), 0, yloc, m_slots_x, 1);
     render_string(0, yloc+2, temp, col);
 }
 

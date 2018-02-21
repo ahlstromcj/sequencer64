@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2018-02-18
+# \update      2018-02-20
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -91,7 +91,6 @@ pkginclude_HEADERS = \
 	calculations.hpp \
 	click.hpp \
 	cmdlineopts.hpp \
-	coloring.hpp \
 	configfile.hpp \
 	controllers.hpp \
    daemonize.hpp \
@@ -122,6 +121,7 @@ pkginclude_HEADERS = \
    midi_vector.hpp \
 	mutex.hpp \
 	optionsfile.hpp \
+   palette.hpp \
 	perform.hpp \
 	platform_macros.h \
 	rc_settings.hpp \

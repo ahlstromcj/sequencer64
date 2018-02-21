@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-17
+ * \updates       2018-02-20
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -422,13 +422,13 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
             if (seq->get_queued())
             {
-                draw_rectangle_on_pixmap(grey(), x, y, lx, ly);
+                draw_rectangle_on_pixmap(grey_paint(), x, y, lx, ly);
                 fg_color(black());
             }
 #ifdef SEQ64_SONG_RECORDING
             else if (seq->one_shot())
             {
-                draw_rectangle_on_pixmap(light_grey(), x, y, lx, ly);
+                draw_rectangle_on_pixmap(light_grey_paint(), x, y, lx, ly);
                 fg_color(black());
             }
 #endif

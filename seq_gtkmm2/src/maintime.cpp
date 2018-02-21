@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-07
+ * \updates       2018-02-20
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
@@ -116,8 +116,12 @@ maintime::idle_progress (midipulse ticks)
         clear_window();
         draw_rectangle(black(), 0, yoff, m_box_width, m_box_height, false);
         if (tick_x <= m_flash_x)       /* for flashing the maintime bar     */
-            draw_rectangle(grey(), 2, yoff+2, m_flash_width, m_flash_height);
-
+        {
+            draw_rectangle
+            (
+                grey_paint(), 2, yoff+2, m_flash_width, m_flash_height
+            );
+        }
         draw_rectangle(black(), beat_x + 2, yoff+2, m_pill_width, m_flash_height);
         draw_rectangle(bar_x + 2, yoff+2, m_pill_width, m_flash_height);
     }

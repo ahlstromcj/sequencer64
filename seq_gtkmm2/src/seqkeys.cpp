@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-19
+ * \updates       2018-02-20
  * \license       GNU GPLv2 or above
  *
  *  One thing we must be sure of is the MIDI note range.  Obviously, in terms
@@ -184,7 +184,7 @@ seqkeys::update_pixmap ()
     {
         draw_rectangle_on_pixmap
         (
-            white_key(), kx, (c_key_y * key) + 1, c_key_x - 2, c_key_y - 1
+            white_key_paint(), kx, (c_key_y * key) + 1, c_key_x - 2, c_key_y - 1
         );
 
         int okey = (c_num_keys - key - 1) % SEQ64_OCTAVE_SIZE;
@@ -192,7 +192,8 @@ seqkeys::update_pixmap ()
         {
             draw_rectangle_on_pixmap
             (
-                black_key(), kx, (c_key_y * key) + 2, c_key_x - 3, c_key_y - 3
+                black_key_paint(), kx, (c_key_y * key) + 2,
+                c_key_x - 3, c_key_y - 3
             );
         }
 
@@ -324,13 +325,13 @@ seqkeys::draw_key (int key, bool state)
     int y = (c_key_y * key) + 2 - m_scroll_offset_y;
     int w = c_key_x - 3;                            /* x length of key      */
     int h = c_key_y - 3;                            /* y height of key      */
-    m_gc->set_foreground(is_black_key(k) ? black_key() : white_key());
+    m_gc->set_foreground(is_black_key(k) ? black_key_paint() : white_key_paint());
     if (state)
     {
         if (usr().inverse_colors())
             draw_rectangle(orange(), x, y, w, h);   /* red()?               */
         else
-            draw_rectangle(grey(), x, y, w, h);
+            draw_rectangle(grey_paint(), x, y, w, h);
     }
     else
         draw_rectangle(x, y, w, h);

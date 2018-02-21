@@ -36,6 +36,8 @@
  *  Kepler34.
  */
 
+#include <map>                          /* std::map container class         */
+
 /*
  *  Do not document a namespace; it breaks Doxygen.
  */
@@ -92,6 +94,38 @@ enum thumb_colors_t
 
     NONE                // N/A
 };
+
+/**
+ *  A generic collection of whatever types of color classes (QColor,
+ *  Gdk::Color) one wants to hold.
+ */
+
+template <class T>
+class palette
+{
+
+private:
+
+    /**
+     *  Provides a type definition for the color-class of interest.
+     */
+
+    typedef T Color;
+
+    /**
+     *  Provides an associative container of pointers to the color-class T.
+     */
+
+    std::map<thumb_colors_t, T> container;
+
+public:
+
+    palette ();                         /* initially empty, filled by add() */
+
+    void add (thumb_colors_t index, T * color);
+    T & get_color (thumb_colors_t index);
+
+};          // class palette
 
 }           // namespace seq64
 

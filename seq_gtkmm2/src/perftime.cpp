@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-13
+ * \updates       2018-02-20
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -282,7 +282,7 @@ perftime::draw_background ()
         bar_skip = 64;
 #endif
 
-    m_gc->set_foreground(grey());                   /* draw vertical lines  */
+    m_gc->set_foreground(grey_paint());                 /* vertical lines   */
 
 #ifdef USE_STAZED_EXTRAS
     for (midipulse i = first_measure; i < last_measure; i += bar_skip)

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-02-18
+ * \updates       2018-02-20
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -43,7 +43,7 @@
 
 #include "seq64_features.h"             /* various feature #defines     */
 #include "calculations.hpp"             /* measures_to_ticks()          */
-#include "coloring.hpp"                 /* enum thumb_colors_t          */
+#include "palette.hpp"                  /* enum thumb_colors_t          */
 #include "event_list.hpp"               /* seq64::event_list            */
 #include "midi_container.hpp"           /* seq64::midi_container        */
 #include "midibus.hpp"                  /* seq64::midibus               */

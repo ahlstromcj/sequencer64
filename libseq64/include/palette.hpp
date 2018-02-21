@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-02-18
- * \updates       2018-02-20
+ * \updates       2018-02-21
  * \license       GNU GPLv2 or above
  *
  *  This module is inspired by MidiPerformance::getSequenceColor() in
@@ -97,33 +97,36 @@ enum thumb_colors_t
 
 /**
  *  A generic collection of whatever types of color classes (QColor,
- *  Gdk::Color) one wants to hold.
+ *  Gdk::Color) one wants to hold, and reference by an index number.
+ *  This template class is not meant to manage color, but just to point
+ *  to them.
  */
 
-template <class T>
+template <typename COLOR>
 class palette
 {
 
 private:
 
-    /**
+    /*
      *  Provides a type definition for the color-class of interest.
+     *
+     * typedef COLOR Color;
      */
-
-    typedef T Color;
 
     /**
-     *  Provides an associative container of pointers to the color-class T.
+     *  Provides an associative container of pointers to the color-class COLOR.
+     *  A vector could be used instead of a map.
      */
 
-    std::map<thumb_colors_t, T> container;
+    std::map<thumb_colors_t, const COLOR *> container;
 
 public:
 
     palette ();                         /* initially empty, filled by add() */
 
-    void add (thumb_colors_t index, T * color);
-    T & get_color (thumb_colors_t index);
+    void add (thumb_colors_t index, const COLOR & color);
+    const COLOR & get_color (thumb_colors_t index) const;
 
 };          // class palette
 

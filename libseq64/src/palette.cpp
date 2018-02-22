@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-02-20
- * \updates       2018-02-21
+ * \updates       2018-02-22
  * \license       GNU GPLv2 or above
  *
  *  This module is inspired by MidiPerformance::getSequenceColor() in
@@ -41,57 +41,6 @@
 
 namespace seq64
 {
-
-/**
- *  Creates the palette, and inserts a default COLOR color object as
- *  the NONE entry.
- */
-
-template <typename COLOR>
-palette<COLOR>::palette ()
- :
-    container   ()
-{
-    COLOR color;
-    add(NONE, color);
-}
-
-/**
- *  Inserts a color-index/color pair into the palette.  There is no indication
- *  if the item was not added, which will occur only when the item is already in
- *  the container.
- *
- * \param index
- *      The index into the palette.
- *
- * \param color
- *      The COLOR color object to add to the palette.
- */
-
-template <typename COLOR>
-void
-palette<COLOR>::add (thumb_colors_t index, const COLOR & color)
-{
-    std::pair<thumb_colors_t, const COLOR *> p = std::make_pair(index, &color);
-    (void) container.insert(p);
-}
-
-/**
- *  Gets a color from the palette, based on the index value.
- *
- * \param index
- *      Indicates which color to get.  This index is checked for range, and, if
- *      out of range, the default color object, indexed by thumb_colors_t::NONE,
- *      is returned.
- */
-
-template <typename COLOR>
-const COLOR &
-palette<COLOR>::get_color (thumb_colors_t index) const
-{
-    return (index >= BLACK && index < NONE) ?
-        container[index] : container[NONE] ;
-}
 
 }           // namespace seq64
 

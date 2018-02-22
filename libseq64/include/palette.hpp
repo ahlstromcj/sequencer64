@@ -1,5 +1,5 @@
-#ifndef SEQ64_COLORING_HPP
-#define SEQ64_COLORING_HPP
+#ifndef SEQ64_PALETTE_HPP
+#define SEQ64_PALETTE_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          coloring.hpp
+ * \file          palette.hpp
  *
  *  This module declares/defines items for an abstract representation of the
  *  color of a sequence or panel item.  Colors are, of course, part of using a
@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-02-18
- * \updates       2018-02-21
+ * \updates       2018-02-22
  * \license       GNU GPLv2 or above
  *
  *  This module is inspired by MidiPerformance::getSequenceColor() in
@@ -128,14 +128,75 @@ public:
     void add (thumb_colors_t index, const COLOR & color);
     const COLOR & get_color (thumb_colors_t index) const;
 
+    /**
+     *
+     */
+
+    void clear ()
+    {
+        container.clear();
+    }
+
 };          // class palette
+
+/**
+ *  Creates the palette, and inserts a default COLOR color object as
+ *  the NONE entry.
+ */
+
+template <typename COLOR>
+palette<COLOR>::palette ()
+ :
+    container   ()
+{
+    COLOR color;
+    add(NONE, color);
+}
+
+/**
+ *  Inserts a color-index/color pair into the palette.  There is no indication
+ *  if the item was not added, which will occur only when the item is already in
+ *  the container.
+ *
+ * \param index
+ *      The index into the palette.
+ *
+ * \param color
+ *      The COLOR color object to add to the palette.
+ */
+
+template <typename COLOR>
+void
+palette<COLOR>::add (thumb_colors_t index, const COLOR & color)
+{
+    std::pair<thumb_colors_t, const COLOR *> p = std::make_pair(index, &color);
+    (void) container.insert(p);
+}
+
+/**
+ *  Gets a color from the palette, based on the index value.
+ *
+ * \param index
+ *      Indicates which color to get.  This index is checked for range, and, if
+ *      out of range, the default color object, indexed by thumb_colors_t::NONE,
+ *      is returned.  However, an exception will be thrown if the color does
+ *      not exist.
+ */
+
+template <typename COLOR>
+const COLOR &
+palette<COLOR>::get_color (thumb_colors_t index) const
+{
+    return (index >= BLACK && index < NONE) ?
+        *container.at(index) : *container.at(NONE) ;
+}
 
 }           // namespace seq64
 
-#endif      // SEQ64_COLORING_HPP
+#endif      // SEQ64_PALETTE_HPP
 
 /*
- * coloring.hpp
+ * palette.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

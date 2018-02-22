@@ -217,7 +217,7 @@ qperfroll::paintEvent(QPaintEvent *)
                             mPen->setColor(Qt::black);
 
                         //get seq's assigned colour and beautify
-                        QColor colourSpec = QColor(colourMap.value(perf().getSequenceColour(seqId)));
+                        QColor colourSpec = QColor(colourMap.value(perf().get_sequence_color(seqId)));
                         QColor backColour = QColor(colourSpec);
                         if (backColour.value() != 255) //dont do this if we're white
                             backColour.setHsv(colourSpec.hue(),

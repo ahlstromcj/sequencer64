@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2018-02-20
+ * \updates       2018-02-21
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -40,7 +40,9 @@
  *  since light-grey is the color used to draw scales on the pattern editor.
  */
 
-#include <gtkmm/drawingarea.h>          // or #include <gtkmm/widget.h>
+#include <gtkmm/drawingarea.h>          /* or #include <gtkmm/widget.h> */
+
+#include "palette.hpp"                  /* seq64::palette               */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -116,6 +118,10 @@ protected:
 
     typedef Gdk::Color Color;
 
+protected:
+
+    palette<Gdk::Color> m_palette;
+
 private:                            /* use the accessor functions           */
 
     /**
@@ -158,12 +164,15 @@ private:                            /* use the accessor functions           */
 
     static const Color m_orange;    /**< Provides the orange color.         */
     static const Color m_pink;      /**< Provides the pink color.           */
+    static const Color m_grey;      /**< Provides the unvarying grey color. */
 
     static const Color m_dk_orange; /**< Provides a dark orange color.      */
     static const Color m_dk_pink;   /**< Provides a dark pink color.        */
+    static const Color m_dk_grey;   /**< The unvarying dark grey color.     */
 
     /*
-     * Colors that can be "inverted" (i.e. changed for the inverse-color mode.
+     * Colors that can be "inverted" (i.e. changed for the inverse-color
+     * mode).
      */
 
     static Color m_grey_paint;      /**< Provides the grey color.           */
@@ -189,6 +198,12 @@ public:
 
     gui_palette_gtk2 ();
     ~gui_palette_gtk2 ();
+
+    void initialize ();
+    const Color & get_color (thumb_colors_t index) const
+    {
+        return m_palette.get_color(index);
+    }
 
     static void load_inverse_palette (bool inverse = true);
 

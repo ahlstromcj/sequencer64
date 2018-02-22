@@ -2344,7 +2344,7 @@ public:
         m_looping = looping;
     }
 
-    /*
+    /**
      * Deals with the colors used to represent specific sequences.
      */
 
@@ -2352,6 +2352,10 @@ public:
     {
         return thumb_colors_t(is_active(seqnum) ? m_seqs[seqnum]->color() : 0);
     }
+
+    /**
+     *
+     */
 
     void set_sequence_colour (int seqnum, thumb_colors_t c)
     {

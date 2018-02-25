@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-02-20
+ * \updates       2018-02-25
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -43,7 +43,7 @@
 
 #include "seq64_features.h"             /* various feature #defines     */
 #include "calculations.hpp"             /* measures_to_ticks()          */
-#include "palette.hpp"                  /* enum thumb_colors_t          */
+#include "palette.hpp"                  /* enum class ThumbColor        */
 #include "event_list.hpp"               /* seq64::event_list            */
 #include "midi_container.hpp"           /* seq64::midi_container        */
 #include "midibus.hpp"                  /* seq64::midibus               */
@@ -506,7 +506,7 @@ private:
      *  be an index into a palette.
      */
 
-    thumb_colors_t m_seq_color;
+    int m_seq_color;
 
     /**
      * A feature adapted from Kepler34.
@@ -787,19 +787,23 @@ public:
 
     int color () const
     {
-        return int(m_seq_color);
+        return m_seq_color;
     }
 
     /**
      * \setter m_seq_color
-     *      This setter will set the sequence number only if it has not
-     *      already been set.
+     *      Provides the color-palette value to set.
+     *
+     * \param c
+     *      Provides the index into the color-palette.  The only rules here are
+     *      that -1 represents no color or a default color, and values of zero
+     *      and above (to an unknown limit) represent a legal palette color.
      */
 
     void color (int c)
     {
-        if (c >= int(BLACK) && c <= int(NONE))
-            m_seq_color = thumb_colors_t(c);
+        if (c >= 0 || c == (-1))
+            m_seq_color = c;
     }
 
     /**

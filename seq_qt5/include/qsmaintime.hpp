@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-02-24
  * \license       GNU GPLv2 or above
  *
  */
@@ -57,45 +57,78 @@ class qsmaintime : public QWidget
     Q_OBJECT
 
 public:
-    qsmaintime(QWidget *parent,
-               perform *perf,
-               int beats_per_measure,
-               int beat_width);
+
+    qsmaintime
+    (
+        perform & perf,
+        QWidget * parent,
+        int beats_per_measure   = 4,
+        int beat_width          = 4
+    );
 
     ~qsmaintime();
 
-    int get_beats_per_measure() const;
-    void set_beats_per_measure(int beats_per_measure);
+    /**
+     * \getter m_beats_per_measure
+     */
 
-    int get_beat_width() const;
-    void setbeat_width(int beat_width);
+    int get_beats_per_measure () const
+    {
+        return m_beats_per_measure;
+    }
 
-    //start the redraw timer
-    void startRedrawTimer();
+    /**
+     * \setter m_beats_per_measure
+     */
 
-    bool getPlaying() const;
-    void setPlaying(bool mPlaying);
+    void set_beats_per_measure (int beats_per_measure);
+    {
+        m_beats_per_measure = bpm;
+    }
+
+    /**
+     *  \getter m_beat_width
+     */
+
+    int get_beat_width () const;
+    {
+        return m_beat_width;
+    }
+
+    /**
+     *  \setter m_beat_width
+     */
+
+    void setbeat_width (int beat_width);
+    {
+        m_beat_width = bw;
+    }
+
+    /*
+     * Never defined, never called.
+     *
+     * void startRedrawTimer();
+     * void setPlaying(bool mPlaying);
+     * bool getPlaying() const;
+     */
 
 protected:
-    //override painting event to draw on the frame
-    void paintEvent(QPaintEvent *event);
 
-    //override the sizehint to set our own defaults
-    QSize sizeHint() const;
+    void paintEvent (QPaintEvent * event);  // override to draw on the frame
+    QSize sizeHint() const;                 // override to set our own defaults
 
 private:
-    perform     * const m_main_perf;
 
-    QPainter    *mPainter;
-    QPen        *mPen;
-    QBrush      *mBrush;
-    QColor      *mColour;
-    QFont        mFont;
-
-    int         m_beats_per_measure;
-    int         m_beat_width;
-    int         lastMetro;
-    int         alpha;
+    perform * const m_main_perf;
+    QPainter * mPainter;
+    QPen * mPen;
+    QBrush * mBrush;
+    QColor * mColour;
+    QFont mFont;
+    int m_beats_per_measure;
+    int m_beat_width;
+    int m_lastMetro;
+    int m_alpha;
 
 };          // class qsmaintime
 

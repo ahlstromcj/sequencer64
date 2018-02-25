@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-02-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -53,15 +53,18 @@ qsmaintime::qsmaintime
 ) :
     QWidget             (parent),
     m_main_perf         (perf),
+    mPen                (nullptr),
+    mBrush              (nullptr),
+    m_Color             (new QColor(Qt::red)),
+    mFont               (),
     m_beats_per_measure (beats_per_measure),
-    m_beat_width        (beat_width)
+    m_beat_width        (beat_width),
+    m_lastMetro         (0),
+    m_alpha             (0)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     mFont.setPointSize(9);
     mFont.setBold(true);
-    mColour = new QColor(Qt::red);
-    alpha = 0;
-    lastMetro = 0;
 }
 
 /**
@@ -92,26 +95,27 @@ qsmaintime::paintEvent (QPaintEvent *)
     int metro = (tick / (c_ppqn / 4 * m_beat_width)) % m_beats_per_measure;
     int divX = (width() - 1) / m_beats_per_measure;
 
-    // Flash on beats (i.e. if metro has changed or we've just started
-    // playing)
+    /*
+     * Flash on beats (i.e. if the metronome has changed, or we've just started
+     * playing).
+     *
+     * \todo
+     *      We need to select a color from the palette.
+     */
 
-    if (metro != lastMetro || (tick < 50 && tick > 0))
+    if (metro != m_lastMetro || (tick < 50 && tick > 0))
     {
-        alpha = 230;
+        m_alpha = 230;
         if (metro == 0)
-        {
             mColour->setRgb(255, 50, 50);       // red on first beat in bar
-        }
         else
-        {
             mColour->setRgb(255, 255, 255);     // white on others
-        }
     }
 
-    for (int i = 0; i < m_beats_per_measure; i++)   // draw beat blocks
+    for (int i = 0; i < m_beats_per_measure; ++i)       // draw beat blocks
     {
         int offsetX = divX * i;
-        if (i == metro && m_main_perf->is_running()) // flash on current beat
+        if (i == metro && m_main_perf->is_running())    // flash on current beat
         {
             mBrush->setStyle(Qt::SolidPattern);
             mPen->setColor(Qt::black);
@@ -122,7 +126,7 @@ qsmaintime::paintEvent (QPaintEvent *)
             mPen->setColor(Qt::darkGray);
         }
 
-        mColour->setAlpha(alpha);
+        mColour->setAlpha(m_alpha);
         mBrush->setColor(*mColour);
         mPainter->setPen(*mPen);
         mPainter->setBrush(*mBrush);
@@ -132,7 +136,7 @@ qsmaintime::paintEvent (QPaintEvent *)
             divX - mPen->width(), height() - mPen->width()
         );
     }
-    if (m_beats_per_measure < 10) // draw beat number (if there's space)
+    if (m_beats_per_measure < 10)       // draw beat number (if there's space)
     {
         mPen->setColor(Qt::black);
         mPen->setStyle(Qt::SolidLine);
@@ -144,49 +148,16 @@ qsmaintime::paintEvent (QPaintEvent *)
         );
     }
 
-    // lessen alpha on each redraw to have smooth fading done as a factor of
-    // the bpm to get useful fades
+    /*
+     * lessen alpha on each redraw to have smooth fading done as a factor of
+     * the bpm to get useful fades
+     */
 
-    alpha *= 0.7 - m_main_perf->get_bpm() / 300;
-    lastMetro = metro;
+    m_alpha *= 0.7 - m_main_perf->get_bpm() / 300;
+    m_lastMetro = metro;
     delete mPainter;
     delete mBrush;
     delete mPen;
-}
-
-/**
- *
- */
-
-int qsmaintime::get_beat_width () const
-{
-    return m_beat_width;
-}
-
-/**
- *
- */
-
-void
-qsmaintime::setbeat_width (int bw)
-{
-    m_beat_width = bw;
-}
-
-/**
- *
- */
-
-int
-qsmaintime::get_beats_per_measure () const
-{
-    return m_beats_per_measure;
-}
-
-void
-qsmaintime::set_beats_per_measure (int bpm)
-{
-    m_beats_per_measure = bpm;
 }
 
 /**

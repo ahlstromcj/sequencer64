@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-19
+ * \updates       2018-02-25
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2345,22 +2345,24 @@ public:
     }
 
     /**
-     * Deals with the colors used to represent specific sequences.
+     *  Deals with the colors used to represent specific sequences.  We don't
+     *  want perform knowing the details of the palette color, just treat it
+     *  as an integer.
      */
 
-    thumb_colors_t get_sequence_color (int seqnum) const
+    int get_sequence_color (int seqnum) const
     {
-        return thumb_colors_t(is_active(seqnum) ? m_seqs[seqnum]->color() : 0);
+        return is_active(seqnum) ? m_seqs[seqnum]->color() : (-1) ;
     }
 
     /**
      *
      */
 
-    void set_sequence_colour (int seqnum, thumb_colors_t c)
+    void set_sequence_colour (int seqnum, int c)
     {
         if (is_active(seqnum))
-            m_seqs[seqnum]->color(int(c));
+            m_seqs[seqnum]->color(c);
     }
 
     /**

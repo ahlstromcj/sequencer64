@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2017-09-16
+ * \updates       2018-02-25
  * \license       GNU GPLv2 or above
  *
  *  We've added a number of wrapper functions for the "draw-rectangle",
@@ -79,17 +79,6 @@ namespace seq64
 
 class gui_drawingarea_gtk2 : public gui_palette_gtk2
 {
-
-public:
-
-    /**
-     *  A small helper structure representing a rectangle.
-     */
-
-    struct rect_obsolete
-    {
-        public: int x, y, height, width;
-    };
 
 protected:              // private: should provide accessors
 
@@ -271,7 +260,22 @@ public:
         return m_drop_y;
     }
 
+    /**
+     *
+     */
+
+    const Color & get_color (PaletteColor c) const
+    {
+        return m_palette.get_color(c);
+    }
+
 protected:
+
+    /**
+     *  EXPERIMENTAL
+     */
+
+    const gui_palette_gtk2::Color & get_sequence_color (int seqnum) const;
 
     /**
      *  Provides a common function for redrawing.  This function forces a
@@ -288,6 +292,15 @@ protected:
      */
 
     perform & perf ()
+    {
+        return m_mainperf;
+    }
+
+    /**
+     * \getter m_mainperf, const version
+     */
+
+    const perform & perf () const
     {
         return m_mainperf;
     }

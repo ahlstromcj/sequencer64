@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-05-30
+ * \updates       2018-02-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -591,6 +591,21 @@ gui_drawingarea_gtk2::scroll_vset (Gtk::Adjustment & vadjust, double value)
         value = 0.0;
 
     vadjust.set_value(value);
+}
+
+/**
+ *  EXPERIMENTAL
+ */
+
+const gui_palette_gtk2::Color &
+gui_drawingarea_gtk2::get_sequence_color (int seqnum) const
+{
+    int colindex = perf().get_sequence_color(seqnum);
+    PaletteColor c = PaletteColor(colindex);
+    if (c >= PaletteColor::BLACK && c < PaletteColor::MAX)
+        return get_color(c);
+    else
+        return get_color(PaletteColor::NONE);
 }
 
 }           // namespace seq64

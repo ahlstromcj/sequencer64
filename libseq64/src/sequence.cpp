@@ -140,7 +140,7 @@ sequence::sequence (int ppqn)
     m_maxbeats                  (c_maxbeats),
     m_ppqn                      (0),            /* set in constructor body   */
     m_seq_number                (-1),           /* may be set later          */
-    m_seq_color                 (NONE),
+    m_seq_color                 (-1),           /* PaletteColor::NONE        */
     m_seq_edit_mode             (EDIT_MODE_NOTE),   /* edit_mode_t           */
     m_length                    (0),            /* set in constructor body   */
     m_snap_tick                 (0),            /* set in constructor body   */

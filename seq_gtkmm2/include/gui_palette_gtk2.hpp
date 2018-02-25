@@ -52,21 +52,6 @@ namespace seq64
 {
 
 /**
- *  Progress bar colors.
- */
-
-enum progress_colors_t
-{
-    PROG_COLOR_BLACK        = 0,
-    PROG_COLOR_DARK_RED,
-    PROG_COLOR_DARK_GREEN,
-    PROG_COLOR_DARK_ORANGE,
-    PROG_COLOR_DARK_BLUE,
-    PROG_COLOR_DARK_MAGENTA,
-    PROG_COLOR_DARK_CYAN
-};
-
-/**
  *  Implements a stock palette of Gdk::Color elements.  Note that this
  *  class must be derived from Gtk::DrawingArea (or Gtk::Widget) in order
  *  to get access to the get_default_colormap() function used in the
@@ -120,7 +105,7 @@ protected:
 
 protected:
 
-    palette<Gdk::Color> m_palette;
+    palette<Color> m_palette;
 
 private:                            /* use the accessor functions           */
 
@@ -200,7 +185,7 @@ public:
     ~gui_palette_gtk2 ();
 
     void initialize ();
-    const Color & get_color (thumb_colors_t index) const
+    const Color & get_color (PaletteColor index) const
     {
         return m_palette.get_color(index);
     }
@@ -486,7 +471,7 @@ public:
         m_fg_color = c;
     }
 
-};
+};          // gui_palette_gtk2
 
 }           // namespace seq64
 

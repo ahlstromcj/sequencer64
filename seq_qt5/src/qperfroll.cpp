@@ -208,15 +208,26 @@ qperfroll::paintEvent(QPaintEvent *)
                         int y = c_names_y * seqId + 1;  // + 2
                         int h = c_names_y - 2; // - 4
 
-                        // adjust to screen corrids
-                        x = x - x_offset;
+                        // adjust to screen coordinates
 
+                        x = x - x_offset;
                         if (selected)
                             mPen->setColor(Qt::red);
                         else
                             mPen->setColor(Qt::black);
 
-                        //get seq's assigned colour and beautify
+                        // Get seq's assigned colour and beautify it.
+
+                        // Derive this class from gui_palette_qt5 and
+                        // then you can call
+                        //
+                        // QColor c = get_color(perf().....);
+                        //
+                        // Or should we link the gui_palette to perform????
+                        //
+                        // Or provide an intermediate class?
+                        //
+                        QColor c = QColor(colourMap.value(perf().get_sequence_color(seqId)));
                         QColor colourSpec = QColor(colourMap.value(perf().get_sequence_color(seqId)));
                         QColor backColour = QColor(colourSpec);
                         if (backColour.value() != 255) //dont do this if we're white

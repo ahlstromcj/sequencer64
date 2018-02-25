@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-02-18
- * \updates       2018-02-22
+ * \updates       2018-02-25
  * \license       GNU GPLv2 or above
  *
  *  This module is inspired by MidiPerformance::getSequenceColor() in
@@ -44,6 +44,21 @@
 
 namespace seq64
 {
+
+/**
+ *  Progress bar colors as integer codes.
+ */
+
+enum progress_colors_t
+{
+    PROG_COLOR_BLACK        = 0,
+    PROG_COLOR_DARK_RED,
+    PROG_COLOR_DARK_GREEN,
+    PROG_COLOR_DARK_ORANGE,
+    PROG_COLOR_DARK_BLUE,
+    PROG_COLOR_DARK_MAGENTA,
+    PROG_COLOR_DARK_CYAN
+};
 
 /**
  *  A new type to support the concept of sequence color.  This feature cannot
@@ -61,12 +76,13 @@ namespace seq64
  *  colors in standard X-terminal order, not in Kepler34 order.
  */
 
-enum thumb_colors_t
+enum class PaletteColor
 {
 
  /* Seq64 */            /* Kepler34 */
 
-    BLACK,              //  0 WHITE
+    NONE = -1,          // indicates no color chosen, default color
+    BLACK = 0,          //  0 WHITE
     RED,                //  1 RED
     GREEN,              //  2 GREEN
     YELLOW,             //  3 BLUE
@@ -92,7 +108,7 @@ enum thumb_colors_t
     DK_PINK,            // N/A
     DK_GREY,            // N/A
 
-    NONE                // N/A
+    MAX,                // first illegal value, not in color set
 };
 
 /**
@@ -119,14 +135,14 @@ private:
      *  A vector could be used instead of a map.
      */
 
-    std::map<thumb_colors_t, const COLOR *> container;
+    std::map<PaletteColor, const COLOR *> container;
 
 public:
 
     palette ();                         /* initially empty, filled by add() */
 
-    void add (thumb_colors_t index, const COLOR & color);
-    const COLOR & get_color (thumb_colors_t index) const;
+    void add (PaletteColor index, const COLOR & color);
+    const COLOR & get_color (PaletteColor index) const;
 
     /**
      *
@@ -150,7 +166,7 @@ palette<COLOR>::palette ()
     container   ()
 {
     COLOR color;
-    add(NONE, color);
+    add(PaletteColor::NONE, color);
 }
 
 /**
@@ -167,9 +183,9 @@ palette<COLOR>::palette ()
 
 template <typename COLOR>
 void
-palette<COLOR>::add (thumb_colors_t index, const COLOR & color)
+palette<COLOR>::add (PaletteColor index, const COLOR & color)
 {
-    std::pair<thumb_colors_t, const COLOR *> p = std::make_pair(index, &color);
+    std::pair<PaletteColor, const COLOR *> p = std::make_pair(index, &color);
     (void) container.insert(p);
 }
 
@@ -178,17 +194,17 @@ palette<COLOR>::add (thumb_colors_t index, const COLOR & color)
  *
  * \param index
  *      Indicates which color to get.  This index is checked for range, and, if
- *      out of range, the default color object, indexed by thumb_colors_t::NONE,
+ *      out of range, the default color object, indexed by PaletteColor::NONE,
  *      is returned.  However, an exception will be thrown if the color does
  *      not exist.
  */
 
 template <typename COLOR>
 const COLOR &
-palette<COLOR>::get_color (thumb_colors_t index) const
+palette<COLOR>::get_color (PaletteColor index) const
 {
-    return (index >= BLACK && index < NONE) ?
-        *container.at(index) : *container.at(NONE) ;
+    return (index >= PaletteColor::BLACK && index < PaletteColor::MAX) ?
+        *container.at(index) : *container.at(PaletteColor::NONE) ;
 }
 
 }           // namespace seq64

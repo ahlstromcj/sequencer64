@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-17
+ * \updates       2018-02-25
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1814,6 +1814,8 @@ midifile::write_header (int numtracks)
     return numtracks > 0;
 }
 
+#ifdef USE_WRITE_START_TEMPO
+
 /**
  *  Writes the initial or only tempo, occurring at the beginning of a MIDI
  *  song.  Compare this function to midi_container::fill_time_sig_and_tempo().
@@ -1830,6 +1832,10 @@ midifile::write_start_tempo (midibpm start_tempo)
     write_byte(0x03);                       /* message length, must be 3    */
     write_triple(midilong(60000000.0 / start_tempo));
 }
+
+#endif  // USE_WRITE_START_TEMPO
+
+#ifdef USE_WRITE_TIME_SIG
 
 /**
  *  Writes the main time signature, in a more simplistic manner than
@@ -1856,6 +1862,8 @@ midifile::write_time_sig (int beatsperbar, int beatwidth)
     write_byte(beat_log2(beatwidth));       /* dd                           */
     write_short(0x1808);                    /* cc bb                        */
 }
+
+#endif  // USE_WRITE_TIME_SIG
 
 /**
  *  Writes a "proprietary" (SeqSpec) Seq24 footer header in either the new
@@ -2197,11 +2205,19 @@ midifile::write_song (perform & p)
                     lst.fill_seq_name(seq.name());
                     if (track == 0 && ! rc().legacy_format())
                     {
+                        /*
+                         * As per issue #141, do not force the
+                         * creation/writing of time-sig and tempo events.
+                         */
+
+#ifdef USE_FILL_TIME_SIG_AND_TEMPO
+                        seq.events().scan_meta_events();
                         lst.fill_time_sig_and_tempo
                         (
                             p, seq.events().has_time_signature(),
                             seq.events().has_tempo()
                         );
+#endif
                     }
 
                     /*

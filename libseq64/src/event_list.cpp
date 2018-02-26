@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2018-01-04
+ * \updates       2018-02-25
  * \license       GNU GPLv2 or above
  *
  *  This container now can indicate if certain Meta events (time-signaure or
@@ -505,8 +505,35 @@ event_list::clear_links ()
     }
 }
 
+#ifdef USE_FILL_TIME_SIG_AND_TEMPO
+
 /**
- *  This function tries to link tempo events.  Native support for temp teacks
+ *  Scans the event-list for any tempo or time_signature events.
+ *  The use may have deleted them and is depending on a setting made in the
+ *  user-interface.  So we must set/unset the flags before saving.  This check
+ *  was added to fix issue #141.
+ */
+
+void
+event_list::scan_meta_events ()
+{
+    m_has_tempo = false;
+    m_has_time_signature = false;
+    for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    {
+        event & e = dref(i);
+        if (e.is_tempo())
+            m_has_tempo = true;
+
+        if (e.is_time_signature())
+            m_has_time_signature = true;
+    }
+}
+
+#endif  // USE_FILL_TIME_SIG_AND_TEMPO
+
+/**
+ *  This function tries to link tempo events.  Native support for temp tracks
  *  is a new feature of seq64.  These links are only in one direction: forward
  *  in time, to the next tempo event, if any.
  *

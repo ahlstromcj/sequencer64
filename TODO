@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-02-16
+2016-12-03 to 2018-02-25
 
 Debian (and other) Packaging:
 
@@ -41,6 +41,8 @@ Modify flag:
         (!), and the sequence number is (-1).
     -   If the velocity of notes is edited in the data panel of seqedit,
         the modification is not detected.
+    -   If the main tempo control is modified, the modification is not
+        detected.
 
 Hot bugs:
 

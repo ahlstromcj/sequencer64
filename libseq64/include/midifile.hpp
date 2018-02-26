@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-17
+ * \updates       2018-02-25
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -303,8 +303,12 @@ private:
     int read_seq_number ();
     void write_track_end ();
     bool write_header (int numtracks);
+#ifdef USE_WRITE_START_TEMPO
     void write_start_tempo (midibpm start_tempo);
+#endif
+#ifdef USE_WRITE_TIME_SIG
     void write_time_sig (int beatsperbar, int beatwidth);
+#endif
     void write_prop_header (midilong tag, long len);
     bool write_proprietary_track (perform & a_perf);
     long varinum_size (long len) const;

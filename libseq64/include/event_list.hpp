@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2017-07-30
+ * \updates       2018-02-25
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -428,6 +428,9 @@ private:                                // functions for friend sequence
 
     void link_new ();
     void clear_links ();
+#ifdef USE_FILL_TIME_SIG_AND_TEMPO
+    void scan_meta_events ();
+#endif
     void verify_and_link (midipulse slength);
     void link_tempos ();
     void clear_tempo_links ();

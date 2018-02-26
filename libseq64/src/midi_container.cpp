@@ -287,6 +287,8 @@ midi_container::fill_meta_track_end (midipulse deltatime)
     put(0x00);
 }
 
+#ifdef USE_FILL_TIME_SIG_AND_TEMPO
+
 /**
  *  Combines the two functions fill_tempo() and fill_time_signature().  This
  *  function is called only for track 0.  And it only puts out the events if
@@ -386,6 +388,8 @@ midi_container::fill_tempo (const perform & p)
     put(t[1]);
     put(t[2]);
 }
+
+#endif  // USE_FILL_TIME_SIG_AND_TEMPO
 
 /**
  *  Fills in the Sequencer64-specific information for the current sequence:
@@ -729,7 +733,9 @@ midi_container::fill (int track, const perform & p, bool doseqspec)
 
     if (track == 0 && ! rc().legacy_format())
     {
+#ifdef USE_FILE_TIME_SIG_AND_TEMPO
         fill_time_sig_and_tempo(p, evl.has_time_signature(), evl.has_tempo());
+#endif
     }
 
     midipulse timestamp = 0;

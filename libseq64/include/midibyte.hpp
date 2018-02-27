@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-23
- * \updates       2017-04-05
+ * \updates       2018-02-26
  * \license       GNU GPLv2 or above
  *
  *  These typedef specifications are intended to remove the ambiguity we have
@@ -104,6 +104,14 @@ typedef unsigned short midishort;
  */
 
 typedef unsigned long midilong;
+
+/**
+ *  Provides a way to save a sequence palette color in a single byte.
+ *  This value is signed since we need a value of -1 to indicate no color, and
+ *  0 to 127 to indicate the index that "points" to a palette color.
+ */
+
+typedef char colorbyte;
 
 /**
  *  We need a unique midipulse value that can be used to be indicate a bad,

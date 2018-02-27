@@ -155,7 +155,7 @@ namespace seq64
             c_tempo_map   (seq32's tempo map)
             c_reserved_1 and c_reserved_2
             c_tempo_track (holds the song's particular tempo track)
-            c_seq_colors (holds performance colors for a sequence).
+            c_seq_color (holds performance colors for a sequence).
             c_seq_edit_mode (a potential future feature from Kepler34).
 \endverbatim
  *
@@ -221,7 +221,7 @@ const midilong c_tempo_map   =  0x24240017; /**< Reserve seq32 tempo map.   */
 const midilong c_reserved_1  =  0x24240018; /**< Reserved for expansion.    */
 const midilong c_reserved_2  =  0x24240019; /**< Reserved for expansion.    */
 const midilong c_tempo_track =  0x2424001A; /**< Alternate tempo track no.  */
-const midilong c_seq_colours =  0x2424001B; /**< Future feature Kepler34. * */
+const midilong c_seq_color   =  0x2424001B; /**< Future feature Kepler34. * */
 const midilong c_seq_edit_mode = 0x2424001C; /**< Future feature Kepler34.* */
 
 /**

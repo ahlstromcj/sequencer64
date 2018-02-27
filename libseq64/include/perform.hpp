@@ -2359,7 +2359,7 @@ public:
      *
      */
 
-    void set_sequence_colour (int seqnum, int c)
+    void set_sequence_color (int seqnum, int c)
     {
         if (is_active(seqnum))
             m_seqs[seqnum]->color(c);

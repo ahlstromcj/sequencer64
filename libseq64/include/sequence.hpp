@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-02-25
+ * \updates       2018-02-26
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -72,6 +72,12 @@
  *
  *      #define SEQ64_HANDLE_TIMESIG_AND_TEMPO
  */
+
+/**
+ *  Provides an integer value for color that matches PaletteColor::NONE
+ */
+
+#define SEQ64_COLOR_NONE                (-1)
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -503,10 +509,11 @@ private:
 
     /**
      *  Reserved for a potential feature from the Kepler34 project.  It will
-     *  be an index into a palette.
+     *  be an index into a palette.  The colorbyte type is defined in the
+     *  midibyte.hpp file.
      */
 
-    int m_seq_color;
+    colorbyte m_seq_color;
 
     /**
      * A feature adapted from Kepler34.
@@ -787,7 +794,7 @@ public:
 
     int color () const
     {
-        return m_seq_color;
+        return int(m_seq_color);
     }
 
     /**
@@ -803,7 +810,7 @@ public:
     void color (int c)
     {
         if (c >= 0 || c == (-1))
-            m_seq_color = c;
+            m_seq_color = colorbyte(c);
     }
 
     /**

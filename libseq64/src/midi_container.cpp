@@ -494,6 +494,16 @@ midi_container::fill_proprietary ()
         }
 #endif
 
+        if (m_sequence.color() != SEQ64_COLOR_NONE)
+        {
+            add_variable(0);                            /* key selection dt */
+            put(0xFF);
+            put(0x7F);
+            put(0x01);                              /* colorbyte        */
+            add_long(c_seq_color);
+            put(colorbyte(m_sequence.color()));
+        }
+
 #endif  // SEQ64_STAZED_TRANSPOSE
 
     }

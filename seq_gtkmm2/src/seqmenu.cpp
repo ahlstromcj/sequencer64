@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-20
+ * \updates       2018-02-27
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -181,7 +181,6 @@ seqmenu::popup_menu ()
             MenuElem("New", mem_fun(*this, &seqmenu::seq_edit))
         );
         m_menu->items().push_back(SeparatorElem());
-
         m_menu->items().push_back
         (
             MenuElem("Paste", mem_fun(*this, &seqmenu::seq_paste))
@@ -241,6 +240,41 @@ seqmenu::popup_menu ()
     }
 
 #endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
+
+#ifdef SHOW_COLOR_PALETTE               // EXPERIMENTAL
+
+    /*
+     * Sets up the optional color palette menu.  Currently, we don't access
+     * the PaletteColor enumeration, but the numbers should match it.
+     *
+     * Also, we still need to add the selected color to the mainwid and
+     * perfroll drawing mechanisms.
+     */
+
+#define SET_COLOR   mem_fun(*this, &seqmenu::set_color)
+
+    Gtk::Menu * menu_color = manage(new Gtk::Menu());
+    m_menu->items().push_back(MenuElem("Color", *menu_color));
+    menu_color->items().push_back
+    (
+        MenuElem("None", sigc::bind(SET_COLOR, -1))
+    );
+
+    /*
+     * Not recommended :-D
+     *
+    menu_color->items().push_back
+    (
+        MenuElem("Black", sigc::bind(SET_COLOR, 0))
+    );
+     */
+
+    menu_color->items().push_back
+    (
+        MenuElem("Red", sigc::bind(SET_COLOR, 1))
+    );
+
+#endif  // SHOW_COLOR_PALETTE
 
     /*
      * This is the bottom part of the menu accessible from a non-empty pattern
@@ -371,6 +405,23 @@ seqmenu::set_auto_screenset (bool flag)
 }
 
 #endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
+
+#ifdef SHOW_COLOR_PALETTE               // EXPERIMENTAL
+
+/**
+ *  Sets up or resets the experimental colored sequence feature.
+ *
+ * \param color
+ *      The PaletteColor value to use.
+ */
+
+void
+seqmenu::set_color (int color)
+{
+    m_mainperf.set_sequence_color(seqnum, color);
+}
+
+#endif  // SHOW_COLOR_PALETTE
 
 /**
  *  Sets the "is-transposable" flag of the current sequence.

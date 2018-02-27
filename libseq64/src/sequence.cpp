@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-18
+ * \updates       2018-02-26
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -140,7 +140,7 @@ sequence::sequence (int ppqn)
     m_maxbeats                  (c_maxbeats),
     m_ppqn                      (0),            /* set in constructor body   */
     m_seq_number                (-1),           /* may be set later          */
-    m_seq_color                 (-1),           /* PaletteColor::NONE        */
+    m_seq_color                 (SEQ64_COLOR_NONE), /* PaletteColor::NONE    */
     m_seq_edit_mode             (EDIT_MODE_NOTE),   /* edit_mode_t           */
     m_length                    (0),            /* set in constructor body   */
     m_snap_tick                 (0),            /* set in constructor body   */
@@ -220,7 +220,7 @@ sequence::partial_assign (const sequence & rhs)
         m_transposable  = rhs.m_transposable;
 #endif
         m_bus           = rhs.m_bus;
-        m_master_bus     = rhs.m_master_bus;          /* a pointer, be aware! */
+        m_master_bus    = rhs.m_master_bus;          /* a pointer, be aware! */
         m_playing       = false;
         m_name          = rhs.m_name;
         m_ppqn          = rhs.m_ppqn;

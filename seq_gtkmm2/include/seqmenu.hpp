@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-26
+ * \updates       2018-02-27
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
@@ -365,6 +365,10 @@ private:
 
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
     void set_auto_screenset (bool flag);
+#endif
+
+#ifdef SHOW_COLOR_PALETTE               // EXPERIMENTAL
+    void set_color (int color);
 #endif
 
     /**

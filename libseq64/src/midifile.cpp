@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-25
+ * \updates       2018-02-26
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -991,6 +991,11 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 --len;
                             }
 #endif
+                            else if (seqspec == c_seq_color)
+                            {
+                                seq.color(read_byte());
+                                --len;
+                            }
                             else if (SEQ64_IS_PROPTAG(seqspec))
                             {
                                 errdump
@@ -1558,17 +1563,18 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                 p.set_tempo_track_number(tempotrack);
         }
 
-#ifdef USE_SEQUENCE_COLOR
+#ifdef USE_SEQUENCE_COLOR       // ENABLE WITH CARE
 
         /**
          * Kepler34 (see Oli Kester's project on GitHub) supports coloring
          * the sequence slots in the "mainwid". We want to support something
          * similar.  However, we might reserve this feature for coloring mute
-         * groups.
+         * groups.  Furthermore, we don't want to save 1024 bytes for color.
+         * Save them with the sequences that actually use them.
          */
 
         seqspec = parse_prop_header(file_size);
-        if (seqspec == c_seq_colours)
+        if (seqspec == c_seq_color)
         {
             for (int track = 0; track < p.sequence_high(); ++track)
             {

@@ -241,7 +241,7 @@ seqmenu::popup_menu ()
 
 #endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
 
-#ifdef SHOW_COLOR_PALETTE               // EXPERIMENTAL
+#ifdef SEQ64_SHOW_COLOR_PALETTE               // EXPERIMENTAL
 
     /*
      * Sets up the optional color palette menu.  Currently, we don't access
@@ -252,29 +252,22 @@ seqmenu::popup_menu ()
      */
 
 #define SET_COLOR   mem_fun(*this, &seqmenu::set_color)
+#define PUSH_COLOR(name, c) \
+    menu_color->items().push_back(MenuElem(name, sigc::bind(SET_COLOR, (c))))
 
     Gtk::Menu * menu_color = manage(new Gtk::Menu());
     m_menu->items().push_back(MenuElem("Color", *menu_color));
-    menu_color->items().push_back
-    (
-        MenuElem("None", sigc::bind(SET_COLOR, -1))
-    );
+    PUSH_COLOR("None", -1);
+    PUSH_COLOR("Black", 0);
+    PUSH_COLOR("Red", 1);
+    PUSH_COLOR("Green", 2);
+    PUSH_COLOR("Yellow", 3);
+    PUSH_COLOR("Blue", 4);
+    PUSH_COLOR("Magenta", 5);
+    PUSH_COLOR("Cyan", 6);
+    PUSH_COLOR("White", 7);
 
-    /*
-     * Not recommended :-D
-     *
-    menu_color->items().push_back
-    (
-        MenuElem("Black", sigc::bind(SET_COLOR, 0))
-    );
-     */
-
-    menu_color->items().push_back
-    (
-        MenuElem("Red", sigc::bind(SET_COLOR, 1))
-    );
-
-#endif  // SHOW_COLOR_PALETTE
+#endif  // SEQ64_SHOW_COLOR_PALETTE
 
     /*
      * This is the bottom part of the menu accessible from a non-empty pattern
@@ -406,7 +399,7 @@ seqmenu::set_auto_screenset (bool flag)
 
 #endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
 
-#ifdef SHOW_COLOR_PALETTE               // EXPERIMENTAL
+#ifdef SEQ64_SHOW_COLOR_PALETTE               // EXPERIMENTAL
 
 /**
  *  Sets up or resets the experimental colored sequence feature.
@@ -418,10 +411,10 @@ seqmenu::set_auto_screenset (bool flag)
 void
 seqmenu::set_color (int color)
 {
-    m_mainperf.set_sequence_color(seqnum, color);
+    m_mainperf.set_sequence_color(current_seq(), color);
 }
 
-#endif  // SHOW_COLOR_PALETTE
+#endif  // SEQ64_SHOW_COLOR_PALETTE
 
 /**
  *  Sets the "is-transposable" flag of the current sequence.

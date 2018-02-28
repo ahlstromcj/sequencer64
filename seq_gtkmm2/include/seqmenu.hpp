@@ -38,6 +38,8 @@
 #include "perform.hpp"
 #include "sequence.hpp"
 
+#undef  SEQ64_SHOW_COLOR_PALETTE              // EXPERIMENTAL
+
 /*
  *  Do not document a namespace; it breaks Doxygen.
  */
@@ -367,7 +369,7 @@ private:
     void set_auto_screenset (bool flag);
 #endif
 
-#ifdef SHOW_COLOR_PALETTE               // EXPERIMENTAL
+#ifdef SEQ64_SHOW_COLOR_PALETTE               // EXPERIMENTAL
     void set_color (int color);
 #endif
 

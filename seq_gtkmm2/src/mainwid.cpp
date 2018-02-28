@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-20
+ * \updates       2018-02-28
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -363,28 +363,17 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 char key = char(perf().lookup_slot_key(seqnum));
                 if (key > 0)
                 {
+                    const int lower_slot = 2 * c_seqs_in_set;
+                    const int upper_slot = 2 * c_seqs_in_set;
                     char sh = char(PREFKEY(pattern_shift));
                     if ((sh > 0) && usr().is_variset())
                     {
-                        if
-                        (
-                            slot >= (2 * c_seqs_in_set) &&
-                            slot < (3 * c_seqs_in_set)
-                        )
-                        {
+                        if (slot >= lower_slot && slot < upper_slot)
                             snprintf(temp, sizeof temp, "%c%c%c", sh, sh, key);
-                        }
-                        else if
-                        (
-                            slot >= c_seqs_in_set && slot < (2 * c_seqs_in_set)
-                        )
-                        {
+                        else if (slot >= c_seqs_in_set && slot < lower_slot)
                             snprintf(temp, sizeof temp, "%c%c", sh, key);
-                        }
                         else
-                        {
                             snprintf(temp, sizeof temp, "%c", key);
-                        }
                     }
                     else
                         snprintf(temp, sizeof temp, "%c", key);
@@ -402,8 +391,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             std::string label = perf().sequence_label(*seq);
             render_string_on_pixmap                         // bus, ch, etc.
             (
-                base_x + m_text_size_x - 3,
-                base_y + m_text_size_y * 4 - 2,
+                base_x + m_text_size_x - 3, base_y + m_text_size_y * 4 - 2,
                 label, col
             );
 
@@ -432,7 +420,16 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 fg_color(black());
             }
 #endif
-            draw_rectangle_on_pixmap(fg_color(), x, y, lx, ly, false);
+            else
+            {
+#ifdef SEQ64_SHOW_COLOR_PALETTE
+                int c = 1;  ////// int c = seq->color();
+                const Color & color = get_color(PaletteColor(c));
+                draw_rectangle_on_pixmap(color, x, y, lx, ly, false);
+#else
+                draw_rectangle_on_pixmap(fg_color(), x, y, lx, ly, false);
+#endif
+            }
 
             int low_note;                                   // for side-effect
             int high_note;                                  // ditto
@@ -457,11 +454,14 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     drawcolor = red();
                 }
 #endif
+                /*
+                 * Draw the note events in the sequence.
+                 */
 
                 seq->reset_draw_marker();       /* reset container iterator */
                 do
                 {
-                    dt = seq->get_next_note_event   /* side-effects */
+                    dt = seq->get_next_note_event           /* side-effects */
                     (
                         tick_s, tick_f, note, selected, velocity
                     );
@@ -474,7 +474,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     if (dt == DRAW_TEMPO)
                     {
                         /*
-                         * Do not to scale by the note range here.
+                         * Do not scale by the note range here.
                          */
 
                         note_y = m_seqarea_seq_y -

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2018-02-25
+ * \updates       2018-02-28
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -186,6 +186,12 @@ gui_palette_gtk2::gui_palette_gtk2 ()
         m_progress_color = m_dk_cyan;
         break;
     }
+
+    /*
+     * Fill in the palette!
+     */
+
+    initialize();
 }
 
 /**
@@ -264,7 +270,7 @@ gui_palette_gtk2::load_inverse_palette (bool inverse)
 void
 gui_palette_gtk2::initialize ()
 {
-    m_palette.clear();                  /* just in case */
+    m_palette.clear();                              /* just in case         */
     m_palette.add(PaletteColor::BLACK, m_black);
     m_palette.add(PaletteColor::RED, m_red);
     m_palette.add(PaletteColor::GREEN, m_green);
@@ -291,7 +297,7 @@ gui_palette_gtk2::initialize ()
     m_palette.add(PaletteColor::DK_PINK, m_dk_pink);
     m_palette.add(PaletteColor::DK_GREY, m_dk_grey);
 
-    m_palette.add(PaletteColor::NONE, m_black);
+    m_palette.add(PaletteColor::NONE, m_white);     /* the default "color"  */
 }
 
 }           // namespace seq64

@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-02-18
- * \updates       2018-02-25
+ * \updates       2018-02-27
  * \license       GNU GPLv2 or above
  *
  *  This module is inspired by MidiPerformance::getSequenceColor() in
@@ -157,7 +157,8 @@ public:
 
 /**
  *  Creates the palette, and inserts a default COLOR color object as
- *  the NONE entry.
+ *  the NONE entry.  This color has to be static so that it is always around
+ *  to be used.
  */
 
 template <typename COLOR>
@@ -165,7 +166,7 @@ palette<COLOR>::palette ()
  :
     container   ()
 {
-    COLOR color;
+    static COLOR color;
     add(PaletteColor::NONE, color);
 }
 

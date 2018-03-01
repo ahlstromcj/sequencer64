@@ -1,12 +1,16 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-02-25
+2016-12-03 to 2018-03-01
 
 Debian (and other) Packaging:
 
     -   Still need to get a static package to work.
     -   Refresh the verbatim examples for the "rc" and "usr" files
         in the sequencer64-doc project.
+
+Colors:
+
+    -   Copy/paste does not transfer the colors.  Should it?
 
 Windows (for the Future):
 

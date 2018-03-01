@@ -31,6 +31,9 @@ See the INSTALL file for build-from-source instructions.
 Recent changes:
 
     -   Version 0.94.6:
+        -   Fixed tempo handling, issue #141.
+        -   Added sequence-coloring, stored per sequence as an index into a
+            palette.
     -   Version 0.94.5:
         -   Added the ability to scale the main window from 1.0 to 3.0 times
             its normal size.  Has issues, but makes buttons bigger and the

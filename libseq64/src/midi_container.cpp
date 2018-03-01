@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2018-01-13
+ * \updates       2018-03-01
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -499,7 +499,7 @@ midi_container::fill_proprietary ()
             add_variable(0);                            /* key selection dt */
             put(0xFF);
             put(0x7F);
-            put(0x01);                              /* colorbyte        */
+            put(0x05);                                  /* long + colorbyte */
             add_long(c_seq_color);
             put(colorbyte(m_sequence.color()));
         }

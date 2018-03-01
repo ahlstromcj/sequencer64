@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.94.0 and above
 Chris Ahlstrom
-2015-09-10 to 2018-02-18
+2015-09-10 to 2018-02-28
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -261,6 +261,15 @@ MANUALLY-DEFINED MACROS IN CODE:
     experiment-happy people will normally want to change the define-state of
     these macros.  We have consolidated them into a single file,
     libseq64/include/seq64_features.h, to make them easier to find and edit.
+
+    SEQ64_SHOW_COLOR_PALETTE:
+
+        If enabled (will be the default), this feature allows the user to pick
+        a color for each sequence, to make it more distinguishable.  The
+        default color is NONE (a white color) that is not stored in the track.
+        Otherwise, this color is saved in a SeqSpec associated with the track.
+        This differs from the Kepler34 implementation, which stores 1024
+        color values no matter what.
 
     SEQ64_SONG_BOX_SELECT:
 

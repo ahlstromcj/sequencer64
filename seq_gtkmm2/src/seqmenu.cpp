@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-27
+ * \updates       2018-02-28
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -258,14 +258,32 @@ seqmenu::popup_menu ()
     Gtk::Menu * menu_color = manage(new Gtk::Menu());
     m_menu->items().push_back(MenuElem("Color", *menu_color));
     PUSH_COLOR("None", -1);
-    PUSH_COLOR("Black", 0);
+    menu_color->items().push_back(SeparatorElem());
+    /* Not useful: PUSH_COLOR("Black", 0);                                  */
     PUSH_COLOR("Red", 1);
     PUSH_COLOR("Green", 2);
     PUSH_COLOR("Yellow", 3);
     PUSH_COLOR("Blue", 4);
     PUSH_COLOR("Magenta", 5);
-    PUSH_COLOR("Cyan", 6);
+    /* Not accessible by this name in Gtkmm: PUSH_COLOR("Cyan", 6);         */
     PUSH_COLOR("White", 7);
+    menu_color->items().push_back(SeparatorElem());
+    /* Not useful: PUSH_COLOR("Dk Black", 8);   */
+    PUSH_COLOR("Dk Red", 9);
+    PUSH_COLOR("Dk Green", 10);
+    /* Not accessible by this name in Gtkmm: PUSH_COLOR("Dk Yellow", 11);   */
+    PUSH_COLOR("Dk Blue", 12);
+    PUSH_COLOR("Dk Magenta", 13);
+    PUSH_COLOR("Dk Cyan", 14);
+    /* Not useful:  PUSH_COLOR("Dk White", 15);                             */
+    menu_color->items().push_back(SeparatorElem());
+    PUSH_COLOR("Orange", 16);
+    /* Not accessible by this name in Gtkmm: PUSH_COLOR("Pink", 17);        */
+    /* Conflicts with one-shot: PUSH_COLOR("Grey", 18);                     */
+    menu_color->items().push_back(SeparatorElem());
+    PUSH_COLOR("Dk Orange", 19);
+    /* Not accessible by this name in Gtkmm: PUSH_COLOR("Dk Pink", 20);     */
+    /* Conflicts with queuing: PUSH_COLOR("Dk Grey", 21);                   */
 
 #endif  // SEQ64_SHOW_COLOR_PALETTE
 
@@ -411,7 +429,15 @@ seqmenu::set_auto_screenset (bool flag)
 void
 seqmenu::set_color (int color)
 {
-    m_mainperf.set_sequence_color(current_seq(), color);
+    if (is_current_seq_active())        /* also checks sequence pointer */
+    {
+        sequence * s = get_current_sequence();
+        if (not_nullptr(s))
+        {
+            s->color(color);
+            s->set_dirty();
+        }
+    }
 }
 
 #endif  // SEQ64_SHOW_COLOR_PALETTE

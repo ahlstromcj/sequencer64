@@ -292,6 +292,12 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             {
                 if (seq->get_playing())
                 {
+                    /*
+                     * We need to change the foreground color to black if the
+                     * sequence has no color, which mandates a white
+                     * background.
+                     */
+
                     bg_color(black());                  /* never inversed   */
                     fg_color(white());                  /* ditto            */
                 }
@@ -423,12 +429,24 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             else
             {
 #ifdef SEQ64_SHOW_COLOR_PALETTE
-                int c = 1;  ////// int c = seq->color();
+
+                /*
+                 * Draws a filled-in rectangle to hold the event marks.  We
+                 * might make this conditional to preserve the full coloring
+                 * of empty or in-edit sequences. TBD.
+                 */
+
+                int c = seq->color();
                 const Color & color = get_color(PaletteColor(c));
-                draw_rectangle_on_pixmap(color, x, y, lx, ly, false);
-#else
-                draw_rectangle_on_pixmap(fg_color(), x, y, lx, ly, false);
+                draw_rectangle_on_pixmap(color, x, y, lx, ly);
+                if (c == SEQ64_COLOR_NONE)
+                    fg_color(black());
 #endif
+                /*
+                 * Draws a rectangular outline around the event marks.
+                 */
+
+                draw_rectangle_on_pixmap(fg_color(), x, y, lx, ly, false);
             }
 
             int low_note;                                   // for side-effect

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2018-01-17
+ * \updates       2018-03-01
  * \license       GNU GPLv2 or above
  *
  *  This class is meant to hold the bytes that represent MIDI events and other
@@ -140,7 +140,13 @@ namespace seq64
             c_musicscale (ditto)
             c_backsequence (ditto)
             c_transpose
+            c_seq_color (performance colors for a sequence)
 \endverbatim
+ *
+ *  Note that c_seq_color in Sequencer64 is stored per sequence, and only if
+ *  not PaletteColor::NONE.  In Kepler34, all 1024 sequence colors are stored
+ *  in a "proprietrary", whole-song section, whether used or not.  There are
+ *  also numeric differences in many of these "c_feature" constants.
  *
  * Footer ("proprietary", whole-song) data:
  *
@@ -155,7 +161,6 @@ namespace seq64
             c_tempo_map   (seq32's tempo map)
             c_reserved_1 and c_reserved_2
             c_tempo_track (holds the song's particular tempo track)
-            c_seq_color (holds performance colors for a sequence).
             c_seq_edit_mode (a potential future feature from Kepler34).
 \endverbatim
  *

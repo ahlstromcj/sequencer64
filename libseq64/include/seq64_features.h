@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2017-11-24
+ * \updates       2018-02-28
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -86,6 +86,12 @@
  */
 
 #undef  USE_SEQUENCE_COLOR
+
+/**
+ *  A better way to implement the Kepler34 sequence-color feature.
+ */
+
+#define SEQ64_SHOW_COLOR_PALETTE
 
 /**
  *  Kepler34 has a song-recording mode that we are still exploring and adding,

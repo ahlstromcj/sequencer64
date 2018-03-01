@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-27
+ * \updates       2018-02-28
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
@@ -37,8 +37,6 @@
 
 #include "perform.hpp"
 #include "sequence.hpp"
-
-#undef  SEQ64_SHOW_COLOR_PALETTE              // EXPERIMENTAL
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

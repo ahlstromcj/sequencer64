@@ -666,10 +666,31 @@ perfroll::draw_sequence_on (int seqnum)
                  *  );
                  */
 
-                draw_rectangle_on_pixmap        /* fill segment background  */
-                (
-                    selected ? grey_paint() : white_paint(), x, y, w, h
-                );
+                Color evbkground;
+                if (selected)
+                    evbkground = grey_paint();
+#ifdef SEQ64_SHOW_COLOR_PALETTE
+                else
+                {
+                    int c = seq->color();
+                    if (c != SEQ64_COLOR_NONE)
+                        evbkground = get_color(PaletteColor(c));
+                }
+#else
+                else
+                    evbkground = white_paint();
+#endif
+//              draw_rectangle_on_pixmap        /* fill segment background  */
+//              (
+//                  selected ? grey_paint() : white_paint(), x, y, w, h
+//              );
+
+                /*
+                 * Fill performance segment background.
+                 */
+
+                draw_rectangle_on_pixmap(evbkground, x, y, w, h);
+
                 draw_rectangle_on_pixmap(black_paint(), x, y, w, h, false);
                 draw_rectangle_on_pixmap        /* draw the segment handle  */
                 (

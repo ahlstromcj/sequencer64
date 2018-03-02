@@ -179,7 +179,7 @@ perfnames::draw_sequence (int seqnum)
 
         Color fg = grey_paint();
         font::Color col = font::BLACK;
-        bool is_active = perf().is_active(seqnum);
+        bool is_active = perf().is_active(seqnum);  /* REDUNDANT            */
         bool muted = false;
         bool empty_highlight = false;
         bool smf_0 = false;
@@ -258,9 +258,9 @@ perfnames::draw_sequence (int seqnum)
     {
         /*
          * This "else" shouldn't legally be possible!
+         *
+         * draw_rectangle(grey_paint(), 0, yloc + 1, m_names_x, m_names_y);
          */
-
-        draw_rectangle(grey_paint(), 0, yloc + 1, m_names_x, m_names_y);
     }
 }
 

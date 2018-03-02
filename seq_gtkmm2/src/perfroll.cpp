@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-20
+ * \updates       2018-03-01
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -680,17 +680,12 @@ perfroll::draw_sequence_on (int seqnum)
                 else
                     evbkground = white_paint();
 #endif
-//              draw_rectangle_on_pixmap        /* fill segment background  */
-//              (
-//                  selected ? grey_paint() : white_paint(), x, y, w, h
-//              );
-
                 /*
-                 * Fill performance segment background.
+                 * Fill performance segment background.  Then draw a rectangle
+                 * around it, and add the segment handle.
                  */
 
                 draw_rectangle_on_pixmap(evbkground, x, y, w, h);
-
                 draw_rectangle_on_pixmap(black_paint(), x, y, w, h, false);
                 draw_rectangle_on_pixmap        /* draw the segment handle  */
                 (

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-20
+ * \updates       2018-03-01
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some

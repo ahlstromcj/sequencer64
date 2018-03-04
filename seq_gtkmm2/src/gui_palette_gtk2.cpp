@@ -300,6 +300,35 @@ gui_palette_gtk2::initialize ()
     m_palette.add(PaletteColor::NONE, m_white);     /* the default "color"  */
 }
 
+/**
+ *  Gets a color, but returns a modified value via the function
+ *  Gdk::Color::set_hsv(h, s, v).  This function
+ *  sets the color, by specifying hue, saturation, and value (brightness).
+ *
+ * \param h
+ *      Hue, in the range 0..360 degrees.  Ignored if set to -1.0.
+ *
+ * \param s
+ *      Saturation, in the range 0..1, defaults to 0.65.
+ *
+ * \param v
+ *      Value (a.k.a. brightness), in the range 0..1, defaults to 1.0.
+ */
+
+gui_palette_gtk2::Color
+gui_palette_gtk2::get_color_ex
+(
+    PaletteColor index,
+    double h, double s, double v
+) const
+{
+    Color result = m_palette.get_color(index);
+    if (h != (-1.0))
+        result.set_hsv(h, s, v);
+
+    return result;
+}
+
 }           // namespace seq64
 
 /*

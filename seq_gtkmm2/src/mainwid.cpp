@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-01
+ * \updates       2018-03-04
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -437,7 +437,9 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                  */
 
                 int c = seq->color();
-                const Color & color = get_color(PaletteColor(c));
+//              const Color & color = get_color(PaletteColor(c));
+//              Color color = get_color_ex(PaletteColor(c), 0.0, 0.65, 1.0);
+                Color color = get_color_ex(PaletteColor(c), 40.0, 0.20, 0.5);
                 draw_rectangle_on_pixmap(color, x, y, lx, ly);
                 if (c == SEQ64_COLOR_NONE)
                     fg_color(black());

@@ -223,6 +223,9 @@ qperfroll::paintEvent(QPaintEvent *)
                                 backcolor.saturation() * 0.65,
                                 backcolor.value() * 1.2
                             );
+
+                            //  New:  we can call get_color(Palettecolor(c), 1.0, 0.65, 1.3);
+                            //  LATER
                         }
 
                         //main seq icon box

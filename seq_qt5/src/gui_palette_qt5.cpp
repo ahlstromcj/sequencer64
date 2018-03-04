@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-02-23
- * \updates       2018-03-02
+ * \updates       2018-03-04
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -299,6 +299,34 @@ gui_palette_qt5::initialize ()
     m_palette.add(PaletteColor::DK_GREY, m_dk_grey);
 
     m_palette.add(PaletteColor::NONE, m_white);
+}
+
+/**
+ *  Gets a color, but returns a modified value via the function
+ *  Gdk::Color::set_hsv(h, s, v).  This function
+ *  sets the color, by specifying hue, saturation, and value (brightness).
+ *
+ * \param h
+ *      Hue factor, has no default at this time.  Kepler34 treats this value
+ *      as a 1.0 factor for the hue.
+ *
+ * \param s
+ *      Saturation, in the range 0..1, defaults to 0.65.
+ *
+ * \param v
+ *      Value (a.k.a. brightness), defaults to 1, in the range 0..1.
+ */
+
+Color
+gui_palette_qt5::get_color
+(
+    PaletteColor index,
+    double h, double s, double v
+) const
+{
+    Color result = m_palette.get_color(index);
+    result.setHsv(result.hue() * h, result.saturation() * s, result.value() *  v);
+    return result;
 }
 
 }           // namespace seq64

@@ -269,6 +269,18 @@ public:
         return m_palette.get_color(c);
     }
 
+    /**
+     *
+
+    Color get_color
+    (
+        PaletteColor c, double h, double s = 0.65, double v = 1.0
+    ) const
+    {
+        return m_palette.get_color(c, h, s, v);
+    }
+     */
+
 protected:
 
     /**

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-04
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -173,6 +173,9 @@ qperfnames::paintEvent (QPaintEvent *)
                                       colourSpec.saturation() * 0.65,
                                       colourSpec.value() * 1.3);
                 mBrush->setColor(backColour);
+
+
+                    New:  we can call get_color(Palettecolor(c), 1.0, 0.65, 1.3);
                  *
                  */
             }

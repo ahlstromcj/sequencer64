@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -36,17 +36,25 @@
 #include "qperfeditframe.hpp"
 #include "forms/qperfeditframe.ui.h"
 
-qperfeditframe::qperfeditframe (seq64::perform & a_perf, QWidget * parent)
+namespace seq64
+{
+
+/**
+ *
+ */
+
+qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
  :
     QFrame                  (parent),
+    m_snap                  (8),
     mbeats_per_measure      (4),
     mbeat_width             (4),
     ui                      (new Ui::qperfeditframe),
-    m_mainperf              (a_perf),
     m_layout_grid           (nullptr),
     m_scroll_area           (nullptr),
     mContainer              (nullptr),
     m_palette               (nullptr),
+    m_mainperf              (p),
     m_perfroll              (nullptr),
     m_perfnames             (nullptr),
     m_perftime              (nullptr)
@@ -55,7 +63,7 @@ qperfeditframe::qperfeditframe (seq64::perform & a_perf, QWidget * parent)
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     // fill options for grid snap combo box and set default
-    //
+
     for (int i = 0; i < 6; i++)
     {
         QString combo_text = "1/" + QString::number(pow(2, i));
@@ -108,9 +116,9 @@ qperfeditframe::qperfeditframe (seq64::perform & a_perf, QWidget * parent)
     );
     connect(ui->btnLoop, SIGNAL(clicked(bool)), this, SLOT(markerLoop(bool)));
 
-    m_snap = 8;
-    mbeats_per_measure = 4;
-    mbeat_width = 4;
+    // m_snap = 8;
+    // mbeats_per_measure = 4;
+    // mbeat_width = 4;
 
     set_snap(8);
     set_beats_per_measure(4);
@@ -252,6 +260,8 @@ qperfeditframe::markerLoop(bool loop)
 {
     perf().set_looping(loop);
 }
+
+}           // namespace seq64
 
 /*
  * qperfeditframe.cpp

@@ -58,6 +58,9 @@ namespace Ui
     class qseqeditframe;
 }
 
+namespace seq64
+{
+
 /**
  * Holds tools for editing an individual MIDI sequence
  */
@@ -67,24 +70,36 @@ class qseqeditframe : public QFrame
     Q_OBJECT
 
 public:
-    explicit qseqeditframe(QWidget *parent,
-                           seq64::perform *perf,
-                           int mSeqId);
-    ~qseqeditframe();
 
-    void updateDrawGeometry();
-    void setEditorMode(edit_mode_e mode); //set a new editing mode
+    explicit qseqeditframe
+    (
+        seq64::perform & perf, QWidget * parent, int suqnum
+    );
+    ~qseqeditframe ();
+
+    void updateDrawGeometry ();
+    void setEditorMode (seq64::edit_mode_t mode); //set a new editing mode
+
+    const seq64::perform & perf () const
+    {
+        return mPerformance;
+    }
+
+    seq64::perform & perf ()
+    {
+        return mPerformance;
+    }
 
 private:
 
-    Ui::qseqeditframe   *ui;
+    Ui::qseqeditframe * ui;
+    QWidget * mContainer;
     QGridLayout * m_layout_grid;
     QScrollArea * m_scroll_area;
-    QWidget * mContainer;
     QPalette * m_palette;
     QMenu * mPopup;
-    seq64::sequence * const mSeq;
-    seq64::perform  * const mPerformance;
+    seq64::perform & mPerformance;
+    seq64::sequence * mSeq;
     seq64::qseqkeys * mKeyboard;
     seq64::qseqtime * mTimeBar;
     seq64::qseqroll * mNoteGrid;
@@ -123,6 +138,8 @@ private slots:
     void transposeNotes ();
 
 };          // class qseditframe
+
+}           // namespace seq64
 
 #endif      // SEQ64_QSEQEDITFRAME_HPP
 

@@ -1,3 +1,6 @@
+#ifndef KEPLER43_GLOBALS_HPP
+#define KEPLER43_GLOBALS_HPP
+
 /*
  *  This file is part of seq24.
  *
@@ -337,5 +340,6 @@ enum thumb_colours_e
 extern QMap<thumb_colours_e, QColor> colourMap;
 
 // editor modes (used by the sequence editing components)
-enum edit_mode_e {NOTE, DRUM};
+// enum edit_mode_e {NOTE, DRUM};
 
+#endif  // KEPLER43_GLOBALS_HPP

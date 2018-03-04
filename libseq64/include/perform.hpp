@@ -2229,7 +2229,7 @@ public:
     void paste_trigger (int seqnum, midipulse tick);
     void paste_or_split_trigger (int seqnum, midipulse tick);
     bool intersect_triggers (int seqnum, midipulse tick);
-    midipulse get_max_trigger ();
+    midipulse get_max_trigger () const;
 
     bool is_dirty_main (int seq);
     bool is_dirty_edit (int seq);
@@ -2303,6 +2303,11 @@ public:
     bool resume_note_ons () const
     {
         return m_resume_note_ons;
+    }
+
+    void resume_note_ons (bool f)
+    {
+        m_resume_note_ons = f;
     }
 
 #endif  // SEQ64_SONG_RECORDING
@@ -2406,6 +2411,25 @@ public:
         m_have_redo = redo;
     }
 
+    /**
+     *  A pass-along function to set the edit-mode of the given sequence.
+     *
+     * \param seq
+     *      Provides the sequence number.  If the sequence is not active
+     *      (available), then nothing is done.
+     *
+     * \param ed
+     *      Provides the edit mode, which is "note" or "drum", and which
+     *      determines if the duration of events matters (note) or not (drum).
+     */
+
+    void seq_edit_mode (int seq, edit_mode_t ed)
+    {
+        sequence * sp = get_sequence(seq);
+        if (not_nullptr(sp))
+            sp->edit_mode(ed);
+    }
+
 private:
 
     /**
@@ -2499,13 +2523,6 @@ private:
             return edit_mode_t(0);
     }
 
-    void seq_edit_mode (int seq, edit_mode_t ed)
-    {
-        sequence * sp = get_sequence(seq);
-        if (not_nullptr(sp))
-            sp->edit_mode(ed);
-    }
-
 #ifdef SEQ64_SONG_RECORDING
 
     void song_recording_stop ();
@@ -2520,11 +2537,6 @@ private:
     void song_record_snap (bool f)
     {
         m_song_record_snap = f;
-    }
-
-    void resume_note_ons (bool f)
-    {
-        m_resume_note_ons = f;
     }
 
 #endif  // SEQ64_SONG_RECORDING

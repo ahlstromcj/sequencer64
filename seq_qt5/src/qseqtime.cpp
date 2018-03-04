@@ -48,17 +48,15 @@ qseqtime::qseqtime (sequence & seq, QWidget * parent)
  :
     QWidget     (parent),
     m_seq       (seq)
-    m_timer     (nullptr),
+    m_timer     (new QTimer(this)),  // refresh timer to queue regular redraws
     m_pen       (nullptr),
     m_brush     (nullptr),
     m_painter   (nullptr),
     m_font      (),
     m_zoom      (1)
 {
-    //start refresh timer to queue regular redraws
-    m_timer = new QTimer(this);
-    m_timer->setInterval(50);
     QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(update()));
+    m_timer->setInterval(50);
     m_timer->start();
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }
@@ -77,10 +75,7 @@ qseqtime::paintEvent (QPaintEvent *)
     m_painter->setPen(*m_pen);
     m_painter->setBrush(*m_brush);
     m_painter->setFont(m_font);
-
-    // draw time bar border
-
-    m_painter->drawRect
+    m_painter->drawRect             // draw time bar border
     (
         c_keyboard_padding_x, 0, size().width(), size().height() - 1
     );

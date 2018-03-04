@@ -235,6 +235,48 @@ rect::xy_to_rect_get
     }
 }
 
+#if 0
+
+/**
+ *  Converts a tick/note box to an x/y rectangle.
+ *
+ *  We should refactor this function to use the utility class seqroll::rect as
+ *  the destination for the conversion.
+ *
+ * \param tick_s
+ *      The starting tick of the rectangle.
+ *
+ * \param tick_f
+ *      The finishing tick of the rectangle.
+ *
+ * \param note_h
+ *      The high note of the rectangle.
+ *
+ * \param note_l
+ *      The low note of the rectangle.
+ *
+ * \param [out] destination
+ *      The destination rectangle.
+ */
+
+void
+rect::convert_tn_box_to_rect
+(
+    midipulse tick_s, midipulse tick_f, int note_h, int note_l
+)
+{
+    int x1, y1, x2, y2;
+    convert_tn(tick_s, note_h, x1, y1);     /* convert box to X,Y values */
+    convert_tn(tick_f, note_l, x2, y2);
+//  int x, y, w, h;
+//  rect::xy_to_rect_get(x1, y1, x2, y2, x, y, w, h);
+//  h += c_key_y;
+//  set(x, y, w, h);
+    xy_to_rect(x1, y1, x2, y2);
+}
+
+#endif  // 0
+
 }           // namespace seq64
 
 /*

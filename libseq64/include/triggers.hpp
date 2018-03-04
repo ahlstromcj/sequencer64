@@ -508,7 +508,7 @@ public:
 
     midipulse get_selected_start ();
     midipulse get_selected_end ();
-    midipulse get_maximum ();
+    midipulse get_maximum () const;
     void move (midipulse starttick, midipulse distance, bool direction);
     void copy (midipulse starttick, midipulse distance);
 

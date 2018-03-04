@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -33,6 +33,7 @@
 #include "perform.hpp"
 #include "qseditoptions.hpp"
 #include "forms/qseditoptions.ui.h"
+#include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
 
 /*
  *  Do not document the namespace, it breaks Doxygen.
@@ -49,7 +50,7 @@ qseditoptions::qseditoptions (perform & p, QWidget * parent)
  :
     QDialog             (parent),
     ui                  (new Ui::qseditoptions),
-    mPerf               (p)
+    mPerf               (p),
     backupJackTransport (false),
     backupTimeMaster    (false),
     backupMasterCond    (false),
@@ -118,7 +119,6 @@ qseditoptions::~qseditoptions ()
 /**
  *  \todo
  *      We already have a better facility.
- */
 
 void
 qseditoptions::addRecentFile(QString path)
@@ -141,6 +141,7 @@ qseditoptions::addRecentFile(QString path)
 
     recent_files[0] = path; // add the new path to the first slot
 }
+ */
 
 /**
  *
@@ -149,7 +150,8 @@ qseditoptions::addRecentFile(QString path)
 void
 qseditoptions::jackConnect ()
 {
-    mPerf->init_jack();
+    ///// perf().init_jack();
+    perf().set_jack_mode(true);
 }
 
 /**
@@ -159,7 +161,8 @@ qseditoptions::jackConnect ()
 void
 qseditoptions::jackDisconnect ()
 {
-    mPerf->deinit_jack();
+    ///// perf().deinit_jack();
+    perf().set_jack_mode(false);
 }
 
 /**
@@ -169,7 +172,7 @@ qseditoptions::jackDisconnect ()
 void
 qseditoptions::updateMasterCond ()
 {
-    global_with_jack_master_cond = ui->chkJackConditional->isChecked();
+    rc().with_jack_master_cond(ui->chkJackConditional->isChecked());
     syncWithInternals();
 }
 
@@ -180,7 +183,7 @@ qseditoptions::updateMasterCond ()
 void
 qseditoptions::updateTimeMaster ()
 {
-    global_with_jack_master = ui->chkJackMaster->isChecked();
+    rc().with_jack_master(ui->chkJackMaster->isChecked());
     syncWithInternals();
 }
 
@@ -191,7 +194,7 @@ qseditoptions::updateTimeMaster ()
 void
 qseditoptions::updateTransportSupport ()
 {
-    global_with_jack_transport = ui->chkJackTransport->isChecked();
+    rc().with_jack_transport(ui->chkJackTransport->isChecked());
     syncWithInternals();
 }
 
@@ -202,11 +205,11 @@ qseditoptions::updateTransportSupport ()
 void
 qseditoptions::cancel ()
 {
-    global_with_jack_transport = backupJackTransport;
-    global_with_jack_master_cond = backupMasterCond;
-    global_with_jack_master = backupTimeMaster;
-    mPerf->setEditorKeyHeight(backupKeyHeight);
-    mPerf->setResumeNoteOns(backupNoteResume);
+    rc().with_jack_transport(backupJackTransport);
+    rc().with_jack_master_cond(backupMasterCond);
+    rc().with_jack_master(backupTimeMaster);
+    //////// perf().setEditorKeyHeight(backupKeyHeight);
+    perf().resume_note_ons(backupNoteResume);
     syncWithInternals();
     close();
 }
@@ -218,10 +221,10 @@ qseditoptions::cancel ()
 void
 qseditoptions::syncWithInternals ()
 {
-    ui->chkJackTransport->setChecked(global_with_jack_transport);
-    ui->chkJackMaster->setChecked(global_with_jack_master);
-    ui->chkJackConditional->setChecked(global_with_jack_master_cond);
-    if (! global_with_jack_transport)
+    ui->chkJackTransport->setChecked(rc().with_jack_transport());
+    ui->chkJackMaster->setChecked(rc().with_jack_master());
+    ui->chkJackConditional->setChecked(rc().with_jack_master_cond());
+    if (! rc().with_jack_transport())
     {
         //these options are meaningless if jack transport is disabled
         ui->chkJackMaster->setDisabled(true);
@@ -233,8 +236,8 @@ qseditoptions::syncWithInternals ()
         ui->chkJackConditional->setDisabled(false);
     }
 
-    ui->chkNoteResume->setChecked(mPerf->getResumeNoteOns());
-    ui->spinKeyHeight->setValue(mPerf->getEditorKeyHeight());
+    ui->chkNoteResume->setChecked(perf().resume_note_ons());
+    ///// ui->spinKeyHeight->setValue(perf().getEditorKeyHeight());
 }
 
 /**
@@ -245,11 +248,11 @@ qseditoptions::syncWithInternals ()
 void
 qseditoptions::backup ()
 {
-    backupJackTransport = global_with_jack_transport;
-    backupMasterCond = global_with_jack_master_cond;
-    backupTimeMaster = global_with_jack_master;
-    backupKeyHeight = mPerf->getEditorKeyHeight();
-    backupNoteResume = mPerf->getResumeNoteOns();
+    backupJackTransport = rc().with_jack_transport();
+    backupMasterCond = rc().with_jack_master_cond();
+    backupTimeMaster = rc().with_jack_master();
+    ///// backupKeyHeight = perf().getEditorKeyHeight();
+    backupNoteResume = perf().resume_note_ons();
 }
 
 /**
@@ -270,8 +273,7 @@ qseditoptions::okay ()
 void
 qseditoptions::updateNoteResume ()
 {
-    mPerf->setResumeNoteOns(ui->chkNoteResume->isChecked());
-    qDebug() << "Note resume status" << mPerf->getResumeNoteOns() << endl;
+    perf().resume_note_ons(ui->chkNoteResume->isChecked());
     syncWithInternals();
 }
 
@@ -282,9 +284,11 @@ qseditoptions::updateNoteResume ()
 void
 qseditoptions::updateKeyHeight ()
 {
-    mPerf->setEditorKeyHeight(ui->spinKeyHeight->value());
+    ////// perf().setEditorKeyHeight(ui->spinKeyHeight->value());
     syncWithInternals();
 }
+
+}           // namespace seq64
 
 /*
  * qseditoptions.cpp

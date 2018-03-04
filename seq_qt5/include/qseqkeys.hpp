@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  *      We've added the feature of a right-click toggling between showing the
@@ -53,8 +53,6 @@ namespace seq64
 {
 
     class sequence;
-
-//  class perform;
 
 /**
  * draws the piano keys in the sequence editor

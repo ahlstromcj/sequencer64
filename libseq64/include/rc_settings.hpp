@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-02-05
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -409,6 +409,10 @@ public:
         return m_with_jack_midi;
     }
 
+    void with_jack_transport (bool flag);
+    void with_jack_master (bool flag);
+    void with_jack_master_cond (bool flag);
+
     /**
      * \getter m_with_jack_transport m_with_jack_master, and
      * m_with_jack_master_cond, to save client code some trouble.  Do not
@@ -711,10 +715,6 @@ protected:
     {
         m_pass_sysex = flag;
     }
-
-    void with_jack_transport (bool flag);
-    void with_jack_master (bool flag);
-    void with_jack_master_cond (bool flag);
 
     /**
      * \setter m_with_jack_midi

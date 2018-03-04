@@ -49,7 +49,7 @@ namespace seq64
 qstriggereditor::qstriggereditor
 (
     sequence & a_seq,
-    qseqdata * seqdata_wid,
+    qseqdata & seqdata_wid,
     QWidget * parent,
     int keyHeight
 ) :
@@ -61,7 +61,7 @@ qstriggereditor::qstriggereditor
     mPainter            (nullptr),
     m_old               (new QRect()),
     m_selected          (new QRect()),
-    mTimer              (nullptr),
+    mTimer              (new QTimer(this)), // refresh timer for regular redraws
     mFont               (),
     m_zoom              (1),
     m_snap              (1),
@@ -87,11 +87,8 @@ qstriggereditor::qstriggereditor
     m_snap = m_seq.getSnap_tick();
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    // start refresh timer to queue regular redraws
-
-    mTimer = new QTimer(this);
-    mTimer->setInterval(20);
     QObject::connect(mTimer, SIGNAL(timeout()), this, SLOT(update()));
+    mTimer->setInterval(20);
     mTimer->start();
 }
 

@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.94.0 and above
 Chris Ahlstrom
-2015-09-10 to 2018-02-28
+2015-09-10 to 2018-03-03
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -279,7 +279,8 @@ MANUALLY-DEFINED MACROS IN CODE:
         holding the Shift key while selecting more patterns.  Eventually,
         the ability to box-select mutliple patterns, like Kepler34, will be
         added.  However, this will be a long time in coming, as I have churned
-        a lot trying to get it to work.
+        a lot trying to get it to work.  However, it is available if
+        building for Qt support (i.e. SEQ64_QTMIDI_SUPPORT is defined).
 
     SEQ64_STAZED_EXPAND_RECORD:
 

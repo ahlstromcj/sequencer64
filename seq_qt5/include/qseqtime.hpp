@@ -61,15 +61,11 @@ public:
     void zoom_out ();
 
 protected:
-    //override painting event to draw on the frame
-    void paintEvent(QPaintEvent *);
+    void paintEvent (QPaintEvent *); // painting event to draw on the frame
 
-    //override mouse events for interaction
-    void mousePressEvent(QMouseEvent * event);
-    void mouseReleaseEvent(QMouseEvent * event);
-    void mouseMoveEvent(QMouseEvent * event);
-
-    //override the sizehint to set our own defaults
+    void mousePressEvent (QMouseEvent * event);
+    void mouseReleaseEvent (QMouseEvent * event);
+    void mouseMoveEvent (QMouseEvent * event);
     QSize sizeHint() const;
 
 signals:

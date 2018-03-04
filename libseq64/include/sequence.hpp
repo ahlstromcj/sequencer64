@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-02-26
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1118,6 +1118,25 @@ public:
         bool adjust_triggers = true,
         bool verify = true
     );
+
+    /**
+     *  Kepler34
+     */
+
+    void set_num_measures (int measures)
+    {
+        set_length
+        (
+            measures * get_beats_per_bar() * (m_ppqn * 4) / get_beat_width()
+        );
+    }
+
+    /**
+     *  Kepler34
+     */
+
+    int get_num_measures ();
+
     void apply_length (int bpb, int ppqn, int bw, int measures = 1);
     int extend (midipulse len);
 
@@ -1429,7 +1448,7 @@ public:
         midipulse posstart, midipulse posend,
         midibyte status, midipulse & start
     );
-    void delete_selected_trigger ();
+    void delete_selected_triggers ();
     void cut_selected_trigger ();
     void copy_selected_trigger ();
     void paste_trigger (midipulse paste_tick = SEQ64_NO_PASTE_TRIGGER);
@@ -1449,7 +1468,7 @@ public:
 
     midipulse selected_trigger_start ();
     midipulse selected_trigger_end ();
-    midipulse get_max_trigger ();
+    midipulse get_max_trigger () const;
     void move_triggers (midipulse start_tick, midipulse distance, bool direction);
     void copy_triggers (midipulse start_tick, midipulse distance);
     void clear_triggers ();
@@ -1629,6 +1648,11 @@ public:
         midibyte status, midibyte cc,
         event_list::const_iterator & ev,
         int evtype = EVENTS_ALL
+    );
+    bool get_next_event_kepler          // TEMPORARY
+    (
+        midibyte & status, midibyte & cc,
+        midipulse & tick, midibyte & d0, midibyte & d1, bool & selected
     );
 
     bool get_next_trigger

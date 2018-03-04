@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -63,12 +63,13 @@ class qseqroll : public QWidget
     Q_OBJECT
 
 public:
+
     explicit qseqroll
     (
         perform & a_perf,
         sequence & a_seq,
         QWidget * parent = 0,
-        edit_mode_t mode = EDIT_MODE_NOTE
+        seq64::edit_mode_t mode = EDIT_MODE_NOTE
     );
 
     void set_snap (int snap);
@@ -106,14 +107,18 @@ private:
 
     void convert_xy (int a_x, int a_y, long *a_ticks, int *a_note);
     void convert_tn (long a_ticks, int a_note, int *a_x, int *a_y);
+#if 0
     void xy_to_rect (int a_x1,  int a_y1,
                     int a_x2,  int a_y2,
                     int *a_x,  int *a_y,
                     int *a_w,  int *a_h);
-    void convert_tn_box_to_rect (long a_tick_s, long a_tick_f,
-                                int a_note_h, int a_note_l,
-                                int *a_x, int *a_y,
-                                int *a_w, int *a_h);
+#endif
+
+    void convert_tn_box_to_rect
+    (
+        midipulse tick_s, midipulse tick_f, int note_h, int note_l,
+        seq64::rect & r
+    );
 
     void set_adding (bool a_adding);
     void start_paste();
@@ -127,8 +132,8 @@ private:
 
     perform & m_perform;
     sequence & m_seq;
-    rect m_old;
-    rect m_selected;
+    seq64::rect m_old;
+    seq64::rect m_selected;
     QPen * mPen;
     QBrush * mBrush;
     QPainter * mPainter;
@@ -163,7 +168,7 @@ private:
     int m_old_progress_x;   // playhead tracking
     int m_background_sequence;
     bool m_drawing_background_seq;
-    edit_mode_t editMode;
+    seq64::edit_mode_t editMode;
 
     int note_x;             // note drawing variables
     int note_width;
@@ -177,7 +182,7 @@ signals:
 
 public slots:
 
-    void updateEditMode(edit_mode_e mode);
+    void updateEditMode (seq64::edit_mode_t mode);
 
 };          // class qseqroll
 

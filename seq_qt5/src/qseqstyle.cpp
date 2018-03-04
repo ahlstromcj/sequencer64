@@ -44,9 +44,9 @@
     colourMap[Orange] = QColor(173, 115, 33);
 ***/
 
-qseqstyle::qseqstyle()
+qseqstyle::qseqstyle ()
 {
-
+    // no code
 }
 
 /*
@@ -54,5 +54,4 @@ qseqstyle::qseqstyle()
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
-
 

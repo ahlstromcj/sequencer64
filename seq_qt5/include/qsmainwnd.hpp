@@ -38,7 +38,6 @@
  */
 
 #include <QMainWindow>
-// #include <QDebug>
 #include <QFileDialog>
 #include <QErrorMessage>
 #include <QTimer>
@@ -70,7 +69,7 @@ class qsmainwnd : public QMainWindow
 
 public:
 
-    explicit qsmainwnd (perform & p, QWidget *parent = 0);
+    explicit qsmainwnd (perform & p, QWidget * parent = 0);
     ~qsmainwnd();
 
     // open the file at the given path
@@ -81,9 +80,14 @@ protected:
 
     // override keyboard events for interaction
 
-    void keyPressEvent(QKeyEvent * event);
+    void keyPressEvent (QKeyEvent * event);
 
 protected:
+
+    const perform & perf () const
+    {
+        return m_main_perf;
+    }
 
     perform & perf ()
     {
@@ -95,9 +99,9 @@ private:
     // check if the file has been modified.
     // if modified, ask the user whether to save changes
 
-    bool saveCheck();
-    void updateWindowTitle();
-    void updateRecentFilesMenu();
+    bool saveCheck ();
+    void updateWindowTitle ();
+    void updateRecentFilesMenu ();
 
 private:
 

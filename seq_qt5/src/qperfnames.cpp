@@ -61,6 +61,7 @@ namespace seq64
 qperfnames::qperfnames (perform & p, QWidget * parent)
  :
     QWidget             (parent),
+    gui_palette_qt5     (),
     mPerf               (p),
     mTimer              (nullptr),
     mPen                (nullptr),

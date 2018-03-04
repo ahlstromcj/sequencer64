@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-26
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -3909,7 +3909,7 @@ sequence::offset_triggers (midipulse tick, triggers::grow_edit_t editmode)
  */
 
 midipulse
-sequence::get_max_trigger ()
+sequence::get_max_trigger () const
 {
     automutex locker(m_mutex);
     return m_triggers.get_maximum();
@@ -4001,7 +4001,7 @@ sequence::unselect_triggers ()
  */
 
 void
-sequence::delete_selected_trigger ()
+sequence::delete_selected_triggers ()
 {
     automutex locker(m_mutex);
     m_triggers.remove_selected();
@@ -4310,12 +4310,42 @@ sequence::get_next_event (midibyte & status, midibyte & cc)
 {
     while (m_iterator_draw != m_events.end())       /* NOT THREADSAFE!!!    */
     {
-        midibyte j;
+        midibyte d1;
         event & drawevent = DREF(m_iterator_draw);
         status = drawevent.get_status();
-        drawevent.get_data(cc, j);
+        drawevent.get_data(cc, d1);
         inc_draw_marker();
         return true;                /* we have a good one; update and return */
+    }
+    return false;
+}
+
+/**
+ *  Kepler34
+ */
+
+bool
+sequence::get_next_event_kepler         // TEMPORARY
+(
+    midibyte & status, midibyte & cc,
+    midipulse & tick, midibyte & d0, midibyte & d1, bool & selected
+)
+{
+    while (m_iterator_draw != m_events.end())       /* NOT THREADSAFE!!!    */
+    {
+        midibyte d1;
+        event & drawevent = DREF(m_iterator_draw);
+        status = drawevent.get_status();
+        drawevent.get_data(cc, d1);
+        tick = drawevent.get_timestamp();
+        selected = drawevent.is_selected();
+        if (event::is_desired_cc_or_not_cc(status, cc, d0))
+        {
+            inc_draw_marker();
+            return true;        /* we have a good one; update and return */
+        }
+        else
+            inc_draw_marker();
     }
     return false;
 }
@@ -5737,6 +5767,21 @@ sequence::resume_note_ons (midipulse tick)
 }
 
 #endif      // SEQ64_SONG_RECORDING
+
+/**
+ *  Kepler34
+ */
+
+int
+sequence::get_num_measures ()
+{
+    int units = get_beats_per_bar() * (m_ppqn * 4) / get_beat_width();
+    int measures = get_length() / units;
+    if (get_length() % (units != 0))
+        ++measures;
+
+    return measures;
+}
 
 }           // namespace seq64
 

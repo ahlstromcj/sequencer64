@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-03-01
+2016-12-03 to 2018-03-03
 
 Debian (and other) Packaging:
 
@@ -11,6 +11,11 @@ Debian (and other) Packaging:
 Colors:
 
     -   Copy/paste does not transfer the colors.  Should it?
+
+Build Issues:
+
+    -   In the Makefiles, "-I..", "-I../include", and "-I../../include" appear
+        more than once on command lines.
 
 Windows (for the Future):
 

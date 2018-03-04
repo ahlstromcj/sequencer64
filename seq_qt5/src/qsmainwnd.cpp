@@ -590,7 +590,7 @@ qsmainwnd::updateBeatLength(int blIndex)
             sequence *seq =  perf().get_sequence(i);
             seq->setbeat_width(bl);
             //reset number of measures, causing length to adjust to new b/m
-            seq->setNumMeasures(seq->getNumMeasures());
+            seq->set_num_measures(seq->get_num_measures());
         }
     }
     m_modified = true;
@@ -619,7 +619,7 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
             sequence *seq =  perf().get_sequence(i);
             seq->set_beats_per_measure(bmIndex + 1);
             //reset number of measures, causing length to adjust to new b/m
-            seq->setNumMeasures(seq->getNumMeasures());
+            seq->set_num_measures(seq->get_num_measures());
 
         }
     }

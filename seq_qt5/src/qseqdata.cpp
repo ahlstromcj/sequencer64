@@ -17,7 +17,7 @@
  */
 
 /**
- * \file          qseqdata.hpp
+ * \file          qseqdata.cpp
  *
  *  This module declares/defines the base class for plastering
  *  pattern/sequence data information in the data area of the pattern
@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -34,6 +34,7 @@
  *  The height of the vertical lines is editable via the mouse.
  */
 
+#include "Globals.hpp"
 #include "qseqdata.hpp"
 #include "sequence.hpp"
 
@@ -49,7 +50,7 @@ namespace seq64
  *
  */
 
-qseqdata::qseqdata(sequence & seq, QWidget *parent)
+qseqdata::qseqdata (sequence & seq, QWidget * parent)
  :
     QWidget         (parent),
     m_seq           (seq),
@@ -85,7 +86,7 @@ qseqdata::qseqdata(sequence & seq, QWidget *parent)
  */
 
 void
-qseqdata::zoom_in()
+qseqdata::zoom_in ()
 {
     if (m_zoom > 1)
         m_zoom *= 0.5;
@@ -96,7 +97,7 @@ qseqdata::zoom_in()
  */
 
 void
-qseqdata::zoom_out()
+qseqdata::zoom_out ()
 {
     if (m_zoom < 32)
         m_zoom *= 2;
@@ -111,7 +112,7 @@ qseqdata::sizeHint () const
 {
     return QSize
     (
-        m_seq.get_length() / m_zoom + 100 + c_keyboard_padding_x, c_dataarea_y
+        m_seq.get_length() / m_zoom + 100 + c_keyboard_padding_x, qc_dataarea_y
     );
 }
 
@@ -143,7 +144,7 @@ qseqdata::paintEvent (QPaintEvent *)
     m_seq.reset_draw_marker();
     while
     (
-        m_seq.get_next_event
+        m_seq.get_next_event_kepler         // TEMPORARY
         (
             m_status, m_cc, tick, d0, d1, selected
         ) == true
@@ -173,13 +174,13 @@ qseqdata::paintEvent (QPaintEvent *)
             mPen->setWidth(1);
             mPainter->setPen(*mPen);
             if (val.length() >= 1)
-                mPainter->drawText(event_x + 3, c_dataarea_y - 25, val.at(0));
+                mPainter->drawText(event_x + 3, qc_dataarea_y - 25, val.at(0));
 
             if (val.length() >= 2)
-                mPainter->drawText(event_x + 3, c_dataarea_y - 25 + 8, \ val.at(1));
+                mPainter->drawText(event_x + 3, qc_dataarea_y - 25 + 8, val.at(1));
 
             if (val.length() >= 3)
-                mPainter->drawText(event_x + 3, c_dataarea_y - 25 + 16, val.at(2));
+                mPainter->drawText(event_x + 3, qc_dataarea_y - 25 + 16, val.at(2));
         }
     }
 
@@ -266,7 +267,7 @@ qseqdata::mouseReleaseEvent (QMouseEvent *event)
         m_seq.change_event_data_range
         (
             tick_s, tick_f, m_status, m_cc,
-            c_dataarea_y - mDropY - 1, c_dataarea_y - mCurrentY - 1
+            qc_dataarea_y - mDropY - 1, qc_dataarea_y - mCurrentY - 1
         );
 
         /* convert x,y to ticks, then set events in range */
@@ -310,7 +311,7 @@ qseqdata::mouseMoveEvent (QMouseEvent * event)
         (
             tick_s, tick_f,
             m_status, m_cc,
-            c_dataarea_y - adj_y_min - 1, c_dataarea_y - adj_y_max - 1
+            qc_dataarea_y - adj_y_min - 1, qc_dataarea_y - adj_y_max - 1
         );
     }
     else if (mRelativeAdjust)
@@ -318,7 +319,9 @@ qseqdata::mouseMoveEvent (QMouseEvent * event)
         int adjY = mDropY - mCurrentY;
         convert_x(mDropX - 2, &tick_s);
         convert_x(mDropX + 2, &tick_f);
-        m_seq.change_event_data_relative(tick_s, tick_f, m_status, m_cc, adjY);
+
+        ///// TODO
+        ///// m_seq.change_event_data_relative(tick_s, tick_f, m_status, m_cc, adjY);
 
         // move the drop location so we increment properly on next mouse move
 
@@ -384,7 +387,7 @@ qseqdata::convert_x(int a_x, midipulse * a_tick)
 }           // namespace seq64
 
 /*
- * qseqdata.hpp
+ * qseqdata.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

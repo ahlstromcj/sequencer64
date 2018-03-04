@@ -36,7 +36,6 @@
 
 #include <QtWidgets/QMainWindow>
 
-// #include <QtCore/QDebug>
 // #include <QtWidgets/QFileDialog>
 // #include <QtWidgets/QErrorMessage>
 // #include <QtCore/QTimer>

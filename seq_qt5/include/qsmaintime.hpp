@@ -35,7 +35,6 @@
 
 #include <QWidget>
 #include <QPainter>
-#include <QDebug>
 #include <QTimer>
 
 #include "perform.hpp"

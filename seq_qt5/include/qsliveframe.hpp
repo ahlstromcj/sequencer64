@@ -34,7 +34,6 @@
 
 #include <QFrame>
 #include <QPainter>
-#include <QDebug>
 #include <QMenu>
 #include <QTimer>
 #include <QMessageBox>

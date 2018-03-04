@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2018-02-28
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -114,7 +114,11 @@
  *  specified by it sequence number and the start tick of the trigger.
  */
 
-#undef  SEQ64_SONG_BOX_SELECT               /* not ready for prime time     */
+#ifdef SEQ64_QTMIDI_SUPPORT
+#define SEQ64_SONG_BOX_SELECT
+#else
+#undef  SEQ64_SONG_BOX_SELECT               /* not ready in Gtkmm support   */
+#endif
 
 /**
  *  Odds and ends that we missed.  This value allows non-notes to be included

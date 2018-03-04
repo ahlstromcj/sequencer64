@@ -45,7 +45,7 @@ namespace seq64
 
 qseqkeys::qseqkeys
 (
-    sequence & seq, QWidget *parent, int keyHeight, int keyAreaHeight
+    sequence & seq, QWidget * parent, int keyheight, int keyareaheight
 ) :
     QWidget             (parent),
     m_seq               (seq),
@@ -55,8 +55,8 @@ qseqkeys::qseqkeys
     m_painter           (nullptr),
     m_font              (),
     m_key               (0),
-    keyY                (keyHeight),
-    keyAreaY            (keyAreaHeight),
+    keyY                (keyheight),
+    keyAreaY            (keyareaheight),
     mPreviewKey         (-1),
     mPreviewing         (false)
 {

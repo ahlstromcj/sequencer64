@@ -33,7 +33,7 @@
 #include "globals.h"
 #include "forms/qsliveframe.ui.h"
 
-qsliveframe::qsliveframe (perform & perf, QWidget *parent)
+qsliveframe::qsliveframe (perform & perf, QWidget * parent)
  :
     QFrame              (parent),
     ui                  (new Ui::qsliveframe),
@@ -397,13 +397,7 @@ qsliveframe::setBank (int newBank)
     QString bankName = (*perf().get_bank_name(m_bank_id)).c_str();
     ui->txtBankName->setPlainText(bankName);
     ui->spinBank->setValue(m_bank_id);
-
     update();
-    /***
-    qDebug() << "Newly selected bank" << endl
-             << "Name - " << bankName << endl
-             << "ID - " << m_bank_id << endl;
-     ***/
 }
 
 /**
@@ -447,11 +441,6 @@ void
 qsliveframe::updateInternalBankName ()
 {
     string newName = ui->txtBankName->document()->toPlainText().toStdString();
-    /*
-    qDebug() << "qsliveframe.cpp, New bank name is - "
-             << QString(newName.c_str()) << endl;
-     */
-
     perf().setBankName(m_bank_id, &newName);
 }
 
@@ -771,7 +760,6 @@ qsliveframe::keyPressEvent(QKeyEvent *event)
         break;
     default: //sequence mute toggling
         quint32 keycode =  event->key();
-        qDebug() << "Live frame key press - " << keycode << endl;
         if (perf().get_key_events()->count(event->key()) != 0)
             sequence_key(perf().lookup_keyevent_seq(event->key()));
         else

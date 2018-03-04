@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -42,6 +42,8 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPen>
+
+#include "midibyte.hpp"                 /* midibyte, midipulse typedefs     */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -66,27 +68,27 @@ class qseqdata : public QWidget
 
 public:
 
-    explicit qseqdata(sequence & seq, QWidget * parent = 0);
+    explicit qseqdata (sequence & seq, QWidget * parent = 0);
 
-    void zoom_in();
-    void zoom_out();
-    void set_data_type(midibyte a_status, midibyte a_control);
+    void zoom_in ();
+    void zoom_out ();
+    void set_data_type (midibyte a_status, midibyte a_control);
 
 protected:
 
     // override painting event to draw on the frame
 
-    void paintEvent(QPaintEvent *);
+    void paintEvent (QPaintEvent *);
 
     // override mouse events for interaction
 
-    void mousePressEvent(QMouseEvent * event);
-    void mouseReleaseEvent(QMouseEvent * event);
-    void mouseMoveEvent(QMouseEvent * event);
+    void mousePressEvent (QMouseEvent * event);
+    void mouseReleaseEvent (QMouseEvent * event);
+    void mouseMoveEvent (QMouseEvent * event);
 
     //override the sizehint to set our own defaults
 
-    QSize sizeHint() const;
+    QSize sizeHint () const;
 
 signals:
 

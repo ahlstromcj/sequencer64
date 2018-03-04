@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -34,24 +34,31 @@
  *  The height of the vertical lines is editable via the mouse.
  */
 
+#include "Globals.hpp"
+#include "perform.hpp"
 #include "qseqeditframe.hpp"
 #include "forms/qseqeditframe.ui.h"
+
+namespace seq64
+{
 
 /**
  *
  */
 
-qseqeditframe::qseqeditframe(QWidget * parent, perform  & perf, int seqId)
- :
+qseqeditframe::qseqeditframe
+(
+    perform & perf, QWidget * parent, int seqId
+) :
     QFrame          (parent),
     ui              (new Ui::qseqeditframe),
+    mContainer      (nullptr),
     m_layout_grid   (nullptr),
     m_scroll_area   (nullptr),
-    mContainer      (nullptr),
-    m_palette       (nullptr),
+    m_palette       (new QPalette()),
     mPopup          (nullptr),
-    mSeq            (perf->get_sequence(seqId)),
     mPerformance    (perf),
+    mSeq            (perf.get_sequence(seqId)),    // a pointer
     mKeyboard       (nullptr),
     mTimeBar        (nullptr),
     mNoteGrid       (nullptr),
@@ -62,7 +69,7 @@ qseqeditframe::qseqeditframe(QWidget * parent, perform  & perf, int seqId)
     mSeqId          (seqId)
 {
     ui->setupUi(this);
-    editMode = mPerformance->getEditMode(seqId);
+    editMode = mPerformance.seq_edit_mode(seqId);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     /*
@@ -115,18 +122,18 @@ qseqeditframe::qseqeditframe(QWidget * parent, perform  & perf, int seqId)
     ui->cmbScale->insertItem(1, "Major");
     ui->cmbScale->insertItem(2, "Minor");
 
-    //fill MIDI bus options
+    // fill MIDI buss options
 
-    mastermidibus *masterbus = mPerformance->get_master_midi_bus();
+    mastermidibus * masterbus = mPerformance.master_bus();
     for (int i = 0; i < masterbus->get_num_out_buses(); i++)
     {
-        ui->cmbmidibus->addItem
+        ui->cmbMidiBus->addItem
         (
             QString::fromStdString(masterbus->get_midi_out_bus_name(i))
         );
     }
 
-    ui->cmbmidibus->setCurrentText
+    ui->cmbMidiBus->setCurrentText
     (
         QString::fromStdString
         (
@@ -143,7 +150,7 @@ qseqeditframe::qseqeditframe(QWidget * parent, perform  & perf, int seqId)
     snapText.append(QString::number(c_ppqn * 4 / mSeq->getSnap_tick()));
     ui->cmbGridSnap->setCurrentText(snapText);
 
-    QString seqLenText(QString::number(mSeq->getNumMeasures()));
+    QString seqLenText(QString::number(mSeq->get_num_measures()));
     ui->cmbSeqLen->setCurrentText(seqLenText);
 
     /* set out our custom elements */
@@ -156,19 +163,28 @@ qseqeditframe::qseqeditframe(QWidget * parent, perform  & perf, int seqId)
     m_layout_grid = new QGridLayout(mContainer);
     mContainer->setLayout(m_layout_grid);
 
-    m_palette = new QPalette();
+//  m_palette = new QPalette();
     m_palette->setColor(QPalette::Background, Qt::darkGray);
     mContainer->setPalette(*m_palette);
 
-    mKeyboard = new qseqkeys(mSeq, mContainer,
-                             mPerformance->getEditorKeyHeight(),
-                             mPerformance->getEditorKeyboardHeight());
+    // The key-height parameters should be a user_settings member.
+
+    mKeyboard = new qseqkeys
+    (
+        mSeq,
+        mContainer,
+        c_key_height,                 // mPerformance.getEditorKeyHeight(),
+        c_key_height * c_num_keys + 1 // mPerformance.getEditorKeyboardHeight()
+    );
     mTimeBar = new qseqtime(mSeq, mContainer);
     mNoteGrid = new qseqroll(mPerformance, mSeq, mContainer);
     mNoteGrid->updateEditMode(editMode);
     mEventValues = new qseqdata(mSeq, mContainer);
-    mEventTriggers = new qstriggereditor(mSeq, mEventValues, mContainer,
-                                         mPerformance->getEditorKeyHeight());
+    mEventTriggers = new qstriggereditor
+    (
+        mSeq, mEventValues, mContainer,
+        c_key_height // mPerformance->getEditorKeyHeight()
+    );
 
     m_layout_grid->setSpacing(0);
     m_layout_grid->addWidget(mKeyboard, 1, 0, 1, 1);
@@ -271,15 +287,14 @@ qseqeditframe::qseqeditframe(QWidget * parent, perform  & perf, int seqId)
     );
     connect
     (
-        ui->cmbmidibus, SIGNAL(currentIndexChanged(int)),
+        ui->cmbMidiBus, SIGNAL(currentIndexChanged(int)),
         this, SLOT(updatemidibus(int))
     );
     connect
     (
-        ui->cmbMidiChan,
-            SIGNAL(currentIndexChanged(int)),
-            this,
-            SLOT(updateMidiChannel(int)));
+        ui->cmbMidiChan, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(updateMidiChannel(int))
+    );
 
     connect(ui->btnUndo, SIGNAL(clicked(bool)), this, SLOT(undo()));
     connect(ui->btnRedo, SIGNAL(clicked(bool)), this, SLOT(redo()));
@@ -351,52 +366,24 @@ qseqeditframe::updateGridSnap(int snapIndex)
     int snap;
     switch (snapIndex)
     {
-    case 0:
-        snap = c_ppqn * 4;
-        break;
-    case 1:
-        snap = c_ppqn * 2;
-        break;
-    case 2:
-        snap = c_ppqn * 1;
-        break;
-    case 3:
-        snap = c_ppqn / 2;
-        break;
-    case 4:
-        snap = c_ppqn / 4;
-        break;
-    case 5:
-        snap = c_ppqn / 8;
-        break;
-    case 6:
-        snap = c_ppqn / 16;
-        break;
-    case 7:
-        snap = c_ppqn / 32;
-        break;
-    //ignore index 8 as it's a separator
-    case 9:
-        snap = c_ppqn * 4  / 3;
-        break;
-    case 10:
-        snap = c_ppqn * 2  / 3;
-        break;
-    case 11:
-        snap = c_ppqn * 1 / 3;
-        break;
-    case 12:
-        snap = c_ppqn / 2 / 3;
-        break;
-    case 13:
-        snap = c_ppqn / 4 / 3;
-        break;
-    case 14:
-        snap = c_ppqn / 8 / 3;
-        break;
-    case 15:
-        snap = c_ppqn / 16 / 3;
-        break;
+    case 0: snap = c_ppqn * 4; break;
+    case 1: snap = c_ppqn * 2; break;
+    case 2: snap = c_ppqn * 1; break;
+    case 3: snap = c_ppqn / 2; break;
+    case 4: snap = c_ppqn / 4; break;
+    case 5: snap = c_ppqn / 8; break;
+    case 6: snap = c_ppqn / 16; break;
+    case 7: snap = c_ppqn / 32; break;
+
+    // ignore index 8 as it's a separator
+
+    case 9: snap = c_ppqn * 4  / 3; break;
+    case 10: snap = c_ppqn * 2  / 3; break;
+    case 11: snap = c_ppqn * 1 / 3; break;
+    case 12: snap = c_ppqn / 2 / 3; break;
+    case 13: snap = c_ppqn / 4 / 3; break;
+    case 14: snap = c_ppqn / 8 / 3; break;
+    case 15: snap = c_ppqn / 16 / 3; break;
     }
     mNoteGrid->set_snap(snap);
     mSeq->set_snap_tick(snap);
@@ -561,7 +548,7 @@ void
 qseqeditframe::updateSeqLength()
 {
     int measures = ui->cmbSeqLen->currentText().toInt();
-    mSeq->setNumMeasures(measures);
+    mSeq->set_num_measures(measures);                       // ????
     mTimeBar->updateGeometry();
     mNoteGrid->updateGeometry();
     mContainer->adjustSize();
@@ -586,7 +573,7 @@ qseqeditframe::updateBackgroundSeq(int newIndex)
 void
 qseqeditframe::updateDrawGeometry()
 {
-    QString seqLenText(QString::number(mSeq->getNumMeasures()));
+    QString seqLenText(QString::number(mSeq->get_num_measures()));
     ui->cmbSeqLen->setCurrentText(seqLenText);
     mTimeBar->updateGeometry();
     mNoteGrid->updateGeometry();
@@ -602,20 +589,19 @@ qseqeditframe::toggleEditorMode()
 {
     switch (editMode)
     {
-    case NOTE:
-        editMode = DRUM;
+    case EDIT_MODE_NOTE:
+        editMode = EDIT_MODE_DRUM;
         ui->cmbNoteLen->hide();
         ui->lblNoteLen->hide();
         break;
 
-    case DRUM:
-        editMode = NOTE;
+    case EDIT_MODE_DRUM:
+        editMode = EDIT_MODE_NOTE;
         ui->cmbNoteLen->show();
         ui->lblNoteLen->show();
         break;
     }
-
-    mPerformance->setEditMode(mSeqId, editMode);
+    mPerformance.seq_edit_mode(mSeqId, editMode);
     mNoteGrid->updateEditMode(editMode);
 }
 
@@ -624,10 +610,10 @@ qseqeditframe::toggleEditorMode()
  */
 
 void
-qseqeditframe::setEditorMode(edit_mode_e mode)
+qseqeditframe::setEditorMode (seq64::edit_mode_t mode)
 {
     editMode = mode;
-    mPerformance->setEditMode(mSeqId, editMode);
+    mPerformance.seq_edit_mode(mSeqId, editMode);
     mNoteGrid->updateEditMode(mode);
 }
 
@@ -658,7 +644,7 @@ qseqeditframe::toggleMidiPlay(bool newVal)
 void
 qseqeditframe::toggleMidiQRec(bool newVal)
 {
-    mSeq->set_quantized_rec(newVal);
+    mSeq->set_quantized_recording(newVal);
 }
 
 /**
@@ -666,9 +652,9 @@ qseqeditframe::toggleMidiQRec(bool newVal)
  */
 
 void
-qseqeditframe::toggleMidiRec(bool newVal)
+qseqeditframe::toggleMidiRec (bool newVal)
 {
-    mPerformance->get_master_midi_bus()->set_sequence_input(true, mSeq);
+    mPerformance.master_bus()->set_sequence_input(true, mSeq);
     mSeq->set_recording(newVal);
 }
 
@@ -677,9 +663,9 @@ qseqeditframe::toggleMidiRec(bool newVal)
  */
 
 void
-qseqeditframe::toggleMidiThru(bool newVal)
+qseqeditframe::toggleMidiThru (bool newVal)
 {
-    mPerformance->get_master_midi_bus()->set_sequence_input(true, mSeq);
+    mPerformance.master_bus()->set_sequence_input(true, mSeq);
     mSeq->set_thru(newVal);
 }
 
@@ -739,6 +725,8 @@ qseqeditframe::transposeNotes()
     mSeq->push_undo();
     mSeq->transpose_notes(transposeVal, 0);
 }
+
+}           // namespace seq64
 
 /*
  * qseqeditframe.cpp

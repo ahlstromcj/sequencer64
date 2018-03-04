@@ -95,7 +95,7 @@ private:
 
 private:
 
-    int m_snap; /* set snap to in pulses */
+    int m_snap;                 /* set snap to in pulses */
     int mbeats_per_measure;
     int mbeat_width;
     Ui::qperfeditframe * ui;
@@ -110,13 +110,13 @@ private:
 
 private slots:
 
-    void updateGridSnap(int snapIndex);
-    void zoom_in();
-    void zoom_out();
-    void markerCollapse();
-    void markerExpand();
-    void markerExpandCopy();
-    void markerLoop(bool loop);
+    void updateGridSnap (int snapIndex);
+    void zoom_in ();
+    void zoom_out ();
+    void markerCollapse ();
+    void markerExpand ();
+    void markerExpandCopy ();
+    void markerLoop (bool loop);
 
 };              // class qperfeditframe
 

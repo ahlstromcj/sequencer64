@@ -27,12 +27,14 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-09-16
- * \updates       2017-09-16
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  *  Our version of the rectangle provides specific functionality not necessary
  *  found in, say the GdkMM rectangle.
  */
+
+#include "midibyte.hpp"                 /* midipulse typedef                */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -40,7 +42,6 @@
 
 namespace seq64
 {
-
     class perform;
 
 /**
@@ -209,6 +210,21 @@ public:
     {
         m_height += h;
     }
+
+    void xy_incr (int xv, int yv)
+    {
+        m_x += xv;
+        m_y += yv;
+    }
+
+    /**
+     *
+
+    void convert_tn_box_to_rect
+    (
+        midipulse tick_s, midipulse tick_f, int note_h, int note_l
+    );
+     */
 
 private:
 

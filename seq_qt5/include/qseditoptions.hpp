@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -65,10 +65,12 @@ public:
     explicit qseditoptions (seq64::perform & perf, QWidget * parent = 0);
     ~qseditoptions();
 
+    /*
     // add a new file to the recent files list.
     // reorganises the list if file already present
 
     void addRecentFile(QString path);
+    */
 
 private:
 
@@ -79,6 +81,11 @@ private:
     // backup preferences incase we cancel changes
 
     void backup();
+
+    const perform & perf () const
+    {
+        return mPerf;
+    }
 
     perform & perf ()
     {

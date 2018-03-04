@@ -24,8 +24,8 @@
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2015-07-24
- * \updates       2016-05-11
+ * \date          2018-01-01
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -33,17 +33,31 @@
 #include "qsabout.hpp"
 #include "forms/qsabout.ui.h"
 
-qsabout::qsabout(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::qsabout)
+namespace seq64
+{
+
+/**
+ *
+ */
+
+qsabout::qsabout (QWidget * parent)
+ :
+    QDialog (parent),
+    ui      (new Ui::qsabout)
 {
     ui->setupUi(this);
 }
+
+/**
+ *
+ */
 
 qsabout::~qsabout()
 {
     delete ui;
 }
+
+}               // namespace seq64
 
 /*
  * qsabout.hpp

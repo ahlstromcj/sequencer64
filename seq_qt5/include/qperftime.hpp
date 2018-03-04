@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -79,6 +79,16 @@ protected:
 
     //override the sizehint to set our own defaults
     QSize sizeHint() const;
+
+    const perform & perf () const
+    {
+        return m_mainperf;
+    }
+
+    perform & perf ()
+    {
+        return m_mainperf;
+    }
 
 private:
 

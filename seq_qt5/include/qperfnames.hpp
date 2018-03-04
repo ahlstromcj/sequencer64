@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -36,8 +36,9 @@
 #include <QPainter>
 #include <QPen>
 
-#include "sequence.hpp"
 #include "globals.h"
+#include "sequence.hpp"
+#include "gui_palette_qt5.hpp"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -51,7 +52,7 @@ namespace seq64
  * Sequence labels for the side of the song editor
  */
 
-class qperfnames : public QWidget
+class qperfnames : public QWidget, gui_palette_qt5
 {
     Q_OBJECT
 

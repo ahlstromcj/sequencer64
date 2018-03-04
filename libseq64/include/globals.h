@@ -300,6 +300,7 @@ const int c_num_keys = SEQ64_MIDI_COUNT_MAX;      // 128
  *  piano roll.
  */
 
+const int c_key_height = 12;
 const int c_keyarea_x = 36;
 const int c_keyoffset_x = c_keyarea_x - c_key_x;
 const int c_keyarea_y = c_key_y * c_num_keys + 1;

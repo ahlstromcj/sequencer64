@@ -27,8 +27,8 @@
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2015-07-24
- * \updates       2016-05-11
+ * \date          2018-01-01
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -39,6 +39,9 @@ namespace Ui
 {
     class qsabout;
 }
+
+namespace seq64
+{
 
 class qsabout : public QDialog
 {
@@ -51,11 +54,13 @@ public:
 
 private:
 
-    Ui::qsabout *ui;
+    Ui::qsabout * ui;
 
-};          // class qsabout
+};              // class qsabout
 
-#endif      // SEQ64_QSABOUT_HPP
+}               // namespace seq64
+
+#endif          // SEQ64_QSABOUT_HPP
 
 /*
  * qsabout.hpp

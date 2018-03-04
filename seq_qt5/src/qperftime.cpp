@@ -25,11 +25,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  */
 
+#include "Globals.hpp"
 #include "qperftime.hpp"
 
 /*
@@ -40,11 +41,15 @@ namespace seq64
 {
     class perform;
 
+/**
+ *
+ */
+
 qperftime::qperftime(perform & p, QWidget * parent)
  :
     QWidget             (parent),
     m_mainperf          (p),
-    mTimer              (nullptr),
+    mTimer              (new QTimer(this)), // refresh timer for redraws
     mPen                (nullptr),
     mBrush              (nullptr),
     mPainter            (nullptr),
@@ -54,10 +59,8 @@ qperftime::qperftime(perform & p, QWidget * parent)
     m_measure_length    (c_ppqn * 4),
     zoom                (1)
 {
-    //start refresh timer to queue regular redraws
-    mTimer = new QTimer(this);
-    mTimer->setInterval(50);
     QObject::connect(mTimer, SIGNAL(timeout()), this, SLOT(update()));
+    mTimer->setInterval(50);
     mTimer->start();
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }
@@ -103,8 +106,8 @@ qperftime::paintEvent (QPaintEvent *)
         }
     }
 
-    midipulse left = m_mainperf->get_left_tick();
-    midipulse right = m_mainperf->get_right_tick();
+    midipulse left = perf().get_left_tick();
+    midipulse right = perf().get_right_tick();
     left -= (m_4bar_offset * 16 * c_ppqn);
     left /= c_perf_scale_x * zoom;
     right -= (m_4bar_offset * 16 * c_ppqn);
@@ -142,7 +145,7 @@ qperftime::sizeHint () const
 {
     return QSize
     (
-        m_mainperf->get_max_trigger() / (zoom * c_perf_scale_x) + 2000, 22
+        perf().get_max_trigger() / (zoom * c_perf_scale_x) + 2000, 22
     );
 }
 
@@ -160,13 +163,13 @@ qperftime::mousePressEvent (QMouseEvent * event)
     if (event->y() > height() * 0.5)
     {
         if (event->button() == Qt::LeftButton)  // move L/R markers
-            m_mainperf->set_left_tick(tick);
+            perf().set_left_tick(tick);
 
         if (event->button() == Qt::RightButton)
-            m_mainperf->set_right_tick(tick + m_snap);
+            perf().set_right_tick(tick + m_snap);
     }
     else
-        m_mainperf->setTick(tick);              // reposition timecode
+        perf().set_tick(tick);              // reposition timecode
 }
 
 /**

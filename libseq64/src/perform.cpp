@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-02-19
+ * \updates       2018-03-03
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -3561,7 +3561,7 @@ perform::intersect_triggers (int seqnum, midipulse tick)
  */
 
 midipulse
-perform::get_max_trigger ()
+perform::get_max_trigger () const
 {
     midipulse result = 0;
     for (int s = 0; s < m_sequence_high; ++s)           /* modest speed-up */
@@ -6124,7 +6124,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
             if (k.is_delete())
             {
                 push_trigger_undo();
-                s->delete_selected_trigger();
+                s->delete_selected_triggers();
                 modify();
                 result = true;
             }

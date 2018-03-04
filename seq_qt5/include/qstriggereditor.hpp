@@ -66,41 +66,33 @@ public:
     explicit qstriggereditor
     (
         sequence & seq,
-        qseqdata * seqdata_wid,
+        qseqdata & seqdata_wid,
         QWidget * parent = 0,
         int keyHeight = 12
     );
-    void zoom_in();
-    void zoom_out();
-    void set_data_type(midibyte a_status, midibyte a_control);
+    void zoom_in ();
+    void zoom_out ();
+    void set_data_type (midibyte a_status, midibyte a_control);
 
 protected:
 
-    // override painting event to draw on the frame
-
-    void paintEvent(QPaintEvent *);
-
-    //override mouse events for interaction
-    void mousePressEvent(QMouseEvent * event);
-    void mouseReleaseEvent(QMouseEvent * event);
-    void mouseMoveEvent(QMouseEvent * event);
-
-    //override keyboard events for interaction
-    void keyPressEvent(QKeyEvent * event);
-    void keyReleaseEvent(QKeyEvent * event);
-
-    //override the sizehint to set our own defaults
-    QSize sizeHint() const;
+    void paintEvent (QPaintEvent *);
+    void mousePressEvent (QMouseEvent * event);
+    void mouseReleaseEvent (QMouseEvent * event);
+    void mouseMoveEvent (QMouseEvent * event);
+    void keyPressEvent (QKeyEvent * event);
+    void keyReleaseEvent (QKeyEvent * event);
+    QSize sizeHint () const;
 
 signals:
 
 public slots:
 
 private:
-    /* checks mins / maxes..  the fills in x,y
-       and width and height */
-    void x_to_w(int a_x1, int a_x2,
-                int *a_x, int *a_w);
+
+    /* checks mins / maxes..  the fills in x,y and width and height */
+
+    void x_to_w(int a_x1, int a_x2, int *a_x, int *a_w);
     void start_paste();
     void convert_x(int a_x, long *a_tick);
     void convert_t(long a_ticks, int *a_x);
@@ -108,6 +100,8 @@ private:
     void snap_y(int *a_y);
     void snap_x(int *a_x);
     void set_adding(bool a_adding);
+
+private:
 
     sequence & m_seq;
     qseqdata * m_seqdata_wid;
@@ -119,14 +113,13 @@ private:
     QTimer * mTimer;
     QFont mFont;
 
-    int m_zoom;            /* one pixel == m_zoom ticks */
+    int m_zoom;             /* one pixel == m_zoom ticks */
     int m_snap;
     int m_window_x;
     int m_window_y;
     int keyY;
 
-    /* when highlighting a bunch of events */
-    bool m_selecting;
+    bool m_selecting;       /* when highlighting a bunch of events */
     bool m_moving_init;
     bool m_moving;
     bool m_growing;
@@ -134,15 +127,13 @@ private:
     bool m_paste;
     bool m_adding;
 
-    /* where the dragging started */
-    int m_drop_x;
+    int m_drop_x;           /* where the dragging started */
     int m_drop_y;
     int m_current_x;
     int m_current_y;
     int m_move_snap_offset_x;
 
-    /* what is the data window currently editing ? */
-    midibyte m_status;
+    midibyte m_status;      /* what is seqdata currently editing? */
     midibyte m_cc;
 
 };          // class qstriggereditor

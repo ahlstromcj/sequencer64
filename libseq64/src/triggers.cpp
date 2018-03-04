@@ -1064,7 +1064,7 @@ triggers::offset_selected (midipulse tick, grow_edit_t editmode)
  */
 
 midipulse
-triggers::get_maximum ()
+triggers::get_maximum () const
 {
     midipulse result = 0;
     if (m_triggers.size() > 0)

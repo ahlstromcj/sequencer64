@@ -1124,8 +1124,6 @@ seqroll::convert_tn_box_to_rect
     int & x, int & y, int & w, int & h
 )
 {
-    // TODO: use the new rect::convert_tn_box_to_rect() function
-    //
     int x1, y1, x2, y2;
     convert_tn(tick_s, note_h, x1, y1);     /* convert box to X,Y values */
     convert_tn(tick_f, note_l, x2, y2);

@@ -98,10 +98,10 @@ qseqroll::qseqroll
     note_width              (0),
     note_y                  (0),
     note_height             (0),
-    keyY                    (perf.getEditorKeyHeight()),
-    keyAreaY                (perf.getEditorKeyboardHeight())
+    keyY                    (c_key_height), // perf.getEditorKeyHeight()),
+    keyAreaY                (c_key_height * c_num_keys + 1) // perf.getEditorKeyboardHeight())
 {
-    set_snap(m_seq.getSnap_tick());
+    set_snap(m_seq.get_snap_tick());
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setFocusPolicy(Qt::StrongFocus);
 
@@ -129,7 +129,7 @@ qseqroll::paintEvent (QPaintEvent *)
     mPainter->setFont(mFont);
 
     //draw border
-    //    m_painter->drawRect(0, 0, width(), height());
+    //    mPainter->drawRect(0, 0, width(), height());
 
     mPen->setColor(Qt::lightGray);
     mPen->setStyle(Qt::DashLine);
@@ -143,13 +143,13 @@ qseqroll::paintEvent (QPaintEvent *)
         //        {
         //            m_pen->setColor(Qt::darkGray);
         //            m_pen->setStyle(Qt::SolidLine);
-        //            m_painter->setPen(*m_pen);
+        //            mPainter->setPen(*m_pen);
         //        }
         //        else if (11 == (((c_num_keys - i) + ( 12 - m_key )) % 12))
         //        {
         //            m_pen->setColor(Qt::darkGray);
         //            m_pen->setStyle(Qt::SolidLine);
-        //            m_painter->setPen(*m_pen);
+        //            mPainter->setPen(*m_pen);
         //        }
 
         //draw horizontal grid lines
@@ -171,12 +171,15 @@ qseqroll::paintEvent (QPaintEvent *)
         if (m_scale != c_scale_off)
         {
             if (!c_scales_policy[m_scale][((c_num_keys - i) - 1 + (12 - m_key)) % 12])
-                m_painter->drawRect(0, i * keyY + 1, m_size_x, keyY - 1);
+            {
+                // Commented out in kepler34
+                // mPainter->drawRect(0, i * keyY + 1, m_size_x, keyY - 1);
+            }
         }
     }
 
     int measures_per_line = 1;
-    int ticks_per_measure = m_seq.get_beats_per_measure() *
+    int ticks_per_measure = m_seq.get_beats_per_bar() *
         (4 * c_ppqn) / m_seq.get_beat_width();
 
     int ticks_per_beat = (4 * c_ppqn) / m_seq.get_beat_width();
@@ -228,7 +231,7 @@ qseqroll::paintEvent (QPaintEvent *)
     int note;
     bool selected;
     int velocity;
-    draw_type dt;
+    draw_type_t dt;
     int start_tick = 0;
     int end_tick = (width() * m_zoom);
     sequence * seq = nullptr;
@@ -245,7 +248,7 @@ qseqroll::paintEvent (QPaintEvent *)
             ++method;
 
         if (method == 1)
-            seq = m_seq;
+            seq = &m_seq;
 
         mPen->setColor(Qt::black);      /* draw boxes from sequence */
         mPen->setStyle(Qt::SolidLine);
@@ -418,9 +421,9 @@ qseqroll::paintEvent (QPaintEvent *)
 
     if (m_selecting)
     {
-        xy_to_rect_get
+        rect::xy_to_rect_get
         (
-            m_drop_x, m_drop_y, m_current_x, m_current_y, &x, &y, &w, &h
+            m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h
         );
 
 //      m_old.x(x);
@@ -589,7 +592,8 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                     case EDIT_MODE_NOTE:
                         numsel = m_seq.select_note_events
                         (
-                            tick_s, note, tick_f, note, sequence::e_select_single
+                            tick_s, note, tick_f, note,
+                            sequence::e_select_one  // sequence::e_select_single
                         );
                         break;
 
@@ -597,7 +601,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                         numsel = m_seq.select_note_events
                         (
                             tick_s, note, tick_f, note,
-                            sequence::e_select_onset_single
+                            sequence::e_select_one  // sequence::e_select_single
                         );
                         break;
                     }
@@ -642,17 +646,17 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                         needs_update = true;
                         switch (editMode)
                         {
-                        case NOTE:          // take note lengths into account
+                        case EDIT_MODE_NOTE:           // acount note lengths
                             m_seq.get_selected_box
                             (
-                                &tick_s, &note, &tick_f, &note_l
+                                tick_s, note, tick_f, note_l
                             );
                             break;
 
-                        case DRUM:          // ignore note lengths
+                        case EDIT_MODE_DRUM:           // ignore note lengths
                             m_seq.get_onsets_selected_box
                             (
-                                &tick_s, &note, &tick_f, &note_l
+                                tick_s, note, tick_f, note_l
                             );
                             break;
                         }
@@ -662,20 +666,16 @@ qseqroll::mousePressEvent (QMouseEvent * event)
 //                                             &m_selected.y,
 //                                             &m_selected.width,
 //                                             &m_selected.height);
-//                      m_selected.convert_tn_box_to_rect
-//                      (
-//                          tick_s, tick_f, note, note_l
-//                      );
                         convert_tn_box_to_rect
                         (
                             tick_s, tick_f, note, note_l, m_selected
                         );
 
                         /* save offset that we get from the snap above */
-                        int adjusted_selected_x = m_selected.x;
+                        int adjusted_selected_x = m_selected.x();
                         snap_x(&adjusted_selected_x);
                         m_move_snap_offset_x =
-                            (m_selected.x - adjusted_selected_x);
+                            (m_selected.x() - adjusted_selected_x);
 
                         m_current_x = m_drop_x = snapped_x;
                     }
@@ -696,17 +696,13 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                         m_growing = true;
 
                         /* get the box that selected elements are in */
-                        m_seq.get_selected_box(&tick_s, &note, &tick_f, &note_l);
+                        m_seq.get_selected_box(tick_s, note, tick_f, note_l);
 
 //                      convert_tn_box_to_rect(tick_s, tick_f, note, note_l,
 //                                             &m_selected.x,
 //                                             &m_selected.y,
 //                                             &m_selected.width,
 //                                             &m_selected.height);
-//                      m_selected.convert_tn_box_to_rect
-//                      (
-//                          tick_s, tick_f, note, note_l
-//                      );
                         convert_tn_box_to_rect
                         (
                             tick_s, tick_f, note, note_l, m_selected
@@ -749,15 +745,15 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
     {
         if (m_selecting)
         {
-            xy_to_rect_get
+            rect::xy_to_rect_get
             (
-                m_drop_x, m_drop_y, m_current_x, m_current_y, &x, &y, &w, &h
+                m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h
             );
             switch (editMode)
             {
             case EDIT_MODE_NOTE:
-                convert_xy(x,     y, &tick_s, &note_h);
-                convert_xy(x + w, y + h, &tick_f, &note_l);
+                convert_xy(x,     y, &tick_s, &note_h);         // FIX
+                convert_xy(x + w, y + h, &tick_f, &note_l);         // FIX
                 m_seq.select_note_events
                 (
                     tick_s, note_h, tick_f, note_l, sequence::e_select
@@ -1037,10 +1033,30 @@ qseqroll::xy_to_rect(int a_x1, int a_y1, int a_x2, int a_y2,
 }
 #endif  // 0
 
+/**
+ *  See seqroll::convert_sel_box_to_rect() for a potential upgrade.
+ *
+ * \param tick_s
+ *      The starting tick of the rectangle.
+ *
+ * \param tick_f
+ *      The finishing tick of the rectangle.
+ *
+ * \param note_h
+ *      The high note of the rectangle.
+ *
+ * \param note_l
+ *      The low note of the rectangle.
+ *
+ * \param [out] r
+ *      The destination rectangle for the calculations.
+ */
+
 void
 qseqroll::convert_tn_box_to_rect
 (
-    midipulse tick_s, midipulse tick_f, int note_h, int note_l, rect & r
+    midipulse tick_s, midipulse tick_f, int note_h, int note_l,
+    seq64::rect & r
 )
 {
     int x1, y1, x2, y2;
@@ -1119,18 +1135,18 @@ qseqroll::start_paste ()
     int note_l;
 
     /* get the box that selected elements are in */
-    m_seq.get_clipboard_box(&tick_s, &note_h, &tick_f, &note_l);
+    m_seq.get_clipboard_box(tick_s, note_h, tick_f, note_l);
 //  convert_tn_box_to_rect(tick_s, tick_f, note_h, note_l,
 //                         &m_selected.x,
 //                         &m_selected.y,
 //                         &m_selected.width,
 //                         &m_selected.height);
-    convert_tn_box_to_rect(tick_s, tick_f, note, note_l, m_selected);
+    convert_tn_box_to_rect(tick_s, tick_f, note_h, note_l, m_selected);
 
     /* adjust for clipboard being shifted to tick 0 */
 //  m_selected.x += m_drop_x;
 //  m_selected.y += (m_drop_y - m_selected.y);
-    m_selected.xy_incr(m_drop_x, m_drop_y - m_selected.y);
+    m_selected.xy_incr(m_drop_x, m_drop_y - m_selected.y());
 }
 
 /**

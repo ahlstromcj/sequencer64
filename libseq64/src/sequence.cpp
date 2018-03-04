@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-03
+ * \updates       2018-03-04
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1410,16 +1410,74 @@ sequence::get_selected_box
     note_l = SEQ64_MIDI_COUNT_MAX;
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
-        if (DREF(i).is_selected())
+        event & e = DREF(i);
+        if (e.is_selected())
         {
-            midipulse time = DREF(i).get_timestamp();
+            midipulse time = e.get_timestamp();
             if (time < tick_s)
                 tick_s = time;
 
             if (time > tick_f)
                 tick_f = time;
 
-            int note = DREF(i).get_note();
+            int note = e.get_note();
+            if (note < note_l)
+                note_l = note;
+
+            if (note > note_h)
+                note_h = note;
+        }
+    }
+}
+
+/**
+ *  Returns the 'box' of the selected items for only Note On values.
+ *  Compare to get_selected_box().
+ *
+ * \threadsafe
+ *
+ * \param [out] tick_s
+ *      Side-effect return reference for the start time.
+ *
+ * \param [out] note_h
+ *      Side-effect return reference for the high note.
+ *
+ * \param [out] tick_f
+ *      Side-effect return reference for the finish time.
+ *
+ * \param [out] note_l
+ *      Side-effect return reference for the low note.
+ */
+
+void
+sequence::get_onsets_selected_box
+(
+    midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l
+)
+{
+    automutex locker(m_mutex);
+    tick_s = m_maxbeats * m_ppqn;
+    tick_f = 0;
+    note_h = 0;
+    note_l = SEQ64_MIDI_COUNT_MAX;
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    {
+        event & e = DREF(i);
+        if (e.is_selected() && e.is_note_on())
+        {
+            /*
+             * We cannot check On/Off here.  It screws up seqevent selection,
+             * which has no "off".
+             */
+
+            midipulse time = e.get_timestamp();
+            if (time < tick_s)
+                tick_s = time;
+
+            if (time > tick_f)
+                tick_f = time;
+
+            int note = e.get_note();
             if (note < note_l)
                 note_l = note;
 

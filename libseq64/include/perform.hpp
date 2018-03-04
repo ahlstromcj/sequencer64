@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-25
+ * \updates       2018-03-04
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -169,10 +169,11 @@ struct performcallback
 
 /**
  *  This class supports the performance mode.  It has way too many data
- *  members, one of them public.  Might be ripe for refactoring.  That has its
- *  own dangers, of course.
+ *  members.  Might be ripe for refactoring.  That has its own dangers, of
+ *  course.
  *
  *  One thing to do soon is remove the need to having GUI classes as friends.
+ *  Will make some necessary setters public.
  */
 
 class perform
@@ -2411,8 +2412,24 @@ public:
         m_have_redo = redo;
     }
 
+public:         // GUI-support functions
+
+    /*
+     * Deals with the editing mode of the specific sequence.
+     */
+
+    edit_mode_t seq_edit_mode (int seq) const
+    {
+        const sequence * sp = get_sequence(seq);
+        if (not_nullptr(sp))
+            return sp->edit_mode();
+        else
+            return edit_mode_t(0);
+    }
+
     /**
      *  A pass-along function to set the edit-mode of the given sequence.
+     *  Was private, but a class can have too many friends.
      *
      * \param seq
      *      Provides the sequence number.  If the sequence is not active
@@ -2509,19 +2526,6 @@ private:
     void mute_group_tracks ();
     void select_and_mute_group (int g_group);
     void set_song_mute (mute_op_t op);
-
-    /*
-     * Deals with the editing mode of the specific sequence.
-     */
-
-    edit_mode_t seq_edit_mode (int seq) const
-    {
-        const sequence * sp = get_sequence(seq);
-        if (not_nullptr(sp))
-            return sp->edit_mode();
-        else
-            return edit_mode_t(0);
-    }
 
 #ifdef SEQ64_SONG_RECORDING
 

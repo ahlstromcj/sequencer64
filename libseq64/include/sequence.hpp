@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-03-03
+ * \updates       2018-03-04
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -161,7 +161,9 @@ public:
         e_would_select,         /**< The events would be selected.          */
         e_deselect,             /**< To deselect event under the cursor.    */
         e_toggle_selection,     /**< Toggle selection under cursor.         */
-        e_remove_one            /**< To remove one note under the cursor.   */
+        e_remove_one,           /**< To remove one note under the cursor.   */
+        e_select_onset,         /**< Kepler34, To select a single onset.    */
+        e_is_selected_onset     /**< New, from Kepler34, onsets selected.   */
     };
 
 private:
@@ -1261,6 +1263,15 @@ public:
         );
     }
 
+    /**
+     * \getter m_snap_tick
+     */
+
+    midipulse get_snap_tick () const
+    {
+        return m_snap_tick;
+    }
+
     void set_snap_tick (int st);
 
     /**
@@ -1559,6 +1570,10 @@ public:
     void cut_selected (bool copyevents = true);
     void paste_selected (midipulse tick, int note);
     void get_selected_box
+    (
+        midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l
+    );
+    void get_onsets_selected_box
     (
         midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l
     );

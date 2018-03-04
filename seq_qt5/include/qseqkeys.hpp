@@ -43,6 +43,7 @@
 #include <QSizePolicy>
 #include <QMouseEvent>
 
+#include "Globals.hpp"
 #include "sequence.hpp"
 
 /*
@@ -69,7 +70,7 @@ public:
         sequence & seq,
         QWidget * parent = 0,
         int keyHeight = 12,
-        int keyAreaHeight = 12 * c_num_keys + 1
+        int keyAreaHeight = 12 * qc_num_keys + 1
     );
 
 protected:
@@ -100,7 +101,7 @@ private:
 
 private:
 
-    sequence  & m_seq;
+    sequence & m_seq;
     QTimer * m_timer;
     QPen * m_pen;
     QBrush * m_brush;

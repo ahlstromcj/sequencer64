@@ -217,14 +217,12 @@ public:
         m_y += yv;
     }
 
-    /**
-     *
-
+#if 0                               // see the cpp module for comments
     void convert_tn_box_to_rect
     (
         midipulse tick_s, midipulse tick_f, int note_h, int note_l
     );
-     */
+#endif
 
 private:
 

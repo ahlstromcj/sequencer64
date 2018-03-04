@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-03
+ * \updates       2018-03-04
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -48,7 +48,7 @@ namespace seq64
 
 qseqeditframe::qseqeditframe
 (
-    perform & perf, QWidget * parent, int seqId
+    perform & p, QWidget * parent, int seqId
 ) :
     QFrame          (parent),
     ui              (new Ui::qseqeditframe),
@@ -57,19 +57,18 @@ qseqeditframe::qseqeditframe
     m_scroll_area   (nullptr),
     m_palette       (new QPalette()),
     mPopup          (nullptr),
-    mPerformance    (perf),
-    mSeq            (perf.get_sequence(seqId)),    // a pointer
+    mPerformance    (p),
+    mSeq            (perf().get_sequence(seqId)),    // a pointer
     mKeyboard       (nullptr),
     mTimeBar        (nullptr),
     mNoteGrid       (nullptr),
     mEventValues    (nullptr),
     mEventTriggers  (nullptr),
     mSnap           (0),
-    editMode        (EDIT_MODE_NOTE),
-    mSeqId          (seqId)
+    mSeqId          (seqId),
+    editMode        (perf().seq_edit_mode(seqId))
 {
     ui->setupUi(this);
-    editMode = mPerformance.seq_edit_mode(seqId);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     /*
@@ -124,12 +123,12 @@ qseqeditframe::qseqeditframe
 
     // fill MIDI buss options
 
-    mastermidibus * masterbus = mPerformance.master_bus();
-    for (int i = 0; i < masterbus->get_num_out_buses(); i++)
+    mastermidibus & masterbus = perf().master_bus();
+    for (int i = 0; i < masterbus.get_num_out_buses(); i++)
     {
         ui->cmbMidiBus->addItem
         (
-            QString::fromStdString(masterbus->get_midi_out_bus_name(i))
+            QString::fromStdString(masterbus.get_midi_out_bus_name(i))
         );
     }
 
@@ -137,17 +136,18 @@ qseqeditframe::qseqeditframe
     (
         QString::fromStdString
         (
-            masterbus->get_midi_out_bus_name(mSeq->get_midi_bus())
+            masterbus.get_midi_out_bus_name(mSeq->get_midi_bus())
         )
     );
 
     /* pull data from sequence object */
 
-    ui->txtSeqName->setPlainText(mSeq->name());
+    // ui->txtSeqName->setPlainText(mSeq->name());
+    ui->txtSeqName->setPlainText(mSeq->name().c_str());
     ui->cmbMidiChan->setCurrentIndex(mSeq->get_midi_channel());
 
     QString snapText("1/");
-    snapText.append(QString::number(c_ppqn * 4 / mSeq->getSnap_tick()));
+    snapText.append(QString::number(c_ppqn * 4 / mSeq->get_snap_tick()));
     ui->cmbGridSnap->setCurrentText(snapText);
 
     QString seqLenText(QString::number(mSeq->get_num_measures()));
@@ -171,19 +171,19 @@ qseqeditframe::qseqeditframe
 
     mKeyboard = new qseqkeys
     (
-        mSeq,
+        *mSeq,                      // eventually replace ptr with reference
         mContainer,
-        c_key_height,                 // mPerformance.getEditorKeyHeight(),
-        c_key_height * c_num_keys + 1 // mPerformance.getEditorKeyboardHeight()
+        c_key_height,                 // perf().getEditorKeyHeight(),
+        c_key_height * c_num_keys + 1 // perf().getEditorKeyboardHeight()
     );
-    mTimeBar = new qseqtime(mSeq, mContainer);
-    mNoteGrid = new qseqroll(mPerformance, mSeq, mContainer);
+    mTimeBar = new qseqtime(*mSeq, mContainer);
+    mNoteGrid = new qseqroll(perf(), *mSeq, mContainer);
     mNoteGrid->updateEditMode(editMode);
-    mEventValues = new qseqdata(mSeq, mContainer);
+    mEventValues = new qseqdata(*mSeq, mContainer);
     mEventTriggers = new qstriggereditor
     (
-        mSeq, mEventValues, mContainer,
-        c_key_height // mPerformance->getEditorKeyHeight()
+        *mSeq, *mEventValues, mContainer,
+        c_key_height // perf().etEditorKeyHeight()
     );
 
     m_layout_grid->setSpacing(0);
@@ -601,7 +601,7 @@ qseqeditframe::toggleEditorMode()
         ui->lblNoteLen->show();
         break;
     }
-    mPerformance.seq_edit_mode(mSeqId, editMode);
+    perf().seq_edit_mode(mSeqId, editMode);
     mNoteGrid->updateEditMode(editMode);
 }
 
@@ -613,7 +613,7 @@ void
 qseqeditframe::setEditorMode (seq64::edit_mode_t mode)
 {
     editMode = mode;
-    mPerformance.seq_edit_mode(mSeqId, editMode);
+    perf().seq_edit_mode(mSeqId, editMode);
     mNoteGrid->updateEditMode(mode);
 }
 
@@ -654,7 +654,7 @@ qseqeditframe::toggleMidiQRec(bool newVal)
 void
 qseqeditframe::toggleMidiRec (bool newVal)
 {
-    mPerformance.master_bus()->set_sequence_input(true, mSeq);
+    perf().master_bus().set_sequence_input(true, mSeq);
     mSeq->set_recording(newVal);
 }
 
@@ -665,7 +665,7 @@ qseqeditframe::toggleMidiRec (bool newVal)
 void
 qseqeditframe::toggleMidiThru (bool newVal)
 {
-    mPerformance.master_bus()->set_sequence_input(true, mSeq);
+    perf().master_bus().set_sequence_input(true, mSeq);
     mSeq->set_thru(newVal);
 }
 
@@ -699,7 +699,7 @@ void
 qseqeditframe::quantizeNotes()
 {
     mSeq->push_undo();
-    mSeq->quantize_events(EVENT_NOTE_ON, 0, mSeq->getSnap_tick(), 1, true);
+    mSeq->quantize_events(EVENT_NOTE_ON, 0, mSeq->get_snap_tick(), 1, true);
 }
 
 /**
@@ -710,7 +710,7 @@ void
 qseqeditframe::tightenNotes()
 {
     mSeq->push_undo();
-    mSeq->quantize_events(EVENT_NOTE_ON, 0, mSeq->getSnap_tick(), 2, true);
+    mSeq->quantize_events(EVENT_NOTE_ON, 0, mSeq->get_snap_tick(), 2, true);
 }
 
 /**

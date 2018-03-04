@@ -45,7 +45,6 @@
 #include <QPalette>
 #include <QMenu>
 
-#include "perform.hpp"
 #include "sequence.hpp"
 #include "qseqkeys.hpp"
 #include "qseqtime.hpp"
@@ -60,6 +59,7 @@ namespace Ui
 
 namespace seq64
 {
+    class perform;
 
 /**
  * Holds tools for editing an individual MIDI sequence
@@ -106,8 +106,8 @@ private:
     seq64::qseqdata * mEventValues;
     seq64::qstriggereditor * mEventTriggers;
     int mSnap; /* set snap to in pulses, off = 1 */
-    edit_mode_t editMode;
     int mSeqId;
+    edit_mode_t editMode;
 
 private slots:
 

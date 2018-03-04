@@ -316,11 +316,11 @@ qseqdata::mouseMoveEvent (QMouseEvent * event)
     }
     else if (mRelativeAdjust)
     {
-        int adjY = mDropY - mCurrentY;
         convert_x(mDropX - 2, &tick_s);
         convert_x(mDropX + 2, &tick_f);
 
         ///// TODO
+        ///// int adjY = mDropY - mCurrentY;
         ///// m_seq.change_event_data_relative(tick_s, tick_f, m_status, m_cc, adjY);
 
         // move the drop location so we increment properly on next mouse move

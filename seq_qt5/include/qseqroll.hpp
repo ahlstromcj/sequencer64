@@ -66,8 +66,8 @@ public:
 
     explicit qseqroll
     (
-        perform & a_perf,
-        sequence & a_seq,
+        perform & perf,
+        sequence & seq,
         QWidget * parent = 0,
         seq64::edit_mode_t mode = EDIT_MODE_NOTE
     );
@@ -100,13 +100,13 @@ protected:
 
 private:
 
-    void snap_y(int * a_y); //performs a 'snap' on y
-    void snap_x(int * a_x); //performs a 'snap' on x
+    void snap_y(int * y); //performs a 'snap' on y
+    void snap_x(int * x); //performs a 'snap' on x
 
     /* takes screen corrdinates, give us notes and ticks */
 
-    void convert_xy (int a_x, int a_y, long *a_ticks, int *a_note);
-    void convert_tn (long a_ticks, int a_note, int *a_x, int *a_y);
+    void convert_xy (int x, int y, midipulse & ticks, int & note);
+    void convert_tn (midipulse ticks, int note, int & x, int & a_y);
 #if 0
     void xy_to_rect (int a_x1,  int a_y1,
                     int a_x2,  int a_y2,

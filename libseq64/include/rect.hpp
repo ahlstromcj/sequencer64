@@ -179,7 +179,7 @@ public:
      * \setter m_width
      */
 
-    void incr_width (int w)
+    void width_incr (int w)
     {
         m_width += w;
     }
@@ -206,7 +206,7 @@ public:
      * \setter m_height
      */
 
-    void incr_height (int h)
+    void height_incr (int h)
     {
         m_height += h;
     }

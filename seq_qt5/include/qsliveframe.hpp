@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,7 +38,7 @@
 #include <QTimer>
 #include <QMessageBox>
 
-#include "perform.hpp"
+#include "gui_palette_qt5.hpp"
 #include "sequence.hpp"
 
 /*
@@ -50,21 +50,25 @@ namespace Ui
     class qsliveframe;
 }
 
+namespace seq64
+{
+    class perform;
+
 /**
  *
  */
 
-class qsliveframe : public QFrame
+class qsliveframe : public QFrame, gui_palette_qt5
 {
     Q_OBJECT
 
 public:
 
-    explicit qsliveframe (perform & perf = 0, QWidget * parent = 0 );
+    explicit qsliveframe (perform & perf, QWidget * parent = 0 );
     ~qsliveframe ();
 
     void redraw ();              // redraw frame contents
-    void setBank (int newBank);  // set bank of sequences displayed
+    void setBank (int newBank);  // set bank (screen-set) of sequences displayed
 
 protected:
 
@@ -86,7 +90,12 @@ protected:
 
 private:
 
-    perform & perf ()
+    const seq64::perform & perf () const
+    {
+        return mPerf;
+    }
+
+    seq64::perform & perf ()
     {
         return mPerf;
     }
@@ -122,9 +131,11 @@ private:
     QMessageBox * mMsgBoxNewSeqCheck;
     QFont mFont;
 
-    int m_bank_id;
-    int thumbW, thumbH;             // thumbnail dimensions
-    int previewW, previewH;         // internal seq MIDI preview dimensions
+    int m_bank_id;                  // same as the screen-set number
+    int thumbW;
+    int thumbH;                     // thumbnail dimensions
+    int previewW;
+    int previewH;                   // internal seq MIDI preview dimensions
     int lastMetro;                  // beat pulsing
     int alpha;
 
@@ -161,6 +172,8 @@ signals:
     void callEditor (int seqId); // call the editor tab on the given seq
 
 };              // class qsliveframe
+
+}               // namespace seq64
 
 #endif          // SEQ64_QSLIVEFRAME_HPP
 

@@ -361,29 +361,28 @@ qseqeditframe::updateSeqName()
  */
 
 void
-qseqeditframe::updateGridSnap(int snapIndex)
+qseqeditframe::updateGridSnap (int snapindex)
 {
     int snap;
-    switch (snapIndex)
+    switch (snapindex)
     {
-    case 0: snap = c_ppqn * 4; break;
-    case 1: snap = c_ppqn * 2; break;
-    case 2: snap = c_ppqn * 1; break;
-    case 3: snap = c_ppqn / 2; break;
-    case 4: snap = c_ppqn / 4; break;
-    case 5: snap = c_ppqn / 8; break;
-    case 6: snap = c_ppqn / 16; break;
-    case 7: snap = c_ppqn / 32; break;
-
-    // ignore index 8 as it's a separator
-
-    case 9: snap = c_ppqn * 4  / 3; break;
+    case 0:  snap = c_ppqn * 4; break;
+    case 1:  snap = c_ppqn * 2; break;
+    case 2:  snap = c_ppqn * 1; break;
+    case 3:  snap = c_ppqn / 2; break;
+    case 4:  snap = c_ppqn / 4; break;
+    case 5:  snap = c_ppqn / 8; break;
+    case 6:  snap = c_ppqn / 16; break;
+    case 7:  snap = c_ppqn / 32; break;
+    case 8: snap = c_ppqn * 4; break; // index 8 is a separator
+    case 9:  snap = c_ppqn * 4  / 3; break;
     case 10: snap = c_ppqn * 2  / 3; break;
     case 11: snap = c_ppqn * 1 / 3; break;
     case 12: snap = c_ppqn / 2 / 3; break;
     case 13: snap = c_ppqn / 4 / 3; break;
     case 14: snap = c_ppqn / 8 / 3; break;
     case 15: snap = c_ppqn / 16 / 3; break;
+    default: snap = c_ppqn * 4; break;
     }
     mNoteGrid->set_snap(snap);
     mSeq->set_snap_tick(snap);
@@ -394,9 +393,9 @@ qseqeditframe::updateGridSnap(int snapIndex)
  */
 
 void
-qseqeditframe::updatemidibus (int newIndex)
+qseqeditframe::updatemidibus (int newindex)
 {
-    mSeq->set_midi_bus(newIndex);
+    mSeq->set_midi_bus(newindex);
 }
 
 /**
@@ -404,9 +403,9 @@ qseqeditframe::updatemidibus (int newIndex)
  */
 
 void
-qseqeditframe::updateMidiChannel (int newIndex)
+qseqeditframe::updateMidiChannel (int newindex)
 {
-    mSeq->set_midi_channel(newIndex);
+    mSeq->set_midi_channel(newindex);
 }
 
 /**
@@ -446,57 +445,33 @@ qseqeditframe::showTools()
  */
 
 void
-qseqeditframe::updateNoteLength(int newIndex)
+qseqeditframe::updateNoteLength (int newindex)
 {
     int length;
-    switch (newIndex)
+    switch (newindex)
     {
-    case 0:
-        length = c_ppqn * 4;
-        break;
-    case 1:
-        length = c_ppqn * 2;
-        break;
-    case 2:
-        length = c_ppqn * 1;
-        break;
-    case 3:
-        length = c_ppqn / 2;
-        break;
-    case 4:
-        length = c_ppqn / 4;
-        break;
-    case 5:
-        length = c_ppqn / 8;
-        break;
-    case 6:
-        length = c_ppqn / 16;
-        break;
-    case 7:
-        length = c_ppqn / 32;
-        break;
-    //ignore index 8 as it's a separator
-    case 9:
-        length = c_ppqn * 4  / 3;
-        break;
-    case 10:
-        length = c_ppqn * 2  / 3;
-        break;
-    case 11:
-        length = c_ppqn * 1 / 3;
-        break;
-    case 12:
-        length = c_ppqn / 2 / 3;
-        break;
-    case 13:
-        length = c_ppqn / 4 / 3;
-        break;
-    case 14:
-        length = c_ppqn / 8 / 3;
-        break;
-    case 15:
-        length = c_ppqn / 16 / 3;
-        break;
+    case 0: length = c_ppqn * 4; break;
+    case 1: length = c_ppqn * 2; break;
+    case 2: length = c_ppqn * 1; break;
+    case 3: length = c_ppqn / 2; break;
+    case 4: length = c_ppqn / 4; break;
+    case 5: length = c_ppqn / 8; break;
+    case 6: length = c_ppqn / 16; break;
+    case 7: length = c_ppqn / 32; break;
+
+        /*
+         * Index 8 is a separator. Treat it as the default case.
+         */
+
+    case 8: length = c_ppqn * 4; break;
+    case 9: length = c_ppqn * 4  / 3; break;
+    case 10: length = c_ppqn * 2  / 3; break;
+    case 11: length = c_ppqn * 1 / 3; break;
+    case 12: length = c_ppqn / 2 / 3; break;
+    case 13: length = c_ppqn / 4 / 3; break;
+    case 14: length = c_ppqn / 8 / 3; break;
+    case 15: length = c_ppqn / 16 / 3; break;
+    default: length = c_ppqn * 4; break;
     }
 
     mNoteGrid->set_note_length(length);
@@ -535,7 +510,7 @@ qseqeditframe::zoom_out ()
  */
 
 void
-qseqeditframe::updateKey(int newIndex)
+qseqeditframe::updateKey(int newindex)
 {
     // no code
 }
@@ -559,13 +534,13 @@ qseqeditframe::updateSeqLength()
  */
 
 void
-qseqeditframe::updateScale(int newIndex)
+qseqeditframe::updateScale(int newindex)
 {
 
 }
 
 void
-qseqeditframe::updateBackgroundSeq(int newIndex)
+qseqeditframe::updateBackgroundSeq(int newindex)
 {
 
 }

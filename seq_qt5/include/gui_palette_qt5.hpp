@@ -191,10 +191,12 @@ public:
         return m_palette.get_color(index);
     }
 
-    Color get_color
+    Color get_color_ex
     (
         PaletteColor index, double h, double s = 0.65, double v = 1.0
     ) const;
+
+    Color get_color_fix (PaletteColor index) const;
 
     static void load_inverse_palette (bool inverse = true);
 

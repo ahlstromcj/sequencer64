@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-04
+ * \updates       2018-03-05
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1070,6 +1070,15 @@ public:
     int ppqn () const
     {
         return m_ppqn;
+    }
+
+    /**
+     * \getter m_bpm
+     */
+
+    midibpm bpm () const
+    {
+        return m_bpm;
     }
 
     /**
@@ -2330,6 +2339,7 @@ public:
 
     /**
      *  A better name for get_screen_set_notepad(), adapted from Kepler34.
+     *  However, we will still refer to them as "sets".
      */
 
     const std::string & get_bank_name (int bank) const

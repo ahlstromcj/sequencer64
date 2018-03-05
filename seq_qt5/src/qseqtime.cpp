@@ -25,11 +25,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-04
  * \license       GNU GPLv2 or above
  *
  */
 
+#include "Globals.hpp"
 #include "qseqtime.hpp"
 #include "sequence.hpp"
 
@@ -47,7 +48,7 @@ namespace seq64
 qseqtime::qseqtime (sequence & seq, QWidget * parent)
  :
     QWidget     (parent),
-    m_seq       (seq)
+    m_seq       (seq),
     m_timer     (new QTimer(this)),  // refresh timer to queue regular redraws
     m_pen       (nullptr),
     m_brush     (nullptr),
@@ -114,7 +115,7 @@ qseqtime::paintEvent (QPaintEvent *)
         m_painter->drawText(zoomedX + 3, 10, bar);
     }
 
-    long end_x = m_seq.getLength() / m_zoom + c_keyboard_padding_x;
+    long end_x = m_seq.get_length() / m_zoom + c_keyboard_padding_x;
 
     // draw end of seq label, label background
 
@@ -170,7 +171,7 @@ qseqtime::mouseMoveEvent(QMouseEvent *)
 QSize
 qseqtime::sizeHint() const
 {
-    return QSize(m_seq.getLength() / m_zoom + 100 + c_keyboard_padding_x, 22);
+    return QSize(m_seq.get_length() / m_zoom + 100 + c_keyboard_padding_x, 22);
 }
 
 /**

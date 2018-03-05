@@ -44,7 +44,7 @@
 
 namespace seq64
 {
-    class perform;
+    class sequence;
 
 /**
  * The timebar for the sequence editor

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-03
+ * \updates       2018-03-04
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -503,7 +503,6 @@ qseqroll::paintEvent (QPaintEvent *)
 void
 qseqroll::mousePressEvent (QMouseEvent * event)
 {
-    int numsel;
     midipulse tick_s;
     midipulse tick_f;
     int note;
@@ -517,7 +516,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
     m_current_y = m_drop_y = snapped_y;     /* y is always snapped */
     if (m_paste)
     {
-        convert_xy(snapped_x, snapped_y, &tick_s, &note);
+        convert_xy(snapped_x, snapped_y, tick_s, note);
         m_paste = false;
         m_seq.push_undo();
         m_seq.paste_selected(tick_s, note);
@@ -531,20 +530,20 @@ qseqroll::mousePressEvent (QMouseEvent * event)
             switch (editMode)                // convert screen coords to ticks
             {
             case EDIT_MODE_NOTE:
-                convert_xy(m_drop_x, m_drop_y, &tick_s, &note);
+                convert_xy(m_drop_x, m_drop_y, tick_s, note);
                 tick_f = tick_s;
                 break;
 
             case EDIT_MODE_DRUM:            // padding for selecting drum hits
-                convert_xy(m_drop_x - note_height * 0.5, m_drop_y, &tick_s, &note);
-                convert_xy(m_drop_x + note_height * 0.5, m_drop_y, &tick_f, &note);
+                convert_xy(m_drop_x - note_height * 0.5, m_drop_y, tick_s, note);
+                convert_xy(m_drop_x + note_height * 0.5, m_drop_y, tick_f, note);
                 break;
             }
             if (m_adding)   //painting new notes
             {
                 m_painting = true;                      /* start paint job   */
                 m_current_x = m_drop_x = snapped_x;     /* adding, snapped x */
-                convert_xy(m_drop_x, m_drop_y, &tick_s, &note);
+                convert_xy(m_drop_x, m_drop_y, tick_s, note);
 
                 // test if a note is already there, fake select, if so, no add
 
@@ -584,6 +583,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                 }
                 if (! isSelected)
                 {
+                    int numsel = 0;
                     if (! (event->modifiers() & Qt::ControlModifier))
                         m_seq.unselect();
 
@@ -752,8 +752,8 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
             switch (editMode)
             {
             case EDIT_MODE_NOTE:
-                convert_xy(x,     y, &tick_s, &note_h);         // FIX
-                convert_xy(x + w, y + h, &tick_f, &note_l);         // FIX
+                convert_xy(x, y, tick_s, note_h);
+                convert_xy(x + w, y + h, tick_f, note_l);
                 m_seq.select_note_events
                 (
                     tick_s, note_h, tick_f, note_l, sequence::e_select
@@ -761,8 +761,8 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
                 break;
 
             case EDIT_MODE_DRUM:
-                convert_xy(x,     y, &tick_s, &note_h);
-                convert_xy(x + w, y + h, &tick_f, &note_l);
+                convert_xy(x, y, tick_s, note_h);
+                convert_xy(x + w, y + h, tick_f, note_l);
                 m_seq.select_note_events
                 (
                     tick_s, note_h, tick_f, note_l, sequence::e_select_onset
@@ -778,7 +778,7 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
 
             /* convert deltas into screen corridinates */
 
-            convert_xy(delta_x, delta_y, &delta_tick, &delta_note);
+            convert_xy(delta_x, delta_y, delta_tick, delta_note);
 
             /*
              * since delta_note was from delta_y, it will be filpped
@@ -798,7 +798,7 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
         {
             /* convert deltas into screen corridinates */
 
-            convert_xy(delta_x, delta_y, &delta_tick, &delta_note);
+            convert_xy(delta_x, delta_y, delta_tick, delta_note);
             m_seq.push_undo();
             if (event->modifiers() & Qt::ShiftModifier)
                 m_seq.stretch_selected(delta_tick);
@@ -840,7 +840,7 @@ qseqroll::mouseMoveEvent (QMouseEvent * event)
 
     int note;
     midipulse tick;
-    convert_xy(0, m_current_y, &tick, &note);
+    convert_xy(0, m_current_y, tick, note);
     if (m_selecting || m_moving || m_growing || m_paste)
     {
         if (m_moving || m_paste)
@@ -850,7 +850,7 @@ qseqroll::mouseMoveEvent (QMouseEvent * event)
     if (m_painting)
     {
         snap_x(&m_current_x);
-        convert_xy(m_current_x, m_current_y, &tick, &note);
+        convert_xy(m_current_x, m_current_y, tick, note);
         m_seq.add_note(tick, m_note_length - 2, note, true);
     }
 }
@@ -874,17 +874,17 @@ qseqroll::keyPressEvent (QKeyEvent * event)
     {
         if (event->key() == Qt::Key_Home)
         {
-            m_seq.set_orig_tick(0);
+            m_seq.set_last_tick(0);
             return;
         }
         if (event->key() == Qt::Key_Left)
         {
-            m_seq.set_orig_tick(m_seq.get_last_tick() - m_snap);
+            m_seq.set_last_tick(m_seq.get_last_tick() - m_snap);
             return;
         }
         if (event->key() == Qt::Key_Right)
         {
-            m_seq.set_orig_tick(m_seq.get_last_tick() + m_snap);
+            m_seq.set_last_tick(m_seq.get_last_tick() + m_snap);
             return;
         }
     }
@@ -990,18 +990,26 @@ qseqroll::snap_x (int * a_x)
     *a_x = *a_x - (*a_x % mod);
 }
 
-void
-qseqroll::convert_xy (int a_x, int a_y, long *a_tick, int *a_note)
-{
-    *a_tick = a_x * m_zoom;
-    *a_note = (keyAreaY - a_y - 2) / keyY;
-}
+/**
+ *
+ */
 
 void
-qseqroll::convert_tn (long a_ticks, int a_note, int *a_x, int *a_y)
+qseqroll::convert_xy (int x, int y, midipulse & tick, int & note)
 {
-    *a_x = a_ticks /  m_zoom;
-    *a_y = keyAreaY - ((a_note + 1) * keyY) - 1;
+    tick = x * m_zoom;
+    note = (keyAreaY - y - 2) / keyY;
+}
+
+/**
+ *
+ */
+
+void
+qseqroll::convert_tn (midipulse ticks, int note, int & x, int & y)
+{
+    x = ticks /  m_zoom;
+    y = keyAreaY - ((note + 1) * keyY) - 1;
 }
 
 #if 0
@@ -1060,10 +1068,10 @@ qseqroll::convert_tn_box_to_rect
 )
 {
     int x1, y1, x2, y2;
-    int x, y, w, h;
+    // int x, y, w, h;
     convert_tn(tick_s, note_h, x1, y1);         /* convert box to X,Y values */
     convert_tn(tick_f, note_l, x2, y2);
-    xy_to_rect(x1, y1, x2, y2, r);
+    rect::xy_to_rect(x1, y1, x2, y2, r);
     r.height_incr(keyY);
 }
 
@@ -1072,9 +1080,9 @@ qseqroll::convert_tn_box_to_rect
  */
 
 void
-qseqroll::set_adding(bool a_adding)
+qseqroll::set_adding(bool adding)
 {
-    if (a_adding)
+    if (adding)
     {
         setCursor(Qt::PointingHandCursor);
         m_adding = true;

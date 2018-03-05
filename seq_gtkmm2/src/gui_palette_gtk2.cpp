@@ -322,7 +322,7 @@ gui_palette_gtk2::get_color_ex
     double h, double s, double v
 ) const
 {
-    Color result = m_palette.get_color(index);
+    gui_palette_gtk2::Color result = m_palette.get_color(index);
     if (h != (-1.0))
         result.set_hsv(h, s, v);
 

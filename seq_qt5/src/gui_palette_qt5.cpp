@@ -303,8 +303,11 @@ gui_palette_qt5::initialize ()
 
 /**
  *  Gets a color, but returns a modified value via the function
- *  Gdk::Color::set_hsv(h, s, v).  This function
- *  sets the color, by specifying hue, saturation, and value (brightness).
+ *  Gdk::Color::set_hsv(h, s, v).  This function sets the color, by specifying
+ *  hue, saturation, and value (brightness).
+ *
+ * \param index
+ *      The index into the Sequencer64 stock palette.
  *
  * \param h
  *      Hue factor, has no default at this time.  Kepler34 treats this value
@@ -317,15 +320,36 @@ gui_palette_qt5::initialize ()
  *      Value (a.k.a. brightness), defaults to 1, in the range 0..1.
  */
 
-Color
-gui_palette_qt5::get_color
+gui_palette_qt5::Color
+gui_palette_qt5::get_color_ex
 (
     PaletteColor index,
     double h, double s, double v
 ) const
 {
-    Color result = m_palette.get_color(index);
+    gui_palette_qt5::Color result = m_palette.get_color(index);
     result.setHsv(result.hue() * h, result.saturation() * s, result.value() *  v);
+    return result;
+}
+
+/**
+ *  Gets a color and fixes its HSV in a stock manner.
+ *
+ * \param index
+ *      The index into the Sequencer64 stock palette.
+ */
+
+gui_palette_qt5::Color
+gui_palette_qt5::get_color_fix (PaletteColor index) const
+{
+    gui_palette_qt5::Color result = m_palette.get_color(index);
+    if (result.value() != 255)                      /* i.e. "white"         */
+    {
+        result.setHsv
+        (
+            result.hue(), result.saturation() * 0.65, result.value() * 1.2
+        );
+    }
     return result;
 }
 

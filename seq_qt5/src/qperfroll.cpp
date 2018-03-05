@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-03
+ * \updates       2018-03-05
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -213,31 +213,16 @@ qperfroll::paintEvent(QPaintEvent *)
                         Color backcolor;
                         int c = perf().get_sequence_color(seqId);
                         if (c != SEQ64_COLOR_NONE)
-                            backcolor = get_color(PaletteColor(c));
+                            backcolor = get_color_fix(PaletteColor(c));
 
-                        if (backcolor.value() != 255)   /* not white? */
-                        {
-                            backcolor.setHsv
-                            (
-                                backcolor.hue(),
-                                backcolor.saturation() * 0.65,
-                                backcolor.value() * 1.2
-                            );
-
-                            //  New:  we can call get_color(Palettecolor(c), 1.0, 0.65, 1.3);
-                            //  LATER
-                        }
-
-                        //main seq icon box
-                        mPen->setStyle(Qt::SolidLine);
+                        mPen->setStyle(Qt::SolidLine);  // main seq icon box
                         mBrush->setColor(backcolor);
                         mBrush->setStyle(Qt::SolidPattern);
                         mPainter->setBrush(*mBrush);
                         mPainter->setPen(*mPen);
                         mPainter->drawRect(x, y, w, h);
 
-                        //little seq grab handle - left hand side
-                        mBrush->setStyle(Qt::NoBrush);
+                        mBrush->setStyle(Qt::NoBrush);  // seq grab handle left
                         mPainter->setBrush(*mBrush);
                         mPen->setColor(Qt::black);
                         mPainter->setPen(*mPen);
@@ -246,16 +231,21 @@ qperfroll::paintEvent(QPaintEvent *)
                             x, y, c_perfroll_size_box_w, c_perfroll_size_box_w
                         );
 
-                        //seq grab handle - right side
-                        mPainter->drawRect(x + w - c_perfroll_size_box_w,
-                                           y + h - c_perfroll_size_box_w,
-                                           c_perfroll_size_box_w,
-                                           c_perfroll_size_box_w);
+                        mPainter->drawRect              // seq grab handle right
+                        (
+                            x + w - c_perfroll_size_box_w,
+                            y + h - c_perfroll_size_box_w,
+                            c_perfroll_size_box_w, c_perfroll_size_box_w
+                        );
 
                         mPen->setColor(Qt::black);
                         mPainter->setPen(*mPen);
 
-                        long length_marker_first_tick = (tick_on - (tick_on % seq_length) + (offset % seq_length) - seq_length);
+                        long length_marker_first_tick =
+                        (
+                            tick_on - (tick_on % seq_length) +
+                            (offset % seq_length) - seq_length
+                        );
 
                         long tick_marker = length_marker_first_tick;
                         while (tick_marker < tick_off)

@@ -25,14 +25,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-06
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
  *  performance/song editor.
  */
 
+#include "Globals.hpp"
+#include "qseqdata.hpp"
 #include "qstriggereditor.hpp"
+#include "sequence.hpp"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -48,7 +51,7 @@ namespace seq64
 
 qstriggereditor::qstriggereditor
 (
-    sequence & a_seq,
+    sequence & seq,
     qseqdata & seqdata_wid,
     QWidget * parent,
     int keyHeight
@@ -65,10 +68,9 @@ qstriggereditor::qstriggereditor
     mFont               (),
     m_zoom              (1),
     m_snap              (1),
-    m_selecting         (false),
     m_window_x          (0),
     m_window_y          (0),
-    keyY                (keyHeight)
+    keyY                (keyHeight),
     m_selecting         (false),
     m_moving_init       (false),
     m_moving            (false),
@@ -84,7 +86,7 @@ qstriggereditor::qstriggereditor
     m_status            (EVENT_NOTE_ON),
     m_cc                (0)
 {
-    m_snap = m_seq.getSnap_tick();
+    m_snap = m_seq.get_snap_tick();
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     QObject::connect(mTimer, SIGNAL(timeout()), this, SLOT(update()));
@@ -124,7 +126,7 @@ qstriggereditor::sizeHint () const
     return QSize
     (
         m_seq.get_length() / m_zoom + 100 + c_keyboard_padding_x,
-        c_eventarea_y + 1
+        qc_eventarea_y + 1
     );
 }
 
@@ -177,7 +179,7 @@ qstriggereditor::paintEvent (QPaintEvent *)
         }
 
         mPainter->setPen(*mPen);
-        mPainter->drawLine(base_line, 1, base_line, c_eventarea_y);
+        mPainter->drawLine(base_line, 1, base_line, qc_eventarea_y);
     }
 
     // draw event boxes
@@ -193,7 +195,7 @@ qstriggereditor::paintEvent (QPaintEvent *)
     mPen->setStyle(Qt::SolidLine);
 
     m_seq.reset_draw_marker();
-    while (m_seq.get_next_event(m_status, m_cc, tick, d0, d1, selected))
+    while (m_seq.get_next_event_kepler(m_status, m_cc, tick, d0, d1, selected))
     {
         if ((tick >= start_tick && tick <= end_tick))
         {
@@ -208,8 +210,8 @@ qstriggereditor::paintEvent (QPaintEvent *)
             mPainter->setPen(*mPen);
             mPainter->drawRect
             (
-                x, (c_eventarea_y - c_eventevent_y) / 2,
-                c_eventevent_x, c_eventevent_y
+                x, (qc_eventarea_y - qc_eventevent_y) / 2,
+                qc_eventevent_x, qc_eventevent_y
             );
 
             if (selected)
@@ -221,8 +223,8 @@ qstriggereditor::paintEvent (QPaintEvent *)
             mPainter->setBrush(*mBrush);
             mPainter->drawRect
             (
-                x, (c_eventarea_y - c_eventevent_y) / 2,
-                c_eventevent_x - 1, c_eventevent_y - 1
+                x, (qc_eventarea_y - qc_eventevent_y) / 2,
+                qc_eventevent_x - 1, qc_eventevent_y - 1
             );
         }
     }
@@ -230,8 +232,8 @@ qstriggereditor::paintEvent (QPaintEvent *)
     // draw selection
 
     int w;
-    int y = (c_eventarea_y - c_eventevent_y) / 2;
-    int h =  c_eventevent_y;
+    int y = (qc_eventarea_y - qc_eventevent_y) / 2;
+    int h =  qc_eventevent_y;
 
     mBrush->setStyle(Qt::NoBrush); // painter reset
     mPainter->setBrush(*mBrush);
@@ -272,7 +274,7 @@ qstriggereditor::mousePressEvent (QMouseEvent *event)
     midipulse tick_s;
     midipulse tick_f;
     midipulse tick_w;
-    convert_x(c_eventevent_x, &tick_w);
+    convert_x(qc_eventevent_x, &tick_w);
 
     /* if it was a button press */
 
@@ -337,7 +339,7 @@ qstriggereditor::mousePressEvent (QMouseEvent *event)
                         m_seq.unselect();
 
                     numsel = m_seq.select_events(tick_s, tick_f,
-                          m_status, m_cc, sequence::e_select_single);
+                          m_status, m_cc, sequence::e_select_one);
 
                     /* if we didnt select anyhing (user clicked empty space)
                        unselect all notes, and start selecting */
@@ -380,8 +382,8 @@ qstriggereditor::mousePressEvent (QMouseEvent *event)
 
                     m_selected->setX(x);
                     m_selected->setWidth(w);
-                    m_selected->setY((c_eventarea_y - c_eventevent_y) / 2);
-                    m_selected->setHeight(c_eventevent_y);
+                    m_selected->setY((qc_eventarea_y - qc_eventevent_y) / 2);
+                    m_selected->setHeight(qc_eventevent_y);
 
                     /* save offset that we get from the snap above */
 
@@ -553,7 +555,7 @@ qstriggereditor::keyReleaseEvent (QKeyEvent *)
 
 /**
  *
- */.
+ */
 
 void
 qstriggereditor::x_to_w (int a_x1, int a_x2, int *a_x, int *a_w)
@@ -591,7 +593,7 @@ qstriggereditor::start_paste ()
 
     /* get the box that selected elements are in */
 
-    m_seq.get_clipboard_box(&tick_s, &note_h, &tick_f, &note_l);
+    m_seq.get_clipboard_box(tick_s, note_h, tick_f, note_l);
 
     /* convert box to X,Y values */
     convert_t(tick_s, &x);
@@ -605,8 +607,8 @@ qstriggereditor::start_paste ()
 
     m_selected->setX(x);
     m_selected->setWidth(w);
-    m_selected->setY((c_eventarea_y - c_eventevent_y) / 2);
-    m_selected->setHeight(c_eventevent_y);
+    m_selected->setY((qc_eventarea_y - qc_eventevent_y) / 2);
+    m_selected->setHeight(qc_eventevent_y);
 
     /* adjust for clipboard being shifted to tick 0 */
 

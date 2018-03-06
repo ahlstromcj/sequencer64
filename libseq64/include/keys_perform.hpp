@@ -836,6 +836,19 @@ public:
     }
 
     /**
+     *  Returns the number of times the given key appears in the SlotMap,
+     *  either 0 or 1.
+     *
+     * \param k
+     *      The key value to be checked.
+     */
+
+    int get_key_count (unsigned k) const
+    {
+        return m_key_events.count(k);
+    }
+
+    /**
      * \getter m_key_groups
      */
 

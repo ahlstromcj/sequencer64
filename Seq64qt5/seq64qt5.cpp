@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2017-09-08
+ * \updates       2018-03-06
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -45,7 +45,7 @@
 #include "lash.hpp"                     /* seq64::lash_driver functions     */
 // #include "mainwid.hpp"                  /* needed to fulfill mainwnd        */
 #include "perform.hpp"                  /* seq64::perform                   */
-#include "qseqmainwnd.hpp"              /* the main window of seq64qt5      */
+#include "qsmainwnd.hpp"              /* the main window of seq64qt5      */
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc()     */
 
 /**
@@ -111,7 +111,7 @@ main (int argc, char * argv [])
         /*
          *  If parsing fails, report it and disable usage of the application
          *  and saving bad garbage out when exiting.  Still must launch,
-         *  otherwise a segfault occurs via dependencies in the qseqmainwnd.
+         *  otherwise a segfault occurs via dependencies in the qsmainwnd.
          */
 
         std::string errmessage;                     /* just in case!        */
@@ -133,7 +133,7 @@ main (int argc, char * argv [])
         }
 
         /*
-         * Issue #100, moved this call to before creating the qseqmainwnd.
+         * Issue #100, moved this call to before creating the qsmainwnd.
          * Otherwise, seq64 will not register with LASH (if enabled) in a
          * timely fashion.
          */
@@ -148,21 +148,25 @@ main (int argc, char * argv [])
          */
 
         /*
-         * Push the qseqmainwnd window onto the stack, with an option for
+         * Push the qsmainwnd window onto the stack, with an option for
          * allowing a second perfedit to be created.  Also be sure to pass
          * along the PPQN value, which might be different than the default
          * (192), and affects some of the child objects of mainwnd.
          */
 
-        seq64::qseqmainwnd seq24_window
+        seq64::qsmainwnd seq24_window
         (
-            p, seq64::usr().allow_two_perfedits(),
+            p
+#if defined READY_FOR_USE
+            ,
+            seq64::usr().allow_two_perfedits(),
             seq64::usr().midi_ppqn()
 #if defined SEQ64_MULTI_MAINWID
             ,
             seq64::usr().block_rows(),
             seq64::usr().block_columns(),
             seq64::usr().block_independent()
+#endif
 #endif
         );
         seq24_window.show();

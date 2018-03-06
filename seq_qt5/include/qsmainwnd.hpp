@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-05
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -44,20 +44,25 @@
 #include <QMessageBox>
 #include <QDesktopWidget>
 
-#include "qsliveframe.hpp"
-#include "qperfeditframe.hpp"
-#include "qseqeditframe.hpp"
-#include "qseditoptions.hpp"
-#include "perform.hpp"
 #include "midifile.hpp"
-#include "qsmaintime.hpp"
-#include "qseqstyle.hpp"
-#include "qsabout.hpp"
+
+// Not yet useful:
+// #include "qseqstyle.hpp"
 
 namespace Ui
 {
     class qsmainwnd;
 }
+
+namespace seq64
+{
+    class perform;
+    class qsliveframe;
+    class qperfeditframe;
+    class qseqeditframe;
+    class qsmaintime;
+    class qseditoptions;
+    class qsabout;
 
 /**
  * The main window of kepler34
@@ -158,6 +163,8 @@ private slots:
     void loadEditor(int seqId);
 
 };          // class qsmainwnd
+
+}           // namespace seq64
 
 #endif      // SEQ64_QSMAINWND_HPP
 

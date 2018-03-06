@@ -25,11 +25,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-23
+ * \updates       2018-03-05
  * \license       GNU GPLv2 or above
  *
  */
 
+#include "Globals.hpp"
 #include "qsmaintime.hpp"
 
 /*
@@ -55,7 +56,7 @@ qsmaintime::qsmaintime
     m_main_perf         (perf),
     mPen                (nullptr),
     mBrush              (nullptr),
-    m_Color             (new QColor(Qt::red)),
+    m_color             (new QColor(Qt::red)),
     mFont               (),
     m_beats_per_measure (beats_per_measure),
     m_beat_width        (beat_width),
@@ -91,7 +92,7 @@ qsmaintime::paintEvent (QPaintEvent *)
     mPainter->setFont(mFont);
     mPainter->setBrush(*mBrush);
 
-    midipulse tick = m_main_perf->get_tick();
+    midipulse tick = m_main_perf.get_tick();
     int metro = (tick / (c_ppqn / 4 * m_beat_width)) % m_beats_per_measure;
     int divX = (width() - 1) / m_beats_per_measure;
 
@@ -107,15 +108,15 @@ qsmaintime::paintEvent (QPaintEvent *)
     {
         m_alpha = 230;
         if (metro == 0)
-            mColour->setRgb(255, 50, 50);       // red on first beat in bar
+            m_color->setRgb(255, 50, 50);       // red on first beat in bar
         else
-            mColour->setRgb(255, 255, 255);     // white on others
+            m_color->setRgb(255, 255, 255);     // white on others
     }
 
     for (int i = 0; i < m_beats_per_measure; ++i)       // draw beat blocks
     {
         int offsetX = divX * i;
-        if (i == metro && m_main_perf->is_running())    // flash on current beat
+        if (i == metro && m_main_perf.is_running())    // flash on current beat
         {
             mBrush->setStyle(Qt::SolidPattern);
             mPen->setColor(Qt::black);
@@ -126,8 +127,8 @@ qsmaintime::paintEvent (QPaintEvent *)
             mPen->setColor(Qt::darkGray);
         }
 
-        mColour->setAlpha(m_alpha);
-        mBrush->setColor(*mColour);
+        m_color->setAlpha(m_alpha);
+        mBrush->setColor(*m_color);
         mPainter->setPen(*mPen);
         mPainter->setBrush(*mBrush);
         mPainter->drawRect
@@ -153,7 +154,7 @@ qsmaintime::paintEvent (QPaintEvent *)
      * the bpm to get useful fades
      */
 
-    m_alpha *= 0.7 - m_main_perf->get_bpm() / 300;
+    m_alpha *= 0.7 - m_main_perf.bpm() / 300;
     m_lastMetro = metro;
     delete mPainter;
     delete mBrush;

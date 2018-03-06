@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-03-03
+ * \updates       2018-03-05
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -195,84 +195,6 @@
 
 namespace seq64
 {
-
-/**
- *  Purely internal constants used with the functions that implement MIDI
- *  control (and also some keystroke control) for the application.  Note how
- *  they specify different bit values, as it they could be masked together to
- *  signal multiple functions.
- *
- *  This value signals the "replace" functionality.  If this bit is set, then
- *  perform::sequence_playing_toggle() unsets this status and calls
- *  perform::off_sequences(), which calls sequence::set_playing(false) for all
- *  active sequences.
- *
- *  It works like this:
- *
- *      -#  The user presses the Replace key, or the MIDI control message for
- *          c_midi_control_mod_replace is received.
- *      -#  This bit is OR'd into perform::m_control_status.  This status bit
- *          is used in perform::sequence_playing_toggle().
- *          -   Called in perform::sequence_key() so that keystrokes in
- *              the main window toggle patterns in the main window.
- *          -   Called in peform::toggle_other_seqs() to implement
- *              Shift-click to toggle all other patterns but the one
- *              clicked.
- *          -   Called in seqmenu::toggle_current_sequence(), called in
- *              mainwid to implement clicking on a pattern.
- *          -   Also used in MIDI control to toggle patterns 0 to 31,
- *              offset by the screen-set.
- *          -   perform::sequence_playing_off(), similarly used in MIDI control.
- *          -   perform::sequence_playing_on(), similarly used in MIDI control.
- *      -#  When the key is released, this bit is AND'd out of
- *          perform::m_control_status.
- *
- *      Both the MIDI control and the keystroke set the sequence to be
- *      "replaced".
- */
-
-static const int c_status_replace  = 0x01;
-
-/**
- *  This value signals the "snapshot" functionality.  By default,
- *  perform::sequence_playing_toggle() calls sequence::toggle_playing() on the
- *  given sequence number, plus what is noted for c_status_snapshot.
- *  It works like this:
- *
- *      -#  The user presses the Snapshot key.
- *      -#  This bit is OR'd into perform::m_control_status.
- *      -#  The playing state of the patterns is saved by
- *          perform::save_playing_state().
- *      -#  When the key is released, this bit is AND'd out of
- *          perform::m_control_status.
- *      -#  The playing state of the patterns is restored by
- *          perform::restore_playing_state().
- */
-
-static const int c_status_snapshot = 0x02;
-
-/**
- *  This value signals the "queue" functionality.  If this bit is set, then
- *  perform::sequence_playing_toggle() calls sequence::toggle_queued() on the
- *  given sequence number.  The regular queue key (configurable in File /
- *  Options / Keyboard) sets this bit when pressed, and unsets it when
- *  released.  The keep-queue key sets it, but it is not unset until the
- *  regular queue key is pressed and released.
- */
-
-static const int c_status_queue    = 0x04;
-
-#ifdef SEQ64_SONG_RECORDING
-
-/**
- *  This value signals the Kepler34 "one-shot" functionality.  If this bit
- *  is set, then perform::sequence_playing_toggle() calls
- *  sequence::toggle_oneshot() on the given sequence number.
- */
-
-static const int c_status_oneshot  = 0x08;
-
-#endif  // SEQ64_SONG_RECORDING
 
 /**
  *  Instantiate the dummy midi_control object, which is used in lieu

@@ -61,6 +61,8 @@ class qperfeditframe : public QFrame
 {
     Q_OBJECT
 
+    friend class qsmainwnd;
+
 public:
 
     explicit qperfeditframe (seq64::perform & p, QWidget * parent);

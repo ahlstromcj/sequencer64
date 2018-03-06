@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-06
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -41,9 +41,6 @@
 #include <QTimer>
 #include <QPen>
 
-#include "sequence.hpp"
-#include "qseqdata.hpp"
-
 /*
  *  Do not document a namespace; it breaks Doxygen.
  */
@@ -51,6 +48,8 @@
 namespace seq64
 {
     class perform;
+    class sequence;
+    class seqdata;
 
 /**
  * Displays the triggers for MIDI events
@@ -104,7 +103,7 @@ private:
 private:
 
     sequence & m_seq;
-    qseqdata * m_seqdata_wid;
+    qseqdata & m_seqdata_wid;
     QPen * mPen;
     QBrush * mBrush;
     QPainter * mPainter;

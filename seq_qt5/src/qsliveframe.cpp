@@ -24,12 +24,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-05
+ * \updates       2018-03-06
  * \license       GNU GPLv2 or above
  *
  */
 
-#include "Globals.hpp"
 #include "globals.h"
 #include "qsliveframe.hpp"
 #include "perform.hpp"
@@ -52,7 +51,7 @@ qsliveframe::qsliveframe (perform & perf, QWidget * parent)
     ui                  (new Ui::qsliveframe),
     mPerf               (perf),
     m_moving_seq        (),
-    mSeqClipboard       (),
+    m_seq_clipboard       (),
     mPainter            (nullptr),
     mBrush              (nullptr),
     mPen                (nullptr),
@@ -67,7 +66,7 @@ qsliveframe::qsliveframe (perform & perf, QWidget * parent)
     previewH            (0),
     lastMetro           (0),
     alpha               (0),
-    mCurrentSeq         (0),                // mouse interaction
+    m_curr_seq         (0),                // mouse interaction
     mOldSeq             (0),
     mButtonDown         (false),
     mMoving             (false),
@@ -93,27 +92,17 @@ qsliveframe::qsliveframe (perform & perf, QWidget * parent)
     mMsgBoxNewSeqCheck->setDefaultButton(QMessageBox::No);
     setBank(0);
 
-    QString bankName = perf().get_bank_name(m_bank_id).c_str();
+    QString bankName = mPerf.get_bank_name(m_bank_id).c_str();
     ui->txtBankName->setPlainText(bankName);
     connect(ui->spinBank, SIGNAL(valueChanged(int)), this, SLOT(updateBank(int)));
     connect(ui->txtBankName, SIGNAL(textChanged()), this, SLOT(updateBankName()));
 
-    //start refresh timer to queue regular redraws
+    // Refresh timer to queue regular redraws
 
     mRedrawTimer = new QTimer(this);
     mRedrawTimer->setInterval(50);
     connect(mRedrawTimer, SIGNAL(timeout()), this, SLOT(update()));
     mRedrawTimer->start();
-}
-
-/**
- *
- */
-
-void
-qsliveframe::paintEvent (QPaintEvent *)
-{
-    drawAllSequences();
 }
 
 /**
@@ -132,6 +121,16 @@ qsliveframe::~qsliveframe()
  */
 
 void
+qsliveframe::paintEvent (QPaintEvent *)
+{
+    drawAllSequences();
+}
+
+/**
+ *
+ */
+
+void
 qsliveframe::drawSequence (int seq)
 {
     mPainter = new QPainter(this);
@@ -143,12 +142,10 @@ qsliveframe::drawSequence (int seq)
     mPainter->setBrush(*mBrush);
     mPainter->setFont(mFont);
 
-    // timing info for timed draw elements
-
-    midipulse tick = perf().get_tick();
+    midipulse tick = mPerf.get_tick();  // timing info for timed draw elements
     int metro = (tick / c_ppqn) % 2;
 
-    // grab frame dimensions for scaled drawing
+    // Grab frame dimensions for scaled drawing
 
     thumbW = (ui->frame->width() - 1 - qc_mainwid_spacing * 8) / qc_mainwnd_cols;
     thumbH = (ui->frame->height() - 1 - qc_mainwid_spacing * 5) / qc_mainwnd_rows;
@@ -157,14 +154,14 @@ qsliveframe::drawSequence (int seq)
     if
     (
         seq >= (m_bank_id * qc_mainwnd_rows * qc_mainwnd_cols) &&
-            seq < ((m_bank_id + 1)  * qc_mainwnd_rows * qc_mainwnd_cols)
+        seq < ((m_bank_id + 1) * qc_mainwnd_rows * qc_mainwnd_cols)
     )
     {
         int i = (seq / qc_mainwnd_rows) % qc_mainwnd_cols;
         int j =  seq % qc_mainwnd_rows;
         int base_x = (ui->frame->x() + 1 + (thumbW + qc_mainwid_spacing) * i);
         int base_y = (ui->frame->y() + 1 + (thumbH + qc_mainwid_spacing) * j);
-        sequence * s = perf().get_sequence(seq);
+        sequence * s = mPerf.get_sequence(seq);
         if (not_nullptr(s))
         {
             Color backcolor;
@@ -241,7 +238,7 @@ qsliveframe::drawSequence (int seq)
             mPainter->drawText(base_x + qc_text_x, base_y + 4, 80, 80, 1, name);
 
             /* midi channel + key + timesig */
-            if (perf().show_ui_sequence_key())
+            if (mPerf.show_ui_sequence_key())
             {
                 /*
                  * When looking up key, ignore bank offset (print keys on
@@ -249,9 +246,9 @@ qsliveframe::drawSequence (int seq)
                  */
 
                 QString key;
-                key[0] = (char) perf().lookup_keyevent_key
+                key[0] = (char) mPerf.lookup_keyevent_key
                 (
-                    seq - perf().screenset() * c_seqs_in_set
+                    seq - mPerf.screenset() * c_seqs_in_set
                 );
                 mPainter->drawText(base_x + thumbW - 10, base_y + thumbH - 5, key);
             }
@@ -321,7 +318,7 @@ qsliveframe::drawSequence (int seq)
                                    rectangle_y + note_y);
             }
 
-            int a_tick = perf().get_tick();     // draw playhead
+            int a_tick = mPerf.get_tick();     // draw playhead
             a_tick += (length - s->get_trigger_offset());
             a_tick %= length;
 
@@ -331,7 +328,7 @@ qsliveframe::drawSequence (int seq)
             else
                 mPen->setColor(Qt::black);
 
-            if (s->get_queued() || s->off_from_snap() && s->get_playing())
+            if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
                 mPen->setColor(Qt::green);
             else if (s->one_shot())
                 mPen->setColor(Qt::blue);
@@ -366,7 +363,7 @@ qsliveframe::drawSequence (int seq)
     // lessen alpha on each redraw to have smooth fading
     // done as a factor of the bpm to get useful fades
 
-    alpha *= 0.7 - perf().get_bpm() / 300;
+    alpha *= 0.7 - mPerf.bpm() / 300.0;
     lastMetro = metro;
     delete mPainter;
     delete mPen;
@@ -401,9 +398,9 @@ qsliveframe::setBank (int newBank)
     if (m_bank_id >= qc_max_num_banks)              // 32
         m_bank_id = 0;
 
-    perf().set_screenset(m_bank_id);        // set_offset(m_bank_id);
+    mPerf.set_screenset(m_bank_id);        // set_offset(m_bank_id);
 
-    QString bankName = perf().get_bank_name(m_bank_id).c_str();
+    QString bankName = mPerf.get_bank_name(m_bank_id).c_str();
     ui->txtBankName->setPlainText(bankName);
     ui->spinBank->setValue(m_bank_id);
     update();
@@ -426,9 +423,9 @@ qsliveframe::redraw ()
 void
 qsliveframe::updateBank (int newBank)
 {
-    perf().set_screenset(newBank);
+    mPerf.set_screenset(newBank);
     setBank(newBank);
-    perf().modify();
+    mPerf.modify();
 }
 
 /**
@@ -439,7 +436,7 @@ void
 qsliveframe::updateBankName ()
 {
     updateInternalBankName();
-    perf().modify();
+    mPerf.modify();
 }
 
 /**
@@ -450,7 +447,7 @@ void
 qsliveframe::updateInternalBankName ()
 {
     std::string name = ui->txtBankName->document()->toPlainText().toStdString();
-    perf().set_screenset_notepad(m_bank_id, name);
+    mPerf.set_screenset_notepad(m_bank_id, name);
 }
 
 /**
@@ -498,8 +495,8 @@ qsliveframe::seqIDFromClickXY (int click_x, int click_y)
 void
 qsliveframe::mousePressEvent (QMouseEvent * event)
 {
-    mCurrentSeq = seqIDFromClickXY(event->x(), event->y());
-    if (mCurrentSeq != -1 && event->button() == Qt::LeftButton)
+    m_curr_seq = seqIDFromClickXY(event->x(), event->y());
+    if (m_curr_seq != -1 && event->button() == Qt::LeftButton)
         mButtonDown = true;
 }
 
@@ -512,7 +509,7 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
 {
     /* get the sequence number we clicked on */
 
-    mCurrentSeq = seqIDFromClickXY( event->x(), event->y());
+    m_curr_seq = seqIDFromClickXY( event->x(), event->y());
     mButtonDown = false;
 
     /*
@@ -520,12 +517,12 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
      * dragging a sequence - toggle playing.
      */
 
-    if (mCurrentSeq != -1 && event->button() == Qt::LeftButton && ! mMoving)
+    if (m_curr_seq != -1 && event->button() == Qt::LeftButton && ! mMoving)
     {
-        if (perf().is_active(mCurrentSeq))
+        if (mPerf.is_active(m_curr_seq))
         {
             if (! mAddingNew)
-                perf().sequence_playing_toggle(mCurrentSeq);
+                mPerf.sequence_playing_toggle(m_curr_seq);
 
             mAddingNew = false;
             update();
@@ -539,25 +536,26 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
     if (event->button() == Qt::LeftButton && mMoving)
     {
         mMoving = false;
-        if (!perf().is_active(mCurrentSeq)
-                && mCurrentSeq != -1
-                && !perf().is_sequence_in_edit(mCurrentSeq))
+        if
+        (
+            ! mPerf.is_active(m_curr_seq) && m_curr_seq != -1 &&
+                ! mPerf.is_sequence_in_edit(m_curr_seq))
         {
-            perf().new_sequence(mCurrentSeq);
-            *(perf().get_sequence(mCurrentSeq)) = m_moving_seq;
+            mPerf.new_sequence(m_curr_seq);
+            mPerf.get_sequence(m_curr_seq)->partial_assign(m_moving_seq);
             update();
         }
         else
         {
-            perf().new_sequence(mOldSeq);
-            *(perf().get_sequence(mOldSeq)) = m_moving_seq;
+            mPerf.new_sequence(mOldSeq);
+            mPerf.get_sequence(mOldSeq)->partial_assign(m_moving_seq);
             update();
         }
     }
 
     /* check for right mouse click - this launches the popup menu */
 
-    if (mCurrentSeq != -1 && event->button() == Qt::RightButton)
+    if (m_curr_seq != -1 && event->button() == Qt::RightButton)
     {
         mPopup = new QMenu(this);
 
@@ -570,7 +568,7 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
             this, SLOT(newSeq())
         );
 
-        if (perf().is_active(mCurrentSeq))
+        if (mPerf.is_active(m_curr_seq))
         {
             // edit sequence
 
@@ -594,42 +592,42 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
             connect(actionColours[0],
                     SIGNAL(triggered(bool)),
                     this,
-                    SLOT(setColourWhite()));
+                    SLOT(set_color_white()));
 
             connect(actionColours[1],
                     SIGNAL(triggered(bool)),
                     this,
-                    SLOT(setColourRed()));
+                    SLOT(set_color_Red()));
 
             connect(actionColours[2],
                     SIGNAL(triggered(bool)),
                     this,
-                    SLOT(setColourGreen()));
+                    SLOT(set_color_Green()));
 
             connect(actionColours[3],
                     SIGNAL(triggered(bool)),
                     this,
-                    SLOT(setColourBlue()));
+                    SLOT(set_color_Blue()));
 
             connect(actionColours[4],
                     SIGNAL(triggered(bool)),
                     this,
-                    SLOT(setColourYellow()));
+                    SLOT(set_color_Yellow()));
 
             connect(actionColours[5],
                     SIGNAL(triggered(bool)),
                     this,
-                    SLOT(setColourPurple()));
+                    SLOT(set_color_Purple()));
 
             connect(actionColours[6],
                     SIGNAL(triggered(bool)),
                     this,
-                    SLOT(setColourPink()));
+                    SLOT(set_color_Pink()));
 
             connect(actionColours[7],
                     SIGNAL(triggered(bool)),
                     this,
-                    SLOT(setColourOrange()));
+                    SLOT(set_color_Orange()));
 
             for (int i = 0; i < 8; i++)
             {
@@ -678,11 +676,11 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
     }
 
     //middle button launches seq editor
-    if (mCurrentSeq != -1
+    if (m_curr_seq != -1
             && event->button() == Qt::MiddleButton
-            && perf().is_active(mCurrentSeq))
+            && mPerf.is_active(m_curr_seq))
     {
-        callEditor(mCurrentSeq);
+        callEditor(m_curr_seq);
     }
 }
 
@@ -693,20 +691,19 @@ qsliveframe::mouseMoveEvent(QMouseEvent *event)
 
     if (mButtonDown)
     {
-        if (seqId != mCurrentSeq
+        if (seqId != m_curr_seq
                 && !mMoving
-                && !perf().is_sequence_in_edit(mCurrentSeq))
+                && !mPerf.is_sequence_in_edit(m_curr_seq))
         {
             /* lets drag a sequence between slots */
-            if (perf().is_active(mCurrentSeq))
+            if (mPerf.is_active(m_curr_seq))
             {
-                mOldSeq = mCurrentSeq;
+                mOldSeq = m_curr_seq;
                 mMoving = true;
 
                 /* save the sequence and clear the old slot */
-                m_moving_seq = *(perf().get_sequence(mCurrentSeq));
-                perf().delete_sequence(mCurrentSeq);
-
+                m_moving_seq.partial_assign(*(mPerf.get_sequence(m_curr_seq)));
+                mPerf.delete_sequence(m_curr_seq);
                 update();
             }
         }
@@ -725,14 +722,14 @@ qsliveframe::mouseDoubleClickEvent(QMouseEvent *)
 void
 qsliveframe::newSeq()
 {
-    if (perf().is_active(mCurrentSeq))
+    if (mPerf.is_active(m_curr_seq))
     {
         int choice = mMsgBoxNewSeqCheck->exec();
         if (choice == QMessageBox::No)
             return;
     }
-    perf().new_sequence(mCurrentSeq);
-    perf().get_sequence(mCurrentSeq)->set_dirty();
+    mPerf.new_sequence(m_curr_seq);
+    mPerf.get_sequence(m_curr_seq)->set_dirty();
     //TODO reenable - disabled opening the editor for each new seq
     //    callEditor(m_main_perf->get_sequence(m_current_seq));
 
@@ -741,7 +738,7 @@ qsliveframe::newSeq()
 void
 qsliveframe::editSeq()
 {
-    callEditor(mCurrentSeq);
+    callEditor(m_curr_seq);
 }
 
 void
@@ -757,26 +754,30 @@ qsliveframe::keyPressEvent(QKeyEvent *event)
         setBank(m_bank_id + 1);
         break;
 
-    case Qt::Key_Semicolon: //replace
-        perf().set_sequence_control_status(c_status_replace);
+    case Qt::Key_Semicolon:
+        mPerf.set_sequence_control_status(c_status_replace);
         break;
 
-    case Qt::Key_Slash: //queue
-        perf().set_sequence_control_status(c_status_queue);
+    case Qt::Key_Slash:
+        mPerf.set_sequence_control_status(c_status_queue);
         break;
 
-    case Qt::Key_Apostrophe || Qt::Key_NumberSign: //snapshot
-        perf().set_sequence_control_status(c_status_snapshot);
+    case Qt::Key_Apostrophe:
+    case Qt::Key_NumberSign:
+        mPerf.set_sequence_control_status(c_status_snapshot);
         break;
 
-    case Qt::Key_Period: //one-shot
-        perf().set_sequence_control_status(c_status_oneshot);
+    case Qt::Key_Period:
+        mPerf.set_sequence_control_status(c_status_oneshot);
         break;
 
-    default: //sequence mute toggling
-        quint32 keycode =  event->key();
-        if (perf().get_key_events()->count(event->key()) != 0)
-            sequence_key(perf().lookup_keyevent_seq(event->key()));
+    default:                                // sequence mute toggling
+
+        // quint32 keycode = event->key();
+        // if (mPerf.get_key_events()->count(event->key()) != 0)
+
+        if (mPerf.get_key_count(event->key()) != 0)
+            sequence_key(mPerf.lookup_keyevent_seq(event->key()));
         else
             event->ignore();
         break;
@@ -788,26 +789,27 @@ qsliveframe::keyPressEvent(QKeyEvent *event)
  */
 
 void
-qsliveframe::keyReleaseEvent (QKeyEvent *event)
+qsliveframe::keyReleaseEvent (QKeyEvent * event)
 {
     // unset the relevant control modifiers
 
     switch (event->key())
     {
-    case Qt::Key_Semicolon: //replace
-        perf().unset_sequence_control_status(c_status_replace);
+    case Qt::Key_Semicolon:
+        mPerf.unset_sequence_control_status(c_status_replace);
         break;
 
-    case Qt::Key_Slash: //queue
-        perf().unset_sequence_control_status(c_status_queue);
+    case Qt::Key_Slash:
+        mPerf.unset_sequence_control_status(c_status_queue);
         break;
 
-    case Qt::Key_Apostrophe || Qt::Key_NumberSign: //snapshot
-        perf().unset_sequence_control_status(c_status_snapshot);
+    case Qt::Key_Apostrophe:
+    case Qt::Key_NumberSign:
+        mPerf.unset_sequence_control_status(c_status_snapshot);
         break;
 
-    case Qt::Key_Period: //one-shot
-        perf().unset_sequence_control_status(c_status_oneshot);
+    case Qt::Key_Period:
+        mPerf.unset_sequence_control_status(c_status_oneshot);
         break;
     }
 }
@@ -820,9 +822,9 @@ void
 qsliveframe::sequence_key (int seq)
 {
     /* add bank offset */
-    seq += perf().screenset() * c_mainwnd_rows * c_mainwnd_cols;
-    if (perf().is_active(seq))
-        perf().sequence_playing_toggle(seq);
+    seq += mPerf.screenset() * qc_mainwnd_rows * qc_mainwnd_cols;
+    if (mPerf.is_active(seq))
+        mPerf.sequence_playing_toggle(seq);
 }
 
 /**
@@ -830,9 +832,9 @@ qsliveframe::sequence_key (int seq)
  */
 
 void
-qsliveframe::setColourWhite()
+qsliveframe::set_color_white()
 {
-    perf().setSequenceColour(mCurrentSeq, White);
+    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::WHITE));
 }
 
 /**
@@ -840,9 +842,9 @@ qsliveframe::setColourWhite()
  */
 
 void
-qsliveframe::setColourRed()
+qsliveframe::set_color_red()
 {
-    perf().setSequenceColour(mCurrentSeq, Red);
+    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::RED));
 }
 
 /**
@@ -850,9 +852,9 @@ qsliveframe::setColourRed()
  */
 
 void
-qsliveframe::setColourGreen()
+qsliveframe::set_color_green()
 {
-    perf().setSequenceColour(mCurrentSeq, Green);
+    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::GREEN));
 }
 
 /**
@@ -860,9 +862,9 @@ qsliveframe::setColourGreen()
  */
 
 void
-qsliveframe::setColourBlue()
+qsliveframe::set_color_blue()
 {
-    perf().setSequenceColour(mCurrentSeq, Blue);
+    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::BLUE));
 }
 
 /**
@@ -870,9 +872,9 @@ qsliveframe::setColourBlue()
  */
 
 void
-qsliveframe::setColourYellow()
+qsliveframe::set_color_yellow()
 {
-    perf().setSequenceColour(mCurrentSeq, Yellow);
+    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::YELLOW));
 }
 
 /**
@@ -880,9 +882,9 @@ qsliveframe::setColourYellow()
  */
 
 void
-qsliveframe::setColourPurple()
+qsliveframe::set_color_purple()
 {
-    perf().setSequenceColour(mCurrentSeq, Purple);
+    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::MAGENTA));
 }
 
 /**
@@ -890,9 +892,9 @@ qsliveframe::setColourPurple()
  */
 
 void
-qsliveframe::setColourPink()
+qsliveframe::set_color_pink()
 {
-    perf().setSequenceColour(mCurrentSeq, Pink);
+    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::RED)); // Pink);
 }
 
 /**
@@ -900,9 +902,9 @@ qsliveframe::setColourPink()
  */
 
 void
-qsliveframe::setColourOrange()
+qsliveframe::set_color_orange()
 {
-    perf().setSequenceColour(mCurrentSeq, Orange);
+    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::ORANGE));
 }
 
 /**
@@ -912,9 +914,9 @@ qsliveframe::setColourOrange()
 void
 qsliveframe::copySeq()
 {
-    if (perf().is_active(mCurrentSeq))
+    if (mPerf.is_active(m_curr_seq))
     {
-        mSeqClipboard = *(perf().get_sequence(mCurrentSeq));
+        m_seq_clipboard.partial_assign(*(mPerf.get_sequence(m_curr_seq)));
         mCanPaste = true;
     }
 }
@@ -929,11 +931,11 @@ qsliveframe::cutSeq()
     // TODO: dialog warning that the editor is the reason
     // this seq cant be cut
 
-    if (perf().is_active(mCurrentSeq) && !perf().is_sequence_in_edit(mCurrentSeq))
+    if (mPerf.is_active(m_curr_seq) && !mPerf.is_sequence_in_edit(m_curr_seq))
     {
-        mSeqClipboard = *(perf().get_sequence(mCurrentSeq));
+        m_seq_clipboard.partial_assign(*(mPerf.get_sequence(m_curr_seq)));
         mCanPaste = true;
-        perf().delete_sequence(mCurrentSeq);
+        mPerf.delete_sequence(m_curr_seq);
     }
 }
 
@@ -944,11 +946,11 @@ qsliveframe::cutSeq()
 void
 qsliveframe::deleteSeq()
 {
-    if (perf().is_active(mCurrentSeq) &&
-            !perf().is_sequence_in_edit(mCurrentSeq))
+    if (mPerf.is_active(m_curr_seq) &&
+            !mPerf.is_sequence_in_edit(m_curr_seq))
         //TODO dialog warning that the editor is the reason
         //this seq cant be deleted
-        perf().delete_sequence(mCurrentSeq);
+        mPerf.delete_sequence(m_curr_seq);
 }
 
 /**
@@ -958,11 +960,11 @@ qsliveframe::deleteSeq()
 void
 qsliveframe::pasteSeq()
 {
-    if (! perf().is_active(mCurrentSeq))
+    if (! mPerf.is_active(m_curr_seq))
     {
-        perf().new_sequence(mCurrentSeq);
-        *(perf().get_sequence(mCurrentSeq)) = mSeqClipboard;
-        perf().get_sequence(mCurrentSeq)->set_dirty();
+        mPerf.new_sequence(m_curr_seq);
+        mPerf.get_sequence(m_curr_seq)->partial_assign(m_seq_clipboard);
+        mPerf.get_sequence(m_curr_seq)->set_dirty();
     }
 }
 

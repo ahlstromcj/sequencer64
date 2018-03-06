@@ -138,6 +138,86 @@ namespace seq64
     class keystroke;
 
 /**
+ *  These were purely internal constants used with the functions that
+ *  implement MIDI control (and also some keystroke control) for the
+ *  application.  However, we now have to expose them for the Qt5
+ *  implementation, until we can entirely reconcile/refactor the
+ *  Kepler34-based body of code.  Note how they specify different bit values,
+ *  as it they could be masked together to signal multiple functions.
+ *
+ *  This value signals the "replace" functionality.  If this bit is set, then
+ *  perform::sequence_playing_toggle() unsets this status and calls
+ *  perform::off_sequences(), which calls sequence::set_playing(false) for all
+ *  active sequences.
+ *
+ *  It works like this:
+ *
+ *      -#  The user presses the Replace key, or the MIDI control message for
+ *          c_midi_control_mod_replace is received.
+ *      -#  This bit is OR'd into perform::m_control_status.  This status bit
+ *          is used in perform::sequence_playing_toggle().
+ *          -   Called in perform::sequence_key() so that keystrokes in
+ *              the main window toggle patterns in the main window.
+ *          -   Called in peform::toggle_other_seqs() to implement
+ *              Shift-click to toggle all other patterns but the one
+ *              clicked.
+ *          -   Called in seqmenu::toggle_current_sequence(), called in
+ *              mainwid to implement clicking on a pattern.
+ *          -   Also used in MIDI control to toggle patterns 0 to 31,
+ *              offset by the screen-set.
+ *          -   perform::sequence_playing_off(), similarly used in MIDI control.
+ *          -   perform::sequence_playing_on(), similarly used in MIDI control.
+ *      -#  When the key is released, this bit is AND'd out of
+ *          perform::m_control_status.
+ *
+ *      Both the MIDI control and the keystroke set the sequence to be
+ *      "replaced".
+ */
+
+const int c_status_replace  = 0x01;
+
+/**
+ *  This value signals the "snapshot" functionality.  By default,
+ *  perform::sequence_playing_toggle() calls sequence::toggle_playing() on the
+ *  given sequence number, plus what is noted for c_status_snapshot.
+ *  It works like this:
+ *
+ *      -#  The user presses the Snapshot key.
+ *      -#  This bit is OR'd into perform::m_control_status.
+ *      -#  The playing state of the patterns is saved by
+ *          perform::save_playing_state().
+ *      -#  When the key is released, this bit is AND'd out of
+ *          perform::m_control_status.
+ *      -#  The playing state of the patterns is restored by
+ *          perform::restore_playing_state().
+ */
+
+const int c_status_snapshot = 0x02;
+
+/**
+ *  This value signals the "queue" functionality.  If this bit is set, then
+ *  perform::sequence_playing_toggle() calls sequence::toggle_queued() on the
+ *  given sequence number.  The regular queue key (configurable in File /
+ *  Options / Keyboard) sets this bit when pressed, and unsets it when
+ *  released.  The keep-queue key sets it, but it is not unset until the
+ *  regular queue key is pressed and released.
+ */
+
+const int c_status_queue    = 0x04;
+
+#ifdef SEQ64_SONG_RECORDING
+
+/**
+ *  This value signals the Kepler34 "one-shot" functionality.  If this bit
+ *  is set, then perform::sequence_playing_toggle() calls
+ *  sequence::toggle_oneshot() on the given sequence number.
+ */
+
+const int c_status_oneshot  = 0x08;
+
+#endif  // SEQ64_SONG_RECORDING
+
+/**
  *      Provides for notification of events.  Provide a response to a
  *      group-learn change event.
  */
@@ -1399,6 +1479,15 @@ public:
     }
 
     /**
+     * \setter m_is_pattern_playing
+     */
+
+    void is_pattern_playing (bool flag)
+    {
+        m_is_pattern_playing = flag;
+    }
+
+    /**
      * \setter m_song_start_mode
      */
 
@@ -1957,6 +2046,19 @@ public:
     }
 
     /**
+     *  Returns the number of times the given key appears in the SlotMap,
+     *  either 0 or 1.
+     *
+     * \param k
+     *      The key value to be checked.
+     */
+
+    int get_key_count (unsigned k) const
+    {
+        return keys().get_key_count(k);
+    }
+
+    /**
      *  Forwarding function for key groups.
      */
 
@@ -2457,6 +2559,109 @@ public:         // GUI-support functions
             sp->edit_mode(ed);
     }
 
+    /**
+     *  Returns the notepad text for the current screen-set.
+     */
+
+    const std::string & current_screenset_notepad () const
+    {
+        return get_screenset_notepad(m_screenset);
+    }
+
+    void set_screenset_notepad
+    (
+        int screenset,
+        const std::string & note,
+        bool is_load_modification = false
+    );
+
+    /**
+     *  Sets the notepad text for the current screen-set.
+     *
+     * \param note
+     *      The string value to set into the notepad text.
+     */
+
+    void set_screenset_notepad (const std::string & note)
+    {
+        set_screenset_notepad(m_screenset, note);
+    }
+
+    void start (bool state);
+    void stop ();
+
+    /**
+     *  If JACK is supported, starts the JACK transport.
+     */
+
+    void start_jack ()
+    {
+#ifdef SEQ64_JACK_SUPPORT
+        m_jack_asst.start();
+#endif
+    }
+
+    /**
+     *  If JACK is supported, stops the JACK transport.
+     */
+
+    void stop_jack ()
+    {
+#ifdef SEQ64_JACK_SUPPORT
+        m_jack_asst.stop();
+#endif
+    }
+
+#ifdef SEQ64_SONG_RECORDING
+
+    void song_recording_stop ();
+
+    /**
+     *
+     */
+
+    void song_recording (bool f)
+    {
+        m_song_recording = f;
+        if (! f)
+            song_recording_stop();
+    }
+
+    /**
+     *
+     */
+
+    void song_record_snap (bool f)
+    {
+        m_song_record_snap = f;
+    }
+
+#endif  // SEQ64_SONG_RECORDING
+
+    /**
+     * \getter m_playback_mode
+     */
+
+    bool playback_mode ()
+    {
+        return m_playback_mode;
+    }
+
+    /**
+     * \setter m_playback_mode
+     *
+     * \param playbackmode
+     *      The value of the playback mode flag to be set.
+     */
+
+    void playback_mode (bool playbackmode)
+    {
+        m_playback_mode = playbackmode;
+    }
+
+    void set_beats_per_minute (midibpm bpm);    /* more than just a setter  */
+    void panic ();                              /* from kepler43        */
+
 private:
 
     /**
@@ -2500,60 +2705,12 @@ private:
     bool handle_midi_control_ex (int control, midi_control::action a, int v);
     bool handle_midi_control_event (const event & ev, int ctrl, int offset = 0);
     const std::string & get_screenset_notepad (int screenset) const;
-
-    /**
-     *  Returns the notepad text for the current screen-set.
-     */
-
-    const std::string & current_screenset_notepad () const
-    {
-        return get_screenset_notepad(m_screenset);
-    }
-
-    void set_screenset_notepad
-    (
-        int screenset,
-        const std::string & note,
-        bool is_load_modification = false
-    );
-
-    /**
-     *  Sets the notepad text for the current screen-set.
-     *
-     * \param note
-     *      The string value to set into the notepad text.
-     */
-
-    void set_screenset_notepad (const std::string & note)
-    {
-        set_screenset_notepad(m_screenset, note);
-    }
-
-    void set_playing_screenset ();
-
     bool any_group_unmutes () const;
     void print_group_unmutes () const;
     void mute_group_tracks ();
     void select_and_mute_group (int g_group);
     void set_song_mute (mute_op_t op);
-
-#ifdef SEQ64_SONG_RECORDING
-
-    void song_recording_stop ();
-
-    void song_recording (bool f)
-    {
-        m_song_recording = f;
-        if (! f)
-            song_recording_stop();
-    }
-
-    void song_record_snap (bool f)
-    {
-        m_song_record_snap = f;
-    }
-
-#endif  // SEQ64_SONG_RECORDING
+    void set_playing_screenset ();
 
     /**
      * \setter m_mode_group
@@ -2591,36 +2748,10 @@ private:
 
     void set_and_copy_mute_group (int group);
     bool activate ();
-    void start (bool state);
-    void stop ();
-
-    /**
-     *  If JACK is supported, starts the JACK transport.
-     */
-
-    void start_jack ()
-    {
-#ifdef SEQ64_JACK_SUPPORT
-        m_jack_asst.start();
-#endif
-    }
-
-    /**
-     *  If JACK is supported, stops the JACK transport.
-     */
-
-    void stop_jack ()
-    {
-#ifdef SEQ64_JACK_SUPPORT
-        m_jack_asst.stop();
-#endif
-    }
-
     void position_jack (bool state, midipulse tick = 0);
     void off_sequences ();
     void unqueue_sequences (int current_seq);
     void all_notes_off ();
-    void panic ();                              /* from kepler43        */
     void set_active (int seq, bool active);
     void set_was_active (int seq);
     void reset_sequences (bool pause = false);
@@ -2631,7 +2762,6 @@ private:
 
     void play (midipulse tick);
     void set_orig_ticks (midipulse tick);
-    void set_beats_per_minute (midibpm bpm);    /* more than just a setter  */
     int max_active_set () const;
 
     /*
@@ -2718,36 +2848,6 @@ private:
     void is_running (bool running)
     {
         m_is_running = running;
-    }
-
-    /**
-     * \setter m_is_pattern_playing
-     */
-
-    void is_pattern_playing (bool flag)
-    {
-        m_is_pattern_playing = flag;
-    }
-
-    /**
-     * \getter m_playback_mode
-     */
-
-    bool playback_mode ()
-    {
-        return m_playback_mode;
-    }
-
-    /**
-     * \setter m_playback_mode
-     *
-     * \param playbackmode
-     *      The value of the playback mode flag to be set.
-     */
-
-    void playback_mode (bool playbackmode)
-    {
-        m_playback_mode = playbackmode;
     }
 
     /**

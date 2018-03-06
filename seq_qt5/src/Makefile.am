@@ -158,7 +158,7 @@ SUFFIXES = .hpp .cpp .moc.cpp .ui .ui.h
 # The moc.cpp files are normally deposited in the include directory!
 
 %.moc.cpp: %.hpp
-	$(QT_MOC) $< -o ../src/$(notdir $@)
+	$(QT_MOC) $< -o ../include/$(notdir $@)
 
 # The ui.h files are deposited in the forms directory.
 

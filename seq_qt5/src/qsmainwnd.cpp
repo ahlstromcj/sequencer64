@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-06
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -35,9 +35,21 @@
  */
 
 #include "qsmainwnd.hpp"
+#include "perform.hpp"
+#include "qperfeditframe.hpp"
+#include "qsabout.hpp"
+#include "qseditoptions.hpp"
+#include "qsmaintime.hpp"
+#include "qseqeditframe.hpp"
+#include "qsliveframe.hpp"
 #include "forms/qsmainwnd.ui.h"
 
-static bool is_pattern_playing = false;
+/*
+ * Don't document the namespace.
+ */
+
+namespace seq64
+{
 
 /**
  *
@@ -101,10 +113,10 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     );
 
     m_dialog_prefs = new qseditoptions(m_main_perf, this);
-    m_live_frame = new qsliveframe(ui->LiveTab, m_main_perf);
+    m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
     m_song_frame = new qperfeditframe(m_main_perf, ui->SongTab);
     m_edit_frame = NULL; //set this so we know for sure the edit tab is empty
-    m_beat_ind = new qsmaintime(this, m_main_perf, 4, 4);
+    m_beat_ind = new qsmaintime(m_main_perf, this, 4, 4);
     mDialogAbout = new qsabout(this);
 
     ui->lay_bpm->addWidget(m_beat_ind);
@@ -120,7 +132,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     (
         QString::number(m_song_frame->get_beats_per_measure())
     );
-    m_beat_ind->setbeat_width(m_song_frame->get_beat_width());
+    m_beat_ind->set_beat_width(m_song_frame->get_beat_width());
     m_beat_ind->set_beats_per_measure(m_song_frame->get_beats_per_measure());
 
     updateRecentFilesMenu();
@@ -209,9 +221,9 @@ qsmainwnd::~qsmainwnd()
 void
 qsmainwnd::startPlaying()
 {
-    perf().start();
+    perf().start(false);                // false = live, need song support too
     perf().start_jack();
-    is_pattern_playing = true;
+    perf().is_pattern_playing(true);
 }
 
 /**
@@ -233,7 +245,7 @@ qsmainwnd::stopPlaying()
 void
 qsmainwnd::setRecording (bool record)
 {
-    perf().set_song_recording(record);
+    perf().song_recording(record);
 }
 
 /**
@@ -243,7 +255,7 @@ qsmainwnd::setRecording (bool record)
 void
 qsmainwnd::setSongPlayback (bool playSongData)
 {
-    perf().set_playback_mode(playSongData);
+    perf().playback_mode(playSongData);
     if (playSongData)
     {
         ui->btnRecord->setEnabled(true);
@@ -263,7 +275,7 @@ qsmainwnd::setSongPlayback (bool playSongData)
 void
 qsmainwnd::updateBpm (int newBpm)
 {
-    perf().set_bpm(newBpm);
+    perf().set_beats_per_minute(newBpm);
     m_modified = true;
 }
 
@@ -295,11 +307,11 @@ qsmainwnd::showOpenFileDialog ()
  */
 
 void
-qsmainwnd::openmidifile (const QString &path)
+qsmainwnd::openmidifile (const QString & path)
 {
     bool result;
     perf().clear_all();
-    midifile f(path);
+    midifile f(path.toStdString());
     result = f.parse(m_main_perf, 0);
     m_modified = !result;
     if (!result)
@@ -321,7 +333,7 @@ qsmainwnd::openmidifile (const QString &path)
     if (m_live_frame)
         delete  m_live_frame;
 
-    m_live_frame = new qsliveframe(ui->LiveTab, m_main_perf);
+    m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
     ui->LiveTabLayout->addWidget(m_live_frame);
 
     //reconnect this as we've made a new object
@@ -329,12 +341,13 @@ qsmainwnd::openmidifile (const QString &path)
     connect(m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int)));
     m_live_frame->show();
 
-    m_dialog_prefs->addRecentFile(path); //add to recent files list
+//// TODO USE the existing facility
+//// m_dialog_prefs->addRecentFile(path); //add to recent files list
 
     m_live_frame->setFocus();
     updateRecentFilesMenu();
     m_live_frame->redraw();
-    ui->spinBpm->setValue(perf().get_bpm());
+    ui->spinBpm->setValue(perf().bpm());
     m_song_frame->update_sizes();
 }
 
@@ -347,14 +360,13 @@ qsmainwnd::updateWindowTitle ()
 {
     QString title;
     if (global_filename == "")
-        title = (PACKAGE) + QString(" - [unnamed]");
+        title = (SEQ64_PACKAGE) + QString(" - [unnamed]");
     else
     {
         //give us a title with just the MIDI filename, after the last slash
         int last_slash = global_filename.lastIndexOf("/");
-        title = global_filename.right(
-                    global_filename.length() - last_slash - 1);
-        title = (PACKAGE) + QString(" - [") + title + QString("]");
+        title = global_filename.right(global_filename.length() - last_slash - 1);
+        title = (SEQ64_PACKAGE) + QString(" - [") + title + QString("]");
     }
     this->setWindowTitle(title);
 }
@@ -432,7 +444,7 @@ bool qsmainwnd::saveFile()
         return true;
     }
 
-    midifile file(global_filename);
+    midifile file(global_filename.toStdString());
     result = file.write(m_main_perf);
 
     if (!result)
@@ -443,10 +455,10 @@ bool qsmainwnd::saveFile()
     else
     {
         /* add to recent files list */
-        m_dialog_prefs->addRecentFile(global_filename);
+        /////////////// m_dialog_prefs->addRecentFile(global_filename);
 
         /* update recent menu */
-        updateRecentFilesMenu();
+        /////////////// updateRecentFilesMenu();
     }
     m_modified = !result;
     return result;
@@ -507,11 +519,11 @@ qsmainwnd::showImportDialog()
         {
             try
             {
-                midifile f(path);
-                f.parse(m_main_perf, perf().getBank());
+                midifile f(path.toStdString());
+                f.parse(m_main_perf, perf().screenset());
                 m_modified = true;
-                ui->spinBpm->setValue(perf().get_bpm());
-                m_live_frame->setBank(perf().getBank());
+                ui->spinBpm->setValue(perf().bpm());
+                m_live_frame->setBank(perf().screenset());
 
             }
             catch (...)
@@ -545,7 +557,7 @@ qsmainwnd::loadEditor(int seqId)
     if (m_edit_frame)
         delete  m_edit_frame;
 
-    m_edit_frame = new qseqeditframe(ui->EditTab, m_main_perf, seqId);
+    m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
     ui->EditTabLayout->addWidget(m_edit_frame);
     m_edit_frame->show();
     ui->tabWidget->setCurrentIndex(2);
@@ -557,7 +569,7 @@ qsmainwnd::loadEditor(int seqId)
  */
 
 void
-qsmainwnd::updateBeatLength(int blIndex)
+qsmainwnd::updateBeatLength (int blIndex)
 {
     int bl;
     switch (blIndex)
@@ -565,22 +577,30 @@ qsmainwnd::updateBeatLength(int blIndex)
     case 0:
         bl = 1;
         break;
+
     case 1:
         bl = 2;
         break;
+
     case 2:
         bl = 4;
         break;
+
     case 3:
         bl = 8;
         break;
+
     case 4:
         bl = 16;
+        break;
+
+    default:
+        bl = 4;
         break;
     }
 
     m_song_frame->set_beat_width(bl);
-    m_beat_ind->setbeat_width(bl);
+    m_beat_ind->set_beat_width(bl);
 
     //also set beat length for all sequences
     for (int i = 0; i < c_max_sequence; i++)
@@ -588,7 +608,7 @@ qsmainwnd::updateBeatLength(int blIndex)
         if (perf().is_active(i))
         {
             sequence *seq =  perf().get_sequence(i);
-            seq->setbeat_width(bl);
+            seq->set_beat_width(bl);
             //reset number of measures, causing length to adjust to new b/m
             seq->set_num_measures(seq->get_num_measures());
         }
@@ -617,7 +637,7 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
         if (perf().is_active(i))
         {
             sequence *seq =  perf().get_sequence(i);
-            seq->set_beats_per_measure(bmIndex + 1);
+            seq->set_beats_per_bar(bmIndex + 1);
             //reset number of measures, causing length to adjust to new b/m
             seq->set_num_measures(seq->get_num_measures());
 
@@ -656,9 +676,9 @@ qsmainwnd::tabWidgetClicked(int newIndex)
             seqId = 0;
         }
 
-        sequence *seq = perf().get_sequence(seqId);
+        sequence * seq = perf().get_sequence(seqId);
         seq->set_dirty();
-        m_edit_frame = new qseqeditframe(ui->EditTab, m_main_perf, seqId);
+        m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
         ui->EditTabLayout->addWidget(m_edit_frame);
         m_edit_frame->show();
         update();
@@ -684,10 +704,8 @@ qsmainwnd::updateRecentFilesMenu()
     {
         mRecentFileActions[0] = new QAction(recent_files[0], this);
         mRecentFileActions[0]->setShortcut(tr("Ctrl+R"));
-        connect(mRecentFileActions[0],
-                SIGNAL(triggered(bool)),
-                this,
-                SLOT(load_recent_1()));
+        connect(mRecentFileActions[0], SIGNAL(triggered(bool)),
+                this, SLOT(load_recent_1()));
     }
     else
     {
@@ -801,6 +819,7 @@ qsmainwnd::quit()
         QCoreApplication::exit();
 }
 
+
 /**
  *
  */
@@ -878,7 +897,7 @@ qsmainwnd::load_recent_10()
 void
 qsmainwnd::setRecordingSnap(bool snap)
 {
-    perf().setSongRecordSnap(snap);
+    perf().song_record_snap(snap);
 }
 
 void
@@ -914,6 +933,8 @@ qsmainwnd::panic()
 {
     perf().panic();
 }
+
+}               // namespace seq64
 
 /*
  * qsmainwnd.cpp

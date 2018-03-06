@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-24
+ * \updates       2018-03-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -80,7 +80,7 @@ public:
      * \setter m_beats_per_measure
      */
 
-    void set_beats_per_measure (int beats_per_measure);
+    void set_beats_per_measure (int bpm)
     {
         m_beats_per_measure = bpm;
     }
@@ -89,7 +89,7 @@ public:
      *  \getter m_beat_width
      */
 
-    int get_beat_width () const;
+    int get_beat_width () const
     {
         return m_beat_width;
     }
@@ -98,7 +98,7 @@ public:
      *  \setter m_beat_width
      */
 
-    void setbeat_width (int beat_width);
+    void set_beat_width (int bw)
     {
         m_beat_width = bw;
     }
@@ -118,11 +118,11 @@ protected:
 
 private:
 
-    perform * const m_main_perf;
+    const perform & m_main_perf;
     QPainter * mPainter;
     QPen * mPen;
     QBrush * mBrush;
-    QColor * mColour;
+    QColor * m_color;
     QFont mFont;
     int m_beats_per_measure;
     int m_beat_width;

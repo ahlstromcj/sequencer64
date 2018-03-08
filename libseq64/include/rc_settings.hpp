@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-03-03
+ * \updates       2018-03-07
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -529,6 +529,7 @@ public:
     }
 
     void last_used_dir (const std::string & value);
+    void add_recent_file (const std::string & filename);
 
     /**
      * \getter m_config_directory
@@ -776,7 +777,6 @@ protected:
      */
 
     void tempo_track_number (int track);
-    void add_recent_file (const std::string & filename);
     void device_ignore_num (int value);
     bool interaction_method (interaction_method_t value);
     bool mute_group_saving (mute_group_handling_t mgh);

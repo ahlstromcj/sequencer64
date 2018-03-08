@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-04
+ * \updates       2018-03-07
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -870,7 +870,7 @@ qseqroll::keyPressEvent (QKeyEvent * event)
         return;
     }
 
-    if (! is_pattern_playing)
+    if (! perf().is_pattern_playing())
     {
         if (event->key() == Qt::Key_Home)
         {

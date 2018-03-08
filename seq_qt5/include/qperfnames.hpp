@@ -59,7 +59,7 @@ class qperfnames : public QWidget, gui_palette_qt5
 public:
 
     explicit qperfnames (perform & p, QWidget * parent);
-    ~qperfnames();
+    ~qperfnames ();
 
 protected:
 

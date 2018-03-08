@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-05
+ * \updates       2018-03-06
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -79,7 +79,7 @@ public:
 
     // open the file at the given path
 
-    void openmidifile (const QString & path);
+    void open_file (const std::string & path);
 
 protected:
 
@@ -104,9 +104,9 @@ private:
     // check if the file has been modified.
     // if modified, ask the user whether to save changes
 
-    bool saveCheck ();
-    void updateWindowTitle ();
-    void updateRecentFilesMenu ();
+    bool check ();
+    void update_window_title ();
+    void update_recent_files_menu ();
 
 private:
 
@@ -117,8 +117,8 @@ private:
     QErrorMessage * m_msg_error;
     QMessageBox * m_msg_save_changes;
     QTimer * m_timer;
-    QAction * mRecentFileActions[10];
-    QMenu * mRecentMenu;
+    QAction * m_action[10];
+    QMenu * m_menu_recent;
     QFileDialog * mImportDialog;
     perform & m_main_perf;
     qsmaintime * m_beat_ind;
@@ -137,14 +137,15 @@ private slots:
     void updateBpm (int newBpm);
     void updatebeats_per_measure (int bmIndex);
     void updateBeatLength (int blIndex);
-    void newFile ();
-    bool saveFile ();
-    void saveFileAs ();
+    void new_file ();
+    bool save_file ();
+    void save_file_as ();
     void quit ();
     void showImportDialog (); //import MIDI data from current bank onwards
     void showOpenFileDialog ();
     void showqsabout ();
     void tabWidgetClicked (int newIndex);
+
     void load_recent_1 ();
     void load_recent_2 ();
     void load_recent_3 ();

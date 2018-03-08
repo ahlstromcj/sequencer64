@@ -81,7 +81,7 @@ qperfnames::qperfnames (perform & p, QWidget * parent)
  *
  */
 
-qperfnames::~qperfnames()
+qperfnames::~qperfnames ()
 {
     if (not_nullptr(mPen))
         delete mPen;

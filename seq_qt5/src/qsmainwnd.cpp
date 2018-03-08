@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-06
+ * \updates       2018-03-07
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -42,6 +42,7 @@
 #include "qsmaintime.hpp"
 #include "qseqeditframe.hpp"
 #include "qsliveframe.hpp"
+#include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
 #include "forms/qsmainwnd.ui.h"
 
 /*
@@ -59,12 +60,12 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
  :
     QMainWindow     (parent),
     ui              (new Ui::qsmainwnd),
-    mRecentMenu     (NULL),
+    m_menu_recent   (NULL),
     m_main_perf     (p)
 {
     ui->setupUi(this);
-    for (int i = 0; i < 10; i++)        // nullify all recent file action slots
-        mRecentFileActions[i] = NULL;
+    for (int i = 0; i < 10; i++)        // nullify all recent-file action slots
+        m_action[i] = NULL;
 
     // center on screen
 
@@ -107,7 +108,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     mImportDialog = new QFileDialog
     (
         this, tr("Import MIDI file"),
-        last_used_dir,
+        rc().last_used_dir().c_str(),
         tr("MIDI files (*.midi *.mid);;"
         "All files (*)")
     );
@@ -134,9 +135,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     );
     m_beat_ind->set_beat_width(m_song_frame->get_beat_width());
     m_beat_ind->set_beats_per_measure(m_song_frame->get_beats_per_measure());
-
-    updateRecentFilesMenu();
-
+    update_recent_files_menu();
     m_live_frame->setFocus();
 
     // timer to refresh GUI elements every few ms
@@ -148,9 +147,12 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
 
     // connect GUI elements to handlers
 
-    connect(ui->actionNew, SIGNAL(triggered(bool)), this, SLOT(newFile()));
-    connect(ui->actionSave, SIGNAL(triggered(bool)), this, SLOT(saveFile()));
-    connect(ui->actionSave_As, SIGNAL(triggered(bool)), this, SLOT(saveFileAs()));
+    connect(ui->actionNew, SIGNAL(triggered(bool)), this, SLOT(new_file()));
+    connect(ui->actionSave, SIGNAL(triggered(bool)), this, SLOT(save_file()));
+    connect
+    (
+        ui->actionSave_As, SIGNAL(triggered(bool)), this, SLOT(save_file_as())
+    );
     connect
     (
         ui->actionImport_MIDI, SIGNAL(triggered(bool)),
@@ -287,65 +289,66 @@ void
 qsmainwnd::showOpenFileDialog ()
 {
     QString file;
-    if (saveCheck())
+    if (check())
+    {
         file = QFileDialog::getOpenFileName
         (
-            this, tr("Open MIDI file"), last_used_dir,
+            this, tr("Open MIDI file"), rc().last_used_dir().c_str(),
             tr("MIDI files (*.midi *.mid);; All files (*)")
-            //                    ,0,
-            //                    QFileDialog::DontUseNativeDialog
         );
-
-    // don't bother trying to open if the user cancels
-
-    if (!file.isEmpty())
-        openmidifile(file);
+    }
+    if (! file.isEmpty())                   // if the user did not cancel
+        open_file(file.toStdString());
 }
 
 /**
+ *  Set the last-used directory to the one just loaded.
  *
+ *  Compare this function to mainwnd::open_file() [the Gtkmm version]/
  */
 
 void
-qsmainwnd::openmidifile (const QString & path)
+qsmainwnd::open_file (const std::string & fn)
 {
-    bool result;
+    midifile f(fn);
     perf().clear_all();
-    midifile f(path.toStdString());
-    result = f.parse(m_main_perf, 0);
-    m_modified = !result;
-    if (!result)
+
+    bool result = f.parse(m_main_perf, 0);
+    m_modified = ! result;
+    if (! result)
     {
-        QString msg_text = "Error reading MIDI data from file: " + path;
+        QString msg_text = "Error reading MIDI data from file: ";
+        msg_text += fn.c_str();
         m_msg_error->showMessage(msg_text);
         m_msg_error->exec();
         return;
     }
 
-    //set last used dir to the one we have just loaded from
-    int last_slash = path.lastIndexOf("/");
-    last_used_dir = path.left(last_slash + 1);
-    global_filename = path;
-    updateWindowTitle();
+//  ppqn(f.ppqn());                     /* get and save the actual PPQN     */
+    rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
+    rc().filename(fn);
+    rc().add_recent_file(fn);           /* from Oli Kester's Kepler34       */
+    update_recent_files_menu();
+    update_window_title();
 
-    //reinitialize live frame
+    /*
+     *  Reinitialize the "Live" frame.
+     */
+
     ui->LiveTabLayout->removeWidget(m_live_frame);
     if (m_live_frame)
-        delete  m_live_frame;
+        delete m_live_frame;
 
     m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
     ui->LiveTabLayout->addWidget(m_live_frame);
 
-    //reconnect this as we've made a new object
+    // Reconnect this signal, as we've made a new object.
 
     connect(m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int)));
     m_live_frame->show();
 
-//// TODO USE the existing facility
-//// m_dialog_prefs->addRecentFile(path); //add to recent files list
-
     m_live_frame->setFocus();
-    updateRecentFilesMenu();
+//  update_recent_files_menu();
     m_live_frame->redraw();
     ui->spinBpm->setValue(perf().bpm());
     m_song_frame->update_sizes();
@@ -356,19 +359,22 @@ qsmainwnd::openmidifile (const QString & path)
  */
 
 void
-qsmainwnd::updateWindowTitle ()
+qsmainwnd::update_window_title ()
 {
-    QString title;
-    if (global_filename == "")
-        title = (SEQ64_PACKAGE) + QString(" - [unnamed]");
-    else
+    std::string title = SEQ64_APP_NAME + std::string(" - [");
+    std::string itemname = "unnamed";
+    int ppqn = SEQ64_DEFAULT_PPQN;          // choose_ppqn(m_ppqn);
+    char temp[16];
+    snprintf(temp, sizeof temp, " (%d ppqn) ", ppqn);
+    if (! rc().filename().empty())
     {
-        //give us a title with just the MIDI filename, after the last slash
-        int last_slash = global_filename.lastIndexOf("/");
-        title = global_filename.right(global_filename.length() - last_slash - 1);
-        title = (SEQ64_PACKAGE) + QString(" - [") + title + QString("]");
+        std::string name = shorten_file_spec(rc().filename(), 56);
+        itemname = name;                    // Glib::filename_to_utf8(name);
     }
-    this->setWindowTitle(title);
+    title += itemname + std::string("]") + std::string(temp);
+
+    QString t = title.c_str();
+    setWindowTitle(t);
 }
 
 /**
@@ -376,7 +382,7 @@ qsmainwnd::updateWindowTitle ()
  */
 
 void
-qsmainwnd::refresh()
+qsmainwnd::refresh ()
 {
     m_beat_ind->update();
 }
@@ -386,7 +392,7 @@ qsmainwnd::refresh()
  */
 
 bool
-qsmainwnd::saveCheck ()
+qsmainwnd::check ()
 {
     bool result = false;
     if (m_modified)
@@ -395,12 +401,14 @@ qsmainwnd::saveCheck ()
         switch (choice)
         {
         case QMessageBox::Save:
-            if (saveFile())
+            if (save_file())
                 result = true;
             break;
+
         case QMessageBox::Discard:
             result = true;
             break;
+
         case QMessageBox::Cancel:
         default:
             break;
@@ -414,19 +422,18 @@ qsmainwnd::saveCheck ()
 
 /**
  *
+ * \todo
+ *      Ensure proper reset on load.
  */
 
 void
-qsmainwnd::newFile()
+qsmainwnd::new_file()
 {
-    if (saveCheck())
+    if (check() && perf().clear_all())
     {
-        perf().clear_all();
-
-        //TODO ensure proper reset on load
-
-        global_filename = "";
-        updateWindowTitle();
+        // m_entry_notes->set_text(perf().current_screenset_notepad());
+        rc().filename("");
+        update_window_title();
         m_modified = false;
     }
 }
@@ -435,34 +442,35 @@ qsmainwnd::newFile()
  *
  */
 
-bool qsmainwnd::saveFile()
+bool qsmainwnd::save_file()
 {
     bool result = false;
-    if (global_filename == "")
+    if (rc().filename().empty())
     {
-        saveFileAs();
-        return true;
-    }
-
-    midifile file(global_filename.toStdString());
-    result = file.write(m_main_perf);
-
-    if (!result)
-    {
-        m_msg_error->showMessage("Error writing file.");
-        m_msg_error->exec();
+        save_file_as();
+        result = true;
     }
     else
     {
-        /* add to recent files list */
-        /////////////// m_dialog_prefs->addRecentFile(global_filename);
-
-        /* update recent menu */
-        /////////////// updateRecentFilesMenu();
+        midifile f
+        (
+            rc().filename()
+            // , ppqn(), rc().legacy_format(), usr().global_seq_feature()
+        );
+        result = f.write(m_main_perf);
+        if (result)
+        {
+            rc().add_recent_file(rc().filename());
+            update_recent_files_menu();
+        }
+        else
+        {
+            m_msg_error->showMessage("Error writing file.");
+            m_msg_error->exec();
+        }
     }
-    m_modified = !result;
+    m_modified = ! result;
     return result;
-
 }
 
 /**
@@ -470,33 +478,27 @@ bool qsmainwnd::saveFile()
  */
 
 void
-qsmainwnd::saveFileAs()
+qsmainwnd::save_file_as()
 {
     QString file;
+    file = QFileDialog::getSaveFileName
+    (
+        this,
+        tr("Save MIDI file as..."),
+        rc().last_used_dir().c_str(),
+        tr("MIDI files (*.midi *.mid);;All files (*)")
+    );
 
-    file = QFileDialog::getSaveFileName(
-               this,
-               tr("Save MIDI file as..."),
-               last_used_dir,
-               tr("MIDI files (*.midi *.mid);;"
-                  "All files (*)")
-               //                                ,0,
-               //                                QFileDialog::DontUseNativeDialog
-           );
-
-    if (!file.isEmpty())
+    if (! file.isEmpty())
     {
         QFileInfo fileInfo(file);
         QString suffix = fileInfo.completeSuffix();
-
         if ((suffix != "midi") && (suffix != "mid"))
-        {
             file += ".midi";
-        }
 
-        global_filename = file;
-        updateWindowTitle();
-        saveFile();
+        rc().filename(file.toStdString());
+        update_window_title();
+        save_file();
     }
 }
 
@@ -508,13 +510,10 @@ void
 qsmainwnd::showImportDialog()
 {
     mImportDialog->exec();
-
     QStringList filePaths = mImportDialog->selectedFiles();
-
     for (int i = 0; i < filePaths.length(); i++)
     {
         QString path = mImportDialog->selectedFiles()[i];
-
         if (!path.isEmpty())
         {
             try
@@ -654,14 +653,16 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
  */
 
 void
-qsmainwnd::tabWidgetClicked(int newIndex)
+qsmainwnd::tabWidgetClicked (int newIndex)
 {
-    //if we've selected the edit tab,
-    //make sure it has something to edit
-    if (newIndex == 2 && !m_edit_frame)
+    /*
+     * If we've selected the edit tab, make sure it has something to edit
+     */
+
+    if (newIndex == 2 && ! m_edit_frame)
     {
         int seqId = -1;
-        for (int i = 0; i < c_max_sequence; i++)
+        for (int i = 0; i < c_max_sequence; ++i)
         {
             if (perf().is_active(i))
             {
@@ -669,8 +670,7 @@ qsmainwnd::tabWidgetClicked(int newIndex)
                 break;
             }
         }
-        //no sequence found, make a new one
-        if (seqId == -1)
+        if (seqId == -1)                // no sequence found, make a new one
         {
             perf().new_sequence(0);
             seqId = 0;
@@ -690,122 +690,95 @@ qsmainwnd::tabWidgetClicked(int newIndex)
  */
 
 void
-qsmainwnd::updateRecentFilesMenu()
+qsmainwnd::update_recent_files_menu ()
 {
-    //if menu already exists, delete it.
-    if (mRecentMenu && mRecentMenu->isWidgetType())
-        delete mRecentMenu;
+    /*
+     *  If the menu already exists, delete it.  This differs from the Gtkmm
+     *  implementation, which simply clears it.
+     */
 
-    //recent files sub-menu
-    mRecentMenu = new QMenu(tr("&Recent..."), this);
+    if (m_menu_recent && m_menu_recent->isWidgetType())
+        delete m_menu_recent;
 
-    /* only add if a path is actually contained in each slot */
-    if (recent_files[0] != "")
+    m_menu_recent = new QMenu(tr("&Recent MIDI files..."), this);
+
+    /*
+     *  Only add if a path is actually contained in each slot.  This method
+     *  of adding paths is pretty clumsy compared to the Gtkmm method, which
+     *  uses a simple loop.
+     */
+
+
+    if (rc().recent_file_count() > 0)
     {
-        mRecentFileActions[0] = new QAction(recent_files[0], this);
-        mRecentFileActions[0]->setShortcut(tr("Ctrl+R"));
-        connect(mRecentFileActions[0], SIGNAL(triggered(bool)),
-                this, SLOT(load_recent_1()));
+        m_action[0]->setShortcut(tr("Ctrl+R"));
     }
     else
     {
-        mRecentMenu->addAction(tr("(No recent files)"));
-        ui->menuFile->insertMenu(ui->actionSave, mRecentMenu);
+        m_menu_recent->addAction(tr("<none>"));
+        ui->menuFile->insertMenu(ui->actionSave, m_menu_recent);
         return;
     }
 
-    if (recent_files[1] != "")
+    if (rc().recent_file_count() > 0)
     {
-        mRecentFileActions[1] = new QAction(recent_files[1], this);
-        connect(mRecentFileActions[1],
-                SIGNAL(triggered(bool)),
-                this,
-                SLOT(load_recent_2()));
+        m_action[0] = new QAction(rc().recent_file(0).c_str(), this);
+        connect(m_action[0], SIGNAL(triggered(bool)), this, SLOT(load_recent_1()));
+    }
+    if (rc().recent_file_count() > 1)
+    {
+        m_action[1] = new QAction(rc().recent_file(1).c_str(), this);
+        connect(m_action[1], SIGNAL(triggered(bool)), this, SLOT(load_recent_2()));
+    }
+    if (rc().recent_file_count() > 2)
+    {
+        m_action[2] = new QAction(rc().recent_file(2).c_str(), this);
+        connect(m_action[2], SIGNAL(triggered(bool)), this, SLOT(load_recent_3()));
+    }
+    if (rc().recent_file_count() > 3)
+    {
+        m_action[3] = new QAction(rc().recent_file(3).c_str(), this);
+        connect(m_action[3], SIGNAL(triggered(bool)), this, SLOT(load_recent_4()));
+    }
+    if (rc().recent_file_count() > 4)
+    {
+        m_action[4] = new QAction(rc().recent_file(4).c_str(), this);
+        connect(m_action[4], SIGNAL(triggered(bool)), this, SLOT(load_recent_5()));
+    }
+    if (rc().recent_file_count() > 5)
+    {
+        m_action[5] = new QAction(rc().recent_file(5).c_str(), this);
+        connect(m_action[5], SIGNAL(triggered(bool)), this, SLOT(load_recent_6()));
+    }
+    if (rc().recent_file_count() > 6)
+    {
+        m_action[6] = new QAction(rc().recent_file(6).c_str(), this);
+        connect(m_action[6], SIGNAL(triggered(bool)), this, SLOT(load_recent_7()));
+    }
+    if (rc().recent_file_count() > 7)
+    {
+        m_action[7] = new QAction(rc().recent_file(7).c_str(), this);
+        connect(m_action[7], SIGNAL(triggered(bool)), this, SLOT(load_recent_8()));
+    }
+    if (rc().recent_file_count() > 8)
+    {
+        m_action[8] = new QAction(rc().recent_file(8).c_str(), this);
+        connect(m_action[8], SIGNAL(triggered(bool)), this, SLOT(load_recent_9()));
+    }
+    if (rc().recent_file_count() > 9)
+    {
+        m_action[9] = new QAction(rc().recent_file(9).c_str(), this);
+        connect(m_action[9], SIGNAL(triggered(bool)), this, SLOT(load_recent_10()));
     }
 
-    if (recent_files[2] != "")
+    for (int i = 0; i < 10; ++i)
     {
-        mRecentFileActions[2] = new QAction(recent_files[2], this);
-        connect(mRecentFileActions[2],
-                SIGNAL(triggered(bool)),
-                this,
-                SLOT(load_recent_3()));
-    }
-
-    if (recent_files[3] != "")
-    {
-        mRecentFileActions[3] = new QAction(recent_files[3], this);
-        connect(mRecentFileActions[3],
-                SIGNAL(triggered(bool)),
-                this,
-                SLOT(load_recent_4()));
-    }
-
-    if (recent_files[4] != "")
-    {
-        mRecentFileActions[4] = new QAction(recent_files[4], this);
-        connect(mRecentFileActions[4],
-                SIGNAL(triggered(bool)),
-                this,
-                SLOT(load_recent_5()));
-    }
-
-    if (recent_files[5] != "")
-    {
-        mRecentFileActions[5] = new QAction(recent_files[5], this);
-        connect(mRecentFileActions[5],
-                SIGNAL(triggered(bool)),
-                this,
-                SLOT(load_recent_6()));
-    }
-
-    if (recent_files[6] != "")
-    {
-        mRecentFileActions[6] = new QAction(recent_files[6], this);
-        connect(mRecentFileActions[6],
-                SIGNAL(triggered(bool)),
-                this,
-                SLOT(load_recent_7()));
-    }
-
-    if (recent_files[7] != "")
-    {
-        mRecentFileActions[7] = new QAction(recent_files[7], this);
-        connect(mRecentFileActions[7],
-                SIGNAL(triggered(bool)),
-                this,
-                SLOT(load_recent_8()));
-    }
-
-    if (recent_files[8] != "")
-    {
-        mRecentFileActions[8] = new QAction(recent_files[8], this);
-        connect(mRecentFileActions[8],
-                SIGNAL(triggered(bool)),
-                this,
-                SLOT(load_recent_9()));
-    }
-
-    if (recent_files[9] != "")
-    {
-        mRecentFileActions[9] = new QAction(recent_files[9], this);
-        connect(mRecentFileActions[9],
-                SIGNAL(triggered(bool)),
-                this,
-                SLOT(load_recent_10()));
-    }
-
-    for (int i = 0; i < 10; i++)
-    {
-        if (mRecentFileActions[i])
-        {
-            mRecentMenu->addAction(mRecentFileActions[i]);
-        }
+        if (m_action[i])
+            m_menu_recent->addAction(m_action[i]);
         else
             break;
     }
-
-    ui->menuFile->insertMenu(ui->actionSave, mRecentMenu);
+    ui->menuFile->insertMenu(ui->actionSave, m_menu_recent);
 }
 
 /**
@@ -813,95 +786,39 @@ qsmainwnd::updateRecentFilesMenu()
  */
 
 void
-qsmainwnd::quit()
+qsmainwnd::quit ()
 {
-    if (saveCheck())
+    if (check())
         QCoreApplication::exit();
 }
 
+void qsmainwnd::load_recent_1 () { if (check()) open_file(rc().recent_file(0)); }
+void qsmainwnd::load_recent_2 () { if (check()) open_file(rc().recent_file(1)); }
+void qsmainwnd::load_recent_3 () { if (check()) open_file(rc().recent_file(2)); }
+void qsmainwnd::load_recent_4 () { if (check()) open_file(rc().recent_file(3)); }
+void qsmainwnd::load_recent_5 () { if (check()) open_file(rc().recent_file(4)); }
+void qsmainwnd::load_recent_6 () { if (check()) open_file(rc().recent_file(5)); }
+void qsmainwnd::load_recent_7 () { if (check()) open_file(rc().recent_file(6)); }
+void qsmainwnd::load_recent_8 () { if (check()) open_file(rc().recent_file(7)); }
+void qsmainwnd::load_recent_9 () { if (check()) open_file(rc().recent_file(8)); }
+void qsmainwnd::load_recent_10 () { if (check()) open_file(rc().recent_file(9)); }
 
 /**
  *
  */
 
 void
-qsmainwnd::load_recent_1()
-{
-    if (saveCheck())
-        openmidifile(recent_files[0]);
-}
-
-void
-qsmainwnd::load_recent_2()
-{
-    if (saveCheck())
-        openmidifile(recent_files[1]);
-}
-
-void
-qsmainwnd::load_recent_3()
-{
-    if (saveCheck())
-        openmidifile(recent_files[2]);
-}
-
-void
-qsmainwnd::load_recent_4()
-{
-    if (saveCheck())
-        openmidifile(recent_files[3]);
-}
-
-void
-qsmainwnd::load_recent_5()
-{
-    if (saveCheck())
-        openmidifile(recent_files[4]);
-}
-
-void
-qsmainwnd::load_recent_6()
-{
-    if (saveCheck())
-        openmidifile(recent_files[5]);
-}
-
-void
-qsmainwnd::load_recent_7()
-{
-    if (saveCheck())
-        openmidifile(recent_files[6]);
-}
-
-void
-qsmainwnd::load_recent_8()
-{
-    if (saveCheck())
-        openmidifile(recent_files[7]);
-}
-
-void
-qsmainwnd::load_recent_9()
-{
-    if (saveCheck())
-        openmidifile(recent_files[8]);
-}
-
-void
-qsmainwnd::load_recent_10()
-{
-    if (saveCheck())
-        openmidifile(recent_files[9]);
-}
-
-void
-qsmainwnd::setRecordingSnap(bool snap)
+qsmainwnd::setRecordingSnap (bool snap)
 {
     perf().song_record_snap(snap);
 }
 
+/**
+ *
+ */
+
 void
-qsmainwnd::keyPressEvent(QKeyEvent *event)
+qsmainwnd::keyPressEvent (QKeyEvent * event)
 {
     switch (event->key())
     {

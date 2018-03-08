@@ -44,6 +44,7 @@
 #include <QMouseEvent>
 
 #include "rect.hpp"
+#include "sequence.hpp"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -52,7 +53,7 @@
 namespace seq64
 {
     class perform;
-    class sequence;
+//  class sequence;
 
 /**
  * The MIDI note grid in the sequence editor

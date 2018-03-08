@@ -1873,6 +1873,9 @@ mainwnd::on_grouplearnchange (bool state)
  *  Actually does the work of setting up for a new file.  Not sure that we
  *  need to clear the modified flag here, especially since it is now
  *  centralizeed in the perform object.  Let perf().clear_all() handle it now.
+ *
+ * \question
+ *      Should we do a save check here, a la Kepler34?
  */
 
 void
@@ -2140,6 +2143,7 @@ mainwnd::open_file (const std::string & fn)
 {
     midifile f(fn);                     /* create object to represent file  */
     perf().clear_all();
+
     bool result = f.parse(perf());      /* parsing handles old & new format */
     if (! result)
     {

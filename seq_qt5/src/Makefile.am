@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2018-02-23
+# \update      2018-03-07
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -180,15 +180,28 @@ lib_LTLIBRARIES = libseq_qt5.la
 #
 # moc_sources = $(moc_qt_headers:.hpp=.moc.cpp)
 #
+# Added qperfnames, qperfroll, qperftime, qseqdata, qseqkeys, qsmaintime,
+# qseqroll, qseqtime, qstriggereditor, due to vtable error for their
+# constructors or destructors.
+#
 #----------------------------------------------------------------------------
 
 moc_qt_headers = \
  $(hppdir)/qseditoptions.hpp \
  $(hppdir)/qperfeditframe.hpp \
+ $(hppdir)/qperfnames.hpp \
+ $(hppdir)/qperfroll.hpp \
+ $(hppdir)/qperftime.hpp \
  $(hppdir)/qsabout.hpp \
+ $(hppdir)/qseqdata.hpp \
  $(hppdir)/qseqeditframe.hpp \
+ $(hppdir)/qseqkeys.hpp \
+ $(hppdir)/qseqroll.hpp \
+ $(hppdir)/qseqtime.hpp \
  $(hppdir)/qsliveframe.hpp \
- $(hppdir)/qsmainwnd.hpp
+ $(hppdir)/qsmaintime.hpp \
+ $(hppdir)/qsmainwnd.hpp \
+ $(hppdir)/qstriggereditor.hpp
 
 # $(hppdir)/qseqmainwnd.hpp
 # $(mocdir)/qseqmaindwnd.moc.cpp

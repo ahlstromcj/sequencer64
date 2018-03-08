@@ -1163,7 +1163,7 @@ seqroll::convert_tn_box_to_rect
     convert_tn(tick_s, note_h, x1, y1);     /* convert box to X,Y values */
     convert_tn(tick_f, note_l, x2, y2);
     rect::xy_to_rect(x1, y1, x2, y2, r);
-    r.incr_height(c_key_y);
+    r.height_incr(c_key_y);
 }
 
 /**

@@ -28,9 +28,10 @@ MAINTAINERCLEANFILES = Makefile.in Makefile $(AUX_DIST)
 #
 #  Do not forget to clean the moc/uic generated files.
 #
+#  CLEANFILES = *.gc* *.moc.cpp ../forms/*.ui.h
+#
 #------------------------------------------------------------------------------
 
-CLEANFILES = *.gc* *.moc.cpp ../forms/*.ui.h
 MOSTLYCLEANFILES = *~
 
 #******************************************************************************

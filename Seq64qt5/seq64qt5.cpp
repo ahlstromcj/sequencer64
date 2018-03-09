@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-03-06
+ * \updates       2018-03-09
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -34,18 +34,13 @@
 
 #include <stdio.h>
 #include <QApplication>
-// #include <QDir>
-// #include <QFile>
 
 #include "cmdlineopts.hpp"              /* command-line functions           */
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "gui_assistant.hpp"            /* seq64::gui_assistant             */
-// #include "gui_assistant_gtk2.hpp"       /* seq64::gui_assistant_gtk2        */
-// #include "gui_palette_gtk2.hpp"         /* colors and "inverse" colors      */
 #include "lash.hpp"                     /* seq64::lash_driver functions     */
-// #include "mainwid.hpp"                  /* needed to fulfill mainwnd        */
 #include "perform.hpp"                  /* seq64::perform                   */
-#include "qsmainwnd.hpp"              /* the main window of seq64qt5      */
+#include "qsmainwnd.hpp"                /* the main window of seq64qt5      */
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc()     */
 
 /**
@@ -77,17 +72,13 @@
 int
 main (int argc, char * argv [])
 {
-    /*
-     * Gtk::Main kit(argc, argv);
-     */
-
     QApplication a(argc, argv);             /* main application object      */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
     (void) seq64::parse_log_option(argc, argv);    /* -o log=file.ext early */
 
     /**
-     * Set up objects that are specific to the Gtk-2 GUI.  Pass them to the
+     * Set up objects that are specific to the GUI.  Pass them to the
      * perform constructor.  Then parse any command-line options to see if
      * they might affect what gets read from the 'rc' or 'user' configuration
      * files.  They will be parsed again later so that they can still override

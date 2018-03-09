@@ -8,6 +8,8 @@
 #
 # DESCRIPTION
 #
+#   Extended by C. Ahlstrom 2018-03-08 to support rcc.
+#
 #   Searches $PATH and queries qmake for Qt include files, libraries and Qt
 #   binary utilities. The macro only supports Qt5 or later.
 #
@@ -20,6 +22,7 @@
 #     QT_CXXFLAGS
 #     QT_LIBS
 #     QT_MOC
+#     QT_RCC    (new with this version)
 #     QT_UIC
 #     QT_LRELEASE
 #     QT_LUPDATE
@@ -112,6 +115,7 @@ EOF
 
     # Look for specific tools in $PATH
     QT_MOC=`which moc`
+    QT_RCC=`which rcc`
     QT_UIC=`which uic`
     QT_LRELEASE=`which lrelease`
     QT_LUPDATE=`which lupdate`
@@ -124,8 +128,9 @@ EOF
     QT_CXXFLAGS=$QT_CXXFLAGS
     QT_DIR=$QT_DIR
     QT_LIBS=$QT_LIBS
-    QT_UIC=$QT_UIC
     QT_MOC=$QT_MOC
+    QT_RCC=$QT_RCC
+    QT_UIC=$QT_UIC
     QT_LRELEASE=$QT_LRELEASE
     QT_LUPDATE=$QT_LUPDATE])
   else
@@ -134,8 +139,9 @@ EOF
     QT_CXXFLAGS=
     QT_DIR=
     QT_LIBS=
-    QT_UIC=
     QT_MOC=
+    QT_RCC=
+    QT_UIC=
     QT_LRELEASE=
     QT_LUPDATE=
     AC_MSG_RESULT($have_qt)
@@ -143,8 +149,9 @@ EOF
   AC_SUBST(QT_CXXFLAGS)
   AC_SUBST(QT_DIR)
   AC_SUBST(QT_LIBS)
-  AC_SUBST(QT_UIC)
   AC_SUBST(QT_MOC)
+  AC_SUBST(QT_RCC)
+  AC_SUBST(QT_UIC)
   AC_SUBST(QT_LRELEASE)
   AC_SUBST(QT_LUPDATE)
 

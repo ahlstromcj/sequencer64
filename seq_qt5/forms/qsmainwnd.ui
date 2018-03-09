@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ui version="4.0">
+<ui version="5.0">
  <class>qsmainwnd</class>
  <widget class="QMainWindow" name="qsmainwnd">
   <property name="geometry">
@@ -31,10 +31,10 @@
    <cursorShape>ArrowCursor</cursorShape>
   </property>
   <property name="windowTitle">
-   <string>Kepler34</string>
+   <string>qseq64</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="kepler34.qrc">
+   <iconset resource="qseq64.qrc">
     <normaloff>:/pixmaps/logo.xpm</normaloff>:/pixmaps/logo.xpm</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -329,7 +329,7 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="kepler34.qrc">
+         <iconset resource="qseq64.qrc">
           <normaloff>:/pixmaps/song-snap.xpm</normaloff>:/pixmaps/song-snap.xpm</iconset>
         </property>
         <property name="checkable">
@@ -361,7 +361,7 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="kepler34.qrc">
+         <iconset resource="qseq64.qrc">
           <normaloff>:/pixmaps/panic.xpm</normaloff>:/pixmaps/panic.xpm</iconset>
         </property>
         <property name="iconSize">
@@ -673,7 +673,7 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="kepler34.qrc"/>
+  <include location="qseq64.qrc"/>
  </resources>
  <connections/>
 </ui>

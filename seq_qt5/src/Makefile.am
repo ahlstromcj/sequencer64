@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2018-03-07
+# \update      2018-03-09
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -19,7 +19,7 @@
 # Packing/cleaning targets
 #-----------------------------------------------------------------------------
 
-AUTOMAKE_OPTIONS = foreign dist-zip dist-bzip2 # subdir-objects
+AUTOMAKE_OPTIONS = foreign dist-zip dist-bzip2 subdir-objects
 MAINTAINERCLEANFILES = Makefile.in Makefile $(AUX_DIST)
 
 #******************************************************************************
@@ -102,6 +102,7 @@ builddir = @abs_top_builddir@
 
 formsdir = $(top_srcdir)/seq_qt5/forms
 hppdir = ../include
+pixdir = $(top_srcdir)/resources/pixmaps
 
 #*****************************************************************************
 # libtool
@@ -160,6 +161,11 @@ SUFFIXES = .hpp .cpp .moc.cpp .ui .ui.h
 %.moc.cpp: %.hpp
 	$(QT_MOC) $< -o ../include/$(notdir $@)
 
+# The qrc files are ...
+
+%.qrc.cpp: %.qrc
+	$(QT_RCC) $< -o $@
+
 # The ui.h files are deposited in the forms directory.
 
 %.ui.h: %.ui
@@ -200,15 +206,41 @@ moc_qt_headers = \
  $(hppdir)/qseqtime.hpp \
  $(hppdir)/qsliveframe.hpp \
  $(hppdir)/qsmaintime.hpp \
- $(hppdir)/qsmainwnd.hpp \
- $(hppdir)/qstriggereditor.hpp
-
-# $(hppdir)/qseqmainwnd.hpp
-# $(mocdir)/qseqmaindwnd.moc.cpp
-# $(formsdir)/qseqmainwnd.ui
-#	qseqmainwnd.cpp
+ $(hppdir)/qsmainwnd.hpp
 
 moc_sources = $(moc_qt_headers:.hpp=.moc.cpp)
+
+qseq64.qrc.cpp: qseq64.qrc \
+ $(pixdir)/song-snap.xpm \
+ $(pixdir)/panic.xpm \
+ $(pixdir)/logo.xpm \
+ $(pixdir)/drum.xpm \
+ $(pixdir)/note_length.xpm \
+ $(pixdir)/quantize.xpm \
+ $(pixdir)/snap.xpm \
+ $(pixdir)/play2.xpm \
+ $(pixdir)/collapse.xpm \
+ $(pixdir)/midi.xpm \
+ $(pixdir)/length.xpm \
+ $(pixdir)/loop.xpm \
+ $(pixdir)/zoom.xpm \
+ $(pixdir)/editor-rec.xpm \
+ $(pixdir)/redo.xpm \
+ $(pixdir)/drum.xpm \
+ $(pixdir)/scale.xpm \
+ $(pixdir)/bus.xpm \
+ $(pixdir)/editor-q-rec.xpm \
+ $(pixdir)/stop.xpm \
+ $(pixdir)/rec.xpm \
+ $(pixdir)/editor-play.xpm \
+ $(pixdir)/expand.xpm \
+ $(pixdir)/undo.xpm \
+ $(pixdir)/sequences.xpm \
+ $(pixdir)/play.xpm \
+ $(pixdir)/key.xpm \
+ $(pixdir)/editor-thru.xpm \
+ $(pixdir)/copy.xpm \
+ $(pixdir)/tools.xpm
 
 uic_qt_forms = \
  $(formsdir)/qseditoptions.ui \
@@ -240,6 +272,7 @@ libseq_qt5_la_SOURCES = \
  qsmaintime.cpp \
  qsmainwnd.cpp \
  qstriggereditor.cpp \
+ qseq64.qrc.cpp \
  $(moc_sources)
 
 libseq_qt5_la_LDFLAGS = -version-info $(version)

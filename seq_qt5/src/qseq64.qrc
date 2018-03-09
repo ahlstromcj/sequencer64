@@ -1,0 +1,37 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/pixmaps">
+        <file>pixmaps/stop.xpm</file>
+        <file>pixmaps/rec.xpm</file>
+        <file>pixmaps/play2.xpm</file>
+        <file>pixmaps/play.xpm</file>
+        <file>pixmaps/undo.xpm</file>
+        <file>pixmaps/redo.xpm</file>
+        <file>pixmaps/quantize.xpm</file>
+        <file>pixmaps/loop.xpm</file>
+        <file>pixmaps/collapse.xpm</file>
+        <file>pixmaps/expand.xpm</file>
+        <file>pixmaps/copy.xpm</file>
+        <file>pixmaps/zoom.xpm</file>
+        <file>pixmaps/tools.xpm</file>
+        <file>pixmaps/snap.xpm</file>
+        <file>pixmaps/sequences.xpm</file>
+        <file>pixmaps/scale.xpm</file>
+        <file>pixmaps/note_length.xpm</file>
+        <file>pixmaps/midi.xpm</file>
+        <file>pixmaps/length.xpm</file>
+        <file>pixmaps/key.xpm</file>
+        <file>pixmaps/bus.xpm</file>
+        <file>pixmaps/editor-play.xpm</file>
+        <file>pixmaps/editor-q-rec.xpm</file>
+        <file>pixmaps/editor-rec.xpm</file>
+        <file>pixmaps/editor-thru.xpm</file>
+        <file>pixmaps/drum.xpm</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>pixmaps/drum.xpm</file>
+        <file>pixmaps/logo.xpm</file>
+        <file>pixmaps/panic.xpm</file>
+        <file>pixmaps/song-snap.xpm</file>
+    </qresource>
+</RCC>

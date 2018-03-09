@@ -666,8 +666,9 @@ BUILD_ALSAMIDI_TRUE
 APP_NAME
 QT_LUPDATE
 QT_LRELEASE
-QT_MOC
 QT_UIC
+QT_RCC
+QT_MOC
 QT_LIBS
 QT_DIR
 QT_CXXFLAGS
@@ -4934,6 +4935,7 @@ esac
 
 
 build_alsamidi="no"
+build_qtmidi="no"
 build_rtmidi="no"
 build_portmidi="no"
 build_rtcli="no"
@@ -18818,6 +18820,7 @@ EOF
 
     # Look for specific tools in $PATH
     QT_MOC=`which moc`
+    QT_RCC=`which rcc`
     QT_UIC=`which uic`
     QT_LRELEASE=`which lrelease`
     QT_LUPDATE=`which lupdate`
@@ -18830,16 +18833,18 @@ EOF
     QT_CXXFLAGS=$QT_CXXFLAGS
     QT_DIR=$QT_DIR
     QT_LIBS=$QT_LIBS
-    QT_UIC=$QT_UIC
     QT_MOC=$QT_MOC
+    QT_RCC=$QT_RCC
+    QT_UIC=$QT_UIC
     QT_LRELEASE=$QT_LRELEASE
     QT_LUPDATE=$QT_LUPDATE" >&5
 $as_echo "$have_qt:
     QT_CXXFLAGS=$QT_CXXFLAGS
     QT_DIR=$QT_DIR
     QT_LIBS=$QT_LIBS
-    QT_UIC=$QT_UIC
     QT_MOC=$QT_MOC
+    QT_RCC=$QT_RCC
+    QT_UIC=$QT_UIC
     QT_LRELEASE=$QT_LRELEASE
     QT_LUPDATE=$QT_LUPDATE" >&6; }
   else
@@ -18848,13 +18853,15 @@ $as_echo "$have_qt:
     QT_CXXFLAGS=
     QT_DIR=
     QT_LIBS=
-    QT_UIC=
     QT_MOC=
+    QT_RCC=
+    QT_UIC=
     QT_LRELEASE=
     QT_LUPDATE=
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_qt" >&5
 $as_echo "$have_qt" >&6; }
   fi
+
 
 
 
@@ -18983,6 +18990,7 @@ $as_echo "#define APP_NAME \"seq64cli\"" >>confdefs.h
 
     if test "x$mingw" != "xyes" ; then
         build_rtcli="yes"
+        build_rtmidi="no"
 
 $as_echo "#define RTMIDI_SUPPORT 1" >>confdefs.h
 
@@ -19193,6 +19201,7 @@ fi
 
     else
         build_windows="yes"
+        build_rtmidi="no"
 
 $as_echo "#define PORTMIDI_SUPPORT 1" >>confdefs.h
 

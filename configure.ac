@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-03-04
+dnl \update        2018-03-08
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -115,6 +115,7 @@ dnl Note that the BUILD_XXXX macros "merely" select which subdirectories we
 dnl descend into during the build.
 
 build_alsamidi="no"
+build_qtmidi="no"
 build_rtmidi="no"
 build_portmidi="no"
 build_rtcli="no"
@@ -580,10 +581,12 @@ if test "$cli" != "no"; then
     AC_DEFINE(APP_NAME, ["seq64cli"], [Names the CLI version of application])
     if test "x$mingw" != "xyes" ; then
         build_rtcli="yes"
+        build_rtmidi="no"
         AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates that rtmidi is enabled])
         AM_PATH_ALSA(0.9.0)
     else
         build_windows="yes"
+        build_rtmidi="no"
         AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates that PortMidi is enabled])
     fi
 else

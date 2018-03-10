@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2018-03-09
+# \update      2018-03-10
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -99,10 +99,13 @@ builddir = @abs_top_builddir@
 #  The UI forms are stored in the "forms" directory, while the generated files
 #  are stored in the "qt" directory, for both moc'ing and uic'ing.
 #
+# hppdir = ../include
+#
 #-----------------------------------------------------------------------------
 
+thisdir = $(top_srcdir)/seq_qt5
 formsdir = $(top_srcdir)/seq_qt5/forms
-hppdir = ../include
+hppdir = $(top_srcdir)/seq_qt5/include
 pixdir = $(top_srcdir)/resources/pixmaps
 
 #*****************************************************************************
@@ -134,12 +137,12 @@ git_info = "$(git_version) $(git_branch)"
 #     -  We include "-I.." and require that the Qt5-generated modules be
 #        included as:   "#include "qt/generated_module.h".
 #
+# -I..
 #------------------------------------------------------------------------------
 
 AM_CXXFLAGS = \
- -I.. \
- -I../include \
- -I$(top_srcdir)/include \
+ -I$(hppdir) \
+ -I$(thisdir) \
  -I$(top_srcdir)/libseq64/include \
  -I$(top_srcdir)/seq_alsamidi/include \
  -I$(top_srcdir)/seq_portmidi/include \
@@ -152,25 +155,45 @@ AM_CXXFLAGS = \
  -DSEQ64_GIT_VERSION=\"$(git_info)\"
 
 #******************************************************************************
-# Qt 5 rules
+# Moc flags
 #------------------------------------------------------------------------------
 
-SUFFIXES = .hpp .cpp .moc.cpp .ui .ui.h
+MOC_CPPFLAGS = -I$(top_srcdir)/include
+
+if BUILD_QTMIDI
+   MOC_CPPFLAGS += -DQ_OS_MAC
+endif
+
+if BUILD_WINDOWS
+   MOC_CPPFLAGS += -D_WIN32
+endif
+
+#******************************************************************************
+# Qt 5 rules
+#
+#     $@ is the name of the file being generated;
+#     $< is the first prerequisite (the source file)
+#
+#------------------------------------------------------------------------------
+
+SUFFIXES = .h .hpp .cpp .moc.cpp .grc.cpp .ui .ui.h
 
 # The moc.cpp files are normally deposited in the include directory!
+#
+#     $(QT_MOC) $(MOC_CPPFLAGS) -o ../include/$(notdir $@) $<
 
 %.moc.cpp: %.hpp
-	$(QT_MOC) $< -o ../include/$(notdir $@)
-
-# The qrc files are ...
-
-%.qrc.cpp: %.qrc
-	$(QT_RCC) $< -o $@
+	$(QT_MOC) $(MOC_CPPFLAGS) -o $@ $<
 
 # The ui.h files are deposited in the forms directory.
 
 %.ui.h: %.ui
-	$(QT_UIC) $< -o $@
+	$(QT_UIC) -o $@ $<
+
+# The qrc files hold resources needed that aren't code.
+
+%.qrc.cpp: %.qrc
+	$(QT_RCC) -o $@ $<
 
 #******************************************************************************
 # The library to build, a libtool-based library
@@ -191,25 +214,38 @@ lib_LTLIBRARIES = libseq_qt5.la
 # qseqroll, qseqtime, qstriggereditor, due to vtable error for their
 # constructors or destructors.
 #
+#  Somehow, using the hppdir macro creates a '$(hppdir)' directory.... :-(
+#
 #----------------------------------------------------------------------------
 
 moc_qt_headers = \
- $(hppdir)/qseditoptions.hpp \
- $(hppdir)/qperfeditframe.hpp \
- $(hppdir)/qperfnames.hpp \
- $(hppdir)/qperfroll.hpp \
- $(hppdir)/qperftime.hpp \
- $(hppdir)/qsabout.hpp \
- $(hppdir)/qseqdata.hpp \
- $(hppdir)/qseqeditframe.hpp \
- $(hppdir)/qseqkeys.hpp \
- $(hppdir)/qseqroll.hpp \
- $(hppdir)/qseqtime.hpp \
- $(hppdir)/qsliveframe.hpp \
- $(hppdir)/qsmaintime.hpp \
- $(hppdir)/qsmainwnd.hpp
+ ../include/qperfeditframe.hpp \
+ ../include/qperfnames.hpp \
+ ../include/qperfroll.hpp \
+ ../include/qperftime.hpp \
+ ../include/qsabout.hpp \
+ ../include/qseditoptions.hpp \
+ ../include/qseqdata.hpp \
+ ../include/qseqeditframe.hpp \
+ ../include/qseqkeys.hpp \
+ ../include/qseqroll.hpp \
+ ../include/qseqtime.hpp \
+ ../include/qsliveframe.hpp \
+ ../include/qsmaintime.hpp \
+ ../include/qsmainwnd.hpp \
+ ../include/qstriggereditor.hpp
 
 moc_sources = $(moc_qt_headers:.hpp=.moc.cpp)
+
+uic_qt_forms = \
+ $(formsdir)/qseditoptions.ui \
+ $(formsdir)/qperfeditframe.ui \
+ $(formsdir)/qsabout.ui \
+ $(formsdir)/qseqeditframe.ui \
+ $(formsdir)/qsliveframe.ui \
+ $(formsdir)/qsmainwnd.ui
+
+uic_sources = $(uic_qt_forms:.ui=.ui.h)
 
 qseq64.qrc.cpp: qseq64.qrc \
  $(pixdir)/song-snap.xpm \
@@ -243,17 +279,7 @@ qseq64.qrc.cpp: qseq64.qrc \
  $(pixdir)/copy.xpm \
  $(pixdir)/tools.xpm
 
-uic_qt_forms = \
- $(formsdir)/qseditoptions.ui \
- $(formsdir)/qperfeditframe.ui \
- $(formsdir)/qsabout.ui \
- $(formsdir)/qseqeditframe.ui \
- $(formsdir)/qsliveframe.ui \
- $(formsdir)/qsmainwnd.ui
-
-uic_sources = $(uic_qt_forms:.ui=.ui.h)
-
-BUILT_SOURCES = $(uic_sources) $(moc_sources)
+BUILT_SOURCES = $(uic_sources) $(moc_sources) qseq64.qrc.cpp
 
 libseq_qt5_la_SOURCES = \
  gui_palette_qt5.cpp \

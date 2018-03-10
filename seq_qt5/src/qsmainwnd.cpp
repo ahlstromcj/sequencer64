@@ -708,12 +708,7 @@ qsmainwnd::update_recent_files_menu ()
      *  uses a simple loop.
      */
 
-
-    if (rc().recent_file_count() > 0)
-    {
-        m_action[0]->setShortcut(tr("Ctrl+R"));
-    }
-    else
+    if (rc().recent_file_count() == 0)
     {
         m_menu_recent->addAction(tr("<none>"));
         ui->menuFile->insertMenu(ui->actionSave, m_menu_recent);
@@ -722,6 +717,8 @@ qsmainwnd::update_recent_files_menu ()
 
     if (rc().recent_file_count() > 0)
     {
+        ///// DOES THIS CAUSE SEGFAULT?
+        //    m_action[0]->setShortcut(tr("Ctrl+R"));
         m_action[0] = new QAction(rc().recent_file(0).c_str(), this);
         connect(m_action[0], SIGNAL(triggered(bool)), this, SLOT(load_recent_1()));
     }

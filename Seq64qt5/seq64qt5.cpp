@@ -73,6 +73,7 @@ int
 main (int argc, char * argv [])
 {
     QApplication a(argc, argv);             /* main application object      */
+    int exit_status = EXIT_SUCCESS;         /* EXIT_FAILURE                 */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
     (void) seq64::parse_log_option(argc, argv);    /* -o log=file.ext early */
@@ -175,12 +176,7 @@ main (int argc, char * argv [])
             {
                 std::string midifilename = argv[optionindex];
                 if (seq64::file_accessible(midifilename))
-                {
-                    /*
-                     * TODO
                     seq24_window.open_file(midifilename);
-                     */
-                }
                 else
                     printf("? MIDI file not found: %s\n", midifilename.c_str());
             }
@@ -188,12 +184,7 @@ main (int argc, char * argv [])
             if (seq64::rc().lash_support())
                 seq64::create_lash_driver(p, argc, argv);
 
-            /*
-             * TODO
-             *
-            kit.run(seq24_window);                  // run until user quit  //
-             */
-
+            exit_status = a.exec();                 /* run main window loop */
             p.finish();                             /* tear down performer  */
             if (seq64::rc().auto_option_save())
             {
@@ -214,7 +205,7 @@ main (int argc, char * argv [])
              */
         }
     }
-    return ok ? EXIT_SUCCESS : EXIT_FAILURE ;
+    return exit_status;
 }
 
 /*

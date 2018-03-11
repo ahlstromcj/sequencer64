@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-06
+ * \updates       2018-03-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -133,14 +133,19 @@ qsliveframe::paintEvent (QPaintEvent *)
 void
 qsliveframe::drawSequence (int seq)
 {
-    mPainter = new QPainter(this);
-    mPen = new QPen(Qt::black);
-    mBrush = new QBrush(Qt::darkGray);
+    ///// mPainter = new QPainter(this);
+    ///// mPen = new QPen(Qt::black);
+    ///// mBrush = new QBrush(Qt::darkGray);
+
+    QPainter painter(this);
+    QPen pen(Qt::black);
+    QBrush brush(Qt::darkGray);
+
     mFont.setPointSize(6);
     mFont.setLetterSpacing(QFont::AbsoluteSpacing, 1);
-    mPainter->setPen(*mPen);
-    mPainter->setBrush(*mBrush);
-    mPainter->setFont(mFont);
+    painter.setPen(pen);
+    painter.setBrush(brush);
+    painter.setFont(mFont);
 
     midipulse tick = mPerf.get_tick();  // timing info for timed draw elements
     int metro = (tick / c_ppqn) % 2;
@@ -164,78 +169,75 @@ qsliveframe::drawSequence (int seq)
         sequence * s = mPerf.get_sequence(seq);
         if (not_nullptr(s))
         {
-            Color backcolor;
             int c = s->color();
-            if (c != SEQ64_COLOR_NONE)
-                backcolor = get_color_fix(PaletteColor(c));
-
-            mPen->setColor(Qt::black);
-            mPen->setStyle(Qt::SolidLine);
+            Color backcolor = get_color_fix(PaletteColor(c));
+            pen.setColor(Qt::black);
+            pen.setStyle(Qt::SolidLine);
             if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
             {
                 /*
                  * Playing but queued to mute, or turning off after snapping.
                  */
 
-                mPen->setWidth(2);
-                mPen->setColor(Qt::black);
-                mPen->setStyle(Qt::DashLine);
-                mPainter->setPen(*mPen);
+                pen.setWidth(2);
+                pen.setColor(Qt::black);
+                pen.setStyle(Qt::DashLine);
+                painter.setPen(pen);
                 backcolor.setAlpha(210);
-                mBrush->setColor(backcolor);
-                mPainter->setBrush(*mBrush);
-                mPainter->drawRect(base_x, base_y, thumbW + 1, thumbH + 1);
+                brush.setColor(backcolor);
+                painter.setBrush(brush);
+                painter.drawRect(base_x, base_y, thumbW + 1, thumbH + 1);
             }
             else if (s->get_playing())              // playing, no queueing
             {
-                mPen->setWidth(2);
-                mPainter->setPen(*mPen);
+                pen.setWidth(2);
+                painter.setPen(pen);
                 backcolor.setAlpha(210);
-                mBrush->setColor(backcolor);
-                mPainter->setBrush(*mBrush);
-                mPainter->drawRect(base_x, base_y, thumbW + 1, thumbH + 1);
+                brush.setColor(backcolor);
+                painter.setBrush(brush);
+                painter.drawRect(base_x, base_y, thumbW + 1, thumbH + 1);
             }
             else if (s->get_queued())       // not playing but queued
             {
-                mPen->setWidth(2);
-                mPen->setColor(Qt::darkGray);
-                mPen->setStyle(Qt::DashLine);
+                pen.setWidth(2);
+                pen.setColor(Qt::darkGray);
+                pen.setStyle(Qt::DashLine);
                 backcolor.setAlpha(180);
-                mBrush->setColor(backcolor);
-                mPainter->setPen(*mPen);
-                mPainter->setBrush(*mBrush);
-                mPainter->drawRect(base_x, base_y, thumbW, thumbH);
+                brush.setColor(backcolor);
+                painter.setPen(pen);
+                painter.setBrush(brush);
+                painter.drawRect(base_x, base_y, thumbW, thumbH);
             }
             else if (s->one_shot())         // queued for one-shot
             {
-                mPen->setWidth(2);
-                mPen->setColor(Qt::darkGray);
-                mPen->setStyle(Qt::DotLine);
+                pen.setWidth(2);
+                pen.setColor(Qt::darkGray);
+                pen.setStyle(Qt::DotLine);
                 backcolor.setAlpha(180);
-                mBrush->setColor(backcolor);
-                mPainter->setPen(*mPen);
-                mPainter->setBrush(*mBrush);
-                mPainter->drawRect(base_x, base_y, thumbW, thumbH);
+                brush.setColor(backcolor);
+                painter.setPen(pen);
+                painter.setBrush(brush);
+                painter.drawRect(base_x, base_y, thumbW, thumbH);
             }
             else                            // just not playing
             {
-                mPen->setStyle(Qt::NoPen);
+                pen.setStyle(Qt::NoPen);
                 backcolor.setAlpha(180);
-                mBrush->setColor(backcolor);
-                mPainter->setPen(*mPen);
-                mPainter->setBrush(*mBrush);
-                mPainter->drawRect(base_x, base_y, thumbW, thumbH);
+                brush.setColor(backcolor);
+                painter.setPen(pen);
+                painter.setBrush(brush);
+                painter.drawRect(base_x, base_y, thumbW, thumbH);
             }
 
-            mPen->setColor(Qt::black);      // write seq data strings, name
-            mPen->setWidth(1);
-            mPen->setStyle(Qt::SolidLine);
-            mPainter->setPen(*mPen);
+            pen.setColor(Qt::black);      // write seq data strings, name
+            pen.setWidth(1);
+            pen.setStyle(Qt::SolidLine);
+            painter.setPen(pen);
 
             // TODO Use perform::sequence_label() to do this
             char name[20];
             snprintf(name, sizeof name, "%.13s", s->name().c_str());
-            mPainter->drawText(base_x + qc_text_x, base_y + 4, 80, 80, 1, name);
+            painter.drawText(base_x + qc_text_x, base_y + 4, 80, 80, 1, name);
 
             /* midi channel + key + timesig */
             if (mPerf.show_ui_sequence_key())
@@ -250,24 +252,24 @@ qsliveframe::drawSequence (int seq)
                 (
                     seq - mPerf.screenset() * c_seqs_in_set
                 );
-                mPainter->drawText(base_x + thumbW - 10, base_y + thumbH - 5, key);
+                painter.drawText(base_x + thumbW - 10, base_y + thumbH - 5, key);
             }
 
             QString seqInfo = QString::number(s->get_midi_bus() + 1);
             seqInfo.append("-");
             seqInfo.append(QString::number(s->get_midi_channel() + 1));
 
-            mPainter->drawText(base_x + 5, base_y + thumbH - 5, seqInfo);
+            painter.drawText(base_x + 5, base_y + thumbH - 5, seqInfo);
 
             int rectangle_x = base_x + 7;
             int rectangle_y = base_y + 15;
 
-            mPen->setColor(Qt::gray);
-            mBrush->setStyle(Qt::NoBrush);
-            mPainter->setBrush(*mBrush);
-            mPainter->setPen(*mPen);
+            pen.setColor(Qt::gray);
+            brush.setStyle(Qt::NoBrush);
+            painter.setBrush(brush);
+            painter.setPen(pen);
             //draw inner box for notes
-            mPainter->drawRect(rectangle_x-2, rectangle_y-1, previewW, previewH);
+            painter.drawRect(rectangle_x-2, rectangle_y-1, previewW, previewH);
 
             int lowest_note;    //  = s->get_lowest_note_event();
             int highest_note;   //  = s->get_highest_note_event();
@@ -309,10 +311,10 @@ qsliveframe::drawSequence (int seq)
                 if (tick_f_x <= tick_s_x)
                     tick_f_x = tick_s_x + 1;
 
-                mPen->setColor(Qt::black); // draw line representing this note
-                mPen->setWidth(2);
-                mPainter->setPen(*mPen);
-                mPainter->drawLine(rectangle_x + tick_s_x,
+                pen.setColor(Qt::black); // draw line representing this note
+                pen.setWidth(2);
+                painter.setPen(pen);
+                painter.drawLine(rectangle_x + tick_s_x,
                                    rectangle_y + note_y,
                                    rectangle_x + tick_f_x,
                                    rectangle_y + note_y);
@@ -324,18 +326,18 @@ qsliveframe::drawSequence (int seq)
 
             midipulse tick_x = a_tick * previewW / length;
             if (s->get_playing())
-                mPen->setColor(Qt::red);
+                pen.setColor(Qt::red);
             else
-                mPen->setColor(Qt::black);
+                pen.setColor(Qt::black);
 
             if (s->get_playing() && (s->get_queued() || s->off_from_snap()))
-                mPen->setColor(Qt::green);
+                pen.setColor(Qt::green);
             else if (s->one_shot())
-                mPen->setColor(Qt::blue);
+                pen.setColor(Qt::blue);
 
-            mPen->setWidth(1);
-            mPainter->setPen(*mPen);
-            mPainter->drawLine
+            pen.setWidth(1);
+            painter.setPen(pen);
+            painter.drawLine
             (
                 rectangle_x + tick_x - 1, rectangle_y - 1,
                 rectangle_x + tick_x - 1, rectangle_y + previewH + 1
@@ -343,20 +345,20 @@ qsliveframe::drawSequence (int seq)
         }
         else
         {
-            mPen->setColor(Qt::black);
-            mPen->setStyle(Qt::NoPen);
+            pen.setColor(Qt::black);
+            pen.setStyle(Qt::NoPen);
             mFont.setPointSize(15);
-            mPainter->setPen(*mPen);
-            mPainter->setFont(mFont);
+            painter.setPen(pen);
+            painter.setFont(mFont);
 
             // draw outline of this seq thumbnail
 
-            mPainter->drawRect(base_x, base_y, thumbW, thumbH);
+            painter.drawRect(base_x, base_y, thumbW, thumbH);
 
             // no sequence present. Insert placeholder
-            mPen->setStyle(Qt::SolidLine);
-            mPainter->setPen(*mPen);
-            mPainter->drawText(base_x + 2, base_y + 17, "+");
+            pen.setStyle(Qt::SolidLine);
+            painter.setPen(pen);
+            painter.drawText(base_x + 2, base_y + 17, "+");
         }
     }
 
@@ -365,9 +367,10 @@ qsliveframe::drawSequence (int seq)
 
     alpha *= 0.7 - mPerf.bpm() / 300.0;
     lastMetro = metro;
-    delete mPainter;
-    delete mPen;
-    delete mBrush;
+
+    ///// delete mPainter;
+    ///// delete mPen;
+    ///// delete mBrush;
 }
 
 /**

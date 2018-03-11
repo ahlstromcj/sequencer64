@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2018-03-10
+# \update      2018-03-11
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -32,6 +32,7 @@ MAINTAINERCLEANFILES = Makefile.in Makefile $(AUX_DIST)
 #
 #------------------------------------------------------------------------------
 
+CLEANFILES = "qseq64.qrc.cpp"
 MOSTLYCLEANFILES = *~
 
 #******************************************************************************

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-06
+ * \updates       2018-03-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -124,9 +124,6 @@ private:
     seq64::sequence m_moving_seq;
     seq64::sequence m_seq_clipboard;
 
-    QPainter * mPainter;
-    QBrush * mBrush;
-    QPen * mPen;
     QMenu * mPopup;
     QTimer * mRedrawTimer;
     QMessageBox * mMsgBoxNewSeqCheck;
@@ -159,14 +156,14 @@ private slots:
     void cutSeq ();
     void pasteSeq ();
     void deleteSeq ();
-    void set_color_white ();
-    void set_color_red ();
-    void set_color_green ();
-    void set_color_blue ();
-    void set_color_yellow ();
-    void set_color_purple ();
-    void set_color_pink ();
-    void set_color_orange ();
+    void color_white ();
+    void color_red ();
+    void color_green ();
+    void color_blue ();
+    void color_yellow ();
+    void color_purple ();
+    void color_pink ();
+    void color_orange ();
 
 signals:
 

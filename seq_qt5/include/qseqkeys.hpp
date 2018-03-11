@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-03
+ * \updates       2018-03-11
  * \license       GNU GPLv2 or above
  *
  *      We've added the feature of a right-click toggling between showing the
@@ -103,9 +103,6 @@ private:
 
     sequence & m_seq;
     QTimer * m_timer;
-    QPen * m_pen;
-    QBrush * m_brush;
-    QPainter * m_painter;
     QFont m_font;
     int m_key;
     int keyY;

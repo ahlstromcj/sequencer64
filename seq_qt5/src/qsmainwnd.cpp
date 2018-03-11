@@ -601,26 +601,28 @@ qsmainwnd::updateBeatLength (int blIndex)
     m_song_frame->set_beat_width(bl);
     m_beat_ind->set_beat_width(bl);
 
-    //also set beat length for all sequences
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < c_max_sequence; i++) // set beat length, all sequences
     {
         if (perf().is_active(i))
         {
             sequence *seq =  perf().get_sequence(i);
             seq->set_beat_width(bl);
-            //reset number of measures, causing length to adjust to new b/m
+
+            // reset number of measures, causing length to adjust to new b/m
+
             seq->set_num_measures(seq->get_num_measures());
         }
     }
     m_modified = true;
 
-    //update the edit frame if it exists
     if (m_edit_frame)
         m_edit_frame->updateDrawGeometry();
 }
 
 /**
  *
+ *  Also set beat length for all sequences.
+ *  Reset number of measures, causing length to adjust to new b/m.
  */
 
 void
@@ -630,20 +632,17 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
     m_song_frame->set_beats_per_measure(bm);
     m_beat_ind->set_beats_per_measure(bm);
 
-    //also set beat length for all sequences
     for (int i = 0; i < c_max_sequence; i++)
     {
         if (perf().is_active(i))
         {
             sequence *seq =  perf().get_sequence(i);
             seq->set_beats_per_bar(bmIndex + 1);
-            //reset number of measures, causing length to adjust to new b/m
             seq->set_num_measures(seq->get_num_measures());
 
         }
     }
     m_modified = true;
-    //update the edit frame if it exists
     if (m_edit_frame)
         m_edit_frame->updateDrawGeometry();
 }

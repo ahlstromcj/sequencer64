@@ -24,7 +24,7 @@
       </font>
      </property>
      <property name="text">
-      <string>kepler34</string>
+      <string>qseq64</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

@@ -54,7 +54,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="kepler34.qrc">
+          <iconset resource="qseq64.qrc">
            <normaloff>:/pixmaps/pixmaps/undo.xpm</normaloff>:/pixmaps/pixmaps/undo.xpm</iconset>
          </property>
         </widget>
@@ -74,7 +74,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="kepler34.qrc">
+          <iconset resource="qseq64.qrc">
            <normaloff>:/pixmaps/pixmaps/redo.xpm</normaloff>:/pixmaps/pixmaps/redo.xpm</iconset>
          </property>
         </widget>
@@ -98,7 +98,7 @@
           <string>-</string>
          </property>
          <property name="icon">
-          <iconset resource="kepler34.qrc">
+          <iconset resource="qseq64.qrc">
            <normaloff>:/pixmaps/pixmaps/zoom.xpm</normaloff>:/pixmaps/pixmaps/zoom.xpm</iconset>
          </property>
         </widget>
@@ -118,7 +118,7 @@
           <string>+</string>
          </property>
          <property name="icon">
-          <iconset resource="kepler34.qrc">
+          <iconset resource="qseq64.qrc">
            <normaloff>:/pixmaps/pixmaps/zoom.xpm</normaloff>:/pixmaps/pixmaps/zoom.xpm</iconset>
          </property>
         </widget>
@@ -176,7 +176,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="kepler34.qrc">
+        <iconset resource="qseq64.qrc">
          <normaloff>:/pixmaps/pixmaps/loop.xpm</normaloff>:/pixmaps/pixmaps/loop.xpm</iconset>
        </property>
        <property name="iconSize">
@@ -220,7 +220,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="kepler34.qrc">
+          <iconset resource="qseq64.qrc">
            <normaloff>:/pixmaps/pixmaps/collapse.xpm</normaloff>:/pixmaps/pixmaps/collapse.xpm</iconset>
          </property>
          <property name="iconSize">
@@ -246,7 +246,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="kepler34.qrc">
+          <iconset resource="qseq64.qrc">
            <normaloff>:/pixmaps/pixmaps/copy.xpm</normaloff>:/pixmaps/pixmaps/copy.xpm</iconset>
          </property>
          <property name="iconSize">
@@ -278,7 +278,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="kepler34.qrc">
+          <iconset resource="qseq64.qrc">
            <normaloff>:/pixmaps/pixmaps/expand.xpm</normaloff>:/pixmaps/pixmaps/expand.xpm</iconset>
          </property>
          <property name="iconSize">
@@ -331,7 +331,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="kepler34.qrc"/>
+  <include location="qseq64.qrc"/>
  </resources>
  <connections/>
 </ui>

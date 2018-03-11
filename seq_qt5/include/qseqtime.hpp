@@ -76,9 +76,6 @@ private:
 
     sequence & m_seq;
     QTimer * m_timer;
-    QPen * m_pen;
-    QBrush * m_brush;
-    QPainter * m_painter;
     QFont m_font;
     int m_zoom;
 

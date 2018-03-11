@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-03
+ * \updates       2018-03-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -50,9 +50,6 @@ qperftime::qperftime(perform & p, QWidget * parent)
     QWidget             (parent),
     m_mainperf          (p),
     mTimer              (new QTimer(this)), // refresh timer for redraws
-    mPen                (nullptr),
-    mBrush              (nullptr),
-    mPainter            (nullptr),
     mFont               (),
     m_4bar_offset       (0),
     m_snap              (c_ppqn),
@@ -72,14 +69,15 @@ qperftime::qperftime(perform & p, QWidget * parent)
 void
 qperftime::paintEvent (QPaintEvent *)
 {
-    mPainter = new QPainter(this);
-    mPen = new QPen(Qt::black);
-    mBrush = new QBrush(Qt::lightGray, Qt::SolidPattern);
+    QPainter painter(this);
+    QPen pen(Qt::black);
+    QBrush brush(Qt::lightGray, Qt::SolidPattern);
+
     mFont.setPointSize(6);
-    mPainter->setPen(*mPen);
-    mPainter->setBrush(*mBrush);
-    mPainter->setFont(mFont);
-    mPainter->drawRect(0, 0, width(), height());
+    painter.setPen(pen);
+    painter.setBrush(brush);
+    painter.setFont(mFont);
+    painter.drawRect(0, 0, width(), height());
 
     /* draw vert lines */
 
@@ -93,16 +91,16 @@ qperftime::paintEvent (QPaintEvent *)
         int x_pos = ((i * m_measure_length) - tick_offset) /
             (c_perf_scale_x * zoom);
 
-        mPen->setColor(Qt::black);          /* beat */
-        mPainter->setPen(*mPen);
-        mPainter->drawLine(x_pos, 0, x_pos, height());
+        pen.setColor(Qt::black);          /* beat */
+        painter.setPen(pen);
+        painter.drawLine(x_pos, 0, x_pos, height());
 
         if (zoom <= 2)          // only draw these numbers if they'll fit
         {
             QString bar(QString::number(i + 1));
-            mPen->setColor(Qt::black);
-            mPainter->setPen(*mPen);
-            mPainter->drawText(x_pos + 2, 9, bar);
+            pen.setColor(Qt::black);
+            painter.setPen(pen);
+            painter.drawText(x_pos + 2, 9, bar);
         }
     }
 
@@ -114,25 +112,25 @@ qperftime::paintEvent (QPaintEvent *)
     right /= c_perf_scale_x * zoom;
     if (left >= 0 && left <= width())
     {
-        mPen->setColor(Qt::black);
-        mBrush->setColor(Qt::black);
-        mPainter->setBrush(*mBrush);
-        mPainter->setPen(*mPen);
-        mPainter->drawRect(left, height() - 9, 7, 10);
-        mPen->setColor(Qt::white);
-        mPainter->setPen(*mPen);
-        mPainter->drawText(left + 1, 21, "L");
+        pen.setColor(Qt::black);
+        brush.setColor(Qt::black);
+        painter.setBrush(brush);
+        painter.setPen(pen);
+        painter.drawRect(left, height() - 9, 7, 10);
+        pen.setColor(Qt::white);
+        painter.setPen(pen);
+        painter.drawText(left + 1, 21, "L");
     }
     if (right >= 0 && right <= width())
     {
-        mPen->setColor(Qt::black);
-        mBrush->setColor(Qt::black);
-        mPainter->setBrush(*mBrush);
-        mPainter->setPen(*mPen);
-        mPainter->drawRect(right - 6, height() - 9, 7, 10);
-        mPen->setColor(Qt::white);
-        mPainter->setPen(*mPen);
-        mPainter->drawText(right - 6 + 1, 21, "R");
+        pen.setColor(Qt::black);
+        brush.setColor(Qt::black);
+        painter.setBrush(brush);
+        painter.setPen(pen);
+        painter.drawRect(right - 6, height() - 9, 7, 10);
+        pen.setColor(Qt::white);
+        painter.setPen(pen);
+        painter.drawText(right - 6 + 1, 21, "R");
     }
 }
 

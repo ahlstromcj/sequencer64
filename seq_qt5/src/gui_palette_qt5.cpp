@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-02-23
- * \updates       2018-03-04
+ * \updates       2018-03-11
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -122,35 +122,6 @@ gui_palette_qt5::gui_palette_qt5 ()
     m_bg_color          (),
     m_fg_color          ()
 {
-    /*
-    Glib::RefPtr<Gdk::Colormap> colormap = get_default_colormap();
-    colormap->alloc_color(const_cast<Color &>(m_black));
-    colormap->alloc_color(const_cast<Color &>(m_dk_red));
-    colormap->alloc_color(const_cast<Color &>(m_dk_green));
-    colormap->alloc_color(const_cast<Color &>(m_dk_orange));
-    colormap->alloc_color(const_cast<Color &>(m_dk_blue));
-    colormap->alloc_color(const_cast<Color &>(m_dk_magenta));
-    colormap->alloc_color(const_cast<Color &>(m_dk_cyan));
-
-    colormap->alloc_color(const_cast<Color &>(m_red));
-    colormap->alloc_color(const_cast<Color &>(m_white));
-    colormap->alloc_color(const_cast<Color &>(m_orange));
-    colormap->alloc_color(const_cast<Color &>(m_yellow));
-    colormap->alloc_color(const_cast<Color &>(m_green));
-    colormap->alloc_color(const_cast<Color &>(m_magenta));
-    colormap->alloc_color(const_cast<Color &>(m_blue));
-
-    colormap->alloc_color(const_cast<Color &>(m_grey_paint));
-    colormap->alloc_color(const_cast<Color &>(m_dk_grey_paint));
-    colormap->alloc_color(const_cast<Color &>(m_lt_grey_paint));
-    colormap->alloc_color(const_cast<Color &>(m_blk_paint));
-    colormap->alloc_color(const_cast<Color &>(m_wht_paint));
-    colormap->alloc_color(const_cast<Color &>(m_blk_key_paint));
-    colormap->alloc_color(const_cast<Color &>(m_wht_key_paint));
-    colormap->alloc_color(const_cast<Color &>(m_tempo_paint));
-    colormap->alloc_color(const_cast<Color &>(m_sel_paint));
-    */
-
     /**
      * \todo
      *      Use an array of colors instead of this switch.

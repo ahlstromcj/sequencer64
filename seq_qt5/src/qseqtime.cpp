@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-04
+ * \updates       2018-03-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -50,9 +50,6 @@ qseqtime::qseqtime (sequence & seq, QWidget * parent)
     QWidget     (parent),
     m_seq       (seq),
     m_timer     (new QTimer(this)),  // refresh timer to queue regular redraws
-    m_pen       (nullptr),
-    m_brush     (nullptr),
-    m_painter   (nullptr),
     m_font      (),
     m_zoom      (1)
 {
@@ -69,14 +66,14 @@ qseqtime::qseqtime (sequence & seq, QWidget * parent)
 void
 qseqtime::paintEvent (QPaintEvent *)
 {
-    m_painter = new QPainter(this);
-    m_pen = new QPen(Qt::black);
-    m_brush = new QBrush(Qt::lightGray, Qt::SolidPattern);
+    QPainter painter(this);
+    QPen pen(Qt::black);
+    QBrush brush(Qt::lightGray, Qt::SolidPattern);
     m_font.setPointSize(6);
-    m_painter->setPen(*m_pen);
-    m_painter->setBrush(*m_brush);
-    m_painter->setFont(m_font);
-    m_painter->drawRect             // draw time bar border
+    painter.setPen(pen);
+    painter.setBrush(brush);
+    painter.setFont(m_font);
+    painter.drawRect             // draw time bar border
     (
         c_keyboard_padding_x, 0, size().width(), size().height() - 1
     );
@@ -95,43 +92,39 @@ qseqtime::paintEvent (QPaintEvent *)
     int start_tick = 0;
     int end_tick = (m_seq.get_length());
 
-    m_pen->setColor(Qt::black);
-    m_painter->setPen(*m_pen);
+    pen.setColor(Qt::black);
+    painter.setPen(pen);
     for (int i = start_tick; i <= end_tick; i += ticks_per_beat)
     {
         int zoomedX = i / m_zoom + c_keyboard_padding_x;
 
         // vertical line at each beat
 
-        m_painter->drawLine(zoomedX, 0, zoomedX, size().height());
+        painter.drawLine(zoomedX, 0, zoomedX, size().height());
 
         char bar[8];
         snprintf(bar, sizeof(bar), "%d", (i / ticks_per_measure) + 1);
 
         // number each beat
 
-        m_pen->setColor(Qt::black);
-        m_painter->setPen(*m_pen);
-        m_painter->drawText(zoomedX + 3, 10, bar);
+        pen.setColor(Qt::black);
+        painter.setPen(pen);
+        painter.drawText(zoomedX + 3, 10, bar);
     }
 
     long end_x = m_seq.get_length() / m_zoom + c_keyboard_padding_x;
 
     // draw end of seq label, label background
 
-    m_pen->setColor(Qt::white);
-    m_brush->setColor(Qt::white);
-    m_brush->setStyle(Qt::SolidPattern);
-    m_painter->setBrush(*m_brush);
-    m_painter->setPen(*m_pen);
-    m_painter->drawRect(end_x + 1, 13, 15, 8);
-    m_pen->setColor(Qt::black);                     // label text
-    m_painter->setPen(*m_pen);
-    m_painter->drawText(end_x + 1, 21, tr("END"));
-
-    delete m_painter;
-    delete m_brush;
-    delete m_pen;
+    pen.setColor(Qt::white);
+    brush.setColor(Qt::white);
+    brush.setStyle(Qt::SolidPattern);
+    painter.setBrush(brush);
+    painter.setPen(pen);
+    painter.drawRect(end_x + 1, 13, 15, 8);
+    pen.setColor(Qt::black);                     // label text
+    painter.setPen(pen);
+    painter.drawText(end_x + 1, 21, tr("END"));
 }
 
 /**

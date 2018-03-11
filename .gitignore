@@ -152,6 +152,7 @@ scratch/
 sdist
 Seq64cli/seq64cli
 Seq64portmidi/seq64portmidi
+Seq64qt5/qseq64
 Seq64rtmidi/seq64
 Seq64rtmidi/seq64-static
 Sequencer64/sequencer64

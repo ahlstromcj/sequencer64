@@ -54,8 +54,6 @@ qsmaintime::qsmaintime
 ) :
     QWidget             (parent),
     m_main_perf         (perf),
-    mPen                (nullptr),
-    mBrush              (nullptr),
     m_color             (new QColor(Qt::red)),
     mFont               (),
     m_beats_per_measure (beats_per_measure),
@@ -84,13 +82,13 @@ qsmaintime::~qsmaintime ()
 void
 qsmaintime::paintEvent (QPaintEvent *)
 {
-    mPainter    = new QPainter(this);
-    mBrush      = new QBrush(Qt::NoBrush);
-    mPen        = new QPen(Qt::darkGray);
+    QPainter painter(this);
+    QPen pen(Qt::darkGray);
+    QBrush brush(Qt::NoBrush);
 
-    mPainter->setPen(*mPen);
-    mPainter->setFont(mFont);
-    mPainter->setBrush(*mBrush);
+    painter.setPen(pen);
+    painter.setFont(mFont);
+    painter.setBrush(brush);
 
     midipulse tick = m_main_perf.get_tick();
     int metro = (tick / (c_ppqn / 4 * m_beat_width)) % m_beats_per_measure;
@@ -118,31 +116,31 @@ qsmaintime::paintEvent (QPaintEvent *)
         int offsetX = divX * i;
         if (i == metro && m_main_perf.is_running())    // flash on current beat
         {
-            mBrush->setStyle(Qt::SolidPattern);
-            mPen->setColor(Qt::black);
+            brush.setStyle(Qt::SolidPattern);
+            pen.setColor(Qt::black);
         }
         else
         {
-            mBrush->setStyle(Qt::NoBrush);
-            mPen->setColor(Qt::darkGray);
+            brush.setStyle(Qt::NoBrush);
+            pen.setColor(Qt::darkGray);
         }
 
         m_color->setAlpha(m_alpha);
-        mBrush->setColor(*m_color);
-        mPainter->setPen(*mPen);
-        mPainter->setBrush(*mBrush);
-        mPainter->drawRect
+        brush.setColor(*m_color);
+        painter.setPen(pen);
+        painter.setBrush(brush);
+        painter.drawRect
         (
-            offsetX + mPen->width() - 1, mPen->width() - 1,
-            divX - mPen->width(), height() - mPen->width()
+            offsetX + pen.width() - 1, pen.width() - 1,
+            divX - pen.width(), height() - pen.width()
         );
     }
     if (m_beats_per_measure < 10)       // draw beat number (if there's space)
     {
-        mPen->setColor(Qt::black);
-        mPen->setStyle(Qt::SolidLine);
-        mPainter->setPen(*mPen);
-        mPainter->drawText
+        pen.setColor(Qt::black);
+        pen.setStyle(Qt::SolidLine);
+        painter.setPen(pen);
+        painter.drawText
         (
             (metro + 1) * divX - (mFont.pointSize() + 2),
             height() * 0.3 + mFont.pointSize(), QString::number(metro + 1)
@@ -156,9 +154,6 @@ qsmaintime::paintEvent (QPaintEvent *)
 
     m_alpha *= 0.7 - m_main_perf.bpm() / 300;
     m_lastMetro = metro;
-    delete mPainter;
-    delete mBrush;
-    delete mPen;
 }
 
 /**

@@ -6,7 +6,7 @@
 # \library       libseq_qt5
 # \author        Chris Ahlstrom
 # \date          2017-09-05
-# \updates       2017-09-05
+# \updates       2018-03-11
 # \version       $Revision$
 # \license       $MIDICVT_SUITE_GPL_LICENSE$
 #
@@ -40,7 +40,7 @@ EXTRA_DIST =
 # SUBDIRS
 #-----------------------------------------------------------------------------
 
-SUBDIRS = include src
+SUBDIRS = include src forms
 
 #*****************************************************************************
 # DIST_SUBDIRS

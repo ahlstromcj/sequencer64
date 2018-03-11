@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-02
+ * \updates       2018-03-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -103,13 +103,8 @@ public slots:
 private:
 
     perform & mPerf;
-
     QTimer * mTimer;
-    QPen * mPen;
-    QBrush * mBrush;
-    QPainter * mPainter;
     QFont mFont;
-
     bool m_sequence_active[c_max_sequence];
     int m_nametext_x;
     int m_nametext_y;

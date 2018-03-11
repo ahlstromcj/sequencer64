@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-04
+ * \updates       2018-03-11
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -64,9 +64,6 @@ qperfnames::qperfnames (perform & p, QWidget * parent)
     gui_palette_qt5     (),
     mPerf               (p),
     mTimer              (nullptr),
-    mPen                (nullptr),
-    mBrush              (nullptr),
-    mPainter            (nullptr),
     mFont               (),
     m_sequence_active   (),
     m_nametext_x        (6 * 2 + 6 * 20),
@@ -83,14 +80,7 @@ qperfnames::qperfnames (perform & p, QWidget * parent)
 
 qperfnames::~qperfnames ()
 {
-    if (not_nullptr(mPen))
-        delete mPen;
-
-    if (not_nullptr(mPainter))
-        delete mPainter;
-
-    if (not_nullptr(mBrush))
-        delete mBrush;
+    // no code
 }
 
 /**
@@ -100,20 +90,21 @@ qperfnames::~qperfnames ()
 void
 qperfnames::paintEvent (QPaintEvent *)
 {
-    mPainter = new QPainter(this);
-    mPen = new QPen(Qt::black);
-    mBrush = new QBrush(Qt::lightGray);
-    mPen->setStyle(Qt::SolidLine);
-    mBrush->setStyle((Qt::SolidPattern));
+    QPainter painter(this);
+    QPen pen(Qt::black);
+    QBrush brush(Qt::lightGray);
+
+    pen.setStyle(Qt::SolidLine);
+    brush.setStyle((Qt::SolidPattern));
     mFont.setPointSize(6);
     mFont.setLetterSpacing(QFont::AbsoluteSpacing, 1);
-    mPainter->setPen(*mPen);
-    mPainter->setBrush(*mBrush);
-    mPainter->setFont(mFont);
+    painter.setPen(pen);
+    painter.setBrush(brush);
+    painter.setFont(mFont);
 
     int y_s = 0;
     int y_f = height() / c_names_y;
-    mPainter->drawRect(0, 0, width(), height() - 1);    // draw border
+    painter.drawRect(0, 0, width(), height() - 1);    // draw border
     for (int y = y_s; y <= y_f; ++y)
     {
         int seqId = y;
@@ -122,73 +113,55 @@ qperfnames::paintEvent (QPaintEvent *)
             int i = seqId;
             if (seqId % c_seqs_in_set == 0)     // if first seq in bank
             {
-                mPen->setColor(Qt::black);      // black boxes to mark each bank
-                mBrush->setColor(Qt::black);
-                mBrush->setStyle(Qt::SolidPattern);
-                mPainter->setPen(*mPen);
-                mPainter->setBrush(*mBrush);
-                mPainter->drawRect(1, name_y(i) + 1, 15, c_names_y - 1);
+                pen.setColor(Qt::black);        // black boxes to mark each bank
+                brush.setColor(Qt::black);
+                brush.setStyle(Qt::SolidPattern);
+                painter.setPen(pen);
+                painter.setBrush(brush);
+                painter.drawRect(1, name_y(i) + 1, 15, c_names_y - 1);
 
                 char ss[4];
                 int bankId = seqId / c_seqs_in_set;
                 snprintf(ss, sizeof(ss), "%2d", bankId);
 
-                mPen->setColor(Qt::white);  // draw bank number here
-                mPainter->setPen(*mPen);
-                mPainter->drawText(4, c_names_y * i + 15, ss);
+                pen.setColor(Qt::white);        // draw bank number here
+                painter.setPen(pen);
+                painter.drawText(4, c_names_y * i + 15, ss);
 
                 // offset and draw bank name sideways
 
-                mPen->setColor(Qt::black);
-                mPainter->setPen(*mPen);
-                mPainter->save();
+                pen.setColor(Qt::black);
+                painter.setPen(pen);
+                painter.save();
                 QString bankName(perf().get_bank_name(bankId).c_str());
-                mPainter->translate
+                painter.translate
                 (
-                    12,
-                    (c_names_y * i) + (c_names_y * c_seqs_in_set * 0.5)
+                    12, (c_names_y * i) + (c_names_y * c_seqs_in_set * 0.5)
                         + bankName.length() * 4
                 );
-                mPainter->rotate(270);
+                painter.rotate(270);
                 mFont.setPointSize(9);
                 mFont.setBold(true);
                 mFont.setLetterSpacing(QFont::AbsoluteSpacing, 2);
-                mPainter->setFont(mFont);
-                mPainter->drawText(0, 0, bankName);
-                mPainter->restore();
+                painter.setFont(mFont);
+                painter.drawText(0, 0, bankName);
+                painter.restore();
             }
-            mPen->setStyle(Qt::SolidLine);
-            mPen->setColor(Qt::black);
-            if (perf().is_active(seqId))
+            pen.setStyle(Qt::SolidLine);
+            pen.setColor(Qt::black);
+            sequence * s = mPerf.get_sequence(seqId);
+            if (not_nullptr(s))
             {
-                /*
-                 * Commented out until we fix the issues.
-                 *
-                //get seq's assigned colour and beautify
-                QColor colourSpec =
-                    QColor(colourMap.value(perf().get_sequence_color(seqId)));
-                QColor backColour = QColor(colourSpec);
-                if (backColour.value() != 255) //dont do this if we're white
-                    backColour.setHsv(colourSpec.hue(),
-                                      colourSpec.saturation() * 0.65,
-                                      colourSpec.value() * 1.3);
-                mBrush->setColor(backColour);
-
-
-                    New:  we can call get_color(Palettecolor(c), 1.0, 0.65, 1.3);
-                 *
-                 */
+                int c = s->color();
+                Color backcolor = get_color_fix(PaletteColor(c));
+                brush.setColor(backcolor);
             }
             else
-                mBrush->setColor(Qt::lightGray);
+                brush.setColor(Qt::lightGray);
 
-            mPainter->setPen(*mPen);    // fill seq label background
-            mPainter->setBrush(*mBrush);
-            mPainter->drawRect
-            (
-                6 * 2 + 4, c_names_y * i, c_names_x - 15, c_names_y
-            );
-
+            painter.setPen(pen);    // fill seq label background
+            painter.setBrush(brush);
+            painter.drawRect(6 * 2 + 4, c_names_y * i, c_names_x - 15, c_names_y);
             if (perf().is_active(seqId))
             {
                 m_sequence_active[seqId] = true;
@@ -205,9 +178,9 @@ qperfnames::paintEvent (QPaintEvent *)
                  */
 
                 std::string name = perf().sequence_label(seqId); // seq name
-                mPen->setColor(Qt::black);
-                mPainter->setPen(*mPen);
-                mPainter->drawText(18, c_names_y * i + 10, name.c_str());
+                pen.setColor(Qt::black);
+                painter.setPen(pen);
+                painter.drawText(18, c_names_y * i + 10, name.c_str());
 
                 /*
                 char str[20];
@@ -220,45 +193,30 @@ qperfnames::paintEvent (QPaintEvent *)
                      perf().get_sequence(seqId)->get_beats_per_bar(),
                      perf().get_sequence(seqId)->get_beat_width()
                 );
-                mPainter->drawText(18, c_names_y * i + 20, str); // seq info
+                painter.drawText(18, c_names_y * i + 20, str); // seq info
                  */
 
                 bool muted = perf().get_sequence(seqId)->get_song_mute();
-                mPen->setColor(Qt::black);
-                mPainter->setPen(*mPen);
-                mPainter->drawRect(name_x(2), name_y(i), 10, m_nametext_y);
+                pen.setColor(Qt::black);
+                painter.setPen(pen);
+                painter.drawRect(name_x(2), name_y(i), 10, m_nametext_y);
 //              (
 //                  6 * 2 + 6 * 20 + 2, (c_names_y * i), 10, c_names_y
 //              );
 
                 if (muted) // seq mute state
                 {
-                    mPainter->drawText(name_x(4), name_y(i) + 14, "M");
+                    painter.drawText(name_x(4), name_y(i) + 14, "M");
 //                  (
 //                      6 * 2 + 6 * 20 + 4, c_names_y * i + 14, "M"
 //                  );
                 }
                 else
                 {
-                    mPainter->drawText(name_x(4), name_y(i) + 14, "M");
+                    painter.drawText(name_x(4), name_y(i) + 14, "M");
                 }
             }
         }
-    }
-    if (not_nullptr(mPen))
-    {
-        delete mPen;
-        mPen = nullptr;
-    }
-    if (not_nullptr(mPainter))
-    {
-        delete mPainter;
-        mPainter = nullptr;
-    }
-    if (not_nullptr(mBrush))
-    {
-        delete mBrush;
-        mBrush = nullptr;
     }
 }
 

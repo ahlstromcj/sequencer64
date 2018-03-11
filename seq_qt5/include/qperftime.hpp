@@ -94,9 +94,6 @@ private:
 
     perform & m_mainperf;
     QTimer * mTimer;
-    QPen * mPen;
-    QBrush * mBrush;
-    QPainter * mPainter;
     QFont mFont;
 
     int m_4bar_offset;
@@ -112,7 +109,7 @@ public slots:
 
 }           // namespace seq64
 
-#endif       // SEQ64_QPERFTIME_HPP
+#endif      // SEQ64_QPERFTIME_HPP
 
 /*
  * qperftime.hpp

@@ -54,9 +54,6 @@ qseqdata::qseqdata (sequence & seq, QWidget * parent)
  :
     QWidget         (parent),
     m_seq           (seq),
-    mPen            (nullptr),
-    mBrush          (nullptr),
-    mPainter        (nullptr),
     mOld            (new QRect()),
     mTimer          (nullptr),          // (new QTimer(this)),
     mNumbers        (),
@@ -72,9 +69,6 @@ qseqdata::qseqdata (sequence & seq, QWidget * parent)
     mRelativeAdjust (false)
 {
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-//  m_status = EVENT_NOTE_ON;
-//  m_cc = 1;
-//  mOld = new QRect();
     mTimer = new QTimer(this);  // start refresh timer to queue regular redraws
     mTimer->setInterval(20);
     QObject::connect(mTimer, SIGNAL(timeout()), this, SLOT(update()));
@@ -123,24 +117,23 @@ qseqdata::sizeHint () const
 void
 qseqdata::paintEvent (QPaintEvent *)
 {
-    mPainter = new QPainter(this);
-    mPen = new QPen(Qt::black);
-    mBrush = new QBrush(Qt::lightGray, Qt::SolidPattern);
+    QPainter painter(this);
+    QPen pen(Qt::black);
+    QBrush brush(Qt::lightGray, Qt::SolidPattern);
+
     mFont.setPointSize(6);
-    mPainter->setPen(*mPen);
-    mPainter->setBrush(*mBrush);
-    mPainter->setFont(mFont);
+    painter.setPen(pen);
+    painter.setBrush(brush);
+    painter.setFont(mFont);
 
-    //this is perhaps the background?
-
-    long tick;
+    midipulse tick;                  // this is perhaps the background?
     midibyte d0, d1;
     int event_x;
     int event_height;
     bool selected;
     int start_tick = 0 ;
     int end_tick = (width() * m_zoom);
-    mPainter->drawRect(0, 0, width() - 1, height() - 1);
+    painter.drawRect(0, 0, width() - 1, height() - 1);
     m_seq.reset_draw_marker();
     while
     (
@@ -162,48 +155,42 @@ qseqdata::paintEvent (QPaintEvent *)
                 event_height = d0;
             }
 
-            mPen->setWidth(2);                  /* draw vert lines */
-            mPainter->setPen(*mPen);
-            mPainter->drawLine
+            pen.setWidth(2);                  /* draw vert lines */
+            painter.setPen(pen);
+            painter.drawLine
             (
                 event_x + 1, height() - event_height, event_x + 1, height()
             );
 
             QString val = QString::number(d1); // draw numbers
-            mPen->setColor(Qt::black);
-            mPen->setWidth(1);
-            mPainter->setPen(*mPen);
+            pen.setColor(Qt::black);
+            pen.setWidth(1);
+            painter.setPen(pen);
             if (val.length() >= 1)
-                mPainter->drawText(event_x + 3, qc_dataarea_y - 25, val.at(0));
+                painter.drawText(event_x + 3, qc_dataarea_y - 25, val.at(0));
 
             if (val.length() >= 2)
-                mPainter->drawText(event_x + 3, qc_dataarea_y - 25 + 8, val.at(1));
+                painter.drawText(event_x + 3, qc_dataarea_y - 25 + 8, val.at(1));
 
             if (val.length() >= 3)
-                mPainter->drawText(event_x + 3, qc_dataarea_y - 25 + 16, val.at(2));
+                painter.drawText(event_x + 3, qc_dataarea_y - 25 + 16, val.at(2));
         }
     }
 
     if (mLineAdjust) // draw edit line
     {
         int x, y, w, h;
-        mPen->setColor(Qt::black);
-        mPen->setStyle(Qt::DashLine);
-        mPainter->setPen(*mPen);
+        pen.setColor(Qt::black);
+        pen.setStyle(Qt::DashLine);
+        painter.setPen(pen);
         xy_to_rect(mDropX, mDropY, mCurrentX, mCurrentY, &x, &y, &w, &h);
         mOld->setX(x);
         mOld->setY(y);
         mOld->setWidth(w);
         mOld->setHeight(h);
-        mPainter->drawLine(mCurrentX + c_keyboard_padding_x,
-                           mCurrentY,
-                           mDropX + c_keyboard_padding_x,
-                           mDropY);
+        painter.drawLine(mCurrentX + c_keyboard_padding_x,
+                           mCurrentY, mDropX + c_keyboard_padding_x, mDropY);
     }
-
-    delete mPainter;
-    delete mBrush;
-    delete mPen;
 }
 
 /**
@@ -213,18 +200,23 @@ qseqdata::paintEvent (QPaintEvent *)
 void
 qseqdata::mousePressEvent (QMouseEvent *event)
 {
-    m_seq.push_undo();
-
     int mouseX = event->x() - c_keyboard_padding_x;
     int mouseY = event->y();
 
-    //if we're near an event (4px), do relative adjustment
-    long tick_start, tick_finish;
+    // if we're near an event (4px), do relative adjustment
+    midipulse tick_start, tick_finish;
     convert_x(mouseX - 2, &tick_start);
     convert_x(mouseX + 2, &tick_finish);
 
-    //check if these ticks would select an event
-    if (m_seq.select_events(tick_start, tick_finish, m_status, m_cc, sequence::e_would_select))
+    // check if these ticks would select an event
+    m_seq.push_undo();
+    if
+    (
+        m_seq.select_events
+        (
+            tick_start, tick_finish, m_status, m_cc, sequence::e_would_select
+        )
+    )
     {
         mRelativeAdjust = true;
     }
@@ -233,12 +225,10 @@ qseqdata::mousePressEvent (QMouseEvent *event)
         mLineAdjust = true;
     }
 
-    /* set values for line */
-    mDropX = mouseX;
+    mDropX = mouseX;            /* set values for line */
     mDropY = mouseY;
 
-    /* reset box that holds dirty redraw spot */
-    mOld->setX(0);
+    mOld->setX(0);              /* reset box that holds dirty redraw spot */
     mOld->setY(0);
     mOld->setWidth(0);
     mOld->setHeight(0);
@@ -309,8 +299,7 @@ qseqdata::mouseMoveEvent (QMouseEvent * event)
         convert_x(adj_x_max, &tick_f);
         m_seq.change_event_data_range
         (
-            tick_s, tick_f,
-            m_status, m_cc,
+            tick_s, tick_f, m_status, m_cc,
             qc_dataarea_y - adj_y_min - 1, qc_dataarea_y - adj_y_max - 1
         );
     }
@@ -331,14 +320,13 @@ qseqdata::mouseMoveEvent (QMouseEvent * event)
 
 /**
  *
+ *  checks mins / maxes..  the fills in x,y and width and height
  */
 
 void
 qseqdata::xy_to_rect(int a_x1,  int a_y1, int a_x2,  int a_y2,
       int *a_x,  int *a_y, int *a_w,  int *a_h)
 {
-    /* checks mins / maxes..  the fills in x,y
-       and width and height */
 
     if (a_x1 < a_x2)
     {
@@ -368,7 +356,7 @@ qseqdata::xy_to_rect(int a_x1,  int a_y1, int a_x2,  int a_y2,
  */
 
 void
-qseqdata::set_data_type(midibyte a_status, midibyte a_control = 0)
+qseqdata::set_data_type (midibyte a_status, midibyte a_control = 0)
 {
     m_status = a_status;
     m_cc = a_control;
@@ -379,7 +367,7 @@ qseqdata::set_data_type(midibyte a_status, midibyte a_control = 0)
  */
 
 void
-qseqdata::convert_x(int a_x, midipulse * a_tick)
+qseqdata::convert_x (int a_x, midipulse * a_tick)
 {
     *a_tick = a_x * m_zoom;
 }

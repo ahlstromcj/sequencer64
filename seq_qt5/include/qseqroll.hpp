@@ -108,13 +108,6 @@ private:
 
     void convert_xy (int x, int y, midipulse & ticks, int & note);
     void convert_tn (midipulse ticks, int note, int & x, int & a_y);
-#if 0
-    void xy_to_rect (int a_x1,  int a_y1,
-                    int a_x2,  int a_y2,
-                    int *a_x,  int *a_y,
-                    int *a_w,  int *a_h);
-#endif
-
     void convert_tn_box_to_rect
     (
         midipulse tick_s, midipulse tick_f, int note_h, int note_l,

@@ -106,9 +106,6 @@ private:
 
     sequence & m_seq;
     qseqdata & m_seqdata_wid;
-    QPen * mPen;
-    QBrush * mBrush;
-    QPainter * mPainter;
     QRect * m_old;
     QRect * m_selected;
     QTimer * mTimer;

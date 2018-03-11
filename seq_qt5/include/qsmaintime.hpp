@@ -119,9 +119,6 @@ protected:
 private:
 
     const perform & m_main_perf;
-    QPainter * mPainter;
-    QPen * mPen;
-    QBrush * mBrush;
     QColor * m_color;
     QFont mFont;
     int m_beats_per_measure;

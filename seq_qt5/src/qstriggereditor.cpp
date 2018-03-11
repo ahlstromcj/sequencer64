@@ -59,9 +59,6 @@ qstriggereditor::qstriggereditor
     QWidget             (parent),
     m_seq               (seq),
     m_seqdata_wid       (seqdata_wid),
-    mPen                (nullptr),
-    mBrush              (nullptr),
-    mPainter            (nullptr),
     m_old               (new QRect()),
     m_selected          (new QRect()),
     mTimer              (new QTimer(this)), // refresh timer for regular redraws
@@ -137,17 +134,18 @@ qstriggereditor::sizeHint () const
 void
 qstriggereditor::paintEvent (QPaintEvent *)
 {
-    mPainter = new QPainter(this);
-    mPen = new QPen(Qt::black);
-    mBrush = new QBrush(Qt::darkGray, Qt::SolidPattern);
+    QPainter painter(this);
+    QPen pen(Qt::black);
+    QBrush brush(Qt::darkGray, Qt::SolidPattern);
+
     mFont.setPointSize(6);
-    mPainter->setPen(*mPen);
-    mPainter->setBrush(*mBrush);
-    mPainter->setFont(mFont);
+    painter.setPen(pen);
+    painter.setBrush(brush);
+    painter.setFont(mFont);
 
     /* draw background */
 
-    mPainter->drawRect(c_keyboard_padding_x, 0, width(), height());
+    painter.drawRect(c_keyboard_padding_x, 0, width(), height());
 
     int measures_per_line = 1;
     int ticks_per_measure =  m_seq.get_beats_per_bar() * (4 * c_ppqn) /
@@ -164,22 +162,22 @@ qstriggereditor::paintEvent (QPaintEvent *)
         if (i % ticks_per_m_line == 0)
         {
             /* solid line on every beat */
-            mPen->setColor(Qt::black);
-            mPen->setStyle(Qt::SolidLine);
+            pen.setColor(Qt::black);
+            pen.setStyle(Qt::SolidLine);
         }
         else if (i % ticks_per_beat == 0)
         {
-            mPen->setStyle(Qt::SolidLine);
-            mPen->setColor(Qt::black);
+            pen.setStyle(Qt::SolidLine);
+            pen.setColor(Qt::black);
         }
         else
         {
-            mPen->setColor(Qt::lightGray);
-            mPen->setStyle(Qt::DashLine);
+            pen.setColor(Qt::lightGray);
+            pen.setStyle(Qt::DashLine);
         }
 
-        mPainter->setPen(*mPen);
-        mPainter->drawLine(base_line, 1, base_line, qc_eventarea_y);
+        painter.setPen(pen);
+        painter.drawLine(base_line, 1, base_line, qc_eventarea_y);
     }
 
     // draw event boxes
@@ -191,8 +189,8 @@ qstriggereditor::paintEvent (QPaintEvent *)
 
     /* draw boxes from sequence */
 
-    mPen->setColor(Qt::black);
-    mPen->setStyle(Qt::SolidLine);
+    pen.setColor(Qt::black);
+    pen.setStyle(Qt::SolidLine);
 
     m_seq.reset_draw_marker();
     while (m_seq.get_next_event_kepler(m_status, m_cc, tick, d0, d1, selected))
@@ -203,25 +201,25 @@ qstriggereditor::paintEvent (QPaintEvent *)
             x = tick / m_zoom + c_keyboard_padding_x;
 
             //draw outer note border
-            mPen->setColor(Qt::black);
-            mBrush->setStyle(Qt::SolidPattern);
-            mBrush->setColor(Qt::black);
-            mPainter->setBrush(*mBrush);
-            mPainter->setPen(*mPen);
-            mPainter->drawRect
+            pen.setColor(Qt::black);
+            brush.setStyle(Qt::SolidPattern);
+            brush.setColor(Qt::black);
+            painter.setBrush(brush);
+            painter.setPen(pen);
+            painter.drawRect
             (
                 x, (qc_eventarea_y - qc_eventevent_y) / 2,
                 qc_eventevent_x, qc_eventevent_y
             );
 
             if (selected)
-                mBrush->setColor(Qt::red);
+                brush.setColor(Qt::red);
             else
-                mBrush->setColor(Qt::white);
+                brush.setColor(Qt::white);
 
             //draw note highlight
-            mPainter->setBrush(*mBrush);
-            mPainter->drawRect
+            painter.setBrush(brush);
+            painter.drawRect
             (
                 x, (qc_eventarea_y - qc_eventevent_y) / 2,
                 qc_eventevent_x - 1, qc_eventevent_y - 1
@@ -235,32 +233,28 @@ qstriggereditor::paintEvent (QPaintEvent *)
     int y = (qc_eventarea_y - qc_eventevent_y) / 2;
     int h =  qc_eventevent_y;
 
-    mBrush->setStyle(Qt::NoBrush); // painter reset
-    mPainter->setBrush(*mBrush);
+    brush.setStyle(Qt::NoBrush); // painter reset
+    painter.setBrush(brush);
     if (m_selecting)
     {
         x_to_w(m_drop_x, m_current_x, &x, &w);
         m_old->setX(x);
         m_old->setWidth(w);
-        mPen->setColor(Qt::black);
-        mPainter->setPen(*mPen);
-        mPainter->drawRect(x + c_keyboard_padding_x, y, w, h);
+        pen.setColor(Qt::black);
+        painter.setPen(pen);
+        painter.drawRect(x + c_keyboard_padding_x, y, w, h);
     }
 
     if (m_moving || m_paste)
     {
         int delta_x = m_current_x - m_drop_x;
         x = m_selected->x() + delta_x;
-        mPen->setColor(Qt::black);
-        mPainter->setPen(*mPen);
-        mPainter->drawRect(x + c_keyboard_padding_x, y, m_selected->width(), h);
+        pen.setColor(Qt::black);
+        painter.setPen(pen);
+        painter.drawRect(x + c_keyboard_padding_x, y, m_selected->width(), h);
         m_old->setX(x);
         m_old->setWidth(m_selected->width());
     }
-
-    delete mPainter;
-    delete mBrush;
-    delete mPen;
 }
 
 /**
@@ -672,14 +666,14 @@ qstriggereditor::snap_y (int *a_y)
 
 /**
  * performs a 'snap' on x
+    //snap = number pulses to snap to
+    //m_zoom = number of pulses per pixel
+    //so snap / m_zoom  = number pixels to snap to
  */
 
 void
 qstriggereditor::snap_x (int *a_x)
 {
-    //snap = number pulses to snap to
-    //m_zoom = number of pulses per pixel
-    //so snap / m_zoom  = number pixels to snap to
     int mod = (m_snap / m_zoom);
     if (mod <= 0)
         mod = 1;

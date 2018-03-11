@@ -130,7 +130,7 @@ p, li { white-space: pre-wrap; }
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="kepler34.qrc">:/pixmaps/pixmaps/snap.xpm</pixmap>
+          <pixmap resource="qseq64.qrc">:/pixmaps/pixmaps/snap.xpm</pixmap>
          </property>
         </widget>
        </item>
@@ -181,7 +181,7 @@ p, li { white-space: pre-wrap; }
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="kepler34.qrc">:/pixmaps/pixmaps/note_length.xpm</pixmap>
+          <pixmap resource="qseq64.qrc">:/pixmaps/pixmaps/note_length.xpm</pixmap>
          </property>
         </widget>
        </item>
@@ -229,7 +229,7 @@ p, li { white-space: pre-wrap; }
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="kepler34.qrc">:/pixmaps/pixmaps/length.xpm</pixmap>
+          <pixmap resource="qseq64.qrc">:/pixmaps/pixmaps/length.xpm</pixmap>
          </property>
         </widget>
        </item>
@@ -265,7 +265,7 @@ p, li { white-space: pre-wrap; }
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="kepler34.qrc">:/pixmaps/pixmaps/bus.xpm</pixmap>
+          <pixmap resource="qseq64.qrc">:/pixmaps/pixmaps/bus.xpm</pixmap>
          </property>
         </widget>
        </item>
@@ -301,7 +301,7 @@ p, li { white-space: pre-wrap; }
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="kepler34.qrc">:/pixmaps/pixmaps/midi.xpm</pixmap>
+          <pixmap resource="qseq64.qrc">:/pixmaps/pixmaps/midi.xpm</pixmap>
          </property>
         </widget>
        </item>
@@ -360,7 +360,7 @@ p, li { white-space: pre-wrap; }
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="kepler34.qrc">
+        <iconset resource="qseq64.qrc">
          <normaloff>:/pixmaps/pixmaps/drum.xpm</normaloff>:/pixmaps/pixmaps/drum.xpm</iconset>
        </property>
       </widget>
@@ -389,7 +389,7 @@ p, li { white-space: pre-wrap; }
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="kepler34.qrc">
+          <iconset resource="qseq64.qrc">
            <normaloff>:/pixmaps/pixmaps/undo.xpm</normaloff>:/pixmaps/pixmaps/undo.xpm</iconset>
          </property>
         </widget>
@@ -409,7 +409,7 @@ p, li { white-space: pre-wrap; }
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="kepler34.qrc">
+          <iconset resource="qseq64.qrc">
            <normaloff>:/pixmaps/pixmaps/redo.xpm</normaloff>:/pixmaps/pixmaps/redo.xpm</iconset>
          </property>
         </widget>
@@ -431,7 +431,7 @@ p, li { white-space: pre-wrap; }
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="kepler34.qrc">
+        <iconset resource="qseq64.qrc">
          <normaloff>:/pixmaps/pixmaps/tools.xpm</normaloff>:/pixmaps/pixmaps/tools.xpm</iconset>
        </property>
       </widget>
@@ -453,7 +453,7 @@ p, li { white-space: pre-wrap; }
           <string>-</string>
          </property>
          <property name="icon">
-          <iconset resource="kepler34.qrc">
+          <iconset resource="qseq64.qrc">
            <normaloff>:/pixmaps/pixmaps/zoom.xpm</normaloff>:/pixmaps/pixmaps/zoom.xpm</iconset>
          </property>
         </widget>
@@ -473,7 +473,7 @@ p, li { white-space: pre-wrap; }
           <string>+</string>
          </property>
          <property name="icon">
-          <iconset resource="kepler34.qrc">
+          <iconset resource="qseq64.qrc">
            <normaloff>:/pixmaps/pixmaps/zoom.xpm</normaloff>:/pixmaps/pixmaps/zoom.xpm</iconset>
          </property>
         </widget>
@@ -494,7 +494,7 @@ p, li { white-space: pre-wrap; }
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="kepler34.qrc">:/pixmaps/pixmaps/key.xpm</pixmap>
+          <pixmap resource="qseq64.qrc">:/pixmaps/pixmaps/key.xpm</pixmap>
          </property>
         </widget>
        </item>
@@ -532,7 +532,7 @@ p, li { white-space: pre-wrap; }
             <string/>
            </property>
            <property name="pixmap">
-            <pixmap resource="kepler34.qrc">:/pixmaps/pixmaps/sequences.xpm</pixmap>
+            <pixmap resource="qseq64.qrc">:/pixmaps/pixmaps/sequences.xpm</pixmap>
            </property>
           </widget>
          </item>
@@ -566,7 +566,7 @@ p, li { white-space: pre-wrap; }
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="kepler34.qrc">:/pixmaps/pixmaps/scale.xpm</pixmap>
+          <pixmap resource="qseq64.qrc">:/pixmaps/pixmaps/scale.xpm</pixmap>
          </property>
         </widget>
        </item>
@@ -693,7 +693,7 @@ p, li { white-space: pre-wrap; }
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="kepler34.qrc">
+            <iconset resource="qseq64.qrc">
              <normaloff>:/pixmaps/pixmaps/editor-play.xpm</normaloff>:/pixmaps/pixmaps/editor-play.xpm</iconset>
            </property>
            <property name="iconSize">
@@ -722,7 +722,7 @@ p, li { white-space: pre-wrap; }
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="kepler34.qrc">
+            <iconset resource="qseq64.qrc">
              <normaloff>:/pixmaps/pixmaps/editor-thru.xpm</normaloff>:/pixmaps/pixmaps/editor-thru.xpm</iconset>
            </property>
            <property name="iconSize">
@@ -751,7 +751,7 @@ p, li { white-space: pre-wrap; }
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="kepler34.qrc">
+            <iconset resource="qseq64.qrc">
              <normaloff>:/pixmaps/pixmaps/editor-rec.xpm</normaloff>:/pixmaps/pixmaps/editor-rec.xpm</iconset>
            </property>
            <property name="iconSize">
@@ -780,7 +780,7 @@ p, li { white-space: pre-wrap; }
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="kepler34.qrc">
+            <iconset resource="qseq64.qrc">
              <normaloff>:/pixmaps/pixmaps/editor-q-rec.xpm</normaloff>:/pixmaps/pixmaps/editor-q-rec.xpm</iconset>
            </property>
            <property name="iconSize">
@@ -845,7 +845,7 @@ p, li { white-space: pre-wrap; }
   </layout>
  </widget>
  <resources>
-  <include location="kepler34.qrc"/>
+  <include location="qseq64.qrc"/>
  </resources>
  <connections/>
 </ui>

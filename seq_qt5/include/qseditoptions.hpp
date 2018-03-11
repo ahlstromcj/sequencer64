@@ -65,13 +65,6 @@ public:
     explicit qseditoptions (seq64::perform & perf, QWidget * parent = 0);
     ~qseditoptions();
 
-    /*
-    // add a new file to the recent files list.
-    // reorganises the list if file already present
-
-    void addRecentFile(QString path);
-    */
-
 private:
 
     // makes sure the dialog properly reflects internal settings

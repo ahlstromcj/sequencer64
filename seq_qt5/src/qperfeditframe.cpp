@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-03
+ * \updates       2018-03-11
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -83,17 +83,15 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
     mContainer->setPalette(*m_palette);
 
     m_perfnames = new seq64::qperfnames(m_mainperf, mContainer);
-    m_perfroll = new seq64::qperfroll(m_mainperf, mContainer);  // & 
-    m_perftime = new seq64::qperftime(m_mainperf, mContainer);  // & 
+    m_perfroll = new seq64::qperfroll(m_mainperf, mContainer);
+    m_perftime = new seq64::qperftime(m_mainperf, mContainer);
 
     m_layout_grid->setSpacing(0);
     m_layout_grid->addWidget(m_perfnames, 1, 0, 1, 1);
     m_layout_grid->addWidget(m_perftime, 0, 1, 1, 1);
     m_layout_grid->addWidget(m_perfroll, 1, 1, 1, 1);
     m_layout_grid->setAlignment(m_perfroll, Qt::AlignTop);
-
     m_scroll_area->setWidget(mContainer);
-
     connect
     (
         ui->cmbGridSnap, SIGNAL(currentIndexChanged(int)),
@@ -115,11 +113,6 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
         ui->btnExpandCopy, SIGNAL(clicked(bool)), this, SLOT(markerExpandCopy())
     );
     connect(ui->btnLoop, SIGNAL(clicked(bool)), this, SLOT(markerLoop(bool)));
-
-    // m_snap = 8;
-    // mbeats_per_measure = 4;
-    // mbeat_width = 4;
-
     set_snap(8);
     set_beats_per_measure(4);
     set_beat_width(4);
@@ -129,52 +122,49 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
  *
  */
 
-qperfeditframe::~qperfeditframe()
+qperfeditframe::~qperfeditframe ()
 {
     delete ui;
 }
 
+/**
+ *
+ */
+
 int
-qperfeditframe::get_beat_width() const
+qperfeditframe::get_beat_width () const
 {
     return mbeat_width;
 }
 
+/**
+ *
+ */
+
 void
-qperfeditframe::updateGridSnap(int snapIndex)
+qperfeditframe::updateGridSnap (int snapIndex)
 {
     int snap;
     switch (snapIndex)
     {
-    case 0:
-        snap = 1;
-        break;
-    case 1:
-        snap = 2;
-        break;
-    case 2:
-        snap = 4;
-        break;
-    case 3:
-        snap = 8;
-        break;
-    case 4:
-        snap = 16;
-        break;
-    case 5:
-        snap = 32;
-        break;
-    default:
-        snap = 16;
-        break;
+    case 0: snap = 1; break;
+    case 1: snap = 2; break;
+    case 2: snap = 4; break;
+    case 3: snap = 8; break;
+    case 4: snap = 16; break;
+    case 5: snap = 32; break;
+    default: snap = 16; break;
     }
-
     m_snap = snap;
     set_guides();
 }
 
+/**
+ *
+ */
+
 void
-qperfeditframe::set_snap(int a_snap)
+qperfeditframe::set_snap (int a_snap)
 {
     char b[10];
     snprintf(b, sizeof(b), "1/%d", a_snap);
@@ -183,80 +173,124 @@ qperfeditframe::set_snap(int a_snap)
     set_guides();
 }
 
+/**
+ *
+ */
+
 void
-qperfeditframe::set_beats_per_measure(int a_beats_per_measure)
+qperfeditframe::set_beats_per_measure (int bpm)
 {
-    mbeats_per_measure = a_beats_per_measure;
+    mbeats_per_measure = bpm;
     set_guides();
 }
 
-int qperfeditframe::get_beats_per_measure() const
+/**
+ *
+ */
+
+int qperfeditframe::get_beats_per_measure () const
 {
     return mbeats_per_measure;
 }
 
+/**
+ *
+ */
+
 void
-qperfeditframe::set_beat_width(int a_beat_width)
+qperfeditframe::set_beat_width (int bw)
 {
-    mbeat_width = a_beat_width;
+    mbeat_width = bw;
     set_guides();
 }
 
+/**
+ *
+ */
+
 void
-qperfeditframe::set_guides()
+qperfeditframe::set_guides ()
 {
-    long measure_ticks = (c_ppqn * 4) * mbeats_per_measure / mbeat_width;
-    long snap_ticks =  measure_ticks / m_snap;
-    long beat_ticks = (c_ppqn * 4) / mbeat_width;
+    midipulse measure_ticks = (c_ppqn * 4) * mbeats_per_measure / mbeat_width;
+    midipulse snap_ticks =  measure_ticks / m_snap;
+    midipulse beat_ticks = (c_ppqn * 4) / mbeat_width;
     m_perfroll->set_guides(snap_ticks, measure_ticks, beat_ticks);
     m_perftime->set_guides(snap_ticks, measure_ticks);
 }
 
+/**
+ *
+ */
+
 void
-qperfeditframe::zoom_in()
+qperfeditframe::zoom_in ()
 {
     m_perftime->zoom_in();
     m_perfroll->zoom_in();
 }
 
+/**
+ *
+ */
+
 void
-qperfeditframe::zoom_out()
+qperfeditframe::zoom_out ()
 {
     m_perftime->zoom_out();
     m_perfroll->zoom_out();
 }
 
+/**
+ *
+ */
+
 void
-qperfeditframe::update_sizes()
+qperfeditframe::update_sizes ()
 {
     m_perfroll->updateGeometry();
     m_perftime->updateGeometry();
     mContainer->adjustSize();
 }
 
+/**
+ *
+ */
+
 void
-qperfeditframe::markerCollapse()
+qperfeditframe::markerCollapse ()
 {
     perf().push_trigger_undo();
     perf().move_triggers(false);
 }
 
+/**
+ *
+ */
+
 void
-qperfeditframe::markerExpand()
+qperfeditframe::markerExpand ()
 {
     perf().push_trigger_undo();
     perf().move_triggers(true);
 }
 
+/**
+ *
+ */
+
 void
-qperfeditframe::markerExpandCopy()
+qperfeditframe::markerExpandCopy ()
 {
     perf().push_trigger_undo();
     perf().copy_triggers();
 }
 
+/**
+ *
+ */
+
 void
-qperfeditframe::markerLoop(bool loop)
+qperfeditframe::markerLoop (bool loop)
 {
     perf().set_looping(loop);
 }

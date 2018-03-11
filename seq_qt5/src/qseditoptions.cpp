@@ -62,13 +62,11 @@ qseditoptions::qseditoptions (perform & p, QWidget * parent)
     syncWithInternals();
     connect
     (
-        ui->btnJackConnect, SIGNAL(clicked(bool)),
-        this, SLOT(jackConnect())
+        ui->btnJackConnect, SIGNAL(clicked(bool)), this, SLOT(jackConnect())
     );
     connect
     (
-        ui->btnJackDisconnect, SIGNAL(clicked(bool)),
-        this, SLOT(jackDisconnect())
+        ui->btnJackDisconnect, SIGNAL(clicked(bool)), this, SLOT(jackDisconnect())
     );
     connect
     (
@@ -117,41 +115,13 @@ qseditoptions::~qseditoptions ()
 }
 
 /**
- *  \todo
- *      We already have a better facility.
-
-void
-qseditoptions::addRecentFile(QString path)
-{
-    // start shifting from the last element if file not already recent
-
-    int path_found_index = 9;
-
-    // check if path is already present
-
-    for (int c = 0; c < 10; c++)
-    {
-        if (recent_files[c] == path)
-            path_found_index = c;
-    }
-
-    // shift the recent files along by one, thus dropping the oldest
-    for (int c = path_found_index; c > 0; c--)
-        recent_files[c] = recent_files[c - 1];
-
-    recent_files[0] = path; // add the new path to the first slot
-}
- */
-
-/**
  *
  */
 
 void
 qseditoptions::jackConnect ()
 {
-    ///// perf().init_jack();
-    perf().set_jack_mode(true);
+    perf().set_jack_mode(true);             // perf().init_jack();
 }
 
 /**
@@ -161,8 +131,7 @@ qseditoptions::jackConnect ()
 void
 qseditoptions::jackDisconnect ()
 {
-    ///// perf().deinit_jack();
-    perf().set_jack_mode(false);
+    perf().set_jack_mode(false);            // perf().deinit_jack();
 }
 
 /**

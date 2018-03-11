@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-03-11
  * \license       GNU GPLv2 or above
  *
  *      We've added the feature of a right-click toggling between showing the
@@ -50,9 +50,6 @@ qseqkeys::qseqkeys
     QWidget             (parent),
     m_seq               (seq),
     m_timer             (nullptr),
-    m_pen               (nullptr),
-    m_brush             (nullptr),
-    m_painter           (nullptr),
     m_font              (),
     m_key               (0),
     keyY                (keyheight),
@@ -71,59 +68,59 @@ qseqkeys::qseqkeys
 void
 qseqkeys::paintEvent (QPaintEvent *)
 {
-    m_painter = new QPainter(this);
-    m_pen = new QPen(Qt::black);
-    m_pen->setStyle(Qt::SolidLine);
-    m_brush = new QBrush(Qt::SolidPattern);
-    m_brush->setColor(Qt::lightGray);
+    QPainter painter(this);
+    QPen pen(Qt::black);
+    QBrush brush (Qt::SolidPattern);
+    pen.setStyle(Qt::SolidLine);
+    brush.setColor(Qt::lightGray);
     m_font.setPointSize(6);
-    m_painter->setPen(*m_pen);
-    m_painter->setBrush(*m_brush);
-    m_painter->setFont(m_font);
+    painter.setPen(pen);
+    painter.setBrush(brush);
+    painter.setFont(m_font);
 
     // draw keyboard border
 
-    m_painter->drawRect(0, 0, qc_keyarea_x, keyAreaY);
+    painter.drawRect(0, 0, qc_keyarea_x, keyAreaY);
     for (int i = 0; i < qc_num_keys; i++)
     {
         // draw white keys
-        m_pen->setColor(Qt::black);
-        m_pen->setStyle(Qt::SolidLine);
-        m_brush->setColor(Qt::white);
-        m_brush->setStyle(Qt::SolidPattern);
-        m_painter->setPen(*m_pen);
-        m_painter->setBrush(*m_brush);
-        m_painter->drawRect(qc_keyoffset_x+1, keyY*i + 1, qc_key_x-2, keyY-1);
+        pen.setColor(Qt::black);
+        pen.setStyle(Qt::SolidLine);
+        brush.setColor(Qt::white);
+        brush.setStyle(Qt::SolidPattern);
+        painter.setPen(pen);
+        painter.setBrush(brush);
+        painter.drawRect(qc_keyoffset_x+1, keyY*i + 1, qc_key_x-2, keyY-1);
 
         int key = (qc_num_keys - i - 1) % 12; /* the the key in the octave */
         if (key == 1 || key == 3 || key == 6 || key == 8 || key == 10)
         {
             if (qc_num_keys - (i + 1) == mPreviewKey)
             {
-                //                m_pen->setStyle(Qt::NoPen);
-                //                m_brush->setColor(Qt::red);
-                //                m_painter->setPen(*m_pen);
-                //                m_painter->setBrush(*m_brush);
-                //                m_painter->drawRect(qc_keyoffset_x + 3,
+                //                pen.setStyle(Qt::NoPen);
+                //                brush.setColor(Qt::red);
+                //                painter.setPen(*m_pen);
+                //                painter.setBrush(*m_brush);
+                //                painter.drawRect(qc_keyoffset_x + 3,
                 //                                    keyY * i + 5,
                 //                                    qc_key_x - 6,
                 //                                    keyY - 8);
             }
-            m_pen->setStyle(Qt::SolidLine); // draw black keys
-            m_pen->setColor(Qt::black);
-            m_brush->setColor(Qt::black);
-            m_painter->setPen(*m_pen);
-            m_painter->setBrush(*m_brush);
-            m_painter->drawRect(qc_keyoffset_x+1, keyY*i + 3, qc_key_x-4, keyY-5);
+            pen.setStyle(Qt::SolidLine); // draw black keys
+            pen.setColor(Qt::black);
+            brush.setColor(Qt::black);
+            painter.setPen(pen);
+            painter.setBrush(brush);
+            painter.drawRect(qc_keyoffset_x+1, keyY*i + 3, qc_key_x-4, keyY-5);
         }
 
         if (qc_num_keys - (i + 1) == mPreviewKey) // highlight for note previewing
         {
-            m_brush->setColor(Qt::red);
-            m_pen->setStyle(Qt::NoPen);
-            m_painter->setPen(*m_pen);
-            m_painter->setBrush(*m_brush);
-            m_painter->drawRect(qc_keyoffset_x+3, keyY*i + 3, qc_key_x-5, keyY-4);
+            brush.setColor(Qt::red);
+            pen.setStyle(Qt::NoPen);
+            painter.setPen(pen);
+            painter.setBrush(brush);
+            painter.drawRect(qc_keyoffset_x+3, keyY*i + 3, qc_key_x-5, keyY-4);
         }
 
         char notes[20];
@@ -141,16 +138,12 @@ qseqkeys::paintEvent (QPaintEvent *)
             snprintf(notes, sizeof(notes), "%2s%1d", c_key_text[key], octave);
 
             //draw "Cx" octave labels
-            m_pen->setColor(Qt::black);
-            m_pen->setStyle(Qt::SolidLine);
-            m_painter->setPen(*m_pen);
-            m_painter->drawText(2, keyY * i + 11, notes);
+            pen.setColor(Qt::black);
+            pen.setStyle(Qt::SolidLine);
+            painter.setPen(pen);
+            painter.drawText(2, keyY * i + 11, notes);
         }
-
     }
-    delete m_painter;
-    delete m_brush;
-    delete m_pen;
 }
 
 /**

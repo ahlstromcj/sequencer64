@@ -126,9 +126,6 @@ private:
     void set_adding(bool adding);
 
     perform & mPerf;
-    QPen * mPen;
-    QBrush * mBrush;
-    QPainter* mPainter;
     QTimer * mTimer;
     QFont mFont;
     seq64::rect m_old;      // why do we need the namespace here?
@@ -143,13 +140,13 @@ private:
 
     // sequence selection
 
-    long tick_s; //start of tick window
-    long tick_f; //end of tick window
+    midipulse tick_s; //start of tick window
+    midipulse tick_f; //end of tick window
     int seq_h;  //highest seq in window
     int seq_l;  //lowest seq in window
-    long m_drop_tick;
-    long m_drop_tick_trigger_offset; // ticks clicked from start of trigger
-    long mLastTick;                  // tick using at last mouse event
+    midipulse m_drop_tick;
+    midipulse m_drop_tick_trigger_offset; // ticks clicked from start of trigger
+    midipulse mLastTick;                  // tick using at last mouse event
     bool m_sequence_active[c_max_sequence];
     bool m_moving;
     bool mBoxSelect;

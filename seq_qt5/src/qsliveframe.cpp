@@ -51,10 +51,7 @@ qsliveframe::qsliveframe (perform & perf, QWidget * parent)
     ui                  (new Ui::qsliveframe),
     mPerf               (perf),
     m_moving_seq        (),
-    m_seq_clipboard       (),
-    mPainter            (nullptr),
-    mBrush              (nullptr),
-    mPen                (nullptr),
+    m_seq_clipboard     (),
     mPopup              (nullptr),
     mRedrawTimer        (nullptr),
     mMsgBoxNewSeqCheck  (nullptr),
@@ -66,7 +63,7 @@ qsliveframe::qsliveframe (perform & perf, QWidget * parent)
     previewH            (0),
     lastMetro           (0),
     alpha               (0),
-    m_curr_seq         (0),                // mouse interaction
+    m_curr_seq          (0),            // mouse interaction
     mOldSeq             (0),
     mButtonDown         (false),
     mMoving             (false),
@@ -133,10 +130,6 @@ qsliveframe::paintEvent (QPaintEvent *)
 void
 qsliveframe::drawSequence (int seq)
 {
-    ///// mPainter = new QPainter(this);
-    ///// mPen = new QPen(Qt::black);
-    ///// mBrush = new QBrush(Qt::darkGray);
-
     QPainter painter(this);
     QPen pen(Qt::black);
     QBrush brush(Qt::darkGray);
@@ -367,10 +360,6 @@ qsliveframe::drawSequence (int seq)
 
     alpha *= 0.7 - mPerf.bpm() / 300.0;
     lastMetro = metro;
-
-    ///// delete mPainter;
-    ///// delete mPen;
-    ///// delete mBrush;
 }
 
 /**
@@ -582,129 +571,87 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
             // set the colour from the scheme
 
             QMenu * menuColour = new QMenu(tr("Set colour..."));
-            QAction * actionColours[8];
-            actionColours[0] = new QAction(tr("White"), menuColour);
-            actionColours[1] = new QAction(tr("Red"), menuColour);
-            actionColours[2] = new QAction(tr("Green"), menuColour);
-            actionColours[3] = new QAction(tr("Blue"), menuColour);
-            actionColours[4] = new QAction(tr("Yellow"), menuColour);
-            actionColours[5] = new QAction(tr("Purple"), menuColour);
-            actionColours[6] = new QAction(tr("Pink"), menuColour);
-            actionColours[7] = new QAction(tr("Orange"), menuColour);
+            QAction * color[8];
+            color[0] = new QAction(tr("White"), menuColour);
+            color[1] = new QAction(tr("Red"), menuColour);
+            color[2] = new QAction(tr("Green"), menuColour);
+            color[3] = new QAction(tr("Blue"), menuColour);
+            color[4] = new QAction(tr("Yellow"), menuColour);
+            color[5] = new QAction(tr("Purple"), menuColour);
+            color[6] = new QAction(tr("Pink"), menuColour);
+            color[7] = new QAction(tr("Orange"), menuColour);
 
-            connect(actionColours[0],
-                    SIGNAL(triggered(bool)),
-                    this,
-                    SLOT(set_color_white()));
+            connect(color[0], SIGNAL(triggered(bool)), this, SLOT(color_white()));
+            connect(color[1], SIGNAL(triggered(bool)), this, SLOT(color_red()));
+            connect(color[2], SIGNAL(triggered(bool)), this, SLOT(color_green()));
+            connect(color[3], SIGNAL(triggered(bool)), this, SLOT(color_blue()));
+            connect(color[4], SIGNAL(triggered(bool)), this, SLOT(color_yellow()));
+            connect(color[5], SIGNAL(triggered(bool)), this, SLOT(color_purple()));
+            connect(color[6], SIGNAL(triggered(bool)), this, SLOT(color_pink()));
+            connect(color[7], SIGNAL(triggered(bool)), this, SLOT(color_orange()));
 
-            connect(actionColours[1],
-                    SIGNAL(triggered(bool)),
-                    this,
-                    SLOT(set_color_Red()));
-
-            connect(actionColours[2],
-                    SIGNAL(triggered(bool)),
-                    this,
-                    SLOT(set_color_Green()));
-
-            connect(actionColours[3],
-                    SIGNAL(triggered(bool)),
-                    this,
-                    SLOT(set_color_Blue()));
-
-            connect(actionColours[4],
-                    SIGNAL(triggered(bool)),
-                    this,
-                    SLOT(set_color_Yellow()));
-
-            connect(actionColours[5],
-                    SIGNAL(triggered(bool)),
-                    this,
-                    SLOT(set_color_Purple()));
-
-            connect(actionColours[6],
-                    SIGNAL(triggered(bool)),
-                    this,
-                    SLOT(set_color_Pink()));
-
-            connect(actionColours[7],
-                    SIGNAL(triggered(bool)),
-                    this,
-                    SLOT(set_color_Orange()));
-
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 8; ++i)
             {
-                menuColour->addAction(actionColours[i]);
+                menuColour->addAction(color[i]);
             }
 
             mPopup->addMenu(menuColour);
 
-            //copy sequence
-            QAction *actionCopy = new QAction(tr("Copy sequence"), mPopup);
+            QAction * actionCopy = new QAction(tr("Copy sequence"), mPopup);
             mPopup->addAction(actionCopy);
-            connect(actionCopy,
-                    SIGNAL(triggered(bool)),
-                    this,
-                    SLOT(copySeq()));
+            connect(actionCopy, SIGNAL(triggered(bool)), this, SLOT(copySeq()));
 
-            //cut sequence
-            QAction *actionCut = new QAction(tr("Cut sequence"), mPopup);
+            QAction * actionCut = new QAction(tr("Cut sequence"), mPopup);
             mPopup->addAction(actionCut);
-            connect(actionCut,
-                    SIGNAL(triggered(bool)),
-                    this,
-                    SLOT(cutSeq()));
+            connect(actionCut, SIGNAL(triggered(bool)), this, SLOT(cutSeq()));
 
-            //delete sequence
-            QAction *actionDelete = new QAction(tr("Delete sequence"), mPopup);
+            QAction * actionDelete = new QAction(tr("Delete sequence"), mPopup);
             mPopup->addAction(actionDelete);
-            connect(actionDelete,
-                    SIGNAL(triggered(bool)),
-                    this,
-                    SLOT(deleteSeq()));
-
+            connect
+            (
+                actionDelete, SIGNAL(triggered(bool)), this, SLOT(deleteSeq())
+            );
         }
         else if (mCanPaste)
         {
-            //paste sequence
-            QAction *actionPaste = new QAction(tr("Paste sequence"), mPopup);
+            QAction * actionPaste = new QAction(tr("Paste sequence"), mPopup);
             mPopup->addAction(actionPaste);
-            connect(actionPaste,
-                    SIGNAL(triggered(bool)),
-                    this,
-                    SLOT(pasteSeq()));
+            connect(actionPaste, SIGNAL(triggered(bool)), this, SLOT(pasteSeq()));
         }
-
         mPopup->exec(QCursor::pos());
     }
 
-    //middle button launches seq editor
-    if (m_curr_seq != -1
-            && event->button() == Qt::MiddleButton
-            && mPerf.is_active(m_curr_seq))
+    if                      // middle button launches seq editor
+    (   m_curr_seq != -1 && event->button() == Qt::MiddleButton &&
+        mPerf.is_active(m_curr_seq)
+    )
     {
         callEditor(m_curr_seq);
     }
 }
 
+/**
+ *
+ */
+
 void
-qsliveframe::mouseMoveEvent(QMouseEvent *event)
+qsliveframe::mouseMoveEvent (QMouseEvent * event)
 {
     int seqId = seqIDFromClickXY(event->x(), event->y());
-
     if (mButtonDown)
     {
-        if (seqId != m_curr_seq
-                && !mMoving
-                && !mPerf.is_sequence_in_edit(m_curr_seq))
+        if (seqId != m_curr_seq && ! mMoving &&
+            ! mPerf.is_sequence_in_edit(m_curr_seq))
         {
-            /* lets drag a sequence between slots */
+            /*
+             * Drag a sequence between slots; save the sequence and clear the
+             * old slot.
+             */
+
             if (mPerf.is_active(m_curr_seq))
             {
                 mOldSeq = m_curr_seq;
                 mMoving = true;
-
-                /* save the sequence and clear the old slot */
                 m_moving_seq.partial_assign(*(mPerf.get_sequence(m_curr_seq)));
                 mPerf.delete_sequence(m_curr_seq);
                 update();
@@ -713,14 +660,20 @@ qsliveframe::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
+/**
+ *
+ */
+
 void
-qsliveframe::mouseDoubleClickEvent(QMouseEvent *)
+qsliveframe::mouseDoubleClickEvent (QMouseEvent *)
 {
     if (mAddingNew)
-    {
         newSeq();
-    }
 }
+
+/**
+ *
+ */
 
 void
 qsliveframe::newSeq()
@@ -733,19 +686,28 @@ qsliveframe::newSeq()
     }
     mPerf.new_sequence(m_curr_seq);
     mPerf.get_sequence(m_curr_seq)->set_dirty();
+
     //TODO reenable - disabled opening the editor for each new seq
     //    callEditor(m_main_perf->get_sequence(m_current_seq));
 
 }
 
+/**
+ *
+ */
+
 void
-qsliveframe::editSeq()
+qsliveframe::editSeq ()
 {
     callEditor(m_curr_seq);
 }
 
+/**
+ *
+ */
+
 void
-qsliveframe::keyPressEvent(QKeyEvent *event)
+qsliveframe::keyPressEvent (QKeyEvent * event)
 {
     switch (event->key())
     {
@@ -835,7 +797,7 @@ qsliveframe::sequence_key (int seq)
  */
 
 void
-qsliveframe::set_color_white()
+qsliveframe::color_white ()
 {
     mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::WHITE));
 }
@@ -845,7 +807,7 @@ qsliveframe::set_color_white()
  */
 
 void
-qsliveframe::set_color_red()
+qsliveframe::color_red ()
 {
     mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::RED));
 }
@@ -855,7 +817,7 @@ qsliveframe::set_color_red()
  */
 
 void
-qsliveframe::set_color_green()
+qsliveframe::color_green ()
 {
     mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::GREEN));
 }
@@ -865,7 +827,7 @@ qsliveframe::set_color_green()
  */
 
 void
-qsliveframe::set_color_blue()
+qsliveframe::color_blue ()
 {
     mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::BLUE));
 }
@@ -875,7 +837,7 @@ qsliveframe::set_color_blue()
  */
 
 void
-qsliveframe::set_color_yellow()
+qsliveframe::color_yellow ()
 {
     mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::YELLOW));
 }
@@ -885,7 +847,7 @@ qsliveframe::set_color_yellow()
  */
 
 void
-qsliveframe::set_color_purple()
+qsliveframe::color_purple ()
 {
     mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::MAGENTA));
 }
@@ -895,7 +857,7 @@ qsliveframe::set_color_purple()
  */
 
 void
-qsliveframe::set_color_pink()
+qsliveframe::color_pink ()
 {
     mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::RED)); // Pink);
 }
@@ -905,7 +867,7 @@ qsliveframe::set_color_pink()
  */
 
 void
-qsliveframe::set_color_orange()
+qsliveframe::color_orange ()
 {
     mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::ORANGE));
 }
@@ -915,7 +877,7 @@ qsliveframe::set_color_orange()
  */
 
 void
-qsliveframe::copySeq()
+qsliveframe::copySeq ()
 {
     if (mPerf.is_active(m_curr_seq))
     {
@@ -929,7 +891,7 @@ qsliveframe::copySeq()
  */
 
 void
-qsliveframe::cutSeq()
+qsliveframe::cutSeq ()
 {
     // TODO: dialog warning that the editor is the reason
     // this seq cant be cut
@@ -947,13 +909,17 @@ qsliveframe::cutSeq()
  */
 
 void
-qsliveframe::deleteSeq()
+qsliveframe::deleteSeq ()
 {
-    if (mPerf.is_active(m_curr_seq) &&
-            !mPerf.is_sequence_in_edit(m_curr_seq))
-        //TODO dialog warning that the editor is the reason
-        //this seq cant be deleted
+    if
+    (
+        mPerf.is_active(m_curr_seq) && !mPerf.is_sequence_in_edit(m_curr_seq)
+    )
+    {
+        // TODO
+        //dialog warning that the editor is the reason this seq cant be deleted
         mPerf.delete_sequence(m_curr_seq);
+    }
 }
 
 /**
@@ -961,7 +927,7 @@ qsliveframe::deleteSeq()
  */
 
 void
-qsliveframe::pasteSeq()
+qsliveframe::pasteSeq ()
 {
     if (! mPerf.is_active(m_curr_seq))
     {

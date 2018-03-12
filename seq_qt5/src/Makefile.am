@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2018-03-11
+# \update      2018-03-12
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -26,13 +26,11 @@ MAINTAINERCLEANFILES = Makefile.in Makefile $(AUX_DIST)
 # CLEANFILES
 #------------------------------------------------------------------------------
 #
-#  Do not forget to clean the moc/uic generated files.
-#
-#  CLEANFILES = *.gc* *.moc.cpp ../forms/*.ui.h
+#  Do not forget to clean the moc/uic/rcc generated files.
 #
 #------------------------------------------------------------------------------
 
-CLEANFILES = "qseq64.qrc.cpp"
+CLEANFILES = *.gc* *.moc.cpp ../forms/*.ui.h qseq64.qrc.cpp
 MOSTLYCLEANFILES = *~
 
 #******************************************************************************
@@ -107,7 +105,9 @@ builddir = @abs_top_builddir@
 thisdir = $(top_srcdir)/seq_qt5
 formsdir = $(top_srcdir)/seq_qt5/forms
 hppdir = $(top_srcdir)/seq_qt5/include
-pixdir = $(top_srcdir)/resources/pixmaps
+pixdir = $(top_srcdir)/seq_qt5/pixmaps
+
+# pixdir = $(top_srcdir)/resources/pixmaps
 
 #*****************************************************************************
 # libtool
@@ -127,6 +127,7 @@ git_info = "$(git_version) $(git_branch)"
 
 #******************************************************************************
 # Compiler and linker flags (later, PortMidi)
+#------------------------------------------------------------------------------
 #
 #	Unfortunately, we need to add the platform-specific include directories
 #	because we include the perform module in some modules, and it includes
@@ -171,13 +172,14 @@ endif
 
 #******************************************************************************
 # Qt 5 rules
+#------------------------------------------------------------------------------
 #
 #     $@ is the name of the file being generated;
 #     $< is the first prerequisite (the source file)
 #
 #------------------------------------------------------------------------------
 
-SUFFIXES = .h .hpp .cpp .moc.cpp .grc.cpp .ui .ui.h
+SUFFIXES = .h .hpp .cpp .moc.cpp .qrc.cpp .ui .ui.h
 
 # The moc.cpp files are normally deposited in the include directory!
 #
@@ -211,9 +213,11 @@ lib_LTLIBRARIES = libseq_qt5.la
 #
 # moc_sources = $(moc_qt_headers:.hpp=.moc.cpp)
 #
-# Added qperfnames, qperfroll, qperftime, qseqdata, qseqkeys, qsmaintime,
-# qseqroll, qseqtime, qstriggereditor, due to vtable error for their
-# constructors or destructors.
+#  However....
+#
+#  Added qperfnames, qperfroll, qperftime, qseqdata, qseqkeys, qsmaintime,
+#  qseqroll, qseqtime, qstriggereditor, due to vtable error for their
+#  constructors or destructors.
 #
 #  Somehow, using the hppdir macro creates a '$(hppdir)' directory.... :-(
 #

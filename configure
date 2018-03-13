@@ -21422,7 +21422,7 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile m4/Makefile libseq64/Makefile libseq64/include/Makefile libseq64/src/Makefile seq_alsamidi/Makefile seq_alsamidi/include/Makefile seq_alsamidi/src/Makefile seq_gtkmm2/Makefile seq_gtkmm2/include/Makefile seq_gtkmm2/src/Makefile seq_qt5/Makefile seq_qt5/include/Makefile seq_qt5/src/Makefile seq_portmidi/Makefile seq_portmidi/include/Makefile seq_portmidi/src/Makefile seq_rtmidi/Makefile seq_rtmidi/include/Makefile seq_rtmidi/src/Makefile resources/pixmaps/Makefile Sequencer64/Makefile Seq64portmidi/Makefile Seq64qt5/Makefile Seq64rtmidi/Makefile Seq64cli/Makefile Midiclocker64/Makefile man/Makefile data/Makefile"
+ac_config_files="$ac_config_files Makefile m4/Makefile libseq64/Makefile libseq64/include/Makefile libseq64/src/Makefile seq_alsamidi/Makefile seq_alsamidi/include/Makefile seq_alsamidi/src/Makefile seq_gtkmm2/Makefile seq_gtkmm2/include/Makefile seq_gtkmm2/src/Makefile seq_qt5/Makefile seq_qt5/include/Makefile seq_qt5/forms/Makefile seq_qt5/src/Makefile seq_portmidi/Makefile seq_portmidi/include/Makefile seq_portmidi/src/Makefile seq_rtmidi/Makefile seq_rtmidi/include/Makefile seq_rtmidi/src/Makefile resources/pixmaps/Makefile Sequencer64/Makefile Seq64portmidi/Makefile Seq64qt5/Makefile Seq64rtmidi/Makefile Seq64cli/Makefile Midiclocker64/Makefile man/Makefile data/Makefile"
 
 
 
@@ -22596,6 +22596,7 @@ do
     "seq_gtkmm2/src/Makefile") CONFIG_FILES="$CONFIG_FILES seq_gtkmm2/src/Makefile" ;;
     "seq_qt5/Makefile") CONFIG_FILES="$CONFIG_FILES seq_qt5/Makefile" ;;
     "seq_qt5/include/Makefile") CONFIG_FILES="$CONFIG_FILES seq_qt5/include/Makefile" ;;
+    "seq_qt5/forms/Makefile") CONFIG_FILES="$CONFIG_FILES seq_qt5/forms/Makefile" ;;
     "seq_qt5/src/Makefile") CONFIG_FILES="$CONFIG_FILES seq_qt5/src/Makefile" ;;
     "seq_portmidi/Makefile") CONFIG_FILES="$CONFIG_FILES seq_portmidi/Makefile" ;;
     "seq_portmidi/include/Makefile") CONFIG_FILES="$CONFIG_FILES seq_portmidi/include/Makefile" ;;

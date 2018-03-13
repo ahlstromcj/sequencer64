@@ -2,16 +2,16 @@
 # Makefile.am (libseq_qt5)
 #------------------------------------------------------------------------------
 ##
-# \file       	Makefile.am
-# \library    	libseq_qt5 library
-# \author     	Chris Ahlstrom
-# \date       	2018-03-09
-# \update      2018-03-09
-# \version    	$Revision$
-# \license    	$XPC_SUITE_GPL_LICENSE$
+# \file         Makefile.am
+# \library      libseq_qt5 library
+# \author       Chris Ahlstrom
+# \date         2018-03-09
+# \update       2018-03-12
+# \version      $Revision$
+# \license      $XPC_SUITE_GPL_LICENSE$
 #
-# 		This module provides an Automake makefile for the libseq_qt5 C++
-# 		library.
+#       This module provides an Automake makefile for the libseq_qt5 C++
+#       library.
 #
 #------------------------------------------------------------------------------
 
@@ -66,24 +66,21 @@ sequencer64libdir = @sequencer64libdir@
 # Source files
 #----------------------------------------------------------------------------
 
-pkginclude_HEADERS = \
- gui_palette_qt5.hpp \
- qperfeditframe.hpp \
- qperfnames.hpp \
- qperfroll.hpp \
- qperftime.hpp \
- qsabout.hpp \
- qseditoptions.hpp \
- qseqdata.hpp \
- qseqeditframe.hpp \
- qseqkeys.hpp \
- qseqroll.hpp \
- qseqstyle.hpp \
- qseqtime.hpp \
- qsliveframe.hpp \
- qsmaintime.hpp \
- qsmainwnd.hpp \
- qstriggereditor.hpp
+UI_FILES = \
+ qperfeditframe.ui \
+ qsabout.ui \
+ qseditoptions.ui \
+ qseqeditframe.ui \
+ qsliveframe.ui \
+ qsmainwnd.ui
+
+UI_H_FILES = \
+ qperfeditframe.ui.h \
+ qsabout.ui.h \
+ qseditoptions.ui.h \
+ qseqeditframe.ui.h \
+ qsliveframe.ui.h \
+ qsmainwnd.ui.h
 
 #******************************************************************************
 # uninstall-hook

@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2018-03-12
+# \update      2018-03-13
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -56,8 +56,10 @@ SEQ64_LT_CURRENT = @SEQ64_LT_CURRENT@
 SEQ64_LT_REVISION = @SEQ64_LT_REVISION@
 SEQ64_LT_AGE = @SEQ64_LT_AGE@
 
-CXXFLAGS = @QT_CXXFLAGS@
+QT_CXXFLAGS = @QT_CXXFLAGS@
+
 QT_MOC = @QT_MOC@
+QT_RCC = @QT_RCC@
 QT_UIC = @QT_UIC@
 
 #******************************************************************************
@@ -105,8 +107,9 @@ builddir = @abs_top_builddir@
 thisdir = $(top_srcdir)/seq_qt5
 formsdir = $(top_srcdir)/seq_qt5/forms
 hppdir = $(top_srcdir)/seq_qt5/include
-pixdir = $(top_srcdir)/seq_qt5/pixmaps
+pixdir = $(top_srcdir)/resources/pixmaps
 
+# pixdir = $(top_srcdir)/seq_qt5/pixmaps
 # pixdir = $(top_srcdir)/resources/pixmaps
 
 #*****************************************************************************
@@ -179,7 +182,7 @@ endif
 #
 #------------------------------------------------------------------------------
 
-SUFFIXES = .h .hpp .cpp .moc.cpp .qrc.cpp .ui .ui.h
+SUFFIXES = .h .hpp .cpp .moc.cpp .qrc .qrc.cpp .ui .ui.h
 
 # The moc.cpp files are normally deposited in the include directory!
 #
@@ -252,7 +255,8 @@ uic_qt_forms = \
 
 uic_sources = $(uic_qt_forms:.ui=.ui.h)
 
-qseq64.qrc.cpp: qseq64.qrc \
+qseq64.qrc.cpp: \
+ qseq64.qrc \
  $(pixdir)/song-snap.xpm \
  $(pixdir)/panic.xpm \
  $(pixdir)/logo.xpm \
@@ -284,7 +288,9 @@ qseq64.qrc.cpp: qseq64.qrc \
  $(pixdir)/copy.xpm \
  $(pixdir)/tools.xpm
 
-BUILT_SOURCES = $(uic_sources) $(moc_sources) qseq64.qrc.cpp
+BUILT_SOURCES = $(uic_sources) $(moc_sources)
+
+# qseq64.qrc.cpp
 
 libseq_qt5_la_SOURCES = \
  gui_palette_qt5.cpp \

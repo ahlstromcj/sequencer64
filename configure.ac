@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-03-08
+dnl \update        2018-03-13
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -540,6 +540,7 @@ dnl "QtMidi" support.  This is support for the "RtMidi" configuration plus
 dnl using the Qt5 API.  It will be supported for Windows (MingW) or Linux, but
 dnl is currently only vestigially implemented.  The AX_HAVE_QT macro exports
 dnl QT_CXXFLAGS, QT_LIBS, QT_MOC, QT_UIC, QT_LRELEASE, QT_LUPDATE, QT_DIR.
+dnl Our local version, in the m4 directory, also adds QT_RCC.
 dnl
 dnl If this does not work on Debian (empty QT macros are shown in config.log
 dnl after bootstrap), then add the following to your ~/.bashrc file:
@@ -789,7 +790,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-03-04"
+#define VERSION_DATE_SHORT "2018-03-13"
 #define VERSION "0.94.6"
 
 )
@@ -930,6 +931,7 @@ AC_CONFIG_FILES([
  seq_gtkmm2/src/Makefile
  seq_qt5/Makefile
  seq_qt5/include/Makefile
+ seq_qt5/forms/Makefile
  seq_qt5/src/Makefile
  seq_portmidi/Makefile
  seq_portmidi/include/Makefile

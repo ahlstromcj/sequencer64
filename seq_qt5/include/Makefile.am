@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2018-03-09
+# \update      2018-03-12
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -26,7 +26,7 @@ MAINTAINERCLEANFILES = Makefile.in Makefile $(AUX_DIST)
 # CLEANFILES
 #------------------------------------------------------------------------------
 
-CLEANFILES = *.gc*
+CLEANFILES = *.gc* *.moc.cpp
 MOSTLYCLEANFILES = *~
 
 #******************************************************************************

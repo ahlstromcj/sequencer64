@@ -419,7 +419,7 @@ dnl AC_PROG_DOXYGEN
 
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN";
-   then AC_MSG_WARN([Doxygen not found, FYI only])
+   then AC_MSG_WARN([Doxygen not found, FYI only, not to worry])
 fi
 
 dnl gtkmm
@@ -488,7 +488,7 @@ if test "$jack" != "no"; then
         AC_MSG_WARN([Could not find JACK library, disabling JACK.])
     fi
 else
-    AC_MSG_WARN([JACK disabled.]);
+    AC_MSG_NOTICE([JACK disabled.]);
 fi
 
 dnl LASH support
@@ -509,7 +509,7 @@ if test "$lash" != "no"; then
         AC_MSG_WARN([LASH not found, session support will not be built.])
     fi
 else
-    AC_MSG_WARN([LASH support disabled.]);
+    AC_MSG_NOTICE([LASH support disabled.]);
 fi
 
 dnl "RtMidi" support.  This is now the default build for Sequencer64.
@@ -533,7 +533,7 @@ if test "$rtmidi" != "no"; then
     AM_PATH_ALSA(0.9.0)
     AC_MSG_RESULT([rtmidi native build enabled.]);
 else
-    AC_MSG_WARN([rtmidi native build disabled.]);
+    AC_MSG_NOTICE([rtmidi native build disabled.]);
 fi
 
 dnl "QtMidi" support.  This is support for the "RtMidi" configuration plus
@@ -567,7 +567,7 @@ if test "$qtmidi" != "no"; then
     AX_HAVE_QT
     AC_MSG_RESULT([qtmidi native build enabled.]);
 else
-    AC_MSG_WARN([qtmidi native build disabled.]);
+    AC_MSG_NOTICE([qtmidi native build disabled.]);
 fi
 
 dnl "CLI" or "Command-line" support.  This is enable for Windows or Linux.
@@ -591,7 +591,7 @@ if test "$cli" != "no"; then
         AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates that PortMidi is enabled])
     fi
 else
-    AC_MSG_WARN([rtmidi command-line build disabled.])
+    AC_MSG_NOTICE([rtmidi command-line build disabled.])
 fi
 
 dnl ALSA MIDI (legacy) support.
@@ -608,7 +608,7 @@ if test "$alsamidi" != "no"; then
     AM_PATH_ALSA(0.9.0)
     AC_MSG_RESULT([Standard ALSA build enabled.]);
 else
-    AC_MSG_WARN([Standard ALSA build disabled.]);
+    AC_MSG_NOTICE([Standard ALSA build disabled.]);
 fi
 
 dnl PortMidi support.  Deprecated for Linux, but will still build it. It needs
@@ -626,7 +626,7 @@ if test "$portmidi" != "no"; then
     AM_PATH_ALSA(0.9.0)
     AC_MSG_RESULT([PortMidi build enabled.]);
 else
-    AC_MSG_WARN([PortMidi build disabled.]);
+    AC_MSG_NOTICE([PortMidi build disabled.]);
 fi
 
 AC_SUBST(APP_NAME)
@@ -643,7 +643,7 @@ if test "$highlight" != "no"; then
     AC_DEFINE(HIGHLIGHT_EMPTY_SEQS, 1, [Define to enable highlighting empty sequences])
     AC_MSG_RESULT([Highlighting empty sequences enabled.]);
 else
-    AC_MSG_WARN([Highlighting empty sequences disabled.]);
+    AC_MSG_NOTICE([Highlighting empty sequences disabled.]);
 fi
 
 dnl Support for using the event editor.  It can cause issues if used, and adds
@@ -661,7 +661,7 @@ if test "$eveditor" != "no"; then
     AC_DEFINE(ENABLE_EVENT_EDITOR, 1, [Define to enable the event editor])
     AC_MSG_RESULT([Event editor enabled.]);
 else
-    AC_MSG_WARN([Event editor disabled.]);
+    AC_MSG_NOTICE([Event editor disabled.]);
 fi
 
 dnl Support for pausing playback in ALSA mode, including a pause button.
@@ -676,7 +676,7 @@ if test "$pause" != "no"; then
     AC_DEFINE(PAUSE_SUPPORT, 1, [Define to enable pausing and pause button])
     AC_MSG_RESULT([Pausing sequences and pause-button enabled.]);
 else
-    AC_MSG_WARN([Pausing sequences and pause-button disabled.]);
+    AC_MSG_NOTICE([Pausing sequences and pause-button disabled.]);
 fi
 
 dnl Support for multiple main windows. If enabled, the
@@ -691,7 +691,7 @@ if test "$multiwid" != "no"; then
     AC_DEFINE(MULTI_MAINWID, 1, [Define to enable multiple main windows])
     AC_MSG_RESULT([Multiple main windows enabled.]);
 else
-    AC_MSG_WARN([Multiple main windows disabled.]);
+    AC_MSG_NOTICE([Multiple main windows disabled.]);
 fi
 
 dnl Support for re-enabling the "statistics" code.  If enabled, macro
@@ -706,7 +706,7 @@ if test "$statistics" != "no"; then
     AC_DEFINE(STATISTICS_SUPPORT, 1, [Define to enable statistics gathering])
     AC_MSG_RESULT([Statistics gathering enabled.]);
 else
-    AC_MSG_WARN([Statistics gathering disabled.]);
+    AC_MSG_NOTICE([Statistics gathering disabled.]);
 fi
 
 dnl Support for using the stazed JACK support is now permanent.
@@ -724,7 +724,7 @@ if test "$lfo" != "no"; then
     AC_DEFINE(STAZED_LFO_SUPPORT, 1, [Define to enable Seq32 LFO window support])
     AC_MSG_RESULT([Seq32 LFO window support enabled.]);
 else
-    AC_MSG_WARN([Seq32 LFO window support disabled.]);
+    AC_MSG_NOTICE([Seq32 LFO window support disabled.]);
 fi
 
 dnl Support for using the stazed chord generator.
@@ -738,7 +738,7 @@ if test "$chords" != "no"; then
     AC_DEFINE(STAZED_CHORD_GENERATOR, 1, [Define to enable the chord generator])
     AC_MSG_RESULT([Chord generator enabled.])
 else
-    AC_MSG_WARN([Chord generator disabled.]);
+    AC_MSG_NOTICE([Chord generator disabled.]);
 fi
 
 dnl Support for using the stazed transpose feature.  This affects sequence and
@@ -753,7 +753,7 @@ if test "$transpose" != "no"; then
     AC_DEFINE(STAZED_TRANSPOSE, 1, [Define to enable global transpose])
     AC_MSG_RESULT([Global seq32 transpose enabled.])
 else
-    AC_MSG_WARN([Global seq32 transpose disabled.]);
+    AC_MSG_NOTICE([Global seq32 transpose disabled.]);
 fi
 
 dnl Support for using jean-emmanuel's scrollbars in the patterns panel.  We will
@@ -769,7 +769,7 @@ if test "$mainscroll" != "no"; then
         1, [Define to enable main pattern scrollbars])
     AC_MSG_RESULT([Main patterns-panel scrollbars enabled.])
 else
-    AC_MSG_WARN([Main patterns-panel scrollbars disabled.]);
+    AC_MSG_NOTICE([Main patterns-panel scrollbars disabled.]);
 fi
 
 AM_CONDITIONAL([BUILD_ALSAMIDI], [test "$build_alsamidi" = "yes"])

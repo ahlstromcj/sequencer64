@@ -17168,8 +17168,8 @@ fi
 done
 
 if test -z "$DOXYGEN";
-   then { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Doxygen not found, FYI only" >&5
-$as_echo "$as_me: WARNING: Doxygen not found, FYI only" >&2;}
+   then { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Doxygen not found, FYI only, not to worry" >&5
+$as_echo "$as_me: WARNING: Doxygen not found, FYI only, not to worry" >&2;}
 fi
 
 
@@ -17524,8 +17524,8 @@ $as_echo "JACK support enabled." >&6; };
 $as_echo "$as_me: WARNING: Could not find JACK library, disabling JACK." >&2;}
     fi
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: JACK disabled." >&5
-$as_echo "$as_me: WARNING: JACK disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: JACK disabled." >&5
+$as_echo "$as_me: JACK disabled." >&6;};
 fi
 
 
@@ -17622,8 +17622,8 @@ $as_echo "LASH support enabled." >&6; };
 $as_echo "$as_me: WARNING: LASH not found, session support will not be built." >&2;}
     fi
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: LASH support disabled." >&5
-$as_echo "$as_me: WARNING: LASH support disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: LASH support disabled." >&5
+$as_echo "$as_me: LASH support disabled." >&6;};
 fi
 
 
@@ -17851,8 +17851,8 @@ fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: rtmidi native build enabled." >&5
 $as_echo "rtmidi native build enabled." >&6; };
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: rtmidi native build disabled." >&5
-$as_echo "$as_me: WARNING: rtmidi native build disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: rtmidi native build disabled." >&5
+$as_echo "$as_me: rtmidi native build disabled." >&6;};
 fi
 
 
@@ -18969,8 +18969,8 @@ $as_echo "$ax_cv_qt_test_result" >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: qtmidi native build enabled." >&5
 $as_echo "qtmidi native build enabled." >&6; };
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: qtmidi native build disabled." >&5
-$as_echo "$as_me: WARNING: qtmidi native build disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: qtmidi native build disabled." >&5
+$as_echo "$as_me: qtmidi native build disabled." >&6;};
 fi
 
 
@@ -19207,8 +19207,8 @@ $as_echo "#define PORTMIDI_SUPPORT 1" >>confdefs.h
 
     fi
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: rtmidi command-line build disabled." >&5
-$as_echo "$as_me: WARNING: rtmidi command-line build disabled." >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: rtmidi command-line build disabled." >&5
+$as_echo "$as_me: rtmidi command-line build disabled." >&6;}
 fi
 
 
@@ -19436,8 +19436,8 @@ fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Standard ALSA build enabled." >&5
 $as_echo "Standard ALSA build enabled." >&6; };
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Standard ALSA build disabled." >&5
-$as_echo "$as_me: WARNING: Standard ALSA build disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Standard ALSA build disabled." >&5
+$as_echo "$as_me: Standard ALSA build disabled." >&6;};
 fi
 
 
@@ -19665,8 +19665,8 @@ fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: PortMidi build enabled." >&5
 $as_echo "PortMidi build enabled." >&6; };
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: PortMidi build disabled." >&5
-$as_echo "$as_me: WARNING: PortMidi build disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: PortMidi build disabled." >&5
+$as_echo "$as_me: PortMidi build disabled." >&6;};
 fi
 
 
@@ -19687,8 +19687,8 @@ $as_echo "#define HIGHLIGHT_EMPTY_SEQS 1" >>confdefs.h
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Highlighting empty sequences enabled." >&5
 $as_echo "Highlighting empty sequences enabled." >&6; };
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Highlighting empty sequences disabled." >&5
-$as_echo "$as_me: WARNING: Highlighting empty sequences disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Highlighting empty sequences disabled." >&5
+$as_echo "$as_me: Highlighting empty sequences disabled." >&6;};
 fi
 
 
@@ -19707,8 +19707,8 @@ $as_echo "#define ENABLE_EVENT_EDITOR 1" >>confdefs.h
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Event editor enabled." >&5
 $as_echo "Event editor enabled." >&6; };
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Event editor disabled." >&5
-$as_echo "$as_me: WARNING: Event editor disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Event editor disabled." >&5
+$as_echo "$as_me: Event editor disabled." >&6;};
 fi
 
 
@@ -19727,8 +19727,8 @@ $as_echo "#define PAUSE_SUPPORT 1" >>confdefs.h
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Pausing sequences and pause-button enabled." >&5
 $as_echo "Pausing sequences and pause-button enabled." >&6; };
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Pausing sequences and pause-button disabled." >&5
-$as_echo "$as_me: WARNING: Pausing sequences and pause-button disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Pausing sequences and pause-button disabled." >&5
+$as_echo "$as_me: Pausing sequences and pause-button disabled." >&6;};
 fi
 
 
@@ -19747,8 +19747,8 @@ $as_echo "#define MULTI_MAINWID 1" >>confdefs.h
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Multiple main windows enabled." >&5
 $as_echo "Multiple main windows enabled." >&6; };
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Multiple main windows disabled." >&5
-$as_echo "$as_me: WARNING: Multiple main windows disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Multiple main windows disabled." >&5
+$as_echo "$as_me: Multiple main windows disabled." >&6;};
 fi
 
 
@@ -19767,8 +19767,8 @@ $as_echo "#define STATISTICS_SUPPORT 1" >>confdefs.h
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Statistics gathering enabled." >&5
 $as_echo "Statistics gathering enabled." >&6; };
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Statistics gathering disabled." >&5
-$as_echo "$as_me: WARNING: Statistics gathering disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Statistics gathering disabled." >&5
+$as_echo "$as_me: Statistics gathering disabled." >&6;};
 fi
 
 
@@ -19791,8 +19791,8 @@ $as_echo "#define STAZED_LFO_SUPPORT 1" >>confdefs.h
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Seq32 LFO window support enabled." >&5
 $as_echo "Seq32 LFO window support enabled." >&6; };
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Seq32 LFO window support disabled." >&5
-$as_echo "$as_me: WARNING: Seq32 LFO window support disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Seq32 LFO window support disabled." >&5
+$as_echo "$as_me: Seq32 LFO window support disabled." >&6;};
 fi
 
 
@@ -19811,8 +19811,8 @@ $as_echo "#define STAZED_CHORD_GENERATOR 1" >>confdefs.h
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Chord generator enabled." >&5
 $as_echo "Chord generator enabled." >&6; }
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Chord generator disabled." >&5
-$as_echo "$as_me: WARNING: Chord generator disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Chord generator disabled." >&5
+$as_echo "$as_me: Chord generator disabled." >&6;};
 fi
 
 
@@ -19831,8 +19831,8 @@ $as_echo "#define STAZED_TRANSPOSE 1" >>confdefs.h
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Global seq32 transpose enabled." >&5
 $as_echo "Global seq32 transpose enabled." >&6; }
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Global seq32 transpose disabled." >&5
-$as_echo "$as_me: WARNING: Global seq32 transpose disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Global seq32 transpose disabled." >&5
+$as_echo "$as_me: Global seq32 transpose disabled." >&6;};
 fi
 
 
@@ -19851,8 +19851,8 @@ $as_echo "#define JE_PATTERN_PANEL_SCROLLBARS 1" >>confdefs.h
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Main patterns-panel scrollbars enabled." >&5
 $as_echo "Main patterns-panel scrollbars enabled." >&6; }
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Main patterns-panel scrollbars disabled." >&5
-$as_echo "$as_me: WARNING: Main patterns-panel scrollbars disabled." >&2;};
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Main patterns-panel scrollbars disabled." >&5
+$as_echo "$as_me: Main patterns-panel scrollbars disabled." >&6;};
 fi
 
  if test "$build_alsamidi" = "yes"; then

@@ -1,7 +1,7 @@
 # .gitignore for sequencer64
 #
 # Chris Ahlstrom
-# Updates: 2015-09-12 to 2018-03-10
+# Updates: 2015-09-12 to 2018-03-13
 
 ~$*
 .*
@@ -105,7 +105,6 @@ m4/ltsugar.m4
 m4/ltversion.m4
 *.maf
 Makefile
-Makefile.in
 Makefile.in.in
 Makefile.old
 MANIFEST.bak

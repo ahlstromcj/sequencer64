@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2018-03-13
+# \update      2018-03-14
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -108,9 +108,6 @@ thisdir = $(top_srcdir)/seq_qt5
 formsdir = $(top_srcdir)/seq_qt5/forms
 hppdir = $(top_srcdir)/seq_qt5/include
 pixdir = $(top_srcdir)/resources/pixmaps
-
-# pixdir = $(top_srcdir)/seq_qt5/pixmaps
-# pixdir = $(top_srcdir)/resources/pixmaps
 
 #*****************************************************************************
 # libtool
@@ -310,6 +307,7 @@ libseq_qt5_la_SOURCES = \
  qsmaintime.cpp \
  qsmainwnd.cpp \
  qstriggereditor.cpp \
+ qt5_helpers.cpp \
  qseq64.qrc.cpp \
  $(moc_sources)
 

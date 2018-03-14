@@ -21,7 +21,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2018-03-13
+# \update      2018-03-14
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -174,8 +174,8 @@ am_libseq_qt5_la_OBJECTS = gui_palette_qt5.lo qperfeditframe.lo \
 	qperfnames.lo qperfroll.lo qperftime.lo qsabout.lo \
 	qseditoptions.lo qseqdata.lo qseqeditframe.lo qseqkeys.lo \
 	qseqroll.lo qseqstyle.lo qseqtime.lo qsliveframe.lo \
-	qsmaintime.lo qsmainwnd.lo qstriggereditor.lo qseq64.qrc.lo \
-	$(am__objects_2)
+	qsmaintime.lo qsmainwnd.lo qstriggereditor.lo qt5_helpers.lo \
+	qseq64.qrc.lo $(am__objects_2)
 libseq_qt5_la_OBJECTS = $(am_libseq_qt5_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -481,9 +481,6 @@ formsdir = $(top_srcdir)/seq_qt5/forms
 hppdir = $(top_srcdir)/seq_qt5/include
 pixdir = $(top_srcdir)/resources/pixmaps
 
-# pixdir = $(top_srcdir)/seq_qt5/pixmaps
-# pixdir = $(top_srcdir)/resources/pixmaps
-
 #*****************************************************************************
 # libtool
 #-----------------------------------------------------------------------------
@@ -615,6 +612,7 @@ libseq_qt5_la_SOURCES = \
  qsmaintime.cpp \
  qsmainwnd.cpp \
  qstriggereditor.cpp \
+ qt5_helpers.cpp \
  qseq64.qrc.cpp \
  $(moc_sources)
 
@@ -770,6 +768,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qsmaintime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qsmainwnd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qstriggereditor.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qt5_helpers.Plo@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\

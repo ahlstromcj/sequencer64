@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-13
+ * \updates       2018-03-14
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -42,16 +42,15 @@
 #include "qsmaintime.hpp"
 #include "qseqeditframe.hpp"
 #include "qsliveframe.hpp"
+#include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
 #include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
 #include "forms/qsmainwnd.ui.h"         /* generated btnStop, btnPlay, etc. */
 
-#define USE_LOCAL_QT_ICONS
 #ifdef USE_LOCAL_QT_ICONS
 #include "pixmaps/stop.xpm"
 #include "pixmaps/play2.xpm"
-#include "pixmaps/live_mode.xpm"        /* alternative: "Live"/"Song"       */
-#include "pixmaps/song_mode.xpm"        /* alternative: "Live"/"Song"       */
-#include "pixmaps/song_rec.xpm"
+#include "pixmaps/live_mode.xpm"        // #include "pixmaps/song_mode.xpm"
+#include "pixmaps/song_rec_on.xpm"      // #include "pixmaps/song_rec.xpm"
 #endif
 
 /*
@@ -180,44 +179,20 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
         m_dialog_prefs, SLOT(show())
     );
     connect(ui->btnPlay, SIGNAL(clicked(bool)), this, SLOT(startPlaying()));
-
-#ifdef USE_LOCAL_QT_ICONS
-    QPixmap play_pix(play2_xpm);
-    QIcon play_icon;
-    play_icon.addPixmap(play_pix, QIcon::Normal, QIcon::On);
-    ui->btnPlay->setIcon(play_icon);
-#endif  // USE_LOCAL_QT_ICONS
+    qt_set_icon(play2_xpm, ui->btnPlay);
 
     connect
     (
         ui->btnSongPlay, SIGNAL(clicked(bool)),
         this, SLOT(setSongPlayback(bool))
     );
-
-#ifdef USE_LOCAL_QT_ICONS
-    QPixmap live_pix(live_mode_xpm);    /* versus song_mode_xpm             */
-    QIcon live_icon;
-    live_icon.addPixmap(live_pix, QIcon::Normal, QIcon::On);
-    ui->btnPlay->setIcon(live_icon);
-#endif  // USE_LOCAL_QT_ICONS
+    qt_set_icon(live_mode_xpm, ui->btnSongPlay);
 
     connect(ui->btnStop, SIGNAL(clicked(bool)), this, SLOT(stopPlaying()));
-
-#ifdef USE_LOCAL_QT_ICONS
-    QPixmap stop_pix(stop_xpm);
-    QIcon stop_icon;
-    stop_icon.addPixmap(stop_pix, QIcon::Normal, QIcon::On);
-    ui->btnStop->setIcon(stop_icon);
-#endif  // USE_LOCAL_QT_ICONS
+    qt_set_icon(stop_xpm, ui->btnStop);
 
     connect(ui->btnRecord, SIGNAL(clicked(bool)), this, SLOT(setRecording(bool)));
-
-#ifdef USE_LOCAL_QT_ICONS
-    QPixmap song_rec_pix(song_rec_xpm);
-    QIcon song_rec_icon;
-    song_rec_icon.addPixmap(song_rec_pix, QIcon::Normal, QIcon::On);
-    ui->btnRecord->setIcon(song_rec_icon);
-#endif  // USE_LOCAL_QT_ICONS
+    qt_set_icon(song_rec_on_xpm, ui->btnRecord);
 
     connect(ui->spinBpm, SIGNAL(valueChanged(int)), this, SLOT(updateBpm(int)));
 

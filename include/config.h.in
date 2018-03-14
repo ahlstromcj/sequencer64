@@ -1,0 +1,212 @@
+/* include/config.h.in.  Generated from configure.ac by autoheader.  */
+
+#define VERSION_DATE_SHORT "2018-03-13"
+#define VERSION "0.94.6"
+
+
+
+/* Indicates if ALSA MIDI support is enabled */
+#undef ALSAMIDI_SUPPORT
+
+/* Names this version of application */
+#undef APP_NAME
+
+/* "The name to display as client/port" */
+#undef CLIENT_NAME
+
+/* Define COVFLAGS=-fprofile-arcs -ftest-coverage if coverage support is
+   wanted. */
+#undef COVFLAGS
+
+/* Define DBGFLAGS=-ggdb -O0 -DDEBUG -fno-inline if debug support is wanted.
+   */
+#undef DBGFLAGS
+
+/* Define to enable the event editor */
+#undef ENABLE_EVENT_EDITOR
+
+/* Define to 1 if you have the <ctype.h> header file. */
+#undef HAVE_CTYPE_H
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the <errno.h> header file. */
+#undef HAVE_ERRNO_H
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Define to 1 if you have the <getopt.h> header file. */
+#undef HAVE_GETOPT_H
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `asound' library (-lasound). */
+#undef HAVE_LIBASOUND
+
+/* Define to 1 if you have the `gtkmm-2.4' library (-lgtkmm-2.4). */
+#undef HAVE_LIBGTKMM_2_4
+
+/* Define to 1 if you have the `sigc-2.0' library (-lsigc-2.0). */
+#undef HAVE_LIBSIGC_2_0
+
+/* Define to 1 if you have the <limits.h> header file. */
+#undef HAVE_LIMITS_H
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define if you have POSIX threads libraries and header files. */
+#undef HAVE_PTHREAD
+
+/* Have PTHREAD_PRIO_INHERIT. */
+#undef HAVE_PTHREAD_PRIO_INHERIT
+
+/* Define to 1 if you have the <stdarg.h> header file. */
+#undef HAVE_STDARG_H
+
+/* Define to 1 if you have the <stddef.h> header file. */
+#undef HAVE_STDDEF_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <syslog.h> header file. */
+#undef HAVE_SYSLOG_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/sysctl.h> header file. */
+#undef HAVE_SYS_SYSCTL_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <time.h> header file. */
+#undef HAVE_TIME_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to enable highlighting empty sequences */
+#undef HIGHLIGHT_EMPTY_SEQS
+
+/* Define to enable JACK session */
+#undef JACK_SESSION
+
+/* Define to enable JACK driver */
+#undef JACK_SUPPORT
+
+/* Define to enable main pattern scrollbars */
+#undef JE_PATTERN_PANEL_SCROLLBARS
+
+/* Define to enable LASH */
+#undef LASH_SUPPORT
+
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
+#undef LT_OBJDIR
+
+/* Define to enable multiple main windows */
+#undef MULTI_MAINWID
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define to enable pausing and pause button */
+#undef PAUSE_SUPPORT
+
+/* Indicates if PortMidi support is enabled */
+#undef PORTMIDI_SUPPORT
+
+/* Define PROFLAGS=-pg (gprof) or -p (prof) if profile support is wanted. */
+#undef PROFLAGS
+
+/* Define to necessary symbol if this constant uses a non-standard name on
+   your system. */
+#undef PTHREAD_CREATE_JOINABLE
+
+/* Indicates that Qt5 is enabled */
+#undef QTMIDI_SUPPORT
+
+/* Indicates that rtmidi is enabled */
+#undef RTMIDI_SUPPORT
+
+/* Define to enable statistics gathering */
+#undef STATISTICS_SUPPORT
+
+/* Define to enable the chord generator */
+#undef STAZED_CHORD_GENERATOR
+
+/* Define to enable Seq32 LFO window support */
+#undef STAZED_LFO_SUPPORT
+
+/* Define to enable global transpose */
+#undef STAZED_TRANSPOSE
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Version number of package */
+#undef VERSION
+
+/* Indicates limited Windows support */
+#undef WINDOWS_SUPPORT
+
+/* Define to 1 if the X Window System is missing or not being used. */
+#undef X_DISPLAY_MISSING
+
+/* gnu source */
+#undef _GNU_SOURCE
+
+/* Define to empty if `const' does not conform to ANSI C. */
+#undef const
+
+#ifdef SEQ64_ALSAMIDI_SUPPORT
+#/**/undef/**/ SEQ64_RTMIDI_SUPPORT
+#endif
+
+#ifdef SEQ64_PORTMIDI_SUPPORT
+#/**/undef/**/ SEQ64_RTMIDI_SUPPORT
+#endif
+
+#ifdef SEQ64_WINDOWS_SUPPORT
+#/**/undef/**/ SEQ64_RTMIDI_SUPPORT
+#endif
+
+

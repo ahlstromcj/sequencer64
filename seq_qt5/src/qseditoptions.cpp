@@ -25,15 +25,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-03
+ * \updates       2018-03-14
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "perform.hpp"
 #include "qseditoptions.hpp"
-#include "forms/qseditoptions.ui.h"
 #include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
+#include "forms/qseditoptions.ui.h"
 
 /*
  *  Do not document the namespace, it breaks Doxygen.

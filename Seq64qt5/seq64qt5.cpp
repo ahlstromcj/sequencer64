@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-03-09
+ * \updates       2018-03-15
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -76,6 +76,7 @@ main (int argc, char * argv [])
     int exit_status = EXIT_SUCCESS;         /* EXIT_FAILURE                 */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
+    seq64::rc().set_config_files("qseq64"); /* use a different config file  */
     (void) seq64::parse_log_option(argc, argv);    /* -o log=file.ext early */
 
     /**
@@ -136,7 +137,7 @@ main (int argc, char * argv [])
          * TODO
          *
         if (seq64::usr().inverse_colors())
-            seq64::gui_palette_gtk2::load_inverse_palette(true);
+            seq64::gui_palette_qt5::load_inverse_palette(true);
          */
 
         /*

@@ -95,7 +95,7 @@
           <enum>Qt::NoFocus</enum>
          </property>
          <property name="text">
-          <string>-</string>
+          <string> </string>
          </property>
          <property name="icon">
           <iconset resource="../src/qseq64.qrc">
@@ -115,7 +115,7 @@
           <enum>Qt::NoFocus</enum>
          </property>
          <property name="text">
-          <string>+</string>
+          <string> </string>
          </property>
          <property name="icon">
           <iconset resource="../src/qseq64.qrc">

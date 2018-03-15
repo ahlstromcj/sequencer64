@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-11
+ * \updates       2018-03-14
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -34,7 +34,19 @@
 
 #include "perform.hpp"
 #include "qperfeditframe.hpp"
+#include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
 #include "forms/qperfeditframe.ui.h"
+
+#ifdef USE_LOCAL_QT_ICONS
+#include "pixmaps/collapse.xpm"
+#include "pixmaps/copy.xpm"
+#include "pixmaps/expand.xpm"
+#include "pixmaps/loop.xpm"
+#include "pixmaps/redo.xpm"
+#include "pixmaps/undo.xpm"
+#include "pixmaps/zoom_in.xpm"
+#include "pixmaps/zoom_out.xpm"
+#endif
 
 namespace seq64
 {
@@ -98,21 +110,29 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
         this, SLOT(updateGridSnap(int))
     );
     connect(ui->btnUndo, SIGNAL(clicked(bool)), m_perfroll, SLOT(undo()));
+    qt_set_icon(undo_xpm, ui->btnUndo);
     connect(ui->btnRedo, SIGNAL(clicked(bool)), m_perfroll, SLOT(redo()));
+    qt_set_icon(redo_xpm, ui->btnRedo);
     connect
     (
         ui->cmbGridSnap, SIGNAL(currentIndexChanged(int)),
         this, SLOT(updateGridSnap(int))
     );
     connect(ui->btnZoomIn, SIGNAL(clicked(bool)), this, SLOT(zoom_in()));
+    qt_set_icon(zoom_in_xpm, ui->btnZoomIn);
     connect(ui->btnZoomOut, SIGNAL(clicked(bool)), this, SLOT(zoom_out()));
+    qt_set_icon(zoom_out_xpm, ui->btnZoomOut);
     connect(ui->btnCollapse, SIGNAL(clicked(bool)), this, SLOT(markerCollapse()));
+    qt_set_icon(collapse_xpm, ui->btnCollapse);
     connect(ui->btnExpand, SIGNAL(clicked(bool)), this, SLOT(markerExpand()));
+    qt_set_icon(expand_xpm, ui->btnExpand);
     connect
     (
         ui->btnExpandCopy, SIGNAL(clicked(bool)), this, SLOT(markerExpandCopy())
     );
+    qt_set_icon(copy_xpm, ui->btnExpandCopy);
     connect(ui->btnLoop, SIGNAL(clicked(bool)), this, SLOT(markerLoop(bool)));
+    qt_set_icon(loop_xpm, ui->btnLoop);
     set_snap(8);
     set_beats_per_measure(4);
     set_beat_width(4);

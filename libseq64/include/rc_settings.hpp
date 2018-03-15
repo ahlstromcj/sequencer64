@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-03-07
+ * \updates       2018-03-15
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -117,8 +117,8 @@ private:
     /**
      *  [comments]
      *
-     *  Provides a way to embed comments in the "usr" file and not lose
-     *  them when the "usr" file is auto-saved.
+     *  Provides a way to embed comments in the "rc" file and not lose
+     *  them when the "rc" file is auto-saved.
      */
 
     std::string m_comments_block;
@@ -187,7 +187,7 @@ private:
 
     /**
      *  Holds the current "user" configuration filename.  This value is
-     *  "sequencer64.usr" by default.
+     *  "sequencer64.rc" by default.
      */
 
     std::string m_user_filename;
@@ -541,6 +541,7 @@ public:
     }
 
     std::string home_config_directory () const;
+    void set_config_files (const std::string & value);
 
     /**
      * \getter m_config_filename
@@ -782,7 +783,6 @@ protected:
     bool mute_group_saving (mute_group_handling_t mgh);
     void jack_session_uuid (const std::string & value);
     void config_directory (const std::string & value);
-    void set_config_files (const std::string & value);
     void config_filename (const std::string & value);
     void user_filename (const std::string & value);
     void config_filename_alt (const std::string & value);

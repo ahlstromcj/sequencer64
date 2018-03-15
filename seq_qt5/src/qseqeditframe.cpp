@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-04
+ * \updates       2018-03-14
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -37,7 +37,21 @@
 #include "Globals.hpp"
 #include "perform.hpp"
 #include "qseqeditframe.hpp"
+#include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
 #include "forms/qseqeditframe.ui.h"
+
+#ifdef USE_LOCAL_QT_ICONS
+#include "pixmaps/drum.xpm"
+#include "pixmaps/play.xpm"
+#include "pixmaps/quantize.xpm"
+#include "pixmaps/rec.xpm"
+#include "pixmaps/redo.xpm"
+#include "pixmaps/thru.xpm"
+#include "pixmaps/tools.xpm"
+#include "pixmaps/undo.xpm"
+#include "pixmaps/zoom_in.xpm"
+#include "pixmaps/zoom_out.xpm"
+#endif
 
 namespace seq64
 {
@@ -297,15 +311,20 @@ qseqeditframe::qseqeditframe
     );
 
     connect(ui->btnUndo, SIGNAL(clicked(bool)), this, SLOT(undo()));
+    qt_set_icon(undo_xpm, ui->btnUndo);
     connect(ui->btnRedo, SIGNAL(clicked(bool)), this, SLOT(redo()));
+    qt_set_icon(redo_xpm, ui->btnRedo);
     connect(ui->btnTools, SIGNAL(clicked(bool)), this, SLOT(showTools()));
+    qt_set_icon(tools_xpm, ui->btnTools);
     connect
     (
         ui->cmbNoteLen, SIGNAL(currentIndexChanged(int)),
         this, SLOT(updateNoteLength(int))
     );
     connect(ui->btnZoomIn, SIGNAL(clicked(bool)), this, SLOT(zoom_in()));
+    qt_set_icon(zoom_in_xpm, ui->btnZoomIn);
     connect(ui->btnZoomOut, SIGNAL(clicked(bool)), this, SLOT(zoom_out()));
+    qt_set_icon(zoom_out_xpm, ui->btnZoomOut);
     connect
     (
         ui->cmbKey, SIGNAL(currentIndexChanged(int)), this, SLOT(updateKey(int))
@@ -326,15 +345,20 @@ qseqeditframe::qseqeditframe
         this, SLOT(updateBackgroundSeq(int))
     );
     connect(ui->btnDrum, SIGNAL(clicked(bool)), this, SLOT(toggleEditorMode()));
+    qt_set_icon(drum_xpm, ui->btnDrum);
     connect
     (
         ui->cmbRecVol, SIGNAL(currentIndexChanged(int)),
         this, SLOT(updateRecVol())
     );
     connect(ui->btnPlay, SIGNAL(clicked(bool)), this, SLOT(toggleMidiPlay(bool)));
+    qt_set_icon(play_xpm, ui->btnPlay);
     connect(ui->btnQRec, SIGNAL(clicked(bool)), this, SLOT(toggleMidiQRec(bool)));
+    qt_set_icon(quantize_xpm, ui->btnQRec);
     connect(ui->btnRec, SIGNAL(clicked(bool)), this, SLOT(toggleMidiRec(bool)));
+    qt_set_icon(rec_xpm, ui->btnRec);
     connect(ui->btnThru, SIGNAL(clicked(bool)), this, SLOT(toggleMidiThru(bool)));
+    qt_set_icon(thru_xpm, ui->btnThru);
 }
 
 /**

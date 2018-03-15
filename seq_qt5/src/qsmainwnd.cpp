@@ -47,10 +47,12 @@
 #include "forms/qsmainwnd.ui.h"         /* generated btnStop, btnPlay, etc. */
 
 #ifdef USE_LOCAL_QT_ICONS
-#include "pixmaps/stop.xpm"
-#include "pixmaps/play2.xpm"
 #include "pixmaps/live_mode.xpm"        // #include "pixmaps/song_mode.xpm"
+#include "pixmaps/panic.xpm"
+#include "pixmaps/play2.xpm"
+#include "pixmaps/snap.xpm"
 #include "pixmaps/song_rec_on.xpm"      // #include "pixmaps/song_rec.xpm"
+#include "pixmaps/stop.xpm"
 #endif
 
 /*
@@ -72,7 +74,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_main_perf     (p)
 {
     ui->setupUi(this);
-    for (int i = 0; i < 10; i++)        // nullify all recent-file action slots
+    for (int i = 0; i < 10; ++i)        // nullify all recent-file action slots
         m_action[i] = NULL;
 
     // center on screen
@@ -88,7 +90,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
 
     // fill options for beats per measure combo box and set default
 
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 16; ++i)
     {
         QString combo_text = QString::number(i + 1);
         ui->cmb_beat_measure->insertItem(i, combo_text);
@@ -96,14 +98,13 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
 
     // fill options for beat length combo box and set default
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 5; ++i)
     {
         QString combo_text = QString::number(pow(2, i));
         ui->cmb_beat_length->insertItem(i, combo_text);
     }
 
     m_msg_error = new QErrorMessage(this);
-
     m_msg_save_changes = new QMessageBox(this);
     m_msg_save_changes->setText(tr("Unsaved changes detected."));
     m_msg_save_changes->setInformativeText(tr("Do you want to save them?"));
@@ -124,16 +125,14 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_dialog_prefs = new qseditoptions(m_main_perf, this);
     m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
     m_song_frame = new qperfeditframe(m_main_perf, ui->SongTab);
-    m_edit_frame = NULL; //set this so we know for sure the edit tab is empty
+    m_edit_frame = NULL;                // set so we know the edit tab is empty
     m_beat_ind = new qsmaintime(m_main_perf, this, 4, 4);
     mDialogAbout = new qsabout(this);
 
     ui->lay_bpm->addWidget(m_beat_ind);
     ui->LiveTabLayout->addWidget(m_live_frame);
     ui->SongTabLayout->addWidget(m_song_frame);
-
-    //pull defaults from song frame
-    ui->cmb_beat_length->setCurrentText
+    ui->cmb_beat_length->setCurrentText     // pull defaults from song frame
     (
         QString::number(m_song_frame->get_beat_width())
     );
@@ -178,18 +177,26 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
         ui->actionPreferences, SIGNAL(triggered(bool)),
         m_dialog_prefs, SLOT(show())
     );
+
+    // Play
+
     connect(ui->btnPlay, SIGNAL(clicked(bool)), this, SLOT(startPlaying()));
     qt_set_icon(play2_xpm, ui->btnPlay);
 
+    // Song Play (live vs song)
+
     connect
     (
-        ui->btnSongPlay, SIGNAL(clicked(bool)),
-        this, SLOT(setSongPlayback(bool))
+        ui->btnSongPlay, SIGNAL(clicked(bool)), this, SLOT(setSongPlayback(bool))
     );
     qt_set_icon(live_mode_xpm, ui->btnSongPlay);
 
+    // Stop
+
     connect(ui->btnStop, SIGNAL(clicked(bool)), this, SLOT(stopPlaying()));
     qt_set_icon(stop_xpm, ui->btnStop);
+
+    // Record (song)
 
     connect(ui->btnRecord, SIGNAL(clicked(bool)), this, SLOT(setRecording(bool)));
     qt_set_icon(song_rec_on_xpm, ui->btnRecord);
@@ -211,16 +218,25 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
         ui->tabWidget, SIGNAL(currentChanged(int)),
         this, SLOT(tabWidgetClicked(int))
     );
+
+    // Record snap
+
     connect
     (
         ui->btnRecSnap, SIGNAL(clicked(bool)),
         this, SLOT(setRecordingSnap(bool))
     );
+    qt_set_icon(snap_xpm, ui->btnRecSnap);
 
     // connect to the seq edit signal from the live tab
 
     connect(m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int)));
+
+    // Panic
+
     connect(ui->btnPanic, SIGNAL(clicked(bool)), this, SLOT(panic()));
+    qt_set_icon(panic_xpm, ui->btnPanic);
+
     show();
 }
 

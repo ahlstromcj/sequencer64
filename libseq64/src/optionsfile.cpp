@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-06
+ * \updates       2018-03-16
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -416,12 +416,18 @@ optionsfile::parse (perform & p)
         p.add_clock(e_clock_off);
     }
 
+    /*
+     *  We used to crap out when this section had 0 entries.  But for working
+     *  with the new Qt5 implmentation, it is worthwhile to continue.  Also,
+     *  we note that Kepler34 has this section commented out.
+     */
+
     line_after(file, "[keyboard-control]");
     long keys = 0;
     sscanf(m_line, "%ld", &keys);
     ok = next_data_line(file) && keys > 0 && keys <= c_max_keys;
     if (! ok)
-        return error_message("keyboard-control");
+        (void) error_message("keyboard-control");   // now allowed to continue
 
     /*
      * Bug involving the optionsfile and perform modules:  At the 4th or 5th
@@ -444,12 +450,18 @@ optionsfile::parse (perform & p)
             return error_message("keyboard-control data line");
     }
 
+    /*
+     *  We used to crap out when this section had 0 entries.  But for working
+     *  with the new Qt5 implmentation, it is worthwhile to continue.  Also,
+     *  we note that Kepler34 has this section commented out.
+     */
+
     line_after(file, "[keyboard-group]");
     long groups = 0;
     sscanf(m_line, "%ld", &groups);
     ok = next_data_line(file) && groups > 0 && groups <= c_max_keys;
     if (! ok)
-        return error_message("keyboard-group");
+        (void) error_message("keyboard-group");     // now allowed to continue
 
     p.get_key_groups().clear();
     p.get_key_groups_rev().clear();       // \new ca 2015-09-16

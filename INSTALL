@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.94.0 and above
 Chris Ahlstrom
-2015-09-10 to 2018-03-03
+2015-09-10 to 2018-03-16
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -547,6 +547,12 @@ DEPENDENCIES:
          -  qtchooser
          -  qtdesigner; optional if you want to tweak the GUIs, not huge,
             provided by the qtttools5-dev-tools package in Debian.
+
+         To setup Qt, first run the command "qtchooser -l".  If more than one
+         version of Qt is installed, their numbers are all listed.  Make sure
+         that "5" is in the list, and then add this line to your .bashrc file:
+
+            export QT_SELECT=5
 
    Documentation (now optional, must be built manually):
 

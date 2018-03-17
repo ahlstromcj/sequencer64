@@ -5,8 +5,8 @@
 # \file       	Makefile.am
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
-# \date       	2017-09-06
-# \update      2018-03-16
+# \date       	2018-01-01
+# \update      2018-03-17
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -252,6 +252,19 @@ uic_qt_forms = \
 
 uic_sources = $(uic_qt_forms:.ui=.ui.h)
 
+#****************************************************************************
+# QRC file
+#----------------------------------------------------------------------------
+#
+#  In Kepler34, this file held all of the XPM resources.  We have moved them
+#  into the relevant source files, in the same style as the Gtkmm 2.4 version
+#  of the application.  We remove qseq64.qrc.cpp as a dependency, though
+#  we have left the code itself intact.
+#
+#     -- Justin Case
+#
+#----------------------------------------------------------------------------
+
 qseq64.qrc.cpp: \
  qseq64.qrc \
  $(pixdir)/song-snap.xpm \
@@ -287,7 +300,11 @@ qseq64.qrc.cpp: \
 
 BUILT_SOURCES = $(uic_sources) $(moc_sources)
 
-# qseq64.qrc.cpp
+#******************************************************************************
+# No longer part of BUILT_SOURCES or libseq_qt5_la_SOURCES:
+#
+#     qseq64.qrc.cpp
+#------------------------------------------------------------------------------
 
 libseq_qt5_la_SOURCES = \
  gui_assistant_qt5.cpp \

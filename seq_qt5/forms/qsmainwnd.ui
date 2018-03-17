@@ -187,11 +187,6 @@
         <property name="text">
          <string/>
         </property>
-        <property name="icon">
-         <iconset>
-          <normalon>:/pixmaps/pixmaps/stop.xpm</normalon>
-         </iconset>
-        </property>
         <property name="checkable">
          <bool>false</bool>
         </property>
@@ -219,11 +214,6 @@
         </property>
         <property name="text">
          <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normalon>:/pixmaps/pixmaps/play.xpm</normalon>
-         </iconset>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -256,11 +246,6 @@
         <property name="text">
          <string/>
         </property>
-        <property name="icon">
-         <iconset>
-          <normalon>:/pixmaps/pixmaps/play2.xpm</normalon>
-         </iconset>
-        </property>
         <property name="checkable">
          <bool>true</bool>
         </property>
@@ -291,11 +276,6 @@
         </property>
         <property name="text">
          <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normalon>:/pixmaps/pixmaps/rec.xpm</normalon>
-         </iconset>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -328,10 +308,6 @@
         <property name="text">
          <string/>
         </property>
-        <property name="icon">
-         <iconset resource="../src/qseq64.qrc">
-          <normaloff>:/pixmaps/song-snap.xpm</normaloff>:/pixmaps/song-snap.xpm</iconset>
-        </property>
         <property name="checkable">
          <bool>true</bool>
         </property>
@@ -359,10 +335,6 @@
         </property>
         <property name="text">
          <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../src/qseq64.qrc">
-          <normaloff>:/pixmaps/panic.xpm</normaloff>:/pixmaps/panic.xpm</iconset>
         </property>
         <property name="iconSize">
          <size>

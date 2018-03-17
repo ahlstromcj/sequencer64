@@ -1,3 +1,360 @@
+2018-03-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* resources/pixmaps/snap-bak.xpm, resources/pixmaps/snap.xpm,
+	seq_qt5/forms/qperfeditframe.ui, seq_qt5/forms/qseqeditframe.ui,
+	seq_qt5/forms/qsmainwnd.ui, seq_qt5/src/Makefile.am,
+	seq_qt5/src/Makefile.in: Eliminated QRC as a dependency, fixed snap
+	XPM.
+	* Seq64cli/seq64rtcli.cpp, Seq64qt5/seq64qt5.cpp,
+	include/config.h.in, libseq64/include/keys_perform.hpp,
+	libseq64/src/keys_perform.cpp,
+	seq_gtkmm2/include/keys_perform_gtk2.hpp,
+	seq_gtkmm2/src/keys_perform_gtk2.cpp, seq_qt5/include/Makefile.am,
+	seq_qt5/include/Makefile.in, seq_qt5/include/gui_assistant_qt5.hpp,
+	seq_qt5/include/keys_perform_qt5.hpp, seq_qt5/src/Makefile.am,
+	seq_qt5/src/Makefile.in, seq_qt5/src/gui_assistant_qt5.cpp,
+	seq_qt5/src/keys_perform_qt5.cpp: Added basic GUI/keys support to
+	qseq64, still in progress.
+
+2018-03-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, configure.ac, libseq64/src/optionsfile.cpp: Allow an
+	empty keyboard-control and keyboard-group for qseq64.
+
+2018-03-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64qt5/seq64qt5.cpp, data/qseq64.rc, data/qseq64.usr,
+	libseq64/include/rc_settings.hpp, resources/pixmaps/zoom_in.xpm,
+	resources/pixmaps/zoom_out.xpm, seq_qt5/forms/qperfeditframe.ui,
+	seq_qt5/forms/qseqeditframe.ui, seq_qt5/src/qperfeditframe.cpp,
+	seq_qt5/src/qseditoptions.cpp, seq_qt5/src/qseq64.qrc,
+	seq_qt5/src/qseqeditframe.cpp, seq_qt5/src/qsmainwnd.cpp: Set up
+	qseq64.rc/.usr, deprecated QRC file, embedded xpms directly for Qt
+	5.
+
+2018-03-14  Chris Ahlstrom <ahlstrom_christopher@bah.com>
+
+	* include/config.h.in: Added the config.h.in file.
+	* seq_qt5/include/Makefile.am, seq_qt5/include/Makefile.in,
+	seq_qt5/include/qt5_helpers.hpp, seq_qt5/src/Makefile.am,
+	seq_qt5/src/Makefile.in, seq_qt5/src/qsmainwnd.cpp,
+	seq_qt5/src/qt5_helpers.cpp: Added qt_set_icon() to overcome qrc
+	issues.
+
+2018-03-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Makefile.in, resources/pixmaps/song_rec.xpm,
+	seq_qt5/src/qsmainwnd.cpp: Starting to replace the qrc support with
+	embedded xpm arrays.
+	* seq_qt5/src/pixmaps/bus.xpm, seq_qt5/src/pixmaps/collapse.xpm,
+	seq_qt5/src/pixmaps/copy.xpm, seq_qt5/src/pixmaps/drum.xpm,
+	seq_qt5/src/pixmaps/editor-play.xpm,
+	seq_qt5/src/pixmaps/editor-q-rec.xpm,
+	seq_qt5/src/pixmaps/editor-rec.xpm,
+	seq_qt5/src/pixmaps/editor-thru.xpm,
+	seq_qt5/src/pixmaps/expand.xpm, seq_qt5/src/pixmaps/key.xpm,
+	seq_qt5/src/pixmaps/length.xpm, seq_qt5/src/pixmaps/logo.xpm,
+	seq_qt5/src/pixmaps/loop.xpm, seq_qt5/src/pixmaps/midi.xpm,
+	seq_qt5/src/pixmaps/note_length.xpm, seq_qt5/src/pixmaps/panic.xpm,
+	seq_qt5/src/pixmaps/play.xpm, seq_qt5/src/pixmaps/play2.xpm,
+	seq_qt5/src/pixmaps/quantize.xpm, seq_qt5/src/pixmaps/rec.xpm,
+	seq_qt5/src/pixmaps/redo.xpm, seq_qt5/src/pixmaps/scale.xpm,
+	seq_qt5/src/pixmaps/sequences.xpm, seq_qt5/src/pixmaps/snap.xpm,
+	seq_qt5/src/pixmaps/song-snap.xpm, seq_qt5/src/pixmaps/stop.xpm,
+	seq_qt5/src/pixmaps/tools.xpm, seq_qt5/src/pixmaps/undo.xpm,
+	seq_qt5/src/pixmaps/zoom.xpm: Removed copies of kepler34 icons.
+	* .gitignore, Makefile.in, Midiclocker64/Makefile.in,
+	Seq64cli/Makefile.in, Seq64portmidi/Makefile.in,
+	Seq64qt5/Makefile.in, Seq64rtmidi/Makefile.in,
+	Sequencer64/Makefile.in, configure, configure.ac, data/Makefile.in,
+	libseq64/Makefile.in, libseq64/include/Makefile.in,
+	libseq64/src/Makefile.in, m4/Makefile.in, man/Makefile.in,
+	resources/pixmaps/Makefile.in, seq_alsamidi/Makefile.in,
+	seq_alsamidi/include/Makefile.in, seq_alsamidi/src/Makefile.in,
+	seq_gtkmm2/Makefile.in, seq_gtkmm2/include/Makefile.in,
+	seq_gtkmm2/src/Makefile.in, seq_portmidi/Makefile.in,
+	seq_portmidi/include/Makefile.in, seq_portmidi/src/Makefile.in,
+	seq_qt5/Makefile.in, seq_qt5/forms/Makefile.in,
+	seq_qt5/include/Makefile.in, seq_qt5/src/Makefile.in,
+	seq_rtmidi/Makefile.in, seq_rtmidi/include/Makefile.in,
+	seq_rtmidi/src/Makefile.in: Added Makefile.in files needed by the
+	configure script.
+	* seq_qt5/forms/qperfeditframe.ui, seq_qt5/forms/qseqeditframe.ui,
+	seq_qt5/forms/qsmainwnd.ui, seq_qt5/src/Makefile.am,
+	seq_qt5/src/qseq64.qrc: Interim check-in.
+	* configure, configure.ac, seq_qt5/forms/Makefile.am,
+	seq_qt5/include/Makefile.am, seq_qt5/src/Makefile.am: Still cannot
+	get pixmaps to show up in qseq64.
+
+2018-03-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_qt5/src/Makefile.am: Interim check-in of qt5 src Makefile.
+
+2018-03-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, seq_qt5/Makefile.am, seq_qt5/forms/qperfeditframe.ui,
+	seq_qt5/forms/qsabout.ui, seq_qt5/forms/qseqeditframe.ui,
+	seq_qt5/include/qperfnames.hpp, seq_qt5/include/qperfroll.hpp,
+	seq_qt5/include/qperftime.hpp, seq_qt5/include/qseditoptions.hpp,
+	seq_qt5/include/qseqdata.hpp, seq_qt5/include/qseqkeys.hpp,
+	seq_qt5/include/qseqroll.hpp, seq_qt5/include/qseqtime.hpp,
+	seq_qt5/include/qsliveframe.hpp, seq_qt5/include/qsmaintime.hpp,
+	seq_qt5/include/qstriggereditor.hpp,
+	seq_qt5/src/gui_palette_qt5.cpp, seq_qt5/src/qperfeditframe.cpp,
+	seq_qt5/src/qperfnames.cpp, seq_qt5/src/qperfroll.cpp,
+	seq_qt5/src/qperftime.cpp, seq_qt5/src/qseditoptions.cpp,
+	seq_qt5/src/qseqdata.cpp, seq_qt5/src/qseqkeys.cpp,
+	seq_qt5/src/qseqroll.cpp, seq_qt5/src/qseqstyle.cpp,
+	seq_qt5/src/qseqtime.cpp, seq_qt5/src/qsliveframe.cpp,
+	seq_qt5/src/qsmaintime.cpp, seq_qt5/src/qsmainwnd.cpp,
+	seq_qt5/src/qstriggereditor.cpp: Refactored all Qt 5 files, but
+	still icons are missing.
+	* Seq64qt5/seq64qt5.cpp, seq_qt5/src/Makefile.am,
+	seq_qt5/src/qsliveframe.cpp: Refactoring GUI, need to connect qrc
+	file.
+
+2018-03-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, seq_qt5/src/Makefile.am, seq_qt5/src/qsmainwnd.cpp: 
+	Got qseq64 building, running, but exits immediately.
+
+2018-03-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64qt5/seq64qt5.cpp, seq_qt5/forms/Makefile.am,
+	seq_qt5/src/Makefile.am: More qt cleanup, get no make target for
+	qsmainwnd.com....
+	* configure, configure.ac, m4/ax_have_qt.m4,
+	resources/pixmaps/Makefile.am, resources/pixmaps/editor-play.xpm,
+	resources/pixmaps/editor-q-rec.xpm,
+	resources/pixmaps/editor-rec.xpm,
+	resources/pixmaps/editor-thru.xpm, resources/pixmaps/logo.xpm,
+	resources/pixmaps/song-snap.xpm, seq_gtkmm2/src/Makefile.am,
+	seq_qt5/forms/Makefile.am, seq_qt5/forms/qseqmainwnd.ui,
+	seq_qt5/forms/qsmainwnd.ui, seq_qt5/include/Makefile.am,
+	seq_qt5/include/qseqmainwnd.hpp, seq_qt5/src/Makefile.am,
+	seq_qt5/src/pixmaps/bus.xpm, seq_qt5/src/pixmaps/collapse.xpm,
+	seq_qt5/src/pixmaps/copy.xpm, seq_qt5/src/pixmaps/drum.xpm,
+	seq_qt5/src/pixmaps/editor-play.xpm,
+	seq_qt5/src/pixmaps/editor-q-rec.xpm,
+	seq_qt5/src/pixmaps/editor-rec.xpm,
+	seq_qt5/src/pixmaps/editor-thru.xpm,
+	seq_qt5/src/pixmaps/expand.xpm, seq_qt5/src/pixmaps/key.xpm,
+	seq_qt5/src/pixmaps/length.xpm, seq_qt5/src/pixmaps/logo.xpm,
+	seq_qt5/src/pixmaps/loop.xpm, seq_qt5/src/pixmaps/midi.xpm,
+	seq_qt5/src/pixmaps/note_length.xpm, seq_qt5/src/pixmaps/panic.xpm,
+	seq_qt5/src/pixmaps/play.xpm, seq_qt5/src/pixmaps/play2.xpm,
+	seq_qt5/src/pixmaps/quantize.xpm, seq_qt5/src/pixmaps/rec.xpm,
+	seq_qt5/src/pixmaps/redo.xpm, seq_qt5/src/pixmaps/scale.xpm,
+	seq_qt5/src/pixmaps/sequences.xpm, seq_qt5/src/pixmaps/snap.xpm,
+	seq_qt5/src/pixmaps/song-snap.xpm, seq_qt5/src/pixmaps/stop.xpm,
+	seq_qt5/src/pixmaps/tools.xpm, seq_qt5/src/pixmaps/undo.xpm,
+	seq_qt5/src/pixmaps/zoom.xpm, seq_qt5/src/qseq64.qrc,
+	seq_qt5/src/qseqmainwnd.cpp: Cleanup of cli build, issue #64, and qt
+	build.
+
+2018-03-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : commit 640319e36bb3c66d2febe296d5ba822d6341c029 Merge: a3bd141b
+	81520ac5 Author: Chris Ahlstrom <ahlstromcj@gmail.com> Date:   Thu
+	Mar 8 05:24:50 2018 -0500
+
+2018-03-08  layk <lassi.ylikojola@gmail.com>
+
+	* seq_gtkmm2/src/seqroll.cpp: FIX compile error. Wrong function
+	name.
+
+2018-03-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/rc_settings.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_qt5/include/qperfnames.hpp, seq_qt5/include/qseqroll.hpp,
+	seq_qt5/include/qsmainwnd.hpp, seq_qt5/include/qstriggereditor.hpp,
+	seq_qt5/src/Makefile.am, seq_qt5/src/qperfnames.cpp,
+	seq_qt5/src/qseqroll.cpp, seq_qt5/src/qsmainwnd.cpp: Interim
+	check-in, builds but segfaults.
+
+2018-03-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64qt5/seq64qt5.cpp, libseq64/include/keys_perform.hpp,
+	libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_qt5/include/qperfeditframe.hpp,
+	seq_qt5/include/qsliveframe.hpp, seq_qt5/include/qsmaintime.hpp,
+	seq_qt5/include/qsmainwnd.hpp, seq_qt5/include/qstriggereditor.hpp,
+	seq_qt5/src/Makefile.am, seq_qt5/src/qsliveframe.cpp,
+	seq_qt5/src/qsmaintime.cpp, seq_qt5/src/qsmainwnd.cpp,
+	seq_qt5/src/qstriggereditor.cpp: Qt5 builds except for linkage
+	errors.
+
+2018-03-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, configure.ac, libseq64/include/perform.hpp,
+	libseq64/include/rect.hpp, seq_gtkmm2/src/gui_palette_gtk2.cpp,
+	seq_qt5/include/gui_palette_qt5.hpp, seq_qt5/include/qperfroll.hpp,
+	seq_qt5/include/qseqroll.hpp, seq_qt5/include/qseqtime.hpp,
+	seq_qt5/include/qsliveframe.hpp, seq_qt5/src/gui_palette_qt5.cpp,
+	seq_qt5/src/qperfroll.cpp, seq_qt5/src/qseqeditframe.cpp,
+	seq_qt5/src/qseqroll.cpp, seq_qt5/src/qseqtime.cpp,
+	seq_qt5/src/qsliveframe.cpp: More reconciling of kepler34 with seq64
+	libraries.
+
+2018-03-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_qt5/include/gui_palette_qt5.hpp,
+	seq_qt5/src/gui_palette_qt5.cpp, seq_qt5/src/qperfnames.cpp,
+	seq_qt5/src/qperfroll.cpp: Attempting to modify palette colors,
+	get_color_ex(), does nothing in gtk.
+	* libseq64/include/perform.hpp, libseq64/include/rect.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/rect.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/seqroll.cpp,
+	seq_qt5/include/qseqeditframe.hpp, seq_qt5/include/qseqkeys.hpp,
+	seq_qt5/src/qseqdata.cpp, seq_qt5/src/qseqeditframe.cpp,
+	seq_qt5/src/qseqkeys.cpp, seq_qt5/src/qseqroll.cpp: Got more qt5
+	modules to build, up to qseqroll.
+
+2018-03-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, TODO, libseq64/include/globals.h,
+	libseq64/include/perform.hpp, libseq64/include/rc_settings.hpp,
+	libseq64/include/rect.hpp, libseq64/include/seq64_features.h,
+	libseq64/include/sequence.hpp, libseq64/include/triggers.hpp,
+	libseq64/src/perform.cpp, libseq64/src/rect.cpp,
+	libseq64/src/sequence.cpp, libseq64/src/triggers.cpp,
+	seq_gtkmm2/src/seqroll.cpp, seq_qt5/include/Globals.hpp,
+	seq_qt5/include/qperfeditframe.hpp, seq_qt5/include/qperfnames.hpp,
+	seq_qt5/include/qperfroll.hpp, seq_qt5/include/qperftime.hpp,
+	seq_qt5/include/qsabout.hpp, seq_qt5/include/qseditoptions.hpp,
+	seq_qt5/include/qseqdata.hpp, seq_qt5/include/qseqeditframe.hpp,
+	seq_qt5/include/qseqkeys.hpp, seq_qt5/include/qseqmainwnd.hpp,
+	seq_qt5/include/qseqroll.hpp, seq_qt5/include/qseqtime.hpp,
+	seq_qt5/include/qsliveframe.hpp, seq_qt5/include/qsmaintime.hpp,
+	seq_qt5/include/qsmainwnd.hpp, seq_qt5/include/qstriggereditor.hpp,
+	seq_qt5/src/gui_palette_qt5.cpp, seq_qt5/src/qperfeditframe.cpp,
+	seq_qt5/src/qperfnames.cpp, seq_qt5/src/qperfroll.cpp,
+	seq_qt5/src/qperftime.cpp, seq_qt5/src/qsabout.cpp,
+	seq_qt5/src/qseditoptions.cpp, seq_qt5/src/qseqdata.cpp,
+	seq_qt5/src/qseqeditframe.cpp, seq_qt5/src/qseqkeys.cpp,
+	seq_qt5/src/qseqroll.cpp, seq_qt5/src/qseqstyle.cpp,
+	seq_qt5/src/qseqtime.cpp, seq_qt5/src/qsliveframe.cpp,
+	seq_qt5/src/qsmainwnd.cpp, seq_qt5/src/qstriggereditor.cpp: Much
+	cleanup for Qt5 support, still will not compile though.
+
+2018-03-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqmenu.cpp: Added
+	sequence color support to perfroll.
+	* seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/perfroll.cpp: 
+	contrib/midi/colours.midi
+	* INSTALL, README, TODO, configure.ac,
+	libseq64/include/midi_container.hpp,
+	libseq64/include/seq64_features.h, libseq64/src/midi_container.cpp,
+	libseq64/src/midifile.cpp, seq_gtkmm2/include/seqmenu.hpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/seqmenu.cpp,
+	seq_qt5/src/gui_palette_qt5.cpp: Gtkmm sequence coloring now in
+	place.
+
+2018-02-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/palette.hpp, seq_gtkmm2/include/seqmenu.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Further experiments with color palette.
+
+2018-02-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_qt5/include/gui_palette_qt5.hpp,
+	seq_qt5/src/gui_palette_qt5.cpp: Oops, added the gui_palette_qt5
+	class, in progress.
+	* contrib/midi/README, libseq64/include/midi_container.hpp,
+	libseq64/include/midibyte.hpp, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/src/seqmenu.cpp: Sequence
+	color upgrade in progress.
+
+2018-02-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* TODO, libseq64/include/event_list.hpp,
+	libseq64/include/midi_container.hpp, libseq64/include/midifile.hpp,
+	libseq64/src/event_list.cpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midifile.cpp: Work on tempo issues, #141.
+	* libseq64/include/palette.hpp, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_qt5/include/Makefile.am,
+	seq_qt5/include/qsmaintime.hpp, seq_qt5/src/Makefile.am,
+	seq_qt5/src/qperfroll.cpp, seq_qt5/src/qsmaintime.cpp: Refactoring
+	color-palette support, still in progress.
+
+2018-02-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/palette.hpp, libseq64/include/perform.hpp,
+	libseq64/src/palette.cpp, seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_qt5/src/qperfroll.cpp,
+	seq_qt5/src/qsliveframe.cpp: Adding color palette, in progress.
+
+2018-02-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/palette.hpp, libseq64/src/palette.cpp: Writing
+	basic palette class.
+
+2018-02-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure, libseq64/include/Makefile.am,
+	libseq64/include/{coloring.hpp => palette.hpp},
+	libseq64/include/sequence.hpp, libseq64/src/Makefile.am,
+	libseq64/src/palette.cpp, seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/src/eventslots.cpp, seq_gtkmm2/src/gui_palette_gtk2.cpp,
+	seq_gtkmm2/src/maintime.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/perftime.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqkeys.cpp, seq_gtkmm2/src/seqroll.cpp: Added
+	palette template class, not yet complete.
+	* libseq64/include/coloring.hpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp: Started reconciling color
+	palettes.
+
+2018-02-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/coloring.hpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perftime.hpp, seq_gtkmm2/include/seqdata.hpp,
+	seq_gtkmm2/include/seqkeys.hpp, seq_gtkmm2/include/seqtime.hpp,
+	seq_qt5/include/Globals.hpp, seq_qt5/include/Makefile.am,
+	seq_qt5/include/qperfeditframe.hpp, seq_qt5/include/qperfnames.hpp,
+	seq_qt5/include/qperfroll.hpp, seq_qt5/include/qperftime.hpp,
+	seq_qt5/include/qsabout.hpp, seq_qt5/include/qseditoptions.hpp,
+	seq_qt5/include/qseqdata.hpp, seq_qt5/include/qseqeditframe.hpp,
+	seq_qt5/include/qseqkeys.hpp, seq_qt5/include/qseqmainwnd.hpp,
+	seq_qt5/include/qseqroll.hpp, seq_qt5/include/qseqstyle.hpp,
+	seq_qt5/include/qseqtime.hpp, seq_qt5/include/qsliveframe.hpp,
+	seq_qt5/include/qsmaintime.hpp, seq_qt5/include/qsmainwnd.hpp,
+	seq_qt5/include/qstriggereditor.hpp, seq_qt5/include/seq24Rect.hpp,
+	seq_qt5/src/qperfeditframe.cpp, seq_qt5/src/qperfnames.cpp,
+	seq_qt5/src/qperfroll.cpp, seq_qt5/src/qperftime.cpp,
+	seq_qt5/src/qsabout.cpp, seq_qt5/src/qseditoptions.cpp,
+	seq_qt5/src/qseqdata.cpp, seq_qt5/src/qseqeditframe.cpp,
+	seq_qt5/src/qseqkeys.cpp, seq_qt5/src/qseqroll.cpp,
+	seq_qt5/src/qseqstyle.cpp, seq_qt5/src/qseqtime.cpp,
+	seq_qt5/src/qsliveframe.cpp, seq_qt5/src/qsmaintime.cpp,
+	seq_qt5/src/qsmainwnd.cpp, seq_qt5/src/qstriggereditor.cpp: Still
+	reconciling Qt classes, do not bother trying to build them.
+	* configure.ac, libseq64/include/perform.hpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_qt5/include/qperfnames.hpp, seq_qt5/include/qperfroll.hpp,
+	seq_qt5/src/qperfeditframe.cpp, seq_qt5/src/qperfnames.cpp,
+	seq_qt5/src/qperfroll.cpp: Ongoing qt cleanup.
+
+2018-02-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure, strap_functions: Merged configure and strap_functions.
+	* seq_gtkmm2/include/mainwnd.hpp: Tweaks from accidental merge to
+	master.
+	* : Merged latest qt5_support into master.
+
 2018-02-17  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* README, libseq64/include/midifile.hpp, libseq64/src/midifile.cpp,

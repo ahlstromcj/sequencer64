@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.94.0 and above
+INSTALL for Sequencer64 v. 0.94.6 and above
 Chris Ahlstrom
-2015-09-10 to 2018-03-16
+2015-09-10 to 2018-03-17
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -23,15 +23,33 @@ bootstrapping setup is primarily aimed at developers.  Starting with version
 
 Quick Install:
 
-    This project finally provides a "configure" script for the normal
-    build process:
+    The quick install is meant for "newbies" or for those who do no want to
+    install a lot of extra developer packages.  Also, this step builds the
+    default version of Sequencer64, "seq64".
 
-        ./configure [options] ; make ; sudo make install
+    This project finally provides a "configure" script for the normal
+    build process.  However, as usual, you will need to make sure various
+    "dev" dependencies are installed.  See the DEPENDENCIES section.  In
+    addition, there may be a need to do the following commands, which require
+    automake and libtool to be installed:
+
+        $ libtoolize
+        $ automake --add-missing
+
+    We hope to eliminate the steps above at some point.  Next:
+
+        $ ./configure [options] ; make ; sudo make install
 
     This build results in the first executable described above, seq64,
     the same setup created by "./bootstrap -er -rm".
 
+    If any issues occur, please write me through GitHub, or directly at my
+    Gmail address.
+
 Advanced Steps:
+
+    These steps are meant for those who want to try the various versions of
+    Sequencer64, and do not mind install a lot of extra developer software.
 
    0.  Preload any DEPENDENCIES, as listed at the end of this document.
        However, if some are missing, the configure script will tell you,

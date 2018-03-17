@@ -1,6 +1,6 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-#define VERSION_DATE_SHORT "2018-03-13"
+#define VERSION_DATE_SHORT "2018-03-17"
 #define VERSION "0.94.6"
 
 

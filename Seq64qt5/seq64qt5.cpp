@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-03-15
+ * \updates       2018-03-17
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -37,7 +37,7 @@
 
 #include "cmdlineopts.hpp"              /* command-line functions           */
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
-#include "gui_assistant.hpp"            /* seq64::gui_assistant             */
+#include "gui_assistant_qt5.hpp"        /* seq64::gui_assistant_qt5         */
 #include "lash.hpp"                     /* seq64::lash_driver functions     */
 #include "perform.hpp"                  /* seq64::perform                   */
 #include "qsmainwnd.hpp"                /* the main window of seq64qt5      */
@@ -92,8 +92,7 @@ main (int argc, char * argv [])
      * perform::launch() function.
      */
 
-    seq64::keys_perform kp;                     /* TO BE FLESHED OUT        */
-    seq64::gui_assistant gui(kp);       // TODO /* GUI-specific objects     */
+    seq64::gui_assistant_qt5 gui;               /* GUI-specific objects     */
     seq64::perform p(gui);                      /* main performance object  */
     (void) seq64::parse_command_line_options(p, argc, argv);
     bool is_help = seq64::help_check(argc, argv);

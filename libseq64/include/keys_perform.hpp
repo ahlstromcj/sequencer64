@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2017-11-25
+ * \updates       2018-03-16
  * \license       GNU GPLv2 or above
  *
  * Stazed:
@@ -1263,6 +1263,13 @@ protected:
     {
         return &m_key_show_ui_sequence_number;
     }
+
+    /*
+     * These functions set up the keys common to all GUI frameworks.
+     */
+
+    virtual void set_basic_key_events ();
+    virtual void set_basic_key_groups ();
 
 };          // class keys_perform
 

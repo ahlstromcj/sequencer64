@@ -1,5 +1,5 @@
-#ifndef SEQ64_KEYS_PERFORM_GTK2_HPP
-#define SEQ64_KEYS_PERFORM_GTK2_HPP
+#ifndef SEQ64_KEYS_PERFORM_QT5_HPP
+#define SEQ64_KEYS_PERFORM_QT5_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          keys_perform_gtk2.hpp
+ * \file          keys_perform_qt5.hpp
  *
  *  This module declares/defines the Gtk-2 class for keystrokes that
  *  depend on the GUI framework.
@@ -50,13 +50,13 @@ namespace seq64
  *  Might be ripe for refactoring.
  */
 
-class keys_perform_gtk2 : public keys_perform
+class keys_perform_qt5 : public keys_perform
 {
 
 public:
 
-    keys_perform_gtk2 ();
-    virtual ~keys_perform_gtk2 ();
+    keys_perform_qt5 ();
+    virtual ~keys_perform_qt5 ();
 
     virtual std::string key_name (unsigned int key) const
     {
@@ -66,14 +66,14 @@ public:
     virtual void set_all_key_events ();
     virtual void set_all_key_groups ();
 
-};          // keys_perform_gtk2
+};          // class keys_perform_qt5
 
 }           // namespace seq64
 
-#endif      // SEQ64_KEYS_PERFORM_GTK2_HPP
+#endif      // SEQ64_KEYS_PERFORM_QT5_HPP
 
 /*
- * keys_perform_gtk2.hpp
+ * keys_perform_qt5.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

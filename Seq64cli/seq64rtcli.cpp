@@ -186,7 +186,7 @@ main (int argc, char * argv [])
 
                 p.print_busses();
             }
-            if (optionindex < argc)                 /* MIDI filename given? */
+            if (optionindex < argc)                 /* MIDI filename given?   */
             {
                 std::string fn = argv[optionindex];
                 if (seq64::file_accessible(fn))

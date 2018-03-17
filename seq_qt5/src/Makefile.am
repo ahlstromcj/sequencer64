@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2018-03-14
+# \update      2018-03-16
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -290,7 +290,9 @@ BUILT_SOURCES = $(uic_sources) $(moc_sources)
 # qseq64.qrc.cpp
 
 libseq_qt5_la_SOURCES = \
+ gui_assistant_qt5.cpp \
  gui_palette_qt5.cpp \
+ keys_perform_qt5.cpp \
  qperfeditframe.cpp \
  qperfnames.cpp \
  qperfroll.cpp \

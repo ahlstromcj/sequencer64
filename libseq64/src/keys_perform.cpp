@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2017-11-26
+ * \updates       2018-03-16
  * \license       GNU GPLv2 or above
  *
  *  Added pattern-edit and event-edit keys which change the pattern slot
@@ -260,6 +260,88 @@ keys_perform::set_key_event (unsigned keycode, int sequence_slot)
     }
     m_key_events[keycode] = sequence_slot;      /* set the new binding      */
     m_key_events_rev[sequence_slot] = keycode;
+}
+
+/**
+ *
+ */
+
+void
+keys_perform::set_basic_key_events ()
+{
+    set_key_event(SEQ64_1, 0);
+    set_key_event(SEQ64_q, 1);
+    set_key_event(SEQ64_a, 2);
+    set_key_event(SEQ64_z, 3);
+    set_key_event(SEQ64_2, 4);
+    set_key_event(SEQ64_w, 5);
+    set_key_event(SEQ64_s, 6);
+    set_key_event(SEQ64_x, 7);
+    set_key_event(SEQ64_3, 8);
+    set_key_event(SEQ64_e, 9);
+    set_key_event(SEQ64_d, 10);
+    set_key_event(SEQ64_c, 11);
+    set_key_event(SEQ64_4, 12);
+    set_key_event(SEQ64_r, 13);
+    set_key_event(SEQ64_f, 14);
+    set_key_event(SEQ64_v, 15);
+    set_key_event(SEQ64_5, 16);
+    set_key_event(SEQ64_t, 17);
+    set_key_event(SEQ64_g, 18);
+    set_key_event(SEQ64_b, 19);
+    set_key_event(SEQ64_6, 20);
+    set_key_event(SEQ64_y, 21);
+    set_key_event(SEQ64_h, 22);
+    set_key_event(SEQ64_n, 23);
+    set_key_event(SEQ64_7, 24);
+    set_key_event(SEQ64_u, 25);
+    set_key_event(SEQ64_j, 26);
+    set_key_event(SEQ64_m, 27);
+    set_key_event(SEQ64_8, 28);
+    set_key_event(SEQ64_i, 29);
+    set_key_event(SEQ64_k, 30);
+    set_key_event(SEQ64_comma, 31);
+}
+
+/**
+ *
+ */
+
+void
+keys_perform::set_basic_key_groups ()
+{
+    set_key_group(SEQ64_exclam, 0);
+    set_key_group(SEQ64_quotedbl, 1);
+    set_key_group(SEQ64_numbersign, 2);
+    set_key_group(SEQ64_dollar, 3);
+    set_key_group(SEQ64_percent, 4);
+    set_key_group(SEQ64_ampersand, 5);
+    set_key_group(SEQ64_parenleft, 7);
+    set_key_group(SEQ64_slash, 6);
+    set_key_group(SEQ64_semicolon, 31);
+    set_key_group(SEQ64_A, 16);
+    set_key_group(SEQ64_B, 28);
+    set_key_group(SEQ64_C, 26);
+    set_key_group(SEQ64_D, 18);
+    set_key_group(SEQ64_E, 10);
+    set_key_group(SEQ64_F, 19);
+    set_key_group(SEQ64_G, 20);
+    set_key_group(SEQ64_H, 21);
+    set_key_group(SEQ64_I, 15);
+    set_key_group(SEQ64_J, 22);
+    set_key_group(SEQ64_K, 23);
+    set_key_group(SEQ64_M, 30);
+    set_key_group(SEQ64_N, 29);
+    set_key_group(SEQ64_Q, 8);
+    set_key_group(SEQ64_R, 11);
+    set_key_group(SEQ64_S, 17);
+    set_key_group(SEQ64_T, 12);
+    set_key_group(SEQ64_U, 14);
+    set_key_group(SEQ64_V, 27);
+    set_key_group(SEQ64_W, 9);
+    set_key_group(SEQ64_X, 25);
+    set_key_group(SEQ64_Y, 13);
+    set_key_group(SEQ64_Z, 24);
 }
 
 /**

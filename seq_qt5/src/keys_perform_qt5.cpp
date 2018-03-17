@@ -17,20 +17,19 @@
  */
 
 /**
- * \file          keys_perform_gtk2.cpp
+ * \file          keys_perform_qt5.cpp
  *
  *  This module defines Gtk-2 interface items.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2015-09-13
+ * \date          2018-03-16
  * \updates       2018-03-16
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <gtkmm/accelkey.h>             // For keys
-#include "keys_perform_gtk2.hpp"
+#include "keys_perform_qt5.hpp"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -44,7 +43,7 @@ namespace seq64
  *  of them public!
  */
 
-keys_perform_gtk2::keys_perform_gtk2 ()
+keys_perform_qt5::keys_perform_qt5 ()
  :
     keys_perform    ()
 {
@@ -56,7 +55,7 @@ keys_perform_gtk2::keys_perform_gtk2 ()
  *  A rote virtual destructor.  No action.
  */
 
-keys_perform_gtk2::~keys_perform_gtk2 ()
+keys_perform_qt5::~keys_perform_qt5 ()
 {
     // what to do?
 }
@@ -71,7 +70,7 @@ keys_perform_gtk2::~keys_perform_gtk2 ()
  */
 
 void
-keys_perform_gtk2::set_all_key_events ()
+keys_perform_qt5::set_all_key_events ()
 {
     keys_perform::set_all_key_events();
     keys_perform::set_basic_key_events();
@@ -87,7 +86,7 @@ keys_perform_gtk2::set_all_key_events ()
  */
 
 void
-keys_perform_gtk2::set_all_key_groups ()
+keys_perform_qt5::set_all_key_groups ()
 {
     keys_perform::set_all_key_groups();
     keys_perform::set_basic_key_groups();
@@ -111,9 +110,16 @@ std::string
 keyval_name (unsigned int key)
 {
     std::string result;
-    gchar * kname = gdk_keyval_name(key);
-    if (not_nullptr(kname))
-        result = std::string((char *) kname);
+    /*
+     * This is the Gdk name translator.  For now, we provide a simplistic name
+     * until we can figure out how qt5 gets the names of it keys.
+     *
+     * gchar * kname = gdk_keyval_name(key);
+     */
+
+    char temp[16];
+    (void) snprintf(temp, sizeof temp, "Key %ux", key);
+        result = std::string(temp);
 
     return result;
 }
@@ -121,7 +127,7 @@ keyval_name (unsigned int key)
 }           // namespace seq64
 
 /*
- * keys_perform_gtk2.cpp
+ * keys_perform_qt5.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

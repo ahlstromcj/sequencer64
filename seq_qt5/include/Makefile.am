@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2018-03-14
+# \update      2018-03-16
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -67,7 +67,9 @@ sequencer64libdir = @sequencer64libdir@
 #----------------------------------------------------------------------------
 
 pkginclude_HEADERS = \
+ gui_assistant_qt5.hpp \
  gui_palette_qt5.hpp \
+ keys_perform_qt5.hpp \
  qperfeditframe.hpp \
  qperfnames.hpp \
  qperfroll.hpp \

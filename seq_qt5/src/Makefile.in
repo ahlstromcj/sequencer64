@@ -21,7 +21,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2018-03-14
+# \update      2018-03-16
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -170,12 +170,13 @@ am__objects_1 = ../include/qperfeditframe.moc.lo \
 	../include/qsliveframe.moc.lo ../include/qsmaintime.moc.lo \
 	../include/qsmainwnd.moc.lo ../include/qstriggereditor.moc.lo
 am__objects_2 = $(am__objects_1)
-am_libseq_qt5_la_OBJECTS = gui_palette_qt5.lo qperfeditframe.lo \
-	qperfnames.lo qperfroll.lo qperftime.lo qsabout.lo \
-	qseditoptions.lo qseqdata.lo qseqeditframe.lo qseqkeys.lo \
-	qseqroll.lo qseqstyle.lo qseqtime.lo qsliveframe.lo \
-	qsmaintime.lo qsmainwnd.lo qstriggereditor.lo qt5_helpers.lo \
-	qseq64.qrc.lo $(am__objects_2)
+am_libseq_qt5_la_OBJECTS = gui_assistant_qt5.lo gui_palette_qt5.lo \
+	keys_perform_qt5.lo qperfeditframe.lo qperfnames.lo \
+	qperfroll.lo qperftime.lo qsabout.lo qseditoptions.lo \
+	qseqdata.lo qseqeditframe.lo qseqkeys.lo qseqroll.lo \
+	qseqstyle.lo qseqtime.lo qsliveframe.lo qsmaintime.lo \
+	qsmainwnd.lo qstriggereditor.lo qt5_helpers.lo qseq64.qrc.lo \
+	$(am__objects_2)
 libseq_qt5_la_OBJECTS = $(am_libseq_qt5_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -595,7 +596,9 @@ BUILT_SOURCES = $(uic_sources) $(moc_sources)
 
 # qseq64.qrc.cpp
 libseq_qt5_la_SOURCES = \
+ gui_assistant_qt5.cpp \
  gui_palette_qt5.cpp \
+ keys_perform_qt5.cpp \
  qperfeditframe.cpp \
  qperfnames.cpp \
  qperfroll.cpp \
@@ -750,7 +753,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../include/$(DEPDIR)/qsmaintime.moc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../include/$(DEPDIR)/qsmainwnd.moc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../include/$(DEPDIR)/qstriggereditor.moc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gui_assistant_qt5.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gui_palette_qt5.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys_perform_qt5.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qperfeditframe.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qperfnames.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qperfroll.Plo@am__quote@

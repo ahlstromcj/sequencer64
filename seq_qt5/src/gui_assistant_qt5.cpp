@@ -1,6 +1,3 @@
-#ifndef SEQ64_KEYS_PERFORM_GTK2_HPP
-#define SEQ64_KEYS_PERFORM_GTK2_HPP
-
 /*
  *  This file is part of seq24/sequencer64.
  *
@@ -20,60 +17,53 @@
  */
 
 /**
- * \file          keys_perform_gtk2.hpp
+ * \file          gui_assistant_qt5.cpp
  *
- *  This module declares/defines the Gtk-2 class for keystrokes that
- *  depend on the GUI framework.
+ *  This module declares/defines the base class for handling many facets
+ *  of using a GUI, without being tied to it.
  *
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
- * \date          2015-09-13
- * \updates       2016-06-22
+ * \date          2018-03-16
+ * \updates       2018-03-17
  * \license       GNU GPLv2 or above
  *
- *  This class has way too many members.
+ *  The Qt 5 version does not (yet) support the jack_assistant and lash
+ *  classes, nor does it support the quit notification.
  */
 
-#include "keys_perform.hpp"
+#include "gui_assistant_qt5.hpp"       /* seq64::gui_assistant_qt5      */
 
 /*
- * Do not document the namespace; it breaks Doxygen.
+ * Provides the namespace for all Sequencer64 libraries.
  */
 
 namespace seq64
 {
 
 /**
- *  This class supports the performance mode.
- *
- *  It has way too many data members, many of the public.
- *  Might be ripe for refactoring.
+ *  Provides a pre-made keys_perform object.  This object is set into
+ *  the reference provided in the gui_assistant base class.
  */
 
-class keys_perform_gtk2 : public keys_perform
+keys_perform_qt5 gui_assistant_qt5::sm_internal_keys;
+
+/**
+ *  This class provides an interface for some of the Gtk/Gdk/Glib support
+ *  needed in Sequencer64.
+ */
+
+gui_assistant_qt5::gui_assistant_qt5 ()
+ :
+    gui_assistant   (sm_internal_keys)
 {
-
-public:
-
-    keys_perform_gtk2 ();
-    virtual ~keys_perform_gtk2 ();
-
-    virtual std::string key_name (unsigned int key) const
-    {
-        return keyval_name(key);
-    }
-
-    virtual void set_all_key_events ();
-    virtual void set_all_key_groups ();
-
-};          // keys_perform_gtk2
+    // No code yet
+}
 
 }           // namespace seq64
 
-#endif      // SEQ64_KEYS_PERFORM_GTK2_HPP
-
 /*
- * keys_perform_gtk2.hpp
+ * gui_assistant_qt5.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

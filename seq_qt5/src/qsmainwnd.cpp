@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-14
+ * \updates       2018-03-19
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -34,8 +34,9 @@
  *  behavior of the pattern slots.
  */
 
-#include "qsmainwnd.hpp"
+#include "keystroke.hpp"
 #include "perform.hpp"
+#include "qsmainwnd.hpp"
 #include "qperfeditframe.hpp"
 #include "qsabout.hpp"
 #include "qseditoptions.hpp"
@@ -843,31 +844,43 @@ qsmainwnd::setRecordingSnap (bool snap)
 }
 
 /**
+ *  The Gtkmm 2.4 version calls perform::mainwnd_key_event().  The function
+ *  here handles only the Space key to start/stop playback.  See
+ *  qsliveframe::keyPressEvent() instead.
  *
+ *  Note that there is currently a Qt issue with processing the Escape key
+ *  (which is the normal "Stop" key).  For now, we have to set up qseq64.rc to
+ *  use the Space key for both Start and Stop.  Also, must debug why the Pause
+ *  key is not working.  And why the key appearance is not changing in the
+ *  GUI.
+ *
+ * \todo
+ *      Support and indicate the Pause operation.
+ *
+ * \param event
+ *      Provides a pointer to the key event.
  */
 
 void
 qsmainwnd::keyPressEvent (QKeyEvent * event)
 {
-    switch (event->key())
+    unsigned kevent = unsigned(event->key());
+    keystroke k(kevent, SEQ64_KEYSTROKE_PRESS);
+    if (perf().playback_key_event(k))               // song mode parameter?
     {
-    case Qt::Key_Space:
         if (perf().is_running())
         {
-            stopPlaying();
+            // stopPlaying();
             ui->btnPlay->setChecked(false);
         }
         else
         {
-            startPlaying();
+            // startPlaying();
             ui->btnPlay->setChecked(true);
         }
-        break;
-
-    default:
-        event->ignore();
-        break;
     }
+    else
+        event->ignore();
 }
 
 /**

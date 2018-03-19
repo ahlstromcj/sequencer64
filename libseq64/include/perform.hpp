@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-05
+ * \updates       2018-03-17
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -174,7 +174,7 @@ namespace seq64
  *      "replaced".
  */
 
-const int c_status_replace  = 0x01;
+const int c_status_replace = 0x01;
 
 /**
  *  This value signals the "snapshot" functionality.  By default,
@@ -203,9 +203,7 @@ const int c_status_snapshot = 0x02;
  *  regular queue key is pressed and released.
  */
 
-const int c_status_queue    = 0x04;
-
-#ifdef SEQ64_SONG_RECORDING
+const int c_status_queue = 0x04;
 
 /**
  *  This value signals the Kepler34 "one-shot" functionality.  If this bit
@@ -213,9 +211,7 @@ const int c_status_queue    = 0x04;
  *  sequence::toggle_oneshot() on the given sequence number.
  */
 
-const int c_status_oneshot  = 0x08;
-
-#endif  // SEQ64_SONG_RECORDING
+const int c_status_oneshot = 0x08;
 
 /**
  *      Provides for notification of events.  Provide a response to a
@@ -347,23 +343,6 @@ public:
         FF_RW_NONE      =  0,
         FF_RW_FORWARD   =  1
     };
-
-#ifdef USE_CONSOLIDATED_PLAYBACK
-
-    /**
-     *  We're experimenting with consolidating all the various playback
-     *  functions that have gotten scattered throughout the code.  Might
-     *  fold the ff_rw_button_t in at some point.
-     */
-
-    enum playback_action_t
-    {
-        PLAYBACK_STOP,
-        PLAYBACK_PAUSE,
-        PLAYBACK_START
-    };
-
-#endif  // USE_CONSOLIDATED_PLAYBACK
 
 private:
 
@@ -2314,13 +2293,13 @@ public:
     std::string sequence_label (int seqnumb);           // for qperfnames
     void set_input_bus (int bus, bool input_active);    // used in options
     void set_clock_bus (int bus, clock_e clocktype);    // used in options
+
     bool mainwnd_key_event (const keystroke & k);
+    bool keyboard_group_c_status_press (const keystroke & k);
+    bool keyboard_group_c_status_release (const keystroke & k);
+
     bool perfroll_key_event (const keystroke & k, int drop_sequence);
     bool playback_key_event (const keystroke & k, bool songmode = false);
-
-#ifdef USE_CONSOLIDATED_PLAYBACK
-    bool playback_action (playback_action_t p, bool songmode = false);
-#endif
 
     /*
      * More trigger functions.
@@ -2659,6 +2638,15 @@ public:         // GUI-support functions
         m_playback_mode = playbackmode;
     }
 
+    /**
+     * \getter m_mode_group_learn
+     */
+
+    bool is_group_learning ()
+    {
+        return m_mode_group_learn;
+    }
+
     void set_beats_per_minute (midibpm bpm);    /* more than just a setter  */
     void panic ();                              /* from kepler43        */
 
@@ -2736,17 +2724,8 @@ private:
     void unset_mode_group_learn ();
     bool load_mute_group (int gmute, int gm [c_max_groups]);
     bool save_mute_group (int gmute, int gm [c_max_groups]) const;
-
-    /**
-     * \getter m_mode_group_learn
-     */
-
-    bool is_group_learning ()
-    {
-        return m_mode_group_learn;
-    }
-
     void set_and_copy_mute_group (int group);
+
     bool activate ();
     void position_jack (bool state, midipulse tick = 0);
     void off_sequences ();

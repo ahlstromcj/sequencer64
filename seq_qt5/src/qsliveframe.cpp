@@ -24,14 +24,16 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-11
+ * \updates       2018-03-17
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "globals.h"
-#include "qsliveframe.hpp"
+#include "keystroke.hpp"
 #include "perform.hpp"
+#include "qsliveframe.hpp"
+#include "settings.hpp"
 #include "forms/qsliveframe.ui.h"
 
 /*
@@ -703,13 +705,59 @@ qsliveframe::editSeq ()
 }
 
 /**
+ *  The Gtkmm 2.4 version calls perform::mainwnd_key_event().  We will
+ *  slowly migrate the present function to be more like
+ *  mainwnd::on_key_press_event().  That function first calls
+ *  mainwnd_key_event() to handle group-learning and the "c_status" events.
+ *  Then, if those weren't called, the processing of BPM, screenset, and
+ *  other change keys is handled.
  *
+ *  An important point is that keys that affect the GUI directly need to be
+ *  handled here in the GUI.
+ *
+ *  Another important point is that other events are offloaded to the
+ *  perform object, and we need to let that object handle as much as
+ *  possible.
+ *
+ *  The logic here is an admixture of events that we will have to sort out.
+ *
+ * \param event
+ *      Provides a pointer to the key event.
  */
 
 void
 qsliveframe::keyPressEvent (QKeyEvent * event)
 {
-    switch (event->key())
+    /*
+     * Start of new code
+     */
+
+    unsigned kevent = unsigned(event->key());
+
+/*****
+ *
+    keystroke k(kevent, SEQ64_KEYSTROKE_PRESS);
+    if (perf().is_group_learning())
+        k.shift_lock();
+
+    if (rc().print_keys())
+    {
+        printf("key_press[%d]\n", k.key());
+        fflush(stdout);
+    }
+
+    if (perf().mainwnd_key_event(k))
+        return;
+    else if (perf().playback_key_event(k))
+        return;
+ *
+ */
+
+    /*
+     * End of new code
+     */
+
+    switch (kevent)
     {
     case Qt::Key_BracketLeft:
         setBank(m_bank_id - 1);
@@ -738,11 +786,11 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
 
     default:                                // sequence mute toggling
 
-        // quint32 keycode = event->key();
-        // if (mPerf.get_key_events()->count(event->key()) != 0)
+        // quint32 keycode = kevent;
+        // if (mPerf.get_key_events()->count(kevent) != 0)
 
-        if (mPerf.get_key_count(event->key()) != 0)
-            sequence_key(mPerf.lookup_keyevent_seq(event->key()));
+        if (mPerf.get_key_count(kevent) != 0)
+            sequence_key(mPerf.lookup_keyevent_seq(kevent));
         else
             event->ignore();
         break;
@@ -756,9 +804,28 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
 void
 qsliveframe::keyReleaseEvent (QKeyEvent * event)
 {
+    /*
+     * Start of new code
+     */
+
+    unsigned kevent = unsigned(event->key());
+
+    /***********
+    keystroke k(kevent, SEQ64_KEYSTROKE_RELEASE);
+    if (perf().is_group_learning())
+        k.shift_lock();
+
+    if (perf().mainwnd_key_event(k))
+        return;
+        ***********/
+
+    /*
+     * End of new code
+     */
+
     // unset the relevant control modifiers
 
-    switch (event->key())
+    switch (kevent)
     {
     case Qt::Key_Semicolon:
         mPerf.unset_sequence_control_status(c_status_replace);

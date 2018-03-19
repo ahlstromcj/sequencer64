@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2018-01-01
-# \update      2018-03-17
+# \update      2018-03-19
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -327,7 +327,6 @@ libseq_qt5_la_SOURCES = \
  qsmainwnd.cpp \
  qstriggereditor.cpp \
  qt5_helpers.cpp \
- qseq64.qrc.cpp \
  $(moc_sources)
 
 libseq_qt5_la_LDFLAGS = -version-info $(version)

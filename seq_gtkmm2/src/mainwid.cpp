@@ -437,8 +437,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                  */
 
                 int c = seq->color();
-//              const Color & color = get_color(PaletteColor(c));
-//              Color color = get_color_ex(PaletteColor(c), 0.0, 0.65, 1.0);
                 Color color = get_color_ex(PaletteColor(c), 40.0, 0.20, 0.5);
                 draw_rectangle_on_pixmap(color, x, y, lx, ly);
                 if (c == SEQ64_COLOR_NONE)

@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2017-06-04
+2015-09-09 to 2018-03-20
 
 Creating a GitHub Repository:
 
@@ -220,6 +220,19 @@ Tagging:
     denotes that the "git" DVCS is being used) that can be used if the
     commit changes, or there are many 12th commits.  Note that the output
     also depends on the current branch that is checked out.
+
+    To check out a specific tag:
+
+    $ git fetch --all --tags --prune
+    $ git checkout tags/<tagname> [-b branch name]
+
+    The branch name is optional; you might not want to make a branch, and
+    just get the tagged version.
+
+    $ ./pack 0.94.6
+
+    This will pack up the code and Makefiles as a tar-file that can be
+    used to ./configure and build the code.
 
 Cherry-Picking:
 

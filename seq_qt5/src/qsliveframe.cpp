@@ -728,35 +728,7 @@ qsliveframe::editSeq ()
 void
 qsliveframe::keyPressEvent (QKeyEvent * event)
 {
-    /*
-     * Start of new code
-     */
-
     unsigned kevent = unsigned(event->key());
-
-/*****
- *
-    keystroke k(kevent, SEQ64_KEYSTROKE_PRESS);
-    if (perf().is_group_learning())
-        k.shift_lock();
-
-    if (rc().print_keys())
-    {
-        printf("key_press[%d]\n", k.key());
-        fflush(stdout);
-    }
-
-    if (perf().mainwnd_key_event(k))
-        return;
-    else if (perf().playback_key_event(k))
-        return;
- *
- */
-
-    /*
-     * End of new code
-     */
-
     switch (kevent)
     {
     case Qt::Key_BracketLeft:
@@ -804,28 +776,8 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
 void
 qsliveframe::keyReleaseEvent (QKeyEvent * event)
 {
-    /*
-     * Start of new code
-     */
-
     unsigned kevent = unsigned(event->key());
-
-    /***********
-    keystroke k(kevent, SEQ64_KEYSTROKE_RELEASE);
-    if (perf().is_group_learning())
-        k.shift_lock();
-
-    if (perf().mainwnd_key_event(k))
-        return;
-        ***********/
-
-    /*
-     * End of new code
-     */
-
-    // unset the relevant control modifiers
-
-    switch (kevent)
+    switch (kevent)         // unset the relevant control modifiers
     {
     case Qt::Key_Semicolon:
         mPerf.unset_sequence_control_status(c_status_replace);

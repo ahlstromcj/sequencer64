@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-03-05
+ * \updates       2018-03-20
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -317,9 +317,6 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_screenset_offset          (0),
     m_playscreen                (0),        // vice m_screenset
     m_playscreen_offset         (0),
-#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
-    m_auto_screenset_queue      (false),
-#endif
     m_max_sets                  (usr().max_sets()),     // c_max_sets
     m_sequence_count            (0),
     m_sequence_max              (c_max_sequence),
@@ -2407,7 +2404,7 @@ perform::get_screenset_notepad (int screenset) const
  *
  *  As a new feature, we would like to queue-mute the previous screenset,
  *  and queue-unmute the newly-selected screenset.  Still working on getting
- *  it right.  Still undefined: SEQ64_USE_AUTO_SCREENSET_QUEUE.
+ *  it right.  Aborted.
  *
  * \param ss
  *      The index of the desired new screen-set.  It is forced to range from
@@ -2427,93 +2424,16 @@ perform::set_screenset (int ss)
     if (ss < 0)
         ss = m_max_sets - 1;
     else if (ss >= m_max_sets)
-    {
-#if USE_THIS_DODGY_CODE
-        if (m_screenset == 0)
-            ss = m_max_sets - 1;    /* at zero, dropping to largest value   */
-        else
-            ss = 0;                 /* moving up from maximum back to 0     */
-#else
         ss = 0;
-#endif
-    }
 
     if ((ss != m_screenset) && is_screenset_valid(ss))
     {
-#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
-        if (m_auto_screenset_queue)
-            swap_screenset_queues(m_screenset, ss);
-        else
-            m_screenset = ss;
-#else
         m_screenset = ss;
-#endif
         m_screenset_offset = screenset_offset(ss);
         unset_queued_replace();                 /* clear this new feature   */
     }
     return m_screenset;
 }
-
-#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
-
-/**
- *  EXPERIMENTAL.  Doesn't quite work.  This may be due to a bug we found in
- *  mute_screenset(), on 2016-10-05, so we will revisit this functionality for
- *  0.9.19.  Or maybe not :-(.
- *
- * \param flag
- *      If the flag is true:
- *      -#  Mute all tracks in order to start from a known status for all
- *          screen-sets.
- *      -#  Unmute screen-set 0 (the first screen-set).
- */
-
-void
-perform::set_auto_screenset (bool flag)
-{
-    m_auto_screenset_queue = flag;
-}
-
-/**
- *  EXPERIMENTAL.  Doesn't quite work.  Queues all of the sequences in the
- *  given screen-set.  Doesn't work, even after a lot of hacking on it, so
- *  disabled for now.
- *
- * \param ss0
- *      The original screenset, will be unqueued.
- *
- * \param ss1
- *      The destination screenset, will be queued.
- */
-
-void
-perform::swap_screenset_queues (int ss0, int ss1)
-{
-    if (is_pattern_playing())
-    {
-        int seq0 = screenset_offset(ss0);
-        for (int s = 0; s < m_seqs_in_set; ++s, ++seq0)
-        {
-            if (is_active(seq0))
-                m_seqs[seq0]->off_queued();         // toggle_queued();
-        }
-
-        int seq1 = screenset_offset(ss1);
-        m_screenset = ss1;
-        for (int s = 0; s < m_seqs_in_set; ++s, ++seq1)
-        {
-            if (is_active(seq1))
-                m_seqs[seq1]->on_queued();          // toggle_queued();
-        }
-        set_playing_screenset();
-
-#ifdef PLATFORM_DEBUG_TMI
-        dump_mute_statuses("screen-set change");
-#endif
-    }
-}
-
-#endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
  *  Sets the screen-set that is active, based on the value of m_screenset.
@@ -5976,28 +5896,25 @@ perform::mainwnd_key_event (const keystroke & k)
     unsigned key = k.key();
     if (k.is_press())
     {
-        if (! keyboard_group_c_status_press(k))
+        if (! keyboard_group_c_status_press(key))
         {
-            if (key == keys().set_playing_screenset())
-                set_playing_screenset();
-            else if (key == keys().group_on())
-                set_mode_group_mute();                  /* m_mode_group = true */
-            else if (key == keys().group_off())
-                unset_mode_group_mute();
-            else if (key == keys().group_learn())
-                set_mode_group_learn();
-            else
-                result = false;
+            if (! keyboard_group_press(key))
+            {
+                if (key == keys().set_playing_screenset())
+                    set_playing_screenset();
+                else
+                    result = false;
+            }
         }
     }
     else
     {
-        if (! keyboard_group_c_status_release(k))
+        if (! keyboard_group_c_status_release(key))
         {
-            if (key == keys().group_learn())
-                unset_mode_group_learn();
-            else
+            if (! keyboard_group_release(key))
+            {
                 result = false;
+            }
         }
     }
     return result;
@@ -6029,10 +5946,9 @@ perform::mainwnd_key_event (const keystroke & k)
  */
 
 bool
-perform::keyboard_group_c_status_press (const keystroke & k)
+perform::keyboard_group_c_status_press (unsigned key)
 {
     bool result = true;
-    unsigned key = k.key();
     if (key == keys().replace())
         set_sequence_control_status(c_status_replace);
     else if (key == keys().queue() || key == keys().keep_queue())
@@ -6052,10 +5968,9 @@ perform::keyboard_group_c_status_press (const keystroke & k)
  */
 
 bool
-perform::keyboard_group_c_status_release (const keystroke & k)
+perform::keyboard_group_c_status_release (unsigned key)
 {
     bool result = true;
-    unsigned key = k.key();
     if (key == keys().replace())
         unset_sequence_control_status(c_status_replace);
     else if (key == keys().queue())
@@ -6066,6 +5981,80 @@ perform::keyboard_group_c_status_release (const keystroke & k)
         unset_sequence_control_status(c_status_oneshot);
     else
         result = false;
+
+    return result;
+}
+
+/**
+ *
+ */
+
+bool
+perform::keyboard_group_press (unsigned key)
+{
+    bool result = true;
+    if (key == keys().group_on())
+        set_mode_group_mute();                  /* m_mode_group = true */
+    else if (key == keys().group_off())
+        unset_mode_group_mute();
+    else if (key == keys().group_learn())
+        set_mode_group_learn();
+    else
+        result = false;
+
+    return result;
+}
+
+/**
+ *
+ */
+
+bool
+perform::keyboard_group_release (unsigned key)
+{
+    bool result = true;
+    if (key == keys().group_learn())
+        unset_mode_group_learn();
+    else
+        result = false;
+
+    return result;
+}
+
+/**
+ *
+ */
+
+perform::action_t
+perform::keyboard_group_action (unsigned key)
+{
+    action_t result = ACTION_NONE;
+    if (key == keys().bpm_dn())
+    {
+        (void) decrement_beats_per_minute();
+        result = ACTION_BPM;
+    }
+    else if (key == keys().bpm_up())
+    {
+        (void) increment_beats_per_minute();
+        result = ACTION_BPM;
+    }
+    else if (key == keys().tap_bpm())
+    {
+        result = ACTION_BPM;            // make sure the tap records the BPM
+    }
+    else if (key == keys().screenset_dn())  // || k.is(SEQ64_Page_Down)) ???
+    {
+        (void) decrement_screenset();
+        result = ACTION_SCREENSET;
+    }
+    else if (key == keys().screenset_up())  // || k.is(SEQ64_Page_Up)) ???
+    {
+        (void) increment_screenset();
+        result = ACTION_SCREENSET;
+    }
+
+    // more to come
 
     return result;
 }

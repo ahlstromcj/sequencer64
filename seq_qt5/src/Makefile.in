@@ -21,7 +21,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2018-01-01
-# \update      2018-03-17
+# \update      2018-03-19
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -123,7 +123,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/alsa.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
-mkinstalldirs = $(install_sh) -d
+mkinstalldirs = $(SHELL) $(top_srcdir)/aux-files/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
@@ -175,7 +175,7 @@ am_libseq_qt5_la_OBJECTS = gui_assistant_qt5.lo gui_palette_qt5.lo \
 	qperfroll.lo qperftime.lo qsabout.lo qseditoptions.lo \
 	qseqdata.lo qseqeditframe.lo qseqkeys.lo qseqroll.lo \
 	qseqstyle.lo qseqtime.lo qsliveframe.lo qsmaintime.lo \
-	qsmainwnd.lo qstriggereditor.lo qt5_helpers.lo qseq64.qrc.lo \
+	qsmainwnd.lo qstriggereditor.lo qt5_helpers.lo \
 	$(am__objects_2)
 libseq_qt5_la_OBJECTS = $(am_libseq_qt5_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -247,7 +247,8 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in \
-	$(top_srcdir)/aux-files/depcomp
+	$(top_srcdir)/aux-files/depcomp \
+	$(top_srcdir)/aux-files/mkinstalldirs
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 ALSA_CFLAGS = @ALSA_CFLAGS@
@@ -619,7 +620,6 @@ libseq_qt5_la_SOURCES = \
  qsmainwnd.cpp \
  qstriggereditor.cpp \
  qt5_helpers.cpp \
- qseq64.qrc.cpp \
  $(moc_sources)
 
 libseq_qt5_la_LDFLAGS = -version-info $(version)
@@ -765,7 +765,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qperftime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qsabout.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qseditoptions.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qseq64.qrc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qseqdata.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qseqeditframe.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qseqkeys.Plo@am__quote@

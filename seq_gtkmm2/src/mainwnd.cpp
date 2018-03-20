@@ -3089,6 +3089,13 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 
         if (! perf().mainwnd_key_event(k))
         {
+            /*
+             * \todo
+             *      Call perf().keyboard_group_action(k) and use a switch
+             *      to get the new values based on the return code which
+             *      can be perform::ACTION_BPM etc.
+             */
+
             if (k.is(PREFKEY(bpm_dn)))
             {
                 midibpm newbpm = perf().decrement_beats_per_minute();
@@ -3364,7 +3371,7 @@ mainwnd::on_key_release_event (GdkEventKey * ev)
     if (perf().is_group_learning())
         k.shift_lock();
 
-    (void) perf().mainwnd_key_event(k);     // already called in key-press!!!
+    (void) perf().mainwnd_key_event(k);     // called in key-press, too
     return false;
 }
 

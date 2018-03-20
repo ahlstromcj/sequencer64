@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-17
+ * \updates       2018-03-20
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -285,6 +285,42 @@ class perform
     friend long get_current_jack_position (void * arg);
 
 #endif  // SEQ64_JACK_SUPPORT
+
+public:
+
+    /**
+     *  In many cases, when we check a key action that perform wil do, it is
+     *  sufficient to return a boolean.  But, in some cases, we need to indicate
+     *  what was changed (e.g. via a keystroke).  This enumeration provides
+     *  return values that a (GUI) caller can use to decided which values to get
+     *  and then change the user-interface to indicate the new value.
+     *
+     *  See the keyboard_group_action() function and the "[keyboard-control]"
+     *  and "[keyboard-group]" configuration sections of the "rc" file.
+     */
+
+    enum action_t
+    {
+        ACTION_NONE,            /**< The keystroke was not handled by perform.  */
+        ACTION_SEQ_TOGGLE,      /**< For perform::sequence_playing_toggle().    */
+        ACTION_GROUP_MUTE,      /**< See mainwnd::on_key_press_event().  ???    */
+        ACTION_BPM,             /**< Applies to any BPM change, including tap.  */
+        ACTION_SCREENSET,       /**< The keystroke altered the active set.      */
+        ACTION_GROUP_LEARN,     /**< See mainwnd::on_key_press_event().  ???    */
+        ACTION_C_STATUS,        /**< For replace, queue, snapshot, oneshot.     */
+
+        // Might not be useful:
+        //
+        // ACTION_PLAYBACK
+        // ACTION_SONG_MODE,
+        // ACTION_MENU_MODE,
+        // ACTION_SONG_RECORD,
+        // ACTION_ONESHOT_QUEUE,
+        // ACTION_SONG_EDIT,
+        // ACTION_EVENT_EDIT,
+        // ACTION_SLASH_SHIFT,
+        // ACTION_EXTENDED,
+    };
 
 public:
 
@@ -947,19 +983,6 @@ private:
      */
 
     int m_playscreen_offset;
-
-#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
-
-    /**
-     *  New.  Attempting to provide a feature where moving to another
-     *  screenset automatically cues the current screenset for turning off,
-     *  and the new screenset for turning on.  EXPERIMENTAL.  Will be a menu
-     *  option once it works.
-     */
-
-    bool m_auto_screenset_queue;
-
-#endif
 
     /**
      *  A replacement for the c_max_sets constant.  Again, currently set to
@@ -1906,6 +1929,9 @@ public:
      * \getter m_master_bus.get_beats_per_minute
      *      Retrieves the BPM setting of the master MIDI buss.
      *
+     *  This result should be the same as the value of the m_bpm member.
+     *  This function returns that value in a roundabout way.
+     *
      * \return
      *      Returns the value of beats/minute from the master buss.
      */
@@ -2272,22 +2298,6 @@ public:
         return is_mseq_valid(seq) ? m_seqs[seq] : nullptr ;
     }
 
-#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
-
-    void set_auto_screenset (bool flag);
-    void swap_screenset_queues (int ss0, int ss1);
-
-    /**
-     * \getter m_auto_screenset_queue
-     */
-
-    bool auto_screenset () const
-    {
-        return m_auto_screenset_queue;
-    }
-
-#endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
-
     void sequence_key (int seq);                        // encapsulation
     std::string sequence_label (const sequence & seq);
     std::string sequence_label (int seqnumb);           // for qperfnames
@@ -2295,8 +2305,12 @@ public:
     void set_clock_bus (int bus, clock_e clocktype);    // used in options
 
     bool mainwnd_key_event (const keystroke & k);
-    bool keyboard_group_c_status_press (const keystroke & k);
-    bool keyboard_group_c_status_release (const keystroke & k);
+
+    bool keyboard_group_c_status_press (unsigned key);
+    bool keyboard_group_c_status_release (unsigned key);
+    bool keyboard_group_press (unsigned key);
+    bool keyboard_group_release (unsigned key);
+    action_t keyboard_group_action (unsigned key);
 
     bool perfroll_key_event (const keystroke & k, int drop_sequence);
     bool playback_key_event (const keystroke & k, bool songmode = false);

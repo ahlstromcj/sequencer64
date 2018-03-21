@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-17
+ * \updates       2018-03-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -383,9 +383,23 @@ qsliveframe::drawAllSequences ()
  */
 
 void
-qsliveframe::setBank (int newBank)
+qsliveframe::setBank ()
 {
-    m_bank_id = newBank;
+    int bank = mPerf.screenset();
+    setBank(bank);
+}
+
+/**
+ *
+ */
+
+void
+qsliveframe::setBank (int bank)
+{
+#ifdef USE_NEW_CODE
+    m_bank_id = bank
+#else
+    m_bank_id = bank;
     if (m_bank_id < 0)
         m_bank_id = qc_max_num_banks - 1;
 
@@ -393,6 +407,7 @@ qsliveframe::setBank (int newBank)
         m_bank_id = 0;
 
     mPerf.set_screenset(m_bank_id);        // set_offset(m_bank_id);
+#endif
 
     QString bankName = mPerf.get_bank_name(m_bank_id).c_str();
     ui->txtBankName->setPlainText(bankName);
@@ -415,10 +430,10 @@ qsliveframe::redraw ()
  */
 
 void
-qsliveframe::updateBank (int newBank)
+qsliveframe::updateBank (int bank)
 {
-    mPerf.set_screenset(newBank);
-    setBank(newBank);
+    mPerf.set_screenset(bank);
+    setBank(bank);
     mPerf.modify();
 }
 
@@ -725,18 +740,49 @@ qsliveframe::editSeq ()
  *      Provides a pointer to the key event.
  */
 
+#ifdef USE_NEW_CODE
+
+void
+qsliveframe::keyPressEvent (QKeyEvent * event)
+{
+    unsigned kevent = unsigned(event->key());
+    perform::action_t action = perf().keyboard_group_action(kevent);
+    if (action == perform::ACTION_NONE)
+    {
+        bool done = perf().keyboard_group_c_status_press(kevent);
+        if (! done)
+        {
+            done = perf().keyboard_control_press(kevent);   // mute toggles
+        }
+    }
+    else
+    {
+        switch (action)
+        {
+        case perform::ACTION_BPM:
+            break;
+
+        case perform::ACTION_SCREENSET:
+            setBank();                      // gets screenset from perform
+            break;
+        }
+    }
+}
+
+#else
+
 void
 qsliveframe::keyPressEvent (QKeyEvent * event)
 {
     unsigned kevent = unsigned(event->key());
     switch (kevent)
     {
-    case Qt::Key_BracketLeft:
-        setBank(m_bank_id - 1);
+    case Qt::Key_BracketLeft:       // can be handled by new version
+        setBank(m_bank_id - 1);     // if new code, parameter not needed
         break;
 
-    case Qt::Key_BracketRight:
-        setBank(m_bank_id + 1);
+    case Qt::Key_BracketRight:      // can be handled by new version
+        setBank(m_bank_id + 1);     // if new code, parameter not needed
         break;
 
     case Qt::Key_Semicolon:
@@ -769,6 +815,8 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
     }
 }
 
+#endif  // USE_NEW_CODE
+
 /**
  *
  */
@@ -799,7 +847,7 @@ qsliveframe::keyReleaseEvent (QKeyEvent * event)
 }
 
 /**
- *
+ *  NOT NEEDED, call perf().sequence_key() directly.
  */
 
 void

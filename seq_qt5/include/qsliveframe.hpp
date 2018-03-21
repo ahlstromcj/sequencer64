@@ -70,6 +70,7 @@ public:
 
     void redraw ();              // redraw frame contents
     void setBank (int newBank);  // set bank (screen-set) of sequences displayed
+    void setBank ();             // bank number retrieved from perform
 
 protected:
 

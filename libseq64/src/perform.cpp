@@ -5921,6 +5921,27 @@ perform::mainwnd_key_event (const keystroke & k)
 }
 
 /**
+ *
+ */
+
+bool
+perform::keyboard_control_press (unsigned key)
+{
+    bool result = true;
+    if (get_key_count(key) != 0)
+    {
+        // sequence_key(lookup_keyevent_key(kevent));      // kevent == seq???
+        int seqnum = lookup_keyevent_seq(key);
+        int keynum = seqnum;            // + m_call_seq_shift * c_seqs_in_set;
+        sequence_key(keynum);
+    }
+    else
+        result = false;
+
+    return result;
+}
+
+/**
  *  Categories of keyboard actions:
  *
  *  -   [xxxxxxxxx]

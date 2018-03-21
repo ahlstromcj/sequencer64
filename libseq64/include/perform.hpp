@@ -2306,6 +2306,7 @@ public:
 
     bool mainwnd_key_event (const keystroke & k);
 
+    bool keyboard_control_press (unsigned key);
     bool keyboard_group_c_status_press (unsigned key);
     bool keyboard_group_c_status_release (unsigned key);
     bool keyboard_group_press (unsigned key);

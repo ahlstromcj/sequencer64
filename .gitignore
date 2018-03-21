@@ -106,6 +106,7 @@ m4/ltsugar.m4
 m4/ltversion.m4
 *.maf
 Makefile
+Makefile.in
 Makefile.in.in
 Makefile.old
 MANIFEST.bak

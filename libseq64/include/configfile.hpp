@@ -53,7 +53,7 @@ class perform;
  *  realistically, 128 is more than enough.  We provide safety anyway.
  */
 
-#define SEQ64_LINE_MAX          132
+#define SEQ64_LINE_MAX          1024    // 132 is *not* enough
 
 /**
  *    This class is the abstract base class for optionsfile and userfile.

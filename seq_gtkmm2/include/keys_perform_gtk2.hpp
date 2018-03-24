@@ -58,7 +58,17 @@ public:
     keys_perform_gtk2 ();
     virtual ~keys_perform_gtk2 ();
 
-    virtual std::string key_name (unsigned int key) const
+    /**
+     *  Converts a key's value to a human-readable string.
+     *
+     * \param key
+     *      The numerical value of the key.
+     *
+     * \return
+     *      Returns the string version of the key.
+     */
+
+    virtual std::string key_name (unsigned key) const
     {
         return keyval_name(key);
     }
@@ -67,6 +77,14 @@ public:
     virtual void set_all_key_groups ();
 
 };          // keys_perform_gtk2
+
+/**
+ * Free functions for keyboard support.  The implementation of this function
+ * will ultimately depend on the GUI environment; currently it is GTK 2.x, so
+ * the implementation is in seq_gtkmm2/src/keys_perform_gtk2.cpp.
+ */
+
+extern std::string keyval_name (unsigned key);
 
 }           // namespace seq64
 

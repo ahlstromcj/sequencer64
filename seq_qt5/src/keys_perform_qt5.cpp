@@ -107,7 +107,7 @@ keys_perform_qt5::set_all_key_groups ()
  */
 
 std::string
-keyval_name (unsigned int key)
+keyval_name (unsigned key)
 {
     std::string result;
     /*

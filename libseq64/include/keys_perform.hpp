@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2018-03-16
+ * \updates       2018-03-24
  * \license       GNU GPLv2 or above
  *
  * Stazed:
@@ -1279,12 +1279,12 @@ protected:
  * the implementation is in seq_gtkmm2/src/keys_perform_gtk2.cpp.
  */
 
-inline bool invalid_key (unsigned key)
+inline bool
+invalid_key (unsigned key)
 {
     return (key == 0) || (key > 0xffff);
 }
 
-extern std::string keyval_name (unsigned key);
 extern void keyval_normalize (keys_perform_transfer & k);
 
 }           // namespace seq64

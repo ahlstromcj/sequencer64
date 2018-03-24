@@ -27,8 +27,8 @@
  *
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
- * \date          2015-09-13
- * \updates       2016-06-22
+ * \date          2018-01-01
+ * \updates       2018-03-24
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -58,10 +58,14 @@ public:
     keys_perform_qt5 ();
     virtual ~keys_perform_qt5 ();
 
-    virtual std::string key_name (unsigned int key) const
-    {
-        return keyval_name(key);
-    }
+/*
+ * Use the base version (it generates hex codes) for now.
+ *
+ *  virtual std::string key_name (unsigned key) const
+ *  {
+ *      return keyval_name(key);
+ *  }
+ */
 
     virtual void set_all_key_events ();
     virtual void set_all_key_groups ();

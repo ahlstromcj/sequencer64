@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-20
+ * \updates       2018-03-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -33,6 +33,7 @@
 #include "keystroke.hpp"
 #include "perform.hpp"
 #include "qsliveframe.hpp"
+#include "qsmacros.hpp"                 /* QS_KEY_CHAR() macro              */
 #include "settings.hpp"
 #include "forms/qsliveframe.ui.h"
 
@@ -91,8 +92,8 @@ qsliveframe::qsliveframe (perform & perf, QWidget * parent)
     mMsgBoxNewSeqCheck->setDefaultButton(QMessageBox::No);
     setBank(0);
 
-    QString bankName = mPerf.get_bank_name(m_bank_id).c_str();
-    ui->txtBankName->setPlainText(bankName);
+    QString bname = mPerf.get_bank_name(m_bank_id).c_str();
+    ui->txtBankName->setPlainText(bname);
     connect(ui->spinBank, SIGNAL(valueChanged(int)), this, SLOT(updateBank(int)));
     connect(ui->txtBankName, SIGNAL(textChanged()), this, SLOT(updateBankName()));
 
@@ -397,7 +398,7 @@ void
 qsliveframe::setBank (int bank)
 {
 #ifdef USE_NEW_CODE
-    m_bank_id = bank
+    m_bank_id = bank;
 #else
     m_bank_id = bank;
     if (m_bank_id < 0)
@@ -409,8 +410,8 @@ qsliveframe::setBank (int bank)
     mPerf.set_screenset(m_bank_id);        // set_offset(m_bank_id);
 #endif
 
-    QString bankName = mPerf.get_bank_name(m_bank_id).c_str();
-    ui->txtBankName->setPlainText(bankName);
+    QString bname = mPerf.get_bank_name(m_bank_id).c_str();
+    ui->txtBankName->setPlainText(bname);
     ui->spinBank->setValue(m_bank_id);
     update();
 }
@@ -720,12 +721,8 @@ qsliveframe::editSeq ()
 }
 
 /**
- *  The Gtkmm 2.4 version calls perform::mainwnd_key_event().  We will
- *  slowly migrate the present function to be more like
- *  mainwnd::on_key_press_event().  That function first calls
- *  mainwnd_key_event() to handle group-learning and the "c_status" events.
- *  Then, if those weren't called, the processing of BPM, screenset, and
- *  other change keys is handled.
+ *  The Gtkmm 2.4 version calls perform::mainwnd_key_event().  We have broken
+ *  that function into pieces (smaller functions) that we can use here.
  *
  *  An important point is that keys that affect the GUI directly need to be
  *  handled here in the GUI.
@@ -736,37 +733,81 @@ qsliveframe::editSeq ()
  *
  *  The logic here is an admixture of events that we will have to sort out.
  *
+ *  Note that the QKeyEWvent::key() function does not distinguish between
+ *  capital and non-capital letters, use the text() function (returning the
+ *  Unicode text the key generated) for this purpose.
+ *
  * \param event
  *      Provides a pointer to the key event.
  */
 
 #ifdef USE_NEW_CODE
 
+/*
+ * Weird.  After the first keystroke, for, say 'o' (ascii 111) == kevent,
+ * we get kevent == 0, presumably a terminator character that we have to
+ * ignore.
+ */
+
 void
 qsliveframe::keyPressEvent (QKeyEvent * event)
 {
-    unsigned kevent = unsigned(event->key());
+    // unsigned kevent_dummy = unsigned(event->key());
+    QString qevent = event->text();
+    unsigned kevent = QS_KEY_CHAR(qevent);
+    if (kevent == 0)
+        return;                         /* bug out                          */
+
     perform::action_t action = perf().keyboard_group_action(kevent);
+    bool done = false;
     if (action == perform::ACTION_NONE)
     {
-        bool done = perf().keyboard_group_c_status_press(kevent);
+        /*
+         * This call replaces Kepler34's processing of the semi-colon, slash,
+         * apostrophe, number sign, and period.
+         */
+
+        done = perf().keyboard_group_c_status_press(kevent);
         if (! done)
         {
+            /*
+             * Replaces a call to Kepler34's sequence_key() function.
+             */
+
             done = perf().keyboard_control_press(kevent);   // mute toggles
         }
     }
     else
     {
+        done = true;
         switch (action)
         {
+        case perform::ACTION_SEQ_TOGGLE:
+            break;
+
+        case perform::ACTION_GROUP_MUTE:
+            break;
+
         case perform::ACTION_BPM:
             break;
 
-        case perform::ACTION_SCREENSET:
-            setBank();                      // gets screenset from perform
+        case perform::ACTION_SCREENSET:             // replaces L/R brackets
+            setBank();                              // screenset from perform
+            break;
+
+        case perform::ACTION_GROUP_LEARN:
+            break;
+
+        case perform::ACTION_C_STATUS:
+            break;
+
+        default:
+            done = false;
             break;
         }
     }
+    if (! done)
+        event->ignore();
 }
 
 #else
@@ -821,6 +862,30 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
  *
  */
 
+#ifdef USE_NEW_CODE
+
+void
+qsliveframe::keyReleaseEvent (QKeyEvent * event)
+{
+    unsigned kevent = unsigned(event->key());
+    (void) perf().keyboard_group_c_status_press(kevent);
+}
+
+#else
+
+/**
+ *  NOT NEEDED, call perf().sequence_key() directly.
+ */
+
+void
+qsliveframe::sequence_key (int seq)
+{
+    /* add bank offset */
+    seq += mPerf.screenset() * qc_mainwnd_rows * qc_mainwnd_cols;
+    if (mPerf.is_active(seq))
+        mPerf.sequence_playing_toggle(seq);
+}
+
 void
 qsliveframe::keyReleaseEvent (QKeyEvent * event)
 {
@@ -846,18 +911,7 @@ qsliveframe::keyReleaseEvent (QKeyEvent * event)
     }
 }
 
-/**
- *  NOT NEEDED, call perf().sequence_key() directly.
- */
-
-void
-qsliveframe::sequence_key (int seq)
-{
-    /* add bank offset */
-    seq += mPerf.screenset() * qc_mainwnd_rows * qc_mainwnd_cols;
-    if (mPerf.is_active(seq))
-        mPerf.sequence_playing_toggle(seq);
-}
+#endif  // USE_NEW_CODE
 
 /**
  *

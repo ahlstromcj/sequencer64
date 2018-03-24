@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2018-03-20
+# \update     	2018-03-21
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -21,17 +21,23 @@
 #  so that a conventional "GNU configure" tarfile can be generated.  If you do
 #  not want that, do a "./bootstrap --full-clean" first.
 #
+#  Please note that making a build from the resulting tarball will not include
+#  git version information, which is a good thing for release tarballs, which
+#  just need the date and version number.
+#
 #-----------------------------------------------------------------------------
 
-CURRENTDATE=`date +%Y-%m-%d`
-CURRENTDIR=`pwd`
+CURRENTDATE=$(date +%Y-%m-%d)
+CURRENTDIR=$(pwd)
 WORKINGDIR=${CURRENTDIR##/*/}       # strip all but last part of path
+PACKAGENAME="bogus"
 
 # TAGSTRING="git"
 
 TAGSTRING="pack"
 DODRYRUN="no"
 DOCLEAN="no"
+DORELEASE="no"
 
 BRANCH=`git symbolic-ref -q HEAD 2> /dev/null`
 
@@ -51,9 +57,9 @@ if [ "$1" == "--help" ] || [ "$1" == "help" ] ; then
 
    cat << E_O_F
 
-pack 0.4 2018-03-20
+pack 0.4 2018-03-21
 
-Usage:  ./pack [--dry-run] [--clean] [tag]
+Usage:  ./pack [--dry-run] [--clean] [--release package] [tag]
 
 where tag is alternate information you want to include in the
 name of the tarball; it replaces the current date.
@@ -71,6 +77,15 @@ a file named like the following (using no tag as an example):
 
    $WORKINGDIR-master-$TAGSTRING-my-code.tar.xz
    $WORKINGDIR-$TAGSTRING-my-code.tar.xz
+
+For source-code releases, one first checks out the desired git branch,
+then bootstraps the desired package (e.g. 'rtmidi'), then builds the code
+(optional, but recommended), and then runs a command like the following:
+
+   ./pack --release rtmidi 0.94.6
+
+The resulting tarball can be distributed to users who just want to do
+the "./configure ; make ; make install" mantra.
 
 Excluded from the tarball are derived products such as the 'Debug',
 'Release', 'html', and 'latex' directories, as well as object
@@ -97,8 +112,8 @@ else
 #        git discovery.
 
         --branch | --git)
-            ISGITBRANCH="yes"
             shift
+            ISGITBRANCH="yes"
             GITBRANCH="$1"
             ;;
 
@@ -114,6 +129,12 @@ else
             DOCLEAN="no"
             ;;
 
+        --release)
+            shift
+            DORELEASE="yes"
+            PACKAGENAME="$1"
+            ;;
+
         *)
             TAGSTRING="$1"
             ;;
@@ -123,9 +144,17 @@ else
    done
 
    if [ "$ISGITBRANCH" == "yes" ] ; then
-      TARBALLNAME="$WORKINGDIR-$GITBRANCH-$CURRENTDATE-$TAGSTRING.tar.xz"
+      if [ "$DORELEASE" == "yes" ] ; then
+         TARBALLNAME="$WORKINGDIR-$GITBRANCH-$PACKAGENAME-$TAGSTRING.tar.xz"
+      else
+         TARBALLNAME="$WORKINGDIR-$GITBRANCH-$CURRENTDATE-$TAGSTRING.tar.xz"
+      fi
    else
-      TARBALLNAME="$WORKINGDIR-$CURRENTDATE-$TAGSTRING.tar.xz"
+      if [ "$DORELEASE" == "yes" ] ; then
+         TARBALLNAME="$WORKINGDIR-$PACKAGENAME-$TAGSTRING.tar.xz"
+      else
+         TARBALLNAME="$WORKINGDIR-$CURRENTDATE-$TAGSTRING.tar.xz"
+      fi
    fi
 
    echo "The tar-ball to be generated is '../$TARBALLNAME'..."
@@ -160,11 +189,11 @@ else
    tar cJf $TARBALLNAME \
  --exclude-vcs         \
  --exclude=".git"      \
- --exclude="src/seq24" \
- --exclude="src/sequencer64" \
- --exclude="src/seq64" \
- --exclude="src/qseq64" \
- --exclude="src/seq64cli" \
+ --exclude="Midiclocker64/midiclocker64" \
+ --exclude="Sequencer64/sequencer64" \
+ --exclude="Seq64rtmidi/seq64" \
+ --exclude="Seq64qt5/qseq64" \
+ --exclude="Seq64cli/seq64cli" \
  --exclude="config.h"  \
  --exclude="config.status"  \
  --exclude="libtool"   \

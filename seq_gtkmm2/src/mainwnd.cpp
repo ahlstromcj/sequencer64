@@ -3089,7 +3089,11 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 
         if (! perf().mainwnd_key_event(k))
         {
-// perform::action_t perform::keyboard_group_action (unsigned key)
+            // This will first be used in the relevant Qt module, before
+            // we monkey with it here.
+            //
+            // perform::action_t perform::keyboard_group_action (unsigned key)
+
             /*
              * \todo
              *      Call perf().keyboard_group_action(k) and use a switch

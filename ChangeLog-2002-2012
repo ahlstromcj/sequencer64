@@ -1,0 +1,478 @@
+2012-02-24  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/perform.*: Register empty process callback for JACK, patch
+	provided by Lieven Moors
+
+2010-11-25  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* configure.in: remove unused variables, harmonize option
+	enabling/disabling
+
+2010-11-24  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/mainwnd.cpp, src/mainwnd.h: use initialization list for
+	members, close pipe on exit, use name label for sreen set name
+
+2010-11-23  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/seq24.cpp: read only existing configuration files
+
+2010-11-23  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/configfile.cpp, src/configfile.h, src/controllers.h,
+	src/event.cpp, src/event.h, src/font.cpp, src/font.h, src/globals.h,
+	src/maintime.cpp, src/maintime.h, src/mainwid.cpp, src/mainwid.h,
+	src/mainwnd.h, src/midibus.cpp, src/midibus.h,
+	src/midibus_portmidi.cpp, src/midibus_portmidi.h, src/midifile.cpp,
+	src/mutex.cpp, src/mutex.h, src/options.cpp, src/options.h,
+	src/optionsfile.cpp, src/optionsfile.h, src/perfedit.cpp,
+	src/perfedit.h, src/perfnames.cpp, src/perfnames.h, src/perform.cpp,
+	src/perform.h, src/perfroll.cpp, src/perfroll.h, src/seqdata.cpp,
+	src/seqdata.h, src/seqedit.cpp, src/seqedit.h, src/seqevent.cpp,
+	src/seqevent.h, src/seqkeys.cpp, src/seqkeys.h, src/seqmenu.cpp,
+	src/seqmenu.h, src/seqroll.cpp, src/seqroll.h, src/seqtime.cpp,
+	src/seqtime.h, src/sequence.cpp, src/sequence.h, src/userfile.cpp,
+	src/userfile.h: remove trailing whitespaces
+
+2010-11-23  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/mainwnd.cpp, src/seq24.cpp: add missing line breaks
+
+2010-11-23  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* man/seq24.1, src/mainwnd.h, src/seq24.cpp: remove -f commandline
+	option to be replaced by a simple <filename> argument
+
+2010-11-23  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/lash.cpp, src/lash.h, src/seq24.cpp: fix lash connect to
+	start after command line parsing
+
+2010-11-22  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/mainwnd.cpp, src/mainwnd.h: add interrupt handlers for
+	SIGINT and SIGUSR1 to enable LADISH level 1 support
+
+2010-11-22  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/mainwnd.cpp: fix typo again
+
+2010-11-22  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/keybindentry.cpp, src/keybindentry.h, src/Makefile.am,
+	src/options.cpp: move keybindentry class to separate file
+
+2010-11-21  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/mainwnd.cpp: fix typo
+
+2010-11-21  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/seq24.cpp: change short option for version to V, fix
+	compiler warning
+
+2010-11-20  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* man/seq24.1: add missing command line parameters to man page
+
+2010-11-20  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/seq24.cpp: add missing command line parameters to help
+	message, show also short options, add version option
+
+2010-11-20  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/lash.cpp, src/seq24.cpp: first parse command line before
+	anything else is done
+
+2010-11-20  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/mainwnd.cpp: fix doubled key event for screen set name line
+	(notes edit line)
+
+2010-11-20  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/mainwnd.cpp: rearrange bottom line item layout to get rid of
+	whitespace label spacing, add mnemonics for widgets
+
+2010-11-20  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/mainwnd.cpp: rearrange bottom line item addition
+
+2010-11-14  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/mainwnd.cpp: rename box containers to make clear what they
+	are responsible for
+
+2010-11-11  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/mainwnd.h: remove doubled options header include
+
+2010-11-11  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/options.cpp: remove doubled "show_all()" call
+
+2010-11-11  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* INSTALL, configure.in, src/globals.h, src/perform.cpp,
+	src/perform.h, src/seq24.cpp: add support for jack session, patch
+	provided by Torben Hohn (slightly changed)
+
+2010-11-10  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/pixmaps/Makefile.am: add missing file
+
+2010-11-10  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/pixmaps, configure.in, src/Makefile.am, src/font.cpp,
+	src/mainwnd.cpp, src/perfedit.cpp, src/seqedit.cpp, src/bus.xpm,
+	src/pixmaps/bus.xpm, src/collapse.xpm, src/pixmaps/collapse.xpm,
+	src/copy.xpm, src/pixmaps/copy.xpm, src/down.xpm,
+	src/pixmaps/down.xpm, src/expand.xpm, src/pixmaps/expand.xpm,
+	src/font_b.xpm, src/pixmaps/font_b.xpm, src/font_w.xpm,
+	src/pixmaps/font_w.xpm, src/key.xpm, src/pixmaps/key.xpm,
+	src/learn.xpm, src/pixmaps/learn.xpm, src/learn2.xpm,
+	src/pixmaps/learn2.xpm, src/length.xpm, src/pixmaps/length.xpm,
+	src/loop.xpm, src/pixmaps/loop.xpm, src/menu_empty.xpm,
+	src/pixmaps/menu_empty.xpm, src/menu_full.xpm,
+	src/pixmaps/menu_full.xpm, src/midi.xpm, src/pixmaps/midi.xpm,
+	src/note_length.xpm, src/pixmaps/note_length.xpm, src/perfedit.xpm,
+	src/pixmaps/perfedit.xpm, src/play.xpm, src/pixmaps/play.xpm,
+	src/play2.xpm, src/pixmaps/play2.xpm, src/q_rec.xpm,
+	src/pixmaps/q_rec.xpm, src/quanize.xpm, src/pixmaps/quanize.xpm,
+	src/rec.xpm, src/pixmaps/rec.xpm, src/redo.xpm, src/pixmaps/redo.xpm,
+	src/scale.xpm, src/pixmaps/scale.xpm, src/seq-editor.xpm,
+	src/pixmaps/seq-editor.xpm, src/seq24.xpm, src/pixmaps/seq24.xpm,
+	src/seq24_32.xpm, src/pixmaps/seq24_32.xpm, src/sequences.xpm,
+	src/pixmaps/sequences.xpm, src/snap.xpm, src/pixmaps/snap.xpm,
+	src/song-editor.xpm, src/pixmaps/song-editor.xpm, src/stop.xpm,
+	src/pixmaps/stop.xpm, src/thru.xpm, src/pixmaps/thru.xpm,
+	src/tools.xpm, src/pixmaps/tools.xpm, src/undo.xpm,
+	src/pixmaps/undo.xpm, src/zoom.xpm, src/pixmaps/zoom.xpm: cleanup
+	pixmap files into separate directory
+
+2010-11-10  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/perform.cpp: fix sched_param memory leaks
+
+2010-11-10  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/options.cpp: fix typo
+
+2010-11-10  Guido Scholz  <guido.scholz@bayernline.de>
+
+	* src/options.cpp, src/options.h: fix tooltip usage for older GTK
+	versions (GTK_MINOR_VERSION < 12)
+
++++ Release 0.9.1 (2010-11-08) +++
+
+2010-11-08  Guido Scholz  <guido.scholz@bayernline.de>
+	* depcomp, install-sh, missing, mkinstalldirs: remove
+	administrative autotools scripts from repository
+
+2010-11-08  Guido Scholz  <guido.scholz@bayernline.de>
+	* NEWS: fix some typos
+
+2010-11-08  Guido Scholz  <guido.scholz@bayernline.de>
+	* src/perform.cpp: fix compiler warning
+
+2010-11-08 Guido Scholz <guido.scholz@bayernline.de>
+	* src/perform.cpp: Revert revision 48.1.21..48.1.23 MIDI clock
+	change
+
+2010-11-07 Guido Scholz <guido.scholz@bayernline.de>
+	* src/options.*: table container for control keys, table
+	container for mute-group keys, mnemonics for notebook pages,
+	Jack sync page redesigned using group frames and mnemonics,
+	select mouse interaction mode via radiobuttons.
+	* src/mainwnd.cpp: Update author list and date
+
+2010-11-06 Guido Scholz <guido.scholz@bayernline.de>
+	* src/options.cpp: Use stock-id for OK button, split notebook
+	setup according to contained pages, table container for sequence
+	group keys
+
+2010-11-05 Guido Scholz <guido.scholz@bayernline.de>
+	* src/mainwnd.cpp: fix HButtonBox compile error
+
+2010-02-21 Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+	* src/configfile.cpp, src/event.cpp, src/event.h, src/maintime.cpp,
+	src/mainwid.cpp, src/mainwid.h, src/midibus.cpp, src/midibus.h,
+	src/midifile.cpp, src/midifile.h, src/options.cpp,
+	src/perfnames.cpp, src/perfroll.cpp, src/perftime.cpp,
+	src/perftime.h, src/seqdata.cpp, src/seqdata.h, src/seqedit.cpp,
+	src/seqedit.h, src/seqevent.cpp, src/seqevent.h, src/seqkeys.cpp,
+	src/seqmenu.cpp, src/seqroll.cpp, src/seqroll.h, src/seqtime.cpp,
+	src/sequence.cpp: Merged constructor initializer lists
+
+2010-02-21 Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+	* src/event.cpp, src/mainwnd.cpp, src/seqmenu.cpp: Merged
+
+2010-02-21 Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+	* src/configfile.cpp, src/event.cpp, src/event.h, src/maintime.cpp,
+	src/mainwid.cpp, src/mainwid.h, src/midibus.cpp, src/midibus.h,
+	src/midifile.cpp, src/midifile.h, src/options.cpp, src/perfnames.cpp,
+	src/perfroll.cpp, src/perftime.cpp, src/perftime.h, src/seqdata.cpp,
+	src/seqdata.h, src/seqedit.cpp, src/seqedit.h, src/seqevent.cpp,
+	src/seqevent.h, src/seqkeys.cpp, src/seqmenu.cpp, src/seqroll.cpp,
+	src/seqroll.h, src/seqtime.cpp, src/sequence.cpp: Code improvement:
+	use initializer lists in constructors
+
+2010-02-20 Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+	* src/event.cpp, src/mainwnd.cpp, src/seqmenu.cpp: Merge removal
+	of useless nullity tests
+
+2010-02-20 Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+	* src/event.cpp, src/mainwnd.cpp, src/seqmenu.cpp: Removed
+	unecessary nullity tests before deletes. deleting NULL has no effect.
+
+2010-02-20 Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+	* src/midifile.cpp: Cleanup: removed some unused variables,
+	reduced unecessary big scope of some other variables
+
+2010-02-20 Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+	* src/midifile.cpp, src/midifile.h: Wrapped reading of single
+	bytes, and removed the push_front/reverse list browsing insanity.
+
+2010-02-20 Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+	* src/midifile.cpp, src/midifile.h: Use STL in midifile instead of
+	news/deletes
+
+2009-10-06 Ivan Hernandez <ihernandez@kiuts>
+	* src/sequence.cpp, src/sequence.h: Plyphonic Step Edit
+
+2009-10-06 Ivan Hernandez <ihernandez@kiuts>
+	* src/seqroll.cpp, src/sequence.cpp: Monophonic Step Edit on Sequence
+
+2009-10-05 Ivan Hernandez <ihernandez@kiuts>
+	* src/sequence.cpp: Fixed adding notes on the begining when midi
+	record is on and not playing sequence
+
+2009-09-26 Killian EBEL <killian.ebel@gmail.com>
+	* src/perform.cpp: Fixed jack_position_t->bar calculation which
+	always where 0 or negative while using Hydrogen 0.9.4 at the same
+	time.
+
+2009-06-27 Guido Scholz <guido.scholz@bayernline.de>
+	* src/mainwnd.cpp: Mute group learn dialogs changed to use
+	std:string formatting.
+
+2009-06-26 Guido Scholz <guido.scholz@bayernline.de>
+	* configure.in: Support for --as-needed linker flag added to
+	remove unused library references.
+
+2009-06-25 Guido Scholz <guido.scholz@bayernline.de>
+	* src/perform.cpp: MIDI clock control modified.
+
+2009-06-24 Kevin Meinert <kevin@subatomicglue.com>
+	* src/globals.h, src/midifile.cpp: Support for mute groups in
+	MIDI files added.
+
+2009-06-23 Guido Scholz <guido.scholz@bayernline.de>
+	* src/mainwid.cpp, src/mainwnd.cpp, src/options.cpp,
+	src/perfnames.cpp, src/perftime.cpp, src/perfedit.cpp,
+	src/seqdata.cpp, src/perform.cpp, src/seqedit.cpp, src/seqkeys.cpp,
+	seqtime.cpp. src/seqmenu.cpp, src/optionsfile.cpp,
+	src/userfile.cpp: sprintf() replaced by snprintf() to avoid
+	buffer overflows.
+
+2009-06-18 Kevin Meinert <kevin@subatomicglue.com>
+	* src/globals.h, src/mainwnd.cpp, src/midibus_portmidi.cpp,
+	src/options.cpp, src/optionsfile.cpp, src/perfedit.cpp,
+	src/perform.cpp, src/seq24.cpp, src/seqroll.cpp: Some compiler
+	warnings fixed, generic key name translation.
+
+2009-05-29 Guido Scholz <guido.scholz@bayernline.de>
+	* src/options.cpp: Fixed missing return value for
+	on_key_press_event().
+	* src/midibus.cpp: Improved MIDI buffer size handling.
+	* man/seq24.1: Command line option for mouse interaction method
+	added.
+	* SEQ24: Documentation for mute groups added (provided by Andrea
+	delle Canne and Frank Kober).
+
+2009-05-29 Sebastien Alaiw <ace17@free.fr>
+	* src/midibus.cpp: Fixed handling of error condition for
+	snd_midi_event_decode().
+
+2009-05-28 Kevin Meinert <kevin@subatomicglue.com>, Andrea delle Canne
+<andreadellecanne@gmail.com>
+	* src/globals.h, src/learn.xpm, src/learn2.xpm, src/mainwid.*,
+	src/options.*, src/optionsfile.cpp, src/perfedit.cpp,
+	src/perform.*, src/seq24.cpp, src/seqedit.cpp, src/seqmenu.cpp,
+	src/seqroll.cpp, src/userfile.cpp: Mute group feature added.
+
+2009-05-27 Kevin Meinert <kevin@subatomicglue.com>
+	* src/perform.*: Support for MIDI clock synchronization added.
+	* src/globals.h, src/mainwnd.cpp, src/options.h,
+	src/optionsfile.cpp, src/seq24.cpp, src/perfroll.*, src/seqroll.*,
+	src/seqevent.*, src/sequence.*: Fruitty loop editing added.
+
+2009-05-22 Sebastien Alaiw <ace17@free.fr>
+	* src/mainwnd.cpp: Fixed file save as crash.
+	* src/midifile.cpp: Fixed MIDI sysex event reading.
+
+2009-05-22 Guido Scholz <guido.scholz@bayernline.de>
+	* src/seq24.cpp, src/midibus.*, midibus_portmidi.*, perform.cpp,
+	options.cpp, lash.*, seauence.h, globals.h, configwin32.h:
+	Support for (lost) Win32 platform support added (reworked
+	patch from Kevin Meinert, Rob Buse).
+	* src/seqedit.cpp, src/seqroll.*: Optimized redraw for sequencer
+	roll background (from Win32 version, Rob Buse).
+
+2009-03-14 Stéphane Letz <>
+	* src/iperform.cpp: Adaptations for jack2 applied.
+
+2008-12-01 Guido Scholz <guido.scholz@bayernline.de>
+	* src/seq.cpp, src/optionsfile.cpp: Fixed error if path for
+	last used directory is not properly set.
+	* src/mainwnd.cpp: "Cancel" option added to "Save file?"
+	question.
+
+2008-11-30 Guido Scholz <guido.scholz@bayernline.de>
+	* src/mainwnd.cpp: Check for GTK minor version added to avoid
+	tooltip compile error for GTK < 2.12.
+
+2008-11-29 Guido Scholz <guido.scholz@bayernline.de>
+	* src/globals.h, src/configfile.*, src/midifile.*,
+	src/mainwnd.*, src/optionsfile.*, src/seq24.cpp: Handle
+	filenames more consistently as UTF-8 strings.
+
++++ Release 0.9.0 (2008-11-27) +++
+
+2008-11-27 Guido Scholz <guido.scholz@bayernline.de>
+	* src/perfedit.cpp, src/seqedit.cpp: Window icons for song
+	editor and sequence editor added.
+
+2008-10-18 Guido Scholz <guido.scholz@bayernline.de>
+	* src/midifile.cpp: Fixed memory leak if MIDI file format error
+	occurs. Error messages added to give user better feedback about
+	reason behind file read error.
+
+2008-09-28 Daniel Ellis <mail@danellis.co.uk>
+	* src/perfroll.cpp: Panning in the song editor using the scroll
+	wheel (when SHIFT is used).
+
+2008-09-16 Daniel Ellis <mail@danellis.co.uk>
+	* src/seqdata.cpp, src/seqedit.*, src/seqroll.cpp: Zooming and
+	panning in the editor window using the scroll wheel (when CTRL 
+	or SHIFT are used) implemented. Horizontal scroll step interval
+	increased to 1/16 note per zoom level and page interval to
+	1 bar.
+
+2008-09-16 Guido Scholz <guido.scholz@bayernline.de>
+	* src/mainwnd.*: About dialog changed to use new layout. Project
+	contributors added accordingly.
+	* src/seqdata.cpp: Buffer overflow fixed; provided by Anthony
+	Green.
+
+2008-09-15 Guido Scholz <guido.scholz@bayernline.de>
+	* src/main.cpp, src/mainwnd.*: File new/open/save/close logic
+	rewritten to monitor user applied file changes.
+
+2008-09-13 Guido Scholz <guido.scholz@bayernline.de>
+	* src/dump.cpp, src/Makefile.am: "dump" program removed, source
+	files in Makefile.am reordered.
+	* configure.in, src/Makefile.am: Cleanup compiler and linker
+	variables handling for gtkmm library.
+	* src/mainwnd.*: Use newer file dialog, MIDI files are
+	preselectable. ".midi" suffix is added if user does not append a
+	valid MIDI file extension.
+	New menu item to show and hide song edit window. Tooltips for
+	bottom line elements added.
+
+2008-09-08 Jaakko Sipari <jaakko.sipari@gmail.com>
+	* perfroll.cpp, seqevent.cpp, seqroll.cpp: Added backspace as
+	an optional delete key to the pattern editor.
+
+2008-09-08 Guido Scholz <guido.scholz@bayernline.de>
+	* src/mainwnd.cpp: Keyboard shortcuts for menu items added.
+	Menu rearranged to use less separators.
+
+2008-09-07 Guido Scholz <guido.scholz@bayernline.de>
+	* src/mainwnd.*: Title page naming changed.
+	* src/seqedit.cpp: Fixed GTK warning about invalid input string,
+	caused by buffer overflow.
+
+2008-08-30 Guido Scholz <guido.scholz@bayernline.de>
+	* man/seq24.1: Man page from Ubuntu added; written by Dana
+	Olson.
+
+2008-08-27 Guido Scholz <guido.scholz@bayernline.de>
+	* src/*.xpm: Fixed missing "const" to avoid compiler warnings.
+	* configure.in: Enabled bzip2 tarball for make target "dist".
+	Checks for gtkmm-2.4 , sigc-2.0 and asound libraries added.
+	* main.cpp, src/seq24_32.xpm: Application icon added. Typos
+	fixed.
+	* event.cpp, font.cpp: Missing include for header files added;
+	was complained by gcc 4.3.
+	* mainwnd.h, options.cpp, perfedit.*, seqedit.cpp, seqmenu.cpp:
+	Switched to sigc++-2.0 API, to make program compatible to latest
+	sigc++ version (2.2).
+
+2008-07-03 Ivan Hernandez <ihernandez@kiusys.com>
+	* redo.xpm, seqedit.*,  sequence.*: Added Redo function on
+	sequence editor.
+
+2008-05-19 Ivan Hernandez <ihernandez@kiusys.com>
+	* midifile.cpp: Fixes the BPM saving on 64bit platforms, patch
+	provided by Pete Leigh.
+
+2008-05-12 Ivan Hernandez <ihernandez@kiusys.com>
+	* globals.h, mainwnd.cpp, optionsfile.cpp, seqedit.*,
+	seqroll.cpp, sequence.*, q_rec.xpm, quanize.xpm: Round robbin
+	logic on sequence edit. Start stop shortcut on sequence editor.
+	Remembers last used directory on configuration so you go where
+	you worked. Live Quantize, so notes get to the right time when
+	you play. Fixed volume. Makes midi input have a fixed volume
+	when you record.
+
+v0.4.2 ------------------------------------------------
+2003-5-14
+
+	* Updated main interface
+	* added --priority flag (runs at higher priority)
+	* refactored midi system, took out midi prebuffer
+
+v0.4.1 ------------------------------------------------
+
+	* Fixed gcc 3.2 compile problem
+	* real time value change in data window
+
+v0.4.0 ------------------------------------------------
+
+2002-10-8
+
+	* Added Performace editor.
+
+v0.3.0 ------------------------------------------------
+
+2002-9-16
+
+	* Midi clock configure Dialog ( removed #ifndef MIDI_CLOCK stuff )
+	* Updated main interface (progress bars, spin widgets for bpm and screen set )
+	* Midi recording & midi Thru in edit window
+	* Ability to move/select/delete rouge Note On/Off events (just deleted them before )
+	* Added Paino Roll progress indicator, removed one from upper time bar thing.
+	* Removed context menu to switch from Add/Select mode on paino roll.  Now
+	  you just right click and hold down on paino roll and event bar to toggle modes.
+	* Moved Event select button, now on bottom with a display of curent event type.
+	
+v0.2.0 -------------------------------------------------
+
+2002-08-04
+	* Added Control Code Editor
+
+2002-07-16	
+	* seqkeys.C - fixed black key drawing problem
+
+v0.1.1 -------------------------------------------------
+
+2002-07-15	 Rob Buse	 rcbuse@filter24.org
+	* added #define _GNU_SOURCE to makefile.in
+
+v0.1.0 -------------------------------------------------
+
+2002-07-14	 Rob Buse	 rcbuse@filter24.org 
+	* Initial release of seq24-0.1.0  woohoo!
+

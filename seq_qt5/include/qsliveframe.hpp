@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-11
+ * \updates       2018-03-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -41,6 +41,8 @@
 #include "Globals.hpp"
 #include "gui_palette_qt5.hpp"
 #include "sequence.hpp"
+
+#define USE_NEW_CODE
 
 /*
  * Do not document namespaces.
@@ -116,9 +118,9 @@ private:
 
     int seqIDFromClickXY(int click_x, int click_y);
 
-    /* set/unset sequences with key presses */
-
-    void sequence_key (int seq);
+#ifndef USE_NEW_CODE
+    void sequence_key (int seq);    // set/unset sequences with key presses
+#endif
 
     Ui::qsliveframe * ui;
     seq64::perform & mPerf;

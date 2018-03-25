@@ -39,6 +39,8 @@ Recent changes:
         -   Fixed a bug in reading long recent-file entries.  Caused an
             infinite loop.  Your basic programmer brain-fart.
         -   Now storing the full path-names of recent-file entries.
+        -   Restored mainwid event color to the normal colors if no
+            color palette selection for the sequence.
     -   Version 0.94.6:
         -   Fixed tempo handling, issue #141.
         -   Added sequence-coloring, stored per sequence as an index into a

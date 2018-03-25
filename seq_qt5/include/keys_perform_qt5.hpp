@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-24
+ * \updates       2018-03-25
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -42,6 +42,12 @@
 
 namespace seq64
 {
+
+/*
+ *  Free functions.
+ */
+
+extern std::string keyval_name (unsigned key);      /* Qt 5 version     */
 
 /**
  *  This class supports the performance mode.
@@ -58,14 +64,14 @@ public:
     keys_perform_qt5 ();
     virtual ~keys_perform_qt5 ();
 
-/*
- * Use the base version (it generates hex codes) for now.
- *
- *  virtual std::string key_name (unsigned key) const
- *  {
- *      return keyval_name(key);
- *  }
- */
+    /**
+     * \getter keyval_name(), Qt 5 version
+     */
+
+    virtual std::string key_name (unsigned key) const
+    {
+        return keyval_name(key);
+    }
 
     virtual void set_all_key_events ();
     virtual void set_all_key_groups ();

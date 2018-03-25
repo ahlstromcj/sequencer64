@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-03-23
- * \updates       2018-03-23
+ * \updates       2018-03-25
  * \license       GNU GPLv2 or above
  *
  *  In these macros, the "s" parameter is a QString,
@@ -74,7 +74,7 @@
  *  macro.  This macro also casts to unsigned.
  */
 
-#define QS_KEY_CHAR(s)                  (unsigned(* QS_CHAR_PTR(s)))
+#define QS_TEXT_CHAR(s)                 (unsigned(* QS_CHAR_PTR(s)))
 
 #endif      // SEQ64_QSMACROS_HPP
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-19
+ * \updates       2018-03-25
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -36,12 +36,14 @@
 
 #include "keystroke.hpp"
 #include "perform.hpp"
-#include "qsmainwnd.hpp"
+#include "qsmacros.hpp"                 /* QS_TEXT_CHAR() macro             */
 #include "qperfeditframe.hpp"
 #include "qsabout.hpp"
 #include "qseditoptions.hpp"
-#include "qsmaintime.hpp"
 #include "qseqeditframe.hpp"
+#include "qskeymaps.hpp"                /* mapping between Gtkmm and Qt     */
+#include "qsmaintime.hpp"
+#include "qsmainwnd.hpp"
 #include "qsliveframe.hpp"
 #include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
 #include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
@@ -864,19 +866,29 @@ qsmainwnd::setRecordingSnap (bool snap)
 void
 qsmainwnd::keyPressEvent (QKeyEvent * event)
 {
-    unsigned kevent = unsigned(event->key());
-    keystroke k(kevent, SEQ64_KEYSTROKE_PRESS);
+    unsigned ktext = QS_TEXT_CHAR(event->text());
+    unsigned kkey = event->key();
+    unsigned gdkkey = qt_map_to_gdk(kkey, ktext);
+
+#ifdef PLATFORM_DEBUG_TMI
+    std::string kname = qt_key_name(kkey, ktext);
+    printf
+    (
+        "qsmainwnd: name = %s; gdk = 0x%x; key = 0x%x; text = 0x%x\n",
+        kname.c_str(), gdkkey, kkey, ktext
+    );
+#endif
+
+    keystroke k(gdkkey, SEQ64_KEYSTROKE_PRESS);
     if (perf().playback_key_event(k))               // song mode parameter?
     {
         if (perf().is_running())
         {
-            // stopPlaying();
-            ui->btnPlay->setChecked(false);
+            ui->btnPlay->setChecked(false);         // stopPlaying();
         }
         else
         {
-            // startPlaying();
-            ui->btnPlay->setChecked(true);
+            ui->btnPlay->setChecked(true);          // startPlaying();
         }
     }
     else

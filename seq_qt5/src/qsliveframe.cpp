@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-23
+ * \updates       2018-03-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -32,8 +32,9 @@
 #include "globals.h"
 #include "keystroke.hpp"
 #include "perform.hpp"
+#include "qskeymaps.hpp"                /* mapping between Gtkmm and Qt     */
 #include "qsliveframe.hpp"
-#include "qsmacros.hpp"                 /* QS_KEY_CHAR() macro              */
+#include "qsmacros.hpp"                 /* QS_TEXT_CHAR() macro             */
 #include "settings.hpp"
 #include "forms/qsliveframe.ui.h"
 
@@ -397,22 +398,10 @@ qsliveframe::setBank ()
 void
 qsliveframe::setBank (int bank)
 {
-#ifdef USE_NEW_CODE
-    m_bank_id = bank;
-#else
-    m_bank_id = bank;
-    if (m_bank_id < 0)
-        m_bank_id = qc_max_num_banks - 1;
-
-    if (m_bank_id >= qc_max_num_banks)              // 32
-        m_bank_id = 0;
-
-    mPerf.set_screenset(m_bank_id);        // set_offset(m_bank_id);
-#endif
-
-    QString bname = mPerf.get_bank_name(m_bank_id).c_str();
+    QString bname = mPerf.get_bank_name(bank).c_str();
     ui->txtBankName->setPlainText(bname);
-    ui->spinBank->setValue(m_bank_id);
+    ui->spinBank->setValue(bank);
+    m_bank_id = bank;
     update();
 }
 
@@ -722,43 +711,43 @@ qsliveframe::editSeq ()
 
 /**
  *  The Gtkmm 2.4 version calls perform::mainwnd_key_event().  We have broken
- *  that function into pieces (smaller functions) that we can use here.
- *
- *  An important point is that keys that affect the GUI directly need to be
- *  handled here in the GUI.
- *
- *  Another important point is that other events are offloaded to the
- *  perform object, and we need to let that object handle as much as
- *  possible.
- *
- *  The logic here is an admixture of events that we will have to sort out.
+ *  that function into pieces (smaller functions) that we can use here.  An
+ *  important point is that keys that affect the GUI directly need to be
+ *  handled here in the GUI.  Another important point is that other events are
+ *  offloaded to the perform object, and we need to let that object handle as
+ *  much as possible.  The logic here is an admixture of events that we will
+ *  have to sort out.
  *
  *  Note that the QKeyEWvent::key() function does not distinguish between
- *  capital and non-capital letters, use the text() function (returning the
- *  Unicode text the key generated) for this purpose.
+ *  capital and non-capital letters, so we use the text() function (returning
+ *  the Unicode text the key generated) for this purpose and provide a the
+ *  QS_TEXT_CHAR() macro to make it obvious.
+ *
+ *  Weird.  After the first keystroke, for, say 'o' (ascii 111) == kkey, we
+ *  get kkey == 0, presumably a terminator character that we have to ignore.
+ *  Also, we can't intercept the Esc key.  Qt grabbing it?
  *
  * \param event
  *      Provides a pointer to the key event.
  */
 
-#ifdef USE_NEW_CODE
-
-/*
- * Weird.  After the first keystroke, for, say 'o' (ascii 111) == kevent,
- * we get kevent == 0, presumably a terminator character that we have to
- * ignore.
- */
-
 void
 qsliveframe::keyPressEvent (QKeyEvent * event)
 {
-    // unsigned kevent_dummy = unsigned(event->key());
-    QString qevent = event->text();
-    unsigned kevent = QS_KEY_CHAR(qevent);
-    if (kevent == 0)
-        return;                         /* bug out                          */
+    unsigned ktext = QS_TEXT_CHAR(event->text());
+    unsigned kkey = event->key();
+    unsigned gdkkey = qt_map_to_gdk(kkey, ktext);
 
-    perform::action_t action = perf().keyboard_group_action(kevent);
+#ifdef PLATFORM_DEBUG_TMI
+    std::string kname = qt_key_name(kkey, ktext);
+    printf
+    (
+        "qsliveframe: name = %s; gdk = 0x%x; key = 0x%x; text = 0x%x\n",
+        kname.c_str(), gdkkey, kkey, ktext
+    );
+#endif
+
+    perform::action_t action = perf().keyboard_group_action(gdkkey);
     bool done = false;
     if (action == perform::ACTION_NONE)
     {
@@ -767,14 +756,14 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
          * apostrophe, number sign, and period.
          */
 
-        done = perf().keyboard_group_c_status_press(kevent);
+        done = perf().keyboard_group_c_status_press(gdkkey);
         if (! done)
         {
             /*
              * Replaces a call to Kepler34's sequence_key() function.
              */
 
-            done = perf().keyboard_control_press(kevent);   // mute toggles
+            done = perf().keyboard_control_press(gdkkey);   // mute toggles
         }
     }
     else
@@ -810,108 +799,16 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
         event->ignore();
 }
 
-#else
-
-void
-qsliveframe::keyPressEvent (QKeyEvent * event)
-{
-    unsigned kevent = unsigned(event->key());
-    switch (kevent)
-    {
-    case Qt::Key_BracketLeft:       // can be handled by new version
-        setBank(m_bank_id - 1);     // if new code, parameter not needed
-        break;
-
-    case Qt::Key_BracketRight:      // can be handled by new version
-        setBank(m_bank_id + 1);     // if new code, parameter not needed
-        break;
-
-    case Qt::Key_Semicolon:
-        mPerf.set_sequence_control_status(c_status_replace);
-        break;
-
-    case Qt::Key_Slash:
-        mPerf.set_sequence_control_status(c_status_queue);
-        break;
-
-    case Qt::Key_Apostrophe:
-    case Qt::Key_NumberSign:
-        mPerf.set_sequence_control_status(c_status_snapshot);
-        break;
-
-    case Qt::Key_Period:
-        mPerf.set_sequence_control_status(c_status_oneshot);
-        break;
-
-    default:                                // sequence mute toggling
-
-        // quint32 keycode = kevent;
-        // if (mPerf.get_key_events()->count(kevent) != 0)
-
-        if (mPerf.get_key_count(kevent) != 0)
-            sequence_key(mPerf.lookup_keyevent_seq(kevent));
-        else
-            event->ignore();
-        break;
-    }
-}
-
-#endif  // USE_NEW_CODE
-
 /**
  *
  */
 
-#ifdef USE_NEW_CODE
-
 void
 qsliveframe::keyReleaseEvent (QKeyEvent * event)
 {
-    unsigned kevent = unsigned(event->key());
-    (void) perf().keyboard_group_c_status_press(kevent);
+    unsigned kkey = unsigned(event->key());
+    (void) perf().keyboard_group_c_status_press(kkey);
 }
-
-#else
-
-/**
- *  NOT NEEDED, call perf().sequence_key() directly.
- */
-
-void
-qsliveframe::sequence_key (int seq)
-{
-    /* add bank offset */
-    seq += mPerf.screenset() * qc_mainwnd_rows * qc_mainwnd_cols;
-    if (mPerf.is_active(seq))
-        mPerf.sequence_playing_toggle(seq);
-}
-
-void
-qsliveframe::keyReleaseEvent (QKeyEvent * event)
-{
-    unsigned kevent = unsigned(event->key());
-    switch (kevent)         // unset the relevant control modifiers
-    {
-    case Qt::Key_Semicolon:
-        mPerf.unset_sequence_control_status(c_status_replace);
-        break;
-
-    case Qt::Key_Slash:
-        mPerf.unset_sequence_control_status(c_status_queue);
-        break;
-
-    case Qt::Key_Apostrophe:
-    case Qt::Key_NumberSign:
-        mPerf.unset_sequence_control_status(c_status_snapshot);
-        break;
-
-    case Qt::Key_Period:
-        mPerf.unset_sequence_control_status(c_status_oneshot);
-        break;
-    }
-}
-
-#endif  // USE_NEW_CODE
 
 /**
  *

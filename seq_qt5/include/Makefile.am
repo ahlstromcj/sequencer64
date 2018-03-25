@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2018-03-16
+# \update      2018-03-24
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -83,6 +83,7 @@ pkginclude_HEADERS = \
  qseqstyle.hpp \
  qseqtime.hpp \
  qsliveframe.hpp \
+ qskeymaps.hpp \
  qsmaintime.hpp \
  qsmainwnd.hpp \
  qstriggereditor.hpp \

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-17
+ * \updates       2018-03-25
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -3203,7 +3203,8 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             {
                 std::ostringstream os;
                 os
-                    << "Mute group key '" << keyval_name(k.key())
+                    << "Mute group key '"
+                    << perf().key_name(k.key()) // keyval_name(k.key())
                     << "' (code = " << k.key() << ") successfully mapped."
                    ;
 
@@ -3226,7 +3227,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             {
                 std::ostringstream os;
                 os
-                    << "Key '" << keyval_name(k.key())
+                    << "Key '" << perf().key_name(k.key()) // keyval_name(k.key())
                     << "' (code = " << k.key()
                     << ") is not a configured mute-group key. "
                     << "To add it, see File/Options menu or the 'rc' file."

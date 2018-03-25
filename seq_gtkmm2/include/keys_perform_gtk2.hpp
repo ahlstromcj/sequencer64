@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-06-22
+ * \updates       2018-03-25
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -42,6 +42,14 @@
 
 namespace seq64
 {
+
+/**
+ * Free functions for keyboard support.  The implementation of this function
+ * will ultimately depend on the GUI environment; currently it is GTK 2.x, so
+ * the implementation is in seq_gtkmm2/src/keys_perform_gtk2.cpp.
+ */
+
+extern std::string keyval_name (unsigned key);
 
 /**
  *  This class supports the performance mode.
@@ -77,14 +85,6 @@ public:
     virtual void set_all_key_groups ();
 
 };          // keys_perform_gtk2
-
-/**
- * Free functions for keyboard support.  The implementation of this function
- * will ultimately depend on the GUI environment; currently it is GTK 2.x, so
- * the implementation is in seq_gtkmm2/src/keys_perform_gtk2.cpp.
- */
-
-extern std::string keyval_name (unsigned key);
 
 }           // namespace seq64
 

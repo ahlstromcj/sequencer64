@@ -2,8 +2,8 @@
  * \file          daemonize.cpp
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
- * \date          2005-07-03 to 2007-08-21
- * \updates       2017-09-03
+ * \date          2005-07-03 to 2007-08-21 (pre-Sequencer24/64)
+ * \updates       2018-03-25
  * \license       GNU GPLv2 or above
  *
  *  Daemonization module of the POSIX C Wrapper (PSXC) library
@@ -58,32 +58,28 @@
  *      it is available, and Windows XP seems to use it quite a bit.
  */
 
-#include <string.h>                 /* strlen() etc.                        */
-#include "platform_macros.h"        /* TBD                                  */
+#include <string.h>                     /* strlen() etc.                    */
+#include "platform_macros.h"            /* TBD                              */
 
 #if ! defined PLATFORM_WINDOWS
 
-#include "daemonize.hpp"            /* daemonization functions & macros     */
-#include "easy_macros.h"            /* used in the following macro call     */
-
-#if SEQ64_HAVE_LIMITS_H
-#include <limits.h>                 /* PATH_MAX                             */
-#endif
+#include "daemonize.hpp"                /* daemonization functions & macros */
+#include "easy_macros.h"                /* used in the following macro call */
 
 #if SEQ64_HAVE_SYS_STAT_H
-#include <sys/stat.h>               /* umask(), etc.                        */
+#include <sys/stat.h>                   /* umask(), etc.                    */
 #endif
 
 #if SEQ64_HAVE_SYSLOG_H
-#include <syslog.h>                 /* syslog() and related constants       */
+#include <syslog.h>                     /* syslog() and related constants   */
 #endif
 
 #if SEQ64_HAVE_UNISTD_H
-#include <unistd.h>                 /* exit(), setsid()                     */
+#include <unistd.h>                     /* exit(), setsid()                 */
 #endif
 
 #if SEQ64_HAVE_FCNTL_H
-#include <fcntl.h>                  /* O_RDWR flag                          */
+#include <fcntl.h>                      /* O_RDWR flag                      */
 #endif
 
 /*
@@ -123,39 +119,6 @@ set_current_directory (const std::string & path)
     return result;
 }
 
-/**
- *  Provides the path name of the current working directory.  This function is a
- *  wrapper for getcwd() and other such functions.  It obtains the current
- *  working directory in the application.
- *
- * \return
- *      The pointer to the string containg the name of the current directory.
- *      This name is the full path name for the directory.  If an error occurs,
- *      then an empty string is returned.
- */
-
-std::string
-get_current_directory ()
-{
-    std::string result;
-    char temp[PATH_MAX];
-    char * cwd = GETCWD(temp, PATH_MAX);  /* get current directory      */
-    if (not_nullptr(cwd))
-    {
-      size_t len = strlen(cwd);
-      if (len > 0)
-         result = cwd;
-      else
-      {
-         errprint("empty directory name returned");
-      }
-   }
-   else
-   {
-      errprint("could not get current directory");
-   }
-   return result;
-}
 
 #if defined PLATFORM_POSIX_API
 

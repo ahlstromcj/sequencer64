@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-02-05
+ * \updates       2018-03-25
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -52,7 +52,7 @@
 #include <sys/stat.h>
 #endif
 
-#include "file_functions.hpp"           /* make_directory()             */
+#include "file_functions.hpp"           /* make_directory(), etc.       */
 #include "rc_settings.hpp"              /* seq64::rc_settings class     */
 #include "settings.hpp"                 /* seq64::rc()                  */
 
@@ -432,6 +432,8 @@ rc_settings::tempo_track_number (int track)
  *
  * \param shorten
  *      If true, remove the path-name from the file-name.  True by default.
+ *      It needs to be short for the menu entry, but the full path-name for
+ *      the "rc" file.
  *
  * \return
  *      Returns m_recent_files[index], perhaps shortened.  An empty string is
@@ -456,7 +458,11 @@ rc_settings::recent_file (int index, bool shorten) const
 /**
  * \setter m_recent_files
  *
- *  First makes sure the filename is not already present, before adding it.
+ *  First makes sure the filename is not already present, and removes the back
+ *  entry from the list, if it is full (SEQ64_RECENT_FILES_MAX) before adding
+ *  it.
+ *
+ *  Now the full pathname is added.
  *
  * \param fname
  *      Provides the full path to the MIDI file that is to be added to the
@@ -466,16 +472,18 @@ rc_settings::recent_file (int index, bool shorten) const
 void
 rc_settings::add_recent_file (const std::string & fname)
 {
-    bool found =
-        std::find(m_recent_files.begin(), m_recent_files.end(), fname) !=
-            m_recent_files.end();
+    bool found = std::find
+    (
+        m_recent_files.begin(), m_recent_files.end(), fname
+    ) != m_recent_files.end();
 
     if (! found)
     {
         if (m_recent_files.size() >= SEQ64_RECENT_FILES_MAX)
             m_recent_files.pop_back();
 
-        m_recent_files.insert(m_recent_files.begin(), fname);
+        std::string fullname = get_full_path(fname);
+        m_recent_files.insert(m_recent_files.begin(), fullname);    // fname);
     }
 }
 

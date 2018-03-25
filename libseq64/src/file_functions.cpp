@@ -6,7 +6,7 @@
  *
  * \author  Chris Ahlstrom
  * \date    2015-11-20
- * \updates 2015-11-23
+ * \updates 2018-03-25
  * \version $Revision$
  *
  *    We basically include only the functions we need for Sequencer64, not
@@ -14,11 +14,17 @@
  *    project.
  */
 
+#include <stdlib.h>                     /* realpath()                       */
+#include <string.h>                     /* strlen() etc.                    */
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #include "easy_macros.h"
 #include "file_functions.hpp"           /* free functions in seq64 n'space  */
+
+#if SEQ64_HAVE_LIMITS_H
+#include <limits.h>                     /* PATH_MAX                         */
+#endif
 
 #if defined _MSC_VER                    /* Microsoft compiler               */
 
@@ -257,7 +263,7 @@ file_is_directory (const std::string & filename)
 /**
  *  A function to ensure that the ~/.config/sequencer64 directory exists.
  *  This function is actually a little more general than that, but it is not
- *  sufficiently general, in general.
+ *  sufficiently general, in general, General.
  *
  * \param pathname
  *      Provides the name of the path to create.  The parent directory of the
@@ -290,6 +296,66 @@ make_directory (const std::string & pathname)
 #endif
             result = rcode == 0;
         }
+    }
+    return result;
+}
+
+/**
+ *  Provides the path name of the current working directory.  This function is a
+ *  wrapper for getcwd() and other such functions.  It obtains the current
+ *  working directory in the application.
+ *
+ * \return
+ *      The pointer to the string containg the name of the current directory.
+ *      This name is the full path name for the directory.  If an error occurs,
+ *      then an empty string is returned.
+ */
+
+std::string
+get_current_directory ()
+{
+    std::string result;
+    char temp[PATH_MAX];
+    char * cwd = GETCWD(temp, PATH_MAX);  /* get current directory      */
+    if (not_nullptr(cwd))
+    {
+      size_t len = strlen(cwd);
+      if (len > 0)
+         result = cwd;
+      else
+      {
+         errprint("empty directory name returned");
+      }
+   }
+   else
+   {
+      errprint("could not get current directory");
+   }
+   return result;
+}
+
+/**
+ *  Given a path, relative or not, this function returns the full path.
+ *  It uses the Linux function realpath(3), which returns the canonicalized
+ *  absolute path-name.
+ *
+ * \param path
+ *      Provides the path, which may be relative.
+ */
+
+std::string
+get_full_path (const std::string & path)
+{
+    std::string result;
+    char * resolved_path = realpath(path.c_str(), NULL);
+    if (not_NULL(resolved_path))
+    {
+        result = resolved_path;
+        free(resolved_path);
+    }
+    else
+    {
+        // TODO: check the errno value and emit a message.
     }
     return result;
 }

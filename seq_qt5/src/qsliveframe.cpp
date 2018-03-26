@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-25
+ * \updates       2018-03-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -231,19 +231,15 @@ qsliveframe::drawSequence (int seq)
             pen.setStyle(Qt::SolidLine);
             painter.setPen(pen);
 
-            // TODO Use perform::sequence_label() to do this
-            char name[20];
-            snprintf(name, sizeof name, "%.13s", s->name().c_str());
+            char name[16];
+            snprintf(name, sizeof name, "%.14s", s->name().c_str());
             painter.drawText(base_x + qc_text_x, base_y + 4, 80, 80, 1, name);
 
-            /* midi channel + key + timesig */
+            std::string sl = perf().sequence_label(*s);
+            QString label(sl.c_str());
+            painter.drawText(base_x + 8, base_y + thumbH - 5, label);
             if (mPerf.show_ui_sequence_key())
             {
-                /*
-                 * When looking up key, ignore bank offset (print keys on
-                 * every bank).  A Kepler34 bank is a Sequencer64 screen-set.
-                 */
-
                 QString key;
                 key[0] = (char) mPerf.lookup_keyevent_key
                 (
@@ -251,12 +247,6 @@ qsliveframe::drawSequence (int seq)
                 );
                 painter.drawText(base_x + thumbW - 10, base_y + thumbH - 5, key);
             }
-
-            QString seqInfo = QString::number(s->get_midi_bus() + 1);
-            seqInfo.append("-");
-            seqInfo.append(QString::number(s->get_midi_channel() + 1));
-
-            painter.drawText(base_x + 5, base_y + thumbH - 5, seqInfo);
 
             int rectangle_x = base_x + 7;
             int rectangle_y = base_y + 15;
@@ -352,10 +342,29 @@ qsliveframe::drawSequence (int seq)
 
             painter.drawRect(base_x, base_y, thumbW, thumbH);
 
-            // no sequence present. Insert placeholder
-            pen.setStyle(Qt::SolidLine);
-            painter.setPen(pen);
-            painter.drawText(base_x + 2, base_y + 17, "+");
+            /*
+             * No sequence present. Insert placeholder.  (Not a big fan of this
+             * one.)
+             *
+             *  pen.setStyle(Qt::SolidLine);
+             *  painter.setPen(pen);
+             *  painter.drawText(base_x + 2, base_y + 17, "+");
+             */
+
+            if (mPerf.show_ui_sequence_number())
+            {
+                int lx = base_x + (thumbW / 2) - 7;
+                int ly = base_y + (thumbH / 2) + 5;
+                char snum[8];
+                snprintf(snum, sizeof snum, "%d", seq);
+                mFont.setPointSize(8);
+                pen.setColor(Qt::black);
+                pen.setWidth(1);
+                pen.setStyle(Qt::SolidLine);
+                painter.setPen(pen);
+                painter.setFont(mFont);
+                painter.drawText(lx, ly, snum);
+            }
         }
     }
 

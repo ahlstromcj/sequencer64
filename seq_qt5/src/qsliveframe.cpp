@@ -136,7 +136,7 @@ qsliveframe::drawSequence (int seq)
 {
     QPainter painter(this);
     QPen pen(Qt::black);
-    QBrush brush(Qt::darkGray);
+    QBrush brush(Qt::black);     // QBrush brush(Qt::darkGray);
 
     mFont.setPointSize(6);
     mFont.setLetterSpacing(QFont::AbsoluteSpacing, 1);
@@ -231,8 +231,9 @@ qsliveframe::drawSequence (int seq)
             pen.setStyle(Qt::SolidLine);
             painter.setPen(pen);
 
-            char name[16];
-            snprintf(name, sizeof name, "%.14s", s->name().c_str());
+            char name[32];
+            // snprintf(name, sizeof name, "%.14s", s->name().c_str());
+            snprintf(name, sizeof name, "%.14s", s->title().c_str());
             painter.drawText(base_x + qc_text_x, base_y + 4, 80, 80, 1, name);
 
             std::string sl = perf().sequence_label(*s);
@@ -251,15 +252,18 @@ qsliveframe::drawSequence (int seq)
             int rectangle_x = base_x + 7;
             int rectangle_y = base_y + 15;
 
+            // pen.setColor(Qt::black);
             pen.setColor(Qt::gray);
             brush.setStyle(Qt::NoBrush);
             painter.setBrush(brush);
             painter.setPen(pen);
-            //draw inner box for notes
+
+            // inner box for notes
+
             painter.drawRect(rectangle_x-2, rectangle_y-1, previewW, previewH);
 
-            int lowest_note;    //  = s->get_lowest_note_event();
-            int highest_note;   //  = s->get_highest_note_event();
+            int lowest_note;
+            int highest_note;
             (void) s->get_minmax_note_events(lowest_note, highest_note);
 
             int height = highest_note - lowest_note + 2;
@@ -332,15 +336,18 @@ qsliveframe::drawSequence (int seq)
         }
         else
         {
-            pen.setColor(Qt::black);
-            pen.setStyle(Qt::NoPen);
+            /*
+             * This removes the black border around the empty sequence boxes.
+             * We like the bordker
+             *
+             *  pen.setStyle(Qt::NoPen);
+             */
+
             mFont.setPointSize(15);
+            pen.setColor(Qt::black);        // or dark gray?
             painter.setPen(pen);
             painter.setFont(mFont);
-
-            // draw outline of this seq thumbnail
-
-            painter.drawRect(base_x, base_y, thumbW, thumbH);
+            painter.drawRect(base_x, base_y, thumbW, thumbH);   // outline
 
             /*
              * No sequence present. Insert placeholder.  (Not a big fan of this
@@ -358,7 +365,7 @@ qsliveframe::drawSequence (int seq)
                 char snum[8];
                 snprintf(snum, sizeof snum, "%d", seq);
                 mFont.setPointSize(8);
-                pen.setColor(Qt::black);
+                pen.setColor(Qt::white);    // pen.setColor(Qt::black);
                 pen.setWidth(1);
                 pen.setStyle(Qt::SolidLine);
                 painter.setPen(pen);

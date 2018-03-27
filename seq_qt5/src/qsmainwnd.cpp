@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-25
+ * \updates       2018-03-27
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -49,14 +49,12 @@
 #include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
 #include "forms/qsmainwnd.ui.h"         /* generated btnStop, btnPlay, etc. */
 
-#ifdef USE_LOCAL_QT_ICONS
-#include "pixmaps/live_mode.xpm"        // #include "pixmaps/song_mode.xpm"
+#include "pixmaps/live_mode.xpm"        /* #include "pixmaps/song_mode.xpm" */
 #include "pixmaps/panic.xpm"
 #include "pixmaps/play2.xpm"
 #include "pixmaps/snap.xpm"
-#include "pixmaps/song_rec_on.xpm"      // #include "pixmaps/song_rec.xpm"
+#include "pixmaps/song_rec_on.xpm"      /* #include "pixmaps/song_rec.xpm" */
 #include "pixmaps/stop.xpm"
-#endif
 
 /*
  * Don't document the namespace.
@@ -73,12 +71,24 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
  :
     QMainWindow     (parent),
     ui              (new Ui::qsmainwnd),
-    m_menu_recent   (NULL),
-    m_main_perf     (p)
+    m_live_frame    (nullptr),
+    m_song_frame    (nullptr),
+    m_edit_frame    (nullptr),
+    m_msg_error     (nullptr),
+    m_msg_save_changes (nullptr),
+    m_timer         (nullptr),
+    m_action        (),                 // array
+    m_menu_recent   (nullptr),
+    mImportDialog   (nullptr),
+    m_main_perf     (p),
+    m_beat_ind      (nullptr),
+    m_dialog_prefs  (nullptr),
+    mDialogAbout    (nullptr),
+    m_modified      (false)
 {
     ui->setupUi(this);
     for (int i = 0; i < 10; ++i)        // nullify all recent-file action slots
-        m_action[i] = NULL;
+        m_action[i] = nullptr;
 
     // center on screen
 
@@ -128,7 +138,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_dialog_prefs = new qseditoptions(m_main_perf, this);
     m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
     m_song_frame = new qperfeditframe(m_main_perf, ui->SongTab);
-    m_edit_frame = NULL;                // set so we know the edit tab is empty
+    m_edit_frame = nullptr;                // set so we know the edit tab is empty
     m_beat_ind = new qsmaintime(m_main_perf, this, 4, 4);
     mDialogAbout = new qsabout(this);
 
@@ -350,8 +360,11 @@ qsmainwnd::open_file (const std::string & fn)
     perf().clear_all();
 
     bool result = f.parse(m_main_perf, 0);
-    m_modified = ! result;
-    if (! result)
+    if (result)
+    {
+        m_modified = false;
+    }
+    else
     {
         QString msg_text = "Error reading MIDI data from file: ";
         msg_text += fn.c_str();
@@ -514,7 +527,7 @@ bool qsmainwnd::save_file()
  */
 
 void
-qsmainwnd::save_file_as()
+qsmainwnd::save_file_as ()
 {
     QString file;
     file = QFileDialog::getSaveFileName
@@ -732,6 +745,9 @@ qsmainwnd::update_recent_files_menu ()
      *  implementation, which simply clears it.
      */
 
+    for (int i = 0; i < 10; ++i)        // nullify all recent-file action slots
+        m_action[i] = nullptr;
+
     if (m_menu_recent && m_menu_recent->isWidgetType())
         delete m_menu_recent;
 
@@ -824,16 +840,75 @@ qsmainwnd::quit ()
         QCoreApplication::exit();
 }
 
-void qsmainwnd::load_recent_1 () { if (check()) open_file(rc().recent_file(0)); }
-void qsmainwnd::load_recent_2 () { if (check()) open_file(rc().recent_file(1)); }
-void qsmainwnd::load_recent_3 () { if (check()) open_file(rc().recent_file(2)); }
-void qsmainwnd::load_recent_4 () { if (check()) open_file(rc().recent_file(3)); }
-void qsmainwnd::load_recent_5 () { if (check()) open_file(rc().recent_file(4)); }
-void qsmainwnd::load_recent_6 () { if (check()) open_file(rc().recent_file(5)); }
-void qsmainwnd::load_recent_7 () { if (check()) open_file(rc().recent_file(6)); }
-void qsmainwnd::load_recent_8 () { if (check()) open_file(rc().recent_file(7)); }
-void qsmainwnd::load_recent_9 () { if (check()) open_file(rc().recent_file(8)); }
-void qsmainwnd::load_recent_10 () { if (check()) open_file(rc().recent_file(9)); }
+void
+qsmainwnd::load_recent_1 ()
+{
+    if (check())
+        open_file(rc().recent_file(0, false));
+}
+
+void
+qsmainwnd::load_recent_2 ()
+{
+    if (check())
+        open_file(rc().recent_file(1, false));
+}
+
+void
+qsmainwnd::load_recent_3 ()
+{
+    if (check())
+        open_file(rc().recent_file(2, false));
+}
+
+void
+qsmainwnd::load_recent_4 ()
+{
+    if (check())
+        open_file(rc().recent_file(3, false));
+}
+
+void
+qsmainwnd::load_recent_5 ()
+{
+    if (check())
+        open_file(rc().recent_file(4, false));
+}
+
+void
+qsmainwnd::load_recent_6 ()
+{
+    if (check())
+        open_file(rc().recent_file(5, false));
+}
+
+void
+qsmainwnd::load_recent_7 ()
+{
+    if (check())
+        open_file(rc().recent_file(6, false));
+}
+
+void
+qsmainwnd::load_recent_8 ()
+{
+    if (check())
+        open_file(rc().recent_file(7, false));
+}
+
+void
+qsmainwnd::load_recent_9 ()
+{
+    if (check())
+        open_file(rc().recent_file(8, false));
+}
+
+void
+qsmainwnd::load_recent_10 ()
+{
+    if (check())
+        open_file(rc().recent_file(9, false));
+}
 
 /**
  *

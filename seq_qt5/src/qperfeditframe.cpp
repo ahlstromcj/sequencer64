@@ -37,7 +37,6 @@
 #include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
 #include "forms/qperfeditframe.ui.h"
 
-#ifdef USE_LOCAL_QT_ICONS
 #include "pixmaps/collapse.xpm"
 #include "pixmaps/copy.xpm"
 #include "pixmaps/expand.xpm"
@@ -46,7 +45,6 @@
 #include "pixmaps/undo.xpm"
 #include "pixmaps/zoom_in.xpm"
 #include "pixmaps/zoom_out.xpm"
-#endif
 
 namespace seq64
 {

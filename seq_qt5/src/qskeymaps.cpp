@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-03-24
- * \updates       2018-03-25
+ * \updates       2018-03-26
  * \license       GNU GPLv2 or above
  *
  *  Gtkmm 2.4 and Qt 5 handle keystrokes in a somewhat different manner.
@@ -122,7 +122,7 @@ typedef std::map<unsigned, q_key_spec_t> QtGtkKeyMap;
 
 static QtGtkKeyMap sg_key_map =
 {
-    { 0x1000000, { "Escape",       0xff1B, 0x1000000 } },
+    { 0x1000000, { "Escape",       0xff1b, 0x1000000 } },   // see "ESC" below
     { 0x1000003, { "Backspace",    0xff08, 0x1000003 } },
     { 0x1000004, { "Return",       0xff0d, 0x1000004 } },
     { 0x1000005, { "KP_Enter",     0xff8d, 0x1000005 } },
@@ -170,6 +170,12 @@ static QtGtkKeyMap sg_key_map =
  *  0x1000000 or above, the key-code is returned unaltered, as a normal ASCII
  *  keystroke.
  *
+ * ESC Exception:
+ *
+ *      Although the Esc key does yield key() == 0x1000000, as set up in the
+ *      list above, it also yields text() == 0x1b.  We still need to map it
+ *      to Gtkmm's 0xff1b.
+ *
  * \param qtkey
  *      The Qt 5 key-code, as provided to the Qt keyPress() callback via
  *      QKeyEvent::key().  This value does not distinguish between lower-case
@@ -193,7 +199,7 @@ static QtGtkKeyMap sg_key_map =
 unsigned
 qt_map_to_gdk (unsigned qtkey, unsigned qttext)
 {
-    if (qttext > 0)
+    if (qttext > 0 && qttext != 0x1b)
     {
         return qttext;
     }

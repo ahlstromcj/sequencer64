@@ -341,7 +341,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     col = font::WHITE;
             }
 
-            char temp[16];                      /* was 13, now 14           */
+            char temp[16];
             snprintf(temp, sizeof temp, "%.14s", seq->title().c_str());
             render_string_on_pixmap             /* seqnum:name of pattern   */
             (
@@ -439,9 +439,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 int c = seq->color();
                 Color color = get_color_ex(PaletteColor(c), 40.0, 0.20, 0.5);
                 if (c == SEQ64_COLOR_NONE)
-                {
                     color = bg_color();     /* preserve normal coloring     */
-                }
 
                 draw_rectangle_on_pixmap(color, x, y, lx, ly);
 #endif

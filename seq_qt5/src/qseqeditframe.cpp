@@ -40,7 +40,6 @@
 #include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
 #include "forms/qseqeditframe.ui.h"
 
-#ifdef USE_LOCAL_QT_ICONS
 #include "pixmaps/drum.xpm"
 #include "pixmaps/play.xpm"
 #include "pixmaps/quantize.xpm"
@@ -51,7 +50,6 @@
 #include "pixmaps/undo.xpm"
 #include "pixmaps/zoom_in.xpm"
 #include "pixmaps/zoom_out.xpm"
-#endif
 
 namespace seq64
 {

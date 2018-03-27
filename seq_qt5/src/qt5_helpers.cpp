@@ -40,8 +40,6 @@
 namespace seq64
 {
 
-#ifdef USE_LOCAL_QT_ICONS
-
 void
 qt_set_icon (const char * pixmap_filename [], QPushButton * button)
 {
@@ -50,16 +48,6 @@ qt_set_icon (const char * pixmap_filename [], QPushButton * button)
     icon.addPixmap(pixmap, QIcon::Normal, QIcon::On);
     button->setIcon(icon);
 }
-
-#else
-
-void
-qt_set_icon (const char * [], QPushButton *)
-{
-    // no code
-}
-
-#endif  // USE_LOCAL_QT_ICONS
 
 }               // namespace seq64
 

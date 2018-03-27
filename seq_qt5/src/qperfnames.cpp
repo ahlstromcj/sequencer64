@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-11
+ * \updates       2018-03-26
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -98,6 +98,9 @@ qperfnames::paintEvent (QPaintEvent *)
     brush.setStyle((Qt::SolidPattern));
     mFont.setPointSize(6);
     mFont.setLetterSpacing(QFont::AbsoluteSpacing, 1);
+
+    mFont.setStyleHint(QFont::Monospace);       // EXPERIMENT
+
     painter.setPen(pen);
     painter.setBrush(brush);
     painter.setFont(mFont);
@@ -166,35 +169,21 @@ qperfnames::paintEvent (QPaintEvent *)
             {
                 m_sequence_active[seqId] = true;
 
-                // draw seq info on label
-                /*
-                char name[50];
+                char name[64];
                 snprintf
                 (
-                    name, sizeof(name), "%-14.14s                        %2d",
-                     perf().get_sequence(seqId)->name().c_str(),
-                     perf().get_sequence(seqId)->get_midi_channel() + 1
+                    // name, sizeof name, "%-14.14s   %2d",
+                    name, sizeof name, "%-14.14s         %2d",
+                    perf().get_sequence(seqId)->name().c_str(),
+                    perf().get_sequence(seqId)->get_midi_channel() + 1
                 );
-                 */
 
-                std::string name = perf().sequence_label(seqId); // seq name
                 pen.setColor(Qt::black);
                 painter.setPen(pen);
-                painter.drawText(18, c_names_y * i + 10, name.c_str());
+                painter.drawText(18, c_names_y * i + 10, name);
 
-                /*
-                char str[20];
-                snprintf
-                (
-                    str, sizeof(str),
-                     "%d-%d %d/%d",
-                     perf().get_sequence(seqId)->get_midi_bus(),
-                     perf().get_sequence(seqId)->get_midi_channel() + 1,
-                     perf().get_sequence(seqId)->get_beats_per_bar(),
-                     perf().get_sequence(seqId)->get_beat_width()
-                );
-                painter.drawText(18, c_names_y * i + 20, str); // seq info
-                 */
+                std::string sname = perf().sequence_label(seqId); // seq name
+                painter.drawText(18, c_names_y * i + 20, sname.c_str());
 
                 bool muted = perf().get_sequence(seqId)->get_song_mute();
                 pen.setColor(Qt::black);

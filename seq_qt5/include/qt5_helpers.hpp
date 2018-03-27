@@ -32,8 +32,6 @@
  *
  */
 
-#define USE_LOCAL_QT_ICONS
-
 class QPushButton;
 
 /*

@@ -155,6 +155,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     );
     m_beat_ind->set_beat_width(m_song_frame->get_beat_width());
     m_beat_ind->set_beats_per_measure(m_song_frame->get_beats_per_measure());
+
     update_recent_files_menu();
     m_live_frame->setFocus();
 
@@ -377,30 +378,28 @@ qsmainwnd::open_file (const std::string & fn)
     rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
     rc().filename(fn);
     rc().add_recent_file(fn);           /* from Oli Kester's Kepler34       */
-    update_recent_files_menu();
+//  update_recent_files_menu();
     update_window_title();
 
     /*
-     *  Reinitialize the "Live" frame.
+     *  Reinitialize the "Live" frame.  Reconnect its signal, as we've made a
+     *  new object.
      */
 
     ui->LiveTabLayout->removeWidget(m_live_frame);
-    if (m_live_frame)
+    if (not_nullptr(m_live_frame))
         delete m_live_frame;
 
     m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
     ui->LiveTabLayout->addWidget(m_live_frame);
 
-    // Reconnect this signal, as we've made a new object.
-
     connect(m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int)));
     m_live_frame->show();
-
     m_live_frame->setFocus();
-//  update_recent_files_menu();
     m_live_frame->redraw();
     ui->spinBpm->setValue(perf().bpm());
     m_song_frame->update_sizes();
+    update_recent_files_menu();
 }
 
 /**
@@ -514,7 +513,8 @@ bool qsmainwnd::save_file()
         }
         else
         {
-            m_msg_error->showMessage("Error writing file.");
+            std::string errmsg = f.error_message();
+            m_msg_error->showMessage(errmsg.c_str());
             m_msg_error->exec();
         }
     }
@@ -602,7 +602,7 @@ void
 qsmainwnd::loadEditor(int seqId)
 {
     ui->EditTabLayout->removeWidget(m_edit_frame);
-    if (m_edit_frame)
+    if (not_nullptr(m_edit_frame))
         delete  m_edit_frame;
 
     m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
@@ -726,6 +726,11 @@ qsmainwnd::tabWidgetClicked (int newIndex)
 
         sequence * seq = perf().get_sequence(seqId);
         seq->set_dirty();
+
+        /*
+         * When does this get deleted?
+         */
+
         m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
         ui->EditTabLayout->addWidget(m_edit_frame);
         m_edit_frame->show();
@@ -746,9 +751,19 @@ qsmainwnd::update_recent_files_menu ()
      */
 
     for (int i = 0; i < 10; ++i)        // nullify all recent-file action slots
-        m_action[i] = nullptr;
+    {
+        if (not_nullptr(m_action[i]))
+        {
+            /*
+             * Do we need to disconnect the slots?
+             */
 
-    if (m_menu_recent && m_menu_recent->isWidgetType())
+            delete m_action[i];
+            m_action[i] = nullptr;
+        }
+    }
+
+    if (not_nullptr(m_menu_recent) && m_menu_recent->isWidgetType())
         delete m_menu_recent;
 
     m_menu_recent = new QMenu(tr("&Recent MIDI files..."), this);
@@ -765,11 +780,13 @@ qsmainwnd::update_recent_files_menu ()
         ui->menuFile->insertMenu(ui->actionSave, m_menu_recent);
         return;
     }
-
     if (rc().recent_file_count() > 0)
     {
-        ///// DOES THIS CAUSE SEGFAULT?
-        //    m_action[0]->setShortcut(tr("Ctrl+R"));
+        /*
+         * Seems to cause a segfault!!!!
+         *
+         * m_action[0]->setShortcut(tr("Ctrl+R"));
+         */
         m_action[0] = new QAction(rc().recent_file(0).c_str(), this);
         connect(m_action[0], SIGNAL(triggered(bool)), this, SLOT(load_recent_1()));
     }

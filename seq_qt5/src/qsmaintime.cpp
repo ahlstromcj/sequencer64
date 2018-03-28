@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-05
+ * \updates       2018-03-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -67,12 +67,13 @@ qsmaintime::qsmaintime
 }
 
 /**
- *
+ *  what about the pens, brushes, etc???
  */
 
 qsmaintime::~qsmaintime ()
 {
-    // what about the pens, brushes, etc???
+    if (not_nullptr(m_color))
+        delete m_color;
 }
 
 /**

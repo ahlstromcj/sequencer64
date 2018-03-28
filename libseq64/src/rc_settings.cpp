@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-03-25
+ * \updates       2018-03-28
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -450,7 +450,8 @@ rc_settings::recent_file (int index, bool shorten) const
     if (shorten)
     {
         std::string::size_type slashpos = result.find_last_of("/\\");
-        result = result.substr(slashpos + 1, std::string::npos);
+        if (slashpos != std::string::npos)
+            result = result.substr(slashpos + 1, std::string::npos);
     }
     return result;
 }

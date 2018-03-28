@@ -168,6 +168,7 @@ else
    fi
 
    if [ "$DOCLEAN" == "yes" ] ; then
+      echo "Cleaning the project..."
       ./bootstrap --full-clean
    fi
 
@@ -221,6 +222,7 @@ else
  --exclude="*.BAK"     \
  --exclude="*.bpi"     \
  --exclude="*.bz2"     \
+ --exclude="*.xz"      \
  --exclude="*.deps"    \
  --exclude="*.bz"      \
  --exclude="*.idb"     \

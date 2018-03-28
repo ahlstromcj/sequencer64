@@ -143,6 +143,8 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
 qperfeditframe::~qperfeditframe ()
 {
     delete ui;
+    if (not_nullptr(m_palette))     // valgrind fix?
+        delete m_palette;
 }
 
 /**

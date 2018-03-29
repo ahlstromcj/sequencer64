@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-19
+ * \updates       2018-03-29
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -40,6 +40,7 @@
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QErrorMessage>
+#include <QList>                // new
 #include <QTimer>
 #include <QMessageBox>
 #include <QDesktopWidget>
@@ -108,6 +109,9 @@ private:
     void update_window_title ();
     void update_recent_files_menu ();
 
+    void create_action_connections ();      // new
+    void create_action_menu ();             // new
+
 private:
 
     Ui::qsmainwnd * ui;
@@ -117,8 +121,12 @@ private:
     QErrorMessage * m_msg_error;
     QMessageBox * m_msg_save_changes;
     QTimer * m_timer;
+#ifdef USE_OLD_CODE
     QAction * m_action[10];
+#endif
     QMenu * m_menu_recent;
+    QList<QAction*> m_recent_action_list;     // new
+    const int mc_max_recent_files;
     QFileDialog * mImportDialog;
     perform & m_main_perf;
     qsmaintime * m_beat_ind;
@@ -137,6 +145,7 @@ private slots:
     void updateBpm (int newBpm);
     void updatebeats_per_measure (int bmIndex);
     void updateBeatLength (int blIndex);
+    void open_recent_file ();   // new
     void new_file ();
     bool save_file ();
     void save_file_as ();
@@ -146,6 +155,7 @@ private slots:
     void showqsabout ();
     void tabWidgetClicked (int newIndex);
 
+#ifdef USE_OLD_CODE
     void load_recent_1 ();
     void load_recent_2 ();
     void load_recent_3 ();
@@ -156,6 +166,7 @@ private slots:
     void load_recent_8 ();
     void load_recent_9 ();
     void load_recent_10 ();
+#endif
 
     void refresh(); // redraw certain GUI elements
 

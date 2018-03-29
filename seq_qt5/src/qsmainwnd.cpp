@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-27
+ * \updates       2018-03-29
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -69,26 +69,32 @@ namespace seq64
 
 qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
  :
-    QMainWindow     (parent),
-    ui              (new Ui::qsmainwnd),
-    m_live_frame    (nullptr),
-    m_song_frame    (nullptr),
-    m_edit_frame    (nullptr),
-    m_msg_error     (nullptr),
-    m_msg_save_changes (nullptr),
-    m_timer         (nullptr),
-    m_action        (),                 // array
-    m_menu_recent   (nullptr),
-    mImportDialog   (nullptr),
-    m_main_perf     (p),
-    m_beat_ind      (nullptr),
-    m_dialog_prefs  (nullptr),
-    mDialogAbout    (nullptr),
-    m_modified      (false)
+    QMainWindow         (parent),
+    ui                  (new Ui::qsmainwnd),
+    m_live_frame        (nullptr),
+    m_song_frame        (nullptr),
+    m_edit_frame        (nullptr),
+    m_msg_error         (nullptr),
+    m_msg_save_changes  (nullptr),
+    m_timer             (nullptr),
+#ifdef USE_OLD_CODE
+    m_action            (),                 // array
+#endif
+    m_menu_recent       (nullptr),
+    m_recent_action_list(),                 // new
+    mc_max_recent_files (10),               // new
+    mImportDialog       (nullptr),
+    m_main_perf         (p),
+    m_beat_ind          (nullptr),
+    m_dialog_prefs      (nullptr),
+    mDialogAbout        (nullptr),
+    m_modified          (false)
 {
     ui->setupUi(this);
-    for (int i = 0; i < 10; ++i)        // nullify all recent-file action slots
-        m_action[i] = nullptr;
+#ifdef USE_OLD_CODE
+    for (int i = 0; i < mc_max_recent_files; ++i)
+        m_action[i] = nullptr;      // nullify all recent-file action slots
+#endif
 
     // center on screen
 
@@ -156,7 +162,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_beat_ind->set_beat_width(m_song_frame->get_beat_width());
     m_beat_ind->set_beats_per_measure(m_song_frame->get_beats_per_measure());
 
-    update_recent_files_menu();
+//  update_recent_files_menu();
     m_live_frame->setFocus();
 
     // timer to refresh GUI elements every few ms
@@ -251,6 +257,11 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     connect(ui->btnPanic, SIGNAL(clicked(bool)), this, SLOT(panic()));
     qt_set_icon(panic_xpm, ui->btnPanic);
 
+    create_action_connections();
+    create_action_menu();
+    update_recent_files_menu();
+
+    // resize(800, 600);
     show();
 }
 
@@ -379,7 +390,7 @@ qsmainwnd::open_file (const std::string & fn)
     rc().filename(fn);
     rc().add_recent_file(fn);           /* from Oli Kester's Kepler34       */
 //  update_recent_files_menu();
-    update_window_title();
+//  update_window_title();
 
     /*
      *  Reinitialize the "Live" frame.  Reconnect its signal, as we've made a
@@ -400,6 +411,7 @@ qsmainwnd::open_file (const std::string & fn)
     ui->spinBpm->setValue(perf().bpm());
     m_song_frame->update_sizes();
     update_recent_files_menu();
+    update_window_title();
 }
 
 /**
@@ -742,6 +754,8 @@ qsmainwnd::tabWidgetClicked (int newIndex)
  *
  */
 
+#ifdef USE_OLD_CODE
+
 void
 qsmainwnd::update_recent_files_menu ()
 {
@@ -750,7 +764,7 @@ qsmainwnd::update_recent_files_menu ()
      *  implementation, which simply clears it.
      */
 
-    for (int i = 0; i < 10; ++i)        // nullify all recent-file action slots
+    for (int i = 0; i < mc_max_recent_files; ++i)
     {
         if (not_nullptr(m_action[i]))
         {
@@ -836,7 +850,7 @@ qsmainwnd::update_recent_files_menu ()
         connect(m_action[9], SIGNAL(triggered(bool)), this, SLOT(load_recent_10()));
     }
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < mc_max_recent_files; ++i)
     {
         if (m_action[i])
             m_menu_recent->addAction(m_action[i]);
@@ -844,6 +858,87 @@ qsmainwnd::update_recent_files_menu ()
             break;
     }
     ui->menuFile->insertMenu(ui->actionSave, m_menu_recent);
+}
+
+#else   // USE_OLD_CODE
+
+void
+qsmainwnd::update_recent_files_menu ()
+{
+    int count = rc().recent_file_count();
+    if (count > 0)
+    {
+        if (count > mc_max_recent_files)
+            count = mc_max_recent_files;
+
+        for (int f = 0; f < count; ++f)
+        {
+            std::string shortname = rc().recent_file(f);
+            std::string longname = rc().recent_file(f, false);
+            m_recent_action_list.at(f)->setText(shortname.c_str());
+            m_recent_action_list.at(f)->setData(longname.c_str());
+            m_recent_action_list.at(f)->setVisible(true);
+        }
+    }
+    for (int fj = count; fj < mc_max_recent_files; ++fj)
+        m_recent_action_list.at(fj)->setVisible(false);
+
+    ui->menuFile->insertMenu(ui->actionSave, m_menu_recent);
+}
+
+#endif
+
+/**
+ *
+ */
+
+void
+qsmainwnd::create_action_connections ()
+{
+    for (int i = 0; i < mc_max_recent_files; ++i)
+    {
+        QAction * action = new QAction(this);
+        action->setVisible(false);
+        QObject::connect
+        (
+            action, &QAction::triggered, this, &qsmainwnd::open_recent_file
+        );
+        m_recent_action_list.append(action);
+    }
+}
+
+/**
+ *
+ */
+
+void
+qsmainwnd::create_action_menu ()
+{
+    if (not_nullptr(m_menu_recent) && m_menu_recent->isWidgetType())
+        delete m_menu_recent;
+
+    m_menu_recent = new QMenu(tr("&Recent MIDI files..."), this);
+    for (int i = 0; i < mc_max_recent_files; ++i)
+    {
+        m_menu_recent->addAction(m_recent_action_list.at(i));
+    }
+    ui->menuFile->insertMenu(ui->actionSave, m_menu_recent);
+}
+
+/**
+ *
+ */
+
+void
+qsmainwnd::open_recent_file ()
+{
+    QAction * action = qobject_cast<QAction *>(sender());
+    if (not_nullptr(action))
+    {
+        QString fname = QVariant(action->data()).toString();
+        std::string actionfile = fname.toStdString();
+        open_file(actionfile);
+    }
 }
 
 /**
@@ -856,6 +951,8 @@ qsmainwnd::quit ()
     if (check())
         QCoreApplication::exit();
 }
+
+#ifdef USE_OLD_CODE
 
 void
 qsmainwnd::load_recent_1 ()
@@ -926,6 +1023,8 @@ qsmainwnd::load_recent_10 ()
     if (check())
         open_file(rc().recent_file(9, false));
 }
+
+#endif      // USE_OLD_CODE
 
 /**
  *

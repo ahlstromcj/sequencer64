@@ -77,9 +77,6 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_msg_error         (nullptr),
     m_msg_save_changes  (nullptr),
     m_timer             (nullptr),
-#ifdef USE_OLD_CODE
-    m_action            (),                 // array
-#endif
     m_menu_recent       (nullptr),
     m_recent_action_list(),                 // new
     mc_max_recent_files (10),               // new
@@ -91,15 +88,9 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_modified          (false)
 {
     ui->setupUi(this);
-#ifdef USE_OLD_CODE
-    for (int i = 0; i < mc_max_recent_files; ++i)
-        m_action[i] = nullptr;      // nullify all recent-file action slots
-#endif
-
-    // center on screen
 
     QRect screen = QApplication::desktop()->screenGeometry();
-    int x = (screen.width() - width()) / 2;
+    int x = (screen.width() - width()) / 2;             // center on screen
     int y = (screen.height() - height()) / 2;
     move(x, y);
 
@@ -754,114 +745,6 @@ qsmainwnd::tabWidgetClicked (int newIndex)
  *
  */
 
-#ifdef USE_OLD_CODE
-
-void
-qsmainwnd::update_recent_files_menu ()
-{
-    /*
-     *  If the menu already exists, delete it.  This differs from the Gtkmm
-     *  implementation, which simply clears it.
-     */
-
-    for (int i = 0; i < mc_max_recent_files; ++i)
-    {
-        if (not_nullptr(m_action[i]))
-        {
-            /*
-             * Do we need to disconnect the slots?
-             */
-
-            delete m_action[i];
-            m_action[i] = nullptr;
-        }
-    }
-
-    if (not_nullptr(m_menu_recent) && m_menu_recent->isWidgetType())
-        delete m_menu_recent;
-
-    m_menu_recent = new QMenu(tr("&Recent MIDI files..."), this);
-
-    /*
-     *  Only add if a path is actually contained in each slot.  This method
-     *  of adding paths is pretty clumsy compared to the Gtkmm method, which
-     *  uses a simple loop.
-     */
-
-    if (rc().recent_file_count() == 0)
-    {
-        m_menu_recent->addAction(tr("<none>"));
-        ui->menuFile->insertMenu(ui->actionSave, m_menu_recent);
-        return;
-    }
-    if (rc().recent_file_count() > 0)
-    {
-        /*
-         * Seems to cause a segfault!!!!
-         *
-         * m_action[0]->setShortcut(tr("Ctrl+R"));
-         */
-        m_action[0] = new QAction(rc().recent_file(0).c_str(), this);
-        connect(m_action[0], SIGNAL(triggered(bool)), this, SLOT(load_recent_1()));
-    }
-    if (rc().recent_file_count() > 1)
-    {
-        m_action[1] = new QAction(rc().recent_file(1).c_str(), this);
-        connect(m_action[1], SIGNAL(triggered(bool)), this, SLOT(load_recent_2()));
-    }
-    if (rc().recent_file_count() > 2)
-    {
-        m_action[2] = new QAction(rc().recent_file(2).c_str(), this);
-        connect(m_action[2], SIGNAL(triggered(bool)), this, SLOT(load_recent_3()));
-    }
-    if (rc().recent_file_count() > 3)
-    {
-        m_action[3] = new QAction(rc().recent_file(3).c_str(), this);
-        connect(m_action[3], SIGNAL(triggered(bool)), this, SLOT(load_recent_4()));
-    }
-    if (rc().recent_file_count() > 4)
-    {
-        m_action[4] = new QAction(rc().recent_file(4).c_str(), this);
-        connect(m_action[4], SIGNAL(triggered(bool)), this, SLOT(load_recent_5()));
-    }
-    if (rc().recent_file_count() > 5)
-    {
-        m_action[5] = new QAction(rc().recent_file(5).c_str(), this);
-        connect(m_action[5], SIGNAL(triggered(bool)), this, SLOT(load_recent_6()));
-    }
-    if (rc().recent_file_count() > 6)
-    {
-        m_action[6] = new QAction(rc().recent_file(6).c_str(), this);
-        connect(m_action[6], SIGNAL(triggered(bool)), this, SLOT(load_recent_7()));
-    }
-    if (rc().recent_file_count() > 7)
-    {
-        m_action[7] = new QAction(rc().recent_file(7).c_str(), this);
-        connect(m_action[7], SIGNAL(triggered(bool)), this, SLOT(load_recent_8()));
-    }
-    if (rc().recent_file_count() > 8)
-    {
-        m_action[8] = new QAction(rc().recent_file(8).c_str(), this);
-        connect(m_action[8], SIGNAL(triggered(bool)), this, SLOT(load_recent_9()));
-    }
-    if (rc().recent_file_count() > 9)
-    {
-        m_action[9] = new QAction(rc().recent_file(9).c_str(), this);
-        connect(m_action[9], SIGNAL(triggered(bool)), this, SLOT(load_recent_10()));
-    }
-
-    for (int i = 0; i < mc_max_recent_files; ++i)
-    {
-        if (m_action[i])
-            m_menu_recent->addAction(m_action[i]);
-        else
-            break;
-    }
-    ui->menuFile->insertMenu(ui->actionSave, m_menu_recent);
-}
-
-#else   // USE_OLD_CODE
-
 void
 qsmainwnd::update_recent_files_menu ()
 {
@@ -885,8 +768,6 @@ qsmainwnd::update_recent_files_menu ()
 
     ui->menuFile->insertMenu(ui->actionSave, m_menu_recent);
 }
-
-#endif
 
 /**
  *
@@ -951,80 +832,6 @@ qsmainwnd::quit ()
     if (check())
         QCoreApplication::exit();
 }
-
-#ifdef USE_OLD_CODE
-
-void
-qsmainwnd::load_recent_1 ()
-{
-    if (check())
-        open_file(rc().recent_file(0, false));
-}
-
-void
-qsmainwnd::load_recent_2 ()
-{
-    if (check())
-        open_file(rc().recent_file(1, false));
-}
-
-void
-qsmainwnd::load_recent_3 ()
-{
-    if (check())
-        open_file(rc().recent_file(2, false));
-}
-
-void
-qsmainwnd::load_recent_4 ()
-{
-    if (check())
-        open_file(rc().recent_file(3, false));
-}
-
-void
-qsmainwnd::load_recent_5 ()
-{
-    if (check())
-        open_file(rc().recent_file(4, false));
-}
-
-void
-qsmainwnd::load_recent_6 ()
-{
-    if (check())
-        open_file(rc().recent_file(5, false));
-}
-
-void
-qsmainwnd::load_recent_7 ()
-{
-    if (check())
-        open_file(rc().recent_file(6, false));
-}
-
-void
-qsmainwnd::load_recent_8 ()
-{
-    if (check())
-        open_file(rc().recent_file(7, false));
-}
-
-void
-qsmainwnd::load_recent_9 ()
-{
-    if (check())
-        open_file(rc().recent_file(8, false));
-}
-
-void
-qsmainwnd::load_recent_10 ()
-{
-    if (check())
-        open_file(rc().recent_file(9, false));
-}
-
-#endif      // USE_OLD_CODE
 
 /**
  *

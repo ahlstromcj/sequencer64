@@ -121,9 +121,6 @@ private:
     QErrorMessage * m_msg_error;
     QMessageBox * m_msg_save_changes;
     QTimer * m_timer;
-#ifdef USE_OLD_CODE
-    QAction * m_action[10];
-#endif
     QMenu * m_menu_recent;
     QList<QAction*> m_recent_action_list;     // new
     const int mc_max_recent_files;
@@ -154,20 +151,6 @@ private slots:
     void showOpenFileDialog ();
     void showqsabout ();
     void tabWidgetClicked (int newIndex);
-
-#ifdef USE_OLD_CODE
-    void load_recent_1 ();
-    void load_recent_2 ();
-    void load_recent_3 ();
-    void load_recent_4 ();
-    void load_recent_5 ();
-    void load_recent_6 ();
-    void load_recent_7 ();
-    void load_recent_8 ();
-    void load_recent_9 ();
-    void load_recent_10 ();
-#endif
-
     void refresh(); // redraw certain GUI elements
 
     // set the editor to a specific seq and switch tab to it

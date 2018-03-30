@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2018-02-20
+# \update      2018-03-30
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -172,6 +172,7 @@ libseq64_la_SOURCES = \
    palette.cpp \
    perform.cpp \
 	rc_settings.cpp \
+   recent.cpp \
    rect.cpp \
 	sequence.cpp \
 	seq64_features.cpp \

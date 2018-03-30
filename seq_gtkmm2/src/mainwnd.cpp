@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-25
+ * \updates       2018-03-30
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -2033,12 +2033,8 @@ mainwnd::file_save_as (SaveOption option)
         case Gtk::RESPONSE_OK:
         {
             std::string fname = dialog.get_filename();
-            Gtk::FileFilter * current_filter = dialog.get_filter();
-            if
-            (
-                (current_filter != NULL) &&
-                (current_filter->get_name() == "MIDI files")
-            )
+            Gtk::FileFilter * filter = dialog.get_filter();
+            if ((filter != NULL) && (filter->get_name() == "MIDI files"))
             {
                 /*
                  * Check for MIDI file extension; if missing, add ".midi".

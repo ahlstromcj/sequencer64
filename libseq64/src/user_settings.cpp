@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2018-02-07
+ * \updates       2018-03-30
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -102,7 +102,9 @@
 #include "settings.hpp"                 /* seq64::rc()                  */
 #include "user_settings.hpp"            /* seq64::user_settings         */
 
+#define SEQ64_WINDOW_SCALE_MIN          0.5f
 #define SEQ64_WINDOW_SCALE_DEFAULT      1.0f
+#define SEQ64_WINDOW_SCALE_MAX          3.0f
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -433,7 +435,7 @@ user_settings::set_defaults ()
     m_mainwnd_rows = SEQ64_DEFAULT_MAINWND_ROWS;    // range: 4-8
     m_mainwnd_cols = SEQ64_DEFAULT_MAINWND_COLUMNS; // range: 8-8
     m_max_sets = SEQ64_DEFAULT_SET_MAX;     // range: 32-64
-    m_window_scale = SEQ64_WINDOW_SCALE_DEFAULT; // range: 1.0 to 3.0
+    m_window_scale = SEQ64_WINDOW_SCALE_DEFAULT; // range: 0.5 to 3.0
     m_mainwid_border = 0;                   // range: 0-3, try 2 or 3
     m_mainwid_spacing = 2;                  // range: 2-6, try 4 or 6
     m_control_height = 0;                   // range: 0-4?
@@ -656,7 +658,7 @@ user_settings::set_instrument_controllers
 void
 user_settings::window_scale (float winscale)
 {
-    if (winscale >= 0.75f && winscale <= 3.0f)
+    if (winscale >= SEQ64_WINDOW_SCALE_MIN && winscale <= SEQ64_WINDOW_SCALE_MAX)
     {
         m_window_scale = winscale;
         normalize();

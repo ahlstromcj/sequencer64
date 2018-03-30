@@ -84,8 +84,8 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_main_perf         (p),
     m_beat_ind          (nullptr),
     m_dialog_prefs      (nullptr),
-    mDialogAbout        (nullptr),
-    m_modified          (false)
+    mDialogAbout        (nullptr) //,
+//  m_modified          (false)
 {
     ui->setupUi(this);
 
@@ -93,10 +93,6 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     int x = (screen.width() - width()) / 2;             // center on screen
     int y = (screen.height() - height()) / 2;
     move(x, y);
-
-    // maximize by default setWindowState(Qt::WindowMaximized);
-
-    m_modified = false;
 
     // fill options for beats per measure combo box and set default
 
@@ -152,13 +148,9 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     );
     m_beat_ind->set_beat_width(m_song_frame->get_beat_width());
     m_beat_ind->set_beats_per_measure(m_song_frame->get_beats_per_measure());
-
-//  update_recent_files_menu();
     m_live_frame->setFocus();
 
-    // timer to refresh GUI elements every few ms
-
-    m_timer = new QTimer(this);
+    m_timer = new QTimer(this); // refresh GUI elements every few ms
     m_timer->setInterval(50);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(refresh()));
     m_timer->start();
@@ -198,7 +190,8 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
 
     connect
     (
-        ui->btnSongPlay, SIGNAL(clicked(bool)), this, SLOT(setSongPlayback(bool))
+        ui->btnSongPlay, SIGNAL(clicked(bool)),
+        this, SLOT(setSongPlayback(bool))
     );
     qt_set_icon(live_mode_xpm, ui->btnSongPlay);
 
@@ -209,11 +202,13 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
 
     // Record (song)
 
-    connect(ui->btnRecord, SIGNAL(clicked(bool)), this, SLOT(setRecording(bool)));
+    connect
+    (
+        ui->btnRecord, SIGNAL(clicked(bool)), this, SLOT(setRecording(bool))
+    );
     qt_set_icon(song_rec_on_xpm, ui->btnRecord);
 
     connect(ui->spinBpm, SIGNAL(valueChanged(int)), this, SLOT(updateBpm(int)));
-
     connect
     (
         ui->cmb_beat_length, SIGNAL(currentIndexChanged(int)),
@@ -252,7 +247,12 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     create_action_menu();
     update_recent_files_menu();
 
-    // resize(800, 600);
+    /*
+     * This scales the full GUI, cool!
+     *
+     * resize(1024, 768);
+     */
+
     show();
 }
 
@@ -327,7 +327,7 @@ void
 qsmainwnd::updateBpm (int newBpm)
 {
     perf().set_beats_per_minute(newBpm);
-    m_modified = true;
+//  m_modified = true;
 }
 
 /**
@@ -365,7 +365,7 @@ qsmainwnd::open_file (const std::string & fn)
     bool result = f.parse(m_main_perf, 0);
     if (result)
     {
-        m_modified = false;
+//      m_modified = false;
     }
     else
     {
@@ -380,8 +380,6 @@ qsmainwnd::open_file (const std::string & fn)
     rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
     rc().filename(fn);
     rc().add_recent_file(fn);           /* from Oli Kester's Kepler34       */
-//  update_recent_files_menu();
-//  update_window_title();
 
     /*
      *  Reinitialize the "Live" frame.  Reconnect its signal, as we've made a
@@ -446,7 +444,8 @@ bool
 qsmainwnd::check ()
 {
     bool result = false;
-    if (m_modified)
+//  if (m_modified)
+    if (perf().is_modified())
     {
         int choice = m_msg_save_changes->exec();
         switch (choice)
@@ -485,7 +484,7 @@ qsmainwnd::new_file()
         // m_entry_notes->set_text(perf().current_screenset_notepad());
         rc().filename("");
         update_window_title();
-        m_modified = false;
+//      m_modified = false;
     }
 }
 
@@ -521,12 +520,18 @@ bool qsmainwnd::save_file()
             m_msg_error->exec();
         }
     }
-    m_modified = ! result;
+
+    /*
+     * The Gtkmm version does not do this.
+     */
+
+//  m_modified = ! result;
     return result;
 }
 
 /**
- *
+ * \todo
+ *      Add the export options as done in mainwnd::file_save_as().
  */
 
 void
@@ -572,7 +577,7 @@ qsmainwnd::showImportDialog()
             {
                 midifile f(path.toStdString());
                 f.parse(m_main_perf, perf().screenset());
-                m_modified = true;
+//              m_modified = true;
                 ui->spinBpm->setValue(perf().bpm());
                 m_live_frame->setBank(perf().screenset());
 
@@ -612,7 +617,7 @@ qsmainwnd::loadEditor(int seqId)
     ui->EditTabLayout->addWidget(m_edit_frame);
     m_edit_frame->show();
     ui->tabWidget->setCurrentIndex(2);
-    m_modified = true;
+//  m_modified = true;
 }
 
 /**
@@ -665,7 +670,7 @@ qsmainwnd::updateBeatLength (int blIndex)
             seq->set_num_measures(seq->get_num_measures());
         }
     }
-    m_modified = true;
+//  m_modified = true;
 
     if (m_edit_frame)
         m_edit_frame->updateDrawGeometry();
@@ -694,7 +699,7 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
 
         }
     }
-    m_modified = true;
+//  m_modified = true;
     if (m_edit_frame)
         m_edit_frame->updateDrawGeometry();
 }

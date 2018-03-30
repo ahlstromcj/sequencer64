@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-25
+ * \updates       2018-03-30
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -750,7 +750,10 @@ optionsfile::parse (perform & p)
             if (next_data_line(file))
             {
                 if (strlen(m_line) > 0)
-                    rc().add_recent_file(std::string(m_line));
+                {
+                    if (! rc().append_recent_file(std::string(m_line)))
+                        break;
+                }
             }
             else
                 break;

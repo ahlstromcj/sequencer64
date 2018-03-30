@@ -30,14 +30,6 @@
  * \updates       2018-03-30
  * \license       GNU GPLv2 or above
  *
-    void add_recent_file (const std::string & filename);
-    std::string recent_file (int index, bool shorten = true) const;
-    int recent_file_count () const
-
-    push_back()
-    push_front()
-    remove()
-    get()
  */
 
 #include <deque>
@@ -84,6 +76,7 @@ public:
     recent ();
     recent (const recent & source);
     recent & operator = (const recent & source);
+    ~recent ();
 
     void clear ()
     {
@@ -100,7 +93,10 @@ public:
         return m_maximum_size;
     }
 
-    bool append (const std::string & item);
+    std::string get (int index) const;          // rc().recent_file()
+    bool append (const std::string & item);     // optionsfile::parse()
+    bool add (const std::string & item);        // add_recent_file()
+    bool remove (const std::string & item);     // remove_recent_file()
 
 };          // class recent
 

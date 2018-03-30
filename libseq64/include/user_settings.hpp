@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-02-06
+ * \updates       2018-03-30
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -1009,7 +1009,7 @@ public:
 
     int scale_size (int value) const
     {
-        return int(m_window_scale * value);
+        return int(m_window_scale * value + 0.5);
     }
 
     /**

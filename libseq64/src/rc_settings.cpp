@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-03-28
+ * \updates       2018-03-30
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -126,7 +126,7 @@ rc_settings::rc_settings ()
     m_application_name          (SEQ64_APP_NAME),
     m_app_client_name           (SEQ64_CLIENT_NAME),
     m_tempo_track_number        (0),
-    m_recent_files              ()                      /* std::list    */
+    m_recent_files              ()
 {
     // Empty body
 }
@@ -443,49 +443,14 @@ rc_settings::tempo_track_number (int track)
 std::string
 rc_settings::recent_file (int index, bool shorten) const
 {
-    std::string result;
-    if (index >= 0 && index < recent_file_count())
-        result = m_recent_files[index];
-
-    if (shorten)
+    std::string result = m_recent_files.get(index);
+    if (shorten && ! result.empty())
     {
         std::string::size_type slashpos = result.find_last_of("/\\");
         if (slashpos != std::string::npos)
             result = result.substr(slashpos + 1, std::string::npos);
     }
     return result;
-}
-
-/**
- * \setter m_recent_files
- *
- *  First makes sure the filename is not already present, and removes the back
- *  entry from the list, if it is full (SEQ64_RECENT_FILES_MAX) before adding
- *  it.
- *
- *  Now the full pathname is added.
- *
- * \param fname
- *      Provides the full path to the MIDI file that is to be added to the
- *      recent-files list.
- */
-
-void
-rc_settings::add_recent_file (const std::string & fname)
-{
-    bool found = std::find
-    (
-        m_recent_files.begin(), m_recent_files.end(), fname
-    ) != m_recent_files.end();
-
-    if (! found)
-    {
-        if (m_recent_files.size() >= SEQ64_RECENT_FILES_MAX)
-            m_recent_files.pop_back();
-
-        std::string fullname = get_full_path(fname);
-        m_recent_files.insert(m_recent_files.begin(), fullname);    // fname);
-    }
 }
 
 /**

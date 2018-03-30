@@ -129,7 +129,7 @@ private:
     qsmaintime * m_beat_ind;
     qseditoptions * m_dialog_prefs;
     qsabout * mDialogAbout;
-    bool m_modified; //TODO move this into main performance
+//  bool m_modified; //TODO move this into main performance
 
 private slots:
 

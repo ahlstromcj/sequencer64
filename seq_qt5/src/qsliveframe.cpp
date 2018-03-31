@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-26
+ * \updates       2018-03-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -231,10 +231,13 @@ qsliveframe::drawSequence (int seq)
             pen.setStyle(Qt::SolidLine);
             painter.setPen(pen);
 
-            char name[32];
+            // char name[32];
             // snprintf(name, sizeof name, "%.14s", s->name().c_str());
-            snprintf(name, sizeof name, "%.14s", s->title().c_str());
-            painter.drawText(base_x + qc_text_x, base_y + 4, 80, 80, 1, name);
+            // snprintf(name, sizeof name, "%.14s", s->title().c_str());
+
+            std::string st = perf().sequence_title(*s);
+            QString title(st.c_str());
+            painter.drawText(base_x + qc_text_x, base_y + 4, 80, 80, 1, title);
 
             std::string sl = perf().sequence_label(*s);
             QString label(sl.c_str());

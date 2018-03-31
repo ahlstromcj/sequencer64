@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-03-20
+ * \updates       2018-03-31
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -5698,6 +5698,41 @@ perform::sequence_label (int seqnum)
 {
     const sequence * s = get_sequence(seqnum);
     return not_nullptr(s) ? sequence_label(*s) : std::string("") ;
+}
+
+/**
+ *  Creates the sequence title, adjusting it for scaling down.
+ *
+ * \param seq
+ *      Provides the reference to the sequence, use for getting the sequence
+ *      parameters to be written to the label string.
+ *
+ * \return
+ *      Returns the filled in label if the sequence is active.
+ *      Otherwise, an empty string is returned.
+ */
+
+std::string
+perform::sequence_title (const sequence & seq)
+{
+    std::string result;
+    int sn = seq.number();
+    if (is_active(sn))
+    {
+        if (usr().window_scaled_down())
+        {
+            char temp[12];
+            snprintf(temp, sizeof temp, "%.11s", seq.title().c_str());
+            result = std::string(temp);
+        }
+        else
+        {
+            char temp[16];
+            snprintf(temp, sizeof temp, "%.14s", seq.title().c_str());
+            result = std::string(temp);
+        }
+    }
+    return result;
 }
 
 /**

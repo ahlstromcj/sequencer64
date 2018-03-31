@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-30
+ * \updates       2018-03-31
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -273,7 +273,7 @@ mainwnd::mainwnd
     bool mainwid_indep
 #endif
 ) :
-    gui_window_gtk2         (p),
+    gui_window_gtk2         (p, usr().mainwnd_x(), usr().mainwnd_y()),
     performcallback         (),
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
@@ -451,18 +451,21 @@ mainwnd::mainwnd
 
     Gtk::HBox * tophbox = manage(new Gtk::HBox(false, 0));
 
+    if (! usr().window_scaled_down())
+    {
 #ifdef SEQ64_RTMIDI_SUPPORT
-    const char ** bitmap = rc().legacy_format() ?
-        seq64_logo_legacy_xpm : seq64_logo_xpm ;
+        const char ** bitmap = rc().legacy_format() ?
+            seq64_logo_legacy_xpm : seq64_logo_xpm ;
 #else
-    const char ** bitmap = rc().legacy_format() ?
-        sequencer64_legacy_xpm : sequencer64_square_small_xpm ;
+        const char ** bitmap = rc().legacy_format() ?
+            sequencer64_legacy_xpm : sequencer64_square_small_xpm ;
 #endif
 
-    tophbox->pack_start
-    (
-        *manage(new PIXBUF_IMAGE(bitmap)), false, false, TOP_HBOX_PADDING
-    );
+        tophbox->pack_start
+        (
+            *manage(new PIXBUF_IMAGE(bitmap)), false, false, TOP_HBOX_PADDING
+        );
+    }
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS            /* also enables muting button */
 
@@ -854,9 +857,12 @@ mainwnd::mainwnd
         "the Up/Down arrows adjust by the step size, and the Page-Up/Page-Down "
         "keys adjust by the page size, as configured in the 'usr' file."
     );
-    Gtk::Label * bpmlabel = manage(new Gtk::Label("_BPM", true));
-    bpmlabel->set_mnemonic_widget(*m_spinbutton_bpm);
-    bpmhbox->pack_start(*bpmlabel, HBOX_PACKING);
+    if (! usr().window_scaled_down())
+    {
+        Gtk::Label * bpmlabel = manage(new Gtk::Label("_BPM", true));
+        bpmlabel->set_mnemonic_widget(*m_spinbutton_bpm);
+        bpmhbox->pack_start(*bpmlabel, HBOX_PACKING);
+    }
     bpmhbox->pack_start(*m_spinbutton_bpm, HBOX_PACKING);
 
 #ifdef SEQ64_MAINWND_TAP_BUTTON
@@ -889,9 +895,12 @@ mainwnd::mainwnd
         "the Patterns window."
     );
 
-    Gtk::Label * notelabel = manage(new Gtk::Label("_Name", true));
-    notelabel->set_mnemonic_widget(*m_entry_notes);
-    notebox->pack_start(*notelabel, Gtk::PACK_SHRINK);
+    if (! usr().window_scaled_down())
+    {
+        Gtk::Label * notelabel = manage(new Gtk::Label("_Name", true));
+        notelabel->set_mnemonic_widget(*m_entry_notes);
+        notebox->pack_start(*notelabel, Gtk::PACK_SHRINK);
+    }
     notebox->pack_start(*m_entry_notes, HBOX_PACKING);
 
     /*
@@ -921,9 +930,12 @@ mainwnd::mainwnd
         (
             m_spinbutton_ss, "Select screen-set from one of up to 32 sets."
         );
-        Gtk::Label * setlabel = manage(new Gtk::Label("_Set", true));
-        setlabel->set_mnemonic_widget(*m_spinbutton_ss);
-        sethbox->pack_start(*setlabel, Gtk::PACK_SHRINK);
+        if (! usr().window_scaled_down())
+        {
+            Gtk::Label * setlabel = manage(new Gtk::Label("_Set", true));
+            setlabel->set_mnemonic_widget(*m_spinbutton_ss);
+            sethbox->pack_start(*setlabel, Gtk::PACK_SHRINK);
+        }
         sethbox->pack_start(*m_spinbutton_ss, Gtk::PACK_SHRINK);
     }
 

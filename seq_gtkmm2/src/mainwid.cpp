@@ -342,10 +342,10 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             }
 
             char temp[16];
-            snprintf(temp, sizeof temp, "%.14s", seq->title().c_str());
+            std::string title = perf().sequence_title(*seq);
             render_string_on_pixmap             /* seqnum:name of pattern   */
             (
-                base_x + m_text_size_x - 3, base_y + 4, temp, col
+                base_x + m_text_size_x - 3, base_y + 4, title, col
             );
 
             /*

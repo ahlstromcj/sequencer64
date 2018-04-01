@@ -1,3 +1,12 @@
+sequencer64 (0.94.7-0) unstable; urgency=medium
+
+  * Fixed a large number of bugs, many new features, see the main site.
+  * Added support for a configurable source tarball.
+  * Added a prototype Qt version, qseq64, based on Kepler34, see the INSTALL
+    file.
+
+ -- Chris Ahlstrom <ahlstromcj@gmail.com>  Sun, 19 Nov 2017 12:00:00 +0400
+
 sequencer64 (0.93.5-0) unstable; urgency=medium
 
   * Fixed a sequencer64-packages bug, bad handling of active sensing events.

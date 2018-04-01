@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.94.7 and above
 Chris Ahlstrom
-2015-09-10 to 2018-03-21
+2015-09-10 to 2018-04-01
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -19,7 +19,8 @@ bootstrapping setup is primarily aimed at developers.  Starting with version
         option for Linux; might still be used for the upcoming Windows
         implementation.
     -   qseq64.  The seq64 (rtmidi) version of the application, with a Qt5
-        user interface based on Kepler34.  Still a LONG WAY from usability.
+        user interface based on Kepler34.  Useable, but still lacks many of
+        the user-interface elements of the Gtkmm 2.4 application.
 
 Quick Install:
 
@@ -65,12 +66,13 @@ Advanced Steps:
        show other branches not yet deleted.  See GitHub.
 
    2.  The first thing to do is decide what version of Sequencer64 you want to
-       build.  There are now 4 versions:
+       build.  There are now 5 versions:
 
        1.   Seq64rtmidi/seq64:           ./bootstrap [ -er | -ed] -rm
        2.   Seq64cli/seq64cli:           ./bootstrap -er -cli
        3.   Sequencer64/sequencer64:     ./bootstrap -er -am
        4.   Seq64portmidi/seq64portmidi: ./bootstrap -er -pm (fewer features)
+       5.   Seq64qt5/qseq64:             ./bootstrap -er -qt (in progress)
    
        From the top project directory, run one of the commands above (they
        auto-configure) or run the following commands, which set up a release

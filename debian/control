@@ -18,4 +18,4 @@ Description: Native JACK/ALSA MIDI live sequencer refactored from seq24.
  native JACK MIDI, SMF 0 files, a range of PPQN values, more MIDI controls,
  more scales, chord-generation, expanded configuration options, pause,
  event-editing window, tap-tempo, more keystroke control, and many other
- enhancements and fixes.
+ enhancements and fixes.  A prototype Qt build is now available.

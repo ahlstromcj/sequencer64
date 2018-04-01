@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-16
+ * \updates       2018-03-30
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -750,7 +750,10 @@ optionsfile::parse (perform & p)
             if (next_data_line(file))
             {
                 if (strlen(m_line) > 0)
-                    rc().add_recent_file(std::string(m_line));
+                {
+                    if (! rc().append_recent_file(std::string(m_line)))
+                        break;
+                }
             }
             else
                 break;
@@ -1421,20 +1424,19 @@ optionsfile::write (const perform & p)
         << "# Key #  Sequence #  Key name\n\n"
         ;
 
-    for
+for
+(
+    keys_perform::SlotMap::const_iterator i = ucperf.get_key_events().begin();
+    i != ucperf.get_key_events().end(); ++i
+)
+{
+    std::string keyname = ucperf.key_name(i->first); // gdk_keyval_name(i->first)
+    snprintf
     (
-        keys_perform::SlotMap::const_iterator i = ucperf.get_key_events().begin();
-        i != ucperf.get_key_events().end(); ++i
-    )
-    {
-        snprintf
-        (
-            outs, sizeof(outs), "%u  %d   # %s",
-            i->first, i->second,
-            ucperf.key_name(i->first).c_str()   // gdk_keyval_name(i->first)
-        );
-        file << std::string(outs) << "\n";
-    }
+        outs, sizeof(outs), "%u %d   # %s", i->first, i->second, keyname.c_str()
+    );
+    file << std::string(outs) << "\n";
+}
 
     size_t kegsize = ucperf.get_key_groups().size() < size_t(c_max_keys) ?
          ucperf.get_key_groups().size() : size_t(c_max_keys)

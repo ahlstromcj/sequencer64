@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-03-15
+ * \updates       2018-03-30
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -45,9 +45,9 @@
  */
 
 #include <string>
-#include <vector>
 
 #include "seq64_features.h"             /* SEQ64_USE_ZOOM_POWER_OF_2    */
+#include "recent.hpp"                   /* seq64::recent class          */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -233,9 +233,11 @@ private:
      *  vector, we do not let it grow past SEQ64_RECENT_FILES_MAX.
      *
      *  New feature from Oli Kester's kepler34 project.
+     *
+     * std::vector<std::string> m_recent_files;
      */
 
-    std::vector<std::string> m_recent_files;
+    recent m_recent_files;
 
 public:
 
@@ -529,7 +531,47 @@ public:
     }
 
     void last_used_dir (const std::string & value);
-    void add_recent_file (const std::string & filename);
+
+    /**
+     * \setter m_recent_files
+     *
+     *  First makes sure the filename is not already present, and removes
+     *  the back entry from the list, if it is full (SEQ64_RECENT_FILES_MAX)
+     *  before adding
+     *  it.
+     *
+     *  Now the full pathname is added.
+     *
+     * \param fname
+     *      Provides the full path to the MIDI file that is to be added to
+     *      the recent-files list.
+     *
+     * \return
+     *      Returns true if the file-name was able to be added.
+     */
+
+    bool add_recent_file (const std::string & filename)
+    {
+        return m_recent_files.add(filename);
+    }
+
+    /**
+     *
+     */
+
+    bool append_recent_file (const std::string & filename)
+    {
+        return m_recent_files.append(filename);
+    }
+
+    /**
+     *
+     */
+
+    bool remove_recent_file (const std::string & filename)
+    {
+        return m_recent_files.remove(filename);
+    }
 
     /**
      * \getter m_config_directory
@@ -614,7 +656,7 @@ public:
 
     int recent_file_count () const
     {
-        return int(m_recent_files.size());
+        return m_recent_files.count();
     }
 
 protected:

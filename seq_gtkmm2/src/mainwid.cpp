@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-04
+ * \updates       2018-03-31
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -97,7 +97,7 @@ update_mainwid_sequences ()
  * \param ss
  *      Indicates the screen we start out at.  This is really only useful if
  *      SEQ64_MULTI_MAINWND is defined, but doesn't hurt much to have it
- *      hardwired here, and it could be a good feature independent of
+ *      as a parameter here, and it could be a good feature independent of
  *      multi-mainwid support.  The default value is 0.
  */
 
@@ -131,8 +131,8 @@ mainwid::mainwid (perform & p, int ss)
     m_mainwid_border_x      (usr().mainwid_border_x()),
     m_mainwid_border_y      (usr().mainwid_border_y()),
     m_mainwid_spacing       (usr().mainwid_spacing()),
-    m_text_size_x           (usr().scale_size(font_render().char_width())),
-    m_text_size_y           (usr().scale_size(font_render().padded_height())),
+    m_text_size_x           (font_render().char_width()),       // unscalable
+    m_text_size_y           (font_render().padded_height()),    // unscalable
     m_max_sets              (c_max_sets),
     m_screenset_slots       (m_mainwnd_rows * m_mainwnd_cols),
     m_screenset_offset      (m_screenset * m_screenset_slots),
@@ -341,11 +341,10 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     col = font::WHITE;
             }
 
-            char temp[16];                      /* was 13, now 14           */
-            snprintf(temp, sizeof temp, "%.14s", seq->title().c_str());
+            std::string title = perf().sequence_title(*seq);
             render_string_on_pixmap             /* seqnum:name of pattern   */
             (
-                base_x + m_text_size_x - 3, base_y + 4, temp, col
+                base_x + m_text_size_x - 3, base_y + 4, title, col
             );
 
             /*
@@ -369,6 +368,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 char key = char(perf().lookup_slot_key(seqnum));
                 if (key > 0)
                 {
+                    char temp[8];
                     const int lower_slot = 2 * c_seqs_in_set;
                     const int upper_slot = 2 * c_seqs_in_set;
                     char sh = char(PREFKEY(pattern_shift));
@@ -437,12 +437,11 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                  */
 
                 int c = seq->color();
-//              const Color & color = get_color(PaletteColor(c));
-//              Color color = get_color_ex(PaletteColor(c), 0.0, 0.65, 1.0);
                 Color color = get_color_ex(PaletteColor(c), 40.0, 0.20, 0.5);
-                draw_rectangle_on_pixmap(color, x, y, lx, ly);
                 if (c == SEQ64_COLOR_NONE)
-                    fg_color(black());
+                    color = bg_color();     /* preserve normal coloring     */
+
+                draw_rectangle_on_pixmap(color, x, y, lx, ly);
 #endif
                 /*
                  * Draws a rectangular outline around the event marks.
@@ -589,8 +588,8 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             }
             if (perf().show_ui_sequence_number())
             {
-                char snum[8];
-                snprintf(snum, sizeof(snum), "%d", seqnum);
+                char snum[16];
+                snprintf(snum, sizeof snum, "%d", seqnum);
                 x = strlen(snum) * m_text_size_x / 2;
                 y = font_render().char_height() / 2;
                 lx = base_x + m_seqarea_x / 2 - x;              /* center x */

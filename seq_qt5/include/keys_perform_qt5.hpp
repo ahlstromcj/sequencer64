@@ -27,8 +27,8 @@
  *
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
- * \date          2015-09-13
- * \updates       2016-06-22
+ * \date          2018-01-01
+ * \updates       2018-03-25
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -42,6 +42,12 @@
 
 namespace seq64
 {
+
+/*
+ *  Free functions.
+ */
+
+extern std::string keyval_name (unsigned key);      /* Qt 5 version     */
 
 /**
  *  This class supports the performance mode.
@@ -58,7 +64,11 @@ public:
     keys_perform_qt5 ();
     virtual ~keys_perform_qt5 ();
 
-    virtual std::string key_name (unsigned int key) const
+    /**
+     * \getter keyval_name(), Qt 5 version
+     */
+
+    virtual std::string key_name (unsigned key) const
     {
         return keyval_name(key);
     }

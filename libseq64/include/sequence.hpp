@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-03-04
+ * \updates       2018-03-20
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1205,11 +1205,6 @@ public:
 
     void toggle_playing (midipulse tick, bool resumenoteons);
     void toggle_queued ();
-
-#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
-    void off_queued ();
-    void on_queued ();
-#endif
 
     /**
      * \getter m_queued

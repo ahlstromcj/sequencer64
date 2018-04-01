@@ -1,7 +1,7 @@
 # .gitignore for sequencer64
 #
 # Chris Ahlstrom
-# Updates: 2015-09-12 to 2018-03-13
+# Updates: 2015-09-12 to 2018-03-18
 
 ~$*
 .*
@@ -77,6 +77,7 @@ Generated_Code # added for RIA/Silverlight projects
 *.gls
 html/
 i18n/
+include/seq64-config.h
 *_i.c
 *.idb
 *.idx
@@ -105,6 +106,7 @@ m4/ltsugar.m4
 m4/ltversion.m4
 *.maf
 Makefile
+Makefile.in
 Makefile.in.in
 Makefile.old
 MANIFEST.bak

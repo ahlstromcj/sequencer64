@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-11
+ * \updates       2018-03-24
  * \license       GNU GPLv2 or above
  *
  */
@@ -70,6 +70,7 @@ public:
 
     void redraw ();              // redraw frame contents
     void setBank (int newBank);  // set bank (screen-set) of sequences displayed
+    void setBank ();             // bank number retrieved from perform
 
 protected:
 
@@ -114,10 +115,6 @@ private:
     // converts the XY coordinates of a click into a seq ID
 
     int seqIDFromClickXY(int click_x, int click_y);
-
-    /* set/unset sequences with key presses */
-
-    void sequence_key (int seq);
 
     Ui::qsliveframe * ui;
     seq64::perform & mPerf;

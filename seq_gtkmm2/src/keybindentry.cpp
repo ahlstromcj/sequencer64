@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-19
+ * \updates       2018-03-25
  * \license       GNU GPLv2 or above
  *
  *  This module defines a GTK text-edit widget for getting keyboard button
@@ -35,6 +35,7 @@
  */
 
 #include "keybindentry.hpp"
+#include "keys_perform_gtk2.hpp"
 #include "perform.hpp"
 
 /*

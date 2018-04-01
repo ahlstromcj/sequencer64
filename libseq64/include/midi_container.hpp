@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2018-03-01
+ * \updates       2018-03-24
  * \license       GNU GPLv2 or above
  *
  *  This class is meant to hold the bytes that represent MIDI events and other
@@ -252,7 +252,7 @@ private:
      *  calls on the container.
      */
 
-    mutable unsigned int m_position_for_get;
+    mutable unsigned m_position_for_get;
 
 public:
 
@@ -317,7 +317,7 @@ protected:
      *      Sets the position to 0 and then returns that value.
      */
 
-    unsigned int position_reset () const
+    unsigned position_reset () const
     {
         m_position_for_get = 0;
         return m_position_for_get;
@@ -328,7 +328,7 @@ protected:
      *      Returns the current position.
      */
 
-    unsigned int position () const
+    unsigned position () const
     {
         return m_position_for_get;
     }

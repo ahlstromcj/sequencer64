@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2018-03-16
+ * \updates       2018-03-24
  * \license       GNU GPLv2 or above
  *
  */
@@ -108,7 +108,7 @@ keys_perform_gtk2::set_all_key_groups ()
  */
 
 std::string
-keyval_name (unsigned int key)
+keyval_name (unsigned key)
 {
     std::string result;
     gchar * kname = gdk_keyval_name(key);

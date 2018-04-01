@@ -254,11 +254,10 @@ private:
 #endif  // SEQ64_MULTI_MAINWID
 
     /**
-     *  The biggest sub-components of mainwnd.  The first is the Patterns
-     *  Panel, which the mainwid helps implement.  We end up sharing this
-     *  object with perfedit, perfnames, and seqedit in order to allow the
-     *  seqedit object to notify the mainwid (indirectly) of the
-     *  currently-edited sequence.
+     *  The biggest sub-component of mainwnd is the Patterns Panel, which the
+     *  mainwid implements.  We end up sharing this object with perfedit,
+     *  perfnames, and seqedit in order to allow the seqedit object to notify
+     *  the mainwid (indirectly) of the currently-edited sequence.
      *
      *  If the SEQ64_MULTI_MAINWID build option is in force, this pointer is
      *  used for highlighting and activating the mainwid that was last

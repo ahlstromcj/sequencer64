@@ -673,7 +673,7 @@ perfroll::draw_sequence_on (int seqnum)
                 else
                 {
                     int c = seq->color();
-                    if (c != SEQ64_COLOR_NONE)
+                    // if (c != SEQ64_COLOR_NONE)
                         evbkground = get_color(PaletteColor(c));
                 }
 #else

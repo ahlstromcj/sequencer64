@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-04
+ * \updates       2018-03-20
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1029,48 +1029,6 @@ sequence::toggle_queued ()
 #endif
     set_dirty_mp();
 }
-
-#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
-
-/**
- * \setter m_queued
- *      Turns off (resets) the queued flag and sets the dirty-mp flag.
- *      Do we need to set m_queued_tick as in toggle_queued()?  Currently not
- *      used, disabled by SEQ64_USE_AUTO_SCREENSET_QUEUE macro.
- *
- * \threadsafe
- */
-
-void
-sequence::off_queued ()
-{
-    automutex locker(m_mutex);
-    m_queued = false;
-#ifdef SEQ64_SONG_RECORDING
-    m_off_from_snap = true;
-#endif
-    set_dirty_mp();
-}
-
-/**
- * \setter m_queued
- *      Turns on (sets) the queued flag and sets the dirty-mp flag.
- *
- *      Do we need to set m_queued_tick as in toggle_queued()?  Currently not
- *      used; see disabled SEQ64_USE_AUTO_SCREENSET_QUEUE in perform.cpp.
- *
- * \threadsafe
- */
-
-void
-sequence::on_queued ()
-{
-    automutex locker(m_mutex);
-    m_queued = true;
-    set_dirty_mp();
-}
-
-#endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
  *  The play() function dumps notes starting from the given tick, and it

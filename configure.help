@@ -1,4 +1,4 @@
-`configure' configures Sequencer64 0.93.5 to adapt to many kinds of systems.
+`configure' configures Sequencer64 0.94.7 to adapt to many kinds of systems.
 
 Usage: ./configure [OPTION]... [VAR=VALUE]...
 
@@ -58,6 +58,10 @@ Program names:
   --program-suffix=SUFFIX            append SUFFIX to installed program names
   --program-transform-name=PROGRAM   run sed PROGRAM on installed program names
 
+X features:
+  --x-includes=DIR    X include files are in DIR
+  --x-libraries=DIR   X library files are in DIR
+
 System types:
   --build=BUILD     configure for building on BUILD [guessed]
   --host=HOST       cross-compile to build programs to run on HOST [BUILD]
@@ -84,6 +88,7 @@ Optional Features:
   --enable-lash           Enable LASH support (deprecated)
   --enable-rtmidi         Enable rtmidi build, which is the default
   --disable-alsatest      Do not try to compile and run a test Alsa program
+  --enable-qtmidi         Enable Qt5/rtmidi build
   --enable-cli            Enable rtmidi command-line build
   --enable-alsamidi       Enable standard ALSA build
   --enable-portmidi       Enable PortMidi build (deprecated)
@@ -114,6 +119,7 @@ Optional Packages:
                           compiler's sysroot if not specified).
   --with-alsa-prefix=PFX  Prefix where Alsa library is installed(optional)
   --with-alsa-inc-prefix=PFX  Prefix where include libraries are (optional)
+  --with-x                use the X Window System
 
 Some influential environment variables:
   CC          C compiler command
@@ -141,6 +147,7 @@ Some influential environment variables:
   JACK_LIBS   linker flags for JACK, overriding pkg-config
   LASH_CFLAGS C compiler flags for LASH, overriding pkg-config
   LASH_LIBS   linker flags for LASH, overriding pkg-config
+  XMKMF       Path to xmkmf, Makefile generator for X Window System
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.

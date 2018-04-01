@@ -9,7 +9,7 @@
  *
  * \author  Chris Ahlstrom
  * \date    2015-11-20
- * \updates 2015-11-20
+ * \updates 2018-03-25
  * \version $Revision$
  *
  *    Also see the file_functions.cpp module.
@@ -36,6 +36,8 @@ extern bool file_accessible (const std::string & targetfile);
 extern bool file_executable (const std::string & targetfile);
 extern bool file_is_directory (const std::string & targetfile);
 extern bool make_directory (const std::string & pathname);
+extern std::string get_current_directory ();
+extern std::string get_full_path (const std::string & path);
 
 #endif      // SEQ64_FILE_FUNCTIONS_HPP
 

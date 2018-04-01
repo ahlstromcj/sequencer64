@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-17
+ * \updates       2018-04-01
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -273,7 +273,7 @@ mainwnd::mainwnd
     bool mainwid_indep
 #endif
 ) :
-    gui_window_gtk2         (p),
+    gui_window_gtk2         (p, usr().mainwnd_x(), usr().mainwnd_y()),
     performcallback         (),
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
@@ -451,18 +451,21 @@ mainwnd::mainwnd
 
     Gtk::HBox * tophbox = manage(new Gtk::HBox(false, 0));
 
+    if (! usr().window_scaled_down())
+    {
 #ifdef SEQ64_RTMIDI_SUPPORT
-    const char ** bitmap = rc().legacy_format() ?
-        seq64_logo_legacy_xpm : seq64_logo_xpm ;
+        const char ** bitmap = rc().legacy_format() ?
+            seq64_logo_legacy_xpm : seq64_logo_xpm ;
 #else
-    const char ** bitmap = rc().legacy_format() ?
-        sequencer64_legacy_xpm : sequencer64_square_small_xpm ;
+        const char ** bitmap = rc().legacy_format() ?
+            sequencer64_legacy_xpm : sequencer64_square_small_xpm ;
 #endif
 
-    tophbox->pack_start
-    (
-        *manage(new PIXBUF_IMAGE(bitmap)), false, false, TOP_HBOX_PADDING
-    );
+        tophbox->pack_start
+        (
+            *manage(new PIXBUF_IMAGE(bitmap)), false, false, TOP_HBOX_PADDING
+        );
+    }
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS            /* also enables muting button */
 
@@ -854,9 +857,12 @@ mainwnd::mainwnd
         "the Up/Down arrows adjust by the step size, and the Page-Up/Page-Down "
         "keys adjust by the page size, as configured in the 'usr' file."
     );
-    Gtk::Label * bpmlabel = manage(new Gtk::Label("_BPM", true));
-    bpmlabel->set_mnemonic_widget(*m_spinbutton_bpm);
-    bpmhbox->pack_start(*bpmlabel, HBOX_PACKING);
+    if (! usr().window_scaled_down())
+    {
+        Gtk::Label * bpmlabel = manage(new Gtk::Label("_BPM", true));
+        bpmlabel->set_mnemonic_widget(*m_spinbutton_bpm);
+        bpmhbox->pack_start(*bpmlabel, HBOX_PACKING);
+    }
     bpmhbox->pack_start(*m_spinbutton_bpm, HBOX_PACKING);
 
 #ifdef SEQ64_MAINWND_TAP_BUTTON
@@ -889,9 +895,12 @@ mainwnd::mainwnd
         "the Patterns window."
     );
 
-    Gtk::Label * notelabel = manage(new Gtk::Label("_Name", true));
-    notelabel->set_mnemonic_widget(*m_entry_notes);
-    notebox->pack_start(*notelabel, Gtk::PACK_SHRINK);
+    if (! usr().window_scaled_down())
+    {
+        Gtk::Label * notelabel = manage(new Gtk::Label("_Name", true));
+        notelabel->set_mnemonic_widget(*m_entry_notes);
+        notebox->pack_start(*notelabel, Gtk::PACK_SHRINK);
+    }
     notebox->pack_start(*m_entry_notes, HBOX_PACKING);
 
     /*
@@ -921,9 +930,12 @@ mainwnd::mainwnd
         (
             m_spinbutton_ss, "Select screen-set from one of up to 32 sets."
         );
-        Gtk::Label * setlabel = manage(new Gtk::Label("_Set", true));
-        setlabel->set_mnemonic_widget(*m_spinbutton_ss);
-        sethbox->pack_start(*setlabel, Gtk::PACK_SHRINK);
+        if (! usr().window_scaled_down())
+        {
+            Gtk::Label * setlabel = manage(new Gtk::Label("_Set", true));
+            setlabel->set_mnemonic_widget(*m_spinbutton_ss);
+            sethbox->pack_start(*setlabel, Gtk::PACK_SHRINK);
+        }
         sethbox->pack_start(*m_spinbutton_ss, Gtk::PACK_SHRINK);
     }
 
@@ -1005,7 +1017,7 @@ mainwnd::mainwnd
         mainwid_wrapper->add(*m_main_wid);
         mainwid_wrapper->set_size
         (
-            m_main_wid->m_mainwid_x, m_main_wid->m_mainwid_y
+            m_main_wid->nominal_width(), m_main_wid->nominal_height()
         );
 
         Gtk::HBox * mainwid_vscroll_wrapper = new Gtk::HBox();
@@ -1165,11 +1177,11 @@ mainwnd::mainwnd
     {
         resize
         (
-            m_main_wid->m_mainwid_x + 20,
+            m_main_wid->nominal_width() + 20,
             tophbox->get_allocation().get_height() +
                 bottomhbox->get_allocation().get_height() +
                 m_menubar->get_allocation().get_height() +
-                m_main_wid->m_mainwid_y + 40
+                m_main_wid->nominal_height() + 40
         );
     }
 
@@ -2033,12 +2045,8 @@ mainwnd::file_save_as (SaveOption option)
         case Gtk::RESPONSE_OK:
         {
             std::string fname = dialog.get_filename();
-            Gtk::FileFilter * current_filter = dialog.get_filter();
-            if
-            (
-                (current_filter != NULL) &&
-                (current_filter->get_name() == "MIDI files")
-            )
+            Gtk::FileFilter * filter = dialog.get_filter();
+            if ((filter != NULL) && (filter->get_name() == "MIDI files"))
             {
                 /*
                  * Check for MIDI file extension; if missing, add ".midi".
@@ -2145,7 +2153,17 @@ mainwnd::open_file (const std::string & fn)
     perf().clear_all();
 
     bool result = f.parse(perf());      /* parsing handles old & new format */
-    if (! result)
+    if (result)
+    {
+        ppqn(f.ppqn());                 /* get and save the actual PPQN     */
+        rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
+        rc().filename(fn);
+        rc().add_recent_file(fn);       /* from Oli Kester's Kepler34       */
+        update_recent_files_menu();
+        update_window_title();
+        reset_window();
+    }
+    else
     {
         std::string errmsg = f.error_message();
         Gtk::MessageDialog errdialog
@@ -2154,16 +2172,8 @@ mainwnd::open_file (const std::string & fn)
         );
         errdialog.run();
         if (f.error_is_fatal())
-            return;
+            rc().remove_recent_file(fn);
     }
-
-    ppqn(f.ppqn());                     /* get and save the actual PPQN     */
-    rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
-    rc().filename(fn);
-    rc().add_recent_file(fn);           /* from Oli Kester's Kepler34       */
-    update_recent_files_menu();
-    update_window_title();
-    reset_window();
 }
 
 /**
@@ -3089,6 +3099,18 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 
         if (! perf().mainwnd_key_event(k))
         {
+            // This will first be used in the relevant Qt module, before
+            // we monkey with it here.
+            //
+            // perform::action_t perform::keyboard_group_action (unsigned key)
+
+            /*
+             * \todo
+             *      Call perf().keyboard_group_action(k) and use a switch
+             *      to get the new values based on the return code which
+             *      can be perform::ACTION_BPM etc.
+             */
+
             if (k.is(PREFKEY(bpm_dn)))
             {
                 midibpm newbpm = perf().decrement_beats_per_minute();
@@ -3191,7 +3213,8 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             {
                 std::ostringstream os;
                 os
-                    << "Mute group key '" << keyval_name(k.key())
+                    << "Mute group key '"
+                    << perf().key_name(k.key()) // keyval_name(k.key())
                     << "' (code = " << k.key() << ") successfully mapped."
                    ;
 
@@ -3214,7 +3237,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             {
                 std::ostringstream os;
                 os
-                    << "Key '" << keyval_name(k.key())
+                    << "Key '" << perf().key_name(k.key()) // keyval_name(k.key())
                     << "' (code = " << k.key()
                     << ") is not a configured mute-group key. "
                     << "To add it, see File/Options menu or the 'rc' file."
@@ -3285,6 +3308,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                     }
                     else if (m_call_seq_shift > 0)      /* variset support  */
                     {
+                        //                           why? -------v
                         int keynum = seqnum + m_call_seq_shift * c_seqs_in_set;
                         sequence_key(keynum);
                         result = true;
@@ -3364,7 +3388,7 @@ mainwnd::on_key_release_event (GdkEventKey * ev)
     if (perf().is_group_learning())
         k.shift_lock();
 
-    (void) perf().mainwnd_key_event(k);     // already called in key-press!!!
+    (void) perf().mainwnd_key_event(k);     // called in key-press, too
     return false;
 }
 
@@ -3868,6 +3892,9 @@ mainwnd::populate_menu_help ()
 /**
  *  Use the sequence key to toggle the playing of an active pattern in
  *  the current screen-set.
+ *
+ * \param seq
+ *      This is actually the key-number.
  */
 
 void

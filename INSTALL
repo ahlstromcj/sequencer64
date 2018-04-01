@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.94.6 and above
+INSTALL for Sequencer64 v. 0.94.7 and above
 Chris Ahlstrom
-2015-09-10 to 2018-03-17
+2015-09-10 to 2018-03-21
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -19,29 +19,33 @@ bootstrapping setup is primarily aimed at developers.  Starting with version
         option for Linux; might still be used for the upcoming Windows
         implementation.
     -   qseq64.  The seq64 (rtmidi) version of the application, with a Qt5
-        user interface.  Still a LONG WAY from usability.
+        user interface based on Kepler34.  Still a LONG WAY from usability.
 
 Quick Install:
 
-    The quick install is meant for "newbies" or for those who do no want to
-    install a lot of extra developer packages.  Also, this step builds the
-    default version of Sequencer64, "seq64".
+    The quick install is meant for for those who do no want to install a lot
+    of extra developer packages, and want to use the standard "./configure ;
+    make ; make install" mantra.  These steps build the default version of
+    Sequencer64, "seq64".
 
-    This project finally provides a "configure" script for the normal
-    build process.  However, as usual, you will need to make sure various
-    "dev" dependencies are installed.  See the DEPENDENCIES section.  In
-    addition, there may be a need to do the following commands, which require
-    automake and libtool to be installed:
+    The "configure" script for the normal build process means you will need to
+    make sure various "dev" dependencies are installed.  See the DEPENDENCIES
+    section.  In addition, there may be a need to do the following commands,
+    which require automake and libtool to be installed:
 
         $ libtoolize
         $ automake --add-missing
 
-    We hope to eliminate the steps above at some point.  Next:
+    Grab a Sequencer64 tarball e.g. sequencer64-master-rtmidi-0.94.6-1.tar.xz.
+    Untar it
 
-        $ ./configure [options] ; make ; sudo make install
+        $ ./configure --enable-release --enable-rtmidi
+        $ make
+        $ sudo make install
 
-    This build results in the first executable described above, seq64,
-    the same setup created by "./bootstrap -er -rm".
+    The configure "--enable-release --enable-rtmidi" options are optional,
+    since they are the defaults.  This build results in the first executable
+    described above, seq64, the same setup created by "./bootstrap -er -rm".
 
     If any issues occur, please write me through GitHub, or directly at my
     Gmail address.
@@ -132,6 +136,15 @@ Advanced Steps:
 
        It contains a prebuilt PDF version of the manual, as well as the
        LaTeX files needed to rebuild it.
+
+   7.  If you want to generate your own source/configure tarball for
+       distributing Sequencer64, use the pack script:
+
+       ./pack --release rtmidi 0.94.6
+
+       where rtmidi is the intended default build, and 0.94.6 is the version
+       of the project.  The branch is included in the resulting tarball name;
+       the usual branch would be "master".
 
 CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 

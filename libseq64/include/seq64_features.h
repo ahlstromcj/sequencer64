@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2018-03-03
+ * \updates       2018-03-20
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -284,14 +284,13 @@
  */
 
 /**
- *  EXPERIMENTAL.  Not yet working.  A very tough problem.
- *  The idea is to go into an auto-screen-set mode via a menu entry, where the
- *  current screen-set is queued for muting, while the next selected
- *  screen-set is queued for unmuting.
- *  DO NOT ENABLE AT THIS TIME.
+ *  EXPERIMENTAL.  Not yet working, removed.  A very tough problem.  The idea
+ *  is to go into an auto-screen-set mode via a menu entry, where the current
+ *  screen-set is queued for muting, while the next selected screen-set is
+ *  queued for unmuting.
+ *
+ *  #undef  SEQ64_USE_AUTO_SCREENSET_QUEUE
  */
-
-#undef  SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
  *  Try to highlight the selected pattern using black-on-cyan

@@ -1,3 +1,6 @@
+#ifndef SEQ64_QSKEYMAPS_HPP
+#define SEQ64_QSKEYMAPS_HPP
+
 /*
  *  This file is part of seq24/sequencer64.
  *
@@ -17,42 +20,42 @@
  */
 
 /**
- * \file          qt5_helpers.cpp
+ * \file          qskeymaps.hpp
  *
- *  This module declares/defines some helpful macros or functions.
+ *  The time bar shows markers and numbers for the measures of the song,
+ *  and also depicts the left and right markers.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2018-03-14
- * \updates       2018-03-14
+ * \date          2018-03-24
+ * \updates       2018-03-25
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <QPushButton>
-
-#include "qt5_helpers.hpp"
+#include <string>                       /* std::string                      */
 
 /*
- * Don't document the namespace.
+ *  Do not document a namespace, it breaks Doxygen.
  */
 
 namespace seq64
 {
 
-void
-qt_set_icon (const char * pixmap_filename [], QPushButton * button)
-{
-    QPixmap pixmap(pixmap_filename);
-    QIcon icon;
-    icon.addPixmap(pixmap, QIcon::Normal, QIcon::On);
-    button->setIcon(icon);
-}
+/**
+ *  Free functions in the seq64 namespace.
+ */
+
+extern unsigned qt_map_to_gdk (unsigned qtkey, unsigned qttext);
+extern std::string qt_key_name (unsigned qtkey, unsigned qttext);
+extern unsigned gdk_map_to_qt (unsigned gdkkeycode);
 
 }               // namespace seq64
 
+#endif          // SEQ64_QSKEYMAPS_HPP
+
 /*
- * qt5_helpers.cpp
+ * qskeymaps.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

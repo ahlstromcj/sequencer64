@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-14
+ * \updates       2018-04-01
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -34,26 +34,27 @@
  *  behavior of the pattern slots.
  */
 
-#include "qsmainwnd.hpp"
+#include "keystroke.hpp"
 #include "perform.hpp"
+#include "qsmacros.hpp"                 /* QS_TEXT_CHAR() macro             */
 #include "qperfeditframe.hpp"
 #include "qsabout.hpp"
 #include "qseditoptions.hpp"
-#include "qsmaintime.hpp"
 #include "qseqeditframe.hpp"
+#include "qskeymaps.hpp"                /* mapping between Gtkmm and Qt     */
+#include "qsmaintime.hpp"
+#include "qsmainwnd.hpp"
 #include "qsliveframe.hpp"
 #include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
 #include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
 #include "forms/qsmainwnd.ui.h"         /* generated btnStop, btnPlay, etc. */
 
-#ifdef USE_LOCAL_QT_ICONS
-#include "pixmaps/live_mode.xpm"        // #include "pixmaps/song_mode.xpm"
+#include "pixmaps/live_mode.xpm"        /* #include "pixmaps/song_mode.xpm" */
 #include "pixmaps/panic.xpm"
 #include "pixmaps/play2.xpm"
 #include "pixmaps/snap.xpm"
-#include "pixmaps/song_rec_on.xpm"      // #include "pixmaps/song_rec.xpm"
+#include "pixmaps/song_rec_on.xpm"      /* #include "pixmaps/song_rec.xpm" */
 #include "pixmaps/stop.xpm"
-#endif
 
 /*
  * Don't document the namespace.
@@ -68,25 +69,30 @@ namespace seq64
 
 qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
  :
-    QMainWindow     (parent),
-    ui              (new Ui::qsmainwnd),
-    m_menu_recent   (NULL),
-    m_main_perf     (p)
+    QMainWindow         (parent),
+    ui                  (new Ui::qsmainwnd),
+    m_live_frame        (nullptr),
+    m_song_frame        (nullptr),
+    m_edit_frame        (nullptr),
+    m_msg_error         (nullptr),
+    m_msg_save_changes  (nullptr),
+    m_timer             (nullptr),
+    m_menu_recent       (nullptr),
+    m_recent_action_list(),                 // new
+    mc_max_recent_files (10),               // new
+    mImportDialog       (nullptr),
+    m_main_perf         (p),
+    m_beat_ind          (nullptr),
+    m_dialog_prefs      (nullptr),
+    mDialogAbout        (nullptr) //,
+//  m_modified          (false)
 {
     ui->setupUi(this);
-    for (int i = 0; i < 10; ++i)        // nullify all recent-file action slots
-        m_action[i] = NULL;
-
-    // center on screen
 
     QRect screen = QApplication::desktop()->screenGeometry();
-    int x = (screen.width() - width()) / 2;
+    int x = (screen.width() - width()) / 2;             // center on screen
     int y = (screen.height() - height()) / 2;
     move(x, y);
-
-    // maximize by default setWindowState(Qt::WindowMaximized);
-
-    m_modified = false;
 
     // fill options for beats per measure combo box and set default
 
@@ -125,7 +131,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_dialog_prefs = new qseditoptions(m_main_perf, this);
     m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
     m_song_frame = new qperfeditframe(m_main_perf, ui->SongTab);
-    m_edit_frame = NULL;                // set so we know the edit tab is empty
+    m_edit_frame = nullptr;                // set so we know the edit tab is empty
     m_beat_ind = new qsmaintime(m_main_perf, this, 4, 4);
     mDialogAbout = new qsabout(this);
 
@@ -142,12 +148,9 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     );
     m_beat_ind->set_beat_width(m_song_frame->get_beat_width());
     m_beat_ind->set_beats_per_measure(m_song_frame->get_beats_per_measure());
-    update_recent_files_menu();
     m_live_frame->setFocus();
 
-    // timer to refresh GUI elements every few ms
-
-    m_timer = new QTimer(this);
+    m_timer = new QTimer(this); // refresh GUI elements every few ms
     m_timer->setInterval(50);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(refresh()));
     m_timer->start();
@@ -187,7 +190,8 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
 
     connect
     (
-        ui->btnSongPlay, SIGNAL(clicked(bool)), this, SLOT(setSongPlayback(bool))
+        ui->btnSongPlay, SIGNAL(clicked(bool)),
+        this, SLOT(setSongPlayback(bool))
     );
     qt_set_icon(live_mode_xpm, ui->btnSongPlay);
 
@@ -198,11 +202,13 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
 
     // Record (song)
 
-    connect(ui->btnRecord, SIGNAL(clicked(bool)), this, SLOT(setRecording(bool)));
+    connect
+    (
+        ui->btnRecord, SIGNAL(clicked(bool)), this, SLOT(setRecording(bool))
+    );
     qt_set_icon(song_rec_on_xpm, ui->btnRecord);
 
     connect(ui->spinBpm, SIGNAL(valueChanged(int)), this, SLOT(updateBpm(int)));
-
     connect
     (
         ui->cmb_beat_length, SIGNAL(currentIndexChanged(int)),
@@ -237,6 +243,17 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     connect(ui->btnPanic, SIGNAL(clicked(bool)), this, SLOT(panic()));
     qt_set_icon(panic_xpm, ui->btnPanic);
 
+    create_action_connections();
+    create_action_menu();
+    update_recent_files_menu();
+
+    /*
+     * This scales the full GUI, cool!
+     */
+
+    int width = usr().scale_size(800);
+    int height = usr().scale_size(450);
+    resize(width, height);
     show();
 }
 
@@ -311,7 +328,7 @@ void
 qsmainwnd::updateBpm (int newBpm)
 {
     perf().set_beats_per_minute(newBpm);
-    m_modified = true;
+//  m_modified = true;
 }
 
 /**
@@ -347,44 +364,46 @@ qsmainwnd::open_file (const std::string & fn)
     perf().clear_all();
 
     bool result = f.parse(m_main_perf, 0);
-    m_modified = ! result;
-    if (! result)
+    if (result)
     {
-        QString msg_text = "Error reading MIDI data from file: ";
-        msg_text += fn.c_str();
+//      ppqn(f.ppqn());                 /* get and save the actual PPQN     */
+        rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
+        rc().filename(fn);
+        rc().add_recent_file(fn);       /* from Oli Kester's Kepler34       */
+
+        /*
+         *  Reinitialize the "Live" frame.  Reconnect its signal, as we've
+         *  made a new object.
+         */
+
+        ui->LiveTabLayout->removeWidget(m_live_frame);
+        if (not_nullptr(m_live_frame))
+            delete m_live_frame;
+
+        m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
+        ui->LiveTabLayout->addWidget(m_live_frame);
+        connect
+        (
+            m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int))
+        );
+        m_live_frame->show();
+        m_live_frame->setFocus();
+        m_live_frame->redraw();
+        ui->spinBpm->setValue(perf().bpm());
+        m_song_frame->update_sizes();
+        update_recent_files_menu();
+        update_window_title();
+    }
+    else
+    {
+        std::string errmsg = f.error_message();
+        QString msg_text = errmsg.c_str();
+        // msg_text += fn.c_str();
         m_msg_error->showMessage(msg_text);
         m_msg_error->exec();
-        return;
+        if (f.error_is_fatal())
+            rc().remove_recent_file(fn);
     }
-
-//  ppqn(f.ppqn());                     /* get and save the actual PPQN     */
-    rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
-    rc().filename(fn);
-    rc().add_recent_file(fn);           /* from Oli Kester's Kepler34       */
-    update_recent_files_menu();
-    update_window_title();
-
-    /*
-     *  Reinitialize the "Live" frame.
-     */
-
-    ui->LiveTabLayout->removeWidget(m_live_frame);
-    if (m_live_frame)
-        delete m_live_frame;
-
-    m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
-    ui->LiveTabLayout->addWidget(m_live_frame);
-
-    // Reconnect this signal, as we've made a new object.
-
-    connect(m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int)));
-    m_live_frame->show();
-
-    m_live_frame->setFocus();
-//  update_recent_files_menu();
-    m_live_frame->redraw();
-    ui->spinBpm->setValue(perf().bpm());
-    m_song_frame->update_sizes();
 }
 
 /**
@@ -428,7 +447,8 @@ bool
 qsmainwnd::check ()
 {
     bool result = false;
-    if (m_modified)
+//  if (m_modified)
+    if (perf().is_modified())
     {
         int choice = m_msg_save_changes->exec();
         switch (choice)
@@ -467,7 +487,7 @@ qsmainwnd::new_file()
         // m_entry_notes->set_text(perf().current_screenset_notepad());
         rc().filename("");
         update_window_title();
-        m_modified = false;
+//      m_modified = false;
     }
 }
 
@@ -498,20 +518,27 @@ bool qsmainwnd::save_file()
         }
         else
         {
-            m_msg_error->showMessage("Error writing file.");
+            std::string errmsg = f.error_message();
+            m_msg_error->showMessage(errmsg.c_str());
             m_msg_error->exec();
         }
     }
-    m_modified = ! result;
+
+    /*
+     * The Gtkmm version does not do this.
+     */
+
+//  m_modified = ! result;
     return result;
 }
 
 /**
- *
+ * \todo
+ *      Add the export options as done in mainwnd::file_save_as().
  */
 
 void
-qsmainwnd::save_file_as()
+qsmainwnd::save_file_as ()
 {
     QString file;
     file = QFileDialog::getSaveFileName
@@ -553,7 +580,7 @@ qsmainwnd::showImportDialog()
             {
                 midifile f(path.toStdString());
                 f.parse(m_main_perf, perf().screenset());
-                m_modified = true;
+//              m_modified = true;
                 ui->spinBpm->setValue(perf().bpm());
                 m_live_frame->setBank(perf().screenset());
 
@@ -586,14 +613,14 @@ void
 qsmainwnd::loadEditor(int seqId)
 {
     ui->EditTabLayout->removeWidget(m_edit_frame);
-    if (m_edit_frame)
+    if (not_nullptr(m_edit_frame))
         delete  m_edit_frame;
 
     m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
     ui->EditTabLayout->addWidget(m_edit_frame);
     m_edit_frame->show();
     ui->tabWidget->setCurrentIndex(2);
-    m_modified = true;
+//  m_modified = true;
 }
 
 /**
@@ -646,7 +673,7 @@ qsmainwnd::updateBeatLength (int blIndex)
             seq->set_num_measures(seq->get_num_measures());
         }
     }
-    m_modified = true;
+//  m_modified = true;
 
     if (m_edit_frame)
         m_edit_frame->updateDrawGeometry();
@@ -675,7 +702,7 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
 
         }
     }
-    m_modified = true;
+//  m_modified = true;
     if (m_edit_frame)
         m_edit_frame->updateDrawGeometry();
 }
@@ -710,6 +737,11 @@ qsmainwnd::tabWidgetClicked (int newIndex)
 
         sequence * seq = perf().get_sequence(seqId);
         seq->set_dirty();
+
+        /*
+         * When does this get deleted?
+         */
+
         m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
         ui->EditTabLayout->addWidget(m_edit_frame);
         m_edit_frame->show();
@@ -724,90 +756,78 @@ qsmainwnd::tabWidgetClicked (int newIndex)
 void
 qsmainwnd::update_recent_files_menu ()
 {
-    /*
-     *  If the menu already exists, delete it.  This differs from the Gtkmm
-     *  implementation, which simply clears it.
-     */
+    int count = rc().recent_file_count();
+    if (count > 0)
+    {
+        if (count > mc_max_recent_files)
+            count = mc_max_recent_files;
 
-    if (m_menu_recent && m_menu_recent->isWidgetType())
+        for (int f = 0; f < count; ++f)
+        {
+            std::string shortname = rc().recent_file(f);
+            std::string longname = rc().recent_file(f, false);
+            m_recent_action_list.at(f)->setText(shortname.c_str());
+            m_recent_action_list.at(f)->setData(longname.c_str());
+            m_recent_action_list.at(f)->setVisible(true);
+        }
+    }
+    for (int fj = count; fj < mc_max_recent_files; ++fj)
+        m_recent_action_list.at(fj)->setVisible(false);
+
+    ui->menuFile->insertMenu(ui->actionSave, m_menu_recent);
+}
+
+/**
+ *
+ */
+
+void
+qsmainwnd::create_action_connections ()
+{
+    for (int i = 0; i < mc_max_recent_files; ++i)
+    {
+        QAction * action = new QAction(this);
+        action->setVisible(false);
+        QObject::connect
+        (
+            action, &QAction::triggered, this, &qsmainwnd::open_recent_file
+        );
+        m_recent_action_list.append(action);
+    }
+}
+
+/**
+ *
+ */
+
+void
+qsmainwnd::create_action_menu ()
+{
+    if (not_nullptr(m_menu_recent) && m_menu_recent->isWidgetType())
         delete m_menu_recent;
 
     m_menu_recent = new QMenu(tr("&Recent MIDI files..."), this);
-
-    /*
-     *  Only add if a path is actually contained in each slot.  This method
-     *  of adding paths is pretty clumsy compared to the Gtkmm method, which
-     *  uses a simple loop.
-     */
-
-    if (rc().recent_file_count() == 0)
+    for (int i = 0; i < mc_max_recent_files; ++i)
     {
-        m_menu_recent->addAction(tr("<none>"));
-        ui->menuFile->insertMenu(ui->actionSave, m_menu_recent);
-        return;
-    }
-
-    if (rc().recent_file_count() > 0)
-    {
-        ///// DOES THIS CAUSE SEGFAULT?
-        //    m_action[0]->setShortcut(tr("Ctrl+R"));
-        m_action[0] = new QAction(rc().recent_file(0).c_str(), this);
-        connect(m_action[0], SIGNAL(triggered(bool)), this, SLOT(load_recent_1()));
-    }
-    if (rc().recent_file_count() > 1)
-    {
-        m_action[1] = new QAction(rc().recent_file(1).c_str(), this);
-        connect(m_action[1], SIGNAL(triggered(bool)), this, SLOT(load_recent_2()));
-    }
-    if (rc().recent_file_count() > 2)
-    {
-        m_action[2] = new QAction(rc().recent_file(2).c_str(), this);
-        connect(m_action[2], SIGNAL(triggered(bool)), this, SLOT(load_recent_3()));
-    }
-    if (rc().recent_file_count() > 3)
-    {
-        m_action[3] = new QAction(rc().recent_file(3).c_str(), this);
-        connect(m_action[3], SIGNAL(triggered(bool)), this, SLOT(load_recent_4()));
-    }
-    if (rc().recent_file_count() > 4)
-    {
-        m_action[4] = new QAction(rc().recent_file(4).c_str(), this);
-        connect(m_action[4], SIGNAL(triggered(bool)), this, SLOT(load_recent_5()));
-    }
-    if (rc().recent_file_count() > 5)
-    {
-        m_action[5] = new QAction(rc().recent_file(5).c_str(), this);
-        connect(m_action[5], SIGNAL(triggered(bool)), this, SLOT(load_recent_6()));
-    }
-    if (rc().recent_file_count() > 6)
-    {
-        m_action[6] = new QAction(rc().recent_file(6).c_str(), this);
-        connect(m_action[6], SIGNAL(triggered(bool)), this, SLOT(load_recent_7()));
-    }
-    if (rc().recent_file_count() > 7)
-    {
-        m_action[7] = new QAction(rc().recent_file(7).c_str(), this);
-        connect(m_action[7], SIGNAL(triggered(bool)), this, SLOT(load_recent_8()));
-    }
-    if (rc().recent_file_count() > 8)
-    {
-        m_action[8] = new QAction(rc().recent_file(8).c_str(), this);
-        connect(m_action[8], SIGNAL(triggered(bool)), this, SLOT(load_recent_9()));
-    }
-    if (rc().recent_file_count() > 9)
-    {
-        m_action[9] = new QAction(rc().recent_file(9).c_str(), this);
-        connect(m_action[9], SIGNAL(triggered(bool)), this, SLOT(load_recent_10()));
-    }
-
-    for (int i = 0; i < 10; ++i)
-    {
-        if (m_action[i])
-            m_menu_recent->addAction(m_action[i]);
-        else
-            break;
+        m_menu_recent->addAction(m_recent_action_list.at(i));
     }
     ui->menuFile->insertMenu(ui->actionSave, m_menu_recent);
+}
+
+/**
+ *
+ */
+
+void
+qsmainwnd::open_recent_file ()
+{
+    QAction * action = qobject_cast<QAction *>(sender());
+    if (not_nullptr(action))
+    {
+        QString fname = QVariant(action->data()).toString();
+        std::string actionfile = fname.toStdString();
+        open_file(actionfile);
+    }
 }
 
 /**
@@ -821,17 +841,6 @@ qsmainwnd::quit ()
         QCoreApplication::exit();
 }
 
-void qsmainwnd::load_recent_1 () { if (check()) open_file(rc().recent_file(0)); }
-void qsmainwnd::load_recent_2 () { if (check()) open_file(rc().recent_file(1)); }
-void qsmainwnd::load_recent_3 () { if (check()) open_file(rc().recent_file(2)); }
-void qsmainwnd::load_recent_4 () { if (check()) open_file(rc().recent_file(3)); }
-void qsmainwnd::load_recent_5 () { if (check()) open_file(rc().recent_file(4)); }
-void qsmainwnd::load_recent_6 () { if (check()) open_file(rc().recent_file(5)); }
-void qsmainwnd::load_recent_7 () { if (check()) open_file(rc().recent_file(6)); }
-void qsmainwnd::load_recent_8 () { if (check()) open_file(rc().recent_file(7)); }
-void qsmainwnd::load_recent_9 () { if (check()) open_file(rc().recent_file(8)); }
-void qsmainwnd::load_recent_10 () { if (check()) open_file(rc().recent_file(9)); }
-
 /**
  *
  */
@@ -843,31 +852,53 @@ qsmainwnd::setRecordingSnap (bool snap)
 }
 
 /**
+ *  The Gtkmm 2.4 version calls perform::mainwnd_key_event().  The function
+ *  here handles only the Space key to start/stop playback.  See
+ *  qsliveframe::keyPressEvent() instead.
  *
+ *  Note that there is currently a Qt issue with processing the Escape key
+ *  (which is the normal "Stop" key).  For now, we have to set up qseq64.rc to
+ *  use the Space key for both Start and Stop.  Also, must debug why the Pause
+ *  key is not working.  And why the key appearance is not changing in the
+ *  GUI.
+ *
+ * \todo
+ *      Support and indicate the Pause operation.
+ *
+ * \param event
+ *      Provides a pointer to the key event.
  */
 
 void
 qsmainwnd::keyPressEvent (QKeyEvent * event)
 {
-    switch (event->key())
+    unsigned ktext = QS_TEXT_CHAR(event->text());
+    unsigned kkey = event->key();
+    unsigned gdkkey = qt_map_to_gdk(kkey, ktext);
+
+#ifdef PLATFORM_DEBUG_TMI
+    std::string kname = qt_key_name(kkey, ktext);
+    printf
+    (
+        "qsmainwnd: name = %s; gdk = 0x%x; key = 0x%x; text = 0x%x\n",
+        kname.c_str(), gdkkey, kkey, ktext
+    );
+#endif
+
+    keystroke k(gdkkey, SEQ64_KEYSTROKE_PRESS);
+    if (perf().playback_key_event(k))               // song mode parameter?
     {
-    case Qt::Key_Space:
         if (perf().is_running())
         {
-            stopPlaying();
-            ui->btnPlay->setChecked(false);
+            ui->btnPlay->setChecked(false);         // stopPlaying();
         }
         else
         {
-            startPlaying();
-            ui->btnPlay->setChecked(true);
+            ui->btnPlay->setChecked(true);          // startPlaying();
         }
-        break;
-
-    default:
-        event->ignore();
-        break;
     }
+    else
+        event->ignore();
 }
 
 /**

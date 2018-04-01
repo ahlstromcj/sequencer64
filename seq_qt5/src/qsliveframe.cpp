@@ -24,14 +24,18 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-11
+ * \updates       2018-03-31
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "globals.h"
-#include "qsliveframe.hpp"
+#include "keystroke.hpp"
 #include "perform.hpp"
+#include "qskeymaps.hpp"                /* mapping between Gtkmm and Qt     */
+#include "qsliveframe.hpp"
+#include "qsmacros.hpp"                 /* QS_TEXT_CHAR() macro             */
+#include "settings.hpp"
 #include "forms/qsliveframe.ui.h"
 
 /*
@@ -89,8 +93,8 @@ qsliveframe::qsliveframe (perform & perf, QWidget * parent)
     mMsgBoxNewSeqCheck->setDefaultButton(QMessageBox::No);
     setBank(0);
 
-    QString bankName = mPerf.get_bank_name(m_bank_id).c_str();
-    ui->txtBankName->setPlainText(bankName);
+    QString bname = mPerf.get_bank_name(m_bank_id).c_str();
+    ui->txtBankName->setPlainText(bname);
     connect(ui->spinBank, SIGNAL(valueChanged(int)), this, SLOT(updateBank(int)));
     connect(ui->txtBankName, SIGNAL(textChanged()), this, SLOT(updateBankName()));
 
@@ -132,7 +136,7 @@ qsliveframe::drawSequence (int seq)
 {
     QPainter painter(this);
     QPen pen(Qt::black);
-    QBrush brush(Qt::darkGray);
+    QBrush brush(Qt::black);     // QBrush brush(Qt::darkGray);
 
     mFont.setPointSize(6);
     mFont.setLetterSpacing(QFont::AbsoluteSpacing, 1);
@@ -227,19 +231,19 @@ qsliveframe::drawSequence (int seq)
             pen.setStyle(Qt::SolidLine);
             painter.setPen(pen);
 
-            // TODO Use perform::sequence_label() to do this
-            char name[20];
-            snprintf(name, sizeof name, "%.13s", s->name().c_str());
-            painter.drawText(base_x + qc_text_x, base_y + 4, 80, 80, 1, name);
+            // char name[32];
+            // snprintf(name, sizeof name, "%.14s", s->name().c_str());
+            // snprintf(name, sizeof name, "%.14s", s->title().c_str());
 
-            /* midi channel + key + timesig */
+            std::string st = perf().sequence_title(*s);
+            QString title(st.c_str());
+            painter.drawText(base_x + qc_text_x, base_y + 4, 80, 80, 1, title);
+
+            std::string sl = perf().sequence_label(*s);
+            QString label(sl.c_str());
+            painter.drawText(base_x + 8, base_y + thumbH - 5, label);
             if (mPerf.show_ui_sequence_key())
             {
-                /*
-                 * When looking up key, ignore bank offset (print keys on
-                 * every bank).  A Kepler34 bank is a Sequencer64 screen-set.
-                 */
-
                 QString key;
                 key[0] = (char) mPerf.lookup_keyevent_key
                 (
@@ -248,24 +252,21 @@ qsliveframe::drawSequence (int seq)
                 painter.drawText(base_x + thumbW - 10, base_y + thumbH - 5, key);
             }
 
-            QString seqInfo = QString::number(s->get_midi_bus() + 1);
-            seqInfo.append("-");
-            seqInfo.append(QString::number(s->get_midi_channel() + 1));
-
-            painter.drawText(base_x + 5, base_y + thumbH - 5, seqInfo);
-
             int rectangle_x = base_x + 7;
             int rectangle_y = base_y + 15;
 
+            // pen.setColor(Qt::black);
             pen.setColor(Qt::gray);
             brush.setStyle(Qt::NoBrush);
             painter.setBrush(brush);
             painter.setPen(pen);
-            //draw inner box for notes
+
+            // inner box for notes
+
             painter.drawRect(rectangle_x-2, rectangle_y-1, previewW, previewH);
 
-            int lowest_note;    //  = s->get_lowest_note_event();
-            int highest_note;   //  = s->get_highest_note_event();
+            int lowest_note;
+            int highest_note;
             (void) s->get_minmax_note_events(lowest_note, highest_note);
 
             int height = highest_note - lowest_note + 2;
@@ -338,20 +339,42 @@ qsliveframe::drawSequence (int seq)
         }
         else
         {
-            pen.setColor(Qt::black);
-            pen.setStyle(Qt::NoPen);
+            /*
+             * This removes the black border around the empty sequence boxes.
+             * We like the bordker
+             *
+             *  pen.setStyle(Qt::NoPen);
+             */
+
             mFont.setPointSize(15);
+            pen.setColor(Qt::black);        // or dark gray?
             painter.setPen(pen);
             painter.setFont(mFont);
+            painter.drawRect(base_x, base_y, thumbW, thumbH);   // outline
 
-            // draw outline of this seq thumbnail
+            /*
+             * No sequence present. Insert placeholder.  (Not a big fan of this
+             * one.)
+             *
+             *  pen.setStyle(Qt::SolidLine);
+             *  painter.setPen(pen);
+             *  painter.drawText(base_x + 2, base_y + 17, "+");
+             */
 
-            painter.drawRect(base_x, base_y, thumbW, thumbH);
-
-            // no sequence present. Insert placeholder
-            pen.setStyle(Qt::SolidLine);
-            painter.setPen(pen);
-            painter.drawText(base_x + 2, base_y + 17, "+");
+            if (mPerf.show_ui_sequence_number())
+            {
+                int lx = base_x + (thumbW / 2) - 7;
+                int ly = base_y + (thumbH / 2) + 5;
+                char snum[8];
+                snprintf(snum, sizeof snum, "%d", seq);
+                mFont.setPointSize(8);
+                pen.setColor(Qt::white);    // pen.setColor(Qt::black);
+                pen.setWidth(1);
+                pen.setStyle(Qt::SolidLine);
+                painter.setPen(pen);
+                painter.setFont(mFont);
+                painter.drawText(lx, ly, snum);
+            }
         }
     }
 
@@ -381,20 +404,23 @@ qsliveframe::drawAllSequences ()
  */
 
 void
-qsliveframe::setBank (int newBank)
+qsliveframe::setBank ()
 {
-    m_bank_id = newBank;
-    if (m_bank_id < 0)
-        m_bank_id = qc_max_num_banks - 1;
+    int bank = mPerf.screenset();
+    setBank(bank);
+}
 
-    if (m_bank_id >= qc_max_num_banks)              // 32
-        m_bank_id = 0;
+/**
+ *
+ */
 
-    mPerf.set_screenset(m_bank_id);        // set_offset(m_bank_id);
-
-    QString bankName = mPerf.get_bank_name(m_bank_id).c_str();
-    ui->txtBankName->setPlainText(bankName);
-    ui->spinBank->setValue(m_bank_id);
+void
+qsliveframe::setBank (int bank)
+{
+    QString bname = mPerf.get_bank_name(bank).c_str();
+    ui->txtBankName->setPlainText(bname);
+    ui->spinBank->setValue(bank);
+    m_bank_id = bank;
     update();
 }
 
@@ -413,10 +439,10 @@ qsliveframe::redraw ()
  */
 
 void
-qsliveframe::updateBank (int newBank)
+qsliveframe::updateBank (int bank)
 {
-    mPerf.set_screenset(newBank);
-    setBank(newBank);
+    mPerf.set_screenset(bank);
+    setBank(bank);
     mPerf.modify();
 }
 
@@ -703,50 +729,93 @@ qsliveframe::editSeq ()
 }
 
 /**
+ *  The Gtkmm 2.4 version calls perform::mainwnd_key_event().  We have broken
+ *  that function into pieces (smaller functions) that we can use here.  An
+ *  important point is that keys that affect the GUI directly need to be
+ *  handled here in the GUI.  Another important point is that other events are
+ *  offloaded to the perform object, and we need to let that object handle as
+ *  much as possible.  The logic here is an admixture of events that we will
+ *  have to sort out.
  *
+ *  Note that the QKeyEWvent::key() function does not distinguish between
+ *  capital and non-capital letters, so we use the text() function (returning
+ *  the Unicode text the key generated) for this purpose and provide a the
+ *  QS_TEXT_CHAR() macro to make it obvious.
+ *
+ *  Weird.  After the first keystroke, for, say 'o' (ascii 111) == kkey, we
+ *  get kkey == 0, presumably a terminator character that we have to ignore.
+ *  Also, we can't intercept the Esc key.  Qt grabbing it?
+ *
+ * \param event
+ *      Provides a pointer to the key event.
  */
 
 void
 qsliveframe::keyPressEvent (QKeyEvent * event)
 {
-    switch (event->key())
+    unsigned ktext = QS_TEXT_CHAR(event->text());
+    unsigned kkey = event->key();
+    unsigned gdkkey = qt_map_to_gdk(kkey, ktext);
+
+#ifdef PLATFORM_DEBUG_TMI
+    std::string kname = qt_key_name(kkey, ktext);
+    printf
+    (
+        "qsliveframe: name = %s; gdk = 0x%x; key = 0x%x; text = 0x%x\n",
+        kname.c_str(), gdkkey, kkey, ktext
+    );
+#endif
+
+    perform::action_t action = perf().keyboard_group_action(gdkkey);
+    bool done = false;
+    if (action == perform::ACTION_NONE)
     {
-    case Qt::Key_BracketLeft:
-        setBank(m_bank_id - 1);
-        break;
+        /*
+         * This call replaces Kepler34's processing of the semi-colon, slash,
+         * apostrophe, number sign, and period.
+         */
 
-    case Qt::Key_BracketRight:
-        setBank(m_bank_id + 1);
-        break;
+        done = perf().keyboard_group_c_status_press(gdkkey);
+        if (! done)
+        {
+            /*
+             * Replaces a call to Kepler34's sequence_key() function.
+             */
 
-    case Qt::Key_Semicolon:
-        mPerf.set_sequence_control_status(c_status_replace);
-        break;
-
-    case Qt::Key_Slash:
-        mPerf.set_sequence_control_status(c_status_queue);
-        break;
-
-    case Qt::Key_Apostrophe:
-    case Qt::Key_NumberSign:
-        mPerf.set_sequence_control_status(c_status_snapshot);
-        break;
-
-    case Qt::Key_Period:
-        mPerf.set_sequence_control_status(c_status_oneshot);
-        break;
-
-    default:                                // sequence mute toggling
-
-        // quint32 keycode = event->key();
-        // if (mPerf.get_key_events()->count(event->key()) != 0)
-
-        if (mPerf.get_key_count(event->key()) != 0)
-            sequence_key(mPerf.lookup_keyevent_seq(event->key()));
-        else
-            event->ignore();
-        break;
+            done = perf().keyboard_control_press(gdkkey);   // mute toggles
+        }
     }
+    else
+    {
+        done = true;
+        switch (action)
+        {
+        case perform::ACTION_SEQ_TOGGLE:
+            break;
+
+        case perform::ACTION_GROUP_MUTE:
+            break;
+
+        case perform::ACTION_BPM:
+            break;
+
+        case perform::ACTION_SCREENSET:             // replaces L/R brackets
+            setBank();                              // screenset from perform
+            break;
+
+        case perform::ACTION_GROUP_LEARN:
+            break;
+
+        case perform::ACTION_C_STATUS:
+            break;
+
+        default:
+            done = false;
+            break;
+        }
+    }
+    if (! done)
+        event->ignore();
 }
 
 /**
@@ -756,40 +825,8 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
 void
 qsliveframe::keyReleaseEvent (QKeyEvent * event)
 {
-    // unset the relevant control modifiers
-
-    switch (event->key())
-    {
-    case Qt::Key_Semicolon:
-        mPerf.unset_sequence_control_status(c_status_replace);
-        break;
-
-    case Qt::Key_Slash:
-        mPerf.unset_sequence_control_status(c_status_queue);
-        break;
-
-    case Qt::Key_Apostrophe:
-    case Qt::Key_NumberSign:
-        mPerf.unset_sequence_control_status(c_status_snapshot);
-        break;
-
-    case Qt::Key_Period:
-        mPerf.unset_sequence_control_status(c_status_oneshot);
-        break;
-    }
-}
-
-/**
- *
- */
-
-void
-qsliveframe::sequence_key (int seq)
-{
-    /* add bank offset */
-    seq += mPerf.screenset() * qc_mainwnd_rows * qc_mainwnd_cols;
-    if (mPerf.is_active(seq))
-        mPerf.sequence_playing_toggle(seq);
+    unsigned kkey = unsigned(event->key());
+    (void) perf().keyboard_group_c_status_press(kkey);
 }
 
 /**

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-03-05
+ * \updates       2018-03-31
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -317,9 +317,6 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_screenset_offset          (0),
     m_playscreen                (0),        // vice m_screenset
     m_playscreen_offset         (0),
-#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
-    m_auto_screenset_queue      (false),
-#endif
     m_max_sets                  (usr().max_sets()),     // c_max_sets
     m_sequence_count            (0),
     m_sequence_max              (c_max_sequence),
@@ -2407,7 +2404,7 @@ perform::get_screenset_notepad (int screenset) const
  *
  *  As a new feature, we would like to queue-mute the previous screenset,
  *  and queue-unmute the newly-selected screenset.  Still working on getting
- *  it right.  Still undefined: SEQ64_USE_AUTO_SCREENSET_QUEUE.
+ *  it right.  Aborted.
  *
  * \param ss
  *      The index of the desired new screen-set.  It is forced to range from
@@ -2427,93 +2424,16 @@ perform::set_screenset (int ss)
     if (ss < 0)
         ss = m_max_sets - 1;
     else if (ss >= m_max_sets)
-    {
-#if USE_THIS_DODGY_CODE
-        if (m_screenset == 0)
-            ss = m_max_sets - 1;    /* at zero, dropping to largest value   */
-        else
-            ss = 0;                 /* moving up from maximum back to 0     */
-#else
         ss = 0;
-#endif
-    }
 
     if ((ss != m_screenset) && is_screenset_valid(ss))
     {
-#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
-        if (m_auto_screenset_queue)
-            swap_screenset_queues(m_screenset, ss);
-        else
-            m_screenset = ss;
-#else
         m_screenset = ss;
-#endif
         m_screenset_offset = screenset_offset(ss);
         unset_queued_replace();                 /* clear this new feature   */
     }
     return m_screenset;
 }
-
-#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
-
-/**
- *  EXPERIMENTAL.  Doesn't quite work.  This may be due to a bug we found in
- *  mute_screenset(), on 2016-10-05, so we will revisit this functionality for
- *  0.9.19.  Or maybe not :-(.
- *
- * \param flag
- *      If the flag is true:
- *      -#  Mute all tracks in order to start from a known status for all
- *          screen-sets.
- *      -#  Unmute screen-set 0 (the first screen-set).
- */
-
-void
-perform::set_auto_screenset (bool flag)
-{
-    m_auto_screenset_queue = flag;
-}
-
-/**
- *  EXPERIMENTAL.  Doesn't quite work.  Queues all of the sequences in the
- *  given screen-set.  Doesn't work, even after a lot of hacking on it, so
- *  disabled for now.
- *
- * \param ss0
- *      The original screenset, will be unqueued.
- *
- * \param ss1
- *      The destination screenset, will be queued.
- */
-
-void
-perform::swap_screenset_queues (int ss0, int ss1)
-{
-    if (is_pattern_playing())
-    {
-        int seq0 = screenset_offset(ss0);
-        for (int s = 0; s < m_seqs_in_set; ++s, ++seq0)
-        {
-            if (is_active(seq0))
-                m_seqs[seq0]->off_queued();         // toggle_queued();
-        }
-
-        int seq1 = screenset_offset(ss1);
-        m_screenset = ss1;
-        for (int s = 0; s < m_seqs_in_set; ++s, ++seq1)
-        {
-            if (is_active(seq1))
-                m_seqs[seq1]->on_queued();          // toggle_queued();
-        }
-        set_playing_screenset();
-
-#ifdef PLATFORM_DEBUG_TMI
-        dump_mute_statuses("screen-set change");
-#endif
-    }
-}
-
-#endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
  *  Sets the screen-set that is active, based on the value of m_screenset.
@@ -4374,6 +4294,10 @@ perform::handle_midi_control (int ctl, bool state)
             unset_sequence_control_status(c_status_queue);
         break;
 
+    /*
+     * TODO:  c_status_oneshot
+     */
+
     case c_midi_control_mod_gmute:
 
         result = true;
@@ -5777,6 +5701,41 @@ perform::sequence_label (int seqnum)
 }
 
 /**
+ *  Creates the sequence title, adjusting it for scaling down.
+ *
+ * \param seq
+ *      Provides the reference to the sequence, use for getting the sequence
+ *      parameters to be written to the label string.
+ *
+ * \return
+ *      Returns the filled in label if the sequence is active.
+ *      Otherwise, an empty string is returned.
+ */
+
+std::string
+perform::sequence_title (const sequence & seq)
+{
+    std::string result;
+    int sn = seq.number();
+    if (is_active(sn))
+    {
+        if (usr().window_scaled_down())
+        {
+            char temp[12];
+            snprintf(temp, sizeof temp, "%.11s", seq.title().c_str());
+            result = std::string(temp);
+        }
+        else
+        {
+            char temp[16];
+            snprintf(temp, sizeof temp, "%.14s", seq.title().c_str());
+            result = std::string(temp);
+        }
+    }
+    return result;
+}
+
+/**
  *  Sets the input bus, and handles the special "key labels on sequence" and
  *  "sequence numbers on sequence" functionality.  This function is called by
  *  options::input_callback().
@@ -5972,44 +5931,187 @@ perform::mainwnd_key_event (const keystroke & k)
     unsigned key = k.key();
     if (k.is_press())
     {
-        if (key == keys().replace())
-            set_sequence_control_status(c_status_replace);
-        else if (key == keys().queue() || key == keys().keep_queue())
-            set_sequence_control_status(c_status_queue);
-        else if (key == keys().snapshot_1() || key == keys().snapshot_2())
-            set_sequence_control_status(c_status_snapshot);
-        else if (key == keys().set_playing_screenset())
-            set_playing_screenset();
-        else if (key == keys().group_on())
-            set_mode_group_mute();                  /* m_mode_group = true */
-        else if (key == keys().group_off())
-            unset_mode_group_mute();
-        else if (key == keys().group_learn())
-            set_mode_group_learn();
-#ifdef SEQ64_SONG_RECORDING
-        else if (key == keys().oneshot_queue())
-            set_sequence_control_status(c_status_oneshot);
-#endif
-        else
-            result = false;
+        if (! keyboard_group_c_status_press(key))
+        {
+            if (! keyboard_group_press(key))
+            {
+                if (key == keys().set_playing_screenset())
+                    set_playing_screenset();
+                else
+                    result = false;
+            }
+        }
     }
     else
     {
-        if (key == keys().replace())
-            unset_sequence_control_status(c_status_replace);
-        else if (key == keys().queue())
-            unset_sequence_control_status(c_status_queue);
-        else if (key == keys().snapshot_1() || key == keys().snapshot_2())
-            unset_sequence_control_status(c_status_snapshot);
-        else if (key == keys().group_learn())
-            unset_mode_group_learn();
-#ifdef SEQ64_SONG_RECORDING
-        else if (key == keys().oneshot_queue())
-            unset_sequence_control_status(c_status_oneshot);
-#endif
-        else
-            result = false;
+        if (! keyboard_group_c_status_release(key))
+        {
+            if (! keyboard_group_release(key))
+            {
+                result = false;
+            }
+        }
     }
+    return result;
+}
+
+/**
+ *  Still need to work on this one.
+ */
+
+bool
+perform::keyboard_control_press (unsigned key)
+{
+    bool result = true;
+    if (get_key_count(key) != 0)
+    {
+        // sequence_key(lookup_keyevent_key(kevent));      // kevent == seq???
+        int seqnum = lookup_keyevent_seq(key);
+        int keynum = seqnum;            // + m_call_seq_shift * c_seqs_in_set;
+        sequence_key(keynum);
+    }
+    else
+        result = false;
+
+    return result;
+}
+
+/**
+ *  Categories of keyboard actions:
+ *
+ *  -   [xxxxxxxxx]
+ *      -   perform::c_status "events".
+ *          -   c_status_replace.
+ *          -   c_status_queue.
+ *          -   c_status_snapshot.
+ *          -   c_status_oneshot.
+ *          -   Used by:
+ *              -   mainwnd::on_key_press_event() [perform::mainwnd_key_event()]
+ *      -   perform groups
+ *          -   On.
+ *          -   Off.
+ *          -   Learn.
+ *          -   Used by:
+ *              -   mainwnd::on_key_press_event() [perform::mainwnd_key_event()]
+ *      -   perform::playback_key_event().
+ *      -   perform::set_playing_screenset().
+ *          -   Start.
+ *          -   Stop.
+ *          -   Pause.
+ *      -   GUI framework specific
+ */
+
+bool
+perform::keyboard_group_c_status_press (unsigned key)
+{
+    bool result = true;
+    if (key == keys().replace())
+        set_sequence_control_status(c_status_replace);
+    else if (key == keys().queue() || key == keys().keep_queue())
+        set_sequence_control_status(c_status_queue);
+    else if (key == keys().snapshot_1() || key == keys().snapshot_2())
+        set_sequence_control_status(c_status_snapshot);
+    else if (key == keys().oneshot_queue())
+        set_sequence_control_status(c_status_oneshot);
+    else
+        result = false;
+
+    return result;
+}
+
+/**
+ *
+ */
+
+bool
+perform::keyboard_group_c_status_release (unsigned key)
+{
+    bool result = true;
+    if (key == keys().replace())
+        unset_sequence_control_status(c_status_replace);
+    else if (key == keys().queue())
+        unset_sequence_control_status(c_status_queue);
+    else if (key == keys().snapshot_1() || key == keys().snapshot_2())
+        unset_sequence_control_status(c_status_snapshot);
+    else if (key == keys().oneshot_queue())
+        unset_sequence_control_status(c_status_oneshot);
+    else
+        result = false;
+
+    return result;
+}
+
+/**
+ *
+ */
+
+bool
+perform::keyboard_group_press (unsigned key)
+{
+    bool result = true;
+    if (key == keys().group_on())
+        set_mode_group_mute();                  /* m_mode_group = true */
+    else if (key == keys().group_off())
+        unset_mode_group_mute();
+    else if (key == keys().group_learn())
+        set_mode_group_learn();
+    else
+        result = false;
+
+    return result;
+}
+
+/**
+ *
+ */
+
+bool
+perform::keyboard_group_release (unsigned key)
+{
+    bool result = true;
+    if (key == keys().group_learn())
+        unset_mode_group_learn();
+    else
+        result = false;
+
+    return result;
+}
+
+/**
+ *
+ */
+
+perform::action_t
+perform::keyboard_group_action (unsigned key)
+{
+    action_t result = ACTION_NONE;
+    if (key == keys().bpm_dn())
+    {
+        (void) decrement_beats_per_minute();
+        result = ACTION_BPM;
+    }
+    else if (key == keys().bpm_up())
+    {
+        (void) increment_beats_per_minute();
+        result = ACTION_BPM;
+    }
+    else if (key == keys().tap_bpm())
+    {
+        result = ACTION_BPM;            // make sure the tap records the BPM
+    }
+    else if (key == keys().screenset_dn())  // || k.is(SEQ64_Page_Down)) ???
+    {
+        (void) decrement_screenset();
+        result = ACTION_SCREENSET;
+    }
+    else if (key == keys().screenset_up())  // || k.is(SEQ64_Page_Up)) ???
+    {
+        (void) increment_screenset();
+        result = ACTION_SCREENSET;
+    }
+
+    // more to come
+
     return result;
 }
 
@@ -6266,27 +6368,6 @@ perform::playback_key_event (const keystroke & k, bool songmode)
     if (result)
     {
         bool onekey = keys().start() == keys().stop();
-
-#ifdef USE_CONSOLIDATED_PLAYBACK
-
-        playback_action_t action = PLAYBACK_STOP;
-        if (k.is(keys().start()))
-        {
-            if (onekey)
-            {
-                if (is_running())
-                    action = PLAYBACK_PAUSE;            // why pause, not stop?
-                else
-                    action = PLAYBACK_START;
-            }
-            else if (! is_running())
-                action = PLAYBACK_START;
-        }
-        else if (k.is(keys().pause()))
-            action = PLAYBACK_PAUSE;
-
-#else   // USE_CONSOLIDATED_PLAYBACK
-
         bool isplaying = false;
         if (k.is(keys().start()))
         {
@@ -6328,74 +6409,9 @@ perform::playback_key_event (const keystroke & k, bool songmode)
             }
         }
         is_pattern_playing(isplaying);
-
-#endif  // USE_CONSOLIDATED_PLAYBACK
-
     }
     return result;
 }
-
-#ifdef USE_CONSOLIDATED_PLAYBACK
-
-/**
- *  A more rational new function provided to unify the stop/start
- *  (space/escape) behavior of the various windows where playback can be
- *  started, paused, or stopped.  To be used in mainwnd, perfedit, and
- *  seqroll.  We want this function to be the one maintaining the various
- *  flags, if possible:  m_start_from_perfedit (seq32) and m_is_pattern_playing
- *  at a minimum.
- *
- * \param p
- *      Provides the playback action to perform.
- *
- * \param songmode
- *      Provides the "jack flag" needed by the mainwnd, seqroll, and perfedit
- *      windows.  Defaults to false, which disables Song mode, and enables
- *      Live mode.  But using Song mode seems to make the Pause key not work
- *      in the performance editor.
- *
- * \return
- *      Returns true if the patterns are playing, as opposed to not playing,
- *      by the end of this function.
- *
- * \sideeffect
- *      The m_is_pattern_playing flag is set to the return value for the
- *      caller.
- */
-
-bool
-perform::playback_action (playback_action_t p, bool songmode)
-{
-    bool isplaying = false;
-    if (p == PLAYBACK_START)
-    {
-        if (! is_running())             /* what about a restart???? */
-        {
-            start_playing(songmode);
-            isplaying = true;
-        }
-    }
-    else if (p == PLAYBACK_STOP)
-    {
-        stop_playing();
-    }
-    else if (p == PLAYBACK_PAUSE)
-    {
-        if (is_running())
-        {
-            pause_playing(songmode);
-        }
-        else
-        {
-            start_playing(songmode);
-            isplaying = true;
-        }
-    }
-    is_pattern_playing(isplaying);
-    return isplaying;
-}
-
-#endif  // USE_CONSOLIDATED_PLAYBACK
 
 /**
  *  Shows all the triggers of all the sequences.

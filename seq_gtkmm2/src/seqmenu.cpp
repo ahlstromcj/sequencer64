@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-01
+ * \updates       2018-03-20
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -220,27 +220,6 @@ seqmenu::popup_menu ()
         )
     );
 
-#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE       // currently doesn't work well
-
-#define SET_AUTO    mem_fun(*this, &seqmenu::set_auto_screenset)
-
-    if (m_mainperf.auto_screenset())
-    {
-        menu_song->items().push_back
-        (
-            MenuElem("Disable Auto Queuing", sigc::bind(SET_AUTO, false))
-        );
-    }
-    else
-    {
-        menu_song->items().push_back
-        (
-            MenuElem("Enable Auto Queuing", sigc::bind(SET_AUTO, true))
-        );
-    }
-
-#endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
-
 #ifdef SEQ64_SHOW_COLOR_PALETTE               // EXPERIMENTAL
 
     /*
@@ -399,23 +378,6 @@ seqmenu::set_bus_and_midi_channel (int bus, int ch)
         }
     }
 }
-
-#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
-
-/**
- *  Sets up or resets the experimental "auto screen-set queuing" feature.
- *
- * \param flag
- *      The value to use to set the flag.
- */
-
-void
-seqmenu::set_auto_screenset (bool flag)
-{
-    m_mainperf.set_auto_screenset(flag);
-}
-
-#endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 #ifdef SEQ64_SHOW_COLOR_PALETTE               // EXPERIMENTAL
 

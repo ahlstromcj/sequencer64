@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-10
+ * \updates       2018-04-01
  * \license       GNU GPLv2 or above
  *
  *  This is actually an elegant little parser, and works well as long as one
@@ -51,6 +51,8 @@ class perform;
  *  A manifest constant for controlling the length of a line-reading
  *  array in a configuration file.  This value was 1024, but
  *  realistically, 128 is more than enough.  We provide safety anyway.
+ *  Actually, not.  A line longer than 132 (e.g. in the recent-files list of
+ *  the "rc" file) causes std::ifstream::getline() to go off into the ozone.
  */
 
 #define SEQ64_LINE_MAX          1024    // 132 is *not* enough

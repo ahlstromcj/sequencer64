@@ -24,12 +24,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-03-16
- * \updates       2018-03-16
+ * \updates       2018-03-25
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "keys_perform_qt5.hpp"
+#include "qskeymaps.hpp"                /* mapping between Gtkmm and Qt     */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -98,8 +99,17 @@ keys_perform_qt5::set_all_key_groups ()
  *  easy-to-create string.  Note that this is a free function, not a class
  *  member.
  *
+ *  There is a new function in the qskeymaps module, called qt_key_name(),
+ *  that can provide a better name.  However, it requires both the
+ *  QKeyEvent::key() and QKeyEvent::text() values in order to do a workable
+ *  lookup.  But we can use the gdk_map_to_qt() function to work around this
+ *  limitation.
+ *
  * \param key
- *      Provides the key-number to be converted to a key name.
+ *      Provides the key-number to be converted to a key name.  Under the
+ *      current regime, this value is a Gdk keystroke value, which is either
+ *      in the ASCII character range or in the special character range of
+ *      0xFF00 and above.
  *
  * \return
  *      Returns the key name as looked up by the GDK infrastructure.  If the
@@ -107,21 +117,29 @@ keys_perform_qt5::set_all_key_groups ()
  */
 
 std::string
-keyval_name (unsigned int key)
+keyval_name (unsigned key)
 {
+#if USE_OLD_CODE
     std::string result;
-    /*
-     * This is the Gdk name translator.  For now, we provide a simplistic name
-     * until we can figure out how qt5 gets the names of it keys.
-     *
-     * gchar * kname = gdk_keyval_name(key);
-     */
-
     char temp[16];
     (void) snprintf(temp, sizeof temp, "Key %ux", key);
         result = std::string(temp);
 
     return result;
+#else
+    unsigned qtkey = gdk_map_to_qt(key);
+    unsigned qttext;
+    if (qtkey >= 0x1000000)
+    {
+        qttext = 0;
+    }
+    else
+    {
+        qttext = key;
+        qtkey = toupper(key);
+    }
+    return qt_key_name(qtkey, qttext);
+#endif
 }
 
 }           // namespace seq64

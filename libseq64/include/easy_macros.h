@@ -122,16 +122,20 @@
 #endif
 
 /**
- *    Test for being a valid pointer.
+ *    Test for being a valid pointer.  The not_NULL() macro is meant for C
+ *    code that returns NULL.
  */
 
+#define not_NULL(x)             ((x) != NULL)
 #define not_nullptr(x)          ((x) != nullptr)
 #define not_nullptr_2(x1, x2)   ((x1) != nullptr && (x2) != nullptr)
 
 /**
- *    Test for being an invalid pointer.
+ *    Test for being an invalid pointer.  The is_NULL() macro is meant for C
+ *    code that returns NULL.
  */
 
+#define is_NULL(x)              ((x) == NULL)
 #define is_nullptr(x)           ((x) == nullptr)
 
 /**

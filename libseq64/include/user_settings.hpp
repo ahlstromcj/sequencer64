@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-02-06
+ * \updates       2018-03-31
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -250,9 +250,9 @@ private:
     int m_max_sets;
 
     /**
-     *  EXPERIMENTAL.
      *  Provide a scale factor to increase the size of the main window
      *  and its internals.  Should be limited from 1.0 to 3.0, probably.
+     *  Right now we allow 0.5 to 3.0.
      */
 
     float m_window_scale;
@@ -423,8 +423,6 @@ private:
 
     bool m_use_more_icons;
 
-#if defined SEQ64_MULTI_MAINWID
-
     /**
      *  New section [user-main-window]
      *
@@ -464,8 +462,6 @@ private:
      */
 
     bool m_mainwid_block_independent;
-
-#endif  // SEQ64_MULTI_MAINWID
 
     /**
      *  Constants for the mainwid class.  These items are not read from the
@@ -713,20 +709,36 @@ private:
     int m_seqarea_seq_y;
 
     /**
-     * The width of the main pattern/sequence grid, in pixels.  Affected
-     * by the m_mainwid_border and m_mainwid_spacing values.  Replaces
-     * c_mainwid_x.
+     *  The width of the main pattern/sequence grid, in pixels.  Affected by
+     *  the m_mainwid_border and m_mainwid_spacing values, as well a
+     *  m_window_scale.  Replaces c_mainwid_x.
      */
 
     int m_mainwid_x;
 
-    /*
-     * The height of the main pattern/sequence grid, in pixels.  Affected by
-     * the m_mainwid_border and m_control_height values. Replaces
-     * c_mainwid_y.
+    /**
+     *  The height of the main pattern/sequence grid, in pixels.  Affected by
+     *  the m_mainwid_border and m_control_height values, as well a
+     *  m_window_scale. Replaces c_mainwid_y.
      */
 
     int m_mainwid_y;
+
+    /**
+     *  The hardwired base width of the whole main window.  If m_window_scale
+     *  is significantly different from 1.0, then the accessor will scale this
+     *  value.
+     */
+
+    int m_mainwnd_x;
+
+    /**
+     *  The hardwired base height of the whole main window.  Llike
+     *  m_mainwnd_x, this value is scaled by the accessor, however, only if
+     *  less than 1.0; otherwise, the top buttons expand way too much.
+     */
+
+    int m_mainwnd_y;
 
     /**
      *  Provides a temporary variable that can be set from the command line to
@@ -1004,12 +1016,21 @@ public:
     }
 
     /**
+     *  Returns true if we're reducing the size of the main window.
+     */
+
+    bool window_scaled_down () const
+    {
+        return m_window_scale < 1.0f;
+    }
+
+    /**
      * \getter m_window_scale
      */
 
     int scale_size (int value) const
     {
-        return int(m_window_scale * value);
+        return int(m_window_scale * value + 0.5);
     }
 
     /**
@@ -1250,6 +1271,9 @@ public:
         return scale_size(m_mainwid_y);
     }
 
+    int mainwnd_x () const;
+    int mainwnd_y () const;
+
     /**
      *  Returns the mainwid border thickness plus a fudge constant.
      */
@@ -1447,8 +1471,6 @@ public:
         return m_use_more_icons;
     }
 
-#if defined SEQ64_MULTI_MAINWID
-
     /**
      * \getter m_mainwid_block_rows
      */
@@ -1475,8 +1497,6 @@ public:
     {
         return m_mainwid_block_independent;
     }
-
-#endif  // SEQ64_MULTI_MAINWID
 
     /**
      * \getter m_save_user_config
@@ -1771,8 +1791,6 @@ public:         // used in main application module and the userfile class
         m_use_more_icons = flag;
     }
 
-#if defined SEQ64_MULTI_MAINWID
-
     void block_rows (int count);
     void block_columns (int count);
 
@@ -1784,8 +1802,6 @@ public:         // used in main application module and the userfile class
     {
         m_mainwid_block_independent = flag;
     }
-
-#endif  // SEQ64_MULTI_MAINWID
 
     /**
      * \setter m_user_option_daemonize

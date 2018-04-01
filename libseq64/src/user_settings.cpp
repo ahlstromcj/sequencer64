@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2018-03-30
+ * \updates       2018-03-31
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -198,8 +198,8 @@ user_settings::user_settings ()
     m_seqarea_seq_y             (0),
     m_mainwid_x                 (0),
     m_mainwid_y                 (0),
-    m_mainwnd_x                 (760),          // constant
-    m_mainwnd_y                 (408),          // constant
+    m_mainwnd_x                 (780),          // constant
+    m_mainwnd_y                 (412),          // constant
     m_save_user_config          (false),
 
     /*
@@ -524,8 +524,8 @@ user_settings::normalize ()
     m_seqarea_seq_y = m_text_y * 2;
     m_mainwid_x =
     (
-        2 + (m_seqarea_x + m_mainwid_spacing) * m_mainwnd_cols -
-            m_mainwid_spacing + m_mainwid_border * 2
+        (m_seqarea_x + m_mainwid_spacing) * m_mainwnd_cols - m_mainwid_spacing +
+            m_mainwid_border * 2
     );
     m_mainwid_y =
     (
@@ -1180,9 +1180,8 @@ user_settings::block_columns (int count)
 int
 user_settings::mainwid_width () const
 {
-    int result = (c_seqarea_x + c_mainwid_spacing) * m_mainwnd_cols -
-        (c_mainwid_spacing + c_mainwid_border * 2) +
-        mainwid_width_fudge() * 2;
+    int result = (m_seqarea_x + m_mainwid_spacing) * m_mainwnd_cols -
+        m_mainwid_spacing + m_mainwid_border * 2 + mainwid_width_fudge() * 2;
 
     return scale_size(result);
 }

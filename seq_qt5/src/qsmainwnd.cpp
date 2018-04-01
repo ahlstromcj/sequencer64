@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-29
+ * \updates       2018-04-01
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -249,10 +249,11 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
 
     /*
      * This scales the full GUI, cool!
-     *
-     * resize(1024, 768);
      */
 
+    int width = usr().scale_size(800);
+    int height = usr().scale_size(450);
+    resize(width, height);
     show();
 }
 
@@ -365,42 +366,44 @@ qsmainwnd::open_file (const std::string & fn)
     bool result = f.parse(m_main_perf, 0);
     if (result)
     {
-//      m_modified = false;
+//      ppqn(f.ppqn());                 /* get and save the actual PPQN     */
+        rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
+        rc().filename(fn);
+        rc().add_recent_file(fn);       /* from Oli Kester's Kepler34       */
+
+        /*
+         *  Reinitialize the "Live" frame.  Reconnect its signal, as we've
+         *  made a new object.
+         */
+
+        ui->LiveTabLayout->removeWidget(m_live_frame);
+        if (not_nullptr(m_live_frame))
+            delete m_live_frame;
+
+        m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
+        ui->LiveTabLayout->addWidget(m_live_frame);
+        connect
+        (
+            m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int))
+        );
+        m_live_frame->show();
+        m_live_frame->setFocus();
+        m_live_frame->redraw();
+        ui->spinBpm->setValue(perf().bpm());
+        m_song_frame->update_sizes();
+        update_recent_files_menu();
+        update_window_title();
     }
     else
     {
-        QString msg_text = "Error reading MIDI data from file: ";
-        msg_text += fn.c_str();
+        std::string errmsg = f.error_message();
+        QString msg_text = errmsg.c_str();
+        // msg_text += fn.c_str();
         m_msg_error->showMessage(msg_text);
         m_msg_error->exec();
-        return;
+        if (f.error_is_fatal())
+            rc().remove_recent_file(fn);
     }
-
-//  ppqn(f.ppqn());                     /* get and save the actual PPQN     */
-    rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
-    rc().filename(fn);
-    rc().add_recent_file(fn);           /* from Oli Kester's Kepler34       */
-
-    /*
-     *  Reinitialize the "Live" frame.  Reconnect its signal, as we've made a
-     *  new object.
-     */
-
-    ui->LiveTabLayout->removeWidget(m_live_frame);
-    if (not_nullptr(m_live_frame))
-        delete m_live_frame;
-
-    m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
-    ui->LiveTabLayout->addWidget(m_live_frame);
-
-    connect(m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int)));
-    m_live_frame->show();
-    m_live_frame->setFocus();
-    m_live_frame->redraw();
-    ui->spinBpm->setValue(perf().bpm());
-    m_song_frame->update_sizes();
-    update_recent_files_menu();
-    update_window_title();
 }
 
 /**

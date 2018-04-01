@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-31
+ * \updates       2018-04-01
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1017,7 +1017,7 @@ mainwnd::mainwnd
         mainwid_wrapper->add(*m_main_wid);
         mainwid_wrapper->set_size
         (
-            m_main_wid->m_mainwid_x, m_main_wid->m_mainwid_y
+            m_main_wid->nominal_width(), m_main_wid->nominal_height()
         );
 
         Gtk::HBox * mainwid_vscroll_wrapper = new Gtk::HBox();
@@ -1177,11 +1177,11 @@ mainwnd::mainwnd
     {
         resize
         (
-            m_main_wid->m_mainwid_x + 20,
+            m_main_wid->nominal_width() + 20,
             tophbox->get_allocation().get_height() +
                 bottomhbox->get_allocation().get_height() +
                 m_menubar->get_allocation().get_height() +
-                m_main_wid->m_mainwid_y + 40
+                m_main_wid->nominal_height() + 40
         );
     }
 
@@ -2153,7 +2153,17 @@ mainwnd::open_file (const std::string & fn)
     perf().clear_all();
 
     bool result = f.parse(perf());      /* parsing handles old & new format */
-    if (! result)
+    if (result)
+    {
+        ppqn(f.ppqn());                 /* get and save the actual PPQN     */
+        rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
+        rc().filename(fn);
+        rc().add_recent_file(fn);       /* from Oli Kester's Kepler34       */
+        update_recent_files_menu();
+        update_window_title();
+        reset_window();
+    }
+    else
     {
         std::string errmsg = f.error_message();
         Gtk::MessageDialog errdialog
@@ -2162,16 +2172,8 @@ mainwnd::open_file (const std::string & fn)
         );
         errdialog.run();
         if (f.error_is_fatal())
-            return;
+            rc().remove_recent_file(fn);
     }
-
-    ppqn(f.ppqn());                     /* get and save the actual PPQN     */
-    rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
-    rc().filename(fn);
-    rc().add_recent_file(fn);           /* from Oli Kester's Kepler34       */
-    update_recent_files_menu();
-    update_window_title();
-    reset_window();
 }
 
 /**

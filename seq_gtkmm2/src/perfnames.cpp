@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-01
+ * \updates       2018-03-31
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -162,7 +162,7 @@ perfnames::draw_sequence (int seqnum)
     {
         char snb[8];                                /* set-number buffer    */
         snprintf(snb, sizeof(snb), "%2d", seqnum / m_seqs_in_set);
-        draw_rectangle(black_paint(), 0, yloc, m_names_x, m_names_y);
+        draw_rectangle(dark_grey_paint(), 0, yloc, m_names_x, m_names_y);
         if (seqnum % m_seqs_in_set == 0)
         {
             render_string

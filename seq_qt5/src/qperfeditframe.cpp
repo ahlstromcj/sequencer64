@@ -74,7 +74,7 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
 
     // fill options for grid snap combo box and set default
 
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 6; ++i)
     {
         QString combo_text = "1/" + QString::number(pow(2, i));
         ui->cmbGridSnap->insertItem(i, combo_text);
@@ -186,7 +186,7 @@ qperfeditframe::updateGridSnap (int snapIndex)
 void
 qperfeditframe::set_snap (int a_snap)
 {
-    char b[10];
+    char b[16];
     snprintf(b, sizeof(b), "1/%d", a_snap);
     ui->cmbGridSnap->setCurrentText(b);
     m_snap = a_snap;

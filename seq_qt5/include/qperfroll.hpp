@@ -117,13 +117,16 @@ private:
         return mPerf;
     }
 
-    void xy_to_rect(int x1, int y1, int x2, int y2, int *x, int *y, int *w, int *h);
-    void convert_xy(int x, int y, long *ticks, int *seq);
-    void convert_x(int x, long *ticks);
-    void snap_x(int *x);
-    void snap_y(int *y);
-    void half_split_trigger(int sequence, long tick);
-    void set_adding(bool adding);
+    void xy_to_rect
+    (
+        int x1, int y1, int x2, int y2, int * x, int * y, int * w, int * h
+    );
+    void convert_xy (int x, int y, midipulse * ticks, int * seq);
+    void convert_x (int x, midipulse * ticks);
+    void snap_x (int * x);
+    void snap_y (int * y);
+    void half_split_trigger (int sequence, midipulse tick);
+    void set_adding (bool adding);
 
     perform & mPerf;
     QTimer * mTimer;
@@ -136,14 +139,14 @@ private:
     int m_drop_x, m_drop_y;
     int m_current_x, m_current_y;
     int m_drop_sequence;
-    int zoom;
+    int m_zoom;
 
     // sequence selection
 
-    midipulse tick_s; //start of tick window
-    midipulse tick_f; //end of tick window
-    int seq_h;  //highest seq in window
-    int seq_l;  //lowest seq in window
+    midipulse m_tick_s; //start of tick window
+    midipulse m_tick_f; //end of tick window
+    int m_seq_h;  //highest seq in window
+    int m_seq_l;  //lowest seq in window
     midipulse m_drop_tick;
     midipulse m_drop_tick_trigger_offset; // ticks clicked from start of trigger
     midipulse mLastTick;                  // tick using at last mouse event

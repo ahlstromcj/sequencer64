@@ -1,6 +1,6 @@
 Sequencer64 Debian Instructions
 Chris Ahlstrom
-2015-09-10 to 2017-11-23
+2015-09-10 to 2018-04-01
 
 There is a concise, recent, and fairly complete guide to creating a "deb"
 package in the Debian package called "maint-guide", which stores different
@@ -8,8 +8,9 @@ versions of the "Debian New Maintainers' Guide" in
 /usr/share/doc/maint-guide.  The debhelper package (and perhaps some related
 packages) need to be installed in order to create a Sequencer64 DEB package.
 
-However, since the rules file was already provided by the Debian maintainer
-of seq24, the process of creating a "deb" file is very simple.
+However, since the "rules" file was already provided by the Debian maintainer
+of seq24, the process of creating a "deb" file for Sequencer64 is relatively
+simple.
 
 0. First build the project normally:
 
@@ -90,5 +91,9 @@ Dependencies:
     libpangomm-1.4-1v5 (>= 2.40.0)
     libsigc++-2.0-0v5 (>= 2.2.0)
     libstdc++6 (>= 5.2)
+
+Packaging your project for Debian:
+
+    https://www.debian.org/doc/manuals/distribute-deb/distribute-deb.html
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

@@ -8,7 +8,7 @@
 # \library    	Any project
 # \author     	Chris Ahlstrom
 # \date       	2015-07-24
-# \update     	2018-02-18
+# \update     	2018-04-01
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -458,6 +458,22 @@ function clean_debfiles()
    #  done
 
    debian/rules clean
+
+   # These come from using the control-split file on a trial basis.
+
+	rm -f debian/libseq64-dev.substvars
+	rm -rf debian/libseq64-dev/
+	rm -f debian/libseq64.substvars
+	rm -rf debian/libseq64/
+	rm -f debian/seq-gtkmm2-dev.substvars
+	rm -rf debian/seq-gtkmm2-dev/
+	rm -f debian/seq-gtkmm2.substvars
+	rm -rf debian/seq-gtkmm2/
+	rm -f debian/seq-rtmidi-dev.substvars
+	rm -rf debian/seq-rtmidi-dev/
+	rm -f debian/seq-rtmidi.substvars
+	rm -rf debian/seq-rtmidi/
+
 }
 
 #******************************************************************************

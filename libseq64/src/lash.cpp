@@ -50,7 +50,7 @@ namespace seq64
  *  The global pointer to the LASH driver instance.  It is actually hidden in
  *  this module now, so that a function can be used in its place.
  *
- *  Like the font renderer, This item was once created in the main module,
+ *  Like the font renderer, this item was once created in the main module,
  *  sequencer64.cpp.  Now we make it a safer, more fool-proof, function.
  *  However, unlike the font-render, which always exists, the LASH driver is
  *  conditional, and might not be wanted.  Therefore, we cannot return a

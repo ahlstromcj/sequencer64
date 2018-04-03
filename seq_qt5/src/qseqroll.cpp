@@ -126,15 +126,14 @@ qseqroll::paintEvent (QPaintEvent *)
     painter.setBrush(brush);
     painter.setFont(mFont);
 
-    //draw border
+    // draw border
     //    painter.drawRect(0, 0, width(), height());
 
     pen.setColor(Qt::lightGray);
     pen.setStyle(Qt::DashLine);
     painter.setPen(pen);
 
-    //for each note row in our grid
-    for (int i = 1; i < c_num_keys; i++)
+    for (int i = 1; i < c_num_keys; ++i)    // for each note row in grid
     {
         //set line colour dependent on the note row we're on
         //        if (0 == (((c_num_keys - i) + ( 12 - m_key )) % 12))

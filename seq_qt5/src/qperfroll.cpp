@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-11
+ * \updates       2018-04-02
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -34,6 +34,7 @@
 
 #include "perform.hpp"
 #include "qperfroll.hpp"
+#include "rect.hpp"                     /* seq64::rect::xy_to_rect_get()    */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -85,8 +86,6 @@ qperfroll::qperfroll (perform & p, QWidget * parent)
         m_sequence_active[i] = false;
 
     m_roll_length_ticks = perf().get_max_trigger();
-//  m_roll_length_ticks = m_roll_length_ticks -
-//      (m_roll_length_ticks % (c_ppqn * 16));
     m_roll_length_ticks -= (m_roll_length_ticks % (c_ppqn * 16));
     m_roll_length_ticks +=  c_ppqn * 64;
     mTimer = new QTimer(this);      // refresh timer to queue regular redraws
@@ -317,7 +316,10 @@ qperfroll::paintEvent(QPaintEvent *)
         pen.setColor(Qt::black);
         painter.setBrush(brush);
         painter.setPen(pen);
-        xy_to_rect(m_drop_x, m_drop_y, m_current_x, m_current_y, &x, &y, &w, &h);
+        rect::xy_to_rect_get
+        (
+            m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h
+        );
         m_old.x(x);
         m_old.y(y);
         m_old.width(w);
@@ -387,16 +389,18 @@ qperfroll::mousePressEvent(QMouseEvent *event)
     m_drop_x = event->x();
     m_drop_y = event->y();
 
-    //convery to get the sequence row we're on
-    convert_xy(m_drop_x, m_drop_y, &m_drop_tick, &m_drop_sequence);
+    // get the sequence row we're on
 
-    /* left mouse button */
+    convert_xy(m_drop_x, m_drop_y, m_drop_tick, m_drop_sequence);
     if (event->button() == Qt::LeftButton)
     {
         midipulse tick = m_drop_tick;
 
-        /* add a new seq instance if we didnt select anything,
-         * and are holding the right mouse btn */
+        /*
+         * Add a new seq instance if we didnt select anything, and are holding
+         * the right mouse button.
+         */
+
         if (m_adding)
         {
             m_adding_pressed = true;
@@ -498,7 +502,7 @@ qperfroll::mousePressEvent(QMouseEvent *event)
             if (! selected)                     // let's select with a box
             {
                 perf().unselect_all_triggers();
-                snap_y(&m_drop_y);              // y is always snapped to rows
+                snap_y(m_drop_y);               // y is always snapped to rows
                 m_current_x = m_drop_x;
                 m_current_y = m_drop_y;
                 mBoxSelect = true;
@@ -544,13 +548,13 @@ qperfroll::mouseReleaseEvent (QMouseEvent * event)
             int x, y, w, h; //window dimensions
             m_current_x = event->x();
             m_current_y = event->y();
-            snap_y(&m_current_y);
-            xy_to_rect
+            snap_y(m_current_y);
+            rect::xy_to_rect_get
             (
-                m_drop_x, m_drop_y, m_current_x, m_current_y, &x, &y, &w, &h
+                m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h
             );
-            convert_xy(x,     y, &m_tick_s, &m_seq_l);
-            convert_xy(x + w, y + h, &m_tick_f, &m_seq_h);
+            convert_xy(x,     y, m_tick_s, m_seq_l);
+            convert_xy(x + w, y + h, m_tick_f, m_seq_h);
             perf().select_triggers_in_range(m_seq_l, m_seq_h, m_tick_s, m_tick_f);
         }
     }
@@ -579,10 +583,11 @@ qperfroll::mouseMoveEvent (QMouseEvent * event)
     int x = event->x();
     if (m_adding && m_adding_pressed)
     {
-        convert_x(x, &tick);
+        convert_x(x, tick);
         if (perf().is_active(m_drop_sequence))
         {
-            midipulse seq_length = perf().get_sequence(m_drop_sequence)->get_length();
+            midipulse seq_length = perf().get_sequence(m_drop_sequence)->
+                get_length();
 
             if (perf().song_record_snap())      // snap to length of sequence
                 tick = tick - (tick % seq_length);
@@ -596,7 +601,7 @@ qperfroll::mouseMoveEvent (QMouseEvent * event)
     {
         if (perf().is_active(m_drop_sequence))
         {
-            convert_x(x, &tick);
+            convert_x(x, tick);
             tick -= m_drop_tick_trigger_offset;
             if (perf().song_record_snap())      // snap to length of sequence
                 tick = tick - tick % m_snap;
@@ -613,48 +618,53 @@ qperfroll::mouseMoveEvent (QMouseEvent * event)
                     }
                 }
             }
-
             if (m_growing)
             {
                 if (m_grow_direction)
                 {
-                    //grow start of all selected triggers
+                    // grow start of all selected triggers
+
                     for (int seqId = m_seq_l; seqId <= m_seq_h; seqId++)
                     {
                         if (perf().is_active(seqId))
                         {
                             if (mLastTick != 0)
+                            {
                                 perf().get_sequence(seqId)->offset_triggers
                                 (
                                     -(mLastTick - tick), triggers::GROW_START
                                 );
+                            }
                         }
                     }
                 }
                 else
                 {
-                    //grow end of all selected triggers
+                    // grow end of all selected triggers
+
                     for (int seqId = m_seq_l; seqId <= m_seq_h; seqId++)
                     {
                         if (perf().is_active(seqId))
                         {
                             if (mLastTick != 0)
+                            {
                                 perf().get_sequence(seqId)->offset_triggers
                                 (
                                     -(mLastTick - tick) - 1, triggers::GROW_END
                                 );
+                            }
                         }
                     }
                 }
             }
         }
     }
-    else if (mBoxSelect) //box selection
+    else if (mBoxSelect)                    // box selection
     {
         m_current_x = event->x();
         m_current_y = event->y();
-        snap_y(&m_current_y);
-        convert_xy(0, m_current_y, &tick, &m_drop_sequence);
+        snap_y(m_current_y);
+        convert_xy(0, m_current_y, tick, m_drop_sequence);
     }
     mLastTick = tick;
 }
@@ -707,24 +717,28 @@ qperfroll::keyPressEvent (QKeyEvent * event)
  */
 
 void
-qperfroll::keyReleaseEvent(QKeyEvent *event)
+qperfroll::keyReleaseEvent (QKeyEvent * /*event*/)
 {
     // no code
 }
 
-/* performs a 'snap' on x */
-    // snap = number pulses to snap to
-    // m_scale = number of pulses per pixel
-    //  so snap / m_scale  = number pixels to snap to
+/**
+ *  Performs a 'snap' on x:
+ *
+ *      -   snap = number pulses to snap to
+ *      -   m_scale = number of pulses per pixel
+ *
+ *  So, snap / m_scale = number pixels to snap to.
+ */
 
 void
-qperfroll::snap_x (int * a_x)
+qperfroll::snap_x (int & x)
 {
     int mod = (m_snap / (c_perf_scale_x * m_zoom));
     if (mod <= 0)
         mod = 1;
 
-    *a_x = *a_x - (*a_x % mod);
+    x -= x % mod;
 }
 
 /**
@@ -732,9 +746,9 @@ qperfroll::snap_x (int * a_x)
  */
 
 void
-qperfroll::snap_y (int * a_y)
+qperfroll::snap_y (int & y)
 {
-    *a_y = *a_y - (*a_y % c_names_y);
+    y -= y % c_names_y;
 }
 
 /**
@@ -742,11 +756,11 @@ qperfroll::snap_y (int * a_y)
  */
 
 void
-qperfroll::convert_x (int a_x, midipulse * a_tick)
+qperfroll::convert_x (int x, midipulse & tick)
 {
-    midipulse tick_offset = 0;
-    *a_tick = a_x * (c_perf_scale_x * m_zoom);
-    *a_tick += tick_offset;
+    midipulse tick_offset = 0;                  // it's always this!!!
+    tick = x * (c_perf_scale_x * m_zoom);
+    tick += tick_offset;
 }
 
 /**
@@ -754,17 +768,17 @@ qperfroll::convert_x (int a_x, midipulse * a_tick)
  */
 
 void
-qperfroll::convert_xy(int a_x, int a_y, midipulse * a_tick, int * a_seq)
+qperfroll::convert_xy (int x, int y, midipulse & tick, int & seq)
 {
-    midipulse tick_offset =  0;
-    *a_tick = a_x * (c_perf_scale_x * m_zoom);
-    *a_seq = a_y / c_names_y;
-    *a_tick += tick_offset;
-    if (*a_seq >= c_max_sequence)
-        *a_seq = c_max_sequence - 1;
+    midipulse tick_offset =  0;                 // again, always 0!!!
+    tick = x * (c_perf_scale_x * m_zoom);
+    seq = y / c_names_y;
+    tick += tick_offset;
+    if (seq >= c_max_sequence)
+        seq = c_max_sequence - 1;
 
-    if (*a_seq < 0)
-        *a_seq = 0;
+    if (seq < 0)
+        seq = 0;
 }
 
 /**
@@ -772,20 +786,20 @@ qperfroll::convert_xy(int a_x, int a_y, midipulse * a_tick, int * a_seq)
  */
 
 void
-qperfroll::half_split_trigger(int a_sequence, midipulse a_tick)
+qperfroll::half_split_trigger (int sequence, midipulse tick)
 {
     perf().push_trigger_undo();
-    perf().get_sequence(a_sequence)->half_split_trigger(a_tick);
+    perf().get_sequence(sequence)->half_split_trigger(tick);
 }
 
 /* simply sets the snap member */
 
 void
-qperfroll::set_guides(int a_snap, int a_measure, int a_beat)
+qperfroll::set_guides (int snap, int measure, int beat)
 {
-    m_snap = a_snap;
-    m_measure_length = a_measure;
-    m_beat_length = a_beat;
+    m_snap = snap;
+    m_measure_length = measure;
+    m_beat_length = beat;
 }
 
 /**
@@ -793,18 +807,13 @@ qperfroll::set_guides(int a_snap, int a_measure, int a_beat)
  */
 
 void
-qperfroll::set_adding(bool a_adding)
+qperfroll::set_adding (bool adding)
 {
-    if (a_adding)
-    {
+    m_adding = adding;
+    if (adding)
         setCursor(Qt::PointingHandCursor);
-        m_adding = true;
-    }
     else
-    {
         setCursor(Qt::ArrowCursor);
-        m_adding = false;
-    }
 }
 
 /**
@@ -812,7 +821,7 @@ qperfroll::set_adding(bool a_adding)
  */
 
 void
-qperfroll::undo()
+qperfroll::undo ()
 {
     perf().pop_trigger_undo();
 }
@@ -822,7 +831,7 @@ qperfroll::undo()
  */
 
 void
-qperfroll::redo()
+qperfroll::redo ()
 {
     perf().pop_trigger_redo();
 }
@@ -832,7 +841,7 @@ qperfroll::redo()
  */
 
 void
-qperfroll::zoom_in()
+qperfroll::zoom_in ()
 {
     if (m_zoom > 1)
         m_zoom *= 0.5;
@@ -843,40 +852,9 @@ qperfroll::zoom_in()
  */
 
 void
-qperfroll::zoom_out()
+qperfroll::zoom_out ()
 {
     m_zoom *= 2;
-}
-
-/**
- *
- */
-
-void
-qperfroll::xy_to_rect(int a_x1, int a_y1, int a_x2, int a_y2,
-                           int *a_x, int *a_y, int *a_w, int *a_h)
-{
-    if (a_x1 < a_x2)
-    {
-        *a_x = a_x1;
-        *a_w = a_x2 - a_x1;
-    }
-    else
-    {
-        *a_x = a_x2;
-        *a_w = a_x1 - a_x2;
-    }
-
-    if (a_y1 < a_y2)
-    {
-        *a_y = a_y1;
-        *a_h = a_y2 - a_y1;
-    }
-    else
-    {
-        *a_y = a_y2;
-        *a_h = a_y1 - a_y2;
-    }
 }
 
 }           // namespace seq64

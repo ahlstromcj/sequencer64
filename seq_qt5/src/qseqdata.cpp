@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-03
+ * \updates       2018-04-02
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -36,6 +36,7 @@
 
 #include "Globals.hpp"
 #include "qseqdata.hpp"
+#include "rect.hpp"                     /* seq64::rect::xy_to_rect_get()    */
 #include "sequence.hpp"
 
 /*
@@ -177,19 +178,22 @@ qseqdata::paintEvent (QPaintEvent *)
         }
     }
 
-    if (mLineAdjust) // draw edit line
+    if (mLineAdjust)                            // draw edit line
     {
         int x, y, w, h;
         pen.setColor(Qt::black);
         pen.setStyle(Qt::DashLine);
         painter.setPen(pen);
-        xy_to_rect(mDropX, mDropY, mCurrentX, mCurrentY, &x, &y, &w, &h);
+        rect::xy_to_rect_get(mDropX, mDropY, mCurrentX, mCurrentY, x, y, w, h);
         mOld->setX(x);
         mOld->setY(y);
         mOld->setWidth(w);
         mOld->setHeight(h);
-        painter.drawLine(mCurrentX + c_keyboard_padding_x,
-                           mCurrentY, mDropX + c_keyboard_padding_x, mDropY);
+        painter.drawLine
+        (
+            mCurrentX + c_keyboard_padding_x,
+            mCurrentY, mDropX + c_keyboard_padding_x, mDropY
+        );
     }
 }
 
@@ -203,14 +207,14 @@ qseqdata::mousePressEvent (QMouseEvent *event)
     int mouseX = event->x() - c_keyboard_padding_x;
     int mouseY = event->y();
 
-    // if we're near an event (4px), do relative adjustment
-    midipulse tick_start, tick_finish;
-    convert_x(mouseX - 2, &tick_start);
-    convert_x(mouseX + 2, &tick_finish);
+    // If near an event (4px), do relative adjustment
 
-    // check if these ticks would select an event
+    midipulse tick_start, tick_finish;
+    convert_x(mouseX - 2, tick_start);
+    convert_x(mouseX + 2, tick_finish);
+
     m_seq.push_undo();
-    if
+    if                      // check if these ticks would select an event
     (
         m_seq.select_events
         (
@@ -220,14 +224,13 @@ qseqdata::mousePressEvent (QMouseEvent *event)
     {
         mRelativeAdjust = true;
     }
-    else //else set new values for seqs under a line
+    else                    // set new values for seqs under a line
     {
         mLineAdjust = true;
     }
 
     mDropX = mouseX;            /* set values for line */
     mDropY = mouseY;
-
     mOld->setX(0);              /* reset box that holds dirty redraw spot */
     mOld->setY(0);
     mOld->setWidth(0);
@@ -245,22 +248,25 @@ qseqdata::mouseReleaseEvent (QMouseEvent *event)
     mCurrentY = (int) event->y();
     if (mLineAdjust)
     {
-        long tick_s, tick_f;
+        midipulse tick_s, tick_f;
         if (mCurrentX < mDropX)
         {
             swap(mCurrentX, mDropX);
             swap(mCurrentY, mDropY);
         }
 
-        convert_x(mDropX, &tick_s);
-        convert_x(mCurrentX, &tick_f);
+        /*
+         * convert x,y to ticks, then set events in range
+         */
+
+        convert_x(mDropX, tick_s);
+        convert_x(mCurrentX, tick_f);
         m_seq.change_event_data_range
         (
             tick_s, tick_f, m_status, m_cc,
             qc_dataarea_y - mDropY - 1, qc_dataarea_y - mCurrentY - 1
         );
 
-        /* convert x,y to ticks, then set events in range */
         mLineAdjust = false;
     }
     else if (mRelativeAdjust)
@@ -295,8 +301,8 @@ qseqdata::mouseMoveEvent (QMouseEvent * event)
             adj_y_min = mDropY;
         }
 
-        convert_x(adj_x_min, &tick_s);
-        convert_x(adj_x_max, &tick_f);
+        convert_x(adj_x_min, tick_s);
+        convert_x(adj_x_max, tick_f);
         m_seq.change_event_data_range
         (
             tick_s, tick_f, m_status, m_cc,
@@ -305,8 +311,8 @@ qseqdata::mouseMoveEvent (QMouseEvent * event)
     }
     else if (mRelativeAdjust)
     {
-        convert_x(mDropX - 2, &tick_s);
-        convert_x(mDropX + 2, &tick_f);
+        convert_x(mDropX - 2, tick_s);
+        convert_x(mDropX + 2, tick_f);
 
         ///// TODO
         ///// int adjY = mDropY - mCurrentY;
@@ -320,35 +326,13 @@ qseqdata::mouseMoveEvent (QMouseEvent * event)
 
 /**
  *
- *  checks mins / maxes..  the fills in x,y and width and height
  */
 
 void
-qseqdata::xy_to_rect(int a_x1,  int a_y1, int a_x2,  int a_y2,
-      int *a_x,  int *a_y, int *a_w,  int *a_h)
+qseqdata::set_data_type (midibyte status, midibyte control = 0)
 {
-
-    if (a_x1 < a_x2)
-    {
-        *a_x = a_x1;
-        *a_w = a_x2 - a_x1;
-    }
-    else
-    {
-        *a_x = a_x2;
-        *a_w = a_x1 - a_x2;
-    }
-
-    if (a_y1 < a_y2)
-    {
-        *a_y = a_y1;
-        *a_h = a_y2 - a_y1;
-    }
-    else
-    {
-        *a_y = a_y2;
-        *a_h = a_y1 - a_y2;
-    }
+    m_status = status;
+    m_cc = control;
 }
 
 /**
@@ -356,20 +340,9 @@ qseqdata::xy_to_rect(int a_x1,  int a_y1, int a_x2,  int a_y2,
  */
 
 void
-qseqdata::set_data_type (midibyte a_status, midibyte a_control = 0)
+qseqdata::convert_x (int x, midipulse & tick)
 {
-    m_status = a_status;
-    m_cc = a_control;
-}
-
-/**
- *
- */
-
-void
-qseqdata::convert_x (int a_x, midipulse * a_tick)
-{
-    *a_tick = a_x * m_zoom;
+    tick = x * m_zoom;
 }
 
 }           // namespace seq64

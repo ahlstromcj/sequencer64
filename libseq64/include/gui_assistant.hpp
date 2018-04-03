@@ -130,7 +130,7 @@ public:
         return m_keys_perform;
     }
 
-};
+};          // class gui_assistant
 
 }           // namespace seq64
 

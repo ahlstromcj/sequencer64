@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-11
+ * \updates       2018-04-02
  * \license       GNU GPLv2 or above
  *
  *      We've added the feature of a right-click toggling between showing the
@@ -95,9 +95,7 @@ public slots:
 
 private:
 
-    // takes a y coordinate and converts it to a note value
-
-    void convert_y(int a_y, int *a_note);
+    void convert_y (int y, int & note);
 
 private:
 

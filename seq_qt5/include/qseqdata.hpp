@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-03
+ * \updates       2018-04-02
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -96,12 +96,7 @@ public slots:
 
 private:
 
-    // Takes two points, returns a Xwin rectangle
-    void xy_to_rect(int a_x1,  int a_y1, int a_x2,  int a_y2,
-                    int *a_x,  int *a_y, int *a_w,  int *a_h);
-
-    //convert the given X coordinate into a tick via a pointer
-    void convert_x(int a_x, long *a_tick);
+    void convert_x (int x, midipulse & tick);
 
 private:
 

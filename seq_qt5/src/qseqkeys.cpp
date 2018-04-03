@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-11
+ * \updates       2018-04-02
  * \license       GNU GPLv2 or above
  *
  *      We've added the feature of a right-click toggling between showing the
@@ -83,8 +83,7 @@ qseqkeys::paintEvent (QPaintEvent *)
     painter.drawRect(0, 0, qc_keyarea_x, keyAreaY);
     for (int i = 0; i < qc_num_keys; i++)
     {
-        // draw white keys
-        pen.setColor(Qt::black);
+        pen.setColor(Qt::black);                // draw keys
         pen.setStyle(Qt::SolidLine);
         brush.setColor(Qt::white);
         brush.setStyle(Qt::SolidPattern);
@@ -97,14 +96,12 @@ qseqkeys::paintEvent (QPaintEvent *)
         {
             if (qc_num_keys - (i + 1) == mPreviewKey)
             {
-                //                pen.setStyle(Qt::NoPen);
-                //                brush.setColor(Qt::red);
-                //                painter.setPen(*m_pen);
-                //                painter.setBrush(*m_brush);
-                //                painter.drawRect(qc_keyoffset_x + 3,
-                //                                    keyY * i + 5,
-                //                                    qc_key_x - 6,
-                //                                    keyY - 8);
+                // pen.setStyle(Qt::NoPen);
+                // brush.setColor(Qt::red);
+                // painter.setPen(*m_pen);
+                // painter.setBrush(*m_brush);
+                // painter.drawRect(qc_keyoffset_x + 3,
+                //     keyY * i + 5, qc_key_x - 6, keyY - 8);
             }
             pen.setStyle(Qt::SolidLine); // draw black keys
             pen.setColor(Qt::black);
@@ -114,7 +111,7 @@ qseqkeys::paintEvent (QPaintEvent *)
             painter.drawRect(qc_keyoffset_x+1, keyY*i + 3, qc_key_x-4, keyY-5);
         }
 
-        if (qc_num_keys - (i + 1) == mPreviewKey) // highlight for note previewing
+        if (qc_num_keys - (i + 1) == mPreviewKey) // highlight note preview
         {
             brush.setColor(Qt::red);
             pen.setStyle(Qt::NoPen);
@@ -126,8 +123,7 @@ qseqkeys::paintEvent (QPaintEvent *)
         char notes[20];
         if (key == m_key)
         {
-            /* notes */
-            int octave = ((qc_num_keys - i - 1) / 12) - 1;
+            int octave = ((qc_num_keys - i - 1) / 12) - 1;      /* notes */
             if (octave < 0)
                 octave *= -1;
 
@@ -137,8 +133,7 @@ qseqkeys::paintEvent (QPaintEvent *)
 
             snprintf(notes, sizeof(notes), "%2s%1d", c_key_text[key], octave);
 
-            //draw "Cx" octave labels
-            pen.setColor(Qt::black);
+            pen.setColor(Qt::black);            // draw "Cx" octave labels
             pen.setStyle(Qt::SolidLine);
             painter.setPen(pen);
             painter.drawText(2, keyY * i + 11, notes);
@@ -158,7 +153,7 @@ qseqkeys::mousePressEvent (QMouseEvent * event)
         int note;
         int y = event->y();
         mPreviewing = true;
-        convert_y(y, &note);
+        convert_y(y, note);
         mPreviewKey = note;
         m_seq.play_note_on(note);
     }
@@ -190,7 +185,7 @@ qseqkeys::mouseMoveEvent (QMouseEvent * event)
 {
     int note;
     int y = event->y();
-    convert_y(y, &note);
+    convert_y(y, note);
     if (mPreviewing)
     {
         if (note != mPreviewKey)
@@ -218,9 +213,9 @@ qseqkeys::sizeHint () const
  */
 
 void
-qseqkeys::convert_y(int y, int * note)
+qseqkeys::convert_y (int y, int & note)
 {
-    *note = (keyAreaY - y - 2) / keyY;
+    note = (keyAreaY - y - 2) / keyY;
 }
 
 }           // namespace seq64

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-05
+ * \updates       2018-04-02
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -117,16 +117,14 @@ private:
         return mPerf;
     }
 
-    void xy_to_rect
-    (
-        int x1, int y1, int x2, int y2, int * x, int * y, int * w, int * h
-    );
-    void convert_xy (int x, int y, midipulse * ticks, int * seq);
-    void convert_x (int x, midipulse * ticks);
-    void snap_x (int * x);
-    void snap_y (int * y);
+    void convert_xy (int x, int y, midipulse & ticks, int & seq);
+    void convert_x (int x, midipulse & ticks);
+    void snap_x (int & x);
+    void snap_y (int & y);
     void half_split_trigger (int sequence, midipulse tick);
     void set_adding (bool adding);
+
+private:
 
     perform & mPerf;
     QTimer * mTimer;
@@ -143,13 +141,13 @@ private:
 
     // sequence selection
 
-    midipulse m_tick_s; //start of tick window
-    midipulse m_tick_f; //end of tick window
-    int m_seq_h;  //highest seq in window
-    int m_seq_l;  //lowest seq in window
+    midipulse m_tick_s;                     // start of tick window
+    midipulse m_tick_f;                     // end of tick window
+    int m_seq_h;                            // highest seq in window
+    int m_seq_l;                            // lowest seq in window
     midipulse m_drop_tick;
-    midipulse m_drop_tick_trigger_offset; // ticks clicked from start of trigger
-    midipulse mLastTick;                  // tick using at last mouse event
+    midipulse m_drop_tick_trigger_offset;   // ticks clicked from trigger
+    midipulse mLastTick;                    // tick using at last mouse event
     bool m_sequence_active[c_max_sequence];
     bool m_moving;
     bool mBoxSelect;

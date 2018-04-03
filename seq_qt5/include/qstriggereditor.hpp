@@ -93,14 +93,14 @@ private:
 
     /* checks mins / maxes..  the fills in x,y and width and height */
 
-    void x_to_w(int a_x1, int a_x2, int *a_x, int *a_w);
-    void start_paste();
-    void convert_x(int a_x, long *a_tick);
-    void convert_t(long a_ticks, int *a_x);
-    void drop_event(long a_tick);
-    void snap_y(int *a_y);
-    void snap_x(int *a_x);
-    void set_adding(bool a_adding);
+    void x_to_w (int x1, int x2, int & x, int & w);
+    void start_paste ();
+    void convert_x (int x, midipulse & tick);
+    void convert_t (midipulse ticks, int & x);
+    void drop_event (midipulse tick);
+    void snap_y (int & y);
+    void snap_x (int & x);
+    void set_adding (bool adding);
 
 private:
 

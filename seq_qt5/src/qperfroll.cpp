@@ -414,17 +414,21 @@ qperfroll::mousePressEvent(QMouseEvent *event)
 
                 if (trigger_state)
                 {
-                    perf().push_trigger_undo();
-                    perf().get_sequence(m_drop_sequence)->delete_trigger(tick);
+                    // perf().push_trigger_undo();
+                    // perf().get_sequence(m_drop_sequence)->delete_trigger(tick);
+
+                    delete_trigger(m_drop_sequence, tick);
                 }
                 else
                 {
                     if (perf().song_record_snap())  // snap to seq length
                         tick = tick - (tick % seq_length);
 
-                    perf().push_trigger_undo();
-                    perf().get_sequence(m_drop_sequence)->
-                        add_trigger(tick, seq_length);
+//                  perf().push_trigger_undo();
+//                  perf().get_sequence(m_drop_sequence)->
+//                      add_trigger(tick, seq_length);
+
+                    add_trigger(m_drop_sequence, tick);
                 }
             }
         }
@@ -709,7 +713,6 @@ qperfroll::keyPressEvent (QKeyEvent * event)
             break;
         }
     }
-
 }
 
 /**
@@ -786,10 +789,32 @@ qperfroll::convert_xy (int x, int y, midipulse & tick, int & seq)
  */
 
 void
-qperfroll::half_split_trigger (int sequence, midipulse tick)
+qperfroll::add_trigger(int seq, midipulse tick)
 {
-    perf().push_trigger_undo();
-    perf().get_sequence(sequence)->half_split_trigger(tick);
+    perf().add_trigger(seq, tick);
+}
+
+/**
+ *
+ */
+
+void
+qperfroll::half_split_trigger (int seq, midipulse tick)
+{
+//  perf().push_trigger_undo();
+//  perf().get_sequence(seq)->half_split_trigger(tick);
+
+    perf().split_trigger(seq, tick);
+}
+
+/**
+ *
+ */
+
+void
+qperfroll::delete_trigger(int seq, midipulse tick)
+{
+    perf().delete_trigger(seq, tick);
 }
 
 /* simply sets the snap member */

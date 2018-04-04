@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-03
+ * \updates       2018-04-03
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -101,8 +101,8 @@ protected:
 
 private:
 
-    void snap_y(int * y); //performs a 'snap' on y
-    void snap_x(int * x); //performs a 'snap' on x
+    void snap_y (int & y);
+    void snap_x (int & x);
 
     /* takes screen corrdinates, give us notes and ticks */
 

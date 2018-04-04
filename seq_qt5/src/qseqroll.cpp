@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-11
+ * \updates       2018-04-03
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -496,8 +496,8 @@ qseqroll::mousePressEvent (QMouseEvent * event)
     int norm_x, norm_y, snapped_x, snapped_y;
     snapped_x = norm_x = event->x() - c_keyboard_padding_x;
     snapped_y = norm_y = event->y();
-    snap_x(&snapped_x);
-    snap_y(&snapped_y);
+    snap_x(snapped_x);
+    snap_y(snapped_y);
     m_current_y = m_drop_y = snapped_y;     /* y is always snapped */
     if (m_paste)
     {
@@ -653,9 +653,9 @@ qseqroll::mousePressEvent (QMouseEvent * event)
 
                         /* save offset that we get from the snap above */
                         int adjusted_selected_x = m_selected.x();
-                        snap_x(&adjusted_selected_x);
+                        snap_x(adjusted_selected_x);
                         m_move_snap_offset_x =
-                            (m_selected.x() - adjusted_selected_x);
+                            m_selected.x() - adjusted_selected_x;
 
                         m_current_x = m_drop_x = snapped_x;
                     }
@@ -707,9 +707,9 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
     bool needs_update = false;
     m_current_x = event->x() - c_keyboard_padding_x;
     m_current_y = event->y();
-    snap_y(&m_current_y);
+    snap_y(m_current_y);
     if (m_moving)
-        snap_x(&m_current_x);
+        snap_x(m_current_x);
 
     int delta_x = m_current_x - m_drop_x;
     int delta_y = m_current_y - m_drop_y;
@@ -810,7 +810,7 @@ qseqroll::mouseMoveEvent (QMouseEvent * event)
         m_moving_init = false;
         m_moving = true;
     }
-    snap_y(&m_current_y);
+    snap_y(m_current_y);
 
     int note;
     midipulse tick;
@@ -818,12 +818,12 @@ qseqroll::mouseMoveEvent (QMouseEvent * event)
     if (m_selecting || m_moving || m_growing || m_paste)
     {
         if (m_moving || m_paste)
-            snap_x(&m_current_x);
+            snap_x(m_current_x);
     }
 
     if (m_painting)
     {
-        snap_x(&m_current_x);
+        snap_x(m_current_x);
         convert_xy(m_current_x, m_current_y, tick, note);
         m_seq.add_note(tick, m_note_length - 2, note, true);
     }
@@ -838,9 +838,11 @@ qseqroll::keyPressEvent (QKeyEvent * event)
 {
     if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace)
     {
-        m_seq.push_undo();
-        m_seq.mark_selected();
-        m_seq.remove_marked();          // delete selected notes
+        // m_seq.push_undo();
+        // m_seq.mark_selected();
+        // m_seq.remove_marked();          // delete selected notes
+
+        m_seq.remove_selected();
         return;
     }
 
@@ -868,10 +870,12 @@ qseqroll::keyPressEvent (QKeyEvent * event)
         switch (event->key())
         {
         case Qt::Key_X:
-            m_seq.push_undo();
-            m_seq.copy_selected();
-            m_seq.mark_selected();
-            m_seq.remove_marked();
+            // m_seq.push_undo();
+            // m_seq.copy_selected();
+            // m_seq.mark_selected();
+            // m_seq.remove_marked();
+
+            m_seq.cut_selected();
             return;
             break;
 
@@ -903,11 +907,12 @@ qseqroll::keyPressEvent (QKeyEvent * event)
         }
     }
 
-    // If we reach this point, the key isn't relevant to us ignore it so the
-    // event is passed to the parent
+    /*
+     * If we reach this point, the key isn't relevant to us; ignore it so the
+     * event is passed to the parent.
+     */
 
     event->ignore();
-
 }
 
 /**
@@ -938,9 +943,9 @@ qseqroll::sizeHint () const
  */
 
 void
-qseqroll::snap_y (int * a_y)
+qseqroll::snap_y (int & y)
 {
-    *a_y = *a_y - (*a_y % keyY);
+    y -= y % keyY;
 }
 
 /**
@@ -953,13 +958,13 @@ qseqroll::snap_y (int * a_y)
  */
 
 void
-qseqroll::snap_x (int * a_x)
+qseqroll::snap_x (int & x)
 {
     int mod = (m_snap / m_zoom);
     if (mod <= 0)
         mod = 1;
 
-    *a_x = *a_x - (*a_x % mod);
+    x -= x % mod;
 }
 
 /**
@@ -1073,8 +1078,8 @@ qseqroll::set_snap (int snap)
 void
 qseqroll::start_paste ()
 {
-    snap_x(&m_current_x);
-    snap_y(&m_current_x);
+    snap_x(m_current_x);
+    snap_y(m_current_x);
     m_drop_x = m_current_x;
     m_drop_y = m_current_y;
     m_paste = true;

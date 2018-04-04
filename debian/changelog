@@ -1,3 +1,9 @@
+sequencer64 (0.94.8-0) unstable; urgency=medium
+
+  * Fixed configure.ac.
+
+ -- Chris Ahlstrom <ahlstromcj@gmail.com>  Sun, 03 Apr 2018 12:00:00 +0400
+
 sequencer64 (0.94.7-0) unstable; urgency=medium
 
   * Fixed a large number of bugs, many new features, see the main site.
@@ -5,7 +11,7 @@ sequencer64 (0.94.7-0) unstable; urgency=medium
   * Added a prototype Qt version, qseq64, based on Kepler34, see the INSTALL
     file.
 
- -- Chris Ahlstrom <ahlstromcj@gmail.com>  Sun, 19 Nov 2017 12:00:00 +0400
+ -- Chris Ahlstrom <ahlstromcj@gmail.com>  Sun, 01 Apr 2018 12:00:00 +0400
 
 sequencer64 (0.93.5-0) unstable; urgency=medium
 

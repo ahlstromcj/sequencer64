@@ -121,7 +121,16 @@ private:
     void convert_x (int x, midipulse & ticks);
     void snap_x (int & x);
     void snap_y (int & y);
-    void half_split_trigger (int sequence, midipulse tick);
+
+    // We could add these function to perform and here:
+    //
+    //  cut_selected_trigger()
+    //  copy_selected_trigger()
+    //  paste_trigger()
+
+    void add_trigger (int seq, midipulse tick);
+    void half_split_trigger (int seq, midipulse tick);
+    void delete_trigger (int seq, midipulse tick);
     void set_adding (bool adding);
 
 private:

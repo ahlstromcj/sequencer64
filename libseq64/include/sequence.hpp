@@ -1609,9 +1609,9 @@ public:
     void adjust_data_handle (midibyte status, int data);
 #endif
 
-    bool remove_marked ();                      /* a forwarding function */
     bool mark_selected ();
     void remove_selected ();
+    bool remove_marked ();                      /* a forwarding function */
     void unpaint_all ();
     void unselect ();
     void verify_and_link ();

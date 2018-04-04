@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-04-01
+dnl \update        2018-04-03
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -26,7 +26,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.94$)dnl
-AC_INIT(Sequencer64, [0.94.7], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.94.8], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl See AC_CONFIG_SRCDIR
@@ -120,19 +120,22 @@ build_rtmidi="no"
 build_portmidi="no"
 build_rtcli="no"
 build_windows="no"
+need_gtkmm="no"
+need_qt="no"
 
 dnl Flaky, the AR macro is set well after this test, but the GCC macro
 dnl is set before it, so that is what we use.  Odd.
 dnl
 dnl AC_MSG_RESULT([TESTING HOST OS])
 
-if test x"$windows_host" = x"yes" ; then
-    if test x"$CC" = x"gcc" ; then
+if test "x$windows_host" = "xyes" ; then
+    if test "x$CC" = "xgcc" ; then
         AC_MSG_ERROR([MingW build enabled, but MingW packages not installed.])
     else
         build_windows="yes"
+        need_qt="yes"
         AC_DEFINE(WINDOWS_SUPPORT, 1, [Indicates limited Windows support])
-        AC_MSG_RESULT([MingW Windows CLI build enabled.])
+        AC_MSG_RESULT([MingW Windows (Qt) build enabled.])
     fi
 fi
 
@@ -150,7 +153,7 @@ AC_SUBST(PACKAGE)
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
 
-VERSION="0.94.7"
+VERSION="0.94.8"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -316,7 +319,7 @@ dnl
 dnl We have disabled this test for now, by testing against a non-existent
 dnl macro.
 
-if test x"$use_as_needed" = x"yes" ; then       # disables this code
+if test "x$use_as_needed" = "xyes" ; then       # disables this code
 
 AC_MSG_CHECKING(if --as-needed works)
 AC_ARG_ENABLE(as_needed,
@@ -331,7 +334,7 @@ AC_ARG_ENABLE(as_needed,
     ],[
         as_needed="unknown"
     ])
-if test x"${as_needed}" = x"unknown" ; then
+if test "x${as_needed}" = "xunknown" ; then
     ac_old_ldflags="${LDFLAGS}"
     LDFLAGS="-Wl,--as-needed"
     AC_TRY_LINK(
@@ -373,9 +376,10 @@ dnl AC_CHECK_LIB(rt, main,, AC_MSG_ERROR([POSIX.1b Realtime library missing libr
 
 dnl Convert from gtkmm-2.4 to gtkmm-3.0.  It currently builds either way.
 dnl No! I was mistaken, because I had left some 2.4 paths in place below.
-dnl Not supported in a Windows build at this time.
+dnl Not supported in a Windows build at this time.  Also, be warned that
+dnl there is a second gtkmm check around line 635.
 
-if test x"$windows_host" = x"no" ; then
+if test "x$need_gtkmm" = "xyes" ; then
     AC_CHECK_LIB(gtkmm-2.4, _init,,
         AC_MSG_ERROR([Essential library libgtkmm-2.4 not found]))
 fi
@@ -385,7 +389,7 @@ dnl     AC_MSG_ERROR([Essential library libgtkmm-3.0 not found]))
 
 dnl Not supported in a Windows build at this time.
 
-if test x"$windows_host" = x"no" ; then
+if test "x$windows_host" = "xno" ; then
     AC_CHECK_LIB(sigc-2.0, main,,
         AC_MSG_ERROR([Essential library libsigc++-2.0 not found]))
 fi
@@ -420,16 +424,6 @@ dnl AC_PROG_DOXYGEN
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN";
    then AC_MSG_WARN([Doxygen not found, FYI only, not to worry])
-fi
-
-dnl gtkmm
-dnl
-dnl PKG_CHECK_MODULES(GTKMM, gtkmm-3.0 >= 3.0.0)
-
-if test x"$windows_host" = x"no" ; then
-    PKG_CHECK_MODULES(GTKMM, gtkmm-2.4 >= 2.4.0)
-    AC_SUBST(GTKMM_CFLAGS)
-    AC_SUBST(GTKMM_LIBS)
 fi
 
 dnl Checks for the Cygwin environment. If present, sets shell variable
@@ -528,6 +522,7 @@ AC_ARG_ENABLE(rtmidi,
 
 if test "$rtmidi" != "no"; then
     build_rtmidi="yes"
+    need_gtkmm="yes"
     AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi is enabled])
     AM_PATH_ALSA(0.9.0)
@@ -559,7 +554,9 @@ AC_ARG_ENABLE(qtmidi,
 
 if test "$qtmidi" != "no"; then
     build_qtmidi="yes"
+    need_qt="yes"
     build_rtmidi="no"
+    need_gtkmm="no"
     AC_DEFINE(APP_NAME, ["qseq64"], [Names the Qt/rtmidi version of application])
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates that rtmidi is enabled])
     AC_DEFINE(QTMIDI_SUPPORT, 1, [Indicates that Qt5 is enabled])
@@ -591,7 +588,7 @@ if test "$cli" != "no"; then
         AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates that PortMidi is enabled])
     fi
 else
-    AC_MSG_NOTICE([rtmidi command-line build disabled.])
+    AC_MSG_NOTICE([portmidi/rtmidi command-line build disabled.])
 fi
 
 dnl ALSA MIDI (legacy) support.
@@ -603,6 +600,7 @@ AC_ARG_ENABLE(alsamidi,
 
 if test "$alsamidi" != "no"; then
     build_alsamidi="yes"
+    need_gtkmm="yes"
     AC_DEFINE(ALSAMIDI_SUPPORT, 1, [Indicates if ALSA MIDI support is enabled])
     AC_DEFINE(APP_NAME, ["sequencer64"], [Names legacy version of application])
     AM_PATH_ALSA(0.9.0)
@@ -621,6 +619,7 @@ AC_ARG_ENABLE(portmidi,
 
 if test "$portmidi" != "no"; then
     build_portmidi="yes"
+    need_gtkmm="yes"
     AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates if PortMidi support is enabled])
     AC_DEFINE(APP_NAME, ["seq64portmidi"], [Names this version of application])
     AM_PATH_ALSA(0.9.0)
@@ -630,6 +629,14 @@ else
 fi
 
 AC_SUBST(APP_NAME)
+
+dnl PKG_CHECK_MODULES(GTKMM, gtkmm-3.0 >= 3.0.0)
+
+if test "x$need_gtkmm" = "xyes" ; then
+    PKG_CHECK_MODULES(GTKMM, gtkmm-2.4 >= 2.4.0)
+    AC_SUBST(GTKMM_CFLAGS)
+    AC_SUBST(GTKMM_LIBS)
+fi
 
 dnl Support for highlighting empty sequences (in yellow).  If enabled, the
 dnl macro SEQ64_HIGHLIGHT_EMPTY_SEQS is defined.
@@ -790,8 +797,8 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-04-01"
-#define VERSION "0.94.7"
+#define VERSION_DATE_SHORT "2018-04-03"
+#define VERSION "0.94.8"
 
 )
 

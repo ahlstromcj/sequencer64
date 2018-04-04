@@ -1,3 +1,6 @@
+# This is a try at eliminating unresolved symbol errors, but results in a 
+# lot of too-small debs.
+
 Source: sequencer64
 Section: sound
 Priority: optional
@@ -18,6 +21,7 @@ Vcs-Browser: https://github.com/ahlstromcj/sequencer64.git
 
 Package: sequencer64
 Architecture: any
+Multi-Arch: foreign
 Depends: libasound2 (>= 1.0.16),
     libc6 (>= 2.14),
     libgcc1 (>= 1:3.0),
@@ -31,5 +35,103 @@ Description: Native JACK/ALSA MIDI live sequencer refactored from seq24.
  more scales, chord-generation, expanded configuration options, pause,
  event-editing window, tap-tempo, more keystroke control, and many other
  enhancements and fixes.  A prototype Qt build is now available.
+
+Package: sequencer64-dbg
+Section: debug
+Architecture: any
+Multi-Arch: same
+Depends: debhello (= ${binary:Version}), ${misc:Depends}
+Description: Debugging symbols for sequencer64 (seq64 executable).
+
+Package: libseq64
+Section: libs
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${misc:Depends}
+Description: Sequencer64 is a live-looping sequencer based on seq24.
+ The libseq64 library provides support for MIDI file reading and writing,
+ SeqSpec handling, triggers, performance control, and a few other useful
+ utilities for all applications similar to Sequencer64.
+ .
+ This package contains the shared library required by applications using the
+ features of this library.
+
+Package: libseq64-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: libseq64 (= ${binary:Version}), pkg-config, ${misc:Depends}
+Description: Development files for libseq64.
+ This package contains headers and a static library required to build
+ the various versions of Sequencer64.
+
+Package: libseq64-dbg
+Section: debug
+Architecture: any
+Multi-Arch: same
+Depends: debhello (= ${binary:Version}), ${misc:Depends}
+Description: Debugging symbols for the libseq64 library.
+
+Package: seq-gtkmm2
+Section: libs
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${misc:Depends}
+Description: Sequencer64 is a live-looping sequencer based on seq24.
+ The seq_gtkmm2 library provides support for the Gtkmm-2.4 user-interface of
+ the application.
+
+Package: seq-gtkmm2-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: libseq64-dev (= ${binary:Version}), pkg-config, ${misc:Depends}
+Description: Development files for seq_gtkmm2.
+ The seq_gtkmm2 library provides the Gtkmm-2.4 classes needed to implement the
+ Sequencer64 user-interface, and the base classes that support them.
+ .
+ This package contains the shared library required for Gtkmm-2.4 applications
+ using the Sequencer64 user-interface windows.
+
+Package: seq-gtkmm2-dbg
+Section: debug
+Architecture: any
+Multi-Arch: same
+Depends: debhello (= ${binary:Version}), ${misc:Depends}
+Description: Debugging symbols for the seq_gtkmm2 library.
+
+Package: seq-rtmidi
+Section: libs
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${misc:Depends}
+Description: Sequencer64 is a live-looping sequencer based on seq24.
+ The seq_rtmidi library provides support for the "rtmidi" interfaces for ALSA
+ and MIDI for the application.
+
+Package: seq-rtmidi-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: libseq64-dev (= ${binary:Version}), pkg-config, ${misc:Depends}
+Description: Development files for seq_gtkmm2.
+ The seq_rtmidi library provides the classes needed to implement the
+ Sequencer64 support for ALSA and MIDI, loosely based on the RtMidi project.
+ .
+ This package contains the shared library required for applications using the
+ Sequencer64 "rtmidi" interface.
+
+Package: seq-rtmidi-dbg
+Section: debug
+Architecture: any
+Multi-Arch: same
+Depends: debhello (= ${binary:Version}), ${misc:Depends}
+Description: Debugging symbols for the seq_rtmidi library.
 
 # vim: ft=debcontrol

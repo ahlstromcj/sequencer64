@@ -5,43 +5,32 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2017-11-23
+# \updates     2018-04-04
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
 # See debhelper(9).  Enables output of every command that modifies files on the
-# build system.
+# build system.  Also check out:
 #
-# Uncomment this to turn on verbose mode.
-#
-#  export DH_OPTIONS=-v
-#  export DH_VERBOSE=1
-#
-# see FEATURE AREAS in dpkg-buildflags(1)
-#  export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-#
-# see ENVIRONMENT in dpkg-buildflags(1)
-# package maintainers to append CFLAGS
-#  export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
-# package maintainers to append LDFLAGS
-#  export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+# https://www.debian.org/doc/manuals/debmake-doc/ch08.en.html#autotools-multi
 
-#  export LD_LIBRARY_PATH=$(shell pwd)/lib/Linux/$(DEB_BUILD_GNU_CPU)
+export DH_VERBOSE = 1
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
-# override_dh_clean:
-#	echo Skipping dh_clean
-
-override_dh_auto_test:
-override_dh_usrlocal:
-override_dh_shlibdeps:
-	dh_shlibdeps -l$(shell pwd)/lib/$(shell uname -m)
-
-#	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info -l$(shell pwd)/lib/$(shell uname -m)
-
-# LDFLAGS+=-Wl,--as-needed,-static
-
-LDFLAGS+=-Wl,--as-needed,-all-static
+#	dh $@ --with=autotools_dev
 
 %:
-	dh $@ --with=autotools_dev
+	dh $@ --with autoreconf
 
+# override_dh_install:
+#	dh_missing --list-missing
+
+override_dh_strip:
+	dh_strip -Xlibseq64 -Xlibseq_gtkmm2 -Xlibseq_rtmidi --dbg-package=sequencer64-dbg
+	dh_strip -Xseq64 -Xseq-gtkmm2 -Xseq-rtmidi --dbg-package=libseq64-dbg
+	dh_strip -Xseq64 -Xlibseq64 -Xseq-rtmidi --dbg-package=seq-gtkmm2-dbg
+	dh_strip -Xseq64 -Xlibseq64 -Xseq-gtkmm2 --dbg-package=seq-rtmidi-dbg
+
+# vim: ft=make

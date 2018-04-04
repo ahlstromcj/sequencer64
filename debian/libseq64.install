@@ -1,0 +1,9 @@
+# debian/libseq64.install
+#
+# tmp/usr/lib/x86_64-linux-gnu/sequencer64-0.94/ is where all the *.a, *.la,
+# and *.so files are stored.
+#
+# usr/lib/*/*.so.*
+
+usr/lib/*/*/*.so
+

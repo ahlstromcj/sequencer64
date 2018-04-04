@@ -1,0 +1,5 @@
+# debian/sequencer64.install
+
+usr/bin/*
+usr/share/man/*
+

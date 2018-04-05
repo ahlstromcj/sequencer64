@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2018-02-18
+# \update     	2018-04-05
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -35,7 +35,7 @@ LANG=C
 export LANG
 CYGWIN=binmode
 export CYGWIN
-export SEQ64_SCRIPT_EDIT_DATE="2018-02-18"
+export SEQ64_SCRIPT_EDIT_DATE="2018-04-05"
 export SEQ64_LIBRARY_API_VERSION="0.94"
 export SEQ64_LIBRARY_VERSION="$SEQ64_LIBRARY_API_VERSION.94.0"
 
@@ -65,8 +65,8 @@ checkdir Sequencer64
 #  Option settings
 #------------------------------------------------------------------------------
 
-DOALSAMIDI="no"
 DOBOOTSTRAP="yes"
+DOALSAMIDI="no"
 DOCLEAN="no"
 DODEBUG="no"
 DOFULLCLEAN="no"
@@ -79,8 +79,6 @@ DOTESTONLY="no"
 DOVERSION="no"
 DOALSAMIDI="no"
 DOPORTMIDI="no"
-DORTCLI="no"
-DOMINGW="no"
 DOGTKMMUI="yes"
 DOQT5UI="no"
 LOGFILENAME=""
@@ -100,7 +98,7 @@ EXTRAFLAGS="--enable-rtmidi"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.94.6-2018-02-18)
+Usage: ./bootstrap [options]                                 (0.94.6-2018-04-05)
 
     'bootstrap' sets up GNU automake support and libtool support for the
     Sequencer64 projects, creating the 'configure' script.  It can also
@@ -214,9 +212,12 @@ if [ $# -ge 1 ] ; then
 
          --windows | -win | -w64)
             DORTMIDI="no"
-            DORTCLI="yes"
+            DOGTKMMUI="no"
+            DORTCLI="no"
+            DOQT5UI="yes"
+            DOPORTMIDI="yes"
             DOMINGW="yes"
-            EXTRAFLAGS="--disable-rtmidi --enable-cli --enable-mingw --build=x86_64-pc-linux-gnu --host=x86_64-w64-mingw32"
+            EXTRAFLAGS="--disable-rtmidi --enable-portmidi --enable-mingw --build=x86_64-pc-linux-gnu --host=x86_64-w64-mingw32"
             ;;
 
          --win32 | -w32)

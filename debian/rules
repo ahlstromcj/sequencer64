@@ -27,8 +27,13 @@ export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 # override_dh_install:
 #	dh_missing --list-missing
 
+override_dh_auto_test:
+override_dh_usrlocal:
+override_dh_shlibdeps:
+	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info -l$(shell pwd)/lib/x86_64-linux-gnu
+
 override_dh_strip:
-	dh_strip -Xlibseq64 -Xlibseq_gtkmm2 -Xlibseq_rtmidi --dbg-package=sequencer64-dbg
+	dh_strip -Xlibseq64 -Xseq_gtkmm2 -Xseq_rtmidi --dbg-package=sequencer64-dbg
 	dh_strip -Xseq64 -Xseq-gtkmm2 -Xseq-rtmidi --dbg-package=libseq64-dbg
 	dh_strip -Xseq64 -Xlibseq64 -Xseq-rtmidi --dbg-package=seq-gtkmm2-dbg
 	dh_strip -Xseq64 -Xlibseq64 -Xseq-gtkmm2 --dbg-package=seq-rtmidi-dbg

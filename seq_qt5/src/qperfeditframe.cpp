@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-14
+ * \updates       2018-04-08
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -35,7 +35,17 @@
 #include "perform.hpp"
 #include "qperfeditframe.hpp"
 #include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
+
+/*
+ *  Qt's uic application allows a different output file-name, but not sure
+ *  if qmake can change the file-name.
+ */
+
+#ifdef SEQ64_QMAKE_RULES
+#include "forms/ui_qperfeditframe.h"
+#else
 #include "forms/qperfeditframe.ui.h"
+#endif
 
 #include "pixmaps/collapse.xpm"
 #include "pixmaps/copy.xpm"

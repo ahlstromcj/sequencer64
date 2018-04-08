@@ -113,6 +113,7 @@ MANIFEST.bak
 *.meta
 META.yml
 Midiclocker64/midiclocker64
+moc_*.cpp
 *.mo
 *.moc.cpp
 .mr.developer.cfg
@@ -184,6 +185,7 @@ tmp/        # hmmm
 *.toc
 .tox
 *.trs
+ui_*.h
 *.un~
 UpgradeLog*.XML
 _UpgradeReport_Files/

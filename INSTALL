@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.94.8 and above
 Chris Ahlstrom
-2015-09-10 to 2018-04-03
+2015-09-10 to 2018-04-08
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -21,6 +21,12 @@ bootstrapping setup is primarily aimed at developers.  Starting with version
     -   qseq64.  The seq64 (rtmidi) version of the application, with a Qt5
         user interface based on Kepler34.  Useable, but still lacks many of
         the user-interface elements of the Gtkmm 2.4 application.
+
+Below are sections for various ways of installing this project:
+
+    -   Quick Install
+    -   Advanced Steps
+    -   Qmake-base Install
 
 Quick Install:
 
@@ -147,6 +153,26 @@ Advanced Steps:
        where rtmidi is the intended default build, and 0.94.6 is the version
        of the project.  The branch is included in the resulting tarball name;
        the usual branch would be "master".
+
+Qmake-base Install:
+
+    A build based on Qt Creator and Qmake is available.  It has the sole
+    purpose of making it easy to build the project on Windows, though we
+    created this build on Linux first to work out the numerous "gotchas" with
+    Qt Creator and QMake.  This build is designed *only* to use the PortMidi
+    library.
+
+    The first way to use this build is to run qtcreator and load the
+    qplseq64.pro file.  This method can be used if you do not care for the
+    command-line.
+
+    The second way to use thisbuild is to do:
+
+        $ qmake -recursive qplseq64.pro
+        $ make
+        $ make install (not yet tested)
+
+    Our secondary aim is to get a nice static build.
 
 CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 

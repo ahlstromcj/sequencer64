@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-31
+ * \updates       2018-04-08
  * \license       GNU GPLv2 or above
  *
  */
@@ -36,7 +36,17 @@
 #include "qsliveframe.hpp"
 #include "qsmacros.hpp"                 /* QS_TEXT_CHAR() macro             */
 #include "settings.hpp"
+
+/*
+ *  Qt's uic application allows a different output file-name, but not sure
+ *  if qmake can change the file-name.
+ */
+
+#ifdef SEQ64_QMAKE_RULES
+#include "forms/ui_qsliveframe.h"
+#else
 #include "forms/qsliveframe.ui.h"
+#endif
 
 /*
  * Do not document a namespace, it breaks Doxygen.

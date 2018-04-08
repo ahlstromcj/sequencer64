@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-01
+ * \updates       2018-04-08
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -47,7 +47,17 @@
 #include "qsliveframe.hpp"
 #include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
 #include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
+
+/*
+ *  Qt's uic application allows a different output file-name, but not sure
+ *  if qmake can change the file-name.
+ */
+
+#ifdef SEQ64_QMAKE_RULES
+#include "forms/ui_qsmainwnd.h"
+#else
 #include "forms/qsmainwnd.ui.h"         /* generated btnStop, btnPlay, etc. */
+#endif
 
 #include "pixmaps/live_mode.xpm"        /* #include "pixmaps/song_mode.xpm" */
 #include "pixmaps/panic.xpm"

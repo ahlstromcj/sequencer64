@@ -29,7 +29,6 @@
         <file>../../resources/pixmaps/drum.xpm</file>
     </qresource>
     <qresource>
-        <file>../../resources/pixmaps/drum.xpm</file>
         <file>../../resources/pixmaps/logo.xpm</file>
         <file>../../resources/pixmaps/panic.xpm</file>
         <file>../../resources/pixmaps/song-snap.xpm</file>

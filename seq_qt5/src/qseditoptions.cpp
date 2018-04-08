@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-14
+ * \updates       2018-04-08
  * \license       GNU GPLv2 or above
  *
  */
@@ -33,7 +33,17 @@
 #include "perform.hpp"
 #include "qseditoptions.hpp"
 #include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
+
+/*
+ *  Qt's uic application allows a different output file-name, but not sure
+ *  if qmake can change the file-name.
+ */
+
+#ifdef SEQ64_QMAKE_RULES
+#include "forms/ui_qseditoptions.h"
+#else
 #include "forms/qseditoptions.ui.h"
+#endif
 
 /*
  *  Do not document the namespace, it breaks Doxygen.

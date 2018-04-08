@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2018-03-31
+ * \updates       2018-04-06
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -1150,8 +1150,13 @@ user_settings::option_logfile () const
 void
 user_settings::block_rows (int count)
 {
+#if defined SEQ64_MAINWID_BLOCK_ROWS_MAX
     if (count > 0 && count <= SEQ64_MAINWID_BLOCK_ROWS_MAX)
         m_mainwid_block_rows = count;
+#else
+    if (count == 1)
+        m_mainwid_block_rows = count;
+#endif
 }
 
 /**
@@ -1161,8 +1166,13 @@ user_settings::block_rows (int count)
 void
 user_settings::block_columns (int count)
 {
+#if defined SEQ64_MAINWID_BLOCK_ROWS_MAX
     if (count > 0 && count <= SEQ64_MAINWID_BLOCK_COLS_MAX)
         m_mainwid_block_cols = count;
+#else
+    if (count == 1)
+        m_mainwid_block_cols = count;
+#endif
 }
 
 /*

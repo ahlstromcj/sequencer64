@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-14
+ * \updates       2018-04-08
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -38,7 +38,17 @@
 #include "perform.hpp"
 #include "qseqeditframe.hpp"
 #include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
+
+/*
+ *  Qt's uic application allows a different output file-name, but not sure
+ *  if qmake can change the file-name.
+ */
+
+#ifdef SEQ64_QMAKE_RULES
+#include "forms/ui_qseqeditframe.h"
+#else
 #include "forms/qseqeditframe.ui.h"
+#endif
 
 #include "pixmaps/drum.xpm"
 #include "pixmaps/play.xpm"

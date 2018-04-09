@@ -348,7 +348,7 @@ none_get_host_error
 (
     PmInternal * UNUSED(midi),
     char * msg,
-    unsigned int UNUSED(len)
+    unsigned UNUSED(len)
 )
 {
     *msg = 0;       // empty string
@@ -358,7 +358,7 @@ none_get_host_error
  *
  */
 
-static unsigned int
+static unsigned
 none_has_host_error (PmInternal * UNUSED(midi))
 {
     return FALSE;
@@ -465,7 +465,7 @@ Pm_GetErrorText (PmError errnum)
  */
 
 PMEXPORT void
-Pm_GetHostErrorText (char * msg, unsigned int len)
+Pm_GetHostErrorText (char * msg, unsigned len)
 {
     assert(msg);
     assert(len > 0);
@@ -1532,7 +1532,7 @@ pm_read_short (PmInternal * midi, PmEvent * event)
  * returns how many bytes processed
  */
 
-unsigned int
+unsigned
 pm_read_bytes
 (
     PmInternal * midi, const unsigned char * data,

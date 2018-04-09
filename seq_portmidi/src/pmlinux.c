@@ -32,7 +32,7 @@
  */
 
 #include "stdlib.h"
-#include "portmidi.h"
+#include "finddefault.h"
 #include "pmutil.h"
 #include "pminternal.h"
 

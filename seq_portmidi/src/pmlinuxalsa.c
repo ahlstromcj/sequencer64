@@ -900,7 +900,7 @@ alsa_poll (PmInternal * UNUSED(midi))
  *
  */
 
-static unsigned int
+static unsigned
 alsa_has_host_error (PmInternal * midi)
 {
     alsa_descriptor_type desc = (alsa_descriptor_type) midi->descriptor;
@@ -909,10 +909,11 @@ alsa_has_host_error (PmInternal * midi)
 
 /**
  *
+ *  alsa_get_host_error (PmInternal * midi, char * msg, unsigned len)
  */
 
 static void
-alsa_get_host_error (PmInternal * midi, char * msg, unsigned int len)
+alsa_get_host_error (struct pm_internal_struct * midi, char * msg, unsigned len)
 {
     alsa_descriptor_type desc = (alsa_descriptor_type) midi->descriptor;
     int err = (pm_hosterror || desc->error);
@@ -994,7 +995,7 @@ pm_linuxalsa_init (void)
 {
     snd_seq_client_info_t * cinfo;
     snd_seq_port_info_t * pinfo;
-    unsigned int caps;
+    unsigned caps;
     int err = snd_seq_open(&s_seq, "default", SND_SEQ_OPEN_DUPLEX, 0);
     if (err < 0)
         return err;

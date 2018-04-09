@@ -25,13 +25,6 @@ INCLUDEPATH = \
  ../seq_portmidi/include \
  ../seq_qt5/include
 
-## win32:CONFIG(release, debug|release): LIBS += 
-##  -L$$OUT_PWD/../../../projects/mylib/release/ -lmylib
-## else:win32:CONFIG(debug, debug|release): LIBS += 
-##  -L$$OUT_PWD/../../../projects/mylib/debug/ -lmylib
-## else:unix: LIBS += 
-##  -L$$OUT_PWD/../../../projects/mylib/ -lmylib
-
 DEPENDPATH += \
  $$PWD/../libseq64 \
  $$PWD/../seq_portmidi \
@@ -49,10 +42,23 @@ unix: PRE_TARGETDEPS += \
  $$OUT_PWD/../seq_portmidi/libseq_portmidi.a \ 
  $$OUT_PWD/../seq_qt5/libseq_qt5.a
 
+## win32:CONFIG(release, debug|release): LIBS += 
+##  -L$$OUT_PWD/../../../projects/mylib/release/ -lmylib
+## else:win32:CONFIG(debug, debug|release): LIBS += 
+##  -L$$OUT_PWD/../../../projects/mylib/debug/ -lmylib
+## else:unix: LIBS += 
+##  -L$$OUT_PWD/../../../projects/mylib/ -lmylib
+
+# Sometimes some midifile and rect member functions cannot be found at link
+# time, so we include libseq64 twice.
+#
+# https://eli.thegreenplace.net/2013/07/09/library-order-in-static-linking
+
 unix: LIBS += \
- -L$$OUT_PWD/../libseq64/ -lseq64 \
- -L$$OUT_PWD/../seq_portmidi/ -lseq_portmidi \
- -L$$OUT_PWD/../seq_qt5/ -lseq_qt5
+ -L$$OUT_PWD/../libseq64 -lseq64 \
+ -L$$OUT_PWD/../seq_portmidi -lseq_portmidi \
+ -L$$OUT_PWD/../seq_qt5 -lseq_qt5 \
+ -L$$OUT_PWD/../libseq64 -lseq64
 
 # May consider adding:  /usr/include/lash-1.0 and -llash
 

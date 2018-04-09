@@ -145,10 +145,10 @@ typedef void (* pm_host_error_fn)
 (
     struct pm_internal_struct * midi,   // PmInternal * not defined until below
     char * msg,
-    int len
+    unsigned
 );
 
-typedef unsigned int (* pm_has_host_error_fn)
+typedef unsigned (* pm_has_host_error_fn)
 (
     struct pm_internal_struct * midi
 );
@@ -167,7 +167,13 @@ typedef struct
     pm_close_fn close;                      /* close device */
     pm_poll_fn poll;                        /* read events into PM buffer */
     pm_has_host_error_fn has_host_error;    /* device has host error message */
-    pm_host_error_fn host_error;            /* readable error message for device (clears and resets) */
+
+    /*
+     * Readable error message for device (clears and resets).
+     */
+
+    pm_host_error_fn host_error;
+
 } pm_fns_node, * pm_fns_type;
 
 /*

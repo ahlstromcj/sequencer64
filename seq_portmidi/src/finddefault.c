@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "portmidi.h"
+#include "finddefault.h"
 #include "pminternal.h"
 
 /**

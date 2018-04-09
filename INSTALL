@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.94.8 and above
 Chris Ahlstrom
-2015-09-10 to 2018-04-08
+2015-09-10 to 2018-04-09
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -168,9 +168,18 @@ Qmake-base Install:
 
     The second way to use thisbuild is to do:
 
-        $ qmake -recursive qplseq64.pro
+        $ qmake -recursive  [ qplseq64.pro (optional} ]
         $ make
         $ make install (not yet tested)
+
+    Better is to do it in a "shadow" directory:
+
+        $ cd ..
+        $ mkdir shadow_build
+        $ cd shadow_build
+        $ qmake -recursive ../sequencer64
+        $ make
+          . . .
 
     Our secondary aim is to get a nice static build.
 

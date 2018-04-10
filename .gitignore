@@ -77,7 +77,6 @@ Generated_Code # added for RIA/Silverlight projects
 *.gls
 html/
 i18n/
-include/seq64-config.h
 *_i.c
 *.idb
 *.idx

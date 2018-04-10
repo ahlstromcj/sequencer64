@@ -1,10 +1,34 @@
-# libseq64.pro
+#******************************************************************************
+# libseq64.pro (qplseq64)
+#------------------------------------------------------------------------------
+##
+# \file       	libseq64.pro
+# \library    	qplseq64 application
+# \author     	Chris Ahlstrom
+# \date       	2018-04-08
+# \update      2018-04-09
+# \version    	$Revision$
+# \license    	$XPC_SUITE_GPL_LICENSE$
+#
+# Important:
+#
+#  This project file is designed only for Qt 5 (and above?).
+#
+#------------------------------------------------------------------------------
 
 message($$_PRO_FILE_PWD_)
 
 TEMPLATE = lib
 TARGET = seq64
 CONFIG += staticlib config_prl
+
+# These are needed to set up platform_macros:
+
+CONFIG(debug, debug|release) {
+   DEFINES += DEBUG
+} else {
+   DEFINES += NDEBUG
+}
 
 HEADERS += \
  include/app_limits.h \
@@ -107,3 +131,8 @@ INCLUDEPATH = \
  include \
  ../seq_portmidi/include
 
+#******************************************************************************
+# libseq64.pro (qplseq64)
+#------------------------------------------------------------------------------
+# 	vim: ts=3 sw=3 ft=automake
+#------------------------------------------------------------------------------

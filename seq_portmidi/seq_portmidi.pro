@@ -1,10 +1,38 @@
-# seq_portmidi.pro
+#******************************************************************************
+# seq_portmidi.pro (qplseq64)
+#------------------------------------------------------------------------------
+##
+# \file       	seq_portmidi.pro
+# \library    	qplseq64 application
+# \author     	Chris Ahlstrom
+# \date       	2018-04-08
+# \update      2018-04-08
+# \version    	$Revision$
+# \license    	$XPC_SUITE_GPL_LICENSE$
+#
+# Created by and for Qt Creator This file was created for editing the project
+# sources only.  You may attempt to use it for building too, by modifying this
+# file here.
+#
+# Important:
+#
+#  This project file is designed only for Qt 5 (and above?).
+#
+#------------------------------------------------------------------------------
 
 message($$_PRO_FILE_PWD_)
 
 TEMPLATE = lib
 TARGET = seq_portmidi
 CONFIG += staticlib config_prl
+
+# These are needed to set up platform_macros:
+
+CONFIG(debug, debug|release) {
+   DEFINES += DEBUG
+} else {
+   DEFINES += NDEBUG
+}
 
 # Windows:
 #   include/pmwinmm.h
@@ -49,3 +77,8 @@ INCLUDEPATH = \
  include \
  ../libseq64/include
 
+#******************************************************************************
+# seq_portmidi.pro (qplseq64)
+#------------------------------------------------------------------------------
+# 	vim: ts=3 sw=3 ft=automake
+#------------------------------------------------------------------------------

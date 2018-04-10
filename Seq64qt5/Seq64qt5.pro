@@ -1,10 +1,22 @@
+#******************************************************************************
+# Seq64qt5.pro (Seq64qt5)
+#------------------------------------------------------------------------------
+##
+# \file       	Seq64qt5.pro
+# \library    	seq64qt5 application
+# \author     	Chris Ahlstrom
+# \date       	2018-04-08
+# \update      2018-04-09
+# \version    	$Revision$
+# \license    	$XPC_SUITE_GPL_LICENSE$
+#
 # Created by and for Qt Creator This file was created for editing the project
 # sources only.  You may attempt to use it for building too, by modifying this
 # file here.
 #
-# Important:
+# Important: This project file is designed only for Qt 5 (and above?).
 #
-#  This project file is designed only for Qt 5 (and above?).
+#------------------------------------------------------------------------------
 
 message($$_PRO_FILE_PWD_)
 
@@ -12,6 +24,15 @@ QT += core gui widgets
 TARGET = qplseq64
 TEMPLATE += app
 CONFIG += static
+
+# These are needed to set up platform_macros:
+
+CONFIG(debug, debug|release) {
+   DEFINES += DEBUG
+} else {
+   DEFINES += NDEBUG
+}
+
 SOURCES += seq64qt5.cpp
 
 # Tries to link in non-existentic static libraries for Qt, ALSA (libasound),
@@ -50,15 +71,20 @@ unix: PRE_TARGETDEPS += \
 ##  -L$$OUT_PWD/../../../projects/mylib/ -lmylib
 
 # Sometimes some midifile and rect member functions cannot be found at link
-# time, so we include libseq64 twice.
+# time, and this is worse with static linkage of our internal libraries.
+# So we add the linker options --start-group and --end-group, as discussed
+# in this interesting article.
 #
 # https://eli.thegreenplace.net/2013/07/09/library-order-in-static-linking
 
 unix: LIBS += \
+ -Wl,--start-group \
  -L$$OUT_PWD/../libseq64 -lseq64 \
  -L$$OUT_PWD/../seq_portmidi -lseq_portmidi \
  -L$$OUT_PWD/../seq_qt5 -lseq_qt5 \
- -L$$OUT_PWD/../libseq64 -lseq64
+ -Wl,--end-group
+
+# -L$$OUT_PWD/../libseq64 -lseq64
 
 # May consider adding:  /usr/include/lash-1.0 and -llash
 
@@ -67,3 +93,8 @@ unix:!macx: LIBS += \
  -ljack \
  -lrt
 
+#******************************************************************************
+# Seq64qt5.pro (Seq64qt5)
+#------------------------------------------------------------------------------
+# 	vim: ts=3 sw=3 ft=automake
+#------------------------------------------------------------------------------

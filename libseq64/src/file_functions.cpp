@@ -6,7 +6,7 @@
  *
  * \author  Chris Ahlstrom
  * \date    2015-11-20
- * \updates 2018-03-25
+ * \updates 2018-04-10
  * \version $Revision$
  *
  *    We basically include only the functions we need for Sequencer64, not
@@ -14,7 +14,7 @@
  *    project.
  */
 
-#include <stdlib.h>                     /* realpath()                       */
+#include <stdlib.h>                     /* realpath() or _fullpath()        */
 #include <string.h>                     /* strlen() etc.                    */
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -347,7 +347,12 @@ std::string
 get_full_path (const std::string & path)
 {
     std::string result;
+#if defined PLATFORM_WINDOWS
+    char temp[256];
+    char * resolved_path = _fullpath(temp, path.c_str(), 256);
+#else
     char * resolved_path = realpath(path.c_str(), NULL);
+#endif
     if (not_NULL(resolved_path))
     {
         result = resolved_path;

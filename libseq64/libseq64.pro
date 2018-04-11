@@ -19,8 +19,17 @@
 message($$_PRO_FILE_PWD_)
 
 TEMPLATE = lib
-TARGET = seq64
 CONFIG += staticlib config_prl
+
+CONFIG(release, debug|release) {
+   LIBOUTDIR = release
+} else:CONFIG(debug, debug|release) {
+   LIBOUTDIR = debug
+} else {
+   LIBOUTDIR = .
+}
+
+TARGET = $$LIBOUTDIR/seq64
 
 # These are needed to set up platform_macros:
 

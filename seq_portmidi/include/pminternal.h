@@ -24,11 +24,11 @@
  *
  *  This file is included by files that implement library internals.
  *
- * \library       sequencer64 application
- * \author        PortMIDI team; modifications by Chris Ahlstrom
- * \date          2017-08-21
- * \updates       2017-08-29
- * \license       GNU GPLv2 or above
+ * \library     sequencer64 application
+ * \author      PortMIDI team; modifications by Chris Ahlstrom
+ * \date        2017-08-21
+ * \updates     2018-04-10
+ * \license     GNU GPLv2 or above
  *
  * Here is a guide to implementers:
  *
@@ -47,10 +47,125 @@
  *  Assumptions about pm_fns_type functions are given below.
  */
 
+#include "platform_macros.h"        // PLATFORM_WINDOWS, etc.
+
+/**
+ *  Rather than having users install a special .h file for Windows, just put
+ *  the required definitions inline here. The porttime.h header file uses
+ *  these too, so the definitions are (unfortunately) duplicated there.
+ */
+
+#if defined PLATFORM_WINDOWS        //  WIN32
+#ifndef INT32_DEFINED
+#define INT32_DEFINED
+typedef int int32_t;
+typedef unsigned int uint32_t;
+#endif
+#else
+#include <stdint.h>                 // Linux and OS X have stdint.h
+#endif                              // PLATFORM_WINDOWS
+
+/**
+ *  Default size of buffers for sysex transmission.
+ */
+
+#define PM_DEFAULT_SYSEX_BUFFER_SIZE    1024
+
+/**
+ *  Length of a message header?
+ */
+
+#define HDRLENGTH                       50
+
+/**
+ *  Any host error message will occupy less than this number of characters.
+ */
+
+#define PM_HOST_ERROR_MSG_LEN           256u
+
+#ifndef FALSE
+#define FALSE   0
+#endif
+
+#ifndef TRUE
+#define TRUE    1
+#endif
+
+/**
+ *  TRUE if t1 before t2.
+ */
+
+#define PmBefore(t1, t2)            ((t1-t2) < 0)
+#define none_write_flush            pm_fail_timestamp_fn
+#define none_sysex                  pm_fail_timestamp_fn
+#define none_poll                   pm_fail_fn
+#define success_poll                pm_success_fn
+#define MIDI_REALTIME_MASK          0xf8
+#define is_real_time(msg) \
+    ((Pm_MessageStatus(msg) & MIDI_REALTIME_MASK) == MIDI_REALTIME_MASK)
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+/**
+ *  This typedef is the same as seq64::midibyte, but is for use by the C
+ *  modules of PortMIDI.
+ */
+
+typedef unsigned char midibyte_t;
+
+/**
+ *  Pm_Message() encodes a short Midi message into a 32-bit word. If data1
+ *  and/or data2 are not present, use zero.
+ *
+ *  Pm_MessageStatus(), Pm_MessageData1(), and
+ *  Pm_MessageData2() extract fields from a 32-bit midi message.
+ */
+
+#define Pm_Message(status, data1, data2) ((((data2) << 16) & 0xFF0000) | \
+    (((data1) << 8) & 0xFF00) | ((status) & 0xFF))
+
+#define Pm_MessageStatus(msg) ((msg) & 0xFF)
+#define Pm_MessageData1(msg) (((msg) >> 8) & 0xFF)
+#define Pm_MessageData2(msg) (((msg) >> 16) & 0xFF)
+
+typedef int32_t PmMessage;          /**< see PmEvent */
+
+/**
+ *  PmTimestamp is used to represent a millisecond clock with arbitrary
+ *  start time. The type is used for all MIDI timestampes and clocks.
+ */
+
+typedef int32_t PmTimestamp;
+
+/**
+ *  Indicates the lack of a device.  :-)
+ */
+
+#define pmNoDevice -1
+
+/**
+ *  Holds information about the device and its platform.
+ */
+
+typedef struct
+{
+    int structVersion;      /**< This internal structure version.           */
+    const char * interf;    /**< Underlying MIDI API, MMSystem, DirectX.i   */
+    const char * name;      /**< Device name, e.g. USB MidiSport 1x1.       */
+    int input;              /**< True iff input is available.               */
+    int output;             /**< True iff output is available.              */
+    int opened;             /**< Generic PortMidi code, argument-checking.  */
+
+} PmDeviceInfo;
+
+/**
+ *  A type definition for a timer callback.
+ */
+
+typedef PmTimestamp (* PmTimeProcPtr) (void * time_info);
 
 /**
  *  Provides an obvious declaration for PortMIDI queues.
@@ -58,7 +173,123 @@ extern "C"
 
 typedef void PmQueue;
 
-extern int pm_initialized;                  /* see note in portmidi.c */
+/**
+ *  All midi data comes in the form of PmEvent structures. A SysEx message is
+ *  encoded as a sequence of PmEvent structures, with each structure carrying
+ *  4 bytes of the message, i.e. only the first PmEvent carries the status
+ *  byte.
+ *
+ *  Note that MIDI allows nested messages: the so-called "real-time" MIDI
+ *  messages can be inserted into the MIDI byte stream at any location,
+ *  including within a SysEx message. MIDI real-time messages are one-byte
+ *  messages used mainly for timing (see the MIDI spec). PortMidi retains the
+ *  order of non-real-time MIDI messages on both input and output, but it does
+ *  not specify exactly how real-time messages are processed. This is
+ *  particulary problematic for MIDI input, because the input parser must
+ *  either prepare to buffer an unlimited number of SysEx message bytes or to
+ *  buffer an unlimited number of real-time messages that arrive embedded in a
+ *  long SysEx message. To simplify things, the input parser is allowed to
+ *  pass real-time MIDI messages embedded within a SysEx message, and it is up
+ *  to the client to detect, process, and remove these messages as they
+ *  arrive.
+ *
+ *  When receiving SysEx messages, the SysEx message is terminated by either
+ *  an EOX status byte (anywhere in the 4 byte messages) or by a non-real-time
+ *  status byte in the low order byte of the message.  If you get a
+ *  non-real-time status byte but there was no EOX byte, it means the SysEx
+ *  message was somehow truncated. This is not considered an error; e.g., a
+ *  missing EOX can result from the user disconnecting a MIDI cable during
+ *  SysEx transmission.
+ *
+ *  A real-time message can occur within a SysEx message. A real-time message
+ *  will always occupy a full PmEvent with the status byte in the low-order
+ *  byte of the PmEvent message field. (This implies that the byte-order of
+ *  SysEx bytes and real-time message bytes may not be preserved -- for
+ *  example, if a real-time message arrives after 3 bytes of a SysEx message,
+ *  the real-time message will be delivered first. The first word of the SysEx
+ *  message will be delivered only after the 4th byte arrives, filling the
+ *  4-byte PmEvent message field.
+ *
+ *  The timestamp field is observed when the output port is opened with a
+ *  non-zero latency. A timestamp of zero means "use the current time", which
+ *  in turn means to deliver the message with a delay of latency (the latency
+ *  parameter used when opening the output port.) Do not expect PortMidi to
+ *  sort data according to timestamps -- messages should be sent in the
+ *  correct order, and timestamps MUST be non-decreasing. See also "Example"
+ *  for Pm_OpenOutput() above.
+ *
+ *  A SysEx message will generally fill many PmEvent structures. On output to
+ *  a PortMidiStream with non-zero latency, the first timestamp on SysEx
+ *  message data will determine the time to begin sending the message.
+ *  PortMidi implementations may ignore timestamps for the remainder of the
+ *  SysEx message.
+ *
+ *  On input, the timestamp ideally denotes the arrival time of the status
+ *  byte of the message. The first timestamp on SysEx message data will be
+ *  valid. Subsequent timestamps may denote when message bytes were actually
+ *  received, or they may be simply copies of the first timestamp.
+ *
+ *  Timestamps for nested messages: If a real-time message arrives in the
+ *  middle of some other message, it is enqueued immediately with the
+ *  timestamp corresponding to its arrival time. The interrupted non-real-time
+ *  message or 4-byte packet of SysEx data will be enqueued later. The
+ *  timestamp of interrupted data will be equal to that of the interrupting
+ *  real-time message to insure that timestamps are non-decreasing.
+ */
+
+typedef struct
+{
+    PmMessage message;
+    PmTimestamp timestamp;
+
+} PmEvent;
+
+/**
+ *  Device enumeration mechanism.
+ *  Device ids range from 0 to Pm_CountDevices()-1.
+ */
+
+typedef int PmDeviceID;
+
+/**
+ *  List of PortMIDI errors.
+ *
+ *  -   pmNoData is a "No error" return, also indicates no data available.
+ *  -   pmGotData is a "No error" return, also indicates data available.
+ *  -   pmInvalidDeviceId is an out of range or output device when input is
+ *      requested or input device when output is requested or device is
+ *      already opened.
+ *  -   pmBadPtr means the PortMidiStream parameter is NULL, or stream is not
+ *      opened, or stream is output when input is required, or stream is input
+ *      when output is required.
+ *  -   pmBadData means illegal MIDI data, e.g. missing EOX.
+ *  -   pmBufferMaxSize means the buffer is already as large as it can be.
+ *
+ * Note:
+ *
+ *      If you add a new error type, be sure to update Pm_GetErrorText().
+ */
+
+typedef enum
+{
+    pmNoError = 0,
+    pmNoData = 0,
+    pmGotData = 1,
+    pmHostError = -10000,
+    pmInvalidDeviceId,
+    pmInsufficientMemory,
+    pmBufferTooSmall,
+    pmBufferOverflow,
+    pmBadPtr,
+    pmBadData,
+    pmInternalError,
+    pmBufferMaxSize
+
+    /* If you add a new error type, be sure to update Pm_GetErrorText() */
+
+} PmError;
+
+extern int pm_initialized;              /* see note in portmidi.c           */
 
 /*
  *  These are defined in system-specific file
@@ -80,11 +311,19 @@ struct pm_internal_struct;                  /* forward declaration  */
  *  These do not use PmInternal because it is not defined yet....
  */
 
+/**
+ *
+ */
+
 typedef PmError (* pm_write_short_fn)
 (
     struct pm_internal_struct * midi,
     PmEvent * buffer
 );
+
+/**
+ *
+ */
 
 typedef PmError (* pm_begin_sysex_fn)
 (
@@ -92,18 +331,30 @@ typedef PmError (* pm_begin_sysex_fn)
     PmTimestamp timestamp
 );
 
+/**
+ *
+ */
+
 typedef PmError (* pm_end_sysex_fn)
 (
     struct pm_internal_struct * midi,
     PmTimestamp timestamp
 );
 
+/**
+ *
+ */
+
 typedef PmError (* pm_write_byte_fn)
 (
     struct pm_internal_struct * midi,
-    unsigned char byte,
+    midibyte_t byte,
     PmTimestamp timestamp
 );
+
+/**
+ *
+ */
 
 typedef PmError (* pm_write_realtime_fn)
 (
@@ -111,17 +362,25 @@ typedef PmError (* pm_write_realtime_fn)
     PmEvent * buffer
 );
 
+/**
+ *
+ */
+
 typedef PmError (* pm_write_flush_fn)
 (
     struct pm_internal_struct * midi,
      PmTimestamp timestamp
 );
 
+/**
+ *
+ */
+
 typedef PmTimestamp (* pm_synchronize_fn) (struct pm_internal_struct * midi);
 
-/*
- * pm_open_fn() should clean up all memory and close the device if any part
- * of the open fails.
+/**
+ *  pm_open_fn() should clean up all memory and close the device if any part
+ *  of the open fails.
  */
 
 typedef PmError (* pm_open_fn)
@@ -132,14 +391,22 @@ typedef PmError (* pm_open_fn)
 
 typedef PmError (* pm_abort_fn) (struct pm_internal_struct * midi);
 
-/*
- * pm_close_fn() should clean up all memory and close the device if any
- * part of the close fails.
+/**
+ *  pm_close_fn() should clean up all memory and close the device if any part
+ *  of the close fails.
  */
 
 typedef PmError (* pm_close_fn) (struct pm_internal_struct * midi);
 
+/**
+ *
+ */
+
 typedef PmError (* pm_poll_fn) (struct pm_internal_struct * midi);
+
+/**
+ *
+ */
 
 typedef void (* pm_host_error_fn)
 (
@@ -148,10 +415,18 @@ typedef void (* pm_host_error_fn)
     unsigned
 );
 
+/**
+ *
+ */
+
 typedef unsigned (* pm_has_host_error_fn)
 (
     struct pm_internal_struct * midi
 );
+
+/**
+ *
+ */
 
 typedef struct
 {
@@ -175,12 +450,6 @@ typedef struct
     pm_host_error_fn host_error;
 
 } pm_fns_node, * pm_fns_type;
-
-/*
- *  When open fails, the dictionary gets this set of functions.
- */
-
-extern pm_fns_node pm_none_dictionary;
 
 typedef struct
 {
@@ -206,6 +475,12 @@ typedef struct
     pm_fns_type dictionary;
 
 } descriptor_node, * descriptor_type;
+
+/**
+ *  When open fails, the dictionary gets this set of functions.
+ */
+
+extern pm_fns_node pm_none_dictionary;
 
 extern int pm_descriptor_max;
 extern descriptor_type descriptors;
@@ -318,7 +593,7 @@ typedef struct pm_internal_struct
 
     /* addr of ptr to sysex data */
 
-    unsigned char * fill_base;
+    midibyte_t * fill_base;
 
     /* offset of next sysex byte */
 
@@ -341,7 +616,7 @@ extern PmError none_write_short (PmInternal * midi, PmEvent * buffer);
 extern PmError none_write_byte
 (
     PmInternal * midi,
-    unsigned char byte,
+    midibyte_t byte,
     PmTimestamp timestamp
 );
 extern PmTimestamp none_synchronize (PmInternal * midi);
@@ -355,20 +630,10 @@ extern PmError pm_add_device
 );
 extern uint32_t pm_read_bytes
 (
-    PmInternal * midi, const unsigned char * data,
+    PmInternal * midi, const midibyte_t * data,
     int len, PmTimestamp timestamp
 );
 extern void pm_read_short (PmInternal * midi, PmEvent * event);
-
-#define none_write_flush    pm_fail_timestamp_fn
-#define none_sysex          pm_fail_timestamp_fn
-#define none_poll           pm_fail_fn
-#define success_poll        pm_success_fn
-
-#define MIDI_REALTIME_MASK  0xf8
-
-#define is_real_time(msg) \
-    ((Pm_MessageStatus(msg) & MIDI_REALTIME_MASK) == MIDI_REALTIME_MASK)
 
 extern int pm_find_default_device (char * pattern, int is_input);
 

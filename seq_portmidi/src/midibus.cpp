@@ -132,7 +132,8 @@ midibus::api_poll_for_midi ()
  *      Returns true if the output port was successfully opened.
  */
 
-bool midibus::api_init_out ()
+bool
+midibus::api_init_out ()
 {
     PmError err = Pm_OpenOutput(&m_pms, queue_number(), NULL, 100, NULL, NULL, 0);
     if (err != pmNoError)
@@ -150,7 +151,8 @@ bool midibus::api_init_out ()
  *      Returns true if the input port was successfully opened.
  */
 
-bool midibus::api_init_in ()
+bool
+midibus::api_init_in ()
 {
     PmError err = Pm_OpenInput(&m_pms, queue_number(), NULL, 100, NULL, NULL);
     if (err != pmNoError)

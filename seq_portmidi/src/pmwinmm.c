@@ -133,12 +133,12 @@ static void winmm_out_delete (PmInternal * midi);
  *  The following constants help to represent these design parameters:
  */
 
-#define NUM_SIMPLE_SYSEX_BUFFERS 3
-#define MIN_SIMPLE_SYSEX_LEN 256
-#define MIN_STREAM_BUFFERS 16
-#define STREAM_BUFFER_LEN 24
-#define INPUT_SYSEX_LEN 64
-#define MIN_INPUT_BUFFERS 16
+#define NUM_SIMPLE_SYSEX_BUFFERS      3
+#define MIN_SIMPLE_SYSEX_LEN        256
+#define MIN_STREAM_BUFFERS           16
+#define STREAM_BUFFER_LEN            24
+#define INPUT_SYSEX_LEN              64
+#define MIN_INPUT_BUFFERS            16
 
 /**
  *  If we run out of space for output (assume this is due to a sysex msg,
@@ -146,8 +146,8 @@ static void winmm_out_delete (PmInternal * midi);
  *  EXPANSION_BUFFER_LEN.
  */
 
-#define NUM_EXPANSION_BUFFERS 128
-#define EXPANSION_BUFFER_LEN 1024
+#define NUM_EXPANSION_BUFFERS       128
+#define EXPANSION_BUFFER_LEN       1024
 
 /**
  *  A sysex buffer has 3 DWORDS as a header plus the actual message size.
@@ -256,8 +256,10 @@ pm_winmm_general_inputs (void)
 
     for (i = 0; i < midi_num_inputs; i++)
     {
-        wRtn = midiInGetDevCaps(i, (LPMIDIINCAPS) & midi_in_caps[i],
-                                sizeof(MIDIINCAPS));
+        wRtn = midiInGetDevCaps
+        (
+            i, (LPMIDIINCAPS) & midi_in_caps[i], sizeof(MIDIINCAPS)
+        );
         if (wRtn == MMSYSERR_NOERROR)
         {
             /*
@@ -339,19 +341,23 @@ static void
 pm_winmm_mapper_output (void)
 {
     WORD wRtn;
-    wRtn = midiOutGetDevCaps((UINT) MIDIMAPPER, (LPMIDIOUTCAPS)
-                             & midi_out_mapper_caps, sizeof(MIDIOUTCAPS));
+    wRtn = midiOutGetDevCaps
+    (
+        (UINT) MIDIMAPPER, (LPMIDIOUTCAPS) &midi_out_mapper_caps,
+        sizeof(MIDIOUTCAPS)
+    );
     if (wRtn == MMSYSERR_NOERROR)
     {
-        pm_add_device("MMSystem", midi_out_mapper_caps.szPname, FALSE,
-                      (void *) MIDIMAPPER, &pm_winmm_out_dictionary);
+        pm_add_device
+        (
+            "MMSystem", midi_out_mapper_caps.szPname, FALSE,
+            (void *) MIDIMAPPER, &pm_winmm_out_dictionary
+        );
     }
 }
 
-
 /*
- *
- * host error handling
+ * Host error handling.
  */
 
 /**
@@ -382,31 +388,32 @@ str_copy_len (char * dst, char * src, int len)
 }
 
 /**
+ *  Precondition: midi != NULL.
  *
  */
 
 static void
 winmm_get_host_error (PmInternal * midi, char * msg, UINT len)
 {
-    /* precondition: midi != NULL */
-
     midiwinmm_node * m = (midiwinmm_node *) midi->descriptor;
     char * hdr1 = "Host error: ";
-
-    /* UNUSED: char * hdr2 = "Host callback error: "; */
-
-    msg[0] = 0; /* initialize result string to empty */
+    msg[0] = 0;                             /* set result string to empty */
     if (descriptors[midi->device_id].pub.input)
     {
-        /* input and output use different winmm API calls */
+        /*
+         * Input and output use different winmm API calls.  Make sure there is
+         * an open device to examine.
+         */
 
-        if (m)   /* make sure there is an open device to examine */
+        if (not_nullptr(m))
         {
             if (m->error != MMSYSERR_NOERROR)
             {
                 int n = str_copy_len(msg, hdr1, len);
 
-                /* read and record host error */
+                /*
+                 * Read and record host error.
+                 */
 
                 int err = midiInGetErrorText(m->error, msg + n, len - n);
                 assert(err == MMSYSERR_NOERROR);
@@ -416,7 +423,7 @@ winmm_get_host_error (PmInternal * midi, char * msg, UINT len)
     }
     else     /* output port */
     {
-        if (m)
+        if (not_nullptr(m))
         {
             if (m->error != MMSYSERR_NOERROR)
             {
@@ -429,9 +436,8 @@ winmm_get_host_error (PmInternal * midi, char * msg, UINT len)
     }
 }
 
-
-/*
- * buffer handling
+/**
+ *  Buffer handling.
  */
 
 static MIDIHDR *
@@ -439,7 +445,9 @@ allocate_buffer (long data_size)
 {
     LPMIDIHDR hdr = (LPMIDIHDR) pm_alloc(MIDIHDR_SYSEX_SIZE(data_size));
     MIDIEVENT * evt;
-    if (!hdr) return NULL;
+    if (! hdr)
+        return NULL;
+
     evt = (MIDIEVENT *)(hdr + 1);  /* place MIDIEVENT after header */
     hdr->lpData = (LPSTR) evt;
     hdr->dwBufferLength = MIDIHDR_SYSEX_BUFFER_LENGTH(data_size);
@@ -460,11 +468,11 @@ static MIDIHDR *
 allocate_sysex_buffer (long data_size)
 {
     LPMIDIHDR hdr = (LPMIDIHDR) pm_alloc(MIDIHDR_SYSEX_SIZE(data_size));
-    MIDIEVENT *evt;
+    MIDIEVENT * evt;
     if (! hdr)
         return NULL;
 
-    evt = (MIDIEVENT *)(hdr + 1);  /* place MIDIEVENT after header */
+    evt = (MIDIEVENT *)(hdr + 1);       /* place MIDIEVENT after header */
     hdr->lpData = (LPSTR) evt;
     hdr->dwFlags = 0;
     hdr->dwUser = 0;
@@ -482,14 +490,14 @@ static PmError
 allocate_buffers (midiwinmm_type m, long data_size, long count)
 {
     int i;
-    m->num_buffers = 0;         /* in case no memory can be allocated */
+    m->num_buffers = 0;             /* in case no memory can be allocated   */
     m->buffers = (LPMIDIHDR *) pm_alloc(sizeof(LPMIDIHDR) * count);
     if (!m->buffers) return pmInsufficientMemory;
     m->max_buffers = count;
     for (i = 0; i < count; i++)
     {
         LPMIDIHDR hdr = allocate_buffer(data_size);
-        if (! hdr)   /* free everything allocated so far and return */
+        if (! hdr)                  /* free all allocations and return      */
         {
             for (i = i - 1; i >= 0; i--)
                 pm_free(m->buffers[i]);
@@ -498,7 +506,7 @@ allocate_buffers (midiwinmm_type m, long data_size, long count)
             m->max_buffers = 0;
             return pmInsufficientMemory;
         }
-        m->buffers[i] = hdr; /* this may be NULL if allocation fails */
+        m->buffers[i] = hdr;        /* this may be NULL if allocation fails */
     }
     m->num_buffers = count;
     return pmNoError;
@@ -516,7 +524,7 @@ allocate_sysex_buffers (midiwinmm_type m, long data_size)
 {
     PmError rslt = pmNoError;
     int i;
-    for (i = 0; i < NUM_SYSEX_BUFFERS; i++)
+    for (i = 0; i < NUM_SYSEX_BUFFERS; ++i)
     {
         LPMIDIHDR hdr = allocate_sysex_buffer(data_size);
         if (! hdr)
@@ -540,9 +548,7 @@ get_free_sysex_buffer (PmInternal * midi)
     if (! m->sysex_buffers[0])
     {
         if (allocate_sysex_buffers(m, SYSEX_BYTES_PER_BUFFER))
-        {
             return NULL;
-        }
     }
 
     /* busy wait until we find a free buffer */
@@ -550,7 +556,7 @@ get_free_sysex_buffer (PmInternal * midi)
     for (;;)
     {
         int i;
-        for (i = 0; i < NUM_SYSEX_BUFFERS; i++)
+        for (i = 0; i < NUM_SYSEX_BUFFERS; ++i)
         {
             /* cycle through buffers, modulo NUM_SYSEX_BUFFERS */
 
@@ -567,8 +573,12 @@ get_free_sysex_buffer (PmInternal * midi)
 
         if (WaitForSingleObject(m->buffer_signal, 1000) == WAIT_TIMEOUT)
         {
-#ifdef DEBUG
-printf("PortMidi warning: get_free_sysex_buffer() wait timed out after 1000ms\n");
+#ifdef PLATFORM_DEBUG
+            printf
+            (
+                "PortMidi warning: get_free_sysex_buffer() wait timed "
+                "out after 1000ms\n"
+            );
 #endif
         }
     }
@@ -611,14 +621,18 @@ get_free_output_buffer (PmInternal * midi)
 
         if (WaitForSingleObject(m->buffer_signal, 1000) == WAIT_TIMEOUT)
         {
-#ifdef DEBUG
-printf("PortMidi warning: get_free_output_buffer() wait timed out after 1000ms\n");
+#ifdef PLATFORM_DEBUG
+            printf
+            (
+                "PortMidi warning: get_free_output_buffer() "
+                " wait timed out after 1000ms\n"
+            );
 #endif
             /*
-             * if we're trying to send a sysex message, maybe the
-             * message is too big and we need more message buffers.
-             * Expand the buffer pool by 128KB using 1024-byte buffers.
-             * first, expand the buffers array if necessary.
+             * If we're trying to send a sysex message, maybe the message is
+             * too big and we need more message buffers.  Expand the buffer
+             * pool by 128KB using 1024-byte buffers.  First, expand the
+             * buffers array if necessary.
              */
 
             if (!m->buffers_expanded)
@@ -629,16 +643,18 @@ printf("PortMidi warning: get_free_output_buffer() wait timed out after 1000ms\n
                 );
 
                 /*
-                 * if no memory, we could return a no-memory error, but user
-                 * probably will be unprepared to deal with it. Maybe the
-                 * MIDI driver is temporarily hung so we should just wait.
-                 * I don't know the right answer, but waiting is easier.
+                 * If no memory, we could return a no-memory error, but user
+                 * probably will be unprepared to deal with it. Maybe the MIDI
+                 * driver is temporarily hung so we should just wait.  I don't
+                 * know the right answer, but waiting is easier.
                  */
 
                 if (! new_buffers)
                     continue;
 
-                /* copy buffers to new_buffers and replace buffers */
+                /*
+                 * Copy buffers to new_buffers and replace buffers.
+                 */
 
                 memcpy(new_buffers, m->buffers, m->num_buffers*sizeof(LPMIDIHDR));
                 pm_free(m->buffers);
@@ -647,16 +663,18 @@ printf("PortMidi warning: get_free_output_buffer() wait timed out after 1000ms\n
                 m->buffers_expanded = TRUE;
             }
 
-            /* next, add one buffer and return it */
+            /*
+             * Next, add one buffer and return it.
+             */
 
             if (m->num_buffers < m->max_buffers)
             {
                 r = allocate_buffer(EXPANSION_BUFFER_LEN);
 
                 /*
-                 * if there's no memory, we may not really be dead -- maybe the
-                 * system is temporarily hung and we can just wait longer for a
-                 * message buffer
+                 * If there's no memory, we may not really be dead -- maybe
+                 * the system is temporarily hung and we can just wait longer
+                 * for a message buffer.
                  */
 
                 if (! r)
@@ -667,9 +685,9 @@ printf("PortMidi warning: get_free_output_buffer() wait timed out after 1000ms\n
             }
 
             /*
-             * else, we've allocated all NUM_EXPANSION_BUFFERS buffers,
-             * and we have no free buffers to send. We'll just keep
-             * polling to see if any buffers show up.
+             * Else, we've allocated all NUM_EXPANSION_BUFFERS buffers, and we
+             * have no free buffers to send. We'll just keep polling to see if
+             * any buffers show up.
              */
         }
     }
@@ -678,7 +696,9 @@ found_buffer:
 
     r->dwBytesRecorded = 0;
 
-    /* actual buffer length is saved in dwUser field */
+    /*
+     * Actual buffer length is saved in dwUser field.
+     */
 
     r->dwBufferLength = (DWORD) r->dwUser;
     return r;
@@ -687,8 +707,10 @@ found_buffer:
 #ifdef EXPANDING_SYSEX_BUFFERS
 
 /*
- * note: this is not working code, but might be useful if you want
- * to grow sysex buffers.
+ * Note:
+ *
+ *      This is not working code, but might be useful if you want to grow
+ *      sysex buffers.
  */
 
 static PmError
@@ -791,33 +813,34 @@ winmm_in_open (PmInternal * midi, void * driverInfo)
         goto no_memory;
 
     m->handle.in = NULL;
-    m->buffers = NULL; /* not used for input */
-    m->num_buffers = 0; /* not used for input */
-    m->max_buffers = FALSE; /* not used for input */
-    m->buffers_expanded = 0; /* not used for input */
-    m->next_buffer = 0; /* not used for input */
-    m->buffer_signal = 0; /* not used for input */
+    m->buffers = NULL;                  /* not used for input */
+    m->num_buffers = 0;                 /* not used for input */
+    m->max_buffers = FALSE;             /* not used for input */
+    m->buffers_expanded = 0;            /* not used for input */
+    m->next_buffer = 0;                 /* not used for input */
+    m->buffer_signal = 0;               /* not used for input */
 
 #ifdef USE_SYSEX_BUFFERS
     for (i = 0; i < NUM_SYSEX_BUFFERS; i++)
-        m->sysex_buffers[i] = NULL; /* not used for input */
+        m->sysex_buffers[i] = NULL;     /* not used for input */
 
-    m->next_sysex_buffer = 0; /* not used for input */
+    m->next_sysex_buffer = 0;           /* not used for input */
 #endif
 
     m->last_time = 0;
-    m->first_message = TRUE; /* not used for input */
+    m->first_message = TRUE;            /* not used for input */
     m->sysex_mode = FALSE;
     m->sysex_word = 0;
     m->sysex_byte_count = 0;
-    m->hdr = NULL; /* not used for input */
+    m->hdr = NULL;                      /* not used for input */
     m->sync_time = 0;
     m->delta = 0;
     m->error = MMSYSERR_NOERROR;
 
-    /* 4000 is based on Windows documentation -- that's the value used in the
-       memory manager. It's small enough that it should not hurt performance even
-       if it's not optimal.
+    /*
+     * 4000 is based on Windows documentation -- that's the value used in the
+     * memory manager. It's small enough that it should not hurt performance
+     * even if it's not optimal.
      */
 
     InitializeCriticalSectionAndSpinCount(&m->lock, 4000);
@@ -826,33 +849,31 @@ winmm_in_open (PmInternal * midi, void * driverInfo)
 
     pm_hosterror = midiInOpen
     (
-        &(m->handle.in),  /* input device handle */
-        dwDevice,  /* device ID */
+        &(m->handle.in),                /* input device handle */
+        dwDevice,                       /* device ID */
         (DWORD_PTR) winmm_in_callback,  /* callback address */
-        (DWORD_PTR) midi,  /* callback instance data */
-        CALLBACK_FUNCTION
-    );                                  /* callback is a procedure */
-    if (pm_hosterror) goto free_descriptor;
+        (DWORD_PTR) midi,               /* callback instance data */
+        CALLBACK_FUNCTION               /* callback is a procedure */
+    );
+    if (pm_hosterror)
+        goto free_descriptor;
 
     if (num_input_buffers < MIN_INPUT_BUFFERS)
         num_input_buffers = MIN_INPUT_BUFFERS;
 
-    for (i = 0; i < num_input_buffers; i++)
+    for (i = 0; i < num_input_buffers; ++i)
     {
         if (allocate_input_buffer(m->handle.in, INPUT_SYSEX_LEN))
         {
             /*
-             * either pm_hosterror was set, or the proper return code
-             * is pmInsufficientMemory
+             * Either pm_hosterror was set, or the proper return code is
+             * pmInsufficientMemory.
              */
 
             goto close_device;
         }
     }
-
-    /* start device */
-
-    pm_hosterror = midiInStart(m->handle.in);
+    pm_hosterror = midiInStart(m->handle.in);       /* start device */
     if (pm_hosterror)
         goto reset_device;
 
@@ -1018,7 +1039,7 @@ winmm_in_callback
     case MIM_LONGDATA:
     {
         MIDIHDR * lpMidiHdr = (MIDIHDR *) dwParam1;
-        unsigned char *data = (unsigned char *) lpMidiHdr->lpData;
+        midibyte_t *data = (midibyte_t *) lpMidiHdr->lpData;
         unsigned int processed = 0;
         int remaining = lpMidiHdr->dwBytesRecorded;
         EnterCriticalSection(&m->lock);
@@ -1094,7 +1115,7 @@ winmm_in_callback
 }
 
 /*
- *begin midi output implementation
+ * MIDI output implementation.
  */
 
 /**
@@ -1137,6 +1158,7 @@ pm_time_get (midiwinmm_type m)
     assert(wRtn == MMSYSERR_NOERROR);
     return mmtime.u.ticks;
 }
+
 /* end helper routines used by midiOutStream interface */
 
 /**
@@ -1439,10 +1461,10 @@ winmm_write_flush (PmInternal * midi, PmTimestamp timestamp)
 #ifdef GARBAGE
 
 static PmError
-winmm_write_sysex_byte (PmInternal * midi, unsigned char byte)
+winmm_write_sysex_byte (PmInternal * midi, midibyte_t byte)
 {
     midiwinmm_type m = (midiwinmm_type) midi->descriptor;
-    unsigned char * msg_buffer;
+    midibyte_t * msg_buffer;
 
     /* at the beginning of sysex, m->hdr is NULL */
     if (!m->hdr)   /* allocate a buffer if none allocated yet */
@@ -1456,7 +1478,7 @@ winmm_write_sysex_byte (PmInternal * midi, unsigned char byte)
 
     /* figure out where to write byte */
 
-    msg_buffer = (unsigned char *)(m->hdr->lpData);
+    msg_buffer = (midibyte_t *)(m->hdr->lpData);
     assert(m->hdr->lpData == (char *)(m->hdr + 1));
 
     /* check for overflow */
@@ -1476,7 +1498,7 @@ winmm_write_sysex_byte (PmInternal * midi, unsigned char byte)
             return pmHostError;
         }
         memcpy(big->lpData, msg_buffer, m->sysex_byte_count);
-        msg_buffer = (unsigned char *)(big->lpData);
+        msg_buffer = (midibyte_t *)(big->lpData);
         if (m->buffers[0] == m->hdr)
         {
             m->buffers[0] = big;
@@ -1626,7 +1648,7 @@ winmm_end_sysex (PmInternal * midi, PmTimestamp timestamp)
             printf("OutLongMsg %d ", len);
             for (i = 0; i < len; i++)
             {
-                printf("%2x ", (unsigned char)(m->hdr->lpData[i]));
+                printf("%2x ", (midibyte_t)(m->hdr->lpData[i]));
             }
         }
 #endif
@@ -1657,7 +1679,7 @@ winmm_end_sysex (PmInternal * midi, PmTimestamp timestamp)
 static PmError
 winmm_write_byte
 (
-    PmInternal * midi, unsigned char byte, PmTimestamp timestamp
+    PmInternal * midi, midibyte_t byte, PmTimestamp timestamp
 )
 {
     /* write a sysex byte */
@@ -1665,13 +1687,13 @@ winmm_write_byte
     PmError rslt = pmNoError;
     midiwinmm_type m = (midiwinmm_type) midi->descriptor;
     LPMIDIHDR hdr = m->hdr;
-    unsigned char *msg_buffer;
+    midibyte_t *msg_buffer;
     assert(m);
     if (! hdr)
     {
         m->hdr = hdr = get_free_output_buffer(midi);
         assert(hdr);
-        midi->fill_base = (unsigned char *) m->hdr->lpData;
+        midi->fill_base = (midibyte_t *) m->hdr->lpData;
         midi->fill_offset_ptr = &(hdr->dwBytesRecorded);
 
         /*
@@ -1713,7 +1735,7 @@ winmm_write_byte
 
     /* add the data byte */
 
-    msg_buffer = (unsigned char *)(hdr->lpData);
+    msg_buffer = (midibyte_t *)(hdr->lpData);
     msg_buffer[hdr->dwBytesRecorded++] = byte;
 
     /* see if buffer is full, leave one byte extra for pad */

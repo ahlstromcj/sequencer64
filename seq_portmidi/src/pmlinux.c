@@ -31,43 +31,38 @@
  * in pmlinuxalsa.c, which assumes all input devices are ALSA.
  */
 
-#include "stdlib.h"
+#include <stdlib.h>
+
+#include "seq64-config.h"
 #include "finddefault.h"
 #include "pmutil.h"
 #include "pminternal.h"
 
-#ifdef PMALSA
+#ifdef SEQ64_HAVE_LIBASOUNS
 #include "pmlinuxalsa.h"
-#endif
-
-#ifdef PMNULL
-#include "pmlinuxnull.h"
 #endif
 
 PmDeviceID pm_default_input_device_id = -1;
 PmDeviceID pm_default_output_device_id = -1;
 
 /**
- * Note: it is not an error for PMALSA to fail to initialize.
- * It may be a design error that the client cannot query what subsystems
- * are working properly other than by looking at the list of available
- * devices.
+ * Note:
+ *
+ *  It is not an error for ALSA to fail to initialize.  It may be a design
+ *  error that the client cannot query what subsystems are working properly
+ *  other than by looking at the list of available devices.
  */
 
 void
 pm_init ()
 {
-#ifdef PMALSA
+#ifdef SEQ64_HAVE_LIBASOUNS
 	pm_linuxalsa_init();
 #endif
 
-#ifdef PMNULL
-    pm_linuxnull_init();
-#endif
-
     /*
-     * this is set when we return to Pm_Initialize, but we need it
-     * now in order to (successfully) call Pm_CountDevices()
+     * This is set when we return to Pm_Initialize, but we need it
+     * now in order to (successfully) call Pm_CountDevices().  Ugh.
      */
 
     pm_initialized = TRUE;
@@ -91,7 +86,7 @@ pm_init ()
 void
 pm_term (void)
 {
-#ifdef PMALSA
+#ifdef SEQ64_HAVE_LIBASOUNS
     pm_linuxalsa_term();
 #endif
 }

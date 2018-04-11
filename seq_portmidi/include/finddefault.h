@@ -24,11 +24,11 @@
  *
  *  This file is included by files that implement library internals.
  *
- * \library       sequencer64 application
- * \author        PortMIDI team; new from Chris Ahlstrom
- * \date          2018-04-08
- * \updates       2018-04-08
- * \license       GNU GPLv2 or above
+ * \library     sequencer64 application
+ * \author      PortMIDI team; new from Chris Ahlstrom
+ * \date        2018-04-08
+ * \updates     2018-04-08
+ * \license     GNU GPLv2 or above
  */
 
 #include "portmidi.h"                   /* PmDeviceID   */
@@ -41,10 +41,10 @@ extern "C"
 extern PmDeviceID find_default_device (char * path, int input, PmDeviceID);
 
 #ifdef __cplusplus
-}           // extern "C"
+}               // extern "C"
 #endif
 
-#endif      // SEQ64_FINDDEFAULT_H
+#endif          // SEQ64_FINDDEFAULT_H
 
 /*
  * finddefault.h

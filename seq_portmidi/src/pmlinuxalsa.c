@@ -17,11 +17,11 @@
  */
 
 /**
- * \file pmlinuxalsa.c
+ * \file        pmlinuxalsa.c
  *
- * system specific definitions
+ *  System-specific definitions for Linux's ALSA MIDI subsystem.
  *
- * written by:
+ * Written by:
  *
  *  -   Roger Dannenberg (port to Alsa 0.9.x)
  *  -   Clemens Ladisch (provided code examples and invaluable consulting)
@@ -71,12 +71,6 @@
 #define MASK_DESCRIPTOR_CLIENT(x)       ( (((int) (intptr_t) (x)) >> 8) & 0xff )
 
 #define MASK_DESCRIPTOR_PORT(x)         ( ((int) (intptr_t) (x)) & 0xff )
-
-/*
- * should be a typedef
- */
-
-#define BYTE unsigned char
 
 extern pm_fns_node pm_linuxalsa_in_dictionary;
 extern pm_fns_node pm_linuxalsa_out_dictionary;
@@ -312,7 +306,7 @@ alsa_out_open (PmInternal * midi, void * UNUSED(driverinfo))
 static PmError
 alsa_write_byte
 (
-    PmInternal * midi, unsigned char byte, PmTimestamp timestamp
+    PmInternal * midi, midibyte_t byte, PmTimestamp timestamp
 )
 {
     alsa_descriptor_type desc = (alsa_descriptor_type) midi->descriptor;
@@ -360,18 +354,15 @@ alsa_write_byte
              * PortMidi is terminated. (This should be simple, but it's not
              * how the code works now.) -RBD
              */
-
         }
         else
         {
-            /* send event out without queueing */
+            /*
+             * ev.queue = SND_SEQ_QUEUE_DIRECT;
+             * ev.dest.client = SND_SEQ_ADDRESS_SUBSCRIBERS;
+             */
 
-            VERBOSE printf("direct\n");
-
-            /* ev.queue = SND_SEQ_QUEUE_DIRECT;
-               ev.dest.client = SND_SEQ_ADDRESS_SUBSCRIBERS; */
-
-            snd_seq_ev_set_direct(&ev);
+            snd_seq_ev_set_direct(&ev);     /* send event out without queueing */
         }
         VERBOSE printf("sending event\n");
         err = snd_seq_event_output(s_seq, &ev);
@@ -621,7 +612,7 @@ alsa_write_short (PmInternal * midi, PmEvent * event)
     alsa_descriptor_type desc = (alsa_descriptor_type) midi->descriptor;
     for (i = 0; i < bytes; i++)
     {
-        unsigned char byte = msg;
+        midibyte_t byte = msg;
         VERBOSE printf("sending 0x%x\n", byte);
         alsa_write_byte(midi, byte, event->timestamp);
         if (desc->error < 0)
@@ -701,32 +692,28 @@ handle_event (snd_seq_event_t * ev)
     {
     case SND_SEQ_EVENT_NOTEON:
         pm_ev.message = Pm_Message(0x90 | ev->data.note.channel,
-            ev->data.note.note & 0x7f,
-            ev->data.note.velocity & 0x7f);
+            ev->data.note.note & 0x7f, ev->data.note.velocity & 0x7f);
 
         pm_read_short(midi, &pm_ev);
         break;
 
     case SND_SEQ_EVENT_NOTEOFF:
         pm_ev.message = Pm_Message(0x80 | ev->data.note.channel,
-            ev->data.note.note & 0x7f,
-            ev->data.note.velocity & 0x7f);
+            ev->data.note.note & 0x7f, ev->data.note.velocity & 0x7f);
 
         pm_read_short(midi, &pm_ev);
         break;
 
     case SND_SEQ_EVENT_KEYPRESS:
         pm_ev.message = Pm_Message(0xa0 | ev->data.note.channel,
-            ev->data.note.note & 0x7f,
-            ev->data.note.velocity & 0x7f);
+            ev->data.note.note & 0x7f, ev->data.note.velocity & 0x7f);
 
         pm_read_short(midi, &pm_ev);
         break;
 
     case SND_SEQ_EVENT_CONTROLLER:
         pm_ev.message = Pm_Message(0xb0 | ev->data.note.channel,
-            ev->data.control.param & 0x7f,
-            ev->data.control.value & 0x7f);
+            ev->data.control.param & 0x7f, ev->data.control.value & 0x7f);
 
         pm_read_short(midi, &pm_ev);
         break;
@@ -757,19 +744,18 @@ handle_event (snd_seq_event_t * ev)
         if (ev->data.control.param < 0x20)
         {
             pm_ev.message = Pm_Message(0xb0 | ev->data.note.channel,
-                ev->data.control.param,
-                (ev->data.control.value >> 7) & 0x7f);
+                ev->data.control.param, (ev->data.control.value >> 7) & 0x7f);
+
             pm_read_short(midi, &pm_ev);
             pm_ev.message = Pm_Message(0xb0 | ev->data.note.channel,
-                ev->data.control.param + 0x20,
-                ev->data.control.value & 0x7f);
+                ev->data.control.param + 0x20, ev->data.control.value & 0x7f);
+
             pm_read_short(midi, &pm_ev);
         }
         else
         {
             pm_ev.message = Pm_Message(0xb0 | ev->data.note.channel,
-                ev->data.control.param & 0x7f,
-                ev->data.control.value & 0x7f);
+                ev->data.control.param & 0x7f, ev->data.control.value & 0x7f);
 
             pm_read_short(midi, &pm_ev);
         }
@@ -777,23 +763,18 @@ handle_event (snd_seq_event_t * ev)
 
     case SND_SEQ_EVENT_SONGPOS:
         pm_ev.message = Pm_Message(0xf2,
-            ev->data.control.value & 0x7f,
-            (ev->data.control.value >> 7) & 0x7f);
+            ev->data.control.value & 0x7f, (ev->data.control.value >> 7) & 0x7f);
 
         pm_read_short(midi, &pm_ev);
         break;
 
     case SND_SEQ_EVENT_SONGSEL:
-        pm_ev.message = Pm_Message(0xf3,
-            ev->data.control.value & 0x7f, 0);
-
+        pm_ev.message = Pm_Message(0xf3, ev->data.control.value & 0x7f, 0);
         pm_read_short(midi, &pm_ev);
         break;
 
     case SND_SEQ_EVENT_QFRAME:
-        pm_ev.message = Pm_Message(0xf1,
-            ev->data.control.value & 0x7f, 0);
-
+        pm_ev.message = Pm_Message(0xf1, ev->data.control.value & 0x7f, 0);
         pm_read_short(midi, &pm_ev);
         break;
 
@@ -834,7 +815,7 @@ handle_event (snd_seq_event_t * ev)
 
     case SND_SEQ_EVENT_SYSEX:
         {
-            const BYTE * ptr = (const BYTE *) ev->data.ext.ptr;
+            const midibyte_t * ptr = (const midibyte_t *) ev->data.ext.ptr;
 
             /* assume there is one sysex byte to process */
 
@@ -962,7 +943,6 @@ pm_fns_node pm_linuxalsa_out_dictionary =
     alsa_get_host_error
 };
 
-
 /**
  * pm_strdup -- copy a string to the heap. Use this rather than strdup so
  *    that we call pm_alloc, not malloc. This allows portmidi to avoid
@@ -1002,7 +982,6 @@ pm_linuxalsa_init (void)
 
     snd_seq_client_info_alloca(&cinfo);
     snd_seq_port_info_alloca(&pinfo);
-
     snd_seq_client_info_set_client(cinfo, -1);
     while (snd_seq_query_next_client(s_seq, cinfo) == 0)
     {
@@ -1014,8 +993,16 @@ pm_linuxalsa_init (void)
                 continue; /* ignore Timer and Announce ports on client 0 */
 
             caps = snd_seq_port_info_get_capability(pinfo);
-            if (!(caps & (SND_SEQ_PORT_CAP_SUBS_READ | SND_SEQ_PORT_CAP_SUBS_WRITE)))
+            if
+            (
+                ! (
+                    caps &
+                    (SND_SEQ_PORT_CAP_SUBS_READ | SND_SEQ_PORT_CAP_SUBS_WRITE)
+                )
+            )
+            {
                 continue; /* ignore if you cannot read or write port */
+            }
 
             if (caps & SND_SEQ_PORT_CAP_SUBS_WRITE)
             {
@@ -1038,12 +1025,18 @@ pm_linuxalsa_init (void)
                 if (pm_default_input_device_id == -1)
                     pm_default_input_device_id = pm_descriptor_index;
 
-                pm_add_device("ALSA",
+                pm_add_device
+                (
+                    "ALSA",
                     pm_strdup(snd_seq_port_info_get_name(pinfo)),
                     TRUE,
-                    MAKE_DESCRIPTOR(snd_seq_port_info_get_client(pinfo),
-                        snd_seq_port_info_get_port(pinfo)),
-                    &pm_linuxalsa_in_dictionary);
+                    MAKE_DESCRIPTOR
+                    (
+                        snd_seq_port_info_get_client(pinfo),
+                        snd_seq_port_info_get_port(pinfo)
+                    ),
+                    &pm_linuxalsa_in_dictionary
+                );
             }
         }
     }

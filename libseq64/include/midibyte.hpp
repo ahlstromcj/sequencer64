@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-23
- * \updates       2018-02-26
+ * \updates       2018-04-10
  * \license       GNU GPLv2 or above
  *
  *  These typedef specifications are intended to remove the ambiguity we have

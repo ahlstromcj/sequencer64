@@ -23,6 +23,12 @@
  * \file        pmutil.h
  *
  *  Some helpful utilities for building MIDI applications that use PortMidi.
+ *
+ * \library     sequencer64 application
+ * \author      PortMIDI team; modifications by Chris Ahlstrom
+ * \date        2017-08-21
+ * \updates     2018-04-10
+ * \license     GNU GPLv2 or above
  */
 
 #include "pminternal.h"                 /* they all include this one anyway */
@@ -87,7 +93,7 @@ PMEXPORT PmError Pm_QueueDestroy (PmQueue * queue);
 
 PMEXPORT PmError Pm_Dequeue (PmQueue * queue, void * msg);
 
-/*
+/**
  *  Pm_Enqueue() inserts one item into the queue, copying it from msg.
  *  Returns pmNoError if successful and pmBufferOverflow if the queue was
  *  already full. If pmBufferOverflow is returned, the overflow flag is set.
@@ -95,7 +101,7 @@ PMEXPORT PmError Pm_Dequeue (PmQueue * queue, void * msg);
 
 PMEXPORT PmError Pm_Enqueue (PmQueue * queue, void * msg);
 
-/*
+/**
  *  Pm_QueueFull() returns non-zero if the queue is full.
  *  Pm_QueueEmpty() returns non-zero if the queue is empty.
  *
@@ -114,7 +120,7 @@ PMEXPORT PmError Pm_Enqueue (PmQueue * queue, void * msg);
 PMEXPORT int Pm_QueueFull (PmQueue * queue);
 PMEXPORT int Pm_QueueEmpty (PmQueue * queue);
 
-/*
+/**
  *  Pm_QueuePeek() returns a pointer to the item at the head of the queue, or
  *  NULL if the queue is empty. The item is not removed from the queue.
  *  Pm_QueuePeek() will not indicate when an overflow occurs. If you want to
@@ -139,7 +145,7 @@ PMEXPORT int Pm_QueueEmpty (PmQueue * queue);
 
 PMEXPORT void * Pm_QueuePeek (PmQueue * queue);
 
-/*
+/**
  *  Pm_SetOverflow() allows the writer (enqueuer) to signal an overflow
  *  condition to the reader (dequeuer). E.g. when transfering data from the OS
  *  to an application, if the OS indicates a buffer overrun, Pm_SetOverflow()

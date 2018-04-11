@@ -6,7 +6,7 @@
 # \library    	seq64qt5 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-04-09
+# \update      2018-04-10
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -58,10 +58,21 @@ DEPENDPATH += \
 ## else:unix: PRE_TARGETDEPS += 
 ##    $$OUT_PWD/../../../projects/mylib/libmylib.a
 
-unix: PRE_TARGETDEPS += \
- $$OUT_PWD/../libseq64/libseq64.a \ 
- $$OUT_PWD/../seq_portmidi/libseq_portmidi.a \ 
- $$OUT_PWD/../seq_qt5/libseq_qt5.a
+CONFIG(release, debug|release) {
+   LIBOUTDIR = release
+} else:CONFIG(debug, debug|release) {
+   LIBOUTDIR = debug
+} else {
+   LIBOUTDIR = .
+}
+
+## unix: PRE_TARGETDEPS +=
+## PRE_TARGETDEPS +=
+
+PRE_TARGETDEPS += \
+ $$OUT_PWD/../libseq64/$$LIBOUTDIR/libseq64.a \ 
+ $$OUT_PWD/../seq_portmidi/$$LIBOUTDIR/libseq_portmidi.a \ 
+ $$OUT_PWD/../seq_qt5/$$LIBOUTDIR/libseq_qt5.a
 
 ## win32:CONFIG(release, debug|release): LIBS += 
 ##  -L$$OUT_PWD/../../../projects/mylib/release/ -lmylib
@@ -76,12 +87,14 @@ unix: PRE_TARGETDEPS += \
 # in this interesting article.
 #
 # https://eli.thegreenplace.net/2013/07/09/library-order-in-static-linking
+#
+## unix: LIBS +=
 
-unix: LIBS += \
+LIBS += \
  -Wl,--start-group \
- -L$$OUT_PWD/../libseq64 -lseq64 \
- -L$$OUT_PWD/../seq_portmidi -lseq_portmidi \
- -L$$OUT_PWD/../seq_qt5 -lseq_qt5 \
+ -L$$OUT_PWD/../libseq64/$$LIBOUTDIR -lseq64 \
+ -L$$OUT_PWD/../seq_portmidi/$$LIBOUTDIR -lseq_portmidi \
+ -L$$OUT_PWD/../seq_qt5/$$LIBOUTDIR -lseq_qt5 \
  -Wl,--end-group
 
 # -L$$OUT_PWD/../libseq64 -lseq64
@@ -92,6 +105,8 @@ unix:!macx: LIBS += \
  -lasound \
  -ljack \
  -lrt
+
+windows: LIBS += -lwinmm
 
 #******************************************************************************
 # Seq64qt5.pro (Seq64qt5)

@@ -21,7 +21,9 @@
 #ifdef DEBUG
 #include "stdio.h"
 #endif
+
 #include <windows.h>
+#include <tchar.h>
 
 /* pm_exit is called when the program exits.
    It calls pm_term to make sure PortMidi is properly closed.
@@ -63,18 +65,21 @@ void pm_term(void)
 }
 
 
-static PmDeviceID pm_get_default_device_id(int is_input, char *key)
+static PmDeviceID
+pm_get_default_device_id (int is_input, TCHAR * key)
 {
     HKEY hkey;
 #define PATTERN_MAX 256
-    char pattern[PATTERN_MAX];
-    long pattern_max = PATTERN_MAX;
+    BYTE pattern[PATTERN_MAX];
+    ULONG pattern_max = PATTERN_MAX;
     DWORD dwType;
+
     /* Find first input or device -- this is the default. */
+
     PmDeviceID id = pmNoDevice;
     int i, j;
-    Pm_Initialize(); /* make sure descriptors exist! */
-    for (i = 0; i < pm_descriptor_index; i++)
+    Pm_Initialize();                      /* make sure descriptors exist! */
+    for (i = 0; i < pm_descriptor_index; ++i)
     {
         if (descriptors[i].pub.input == is_input)
         {
@@ -82,23 +87,25 @@ static PmDeviceID pm_get_default_device_id(int is_input, char *key)
             break;
         }
     }
+
     /* Look in registry for a default device name pattern. */
-    if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software", 0, KEY_READ, &hkey) !=
+
+    if (RegOpenKeyEx(HKEY_CURRENT_USER, _T("Software"), 0, KEY_READ, &hkey) !=
             ERROR_SUCCESS)
     {
         return id;
     }
-    if (RegOpenKeyEx(hkey, "JavaSoft", 0, KEY_READ, &hkey) !=
+    if (RegOpenKeyEx(hkey, _T("JavaSoft"), 0, KEY_READ, &hkey) !=
             ERROR_SUCCESS)
     {
         return id;
     }
-    if (RegOpenKeyEx(hkey, "Prefs", 0, KEY_READ, &hkey) !=
+    if (RegOpenKeyEx(hkey, _T("Prefs"), 0, KEY_READ, &hkey) !=
             ERROR_SUCCESS)
     {
         return id;
     }
-    if (RegOpenKeyEx(hkey, "/Port/Midi", 0, KEY_READ, &hkey) !=
+    if (RegOpenKeyEx(hkey, _T("/Port/Midi"), 0, KEY_READ, &hkey) !=
             ERROR_SUCCESS)
     {
         return id;
@@ -125,8 +132,13 @@ static PmDeviceID pm_get_default_device_id(int is_input, char *key)
     }
     pattern[j] = 0; /* end of string */
 
-    /* now pattern is the string from the registry; search for match */
-    i = pm_find_default_device(pattern, is_input);
+    /*
+     * Now pattern is the string from the Registry; search for match.
+     * We may need to use typedefs to properly switch between Linux and
+     * Windows.
+     */
+
+    i = pm_find_default_device((char *) pattern, is_input);
     if (i != pmNoDevice)
     {
         id = i;
@@ -135,17 +147,25 @@ static PmDeviceID pm_get_default_device_id(int is_input, char *key)
 }
 
 
-PmDeviceID Pm_GetDefaultInputDeviceID()
+PmDeviceID
+Pm_GetDefaultInputDeviceID()
 {
-    return pm_get_default_device_id(TRUE,
-                                    "/P/M_/R/E/C/O/M/M/E/N/D/E/D_/I/N/P/U/T_/D/E/V/I/C/E");
+    return pm_get_default_device_id
+    (
+         TRUE,
+         _T("/P/M_/R/E/C/O/M/M/E/N/D/E/D_/I/N/P/U/T_/D/E/V/I/C/E")
+    );
 }
 
 
-PmDeviceID Pm_GetDefaultOutputDeviceID()
+PmDeviceID
+Pm_GetDefaultOutputDeviceID()
 {
-    return pm_get_default_device_id(FALSE,
-                                    "/P/M_/R/E/C/O/M/M/E/N/D/E/D_/O/U/T/P/U/T_/D/E/V/I/C/E");
+    return pm_get_default_device_id
+    (
+         FALSE,
+         _T("/P/M_/R/E/C/O/M/M/E/N/D/E/D_/O/U/T/P/U/T_/D/E/V/I/C/E")
+    );
 }
 
 

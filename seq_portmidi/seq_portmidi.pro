@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-04-08
+# \update      2018-04-10
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -23,7 +23,6 @@
 message($$_PRO_FILE_PWD_)
 
 TEMPLATE = lib
-TARGET = seq_portmidi
 CONFIG += staticlib config_prl
 
 # These are needed to set up platform_macros:
@@ -34,43 +33,60 @@ CONFIG(debug, debug|release) {
    DEFINES += NDEBUG
 }
 
-# Windows:
-#   include/pmwinmm.h
-#
-# Linux:
-#   include/pmlinux.h
-#   include/pmlinuxalsa.h
+CONFIG(release, debug|release) {
+   LIBOUTDIR = release
+} else:CONFIG(debug, debug|release) {
+   LIBOUTDIR = debug
+} else {
+   LIBOUTDIR = .
+}
+
+TARGET = $$LIBOUTDIR/seq_portmidi
+
+# Common:
 
 HEADERS += \
  include/mastermidibus_pm.hpp \
  include/midibus_pm.hpp \
  include/pminternal.h \
- include/pmlinux.h \
- include/pmlinuxalsa.h \
  include/pmutil.h \
  include/portmidi.h \
  include/porttime.h
 
-# Windows:
-#   src/pmwin.c
-#   src/pmwinmm.c
-#   src/ptwinmm.c
-#
 # Linux:
-#   src/pmlinux.c \
-#   src/pmlinuxalsa.c \
-#   src/ptlinux.c
+
+unix: HEADERS += \
+ include/pmlinux.h \
+ include/pmlinuxalsa.h \
+
+# Windows:
+
+windows: HEADERS += \
+ include/pmwinmm.h
+
+# Common:
 
 SOURCES += \
  src/finddefault.c \
  src/mastermidibus.cpp \
  src/midibus.cpp \
- src/pmlinux.c \
- src/pmlinuxalsa.c \
  src/pmutil.c \
  src/portmidi.c \
- src/porttime.c \
+ src/porttime.c
+
+# Linux:
+
+unix: SOURCES += \
+ src/pmlinux.c \
+ src/pmlinuxalsa.c \
  src/ptlinux.c
+
+# Windows:
+
+windows: SOURCES += \
+ src/pmwin.c \
+ src/pmwinmm.c \
+ src/ptwinmm.c
 
 INCLUDEPATH = \
  ../include/qt/portmidi \

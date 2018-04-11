@@ -20,7 +20,6 @@
 #
 #------------------------------------------------------------------------------
 
-
 message($$_PRO_FILE_PWD_)
 
 QT += core gui widgets
@@ -34,6 +33,16 @@ CONFIG(debug, debug|release) {
 } else {
    DEFINES += NDEBUG
 }
+
+CONFIG(release, debug|release) {
+   LIBOUTDIR = release
+} else:CONFIG(debug, debug|release) {
+   LIBOUTDIR = debug
+} else {
+   LIBOUTDIR = .
+}
+
+TARGET = $$LIBOUTDIR/seq_qt5
 
 # Target file directory:
 # DESTDIR = bin

@@ -312,7 +312,7 @@ PmError
 none_write_byte
 (
     PmInternal * UNUSED(midi),
-    unsigned char UNUSED(byte),
+    midibyte_t UNUSED(byte),
     PmTimestamp UNUSED(timestamp)
 )
 {
@@ -829,7 +829,7 @@ Pm_Write (PortMidiStream * stream, PmEvent * buffer, int32_t length)
                  * All data.  Copy 4 bytes from msg to fill_base + fill_offset
                  */
 
-                unsigned char * ptr = midi->fill_base + *(midi->fill_offset_ptr);
+                midibyte_t * ptr = midi->fill_base + *(midi->fill_offset_ptr);
                 ptr[0] = msg; ptr[1] = msg >> 8;
                 ptr[2] = msg >> 16; ptr[3] = msg >> 24;
                 (*midi->fill_offset_ptr) += 4;
@@ -840,7 +840,7 @@ Pm_Write (PortMidiStream * stream, PmEvent * buffer, int32_t length)
 
             while (bits < 32)
             {
-                unsigned char midi_byte = (unsigned char) (msg >> bits);
+                midibyte_t midi_byte = (midibyte_t) (msg >> bits);
                 if
                 (
                     (err = (*midi->dictionary->write_byte)(midi, midi_byte,
@@ -909,7 +909,7 @@ Pm_WriteShort (PortMidiStream * stream, PmTimestamp when, PmMessage msg)
 #define BUFLEN ((int) (PM_DEFAULT_SYSEX_BUFFER_SIZE / sizeof(PmMessage)))
 
 PMEXPORT PmError
-Pm_WriteSysEx (PortMidiStream * stream, PmTimestamp when, unsigned char * msg)
+Pm_WriteSysEx (PortMidiStream * stream, PmTimestamp when, midibyte_t * msg)
 {
     PmEvent buffer[BUFLEN];
     int buffer_size = 1;    /* first time, send 1. After that, it's BUFLEN */
@@ -1535,7 +1535,7 @@ pm_read_short (PmInternal * midi, PmEvent * event)
 unsigned
 pm_read_bytes
 (
-    PmInternal * midi, const unsigned char * data,
+    PmInternal * midi, const midibyte_t * data,
     int len, PmTimestamp timestamp
 )
 {
@@ -1559,7 +1559,7 @@ pm_read_bytes
         {
             /* process all data */
 
-            unsigned char byte = data[i++];
+            midibyte_t byte = data[i++];
             if (byte == MIDI_SYSEX && !pm_realtime_filtered(byte, midi->filters))
             {
                 midi->sysex_in_progress = TRUE;
@@ -1613,7 +1613,7 @@ pm_read_bytes
         } else {
             while (i < len) {
                 /* send one byte at a time */
-                unsigned char byte = data[i++];
+                midibyte_t byte = data[i++];
                 if (is_real_time(byte) &&
                     pm_realtime_filtered(byte, midi->filters)) {
                     continue; /* real-time data is filtered, so omit */

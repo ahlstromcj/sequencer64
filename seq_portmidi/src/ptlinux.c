@@ -17,25 +17,32 @@
  */
 
 /**
- * \file ptlinux.c
+ * \file        ptlinux.c
  *
- * ptlinux.c -- portable timer implementation for linux
+ *      Portable timer implementation for Linux.
  *
- * IMPLEMENTATION NOTES (by Mark Nelson):
+ * \library     sequencer64 application
+ * \author      PortMIDI team; modifications by Chris Ahlstrom
+ * \date        2017-08-21
+ * \updates     2018-04-11
+ * \license     GNU GPLv2 or above
  *
- *  Unlike Windows, Linux has no system call to request a periodic callback,
- *  so if Pt_Start() receives a callback parameter, it must create a thread
- *  that wakes up periodically and calls the provided callback function.
- *  If running as superuser, use setpriority() to renice thread to -20.
- *  One could also set the timer thread to a real-time priority (SCHED_FIFO
- *  and SCHED_RR), but this is dangerous for This is necessary because
- *  if the callback hangs it'll never return. A more serious reason
- *  is that the current scheduler implementation busy-waits instead
- *  of sleeping when realtime threads request a sleep of <=2ms (as a way
- *  to get around the 10ms granularity), which means the thread would never
- *  let anyone else on the CPU.
+ * Implementation Notes (by Mark Nelson):
  *
- * CHANGE LOG
+ *      Unlike Windows, Linux has no system call to request a periodic
+ *      callback, so if Pt_Start() receives a callback parameter, it must
+ *      create a thread that wakes up periodically and calls the provided
+ *      callback function.  If running as superuser, use setpriority() to
+ *      renice thread to -20.  One could also set the timer thread to a
+ *      real-time priority (SCHED_FIFO and SCHED_RR), but this is dangerous
+ *      for This is necessary because if the callback hangs it'll never
+ *      return. A more serious reason is that the current scheduler
+ *      implementation busy-waits instead of sleeping when realtime threads
+ *      request a sleep of <=2ms (as a way to get around the 10ms
+ *      granularity), which means the thread would never let anyone else on
+ *      the CPU.
+ *
+ * Change Log:
  *
  * 18-Jul-03 Roger Dannenberg -- Simplified code to set priority of timer
  *          thread. Simplified implementation notes.
@@ -48,11 +55,16 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <sys/timeb.h>
+#include <pthread.h>
+
 #include "porttime.h"
-#include "sys/time.h"
-#include "sys/resource.h"
-#include "sys/timeb.h"
-#include "pthread.h"
+
+/*
+ * REDUNDANT
+ */
 
 #define TRUE        1
 #define FALSE       0

@@ -19,7 +19,13 @@
 /**
  * \file        pmlinuxalsa.c
  *
- *  System-specific definitions for Linux's ALSA MIDI subsystem.
+ *      System-specific definitions for Linux's ALSA MIDI subsystem.
+ *
+ * \library     sequencer64 application
+ * \author      PortMIDI team; modifications by Chris Ahlstrom
+ * \date        2017-08-21
+ * \updates     2018-04-11
+ * \license     GNU GPLv2 or above
  *
  * Written by:
  *
@@ -28,15 +34,15 @@
  *  -   Jason Cohen, Rico Colon, Matt Filippone (Alsa 0.5.x implementation)
  */
 
+#include <string.h>
+#include <stdlib.h>
 #include <alsa/asoundlib.h>
 
 #include "platform_macros.h"            /* UNUSED() parameter macro         */
-#include "stdlib.h"
 #include "portmidi.h"
 #include "pmutil.h"
 #include "pminternal.h"
 #include "pmlinuxalsa.h"
-#include "string.h"
 #include "porttime.h"
 #include "pmlinux.h"
 
@@ -55,7 +61,7 @@
 #error needs ALSA 0.9.0 or later
 #endif
 
-/*
+/**
  *  These defines are added to help store client/port information in the
  *  device descriptor.  One issue with the existing PortMidi library is that
  *  we're casting from a pointer to an integer of different size.  So we add

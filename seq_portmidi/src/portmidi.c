@@ -18,6 +18,14 @@
 
 /**
  * \file        portmidi.c
+ *
+ *      Provides the basic PortMIDI API.
+ *
+ * \library     sequencer64 application
+ * \author      PortMIDI team; modifications by Chris Ahlstrom
+ * \date        2017-08-21
+ * \updates     2018-04-11
+ * \license     GNU GPLv2 or above
  */
 
 #ifdef _MSC_VER

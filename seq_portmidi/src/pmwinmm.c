@@ -19,32 +19,34 @@
 /**
  * \file        pmwinmm.c
  *
- * system specific definitions
+ *      System specific definitions for the Windows MM API.
+ *
+ * \library     sequencer64 application
+ * \author      PortMIDI team; modifications by Chris Ahlstrom
+ * \date        2017-08-21
+ * \updates     2018-04-11
+ * \license     GNU GPLv2 or above
  */
 
 #ifdef _MSC_VER
-#pragma warning(disable: 4133) // stop warnings about implicit typecasts
+#pragma warning(disable: 4133)      // stop warnings about implicit typecasts
 #endif
 
-#ifndef _WIN32_WINNT
-
 /*
- * without this define, InitializeCriticalSectionAndSpinCount is
- * undefined. This version level means "Windows 2000 and higher"
+ *  Without this #define, InitializeCriticalSectionAndSpinCount is undefined.
+ *  This version level means "Windows 2000 and higher".
  */
 
+#ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0500
-
 #endif
 
 #include <windows.h>
 #include <mmsystem.h>
 #include <string.h>
 
-#include "platform_macros.h"        /* seq64 library UNUSED() macro */
-#include "portmidi.h"
+#include "portmidi.h"           /* seq64 library UNUSED() macro and API */
 #include "pmutil.h"
-#include "pminternal.h"
 #include "pmwinmm.h"
 #include "porttime.h"
 
@@ -56,13 +58,13 @@
 #include <assert.h>
 
 /*
- * this printf stuff really important for debugging client app w/host errors.
- *  probably want to do something else besides read/write from/to console
- *  for portability, however.
+ *  This printf() stuff is really important for debugging client app w/host
+ *  errors.  Probably want to do something else besides read/write from/to
+ *  console for portability, however.
  */
 
-#ifdef DEBUG
-#define STRING_MAX 80
+#ifdef PLATFORM_DEBUG
+#define STRING_MAX      80
 #include <stdio.h>
 #endif
 
@@ -1646,10 +1648,8 @@ winmm_end_sysex (PmInternal * midi, PmTimestamp timestamp)
             int i;
             int len = m->hdr->dwBufferLength;
             printf("OutLongMsg %d ", len);
-            for (i = 0; i < len; i++)
-            {
+            for (i = 0; i < len; ++i)
                 printf("%2x ", (midibyte_t)(m->hdr->lpData[i]));
-            }
         }
 #endif
     }
@@ -1963,7 +1963,7 @@ pm_winmm_term (void)
     int i;
     int doneAny = 0;
 
-#ifdef DEBUG
+#ifdef PLATFORM_DEBUG
     char msg[PM_HOST_ERROR_MSG_LEN];
     printf("pm_winmm_term called\n");
 #endif
@@ -1977,7 +1977,7 @@ pm_winmm_term (void)
             if (m->handle.out)
             {
                 /* close next open device*/
-#ifdef DEBUG
+#ifdef PLATFORM_DEBUG
                 if (doneAny == 0)
                 {
                     printf("begin closing open devices...\n");
@@ -2009,7 +2009,7 @@ pm_winmm_term (void)
         pm_free(midi_out_caps);
         midi_out_caps = NULL;
     }
-#ifdef DEBUG
+#ifdef PLATFORM_DEBUG
     if (doneAny)
     {
         printf("warning: devices were left open. They have been closed.\n");

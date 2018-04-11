@@ -19,23 +19,27 @@
 /**
  * \file        pmutil.c
  *
- *  Some helpful utilities for building midi applications that use PortMidi.
+ *      Some helpful utilities for building MIDI applications that use
+ *      PortMidi.
+ *
+ * \library     sequencer64 application
+ * \author      PortMIDI team; modifications by Chris Ahlstrom
+ * \date        2017-08-21
+ * \updates     2018-04-11
+ * \license     GNU GPLv2 or above
+ *
  */
 
 #include <stdlib.h>
 #include <assert.h>
-#include <string.h>
+#include <string.h>                     /* bzero(3) in Linux            */
 
 #include "portmidi.h"
 #include "pmutil.h"
 #include "pminternal.h"
 
-#ifdef WIN32
-#define bzero(addr, siz) memset(addr, 0, siz)
-#endif
-
-#ifdef QUEUE_DEBUG
-#include "stdio.h"
+#ifdef PLATFORM_WINDOWS
+#define bzero(addr, siz)    memset(addr, 0, siz)
 #endif
 
 /**

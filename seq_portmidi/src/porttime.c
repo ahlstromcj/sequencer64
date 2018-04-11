@@ -19,8 +19,15 @@
 /**
  * \file        porttime.c
  *
- * portable API for millisecond timer.
- * There is no machine-independent implementation code to put here.
+ *      Portable API for millisecond timer.
+ *
+ * \library     sequencer64 application
+ * \author      PortMIDI team; modifications by Chris Ahlstrom
+ * \date        2017-08-21
+ * \updates     2018-04-11
+ * \license     GNU GPLv2 or above
+ *
+ *  There is no machine-independent implementation code to put here.
  */
 
 /*

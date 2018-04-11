@@ -19,16 +19,24 @@
 /**
  * \file pmlinux.c
  *
- * PortMidi os-dependent code
+ *      PortMidi os-dependent code for Linux.
  *
- * This file only needs to implement pm_init(), which calls various
- * routines to register the available midi devices. This file must
- * be separate from the main portmidi.c file because it is system
- * dependent, and it is separate from, pmlinuxalsa.c, because it
- * might need to register non-alsa devices as well.
+ * \library     sequencer64 application
+ * \author      PortMIDI team; modifications by Chris Ahlstrom
+ * \date        2017-08-21
+ * \updates     2018-04-11
+ * \license     GNU GPLv2 or above
  *
- * NOTE: if you add non-ALSA support, you need to fix :alsa_poll()
- * in pmlinuxalsa.c, which assumes all input devices are ALSA.
+ *  This file only needs to implement pm_init(), which calls various routines
+ *  to register the available midi devices. This file must be separate from
+ *  the main portmidi.c file because it is system dependent, and it is
+ *  separate from, pmlinuxalsa.c, because it might need to register non-ALSA
+ *  devices as well.
+ *
+ * Note:
+ *
+ *      If you add non-ALSA support, you need to fix alsa_poll() in
+ *      pmlinuxalsa.c, which assumes all input devices are ALSA.
  */
 
 #include <stdlib.h>
@@ -38,7 +46,7 @@
 #include "pmutil.h"
 #include "pminternal.h"
 
-#ifdef SEQ64_HAVE_LIBASOUNS
+#ifdef SEQ64_HAVE_LIBASOUND
 #include "pmlinuxalsa.h"
 #endif
 
@@ -56,13 +64,14 @@ PmDeviceID pm_default_output_device_id = -1;
 void
 pm_init ()
 {
-#ifdef SEQ64_HAVE_LIBASOUNS
+#ifdef SEQ64_HAVE_LIBASOUND
 	pm_linuxalsa_init();
 #endif
 
     /*
      * This is set when we return to Pm_Initialize, but we need it
      * now in order to (successfully) call Pm_CountDevices().  Ugh.
+     * At least we get to assume UTF-8 here, rather than Window's UTF-16.
      */
 
     pm_initialized = TRUE;
@@ -86,7 +95,7 @@ pm_init ()
 void
 pm_term (void)
 {
-#ifdef SEQ64_HAVE_LIBASOUNS
+#ifdef SEQ64_HAVE_LIBASOUND
     pm_linuxalsa_term();
 #endif
 }

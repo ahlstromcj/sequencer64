@@ -19,7 +19,13 @@
 /**
  * \file        finddefault.c
  *
- *  find_default_device() implementation.
+ *      Provides the find_default_device() implementation.
+ *
+ * \library     sequencer64 application
+ * \author      PortMIDI team; modifications by Chris Ahlstrom
+ * \date        2017-08-21
+ * \updates     2018-04-11
+ * \license     GNU GPLv2 or above
  *
  *  Roger Dannenberg, Jan 2009, some fixes and reformatting by Chris Ahlstrom.
  */
@@ -64,23 +70,25 @@ match_string (FILE * inf, char * s)
     while (*s && *s == getc(inf))
         s++;
 
-    return (*s == 0);
+    return *s == 0;
 }
 
 /**
- * Parse preference files, find default device, search devices
+ *  Parse preference files, find default device, search devices.
+ *
+ * TODO:  REPLACE THIS WITH Sequencer64 options.
  *
  * \param path
- *      the name of the preference we are searching for
+ *      The name of the preference we are searching for.
  *
  * \param input
- *      true iff this is an input device
+ *      Set to true if this is an input device.
  *
  * \param id
- *      current default device id
+ *      Current default device ID.
  *
  * \return
- *      matching device id if found, otherwise id
+ *      Matching device ID if found, otherwise the ID parameter.
  */
 
 PmDeviceID

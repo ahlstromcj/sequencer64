@@ -19,12 +19,19 @@
 /**
  * \file ptwinmm.c
  *
- * ptwinmm.c -- portable timer implementation for win32
+ *      Portable timer implementation for Win32.
+ *
+ * \library     sequencer64 application
+ * \author      PortMIDI team; modifications by Chris Ahlstrom
+ * \date        2017-08-21
+ * \updates     2018-04-11
+ * \license     GNU GPLv2 or above
  */
 
+#include <windows.h>
+#include <time.h>
+
 #include "porttime.h"
-#include "windows.h"
-#include "time.h"
 
 /**
  *

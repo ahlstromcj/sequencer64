@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-08-22
+ * \updates       2018-04-12
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -56,6 +56,7 @@
  */
 
 #include "calculations.hpp"             /* seq64::tempo_us_from_bpm()       */
+#include "easy_macros.hpp"              /* C++ version of easy macros       */
 #include "event.hpp"                    /* seq64::event and other tokens    */
 #include "midi_alsa_info.hpp"           /* seq64::midi_alsa_info            */
 #include "midibus_common.hpp"           /* from the libseq64 sub-project    */

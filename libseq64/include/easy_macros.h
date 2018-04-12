@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2018-01-31
+ * \updates       2018-04-12
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -345,6 +345,8 @@ extern bool not_nullptr_assert (void * ptr, const std::string & context);
 #define not_nullptr_assert(ptr, context) (not_nullptr(ptr))
 #endif
 
+#if 0           // moved to easy_macros.hpp
+
 /*
  *  Do not document a namespace; it breaks Doxygen.
  */
@@ -357,6 +359,8 @@ extern bool info_message (const std::string & msg);
 extern bool error_message (const std::string & msg);
 
 }               /* namespace seq64      */
+
+#endif          /* 0                    */
 
 #endif          /* SEQ64_EASY_MACROS_H  */
 

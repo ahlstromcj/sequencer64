@@ -50,7 +50,12 @@
 #endif
 
 #include <windows.h>
-#include <tchar.h>
+
+/*
+ * #include <tchar.h>
+ */
+
+#define _T(x)       ((const char *)(x))
 
 #define PATTERN_MAX 256
 

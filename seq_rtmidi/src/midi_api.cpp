@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-02-16
+ * \updates       2018-04-12
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring, we had to adapt the existing Sequencer64
@@ -15,6 +15,7 @@
  *  mode of the Sequencer64 application and libraries.
  */
 
+#include "easy_macros.hpp"              /* C++ version of easy macros       */
 #include "event.hpp"
 #include "midi_api.hpp"
 #include "midi_info.hpp"

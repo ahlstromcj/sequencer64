@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2018-03-30
+# \update      2018-04-12
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -95,6 +95,7 @@ pkginclude_HEADERS = \
 	controllers.hpp \
    daemonize.hpp \
 	easy_macros.h \
+	easy_macros.hpp \
 	editable_event.hpp \
 	editable_events.hpp \
 	event.hpp \

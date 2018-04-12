@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2018-01-05
+ * \updates       2018-04-12
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.  This class
@@ -14,6 +14,7 @@
  *
  */
 
+#include "easy_macros.hpp"              /* C++ version of easy macros       */
 #include "rtmidi_info.hpp"              /* seq64::rtmidi_info           */
 #include "settings.hpp"                 /* seq64::rc().with_jack_...()  */
 #include "seq64_rtmidi_features.h"      /* selects the usable APIs      */

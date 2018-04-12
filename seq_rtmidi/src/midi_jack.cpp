@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2018-01-26
+ * \updates       2018-04-12
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -142,6 +142,7 @@
 #include <jack/ringbuffer.h>
 
 #include "calculations.hpp"             /* seq64::extract_port_name()       */
+#include "easy_macros.hpp"              /* C++ version of easy macros       */
 #include "event.hpp"                    /* seq64::event from main library   */
 #include "jack_assistant.hpp"           /* seq64::jack_status_pair_t        */
 #include "midibus_rm.hpp"               /* seq64::midibus for rtmidi        */

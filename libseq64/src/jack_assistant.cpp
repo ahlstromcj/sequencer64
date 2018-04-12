@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2018-01-14
+ * \updates       2018-04-12
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -57,6 +57,7 @@
 #include <stdio.h>
 #include <string.h>                     /* strdup() <gasp!>             */
 
+#include "easy_macros.hpp"              /* C++ additions to easy macros */
 #include "jack_assistant.hpp"           /* this seq64::jack_ass class   */
 #include "midifile.hpp"                 /* seq64::midifile class        */
 #include "mutex.hpp"                    /* seq64::mutex, automutex      */

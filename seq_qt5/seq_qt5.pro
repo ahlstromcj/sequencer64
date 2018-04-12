@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-04-09
+# \update      2018-04-12
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -34,15 +34,17 @@ CONFIG(debug, debug|release) {
    DEFINES += NDEBUG
 }
 
-CONFIG(release, debug|release) {
-   LIBOUTDIR = release
-} else:CONFIG(debug, debug|release) {
-   LIBOUTDIR = debug
-} else {
-   LIBOUTDIR = .
-}
+## CONFIG(release, debug|release) {
+##    LIBOUTDIR = release
+## } else:CONFIG(debug, debug|release) {
+##    LIBOUTDIR = debug
+## } else {
+##    LIBOUTDIR = .
+## }
 
-TARGET = $$LIBOUTDIR/seq_qt5
+## TARGET = $$LIBOUTDIR/seq_qt5
+
+TARGET = seq_qt5
 
 # Target file directory:
 # DESTDIR = bin

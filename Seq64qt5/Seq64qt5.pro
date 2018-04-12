@@ -6,7 +6,7 @@
 # \library    	seq64qt5 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-04-10
+# \update      2018-04-12
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -35,51 +35,11 @@ CONFIG(debug, debug|release) {
 
 SOURCES += seq64qt5.cpp
 
-# Tries to link in non-existentic static libraries for Qt, ALSA (libasound),
-# etc.
-#
-# QMAKE_LFLAGS = -Xlinker -Bstatic $$QMAKE_LFLAGS
-
 INCLUDEPATH = \
  ../include/qt/portmidi \
  ../libseq64/include \
  ../seq_portmidi/include \
  ../seq_qt5/include
-
-DEPENDPATH += \
- $$PWD/../libseq64 \
- $$PWD/../seq_portmidi \
- $$PWD/../seq_qt5
-
-## win32:CONFIG(release, debug|release): PRE_TARGETDEPS += 
-##  $$OUT_PWD/../../../projects/mylib/release/mylib.lib
-## else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += 
-##   $$OUT_PWD/../../../projects/mylib/debug/mylib.lib
-## else:unix: PRE_TARGETDEPS += 
-##    $$OUT_PWD/../../../projects/mylib/libmylib.a
-
-CONFIG(release, debug|release) {
-   LIBOUTDIR = release
-} else:CONFIG(debug, debug|release) {
-   LIBOUTDIR = debug
-} else {
-   LIBOUTDIR = .
-}
-
-## unix: PRE_TARGETDEPS +=
-## PRE_TARGETDEPS +=
-
-PRE_TARGETDEPS += \
- $$OUT_PWD/../libseq64/$$LIBOUTDIR/libseq64.a \ 
- $$OUT_PWD/../seq_portmidi/$$LIBOUTDIR/libseq_portmidi.a \ 
- $$OUT_PWD/../seq_qt5/$$LIBOUTDIR/libseq_qt5.a
-
-## win32:CONFIG(release, debug|release): LIBS += 
-##  -L$$OUT_PWD/../../../projects/mylib/release/ -lmylib
-## else:win32:CONFIG(debug, debug|release): LIBS += 
-##  -L$$OUT_PWD/../../../projects/mylib/debug/ -lmylib
-## else:unix: LIBS += 
-##  -L$$OUT_PWD/../../../projects/mylib/ -lmylib
 
 # Sometimes some midifile and rect member functions cannot be found at link
 # time, and this is worse with static linkage of our internal libraries.
@@ -88,16 +48,41 @@ PRE_TARGETDEPS += \
 #
 # https://eli.thegreenplace.net/2013/07/09/library-order-in-static-linking
 #
-## unix: LIBS +=
 
+win32:CONFIG(release, debug|release) {
+ LIBS += \
+  -Wl,--start-group \
+  -L$$OUT_PWD/../libseq64/release -lseq64 \
+  -L$$OUT_PWD/../seq_portmidi/release -lseq_portmidi \
+  -L$$OUT_PWD/../seq_qt5/release -lseq_qt5 \
+  -Wl,--end-group
+}
+else:win32:CONFIG(debug, debug|release) {
+ LIBS += \
+  -Wl,--start-group \
+  -L$$OUT_PWD/../libseq64/debug -lseq64 \
+  -L$$OUT_PWD/../seq_portmidi/debug -lseq_portmidi \
+  -L$$OUT_PWD/../seq_qt5/debug -lseq_qt5 \
+  -Wl,--end-group
+}
+else:unix {
 LIBS += \
  -Wl,--start-group \
- -L$$OUT_PWD/../libseq64/$$LIBOUTDIR -lseq64 \
- -L$$OUT_PWD/../seq_portmidi/$$LIBOUTDIR -lseq_portmidi \
- -L$$OUT_PWD/../seq_qt5/$$LIBOUTDIR -lseq_qt5 \
+ -L$$OUT_PWD/../libseq64 -lseq64 \
+ -L$$OUT_PWD/../seq_portmidi -lseq_portmidi \
+ -L$$OUT_PWD/../seq_qt5 -lseq_qt5 \
  -Wl,--end-group
+}
 
-# -L$$OUT_PWD/../libseq64 -lseq64
+DEPENDPATH += \
+ $$PWD/../libseq64 \
+ $$PWD/../seq_portmidi \
+ $$PWD/../seq_qt5
+
+## PRE_TARGETDEPS += \
+##  $$OUT_PWD/../libseq64/libseq64.a \ 
+##  $$OUT_PWD/../seq_portmidi/libseq_portmidi.a \ 
+##  $$OUT_PWD/../seq_qt5/libseq_qt5.a
 
 # May consider adding:  /usr/include/lash-1.0 and -llash
 

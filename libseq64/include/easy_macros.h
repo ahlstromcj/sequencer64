@@ -27,7 +27,6 @@
  *  really should have the "hpp" extension now.  Oh well.
  */
 
-#include <string>
 #include <stdio.h>
 
 #include "platform_macros.h"
@@ -332,35 +331,6 @@ typedef bool cbool_t;
 #else
 #define apiprint(name, tag)
 #endif
-
-/**
- * Global functions.  The not_nullptr_assert() function is a macro in
- * release mode, to speed up release mode.  It cannot do anything at
- * all, since it is used in the conditional part of if-statements.
- */
-
-#ifdef PLATFORM_DEBUG
-extern bool not_nullptr_assert (void * ptr, const std::string & context);
-#else
-#define not_nullptr_assert(ptr, context) (not_nullptr(ptr))
-#endif
-
-#if 0           // moved to easy_macros.hpp
-
-/*
- *  Do not document a namespace; it breaks Doxygen.
- */
-
-namespace seq64
-{
-
-extern std::string message_concatenate (const char * m1, const char * m2);
-extern bool info_message (const std::string & msg);
-extern bool error_message (const std::string & msg);
-
-}               /* namespace seq64      */
-
-#endif          /* 0                    */
 
 #endif          /* SEQ64_EASY_MACROS_H  */
 

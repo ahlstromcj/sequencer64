@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-10
+ * \updates     2018-04-12
  * \license     GNU GPLv2 or above
  *
  * change log for porttime:
@@ -34,6 +34,7 @@
  */
 
 #include "platform_macros.h"
+#include "pminternal.h"                 /* int32_t  */
 
 /* Should there be a way to choose the source of time here? */
 

@@ -25,13 +25,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-26
- * \updates       2017-09-03
+ * \updates       2018-04-12
  * \license       GNU GPLv2 or above
  *
  *  These functions are used in macros such as func_message().
  */
 
-#include "easy_macros.h"
+#include "easy_macros.hpp"
 
 #include <assert.h>
 

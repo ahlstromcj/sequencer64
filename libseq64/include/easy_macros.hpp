@@ -18,7 +18,21 @@
  *  C code of the seq_portmidi library.
  */
 
-#include "easy_macros.h"
+#include <string>
+
+#include "easy_macros.h"                /* stuff suitable for C code    */
+
+/**
+ * Global functions.  The not_nullptr_assert() function is a macro in
+ * release mode, to speed up release mode.  It cannot do anything at
+ * all, since it is used in the conditional part of if-statements.
+ */
+
+#ifdef PLATFORM_DEBUG
+extern bool not_nullptr_assert (void * ptr, const std::string & context);
+#else
+#define not_nullptr_assert(ptr, context) (not_nullptr(ptr))
+#endif
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

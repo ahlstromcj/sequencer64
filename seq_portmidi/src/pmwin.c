@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-11
+ * \updates     2018-04-12
  * \license     GNU GPLv2 or above
 
  *  This file needs to implement:
@@ -39,14 +39,16 @@
  *  need to register devices for WinMM, DirectX, and others.
  */
 
-#include "stdlib.h"
+#include <stdlib.h>
+
+#include "easy_macros.h"
 #include "portmidi.h"
 #include "pmutil.h"
 #include "pminternal.h"
 #include "pmwinmm.h"
 
 #ifdef PLATFORM_DEBUG
-#include "stdio.h"
+#include <stdio.h>
 #endif
 
 #include <windows.h>
@@ -55,7 +57,12 @@
  * #include <tchar.h>
  */
 
-#define _T(x)       ((const char *)(x))
+/*
+ *  This macro is part of Microsoft's tchar.h, but we want to use it only as
+ *  a marker for now.
+ */
+
+#define _T(x)       ((char *)(x))
 
 #define PATTERN_MAX 256
 
@@ -86,7 +93,8 @@ pm_exit(void)
  *  atexit() callback to pm_exit().
  */
 
-void pm_init(void)
+void
+pm_init (void)
 {
     atexit(pm_exit);
 
@@ -116,7 +124,7 @@ pm_term (void)
  */
 
 static PmDeviceID
-pm_get_default_device_id (int is_input, TCHAR * key)
+pm_get_default_device_id (int is_input, char * key)
 {
     HKEY hkey;
     BYTE pattern[PATTERN_MAX];
@@ -139,8 +147,11 @@ pm_get_default_device_id (int is_input, TCHAR * key)
 
     /* Look in registry for a default device name pattern. */
 
-    if (RegOpenKeyEx(HKEY_CURRENT_USER, _T("Software"), 0, KEY_READ, &hkey) !=
-            ERROR_SUCCESS)
+    if
+    (
+        RegOpenKeyEx(HKEY_CURRENT_USER, _T("Software"), 0, KEY_READ, &hkey)
+            != ERROR_SUCCESS
+    )
     {
         return id;
     }
@@ -152,12 +163,19 @@ pm_get_default_device_id (int is_input, TCHAR * key)
     {
         return id;
     }
-    if (RegOpenKeyEx(hkey, _T("/Port/Midi"), 0, KEY_READ, &hkey) != ERROR_SUCCESS)
+    if
+    (
+        RegOpenKeyEx(hkey, _T("/Port/Midi"), 0, KEY_READ, &hkey)
+            != ERROR_SUCCESS
+    )
     {
         return id;
     }
-    if (RegQueryValueEx(hkey, key, NULL, &dwType, pattern, &pattern_max) !=
-            ERROR_SUCCESS)
+    if
+    (
+        RegQueryValueEx(hkey, key, NULL, &dwType, pattern, &pattern_max)
+            != ERROR_SUCCESS
+    )
     {
         return id;
     }
@@ -173,7 +191,7 @@ pm_get_default_device_id (int is_input, TCHAR * key)
         {
             pattern[j++] = tolower(pattern[i]);
         }
-        i++;
+        ++i;
     }
     pattern[j] = 0;                         /* end of string */
 

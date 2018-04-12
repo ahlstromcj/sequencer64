@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-04-10
+# \update      2018-04-12
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -33,15 +33,17 @@ CONFIG(debug, debug|release) {
    DEFINES += NDEBUG
 }
 
-CONFIG(release, debug|release) {
-   LIBOUTDIR = release
-} else:CONFIG(debug, debug|release) {
-   LIBOUTDIR = debug
-} else {
-   LIBOUTDIR = .
-}
+## CONFIG(release, debug|release) {
+##    LIBOUTDIR = release
+## } else:CONFIG(debug, debug|release) {
+##    LIBOUTDIR = debug
+## } else {
+##    LIBOUTDIR = .
+## }
 
-TARGET = $$LIBOUTDIR/seq_portmidi
+## TARGET = $$LIBOUTDIR/seq_portmidi
+
+TARGET = seq_portmidi
 
 # Common:
 
@@ -61,8 +63,12 @@ unix: HEADERS += \
 
 # Windows:
 
-windows: HEADERS += \
- include/pmwinmm.h
+windows {
+ HEADERS += include/pmwinmm.h
+ DEFINES -= UNICODE
+ DEFINES -= _UNICODE
+ QMAKE_CFLAGS_WARN_ON += -Wno-unused-parameter
+}
 
 # Common:
 

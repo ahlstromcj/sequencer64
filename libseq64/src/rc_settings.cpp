@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-04-13
+ * \updates       2018-04-14
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -281,8 +281,8 @@ rc_settings::set_defaults ()
     m_last_used_dir             = "~/";
     m_config_directory          = ".config/sequencer64";
 #endif
-    m_config_filename           = "sequencer64.rc";
-    m_user_filename             = "sequencer64.usr";
+    m_config_filename           = "sequencer64.rc";     // adapts to app name
+    m_user_filename             = "sequencer64.usr";    // ditto
     m_config_filename_alt       = ".seq24rc";
     m_user_filename_alt         = ".seq24usr";
 
@@ -293,6 +293,7 @@ rc_settings::set_defaults ()
     m_app_client_name           = SEQ64_CLIENT_NAME;
     m_tempo_track_number        = 0;
     m_recent_files.clear();
+    set_config_files(SEQ64_CONFIG_NAME);
 }
 
 /**
@@ -340,7 +341,13 @@ rc_settings::home_config_directory () const
             result += SLASH;
 #endif
             bool ok = make_directory(result);
-            if (! ok)
+            if (ok)
+            {
+#ifdef PLATFORM_WINDOWS
+                result += SLASH;
+#endif
+            }
+            else
             {
                 printf("? error creating [%s]\n", result.c_str());
                 result.clear();

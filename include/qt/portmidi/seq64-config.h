@@ -20,15 +20,16 @@
  */
 
 /**
- * \file          seq64-config.h (for qmake build of portmidi linux version)
+ * \file          seq64-config.h
  *
  *  This module provides platform/build-specific configuration that is not
- *  modifiable via a "configure" operation.
+ *  modifiable via a "configure" operation.  It is meant for the hardwired
+ *  qmake build of the PortMidi Linux and Windows versions.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-04-08
- * \updates       2018-04-09
+ * \updates       2018-04-14
  * \license       GNU GPLv2 or above
  *
  *  Qt Portmidi Linux version.
@@ -38,7 +39,7 @@
  */
 
 #ifndef SEQ64_VERSION_DATE_SHORT
-#define SEQ64_VERSION_DATE_SHORT "2018-04-09"
+#define SEQ64_VERSION_DATE_SHORT "2018-04-14"
 #endif
 
 #ifndef SEQ64_VERSION
@@ -64,10 +65,23 @@
 /* Indicates if ALSA MIDI support is enabled */
 /* #undef ALSAMIDI_SUPPORT */
 
-/* Names this version of application */
+/**
+ * Names this version of application.
+ *
+ *  "qpl" means "Qt PortMidi Linux-based".  On Windows, consider "Linux"
+ *  to be "MingW32" :-).
+ */
 
 #ifndef SEQ64_APP_NAME
-#define SEQ64_APP_NAME "qseq64"
+#define SEQ64_APP_NAME "qplseq64"
+#endif
+
+/**
+ * Names the configuration file for this version of application.
+ */
+
+#ifndef SEQ64_CONFIG_NAME
+#define SEQ64_CONFIG_NAME "qplseq64"
 #endif
 
 /* "The name to display as client/port" */

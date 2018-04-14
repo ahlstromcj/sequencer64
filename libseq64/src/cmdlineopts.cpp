@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-02-09
+ * \updates       2018-04-14
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -618,8 +618,9 @@ parse_log_option (int argc, char * argv [])
  *      seq64::perform p(gui);
  *
  *  It also requires the caller to call rc().set_defaults() and
- *  usr().set_defaults().  The caller can then use the command-line to make
- *  any modifications to the setting that will be used here.  The biggest
+ *  usr().set_defaults() at the appropriate time, which is before any parsing
+ *  of the command-line options.  The caller can then use the command-line to
+ *  make any modifications to the setting that will be used here.  The biggest
  *  example is the -r/--reveal-alsa-ports option, which determines if the MIDI
  *  buss definition strings are read from the 'user' configuration file.
  *
@@ -658,7 +659,9 @@ parse_log_option (int argc, char * argv [])
  *      The array of command-line argument pointers.
  *
  * \return
- *      Returns true if the reading of both configuration files succeeded.
+ *      Returns true if the reading of both configuration files succeeded, or
+ *      if they did not exist.  In the latter case, they will be saved as new
+ *      files upon exit.
  */
 
 bool
@@ -669,17 +672,8 @@ parse_options_files
     int argc, char * argv []
 )
 {
-    bool result = true;
     std::string rcname = seq64::rc().config_filespec();
-
-    /*
-     * The caller must make these calls, at the appropriate time, which is
-     * before any parsing of the command-line options.
-     *
-     * seq64::rc().set_defaults();     // start out with normal values
-     * seq64::usr().set_defaults();    // ditto
-     */
-
+    bool result = true; // ! rcname.empty();
     if (file_accessible(rcname))
     {
         printf("[Reading rc configuration %s]\n", rcname.c_str());

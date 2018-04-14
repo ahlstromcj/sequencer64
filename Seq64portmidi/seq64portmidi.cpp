@@ -25,7 +25,7 @@
  * \library       seq64portmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2018-02-09
+ * \updates       2018-04-14
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -44,7 +44,11 @@
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "gui_assistant_gtk2.hpp"       /* seq64::gui_assistant_gtk2        */
 #include "gui_palette_gtk2.hpp"         /* colors and "inverse" colors      */
+
+#ifdef PLATFORM_LINUX
 #include "lash.hpp"                     /* seq64::lash_driver functions     */
+#endif
+
 #include "mainwid.hpp"                  /* needed to fulfill mainwnd        */
 #include "mainwnd.hpp"                  /* the main window of seq64portmidi */
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc()     */
@@ -81,7 +85,7 @@ main (int argc, char * argv [])
     Gtk::Main kit(argc, argv);              /* strip GTK+ parameters        */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
-    (void) seq64::parse_log_option(argc, argv);    /* -o log=file.ext early */
+    (void) seq64::parse_log_option(argc, argv);   /* -o log=file.ext early  */
 
     /*
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to the

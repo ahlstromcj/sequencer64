@@ -24,7 +24,7 @@
  * \library       seq64rtcli application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-04-07
- * \updates       2017-09-05
+ * \updates       2018-04-14
  * \license       GNU GPLv2 or above
  *
  *  This application is seq64 without a GUI, control must be done via MIDI.
@@ -44,7 +44,11 @@
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "gui_assistant.hpp"            /* seq64::gui_assistant base class  */
 #include "keys_perform.hpp"             /* seq64::keys_perform              */
+
+#ifdef PLATFORM_LINUX
 #include "lash.hpp"                     /* seq64::lash_driver functions     */
+#endif
+
 #include "midifile.hpp"                 /* seq64::midifile to open the file */
 #include "perform.hpp"                  /* seq64::perform, the main object  */
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc()     */
@@ -241,7 +245,9 @@ main (int argc, char * argv [])
                 else
                     printf("[auto-option-save off, not saving config files]\n");
 
+#ifdef PLATFORM_LINUX
                 seq64::delete_lash_driver();        /* deleted only exists  */
+#endif
             }
         }
 

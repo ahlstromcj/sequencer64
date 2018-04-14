@@ -25,7 +25,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2018-02-09
+ * \updates       2018-04-14
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -44,7 +44,11 @@
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "gui_assistant_gtk2.hpp"       /* seq64::gui_assistant_gtk2        */
 #include "gui_palette_gtk2.hpp"         /* colors and "inverse" colors      */
+
+#ifdef PLATFORM_LINUX
 #include "lash.hpp"                     /* seq64::lash_driver functions     */
+#endif
+
 #include "mainwid.hpp"                  /* needed to fulfill mainwnd        */
 #include "mainwnd.hpp"                  /* the main window of seq64rtmidi   */
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc()     */
@@ -81,7 +85,7 @@ main (int argc, char * argv [])
     Gtk::Main kit(argc, argv);              /* strip GTK+ parameters        */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
-    (void) seq64::parse_log_option(argc, argv);    /* -o log=file.ext early */
+    (void) seq64::parse_log_option(argc, argv);   /* -o log=file.ext early  */
 
     /**
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to the
@@ -177,8 +181,10 @@ main (int argc, char * argv [])
                     printf("? MIDI file not found: %s\n", midifilename.c_str());
             }
 
+#ifdef PLATFORM_LINUX
             if (seq64::rc().lash_support())
                 seq64::create_lash_driver(p, argc, argv);
+#endif
 
             kit.run(seq24_window);                  /* run until user quit  */
             p.finish();                             /* tear down performer  */
@@ -190,7 +196,9 @@ main (int argc, char * argv [])
             else
                 printf("[auto-option-save off, not saving config files]\n");
 
+#ifdef PLATFORM_LINUX
             seq64::delete_lash_driver();            /* deleted only exists  */
+#endif
         }
         else
             seq24_window.rc_error_dialog(errmessage);

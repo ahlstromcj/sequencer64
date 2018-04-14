@@ -1,0 +1,37 @@
+Notes on Windows
+Chris Ahlstrom
+2018-04-14 to 2018-04-14
+
+This file provides some notes on Sequencer64 and Windows.  We're mostly using
+Windows 10; some features might differ in Windows 7 or Windows 2012+ Server.
+
+Configuration Files:
+
+    On Linux, the normal directory location of the Sequencer64 configuration
+    files is "/home/username/.config/sequencer64".  Various confignames:
+
+        sequencer64.rc
+        qseq64.rc
+        qplseq64.rc
+
+    On Windows, the convention location is different, and the location used is 
+    "C:\Users\username\AppData\local\sequencer64".  The configname:
+
+        qplseq64.rc
+
+-   What is "git rev-parse"?
+-   qplseq64.rc: [midi-input] has 0 for "number of input MIDI busses".
+    Might not be a bug, since nothing is plugged into the Windows VM.
+    [midi-clock] shows:
+
+    2    # number of MIDI clocks/busses
+
+    # Output buss name: [0] 0:0 PortMidi:Microsoft MIDI Mapper
+    0 0  # buss number, clock status
+
+    # Output buss name: [1] 1:1 PortMidi:Microsoft GS Wavetable Synth (virtual)
+    1 0  # buss number, clock status
+
+
+
+

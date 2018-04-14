@@ -524,6 +524,7 @@ if test "$rtmidi" != "no"; then
     build_rtmidi="yes"
     need_gtkmm="yes"
     AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
+    AC_DEFINE(CONFIG_NAME, ["sequencer64"], [Configuration file name])
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi is enabled])
     AM_PATH_ALSA(0.9.0)
     AC_MSG_RESULT([rtmidi native build enabled.]);
@@ -558,6 +559,7 @@ if test "$qtmidi" != "no"; then
     build_rtmidi="no"
     need_gtkmm="no"
     AC_DEFINE(APP_NAME, ["qseq64"], [Names the Qt/rtmidi version of application])
+    AC_DEFINE(CONFIG_NAME, ["qseq64"], [Configuration file name])
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates that rtmidi is enabled])
     AC_DEFINE(QTMIDI_SUPPORT, 1, [Indicates that Qt5 is enabled])
     AM_PATH_ALSA(0.9.0)
@@ -577,6 +579,7 @@ AC_ARG_ENABLE(cli,
 if test "$cli" != "no"; then
     AC_MSG_RESULT([portmidi/rtmidi command-line build enabled.]);
     AC_DEFINE(APP_NAME, ["seq64cli"], [Names the CLI version of application])
+    AC_DEFINE(CONFIG_NAME, ["seq64cli"], [Configuration file name])
     if test "x$mingw" != "xyes" ; then
         build_rtcli="yes"
         build_rtmidi="no"
@@ -603,6 +606,7 @@ if test "$alsamidi" != "no"; then
     need_gtkmm="yes"
     AC_DEFINE(ALSAMIDI_SUPPORT, 1, [Indicates if ALSA MIDI support is enabled])
     AC_DEFINE(APP_NAME, ["sequencer64"], [Names legacy version of application])
+    AC_DEFINE(CONFIG_NAME, ["sequencer64"], [Configuration file name])
     AM_PATH_ALSA(0.9.0)
     AC_MSG_RESULT([Standard ALSA build enabled.]);
 else
@@ -622,6 +626,7 @@ if test "$portmidi" != "no"; then
     need_gtkmm="yes"
     AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates if PortMidi support is enabled])
     AC_DEFINE(APP_NAME, ["seq64portmidi"], [Names this version of application])
+    AC_DEFINE(CONFIG_NAME, ["seq64portmidi"], [Configuration file name])
     AM_PATH_ALSA(0.9.0)
     AC_MSG_RESULT([PortMidi build enabled.]);
 else
@@ -629,6 +634,7 @@ else
 fi
 
 AC_SUBST(APP_NAME)
+AC_SUBST(CONFIG_NAME)
 
 dnl PKG_CHECK_MODULES(GTKMM, gtkmm-3.0 >= 3.0.0)
 

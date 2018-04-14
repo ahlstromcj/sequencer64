@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-03-17
+ * \updates       2018-04-14
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -38,7 +38,11 @@
 #include "cmdlineopts.hpp"              /* command-line functions           */
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "gui_assistant_qt5.hpp"        /* seq64::gui_assistant_qt5         */
+
+#ifdef PLATFORM_LINUX
 #include "lash.hpp"                     /* seq64::lash_driver functions     */
+#endif
+
 #include "perform.hpp"                  /* seq64::perform                   */
 #include "qsmainwnd.hpp"                /* the main window of seq64qt5      */
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc()     */
@@ -76,8 +80,7 @@ main (int argc, char * argv [])
     int exit_status = EXIT_SUCCESS;         /* EXIT_FAILURE                 */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
-    seq64::rc().set_config_files("qseq64"); /* use a different config file  */
-    (void) seq64::parse_log_option(argc, argv);    /* -o log=file.ext early */
+    (void) seq64::parse_log_option(argc, argv);   /* -o log=file.ext early  */
 
     /**
      * Set up objects that are specific to the GUI.  Pass them to the
@@ -117,9 +120,11 @@ main (int argc, char * argv [])
              * take precedence.  The "log" option is processed early in the
              * startup sequence.  These same settings are made in the
              * cmdlineopts module.
+             *
+             * Now handled via optind incrementing:     ++optionindex;
              */
 
-            ++optionindex;
+            ////// ++optionindex;
             p.seqs_in_set(seq64::usr().seqs_in_set());
             p.max_sets(seq64::usr().max_sets());
         }

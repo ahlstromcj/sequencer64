@@ -175,7 +175,11 @@ Qmake-based Install:
     If the kit is set up properly, the "qplseq64.pro" entry in the left
     project panel will show the other "pro" files as subprojects.  Note that
     a successful build will put the generated files in a "shadow" directory
-    parallel with the "sequencer64" directory.
+    parallel with the "sequencer64" directory, such as:
+    
+        build-qplseq64-Desktop_Qt_5_10_1_MinGW_32bit-Debug
+    
+    Do not forget to "Configure Project" before trying to build it!
 
     The second way to use this build is to just use qmake to do a "shadow
     build".  Assuming you are in the "sequencer64" directory:

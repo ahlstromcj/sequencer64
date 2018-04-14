@@ -94,11 +94,9 @@ const int qc_timearea_y = 18;
 
 /* sequences */
 const int qc_midi_notes = 256;
-const std::string qc_dummy("Untitled");
 
 /* maximum size of sequence, default size */
 const int qc_maxbeats     = 0xFFFF;   /* max number of beats in a sequence */
-
 
 /* midifile tags */
 const unsigned long c_midibus =         0x24240001;

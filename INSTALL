@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.94.8 and above
 Chris Ahlstrom
-2015-09-10 to 2018-04-09
+2015-09-10 to 2018-04-14
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -21,12 +21,14 @@ bootstrapping setup is primarily aimed at developers.  Starting with version
     -   qseq64.  The seq64 (rtmidi) version of the application, with a Qt5
         user interface based on Kepler34.  Useable, but still lacks many of
         the user-interface elements of the Gtkmm 2.4 application.
+    -   qplseq64.  Very similar to qseq64, but built via qmake and
+        suitable for loading in QtCreator installed with its mingw32 tools.
 
 Below are sections for various ways of installing this project:
 
     -   Quick Install
     -   Advanced Steps
-    -   Qmake-base Install
+    -   Qmake-based Install
 
 Quick Install:
 
@@ -154,34 +156,44 @@ Advanced Steps:
        of the project.  The branch is included in the resulting tarball name;
        the usual branch would be "master".
 
-Qmake-base Install:
+Qmake-based Install:
 
     A build based on Qt Creator and Qmake is available.  It has the sole
     purpose of making it easy to build the project on Windows, though we
     created this build on Linux first to work out the numerous "gotchas" with
-    Qt Creator and QMake.  This build is designed *only* to use the PortMidi
-    library.
+    Qt Creator and QMake.
+    
+    The Qmake-based build is designed *only* to use the PortMidi
+    library and the new Kepler34-based Qt 5 user interface.  This
+    user interface is currently less functional than the Gtkmm 2.4 user
+    interface, but the Sequencer64 libraries are used internally.
 
     The first way to use this build is to run qtcreator and load the
     qplseq64.pro file.  This method can be used if you do not care for the
-    command-line.
+    command-line.  However, if the installer for Qt Creator did not
+    set up the default "kit" properly, you must create a good kit manually.
+    If the kit is set up properly, the "qplseq64.pro" entry in the left
+    project panel will show the other "pro" files as subprojects.  Note that
+    a successful build will put the generated files in a "shadow" directory
+    parallel with the "sequencer64" directory.
 
-    The second way to use thisbuild is to do:
-
-        $ qmake -recursive  [ qplseq64.pro (optional} ]
-        $ make
-        $ make install (not yet tested)
-
-    Better is to do it in a "shadow" directory:
+    The second way to use this build is to just use qmake to do a "shadow
+    build".  Assuming you are in the "sequencer64" directory:
 
         $ cd ..
-        $ mkdir shadow_build
-        $ cd shadow_build
-        $ qmake -recursive ../sequencer64
+        $ mkdir debug-build
+        $ cd debug-build
+        $ qmake -makefile -recursive "CONFIG += debug" ../sequencer64/qplseq64.pro
         $ make
-          . . .
+        $ sudo make install (does not work yet!)
+        $ gdb ./Seq64qt/qplseq64 (for debugging)
 
-    Our secondary aim is to get a nice static build.
+    One can also use "CONFIG += release", or just leave that off entirely.
+
+    Our aim is to get a nice static build that works under Linux or Windows.
+    Currently, we have tried only using the "mingw" tools in Windows, not the
+    "msvc" (Microsoft) tools.  For debugging, gdb can be used, but QtCreator
+    is an easier debugging interface.
 
 CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 

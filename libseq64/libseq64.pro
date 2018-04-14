@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-04-12
+# \update      2018-04-14
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -19,18 +19,7 @@
 message($$_PRO_FILE_PWD_)
 
 TEMPLATE = lib
-CONFIG += staticlib config_prl
-
-## CONFIG(release, debug|release) {
-##    LIBOUTDIR = release
-## } else:CONFIG(debug, debug|release) {
-##    LIBOUTDIR = debug
-## } else {
-##    LIBOUTDIR = .
-## }
-
-# TARGET = $$LIBOUTDIR/seq64
-
+CONFIG += staticlib config_prl qtc_runnable
 TARGET = seq64
 
 # These are needed to set up platform_macros:

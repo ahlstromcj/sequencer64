@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-20
+ * \updates       2018-04-13
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -77,6 +77,12 @@ namespace seq64
  */
 
 event_list sequence::m_events_clipboard;
+
+/**
+ *  Provides the default name/title for the sequence.
+ */
+
+const std::string sequence::sm_default_name = "Untitled";
 
 /**
  *  Principal constructor.
@@ -4885,7 +4891,11 @@ sequence::set_input_thru (bool thru_active, bool toggle)
 void
 sequence::set_name (const std::string & name)
 {
-    m_name = name;                                      /* legacy behavior  */
+    if (name.empty())
+        m_name = sm_default_name;
+    else
+        m_name = name;                                /* legacy behavior  */
+
     set_dirty_mp();
 }
 

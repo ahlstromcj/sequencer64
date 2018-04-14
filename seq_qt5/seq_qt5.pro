@@ -24,7 +24,7 @@ message($$_PRO_FILE_PWD_)
 
 QT += core gui widgets
 TEMPLATE = lib
-CONFIG += staticlib config_prl
+CONFIG += staticlib config_prl qtc_runnable
 
 # These are needed to set up platform_macros:
 
@@ -33,16 +33,6 @@ CONFIG(debug, debug|release) {
 } else {
    DEFINES += NDEBUG
 }
-
-## CONFIG(release, debug|release) {
-##    LIBOUTDIR = release
-## } else:CONFIG(debug, debug|release) {
-##    LIBOUTDIR = debug
-## } else {
-##    LIBOUTDIR = .
-## }
-
-## TARGET = $$LIBOUTDIR/seq_qt5
 
 TARGET = seq_qt5
 
@@ -54,7 +44,7 @@ TARGET = seq_qt5
 #
 # Intermediate moc files directory:
 # MOC_DIR = moc
-
+#
 # Not UIC_DIR :-D
 
 UI_DIR = forms

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-03-31
+ * \updates       2018-04-13
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1811,7 +1811,7 @@ perform::set_active (int seq, bool active)
         {
             m_seqs[seq]->number(seq);
             if (m_seqs[seq]->name().empty())
-                m_seqs[seq]->set_name(std::string("Untitled"));
+                m_seqs[seq]->set_name();
         }
     }
 }

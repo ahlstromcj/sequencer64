@@ -23,7 +23,7 @@ message($$_PRO_FILE_PWD_)
 QT += core gui widgets
 TARGET = qplseq64
 TEMPLATE += app
-CONFIG += static
+CONFIG += static qtc_runnable
 
 # These are needed to set up platform_macros:
 

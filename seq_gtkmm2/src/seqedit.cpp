@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-13
+ * \updates       2018-04-13
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -646,7 +646,7 @@ seqedit::seqedit
     set_rec_vol(usr().velocity_override());
 
 #ifdef USE_STAZED_EXTRAS
-    if (m_seq.name() != std::string("Untitled"))
+    if (! m_seq.is_default_name())
     {
         m_seqroll_wid->set_can_focus();
         m_seqroll_wid->grab_focus();
@@ -1308,7 +1308,7 @@ seqedit::fill_top_bar ()
      * Esc by default) can be used immediately to control playback.
      */
 
-    if (m_seq.name() != std::string("Untitled"))
+    if (! m_seq.is_default_name())
     {
         m_entry_name->set_position(-1);                 /* unselect text    */
         m_seqroll_wid->set_can_focus();

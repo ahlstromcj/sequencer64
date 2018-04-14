@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-03-20
+ * \updates       2018-04-13
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -478,6 +478,12 @@ private:
     std::string m_name;
 
     /**
+     *  Provides the default name/title for the sequence.
+     */
+
+    static const std::string sm_default_name;
+
+    /**
      *  These members manage where we are in the playing of this sequence,
      *  including triggering.
      */
@@ -900,7 +906,7 @@ public:
     void pop_trigger_undo ();
     void pop_trigger_redo ();
 
-    void set_name (const std::string & name);
+    void set_name (const std::string & name = "");
 
     /*
      * Amazingly, the functions set_measures() and get_measures() have had no
@@ -1072,6 +1078,24 @@ public:
     const std::string & name () const
     {
         return m_name;
+    }
+
+    /**
+     *  Tests the name for being changed.
+     */
+
+    bool is_default_name () const
+    {
+        return m_name == sm_default_name;
+    }
+
+    /**
+     * \getter sm_default_name
+     */
+
+    static const std::string & default_name ()
+    {
+        return sm_default_name;
     }
 
     /**

@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-12
+ * \updates     2018-04-13
  * \license     GNU GPLv2 or above
  */
 
@@ -1698,10 +1698,10 @@ winmm_write_byte
         m->hdr = hdr = get_free_output_buffer(midi);
         assert(hdr);
         midi->fill_base = (midibyte_t *) m->hdr->lpData;
-        midi->fill_offset_ptr = &(hdr->dwBytesRecorded);
+        midi->fill_offset_ptr = (uint32_t *)(&(hdr->dwBytesRecorded));
 
         /*
-         * when buffer fills, Pm_WriteSysEx will revert to calling
+         * When buffer fills, Pm_WriteSysEx will revert to calling
          * pmwin_write_byte, which expect to have space, so leave one byte free
          * for pmwin_write_byte. Leave another byte of space for zero after
          * message to make early version of MIDI YOKE driver happy -- therefore

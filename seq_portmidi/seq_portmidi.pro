@@ -23,7 +23,7 @@
 message($$_PRO_FILE_PWD_)
 
 TEMPLATE = lib
-CONFIG += staticlib config_prl
+CONFIG += staticlib config_prl qtc_runnable
 
 # These are needed to set up platform_macros:
 
@@ -32,16 +32,6 @@ CONFIG(debug, debug|release) {
 } else {
    DEFINES += NDEBUG
 }
-
-## CONFIG(release, debug|release) {
-##    LIBOUTDIR = release
-## } else:CONFIG(debug, debug|release) {
-##    LIBOUTDIR = debug
-## } else {
-##    LIBOUTDIR = .
-## }
-
-## TARGET = $$LIBOUTDIR/seq_portmidi
 
 TARGET = seq_portmidi
 

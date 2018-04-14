@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-03-30
+ * \updates       2018-04-13
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -63,11 +63,11 @@
  */
 
 #ifdef PLATFORM_WINDOWS
-#define HOME "HOMEPATH"
-#define SLASH "\\"
+#define HOME    "LOCALAPPDATA"          // "HOMEPATH"
+#define SLASH   "\\"
 #else
-#define HOME "HOME"
-#define SLASH "/"
+#define HOME    "HOME"
+#define SLASH   "/"
 #endif
 
 /*
@@ -275,8 +275,8 @@ rc_settings::set_defaults ()
     m_filename.clear();
     m_jack_session_uuid.clear();
 #if defined PLATFORM_WINDOWS            /* but see home_config_directory()  */
-    m_last_used_dir             = "C:\\Users\\$USER";
-    m_config_directory          = "C:\\Users\\$USER";
+    m_last_used_dir             = "";
+    m_config_directory          = "sequencer64";
 #else
     m_last_used_dir             = "~/";
     m_config_directory          = ".config/sequencer64";
@@ -308,7 +308,16 @@ rc_settings::set_defaults ()
  *  "sequencer64.rc".
  *
  *  This function should also adapt to Windows conventions automatically.
- *  We shall see.
+ *  We shall see.  No, it does not.  But all we have to do is replace
+ *  Window's HOMEPATH with its LOCALAPPDATA value.
+ *
+ * getenv(HOME):
+ *
+ *      -   Linux returns "/home/ahlstrom".  Append "/.config/sequencer64".
+ *      -   Windows returns "\Users\ahlstrom".  A better value than HOMEPATH
+ *          is LOCALAPPDATA, which gives us most of what we want:
+ *          "C:\Users\ahlstrom\AppData\local", and then we append simply
+ *          "sequencer64".
  *
  * \return
  *      Returns the selected home configuration directory.  If it does not
@@ -319,7 +328,7 @@ std::string
 rc_settings::home_config_directory () const
 {
     std::string result;
-    char * env = getenv(HOME);
+    char * env = getenv(HOME);                      /* see banner notes     */
     if (env != NULL)
     {
         std::string home(env);                      // getenv(HOME);
@@ -327,7 +336,9 @@ rc_settings::home_config_directory () const
         if (! rc().legacy_format())
         {
             result += config_directory();           /* new, longer directory */
+#ifdef PLATFORM_UNIX
             result += SLASH;
+#endif
             bool ok = make_directory(result);
             if (! ok)
             {

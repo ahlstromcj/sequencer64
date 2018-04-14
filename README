@@ -1,6 +1,6 @@
 README for Sequencer64 0.94.8 (Native JACK, CLI, multiple sets, varisets, tempo)
 Chris Ahlstrom
-2015-09-10 to 2018-04-03
+2015-09-10 to 2018-04-14
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
 The heart of seq24 remains intact.  It is an old friend, and maintains some
@@ -34,7 +34,9 @@ conventional source tarball.
 Recent changes:
 
     -   Version 0.94.8:
-        -   Fixing an issue with configure.ac.
+        -   Fixed issues with configure.ac.
+        -   Added Qt "pro" files to support qmake and Qt Creator to make
+            a PortMidi build for Linux/Windows.
     -   Version 0.94.7:
         -   Keystroke-handling cleanup in preparation for a Qt build.
             Qt keystroke combinations now mapped to Gtkmm values. Tricky.

@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-04-07
+dnl \update        2018-04-14
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -797,7 +797,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-04-07"
+#define VERSION_DATE_SHORT "2018-04-14"
 #define VERSION "0.94.8"
 
 )
@@ -905,7 +905,6 @@ AH_BOTTOM(
 dnl Set up the Makefiles.  First, add Doxygen support conditionally, not using
 dnl doc/dox/Makefile.  Then do the rest.
 dnl
-dnl ca 2016-05-07
 dnl We decided to build the Doxygen documentation only manually, and have
 dnl removed the doc directory from the Makefile.am, and commented out the
 dnl following check.

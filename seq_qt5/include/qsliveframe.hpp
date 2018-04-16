@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-24
+ * \updates       2018-04-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -104,6 +104,7 @@ private:
 
 private:
 
+    void calculate_base_sizes (int seq, int & basex, int & basey);
     void drawSequence (int seq);
     void drawAllSequences ();
 
@@ -120,12 +121,10 @@ private:
     seq64::perform & mPerf;
     seq64::sequence m_moving_seq;
     seq64::sequence m_seq_clipboard;
-
     QMenu * mPopup;
     QTimer * mRedrawTimer;
     QMessageBox * mMsgBoxNewSeqCheck;
     QFont mFont;
-
     int m_bank_id;                  // same as the screen-set number
     int thumbW;
     int thumbH;                     // thumbnail dimensions
@@ -133,8 +132,7 @@ private:
     int previewH;                   // internal seq MIDI preview dimensions
     int lastMetro;                  // beat pulsing
     int alpha;
-
-    int m_curr_seq;                // mouse interaction
+    int m_curr_seq;                 // mouse interaction
     int mOldSeq;
     bool mButtonDown;
     bool mMoving;                   // are we moving bewteen slots

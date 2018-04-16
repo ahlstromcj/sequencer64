@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-11
+ * \updates     2018-04-15
  * \license     GNU GPLv2 or above
  */
 
@@ -37,7 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "platform_macros.h"        /* seq64 library UNUSED() macro */
+#include "easy_macros.h"
 #include "portmidi.h"
 #include "porttime.h"
 #include "pmutil.h"
@@ -1043,7 +1043,10 @@ Pm_OpenInput
     PmInternal * midi;
     PmError err = pmNoError;
     pm_hosterror = FALSE;
-    *stream = NULL;
+    if (not_nullptr(stream))
+        *stream = NULL;
+    else
+        err = pmBadPtr;
 
     if (inputDevice < 0 || inputDevice >= pm_descriptor_index)
         err = pmInvalidDeviceId;
@@ -1070,7 +1073,7 @@ Pm_OpenInput
     midi->time_info = time_info;
 
     /*
-     * windows adds timestamps in the driver and these are more accurate than
+     * Windows adds timestamps in the driver, and these are more accurate than
      * using a time_proc, so do not automatically provide a time proc. Non-win
      * implementations may want to provide a default time_proc in their
      * system-specific midi_out_open() method.
@@ -1127,9 +1130,9 @@ Pm_OpenInput
 error_return:
 
     /*
-     * note: if there is a pmHostError, it is the responsibility of the
+     * Note: If there is a pmHostError, it is the responsibility of the
      * system-dependent code (*midi->dictionary->open)() to set pm_hosterror
-     * and pm_hosterror_text
+     * and pm_hosterror_text.
      */
 
     return pm_errmsg(err);
@@ -1154,7 +1157,12 @@ Pm_OpenOutput
     PmInternal * midi;
     PmError err = pmNoError;
     pm_hosterror = FALSE;
-    *stream =  NULL;
+
+    if (not_nullptr(stream))
+        *stream = NULL;
+    else
+        err = pmBadPtr;
+
     if (outputDevice < 0 || outputDevice >= pm_descriptor_index)
         err = pmInvalidDeviceId;
     else if (! descriptors[outputDevice].pub.output)
@@ -1178,7 +1186,7 @@ Pm_OpenOutput
     midi->time_proc = time_proc;
 
     /*
-     * if latency > 0, we need a time reference. If none is provided,
+     * If latency > 0, we need a time reference. If none is provided,
      * use PortTime library.
      */
 
@@ -1193,11 +1201,11 @@ Pm_OpenOutput
     }
     midi->time_info = time_info;
     midi->buffer_len = bufferSize;
-    midi->queue = NULL;                         /* unused by output */
+    midi->queue = NULL;                             /* unused by output     */
 
     /*
-     * if latency zero, output immediate (timestamps ignored).
-     * if latency < 0, use 0 but don't return an error.
+     * If latency zero, output immediate (timestamps ignored).  if latency <
+     * 0, use 0, but don't return an error.
      */
 
     if (latency < 0)
@@ -1205,9 +1213,9 @@ Pm_OpenOutput
 
     midi->latency = latency;
     midi->sysex_in_progress = FALSE;
-    midi->sysex_message = 0;                    /* unused by output */
-    midi->sysex_message_count = 0;              /* unused by output */
-    midi->filters = 0;                          /* not used for output */
+    midi->sysex_message = 0;                        /* unused by output     */
+    midi->sysex_message_count = 0;                  /* unused by output     */
+    midi->filters = 0;                              /* not used for output  */
     midi->channel_mask = 0xFFFF;
     midi->sync_time = 0;
     midi->first_message = TRUE;
@@ -1224,23 +1232,16 @@ Pm_OpenOutput
     {
         *stream = NULL;
         descriptors[outputDevice].internalDescriptor = NULL;
-
-        /* free portMidi data */
-
-        pm_free(midi);
+        pm_free(midi);                          /* free portMidi data */
     }
     else
-    {
-        /* portMidi input open successful */
-
-        descriptors[outputDevice].pub.opened = TRUE;
-    }
+        descriptors[outputDevice].pub.opened = TRUE; /* input-open success */
 
 error_return:
 
     /*
-     * note: system-dependent code must set pm_hosterror and
-     * pm_hosterror_text if a pmHostError occurs
+     * Note: system-dependent code must set pm_hosterror and pm_hosterror_text
+     * if a pmHostError occurs.
      */
 
     return pm_errmsg(err);

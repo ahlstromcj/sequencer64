@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-04-14
+ * \updates       2018-04-15
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -186,8 +186,10 @@ main (int argc, char * argv [])
                     printf("? MIDI file not found: %s\n", midifilename.c_str());
             }
 
+#ifdef PLATFORM_LINUX
             if (seq64::rc().lash_support())
                 seq64::create_lash_driver(p, argc, argv);
+#endif
 
             exit_status = a.exec();                 /* run main window loop */
             p.finish();                             /* tear down performer  */
@@ -199,7 +201,9 @@ main (int argc, char * argv [])
             else
                 printf("[auto-option-save off, not saving config files]\n");
 
+#ifdef PLATFORM_LINUX
             seq64::delete_lash_driver();            /* deleted only exists  */
+#endif
         }
         else
         {

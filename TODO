@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-03-03
+2016-12-03 to 2018-04-15
 
 Debian (and other) Packaging:
 
@@ -17,14 +17,20 @@ Build Issues:
     -   In the Makefiles, "-I..", "-I../include", and "-I../../include" appear
         more than once on command lines.
 
+qplseq64:
+
+    -   Update the Help / About properly.
+    -   Show "Input buss name" when writing the "rc" file, the same as
+        "Output buss name: " is shown.
+
 Windows (for the Future):
 
-    -   Implement api_sysex() in PortMIDI
-    -   Implement api_flush() in PortMIDI
-    -   Master MingW.
-    -   Add Windows implementation and build files.
+    -   Implement api_sysex() for PortMIDI.
+    -   Implement api_flush() for PortMIDI.
     -   Add NSIS installer creation.
-    -   Get basic Qt 5 support working.
+    -   Get basic Qt 5 support working.  We have the code building and
+        running in Windows via Qt Creator or qmake, using the MingW
+        facilities.  Still working on it.
 
 Tempo Track:
 

@@ -125,9 +125,9 @@ private:
     const int m_seqarea_seq_y;  /**< To be determined.                          */
     const int m_mainwid_x;      /**< Horizontal size of the main window grid.   */
     const int m_mainwid_y;      /**< Vertical size of the main window grid.     */
-    const int m_mainwid_border_x;   /**< Border offset fudge factor, x. */
-    const int m_mainwid_border_y;   /**< Border offset fudge factor, y. */
-    const int m_mainwid_spacing;    /**< Spacing, unused setting.       */
+    const int m_mainwid_border_x;   /**< Border offset fudge factor, x.         */
+    const int m_mainwid_border_y;   /**< Border offset fudge factor, y.         */
+    const int m_mainwid_spacing;    /**< Spacing, untested setting.             */
     const int m_text_size_x;    /**< Text width, varies with font in use.       */
     const int m_text_size_y;    /**< Text height, varies with font in use.      */
     const int m_max_sets;       /**< Maximum number of sets, used all over.     */

@@ -2849,9 +2849,6 @@ mainwnd::clear_mute_groups ()
  *  This function is actually a callback for the pause/play button.
  *  Now very similar to perfedit::start_playing(), except that the implicit
  *  songmode == false parameter is used here.
- *
- *  We still need to see if pause_key() is workable with Stazed JACK support
- *  in force.  Doesn't pause at present.
  */
 
 void

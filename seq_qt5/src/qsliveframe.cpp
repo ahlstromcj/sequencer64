@@ -207,11 +207,6 @@ qsliveframe::drawSequence (int seq)
             seq < ((m_bank_id + 1) * qc_mainwnd_rows * qc_mainwnd_cols)
         )
         {
-//          int i = (seq / qc_mainwnd_rows) % qc_mainwnd_cols;
-//          int j =  seq % qc_mainwnd_rows;
-//          int base_x = (ui->frame->x() + 1 + (thumbW + qc_mainwid_spacing) * i);
-//          int base_y = (ui->frame->y() + 1 + (thumbH + qc_mainwid_spacing) * j);
-
             int base_x, base_y;
             calculate_base_sizes(seq, base_x, base_y);    /* side-effects    */
             sequence * s = mPerf.get_sequence(seq);
@@ -300,7 +295,6 @@ qsliveframe::drawSequence (int seq)
 
                 int rectangle_x = base_x + 7;
                 int rectangle_y = base_y + 15;
-
                 pen.setColor(Qt::gray);             // pen.setColor(Qt::black);
                 brush.setStyle(Qt::NoBrush);
                 painter.setBrush(brush);
@@ -323,11 +317,21 @@ qsliveframe::drawSequence (int seq)
                     bool selected;
                     int velocity;
                     draw_type_t dt;
-                    s->reset_draw_marker();
+                    Color drawcolor = fg_color();
+                    Color eventcolor = fg_color();
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+                    if (! s->get_transposable())
+                    {
+                        eventcolor = red();
+                        drawcolor = red();
+                    }
+#endif
                     previewH -= 6;          // add padding to box measurements
                     previewW -= 6;
                     rectangle_x += 2;
                     rectangle_y += 2;
+                    s->reset_draw_marker();     /* reset container iterator */
                     while
                     (
                         (
@@ -338,11 +342,9 @@ qsliveframe::drawSequence (int seq)
                         ) != DRAW_FIN
                     )
                     {
-                        int note_y = previewH -
-                             (previewH * (note + 1 - lowest_note)) / height ;
-
                         int tick_s_x = (tick_s * previewW) / length;
                         int tick_f_x = (tick_f * previewH) / length;
+                        int note_y;
                         if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
                             tick_f_x = tick_s_x + 1;
 
@@ -351,26 +353,42 @@ qsliveframe::drawSequence (int seq)
 
                         if (dt == DRAW_TEMPO)
                         {
+                            /*
+                             * Do not scale by the note range here.
+                             */
+
                             pen.setWidth(2);
-                            pen.setColor(tempo_paint());
+                            // pen.setColor(tempo_paint());
+                            drawcolor = tempo_paint();
                             note_y = thumbW -
                                  thumbH * (note + 1) / SEQ64_MAX_DATA_VALUE;
                         }
                         else
                         {
                             pen.setWidth(1);            // 2 is too thick
-                            pen.setColor(Qt::black);    // draw line for note
+                            // pen.setColor(Qt::black); // draw line for note
+                            // pen.setColor(drawcolor); // draw line for note
+                            note_y = previewH -
+                                 (previewH * (note+1-lowest_note)) / height;
                         }
+
+                        int sx = rectangle_x + tick_s_x;        /* start x  */
+                        int fx = rectangle_x + tick_f_x;        /* finish x */
+                        int sy = rectangle_y + note_y;          /* start y  */
+                        int fy = sy;                            /* finish y */
+                        pen.setColor(drawcolor);    /* draw line for note   */
                         painter.setPen(pen);
-                        painter.drawLine
-                        (
-                            rectangle_x + tick_s_x, rectangle_y + note_y,
-                            rectangle_x + tick_f_x, rectangle_y + note_y
-                        );
+                        painter.drawLine(sx, sy, fx, fy);
+//                      (
+//                          rectangle_x + tick_s_x, rectangle_y + note_y,
+//                          rectangle_x + tick_f_x, rectangle_y + note_y
+//                      );
                         if (dt == DRAW_TEMPO)
                         {
                             pen.setWidth(1);            // 2 is too thick
-                            pen.setColor(Qt::black);    // eventcolor
+                            // pen.setColor(Qt::black);    // eventcolor
+                            // pen.setColor(eventcolor);
+                            drawcolor = eventcolor;
                         }
                     }
 
@@ -489,13 +507,13 @@ qsliveframe::setBank (int bank)
 
 /**
  *
- */
 
 void
 qsliveframe::redraw ()
 {
     drawAllSequences();
 }
+ */
 
 /**
  *

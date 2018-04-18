@@ -6,7 +6,7 @@
 # \library    	seq64qt5 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-04-12
+# \update      2018-04-18
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -79,10 +79,14 @@ DEPENDPATH += \
  $$PWD/../seq_portmidi \
  $$PWD/../seq_qt5
 
-## PRE_TARGETDEPS += \
-##  $$OUT_PWD/../libseq64/libseq64.a \ 
-##  $$OUT_PWD/../seq_portmidi/libseq_portmidi.a \ 
-##  $$OUT_PWD/../seq_qt5/libseq_qt5.a
+# Works in Linux with "CONFIG += debug".
+
+unix {
+ PRE_TARGETDEPS += \
+  $$OUT_PWD/../libseq64/libseq64.a \ 
+  $$OUT_PWD/../seq_portmidi/libseq_portmidi.a \ 
+  $$OUT_PWD/../seq_qt5/libseq_qt5.a
+}
 
 # May consider adding:  /usr/include/lash-1.0 and -llash
 

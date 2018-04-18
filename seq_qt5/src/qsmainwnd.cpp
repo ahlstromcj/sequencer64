@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-08
+ * \updates       2018-04-17
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -94,8 +94,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_main_perf         (p),
     m_beat_ind          (nullptr),
     m_dialog_prefs      (nullptr),
-    mDialogAbout        (nullptr) //,
-//  m_modified          (false)
+    mDialogAbout        (nullptr)
 {
     ui->setupUi(this);
 
@@ -139,26 +138,36 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     );
 
     m_dialog_prefs = new qseditoptions(m_main_perf, this);
-    m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
     m_song_frame = new qperfeditframe(m_main_perf, ui->SongTab);
-    m_edit_frame = nullptr;                // set so we know the edit tab is empty
+    m_edit_frame = nullptr;                 // set so we know edit tab is empty
     m_beat_ind = new qsmaintime(m_main_perf, this, 4, 4);
     mDialogAbout = new qsabout(this);
 
-    ui->lay_bpm->addWidget(m_beat_ind);
-    ui->LiveTabLayout->addWidget(m_live_frame);
-    ui->SongTabLayout->addWidget(m_song_frame);
-    ui->cmb_beat_length->setCurrentText     // pull defaults from song frame
-    (
-        QString::number(m_song_frame->get_beat_width())
-    );
-    ui->cmb_beat_measure->setCurrentText
-    (
-        QString::number(m_song_frame->get_beats_per_measure())
-    );
-    m_beat_ind->set_beat_width(m_song_frame->get_beat_width());
-    m_beat_ind->set_beats_per_measure(m_song_frame->get_beats_per_measure());
-    m_live_frame->setFocus();
+    if (not_nullptr(m_song_frame))
+    {
+        ui->SongTabLayout->addWidget(m_song_frame);
+        ui->cmb_beat_length->setCurrentText // pull defaults from song frame
+        (
+            QString::number(m_song_frame->get_beat_width())
+        );
+        ui->cmb_beat_measure->setCurrentText
+        (
+            QString::number(m_song_frame->get_beats_per_measure())
+        );
+        if (not_nullptr(m_beat_ind))
+        {
+            ui->lay_bpm->addWidget(m_beat_ind);
+            m_beat_ind->set_beat_width(m_song_frame->get_beat_width());
+            m_beat_ind->set_beats_per_measure(m_song_frame->get_beats_per_measure());
+        }
+    }
+
+    m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
+    if (not_nullptr(m_live_frame))
+    {
+        ui->LiveTabLayout->addWidget(m_live_frame);
+        m_live_frame->setFocus();
+    }
 
     m_timer = new QTimer(this); // refresh GUI elements every few ms
     m_timer->setInterval(50);
@@ -185,11 +194,14 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     );
     connect(ui->actionQuit, SIGNAL(triggered(bool)), this, SLOT(quit()));
     connect(ui->actionAbout, SIGNAL(triggered(bool)), this, SLOT(showqsabout()));
-    connect
-    (
-        ui->actionPreferences, SIGNAL(triggered(bool)),
-        m_dialog_prefs, SLOT(show())
-    );
+    if (not_nullptr(m_dialog_prefs))
+    {
+        connect
+        (
+            ui->actionPreferences, SIGNAL(triggered(bool)),
+            m_dialog_prefs, SLOT(show())
+        );
+    }
 
     // Play
 
@@ -246,7 +258,13 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
 
     // connect to the seq edit signal from the live tab
 
-    connect(m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int)));
+    if (not_nullptr(m_live_frame))
+    {
+        connect
+        (
+            m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int))
+        );
+    }
 
     // Panic
 
@@ -277,15 +295,17 @@ qsmainwnd::~qsmainwnd()
 }
 
 /**
- *
+ *  Implements the play button, which is also a pause button in Sequencer64,
+ *  though we do not yet change the pixmap.
  */
 
 void
 qsmainwnd::startPlaying()
 {
-    perf().start(false);                // false = live, need song support too
-    perf().start_jack();
-    perf().is_pattern_playing(true);
+//  perf().start(false);                // false = live, need song support too
+//  perf().start_jack();
+//  perf().is_pattern_playing(true);
+    perf().pause_key();                             /* not start_key()      */
 }
 
 /**
@@ -295,8 +315,9 @@ qsmainwnd::startPlaying()
 void
 qsmainwnd::stopPlaying()
 {
-    perf().stop_jack();
-    perf().stop();
+//  perf().stop_jack();
+//  perf().stop();
+    perf().stop_key();                          /* make sure it's seq32able */
     ui->btnPlay->setChecked(false);
 }
 
@@ -338,7 +359,6 @@ void
 qsmainwnd::updateBpm (int newBpm)
 {
     perf().set_beats_per_minute(newBpm);
-//  m_modified = true;
 }
 
 /**
@@ -391,16 +411,28 @@ qsmainwnd::open_file (const std::string & fn)
             delete m_live_frame;
 
         m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
-        ui->LiveTabLayout->addWidget(m_live_frame);
-        connect
-        (
-            m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int))
-        );
-        m_live_frame->show();
-        m_live_frame->setFocus();
-        m_live_frame->redraw();
+        if (not_nullptr(m_live_frame))
+        {
+            ui->LiveTabLayout->addWidget(m_live_frame);
+            connect
+            (
+                m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int))
+            );
+            m_live_frame->show();
+            m_live_frame->setFocus();
+
+            /*
+             * This is not necessary.  And it causes copies painter errors
+             * since it bypasses paintEvent().  If we do need to redraw, call
+             * m_live_frame->repaint() instead.
+             *
+             *  m_live_frame->redraw();
+             */
+        }
         ui->spinBpm->setValue(perf().bpm());
-        m_song_frame->update_sizes();
+        if (not_nullptr(m_song_frame))
+            m_song_frame->update_sizes();
+
         update_recent_files_menu();
         update_window_title();
     }
@@ -446,7 +478,8 @@ qsmainwnd::update_window_title ()
 void
 qsmainwnd::refresh ()
 {
-    m_beat_ind->update();
+    if (not_nullptr(m_beat_ind))
+        m_beat_ind->update();
 }
 
 /**
@@ -457,7 +490,6 @@ bool
 qsmainwnd::check ()
 {
     bool result = false;
-//  if (m_modified)
     if (perf().is_modified())
     {
         int choice = m_msg_save_changes->exec();
@@ -497,7 +529,6 @@ qsmainwnd::new_file()
         // m_entry_notes->set_text(perf().current_screenset_notepad());
         rc().filename("");
         update_window_title();
-//      m_modified = false;
     }
 }
 
@@ -538,7 +569,6 @@ bool qsmainwnd::save_file()
      * The Gtkmm version does not do this.
      */
 
-//  m_modified = ! result;
     return result;
 }
 
@@ -590,10 +620,9 @@ qsmainwnd::showImportDialog()
             {
                 midifile f(path.toStdString());
                 f.parse(m_main_perf, perf().screenset());
-//              m_modified = true;
                 ui->spinBpm->setValue(perf().bpm());
-                m_live_frame->setBank(perf().screenset());
-
+                if (not_nullptr(m_live_frame))
+                    m_live_frame->setBank(perf().screenset());
             }
             catch (...)
             {
@@ -612,7 +641,8 @@ qsmainwnd::showImportDialog()
 void
 qsmainwnd::showqsabout()
 {
-    mDialogAbout->show();
+    if (not_nullptr(mDialogAbout))
+        mDialogAbout->show();
 }
 
 /**
@@ -622,15 +652,19 @@ qsmainwnd::showqsabout()
 void
 qsmainwnd::loadEditor(int seqId)
 {
-    ui->EditTabLayout->removeWidget(m_edit_frame);
     if (not_nullptr(m_edit_frame))
+    {
+        ui->EditTabLayout->removeWidget(m_edit_frame);
         delete  m_edit_frame;
+    }
 
-    m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
-    ui->EditTabLayout->addWidget(m_edit_frame);
-    m_edit_frame->show();
-    ui->tabWidget->setCurrentIndex(2);
-//  m_modified = true;
+ // m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
+    if (not_nullptr(m_edit_frame))
+    {
+        ui->EditTabLayout->addWidget(m_edit_frame);
+        m_edit_frame->show();
+        ui->tabWidget->setCurrentIndex(2);
+    }
 }
 
 /**
@@ -668,8 +702,11 @@ qsmainwnd::updateBeatLength (int blIndex)
         break;
     }
 
-    m_song_frame->set_beat_width(bl);
-    m_beat_ind->set_beat_width(bl);
+    if (not_nullptr(m_song_frame))
+        m_song_frame->set_beat_width(bl);
+
+    if (not_nullptr(m_beat_ind))
+        m_beat_ind->set_beat_width(bl);
 
     for (int i = 0; i < c_max_sequence; i++) // set beat length, all sequences
     {
@@ -683,9 +720,8 @@ qsmainwnd::updateBeatLength (int blIndex)
             seq->set_num_measures(seq->get_num_measures());
         }
     }
-//  m_modified = true;
 
-    if (m_edit_frame)
+    if (not_nullptr(m_edit_frame))
         m_edit_frame->updateDrawGeometry();
 }
 
@@ -699,8 +735,11 @@ void
 qsmainwnd::updatebeats_per_measure(int bmIndex)
 {
     int bm = bmIndex + 1;
-    m_song_frame->set_beats_per_measure(bm);
-    m_beat_ind->set_beats_per_measure(bm);
+    if (not_nullptr(m_song_frame))
+        m_song_frame->set_beats_per_measure(bm);
+
+    if (not_nullptr(m_beat_ind))
+        m_beat_ind->set_beats_per_measure(bm);
 
     for (int i = 0; i < c_max_sequence; i++)
     {
@@ -712,8 +751,7 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
 
         }
     }
-//  m_modified = true;
-    if (m_edit_frame)
+    if (not_nullptr(m_edit_frame))
         m_edit_frame->updateDrawGeometry();
 }
 
@@ -728,7 +766,7 @@ qsmainwnd::tabWidgetClicked (int newIndex)
      * If we've selected the edit tab, make sure it has something to edit
      */
 
-    if (newIndex == 2 && ! m_edit_frame)
+    if (newIndex == 2 && is_nullptr(m_edit_frame))
     {
         int seqId = -1;
         for (int i = 0; i < c_max_sequence; ++i)
@@ -752,9 +790,12 @@ qsmainwnd::tabWidgetClicked (int newIndex)
          * When does this get deleted?
          */
 
-        m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
-        ui->EditTabLayout->addWidget(m_edit_frame);
-        m_edit_frame->show();
+  //    m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
+        if (not_nullptr(m_edit_frame))
+        {
+            ui->EditTabLayout->addWidget(m_edit_frame);
+            m_edit_frame->show();
+        }
         update();
     }
 }

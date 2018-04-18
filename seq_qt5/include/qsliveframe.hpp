@@ -68,7 +68,9 @@ public:
     explicit qsliveframe (perform & perf, QWidget * parent = 0 );
     ~qsliveframe ();
 
+/*
     void redraw ();              // redraw frame contents
+    */
     void setBank (int newBank);  // set bank (screen-set) of sequences displayed
     void setBank ();             // bank number retrieved from perform
 
@@ -76,14 +78,14 @@ protected:
 
     // override painting event to draw on the frame
 
-    void paintEvent (QPaintEvent *event);
+    void paintEvent (QPaintEvent * event);
 
     // override mouse events for interaction
 
     void mousePressEvent (QMouseEvent * event);
     void mouseReleaseEvent (QMouseEvent * event);
     void mouseMoveEvent (QMouseEvent * event);
-    void mouseDoubleClickEvent (QMouseEvent *);
+    void mouseDoubleClickEvent (QMouseEvent * event);
 
     // override keyboard events for interaction
 
@@ -115,7 +117,7 @@ private:
 
     // converts the XY coordinates of a click into a seq ID
 
-    int seqIDFromClickXY(int click_x, int click_y);
+    int seqIDFromClickXY (int click_x, int click_y);
 
     Ui::qsliveframe * ui;
     seq64::perform & mPerf;

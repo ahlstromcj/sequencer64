@@ -6,7 +6,7 @@
  *
  * \author  Chris Ahlstrom
  * \date    2015-11-20
- * \updates 2018-04-10
+ * \updates 2018-04-18
  * \version $Revision$
  *
  *    We basically include only the functions we need for Sequencer64, not
@@ -14,7 +14,7 @@
  *    project.
  */
 
-#include <stdlib.h>                     /* realpath() or _fullpath()        */
+#include <stdlib.h>                     /* realpath(3) or _fullpath()       */
 #include <string.h>                     /* strlen() etc.                    */
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -337,30 +337,36 @@ get_current_directory ()
 /**
  *  Given a path, relative or not, this function returns the full path.
  *  It uses the Linux function realpath(3), which returns the canonicalized
- *  absolute path-name.
+ *  absolute path-name.  For Windows, the function _fullpath() is used.
  *
  * \param path
  *      Provides the path, which may be relative.
+ *
+ * \return
+ *      Returns the full path.  If a problem occurs, the result is empty.
  */
 
 std::string
 get_full_path (const std::string & path)
 {
     std::string result;
+    if (! path.empty())
+    {
 #if defined PLATFORM_WINDOWS
-    char temp[256];
-    char * resolved_path = _fullpath(temp, path.c_str(), 256);
+        char temp[256];
+        char * resolved_path = _fullpath(temp, path.c_str(), 256);
 #else
-    char * resolved_path = realpath(path.c_str(), NULL);
+        char * resolved_path = realpath(path.c_str(), NULL);
 #endif
-    if (not_NULL(resolved_path))
-    {
-        result = resolved_path;
-        free(resolved_path);
-    }
-    else
-    {
-        // TODO: check the errno value and emit a message.
+        if (not_NULL(resolved_path))
+        {
+            result = resolved_path;
+            free(resolved_path);
+        }
+        else
+        {
+            // TODO: check the errno value and emit a message.
+        }
     }
     return result;
 }

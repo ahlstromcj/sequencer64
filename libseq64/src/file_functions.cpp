@@ -1,19 +1,21 @@
 /**
- * \file    file_functions.cpp
+ * \file          file_functions.cpp
  *
  *    Provides the implementations for safe replacements for the various C
  *    file functions.
  *
- * \author  Chris Ahlstrom
- * \date    2015-11-20
- * \updates 2018-04-18
- * \version $Revision$
+ * \library       sequencer64 application
+ * \author        Chris Ahlstrom
+ * \date          2015-11-20
+ * \updates       2018-04-19
+ * \version       $Revision$
  *
  *    We basically include only the functions we need for Sequencer64, not
  *    much more than that.  These functions are adapted from our xpc_basic
  *    project.
  */
 
+#include <algorithm>                    /* std::replace() function          */
 #include <stdlib.h>                     /* realpath(3) or _fullpath()       */
 #include <string.h>                     /* strlen() etc.                    */
 #include <sys/types.h>
@@ -366,6 +368,44 @@ get_full_path (const std::string & path)
         else
         {
             // TODO: check the errno value and emit a message.
+        }
+    }
+    return result;
+}
+
+/**
+ *  Makes sure that the path-name is a UNIX path, separated by forward slashes
+ *  (the solidus).
+ *
+ * \param path
+ *      Provides the path, which should be a full path-name.
+ *
+ * \param to_unix
+ *      Defaults to true, which converts "\" to "/".  False converts in the
+ *      opposite direction.
+ *
+ * \return
+ *      The possibly modified path is returned.
+ */
+
+std::string
+normalize_path (const std::string & path, bool to_unix)
+{
+    std::string result;
+    if (! path.empty())
+    {
+        result = path;
+        if (to_unix)
+        {
+            std::string::size_type pos = path.find_first_of("\\");
+            if (pos != std::string::npos)
+                std::replace(result.begin(), result.end(), '\\', '/');
+        }
+        else
+        {
+            std::string::size_type pos = path.find_first_of("/");
+            if (pos != std::string::npos)
+                std::replace(result.begin(), result.end(), '/', '\\');
         }
     }
     return result;

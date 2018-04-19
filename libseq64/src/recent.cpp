@@ -25,18 +25,18 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-03-29
- * \updates       2018-04-18
+ * \updates       2018-04-19
  * \license       GNU GPLv2 or above
  *
  *  The seq64::recent class simply keeps track of recently-used files for the
  *  "Recent Files" menu.
  */
 
-#include <algorithm>                    /* std::find()                  */
+#include <algorithm>                    /* std::find()                      */
 
-#include "app_limits.h"                 /* SEQ64_RECENT_FILES_MAX       */
-#include "file_functions.hpp"           /* seq64::get_full_path()       */
-#include "recent.hpp"                   /* recent-files container       */
+#include "app_limits.h"                 /* SEQ64_RECENT_FILES_MAX           */
+#include "file_functions.hpp"           /* seq64::get_full_path()           */
+#include "recent.hpp"                   /* recent-files container           */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -100,7 +100,8 @@ recent::~recent ()
  *
  * \param item
  *      Provides the file-name to append.  It is converted to the full path to
- *      the file before being added.
+ *      the file before being added.  Also, it is set to UNIX conventions,
+ *      using the forward slash as a path separator.
  *
  * \return
  *      Returns true if the file-name was appended.
@@ -115,7 +116,16 @@ recent::append (const std::string & item)
         std::string fullpath = get_full_path(item);
         result = ! fullpath.empty();
         if (result)
-            m_recent_list.push_back(fullpath);
+        {
+            Container::iterator it = std::find
+            (
+                m_recent_list.begin(), m_recent_list.end(), fullpath
+            );
+            if (it != m_recent_list.end())
+                (void) m_recent_list.erase(it);
+
+            m_recent_list.push_back(normalize_path(fullpath));
+        }
     }
     return result;
 }
@@ -127,7 +137,8 @@ recent::append (const std::string & item)
  *
  * \param item
  *      Provides the file-name to add.  It is converted to the full path to
- *      the file before being added.
+ *      the file before being added.  Also, it is set to UNIX conventions,
+ *      using the forward slash as a path separator.
  *
  * \return
  *      Returns true if the file-name was added.
@@ -136,7 +147,7 @@ recent::append (const std::string & item)
 bool
 recent::add (const std::string & item)
 {
-    std::string fullpath = get_full_path(item);
+    std::string fullpath = get_full_path(normalize_path(item));
     bool result = ! fullpath.empty();
     if (result)
     {
@@ -160,7 +171,13 @@ recent::add (const std::string & item)
 }
 
 /**
+ *  Removes the path from the recent-files list, if it was found in that list.
  *
+ * \param item
+ *      Provides the path to be removed.
+ *
+ * \return
+ *      Returns true if the item was found and removed.
  */
 
 bool
@@ -182,7 +199,15 @@ recent::remove (const std::string & item)
 }
 
 /**
+ *  Gets the file-path at the given position.
  *
+ * \param index
+ *      Provides the index into the container.  It is checked for validity.
+ *
+ * \return
+ *      Returns the file-path, if available.  Otherwise, an empty string is
+ *      returned.  The path is converted to the slash/backslash conventions
+ *      appropriate for the operating system on which this code was built.
  */
 
 std::string
@@ -190,8 +215,15 @@ recent::get (int index) const
 {
     std::string result;
     if (index >= 0 && index < count())
+    {
         result = m_recent_list[Container::size_type(index)];
 
+#ifdef PLATFORM_WINDOWS
+        result = normalize_path(result, false);
+#else
+        result = normalize_path(result, true);
+#endif
+    }
     return result;
 }
 

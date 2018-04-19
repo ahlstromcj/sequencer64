@@ -552,7 +552,7 @@
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
-     <string>About</string>
+     <string>Help</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>

@@ -178,13 +178,13 @@ extern pm_fns_node pm_winmm_out_dictionary;
  *  global winmm device info
  */
 
-MIDIINCAPS * midi_in_caps = nullptr;
-MIDIINCAPS midi_in_mapper_caps;
-UINT midi_num_inputs = 0;
+static MIDIINCAPS * midi_in_caps = nullptr;
+static MIDIINCAPS midi_in_mapper_caps;
+static UINT midi_num_inputs = 0;
 
-MIDIOUTCAPS * midi_out_caps = nullptr;
-MIDIOUTCAPS midi_out_mapper_caps;
-UINT midi_num_outputs = 0;
+static MIDIOUTCAPS * midi_out_caps = nullptr;
+static MIDIOUTCAPS midi_out_mapper_caps;
+static UINT midi_num_outputs = 0;
 
 /**
  *  per device info
@@ -194,9 +194,10 @@ typedef struct midiwinmm_struct
 {
     union
     {
-        HMIDISTRM stream;   /* windows handle for stream */
-        HMIDIOUT out;       /* windows handle for out calls */
-        HMIDIIN in;         /* windows handle for in calls */
+        HMIDISTRM stream;   /**< Windows handle for stream.             */
+        HMIDIOUT out;       /**< Windows handle for out calls.          */
+        HMIDIIN in;         /**< Windows handle for in calls.           */
+
     } handle;
 
     /*
@@ -204,12 +205,12 @@ typedef struct midiwinmm_struct
      * in a round-robin fashion, using next_buffer as an index
      */
 
-    LPMIDIHDR *buffers;     /* pool of buffers for midi in or out data */
-    int max_buffers;        /* length of buffers array */
-    int buffers_expanded;   /* buffers array expanded for extra msgs? */
-    int num_buffers;        /* how many buffers allocated in buffers array */
-    int next_buffer;        /* index of next buffer to send */
-    HANDLE buffer_signal;   /* used to wait for buffer to become free */
+    LPMIDIHDR * buffers;    /**< Pool of buffers for midi in or out data */
+    int max_buffers;        /**< Length of buffers array */
+    int buffers_expanded;   /**< Buffers array expanded for extra msgs? */
+    int num_buffers;        /**< How many buffers allocated in buffers array */
+    int next_buffer;        /**< Index of next buffer to send */
+    HANDLE buffer_signal;   /**< Used to wait for buffer to become free */
 
     /*
      * sysex buffers will be allocated only when
@@ -218,7 +219,7 @@ typedef struct midiwinmm_struct
 
 #ifdef USE_SYSEX_BUFFERS
     LPMIDIHDR sysex_buffers[NUM_SYSEX_BUFFERS]; /* buffer pool for sysex data */
-    int next_sysex_buffer;      /* index of next sysexbuffer to send */
+    int next_sysex_buffer;      /**< index of next sysexbuffer to send */
 #endif
 
     unsigned long last_time;    /* last output time */
@@ -228,8 +229,7 @@ typedef struct midiwinmm_struct
     unsigned sysex_byte_count;  /* count how many received */
     LPMIDIHDR hdr;              /* the message accumulating sysex to send */
     unsigned long sync_time;    /* when did we last determine delta? */
-    long delta;                 /* difference between stream time and
-                                       real time */
+    long delta;                 /* diff between stream time and real time */
     int error;                  /* host error from doing port midi call */
     CRITICAL_SECTION lock;      /* prevents reentrant callbacks (input only) */
 
@@ -400,7 +400,6 @@ winmm_get_host_error (PmInternal * midi, char * msg, UINT len)
 {
     midiwinmm_node * m = (midiwinmm_node *) midi->descriptor;
     char * hdr1 = "Host error: ";
-    // unused: char * hdr2 = "Host callback error: ";
     msg[0] = 0;                             /* set result string to empty */
     if (descriptors[midi->device_id].pub.input)
     {

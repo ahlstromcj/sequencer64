@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-04-14
+ * \updates       2018-04-19
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -57,17 +57,18 @@
 #include "settings.hpp"                 /* seq64::rc()                  */
 
 /**
- *  Select the HOME or HOMEPATH environment variables depending on whether
- *  building for Windows or not.  Also select the appropriate directory
- *  separator for SLASH.
+ *  Select the HOME or LOCALAPPDATA environment variables depending on whether
+ *  building for Windows or not. LOCALAPPDATA points to the root of the
+ *  Windows user's configuration directory, AppData/Local.  Also select the
+ *  appropriate directory separator for PATH_SLASH.
  */
 
 #ifdef PLATFORM_WINDOWS
-#define HOME    "LOCALAPPDATA"          // "HOMEPATH"
-#define SLASH   "\\"
+#define HOME            "LOCALAPPDATA"
+#define PATH_SLASH      "\\"
 #else
-#define HOME    "HOME"
-#define SLASH   "/"
+#define HOME            "HOME"
+#define PATH_SLASH      "/"
 #endif
 
 /*
@@ -333,18 +334,18 @@ rc_settings::home_config_directory () const
     if (env != NULL)
     {
         std::string home(env);                      // getenv(HOME);
-        result = home + SLASH;                      /* e.g. /home/username/  */
+        result = home + PATH_SLASH;                      /* e.g. /home/username/  */
         if (! rc().legacy_format())
         {
             result += config_directory();           /* new, longer directory */
 #ifdef PLATFORM_UNIX
-            result += SLASH;
+            result += PATH_SLASH;
 #endif
             bool ok = make_directory(result);
             if (ok)
             {
 #ifdef PLATFORM_WINDOWS
-                result += SLASH;
+                result += PATH_SLASH;
 #endif
             }
             else

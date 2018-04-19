@@ -43,7 +43,9 @@ namespace seq64
 {
 
 /**
- *
+ *  This class provides a standard container and operations for a recent-files
+ *  list.  The container should, if possible, contain only unique strings...
+ *  no file-path should be included more than once.
  */
 
 class recent
@@ -55,7 +57,7 @@ private:
      *
      */
 
-    typedef std::deque<std::string>  Container;
+    typedef std::deque<std::string> Container;
 
 private:
 

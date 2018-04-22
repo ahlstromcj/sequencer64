@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-11
+ * \updates     2018-04-20
  * \license     GNU GPLv2 or above
  *
  * Written by:
@@ -39,6 +39,7 @@
 #include <alsa/asoundlib.h>
 
 #include "platform_macros.h"            /* UNUSED() parameter macro         */
+#include "easy_macros.h"                /* not_nullptr() macro, etc.        */
 #include "portmidi.h"
 #include "pmutil.h"
 #include "pminternal.h"
@@ -217,7 +218,7 @@ midi_message_length (PmMessage message)
 static PmError
 alsa_out_open (PmInternal * midi, void * UNUSED(driverinfo))
 {
-    void * client_port = descriptors[midi->device_id].descriptor;
+    void * client_port = pm_descriptors[midi->device_id].descriptor;
     alsa_descriptor_type desc = (alsa_descriptor_type)
         pm_alloc(sizeof(alsa_descriptor_node));
 
@@ -432,7 +433,7 @@ alsa_out_close (PmInternal * midi)
 static PmError
 alsa_in_open (PmInternal * midi, void * UNUSED(driverinfo))
 {
-    void * client_port = descriptors[midi->device_id].descriptor;
+    void * client_port = pm_descriptors[midi->device_id].descriptor;
     alsa_descriptor_type desc = (alsa_descriptor_type)
         pm_alloc(sizeof(alsa_descriptor_node));
 
@@ -665,7 +666,7 @@ static void
 handle_event (snd_seq_event_t * ev)
 {
     int device_id = ev->dest.port;
-    PmInternal * midi = descriptors[device_id].internalDescriptor;
+    PmInternal * midi = pm_descriptors[device_id].internalDescriptor;
     PmEvent pm_ev;
     PmTimeProcPtr time_proc = midi->time_proc;
     PmTimestamp timestamp;
@@ -866,14 +867,14 @@ alsa_poll (PmInternal * UNUSED(midi))
                 int i;
                 for (i = 0; i < pm_descriptor_index; i++)
                 {
-                    if (descriptors[i].pub.input)
+                    if (pm_descriptors[i].pub.input)
                     {
                         PmInternal * midi = (PmInternal *)
-                                descriptors[i].internalDescriptor;
+                                pm_descriptors[i].internalDescriptor;
 
                         /* careful, device may not be open! */
 
-                        if (midi)
+                        if (not_nullptr(midi))
                             Pm_SetOverflow(midi->queue);
                     }
                 }
@@ -1059,8 +1060,8 @@ pm_linuxalsa_term (void)
     if (s_seq)
     {
         snd_seq_close(s_seq);
-        pm_free(descriptors);
-        descriptors = NULL;
+        pm_free(pm_descriptors);
+        pm_descriptors = nullptr;
         pm_descriptor_index = 0;
         pm_descriptor_max = 0;
     }

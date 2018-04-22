@@ -6,7 +6,7 @@
 # \library    	libseq_portmidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2017-09-05
+# \update      2018-04-21
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -128,6 +128,7 @@ libseq_portmidi_la_SOURCES = \
 	mastermidibus.cpp \
 	midibus.cpp \
 	finddefault.c \
+	pmerrmm.c \
 	pmwin.c \
 	pmwinmm.c \
 	pmutil.c \

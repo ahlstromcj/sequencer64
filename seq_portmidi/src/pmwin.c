@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-12
+ * \updates     2018-04-20
  * \license     GNU GPLv2 or above
 
  *  This file needs to implement:
@@ -57,14 +57,18 @@
  * #include <tchar.h>
  */
 
-/*
+/**
  *  This macro is part of Microsoft's tchar.h, but we want to use it only as
  *  a marker for now.
  */
 
-#define _T(x)       ((char *)(x))
+#define _T(x)           ((char *)(x))
 
-#define PATTERN_MAX 256
+/**
+ *  The maximum length of the name of a device.
+ */
+
+#define PATTERN_MAX     256
 
 /**
  *  pm_exit() is called when the program exits.  It calls pm_term() to make
@@ -74,7 +78,7 @@
  */
 
 static void
-pm_exit(void)
+pm_exit (void)
 {
     pm_term();
 
@@ -105,12 +109,13 @@ pm_init (void)
     pm_winmm_init();
 
     /*
-     * Initialize other APIs (DirectX?) here.
+     * Initialize other APIs (DirectX?) here.  DOn't we need to set
+     * pm_initialized = TRUE here?  And call find_default_device()?
      */
 }
 
 /**
- *
+ *  Calls pm_winmm_term() to end the PortMidi session.
  */
 
 void
@@ -120,7 +125,14 @@ pm_term (void)
 }
 
 /**
+ *  Gets the default MIDI device by querying the Windows Registry.
  *
+ * \param is_input
+ *      Set to true if this is an input device.
+ *
+ *  \param key
+ *      A pointer to the name of the devices.  It will be altered as a
+ *      side-effect in this function.
  */
 
 static PmDeviceID
@@ -131,21 +143,31 @@ pm_get_default_device_id (int is_input, char * key)
     ULONG pattern_max = PATTERN_MAX;
     DWORD dwType;
 
-    /* Find first input or device -- this is the default. */
+    /*
+     * Find the first input or device; this is the default.
+     */
 
     PmDeviceID id = pmNoDevice;
     int i, j;
-    Pm_Initialize();                      /* make sure descriptors exist! */
+    Pm_Initialize();                    /* make sure the descriptors exist! */
     for (i = 0; i < pm_descriptor_index; ++i)
     {
-        if (descriptors[i].pub.input == is_input)
+        if (pm_descriptors[i].pub.input == is_input)
         {
             id = i;
             break;
         }
     }
 
-    /* Look in registry for a default device name pattern. */
+#ifdef SEQ64_PORTMIDI_USE_JAVA_PREFS
+
+    /*
+     * Look in the Windows Registry for a default device name pattern.
+     *
+     *  We want to get rid of this freakin' dependency on Java!  Also, we
+     *  do not need "Prefs", we have our own configuration file.  The Linux
+     *  version does not use "JavaSoft" or "Prefs".
+     */
 
     if
     (
@@ -205,8 +227,12 @@ pm_get_default_device_id (int is_input, char * key)
     if (i != pmNoDevice)
         id = i;
 
+#endif  // SEQ64_PORTMIDI_USE_JAVA_PREFS
+
     return id;
 }
+
+#ifdef SEQ64_PORTMIDI_DEFAULT_DEVICE_ID
 
 /**
  * \tricky
@@ -238,8 +264,16 @@ Pm_GetDefaultOutputDeviceID ()
     );
 }
 
+#endif  // SEQ64_PORTMIDI_DEFAULT_DEVICE_ID
+
 /**
+ *  A simple wrapper for malloc().
  *
+ * \param s
+ *      Provides the desired size of the allocation.
+ *
+ * \return
+ *      Returns a void pointer to the allocated buffer.
  */
 
 void *
@@ -249,7 +283,10 @@ pm_alloc (size_t s)
 }
 
 /**
+ *  The inverse of pm_alloc(), a wrapper for the free(3) function.
  *
+ * \param ptr
+ *      Provides the pointer to be freed, if it is not null.
  */
 
 void

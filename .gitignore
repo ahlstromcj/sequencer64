@@ -82,6 +82,7 @@ i18n/
 *.idx
 *.ilg
 *.ilk
+include/config.h.in
 inc/
 *.ind
 .installed.cfg

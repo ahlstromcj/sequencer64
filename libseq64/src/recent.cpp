@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-03-29
- * \updates       2018-04-19
+ * \updates       2018-04-21
  * \license       GNU GPLv2 or above
  *
  *  The seq64::recent class simply keeps track of recently-used files for the
@@ -46,7 +46,8 @@ namespace seq64
 {
 
 /**
- *
+ *  This construction creates an empty recent-files list and sets the maximum
+ *  size of the list.
  */
 
 recent::recent ()
@@ -58,7 +59,7 @@ recent::recent ()
 }
 
 /**
- *
+ *  \copyctor
  */
 
 recent::recent (const recent & source)
@@ -70,7 +71,7 @@ recent::recent (const recent & source)
 }
 
 /**
- *
+ *  The conventional, rote, principal assignent operator.
  */
 
 recent &
@@ -79,13 +80,19 @@ recent::operator = (const recent & source)
     if (this != &source)
     {
         m_recent_list   = source.m_recent_list;
-        m_maximum_size  = source.m_maximum_size;
+
+        /*
+         * A constant, cannot be reassigned:
+         *
+         * m_maximum_size  = source.m_maximum_size;
+         */
     }
     return *this;
 }
 
 /**
- *
+ * \dtor
+ *      Nothing to do in this implementation.
  */
 
 recent::~recent ()
@@ -95,8 +102,9 @@ recent::~recent ()
 
 /**
  *  This function is meant to be used when loading the recent-files list from
- *  a configuration file.  Unlike the add() function, this one will not pop of
- *  an existing item to allow the current item to be put into the container.
+ *  a configuration file.  Unlike the add() function, this one will not pop
+ *  off an existing item to allow the current item to be put into the
+ *  container.  If the entry is already in the list, it is ignored.
  *
  * \param item
  *      Provides the file-name to append.  It is converted to the full path to
@@ -113,7 +121,7 @@ recent::append (const std::string & item)
     bool result = count() < maximum();
     if (result)
     {
-        std::string fullpath = get_full_path(item);
+        std::string fullpath = get_full_path(normalize_path(item));
         result = ! fullpath.empty();
         if (result)
         {
@@ -121,10 +129,8 @@ recent::append (const std::string & item)
             (
                 m_recent_list.begin(), m_recent_list.end(), fullpath
             );
-            if (it != m_recent_list.end())
-                (void) m_recent_list.erase(it);
-
-            m_recent_list.push_back(normalize_path(fullpath));
+            if (it == m_recent_list.end())              /* not found?   */
+                m_recent_list.push_back(fullpath);      /* append it!   */
         }
     }
     return result;
@@ -133,7 +139,8 @@ recent::append (const std::string & item)
 /**
  *  This function is meant to be used when adding a file that the user
  *  selected.  If the file is already in the list, it is moved to the "top"
- *  (the beginning of the list).
+ *  (the beginning of the list); the original entry is removed.  If the list is
+ *  full, the last entry is removed, in order to make room for the new entry.
  *
  * \param item
  *      Provides the file-name to add.  It is converted to the full path to
@@ -161,7 +168,7 @@ recent::add (const std::string & item)
         result = count() < maximum();
         if (! result)
         {
-            m_recent_list.pop_back();
+            m_recent_list.pop_back();   /* remove last entry to make room   */
             result = true;
         }
         if (result)
@@ -183,6 +190,7 @@ recent::add (const std::string & item)
 bool
 recent::remove (const std::string & item)
 {
+    std::string fullpath = get_full_path(normalize_path(item));
     bool result = ! item.empty();
     if (result)
     {

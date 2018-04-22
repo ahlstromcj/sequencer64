@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-30
+ * \updates       2018-04-20
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1313,10 +1313,14 @@ optionsfile::write (const perform & p)
 
     for (int i = 0; i < buses; ++i)
     {
-        file << "# " << ucperf.master_bus().get_midi_in_bus_name(i) << "\n";
+        file
+            << "# Input buss name: "
+            << ucperf.master_bus().get_midi_in_bus_name(i)
+            << "\n"
+            ;
         snprintf
         (
-            outs, sizeof(outs), "%d %d",
+            outs, sizeof(outs), "%d %d  # buss number, input status",
             i, static_cast<char>(ucperf.master_bus().get_input(i))
         );
         file << outs << "\n";

@@ -27,7 +27,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-10
+ * \updates     2018-04-20
  * \license     GNU GPLv2 or above
  *
  * Here is a guide to implementers:
@@ -481,9 +481,8 @@ typedef struct
  */
 
 extern pm_fns_node pm_none_dictionary;
-
 extern int pm_descriptor_max;
-extern descriptor_type descriptors;
+extern descriptor_type pm_descriptors;
 extern int pm_descriptor_index;
 
 /**

@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-04-12
+# \update      2018-04-21
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -54,7 +54,7 @@ unix: HEADERS += \
 # Windows:
 
 windows {
- HEADERS += include/pmwinmm.h
+ HEADERS += include/pmerrmm.h include/pmwinmm.h
  DEFINES -= UNICODE
  DEFINES -= _UNICODE
  QMAKE_CFLAGS_WARN_ON += -Wno-unused-parameter
@@ -81,6 +81,7 @@ unix: SOURCES += \
 
 windows: SOURCES += \
  src/pmwin.c \
+ src/pmerrmm.c \
  src/pmwinmm.c \
  src/ptwinmm.c
 

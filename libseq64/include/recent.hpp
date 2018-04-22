@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-03-29
- * \updates       2018-03-30
+ * \updates       2018-04-21
  * \license       GNU GPLv2 or above
  *
  */
@@ -54,7 +54,12 @@ class recent
 private:
 
     /**
-     *
+     *  Provide the type definition for the recent-files container.  It is
+     *  currently a standard deque.  A deque (pronounced like "deck") is an
+     *  irregular acronym of double-ended queue. Double-ended queues are
+     *  sequence containers with dynamic sizes that can be expanded or
+     *  contracted on both ends (either its front or its back), like a deck of
+     *  cards where the dirty dealer can deal from the bottom.
      */
 
     typedef std::deque<std::string> Container;
@@ -62,16 +67,17 @@ private:
 private:
 
     /**
-     *
+     *  Holds the list of recent files.
      */
 
     Container m_recent_list;
 
     /**
-     *
+     *  Holds the constraint on the number of recent files.  Usually a value
+     *  like 10.
      */
 
-    int m_maximum_size;
+    const int m_maximum_size;
 
 public:
 

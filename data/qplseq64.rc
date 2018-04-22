@@ -224,12 +224,14 @@
 # Clock Modulo, where MIDI clocking will not begin until the song
 # position reaches the start modulo value [midi-clock-mod-ticks].
 
-2    # number of MIDI clocks/busses
+3    # number of MIDI clocks/busses
 
 # Output buss name: [0] 0:0 PortMidi:Microsoft MIDI Mapper
 0 0  # buss number, clock status
-# Output buss name: [1] 1:1 PortMidi:Microsoft GS Wavetable Synth (virtual)
+# Output buss name: [2] 1:2 PortMidi:Microsoft GS Wavetable Synth (virtual)
 1 0  # buss number, clock status
+# Output buss name: [3] 2:3 PortMidi:nanoKEY2
+2 0  # buss number, clock status
 
 [midi-clock-mod-ticks]
 
@@ -251,11 +253,13 @@
 
 [midi-input]
 
-0   # number of input MIDI busses
+1   # number of input MIDI busses
 
 # The first number is the port number, and the second number
 # indicates whether it is disabled (0), or enabled (1).
 
+# Input buss name: [1] 0:1 PortMidi:nanoKEY2
+0 0  # buss number, input status
 
 # If set to 1, this option allows the master MIDI bus to record
 # (filter) incoming MIDI data by channel, allocating each incoming
@@ -481,13 +485,16 @@
 
 # Last-used and currently-active directory:
 
-
+C:/Users/chris/Documents/Home/sequencer64/data/
 
 [recent-files]
 
 # Holds a list of the last few recently-loaded MIDI files.
 
-0
+2
+
+C:/Users/chris/Documents/Home/sequencer64/data/b4uacuse-gm-patchless.midi
+C:/Users/chris/Documents/Home/sequencer64/data/b4uacuse-gm-patchless.midi
 
 # End of C:\Users\chris\AppData\Local\sequencer64\qplseq64.rc
 #

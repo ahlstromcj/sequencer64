@@ -28,7 +28,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-10
+ * \updates     2018-04-20
  * \license     GNU GPLv2 or above
  *
  * Copyright (c) 1999-2000 Ross Bencina and Phil Burk
@@ -187,6 +187,8 @@ PMEXPORT void Pm_GetHostErrorText (char * msg, unsigned int len);
 
 PMEXPORT int Pm_CountDevices (void);
 
+#ifdef SEQ64_PORTMIDI_DEFAULT_DEVICE_ID
+
 /**
  *  Pm_GetDefaultInputDeviceID(), Pm_GetDefaultOutputDeviceID()
  *
@@ -228,6 +230,8 @@ PMEXPORT int Pm_CountDevices (void);
 
 PMEXPORT PmDeviceID Pm_GetDefaultInputDeviceID (void);
 PMEXPORT PmDeviceID Pm_GetDefaultOutputDeviceID (void);
+
+#endif  // SEQ64_PORTMIDI_DEFAULT_DEVICE_ID
 
 /**
  *  \defgroup grp_device Input/Output Devices Handling

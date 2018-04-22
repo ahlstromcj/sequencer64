@@ -17,14 +17,14 @@
  */
 
 /**
- * \file pmlinux.c
+ * \file        pmlinux.c
  *
  *      PortMidi os-dependent code for Linux.
  *
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-11
+ * \updates     2018-04-20
  * \license     GNU GPLv2 or above
  *
  *  This file only needs to implement pm_init(), which calls various routines
@@ -100,6 +100,8 @@ pm_term (void)
 #endif
 }
 
+#ifdef SEQ64_PORTMIDI_DEFAULT_DEVICE_ID
+
 /**
  *
  */
@@ -121,6 +123,8 @@ Pm_GetDefaultOutputDeviceID ()
     Pm_Initialize();
     return pm_default_output_device_id;
 }
+
+#endif  // ifdef SEQ64_PORTMIDI_DEFAULT_DEVICE_ID
 
 /**
  *

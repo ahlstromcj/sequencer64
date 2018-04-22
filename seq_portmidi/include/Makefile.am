@@ -6,7 +6,7 @@
 # \library    	libseq_portmidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2017-09-04
+# \update      2018-04-21
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -76,6 +76,7 @@ pkginclude_HEADERS = \
 	midibus_pm.hpp \
 	pminternal.h \
 	pmutil.h \
+	pmerrmm.h \
 	pmwinmm.h \
 	portmidi.h \
 	porttime.h

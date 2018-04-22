@@ -28,10 +28,6 @@
  * \license     GNU GPLv2 or above
  */
 
-// #ifdef _MSC_VER
-// #pragma warning(disable: 4133)      // stop warnings about implicit typecasts
-// #endif
-
 /*
  *  Without this #define, InitializeCriticalSectionAndSpinCount is undefined.
  *  This version level means "Windows 2000 and higher".
@@ -41,17 +37,13 @@
 #define _WIN32_WINNT 0x0500
 #endif
 
-// #include <windows.h>
 #include <string.h>
 #include <stdio.h>
 #define PMERRMM_STRING_MAX          80
 
 #include "easy_macros.h"
-// #include "portmidi.h"           /* seq64 library UNUSED() macro and API */
-// #include "pmutil.h"
 #include "pmerrmm.h"
-// #include "porttime.h"
-// #include <assert.h>
+#include <mmsystem.h>
 
 /*
  *  This printf() stuff is really important for debugging client app w/host
@@ -67,14 +59,14 @@
  */
 
 const char *
-midi_in_get_dev_caps_error
+midi_io_get_dev_caps_error
 (
     const char * devicename,
     const char * functionname,
     MMRESULT errcode
 )
 {
-    static char s_error_storage[PMERRMM_STRING_MAX]
+    static char s_error_storage[PMERRMM_STRING_MAX];
     const char * result = "Unknown";
     switch (errcode)
     {
@@ -85,22 +77,22 @@ midi_in_get_dev_caps_error
 
     case MMSYSERR_BADDEVICEID:
 
-        result = "The specified device identifier is out of range"
+        result = "The specified device identifier is out of range";
         break;
 
     case MMSYSERR_INVALPARAM:
 
-        result = "The specified pointer or structure is invalid"
+        result = "The specified pointer or structure is invalid";
         break;
 
     case MMSYSERR_NODRIVER:
 
-        result = "The driver is not installed"
+        result = "The driver is not installed";
         break;
 
     case MMSYSERR_NOMEM:
 
-        result = "The system is unable to allocate or lock memory"
+        result = "The system is unable to allocate or lock memory";
         break;
     }
     (void) snprintf

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-09
+ * \updates       2018-04-22
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -45,6 +45,7 @@
 #include <gtkmm/main.h>
 
 #include "cmdlineopts.hpp"              /* command-line functions           */
+#include "daemonize.hpp"                /* seq64::reroute_stdio()           */
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "gui_assistant_gtk2.hpp"       /* seq64::gui_assistant_gtk2        */
 #include "gui_palette_gtk2.hpp"         /* colors and "inverse" colors      */
@@ -123,6 +124,10 @@ main (int argc, char * argv [])
 
             p.seqs_in_set(seq64::usr().seqs_in_set());
             p.max_sets(seq64::usr().max_sets());
+
+            std::string logfile = seq64::usr().option_logfile();
+            if (seq64::usr().option_use_logfile() && ! logfile.empty())
+                (void) seq64::reroute_stdio(logfile);
         }
         p.launch(seq64::usr().midi_ppqn());         /* set up performance   */
         if (seq64::usr().inverse_colors())

@@ -321,7 +321,7 @@ pm_winmm_mapper_input (void)
 #ifdef PLATFORM_DEBUG
         const char * errmsg = midi_io_get_dev_caps_error
         (
-            (const char *) midi_out_caps[i].szPname,
+            (const char *) midi_in_mapper_caps.szPname,
             "mapper in : midiInGetDevCaps", winerrcode
         );
         printf("%s", errmsg);
@@ -399,7 +399,7 @@ pm_winmm_mapper_output (void)
 #ifdef PLATFORM_DEBUG
         const char * errmsg = midi_io_get_dev_caps_error
         (
-            (const char *) midi_out_caps[i].szPname,
+            (const char *) midi_out_mapper_caps.szPname,
             "mapper out : midiOutGetDevCaps", winerrcode
         );
         printf("%s", errmsg);
@@ -493,7 +493,7 @@ static MIDIHDR *
 allocate_buffer (long data_size)
 {
     LPMIDIHDR hdr = nullptr;
-    if (datasize > 0)
+    if (data_size > 0)
     {
         hdr = (LPMIDIHDR) pm_alloc(MIDIHDR_SYSEX_SIZE(data_size));
         if (not_nullptr(hdr))

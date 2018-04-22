@@ -24,7 +24,7 @@
  * \library       seq64rtcli application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-04-07
- * \updates       2018-04-14
+ * \updates       2018-04-22
  * \license       GNU GPLv2 or above
  *
  *  This application is seq64 without a GUI, control must be done via MIDI.
@@ -40,7 +40,7 @@
 #endif
 
 #include "cmdlineopts.hpp"              /* command-line functions           */
-#include "daemonize.hpp"                /* seqg4::daemonize()               */
+#include "daemonize.hpp"                /* seq64::daemonize()               */
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "gui_assistant.hpp"            /* seq64::gui_assistant base class  */
 #include "keys_perform.hpp"             /* seq64::keys_perform              */
@@ -126,11 +126,9 @@ main (int argc, char * argv [])
     if (seq64::parse_o_options(argc, argv))
     {
         std::string logfile = seq64::usr().option_logfile();
-        if (! logfile.empty())
+        if (seq64::usr().option_use_logfile() && ! logfile.empty())
         {
-#ifdef PLATFORM_LINUX
             (void) seq64::reroute_stdio(logfile);
-#endif
             stdio_rerouted = true;
         }
 
@@ -160,12 +158,8 @@ main (int argc, char * argv [])
     if (! stdio_rerouted)                       /* not done already?        */
     {
         std::string logfile = seq64::usr().option_logfile();
-        if (! logfile.empty())
-        {
-#ifdef PLATFORM_LINUX
+        if (seq64::usr().option_use_logfile() && ! logfile.empty())
             (void) seq64::reroute_stdio(logfile);
-#endif
-        }
     }
     if (! is_help)
     {

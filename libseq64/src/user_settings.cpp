@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2018-04-06
+ * \updates       2018-04-22
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -209,7 +209,13 @@ user_settings::user_settings ()
     mc_min_zoom                 (SEQ64_MINIMUM_ZOOM),
     mc_max_zoom                 (SEQ64_MAXIMUM_ZOOM),
     mc_baseline_ppqn            (SEQ64_DEFAULT_PPQN),
+
+    /*
+     * Back to non-constant values.
+     */
+
     m_user_option_daemonize     (false),
+    m_user_use_logfile          (false),
     m_user_option_logfile       (),
     m_work_around_play_image    (false),
     m_work_around_transpose_image (false)
@@ -303,7 +309,13 @@ user_settings::user_settings (const user_settings & rhs)
     mc_min_zoom                 (rhs.mc_min_zoom),
     mc_max_zoom                 (rhs.mc_max_zoom),
     mc_baseline_ppqn            (SEQ64_DEFAULT_PPQN),
+
+    /*
+     * Back to non-constant values.
+     */
+
     m_user_option_daemonize     (false),
+    m_user_use_logfile          (false),
     m_user_option_logfile       (),
     m_work_around_play_image    (false),
     m_work_around_transpose_image (false)
@@ -404,6 +416,7 @@ user_settings::operator = (const user_settings & rhs)
          */
 
         m_user_option_daemonize = rhs.m_user_option_daemonize;
+        m_user_use_logfile = rhs.m_user_use_logfile;
         m_user_option_logfile = rhs.m_user_option_logfile;
         m_work_around_play_image = rhs.m_work_around_play_image;
         m_work_around_transpose_image = rhs.m_work_around_transpose_image;
@@ -478,6 +491,7 @@ user_settings::set_defaults ()
      */
 
     m_user_option_daemonize = false;
+    m_user_use_logfile = false;
     m_user_option_logfile.clear();
     m_work_around_play_image = false;
     m_work_around_transpose_image = false;

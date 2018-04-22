@@ -31,7 +31,7 @@
  *  Provides system-specific error-messages for Windows.
  */
 
-#include <mmsystem.h>
+#include <windows.h>
 
 #ifdef __cplusplus
 extern "C"

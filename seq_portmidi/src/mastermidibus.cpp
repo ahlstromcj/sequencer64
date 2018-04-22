@@ -109,7 +109,7 @@ mastermidibus::api_init (int ppqn, midibpm /*bpm*/)
 #ifdef PLATFORM_DEBUG   // _TMI
         fprintf
         (
-            stderr, "[%s device %d: %s in:%d out:%d\n",
+            stderr, "PortMidi %s device %d: %s in:%d out:%d\n",
             dev_info->interf, i, dev_info->name,
             dev_info->input, dev_info->output
         );

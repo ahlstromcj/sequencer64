@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-04-14
+ * \updates       2018-04-22
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -302,6 +302,9 @@ static const char * const s_help_3 =
 static const char * const s_help_4 =
 "              log=filename  Redirect console output to a log file in the\n"
 "                            --home directory [$HOME/.config/sequencer64].\n"
+"                            If '=filename' is not provided, then the filename\n"
+"                            specified in '[user-options]' in the 'usr' file is\n"
+"                            used.\n"
 #if defined SEQ64_MULTI_MAINWID
 "              wid=RxC,F     Show R rows of sets, C columns of sets, and set\n"
 "                            the sync-status of the set blocks. R can range\n"
@@ -494,13 +497,33 @@ parse_o_options (int argc, char * argv [])
                                 result = true;
                                 usr().option_daemonize(false);
                             }
+                            else if (arg == "log")
+                            {
+                                /*
+                                 * Without a filename, just turn on the
+                                 * log-file flag, using the name already read
+                                 * from the "[user-options]" section of the
+                                 * "usr" file.
+                                 */
+
+                                result = true;
+                                usr().option_use_logfile(true);
+                            }
                         }
                         else
                         {
+                            /*
+                             * \tricky
+                             *      Note that 'arg' is used in the clause
+                             *      above, but 'optionname' is used here.
+                             */
+
                             if (optionname == "log")
                             {
                                 result = true;
                                 usr().option_logfile(arg);
+                                if (! arg.empty())
+                                    usr().option_use_logfile(true);
                             }
 #if defined SEQ64_MULTI_MAINWID
                             else if (optionname == "wid")

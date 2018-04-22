@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-04-15
+ * \updates       2018-04-22
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -36,6 +36,7 @@
 #include <QApplication>
 
 #include "cmdlineopts.hpp"              /* command-line functions           */
+#include "daemonize.hpp"                /* seqg4::reroute_stdio()           */
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "gui_assistant_qt5.hpp"        /* seq64::gui_assistant_qt5         */
 
@@ -124,9 +125,12 @@ main (int argc, char * argv [])
              * Now handled via optind incrementing:     ++optionindex;
              */
 
-            ////// ++optionindex;
             p.seqs_in_set(seq64::usr().seqs_in_set());
             p.max_sets(seq64::usr().max_sets());
+
+            std::string logfile = seq64::usr().option_logfile();
+            if (seq64::usr().option_use_logfile() && ! logfile.empty())
+                (void) seq64::reroute_stdio(logfile);
         }
 
         /*

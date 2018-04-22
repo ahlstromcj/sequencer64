@@ -7,7 +7,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-04-19
+ * \updates       2018-04-22
  * \version       $Revision$
  *
  *    We basically include only the functions we need for Sequencer64, not
@@ -406,6 +406,38 @@ normalize_path (const std::string & path, bool to_unix)
             std::string::size_type pos = path.find_first_of("/");
             if (pos != std::string::npos)
                 std::replace(result.begin(), result.end(), '/', '\\');
+        }
+    }
+    return result;
+}
+
+/**
+ *  Strips the double quotes from a string.  Meant mainly for removing quotes
+ *  around a file-name, so it works only if the first character is a quote,
+ *  and the last character is a quote.
+ *
+ * \param item
+ *      The string to be massaged.
+ *
+ * \return
+ *      The string without double quotes.  If it didn't have any, the string
+ *      should be unchanged.
+ */
+
+std::string
+strip_quotes (const std::string & item)
+{
+    std::string result;
+    if (! item.empty())
+    {
+        result = item;
+        std::string::size_type fpos = result.find_first_of("\"");
+        if (fpos == 0)
+        {
+            std::string::size_type lpos = result.find_last_of("\"");
+            std::string::size_type end_index = result.length() - 1;
+            if (lpos != std::string::npos && lpos == end_index)
+                result = result.substr(1, end_index - 1);
         }
     }
     return result;

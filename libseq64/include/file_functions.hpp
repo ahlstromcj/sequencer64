@@ -9,7 +9,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-04-19
+ * \updates       2018-04-22
  * \version       $Revision$
  *
  *    Also see the file_functions.cpp module.
@@ -39,6 +39,7 @@ extern bool make_directory (const std::string & pathname);
 extern std::string get_current_directory ();
 extern std::string get_full_path (const std::string & path);
 extern std::string normalize_path (const std::string & path, bool to_unix = true);
+extern std::string strip_quotes (const std::string & item);
 
 #endif      // SEQ64_FILE_FUNCTIONS_HPP
 

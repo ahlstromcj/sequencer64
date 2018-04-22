@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-03-31
+ * \updates       2018-04-22
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -801,6 +801,13 @@ private:
      */
 
     bool m_user_option_daemonize;
+
+    /**
+     *  If true, this value means that "-o log=..." (where the "..." is an
+     *  optional filename) was specified on the command line.
+     */
+
+    bool m_user_use_logfile;
 
     /**
      *  If not empty, this file will be set up as the destination for all
@@ -1702,6 +1709,15 @@ public:
         return m_user_option_daemonize;
     }
 
+    /**
+     * \getter m_user_use_logfile
+     */
+
+    bool option_use_logfile () const
+    {
+        return m_user_use_logfile;
+    }
+
     std::string option_logfile () const;
 
     /**
@@ -1810,6 +1826,15 @@ public:         // used in main application module and the userfile class
     void option_daemonize (bool flag)
     {
         m_user_option_daemonize = flag;
+    }
+
+    /**
+     * \setter m_user_use_logfile
+     */
+
+    void option_use_logfile (bool flag)
+    {
+        m_user_use_logfile = flag;
     }
 
     /**

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-06
+ * \updates       2018-04-22
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -37,6 +37,7 @@
 #include <iostream>
 
 #include "globals.h"
+#include "file_functions.hpp"           /* seq64::strip_quotes()        */
 #include "settings.hpp"                 /* seq64::rc()                  */
 #include "userfile.hpp"                 /* seq64::userfile              */
 #include "user_instrument.hpp"          /* seq64::user_instrument       */
@@ -535,8 +536,10 @@ userfile::parse (perform & /* p */)
                 if (logfile == "\"\"")
                     logfile.clear();
                 else
-                    printf("[option_logfile = '%s']\n", logfile.c_str());
-
+                {
+                    logfile = strip_quotes(logfile);
+                    printf("[option_logfile: '%s']\n", logfile.c_str());
+                }
                 usr().option_logfile(logfile);
             }
         }
@@ -1192,7 +1195,8 @@ userfile::write (const perform & /* a_perf */ )
             "# This value specifies an optional log-file that replaces output\n"
             "# to standard output and standard error.  To indicate no log-file,\n"
             "# the string \"\" is used.  Currently, this option works best from\n"
-            "# the command line, as in '-o log=filename.log'.\n"
+            "# the command line, as in '-o log=filename.log'.  However, the\n"
+            "# name here is used only if the bare option '-o log' is specified.\n"
             "\n"
             ;
         std::string logfile = usr().option_logfile();

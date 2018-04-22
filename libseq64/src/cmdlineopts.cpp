@@ -48,6 +48,7 @@
  */
 
 #include <sstream>
+#include <stdlib.h>                     /* atoi(), atof(), 32-bit old gcc   */
 #include <string.h>                     /* strlen() <gasp!>                 */
 #include "easy_macros.h"
 

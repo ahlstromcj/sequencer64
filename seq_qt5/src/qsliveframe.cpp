@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-08
+ * \updates       2018-04-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -916,7 +916,7 @@ qsliveframe::keyReleaseEvent (QKeyEvent * event)
 void
 qsliveframe::color_white ()
 {
-    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::WHITE));
+    mPerf.set_sequence_color(m_curr_seq, int(SEQ64_COLOR(WHITE)));
 }
 
 /**
@@ -926,7 +926,7 @@ qsliveframe::color_white ()
 void
 qsliveframe::color_red ()
 {
-    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::RED));
+    mPerf.set_sequence_color(m_curr_seq, int(SEQ64_COLOR(RED)));
 }
 
 /**
@@ -936,7 +936,7 @@ qsliveframe::color_red ()
 void
 qsliveframe::color_green ()
 {
-    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::GREEN));
+    mPerf.set_sequence_color(m_curr_seq, int(SEQ64_COLOR(GREEN)));
 }
 
 /**
@@ -946,7 +946,7 @@ qsliveframe::color_green ()
 void
 qsliveframe::color_blue ()
 {
-    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::BLUE));
+    mPerf.set_sequence_color(m_curr_seq, int(SEQ64_COLOR(BLUE)));
 }
 
 /**
@@ -956,7 +956,7 @@ qsliveframe::color_blue ()
 void
 qsliveframe::color_yellow ()
 {
-    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::YELLOW));
+    mPerf.set_sequence_color(m_curr_seq, int(SEQ64_COLOR(YELLOW)));
 }
 
 /**
@@ -966,7 +966,7 @@ qsliveframe::color_yellow ()
 void
 qsliveframe::color_purple ()
 {
-    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::MAGENTA));
+    mPerf.set_sequence_color(m_curr_seq, int(SEQ64_COLOR(MAGENTA)));
 }
 
 /**
@@ -976,7 +976,7 @@ qsliveframe::color_purple ()
 void
 qsliveframe::color_pink ()
 {
-    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::RED)); // Pink);
+    mPerf.set_sequence_color(m_curr_seq, int(SEQ64_COLOR(RED))); // Pink);
 }
 
 /**
@@ -986,7 +986,7 @@ qsliveframe::color_pink ()
 void
 qsliveframe::color_orange ()
 {
-    mPerf.set_sequence_color(m_curr_seq, int(PaletteColor::ORANGE));
+    mPerf.set_sequence_color(m_curr_seq, int(SEQ64_COLOR(ORANGE)));
 }
 
 /**

@@ -24,13 +24,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-15
+ * \updates       2018-04-22
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_event
  *  object.
  */
 
+#include <stdlib.h>                     /* atoi(3) and atof(3) for 32-bit   */
 #include "easy_macros.h"
 #include "editable_event.hpp"           /* seq64::editable_event            */
 #include "editable_events.hpp"          /* seq64::editable_events multimap  */

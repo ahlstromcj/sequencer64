@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-17
+ * \updates       2018-04-22
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -96,6 +96,10 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_dialog_prefs      (nullptr),
     mDialogAbout        (nullptr)
 {
+#if __cplusplus < 201103L                               // C++11
+    initialize_key_map();
+#endif
+
     ui->setupUi(this);
 
     QRect screen = QApplication::desktop()->screenGeometry();

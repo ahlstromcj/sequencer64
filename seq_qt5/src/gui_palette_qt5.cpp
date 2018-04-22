@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-02-23
- * \updates       2018-03-11
+ * \updates       2018-04-22
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -35,7 +35,7 @@
 #include "gui_palette_qt5.hpp"          /* seq64::gui_palette_gtkw          */
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()      */
 
-#define STATIC_COLOR        gui_palette_qt5::Color
+#define STATIC_COLOR                    gui_palette_qt5::Color
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -243,33 +243,33 @@ void
 gui_palette_qt5::initialize ()
 {
     m_palette.clear();                  /* just in case */
-    m_palette.add(PaletteColor::BLACK, m_black);
-    m_palette.add(PaletteColor::RED, m_red);
-    m_palette.add(PaletteColor::GREEN, m_green);
-    m_palette.add(PaletteColor::YELLOW, m_yellow);
-    m_palette.add(PaletteColor::BLUE, m_blue);
-    m_palette.add(PaletteColor::MAGENTA, m_magenta);
-    m_palette.add(PaletteColor::CYAN, m_cyan);
-    m_palette.add(PaletteColor::WHITE, m_white);
+    m_palette.add(SEQ64_COLOR(BLACK), m_black);
+    m_palette.add(SEQ64_COLOR(RED), m_red);
+    m_palette.add(SEQ64_COLOR(GREEN), m_green);
+    m_palette.add(SEQ64_COLOR(YELLOW), m_yellow);
+    m_palette.add(SEQ64_COLOR(BLUE), m_blue);
+    m_palette.add(SEQ64_COLOR(MAGENTA), m_magenta);
+    m_palette.add(SEQ64_COLOR(CYAN), m_cyan);
+    m_palette.add(SEQ64_COLOR(WHITE), m_white);
 
-    m_palette.add(PaletteColor::DK_BLACK, m_dk_black);
-    m_palette.add(PaletteColor::DK_RED, m_dk_red);
-    m_palette.add(PaletteColor::DK_GREEN, m_dk_green);
-    m_palette.add(PaletteColor::DK_YELLOW, m_dk_yellow);
-    m_palette.add(PaletteColor::DK_BLUE, m_dk_blue);
-    m_palette.add(PaletteColor::DK_MAGENTA, m_dk_magenta);
-    m_palette.add(PaletteColor::DK_CYAN, m_dk_cyan);
-    m_palette.add(PaletteColor::DK_WHITE, m_dk_white);
+    m_palette.add(SEQ64_COLOR(DK_BLACK), m_dk_black);
+    m_palette.add(SEQ64_COLOR(DK_RED), m_dk_red);
+    m_palette.add(SEQ64_COLOR(DK_GREEN), m_dk_green);
+    m_palette.add(SEQ64_COLOR(DK_YELLOW), m_dk_yellow);
+    m_palette.add(SEQ64_COLOR(DK_BLUE), m_dk_blue);
+    m_palette.add(SEQ64_COLOR(DK_MAGENTA), m_dk_magenta);
+    m_palette.add(SEQ64_COLOR(DK_CYAN), m_dk_cyan);
+    m_palette.add(SEQ64_COLOR(DK_WHITE), m_dk_white);
 
-    m_palette.add(PaletteColor::ORANGE, m_orange);
-    m_palette.add(PaletteColor::PINK, m_pink);
-    m_palette.add(PaletteColor::GREY, m_grey);
+    m_palette.add(SEQ64_COLOR(ORANGE), m_orange);
+    m_palette.add(SEQ64_COLOR(PINK), m_pink);
+    m_palette.add(SEQ64_COLOR(GREY), m_grey);
 
-    m_palette.add(PaletteColor::DK_ORANGE, m_dk_orange);
-    m_palette.add(PaletteColor::DK_PINK, m_dk_pink);
-    m_palette.add(PaletteColor::DK_GREY, m_dk_grey);
+    m_palette.add(SEQ64_COLOR(DK_ORANGE), m_dk_orange);
+    m_palette.add(SEQ64_COLOR(DK_PINK), m_dk_pink);
+    m_palette.add(SEQ64_COLOR(DK_GREY), m_dk_grey);
 
-    m_palette.add(PaletteColor::NONE, m_white);
+    m_palette.add(SEQ64_COLOR(NONE), m_white);
 }
 
 /**

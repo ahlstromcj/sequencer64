@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2017-07-30
+ * \updates       2018-04-22
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_events
@@ -193,7 +193,7 @@ editable_events::add (const editable_event & e)
 #if __cplusplus >= 201103L                  /* C++11                        */
     EventsPair p = std::make_pair(key, e);
 #else
-    EventsPair p = std::make_pair<event_key, event>(key, e);
+    EventsPair p = std::make_pair<event_list::event_key, editable_event>(key, e);
 #endif
 
     iterator ei = m_events.insert(p);       /* std::multimap operation      */

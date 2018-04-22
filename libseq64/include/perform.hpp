@@ -342,7 +342,9 @@ public:
      *  placeholders or parameters, if desired.
      */
 
+#if __cplusplus >= 201103L                  /* C++11                        */
     typedef std::function<void(int)> SeqOperation;
+#endif
 
 #endif
 
@@ -1744,7 +1746,9 @@ public:
 
 #ifdef SEQ64_SONG_BOX_SELECT
 
+#if __cplusplus >= 201103L                  /* C++11                        */
     bool selection_operation (SeqOperation func);
+#endif
     void box_insert (int dropseq, midipulse droptick);
     void box_delete (int dropseq, midipulse droptick);
     void box_toggle_sequence (int dropseq, midipulse droptick);

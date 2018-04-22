@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-02-18
- * \updates       2018-02-27
+ * \updates       2018-04-22
  * \license       GNU GPLv2 or above
  *
  *  This module is inspired by MidiPerformance::getSequenceColor() in
@@ -76,7 +76,11 @@ enum progress_colors_t
  *  colors in standard X-terminal order, not in Kepler34 order.
  */
 
+#if __cplusplus >= 201103L                  /* C++11                        */
 enum class PaletteColor
+#else
+typedef enum
+#endif
 {
 
  /* Seq64 */            /* Kepler34 */
@@ -109,7 +113,18 @@ enum class PaletteColor
     DK_GREY,            // N/A
 
     MAX,                // first illegal value, not in color set
+
+#if __cplusplus >= 201103L                  /* C++11                        */
 };
+#else
+} PaletteColor;
+#endif
+
+#if __cplusplus >= 201103L                  /* C++11                        */
+#define SEQ64_COLOR(x)  PaletteColor:: ## x
+#else
+#define SEQ64_COLOR(x)  x
+#endif
 
 /**
  *  A generic collection of whatever types of color classes (QColor,
@@ -167,7 +182,7 @@ palette<COLOR>::palette ()
     container   ()
 {
     static COLOR color;
-    add(PaletteColor::NONE, color);
+    add(SEQ64_COLOR(NONE), color);
 }
 
 /**
@@ -204,8 +219,8 @@ template <typename COLOR>
 const COLOR &
 palette<COLOR>::get_color (PaletteColor index) const
 {
-    return (index >= PaletteColor::BLACK && index < PaletteColor::MAX) ?
-        *container.at(index) : *container.at(PaletteColor::NONE) ;
+    return (index >= SEQ64_COLOR(BLACK) && index < SEQ64_COLOR(MAX)) ?
+        *container.at(index) : *container.at(SEQ64_COLOR(NONE)) ;
 }
 
 }           // namespace seq64

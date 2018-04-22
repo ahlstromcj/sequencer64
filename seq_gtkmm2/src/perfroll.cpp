@@ -969,11 +969,15 @@ perfroll::draw_all ()
 {
 
 #ifdef SEQ64_SONG_BOX_SELECT
+
+#if __cplusplus >= 201103L                  /* C++11                        */
     perform::SeqOperation f = std::bind
     (
         &perfroll::draw_sequence, std::ref(*this), std::placeholders::_1
     );
     perf().selection_operation(f);          /* works with sets of sequences */
+#endif
+
 #else
     (void) draw_sequence(m_drop_sequence);  /* draw seq background & events */
 #endif

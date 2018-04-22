@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-03-24
- * \updates       2018-03-26
+ * \updates       2018-04-22
  * \license       GNU GPLv2 or above
  *
  *  Gtkmm 2.4 and Qt 5 handle keystrokes in a somewhat different manner.
@@ -120,6 +120,8 @@ typedef std::map<unsigned, q_key_spec_t> QtGtkKeyMap;
  *  above in order to compile.
  */
 
+#if __cplusplus >= 201103L                  /* C++11                        */
+
 static QtGtkKeyMap sg_key_map =
 {
     { 0x1000000, { "Escape",       0xff1b, 0x1000000 } },   // see "ESC" below
@@ -164,6 +166,86 @@ static QtGtkKeyMap sg_key_map =
     { 0x100003b, { "F12",          0xffc9, 0x100003b } },
     { 0x1000055, { "Menu",         0xff67, 0x1000055 } }
 };
+
+#else
+
+typedef struct
+{
+    unsigned keycode;
+    q_key_spec_t keyspec;
+
+} keycode_spec_t;
+
+static keycode_spec_t sg_key_map_spec [] =
+{
+    { 0x1000000, { "Escape",       0xff1b, 0x1000000 } },   // see "ESC" below
+    { 0x1000003, { "Backspace",    0xff08, 0x1000003 } },
+    { 0x1000004, { "Return",       0xff0d, 0x1000004 } },
+    { 0x1000005, { "KP_Enter",     0xff8d, 0x1000005 } },
+    { 0x1000006, { "Insert",       0xff63, 0x1000006 } },
+    { 0x1000006, { "KP_Insert",    0xff9e, 0x1000006 } },
+    { 0x1000007, { "KP_Delete",    0xff9f, 0x1000007 } },
+    { 0x1000007, { "Delete",       0xffff, 0x1000007 } },
+    { 0x1000008, { "Pause",        0xff13, 0x1000008 } },
+    { 0x1000009, { "Print Scrn",   0xff61, 0x1000009 } },
+    { 0x1000010, { "Home",         0xff50, 0x1000010 } },
+    { 0x1000011, { "End",          0xff51, 0x1000011 } },
+    { 0x1000011, { "KP_End",       0xff9c, 0x1000011 } },
+    { 0x1000012, { "Left",         0xff51, 0x1000012 } },
+    { 0x1000013, { "Up",           0xff52, 0x1000013 } },
+    { 0x1000014, { "Right",        0xff53, 0x1000014 } },
+    { 0x1000014, { "KP_Right",     0xff98, 0x1000014 } },
+    { 0x1000015, { "Down",         0xff54, 0x1000015 } },
+    { 0x1000015, { "KP_Down",      0xff99, 0x1000015 } },
+    { 0x1000016, { "Page Up",      0xff55, 0x1000016 } },
+    { 0x1000017, { "Page Down",    0xff56, 0x1000017 } },
+    { 0x1000020, { "Shift",        0xffe1, 0x1000020 } },
+    { 0x1000020, { "Shift",        0xffe2, 0x1000020 } },
+    { 0x1000021, { "Control",      0xffe3, 0x1000021 } },
+    { 0x1000022, { "Super",        0xffeb, 0x1000022 } },
+    { 0x1000023, { "Alt",          0xffe9, 0x1000023 } },
+    { 0x1000025, { "Num_Lock",     0xff7f, 0x1000025 } },
+    { 0x1000026, { "Scroll_Lock",  0xff14, 0x1000026 } },
+    { 0x1000030, { "F1",           0xffbe, 0x1000030 } },
+    { 0x1000031, { "F2",           0xffbf, 0x1000031 } },
+    { 0x1000032, { "F3",           0xffc0, 0x1000032 } },
+    { 0x1000033, { "F4",           0xffc1, 0x1000033 } },
+    { 0x1000034, { "F5",           0xffc2, 0x1000034 } },
+    { 0x1000035, { "F6",           0xffc3, 0x1000035 } },
+    { 0x1000036, { "F7",           0xffc4, 0x1000036 } },
+    { 0x1000037, { "F8",           0xffc5, 0x1000037 } },
+    { 0x1000038, { "F9",           0xffc6, 0x1000038 } },
+    { 0x1000039, { "F10",          0xffc7, 0x1000039 } },
+    { 0x100003a, { "F11",          0xffc8, 0x100003a } },
+    { 0x100003b, { "F12",          0xffc9, 0x100003b } },
+    { 0x1000055, { "Menu",         0xff67, 0x1000055 } },
+    { 0x0,       { "0",            0x0,    0x0 } }
+};
+
+static QtGtkKeyMap sg_key_map;
+
+void
+initialize_key_map ()               // where can we call this?
+{
+    keycode_spec_t * ksptr = &sg_key_map_spec[0];
+    for (;;)
+    {
+        if (ksptr->keycode != 0)
+        {
+            std::pair<unsigned, q_key_spec_t> p =
+                std::make_pair<unsigned, q_key_spec_t>
+                (
+                    ksptr->keycode, ksptr->keyspec
+                );
+            (void) sg_key_map.insert(p);
+        }
+        else
+            break;
+    }
+
+}
+
+#endif  // __cplusplus >= 201103L
 
 /**
  *  This is meant to accept all key-codes.  However, unless the key-code is

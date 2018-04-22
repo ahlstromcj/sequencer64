@@ -497,6 +497,8 @@ perform::launch (int ppqn)
  *      Returns true if at least one set item was found to operate on.
  */
 
+#if __cplusplus >= 201103L                  /* C++11                        */
+
 bool
 perform::selection_operation (SeqOperation func)
 {
@@ -507,6 +509,8 @@ perform::selection_operation (SeqOperation func)
 
     return result;
 }
+
+#endif
 
 /**
  *  Selects the desired trigger for this sequence.  If this is the first

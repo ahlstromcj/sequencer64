@@ -24,12 +24,11 @@
  * \library     sequencer64 application
  * \author      Chris Ahlstrom
  * \date        2018-04-21
- * \updates     2018-04-21
+ * \updates     2018-04-23
  * \license     GNU GPLv2 or above
  */
 
 /*
- *  Without this #define, InitializeCriticalSectionAndSpinCount is undefined.
  *  This version level means "Windows 2000 and higher".
  */
 
@@ -39,11 +38,13 @@
 
 #include <string.h>
 #include <stdio.h>
-#define PMERRMM_STRING_MAX          80
+#include <windows.h>
+#include <mmsystem.h>
 
 #include "easy_macros.h"
 #include "pmerrmm.h"
-#include <mmsystem.h>
+
+#define PMERRMM_STRING_MAX          80
 
 /*
  *  This printf() stuff is really important for debugging client app w/host
@@ -98,7 +99,8 @@ midi_io_get_dev_caps_error
     (void) snprintf
     (
         s_error_storage, sizeof s_error_storage,
-        "%s() error for device '%s': '%s'", functionname, devicename, result
+        "%s() error for device '%s': '%s'\n",
+        functionname, devicename, result
     );
     return &s_error_storage[0];
 }

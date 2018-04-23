@@ -28,6 +28,13 @@ GUI-less native JACK support: Seq64rtmidi/seq64cli
     hope to add an OSC harness eventually.  It supports a "daemonize" option
     and dumping status to a log-file in the user-configuration directory.
 
+Windows support:
+
+    We are still getting this to work, using a Qt 5 user-interface bases on
+    Kepler34, but using the standard Sequencer64 libraries.  The
+    user-interface works, and Windows built-in MIDI devices are detected,
+    but still working on other startup issues that prevent basic playback.
+
 See the INSTALL file for build-from-source instructions or using a
 conventional source tarball.
 
@@ -40,7 +47,8 @@ Recent changes:
         -   Added full-path handling to recent-files feature and fixed issues
             with it.
         -   Improved the log-file handling and added it to all versions of the
-            application.  Necessary to get log output in Windows.
+            application.  Added reroute_stdio() implementation for Windows.
+        -   Caught up with the latest features for 32-bit builds, more to do.
     -   Version 0.94.7:
         -   Keystroke-handling cleanup in preparation for a Qt build.
             Qt keystroke combinations now mapped to Gtkmm values. Tricky.
@@ -62,52 +70,6 @@ Recent changes:
         -   Improving support for a Qt 5 build, still not ready for real
             usage, use at your own risk
         -   Support for configure script without needing to bootstrap.
-    -   Version 0.94.5:
-        -   Added the ability to scale the main window from 1.0 to 3.0 times
-            its normal size.  Has issues, but makes buttons bigger and the
-            layout easier to see from a distance.
-        -   Fixed issues with parsing the -o/--options and adding a file to
-            open as the last command-line argument.
-        -   Fixed issues #92 and #94, and other issues with multi-wid set
-            selection.
-        -   Adding events in the seqedit event pane did not work. Fixed.
-        -   Importing a file wiped out existing set notes.  Fixed.
-    -   Version 0.94.4:
-        -   Fixed some mismanagement of the changing image for the transpose
-            and play buttons that caused segfaults on some systems.
-        -   Fixed build errors with --enable-mainscroll (an unfinished feature).
-        -   The LFO window button now toggles that window.
-        -   Added a pattern editor event button showing only existing events.
-        -   Fleshed out the implementation of MIDI control for sequence record,
-            quantize record, and thru.
-        -   The configure script is now removed (for reconstruction) after a
-            --full-clean bootstrap.
-        -   Fixed issues with changing the screenset via keystroke,
-            spinbutton, and MIDI control event.
-    -   Version 0.94.3:
-        -   Changed SeqSpec proprietary track number from 0x7777 to 0x3FFF.
-            This will change existing files silently to store the new track
-            number.
-        -   Added a File / Export option to write a version of a file without
-            Sequencer64-specific SeqSpecs.
-        -   Unhandled meta events are now preserved instead of being sent to
-            the bit bucket.  They are saved along with the rest of the data.
-        -   The sequence number is now shown in the pattern and event editors.
-        -   Minor fixes and improvements to fruity interaction mode, plus
-            fixing GitHub issues #90 and #105.  Also show fruity mode
-            indicator in the pattern editor.
-    -   Version 0.94.2:
-        -   Fixed issue #124, Stop button not resetting the progress bar.
-        -   Improved the panic function, and fixed an issue with it when JACK
-            native mode is in force.
-        -   The "user" definitions for port names are now applied to the
-            virtual (manual) output ports by the "-m -R" options.  Note that
-            input ports no longer show the "user" definitions.
-        -   Installation now adds files to /usr/local/share/sequencer64-0.94.
-    -   Version 0.94.1:
-        -   Fixed a side-effect of code that kept resetting the tick position
-            to 0, preventing progress if JACK transport was active.
-        -   Fixed the MIDI clock issue #123.
     -   For earlier version information, see the NEWS and ChangeLog files.
 
 This package is oriented to developers and users who do not mind building from

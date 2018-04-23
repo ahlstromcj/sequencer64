@@ -3,7 +3,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2005-07-03 to 2007-08-21 (pre-Sequencer24/64)
- * \updates       2018-04-22
+ * \updates       2018-04-23
  * \license       GNU GPLv2 or above
  *
  *  Daemonization module of the POSIX C Wrapper (PSXC) library
@@ -60,12 +60,25 @@
 
 #include <stdlib.h>                     /* EXIT_FAILURE for 32-bit builds   */
 #include <string.h>                     /* strlen() etc.                    */
+
 #include "platform_macros.h"            /* TBD                              */
-
-#if ! defined PLATFORM_WINDOWS
-
 #include "daemonize.hpp"                /* daemonization functions & macros */
 #include "easy_macros.h"                /* used in the following macro call */
+
+#if defined PLATFORM_WINDOWS
+
+/*
+ * For Windows, only the reroute_stdio() function is defined, currently.
+ */
+
+#include <fcntl.h>                      /* _O_RDWR                          */
+#include <io.h>                         /* _open(), _close()                */
+
+#define STD_CLOSE       _close
+#define STD_OPEN        _open
+#define STD_O_RDWR      _O_RDWR
+
+#else
 
 #if SEQ64_HAVE_SYS_STAT_H
 #include <sys/stat.h>                   /* umask(), etc.                    */
@@ -82,6 +95,10 @@
 #if SEQ64_HAVE_FCNTL_H
 #include <fcntl.h>                      /* O_RDWR flag                      */
 #endif
+
+#define STD_CLOSE       close
+#define STD_OPEN        open
+#define STD_O_RDWR      O_RDWR
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -119,7 +136,6 @@ set_current_directory (const std::string & path)
     }
     return result;
 }
-
 
 #if defined PLATFORM_POSIX_API
 
@@ -264,9 +280,29 @@ undaemonize (uint32_t previous_umask)
       (void) umask(previous_umask);          /* restore user mask             */
 }
 
+}           // namespace seq64
+
+#endif      // PLATFORM_POSIX_API
+
+#endif      // PLATFORM_WINDOWS
+
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
+namespace seq64
+{
+
+/**
+ * \todo
+ *    Implement "daemonizing" for Windows, including redirection to the
+ *    Windows Event Log.  Still need to figure out a way to do this very
+ *    simply, a la' Microsoft's 'svchost' executable.
+ */
+
 /**
  *  Alters the standard terminal file descriptors so that they either route to
- *  /dev/null or to a log file.
+ *  to a log file, under Linux or Windows.
  *
  * \param logfile
  *      The optional name of the file to which to log messages.  Defaults to
@@ -288,24 +324,24 @@ reroute_stdio (const std::string & logfile, bool closem)
     bool result = false;
     if (closem)
     {
-        int rc = close(STDIN_FILENO);
+        int rc = STD_CLOSE(STDIN_FILENO);
         if (rc == (-1))
             result = false;
 
-        rc = close(STDOUT_FILENO);
+        rc = STD_CLOSE(STDOUT_FILENO);
         if (rc == (-1))
             result = false;
 
-        rc = close(STDERR_FILENO);
+        rc = STD_CLOSE(STDERR_FILENO);
         if (rc == (-1))
             result = false;
     }
     else
     {
         result = true;
-        (void) close(STDIN_FILENO);
+        (void) STD_CLOSE(STDIN_FILENO);
 
-        int fd = open("/dev/null", O_RDWR);
+        int fd = STD_OPEN("NUL", STD_O_RDWR);
         if (fd != STDIN_FILENO)
         {
             result = false;
@@ -339,18 +375,7 @@ reroute_stdio (const std::string & logfile, bool closem)
     return result;
 }
 
-/**
- * \todo
- *    Implement "daemonizing" for Windows, including redirection to the
- *    Windows Event Log.  Still need to figure out a way to do this very
- *    simply, a la' Microsoft's 'svchost' executable.
- */
-
-#endif      // PLATFORM_POSIX vs Win32
-
 }           // namespace seq64
-
-#endif      // ! defined PLATFORM_WINDOWS
 
 /*
  * vim: ts=4 sw=4 et ft=cpp

@@ -121,7 +121,7 @@ typedef enum
 #endif
 
 #if __cplusplus >= 201103L                  /* C++11                        */
-#define SEQ64_COLOR(x)  PaletteColor:: ## x
+#define SEQ64_COLOR(x)  PaletteColor :: x
 #else
 #define SEQ64_COLOR(x)  x
 #endif

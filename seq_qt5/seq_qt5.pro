@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-04-12
+# \update      2018-04-24
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #

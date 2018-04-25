@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-20
+ * \updates     2018-04-24
  * \license     GNU GPLv2 or above
 
  *  This file needs to implement:
@@ -82,12 +82,11 @@ pm_exit (void)
 {
     pm_term();
 
-#ifdef PLATFORM_DEBUG
-#define STRING_MAX 80
+#ifdef PLATFORM_DEBUG_XXX
     {
-        char line[STRING_MAX];
+        char line[PM_STRING_MAX];
         printf("Type Enter to exit...\n");
-        fgets(line, STRING_MAX, stdin);
+        fgets(line, PM_STRING_MAX, stdin);
     }
 #endif
 }
@@ -103,7 +102,7 @@ pm_init (void)
     atexit(pm_exit);
 
 #ifdef PLATFORM_DEBUG
-    printf("registered pm_exit with atexit()\n");
+    printf("Registered pm_exit() with atexit()\n");
 #endif
 
     pm_winmm_init();

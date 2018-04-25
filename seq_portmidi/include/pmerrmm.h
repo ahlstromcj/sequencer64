@@ -25,13 +25,15 @@
  * \library     sequencer64 application
  * \author      Chris Ahlstrom
  * \date        2018-04-21
- * \updates     2018-04-21
+ * \updates     2018-04-24
  * \license     GNU GPLv2 or above
  *
  *  Provides system-specific error-messages for Windows.
  */
 
 #include <windows.h>
+
+#include "pminternal.h"
 
 #ifdef __cplusplus
 extern "C"

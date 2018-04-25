@@ -52,7 +52,7 @@
  * source, and you can turn them on by changing false to true below:
  */
 
-#define VERBOSE_ON          0
+#define VERBOSE_ON          1                   // TEMPORARY
 #define VERBOSE             if (VERBOSE_ON)
 
 #define MIDI_SYSEX          0xF0
@@ -180,7 +180,8 @@ alsa_unuse_queue (void)
         snd_seq_stop_queue(s_seq, s_queue, NULL);
         snd_seq_drain_output(s_seq);
         snd_seq_free_queue(s_seq, s_queue);
-        VERBOSE printf("s_queue freed\n");
+        VERBOSE
+            printf("s_queue freed\n");
     }
 }
 
@@ -344,11 +345,18 @@ alsa_write_byte
             if (when < 0)
                 when = 0;
 
-            VERBOSE printf("timestamp %d now %d latency %d, ",
-                           (int) timestamp, (int) now, midi->latency);
-            VERBOSE printf("scheduling event after %d\n", when);
+            VERBOSE
+                printf
+                (
+                    "Timestamp %d now %d latency %d, ",
+                    (int) timestamp, (int) now, midi->latency
+                );
+            VERBOSE
+                printf("Scheduling event after %d\n", when);
 
-            /* message is sent in relative ticks, where 1 tick = 1 ms */
+            /*
+             * Message is sent in relative ticks, where 1 tick = 1 ms.
+             */
 
             snd_seq_ev_schedule_tick(&ev, s_queue, 1, when);
 
@@ -371,7 +379,8 @@ alsa_write_byte
 
             snd_seq_ev_set_direct(&ev);     /* send event out without queueing */
         }
-        VERBOSE printf("sending event\n");
+        VERBOSE
+            printf("Sending event\n");
         err = snd_seq_event_output(s_seq, &ev);
         if (err < 0)
         {
@@ -470,8 +479,12 @@ alsa_in_open (PmInternal * midi, void * UNUSED(driverinfo))
     desc->in_sysex = 0;
     desc->error = 0;
 
-    VERBOSE printf("snd_seq_connect_from: %d %d %d\n",
-                   desc->this_port, desc->client, desc->port);
+    VERBOSE
+        printf
+        (
+            "snd_seq_connect_from: %d %d %d\n",
+            desc->this_port, desc->client, desc->port
+        );
 
     snd_seq_port_subscribe_alloca(&sub);
     addr.client = snd_seq_client_id(s_seq);
@@ -579,7 +592,7 @@ alsa_abort (PmInternal * UNUSED(midi))
     }
     */
 
-    printf("WARNING: alsa_abort() not implemented\n");
+    printf("WARNING: alsa_abort() not implemented.\n");
     return pmNoError;
 }
 
@@ -595,9 +608,6 @@ static PmError
 alsa_write_flush (PmInternal * midi, PmTimestamp UNUSED(timestamp))
 {
     alsa_descriptor_type desc = (alsa_descriptor_type) midi->descriptor;
-
-    // VERBOSE printf("snd_seq_drain_output: 0x%x\n", (unsigned int) s_seq);
-
     desc->error = snd_seq_drain_output(s_seq);
     if (desc->error < 0)
         return pmHostError;
@@ -620,7 +630,9 @@ alsa_write_short (PmInternal * midi, PmEvent * event)
     for (i = 0; i < bytes; i++)
     {
         midibyte_t byte = msg;
-        VERBOSE printf("sending 0x%x\n", byte);
+        VERBOSE
+            printf("Sending 0x%x\n", byte);
+
         alsa_write_byte(midi, byte, event->timestamp);
         if (desc->error < 0)
             break;

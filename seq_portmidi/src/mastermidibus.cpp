@@ -107,9 +107,9 @@ mastermidibus::api_init (int ppqn, midibpm /*bpm*/)
         dev_info = Pm_GetDeviceInfo(i);
 
 #ifdef PLATFORM_DEBUG   // _TMI
-        fprintf
+        printf
         (
-            stderr, "PortMidi %s device %d: %s in:%d out:%d\n",
+            "PortMidi %s device %d: %s in:%d out:%d\n",
             dev_info->interf, i, dev_info->name,
             dev_info->input, dev_info->output
         );
@@ -215,9 +215,9 @@ mastermidibus::api_get_midi_event (event * in)
         midibus * m = m_inbus_array.bus(i);
         if (m->poll_for_midi())
         {
-            int /*PmError*/ err = Pm_Read(m->m_pms, &event, 1);
+            int /* PmError */ err = Pm_Read(m->m_pms, &event, 1);
             if (err < 0)
-                printf("Pm_Read: %s\n", Pm_GetErrorText((PmError) err));
+                printf("Pm_Read(): %s\n", Pm_GetErrorText((PmError) err));
 
             if (m->m_inputing)
                 result = true;

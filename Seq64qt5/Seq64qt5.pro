@@ -6,7 +6,7 @@
 # \library    	seq64qt5 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-04-20
+# \update      2018-04-24
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -21,16 +21,7 @@
 message($$_PRO_FILE_PWD_)
 
 QT += core gui widgets
-
-# TARGET = qplseq64
-
-win32 {
-TARGET = qpwseq64
-}
-else:unix {
-TARGET = qplseq64
-}
-
+TARGET = qpseq64
 TEMPLATE += app
 CONFIG += static qtc_runnable
 

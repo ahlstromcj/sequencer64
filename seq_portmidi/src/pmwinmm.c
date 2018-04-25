@@ -254,7 +254,7 @@ pm_winmm_general_inputs (void)
          */
 
 #ifdef PLATFORM_DEBUG
-        printf("pm_winmm_general_inputs(): no input devices");
+        printf("pm_winmm_general_inputs(): no input devices\n");
 #endif
     }
     else
@@ -286,7 +286,7 @@ pm_winmm_general_inputs (void)
                     (const char *) midi_in_caps[i].szPname,
                     "general in : midiInGetDevCaps", winerrcode
                 );
-                printf("%s", errmsg);
+                printf("%s\n", errmsg);
 #endif
             }
         }
@@ -324,7 +324,7 @@ pm_winmm_mapper_input (void)
             (const char *) midi_in_mapper_caps.szPname,
             "mapper in : midiInGetDevCaps", winerrcode
         );
-        printf("%s", errmsg);
+        printf("%s\n", errmsg);
 #endif
     }
 }
@@ -364,7 +364,7 @@ pm_winmm_general_outputs (void)
                 (const char *) midi_out_caps[i].szPname,
                 "general : midiOutGetDevCaps", winerrcode
             );
-            printf("%s", errmsg);
+            printf("%s\n", errmsg);
 #endif
         }
     }
@@ -402,7 +402,7 @@ pm_winmm_mapper_output (void)
             (const char *) midi_out_mapper_caps.szPname,
             "mapper out : midiOutGetDevCaps", winerrcode
         );
-        printf("%s", errmsg);
+        printf("%s\n", errmsg);
 #endif
     }
 }
@@ -1159,11 +1159,15 @@ winmm_in_callback
         break;
 
     case MIM_ERROR:
-        /* printf("MIM_ERROR\n"); */
+#ifdef PLATFORM_DEBUG
+        printf("MIM_ERROR\n");
+#endif
         break;
 
     case MIM_LONGERROR:
-        /* printf("MIM_LONGERROR\n"); */
+#ifdef PLATFORM_DEBUG
+        printf("MIM_LONGERROR\n");
+#endif
         break;
 
     default:
@@ -1703,6 +1707,8 @@ winmm_end_sysex (PmInternal * midi, PmTimestamp timestamp)
             printf("OutLongMsg %d ", len);
             for (i = 0; i < len; ++i)
                 printf("%2x ", (midibyte_t)(m->hdr->lpData[i]));
+
+            printf("\n");
         }
 #endif
     }
@@ -2023,7 +2029,7 @@ pm_winmm_term (void)
 
 #ifdef PLATFORM_DEBUG
     char msg[PM_HOST_ERROR_MSG_LEN];
-    printf("pm_winmm_term called\n");
+    printf("pm_winmm_term() called\n");
 #endif
 
     for (i = 0; i < pm_descriptor_index; ++i)
@@ -2038,7 +2044,7 @@ pm_winmm_term (void)
 #ifdef PLATFORM_DEBUG
                 if (doneAny == 0)
                 {
-                    printf("begin closing open devices...\n");
+                    printf("Begin closing open devices...\n");
                     doneAny = 1;
                 }
 
@@ -2070,9 +2076,9 @@ pm_winmm_term (void)
 #ifdef PLATFORM_DEBUG
     if (doneAny)
     {
-        printf("warning: devices were left open. They have been closed.\n");
+        printf("Warning: devices were left open. They have been closed.\n");
     }
-    printf("pm_winmm_term exiting\n");
+    printf("pm_winmm_term() exiting\n");
 #endif
     pm_descriptor_index = 0;
 }

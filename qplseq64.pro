@@ -25,6 +25,7 @@
 TEMPLATE = subdirs
 SUBDIRS =  libseq64 seq_portmidi seq_qt5 Seq64qt5
 CONFIG += static link_prl ordered qtc_runnable
+
 Seq64qt5.depends = libseq64 seq_portmidi seq_qt5
 
 #******************************************************************************

@@ -78,6 +78,13 @@
 #define STD_OPEN        _open
 #define STD_O_RDWR      _O_RDWR
 
+/*
+ *  Do not document a namespace; it breaks Doxygen.
+ */
+
+namespace seq64
+{
+
 #else
 
 #if SEQ64_HAVE_SYS_STAT_H
@@ -280,18 +287,9 @@ undaemonize (uint32_t previous_umask)
       (void) umask(previous_umask);          /* restore user mask             */
 }
 
-}           // namespace seq64
-
 #endif      // PLATFORM_POSIX_API
 
 #endif      // PLATFORM_WINDOWS
-
-/*
- *  Do not document a namespace; it breaks Doxygen.
- */
-
-namespace seq64
-{
 
 /**
  * \todo

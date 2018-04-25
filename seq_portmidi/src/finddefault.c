@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-11
+ * \updates     2018-04-24
  * \license     GNU GPLv2 or above
  *
  *  Roger Dannenberg, Jan 2009, some fixes and reformatting by Chris Ahlstrom.
@@ -38,12 +38,6 @@
 #include "portmidi.h"
 #include "finddefault.h"
 #include "pminternal.h"
-
-/**
- *
- */
-
-#define STRING_MAX 256
 
 /**
  * skip over spaces, return first non-space.
@@ -145,7 +139,7 @@ find_default_device (char * path, int input, PmDeviceID id)
 
     while ((c = getc(inf)) != EOF)
     {
-        char pref_str[STRING_MAX];
+        char pref_str[PM_STRING_MAX];
         if (c != '"')
             continue;                   // scan up to quote
 
@@ -168,14 +162,14 @@ find_default_device (char * path, int input, PmDeviceID id)
 
         // now read the value up to the close quote
 
-        for (i = 0; i < STRING_MAX; i++)
+        for (i = 0; i < PM_STRING_MAX; ++i)
         {
             if ((c = getc(inf)) == '"')
                 break;
 
             pref_str[i] = c;
         }
-        if (i == STRING_MAX)
+        if (i == PM_STRING_MAX)
             continue;                   // value too long, ignore
 
         pref_str[i] = 0;                // BUG:  Was pref_str[i] == 0;

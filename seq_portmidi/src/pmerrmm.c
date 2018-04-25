@@ -44,8 +44,6 @@
 #include "easy_macros.h"
 #include "pmerrmm.h"
 
-#define PMERRMM_STRING_MAX          80
-
 /*
  *  This printf() stuff is really important for debugging client app w/host
  *  errors.  Probably want to do something else besides read/write from/to
@@ -67,7 +65,7 @@ midi_io_get_dev_caps_error
     MMRESULT errcode
 )
 {
-    static char s_error_storage[PMERRMM_STRING_MAX];
+    static char s_error_storage[PM_STRING_MAX];
     const char * result = "Unknown";
     switch (errcode)
     {

@@ -104,7 +104,7 @@ midibus::~midibus ()
 int
 midibus::api_poll_for_midi ()
 {
-    if (queue_number() >= 0)            /* used as a buss number here */
+    if (queue_number() >= 0)            /* used as a buss number here   */
     {
         PmError err = Pm_Poll(m_pms);
 
@@ -116,9 +116,9 @@ midibus::api_poll_for_midi ()
         {
             return 0;
         }
-        if (err == TRUE)
+        else                            /* if (err == TRUE)             */
         {
-            errprintf("Pm_Poll: %s\n", Pm_GetErrorText(err));
+            errprintf("Pm_Poll(): %s\n", Pm_GetErrorText(err));
             return 1;
         }
     }
@@ -138,7 +138,7 @@ midibus::api_init_out ()
     PmError err = Pm_OpenOutput(&m_pms, queue_number(), NULL, 100, NULL, NULL, 0);
     if (err != pmNoError)
     {
-        errprintf("Pm_OpenOutput: %s\n", Pm_GetErrorText(err));
+        errprintf("Pm_OpenOutput(): %s\n", Pm_GetErrorText(err));
         return false;
     }
     return true;
@@ -157,7 +157,7 @@ midibus::api_init_in ()
     PmError err = Pm_OpenInput(&m_pms, queue_number(), NULL, 100, NULL, NULL);
     if (err != pmNoError)
     {
-        errprintf("Pm_OpenInput: %s\n", Pm_GetErrorText(err));
+        errprintf("Pm_OpenInput(): %s\n", Pm_GetErrorText(err));
         return false;
     }
     return true;

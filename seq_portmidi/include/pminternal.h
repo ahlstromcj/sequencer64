@@ -27,7 +27,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-20
+ * \updates     2018-04-24
  * \license     GNU GPLv2 or above
  *
  * Here is a guide to implementers:
@@ -81,7 +81,8 @@ typedef unsigned int uint32_t;
  *  Any host error message will occupy less than this number of characters.
  */
 
-#define PM_HOST_ERROR_MSG_LEN           256u
+#define PM_HOST_ERROR_MSG_LEN           256
+#define PM_STRING_MAX                   256
 
 #ifndef FALSE
 #define FALSE   0

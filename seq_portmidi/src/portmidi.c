@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-24
+ * \updates     2018-04-27
  * \license     GNU GPLv2 or above
  *
  * Notes on host error reporting:
@@ -149,26 +149,15 @@ int pm_hosterror;
 
 char pm_hosterror_text[PM_HOST_ERROR_MSG_LEN];
 
-#ifdef PM_CHECK_ERRORS
-
-#include <stdio.h>
-
 /**
  *
+ *  System implementation of portmidi interface.  We should wrap this in a
+ *  function as well.
  */
 
-static void
-prompt_and_exit (void)
-{
-
-#ifdef PLATFORM_DEBUG_XXX
-    char line[PM_STRING_MAX];
-    printf("type ENTER...");
-    fgets(line, PM_STRING_MAX, stdin);
-#endif
-
-    exit(-1);                           /* this will clean up open ports */
-}
+int pm_descriptor_max = 0;
+int pm_descriptor_index = 0;
+descriptor_type pm_descriptors = nullptr;
 
 /**
  *
@@ -187,31 +176,19 @@ pm_errmsg (PmError err)
         printf("PortMidi host error: '%s'\n", pm_hosterror_text);
         pm_hosterror = FALSE;
         pm_hosterror_text[0] = 0;                   /* clear the message */
+#ifdef PM_CHECK_ERRORS
         prompt_and_exit();
+#endif
     }
     else if (err < 0)
     {
         printf("PortMidi call failed: '%s'\n", Pm_GetErrorText(err));
+#ifdef PM_CHECK_ERRORS
         prompt_and_exit();
+#endif
     }
     return err;
 }
-
-#else       // PM_CHECK_ERRORS
-
-#define pm_errmsg(err) err
-
-#endif      // PM_CHECK_ERRORS
-
-/**
- *
- *  System implementation of portmidi interface.  We should wrap this in a
- *  function as well.
- */
-
-int pm_descriptor_max = 0;
-int pm_descriptor_index = 0;
-descriptor_type pm_descriptors = nullptr;
 
 /**
  *  Describe interface/device pair to library.  This is called at
@@ -1888,6 +1865,122 @@ pm_read_bytes
     }
     return i;
 }
+
+/*
+ * Improved access to error messages and debugging features.  These will be
+ * accessible only via external functions.
+ */
+
+/**
+ *  A boolean to indicate to show debug messages.  Will start at false by
+ *  default for now.
+ */
+
+static int pm_show_debug = 1;
+
+/**
+ * \setter pm_show_debug
+ */
+
+void
+Pm_set_show_debug (int flag)
+{
+    pm_show_debug = flag;
+}
+
+/**
+ * \getter pm_show_debug
+ */
+
+int
+Pm_show_debug (void)
+{
+    return pm_show_debug;
+}
+
+/**
+ *  A boolean to indicate to exit upon error.  Will start at true by default
+ *  for now.
+ */
+
+static int pm_exit_on_error = 1;
+
+/**
+ * \setter pm_exit_on_error
+ */
+
+void
+Pm_set_exit_on_error (int flag)
+{
+    pm_exit_on_error = flag;
+}
+
+/**
+ * \getter pm_exit_on_error
+ */
+
+int
+Pm_exit_on_error (void)
+{
+    return pm_exit_on_error;
+}
+
+/**
+ *  Like pm_host_error_text[], but will be exposed to the outside world and
+ *  might contain additional information.
+ */
+
+static char pm_hosterror_message [PM_HOST_ERROR_MSG_LEN];
+
+/**
+ * \setter pm_host_error_message
+ */
+
+void
+Pm_set_hosterror_message (const char * msg)
+{
+    if (not_nullptr(msg))
+    {
+        if (strlen(msg) == 0)
+            pm_hosterror_message[0] = 0;
+        else
+            snprintf(pm_hosterror_message, sizeof pm_hosterror_message, msg);
+    }
+}
+
+/**
+ * \getter pm_host_error_message
+ */
+
+const char *
+Pm_hosterror_message (void)
+{
+    return &pm_hosterror_message[0];
+}
+
+#ifdef PM_CHECK_ERRORS
+
+#include <stdio.h>
+
+/**
+ *
+ */
+
+static void
+prompt_and_exit (void)
+{
+
+#ifdef PLATFORM_DEBUG_XXX
+    char line[PM_STRING_MAX];
+    printf("type ENTER...");
+    fgets(line, PM_STRING_MAX, stdin);
+#endif
+
+    if (pm_exit_on_error)
+        exit(-1);                       /* this will clean up open ports */
+}
+
+#endif      // PM_CHECK_ERRORS
 
 /*
  * portmidi.c

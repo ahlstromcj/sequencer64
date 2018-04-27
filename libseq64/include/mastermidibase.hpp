@@ -279,6 +279,8 @@ public:
 
     /**
      * \getter m_seq
+     *      Used only in perform::input_func() when not filtering MIDI input
+     *      by channel.
      */
 
     sequence * get_sequence () const

@@ -443,8 +443,7 @@ qsmainwnd::open_file (const std::string & fn)
     else
     {
         std::string errmsg = f.error_message();
-        QString msg_text = errmsg.c_str();
-        // msg_text += fn.c_str();
+        QString msg_text = errmsg.c_str();      /* msg_text += fn.c_str();  */
         m_msg_error->showMessage(msg_text);
         m_msg_error->exec();
         if (f.error_is_fatal())

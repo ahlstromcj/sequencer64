@@ -127,7 +127,8 @@ optionsfile::~optionsfile ()
 }
 
 /**
- *  Helper function for error-handling.
+ *  Helper function for error-handling.  It assembles a message and then
+ *  passes it to set_error_message().
  *
  * \param sectionname
  *      Provides the name of the section for reporting the error.

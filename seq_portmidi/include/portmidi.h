@@ -28,7 +28,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-20
+ * \updates     2018-04-26
  * \license     GNU GPLv2 or above
  *
  * Copyright (c) 1999-2000 Ross Bencina and Phil Burk
@@ -316,6 +316,17 @@ PMEXPORT PmError Pm_WriteSysEx
 (
     PortMidiStream * stream, PmTimestamp when, midibyte_t * msg
 );
+
+/*
+ * New section for accessing static options in the portmidi module.
+ */
+
+PMEXPORT void Pm_set_exit_on_error (int flag);
+PMEXPORT int Pm_exit_on_error (void);
+PMEXPORT void Pm_set_show_debug (int flag);
+PMEXPORT int Pm_show_debug (void);
+PMEXPORT void Pm_set_hosterror_message (const char * msg);
+PMEXPORT const char * Pm_hosterror_message (void);
 
 #ifdef __cplusplus
 }           // extern "C"

@@ -26,6 +26,11 @@
  * \date        2017-08-21
  * \updates     2018-04-20
  * \license     GNU GPLv2 or above
+ *
+ *  Check out this site:
+ *
+ *      http://donyaquick.com/midi-on-windows/
+ *      "Working with MIDI on Windows (Outside of a DAW)"
  */
 
 #ifdef _MSC_VER
@@ -2009,6 +2014,7 @@ pm_fns_node pm_winmm_out_dictionary =
 void
 pm_winmm_init (void)
 {
+    // TRIAL COMMENTING OUT???
     pm_winmm_mapper_input();
     pm_winmm_mapper_output();
     pm_winmm_general_inputs();

@@ -61,6 +61,13 @@ mastermidibus::mastermidibus (int ppqn, midibpm bpm)
  :
     mastermidibase      (ppqn, bpm)
 {
+    /*
+     * EXPERIMENTAL.
+     * New feature. Turn off exiting upon errors so that the application
+     * has a chance to come up and display the error(s).
+     */
+
+    Pm_set_exit_on_error(FALSE);
     Pm_Initialize();
 }
 

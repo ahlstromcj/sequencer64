@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-22
+ * \updates       2018-04-27
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -963,6 +963,21 @@ void
 qsmainwnd::panic()
 {
     perf().panic();
+}
+
+/**
+ *
+ */
+
+void
+qsmainwnd::show_message_box (const std::string & msg_text)
+{
+    if (not_nullptr(m_msg_error) && ! msg_text.empty())
+    {
+        QString msg = msg_text.c_str();     /* Qt still needs c_str()!! */
+        m_msg_error->showMessage(msg);
+        m_msg_error->exec();
+    }
 }
 
 }               // namespace seq64

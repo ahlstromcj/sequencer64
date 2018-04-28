@@ -325,6 +325,8 @@ PMEXPORT void Pm_set_exit_on_error (int flag);
 PMEXPORT int Pm_exit_on_error (void);
 PMEXPORT void Pm_set_show_debug (int flag);
 PMEXPORT int Pm_show_debug (void);
+PMEXPORT void Pm_set_error_present (int flag);
+PMEXPORT int Pm_error_present (void);
 PMEXPORT void Pm_set_hosterror_message (const char * msg);
 PMEXPORT const char * Pm_hosterror_message (void);
 

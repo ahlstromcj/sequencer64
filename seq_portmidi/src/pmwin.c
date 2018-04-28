@@ -123,6 +123,8 @@ pm_term (void)
     pm_winmm_term();
 }
 
+#ifdef SEQ64_PORTMIDI_USE_JAVA_PREFS
+
 /**
  *  Gets the default MIDI device by querying the Windows Registry.
  *
@@ -141,13 +143,14 @@ pm_get_default_device_id (int is_input, char * key)
     BYTE pattern[PATTERN_MAX];
     ULONG pattern_max = PATTERN_MAX;
     DWORD dwType;
+    PmDeviceID id = pmNoDevice;
+    int i;
+    int j;
 
     /*
      * Find the first input or device; this is the default.
      */
 
-    PmDeviceID id = pmNoDevice;
-    int i, j;
     Pm_Initialize();                    /* make sure the descriptors exist! */
     for (i = 0; i < pm_descriptor_index; ++i)
     {
@@ -157,8 +160,6 @@ pm_get_default_device_id (int is_input, char * key)
             break;
         }
     }
-
-#ifdef SEQ64_PORTMIDI_USE_JAVA_PREFS
 
     /*
      * Look in the Windows Registry for a default device name pattern.
@@ -226,10 +227,10 @@ pm_get_default_device_id (int is_input, char * key)
     if (i != pmNoDevice)
         id = i;
 
-#endif  // SEQ64_PORTMIDI_USE_JAVA_PREFS
-
     return id;
 }
+
+#endif  // SEQ64_PORTMIDI_USE_JAVA_PREFS
 
 #ifdef SEQ64_PORTMIDI_DEFAULT_DEVICE_ID
 

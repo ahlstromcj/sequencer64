@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-04-22
+ * \updates       2018-04-27
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -179,6 +179,12 @@ main (int argc, char * argv [])
          *  p.launch(seq64::usr().midi_ppqn());
          */
 
+        if (Pm_error_present())
+        {
+            ok = false;
+            seq24_window.show_message_box(std::string(Pm_hosterror_message()));
+        }
+
         if (ok)
         {
             if (optionindex < argc)                 /* MIDI filename given? */
@@ -187,7 +193,16 @@ main (int argc, char * argv [])
                 if (seq64::file_accessible(midifilename))
                     seq24_window.open_file(midifilename);
                 else
-                    printf("? MIDI file not found: %s\n", midifilename.c_str());
+                {
+                    char temp[256];
+                    (void) snprintf
+                    (
+                        temp, sizeof temp,
+                        "? MIDI file not found: %s\n", midifilename.c_str()
+                    );
+                    printf(temp);
+                    seq24_window.show_message_box(std::string(temp));
+                }
             }
 
 #ifdef PLATFORM_LINUX

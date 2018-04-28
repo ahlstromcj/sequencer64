@@ -157,7 +157,17 @@ main (int argc, char * argv [])
                 if (seq64::file_accessible(midifilename))
                     seq24_window.open_file(midifilename);
                 else
-                    printf("? MIDI file not found: %s\n", midifilename.c_str());
+                {
+                    char temp[256];
+                    (void) snprintf
+                    (
+                        temp, sizeof temp,
+                        "? MIDI file not found: %s\n", midifilename.c_str()
+                    );
+                    printf(temp);
+                    // seq24_window.show_message_box(std::string(temp));
+                    seq24_window.rc_error_dialog(std::string(temp));
+                }
             }
 
 #ifdef PLATFORM_LINUX

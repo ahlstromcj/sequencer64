@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-29
+ * \updates       2018-04-27
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -81,6 +81,7 @@ public:
     // open the file at the given path
 
     void open_file (const std::string & path);
+    void show_message_box (const std::string & msg_text);
 
 protected:
 

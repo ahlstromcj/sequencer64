@@ -272,11 +272,6 @@ pm_winmm_general_inputs (void)
             );
             if (winerrcode == MMSYSERR_NOERROR)
             {
-                /*
-                 * Ignore errors here. If pm_descriptor_max is exceeded, some
-                 * devices will not be accessible.
-                 */
-
                 (void) pm_add_device
                 (
                     "MMSystem", (char *) midi_in_caps[i].szPname, TRUE,
@@ -285,6 +280,11 @@ pm_winmm_general_inputs (void)
             }
             else
             {
+                /*
+                 * Ignore errors here. If pm_descriptor_max is exceeded, some
+                 * devices will not be accessible.
+                 */
+
 #ifdef PLATFORM_DEBUG
                 const char * errmsg = midi_io_get_dev_caps_error
                 (

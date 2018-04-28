@@ -338,8 +338,9 @@ pm_errmsg (PmError err)
     }
     else if (err < 0)
     {
-        printf("PortMidi call failed: '%s'\n", Pm_GetErrorText(err));
-        Pm_set_hosterror_message(pm_hosterror_text);
+        const char * errmsg = Pm_GetErrorText(err);
+        printf("PortMidi call failed: '%s'\n", errmsg);
+        Pm_set_hosterror_message(errmsg);
 #ifdef PM_CHECK_ERRORS
         prompt_and_exit();
 #endif

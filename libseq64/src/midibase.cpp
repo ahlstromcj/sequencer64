@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2018-01-03
+ * \updates       2018-04-28
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -454,6 +454,8 @@ midibase::connect_name () const
 /**
  *  Polls for MIDI events.
  *
+ *  EXPERIMENTAL FIX FOR PORTMIDI BUG BUT NEEDED FOR ALL.
+ *
  * \return
  *      Returns a value greater than 0 if MIDI events are available.
  *      Otherwise 0 is returned, or -1 for some APIs (ALSA) when an internal
@@ -463,7 +465,7 @@ midibase::connect_name () const
 int
 midibase::poll_for_midi ()
 {
-    return api_poll_for_midi();
+    return m_inputing ? api_poll_for_midi() : 0 ;
 }
 
 /**

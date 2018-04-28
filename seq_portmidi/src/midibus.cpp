@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-02-13
+ * \updates       2017-04-28
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the midibus class.
@@ -104,19 +104,20 @@ midibus::~midibus ()
 int
 midibus::api_poll_for_midi ()
 {
-    if (queue_number() >= 0)            /* used as a buss number here   */
+    if (not_nullptr(m_pms) && queue_number() >= 0)          /* buss number  */
     {
         PmError err = Pm_Poll(m_pms);
 
         /*
-         * if (err == FALSE versus TRUE), too simplistic.
+         * if (err == FALSE versus TRUE), too simplistic.  Besides, FALSE ==
+         * pmNoError and pmNoData, and TRUE == any other value.
          */
 
         if (err == pmNoError || err == pmNoData || err == pmGotData)
         {
             return 0;
         }
-        else                            /* if (err == TRUE)             */
+        if (err == TRUE)                /* back to what it was          */
         {
             errprintf("Pm_Poll(): %s\n", Pm_GetErrorText(err));
             return 1;

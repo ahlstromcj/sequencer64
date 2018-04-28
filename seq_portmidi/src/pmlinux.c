@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-20
+ * \updates     2018-04-28
  * \license     GNU GPLv2 or above
  *
  *  This file only needs to implement pm_init(), which calls various routines
@@ -66,6 +66,10 @@ pm_init ()
 {
 #ifdef SEQ64_HAVE_LIBASOUND
 	pm_linuxalsa_init();
+#else
+#ifdef SEQ64_PORTMIDI_NULL          // never defined, at present
+    pm_linuxnull_init();
+#endif
 #endif
 
     /*

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2018-02-06
+ * \updates       2018-04-28
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -522,6 +522,7 @@ extern bool extract_port_names
 );
 extern std::string extract_bus_name (const std::string & fullname);
 extern std::string extract_port_name (const std::string & fullname);
+extern std::string current_date_time ();
 
 }           // namespace seq64
 

@@ -3,7 +3,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2005-07-03 to 2007-08-21 (pre-Sequencer24/64)
- * \updates       2018-04-23
+ * \updates       2018-04-28
  * \license       GNU GPLv2 or above
  *
  *  Daemonization module of the POSIX C Wrapper (PSXC) library
@@ -61,9 +61,8 @@
 #include <stdlib.h>                     /* EXIT_FAILURE for 32-bit builds   */
 #include <string.h>                     /* strlen() etc.                    */
 
-#include "platform_macros.h"            /* TBD                              */
 #include "daemonize.hpp"                /* daemonization functions & macros */
-#include "easy_macros.h"                /* used in the following macro call */
+#include "calculations.hpp"             /* seq64::current_date_time()       */
 
 #if defined PLATFORM_WINDOWS
 
@@ -359,7 +358,15 @@ reroute_stdio (const std::string & logfile, bool closem)
             }
             else                            /* route output to log-file     */
             {
-                FILE * fp = freopen(logfile.c_str(), "w", stdout);
+                /*
+                 * ca 2018-04-28
+                 *  Change from "w" (O_WRONLY|O_CREAT|O_TRUNC) to
+                 *  "a" (O_WRONLY|O_CREAT|O_APPEND).
+                 *
+                 * FILE * fp = freopen(logfile.c_str(), "w", stdout);
+                 */
+
+                FILE * fp = freopen(logfile.c_str(), "g", stdout);
                 if (not_nullptr(fp))
                 {
                     if (dup2(STDOUT_FILENO, STDERR_FILENO) != STDERR_FILENO)
@@ -369,6 +376,8 @@ reroute_stdio (const std::string & logfile, bool closem)
                     result = false;
             }
         }
+        if (result)
+            printf("\n%s\n", current_date_time().c_str());
     }
     return result;
 }

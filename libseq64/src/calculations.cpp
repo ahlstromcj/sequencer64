@@ -1309,6 +1309,27 @@ extract_port_name (const std::string & fullname)
         fullname.substr(colonpos + 1) : fullname ;
 }
 
+/**
+ *  Gets the current date/time.
+ *
+ * \return
+ *      Returns
+ */
+
+std::string
+current_date_time ()
+{
+    static char s_temp[64];
+    static const char * const s_format = "%Y-%m-%d %H:%M:%S";
+    time_t t;
+    memset(s_temp, 0, sizeof s_temp);
+    time(&t);
+
+    struct tm * tm = localtime(&t);
+    strftime(s_temp, sizeof s_temp - 1, s_format, tm);
+    return std::string(s_temp);
+}
+
 }       // namespace seq64
 
 /*

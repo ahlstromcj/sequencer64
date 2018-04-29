@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-04-19
+ * \updates       2018-04-29
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -333,11 +333,11 @@ rc_settings::home_config_directory () const
     char * env = getenv(HOME);                      /* see banner notes     */
     if (env != NULL)
     {
-        std::string home(env);                      // getenv(HOME);
-        result = home + PATH_SLASH;                      /* e.g. /home/username/  */
+        std::string home(env);                      /* getenv(HOME);        */
+        result = home + PATH_SLASH;                 /* e.g. /home/username/ */
         if (! rc().legacy_format())
         {
-            result += config_directory();           /* new, longer directory */
+            result += config_directory();           /* Seq64 directory      */
 #ifdef PLATFORM_UNIX
             result += PATH_SLASH;
 #endif
@@ -551,21 +551,25 @@ rc_settings::jack_session_uuid (const std::string & value)
  * \setter m_last_used_dir
  *
  * \param value
- *      The value to use to make the setting.
+ *      The value to use to make the setting.  It needs to be a directory, not
+ *      a file.  Also, we now expand a relative directory to the full path to
+ *      that directory, to avoid ambiguity should the application be run from
+ *      a different directory.
  */
 
 void
 rc_settings::last_used_dir (const std::string & value)
 {
     if (! value.empty())
-        m_last_used_dir = value;
+        m_last_used_dir = get_full_path(value);
 }
 
 /**
  * \setter m_config_directory
  *
  * \param value
- *      The value to use to make the setting.
+ *      The value to use to make the setting.  Currently, we do not handle
+ *      relative paths.  To do so seems... iffy.
  */
 
 void

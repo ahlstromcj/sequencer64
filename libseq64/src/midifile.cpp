@@ -387,7 +387,11 @@ midifile::parse (perform & p, int screenset, bool importing)
         m_name.c_str(), std::ios::in | std::ios::binary | std::ios::ate
     );
     m_error_is_fatal = false;
-    if (! file.is_open())
+    if (file.is_open())
+    {
+        printf("[Opened MIDI file, '%s']\n", m_name.c_str());
+    }
+    else
     {
         m_error_is_fatal = true;
         m_error_message = "Error opening MIDI file '";

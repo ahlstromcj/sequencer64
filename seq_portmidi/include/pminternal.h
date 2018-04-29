@@ -284,9 +284,14 @@ typedef enum
     pmBadPtr,
     pmBadData,
     pmInternalError,
-    pmBufferMaxSize
+    pmBufferMaxSize,
+    pmDeviceClosed
 
-    /* If you add a new error type, be sure to update Pm_GetErrorText() */
+    /*
+     * \note
+     *      If you add a new error type here, be sure to update
+     *      Pm_GetErrorText()!!
+     */
 
 } PmError;
 

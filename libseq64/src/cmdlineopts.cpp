@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-04-22
+ * \updates       2018-04-29
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -161,14 +161,11 @@ static struct option long_options [] =
 
     /*
      * New app-specific options, for easier expansion.  The -o/--option
-     * processing has to be handled outside of the get-opt setup, because it
+     * processing is mostly handled outside of the get-opt setup, because it
      * can disable detection of a MIDI file-name argument.
      */
 
-#if 0
     {"option",              0, 0, 'o'},                 /* expansion!       */
-#endif
-
     {0, 0, 0, 0}                                        /* terminator       */
 };
 
@@ -620,7 +617,7 @@ parse_log_option (int argc, char * argv [])
         std::string logfile = usr().option_logfile();
         if (! logfile.empty())
         {
-#ifdef PLATFORM_LINUX
+#ifdef PLATFORM_LINUX_XXX                   /* let main() call this */
             (void) reroute_stdio(logfile);
 #endif
             result = true;

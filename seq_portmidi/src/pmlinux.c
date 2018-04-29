@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-28
+ * \updates     2018-04-29
  * \license     GNU GPLv2 or above
  *
  *  This file only needs to implement pm_init(), which calls various routines
@@ -42,7 +42,10 @@
 #include <stdlib.h>
 
 #include "seq64-config.h"
+#include "easy_macros.h"                /* nullptr                          */
+// #ifdef SEQ64_PORTMIDI_FIND_DEFAULT_DEVICE
 #include "finddefault.h"
+// #endif
 #include "pmutil.h"
 #include "pminternal.h"
 
@@ -79,6 +82,9 @@ pm_init ()
      */
 
     pm_initialized = TRUE;
+
+// #ifdef SEQ64_PORTMIDI_FIND_DEFAULT_DEVICE
+
     pm_default_input_device_id = find_default_device
     (
         "/PortMidi/PM_RECOMMENDED_INPUT_DEVICE", TRUE,
@@ -90,6 +96,9 @@ pm_init ()
         "/PortMidi/PM_RECOMMENDED_OUTPUT_DEVICE", FALSE,
         pm_default_output_device_id
     );
+
+// #endif  // SEQ64_PORTMIDI_FIND_DEFAULT_DEVICE
+
 }
 
 /**
@@ -105,6 +114,11 @@ pm_term (void)
 }
 
 #ifdef SEQ64_PORTMIDI_DEFAULT_DEVICE_ID
+
+/*
+ * This code is not used.  Pm_Initialize() is called in the PortMidi version
+ * of the mastermidibus constructor.
+ */
 
 /**
  *
@@ -131,23 +145,37 @@ Pm_GetDefaultOutputDeviceID ()
 #endif  // ifdef SEQ64_PORTMIDI_DEFAULT_DEVICE_ID
 
 /**
+ *  A wrapper for malloc().
  *
+ * \param s
+ *      Provides the number of bytes to allocate.
+ *
+ * \return
+ *      Returns a pointer to the allocated memory, or a null pointer if the
+ *      size parameter is 0.
  */
 
 void *
 pm_alloc (size_t s)
 {
-    return malloc(s);
+    return s > 0 ? malloc(s) : nullptr ;
 }
 
 /**
+ *  A wrapper for free().  It would be nice to be able so see if the pointer
+ *  was already freed, as calling free() twice on the same pointer is
+ *  undefined.  The caller can guard against this by setting the pointer to
+ *  null explicitly after calling this function.
  *
+ * \param ptr
+ *      The pointer to be freed.  It is ignored if null.
  */
 
 void
 pm_free (void * ptr)
 {
-    free(ptr);
+    if (not_nullptr(ptr))
+        free(ptr);
 }
 
 /*

@@ -1,4 +1,4 @@
-.TH Sequencer64 "January 10 2018" "Version 0.94.5" "Sequencer64 Manual Page"
+.TH Sequencer64 "May 1 2018" "Version 0.94.8" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real-time live MIDI sequencer refactored from Seq24
@@ -178,8 +178,9 @@ JACK master will fail if there is already a JACK master.
 .TP 8
 .B \-M, \-\-jack-start-mode \fI<x>\fP
 When Sequencer64 is synced to JACK, the following play modes are available:
-	(0 = live mode)
-	(1 = song mode) (default)
+0 = live mode and 1 = song mode (the default).  Live mode means that
+the musician controls the unmuting of patterns on the main window.  Song mode
+means that the song layout in the "Song" window controls the playback.
 
 .TP 8
 .B \-t, \-\-jack-midi
@@ -232,13 +233,13 @@ log=filename  Redirect console output to a log file in the
 wid=3x2,f     Sets up for multiple main windows, to show
               multiple sets in a grid of patterns panels.
 sets=RxC      Modifies the rows and columns in a set from the
-			  default of 4x8.  Supported values of R are 4 to 8,
-			  and C can range from 8 to 12. If not 4x8, seq64 is
-			  in 'variset' mode. Affects mute groups, too.
-scale=x       Scales the main window size, from 1.0 to 3.0.
-              Actually, 0.75 will also work, and is useful
-              when using "-o wid=2x2 -o sets=8x8", though
-              the pattern labelling is mildly distorted.
+              default of 4x8.  Supported values of R are 4 to 8,
+              and C can range from 8 to 12. If not 4x8, seq64 is
+              in 'variset' mode. Affects mute groups, too.
+scale=x       Scales the main window size, from 0.5 to 3.0.
+              A value of 0.75 is useful when using
+              "-o wid=2x2 -o sets=8x8", though the pattern
+              labelling is mildly distorted.
 
 .SH FILES
 \fB$HOME\fP/.config/sequencer64.rc stores the main configuration settings for

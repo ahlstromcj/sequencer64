@@ -3,7 +3,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2005-07-03 to 2007-08-21 (pre-Sequencer24/64)
- * \updates       2018-04-28
+ * \updates       2018-04-29
  * \license       GNU GPLv2 or above
  *
  *  Daemonization module of the POSIX C Wrapper (PSXC) library
@@ -76,6 +76,7 @@
 #define STD_CLOSE       _close
 #define STD_OPEN        _open
 #define STD_O_RDWR      _O_RDWR
+#define DEV_NULL        "NUL"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -105,6 +106,7 @@ namespace seq64
 #define STD_CLOSE       close
 #define STD_OPEN        open
 #define STD_O_RDWR      O_RDWR
+#define DEV_NULL        "/dev/null"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -338,12 +340,11 @@ reroute_stdio (const std::string & logfile, bool closem)
         result = true;
         (void) STD_CLOSE(STDIN_FILENO);
 
-        int fd = STD_OPEN("NUL", STD_O_RDWR);
+        int fd = STD_OPEN(DEV_NULL, STD_O_RDWR);
         if (fd != STDIN_FILENO)
-        {
             result = false;
-        }
-        else
+
+        if (result)
         {
             if (logfile.empty())            /* route output to /dev/null    */
             {
@@ -366,7 +367,7 @@ reroute_stdio (const std::string & logfile, bool closem)
                  * FILE * fp = freopen(logfile.c_str(), "w", stdout);
                  */
 
-                FILE * fp = freopen(logfile.c_str(), "g", stdout);
+                FILE * fp = freopen(logfile.c_str(), "a", stdout);
                 if (not_nullptr(fp))
                 {
                     if (dup2(STDOUT_FILENO, STDERR_FILENO) != STDERR_FILENO)
@@ -377,7 +378,13 @@ reroute_stdio (const std::string & logfile, bool closem)
             }
         }
         if (result)
-            printf("\n%s\n", current_date_time().c_str());
+        {
+            printf
+            (
+                "\n%s \n%s \n%s \n",
+                SEQ64_APP_NAME, logfile.c_str(), current_date_time().c_str()
+            );
+        }
     }
     return result;
 }

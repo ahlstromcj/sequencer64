@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-04-20
+ * \updates       2018-04-28
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -675,8 +675,8 @@ optionsfile::parse (perform & p)
                 {
                     bool flag = bool(bus);
                     rc().filter_by_channel(flag);
-                    p.filter_by_channel(flag);      /* important! */
-                    infoprintf("filter-by-channel %s\n", flag ? "on" : "off");
+                    p.filter_by_channel(flag);              /* important! */
+                    infoprintf("[Filter-by-channel %s]\n", flag ? "on" : "off");
                 }
             }
             if (b < buses)

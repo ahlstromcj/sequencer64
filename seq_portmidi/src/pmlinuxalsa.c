@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-20
+ * \updates     2018-04-29
  * \license     GNU GPLv2 or above
  *
  * Written by:
@@ -48,15 +48,15 @@
 #include "pmlinux.h"
 
 /*
- * I used many print statements to debug this code. I left them in the
- * source, and you can turn them on by changing false to true below:
+ *  I used many print statements to debug this code. I left them in the
+ *  source, and you can turn them on by changing false to true below:
  */
 
-#define VERBOSE_ON          1                   // TEMPORARY
-#define VERBOSE             if (VERBOSE_ON)
+#define VERBOSE_ON          0                   // TEMPORARY
 
-#define MIDI_SYSEX          0xF0
-#define MIDI_EOX            0xF7
+/*
+ *  Check for ALSA version.
+ */
 
 #if SND_LIB_MAJOR == 0 && SND_LIB_MINOR < 9
 #error needs ALSA 0.9.0 or later
@@ -86,13 +86,14 @@ extern pm_fns_node pm_linuxalsa_out_dictionary;
  * all input comes here, output queue allocated on seq
  */
 
-static snd_seq_t * s_seq = NULL;
+static snd_seq_t * s_seq = nullptr;
 
 /**
  *
  */
 
-static int s_queue, s_queue_used;       /* one for all ports, reference counted */
+static int s_queue;                 /* one for all ports, reference counted */
+static int s_queue_used;            /* one for all ports, reference counted */
 
 /**
  *
@@ -180,13 +181,13 @@ alsa_unuse_queue (void)
         snd_seq_stop_queue(s_seq, s_queue, NULL);
         snd_seq_drain_output(s_seq);
         snd_seq_free_queue(s_seq, s_queue);
-        VERBOSE
+        if (VERBOSE_ON)
             printf("s_queue freed\n");
     }
 }
 
 /**
- * midi_message_length -- how many bytes in a message?
+ *  midi_message_length() -- how many bytes in a message?
  */
 
 static int
@@ -246,22 +247,19 @@ alsa_out_open (PmInternal * midi, void * UNUSED(driverinfo))
     midi->descriptor = desc;
 
 //                 ((((int) (intptr_t) (x)) >> 8) & 0xff)
-    desc->client = ((((int) (intptr_t) (client_port)) >> 8) & 0xff);
+//  desc->client = ((((int) (intptr_t) (client_port)) >> 8) & 0xff);
 
     desc->client = MASK_DESCRIPTOR_CLIENT(client_port);
     desc->port = MASK_DESCRIPTOR_PORT(client_port);
     desc->this_port = midi->device_id;
     desc->in_sysex = 0;
     desc->error = 0;
-
     err = snd_midi_event_new(PM_DEFAULT_SYSEX_BUFFER_SIZE, &desc->parser);
     if (err < 0)
         goto free_this_port;
 
-    if (midi->latency > 0)
+    if (midi->latency > 0)          /* must delay output using a queue */
     {
-        /* must delay output using a queue */
-
         err = alsa_use_queue();
         if (err < 0)
             goto free_parser;
@@ -308,7 +306,13 @@ alsa_out_open (PmInternal * midi, void * UNUSED(driverinfo))
 }
 
 /**
- *
+ * \note
+ *      For cases where the user does not supply a time function, we could
+ *      optimize the code by not starting Pt_Time and using the alsa tick time
+ *      instead. I didn't do this because it would entail changing the queue
+ *      management to start the queue tick count when PortMidi is initialized
+ *      and keep it running until PortMidi is terminated. (This should be
+ *      simple, but it's not how the code works now.) -- RBD
  */
 
 static PmError
@@ -345,30 +349,22 @@ alsa_write_byte
             if (when < 0)
                 when = 0;
 
-            VERBOSE
+            if (VERBOSE_ON)
                 printf
                 (
                     "Timestamp %d now %d latency %d, ",
                     (int) timestamp, (int) now, midi->latency
                 );
-            VERBOSE
+
+            if (VERBOSE_ON)
                 printf("Scheduling event after %d\n", when);
 
             /*
-             * Message is sent in relative ticks, where 1 tick = 1 ms.
+             * Message is sent in relative ticks, where 1 tick = 1 ms. See the
+             * function banner note.
              */
 
             snd_seq_ev_schedule_tick(&ev, s_queue, 1, when);
-
-            /*
-             * NOTE: for cases where the user does not supply a time function,
-             * we could optimize the code by not starting Pt_Time and using
-             * the alsa tick time instead. I didn't do this because it would
-             * entail changing the queue management to start the queue tick
-             * count when PortMidi is initialized and keep it running until
-             * PortMidi is terminated. (This should be simple, but it's not
-             * how the code works now.) -RBD
-             */
         }
         else
         {
@@ -379,8 +375,9 @@ alsa_write_byte
 
             snd_seq_ev_set_direct(&ev);     /* send event out without queueing */
         }
-        VERBOSE
+        if (VERBOSE_ON)
             printf("Sending event\n");
+
         err = snd_seq_event_output(s_seq, &ev);
         if (err < 0)
         {
@@ -407,14 +404,18 @@ alsa_out_close (PmInternal * midi)
 
     if (pm_hosterror)
     {
-        // if there's an error, try to delete the port anyway, but don't
-        // change the pm_hosterror value so we retain the first error
+        /*
+         * If there's an error, try to delete the port anyway, but don't
+         * change the pm_hosterror value so we retain the first error
+         */
 
         snd_seq_delete_port(s_seq, desc->this_port);
     }
     else
     {
-        // if there's no error, delete the port and retain any error
+        /*
+         * If there's no error, delete the port and retain any error
+         */
 
         pm_hosterror = snd_seq_delete_port(s_seq, desc->this_port);
     }
@@ -422,7 +423,7 @@ alsa_out_close (PmInternal * midi)
         alsa_unuse_queue();
 
     snd_midi_event_free(desc->parser);
-    midi->descriptor = NULL;    /* destroy the pointer to signify "closed" */
+    midi->descriptor = nullptr;    /* destroy pointer to signify "closed" */
     pm_free(desc);
     if (pm_hosterror)
     {
@@ -470,7 +471,9 @@ alsa_in_open (PmInternal * midi, void * UNUSED(driverinfo))
     if (err < 0)
         goto free_queue;
 
-    /* fill in fields of desc, which is passed to pm_write routines */
+    /*
+     * Fill in the fields of desc, which is passed to pm_write routines.
+     */
 
     midi->descriptor = desc;
     desc->client = MASK_DESCRIPTOR_CLIENT(client_port);
@@ -479,7 +482,7 @@ alsa_in_open (PmInternal * midi, void * UNUSED(driverinfo))
     desc->in_sysex = 0;
     desc->error = 0;
 
-    VERBOSE
+    if (VERBOSE_ON)
         printf
         (
             "snd_seq_connect_from: %d %d %d\n",
@@ -495,13 +498,17 @@ alsa_in_open (PmInternal * midi, void * UNUSED(driverinfo))
     snd_seq_port_subscribe_set_sender(sub, &addr);
     snd_seq_port_subscribe_set_time_update(sub, 1);
 
-    /* this doesn't seem to work: messages come in with real timestamps */
+    /*
+     * This doesn't seem to work: messages come in with real timestamps.
+     */
 
     snd_seq_port_subscribe_set_time_real(sub, 0);
     err = snd_seq_subscribe_port(s_seq, sub);
 
-    /* err =
-       snd_seq_connect_from(s_seq, desc->this_port, desc->client, desc->port); */
+    /*
+     * err = snd_seq_connect_from(s_seq, desc->this_port, desc->client,
+     *      desc->port);
+     */
 
     if (err < 0)
         goto free_this_port;            /* clean up and return on error */
@@ -563,14 +570,13 @@ alsa_in_close (PmInternal * midi)
 }
 
 /**
- *
- * NOTE: ALSA documentation is vague. This is supposed to remove any pending
- * output messages. If you can test and confirm this code is correct, please
- * update this comment. -RBD
- *
- * Unfortunately, I can't even compile it -- my ALSA version does not
- * implement snd_seq_remove_events_t, so this does not compile. I'll try
- * again, but it looks like I'll need to upgrade my entire Linux OS -RBD
+ * \note
+ *      ALSA documentation is vague. This is supposed to remove any pending
+ *      output messages. If you can test and confirm this code is correct,
+ *      please update this comment.  Unfortunately, I can't even compile it --
+ *      my ALSA version does not implement snd_seq_remove_events_t, so this
+ *      does not compile. I'll try again, but it looks like I'll need to
+ *      upgrade my entire Linux OS. -- RBD
  */
 
 static PmError
@@ -585,9 +591,9 @@ alsa_abort (PmInternal * UNUSED(midi))
     snd_seq_remove_events_set_dest(&info, &addr);
     snd_seq_remove_events_set_condition(&info, SND_SEQ_REMOVE_DEST);
     pm_hosterror = snd_seq_remove_events(s_seq, &info);
-    if (pm_hosterror) {
-        get_alsa_error_text(pm_hosterror_text, PM_HOST_ERROR_MSG_LEN,
-                            pm_hosterror);
+    if (pm_hosterror)
+    {
+        get_alsa_error_text(pm_hosterror_text, PM_HOST_ERROR_MSG_LEN, pm_hosterror);
         return pmHostError;
     }
     */
@@ -608,6 +614,12 @@ static PmError
 alsa_write_flush (PmInternal * midi, PmTimestamp UNUSED(timestamp))
 {
     alsa_descriptor_type desc = (alsa_descriptor_type) midi->descriptor;
+
+#if 0
+    if (VERBOSE_ON)
+        printf("snd_seq_drain_output: 0x%x\n", (unsigned) s_seq);
+#endif
+
     desc->error = snd_seq_drain_output(s_seq);
     if (desc->error < 0)
         return pmHostError;
@@ -627,10 +639,10 @@ alsa_write_short (PmInternal * midi, PmEvent * event)
     PmMessage msg = event->message;
     int i;
     alsa_descriptor_type desc = (alsa_descriptor_type) midi->descriptor;
-    for (i = 0; i < bytes; i++)
+    for (i = 0; i < bytes; ++i)
     {
         midibyte_t byte = msg;
-        VERBOSE
+        if (VERBOSE_ON)
             printf("Sending 0x%x\n", byte);
 
         alsa_write_byte(midi, byte, event->timestamp);
@@ -658,10 +670,10 @@ alsa_sysex (PmInternal * UNUSED(midi), PmTimestamp UNUSED(timestamp))
 
 /**
  *  Linux implementation does not use this synchronize function.  Apparently,
- *  Alsa data is relative to the time you send it, and there is no reference.
- *  If this is true, this is a serious shortcoming of Alsa. If not true, then
+ *  ALSA data is relative to the time you send it, and there is no reference.
+ *  If this is true, this is a serious shortcoming of ALSA. If not true, then
  *  PortMidi has a serious shortcoming -- it should be scheduling relative to
- *  Alsa's time reference.
+ *  ALSA's time reference.
  */
 
 static PmTimestamp
@@ -683,19 +695,17 @@ handle_event (snd_seq_event_t * ev)
     PmTimeProcPtr time_proc = midi->time_proc;
     PmTimestamp timestamp;
 
-    /* time stamp should be in ticks, using our queue where 1 tick = 1ms */
+    /*
+     * Time stamp should be in ticks, using our queue, where 1 tick = 1 ms.
+     */
 
     assert((ev->flags & SND_SEQ_TIME_STAMP_MASK) == SND_SEQ_TIME_STAMP_TICK);
-
-    /* if no time_proc, just return "native" ticks (ms) */
-
     if (time_proc == NULL)
     {
-        timestamp = ev->time.tick;
+        timestamp = ev->time.tick;  /* no time_proc, return native ticks, ms */
     }
-    else
+    else                            /* translate time to time_proc basis */
     {
-        /* translate time to time_proc basis */
 
         snd_seq_queue_status_t *queue_status;
         snd_seq_queue_status_alloca(&queue_status);
@@ -834,10 +844,11 @@ handle_event (snd_seq_event_t * ev)
 
     case SND_SEQ_EVENT_SYSEX:
         {
+            /*
+             * Assume there is one SysEx byte to process.
+             */
+
             const midibyte_t * ptr = (const midibyte_t *) ev->data.ext.ptr;
-
-            /* assume there is one sysex byte to process */
-
             pm_read_bytes(midi, ptr, ev->data.ext.len, timestamp);
             break;
         }
@@ -845,27 +856,27 @@ handle_event (snd_seq_event_t * ev)
 }
 
 /**
- * Poll!
+ *  Poll!  Checks for and ignore errors, e.g. input overflow.
  *
- * Checks for and ignore errors, e.g. input overflow.
+ *  There is an expensive check (while loop) for input data, and it gets data
+ *  from device.
  *
- * Note: if there's overflow, this should be reported
- * all the way through to client. Since input from all
- * devices is merged, we need to find all input devices
- * and set all to the overflow state.
- * NOTE: this assumes every input is ALSA based.
+ * \note
+ *      If there's overflow, this should be reported all the way through to
+ *      client. Since input from all devices is merged, we need to find all
+ *      input devices and set all to the overflow state.  NOTE: this assumes
+ *      every input is ALSA based.
  */
 
 static PmError
 alsa_poll (PmInternal * UNUSED(midi))
 {
     snd_seq_event_t * ev;
-
-    /* expensive check for input data, gets data from device: */
-
-    while (snd_seq_event_input_pending(s_seq, TRUE) > 0)
+    while (snd_seq_event_input_pending(s_seq, TRUE) > 0)    /* expensive!   */
     {
-        /* cheap check on local input buffer, see note above. */
+        /*
+         * Cheap check on local input buffer.
+         */
 
         while (snd_seq_event_input_pending(s_seq, FALSE) > 0)
         {
@@ -963,10 +974,10 @@ pm_fns_node pm_linuxalsa_out_dictionary =
 };
 
 /**
- * pm_strdup -- copy a string to the heap. Use this rather than strdup so
- *    that we call pm_alloc, not malloc. This allows portmidi to avoid
- *    malloc which might cause priority inversion. Probably ALSA is going
- *    to call malloc anyway, so this extra work here may be pointless.
+ *  Copies a string to the heap. Use this function, rather than strdup(), so
+ *  that we call pm_alloc(), not malloc(). This allows PortMidi to avoid
+ *  malloc() which might cause priority inversion. Probably ALSA is going to
+ *  call malloc()l anyway, so this extra work here may be pointless.
  */
 
 char *
@@ -979,14 +990,13 @@ pm_strdup (const char * s)
 }
 
 /**
- * Previously, the last parameter was SND_SEQ_NONBLOCK, but this
- * would cause messages to be dropped if the ALSA buffer fills up.
- * The correct behavior is for writes to block until there is
- * room to send all the data. The client should normally allocate
- * a large enough buffer to avoid blocking on output.
- * Now that blocking is enabled, the seq_event_input() will block
- * if there is no input data. This is not what we want, so must
- * call seq_event_input_pending() to avoid blocking.
+ *  Previously, the last parameter to snd_seq_opten() was SND_SEQ_NONBLOCK,
+ *  but this would cause messages to be dropped if the ALSA buffer fills up.
+ *  The correct behavior is for writes to block until there is room to send
+ *  all the data. The client should normally allocate a large enough buffer to
+ *  avoid blocking on output.  Now that blocking is enabled, the
+ *  seq_event_input() will block if there is no input data. This is not what
+ *  we want, so must call seq_event_input_pending() to avoid blocking.
  */
 
 PmError

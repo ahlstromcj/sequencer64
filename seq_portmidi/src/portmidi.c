@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-28
+ * \updates     2018-04-29
  * \license     GNU GPLv2 or above
  *
  * Notes on host error reporting:
@@ -665,6 +665,10 @@ Pm_GetErrorText (PmError errnum)
         msg = "PortMidi: Buffer cannot be made larger";
         break;
 
+    case pmDeviceClosed:
+        msg = "PortMidi: Device already closed";
+        break;
+
     default:
         msg = "PortMidi: Illegal error number";
         break;
@@ -768,7 +772,11 @@ Pm_Terminate (void)
     {
         pm_term();
 
-        // if there are no devices, descriptors might still be NULL
+        /*
+         * If there are no devices, descriptors might still be null. The Linux
+         * code has already done this, but the Windows version does not
+         * AFAICT.
+         */
 
         if (not_nullptr(pm_descriptors))
         {
@@ -1631,6 +1639,12 @@ Pm_SetFilter (PortMidiStream * stream, int32_t filters)
  *  attempts to close open streams when the application exits -- this is
  *  particularly difficult under Windows.) If it is an open device, the
  *  device_id will be valid and the device should be in the opened state.
+ *
+ *  For Sequencer64, we have added a check for pm_descriptors being null.
+ *  This happens because the ~mastermidbus() function calls Pm_Terminate(),
+ *  which frees that array.  Then ~midibus() calls Pm_Close().
+ *
+ *  I think we ought to straighten this out at some point.
  */
 
 PMEXPORT PmError
@@ -1639,31 +1653,32 @@ Pm_Close (PortMidiStream * stream)
     PmInternal * midi = (PmInternal *) stream;
     PmError err = pmNoError;
     pm_hosterror = FALSE;
-    if (is_nullptr(midi))                   /* midi must point to something */
-        err = pmBadPtr;
-    else if (midi->device_id < 0 || midi->device_id >= pm_descriptor_index)
-        err = pmBadPtr;
-    else if (! pm_descriptors[midi->device_id].pub.opened)
-        err = pmBadPtr;
+    if (not_nullptr(pm_descriptors))
+    {
+        if (is_nullptr(midi))
+            err = pmBadPtr;
+        else if (midi->device_id < 0 || midi->device_id >= pm_descriptor_index)
+            err = pmInvalidDeviceId;
+        else if (! pm_descriptors[midi->device_id].pub.opened)
+            err = pmDeviceClosed;
 
-    if (err != pmNoError)
-        goto error_return;
+        if (err == pmNoError)
+        {
+            err = (*midi->dictionary->close)(midi);     /* close the device */
 
-    err = (*midi->dictionary->close)(midi);             /* close the device */
+            /* even if an error occurred, continue with cleanup */
 
-    /* even if an error occurred, continue with cleanup */
+            pm_descriptors[midi->device_id].internalDescriptor = nullptr;
+            pm_descriptors[midi->device_id].pub.opened = FALSE;
+            if (midi->queue)
+                Pm_QueueDestroy(midi->queue);
 
-    pm_descriptors[midi->device_id].internalDescriptor = nullptr;
-    pm_descriptors[midi->device_id].pub.opened = FALSE;
-    if (midi->queue)
-        Pm_QueueDestroy(midi->queue);
-
-    pm_free(midi);
-
-error_return:
+            pm_free(midi);
+        }
+    }
 
     /*
-     * system dependent code must set pm_hosterror and pm_hosterror_text if a
+     * System-dependent code must set pm_hosterror and pm_hosterror_text if a
      * pmHostError occurs.
      */
 

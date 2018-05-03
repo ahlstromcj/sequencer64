@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-26
+ * \updates       2018-05-01
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -66,7 +66,8 @@
 #include <fstream>
 
 #include "app_limits.h"                 /* SEQ64_USE_MIDI_VECTOR            */
-#include "calculations.hpp"             /* bpm_from_tempo_us()              */
+#include "calculations.hpp"             /* seq64::bpm_from_tempo_us()       */
+#include "file_functions.hpp"           /* seq64::get_full_path()           */
 #include "perform.hpp"                  /* must precede midifile.hpp !      */
 #include "midifile.hpp"                 /* seq64::midifile                  */
 #include "sequence.hpp"                 /* seq64::sequence                  */
@@ -389,7 +390,8 @@ midifile::parse (perform & p, int screenset, bool importing)
     m_error_is_fatal = false;
     if (file.is_open())
     {
-        printf("[Opened MIDI file, '%s']\n", m_name.c_str());
+        std::string path = get_full_path(m_name);
+        printf("[Opened MIDI file, '%s']\n", path.c_str());
     }
     else
     {

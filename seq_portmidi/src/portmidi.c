@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-29
+ * \updates     2018-04-30
  * \license     GNU GPLv2 or above
  *
  * Notes on host error reporting:
@@ -93,7 +93,9 @@
  * TEMPORARILY ACTIVATED!
  */
 
-#if defined PLATFORM_WINDOWS && defined PLATFORM_DEBUG
+// #if defined PLATFORM_WINDOWS && defined PLATFORM_DEBUG
+
+#if defined PLATFORM_DEBUG
 #define PM_CHECK_ERRORS
 #endif
 
@@ -128,7 +130,13 @@
  *  Tests for an empty queue.
  */
 
-#define is_empty(midi)      ((midi)->tail == (midi)->head)
+#define is_empty(midi)                  ((midi)->tail == (midi)->head)
+
+/**
+ *  Indicates an errant or unassigned device ID.
+ */
+
+#define PORTMIDI_BAD_DEVICE_ID          (-1)
 
 /*
  *  This value is not static so that pm_init can set it directly if needed.
@@ -319,7 +327,7 @@ prompt_and_exit (void)
  */
 
 static PmError
-pm_errmsg (PmError err)
+pm_errmsg (PmError err, int deviceid)
 {
     if (err == pmHostError)
     {
@@ -328,7 +336,7 @@ pm_errmsg (PmError err)
          * work of Pm_GetHostErrorText() directly.
          */
 
-        printf("PortMidi host error: '%s'\n", pm_hosterror_text);
+        printf("PortMidi host error: '%s' [%d]\n", pm_hosterror_text, deviceid);
         Pm_set_hosterror_message(pm_hosterror_text);
         pm_hosterror = FALSE;                       /* Why????              */
         pm_hosterror_text[0] = 0;                   /* clear the message    */
@@ -339,7 +347,7 @@ pm_errmsg (PmError err)
     else if (err < 0)
     {
         const char * errmsg = Pm_GetErrorText(err);
-        printf("PortMidi call failed: '%s'\n", errmsg);
+        printf("PortMidi call failed: '%s' [%d]\n", errmsg, deviceid);
         Pm_set_hosterror_message(errmsg);
 #ifdef PM_CHECK_ERRORS
         prompt_and_exit();
@@ -386,7 +394,7 @@ pm_add_device
     pm_descriptors[pm_descriptor_index].pub.interf = interf;
     pm_descriptors[pm_descriptor_index].pub.name = name;
     pm_descriptors[pm_descriptor_index].pub.input = input;
-    pm_descriptors[pm_descriptor_index].pub.output = !input;
+    pm_descriptors[pm_descriptor_index].pub.output = ! input;
 
     /*
      * Default state: nothing to close (for automatic device closing).
@@ -630,47 +638,63 @@ Pm_GetErrorText (PmError errnum)
         break;
 
     case pmHostError:
-        msg = "PortMidi: Host error";
+        msg = "Host error";
         break;
 
     case pmInvalidDeviceId:
-        msg = "PortMidi: Invalid device ID";
+        msg = "Invalid device ID";
         break;
 
     case pmInsufficientMemory:
-        msg = "PortMidi: Insufficient memory";
+        msg = "Insufficient memory";
         break;
 
     case pmBufferTooSmall:
-        msg = "PortMidi: Buffer too small";
+        msg = "Buffer too small";
         break;
 
     case pmBadPtr:
-        msg = "PortMidi: Bad pointer";
+        msg = "Bad pointer";
         break;
 
     case pmInternalError:
-        msg = "PortMidi: Internal PortMidi Error";
+        msg = "Internal PortMidi Error";
         break;
 
     case pmBufferOverflow:
-        msg = "PortMidi: Buffer overflow";
+        msg = "Buffer overflow";
         break;
 
     case pmBadData:
-        msg = "PortMidi: Invalid MIDI message Data";
+        msg = "Invalid MIDI message Data";
         break;
 
     case pmBufferMaxSize:
-        msg = "PortMidi: Buffer cannot be made larger";
+        msg = "Buffer cannot be made larger";
         break;
 
     case pmDeviceClosed:
-        msg = "PortMidi: Device already closed";
+        msg = "Device is closed";
+        break;
+
+    case pmDeviceOpen:
+        msg = "Device already open";
+        break;
+
+    case pmWriteToInput:
+        msg = "Writing to input device";
+        break;
+
+    case pmReadFromOutput:
+        msg = "Reading from output device";
+        break;
+
+    case pmErrOther:
+        msg = "Unspecified error";
         break;
 
     default:
-        msg = "PortMidi: Illegal error number";
+        msg = "Illegal error number";
         break;
     }
     return msg;
@@ -828,17 +852,22 @@ PMEXPORT int
 Pm_Read (PortMidiStream * stream, PmEvent * buffer, int32_t length)
 {
     PmInternal * midi = (PmInternal *) stream;
-    int n = 0;
+    int deviceid = PORTMIDI_BAD_DEVICE_ID;
     PmError err = pmNoError;
+    int n = 0;
     pm_hosterror = FALSE;
     if (is_nullptr(midi))
         err = pmBadPtr;
-    else if (! pm_descriptors[midi->device_id].pub.opened)
-        err = pmBadPtr;
-    else if (! pm_descriptors[midi->device_id].pub.input)
-        err = pmBadPtr;
     else
-        err = (*(midi->dictionary->poll))(midi);    /* see banner comments */
+    {
+        deviceid = midi->device_id;
+        if (! pm_descriptors[deviceid].pub.opened)
+            err = pmDeviceClosed;
+        else if (! pm_descriptors[deviceid].pub.input)
+            err = pmReadFromOutput;
+        else
+            err = (*(midi->dictionary->poll))(midi);    /* see banner comments */
+    }
 
     if (err != pmNoError)
     {
@@ -850,7 +879,7 @@ Pm_Read (PortMidiStream * stream, PmEvent * buffer, int32_t length)
             );
             pm_hosterror = TRUE;
         }
-        return pm_errmsg(err);
+        return pm_errmsg(err, deviceid);
     }
 
     while (n < length)
@@ -860,7 +889,7 @@ Pm_Read (PortMidiStream * stream, PmEvent * buffer, int32_t length)
         {
             /* ignore the data we have retrieved so far */
 
-            return pm_errmsg(pmBufferOverflow);
+            return pm_errmsg(pmBufferOverflow, deviceid);
         }
         else if (err == 0)          /* empty queue */
         {
@@ -880,16 +909,21 @@ PMEXPORT PmError
 Pm_Poll (PortMidiStream * stream)
 {
     PmInternal * midi = (PmInternal *) stream;
-    PmError err;
+    int deviceid = PORTMIDI_BAD_DEVICE_ID;
+    PmError err = pmNoError;
     pm_hosterror = FALSE;
     if (is_nullptr(midi))
         err = pmBadPtr;
-    else if (! pm_descriptors[midi->device_id].pub.opened)
-        err = pmBadPtr;
-    else if (! pm_descriptors[midi->device_id].pub.input)
-        err = pmBadPtr;
     else
-        err = (*(midi->dictionary->poll))(midi);
+    {
+        deviceid = midi->device_id;
+        if (! pm_descriptors[deviceid].pub.opened)
+            err = pmDeviceClosed;
+        else if (! pm_descriptors[deviceid].pub.input)
+            err = pmReadFromOutput;
+        else
+            err = (*(midi->dictionary->poll))(midi);
+    }
 
     if (err != pmNoError)
     {
@@ -901,7 +935,7 @@ Pm_Poll (PortMidiStream * stream)
             );
            pm_hosterror = TRUE;
         }
-        return pm_errmsg(err);
+        return pm_errmsg(err, deviceid);
     }
     return ! Pm_QueueEmpty(midi->queue);
 }
@@ -940,7 +974,7 @@ pm_end_sysex (PmInternal * midi)
  *        structures, e.g. sending data from a file or forwarding them
  *        from midi input.
  *
- *  Use Pm_WriteSysEx() to write a sysex message stored as a contiguous
+ *  Use Pm_WriteSysEx() to write a SysEx message stored as a contiguous
  *  array of bytes.  SysEX data may contain embedded real-time messages.
  */
 
@@ -948,18 +982,23 @@ PMEXPORT PmError
 Pm_Write (PortMidiStream * stream, PmEvent * buffer, int32_t length)
 {
     PmInternal * midi = (PmInternal *) stream;
+    int deviceid = PORTMIDI_BAD_DEVICE_ID;
     PmError err = pmNoError;
+    pm_hosterror = FALSE;
     int i;
     int bits;
-    pm_hosterror = FALSE;
     if (is_nullptr(midi))
         err = pmBadPtr;
-    else if (! pm_descriptors[midi->device_id].pub.opened)
-        err = pmBadPtr;
-    else if (! pm_descriptors[midi->device_id].pub.output)
-        err = pmBadPtr;
     else
-        err = pmNoError;
+    {
+        deviceid = midi->device_id;
+        if (! pm_descriptors[deviceid].pub.opened)
+            err = pmDeviceClosed;
+        else if (! pm_descriptors[deviceid].pub.output)
+            err = pmWriteToInput;
+        else
+            err = pmNoError;
+    }
 
     if (err != pmNoError)
         goto pm_write_error;
@@ -973,9 +1012,7 @@ Pm_Write (PortMidiStream * stream, PmEvent * buffer, int32_t length)
         midi->now = (*(midi->time_proc))(midi->time_info);
         if (midi->first_message || midi->sync_time + 100 /*ms*/ < midi->now)
         {
-            /* time to resync */
-
-            midi->now = (*midi->dictionary->synchronize)(midi);
+            midi->now = (*midi->dictionary->synchronize)(midi); /* resync */
             midi->first_message = FALSE;
         }
     }
@@ -1156,7 +1193,7 @@ pm_write_error:
 
 error_exit:
 
-    return pm_errmsg(err);
+    return pm_errmsg(err, deviceid);
 }
 
 /**
@@ -1190,12 +1227,12 @@ Pm_WriteShort (PortMidiStream * stream, PmTimestamp when, PmMessage msg)
 PMEXPORT PmError
 Pm_WriteSysEx (PortMidiStream * stream, PmTimestamp when, midibyte_t * msg)
 {
+    PmInternal * midi = (PmInternal *) stream;
     PmEvent buffer[BUFLEN];
     int buffer_size = 1;    /* first time, send 1. After that, it's BUFLEN */
-    PmInternal *midi = (PmInternal *) stream;
 
     /*
-     * the next byte in the buffer is represented by an index, bufx, and
+     * The next byte in the buffer is represented by an index, bufx, and
      * a shift in bits.
      */
 
@@ -1242,7 +1279,7 @@ Pm_WriteSysEx (PortMidiStream * stream, PmTimestamp when, midibyte_t * msg)
                         {
                             err = pm_end_sysex(midi);
                             if (err != pmNoError)
-                                return pm_errmsg(err);
+                                return pm_errmsg(err, midi->device_id);
 
                             goto end_of_sysex;
                         }
@@ -1381,9 +1418,9 @@ Pm_OpenInput
     if (inputDevice < 0 || inputDevice >= pm_descriptor_index)
         err = pmInvalidDeviceId;
     else if (! pm_descriptors[inputDevice].pub.input)
-        err =  pmInvalidDeviceId;
+        err = pmInvalidDeviceId;
     else if (pm_descriptors[inputDevice].pub.opened)
-        err =  pmInvalidDeviceId;
+        err = pmDeviceOpen;
 
     if (err != pmNoError)
         goto error_return;
@@ -1465,7 +1502,7 @@ error_return:
      * and pm_hosterror_text.
      */
 
-    return pm_errmsg(err);
+    return pm_errmsg(err, PORTMIDI_BAD_DEVICE_ID);
 }
 
 /**
@@ -1498,7 +1535,7 @@ Pm_OpenOutput
     else if (! pm_descriptors[outputDevice].pub.output)
         err = pmInvalidDeviceId;
     else if (pm_descriptors[outputDevice].pub.opened)
-        err = pmInvalidDeviceId;
+        err = pmDeviceOpen;
     if (err != pmNoError)
         goto error_return;
 
@@ -1574,7 +1611,7 @@ error_return:
      * if a pmHostError occurs.
      */
 
-    return pm_errmsg(err);
+    return pm_errmsg(err, PORTMIDI_BAD_DEVICE_ID);
 }
 
 /**
@@ -1602,7 +1639,7 @@ Pm_SetChannelMask (PortMidiStream * stream, int mask)
     else
         midi->channel_mask = mask;
 
-    return pm_errmsg(err);
+    return pm_errmsg(err, PORTMIDI_BAD_DEVICE_ID);
 }
 
 /**
@@ -1622,16 +1659,20 @@ Pm_SetChannelMask (PortMidiStream * stream, int mask)
 PMEXPORT PmError
 Pm_SetFilter (PortMidiStream * stream, int32_t filters)
 {
+    int deviceid = PORTMIDI_BAD_DEVICE_ID;
     PmInternal * midi = (PmInternal *) stream;
     PmError err = pmNoError;
     if (is_nullptr(midi))
         err = pmBadPtr;
-    else if (! pm_descriptors[midi->device_id].pub.opened)
-        err = pmBadPtr;
     else
-        midi->filters = filters;
-
-    return pm_errmsg(err);
+    {
+        deviceid = midi->device_id;
+        if (! pm_descriptors[deviceid].pub.opened)
+            err = pmDeviceClosed;
+        else
+            midi->filters = filters;
+    }
+    return pm_errmsg(err, deviceid);
 }
 
 /**
@@ -1650,6 +1691,7 @@ Pm_SetFilter (PortMidiStream * stream, int32_t filters)
 PMEXPORT PmError
 Pm_Close (PortMidiStream * stream)
 {
+    int deviceid = PORTMIDI_BAD_DEVICE_ID;
     PmInternal * midi = (PmInternal *) stream;
     PmError err = pmNoError;
     pm_hosterror = FALSE;
@@ -1657,10 +1699,14 @@ Pm_Close (PortMidiStream * stream)
     {
         if (is_nullptr(midi))
             err = pmBadPtr;
-        else if (midi->device_id < 0 || midi->device_id >= pm_descriptor_index)
-            err = pmInvalidDeviceId;
-        else if (! pm_descriptors[midi->device_id].pub.opened)
-            err = pmDeviceClosed;
+        else
+        {
+            deviceid = midi->device_id;
+            if (deviceid < 0 || deviceid >= pm_descriptor_index)
+                err = pmInvalidDeviceId;
+            else if (! pm_descriptors[deviceid].pub.opened)
+                err = pmDeviceClosed;
+        }
 
         if (err == pmNoError)
         {
@@ -1668,8 +1714,8 @@ Pm_Close (PortMidiStream * stream)
 
             /* even if an error occurred, continue with cleanup */
 
-            pm_descriptors[midi->device_id].internalDescriptor = nullptr;
-            pm_descriptors[midi->device_id].pub.opened = FALSE;
+            pm_descriptors[deviceid].internalDescriptor = nullptr;
+            pm_descriptors[deviceid].pub.opened = FALSE;
             if (midi->queue)
                 Pm_QueueDestroy(midi->queue);
 
@@ -1682,7 +1728,7 @@ Pm_Close (PortMidiStream * stream)
      * pmHostError occurs.
      */
 
-    return pm_errmsg(err);
+    return pm_errmsg(err, deviceid);
 }
 
 /**
@@ -1709,15 +1755,20 @@ PmError
 Pm_Synchronize (PortMidiStream * stream )
 {
     PmInternal * midi = (PmInternal *) stream;
+    int deviceid = PORTMIDI_BAD_DEVICE_ID;
     PmError err = pmNoError;
     if (is_nullptr(midi))
         err = pmBadPtr;
-    else if (! pm_descriptors[midi->device_id].pub.output)
-        err = pmBadPtr;
-    else if (! pm_descriptors[midi->device_id].pub.opened)
-        err = pmBadPtr;
     else
-        midi->first_message = TRUE;
+    {
+        deviceid = midi->device_id;
+        if (! pm_descriptors[deviceid].pub.output)
+            err = pmErrOther;
+        else if (! pm_descriptors[deviceid].pub.opened)
+            err = pmDeviceClosed;
+        else
+            midi->first_message = TRUE;
+    }
 
     return err;
 }
@@ -1734,15 +1785,20 @@ PMEXPORT PmError
 Pm_Abort (PortMidiStream * stream)
 {
     PmInternal * midi = (PmInternal *) stream;
-    PmError err;
+    int deviceid = PORTMIDI_BAD_DEVICE_ID;
+    PmError err = pmNoError;
     if (is_nullptr(midi))
         err = pmBadPtr;
-    else if (! pm_descriptors[midi->device_id].pub.output)
-        err = pmBadPtr;
-    else if (! pm_descriptors[midi->device_id].pub.opened)
-        err = pmBadPtr;
     else
-        err = (*midi->dictionary->abort)(midi);
+    {
+        deviceid = midi->device_id;
+        if (! pm_descriptors[deviceid].pub.output)
+            err = pmErrOther;
+        else if (! pm_descriptors[deviceid].pub.opened)
+            err = pmDeviceClosed;
+        else
+            err = (*midi->dictionary->abort)(midi);
+    }
 
     if (err == pmHostError)
     {
@@ -1752,7 +1808,7 @@ Pm_Abort (PortMidiStream * stream)
         );
         pm_hosterror = TRUE;
     }
-    return pm_errmsg(err);
+    return pm_errmsg(err, deviceid);
 }
 
 /**

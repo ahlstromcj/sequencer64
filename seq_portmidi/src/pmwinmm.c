@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-20
+ * \updates     2018-04-29
  * \license     GNU GPLv2 or above
  *
  *  Check out this site:
@@ -2032,12 +2032,6 @@ pm_winmm_term (void)
 {
     int i;
     int doneAny = 0;
-
-#ifdef PLATFORM_DEBUG
-    char msg[PM_HOST_ERROR_MSG_LEN];
-    printf("pm_winmm_term() called\n");
-#endif
-
     for (i = 0; i < pm_descriptor_index; ++i)
     {
         PmInternal * midi = pm_descriptors[i].internalDescriptor;
@@ -2081,10 +2075,7 @@ pm_winmm_term (void)
     }
 #ifdef PLATFORM_DEBUG
     if (doneAny)
-    {
         printf("Warning: devices were left open. They have been closed.\n");
-    }
-    printf("pm_winmm_term() exiting\n");
 #endif
     pm_descriptor_index = 0;
 }

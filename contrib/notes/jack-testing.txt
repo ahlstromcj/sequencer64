@@ -1,6 +1,6 @@
 User Testing of JACK in Sequencer64
 Chris Ahlstrom
-2016-01-16 to 2018-02-24
+2016-01-16 to 2018-05-01
 
 ===========================================================================
  SETTINGS TESTS
@@ -682,6 +682,28 @@ no sync problems.
 
       http://www.penguinpetes.com/pages/Seq24_MP3s/Steely_Dan_Brown.mp3
       http://penguinpetes.com/pages/Seq24_MP3s/greasy_burgers.mp3
+
+===========================================================================
+ QJackCtl, Yoshimi, and Sequencer64
+===========================================================================
+
+Playing TestBeeps.midi:
+
+    Run qjackctl:
+
+        Sample Rate = 48000
+        Frames/Period = 128
+        Periods/Buffer = 4
+        (Latency = 10.7 ms)
+
+        At this rate, there's is a tiny amount of crackling on playback.
+        Reducing the latency makes it worse.  Also makes it harder for
+        Yoshimi or Sequencer64 to reliably connect.
+
+        At higher latencies, on my system, the beeps are regular, and
+        viewing the jack_capture'd waveform looks basically fine.
+
+        For example, a latency of 21.3 ms is fine.
 
 ===========================================================================
  TO DO LIST

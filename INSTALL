@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.94.8 and above
 Chris Ahlstrom
-2015-09-10 to 2018-04-14
+2015-09-10 to 2018-05-01
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -543,8 +543,8 @@ MANUALLY-DEFINED MACROS IN CODE:
         temporarily break stuff or add annoying console output.
         The "TMI" in some denotes debug code that dumps too much information
         (TMI) to the console, so has to be enabled by editing it on those
-        occasions where.  The "XXX" is similar, disabling the macro no matter
-        what.
+        occasions where you really want it.  The "XXX" is similar, disabling
+        the macro no matter what.  It is more serious than "TMI" :-D.
 
         We have incorporated some very useful code from the Seq32 project
         of the user "stazed".  He includes some new features and some bug

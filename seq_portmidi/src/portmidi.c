@@ -336,7 +336,7 @@ pm_errmsg (PmError err, int deviceid)
          * work of Pm_GetHostErrorText() directly.
          */
 
-        printf("PortMidi host error: '%s' [%d]\n", pm_hosterror_text, deviceid);
+        printf("PortMidi host error: [%d] '%s'\n", deviceid, pm_hosterror_text);
         Pm_set_hosterror_message(pm_hosterror_text);
         pm_hosterror = FALSE;                       /* Why????              */
         pm_hosterror_text[0] = 0;                   /* clear the message    */
@@ -347,7 +347,7 @@ pm_errmsg (PmError err, int deviceid)
     else if (err < 0)
     {
         const char * errmsg = Pm_GetErrorText(err);
-        printf("PortMidi call failed: '%s' [%d]\n", errmsg, deviceid);
+        printf("PortMidi call failed: [%d] '%s'\n", deviceid, errmsg);
         Pm_set_hosterror_message(errmsg);
 #ifdef PM_CHECK_ERRORS
         prompt_and_exit();

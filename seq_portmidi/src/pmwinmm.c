@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-29
+ * \updates     2018-05-03
  * \license     GNU GPLv2 or above
  *
  *  Check out this site:
@@ -63,19 +63,6 @@
  */
 
 #include <assert.h>
-
-/**
- *
-
-#define streql(x, y) (strcmp(x, y) == 0)
- */
-
-/**
- * Repeats!
-
-#define MIDI_SYSEX      0xF0
-#define MIDI_EOX        0xF7
- */
 
 /*
  *  WinMM API callback routines.
@@ -2049,14 +2036,15 @@ pm_winmm_term (void)
                 }
 
                 /*
-                 * report any host errors; this EXTEREMELY useful when
-                 * trying to debug client app
+                 * Report any host errors; this EXTREMELY useful when
+                 * trying to debug client app.
                  */
 
                 if (winmm_has_host_error(midi))
                 {
+                    char msg[PM_HOST_ERROR_MSG_LEN];
                     winmm_get_host_error(midi, msg, PM_HOST_ERROR_MSG_LEN);
-                    printf("%s\n", msg);
+                    printf("[%d] '%s'\n", i, msg);
                 }
 #endif
                 (*midi->dictionary->close)(midi); /* close all open ports */

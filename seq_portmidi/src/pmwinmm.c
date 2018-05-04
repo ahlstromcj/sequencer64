@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-03
+ * \updates     2018-05-04
  * \license     GNU GPLv2 or above
  *
  *  Check out this site:
@@ -278,7 +278,7 @@ pm_winmm_general_inputs (void)
                     (const char *) midi_in_caps[i].szPname,
                     "general in : midiInGetDevCaps", winerrcode
                 );
-                printf("%s\n", errmsg);
+                printf("[%d] '%s'\n", i, errmsg);
 #endif
             }
         }
@@ -311,12 +311,12 @@ pm_winmm_mapper_input (void)
     else
     {
 #ifdef PLATFORM_DEBUG
+        const char * devname = (const char *) midi_in_mapper_caps.szPname;
         const char * errmsg = midi_io_get_dev_caps_error
         (
-            (const char *) midi_in_mapper_caps.szPname,
-            "mapper in : midiInGetDevCaps", winerrcode
+            devname, "mapper in : midiInGetDevCaps", winerrcode
         );
-        printf("%s\n", errmsg);
+        printf("[%s] '%s'\n", devname, errmsg);
 #endif
     }
 }
@@ -351,12 +351,12 @@ pm_winmm_general_outputs (void)
         else
         {
 #ifdef PLATFORM_DEBUG
+            const char * devname = (const char *) midi_out_caps[i].szPname;
             const char * errmsg = midi_io_get_dev_caps_error
             (
-                (const char *) midi_out_caps[i].szPname,
-                "general : midiOutGetDevCaps", winerrcode
+                devname, "general : midiOutGetDevCaps", winerrcode
             );
-            printf("%s\n", errmsg);
+            printf("[%d (%s) '%s'\n", i, devname, errmsg);
 #endif
         }
     }
@@ -389,12 +389,12 @@ pm_winmm_mapper_output (void)
     else
     {
 #ifdef PLATFORM_DEBUG
+        const char * devname = (const char *) midi_out_mapper_caps.szPname;
         const char * errmsg = midi_io_get_dev_caps_error
         (
-            (const char *) midi_out_mapper_caps.szPname,
-            "mapper out : midiOutGetDevCaps", winerrcode
+            devname, "mapper out : midiOutGetDevCaps", winerrcode
         );
-        printf("%s\n", errmsg);
+        printf("[%s] %s\n", devname, errmsg);
 #endif
     }
 }

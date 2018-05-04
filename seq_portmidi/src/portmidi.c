@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-30
+ * \updates     2018-05-04
  * \license     GNU GPLv2 or above
  *
  * Notes on host error reporting:
@@ -312,7 +312,7 @@ prompt_and_exit (void)
 
 #ifdef PLATFORM_DEBUG_XXX
     char line[PM_STRING_MAX];
-    printf("type ENTER...");
+    printf("Type Enter...");
     fgets(line, PM_STRING_MAX, stdin);
 #endif
 
@@ -336,20 +336,32 @@ pm_errmsg (PmError err, int deviceid)
          * work of Pm_GetHostErrorText() directly.
          */
 
-        printf("PortMidi host error: [%d] '%s'\n", deviceid, pm_hosterror_text);
-        Pm_set_hosterror_message(pm_hosterror_text);
+        char temp[PM_HOST_ERROR_MSG_LEN];
+        (void) snprintf
+        (
+            temp, sizeof temp, "PortMidi host error: [%d] '%s'\n",
+            deviceid, pm_hosterror_text
+        );
+        Pm_set_hosterror_message(temp);
         pm_hosterror = FALSE;                       /* Why????              */
         pm_hosterror_text[0] = 0;                   /* clear the message    */
 #ifdef PM_CHECK_ERRORS
+        printf("%s", temp);
         prompt_and_exit();
 #endif
     }
     else if (err < 0)
     {
+        char temp[PM_HOST_ERROR_MSG_LEN];
         const char * errmsg = Pm_GetErrorText(err);
-        printf("PortMidi call failed: [%d] '%s'\n", deviceid, errmsg);
-        Pm_set_hosterror_message(errmsg);
+        (void) snprintf
+        (
+            temp, sizeof temp, "PortMidi call failed: [%d] '%s'\n",
+            deviceid, errmsg
+        );
+        Pm_set_hosterror_message(temp);
 #ifdef PM_CHECK_ERRORS
+        printf("%s", temp);
         prompt_and_exit();
 #endif
     }
@@ -866,7 +878,7 @@ Pm_Read (PortMidiStream * stream, PmEvent * buffer, int32_t length)
         else if (! pm_descriptors[deviceid].pub.input)
             err = pmReadFromOutput;
         else
-            err = (*(midi->dictionary->poll))(midi);    /* see banner comments */
+            err = (*(midi->dictionary->poll))(midi);    /* see the banner   */
     }
 
     if (err != pmNoError)
@@ -885,16 +897,11 @@ Pm_Read (PortMidiStream * stream, PmEvent * buffer, int32_t length)
     while (n < length)
     {
         PmError err = Pm_Dequeue(midi->queue, buffer++);
-        if (err == pmBufferOverflow)
-        {
-            /* ignore the data we have retrieved so far */
-
+        if (err == pmBufferOverflow)        /* ignore data retrieved so far */
             return pm_errmsg(pmBufferOverflow, deviceid);
-        }
-        else if (err == 0)          /* empty queue */
-        {
+        else if (err == 0)                  /* empty queue                  */
             break;
-        }
+
         n++;
     }
     return n;
@@ -1502,7 +1509,7 @@ error_return:
      * and pm_hosterror_text.
      */
 
-    return pm_errmsg(err, PORTMIDI_BAD_DEVICE_ID);
+    return pm_errmsg(err, inputDevice);
 }
 
 /**
@@ -1611,7 +1618,7 @@ error_return:
      * if a pmHostError occurs.
      */
 
-    return pm_errmsg(err, PORTMIDI_BAD_DEVICE_ID);
+    return pm_errmsg(err, outputDevice);
 }
 
 /**

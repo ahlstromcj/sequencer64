@@ -97,7 +97,6 @@ latex/
 libtool
 *.lo
 *.lof
-*.log
 *.lot
 m4/libtool.m4
 m4/lt~obsolete.m4

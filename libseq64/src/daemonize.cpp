@@ -3,7 +3,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2005-07-03 to 2007-08-21 (pre-Sequencer24/64)
- * \updates       2018-04-29
+ * \updates       2018-05-05
  * \license       GNU GPLv2 or above
  *
  *  Daemonization module of the POSIX C Wrapper (PSXC) library
@@ -63,6 +63,7 @@
 
 #include "daemonize.hpp"                /* daemonization functions & macros */
 #include "calculations.hpp"             /* seq64::current_date_time()       */
+#include "file_functions.hpp"           /* seq64::get_full_path() etc.      */
 
 #if defined PLATFORM_WINDOWS
 
@@ -362,16 +363,18 @@ reroute_stdio (const std::string & logfile, bool closem)
                 /*
                  * ca 2018-04-28
                  *  Change from "w" (O_WRONLY|O_CREAT|O_TRUNC) to
-                 *  "a" (O_WRONLY|O_CREAT|O_APPEND).
-                 *
-                 * FILE * fp = freopen(logfile.c_str(), "w", stdout);
+                 *  "a" (O_WRONLY|O_CREAT|O_APPEND).  Oops!
                  */
 
                 FILE * fp = freopen(logfile.c_str(), "a", stdout);
                 if (not_nullptr(fp))
                 {
+#if defined PLATFORM_WINDOWS
+                    (void) dup2(STDOUT_FILENO, STDERR_FILENO);
+#else
                     if (dup2(STDOUT_FILENO, STDERR_FILENO) != STDERR_FILENO)
                         result = false;
+#endif
                 }
                 else
                     result = false;
@@ -379,10 +382,12 @@ reroute_stdio (const std::string & logfile, bool closem)
         }
         if (result)
         {
+            std::string logpath = get_full_path(logfile);
+            std::string normedpath = normalize_path(logpath);
             printf
             (
                 "\n%s \n%s \n%s \n",
-                SEQ64_APP_NAME, logfile.c_str(), current_date_time().c_str()
+                SEQ64_APP_NAME, normedpath.c_str(), current_date_time().c_str()
             );
         }
     }

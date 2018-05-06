@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-04
+ * \updates     2018-05-05
  * \license     GNU GPLv2 or above
  *
  * Notes on host error reporting:
@@ -65,13 +65,18 @@
  *
  * Notes on compile-time switches:
  *
- *    DEBUG assumes stdio and a console. Use this if you want automatic, simple
- *    error reporting, e.g. for prototyping. If you are using MFC or some other
- *    graphical interface with no console, DEBUG probably should be undefined.
+ *    DEBUG assumes stdio and a console. Use this if you want automatic,
+ *    simple error reporting, e.g. for prototyping. If you are using MFC or
+ *    some other graphical interface with no console, DEBUG probably should be
+ *    undefined.  Actually, for Sequencer64, the output can be re-routed to
+ *    a log-file for trouble-shooting.
  *
  *    PM_CHECK_ERRORS more-or-less takes over error checking for return values,
  *    stopping your program and printing error messages when an error occurs.
- *    This also uses stdio for console text I/O.
+ *    This also uses stdio for console text I/O.  For Sequencer64, we want to
+ *    see these errors, all the time, and they can be redirected to a log file
+ *    via the "-o log=filename.log" or "--option log=filename.log"
+ *    command-line options.
  */
 
 #ifdef _MSC_VER
@@ -90,13 +95,13 @@
 #include "pminternal.h"
 
 /*
- * TEMPORARILY ACTIVATED!
+ * Permanently activated!
  */
 
-// #if defined PLATFORM_WINDOWS && defined PLATFORM_DEBUG
-
-#if defined PLATFORM_DEBUG
 #define PM_CHECK_ERRORS
+
+#ifdef PM_CHECK_ERRORS
+#include <stdio.h>
 #endif
 
 /**
@@ -300,8 +305,6 @@ Pm_hosterror_message (void)
 
 #ifdef PM_CHECK_ERRORS
 
-#include <stdio.h>
-
 /**
  *
  */
@@ -310,7 +313,7 @@ static void
 prompt_and_exit (void)
 {
 
-#ifdef PLATFORM_DEBUG_XXX
+#if defined PLATFORM_DEBUG_XXX
     char line[PM_STRING_MAX];
     printf("Type Enter...");
     fgets(line, PM_STRING_MAX, stdin);

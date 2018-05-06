@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-04-27
+ * \updates       2018-05-05
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -177,6 +177,11 @@ main (int argc, char * argv [])
          * #100, where ladish doesn't see seq64's ports in time.
          *
          *  p.launch(seq64::usr().midi_ppqn());
+         *
+         * We also check for any "fatal" PortMidi errors, so we can display
+         * them.  But we still want to keep going, in order to at least
+         * generate the log-files and configuration files to
+         * C:/Users/me/AppData/Local/sequencer64 or ~/.config/sequencer64.
          */
 
         if (Pm_error_present())
@@ -204,34 +209,29 @@ main (int argc, char * argv [])
                     seq24_window.show_message_box(std::string(temp));
                 }
             }
+        }
 
 #ifdef PLATFORM_LINUX
+        if (ok)
+        {
             if (seq64::rc().lash_support())
                 seq64::create_lash_driver(p, argc, argv);
+        }
 #endif
 
-            exit_status = a.exec();                 /* run main window loop */
-            p.finish();                             /* tear down performer  */
-            if (seq64::rc().auto_option_save())
-            {
-                if (ok)                             /* don't write bad data */
-                    ok = seq64::write_options_files(p);
-            }
-            else
-                printf("[auto-option-save off, not saving config files]\n");
-
-#ifdef PLATFORM_LINUX
-            seq64::delete_lash_driver();            /* deleted only exists  */
-#endif
+        exit_status = a.exec();                 /* run main window loop */
+        p.finish();                             /* tear down performer  */
+        if (seq64::rc().auto_option_save())
+        {
+            (void) seq64::write_options_files(p);
         }
         else
-        {
-            /*
-             * TODO
-             *
-            seq24_window.rc_error_dialog(errmessage);
-             */
-        }
+            printf("[auto-option-save off, not saving config files]\n");
+
+#ifdef PLATFORM_LINUX
+    if (ok)
+        seq64::delete_lash_driver();            /* deleted only exists  */
+#endif
     }
     return exit_status;
 }

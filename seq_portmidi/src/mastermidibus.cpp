@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-23
+ * \updates       2017-05-05
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -83,7 +83,7 @@ mastermidibus::~mastermidibus ()
 
 /**
  *  Provides the PortMidi implementation needed for the init() function.
- *  Unlike the seq24 ALSA implementation, this version does not support the
+ *  Unlike the seq24 ALSA implementation, this version does NOT support the
  *  --manual-alsa-ports option.  It initializes as many input and output MIDI
  *  devices as are found by Pm_CountDevices(), and the flags
  *  PmDeviceInfo::input and output determine what category of MIDI device it
@@ -112,16 +112,12 @@ mastermidibus::api_init (int ppqn, midibpm /*bpm*/)
     for (int i = 0; i < num_devices; ++i)
     {
         dev_info = Pm_GetDeviceInfo(i);
-
-#ifdef PLATFORM_DEBUG   // _TMI
         printf
         (
             "PortMidi %s device %d: %s in:%d out:%d\n",
             dev_info->interf, i, dev_info->name,
             dev_info->input, dev_info->output
         );
-#endif
-
         if (dev_info->output)
         {
             /*

@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-04
+ * \updates     2018-05-05
  * \license     GNU GPLv2 or above
  *
  *  Check out this site:
@@ -245,9 +245,7 @@ pm_winmm_general_inputs (void)
          * move on without reporting an error.
          */
 
-#ifdef PLATFORM_DEBUG
         printf("pm_winmm_general_inputs(): no input devices\n");
-#endif
     }
     else
     {
@@ -272,7 +270,7 @@ pm_winmm_general_inputs (void)
                  * devices will not be accessible.
                  */
 
-#ifdef PLATFORM_DEBUG
+#if defined PLATFORM_DEBUG
                 const char * errmsg = midi_io_get_dev_caps_error
                 (
                     (const char *) midi_in_caps[i].szPname,
@@ -310,7 +308,7 @@ pm_winmm_mapper_input (void)
     }
     else
     {
-#ifdef PLATFORM_DEBUG
+#if defined PLATFORM_DEBUG
         const char * devname = (const char *) midi_in_mapper_caps.szPname;
         const char * errmsg = midi_io_get_dev_caps_error
         (
@@ -350,7 +348,7 @@ pm_winmm_general_outputs (void)
         }
         else
         {
-#ifdef PLATFORM_DEBUG
+#if defined PLATFORM_DEBUG
             const char * devname = (const char *) midi_out_caps[i].szPname;
             const char * errmsg = midi_io_get_dev_caps_error
             (
@@ -388,7 +386,7 @@ pm_winmm_mapper_output (void)
     }
     else
     {
-#ifdef PLATFORM_DEBUG
+#if defined PLATFORM_DEBUG
         const char * devname = (const char *) midi_out_mapper_caps.szPname;
         const char * errmsg = midi_io_get_dev_caps_error
         (
@@ -453,15 +451,17 @@ winmm_get_host_error (PmInternal * midi, char * msg, UINT len)
             /*
              * Input and output use different WinMM API calls.  Make sure
              * there is an open device (m) to examine. If there is an error,
-             * then read and record the host error.
+             * then read and record the host error.  Note that the error codes
+             * returned by the get-error-text functions are for that function.
+             * We disable those asserts here.
              */
 
             if (m->error != MMSYSERR_NOERROR)
             {
                 int n = str_copy_len(msg, hdr1, len);
                 int err = midiInGetErrorText(m->error, msg + n, len - n);
-                assert(err == MMSYSERR_NOERROR);
-                m->error = MMSYSERR_NOERROR;
+                if (err == MMSYSERR_NOERROR)    // assert(err == MMSYSERR_NOERROR)
+                    m->error = MMSYSERR_NOERROR;
             }
         }
         else                            /* output port                      */
@@ -470,8 +470,8 @@ winmm_get_host_error (PmInternal * midi, char * msg, UINT len)
             {
                 int n = str_copy_len(msg, hdr1, len);
                 int err = midiOutGetErrorText(m->error, msg + n, len - n);
-                assert(err == MMSYSERR_NOERROR);
-                m->error = MMSYSERR_NOERROR;
+                if (err == MMSYSERR_NOERROR)    // assert(err == MMSYSERR_NOERROR)
+                    m->error = MMSYSERR_NOERROR;
             }
         }
     }
@@ -616,7 +616,7 @@ get_free_sysex_buffer (PmInternal * midi)
 
         if (WaitForSingleObject(m->buffer_signal, 1000) == WAIT_TIMEOUT)
         {
-#ifdef PLATFORM_DEBUG
+#if defined PLATFORM_DEBUG
             printf
             (
                 "PortMidi warning: get_free_sysex_buffer() wait timed "
@@ -664,7 +664,7 @@ get_free_output_buffer (PmInternal * midi)
 
         if (WaitForSingleObject(m->buffer_signal, 1000) == WAIT_TIMEOUT)
         {
-#ifdef PLATFORM_DEBUG
+#if defined PLATFORM_DEBUG
             printf
             (
                 "PortMidi warning: get_free_output_buffer() "
@@ -790,7 +790,8 @@ resize_sysex_buffer (PmInternal * midi, long old_size, long new_size)
     /* make sure we're not going to overwrite any memory */
 
     assert(old_size <= new_size);
-    memcpy(big->lpData, m->hdr->lpData, old_size);
+    if (old_size <= new_size)
+        memcpy(big->lpData, m->hdr->lpData, old_size);
 
     /* keep track of how many sysex bytes are in message so far */
 
@@ -946,11 +947,18 @@ no_memory:
 
     if (pm_hosterror)
     {
+#if defined PLATFORM_DEBUG
         int err = midiInGetErrorText
         (
             pm_hosterror, (char *) pm_hosterror_text, PM_HOST_ERROR_MSG_LEN
         );
         assert(err == MMSYSERR_NOERROR);
+#else
+        (void) midiInGetErrorText
+        (
+            pm_hosterror, (char *) pm_hosterror_text, PM_HOST_ERROR_MSG_LEN
+        );
+#endif
         return pmHostError;
     }
 
@@ -1007,11 +1015,18 @@ winmm_in_close(PmInternal * midi)
     pm_free(m);
     if (pm_hosterror)
     {
+#if defined PLATFORM_DEBUG
         int err = midiInGetErrorText
         (
             pm_hosterror, (char *) pm_hosterror_text, PM_HOST_ERROR_MSG_LEN
         );
         assert(err == MMSYSERR_NOERROR);
+#else
+        (void) midiInGetErrorText
+        (
+            pm_hosterror, (char *) pm_hosterror_text, PM_HOST_ERROR_MSG_LEN
+        );
+#endif
         return pmHostError;
     }
     return pmNoError;
@@ -1113,6 +1128,9 @@ winmm_in_callback
          * returned to this callback with dwBytesRecorded == 0. In this
          * case, we do not want to send them back to the interface (if
          * we do, the interface will not close, and Windows OS may (!!!) hang).
+         * Note: no error checking.  I don't think this can fail except
+         * possibly for MMSYSERR_NOMEM, but the pain of reporting this
+         * unlikely but probably catastrophic error does not seem worth it.
          */
 
         if (lpMidiHdr->dwBytesRecorded > 0)
@@ -1120,19 +1138,15 @@ winmm_in_callback
             MMRESULT rslt;
             lpMidiHdr->dwBytesRecorded = 0;
             lpMidiHdr->dwFlags = 0;
-
-            /* note: no error checking -- can this actually fail? */
-
             rslt = midiInPrepareHeader(hMidiIn, lpMidiHdr, sizeof(MIDIHDR));
             assert(rslt == MMSYSERR_NOERROR);
 
             /*
-             * note: I don't think this can fail except possibly for
-             * MMSYSERR_NOMEM, but the pain of reporting this unlikely but
-             * probably catastrophic error does not seem worth it.
              */
 
-            rslt = midiInAddBuffer(hMidiIn, lpMidiHdr, sizeof(MIDIHDR));
+            if (rslt == MMSYSERR_NOERROR)
+                rslt = midiInAddBuffer(hMidiIn, lpMidiHdr, sizeof(MIDIHDR));
+
             assert(rslt == MMSYSERR_NOERROR);
             LeaveCriticalSection(&m->lock);
         }
@@ -1151,13 +1165,13 @@ winmm_in_callback
         break;
 
     case MIM_ERROR:
-#ifdef PLATFORM_DEBUG
+#if defined PLATFORM_DEBUG
         printf("MIM_ERROR\n");
 #endif
         break;
 
     case MIM_LONGERROR:
-#ifdef PLATFORM_DEBUG
+#if defined PLATFORM_DEBUG
         printf("MIM_LONGERROR\n");
 #endif
         break;
@@ -1208,7 +1222,7 @@ pm_time_get (midiwinmm_type m)
     mmtime.u.ticks = 0;
     winerrcode = midiStreamPosition(m->handle.stream, &mmtime, sizeof(mmtime));
     assert(winerrcode == MMSYSERR_NOERROR);
-    return mmtime.u.ticks;
+    return winerrcode == MMSYSERR_NOERROR ?  mmtime.u.ticks : 0 ;
 }
 
 /*
@@ -1366,11 +1380,18 @@ no_memory:
 
     if (pm_hosterror)
     {
+#if defined PLATFORM_DEBUG
         int err = midiOutGetErrorText
         (
             pm_hosterror, (char *) pm_hosterror_text, PM_HOST_ERROR_MSG_LEN
         );
         assert(err == MMSYSERR_NOERROR);
+#else
+        (void) midiOutGetErrorText
+        (
+            pm_hosterror, (char *) pm_hosterror_text, PM_HOST_ERROR_MSG_LEN
+        );
+#endif
         return pmHostError;
     }
     return pmInsufficientMemory;
@@ -1438,12 +1459,18 @@ winmm_out_close (PmInternal * midi)
     }
     if (pm_hosterror)
     {
+#if defined PLATFORM_DEBUG
         int err = midiOutGetErrorText
         (
             pm_hosterror, (char *) pm_hosterror_text, PM_HOST_ERROR_MSG_LEN
         );
-
         assert(err == MMSYSERR_NOERROR);
+#else
+        (void) midiOutGetErrorText
+        (
+            pm_hosterror, (char *) pm_hosterror_text, PM_HOST_ERROR_MSG_LEN
+        );
+#endif
         return pmHostError;
     }
     return pmNoError;
@@ -1916,26 +1943,32 @@ winmm_streamout_callback
     PmInternal * midi = (PmInternal *) dwInstance;
     midiwinmm_type m = (midiwinmm_type) midi->descriptor;
     LPMIDIHDR hdr = (LPMIDIHDR) dwParam1;
+#if defined PLATFORM_DEBUG
     int err;
+#endif
 
     /*
-     * Even if an error is pending, I think we should unprepare msgs and
-     * signal their arrival
+     * Even if an error is pending, I think we should unprepare messages and
+     * signal their arrival in case the client is blocked waiting for the
+     * buffer.
      */
 
     if (wMsg == MOM_DONE)
     {
-        MMRESULT ret = midiOutUnprepareHeader
-        (
-            m->handle.out, hdr, sizeof(MIDIHDR)
-        );
-        assert(ret == MMSYSERR_NOERROR);
+#if defined PLATFORM_DEBUG
+        MMRESULT r = midiOutUnprepareHeader(m->handle.out, hdr, sizeof(MIDIHDR));
+        assert(r == MMSYSERR_NOERROR);
+#else
+        (void) midiOutUnprepareHeader(m->handle.out, hdr, sizeof(MIDIHDR));
+#endif
     }
 
-    /* signal client in case it is blocked waiting for buffer */
-
+#if defined PLATFORM_DEBUG
     err = SetEvent(m->buffer_signal);
     assert(err);                            /* false -> error */
+#else
+    (void) SetEvent(m->buffer_signal);
+#endif
 }
 
 
@@ -2017,8 +2050,10 @@ pm_winmm_init (void)
 void
 pm_winmm_term (void)
 {
-    int i;
+#if defined PLATFORM_DEBUG
     int doneAny = 0;
+#endif
+    int i;
     for (i = 0; i < pm_descriptor_index; ++i)
     {
         PmInternal * midi = pm_descriptors[i].internalDescriptor;
@@ -2027,9 +2062,8 @@ pm_winmm_term (void)
             midiwinmm_type m = (midiwinmm_type) midi->descriptor;
             if (m->handle.out)
             {
-                /* close next open device*/
-#ifdef PLATFORM_DEBUG
-                if (doneAny == 0)
+#if defined PLATFORM_DEBUG
+                if (doneAny == 0)           /* close next open device   */
                 {
                     printf("Begin closing open devices...\n");
                     doneAny = 1;
@@ -2061,7 +2095,7 @@ pm_winmm_term (void)
         pm_free(midi_out_caps);
         midi_out_caps = nullptr;
     }
-#ifdef PLATFORM_DEBUG
+#if defined PLATFORM_DEBUG
     if (doneAny)
         printf("Warning: devices were left open. They have been closed.\n");
 #endif

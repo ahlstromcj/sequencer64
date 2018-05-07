@@ -300,9 +300,11 @@ pm_winmm_mapper_input (void)
     );
     if (winerrcode == MMSYSERR_NOERROR)
     {
+        const char * devname = (const char *) midi_in_mapper_caps.szPname;
         pm_add_device
         (
-            "MMSystem", (char *) midi_in_mapper_caps.szPname, TRUE,
+            // "MMSystem", (char *) midi_in_mapper_caps.szPname, TRUE,
+            "MMSystem", devname, TRUE,
             (void *) MIDIMAPPER, &pm_winmm_in_dictionary
         );
     }
@@ -310,6 +312,9 @@ pm_winmm_mapper_input (void)
     {
 #if defined PLATFORM_DEBUG
         const char * devname = (const char *) midi_in_mapper_caps.szPname;
+        if (strlen(devname) == 0)
+            devname = "MIDIMAPPER";
+
         const char * errmsg = midi_io_get_dev_caps_error
         (
             devname, "mapper in : midiInGetDevCaps", winerrcode

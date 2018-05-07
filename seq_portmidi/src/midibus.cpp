@@ -169,6 +169,11 @@ midibus::api_init_in ()
  *  the queue.  It fills a small byte buffer, sets the MIDI channel, make a
  *  message of it, and writes the message.
  *
+ * \question
+ *      The subatomic glue (Windows/PortMidi) implementation of Seq24 uses a
+ *      mutex to lock this function.  Do we need to do that? Done in the
+ *      wrapper.
+ *
  * \param e24
  *      The MIDI event to play.
  *
@@ -179,7 +184,7 @@ midibus::api_init_in ()
 void
 midibus::api_play (event * e24, midibyte channel)
 {
-    midibyte buffer[3];                /* temp for midi data */
+    midibyte buffer[4];                /* temp for midi data */
     buffer[0] = e24->get_status();
     buffer[0] += (channel & 0x0F);
     e24->get_data(buffer[1], buffer[2]);
@@ -245,8 +250,12 @@ midibus::api_stop ()
 }
 
 /**
- *  Generates MIDI clock.
- *  This function is called by midibase::clock().
+ *  Generates MIDI clock.  This function is called by midibase::clock().
+ *
+ * \question
+ *      The subatomic glue (Windows/PortMidi) implementation of Seq24 uses a
+ *      mutex to lock this function.  Do we need to do that?  We do, in
+ *      midibase::clock().
  *
  * \param tick
  *      The clock tick value, not used in the API implementation of this

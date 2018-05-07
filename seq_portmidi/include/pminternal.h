@@ -27,7 +27,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-24
+ * \updates     2018-05-06
  * \license     GNU GPLv2 or above
  *
  * Here is a guide to implementers:
@@ -66,7 +66,7 @@ typedef unsigned int uint32_t;
 #endif                              // PLATFORM_WINDOWS
 
 /**
- *  Default size of buffers for sysex transmission.
+ *  Default size of buffers for SysEx transmission.
  */
 
 #define PM_DEFAULT_SYSEX_BUFFER_SIZE    1024
@@ -159,6 +159,7 @@ typedef struct
     int input;              /**< True iff input is available.               */
     int output;             /**< True iff output is available.              */
     int opened;             /**< Generic PortMidi code, argument-checking.  */
+    int mapper;             /**< True iff this device is a MIDI Mapper.     */
 
 } PmDeviceInfo;
 
@@ -442,24 +443,19 @@ typedef unsigned (* pm_has_host_error_fn)
 
 typedef struct
 {
-    pm_write_short_fn write_short;          /* output short MIDI msg */
-    pm_begin_sysex_fn begin_sysex;          /* prepare to send sysex message */
-    pm_end_sysex_fn end_sysex;              /* marks end of sysex message */
-    pm_write_byte_fn write_byte;            /* accumulate one more sysex byte */
-    pm_write_realtime_fn write_realtime;    /* send real-time message in sysex */
-    pm_write_flush_fn write_flush;          /* send accumulated unsent data */
-    pm_synchronize_fn synchronize;          /* synch PM time to stream time */
-    pm_open_fn open;                        /* open MIDI device */
-    pm_abort_fn abort;                      /* abort */
-    pm_close_fn close;                      /* close device */
-    pm_poll_fn poll;                        /* read events into PM buffer */
-    pm_has_host_error_fn has_host_error;    /* device has host error message */
-
-    /*
-     * Readable error message for device (clears and resets).
-     */
-
-    pm_host_error_fn host_error;
+    pm_write_short_fn write_short;      /**< Output short MIDI msg.         */
+    pm_begin_sysex_fn begin_sysex;      /**< Prepare to send SysEx message. */
+    pm_end_sysex_fn end_sysex;          /**< Marks end of SysEx message.    */
+    pm_write_byte_fn write_byte;        /**< Accumulate 1 more SysEx byte.  */
+    pm_write_realtime_fn write_realtime; /**< Send real-time message in SysEx. */
+    pm_write_flush_fn write_flush;      /**< Send accumulated unsent data.  */
+    pm_synchronize_fn synchronize;      /**< Synch PM time to stream time.  */
+    pm_open_fn open;                    /**< Open MIDI device.              */
+    pm_abort_fn abort;                  /**< Abort.                         */
+    pm_close_fn close;                  /**< Close the device.              */
+    pm_poll_fn poll;                    /**< Read events into PM buffer.    */
+    pm_has_host_error_fn has_host_error; /**< Device has host error message */
+    pm_host_error_fn host_error; /**< Readable device error, clears/resets. */
 
 } pm_fns_node, * pm_fns_type;
 
@@ -544,18 +540,18 @@ typedef struct pm_internal_struct
     int32_t latency;
 
     /**
-     *  When sysex status is seen, this flag becomes true until EOX is seen.
+     *  When SysEx status is seen, this flag becomes true until EOX is seen.
      *  When true, new data is appended to the stream of outgoing bytes. When
-     *  overflow occurs, sysex data is dropped (until an EOX or non-real-timei
+     *  overflow occurs, SysEx data is dropped (until an EOX or non-real-timei
      *  status byte is seen) so that, if the overflow condition is cleared, we
-     *  don't start sending data from the middle of a sysex message. If a sysex
-     *  message is filtered, sysex_in_progress is false, causing the message to
-     *  be dropped.
+     *  don't start sending data from the middle of a SysEx message. If a
+     *  SysEx message is filtered, sysex_in_progress is false, causing the
+     *  message to be dropped.
      */
 
     int sysex_in_progress;
 
-    /* buffer for 4 bytes of sysex data */
+    /* buffer for 4 bytes of SysEx data */
 
     PmMessage sysex_message;
 
@@ -595,22 +591,22 @@ typedef struct pm_internal_struct
 
     void * descriptor;
 
-    /* the following are used to expedite sysex data
-     * on windows, in debug mode, based on some profiling, these optimizations
-     * cut the time to process sysex bytes from about 7.5 to 0.26 usec/byte,
-     * but this does not count time in the driver, so I don't know if it is
-     * important
+    /*
+     *  The following are used to expedite SysEx data on Windows, in debug
+     *  mode. Based on some profiling, these optimizations cut the time to
+     *  process SysEx bytes from about 7.5 to 0.26 usec/byte, but this does
+     *  not count time in the driver, so I don't know if it is important.
      */
 
-    /* addr of ptr to sysex data */
+    /* addr of ptr to SysEx data */
 
     midibyte_t * fill_base;
 
-    /* offset of next sysex byte */
+    /* offset of next SysEx byte */
 
     uint32_t * fill_offset_ptr;
 
-    /* how many sysex bytes to write */
+    /* how many SysEx bytes to write */
 
     uint32_t fill_length;                   /* changed from int32_t */
 

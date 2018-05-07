@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-05
+ * \updates     2018-05-07
  * \license     GNU GPLv2 or above
  *
  * Notes on host error reporting:
@@ -79,14 +79,22 @@
  *    command-line options.
  */
 
+#include <string.h>                     /* C::strcasestr() GNU function.    */
+
 #ifdef _MSC_VER
 #pragma warning(disable: 4244) // stop warnings about downsize typecasts
 #pragma warning(disable: 4018) // stop warnings about signed/unsigned
+
+/*
+ *  We will need an implementation of strcasestr() in terms of a Microsoft
+ *  non-case-sensitive string comparison, for the freakin' Microsoft compiler.
+ */
+
 #endif
 
 #include <assert.h>
+#include <ctype.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "easy_macros.h"
 #include "portmidi.h"
@@ -204,6 +212,63 @@ static int pm_error_present = 0;
  */
 
 static char pm_hosterror_message [PM_HOST_ERROR_MSG_LEN];
+
+/**
+ *  Provides a case-insensitive implementation of strstr() that doesn't need a
+ *  C extension function.  Not necessarily efficient, and handles only string
+ *  that are relatively small.
+ *
+ * \param src
+ *      Provides the string that is suspected of containing the target.
+ *
+ * \param target
+ *      Provides the string to be searched for.
+ *
+ * \return
+ *      If all the parameters are suitable (not null, non-zero length, not too
+ *      long [256 bytes]), returns true if the target was found.  Otherwise,
+ *      returns false.
+ */
+
+static int
+strstrcase (const char * src, const char * target)
+{
+    int result = false;
+    int lensrc = 0;
+    int lentarget = 0;
+    int ok = not_nullptr(src);
+    if (ok)
+    {
+        lensrc = strlen(src);
+        ok = lensrc > 0;
+    }
+    if (ok)
+    {
+        ok = not_nullptr(target);
+        if (ok)
+        {
+            lentarget = strlen(target);
+            ok = lentarget > 0;
+        }
+    }
+    if (ok)
+    {
+        char tempsrc[PM_STRING_MAX];
+        char temptarget[PM_STRING_MAX];
+        int isrc;
+        int itarget;
+        (void) snprintf(tempsrc, sizeof(tempsrc), src);
+        (void) snprintf(temptarget, sizeof(temptarget), target);
+        for (isrc = 0; isrc < lensrc; ++isrc)
+            tempsrc[isrc] = (char) tolower((unsigned char) src[isrc]);
+
+        for (itarget = 0; itarget < lentarget; ++itarget)
+            temptarget[itarget] = (char) tolower((unsigned char) target[itarget]);
+
+        result = not_nullptr(strstr(tempsrc, temptarget));
+    }
+    return result;
+}
 
 /**
  * \setter pm_show_debug
@@ -377,6 +442,13 @@ pm_errmsg (PmError err, int deviceid)
  *  (e.g. SoundBlaster 1). The strings are retained but NOT COPIED, so do not
  *  destroy them!
  *
+ * \param interf
+ *      The name of the interface.  It is "MMSystem" for Windows.
+ *
+ * \param name
+ *      The name of the device.  This is a pointer to an external entity, such
+ *      as midi_in_mapper_caps.szPname.
+ *
  * \return
  *      pmInvalidDeviceId if device memory is exceeded otherwise returns
  *      pmNoError.
@@ -389,6 +461,7 @@ pm_add_device
     void * descriptor, pm_fns_type dictionary
 )
 {
+    int ismapper = not_nullptr(strstrcase(name, "mapper"));
     if (pm_descriptor_index >= pm_descriptor_max)
     {
         const size_t sdesc = sizeof(descriptor_node); // expand descriptors
@@ -410,6 +483,7 @@ pm_add_device
     pm_descriptors[pm_descriptor_index].pub.name = name;
     pm_descriptors[pm_descriptor_index].pub.input = input;
     pm_descriptors[pm_descriptor_index].pub.output = ! input;
+    pm_descriptors[pm_descriptor_index].pub.mapper = ismapper;
 
     /*
      * Default state: nothing to close (for automatic device closing).
@@ -430,6 +504,7 @@ pm_add_device
     pm_descriptors[pm_descriptor_index].internalDescriptor = nullptr;
     pm_descriptors[pm_descriptor_index].dictionary = dictionary;
     ++pm_descriptor_index;
+    printf("Device '%s' added to PortMidi\n", name);
     return pmNoError;
 }
 
@@ -2103,6 +2178,35 @@ pm_read_bytes
         }
     }
     return i;
+}
+
+/*
+ * Ad hoc safe C accessors.
+ */
+
+/**
+ *  Returns true if the given device number is valid and the device is opened.
+ *
+ * \param deviceid
+ *      The device to be tested.
+ *
+ * \return
+ *      Returns the opened status of a valid device.
+ */
+
+int
+Pm_device_opened (int deviceid)
+{
+    int result = not_nullptr(pm_descriptors);
+    if (result)
+    {
+        result = pm_descriptor_index >= 0 &&
+            pm_descriptor_index < pm_descriptor_max;
+
+        if (result)
+            result = pm_descriptors[deviceid].pub.opened ? TRUE : FALSE ;
+    }
+    return result;
 }
 
 /*

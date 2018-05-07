@@ -28,7 +28,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-26
+ * \updates     2018-05-06
  * \license     GNU GPLv2 or above
  *
  * Copyright (c) 1999-2000 Ross Bencina and Phil Burk
@@ -329,6 +329,7 @@ PMEXPORT void Pm_set_error_present (int flag);
 PMEXPORT int Pm_error_present (void);
 PMEXPORT void Pm_set_hosterror_message (const char * msg);
 PMEXPORT const char * Pm_hosterror_message (void);
+PMEXPORT int Pm_device_opened (int deviceid);
 
 #ifdef __cplusplus
 }           // extern "C"

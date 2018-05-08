@@ -611,8 +611,9 @@ midibase::flush ()
 }
 
 /**
- *  Initialize the clock, continuing from the given tick.  This function doesn't
- *  depend upon the MIDI API in use.
+ *  Initialize the clock, continuing from the given tick.  This function
+ *  doesn't depend upon the MIDI API in use.  Here, e_clock_off and
+ *  e_clock_disabled have the same effect... none.
  *
  * \param tick
  *      The starting tick.
@@ -670,7 +671,7 @@ midibase::continue_from (midipulse tick)
         starting_tick += pp16th;
 
     m_lasttick = starting_tick - 1;
-    if (m_clock_type != e_clock_off)
+    if ((m_clock_type != e_clock_off) && (m_clock_type != e_clock_disabled))
     {
         api_continue_from(tick, beats);
     }
@@ -678,14 +679,14 @@ midibase::continue_from (midipulse tick)
 
 /**
  *  This function gets the MIDI clock a-runnin', if the clock type is not
- *  e_clock_off.
+ *  e_clock_off or e_clock_disabled.
  */
 
 void
 midibase::start ()
 {
     m_lasttick = -1;
-    if (m_clock_type != e_clock_off)
+    if ((m_clock_type != e_clock_off) && (m_clock_type != e_clock_disabled))
     {
         api_start();
     }
@@ -733,6 +734,13 @@ void
 midibase::stop ()
 {
     m_lasttick = -1;
+
+    /*
+     * Hmmmmm.
+     *
+     * if ((m_clock_type != e_clock_off) && (m_clock_type != e_clock_disabled))
+     */
+
     if (m_clock_type != e_clock_off)
     {
         api_stop();
@@ -740,8 +748,8 @@ midibase::stop ()
 }
 
 /**
- *  Generates the MIDI clock, starting at the given tick value.  The number of
- *  ticks needed is calculated.
+ *  Generates the MIDI clock, starting at the given tick value.  The number
+ *  of ticks needed is calculated.
  *
  * \threadsafe
  *
@@ -753,7 +761,7 @@ void
 midibase::clock (midipulse tick)
 {
     automutex locker(m_mutex);
-    if (m_clock_type != e_clock_off)
+    if ((m_clock_type != e_clock_off) && (m_clock_type != e_clock_disabled))
     {
         bool done = m_lasttick >= tick;
         int ct = clock_ticks_from_ppqn(m_ppqn);         /* ppqn / 24        */

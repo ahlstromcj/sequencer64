@@ -59,7 +59,7 @@ businfo::businfo ()
     m_bus           (nullptr),
     m_active        (false),
     m_initialized   (false),
-    m_init_clock    (e_clock_off),
+    m_init_clock    (e_clock_off),      /* could end up disabled as well */
     m_init_input    (false)
 {
     // Empty body
@@ -88,7 +88,7 @@ businfo::businfo (midibus * bus)
     m_bus           (bus),
     m_active        (false),
     m_initialized   (false),
-    m_init_clock    (e_clock_off),
+    m_init_clock    (e_clock_off),      /* could end up disabled as well */
     m_init_input    (false)
 {
     // See the initialize() function
@@ -151,6 +151,12 @@ businfo::initialize ()
     bool result = not_nullptr(bus());
     if (result)
     {
+        /*
+         * \todo
+         *      If bus has been "disabled" (e_clock_disable), skip this port
+         *      and return true.
+         */
+
         if (! bus()->is_input_port())           /* not built in master bus  */
         {
             if (bus()->is_virtual_port())
@@ -212,6 +218,8 @@ businfo::print () const
             flags += "Pos";
         else if (init_clock() == e_clock_mod)
             flags += "Mod";
+        else if (init_clock() == e_clock_disabled)
+            flags += "Disabled";
         else
             flags += "illegal!";
     }
@@ -381,8 +389,8 @@ busarray::stop ()
 }
 
 /**
- *  Continues from the given tick for all of the busses; used for output busses
- *  only.
+ *  Continues from the given tick for all of the busses; used for output
+ *  busses only.
  *
  * \param tick
  *      Provides the tick value for all busses to continue from.
@@ -397,8 +405,8 @@ busarray::continue_from (midipulse tick)
 }
 
 /**
- *  Initializes the clocking at the given tick for all of the busses; used for
- *  output busses only.
+ *  Initializes the clocking at the given tick for all of the busses; used
+ *  for output busses only.
  *
  * \param tick
  *      Provides the tick value for all busses use as the clock tick.
@@ -413,7 +421,8 @@ busarray::init_clock (midipulse tick)
 }
 
 /**
- *  Clocks at the given tick for all of the busses; used for output busses only.
+ *  Clocks at the given tick for all of the busses; used for output busses
+ *  only.
  *
  * \param tick
  *      Provides the tick value for all busses use as the clock tick.
@@ -509,7 +518,7 @@ busarray::set_all_clocks ()
  *
  * \return
  *      Returns the clock value set for the desired buss.  If the buss is
- *      invalid, then e_clock_off is returned.
+ *      invalid, then e_clock_disabled (was e_clock_off) is returned.
  */
 
 clock_e
@@ -518,7 +527,7 @@ busarray::get_clock (bussbyte bus)
     if (bus < count() && m_container[bus].active())
         return m_container[bus].bus()->get_clock();
     else
-        return e_clock_off;
+        return e_clock_disabled;                /* e_clock_off; */
 }
 
 /**

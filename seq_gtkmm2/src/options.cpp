@@ -33,7 +33,7 @@
  *
  *      -   c_max_sequence
  *      -   e_fruity_interaction and e_seq24_interation
- *      -   e_clock_off, e_clock_pos, e_clock_mod
+ *      -   e_clock_off, e_clock_pos, e_clock_mod, and e_clock_disabled
  *      -   e_keylabelsonsequence and e_keylabelsonsequence
  *      -   e_jack_transport, e_jack_master,
  *          e_jack_master_cond, e_jack_master_connect,
@@ -275,6 +275,13 @@ options::add_midi_clock_page ()
 
         case e_clock_mod:
             rb_mod->set_active(1);
+
+        default:
+
+            /*
+             * e_clock_disabled not yet a GUI-selectable item.
+             */
+
             break;
         }
     }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-05
+ * \updates       2017-05-07
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -69,6 +69,23 @@ mastermidibus::mastermidibus (int ppqn, midibpm bpm)
 
     Pm_set_exit_on_error(FALSE);
     Pm_Initialize();
+
+    /*
+     * \todo
+     *      For any output ports that are non-working, flag their disabling
+     *      in ...
+     *
+    for (int dev = 0; dev < Pm_device_count(); ++dev)
+    {
+        bool status = bool(Pm_device_opened(dev));
+        printf("Device %d %s\n", dev, status ? "open" : "closed");
+    }
+     *      At this point, the Pm_OpenInput() and Pm_Output() functions are
+     *      not yet called, so that the devices are not opened yet.
+     *      Instead, check at midibus::api_init_out() and _in().  Also
+     *      should be able to do this after the mastermidibase::activate()
+     *      call, somehow.
+     */
 }
 
 /**
@@ -79,6 +96,29 @@ mastermidibus::mastermidibus (int ppqn, midibpm bpm)
 mastermidibus::~mastermidibus ()
 {
     Pm_Terminate();
+}
+
+/**
+ *  Here, we want to first make sure that the ports that the OS cannot access
+ *  are disable, before we activate them.  Otherwise, they fail and prevent
+ *  working ports from operating.
+ */
+
+bool
+mastermidibus::activate ()
+{
+    /*
+     * Do specific setup.  TODO!!!  We need to get to api_init_out() before
+     * getting here.
+     */
+
+    for (int dev = 0; dev < Pm_device_count(); ++dev)
+    {
+        bool status = bool(Pm_device_opened(dev));
+        printf("Device %d %s\n", dev, status ? "open" : "closed");
+    }
+
+    return mastermidibase::activate();
 }
 
 /**
@@ -105,13 +145,12 @@ mastermidibus::~mastermidibus ()
 void
 mastermidibus::api_init (int ppqn, midibpm /*bpm*/)
 {
-    int num_devices = Pm_CountDevices();
-    const PmDeviceInfo * dev_info = nullptr;
+    int num_devices = Pm_device_count();    /* Pm_CountDevices()    */
     int numouts = 0;
     int numins = 0;
     for (int i = 0; i < num_devices; ++i)
     {
-        dev_info = Pm_GetDeviceInfo(i);
+        const PmDeviceInfo * dev_info = Pm_GetDeviceInfo(i);
         printf
         (
             "PortMidi %s device %d: %s in:%d out:%d\n",

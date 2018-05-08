@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-12-18
+ * \updates       2018-05-07
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibase module is the base-class version of the mastermidibus
@@ -335,7 +335,7 @@ protected:
     clock_e clock (int bus)
     {
         return bus < int(m_master_clocks.size()) ?
-            m_master_clocks[bus] : e_clock_off ;
+            m_master_clocks[bus] : e_clock_disabled ;    /* e_clock_off */
     }
 
     bool input (int bus)

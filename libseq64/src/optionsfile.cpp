@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-04-28
+ * \updates       2018-05-07
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -412,9 +412,12 @@ optionsfile::parse (perform & p)
          *  rather than make the poor user figure out how to fix it.
          *
          *      return error_message("midi-clock");
+         *
+         *  And let's use the new e_clock_disabled code instead of
+         *  e_clock_off.
          */
 
-        p.add_clock(e_clock_off);
+        p.add_clock(e_clock_disabled);
     }
 
     /*

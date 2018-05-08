@@ -381,7 +381,7 @@ mastermidibase::save_clock (bussbyte bus, clock_e clock)
  *
  * \return
  *      If the buss number is legal, and the buss is active, then its clock
- *      setting is returned.  Otherwise, e_clock_off is returned.
+ *      setting is returned.  Otherwise, e_clock_disabled is returned.
  */
 
 clock_e

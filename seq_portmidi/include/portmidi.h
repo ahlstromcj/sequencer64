@@ -28,7 +28,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-06
+ * \updates     2018-05-07
  * \license     GNU GPLv2 or above
  *
  * Copyright (c) 1999-2000 Ross Bencina and Phil Burk
@@ -301,8 +301,11 @@ PMEXPORT PmError Pm_SetFilter (PortMidiStream * stream, int32_t filters);
 PMEXPORT PmError Pm_SetChannelMask (PortMidiStream * stream, int mask);
 PMEXPORT PmError Pm_Abort (PortMidiStream * stream);
 PMEXPORT PmError Pm_Close (PortMidiStream * stream);
-PMEXPORT int Pm_Read (PortMidiStream * stream, PmEvent * buffer, int32_t length);
-PmError Pm_Synchronize (PortMidiStream * stream);
+PMEXPORT int Pm_Read
+(
+    PortMidiStream * stream, PmEvent * buffer, int32_t length
+);
+PMEXPORT PmError Pm_Synchronize (PortMidiStream * stream);
 PMEXPORT PmError Pm_Poll (PortMidiStream * stream);
 PMEXPORT PmError Pm_Write
 (
@@ -330,6 +333,7 @@ PMEXPORT int Pm_error_present (void);
 PMEXPORT void Pm_set_hosterror_message (const char * msg);
 PMEXPORT const char * Pm_hosterror_message (void);
 PMEXPORT int Pm_device_opened (int deviceid);
+PMEXPORT int Pm_device_count (void);
 
 #ifdef __cplusplus
 }           // extern "C"

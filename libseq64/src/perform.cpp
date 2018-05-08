@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-04-13
+ * \updates       2018-05-07
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -414,6 +414,12 @@ perform::~perform ()
  *  However, the devices actually on the system at start time might be
  *  different from what was saved in the "rc" file after the last run of
  *  Sequencer64.
+ *
+ *  For output, both apps have always connected to all ports automatically.
+ *  But we want to support disabling some output ports, both in the "rc"
+ *  file and via the operating system indicating that it cannot open an
+ *  output port.  So how do we get the port-settings from the OS?  Probably
+ *  at initialization time.  See the mastermidibus constructor for PortMidi.
  *
  * \return
  *      Returns true if the creation succeeded, or if the buss already exists.
@@ -5797,7 +5803,7 @@ perform::set_input_bus (int bus, bool active)
  *
  * \param clocktype
  *      Indicates whether the buss or the user-interface feature is
- *      e_clock_off, e_clock_pos, and e_clock_mod.
+ *      e_clock_off, e_clock_pos, e_clock_mod, or (new) e_clock_disabled.
  */
 
 void

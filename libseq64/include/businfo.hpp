@@ -166,10 +166,18 @@ public:
         return m_initialized;
     }
 
+    /**
+     * \getter m_init_clock
+     */
+
     clock_e init_clock () const
     {
         return m_init_clock;
     }
+
+    /**
+     * \getter m_init_input
+     */
 
     bool init_input () const
     {
@@ -178,10 +186,18 @@ public:
 
 public:
 
+    /**
+     * \setter m_bus
+     */
+
     void bus (midibus * b)
     {
         m_bus = b;
     }
+
+    /**
+     * \setter m_active and m_initialized
+     */
 
     void activate ()
     {
@@ -189,18 +205,30 @@ public:
         m_initialized = true;
     }
 
+    /**
+     * \setter m_active and m_initialized
+     */
+
     void deactivate ()
     {
         m_active = false;
         m_initialized = false;
     }
 
+    /**
+     * \setter m_init_clock and bus clock
+     */
+
     void init_clock (clock_e clocktype)
     {
         m_init_clock = clocktype;
         if (not_nullptr(bus()))
-            bus()->set_clock_status(clocktype);
+            bus()->set_clock(clocktype);
     }
+
+    /**
+     * \setter m_init_input and bus input
+     */
 
     void init_input (bool flag)
     {

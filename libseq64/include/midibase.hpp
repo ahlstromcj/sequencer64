@@ -361,6 +361,7 @@ public:
 
     /**
      * \setter m_clock_type
+     *      We removed the redundant set_clock_status() function.
      *
      * \param clocktype
      *      The value used to set the clock-type.
@@ -378,15 +379,6 @@ public:
     clock_e get_clock () const
     {
         return m_clock_type;
-    }
-
-    /**
-     * \setter m_clock_type
-     */
-
-    void set_clock_status (clock_e clocktype)
-    {
-        m_clock_type = clocktype;
     }
 
     /**

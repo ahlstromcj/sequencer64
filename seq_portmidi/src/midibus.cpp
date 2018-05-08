@@ -136,13 +136,22 @@ midibus::api_poll_for_midi ()
 bool
 midibus::api_init_out ()
 {
-    PmError err = Pm_OpenOutput(&m_pms, queue_number(), NULL, 100, NULL, NULL, 0);
-    if (err != pmNoError)
+    PmError err = Pm_OpenOutput
+    (
+        &m_pms, queue_number(), NULL, 100, NULL, NULL, 0
+    );
+    bool result = err == pmNoError;
+    if (! result)
     {
         errprintf("Pm_OpenOutput(): %s\n", Pm_GetErrorText(err));
-        return false;
+
+        /*
+         * \todo
+         *      Set the clocking to e_clock_disable to indicate we should
+         *      not bother to use the port.
+         */
     }
-    return true;
+    return result;
 }
 
 /**
@@ -156,12 +165,12 @@ bool
 midibus::api_init_in ()
 {
     PmError err = Pm_OpenInput(&m_pms, queue_number(), NULL, 100, NULL, NULL);
-    if (err != pmNoError)
+    bool result = err == pmNoError;
+    if (! result)
     {
         errprintf("Pm_OpenInput(): %s\n", Pm_GetErrorText(err));
-        return false;
     }
-    return true;
+    return result;
 }
 
 /**

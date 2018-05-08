@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-03-21
+ * \updates       2017-05-07
  * \license       GNU GPLv2 or above
  *
  *  This mastermidibus module is the Windows (and Linux now!) version of the
@@ -67,6 +67,7 @@ public:
         midibpm bpm = SEQ64_DEFAULT_BPM        /* c_beats_per_minute */
     );
     virtual ~mastermidibus ();
+    virtual bool activate ();
 
 protected:
 

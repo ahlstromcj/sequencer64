@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-11
+ * \updates       2018-05-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -102,8 +102,21 @@ enum clock_e
      *  notes) that is specified.
      */
 
-    e_clock_mod
-};
+    e_clock_mod,
+
+    /**
+     *  A new, currently-hidden value to indicate to ignore/disable an
+     *  output port.  If a port always fails to open, we want to just ignore
+     *  it.
+     */
+
+    e_clock_disabled = -1
+
+};          // enum clock_e
+
+/*
+ *
+ */
 
 }           // namespace seq64
 

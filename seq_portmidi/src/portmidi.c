@@ -550,7 +550,6 @@ pm_find_default_device (char * pattern, int is_input)
     return id;
 }
 
-
 /**
  *  Get devices count; IDs range from 0 to Pm_CountDevices()-1.
  */
@@ -558,7 +557,7 @@ pm_find_default_device (char * pattern, int is_input)
 PMEXPORT int
 Pm_CountDevices (void)
 {
-    Pm_Initialize();    /* no error checking -- Pm_Initialize() does not fail */
+    Pm_Initialize();                /* no error checking; does not fail */
     return pm_descriptor_index;
 }
 
@@ -2188,7 +2187,8 @@ pm_read_bytes
  *  Returns true if the given device number is valid and the device is opened.
  *
  * \param deviceid
- *      The device to be tested.
+ *      The device to be tested, ranging from 0 to less than
+ *      pm_descriptor_index.
  *
  * \return
  *      Returns the opened status of a valid device.
@@ -2200,13 +2200,22 @@ Pm_device_opened (int deviceid)
     int result = not_nullptr(pm_descriptors);
     if (result)
     {
-        result = pm_descriptor_index >= 0 &&
-            pm_descriptor_index < pm_descriptor_max;
-
+        result = pm_descriptor_index >= 0 && deviceid < pm_descriptor_index;
         if (result)
             result = pm_descriptors[deviceid].pub.opened ? TRUE : FALSE ;
     }
     return result;
+}
+
+/**
+ *  The official accessor of pm_descriptor_index.  Unlike Pm_CountDevices(),
+ *  this function does not call Pm_Initialize() first.
+ */
+
+int
+Pm_device_count (void)
+{
+    return pm_descriptor_index;
 }
 
 /*

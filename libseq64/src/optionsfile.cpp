@@ -414,10 +414,10 @@ optionsfile::parse (perform & p)
          *      return error_message("midi-clock");
          *
          *  And let's use the new e_clock_disabled code instead of
-         *  e_clock_off.
+         *  e_clock_off.  LATER.
          */
 
-        p.add_clock(e_clock_disabled);
+        p.add_clock(e_clock_off);
     }
 
     /*

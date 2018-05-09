@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-04-28
+ * \updates       2017-05-08
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the midibus class.
@@ -146,10 +146,11 @@ midibus::api_init_out ()
         errprintf("Pm_OpenOutput(): %s\n", Pm_GetErrorText(err));
 
         /*
-         * \todo
-         *      Set the clocking to e_clock_disable to indicate we should
-         *      not bother to use the port.
+         *  Set the clocking to e_clock_disable to indicate we should
+         *  not bother to use the port.  LATER
          */
+
+        //// set_clock(e_clock_disabled);
     }
     return result;
 }

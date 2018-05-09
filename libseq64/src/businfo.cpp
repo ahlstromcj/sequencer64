@@ -152,20 +152,32 @@ businfo::initialize ()
     if (result)
     {
         /*
-         * \todo
-         *      If bus has been "disabled" (e_clock_disable), skip this port
-         *      and return true.
+         *  If bus has been "disabled" (e_clock_disable), skip this port and
+         *  return true.  However, we still have a potential conflict
+         *  between "active", "initialized", and "disabled".
+         *
+         *  "Active" is used for:  enabling play(), set_clock(), get_clock(),
+         *  get_midi_bus_name(), set_input(), get_input(), is_system_port(),
+         *  replacement_port().
+         *
+         *  "Initialized" is used for:
+         *
+         *  "Disabled" is currently used to making an OS-disabled,
+         *  non-openable port a non-fatal error.
          */
 
-        if (! bus()->is_input_port())           /* not built in master bus  */
+        if (! bus()->port_disabled())       /* NEW */
         {
-            if (bus()->is_virtual_port())
-                result = bus()->init_out_sub(); /* not built in master bus  */
-            else
-                result = bus()->init_out();
+            if (! bus()->is_input_port())       /* not built in master bus  */
+            {
+                if (bus()->is_virtual_port())
+                    result = bus()->init_out_sub();
+                else
+                    result = bus()->init_out();
+            }
+            if (result)
+                activate();                     /* "initialized" & "active" */
         }
-        if (result)
-            activate();                         /* "initialized" & "active" */
     }
     else
     {
@@ -527,7 +539,7 @@ busarray::get_clock (bussbyte bus)
     if (bus < count() && m_container[bus].active())
         return m_container[bus].bus()->get_clock();
     else
-        return e_clock_disabled;                /* e_clock_off; */
+        return e_clock_off;                /* e_clock_disabled; */
 }
 
 /**

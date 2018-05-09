@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-24
- * \updates       2017-03-21
+ * \updates       2017-05-09
  * \license       GNU GPLv2 or above
  *
  *  The midibase module is the new base class for the various implementations
@@ -89,7 +89,10 @@ private:
     int m_port_id;
 
     /**
-     *  The type of clock to use.
+     *  The type of clock to use.  The special value e_clock_disabled means
+     *  we will not be using the port, so that a failure in setting up the
+     *  port is not a "fatal error".  (We could have added an "m_outputing"
+     *  boolean as an alternative.)
      */
 
     clock_e m_clock_type;
@@ -379,6 +382,24 @@ public:
     clock_e get_clock () const
     {
         return m_clock_type;
+    }
+
+    /**
+     * \getter m_clock_type
+     */
+
+    bool port_disabled () const
+    {
+        return m_clock_type == e_clock_disabled;
+    }
+
+    /**
+     * \getter m_clock_type
+     */
+
+    bool clock_enabled () const
+    {
+        return m_clock_type != e_clock_off && m_clock_type != e_clock_disabled;
     }
 
     /**

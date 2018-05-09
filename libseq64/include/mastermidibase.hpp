@@ -335,7 +335,7 @@ protected:
     clock_e clock (int bus)
     {
         return bus < int(m_master_clocks.size()) ?
-            m_master_clocks[bus] : e_clock_disabled ;    /* e_clock_off */
+            m_master_clocks[bus] : e_clock_off ;    /* e_clock_disable */
     }
 
     bool input (int bus)

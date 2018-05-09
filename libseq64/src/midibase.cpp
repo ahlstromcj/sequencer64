@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2018-04-28
+ * \updates       2018-05-09
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -671,7 +671,7 @@ midibase::continue_from (midipulse tick)
         starting_tick += pp16th;
 
     m_lasttick = starting_tick - 1;
-    if ((m_clock_type != e_clock_off) && (m_clock_type != e_clock_disabled))
+    if (clock_enabled())
     {
         api_continue_from(tick, beats);
     }
@@ -686,7 +686,7 @@ void
 midibase::start ()
 {
     m_lasttick = -1;
-    if ((m_clock_type != e_clock_off) && (m_clock_type != e_clock_disabled))
+    if (clock_enabled())
     {
         api_start();
     }
@@ -738,7 +738,7 @@ midibase::stop ()
     /*
      * Hmmmmm.
      *
-     * if ((m_clock_type != e_clock_off) && (m_clock_type != e_clock_disabled))
+     * if (clock_enabled())
      */
 
     if (m_clock_type != e_clock_off)
@@ -761,7 +761,7 @@ void
 midibase::clock (midipulse tick)
 {
     automutex locker(m_mutex);
-    if ((m_clock_type != e_clock_off) && (m_clock_type != e_clock_disabled))
+    if (clock_enabled())
     {
         bool done = m_lasttick >= tick;
         int ct = clock_ticks_from_ppqn(m_ppqn);         /* ppqn / 24        */

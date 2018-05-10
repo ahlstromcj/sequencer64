@@ -8,7 +8,7 @@
 # \library    	Any project
 # \author     	Chris Ahlstrom
 # \date       	2015-07-24
-# \update     	2018-04-09
+# \update     	2018-05-10
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -362,7 +362,8 @@ function clean_tempfiles()
    find . -name "*.t" -exec rm -f '{}' \; 2> /dev/null
    find . -name "*.hexer" -exec rm -f '{}' \; 2> /dev/null
    find . -name "*~" -exec rm -f '{}' \; 2> /dev/null
-   clean_by_ext "bak t tmp log"
+#  clean_by_ext "bak t tmp log"
+   clean_by_ext "bak t tmp"
    find . -name "tmwrk*" -exec rm -rf '{}' \; 2> /dev/null
    find . -name "tmpcvs*" -exec rm -rf '{}' \; 2> /dev/null
    find . -name "tmp" -exec rm -rf '{}' \; 2> /dev/null

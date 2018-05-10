@@ -1,0 +1,26 @@
+
+qpseq64 
+C:/Users/chris/AppData/Local/sequencer64/virtualmidi.log 
+2018-05-10 05:50:17 
+[MIDIMAPPER] 'mapper in : midiInGetDevCaps() error for device 'MIDIMAPPER': 'The specified device identifier is out of range'
+'
+Device 'Microsoft MIDI Mapper' added to PortMidi
+pm_winmm_general_inputs(): no input devices
+Device 'CoolSoft MIDIMapper' added to PortMidi
+Device 'Microsoft GS Wavetable Synth' added to PortMidi
+Device 'VirtualMIDISynth #1' added to PortMidi
+PortMidi MMSystem device 0: Microsoft MIDI Mapper in:0 out:1
+PortMidi MMSystem device 1: CoolSoft MIDIMapper in:0 out:1
+PortMidi MMSystem device 2: Microsoft GS Wavetable Synth in:0 out:1
+PortMidi MMSystem device 3: VirtualMIDISynth #1 in:0 out:1
+PortMidi host error: [1] 'The specified device is already in use.  Wait until it is free, and then try again.'
+PortMidi host error: [3] 'The specified device is already in use.  Wait until it is free, and then try again.'
+Device 0 open
+Device 1 closed
+Device 2 open
+Device 3 closed
+[Writing rc configuration C:\Users\chris\AppData\Local\sequencer64\qpseq64.rc]
+Begin closing open devices...
+Warning: devices were left open. They have been closed.
+Pm_OpenOutput(): Host error
+Pm_OpenOutput(): Host error

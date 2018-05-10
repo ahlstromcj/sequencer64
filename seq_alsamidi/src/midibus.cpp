@@ -606,7 +606,7 @@ midibus::api_continue_from (midipulse /*tick*/, midipulse beats)
         starting_tick += pp16th;
 
     m_lasttick = starting_tick - 1;
-    if (m_clock_type != e_clock_off && m_clock_type != e_clock_disabled)
+    if (clock_enabled())
     {
         ... covers the rest of the statements....
 #endif	// USE_THIS_SEQ24_CODE

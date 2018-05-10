@@ -61,31 +61,13 @@ mastermidibus::mastermidibus (int ppqn, midibpm bpm)
  :
     mastermidibase      (ppqn, bpm)
 {
-    /*
-     * EXPERIMENTAL.
+    /**
      * New feature. Turn off exiting upon errors so that the application
      * has a chance to come up and display the error(s).
      */
 
     Pm_set_exit_on_error(FALSE);
     Pm_Initialize();
-
-    /*
-     * \todo
-     *      For any output ports that are non-working, flag their disabling
-     *      in ...
-     *
-    for (int dev = 0; dev < Pm_device_count(); ++dev)
-    {
-        bool status = bool(Pm_device_opened(dev));
-        printf("Device %d %s\n", dev, status ? "open" : "closed");
-    }
-     *      At this point, the Pm_OpenInput() and Pm_Output() functions are
-     *      not yet called, so that the devices are not opened yet.
-     *      Instead, check at midibus::api_init_out() and _in().  Also
-     *      should be able to do this after the mastermidibase::activate()
-     *      call, somehow.
-     */
 }
 
 /**
@@ -107,18 +89,18 @@ mastermidibus::~mastermidibus ()
 bool
 mastermidibus::activate ()
 {
-    /*
-     * Do specific setup.  TODO!!!  We need to get to api_init_out() before
-     * getting here.
-     */
-
+#ifdef PLATFORM_DEBUG
+    bool result = mastermidibase::activate();
     for (int dev = 0; dev < Pm_device_count(); ++dev)
     {
         bool status = bool(Pm_device_opened(dev));
         printf("Device %d %s\n", dev, status ? "open" : "closed");
     }
-
+    return result;
+#else
     return mastermidibase::activate();
+#endif
+
 }
 
 /**

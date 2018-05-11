@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-21
+ * \updates       2018-05-11
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -205,11 +205,13 @@ options::add_midi_clock_page ()
 
 #else
 
-        Gtk::Label * label = manage
-        (
-            new Gtk::Label(perf().master_bus().get_midi_out_bus_name(bus), 0)
-        );
+        std::string txt = perf().master_bus().get_midi_out_bus_name(bus);
+        if (perf().get_clock(bus) == e_clock_disabled)
+            txt += " (disabled)";
+
+        Gtk::Label * label = manage(new Gtk::Label(txt, 0));
         hbox2->pack_start(*label, false, false);
+        // label->set_sensitive(perf().get_clock(bus) != e_clock_disabled);
 
 #endif  // USE_MIDI_CLOCK_CONNECT_BUTTON
 

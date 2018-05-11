@@ -5677,7 +5677,7 @@ perform::sequence_label (const sequence & seq)
     if (is_active(sn))
     {
         char tmp[32];
-        int bus = seq.get_midi_bus();
+        bussbyte bus = seq.get_midi_bus();
         int chan = seq.is_smf_0() ? 0 : seq.get_midi_channel() + 1;
         int bpb = int(seq.get_beats_per_bar());
         int bw = int(seq.get_beat_width());
@@ -5770,7 +5770,7 @@ perform::sequence_title (const sequence & seq)
  */
 
 void
-perform::set_input_bus (int bus, bool active)
+perform::set_input_bus (bussbyte bus, bool active)
 {
     if (bus >= SEQ64_DEFAULT_BUSS_MAX)                  /* 32 busses    */
     {
@@ -5786,7 +5786,7 @@ perform::set_input_bus (int bus, bool active)
                 s->set_dirty();
         }
     }
-    else if (bus >= 0)
+    else // if (bus >= 0)
     {
         if (m_master_bus->set_input(bus, active))
             set_input(bus, active);
@@ -5807,7 +5807,7 @@ perform::set_input_bus (int bus, bool active)
  */
 
 void
-perform::set_clock_bus (int bus, clock_e clocktype)
+perform::set_clock_bus (bussbyte bus, clock_e clocktype)
 {
     if (m_master_bus->set_clock(bus, clocktype))     /* checks bus index, too */
         set_clock(bus, clocktype);

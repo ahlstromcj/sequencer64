@@ -126,8 +126,8 @@
  *  Show Sequence Number settings change.
  */
 
-#define PERFORM_KEY_LABELS_ON_SEQUENCE  9998
-#define PERFORM_NUM_LABELS_ON_SEQUENCE  9999
+#define PERFORM_KEY_LABELS_ON_SEQUENCE  254     // 9998
+#define PERFORM_NUM_LABELS_ON_SEQUENCE  255     // 9999
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -2306,8 +2306,26 @@ public:
     std::string sequence_label (const sequence & seq);
     std::string sequence_label (int seqnumb);           // for qperfnames
     std::string sequence_title (const sequence & seq);
-    void set_input_bus (int bus, bool input_active);    // used in options
-    void set_clock_bus (int bus, clock_e clocktype);    // used in options
+    void set_input_bus (bussbyte bus, bool input_active);    // used in options
+    void set_clock_bus (bussbyte bus, clock_e clocktype);    // used in options
+
+    /**
+     * \getter m_master_bus->get_clock(bus);
+     */
+
+    clock_e get_clock (bussbyte bus) const
+    {
+        return m_master_bus->get_clock(bus);
+    }
+
+    /**
+     * \getter m_master_bus->get_input(bus);
+     */
+
+    bool get_input (bussbyte bus) const
+    {
+        return m_master_bus->get_input(bus);
+    }
 
     bool mainwnd_key_event (const keystroke & k);
 
@@ -2942,7 +2960,7 @@ private:
      *  Mostly meant for use by the Options / MIDI Input tab.
      */
 
-    void set_clock (int bus, clock_e clocktype)
+    void set_clock (bussbyte bus, clock_e clocktype)
     {
         if (bus < int(m_master_clocks.size()))
             m_master_clocks[bus] = clocktype;
@@ -2966,9 +2984,9 @@ private:
      *  Mostly meant for use by the Options / MIDI Input tab.
      */
 
-    void set_input (int bus, bool inputing)
+    void set_input (bussbyte bus, bool inputing)
     {
-        if (bus < int(m_master_inputs.size()))
+        if (bus < bussbyte(m_master_inputs.size()))
             m_master_inputs[bus] = inputing;
     }
 
@@ -2976,7 +2994,7 @@ private:
      * \getter m_master_bus->get_input(bus)
      */
 
-    bool get_input (int bus)
+    bool get_input (bussbyte bus)
     {
         return not_nullptr(m_master_bus) ?
             m_master_bus->get_input(bus) : false ;
@@ -2986,7 +3004,7 @@ private:
      * \getter m_master_bus->is_input_system_port(bus)
      */
 
-    bool is_input_system_port (int bus)
+    bool is_input_system_port (bussbyte bus)
     {
         return not_nullptr(m_master_bus) ?
             m_master_bus->is_input_system_port(bus) : false ;

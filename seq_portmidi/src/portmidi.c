@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-07
+ * \updates     2018-05-11
  * \license     GNU GPLv2 or above
  *
  * Notes on host error reporting:
@@ -504,7 +504,11 @@ pm_add_device
     pm_descriptors[pm_descriptor_index].internalDescriptor = nullptr;
     pm_descriptors[pm_descriptor_index].dictionary = dictionary;
     ++pm_descriptor_index;
+
+#if defined PLATFORM_DEBUG_TMI
     printf("Device '%s' added to PortMidi\n", name);
+#endif
+
     return pmNoError;
 }
 
@@ -2216,6 +2220,27 @@ int
 Pm_device_count (void)
 {
     return pm_descriptor_index;
+}
+
+void
+Pm_print_devices (void)
+{
+    int dev;
+    for (dev = 0; dev < pm_descriptor_index; ++dev)
+    {
+        int status = Pm_device_opened(dev);
+        const PmDeviceInfo * dev_info = Pm_GetDeviceInfo(dev);
+        const char * io = dev_info->output == 1 ? "output" : "unknown" ;
+        const char * opstat = status == 1 ? "opened" : "closed" ;
+        if (dev_info->input == 1)
+            io = "input";
+
+        printf
+        (
+            "PortMidi %s %d: %s %s %s\n",
+            dev_info->interf, dev, dev_info->name, io, opstat
+        );
+    }
 }
 
 /*

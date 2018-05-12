@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-05-07
+ * \updates       2018-05-12
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -406,10 +406,10 @@ perform::~perform ()
  *  application.
  *
  *  Once the master buss is created, we then copy the clocks and input setting
- *  that were read from the "rc" file, via the mastermidibus::port_settings()
- *  function, to use in determining whether to initialize and connect the
- *  input ports at start-up.  Seq24 wouldn't connect unconditionally, and
- *  Sequencer64 shouldn't, either.
+ *  that were read from the "rc" file, via the mastermidibus ::
+ *  set_port_statuses() function, to use in determining whether to initialize
+ *  and connect the input ports at start-up.  Seq24 wouldn't connect
+ *  unconditionally, and Sequencer64 shouldn't, either.
  *
  *  However, the devices actually on the system at start time might be
  *  different from what was saved in the "rc" file after the last run of
@@ -436,7 +436,7 @@ perform::create_master_bus ()
         if (result)
         {
             m_master_bus->filter_by_channel(m_filter_by_channel);
-            m_master_bus->port_settings(m_master_clocks, m_master_inputs);
+            m_master_bus->set_port_statuses(m_master_clocks, m_master_inputs);
         }
     }
     return result;
@@ -462,14 +462,14 @@ perform::create_master_bus ()
 void
 perform::launch (int ppqn)
 {
-    if (create_master_bus())
+    if (create_master_bus())                /* also calls set_port_statuses()   */
     {
 
 #ifdef SEQ64_JACK_SUPPORT
         init_jack_transport();
 #endif
 
-        m_master_bus->init(ppqn, m_bpm);     /* calls api_init() per API */
+        m_master_bus->init(ppqn, m_bpm);    /* calls api_init() per API     */
 
         /*
          * We may need to copy the actually input buss settings back to here,
@@ -484,6 +484,24 @@ perform::launch (int ppqn)
             launch_output_thread();
         }
     }
+}
+
+/**
+ *  The rough opposite of launch(); it doesn't stop the threads.  A minor
+ *  simplification for the main() routine, hides the JACK support macro.
+ *  We might need to add code to stop any ongoing outputing.
+ *
+ *  Also gets the settings made/changed while the application was running from
+ *  the mastermidibase class to here.  This action is the converse of calling
+ *  the set_port_statuses() function defined in the mastermidibase module.
+ */
+
+void
+perform::finish ()
+{
+    (void) deinit_jack_transport();
+    if (not_nullptr(m_master_bus))
+        m_master_bus->get_port_statuses(m_master_clocks, m_master_inputs);
 }
 
 #ifdef SEQ64_SONG_BOX_SELECT

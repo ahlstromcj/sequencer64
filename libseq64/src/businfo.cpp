@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2018-01-25
+ * \updates       2018-05-12
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -160,13 +160,18 @@ businfo::initialize ()
          *  get_midi_bus_name(), set_input(), get_input(), is_system_port(),
          *  replacement_port().
          *
-         *  "Initialized" is used for:
+         *  "Initialized" is used for: . . .
          *
          *  "Disabled" is currently used to making an OS-disabled,
          *  non-openable port a non-fatal error.
          */
 
-        if (! bus()->port_disabled())       /* NEW */
+        if (bus()->port_disabled())
+        {
+            // int bussnumber = bus()->get_bus_index();
+            // result = mymasterbus.set_clock(bussnumber, e_clock_disabled);
+        }
+        else
         {
             if (! bus()->is_input_port())       /* not built in master bus  */
             {
@@ -467,7 +472,8 @@ busarray::sysex (event * ev)
  *  Plays an event, if the bus is proper.
  *
  * \param bus
- *      The MIDI buss on which to play the event.
+ *      The MIDI buss on which to play the event.  The buss number must be
+ *      valid (in range) and the bus must be active.
  *
  * \param e24
  *      A pointer to the event to be played.
@@ -495,16 +501,35 @@ busarray::play (bussbyte bus, event * e24, midibyte channel)
  *
  * \param clocktype
  *      Provides the type of clocking for the buss.
+ *
+ * \return
+ *      Returns true if the change was made.
  */
 
 bool
 busarray::set_clock (bussbyte bus, clock_e clocktype)
 {
-    bool result = bus < count() && m_container[bus].active();
+    /*
+     * Getting the current clock setting is essentially equivalent to:
+     *
+     *      m_container[bus].bus()->get_clock();
+     */
+
+    clock_e current = get_clock(bus);
+    bool result = bus < count() && current != clocktype;
     if (result)
     {
-        m_container[bus].init_clock(clocktype);
-        m_container[bus].bus()->set_clock(clocktype);
+        result = m_container[bus].active() || current == e_clock_disabled;
+        if (result)
+        {
+            m_container[bus].init_clock(clocktype);
+
+            /*
+             * Already done in the call above.
+             *
+             * m_container[bus].bus()->set_clock(clocktype);
+             */
+        }
     }
     return result;
 }
@@ -530,16 +555,28 @@ busarray::set_all_clocks ()
  *
  * \return
  *      Returns the clock value set for the desired buss.  If the buss is
- *      invalid, then e_clock_disabled (was e_clock_off) is returned.
+ *      invalid, e_clock_off is returned.  If the buss is not active, we still
+ *      get the existing clock value.  The theory here is that we don't want
+ *      to junk the current clock value; it could alter what was read from the
+ *      "rc" file.
  */
 
 clock_e
 busarray::get_clock (bussbyte bus)
 {
-    if (bus < count() && m_container[bus].active())
+    if (bus < count())
+    {
+#ifdef USE_ACTIVITY_FLAG_CHECK
+        if (m_container[bus].active())
+            return m_container[bus].bus()->get_clock();
+        else
+            return e_clock_disabled;
+#else
         return m_container[bus].bus()->get_clock();
+#endif
+    }
     else
-        return e_clock_off;                /* e_clock_disabled; */
+        return e_clock_off;
 }
 
 /**
@@ -574,7 +611,8 @@ busarray::get_midi_bus_name (int bus)
     std::string result;
     if (bus < count())
     {
-        if (m_container[bus].active())
+        clock_e current = get_clock(bus);
+        if (m_container[bus].active() || current == e_clock_disabled)
         {
             std::string busname = m_container[bus].bus()->bus_name();
             std::string portname = m_container[bus].bus()->port_name();
@@ -600,6 +638,9 @@ busarray::get_midi_bus_name (int bus)
             std::string status = "virtual";
             if (m_container[bus].initialized())
                 status = "disconnected";
+
+            if (m_container[bus].bus()->port_disabled())
+                status = "disabled";
 
             snprintf
             (

@@ -147,10 +147,10 @@ midibus::api_init_out ()
 
         /*
          *  Set the clocking to e_clock_disable to indicate we should
-         *  not bother to use the port.  LATER
+         *  not bother to use the port.  EXPERIMENTAL
          */
 
-        //// set_clock(e_clock_disabled);
+        set_clock(e_clock_disabled);
     }
     return result;
 }

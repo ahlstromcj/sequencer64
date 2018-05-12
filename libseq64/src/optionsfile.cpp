@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-05-07
+ * \updates       2018-05-12
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -390,13 +390,29 @@ optionsfile::parse (perform & p)
          * will be saved in the [midi-clock] list.  When unplugged, it will be
          * read here at startup, but won't be shown.  The next exit will find
          * it removed from this list.
+         *
+         * Also, we want to pre-allocate the number of clock entries needed,
+         * and then use the buss number to populate the list of clocks, in the
+         * odd event that the user changed the bus-order of the entries.
          */
 
+        p.preallocate_clocks(buses);
         for (int i = 0; i < buses; ++i)
         {
-            long bus_on, bus;
-            sscanf(m_line, "%ld %ld", &bus, &bus_on);
-            p.add_clock(static_cast<clock_e>(bus_on));
+            int bus_on;
+            int bus;
+            sscanf(m_line, "%d %d", &bus, &bus_on);
+
+            /*
+             *  The first call ignores the bus number that was read.  The
+             *  second call indirectly accesses the mastermidibus, which does
+             *  not exist yet.
+             *
+             *      p.add_clock(static_cast<clock_e>(bus_on));
+             *      p.set_clock_bus(bus, static_cast<clock_e>(bus_on));
+             */
+
+            p.set_clock(bus, static_cast<clock_e>(bus_on));
             ok = next_data_line(file);
             if (! ok)
             {
@@ -480,7 +496,7 @@ optionsfile::parse (perform & p)
     }
 
     keys_perform_transfer ktx;
-    memset(&ktx, 0, sizeof(ktx));
+    memset(&ktx, 0, sizeof ktx);
     sscanf(m_line, "%u %u", &ktx.kpt_bpm_up, &ktx.kpt_bpm_dn);
     next_data_line(file);
     sscanf
@@ -1251,9 +1267,13 @@ optionsfile::write (const perform & p)
            "# The first line indicates the number of MIDI busses defined.\n"
            "# Each buss line contains the buss (re 0) and the clock status of\n"
            "# that buss.  0 = MIDI Clock is off; 1 = MIDI Clock on, and Song\n"
-           "# Position and MIDI Continue will be sent, if needed; and 2 = MIDI\n"
+           "# Position and MIDI Continue will be sent, if needed; 2 = MIDI\n"
            "# Clock Modulo, where MIDI clocking will not begin until the song\n"
            "# position reaches the start modulo value [midi-clock-mod-ticks].\n"
+           "# A value of -1 indicates that the output port is totally\n"
+           "# disabled.  On can set this value manually for devices that are\n"
+           "# present, but not available, perhaps because another application\n"
+           "# has exclusive access to the device (e.g. on Windows).\n"
            "\n"
         ;
 
@@ -1265,10 +1285,17 @@ optionsfile::write (const perform & p)
             << ucperf.master_bus().get_midi_out_bus_name(bus)
             << "\n"
             ;
+
+        /*
+         * We were getting this from the master bus, but we now let perform
+         * get the clocks from the master bus, and we get them from perform.
+         */
+
+        int bus_on = static_cast<int>(ucperf.get_clock(bussbyte(bus)));
         snprintf
         (
-            outs, sizeof(outs), "%d %d  # buss number, clock status",
-            bus, (char) ucperf.master_bus().get_clock(bus)
+            outs, sizeof outs, "%d %d    # buss number, clock status",
+            bus, bus_on
         );
         file << outs << "\n";
     }
@@ -1301,7 +1328,6 @@ optionsfile::write (const perform & p)
         << rc().tempo_track_number() << "    # tempo_track_number\n"
         ;
 
-
     /*
      * Bus input data
      */
@@ -1324,8 +1350,8 @@ optionsfile::write (const perform & p)
             ;
         snprintf
         (
-            outs, sizeof(outs), "%d %d  # buss number, input status",
-            i, static_cast<char>(ucperf.master_bus().get_input(i))
+            outs, sizeof outs, "%d %d  # buss number, input status",
+            i, static_cast<int>(ucperf.get_input(i))
         );
         file << outs << "\n";
     }
@@ -1438,10 +1464,10 @@ for
     i != ucperf.get_key_events().end(); ++i
 )
 {
-    std::string keyname = ucperf.key_name(i->first); // gdk_keyval_name(i->first)
+    std::string keyname = ucperf.key_name(i->first);
     snprintf
     (
-        outs, sizeof(outs), "%u %d   # %s", i->first, i->second, keyname.c_str()
+        outs, sizeof outs, "%u %d   # %s", i->first, i->second, keyname.c_str()
     );
     file << std::string(outs) << "\n";
 }
@@ -1463,9 +1489,8 @@ for
     {
         snprintf
         (
-            outs, sizeof(outs), "%u  %d   # %s",
-            i->first, i->second,
-            ucperf.key_name(i->first).c_str()   // gdk_keyval_name(i->first)
+            outs, sizeof outs, "%u  %d   # %s", i->first, i->second,
+            ucperf.key_name(i->first).c_str()
         );
         file << std::string(outs) << "\n";
     }

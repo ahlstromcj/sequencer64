@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2018-05-07
+ * \updates       2018-05-11
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibase module is the base-class version of the mastermidibus
@@ -302,7 +302,12 @@ public:
     void panic ();                                          /* kepler34 func  */
     void set_sequence_input (bool state, sequence * seq);
     void dump_midi_input (event in);                        /* seq32 function */
-    bool initialize_buses ();
+
+    /*
+     * Never called.
+     *
+     * bool initialize_buses ();
+     */
 
     std::string get_midi_out_bus_name (bussbyte bus);
     std::string get_midi_in_bus_name (bussbyte bus);
@@ -322,7 +327,13 @@ public:
 
 protected:
 
-    void port_settings
+    /**
+     * \setter m_master_clocks, m_master_inputs.
+     *      Used in the perform class to pass the settings read from the "rc"
+     *      file to here.  There is an converse function defined below.
+     */
+
+    void set_port_statuses
     (
         const std::vector<clock_e> & clocks,
         const std::vector<bool> & inputs
@@ -330,6 +341,22 @@ protected:
     {
         m_master_clocks = clocks;
         m_master_inputs = inputs;
+    }
+
+    /**
+     * \getter m_master_clocks, m_master_inputs.
+     *      Used in the perform class to pass the settings read from the "rc"
+     *      file to here.  There is an converse function defined above.
+     */
+
+    void get_port_statuses
+    (
+        std::vector<clock_e> & clocks,
+        std::vector<bool> & inputs
+    )
+    {
+        clocks = m_master_clocks;
+        inputs = m_master_inputs;
     }
 
     clock_e clock (int bus)

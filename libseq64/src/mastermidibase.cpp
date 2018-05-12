@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2017-11-23
+ * \updates       2018-05-11
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -390,12 +390,13 @@ mastermidibase::get_clock (bussbyte bus)
     return m_outbus_array.get_clock(bus);
 }
 
-/**
+/*
  *  Initializes all fo the busses in the input and output buss arrays.
+ *
+ *  Currently never called!
  *
  * \return
  *      Returns true if both busses were successfully initialized.
- */
 
 bool
 mastermidibase::initialize_buses ()
@@ -407,6 +408,8 @@ mastermidibase::initialize_buses ()
 
     return result;
 }
+ *
+ */
 
 /**
  *  Set the status of the given input buss, if a legal buss number.

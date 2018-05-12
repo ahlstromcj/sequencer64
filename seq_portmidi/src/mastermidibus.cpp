@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-09
+ * \updates       2017-05-12
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -89,18 +89,9 @@ mastermidibus::~mastermidibus ()
 bool
 mastermidibus::activate ()
 {
-#ifdef PLATFORM_DEBUG
     bool result = mastermidibase::activate();
-    for (int dev = 0; dev < Pm_device_count(); ++dev)
-    {
-        bool status = bool(Pm_device_opened(dev));
-        printf("Device %d %s\n", dev, status ? "open" : "closed");
-    }
+    Pm_print_devices();
     return result;
-#else
-    return mastermidibase::activate();
-#endif
-
 }
 
 /**
@@ -133,40 +124,31 @@ mastermidibus::api_init (int ppqn, midibpm /*bpm*/)
     for (int i = 0; i < num_devices; ++i)
     {
         const PmDeviceInfo * dev_info = Pm_GetDeviceInfo(i);
-        printf
-        (
-            "PortMidi %s device %d: %s in:%d out:%d\n",
-            dev_info->interf, i, dev_info->name,
-            dev_info->input, dev_info->output
-        );
         if (dev_info->output)
         {
             /*
-             * The parameters here are bus ID, port ID, and client name.
+             * The parameters here are the bus index (within the input or output
+             * busarry), the bus ID (currently identical to the bus index,
+             * hmmmmm), the port ID, and the client name.
              */
 
-            midibus * m = new midibus
-            (
-                i, numouts, i, dev_info->name   // false, false NEEDED
-            );
+            midibus * m = new midibus(numouts, numouts, i, dev_info->name);
             m->is_input_port(false);
             m->is_virtual_port(false);
-            m_outbus_array.add(m, clock(i));
+            m_outbus_array.add(m, clock(numouts));      // not i
             ++numouts;
         }
         else if (dev_info->input)
         {
             /*
-             * The parameters here are bus ID, port ID, and client name.
+             * The parameters here are bus index, bus ID, port ID, and client
+             * name.
              */
 
-            midibus * m = new midibus
-            (
-                i, numins, i, dev_info->name    // true, false NEEDED
-            );
+            midibus * m = new midibus(numins, numins, i, dev_info->name);
             m->is_input_port(true);
             m->is_virtual_port(false);
-            m_inbus_array.add(m, input(i));
+            m_inbus_array.add(m, input(numins));        // not i
             ++numins;
         }
     }

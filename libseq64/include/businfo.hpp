@@ -43,11 +43,10 @@
  *  are maintained, one for input and one for output.
  */
 
-
 #include <vector>                       /* for containing the bus objects   */
 
 #include "midibus_common.hpp"           /* enum clock_e                     */
-#include "midibus.hpp"                  /* seq64::midibus           */
+#include "midibus.hpp"                  /* seq64::midibus                   */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

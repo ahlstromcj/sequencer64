@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-31
+ * \updates       2018-05-12
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1778,22 +1778,12 @@ public:
 
     bool clear_all ();
     void launch (int ppqn);
+    void finish ();
     void new_sequence (int seq);                    /* seqmenu & mainwid    */
     void add_sequence (sequence * seq, int perf);   /* midifile             */
     void delete_sequence (int seq);                 /* seqmenu & mainwid    */
     bool is_sequence_in_edit (int seq);
     void print_busses () const;
-
-    /**
-     *  The rough opposite of launch(); it doesn't stop the threads.  A minor
-     *  simplification for the main() routine, hides the JACK support macro.
-     *  We might need to add code to stop any ongoing outputing.
-     */
-
-    void finish ()
-    {
-        (void) deinit_jack_transport();
-    }
 
     /**
      * \getter m_tick
@@ -2302,30 +2292,12 @@ public:
         return is_mseq_valid(seq) ? m_seqs[seq] : nullptr ;
     }
 
-    void sequence_key (int seq);                        // encapsulation
+    void sequence_key (int seq);                            // encapsulation
     std::string sequence_label (const sequence & seq);
-    std::string sequence_label (int seqnumb);           // for qperfnames
+    std::string sequence_label (int seqnumb);               // for qperfnames
     std::string sequence_title (const sequence & seq);
-    void set_input_bus (bussbyte bus, bool input_active);    // used in options
-    void set_clock_bus (bussbyte bus, clock_e clocktype);    // used in options
-
-    /**
-     * \getter m_master_bus->get_clock(bus);
-     */
-
-    clock_e get_clock (bussbyte bus) const
-    {
-        return m_master_bus->get_clock(bus);
-    }
-
-    /**
-     * \getter m_master_bus->get_input(bus);
-     */
-
-    bool get_input (bussbyte bus) const
-    {
-        return m_master_bus->get_input(bus);
-    }
+    void set_input_bus (bussbyte bus, bool input_active);   // used in options
+    void set_clock_bus (bussbyte bus, clock_e clocktype);   // used in options
 
     bool mainwnd_key_event (const keystroke & k);
 
@@ -2943,6 +2915,19 @@ private:
 #endif
 
     /**
+     *  Pre-allocates the desired number of clocks.  This function and calls
+     *  to set_clock() are a more fool-proof option for reading the clocks
+     *  from the "rc" file.  Might eventually do this for inputs as well.
+     *  LATER.
+     */
+
+    void preallocate_clocks (int busscount)
+    {
+        for (int b = 0; b < busscount; ++b)
+            add_clock(e_clock_off);
+    }
+
+    /**
      *  Saves the clock settings read from the "rc" file so that they can be
      *  passed to the mastermidibus after it is created.
      *
@@ -2964,6 +2949,27 @@ private:
     {
         if (bus < int(m_master_clocks.size()))
             m_master_clocks[bus] = clocktype;
+    }
+
+    /**
+     *  Gets a single clock item, if in the currently existing range.
+     *  Meant for use by the optionsfile::write() function.
+
+    clock_e get_clock (bussbyte bus) const
+    {
+        return bus < bussbyte(m_master_clocks.size()) ?
+            m_master_clocks[bus] : e_clock_off ;
+    }
+     * STILL THINKING ABOUT THIS.
+     */
+
+    /**
+     * \getter m_master_bus->get_clock(bus);
+     */
+
+    clock_e get_clock (bussbyte bus) const
+    {
+        return m_master_bus->get_clock(bus);
     }
 
     /**
@@ -2991,13 +2997,28 @@ private:
     }
 
     /**
-     * \getter m_master_bus->get_input(bus)
+     * \getter m_master_inputs[bus]
+     *
+     *  Changed from:
+     *
+     *      return not_nullptr(m_master_bus) ?
+     *          m_master_bus->get_input(bus) : false ;
+
+    bool get_input (bussbyte bus) const
+    {
+        return bus < bussbyte(m_master_inputs.size()) ?
+            m_master_inputs[bus] : false ;
+    }
+     * STILL THINKING ABOUT THIS.
      */
 
-    bool get_input (bussbyte bus)
+    /**
+     * \getter m_master_bus->get_input(bus);
+     */
+
+    bool get_input (bussbyte bus) const
     {
-        return not_nullptr(m_master_bus) ?
-            m_master_bus->get_input(bus) : false ;
+        return m_master_bus->get_input(bus);
     }
 
     /**

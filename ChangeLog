@@ -1,3 +1,16 @@
+2018-05-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure, include/config.h.in: Updating configure files.
+	* ChangeLog, INSTALL, README, README.windows, configure.ac,
+	contrib/notes/windows.txt, contrib/qt5/virtualmidi.log,
+	contrib/qt5/windows.txt, data/qpseq64.rc,
+	libseq64/include/mastermidibase.hpp, libseq64/include/midibase.hpp,
+	libseq64/include/midibus_common.hpp,
+	libseq64/src/mastermidibase.cpp, libseq64/src/midibase.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_portmidi/src/pmwinmm.c,
+	seq_qt5/src/qsmainwnd.cpp: Linux/Windows version 0.94.8 pending.
+
 2018-05-12  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/businfo.hpp,

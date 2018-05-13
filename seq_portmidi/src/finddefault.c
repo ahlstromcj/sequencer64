@@ -29,7 +29,8 @@
  *
  *  Roger Dannenberg, Jan 2009, some fixes and reformatting by Chris Ahlstrom.
  *  However, since this uses Java "prefs", and Sequencer64 already has its
- *  own configuration file, this code will not be used.
+ *  own configuration file, this code will not be used. Kept for any
+ *  "cover-your-ass" situations.
  */
 
 #include <ctype.h>

@@ -6,7 +6,7 @@
 # \library    	libseq_portmidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2018-04-21
+# \update      2018-05-13
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -118,7 +118,11 @@ lib_LTLIBRARIES = libseq_portmidi.la
 # Source files
 #----------------------------------------------------------------------------
 #
-#	porttime.c is currently an empty module.
+#	porttime.c is currently an empty module.  Also, we don't use the
+#	finddefault*.c modules because Sequencer64 already has a more tractable way
+#	to store configuration than in Java "prefs".
+#
+#	finddefault.c
 #
 #----------------------------------------------------------------------------
 
@@ -127,7 +131,6 @@ if BUILD_WINDOWS
 libseq_portmidi_la_SOURCES = \
 	mastermidibus.cpp \
 	midibus.cpp \
-	finddefault.c \
 	pmerrmm.c \
 	pmwin.c \
 	pmwinmm.c \
@@ -143,7 +146,6 @@ else
 libseq_portmidi_la_SOURCES = \
 	mastermidibus.cpp \
 	midibus.cpp \
-	finddefault.c \
 	pmlinuxalsa.c \
 	pmlinux.c \
 	pmutil.c \

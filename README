@@ -1,4 +1,4 @@
-README for Sequencer64 0.94.8 (Native JACK, CLI, varisets, tempo, Windows)
+README for Sequencer64 0.95.0 (Native JACK, CLI, varisets, tempo, Windows)
 Chris Ahlstrom
 2015-09-10 to 2018-05-13
 
@@ -46,6 +46,10 @@ conventional source tarball.
 
 Recent changes:
 
+    -   Version 0.95.0:
+        -   Improving the Windows version and its packaging.  Needs a Windows
+            icon, an installer, better data support and documentation, and
+            upgrades to the GUI.
     -   Version 0.94.8:
         -   Fixed issues with configure.ac.
         -   Added Qt "pro" files to support qmake and Qt Creator to make

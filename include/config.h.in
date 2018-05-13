@@ -1,6 +1,6 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-#define VERSION_DATE_SHORT "2018-04-07"
+#define VERSION_DATE_SHORT "2018-05-13"
 #define VERSION "0.94.8"
 
 
@@ -13,6 +13,9 @@
 
 /* "The name to display as client/port" */
 #undef CLIENT_NAME
+
+/* Configuration file name */
+#undef CONFIG_NAME
 
 /* Define COVFLAGS=-fprofile-arcs -ftest-coverage if coverage support is
    wanted. */

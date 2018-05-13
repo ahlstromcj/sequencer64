@@ -28,14 +28,11 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-05-07
+ * \updates       2018-05-12
  * \license       GNU GPLv2 or above
  *
+ *  Defines some midibus constants and the clock_e enumeration
  */
-
-#include <string>
-
-#include "midibyte.hpp"                 /* seq64::midibyte typedef  */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -48,7 +45,7 @@ namespace seq64
  *  Manifest global constants.  These constants were also defined in
  *  midibus_portmidi.h, but we made them common to both implementations here.
  *
- *  The c_midibus_output_size value is passed, in mastermidibus,  to
+ *  The c_midibus_output_size value is passed, in mastermidibus, to
  *  snd_seq_set_output_buffer_size().  Not sure if the value needs to be so
  *  large.
  */
@@ -67,7 +64,7 @@ const int c_midibus_input_size  = 0x100000;     // 1048576
  *  Controls the amount a SysEx data sent at one time, in the midibus module.
  */
 
-const int c_midibus_sysex_chunk = 0x100;        //     256
+const int c_midibus_sysex_chunk = 0x100;        // 256
 
 /**
  *  A clock enumeration, as used in the File / Options / MIDI Clock dialog.
@@ -113,10 +110,6 @@ enum clock_e
     e_clock_disabled = -1
 
 };          // enum clock_e
-
-/*
- *
- */
 
 }           // namespace seq64
 

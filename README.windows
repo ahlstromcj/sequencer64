@@ -1,0 +1,121 @@
+README.windows for Sequencer64 0.94.8
+Chris Ahlstrom
+2018-05-13 to 2018-05-13
+
+This README file provides the things you need to know to run the new native
+Windows implmentation of sequencer64, an executable called qpseq64.exe.  It
+provides some notes on Sequencer64 and Windows.  We mostly use Windows 10;
+some features might differ in Windows 7 or Windows 2012+ Server.
+
+At first, we will provide only a portable ZIP package for qpseq64.  Later,
+we will provide an NSIS-based installer.
+
+Inaccessible Devices:
+
+    When first starting qpseq64 on Windows, one might experience some issues.
+    One issue is that the Microsoft MIDI Mapper, rumored to be removed in
+    Windows 8 and beyond, is still detected by the PortMidi library used in
+    qpseq64.  Another issue is that the built-in Microsoft wave-table
+    synthesizer is not accessible.
+
+    We installed the CoolSoft MIDIMapper and VirtualMIDISYnth to try to get
+    around these issues, and tried to turn off the system setup of "Allow
+    applications to restrict access to this device."  But we still had
+    inaccessible devices, and the resulting errors would cause qpseq64 to
+    abort.  So we had to spend a lot of time supporting the disabling of
+    inaccessible ports, and saving and restoring the "rc" setup properly.
+
+    Here is the latest output on our Windows, generated using the option
+    "-o log=virtualmidi.log":
+
+        qpseq64 
+        C:/Users/chris/AppData/Local/sequencer64/virtualmidi.log 
+        2018-05-13 09:06:58 
+        [MIDIMAPPER] 'mapper in : midiInGetDevCaps() error for device
+            'MIDIMAPPER': 'The specified device identifier is out of range' '
+        pm_winmm_general_inputs(): no input devices
+        PortMidi MMSystem 0: Microsoft MIDI Mapper output opened
+        PortMidi MMSystem 1: CoolSoft MIDIMapper output closed
+        PortMidi MMSystem 2: Microsoft GS Wavetable Synth output opened
+        PortMidi MMSystem 3: VirtualMIDISynth #1 output closed
+        [Opened MIDI file,
+    'C:\Users\chris\Documents\Home\sequencer64\data\b4uacuse-gm-patchless.midi']
+        [Writing rc configuration
+            C:\Users\chris\AppData\Local\sequencer64\qpseq64.rc]
+        PortMidi call failed: [-1] 'Bad pointer'
+        PortMidi call failed: [-1] 'Bad pointer'
+        Begin closing open devices...
+        Warning: devices were left open. They have been closed.
+
+    We still have some minor issues at start up and at exit, but are now able
+    to play a tune on the wavetable synthesizer using the "-b 2" option.
+
+    When you first run qpseq64 on Windows, it will create a new configuration
+    file, with inaccessible devices noted in the "[midi-clock]" section of
+    "C:\Users\username\AppData\Local\sequencer64\qpseq64.rc" by a "-1" value.
+
+Configuration Files:
+
+    On Linux, the normal directory location of the Sequencer64 configuration
+    files is "/home/username/.config/sequencer64".  Various confignames:
+
+        sequencer64.rc      The RtMidi Native ALSA/JACK version.
+        seq64portmidi.rc    The PortMidi Gtkmm 2.4 version.
+        qpseq64.rc          The PortMidi Qt 5 version.
+
+    On Windows, the conventional location is different, and the location used
+    is "C:\Users\username\AppData\Local\sequencer64".  The file is:
+
+        qpseq64.rc          The PortMidi Qt 5 version for Windows.
+
+    To access AppData, highlight the username directory, then append
+    "AppData" to the end of "C:\username".  It is a Windows thang.
+
+    After a build, one can change to the shadow-build directory
+    and run
+    
+        Seq64qt5\release\qpseq64.exe
+        
+    If it does not come up after a few seconds (Windows is *slow*), then
+    run:
+
+        windeployqt Seq64qt5\release
+
+    and try again.  Immedidately quit the application, go to your
+    "AppData" directory and verify the presence of:
+
+        qpseq64.rc
+        qpseq64.usr
+
+    Now plug in a MIDI device, and do the same exercise.  Open
+    qplseq64.rc and see what is in it:
+
+    [midi-clock]
+
+    2    # number of MIDI clocks/busses
+
+    # Output buss name: [0] 0:0 PortMidi:Microsoft MIDI Mapper
+    0 0  # buss number, clock status
+
+    # Output buss name: [2] 1:1 PortMidi:Microsoft GS Wavetable Synth (virtual)
+    1 0  # buss number, clock status
+
+    # Output buss name: [3] 1:1 PortMidi:nanoKEY2
+    2 0  # buss number, clock status
+    
+    [midi-input]
+    
+    1    # number of input MIDI busses
+
+	# The first number is the port number, and the second number
+	# indicates whether it is disabled (0), or enabled (1).
+
+	# [1] 0:1 PortMidi:nanoKEY2
+	0 0
+
+	As of this time (2018-05-13) these settings are the only way to
+	alter the ports accessed, in the Windows version of Sequencer64.
+
+	qpseq64 --buss 1 --option log=filename.out 
+
+# vim: sw=4 ts=4 wm=4 et ft=sh

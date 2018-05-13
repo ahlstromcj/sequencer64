@@ -1,6 +1,10 @@
 Notes About Windows Support
 Chris Ahlstrom
-2016-11-30 to 2016-11-30
+2016-11-30 to 2018-05-13
+
+This file is out-of-date, kept here for historical reasons.  See
+README.windows for up-to-date information.  We are using Qt 5 instead of
+Gtkmm 2.4, for the Windows support.
 
 https://wiki.gnome.org/Projects/gtkmm/MSWindows
 

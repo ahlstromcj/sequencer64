@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-05
+ * \updates     2018-05-13
  * \license     GNU GPLv2 or above
  *
  *  Check out this site:
@@ -303,8 +303,7 @@ pm_winmm_mapper_input (void)
         const char * devname = (const char *) midi_in_mapper_caps.szPname;
         pm_add_device
         (
-            // "MMSystem", (char *) midi_in_mapper_caps.szPname, TRUE,
-            "MMSystem", devname, TRUE,
+            "MMSystem", (char *) devname, TRUE,
             (void *) MIDIMAPPER, &pm_winmm_in_dictionary
         );
     }
@@ -1566,14 +1565,9 @@ winmm_write_sysex_byte (PmInternal * midi, midibyte_t byte)
         m->sysex_byte_count = 0;
     }
 
-    /* figure out where to write byte */
-
-    msg_buffer = (midibyte_t *)(m->hdr->lpData);
-    assert(m->hdr->lpData == (char *)(m->hdr + 1));
-
-    /* check for overflow */
-
-    if (m->sysex_byte_count >= m->hdr->dwBufferLength)
+    msg_buffer = (midibyte_t *) (m->hdr->lpData);       /* where to write   */
+    assert(m->hdr->lpData == (char *) (m->hdr + 1));
+    if (m->sysex_byte_count >= m->hdr->dwBufferLength)  /* check overflow   */
     {
         /* allocate a bigger message -- double it every time */
 

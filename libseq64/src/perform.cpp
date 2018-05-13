@@ -475,7 +475,7 @@ perform::launch (int ppqn)
          * We may need to copy the actually input buss settings back to here,
          * as they can change.  LATER.  They get saved properly anyway,
          * because the optionsfile object gets the information from the
-         * mastermidibus more directly.
+         * mastermidibus more directly.  Actually indirectly. :-)
          */
 
         if (activate())
@@ -1420,35 +1420,47 @@ perform::toggle_playing_tracks ()
     if (song_start_mode())
         return;
 
-    if (m_armed_saved)
+    if (are_any_armed())
     {
-        m_armed_saved = false;
-        for (int i = 0; i < m_sequence_high; ++i)
+        if (m_armed_saved)
         {
-            if (m_armed_statuses[i])
+            m_armed_saved = false;
+            for (int i = 0; i < m_sequence_high; ++i)
             {
-                m_seqs[i]->toggle_song_mute();
-                m_seqs[i]->toggle_playing();        /* to show mute status  */
+                if (m_armed_statuses[i])
+                {
+                    m_seqs[i]->toggle_song_mute();
+                    m_seqs[i]->toggle_playing();        /* to show mute status  */
+                }
+            }
+        }
+        else
+        {
+            bool armed_status = false;
+            for (int i = 0; i < m_sequence_high; ++i)   /* m_sequence_max       */
+            {
+                if (is_active(i))
+                {
+                    armed_status = m_seqs[i]->get_playing();
+                    m_armed_statuses[i] = armed_status;
+                    if (armed_status)
+                    {
+                        m_armed_saved = true;           /* one was armed        */
+                        m_seqs[i]->toggle_song_mute();  /* toggle the arming    */
+                        m_seqs[i]->toggle_playing();    /* to show mute status  */
+                    }
+                }
             }
         }
     }
     else
     {
-        bool armed_status = false;
-        for (int i = 0; i < m_sequence_high; ++i)   /* m_sequence_max       */
-        {
-            if (is_active(i))
-            {
-                armed_status = m_seqs[i]->get_playing();
-                m_armed_statuses[i] = armed_status;
-                if (armed_status)
-                {
-                    m_armed_saved = true;           /* one was armed        */
-                    m_seqs[i]->toggle_song_mute();  /* toggle the arming    */
-                    m_seqs[i]->toggle_playing();    /* to show mute status  */
-                }
-            }
-        }
+        /*
+         * If no sequences are armed, then turn them all on, as a convenience
+         * to the user.
+         */
+
+        mute_all_tracks(false);
     }
 }
 

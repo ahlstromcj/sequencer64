@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-04-01
+ * \updates       2018-05-12
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -582,8 +582,9 @@ mainwnd::mainwnd
     (
         m_button_mute,
         "Toggle the mute status of playing tracks. Effective only in Live "
-        "mode.  Affects only tracks that are currently armed. Muted tracks "
-        "are remembered even if the mode is toggled to Song and back to Live. "
+        "mode.  Affects tracks that are currently armed, unless none are armed. "
+        "In that case, all tracks are turned on.  Muted tracks are remembered "
+        "even if the playback mode is toggled to Song and back to Live. "
     );
     tophbox->pack_start(*m_button_mute, HBOX_PACKING, TOP_HBOX_PADDING/2);
     if (usr().use_more_icons())

@@ -1,6 +1,6 @@
-README for Sequencer64 0.94.8 (Native JACK, CLI, multiple sets, varisets, tempo)
+README for Sequencer64 0.94.8 (Native JACK, CLI, varisets, tempo, Windows)
 Chris Ahlstrom
-2015-09-10 to 2018-04-27
+2015-09-10 to 2018-05-13
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
 The heart of seq24 remains intact.  It is an old friend, and maintains some
@@ -30,10 +30,16 @@ GUI-less native JACK support: Seq64rtmidi/seq64cli
 
 Windows support:
 
-    We are still getting this to work, using a Qt 5 user-interface bases on
+    This version now works, unofficially, using a Qt 5 user-interface based on
     Kepler34, but using the standard Sequencer64 libraries.  The
     user-interface works, and Windows built-in MIDI devices are detected,
-    but still working on other startup issues that prevent basic playback.
+    inaccessible devices are ignored, and playback (e.g. to the built-in
+    wavetable synthesizer) work.
+
+    However, the Qt 5 GUI is well behind the Gtkmm 2.4 GUI for many features.
+    That will be fixed bit-by-bit (help wanted!).  In the meantime,
+    some configuration can be done manually in the "rc" and "usr" files.
+    See README.windows for more information.
 
 See the INSTALL file for build-from-source instructions or using a
 conventional source tarball.

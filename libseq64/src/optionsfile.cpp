@@ -664,14 +664,14 @@ optionsfile::parse (perform & p)
     }
 
     /*
-     *  We are taking a slightly different approach to this section.
-     *  When Sequencer64 exits, it saves all of the inputs it has.
-     *  If an input is removed from the system (e.g. unplugging a MIDI
-     *  controller), then there will be too many entries in this section.
-     *  The user might remove one, and forget to update the buss count.
-     *  So we basically ignore the buss count.  But we also have to read
-     *  the new channel-filter boolean if not in legacy format. If an error
-     *  occurs, we abort... the user must fix the "rc" file.
+     *  We are taking a slightly different approach to this section.  When
+     *  Sequencer64 exits, it saves all of the inputs it has.  If an input is
+     *  removed from the system (e.g. unplugging a MIDI controller), then
+     *  there will be too many entries in this section.  The user might remove
+     *  one, and forget to update the buss count.  So we basically ignore the
+     *  buss count.  But we also have to read the new channel-filter boolean
+     *  if not in legacy format. If an error occurs, we abort... the user must
+     *  fix the "rc" file.
      */
 
     if (line_after(file, "[midi-input]"))
@@ -984,9 +984,9 @@ optionsfile::write (const perform & p)
             ;
 
         file << "#\n"
-            "# The [comments] section lets one document this file.  Lines starting\n"
-            "# with '#' and '[' are ignored.  Blank lines are ignored.  To show a\n"
-            "# blank line, add a space character to the line.\n"
+            "# The [comments] section can document this file.  Lines starting\n"
+            "# with '#' and '[' are ignored.  Blank lines are ignored.  Show a\n"
+            "# blank line by adding a space character to the line.\n"
             ;
 
         /*
@@ -1062,10 +1062,7 @@ optionsfile::write (const perform & p)
             break;
 
         case c_midi_control_bpm_up:         // 64
-            file
-                << "\n# Automation group\n\n"
-                   "# bpm up:\n"
-                ;
+            file << "\n# Automation group\n\n" "# bpm up:\n" ;
             break;
 
         case c_midi_control_bpm_dn:         // 65
@@ -1106,8 +1103,8 @@ optionsfile::write (const perform & p)
 
         case c_midi_control_playback:       // 74 (new values!)
             file << "\n# Extended MIDI controls:\n\n"
-                    "# start playback (pause, start, stop):\n"
-                    ;
+                "# start playback (pause, start, stop):\n"
+                ;
             break;
 
         case c_midi_control_song_record:    // 75
@@ -1271,7 +1268,7 @@ optionsfile::write (const perform & p)
            "# Clock Modulo, where MIDI clocking will not begin until the song\n"
            "# position reaches the start modulo value [midi-clock-mod-ticks].\n"
            "# A value of -1 indicates that the output port is totally\n"
-           "# disabled.  On can set this value manually for devices that are\n"
+           "# disabled.  One can set this value manually for devices that are\n"
            "# present, but not available, perhaps because another application\n"
            "# has exclusive access to the device (e.g. on Windows).\n"
            "\n"

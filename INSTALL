@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.94.8 and above
 Chris Ahlstrom
-2015-09-10 to 2018-05-01
+2015-09-10 to 2018-05-13
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -16,13 +16,17 @@ bootstrapping setup is primarily aimed at developers.  Starting with version
         builds a test application, midiclocker64.
     -   sequencer64. ALSA with JACK transport; the original version.
     -   seq64portmidi. PortMIDI implementation; has issues, a less effective
-        option for Linux; might still be used for the upcoming Windows
-        implementation.
-    -   qseq64.  The seq64 (rtmidi) version of the application, with a Qt5
+        option for Linux.
+    -   qpseq64.  The PortMidi version of the application, with a Qt5
         user interface based on Kepler34.  Useable, but still lacks many of
-        the user-interface elements of the Gtkmm 2.4 application.
-    -   qplseq64.  Very similar to qseq64, but built via qmake and
-        suitable for loading in QtCreator installed with its mingw32 tools.
+        the user-interface elements of the Gtkmm 2.4 application.  Built via
+        qmake and suitable for loading in QtCreator installed with its mingw32
+        tools.  If you want to build it yourself, be sure to specify the Mingw
+        library, tools, and mkspec in Qt Creator.  This version supports both
+        Linux and (wait for it...) Windows.
+
+        We will eventually provide a portable Zip package in the
+        sequencer64-packages project.
 
 Below are sections for various ways of installing this project:
 
@@ -161,7 +165,7 @@ Qmake-based Install:
     A build based on Qt Creator and Qmake is available.  It has the sole
     purpose of making it easy to build the project on Windows, though we
     created this build on Linux first to work out the numerous "gotchas" with
-    Qt Creator and QMake.
+    Qt Creator, QMake, and the internal Sequencer64 "architecture".
     
     The Qmake-based build is designed *only* to use the PortMidi
     library and the new Kepler34-based Qt 5 user interface.  This

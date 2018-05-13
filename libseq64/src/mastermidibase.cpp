@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2018-05-11
+ * \updates       2018-05-12
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -389,27 +389,6 @@ mastermidibase::get_clock (bussbyte bus)
 {
     return m_outbus_array.get_clock(bus);
 }
-
-/*
- *  Initializes all fo the busses in the input and output buss arrays.
- *
- *  Currently never called!
- *
- * \return
- *      Returns true if both busses were successfully initialized.
-
-bool
-mastermidibase::initialize_buses ()
-{
-    automutex locker(m_mutex);
-    bool result = m_inbus_array.initialize();
-    if (result)
-        result = m_outbus_array.initialize();
-
-    return result;
-}
- *
- */
 
 /**
  *  Set the status of the given input buss, if a legal buss number.
@@ -796,9 +775,9 @@ mastermidibase::dump_midi_input (event ev)
             else if (m_vector_sequence[i]->stream_event(ev))
             {
                 /*
-                 * Did we find a match to the sequence channel?  Then don't bother
-                 * with the remaining sequences.  Otherwise, pass the event to any
-                 * other recording sequences.
+                 * Did we find a match to the sequence channel?  Then don't
+                 * bother with the remaining sequences.  Otherwise, pass the
+                 * event to any other recording sequences.
                  */
 
                 if (m_vector_sequence[i]->channel_match())

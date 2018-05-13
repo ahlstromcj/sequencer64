@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-27
+ * \updates       2018-05-13
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -162,7 +162,10 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
         {
             ui->lay_bpm->addWidget(m_beat_ind);
             m_beat_ind->set_beat_width(m_song_frame->get_beat_width());
-            m_beat_ind->set_beats_per_measure(m_song_frame->get_beats_per_measure());
+            m_beat_ind->set_beats_per_measure
+            (
+                m_song_frame->get_beats_per_measure()
+            );
         }
     }
 
@@ -173,12 +176,14 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
         m_live_frame->setFocus();
     }
 
-    m_timer = new QTimer(this); // refresh GUI elements every few ms
+    m_timer = new QTimer(this);     /* refresh GUI elements every few ms    */
     m_timer->setInterval(50);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(refresh()));
     m_timer->start();
 
-    // connect GUI elements to handlers
+    /*
+     * Connect the GUI elements to event handlers.
+     */
 
     connect(ui->actionNew, SIGNAL(triggered(bool)), this, SLOT(new_file()));
     connect(ui->actionSave, SIGNAL(triggered(bool)), this, SLOT(save_file()));
@@ -300,16 +305,13 @@ qsmainwnd::~qsmainwnd()
 
 /**
  *  Implements the play button, which is also a pause button in Sequencer64,
- *  though we do not yet change the pixmap.
+ *  though we do not yet change the pixmap in the Qt 5 version.
  */
 
 void
 qsmainwnd::startPlaying()
 {
-//  perf().start(false);                // false = live, need song support too
-//  perf().start_jack();
-//  perf().is_pattern_playing(true);
-    perf().pause_key();                             /* not start_key()      */
+    perf().pause_key();                 /* not the start_key()              */
 }
 
 /**
@@ -319,9 +321,7 @@ qsmainwnd::startPlaying()
 void
 qsmainwnd::stopPlaying()
 {
-//  perf().stop_jack();
-//  perf().stop();
-    perf().stop_key();                          /* make sure it's seq32able */
+    perf().stop_key();                  /* make sure it's seq64-able        */
     ui->btnPlay->setChecked(false);
 }
 
@@ -649,25 +649,23 @@ qsmainwnd::showqsabout()
 }
 
 /**
- *
+ * \warning
+ *      Somehow, checking for not_nullptr(m_edit_frame) to determine whether
+ *      to remove or add that widget causes the edit frame to not get created,
+ *      and then the Edit tab is empty.
  */
 
 void
 qsmainwnd::loadEditor(int seqId)
 {
+    ui->EditTabLayout->removeWidget(m_edit_frame);      /* no nullptr check */
     if (not_nullptr(m_edit_frame))
-    {
-        ui->EditTabLayout->removeWidget(m_edit_frame);
-        delete  m_edit_frame;
-    }
+        delete m_edit_frame;
 
- // m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
-    if (not_nullptr(m_edit_frame))
-    {
-        ui->EditTabLayout->addWidget(m_edit_frame);
-        m_edit_frame->show();
-        ui->tabWidget->setCurrentIndex(2);
-    }
+    m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
+    ui->EditTabLayout->addWidget(m_edit_frame);         /* no nullptr check */
+    m_edit_frame->show();
+    ui->tabWidget->setCurrentIndex(2);
 }
 
 /**
@@ -759,14 +757,17 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
 }
 
 /**
- *
+ * \warning
+ *      Somehow, checking for not_nullptr(m_edit_frame) to determine whether
+ *      to remove or add that widget causes the edit frame to not get created,
+ *      and then the Edit tab is empty.
  */
 
 void
 qsmainwnd::tabWidgetClicked (int newIndex)
 {
     /*
-     * If we've selected the edit tab, make sure it has something to edit
+     * If we've selected the edit tab, make sure it has something to edit.
      */
 
     if (newIndex == 2 && is_nullptr(m_edit_frame))
@@ -780,7 +781,7 @@ qsmainwnd::tabWidgetClicked (int newIndex)
                 break;
             }
         }
-        if (seqId == -1)                // no sequence found, make a new one
+        if (seqId == -1)                /* no sequence found, make a new one */
         {
             perf().new_sequence(0);
             seqId = 0;
@@ -788,17 +789,9 @@ qsmainwnd::tabWidgetClicked (int newIndex)
 
         sequence * seq = perf().get_sequence(seqId);
         seq->set_dirty();
-
-        /*
-         * When does this get deleted?
-         */
-
-  //    m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
-        if (not_nullptr(m_edit_frame))
-        {
-            ui->EditTabLayout->addWidget(m_edit_frame);
-            m_edit_frame->show();
-        }
+        m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
+        ui->EditTabLayout->addWidget(m_edit_frame);     /* no nullptr check */
+        m_edit_frame->show();
         update();
     }
 }

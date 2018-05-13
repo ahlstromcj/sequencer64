@@ -1,5 +1,321 @@
+2018-05-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/businfo.hpp,
+	libseq64/include/mastermidibase.hpp, libseq64/include/perform.hpp,
+	libseq64/src/businfo.cpp, libseq64/src/mastermidibase.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/options.hpp, seq_gtkmm2/src/options.cpp,
+	seq_portmidi/include/portmidi.h,
+	seq_portmidi/src/mastermidibus.cpp, seq_portmidi/src/midibus.cpp,
+	seq_portmidi/src/portmidi.c, seq_rtmidi/src/mastermidibus.cpp: 
+	Fixing PortMidi buss/port and disabling support, need to test rtmidi
+	for regressions.
+
+2018-05-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/options.cpp: Improved labelling of disabled ports.
+
+2018-05-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/qt5/virtualmidi.log, seq_alsamidi/src/midibus.cpp,
+	seq_portmidi/src/mastermidibus.cpp, strap_functions: Interim
+	check-in, minor stuff.
+
+2018-05-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/mastermidibase.hpp,
+	libseq64/include/midibase.hpp, libseq64/src/businfo.cpp,
+	libseq64/src/midibase.cpp, libseq64/src/optionsfile.cpp,
+	seq_portmidi/src/mastermidibus.cpp, seq_portmidi/src/midibus.cpp: 
+	Disabled usage of e_clock_disabled, pending investigation.
+
+2018-05-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/businfo.hpp,
+	libseq64/include/mastermidibase.hpp, libseq64/include/midibase.hpp,
+	libseq64/include/midibus_common.hpp, libseq64/src/businfo.cpp,
+	libseq64/src/mastermidibase.cpp, libseq64/src/midibase.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	seq_alsamidi/src/midibus.cpp, seq_gtkmm2/src/options.cpp,
+	seq_portmidi/include/mastermidibus_pm.hpp,
+	seq_portmidi/include/portmidi.h,
+	seq_portmidi/src/mastermidibus.cpp, seq_portmidi/src/midibus.cpp,
+	seq_portmidi/src/portmidi.c, seq_rtmidi/src/midi_alsa_info.cpp: 
+	Added support for output disabling via new clock setting.
+
+2018-05-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, contrib/qt5/virtualmidi.log,
+	seq_portmidi/include/pminternal.h, seq_portmidi/include/portmidi.h,
+	seq_portmidi/src/midibus.cpp, seq_portmidi/src/pmwinmm.c,
+	seq_portmidi/src/portmidi.c: Interim check-in, still dicking with
+	pmwinmm.
+
+2018-05-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, Seq64qt5/seq64qt5.cpp, contrib/qt5/virtualmidi.log,
+	libseq64/src/daemonize.cpp, seq_portmidi/src/mastermidibus.cpp,
+	seq_portmidi/src/pmwin.c, seq_portmidi/src/pmwinmm.c,
+	seq_portmidi/src/portmidi.c: Interim work on getting rid of
+	device-is-busy errors.
+
+2018-05-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_portmidi/src/pmwinmm.c, seq_portmidi/src/portmidi.c: Finally
+	got device ID to show up in Windows error message.
+
+2018-05-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_portmidi/src/pmwinmm.c, seq_portmidi/src/portmidi.c: Trying to
+	get PortMidi error messages working properly in Windows.
+
+2018-05-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, configure.ac, contrib/notes/jack-testing.txt,
+	libseq64/src/midifile.cpp, seq_portmidi/include/pminternal.h,
+	seq_portmidi/src/pmwinmm.c, seq_portmidi/src/portmidi.c,
+	seq_rtmidi/src/midi_jack.cpp: Interim check-in.
+
+2018-04-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/midifile.cpp, libseq64/src/rc_settings.cpp: Put MIDI
+	filename to stdout and expand full-path of last-user-dir.
+	* libseq64/src/cmdlineopts.cpp, libseq64/src/daemonize.cpp,
+	libseq64/src/optionsfile.cpp, man/sequencer64.1,
+	seq_portmidi/include/pminternal.h, seq_portmidi/src/finddefault.c,
+	seq_portmidi/src/pmlinux.c, seq_portmidi/src/pmlinuxalsa.c,
+	seq_portmidi/src/portmidi.c: More log-file fixes, PortMidi upgrades.
+
+2018-04-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/midibase.cpp, seq_portmidi/src/midibus.cpp,
+	seq_portmidi/src/portmidi.c: Tentative fix to avoid polling if
+	m_inputing is false, revealed by portmidi error messages.
+	* libseq64/include/calculations.hpp, libseq64/src/calculations.cpp,
+	libseq64/src/daemonize.cpp, seq_portmidi/src/pmlinux.c: Interim
+	check-in, added log-file date.
+	* Seq64portmidi/seq64portmidi.cpp, Seq64qt5/seq64qt5.cpp,
+	seq_portmidi/include/portmidi.h, seq_portmidi/src/pmwin.c,
+	seq_portmidi/src/pmwinmm.c, seq_portmidi/src/portmidi.c,
+	seq_qt5/include/qsmainwnd.hpp, seq_qt5/src/qsmainwnd.cpp: Trying to
+	get portmidi to report errors in Qt message box.
+
+2018-04-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure, configure.ac,
+	libseq64/include/mastermidibase.hpp, libseq64/src/optionsfile.cpp,
+	seq_portmidi/include/portmidi.h,
+	seq_portmidi/src/mastermidibus.cpp, seq_portmidi/src/pmwinmm.c,
+	seq_portmidi/src/portmidi.c, seq_qt5/src/qsmainwnd.cpp: Added
+	error/message access and options to portmidie.
+
+2018-04-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64qt5/Seq64qt5.pro, configure.ac,
+	include/qt/portmidi/seq64-config.h, libseq64/libseq64.pro,
+	libseq64/src/daemonize.cpp, qplseq64.pro,
+	seq_portmidi/include/pmerrmm.h, seq_portmidi/include/pminternal.h,
+	seq_portmidi/include/portmidi.h, seq_portmidi/src/finddefault.c,
+	seq_portmidi/src/mastermidibus.cpp, seq_portmidi/src/midibus.cpp,
+	seq_portmidi/src/pmerrmm.c, seq_portmidi/src/pmlinuxalsa.c,
+	seq_portmidi/src/pmwin.c, seq_portmidi/src/pmwinmm.c,
+	seq_portmidi/src/portmidi.c, seq_qt5/seq_qt5.pro: Beefing up error
+	messaging for Windows build.
+
+2018-04-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* NEWS, README, libseq64/include/palette.hpp,
+	libseq64/src/daemonize.cpp, seq_portmidi/src/pmerrmm.c: Fixed
+	log-file and SEQ64_COLOR macro.
+
+2018-04-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/daemonize.hpp, libseq64/include/palette.hpp,
+	libseq64/include/perform.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/daemonize.cpp, libseq64/src/editable_event.cpp,
+	libseq64/src/editable_events.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_qt5/include/qskeymaps.hpp,
+	seq_qt5/src/gui_palette_qt5.cpp, seq_qt5/src/qskeymaps.cpp,
+	seq_qt5/src/qsliveframe.cpp, seq_qt5/src/qsmainwnd.cpp: Catching up
+	with old gcc 4.9 and 32-bit support, still some issues.
+	* README, Seq64cli/seq64rtcli.cpp, Seq64portmidi/seq64portmidi.cpp,
+	Seq64qt5/seq64qt5.cpp, Seq64rtmidi/seq64rtmidi.cpp,
+	Sequencer64/sequencer64.cpp, configure.ac,
+	libseq64/include/file_functions.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/file_functions.cpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, seq_portmidi/include/pmerrmm.h,
+	seq_portmidi/src/mastermidibus.cpp, seq_portmidi/src/pmerrmm.c,
+	seq_portmidi/src/pmwinmm.c: Severly improved the log option, added
+	it to all versions of seq64.
+	* .gitignore, Seq64qt5/Seq64qt5.pro, data/qplseq64.rc,
+	libseq64/include/recent.hpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/recent.cpp, seq_portmidi/include/Makefile.am,
+	seq_portmidi/include/pmerrmm.h, seq_portmidi/include/pminternal.h,
+	seq_portmidi/include/portmidi.h, seq_portmidi/seq_portmidi.pro,
+	seq_portmidi/src/Makefile.am, seq_portmidi/src/pmerrmm.c,
+	seq_portmidi/src/pmlinux.c, seq_portmidi/src/pmlinuxalsa.c,
+	seq_portmidi/src/pmwin.c, seq_portmidi/src/pmwinmm.c,
+	seq_portmidi/src/portmidi.c: Updates to portmidi for Windows, still
+	struggling.
+
+2018-04-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/file_functions.hpp, libseq64/include/recent.hpp,
+	libseq64/src/file_functions.cpp, libseq64/src/rc_settings.cpp,
+	libseq64/src/recent.cpp, seq_portmidi/src/pmwinmm.c,
+	seq_qt5/forms/qsabout.ui, seq_qt5/forms/qsmainwnd.ui: More
+	improvements to recent-files, Help/About.
+
+2018-04-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, Seq64qt5/Seq64qt5.pro, libseq64/src/file_functions.cpp,
+	libseq64/src/recent.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_qt5/include/qsliveframe.hpp,
+	seq_qt5/src/qsliveframe.cpp, seq_qt5/src/qsmainwnd.cpp: Fixes to
+	recent-files, Live drawing, and more.
+
+2018-04-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64qt5/seq64qt5.cpp, TODO, contrib/qt5/windows.txt,
+	seq_gtkmm2/include/mainwid.hpp, seq_portmidi/src/portmidi.c,
+	seq_qt5/include/qsliveframe.hpp, seq_qt5/src/qsliveframe.cpp: Minor
+	updates, qt/portmidi code.
+
+2018-04-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, Seq64cli/seq64rtcli.cpp,
+	Seq64portmidi/seq64portmidi.cpp, Seq64qt5/seq64qt5.cpp,
+	Seq64rtmidi/seq64rtmidi.cpp, configure.ac, contrib/qt5/windows.txt,
+	data/qplseq64.rc, data/qplseq64.usr,
+	include/qt/portmidi/seq64-config.h, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/rc_settings.cpp: Fixed configuration file action and
+	naming.
+	* INSTALL, README, Seq64qt5/Seq64qt5.pro, configure.ac,
+	contrib/qt5/qplseq64.pro.user, libseq64/include/globals.h,
+	libseq64/include/sequence.hpp, libseq64/libseq64.pro,
+	libseq64/src/hsvtorgb.cpp, libseq64/src/perform.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/sequence.cpp,
+	qplseq64.pro, seq_gtkmm2/src/seqedit.cpp,
+	seq_portmidi/seq_portmidi.pro, seq_portmidi/src/pmwinmm.c,
+	seq_qt5/include/Globals.hpp, seq_qt5/seq_qt5.pro: Successful Windows
+	build, untested, added code to handle Untitled tests.
+
+2018-04-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64qt5/Seq64qt5.pro, libseq64/include/easy_macros.h,
+	libseq64/include/easy_macros.hpp, libseq64/libseq64.pro,
+	libseq64/src/easy_macros.cpp, seq_portmidi/include/porttime.h,
+	seq_portmidi/seq_portmidi.pro, seq_portmidi/src/pmwin.c,
+	seq_portmidi/src/pmwinmm.c, seq_qt5/seq_qt5.pro: More fixes to easy
+	macros and pm-windows.
+	* libseq64/include/Makefile.am, libseq64/include/easy_macros.h,
+	libseq64/include/easy_macros.hpp, libseq64/src/jack_assistant.cpp,
+	seq_portmidi/src/pmwin.c, seq_portmidi/src/pmwinmm.c,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_api.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp,
+	seq_rtmidi/src/rtmidi.cpp, seq_rtmidi/src/rtmidi_info.cpp: Separated
+	easy_macros into 2 files, starting to patch portmidi win code.
+
+2018-04-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_portmidi/src/finddefault.c, seq_portmidi/src/pmlinux.c,
+	seq_portmidi/src/pmlinuxalsa.c, seq_portmidi/src/pmutil.c,
+	seq_portmidi/src/pmwin.c, seq_portmidi/src/pmwinmm.c,
+	seq_portmidi/src/portmidi.c, seq_portmidi/src/porttime.c,
+	seq_portmidi/src/ptlinux.c, seq_portmidi/src/ptwinmm.c: Fixes to
+	Linux PortMIDI and commenting.
+
+2018-04-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Seq64qt5/Seq64qt5.pro, libseq64/include/midibyte.hpp,
+	libseq64/libseq64.pro, seq_portmidi/include/finddefault.h,
+	seq_portmidi/include/pminternal.h, seq_portmidi/include/pmlinux.h,
+	seq_portmidi/include/pmlinuxalsa.h, seq_portmidi/include/pmutil.h,
+	seq_portmidi/include/pmwinmm.h, seq_portmidi/include/portmidi.h,
+	seq_portmidi/include/porttime.h, seq_portmidi/seq_portmidi.pro,
+	seq_portmidi/src/mastermidibus.cpp, seq_portmidi/src/midibus.cpp,
+	seq_portmidi/src/pmlinux.c, seq_portmidi/src/pmlinuxalsa.c,
+	seq_portmidi/src/pmwin.c, seq_portmidi/src/pmwinmm.c,
+	seq_portmidi/src/portmidi.c, seq_qt5/seq_qt5.pro,
+	seq_qt5/src/qperfroll.cpp: Many fixes, still in progress, for
+	internal portmidi library.
+	* libseq64/src/file_functions.cpp: Added _fullpath() support to
+	file_functions.
+
+2018-04-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, Seq64qt5/Seq64qt5.pro, bootstrap,
+	include/config.h.in, include/qt/portmidi/seq64-config.h,
+	libseq64/libseq64.pro, qplseq64.pro, seq_portmidi/seq_portmidi.pro,
+	seq_qt5/seq_qt5.pro, strap_functions: Added qt-portmidi-specific
+	config header, got .pro files and static linkage working, adjust
+	full-clean operation.
+	* INSTALL, Seq64qt5/Seq64qt5.pro,
+	seq_portmidi/include/finddefault.h,
+	seq_portmidi/include/pminternal.h, seq_portmidi/src/finddefault.c,
+	seq_portmidi/src/pmlinux.c, seq_portmidi/src/pmlinuxalsa.c,
+	seq_portmidi/src/portmidi.c: Fixed portmidi warnings, still fixing
+	static linkage.
+
+2018-04-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, INSTALL, Seq64qt5/Seq64qt5.pro, bootstrap,
+	configure.ac, include/qt/portmidi/seq64-config.h,
+	libseq64/libseq64.pro, libseq64/src/user_settings.cpp,
+	qplseq64.pro, seq_portmidi/seq_portmidi.pro, seq_qt5/seq_qt5.pro,
+	seq_qt5/src/qperfeditframe.cpp, seq_qt5/src/qsabout.cpp,
+	seq_qt5/src/qseditoptions.cpp, seq_qt5/src/qseq64.qrc,
+	seq_qt5/src/qseqeditframe.cpp, seq_qt5/src/qsliveframe.cpp,
+	seq_qt5/src/qsmainwnd.cpp: Initial qtcreator setup for portmidi
+	build.
+
+2018-04-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* bootstrap, debian/compat, debian/rules: Interim check-in, windows
+	builds still an issue.
+
+2018-04-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* debian/control, debian/control-split,
+	debian/libseq64-dev.install, debian/libseq64.install, debian/rules,
+	debian/seq-gtkmm2-dev.install, debian/seq-gtkmm2.install,
+	debian/seq-rtmidi-dev.install, debian/seq-rtmidi.install,
+	debian/sequencer64.install: Debian install files, incorrect but want
+	to preserve them anyway.
+	* INSTALL, README, VERSION, aux-files/config.guess,
+	aux-files/config.sub, configure, configure.ac, debian/changelog,
+	libseq64/include/sequence.hpp, seq_qt5/include/qperfroll.hpp,
+	seq_qt5/include/qseqroll.hpp, seq_qt5/src/qperfroll.cpp,
+	seq_qt5/src/qseqroll.cpp: Ready for next version, code cleanup.
+
+2018-04-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/code/selectionbox.cpp, contrib/code/selectionbox.hpp,
+	libseq64/include/gui_assistant.hpp, libseq64/src/lash.cpp,
+	seq_qt5/include/qperfroll.hpp, seq_qt5/include/qseqdata.hpp,
+	seq_qt5/include/qseqkeys.hpp, seq_qt5/include/qstriggereditor.hpp,
+	seq_qt5/src/qperfroll.cpp, seq_qt5/src/qseqdata.cpp,
+	seq_qt5/src/qseqkeys.cpp, seq_qt5/src/qseqroll.cpp,
+	seq_qt5/src/qstriggereditor.cpp: Code cleanup, mainly for Qt.
+
+2018-04-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_qt5/forms/qsliveframe.ui, seq_qt5/forms/qsmainwnd.ui,
+	seq_qt5/include/qperfroll.hpp, seq_qt5/src/qperfeditframe.cpp,
+	seq_qt5/src/qperfroll.cpp: Allow smaller size of qsmainwnd, qperf
+	cleanup started.
+
 2018-04-01  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* debian/README, debian/control, debian/control-split,
+	debian/copyright, strap_functions: Beefing up the deb build.
+	* INSTALL, aux-files/config.guess, aux-files/config.sub,
+	debian/changelog, debian/control, debian/copyright, debian/menu: 
+	Updated the debian build files, still unresolvable reference issues
+	galore.
+	* ChangeLog: Version 0.94.7 pending.
 	* : Merge from qt5_reconcile, removal of Makefile.ins.
 
 2018-03-31  Chris Ahlstrom <ahlstromcj@gmail.com>

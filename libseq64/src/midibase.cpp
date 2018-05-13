@@ -291,9 +291,8 @@ midibase::set_name
             bus_name(busname);              // bus_name(alias);
         }
         else
-        {
             snprintf(alias, sizeof alias, "%s", portname.c_str());
-        }
+
         snprintf                            /* copy the client name parts */
         (
             name, sizeof name, "[%d] %d:%d %s",
@@ -770,13 +769,7 @@ midibase::clock (midipulse tick)
             ++m_lasttick;
             done = m_lasttick >= tick;
             if ((m_lasttick % ct) == 0)                 /* tick time yet?   */
-            {
                 api_clock(tick);
-
-                /*
-                 * TMI: printf("midibase::clock(%ld)\n", tick);
-                 */
-            }
         }
         api_flush();                                    /* and send it out  */
     }

@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-05-14
+# \update      2018-05-15
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -47,14 +47,18 @@ HEADERS += \
 
 # Linux:
 
-unix:!macx HEADERS += include/pmlinux.h include/pmlinuxalsa.h 
+unix:!macx {
+   HEADERS += include/pmlinux.h include/pmlinuxalsa.h 
+}
 
 # Mac OSX
 #
 #  We provide the readbinaryplist.h file in case someone needs it, but
 #  currently do not include that module in the seq_portmidi library.
 
-macx: HEADERS += include/pmmac.h include/pmmacosxcm.h 
+macx: {
+   HEADERS += include/pmmac.h include/pmmacosxcm.h 
+}
 
 # Windows:
 
@@ -77,7 +81,9 @@ SOURCES += \
 
 # Linux:
 
-unix:!macx SOURCES += src/pmlinux.c src/pmlinuxalsa.c src/ptlinux.c
+unix:!macx {
+   SOURCES += src/pmlinux.c src/pmlinuxalsa.c src/ptlinux.c
+}
 
 # Mac OSX
 #
@@ -86,7 +92,9 @@ unix:!macx SOURCES += src/pmlinux.c src/pmlinuxalsa.c src/ptlinux.c
 #  The ptmacosx_cf.c module is also provide, but it is not used, as far
 #  as we can tell.
 
-macx: SOURCES += src/pmmac.c pmmacosxcm.c src/ptmacosx_mach.c
+macx: {
+   SOURCES += src/pmmac.c pmmacosxcm.c src/ptmacosx_mach.c
+}
 
 # Windows:
 

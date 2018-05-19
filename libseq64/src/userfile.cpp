@@ -824,7 +824,7 @@ userfile::write (const perform & /* a_perf */ )
         file << "\n"
             "# Specifies the number of rows in the main window.\n"
             "# Values of 4 (the default) through 8 (the best alternative value)\n"
-            "# are allowed.\n"
+            "# are allowed. Same as R in the '-o sets=RxC' option.\n"
             "\n"
             << usr().mainwnd_rows() << "       # mainwnd_rows\n"
             ;
@@ -832,6 +832,7 @@ userfile::write (const perform & /* a_perf */ )
         file << "\n"
             "# Specifies the number of columns in the main window.\n"
             "# At present, values from 8 (the default) to 12 are supported.\n"
+            "# are allowed. Same as C in the '-o sets=RxC' option.\n"
             "\n"
             << usr().mainwnd_cols() << "       # mainwnd_cols\n"
             ;
@@ -857,7 +858,7 @@ userfile::write (const perform & /* a_perf */ )
             ;
 
         file << "\n"
-            "# Specifies a quantity that affect the height of the main window.\n"
+            "# Specifies a quantity that affects the height of the main window.\n"
             "\n"
             << usr().control_height() << "      # control_height\n"
             ;
@@ -978,6 +979,7 @@ userfile::write (const perform & /* a_perf */ )
             "# default is the normal palette.  Not all items in the user\n"
             "# interface are altered by this setting, and it's not perfect.\n"
             "# Set this value to 1 to enable the feature, 0 to disable it.\n"
+            "# Same as the -K or --inverse command-line options.\n"
             "\n"
             << (usr().inverse_colors() ? "1" : "0")
             << "      # inverse_colors\n"
@@ -1005,9 +1007,9 @@ userfile::write (const perform & /* a_perf */ )
 #if defined SEQ64_MULTI_MAINWID
 
         file << "\n"
-            "# Specifies the number of set window ('wid') rows to show.\n"
+            "# Specifies the number of set-window ('wid') rows to show.\n"
             "# The long-standing default is 1, but 2 or 3 may also be set.\n"
-            "# Corresponds to 'r' in the '-o wid=rxc,f' option.\n"
+            "# Corresponds to R in the '-o wid=RxC,F' option.\n"
             "\n"
             << usr().block_rows()
             << "      # block_rows (number of rows of set blocks/wids)\n"
@@ -1016,7 +1018,7 @@ userfile::write (const perform & /* a_perf */ )
         file << "\n"
             "# Specifies the number of set window ('wid') columns to show.\n"
             "# The long-standing default is 1, but 2 may also be set.\n"
-            "# Corresponds to 'c' in the '-o wid=rxc,f' option.\n"
+            "# Corresponds to C in the '-o wid=RxC,F' option.\n"
             "\n"
             << usr().block_columns()
             << "      # block_columns (number of columns of set blocks/wids)\n"
@@ -1030,7 +1032,7 @@ userfile::write (const perform & /* a_perf */ )
             "# and the rest of the set numbers follow sequentially.  If true\n"
             "# (1), then each 'wid' can be set to any set-number.\n"
             "# Corresponds to the 'f' (true, false, or 'indep') in the\n"
-            "# '-o wid=rxc,f' option.  Here, 1 is the same as 'indep' or false,\n"
+            "# '-o wid=RxC,F' option.  Here, 1 is the same as 'indep' or false,\n"
             "# and 0 is the same as f = true.  Backwards, so be careful.\n"
             "\n"
             << (usr().block_independent() ? "1" : "0")
@@ -1041,7 +1043,8 @@ userfile::write (const perform & /* a_perf */ )
             "# Specifies an enlargement of the main window of Sequencer64.\n"
             "# The normal value is 1.0, which is the legacy sizing.  If this\n"
             "# value is between 1.0 and 3.0, it will increase the size of all\n"
-            "# of the main window elements proportionately.\n"
+            "# of the main window elements proportionately. Same as the\n"
+            "# '-o scale=x.y' option.\n"
             "\n"
             << usr().window_scale()
             << "      # scales the main window upwards in size\n"
@@ -1184,7 +1187,7 @@ userfile::write (const perform & /* a_perf */ )
             "# set via the -o or --option switch, which help expand the number\n"
             "# of options the Sequencer64 options can support.\n"
             "\n"
-            "# The daemonize option is used in seq64cli to indicate that the\n"
+            "# The 'daemonize' option is used in seq64cli to indicate that the\n"
             "# application should be gracefully run as a service.\n"
             "\n"
             ;

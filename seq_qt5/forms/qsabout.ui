@@ -24,7 +24,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Sequencer64 [qplseq64]</string>
+      <string>Sequencer64 [qpseq64]</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

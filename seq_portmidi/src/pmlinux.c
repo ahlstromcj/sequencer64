@@ -83,7 +83,7 @@ pm_init ()
 
     pm_initialized = TRUE;
 
-// #ifdef SEQ64_PORTMIDI_FIND_DEFAULT_DEVICE
+#ifdef SEQ64_PORTMIDI_FIND_DEFAULT_DEVICE   // or PLATFORM_WINDOWS?
 
     pm_default_input_device_id = find_default_device
     (
@@ -97,7 +97,7 @@ pm_init ()
         pm_default_output_device_id
     );
 
-// #endif  // SEQ64_PORTMIDI_FIND_DEFAULT_DEVICE
+#endif  // SEQ64_PORTMIDI_FIND_DEFAULT_DEVICE
 
 }
 

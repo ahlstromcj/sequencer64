@@ -25,12 +25,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-08
+ * \updates       2018-05-20
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "perform.hpp"
+#include "qclocklayout.hpp"
 #include "qseditoptions.hpp"
 #include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
 
@@ -72,11 +73,13 @@ qseditoptions::qseditoptions (perform & p, QWidget * parent)
     syncWithInternals();
     connect
     (
-        ui->btnJackConnect, SIGNAL(clicked(bool)), this, SLOT(jackConnect())
+        ui->btnJackConnect, SIGNAL(clicked(bool)),
+        this, SLOT(jackConnect())
     );
     connect
     (
-        ui->btnJackDisconnect, SIGNAL(clicked(bool)), this, SLOT(jackDisconnect())
+        ui->btnJackDisconnect, SIGNAL(clicked(bool)),
+        this, SLOT(jackDisconnect())
     );
     connect
     (
@@ -95,13 +98,13 @@ qseditoptions::qseditoptions (perform & p, QWidget * parent)
     );
     connect
     (
-        ui->buttonBox->button(QDialogButtonBox::Ok), SIGNAL(clicked(bool)),
-        this, SLOT(okay())
+        ui->buttonBoxOptionsDialog->button(QDialogButtonBox::Ok),
+        SIGNAL(clicked(bool)), this, SLOT(okay())
     );
     connect
     (
-        ui->buttonBox->button(QDialogButtonBox::Cancel), SIGNAL(clicked(bool)),
-        this, SLOT(cancel())
+        ui->buttonBoxOptionsDialog->button(QDialogButtonBox::Cancel),
+        SIGNAL(clicked(bool)), this, SLOT(cancel())
     );
     connect
     (
@@ -113,6 +116,20 @@ qseditoptions::qseditoptions (perform & p, QWidget * parent)
         ui->spinKeyHeight, SIGNAL(valueChanged(int)),
         this, SLOT(updateKeyHeight())
     );
+
+    QVBoxLayout * vbox = new QVBoxLayout;
+    int buses = perf().master_bus().get_num_out_buses();
+    for (int bus = 0; bus < buses; ++bus)
+    {
+        qclocklayout * tempqc = new qclocklayout(this, perf(), bus);
+        vbox->addLayout(tempqc->layout());
+    }
+    QSpacerItem * spacer = new QSpacerItem
+    (
+        40, 20, QSizePolicy::Expanding, QSizePolicy::Maximum
+    );
+    vbox->addItem(spacer);
+    ui->groupBoxClocks->setLayout(vbox);
 }
 
 /**
@@ -267,6 +284,40 @@ qseditoptions::updateKeyHeight ()
     syncWithInternals();
 }
 
+/*
+ *  Added for Sequencer64
+ */
+
+void
+qseditoptions::on_spinBoxClockStartModulo_valueChanged(int arg1)
+{
+
+}
+
+void
+qseditoptions::on_plainTextEditTempoTrack_textChanged()
+{
+
+}
+
+void
+qseditoptions::on_pushButtonTempoTrack_clicked()
+{
+
+}
+
+void
+qseditoptions::on_checkBoxRecordByChannel_clicked(bool checked)
+{
+
+}
+
+void
+qseditoptions::on_chkJackConditional_stateChanged(int arg1)
+{
+
+}
+
 }           // namespace seq64
 
 /*
@@ -274,4 +325,3 @@ qseditoptions::updateKeyHeight ()
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
-

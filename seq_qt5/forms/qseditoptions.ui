@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>638</width>
-    <height>532</height>
+    <height>564</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabMidiClock">
       <attribute name="title">
@@ -29,18 +29,29 @@
          <x>10</x>
          <y>20</y>
          <width>591</width>
-         <height>321</height>
+         <height>291</height>
         </rect>
        </property>
        <property name="title">
         <string>Clocks</string>
        </property>
+       <widget class="QWidget" name="layoutWidgetClocks">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>571</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <layout class="QHBoxLayout" name="horizLayoutClockLine"/>
+       </widget>
       </widget>
       <widget class="QGroupBox" name="groupBoxMetaEvents">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>350</y>
+         <y>370</y>
          <width>591</width>
          <height>80</height>
         </rect>
@@ -94,6 +105,38 @@
         </property>
        </widget>
       </widget>
+      <widget class="QWidget" name="">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>330</y>
+         <width>262</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizLayoutClockStartModulo">
+        <item>
+         <widget class="QLabel" name="labelClockStartModulo">
+          <property name="text">
+           <string>Clock Start Modulo (1/16/Notes)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="spinBoxClockStartModulo">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>1024</number>
+          </property>
+          <property name="value">
+           <number>64</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
      <widget class="QWidget" name="tabMidiInput">
       <attribute name="title">
@@ -111,6 +154,17 @@
        <property name="title">
         <string>Input Buses</string>
        </property>
+       <widget class="QWidget" name="gridLayoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>29</y>
+          <width>571</width>
+          <height>131</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="gridLayoutMidiInput"/>
+       </widget>
       </widget>
       <widget class="QGroupBox" name="groupBoxInputOptions">
        <property name="geometry">
@@ -145,9 +199,9 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
+        <layout class="QHBoxLayout" name="horizLayoutPlayKeyHeight">
          <item>
-          <widget class="QLabel" name="label">
+          <widget class="QLabel" name="labelEditorKeyHeight">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
              <horstretch>0</horstretch>
@@ -175,7 +229,7 @@
         </layout>
        </item>
        <item>
-        <spacer name="verticalSpacer_2">
+        <spacer name="verticalSpacerPlayOptions">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -248,7 +302,7 @@
         <string>JACK Transport &amp;Disconnect</string>
        </property>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidgetJackTransport">
        <property name="geometry">
         <rect>
          <x>30</x>
@@ -257,7 +311,7 @@
          <height>104</height>
         </rect>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <layout class="QVBoxLayout" name="vertLayoutJackTransportMidi">
         <item>
          <widget class="QCheckBox" name="chkJackConditional">
           <property name="text">
@@ -288,7 +342,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidgetJack">
        <property name="geometry">
         <rect>
          <x>30</x>
@@ -297,7 +351,7 @@
          <height>61</height>
         </rect>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <layout class="QVBoxLayout" name="vertLayoutJackStartMode">
         <item>
          <widget class="QRadioButton" name="rbLiveMode">
           <property name="text">
@@ -315,7 +369,7 @@
        </layout>
       </widget>
      </widget>
-     <widget class="QWidget" name="tabMidi">
+     <widget class="QWidget" name="tabPlayOptions">
       <attribute name="title">
        <string>&amp;Play Options</string>
       </attribute>
@@ -345,7 +399,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
+    <widget class="QDialogButtonBox" name="buttonBoxOptionsDialog">
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>

@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-11
+ * \updates     2018-05-20
  * \license     GNU GPLv2 or above
  *
  * Notes on host error reporting:
@@ -449,6 +449,26 @@ pm_errmsg (PmError err, int deviceid)
  *      The name of the device.  This is a pointer to an external entity, such
  *      as midi_in_mapper_caps.szPname.
  *
+ * \param input
+ *      A boolean that is set to 1 (true) if the device is an input device,
+ *      and 0 (false) if it is an output device.
+ *
+ * \param descriptor
+ *      Provides additional information for a given API, we think.
+ *
+ * \param dictionary
+ *      Indicates the function signature of MIDI handler functions, we think.
+ *
+ * \param client
+ *      Provides a client number for the device.  This value is an ALSA
+ *      concept.  For other APIs, it is simply the ordinal of the device as it
+ *      was looked up.
+ *
+ * \param port
+ *      Provides a port number for the device.  This value is an ALSA
+ *      concept.  For other APIs, it is simply the ordinal of the port as it
+ *      was looked up, or simply 0.
+ *
  * \return
  *      pmInvalidDeviceId if device memory is exceeded otherwise returns
  *      pmNoError.
@@ -458,7 +478,8 @@ PmError
 pm_add_device
 (
     char * interf, char * name, int input,
-    void * descriptor, pm_fns_type dictionary
+    void * descriptor, pm_fns_type dictionary,
+    int client, int port
 )
 {
     int ismapper = not_nullptr(strstrcase(name, "mapper"));
@@ -479,11 +500,14 @@ pm_add_device
         pm_descriptor_max += 32;
         pm_descriptors = new_descriptors;
     }
+    pm_descriptors[pm_descriptor_index].pub.structVersion = PM_STRUCTURE_VERSION;
     pm_descriptors[pm_descriptor_index].pub.interf = interf;
     pm_descriptors[pm_descriptor_index].pub.name = name;
     pm_descriptors[pm_descriptor_index].pub.input = input;
     pm_descriptors[pm_descriptor_index].pub.output = ! input;
     pm_descriptors[pm_descriptor_index].pub.mapper = ismapper;
+    pm_descriptors[pm_descriptor_index].pub.client = client;
+    pm_descriptors[pm_descriptor_index].pub.port = port;
 
     /*
      * Default state: nothing to close (for automatic device closing).

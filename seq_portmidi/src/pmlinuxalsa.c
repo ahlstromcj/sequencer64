@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-29
+ * \updates     2018-05-20
  * \license     GNU GPLv2 or above
  *
  * Written by:
@@ -1014,11 +1014,15 @@ pm_linuxalsa_init (void)
     snd_seq_client_info_set_client(cinfo, -1);
     while (snd_seq_query_next_client(s_seq, cinfo) == 0)
     {
-        snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
-        snd_seq_port_info_set_port(pinfo, -1);
+        int client = snd_seq_client_info_get_client(cinfo);
+        int port = -1;
+        const char * portname = "unknown";
+        snd_seq_port_info_set_client(pinfo, client);
+        snd_seq_port_info_set_port(pinfo, port);
         while (snd_seq_query_next_port(s_seq, pinfo) == 0)
         {
-            if (snd_seq_port_info_get_client(pinfo) == SND_SEQ_CLIENT_SYSTEM)
+            client = snd_seq_client_info_get_client(cinfo);
+            if (client == SND_SEQ_CLIENT_SYSTEM)
                 continue; /* ignore Timer and Announce ports on client 0 */
 
             caps = snd_seq_port_info_get_capability(pinfo);
@@ -1038,16 +1042,16 @@ pm_linuxalsa_init (void)
                 if (pm_default_output_device_id == -1)
                     pm_default_output_device_id = pm_descriptor_index;
 
+                portname = snd_seq_port_info_get_name(pinfo);
+                client = snd_seq_port_info_get_client(pinfo);
+                port = snd_seq_port_info_get_port(pinfo);
                 pm_add_device
                 (
-                    "ALSA", pm_strdup(snd_seq_port_info_get_name(pinfo)),
-                    FALSE,
-                    MAKE_DESCRIPTOR
-                    (
-                        snd_seq_port_info_get_client(pinfo),
-                        snd_seq_port_info_get_port(pinfo)
-                    ),
-                    &pm_linuxalsa_out_dictionary);
+                    "ALSA", pm_strdup(portname), FALSE,
+                    MAKE_DESCRIPTOR(client, port),
+                    &pm_linuxalsa_out_dictionary,
+                    client, port                    /* new parameters   */
+                );
             }
             if (caps & SND_SEQ_PORT_CAP_SUBS_READ)
             {
@@ -1056,15 +1060,10 @@ pm_linuxalsa_init (void)
 
                 pm_add_device
                 (
-                    "ALSA",
-                    pm_strdup(snd_seq_port_info_get_name(pinfo)),
-                    TRUE,
-                    MAKE_DESCRIPTOR
-                    (
-                        snd_seq_port_info_get_client(pinfo),
-                        snd_seq_port_info_get_port(pinfo)
-                    ),
-                    &pm_linuxalsa_in_dictionary
+                    "ALSA", pm_strdup(portname), TRUE,
+                    MAKE_DESCRIPTOR(client, port),
+                    &pm_linuxalsa_in_dictionary,
+                    client, port                    /* new parameters   */
                 );
             }
         }

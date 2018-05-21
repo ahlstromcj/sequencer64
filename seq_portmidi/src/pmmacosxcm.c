@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2018-05-13
- * \updates     2018-05-13
+ * \updates     2018-05-20
  * \license     GNU GPLv2 or above
  *
  *  A platform interface to the MacOS X CoreMIDI framework.
@@ -1336,7 +1336,7 @@ pm_macosxcm_init (void)
         goto error_return;
     }
 
-    for (i = 0; i < numInputs; i++)         /* Iterate over MIDI input devices */
+    for (i = 0; i < numInputs; ++i)         /* iterate over MIDI in devices */
     {
         endpoint = MIDIGetSource(i);
         if (endpoint == NULL_REF)
@@ -1353,11 +1353,12 @@ pm_macosxcm_init (void)
         pm_add_device
         (
             "CoreMIDI", cm_get_full_endpoint_name(endpoint),
-            TRUE, (void *) (long) endpoint, &pm_macosx_in_dictionary
+            TRUE, (void *) (long) endpoint, &pm_macosx_in_dictionary,
+            i, 0                            /* client and port, TODO        */
         );
     }
 
-    for (i = 0; i < numOutputs; i++)    /* Iterate over MIDI output devices */
+    for (i = 0; i < numOutputs; ++i)        /* iterate over MIDI out devs   */
     {
         endpoint = MIDIGetDestination(i);
         if (endpoint == NULL_REF)
@@ -1374,7 +1375,8 @@ pm_macosxcm_init (void)
         pm_add_device
         (
             "CoreMIDI", cm_get_full_endpoint_name(endpoint),
-            FALSE, (void *)(long) endpoint, &pm_macosx_out_dictionary
+            FALSE, (void *)(long) endpoint, &pm_macosx_out_dictionary,
+            i, 0                            /* client and port, TODO        */
         );
     }
     return pmNoError;

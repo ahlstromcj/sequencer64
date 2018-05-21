@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-05-19
+# \update      2018-05-20
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -65,6 +65,7 @@ HEADERS += \
  include/gui_palette_qt5.hpp \
  include/keys_perform_qt5.hpp \
  include/qclocklayout.hpp \
+ include/qinputcheckbox.hpp \
  include/qperfeditframe.hpp \
  include/qperfnames.hpp \
  include/qperfroll.hpp \
@@ -90,6 +91,7 @@ SOURCES += \
  src/gui_palette_qt5.cpp \
  src/keys_perform_qt5.cpp \
  src/qclocklayout.cpp \
+ src/qinputcheckbox.cpp \
  src/qperfeditframe.cpp \
  src/qperfnames.cpp \
  src/qperfroll.cpp \

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2018-05-12
+ * \updates       2018-05-20
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -341,7 +341,13 @@ busarray::add (midibus * bus, bool inputing)
 {
     size_t count = m_container.size();
     businfo b(bus);
-    m_container.push_back(b);
+
+    /*
+     * If we do this here, the copy of b never gets set!
+     *
+     * m_container.push_back(b);
+     */
+
     if (inputing)
     {
         bool was_inputing = bus->get_input();
@@ -349,6 +355,7 @@ busarray::add (midibus * bus, bool inputing)
             bus->set_input(inputing);       /* will call init_in()          */
     }
     b.init_input(inputing);                 /* just sets the flag (again)   */
+    m_container.push_back(b);               /* now we can push a copy       */
 #ifdef SEQ64_SHOW_API_CALLS
     printf
     (

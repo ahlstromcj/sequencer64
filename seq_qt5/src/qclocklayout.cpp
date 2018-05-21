@@ -19,8 +19,9 @@
 /**
  * \file          qclocklayout.hpp
  *
- *  The time bar shows markers and numbers for the measures of the song,
- *  and also depicts the left and right markers.
+ *  This class supports a MIDI Clocks label and a set of radio-buttons for
+ *  selecting the clock style (off, on POS, on MOD), associating it with a
+ *  particular output buss.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
@@ -53,14 +54,14 @@ namespace seq64
  *  the words "clock" or "port" for the MIDI output port represented by this
  *  widget.  Here are the jobs we have to do:
  *
- *      -#	Get the label for the port and set it.
+ *      -#    Get the label for the port and set it.
  *      -#  Add the tooltips for the clock radio-buttons.
  *      -#  Add the clock radio-buttons to m_horizlayout_clocklive.
- *		-#	Connect to the radio-button slots:
- *			-	clock_callback_disable().
- *			-	clock_callback_off().
- *			-	clock_callback_on().
- *			-	clock_callback_mod().
+ *        -#    Connect to the radio-button slots:
+ *            -    clock_callback_disable().
+ *            -    clock_callback_off().
+ *            -    clock_callback_on().
+ *            -    clock_callback_mod().
  */
 
 qclocklayout::qclocklayout
@@ -85,30 +86,14 @@ qclocklayout::qclocklayout
     setup_ui();
 
     bool ok = connect
-	(
-        m_rbutton_portdisabled, SIGNAL(clicked(bool)),
-        this, SLOT(clock_callback_disable())
+    (
+        m_rbutton_group, SIGNAL(buttonClicked(int)),
+        this, SLOT(clock_callback_clicked(int))
     );
     if (! ok)
     {
-        errprint("qclocklayout: slot failed to connect");
+        errprint("qclocklayout: clock-group slot failed to connect");
     }
-
-	connect
-	(
-        m_rbutton_clockoff, SIGNAL(clicked(bool)),
-        this, SLOT(clock_callback_off())
-    );
-	connect
-	(
-        m_rbutton_portdisabled, SIGNAL(clicked(bool)),
-        this, SLOT(clock_callback_on())
-    );
-	connect
-	(
-        m_rbutton_portdisabled, SIGNAL(clicked(bool)),
-        this, SLOT(clock_callback_mod())
-    );
 }
 
 /*
@@ -149,11 +134,11 @@ qclocklayout::setup_ui ()
     m_rbutton_clockonpos = new QRadioButton("On (Pos)");
     m_rbutton_clockonmod = new QRadioButton("On (Mod)");
 
-    QButtonGroup * radio_group = new QButtonGroup();
-    radio_group->addButton(m_rbutton_portdisabled);
-    radio_group->addButton(m_rbutton_clockoff);
-    radio_group->addButton(m_rbutton_clockonpos);
-    radio_group->addButton(m_rbutton_clockonmod);
+    m_rbutton_group = new QButtonGroup();
+    m_rbutton_group->addButton(m_rbutton_portdisabled, int(e_clock_disabled));
+    m_rbutton_group->addButton(m_rbutton_clockoff, int(e_clock_off));
+    m_rbutton_group->addButton(m_rbutton_clockonpos, int(e_clock_pos));
+    m_rbutton_group->addButton(m_rbutton_clockonmod, int(e_clock_mod));
 
     m_horizlayout_clockline->addWidget(m_label_outputbusname);
     m_horizlayout_clockline->addItem(m_spacer_clock);
@@ -183,47 +168,28 @@ qclocklayout::setup_ui ()
 }
 
 /**
- *  Sets the clock-disabled status if this radio-button is clicked.
+ *  Sets the clocking value based on in incoming parameter.  We have to use
+ *  this particular slot in order to handle all of the radio-buttons.
+ *
+ * \param id
+ *      Provides the ID code of the button that was clicked.  We set these ID
+ *      values explicitly, via addButton(ptrbutton, int(e_clock_disabled)).
+ *      For some reason, probably because -1 is a special flag for this
+ *      callback, -1 [e_clock_disabled] gets converted to -2.  So we have to
+ *      adjust.
  */
 
 void
-qclocklayout::clock_callback_disable ()
+qclocklayout::clock_callback_clicked (int id)
 {
-    if (m_rbutton_portdisabled->isChecked())
-        perf().set_clock_bus(m_bus, e_clock_disabled);
-}
+    if (id == (-2))
+        id = -1;
 
-/**
- *  Sets the clock-off status if this radio-button is clicked.
- */
+    /*
+     * For debug only: infoprintf("%d clicked\n", id);
+     */
 
-void
-qclocklayout::clock_callback_off ()
-{
-    if (m_rbutton_clockoff->isChecked())
-        perf().set_clock_bus(m_bus, e_clock_off);
-}
-
-/**
- *  Sets the clock-on-pos status if this radio-button is clicked.
- */
-
-void
-qclocklayout::clock_callback_on ()
-{
-    if (m_rbutton_clockoff->isChecked())
-        perf().set_clock_bus(m_bus, e_clock_pos);
-}
-
-/**
- *  Sets the clock-on-mod status if this radio-button is clicked.
- */
-
-void
-qclocklayout::clock_callback_mod ()
-{
-    if (m_rbutton_clockoff->isChecked())
-        perf().set_clock_bus(m_bus, e_clock_mod);
+    perf().set_clock_bus(m_bus, clock_e(id));
 }
 
 }           // namespace seq64

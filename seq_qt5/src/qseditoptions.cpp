@@ -32,6 +32,7 @@
 
 #include "perform.hpp"
 #include "qclocklayout.hpp"
+#include "qinputcheckbox.hpp"
 #include "qseditoptions.hpp"
 #include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
 
@@ -117,19 +118,46 @@ qseditoptions::qseditoptions (perform & p, QWidget * parent)
         this, SLOT(updateKeyHeight())
     );
 
-    QVBoxLayout * vbox = new QVBoxLayout;
+    /*
+     * Set up the MIDI Clock tab.  We use the new qclocklayout class to hold
+     * most of the complex code needed to handle the list of output ports and
+     * clock radio-buttons.
+     */
+
+    QVBoxLayout * vboxclocks = new QVBoxLayout;
     int buses = perf().master_bus().get_num_out_buses();
     for (int bus = 0; bus < buses; ++bus)
     {
         qclocklayout * tempqc = new qclocklayout(this, perf(), bus);
-        vbox->addLayout(tempqc->layout());
+        vboxclocks->addLayout(tempqc->layout());
     }
+
     QSpacerItem * spacer = new QSpacerItem
     (
         40, 20, QSizePolicy::Expanding, QSizePolicy::Maximum
     );
-    vbox->addItem(spacer);
-    ui->groupBoxClocks->setLayout(vbox);
+    vboxclocks->addItem(spacer);
+    ui->groupBoxClocks->setLayout(vboxclocks);
+
+    /*
+     * Set up the MIDI Input tab.  It is simpler, just a list of check-boxes
+     * in the groupBoxInputs widget.  No need for a separate class.
+     */
+
+    QVBoxLayout * vboxinputs = new QVBoxLayout;
+    buses = perf().master_bus().get_num_in_buses();
+    for (int bus = 0; bus < buses; ++bus)
+    {
+        qinputcheckbox * tempqi = new qinputcheckbox(this, perf(), bus);
+        vboxinputs->addWidget(tempqi->input_checkbox());
+    }
+
+    QSpacerItem * spacer2 = new QSpacerItem
+    (
+        40, 20, QSizePolicy::Expanding, QSizePolicy::Maximum
+    );
+    vboxinputs->addItem(spacer2);
+    ui->groupBoxInputs->setLayout(vboxinputs);
 }
 
 /**

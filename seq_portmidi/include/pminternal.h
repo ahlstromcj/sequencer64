@@ -27,7 +27,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-06
+ * \updates     2018-05-20
  * \license     GNU GPLv2 or above
  *
  * Here is a guide to implementers:
@@ -148,7 +148,18 @@ typedef int32_t PmTimestamp;
 #define pmNoDevice -1
 
 /**
- *  Holds information about the device and its platform.
+ *  Indicates the structure version of PmDeviceInfo.
+ */
+
+#define PM_STRUCTURE_VERSION  950           /* 0.95.0 */
+
+/**
+ *  Holds information about the device and its platform.  We are going to
+ *  extend this structure by adding the client and port numbers.  These
+ *  will be the ALSA client and port numbers under Linux, and just the ordinal
+ *  numbers under Windows.  We will also update structVersion.  This value was
+ *  never assigned, and was just a random value.  We will start using it with
+ *  a value of 950 (for 0.95.0 in Sequencer64).
  */
 
 typedef struct
@@ -160,6 +171,8 @@ typedef struct
     int output;             /**< True iff output is available.              */
     int opened;             /**< Generic PortMidi code, argument-checking.  */
     int mapper;             /**< True iff this device is a MIDI Mapper.     */
+    int client;             /**< Provides the (ALSA) client number.         */
+    int port;               /**< Provides the (ALSA) port number.           */
 
 } PmDeviceInfo;
 
@@ -633,7 +646,8 @@ extern PmError pm_success_fn (PmInternal * midi);
 extern PmError pm_add_device
 (
     char * interf, char * name, int input,
-    void * descriptor, pm_fns_type dictionary
+    void * descriptor, pm_fns_type dictionary,
+    int client, int port                        /* new values, TODO     */
 );
 extern uint32_t pm_read_bytes
 (

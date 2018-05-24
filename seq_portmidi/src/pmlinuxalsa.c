@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-20
+ * \updates     2018-05-24
  * \license     GNU GPLv2 or above
  *
  * Written by:
@@ -42,7 +42,6 @@
 #include "easy_macros.h"                /* not_nullptr() macro, etc.        */
 #include "portmidi.h"
 #include "pmutil.h"
-#include "pminternal.h"
 #include "pmlinuxalsa.h"
 #include "porttime.h"
 #include "pmlinux.h"
@@ -83,7 +82,7 @@ extern pm_fns_node pm_linuxalsa_in_dictionary;
 extern pm_fns_node pm_linuxalsa_out_dictionary;
 
 /**
- * all input comes here, output queue allocated on seq
+ * All input comes here, output queue allocated on seq.
  */
 
 static snd_seq_t * s_seq = nullptr;
@@ -156,8 +155,8 @@ alsa_use_queue (void)
             return pmHostError;
         }
         snd_seq_queue_tempo_alloca(&tempo);
-        snd_seq_queue_tempo_set_tempo(tempo, 480000);   // HARDWIRED
-        snd_seq_queue_tempo_set_ppq(tempo, 480);    // HARDWIRED
+        snd_seq_queue_tempo_set_tempo(tempo, Pt_get_tempo_microseconds());
+        snd_seq_queue_tempo_set_ppq(tempo, Pt_get_ppqn());
         pm_hosterror = snd_seq_set_queue_tempo(s_seq, s_queue, tempo);
         if (pm_hosterror < 0)
             return pmHostError;
@@ -691,8 +690,8 @@ handle_event (snd_seq_event_t * ev)
 {
     int device_id = ev->dest.port;
     PmInternal * midi = pm_descriptors[device_id].internalDescriptor;
-    PmEvent pm_ev;
     PmTimeProcPtr time_proc = midi->time_proc;
+    PmEvent pm_ev;
     PmTimestamp timestamp;
 
     /*
@@ -855,11 +854,43 @@ handle_event (snd_seq_event_t * ev)
     }
 }
 
+#ifdef USE_PORTMIDI_SIMPLE_ALSA_POLL
+
+/**
+ *  This version just check for data.  DOES NOT WORK.
+ *
+ * \return
+ *      Returns pmGotData if any data is pending.  Otherwise, pmNoData is
+ *      returned.
+ */
+
+static PmError
+alsa_poll (PmInternal * UNUSED(midi))
+{
+    int bytes = snd_seq_event_input_pending(s_seq, FALSE);
+#if defined PLATFORM_DEBUG_TMI
+    if (bytes > 0)
+    {
+        infoprint("alsa_poll(): incoming MIDI events detected");
+    }
+#endif
+    return bytes > 0 ?  pmGotData : pmNoData ;
+}
+
+#else   // USE_PORTMIDI_SIMPLE_ALSA_POLL
+
 /**
  *  Poll!  Checks for and ignore errors, e.g. input overflow.
  *
  *  There is an expensive check (while loop) for input data, and it gets data
  *  from device.
+ *
+ *  snd_seq_event_input_pending(s_seq, TRUE) checks the presence of events on
+ *  the sequencer FIFO; these events are transferred to the input buffer, and
+ *  the number of received events is returned.
+ *
+ *  snd_seq_event_input_pending(s_seq, FALSE) returns 0 if no events remain
+ *  in the input buffer.  We think this is all we need for the poll function!
  *
  * \note
  *      If there's overflow, this should be reported all the way through to
@@ -880,10 +911,13 @@ alsa_poll (PmInternal * UNUSED(midi))
 
         while (snd_seq_event_input_pending(s_seq, FALSE) > 0)
         {
+#if defined PLATFORM_DEBUG_TMI
+            infoprint("alsa_poll(): incoming MIDI events detected");
+#endif
             int rslt = snd_seq_event_input(s_seq, &ev);
             if (rslt >= 0)
             {
-                handle_event(ev);
+                handle_event(ev);                           /* much work!   */
             }
             else if (rslt == -ENOSPC)
             {
@@ -906,6 +940,8 @@ alsa_poll (PmInternal * UNUSED(midi))
     }
     return pmNoError;
 }
+
+#endif   // USE_PORTMIDI_SIMPLE_ALSA_POLL
 
 /**
  *

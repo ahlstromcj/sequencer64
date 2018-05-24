@@ -113,15 +113,22 @@ midibus::api_poll_for_midi ()
          * pmNoError and pmNoData, and TRUE == any other value.
          */
 
-        if (err == pmNoError || err == pmNoData || err == pmGotData)
+        if (err == pmNoError || err == pmNoData)   // || err == pmGotData)
         {
             return 0;
         }
+        else if (err == pmGotData)
+        {
+            return 1;
+        }
+
+#ifdef THIS_MAKES_SENSE                 /* it doesn't                   */
         if (err == TRUE)                /* back to what it was          */
         {
             errprintf("Pm_Poll(): %s\n", Pm_GetErrorText(err));
             return 1;
         }
+#endif
     }
     return 0;
 }

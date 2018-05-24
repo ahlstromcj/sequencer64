@@ -24,11 +24,76 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-11
+ * \updates     2018-05-24
  * \license     GNU GPLv2 or above
  *
  *  There is no machine-independent implementation code to put here.
  */
+
+/**
+ *
+ */
+
+static double s_pm_beats_per_minute = 125;
+static int s_pm_tempo_microseconds = 480000;
+static int s_pm_ppqn = 480;
+
+/**
+ *  New functions to support setting the tempo and PPQN, as well as
+ *  converting PortMidi time to MIDI pulses (ticks).
+ */
+
+void
+Pt_Set_Midi_Timing (double bpm, int ppqn)
+{
+    if (bpm > 0.0)
+    {
+        s_pm_beats_per_minute = bpm;
+        s_pm_tempo_microseconds = (int) (60000000.0 / bpm);
+    }
+    if (ppqn > 0)
+        s_pm_ppqn = ppqn;
+}
+
+/**
+ *  Convert the milliseconds timestamp to pulses (ticks).
+ */
+
+long
+Pt_Time_To_Pulses (int tsms)
+{
+    return (long) (tsms * s_pm_beats_per_minute / 60000);
+}
+
+/**
+ *
+ */
+
+double
+Pt_get_beats_per_minute (void)
+{
+    return s_pm_beats_per_minute;
+}
+
+/**
+ *
+ */
+
+int
+Pt_get_tempo_microseconds (void)
+{
+    return s_pm_tempo_microseconds;
+}
+
+/**
+ *
+ */
+
+int
+Pt_get_ppqn (void)
+{
+    return s_pm_ppqn;
+}
 
 /*
  * porttime.c

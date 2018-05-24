@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-20
+ * \updates     2018-05-23
  * \license     GNU GPLv2 or above
  *
  * Notes on host error reporting:
@@ -100,7 +100,7 @@
 #include "portmidi.h"
 #include "porttime.h"
 #include "pmutil.h"
-#include "pminternal.h"
+// #include "pminternal.h"  // already included
 
 /*
  * Permanently activated!
@@ -391,7 +391,8 @@ prompt_and_exit (void)
 #endif      // PM_CHECK_ERRORS
 
 /**
- *
+ *  It seems pointless to allocate memory and copy the string, so do the work
+ *  of Pm_GetHostErrorText() directly.
  */
 
 static PmError
@@ -399,11 +400,6 @@ pm_errmsg (PmError err, int deviceid)
 {
     if (err == pmHostError)
     {
-        /*
-         * It seems pointless to allocate memory and copy the string, so do the
-         * work of Pm_GetHostErrorText() directly.
-         */
-
         char temp[PM_HOST_ERROR_MSG_LEN];
         (void) snprintf
         (
@@ -548,27 +544,24 @@ pm_find_default_device (char * pattern, int is_input)
 
     /* first parse pattern into name, interf parts */
 
-    char * interf_pref = "";        /* initially assume it is not there */
+    char * interf_pref = "";            /* initially assume it's not there  */
     char * name_pref = strstr(pattern, ", ");
-
-    if (name_pref)                  /* found separator, adjust the pointer */
+    if (name_pref)                      /* found separator, adjust pointer  */
     {
         interf_pref = pattern;
         name_pref[0] = 0;
         name_pref += 2;
     }
     else
-    {
-        name_pref = pattern;        /* whole string is the name pattern */
-    }
-    for (i = 0; i < pm_descriptor_index; i++)
+        name_pref = pattern;            /* whole string is the name pattern */
+
+    for (i = 0; i < pm_descriptor_index; ++i)
     {
         const PmDeviceInfo * info = Pm_GetDeviceInfo(i);
         if
         (
             info->input == is_input &&
-            strstr(info->name, name_pref) &&
-            strstr(info->interf, interf_pref)
+            strstr(info->name, name_pref) && strstr(info->interf, interf_pref)
         )
         {
             id = i;
@@ -604,14 +597,13 @@ Pm_GetDeviceInfo (PmDeviceID id)
 {
     Pm_Initialize();                            /* no error check needed */
     if (id >= 0 && id < pm_descriptor_index)
-    {
         return &pm_descriptors[id].pub;
-    }
+
     return nullptr;
 }
 
 /**
- * pm_success_fn -- "noop" function pointer
+ *  Provides a "no-op" function pointer.
  */
 
 PmError
@@ -621,7 +613,7 @@ pm_success_fn (PmInternal * UNUSED(midi))
 }
 
 /**
- * none_write -- returns an error if called
+ *  Returns an error if called.
  */
 
 PmError
@@ -631,7 +623,7 @@ none_write_short (PmInternal * UNUSED(midi), PmEvent * UNUSED(buffer))
 }
 
 /**
- * pm_fail_timestamp_fn -- placeholder for begin_sysex and flush
+ *  Provides a placeholder for begin_sysex() and flush().
  */
 
 PmError
@@ -647,8 +639,7 @@ pm_fail_timestamp_fn (PmInternal * UNUSED(midi), PmTimestamp UNUSED(timestamp))
 PmError
 none_write_byte
 (
-    PmInternal * UNUSED(midi),
-    midibyte_t UNUSED(byte),
+    PmInternal * UNUSED(midi), midibyte_t UNUSED(byte),
     PmTimestamp UNUSED(timestamp)
 )
 {
@@ -656,7 +647,7 @@ none_write_byte
 }
 
 /**
- * pm_fail_fn -- generic function, returns error if called
+ *  A generic function, returns error if called.
  */
 
 PmError
@@ -680,12 +671,7 @@ none_open (PmInternal * UNUSED(midi), void * UNUSED(driverinfo))
  */
 
 static void
-none_get_host_error
-(
-    PmInternal * UNUSED(midi),
-    char * msg,
-    unsigned UNUSED(len)
-)
+none_get_host_error (PmInternal * UNUSED(midi), char * msg, unsigned UNUSED(len))
 {
     *msg = 0;       // empty string
 }
@@ -932,10 +918,10 @@ Pm_Terminate (void)
 }
 
 /**
- *  Read up to length messages from source into buffer.
- *  Pm_Read() retrieves midi data into a buffer, and returns the number
- *  of events read. Result is a non-negative number unless an error occurs,
- *  in which case a PmError value will be returned.
+ *  Read up to length messages from source into buffer.  Pm_Read() retrieves
+ *  midi data into a buffer, and returns the number of events read. Result is
+ *  a non-negative number unless an error occurs, in which case a PmError
+ *  value will be returned.
  *
  * Buffer Overflow:
  *
@@ -961,6 +947,10 @@ Pm_Terminate (void)
  *  here, but that would redo a lot of redundant parameter checking, so I
  *  copied some code from Pm_Poll to here.
  *
+ *  For Linux, the poll function is alsa_poll() in the pmlinuxalsa module.
+ *  That function does a lot of work, so a simpler version that just check for
+ *  data is called, to support Sequencer64's midibus object.
+ *
  * \return
  *      Returns the number of messages actually read, or an error code.
  */
@@ -968,6 +958,10 @@ Pm_Terminate (void)
 PMEXPORT int
 Pm_Read (PortMidiStream * stream, PmEvent * buffer, int32_t length)
 {
+    /*
+     * From here to the END marker, basically identical to Pm_Poll().
+     */
+
     PmInternal * midi = (PmInternal *) stream;
     int deviceid = PORTMIDI_BAD_DEVICE_ID;
     PmError err = pmNoError;
@@ -985,7 +979,6 @@ Pm_Read (PortMidiStream * stream, PmEvent * buffer, int32_t length)
         else
             err = (*(midi->dictionary->poll))(midi);    /* see the banner   */
     }
-
     if (err != pmNoError)
     {
         if (err == pmHostError)
@@ -999,6 +992,10 @@ Pm_Read (PortMidiStream * stream, PmEvent * buffer, int32_t length)
         return pm_errmsg(err, deviceid);
     }
 
+    /*
+     * END: return ! Pm_QueueEmpty(midi->queue);
+     */
+
     while (n < length)
     {
         PmError err = Pm_Dequeue(midi->queue, buffer++);
@@ -1007,14 +1004,15 @@ Pm_Read (PortMidiStream * stream, PmEvent * buffer, int32_t length)
         else if (err == 0)                  /* empty queue                  */
             break;
 
-        n++;
+        ++n;
     }
     return n;
 }
 
 /**
- *  Pm_Poll() tests whether input is available, returning TRUE, FALSE, or an
- *  error value.
+ *  Pm_Poll() tests whether input is available, returning TRUE (PmGotData = 1),
+ *  FALSE (PmNoData = 0), or an error value.  This is a pretty weird way of
+ *  dealing with polling status.
  */
 
 PMEXPORT PmError
@@ -1022,24 +1020,23 @@ Pm_Poll (PortMidiStream * stream)
 {
     PmInternal * midi = (PmInternal *) stream;
     int deviceid = PORTMIDI_BAD_DEVICE_ID;
-    PmError err = pmNoError;
+    PmError result = pmNoError;
     pm_hosterror = FALSE;
     if (is_nullptr(midi))
-        err = pmBadPtr;
+        result = pmBadPtr;
     else
     {
         deviceid = midi->device_id;
         if (! pm_descriptors[deviceid].pub.opened)
-            err = pmDeviceClosed;
+            result = pmDeviceClosed;
         else if (! pm_descriptors[deviceid].pub.input)
-            err = pmReadFromOutput;
+            result = pmReadFromOutput;
         else
-            err = (*(midi->dictionary->poll))(midi);
+            result = (*(midi->dictionary->poll))(midi);
     }
-
-    if (err != pmNoError)
+    if (result != pmNoError)
     {
-        if (err == pmHostError)
+        if (result == pmHostError)
         {
             midi->dictionary->host_error
             (
@@ -1047,7 +1044,7 @@ Pm_Poll (PortMidiStream * stream)
             );
            pm_hosterror = TRUE;
         }
-        return pm_errmsg(err, deviceid);
+        return pm_errmsg(result, deviceid);
     }
     return ! Pm_QueueEmpty(midi->queue);
 }
@@ -1165,8 +1162,10 @@ Pm_Write (PortMidiStream * stream, PmEvent * buffer, int32_t length)
             if
             (
                 (
-                    err = (*midi->dictionary->begin_sysex)(
-                        midi, buffer[i].timestamp)
+                    err = (*midi->dictionary->begin_sysex)
+                    (
+                        midi, buffer[i].timestamp
+                    )
                 ) != pmNoError
             )
             {
@@ -1175,8 +1174,10 @@ Pm_Write (PortMidiStream * stream, PmEvent * buffer, int32_t length)
             if
             (
                 (
-                    err = (*midi->dictionary->write_byte)(
-                        midi, MIDI_SYSEX, buffer[i].timestamp)
+                    err = (*midi->dictionary->write_byte)
+                    (
+                        midi, MIDI_SYSEX, buffer[i].timestamp
+                    )
                 ) != pmNoError)
             {
                 goto pm_write_error;
@@ -1188,22 +1189,13 @@ Pm_Write (PortMidiStream * stream, PmEvent * buffer, int32_t length)
         }
         else if ((msg & MIDI_STATUS_MASK) && (Pm_MessageStatus(msg) != MIDI_EOX))
         {
-            /* a non-SysEx message */
-
-            if (midi->sysex_in_progress)
+            if (midi->sysex_in_progress)        /* a non-SysEx message?     */
             {
-                /* this should be a realtime message */
-
-                if (is_real_time(msg))
+                if (is_real_time(msg))      /* should be a realtime message */
                 {
-                    if
-                    (
-                        (err = (*midi->dictionary->write_realtime)(
-                            midi, &(buffer[i]))) != pmNoError
-                    )
-                    {
+                    err = (*midi->dictionary->write_realtime)(midi, &(buffer[i]));
+                    if (err!= pmNoError)
                         goto pm_write_error;
-                    }
                 }
                 else
                 {
@@ -1211,8 +1203,8 @@ Pm_Write (PortMidiStream * stream, PmEvent * buffer, int32_t length)
                     err = pmBadData;
 
                     /*
-                     * ignore any error from this, because we already have
-                     * one.  pass 0 as timestamp -- it's ignored
+                     * Ignore any error from this, because we already have
+                     * one.  Pass 0 as timestamp -- it's ignored.
                      */
 
                     (*midi->dictionary->end_sysex)(midi, 0);
@@ -1221,21 +1213,22 @@ Pm_Write (PortMidiStream * stream, PmEvent * buffer, int32_t length)
             }
             else
             {
-                /* regular short midi message */
+                /*
+                 * Regular short MIDI message
+                 */
 
-                if ((err = (*midi->dictionary->write_short)(midi,
-                                   &(buffer[i]))) != pmNoError)
-                {
+                err = (*midi->dictionary->write_short)(midi, &(buffer[i]));
+                if (err != pmNoError)
                     goto pm_write_error;
-                }
+
                 continue;
             }
         }
         if (midi->sysex_in_progress)
         {
             /*
-             * send SysEx bytes until EOX.
-             * see if we can accelerate data transfer
+             * Send SysEx bytes until EOX.  See if we can accelerate data
+             * transfer.
              */
 
             if
@@ -1255,20 +1248,16 @@ Pm_Write (PortMidiStream * stream, PmEvent * buffer, int32_t length)
                 (*midi->fill_offset_ptr) += 4;
                  continue;
             }
-
-            /* no acceleration, so do byte-by-byte copying */
-
-            while (bits < 32)
+            while (bits < 32)       /* no acceleration, copy byte-by-byte   */
             {
                 midibyte_t midi_byte = (midibyte_t) (msg >> bits);
-                if
+                err = (*midi->dictionary->write_byte)
                 (
-                    (err = (*midi->dictionary->write_byte)(midi, midi_byte,
-                                   buffer[i].timestamp)) != pmNoError
-                )
-                {
+                    midi, midi_byte, buffer[i].timestamp
+                );
+                if (err != pmNoError)
                     goto pm_write_error;
-                }
+
                 if (midi_byte == MIDI_EOX)
                 {
                     err = pm_end_sysex(midi);
@@ -1354,9 +1343,7 @@ Pm_WriteSysEx (PortMidiStream * stream, PmTimestamp when, midibyte_t * msg)
     buffer[0].timestamp = when;
     for (;;)
     {
-        /* insert next byte into buffer */
-
-        buffer[bufx].message |= ((*msg) << shift);
+        buffer[bufx].message |= ((*msg) << shift); /* put next byte in buffer */
         shift += 8;
         if (*msg++ == MIDI_EOX)
             break;
@@ -1364,26 +1351,16 @@ Pm_WriteSysEx (PortMidiStream * stream, PmTimestamp when, midibyte_t * msg)
         if (shift == 32)
         {
             shift = 0;
-            bufx++;
-            if (bufx == buffer_size)
+            if (++bufx == buffer_size)                          // ++bufx;
             {
                 PmError err = Pm_Write(stream, buffer, buffer_size);
-
-                /* note: Pm_Write has already called errmsg() */
-
                 if (err)
-                    return err;
+                    return err;         /* Pm_Write() called errmsg()       */
 
-                /* prepare to fill another buffer */
-
-                bufx = 0;
+                bufx = 0;               /* prepare to fill another buffer   */
                 buffer_size = BUFLEN;
-
-                /* optimization: maybe we can just copy bytes */
-
-                if (midi->fill_base)
+                if (midi->fill_base)    /* optimization? just copy bytes?   */
                 {
-                    PmError err;
                     while (*(midi->fill_offset_ptr) < midi->fill_length)
                     {
                         midi->fill_base[(*midi->fill_offset_ptr)++] = *msg;
@@ -1422,25 +1399,22 @@ Pm_WriteSysEx (PortMidiStream * stream, PmTimestamp when, midibyte_t * msg)
             buffer[bufx].message = 0;
             buffer[bufx].timestamp = when;
         }
-
-        /* keep inserting bytes until you find MIDI_EOX */
-    }
+    }                   /* keep inserting bytes until you find MIDI_EOX     */
 
 end_of_sysex:
 
     /*
-     * finished sending full buffers, but there may be a partial one left.
+     * Finished sending full buffers, but there may be a partial one left.
      */
 
     if (shift != 0)
-        bufx++; /* add partial message to buffer len */
+        ++bufx;                 /* add partial message to buffer length     */
 
-    if (bufx)
+    if (bufx > 0)               /* number of PmEvents to send from buffer   */
     {
-        /* bufx is number of PmEvents to send from buffer */
-
         PmError err = Pm_Write(stream, buffer, bufx);
-        if (err) return err;
+        if (err)
+            return err;
     }
     return pmNoError;
 }
@@ -2107,24 +2081,23 @@ pm_read_bytes
      */
 
     if (len == 0)
-        return 0;                                   /* sanity check */
+        return 0;                                   /* sanity check         */
     if (! midi->sysex_in_progress)
     {
-        while (i < len)
+        while (i < len)                             /* process all data     */
         {
-            /* process all data */
 
             midibyte_t byte = data[i++];
             if (byte == MIDI_SYSEX && !pm_realtime_filtered(byte, midi->filters))
             {
                 midi->sysex_in_progress = TRUE;
-                i--;            /* back up so code below will get SYSEX byte */
-                break;          /* continue looping below to process msg */
+                i--;            /* back up so code below gets SYSEX byte    */
+                break;          /* continue looping below to process msg    */
             }
             else if (byte == MIDI_EOX)
             {
                 midi->sysex_in_progress = FALSE;
-                return i;       /* done with one message */
+                return i;       /* done with one message                    */
             }
             else if (byte & MIDI_STATUS_MASK)
             {
@@ -2162,9 +2135,8 @@ pm_read_bytes
         )
         {                               /* all data, no status */
             if (Pm_Enqueue(midi->queue, &event) == pmBufferOverflow)
-            {
                 midi->sysex_in_progress = FALSE;
-            }
+
             i += 4;
         }
         else
@@ -2245,6 +2217,10 @@ Pm_device_count (void)
 {
     return pm_descriptor_index;
 }
+
+/**
+ *
+ */
 
 void
 Pm_print_devices (void)

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-12
+ * \updates       2017-05-24
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -37,6 +37,8 @@
 #include "mastermidibus_pm.hpp"         /* seq64::mastermidibus, PortMIDI   */
 #include "midibus_pm.hpp"               /* seq64::midibus, PortMIDI         */
 #include "portmidi.h"                   /* external PortMidi header file    */
+#include "porttime.h"                   /* Pt_Time_To_Pulses()              */
+#include "pmutil.h"                     /* Pm_Dequeue()                     */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -207,6 +209,8 @@ mastermidibus::api_is_more_input ()
 /**
  *  Grab a MIDI event.
  *
+ *  Assumes that [api_]poll_for_midi() has been called to "prime the pump".
+ *
  * \threadsafe
  */
 
@@ -214,36 +218,69 @@ bool
 mastermidibus::api_get_midi_event (event * in)
 {
     bool result = false;
-    PmEvent event;
     int count = m_inbus_array.count();
     for (int i = 0; i < count; ++i)
     {
         midibus * m = m_inbus_array.bus(i);
-        if (m->poll_for_midi())
+        if (m->m_inputing)                      /* && m->poll_for_midi())   */
         {
-            int /* PmError */ err = Pm_Read(m->m_pms, &event, 1);
-            if (err < 0)
-                printf("Pm_Read(): %s\n", Pm_GetErrorText((PmError) err));
+            PmEvent pme;
+            PmInternal * midi = (PmInternal *) m->m_pms;
+            PmError err = Pm_Dequeue(midi->queue, &pme);
+            if (err == pmBufferOverflow)        /* ignore data retrieved    */
+            {
+                result = false;     // pm_errmsg(pmBufferOverflow, deviceid);
+            }
+            else if (err == 0)                  /* empty queue              */
+                result = false;
+            else
+            {
+                /*
+                 * We don't need to do this.  The perform input loop
+                 * sets the timestamp.
+                 *
+                 * midipulse ts = midipulse(Pt_Time_To_Pulses(pme.timestamp));
+                 * in->set_timestamp(ts);
+                 */
 
-            if (m->m_inputing)
+                in->set_status_keep_channel(Pm_MessageStatus(pme.message));
+                in->set_data
+                (
+                    Pm_MessageData1(pme.message), Pm_MessageData2(pme.message)
+                );
+                if (in->is_note_off_recorded())
+                {
+                    midibyte channel = Pm_MessageStatus(pme.message) &
+                        EVENT_GET_CHAN_MASK;
+
+                    midibyte status = EVENT_NOTE_OFF | channel;
+                    in->set_status_keep_channel(status);
+                }
                 result = true;
+            }
         }
     }
     if (! result)
         return false;
 
-    in->set_status(Pm_MessageStatus(event.message));
-    in->set_sysex_size(3);
-    in->set_data(Pm_MessageData1(event.message), Pm_MessageData2(event.message));
+    // in->set_sysex_size(3);      // ??????????????
+
+    /*
+     * Now done above.
+     *
+     * in->set_status(Pm_MessageStatus(pmevent.message));
+     * in->set_data
+     * (
+     * wPm_MessageData1(pmevent.message), Pm_MessageData2(pmevent.message)
+     * );
+     */
 
     /* some keyboards send Note On with velocity 0 for Note Off */
 
     if (in->get_status() == EVENT_NOTE_ON && in->get_note_velocity() == 0x00)
         in->set_status(EVENT_NOTE_OFF);
 
-    // Why no "sysex = false" here, like in Linux version?
-
-    return true;
+    return true;        // Why no "sysex = false"?
 }
 
 }           // namespace seq64

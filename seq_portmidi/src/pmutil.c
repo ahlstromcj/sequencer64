@@ -25,7 +25,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-11
+ * \updates     2018-05-24
  * \license     GNU GPLv2 or above
  *
  */
@@ -139,11 +139,11 @@ Pm_QueueDestroy (PmQueue * q)
 PMEXPORT PmError
 Pm_Dequeue(PmQueue * q, void * msg)
 {
-    const size_t sint32 = sizeof(int32_t);
+    static const size_t sint32 = sizeof(int32_t);
     long head;
-    PmQueueRep *queue = (PmQueueRep *) q;
+    PmQueueRep * queue = (PmQueueRep *) q;
     int i;
-    int32_t *msg_as_int32 = (int32_t *) msg;
+    int32_t * msg_as_int32 = (int32_t *) msg;
 
     if (! queue)                                    /* arg checking */
         return pmBadPtr;
@@ -198,19 +198,17 @@ Pm_Dequeue(PmQueue * q, void * msg)
      * write is not finished.
      */
 
-    for (i = queue->msg_size - 1; i >= 0; i--)
+    for (i = queue->msg_size - 1; i >= 0; --i)
     {
         if (! queue->buffer[head + i])
-        {
             return pmNoData;
-        }
     }
     memcpy(msg, (char *) &queue->buffer[head+1], sint32 * (queue->msg_size-1));
-    i = queue->buffer[head];                            /* fix up zeros */
+    i = queue->buffer[head];                                /* fix up zeros */
     while (i < queue->msg_size)
     {
         int32_t j;
-        i--;                    /* msg does not have extra word so shift down */
+        --i;                    /* msg does not have extra word; shift down */
         j = msg_as_int32[i];
         msg_as_int32[i] = 0;
         i = j;
@@ -310,17 +308,14 @@ Pm_Enqueue (PmQueue * q, void * msg)
 }
 
 /**
- *
+ *  null pointer -> return "empty"
  */
 
 PMEXPORT int
 Pm_QueueEmpty (PmQueue * q)
 {
     PmQueueRep * queue = (PmQueueRep *) q;
-
-    /* null pointer -> return "empty" */
-
-    return (! queue) || (queue->buffer[queue->head] == 0 && !queue->peek_flag);
+    return (! queue) || (queue->buffer[queue->head] == 0 && ! queue->peek_flag);
 }
 
 /**
@@ -339,12 +334,10 @@ Pm_QueueFull (PmQueue * q)
     /* test to see if there is space in the queue */
 
     tail = queue->tail;
-    for (i = 0; i < queue->msg_size; i++)
+    for (i = 0; i < queue->msg_size; ++i)
     {
         if (queue->buffer[tail + i])
-        {
             return TRUE;
-        }
     }
     return FALSE;
 }
@@ -363,9 +356,7 @@ Pm_QueuePeek (PmQueue * q)
         return NULL;
 
     if (queue->peek_flag)
-    {
         return queue->peek;
-    }
 
     /*
      * This is ugly: if peek_overflow is set, then Pm_Dequeue() returns
@@ -377,7 +368,6 @@ Pm_QueuePeek (PmQueue * q)
     queue->peek_overflow = FALSE;
     rslt = Pm_Dequeue(q, queue->peek);
     queue->peek_overflow = temp;
-
     if (rslt == 1)
     {
         queue->peek_flag = TRUE;
@@ -397,4 +387,10 @@ Pm_QueuePeek (PmQueue * q)
     }
     return NULL;
 }
+
+/*
+ * pmutil.c
+ *
+ * vim: sw=4 ts=4 wm=4 et ft=c
+ */
 

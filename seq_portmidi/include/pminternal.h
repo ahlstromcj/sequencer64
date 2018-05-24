@@ -118,7 +118,7 @@ extern "C"
 typedef unsigned char midibyte_t;
 
 /**
- *  Pm_Message() encodes a short Midi message into a 32-bit word. If data1
+ *  Pm_Message() encodes a short MIDI message into a 32-bit word. If data1
  *  and/or data2 are not present, use zero.
  *
  *  Pm_MessageStatus(), Pm_MessageData1(), and

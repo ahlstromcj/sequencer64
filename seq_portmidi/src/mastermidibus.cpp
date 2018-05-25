@@ -69,7 +69,8 @@ mastermidibus::mastermidibus (int ppqn, midibpm bpm)
      */
 
     Pm_set_exit_on_error(FALSE);
-    Pm_Initialize();
+    Pt_Set_Midi_Timing(double(bpm), ppqn);              /* do this first    */
+    Pm_Initialize();                                    /* do this second   */
 }
 
 /**

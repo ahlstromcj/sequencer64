@@ -20,15 +20,15 @@
  */
 
 /**
- * \file        pmwinmm.h
+ * \file        pmmacosxcm.h
+ *
+ *      Provides system-specific definitions for Mac OSX.
  *
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
  * \updates     2018-04-10
  * \license     GNU GPLv2 or above
- *
- *  Provides system-specific definitions for Windows.
  */
 
 #ifdef __cplusplus
@@ -50,7 +50,7 @@ PmDeviceID find_default_device (char * path, int input, PmDeviceID id);
 #endif      // SEQ64_PMWINMM_H
 
 /*
- * pmwinmm.h
+ * pmmacosxcm.h
  *
  * vim: sw=4 ts=4 wm=4 et ft=c
  */

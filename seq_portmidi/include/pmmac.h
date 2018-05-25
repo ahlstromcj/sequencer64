@@ -22,6 +22,8 @@
 /**
  * \file        pmmac.h
  *
+ *      Device ID functions for Mac OSX.
+ *
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2018-05-13

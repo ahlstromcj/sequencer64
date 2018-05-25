@@ -22,7 +22,7 @@
  */
 
 /**
- * \file        pmmac.h
+ * \file        readbinaryplist.h
  *
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom

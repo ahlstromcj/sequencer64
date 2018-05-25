@@ -61,9 +61,6 @@
  * non-binding requests be included along with the license above.
  */
 
-/**
- */
-
 #ifdef __cplusplus
 extern "C"
 {

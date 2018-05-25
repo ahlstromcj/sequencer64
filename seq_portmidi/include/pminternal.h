@@ -474,20 +474,20 @@ typedef struct
 
 typedef struct
 {
-    /*
+    /**
      *  Some portmidi state also saved in here (for autmatic
      *  device closing (see PmDeviceInfo struct).
      */
 
     PmDeviceInfo pub;
 
-    /*
+    /**
      *  ID number passed to win32 multimedia API open.
      */
 
     void * descriptor;
 
-    /*
+    /**
      *  Points to PmInternal device, allows automatic device closing.
      */
 
@@ -518,23 +518,33 @@ typedef uint32_t (* time_get_proc_type) (void * time_info);
 
 typedef struct pm_internal_struct
 {
-    /* which device is open (index to descriptors) */
+    /**
+     *  which device is open (index to descriptors).
+     */
 
     int device_id;
 
-    /* MIDI_IN, or MIDI_OUT */
+    /**
+     *  MIDI_IN, or MIDI_OUT.
+     */
 
     short write_flag;
 
-    /* where to get the time */
+    /**
+     *  where to get the time.
+     */
 
     PmTimeProcPtr time_proc;
 
-    /* pass this to get_time() */
+    /**
+     *  pass this to get_time().
+     */
 
     void * time_info;
 
-    /* how big is the buffer or queue? */
+    /**
+     *  how big is the buffer or queue?.
+     */
 
     int32_t buffer_len;
 
@@ -564,43 +574,63 @@ typedef struct pm_internal_struct
 
     int sysex_in_progress;
 
-    /* buffer for 4 bytes of SysEx data */
+    /**
+     *  buffer for 4 bytes of SysEx data.
+     */
 
     PmMessage sysex_message;
 
-    /* how many bytes in sysex_message so far */
+    /**
+     *  how many bytes in sysex_message so far.
+     */
 
     int sysex_message_count;
 
-    /* flags that filter incoming message classes */
+    /**
+     *  flags that filter incoming message classes.
+     */
 
     int32_t filters;
 
-    /* filter incoming messages based on channel */
+    /**
+     *  filter incoming messages based on channel.
+     */
 
     int32_t channel_mask;
 
-    /* timestamp of last message */
+    /**
+     *  timestamp of last message.
+     */
 
     PmTimestamp last_msg_time;
 
-    /* time of last synchronization */
+    /**
+     *  time of last synchronization.
+     */
 
     PmTimestamp sync_time;
 
-    /* set by PmWrite to current time */
+    /**
+     *  set by PmWrite to current time.
+     */
 
     PmTimestamp now;
 
-    /* initially true, used to run first synchronization */
+    /**
+     *  initially true, used to run first synchronization.
+     */
 
     int first_message;
 
-    /* implementation functions */
+    /**
+     *  implementation functions.
+     */
 
     pm_fns_type dictionary;
 
-    /* system-dependent state */
+    /**
+     *  system-dependent state.
+     */
 
     void * descriptor;
 
@@ -611,15 +641,21 @@ typedef struct pm_internal_struct
      *  not count time in the driver, so I don't know if it is important.
      */
 
-    /* addr of ptr to SysEx data */
+    /**
+     *  addr of ptr to SysEx data.
+     */
 
     midibyte_t * fill_base;
 
-    /* offset of next SysEx byte */
+    /**
+     *  offset of next SysEx byte.
+     */
 
     uint32_t * fill_offset_ptr;
 
-    /* how many SysEx bytes to write */
+    /**
+     *  how many SysEx bytes to write.
+     */
 
     uint32_t fill_length;                   /* changed from int32_t */
 

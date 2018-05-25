@@ -22,6 +22,8 @@
 /**
  * \file        pmwinmm.h
  *
+ *      Windows multi-media API setup and teardown functions.
+ *
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21

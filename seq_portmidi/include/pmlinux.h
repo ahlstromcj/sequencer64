@@ -22,6 +22,8 @@
 /**
  * \file        pmlinux.h
  *
+ *      Device ID functions for Linux.
+ *
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21

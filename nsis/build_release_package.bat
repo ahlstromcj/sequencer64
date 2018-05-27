@@ -1,3 +1,5 @@
+@echo off
+
 :: **************************************************************************
 :: Build Release Package
 :: --------------------------------------------------------------------------
@@ -6,7 +8,7 @@
 :: \library     Sequencer64 for Windows
 :: \author      Chris Ahlstrom
 :: \date        2018-05-26
-:: \update      2018-05-26
+:: \update      2018-05-27
 :: \license     $XPC_SUITE_GPL_LICENSE$
 ::
 ::      This script sets up and creates a release build of Sequencer64 for
@@ -28,12 +30,16 @@
 ::      Before running this script, modify the environment variables below
 ::      for your specific setup.
 ::
+:: It completely removes the old release directory and re-does everything.
+::
 ::---------------------------------------------------------------------------
  
+set PROJECT_VERSION=0.95.0
 set PROJECT_DRIVE=C:
 set PROJECT_BASE=\Users\Chris\Documents\Home
 set PROJECT_ROOT=..\sequencer64
 set PROJECT_FILE=qplseq64.pro
+set PROJECT_7ZIP="qpseq64-release-package-%PROJECT_VERSION%.7z"
 set SHADOW_DIR=seq64-release
 set APP_DIR=Seq64qt5
 set OUTPUT_DIR=%APP_DIR%\release
@@ -51,25 +57,47 @@ cd %PROJECT_BASE%
 :: mkdir seq64-release
 :: cd seq64-release
 
+del /S /Q %SHADOW_DIR% > NUL
 mkdir %SHADOW_DIR%
 cd %SHADOW_DIR%
 
 :: qmake -makefile -recursive "CONFIG += release" ..\sequencer64\qplseq64.pro
 
+cd
+echo qmake -makefile -recursive %CONFIG_SET% %PROJECT_ROOT%\%PROJECT_FILE%
+echo mingw32-make (output to make.log)
 qmake -makefile -recursive %CONFIG_SET% %PROJECT_ROOT%\%PROJECT_FILE%
-mingw32-make 2> make.log
+mingw32-make > make.log 2>&1
 
 :: windeployqt Seq64qt5\release
 
+echo windeployqt %OUTPUT_DIR%
 windeployqt %OUTPUT_DIR%
 
 :: mkdir Seq64qt5\release\data
 :: copy ..\sequencer64\data\b4uacuse-gm-patchless.midi Seq64qt5\release\data
+:: copy ..\sequencer64\data\qpseq64.* Seq64qt5\release\data
+:: copy ..\sequencer64\data\*.pdf Seq64qt5\release\data
+
+echo mkdir %OUTPUT_DIR%\%AUX_DIR%
+echo copy %PROJECT_ROOT%\%AUX_DIR%\b4uacuse-gm-patchless.midi %OUTPUT_DIR%\%AUX_DIR%
+echo copy %PROJECT_ROOT%\%AUX_DIR%\sequencer64-user-manual.pdf %OUTPUT_DIR%\%AUX_DIR%
+echo copy %PROJECT_ROOT%\%AUX_DIR%\qpseq64.* %OUTPUT_DIR%\%AUX_DIR%
+echo copy %PROJECT_ROOT%\%AUX_DIR%\*.pdf %OUTPUT_DIR%\%AUX_DIR%
 
 mkdir %OUTPUT_DIR%\%AUX_DIR%
 copy %PROJECT_ROOT%\%AUX_DIR%\b4uacuse-gm-patchless.midi %OUTPUT_DIR%\%AUX_DIR%
+copy %PROJECT_ROOT%\%AUX_DIR%\sequencer64-user-manual.pdf %OUTPUT_DIR%\%AUX_DIR%
+copy %PROJECT_ROOT%\%AUX_DIR%\qpseq64.* %OUTPUT_DIR%\%AUX_DIR%
+copy %PROJECT_ROOT%\%AUX_DIR%\*.pdf %OUTPUT_DIR%\%AUX_DIR%
 
-REM copy %PROJECT_ROOT%\%AUX_DIR%\qpseq64.* %OUTPUT_DIR%\%AUX_DIR%
-REM copy %PROJECT_ROOT%\%AUX_DIR%\*.pdf %OUTPUT_DIR%\%AUX_DIR%
+:: pushd Seq64qt5
+:: 7z a -r qppseq64-nsis-ready-package-DATE.7z release\*
 
-:: vim: ts=4 sw=4 ft=dosbatch
+pushd %APP_DIR%
+cd
+echo 7z a -r %PROJECT_7ZIP% release\*
+7z a -r %PROJECT_7ZIP% release\*
+popd
+
+:: vim: ts=4 sw=4 ft=dosbatch fileformat=dos

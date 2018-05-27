@@ -1,0 +1,318 @@
+# Sequencer64 0.94.0 (and above) user-configuration file
+#
+# Created by reading the following file and writing it out via the
+# Sequencer64 application:
+#
+# https://raw.githubusercontent.com/vext01/seq24/master/seq24usr.example
+#
+# This is a sequencer64.usr file. Edit it and place it in the
+# $HOME/.config/sequencer64 directory. It allows one to provide an
+# alias (alternate name) to each MIDI bus, MIDI channel, and MIDI
+# control codes per channel.
+#
+# The [comments] section lets one document this file.  Lines starting
+# with '#' and '[' are ignored.  Blank lines are ignored.  To show a
+# blank line, add a space character to the line.
+
+[comments]
+
+(Comments added to this section are preserved.  Lines starting with
+ a '#' or '[', or that are blank, are ignored.  Start lines that must
+ be blank with a space.)
+
+# 1. Define your instruments and their control-code names,
+#    if they have them.
+# 2. Define a MIDI bus, its name, and what instruments are
+#    on which channel.
+#
+# In the following MIDI buss definitions, channels are counted
+# from 0 to 15, not 1 to 16.  Instruments not set here are set to
+# -1 (SEQ64_GM_INSTRUMENT_FLAG) and are GM (General MIDI).
+# These replacement MIDI buss labels are shown in MIDI Clocks,
+# MIDI Inputs, and in the Pattern Editor buss drop-down.
+#
+# To temporarily disable the entries, set the count values to 0.
+
+[user-midi-bus-definitions]
+
+0     # number of user-defined MIDI busses
+
+
+# In the following MIDI instrument definitions, active controller
+# numbers (i.e. supported by the instrument) are paired with
+# the (optional) name of the controller supported.
+
+[user-instrument-definitions]
+
+0     # instrument list count
+
+
+# ======== Sequencer64-Specific Variables Section ========
+
+[user-interface-settings]
+
+# These settings specify the modifiable configuration
+# of some of the Sequencer64 user-interface elements.
+
+# Specifies the style of the main-window grid of patterns.
+#
+# 0 = Normal style, matches the GTK theme, has brackets.
+# 1 = White grid boxes that have brackets.
+# 2 = Black grid boxes (no brackets, our favorite).
+
+0       # grid_style
+
+# Specifies box style of an empty slot in the main-window grid.
+#
+# 0  = Draw a one-pixel box outline around the pattern slot.
+# 1  = Draw brackets on the sides of the pattern slot.
+# 2 to 30 = Make the brackets thicker and thicker.
+# -1 = Same as 0, draw a box outline one-pixel thick.
+# -2 to -30 = Draw a box outline, thicker and thicker.
+
+1       # grid_brackets
+
+# Specifies the number of rows in the main window.
+# Values of 4 (the default) through 8 (the best alternative value)
+# are allowed. Same as R in the '-o sets=RxC' option.
+
+4       # mainwnd_rows
+
+# Specifies the number of columns in the main window.
+# At present, values from 8 (the default) to 12 are supported.
+# are allowed. Same as C in the '-o sets=RxC' option.
+
+8       # mainwnd_cols
+
+# Specifies the maximum number of sets, which defaults to 32.
+# It is currently never necessary to change this value. In fact,
+# it should be a derived value.
+
+32      # max_sets
+
+# Specifies the border width in the main window.
+
+0      # mainwid_border
+
+# Specifies the border spacing in the main window.
+
+2      # mainwid_spacing
+
+# Specifies a quantity that affects the height of the main window.
+
+0      # control_height
+
+# Specifies the initial zoom for the piano rolls.  Ranges from 1.
+# to 512 (the legacy maximum was 32), and defaults to 2 unless
+# changed here.  Note that large PPQN values will require larger
+# zoom values in order to look good in the sequence editor.
+# Sequencer64 adapts the zoom to the PPQN, if zoom is set to 0.
+
+2      # default zoom (0 = auto-adjust to PPQN)
+
+# Specifies if the key, scale, and background sequence are to be
+# applied to all sequences, or to individual sequences.  The
+# behavior of Seq24 was to apply them to all sequences.  But
+# Sequencer64 takes it further by applying it immediately, and
+# by saving to the end of the MIDI file.  Note that these three
+# values are stored in the MIDI file, not this configuration file.
+# Also note that reading MIDI files not created with this feature
+# will pick up this feature if active, and the file gets saved.
+# It is contagious.
+#
+# 0 = Allow each sequence to have its own key/scale/background.
+#     Settings are saved with each sequence.
+# 1 = Apply these settings globally (similar to seq24).
+#     Settings are saved in the global final section of the file.
+
+1      # global_seq_feature
+
+# Specifies if the old, console-style font, or the new anti-
+# aliased font, is to be used as the font throughout the GUI.
+# In legacy mode, the old font is the default.
+#
+# 0 = Use the old-style font.
+# 1 = Use the new-style font.
+
+1      # use_new_font
+
+# Specifies if the user-interface will support two song editor
+# windows being shown at the same time.  This makes it easier to
+# edit songs with a large number of sequences.
+#
+# 0 = Allow only one song editor (performance editor).
+# 1 = Allow two song editors.
+
+1      # allow_two_perfedits
+
+# Specifies the number of 4-measure blocks for horizontal page
+# scrolling in the song editor.  The old default, 1, is a bit
+# small.  The new default is 4.  The legal range is 1 to 6, where
+# 6 is the width of the whole performance piano roll view.
+
+4      # perf_h_page_increment
+
+# Specifies the number of 1-track blocks for vertical page
+# scrolling in the song editor.  The old default, 1, is a bit
+# small.  The new default is 8.  The legal range is 1 to 18, where
+# 18 is about the height of the whole performance piano roll view.
+
+8      # perf_v_page_increment
+
+# Specifies if the progress bar is colored black, or a different
+# color.  The following integer color values are supported:
+# 
+# 0 = black
+# 1 = dark red
+# 2 = dark green
+# 3 = dark orange
+# 4 = dark blue
+# 5 = dark magenta
+# 6 = dark cyan
+
+0      # progress_bar_colored
+
+# Specifies if the progress bar is thicker.  The default is 1
+# pixel.  The 'thick' value is 2 pixels.  (More than that is not
+# useful.  Set this value to 1 to enable the feature, 0 to disable
+# it.
+
+0      # progress_bar_thick
+
+# Specifies using an alternate (darker) color palette.  The
+# default is the normal palette.  Not all items in the user
+# interface are altered by this setting, and it's not perfect.
+# Set this value to 1 to enable the feature, 0 to disable it.
+# Same as the -K or --inverse command-line options.
+
+0      # inverse_colors
+
+# Specifies the window redraw rate for all windows that support
+# that concept.  The default is 40 ms.  Some windows used 25 ms,
+# which is faster.
+
+20      # window_redraw_rate
+
+# Specifies using icons for some of the user-interface buttons
+# instead of text buttons.  This is purely a preference setting.
+# If 0, text is used in some buttons (the main window buttons).
+# Otherwise, icons are used.  One will have to experiment :-).
+
+0      # use_more_icons (currently affects only main window)
+
+[user-midi-settings]
+
+# These settings specify MIDI-specific value that might be
+# better off as variables, rather than constants.
+
+# Specifies parts-per-quarter note to use, if the MIDI file.
+# does not override it.  Default is 192, but we'd like to go
+# higher than that.
+
+192       # midi_ppqn
+
+# Specifies the default beats per measure, or beats per bar.
+# The default value is 4.
+
+4       # midi_beats_per_measure/bar
+
+# Specifies the default beats per minute.  The default value
+# is 120, and the legal range is 20 to 600. Also see the value of
+# midi_bpm_minimum and midi_bpm_maximum below.
+
+120       # midi_beats_per_minute
+
+# Specifies the default beat width. The default value is 4.
+
+4       # midi_beat_width
+
+# Specifies the buss-number override, the same as the --bus
+# command-line option. The default value is -1, which means that
+# there is no buss override.  If a value from 0 to 31 is given,
+# then that buss value overrides all buss values in all patterns.
+# Change this value from -1 only to use a single output buss,
+# either for testing or convenience.  And don't save the MIDI file
+# afterwards, unless you want to overwrite all the buss values!
+
+2       # midi_buss_override (enabled, careful!)
+
+# Specifies the default velocity override when adding notes in the
+# sequence/pattern editor.  This value is obtained via the 'Vol'
+# button, and ranges from 0 (not recommended :-) to 127.  If the
+# value is -1, then the incoming note velocity is preserved.
+
+-1       # velocity_override (-1 = 'Free')
+
+# Specifies the precision of the beats-per-minutes spinner and
+# MIDI control over the BPM value.  The default is 0, which means
+# the BPM is an integer.  Other values are 1 and 2 decimal digits
+# of precision.
+
+0       # bpm_precision
+
+# Specifies the step increment of the beats/minute spinner and
+# MIDI control over the BPM value.  The default is 1. For a
+# precision of 1 decimal point, 0.1 is a good value.  For a
+# precision of 2 decimal points, 0.01 is a good value, but one
+# might want somethings a little faster, like 0.05.
+
+1       # bpm_step_increment
+
+# Specifies the page increment of the beats/minute field. It is
+# used when the Page-Up/Page-Down keys are pressed while the BPM
+# field has the keyboard focus.  The default value is 10.
+
+10       # bpm_page_increment
+
+# Specifies the minimum value of beats/minute in tempo graphing.
+# By default, the tempo graph ranges from 0.0 to 127.0.
+# This value can be increased to give a magnified view of tempo.
+
+0       # midi_bpm_minimum
+
+# Specifies the maximum value of beats/minute in tempo graphing.
+# By default, the tempo graph ranges from 0.0 to 127.0.
+# This value can be increased to give a magnified view of tempo.
+
+127       # midi_bpm_maximum
+
+[user-options]
+
+# These settings specify application-specific values that are
+# set via the -o or --option switch, which help expand the number
+# of options the Sequencer64 options can support.
+
+# The 'daemonize' option is used in seq64cli to indicate that the
+# application should be gracefully run as a service.
+
+0       # option_daemonize
+
+# This value specifies an optional log-file that replaces output
+# to standard output and standard error.  To indicate no log-file,
+# the string "" is used.  Currently, this option works best from
+# the command line, as in '-o log=filename.log'.  However, the
+# name here is used only if the bare option '-o log' is specified.
+
+C:\Users\chris\AppData\Local\sequencer64\/virtualmidi.log
+
+[user-work-arounds]
+
+# These settings specify application-specific values that work
+# around issues that we have not been able to truly fix for all
+# users.
+
+# The work_around_play_image option can be set to 0 or 1.  0 is
+# the normal setting. Set it to 1 if multiple-clicks of the play
+# button (or the equivalent play/pause/stop actions) cause the
+# sequencer64 application to crash.
+
+0       # work_around_play_image
+
+# The work_around_transpose_image option is similar, for an issue
+# some users have setting the transpose button in seqedit.
+
+0       # work_around_transpose_image
+
+# End of C:\Users\chris\AppData\Local\sequencer64\qpseq64.usr
+#
+# vim: sw=4 ts=4 wm=4 et ft=sh

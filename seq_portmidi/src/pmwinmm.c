@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-24
+ * \updates     2018-05-27
  * \license     GNU GPLv2 or above
  *
  *  Check out this site:
@@ -1341,7 +1341,7 @@ winmm_out_open (PmInternal * midi, void * UNUSED(driverinfo))
 
         output_buffer_len = STREAM_BUFFER_LEN;
         propdata.cbStruct = sizeof(MIDIPROPTEMPO);
-        propdata.dwTempo = Pt_get_tempo_microseconds(); /* us per quarter   */
+        propdata.dwTempo = Pt_Get_Tempo_Microseconds(); /* us per quarter   */
         pm_hosterror = midiStreamProperty
         (
             m->handle.stream, (LPBYTE) & propdata, MIDIPROP_SET | MIDIPROP_TEMPO
@@ -1351,7 +1351,7 @@ winmm_out_open (PmInternal * midi, void * UNUSED(driverinfo))
             goto close_device;
 
         divdata.cbStruct = sizeof(MIDIPROPTEMPO);
-        divdata.dwTimeDiv = Pt_get_ppqn();              /* divs per 1/4     */
+        divdata.dwTimeDiv = Pt_Get_Ppqn();              /* divs per 1/4     */
         pm_hosterror = midiStreamProperty
         (
             m->handle.stream, (LPBYTE) & divdata, MIDIPROP_SET | MIDIPROP_TIMEDIV

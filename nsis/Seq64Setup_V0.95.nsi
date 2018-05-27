@@ -3,42 +3,41 @@
 ; File:         Seq64Setup_V0.95.nsi
 ; Author:       Chris Ahlstrom
 ; Date:         2018-05-26
+; Updated:      2018-05-27
 ; Version:      0.95.0
 ;
 ;       Installation is silent.
 ;
-; Usage of this Script:
+; Usage of this script:
 ;
 ;    -  Obtain and install the NSIS 2.46 installer from
 ;       http://nsis.sourceforge.net/Download
 ;    -  Check out the latest branch project from Git.
 ;    -  In the project directory, on the command-line, run the following
-;       command to build the Release version of Seq64 using qmake and make:
+;       command to build the Release version of Seq64 using qmake and make,
+;       and to create a 7-Zip "release" package that can be unpacked in
+;       the root "sequencer64" directory:
 ;
-;           $ qmake -makefile -recursive "CONFIG += release"
-;                   ../sequencer64/qplseq64.pro
-;           $ make
+;           $ build_release_package.bat
 ;
-;    -  If the build succeeds, then run
-;
-;           $ windeployqt ./Seq64qt
-;
-;    -  Then run NSIS.  Then do the following steps:
-;       -   Click on "Compile NSI scripts".
-;       -   Click File / Load Script.
-;       -   Navigate to the "nsis" directory and select
-;           "Seq64Setup_V0.95.nsi".  The script will take a few minutes
-;           to build.  The output goes to "...."
-;       -   You can run that executable, or you can instead click the
-;           "Test Installer" button in the NSIS window.
-;       -   When you get to the "Choose Install Location" window, you can
-;           use "C" and test the installation.
+;    -  Then run NSIS:
+;       -   Windows:
+;           -   Click on "Compile NSI scripts".
+;           -   Click File / Load Script.
+;           -   Navigate to the "nsis" directory and select
+;               "Seq64Setup_V0.95.nsi".  The script will take a few minutes
+;               to build.  The output goes to "...."
+;           -   You can run that executable, or you can instead click the
+;               "Test Installer" button in the NSIS window.
+;           -   When you get to the "Choose Install Location" window, you can
+;               use "C" and test the installation.
+;       -   Linux:
+;           -   TODO
 ;    -  The installer package is located at "...."
-;       -   Copy this executable to a CD-ROM drive.
-;       -   Bring it to a prospective VIDS server and run it.
 ;       -   Select the defaults and let the installer do its thing.
 ;    -  To uninstall the application, use Settings /
-;           Control Panel / Add and Remove Programs.
+;           Control Panel / Add and Remove Programs.  The application is
+;           Sequencer64, and the executable is qpseq64.exe.
 ;
 ; References:
 ;
@@ -48,51 +47,147 @@
 ;
 ;---------------------------------------------------------------------------
 
+;---------------------------------------------------------------------------
+;   MUI.nsh provides GUI features as expected for an installer.
+;   Sections.nsh provides support for sections and section groups.
+;   Seq64Constants.nsh contains names and version numbers.
+;---------------------------------------------------------------------------
+
+!include MUI.nsh
 !include Sections.nsh
-; !include VIDSUtilFunctions.nsh
 !include Seq64Constants.nsh
 
 ;---------------------------------------------------------------------------
-; Here we set silent install.
+; We want:
+;
+;   -   The description at the bottom.
+;   -   A welcome page.
+;   -   A license page.
+;   -   A components page.
+;   -   A directory page to allow changing the installation location of
+;       Sequencer64.
+;   -   An install-files page.
+;   -   A finish page.
+;   -   An uninstaller page.
+;   -   An abort-warning prompt.
+;
 ;---------------------------------------------------------------------------
 
-SilentInstall silent
+!define MUI_COMPONENTSPAGE_SMALLDESC
+!insertmacro MUI_PAGE_WELCOME
+
+!define MUI_LICENSEPAGE_CHECKBOX
+!insertmacro MUI_PAGE_LICENSE "..\data\license.txt"
+!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+
+!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\data\readme.txt"
+!insertmacro MUI_PAGE_FINISH
+!insertmacro MUI_UNPAGE_INSTFILES
+
+!define MUI_ABORTWARNING
+!insertmacro MUI_LANGUAGE "English"
+
+;---------------------------------------------------------------------------
+; Here we set a non-silent install.
+;
+;   SilentInstall silent
+;
+;---------------------------------------------------------------------------
+
+SilentInstall normal
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-
 BrandingText "${PRODUCT_NAME} ${PRODUCT_VERSION} NSIS-based Installer"
-
-OutFile "${EXE_DIRECTORY}\sequencer64_setup_${VER_NUMBER}.exe"
-
+OutFile "${EXE_DIRECTORY}\sequencer64_setup_${VER_NUMBER}.${VER_REVISION}.exe"
 RequestExecutionLevel admin
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
 ShowUnInstDetails show
-InstallDir "$PROGRAMFILES\VIDS"
+InstallDir "$PROGRAMFILES\${PRODUCT_NAME}"
 
-; SectionGroup /e "Workstation"
+;---------------------------------------------------------------------------
+; The actual installer sections
+;---------------------------------------------------------------------------
 
-Section "Binaries"
-
-    SetOutPath "$INSTDIR"
-    SetOverwrite on
-;   File "Projects\apps\AFLCSClient\vs10\Release\AFLCSClient.exe"
-    File "qpseq64.exe"
-          
-;   CreateShortCut "$SMPROGRAMS\Startup\seq64start.lnk" "$INSTDIR\seq64start.bat"
-
-SectionEnd
-
-Section "Supporting DLLs" 
+Section "Application" SEC_APPLIC
 
     SetOutPath "$INSTDIR"
     SetOverwrite on
-
-;   File "Projects\libs\tcpip\vs10\Release\clientdll.dll"
+    File "..\release\qpseq64.exe"
 
 SectionEnd
 
-; SectionGroupEnd
+SectionGroup "Qt5 Support" SEC_QT5
+
+Section "Mingw DLLs" SEC_MINGW
+
+    SetOutPath "$INSTDIR"
+    SetOverwrite on
+    File "..\release\D3Dcompiler_47.dll"
+    File "..\release\lib*.dll"
+    File "..\release\opengl*.dll"
+
+SectionEnd
+
+Section "Qt5 Main DLLs" SEC_QTDLLS
+
+    SetOutPath "$INSTDIR"
+    SetOverwrite on
+    File "..\release\Qt*.dll"
+
+SectionEnd
+
+Section "Qt5 Icon Engine" SEC_QTICON
+
+    SetOutPath "$INSTDIR\iconengines"
+    SetOverwrite on
+    File /r "..\release\iconengines\*.*"
+
+SectionEnd
+
+Section "Qt5 Imaging" SEC_QTIMG
+
+    SetOutPath "$INSTDIR\imageformats"
+    SetOverwrite on
+    File /r "..\release\imageformats\*.*"
+
+SectionEnd
+
+Section "Qt5 Platform Support" SEC_QTPLAT
+
+    SetOutPath "$INSTDIR\platforms"
+    SetOverwrite on
+    File /r "..\release\platforms\*.*"
+
+SectionEnd
+
+Section "Qt5 Style Engine" SEC_QTSTYLE
+
+    SetOutPath "$INSTDIR\styles"
+    SetOverwrite on
+    File /r "..\release\styles\*.*"
+
+SectionEnd
+
+Section "Qt5 Translations" SEC_QTTRANS
+
+    SetOutPath "$INSTDIR\translations"
+    SetOverwrite on
+    File /r "..\release\translations\*.*"
+
+SectionEnd
+
+SectionGroupEnd
+
+Section "Licensing and Sample Files" SEC_LIC
+
+    SetOutPath "$INSTDIR\data"
+    SetOverwrite on
+    File /r "..\release\data\*"
+
+SectionEnd
 
 ;--------------------------------------------------------------------------
 ; Section "Registry Entries"
@@ -131,10 +226,24 @@ Section -Post
 
     WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
 
-;   File "Projects\license.txt"
-;   File "Projects\readme.txt"
-
 SectionEnd
+
+;--------------------------------------------------------------------------
+; Section Descriptions
+;--------------------------------------------------------------------------
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_APPLIC}  "Application 32-bit executable."
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_QT5}     "Qt 5 DLLs."
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_MINGW}   "MingW 32-bit DLLs."
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_QTDLLS}  "Qt 5 32-bit DLLs."
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_QTICON}  "Qt 5 icon-engine DLLs."
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_QTIMG}   "Qt 5 image-format DLLs."
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_QTPLAT}  "Qt 5 platform DLLs."
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_QTSTYLE} "Qt 5 style DLLs."
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_QTTRANS} "Qt 5 translation files."
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_LIC}     "Licenses and sample files."
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;--------------------------------------------------------------------------
 ; Uninstallation operations

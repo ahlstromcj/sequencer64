@@ -31,4 +31,10 @@
 !define PRODUCT_PUBLISHER   "Chris Ahlstrom"
 !define PRODUCT_WEB_SITE    "https://github.com/ahlstromcj/sequencer64-packages"
 
+;============================================================================
+; Directory to place the installer.
+;============================================================================
+
+!define EXE_DIRECTORY       "..\release"
+
 ; vim: ts=4 sw=4 wm=3 et ft=nsis

@@ -39,13 +39,9 @@
  *      pmlinuxalsa.c, which assumes all input devices are ALSA.
  */
 
-#include <stdlib.h>
-
 #include "seq64-config.h"
 #include "easy_macros.h"                /* nullptr                          */
-// #ifdef SEQ64_PORTMIDI_FIND_DEFAULT_DEVICE
 #include "finddefault.h"
-// #endif
 #include "pmutil.h"
 #include "pminternal.h"
 

@@ -64,8 +64,9 @@ mastermidibus::mastermidibus (int ppqn, midibpm bpm)
     mastermidibase      (ppqn, bpm)
 {
     /**
-     * New feature. Turn off exiting upon errors so that the application
-     * has a chance to come up and display the error(s).
+     * New features. Turn off exiting upon errors so that the application
+     * has a chance to come up and display the error(s).  Set BPM and PPQN
+     * in the PortMidi module.  The ppqn parameter defaults to -1 here.
      */
 
     Pm_set_exit_on_error(FALSE);
@@ -282,6 +283,26 @@ mastermidibus::api_get_midi_event (event * in)
         in->set_status(EVENT_NOTE_OFF);
 
     return true;        // Why no "sysex = false"?
+}
+
+/**
+ *
+ */
+
+void
+mastermidibus::api_set_ppqn (int /*ppqn*/)
+{
+    // TODO
+}
+
+/**
+ *
+ */
+
+void
+mastermidibus::api_set_beats_per_minute (midibpm /*bpm*/)
+{
+    // TODO
 }
 
 }           // namespace seq64

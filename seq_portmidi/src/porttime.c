@@ -24,11 +24,13 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-24
+ * \updates     2018-05-25
  * \license     GNU GPLv2 or above
  *
  *  There is no machine-independent implementation code to put here.
  */
+
+#include "porttime.h"
 
 /**
  *
@@ -40,19 +42,40 @@ static int s_pm_ppqn = 480;
 
 /**
  *  New functions to support setting the tempo and PPQN, as well as
- *  converting PortMidi time to MIDI pulses (ticks).
+ *  converting PortMidi time to MIDI pulses (ticks).  Note that the setting
+ *  of PPQN here is roughly similar to seq64::choose_ppqn() in the settings
+ *  module.
  */
 
 void
 Pt_Set_Midi_Timing (double bpm, int ppqn)
+{
+    Pt_Set_Bpm(bpm);
+    Pt_Set_Ppqn(ppqn);
+}
+
+/**
+ *
+ */
+
+void
+Pt_Set_Bpm (double bpm)
 {
     if (bpm > 0.0)
     {
         s_pm_beats_per_minute = bpm;
         s_pm_tempo_microseconds = (int) (60000000.0 / bpm);
     }
-    if (ppqn > 0)
-        s_pm_ppqn = ppqn;
+}
+
+/**
+ *
+ */
+
+void
+Pt_Set_Ppqn (int ppqn)
+{
+    s_pm_ppqn = ppqn > 0 ? ppqn : 192 ;
 }
 
 /**
@@ -70,7 +93,7 @@ Pt_Time_To_Pulses (int tsms)
  */
 
 double
-Pt_get_beats_per_minute (void)
+Pt_Get_Bpm (void)
 {
     return s_pm_beats_per_minute;
 }
@@ -80,7 +103,7 @@ Pt_get_beats_per_minute (void)
  */
 
 int
-Pt_get_tempo_microseconds (void)
+Pt_Get_Tempo_Microseconds (void)
 {
     return s_pm_tempo_microseconds;
 }
@@ -90,7 +113,7 @@ Pt_get_tempo_microseconds (void)
  */
 
 int
-Pt_get_ppqn (void)
+Pt_Get_Ppqn (void)
 {
     return s_pm_ppqn;
 }

@@ -1,8 +1,6 @@
 #ifndef SEQ64_READBINARYPLIST_H
 #define SEQ64_READBINARYPLIST_H
 
-*/
-
 /*
  *  This file is part of sequencer64, adapted from the PortMIDI project.
  *
@@ -36,7 +34,7 @@
  * Roger B. Dannenberg, Jun 2008
  */
 
-#include <stdint.h> /* for uint8_t ... */
+#include <stdint.h>                     /* for uint8_t ... */
 
 #include "pminternal.h"                 /* PmDeviceID typedef               */
 

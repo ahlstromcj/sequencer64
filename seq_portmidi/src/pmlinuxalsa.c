@@ -88,14 +88,20 @@ extern pm_fns_node pm_linuxalsa_out_dictionary;
 static snd_seq_t * s_seq = nullptr;
 
 /**
- *
+ *  Provides an item to hold the ALSA queue.
  */
 
 static int s_queue;                 /* one for all ports, reference counted */
+
+/**
+ *  A boolean that prevents the ALSA queue from getting reset if it has
+ *  already been set.
+ */
+
 static int s_queue_used;            /* one for all ports, reference counted */
 
 /**
- *
+ *  Holds information about an ALSA port.
  */
 
 typedef struct alsa_descriptor_struct
@@ -110,7 +116,7 @@ typedef struct alsa_descriptor_struct
 } alsa_descriptor_node, * alsa_descriptor_type;
 
 /**
- *  get_alsa_error_text -- copy error text to potentially short string.
+ *  Copies error text to a potentially short string.
  */
 
 static void
@@ -145,7 +151,7 @@ get_alsa_error_text (char * msg, int len, int err)
 static PmError
 alsa_use_queue (void)
 {
-    if (s_queue_used == 0)
+    if (s_queue_used == 0 && not_nullptr(s_seq))
     {
         snd_seq_queue_tempo_t * tempo;
         s_queue = snd_seq_alloc_queue(s_seq);
@@ -155,8 +161,8 @@ alsa_use_queue (void)
             return pmHostError;
         }
         snd_seq_queue_tempo_alloca(&tempo);
-        snd_seq_queue_tempo_set_tempo(tempo, Pt_get_tempo_microseconds());
-        snd_seq_queue_tempo_set_ppq(tempo, Pt_get_ppqn());
+        snd_seq_queue_tempo_set_tempo(tempo, Pt_Get_Tempo_Microseconds());
+        snd_seq_queue_tempo_set_ppq(tempo, Pt_Get_Ppqn());
         pm_hosterror = snd_seq_set_queue_tempo(s_seq, s_queue, tempo);
         if (pm_hosterror < 0)
             return pmHostError;
@@ -167,6 +173,43 @@ alsa_use_queue (void)
     ++s_queue_used;
     return pmNoError;
 }
+
+#if 0
+/*
+ * EXPERIMENTAL.
+ *
+ *  The s_queue must already exist.
+ */
+
+static void
+alsa_set_beats_per_minute (int tempo_us)
+{
+    if (s_queue >= 0 && not_nullptr(s_seq))
+    {
+        snd_seq_queue_tempo_t * tempo;
+        snd_seq_queue_tempo_alloca(&tempo);
+        snd_seq_queue_tempo_set_tempo(tempo, tempo_us);
+        (void) snd_seq_set_queue_tempo(s_seq, s_queue, tempo);
+
+        /*
+         * Do we have a snd_seq_restart_queue() to call?
+         */
+    }
+}
+
+static void
+alsa_set_ppqn (int ppqn)
+{
+    snd_seq_queue_tempo_t * tempo;
+    snd_seq_queue_tempo_alloca(&tempo);
+    snd_seq_queue_tempo_set_ppq(tempo, ppqn);
+
+    /*
+     * Do we have a snd_seq_restart_queue() to call?
+     */
+}
+
+#endif
 
 /**
  *

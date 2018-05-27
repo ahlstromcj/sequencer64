@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-04-13
+ * \updates       2018-05-27
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -4338,36 +4338,6 @@ sequence::get_next_event (midibyte & status, midibyte & cc)
         drawevent.get_data(cc, d1);
         inc_draw_marker();
         return true;                /* we have a good one; update and return */
-    }
-    return false;
-}
-
-/**
- *  Kepler34
- */
-
-bool
-sequence::get_next_event_kepler         // TEMPORARY
-(
-    midibyte & status, midibyte & cc,
-    midipulse & tick, midibyte & d0, midibyte & d1, bool & selected
-)
-{
-    while (m_iterator_draw != m_events.end())       /* NOT THREADSAFE!!!    */
-    {
-        midibyte d1;
-        event & drawevent = DREF(m_iterator_draw);
-        status = drawevent.get_status();
-        drawevent.get_data(cc, d1);
-        tick = drawevent.get_timestamp();
-        selected = drawevent.is_selected();
-        if (event::is_desired_cc_or_not_cc(status, cc, d0))
-        {
-            inc_draw_marker();
-            return true;        /* we have a good one; update and return */
-        }
-        else
-            inc_draw_marker();
     }
     return false;
 }

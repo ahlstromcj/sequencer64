@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2018-02-25
+ * \updates       2018-05-27
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -87,14 +87,9 @@ namespace seq64
 
 class event_list
 {
-
     friend class editable_events;       // access to event_key class
     friend class midifile;              // access to print()
-    friend class midi_container;        // access to event_list::iterator
-    friend class midi_splitter;         // ditto
-    friend class sequence;              // tritto
-    friend class seqdata;               // quaditto
-    friend class seqevent;              // quintitto
+    friend class sequence;              // any_selected_notes()
 
 private:
 
@@ -130,8 +125,9 @@ private:
          *  event_key (const event_key & ek);
          *  event_key & operator = (const event_key & ek);
          */
-
     };
+
+public:
 
 #ifdef SEQ64_USE_EVENT_MAP
 

@@ -27,7 +27,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-20
+ * \updates     2018-05-25
  * \license     GNU GPLv2 or above
  *
  * Here is a guide to implementers:
@@ -46,6 +46,8 @@
  *
  *  Assumptions about pm_fns_type functions are given below.
  */
+
+#include <stdlib.h>
 
 #include "platform_macros.h"        // PLATFORM_WINDOWS, etc.
 

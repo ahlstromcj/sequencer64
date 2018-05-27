@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-24
+ * \updates     2018-05-25
  * \license     GNU GPLv2 or above
  *
  * change log for porttime:
@@ -142,9 +142,12 @@ PMEXPORT void Pt_Sleep (int32_t duration);
 
 PMEXPORT void Pt_Set_Midi_Timing (double bpm, int ppqn);
 PMEXPORT long Pt_Time_To_Pulses (int tsms);
-PMEXPORT double Pt_get_beats_per_minute (void);
-PMEXPORT int Pt_get_tempo_microseconds (void);
-PMEXPORT int Pt_get_ppqn (void);
+PMEXPORT void Pt_Set_Midi_Timing (double bpm, int ppqn);
+PMEXPORT void Pt_Set_Bpm (double bpm);
+PMEXPORT void Pt_Set_Ppqn (int ppqn);
+PMEXPORT double Pt_Get_Bpm (void);
+PMEXPORT int Pt_Get_Tempo_Microseconds (void);
+PMEXPORT int Pt_Get_Ppqn (void);
 
 #ifdef __cplusplus
 }       // extern "C"

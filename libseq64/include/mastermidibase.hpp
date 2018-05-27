@@ -434,7 +434,7 @@ protected:
 
     virtual void api_set_beats_per_minute (midibpm /* bpm */)
     {
-        // no code for base or portmidi
+        // no code for base
     }
 
     /**

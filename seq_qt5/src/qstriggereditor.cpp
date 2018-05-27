@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-06
+ * \updates       2018-05-27
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -44,6 +44,10 @@
 namespace seq64
 {
     class perform;
+
+static const int qc_eventarea_y     = 16;
+static const int qc_eventevent_y    = 10;
+static const int qc_eventevent_x    =  5;
 
 /**
  *
@@ -180,62 +184,41 @@ qstriggereditor::paintEvent (QPaintEvent *)
         painter.drawLine(base_line, 1, base_line, qc_eventarea_y);
     }
 
-    // draw event boxes
-
-    midipulse tick;
-    int x;
-    midibyte d0, d1;
-    bool selected;
-
     /* draw boxes from sequence */
 
     pen.setColor(Qt::black);
     pen.setStyle(Qt::SolidLine);
 
-    m_seq.reset_draw_marker();
-    while (m_seq.get_next_event_kepler(m_status, m_cc, tick, d0, d1, selected))
+    event_list::const_iterator cev;
+    m_seq.reset_ex_iterator(cev);                   /* reset_draw_marker()  */
+    while (m_seq.get_next_event_ex(m_status, m_cc, cev))
     {
+        midipulse tick = cev->get_timestamp();
         if ((tick >= start_tick && tick <= end_tick))
         {
-            /* turn into screen corrids */
-            x = tick / m_zoom + c_keyboard_padding_x;
-
-            //draw outer note border
-            pen.setColor(Qt::black);
+            bool selected = cev->is_selected();
+            int x = tick / m_zoom + c_keyboard_padding_x;
+            int y = (qc_eventarea_y - qc_eventevent_y) / 2;
+            pen.setColor(Qt::black);                /* outer note border    */
             brush.setStyle(Qt::SolidPattern);
             brush.setColor(Qt::black);
             painter.setBrush(brush);
             painter.setPen(pen);
-            painter.drawRect
-            (
-                x, (qc_eventarea_y - qc_eventevent_y) / 2,
-                qc_eventevent_x, qc_eventevent_y
-            );
-
-            if (selected)
-                brush.setColor(Qt::red);
-            else
-                brush.setColor(Qt::white);
-
-            painter.setBrush(brush);            // draw note highlight
-            painter.drawRect
-            (
-                x, (qc_eventarea_y - qc_eventevent_y) / 2,
-                qc_eventevent_x - 1, qc_eventevent_y - 1
-            );
+            painter.drawRect(x, y, qc_eventevent_x, qc_eventevent_y);
+            brush.setColor(selected ? Qt::red : Qt::white);
+            painter.setBrush(brush);                /* draw note highlight  */
+            painter.drawRect(x, y, qc_eventevent_x - 1, qc_eventevent_y - 1);
         }
+        ++cev;
     }
 
-    // draw selection
-
-    int w;
-    int y = (qc_eventarea_y - qc_eventevent_y) / 2;
+    int y = (qc_eventarea_y - qc_eventevent_y) / 2; /* draw selection       */
     int h =  qc_eventevent_y;
-
-    brush.setStyle(Qt::NoBrush); // painter reset
+    brush.setStyle(Qt::NoBrush);                    /* painter reset        */
     painter.setBrush(brush);
     if (m_selecting)
     {
+        int x, w;
         x_to_w(m_drop_x, m_current_x, x, w);
         m_old->setX(x);
         m_old->setWidth(w);
@@ -243,11 +226,10 @@ qstriggereditor::paintEvent (QPaintEvent *)
         painter.setPen(pen);
         painter.drawRect(x + c_keyboard_padding_x, y, w, h);
     }
-
     if (m_moving || m_paste)
     {
         int delta_x = m_current_x - m_drop_x;
-        x = m_selected->x() + delta_x;
+        int x = m_selected->x() + delta_x;
         pen.setColor(Qt::black);
         painter.setPen(pen);
         painter.drawRect(x + c_keyboard_padding_x, y, m_selected->width(), h);

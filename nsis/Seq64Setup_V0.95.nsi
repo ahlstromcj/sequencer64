@@ -82,7 +82,7 @@
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 
-!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\data\readme.txt"
+!define MUI_FINISHPAGE_SHOWREADME "..\data\readme.txt"
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_INSTFILES
 

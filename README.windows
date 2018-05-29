@@ -1,14 +1,16 @@
 README.windows for Sequencer64 0.95.0
 Chris Ahlstrom
-2018-05-13 to 2018-05-13
+2018-05-13 to 2018-05-28
 
 This README file provides the things you need to know to run the new native
 Windows implmentation of sequencer64, an executable called qpseq64.exe.  It
 provides some notes on Sequencer64 and Windows.  We mostly use Windows 10;
 some features might differ in Windows 7 or Windows 2012+ Server.
 
-At first, we will provide only a portable ZIP package for qpseq64.  Later,
-we will provide an NSIS-based installer.
+At first, we will provide only a portable ZIP package for qpseq64.  Now,
+we also provide an NSIS-based installer.  See
+
+    https://github.com/ahlstromcj/sequencer64-packages
 
 Inaccessible Devices:
 
@@ -113,8 +115,10 @@ Configuration Files:
 	# [1] 0:1 PortMidi:nanoKEY2
 	0 0
 
-	As of this time (2018-05-13) these settings are the only way to
-	alter the ports accessed, in the Windows version of Sequencer64.
+	As of this time (2018-05-27) these settings can now be accessed via
+    Edit / Preferences / MIDI Clock and MIDI Input to
+	alter the ports accessible, in the Windows version of Sequencer64.
+    The operator system may have some devices locked out, though.
 
 	qpseq64 --buss 1 --option log=filename.out 
 

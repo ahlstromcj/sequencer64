@@ -75,22 +75,32 @@ echo windeployqt %OUTPUT_DIR%
 windeployqt %OUTPUT_DIR%
 
 :: mkdir Seq64qt5\release\data
-:: copy ..\sequencer64\data\b4uacuse-gm-patchless.midi Seq64qt5\release\data
+:: copy ..\sequencer64\data\*.midi Seq64qt5\release\data
 :: copy ..\sequencer64\data\qpseq64.* Seq64qt5\release\data
 :: copy ..\sequencer64\data\*.pdf Seq64qt5\release\data
+:: copy ..\sequencer64\data\*.txt Seq64qt5\release\data
 
 echo mkdir %OUTPUT_DIR%\%AUX_DIR%
-echo copy %PROJECT_ROOT%\%AUX_DIR%\b4uacuse-gm-patchless.midi %OUTPUT_DIR%\%AUX_DIR%
-echo copy %PROJECT_ROOT%\%AUX_DIR%\sequencer64-user-manual.pdf %OUTPUT_DIR%\%AUX_DIR%
 echo copy %PROJECT_ROOT%\%AUX_DIR%\qpseq64.* %OUTPUT_DIR%\%AUX_DIR%
+echo copy %PROJECT_ROOT%\%AUX_DIR%\*.midi %OUTPUT_DIR%\%AUX_DIR%
 echo copy %PROJECT_ROOT%\%AUX_DIR%\*.pdf %OUTPUT_DIR%\%AUX_DIR%
+echo copy %PROJECT_ROOT%\%AUX_DIR%\*.txt %OUTPUT_DIR%\%AUX_DIR%
 
 mkdir %OUTPUT_DIR%\%AUX_DIR%
-copy %PROJECT_ROOT%\%AUX_DIR%\b4uacuse-gm-patchless.midi %OUTPUT_DIR%\%AUX_DIR%
-copy %PROJECT_ROOT%\%AUX_DIR%\sequencer64-user-manual.pdf %OUTPUT_DIR%\%AUX_DIR%
 copy %PROJECT_ROOT%\%AUX_DIR%\qpseq64.* %OUTPUT_DIR%\%AUX_DIR%
+copy %PROJECT_ROOT%\%AUX_DIR%\*.midi %OUTPUT_DIR%\%AUX_DIR%
 copy %PROJECT_ROOT%\%AUX_DIR%\*.pdf %OUTPUT_DIR%\%AUX_DIR%
+copy %PROJECT_ROOT%\%AUX_DIR%\*.txt %OUTPUT_DIR%\%AUX_DIR%
 
+:: This section takes the generated build and data files and packs them
+:: up into a 7-zip archive.  This archive should be copied to the root
+:: directory (sequencer64) and extracted (the contents go into the release
+:: directory.
+::
+:: Then, in Linux, "cd" to the "nsis" directory and run
+::
+::      makensis Seq64Setup_V0.95.nsi
+::
 :: pushd Seq64qt5
 :: 7z a -r qppseq64-nsis-ready-package-DATE.7z release\*
 

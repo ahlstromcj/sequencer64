@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-04-22
+ * \updates       2018-05-28
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -559,6 +559,18 @@ userfile::parse (perform & /* p */)
                 usr().work_around_transpose_image(scratch != 0);
             }
         }
+
+        /*
+         * [user-ui-tweaks]
+         */
+
+        if (line_after(file, "[user-ui-tweaks]"))
+        {
+            int scratch = 0;
+            sscanf(m_line, "%d", &scratch);
+            usr().key_height(scratch);
+        }
+
     }
 
     /*
@@ -602,7 +614,7 @@ userfile::write (const perform & /* a_perf */ )
            "# Sequencer64 user-configuration file (legacy Seq24 0.9.2 format)\n";
     }
     else
-        file << "# Sequencer64 0.94.0 (and above) user-configuration file\n";
+        file << "# Sequencer64 0.95.0 (and above) user-configuration file\n";
 
     file <<
         "#\n"
@@ -1047,7 +1059,7 @@ userfile::write (const perform & /* a_perf */ )
             "# '-o scale=x.y' option.\n"
             "\n"
             << usr().window_scale()
-            << "      # scales the main window upwards in size\n"
+            << "      # window_scale (scales the main window upwards in size)\n"
             ;
 
 #endif  // SEQ64_MULTI_MAINWID
@@ -1237,6 +1249,22 @@ userfile::write (const perform & /* a_perf */ )
 
         uscratch = usr().work_around_transpose_image() ? 1 : 0 ;
         file << uscratch << "       # work_around_transpose_image\n";
+
+        /*
+         * [user-ui-tweaks]
+         */
+
+        file << "\n"
+            "[user-ui-tweaks]\n"
+            "\n"
+            "# This first value specifies the height of the keys in the\n"
+            "# sequence editor.  Defaults to 12 (pixels).\n"
+            "# Currently used only in the Qt GUI.\n"
+            "\n"
+            ;
+
+        uscratch = usr().key_height();
+        file << uscratch << "       # (user_ui_) key_height\n";
     }
 
     /*

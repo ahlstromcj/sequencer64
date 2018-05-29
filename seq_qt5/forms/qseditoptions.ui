@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>638</width>
-    <height>564</height>
+    <height>672</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabMidiClock">
       <attribute name="title">
@@ -29,7 +29,7 @@
          <x>10</x>
          <y>20</y>
          <width>591</width>
-         <height>291</height>
+         <height>371</height>
         </rect>
        </property>
        <property name="title">
@@ -51,7 +51,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>370</y>
+         <y>460</y>
          <width>591</width>
          <height>80</height>
         </rect>
@@ -105,11 +105,11 @@
         </property>
        </widget>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>30</x>
-         <y>330</y>
+         <y>410</y>
          <width>262</width>
          <height>26</height>
         </rect>
@@ -148,7 +148,7 @@
          <x>10</x>
          <y>10</y>
          <width>591</width>
-         <height>171</height>
+         <height>301</height>
         </rect>
        </property>
        <property name="title">
@@ -160,7 +160,7 @@
           <x>10</x>
           <y>29</y>
           <width>571</width>
-          <height>131</height>
+          <height>261</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayoutMidiInput"/>
@@ -170,7 +170,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>250</y>
+         <y>350</y>
          <width>591</width>
          <height>81</height>
         </rect>

@@ -3,7 +3,7 @@
 ; File:         Seq64Setup_V0.95.nsi
 ; Author:       Chris Ahlstrom
 ; Date:         2018-05-26
-; Updated:      2018-05-27
+; Updated:      2018-05-29
 ; Version:      0.95.0
 ;
 ;       Installation is silent.
@@ -54,8 +54,14 @@
 ;---------------------------------------------------------------------------
 
 !include MUI.nsh
+!include MUI2.nsh
 !include Sections.nsh
 !include Seq64Constants.nsh
+
+!define MUI_ICON "..\resources\icons\route64rwb-64x64.ico"
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_BITMAP "..\resources\icons\route64rwb-64x64.bmp"
+!define MUI_HEADERIMAGE_RIGHT
 
 ;---------------------------------------------------------------------------
 ; We want:

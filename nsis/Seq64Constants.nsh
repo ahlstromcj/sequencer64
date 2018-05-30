@@ -3,6 +3,7 @@
 ; File:         Seq64Constants.nsh
 ; Author:       Chris Ahlstrom
 ; Date:         2018-05-26
+; Updated:      2018-05-29
 ; Version:      0.95.0
 ;
 ;   Provides constants commonly used by the installer for Sequencer64 for

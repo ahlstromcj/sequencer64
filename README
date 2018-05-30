@@ -1,6 +1,6 @@
 README for Sequencer64 0.95.0 (Native JACK, CLI, varisets, tempo, Windows)
 Chris Ahlstrom
-2015-09-10 to 2018-05-13
+2015-09-10 to 2018-05-31
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
 The heart of seq24 remains intact.  It is an old friend, and maintains some
@@ -28,7 +28,7 @@ GUI-less native JACK support: Seq64rtmidi/seq64cli
     hope to add an OSC harness eventually.  It supports a "daemonize" option
     and dumping status to a log-file in the user-configuration directory.
 
-Windows support:
+Windows support (derived from PortMidi):
 
     This version now works, unofficially, using a Qt 5 user-interface based on
     Kepler34, but using the standard Sequencer64 libraries.  The

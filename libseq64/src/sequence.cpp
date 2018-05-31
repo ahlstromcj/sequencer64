@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-05-27
+ * \updates       2018-05-30
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -2196,16 +2196,12 @@ sequence::grow_selected (midipulse delta)
             }
             else if (er.is_marked())                /* non-Note event?      */
             {
-#ifdef SEQ64_NON_NOTE_EVENT_ADJUSTMENT              /* currenty defined     */
                 event e = er;                       /* copy original event  */
                 midipulse ontime = er.get_timestamp();
                 midipulse newtime = clip_timestamp(ontime, ontime + delta);
                 e.set_timestamp(newtime);           /* adjust time-stamp    */
                 add_event(e);                       /* add adjusted event   */
                 modify();
-#else
-                er.unmark();                        /* unmark old version   */
-#endif
             }
         }
         if (remove_marked())

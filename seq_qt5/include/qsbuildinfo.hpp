@@ -1,3 +1,6 @@
+#ifndef SEQ64_QSBUILDINFO_H
+#define SEQ64_QSBUILDINFO_H
+
 /*
  *  This file is part of seq24/sequencer64.
  *
@@ -17,61 +20,50 @@
  */
 
 /**
- * \file          qsabout.cpp
+ * \file          qsbuildinfo.hpp
  *
  *  The time bar shows markers and numbers for the measures of the song,
  *  and also depicts the left and right markers.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2018-01-01
- * \updates       2018-04-08
+ * \date          2018-05-30
+ * \updates       2018-05-30
  * \license       GNU GPLv2 or above
  *
  */
 
-#include "qsabout.hpp"
-#include "seq64-config.h"
+#include <QDialog>
 
-/*
- *  Qt's uic application allows a different output file-name, but not sure
- *  if qmake can change the file-name.
- */
-
-#ifdef SEQ64_QMAKE_RULES
-#include "forms/ui_qsabout.h"
-#else
-#include "forms/qsabout.ui.h"
-#endif
+namespace Ui
+{
+   class qsbuildinfo;
+}
 
 namespace seq64
 {
 
-/**
- *
- */
-
-qsabout::qsabout (QWidget * parent)
- :
-    QDialog (parent),
-    ui      (new Ui::qsabout)
+class qsbuildinfo : public QDialog
 {
-    ui->setupUi(this);
-}
+    Q_OBJECT
 
-/**
- *
- */
+public:
 
-qsabout::~qsabout()
-{
-    delete ui;
-}
+    explicit qsbuildinfo (QWidget * parent = 0);
+    ~qsbuildinfo ();
 
-}               // namespace seq64
+private:
+
+    Ui::qsbuildinfo * ui;
+
+};             // class qsbuildinfo
+
+}              // namespace seq64
+
+#endif         // SEQ64_QSBUILDINFO_H
 
 /*
- * qsabout.cpp
+ * qsbuildinfo.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          seq64-config.h
+ * \file          seq64-config.h for Qt/PortMidi
  *
  *  This module provides platform/build-specific configuration that is not
  *  modifiable via a "configure" operation.  It is meant for the hardwired
@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-04-08
- * \updates       2018-05-13
+ * \updates       2018-05-31
  * \license       GNU GPLv2 or above
  *
  *  Qt Portmidi Linux version.
@@ -39,7 +39,7 @@
  */
 
 #ifndef SEQ64_VERSION_DATE_SHORT
-#define SEQ64_VERSION_DATE_SHORT "2018-05-13"
+#define SEQ64_VERSION_DATE_SHORT "2018-05-31"
 #endif
 
 #ifndef SEQ64_VERSION
@@ -100,7 +100,7 @@
  * Define to enable the event editor.
  *
  *      NOT AVAILABLE YET IN QT USER INTERFACE.
-
+ *
 #ifndef SEQ64_ENABLE_EVENT_EDITOR
 #define SEQ64_ENABLE_EVENT_EDITOR 1
 #endif
@@ -239,10 +239,15 @@
 #define SEQ64_HAVE_UNISTD_H 1
 #endif
 
-/* Define to enable highlighting empty sequences */
+/*
+ * Define to enable highlighting empty sequences
+ *
+ *      NOT AVAILABLE YET IN QT USER INTERFACE.
+ *
 #ifndef SEQ64_HIGHLIGHT_EMPTY_SEQS
 #define SEQ64_HIGHLIGHT_EMPTY_SEQS 1
 #endif
+ */
 
 /*
  * Define to enable JACK session.
@@ -304,7 +309,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef SEQ64_PACKAGE_STRING
-#define SEQ64_PACKAGE_STRING "Sequencer64 0.94.8"
+#define SEQ64_PACKAGE_STRING "Sequencer64 0.95.0"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -319,13 +324,18 @@
 
 /* Define to the version of this package. */
 #ifndef SEQ64_PACKAGE_VERSION
-#define SEQ64_PACKAGE_VERSION "0.94.8"
+#define SEQ64_PACKAGE_VERSION "0.95.0"
 #endif
 
-/* Define to enable pausing and pause button */
+/*
+ * Define to enable pausing and pause button
+ *
+ *      NOT AVAILABLE YET IN QT USER INTERFACE.
+ *
 #ifndef SEQ64_PAUSE_SUPPORT
 #define SEQ64_PAUSE_SUPPORT 1
 #endif
+ */
 
 /*
  * Indicates if PortMidi support is enabled
@@ -351,6 +361,8 @@
 
 /* Indicates that rtmidi is enabled.
  *
+ *      NOT AVAILABLE YET IN QT USER INTERFACE.
+ *
 #ifndef SEQ64_RTMIDI_SUPPORT
 #define SEQ64_RTMIDI_SUPPORT 1
 #endif
@@ -359,10 +371,15 @@
 /* Define to enable statistics gathering */
 /* #undef STATISTICS_SUPPORT */
 
-/* Define to enable the chord generator */
+/*
+ * Define to enable the chord generator
+ *
+ *      NOT AVAILABLE YET IN QT USER INTERFACE.
+ *
 #ifndef SEQ64_STAZED_CHORD_GENERATOR
 #define SEQ64_STAZED_CHORD_GENERATOR 1
 #endif
+ */
 
 /*
  * Define to enable Seq32 LFO window support.
@@ -374,7 +391,13 @@
 #endif
  */
 
-/* Define to enable global transpose */
+/*
+ * Define to enable global transpose.
+ *
+ *      NOT AVAILABLE YET IN QT USER INTERFACE. But it can still be supported
+ *      in the internal Sequencer64 library.
+ */
+
 #ifndef SEQ64_STAZED_TRANSPOSE
 #define SEQ64_STAZED_TRANSPOSE 1
 #endif
@@ -408,7 +431,7 @@
 #endif
 
 #ifdef SEQ64_WINDOWS_SUPPORT
-#/undef SEQ64_RTMIDI_SUPPORT
+#undef SEQ64_RTMIDI_SUPPORT
 #endif
 
 /* once: _INCLUDE_SEQ___CONFIG_H */
@@ -416,7 +439,7 @@
 #endif
 
 /*
- * seq640-config.h
+ * seq64-config.h for Qt/PortMidi
  *
  * vim: sw=4 ts=4 wm=4 et ft=c
  */

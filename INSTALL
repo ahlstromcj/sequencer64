@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.95.0 and above
 Chris Ahlstrom
-2015-09-10 to 2018-05-13
+2015-09-10 to 2018-05-31
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -294,8 +294,8 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         the pattern and song editors, which enable transposing whole songs, or
         just sequences that are marked as transposable.  This feature is
         grabbed from https://github.com/Stazed/seq32.  It does not affect the
-        ability to select notes and transpose them individually.  It doe
-        affect Aftertouch events.
+        ability to select notes and transpose them individually.  It does
+        affect Aftertouch events.  Not yet supported in the Qt user-interface.
 
     --disable-seq32jack (obsolete, removed)
 

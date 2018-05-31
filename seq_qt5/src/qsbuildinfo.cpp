@@ -17,21 +17,22 @@
  */
 
 /**
- * \file          qsabout.cpp
+ * \file          qsbuildinfo.cpp
  *
  *  The time bar shows markers and numbers for the measures of the song,
  *  and also depicts the left and right markers.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2018-01-01
- * \updates       2018-04-08
+ * \date          2018-05-30
+ * \updates       2018-05-30
  * \license       GNU GPLv2 or above
  *
  */
 
-#include "qsabout.hpp"
 #include "seq64-config.h"
+#include "cmdlineopts.hpp"              /* for build info function          */
+#include "qsbuildinfo.hpp"
 
 /*
  *  Qt's uic application allows a different output file-name, but not sure
@@ -39,9 +40,9 @@
  */
 
 #ifdef SEQ64_QMAKE_RULES
-#include "forms/ui_qsabout.h"
+#include "forms/ui_qsbuildinfo.h"
 #else
-#include "forms/qsabout.ui.h"
+#include "forms/qsbuildinfo.ui.h"
 #endif
 
 namespace seq64
@@ -51,19 +52,28 @@ namespace seq64
  *
  */
 
-qsabout::qsabout (QWidget * parent)
+qsbuildinfo::qsbuildinfo (QWidget * parent)
  :
     QDialog (parent),
-    ui      (new Ui::qsabout)
+    ui      (new Ui::qsbuildinfo)
 {
     ui->setupUi(this);
+
+    QString name(SEQ64_PACKAGE_NAME);
+    QString version(SEQ64_VERSION);
+    QString comment("\n");
+    comment += build_details().c_str();
+
+    ui->buildProgramLabel->setText(name);
+    ui->buildVersionLabel->setText(version);
+    ui->buildInfoTextEdit->setPlainText(comment);
 }
 
 /**
  *
  */
 
-qsabout::~qsabout()
+qsbuildinfo::~qsbuildinfo ()
 {
     delete ui;
 }
@@ -71,7 +81,7 @@ qsabout::~qsabout()
 }               // namespace seq64
 
 /*
- * qsabout.cpp
+ * qsbuildinfo.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

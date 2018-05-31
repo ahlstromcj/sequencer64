@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-04-29
+ * \updates       2018-05-30
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -1101,148 +1101,6 @@ write_options_files (const perform & p)
  *  enabled or disabled during the build.
  */
 
-#ifdef SEQ64_ALSAMIDI_SUPPORT
-const static std::string s_build_alsamidi_support = "ON";
-#else
-const static std::string s_build_alsamidi_support = "off";
-#endif
-
-#ifdef SEQ64_PORTMIDI_SUPPORT
-const static std::string s_build_portmidi_support = "ON";
-#else
-const static std::string s_build_portmidi_support = "off";
-#endif
-
-#ifdef SEQ64_RTMIDI_SUPPORT
-const static std::string s_build_rtmidi_support = "ON";
-#else
-const static std::string s_build_rtmidi_support = "off";
-#endif
-
-#ifdef SEQ64_HIGHLIGHT_EMPTY_SEQS
-const static std::string s_build_highlight_empty = "ON";
-#else
-const static std::string s_build_highlight_empty = "off";
-#endif
-
-#ifdef SEQ64_LASH_SUPPORT
-const static std::string s_build_lash_support = "ON";
-#else
-const static std::string s_build_lash_support = "off";
-#endif
-
-#ifdef SEQ64_JACK_SUPPORT
-const static std::string s_build_jack_support = "ON";
-#else
-const static std::string s_build_jack_support = "off";
-#endif
-
-#ifdef SEQ64_JACK_SESSION
-const static std::string s_build_jack_session = "ON";
-#else
-const static std::string s_build_jack_session = "off";
-#endif
-
-#ifdef SEQ64_ENABLE_EVENT_EDITOR
-const static std::string s_event_editor = "ON";
-#else
-const static std::string s_event_editor = "off";
-#endif
-
-const static std::string s_build_pause_support = "ON";
-
-#ifdef SEQ64_USE_EVENT_MAP
-const static std::string s_build_use_event_map = "ON";
-#else
-const static std::string s_build_use_event_map = "off";
-#endif
-
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-const static std::string s_build_chord_generator = "ON";
-#else
-const static std::string s_build_chord_generator = "off";
-#endif
-
-#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-const static std::string s_build_edit_highlight = "ON";
-#else
-const static std::string s_build_edit_highlight = "off";
-#endif
-
-const static std::string s_build_timesig_tempo = "ON";
-
-#ifdef SEQ64_USE_MIDI_VECTOR
-const static std::string s_build_midi_vector = "ON";
-#else
-const static std::string s_build_midi_vector = "off";
-#endif
-
-#ifdef SEQ64_SOLID_PIANOROLL_GRID
-const static std::string s_build_solid_grid = "ON";
-#else
-const static std::string s_build_solid_grid = "off";
-#endif
-
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-const static std::string s_build_follow_progress = "ON";
-#else
-const static std::string s_build_follow_progress = "off";
-#endif
-
-#ifdef SEQ64_STATISTICS_SUPPORT
-const static std::string s_statistics_support = "ON";
-#else
-const static std::string s_statistics_support = "off";
-#endif
-
-#ifdef SEQ64_STAZED_TRANSPOSE
-const static std::string s_seq32_transpose = "ON";
-#else
-const static std::string s_seq32_transpose = "off";
-#endif
-
-#ifdef SEQ64_STAZED_MENU_BUTTONS
-const static std::string s_seq32_menu_buttons = "ON";
-#else
-const static std::string s_seq32_menu_buttons = "off";
-#endif
-
-#ifdef SEQ64_STAZED_LFO_SUPPORT
-const static std::string s_seq32_lfo_support = "ON";
-#else
-const static std::string s_seq32_lfo_support = "off";
-#endif
-
-#ifdef SEQ64_JE_PATTERN_PANEL_SCROLLBARS
-const static std::string s_je_pattern_scrollbars = "ON";
-#else
-const static std::string s_je_pattern_scrollbars = "off";
-#endif
-
-#ifdef SEQ64_MULTI_MAINWID
-const static std::string s_multiple_mainwids = "ON";
-#else
-const static std::string s_multiple_mainwids = "off";
-#endif
-
-#ifdef SEQ64_SONG_BOX_SELECT
-const static std::string s_song_box_select = "ON";
-#else
-const static std::string s_song_box_select = "off";
-#endif
-
-#ifdef DEBUG
-const static std::string s_debug_mode = "ON";
-#else
-const static std::string s_debug_mode = "off";
-#endif
-
-#ifdef PLATFORM_WINDOW
-const static std::string s_windows = "ON";
-#else
-const static std::string s_windows = "off";
-#endif
-
 #ifdef PLATFORM_32_BIT
 const static std::string s_bitness = "32-bit";
 #else
@@ -1262,36 +1120,92 @@ build_details ()
 {
     std::ostringstream result;
     result
-<< "Build features:" << std::endl << std::endl
-<< "Native JACK/ALSA (rtmidi) * = " << s_build_rtmidi_support     << std::endl
-<< "ALSA-only MIDI support * = " << s_build_alsamidi_support      << std::endl
-<< "PortMIDI support * = "       << s_build_portmidi_support      << std::endl
-<< "Event editor * = "           << s_event_editor                << std::endl
-<< "Event multimap (vs list) = " << s_build_use_event_map         << std::endl
-<< "Follow progress bar = "      << s_build_follow_progress       << std::endl
-<< "Highlight edit pattern * = " << s_build_edit_highlight        << std::endl
-<< "Highlight empty patterns = " << s_build_highlight_empty       << std::endl
-<< "JACK session * = "           << s_build_jack_session          << std::endl
-<< "JACK support * = "           << s_build_jack_support          << std::endl
-<< "LASH support * = "           << s_build_lash_support          << std::endl
-<< "MIDI vector (vs list) = "    << s_build_midi_vector           << std::endl
-<< "Pause support * = "          << s_build_pause_support         << std::endl
-<< "Save time-sig/tempo = "      << s_build_timesig_tempo         << std::endl
-<< "Seq32 chord generator * = "  << s_build_chord_generator       << std::endl
-<< "Seq32 LFO support * = "      << s_seq32_lfo_support           << std::endl
-<< "Seq32 menu buttons = "       << s_seq32_menu_buttons          << std::endl
-<< "Seq32 transpose * = "        << s_seq32_transpose             << std::endl
-<< "Solid piano-roll grid = "    << s_build_solid_grid            << std::endl
-<< "Main window scroll-bars = "  << s_je_pattern_scrollbars       << std::endl
-<< "Multiple main windows * = "  << s_multiple_mainwids           << std::endl
-<< "Box song selection = "       << s_song_box_select             << std::endl
-<< "Statistics support * = "     << s_statistics_support          << std::endl
-<< "Windows support * = "        << s_windows                     << std::endl
-<< "Debug code * = "             << s_debug_mode                  << std::endl
-<< s_bitness << " support enabled"                                << std::endl
-<< std::endl
-<< "* option is enabled/disabled via the configure script." << std::endl
-<< "Otherwise, libseq64/include/seq64_features.h sets it." << std::endl
+        << "Build features:" << std::endl << std::endl
+#ifdef SEQ64_RTMIDI_SUPPORT
+        << "Native JACK/ALSA (rtmidi) on" << std::endl
+#endif
+#ifdef SEQ64_ALSAMIDI_SUPPORT
+        << "ALSA-only MIDI support on" << std::endl
+#endif
+#ifdef SEQ64_PORTMIDI_SUPPORT
+        << "PortMIDI support on" << std::endl
+#endif
+#ifdef SEQ64_ENABLE_EVENT_EDITOR
+        << "Event editor on" << std::endl
+#endif
+#ifdef SEQ64_USE_EVENT_MAP
+        << "Event multimap (vs list) on" << std::endl
+#endif
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+        << "Follow progress bar on" << std::endl
+#endif
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+        << "Highlight edit pattern on" << std::endl
+#endif
+#ifdef SEQ64_HIGHLIGHT_EMPTY_SEQS
+        << "Highlight empty patterns on" << std::endl
+#endif
+#ifdef SEQ64_JACK_SESSION
+        << "JACK session on" << std::endl
+#endif
+#ifdef SEQ64_JACK_SUPPORT
+        << "JACK support on" << std::endl
+#endif
+#ifdef SEQ64_LASH_SUPPORT
+        << "LASH support on" << std::endl
+#endif
+#ifdef SEQ64_USE_MIDI_VECTOR
+        << "MIDI vector (vs list) on" << std::endl
+#endif
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+        << "Seq32 chord generator on" << std::endl
+#endif
+#ifdef SEQ64_STAZED_LFO_SUPPORT
+        << "Seq32 LFO window on" << std::endl
+#endif
+#ifdef SEQ64_STAZED_MENU_BUTTONS
+        << "Seq32 menu buttons on" << std::endl
+#endif
+#ifdef SEQ64_STAZED_TRANSPOSE
+        << "Seq32 transpose on" << std::endl
+#endif
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+        << "BPM Tap button on" << std::endl
+#endif
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+        << "Solid piano-roll grid on" << std::endl
+#endif
+#ifdef SEQ64_JE_PATTERN_PANEL_SCROLLBARS
+        << "Main window scroll-bars on" << std::endl
+#endif
+#ifdef SEQ64_SHOW_COLOR_PALETTE
+        << "Optional pattern coloring on" << std::endl
+#endif
+#ifdef SEQ64_MULTI_MAINWID
+        << "Multiple main windows on" << std::endl
+#endif
+#ifdef SEQ64_SONG_RECORDING
+        << "Song performance recording on" << std::endl
+#endif
+#ifdef SEQ64_SONG_BOX_SELECT
+        << "Box song selection on" << std::endl
+#endif
+#ifdef SEQ64_STATISTICS_SUPPORT
+        << "Statistics support on" << std::endl
+#endif
+#ifdef PLATFORM_WINDOWS
+        << "Windows support on" << std::endl
+#endif
+        << "Pause support on" << std::endl
+        << "Save time-sig/tempo on" << std::endl
+#ifdef PLATFORM_DEBUG
+        << "Debug code on" << std::endl
+#endif
+        << s_bitness << " support enabled" << std::endl
+        << std::endl
+    << "Options are enabled/disabled via the configure script," << std::endl
+    << "libseq64/include/seq64_features.h, or the build-specific" << std::endl
+    << "seq64-config.h file in include or in include/qt/portmidi" << std::endl
     ;
     return result.str();
 }

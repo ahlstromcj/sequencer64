@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-27
+ * \updates       2018-05-30
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -64,6 +64,7 @@ namespace seq64
     class qsmaintime;
     class qseditoptions;
     class qsabout;
+    class qsbuildinfo;
 
 /**
  * The main window of kepler34
@@ -130,7 +131,7 @@ private:
     qsmaintime * m_beat_ind;
     qseditoptions * m_dialog_prefs;
     qsabout * mDialogAbout;
-//  bool m_modified; //TODO move this into main performance
+    qsbuildinfo * mDialogBuildInfo;
 
 private slots:
 
@@ -151,6 +152,7 @@ private slots:
     void showImportDialog (); //import MIDI data from current bank onwards
     void showOpenFileDialog ();
     void showqsabout ();
+    void showqsbuildinfo ();
     void tabWidgetClicked (int newIndex);
     void refresh(); // redraw certain GUI elements
 

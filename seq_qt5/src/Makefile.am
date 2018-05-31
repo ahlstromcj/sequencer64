@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2018-01-01
-# \update      2018-05-20
+# \update      2018-05-30
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -231,6 +231,7 @@ moc_qt_headers = \
  ../include/qperfroll.hpp \
  ../include/qperftime.hpp \
  ../include/qsabout.hpp \
+ ../include/qsbuildinfo.hpp \
  ../include/qseditoptions.hpp \
  ../include/qseqdata.hpp \
  ../include/qseqeditframe.hpp \
@@ -248,6 +249,7 @@ uic_qt_forms = \
  $(formsdir)/qseditoptions.ui \
  $(formsdir)/qperfeditframe.ui \
  $(formsdir)/qsabout.ui \
+ $(formsdir)/qsbuildinfo.ui \
  $(formsdir)/qseqeditframe.ui \
  $(formsdir)/qsliveframe.ui \
  $(formsdir)/qsmainwnd.ui
@@ -318,6 +320,7 @@ libseq_qt5_la_SOURCES = \
  qperfroll.cpp \
  qperftime.cpp \
  qsabout.cpp \
+ qsbuildinfo.cpp \
  qseditoptions.cpp \
  qseqdata.cpp \
  qseqeditframe.cpp \

@@ -555,6 +555,7 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
+    <addaction name="actionBuildInfo"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -630,6 +631,11 @@
   <action name="actionAbout">
    <property name="text">
     <string>&amp;About...</string>
+   </property>
+  </action>
+  <action name="actionBuildInfo">
+   <property name="text">
+    <string>&amp;Build Info...</string>
    </property>
   </action>
   <action name="actionAbout_Qt">

@@ -39,6 +39,23 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="aboutVersionLabel">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>0.95.0-c12345af * master</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;A loop-based MIDI sequencer for Linux/Windows&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Licensed under GNU General Public License V2&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;a href=&quot;mailto::oli_kester@zoho.com&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;https://github.com/ahlstromcj/sequencer64 &lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;a href=&quot;mailto::oli_kester@zoho.com&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;ahlstromcj@gmail.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

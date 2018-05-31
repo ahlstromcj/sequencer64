@@ -764,9 +764,9 @@ AC_ARG_ENABLE(transpose,
 
 if test "$transpose" != "no"; then
     AC_DEFINE(STAZED_TRANSPOSE, 1, [Define to enable global transpose])
-    AC_MSG_RESULT([Global seq32 transpose enabled.])
+    AC_MSG_RESULT([Global Seq32 transpose enabled.])
 else
-    AC_MSG_NOTICE([Global seq32 transpose disabled.]);
+    AC_MSG_NOTICE([Global Seq32 transpose disabled.]);
 fi
 
 dnl Support for using jean-emmanuel's scrollbars in the patterns panel.  We will

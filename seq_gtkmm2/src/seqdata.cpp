@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-03
+ * \updates       2018-06-02
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -328,12 +328,18 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
                 }
                 else
                 {
-                    drawable->draw_drawable
-                    (
-                        m_gc, m_numbers[event_height], 0, 0,
-                        x + 2, c_dataarea_y - m_number_h + 3,
-                        m_number_w, m_number_h
-                    );
+                    render_digits(drawable, event_height, x);
+
+                    /*
+                     * Now draws in inverse.  Obsolete.
+                     *
+                     *  drawable->draw_drawable
+                     *  (
+                     *      m_gc, m_numbers[event_height], 0, 0,
+                     *      x + 2, c_dataarea_y - m_number_h + 3,
+                     *      m_number_w, m_number_h
+                     *  );
+                     */
                 }
             }
             ++ev;                                   /* now a must-do        */

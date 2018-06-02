@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2018-04-12
+ * \updates       2018-06-02
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of JACK information
@@ -532,14 +532,13 @@ midi_jack_info::api_port_start
 }
 
 /**
- *  MUCH TO DO!
+ *  We might be able to eliminate this function.
  */
-
 int
 midi_jack_info::api_poll_for_midi ()
 {
     millisleep(1);
-    return 0;       // TODO TODO TODO
+    return 0;
 }
 
 /**

@@ -107,9 +107,7 @@ protected:
     virtual bool api_init_out_sub ();
     virtual bool api_deinit_in ();
     virtual bool api_get_midi_event (event * inev);
-
     virtual int api_poll_for_midi ();
-
     virtual void api_continue_from (midipulse tick, midipulse beats);
     virtual void api_start ();
     virtual void api_stop ();

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-23
- * \updates       2018-05-12
+ * \updates       2018-06-02
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibase module is the base-class version of the mastermidibus
@@ -167,7 +167,7 @@ public:
     mastermidibase
     (
         int ppqn    = SEQ64_USE_DEFAULT_PPQN,
-        midibpm bpm =  SEQ64_DEFAULT_BPM         /* c_beats_per_minute */
+        midibpm bpm = SEQ64_DEFAULT_BPM             /* c_beats_per_minute */
     );
     virtual ~mastermidibase ();
 
@@ -460,9 +460,8 @@ protected:
         // no code for portmidi
     }
 
-    virtual bool api_is_more_input () = 0;
     virtual bool api_get_midi_event (event * inev) = 0;
-    virtual int api_poll_for_midi () = 0;
+    virtual int api_poll_for_midi ();
 
 /*
  *  So far, there is no need for these API-specific functions.

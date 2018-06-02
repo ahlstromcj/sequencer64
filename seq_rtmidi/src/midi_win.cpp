@@ -6,8 +6,12 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2017-08-20
- * \updates       2017-08-21
+ * \updates       2017-06-02
  * \license       See the rtexmidi.lic file.  Too big for a header file.
+ *
+ * \deprecated
+ *      We have decided to use the PortMidi re-implementation for Sequencer64
+ *      for Windows.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
  *  Gary Scavone, April 2011.
@@ -26,6 +30,8 @@
  *
  *  Thanks to Jean-Baptiste Berruchon for the sysex code.
  */
+
+#error Internal RtMidi for Windows obsolete, use internal PortMidi instead.
 
 #include <windows.h>
 #include <mmsystem.h>
@@ -922,8 +928,6 @@ midi_in_win::midi_in_win (midibus & parentbus, midi_info & masterinfo)
 
 /**
  *  Checks the rtmidi_in_data queue for the number of items in the queue.
- *
- *  WE MAY NEED LOCKING.
  *
  * \return
  *      Returns the value of rtindata->queue().count(), unless the caller is

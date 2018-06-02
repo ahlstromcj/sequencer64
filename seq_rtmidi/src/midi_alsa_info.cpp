@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2018-04-12
+ * \updates       2018-06-02
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  API information found at:
@@ -338,7 +338,8 @@ midi_alsa_info::api_set_beats_per_minute (midibpm b)
 
 /**
  *  Polls for any ALSA MIDI information using a timeout value of 1000
- *  milliseconds.
+ *  milliseconds.  Identical to seq_alsamidi's mastermidibus ::
+ *  api_poll_for_midi(), which waits 1 millisecond if no input is pending.
  *
  * \return
  *      Returns the result of the call to poll() on the global ALSA poll
@@ -349,10 +350,8 @@ int
 midi_alsa_info::api_poll_for_midi ()
 {
     int result = poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
-
-#ifdef SEQ64_SHOW_API_CALLS_TMI                 /* too much output!     */
-    printf("midi_alsa_info::poll_for_midi() = %d\n", result);
-#endif
+    if (result == 0)
+        millisleep(1);
 
     return result;
 }

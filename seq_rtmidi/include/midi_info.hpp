@@ -430,7 +430,7 @@ public:
     }
 
     virtual bool api_get_midi_event (event * inev) = 0;
-    virtual int api_poll_for_midi () = 0;
+    virtual int api_poll_for_midi () = 0;       /* disposable??? */
     virtual void api_flush () = 0;
 
     /**

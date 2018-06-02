@@ -1372,8 +1372,6 @@ midi_in_jack::midi_in_jack (midibus & parentbus, midi_info & masterinfo)
 /**
  *  Checks the rtmidi_in_data queue for the number of items in the queue.
  *
- *  WE MAY NEED LOCKING.
- *
  * \return
  *      Returns the value of rtindata->queue().count(), unless the caller is
  *      using an rtmidi callback function, in which case 0 is always returned.

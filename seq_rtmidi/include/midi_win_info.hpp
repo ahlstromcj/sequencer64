@@ -9,12 +9,18 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-08-20
- * \updates       2017-08-20
+ * \updates       2018-06-02
  * \license       See the rtexmidi.lic file.  Too big for a header file.
+ *
+ * \deprecated
+ *      We have decided to use the PortMidi re-implementation for Sequencer64
+ *      for Windows.
  *
  *    We need to have a way to get all of the JACK information of
  *    the midi_win
  */
+
+#error Internal RtMidi for Windows obsolete, use internal PortMidi instead.
 
 #include "midi_info.hpp"                    /* seq64::midi_port_info etc.   */
 #include "midi_win_data.hpp"                /* seq64::midi_win_data         */

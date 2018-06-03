@@ -1,12 +1,20 @@
 NEWS for Sequencer64 0.95.0
 Chris Ahlstrom
-2015-07-10 to 2018-05-13
+2015-07-10 to 2018-06-02
 
 This file collects major changes that are older and clutter up
 the README file.  This file should be called "OLD NEWS".
 
 Older major updates:
 
+    -   Version 0.94.6:
+        -   Fixed tempo handling, issue #141.
+        -   Added sequence-coloring, stored per sequence as an index into a
+            palette.  Colors the mainwid sequence events background and the
+            perfroll events background.
+        -   Improving support for a Qt 5 build, still not ready for real
+            usage, use at your own risk
+        -   Support for configure script without needing to bootstrap.
     -   Version 0.94.5:
         -   Added the ability to scale the main window from 1.0 to 3.0 times
             its normal size.  Has issues, but makes buttons bigger and the

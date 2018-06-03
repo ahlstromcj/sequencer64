@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.95.0 and above
 Chris Ahlstrom
-2015-09-10 to 2018-05-31
+2015-09-10 to 2018-06-02
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -25,10 +25,11 @@ bootstrapping setup is primarily aimed at developers.  Starting with version
         library, tools, and mkspec in Qt Creator.  This version supports both
         Linux and (wait for it...) Windows.
 
-        We will eventually provide a portable Zip package in the
-        sequencer64-packages project.
+    We provide a portable Windows Zip package and a Windows installer in
+    the "sequencer64-packages" project in GitHub.
 
-Below are sections for various ways of installing this project:
+Below are sections for various ways of installing this project by building
+from source code:
 
     -   Quick Install
     -   Advanced Steps
@@ -370,9 +371,9 @@ MANUALLY-DEFINED MACROS IN CODE:
         a lot trying to get it to work.  However, it is available if
         building for Qt support (i.e. SEQ64_QTMIDI_SUPPORT is defined).
 
-    SEQ64_STAZED_EXPAND_RECORD:
+    SEQ64_STAZED_EXPAND_RECORD:     (now a permanent, unmacroed feature)
 
-        This macro, defined by default, turns on the ability to specify
+        This macro, now permanent, turns on the ability to specify
         different behavior in recording.  Normally, when a pattern loops to
         the beginning, and new events are received, then these new events are
         added to the events already there.  If this macro is defined, then

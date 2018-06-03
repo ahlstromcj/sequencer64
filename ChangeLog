@@ -1,3 +1,164 @@
+2018-06-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/businfo.hpp,
+	libseq64/include/mastermidibase.hpp, libseq64/include/midibase.hpp,
+	libseq64/src/businfo.cpp, libseq64/src/mastermidibase.cpp,
+	seq_alsamidi/include/mastermidibus_am.hpp,
+	seq_alsamidi/src/mastermidibus.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_portmidi/include/mastermidibus_pm.hpp,
+	seq_portmidi/src/mastermidibus.cpp, seq_qt5/src/qsliveframe.cpp,
+	seq_rtmidi/include/mastermidibus_rm.hpp,
+	seq_rtmidi/include/midi_alsa.hpp,
+	seq_rtmidi/include/midi_alsa_info.hpp,
+	seq_rtmidi/include/midi_api.hpp, seq_rtmidi/include/midi_info.hpp,
+	seq_rtmidi/include/midi_jack.hpp,
+	seq_rtmidi/include/midi_jack_info.hpp,
+	seq_rtmidi/include/midi_win.hpp,
+	seq_rtmidi/include/midi_win_info.hpp,
+	seq_rtmidi/include/midibus_rm.hpp,
+	seq_rtmidi/src/mastermidibus.cpp, seq_rtmidi/src/midi_alsa.cpp,
+	seq_rtmidi/src/midi_alsa_info.cpp, seq_rtmidi/src/midi_api.cpp,
+	seq_rtmidi/src/midi_jack.cpp, seq_rtmidi/src/midi_jack_info.cpp,
+	seq_rtmidi/src/midi_win.cpp, seq_rtmidi/src/midi_win_info.cpp: 
+	Interim check-in, MIDI polling cleanup.
+
+2018-05-31  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, bootstrap, configure.ac, contrib/win32-seq64-config.h,
+	include/qt/portmidi/seq64-config.h,
+	libseq64/include/seq64_features.h, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/midi_container.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/sequence.cpp, seq_qt5/forms/qsabout.ui,
+	seq_qt5/forms/qsbuildinfo.ui, seq_qt5/forms/qsmainwnd.ui,
+	seq_qt5/include/Makefile.am, seq_qt5/include/qsabout.hpp,
+	seq_qt5/include/qsbuildinfo.hpp, seq_qt5/include/qsmainwnd.hpp,
+	seq_qt5/seq_qt5.pro, seq_qt5/src/Makefile.am,
+	seq_qt5/src/qsabout.cpp, seq_qt5/src/qsbuildinfo.cpp,
+	seq_qt5/src/qsmainwnd.cpp, strap_functions: Added build-info dialog
+	to Qt, updated build macros.
+
+2018-05-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure.ac, nsis/Seq64Constants.nsh,
+	nsis/Seq64Setup_V0.95.nsi: Added bpm/icon to NSIS installer.
+
+2018-05-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README.windows, data/README, doc/dia/seq24/README,
+	libseq64/include/globals.h, libseq64/include/user_settings.hpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	nsis/Seq64Setup_V0.95.nsi, nsis/build_release_package.bat,
+	seq_portmidi/src/midibus.cpp, seq_qt5/forms/qseditoptions.ui,
+	seq_qt5/forms/qseqeditframe.ui, seq_qt5/include/qseqeditframe.hpp,
+	seq_qt5/src/qseditoptions.cpp, seq_qt5/src/qseqeditframe.cpp,
+	seq_qt5/src/qseqroll.cpp: Updates to NSIS installer and Qt5 GUI.
+
+2018-05-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* data/license.txt, data/qpseq64.rc, data/qpseq64.usr,
+	data/readme.txt, data/readme.windows, nsis/Seq64Constants.nsh,
+	nsis/Seq64Setup_V0.95.nsi, nsis/build_release_package.bat,
+	seq_portmidi/src/pmwinmm.c: NSIS installer works, has a minor issue
+	with readme.
+	* libseq64/include/event_list.hpp,
+	libseq64/include/mastermidibase.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_portmidi/include/mastermidibus_pm.hpp,
+	seq_portmidi/include/pminternal.h, seq_portmidi/include/porttime.h,
+	seq_portmidi/include/readbinaryplist.h,
+	seq_portmidi/src/mastermidibus.cpp, seq_portmidi/src/pmlinux.c,
+	seq_portmidi/src/pmlinuxalsa.c, seq_portmidi/src/porttime.c,
+	seq_qt5/include/Globals.hpp, seq_qt5/src/qseqdata.cpp,
+	seq_qt5/src/qstriggereditor.cpp: Fixed qseqdata drawing error, many
+	tweaks and comments.
+
+2018-05-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* nsis/Seq64Constants.nsh, nsis/Seq64Setup_V0.95.nsi,
+	nsis/build_release_package.bat: Added provisional files for NSIS and
+	Windows package.
+
+2018-05-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_portmidi/include/finddefault.h,
+	seq_portmidi/include/pmerrmm.h, seq_portmidi/include/pminternal.h,
+	seq_portmidi/include/pmlinux.h, seq_portmidi/include/pmlinuxalsa.h,
+	seq_portmidi/include/pmmac.h, seq_portmidi/include/pmmacosxcm.h,
+	seq_portmidi/include/pmwinmm.h, seq_portmidi/include/portmidi.h,
+	seq_portmidi/include/readbinaryplist.h,
+	seq_portmidi/src/mastermidibus.cpp: Added ability to set tempo/ppqn
+	in portmidi.
+
+2018-05-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_portmidi/include/midibus_pm.hpp,
+	seq_portmidi/include/pminternal.h, seq_portmidi/include/porttime.h,
+	seq_portmidi/src/Makefile.am, seq_portmidi/src/mastermidibus.cpp,
+	seq_portmidi/src/midibus.cpp, seq_portmidi/src/pmlinuxalsa.c,
+	seq_portmidi/src/pmutil.c, seq_portmidi/src/pmwinmm.c,
+	seq_portmidi/src/portmidi.c, seq_portmidi/src/porttime.c: Added
+	BPM/PPQN setting, not yet used, and got MIDI input basics to work.
+
+2018-05-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/midibus_common.hpp, libseq64/src/businfo.cpp,
+	seq_portmidi/include/pminternal.h, seq_portmidi/src/pmlinuxalsa.c,
+	seq_portmidi/src/pmmacosxcm.c, seq_portmidi/src/pmwinmm.c,
+	seq_portmidi/src/portmidi.c, seq_qt5/include/Makefile.am,
+	seq_qt5/include/qclocklayout.hpp,
+	seq_qt5/include/qinputcheckbox.hpp, seq_qt5/seq_qt5.pro,
+	seq_qt5/src/Makefile.am, seq_qt5/src/qclocklayout.cpp,
+	seq_qt5/src/qinputcheckbox.cpp, seq_qt5/src/qseditoptions.cpp: Got
+	full-circuit PM/inputs/GUI working, the fix to businfo needs testing
+	in rtmidi as well.
+	* seq_portmidi/src/pmlinux.c, seq_qt5/forms/qseditoptions.ui,
+	seq_qt5/include/qclocklayout.hpp,
+	seq_qt5/include/qseditoptions.hpp, seq_qt5/seq_qt5.pro,
+	seq_qt5/src/qclocklayout.cpp, seq_qt5/src/qseditoptions.cpp: Added
+	MIDI Clock buttons, but still not getting signals from radio
+	buttons.
+
+2018-05-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/userfile.cpp, seq_gtkmm2/src/options.cpp,
+	seq_qt5/forms/qsabout.ui, seq_qt5/forms/qseditoptions.ui,
+	seq_qt5/forms/qsmainwnd.ui: Adding clocks and inputs to Qt
+	user-interface.
+
+2018-05-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_portmidi/seq_portmidi.pro: Fixed portmidi pro file.
+
+2018-05-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_portmidi/seq_portmidi.pro, seq_portmidi/src/ptmacosx_cf.c,
+	seq_portmidi/src/ptmacosx_mach.c: Added Mac OSX timer modules to the
+	project.
+
+2018-05-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, NEWS, README, README.macosx, README.windows, VERSION,
+	configure.ac, include/qt/portmidi/seq64-config.h,
+	man/sequencer64.1, seq_portmidi/include/pmmac.h,
+	seq_portmidi/include/pmmacosxcm.h,
+	seq_portmidi/include/readbinaryplist.h,
+	seq_portmidi/src/Makefile.am,
+	seq_portmidi/src/finddefault-macosx.c,
+	seq_portmidi/src/finddefault.c, seq_portmidi/src/pmmac.c,
+	seq_portmidi/src/pmmacosxcm.c, seq_portmidi/src/pmwin.c,
+	seq_portmidi/src/readbinaryplist.c: For version 0.95, adding
+	provisional Mac OSX PortMidi files.
+	* configure, include/config.h.in: Updating configure files.
+	* ChangeLog, INSTALL, README, README.windows, configure.ac,
+	contrib/notes/windows.txt, contrib/qt5/virtualmidi.log,
+	contrib/qt5/windows.txt, data/qpseq64.rc,
+	libseq64/include/mastermidibase.hpp, libseq64/include/midibase.hpp,
+	libseq64/include/midibus_common.hpp,
+	libseq64/src/mastermidibase.cpp, libseq64/src/midibase.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_portmidi/src/pmwinmm.c,
+	seq_qt5/src/qsmainwnd.cpp: Linux/Windows version 0.94.8 pending.
+
 2018-05-12  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/businfo.hpp,

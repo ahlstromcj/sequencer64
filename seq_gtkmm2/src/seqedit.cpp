@@ -342,9 +342,7 @@ seqedit::seqedit
     m_menu_bpm          (manage(new Gtk::Menu())),
     m_menu_bw           (manage(new Gtk::Menu())),
     m_menu_rec_vol      (manage(new Gtk::Menu())),
-#ifdef SEQ64_STAZED_EXPAND_RECORD
     m_menu_rec_type     (nullptr),
-#endif
     m_vadjust           (manage(new Gtk::Adjustment(55, 0, c_num_keys, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll_new       (manage(new Gtk::VScrollbar(*m_vadjust))),
@@ -430,9 +428,7 @@ seqedit::seqedit
     m_button_bw         (nullptr),
     m_entry_bw          (nullptr),
     m_button_rec_vol    (manage(new Gtk::Button())),
-#ifdef SEQ64_STAZED_EXPAND_RECORD
     m_button_rec_type   (manage(new Gtk::Button())),
-#endif
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_toggle_follow     (manage(new Gtk::ToggleButton())),
 #endif
@@ -590,8 +586,6 @@ seqedit::seqedit
     );
     add_tooltip(m_toggle_q_rec, "If active, quantized record.");
 
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-
     /*
      * Provides a button to set the recording style to "legacy" (when looping,
      * merge new incoming events into the patter), "overwrite" (replace events
@@ -610,7 +604,6 @@ seqedit::seqedit
         "Select recording type for patterns: merge events; overwrite events; "
         "or expand the pattern size while recording."
     );
-#endif  // SEQ64_STAZED_EXPAND_RECORD
 
 #define SET_POPUP   mem_fun(*this, &seqedit::popup_menu)
 
@@ -634,9 +627,7 @@ seqedit::seqedit
     m_toggle_record->set_active(m_seq.get_recording());
     m_toggle_thru->set_active(m_seq.get_thru());
     dhbox->pack_end(*m_button_rec_vol, false, false, 4);
-#ifdef SEQ64_STAZED_EXPAND_RECORD
     dhbox->pack_end(*m_button_rec_type, false, false, 4);
-#endif
     dhbox->pack_end(*m_toggle_q_rec, false, false, 4);
     dhbox->pack_end(*m_toggle_record, false, false, 4);
     dhbox->pack_end(*m_toggle_thru, false, false, 4);
@@ -2207,8 +2198,6 @@ seqedit::repopulate_mini_event_menu (int buss, int channel)
         m_button_minidata->set_image(*eventflag);
 }
 
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-
 void
 seqedit::popup_record_menu()
 {
@@ -2258,8 +2247,6 @@ seqedit::popup_record_menu()
     );
     m_menu_rec_type->popup(0, 0);
 }
-
-#endif  // SEQ64_STAZED_EXPAND_RECORD
 
 /**
  *  Selects the given MIDI channel parameter in the main sequence object,
@@ -2872,7 +2859,9 @@ seqedit::set_rec_vol (int recvol)
     usr().velocity_override(recvol);    /* save to the "usr" config file    */
 }
 
-#ifdef SEQ64_STAZED_EXPAND_RECORD
+/**
+ *
+ */
 
 void
 seqedit::set_rec_type (loop_record_t rectype)
@@ -2918,8 +2907,6 @@ seqedit::set_rec_type (loop_record_t rectype)
         ptr->set_text(temp);
     }
 }
-
-#endif  // SEQ64_STAZED_EXPAND_RECORD
 
 /**
  *  Sets the data type based on the given parameters.  This function uses the
@@ -2993,21 +2980,48 @@ seqedit::timeout ()
         m_seq.set_raise(false);
         raise();
     }
-
     m_seqroll_wid->draw_progress_on_window();
+
+#if 0
+    /*
+     * Seq32 has this, but we are not sure why it is needed.
+     * The set_active call triggers the button callback.
+     */
+
+    if (perf().get_sequence_record())
+    {
+        perf().set_sequence_record(false);
+        m_toggle_record->set_active(! m_toggle_record->get_active());
+    }
+#endif
+
+    /*
+     * This was ours, did not seem to work.
+     *
     if (m_seq.recording_next_measure() && m_seqroll_wid->get_expanded_record())
     {
         set_measures(get_measures() + 1);
         m_seqroll_wid->follow_progress();
     }
-    if
-    (
-        perf().follow_progress() &&
-        ! (m_seqroll_wid->get_expanded_record() && m_seq.get_recording())
-    )
+     */
+
+    /*
+     * This is the way Seq32 does it now, and it seems to work for Sequencer64.
+     * However, the hardwired "4" is suspicious.
+     */
+
+    bool expandrec = m_seq.get_recording() && m_seqroll_wid->get_expanded_record();
+    bool expand = m_seq.get_last_tick() >=
+        (m_seq.get_length() - m_seq.get_unit_measure() / 4);
+
+    if (expandrec && expand)
     {
-        m_seqroll_wid->follow_progress();       /* keep up with progress    */
+        set_measures(get_measures() + 1);
+        m_seqroll_wid->follow_progress();
     }
+
+    if (perf().follow_progress() && ! expandrec)
+        m_seqroll_wid->follow_progress();       /* keep up with progress    */
 
     if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */
     {

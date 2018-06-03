@@ -1,6 +1,6 @@
 Sequencer64 Licensing
 Chris Ahlstrom
-2015-09-10 to 2018-05-27
+2015-09-10 to 2018-06-03
 
 Applications:
 
@@ -74,4 +74,4 @@ Documentation:
 
       https://www.gnu.org/licenses/fdl.txt
 
-# vim: ts=3 sw=3 wm=3 et ft=sh
+# vim: ts=3 sw=3 wm=3 et ft=sh fileformat=dos

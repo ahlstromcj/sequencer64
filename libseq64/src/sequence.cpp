@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-05-30
+ * \updates       2018-06-02
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -128,10 +128,8 @@ sequence::sequence (int ppqn)
     m_song_recording_snap       (false),
     m_song_record_tick       (0),
 #endif
-#ifdef SEQ64_STAZED_EXPAND_RECORD
     m_overwrite_recording       (false),
     m_loop_reset                (false),
-#endif
     m_unit_measure              (0),
     m_dirty_main                (true),
     m_dirty_edit                (true),
@@ -155,7 +153,7 @@ sequence::sequence (int ppqn)
     m_clocks_per_metronome      (24),
     m_32nds_per_quarter         (8),
     m_us_per_quarter_note       (tempo_us_from_bpm(SEQ64_DEFAULT_BPM)),
-    m_rec_vol                   (0),
+    m_rec_vol                   (SEQ64_PRESERVE_VELOCITY),
     m_note_on_velocity          (SEQ64_DEFAULT_NOTE_ON_VELOCITY),
     m_note_off_velocity         (SEQ64_DEFAULT_NOTE_OFF_VELOCITY),
     m_musical_key               (SEQ64_KEY_OF_C),
@@ -974,7 +972,7 @@ void
 sequence::set_rec_vol (int recvol)
 {
     automutex locker(m_mutex);
-    bool valid = recvol >= 0;                       /* not "m_rec_vol >= 0"! */
+    bool valid = recvol >= 0;
     if (valid)
         valid = recvol <= SEQ64_MAX_NOTE_ON_VELOCITY;
 
@@ -3184,14 +3182,13 @@ sequence::stream_event (event & ev)
     bool result = channels_match(ev);           /* set if channel matches   */
     if (result)
     {
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-
-        /*
-         * If in overwrite record more, any events after reset should clear
-         * the old items from the previous pass through the loop.
+        /**
+         * If in overwrite loop-record mode, any events after reset should
+         * clear the old items from the previous pass through the loop.
          *
-         * TODO:  If the last event was a Note Off, we should clear it here.
-         *        How?
+         * \todo
+         *      If the last event was a Note Off, we should clear it here, and
+         *      how?
          */
 
         if (get_overwrite_rec() && get_loop_reset())
@@ -3199,8 +3196,6 @@ sequence::stream_event (event & ev)
             set_loop_reset(false);
             remove_all();                       /* clear old items          */
         }
-
-#endif
         ev.set_status(ev.get_status());         /* clear the channel nybble */
         ev.mod_timestamp(m_length);             /* adjust the tick          */
         if (m_recording)
@@ -3225,7 +3220,9 @@ sequence::stream_event (event & ev)
 
                 if (ev.is_note_on())
                 {
-                    bool keepvelocity = m_rec_vol == SEQ64_PRESERVE_VELOCITY;
+                    bool keepvelocity =
+                        m_rec_vol == SEQ64_PRESERVE_VELOCITY || m_rec_vol == 0;
+
                     int velocity = int(ev.get_note_velocity());
                     if (velocity == 0)
                         velocity = SEQ64_DEFAULT_NOTE_ON_VELOCITY;
@@ -4778,8 +4775,6 @@ sequence::set_snap_tick (int st)
     m_snap_tick = st;
 }
 
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-
 /**
  * \setter m_overwrite_recording
  *
@@ -4805,8 +4800,6 @@ sequence::set_loop_reset (bool reset)
     automutex locker(m_mutex);
     m_loop_reset = reset;
 }
-
-#endif  // SEQ64_STAZED_EXPAND_RECORD
 
 /**
  * \setter m_thru

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-30
+ * \updates       2018-06-02
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -247,10 +247,7 @@ private:
     Gtk::Menu * m_menu_bpm;             /**< Beats/measure numerator menu.  */
     Gtk::Menu * m_menu_bw;              /**< Beat-width denominator menu.   */
     Gtk::Menu * m_menu_rec_vol;         /**< Recording level "Vol" button.  */
-
-#ifdef SEQ64_STAZED_EXPAND_RECORD
     Gtk::Menu * m_menu_rec_type;        /**< Recording type menu.           */
-#endif
 
     /**
      *  Scrollbar and adjustment objects for horizontal and vertical panning.
@@ -364,10 +361,7 @@ private:
     Gtk::Button * m_button_bw;          /**< Button for Beat-Width menu.    */
     Gtk::Entry * m_entry_bw;            /**< Text for chosen Beat-Width.    */
     Gtk::Button * m_button_rec_vol;     /**< Button for recording volume.   */
-
-#ifdef SEQ64_STAZED_EXPAND_RECORD
     Gtk::Button * m_button_rec_type;    /**< Button for recording type.     */
-#endif
 
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
     Gtk::ToggleButton * m_toggle_follow; /**< Follow progress bar button.   */
@@ -449,10 +443,7 @@ private:
 #endif
     void set_mousemode_image (bool isfruity);
     void set_rec_vol (int recvol);
-
-#ifdef SEQ64_STAZED_EXPAND_RECORD
     void set_rec_type (loop_record_t rectype);
-#endif
 
     /**
      *  This function provides optimization for the on_scroll_event() function.
@@ -551,11 +542,7 @@ private:
     void repopulate_event_menu (int buss, int channel);
     void popup_mini_event_menu ();
     void repopulate_mini_event_menu (int buss, int channel);
-
-#ifdef SEQ64_STAZED_EXPAND_RECORD
     void popup_record_menu ();
-#endif
-
     void popup_midibus_menu ();
     void popup_sequence_menu ();
     void popup_tool_menu ();

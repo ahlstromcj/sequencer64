@@ -1,16 +1,19 @@
 readme.txt for Sequencer64
 Chris Ahlstrom
-2015-09-10 to 2018-05-27
+2015-09-10 to 2018-06-03
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
-The heart of seq24 remains intact.  It is an old friend, and maintains some
-backward-compatibility with the --legacy option.  An extensive manual is
-found at https://github.com/ahlstromcj/sequencer64-doc.git.  Prebuilt Debian
-packages, Windows installers, and source tarballs are available here:
+It is a "live performance" sequencer, with the musician creating and
+controlling a number of patter loops.
 
-    https://github.com/ahlstromcj/sequencer64-packages.git.
+An extensive manual is found at:
 
-A number of different builds are supported; here are the two main ones:
+    https://github.com/ahlstromcj/sequencer64-doc.git
+    
+Prebuilt Debian packages, Windows installers, and source tarballs are
+available here:
+
+    https://github.com/ahlstromcj/sequencer64-packages.git
 
 Windows support:
 
@@ -27,6 +30,6 @@ Windows support:
 See the INSTALL file for build-from-source instructions or using a
 conventional source tarball.  This file is part of:
 
-    https://github.com/ahlstromcj/sequencer64.git.
+    https://github.com/ahlstromcj/sequencer64.git
 
-# vim: sw=4 ts=4 wm=4 et ft=sh
+# vim: sw=4 ts=4 wm=4 et ft=sh fileformat=dos

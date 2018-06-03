@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-25
+ * \updates       2018-06-02
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -39,7 +39,7 @@
 
 #include "globals.h"
 #include "gui_drawingarea_gtk2.hpp"
-#include "midibyte.hpp"                 /* midibyte typedef */
+#include "midibyte.hpp"                 /* seq64::midibyte typedef          */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -135,16 +135,6 @@ private:
      */
 
     midibyte m_cc;
-
-    /**
-     *  Holds the pixmaps for each number (0 to 127) that can be drawn for a
-     *  data value in the data pane.  This array is filled only once, in the
-     *  on_realize() function.  We could actually just make 10 pixmaps, one for
-     *  each digit, or just use one and rerender the pixmaps every time, as is
-     *  done in the new render_digits() function.
-     */
-
-    Glib::RefPtr<Gdk::Pixmap> m_numbers[c_dataarea_y];
 
     /**
      *  This rectangle is used in blanking out a data line in

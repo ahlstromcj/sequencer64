@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2018-04-12
+ * \updates       2018-06-02
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  In this refactoring, we had to adapt the existing Sequencer64
@@ -15,7 +15,7 @@
  *  mode of the Sequencer64 application and libraries.
  */
 
-#include "easy_macros.hpp"              /* C++ version of easy macros       */
+#include "easy_macros.hpp"              /* func_message() etc.              */
 #include "event.hpp"
 #include "midi_api.hpp"
 #include "midi_info.hpp"
@@ -232,6 +232,21 @@ midi_api::cancel_callback ()
         m_error_string = func_message("no callback function was set");
         error(rterror::WARNING, m_error_string);
     }
+}
+
+/**
+ *  We now provide a default version, since this usage is common and we don't
+ *  like having so many overrides.
+ *
+ * \return
+ *      Always returns 0, after a milliseconds's sleep.
+ */
+
+int
+midi_api::api_poll_for_midi ()
+{
+    millisleep(1);
+    return 0;
 }
 
 }           // namespace seq64

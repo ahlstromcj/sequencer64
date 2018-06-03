@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-08
+ * \updates       2018-05-27
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -34,10 +34,21 @@
  *  The height of the vertical lines is editable via the mouse.
  */
 
+#include <QMenu>
+#include <QPalette>
+#include <QScrollArea>
+#include <qmath.h>                      /* pow()                            */
+
 #include "Globals.hpp"
 #include "perform.hpp"
+#include "qseqdata.hpp"
 #include "qseqeditframe.hpp"
+#include "qseqkeys.hpp"
+#include "qseqroll.hpp"
+#include "qseqtime.hpp"
+#include "qstriggereditor.hpp"
 #include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
+#include "settings.hpp"                 /* usr()                            */
 
 /*
  *  Qt's uic application allows a different output file-name, but not sure
@@ -175,8 +186,11 @@ qseqeditframe::qseqeditframe
     QString seqLenText(QString::number(mSeq->get_num_measures()));
     ui->cmbSeqLen->setCurrentText(seqLenText);
 
-    /* set out our custom elements */
     mSeq->set_editing(true);
+
+    /*
+     * Set out our custom elements.
+     */
 
     m_scroll_area = new QScrollArea(this);
     ui->vbox_centre->addWidget(m_scroll_area);
@@ -185,7 +199,6 @@ qseqeditframe::qseqeditframe
     m_layout_grid = new QGridLayout(mContainer);
     mContainer->setLayout(m_layout_grid);
 
-//  m_palette = new QPalette();
     m_palette->setColor(QPalette::Background, Qt::darkGray);
     mContainer->setPalette(*m_palette);
 
@@ -193,10 +206,10 @@ qseqeditframe::qseqeditframe
 
     mKeyboard = new qseqkeys
     (
-        *mSeq,                      // eventually replace ptr with reference
+        *mSeq,                          // eventually replace ptr with reference
         mContainer,
-        c_key_height,                 // perf().getEditorKeyHeight(),
-        c_key_height * c_num_keys + 1 // perf().getEditorKeyboardHeight()
+        usr().key_height(),
+        usr().key_height() * c_num_keys + 1
     );
     mTimeBar = new qseqtime(*mSeq, mContainer);
     mNoteGrid = new qseqroll(perf(), *mSeq, mContainer);
@@ -205,7 +218,7 @@ qseqeditframe::qseqeditframe
     mEventTriggers = new qstriggereditor
     (
         *mSeq, *mEventValues, mContainer,
-        c_key_height // perf().etEditorKeyHeight()
+        usr().key_height()
     );
 
     m_layout_grid->setSpacing(0);
@@ -289,7 +302,9 @@ qseqeditframe::qseqeditframe
     mPopup->addMenu(menuTiming);
     mPopup->addMenu(menuPitch);
 
-    //hide unused GUI elements
+    // Hide unused GUI elements
+
+#if ! defined PLATFORM_DEBUG
     ui->lblBackgroundSeq->hide();
     ui->cmbBackgroundSeq->hide();
     ui->lblEventSelect->hide();
@@ -298,6 +313,7 @@ qseqeditframe::qseqeditframe
     ui->cmbKey->hide();
     ui->lblScale->hide();
     ui->cmbScale->hide();
+#endif
 
     // connect all the UI signals
 

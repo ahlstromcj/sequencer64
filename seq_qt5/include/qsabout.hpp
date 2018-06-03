@@ -50,7 +50,7 @@ class qsabout : public QDialog
 public:
 
     explicit qsabout (QWidget * parent = 0);
-    ~qsabout();
+    ~qsabout ();
 
 private:
 

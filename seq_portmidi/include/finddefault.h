@@ -22,13 +22,18 @@
 /**
  * \file        finddefault.h
  *
- *  This file is included by files that implement library internals.
+ *      Provides a function to find the default MIDI device.
  *
  * \library     sequencer64 application
  * \author      PortMIDI team; new from Chris Ahlstrom
  * \date        2018-04-08
  * \updates     2018-04-08
  * \license     GNU GPLv2 or above
+ *
+ *  This file is included by files that implement library internals.
+ *  However, Sequencer64 doesn't use it, since it has its own configuration
+ *  files, located in ~/.config/sequencer64/ or in
+ *  C:/Users/username/AppData/Local/.
  */
 
 #include "portmidi.h"                   /* PmDeviceID   */

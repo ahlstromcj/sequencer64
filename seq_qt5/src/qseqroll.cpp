@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-03
+ * \updates       2018-05-27
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -38,6 +38,7 @@
 #include "perform.hpp"
 #include "qseqroll.hpp"
 #include "sequence.hpp"
+#include "settings.hpp"                 /* usr()                            */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -95,8 +96,8 @@ qseqroll::qseqroll
     note_width              (0),
     note_y                  (0),
     note_height             (0),
-    keyY                    (c_key_height), // perf.getEditorKeyHeight()),
-    keyAreaY                (c_key_height * c_num_keys + 1) // perf.getEditorKeyboardHeight())
+    keyY                    (usr().key_height()),
+    keyAreaY                (keyY * c_num_keys + 1)
 {
     set_snap(m_seq.get_snap_tick());
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);

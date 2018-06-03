@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-04-22
+ * \updates       2018-05-27
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -507,7 +507,7 @@ private:
     int m_seqchars_y;   /* c_seqchars_y =  5    */
 
     /*
-     *                  [user-midi-settings]
+     *  [user-midi-settings]
      */
 
     /**
@@ -789,7 +789,7 @@ private:
     const int mc_baseline_ppqn;
 
     /*
-     *                  [user-options]
+     *  [user-options]
      */
 
     /**
@@ -824,7 +824,7 @@ private:
     std::string m_user_option_logfile;
 
     /*
-     *                  [user-work-arounds]
+     *  [user-work-arounds]
      */
 
     /**
@@ -843,6 +843,18 @@ private:
      */
 
     bool m_work_around_transpose_image;
+
+    /*
+     *  [user-ui-tweaks]
+     */
+
+    /**
+     *  Defines the key height in the Kepler34 sequence editor.  Defaults to
+     *  12 pixels (8 is actually a bit nicer IMHO).  Will eventually affect
+     *  the Gtkmm-2.4 user-interface as well.
+     */
+
+    int m_user_ui_key_height;
 
 public:
 
@@ -1738,6 +1750,15 @@ public:
         return m_work_around_transpose_image;
     }
 
+    /**
+     * \getter m_user_ui_key_height
+     */
+
+    int key_height () const
+    {
+        return m_user_ui_key_height;
+    }
+
 public:         // used in main application module and the userfile class
 
     /**
@@ -1862,6 +1883,17 @@ public:         // used in main application module and the userfile class
     void work_around_transpose_image (bool flag)
     {
         m_work_around_transpose_image = flag;
+    }
+
+    /**
+     * \setter m_user_ui_key_height
+     *      Do we want to add scaling to this at this time?  m_window_scale
+     */
+
+    void key_height (int h)
+    {
+        if (h >= 7 && h <= 24)
+            m_user_ui_key_height = h;
     }
 
     void midi_ppqn (int ppqn);

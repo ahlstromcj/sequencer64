@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-05-12
+ * \updates       2018-05-20
  * \license       GNU GPLv2 or above
  *
  *  Defines some midibus constants and the clock_e enumeration
@@ -75,6 +75,14 @@ const int c_midibus_sysex_chunk = 0x100;        // 256
 enum clock_e
 {
     /**
+     *  A new, currently-hidden value to indicate to ignore/disable an
+     *  output port.  If a port always fails to open, we want to just ignore
+     *  it.
+     */
+
+    e_clock_disabled = -1,
+
+    /**
      *  Corresponds to the "Off" selection in the MIDI Clock tab.  With this
      *  setting, the MIDI Clock is disabled for the buss using this setting.
      *  Notes will still be sent that buss, of course.  Some software
@@ -99,15 +107,7 @@ enum clock_e
      *  notes) that is specified.
      */
 
-    e_clock_mod,
-
-    /**
-     *  A new, currently-hidden value to indicate to ignore/disable an
-     *  output port.  If a port always fails to open, we want to just ignore
-     *  it.
-     */
-
-    e_clock_disabled = -1
+    e_clock_mod
 
 };          // enum clock_e
 

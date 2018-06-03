@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2018-05-12
+ * \updates       2018-05-25
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -431,7 +431,15 @@ perform::create_master_bus ()
     bool result = not_nullptr(m_master_bus);
     if (! result)
     {
+#ifdef USE_DEFAULT_ARGS
         m_master_bus = new(std::nothrow) mastermidibus();   /* default args */
+#else
+        /*
+         * TEST TEST TEST!!!!
+         */
+
+        m_master_bus = new(std::nothrow) mastermidibus(m_ppqn, m_bpm);
+#endif
         result = not_nullptr(m_master_bus);
         if (result)
         {

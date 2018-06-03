@@ -659,53 +659,48 @@ seqroll::update_pixmap ()
 void
 seqroll::draw_progress_on_window ()
 {
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-    static int s_last_scroll = 0;
-#endif
+    static bool s_loop_in_progress = false;     /* indicates when to reset  */
 
-    if (perf().is_running())
+    /*
+     * If this test is used, then when not running, the overwrite functionality of
+     * recording will not work: if (perf().is_running())
+     */
+
+    if (usr().progress_bar_thick())
     {
+        draw_drawable(m_progress_x-1, 0, m_progress_x-1, 0, 2, m_window_y);
+        set_line(Gdk::LINE_SOLID, 2);
+    }
+    else
+        draw_drawable(m_progress_x, 0, m_progress_x, 0, 1, m_window_y);
+
+    m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
+    if (m_progress_x > 0)
+    {
+        s_loop_in_progress = true;
+    }
+    else
+    {
+        if (s_loop_in_progress)
+        {
+            m_seq.set_loop_reset(true);         /* for overwrite recording  */
+            s_loop_in_progress = false;
+        }
+    }
+
+    /*
+     * Ensure that the occasional slightly negative value still allows the
+     * progress bar to be drawn.
+     */
+
+    if (m_progress_x != 0)      /* m_progress_x > -16, m_progress_x >= 0    */
+    {
+        draw_line
+        (
+            progress_color(), m_progress_x, 0, m_progress_x, m_window_y
+        );
         if (usr().progress_bar_thick())
-        {
-            draw_drawable(m_progress_x-1, 0, m_progress_x-1, 0, 2, m_window_y);
-            set_line(Gdk::LINE_SOLID, 2);
-        }
-        else
-            draw_drawable(m_progress_x, 0, m_progress_x, 0, 1, m_window_y);
-
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-        long last_progress = m_progress_x;
-        if (s_last_scroll < m_scroll_offset_x)
-        {
-            last_progress -= m_scroll_offset_x;
-            s_last_scroll = m_scroll_offset_x;
-        }
-#endif
-
-        m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
-
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-        if (m_progress_x < last_progress)
-        {
-            m_seq.set_loop_reset(true);     /* for overwrite recording  */
-            s_last_scroll = 0;
-        }
-#endif
-
-        /*
-         * Ensure that the occasional slightly negative value still allows the
-         * progress bar to be drawn.
-         */
-
-        if (m_progress_x > -16)             /* if (m_progress_x >= 0)   */
-        {
-            draw_line
-            (
-                progress_color(), m_progress_x, 0, m_progress_x, m_window_y
-            );
-            if (usr().progress_bar_thick())
-                set_line(Gdk::LINE_SOLID, 1);
-        }
+            set_line(Gdk::LINE_SOLID, 1);
     }
 }
 

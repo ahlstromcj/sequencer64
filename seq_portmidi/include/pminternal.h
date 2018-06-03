@@ -27,7 +27,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-06
+ * \updates     2018-05-25
  * \license     GNU GPLv2 or above
  *
  * Here is a guide to implementers:
@@ -46,6 +46,8 @@
  *
  *  Assumptions about pm_fns_type functions are given below.
  */
+
+#include <stdlib.h>
 
 #include "platform_macros.h"        // PLATFORM_WINDOWS, etc.
 
@@ -118,7 +120,7 @@ extern "C"
 typedef unsigned char midibyte_t;
 
 /**
- *  Pm_Message() encodes a short Midi message into a 32-bit word. If data1
+ *  Pm_Message() encodes a short MIDI message into a 32-bit word. If data1
  *  and/or data2 are not present, use zero.
  *
  *  Pm_MessageStatus(), Pm_MessageData1(), and
@@ -148,7 +150,18 @@ typedef int32_t PmTimestamp;
 #define pmNoDevice -1
 
 /**
- *  Holds information about the device and its platform.
+ *  Indicates the structure version of PmDeviceInfo.
+ */
+
+#define PM_STRUCTURE_VERSION  950           /* 0.95.0 */
+
+/**
+ *  Holds information about the device and its platform.  We are going to
+ *  extend this structure by adding the client and port numbers.  These
+ *  will be the ALSA client and port numbers under Linux, and just the ordinal
+ *  numbers under Windows.  We will also update structVersion.  This value was
+ *  never assigned, and was just a random value.  We will start using it with
+ *  a value of 950 (for 0.95.0 in Sequencer64).
  */
 
 typedef struct
@@ -160,6 +173,8 @@ typedef struct
     int output;             /**< True iff output is available.              */
     int opened;             /**< Generic PortMidi code, argument-checking.  */
     int mapper;             /**< True iff this device is a MIDI Mapper.     */
+    int client;             /**< Provides the (ALSA) client number.         */
+    int port;               /**< Provides the (ALSA) port number.           */
 
 } PmDeviceInfo;
 
@@ -461,20 +476,20 @@ typedef struct
 
 typedef struct
 {
-    /*
+    /**
      *  Some portmidi state also saved in here (for autmatic
      *  device closing (see PmDeviceInfo struct).
      */
 
     PmDeviceInfo pub;
 
-    /*
+    /**
      *  ID number passed to win32 multimedia API open.
      */
 
     void * descriptor;
 
-    /*
+    /**
      *  Points to PmInternal device, allows automatic device closing.
      */
 
@@ -505,23 +520,33 @@ typedef uint32_t (* time_get_proc_type) (void * time_info);
 
 typedef struct pm_internal_struct
 {
-    /* which device is open (index to descriptors) */
+    /**
+     *  which device is open (index to descriptors).
+     */
 
     int device_id;
 
-    /* MIDI_IN, or MIDI_OUT */
+    /**
+     *  MIDI_IN, or MIDI_OUT.
+     */
 
     short write_flag;
 
-    /* where to get the time */
+    /**
+     *  where to get the time.
+     */
 
     PmTimeProcPtr time_proc;
 
-    /* pass this to get_time() */
+    /**
+     *  pass this to get_time().
+     */
 
     void * time_info;
 
-    /* how big is the buffer or queue? */
+    /**
+     *  how big is the buffer or queue?.
+     */
 
     int32_t buffer_len;
 
@@ -551,43 +576,63 @@ typedef struct pm_internal_struct
 
     int sysex_in_progress;
 
-    /* buffer for 4 bytes of SysEx data */
+    /**
+     *  buffer for 4 bytes of SysEx data.
+     */
 
     PmMessage sysex_message;
 
-    /* how many bytes in sysex_message so far */
+    /**
+     *  how many bytes in sysex_message so far.
+     */
 
     int sysex_message_count;
 
-    /* flags that filter incoming message classes */
+    /**
+     *  flags that filter incoming message classes.
+     */
 
     int32_t filters;
 
-    /* filter incoming messages based on channel */
+    /**
+     *  filter incoming messages based on channel.
+     */
 
     int32_t channel_mask;
 
-    /* timestamp of last message */
+    /**
+     *  timestamp of last message.
+     */
 
     PmTimestamp last_msg_time;
 
-    /* time of last synchronization */
+    /**
+     *  time of last synchronization.
+     */
 
     PmTimestamp sync_time;
 
-    /* set by PmWrite to current time */
+    /**
+     *  set by PmWrite to current time.
+     */
 
     PmTimestamp now;
 
-    /* initially true, used to run first synchronization */
+    /**
+     *  initially true, used to run first synchronization.
+     */
 
     int first_message;
 
-    /* implementation functions */
+    /**
+     *  implementation functions.
+     */
 
     pm_fns_type dictionary;
 
-    /* system-dependent state */
+    /**
+     *  system-dependent state.
+     */
 
     void * descriptor;
 
@@ -598,15 +643,21 @@ typedef struct pm_internal_struct
      *  not count time in the driver, so I don't know if it is important.
      */
 
-    /* addr of ptr to SysEx data */
+    /**
+     *  addr of ptr to SysEx data.
+     */
 
     midibyte_t * fill_base;
 
-    /* offset of next SysEx byte */
+    /**
+     *  offset of next SysEx byte.
+     */
 
     uint32_t * fill_offset_ptr;
 
-    /* how many SysEx bytes to write */
+    /**
+     *  how many SysEx bytes to write.
+     */
 
     uint32_t fill_length;                   /* changed from int32_t */
 
@@ -633,7 +684,8 @@ extern PmError pm_success_fn (PmInternal * midi);
 extern PmError pm_add_device
 (
     char * interf, char * name, int input,
-    void * descriptor, pm_fns_type dictionary
+    void * descriptor, pm_fns_type dictionary,
+    int client, int port                        /* new values, TODO     */
 );
 extern uint32_t pm_read_bytes
 (

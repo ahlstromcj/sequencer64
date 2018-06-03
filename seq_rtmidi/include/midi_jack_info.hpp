@@ -9,7 +9,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2018-01-26
+ * \updates       2018-06-02
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the JACK information of
@@ -92,7 +92,7 @@ public:
 
     virtual bool api_get_midi_event (event * inev);
     virtual bool api_connect ();
-    virtual int api_poll_for_midi ();
+    virtual int api_poll_for_midi ();       /* disposable??? */
     virtual void api_set_ppqn (int p);
     virtual void api_set_beats_per_minute (midibpm b);
     virtual void api_port_start (mastermidibus & masterbus, int bus, int port);

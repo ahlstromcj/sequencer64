@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-13
+ * \updates     2018-05-27
  * \license     GNU GPLv2 or above
  *
  *  Check out this site:
@@ -260,7 +260,8 @@ pm_winmm_general_inputs (void)
                 (void) pm_add_device
                 (
                     "MMSystem", (char *) midi_in_caps[i].szPname, TRUE,
-                    (void *) i, &pm_winmm_in_dictionary
+                    (void *) i, &pm_winmm_in_dictionary,
+                    i, 0                            /* client/port, TODO    */
                 );
             }
             else
@@ -304,7 +305,8 @@ pm_winmm_mapper_input (void)
         pm_add_device
         (
             "MMSystem", (char *) devname, TRUE,
-            (void *) MIDIMAPPER, &pm_winmm_in_dictionary
+            (void *) MIDIMAPPER, &pm_winmm_in_dictionary,
+            0, 0                                    /* client/port, TODO    */
         );
     }
     else
@@ -347,7 +349,8 @@ pm_winmm_general_outputs (void)
             pm_add_device
             (
                 "MMSystem", (char *) midi_out_caps[i].szPname, FALSE,
-                (void *) i, &pm_winmm_out_dictionary
+                (void *) i, &pm_winmm_out_dictionary,
+                i, 0                                /* client/port, TODO    */
             );
         }
         else
@@ -385,7 +388,8 @@ pm_winmm_mapper_output (void)
         pm_add_device
         (
             "MMSystem", (char *) midi_out_mapper_caps.szPname, FALSE,
-            (void *) MIDIMAPPER, &pm_winmm_out_dictionary
+            (void *) MIDIMAPPER, &pm_winmm_out_dictionary,
+            0, 0                                    /* client/port, TODO    */
         );
     }
     else
@@ -1337,7 +1341,7 @@ winmm_out_open (PmInternal * midi, void * UNUSED(driverinfo))
 
         output_buffer_len = STREAM_BUFFER_LEN;
         propdata.cbStruct = sizeof(MIDIPROPTEMPO);
-        propdata.dwTempo = 480000;              /* microseconds per quarter */
+        propdata.dwTempo = Pt_Get_Tempo_Microseconds(); /* us per quarter   */
         pm_hosterror = midiStreamProperty
         (
             m->handle.stream, (LPBYTE) & propdata, MIDIPROP_SET | MIDIPROP_TEMPO
@@ -1347,7 +1351,7 @@ winmm_out_open (PmInternal * midi, void * UNUSED(driverinfo))
             goto close_device;
 
         divdata.cbStruct = sizeof(MIDIPROPTEMPO);
-        divdata.dwTimeDiv = 480;                /* divisions per quarter */
+        divdata.dwTimeDiv = Pt_Get_Ppqn();              /* divs per 1/4     */
         pm_hosterror = midiStreamProperty
         (
             m->handle.stream, (LPBYTE) & divdata, MIDIPROP_SET | MIDIPROP_TIMEDIV

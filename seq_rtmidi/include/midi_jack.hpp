@@ -177,16 +177,15 @@ protected:
         return false;
     }
 
-    /**
-     * \return
-     *      Returns 0, since this is an input function that is implemented
-     *      fully only by midi_in_jack.
+    /*
+     *  This is an input function that is implemented fully only by
+     *  midi_in_jack.  Use the default null poll in midi_api instead.
+     *
+     *  virtual int api_poll_for_midi ()
+     *  {
+     *      return 0;
+     *  }
      */
-
-    virtual int api_poll_for_midi ()
-    {
-        return 0;
-    }
 
     virtual void api_play (event * e24, midibyte channel);
     virtual void api_sysex (event * e24);

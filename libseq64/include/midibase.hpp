@@ -621,7 +621,7 @@ protected:
     virtual void api_stop () = 0;
     virtual void api_clock (midipulse tick) = 0;
 
-};          // class midibase (ALSA version)
+};          // class midibase
 
 /*
  *  Free functions

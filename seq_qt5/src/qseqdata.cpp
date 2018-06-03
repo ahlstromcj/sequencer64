@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-02
+ * \updates       2018-05-27
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -113,6 +113,14 @@ qseqdata::sizeHint () const
 
 /**
  *
+ * \note
+ *      We had a weird issue with the following function, where d1 would be
+ *      assigned a value inside the function, but d1 was 0 afterward.  So we
+ *      decided to bite the bullet and ditch this call:
+ *
+ *      m_seq.get_next_event_kepler(m_status, m_cc, tick, d0, d1, selected)
+ *
+ *      Instead, we create an iterator and use sequence::get_next_event_ex().
  */
 
 void
@@ -121,49 +129,41 @@ qseqdata::paintEvent (QPaintEvent *)
     QPainter painter(this);
     QPen pen(Qt::black);
     QBrush brush(Qt::lightGray, Qt::SolidPattern);
-
     mFont.setPointSize(6);
     painter.setPen(pen);
     painter.setBrush(brush);
     painter.setFont(mFont);
 
-    midipulse tick;                  // this is perhaps the background?
-    midibyte d0, d1;
-    int event_x;
-    int event_height;
-    bool selected;
-    int start_tick = 0 ;
-    int end_tick = (width() * m_zoom);
+    event_list::const_iterator cev;
+    int start_tick = 0;
+    int end_tick = width() * m_zoom;
     painter.drawRect(0, 0, width() - 1, height() - 1);
-    m_seq.reset_draw_marker();
-    while
-    (
-        m_seq.get_next_event_kepler         // TEMPORARY
-        (
-            m_status, m_cc, tick, d0, d1, selected
-        ) == true
-    )
+    m_seq.reset_ex_iterator(cev);                   /* reset_draw_marker()  */
+    while (m_seq.get_next_event_ex(m_status, m_cc, cev))
     {
+        midipulse tick = cev->get_timestamp();
         if (tick >= start_tick && tick <= end_tick)
         {
-            /* turn into screen coorids */
+            /*
+             *  Convert to screen coordinates.
+             */
 
-            event_x = tick / m_zoom + c_keyboard_padding_x;
-            event_height = d1;          /* generate the value */
-            if (m_status == EVENT_PROGRAM_CHANGE ||
-                    m_status == EVENT_CHANNEL_PRESSURE)
-            {
+            midibyte d0, d1;
+            int event_x = tick / m_zoom + c_keyboard_padding_x;
+            cev->get_data(d0, d1);
+
+            int event_height = d1;              /* generate the value       */
+            if (event::is_one_byte_msg(m_status))
                 event_height = d0;
-            }
 
-            pen.setWidth(2);                  /* draw vert lines */
+            pen.setWidth(2);                    /* draw vertical grid lines */
             painter.setPen(pen);
             painter.drawLine
             (
                 event_x + 1, height() - event_height, event_x + 1, height()
             );
 
-            QString val = QString::number(d1); // draw numbers
+            QString val = QString::number(d1);  /* draw numbers             */
             pen.setColor(Qt::black);
             pen.setWidth(1);
             painter.setPen(pen);
@@ -176,6 +176,7 @@ qseqdata::paintEvent (QPaintEvent *)
             if (val.length() >= 3)
                 painter.drawText(event_x + 3, qc_dataarea_y - 25 + 16, val.at(2));
         }
+        ++cev;
     }
 
     if (mLineAdjust)                            // draw edit line

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-04-13
+ * \updates       2018-06-02
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -50,13 +50,6 @@
 #include "mutex.hpp"                    /* seq64::mutex, automutex      */
 #include "scales.h"                     /* key and scale constants      */
 #include "triggers.hpp"                 /* seq64::triggers, etc.        */
-
-/**
- *  Enables the Stazed/Seq32 code for adding overwrite and expand looping
- *  modes to the legacy merge looping recording mode.
- */
-
-#define SEQ64_STAZED_EXPAND_RECORD
 
 /**
  * \obsolete
@@ -109,16 +102,9 @@ enum draw_type_t
 
 enum edit_mode_t
 {
-    EDIT_MODE_NOTE,         /**< Edit as Note input, the normal edit mode.  */
+    EDIT_MODE_NOTE = 0,     /**< Edit as Note input, the normal edit mode.  */
     EDIT_MODE_DRUM          /**< Edit as Drum input, using short notes.     */
 };
-
-/**
- *
- *  TODO:  Add a value for an invalid color code.
- */
-
-#ifdef SEQ64_STAZED_EXPAND_RECORD
 
 /**
  *  Provides the supported looping recording modes.  These values are used by
@@ -132,8 +118,6 @@ enum loop_record_t
     LOOP_RECORD_OVERWRITE,  /**< Incoming events overwrite the loop.        */
     LOOP_RECORD_EXPAND      /**< Incoming events increase size of loop.     */
 };
-
-#endif  // SEQ64_STAZED_EXPAND_RECORD
 
 /**
  *  The sequence class is firstly a receptable for a single track of MIDI
@@ -423,8 +407,6 @@ private:
 
 #endif  // SEQ64_SONG_RECORDING
 
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-
     /**
      *  Indicates if overwrite recording more is in force.
      */
@@ -437,8 +419,6 @@ private:
      */
 
     bool m_loop_reset;
-
-#endif  // SEQ64_STAZED_EXPAND_RECORD
 
     /**
      *  Hold the current unit for a measure.  Need to clarifiy this one.
@@ -1683,12 +1663,6 @@ public:
         event_list::const_iterator & ev,
         int evtype = EVENTS_ALL
     );
-    bool get_next_event_kepler          // TEMPORARY
-    (
-        midibyte & status, midibyte & cc,
-        midipulse & tick, midibyte & d0, midibyte & d1, bool & selected
-    );
-
     bool get_next_trigger
     (
         midipulse & tick_on, midipulse & tick_off,
@@ -1812,8 +1786,6 @@ public:
         return m_channel_match;
     }
 
-#ifdef SEQ64_STAZED_EXPAND_RECORD
-
     void set_overwrite_rec (bool ovwr);
 
     /**
@@ -1836,8 +1808,6 @@ public:
         return m_loop_reset;
     }
 
-#endif  // SEQ64_STAZED_EXPAND_RECORD
-
     midipulse handle_size (midipulse start, midipulse finish);
 
 private:
@@ -1849,9 +1819,7 @@ private:
 
     void set_parent (perform * p);
     void put_event_on_bus (event & ev);
-#ifdef SEQ64_STAZED_EXPAND_RECORD
     void reset_loop ();
-#endif
     void set_trigger_offset (midipulse trigger_offset);
     void adjust_trigger_offsets_to_length (midipulse newlen);
     midipulse adjust_offset (midipulse offset);

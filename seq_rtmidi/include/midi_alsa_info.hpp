@@ -93,9 +93,7 @@ public:
     }
 
     virtual bool api_get_midi_event (event * inev);
-
     virtual int api_poll_for_midi ();
-
     virtual void api_set_ppqn (int p);
     virtual void api_set_beats_per_minute (midibpm b);
     virtual void api_port_start (mastermidibus & masterbus, int bus, int port);

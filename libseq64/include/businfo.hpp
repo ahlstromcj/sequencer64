@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2017-04-14
+ * \updates       2017-05-31
  * \license       GNU GPLv2 or above
  *
  *  The businfo module defines the businfo and busarray classes so that we can
@@ -341,7 +341,7 @@ public:
     void set_all_inputs ();
     bool get_input (bussbyte bus);
     bool is_system_port (bussbyte bus);
-    bool poll_for_midi ();
+    int poll_for_midi ();
     bool get_midi_event (event * inev);
     int replacement_port (int bus, int port);
 

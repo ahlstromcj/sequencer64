@@ -111,6 +111,11 @@ private slots:
     void updateNoteResume();
     void updateKeyHeight();
 
+    void on_spinBoxClockStartModulo_valueChanged(int arg1);
+    void on_plainTextEditTempoTrack_textChanged();
+    void on_pushButtonTempoTrack_clicked();
+    void on_checkBoxRecordByChannel_clicked(bool checked);
+    void on_chkJackConditional_stateChanged(int arg1);
 };          // class qseditoptions
 
 }           // namespace seq64

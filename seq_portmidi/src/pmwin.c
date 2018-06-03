@@ -34,6 +34,9 @@
  *      -   Pm_GetDefaultInputDeviceID().
  *      -   Pm_GetDefaultOutputDeviceID().
  *
+ *  The latter two exist only if SEQ64_PORTMIDI_DEFAULT_DEVICE_ID is defined;
+ *  we have our own way of setting device configuration.
+ *
  *  This file must be separate from the main portmidi.c file because it is
  *  system dependent, and it is separate from, say, pmwinmm.c, because it might
  *  need to register devices for WinMM, DirectX, and others.

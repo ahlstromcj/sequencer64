@@ -6,8 +6,12 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-08-20
- * \updates       2017-08-21
+ * \updates       2018-06-02
  * \license       See the rtexmidi.lic file.  Too big.
+ *
+ * \deprecated
+ *      We have decided to use the PortMidi re-implementation for Sequencer64
+ *      for Windows.
  *
  *  This class is meant to collect a whole bunch of Windows MM information
  *  about client number, port numbers, and port names, and hold them
@@ -21,6 +25,8 @@
  *      -   The function midiInGetNumDevs() returns a UINT value specifying
  *          the number of MIDI input devices found on the system.
  */
+
+#error Internal RtMidi for Windows obsolete, use internal PortMidi instead.
 
 #include "calculations.hpp"             /* extract_port_names()             */
 #include "event.hpp"                    /* seq64::event and other tokens    */
@@ -513,14 +519,14 @@ midi_win_info::api_port_start (mastermidibus & masterbus, int bus, int port)
 }
 
 /**
- *  MUCH TO DO!
+ *
  */
 
 int
 midi_win_info::api_poll_for_midi ()
 {
     millisleep(1);
-    return 0;       // TODO TODO TODO
+    return 0;
 }
 
 /**

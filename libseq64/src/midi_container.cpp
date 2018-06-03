@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2018-03-01
+ * \updates       2018-05-31
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -480,20 +480,12 @@ midi_container::fill_proprietary ()
          */
 
         bool transpose = m_sequence.get_transposable();
-#ifdef USE_TRANSPOSE_CHECK_HERE
-        if (! transpose)                                /* save only false  */
-        {
-#endif
-            add_variable(0);                            /* no delta time    */
-            put(0xFF);
-            put(0x7F);
-            put(0x05);                                  /* long + midibyte  */
-            add_long(c_transpose);
-            put(transpose);                             /* a boolean byte   */
-#ifdef USE_TRANSPOSE_CHECK_HERE
-        }
-#endif
-
+        add_variable(0);                            /* no delta time    */
+        put(0xFF);
+        put(0x7F);
+        put(0x05);                                  /* long + midibyte  */
+        add_long(c_transpose);
+        put(transpose);                             /* a boolean byte   */
         if (m_sequence.color() != SEQ64_COLOR_NONE)
         {
             add_variable(0);                            /* key selection dt */

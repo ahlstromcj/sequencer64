@@ -20,7 +20,7 @@
  */
 
 /*
- * DEPRECATED.  Migrate to globals.h.
+ * DEPRECATED.  Migrate to globals.h or to the modules that use it.
  */
 
 #include <QString>
@@ -85,9 +85,6 @@ const int qc_keyoffset_x = qc_keyarea_x - qc_key_x;
 const int c_keyboard_padding_x = 10; //padding to the left of the note roll
 // to allow 1st tick drum hits
 /* events bar */
-const int qc_eventarea_y = 16;
-const int qc_eventevent_y = 10;
-const int qc_eventevent_x = 5;
 
 /* time scale window on top */
 const int qc_timearea_y = 18;

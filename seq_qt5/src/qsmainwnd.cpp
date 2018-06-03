@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-05-13
+ * \updates       2018-05-30
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -39,6 +39,7 @@
 #include "qsmacros.hpp"                 /* QS_TEXT_CHAR() macro             */
 #include "qperfeditframe.hpp"
 #include "qsabout.hpp"
+#include "qsbuildinfo.hpp"
 #include "qseditoptions.hpp"
 #include "qseqeditframe.hpp"
 #include "qskeymaps.hpp"                /* mapping between Gtkmm and Qt     */
@@ -94,7 +95,8 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_main_perf         (p),
     m_beat_ind          (nullptr),
     m_dialog_prefs      (nullptr),
-    mDialogAbout        (nullptr)
+    mDialogAbout        (nullptr),
+    mDialogBuildInfo    (nullptr)
 {
 #if __cplusplus < 201103L                               // C++11
     initialize_key_map();
@@ -146,6 +148,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_edit_frame = nullptr;                 // set so we know edit tab is empty
     m_beat_ind = new qsmaintime(m_main_perf, this, 4, 4);
     mDialogAbout = new qsabout(this);
+    mDialogBuildInfo = new qsbuildinfo(this);
 
     if (not_nullptr(m_song_frame))
     {
@@ -203,6 +206,11 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     );
     connect(ui->actionQuit, SIGNAL(triggered(bool)), this, SLOT(quit()));
     connect(ui->actionAbout, SIGNAL(triggered(bool)), this, SLOT(showqsabout()));
+    connect
+    (
+        ui->actionBuildInfo, SIGNAL(triggered(bool)),
+        this, SLOT(showqsbuildinfo())
+    );
     if (not_nullptr(m_dialog_prefs))
     {
         connect
@@ -642,10 +650,21 @@ qsmainwnd::showImportDialog()
  */
 
 void
-qsmainwnd::showqsabout()
+qsmainwnd::showqsabout ()
 {
     if (not_nullptr(mDialogAbout))
         mDialogAbout->show();
+}
+
+/**
+ *
+ */
+
+void
+qsmainwnd::showqsbuildinfo ()
+{
+    if (not_nullptr(mDialogBuildInfo))
+        mDialogBuildInfo->show();
 }
 
 /**

@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-04-29
+ * \updates     2018-05-24
  * \license     GNU GPLv2 or above
  *
  * Written by:
@@ -42,7 +42,6 @@
 #include "easy_macros.h"                /* not_nullptr() macro, etc.        */
 #include "portmidi.h"
 #include "pmutil.h"
-#include "pminternal.h"
 #include "pmlinuxalsa.h"
 #include "porttime.h"
 #include "pmlinux.h"
@@ -83,20 +82,26 @@ extern pm_fns_node pm_linuxalsa_in_dictionary;
 extern pm_fns_node pm_linuxalsa_out_dictionary;
 
 /**
- * all input comes here, output queue allocated on seq
+ * All input comes here, output queue allocated on seq.
  */
 
 static snd_seq_t * s_seq = nullptr;
 
 /**
- *
+ *  Provides an item to hold the ALSA queue.
  */
 
 static int s_queue;                 /* one for all ports, reference counted */
+
+/**
+ *  A boolean that prevents the ALSA queue from getting reset if it has
+ *  already been set.
+ */
+
 static int s_queue_used;            /* one for all ports, reference counted */
 
 /**
- *
+ *  Holds information about an ALSA port.
  */
 
 typedef struct alsa_descriptor_struct
@@ -111,7 +116,7 @@ typedef struct alsa_descriptor_struct
 } alsa_descriptor_node, * alsa_descriptor_type;
 
 /**
- *  get_alsa_error_text -- copy error text to potentially short string.
+ *  Copies error text to a potentially short string.
  */
 
 static void
@@ -146,7 +151,7 @@ get_alsa_error_text (char * msg, int len, int err)
 static PmError
 alsa_use_queue (void)
 {
-    if (s_queue_used == 0)
+    if (s_queue_used == 0 && not_nullptr(s_seq))
     {
         snd_seq_queue_tempo_t * tempo;
         s_queue = snd_seq_alloc_queue(s_seq);
@@ -156,8 +161,8 @@ alsa_use_queue (void)
             return pmHostError;
         }
         snd_seq_queue_tempo_alloca(&tempo);
-        snd_seq_queue_tempo_set_tempo(tempo, 480000);   // HARDWIRED
-        snd_seq_queue_tempo_set_ppq(tempo, 480);    // HARDWIRED
+        snd_seq_queue_tempo_set_tempo(tempo, Pt_Get_Tempo_Microseconds());
+        snd_seq_queue_tempo_set_ppq(tempo, Pt_Get_Ppqn());
         pm_hosterror = snd_seq_set_queue_tempo(s_seq, s_queue, tempo);
         if (pm_hosterror < 0)
             return pmHostError;
@@ -168,6 +173,43 @@ alsa_use_queue (void)
     ++s_queue_used;
     return pmNoError;
 }
+
+#if 0
+/*
+ * EXPERIMENTAL.
+ *
+ *  The s_queue must already exist.
+ */
+
+static void
+alsa_set_beats_per_minute (int tempo_us)
+{
+    if (s_queue >= 0 && not_nullptr(s_seq))
+    {
+        snd_seq_queue_tempo_t * tempo;
+        snd_seq_queue_tempo_alloca(&tempo);
+        snd_seq_queue_tempo_set_tempo(tempo, tempo_us);
+        (void) snd_seq_set_queue_tempo(s_seq, s_queue, tempo);
+
+        /*
+         * Do we have a snd_seq_restart_queue() to call?
+         */
+    }
+}
+
+static void
+alsa_set_ppqn (int ppqn)
+{
+    snd_seq_queue_tempo_t * tempo;
+    snd_seq_queue_tempo_alloca(&tempo);
+    snd_seq_queue_tempo_set_ppq(tempo, ppqn);
+
+    /*
+     * Do we have a snd_seq_restart_queue() to call?
+     */
+}
+
+#endif
 
 /**
  *
@@ -691,8 +733,8 @@ handle_event (snd_seq_event_t * ev)
 {
     int device_id = ev->dest.port;
     PmInternal * midi = pm_descriptors[device_id].internalDescriptor;
-    PmEvent pm_ev;
     PmTimeProcPtr time_proc = midi->time_proc;
+    PmEvent pm_ev;
     PmTimestamp timestamp;
 
     /*
@@ -855,11 +897,43 @@ handle_event (snd_seq_event_t * ev)
     }
 }
 
+#ifdef USE_PORTMIDI_SIMPLE_ALSA_POLL
+
+/**
+ *  This version just check for data.  DOES NOT WORK.
+ *
+ * \return
+ *      Returns pmGotData if any data is pending.  Otherwise, pmNoData is
+ *      returned.
+ */
+
+static PmError
+alsa_poll (PmInternal * UNUSED(midi))
+{
+    int bytes = snd_seq_event_input_pending(s_seq, FALSE);
+#if defined PLATFORM_DEBUG_TMI
+    if (bytes > 0)
+    {
+        infoprint("alsa_poll(): incoming MIDI events detected");
+    }
+#endif
+    return bytes > 0 ?  pmGotData : pmNoData ;
+}
+
+#else   // USE_PORTMIDI_SIMPLE_ALSA_POLL
+
 /**
  *  Poll!  Checks for and ignore errors, e.g. input overflow.
  *
  *  There is an expensive check (while loop) for input data, and it gets data
  *  from device.
+ *
+ *  snd_seq_event_input_pending(s_seq, TRUE) checks the presence of events on
+ *  the sequencer FIFO; these events are transferred to the input buffer, and
+ *  the number of received events is returned.
+ *
+ *  snd_seq_event_input_pending(s_seq, FALSE) returns 0 if no events remain
+ *  in the input buffer.  We think this is all we need for the poll function!
  *
  * \note
  *      If there's overflow, this should be reported all the way through to
@@ -880,10 +954,13 @@ alsa_poll (PmInternal * UNUSED(midi))
 
         while (snd_seq_event_input_pending(s_seq, FALSE) > 0)
         {
+#if defined PLATFORM_DEBUG_TMI
+            infoprint("alsa_poll(): incoming MIDI events detected");
+#endif
             int rslt = snd_seq_event_input(s_seq, &ev);
             if (rslt >= 0)
             {
-                handle_event(ev);
+                handle_event(ev);                           /* much work!   */
             }
             else if (rslt == -ENOSPC)
             {
@@ -906,6 +983,8 @@ alsa_poll (PmInternal * UNUSED(midi))
     }
     return pmNoError;
 }
+
+#endif   // USE_PORTMIDI_SIMPLE_ALSA_POLL
 
 /**
  *
@@ -1014,11 +1093,15 @@ pm_linuxalsa_init (void)
     snd_seq_client_info_set_client(cinfo, -1);
     while (snd_seq_query_next_client(s_seq, cinfo) == 0)
     {
-        snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
-        snd_seq_port_info_set_port(pinfo, -1);
+        int client = snd_seq_client_info_get_client(cinfo);
+        int port = -1;
+        const char * portname = "unknown";
+        snd_seq_port_info_set_client(pinfo, client);
+        snd_seq_port_info_set_port(pinfo, port);
         while (snd_seq_query_next_port(s_seq, pinfo) == 0)
         {
-            if (snd_seq_port_info_get_client(pinfo) == SND_SEQ_CLIENT_SYSTEM)
+            client = snd_seq_client_info_get_client(cinfo);
+            if (client == SND_SEQ_CLIENT_SYSTEM)
                 continue; /* ignore Timer and Announce ports on client 0 */
 
             caps = snd_seq_port_info_get_capability(pinfo);
@@ -1038,16 +1121,16 @@ pm_linuxalsa_init (void)
                 if (pm_default_output_device_id == -1)
                     pm_default_output_device_id = pm_descriptor_index;
 
+                portname = snd_seq_port_info_get_name(pinfo);
+                client = snd_seq_port_info_get_client(pinfo);
+                port = snd_seq_port_info_get_port(pinfo);
                 pm_add_device
                 (
-                    "ALSA", pm_strdup(snd_seq_port_info_get_name(pinfo)),
-                    FALSE,
-                    MAKE_DESCRIPTOR
-                    (
-                        snd_seq_port_info_get_client(pinfo),
-                        snd_seq_port_info_get_port(pinfo)
-                    ),
-                    &pm_linuxalsa_out_dictionary);
+                    "ALSA", pm_strdup(portname), FALSE,
+                    MAKE_DESCRIPTOR(client, port),
+                    &pm_linuxalsa_out_dictionary,
+                    client, port                    /* new parameters   */
+                );
             }
             if (caps & SND_SEQ_PORT_CAP_SUBS_READ)
             {
@@ -1056,15 +1139,10 @@ pm_linuxalsa_init (void)
 
                 pm_add_device
                 (
-                    "ALSA",
-                    pm_strdup(snd_seq_port_info_get_name(pinfo)),
-                    TRUE,
-                    MAKE_DESCRIPTOR
-                    (
-                        snd_seq_port_info_get_client(pinfo),
-                        snd_seq_port_info_get_port(pinfo)
-                    ),
-                    &pm_linuxalsa_in_dictionary
+                    "ALSA", pm_strdup(portname), TRUE,
+                    MAKE_DESCRIPTOR(client, port),
+                    &pm_linuxalsa_in_dictionary,
+                    client, port                    /* new parameters   */
                 );
             }
         }

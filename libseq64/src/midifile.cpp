@@ -1569,7 +1569,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                 p.set_tempo_track_number(tempotrack);
         }
 
-#ifdef USE_SEQUENCE_COLOR       // DO NOT ENABLE, see SEQ64_SHOW_COLOR_PALETTE
+#ifdef USE_KEPLER34_SEQUENCE_COLOR       // DO NOT ENABLE, see SEQ64_SHOW_COLOR_PALETTE
 
         /**
          * Kepler34 (see Oli Kester's project on GitHub) supports coloring
@@ -1593,7 +1593,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             }
         }
 
-#endif  // USE_SEQUENCE_COLOR
+#endif  // USE_KEPLER34_SEQUENCE_COLOR
 
 #ifdef USE_SEQUENCE_EDIT_MODE_XXX
 

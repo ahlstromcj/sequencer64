@@ -1,6 +1,6 @@
-README.windows for Sequencer64 0.95.0
+README.windows for Sequencer64 0.95.1
 Chris Ahlstrom
-2018-05-13 to 2018-05-28
+2018-05-13 to 2018-06-03
 
 This README file provides the things you need to know to run the new native
 Windows implmentation of sequencer64, an executable called qpseq64.exe.  It

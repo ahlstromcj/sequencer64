@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-04-08
- * \updates       2018-05-31
+ * \updates       2018-06-03
  * \license       GNU GPLv2 or above
  *
  *  Qt Portmidi Linux version.
@@ -39,11 +39,11 @@
  */
 
 #ifndef SEQ64_VERSION_DATE_SHORT
-#define SEQ64_VERSION_DATE_SHORT "2018-05-31"
+#define SEQ64_VERSION_DATE_SHORT "2018-06-03"
 #endif
 
 #ifndef SEQ64_VERSION
-#define SEQ64_VERSION "0.95.0"
+#define SEQ64_VERSION "0.95.1"
 #endif
 
 #ifndef SEQ64_GIT_VERSION

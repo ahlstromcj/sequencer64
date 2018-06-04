@@ -1,10 +1,10 @@
-INSTALL for Sequencer64 v. 0.95.0 and above
+INSTALL for Sequencer64 v. 0.95.1 and above
 Chris Ahlstrom
-2015-09-10 to 2018-06-02
+2015-09-10 to 2018-06-03
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
-0.90.4, four different versions of the program can be built:
+0.90.4, five different versions of the program can be built:
 
     -   seq64. Native JACK; the default build after a simple bootstrap.
         command; JACK MIDI with optional JACK transport; fall-back to ALSA;
@@ -21,9 +21,10 @@ bootstrapping setup is primarily aimed at developers.  Starting with version
         user interface based on Kepler34.  Useable, but still lacks many of
         the user-interface elements of the Gtkmm 2.4 application.  Built via
         qmake and suitable for loading in QtCreator installed with its mingw32
-        tools.  If you want to build it yourself, be sure to specify the Mingw
-        library, tools, and mkspec in Qt Creator.  This version supports both
-        Linux and (wait for it...) Windows.
+        tools.
+    -   This version supports both Linux and (wait for it...) Windows.
+        If you want to build it yourself in Windows, be sure to specify the
+        Mingw library, tools, and mkspec in Qt Creator.
 
     We provide a portable Windows Zip package and a Windows installer in
     the "sequencer64-packages" project in GitHub.
@@ -194,7 +195,6 @@ Qmake-based Install:
         $ cd debug-build
         $ qmake -makefile -recursive "CONFIG += debug" ../sequencer64/qplseq64.pro
         $ make
-        $ sudo make install (does not work yet!)
         $ gdb ./Seq64qt/qplseq64 (for debugging)
 
     One can also use "CONFIG += release", or just leave that off entirely.

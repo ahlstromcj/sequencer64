@@ -8,7 +8,7 @@
 :: \library     Sequencer64 for Windows
 :: \author      Chris Ahlstrom
 :: \date        2018-05-26
-:: \update      2018-05-27
+:: \update      2018-06-03
 :: \license     $XPC_SUITE_GPL_LICENSE$
 ::
 ::      This script sets up and creates a release build of Sequencer64 for
@@ -34,7 +34,7 @@
 ::
 ::---------------------------------------------------------------------------
  
-set PROJECT_VERSION=0.95.0
+set PROJECT_VERSION=0.95.1
 set PROJECT_DRIVE=C:
 set PROJECT_BASE=\Users\Chris\Documents\Home
 set PROJECT_ROOT=..\sequencer64

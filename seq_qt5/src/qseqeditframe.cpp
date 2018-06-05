@@ -304,7 +304,6 @@ qseqeditframe::qseqeditframe
 
     // Hide unused GUI elements
 
-#if ! defined PLATFORM_DEBUG
     ui->lblBackgroundSeq->hide();
     ui->cmbBackgroundSeq->hide();
     ui->lblEventSelect->hide();
@@ -313,7 +312,6 @@ qseqeditframe::qseqeditframe
     ui->cmbKey->hide();
     ui->lblScale->hide();
     ui->cmbScale->hide();
-#endif
 
     // connect all the UI signals
 

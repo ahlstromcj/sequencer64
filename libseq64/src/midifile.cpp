@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-05-01
+ * \updates       2018-06-04
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -78,67 +78,6 @@
 #else
 #include "midi_list.hpp"                /* seq64::midi_list container       */
 #endif
-
-/**
- *  A manifest constant for controlling the length of a line-reading
- *  array in a configuration file.
- */
-
-#define SEQ64_MIDI_LINE_MAX         1024
-
-/**
- *  The maximum length of a Seq24 track name.  This is a bit excessive.
- */
-
-#define SEQ64_TRACKNAME_MAX          256
-
-/**
- *  The maximum allowed variable length value for a MIDI file, which allows
- *  the length to fit in a 32-bit integer.
- */
-
-#define SEQ64_VARLENGTH_MAX         0x0FFFFFFF
-
-/**
- *  Highlights the MIDI file header value, "MThd".
- */
-
-#define SEQ64_MTHD_TAG              0x4D546864      /* magic number 'MThd'  */
-
-/**
- *  Highlights the MIDI file track-marker (chunk) value, "MTrk".
- */
-
-#define SEQ64_MTRK_TAG              0x4D54726B      /* magic number 'MTrk'  */
-
-/**
- *  The chunk header value for the Sequencer64 proprietary/SeqSpec section.
- *  We might try other chunks, as well, since, as per the MIDI
- *  specification, unknown chunks should not cause an error in a sequencer
- *  (or our midicvt program).  For now, we stick with "MTrk".
- */
-
-#define PROP_CHUNK_TAG              SEQ64_MTRK_TAG
-
-/**
- *  Provides the sequence number for the proprietary/SeqSpec data when using
- *  the new format.  (There is no sequence number for the legacy format.)
- *  Can't use numbers, such as 0xFFFF, that have MIDI meta tags in them,
- *  confuses our "proprietary" track parser.
- */
-
-#define PROP_SEQ_NUMBER             0x3FFF
-#define PROP_SEQ_NUMBER_OLD         0x7777
-
-/**
- *  Provides the track name for the "proprietary" data when using the new
- *  format.  (There is no track-name for the "proprietary" footer track when
- *  the legacy format is in force.)  This is more useful for examining a hex
- *  dump of a Sequencer64 song than for checking its validity.  It's overkill
- *  that causes needless error messages.
- */
-
-#define PROP_TRACK_NAME             "Sequencer64-S"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -307,6 +246,61 @@ midifile::read_varinum ()
 }
 
 /**
+ *  Creates the stream input.
+ *
+ * \param tag
+ *      Basically an informative string to denote what kind of file is being
+ *      opened, "MIDI" or "WRK".
+ *
+ * \param [out] file
+ *      Holds the output stream.  Use it only if the return value is true.
+ *
+ * \return
+ *      Returns true if the input stream was successfully opend on a good
+ *      file.
+ */
+
+bool
+midifile::open_input_stream
+(
+    const std::string & tag,
+    std::ifstream & file
+)
+{
+    file = std::ifstream                                /* side-effect      */
+    (
+        m_name.c_str(), std::ios::in | std::ios::binary | std::ios::ate
+    );
+    m_error_is_fatal = false;
+
+    bool result = file.is_open();
+    if (result)
+    {
+        std::string path = get_full_path(m_name);
+        int file_size = file.tellg();                   /* get end offset    */
+        printf("[Opened %s file, '%s']\n", tag.c_str(), path.c_str());
+        if (size_t(file_size) <= sizeof(long))
+        {
+            m_error_is_fatal = true;
+            m_error_message = "Invalid file size... trying to read a directory?";
+            errprint(m_error_message.c_str());
+            result = false;
+        }
+    }
+    else
+    {
+        m_error_is_fatal = true;
+        m_error_message = "Error opening ";
+        m_error_message += tag;
+        m_error_message += " file '";
+        m_error_message += m_name;
+        m_error_message += "'";
+        errprint(m_error_message.c_str());
+    }
+    return result;
+}
+
+/**
  *  This function opens a binary MIDI file and parses it into sequences
  *  and other application objects.
  *
@@ -383,6 +377,7 @@ bool
 midifile::parse (perform & p, int screenset, bool importing)
 {
     bool result = true;
+#if 0
     std::ifstream file
     (
         m_name.c_str(), std::ios::in | std::ios::binary | std::ios::ate
@@ -411,6 +406,16 @@ midifile::parse (perform & p, int screenset, bool importing)
         errprint(m_error_message.c_str());
         return false;
     }
+#endif  // 0
+
+    std::ifstream file;
+    result = open_input_stream(std::string("MIDI"), file);
+    if (! result)
+    {
+        return false;
+    }
+
+    int file_size = file.tellg();                   /* get end offset again */
     file.seekg(0, std::ios::beg);                   /* seek to start        */
     try
     {

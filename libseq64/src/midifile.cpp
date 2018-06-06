@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-04
+ * \updates       2018-06-05
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -159,6 +159,34 @@ midifile::~midifile ()
 }
 
 /**
+ *  Seeks to a new position in the data stream.
+ *
+ * \param pos
+ *      Provides the new position to seek.
+ *
+ * \return
+ *      Returns true if the seek could be accomplished.  No error message is
+ *      logged, but the caller should take evasive action if false is
+ *      returned.
+ */
+
+bool
+midifile::seek (size_t pos)
+{
+    bool result = false;
+    if (pos > 0)
+    {
+        size_t p = m_pos + pos;     // m_d->m_IOStream->device()->seek(pos);
+        if (p < m_file_size)
+        {
+            m_pos = p;
+            result = true;
+        }
+    }
+    return result;
+}
+
+/**
  *  Reads 4 bytes of data using read_byte().
  *
  * \warning
@@ -214,8 +242,7 @@ midifile::read_byte ()
     }
     else if (! m_disable_reported)
     {
-        errdump("'End-of-file', further MIDI reading disabled");
-        m_disable_reported = true;
+        (void) set_error_dump("'End-of-file', further MIDI reading disabled");
     }
     return 0;
 }
@@ -246,28 +273,47 @@ midifile::read_varinum ()
 }
 
 /**
- *  Creates the stream input.
+ *  Jumps/skips the given number of bytes in the data stream.  If too large,
+ *  the position is left at the end.
+ *
+ * \param sz
+ *      Provides the gap size, in bytes.
+ */
+
+void
+midifile::read_gap (size_t sz)
+{
+    if (sz > 0)
+    {
+        size_t p = m_pos + sz;
+        if (p >= m_file_size)
+        {
+            p = m_file_size - 1;
+            if (! m_disable_reported)
+                (void) set_error_dump("'End-of-file', MIDI reading disabled");
+        }
+        m_pos = p;
+    }
+}
+
+/**
+ *  Creates the stream input, reads it into the "buffer", and then closes
+ *  the file.  No file buffering needed on these beefy machines!  :-)
+ *  As a side-effect, also sets m_file_size.
  *
  * \param tag
  *      Basically an informative string to denote what kind of file is being
  *      opened, "MIDI" or "WRK".
  *
- * \param [out] file
- *      Holds the output stream.  Use it only if the return value is true.
- *
  * \return
  *      Returns true if the input stream was successfully opend on a good
- *      file.
+ *      file.  Use it only if the return value is true.
  */
 
 bool
-midifile::open_input_stream
-(
-    const std::string & tag,
-    std::ifstream & file
-)
+midifile::grab_input_stream (const std::string & tag)
 {
-    file = std::ifstream                                /* side-effect      */
+    std::ifstream file = std::ifstream
     (
         m_name.c_str(), std::ios::in | std::ios::binary | std::ios::ate
     );
@@ -277,25 +323,35 @@ midifile::open_input_stream
     if (result)
     {
         std::string path = get_full_path(m_name);
-        int file_size = file.tellg();                   /* get end offset    */
+        m_file_size = file.tellg();                 /* get the end offset   */
         printf("[Opened %s file, '%s']\n", tag.c_str(), path.c_str());
-        if (size_t(file_size) <= sizeof(long))
+        if (m_file_size <= sizeof(long))
         {
-            m_error_is_fatal = true;
-            m_error_message = "Invalid file size... trying to read a directory?";
-            errprint(m_error_message.c_str());
-            result = false;
+            result = set_error("Invalid file size... reading a directory?");
+        }
+        else
+        {
+            file.seekg(0, std::ios::beg);           /* seek to start        */
+            try
+            {
+                m_data.resize(m_file_size);         /* allocate more data   */
+                file.read((char *)(&m_data[0]), m_file_size);
+            }
+            catch (const std::bad_alloc & ex)
+            {
+                result = set_error("Memory allocation failed in midifile stream");
+            }
+            file.close();
         }
     }
     else
     {
-        m_error_is_fatal = true;
-        m_error_message = "Error opening ";
-        m_error_message += tag;
-        m_error_message += " file '";
-        m_error_message += m_name;
-        m_error_message += "'";
-        errprint(m_error_message.c_str());
+        std::string errmsg = "Error opening ";
+        errmsg += tag;
+        errmsg += " file '";
+        errmsg += m_name;
+        errmsg += "'";
+        result = set_error(errmsg);
     }
     return result;
 }
@@ -376,61 +432,10 @@ midifile::open_input_stream
 bool
 midifile::parse (perform & p, int screenset, bool importing)
 {
-    bool result = true;
-#if 0
-    std::ifstream file
-    (
-        m_name.c_str(), std::ios::in | std::ios::binary | std::ios::ate
-    );
-    m_error_is_fatal = false;
-    if (file.is_open())
-    {
-        std::string path = get_full_path(m_name);
-        printf("[Opened MIDI file, '%s']\n", path.c_str());
-    }
-    else
-    {
-        m_error_is_fatal = true;
-        m_error_message = "Error opening MIDI file '";
-        m_error_message += m_name;
-        m_error_message += "'";
-        errprint(m_error_message.c_str());
-        return false;
-    }
-
-    int file_size = file.tellg();                   /* get end offset       */
-    if (size_t(file_size) <= sizeof(long))
-    {
-        m_error_is_fatal = true;
-        m_error_message = "Invalid file size... trying to read a directory?";
-        errprint(m_error_message.c_str());
-        return false;
-    }
-#endif  // 0
-
-    std::ifstream file;
-    result = open_input_stream(std::string("MIDI"), file);
+    bool result = grab_input_stream(std::string("MIDI"));
     if (! result)
-    {
         return false;
-    }
 
-    int file_size = file.tellg();                   /* get end offset again */
-    file.seekg(0, std::ios::beg);                   /* seek to start        */
-    try
-    {
-        m_data.resize(file_size);                   /* allocate more data   */
-        m_file_size = file_size;                    /* save for checking    */
-    }
-    catch (const std::bad_alloc & ex)
-    {
-        m_error_is_fatal = true;
-        m_error_message = "Memory allocation failed in midifile::parse()";
-        errprint(m_error_message.c_str());
-        return false;
-    }
-    file.read((char *)(&m_data[0]), file_size);     /* vector == array :-)  */
-    file.close();
     m_error_message.clear();
     m_disable_reported = false;
     m_smf0_splitter.initialize();                   /* SMF 0 support        */
@@ -438,11 +443,7 @@ midifile::parse (perform & p, int screenset, bool importing)
     midilong ID = read_long();                      /* read hdr chunk info  */
     midilong hdrlength = read_long();               /* stock MThd length    */
     if (ID != SEQ64_MTHD_TAG && hdrlength != 6)     /* magic number 'MThd'  */
-    {
-        m_error_is_fatal = true;
-        errdump("Invalid MIDI header chunk detected", ID);
-        return false;
-    }
+        return set_error_dump("Invalid MIDI header chunk detected", ID);
 
     midishort Format = read_short();                /* 0, 1, or 2           */
     if (Format == 0)
@@ -456,15 +457,14 @@ midifile::parse (perform & p, int screenset, bool importing)
     else
     {
         m_error_is_fatal = true;
-        errdump("Unsupported MIDI format number", midilong(Format));
-        result = false;
+        result = set_error_dump("Unsupported MIDI format number", midilong(Format));
     }
     if (result)
     {
-        if (file_size > m_pos)                      /* any more data left?  */
+        if (m_pos < m_file_size)                    /* any more data left?  */
         {
             if (! importing)
-                result = parse_proprietary_track(p, file_size);
+                result = parse_proprietary_track(p, m_file_size);
         }
         if (result && screenset != 0)
              p.modify();                            /* modification flag    */
@@ -501,7 +501,7 @@ midifile::parse_smf_0 (perform & p, int screenset)
         if (result)
             p.modify();                             /* to prompt for save   */
         else
-            errdump("No SMF 0 main sequence found, bad MIDI file");
+            result = set_error("No SMF 0 main sequence found, bad MIDI file");
     }
     return result;
 }
@@ -537,14 +537,14 @@ midifile::checklen (midilong len, midibyte type)
         {
             char m[40];
             snprintf(m, sizeof m, "0 data length for meta type 0x%02X", type);
-            errdump(m);
+            (void) set_error_dump(m);
         }
     }
     else
     {
         char m[40];
         snprintf(m, sizeof m, "bad data length for meta type 0x%02X", type);
-        errdump(m);
+        (void) set_error_dump(m);
     }
     return result;
 }
@@ -694,7 +694,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
             midibyte d0, d1;                        /* was data[2];         */
             if (s == nullptr)
             {
-                errdump("MIDI file parsing: sequence allocation failed");
+                (void) set_error_dump("MIDI file parse: sequence allocation failed");
                 return false;
             }
             sequence & seq = *s;                /* references are nicer     */
@@ -1009,7 +1009,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             }
                             else if (SEQ64_IS_PROPTAG(seqspec))
                             {
-                                errdump
+                                (void) set_error_dump
                                 (
                                     "Unsupported track SeqSpec, skipping...",
                                     seqspec
@@ -1065,7 +1065,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                         if (is_sysex_special_id(check))
                         {
                             /*
-                             * TMI: errdump("SysEx ID byte = 7D to 7F");
+                             * TMI: "SysEx ID byte = 7D to 7F");
                              */
                         }
                         else                            /* handle normally  */
@@ -1085,21 +1085,30 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 #else
                             m_pos += len;               /* skip it          */
                             if (m_data[m_pos-1] != 0xF7)
-                                errdump("SysEx terminator byte F7 not found");
+                            {
+                                (void) set_error_dump
+                                (
+                                    "SysEx terminator byte F7 not found"
+                                );
+                            }
 #endif
                         }
                     }
                     else
                     {
-                        errdump("Unexpected meta code", midilong(status));
-                        return false;
+                        return set_error_dump
+                        (
+                            "Unexpected meta code", midilong(status)
+                        );
                     }
                     break;
 
                 default:
 
-                    errdump("Unsupported MIDI event", midilong(status));
-                    return false;
+                    return set_error_dump
+                    (
+                        "Unsupported MIDI event", midilong(status)
+                    );
                     break;
                 }
             }                          /* while not done loading Trk chunk */
@@ -1144,12 +1153,14 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
         {
             if (track > 0)                              /* non-fatal later  */
             {
-                errdump("Unsupported MIDI track ID, skipping...", ID);
+                (void) set_error_dump("Unsupported MIDI track ID, skipping...", ID);
             }
             else                                        /* fatal in 1st one */
             {
-                errdump("Unsupported MIDI track ID on first track.", ID);
-                result = false;
+                result = set_error_dump
+                (
+                    "Unsupported MIDI track ID on first track.", ID
+                );
                 break;
             }
             m_pos += TrackLength;
@@ -1224,7 +1235,7 @@ midifile::parse_prop_header (int file_size)
             {
                 fprintf
                 (
-                    stderr, "Bad meta type '%x' in prop section near offset %x\n",
+                    stderr, "Bad meta type '%x' in prop section near offset %lx\n",
                     int(type), m_pos
                 );
             }
@@ -1329,15 +1340,13 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             else if (sn == (-1))
             {
                 m_error_is_fatal = false;
-                errdump("No sequence number in SeqSpec track, extra data");
-                result = false;
+                result = set_error_dump
+                (
+                    "No sequence number in SeqSpec track, extra data"
+                );
             }
             else
-            {
-                m_error_is_fatal = false;
-                m_error_message = "Unexpected sequence number, SeqSpec track";
-                result = false;
-            }
+                result = set_error("Unexpected sequence number, SeqSpec track");
         }
     }
     else
@@ -1365,7 +1374,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             if (seqs > c_max_sequence)
             {
                 m_pos -= 4;
-                errdump
+                (void) set_error_dump
                 (
                     "Bad MIDI-control sequence count, fixing.\n"
                     "Please save the file now!",
@@ -1394,7 +1403,10 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             int busscount = int(read_long());
             if (busscount > SEQ64_DEFAULT_BUSS_MAX)
             {
-                errdump("bad buss count, fixing; please save the file now");
+                (void) set_error_dump
+                (
+                    "Bad buss count, fixing; please save the file now."
+                );
                 m_pos -= 4;
                 busscount = int(read_byte());
             }
@@ -1449,10 +1461,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             {
                 if (c_max_sequence != len)              /* c_gmute_tracks   */
                 {
-                    m_error_is_fatal = true;
-                    m_error_message = "Corrupt data in mute-group section";
-                    errdump(m_error_message.c_str());
-                    result = false;                     /* but keep going   */
+                    result = set_error_dump("Corrupt data in mute-group section");
                 }
 
                 /*
@@ -2594,6 +2603,26 @@ midifile::write_track_end ()
 }
 
 /**
+ *  A new function that just sets the fatal-error status and the error message.
+ *
+ * \param msg
+ *      Provides the error message.
+ *
+ * \return
+ *      Returns false, so that the caller can just assign this as the erroneous
+ *      boolean function result.
+ */
+
+bool
+midifile::set_error (const std::string & msg)
+{
+    m_error_message = msg;
+    errprint(msg.c_str());
+    m_error_is_fatal = true;
+    return false;
+}
+
+/**
  *  Helper function to emit more useful error messages.  It adds the file
  *  offset to the message.
  *
@@ -2601,19 +2630,23 @@ midifile::write_track_end ()
  *      The main error message string, without an ending newline character.
  *
  * \return
- *      The constructed string is returned as a side-effect, in case we want
- *      to pass it along to the externally-accessible error-message buffer.
+ *      Always returns false, to make it easier on the caller.  The constructed
+ *      string is returned as a side-effect, in case we want to pass it along to
+ *      the externally-accessible error-message buffer.
  */
 
-void
-midifile::errdump (const std::string & msg)
+bool
+midifile::set_error_dump (const std::string & msg)
 {
     char temp[32];
-    snprintf(temp, sizeof temp, "Near offset 0x%x: ", m_pos);
+    snprintf(temp, sizeof temp, "Near offset 0x%lx: ", m_pos);
     std::string result = temp;
     result += msg;
     fprintf(stderr, "%s\n", result.c_str());
     m_error_message = result;
+    m_error_is_fatal = true;
+    m_disable_reported = true;
+    return false;
 }
 
 /**
@@ -2627,23 +2660,27 @@ midifile::errdump (const std::string & msg)
  *      The long value to show as part of the message.
  *
  * \return
- *      The constructed string is returned as a side-effect, in case we want
- *      to pass it along to the externally-accessible error-message buffer.
+ *      Always returns false, to make it easier on the caller.  The constructed
+ *      string is returned as a side-effect, in case we want to pass it along to
+ *      the externally-accessible error-message buffer.
  */
 
-void
-midifile::errdump (const std::string & msg, unsigned long value)
+bool
+midifile::set_error_dump (const std::string & msg, unsigned long value)
 {
     char temp[64];
     snprintf
     (
-        temp, sizeof temp, "Near offset 0x%x, bad value %lu (0x%lx): ",
+        temp, sizeof temp, "Near offset 0x%lx, bad value %lu (0x%lx): ",
         m_pos, value, value
     );
     std::string result = temp;
     result += msg;
     fprintf(stderr, "%s\n", result.c_str());
     m_error_message = result;
+    m_error_is_fatal = true;
+    m_disable_reported = true;
+    return false;
 }
 
 }           // namespace seq64

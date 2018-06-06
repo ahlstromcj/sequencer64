@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-04
+ * \updates       2018-06-05
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -158,7 +158,7 @@ private:
      *  of the midicvt test file Dixie04.mid.
      */
 
-    int m_file_size;
+    size_t m_file_size;
 
     /**
      *  Holds the last error message, useful for trouble-shooting without
@@ -189,7 +189,7 @@ private:
      *  into the m_data vector.
      */
 
-    int m_pos;
+    size_t m_pos;
 
     /**
      *  The unchanging name of the MIDI file.
@@ -271,7 +271,7 @@ public:
     );
     virtual ~midifile ();
 
-    virtual bool parse (perform & p, int a_screen_set = 0, bool importing = false);
+    virtual bool parse (perform & p, int screenset = 0, bool importing = false);
     virtual bool write (perform & p, bool doseqspec = true);
 
 #ifdef SEQ64_STAZED_EXPORT_SONG
@@ -310,23 +310,44 @@ public:
         return m_ppqn;
     }
 
-private:
+    /**
+     * \getter m_pos
+     *
+     *  Current position in the data stream.
+     */
 
-    bool open_input_stream
-    (
-        const std::string & tag,
-        std::ifstream & file
-    );
+    size_t get_file_pos ()
+    {
+        return m_pos;           // return m_d->m_IOStream->device()->pos();
+    }
+
+protected:
+
+    /**
+     *  Checks if the data stream pointer has reached the end position
+     *
+     * \return
+     *      Returns true if the read pointer is at the end.
+     */
+
+    bool at_end () const
+    {
+        return m_pos >= m_file_size;
+    }
+
+    bool grab_input_stream (const std::string & tag);
     bool parse_smf_0 (perform & p, int screenset);
     bool parse_smf_1 (perform & p, int screenset, bool is_smf0 = false);
     midilong parse_prop_header (int file_size);
     bool parse_proprietary_track (perform & a_perf, int file_size);
     bool checklen (midilong len, midibyte type);
     void add_trigger (sequence & seq, midishort ppqn);
+    bool seek (size_t pos);
     midilong read_long ();
     midishort read_short ();
     midibyte read_byte ();
     midilong read_varinum ();
+    void read_gap (size_t sz);
     void write_long (midilong value);
     void write_triple (midilong value);
     void write_short (midishort value);
@@ -342,9 +363,9 @@ private:
      *      The number of bytes in the array, and to be read.
      */
 
-    void read_byte_array (midibyte * b, int len)
+    void read_byte_array (midibyte * b, size_t len)
     {
-        for (int i = 0; i < len; ++i)
+        for (size_t i = 0; i < len; ++i)
             *b++ = read_byte();
     }
 
@@ -379,8 +400,9 @@ private:
     long varinum_size (long len) const;
     long prop_item_size (long datalen) const;
     long track_name_size (const std::string & trackname) const;
-    void errdump (const std::string & msg);
-    void errdump (const std::string & msg, unsigned long p);
+    bool set_error (const std::string & msg);
+    bool set_error_dump (const std::string & msg);
+    bool set_error_dump (const std::string & msg, unsigned long p);
     void write_track
     (
 #if defined SEQ64_USE_MIDI_VECTOR

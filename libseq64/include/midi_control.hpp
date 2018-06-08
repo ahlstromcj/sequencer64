@@ -98,7 +98,7 @@ const int c_midi_control_bpm_page_dn  = c_midi_track_ctrl + 15;
 const int c_midi_control_ss_set       = c_midi_track_ctrl + 16; /* pull #85 */
 const int c_midi_control_record       = c_midi_track_ctrl + 17;
 const int c_midi_control_quan_record  = c_midi_track_ctrl + 18;
-const int c_midi_control_19           = c_midi_track_ctrl + 19;
+const int c_midi_control_19           = c_midi_track_ctrl + 19; /* used to reset pattern */
 const int c_midi_controls_extended    = c_midi_track_ctrl + 20; /* new = 84 */
 
 extern int g_midi_control_limit;

@@ -4567,6 +4567,25 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
         }
         break;
 
+    // using last control for overwrite/reset
+    case c_midi_control_19:
+        if (a == midi_control::action_toggle)
+        {
+            set_overwrite_recording(false, v, true);        /* toggles */
+            result = true;
+        }
+        else if (a == midi_control::action_on)
+        {
+            set_overwrite_recording(true, v);
+            result = true;
+        }
+        else if (a == midi_control::action_off)
+        {
+            set_overwrite_recording(false, v);
+            result = true;
+        }
+        break;
+
     default:
 
         break;
@@ -4670,12 +4689,13 @@ perform::set_recording (bool record_active, int seq, bool toggle)
 void
 perform::set_quantized_recording (bool record_active, sequence * s)
 {
-    if (not_nullptr(s))
-        s->set_recording(record_active);
+  if (not_nullptr(s)) {
+        s->set_quantized_recording(record_active);
+  }
 }
 
 /**
- *  Sets qauntized recording.  This isn't quite consistent with setting
+ *  Sets quantized recording.  This isn't quite consistent with setting
  *  regular recording, which uses sequence::set_input_recording().
  *
  * \param record_active
@@ -4701,6 +4721,41 @@ perform::set_quantized_recording (bool record_active, int seq, bool toggle)
             s->set_quantized_recording(record_active);
     }
 }
+
+
+/**
+ *  Set recording for overwrite.
+ *  TODO: might probably as well create (bool rec_active, bool thru_active, sequence * s)
+ *  HOTFIX: ask for reset explicitely on toggle on since we don't have the GUI to control for progress 
+ *
+ * \param overwrite_active
+ *      Provides the current status of the overwrite mode.
+ *
+ * \param seq
+ *      The sequence number; the resulting pointer is checked.
+ *
+ * \param toggle
+ *      If true, ignore the first flag and let the sequence toggle its
+ *      setting.  Passed along to sequence::set_overwrite_rec().
+ */
+
+void
+perform::set_overwrite_recording (bool overwrite_active, int seq, bool toggle)
+{
+    sequence * s = get_sequence(seq);
+    if (not_nullptr(s))
+    {
+        if (toggle)
+            overwrite_active = ! s->get_overwrite_rec();
+	
+        // on overwrite the sequence will reset no matter what here
+	if (overwrite_active)
+            s->set_loop_reset(true);
+
+        s->set_overwrite_rec(overwrite_active);
+    }
+}
+
 
 /**
  *  Encapsulates code used by seqedit::thru_change_callback().
@@ -5080,7 +5135,9 @@ perform::input_func ()
 
                         if (m_master_bus->is_dumping())
                         {
-                            if (! midi_control_record(ev))
+			  // HOTFIX, will check for all events to prevent unwanted recordings
+			  // if (! midi_control_record(ev))
+                            if (! midi_control_event(ev))
                             {
                                 ev.set_timestamp(get_tick());
                                 if (rc().show_midi())

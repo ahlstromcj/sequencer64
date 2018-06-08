@@ -4559,7 +4559,7 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
         }
         break;
 
-    // HOTFIX: using on action of last extended control for reset
+    // using last control for overwrite/reset
     case c_midi_control_19:
         if (a == midi_control::action_toggle)
         {
@@ -4718,6 +4718,7 @@ perform::set_quantized_recording (bool record_active, int seq, bool toggle)
 /**
  *  Set recording for overwrite.
  *  TODO: might probably as well create (bool rec_active, bool thru_active, sequence * s)
+ *  HOTFIX: ask for reset explicitely on toggle on since we don't have the GUI to control for progress 
  *
  * \param overwrite_active
  *      Provides the current status of the overwrite mode.
@@ -4737,9 +4738,13 @@ perform::set_overwrite_recording (bool overwrite_active, int seq, bool toggle)
     if (not_nullptr(s))
     {
         if (toggle)
-            s->set_overwrite_rec(! s->get_overwrite_rec());
-        else
-            s->set_overwrite_rec(overwrite_active);
+            overwrite_active = ! s->get_overwrite_rec();
+	
+        // on overwrite the sequence will reset no matter what here
+	if (overwrite_active)
+            s->set_loop_reset(true);
+
+        s->set_overwrite_rec(overwrite_active);
     }
 }
 

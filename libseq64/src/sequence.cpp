@@ -2933,7 +2933,10 @@ sequence::add_note
             add_event(e);
 
             e.set_status(EVENT_NOTE_OFF);
-            e.set_data(note, midibyte(m_note_off_velocity));    /* HARD-WIRED */
+
+	    // HOTFIX: will be consitant with how m_note_on_velocity is handled above, enable 0 velocity (a standard ?) for note off when not playing
+            //e.set_data(note, midibyte(m_note_off_velocity));    /* HARD-WIRED */
+            e.set_data(note, hardwire ? midibyte(m_note_off_velocity) : 0);
             e.set_timestamp(tick + len);
             result = add_event(e);
         }

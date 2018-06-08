@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-03
+ * \updates       2018-06-02
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -86,7 +86,6 @@ seqdata::seqdata
     m_number_offset_y       (font_render().char_height()-1),     // was 8
     m_status                (0),
     m_cc                    (0),
-    m_numbers               (),             // an array of Gdk::Pixmaps
     m_old                   (),
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS
     m_drag_handle           (false),
@@ -323,18 +322,9 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 #endif
 
                 if (ev->is_tempo())
-                {
                     render_digits(drawable, int(ev->tempo()), x);
-                }
                 else
-                {
-                    drawable->draw_drawable
-                    (
-                        m_gc, m_numbers[event_height], 0, 0,
-                        x + 2, c_dataarea_y - m_number_h + 3,
-                        m_number_w, m_number_h
-                    );
-                }
+                    render_digits(drawable, event_height, x);
             }
             ++ev;                                   /* now a must-do        */
         }
@@ -590,26 +580,11 @@ void
 seqdata::on_realize ()
 {
     gui_drawingarea_gtk2::on_realize();
-    char num[8];                                /* pulled this out of loop  */
-    memset(num, 0, sizeof num);                 /* only need this once!     */
     m_hadjust.signal_value_changed().connect
     (
         mem_fun(*this, &seqdata::change_horz)
     );
     m_gc->set_foreground(white_paint());        /* works for all drawing    */
-    for (int i = 0; i < c_dataarea_y; ++i)      /* MIDI_COUNT_MAX; 128      */
-    {
-        char val[8];
-        snprintf(val, sizeof val, "%3d", i);    /* removed the newline      */
-        num[0] = val[0];                        /* converting to unicode?   */
-        num[2] = val[1];
-        num[4] = val[2];
-        m_numbers[i] = Gdk::Pixmap::create(m_window, m_number_w, m_number_h, -1);
-        draw_rectangle(m_numbers[i], 0, 0, m_number_w, m_number_h);
-        render_number(m_numbers[i], 0, 0, &num[0]);
-        render_number(m_numbers[i], 0, m_number_offset_y,     &num[2]);
-        render_number(m_numbers[i], 0, m_number_offset_y * 2, &num[4]);
-    }
     update_sizes();
 }
 
@@ -802,6 +777,14 @@ seqdata::on_size_allocate (Gtk::Allocation & r)
 /**
  *  Renders an up to 3-digit string vertically to represent a data value.
  *
+ * \param drawable
+ *      Where to draw the digits.
+ *
+ * \param digits
+ *      xxxxxx
+ *
+ * \param x
+ *      xxxxxx
  */
 
 void
@@ -822,7 +805,6 @@ seqdata::render_digits
         s_needs_init = false;
         memset(s_num, 0, sizeof s_num);
     }
-        memset(s_num, 0, sizeof s_num);
 
     char val[4];
     snprintf(val, sizeof val, "%3d", digits);

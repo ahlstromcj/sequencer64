@@ -17,7 +17,7 @@
  */
 
 /**
- * \file          qsabout.hpp
+ * \file          qsabout.cpp
  *
  *  The time bar shows markers and numbers for the measures of the song,
  *  and also depicts the left and right markers.
@@ -71,7 +71,7 @@ qsabout::~qsabout()
 }               // namespace seq64
 
 /*
- * qsabout.hpp
+ * qsabout.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

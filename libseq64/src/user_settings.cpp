@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2018-04-22
+ * \updates       2018-05-27
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -218,7 +218,14 @@ user_settings::user_settings ()
     m_user_use_logfile          (false),
     m_user_option_logfile       (),
     m_work_around_play_image    (false),
-    m_work_around_transpose_image (false)
+    m_work_around_transpose_image (false),
+
+    /*
+     * [user-ui-tweaks]
+     */
+
+    m_user_ui_key_height        (12)
+
 {
     // Empty body; it's no use to call normalize() here, see set_defaults().
 }
@@ -312,13 +319,26 @@ user_settings::user_settings (const user_settings & rhs)
 
     /*
      * Back to non-constant values.
-     */
 
     m_user_option_daemonize     (false),
     m_user_use_logfile          (false),
     m_user_option_logfile       (),
     m_work_around_play_image    (false),
     m_work_around_transpose_image (false)
+    m_user_ui_key_height        (12)
+     */
+
+    m_user_option_daemonize     (rhs.m_user_option_daemonize),
+    m_user_use_logfile          (rhs.m_user_use_logfile),
+    m_user_option_logfile       (rhs.m_user_option_logfile),
+    m_work_around_play_image    (rhs.m_work_around_play_image),
+    m_work_around_transpose_image (rhs.m_work_around_transpose_image),
+
+    /*
+     * [user-ui-tweaks]
+     */
+
+    m_user_ui_key_height        (rhs.m_user_ui_key_height)
 {
     // Empty body; no need to call normalize() here.
 }
@@ -420,6 +440,12 @@ user_settings::operator = (const user_settings & rhs)
         m_user_option_logfile = rhs.m_user_option_logfile;
         m_work_around_play_image = rhs.m_work_around_play_image;
         m_work_around_transpose_image = rhs.m_work_around_transpose_image;
+
+        /*
+         * [user-ui-tweaks]
+         */
+
+        m_user_ui_key_height = rhs.m_user_ui_key_height;
     }
     return *this;
 }
@@ -495,6 +521,7 @@ user_settings::set_defaults ()
     m_user_option_logfile.clear();
     m_work_around_play_image = false;
     m_work_around_transpose_image = false;
+    m_user_ui_key_height = 12;
     normalize();                            // recalculate derived values
 }
 

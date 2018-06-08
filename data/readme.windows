@@ -1,0 +1,57 @@
+readme.windows for Sequencer64
+Chris Ahlstrom
+2018-05-13 to 2018-05-27
+
+This README file provides the things you need to know to run the new native
+Windows implmentation of sequencer64, an executable called qpseq64.exe.  It
+provides some notes on Sequencer64 and Windows.  We mostly use Windows 10;
+some features might differ in Windows 7 or Windows 2012+ Server.
+
+At first, we will provide only a portable ZIP package for qpseq64.  Later,
+we will provide an NSIS-based installer.
+
+Inaccessible Devices:
+
+    When first starting qpseq64 on Windows, one might experience some issues.
+    One issue is that the Microsoft MIDI Mapper, rumored to be removed in
+    Windows 8 and beyond, is still detected by the PortMidi library used in
+    qpseq64.  Another issue is that the built-in Microsoft wave-table
+    synthesizer is not accessible.
+
+    We installed the CoolSoft MIDIMapper and VirtualMIDISYnth to try to get
+    around these issues, and tried to turn off the system setup of "Allow
+    applications to restrict access to this device."  But we still had
+    inaccessible devices, and the resulting errors would cause qpseq64 to
+    abort.  So we had to spend a lot of time supporting the disabling of
+    inaccessible ports, and saving and restoring the "rc" setup properly.
+
+    We still have some minor issues at start up and at exit, but are now able
+    to play a tune on the wavetable synthesizer using the "-b <n>" option.
+
+    When you first run qpseq64 on Windows, it will create a new configuration
+    file, with inaccessible devices noted in the "[midi-clock]" section of
+    "C:\Users\username\AppData\Local\sequencer64\qpseq64.rc" by a "-1" value.
+
+Configuration Files For Windows:
+
+    On Windows, the conventional location is
+
+    "C:\Users\username\AppData\Local\sequencer64".
+    
+    The files are:
+
+        qpseq64.rc          The main usage parameters for Sequencer64.
+        qpseq64.usr         Supplemental options, not all supported in
+                            Windows yet.
+
+    To access AppData, highlight the username directory, then append
+    "AppData" to the end of "C:\username".  It is a Windows thang.
+
+	As of this time (2018-05-13) these settings are the only way to
+	alter the ports accessed, in the Windows version of Sequencer64.
+
+	qpseq64 --buss 1 --option log=filename.out 
+
+    The log-file also goes into the AppData/Local directory.
+
+# vim: sw=4 ts=4 wm=4 et ft=sh

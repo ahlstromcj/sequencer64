@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>526</width>
-    <height>399</height>
+    <width>638</width>
+    <height>672</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,17 +17,191 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="tabMidiClock">
+      <attribute name="title">
+       <string>MIDI &amp;Clock</string>
+      </attribute>
+      <widget class="QGroupBox" name="groupBoxClocks">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>591</width>
+         <height>371</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Clocks</string>
+       </property>
+       <widget class="QWidget" name="layoutWidgetClocks">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>571</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <layout class="QHBoxLayout" name="horizLayoutClockLine"/>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="groupBoxMetaEvents">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>460</y>
+         <width>591</width>
+         <height>80</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Meta Events</string>
+       </property>
+       <widget class="QPlainTextEdit" name="plainTextEditTempoTrack">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>31</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the number of the tempo track, and it is saved to the 'rc' file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="placeholderText">
+         <string>0</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="textLabelTempoTrack">
+        <property name="geometry">
+         <rect>
+          <x>50</x>
+          <y>34</y>
+          <width>361</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Pattern number for tempo track, from 0 to 1023 (0 is best)</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButtonTempoTrack">
+        <property name="geometry">
+         <rect>
+          <x>420</x>
+          <y>30</y>
+          <width>161</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="toolTip">
+         <string>Saves the current tempo track number as a song parameter, saved to the MIDI file, as opposed to a global Sequencer64 value. However, remember that the given value will be saved to the 'rc' file when exiting.</string>
+        </property>
+        <property name="text">
+         <string>Set as Tempo Track</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="layoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>410</y>
+         <width>262</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizLayoutClockStartModulo">
+        <item>
+         <widget class="QLabel" name="labelClockStartModulo">
+          <property name="text">
+           <string>Clock Start Modulo (1/16/Notes)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="spinBoxClockStartModulo">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>1024</number>
+          </property>
+          <property name="value">
+           <number>64</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="tabMidiInput">
+      <attribute name="title">
+       <string>MIDI &amp;Input</string>
+      </attribute>
+      <widget class="QGroupBox" name="groupBoxInputs">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>591</width>
+         <height>301</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Input Buses</string>
+       </property>
+       <widget class="QWidget" name="gridLayoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>29</y>
+          <width>571</width>
+          <height>261</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="gridLayoutMidiInput"/>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="groupBoxInputOptions">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>350</y>
+         <width>591</width>
+         <height>81</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Input Options</string>
+       </property>
+       <widget class="QCheckBox" name="checkBoxRecordByChannel">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>40</y>
+          <width>561</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Record input into sequences according to channel</string>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="tabDisplay">
       <attribute name="title">
        <string>Display</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
+        <layout class="QHBoxLayout" name="horizLayoutPlayKeyHeight">
          <item>
-          <widget class="QLabel" name="label">
+          <widget class="QLabel" name="labelEditorKeyHeight">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
              <horstretch>0</horstretch>
@@ -55,7 +229,7 @@
         </layout>
        </item>
        <item>
-        <spacer name="verticalSpacer_2">
+        <spacer name="verticalSpacerPlayOptions">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -71,53 +245,133 @@
      </widget>
      <widget class="QWidget" name="tabJackSync">
       <attribute name="title">
-       <string>Jack Settings</string>
+       <string>&amp;Jack Sync</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0" colspan="2">
-          <widget class="QCheckBox" name="chkJackTransport">
-           <property name="text">
-            <string>Enable Jack Transport</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0" colspan="2">
-          <widget class="QCheckBox" name="chkJackConditional">
-           <property name="text">
-            <string>Master Conditional</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QPushButton" name="btnJackConnect">
-           <property name="text">
-            <string>Connect</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QPushButton" name="btnJackDisconnect">
-           <property name="text">
-            <string>Disconnect</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0" colspan="2">
-          <widget class="QCheckBox" name="chkJackMaster">
-           <property name="text">
-            <string extracomment="Serve as jack transport master">Transport Master</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
+      <widget class="QGroupBox" name="groupBoxJackTransport">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>591</width>
+         <height>151</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>JACK Transport/MIDI</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="groupBoxJackStartMode">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>170</y>
+         <width>591</width>
+         <height>101</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>JACK Start Mode</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btnJackConnect">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>290</y>
+         <width>281</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>JACK Transport Co&amp;nnect</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btnJackDisconnect">
+       <property name="geometry">
+        <rect>
+         <x>310</x>
+         <y>290</y>
+         <width>291</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>JACK Transport &amp;Disconnect</string>
+       </property>
+      </widget>
+      <widget class="QWidget" name="layoutWidgetJackTransport">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>40</y>
+         <width>246</width>
+         <height>104</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="vertLayoutJackTransportMidi">
+        <item>
+         <widget class="QCheckBox" name="chkJackConditional">
+          <property name="text">
+           <string>Master Conditional</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkJackMaster">
+          <property name="text">
+           <string extracomment="Serve as jack transport master">Transport Master</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkJackTransport">
+          <property name="text">
+           <string>Enable Jack Transport</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkJackNative">
+          <property name="text">
+           <string>Native JACK &amp;MIDI (requires a restart)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="layoutWidgetJack">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>190</y>
+         <width>251</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="vertLayoutJackStartMode">
+        <item>
+         <widget class="QRadioButton" name="rbLiveMode">
+          <property name="text">
+           <string>&amp;Live Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rbSongMode">
+          <property name="text">
+           <string>&amp;Song Mode</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tabPlayOptions">
       <attribute name="title">
-       <string>MIDI</string>
+       <string>&amp;Play Options</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
@@ -145,7 +399,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
+    <widget class="QDialogButtonBox" name="buttonBoxOptionsDialog">
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>

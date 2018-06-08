@@ -9,8 +9,12 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2017-08-20
- * \updates       2017-08-21
+ * \updates       2018-06-02
  * \license       See the rtexmidi.lic file.  Too big for a header file.
+ *
+ * \deprecated
+ *      We have decided to use the PortMidi re-implementation for Sequencer64
+ *      for Windows.
  *
  *    In this refactoring, we've stripped out most of the original RtMidi
  *    functionality, leaving only the method for selecting the API to use for
@@ -18,6 +22,8 @@
  *    port has been transplanted to this rtmidi library.  The name "rtmidi" is
  *    now somewhat misleading.
  */
+
+#error Internal RtMidi for Windows obsolete, use internal PortMidi instead.
 
 #include <string>
 
@@ -179,15 +185,14 @@ protected:
     }
 
     /**
-     * \return
-     *      Returns 0, since this is an input function that is implemented
-     *      fully only by midi_in_win.
+     *  This is an input function that is implemented fully only by
+     *  midi_in_win.
+     *
+     *  virtual int api_poll_for_midi ()
+     *  {
+     *      return 0;
+     *  }
      */
-
-    virtual int api_poll_for_midi ()
-    {
-        return 0;
-    }
 
     virtual void api_play (event * e24, midibyte channel);
     virtual void api_sysex (event * e24);

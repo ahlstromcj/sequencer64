@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-12
+ * \updates       2017-05-31
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus
@@ -264,45 +264,20 @@ mastermidibus::activate ()
 
 /**
  *  Initiate a poll() on the existing poll descriptors.  This is a
- *  primitive poll, which exits when some data is obtained.
+ *  primitive poll, which exits when some data is obtained, or sleeps a
+ *  millisecond in note data is obtained.
  *
- *          m_midi_master.api_poll_for_midi();       // NON-FUNCTIONAL!
+ * \return
+ *      Returns the number of input MIDI events waiting.
  */
 
 int
 mastermidibus::api_poll_for_midi ()
 {
     if (m_use_jack_polling)
-    {
-        for (;;)
-        {
-            if (m_inbus_array.poll_for_midi())
-            {
-                return 1;
-            }
-            else
-            {
-                millisleep(1);
-                return 0;
-            }
-        }
-    }
+        return mastermidibase::api_poll_for_midi(); /* default poll */
     else
         return m_midi_master.api_poll_for_midi();
-}
-
-/**
- *  Test the ALSA sequencer to see if any more input is pending.  Similar to
- *  api_poll_for_midi(), except it is threadsafe.  We got some cleanup to do!
- *
- * \threadsafe
- */
-
-bool
-mastermidibus::api_is_more_input ()
-{
-    automutex locker(m_mutex);
-    return m_inbus_array.poll_for_midi();
 }
 
 /**
@@ -315,13 +290,9 @@ bool
 mastermidibus::api_get_midi_event (event * inev)
 {
     if (m_use_jack_polling)
-    {
         return m_inbus_array.get_midi_event(inev);
-    }
     else
-    {
         return m_midi_master.api_get_midi_event(inev);
-    }
 }
 
 }           // namespace seq64

@@ -15,8 +15,8 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with seq24; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with seq24; if not, write to the Free Software Foundation, Inc.,
+ *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  */
 
 /**
@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-05-27
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -39,18 +39,19 @@
 
 #include <QFrame>
 #include <QLayout>
-#include <qmath.h>
-#include <QScrollBar>
-#include <QScrollArea>
-#include <QPalette>
-#include <QMenu>
 
-#include "sequence.hpp"
-#include "qseqkeys.hpp"
-#include "qseqtime.hpp"
-#include "qseqroll.hpp"
-#include "qseqdata.hpp"
-#include "qstriggereditor.hpp"
+#include "sequence.hpp"                 /* seq64::edit_mode_t enumeration   */
+
+/*
+ *  A bunch of forward declarations.  The Qt header files are moved into the
+ *  cpp file.
+ */
+
+class QWidget;
+class QGridLayout;
+class QScrollArea;
+class QPalette;
+class QMenu;
 
 namespace Ui
 {
@@ -60,6 +61,11 @@ namespace Ui
 namespace seq64
 {
     class perform;
+    class qseqkeys;
+    class qseqtime;
+    class qseqroll;
+    class qseqdata;
+    class qstriggereditor;
 
 /**
  * Holds tools for editing an individual MIDI sequence

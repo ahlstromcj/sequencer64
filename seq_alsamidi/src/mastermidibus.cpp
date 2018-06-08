@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2017-03-26
+ * \updates       2017-06-02
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of ALSA MIDI support.
@@ -492,7 +492,7 @@ mastermidibus::api_flush ()
 }
 
 /**
- *  Initiate a poll() on the existing poll descriptors.
+ *  Initiate a poll() on the existing poll descriptors.  The m_
  *
  *  No locking needed?
  *
@@ -506,8 +506,14 @@ mastermidibus::api_flush ()
 int
 mastermidibus::api_poll_for_midi ()
 {
-    return poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
+    int result = poll(m_poll_descriptors, m_num_poll_descriptors, 1000);
+    if (result == 0)
+        millisleep(1);
+
+    return result;
 }
+
+#ifdef USE_SND_SEQ_EVENT_INPUT_PENDING
 
 /**
  *  Test the ALSA sequencer to see if any more input is pending.
@@ -523,8 +529,16 @@ bool
 mastermidibus::api_is_more_input ()
 {
     automutex locker(m_mutex);
+
+    /*
+     * Try the poll function instead.  This implementation is on its way out
+     * anyway.
+     */
+
     return snd_seq_event_input_pending(m_alsa_seq, 0) > 0;
 }
+
+#endif  // USE_SND_SEQ_EVENT_INPUT_PENDING
 
 /**
  *  Start the given ALSA MIDI port.
@@ -598,12 +612,13 @@ mastermidibus::api_port_start (int bus, int port)
     }                                           /* end loop for clients */
 
     /*
-     * Get the number of MIDI input poll file descriptors.
+     * Get the number of MIDI input poll file descriptors.  Allocate the
+     * buffer to hold the descriptors, then get the descriptors from ALSA.
      */
 
     m_num_poll_descriptors = snd_seq_poll_descriptors_count(m_alsa_seq, POLLIN);
-    m_poll_descriptors = new pollfd[m_num_poll_descriptors]; /* allocate info */
-    snd_seq_poll_descriptors                        /* get input descriptors */
+    m_poll_descriptors = new pollfd[m_num_poll_descriptors];
+    snd_seq_poll_descriptors
     (
         m_alsa_seq, m_poll_descriptors, m_num_poll_descriptors, POLLIN
     );

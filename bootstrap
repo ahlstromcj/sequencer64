@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2018-04-09
+# \update     	2018-05-30
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -259,6 +259,10 @@ if [ $DOCLEAN == "yes" ] ; then
    clean_tempfiles
    clean_m4
    clean_qt5files
+
+# Later, see about using clean_tree(), clean_project(), but safely.
+
+   rm -f include/seq64-config.h
    echo "   Config, GNU, temp, m4, and Qt 5 generated files removed."
 fi
 

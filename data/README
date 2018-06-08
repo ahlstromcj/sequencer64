@@ -1,9 +1,11 @@
 Data Directory
 Chris Ahlstrom
-2018-01-02 to 2018-01-02
+2018-01-02 to 2018-05-27
 
 This directory contains files to be installed in the ${prefix}/share
-directory (e.g. /usr/share or /usr/local/share).
+directory (e.g. /usr/share or /usr/local/share) on Linux, or in the
+installation directory (e.g.  C:/Program Files (x86)/Sequencer64/data) on
+Windows.
 
 The files include alternate configuration files that the user can copy to
 $HOME/.config/sequencer64 and modify to satisfaction, and sample

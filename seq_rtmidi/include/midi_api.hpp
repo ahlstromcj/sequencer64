@@ -9,7 +9,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; modifications by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2017-03-21
+ * \updates       2017-06-02
  * \license       See the rtexmidi.lic file.
  *
  *  Declares the following classes:
@@ -129,15 +129,13 @@ public:
         return true;
     }
 
+    virtual int api_poll_for_midi ();   /* now has a default implementation */
     virtual bool api_init_out () = 0;
     virtual bool api_init_out_sub () = 0;
     virtual bool api_init_in () = 0;
     virtual bool api_init_in_sub () = 0;
     virtual bool api_deinit_in () = 0;
     virtual bool api_get_midi_event (event *) = 0;
-
-    virtual int api_poll_for_midi () = 0;
-
     virtual void api_play (event * e24, midibyte channel) = 0;
     virtual void api_sysex (event * e24) = 0;
     virtual void api_continue_from (midipulse tick, midipulse beats) = 0;

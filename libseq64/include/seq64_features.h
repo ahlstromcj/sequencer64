@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2018-03-20
+ * \updates       2018-05-30
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -78,17 +78,17 @@
 #undef USE_SEQUENCE_EDIT_MODE
 
 /**
- *  Kepler34 has a feature for coloring sequence patterns.  Not supportable in
- *  our current Gtkmm implementation, but we're making room for it now.
- *
+ *  Kepler34 has a feature for coloring sequence patterns.  However, it
+ *  forces every MIDI file to carry 1024 instances of color information.
  *  Compiles, but don't enable until we decide it's worth storing an extra
- *  1024 bytes in the MIDI file.
+ *  1024 bytes in the MIDI file.  Instead, see SEQ64_SHOW_COLOR_PALETTE.
  */
 
-#undef  USE_SEQUENCE_COLOR
+#undef USE_KEPLER34_SEQUENCE_COLOR
 
 /**
- *  A better way to implement the Kepler34 sequence-color feature.
+ *  A better way to implement the Kepler34 sequence-color feature.  Here,
+ *  each sequence that has color has an optional SeqSpec for pattern color.
  */
 
 #define SEQ64_SHOW_COLOR_PALETTE
@@ -117,15 +117,8 @@
 #ifdef SEQ64_QTMIDI_SUPPORT
 #define SEQ64_SONG_BOX_SELECT
 #else
-#undef  SEQ64_SONG_BOX_SELECT               /* not ready in Gtkmm support   */
+#undef  SEQ64_SONG_BOX_SELECT           /* not ready in Gtkmm support       */
 #endif
-
-/**
- *  Odds and ends that we missed.  This value allows non-notes to be included
- *  in a selection for movement or other adjustment.
- */
-
-#define SEQ64_NON_NOTE_EVENT_ADJUSTMENT     /* see sequence.cpp             */
 
 /**
  *  Currently, many macros are undefined as tentative or experimental.
@@ -137,7 +130,7 @@
  *  accomplished by the sequence::multiply_patten() function.
  */
 
-#undef  USE_STAZED_COMPANDING
+#undef USE_STAZED_COMPANDING
 
 /**
  *  Adds: (1) skipping some bars in drawing the grid in perftime, to allow for
@@ -145,7 +138,7 @@
  *  sequence has been given a name (and thus presumably been edited).
  */
 
-#undef  USE_STAZED_EXTRAS
+#undef USE_STAZED_EXTRAS
 
 /**
  *  If defined, adds some extra snap values to the perfedit snap menu.
@@ -154,37 +147,14 @@
  *  this code at least compiles.
  */
 
-#undef  USE_STAZED_EXTRA_SNAPS
+#undef USE_STAZED_EXTRA_SNAPS
 
 /**
  *  Adds more SYSEX processing, plus the ability to read SYSEX information
  *  from a file.
  */
 
-#undef  USE_SYSEX_PROCESSING            /* disabled in Seq24 as well        */
-
-/**
- *  This is a big one, bringing in some massive changes to how JACK is
- *  handled.  It looks good, complex, but now proven, and the only option.
- *
- *  #define USE_STAZED_JACK_SUPPORT
- */
-
-/**
- *  Enables using the lfownd dialog to control the envelope of certain events
- *  in seqedit's seqdata pane.  We're not too keen on the user interface,
- *  though.  However, it is now a configure option, and is now enabled by
- *  default.
- *
- *  #define SEQ64_STAZED_LFO_SUPPORT
- */
-
-/**
- *  Provides support for up to a 3 x 2 array of mainwids.  Now a configure
- *  option.
- *
- * #define SEQ64_MULTI_MAINWID
- */
+#undef USE_SYSEX_PROCESSING            /* disabled in Seq24 as well        */
 
 /**
  *  Adds a button to disable the main menu in the main window.  Adds a button
@@ -211,58 +181,58 @@
  *  In the perform object, replaces a direct call to sequence::stream_event()
  *  with a call to mastermidibus::dump_midi_input(), which then is supposed to
  *  allocate the event to the sequence that has a matching channel.
- *
  *  Unlike in Seq32, however, this is currently a member option in the sequence
  *  class.  We will want to make it a run-time option and then remove this
  *  macro here.  Done.  See the rc_settings::filter_by_channel() option.
  *
- * #define  USE_STAZED_MIDI_DUMP
+ * #define USE_STAZED_MIDI_DUMP
  */
 
 /**
  *  Adds the ability to select odd/even notes in seqedit.
  */
 
-#undef  USE_STAZED_ODD_EVEN_SELECTION
+#undef USE_STAZED_ODD_EVEN_SELECTION
 
 /**
  *  Not yet defined.
  */
 
-#undef  USE_STAZED_SELECTION_EXTENSIONS
+#undef USE_STAZED_SELECTION_EXTENSIONS
 
 /**
  *  Not yet defined.
  */
 
-#undef  USE_STAZED_PLAYING_CONTROL
+#undef USE_STAZED_PLAYING_CONTROL
 
 /**
  *  Not yet defined.
  */
 
-#undef  USE_STAZED_RANDOMIZE_SUPPORT
+#undef USE_STAZED_RANDOMIZE_SUPPORT
 
 /**
  *  Not yet defined.
  */
 
-#undef  USE_STAZED_SEQDATA_EXTENSIONS
+#undef USE_STAZED_SEQDATA_EXTENSIONS
 
 /**
  *  Not yet defined.
  */
 
-#undef  USE_STAZED_SHIFT_SUPPORT
+#undef USE_STAZED_SHIFT_SUPPORT
 
 /**
  *  Stazed implementation of auto-scroll.
  */
 
-#undef  USE_STAZED_PERF_AUTO_SCROLL
+#undef USE_STAZED_PERF_AUTO_SCROLL
 
 /*
- * To recapitulate, all the options above are experimental and in progress.
+ * To recapitulate, all the options above are experimental and may not
+ * even be in progress.
  */
 
 /**
@@ -277,6 +247,13 @@
  *    - SEQ64_STAZED_CHORD_GENERATOR
  *    - SEQ64_STAZED_TRANSPOSE
  *    - SEQ64_STAZED_LFO_SUPPORT
+ *      Enables using the lfownd dialog to control the envelope of certain events
+ *      in seqedit's seqdata pane.  We're not too keen on the user interface,
+ *      though.  However, it is now a configure option, and is now enabled by
+ *      default.
+ *    - SEQ64_MULTI_MAINWID
+ *      Provides support for up to a 3 x 2 array of mainwids.  Now a configure
+ *      option.
  */
 
 /*
@@ -298,11 +275,15 @@
  *  Moved from seqmenu.  Seems to work pretty well now.
  */
 
+#ifdef SEQ64_QTMIDI_SUPPORT
+#undef SEQ64_EDIT_SEQUENCE_HIGHLIGHT    /* not ready in Qt 5 support        */
+#else
 #define SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+#endif
 
 /**
  *  This special value of zoom sets the zoom according to a power of two
- *  related to the PPQN value of the song.  Is this really used?
+ *  related to the PPQN value of the song.
  */
 
 #define SEQ64_USE_ZOOM_POWER_OF_2       0
@@ -328,7 +309,11 @@
  *      active.  Still investigating.
  */
 
+#ifdef SEQ64_QTMIDI_SUPPORT
+#undef SEQ64_FOLLOW_PROGRESS_BAR        /* not ready in Qt 5 support        */
+#else
 #define SEQ64_FOLLOW_PROGRESS_BAR
+#endif
 
 /**
  * \obsolete
@@ -369,7 +354,7 @@
 #define SEQ64_USE_BLACK_SELECTION_BOX
 
 /**
- * This macro indicates an experimental feature where we are tyring to see
+ * This macro indicates an experimental feature where we are trying to see
  * if using std::multimap as an event-container has any benefits over
  * using std::list.  Define this macro to use the multimap.  So far, we
  * recommend using it.  In debug mode, the b4uacuse MIDI files take about 8
@@ -387,10 +372,13 @@
  * somewhat properly from the list.  We've added code to sort the event list
  * after the fact when loading the file, which speeds things up.  But, as
  * the contrib/notes/ev*.png files show, the events are drawn funny in the
- * pattern slot.  They play fine, though.  Still exploring this issue.
+ * pattern slot.  They play fine, though.
+ *
+ * What we finally did was use the faster list method, but only sort the list
+ * after adding every event to it.
  */
 
-#undef  SEQ64_USE_EVENT_MAP             /* the map seems to work well!  */
+#undef SEQ64_USE_EVENT_MAP              /* map seems to work well! But...   */
 
 /**
  *  Determins which implementation of a MIDI byte container is used.

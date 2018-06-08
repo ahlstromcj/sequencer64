@@ -24,7 +24,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Sequencer64 [qplseq64]</string>
+      <string>Sequencer64 [qpseq64]</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -35,6 +35,23 @@
     <widget class="Line" name="line_2">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="aboutVersionLabel">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>0.95.0-c12345af * master</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>

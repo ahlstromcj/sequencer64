@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-05-12
+ * \updates       2018-05-19
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -345,7 +345,12 @@ options::add_midi_clock_page ()
     (
         entry,
         "Sets the number of the tempo track, and it is saved to the 'rc' file. "
-        "A very interactive control; play with it to understand how it works."
+
+        /*
+         * Too much:
+         *
+         * "A very interactive control; play with it to understand how it works."
+         */
     );
     hboxmeta->pack_start(*entry, Gtk::PACK_SHRINK, 4);
     hboxmeta->pack_start(*label, Gtk::PACK_SHRINK, 4);
@@ -364,9 +369,9 @@ options::add_midi_clock_page ()
     (
         log_to_song,
         "Saves the current tempo track number as a song parameter, saved "
-        "to the MIDI file, as "
-        "opposed to a global Sequencer64 value. However, remember that "
-        "the given value will be save to the 'rc' file when exiting."
+        "to the MIDI file, as opposed to a global Sequencer64 value. "
+        "However, remember that the value will be saved to the 'rc' "
+        "file when exiting."
     );
 }
 

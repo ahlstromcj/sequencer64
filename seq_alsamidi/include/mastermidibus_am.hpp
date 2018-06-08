@@ -93,11 +93,8 @@ public:
 
 private:
 
-    virtual bool api_is_more_input ();
     virtual bool api_get_midi_event (event * in);
-
     virtual int api_poll_for_midi ();
-
     virtual void api_init (int ppqn, midibpm bpm);
     virtual void api_set_ppqn (int ppqn);
     virtual void api_set_beats_per_minute (midibpm bpm);

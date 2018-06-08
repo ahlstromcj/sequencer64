@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-31
- * \updates       2018-05-12
+ * \updates       2018-05-31
  * \license       GNU GPLv2 or above
  *
  *  This file provides a base-class implementation for various master MIDI
@@ -341,7 +341,13 @@ busarray::add (midibus * bus, bool inputing)
 {
     size_t count = m_container.size();
     businfo b(bus);
-    m_container.push_back(b);
+
+    /*
+     * If we do this here, the copy of b never gets set!
+     *
+     * m_container.push_back(b);
+     */
+
     if (inputing)
     {
         bool was_inputing = bus->get_input();
@@ -349,6 +355,7 @@ busarray::add (midibus * bus, bool inputing)
             bus->set_input(inputing);       /* will call init_in()          */
     }
     b.init_input(inputing);                 /* just sets the flag (again)   */
+    m_container.push_back(b);               /* now we can push a copy       */
 #ifdef SEQ64_SHOW_API_CALLS
     printf
     (
@@ -807,22 +814,27 @@ busarray::is_system_port (bussbyte bus)
  *  poll, which exits when some data is obtained.  It also applies only to the
  *  input busses.
  *
+ *  One issue is that we have no way of knowing here which MIDI input device
+ *  has MIDI input events waiting.  Should we randomize the order of polling
+ *  in order to avoid starving some input devices?
+ *
  * \return
- *      Returns true if a MIDI event was detected on one of the busses.  Note
- *      that this is a boolean value, while the midibase::poll_for_midi()
- *      function returns an integer.
+ *      Returns the number of MIDI events detected on one of the busses.  Note
+ *      that this is no longer a boolean value.
  */
 
-bool
+int
 busarray::poll_for_midi ()
 {
+    int result = 0;
     std::vector<businfo>::iterator bi;
     for (bi = m_container.begin(); bi != m_container.end(); ++bi)
     {
-        if (bi->bus()->poll_for_midi() > 0)
-            return true;
+        result = bi->bus()->poll_for_midi();
+        if (result > 0)
+            break;
     }
-    return false;
+    return result;
 }
 
 /**

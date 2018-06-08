@@ -1,20 +1,21 @@
-README for Sequencer64 0.94.8 (Native JACK, CLI, varisets, tempo, Windows)
+README for Sequencer64 0.95.0 (Native JACK, CLI, varisets, tempo, Windows)
 Chris Ahlstrom
-2015-09-10 to 2018-05-13
+2015-09-10 to 2018-06-02
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
 The heart of seq24 remains intact.  It is an old friend, and maintains some
 backward-compatibility with the --legacy option.  An extensive manual is
 found at https://github.com/ahlstromcj/sequencer64-doc.git.  Prebuilt Debian
-packages and source tarballs are available:
+packages, source tarballs, and Windows installers are available:
 
     https://github.com/ahlstromcj/sequencer64-packages.git.
 
-A number of different builds are supported; here are the two main ones:
+Sequencer64 has quite a few builds providing support for ALSA, PortMidi, JACK,
+and Gtkmm 2.4, Qt 5, and command-line user-interfaces.
 
 Native JACK support: Seq64rtmidi/seq64
 
-    Sequencer64 now has native JACK MIDI support, with virtual/manual ports
+    Sequencer64 has native JACK MIDI and Transport, with virtual/manual ports
     and auto-connect like ALSA, based on RtMidi massively refactored. It falls
     back to ALSA support if JACK is not running.  See README.jack for basic
     instructions on native JACK.
@@ -28,15 +29,15 @@ GUI-less native JACK support: Seq64rtmidi/seq64cli
     hope to add an OSC harness eventually.  It supports a "daemonize" option
     and dumping status to a log-file in the user-configuration directory.
 
-Windows support:
+Windows support (derived from PortMidi):
 
-    This version now works, unofficially, using a Qt 5 user-interface based on
-    Kepler34, but using the standard Sequencer64 libraries.  The
-    user-interface works, and Windows built-in MIDI devices are detected,
-    inaccessible devices are ignored, and playback (e.g. to the built-in
-    wavetable synthesizer) work.
+    This version uses a Qt 5 user-interface based on Kepler34, but using the
+    standard Sequencer64 libraries.  The user-interface works, and Windows
+    built-in MIDI devices are detected, inaccessible devices are ignored, and
+    playback (e.g. to the built-in wavetable synthesizer) work. It can be
+    built easily via Qt Creator or qmake.
 
-    However, the Qt 5 GUI is well behind the Gtkmm 2.4 GUI for many features.
+    The Qt 5 GUI is well behind the Gtkmm 2.4 GUI for many features.
     That will be fixed bit-by-bit (help wanted!).  In the meantime,
     some configuration can be done manually in the "rc" and "usr" files.
     See README.windows for more information.
@@ -46,6 +47,16 @@ conventional source tarball.
 
 Recent changes:
 
+    -   Version 0.95.0:
+        -   Improved the Windows version and its packaging.  Added a Windows
+            icon, an installer, better data support and documentation, and
+            upgrades to the GUI.
+        -   Added the ability to ignore ports that cannot be opened, and to
+            report them.  Needed for Windows.
+        -   Fixed display of event data values in the Gtkmm GUI.
+        -   Fixed broken "replace loop" recording functionality (Linux).
+        -   Fixed broken "expand loop" recording functionality (Linux).
+        -   As usual, a raft of minor improvements.
     -   Version 0.94.8:
         -   Fixed issues with configure.ac.
         -   Added Qt "pro" files to support qmake and Qt Creator to make
@@ -69,14 +80,6 @@ Recent changes:
         -   The basics of the Qt build work.  It uses the internals from
             seq64, but the Qt user-interface still lacks a lot of features of
             seq64.
-    -   Version 0.94.6:
-        -   Fixed tempo handling, issue #141.
-        -   Added sequence-coloring, stored per sequence as an index into a
-            palette.  Colors the mainwid sequence events background and the
-            perfroll events background.
-        -   Improving support for a Qt 5 build, still not ready for real
-            usage, use at your own risk
-        -   Support for configure script without needing to bootstrap.
     -   For earlier version information, see the NEWS and ChangeLog files.
 
 This package is oriented to developers and users who do not mind building from

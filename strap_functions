@@ -251,6 +251,8 @@ run_cmd()
 #     Cleans out the whole project tree of garbage.  Currently unused.  See the
 #     usage of DOCLEAN and DOFULLCLEAN in the bootstrap script.
 #
+#     MIGHT NOT BE CALLED!
+#
 #------------------------------------------------------------------------------
 
 function clean_tree()

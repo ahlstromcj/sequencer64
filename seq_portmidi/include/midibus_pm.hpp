@@ -61,7 +61,7 @@ class midibus : public midibase
 private:
 
     /**
-     *  The PortMidiStream for the Windows implementation.
+     *  The PortMidiStream for the Windows/Linux/Mac OSX implementation.
      */
 
     PortMidiStream * m_pms;

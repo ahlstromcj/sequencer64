@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-05-08
+ * \updates       2017-05-27
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the midibus class.
@@ -113,15 +113,22 @@ midibus::api_poll_for_midi ()
          * pmNoError and pmNoData, and TRUE == any other value.
          */
 
-        if (err == pmNoError || err == pmNoData || err == pmGotData)
+        if (err == pmNoError || err == pmNoData)   // || err == pmGotData)
         {
             return 0;
         }
+        else if (err == pmGotData)
+        {
+            return 1;
+        }
+
+#ifdef THIS_MAKES_SENSE                 /* it doesn't                   */
         if (err == TRUE)                /* back to what it was          */
         {
             errprintf("Pm_Poll(): %s\n", Pm_GetErrorText(err));
             return 1;
         }
+#endif
     }
     return 0;
 }
@@ -239,10 +246,13 @@ midibus::api_continue_from (midipulse /* tick */, midipulse beats)
 void
 midibus::api_start ()
 {
-    PmEvent event;
-    event.timestamp = 0;
-    event.message = Pm_Message(EVENT_MIDI_START, 0, 0);
-    Pm_Write(m_pms, &event, 1);
+    if (not_nullptr(m_pms) && ! port_disabled())
+    {
+        PmEvent event;
+        event.timestamp = 0;
+        event.message = Pm_Message(EVENT_MIDI_START, 0, 0);
+        Pm_Write(m_pms, &event, 1);
+    }
 }
 
 /**
@@ -253,10 +263,13 @@ midibus::api_start ()
 void
 midibus::api_stop ()
 {
-    PmEvent event;
-    event.timestamp = 0;
-    event.message = Pm_Message(EVENT_MIDI_STOP, 0, 0);
-    Pm_Write(m_pms, &event, 1);
+    if (not_nullptr(m_pms) && ! port_disabled())
+    {
+        PmEvent event;
+        event.timestamp = 0;
+        event.message = Pm_Message(EVENT_MIDI_STOP, 0, 0);
+        Pm_Write(m_pms, &event, 1);
+    }
 }
 
 /**
@@ -264,7 +277,7 @@ midibus::api_stop ()
  *
  * \question
  *      The subatomic glue (Windows/PortMidi) implementation of Seq24 uses a
- *      mutex to lock this function.  Do we need to do that?  We do, in
+ *      mutex to lock this function.  Do we need to do that?  We do that, in
  *      midibase::clock().
  *
  * \param tick
@@ -275,10 +288,13 @@ midibus::api_stop ()
 void
 midibus::api_clock (midipulse /* tick */)
 {
-    PmEvent event;
-    event.timestamp = 0;                        // WHY NOT use 'tick' here???
-    event.message = Pm_Message(EVENT_MIDI_CLOCK, 0, 0);
-    Pm_Write(m_pms, &event, 1);
+    if (not_nullptr(m_pms) && ! port_disabled())
+    {
+        PmEvent event;
+        event.timestamp = 0;                /* WHY NOT use 'tick' here? */
+        event.message = Pm_Message(EVENT_MIDI_CLOCK, 0, 0);
+        Pm_Write(m_pms, &event, 1);
+    }
 }
 
 }           // namespace seq64

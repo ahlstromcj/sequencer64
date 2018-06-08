@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-04-24
+# \update      2018-05-30
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -55,7 +55,8 @@ FORMS += \
  forms/qseditoptions.ui  \
  forms/qseqeditframe.ui  \
  forms/qsliveframe.ui  \
- forms/qsmainwnd.ui
+ forms/qsmainwnd.ui \
+ forms/qsbuildinfo.ui
 
 RESOURCES += src/qseq64.qrc
 
@@ -64,6 +65,8 @@ HEADERS += \
  include/gui_assistant_qt5.hpp \
  include/gui_palette_qt5.hpp \
  include/keys_perform_qt5.hpp \
+ include/qclocklayout.hpp \
+ include/qinputcheckbox.hpp \
  include/qperfeditframe.hpp \
  include/qperfnames.hpp \
  include/qperfroll.hpp \
@@ -82,12 +85,15 @@ HEADERS += \
  include/qsmaintime.hpp \
  include/qsmainwnd.hpp \
  include/qstriggereditor.hpp \
- include/qt5_helpers.hpp
+ include/qt5_helpers.hpp \
+ include/qsbuildinfo.hpp
 
 SOURCES += \
  src/gui_assistant_qt5.cpp \
  src/gui_palette_qt5.cpp \
  src/keys_perform_qt5.cpp \
+ src/qclocklayout.cpp \
+ src/qinputcheckbox.cpp \
  src/qperfeditframe.cpp \
  src/qperfnames.cpp \
  src/qperfroll.cpp \
@@ -105,7 +111,8 @@ SOURCES += \
  src/qsmaintime.cpp \
  src/qsmainwnd.cpp \
  src/qstriggereditor.cpp \
- src/qt5_helpers.cpp
+ src/qt5_helpers.cpp \
+ src/qsbuildinfo.cpp
 
 # The output of the uic command goes to the seq_qt5/forms directory in
 # the shadow directory, and cannot be located unless the OUT_PWD macro

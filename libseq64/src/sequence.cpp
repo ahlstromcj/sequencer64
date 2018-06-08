@@ -4798,8 +4798,11 @@ sequence::set_input_recording (bool record_active, bool toggle)
     if (toggle)
         record_active = ! m_recording;
 
-    if (! m_thru)
+    /* HOTFIX: except if already thru and try to turn recoding (hence input) off, set input to here no matter what, because even if m_thru, input could have been replaced in another sequenence  */
+    if (record_active or !m_thru) {
         m_master_bus->set_sequence_input(record_active, this);
+        printf("Seq %d '%s' set_input_recording, set master bus so that for flag %d \n", number(), name().c_str(), record_active);
+    }
 
     set_recording(record_active);
 }
@@ -4878,8 +4881,11 @@ sequence::set_input_thru (bool thru_active, bool toggle)
     if (toggle)
         thru_active = ! m_thru;
 
-    if (! m_recording)
+    /* HOTFIX: except if already recording and try to turn thru (hence input) off, set input to here no matter what, because even in m_recording, input could have been replaced in another sequenence  */
+    if (thru_active or !m_recording) {
         m_master_bus->set_sequence_input(thru_active, this);
+        printf("Seq %d '%s' set_input_thru, set master bus so that for flag %d \n", number(), name().c_str(), thru_active);
+    }
 
     set_thru(thru_active);
 }

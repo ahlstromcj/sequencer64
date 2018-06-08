@@ -4750,8 +4750,10 @@ void
 sequence::set_recording (bool r)
 {
     automutex locker(m_mutex);
-    m_notes_on = 0;             // should this require (r != m_recording)?
-    m_recording = r;
+    if (r != m_recording) {
+        m_notes_on = 0;
+        m_recording = r;
+    }
 }
 
 /**
@@ -4768,8 +4770,11 @@ void
 sequence::set_quantized_recording (bool qr)
 {
     automutex locker(m_mutex);
-    m_notes_on = 0;             // should this require (qr != m_quantized_rec)?
-    m_quantized_rec = qr;
+    if (qr != m_quantized_rec) {
+
+        m_notes_on = 0;
+        m_quantized_rec = qr;
+    }
 }
 
 /**

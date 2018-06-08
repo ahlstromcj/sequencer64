@@ -1736,6 +1736,7 @@ public:
     void set_recording (bool rec_active, int seq, bool toggle = false);
     void set_quantized_recording (bool rec_active, sequence * s);
     void set_quantized_recording (bool rec_active, int seq, bool toggle = false);
+    void set_overwrite_recording (bool overwrite_active, int seq, bool toggle = false);
     void set_thru (bool rec_active, bool thru_active, sequence * s);
     void set_thru (bool thru_active, int seq, bool toggle = false);
     bool selected_trigger

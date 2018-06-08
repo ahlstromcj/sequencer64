@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2018-03-30
+# \update      2018-06-07
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -181,7 +181,8 @@ libseq64_la_SOURCES = \
 	user_instrument.cpp \
 	user_midi_bus.cpp \
 	user_settings.cpp \
-	userfile.cpp
+	userfile.cpp \
+   wrkfile.cpp
 
 libseq64_la_LDFLAGS = -version-info $(version)
 libseq64_la_LIBADD = $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)

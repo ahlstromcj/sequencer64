@@ -7,7 +7,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-04-22
+ * \updates       2018-06-08
  * \version       $Revision$
  *
  *    We basically include only the functions we need for Sequencer64, not
@@ -16,6 +16,7 @@
  */
 
 #include <algorithm>                    /* std::replace() function          */
+#include <cctype>                       /* std::toupper() function          */
 #include <stdlib.h>                     /* realpath(3) or _fullpath()       */
 #include <string.h>                     /* strlen() etc.                    */
 #include <sys/types.h>
@@ -441,6 +442,82 @@ strip_quotes (const std::string & item)
         }
     }
     return result;
+}
+
+/**
+ *  Gets a file extension, defined simply as the text after the last period
+ *  in the path.
+ *
+ *  We could use libmagic to determine the actual file type, but that is
+ *  probably overkill for our purposes.
+ *
+ * \param path
+ *      Provides the file name or the full path to the file.
+ *
+ * \return
+ *      Returns the file extension.  If there is no period, then an empty
+ *      string is returned.
+ */
+
+std::string
+file_extension (const std::string & path)
+{
+    std::string result;
+    std::string::size_type ppos = path.find_last_of(".");
+    if (ppos != std::string::npos)
+    {
+        std::string::size_type end_index = path.length() - 1;
+        result = path.substr(ppos + 1, end_index - 1);
+    }
+    return result;
+}
+
+/**
+ *
+ */
+
+static inline bool
+casecompare (char a, char b)
+{
+    return
+    (
+        std::toupper(static_cast<unsigned char>(a)) ==
+            std::toupper(static_cast<unsigned char>(b))
+    );
+}
+
+/**
+ *
+ */
+
+bool
+strcasecompare (const std::string & a, const std::string & b)
+{
+    return
+    (
+        (a.size() == b.size()) &&
+        std::equal(a.begin(), a.end(), b.begin(), casecompare)
+    );
+}
+
+/**
+ *  Sees if file-extensions match, case-insensitively.
+ *
+ * \param path
+ *      Provides the file name or the full path to the file.
+ *
+ * \param target
+ *      Provides the file extension to match against, without the period.
+ *
+ * \return
+ *      Returns true if the file extensions match.
+ */
+
+bool
+file_extension_match (const std::string & path, const std::string & target)
+{
+    std::string ext = file_extension(path);
+    return strcasecompare(ext, target);
 }
 
 }           // namespace seq64

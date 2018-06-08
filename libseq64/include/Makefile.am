@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2018-04-12
+# \update      2018-06-07
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -136,7 +136,8 @@ pkginclude_HEADERS = \
 	userfile.hpp \
    user_instrument.hpp \
    user_midi_bus.hpp \
-   user_settings.hpp 
+   user_settings.hpp \
+   wrkfile.hpp
 
 #******************************************************************************
 # uninstall-hook

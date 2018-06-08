@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-05-12
+ * \updates       2018-06-08
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -77,11 +77,10 @@
  *  enabled, just to preserve expected "legacy" behavior under "legacy" usage.
  */
 
-#include <cctype>
 #include <csignal>
 #include <cerrno>
-#include <cstring>
-#include <stdio.h>                      /* snprintf()                   */
+#include <cstring>                      /* strerror()                       */
+#include <stdio.h>                      /* snprintf()                       */
 #include <gtk/gtkversion.h>
 #include <gtkmm/aboutdialog.h>
 #include <gtkmm/adjustment.h>
@@ -94,9 +93,12 @@
 #include <gtkmm/stock.h>
 #include <gtkmm/tooltips.h>
 
+#include "calculations.hpp"             /* pulse_to_measurestring()         */
+#include "cmdlineopts.hpp"              /* for build info function          */
+#include "file_functions.hpp"           /* seq64::file_extension_match()    */
 #include "globals.h"
 #include "gtk_helpers.h"
-#include "gui_key_tests.hpp"            /* is_ctrl_key(), etc.          */
+#include "gui_key_tests.hpp"            /* is_ctrl_key(), etc.              */
 #include "keys_perform.hpp"
 #include "keystroke.hpp"
 #include "maintime.hpp"
@@ -105,8 +107,7 @@
 #include "midifile.hpp"
 #include "options.hpp"
 #include "perfedit.hpp"
-#include "cmdlineopts.hpp"              /* for build info function          */
-#include "calculations.hpp"             /* pulse_to_measurestring()         */
+#include "wrkfile.hpp"
 
 #if defined SEQ64_JE_PATTERN_PANEL_SCROLLBARS
 #include <gtkmm/layout.h>
@@ -2130,7 +2131,7 @@ mainwnd::file_save_as (SaveOption option)
 }
 
 /**
- *  Opens and parses (reads) a MIDI file.
+ *  Opens and parses (reads) a MIDI file or a WRK file.
  *
  *  We leave the ppqn parameter set to the SEQ64_USE_DEFAULT for now, to
  *  preserve the legacy behavior of using the global ppqn, and scaling the
@@ -2150,13 +2151,14 @@ mainwnd::file_save_as (SaveOption option)
 void
 mainwnd::open_file (const std::string & fn)
 {
-    midifile f(fn);                     /* create object to represent file  */
+    bool is_wrk = file_extension_match(fn, "wrk");
+    midifile * f = is_wrk ? new wrkfile(fn) : new midifile(fn) ;
     perf().clear_all();
 
-    bool result = f.parse(perf());      /* parsing handles old & new format */
+    bool result = f->parse(perf());      /* parsing handles old & new format */
     if (result)
     {
-        ppqn(f.ppqn());                 /* get and save the actual PPQN     */
+        ppqn(f->ppqn());                 /* get and save the actual PPQN     */
         rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
         rc().filename(fn);
         rc().add_recent_file(fn);       /* from Oli Kester's Kepler34       */
@@ -2166,13 +2168,13 @@ mainwnd::open_file (const std::string & fn)
     }
     else
     {
-        std::string errmsg = f.error_message();
+        std::string errmsg = f->error_message();
         Gtk::MessageDialog errdialog
         (
             *this, errmsg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
         );
         errdialog.run();
-        if (f.error_is_fatal())
+        if (f->error_is_fatal())
             rc().remove_recent_file(fn);
     }
 }
@@ -2233,6 +2235,12 @@ mainwnd::choose_file ()
     filter_midi.add_pattern("*.mid");
     filter_midi.add_pattern("*.MID");
     dlg.add_filter(filter_midi);
+
+    Gtk::FileFilter filter_wrk;
+    filter_wrk.set_name("WRK files");
+    filter_wrk.add_pattern("*.wrk");
+    filter_wrk.add_pattern("*.WRK");
+    dlg.add_filter(filter_wrk);
 
     Gtk::FileFilter filter_any;
     filter_any.set_name("Any files");

@@ -9,7 +9,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-04-22
+ * \updates       2018-06-08
  * \version       $Revision$
  *
  *    Also see the file_functions.cpp module.
@@ -38,8 +38,14 @@ extern bool file_is_directory (const std::string & targetfile);
 extern bool make_directory (const std::string & pathname);
 extern std::string get_current_directory ();
 extern std::string get_full_path (const std::string & path);
-extern std::string normalize_path (const std::string & path, bool to_unix = true);
+extern std::string normalize_path (const std::string & path, bool tounix = true);
 extern std::string strip_quotes (const std::string & item);
+extern std::string file_extension (const std::string & path);
+extern bool strcasecompare (const std::string & a, const std::string & b);
+extern bool file_extension_match
+(
+    const std::string & path, const std::string & target
+);
 
 #endif      // SEQ64_FILE_FUNCTIONS_HPP
 

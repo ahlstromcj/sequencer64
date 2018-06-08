@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-05
+ * \updates       2018-06-08
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -171,7 +171,7 @@ midifile::~midifile ()
  */
 
 bool
-midifile::seek (size_t pos)
+midifile::read_seek (size_t pos)
 {
     bool result = false;
     if (pos > 0)
@@ -436,8 +436,7 @@ midifile::parse (perform & p, int screenset, bool importing)
     if (! result)
         return false;
 
-    m_error_message.clear();
-    m_disable_reported = false;
+    clear_errors();
     m_smf0_splitter.initialize();                   /* SMF 0 support        */
 
     midilong ID = read_long();                      /* read hdr chunk info  */
@@ -692,9 +691,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
             sequence * s = new sequence(m_ppqn);    /* create new sequence  */
             midilong len;                           /* important counter!   */
             midibyte d0, d1;                        /* was data[2];         */
-            if (s == nullptr)
+            if (is_nullptr(s))
             {
-                (void) set_error_dump("MIDI file parse: sequence allocation failed");
+                set_error_dump("MIDI file parse: sequence allocation failed");
                 return false;
             }
             sequence & seq = *s;                /* references are nicer     */

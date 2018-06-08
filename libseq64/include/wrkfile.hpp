@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-04
- * \updates       2018-06-04
+ * \updates       2018-06-08
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the WRK format, see, for example:
@@ -35,16 +35,11 @@
  *      WRK Cakewalk WRK File Parser (Input).
  */
 
-// #include "macros.h"
-#include <string>
-// #include <QObject>
+#include <list>                         /* std::list                        */
+#include "midifile.hpp"                 /* seq64::midifile base class       */
 
-// class QDataStream;
-
-#include "midifile.hpp"                /* seq64::midifile base class */
-
-/**
- * @{
+/*
+ * Do not document a namespace, it breaks Doxygen.
  */
 
 namespace seq64
@@ -65,7 +60,7 @@ enum wrk_chunk_t
     WC_MEMRGN_CHUNK = 7,    ///< Memory region
     WC_COMMENTS_CHUNK = 8,  ///< Comments
     WC_TRKOFFS_CHUNK = 9,   ///< Track offset
-    WC_TIMEBASE_CHUNK = 10, ///< Timebase. If present is the first chunk in the file.
+    WC_TIMEBASE_CHUNK = 10, ///< Timebase. If present, the first chunk in file.
     WC_TIMEFMT_CHUNK = 11,  ///< SMPTE time format
     WC_TRKREPS_CHUNK = 12,  ///< Track repetitions
     WC_TRKPATCH_CHUNK = 14, ///< Track patch
@@ -106,6 +101,75 @@ const std::string CakewalkHeader("CAKEWALK");
 class wrkfile : public midifile
 {
 
+private:
+
+    struct RecTempo
+    {
+        long time;
+        double tempo;
+        double seconds;
+    };
+
+private:
+
+    /**
+     *  A nested class for holding all the data elements.
+     */
+
+    class wrkfile_private
+    {
+        friend class wrkfile;
+
+    public:
+
+        wrkfile_private ();
+
+    private:
+
+        midilong m_Now;             ///< Now marker time
+        midilong m_From;            ///< From marker time
+        midilong m_Thru;            ///< Thru marker time
+        midibyte m_KeySig;          ///< Key signature (0=C, 1=C#, ... 11=B)
+        midibyte m_Clock;           ///< Clock Source (0=Int, 1=MIDI, 2=FSK, 3=SMPTE)
+        midibyte m_AutoSave;        ///< Auto save (0=disabled, 1..256=minutes)
+        midibyte m_PlayDelay;       ///< Play Delay
+        bool m_ZeroCtrls;           ///< Zero continuous controllers?
+        bool m_SendSPP;             ///< Send Song Position Pointer?
+        bool m_SendCont;            ///< Send MIDI Continue?
+        bool m_PatchSearch;         ///< Patch/controller search-back?
+        bool m_AutoStop;            ///< Auto-stop?
+        midilong m_StopTime;        ///< Auto-stop time
+        bool m_AutoRewind;          ///< Auto-rewind?
+        midilong m_RewindTime;      ///< Auto-rewind time
+        bool m_MetroPlay;           ///< Metronome on during playback?
+        bool m_MetroRecord;         ///< Metronome on during recording?
+        bool m_MetroAccent;         ///< Metronome accents primary beats?
+        midibyte m_CountIn;         ///< Measures of count-in (0=no count-in)
+        bool m_ThruOn;              ///< MIDI Thru enabled? (only if no THRU rec)
+        bool m_AutoRestart;         ///< Auto-restart?
+        midibyte m_CurTempoOfs;     ///< Which of 3 tempo offsets is used: 0..2
+        midibyte m_TempoOfs1;       ///< Fixed-point ratio value of offset 1
+        midibyte m_TempoOfs2;       ///< Fixed-point ratio value of offset 2
+        midibyte m_TempoOfs3;       ///< Fixed-point ratio value of offset 3
+        bool m_PunchEnabled;        ///< Auto-Punch enabled?
+        midilong m_PunchInTime;     ///< Punch-in time
+        midilong m_PunchOutTime;    ///< Punch-out time
+        midilong m_EndAllTime;      ///< Time of latest event (incl. all tracks)
+
+        int m_division;
+        midistring m_lastChunkData; // QByteArray m_lastChunkData;
+
+    //  QTextCodec * m_codec;
+    //  QDataStream * m_IOStream;
+
+        std::list<RecTempo> m_tempos;
+    };
+
+private:
+
+    wrkfile_private m_data;
+    int m_seq_number;
+
 public:
 
     wrkfile
@@ -122,20 +186,13 @@ public:
 
 private:
 
-    // midibyte readByte();
     midishort to_16_bit(midibyte c1, midibyte c2);
     midilong to_32_bit(midibyte c1, midibyte c2, midibyte c3, midibyte c4);
-    // midishort read16bit();
     midilong read_24_bit();
-    // midilong read32bit();
     std::string read_string (int len);
     std::string read_var_string ();
     void read_raw_data (int size);
-    void read_gap (int size);
-    bool at_end ();
-    void seek (long pos);
-
-    int read_check ();
+    int read_chunk ();
     void Track_chunk();
     void Vars_chunk();
     void Timebase_chunk();
@@ -153,7 +210,7 @@ private:
     void TrackBank();
     void TimeFormat();
     void Comments();
-    void processVariableRecord(int max);
+    void ProcessVariableRecord(int max);
     void NewTrack();
     void SoftVer();
     void TrackName();
@@ -166,16 +223,6 @@ private:
     void NewStream();
     void Unknown(int id);
     void End_chunk();
-
-    struct RecTempo
-    {
-        long time;
-        double tempo;
-        double seconds;
-    };
-
-    class wrkfile_private;
-    wrkfile_private * m_d;
 
 };          // class wrkfile
 

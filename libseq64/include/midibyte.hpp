@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-23
- * \updates       2018-04-10
+ * \updates       2018-06-07
  * \license       GNU GPLv2 or above
  *
  *  These typedef specifications are intended to remove the ambiguity we have
@@ -44,7 +44,8 @@
  *  encapsulating MIDI timing information.
  */
 
-#include <limits.h>                     /* ULONG_MAX and other limits   */
+#include <string>
+#include <climits>                     /* ULONG_MAX and other limits   */
 
 #include "easy_macros.h"                /* insure build macros defined  */
 
@@ -74,6 +75,12 @@ namespace seq64
  */
 
 typedef unsigned char midibyte;
+
+/**
+ *  Provides a string specialization to explicitly use unsigned characters.
+ */
+
+typedef std::basic_string<midibyte> midistring;
 
 /*
  *  An unusable value for a midibyte item.  It can be used to indicate an

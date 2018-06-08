@@ -155,7 +155,7 @@ sequence::sequence (int ppqn)
     m_clocks_per_metronome      (24),
     m_32nds_per_quarter         (8),
     m_us_per_quarter_note       (tempo_us_from_bpm(SEQ64_DEFAULT_BPM)),
-    m_rec_vol                   (0),
+    m_rec_vol                   (-1),           /* HOTFIX: free velocity until GUI edit */
     m_note_on_velocity          (SEQ64_DEFAULT_NOTE_ON_VELOCITY),
     m_note_off_velocity         (SEQ64_DEFAULT_NOTE_OFF_VELOCITY),
     m_musical_key               (SEQ64_KEY_OF_C),

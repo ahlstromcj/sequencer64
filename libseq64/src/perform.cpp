@@ -4662,8 +4662,9 @@ perform::set_recording (bool record_active, int seq, bool toggle)
 void
 perform::set_quantized_recording (bool record_active, sequence * s)
 {
-    if (not_nullptr(s))
-        s->set_recording(record_active);
+  if (not_nullptr(s)) {
+        s->set_quantized_recording(record_active);
+  }
 }
 
 /**

@@ -5072,11 +5072,15 @@ perform::input_func ()
 
                         if (m_master_bus->is_dumping())
                         {
-                            if (! midi_control_record(ev))
+			  // HOTFIX, will check for all events to prevent unwanted recordings
+			  // if (! midi_control_record(ev))
+                            if (! midi_control_event(ev))
                             {
                                 ev.set_timestamp(get_tick());
-                                if (rc().show_midi())
+                                if (rc().show_midi()) {
+				  printf("perform input func\n");
                                     ev.print();
+				}
 
                                 if (m_filter_by_channel)
                                     m_master_bus->dump_midi_input(ev);

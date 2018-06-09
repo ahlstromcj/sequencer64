@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-04
- * \updates       2018-06-07
+ * \updates       2018-06-09
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the WRK format, see, for example:
@@ -150,8 +150,15 @@ wrkfile::wrkfile
     int ppqn
 ) :
     midifile        (name, ppqn),
-    m_data          (),
-    m_seq_number    (0)
+    m_wrk_data      (),
+    m_perform       (nullptr),
+    m_screen_set    (-1),
+    m_importing     (false),
+    m_seq_number    (-1),
+    m_track_number  (-1),
+    m_track_count   (0),
+    m_track_time    (0),
+    m_current_seq   (nullptr)
 {
     //
 }
@@ -159,7 +166,7 @@ wrkfile::wrkfile
 /**
  *  \dtor
  *
- *  Nothing to delete, m_data is now a member, not a pointer.  Some might
+ *  Nothing to delete, m_wrk_data is now a member, not a pointer.  Some might
  *  argue that it is better, as Pedro did in his "Drumstick" project,
  *  to hide the data implement in the C++ file, rather than risk rebuilds by
  *  putting it in the header file.
@@ -171,15 +178,29 @@ wrkfile::~wrkfile()
 }
 
 /**
- * Read the chunk raw data (undecoded)
+ *  Shows a message (to console only) for Cakewalk events not supported in
+ *  Sequencer64.
+ */
+
+void
+wrkfile::not_supported (const std::string & tag)
+{
+    warnprintf("Cakewalk '%s' not supported in Sequencer64\n", tag.c_str());
+}
+
+/**
+ *  Read the chunk raw data (undecoded).
+ *
+ *  Sequencer64 status: Not handled.
+ *
+ * \param sz
+ *      Provides the number of raw data bytes to be read.
  */
 
 void
 wrkfile::read_raw_data (int sz)
 {
-    // m_data.m_lastChunkData = m_data.m_IOStream->device()->read(sz);
-
-    read_byte_array(m_data.m_lastChunkData, sz);
+    read_byte_array(m_wrk_data.m_lastChunkData, sz);
 }
 
 /**
@@ -233,7 +254,24 @@ wrkfile::to_32_bit (midibyte c1, midibyte c2, midibyte c3, midibyte c4)
 }
 
 /**
- *  Reads a 24-bit value.
+ *  Reads a 16-bit value.  Tricky, because we reverse the bits before
+ *  conversion.
+ *
+ * \return
+ *      The 32-bit value, calculated from three bytes and a zero, is returned.
+ */
+
+midilong
+wrkfile::read_16_bit ()
+{
+    midibyte c1 = read_byte();
+    midibyte c2 = read_byte();
+    return to_16_bit(c2, c1);
+}
+
+/**
+ *  Reads a 24-bit value.  Tricky, because we reverse the bits before
+ *  conversion.
  *
  * \return
  *      The 32-bit value, calculated from three bytes and a zero, is returned.
@@ -249,9 +287,26 @@ wrkfile::read_24_bit ()
 }
 
 /**
- *  Reads a string.
- *  Unicode will be handled.
- *  Compared this function to midifile::read_byte_array().
+ *  Reads a 32-bit value.  Tricky, because we reverse the bits before
+ *  conversion, contrary to read_32_bit().
+ *
+ * \return
+ *      The 32-bit value, calculated from three bytes and a zero, is returned.
+ */
+
+midilong
+wrkfile::read_32_bit ()
+{
+    midibyte c1 = read_byte();
+    midibyte c2 = read_byte();
+    midibyte c3 = read_byte();
+    midibyte c4 = read_byte();
+    return to_32_bit(c4, c3, c2, c1);
+}
+
+/**
+ *  Reads a string.  Unicode will be handled, eventually.  Compared this
+ *  function to midifile::read_byte_array().
  *
  * \param len
  *      Provides the length to be read.
@@ -275,12 +330,12 @@ wrkfile::read_string (int len)
                 data.push_back(static_cast<char>(c));   // CAREFUL!!!
         }
 #ifdef USE_UNICODE_SUPPORT
-        if (is_nullptr(m_data.m_codec))
+        if (is_nullptr(m_wrk_data.m_codec))
             s = std::string(data);
         else
         {
             // TODO: handle Unicode
-            // s = m_data.m_codec->toUnicode(data);
+            // s = m_wrk_data.m_codec->toUnicode(data);
         }
 #else
         s = std::string(data);
@@ -313,12 +368,12 @@ wrkfile::read_var_string ()
     while (b != 0);
 
 #ifdef USE_UNICODE_SUPPORT
-    if (is_nullptr(m_data.m_codec))
+    if (is_nullptr(m_wrk_data.m_codec))
         result = std::string(data);
     else
     {
         // TODO
-        // result = m_data.m_codec->toUnicode(data);
+        // result = m_wrk_data.m_codec->toUnicode(data);
     }
 #else
     result = std::string(data);
@@ -351,17 +406,17 @@ wrkfile::parse (perform & p, int screenset, bool importing)
     if (result)
     {
         clear_errors();
-        read_gap(1);
+        m_perform = &p;                 /* get address, access via perfp()  */
+        m_screen_set = screenset;
+        m_importing = importing;
+        read_gap(1);                    /* bypasses a 0x1a [SUB] character  */
 
-#ifdef USE_WRK_VERSION_NUMBERS
-        int vme = read_byte();          /* minor WRK version number         */
-        int vma = read_byte();          /* major WRK version number         */
-#else
-        (void) read_byte();             /* minor WRK version number         */
-        (void) read_byte();             /* major WRK version number         */
-#endif
-
+        int vme = int(read_byte());     /* minor WRK version number         */
+        int vma = int(read_byte());     /* major WRK version number         */
         int ck_id;
+        if (rc().show_midi())
+            printf("WRK Version : %d.%d\n", vma, vme);
+
         do
         {
             ck_id = read_chunk();
@@ -406,42 +461,83 @@ wrkfile::parse (perform & p, int screenset, bool importing)
    );
 \endverbatim
  *
- * Not yet sure what to do with this function.
+ *  This function does the following:
+ *
+ *      -   Get a number of track parameters.
+ *      -   Show the MIDI parameters read from this chunk, if desired.
+ *      -   Get the track number, and, if different from the current one,
+ *          we have a new track.
+ *      -   When we encounter a new track, we need to:
+ *          -   Finalize the current sequence, if any.  It remains in memory
+ *              to be used during the Sequencer64 session.
+ *          -   Create a new sequence (pattern) object.
  */
 
 void
 wrkfile::Track_chunk ()
 {
     std::string name[2];
-    int trackno = int(read_short());
+    int trackno = int(read_16_bit());       /* used as provisional seq number   */
     for (int i = 0; i < 2; ++i)
     {
         int namelen = read_byte();
         name[i] = read_string(namelen);
     }
-    int channel = read_byte();
-    int pitch = read_byte();
-    int velocity = read_byte();
-    int port = read_byte();
-    midibyte flags = read_byte();
-    bool selected = ((flags & 1) != 0);
-    bool muted = ((flags & 2) != 0);
-    bool loop = ((flags & 4) != 0);
+    int channel = read_byte();              /* will be logged in the sequence   */
+    int pitch = read_byte();                /* not used in Seq64... transpose?  */
+    int velocity = read_byte();             /* hmmmmm... hardcode vel override? */
+    int port = read_byte();                 /* hmmmmm... buss number?           */
+    midibyte flags = read_byte();           /* hmmmmm... hardcode vel override? */
+    bool selected = ((flags & 1) != 0);     /* not used in Seq64... transpose?  */
+    bool muted = ((flags & 2) != 0);        /* hmmmmm... could be a new feature */
+    bool loop = ((flags & 4) != 0);         /* always true in Sequencer64       */
 
     // Q_EMIT signalWRKTrack(name[0], name[1], trackno, channel, pitch, ...);
 
+    std::string track_name = name[0];       /* will be logged in the sequence   */
+    if (! name[1].empty())
+    {
+        track_name += " ";
+        track_name += name[1];
+    }
     if (rc().show_midi())
     {
-        std::string track_name = name[0] + " " + name[1];
         printf
         (
-            "Track       : Tr. %d '%s' ch. %d port %d "
-            "selected %s muted %s loop %s\n",
-            trackno, track_name.c_str(), channel, port, bool_string(selected),
-            bool_string(muted), bool_string(loop)
+            "Track       : Tr %d '%s'\n"
+            "            : ch %d port %d selected %s\n"
+            "            : muted %s loop %s pitch %d vel %d\n",
+            trackno, track_name.c_str(),
+            channel, ibyte(port), bool_string(selected),
+            bool_string(muted), bool_string(loop), pitch, velocity
         );
-        printf("            : pitch %d velocity %d\n", pitch, velocity);
+    }
 
+    /*
+     * Handle a new track.  All the events in a Cakewalk track are contiguous.
+     * Right now we don't do any error-checking, but we do need to make sure
+     * what exists, so we know what to do.
+     */
+
+    if (trackno != m_track_number)
+    {
+        if (not_nullptr(m_current_seq))         /* a sequence currently exists  */
+        {
+            m_current_seq->set_length(m_track_time);
+            finalize_sequence
+            (
+                *m_perform, *m_current_seq, m_seq_number, m_screen_set
+            );
+        }
+        else
+        {
+            sequence * sp = new sequence(ppqn());
+            sp->set_midi_channel(channel);      /* set MIDI channel, whole trk  */
+            sp->set_master_midi_bus(&m_perform->master_bus());
+            sp->set_name(track_name);
+            m_current_seq = sp;                 /* a new current sequence       */
+            m_track_time = 0;
+        }
     }
 }
 
@@ -469,44 +565,47 @@ wrkfile::Track_chunk ()
  *      - 128 ==> 128/64 = 2.0
  *
  * void signalWRKGlobalVars();
+ *
+ *      Some of the variables filled in below could be useful to save as current
+ *      or future feature values for the whole tune.
  */
 
 void
 wrkfile::Vars_chunk ()
 {
-    m_data.m_Now            = read_long();
-    m_data.m_From           = read_long();
-    m_data.m_Thru           = read_long();
-    m_data.m_KeySig         = read_byte();
-    m_data.m_Clock          = read_byte();
-    m_data.m_AutoSave       = read_byte();
-    m_data.m_PlayDelay      = read_byte();
+    m_wrk_data.m_Now            = read_32_bit();
+    m_wrk_data.m_From           = read_32_bit();
+    m_wrk_data.m_Thru           = read_32_bit();
+    m_wrk_data.m_KeySig         = read_byte();          /* could be useful  */
+    m_wrk_data.m_Clock          = read_byte();          /* could be useful  */
+    m_wrk_data.m_AutoSave       = read_byte();          /* new feature?     */
+    m_wrk_data.m_PlayDelay      = read_byte();
     read_gap(1);
-    m_data.m_ZeroCtrls      = read_byte() != 0;
-    m_data.m_SendSPP        = read_byte() != 0;
-    m_data.m_SendCont       = read_byte() != 0;
-    m_data.m_PatchSearch    = read_byte() != 0;
-    m_data.m_AutoStop       = read_byte() != 0;
-    m_data.m_StopTime       = read_long();
-    m_data.m_AutoRewind     = read_byte() != 0;
-    m_data.m_RewindTime     = read_long();
-    m_data.m_MetroPlay      = read_byte() != 0;
-    m_data.m_MetroRecord    = read_byte() != 0;
-    m_data.m_MetroAccent    = read_byte() != 0;
-    m_data.m_CountIn        = read_byte();
+    m_wrk_data.m_ZeroCtrls      = read_byte() != 0;
+    m_wrk_data.m_SendSPP        = read_byte() != 0;
+    m_wrk_data.m_SendCont       = read_byte() != 0;
+    m_wrk_data.m_PatchSearch    = read_byte() != 0;
+    m_wrk_data.m_AutoStop       = read_byte() != 0;     /* new feature?     */
+    m_wrk_data.m_StopTime       = read_32_bit();        /* new feature?     */
+    m_wrk_data.m_AutoRewind     = read_byte() != 0;     /* new feature?     */
+    m_wrk_data.m_RewindTime     = read_32_bit();
+    m_wrk_data.m_MetroPlay      = read_byte() != 0;
+    m_wrk_data.m_MetroRecord    = read_byte() != 0;
+    m_wrk_data.m_MetroAccent    = read_byte() != 0;
+    m_wrk_data.m_CountIn        = read_byte();          /* new feature?     */
     read_gap(2);
-    m_data.m_ThruOn         = read_byte() != 0;
+    m_wrk_data.m_ThruOn         = read_byte() != 0;
     read_gap(19);
-    m_data.m_AutoRestart    = read_byte() != 0;
-    m_data.m_CurTempoOfs    = read_byte();
-    m_data.m_TempoOfs1      = read_byte();
-    m_data.m_TempoOfs2      = read_byte();
-    m_data.m_TempoOfs3      = read_byte();
+    m_wrk_data.m_AutoRestart    = read_byte() != 0;
+    m_wrk_data.m_CurTempoOfs    = read_byte();
+    m_wrk_data.m_TempoOfs1      = read_byte();
+    m_wrk_data.m_TempoOfs2      = read_byte();
+    m_wrk_data.m_TempoOfs3      = read_byte();
     read_gap(2);
-    m_data.m_PunchEnabled   = read_byte() != 0;
-    m_data.m_PunchInTime    = read_long();
-    m_data.m_PunchOutTime   = read_long();
-    m_data.m_EndAllTime     = read_long();
+    m_wrk_data.m_PunchEnabled   = read_byte() != 0;     /* new feature?     */
+    m_wrk_data.m_PunchInTime    = read_32_bit();
+    m_wrk_data.m_PunchOutTime   = read_32_bit();
+    m_wrk_data.m_EndAllTime     = read_32_bit();
 
     // Q_EMIT signalWRKGlobalVars();
 
@@ -515,7 +614,7 @@ wrkfile::Vars_chunk ()
         printf
         (
             "Global Vars : now = %ld, end = %ld (and many more)\n",
-            m_data.m_Now, m_data.m_EndAllTime
+            m_wrk_data.m_Now, m_wrk_data.m_EndAllTime
         );
     }
 }
@@ -532,15 +631,22 @@ wrkfile::Vars_chunk ()
 void
 wrkfile::Timebase_chunk ()
 {
-    midishort timebase = read_short();
-    m_data.m_division = timebase;
+    midishort timebase = read_16_bit();
+    m_wrk_data.m_division = timebase;
+    if (timebase >= SEQ64_MINIMUM_PPQN && timebase <= SEQ64_MAXIMUM_PPQN)
+    {
+        ppqn(timebase);
+    }
+    else
+    {
+        infoprint("[Setting default PPQN]");
+        ppqn(SEQ64_DEFAULT_PPQN);
+    }
 
     // Q_EMIT signalWRKTimeBase(timebase);
 
     if (rc().show_midi())
-    {
         printf("Time Base   : %d PPQN\n", int(timebase));
-    }
 }
 
 /**
@@ -607,16 +713,16 @@ wrkfile::processNoteArray (int track, int events)
     std::string text;
     midistring mdata;
     const char * format =
-        "%12s: Tr. %d tick %ld event 0x%02X ch. %d data %d.%d value %d dur %d\n";
+        "%12s: Tr %d tick %ld event 0x%02X ch %d data %d.%d value %d dur %d\n";
 
     for (int i = 0; i < events; ++i)
     {
-        midibyte data1 = 0;
-        midibyte data2 = 0;
+        midibyte d0 = 0;
+        midibyte d1 = 0;
         midishort dur = 0;
         midibyte type = 0;
         midibyte channel = 0;
-        midilong time = read_24_bit();
+        midipulse time = read_24_bit();
         midibyte status = read_byte();
         dur = 0;
 
@@ -629,42 +735,42 @@ wrkfile::processNoteArray (int track, int events)
         {
             type = status & 0xf0;
             channel = status & 0x0f;
-            data1 = read_byte();
+            d0 = read_byte();
             if (event::is_two_byte_msg(type))   // note on/off, control, pitch...
-                data2 = read_byte();
+                d1 = read_byte();
 
             if (type == EVENT_NOTE_ON)                          // 0x90
-                dur = read_short();                             // Cakewalk thing
+                dur = read_16_bit();                            // Cakewalk thing
 
             switch (type)
             {
             case EVENT_NOTE_ON:                                 // 0x90
-                // Q_EMIT signalWRKNote(track, time, channel, data1, data2, dur);
+                // Q_EMIT signalWRKNote(track, time, channel, d0, d1, dur);
                 break;
 
             case EVENT_AFTERTOUCH:                              // 0xA0
-                // Q_EMIT signalWRKKeyPress(track, time, channel, data1, data2);
+                // Q_EMIT signalWRKKeyPress(track, time, channel, d0, d1);
                 break;
 
-            case EVENT_NOTE_OFF:                                // 0xB0
-                // Q_EMIT signalWRKCtlChange(track, time, channel, data1, data2);
+            case EVENT_CONTROL_CHANGE:                          // 0xB0
+                // Q_EMIT signalWRKCtlChange(track, time, channel, d0, d1);
                 break;
 
             case EVENT_PROGRAM_CHANGE:                          // 0xC0
-                // Q_EMIT signalWRKProgram(track, time, channel, data1);
+                // Q_EMIT signalWRKProgram(track, time, channel, d0);
                 break;
 
             case EVENT_CHANNEL_PRESSURE:                        // 0xD0
-                // Q_EMIT signalWRKChanPress(track, time, channel, data1);
+                // Q_EMIT signalWRKChanPress(track, time, channel, d0);
                 break;
 
             case EVENT_PITCH_WHEEL:                             // 0xE0
-                value = (data2 << 7) + data1 - 8192;
+                value = (d1 << 7) + d0 - 8192;
                 // Q_EMIT signalWRKPitchBend(track, time, channel, value);
                 break;
 
             case EVENT_MIDI_SYSEX:                              // 0xF0
-                // Q_EMIT signalWRKSysexEvent(track, time, data1);
+                // Q_EMIT signalWRKSysexEvent(track, time, d0);
                 break;
             }
 
@@ -673,14 +779,22 @@ wrkfile::processNoteArray (int track, int events)
                 printf
                 (
                     format, "Note Array",
-                    track, long(time), type, channel, data1, data2, value, dur
+                    track, long(time), type, channel, d0, d1, value, dur
                 );
             }
+
+            /*
+             * We don't see this "Note Array" in our current test WRK file from
+             * years ago, so for now we do not support it.  Report it if you find
+             * a Cakewalk WRK file that uses it!
+             */
+
+            not_supported("Note Array");
         }
-        else if (status == 5)
+        else if (status == 5)               /* not supported in Sequencer64     */
         {
-            int code = read_short();
-            len = read_long();
+            int code = read_16_bit();
+            len = read_32_bit();
             text = read_string(len);
 
             // Q_EMIT signalWRKExpression(track, time, code, text);
@@ -690,7 +804,7 @@ wrkfile::processNoteArray (int track, int events)
                 printf
                 (
                     format, "Expression",
-                    track, long(time), type, channel, data1, data2, value, dur
+                    track, long(time), type, channel, d0, d1, value, dur
                 );
                 printf
                 (
@@ -698,11 +812,12 @@ wrkfile::processNoteArray (int track, int events)
                     code, len, text.c_str()
                 );
             }
+            not_supported("Expression");
         }
-        else if (status == 6)
+        else if (status == 6)               /* not supported in Sequencer64     */
         {
-            int code = int(read_short());
-            dur = read_short();
+            int code = int(read_16_bit());
+            dur = read_16_bit();
             read_gap(4);
 
             // Q_EMIT signalWRKHairpin(track, time, code, dur);
@@ -712,59 +827,53 @@ wrkfile::processNoteArray (int track, int events)
                 printf
                 (
                     format, "Hairpin",
-                    track, long(time), type, channel, data1, data2, value, dur
+                    track, long(time), type, channel, d0, d1, value, dur
                 );
                 printf("        Code: code %d\n", code);
             }
+            not_supported("Hairpin");
         }
-        else if (status == 7)
+        else if (status == 7)               /* not supported in Sequencer64     */
         {
-            len = read_long();
+            len = read_32_bit();
             text = read_string(len);
-            mdata.clear();
-            for (int j = 0; j < 13; ++j)    // TODO: use read_byte_array
+            if (read_byte_array(mdata, 13))
             {
-                midibyte byte = read_byte();
-                mdata += byte;
-            }
+                // Q_EMIT signalWRKChord(track, time, text, mdata);
 
-            // Q_EMIT signalWRKChord(track, time, text, mdata);
-
-            if (rc().show_midi())
-            {
-                printf
-                (
-                    format, "Chord",
-                    track, long(time), type, channel, data1, data2, value, dur
-                );
-                printf("        Text: len %d, '%s'\n", len, text.c_str());
+                if (rc().show_midi())
+                {
+                    printf
+                    (
+                        format, "Chord", track, long(time),
+                        type, channel, d0, d1, value, dur
+                    );
+                    printf("        Text: len %d, '%s'\n", len, text.c_str());
+                }
             }
+            not_supported("WRK Chord");
         }
         else if (status == 8)
         {
-            len = read_short();
-            mdata.clear();
-            for (int j = 0; j < len; ++j)   // TODO: use read_byte_array
+            len = read_16_bit();
+            if (read_byte_array(mdata, len))
             {
-                midibyte byte = read_byte();
-                mdata += byte;
-            }
+                // Q_EMIT signalWRKSysex(0, std::string(), false, 0, mdata);
 
-            // Q_EMIT signalWRKSysex(0, std::string(), false, 0, mdata);
-
-            if (rc().show_midi())
-            {
-                printf
-                (
-                    format, "SysEx",
-                    track, long(time), type, channel, data1, data2, value, dur
-                );
-                // printf("        Text: len %d, '%s'\n", len, mdata.c_str());
+                if (rc().show_midi())
+                {
+                    printf
+                    (
+                        format, "SysEx", track, long(time),
+                        type, channel, d0, d1, value, dur
+                    );
+                }
+                not_supported("WRK Sysex");
             }
         }
         else
         {
-            len = read_long();
+            len = read_32_bit();
             text = read_string(len);
 
             // Q_EMIT signalWRKText(track, time, status, text);
@@ -774,10 +883,11 @@ wrkfile::processNoteArray (int track, int events)
                 printf
                 (
                     format, "Text",
-                    track, long(time), type, channel, data1, data2, value, dur
+                    track, long(time), type, channel, d0, d1, value, dur
                 );
                 printf("        Text: len %d, '%s'\n", len, text.c_str());
             }
+            not_supported("WRK Text");
         }
     }
     // Q_EMIT signalWRKStreamEnd(time + dur);
@@ -855,82 +965,154 @@ wrkfile::processNoteArray (int track, int events)
  *
  * void signalWRKStreamEnd(long time);
  *
+ *  These are seen a lot in our WRK files.
  */
 
 void
 wrkfile::Stream_chunk ()
 {
-    midishort track = read_short();
-    int events = read_short();
+    midishort track = read_16_bit();
+    int events = read_16_bit();
+    midibyte laststatus = 0;
     for (int i = 0; i < events; ++i)
     {
-        long time = read_24_bit();
+        midipulse time = midipulse(read_24_bit());
+        midipulse timemax = time;
         midibyte status = read_byte();
-        midibyte data1 = read_byte();
-        midibyte data2 = read_byte();
-        int dur = read_short();
-        int type = status & 0xf0;
-        int channel = status & 0x0f;
+        midibyte eventcode = status & EVENT_CLEAR_CHAN_MASK;         // 0xF0
+        midibyte channel = status & EVENT_GET_CHAN_MASK;             // 0x0F
+        midibyte d0 = read_byte();
+        midibyte d1 = read_byte();
+        int dur = read_16_bit();
         int value = 0;
-        switch (type)
+        event e;
+        if ((status & 0x80) == 0x00)                /* is it a status bit?      */
+            status = laststatus;                    /* no, it's running status  */
+
+        bool isnoteoff = false;
+        e.set_timestamp(time);
+        e.set_status(status);                       /* includes the channel     */
+
+        /*
+         * e.set_channel(status);
+         */
+
+        if (eventcode == EVENT_NOTE_OFF)
         {
-        case 0x90:
-            // Q_EMIT signalWRKNote(track, time, channel, data1, data2, dur);
+            warnprint("[Note Off event encountered in WRK file!]");
+        }
+
+        switch (eventcode)
+        {
+        case EVENT_NOTE_OFF:                                    // 0x80
+        case EVENT_NOTE_ON:                                     // 0x90
+        case EVENT_AFTERTOUCH:                                  // 0xA0
+        case EVENT_CONTROL_CHANGE:                              // 0xB0
+
+            // Q_EMIT signalWRKNote(track, time, channel, d0, d1, dur);
+            // Q_EMIT signalWRKKeyPress(track, time, channel, d0, d1);
+            // Q_EMIT signalWRKCtlChange(track, time, channel, d0, d1);
+
+            isnoteoff = is_note_off_velocity(eventcode,d1);
+            if (isnoteoff)
+                e.set_status(EVENT_NOTE_OFF, channel);
+
+            e.set_data(d0, d1);
+            m_current_seq->append_event(e);
+            if (eventcode == EVENT_NOTE_ON && ! isnoteoff)
+            {
+                event e;
+                timemax = time + midilong(dur);
+                e.set_timestamp(timemax);
+                e.set_status(EVENT_NOTE_OFF, channel);
+            }
+            m_current_seq->set_midi_channel(channel);
+            if (timemax > m_track_time)
+                m_track_time = timemax;
+
+            /*
+             * if (is_smf0)
+             *     m_smf0_splitter.increment(channel);
+             */
+
             break;
 
-        case 0xA0:
-            // Q_EMIT signalWRKKeyPress(track, time, channel, data1, data2);
+        case EVENT_PROGRAM_CHANGE:                              // 0xC0
+        case EVENT_CHANNEL_PRESSURE:                            // 0xD0
+
+            // Q_EMIT signalWRKProgram(track, time, channel, d0);
+            // Q_EMIT signalWRKChanPress(track, time, channel, d0);
+
+            e.set_data(d0);
+            m_current_seq->append_event(e);
+            m_current_seq->set_midi_channel(channel);
+
+            /*
+             * if (is_smf0)
+             *     m_smf0_splitter.increment(channel);
+             */
+
             break;
 
-        case 0xB0:
-            // Q_EMIT signalWRKCtlChange(track, time, channel, data1, data2);
-            break;
+        case EVENT_PITCH_WHEEL:                                 // 0xE0
 
-        case 0xC0:
-            // Q_EMIT signalWRKProgram(track, time, channel, data1);
-            break;
-
-        case 0xD0:
-            // Q_EMIT signalWRKChanPress(track, time, channel, data1);
-            break;
-
-        case 0xE0:
-            value = (data2 << 7) + data1 - 8192;
             // Q_EMIT signalWRKPitchBend(track, time, channel, value);
+
+            value = (d1 << 7) + d0 - 8192;                      // hmmmm
+            e.set_data(d0, d1);
+            m_current_seq->append_event(e);
+            m_current_seq->set_midi_channel(channel);
+
+            /*
+             * if (is_smf0)
+             *     m_smf0_splitter.increment(channel);
+             */
             break;
 
-        case 0xF0:
-            // Q_EMIT signalWRKSysexEvent(track, time, data1);
+        case EVENT_MIDI_SYSEX:                                  // 0xF0
+
+            // Q_EMIT signalWRKSysexEvent(track, time, d0);
+
+            /*
+             * The midifile class handles a bunch of REALTIME and META events at
+             * this point.  Does a WRK file even have those events?
+             */
+
             break;
         }
         if (rc().show_midi())
         {
             const char * format =
-                "%12s: Tr. %d tick %ld event 0x%02X ch. %d "
+                "%12s: Tr %d tick %ld event 0x%02X ch %d "
                 "data %d.%d value %d dur %d\n";
 
             printf
             (
                 format, "Stream",
-                track, long(time), type, channel, data1, data2, value, dur
+                track, long(time), eventcode, channel, d0, d1, value, dur
             );
         }
     }
+
     // Q_EMIT signalWRKStreamEnd(time + dur);
 }
 
 /**
+ *  Sequencer64 currently doesn't handle variable time signatures.  So we set it
+ *  only for the first bar (measure).  Also, Cakewalk WRK files do not seem to
+ *  handle clocks-per-metronome and 32nds-per-quarter.
+ *
  *  See MeterKey_chunk().
  */
 
 void
 wrkfile::Meter_chunk ()
 {
-    int count = read_short();
+    int count = read_16_bit();
     for (int i = 0; i < count; ++i)
     {
         read_gap(4);
-        int measure = read_short();
+        int measure = read_16_bit();
         int num = read_byte();
         int den = pow(2.0, read_byte());
         read_gap(4);
@@ -941,8 +1123,32 @@ wrkfile::Meter_chunk ()
         {
             printf
             (
-                "Time Sig    : measure = %d timesig %d/%d\n", measure, num, den
+                "Time Sig    : bar %d timesig %d/%d\n", measure, num, den
             );
+        }
+        if (measure == 1)
+        {
+            if (is_nullptr(m_current_seq))
+            {
+                sequence * sp = new sequence(ppqn());
+                sp->set_master_midi_bus(&m_perform->master_bus());
+                m_current_seq = sp;             /* a new current sequence       */
+                m_track_time = 0;
+            }
+            m_current_seq->set_beats_per_bar(num);
+            m_current_seq->set_beat_width(den);
+
+            // m_current_seq->clocks_per_metronome(cpm);
+            // m_current_seq->set_32nds_per_quarter(tpq);
+
+            if (m_track_number == 0)
+            {
+                m_perform->set_beats_per_bar(num);
+                m_perform->set_beat_width(den);
+
+                // m_perform->clocks_per_metronome(cpm);
+                // m_perform->set_32nds_per_quarter(tpq);
+            }
         }
     }
 }
@@ -967,10 +1173,10 @@ wrkfile::Meter_chunk ()
 void
 wrkfile::MeterKey_chunk ()
 {
-    int count = read_short();
+    int count = read_16_bit();
     for (int i = 0; i < count; ++i)
     {
-        int measure = read_short();
+        int measure = read_16_bit();
         int num = read_byte();
         int den = pow(2.0, read_byte());
         midibyte alt = read_byte();
@@ -982,31 +1188,66 @@ wrkfile::MeterKey_chunk ()
         {
             printf
             (
-                "Time Sig/Key: measure %d timesig %d/%d key %u\n",
+                "Time Sig/Key: bar %d timesig %d/%d key %u\n",
                 measure, num, den, unsigned(alt)
             );
+        }
+        if (measure == 1)
+        {
+            if (is_nullptr(m_current_seq))
+            {
+                sequence * sp = new sequence(ppqn());
+                sp->set_master_midi_bus(&m_perform->master_bus());
+                m_current_seq = sp;             /* a new current sequence       */
+                m_track_time = 0;
+            }
+            m_current_seq->set_beats_per_bar(num);
+            m_current_seq->set_beat_width(den);
+
+            // m_current_seq.clocks_per_metronome(cpm);
+            // m_current_seq.set_32nds_per_quarter(tpq);
+
+            if (m_track_number == 0)
+            {
+                m_perform->set_beats_per_bar(num);
+                m_perform->set_beat_width(den);
+
+                // m_perform->clocks_per_metronome(cpm);
+                // m_perform->set_32nds_per_quarter(tpq);
+
+                /*
+                 * We should be able to handle key signature, but it is a two
+                 * byte value, not a single alt byte!!!  So we're stuck with
+                 * major keys.
+                 */
+
+                event e;
+                midibyte bt[2];
+                bt[0] = alt;
+                bt[1] = 0;                  /* indicates a major key        */
+                bool ok = e.append_meta_data(EVENT_META_KEY_SIGNATURE, bt, 2);
+                if (ok)
+                    m_current_seq->append_event(e);
+            }
         }
     }
 }
 
 /**
- *
+ *  Not used internally in this library.
  */
 
 double
 wrkfile::get_real_time (long ticks) const
 {
-    double division = 1.0 * m_data.m_division;
+    double division = 1.0 * m_wrk_data.m_division;
     RecTempo last;
     last.time = 0;
     last.tempo = 100.0;
     last.seconds = 0.0;
-    /*
-     * TODO TODO TODO
-     *
-    if (! m_data.m_tempos.empty())
+    if (! m_wrk_data.m_tempos.empty())
     {
-        for (const RecTempo & rec : m_data.m_tempos)
+        for (const RecTempo & rec : m_wrk_data.m_tempos)
         {
             if (rec.time >= ticks)
                 break;
@@ -1014,8 +1255,6 @@ wrkfile::get_real_time (long ticks) const
             last = rec;
         }
     }
-     */
-
     return last.seconds +
     (
         ((ticks - last.time) / division) * (60.0 / last.tempo)
@@ -1037,14 +1276,14 @@ wrkfile::get_real_time (long ticks) const
 void
 wrkfile::Tempo_chunk (int factor)
 {
-    double division = 1.0 * m_data.m_division;
-    int count = read_short();
+    double division = 1.0 * m_wrk_data.m_division;
+    int count = read_16_bit();
     for (int i = 0; i < count; ++i)
     {
-        long time = read_long();
+        midipulse time = read_32_bit();
         read_gap(4);
 
-        long tempo = read_short() * factor;
+        long tempo = read_16_bit() * factor;
         read_gap(8);
 
         RecTempo next;
@@ -1056,9 +1295,9 @@ wrkfile::Tempo_chunk (int factor)
         last.time = 0;
         last.tempo = next.tempo;
         last.seconds = 0.0;
-        if (! m_data.m_tempos.empty())
+        if (! m_wrk_data.m_tempos.empty())
         {
-            for (const RecTempo & rec : m_data.m_tempos)
+            for (const RecTempo & rec : m_wrk_data.m_tempos)
             {
                 if (rec.time >= time)
                     break;
@@ -1070,16 +1309,45 @@ wrkfile::Tempo_chunk (int factor)
                 ((time - last.time) / division) * (60.0 / last.tempo)
             );
         }
-        m_data.m_tempos.push_back(next);
+        m_wrk_data.m_tempos.push_back(next);
 
         // Q_EMIT signalWRKTempo(time, tempo);
 
         if (rc().show_midi())
         {
-            printf("Tempo       : time %ld tempo %ld\n", time, tempo);
+            printf("Tempo       : tick %ld tempo %ld\n", time, tempo/100);
+        }
+
+        if (is_nullptr(m_current_seq))
+        {
+            sequence * sp = new sequence(ppqn());
+            sp->set_master_midi_bus(&m_perform->master_bus());
+            m_current_seq = sp;             /* a new current sequence       */
+            m_track_time = 0;
+        }
+
+        midibpm bpm = tempo / 100.0;
+        midibpm tt = tempo_us_from_bpm(bpm);
+        if (m_track_number == 0)
+        {
+            m_perform->set_beats_per_minute(bpm);
+            m_perform->us_per_quarter_note(int(tt));
+            m_current_seq->us_per_quarter_note(int(tt));
+        }
+
+        event e;
+        midibyte bt[4];
+        tempo_us_to_bytes(bt, tt);
+        bool ok = e.append_meta_data(EVENT_META_SET_TEMPO, bt, 3);
+        if (ok)
+        {
+            e.set_timestamp(time);
+            m_current_seq->append_event(e);
         }
     }
 }
+
+//////// CONTINUE HERE
 
 /**
  * Emitted after reading a System Exclusive Bank:
@@ -1099,25 +1367,23 @@ wrkfile::Sysex_chunk ()
 {
     midistring data;
     int bank = read_byte();
-    int len = read_short();
+    int len = read_16_bit();
     bool autosend = (read_byte() != 0);
     int namelen = read_byte();
     std::string name = read_string(namelen);
-    for (int j = 0; j < len; ++j)           // TODO: use read_byte_array()
+    if (read_byte_array(data, len))
     {
-        midibyte byte = read_byte();
-        data += byte;
-    }
+        // Q_EMIT signalWRKSysex(bank, name, autosend, 0, data);
 
-    // Q_EMIT signalWRKSysex(bank, name, autosend, 0, data);
-
-    if (rc().show_midi())
-    {
-        printf
-        (
-            "Sysex chunk : bank %d length %d name-length %d '%s' autosend %s\n",
-            bank, len, namelen, name.c_str(), bool_string(autosend)
-        );
+        if (rc().show_midi())
+        {
+            printf
+            (
+                "Sysex chunk : bank %d length %d name-length %d "
+                "'%s' autosend %s\n",
+                bank, len, namelen, name.c_str(), bool_string(autosend)
+            );
+        }
     }
 }
 
@@ -1129,29 +1395,27 @@ void
 wrkfile::Sysex2_chunk ()
 {
     midistring data;
-    int bank = read_short();
-    int len = read_long();
+    int bank = read_16_bit();
+    int len = read_32_bit();
     midibyte b = read_byte();
     int port = (b & 0xf0) >> 4;
     bool autosend = (b & 0x0f) != 0;
     int namelen = read_byte();
     std::string name = read_string(namelen);
-    for (int j = 0; j < len; ++j)           // TODO: use read_byte_array()
+    if (read_byte_array(data, len))
     {
-        int byte = read_byte();
-        data += byte;
-    }
+        // Q_EMIT signalWRKSysex(bank, name, autosend, port, data);
 
-    // Q_EMIT signalWRKSysex(bank, name, autosend, port, data);
-
-    if (rc().show_midi())
-    {
-        printf
-        (
-            "Sysex2 chunk: bank %d length %d name-length %d '%s' "
-            "port %d autosend %s\n",
-            bank, len, namelen, name.c_str(), port, bool_string(autosend)
-        );
+        if (rc().show_midi())
+        {
+            printf
+            (
+                "Sysex2 chunk: bank %d length %d name-length %d '%s' "
+                "port %d autosend %s\n",
+                bank, len, namelen, name.c_str(), ibyte(port),
+                bool_string(autosend)
+            );
+        }
     }
 }
 
@@ -1164,28 +1428,26 @@ wrkfile::NewSysex_chunk ()
 {
     std::string name;
     midistring data;
-    int bank = read_short();
-    int len = int(read_long());
-    int port = read_short();
+    int bank = read_16_bit();
+    int len = int(read_32_bit());
+    int port = read_16_bit();
     bool autosend = (read_byte() != 0);
     int namelen = read_byte();
     name = read_string(namelen);
-    for (int j = 0; j < len; ++j)           // TODO: use read_byte_array()
+    if (read_byte_array(data, len))
     {
-        int byte = read_byte();
-        data += byte;
-    }
+        // Q_EMIT signalWRKSysex(bank, name, autosend, port, data);
 
-    // Q_EMIT signalWRKSysex(bank, name, autosend, port, data);
-
-    if (rc().show_midi())
-    {
-        printf
-        (
-            "New Sysex   : bank %d length %d name-length %d"
-            "'%s' port %d autosend %s\n",
-            bank, len, namelen, name.c_str(), port, bool_string(autosend)
-        );
+        if (rc().show_midi())
+        {
+            printf
+            (
+                "New Sysex   : bank %d length %d name-length %d"
+                "'%s' port %d autosend %s\n",
+                bank, len, namelen, name.c_str(), ibyte(port),
+                bool_string(autosend)
+            );
+        }
     }
 }
 
@@ -1221,12 +1483,14 @@ wrkfile::Thru_chunk ()
 
     if (rc().show_midi())
     {
+        int m = ibyte(mode);
+        int p = ibyte(port);
+        int lp = ibyte(localport);
         printf
         (
-            "Thru        : mode %u port %u channel %u key+ %u vel+ %u "
-            "localport %u\n",
-            unsigned(mode), unsigned(port), unsigned(channel),
-            unsigned(keyplus), unsigned(velplus), unsigned(localport)
+            "Thru Mode   : mode %d port %u channel %u key+%u vel+%u "
+            "localport %d\n",
+            m, p, unsigned(channel), unsigned(keyplus), unsigned(velplus), lp
         );
     }
 }
@@ -1243,14 +1507,14 @@ wrkfile::Thru_chunk ()
 void
 wrkfile::TrackOffset ()
 {
-    midishort track = read_short();
-    midishort offset = read_short();
+    midishort track = read_16_bit();
+    midishort offset = read_16_bit();
 
     // Q_EMIT signalWRKTrackOffset(track, offset);
 
     if (rc().show_midi())
     {
-        printf("Track Offset: Tr. %d offset %d\n", int(track), int(offset));
+        printf("Track Offset: Tr %d offset %d\n", int(track), int(offset));
     }
 }
 
@@ -1266,14 +1530,14 @@ wrkfile::TrackOffset ()
 void
 wrkfile::TrackReps ()
 {
-    midishort track = read_short();
-    midishort reps = read_short();
+    midishort track = read_16_bit();
+    midishort reps = read_16_bit();
 
     // Q_EMIT signalWRKTrackReps(track, reps);
 
     if (rc().show_midi())
     {
-        printf("Track Reps  : Tr. %d reps %d\n", int(track), int(reps));
+        printf("Track Reps  : Tr %d reps %d\n", int(track), int(reps));
     }
 }
 
@@ -1289,14 +1553,14 @@ wrkfile::TrackReps ()
 void
 wrkfile::TrackPatch ()
 {
-    midishort track = read_short();
+    midishort track = read_16_bit();
     midibyte patch = read_byte();
 
     // Q_EMIT signalWRKTrackPatch(track, patch);
 
     if (rc().show_midi())
     {
-        printf("Track Patch : Tr. %d patch %d\n", int(track), int(patch));
+        printf("Track Patch : Tr %d patch %d\n", int(track), int(patch));
     }
 }
 
@@ -1312,14 +1576,14 @@ wrkfile::TrackPatch ()
 void
 wrkfile::TimeFormat ()
 {
-    midishort fmt = read_short();
-    midishort ofs = read_short();
+    midishort fmt = read_16_bit();
+    midishort ofs = read_16_bit();
 
     // Q_EMIT signalWRKTimeFormat(fmt, ofs);
 
     if (rc().show_midi())
     {
-        printf("Time Format : format %d offset %d\n", int(fmt), int(ofs));
+        printf("SMPTE Time  : frames/s %d offset %d\n", int(fmt), int(ofs));
     }
 }
 
@@ -1334,7 +1598,7 @@ wrkfile::TimeFormat ()
 void
 wrkfile::Comments ()
 {
-    int len = read_short();
+    int len = read_16_bit();
     std::string text = read_string(len);
 
     // Q_EMIT signalWRKComments(text);
@@ -1363,14 +1627,14 @@ wrkfile::ProcessVariableRecord (int max)
     midistring data;
     std::string name = read_var_string();
     read_gap(31 - name.length());
-    for (int i = 0; i < datalen; ++i)   // TODO: use read_byte_array()
-        data += read_byte();
-
-    // Q_EMIT signalWRKVariableRecord(name, data);
-
-    if (rc().show_midi())
+    if (read_byte_array(data, datalen))
     {
-        printf("Variable Rec: '%s' (data not shown)\n", name.c_str());
+        // Q_EMIT signalWRKVariableRecord(name, data);
+
+        if (rc().show_midi())
+        {
+            printf("Variable Rec: '%s' (data not shown)\n", name.c_str());
+        }
     }
 }
 
@@ -1386,11 +1650,15 @@ wrkfile::ProcessVariableRecord (int max)
 void
 wrkfile::Unknown (int id)
 {
-    // Q_EMIT signalWRKUnknownChunk(id, m_data.m_lastChunkData);
+    // Q_EMIT signalWRKUnknownChunk(id, m_wrk_data.m_lastChunkData);
 
     if (rc().show_midi())
     {
-        printf("Unknown     : id %d (data not shown)\n", id);
+        printf
+        (
+            "Unknown     : id %d (%d bytes, not shown)\n",
+            id, int(m_wrk_data.m_lastChunkData.size())
+        );
     }
 }
 
@@ -1421,13 +1689,13 @@ wrkfile::NewTrack ()
 {
     bool selected = false;
     bool loop = false;
-    midishort track = read_short();
+    midishort track = read_16_bit();
     midibyte len = read_byte();
     std::string name = read_string(len);
-    midishort bank = read_short();
-    midishort patch = read_short();
-    midishort vol = read_short();
-    midishort pan = read_short();
+    midishort bank = read_16_bit();
+    midishort patch = read_16_bit();
+    midishort vol = read_16_bit();
+    midishort pan = read_16_bit();
     midibyte key = read_byte();
     midibyte vel = read_byte();
     read_gap(7);
@@ -1445,9 +1713,9 @@ wrkfile::NewTrack ()
     {
         printf
         (
-            "New Track   : Tr. %d ch. %d key %d port %d "
+            "New Track   : Tr %d ch %d key %d port %d "
             "selected %s muted %s loop %s\n",
-            int(track), int(channel), int(key), int(port),
+            int(track), int(channel), int(key), ibyte(port),
             bool_string(selected), bool_string(muted), bool_string(loop)
         );
         printf
@@ -1508,7 +1776,7 @@ wrkfile::SoftVer()
 void
 wrkfile::TrackName ()
 {
-    int track = read_short();
+    int track = read_16_bit();
     int len = read_byte();
     std::string name = read_string(len);
 
@@ -1518,7 +1786,7 @@ wrkfile::TrackName ()
     {
         printf
         (
-            "Track Name  : Tr. %d name-length %d name '%s'\n",
+            "Track Name  : Tr %d name-length %d name '%s'\n",
             track, len, name.c_str()
         );
     }
@@ -1536,21 +1804,26 @@ void
 wrkfile::StringTable()
 {
     std::list<std::string> table;
-    int rows = read_short();
+    int rows = read_16_bit();
+    if (rows > 0 && rc().show_midi())
+    {
+        printf("String Table: %d items:", rows);
+    }
     for (int i = 0; i < rows; ++i)
     {
         int len = read_byte();
         std::string name = read_string(len);
         int idx = read_byte();
         table.push_back(name);      // TODO: table.insert(idx, name);
+        if (rc().show_midi())
+        {
+            printf(" %d. %s", idx, name.c_str());
+            if (i == (rows-1))
+                printf("\n");
+        }
     }
 
     // Q_EMIT signalWRKStringTable(table);
-
-    if (rc().show_midi())
-    {
-        printf("String Table: %d rows (event types not shown)\n", rows);
-    }
 }
 
 /**
@@ -1560,8 +1833,8 @@ wrkfile::StringTable()
 void
 wrkfile::LyricsStream ()
 {
-    midishort track = read_short();
-    int events = read_long();
+    midishort track = read_16_bit();
+    int events = read_32_bit();
     processNoteArray(track, events);
 }
 
@@ -1572,14 +1845,14 @@ wrkfile::LyricsStream ()
 void
 wrkfile::TrackVol ()
 {
-    midishort track = read_short();
-    int vol = read_short();
+    midishort track = read_16_bit();
+    int vol = read_16_bit();
 
     // Q_EMIT signalWRKTrackVol(track, vol);
 
     if (rc().show_midi())
     {
-        printf("Track Volume: Tr. %d volume %d\n", int(track), vol);
+        printf("Track Volume: Tr %d volume %d\n", int(track), vol);
     }
 }
 
@@ -1591,14 +1864,14 @@ wrkfile::TrackVol ()
 void
 wrkfile::NewTrackOffset ()
 {
-    midishort track = read_short();
-    int offset = read_long();
+    midishort track = read_16_bit();
+    int offset = read_32_bit();
 
     // Q_EMIT signalWRKTrackOffset(track, offset);
 
     if (rc().show_midi())
     {
-        printf("N track offs: Tr. %d offset %d\n", int(track), offset);
+        printf("N track offs: Tr %d offset %d\n", int(track), offset);
     }
 }
 
@@ -1609,14 +1882,14 @@ wrkfile::NewTrackOffset ()
 void
 wrkfile::TrackBank ()
 {
-    int track = int(read_short());
-    int bank = int(read_short());
+    int track = int(read_16_bit());
+    int bank = int(read_16_bit());
 
     // Q_EMIT signalWRKTrackBank(track, bank);
 
     if (rc().show_midi())
     {
-        printf("Track Bank  : Tr. %d bank %d\n", track, bank);
+        printf("Track Bank  : Tr %d bank %d\n", track, bank);
     }
 }
 
@@ -1635,8 +1908,8 @@ wrkfile::TrackBank ()
 void
 wrkfile::Segment_chunk ()
 {
-    int track = read_short();
-    int offset = read_long();
+    int track = read_16_bit();
+    int offset = read_32_bit();
     read_gap(8);
 
     int len = int(read_byte());
@@ -1649,12 +1922,12 @@ wrkfile::Segment_chunk ()
     {
         printf
         (
-            "Segment     : Tr. %d offset %d name-length %d name '%s'\n",
+            "Segment     : Tr %d offset %d name-length %d name '%s'\n",
             track, offset, len, name.c_str()
         );
     }
 
-    int events = read_long();
+    int events = read_32_bit();
     processNoteArray(track, events);
 }
 
@@ -1665,7 +1938,7 @@ wrkfile::Segment_chunk ()
 void
 wrkfile::NewStream()
 {
-    int track = read_short();
+    int track = read_16_bit();
     int len = int(read_byte());
     std::string name = read_string(len);
 
@@ -1675,12 +1948,12 @@ wrkfile::NewStream()
     {
         printf
         (
-            "New Stream  : Tr. %d name-length %d name '%s'\n",
+            "New Stream  : Tr %d name-length %d name '%s'\n",
             track, len, name.c_str()
         );
     }
 
-    int events = int(read_long());
+    int events = int(read_32_bit());
     processNoteArray(track, events);
 }
 
@@ -1714,7 +1987,7 @@ wrkfile::read_chunk ()
     int ck = int(read_byte());
     if (ck != WC_END_CHUNK)
     {
-        int ck_len = read_long();
+        int ck_len = read_32_bit();
         size_t start_pos = get_file_pos();
         size_t final_pos = start_pos + ck_len;
         read_raw_data(ck_len);

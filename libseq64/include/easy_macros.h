@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2018-04-12
+ * \updates       2018-06-09
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -164,10 +164,16 @@ typedef bool cbool_t;
 #endif
 
 /**
- *  Easy conversion from boolean to string.
+ *  Easy conversion from boolean to string, "true" or "false".
  */
 
 #define bool_string(x)      ((x) ? "true" : "false")
+
+/**
+ *  Easy conversion from boolean to character, "T" or "F".
+ */
+
+#define bool_char(x)        ((x) ? "T" : "F")
 
 /**
  *    GCC provides three magic variables which hold the name of the current

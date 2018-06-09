@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-08
+ * \updates       2018-06-09
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -242,7 +242,7 @@ private:
 
     /**
      *  Provides the current value of the PPQN, which used to be constant
-     *  and is now only the macro DEFAULT_PPQN.
+     *  and is now only the macro SEQ64_DEFAULT_PPQN.
      */
 
     int m_ppqn;
@@ -334,6 +334,15 @@ protected:
     }
 
     /**
+     * \setter m_ppqn
+     */
+
+    void ppqn (int p)
+    {
+        m_ppqn = p;
+    }
+
+    /**
      *  Checks if the data stream pointer has reached the end position
      *
      * \return
@@ -350,6 +359,10 @@ protected:
     bool parse_smf_1 (perform & p, int screenset, bool is_smf0 = false);
     midilong parse_prop_header (int file_size);
     bool parse_proprietary_track (perform & a_perf, int file_size);
+    void finalize_sequence
+    (
+        perform & p, sequence & seq, int seqnum, int screenset
+    );
     bool checklen (midilong len, midibyte type);
     void add_trigger (sequence & seq, midishort ppqn);
     bool read_seek (size_t pos);
@@ -357,47 +370,13 @@ protected:
     midishort read_short ();
     midibyte read_byte ();
     midilong read_varinum ();
+    bool read_byte_array (midibyte * b, size_t len);
+    bool read_byte_array (midistring & b, size_t len);
     void read_gap (size_t sz);
+
     void write_long (midilong value);
     void write_triple (midilong value);
     void write_short (midishort value);
-
-    /**
-     *  A helper function to simplify reading midi_control data from the MIDI
-     *  file.
-     *
-     * \param b
-     *      The byte array to receive the data.
-     *
-     * \param len
-     *      The number of bytes in the array, and to be read.
-     */
-
-    void read_byte_array (midibyte * b, size_t len)
-    {
-        for (size_t i = 0; i < len; ++i)
-            *b++ = read_byte();
-    }
-
-    /**
-     *  A overload function to simplify reading midi_control data from the MIDI
-     *  file.  It uses a midistring object instead of a buffer.
-     *
-     * \param b
-     *      The midistring to receive the data.
-     *
-     * \param len
-     *      The number of bytes to be read.
-     */
-
-    void read_byte_array (midistring & b, size_t len)
-    {
-        if (b.length() < len)
-            b.reserve(len);
-
-        for (size_t i = 0; i < len; ++i)
-            b.push_back(read_byte());
-    }
 
     /**
      *  Writes 1 byte.  The byte is written to the m_char_list member, using a

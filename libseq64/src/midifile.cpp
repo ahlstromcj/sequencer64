@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-08
+ * \updates       2018-06-09
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -159,7 +159,8 @@ midifile::~midifile ()
 }
 
 /**
- *  Seeks to a new position in the data stream.
+ *  Seeks to a new, absolute, position in the data stream.  All this function
+ *  does is change the value of m_pos.  All of the file is already in memory.
  *
  * \param pos
  *      Provides the new position to seek.
@@ -167,21 +168,17 @@ midifile::~midifile ()
  * \return
  *      Returns true if the seek could be accomplished.  No error message is
  *      logged, but the caller should take evasive action if false is
- *      returned.
+ *      returned.  And, in that case, m_pos is unchanged.
  */
 
 bool
 midifile::read_seek (size_t pos)
 {
     bool result = false;
-    if (pos > 0)
+    if (pos < m_file_size)
     {
-        size_t p = m_pos + pos;     // m_d->m_IOStream->device()->seek(pos);
-        if (p < m_file_size)
-        {
-            m_pos = p;
-            result = true;
-        }
+        m_pos = pos;            // m_d->m_IOStream->device()->seek(pos);
+        result = true;
     }
     return result;
 }
@@ -200,7 +197,8 @@ midifile::read_seek (size_t pos)
 midilong
 midifile::read_long ()
 {
-    midilong result = read_byte() << 24;
+    midilong result = read_byte();      /* debugging: we must see the byte  */
+    result <<= 24;
     result += read_byte() << 16;
     result += read_byte() << 8;
     result += read_byte();
@@ -245,6 +243,64 @@ midifile::read_byte ()
         (void) set_error_dump("'End-of-file', further MIDI reading disabled");
     }
     return 0;
+}
+
+/**
+ *  A helper function to simplify reading midi_control data from the MIDI
+ *  file.
+ *
+ * \param b
+ *      The byte array to receive the data.
+ *
+ * \param len
+ *      The number of bytes in the array, and to be read.
+ *
+ * \return
+ *      Returns true if any bytes were read.  Do not use \a b if false is
+ *      returned.
+ */
+
+bool
+midifile::read_byte_array (midibyte * b, size_t len)
+{
+    bool result = not_nullptr(b) && len > 0;
+    if (result)
+    {
+        for (size_t i = 0; i < len; ++i)
+            *b++ = read_byte();
+    }
+    return result;
+}
+
+/**
+ *  A overload function to simplify reading midi_control data from the MIDI
+ *  file.  It uses a midistring object instead of a buffer.
+ *
+ * \param b
+ *      The midistring to receive the data.
+ *
+ * \param len
+ *      The number of bytes to be read.
+ *
+ * \return
+ *      Returns true if any bytes were read.  The string \a b will be empty if
+ *      false is returned.
+ */
+
+bool
+midifile::read_byte_array (midistring & b, size_t len)
+{
+    bool result = len > 0;
+    b.clear();
+    if (result)
+    {
+        if (len > b.capacity())
+            b.reserve(len);
+
+        for (size_t i = 0; i < len; ++i)
+            b.push_back(read_byte());
+    }
+    return result;
 }
 
 /**
@@ -751,10 +807,12 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                     /*
                      * Replaced seq.add_event() with seq.append_event().  The
                      * latter doesn't sort events; sort after we get them all.
+                     * Also, it is kind of weird we change the channel for the
+                     * whole sequence here.
                      */
 
                     seq.append_event(e);                  /* does not sort    */
-                    seq.set_midi_channel(channel);        /* set midi channel */
+                    seq.set_midi_channel(channel);        /* set MIDI channel */
                     if (is_smf0)
                         m_smf0_splitter.increment(channel);
                     break;
@@ -1126,22 +1184,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
             }
             else
             {
-                if (seq.get_length() < seq.get_ppqn())
-                {
-                    seq.set_length          /* pad the sequence to a measure */
-                    (
-                        seq.get_ppqn() * seq.get_beats_per_bar(), false
-                    );
-                }
-
-                int preferred_seqnum = seqnum + screenset * usr().seqs_in_set();
-                seq.sort_events();              /* sort the events now      */
-#if USE_NEW_VERSION
-                seq.apply_length(tempo, ppqn, bw, measures);
-#else
-                seq.set_length();               /* final verify_and_link    */
-#endif
-                p.add_sequence(&seq, preferred_seqnum);
+                finalize_sequence(p, seq, seqnum, screenset);
             }
 
 #ifdef PLATFORM_DEBUG_TMI
@@ -1166,6 +1209,37 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
         }
     }                                                   /* for each track   */
     return result;
+}
+
+/**
+ *
+ */
+
+void
+midifile::finalize_sequence
+(
+    perform & p,
+    sequence & seq,
+    int seqnum,
+    int screenset
+)
+{
+    if (seq.get_length() < seq.get_ppqn())
+    {
+        seq.set_length                  /* pad the sequence to a measure    */
+        (
+            seq.get_ppqn() * seq.get_beats_per_bar(), false
+        );
+    }
+
+    int preferred_seqnum = seqnum + screenset * usr().seqs_in_set();
+    seq.sort_events();                  /* sort the events now              */
+#if USE_NEW_VERSION
+    seq.apply_length(tempo, ppqn, bw, measures);
+#else
+    seq.set_length();                   /* final verify_and_link            */
+#endif
+    p.add_sequence(&seq, preferred_seqnum);
 }
 
 /**

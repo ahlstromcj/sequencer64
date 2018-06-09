@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-04-24
+# \update      2018-06-08
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -80,7 +80,8 @@ HEADERS += \
  include/user_instrument.hpp \
  include/user_midi_bus.hpp \
  include/user_settings.hpp \
- include/userfile.hpp
+ include/userfile.hpp \
+ include/wrkfile.hpp
 
 SOURCES += \
  src/businfo.cpp \
@@ -124,7 +125,8 @@ SOURCES += \
  src/user_instrument.cpp \
  src/user_midi_bus.cpp \
  src/user_settings.cpp \
- src/userfile.cpp
+ src/userfile.cpp \
+ src/wrkfile.cpp
 
 INCLUDEPATH = \
  ../include/qt/portmidi \

@@ -2928,8 +2928,11 @@ sequence::add_note
 
             e.set_status(EVENT_NOTE_OFF);
 
-	    // HOTFIX: will be consitant with how m_note_on_velocity is handled above, enable 0 velocity (a standard ?) for note off when not playing
-            //e.set_data(note, midibyte(m_note_off_velocity));    /* HARD-WIRED */
+            /*
+             * Will be consistent with how m_note_on_velocity is handled above;
+             * enable 0 velocity (a standard?) for note off when not playing.
+             */
+
             e.set_data(note, hardwire ? midibyte(m_note_off_velocity) : 0);
             e.set_timestamp(tick + len);
             result = add_event(e);
@@ -4764,10 +4767,14 @@ sequence::set_input_recording (bool record_active, bool toggle)
     if (toggle)
         record_active = ! m_recording;
 
-    /* HOTFIX: except if already thru and try to turn recoding (hence input) off, set input to here no matter what, because even if m_thru, input could have been replaced in another sequenence  */
-    if (record_active or !m_thru) {
+    /*
+     * Except if already Thru and trying to turn recording (hence input) off,
+     * set input to here no matter what, because even if m_thru, input could
+     * have been replaced in another sequence.
+     */
+
+    if (record_active or ! m_thru)
         m_master_bus->set_sequence_input(record_active, this);
-    }
 
     set_recording(record_active);
 }
@@ -4842,10 +4849,14 @@ sequence::set_input_thru (bool thru_active, bool toggle)
     if (toggle)
         thru_active = ! m_thru;
 
-    /* HOTFIX: except if already recording and try to turn thru (hence input) off, set input to here no matter what, because even in m_recording, input could have been replaced in another sequenence  */
-    if (thru_active or !m_recording) {
+    /*
+     * Except if already recording and trying to turn Thru (hence input) off,
+     * set input to here no matter what, because even in m_recording,
+     * input could have been replaced in another sequence.
+     */
+
+    if (thru_active or ! m_recording)
         m_master_bus->set_sequence_input(thru_active, this);
-    }
 
     set_thru(thru_active);
 }

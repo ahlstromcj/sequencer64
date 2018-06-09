@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-05-12
+ * \updates       2018-06-08
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1736,7 +1736,15 @@ public:
     void set_recording (bool rec_active, int seq, bool toggle = false);
     void set_quantized_recording (bool rec_active, sequence * s);
     void set_quantized_recording (bool rec_active, int seq, bool toggle = false);
-    void set_overwrite_recording (bool overwrite_active, int seq, bool toggle = false);
+
+    /*
+     * New from jfrey-xx on GitHub.
+     */
+
+    void set_overwrite_recording
+    (
+        bool overwrite_active, int seq, bool toggle = false
+    );
     void set_thru (bool rec_active, bool thru_active, sequence * s);
     void set_thru (bool thru_active, int seq, bool toggle = false);
     bool selected_trigger

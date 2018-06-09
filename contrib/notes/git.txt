@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2018-03-20
+2015-09-09 to 2018-06-08
 
 Creating a GitHub Repository:
 
@@ -39,7 +39,7 @@ sure to find:
 
     [core]
     bare = true
-    sharedrepository = 1    (or "true")
+    sharedrepository = 1    (i.e. "true")
 
 Then change the group owner of the repository, if not already set to
 "devs" by git:
@@ -167,7 +167,15 @@ Pulls and merges:
     $ git checkout -b TDeagan-mute_groups master        [or a branch]
     $ git pull https://github.com/TDeagan/sequencer64.git mute_groups
 
-    Step 2: Merge the changes and update on GitHub.
+    Step 2: Verify that the changes are reasonable and correct, building
+            if you need to.  The following command will let you see
+            all the changes, and you can build and test if the changes look
+            suspicious.
+
+    $ git diff --name-only master                       How many files changed?
+    $ git difftool master                               View them (e.g.  gvimdiff)
+
+    Step 3: Merge the changes and update on GitHub.
 
     $ git checkout master
     $ git merge --no-ff TDeagan-mute_groups

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-14
+ * \updates       2018-06-10
  * \license       GNU GPLv2 or above
  *
  */
@@ -53,7 +53,6 @@ namespace Gtk
 
 namespace seq64
 {
-
     class perform;
     class sequence;
 
@@ -75,7 +74,6 @@ private:
      */
 
     int m_zoom;
-    int m_ppqn;
 
 public:
 
@@ -84,8 +82,7 @@ public:
         sequence & seq,
         perform & p,
         int zoom,
-        Gtk::Adjustment & hadjust,
-        int ppqn = SEQ64_USE_DEFAULT_PPQN
+        Gtk::Adjustment & hadjust
     );
 
     /**

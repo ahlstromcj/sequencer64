@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-07-23
+ * \updates       2018-06-10
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -37,9 +37,9 @@
 #include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
 #include "event.hpp"
 #include "font.hpp"
+#include "perform.hpp"
 #include "seqtime.hpp"
 #include "sequence.hpp"
-#include "settings.hpp"                 /* seq64::choose_ppqn()         */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -58,17 +58,15 @@ seqtime::seqtime
     sequence & seq,
     perform & p,
     int zoom,
-    Gtk::Adjustment & hadjust,
-    int ppqn
+    Gtk::Adjustment & hadjust
 ) :
     gui_drawingarea_gtk2    (p, hadjust, adjustment_dummy(), 10, c_timearea_y),
     m_seq                   (seq),
     m_scroll_offset_ticks   (0),
     m_scroll_offset_x       (0),
-    m_zoom                  (zoom),
-    m_ppqn                  (0)
+    m_zoom                  (zoom)
 {
-    m_ppqn = choose_ppqn(ppqn);
+    // no other code
 }
 
 /**
@@ -186,8 +184,6 @@ seqtime::update_pixmap ()
 {
     /*
      * Add a black border.
-     *
-     * draw_rectangle_on_pixmap(white_paint(), 0, 0, m_window_x, m_window_y);
      */
 
     draw_rectangle_on_pixmap(black_paint(), 0, 0, m_window_x, m_window_y);
@@ -206,7 +202,7 @@ seqtime::update_pixmap ()
 
     int bpbar = m_seq.get_beats_per_bar();
     int bwidth = m_seq.get_beat_width();
-    int ticks_per_major = 4 * m_ppqn * bpbar / bwidth;
+    int ticks_per_major = 4 * perf().ppqn() * bpbar / bwidth;
 
     /*
      * This makes the position of END the same for zoom = 2 or 1, but it is

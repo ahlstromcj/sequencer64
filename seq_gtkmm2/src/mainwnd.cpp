@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-08
+ * \updates       2018-06-10
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -3478,17 +3478,7 @@ mainwnd::on_scrollbar_resize ()
 void
 mainwnd::update_window_title ()
 {
-    std::string title = SEQ64_APP_NAME + std::string(" - [");
-    std::string itemname = "unnamed";
-    int ppqn = choose_ppqn(m_ppqn);
-    char temp[16];
-    snprintf(temp, sizeof temp, " (%d ppqn) ", ppqn);
-    if (! rc().filename().empty())
-    {
-        std::string name = shorten_file_spec(rc().filename(), 56);
-        itemname = Glib::filename_to_utf8(name);
-    }
-    title += itemname + std::string("]") + std::string(temp);
+    std::string title = perf().main_window_title();
     set_title(title.c_str());
 }
 

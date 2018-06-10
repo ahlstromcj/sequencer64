@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-20
+ * \updates       2018-06-10
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -62,7 +62,7 @@
  *  Note that the default zoom is 2, so that the maximum tick value for
  *  the window is one/half the windows size, by default.
  *
- *  With --ppqn 384 option:
+ *  With the "--ppqn 384" option:
  *
  *	    seqroll scroll progress=648; value=0; step=192; page=1388; upper=133632
  *
@@ -81,12 +81,12 @@
 #include "gdk_basic_keys.h"
 #include "gui_key_tests.hpp"            /* seq64::is_no_modifier() etc. */
 #include "keystroke.hpp"
+#include "perform.hpp"
 #include "scales.h"
 #include "seqroll.hpp"
 #include "seqdata.hpp"
 #include "seqevent.hpp"
 #include "seqkeys.hpp"
-#include "perform.hpp"
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc() */
 
 /*
@@ -135,10 +135,6 @@ static const long s_handlesize = 16;
  * \param vadjust
  *      Represents the vertical scrollbar of this window.  It is actually
  *      created by the "parent" seqedit object.
- *
- * \param ppqn
- *      The initial value of the PPQN for this sequence.  Useful in scale
- *      calculations.
  */
 
 seqroll::seqroll
@@ -150,8 +146,7 @@ seqroll::seqroll
     seqkeys & seqkeys_wid,
     int pos,
     Gtk::Adjustment & hadjust,
-    Gtk::Adjustment & vadjust,
-    int ppqn
+    Gtk::Adjustment & vadjust
 ) :
     gui_drawingarea_gtk2    (p, hadjust, vadjust, 10, 10),
     m_horizontal_adjust     (hadjust),
@@ -163,7 +158,6 @@ seqroll::seqroll
     m_pos                   (pos),
     m_zoom                  (zoom),
     m_snap                  (snap),
-    m_ppqn                  (0),
     m_note_length           (0),
     m_scale                 (0),
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
@@ -200,7 +194,6 @@ seqroll::seqroll
     m_status                (0),
     m_cc                    (0)
 {
-    m_ppqn = choose_ppqn(ppqn);
     m_old.clear();
 
     /*
@@ -270,15 +263,16 @@ seqroll::set_background_sequence (bool state, int seq)
 void
 seqroll::update_sizes ()
 {
+    int ppqn = perf().ppqn();
     int zoom_x = m_window_x * m_zoom;
     int h_max_value = m_seq.get_length() - zoom_x;
-    int page_increment =
-        4 * m_ppqn * m_seq.get_beats_per_bar() / m_seq.get_beat_width();
+    int inc = ppqn * m_seq.get_beats_per_bar() / m_seq.get_beat_width();
+    int page_increment = 4 * inc;
 
     m_hadjust.set_lower(0);                             /* set default size */
     m_hadjust.set_upper(m_seq.get_length());
     m_hadjust.set_page_size(zoom_x);
-    m_hadjust.set_step_increment(m_zoom * m_ppqn / 4);
+    m_hadjust.set_step_increment(m_zoom * ppqn / 4);
     m_hadjust.set_page_increment(page_increment);
     if (m_hadjust.get_value() > h_max_value)
         m_hadjust.set_value(h_max_value);
@@ -489,7 +483,7 @@ seqroll::update_background ()
     int bpbar = m_seq.get_beats_per_bar();
     int bwidth = m_seq.get_beat_width();
     int ticks_per_step = m_zoom * 6;
-    int ticks_per_beat = 4 * m_ppqn / bwidth;
+    int ticks_per_beat = 4 * perf().ppqn() / bwidth;
     int ticks_per_major = bpbar * ticks_per_beat;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     int starttick = m_scroll_offset_ticks -

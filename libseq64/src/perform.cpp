@@ -5824,7 +5824,8 @@ perform::sequence_label (int seqnum)
 }
 
 /**
- *  Creates the sequence title, adjusting it for scaling down.
+ *  Creates the sequence title, adjusting it for scaling down.  This title is
+ *  used in the slots to show the (possibly shortened) pattern title.
  *
  * \param seq
  *      Provides the reference to the sequence, use for getting the sequence
@@ -5855,6 +5856,74 @@ perform::sequence_title (const sequence & seq)
             result = std::string(temp);
         }
     }
+    return result;
+}
+
+/**
+ *  Creates a sequence ("seqedit") window title, a longer version of
+ *  sequence_title().
+ *
+ * \param seq
+ *      Provides the reference to the sequence, use for getting the sequence
+ *      parameters to be written to the string.
+ *
+ * \return
+ *      Returns the filled in label if the sequence is active.
+ *      Otherwise, an incomplete string is returned.
+ *
+ */
+
+std::string
+perform::sequence_window_title (const sequence & seq)
+{
+	std::string result = SEQ64_APP_NAME;
+    int sn = seq.number();
+    if (is_active(sn))
+    {
+        int ppqn = seq.get_ppqn();					/* choose_ppqn(m_ppqn);	*/
+        char temp[32];
+        snprintf(temp, sizeof temp, " (%d ppqn)", ppqn);
+        result += " #";
+        result += seq.seq_number();
+        result += " \"";
+        result += sequence_title(seq);
+        result += "\"";
+        result += temp;
+    }
+    else
+    {
+        result += "[inactive]";
+    }
+    return result;
+}
+
+/**
+ *  Creates the main window title.  Unlike the disabled code in
+ *  mainwnd::update_window_title(), this code does not (yet) handle
+ *  conversions to UTF-8.
+ *
+ * \return
+ *      Returns the filled-in main window title.
+ */
+
+std::string
+perform::main_window_title ()
+{
+	std::string result = SEQ64_APP_NAME + std::string(" - [");
+	std::string itemname = "unnamed";
+	int ppqn = choose_ppqn(m_ppqn);
+	char temp[32];
+	snprintf(temp, sizeof temp, " (%d ppqn) ", ppqn);
+	if (! rc().filename().empty())
+	{
+		std::string name = shorten_file_spec(rc().filename(), 56);
+#ifdef USE_UTF8_CONVERSION
+		itemname = Glib::filename_to_utf8(name);
+#else
+		itemname = name;
+#endif
+	}
+	result += itemname + std::string("]") + std::string(temp);
     return result;
 }
 

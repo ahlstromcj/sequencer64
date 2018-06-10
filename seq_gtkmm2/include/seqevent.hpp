@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-30
+ * \updates       2018-06-10
  * \license       GNU GPLv2 or above
  *
  *  The event pane is the thin gridded drawing-area below the seqedit's piano
@@ -90,13 +90,6 @@ protected:
      */
 
     int m_snap;
-
-    /**
-     *  The value to use for the PPQN for this sequence.  Used in snap and
-     *  zoom scaling.
-     */
-
-    int m_ppqn;
 
     /**
      *  Used in drawing the event selection in the thing event row.
@@ -210,8 +203,7 @@ public:
         int zoom,
         int snap,
         seqdata & seqdata_wid,
-        Gtk::Adjustment & hadjust,
-        int ppqn = SEQ64_USE_DEFAULT_PPQN
+        Gtk::Adjustment & hadjust
     );
 
     /**

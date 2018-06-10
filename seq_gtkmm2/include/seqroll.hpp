@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-21
+ * \updates       2018-06-10
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -141,13 +141,6 @@ protected:
      */
 
     int m_snap;
-
-    /**
-     *  The value of PPQN for the current MIDI song.  Supports values other
-     *  than the default of 192.
-     */
-
-    int m_ppqn;
 
     /**
      *  Holds the note length in force for this sequence.  Used in the
@@ -369,8 +362,7 @@ public:
         seqkeys & seqkeys_wid,
         int pos,
         Gtk::Adjustment & hadjust,
-        Gtk::Adjustment & vadjust,
-        int ppqn = SEQ64_USE_DEFAULT_PPQN
+        Gtk::Adjustment & vadjust
     );
     virtual ~seqroll ();
 

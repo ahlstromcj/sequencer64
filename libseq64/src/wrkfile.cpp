@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-04
- * \updates       2018-06-09
+ * \updates       2018-06-10
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the WRK format, see, for example:
@@ -154,7 +154,7 @@ wrkfile::wrkfile
     m_perform       (nullptr),
     m_screen_set    (-1),
     m_importing     (false),
-    m_seq_number    (-1),
+    m_seq_number    (0),
     m_track_number  (-1),
     m_track_count   (0),
     m_track_time    (0),
@@ -185,7 +185,8 @@ wrkfile::~wrkfile()
 void
 wrkfile::not_supported (const std::string & tag)
 {
-    warnprintf("Cakewalk '%s' not supported in Sequencer64\n", tag.c_str());
+    if (rc().show_midi())
+        warnprintf("! Cakewalk '%s' not supported\n", tag.c_str());
 }
 
 /**
@@ -435,6 +436,51 @@ wrkfile::parse (perform & p, int screenset, bool importing)
 }
 
 /**
+ *
+ * Add?
+ *
+ *  channel
+ *  trackname
+ *  tracknumber *
+ *
+ *  beatsperbar
+ *  beatwidth
+ *
+ *  beatsperminute
+ *  usperquarternote
+ */
+
+sequence *
+wrkfile::initialize_sequence (perform & p)
+{
+    sequence * result = midifile::initialize_sequence(p);
+    if (not_nullptr(result))
+    {
+        m_track_time = 0;
+    }
+    return result;
+}
+
+/**
+ *
+ */
+
+void
+wrkfile::finalize_sequence
+(
+    perform & p,
+    sequence & seq,
+    int seqnum,
+    int screenset
+)
+{
+    ++m_track_count;
+    ++m_seq_number;
+    midifile::finalize_sequence(p, seq, seqnum, screenset);
+}
+
+
+/**
  *  This function seems to get an element that described a track and how it is
  *  to be played.
  *
@@ -521,23 +567,33 @@ wrkfile::Track_chunk ()
 
     if (trackno != m_track_number)
     {
-        if (not_nullptr(m_current_seq))         /* a sequence currently exists  */
+        if (trackno < 0 || trackno >= SEQ64_SEQUENCE_MAXIMUM)
+        {
+            errprint("? Out-of-range track number found in WRK file");
+            ++m_track_number;
+        }
+        else
+            m_track_number = trackno;       /* with a new number            */
+
+        if (m_track_number < 0)
+            m_track_number = 0;
+
+        if (not_nullptr(m_current_seq))     /* a sequence currently exists  */
         {
             m_current_seq->set_length(m_track_time);
             finalize_sequence
             (
-                *m_perform, *m_current_seq, m_seq_number, m_screen_set
+                *m_perform, *m_current_seq, m_track_number, m_screen_set
             );
         }
-        else
-        {
-            sequence * sp = new sequence(ppqn());
-            sp->set_midi_channel(channel);      /* set MIDI channel, whole trk  */
-            sp->set_master_midi_bus(&m_perform->master_bus());
-            sp->set_name(track_name);
-            m_current_seq = sp;                 /* a new current sequence       */
-            m_track_time = 0;
-        }
+
+        /*
+         * Set up for the next sequence.  The previous one remains.
+         */
+
+        m_current_seq = initialize_sequence(*m_perform);
+        m_current_seq->set_midi_channel(channel);   /* channel, whole trk   */
+        m_current_seq->set_name(track_name);
     }
 }
 
@@ -636,11 +692,13 @@ wrkfile::Timebase_chunk ()
     if (timebase >= SEQ64_MINIMUM_PPQN && timebase <= SEQ64_MAXIMUM_PPQN)
     {
         ppqn(timebase);
+        m_perform->ppqn(timebase);
     }
     else
     {
         infoprint("[Setting default PPQN]");
         ppqn(SEQ64_DEFAULT_PPQN);
+        m_perform->ppqn(SEQ64_DEFAULT_PPQN);
     }
 
     // Q_EMIT signalWRKTimeBase(timebase);
@@ -706,7 +764,7 @@ wrkfile::Timebase_chunk ()
  */
 
 void
-wrkfile::processNoteArray (int track, int events)
+wrkfile::NoteArray (int track, int events)
 {
     int value = 0;
     int len = 0;
@@ -720,9 +778,10 @@ wrkfile::processNoteArray (int track, int events)
         midibyte d0 = 0;
         midibyte d1 = 0;
         midishort dur = 0;
-        midibyte type = 0;
+        midibyte eventcode = 0;
         midibyte channel = 0;
         midipulse time = read_24_bit();
+        midipulse timemax = time;
         midibyte status = read_byte();
         dur = 0;
 
@@ -733,44 +792,102 @@ wrkfile::processNoteArray (int track, int events)
 
         if (status >= EVENT_NOTE_ON)                            // 0x90
         {
-            type = status & 0xf0;
+            event e;
+            eventcode = status & 0xf0;
             channel = status & 0x0f;
             d0 = read_byte();
-            if (event::is_two_byte_msg(type))   // note on/off, control, pitch...
+            if (event::is_two_byte_msg(eventcode))   // note on/off, ctrl, pitch
                 d1 = read_byte();
 
-            if (type == EVENT_NOTE_ON)                          // 0x90
-                dur = read_16_bit();                            // Cakewalk thing
-
-            switch (type)
+            if (eventcode == EVENT_NOTE_ON)                          // 0x90
             {
+                dur = read_16_bit();                        // Cakewalk thing
+            }
+            else if (eventcode == EVENT_NOTE_OFF)
+            {
+                warnprint("! Note Off event encountered in WRK file");
+            }
+
+            bool isnoteoff = false;
+            e.set_timestamp(time);
+            e.set_status(status);                           /* w/channel    */
+
+            switch (eventcode)
+            {
+            case EVENT_NOTE_OFF:                                // 0x80
             case EVENT_NOTE_ON:                                 // 0x90
-                // Q_EMIT signalWRKNote(track, time, channel, d0, d1, dur);
-                break;
-
             case EVENT_AFTERTOUCH:                              // 0xA0
-                // Q_EMIT signalWRKKeyPress(track, time, channel, d0, d1);
-                break;
-
             case EVENT_CONTROL_CHANGE:                          // 0xB0
+
+                // Q_EMIT signalWRKNote(track, time, channel, d0, d1, dur);
+                // Q_EMIT signalWRKKeyPress(track, time, channel, d0, d1);
                 // Q_EMIT signalWRKCtlChange(track, time, channel, d0, d1);
+
+                // CUT-AND-PASTE CODE:
+
+                isnoteoff = is_note_off_velocity(eventcode, d1);
+                if (isnoteoff)
+                    e.set_status(EVENT_NOTE_OFF, channel);
+
+                e.set_data(d0, d1);
+                m_current_seq->append_event(e);
+                if (eventcode == EVENT_NOTE_ON && ! isnoteoff)
+                {
+                    event e;
+                    timemax = time + midilong(dur);
+                    e.set_timestamp(timemax);
+                    e.set_status(EVENT_NOTE_OFF, channel);
+                    e.set_data(d0, 0);
+                    m_current_seq->append_event(e);
+                }
+                m_current_seq->set_midi_channel(channel);
+                if (timemax > m_track_time)
+                    m_track_time = timemax;
                 break;
 
             case EVENT_PROGRAM_CHANGE:                          // 0xC0
-                // Q_EMIT signalWRKProgram(track, time, channel, d0);
-                break;
-
             case EVENT_CHANNEL_PRESSURE:                        // 0xD0
+
+                // Q_EMIT signalWRKProgram(track, time, channel, d0);
                 // Q_EMIT signalWRKChanPress(track, time, channel, d0);
+
+                e.set_data(d0);
+                m_current_seq->append_event(e);
+                m_current_seq->set_midi_channel(channel);
+
+                /*
+                 * if (is_smf0)
+                 *     m_smf0_splitter.increment(channel);
+                 */
+
                 break;
 
             case EVENT_PITCH_WHEEL:                             // 0xE0
-                value = (d1 << 7) + d0 - 8192;
+
                 // Q_EMIT signalWRKPitchBend(track, time, channel, value);
+
+                value = (d1 << 7) + d0 - 8192;
+                e.set_data(d0, d1);
+                m_current_seq->append_event(e);
+                m_current_seq->set_midi_channel(channel);
+
+                /*
+                 * if (is_smf0)
+                 *     m_smf0_splitter.increment(channel);
+                 */
+
                 break;
 
             case EVENT_MIDI_SYSEX:                              // 0xF0
+
                 // Q_EMIT signalWRKSysexEvent(track, time, d0);
+
+                /*
+                 * The midifile class handles a bunch of REALTIME and META
+                 * events at this point.  Does a WRK file even have those
+                 * events?
+                 */
+
                 break;
             }
 
@@ -779,7 +896,7 @@ wrkfile::processNoteArray (int track, int events)
                 printf
                 (
                     format, "Note Array",
-                    track, long(time), type, channel, d0, d1, value, dur
+                    track, long(time), eventcode, channel, d0, d1, value, dur
                 );
             }
 
@@ -804,7 +921,7 @@ wrkfile::processNoteArray (int track, int events)
                 printf
                 (
                     format, "Expression",
-                    track, long(time), type, channel, d0, d1, value, dur
+                    track, long(time), eventcode, channel, d0, d1, value, dur
                 );
                 printf
                 (
@@ -827,7 +944,7 @@ wrkfile::processNoteArray (int track, int events)
                 printf
                 (
                     format, "Hairpin",
-                    track, long(time), type, channel, d0, d1, value, dur
+                    track, long(time), eventcode, channel, d0, d1, value, dur
                 );
                 printf("        Code: code %d\n", code);
             }
@@ -846,7 +963,7 @@ wrkfile::processNoteArray (int track, int events)
                     printf
                     (
                         format, "Chord", track, long(time),
-                        type, channel, d0, d1, value, dur
+                        eventcode, channel, d0, d1, value, dur
                     );
                     printf("        Text: len %d, '%s'\n", len, text.c_str());
                 }
@@ -865,7 +982,7 @@ wrkfile::processNoteArray (int track, int events)
                     printf
                     (
                         format, "SysEx", track, long(time),
-                        type, channel, d0, d1, value, dur
+                        eventcode, channel, d0, d1, value, dur
                     );
                 }
                 not_supported("WRK Sysex");
@@ -883,7 +1000,7 @@ wrkfile::processNoteArray (int track, int events)
                 printf
                 (
                     format, "Text",
-                    track, long(time), type, channel, d0, d1, value, dur
+                    track, long(time), eventcode, channel, d0, d1, value, dur
                 );
                 printf("        Text: len %d, '%s'\n", len, text.c_str());
             }
@@ -992,14 +1109,9 @@ wrkfile::Stream_chunk ()
         bool isnoteoff = false;
         e.set_timestamp(time);
         e.set_status(status);                       /* includes the channel     */
-
-        /*
-         * e.set_channel(status);
-         */
-
         if (eventcode == EVENT_NOTE_OFF)
         {
-            warnprint("[Note Off event encountered in WRK file!]");
+            warnprint("! Note Off event encountered in WRK file");
         }
 
         switch (eventcode)
@@ -1013,7 +1125,9 @@ wrkfile::Stream_chunk ()
             // Q_EMIT signalWRKKeyPress(track, time, channel, d0, d1);
             // Q_EMIT signalWRKCtlChange(track, time, channel, d0, d1);
 
-            isnoteoff = is_note_off_velocity(eventcode,d1);
+            // CUT-AND-PASTE CODE:
+
+            isnoteoff = is_note_off_velocity(eventcode, d1);
             if (isnoteoff)
                 e.set_status(EVENT_NOTE_OFF, channel);
 
@@ -1025,6 +1139,8 @@ wrkfile::Stream_chunk ()
                 timemax = time + midilong(dur);
                 e.set_timestamp(timemax);
                 e.set_status(EVENT_NOTE_OFF, channel);
+                e.set_data(d0, 0);
+                m_current_seq->append_event(e);
             }
             m_current_seq->set_midi_channel(channel);
             if (timemax > m_track_time)
@@ -1067,6 +1183,7 @@ wrkfile::Stream_chunk ()
              * if (is_smf0)
              *     m_smf0_splitter.increment(channel);
              */
+
             break;
 
         case EVENT_MIDI_SYSEX:                                  // 0xF0
@@ -1074,8 +1191,8 @@ wrkfile::Stream_chunk ()
             // Q_EMIT signalWRKSysexEvent(track, time, d0);
 
             /*
-             * The midifile class handles a bunch of REALTIME and META events at
-             * this point.  Does a WRK file even have those events?
+             * The midifile class handles a bunch of REALTIME and META events
+             * at this point.  Does a WRK file even have those events?
              */
 
             break;
@@ -1129,12 +1246,8 @@ wrkfile::Meter_chunk ()
         if (measure == 1)
         {
             if (is_nullptr(m_current_seq))
-            {
-                sequence * sp = new sequence(ppqn());
-                sp->set_master_midi_bus(&m_perform->master_bus());
-                m_current_seq = sp;             /* a new current sequence       */
-                m_track_time = 0;
-            }
+                m_current_seq = initialize_sequence(*m_perform);
+
             m_current_seq->set_beats_per_bar(num);
             m_current_seq->set_beat_width(den);
 
@@ -1195,12 +1308,8 @@ wrkfile::MeterKey_chunk ()
         if (measure == 1)
         {
             if (is_nullptr(m_current_seq))
-            {
-                sequence * sp = new sequence(ppqn());
-                sp->set_master_midi_bus(&m_perform->master_bus());
-                m_current_seq = sp;             /* a new current sequence       */
-                m_track_time = 0;
-            }
+                m_current_seq = initialize_sequence(*m_perform);
+
             m_current_seq->set_beats_per_bar(num);
             m_current_seq->set_beat_width(den);
 
@@ -1319,12 +1428,7 @@ wrkfile::Tempo_chunk (int factor)
         }
 
         if (is_nullptr(m_current_seq))
-        {
-            sequence * sp = new sequence(ppqn());
-            sp->set_master_midi_bus(&m_perform->master_bus());
-            m_current_seq = sp;             /* a new current sequence       */
-            m_track_time = 0;
-        }
+            m_current_seq = initialize_sequence(*m_perform);
 
         midibpm bpm = tempo / 100.0;
         midibpm tt = tempo_us_from_bpm(bpm);
@@ -1346,8 +1450,6 @@ wrkfile::Tempo_chunk (int factor)
         }
     }
 }
-
-//////// CONTINUE HERE
 
 /**
  * Emitted after reading a System Exclusive Bank:
@@ -1385,6 +1487,8 @@ wrkfile::Sysex_chunk ()
             );
         }
     }
+
+    not_supported("Sysex Chunk");
 }
 
 /**
@@ -1417,6 +1521,8 @@ wrkfile::Sysex2_chunk ()
             );
         }
     }
+
+    not_supported("Sysex 2 Chunk");
 }
 
 /**
@@ -1449,6 +1555,8 @@ wrkfile::NewSysex_chunk ()
             );
         }
     }
+
+    not_supported("New Sysex Chunk");
 }
 
 /**
@@ -1493,6 +1601,8 @@ wrkfile::Thru_chunk ()
             m, p, unsigned(channel), unsigned(keyplus), unsigned(velplus), lp
         );
     }
+
+    not_supported("Thru Chunk");
 }
 
 /**
@@ -1516,6 +1626,8 @@ wrkfile::TrackOffset ()
     {
         printf("Track Offset: Tr %d offset %d\n", int(track), int(offset));
     }
+
+    not_supported("Track Offset");
 }
 
 /**
@@ -1539,6 +1651,8 @@ wrkfile::TrackReps ()
     {
         printf("Track Reps  : Tr %d reps %d\n", int(track), int(reps));
     }
+
+    not_supported("Track Reps");
 }
 
 /**
@@ -1562,6 +1676,12 @@ wrkfile::TrackPatch ()
     {
         printf("Track Patch : Tr %d patch %d\n", int(track), int(patch));
     }
+
+    /*
+     * \todo
+     */
+
+    not_supported("Track Patch");
 }
 
 /**
@@ -1585,6 +1705,8 @@ wrkfile::TimeFormat ()
     {
         printf("SMPTE Time  : frames/s %d offset %d\n", int(fmt), int(ofs));
     }
+
+    not_supported("Time Format");
 }
 
 /**
@@ -1607,6 +1729,8 @@ wrkfile::Comments ()
     {
         printf("Comments    : length %d, '%s'\n", len, text.c_str());
     }
+
+    not_supported("Comments");
 }
 
 /**
@@ -1621,7 +1745,7 @@ wrkfile::Comments ()
  */
 
 void
-wrkfile::ProcessVariableRecord (int max)
+wrkfile::VariableRecord (int max)
 {
     int datalen = max - 32;
     midistring data;
@@ -1636,6 +1760,8 @@ wrkfile::ProcessVariableRecord (int max)
             printf("Variable Rec: '%s' (data not shown)\n", name.c_str());
         }
     }
+
+    not_supported("Variable Record");
 }
 
 /**
@@ -1725,6 +1851,8 @@ wrkfile::NewTrack ()
         );
     }
 
+    not_supported("New Track");
+
     if (short(bank) >= 0)
     {
         // Q_EMIT signalWRKTrackBank(track, bank);
@@ -1762,6 +1890,7 @@ wrkfile::SoftVer()
     {
         printf("Software Ver: %s\n", vers.c_str());
     }
+    not_supported("Soft Ver");
 }
 
 /**
@@ -1790,6 +1919,10 @@ wrkfile::TrackName ()
             track, len, name.c_str()
         );
     }
+
+    /*
+     * \todo
+     */
 }
 
 /**
@@ -1824,6 +1957,8 @@ wrkfile::StringTable()
     }
 
     // Q_EMIT signalWRKStringTable(table);
+
+    not_supported("String Table");
 }
 
 /**
@@ -1835,7 +1970,8 @@ wrkfile::LyricsStream ()
 {
     midishort track = read_16_bit();
     int events = read_32_bit();
-    processNoteArray(track, events);
+    NoteArray(track, events);
+    not_supported("Lyrics Stream");
 }
 
 /**
@@ -1854,6 +1990,7 @@ wrkfile::TrackVol ()
     {
         printf("Track Volume: Tr %d volume %d\n", int(track), vol);
     }
+    not_supported("Track Vol");
 }
 
 /**
@@ -1873,6 +2010,7 @@ wrkfile::NewTrackOffset ()
     {
         printf("N track offs: Tr %d offset %d\n", int(track), offset);
     }
+    not_supported("New Track Offset");
 }
 
 /**
@@ -1891,6 +2029,13 @@ wrkfile::TrackBank ()
     {
         printf("Track Bank  : Tr %d bank %d\n", track, bank);
     }
+
+    /*
+     * \todo
+     *      Use this number as the screenset value.
+     */
+
+    not_supported("Track Bank");
 }
 
 /**
@@ -1928,7 +2073,7 @@ wrkfile::Segment_chunk ()
     }
 
     int events = read_32_bit();
-    processNoteArray(track, events);
+    NoteArray(track, events);
 }
 
 /**
@@ -1954,11 +2099,11 @@ wrkfile::NewStream()
     }
 
     int events = int(read_32_bit());
-    processNoteArray(track, events);
+    NoteArray(track, events);
 }
 
 /**
- *  After reading the last chunk of a WRK file
+ *  After reading the last chunk of a WRK file.
  *
  * void signalWRKEnd();
  *
@@ -2051,7 +2196,7 @@ wrkfile::read_chunk ()
             break;
 
         case WC_VARIABLE_CHUNK:
-            ProcessVariableRecord(ck_len);  // record identifier & variable data
+            VariableRecord(ck_len); // record identifier & variable data
             break;
 
         case WC_NTRACK_CHUNK:

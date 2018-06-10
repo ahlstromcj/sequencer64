@@ -55,24 +55,26 @@
  *
  *      The rows and columns of the seqedit main portion are:
  *
- *  Column:         0       1                                         2
- *  Row:         -------------------------------------------------------
- *          0   |         | seqtime  1 2 0 1                        | b |
- *              |---------------------------------------------------|---|
- *              |         |                                         | v |
- *          1   | seqkeys | seqroll  1 2 1 2                        | s |
- *              | 0 1 1 2 |                                         |   |
- *              |---------------------------------------------------|---|
- *          2   | blank   | seqevent 1 2 2 3                        | b |
- *              |---------------------------------------------------|---|
- *              |         |                                         |   |
- *          3   | blank   | seqdata  1 2 3 4                        | b |
- *              | 0 1 3 4 |                                         |   |
- *              |---------------------------------------------------|---|
- *          4   | icon??? | dhbox    1 2 4 5 event to rec-volume    | b |
- *              |---------------------------------------------------|---|
- *          5   | blank   | horizontal scrollbar                    | b |
- *               -------------------------------------------------------
+\verbatim
+    Column:         0       1                                         2
+    Row:         -------------------------------------------------------
+            0   |         | seqtime  1 2 0 1                        | b |
+                |---------------------------------------------------|---|
+                |         |                                         | v |
+            1   | seqkeys | seqroll  1 2 1 2                        | s |
+                | 0 1 1 2 |                                         |   |
+                |---------------------------------------------------|---|
+            2   | blank   | seqevent 1 2 2 3                        | b |
+                |---------------------------------------------------|---|
+                |         |                                         |   |
+            3   | blank   | seqdata  1 2 3 4                        | b |
+                | 0 1 3 4 |                                         |   |
+                |---------------------------------------------------|---|
+            4   | icon??? | dhbox    1 2 4 5 event to rec-volume    | b |
+                |---------------------------------------------------|---|
+            5   | blank   | horizontal scrollbar                    | b |
+                 -------------------------------------------------------
+\endverbatim
  *
  * Menu refinements.
  *
@@ -312,7 +314,8 @@ seqedit::seqedit
     m_key               (usr().seqedit_key()),          // m_initial_key
     m_bgsequence        (usr().seqedit_bgsequence()),   // m_initial_sequence
     m_measures          (0),                            // fixed below
-    m_ppqn              (0),                            // fixed below
+//  m_ppqn              (choose_ppqn(ppqn)),
+    m_ppqn              (p.ppqn()),
 #ifdef USE_STAZED_ODD_EVEN_SELECTION
     m_pp_whole          (0),
     m_pp_eighth         (0),
@@ -450,15 +453,11 @@ seqedit::seqedit
     m_first_event_name  ("(no events)"),
     m_have_focus        (false)
 {
-    std::string title = SEQ64_APP_NAME " #";        /* main window title    */
-    title += m_seq.seq_number();
-    title += " \"";
-    title += m_seq.name();
-    title += "\"";
+    std::string title = perf().sequence_window_title(m_seq);
     set_title(title);
+
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq_editor_xpm));
     m_seq.set_editing(true);
-    m_ppqn          = choose_ppqn(ppqn);
 #ifdef USE_STAZED_ODD_EVEN_SELECTION
     m_pp_whole      = m_ppqn * 4;
     m_pp_eighth     = m_ppqn / 2;

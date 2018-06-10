@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-04
- * \updates       2018-06-09
+ * \updates       2018-06-10
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the WRK format, see, for example:
@@ -172,28 +172,28 @@ private:
     /**
      *  Holds a pointer to the (single) perform object in the Sequencer64
      *  session.  We save it in order to avoid having to pass it around to the
-     *  numerous functions defined in the wrkfile class.  See the perfp() function.
+     *  numerous functions defined in the wrkfile class.  See the perfp()
+     *  function.
      */
 
     perform * m_perform;
 
-    /**
-     *  Holds the screen-set number in force for reading this WRK file.  While it
-     *  is normally 0, it can be non-zero for WRK-file import.
+    /** Holds the screen-set number in force for reading this WRK file.  While
+     * it is normally 0, it can be non-zero for WRK-file import.
      */
 
     int m_screen_set;
 
     /**
-     *  If true, we are importing a file, most likely at a screen-set greater than
-     *  0 (the first and main screen-set.
+     *  If true, we are importing a file, most likely at a screen-set greater
+     *  than 0 (the first and main screen-set.
      */
 
     bool m_importing;
 
     /**
-     *  The number of the current sequencer, re 0.  It is -1 if a sequence is not
-     *  yet in progress.
+     *  The number of the current sequencer, re 0.  It is -1 if a sequence is
+     *  not yet in progress.
      */
 
     int m_seq_number;
@@ -218,8 +218,8 @@ private:
     midipulse m_track_time;
 
     /**
-     *  Holds the sequence currently being filled.  As in midifile, the sequence
-     *  remains in memory for the duration of the performance.
+     *  Holds the sequence currently being filled.  As in midifile, the
+     *  sequence remains in memory for the duration of the performance.
      */
 
     sequence * m_current_seq;
@@ -233,8 +233,7 @@ public:
     );
     virtual ~wrkfile ();
 
-    virtual bool parse (perform & p, int ascreenset = 0, bool importing = false);
-
+    virtual bool parse (perform & p, int screenset = 0, bool importing = false);
     double get_real_time (midipulse ticks) const;
 
 private:
@@ -257,46 +256,51 @@ private:
         return m_perform;
     }
 
+    virtual sequence * initialize_sequence (perform & p);
+    virtual void finalize_sequence
+    (
+        perform & p, sequence & seq, int seqnum, int screenset
+    );
     void not_supported (const std::string & tag);
-    midishort to_16_bit(midibyte c1, midibyte c2);
-    midilong to_32_bit(midibyte c1, midibyte c2, midibyte c3, midibyte c4);
-    midilong read_16_bit();
-    midilong read_24_bit();
-    midilong read_32_bit();
+    midishort to_16_bit (midibyte c1, midibyte c2);
+    midilong to_32_bit (midibyte c1, midibyte c2, midibyte c3, midibyte c4);
+    midilong read_16_bit ();
+    midilong read_24_bit ();
+    midilong read_32_bit ();
     std::string read_string (int len);
     std::string read_var_string ();
     void read_raw_data (int size);
     int read_chunk ();
-    void Track_chunk();
-    void Vars_chunk();
-    void Timebase_chunk();
-    void processNoteArray(int track, int events);
-    void Stream_chunk();
-    void Meter_chunk();
-    void Tempo_chunk(int factor = 1);
-    void Sysex_chunk();
-    void Sysex2_chunk();
-    void NewSysex_chunk();
-    void Thru_chunk();
-    void TrackOffset();
-    void TrackReps();
-    void TrackPatch();
-    void TrackBank();
-    void TimeFormat();
-    void Comments();
-    void ProcessVariableRecord(int max);
-    void NewTrack();
-    void SoftVer();
-    void TrackName();
-    void StringTable();
-    void LyricsStream();
-    void TrackVol();
-    void NewTrackOffset();
-    void MeterKey_chunk();
-    void Segment_chunk();
-    void NewStream();
-    void Unknown(int id);
-    void End_chunk();
+    void NoteArray (int track, int events);
+    void Track_chunk ();
+    void Vars_chunk ();
+    void Timebase_chunk ();
+    void Stream_chunk ();
+    void Meter_chunk ();
+    void Tempo_chunk (int factor = 1);
+    void Sysex_chunk ();
+    void Sysex2_chunk ();
+    void NewSysex_chunk ();
+    void Thru_chunk ();
+    void TrackOffset ();
+    void TrackReps ();
+    void TrackPatch ();
+    void TrackBank ();
+    void TimeFormat ();
+    void Comments ();
+    void VariableRecord (int max);
+    void NewTrack ();
+    void SoftVer ();
+    void TrackName ();
+    void StringTable ();
+    void LyricsStream ();
+    void TrackVol ();
+    void NewTrackOffset ();
+    void MeterKey_chunk ();
+    void Segment_chunk ();
+    void NewStream ();
+    void Unknown (int id);
+    void End_chunk ();
 
 };          // class wrkfile
 

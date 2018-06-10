@@ -323,6 +323,12 @@ public:
 
 protected:
 
+    virtual sequence * initialize_sequence (perform & p);
+    virtual void finalize_sequence
+    (
+        perform & p, sequence & seq, int seqnum, int screenset
+    );
+
     /**
      * \setter m_error_message
      */
@@ -359,10 +365,6 @@ protected:
     bool parse_smf_1 (perform & p, int screenset, bool is_smf0 = false);
     midilong parse_prop_header (int file_size);
     bool parse_proprietary_track (perform & a_perf, int file_size);
-    void finalize_sequence
-    (
-        perform & p, sequence & seq, int seqnum, int screenset
-    );
     bool checklen (midilong len, midibyte type);
     void add_trigger (sequence & seq, midishort ppqn);
     bool read_seek (size_t pos);

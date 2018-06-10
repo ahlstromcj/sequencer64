@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-20
+ * \updates       2018-06-r1
  * \license       GNU GPLv2 or above
  *
  *  We are currently trying to get event processing to accomodate tempo
@@ -73,9 +73,6 @@ namespace seq64
  *
  * \param hadjust
  *      The horizontal scroll-bar.
- *
- * \param ppqn
- *      The initial PPQN value.
  */
 
 seqevent::seqevent
@@ -85,14 +82,12 @@ seqevent::seqevent
     int zoom,
     int snap,
     seqdata & seqdata_wid,
-    Gtk::Adjustment & hadjust,
-    int ppqn
+    Gtk::Adjustment & hadjust
 ) :
     gui_drawingarea_gtk2    (p, hadjust, adjustment_dummy(), 10, c_eventarea_y),
     m_seq                   (seq),
     m_zoom                  (zoom),
     m_snap                  (snap),
-    m_ppqn                  (0),
     m_old                   (),
     m_selected              (),
     m_scroll_offset_ticks   (0),
@@ -109,7 +104,6 @@ seqevent::seqevent
     m_status                (EVENT_NOTE_ON),
     m_cc                    (0)
 {
-    m_ppqn = choose_ppqn(ppqn);
     memset(&m_old, 0, sizeof m_old);        /* from seq24 0.9.3 */
 }
 
@@ -215,14 +209,14 @@ seqevent::draw_background ()
     if (event::is_note_msg(m_status))
     {
         draw_rectangle_on_pixmap(light_grey_paint(), 0, 0, m_window_x, m_window_y);
-        minor_line_color = dark_grey_paint();         /* or white()? black()? */
+        minor_line_color = dark_grey_paint();           /* white()? black()? */
     }
     else
         draw_rectangle_on_pixmap(white(), 0, 0, m_window_x, m_window_y);
 
     int bpbar = m_seq.get_beats_per_bar();
     int bwidth = m_seq.get_beat_width();
-    int ticks_per_beat = 4 * m_ppqn / bwidth;   // 4 --> bpbar ???????
+    int ticks_per_beat = 4 * perf().ppqn() / bwidth;    /* 4-->bpbar?????    */
     int ticks_per_major = bpbar * ticks_per_beat;
     int ticks_per_step = 6 * m_zoom;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
@@ -233,7 +227,7 @@ seqevent::draw_background ()
     for (int tick = starttick; tick < endtick; tick += ticks_per_step)
     {
         int base_line = tick / m_zoom;
-        if (tick % ticks_per_major == 0)       /* solid line on every beat */
+        if (tick % ticks_per_major == 0)            /* solid line every beat */
         {
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
             set_line(Gdk::LINE_SOLID, 2);

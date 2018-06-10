@@ -1215,6 +1215,21 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
  *
  */
 
+sequence *
+midifile::initialize_sequence (perform & p)
+{
+    sequence * result = new sequence(m_ppqn);
+    if (not_nullptr(result))
+    {
+        result->set_master_midi_bus(&p.master_bus());   /* set master buss  */
+    }
+    return result;
+}
+
+/**
+ *
+ */
+
 void
 midifile::finalize_sequence
 (
@@ -1224,20 +1239,16 @@ midifile::finalize_sequence
     int screenset
 )
 {
-    if (seq.get_length() < seq.get_ppqn())
-    {
-        seq.set_length                  /* pad the sequence to a measure    */
-        (
-            seq.get_ppqn() * seq.get_beats_per_bar(), false
-        );
-    }
+    midipulse barlength = seq.get_ppqn() * seq.get_beats_per_bar();
+    if (seq.get_length() < barlength)   /* pad the sequence to a measure    */
+        seq.set_length(barlength, false);
 
     int preferred_seqnum = seqnum + screenset * usr().seqs_in_set();
     seq.sort_events();                  /* sort the events now              */
 #if USE_NEW_VERSION
     seq.apply_length(tempo, ppqn, bw, measures);
 #else
-    seq.set_length();                   /* final verify_and_link            */
+    seq.set_length();                   /* final verify_and_link()          */
 #endif
     p.add_sequence(&seq, preferred_seqnum);
 }

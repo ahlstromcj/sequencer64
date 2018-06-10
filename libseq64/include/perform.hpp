@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-08
+ * \updates       2018-06-10
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -258,6 +258,7 @@ class perform
     friend class keybindentry;
     friend class mainwnd;
     friend class midifile;
+    friend class wrkfile;
     friend class optionsfile;           // needs cleanup
     friend class options;
     friend class perfedit;
@@ -2305,6 +2306,8 @@ public:
     std::string sequence_label (const sequence & seq);
     std::string sequence_label (int seqnumb);               // for qperfnames
     std::string sequence_title (const sequence & seq);
+    std::string main_window_title ();
+    std::string sequence_window_title (const sequence & seq);
     void set_input_bus (bussbyte bus, bool input_active);   // used in options
     void set_clock_bus (bussbyte bus, clock_e clocktype);   // used in options
 
@@ -2670,6 +2673,16 @@ public:         // GUI-support functions
     void panic ();                              /* from kepler43        */
 
 private:
+
+    /**
+     * \setter m_ppqn
+     */
+
+    void ppqn (int p)
+    {
+         m_ppqn = p;
+         m_master_bus->set_ppqn(p);
+    }
 
     /**
      *  Convenience function for perfedit's collapse functionality.

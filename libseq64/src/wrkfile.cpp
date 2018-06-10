@@ -474,9 +474,9 @@ wrkfile::finalize_sequence
     int screenset
 )
 {
+    midifile::finalize_sequence(p, seq, seqnum, screenset);
     ++m_track_count;
     ++m_seq_number;
-    midifile::finalize_sequence(p, seq, seqnum, screenset);
 }
 
 

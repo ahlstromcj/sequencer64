@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-05-05
+ * \updates       2018-06-10
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -184,11 +184,13 @@ main (int argc, char * argv [])
          * C:/Users/me/AppData/Local/sequencer64 or ~/.config/sequencer64.
          */
 
+#ifdef USE_PORTMIDI_IN_RTMIDI
         if (Pm_error_present())
         {
             ok = false;
             seq24_window.show_message_box(std::string(Pm_hosterror_message()));
         }
+#endif
 
         if (ok)
         {

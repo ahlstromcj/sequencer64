@@ -4883,7 +4883,7 @@ sequence::set_name (const std::string & name)
 
 /**
  *  Gets the title of the pattern, to show in the pattern slot.  This function
- *  differs from name, which just returns the value of m_name.  Here, we to
+ *  differs from name, which just returns the value of m_name.  Here, we also
  *  include the length of the sequences in measures at the end of the name,
  *  and limit the length of the entire string.  As noted in the printing of
  *  sequence::get_name() in mainwid, this length is 13 characters.
@@ -4901,25 +4901,25 @@ sequence::title () const
     if (not_nullptr(m_parent))
         showmeasures = m_parent->show_ui_sequence_key();
 
-    if (measures > 0 && showmeasures)
+    if (measures > 0 && showmeasures)           /* do we have bars to show? */
     {
-        char mtemp[8];
-        char fulltemp[16];
+        char mtemp[8];                          /* holds measures as string */
+        char fulltemp[32];                      /* seq name + measures      */
         memset(fulltemp, ' ', sizeof fulltemp);
         snprintf(mtemp, sizeof mtemp, " %d", measures);
         for (int i = 0; i < int(m_name.size()); ++i)
         {
-            if (i <= (14 - 1))              /* max size fittable in slot    */
-                fulltemp[i] = m_name[i];
+            if (i <= (14 - 1))                  /* max size fitting in slot */
+                fulltemp[i] = m_name[i];        /* add sequence name/title  */
             else
                 break;
         }
-        int mlen = int(strlen(mtemp));
-        int offset = 14 - mlen;
+        int mlen = int(strlen(mtemp));          /* no. of chars in measures */
+        int offset = 14 - mlen;                 /* we're allowed 14 chars   */
         for (int i = 0; i < mlen; ++i)
             fulltemp[i + offset] = mtemp[i];
 
-        fulltemp[14] = 0;
+        fulltemp[14] = 0;                       /* guarantee C string term. */
         return std::string(fulltemp);
     }
     else

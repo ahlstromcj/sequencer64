@@ -5825,7 +5825,9 @@ perform::sequence_label (int seqnum)
 
 /**
  *  Creates the sequence title, adjusting it for scaling down.  This title is
- *  used in the slots to show the (possibly shortened) pattern title.
+ *  used in the slots to show the (possibly shortened) pattern title. Note
+ *  that the sequence title will also show the sequence length, in measures,
+ *  if the show_ui_sequence_key() option is active.
  *
  * \param seq
  *      Provides the reference to the sequence, use for getting the sequence

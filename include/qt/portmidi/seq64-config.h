@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-04-08
- * \updates       2018-06-03
+ * \updates       2018-06-11
  * \license       GNU GPLv2 or above
  *
  *  Qt Portmidi Linux version.
@@ -39,7 +39,7 @@
  */
 
 #ifndef SEQ64_VERSION_DATE_SHORT
-#define SEQ64_VERSION_DATE_SHORT "2018-06-03"
+#define SEQ64_VERSION_DATE_SHORT "2018-06-11"
 #endif
 
 #ifndef SEQ64_VERSION
@@ -48,6 +48,10 @@
 
 #ifndef SEQ64_GIT_VERSION
 #define SEQ64_GIT_VERSION SEQ64_VERSION
+#endif
+
+#ifndef SEQ64_QT5_USER_INTERFACE
+#define SEQ64_QT5_USER_INTERFACE
 #endif
 
 /**
@@ -100,11 +104,13 @@
  * Define to enable the event editor.
  *
  *      NOT AVAILABLE YET IN QT USER INTERFACE.
- *
+ */
+
+#ifndef SEQ64_QT5_USER_INTERFACE
 #ifndef SEQ64_ENABLE_EVENT_EDITOR
 #define SEQ64_ENABLE_EVENT_EDITOR 1
 #endif
- */
+#endif
 
 /* Define to 1 if you have the <ctype.h> header file. */
 #ifndef SEQ64_HAVE_CTYPE_H
@@ -243,11 +249,13 @@
  * Define to enable highlighting empty sequences
  *
  *      NOT AVAILABLE YET IN QT USER INTERFACE.
- *
+ */
+
+#ifndef SEQ64_QT5_USER_INTERFACE
 #ifndef SEQ64_HIGHLIGHT_EMPTY_SEQS
 #define SEQ64_HIGHLIGHT_EMPTY_SEQS 1
 #endif
- */
+#endif
 
 /*
  * Define to enable JACK session.
@@ -286,11 +294,13 @@
  * Define to enable multiple main windows.
  *
  *      NOT AVAILABLE YET IN QT USER INTERFACE.
- *
+ */
+
+#ifndef SEQ64_QT5_USER_INTERFACE
 #ifndef SEQ64_MULTI_MAINWID
 #define SEQ64_MULTI_MAINWID 1
 #endif
- */
+#endif
 
 /* Name of package */
 #ifndef SEQ64_PACKAGE
@@ -331,11 +341,13 @@
  * Define to enable pausing and pause button
  *
  *      NOT AVAILABLE YET IN QT USER INTERFACE.
- *
+ */
+
+#ifndef SEQ64_QT5_USER_INTERFACE
 #ifndef SEQ64_PAUSE_SUPPORT
 #define SEQ64_PAUSE_SUPPORT 1
 #endif
- */
+#endif
 
 /*
  * Indicates if PortMidi support is enabled
@@ -354,7 +366,10 @@
    your system. */
 /* #undef PTHREAD_CREATE_JOINABLE */
 
-/* Indicates that Qt5 is enabled */
+/*
+ * Indicates that Qt5 is enabled.
+ */
+
 #ifndef SEQ64_QTMIDI_SUPPORT
 #define SEQ64_QTMIDI_SUPPORT 1
 #endif
@@ -375,11 +390,13 @@
  * Define to enable the chord generator
  *
  *      NOT AVAILABLE YET IN QT USER INTERFACE.
- *
+ */
+
+#ifndef SEQ64_QT5_USER_INTERFACE
 #ifndef SEQ64_STAZED_CHORD_GENERATOR
 #define SEQ64_STAZED_CHORD_GENERATOR 1
 #endif
- */
+#endif
 
 /*
  * Define to enable Seq32 LFO window support.
@@ -398,8 +415,10 @@
  *      in the internal Sequencer64 library.
  */
 
+#ifndef SEQ64_QT5_USER_INTERFACE
 #ifndef SEQ64_STAZED_TRANSPOSE
 #define SEQ64_STAZED_TRANSPOSE 1
+#endif
 #endif
 
 /* Define to 1 if you have the ANSI C header files. */

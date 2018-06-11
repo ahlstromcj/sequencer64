@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2018-05-30
+ * \updates       2018-06-11
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -67,6 +67,15 @@
  */
 
 #include "seq64-config.h"
+
+/*
+ *  We need to disable some features not yet available in the Qt 5 user
+ *  interface.
+ */
+
+#ifdef SEQ64_QTMIDI_SUPPORT
+#define SEQ64_QT5_USER_INTERFACE
+#endif
 
 /**
  *  Kepler34 has a drum edit mode that we are still exploring and adding,
@@ -166,7 +175,9 @@
  *  file, should one want to use text instead.
  */
 
+#ifndef SEQ64_QT5_USER_INTERFACE    /* include/qt/portmidi/seq64-config.h   */
 #define SEQ64_STAZED_MENU_BUTTONS
+#endif
 
 /**
  *  If defined, this macro adds a small button next to the BPM setting that
@@ -175,7 +186,9 @@
  *  alejg.
  */
 
+#ifndef SEQ64_QT5_USER_INTERFACE    /* include/qt/portmidi/seq64-config.h   */
 #define SEQ64_MAINWND_TAP_BUTTON
+#endif
 
 /**
  *  In the perform object, replaces a direct call to sequence::stream_event()
@@ -331,7 +344,9 @@
  *  looks.  It looks a little better.
  */
 
+#ifndef SEQ64_QT5_USER_INTERFACE
 #define SEQ64_SOLID_PIANOROLL_GRID
+#endif
 
 /**
  *  An option we've preserved from Seq24, but have disabled until we find a

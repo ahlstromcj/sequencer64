@@ -45,22 +45,22 @@
 #endif
 
 #include "perform.hpp"                  /* seq64::perform                   */
+
+#ifdef SEQ64_PORTMIDI_SUPPORT
+#include "portmidi.h"       /*  Pm_error_present(), Pm_hosterror_message()  */
+#endif
+
 #include "qsmainwnd.hpp"                /* the main window of seq64qt5      */
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc()     */
 
 /**
- *  The standard C/C++ entry point to this application.  This first thing
- *  this function does is scan the argument vector and strip off all
- *  parameters known to GTK+.
- *
- *  The next thing is to set the various settings defaults, and then try to
- *  read the "user" and "rc" configuration files, in that order.  There are
- *  currently no options to change the names of those files.  If we add
- *  that code, we'll move the parsing code to where the configuration
- *  file-names are changed from the command-line.
- *
- *  The last thing is to override any other settings via the command-line
- *  parameters.
+ *  The standard C/C++ entry point to this application.  The first thing is to
+ *  set the various settings defaults, and then try to read the "user" and
+ *  "rc" configuration files, in that order.  There are currently no options
+ *  to change the names of those files.  If we add that code, we'll move the
+ *  parsing code to where the configuration file-names are changed from the
+ *  command-line.  The last thing is to override any other settings via the
+ *  command-line parameters.
  *
  * \param argc
  *      The number of command-line parameters, including the name of the
@@ -184,7 +184,7 @@ main (int argc, char * argv [])
          * C:/Users/me/AppData/Local/sequencer64 or ~/.config/sequencer64.
          */
 
-#ifdef USE_PORTMIDI_IN_RTMIDI
+#ifdef SEQ64_PORTMIDI_SUPPORT
         if (Pm_error_present())
         {
             ok = false;

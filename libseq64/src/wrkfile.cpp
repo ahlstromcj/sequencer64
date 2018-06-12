@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-04
- * \updates       2018-06-10
+ * \updates       2018-06-11
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the WRK format, see, for example:
@@ -156,6 +156,8 @@ wrkfile::wrkfile
     m_importing     (false),
     m_seq_number    (0),
     m_track_number  (-1),
+    m_track_name    (),
+    m_track_channel (-1),
     m_track_count   (0),
     m_track_time    (0),
     m_current_seq   (nullptr)
@@ -437,17 +439,6 @@ wrkfile::parse (perform & p, int screenset, bool importing)
 
 /**
  *
- * Add?
- *
- *  channel
- *  trackname
- *  tracknumber *
- *
- *  beatsperbar
- *  beatwidth
- *
- *  beatsperminute
- *  usperquarternote
  */
 
 sequence *
@@ -558,26 +549,47 @@ wrkfile::Track_chunk ()
             bool_string(muted), bool_string(loop), pitch, velocity
         );
     }
+    next_track(trackno, channel, track_name);
+}
 
-    /*
-     * Handle a new track.  All the events in a Cakewalk track are contiguous.
-     * Right now we don't do any error-checking, but we do need to make sure
-     * what exists, so we know what to do.
-     */
+/**
+ *  Called from NewTrack() or Track_chunk().  It finalizes the current track and
+ *  sets up for the next track.
+ *
+ *  Handle a new track.  All the events in a Cakewalk track are contiguous.
+ *  Right now we don't do any error-checking, but we do need to make sure what
+ *  exists, so we know what to do.
+ *
+ *  Unanswered yet is what to do with the hanging sequence if no more tracks are
+ *  found?  And we have to have another way to finish off the last track.
+ *  This is now done in End_chunk().
+ */
 
+void
+wrkfile::next_track
+(
+    int trackno,
+    int channel,
+    const std::string & trackname,
+    bool end_chunk
+)
+{
     if (trackno != m_track_number)
     {
-        if (trackno < 0 || trackno >= SEQ64_SEQUENCE_MAXIMUM)
+        if (! end_chunk)                    /* we are at the End chunk      */
         {
-            errprint("? Out-of-range track number found in WRK file");
-            ++m_track_number;
+            m_track_channel = channel;
+            m_track_name = trackname;
+            if (trackno >= 0 && trackno < SEQ64_SEQUENCE_MAXIMUM)
+            {
+                m_track_number = trackno;   /* with a new number            */
+            }
+            else
+            {
+                // errprint("? Out-of-range track number found in WRK file");
+                // ++m_track_number;
+            }
         }
-        else
-            m_track_number = trackno;       /* with a new number            */
-
-        if (m_track_number < 0)
-            m_track_number = 0;
-
         if (not_nullptr(m_current_seq))     /* a sequence currently exists  */
         {
             m_current_seq->set_length(m_track_time);
@@ -586,14 +598,16 @@ wrkfile::Track_chunk ()
                 *m_perform, *m_current_seq, m_track_number, m_screen_set
             );
         }
+        if (! end_chunk)
+        {
+            /*
+             * Set up for the next sequence.  The previous one remains.
+             */
 
-        /*
-         * Set up for the next sequence.  The previous one remains.
-         */
-
-        m_current_seq = initialize_sequence(*m_perform);
-        m_current_seq->set_midi_channel(channel);   /* channel, whole trk   */
-        m_current_seq->set_name(track_name);
+            m_current_seq = initialize_sequence(*m_perform);
+            m_current_seq->set_midi_channel(channel); /* channel, whole trk */
+            m_current_seq->set_name(trackname);
+        }
     }
 }
 
@@ -775,14 +789,14 @@ wrkfile::NoteArray (int track, int events)
 
     for (int i = 0; i < events; ++i)
     {
-        midibyte d0 = 0;
-        midibyte d1 = 0;
-        midishort dur = 0;
-        midibyte eventcode = 0;
-        midibyte channel = 0;
         midipulse time = read_24_bit();
         midipulse timemax = time;
         midibyte status = read_byte();
+        midibyte eventcode = 0;
+        midibyte channel = 0;
+        midibyte d0 = 0;
+        midibyte d1 = 0;
+        midishort dur = 0;
         dur = 0;
 
         /*
@@ -799,9 +813,9 @@ wrkfile::NoteArray (int track, int events)
             if (event::is_two_byte_msg(eventcode))   // note on/off, ctrl, pitch
                 d1 = read_byte();
 
-            if (eventcode == EVENT_NOTE_ON)                          // 0x90
+            if (eventcode == EVENT_NOTE_ON)                     // 0x90
             {
-                dur = read_16_bit();                        // Cakewalk thing
+                dur = read_16_bit();                 // Cakewalk thing
             }
             else if (eventcode == EVENT_NOTE_OFF)
             {
@@ -899,14 +913,6 @@ wrkfile::NoteArray (int track, int events)
                     track, long(time), eventcode, channel, d0, d1, value, dur
                 );
             }
-
-            /*
-             * We don't see this "Note Array" in our current test WRK file from
-             * years ago, so for now we do not support it.  Report it if you find
-             * a Cakewalk WRK file that uses it!
-             */
-
-            not_supported("Note Array");
         }
         else if (status == 5)               /* not supported in Sequencer64     */
         {
@@ -1100,7 +1106,7 @@ wrkfile::Stream_chunk ()
         midibyte channel = status & EVENT_GET_CHAN_MASK;             // 0x0F
         midibyte d0 = read_byte();
         midibyte d1 = read_byte();
-        int dur = read_16_bit();
+        midishort dur = read_16_bit();
         int value = 0;
         event e;
         if ((status & 0x80) == 0x00)                /* is it a status bit?      */
@@ -1815,9 +1821,9 @@ wrkfile::NewTrack ()
 {
     bool selected = false;
     bool loop = false;
-    midishort track = read_16_bit();
+    midishort trackno = read_16_bit();
     midibyte len = read_byte();
-    std::string name = read_string(len);
+    std::string trackname = read_string(len);
     midishort bank = read_16_bit();
     midishort patch = read_16_bit();
     midishort vol = read_16_bit();
@@ -1832,7 +1838,7 @@ wrkfile::NewTrack ()
 
     // Q_EMIT signalWRKNewTrack
     // (
-    //      name, track, channel, key, vel, port, selected, muted, loop
+    //      trackname, trackno, channel, key, vel, port, selected, muted, loop
     // );
 
     if (rc().show_midi())
@@ -1841,7 +1847,7 @@ wrkfile::NewTrack ()
         (
             "New Track   : Tr %d ch %d key %d port %d "
             "selected %s muted %s loop %s\n",
-            int(track), int(channel), int(key), ibyte(port),
+            int(trackno), int(channel), int(key), ibyte(port),
             bool_string(selected), bool_string(muted), bool_string(loop)
         );
         printf
@@ -1851,21 +1857,20 @@ wrkfile::NewTrack ()
         );
     }
 
-    not_supported("New Track");
-
+    next_track(trackno, channel, trackname);
     if (short(bank) >= 0)
     {
-        // Q_EMIT signalWRKTrackBank(track, bank);
+        // Q_EMIT signalWRKTrackBank(trackno, bank);
     }
     if (short(patch) >= 0)
     {
         if (short(channel) >= 0)
         {
-            // Q_EMIT signalWRKProgram(track, 0, channel, patch);
+            // Q_EMIT signalWRKProgram(trackno, 0, channel, patch);
         }
         else
         {
-            // Q_EMIT signalWRKTrackPatch(track, patch);
+            // Q_EMIT signalWRKTrackPatch(trackno, patch);
         }
     }
 }
@@ -2120,6 +2125,7 @@ wrkfile::End_chunk ()
     {
         printf("End chunk   : at seq number %d\n", m_seq_number);
     }
+    next_track(-1, -1, "", true);   /* we're at End chunk   */
 }
 
 /**

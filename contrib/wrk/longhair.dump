@@ -1,3 +1,9 @@
+[Filter-by-channel off]
+! Cakewalk 'Variable Record' not supported
+! Cakewalk 'Comments' not supported
+! Cakewalk 'String Table' not supported
+! Cakewalk 'Time Format' not supported
+! Cakewalk 'Thru Chunk' not supported
 [Reading rc configuration /home/ahlstrom/.config/sequencer64/sequencer64.rc]
 [Reading user configuration /home/ahlstrom/.config/sequencer64/sequencer64.usr]
 [Initialized, running without JACK sync]
@@ -1499,7 +1505,9 @@ Track Name  : Tr 0 name-length 33 name 'Right hand  (99 | 00 Stereo Piano'
       Stream: Tr 0 tick 45660 event 0x90 ch 0 data 63.64 value 0 dur 60
       Stream: Tr 0 tick 45720 event 0x90 ch 0 data 58.64 value 0 dur 40
       Stream: Tr 0 tick 45760 event 0x90 ch 0 data 63.64 value 0 dur 40
-      Stream: Tr 0 tick 45800 event 0x90 ch 0 data 58.64 value 0 dur 40
+      Stream: Tr 0 tick 4! Cakewalk 'Track Patch' not supported
+! Cakewalk 'Track Vol' not supported
+5800 event 0x90 ch 0 data 58.64 value 0 dur 40
       Stream: Tr 0 tick 45840 event 0x90 ch 0 data 57.64 value 0 dur 40
       Stream: Tr 0 tick 45880 event 0x90 ch 0 data 63.64 value 0 dur 40
       Stream: Tr 0 tick 45920 event 0x90 ch 0 data 57.64 value 0 dur 40
@@ -2300,7 +2308,9 @@ Track Name  : Tr 1 name-length 26 name 'Left hand | 48 Grand Piano'
       Stream: Tr 1 tick 45000 event 0x90 ch 0 data 44.64 value 0 dur 60
       Stream: Tr 1 tick 45060 event 0x90 ch 0 data 57.64 value 0 dur 60
       Stream: Tr 1 tick 45060 event 0x90 ch 0 data 45.64 value 0 dur 60
-      Stream: Tr 1 tick 45120 event 0x90 ch 0 data 58.64 value 0 dur 120
+      Stream: Tr 1 tick 45120 event 0x9! Cakewalk 'Track Patch' not supported
+! Cakewalk 'Track Vol' not supported
+0 ch 0 data 58.64 value 0 dur 120
       Stream: Tr 1 tick 45120 event 0x90 ch 0 data 46.64 value 0 dur 120
       Stream: Tr 1 tick 45240 event 0x90 ch 0 data 58.64 value 0 dur 60
       Stream: Tr 1 tick 45300 event 0x90 ch 0 data 58.64 value 0 dur 60
@@ -3101,7 +3111,9 @@ Track Name  : Tr 2 name-length 20 name 'Bass | 265 Jazz Bass'
       Stream: Tr 2 tick 44760 event 0x90 ch 0 data 58.64 value 0 dur 60
       Stream: Tr 2 tick 44820 event 0x90 ch 0 data 58.64 value 0 dur 60
       Stream: Tr 2 tick 44880 event 0x90 ch 0 data 46.64 value 0 dur 60
-      Stream: Tr 2 tick 44940 event 0x90 ch 0 data 58.64 value 0 dur 60
+      Stream: Tr 2 tick 44940 event 0x90 ch 0 data 58.64 value! Cakewalk 'Track Patch' not supported
+! Cakewalk 'Track Vol' not supported
+ 0 dur 60
       Stream: Tr 2 tick 45000 event 0x90 ch 0 data 44.64 value 0 dur 60
       Stream: Tr 2 tick 45060 event 0x90 ch 0 data 57.64 value 0 dur 60
       Stream: Tr 2 tick 45060 event 0x90 ch 0 data 45.64 value 0 dur 60
@@ -3903,7 +3915,9 @@ Track Name  : Tr 3 name-length 21 name 'Drums | 14 Rock Drums'
       Stream: Tr 3 tick 44520 event 0x90 ch 0 data 59.64 value 0 dur 60
       Stream: Tr 3 tick 44580 event 0x90 ch 0 data 58.64 value 0 dur 60
       Stream: Tr 3 tick 44640 event 0x90 ch 0 data 46.64 value 0 dur 120
-      Stream: Tr 3 tick 44760 event 0x90 ch 0 data 58.64 value 0 dur 60
+      Stre! Cakewalk 'Track Patch' not supported
+! Cakewalk 'Track Vol' not supported
+am: Tr 3 tick 44760 event 0x90 ch 0 data 58.64 value 0 dur 60
       Stream: Tr 3 tick 44820 event 0x90 ch 0 data 58.64 value 0 dur 60
       Stream: Tr 3 tick 44880 event 0x90 ch 0 data 46.64 value 0 dur 60
       Stream: Tr 3 tick 44940 event 0x90 ch 0 data 58.64 value 0 dur 60
@@ -3943,16 +3957,16 @@ Track Name  : Tr 3 name-length 21 name 'Drums | 14 Rock Drums'
 Track Patch : Tr 3 patch 5
 Track Volume: Tr 3 volume 89
 Unknown     : id 29 (6 bytes, not shown)
-Track       : Tr 6 'Professor '
+Track       : Tr 6 'Professor'
             : ch 255 port 0 selected false
             : muted true loop false pitch 0 vel 0
 Track Name  : Tr 6 name-length 9 name 'Professor'
 Unknown     : id 29 (6 bytes, not shown)
-Track       : Tr 7 'Longhair '
+Track       : Tr 7 'Longhair'
             : ch 255 port 0 selected false
             : muted true loop false pitch 0 vel 0
 Track Name  : Tr 7 name-length 8 name 'Longhair'
 Unknown     : id 29 (6 bytes, not shown)
-End chunk   : at seq number 0
+End chunk   : at seq number 6
 [JACK sync disabled]
 [Writing rc configuration /home/ahlstrom/.config/sequencer64/sequencer64.rc]

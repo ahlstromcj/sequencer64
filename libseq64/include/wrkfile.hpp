@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-04
- * \updates       2018-06-10
+ * \updates       2018-06-12
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the WRK format, see, for example:
@@ -206,6 +206,18 @@ private:
     int m_track_number;
 
     /**
+     *  Saves the track-name for the NoteArray() function.
+     */
+
+    std::string m_track_name;
+
+    /**
+     *  Saves the track channel for the End_chunk() function.
+     */
+
+    int m_track_channel;
+
+    /**
      *  The number of tracks/sequences created so far.
      */
 
@@ -260,6 +272,13 @@ private:
     virtual void finalize_sequence
     (
         perform & p, sequence & seq, int seqnum, int screenset
+    );
+    void next_track
+    (
+        int trackno,
+        int channel,
+        const std::string & trackname,
+        bool end_chunk = false
     );
     void not_supported (const std::string & tag);
     midishort to_16_bit (midibyte c1, midibyte c2);

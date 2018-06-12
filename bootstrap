@@ -120,7 +120,7 @@ Usage: ./bootstrap [options]                                 (0.94.6-2018-04-09)
  -am                 Configure to build sequencer64 (original ALSA version).
  -pm                 Configure for seq64portmidi.
  -rm                 Configure for seq64rtmidi (JACK version, the default).
- -qm, -qt            Configure for Qt5 user-interface, still utterly unusable.
+ -qm, -qt            Configure for Qt5 user-interface, still not full-featured.
  -cli, -rc           Configure for seq64cli (command-line rtmidi version).
  --windows, -win     Configure for Windows.  Currently implies only the -cli
  -w64, --win32, -w32 option now, enables MingW build.  IMPORTANT: specify

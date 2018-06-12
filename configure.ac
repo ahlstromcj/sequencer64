@@ -374,19 +374,6 @@ dnl DO WE NEED THIS REALLY?  Comment it out for now.
 dnl
 dnl AC_CHECK_LIB(rt, main,, AC_MSG_ERROR([POSIX.1b Realtime library missing librt]))
 
-dnl Convert from gtkmm-2.4 to gtkmm-3.0.  It currently builds either way.
-dnl No! I was mistaken, because I had left some 2.4 paths in place below.
-dnl Not supported in a Windows build at this time.  Also, be warned that
-dnl there is a second gtkmm check around line 635.
-
-if test "x$need_gtkmm" = "xyes" ; then
-    AC_CHECK_LIB(gtkmm-2.4, _init,,
-        AC_MSG_ERROR([Essential library libgtkmm-2.4 not found]))
-fi
-
-dnl AC_CHECK_LIB(gtkmm-3.0, _init,,
-dnl     AC_MSG_ERROR([Essential library libgtkmm-3.0 not found]))
-
 dnl Not supported in a Windows build at this time.
 
 if test "x$windows_host" = "xno" ; then
@@ -512,7 +499,9 @@ dnl top-level Makefile to determine what directories are included in the
 dnl SUBDIRS variable.  Also see the latest versions of the midibus.hpp and
 dnl mastermidibus.hpp files in libseq64/include.
 dnl
-dnl Note that rtmidi is enabled by default now.
+dnl Note that rtmidi is enabled by default now, and gtkmm is provisionally
+dnl required.
+dnl
 dnl Eventually we want to make ALSA optional for the user/developer.
 
 AC_ARG_ENABLE(rtmidi,
@@ -556,7 +545,8 @@ AC_ARG_ENABLE(qtmidi,
 if test "$qtmidi" != "no"; then
     build_qtmidi="yes"
     need_qt="yes"
-    build_rtmidi="no"
+    build_rtmidi="yes"
+    build_portmidi="no"
     need_gtkmm="no"
     AC_DEFINE(APP_NAME, ["qseq64"], [Names the Qt/rtmidi version of application])
     AC_DEFINE(CONFIG_NAME, ["qseq64"], [Configuration file name])
@@ -582,14 +572,18 @@ if test "$cli" != "no"; then
     AC_DEFINE(CONFIG_NAME, ["seq64cli"], [Configuration file name])
     if test "x$mingw" != "xyes" ; then
         build_rtcli="yes"
-        build_rtmidi="no"
+        build_rtmidi="yes"
+        build_portmidi="no"
         AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates that rtmidi is enabled])
         AM_PATH_ALSA(0.9.0)
     else
         build_windows="yes"
         build_rtmidi="no"
+        build_portmidi="yes"
         AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates that PortMidi is enabled])
     fi
+    need_qt="no"
+    need_gtkmm="no"
 else
     AC_MSG_NOTICE([portmidi/rtmidi command-line build disabled.])
 fi
@@ -597,7 +591,7 @@ fi
 dnl ALSA MIDI (legacy) support.
 
 AC_ARG_ENABLE(alsamidi,
-    [AS_HELP_STRING(--enable-alsamidi, [Enable standard ALSA build])],
+    [AS_HELP_STRING(--enable-alsamidi, [Enable legacy ALSA build])],
     [alsamidi=$enableval],
     [alsamidi=no])
 
@@ -608,21 +602,22 @@ if test "$alsamidi" != "no"; then
     AC_DEFINE(APP_NAME, ["sequencer64"], [Names legacy version of application])
     AC_DEFINE(CONFIG_NAME, ["sequencer64"], [Configuration file name])
     AM_PATH_ALSA(0.9.0)
-    AC_MSG_RESULT([Standard ALSA build enabled.]);
+    AC_MSG_RESULT([Legacy ALSA build enabled.]);
 else
-    AC_MSG_NOTICE([Standard ALSA build disabled.]);
+    AC_MSG_NOTICE([Legacy ALSA build disabled.]);
 fi
 
 dnl PortMidi support.  Deprecated for Linux, but will still build it. It needs
 dnl the ALSA libraries to work.
 
 AC_ARG_ENABLE(portmidi,
-    [AS_HELP_STRING(--enable-portmidi, [Enable PortMidi build (deprecated)])],
+    [AS_HELP_STRING(--enable-portmidi, [Enable PortMidi build (for testing)])],
     [portmidi=$enableval],
     [portmidi=no])
 
 if test "$portmidi" != "no"; then
     build_portmidi="yes"
+    build_rtmidi="no"
     need_gtkmm="yes"
     AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates if PortMidi support is enabled])
     AC_DEFINE(APP_NAME, ["seq64portmidi"], [Names this version of application])

@@ -1,0 +1,22 @@
+Contributed Cakewalk/Test Files
+Chris Ahlstrom
+2018-06-11 to 2018-06-11
+
+This directory contains contributed WRK (older-style Cakewalk)
+files for examples and testing.
+
+   longhair.wrk:
+
+        A tune we had transcribed, useful for testing the timing of the
+        PortMidi, ALSA, and JACK implementations.  This transcription 
+        was initially done via the Atari ST program "EditTrack".  Later,
+        it was converted via Cakewalk for DOS.
+
+   oxygene4b.wrk:
+
+        A fortuitous discovery, our by-ear transcription of this
+        Jean-Michel Jarre tune stores the notes in a Note Array, unlike
+        "longhair.wrk".  Thus, it provides an additional test of the
+        import of WRK files.
+
+# vim: sw=3 ts=3 wm=8 et ft=sh

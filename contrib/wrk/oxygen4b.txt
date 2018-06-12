@@ -1,0 +1,127 @@
+Chris Ahlstrom
+(GEnie: KICKAHA [try here first!];  Compuserve: [73340,26])
+9950 Topanga Canyon Blvd
+Chatsworth, CA   91311
+(818) 998-0490
+
+	The format of this file is SMF 1.  The original format for
+this song is Edit Track II, on the Atari ST, but nothing is
+sacrificed for the SMF version.
+
+	Download MIDIMOVR.ARC from GEnie, and use it to
+import this file into EZ-Track+ or Edit Track.  MIDIMOVR is "freeware"
+provided by the makers of EZ-Track+ and Edit Track (Hybrid Arts.)
+Not only does it play any SMF 0 or SMF 1 file, but it plays EZ-Track+
+files, and even Midi-Track files!
+
+
+OXYGENE 4 by Jean-Michel Jarre (version b)
+
+	This file represents a greatly upgraded version my
+original upload.  I fixed the ending quite a bit -- although it
+is still not perfect, it is much easier to listen to.  I also
+shifted most of the bass line earlier in time by 64 ticks, to
+make in sound more in synchrony with the melody; some parts
+were already perfect, and I exempted them from the delay.
+I added to the wind and noise track, and made the latter parts
+of this track sound in tune with the melody, since I had to
+allocate the same channel to a pitched sound source.
+Finally, I rearranged the patching for two keyboards:
+the Casio HT-700 on channels 5-7, and the MT-240 on channels
+1-4.  I believe that the conversion to SMF does not preserve
+transposition of the drum tracks, so follow the guide below
+if you use an MT-240 as a percussion source.  Oh, I fixed
+the note-names below.  They were off an octave!
+
+	I had no score for this well-known bit of sequencing
+by the French electronic musician.  I simply listened to each
+section of the song a hundred times or so, writing the passages
+down on stave paper, and reworking the sections until it sounded
+right.  The song consists entirely of triplets (three notes played
+in the duration of one quarter note).
+
+	Drum information is included.  I recorded the percussion as notes,
+and chose the pitches of the notes so that the percussion would
+sound good as notes, on a synth that has no drums.  Those
+lucky enough to have drums can manually transpose these tracks
+to the proper percussion voices on their own machines.  The
+drum tracks are as follows (I use cymbals in lieu of brushes):
+
+[Note for the SMF 1 version:  the transpositions noted below were
+automatically performed when converting to SMF.  I did not bother
+changing the track labels to suit, however.  Still, the labels do
+tell one the original notes, if that's important.]
+								MT-240
+	Track#	Name		Note		MIDI value	Transpose
+	
+	   7	Finger Snap	C3 (middle C)	60 decimal	flat 15
+	   8	Brush 1		G1		43		sharp 19
+	   9	Brush 2		F2		53		sharp 5
+	  10	Brush 3		C2		48		sharp 4
+	  11	Wind & Noise	C1 etc.		36		sharp 24
+	  12	Premature Bonk	C3		60		flat 12
+	
+	You gotta have the "Finger Snap".  It isn't "Oxygene 4"
+without the "Finger Snap".  I don't have it, just the rim shot.
+
+	Let's quickly discuss the rest of the tracks, and
+what can be done with them.
+
+	Track#	Name		Notes
+	
+	   1	Bass Triplets	Main bass line
+	   2	Tuned "Bonk"	A 1-2-3 1-2 pattern for bass use
+	   3	Bass Reiterator A constant triplet pattern for bass
+	   4	Horn Melody	The main melody
+	   5	Strings		A sub-plot of the main melody
+	   6	Filter Sweep	2-note line to provide chords
+
+	  13	HT700 Ptch 4-1	HT-700 Patching for track 4
+	  14	HT700 Ptch 2,3-2  HT-700 Patch to set tracks 2 & 3.
+	  15	Chris Ahlstrom	An extra (transposed) main melody
+	  16	GEnie:KICKAHA	A little treat (try it!)
+	  17	On the Atari ST	A little transposed treat.
+	  18	MT-240 Patch	Affects channels 1-3; 2==rhythm
+	  19	Strings		Transposed copy of track 5
+	  20	Bass Triplets	Main baseline, sharp one octave.
+
+	The bass tracks (1-3) are simple.  One problem I had, though,
+was that tracks 2 and 3 are a bit softer in the original.  I could
+not assign overall levels using EZ-Track+, and I was too lazy to
+make guesses of velocity to edit in with Edit Track.  As a result,
+the MIDI version sounds more energetic, and the laid-back feel of
+the original is lost.
+
+	The "Horn Melody" actually changes voices a few times.
+The HT-700 patch track (13) makes changes *roughly* analogous to
+the original.  In Jarre's recording, each voice is effectively
+a different track.  In mine, they're all on the same track, to
+make it easier to use with cheap synths.  Track 15 is a transposed
+copy of track 13.
+
+	I tried to stick closely to the improvised melody near
+the end of the song.  I wasn't perfect on this, but did make
+sure that my version sounded good [hah!].  Anyone who wants to tape this
+song will have to manually do a decrescendo near the end of the
+song.  I have no way of fading out near the end of the song.
+
+	"Strings" is a sub-melody that comes into play at times.
+
+	"Filter Sweep" departs a bit from Jarre's recording.
+In the background, he plays a sound with a slow filter sweep
+(say "wow" slowly to get the idea).  I couldn't determine if it
+was 1, 2, or 3 notes.  I tried a 3-note track, but one of the chords
+was impossible to make sound correctly, so I dropped a note, and went
+with two notes.  Seems to work the best.  Tracks 16 and 17 are the
+three-note chords.  You might try to replicate them, and verify
+for yourself that the second chord generates too much dissonance when
+combined with the melody.  Perhaps it works better at the softer
+sound levels in the original.
+
+THANKS!
+
+	Robert Geiger (GEnie: RG.Alaska) was kind enough to make
+a tape of this song and send it to me.  He did a great job, and
+made my month.  I have yet to pay him back in some way.
+
+	He also included some nice songs of his own.

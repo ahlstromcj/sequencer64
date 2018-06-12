@@ -6,7 +6,7 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2018-02-18
+# \updates     2018-06-11
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -141,27 +141,47 @@ libtool: $(LIBTOOL_DEPS)
 #
 #  # doc/dox
 #
+#  Note the order of these tests is important to handling the mixing and
+#  matching of MIDI engine versus user-interface.
+#
+#     RTMIDI/GTKMM
+#     RTMIDI/QT5
+#     PORTMIDI/GTKMM
+#     Legacy ALSA/GTKMM
+#     RTMIDI/CLI
+#     PORTMIDI/WINDOWS/CLI build: QT5 Windows build is done via qmake.
+#
+#  See INSTALL.
+#
 #-----------------------------------------------------------------------------
 
-if BUILD_ALSAMIDI
-SUBDIRS = resources/pixmaps libseq64 seq_alsamidi seq_gtkmm2 Sequencer64 data man
+
+if BUILD_QTMIDI
+
+SUBDIRS = resources/pixmaps libseq64 seq_rtmidi seq_qt5 Seq64qt5 man
+
+else
+
+if BUILD_RTMIDI
+SUBDIRS = resources/pixmaps libseq64 seq_rtmidi seq_gtkmm2 Seq64rtmidi Midiclocker64 data man
 endif
 
 if BUILD_PORTMIDI
 SUBDIRS = resources/pixmaps libseq64 seq_portmidi seq_gtkmm2 Seq64portmidi data man
 endif
 
-if BUILD_QTMIDI
-SUBDIRS = resources/pixmaps libseq64 seq_rtmidi seq_qt5 Seq64qt5 man
-endif
-
-if BUILD_RTMIDI
-SUBDIRS = resources/pixmaps libseq64 seq_rtmidi seq_gtkmm2 Seq64rtmidi Midiclocker64 data man
+if BUILD_ALSAMIDI
+SUBDIRS = resources/pixmaps libseq64 seq_alsamidi seq_gtkmm2 Sequencer64 data man
 endif
 
 if BUILD_RTCLI
 SUBDIRS = resources/pixmaps libseq64 seq_rtmidi Seq64cli Midiclocker64 data man
 endif
+
+endif
+
+#------------------------------
+#------------------------------
 
 if BUILD_WINDOWS
 SUBDIRS = resources/pixmaps libseq64 seq_portmidi Seq64cli data man

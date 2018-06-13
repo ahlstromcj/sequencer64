@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-05-30
+ * \updates       2018-06-13
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -34,6 +34,7 @@
  *  behavior of the pattern slots.
  */
 
+#include "file_functions.hpp"           /* seq64::file_extension_match()    */
 #include "keystroke.hpp"
 #include "perform.hpp"
 #include "qsmacros.hpp"                 /* QS_TEXT_CHAR() macro             */
@@ -48,6 +49,7 @@
 #include "qsliveframe.hpp"
 #include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
 #include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
+#include "wrkfile.hpp"
 
 /*
  *  Qt's uic application allows a different output file-name, but not sure
@@ -139,8 +141,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     (
         this, tr("Import MIDI file"),
         rc().last_used_dir().c_str(),
-        tr("MIDI files (*.midi *.mid);;"
-        "All files (*)")
+        tr("MIDI files (*.midi *.mid);;WRK files (*.wrk);;All files (*)")
     );
 
     m_dialog_prefs = new qseditoptions(m_main_perf, this);
@@ -386,7 +387,7 @@ qsmainwnd::showOpenFileDialog ()
         file = QFileDialog::getOpenFileName
         (
             this, tr("Open MIDI file"), rc().last_used_dir().c_str(),
-            tr("MIDI files (*.midi *.mid);; All files (*)")
+            tr("MIDI files (*.midi *.mid);;WRK files (*.wrk);;All files (*)")
         );
     }
     if (! file.isEmpty())                   // if the user did not cancel
@@ -402,13 +403,14 @@ qsmainwnd::showOpenFileDialog ()
 void
 qsmainwnd::open_file (const std::string & fn)
 {
-    midifile f(fn);
+    bool is_wrk = file_extension_match(fn, "wrk");
+    midifile * f = is_wrk ? new wrkfile(fn) : new midifile(fn) ;
     perf().clear_all();
 
-    bool result = f.parse(m_main_perf, 0);
+    bool result = f->parse(m_main_perf, 0);
     if (result)
     {
-//      ppqn(f.ppqn());                 /* get and save the actual PPQN     */
+//      ppqn(f->ppqn());                /* get and save the actual PPQN     */
         rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
         rc().filename(fn);
         rc().add_recent_file(fn);       /* from Oli Kester's Kepler34       */
@@ -450,11 +452,11 @@ qsmainwnd::open_file (const std::string & fn)
     }
     else
     {
-        std::string errmsg = f.error_message();
+        std::string errmsg = f->error_message();
         QString msg_text = errmsg.c_str();      /* msg_text += fn.c_str();  */
         m_msg_error->showMessage(msg_text);
         m_msg_error->exec();
-        if (f.error_is_fatal())
+        if (f->error_is_fatal())
             rc().remove_recent_file(fn);
     }
 }
@@ -629,8 +631,10 @@ qsmainwnd::showImportDialog()
         {
             try
             {
-                midifile f(path.toStdString());
-                f.parse(m_main_perf, perf().screenset());
+                std::string fn = path.toStdString();
+                bool is_wrk = file_extension_match(fn, "wrk");
+                midifile * f = is_wrk ? new wrkfile(fn) : new midifile(fn) ;
+                f->parse(m_main_perf, perf().screenset());
                 ui->spinBpm->setValue(perf().bpm());
                 if (not_nullptr(m_live_frame))
                     m_live_frame->setBank(perf().screenset());

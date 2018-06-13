@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-04
- * \updates       2018-06-11
+ * \updates       2018-06-12
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the WRK format, see, for example:
@@ -576,38 +576,43 @@ wrkfile::next_track
 {
     if (trackno != m_track_number)
     {
-        if (! end_chunk)                    /* we are at the End chunk      */
+        m_track_channel = channel;
+        m_track_name = trackname;
+        if (trackno >= 0 && trackno < SEQ64_SEQUENCE_MAXIMUM)
         {
-            m_track_channel = channel;
-            m_track_name = trackname;
-            if (trackno >= 0 && trackno < SEQ64_SEQUENCE_MAXIMUM)
-            {
-                m_track_number = trackno;   /* with a new number            */
-            }
-            else
-            {
-                // errprint("? Out-of-range track number found in WRK file");
-                // ++m_track_number;
-            }
+            m_track_number = trackno;   /* with a new number            */
         }
-        if (not_nullptr(m_current_seq))     /* a sequence currently exists  */
+        else
         {
-            m_current_seq->set_length(m_track_time);
-            finalize_sequence
-            (
-                *m_perform, *m_current_seq, m_track_number, m_screen_set
-            );
+            errprint("? Out-of-range track number found in WRK file");
+            ++m_track_number;
         }
-        if (! end_chunk)
-        {
-            /*
-             * Set up for the next sequence.  The previous one remains.
-             */
+        finalize_track();
 
-            m_current_seq = initialize_sequence(*m_perform);
-            m_current_seq->set_midi_channel(channel); /* channel, whole trk */
-            m_current_seq->set_name(trackname);
-        }
+        /*
+         * Set up for the next sequence.  The previous one remains.
+         */
+
+        m_current_seq = initialize_sequence(*m_perform);
+        m_current_seq->set_midi_channel(channel); /* channel, whole trk */
+        m_current_seq->set_name(trackname);
+    }
+}
+
+/**
+ *
+ */
+
+void
+wrkfile::finalize_track ()
+{
+    if (not_nullptr(m_current_seq))     /* a sequence currently exists  */
+    {
+        m_current_seq->set_length(m_track_time);
+        finalize_sequence
+        (
+            *m_perform, *m_current_seq, m_track_number, m_screen_set
+        );
     }
 }
 
@@ -809,6 +814,9 @@ wrkfile::NoteArray (int track, int events)
             event e;
             eventcode = status & 0xf0;
             channel = status & 0x0f;
+
+            m_track_channel = channel;      // EXPERIMENTAL
+
             d0 = read_byte();
             if (event::is_two_byte_msg(eventcode))   // note on/off, ctrl, pitch
                 d1 = read_byte();
@@ -935,7 +943,10 @@ wrkfile::NoteArray (int track, int events)
                     code, len, text.c_str()
                 );
             }
-            not_supported("Expression");
+            event e;
+            e.set_status(EVENT_CONTROL_CHANGE, channel);
+            e.set_data(EVENT_CTRL_EXPRESSION, d1);
+            m_current_seq->append_event(e);
         }
         else if (status == 6)               /* not supported in Sequencer64     */
         {
@@ -1104,6 +1115,9 @@ wrkfile::Stream_chunk ()
         midibyte status = read_byte();
         midibyte eventcode = status & EVENT_CLEAR_CHAN_MASK;         // 0xF0
         midibyte channel = status & EVENT_GET_CHAN_MASK;             // 0x0F
+
+        m_track_channel = channel;      // EXPERIMENTAL
+
         midibyte d0 = read_byte();
         midibyte d1 = read_byte();
         midishort dur = read_16_bit();
@@ -1673,8 +1687,8 @@ wrkfile::TrackReps ()
 void
 wrkfile::TrackPatch ()
 {
-    midishort track = read_16_bit();
-    midibyte patch = read_byte();
+    midishort track = read_16_bit();                    /* track number     */
+    midibyte patch = read_byte();                       /* patch number     */
 
     // Q_EMIT signalWRKTrackPatch(track, patch);
 
@@ -1683,11 +1697,10 @@ wrkfile::TrackPatch ()
         printf("Track Patch : Tr %d patch %d\n", int(track), int(patch));
     }
 
-    /*
-     * \todo
-     */
-
-    not_supported("Track Patch");
+    event e;
+    e.set_status(EVENT_PROGRAM_CHANGE, m_track_channel);
+    e.set_data(patch);
+    m_current_seq->append_event(e);
 }
 
 /**
@@ -1986,8 +1999,8 @@ wrkfile::LyricsStream ()
 void
 wrkfile::TrackVol ()
 {
-    midishort track = read_16_bit();
-    int vol = read_16_bit();
+    midishort track = read_16_bit();                    /* track number     */
+    int vol = read_16_bit();                            /* should be 1 byte */
 
     // Q_EMIT signalWRKTrackVol(track, vol);
 
@@ -1995,7 +2008,11 @@ wrkfile::TrackVol ()
     {
         printf("Track Volume: Tr %d volume %d\n", int(track), vol);
     }
-    not_supported("Track Vol");
+
+    event e;
+    e.set_status(EVENT_CONTROL_CHANGE, m_track_channel);
+    e.set_data(EVENT_CTRL_VOLUME, midibyte(vol));
+    m_current_seq->append_event(e);
 }
 
 /**
@@ -2108,12 +2125,13 @@ wrkfile::NewStream()
 }
 
 /**
- *  After reading the last chunk of a WRK file.
+ *  After reading the last chunk of a WRK file, this function finalizes any
+ *  last track that was extant.
  *
  * void signalWRKEnd();
  *
- *  Nothing to do here.  The original emitted a signal, but that's not needed
- *  when simply reading a WRK file in the Sequencer64 library.
+ *  The original emitted a signal, but that's not needed when simply reading
+ *  a WRK file in the Sequencer64 library.
  */
 
 void
@@ -2125,7 +2143,7 @@ wrkfile::End_chunk ()
     {
         printf("End chunk   : at seq number %d\n", m_seq_number);
     }
-    next_track(-1, -1, "", true);   /* we're at End chunk   */
+    finalize_track();
 }
 
 /**

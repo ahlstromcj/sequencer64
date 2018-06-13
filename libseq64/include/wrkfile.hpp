@@ -280,6 +280,7 @@ private:
         const std::string & trackname,
         bool end_chunk = false
     );
+    void finalize_track ();
     void not_supported (const std::string & tag);
     midishort to_16_bit (midibyte c1, midibyte c2);
     midilong to_32_bit (midibyte c1, midibyte c2, midibyte c3, midibyte c4);

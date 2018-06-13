@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-10
+ * \updates       2018-06-13
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -2068,8 +2068,8 @@ mainwnd::file_save_as (SaveOption option)
                 Gtk::MessageDialog warning
                 (
                     *this,
-                   "File already exists!\nDo you want to overwrite it?",
-                   false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, true
+                    "File already exists!\nDo you want to overwrite it?",
+                    false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, true
                 );
                 response = warning.run();
                 if (response == Gtk::RESPONSE_NO)
@@ -2258,6 +2258,8 @@ mainwnd::choose_file ()
  *  of m_ppqn, which was set when reading the MIDI file.  We also let midifile
  *  tell the perform that saving worked, so that the "is modified" flag can be
  *  cleared.  The midifile class is already a friend of perform.
+ *
+ *  Note that we do not support saving files in the Cakewalk WRK format.
  */
 
 bool
@@ -2394,6 +2396,12 @@ mainwnd::file_import_dialog ()
     filter_midi.add_pattern("*.mid");
     dlg.add_filter(filter_midi);
 
+    Gtk::FileFilter filter_wrk;
+    filter_wrk.set_name("WRK files");
+    filter_wrk.add_pattern("*.wrk");
+    filter_wrk.add_pattern("*.WRK");
+    dlg.add_filter(filter_wrk);
+
     Gtk::FileFilter filter_any;
     filter_any.set_name("Any files");
     filter_any.add_pattern("*");
@@ -2424,8 +2432,13 @@ mainwnd::file_import_dialog ()
         std::string fn = dlg.get_filename();
         try
         {
-            midifile f(fn);
-            f.parse(perf(), int(m_adjust_load_offset->get_value()), true);
+            bool is_wrk = file_extension_match(fn, "wrk");
+            midifile * f = is_wrk ? new wrkfile(fn) : new midifile(fn) ;
+            f->parse(perf(), int(m_adjust_load_offset->get_value()), true);
+            rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
+            rc().filename(fn);
+            rc().add_recent_file(fn);   /* from Oli Kester's Kepler34       */
+            update_recent_files_menu();
         }
         catch (...)
         {

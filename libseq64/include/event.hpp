@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-15
+ * \updates       2018-06-12
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -52,7 +52,7 @@
  *  Defines the number of data bytes in MIDI status data.
  *
  *  But consider this, events other than System Exclusive, which do not have
- *  an arbitrary number of bytes, but a definite number. These events are:
+ *  B arbitrary number of bytes, but a definite number. These events are:
  *
  *      -   Sequence No.:   FF 00 02 s1 s1
  *      -   MIDI Channel:   FF 20 01 cc
@@ -115,6 +115,15 @@ const midibyte EVENT_CONTROL_CHANGE     = 0xB0;      // 0ccccccc 0vvvvvvv
 const midibyte EVENT_PROGRAM_CHANGE     = 0xC0;      // 0ppppppp
 const midibyte EVENT_CHANNEL_PRESSURE   = 0xD0;      // 0vvvvvvv
 const midibyte EVENT_PITCH_WHEEL        = 0xE0;      // 0lllllll 0mmmmmmm
+
+/**
+ *  Control Change Messages.
+ */
+
+const midibyte EVENT_CTRL_VOLUME        = 0x07;
+const midibyte EVENT_CTRL_BALANCE       = 0x08;
+const midibyte EVENT_CTRL_PAN           = 0x0A;
+const midibyte EVENT_CTRL_EXPRESSION    = 0x0B;
 
 /**
  *  System Messages.

@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-05-30
+# \update      2018-06-13
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -50,11 +50,12 @@ TARGET = seq_qt5
 UI_DIR = forms
 
 FORMS += \
- forms/qperfeditframe.ui  \
- forms/qsabout.ui  \
- forms/qseditoptions.ui  \
- forms/qseqeditframe.ui  \
- forms/qsliveframe.ui  \
+ forms/qperfeditframe.ui \
+ forms/qsabout.ui \
+ forms/qseditoptions.ui \
+ forms/qseqeditex.ui \
+ forms/qseqeditframe.ui \
+ forms/qsliveframe.ui \
  forms/qsmainwnd.ui \
  forms/qsbuildinfo.ui
 
@@ -74,6 +75,7 @@ HEADERS += \
  include/qsabout.hpp \
  include/qseditoptions.hpp \
  include/qseqdata.hpp \
+ include/qseqeditex.hpp \
  include/qseqeditframe.hpp \
  include/qseqkeys.hpp \
  include/qseqroll.hpp \
@@ -101,6 +103,7 @@ SOURCES += \
  src/qsabout.cpp \
  src/qseditoptions.cpp \
  src/qseqdata.cpp \
+ src/qseqeditex.cpp \
  src/qseqeditframe.cpp \
  src/qseqkeys.cpp \
  src/qseqroll.cpp \

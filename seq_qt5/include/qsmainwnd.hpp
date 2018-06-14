@@ -47,9 +47,6 @@
 
 #include "midifile.hpp"
 
-// Not yet useful:
-// #include "qseqstyle.hpp"
-
 namespace Ui
 {
     class qsmainwnd;

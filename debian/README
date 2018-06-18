@@ -1,6 +1,6 @@
 Sequencer64 Debian Instructions
 Chris Ahlstrom
-2015-09-10 to 2018-04-01
+2015-09-10 to 2018-06-15
 
 There is a concise, recent, and fairly complete guide to creating a "deb"
 package in the Debian package called "maint-guide", which stores different

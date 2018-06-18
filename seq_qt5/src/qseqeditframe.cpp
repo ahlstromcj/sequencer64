@@ -26,12 +26,50 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-05-27
+ * \updates       2018-06-16
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
  *  contains vertical lines whose height matches the value of each data event.
  *  The height of the vertical lines is editable via the mouse.
+ *
+ *  The layout of this frame is depicted here:
+ *
+\verbatim
+                     -----------------------------------------------------------
+    QHBoxLayout     | seqname : gridsnap : notelength : seqlength : ...         |
+                     -----------------------------------------------------------
+    QHBoxLayout     | undo : redo : tools : zoomin : zoomout : scale : ...      |
+                     -----------------------------------------------------------
+                    |   | qseqtime      (0, 1, 1, 1)                        | V |
+                    |-- |---------------------------------------------------| e |
+    QVBoxLayout     | q |                                                   | r |
+        < >         | s | qseqroll      (1, 1, 1, 1)                        | t |
+         |          | e |                                                   |   |
+         v          | q |---------------------------------------------------| s |
+    QScrollArea     | k | qtriggeredit  (2, 1, 1, 1)                        | ' |
+  QWidget container | e |---------------------------------------------------| b |
+    QGridLayout     | y |                                                   | a |
+                    | s | qseqdata      (3, 1, 1, 1)                        | r |
+                    |   |                                                   |   |
+                     -----------------------------------------------------------
+                    | Horizontal scroll bar                                 |   |
+                     -----------------------------------------------------------
+
+                     qseqkey            (1, 0, 1, 1)
+\endverbatim
+ *
+ *  The horizontal and vertical scroll bars are not shown, but they control
+ *  everything in the scroll area.  The disadvantage of having all the "qseq"
+ *  objects inside the scroll area is that, unlike the Gtkmm version, the keys
+ *  can scroll off horizontally, and the time, trigger edit (events), and data
+ *  can scroll off vertically.
+ *
+ *  The "qseq" widgets are added to the grid layout via the following
+ *  function:
+ *
+ *      addWidget(..., int fromrow, int fromcolumn, int rowspan,
+ *          int columnspan, ...)
  */
 
 #include <QMenu>
@@ -61,6 +99,11 @@
 #include "forms/qseqeditframe.ui.h"
 #endif
 
+/*
+ *  We prefer to load the pixmaps on the fly, rather than deal with those
+ *  friggin' resource files.
+ */
+
 #include "pixmaps/drum.xpm"
 #include "pixmaps/play.xpm"
 #include "pixmaps/quantize.xpm"
@@ -77,11 +120,21 @@ namespace seq64
 
 /**
  *
+ * \param p
+ *      Provides the perform object to use for interacting with this sequence.
+ *
+ * \param seqid
+ *      Provides the sequence number.  The sequence pointer is looked up using
+ *      this number.
+ *
+ * \param parent
+ *      Provides the parent window/widget for this container window.  Defaults
+ *      to null.
  */
 
 qseqeditframe::qseqeditframe
 (
-    perform & p, QWidget * parent, int seqId
+    perform & p, int seqid, QWidget * parent
 ) :
     QFrame          (parent),
     ui              (new Ui::qseqeditframe),
@@ -90,16 +143,16 @@ qseqeditframe::qseqeditframe
     m_scroll_area   (nullptr),
     m_palette       (new QPalette()),
     mPopup          (nullptr),
-    mPerformance    (p),
-    mSeq            (perf().get_sequence(seqId)),    // a pointer
+    mPerformance    (p),                            // a reference
+    mSeq            (perf().get_sequence(seqid)),   // a pointer
     mKeyboard       (nullptr),
     mTimeBar        (nullptr),
     mNoteGrid       (nullptr),
     mEventValues    (nullptr),
     mEventTriggers  (nullptr),
     mSnap           (0),
-    mSeqId          (seqId),
-    editMode        (perf().seq_edit_mode(seqId))
+    mSeqId          (seqid),
+    editMode        (perf().seq_edit_mode(seqid))
 {
     ui->setupUi(this);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -585,11 +638,19 @@ qseqeditframe::updateScale(int newindex)
 
 }
 
+/**
+ *
+ */
+
 void
 qseqeditframe::updateBackgroundSeq(int newindex)
 {
 
 }
+
+/**
+ *
+ */
 
 void
 qseqeditframe::updateDrawGeometry()

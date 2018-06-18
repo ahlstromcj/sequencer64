@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-06-13
+# \update      2018-06-14
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -55,6 +55,7 @@ FORMS += \
  forms/qseditoptions.ui \
  forms/qseqeditex.ui \
  forms/qseqeditframe.ui \
+ forms/qseqeditframe64.ui \
  forms/qsliveframe.ui \
  forms/qsmainwnd.ui \
  forms/qsbuildinfo.ui
@@ -77,6 +78,7 @@ HEADERS += \
  include/qseqdata.hpp \
  include/qseqeditex.hpp \
  include/qseqeditframe.hpp \
+ include/qseqeditframe64.hpp \
  include/qseqkeys.hpp \
  include/qseqroll.hpp \
  include/qseqstyle.hpp \
@@ -105,6 +107,7 @@ SOURCES += \
  src/qseqdata.cpp \
  src/qseqeditex.cpp \
  src/qseqeditframe.cpp \
+ src/qseqeditframe64.cpp \
  src/qseqkeys.cpp \
  src/qseqroll.cpp \
  src/qseqstyle.cpp \

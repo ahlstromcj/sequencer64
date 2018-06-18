@@ -68,7 +68,7 @@ qseqroll::qseqroll
     mFont                   (),
     m_scale                 (0),
     m_key                   (0),
-    m_zoom                  (1),
+    m_zoom                  (SEQ64_DEFAULT_ZOOM),   // 2, not 1
     m_snap                  (16),
     m_note_length           (c_ppqn * 4 / 16),
     m_selecting             (false),
@@ -176,23 +176,39 @@ qseqroll::paintEvent (QPaintEvent *)
         }
     }
 
-    int measures_per_line = 1;
-    int ticks_per_measure = m_seq.get_beats_per_bar() *
-        (4 * c_ppqn) / m_seq.get_beat_width();
+    /*
+     * The ticks_per_step value needs to be figured out.  Why 6 * m_zoom?  6
+     * is the number of pixels in the smallest divisions in the default
+     * seqroll background.
+     */
 
-    int ticks_per_beat = (4 * c_ppqn) / m_seq.get_beat_width();
+//  int measures_per_line = 1;
+    int bpbar = m_seq.get_beats_per_bar();
+    int bwidth = m_seq.get_beat_width();
     int ticks_per_step = 6 * m_zoom;
-    int ticks_per_m_line =  ticks_per_measure * measures_per_line;
+    int ticks_per_beat = (4 * perf().ppqn()) / bwidth;
+    int ticks_per_major = bpbar * ticks_per_beat;
+//  int ticks_per_measure = bpbar * (4 * c_ppqn) / bwidth;
+//  int ticks_per_m_line = ticks_per_major * measures_per_line;
+
+#ifdef USE_THIS_CODE
+    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
+    int starttick = m_scroll_offset_ticks -
+        (m_scroll_offset_ticks % ticks_per_major);
+#endif
 
     // Draw vertical grid lines
 
     for (int i = 0; i < width(); i += ticks_per_step)
     {
         int base_line = i + c_keyboard_padding_x;
-        if (i % ticks_per_m_line == 0)
+        if (i % ticks_per_major == 0)
         {
-            pen.setColor(Qt::black);      // solid line on every beat
+            pen.setColor(Qt::black);        // solid line on every beat
             pen.setStyle(Qt::SolidLine);
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+            pen.setWidth(2);                // two pixels
+#endif
         }
         else if (i % ticks_per_beat == 0)
         {

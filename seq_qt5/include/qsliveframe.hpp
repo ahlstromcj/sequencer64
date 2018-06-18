@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-15
+ * \updates       2018-06-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -149,10 +149,12 @@ private slots:
     void updateBankName ();
     void newSeq ();
     void editSeq ();
+    void editSeqEx ();
     void copySeq ();
     void cutSeq ();
     void pasteSeq ();
     void deleteSeq ();
+
     void color_white ();
     void color_red ();
     void color_green ();
@@ -164,7 +166,8 @@ private slots:
 
 signals:
 
-    void callEditor (int seqId); // call the editor tab on the given seq
+    void callEditor (int seqid);    /* call editor tab for the sequence     */
+    void callEditorEx (int seqid);  /* call editor window for the sequence  */
 
 };              // class qsliveframe
 

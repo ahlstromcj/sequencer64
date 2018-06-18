@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-05-31
+ * \updates       2018-06-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -57,13 +57,19 @@ namespace seq64
 
 /**
  *
+ * \param p
+ *      Provides the perform object to use for interacting with this sequence.
+ *
+ * \param parent
+ *      Provides the parent window/widget for this container window.  Defaults
+ *      to null.
  */
 
-qsliveframe::qsliveframe (perform & perf, QWidget * parent)
+qsliveframe::qsliveframe (perform & p, QWidget * parent)
  :
     QFrame              (parent),
     ui                  (new Ui::qsliveframe),
-    mPerf               (perf),
+    mPerf               (p),
     m_moving_seq        (),
     m_seq_clipboard     (),
     mPopup              (nullptr),
@@ -638,32 +644,33 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
         }
     }
 
-    /* check for right mouse click - this launches the popup menu */
+    /*
+     * Check for right mouse click; this action launches the popup menu for
+     * the pattern slot underneath the mouse.
+     */
 
     if (m_curr_seq != -1 && event->button() == Qt::RightButton)
     {
         mPopup = new QMenu(this);
 
-        //new sequence option
-        QAction *actionNew = new QAction(tr("New sequence"), mPopup);
-        mPopup->addAction(actionNew);
-        QObject::connect
-        (
-            actionNew, SIGNAL(triggered(bool)),
-            this, SLOT(newSeq())
-        );
+        QAction * newseq = new QAction(tr("&New sequence"), mPopup);
+        mPopup->addAction(newseq);
+        QObject::connect(newseq, SIGNAL(triggered(bool)), this, SLOT(newSeq()));
 
         if (perf().is_active(m_curr_seq))
         {
-            // edit sequence
+            QAction * editseq = new QAction(tr("&Edit sequence in tab"), mPopup);
+            mPopup->addAction(editseq);
+            connect(editseq, SIGNAL(triggered(bool)), this, SLOT(editSeq()));
 
-            QAction * actionEdit = new QAction(tr("Edit sequence"), mPopup);
-            mPopup->addAction(actionEdit);
-            connect(actionEdit, SIGNAL(triggered(bool)), this, SLOT(editSeq()));
+            QAction * editseqex = new QAction
+            (
+                tr("Edit sequence in &window"), mPopup
+            );
+            mPopup->addAction(editseqex);
+            connect(editseqex, SIGNAL(triggered(bool)), this, SLOT(editSeqEx()));
 
-            // set the colour from the scheme
-
-            QMenu * menuColour = new QMenu(tr("Set colour..."));
+            QMenu * menuColour = new QMenu(tr("Set &color..."));
             QAction * color[8];
             color[0] = new QAction(tr("White"), menuColour);
             color[1] = new QAction(tr("Red"), menuColour);
@@ -690,15 +697,15 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
 
             mPopup->addMenu(menuColour);
 
-            QAction * actionCopy = new QAction(tr("Copy sequence"), mPopup);
+            QAction * actionCopy = new QAction(tr("Cop&y sequence"), mPopup);
             mPopup->addAction(actionCopy);
             connect(actionCopy, SIGNAL(triggered(bool)), this, SLOT(copySeq()));
 
-            QAction * actionCut = new QAction(tr("Cut sequence"), mPopup);
+            QAction * actionCut = new QAction(tr("Cu&t sequence"), mPopup);
             mPopup->addAction(actionCut);
             connect(actionCut, SIGNAL(triggered(bool)), this, SLOT(cutSeq()));
 
-            QAction * actionDelete = new QAction(tr("Delete sequence"), mPopup);
+            QAction * actionDelete = new QAction(tr("&Delete sequence"), mPopup);
             mPopup->addAction(actionDelete);
             connect
             (
@@ -714,7 +721,7 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
         mPopup->exec(QCursor::pos());
     }
 
-    if                      // middle button launches seq editor
+    if                              /* middle button launches seq editor    */
     (   m_curr_seq != -1 && event->button() == Qt::MiddleButton &&
         perf().is_active(m_curr_seq)
     )
@@ -769,7 +776,7 @@ qsliveframe::mouseDoubleClickEvent (QMouseEvent *)
  */
 
 void
-qsliveframe::newSeq()
+qsliveframe::newSeq ()
 {
     if (perf().is_active(m_curr_seq))
     {
@@ -786,13 +793,25 @@ qsliveframe::newSeq()
 }
 
 /**
- *
+ *  Emits the callEditor() signal.  In qsmainwnd, this signal is connected to
+ *  the loadEditor() slot.
  */
 
 void
 qsliveframe::editSeq ()
 {
     callEditor(m_curr_seq);
+}
+
+/**
+ *  Emits the callEditorEx() signal.  In qsmainwnd, this signal is connected to
+ *  the loadEditorEx() slot.
+ */
+
+void
+qsliveframe::editSeqEx ()
+{
+    callEditorEx(m_curr_seq);
 }
 
 /**

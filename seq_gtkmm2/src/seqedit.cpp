@@ -314,7 +314,6 @@ seqedit::seqedit
     m_key               (usr().seqedit_key()),          // m_initial_key
     m_bgsequence        (usr().seqedit_bgsequence()),   // m_initial_sequence
     m_measures          (0),                            // fixed below
-//  m_ppqn              (choose_ppqn(ppqn)),
     m_ppqn              (p.ppqn()),
 #ifdef USE_STAZED_ODD_EVEN_SELECTION
     m_pp_whole          (0),

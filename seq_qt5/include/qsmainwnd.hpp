@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-05-30
+ * \updates       2018-06-16
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -40,12 +40,10 @@
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QErrorMessage>
-#include <QList>                // new
+#include <QList>
 #include <QTimer>
 #include <QMessageBox>
 #include <QDesktopWidget>
-
-#include "midifile.hpp"
 
 namespace Ui
 {
@@ -57,6 +55,7 @@ namespace seq64
     class perform;
     class qsliveframe;
     class qperfeditframe;
+    class qseqeditex;
     class qseqeditframe;
     class qsmaintime;
     class qseditoptions;
@@ -74,7 +73,7 @@ class qsmainwnd : public QMainWindow
 public:
 
     explicit qsmainwnd (perform & p, QWidget * parent = 0);
-    ~qsmainwnd();
+    ~qsmainwnd ();
 
     // open the file at the given path
 
@@ -116,6 +115,7 @@ private:
     Ui::qsmainwnd * ui;
     qsliveframe * m_live_frame;
     qperfeditframe * m_song_frame;
+    qseqeditex  * m_edit_ex;
     qseqeditframe  * m_edit_frame;
     QErrorMessage * m_msg_error;
     QMessageBox * m_msg_save_changes;
@@ -146,16 +146,14 @@ private slots:
     bool save_file ();
     void save_file_as ();
     void quit ();
-    void showImportDialog (); //import MIDI data from current bank onwards
+    void showImportDialog ();           /* import MIDI into current bank    */
     void showOpenFileDialog ();
     void showqsabout ();
     void showqsbuildinfo ();
-    void tabWidgetClicked (int newIndex);
-    void refresh(); // redraw certain GUI elements
-
-    // set the editor to a specific seq and switch tab to it
-
-    void loadEditor(int seqId);
+    void tabWidgetClicked (int newindex);
+    void refresh ();                    /* redraw certain GUI elements      */
+    void loadEditor (int seqid);
+    void loadEditorEx (int seqid);
 
 };          // class qsmainwnd
 

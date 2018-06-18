@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-13
+ * \updates       2018-06-16
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -42,6 +42,7 @@
 #include "qsabout.hpp"
 #include "qsbuildinfo.hpp"
 #include "qseditoptions.hpp"
+#include "qseqeditex.hpp"
 #include "qseqeditframe.hpp"
 #include "qskeymaps.hpp"                /* mapping between Gtkmm and Qt     */
 #include "qsmaintime.hpp"
@@ -78,6 +79,12 @@ namespace seq64
 
 /**
  *
+ * \param p
+ *      Provides the perform object to use for interacting with this sequence.
+ *
+ * \param parent
+ *      Provides the parent window/widget for this container window.  Defaults
+ *      to null.
  */
 
 qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
@@ -146,7 +153,6 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
 
     m_dialog_prefs = new qseditoptions(m_main_perf, this);
     m_song_frame = new qperfeditframe(m_main_perf, ui->SongTab);
-    m_edit_frame = nullptr;                 // set so we know edit tab is empty
     m_beat_ind = new qsmaintime(m_main_perf, this, 4, 4);
     mDialogAbout = new qsabout(this);
     mDialogBuildInfo = new qsbuildinfo(this);
@@ -274,13 +280,15 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     );
     qt_set_icon(snap_xpm, ui->btnRecSnap);
 
-    // connect to the seq edit signal from the live tab
-
     if (not_nullptr(m_live_frame))
     {
-        connect
+        connect         // connect to sequence-edit signal from the Live tab
         (
             m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int))
+        );
+        connect         // new standalone sequence editor
+        (
+            m_live_frame, SIGNAL(callEditorEx(int)), this, SLOT(loadEditorEx(int))
         );
     }
 
@@ -430,7 +438,13 @@ qsmainwnd::open_file (const std::string & fn)
             ui->LiveTabLayout->addWidget(m_live_frame);
             connect
             (
-                m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int))
+                m_live_frame, SIGNAL(callEditor(int)),
+                this, SLOT(loadEditor(int))
+            );
+            connect
+            (
+                m_live_frame, SIGNAL(callEditorEx(int)),
+                this, SLOT(loadEditorEx(int))
             );
             m_live_frame->show();
             m_live_frame->setFocus();
@@ -679,16 +693,30 @@ qsmainwnd::showqsbuildinfo ()
  */
 
 void
-qsmainwnd::loadEditor(int seqId)
+qsmainwnd::loadEditor (int seqid)
 {
     ui->EditTabLayout->removeWidget(m_edit_frame);      /* no nullptr check */
     if (not_nullptr(m_edit_frame))
         delete m_edit_frame;
 
-    m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
+    m_edit_frame = new qseqeditframe(m_main_perf, seqid, ui->EditTab);
     ui->EditTabLayout->addWidget(m_edit_frame);         /* no nullptr check */
     m_edit_frame->show();
     ui->tabWidget->setCurrentIndex(2);
+}
+
+/**
+ *  Opens an external window for editing the sequence.  This window is much
+ *  more like the Gtkmm seqedit window, and somewhat more functional.  It has
+ *  no parent widget, otherwise the whole big dialog will appear inside that
+ *  parent.
+ */
+
+void
+qsmainwnd::loadEditorEx (int seqid)
+{
+    m_edit_ex = new qseqeditex(m_main_perf, seqid);
+    m_edit_ex->show();
 }
 
 /**
@@ -795,24 +823,24 @@ qsmainwnd::tabWidgetClicked (int newIndex)
 
     if (newIndex == 2 && is_nullptr(m_edit_frame))
     {
-        int seqId = -1;
+        int seqid = -1;
         for (int i = 0; i < c_max_sequence; ++i)
         {
             if (perf().is_active(i))
             {
-                seqId = i;
+                seqid = i;
                 break;
             }
         }
-        if (seqId == -1)                /* no sequence found, make a new one */
+        if (seqid == -1)                /* no sequence found, make a new one */
         {
             perf().new_sequence(0);
-            seqId = 0;
+            seqid = 0;
         }
 
-        sequence * seq = perf().get_sequence(seqId);
+        sequence * seq = perf().get_sequence(seqid);
         seq->set_dirty();
-        m_edit_frame = new qseqeditframe(m_main_perf, ui->EditTab, seqId);
+        m_edit_frame = new qseqeditframe(m_main_perf, seqid, ui->EditTab);
         ui->EditTabLayout->addWidget(m_edit_frame);     /* no nullptr check */
         m_edit_frame->show();
         update();

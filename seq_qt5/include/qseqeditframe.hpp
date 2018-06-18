@@ -29,12 +29,26 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-05-27
+ * \updates       2018-06-17
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
  *  contains vertical lines whose height matches the value of each data event.
  *  The height of the vertical lines is editable via the mouse.
+ *
+\verbatim
+    Gtkmm           Qt 5                Kepler34 (Qt 5)
+    ---------       ----------------    -----------------
+    mainwid         qsliveframe         LiveFrame
+    mainwnd         qsmainwnd           MainWindow
+    seqedit         qseqeditframe       EditFrame
+    seqedit         qseqeditframe64     EditFrame
+    seqkeys         qseqkeys            EditKeys
+    seqtime         qseqtime            EditTimeBar
+    seqroll         qseqroll            EditNoteRoll
+    seqdata         qseqdata            EditEventValues
+    seqevent        qstriggereditor     EditEventTriggers
+\endverbatim
  */
 
 #include <QFrame>
@@ -53,10 +67,18 @@ class QScrollArea;
 class QPalette;
 class QMenu;
 
+/*
+ * Do not document namespaces, it breaks Doxygen.
+ */
+
 namespace Ui
 {
     class qseqeditframe;
 }
+
+/*
+ * Do not document namespaces, it breaks Doxygen.
+ */
 
 namespace seq64
 {
@@ -68,7 +90,9 @@ namespace seq64
     class qstriggereditor;
 
 /**
- * Holds tools for editing an individual MIDI sequence
+ *  This frame holds tools for editing an individual MIDI sequence.
+ *  Basically the same as Kepler34's EditFrame class, renamed to fit in with
+ *  the Gtkmm version's naming conventions.
  */
 
 class qseqeditframe : public QFrame
@@ -79,17 +103,29 @@ public:
 
     explicit qseqeditframe
     (
-        seq64::perform & perf, QWidget * parent, int suqnum
+        seq64::perform & perf, int seqid, QWidget * parent = nullptr
     );
     ~qseqeditframe ();
 
     void updateDrawGeometry ();
-    void setEditorMode (seq64::edit_mode_t mode); //set a new editing mode
+    void setEditorMode (seq64::edit_mode_t mode); // set a new editing mode
+
+private:
+
+    /**
+     * \getter mPerformance
+     *      The const version.
+     */
 
     const seq64::perform & perf () const
     {
         return mPerformance;
     }
+
+    /**
+     * \getter mPerformance
+     *      The non-const version.
+     */
 
     seq64::perform & perf ()
     {

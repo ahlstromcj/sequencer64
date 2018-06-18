@@ -407,13 +407,6 @@ private:
     std::string m_first_event_name;
 
     /**
-     *
-     */
-    /*
-     midibyte m_first_control;
-     */
-
-    /**
      *  Indicates that the focus has already been changed to this sequence.
      */
 

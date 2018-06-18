@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-10
+ * \updates       2018-06-17
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2540,6 +2540,17 @@ public:         // GUI-support functions
             return edit_mode_t(0);
     }
 
+    /*
+     * This overload deals with the editing mode of the specific sequence,
+     * but the seqeuence ID is replaced with a reference to the sequence
+     * itself.
+     */
+
+    edit_mode_t seq_edit_mode (const sequence & s) const
+    {
+        return s.edit_mode();
+    }
+
     /**
      *  A pass-along function to set the edit-mode of the given sequence.
      *  Was private, but a class can have too many friends.
@@ -2558,6 +2569,15 @@ public:         // GUI-support functions
         sequence * sp = get_sequence(seq);
         if (not_nullptr(sp))
             sp->edit_mode(ed);
+    }
+
+    /**
+     *  Overload.
+     */
+
+    void seq_edit_mode (sequence & s, edit_mode_t ed)
+    {
+        s.edit_mode(ed);
     }
 
     /**

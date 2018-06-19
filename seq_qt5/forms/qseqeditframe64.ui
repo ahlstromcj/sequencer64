@@ -49,6 +49,9 @@
         <bold>true</bold>
        </font>
       </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
       <property name="text">
        <string>1024</string>
       </property>
@@ -303,7 +306,7 @@
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>50</y>
+     <y>40</y>
      <width>831</width>
      <height>41</height>
     </rect>
@@ -533,7 +536,7 @@
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>90</y>
+     <y>80</y>
      <width>771</width>
      <height>31</height>
     </rect>
@@ -575,25 +578,25 @@
     </property>
    </widget>
   </widget>
-  <widget class="QScrollArea" name="rollScrollArea">
+  <widget class="qscrollmaster" name="rollScrollArea" native="true">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>120</y>
-     <width>771</width>
+     <x>50</x>
+     <y>110</y>
+     <width>761</width>
      <height>231</height>
     </rect>
    </property>
-   <property name="widgetResizable">
+   <property name="widgetResizable" stdset="0">
     <bool>true</bool>
    </property>
-   <widget class="QWidget" name="scrollAreaWidgetContents_3">
+   <widget class="QWidget" name="scrollAreaWidgetContents_3" native="true">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>769</width>
-      <height>229</height>
+      <x>18</x>
+      <y>8</y>
+      <width>751</width>
+      <height>211</height>
      </rect>
     </property>
    </widget>
@@ -796,6 +799,13 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>qscrollmaster</class>
+   <extends>QWidget</extends>
+   <header>qscrollmaster.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

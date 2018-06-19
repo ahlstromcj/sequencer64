@@ -25,12 +25,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-11
+ * \updates       2018-06-19
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "Globals.hpp"
+#include "perform.hpp"
 #include "qseqtime.hpp"
 #include "sequence.hpp"
 
@@ -45,13 +46,18 @@ namespace seq64
  *
  */
 
-qseqtime::qseqtime (sequence & seq, QWidget * parent)
- :
+qseqtime::qseqtime
+(
+    perform & p,
+    sequence & seq,
+    QWidget * parent
+) :
     QWidget     (parent),
+    m_perform   (p),
     m_seq       (seq),
     m_timer     (new QTimer(this)),  // refresh timer to queue regular redraws
     m_font      (),
-    m_zoom      (1)
+    m_zoom      (1)     // (SEQ64_DEFAULT_ZOOM)
 {
     QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(update()));
     m_timer->setInterval(50);
@@ -67,8 +73,8 @@ void
 qseqtime::paintEvent (QPaintEvent *)
 {
     QPainter painter(this);
-    QPen pen(Qt::black);
     QBrush brush(Qt::lightGray, Qt::SolidPattern);
+    QPen pen(Qt::black);
     m_font.setPointSize(6);
     painter.setPen(pen);
     painter.setBrush(brush);
@@ -78,32 +84,47 @@ qseqtime::paintEvent (QPaintEvent *)
         c_keyboard_padding_x, 0, size().width(), size().height() - 1
     );
 
-    int measure_length_32nds = m_seq.get_beats_per_bar() * 32 /
-        m_seq.get_beat_width();
+    /*
+     * The ticks_per_step value needs to be figured out.  Why 6 * m_zoom?  6
+     * is the number of pixels in the smallest divisions in the default
+     * seqroll background.
+     *
+     * This code needs to be put into a function.
+     */
 
+    int bpbar = m_seq.get_beats_per_bar();
+    int bwidth = m_seq.get_beat_width();
+    int measure_length_32nds = bpbar * 32 / bwidth;
     int measures_per_line = (128 / measure_length_32nds) / (32 / m_zoom);
     if (measures_per_line <= 0)
         measures_per_line = 1;
 
-    int ticks_per_measure = m_seq.get_beats_per_bar() *
-        (4 * c_ppqn) / m_seq.get_beat_width();
-
+    int ticks_per_step = 6 * m_zoom;
+    int ticks_per_measure = bpbar * (4 * perf().ppqn()) / bwidth;
     int ticks_per_beat = ticks_per_measure * measures_per_line;
-    int start_tick = 0;
-    int end_tick = (m_seq.get_length());
+    int ticks_per_major = bpbar * ticks_per_beat;
+
+#ifdef USE_THIS_CODE
+    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
+    int starttick = m_scroll_offset_ticks -
+        (m_scroll_offset_ticks % ticks_per_major);
+#else
+    int starttick = 0;
+    int endtick = m_seq.get_length();          // width()
+#endif
 
     pen.setColor(Qt::black);
     painter.setPen(pen);
-    for (int i = start_tick; i <= end_tick; i += ticks_per_beat)
+    for (int tick = starttick; tick <= endtick; tick += ticks_per_beat)
     {
-        int zoomedX = i / m_zoom + c_keyboard_padding_x;
+        int zoomedX = tick / m_zoom + c_keyboard_padding_x;
 
         // vertical line at each beat
 
         painter.drawLine(zoomedX, 0, zoomedX, size().height());
 
         char bar[8];
-        snprintf(bar, sizeof(bar), "%d", (i / ticks_per_measure) + 1);
+        snprintf(bar, sizeof(bar), "%d", (tick / ticks_per_measure) + 1);
 
         // number each beat
 

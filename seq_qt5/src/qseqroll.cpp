@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-05-27
+ * \updates       2018-06-18
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -68,7 +68,7 @@ qseqroll::qseqroll
     mFont                   (),
     m_scale                 (0),
     m_key                   (0),
-    m_zoom                  (SEQ64_DEFAULT_ZOOM),   // 2, not 1
+    m_zoom                  (1),    // (SEQ64_DEFAULT_ZOOM),   // 2, not 1
     m_snap                  (16),
     m_note_length           (c_ppqn * 4 / 16),
     m_selecting             (false),
@@ -121,7 +121,6 @@ qseqroll::paintEvent (QPaintEvent *)
     QPainter painter(this);
     QBrush brush(Qt::NoBrush);
     QPen pen(Qt::black);
-
     mFont.setPointSize(6);
     painter.setPen(pen);
     painter.setBrush(brush);
@@ -180,29 +179,37 @@ qseqroll::paintEvent (QPaintEvent *)
      * The ticks_per_step value needs to be figured out.  Why 6 * m_zoom?  6
      * is the number of pixels in the smallest divisions in the default
      * seqroll background.
+     *
+     * This code needs to be put into a function.
      */
 
-//  int measures_per_line = 1;
     int bpbar = m_seq.get_beats_per_bar();
     int bwidth = m_seq.get_beat_width();
+    int measure_length_32nds = bpbar * 32 / bwidth;
+    int measures_per_line = (128 / measure_length_32nds) / (32 / m_zoom);
+    if (measures_per_line <= 0)
+        measures_per_line = 1;
+
     int ticks_per_step = 6 * m_zoom;
+    int ticks_per_measure = bpbar * (4 * perf().ppqn()) / bwidth;
     int ticks_per_beat = (4 * perf().ppqn()) / bwidth;
     int ticks_per_major = bpbar * ticks_per_beat;
-//  int ticks_per_measure = bpbar * (4 * c_ppqn) / bwidth;
-//  int ticks_per_m_line = ticks_per_major * measures_per_line;
 
 #ifdef USE_THIS_CODE
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     int starttick = m_scroll_offset_ticks -
         (m_scroll_offset_ticks % ticks_per_major);
+#else
+    int starttick = 0;
+    int endtick = m_seq.get_length();               // width()
 #endif
 
     // Draw vertical grid lines
 
-    for (int i = 0; i < width(); i += ticks_per_step)
+    for (int tick = starttick; tick < endtick; tick += ticks_per_step)
     {
-        int base_line = i + c_keyboard_padding_x;
-        if (i % ticks_per_major == 0)
+        int base_line = tick + c_keyboard_padding_x;
+        if (tick % ticks_per_major == 0)
         {
             pen.setColor(Qt::black);        // solid line on every beat
             pen.setStyle(Qt::SolidLine);
@@ -210,26 +217,39 @@ qseqroll::paintEvent (QPaintEvent *)
             pen.setWidth(2);                // two pixels
 #endif
         }
-        else if (i % ticks_per_beat == 0)
+        else if (tick % ticks_per_beat == 0)
         {
-            pen.setColor(Qt::DashLine);
+            pen.setColor(Qt::darkGray);         // can we use Palette?
+            pen.setStyle(Qt::SolidLine);        // pen.setColor(Qt::DashLine)
         }
         else
         {
-            pen.setColor(Qt::lightGray);  // faint step lines
+            pen.setColor(Qt::lightGray);        // faint step lines
             pen.setStyle(Qt::DotLine);
-            int i_snap = i - (i % m_snap);
-            if (i == i_snap)
+            int tick_snap = tick - (tick % m_snap);
+
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+            if (tick == tick_snap)
             {
-                //                m_pen->setColor(Qt::darkGray);
+                pen.setStyle(Qt::SolidLine);    // pen.setColor(Qt::DashLine)
+                pen.setColor(Qt::lightGray);    // faint step lines
             }
             else
             {
-                //                m_pen->setColor(Qt::gray);
+                pen.setStyle(Qt::DashLine);     // Gdk::LINE_ON_OFF_DASH
+                pen.setColor(Qt::lightGray);    // faint step lines
             }
+#else
+            pen.setStyle(Qt::DashLine);         // Gdk::LINE_ON_OFF_DASH
+            if (tick == tick_snap)
+                pen.setColor(Qt::darkGray);
+            else
+                pen.setColor(Qt::lightGray);
+#endif
         }
 
-        pen.setStyle(Qt::SolidLine);      // draw vertical grid lines
+        pen.setStyle(Qt::SolidLine);            // draw vertical grid lines
+        pen.setWidth(2);                        // two pixels
         painter.setPen(pen);
         painter.drawLine(base_line, 0, base_line, keyAreaY);
     }
@@ -247,7 +267,7 @@ qseqroll::paintEvent (QPaintEvent *)
     int velocity;
     draw_type_t dt;
     int start_tick = 0;
-    int end_tick = (width() * m_zoom);
+    int end_tick = width() * m_zoom;
     sequence * seq = nullptr;
     for (int method = 0; method < 2; ++method)
     {
@@ -327,8 +347,12 @@ qseqroll::paintEvent (QPaintEvent *)
                     length_add = 1;
                 }
                 pen.setColor(Qt::black);
+                pen.setColor(Qt::black);
                 if (method == 0)
+                {
+                    length_add = 1;
                     pen.setColor(Qt::darkGray);
+                }
 
                 brush.setStyle(Qt::SolidPattern);
                 brush.setColor(Qt::black);
@@ -1056,36 +1080,6 @@ qseqroll::set_adding(bool adding)
         setCursor(Qt::ArrowCursor);
         m_adding = false;
     }
-}
-
-/**
- *
- */
-
-int
-qseqroll::length () const
-{
-    return m_note_length;
-}
-
-/**
- *
- */
-
-void
-qseqroll::set_note_length (int length)
-{
-    m_note_length = length;
-}
-
-/**
- *
- */
-
-void
-qseqroll::set_snap (int snap)
-{
-    m_snap = snap;
 }
 
 /**

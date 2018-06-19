@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-06-18
+ * \updates       2018-06-19
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -240,11 +240,11 @@ qseqeditframe64::qseqeditframe64
     ui                  (new Ui::qseqeditframe64),
     m_performance       (p),                            // a reference
     m_seq               (perf().get_sequence(seqid)),   // a pointer
-    m_keyboard          (nullptr),
-    m_time_bar          (nullptr),
-    m_note_grid         (nullptr),
-    m_event_values      (nullptr),
-    m_event_triggers    (nullptr),
+    m_seqkeys          (nullptr),
+    m_seqtime          (nullptr),
+    m_seqroll         (nullptr),
+    m_seqdata      (nullptr),
+    m_seqevent    (nullptr),
     m_initial_zoom      (SEQ64_DEFAULT_ZOOM),           // constant
     m_zoom              (SEQ64_DEFAULT_ZOOM),           // fixed below
     m_snap              (m_initial_snap),
@@ -275,46 +275,30 @@ qseqeditframe64::qseqeditframe64
     /*
      * Instantiate the various editable areas of the seqedit user-interface.
      *
-     * seqkeys:
-     *      Not quite working as we'd hope.  The scrollbars still eat up
-     *      space.
+     * seqkeys: Not quite working as we'd hope.  The scrollbars still eat up
+     * space.
      */
 
-    m_keyboard = new qseqkeys
+    m_seqkeys = new qseqkeys
     (
         *m_seq,
         ui->keysScrollArea,
         usr().key_height(),
         usr().key_height() * c_num_keys + 1
     );
-    ui->keysScrollArea->setWidget(m_keyboard);
+    ui->keysScrollArea->setWidget(m_seqkeys);
+#define HIDE_THE_SCROLLBARS
 #ifdef HIDE_THE_SCROLLBARS
     ui->keysScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->keysScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 #endif
 
-#if 0
-    ui->keysScrollArea->verticalScrollBar()->hide();
-    ui->keysScrollArea->verticalScrollBar()->resize(0, 0);
-    ui->keysScrollArea->horizontalScrollBar()->hide();
-    ui->keysScrollArea->horizontalScrollBar()->setEnabled(false);
-    ui->keysScrollArea->horizontalScrollBar()->resize(0, 0);
-    scrollArea->verticalScrollBar()->setValue
-    (
-        scrollArea->verticalScrollBar()->value() + 10
-    );
-    scrollArea->horizontalScrollBar()->setValue
-    (
-        scrollArea->horizontalScrollBar()->value() + 10
-    );
-#endif  // 0
-
     /*
      * seqtime
      */
 
-    m_time_bar = new qseqtime(*m_seq, ui->timeScrollArea);
-    ui->timeScrollArea->setWidget(m_time_bar);
+    m_seqtime = new qseqtime(perf(), *m_seq, ui->timeScrollArea);
+    ui->timeScrollArea->setWidget(m_seqtime);
 #ifdef HIDE_THE_SCROLLBARS
     ui->timeScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->timeScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -324,16 +308,18 @@ qseqeditframe64::qseqeditframe64
      * seqroll
      */
 
-    m_note_grid = new qseqroll(perf(), *m_seq, ui->rollScrollArea);
-    ui->rollScrollArea->setWidget(m_note_grid);
-    ///////// m_note_grid->updateEditMode(m_edit_mode);
+    m_seqroll = new qseqroll(perf(), *m_seq, ui->rollScrollArea);
+    ui->rollScrollArea->setWidget(m_seqroll);
+    ui->rollScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    ui->rollScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    ///////// m_seqroll->updateEditMode(m_edit_mode);
 
     /*
      * seqdata
      */
 
-    m_event_values = new qseqdata(*m_seq, ui->dataScrollArea);
-    ui->dataScrollArea->setWidget(m_event_values);
+    m_seqdata = new qseqdata(*m_seq, ui->dataScrollArea);
+    ui->dataScrollArea->setWidget(m_seqdata);
 #ifdef HIDE_THE_SCROLLBARS
     ui->dataScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->dataScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -343,16 +329,26 @@ qseqeditframe64::qseqeditframe64
      * seqevent
      */
 
-    m_event_triggers = new qstriggereditor
+    m_seqevent = new qstriggereditor
     (
-        *m_seq, *m_event_values, ui->eventScrollArea, // mContainer,
+        *m_seq, *m_seqdata, ui->eventScrollArea, // mContainer,
         usr().key_height()
     );
-    ui->eventScrollArea->setWidget(m_event_triggers);
+    ui->eventScrollArea->setWidget(m_seqevent);
 #ifdef HIDE_THE_SCROLLBARS
     ui->eventScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->eventScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 #endif
+
+    /*
+     *  Add the various scrollbar points to the qscrollmaster object,
+     *  ui->rollScrollArea.
+     */
+
+    ui->rollScrollArea->add_v_scroll(ui->keysScrollArea->verticalScrollBar());
+    ui->rollScrollArea->add_h_scroll(ui->timeScrollArea->horizontalScrollBar());
+    ui->rollScrollArea->add_h_scroll(ui->dataScrollArea->horizontalScrollBar());
+    ui->rollScrollArea->add_h_scroll(ui->eventScrollArea->horizontalScrollBar());
 
     /*
      *  Sequence Number Label
@@ -480,9 +476,9 @@ qseqeditframe64::set_snap (int s)
 
         m_snap = s;
         m_initial_snap = s;
-        m_note_grid->set_snap(s);
+        m_seqroll->set_snap(s);
         m_seq->set_snap_tick(s);
-        // m_event_triggers->set_snap(s);     // TODO
+        // m_seqevent->set_snap(s);     // TODO
     }
 }
 
@@ -537,7 +533,7 @@ qseqeditframe64::set_note_length (int notelength)
 
     m_note_length = notelength;
     m_initial_note_length = notelength;
-    m_note_grid->set_note_length(notelength);
+    m_seqroll->set_note_length(notelength);
 }
 
 /**
@@ -552,8 +548,8 @@ qseqeditframe64::update_draw_geometry()
     ui->cmbSeqLen->setCurrentText(lentext);
     mContainer->adjustSize();
     */
-    m_time_bar->updateGeometry();
-    m_note_grid->updateGeometry();
+    m_seqtime->updateGeometry();
+    m_seqroll->updateGeometry();
 }
 
 /**
@@ -565,7 +561,7 @@ qseqeditframe64::set_editor_mode (seq64::edit_mode_t mode)
 {
     m_edit_mode = mode;
     perf().seq_edit_mode(*m_seq, mode);
-    // m_note_grid->updateEditMode(mode);
+    // m_seqroll->updateEditMode(mode);
 }
 
 

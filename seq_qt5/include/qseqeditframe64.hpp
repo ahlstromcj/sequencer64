@@ -45,6 +45,7 @@
 class QWidget;
 class QGridLayout;
 class QScrollArea;
+class QScrollBar;
 class QPalette;
 class QMenu;
 
@@ -128,11 +129,11 @@ private:
     Ui::qseqeditframe64 * ui;
     seq64::perform & m_performance;
     seq64::sequence * m_seq;
-    seq64::qseqkeys * m_keyboard;
-    seq64::qseqtime * m_time_bar;
-    seq64::qseqroll * m_note_grid;
-    seq64::qseqdata * m_event_values;
-    seq64::qstriggereditor * m_event_triggers;
+    seq64::qseqkeys * m_seqkeys;
+    seq64::qseqtime * m_seqtime;
+    seq64::qseqroll * m_seqroll;
+    seq64::qseqdata * m_seqdata;
+    seq64::qstriggereditor * m_seqevent;  // qseqevent?
 
     /**
      *  Provides the initial zoom, used for restoring the original zoom using

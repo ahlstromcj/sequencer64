@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-03
+ * \updates       2018-06-19
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -63,6 +63,9 @@ class qseqroll : public QWidget
 {
     Q_OBJECT
 
+    friend class qseqeditframe;
+    friend class qseqeditframe64;
+
 public:
 
     explicit qseqroll
@@ -73,13 +76,40 @@ public:
         seq64::edit_mode_t mode = EDIT_MODE_NOTE
     );
 
-    void set_snap (int snap);
-    int length () const;
-    void set_note_length (int length);
     void zoom_in();
     void zoom_out();
 
 protected:
+
+    /**
+     * \getter m_note_length
+     */
+
+    int get_note_length () const
+    {
+        return m_note_length;
+    }
+
+    /**
+     * \setter m_note_length
+     */
+
+    void set_note_length (int len)
+    {
+        m_note_length = len;
+    }
+
+    /**
+     * \setter m_snap
+     */
+
+    void set_snap (int snap)
+    {
+        m_snap = snap;
+    }
+
+protected:
+
     // override painting event to draw on the frame
 
     void paintEvent (QPaintEvent *);

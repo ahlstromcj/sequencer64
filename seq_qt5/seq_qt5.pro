@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-06-14
+# \update      2018-06-18
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -74,6 +74,7 @@ HEADERS += \
  include/qperfroll.hpp \
  include/qperftime.hpp \
  include/qsabout.hpp \
+ include/qscrollmaster.h \
  include/qseditoptions.hpp \
  include/qseqdata.hpp \
  include/qseqeditex.hpp \
@@ -103,6 +104,7 @@ SOURCES += \
  src/qperfroll.cpp \
  src/qperftime.cpp \
  src/qsabout.cpp \
+ src/qscrollmaster.cpp \
  src/qseditoptions.cpp \
  src/qseqdata.cpp \
  src/qseqeditex.cpp \

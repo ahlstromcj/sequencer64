@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-06-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -44,6 +44,7 @@
 
 namespace seq64
 {
+    class perform;
     class sequence;
 
 /**
@@ -56,17 +57,40 @@ class qseqtime : public QWidget
 
 public:
 
-    explicit qseqtime (sequence & seq, QWidget * parent);
+    explicit qseqtime
+    (
+        perform & p,
+        sequence & seq,
+        QWidget * parent = nullptr
+    );
     void zoom_in ();
     void zoom_out ();
 
 protected:
-    void paintEvent (QPaintEvent *); // painting event to draw on the frame
 
+    void paintEvent (QPaintEvent *); // painting event to draw on the frame
     void mousePressEvent (QMouseEvent * event);
     void mouseReleaseEvent (QMouseEvent * event);
     void mouseMoveEvent (QMouseEvent * event);
     QSize sizeHint() const;
+
+    /**
+     *
+     */
+
+    const perform & perf () const
+    {
+        return m_perform;
+    }
+
+    /**
+     *
+     */
+
+    perform & perf ()
+    {
+        return m_perform;
+    }
 
 signals:
 
@@ -74,6 +98,7 @@ private slots:
 
 private:
 
+    perform & m_perform;
     sequence & m_seq;
     QTimer * m_timer;
     QFont m_font;

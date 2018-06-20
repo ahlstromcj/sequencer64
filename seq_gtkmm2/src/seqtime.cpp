@@ -231,9 +231,9 @@ seqtime::update_pixmap ()
         measures_per_line = 1;
 
     int ticks_per_step = ticks_per_major * measures_per_line;
-    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     int starttick = m_scroll_offset_ticks -
         (m_scroll_offset_ticks % ticks_per_step);
+    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
 
     m_gc->set_foreground(black_paint());                     /* vert. line   */
     for (int tick = starttick; tick < endtick; tick += ticks_per_major)

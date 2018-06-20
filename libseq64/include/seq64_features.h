@@ -345,8 +345,9 @@
  */
 
 #ifndef SEQ64_QT5_USER_INTERFACE
-#define SEQ64_SOLID_PIANOROLL_GRID
 #endif
+
+#define SEQ64_SOLID_PIANOROLL_GRID
 
 /**
  *  An option we've preserved from Seq24, but have disabled until we find a

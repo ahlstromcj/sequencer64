@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-17
+ * \updates       2018-06-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -55,6 +55,10 @@
 namespace seq64
 {
 
+static const int qc_text_x = 6;
+static const int qc_text_y = 12;
+static const int qc_mainwid_border = 0;
+
 /**
  *
  * \param p
@@ -77,6 +81,9 @@ qsliveframe::qsliveframe (perform & p, QWidget * parent)
     mMsgBoxNewSeqCheck  (nullptr),
     mFont               (),
     m_bank_id           (0),
+    m_mainwnd_rows      (usr().mainwnd_rows()),
+    m_mainwnd_cols      (usr().mainwnd_cols()),
+    m_mainwid_spacing   (usr().mainwid_spacing()),
     thumbW              (0),
     thumbH              (0),
     previewW            (0),
@@ -149,14 +156,11 @@ qsliveframe::paintEvent (QPaintEvent *)
  *
  *  Compare it to mainwid::calculate_base_sizes():
  *
- *      -   m_mainwnd_rows and m_mainwnd_cols are qc_mainwnd_rows and
- *          qc_mainwnd_cols.
  *      -   m_mainwid_border_x and m_mainwid_border_y are
  *          ui->frame->x() and ui->frame->y(), which can be alter by the
  *          user via resizing the main window.
  *      -   m_seqarea_x and m_seqarea_y are the thumbW and thumbH members
  *          (!).
- *      -   m_mainwid_spacing is qc_mainwid_spacing.
  *
  * \param seqnum
  *      Provides the number of the sequence to calculate.
@@ -171,10 +175,10 @@ qsliveframe::paintEvent (QPaintEvent *)
 void
 qsliveframe::calculate_base_sizes (int seqnum, int & basex, int & basey)
 {
-    int i = (seqnum / qc_mainwnd_rows) % qc_mainwnd_cols;
-    int j =  seqnum % qc_mainwnd_rows;
-    basex = ui->frame->x() + 1 + (thumbW + qc_mainwid_spacing) * i;
-    basey = ui->frame->y() + 1 + (thumbH + qc_mainwid_spacing) * j;
+    int i = (seqnum / m_mainwnd_rows) % m_mainwnd_cols;
+    int j =  seqnum % m_mainwnd_rows;
+    basex = ui->frame->x() + 1 + (thumbW + m_mainwid_spacing) * i;
+    basey = ui->frame->y() + 1 + (thumbH + m_mainwid_spacing) * j;
 }
 
 /**
@@ -194,21 +198,21 @@ qsliveframe::drawSequence (int seq)
     painter.setFont(mFont);
 
     midipulse tick = perf().get_tick();  // timing info for timed elements
-    int metro = (tick / c_ppqn) % 2;
+    int metro = (tick / perf().ppqn()) % 2;
 
     /*
      * Grab frame dimensions for scaled drawing.  Note that the frame
      * size can be modified by the user dragging a corner.
      */
 
-    thumbW = (ui->frame->width() - 1 - qc_mainwid_spacing * 8) / qc_mainwnd_cols;
-    thumbH = (ui->frame->height() - 1 - qc_mainwid_spacing * 5) / qc_mainwnd_rows;
+    thumbW = (ui->frame->width() - 1 - m_mainwid_spacing * 8) / m_mainwnd_cols;
+    thumbH = (ui->frame->height() - 1 - m_mainwid_spacing * 5) / m_mainwnd_rows;
     previewW = thumbW - mFont.pointSize() * 2;
     previewH = thumbH - mFont.pointSize() * 5;
     if
     (
-        seq >= (m_bank_id * qc_mainwnd_rows * qc_mainwnd_cols) &&
-        seq < ((m_bank_id + 1) * qc_mainwnd_rows * qc_mainwnd_cols)
+        seq >= (m_bank_id * m_mainwnd_rows * m_mainwnd_cols) &&
+        seq < ((m_bank_id + 1) * m_mainwnd_rows * m_mainwnd_cols)
     )
     {
         int base_x, base_y;
@@ -476,10 +480,10 @@ qsliveframe::drawSequence (int seq)
 void
 qsliveframe::drawAllSequences ()
 {
-    for (int i = 0; i < (qc_mainwnd_rows * qc_mainwnd_cols); i++)
+    for (int i = 0; i < (m_mainwnd_rows * m_mainwnd_cols); i++)
     {
-        drawSequence(i + (m_bank_id * qc_mainwnd_rows * qc_mainwnd_cols));
-        m_last_tick_x[i + (m_bank_id * qc_mainwnd_rows * qc_mainwnd_cols)] = 0;
+        drawSequence(i + (m_bank_id * m_mainwnd_rows * m_mainwnd_cols));
+        m_last_tick_x[i + (m_bank_id * m_mainwnd_rows * m_mainwnd_cols)] = 0;
     }
 }
 
@@ -553,28 +557,28 @@ qsliveframe::seqIDFromClickXY (int click_x, int click_y)
     int y = click_y - qc_mainwid_border;
     if                                          /* is it in the box ? */
     (
-        x < 0 || x >= ((thumbW + qc_mainwid_spacing) * qc_mainwnd_cols) ||
-        y < 0 || y >= ((thumbH + qc_mainwid_spacing) * qc_mainwnd_rows))
+        x < 0 || x >= ((thumbW + m_mainwid_spacing) * m_mainwnd_cols) ||
+        y < 0 || y >= ((thumbH + m_mainwid_spacing) * m_mainwnd_rows))
     {
         return -1;
     }
 
     /* gives us x, y in box coordinates */
 
-    int box_test_x = x % (thumbW + qc_mainwid_spacing);
-    int box_test_y = y % (thumbH + qc_mainwid_spacing);
+    int box_test_x = x % (thumbW + m_mainwid_spacing);
+    int box_test_y = y % (thumbH + m_mainwid_spacing);
 
     /* right inactive side of area */
 
     if (box_test_x > thumbW || box_test_y > thumbH)
         return -1;
 
-    x /= (thumbW + qc_mainwid_spacing);
-    y /= (thumbH + qc_mainwid_spacing);
+    x /= (thumbW + m_mainwid_spacing);
+    y /= (thumbH + m_mainwid_spacing);
     int seqId =
     (
-        (x * qc_mainwnd_rows + y) +
-        (m_bank_id * qc_mainwnd_rows * qc_mainwnd_cols)
+        (x * m_mainwnd_rows + y) +
+        (m_bank_id * m_mainwnd_rows * m_mainwnd_cols)
     );
     return seqId;
 }

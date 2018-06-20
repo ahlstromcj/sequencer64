@@ -264,8 +264,14 @@ qseqeditframe::qseqeditframe
         usr().key_height(),
         usr().key_height() * c_num_keys + 1
     );
-    mTimeBar = new qseqtime(perf(), *mSeq, mContainer);
-    mNoteGrid = new qseqroll(perf(), *mSeq, mContainer);
+    mTimeBar = new qseqtime(perf(), *mSeq, SEQ64_DEFAULT_ZOOM, mContainer);
+    mNoteGrid = new qseqroll
+    (
+        perf(), *mSeq,
+        mKeyboard, 1, 16, 0,
+        mContainer,
+        EDIT_MODE_NOTE
+    );
     mNoteGrid->updateEditMode(editMode);
     mEventValues = new qseqdata(*mSeq, mContainer);
     mEventTriggers = new qstriggereditor

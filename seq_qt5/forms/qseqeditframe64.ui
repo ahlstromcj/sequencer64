@@ -535,10 +535,10 @@
   <widget class="QScrollArea" name="timeScrollArea">
    <property name="geometry">
     <rect>
-     <x>40</x>
+     <x>49</x>
      <y>80</y>
-     <width>771</width>
-     <height>31</height>
+     <width>761</width>
+     <height>30</height>
     </rect>
    </property>
    <property name="widgetResizable">
@@ -549,8 +549,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>769</width>
-      <height>29</height>
+      <width>759</width>
+      <height>28</height>
      </rect>
     </property>
    </widget>
@@ -582,9 +582,9 @@
    <property name="geometry">
     <rect>
      <x>50</x>
-     <y>110</y>
+     <y>100</y>
      <width>761</width>
-     <height>231</height>
+     <height>241</height>
     </rect>
    </property>
    <property name="widgetResizable" stdset="0">
@@ -594,8 +594,8 @@
     <property name="geometry">
      <rect>
       <x>18</x>
-      <y>8</y>
-      <width>751</width>
+      <y>10</y>
+      <width>741</width>
       <height>211</height>
      </rect>
     </property>
@@ -606,7 +606,7 @@
     <rect>
      <x>40</x>
      <y>350</y>
-     <width>771</width>
+     <width>770</width>
      <height>20</height>
     </rect>
    </property>
@@ -624,7 +624,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>769</width>
+      <width>768</width>
       <height>18</height>
      </rect>
     </property>

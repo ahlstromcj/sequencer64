@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-06-19
+ * \updates       2018-06-20
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -240,11 +240,11 @@ qseqeditframe64::qseqeditframe64
     ui                  (new Ui::qseqeditframe64),
     m_performance       (p),                            // a reference
     m_seq               (perf().get_sequence(seqid)),   // a pointer
-    m_seqkeys          (nullptr),
-    m_seqtime          (nullptr),
-    m_seqroll         (nullptr),
-    m_seqdata      (nullptr),
-    m_seqevent    (nullptr),
+    m_seqkeys           (nullptr),
+    m_seqtime           (nullptr),
+    m_seqroll           (nullptr),
+    m_seqdata           (nullptr),
+    m_seqevent          (nullptr),
     m_initial_zoom      (SEQ64_DEFAULT_ZOOM),           // constant
     m_zoom              (SEQ64_DEFAULT_ZOOM),           // fixed below
     m_snap              (m_initial_snap),
@@ -276,7 +276,7 @@ qseqeditframe64::qseqeditframe64
      * Instantiate the various editable areas of the seqedit user-interface.
      *
      * seqkeys: Not quite working as we'd hope.  The scrollbars still eat up
-     * space.
+     * space.  They need to be hidden.
      */
 
     m_seqkeys = new qseqkeys
@@ -287,32 +287,36 @@ qseqeditframe64::qseqeditframe64
         usr().key_height() * c_num_keys + 1
     );
     ui->keysScrollArea->setWidget(m_seqkeys);
-#define HIDE_THE_SCROLLBARS
-#ifdef HIDE_THE_SCROLLBARS
     ui->keysScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->keysScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-#endif
 
     /*
      * seqtime
      */
 
-    m_seqtime = new qseqtime(perf(), *m_seq, ui->timeScrollArea);
+    m_seqtime = new qseqtime
+    (
+        perf(), *m_seq, SEQ64_DEFAULT_ZOOM, ui->timeScrollArea
+    );
     ui->timeScrollArea->setWidget(m_seqtime);
-#ifdef HIDE_THE_SCROLLBARS
     ui->timeScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->timeScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-#endif
 
     /*
      * seqroll
      */
 
-    m_seqroll = new qseqroll(perf(), *m_seq, ui->rollScrollArea);
+    m_seqroll = new qseqroll
+    (
+        perf(), *m_seq,
+        m_seqkeys, m_zoom, m_snap, 0,
+        ui->rollScrollArea,
+        EDIT_MODE_NOTE
+    );
     ui->rollScrollArea->setWidget(m_seqroll);
     ui->rollScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     ui->rollScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    ///////// m_seqroll->updateEditMode(m_edit_mode);
+    m_seqroll->updateEditMode(m_edit_mode);
 
     /*
      * seqdata
@@ -320,10 +324,8 @@ qseqeditframe64::qseqeditframe64
 
     m_seqdata = new qseqdata(*m_seq, ui->dataScrollArea);
     ui->dataScrollArea->setWidget(m_seqdata);
-#ifdef HIDE_THE_SCROLLBARS
     ui->dataScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->dataScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-#endif
 
     /*
      * seqevent
@@ -335,10 +337,8 @@ qseqeditframe64::qseqeditframe64
         usr().key_height()
     );
     ui->eventScrollArea->setWidget(m_seqevent);
-#ifdef HIDE_THE_SCROLLBARS
     ui->eventScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->eventScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-#endif
 
     /*
      *  Add the various scrollbar points to the qscrollmaster object,
@@ -561,7 +561,7 @@ qseqeditframe64::set_editor_mode (seq64::edit_mode_t mode)
 {
     m_edit_mode = mode;
     perf().seq_edit_mode(*m_seq, mode);
-    // m_seqroll->updateEditMode(mode);
+    m_seqroll->updateEditMode(mode);
 }
 
 

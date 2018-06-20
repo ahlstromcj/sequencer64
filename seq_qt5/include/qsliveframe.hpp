@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-16
+ * \updates       2018-06-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,7 +38,7 @@
 #include <QTimer>
 #include <QMessageBox>
 
-#include "Globals.hpp"
+#include "globals.h"
 #include "gui_palette_qt5.hpp"
 #include "sequence.hpp"
 
@@ -128,6 +128,9 @@ private:
     QMessageBox * mMsgBoxNewSeqCheck;
     QFont mFont;
     int m_bank_id;                  // same as the screen-set number
+    int m_mainwnd_rows;
+    int m_mainwnd_cols;
+    int m_mainwid_spacing;
     int thumbW;
     int thumbH;                     // thumbnail dimensions
     int previewW;
@@ -139,8 +142,8 @@ private:
     bool mButtonDown;
     bool mMoving;                   // are we moving bewteen slots
     bool mAddingNew; /*we can add a new seq here, wait for double click*/
-    midipulse m_last_tick_x[qc_max_sequence];
-    bool m_last_playing[qc_max_sequence];
+    midipulse m_last_tick_x[c_max_sequence];
+    bool m_last_playing[c_max_sequence];
     bool mCanPaste;
 
 private slots:

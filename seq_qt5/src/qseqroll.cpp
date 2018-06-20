@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-18
+ * \updates       2018-06-20
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -37,8 +37,7 @@
 #include "Globals.hpp"
 #include "perform.hpp"
 #include "qseqroll.hpp"
-#include "sequence.hpp"
-#include "settings.hpp"                 /* usr()                            */
+#include "settings.hpp"                 /* seq64::usr().key_height()        */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -56,6 +55,10 @@ qseqroll::qseqroll
 (
     perform & perf,
     sequence & seq,
+    qseqkeys * seqkeys_wid,
+    int zoom,
+    int snap,
+    int pos,
     QWidget * parent,
     edit_mode_t mode
 ) :
@@ -64,12 +67,14 @@ qseqroll::qseqroll
     m_seq                   (seq),
     m_old                   (),
     m_selected              (),
+    m_seqkeys_wid           (seqkeys_wid),
     mTimer                  (nullptr),
     mFont                   (),
     m_scale                 (0),
+    m_pos                   (0),
     m_key                   (0),
-    m_zoom                  (1),    // (SEQ64_DEFAULT_ZOOM),   // 2, not 1
-    m_snap                  (16),
+    m_zoom                  (zoom),
+    m_snap                  (snap),
     m_note_length           (c_ppqn * 4 / 16),
     m_selecting             (false),
     m_adding                (false),
@@ -81,6 +86,8 @@ qseqroll::qseqroll
     m_is_drag_pasting       (false),
     m_is_drag_pasting_start (false),
     m_justselected_one      (false),
+    m_window_x              (0),
+    m_window_y              (0),
     m_drop_x                (0),
     m_drop_y                (0),
     m_move_delta_x          (0),
@@ -88,10 +95,22 @@ qseqroll::qseqroll
     m_current_x             (0),
     m_current_y             (0),
     m_move_snap_offset_x    (0),
+    m_progress_x            (0),
     m_old_progress_x        (0),
+    m_scroll_offset_ticks   (0),
+    m_scroll_offset_key     (0),
+    m_scroll_offset_x       (0),
+    m_scroll_offset_y       (0),
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+    m_scroll_page           (0),
+    m_progress_follow       (false),
+#endif
     m_background_sequence   (0),
     m_drawing_background_seq (false),
-    editMode                (mode),
+    m_expanded_recording    (false),
+    m_status                (0),
+    m_cc                    (0),
+    m_edit_mode             (mode),
     note_x                  (0),
     note_width              (0),
     note_y                  (0),
@@ -112,7 +131,7 @@ qseqroll::qseqroll
 }
 
 /**
- *
+ *  Draws the piano roll.
  */
 
 void
@@ -120,57 +139,89 @@ qseqroll::paintEvent (QPaintEvent *)
 {
     QPainter painter(this);
     QBrush brush(Qt::NoBrush);
-    QPen pen(Qt::black);
     mFont.setPointSize(6);
+
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+    bool fruity_lines = true;
+    QPen pen(Qt::lightGray);
+    pen.setStyle(Qt::SolidLine);
+#else
+    bool fruity_lines = rc().interaction_method() == e_fruity_interaction;
+    QPen pen(Qt::gray);
+    pen.setStyle(Qt::DashLine);
+#endif
+
     painter.setPen(pen);
     painter.setBrush(brush);
     painter.setFont(mFont);
 
-    // draw border
-    //    painter.drawRect(0, 0, width(), height());
+    /*
+     * Draw the border
+     */
+
+    painter.drawRect(0, 0, width(), height());
 
     pen.setColor(Qt::lightGray);
     pen.setStyle(Qt::DashLine);
     painter.setPen(pen);
 
-    for (int i = 1; i < c_num_keys; ++i)    // for each note row in grid
+    int octkey = SEQ64_OCTAVE_SIZE - m_key;         /* used three times     */
+    for (int key = 1; key < c_num_keys; ++key)      /* for each note row    */
     {
-        //set line colour dependent on the note row we're on
-        //        if (0 == (((c_num_keys - i) + ( 12 - m_key )) % 12))
-        //        {
-        //            m_pen->setColor(Qt::darkGray);
-        //            m_pen->setStyle(Qt::SolidLine);
-        //            painter.setPen(*m_pen);
-        //        }
-        //        else if (11 == (((c_num_keys - i) + ( 12 - m_key )) % 12))
-        //        {
-        //            m_pen->setColor(Qt::darkGray);
-        //            m_pen->setStyle(Qt::SolidLine);
-        //            painter.setPen(*m_pen);
-        //        }
+        int remkeys = c_num_keys - key;             /* remaining keys?      */
+        int modkey = remkeys - m_scroll_offset_key + octkey;
 
-        //draw horizontal grid lines
-        //(differently depending on editing mode)
-        switch (editMode)
+        /*
+         * Set line colour dependent on the note row we're on.
+         */
+
+        if (fruity_lines)
+        {
+            if ((modkey % SEQ64_OCTAVE_SIZE) == 0)
+            {
+                pen.setColor(Qt::darkGray);
+                pen.setStyle(Qt::SolidLine);
+                painter.setPen(pen);
+            }
+            else if ((modkey % SEQ64_OCTAVE_SIZE) == (SEQ64_OCTAVE_SIZE-1))
+            {
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+                pen.setColor(Qt::lightGray);
+                pen.setStyle(Qt::SolidLine);
+                painter.setPen(pen);
+#else
+                pen.setColor(Qt::gray);
+                pen.setStyle(Qt::DashLine);
+                painter.setPen(pen);
+#endif
+            }
+        }
+
+        /*
+         * Draw horizontal grid lines differently depending on editing mode.
+         */
+
+        switch (m_edit_mode)
         {
         case EDIT_MODE_NOTE:
-            painter.drawLine(0, i * keyY, width(), i * keyY);
+            painter.drawLine(0, key * keyY, width(), key * keyY);
             break;
 
         case EDIT_MODE_DRUM:
             painter.drawLine
             (
-                0, i * keyY - (0.5 * keyY), width(), i * keyY - (0.5 * keyY)
+                0, key * keyY - (0.5 * keyY), width(), key * keyY - (0.5 * keyY)
             );
             break;
         }
 
+        int y = key * keyY; // c_key_y
+        painter.drawLine(0, y, width(), y);
         if (m_scale != c_scale_off)
         {
-            if (!c_scales_policy[m_scale][((c_num_keys - i) - 1 + (12 - m_key)) % 12])
+            if (! c_scales_policy[m_scale][(modkey - 1) % SEQ64_OCTAVE_SIZE])
             {
-                // Commented out in kepler34
-                // painter.drawRect(0, i * keyY + 1, m_size_x, keyY - 1);
+                // painter.drawRect(0, key * keyY + 1, m_size_x, keyY - 1);
             }
         }
     }
@@ -185,36 +236,35 @@ qseqroll::paintEvent (QPaintEvent *)
 
     int bpbar = m_seq.get_beats_per_bar();
     int bwidth = m_seq.get_beat_width();
-    int measure_length_32nds = bpbar * 32 / bwidth;
-    int measures_per_line = (128 / measure_length_32nds) / (32 / m_zoom);
+    int ticks_per_beat = (4 * perf().ppqn()) / bwidth;
+    int ticks_per_bar = bpbar * ticks_per_beat;
+    int measures_per_line = m_zoom * bwidth * bpbar * 2;
     if (measures_per_line <= 0)
         measures_per_line = 1;
 
     int ticks_per_step = 6 * m_zoom;
-    int ticks_per_measure = bpbar * (4 * perf().ppqn()) / bwidth;
-    int ticks_per_beat = (4 * perf().ppqn()) / bwidth;
-    int ticks_per_major = bpbar * ticks_per_beat;
-
-#ifdef USE_THIS_CODE
-    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     int starttick = m_scroll_offset_ticks -
-        (m_scroll_offset_ticks % ticks_per_major);
-#else
-    int starttick = 0;
-    int endtick = m_seq.get_length();               // width()
-#endif
+            (m_scroll_offset_ticks % ticks_per_step);
+    int endtick = width() * m_zoom + m_scroll_offset_ticks;
 
-    // Draw vertical grid lines
+    pen.setColor(Qt::darkGray);                 // can we use Palette?
+    painter.setPen(pen);
+
+    /*
+     * Draw vertical grid lines.  Incrementing by ticks_per_step only works for
+     * PPQN of certain multiples.
+     */
 
     for (int tick = starttick; tick < endtick; tick += ticks_per_step)
     {
-        int base_line = tick + c_keyboard_padding_x;
-        if (tick % ticks_per_major == 0)
+        int x_offset = tick / m_zoom + c_keyboard_padding_x - m_scroll_offset_x;
+        pen.setWidth(1);
+        if (tick % ticks_per_bar == 0)
         {
-            pen.setColor(Qt::black);        // solid line on every beat
+            pen.setColor(Qt::black);            // solid line on every beat
             pen.setStyle(Qt::SolidLine);
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
-            pen.setWidth(2);                // two pixels
+            pen.setWidth(2);                    // two pixels
 #endif
         }
         else if (tick % ticks_per_beat == 0)
@@ -247,20 +297,21 @@ qseqroll::paintEvent (QPaintEvent *)
                 pen.setColor(Qt::lightGray);
 #endif
         }
-
-        pen.setStyle(Qt::SolidLine);            // draw vertical grid lines
-        pen.setWidth(2);                        // two pixels
         painter.setPen(pen);
-        painter.drawLine(base_line, 0, base_line, keyAreaY);
+        painter.drawLine(x_offset, 0, x_offset, keyAreaY);
     }
 
-    pen.setColor(Qt::red);                // draw the playhead
+#if ! defined SEQ64_SOLID_PIANOROLL_GRID
+    pen.setStyle(Qt::SolidLine);
+#endif
+
+    pen.setColor(Qt::red);                      // draw the playhead
     pen.setStyle(Qt::SolidLine);
     painter.setPen(pen);
     painter.drawLine(m_old_progress_x, 0, m_old_progress_x, height() * 8);
     m_old_progress_x = (m_seq.get_last_tick() / m_zoom + c_keyboard_padding_x);
 
-    midipulse tick_s;                       // draw notes
+    midipulse tick_s;                               // draw notes
     midipulse tick_f;
     int note;
     bool selected;
@@ -308,7 +359,7 @@ qseqroll::paintEvent (QPaintEvent *)
             {
                 note_x = tick_s / m_zoom + c_keyboard_padding_x;
                 note_y = keyAreaY - (note * keyY) - keyY - 1 + 2;
-                switch (editMode)
+                switch (m_edit_mode)
                 {
                 case EDIT_MODE_NOTE:
                     note_height = keyY - 3;
@@ -358,7 +409,7 @@ qseqroll::paintEvent (QPaintEvent *)
                 brush.setColor(Qt::black);
                 painter.setBrush(brush);
                 painter.setPen(pen);
-                switch (editMode)
+                switch (m_edit_mode)
                 {
                 case EDIT_MODE_NOTE:
 
@@ -393,7 +444,7 @@ qseqroll::paintEvent (QPaintEvent *)
                 // Draw note highlight if there's room, always draw them in
                 // drum mode
 
-                if (note_width > 3 || editMode == EDIT_MODE_DRUM)
+                if (note_width > 3 || m_edit_mode == EDIT_MODE_DRUM)
                 {
                     // red noted selected, otherwise plain white
                     if (selected)
@@ -404,7 +455,7 @@ qseqroll::paintEvent (QPaintEvent *)
                     painter.setBrush(brush);
                     if (method == 1)
                     {
-                        switch (editMode)
+                        switch (m_edit_mode)
                         {
                         case EDIT_MODE_NOTE: // if the note fits in the grid
                             if (tick_f >= tick_s)
@@ -478,7 +529,7 @@ qseqroll::paintEvent (QPaintEvent *)
         y = m_selected.y() + delta_y;
         pen.setColor(Qt::black);
         painter.setPen(pen);
-        switch (editMode)
+        switch (m_edit_mode)
         {
         case EDIT_MODE_NOTE:
             painter.drawRect
@@ -522,6 +573,57 @@ qseqroll::paintEvent (QPaintEvent *)
     }
 }
 
+#ifdef USE_SCROLLING_CODE    // not ready for this class
+
+/**
+ *  Sets the horizontal scroll value according to the current value of the
+ *  horizontal scroll-bar.
+ */
+
+void
+qseqroll::set_scroll_x ()
+{
+    m_scroll_offset_ticks = int(m_hadjust.get_value());
+    m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+}
+
+/**
+ *  Sets the vertical scroll value according to the current value of the
+ *  vertical scroll-bar.
+ */
+
+void
+qseqroll::set_scroll_y ()
+{
+    m_scroll_offset_key = int(m_vadjust.get_value());
+    m_scroll_offset_y = m_scroll_offset_key * c_key_y;
+}
+
+/**
+ *  Change the horizontal scrolling offset and redraw.  Roughly similar to
+ *  seqevent::change_horz().
+ */
+
+void
+qseqroll::change_horz ()
+{
+    set_scroll_x();
+    update_and_draw(true);
+}
+
+/**
+ *  Change the vertical scrolling offset and redraw.
+ */
+
+void
+qseqroll::change_vert ()
+{
+    set_scroll_y();
+    update_and_draw(true);
+}
+
+#endif  // USE_SCROLLING_CODE
+
 /**
  *
  */
@@ -553,7 +655,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
         if (event->button() == Qt::LeftButton)
         {
             m_current_x = m_drop_x = norm_x; // for selection, use non-snapped x
-            switch (editMode)                // convert screen coords to ticks
+            switch (m_edit_mode)                // convert screen coords to ticks
             {
             case EDIT_MODE_NOTE:
                 convert_xy(m_drop_x, m_drop_y, tick_s, note);
@@ -591,7 +693,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                 // if nothing's already selected in the range
 
                 bool isSelected = false;
-                switch (editMode)
+                switch (m_edit_mode)
                 {
                 case EDIT_MODE_NOTE:
                     isSelected = m_seq.select_note_events
@@ -613,7 +715,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                     if (! (event->modifiers() & Qt::ControlModifier))
                         m_seq.unselect();
 
-                    switch (editMode) /* on direct click select only 1 event */
+                    switch (m_edit_mode) /* on direct click select only 1 event */
                     {
                     case EDIT_MODE_NOTE:
                         numsel = m_seq.select_note_events
@@ -642,7 +744,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                     }
                 }
                 isSelected = false;
-                switch (editMode)
+                switch (m_edit_mode)
                 {
                 case EDIT_MODE_NOTE:
                     isSelected = m_seq.select_note_events
@@ -670,7 +772,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                     {
                         m_moving_init = true;
                         needs_update = true;
-                        switch (editMode)
+                        switch (m_edit_mode)
                         {
                         case EDIT_MODE_NOTE:           // acount note lengths
                             m_seq.get_selected_box
@@ -712,7 +814,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                                 (event->modifiers() & Qt::ControlModifier)
                             )
                         )
-                            && editMode == EDIT_MODE_NOTE)
+                            && m_edit_mode == EDIT_MODE_NOTE)
                     {
                         m_growing = true;
 
@@ -764,7 +866,7 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
             (
                 m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h
             );
-            switch (editMode)
+            switch (m_edit_mode)
             {
             case EDIT_MODE_NOTE:
                 convert_xy(x, y, tick_s, note_h);
@@ -1139,7 +1241,7 @@ qseqroll::zoom_out ()
 void
 qseqroll::updateEditMode (edit_mode_t mode)
 {
-    editMode = mode;
+    m_edit_mode = mode;
 }
 
 }           // namespace seq64

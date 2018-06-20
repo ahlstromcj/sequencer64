@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-18
+ * \updates       2018-06-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,6 +37,8 @@
 #include <QTimer>
 #include <QPainter>
 #include <QPen>
+
+#include "app_limits.h"                 /* SEQ64_DEFAULT_ZOOM           */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -61,7 +63,8 @@ public:
     (
         perform & p,
         sequence & seq,
-        QWidget * parent = nullptr
+        int zoom            = SEQ64_DEFAULT_ZOOM,
+        QWidget * parent    = nullptr
     );
     void zoom_in ();
     void zoom_out ();
@@ -103,6 +106,19 @@ private:
     QTimer * m_timer;
     QFont m_font;
     int m_zoom;
+
+    /**
+     *  The horizontal value of the scroll window in units of
+     *  ticks/pulses/divisions.
+     */
+
+    int m_scroll_offset_ticks;
+
+    /**
+     *  The horizontal value of the scroll window in units of pixels.
+     */
+
+    int m_scroll_offset_x;
 
 };          // class qseqtime
 

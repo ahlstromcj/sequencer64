@@ -50,14 +50,17 @@ qseqtime::qseqtime
 (
     perform & p,
     sequence & seq,
+    int zoom,
     QWidget * parent
 ) :
-    QWidget     (parent),
-    m_perform   (p),
-    m_seq       (seq),
-    m_timer     (new QTimer(this)),  // refresh timer to queue regular redraws
-    m_font      (),
-    m_zoom      (1)     // (SEQ64_DEFAULT_ZOOM)
+    QWidget                 (parent),
+    m_perform               (p),
+    m_seq                   (seq),
+    m_timer                 (new QTimer(this)),  // timer to do regular redraws
+    m_font                  (),
+    m_zoom                  (zoom),
+    m_scroll_offset_ticks   (0),
+    m_scroll_offset_x       (0)
 {
     QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(update()));
     m_timer->setInterval(50);
@@ -66,7 +69,7 @@ qseqtime::qseqtime
 }
 
 /**
- *
+ *  Draws the time panel.
  */
 
 void
@@ -79,7 +82,12 @@ qseqtime::paintEvent (QPaintEvent *)
     painter.setPen(pen);
     painter.setBrush(brush);
     painter.setFont(m_font);
-    painter.drawRect             // draw time bar border
+
+    /*
+     * Draw the border
+     */
+
+    painter.drawRect
     (
         c_keyboard_padding_x, 0, size().width(), size().height() - 1
     );
@@ -94,46 +102,51 @@ qseqtime::paintEvent (QPaintEvent *)
 
     int bpbar = m_seq.get_beats_per_bar();
     int bwidth = m_seq.get_beat_width();
-    int measure_length_32nds = bpbar * 32 / bwidth;
-    int measures_per_line = (128 / measure_length_32nds) / (32 / m_zoom);
+    int ticks_per_beat = (4 * perf().ppqn()) / bwidth;
+    int ticks_per_bar = bpbar * ticks_per_beat;
+    int measures_per_line = m_zoom * bwidth * bpbar * 2;
     if (measures_per_line <= 0)
         measures_per_line = 1;
 
     int ticks_per_step = 6 * m_zoom;
-    int ticks_per_measure = bpbar * (4 * perf().ppqn()) / bwidth;
-    int ticks_per_beat = ticks_per_measure * measures_per_line;
-    int ticks_per_major = bpbar * ticks_per_beat;
-
-#ifdef USE_THIS_CODE
-    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     int starttick = m_scroll_offset_ticks -
-        (m_scroll_offset_ticks % ticks_per_major);
-#else
-    int starttick = 0;
-    int endtick = m_seq.get_length();          // width()
-#endif
+            (m_scroll_offset_ticks % ticks_per_step);
+    int endtick = width() * m_zoom + m_scroll_offset_ticks;
 
     pen.setColor(Qt::black);
     painter.setPen(pen);
-    for (int tick = starttick; tick <= endtick; tick += ticks_per_beat)
+    for (int tick = starttick; tick <= endtick; tick += ticks_per_step)
     {
-        int zoomedX = tick / m_zoom + c_keyboard_padding_x;
-
-        // vertical line at each beat
-
-        painter.drawLine(zoomedX, 0, zoomedX, size().height());
-
         char bar[8];
-        snprintf(bar, sizeof(bar), "%d", (tick / ticks_per_measure) + 1);
+        int x_offset = tick / m_zoom + c_keyboard_padding_x - m_scroll_offset_x;
 
-        // number each beat
+        /*
+         * Vertical line at each bar; number each bar.
+         */
 
-        pen.setColor(Qt::black);
-        painter.setPen(pen);
-        painter.drawText(zoomedX + 3, 10, bar);
+        if (tick % ticks_per_bar == 0)
+        {
+            painter.drawLine(x_offset, 0, x_offset, size().height());
+            snprintf(bar, sizeof bar, "%d", tick / ticks_per_bar + 1);
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+            pen.setWidth(2);                    // two pixels
+#endif
+            painter.setPen(pen);
+            painter.drawText(x_offset + 3, 10, bar);
+        }
+        else if (tick % ticks_per_beat == 0)
+        {
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+            pen.setWidth(1);                    // two pixels
+#endif
+            painter.setPen(pen);
+            pen.setStyle(Qt::SolidLine);        // pen.setColor(Qt::DashLine)
+            painter.drawLine(x_offset, 0, x_offset, size().height());
+        }
     }
 
-    long end_x = m_seq.get_length() / m_zoom + c_keyboard_padding_x;
+    int end_x = m_seq.get_length() / m_zoom +
+        c_keyboard_padding_x - m_scroll_offset_x;
 
     // draw end of seq label, label background
 
@@ -142,8 +155,8 @@ qseqtime::paintEvent (QPaintEvent *)
     brush.setStyle(Qt::SolidPattern);
     painter.setBrush(brush);
     painter.setPen(pen);
-    painter.drawRect(end_x + 1, 13, 15, 8);
-    pen.setColor(Qt::black);                     // label text
+    painter.drawRect(end_x + 1, 13, 15, 8);         // white background
+    pen.setColor(Qt::black);                        // black label text
     painter.setPen(pen);
     painter.drawText(end_x + 1, 21, tr("END"));
 }

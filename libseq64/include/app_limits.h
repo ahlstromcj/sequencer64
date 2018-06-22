@@ -115,6 +115,14 @@
 #define SEQ64_SET_KEYS_MAX                32
 
 /**
+ *  Default value of the height of the piano keys in the Qt 5 qseqkeys
+ *  user-interface.  Also configurable in the "usr" file.  No limit-checking
+ *  right now, but keep the values from 8 to 16 for sanity's sake.
+ */
+
+#define SEQ64_SEQKEY_HEIGHT              12
+
+/**
  *  Default value of the width (number of columns) of the slot toggle keys.
  *  Again, this matches with number of columns in a set in the main window of
  *  the application.

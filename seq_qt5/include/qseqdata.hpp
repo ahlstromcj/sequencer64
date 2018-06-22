@@ -72,6 +72,11 @@ public:
 
     void zoom_in ();
     void zoom_out ();
+    void set_zoom (int z)
+    {
+        m_zoom = z;             // must be validated by the caller
+    }
+
     void set_data_type (midibyte a_status, midibyte a_control);
 
 protected:

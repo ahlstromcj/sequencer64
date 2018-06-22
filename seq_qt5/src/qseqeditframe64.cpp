@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-06-20
+ * \updates       2018-06-21
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -131,8 +131,7 @@ QWidget container?
 // #include "pixmaps/thru.xpm"
 // #include "pixmaps/tools.xpm"
 // #include "pixmaps/undo.xpm"
-// #include "pixmaps/zoom_in.xpm"
-// #include "pixmaps/zoom_out.xpm"
+#include "pixmaps/zoom.xpm"     /* zoom_in/zoom_out replaced by combo-box   */
 
 /*
  *  Do not document the name space.
@@ -183,6 +182,48 @@ static const int s_snap_items [] =
     1, 2, 4, 8, 16, 32, 64, 128, 0, 3, 6, 12, 24, 48, 96, 192
 };
 static const int s_snap_count = sizeof(s_snap_items) / sizeof(int);
+
+/**
+ *  These static items are used to fill in and select the proper zoom values for
+ *  the grids.  Note that they are not members, though they could be.
+ *  Also note the features of these zoom numbers:
+ *
+ *      -#  The lowest zoom value is SEQ64_MINIMUM_ZOOM in app_limits.h.
+ *      -#  The highest zoom value is SEQ64_MAXIMUM_ZOOM in app_limits.h.
+ *      -#  The zoom values are all powers of 2.
+ *      -#  The zoom values are further constrained by the configured values
+ *          of usr().min_zoom() and usr().max_zoom().
+ *      -#  The default zoom is specified in the user's "usr" file, and
+ *          the default value of this default zoom is 2.
+ *
+ * \todo
+ *      We still need to figure out what to do with a zoom of 0, which
+ *      is supposed to tell Sequencer64 to auto-adjust to the current PPQN.
+ */
+
+static const int s_zoom_items [] =
+{
+    1, 2, 4, 8, 16, 32, 64, 128, 256, 512
+};
+static const int s_zoom_count = sizeof(s_zoom_items) / sizeof(int);
+
+/**
+ *  Looks up a zoom value.
+ */
+
+static int s_lookup_zoom (int zoom)
+{
+    int result = 0;
+    for (int zi = 0; zi < s_zoom_count; ++zi)
+    {
+        if (s_zoom_items[zi] == zoom)
+        {
+            result = zi;
+            break;
+        }
+    }
+    return result;
+}
 
 /**
  * Actions.  These variables represent actions that can be applied to a
@@ -291,7 +332,7 @@ qseqeditframe64::qseqeditframe64
     ui->keysScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     /*
-     * seqtime
+     * qseqtime
      */
 
     m_seqtime = new qseqtime
@@ -303,7 +344,7 @@ qseqeditframe64::qseqeditframe64
     ui->timeScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     /*
-     * seqroll
+     * qseqroll
      */
 
     m_seqroll = new qseqroll
@@ -316,10 +357,10 @@ qseqeditframe64::qseqeditframe64
     ui->rollScrollArea->setWidget(m_seqroll);
     ui->rollScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     ui->rollScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    m_seqroll->updateEditMode(m_edit_mode);
+    m_seqroll->update_edit_mode(m_edit_mode);
 
     /*
-     * seqdata
+     * qseqdata
      */
 
     m_seqdata = new qseqdata(*m_seq, ui->dataScrollArea);
@@ -328,7 +369,7 @@ qseqeditframe64::qseqeditframe64
     ui->dataScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     /*
-     * seqevent
+     * qseqevent
      */
 
     m_seqevent = new qstriggereditor
@@ -415,10 +456,35 @@ qseqeditframe64::qseqeditframe64
     qt_set_icon(note_length_xpm, ui->m_button_note);
 
     /*
-     *  Zoom In and Zoom Out:
-     *
-     *      We don't yet provide these buttons.  TODO.
+     *  Zoom In and Zoom Out:  Rather than two buttons, we use one and
+     *  a combo-box.
      */
+
+    ui->m_button_zoom->setText("");
+    qt_set_icon(zoom_xpm, ui->m_button_zoom);
+    connect
+    (
+        ui->m_button_zoom, SIGNAL(clicked(bool)),
+        this, SLOT(zoom_out())
+    );
+    for (int zi = 0; zi < s_zoom_count; ++zi)
+    {
+        int zoom = s_zoom_items[zi];
+        if (zoom >= usr().min_zoom() && zoom <= usr().max_zoom())
+        {
+            char fmt[16];
+            snprintf(fmt, sizeof fmt, "1px:%dtx", zoom);
+
+            QString combo_text = fmt;
+            ui->m_combo_zoom->insertItem(zi, combo_text);
+        }
+    }
+    ui->m_combo_zoom->setCurrentIndex(0);               /* 16th-note entry  */
+    connect
+    (
+        ui->m_combo_zoom, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(update_grid_zoom(int))
+    );
 }
 
 /**
@@ -470,10 +536,6 @@ qseqeditframe64::set_snap (int s)
 {
     if (s > 0)
     {
-        // char b[16];
-        // snprintf(b, sizeof b, "1/%d", m_ppqn * 4 / s);
-        // m_entry_snap->set_text(b);
-
         m_snap = s;
         m_initial_snap = s;
         m_seqroll->set_snap(s);
@@ -519,10 +581,6 @@ qseqeditframe64::update_note_length (int index)
 void
 qseqeditframe64::set_note_length (int notelength)
 {
-    // char b[8];
-    // snprintf(b, sizeof b, "1/%d", m_ppqn * 4 / notelength);
-    // m_entry_note_length->set_text(b);
-
 #ifdef CAN_MODIFY_GLOBAL_PPQN
     if (m_ppqn != m_original_ppqn)
     {
@@ -534,6 +592,85 @@ qseqeditframe64::set_note_length (int notelength)
     m_note_length = notelength;
     m_initial_note_length = notelength;
     m_seqroll->set_note_length(notelength);
+}
+
+/**
+ *  Updates the grid-zoom values and control based on the index.  The value is
+ *  passed to the set_zoom() function for processing.
+ *
+ * \param index
+ *      Provides the index selected from the combo-box.
+ */
+
+void
+qseqeditframe64::update_grid_zoom (int index)
+{
+    int v = s_zoom_items[index];
+    set_zoom(v);
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::zoom_in ()
+{
+    if (m_zoom > 1 && m_zoom > usr().min_zoom())
+        m_zoom /= 2;
+
+    int index = s_lookup_zoom(m_zoom);
+    ui->m_combo_zoom->setCurrentIndex(index);
+    m_seqroll->zoom_in();
+    m_seqtime->zoom_in();
+    m_seqevent->zoom_in();
+    m_seqdata->zoom_in();
+    update_draw_geometry();
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::zoom_out ()
+{
+    if (m_zoom < usr().max_zoom())
+    {
+        m_zoom *= 2;
+        m_seqroll->zoom_out();
+        m_seqtime->zoom_out();
+        m_seqevent->zoom_out();
+        m_seqdata->zoom_out();
+    }
+    else                                /* wrap around to beginning */
+    {
+        int v = s_zoom_items[0];
+        set_zoom(v);
+    }
+
+    int index = s_lookup_zoom(m_zoom);
+    ui->m_combo_zoom->setCurrentIndex(index);
+    update_draw_geometry();
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::set_zoom (int z)
+{
+    if ((z >= usr().min_zoom()) && (z <= usr().max_zoom()))
+    {
+        int index = s_lookup_zoom(z);
+        ui->m_combo_zoom->setCurrentIndex(index);
+        m_zoom = z;
+        m_seqroll->set_zoom(z);
+        m_seqtime->set_zoom(z);
+        m_seqdata->set_zoom(z);
+        m_seqevent->set_zoom(z);
+    }
 }
 
 /**
@@ -561,7 +698,7 @@ qseqeditframe64::set_editor_mode (seq64::edit_mode_t mode)
 {
     m_edit_mode = mode;
     perf().seq_edit_mode(*m_seq, mode);
-    m_seqroll->updateEditMode(mode);
+    m_seqroll->update_edit_mode(mode);
 }
 
 

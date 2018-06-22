@@ -83,8 +83,8 @@ qseqdata::qseqdata (sequence & seq, QWidget * parent)
 void
 qseqdata::zoom_in ()
 {
-    if (m_zoom > 1)
-        m_zoom *= 0.5;
+    if (m_zoom > 1)         // restricted more by qseqeditframe64
+        m_zoom /= 2;
 }
 
 /**
@@ -94,7 +94,7 @@ qseqdata::zoom_in ()
 void
 qseqdata::zoom_out ()
 {
-    if (m_zoom < 32)
+    if (m_zoom < 32)       // restricted more by qseqeditframe64
         m_zoom *= 2;
 }
 

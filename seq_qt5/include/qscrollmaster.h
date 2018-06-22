@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-06-18
- * \updates       2018-06-18
+ * \updates       2018-06-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -45,11 +45,15 @@ class QScrollBar;
 
 /*
  * Note that there is no namespace; the Qt uic specification does not seem to
- * support them.
+ * support them well.
  */
 
 /**
- *
+ *  Derived from QScrollArea, this class provides a way to pass any horizontal
+ *  or vertical scrollbar value changes on to one or more other QScrollBars.
+ *  Any number (even 0) of horizontal or vertical
+ *  scrollbars can be added to this object.  See the qseqroll class and the
+ *  class that creates it, qseqeditframe64.
  */
 
 class qscrollmaster : public QScrollArea
@@ -104,7 +108,7 @@ public:
 
 protected:
 
-    virtual void scrollContentsBy (int dx, int dy);
+    virtual void scrollContentsBy (int dx, int dy);     /* override */
 
 };          // class qscrollmaster
 

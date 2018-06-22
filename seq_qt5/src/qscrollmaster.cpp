@@ -67,8 +67,17 @@ qscrollmaster::~qscrollmaster ()
 }
 
 /**
- *  Modifies any attached/listed scrollbars and then calls the base-class
+ *  This override of a QScrollArea virtual member function
+ *  odifies any attached/listed scrollbars and then calls the base-class
  *  version of this function.
+ *
+ * \param dx
+ *      The change in the x position value of the scrollbar.  Simply passed on
+ *      to the base-class version of this function.
+ *
+ * \param dy
+ *      The change in the y position value of the scrollbar.  Simply passed on
+ *      to the base-class version of this function.
  */
 
 void

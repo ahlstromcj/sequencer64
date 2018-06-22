@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-07
+ * \updates       2018-06-20
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -41,6 +41,7 @@
 #include <QTimer>
 #include <QPen>
 
+#include "app_limits.h"                 /* SEQ64_SEQKEY_HEIGHT macro            */
 #include "midibyte.hpp"                 /* seq64::midibyte and other typedefs   */
 
 /*
@@ -68,11 +69,16 @@ public:
     (
         sequence & seq,
         qseqdata & seqdata_wid,
-        QWidget * parent = 0,
-        int keyHeight = 12
+        QWidget * parent    = nullptr,
+        int keyHeight       = SEQ64_SEQKEY_HEIGHT
     );
     void zoom_in ();
     void zoom_out ();
+    void set_zoom (int z)
+    {
+        m_zoom = z;             // must be validated by the caller
+    }
+
     void set_data_type (midibyte a_status, midibyte a_control);
 
 protected:

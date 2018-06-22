@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-06-17
+ * \updates       2018-06-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -118,11 +118,15 @@ private slots:
 
     void update_grid_snap (int index);
     void update_note_length (int index);
+    void update_grid_zoom (int index);
+    void zoom_in ();
+    void zoom_out ();
 
 private:
 
     void set_snap (int s);
-    void set_note_length (int notelength);
+    void set_note_length (int nlen);
+    void set_zoom (int z);
 
 private:
 

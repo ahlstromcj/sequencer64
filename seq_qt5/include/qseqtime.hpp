@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-19
+ * \updates       2018-06-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -68,6 +68,10 @@ public:
     );
     void zoom_in ();
     void zoom_out ();
+    void set_zoom (int z)
+    {
+        m_zoom = z;             // must be validated by the caller
+    }
 
 protected:
 

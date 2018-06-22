@@ -272,7 +272,7 @@ qseqeditframe::qseqeditframe
         mContainer,
         EDIT_MODE_NOTE
     );
-    mNoteGrid->updateEditMode(editMode);
+    mNoteGrid->update_edit_mode(editMode);
     mEventValues = new qseqdata(*mSeq, mContainer);
     mEventTriggers = new qstriggereditor
     (
@@ -690,7 +690,7 @@ qseqeditframe::toggleEditorMode()
         break;
     }
     perf().seq_edit_mode(mSeqId, editMode);
-    mNoteGrid->updateEditMode(editMode);
+    mNoteGrid->update_edit_mode(editMode);
 }
 
 /**
@@ -702,7 +702,7 @@ qseqeditframe::setEditorMode (seq64::edit_mode_t mode)
 {
     editMode = mode;
     perf().seq_edit_mode(mSeqId, editMode);
-    mNoteGrid->updateEditMode(mode);
+    mNoteGrid->update_edit_mode(mode);
 }
 
 /**

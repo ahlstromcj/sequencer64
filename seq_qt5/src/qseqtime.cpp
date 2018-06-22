@@ -208,8 +208,8 @@ qseqtime::sizeHint() const
 void
 qseqtime::zoom_in ()
 {
-    if (m_zoom > 1)
-        m_zoom *= 0.5;
+    if (m_zoom > 1)         // restricted more by qseqeditframe64
+        m_zoom /= 2;
 }
 
 /**
@@ -219,7 +219,7 @@ qseqtime::zoom_in ()
 void
 qseqtime::zoom_out ()
 {
-    if (m_zoom < 32)
+    if (m_zoom < 32)       // restricted more by qseqeditframe64
         m_zoom *= 2;
 }
 

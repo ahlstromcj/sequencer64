@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-20
+ * \updates       2018-06-22
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -45,7 +45,6 @@
 
 namespace seq64
 {
-    class perform;
 
 /**
  *
@@ -63,48 +62,19 @@ qseqroll::qseqroll
     edit_mode_t mode
 ) :
     QWidget                 (parent),
-    m_perform               (perf),
-    m_seq                   (seq),
-    m_old                   (),
-    m_selected              (),
+    qseqbase
+    (
+        perf, seq, zoom, snap,
+        usr().key_height(),                         // keyY
+        (usr().key_height() * c_num_keys + 1)       // keyAreaY
+    ),
     m_seqkeys_wid           (seqkeys_wid),
     mTimer                  (nullptr),
     mFont                   (),
     m_scale                 (0),
     m_pos                   (0),
     m_key                   (0),
-    m_zoom                  (zoom),
-    m_snap                  (snap),
-    m_note_length           (c_ppqn * 4 / 16),
-    m_selecting             (false),
-    m_adding                (false),
-    m_moving                (false),
-    m_moving_init           (false),
-    m_growing               (false),
-    m_painting              (false),
-    m_paste                 (false),
-    m_is_drag_pasting       (false),
-    m_is_drag_pasting_start (false),
-    m_justselected_one      (false),
-    m_window_x              (0),
-    m_window_y              (0),
-    m_drop_x                (0),
-    m_drop_y                (0),
-    m_move_delta_x          (0),
-    m_move_delta_y          (0),
-    m_current_x             (0),
-    m_current_y             (0),
-    m_move_snap_offset_x    (0),
-    m_progress_x            (0),
-    m_old_progress_x        (0),
-    m_scroll_offset_ticks   (0),
-    m_scroll_offset_key     (0),
-    m_scroll_offset_x       (0),
-    m_scroll_offset_y       (0),
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-    m_scroll_page           (0),
-    m_progress_follow       (false),
-#endif
+    m_note_length           (perf.ppqn() * 4 / 16),
     m_background_sequence   (0),
     m_drawing_background_seq (false),
     m_expanded_recording    (false),
@@ -118,13 +88,10 @@ qseqroll::qseqroll
     keyY                    (usr().key_height()),
     keyAreaY                (keyY * c_num_keys + 1)
 {
-    set_snap(m_seq.get_snap_tick());
+    set_snap(seq.get_snap_tick());
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setFocusPolicy(Qt::StrongFocus);
-
-    // start refresh timer to queue regular redraws
-
-    mTimer = new QTimer(this);
+    mTimer = new QTimer(this);  // refresh timer to queue regular redraws !!!
     mTimer->setInterval(20);
     QObject::connect(mTimer, SIGNAL(timeout()), this, SLOT(update()));
     mTimer->start();
@@ -169,7 +136,7 @@ qseqroll::paintEvent (QPaintEvent *)
     for (int key = 1; key < c_num_keys; ++key)      /* for each note row    */
     {
         int remkeys = c_num_keys - key;             /* remaining keys?      */
-        int modkey = remkeys - m_scroll_offset_key + octkey;
+        int modkey = remkeys - scroll_offset_key() + octkey;
 
         /*
          * Set line colour dependent on the note row we're on.
@@ -234,18 +201,18 @@ qseqroll::paintEvent (QPaintEvent *)
      * This code needs to be put into a function.
      */
 
-    int bpbar = m_seq.get_beats_per_bar();
-    int bwidth = m_seq.get_beat_width();
+    int bpbar = seq().get_beats_per_bar();
+    int bwidth = seq().get_beat_width();
     int ticks_per_beat = (4 * perf().ppqn()) / bwidth;
     int ticks_per_bar = bpbar * ticks_per_beat;
-    int measures_per_line = m_zoom * bwidth * bpbar * 2;
+    int measures_per_line = zoom() * bwidth * bpbar * 2;
     if (measures_per_line <= 0)
         measures_per_line = 1;
 
-    int ticks_per_step = 6 * m_zoom;
-    int starttick = m_scroll_offset_ticks -
-            (m_scroll_offset_ticks % ticks_per_step);
-    int endtick = width() * m_zoom + m_scroll_offset_ticks;
+    int ticks_per_step = 6 * zoom();
+    int starttick = scroll_offset_ticks() -
+            (scroll_offset_ticks() % ticks_per_step);
+    int endtick = width() * zoom() + scroll_offset_ticks();
 
     pen.setColor(Qt::darkGray);                 // can we use Palette?
     painter.setPen(pen);
@@ -257,7 +224,7 @@ qseqroll::paintEvent (QPaintEvent *)
 
     for (int tick = starttick; tick < endtick; tick += ticks_per_step)
     {
-        int x_offset = tick / m_zoom + c_keyboard_padding_x - m_scroll_offset_x;
+        int x_offset = tick / zoom() + c_keyboard_padding_x - scroll_offset_x();
         pen.setWidth(1);
         if (tick % ticks_per_bar == 0)
         {
@@ -276,7 +243,7 @@ qseqroll::paintEvent (QPaintEvent *)
         {
             pen.setColor(Qt::lightGray);        // faint step lines
             pen.setStyle(Qt::DotLine);
-            int tick_snap = tick - (tick % m_snap);
+            int tick_snap = tick - (tick % snap());
 
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
             if (tick == tick_snap)
@@ -308,8 +275,8 @@ qseqroll::paintEvent (QPaintEvent *)
     pen.setColor(Qt::red);                      // draw the playhead
     pen.setStyle(Qt::SolidLine);
     painter.setPen(pen);
-    painter.drawLine(m_old_progress_x, 0, m_old_progress_x, height() * 8);
-    m_old_progress_x = (m_seq.get_last_tick() / m_zoom + c_keyboard_padding_x);
+    painter.drawLine(old_progress_x(), 0, old_progress_x(), height() * 8);
+    old_progress_x(seq().get_last_tick() / zoom() + c_keyboard_padding_x);
 
     midipulse tick_s;                               // draw notes
     midipulse tick_f;
@@ -318,14 +285,14 @@ qseqroll::paintEvent (QPaintEvent *)
     int velocity;
     draw_type_t dt;
     int start_tick = 0;
-    int end_tick = width() * m_zoom;
-    sequence * seq = nullptr;
+    int end_tick = width() * zoom();
+    sequence * s = nullptr;
     for (int method = 0; method < 2; ++method)
     {
         if (method == 0 && m_drawing_background_seq)
         {
             if (perf().is_active(m_background_sequence))
-                seq = perf().get_sequence(m_background_sequence);
+                s = perf().get_sequence(m_background_sequence);
             else
                 ++method;
         }
@@ -333,15 +300,15 @@ qseqroll::paintEvent (QPaintEvent *)
             ++method;
 
         if (method == 1)
-            seq = &m_seq;
+            s = &seq();
 
         pen.setColor(Qt::black);      /* draw boxes from sequence */
         pen.setStyle(Qt::SolidLine);
-        seq->reset_draw_marker();
+        s->reset_draw_marker();
         while
         (
             (
-                dt = seq->get_next_note_event
+                dt = s->get_next_note_event
                 (
                     tick_s, tick_f, note, selected, velocity
                 )
@@ -357,7 +324,7 @@ qseqroll::paintEvent (QPaintEvent *)
                 )
             )
             {
-                note_x = tick_s / m_zoom + c_keyboard_padding_x;
+                note_x = tick_s / zoom() + c_keyboard_padding_x;
                 note_y = keyAreaY - (note * keyY) - keyY - 1 + 2;
                 switch (m_edit_mode)
                 {
@@ -376,15 +343,15 @@ qseqroll::paintEvent (QPaintEvent *)
                 {
                     if (tick_f >= tick_s)
                     {
-                        note_width = (tick_f - tick_s) / m_zoom;
+                        note_width = (tick_f - tick_s) / zoom();
                         if (note_width < 1)
                             note_width = 1;
                     }
                     else
-                        note_width = (m_seq.get_length() - tick_s) / m_zoom;
+                        note_width = (seq().get_length() - tick_s) / zoom();
                 }
                 else
-                    note_width = 16 / m_zoom;
+                    note_width = 16 / zoom();
 
                 if (dt == DRAW_NOTE_ON)
                 {
@@ -411,9 +378,7 @@ qseqroll::paintEvent (QPaintEvent *)
                 painter.setPen(pen);
                 switch (m_edit_mode)
                 {
-                case EDIT_MODE_NOTE:
-
-                    // Draw outer note boundary (shadow)
+                case EDIT_MODE_NOTE:        // Draw outer note boundary (shadow)
 
                     painter.drawRect(note_x, note_y, note_width, note_height);
                     if (tick_f < tick_s)    // shadow for notes  before zero
@@ -422,12 +387,13 @@ qseqroll::paintEvent (QPaintEvent *)
                         painter.drawRect
                         (
                             c_keyboard_padding_x, note_y,
-                            tick_f / m_zoom, note_height
+                            tick_f / zoom(), note_height
                         );
                     }
                     break;
 
                 case EDIT_MODE_DRUM:
+
                     QPointF points[4] =     // polygon for drum hits
                     {
                         QPointF(note_x - note_height * 0.5,
@@ -477,13 +443,14 @@ qseqroll::paintEvent (QPaintEvent *)
                                 painter.drawRect
                                 (
                                     c_keyboard_padding_x, note_y,
-                                    (tick_f / m_zoom) - 3 + length_add,
+                                    (tick_f / zoom()) - 3 + length_add,
                                     note_height - 1
                                 );
                             }
                             break;
 
                         case EDIT_MODE_DRUM: // draw inner note (highlight)
+
                             QPointF points[4] =
                             {
                                 QPointF(note_x - note_height * 0.5,
@@ -502,31 +469,31 @@ qseqroll::paintEvent (QPaintEvent *)
         }
     }
 
-    int x, y, w, h;                     /* draw selections  */
-    brush.setStyle(Qt::NoBrush);      /* painter reset    */
+    int x, y, w, h;                     /* draw selections              */
+    brush.setStyle(Qt::NoBrush);        /* painter reset                */
     painter.setBrush(brush);
-    if (m_selecting  ||  m_moving || m_paste ||  m_growing)
+    if (select_action())                /* select/move/paste/grow       */
         pen.setStyle(Qt::SolidLine);
 
-    if (m_selecting)
+    if (selecting())
     {
         rect::xy_to_rect_get
         (
-            m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h
+            drop_x(), drop_y(), current_x(), current_y(), x, y, w, h
         );
 
-        m_old.set(x, y, w, h + keyY);
+        old_rect().set(x, y, w, h + keyY);
         pen.setColor(Qt::black);
         painter.setPen(pen);
         painter.drawRect(x + c_keyboard_padding_x, y, w, h + keyY);
     }
 
-    if (m_moving || m_paste)
+    if (drop_action())
     {
-        int delta_x = m_current_x - m_drop_x;
-        int delta_y = m_current_y - m_drop_y;
-        x = m_selected.x() + delta_x;
-        y = m_selected.y() + delta_y;
+        int delta_x = current_x() - drop_x();
+        int delta_y = current_y() - drop_y();
+        x = selection().x() + delta_x;
+        y = selection().y() + delta_y;
         pen.setColor(Qt::black);
         painter.setPen(pen);
         switch (m_edit_mode)
@@ -535,7 +502,7 @@ qseqroll::paintEvent (QPaintEvent *)
             painter.drawRect
             (
                 x + c_keyboard_padding_x, y,
-                m_selected.width(), m_selected.height()
+                selection().width(), selection().height()
             );
             break;
 
@@ -543,33 +510,33 @@ qseqroll::paintEvent (QPaintEvent *)
             painter.drawRect
             (
                 x - note_height * 0.5 + c_keyboard_padding_x,
-                y, m_selected.width() + note_height, m_selected.height()
+                y, selection().width() + note_height, selection().height()
             );
             break;
         }
-        m_old.x(x);
-        m_old.y(y);
-        m_old.width(m_selected.width());
-        m_old.height(m_selected.height());
+        old_rect().x(x);
+        old_rect().y(y);
+        old_rect().width(selection().width());
+        old_rect().height(selection().height());
     }
 
-    if (m_growing)
+    if (growing())
     {
-        int delta_x = m_current_x - m_drop_x;
-        int width = delta_x + m_selected.width();
+        int delta_x = current_x() - drop_x();
+        int width = delta_x + selection().width();
         if (width < 1)
             width = 1;
 
-        x = m_selected.x();
-        y = m_selected.y();
+        x = selection().x();
+        y = selection().y();
 
         pen.setColor(Qt::black);
         painter.setPen(pen);
-        painter.drawRect(x + c_keyboard_padding_x, y, width, m_selected.height());
-        m_old.x(x);
-        m_old.y(y);
-        m_old.width(width);
-        m_old.height(m_selected.height());
+        painter.drawRect(x + c_keyboard_padding_x, y, width, selection().height());
+        old_rect().x(x);
+        old_rect().y(y);
+        old_rect().width(width);
+        old_rect().height(selection().height());
     }
 }
 
@@ -583,8 +550,8 @@ qseqroll::paintEvent (QPaintEvent *)
 void
 qseqroll::set_scroll_x ()
 {
-    m_scroll_offset_ticks = int(m_hadjust.get_value());
-    m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+    scroll_offset_ticks(int(m_hadjust.get_value()));
+    scroll_offset_x(scroll_offset_ticks() / zoom());
 }
 
 /**
@@ -595,8 +562,8 @@ qseqroll::set_scroll_x ()
 void
 qseqroll::set_scroll_y ()
 {
-    m_scroll_offset_key = int(m_vadjust.get_value());
-    m_scroll_offset_y = m_scroll_offset_key * c_key_y;
+    scroll_offset_key(int(m_vadjust.get_value()));
+    scroll_offset_y(scroll_offset_key() * c_key_y);
 }
 
 /**
@@ -641,50 +608,53 @@ qseqroll::mousePressEvent (QMouseEvent * event)
     snapped_y = norm_y = event->y();
     snap_x(snapped_x);
     snap_y(snapped_y);
-    m_current_y = m_drop_y = snapped_y;     /* y is always snapped */
-    if (m_paste)
+    current_y(snapped_y);
+    drop_y(snapped_y);                  /* y is always snapped */
+    if (paste())
     {
         convert_xy(snapped_x, snapped_y, tick_s, note);
-        m_paste = false;
-        m_seq.push_undo();
-        m_seq.paste_selected(tick_s, note);
+        paste(false);
+        seq().push_undo();
+        seq().paste_selected(tick_s, note);
         needs_update = true;
     }
     else
     {
         if (event->button() == Qt::LeftButton)
         {
-            m_current_x = m_drop_x = norm_x; // for selection, use non-snapped x
-            switch (m_edit_mode)                // convert screen coords to ticks
+            current_x(norm_x);
+            drop_x(norm_x);             // for selection, use non-snapped x
+            switch (m_edit_mode)        // convert screen coords to ticks
             {
             case EDIT_MODE_NOTE:
-                convert_xy(m_drop_x, m_drop_y, tick_s, note);
+                convert_xy(drop_x(), drop_y(), tick_s, note);
                 tick_f = tick_s;
                 break;
 
-            case EDIT_MODE_DRUM:            // padding for selecting drum hits
-                convert_xy(m_drop_x - note_height * 0.5, m_drop_y, tick_s, note);
-                convert_xy(m_drop_x + note_height * 0.5, m_drop_y, tick_f, note);
+            case EDIT_MODE_DRUM:        // padding for selecting drum hits
+                convert_xy(drop_x() - note_height * 0.5, drop_y(), tick_s, note);
+                convert_xy(drop_x() + note_height * 0.5, drop_y(), tick_f, note);
                 break;
             }
-            if (m_adding)   //painting new notes
+            if (adding())               // painting new notes
             {
-                m_painting = true;                      /* start paint job   */
-                m_current_x = m_drop_x = snapped_x;     /* adding, snapped x */
-                convert_xy(m_drop_x, m_drop_y, tick_s, note);
+                painting(true);         /* start paint job   */
+                current_x(snapped_x);
+                drop_x(snapped_x);      /* adding, snapped x */
+                convert_xy(drop_x(), drop_y(), tick_s, note);
 
                 // test if a note is already there, fake select, if so, no add
 
                 if
                 (
-                    ! m_seq.select_note_events
+                    ! seq().select_note_events
                     (
                         tick_s, note, tick_s, note, sequence::e_would_select
                     )
                 )
                 {               /* add note, length = little less than snap */
-                    m_seq.push_undo();
-                    m_seq.add_note(tick_s, m_note_length - 2, note, true);
+                    seq().push_undo();
+                    seq().add_note(tick_s, m_note_length - 2, note, true);
                     needs_update = true;
                 }
             }
@@ -696,14 +666,14 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                 switch (m_edit_mode)
                 {
                 case EDIT_MODE_NOTE:
-                    isSelected = m_seq.select_note_events
+                    isSelected = seq().select_note_events
                     (
                         tick_s, note, tick_f, note, sequence::e_is_selected
                     );
                     break;
 
                 case EDIT_MODE_DRUM:
-                    isSelected = m_seq.select_note_events
+                    isSelected = seq().select_note_events
                     (
                         tick_s, note, tick_f, note, sequence::e_is_selected_onset
                     );
@@ -713,12 +683,12 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                 {
                     int numsel = 0;
                     if (! (event->modifiers() & Qt::ControlModifier))
-                        m_seq.unselect();
+                        seq().unselect();
 
                     switch (m_edit_mode) /* on direct click select only 1 event */
                     {
                     case EDIT_MODE_NOTE:
-                        numsel = m_seq.select_note_events
+                        numsel = seq().select_note_events
                         (
                             tick_s, note, tick_f, note,
                             sequence::e_select_one  // sequence::e_select_single
@@ -726,7 +696,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                         break;
 
                     case EDIT_MODE_DRUM:
-                        numsel = m_seq.select_note_events
+                        numsel = seq().select_note_events
                         (
                             tick_s, note, tick_f, note,
                             sequence::e_select_one  // sequence::e_select_single
@@ -736,7 +706,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                     if (numsel == 0)    /* none selected, start selection box */
                     {
                         if (event->button() == Qt::LeftButton)
-                            m_selecting = true;
+                            selecting(true);
                     }
                     else
                     {
@@ -747,14 +717,14 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                 switch (m_edit_mode)
                 {
                 case EDIT_MODE_NOTE:
-                    isSelected = m_seq.select_note_events
+                    isSelected = seq().select_note_events
                     (
                         tick_s, note, tick_f, note, sequence::e_is_selected
                     );
                     break;
 
                 case EDIT_MODE_DRUM:
-                    isSelected = m_seq.select_note_events
+                    isSelected = seq().select_note_events
                     (
                         tick_s, note, tick_f, note, sequence::e_is_selected_onset
                     );
@@ -770,19 +740,19 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                         ! (event->modifiers() & Qt::ControlModifier)
                     )
                     {
-                        m_moving_init = true;
+                        moving_init(true);
                         needs_update = true;
                         switch (m_edit_mode)
                         {
                         case EDIT_MODE_NOTE:           // acount note lengths
-                            m_seq.get_selected_box
+                            seq().get_selected_box
                             (
                                 tick_s, note, tick_f, note_l
                             );
                             break;
 
                         case EDIT_MODE_DRUM:           // ignore note lengths
-                            m_seq.get_onsets_selected_box
+                            seq().get_onsets_selected_box
                             (
                                 tick_s, note, tick_f, note_l
                             );
@@ -791,16 +761,15 @@ qseqroll::mousePressEvent (QMouseEvent * event)
 
                         convert_tn_box_to_rect
                         (
-                            tick_s, tick_f, note, note_l, m_selected
+                            tick_s, tick_f, note, note_l, selection()
                         );
 
                         /* save offset that we get from the snap above */
-                        int adjusted_selected_x = m_selected.x();
+                        int adjusted_selected_x = selection().x();
                         snap_x(adjusted_selected_x);
-                        m_move_snap_offset_x =
-                            m_selected.x() - adjusted_selected_x;
-
-                        m_current_x = m_drop_x = snapped_x;
+                        move_snap_offset_x(selection().x() - adjusted_selected_x);
+                        current_x(snapped_x);
+                        drop_x(snapped_x);
                     }
 
                     /* middle mouse button or left-ctrl click (2 button mice) */
@@ -816,13 +785,14 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                         )
                             && m_edit_mode == EDIT_MODE_NOTE)
                     {
-                        m_growing = true;
+                        growing(true);
 
                         /* get the box that selected elements are in */
-                        m_seq.get_selected_box(tick_s, note, tick_f, note_l);
+
+                        seq().get_selected_box(tick_s, note, tick_f, note_l);
                         convert_tn_box_to_rect
                         (
-                            tick_s, tick_f, note, note_l, m_selected
+                            tick_s, tick_f, note, note_l, selection()
                         );
                     }
                 }
@@ -832,7 +802,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
             set_adding(true);
     }
     if (needs_update)       // set seq dirty if something's changed
-        m_seq.set_dirty();
+        seq().set_dirty();
 }
 
 /**
@@ -848,30 +818,30 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
     int note_l;                         // lowest note in window
     int x, y, w, h;                     // window dimensions
     bool needs_update = false;
-    m_current_x = event->x() - c_keyboard_padding_x;
-    m_current_y = event->y();
-    snap_y(m_current_y);
-    if (m_moving)
-        snap_x(m_current_x);
+    current_x(event->x() - c_keyboard_padding_x);
+    current_y(event->y());
+    snap_current_y();
+    if (moving())
+        snap_current_x();
 
-    int delta_x = m_current_x - m_drop_x;
-    int delta_y = m_current_y - m_drop_y;
+    int delta_x = current_x() - drop_x();
+    int delta_y = current_y() - drop_y();
     midipulse delta_tick;
     int delta_note;
     if (event->button() == Qt::LeftButton)
     {
-        if (m_selecting)
+        if (selecting())
         {
             rect::xy_to_rect_get
             (
-                m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h
+                drop_x(), drop_y(), current_x(), current_y(), x, y, w, h
             );
             switch (m_edit_mode)
             {
             case EDIT_MODE_NOTE:
                 convert_xy(x, y, tick_s, note_h);
                 convert_xy(x + w, y + h, tick_f, note_l);
-                m_seq.select_note_events
+                seq().select_note_events
                 (
                     tick_s, note_h, tick_f, note_l, sequence::e_select
                 );
@@ -880,7 +850,7 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
             case EDIT_MODE_DRUM:
                 convert_xy(x, y, tick_s, note_h);
                 convert_xy(x + w, y + h, tick_f, note_l);
-                m_seq.select_note_events
+                seq().select_note_events
                 (
                     tick_s, note_h, tick_f, note_l, sequence::e_select_onset
                 );
@@ -889,9 +859,9 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
             needs_update = true;
         }
 
-        if (m_moving)
+        if (moving())
         {
-            delta_x -= m_move_snap_offset_x;            /* adjust for snap */
+            delta_x -= move_snap_offset_x();            /* adjust for snap */
 
             /* convert deltas into screen corridinates */
 
@@ -903,24 +873,24 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
              */
 
             delta_note = delta_note - (c_num_keys - 1);
-            m_seq.push_undo();
-            m_seq.move_selected_notes(delta_tick, delta_note);
+            seq().push_undo();
+            seq().move_selected_notes(delta_tick, delta_note);
             needs_update = true;
         }
     }
 
     if (event->button() == Qt::LeftButton || event->button() == Qt::MiddleButton)
     {
-        if (m_growing)
+        if (growing())
         {
             /* convert deltas into screen corridinates */
 
             convert_xy(delta_x, delta_y, delta_tick, delta_note);
-            m_seq.push_undo();
+            seq().push_undo();
             if (event->modifiers() & Qt::ShiftModifier)
-                m_seq.stretch_selected(delta_tick);
+                seq().stretch_selected(delta_tick);
             else
-                m_seq.grow_selected(delta_tick);
+                seq().grow_selected(delta_tick);
 
             needs_update = true;
         }
@@ -929,14 +899,10 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
     if (event->button() == Qt::RightButton)
         set_adding(false);
 
-    /* turn off */
-
-    m_selecting = m_moving = m_growing = m_paste = m_moving_init =
-        m_painting = false;
-
-    m_seq.unpaint_all();
-    if (needs_update)           /* if they clicked, something changed */
-        m_seq.set_dirty();
+    clear_action_flags();               /* turn off */
+    seq().unpaint_all();
+    if (needs_update)                   /* if clicked, something changed */
+        seq().set_dirty();
 }
 
 /**
@@ -946,29 +912,29 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
 void
 qseqroll::mouseMoveEvent (QMouseEvent * event)
 {
-    m_current_x = event->x() - c_keyboard_padding_x;
-    m_current_y = event->y();
-    if (m_moving_init)
+    current_x(event->x() - c_keyboard_padding_x);
+    current_y(event->y());
+    if (moving_init())
     {
-        m_moving_init = false;
-        m_moving = true;
+        moving_init(false);
+        moving(true);
     }
-    snap_y(m_current_y);
+    snap_current_y();
 
     int note;
     midipulse tick;
-    convert_xy(0, m_current_y, tick, note);
-    if (m_selecting || m_moving || m_growing || m_paste)
+    convert_xy(0, current_y(), tick, note);
+    if (select_action())
     {
-        if (m_moving || m_paste)
-            snap_x(m_current_x);
+        if (drop_action())
+            snap_current_x();
     }
 
-    if (m_painting)
+    if (painting())
     {
-        snap_x(m_current_x);
-        convert_xy(m_current_x, m_current_y, tick, note);
-        m_seq.add_note(tick, m_note_length - 2, note, true);
+        snap_current_x();
+        convert_xy(current_x(), current_y(), tick, note);
+        seq().add_note(tick, m_note_length - 2, note, true);
     }
 }
 
@@ -981,30 +947,38 @@ qseqroll::keyPressEvent (QKeyEvent * event)
 {
     if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace)
     {
-        // m_seq.push_undo();
-        // m_seq.mark_selected();
-        // m_seq.remove_marked();          // delete selected notes
-
-        m_seq.remove_selected();
+        seq().remove_selected();
         return;
     }
+
+    // TODO: get these working and fix the 1:1 zoom in combo-dropdown.
 
     if (! perf().is_pattern_playing())
     {
         if (event->key() == Qt::Key_Home)
         {
-            m_seq.set_last_tick(0);
+            seq().set_last_tick(0);
             return;
         }
         if (event->key() == Qt::Key_Left)
         {
-            m_seq.set_last_tick(m_seq.get_last_tick() - m_snap);
+            seq().set_last_tick(seq().get_last_tick() - snap());
             return;
         }
         if (event->key() == Qt::Key_Right)
         {
-            m_seq.set_last_tick(m_seq.get_last_tick() + m_snap);
+            seq().set_last_tick(seq().get_last_tick() + snap());
             return;
+        }
+        if (event->modifiers() & Qt::ShiftModifier) // Shift + ... events
+        {
+            if (event->key() == Qt::Key_Z)
+                zoom_in();
+        }
+        else
+        {
+            if (event->key() == Qt::Key_Z)
+                zoom_out();
         }
     }
 
@@ -1013,17 +987,13 @@ qseqroll::keyPressEvent (QKeyEvent * event)
         switch (event->key())
         {
         case Qt::Key_X:
-            // m_seq.push_undo();
-            // m_seq.copy_selected();
-            // m_seq.mark_selected();
-            // m_seq.remove_marked();
 
-            m_seq.cut_selected();
+            seq().cut_selected();
             return;
             break;
 
         case Qt::Key_C:
-            m_seq.copy_selected();
+            seq().copy_selected();
             return;
             break;
 
@@ -1035,16 +1005,16 @@ qseqroll::keyPressEvent (QKeyEvent * event)
         case Qt::Key_Z:
             if (event->modifiers() & Qt::ShiftModifier)
             {
-                m_seq.pop_redo();
+                seq().pop_redo();
                 return;
             }
             else
-                m_seq.pop_undo();
+                seq().pop_undo();
             return;
             break;
 
         case Qt::Key_A:
-            m_seq.select_all();
+            seq().select_all();
             return;
             break;
         }
@@ -1077,7 +1047,7 @@ qseqroll::sizeHint () const
 {
     return QSize
     (
-        m_seq.get_length() / m_zoom + 100 + c_keyboard_padding_x, keyAreaY + 1
+        seq().get_length() / zoom() + 100 + c_keyboard_padding_x, keyAreaY + 1
     );
 }
 
@@ -1092,96 +1062,20 @@ qseqroll::snap_y (int & y)
 }
 
 /**
+ *  Provides an override to change the mouse "cursor".
  *
- *  snap = number pulses to snap to
- *
- *  m_zoom = number of pulses per pixel
- *
- *  so snap / m_zoom  = number pixels to snap to
+ * \param a
+ *      The value of the status of adding (e.g. a note).
  */
 
 void
-qseqroll::snap_x (int & x)
+qseqroll::set_adding (bool a)
 {
-    int mod = (m_snap / m_zoom);
-    if (mod <= 0)
-        mod = 1;
-
-    x -= x % mod;
-}
-
-/**
- *
- */
-
-void
-qseqroll::convert_xy (int x, int y, midipulse & tick, int & note)
-{
-    tick = x * m_zoom;
-    note = (keyAreaY - y - 2) / keyY;
-}
-
-/**
- *
- */
-
-void
-qseqroll::convert_tn (midipulse ticks, int note, int & x, int & y)
-{
-    x = ticks /  m_zoom;
-    y = keyAreaY - ((note + 1) * keyY) - 1;
-}
-
-/**
- *  See seqroll::convert_sel_box_to_rect() for a potential upgrade.
- *
- * \param tick_s
- *      The starting tick of the rectangle.
- *
- * \param tick_f
- *      The finishing tick of the rectangle.
- *
- * \param note_h
- *      The high note of the rectangle.
- *
- * \param note_l
- *      The low note of the rectangle.
- *
- * \param [out] r
- *      The destination rectangle for the calculations.
- */
-
-void
-qseqroll::convert_tn_box_to_rect
-(
-    midipulse tick_s, midipulse tick_f, int note_h, int note_l,
-    seq64::rect & r
-)
-{
-    int x1, y1, x2, y2;
-    convert_tn(tick_s, note_h, x1, y1);         /* convert box to X,Y values */
-    convert_tn(tick_f, note_l, x2, y2);
-    rect::xy_to_rect(x1, y1, x2, y2, r);
-    r.height_incr(keyY);
-}
-
-/**
- *
- */
-
-void
-qseqroll::set_adding(bool adding)
-{
-    if (adding)
-    {
+    qseqbase::set_adding(a);
+    if (a)
         setCursor(Qt::PointingHandCursor);
-        m_adding = true;
-    }
     else
-    {
         setCursor(Qt::ArrowCursor);
-        m_adding = false;
-    }
 }
 
 /**
@@ -1191,11 +1085,11 @@ qseqroll::set_adding(bool adding)
 void
 qseqroll::start_paste ()
 {
-    snap_x(m_current_x);
-    snap_y(m_current_x);
-    m_drop_x = m_current_x;
-    m_drop_y = m_current_y;
-    m_paste = true;
+    snap_current_x();
+    snap_current_y();
+    drop_x(current_x());
+    drop_y(current_y());
+    paste(true);
 
     midipulse tick_s;
     midipulse tick_f;
@@ -1207,9 +1101,9 @@ qseqroll::start_paste ()
      *  being shifted to tick 0.
      */
 
-    m_seq.get_clipboard_box(tick_s, note_h, tick_f, note_l);
-    convert_tn_box_to_rect(tick_s, tick_f, note_h, note_l, m_selected);
-    m_selected.xy_incr(m_drop_x, m_drop_y - m_selected.y());
+    seq().get_clipboard_box(tick_s, note_h, tick_f, note_l);
+    convert_tn_box_to_rect(tick_s, tick_f, note_h, note_l, selection());
+    selection().xy_incr(drop_x(), drop_y() - selection().y());
 }
 
 /**
@@ -1217,29 +1111,7 @@ qseqroll::start_paste ()
  */
 
 void
-qseqroll::zoom_in ()
-{
-    if (m_zoom > 1)
-        m_zoom *= 0.5;
-}
-
-/**
- *
- */
-
-void
-qseqroll::zoom_out ()
-{
-    if (m_zoom < 32)
-        m_zoom *= 2;
-}
-
-/**
- *
- */
-
-void
-qseqroll::updateEditMode (edit_mode_t mode)
+qseqroll::update_edit_mode (edit_mode_t mode)
 {
     m_edit_mode = mode;
 }

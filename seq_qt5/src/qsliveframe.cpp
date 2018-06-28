@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-19
+ * \updates       2018-06-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -657,24 +657,24 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
     {
         mPopup = new QMenu(this);
 
-        QAction * newseq = new QAction(tr("&New sequence"), mPopup);
+        QAction * newseq = new QAction(tr("&New pattern"), mPopup);
         mPopup->addAction(newseq);
         QObject::connect(newseq, SIGNAL(triggered(bool)), this, SLOT(newSeq()));
 
         if (perf().is_active(m_curr_seq))
         {
-            QAction * editseq = new QAction(tr("&Edit sequence in tab"), mPopup);
+            QAction * editseq = new QAction(tr("Edit pattern in &tab"), mPopup);
             mPopup->addAction(editseq);
             connect(editseq, SIGNAL(triggered(bool)), this, SLOT(editSeq()));
 
             QAction * editseqex = new QAction
             (
-                tr("Edit sequence in &window"), mPopup
+                tr("Edit pattern in &window"), mPopup
             );
             mPopup->addAction(editseqex);
             connect(editseqex, SIGNAL(triggered(bool)), this, SLOT(editSeqEx()));
 
-            QMenu * menuColour = new QMenu(tr("Set &color..."));
+            QMenu * menuColour = new QMenu(tr("Set pattern &color..."));
             QAction * color[8];
             color[0] = new QAction(tr("White"), menuColour);
             color[1] = new QAction(tr("Red"), menuColour);
@@ -701,15 +701,15 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
 
             mPopup->addMenu(menuColour);
 
-            QAction * actionCopy = new QAction(tr("Cop&y sequence"), mPopup);
+            QAction * actionCopy = new QAction(tr("Cop&y pattern"), mPopup);
             mPopup->addAction(actionCopy);
             connect(actionCopy, SIGNAL(triggered(bool)), this, SLOT(copySeq()));
 
-            QAction * actionCut = new QAction(tr("Cu&t sequence"), mPopup);
+            QAction * actionCut = new QAction(tr("Cu&t pattern"), mPopup);
             mPopup->addAction(actionCut);
             connect(actionCut, SIGNAL(triggered(bool)), this, SLOT(cutSeq()));
 
-            QAction * actionDelete = new QAction(tr("&Delete sequence"), mPopup);
+            QAction * actionDelete = new QAction(tr("&Delete pattern"), mPopup);
             mPopup->addAction(actionDelete);
             connect
             (
@@ -718,7 +718,7 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
         }
         else if (mCanPaste)
         {
-            QAction * actionPaste = new QAction(tr("Paste sequence"), mPopup);
+            QAction * actionPaste = new QAction(tr("Paste pattern"), mPopup);
             mPopup->addAction(actionPaste);
             connect(actionPaste, SIGNAL(triggered(bool)), this, SLOT(pasteSeq()));
         }

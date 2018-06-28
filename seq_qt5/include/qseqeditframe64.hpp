@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-06-20
+ * \updates       2018-06-28
  * \license       GNU GPLv2 or above
  *
  */
@@ -90,7 +90,7 @@ public:
     ~qseqeditframe64 ();
 
     void update_draw_geometry ();
-    void set_editor_mode (seq64::edit_mode_t mode);
+    void set_editor_mode (edit_mode_t mode);
 
 private:
 
@@ -99,7 +99,7 @@ private:
      *      The const version.
      */
 
-    const seq64::perform & perf () const
+    const perform & perf () const
     {
         return m_performance;
     }
@@ -116,6 +116,13 @@ private:
 
 private slots:
 
+    void update_seq_name ();
+    void update_beats_per_measure (int index);
+    void increment_beats_per_measure ();
+    void update_beat_width (int index);
+    void next_beat_width ();
+    void update_measures (int index);
+    void next_measures ();
     void update_grid_snap (int index);
     void update_note_length (int index);
     void update_grid_zoom (int index);
@@ -127,17 +134,34 @@ private:
     void set_snap (int s);
     void set_note_length (int nlen);
     void set_zoom (int z);
+    void set_dirty ();
+    void set_beats_per_measure (int bpm);
+    void set_beat_width (int bw);
+    void set_measures (int len);
+    int get_measures ();
 
 private:
 
     Ui::qseqeditframe64 * ui;
-    seq64::perform & m_performance;
-    seq64::sequence * m_seq;
-    seq64::qseqkeys * m_seqkeys;
-    seq64::qseqtime * m_seqtime;
-    seq64::qseqroll * m_seqroll;
-    seq64::qseqdata * m_seqdata;
-    seq64::qstriggereditor * m_seqevent;  // qseqevent?
+    perform & m_performance;
+    sequence * m_seq;
+    qseqkeys * m_seqkeys;
+    qseqtime * m_seqtime;
+    qseqroll * m_seqroll;
+    qseqdata * m_seqdata;
+    qstriggereditor * m_seqevent;  // qseqevent?
+
+    /**
+     *  Holds the current beats-per-measure selection.
+     */
+
+    int m_beats_per_bar;
+
+    /**
+     *  Holds the current beat-width selection.
+     */
+
+    int m_beat_width;
 
     /**
      *  Provides the initial zoom, used for restoring the original zoom using

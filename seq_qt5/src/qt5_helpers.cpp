@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-03-14
- * \updates       2018-03-14
+ * \updates       2018-06-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -40,12 +40,25 @@
 namespace seq64
 {
 
+/**
+ *  Clears the text of the QPushButton, and sets its icon to the pixmap given
+ *  by the pixmap character array.
+ *
+ * \param pixmap_array
+ *      Provides the character array representing the XPM pixmap.
+ *
+ * \param button
+ *      Provides a pointer to the button to be cleared and to have its icon
+ *      set.
+ */
+
 void
-qt_set_icon (const char * pixmap_filename [], QPushButton * button)
+qt_set_icon (const char * pixmap_array [], QPushButton * button)
 {
-    QPixmap pixmap(pixmap_filename);
+    QPixmap pixmap(pixmap_array);
     QIcon icon;
     icon.addPixmap(pixmap, QIcon::Normal, QIcon::On);
+    button->setText("");
     button->setIcon(icon);
 }
 

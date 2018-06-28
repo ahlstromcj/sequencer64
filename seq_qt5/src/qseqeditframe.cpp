@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-19
+ * \updates       2018-06-25
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -267,17 +267,19 @@ qseqeditframe::qseqeditframe
     mTimeBar = new qseqtime(perf(), *mSeq, SEQ64_DEFAULT_ZOOM, mContainer);
     mNoteGrid = new qseqroll
     (
-        perf(), *mSeq,
-        mKeyboard, 1, 16, 0,
-        mContainer,
-        EDIT_MODE_NOTE
+        perf(), *mSeq, mKeyboard,
+        SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP, 0,
+        EDIT_MODE_NOTE, mContainer
     );
     mNoteGrid->update_edit_mode(editMode);
-    mEventValues = new qseqdata(*mSeq, mContainer);
+    mEventValues = new qseqdata
+    (
+        perf(), *mSeq, SEQ64_DEFAULT_ZOOM, mSnap, mContainer
+    );
     mEventTriggers = new qstriggereditor
     (
-        *mSeq, *mEventValues, mContainer,
-        usr().key_height()
+        perf(), *mSeq, mEventValues, SEQ64_DEFAULT_ZOOM, mSnap,
+        usr().key_height(), mContainer
     );
 
     m_layout_grid->setSpacing(0);

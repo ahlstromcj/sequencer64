@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2017-09-09
+ * \updates       2018-06-28
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -330,6 +330,12 @@
 #define SEQ64_MAXIMUM_ZOOM               512
 
 /**
+ *  The default value of the snap in the sequence editors.
+ */
+
+#define SEQ64_DEFAULT_SNAP                16
+
+/**
  *  Minimum possible value for the global redraw rate.
  */
 
@@ -438,6 +444,13 @@
 #define SEQ64_DEFAULT_BPM_PAGE_INCREMENT  10.0
 
 /**
+ *  Minimum value for "beats-per-measure".  A new addition for the Qt 5
+ *  user-interface.
+ */
+
+#define SEQ64_MINIMUM_BEATS_PER_MEASURE    1
+
+/**
  *  Default value for "beats-per-measure".  This is the "numerator" in a 4/4
  *  time signature.  It also seems to be the value used for JACK's
  *  jack_position_t.beats_per_bar field.  For abbreviation, we will call this
@@ -448,6 +461,38 @@
 #define SEQ64_DEFAULT_BEATS_PER_MEASURE    4
 
 /**
+ *  Maximum value for "beats-per-measure".  A new addition for the Qt 5
+ *  user-interface.
+ */
+
+#define SEQ64_MAXIMUM_BEATS_PER_MEASURE   16
+
+/**
+ *  Minimum number of measures in the official length of a pattern.
+ */
+
+#define SEQ64_MINIMUM_MEASURES             1
+
+/**
+ *  Default number of measures in the official length of a pattern.
+ */
+
+#define SEQ64_DEFAULT_MEASURES             1
+
+/**
+ *  Maximum number of measures in the official length of a pattern.
+ */
+
+#define SEQ64_MAXIMUM_MEASURES          1024
+
+/**
+ *  The minimum value of the beat width.  A new addition for the Qt 5
+ *  user-interface.
+ */
+
+#define SEQ4_MINIMUM_BEAT_WIDTH             1
+
+/**
  *  Default value for "beat-width".  This is the "denominator" in a 4/4 time
  *  signature.  It also seems to be the value used for JACK's
  *  jack_position_t.beat_type field. For abbreviation, we will call this value
@@ -455,6 +500,13 @@
  */
 
 #define SEQ64_DEFAULT_BEAT_WIDTH           4
+
+/**
+ *  The maximum value of the beat width.  A new addition for the Qt 5
+ *  user-interface.
+ */
+
+#define SEQ4_MAXIMUM_BEAT_WIDTH            16
 
 /**
  *  Default value for major divisions per bar.  A graphics version of

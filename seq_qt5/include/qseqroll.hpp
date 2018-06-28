@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-22
+ * \updates       2018-06-27
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -73,11 +73,11 @@ public:
         perform & perf,
         sequence & seq,
         qseqkeys * seqkeys_wid  = nullptr,
-        int zoom                =  1,
-        int snap                = 16,
+        int zoom                = SEQ64_DEFAULT_ZOOM,
+        int snap                = SEQ64_DEFAULT_SNAP,
         int pos                 =  0,
-        QWidget * parent        = nullptr,
-        seq64::edit_mode_t mode = EDIT_MODE_NOTE
+        seq64::edit_mode_t mode = EDIT_MODE_NOTE,
+        QWidget * parent        = nullptr
     );
 
 protected:
@@ -225,6 +225,7 @@ signals:
 
 public slots:
 
+    void conditional_update ();
     void update_edit_mode (seq64::edit_mode_t mode);
 
 };          // class qseqroll

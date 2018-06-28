@@ -149,6 +149,18 @@ qseqbase::snap_x (int & x)
  *
  */
 
+bool
+qseqbase::needs_update () const
+{
+    bool dirty = const_cast<qseqbase *>(this)->check_dirty();
+    perform & ncp = const_cast<perform &>(perf());
+    return ncp.needs_update(seq().number()) || dirty;
+}
+
+/**
+ *
+ */
+
 void
 qseqbase::convert_xy (int x, int y, midipulse & tick, int & note)
 {

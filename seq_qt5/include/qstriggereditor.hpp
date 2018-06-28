@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-20
+ * \updates       2018-06-24
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -43,6 +43,7 @@
 
 #include "app_limits.h"                 /* SEQ64_SEQKEY_HEIGHT macro            */
 #include "midibyte.hpp"                 /* seq64::midibyte and other typedefs   */
+#include "qseqbase.hpp"                 /* seq64::qseqbase base class           */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -55,29 +56,29 @@ namespace seq64
     class qseqdata;
 
 /**
- * Displays the triggers for MIDI events
- * e.g. Modwheel, pitchbend etc
+ *  Displays the triggers for MIDI events (e.g. Mod Wheel, Pitch Bend) in the
+ *  event pane underneath the qseqroll pane.
+ *
+ *  Note that the qeqbase mixin class is publicly inherited so that the
+ *  qseqeditrame classes can access the public member of this class.
  */
 
-class qstriggereditor : public QWidget
+class qstriggereditor : public QWidget, public qseqbase
 {
     Q_OBJECT
 
 public:
 
-    explicit qstriggereditor
+    qstriggereditor
     (
+        perform & perf,
         sequence & seq,
-        qseqdata & seqdata_wid,
-        QWidget * parent    = nullptr,
-        int keyHeight       = SEQ64_SEQKEY_HEIGHT
+        qseqdata * seqdata_wid  = nullptr,
+        int zoom                = SEQ64_DEFAULT_ZOOM,
+        int snap                = SEQ64_DEFAULT_SNAP,
+        int keyHeight           = SEQ64_SEQKEY_HEIGHT,
+        QWidget * parent        = nullptr
     );
-    void zoom_in ();
-    void zoom_out ();
-    void set_zoom (int z)
-    {
-        m_zoom = z;             // must be validated by the caller
-    }
 
     void set_data_type (midibyte a_status, midibyte a_control);
 
@@ -95,6 +96,8 @@ signals:
 
 public slots:
 
+    void conditional_update ();
+
 private:
 
     /* checks mins / maxes..  the fills in x,y and width and height */
@@ -104,39 +107,14 @@ private:
     void convert_x (int x, midipulse & tick);
     void convert_t (midipulse ticks, int & x);
     void drop_event (midipulse tick);
-    void snap_y (int & y);
-    void snap_x (int & x);
     void set_adding (bool adding);
 
 private:
 
-    sequence & m_seq;
-    qseqdata & m_seqdata_wid;
-    QRect * m_old;
-    QRect * m_selected;
-    QTimer * mTimer;
-    QFont mFont;
-
-    int m_zoom;             /* one pixel == m_zoom ticks */
-    int m_snap;
-    int m_window_x;
-    int m_window_y;
-    int keyY;
-
-    bool m_selecting;       /* when highlighting a bunch of events */
-    bool m_moving_init;
-    bool m_moving;
-    bool m_growing;
-    bool m_painting;
-    bool m_paste;
-    bool m_adding;
-
-    int m_drop_x;           /* where the dragging started */
-    int m_drop_y;
-    int m_current_x;
-    int m_current_y;
-    int m_move_snap_offset_x;
-
+    qseqdata * m_seqdata_wid;
+    QTimer * m_timer;
+    QFont m_font;
+    int m_key_y;
     midibyte m_status;      /* what is seqdata currently editing? */
     midibyte m_cc;
 

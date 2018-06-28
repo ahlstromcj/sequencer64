@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-06-16
+ * \updates       2018-06-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -34,9 +34,10 @@
 
 #include "seq64-config.h"
 #include "perform.hpp"
-#include "sequence.hpp"
 #include "qseqeditex.hpp"
 #include "qseqeditframe64.hpp"
+#include "qsmainwnd.hpp"
+#include "sequence.hpp"
 
 /*
  *  Qt's uic application allows a different output file-name, but not sure
@@ -67,17 +68,20 @@ namespace seq64
  *
  * \param parent
  *      Provides the parent window/widget for this container window.  Defaults
- *      to null.
+ *      to null.  Note that this parameter does not link this class to the
+ *      parent as a QWidget, because that would make this class appear inside
+ *      the qsmainwnd user-interface.
  */
 
 qseqeditex::qseqeditex
 (
-    perform & p, int seqid, QWidget * parent
+    perform & p, int seqid, qsmainwnd * parent
 ) :
-    QWidget             (parent),
+    QWidget             (nullptr),
     ui                  (new Ui::qseqeditex),
     m_perform           (p),
     m_seq_id            (seqid),
+    m_edit_parent       (parent),
     m_edit_frame        (nullptr)
 {
     ui->setupUi(this);
@@ -90,12 +94,19 @@ qseqeditex::qseqeditex
 }
 
 /**
- *
+ *  Deletes the user interface, then tells the editor parent to remove
+ *  this object.
  */
 
 qseqeditex::~qseqeditex()
 {
     delete ui;
+
+    // TODO
+    // MOVE THIS TO AN EXIT FUNCTION EXPLICITLY CALLED BY THE USER.
+    // Otherwise, we get a seqfault as a race condition.
+    if (not_nullptr(m_edit_parent))
+        m_edit_parent->remove_editor(m_seq_id);
 }
 
 }               // namespace seq64

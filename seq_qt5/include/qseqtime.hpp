@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-20
+ * \updates       2018-06-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,7 +38,8 @@
 #include <QPainter>
 #include <QPen>
 
-#include "app_limits.h"                 /* SEQ64_DEFAULT_ZOOM           */
+#include "app_limits.h"                 /* SEQ64_DEFAULT_ZOOM               */
+#include "qseqbase.hpp"                 /* seq64::qseqbase mixin class      */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -53,7 +54,7 @@ namespace seq64
  * The timebar for the sequence editor
  */
 
-class qseqtime : public QWidget
+class qseqtime : public QWidget, public qseqbase
 {
     Q_OBJECT
 
@@ -66,12 +67,6 @@ public:
         int zoom            = SEQ64_DEFAULT_ZOOM,
         QWidget * parent    = nullptr
     );
-    void zoom_in ();
-    void zoom_out ();
-    void set_zoom (int z)
-    {
-        m_zoom = z;             // must be validated by the caller
-    }
 
 protected:
 
@@ -81,48 +76,16 @@ protected:
     void mouseMoveEvent (QMouseEvent * event);
     QSize sizeHint() const;
 
-    /**
-     *
-     */
-
-    const perform & perf () const
-    {
-        return m_perform;
-    }
-
-    /**
-     *
-     */
-
-    perform & perf ()
-    {
-        return m_perform;
-    }
-
 signals:
 
 private slots:
 
+    void conditional_update ();
+
 private:
 
-    perform & m_perform;
-    sequence & m_seq;
     QTimer * m_timer;
     QFont m_font;
-    int m_zoom;
-
-    /**
-     *  The horizontal value of the scroll window in units of
-     *  ticks/pulses/divisions.
-     */
-
-    int m_scroll_offset_ticks;
-
-    /**
-     *  The horizontal value of the scroll window in units of pixels.
-     */
-
-    int m_scroll_offset_x;
 
 };          // class qseqtime
 

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-03-14
- * \updates       2018-03-14
+ * \updates       2018-06-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -45,7 +45,7 @@ namespace seq64
  * Free functions in the seq64 namespace.
  */
 
-extern void qt_set_icon (const char * pixmap_filename [], QPushButton * button);
+extern void qt_set_icon (const char * pixmap_array [], QPushButton * button);
 
 }               // namespace seq64
 

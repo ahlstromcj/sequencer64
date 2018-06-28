@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-06-21
+ * \updates       2018-06-28
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -121,8 +121,10 @@ QWidget container?
  *  friggin' resource files.
  */
 
+#include "pixmaps/down.xpm"
 // #include "pixmaps/drum.xpm"
 #include "pixmaps/note_length.xpm"
+#include "pixmaps/length_short.xpm"     /* not length.xpm, it is too long   */
 // #include "pixmaps/play.xpm"
 // #include "pixmaps/quantize.xpm"
 // #include "pixmaps/rec.xpm"
@@ -171,6 +173,61 @@ int qseqeditframe64::m_initial_note_length  = SEQ64_DEFAULT_PPQN / 4;
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
 int qseqeditframe64::m_initial_chord        = 0;
 #endif
+
+/**
+ * To reduce the amount of written code, we use a static array to
+ * initialize the beat-width entries.
+ */
+
+static const int s_width_items [] = { 1, 2, 4, 8, 16, 32 };
+static const int s_width_count = sizeof(s_width_items) / sizeof(int);
+
+/**
+ *  Looks up a beat-width value.
+ */
+
+static int s_lookup_bw (int bw)
+{
+    int result = 0;
+    for (int wi = 0; wi < s_width_count; ++wi)
+    {
+        if (s_width_items[wi] == bw)
+        {
+            result = wi;
+            break;
+        }
+    }
+    return result;
+}
+
+/**
+ * To reduce the amount of written code, we use a static array to
+ * initialize the measures entries.
+ */
+
+static const int s_measures_items [] =
+{
+    1, 2, 3, 4, 5, 6, 7, 8, 16, 32, 64, 128
+};
+static const int s_measures_count = sizeof(s_measures_items) / sizeof(int);
+
+/**
+ *  Looks up a beat-width value.
+ */
+
+static int s_lookup_measures (int m)
+{
+    int result = 0;
+    for (int wi = 0; wi < s_measures_count; ++wi)
+    {
+        if (s_measures_items[wi] == m)
+        {
+            result = wi;
+            break;
+        }
+    }
+    return result;
+}
 
 /**
  *  These static items are used to fill in and select the proper snap values for
@@ -286,6 +343,8 @@ qseqeditframe64::qseqeditframe64
     m_seqroll           (nullptr),
     m_seqdata           (nullptr),
     m_seqevent          (nullptr),
+    m_beats_per_bar     (m_seq->get_beats_per_bar()),
+    m_beat_width        (m_seq->get_beat_width()),
     m_initial_zoom      (SEQ64_DEFAULT_ZOOM),           // constant
     m_zoom              (SEQ64_DEFAULT_ZOOM),           // fixed below
     m_snap              (m_initial_snap),
@@ -349,10 +408,8 @@ qseqeditframe64::qseqeditframe64
 
     m_seqroll = new qseqroll
     (
-        perf(), *m_seq,
-        m_seqkeys, m_zoom, m_snap, 0,
-        ui->rollScrollArea,
-        EDIT_MODE_NOTE
+        perf(), *m_seq, m_seqkeys, m_zoom, m_snap, 0,
+        EDIT_MODE_NOTE, ui->rollScrollArea
     );
     ui->rollScrollArea->setWidget(m_seqroll);
     ui->rollScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -363,7 +420,10 @@ qseqeditframe64::qseqeditframe64
      * qseqdata
      */
 
-    m_seqdata = new qseqdata(*m_seq, ui->dataScrollArea);
+    m_seqdata = new qseqdata
+    (
+        perf(), *m_seq, m_zoom, m_snap, ui->dataScrollArea
+    );
     ui->dataScrollArea->setWidget(m_seqdata);
     ui->dataScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->dataScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -374,8 +434,8 @@ qseqeditframe64::qseqeditframe64
 
     m_seqevent = new qstriggereditor
     (
-        *m_seq, *m_seqdata, ui->eventScrollArea, // mContainer,
-        usr().key_height()
+        perf(), *m_seq, m_seqdata, m_zoom, m_snap,
+        usr().key_height(), ui->eventScrollArea
     );
     ui->eventScrollArea->setWidget(m_seqevent);
     ui->eventScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -400,6 +460,101 @@ qseqeditframe64::qseqeditframe64
 
     QString labeltext = tmp;
     ui->m_label_seqnumber->setText(labeltext);
+
+    /*
+     * Sequence Title
+     */
+
+    ui->m_entry_name->setText(m_seq->name().c_str());
+    connect
+    (
+        ui->m_entry_name, SIGNAL(textChanged()),
+        this, SLOT(update_seq_name())
+    );
+
+    /*
+     * Beats Per Bar.  Fill the options for the beats per measure combo-box,
+     * and set the default.
+     */
+
+    qt_set_icon(down_xpm, ui->m_button_bpm);
+    connect
+    (
+        ui->m_button_bpm, SIGNAL(clicked(bool)),
+        this, SLOT(increment_beats_per_measure())
+    );
+    for
+    (
+        int b = SEQ64_MINIMUM_BEATS_PER_MEASURE - 1;
+        b <= SEQ64_MAXIMUM_BEATS_PER_MEASURE - 1;
+        ++b
+    )
+    {
+        QString combo_text = QString::number(b + 1);
+        ui->m_combo_bpm->insertItem(b, combo_text);
+    }
+    ui->m_combo_bpm->setCurrentIndex(m_beats_per_bar - 1);
+    connect
+    (
+        ui->m_combo_bpm, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(update_beats_per_measure(int))
+    );
+
+    /*
+     * Beat Width (denominator of time signature).  Fill the options for
+     * the beats per measure combo-box, and set the default.
+     */
+
+    qt_set_icon(down_xpm, ui->m_button_bw);
+    connect
+    (
+        ui->m_button_bw, SIGNAL(clicked(bool)),
+        this, SLOT(next_beat_width())
+    );
+    for (int w = 0; w < s_width_count; ++w)
+    {
+        int item = s_width_items[w];
+        char fmt[8];
+        snprintf(fmt, sizeof fmt, "%d", item);
+        QString combo_text = fmt;
+        ui->m_combo_bw->insertItem(w, combo_text);
+    }
+
+    int bw_index = s_lookup_bw(m_beat_width);
+    ui->m_combo_bw->setCurrentIndex(bw_index);
+    connect
+    (
+        ui->m_combo_bw, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(update_beat_width(int))
+    );
+
+    /*
+     * Pattern Length in Measures. Fill the options for
+     * the beats per measure combo-box, and set the default.
+     */
+
+    qt_set_icon(length_short_xpm, ui->m_button_length);
+    connect
+    (
+        ui->m_button_length, SIGNAL(clicked(bool)),
+        this, SLOT(next_measures())
+    );
+    for (int m = 0; m < s_measures_count; ++m)
+    {
+        int item = s_measures_items[m];
+        char fmt[8];
+        snprintf(fmt, sizeof fmt, "%d", item);
+        QString combo_text = fmt;
+        ui->m_combo_length->insertItem(m, combo_text);
+    }
+
+    int len_index = s_lookup_measures(m_measures);
+    ui->m_combo_length->setCurrentIndex(len_index);
+    connect
+    (
+        ui->m_combo_length, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(update_measures(int))
+    );
 
     /**
      *  Fill "Snap" and "Note" Combo Boxes:
@@ -450,9 +605,7 @@ qseqeditframe64::qseqeditframe64
      * Nullify the existing text and replace it with an icon.
      */
 
-    ui->m_button_snap->setText("");
     qt_set_icon(snap_xpm, ui->m_button_snap);
-    ui->m_button_note->setText("");
     qt_set_icon(note_length_xpm, ui->m_button_note);
 
     /*
@@ -460,7 +613,6 @@ qseqeditframe64::qseqeditframe64
      *  a combo-box.
      */
 
-    ui->m_button_zoom->setText("");
     qt_set_icon(zoom_xpm, ui->m_button_zoom);
     connect
     (
@@ -501,6 +653,179 @@ qseqeditframe64::~qseqeditframe64 ()
  */
 
 /**
+ *  Handles edits of the sequence title.
+ */
+
+void
+qseqeditframe64::update_seq_name ()
+{
+    m_seq->set_name(ui->m_entry_name->text().toStdString());
+}
+
+/**
+ *  Handles updates to the beats/measure for only the current sequences.
+ *  See the similar function in qsmainwnd.
+ */
+
+void
+qseqeditframe64::update_beats_per_measure (int index)
+{
+    ++index;
+    if
+    (
+        index != m_beats_per_bar &&
+        index >= SEQ64_MINIMUM_BEATS_PER_MEASURE &&
+        index <= SEQ64_MAXIMUM_BEATS_PER_MEASURE
+    )
+    {
+        set_beats_per_measure(index);
+    }
+}
+
+/**
+ *  When the BPM (beats-per-measure) button is pushed, we go to the next BPM
+ *  entry in the combo-box, wrapping around when the end is reached.
+ */
+
+void
+qseqeditframe64::increment_beats_per_measure ()
+{
+    int bpm = m_beats_per_bar + 1;
+    if (bpm > SEQ64_MAXIMUM_BEATS_PER_MEASURE)
+        bpm = SEQ64_MINIMUM_BEATS_PER_MEASURE;
+
+    ui->m_combo_bpm->setCurrentIndex(bpm - 1);
+    set_beats_per_measure(bpm);
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::set_beats_per_measure (int bpm)
+{
+    int measures = get_measures();
+    m_seq->set_beats_per_bar(bpm);
+    m_beats_per_bar = bpm;
+    m_seq->apply_length(bpm, m_ppqn, m_seq->get_beat_width(), measures);
+    set_dirty();
+}
+
+/**
+ *  TODO:  move into qseqbase ONCE PROVEN
+ */
+
+int
+qseqeditframe64::get_measures ()
+{
+    int units =
+    (
+        m_seq->get_beats_per_bar() * m_ppqn * 4 / m_seq->get_beat_width()
+    );
+    int measures = m_seq->get_length() / units;
+    if (m_seq->get_length() % units != 0)
+        ++measures;
+
+    return measures;
+}
+
+/**
+ *  Handles updates to the beat width for only the current sequences.
+ *  See the similar function in qsmainwnd.
+ */
+
+void
+qseqeditframe64::update_beat_width (int index)
+{
+    int bw = s_width_items[index];
+    if (bw != m_beat_width)
+        set_beat_width(bw);
+}
+
+/**
+ *  When the BW (beat width) button is pushed, we go to the next beat width
+ *  entry in the combo-box, wrapping around when the end is reached.
+ */
+
+void
+qseqeditframe64::next_beat_width ()
+{
+    int index = s_lookup_bw(m_beat_width);
+    if (++index >= s_width_count)
+        index = 0;
+
+    ui->m_combo_bw->setCurrentIndex(index);
+    int bw = s_width_items[index];
+    if (bw != m_beat_width)
+        set_beat_width(bw);
+}
+
+/**
+ *  Sets the beat-width value and then dirties the user-interface so that it
+ *  will be repainted.
+ */
+
+void
+qseqeditframe64::set_beat_width (int bw)
+{
+    int measures = get_measures();
+    m_seq->set_beat_width(bw);
+    m_seq->apply_length(m_seq->get_beats_per_bar(), m_ppqn, bw, measures);
+    m_beat_width = bw;
+    set_dirty();
+}
+
+/**
+ *  Handles updates to the pattern length.
+ */
+
+void
+qseqeditframe64::update_measures (int index)
+{
+    int m = s_measures_items[index];
+    if (m != m_measures)
+        set_measures(m);
+}
+
+/**
+ *  When the measures-length button is pushed, we go to the next length
+ *  entry in the combo-box, wrapping around when the end is reached.
+ */
+
+void
+qseqeditframe64::next_measures ()
+{
+    int index = s_lookup_measures(m_measures);
+    if (++index >= s_width_count)
+        index = 0;
+
+    ui->m_combo_length->setCurrentIndex(index);
+    int m = s_measures_items[index];
+    if (m != m_measures)
+        set_measures(m);
+}
+
+/**
+ *  Set the measures value, using the given parameter, and some internal
+ *  values passed to apply_length().
+ *
+ * \param len
+ *      Provides the sequence length, in measures.
+ */
+
+void
+qseqeditframe64::set_measures (int len)
+{
+    m_measures = len;
+    m_seq->apply_length
+    (
+        m_seq->get_beats_per_bar(), m_ppqn, m_seq->get_beat_width(), len
+    );
+    set_dirty();
+}
+
+/**
  *  Updates the grid-snap values and control based on the index.  The value is
  *  passed to the set_snap() function for processing.
  *
@@ -534,13 +859,13 @@ qseqeditframe64::update_grid_snap (int index)
 void
 qseqeditframe64::set_snap (int s)
 {
-    if (s > 0)
+    if (s > 0 && s != m_snap)
     {
         m_snap = s;
         m_initial_snap = s;
         m_seqroll->set_snap(s);
         m_seq->set_snap_tick(s);
-        // m_seqevent->set_snap(s);     // TODO
+        m_seqevent->set_snap(s);
     }
 }
 
@@ -592,6 +917,7 @@ qseqeditframe64::set_note_length (int notelength)
     m_note_length = notelength;
     m_initial_note_length = notelength;
     m_seqroll->set_note_length(notelength);
+    // TODO:  perf().modify()
 }
 
 /**
@@ -678,15 +1004,32 @@ qseqeditframe64::set_zoom (int z)
  */
 
 void
+qseqeditframe64::set_dirty ()
+{
+    m_seqroll->set_dirty();
+    m_seqtime->set_dirty();
+    m_seqevent->set_dirty();
+    m_seqdata->set_dirty();
+    update_draw_geometry();
+}
+
+/**
+ *
+ */
+
+void
 qseqeditframe64::update_draw_geometry()
 {
     /*
-    QString lentext(QString::number(m_seq->get_num_measures()));
-    ui->cmbSeqLen->setCurrentText(lentext);
-    mContainer->adjustSize();
-    */
+     *  QString lentext(QString::number(m_seq->get_num_measures()));
+     *  ui->cmbSeqLen->setCurrentText(lentext);
+     *  mContainer->adjustSize();
+     */
+
     m_seqtime->updateGeometry();
     m_seqroll->updateGeometry();
+    m_seqevent->updateGeometry();
+    m_seqdata->updateGeometry();
 }
 
 /**
@@ -696,9 +1039,12 @@ qseqeditframe64::update_draw_geometry()
 void
 qseqeditframe64::set_editor_mode (seq64::edit_mode_t mode)
 {
-    m_edit_mode = mode;
-    perf().seq_edit_mode(*m_seq, mode);
-    m_seqroll->update_edit_mode(mode);
+    if (mode != m_edit_mode)
+    {
+        m_edit_mode = mode;
+        perf().seq_edit_mode(*m_seq, mode);
+        m_seqroll->update_edit_mode(mode);
+    }
 }
 
 

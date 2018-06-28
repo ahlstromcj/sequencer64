@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-04-13
+ * \updates       2018-06-28
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -2515,9 +2515,6 @@ seqedit::get_measures ()
  *  Set the measures value, using the given parameter, and some internal
  *  values passed to apply_length().
  *
- * \todo
- *      Check if verification is needed at this point.
- *
  * \param len
  *      Provides the sequence length, in measures.
  */
@@ -2529,18 +2526,7 @@ seqedit::set_measures (int len)
     snprintf(b, sizeof b, "%d", len);
     m_entry_length->set_text(b);
     m_measures = len;
-
-    /*
-     * In lieu of:
-     *
-     * apply_length(m_seq.get_beats_per_bar(), m_seq.get_beat_width(), len);
-     */
-
-    m_seq.apply_length(len);
-    m_seqroll_wid->reset();                 /* see seqedit::apply_length()  */
-    m_seqtime_wid->reset();
-    m_seqdata_wid->reset();
-    m_seqevent_wid->reset();
+    apply_length(m_seq.get_beats_per_bar(), m_seq.get_beat_width(), len);
 }
 
 /**
@@ -2553,7 +2539,7 @@ void
 seqedit::set_measures_manual ()
 {
     int len = atoi(m_entry_length->get_text().c_str());
-    if (len > 0 && len <= 1024)
+    if (len >= SEQ64_MINIMUM_MEASURES && len <= SEQ64_MAXIMUM_MEASURES)
         set_measures(len);
 }
 
@@ -2578,14 +2564,7 @@ seqedit::set_beats_per_bar (int bpb)
     {
         long len = get_measures();
         m_seq.set_beats_per_bar(bpb);
-
-        /*
-         * In lieu of:
-         *
-         * apply_length(bpb, m_seq.get_beat_width(), len);
-         */
-
-        m_seq.apply_length(len);
+        apply_length(bpb, m_seq.get_beat_width(), len);
     }
 }
 

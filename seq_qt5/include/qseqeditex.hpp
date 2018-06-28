@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-06-16
+ * \updates       2018-06-26
  * \license       GNU GPLv2 or above
  *
  *  The sequence editing window is known as the "Pattern Editor".  Kepler34
@@ -49,6 +49,7 @@ namespace seq64
     class perform;
     class sequence;
     class qseqeditframe64;
+    class qsmainwnd;
 
 /**
  *
@@ -60,7 +61,12 @@ class qseqeditex : public QWidget
 
 public:
 
-    explicit qseqeditex (perform & p, int seqid, QWidget * parent = nullptr);
+    explicit qseqeditex
+    (
+        perform & p,
+        int seqid,
+        qsmainwnd * parent = nullptr
+    );
     ~qseqeditex ();
 
 protected:
@@ -80,6 +86,7 @@ private:
     Ui::qseqeditex * ui;
     perform & m_perform;
     int m_seq_id;
+    qsmainwnd * m_edit_parent;
     qseqeditframe64 * m_edit_frame;
 
 };              // class qseqeditex

@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-02
+ * \updates       2018-06-27
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -44,6 +44,7 @@
 #include <QPen>
 
 #include "midibyte.hpp"                 /* midibyte, midipulse typedefs     */
+#include "qseqbase.hpp"                 /* seq64::qseqbase mixin class      */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -55,11 +56,11 @@ namespace seq64
     class sequence;
 
 /**
- * Displays the values for MIDI events
- * e.g. Modwheel, pitchbend etc
+ *  Displays the data values for MIDI events such as Mod Wheel and Pitchbend.
+ *  They are displayed as vertical lines with an accompanying numeric value.
  */
 
-class qseqdata : public QWidget
+class qseqdata : public QWidget, public qseqbase
 {
     Q_OBJECT
 
@@ -68,14 +69,14 @@ class qseqdata : public QWidget
 
 public:
 
-    explicit qseqdata (sequence & seq, QWidget * parent = 0);
-
-    void zoom_in ();
-    void zoom_out ();
-    void set_zoom (int z)
-    {
-        m_zoom = z;             // must be validated by the caller
-    }
+    qseqdata
+    (
+        perform & perf,
+        sequence & seq,
+        int zoom            = SEQ64_DEFAULT_ZOOM,
+        int snap            = SEQ64_DEFAULT_SNAP,
+        QWidget * parent    = nullptr
+    );
 
     void set_data_type (midibyte a_status, midibyte a_control);
 
@@ -99,22 +100,17 @@ signals:
 
 public slots:
 
+    void conditional_update ();
+
 private:
 
     void convert_x (int x, midipulse & tick);
 
 private:
 
-    sequence & m_seq;
-    QRect * mOld;
     QTimer * mTimer;
     QString mNumbers;
     QFont mFont;
-    int m_zoom;
-    int mDropX;
-    int mDropY;
-    int mCurrentX;
-    int mCurrentY;
 
     /* what is the data window currently editing ? */
 

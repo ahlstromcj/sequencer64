@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-05-27
+ * \updates       2018-06-27
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -35,9 +35,11 @@
  */
 
 #include "Globals.hpp"
+#include "perform.hpp"
 #include "qseqdata.hpp"
 #include "rect.hpp"                     /* seq64::rect::xy_to_rect_get()    */
 #include "sequence.hpp"
+#include "settings.hpp"                 /* seq64::usr().key_height(), etc.  */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -45,57 +47,46 @@
 
 namespace seq64
 {
-    class perform;
 
 /**
  *
  */
 
-qseqdata::qseqdata (sequence & seq, QWidget * parent)
- :
+qseqdata::qseqdata
+(
+    perform & p,
+    sequence & seq,
+    int zoom,
+    int snap,
+    QWidget * parent
+) :
     QWidget         (parent),
-    m_seq           (seq),
-    mOld            (new QRect()),
+    qseqbase        (p, seq, zoom, snap),
     mTimer          (nullptr),          // (new QTimer(this)),
     mNumbers        (),
     mFont           (),
-    m_zoom          (1),
-    mDropX          (0),
-    mDropY          (0),
-    mCurrentX       (0),
-    mCurrentY       (0),
     m_status        (EVENT_NOTE_ON),   // edit note velocity for now
     m_cc            (1),
     mLineAdjust     (false),
     mRelativeAdjust (false)
 {
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    mTimer = new QTimer(this);  // start refresh timer to queue regular redraws
-    mTimer->setInterval(20);
-    QObject::connect(mTimer, SIGNAL(timeout()), this, SLOT(update()));
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    mTimer = new QTimer(this);                          // redraw timer !!!
+    mTimer->setInterval(usr().window_redraw_rate());    // 20
+    QObject::connect(mTimer, SIGNAL(timeout()), this, SLOT(conditional_update()));
     mTimer->start();
 }
 
 /**
- *
+ *  In an effort to reduce CPU usage when simply idling, this function calls
+ *  update() only if necessary.  See qseqbase::needs_update().
  */
 
 void
-qseqdata::zoom_in ()
+qseqdata::conditional_update ()
 {
-    if (m_zoom > 1)         // restricted more by qseqeditframe64
-        m_zoom /= 2;
-}
-
-/**
- *
- */
-
-void
-qseqdata::zoom_out ()
-{
-    if (m_zoom < 32)       // restricted more by qseqeditframe64
-        m_zoom *= 2;
+    if (needs_update())
+        update();
 }
 
 /**
@@ -107,7 +98,7 @@ qseqdata::sizeHint () const
 {
     return QSize
     (
-        m_seq.get_length() / m_zoom + 100 + c_keyboard_padding_x, qc_dataarea_y
+        seq().get_length() / zoom() + 100 + c_keyboard_padding_x, qc_dataarea_y
     );
 }
 
@@ -118,7 +109,7 @@ qseqdata::sizeHint () const
  *      assigned a value inside the function, but d1 was 0 afterward.  So we
  *      decided to bite the bullet and ditch this call:
  *
- *      m_seq.get_next_event_kepler(m_status, m_cc, tick, d0, d1, selected)
+ *      seq().get_next_event_kepler(m_status, m_cc, tick, d0, d1, selected)
  *
  *      Instead, we create an iterator and use sequence::get_next_event_ex().
  */
@@ -133,23 +124,23 @@ qseqdata::paintEvent (QPaintEvent *)
     painter.setPen(pen);
     painter.setBrush(brush);
     painter.setFont(mFont);
+    painter.drawRect(0, 0, width() - 1, height() - 1);
 
     event_list::const_iterator cev;
-    int start_tick = 0;
-    int end_tick = width() * m_zoom;
-    painter.drawRect(0, 0, width() - 1, height() - 1);
-    m_seq.reset_ex_iterator(cev);                   /* reset_draw_marker()  */
-    while (m_seq.get_next_event_ex(m_status, m_cc, cev))
+    int starttick = 0;
+    int endtick = width() * zoom();
+    seq().reset_ex_iterator(cev);               /* reset_draw_marker()      */
+    while (seq().get_next_event_ex(m_status, m_cc, cev))
     {
         midipulse tick = cev->get_timestamp();
-        if (tick >= start_tick && tick <= end_tick)
+        if (tick >= starttick && tick <= endtick)
         {
             /*
              *  Convert to screen coordinates.
              */
 
             midibyte d0, d1;
-            int event_x = tick / m_zoom + c_keyboard_padding_x;
+            int event_x = tick / zoom() + c_keyboard_padding_x;
             cev->get_data(d0, d1);
 
             int event_height = d1;              /* generate the value       */
@@ -167,14 +158,16 @@ qseqdata::paintEvent (QPaintEvent *)
             pen.setColor(Qt::black);
             pen.setWidth(1);
             painter.setPen(pen);
+            int x_offset = event_x + 3;
+            int y_offset = qc_dataarea_y - 25;
             if (val.length() >= 1)
-                painter.drawText(event_x + 3, qc_dataarea_y - 25, val.at(0));
+                painter.drawText(x_offset, y_offset, val.at(0));
 
             if (val.length() >= 2)
-                painter.drawText(event_x + 3, qc_dataarea_y - 25 + 8, val.at(1));
+                painter.drawText(x_offset, y_offset + 8, val.at(1));
 
             if (val.length() >= 3)
-                painter.drawText(event_x + 3, qc_dataarea_y - 25 + 16, val.at(2));
+                painter.drawText(x_offset, y_offset + 16, val.at(2));
         }
         ++cev;
     }
@@ -185,15 +178,12 @@ qseqdata::paintEvent (QPaintEvent *)
         pen.setColor(Qt::black);
         pen.setStyle(Qt::DashLine);
         painter.setPen(pen);
-        rect::xy_to_rect_get(mDropX, mDropY, mCurrentX, mCurrentY, x, y, w, h);
-        mOld->setX(x);
-        mOld->setY(y);
-        mOld->setWidth(w);
-        mOld->setHeight(h);
+        rect::xy_to_rect_get(drop_x(), drop_y(), current_x(), current_y(), x, y, w, h);
+        old_rect().set(x, y, w, h);
         painter.drawLine
         (
-            mCurrentX + c_keyboard_padding_x,
-            mCurrentY, mDropX + c_keyboard_padding_x, mDropY
+            current_x() + c_keyboard_padding_x,
+            current_y(), drop_x() + c_keyboard_padding_x, drop_y()
         );
     }
 }
@@ -214,10 +204,10 @@ qseqdata::mousePressEvent (QMouseEvent *event)
     convert_x(mouseX - 2, tick_start);
     convert_x(mouseX + 2, tick_finish);
 
-    m_seq.push_undo();
+    seq().push_undo();
     if                      // check if these ticks would select an event
     (
-        m_seq.select_events
+        seq().select_events
         (
             tick_start, tick_finish, m_status, m_cc, sequence::e_would_select
         )
@@ -230,12 +220,9 @@ qseqdata::mousePressEvent (QMouseEvent *event)
         mLineAdjust = true;
     }
 
-    mDropX = mouseX;            /* set values for line */
-    mDropY = mouseY;
-    mOld->setX(0);              /* reset box that holds dirty redraw spot */
-    mOld->setY(0);
-    mOld->setWidth(0);
-    mOld->setHeight(0);
+    drop_x(mouseX);                     /* set values for line      */
+    drop_y(mouseY);
+    old_rect().clear();                 /* reset dirty redraw box   */
 }
 
 /**
@@ -243,29 +230,29 @@ qseqdata::mousePressEvent (QMouseEvent *event)
  */
 
 void
-qseqdata::mouseReleaseEvent (QMouseEvent *event)
+qseqdata::mouseReleaseEvent (QMouseEvent * event)
 {
-    mCurrentX = (int) event->x() - c_keyboard_padding_x;
-    mCurrentY = (int) event->y();
+    current_x(int(event->x()) - c_keyboard_padding_x);
+    current_y(int(event->y()));
     if (mLineAdjust)
     {
         midipulse tick_s, tick_f;
-        if (mCurrentX < mDropX)
+        if (current_x() < drop_x())
         {
-            swap(mCurrentX, mDropX);
-            swap(mCurrentY, mDropY);
+            swap_x();                   // swap(mCurrentX, mDropX);
+            swap_y();                   // swap(mCurrentY, mDropY);
         }
 
         /*
          * convert x,y to ticks, then set events in range
          */
 
-        convert_x(mDropX, tick_s);
-        convert_x(mCurrentX, tick_f);
-        m_seq.change_event_data_range
+        convert_x(drop_x(), tick_s);
+        convert_x(current_x(), tick_f);
+        seq().change_event_data_range
         (
             tick_s, tick_f, m_status, m_cc,
-            qc_dataarea_y - mDropY - 1, qc_dataarea_y - mCurrentY - 1
+            qc_dataarea_y - drop_y() - 1, qc_dataarea_y - current_y() - 1
         );
 
         mLineAdjust = false;
@@ -281,30 +268,30 @@ qseqdata::mouseReleaseEvent (QMouseEvent *event)
 void
 qseqdata::mouseMoveEvent (QMouseEvent * event)
 {
-    mCurrentX = event->x() - c_keyboard_padding_x;
-    mCurrentY = event->y();
+    current_x(int(event->x()) - c_keyboard_padding_x);
+    current_y(int(event->y()));
     midipulse tick_s, tick_f;
     if (mLineAdjust)
     {
         int adj_x_min, adj_x_max, adj_y_min, adj_y_max;
-        if (mCurrentX < mDropX)
+        if (current_x() < drop_x())
         {
-            adj_x_min = mCurrentX;
-            adj_y_min = mCurrentY;
-            adj_x_max = mDropX;
-            adj_y_max = mDropY;
+            adj_x_min = current_x();
+            adj_y_min = current_y();
+            adj_x_max = drop_x();
+            adj_y_max = drop_y();
         }
         else
         {
-            adj_x_max = mCurrentX;
-            adj_y_max = mCurrentY;
-            adj_x_min = mDropX;
-            adj_y_min = mDropY;
+            adj_x_max = current_x();
+            adj_y_max = current_y();
+            adj_x_min = drop_x();
+            adj_y_min = drop_y();
         }
 
         convert_x(adj_x_min, tick_s);
         convert_x(adj_x_max, tick_f);
-        m_seq.change_event_data_range
+        seq().change_event_data_range
         (
             tick_s, tick_f, m_status, m_cc,
             qc_dataarea_y - adj_y_min - 1, qc_dataarea_y - adj_y_max - 1
@@ -312,16 +299,16 @@ qseqdata::mouseMoveEvent (QMouseEvent * event)
     }
     else if (mRelativeAdjust)
     {
-        convert_x(mDropX - 2, tick_s);
-        convert_x(mDropX + 2, tick_f);
+        convert_x(drop_x() - 2, tick_s);
+        convert_x(drop_x() + 2, tick_f);
 
         ///// TODO
-        ///// int adjY = mDropY - mCurrentY;
-        ///// m_seq.change_event_data_relative(tick_s, tick_f, m_status, m_cc, adjY);
+        ///// int adjY = drop_y() - current_y();
+        ///// seq().change_event_data_relative(tick_s, tick_f, m_status, m_cc, adjY);
 
         // move the drop location so we increment properly on next mouse move
 
-        mDropY = mCurrentY;
+        drop_y(current_y());
     }
 }
 
@@ -343,7 +330,7 @@ qseqdata::set_data_type (midibyte status, midibyte control = 0)
 void
 qseqdata::convert_x (int x, midipulse & tick)
 {
-    tick = x * m_zoom;
+    tick = x * zoom();
 }
 
 }           // namespace seq64

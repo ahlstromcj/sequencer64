@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-22
+ * \updates       2018-06-27
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -37,7 +37,7 @@
 #include "Globals.hpp"
 #include "perform.hpp"
 #include "qseqroll.hpp"
-#include "settings.hpp"                 /* seq64::usr().key_height()        */
+#include "settings.hpp"                 /* seq64::usr().key_height(), etc.  */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -58,8 +58,8 @@ qseqroll::qseqroll
     int zoom,
     int snap,
     int pos,
-    QWidget * parent,
-    edit_mode_t mode
+    edit_mode_t mode,
+    QWidget * parent
 ) :
     QWidget                 (parent),
     qseqbase
@@ -89,12 +89,24 @@ qseqroll::qseqroll
     keyAreaY                (keyY * c_num_keys + 1)
 {
     set_snap(seq.get_snap_tick());
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setFocusPolicy(Qt::StrongFocus);
-    mTimer = new QTimer(this);  // refresh timer to queue regular redraws !!!
-    mTimer->setInterval(20);
-    QObject::connect(mTimer, SIGNAL(timeout()), this, SLOT(update()));
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+    mTimer = new QTimer(this);                          // redraw timer !!!
+    mTimer->setInterval(usr().window_redraw_rate());    // 20
+    QObject::connect(mTimer, SIGNAL(timeout()), this, SLOT(conditional_update()));
     mTimer->start();
+}
+
+/**
+ *  In an effort to reduce CPU usage when simply idling, this function calls
+ *  update() only if necessary.  See qseqbase::needs_update().
+ */
+
+void
+qseqroll::conditional_update ()
+{
+    if (needs_update())
+        update();
 }
 
 /**
@@ -126,8 +138,9 @@ qseqroll::paintEvent (QPaintEvent *)
      * Draw the border
      */
 
-    painter.drawRect(0, 0, width(), height());
-
+    int ww = width();
+    int wh = height();
+    painter.drawRect(0, 0, ww, wh);
     pen.setColor(Qt::lightGray);
     pen.setStyle(Qt::DashLine);
     painter.setPen(pen);
@@ -171,19 +184,19 @@ qseqroll::paintEvent (QPaintEvent *)
         switch (m_edit_mode)
         {
         case EDIT_MODE_NOTE:
-            painter.drawLine(0, key * keyY, width(), key * keyY);
+            painter.drawLine(0, key * keyY, ww, key * keyY);
             break;
 
         case EDIT_MODE_DRUM:
             painter.drawLine
             (
-                0, key * keyY - (0.5 * keyY), width(), key * keyY - (0.5 * keyY)
+                0, key * keyY - (0.5 * keyY), ww, key * keyY - (0.5 * keyY)
             );
             break;
         }
 
-        int y = key * keyY; // c_key_y
-        painter.drawLine(0, y, width(), y);
+        int y = key * keyY;                     // c_key_y
+        painter.drawLine(0, y, ww, y);
         if (m_scale != c_scale_off)
         {
             if (! c_scales_policy[m_scale][(modkey - 1) % SEQ64_OCTAVE_SIZE])
@@ -203,16 +216,12 @@ qseqroll::paintEvent (QPaintEvent *)
 
     int bpbar = seq().get_beats_per_bar();
     int bwidth = seq().get_beat_width();
-    int ticks_per_beat = (4 * perf().ppqn()) / bwidth;
-    int ticks_per_bar = bpbar * ticks_per_beat;
-    int measures_per_line = zoom() * bwidth * bpbar * 2;
-    if (measures_per_line <= 0)
-        measures_per_line = 1;
-
-    int ticks_per_step = 6 * zoom();
-    int starttick = scroll_offset_ticks() -
+    midipulse ticks_per_beat = (4 * perf().ppqn()) / bwidth;
+    midipulse ticks_per_bar = bpbar * ticks_per_beat;
+    midipulse ticks_per_step = 6 * zoom();
+    midipulse starttick = scroll_offset_ticks() -
             (scroll_offset_ticks() % ticks_per_step);
-    int endtick = width() * zoom() + scroll_offset_ticks();
+    midipulse endtick = ww * zoom() + scroll_offset_ticks();
 
     pen.setColor(Qt::darkGray);                 // can we use Palette?
     painter.setPen(pen);
@@ -226,12 +235,12 @@ qseqroll::paintEvent (QPaintEvent *)
     {
         int x_offset = tick / zoom() + c_keyboard_padding_x - scroll_offset_x();
         pen.setWidth(1);
-        if (tick % ticks_per_bar == 0)
+        if (tick % ticks_per_bar == 0)          /* solid line on every beat */
         {
-            pen.setColor(Qt::black);            // solid line on every beat
+            pen.setColor(Qt::black);
             pen.setStyle(Qt::SolidLine);
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
-            pen.setWidth(2);                    // two pixels
+            pen.setWidth(2);                    /* two pixels               */
 #endif
         }
         else if (tick % ticks_per_beat == 0)
@@ -275,7 +284,7 @@ qseqroll::paintEvent (QPaintEvent *)
     pen.setColor(Qt::red);                      // draw the playhead
     pen.setStyle(Qt::SolidLine);
     painter.setPen(pen);
-    painter.drawLine(old_progress_x(), 0, old_progress_x(), height() * 8);
+    painter.drawLine(old_progress_x(), 0, old_progress_x(), wh * 8);
     old_progress_x(seq().get_last_tick() / zoom() + c_keyboard_padding_x);
 
     midipulse tick_s;                               // draw notes
@@ -285,7 +294,7 @@ qseqroll::paintEvent (QPaintEvent *)
     int velocity;
     draw_type_t dt;
     int start_tick = 0;
-    int end_tick = width() * zoom();
+    int end_tick = ww * zoom();
     sequence * s = nullptr;
     for (int method = 0; method < 2; ++method)
     {

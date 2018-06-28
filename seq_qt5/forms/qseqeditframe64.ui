@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>839</width>
-    <height>545</height>
+    <width>884</width>
+    <height>554</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>838</width>
+     <width>861</width>
      <height>41</height>
     </rect>
    </property>
@@ -39,8 +39,8 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>32</width>
-        <height>36</height>
+        <width>36</width>
+        <height>32</height>
        </size>
       </property>
       <property name="font">
@@ -68,7 +68,7 @@
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="font">
@@ -93,9 +93,12 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>24</width>
-        <height>36</height>
+        <width>20</width>
+        <height>32</height>
        </size>
+      </property>
+      <property name="toolTip">
+       <string>Increments the beats/bar selection.  Will wrap around to the beginning of the combo-box.</string>
       </property>
       <property name="text">
        <string>B</string>
@@ -112,9 +115,12 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>32</width>
-        <height>36</height>
+        <width>42</width>
+        <height>32</height>
        </size>
+      </property>
+      <property name="toolTip">
+       <string>Selection of beats/bar settings.</string>
       </property>
      </widget>
     </item>
@@ -128,9 +134,12 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>24</width>
-        <height>36</height>
+        <width>20</width>
+        <height>32</height>
        </size>
+      </property>
+      <property name="toolTip">
+       <string>Increments the beat width, the denominator of the time signature. Will wrap around to the beginning of the combo-box.</string>
       </property>
       <property name="text">
        <string>W</string>
@@ -147,9 +156,12 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>32</width>
-        <height>36</height>
+        <width>42</width>
+        <height>32</height>
        </size>
+      </property>
+      <property name="toolTip">
+       <string>Selects the beat width, the denominator of the time signature.</string>
       </property>
      </widget>
     </item>
@@ -163,9 +175,12 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>24</width>
-        <height>36</height>
+        <width>32</width>
+        <height>32</height>
        </size>
+      </property>
+      <property name="toolTip">
+       <string>Increments the length of the pattern.  Will wrap around to the beginning of the combo-box.</string>
       </property>
       <property name="text">
        <string>L</string>
@@ -182,9 +197,12 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>32</width>
-        <height>36</height>
+        <width>48</width>
+        <height>32</height>
        </size>
+      </property>
+      <property name="toolTip">
+       <string>Selects the length of the pattern for this sequence.  Note that it can be overridden by the &quot;Merge&quot; setting below.</string>
       </property>
      </widget>
     </item>
@@ -199,8 +217,11 @@
       <property name="maximumSize">
        <size>
         <width>24</width>
-        <height>36</height>
+        <height>32</height>
        </size>
+      </property>
+      <property name="toolTip">
+       <string>Toggles the transposability of this pattern.</string>
       </property>
       <property name="text">
        <string>T</string>
@@ -212,7 +233,7 @@
       <property name="maximumSize">
        <size>
         <width>32</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -225,7 +246,7 @@
       <property name="maximumSize">
        <size>
         <width>128</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
      </widget>
@@ -241,7 +262,7 @@
       <property name="maximumSize">
        <size>
         <width>32</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -259,8 +280,8 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>120</width>
-        <height>36</height>
+        <width>132</width>
+        <height>32</height>
        </size>
       </property>
      </widget>
@@ -275,8 +296,8 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>24</width>
-        <height>36</height>
+        <width>32</width>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -294,7 +315,7 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>36</width>
+        <width>42</width>
         <height>36</height>
        </size>
       </property>
@@ -307,7 +328,7 @@
     <rect>
      <x>0</x>
      <y>40</y>
-     <width>831</width>
+     <width>861</width>
      <height>41</height>
     </rect>
    </property>
@@ -317,7 +338,7 @@
       <property name="maximumSize">
        <size>
         <width>24</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -330,7 +351,7 @@
       <property name="maximumSize">
        <size>
         <width>24</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -343,7 +364,7 @@
       <property name="maximumSize">
        <size>
         <width>24</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -356,7 +377,7 @@
       <property name="maximumSize">
        <size>
         <width>24</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -369,7 +390,7 @@
       <property name="maximumSize">
        <size>
         <width>24</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -382,7 +403,7 @@
       <property name="maximumSize">
        <size>
         <width>36</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -404,7 +425,7 @@
       <property name="maximumSize">
        <size>
         <width>64</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
      </widget>
@@ -414,7 +435,7 @@
       <property name="maximumSize">
        <size>
         <width>48</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -433,7 +454,7 @@
       <property name="maximumSize">
        <size>
         <width>64</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
      </widget>
@@ -443,7 +464,7 @@
       <property name="maximumSize">
        <size>
         <width>24</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -455,8 +476,8 @@
      <widget class="QComboBox" name="m_combo_zoom">
       <property name="maximumSize">
        <size>
-        <width>64</width>
-        <height>36</height>
+        <width>72</width>
+        <height>32</height>
        </size>
       </property>
      </widget>
@@ -466,7 +487,7 @@
       <property name="maximumSize">
        <size>
         <width>24</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -478,8 +499,8 @@
      <widget class="QComboBox" name="m_combo_key">
       <property name="maximumSize">
        <size>
-        <width>32</width>
-        <height>36</height>
+        <width>40</width>
+        <height>32</height>
        </size>
       </property>
      </widget>
@@ -489,7 +510,7 @@
       <property name="maximumSize">
        <size>
         <width>36</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -502,7 +523,7 @@
       <property name="maximumSize">
        <size>
         <width>128</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
      </widget>
@@ -512,7 +533,7 @@
       <property name="maximumSize">
        <size>
         <width>36</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -525,7 +546,7 @@
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
      </widget>
@@ -535,11 +556,17 @@
   <widget class="QScrollArea" name="timeScrollArea">
    <property name="geometry">
     <rect>
-     <x>49</x>
+     <x>51</x>
      <y>80</y>
-     <width>761</width>
+     <width>811</width>
      <height>30</height>
     </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::NoFrame</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Plain</enum>
    </property>
    <property name="widgetResizable">
     <bool>true</bool>
@@ -549,8 +576,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>759</width>
-      <height>28</height>
+      <width>811</width>
+      <height>30</height>
      </rect>
     </property>
    </widget>
@@ -559,9 +586,9 @@
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>120</y>
-     <width>41</width>
-     <height>231</height>
+     <y>100</y>
+     <width>51</width>
+     <height>251</height>
     </rect>
    </property>
    <property name="widgetResizable">
@@ -572,8 +599,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>39</width>
-      <height>229</height>
+      <width>49</width>
+      <height>249</height>
      </rect>
     </property>
    </widget>
@@ -583,8 +610,8 @@
     <rect>
      <x>50</x>
      <y>100</y>
-     <width>761</width>
-     <height>241</height>
+     <width>811</width>
+     <height>251</height>
     </rect>
    </property>
    <property name="widgetResizable" stdset="0">
@@ -593,20 +620,26 @@
    <widget class="QWidget" name="scrollAreaWidgetContents_3" native="true">
     <property name="geometry">
      <rect>
-      <x>18</x>
-      <y>10</y>
-      <width>741</width>
-      <height>211</height>
+      <x>8</x>
+      <y>0</y>
+      <width>801</width>
+      <height>241</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
    </widget>
   </widget>
   <widget class="QScrollArea" name="eventScrollArea">
    <property name="geometry">
     <rect>
-     <x>40</x>
+     <x>51</x>
      <y>350</y>
-     <width>770</width>
+     <width>811</width>
      <height>20</height>
     </rect>
    </property>
@@ -615,6 +648,9 @@
      <width>16777215</width>
      <height>20</height>
     </size>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::NoFrame</enum>
    </property>
    <property name="widgetResizable">
     <bool>true</bool>
@@ -624,8 +660,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>768</width>
-      <height>18</height>
+      <width>811</width>
+      <height>20</height>
      </rect>
     </property>
    </widget>
@@ -633,10 +669,10 @@
   <widget class="QScrollArea" name="dataScrollArea">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>377</y>
-     <width>771</width>
-     <height>121</height>
+     <x>51</x>
+     <y>370</y>
+     <width>811</width>
+     <height>128</height>
     </rect>
    </property>
    <property name="maximumSize">
@@ -644,6 +680,12 @@
      <width>16777215</width>
      <height>128</height>
     </size>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::NoFrame</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Plain</enum>
    </property>
    <property name="widgetResizable">
     <bool>true</bool>
@@ -653,8 +695,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>769</width>
-      <height>119</height>
+      <width>811</width>
+      <height>128</height>
      </rect>
     </property>
    </widget>
@@ -663,8 +705,8 @@
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>500</y>
-     <width>811</width>
+     <y>510</y>
+     <width>861</width>
      <height>41</height>
     </rect>
    </property>
@@ -674,7 +716,7 @@
       <property name="maximumSize">
        <size>
         <width>48</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -687,7 +729,7 @@
       <property name="maximumSize">
        <size>
         <width>32</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -700,7 +742,7 @@
       <property name="maximumSize">
        <size>
         <width>256</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
      </widget>
@@ -710,7 +752,7 @@
       <property name="maximumSize">
        <size>
         <width>48</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -723,7 +765,7 @@
       <property name="maximumSize">
        <size>
         <width>32</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -736,7 +778,7 @@
       <property name="maximumSize">
        <size>
         <width>128</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -749,7 +791,7 @@
       <property name="maximumSize">
        <size>
         <width>64</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -762,7 +804,7 @@
       <property name="maximumSize">
        <size>
         <width>64</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -775,7 +817,7 @@
       <property name="maximumSize">
        <size>
         <width>64</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">
@@ -788,7 +830,7 @@
       <property name="maximumSize">
        <size>
         <width>64</width>
-        <height>36</height>
+        <height>32</height>
        </size>
       </property>
       <property name="text">

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-16
+ * \updates       2018-06-27
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -44,6 +44,8 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QDesktopWidget>
+
+class QCloseEvent;
 
 namespace Ui
 {
@@ -79,6 +81,7 @@ public:
 
     void open_file (const std::string & path);
     void show_message_box (const std::string & msg_text);
+    void remove_editor (int seq);
 
 protected:
 
@@ -100,8 +103,12 @@ protected:
 
 private:
 
-    // check if the file has been modified.
-    // if modified, ask the user whether to save changes
+    virtual void closeEvent (QCloseEvent *);
+
+    /*
+     * Check if the file has been modified.  If modified, ask the user whether
+     * to save changes.
+     */
 
     bool check ();
     void update_window_title ();
@@ -109,19 +116,27 @@ private:
 
     void create_action_connections ();      // new
     void create_action_menu ();             // new
+    void remove_all_editors ();
+
+private:
+
+    /**
+     *  A typedef for keeping track of sequence edits.
+     */
+
+    typedef std::map<int, qseqeditex *> edit_container;
 
 private:
 
     Ui::qsmainwnd * ui;
     qsliveframe * m_live_frame;
     qperfeditframe * m_song_frame;
-    qseqeditex  * m_edit_ex;
-    qseqeditframe  * m_edit_frame;
+    qseqeditframe * m_edit_frame;
     QErrorMessage * m_msg_error;
     QMessageBox * m_msg_save_changes;
     QTimer * m_timer;
     QMenu * m_menu_recent;
-    QList<QAction*> m_recent_action_list;     // new
+    QList<QAction *> m_recent_action_list;     // new
     const int mc_max_recent_files;
     QFileDialog * mImportDialog;
     perform & m_main_perf;
@@ -129,6 +144,15 @@ private:
     qseditoptions * m_dialog_prefs;
     qsabout * mDialogAbout;
     qsbuildinfo * mDialogBuildInfo;
+
+    /**
+     *  Holds a list of the sequences currently under edit.  We do not want to
+     *  open the same sequence in two different editors.  Also, we need to be
+     *  able to delete any open qseqeditex windows when exiting the
+     *  application.
+     */
+
+    edit_container m_open_editors;
 
 private slots:
 
@@ -152,8 +176,8 @@ private slots:
     void showqsbuildinfo ();
     void tabWidgetClicked (int newindex);
     void refresh ();                    /* redraw certain GUI elements      */
-    void loadEditor (int seqid);
-    void loadEditorEx (int seqid);
+    void load_editor (int seqid);
+    void load_qseqedit (int seqid);
 
 };          // class qsmainwnd
 

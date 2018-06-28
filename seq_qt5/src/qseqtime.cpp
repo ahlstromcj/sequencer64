@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-19
+ * \updates       2018-06-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -34,6 +34,7 @@
 #include "perform.hpp"
 #include "qseqtime.hpp"
 #include "sequence.hpp"
+#include "settings.hpp"                 /* seq64::usr().key_height(), etc.  */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -54,18 +55,27 @@ qseqtime::qseqtime
     QWidget * parent
 ) :
     QWidget                 (parent),
-    m_perform               (p),
-    m_seq                   (seq),
-    m_timer                 (new QTimer(this)),  // timer to do regular redraws
-    m_font                  (),
-    m_zoom                  (zoom),
-    m_scroll_offset_ticks   (0),
-    m_scroll_offset_x       (0)
+    qseqbase                (p, seq, zoom, SEQ64_DEFAULT_SNAP),
+    m_timer                 (nullptr),
+    m_font                  ()
 {
-    QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(update()));
-    m_timer->setInterval(50);
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    m_timer = new QTimer(this);                             // redraw timer !!!
+    m_timer->setInterval(2 * usr().window_redraw_rate());   // 50
+    QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(conditional_update()));
     m_timer->start();
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+}
+
+/**
+ *  In an effort to reduce CPU usage when simply idling, this function calls
+ *  update() only if necessary.  See qseqbase::needs_update().
+ */
+
+void
+qseqtime::conditional_update ()
+{
+    if (needs_update())
+        update();
 }
 
 /**
@@ -100,25 +110,25 @@ qseqtime::paintEvent (QPaintEvent *)
      * This code needs to be put into a function.
      */
 
-    int bpbar = m_seq.get_beats_per_bar();
-    int bwidth = m_seq.get_beat_width();
+    int bpbar = seq().get_beats_per_bar();
+    int bwidth = seq().get_beat_width();
     int ticks_per_beat = (4 * perf().ppqn()) / bwidth;
     int ticks_per_bar = bpbar * ticks_per_beat;
-    int measures_per_line = m_zoom * bwidth * bpbar * 2;
+    int measures_per_line = zoom() * bwidth * bpbar * 2;
     if (measures_per_line <= 0)
         measures_per_line = 1;
 
-    int ticks_per_step = 6 * m_zoom;
-    int starttick = m_scroll_offset_ticks -
-            (m_scroll_offset_ticks % ticks_per_step);
-    int endtick = width() * m_zoom + m_scroll_offset_ticks;
+    int ticks_per_step = 6 * zoom();
+    int starttick = scroll_offset_ticks() -
+            (scroll_offset_ticks() % ticks_per_step);
+    int endtick = width() * zoom() + scroll_offset_ticks();
 
     pen.setColor(Qt::black);
     painter.setPen(pen);
     for (int tick = starttick; tick <= endtick; tick += ticks_per_step)
     {
         char bar[8];
-        int x_offset = tick / m_zoom + c_keyboard_padding_x - m_scroll_offset_x;
+        int x_offset = tick / zoom() + c_keyboard_padding_x - scroll_offset_x();
 
         /*
          * Vertical line at each bar; number each bar.
@@ -145,10 +155,12 @@ qseqtime::paintEvent (QPaintEvent *)
         }
     }
 
-    int end_x = m_seq.get_length() / m_zoom +
-        c_keyboard_padding_x - m_scroll_offset_x;
+    int end_x = seq().get_length() / zoom() +
+        c_keyboard_padding_x - scroll_offset_x();
 
-    // draw end of seq label, label background
+    /*
+     * Draw end of seq label, label background.
+     */
 
     pen.setColor(Qt::white);
     brush.setColor(Qt::white);
@@ -198,29 +210,7 @@ qseqtime::mouseMoveEvent(QMouseEvent *)
 QSize
 qseqtime::sizeHint() const
 {
-    return QSize(m_seq.get_length() / m_zoom + 100 + c_keyboard_padding_x, 22);
-}
-
-/**
- *
- */
-
-void
-qseqtime::zoom_in ()
-{
-    if (m_zoom > 1)         // restricted more by qseqeditframe64
-        m_zoom /= 2;
-}
-
-/**
- *
- */
-
-void
-qseqtime::zoom_out ()
-{
-    if (m_zoom < 32)       // restricted more by qseqeditframe64
-        m_zoom *= 2;
+    return QSize(seq().get_length() / zoom() + 100 + c_keyboard_padding_x, 22);
 }
 
 }           // namespace seq64

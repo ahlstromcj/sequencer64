@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-16
+ * \updates       2018-06-26
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -105,7 +105,8 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_beat_ind          (nullptr),
     m_dialog_prefs      (nullptr),
     mDialogAbout        (nullptr),
-    mDialogBuildInfo    (nullptr)
+    mDialogBuildInfo    (nullptr),
+    m_open_editors      ()
 {
 #if __cplusplus < 201103L                               // C++11
     initialize_key_map();
@@ -284,11 +285,11 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     {
         connect         // connect to sequence-edit signal from the Live tab
         (
-            m_live_frame, SIGNAL(callEditor(int)), this, SLOT(loadEditor(int))
+            m_live_frame, SIGNAL(callEditor(int)), this, SLOT(load_editor(int))
         );
         connect         // new standalone sequence editor
         (
-            m_live_frame, SIGNAL(callEditorEx(int)), this, SLOT(loadEditorEx(int))
+            m_live_frame, SIGNAL(callEditorEx(int)), this, SLOT(load_qseqedit(int))
         );
     }
 
@@ -315,9 +316,19 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
  *
  */
 
-qsmainwnd::~qsmainwnd()
+qsmainwnd::~qsmainwnd ()
 {
     delete ui;
+}
+
+/**
+ *
+ */
+
+void
+qsmainwnd::closeEvent (QCloseEvent *)
+{
+    quit();
 }
 
 /**
@@ -326,7 +337,7 @@ qsmainwnd::~qsmainwnd()
  */
 
 void
-qsmainwnd::startPlaying()
+qsmainwnd::startPlaying ()
 {
     perf().pause_key();                 /* not the start_key()              */
 }
@@ -439,12 +450,12 @@ qsmainwnd::open_file (const std::string & fn)
             connect
             (
                 m_live_frame, SIGNAL(callEditor(int)),
-                this, SLOT(loadEditor(int))
+                this, SLOT(load_editor(int))
             );
             connect
             (
                 m_live_frame, SIGNAL(callEditorEx(int)),
-                this, SLOT(loadEditorEx(int))
+                this, SLOT(load_qseqedit(int))
             );
             m_live_frame->show();
             m_live_frame->setFocus();
@@ -693,16 +704,20 @@ qsmainwnd::showqsbuildinfo ()
  */
 
 void
-qsmainwnd::loadEditor (int seqid)
+qsmainwnd::load_editor (int seqid)
 {
-    ui->EditTabLayout->removeWidget(m_edit_frame);      /* no nullptr check */
-    if (not_nullptr(m_edit_frame))
-        delete m_edit_frame;
+    edit_container::iterator eci = m_open_editors.find(seqid);
+    if (eci == m_open_editors.end())
+    {
+        ui->EditTabLayout->removeWidget(m_edit_frame);  /* no nullptr check */
+        if (not_nullptr(m_edit_frame))
+            delete m_edit_frame;
 
-    m_edit_frame = new qseqeditframe(m_main_perf, seqid, ui->EditTab);
-    ui->EditTabLayout->addWidget(m_edit_frame);         /* no nullptr check */
-    m_edit_frame->show();
-    ui->tabWidget->setCurrentIndex(2);
+        m_edit_frame = new qseqeditframe(m_main_perf, seqid, ui->EditTab);
+        ui->EditTabLayout->addWidget(m_edit_frame);     /* no nullptr check */
+        m_edit_frame->show();
+        ui->tabWidget->setCurrentIndex(2);
+    }
 }
 
 /**
@@ -713,10 +728,70 @@ qsmainwnd::loadEditor (int seqid)
  */
 
 void
-qsmainwnd::loadEditorEx (int seqid)
+qsmainwnd::load_qseqedit (int seqid)
 {
-    m_edit_ex = new qseqeditex(m_main_perf, seqid);
-    m_edit_ex->show();
+    edit_container::iterator eci = m_open_editors.find(seqid);
+    if (eci == m_open_editors.end())
+    {
+        qseqeditex * ex = new qseqeditex(m_main_perf, seqid, this);
+        if (not_nullptr(ex))
+        {
+            ex->show();
+#if __cplusplus >= 201103L              /* C++11    */
+            std::pair<int, qseqeditex *> p = make_pair(seqid, ex);
+#else
+            std::pair<int, qseqeditex *> p = make_pair<int, qseqeditex *>
+            (
+                seqid, ex
+            );
+#endif
+            m_open_editors.insert(p);
+        }
+    }
+}
+
+/**
+ *  Removes the editor window from the list.  This function is called by the
+ *  editor window to tell its parent (this) that it is going away.  Note that
+ *  this does not delete the editor, it merely removes the pointer to it.
+ *
+ * \param seqid
+ *      The sequence number that the editor represented.
+ */
+
+void
+qsmainwnd::remove_editor (int seqid)
+{
+    edit_container::iterator eci = m_open_editors.find(seqid);
+    printf("remove_editor()\n");
+    if (eci != m_open_editors.end())
+    {
+        printf("erasing qseqeditex(%d)\n", seqid);
+        m_open_editors.erase(eci);
+    }
+}
+
+/**
+ *
+ */
+
+void
+qsmainwnd::remove_all_editors ()
+{
+    edit_container::iterator eci;
+    printf("remove_all_editors()\n");
+    for (eci = m_open_editors.begin(); eci != m_open_editors.end(); ++eci)
+    {
+        int seqid = eci->first;             /* save the sequence number */
+        qseqeditex * qep = eci->second;     /* save the pointer         */
+        m_open_editors.erase(eci);          /* remove the pointer item  */
+        if (not_nullptr(qep))
+        {
+            printf("erasing & deleting qseqeditex(%d)\n", seqid);
+            delete qep;                     /* delete the pointer       */
+            printf("deleted\n");
+        }
+    }
 }
 
 /**
@@ -936,7 +1011,10 @@ void
 qsmainwnd::quit ()
 {
     if (check())
+    {
+        remove_all_editors();
         QCoreApplication::exit();
+    }
 }
 
 /**

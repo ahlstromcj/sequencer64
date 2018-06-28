@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-17
+ * \updates       2018-06-27
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1139,8 +1139,8 @@ public:
     /**
      * \setter m_is_modified
      *      This setter only sets the modified-flag to true.
-     *      The setter that will, is_modified(), is private.  No one but
-     *      perform and its friends should falsify this flag.
+     *      The setter that can falsify it, is_modified(), is private.  No one
+     *      but perform and its friends should falsify this flag.
      */
 
     void modify ()
@@ -2349,6 +2349,17 @@ public:
     bool is_dirty_perf (int seq);
     bool is_dirty_names (int seq);
     bool is_exportable (int seq) const;
+
+    /**
+     *  New for the Qt 5 version, to stop endless needless redraws upon
+     *  ticking of the redraw timer.  Also see (for Qt 5) the qseqbase ::
+     *  needs_update() function.
+     */
+
+    bool needs_update (int seq)
+    {
+        return is_running() || is_dirty_main(seq);
+    }
 
     int set_screenset (int ss);
 

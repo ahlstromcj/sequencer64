@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-20
- * \updates       2018-06-21
+ * \updates       2018-06-28
  * \license       GNU GPLv2 or above
  *
  *  This class WILL BE the base class for qseqroll, qseqdata, qtriggereditor,
@@ -40,6 +40,7 @@
  *  It will be used as a mix-in class
  */
 
+#include "app_limits.h"                 /* SEQ64_DEFAULT_ZOOM, _SNAP    */
 #include "rect.hpp"
 
 /*
@@ -289,14 +290,20 @@ private:
 
     int m_total_height;
 
+    /**
+     *
+     */
+
+    bool m_is_dirty;
+
 public:
 
-    explicit qseqbase
+    qseqbase
     (
         perform & perf,
         sequence & seq,
-        int zoom            =  1,
-        int snap            = 16,
+        int zoom            = SEQ64_DEFAULT_ZOOM,
+        int snap            = SEQ64_DEFAULT_SNAP,
         int unit_height     =  1,
         int total_height    =  1
     );
@@ -324,6 +331,11 @@ public:
     int zoom () const
     {
         return m_zoom;
+    }
+
+    bool is_dirty () const
+    {
+        return m_is_dirty;
     }
 
     /**
@@ -440,6 +452,16 @@ public:
         return m_drop_y;
     }
 
+    void snap_drop_x ()
+    {
+        snap_x(m_drop_x);
+    }
+
+    void snap_drop_y ()
+    {
+        snap_y(m_drop_y);
+    }
+
     int move_delta_x () const
     {
         return m_move_delta_x;
@@ -517,17 +539,7 @@ public:
         return m_total_height;
     }
 
-protected:
-
-    void old_rect (seq64::rect & r)
-    {
-        m_old = r;
-    }
-
-    void selection (seq64::rect & r)
-    {
-        m_selected = r;
-    }
+public:
 
     void zoom_in ()
     {
@@ -553,6 +565,38 @@ protected:
     void set_snap (int snap)
     {
         m_snap = snap;
+    }
+
+    bool needs_update () const;
+
+    /**
+     *  Used by qseqeditframe64 to force a redraw when the user changes
+     *  a sequence parameter in this frame.
+     */
+
+    void set_dirty (bool f = true)
+    {
+        m_is_dirty = f;
+        //////// perf().modify();   /////// TODO
+    }
+
+protected:
+
+    bool check_dirty ()
+    {
+        bool result = m_is_dirty;
+        m_is_dirty = false;
+        return result;
+    }
+
+    void old_rect (seq64::rect & r)
+    {
+        m_old = r;
+    }
+
+    void selection (seq64::rect & r)
+    {
+        m_selected = r;
     }
 
     /**
@@ -739,11 +783,6 @@ protected:
         return m_seq;
     }
 
-    void snap_y (int & y)
-    {
-        y -= y % m_unit_height;
-    }
-
     void snap_x (int & x);
 
     void snap_current_x ()
@@ -751,9 +790,28 @@ protected:
         snap_x(m_current_x);
     }
 
+    void snap_y (int & y)
+    {
+        y -= y % m_unit_height;
+    }
+
     void snap_current_y ()
     {
         snap_y(m_current_y);
+    }
+
+    void swap_x ()
+    {
+        int temp = m_current_x;
+        m_current_x = m_drop_x;
+        m_drop_x = temp;
+    }
+
+    void swap_y ()
+    {
+        int temp = m_current_y;
+        m_current_y = m_drop_y;
+        m_drop_y = temp;
     }
 
     /*

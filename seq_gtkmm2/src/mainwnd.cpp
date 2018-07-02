@@ -3327,7 +3327,6 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                     }
                     else if (m_call_seq_shift > 0)      /* variset support  */
                     {
-                        //                           why? -------v
                         int keynum = seqnum + m_call_seq_shift * c_seqs_in_set;
                         sequence_key(keynum);
                         result = true;

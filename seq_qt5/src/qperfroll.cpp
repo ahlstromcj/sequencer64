@@ -86,8 +86,8 @@ qperfroll::qperfroll (perform & p, QWidget * parent)
         m_sequence_active[i] = false;
 
     m_roll_length_ticks = perf().get_max_trigger();
-    m_roll_length_ticks -= (m_roll_length_ticks % (c_ppqn * 16));
-    m_roll_length_ticks +=  c_ppqn * 64;
+    m_roll_length_ticks -= (m_roll_length_ticks % (perf().ppqn() * 16));
+    m_roll_length_ticks +=  perf().ppqn() * 64;
     mTimer = new QTimer(this);      // refresh timer to queue regular redraws
     mTimer->setInterval(50);
     QObject::connect(mTimer, SIGNAL(timeout()), this, SLOT(update()));
@@ -130,8 +130,8 @@ qperfroll::paintEvent(QPaintEvent *)
             i * m_beat_length / (c_perf_scale_x * m_zoom), 1,
             i * m_beat_length / (c_perf_scale_x * m_zoom), height() - 1
         );
-        if (m_beat_length < c_ppqn / 2)             // jump 2 if 16th notes
-            i += (c_ppqn / m_beat_length);
+        if (m_beat_length < perf().ppqn() / 2)             // jump 2 if 16th notes
+            i += (perf().ppqn() / m_beat_length);
         else
             ++i;
     }

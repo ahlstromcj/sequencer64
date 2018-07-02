@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-02
+ * \updates       2018-06-30
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -116,6 +116,7 @@ sequence::sequence (int ppqn)
     m_was_playing               (false),
     m_playing                   (false),
     m_recording                 (false),
+    m_expanded_recording        (false),
     m_quantized_rec             (false),
     m_thru                      (false),
     m_queued                    (false),
@@ -486,6 +487,21 @@ sequence::calculate_measures () const
         set_unit_measure();
 
     return 1 + (m_length - 1) / m_unit_measure;
+}
+
+/**
+ *  Encapsulates a calculation needed in the new qseqbase class.
+ */
+
+int
+sequence::get_measures () const
+{
+    int units = get_beats_per_bar() * get_ppqn() * 4 / get_beat_width();
+    int measures = get_length() / units;
+    if (get_length() % units != 0)
+        ++measures;
+
+    return measures;
 }
 
 #ifdef USE_STAZED_ODD_EVEN_SELECTION
@@ -5775,6 +5791,27 @@ sequence::resume_note_ons (midipulse tick)
 }
 
 #endif      // SEQ64_SONG_RECORDING
+
+/**
+ *  Makes a calculation for expanded recording, used in seqedit and qseqroll.
+ *  This is the way Seq32 does it now, and it seems to work for Sequencer64.
+ *  However, the hardwired "4" is suspicious.
+ *
+ * \return
+ *      Returns true if we are recording, expanded-record is enabled,
+ *      and we're far enough along in the current length to move to the next
+ *      "time window".
+ */
+
+bool
+sequence::expand_recording () const
+{
+    bool result = m_recording && m_expanded_recording;
+    if (result)
+        result = m_last_tick >= (m_length - get_unit_measure() / 4);
+
+    return result;
+}
 
 /**
  *  Kepler34

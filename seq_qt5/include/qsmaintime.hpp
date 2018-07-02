@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-05
+ * \updates       2018-06-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -115,6 +115,13 @@ protected:
 
     void paintEvent (QPaintEvent * event);  // override to draw on the frame
     QSize sizeHint() const;                 // override to set our own defaults
+
+private:
+
+    const perform & perf () const
+    {
+        return m_main_perf;
+    }
 
 private:
 

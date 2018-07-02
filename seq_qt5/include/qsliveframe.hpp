@@ -27,20 +27,21 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-19
+ * \updates       2018-07-01
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <QFrame>
-#include <QPainter>
-#include <QMenu>
-#include <QTimer>
-#include <QMessageBox>
 
 #include "globals.h"
 #include "gui_palette_qt5.hpp"
 #include "sequence.hpp"
+
+class QMenu;
+class QTimer;
+class QMessageBox;
+class QFont;
 
 /*
  * Do not document namespaces.
@@ -66,31 +67,20 @@ class qsliveframe : public QFrame, gui_palette_qt5
 public:
 
     explicit qsliveframe (perform & perf, QWidget * parent = 0 );
-    ~qsliveframe ();
+    ~qsliveframe ();                // not virtual ???
 
-/*
-    void redraw ();              // redraw frame contents
-    */
-    void setBank (int newBank);  // set bank (screen-set) of sequences displayed
-    void setBank ();             // bank number retrieved from perform
+    void setBank (int newBank);     // bank (screen-set) of sequences displayed
+    void setBank ();                // bank number retrieved from perform
 
-protected:
+protected:                          // overrides of event handlers
 
-    // override painting event to draw on the frame
-
-    void paintEvent (QPaintEvent * event);
-
-    // override mouse events for interaction
-
-    void mousePressEvent (QMouseEvent * event);
-    void mouseReleaseEvent (QMouseEvent * event);
-    void mouseMoveEvent (QMouseEvent * event);
-    void mouseDoubleClickEvent (QMouseEvent * event);
-
-    // override keyboard events for interaction
-
-    void keyPressEvent (QKeyEvent * event);
-    void keyReleaseEvent (QKeyEvent * event);
+    virtual void paintEvent (QPaintEvent * event);
+    virtual void mousePressEvent (QMouseEvent * event);
+    virtual void mouseReleaseEvent (QMouseEvent * event);
+    virtual void mouseMoveEvent (QMouseEvent * event);
+    virtual void mouseDoubleClickEvent (QMouseEvent * event);
+    virtual void keyPressEvent (QKeyEvent * event);
+    virtual void keyReleaseEvent (QKeyEvent * event);
 
 private:
 
@@ -109,42 +99,39 @@ private:
     void calculate_base_sizes (int seq, int & basex, int & basey);
     void drawSequence (int seq);
     void drawAllSequences ();
-
-    // used to grab std::string bank name and convert it to QString for
-    // display
-
     void updateInternalBankName ();
 
-    // converts the XY coordinates of a click into a seq ID
 
     int seqIDFromClickXY (int click_x, int click_y);
+
+private:
 
     Ui::qsliveframe * ui;
     seq64::perform & mPerf;
     seq64::sequence m_moving_seq;
     seq64::sequence m_seq_clipboard;
-    QMenu * mPopup;
-    QTimer * mRedrawTimer;
-    QMessageBox * mMsgBoxNewSeqCheck;
-    QFont mFont;
+    QMenu * m_popup;
+    QTimer * m_timer;
+    QMessageBox * m_msg_box;
+    QFont m_font;
     int m_bank_id;                  // same as the screen-set number
     int m_mainwnd_rows;
     int m_mainwnd_cols;
     int m_mainwid_spacing;
-    int thumbW;
-    int thumbH;                     // thumbnail dimensions
-    int previewW;
-    int previewH;                   // internal seq MIDI preview dimensions
-    int lastMetro;                  // beat pulsing
-    int alpha;
+    int m_slot_w;
+    int m_slot_h;
+    int m_preview_w;
+    int m_preview_h;                   // internal seq MIDI preview dimensions
+    int m_last_metro;                  // beat pulsing
+    int m_alpha;
     int m_curr_seq;                 // mouse interaction
-    int mOldSeq;
-    bool mButtonDown;
-    bool mMoving;                   // are we moving bewteen slots
-    bool mAddingNew; /*we can add a new seq here, wait for double click*/
+    int m_old_seq;
+    bool m_button_down;
+    bool m_moving;                   // are we moving bewteen slots
+    bool m_adding_new; /*we can add a new seq here, wait for double click*/
     midipulse m_last_tick_x[c_max_sequence];
     bool m_last_playing[c_max_sequence];
-    bool mCanPaste;
+    bool m_can_paste;
 
 private slots:
 

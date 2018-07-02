@@ -1,6 +1,6 @@
 README for Sequencer64 0.95.1 (Native JACK, CLI, varisets, tempo, Windows)
 Chris Ahlstrom
-2015-09-10 to 2018-06-27
+2015-09-10 to 2018-06-29
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
 The heart of seq24 remains intact.  It is an old friend, and maintains some
@@ -76,7 +76,9 @@ Recent changes:
         -   Refactoring the "qseq" classes to avoid constant redraws.
         -   More work on getting Qt version of seqedit to handle the same
             features as seqedit.
-        -   Fixed seq64 to match seq24/qpseq64 for changing B/W in seqedit.
+        -   Fixed seq64 to match seq24/qpseq64 for displaying beats and
+            measures properly in seqedit when the time-signature is changed.
+        -   Double precision for BPM in Qt user-interface.
     -   Version 0.95.0:
         -   Improved the Windows version and its packaging.  Added a Windows
             icon, an installer, better data support and documentation, and

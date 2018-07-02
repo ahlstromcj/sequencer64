@@ -376,7 +376,11 @@ qseqeditframe::qseqeditframe
 
     // connect all the UI signals
 
-    connect(ui->txtSeqName, SIGNAL(textChanged()), this, SLOT(updateSeqName()));
+    connect
+    (
+        ui->txtSeqName, SIGNAL(textChanged(const QString &)),
+        this, SLOT(updateSeqName())
+    );
     connect
     (
         ui->cmbGridSnap, SIGNAL(currentIndexChanged(int)),

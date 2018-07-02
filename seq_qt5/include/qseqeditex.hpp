@@ -39,6 +39,8 @@
 
 #include <QWidget>
 
+class QCloseEvent;
+
 namespace Ui
 {
     class qseqeditex;
@@ -70,6 +72,8 @@ public:
     ~qseqeditex ();
 
 protected:
+
+    void closeEvent (QCloseEvent *);
 
     const perform & perf () const
     {

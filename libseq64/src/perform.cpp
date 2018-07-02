@@ -6305,6 +6305,10 @@ perform::keyboard_group_action (unsigned key)
     }
 
     // more to come
+    //  perform::ACTION_SEQ_TOGGLE:
+    //  perform::ACTION_GROUP_MUTE:
+    //  perform::ACTION_GROUP_LEARN:
+    //  perform::ACTION_C_STATUS:
 
     return result;
 }

@@ -101,10 +101,15 @@ qseqeditex::qseqeditex
 qseqeditex::~qseqeditex()
 {
     delete ui;
+}
 
-    // TODO
-    // MOVE THIS TO AN EXIT FUNCTION EXPLICITLY CALLED BY THE USER.
-    // Otherwise, we get a seqfault as a race condition.
+/**
+ *
+ */
+
+void
+qseqeditex::closeEvent (QCloseEvent *)
+{
     if (not_nullptr(m_edit_parent))
         m_edit_parent->remove_editor(m_seq_id);
 }

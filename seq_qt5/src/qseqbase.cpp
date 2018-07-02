@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-21
+ * \updates       2018-07-01
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -106,22 +106,29 @@ qseqbase::qseqbase
  */
 
 void
-qseqbase::set_scroll_x ()
+qseqbase::set_scroll_x (int x)
 {
-    m_scroll_offset_ticks = int(m_hadjust.get_value());
-    m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+    // m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+    // m_scroll_offset_ticks = int(m_hadjust.get_value());
+
+    m_scroll_offset_x = x;
+    m_scroll_offset_ticks = x * m_zoom;
 }
 
 /**
  *  Sets the vertical scroll value according to the current value of the
  *  vertical scroll-bar.
+ *
+ *  TODO:  use the height member....
  */
 
 void
-qseqbase::set_scroll_y ()
+qseqbase::set_scroll_y (int y)
 {
-    m_scroll_offset_key = int(m_vadjust.get_value());
-    m_scroll_offset_y = m_scroll_offset_key * c_key_y;
+    // m_scroll_offset_key = int(m_vadjust.get_value());
+    // m_scroll_offset_y = m_scroll_offset_key * c_key_y;
+    m_scroll_offset_y = y; m_scroll_offset_key * c_key_y;
+    m_scroll_offset_key = y / c_key_y;
 }
 
 #endif  // USE_SCROLLING_CODE
@@ -155,6 +162,31 @@ qseqbase::needs_update () const
     bool dirty = const_cast<qseqbase *>(this)->check_dirty();
     perform & ncp = const_cast<perform &>(perf());
     return ncp.needs_update(seq().number()) || dirty;
+}
+
+/**
+ *  Set the measures value, using the given parameter, and some internal
+ *  values passed to apply_length().
+ *
+ * \param len
+ *      Provides the sequence length, in measures.
+ */
+
+void
+qseqbase::set_measures (int len)
+{
+    seq().apply_length(len);
+    set_dirty();
+}
+
+/**
+ *
+ */
+
+int
+qseqbase::get_measures ()
+{
+    return seq().get_measures();
 }
 
 /**

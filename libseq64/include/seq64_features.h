@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2018-06-11
+ * \updates       2018-06-30
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -327,6 +327,8 @@
 #else
 #define SEQ64_FOLLOW_PROGRESS_BAR
 #endif
+
+#define SEQ64_FOLLOW_PROGRESS_BAR       /* for debugging                    */
 
 /**
  * \obsolete

@@ -25,9 +25,13 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-06-18
- * \updates       2018-06-18
+ * \updates       2018-06-30
  * \license       GNU GPLv2 or above
  *
+ * Other useful QScrollBar functions:
+ *
+ *  -   setPageStep()
+ *  -   setSingleStep()
  */
 
 #include <QFrame>

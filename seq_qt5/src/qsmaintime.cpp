@@ -92,7 +92,7 @@ qsmaintime::paintEvent (QPaintEvent *)
     painter.setBrush(brush);
 
     midipulse tick = m_main_perf.get_tick();
-    int metro = (tick / (c_ppqn / 4 * m_beat_width)) % m_beats_per_measure;
+    int metro = (tick / (perf().ppqn() / 4 * m_beat_width)) % m_beats_per_measure;
     int divX = (width() - 1) / m_beats_per_measure;
 
     /*

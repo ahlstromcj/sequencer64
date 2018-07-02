@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-27
+ * \updates       2018-06-28
  * \license       GNU GPLv2 or above
  *
  */
@@ -156,21 +156,21 @@ qseqtime::paintEvent (QPaintEvent *)
     }
 
     int end_x = seq().get_length() / zoom() +
-        c_keyboard_padding_x - scroll_offset_x();
+        c_keyboard_padding_x - scroll_offset_x() - 20;
 
     /*
      * Draw end of seq label, label background.
      */
 
-    pen.setColor(Qt::white);
-    brush.setColor(Qt::white);
+    pen.setColor(Qt::black);
+    brush.setColor(Qt::black);
     brush.setStyle(Qt::SolidPattern);
     painter.setBrush(brush);
     painter.setPen(pen);
-    painter.drawRect(end_x + 1, 13, 15, 8);         // white background
-    pen.setColor(Qt::black);                        // black label text
+    painter.drawRect(end_x, 10, 20, 24);            // black background
+    pen.setColor(Qt::white);                        // white label text
     painter.setPen(pen);
-    painter.drawText(end_x + 1, 21, tr("END"));
+    painter.drawText(end_x, 18, tr("END"));
 }
 
 /**

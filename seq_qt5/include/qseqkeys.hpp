@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-02
+ * \updates       2018-06-30
  * \license       GNU GPLv2 or above
  *
  *      We've added the feature of a right-click toggling between showing the
@@ -43,8 +43,7 @@
 #include <QSizePolicy>
 #include <QMouseEvent>
 
-#include "Globals.hpp"
-#include "sequence.hpp"
+#include "globals.h"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -70,7 +69,7 @@ public:
         sequence & seq,
         QWidget * parent = 0,
         int keyHeight = 12,
-        int keyAreaHeight = 12 * qc_num_keys + 1
+        int keyAreaHeight = 12 * c_num_keys + 1
     );
 
 protected:

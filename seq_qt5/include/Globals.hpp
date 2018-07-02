@@ -43,11 +43,8 @@ const int qc_dataarea_y = 128;
 const int qc_data_x = 2;
 
 /* keyboard */
-const int qc_key_x = 38;
-const int qc_num_keys = 128;
-const int qc_keyarea_x = qc_key_x + 15;
-const int qc_keyoffset_x = qc_keyarea_x - qc_key_x;
-const int c_keyboard_padding_x = 6; //padding to the left of the note roll
+
+// padding to the left of the note roll
 // to allow 1st tick drum hits
 /* events bar */
 

@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-04-08
- * \updates       2018-06-11
+ * \updates       2018-06-28
  * \license       GNU GPLv2 or above
  *
  *  Qt Portmidi Linux version.
@@ -387,15 +387,11 @@
 /* #undef STATISTICS_SUPPORT */
 
 /*
- * Define to enable the chord generator
- *
- *      NOT AVAILABLE YET IN QT USER INTERFACE.
+ * Define to enable the chord generator.
  */
 
-#ifndef SEQ64_QT5_USER_INTERFACE
 #ifndef SEQ64_STAZED_CHORD_GENERATOR
 #define SEQ64_STAZED_CHORD_GENERATOR 1
-#endif
 #endif
 
 /*
@@ -409,19 +405,17 @@
  */
 
 /*
- * Define to enable global transpose.
- *
- *      NOT AVAILABLE YET IN QT USER INTERFACE. But it can still be supported
- *      in the internal Sequencer64 library.
+ * Define to enable pattern transpose.
  */
 
-#ifndef SEQ64_QT5_USER_INTERFACE
 #ifndef SEQ64_STAZED_TRANSPOSE
 #define SEQ64_STAZED_TRANSPOSE 1
 #endif
-#endif
 
-/* Define to 1 if you have the ANSI C header files. */
+/*
+ * Define to 1 if you have the ANSI C header files.
+ */
+
 #ifndef SEQ64_STDC_HEADERS
 #define SEQ64_STDC_HEADERS 1
 #endif

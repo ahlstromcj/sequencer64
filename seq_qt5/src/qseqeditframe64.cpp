@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-06-28
+ * \updates       2018-07-02
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -65,24 +65,24 @@
     QHBoxLayout | undo : redo : tools : zoomin : zoomout : scale : ...      |
 QVBoxLayout:     -----------------------------------------------------------
 QWidget container?
-    QScrollArea |   | qseqtime      (0, 1, 1, 1) Scroll horiz only      | V |
-                |-- |---------------------------------------------------| e |
-                | q |                                                   | r |
-                | s |                                                   | t |
-                | e |                                                   |   |
-    QScrollArea | q | qseqroll      (1, 1, 1, 1) Scroll h/v both        | s |
-                | k |                                                   | ' |
+    QScrollArea |   | qseqtime      (0, 1, 1, 1) Scroll horiz only      |   |
+                |-- |---------------------------------------------------|---|
+                | q |                                                   | v |
+                | s |                                                   | e |
+                | e |                                                   | r |
+    QScrollArea | q | qseqroll      (1, 1, 1, 1) Scroll h/v both        | t |
+                | k |                                                   | s |
                 | e |                                                   | b |
                 | y |                                                   | a |
                 | s |                                                   | r |
-                |---|---------------------------------------------------|   |
+                |---|---------------------------------------------------|---|
     QScrollArea |   | qtriggeredit  (2, 1, 1, 1) Scroll horiz only      |   |
                 |   |---------------------------------------------------|   |
                 |   |                                                   |   |
     QScrollArea |   | qseqdata      (3, 1, 1, 1) Scroll horiz only      |   |
                 |   |                                                   |   |
                  -----------------------------------------------------------
-                | Horizontal scroll bar for QWidget container           |   |
+                |   | Horizontal scroll bar for QWidget container       |   |
                  -----------------------------------------------------------
     QHBoxLayout | Events : ...                                              |
                  -----------------------------------------------------------
@@ -91,6 +91,7 @@ QWidget container?
  */
 
 #include <QWidget>
+#include <QMenu>
 #include <QPalette>
 #include <QScrollArea>
 #include <QScrollBar>
@@ -121,19 +122,27 @@ QWidget container?
  *  friggin' resource files.
  */
 
+#include "pixmaps/bus.xpm"
 #include "pixmaps/down.xpm"
-// #include "pixmaps/drum.xpm"
+#include "pixmaps/follow.xpm"
+#include "pixmaps/midi.xpm"
 #include "pixmaps/note_length.xpm"
 #include "pixmaps/length_short.xpm"     /* not length.xpm, it is too long   */
-// #include "pixmaps/play.xpm"
-// #include "pixmaps/quantize.xpm"
-// #include "pixmaps/rec.xpm"
-// #include "pixmaps/redo.xpm"
+#include "pixmaps/quantize.xpm"
+#include "pixmaps/redo.xpm"
 #include "pixmaps/snap.xpm"
-// #include "pixmaps/thru.xpm"
-// #include "pixmaps/tools.xpm"
-// #include "pixmaps/undo.xpm"
-#include "pixmaps/zoom.xpm"     /* zoom_in/zoom_out replaced by combo-box   */
+#include "pixmaps/tools.xpm"
+#include "pixmaps/undo.xpm"
+#include "pixmaps/zoom.xpm"             /* zoom_in/_out combo-box           */
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+#include "pixmaps/chord3-inv.xpm"
+#endif
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+#include "pixmaps/drum.xpm"
+#include "pixmaps/transpose.xpm"
+#endif
 
 /*
  *  Do not document the name space.
@@ -186,7 +195,8 @@ static const int s_width_count = sizeof(s_width_items) / sizeof(int);
  *  Looks up a beat-width value.
  */
 
-static int s_lookup_bw (int bw)
+static int
+s_lookup_bw (int bw)
 {
     int result = 0;
     for (int wi = 0; wi < s_width_count; ++wi)
@@ -215,7 +225,8 @@ static const int s_measures_count = sizeof(s_measures_items) / sizeof(int);
  *  Looks up a beat-width value.
  */
 
-static int s_lookup_measures (int m)
+static int
+s_lookup_measures (int m)
 {
     int result = 0;
     for (int wi = 0; wi < s_measures_count; ++wi)
@@ -265,10 +276,11 @@ static const int s_zoom_items [] =
 static const int s_zoom_count = sizeof(s_zoom_items) / sizeof(int);
 
 /**
- *  Looks up a zoom value.
+ *  Looks up a zoom value and returns its index.
  */
 
-static int s_lookup_zoom (int zoom)
+static int
+s_lookup_zoom (int zoom)
 {
     int result = 0;
     for (int zi = 0; zi < s_zoom_count; ++zi)
@@ -282,35 +294,29 @@ static int s_lookup_zoom (int zoom)
     return result;
 }
 
+#ifdef SEQ64_STAZED_CHORD_GENERATOR_NOT_NEEDED
+
 /**
- * Actions.  These variables represent actions that can be applied to a
- * selection of notes.  One idea would be to add a swing-quantize action.
- * We will reserve the value here, for notes only; not yet used or part of the
- * action menu.
+ *  Looks up a chord name and returns its index.  Note that the chord names
+ *  are defined in the scales.h file.
  */
 
-enum edit_action_t
+static int
+s_lookup_chord (const std::string & chordname)
 {
-    c_select_all_notes         =  1,
-    c_select_all_events        =  2,
-    c_select_inverse_notes     =  3,
-    c_select_inverse_events    =  4,
-    c_quantize_notes           =  5,
-    c_quantize_events          =  6,
-#ifdef USE_STAZED_RANDOMIZE_SUPPORT
-    c_randomize_events         =  7,
+    int result = 0;
+    for (int chord = 0; chord < c_chord_number; ++chord)
+    {
+        if (c_chord_table_text[chord] == chordname)
+        {
+            result = chord;
+            break;
+        }
+    }
+    return result;
+}
+
 #endif
-    c_tighten_events           =  8,
-    c_tighten_notes            =  9,
-    c_transpose_notes          = 10,    /* basic transpose      */
-    c_reserved                 = 11,
-    c_transpose_h              = 12,    /* harmonic transpose   */
-    c_expand_pattern           = 13,
-    c_compress_pattern         = 14,
-    c_select_even_notes        = 15,
-    c_select_odd_notes         = 16,
-    c_swing_notes              = 17     /* swing quantize       */
-};
 
 /**
  *
@@ -343,8 +349,9 @@ qseqeditframe64::qseqeditframe64
     m_seqroll           (nullptr),
     m_seqdata           (nullptr),
     m_seqevent          (nullptr),
-    m_beats_per_bar     (m_seq->get_beats_per_bar()),
-    m_beat_width        (m_seq->get_beat_width()),
+    m_tools_popup       (nullptr),
+    m_beats_per_bar     (not_nullptr(m_seq) ? m_seq->get_beats_per_bar() : 4),
+    m_beat_width        (not_nullptr(m_seq) ? m_seq->get_beat_width() : 4),
     m_initial_zoom      (SEQ64_DEFAULT_ZOOM),           // constant
     m_zoom              (SEQ64_DEFAULT_ZOOM),           // fixed below
     m_snap              (m_initial_snap),
@@ -403,13 +410,15 @@ qseqeditframe64::qseqeditframe64
     ui->timeScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     /*
-     * qseqroll
+     * qseqroll.  Note the last parameter, "this" is not really a parent
+     * parameter.  It simply gives qseqroll access to the qseqeditframe64 ::
+     * follow_progress() function.
      */
 
     m_seqroll = new qseqroll
     (
         perf(), *m_seq, m_seqkeys, m_zoom, m_snap, 0,
-        EDIT_MODE_NOTE, ui->rollScrollArea
+        EDIT_MODE_NOTE, this                            /* see note above   */
     );
     ui->rollScrollArea->setWidget(m_seqroll);
     ui->rollScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -468,7 +477,7 @@ qseqeditframe64::qseqeditframe64
     ui->m_entry_name->setText(m_seq->name().c_str());
     connect
     (
-        ui->m_entry_name, SIGNAL(textChanged()),
+        ui->m_entry_name, SIGNAL(textChanged(const QString &)),
         this, SLOT(update_seq_name())
     );
 
@@ -555,6 +564,177 @@ qseqeditframe64::qseqeditframe64
         ui->m_combo_length, SIGNAL(currentIndexChanged(int)),
         this, SLOT(update_measures(int))
     );
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+
+    /*
+     *  Transpose button.
+     */
+
+    bool cantranspose = m_seq->get_transposable();
+    qt_set_icon(transpose_xpm, ui->m_toggle_transpose);
+    connect
+    (
+        ui->m_toggle_transpose, SIGNAL(toggled(bool)),
+        this, SLOT(transpose(bool))
+    );
+    ui->m_toggle_transpose->setToolTip
+    (
+        "Sequence is allowed to be transposed if button is highighted/checked."
+    );
+    ui->m_toggle_transpose->setCheckable(true);
+    ui->m_toggle_transpose->setChecked(cantranspose);
+    if (! usr().work_around_transpose_image())
+        set_transpose_image(cantranspose);
+
+#endif
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+
+    /*
+     * Chord button and combox-box.
+     */
+
+    qt_set_icon(chord3_inv_xpm, ui->m_button_chord);
+    connect
+    (
+        ui->m_button_chord, SIGNAL(clicked(bool)),
+        this, SLOT(increment_chord())
+    );
+
+    for (int chord = 0; chord < c_chord_number; ++chord)
+    {
+        QString combo_text = c_chord_table_text[chord];
+        ui->m_combo_chord->insertItem(chord, combo_text);
+    }
+    ui->m_combo_chord->setCurrentIndex(m_chord);
+    connect
+    (
+        ui->m_combo_chord, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(update_chord(int))
+    );
+
+#endif
+
+    /*
+     *  MIDI buss items discovered at startup-time.  Not sure if we want to
+     *  use the button to reset the buss, or increment to the next buss.
+     */
+
+    qt_set_icon(bus_xpm, ui->m_button_bus);
+    ui->m_button_bus->setToolTip("Resets output MIDI buss number to 0.");
+    connect
+    (
+        ui->m_button_bus, SIGNAL(clicked(bool)),
+        this, SLOT(reset_midi_bus())
+    );
+
+    mastermidibus & masterbus = perf().master_bus();
+    for (int b = 0; b < masterbus.get_num_out_buses(); ++b)
+    {
+        ui->m_combo_bus->addItem
+        (
+            QString::fromStdString(masterbus.get_midi_out_bus_name(b))
+        );
+    }
+    ui->m_combo_bus->setCurrentText
+    (
+        QString::fromStdString
+        (
+            masterbus.get_midi_out_bus_name(m_seq->get_midi_bus())
+        )
+    );
+    connect
+    (
+        ui->m_combo_bus, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(update_midi_bus(int))
+    );
+
+    /*
+     *  MIDI channels.  Not sure if we want to
+     *  use the button to reset the channel, or increment to the next channel.
+     */
+
+    qt_set_icon(midi_xpm, ui->m_button_channel);
+    ui->m_button_channel->setToolTip("Resets output MIDI channel number to 1.");
+    connect
+    (
+        ui->m_button_channel, SIGNAL(clicked(bool)),
+        this, SLOT(reset_midi_channel())
+    );
+
+    for (int channel = 0; channel < SEQ64_MIDI_CHANNEL_MAX; ++channel)
+    {
+        QString combo_text = QString::number(channel + 1);
+        ui->m_combo_channel->insertItem(channel, combo_text);
+    }
+    ui->m_combo_channel->setCurrentIndex(m_seq->get_midi_channel());
+    connect
+    (
+        ui->m_combo_channel, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(update_midi_channel(int))
+    );
+
+    /*
+     * Undo and Redo Buttons.
+     */
+
+    qt_set_icon(undo_xpm, ui->m_button_undo);
+    connect(ui->m_button_undo, SIGNAL(clicked(bool)), this, SLOT(undo()));
+
+    qt_set_icon(redo_xpm, ui->m_button_redo);
+    connect(ui->m_button_redo, SIGNAL(clicked(bool)), this, SLOT(redo()));
+
+    /*
+     * Quantize Button.  This is the "Q" button, and indicates to
+     * quantize (just?) notes.  Compare it to the Quantize menu entry,
+     * which quantizes events.  Note the usage of std::bind()... this feature
+     * requires C++11.
+     */
+
+    qt_set_icon(quantize_xpm, ui->m_button_quantize);
+    connect
+    (
+        ui->m_button_quantize, &QPushButton::clicked,
+        std::bind(&qseqeditframe64::do_action, this, c_quantize_notes, 0)
+    );
+
+    /*
+     * Tools Pop-up Menu Button.
+     */
+
+    qt_set_icon(tools_xpm, ui->m_button_tools);
+    connect(ui->m_button_tools, SIGNAL(clicked(bool)), this, SLOT(tools()));
+    create_tools_menu();
+
+    /*
+     * Follow Progress Button.
+     */
+
+    qt_set_icon(follow_xpm, ui->m_toggle_follow);
+
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+
+    ui->m_toggle_follow->setEnabled(true);
+    ui->m_toggle_follow->setCheckable(true);
+    ui->m_toggle_follow->setToolTip
+    (
+        "If active, the piano roll scrolls to "
+        "follow the progress bar in playback."
+    );
+
+    /*
+     * Qt::NoFocus is the default focus policy.
+     */
+
+    ui->m_toggle_follow->setAutoDefault(false);
+    ui->m_toggle_follow->setChecked(m_seqroll->progress_follow());
+    connect(ui->m_toggle_follow, SIGNAL(toggled(bool)), this, SLOT(follow(bool)));
+#else
+
+    ui->m_toggle_follow->setEnabled(false);
+
+#endif
 
     /**
      *  Fill "Snap" and "Note" Combo Boxes:
@@ -713,7 +893,27 @@ qseqeditframe64::set_beats_per_measure (int bpm)
 }
 
 /**
+ *  Set the measures value, using the given parameter, and some internal
+ *  values passed to apply_length().
+ *
+ * \param len
+ *      Provides the sequence length, in measures.
+ */
+
+void
+qseqeditframe64::set_measures (int len)
+{
+    m_measures = len;
+    m_seq->apply_length
+    (
+        m_seq->get_beats_per_bar(), m_ppqn, m_seq->get_beat_width(), len
+    );
+    set_dirty();
+}
+
+/**
  *  TODO:  move into qseqbase ONCE PROVEN
+ *  Currently COPIED into qseqbase
  */
 
 int
@@ -797,7 +997,7 @@ void
 qseqeditframe64::next_measures ()
 {
     int index = s_lookup_measures(m_measures);
-    if (++index >= s_width_count)
+    if (++index >= s_measures_count)
         index = 0;
 
     ui->m_combo_length->setCurrentIndex(index);
@@ -806,24 +1006,365 @@ qseqeditframe64::next_measures ()
         set_measures(m);
 }
 
+#ifdef SEQ64_STAZED_TRANSPOSE
+
 /**
- *  Set the measures value, using the given parameter, and some internal
- *  values passed to apply_length().
- *
- * \param len
- *      Provides the sequence length, in measures.
+ *  Passes the transpose status to the sequence object.
  */
 
 void
-qseqeditframe64::set_measures (int len)
+qseqeditframe64::transpose (bool ischecked)
 {
-    m_measures = len;
-    m_seq->apply_length
-    (
-        m_seq->get_beats_per_bar(), m_ppqn, m_seq->get_beat_width(), len
-    );
-    set_dirty();
+    m_seq->set_transposable(ischecked);
+    if (! usr().work_around_transpose_image())
+        set_transpose_image(ischecked);
 }
+
+/**
+ *  Changes the image used for the transpose button.
+ *
+ * \param istransposable
+ *      If true, set the image to the "Transpose" icon.  Otherwise, set it to
+ *      the "Drum" (not transposable) icon.
+ */
+
+void
+qseqeditframe64::set_transpose_image (bool istransposable)
+{
+    if (istransposable)
+    {
+        ui->m_toggle_transpose->setToolTip("Sequence is transposable.");
+        qt_set_icon(transpose_xpm, ui->m_toggle_transpose);
+    }
+    else
+    {
+        ui->m_toggle_transpose->setToolTip("Sequence is not transposable.");
+        qt_set_icon(drum_xpm, ui->m_toggle_transpose);
+    }
+}
+
+#endif
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+
+/**
+ *  Handles updates to the beats/measure for only the current sequences.
+ *  See the similar function in qsmainwnd.
+ */
+
+void
+qseqeditframe64::update_chord (int index)
+{
+    if (index != m_chord && index >= 0 && index < c_chord_number)
+        set_chord(index);
+}
+
+/**
+ *  When the BPM (beats-per-measure) button is pushed, we go to the next BPM
+ *  entry in the combo-box, wrapping around when the end is reached.
+ */
+
+void
+qseqeditframe64::increment_chord ()
+{
+    int chord = m_chord + 1;
+    if (chord >= c_chord_number)
+        chord = 0;
+
+    ui->m_combo_chord->setCurrentIndex(chord);
+    set_chord(chord);
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::set_chord (int chord)
+{
+    if (chord >= 0 && chord < c_chord_number)
+    {
+        ui->m_combo_chord->setCurrentIndex(chord);
+        m_chord = m_initial_chord = chord;
+        m_seqroll->set_chord(chord);
+    }
+}
+
+#endif  // SEQ64_STAZED_CHORD_GENERATOR
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::update_midi_bus (int index)
+{
+    mastermidibus & masterbus = perf().master_bus();
+    if (index >= 0 && index < masterbus.get_num_out_buses())
+        m_seq->set_midi_bus(index);
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::reset_midi_bus ()
+{
+    ui->m_combo_bus->setCurrentIndex(0);        // update_midi_bus(0)
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::update_midi_channel (int index)
+{
+    if (index >= 0 && index < SEQ64_MIDI_CHANNEL_MAX)
+        m_seq->set_midi_channel(index);
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::reset_midi_channel ()
+{
+    ui->m_combo_channel->setCurrentIndex(0);    // update_midi_channel(0)
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::undo ()
+{
+    m_seq->pop_undo();
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::redo ()
+{
+    m_seq->pop_redo();
+}
+
+/**
+ *  Popup menu over button.
+ */
+
+void
+qseqeditframe64::tools()
+{
+    m_tools_popup->exec
+    (
+        ui->m_button_tools->mapToGlobal
+        (
+            QPoint(ui->m_button_tools->width()-2, ui->m_button_tools->height()-2)
+        )
+    );
+}
+
+/**
+ *  Builds the Tools popup menu on the fly.
+ */
+
+void
+qseqeditframe64::create_tools_menu ()
+{
+    m_tools_popup = new QMenu(this);
+    QMenu * menuselect = new QMenu(tr("&Select..."), m_tools_popup);
+    QMenu * menutiming = new QMenu(tr("&Timing..."), m_tools_popup);
+    QMenu * menupitch  = new QMenu(tr("&Pitch..."), m_tools_popup);
+    QAction * selectall = new QAction(tr("Select all"), m_tools_popup);
+    selectall->setShortcut(tr("Ctrl+A"));
+    connect
+    (
+        selectall, SIGNAL(triggered(bool)),
+        this, SLOT(select_all_notes())
+    );
+    menuselect->addAction(selectall);
+
+    QAction * selectinverse = new QAction(tr("Inverse selection"), m_tools_popup);
+    selectinverse->setShortcut(tr("Ctrl+Shift+I"));
+    connect
+    (
+        selectinverse, SIGNAL(triggered(bool)),
+        this, SLOT(inverse_note_selection())
+    );
+    menuselect->addAction(selectinverse);
+
+    QAction * quantize = new QAction(tr("Quantize"), m_tools_popup);
+    quantize->setShortcut(tr("Ctrl+Q"));
+    connect(quantize, SIGNAL(triggered(bool)), this, SLOT(quantize_notes()));
+    menutiming->addAction(quantize);
+
+    QAction * tighten = new QAction(tr("Tighten"), m_tools_popup);
+    tighten->setShortcut(tr("Ctrl+T"));
+    connect(tighten, SIGNAL(triggered(bool)), this, SLOT(tighten_notes()));
+    menutiming->addAction(tighten);
+
+    char num[16];
+    QAction * transpose[24];     /* fill out note transpositions */
+    for (int t = -12; t <= 12; ++t)
+    {
+        if (t != 0)
+        {
+            snprintf(num, sizeof num, "%+d [%s]", t, c_interval_text[abs(t)]);
+            transpose[t + 12] = new QAction(num, m_tools_popup);
+            transpose[t + 12]->setData(t);
+            menupitch->addAction(transpose[t + 12]);
+            connect
+            (
+                transpose[t + 12], SIGNAL(triggered(bool)),
+                this, SLOT(transpose_notes())
+            );
+        }
+        else
+            menupitch->addSeparator();
+    }
+    m_tools_popup->addMenu(menuselect);
+    m_tools_popup->addMenu(menutiming);
+    m_tools_popup->addMenu(menupitch);
+}
+
+/**
+ *  Consider adding Aftertouch events.
+ */
+
+void
+qseqeditframe64::select_all_notes ()
+{
+    m_seq->select_events(EVENT_NOTE_ON, 0);
+    m_seq->select_events(EVENT_NOTE_OFF, 0);
+}
+
+/**
+ *  Consider adding Aftertouch events.
+ */
+
+void
+qseqeditframe64::inverse_note_selection ()
+{
+    m_seq->select_events(EVENT_NOTE_ON, 0, true);
+    m_seq->select_events(EVENT_NOTE_OFF, 0, true);
+}
+
+/**
+ *  Consider adding Aftertouch events.
+ */
+
+void
+qseqeditframe64::quantize_notes ()
+{
+    m_seq->push_undo();
+    m_seq->quantize_events(EVENT_NOTE_ON, 0, m_seq->get_snap_tick(), 1, true);
+}
+
+/**
+ *  Consider adding Aftertouch events.
+ */
+
+void
+qseqeditframe64::tighten_notes ()
+{
+    m_seq->push_undo();
+    m_seq->quantize_events(EVENT_NOTE_ON, 0, m_seq->get_snap_tick(), 2, true);
+}
+
+/**
+ *  Consider adding Aftertouch events.
+ */
+
+void
+qseqeditframe64::transpose_notes ()
+{
+    QAction * senderAction = (QAction *) sender();
+    int transposeval = senderAction->data().toInt();
+    m_seq->push_undo();
+    m_seq->transpose_notes(transposeval, 0);
+}
+
+/**
+ * Follow-progress callback.
+ */
+
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+
+
+/**
+ *  Passes the Follow status to the qseqroll object.  When qseqroll has been
+ *  upgraded to support follow-progress, then enable this macro in
+ *  libseq64/include/seq64_features.h.  Also applies to qperfroll.
+ */
+
+void
+qseqeditframe64::follow (bool ischecked)
+{
+    m_seqroll->progress_follow(ischecked);
+}
+
+/**
+ *  Checks the position of the tick, and, if it is in a different piano-roll
+ *  "page" than the last page, moves the page to the next page.
+ *
+ *  We don't want to do any of this if the length of the sequence fits in the
+ *  window, but for now it doesn't hurt; the progress bar just never meets the
+ *  criterion for moving to the next page.
+ *
+ * \todo
+ *      -   If playback is disabled (such as by a trigger), then do not update
+ *          the page;
+ *      -   When it comes back, make sure we're on the correct page;
+ *      -   When it stops, put the window back to the beginning, even if the
+ *          beginning is not defined as "0".
+ */
+
+void
+qseqeditframe64::follow_progress ()
+{
+    int w = m_seqroll->window_width();
+    QScrollBar * hadjust = ui->rollScrollArea->h_scroll();
+    int scrollx = hadjust->value();
+    if (m_seqroll->get_expanded_record() && m_seq->get_recording())
+    {
+        // double h_max_value = m_seq->get_length() - w * m_zoom;
+        // hadjust->setValue(int(h_max_value));
+        int newx = scrollx + w;
+        hadjust->setValue(newx);
+    }
+    else                                        /* use for non-recording */
+    {
+        midipulse progress_tick = m_seq->get_last_tick();
+        if (progress_tick > 0 && m_seqroll->progress_follow())
+        {
+            int prog_x = progress_tick / m_zoom + SEQ64_PROGRESS_PAGE_OVERLAP;
+            int page = prog_x / w;
+            if (page != m_seqroll->scroll_page() || (page == 0 && scrollx != 0))
+            {
+                m_seqroll->scroll_page(page);
+                hadjust->setValue(prog_x);
+                // set_scroll_x();              // not needed
+            }
+        }
+    }
+}
+
+#else
+
+void
+qseqeditframe64::follow_progress ()
+{
+    // No code, never follow the progress bar.
+}
+
+#endif  // SEQ64_FOLLOW_PROGRESS_BAR
 
 /**
  *  Updates the grid-snap values and control based on the index.  The value is
@@ -1047,6 +1588,101 @@ qseqeditframe64::set_editor_mode (seq64::edit_mode_t mode)
     }
 }
 
+/**
+ *  Implements the actions brought forth from the Tools (hammer) button.
+ *
+ *  Note that the push_undo() calls push all of the current events (in
+ *  sequence::m_events) onto the stack (as a single entry).
+ */
+
+void
+qseqeditframe64::do_action (edit_action_t action, int var)
+{
+    switch (action)
+    {
+    case c_select_all_notes:
+        m_seq->select_all_notes();
+        break;
+
+    case c_select_inverse_notes:
+        m_seq->select_all_notes(true);
+        break;
+
+    case c_select_all_events:
+        m_seq->select_events(m_editing_status, m_editing_cc);
+        break;
+
+    case c_select_inverse_events:
+        m_seq->select_events(m_editing_status, m_editing_cc, true);
+        break;
+
+#ifdef USE_STAZED_ODD_EVEN_SELECTION
+
+    case c_select_even_notes:
+        m_seq->select_even_or_odd_notes(var, true);
+        break;
+
+    case c_select_odd_notes:
+        m_seq->select_even_or_odd_notes(var, false);
+        break;
+
+#endif
+
+#ifdef USE_STAZED_RANDOMIZE_SUPPORT
+
+    case c_randomize_events:
+        m_seq->randomize_selected(m_editing_status, m_editing_cc, var);
+        break;
+
+#endif
+
+    case c_quantize_notes:
+
+        /*
+         * sequence::quantize_events() is used in recording as well, so we do
+         * not want to incorporate sequence::push_undo() into it.  So we make
+         * a new function to do that.
+         */
+
+        m_seq->push_quantize(EVENT_NOTE_ON, 0, m_snap, 1, true);
+        break;
+
+    case c_quantize_events:
+        m_seq->push_quantize(m_editing_status, m_editing_cc, m_snap, 1);
+        break;
+
+    case c_tighten_notes:
+        m_seq->push_quantize(EVENT_NOTE_ON, 0, m_snap, 2, true);
+        break;
+
+    case c_tighten_events:
+        m_seq->push_quantize(m_editing_status, m_editing_cc, m_snap, 2);
+        break;
+
+    case c_transpose_notes:                     /* regular transpose    */
+        m_seq->transpose_notes(var, 0);
+        break;
+
+    case c_transpose_h:                         /* harmonic transpose   */
+        m_seq->transpose_notes(var, m_scale);
+        break;
+
+#ifdef USE_STAZED_COMPANDING
+
+    case c_expand_pattern:
+        m_seq->multiply_pattern(2.0);
+        break;
+
+    case c_compress_pattern:
+        m_seq->multiply_pattern(0.5);
+        break;
+#endif
+
+    default:
+        break;
+    }
+    set_dirty();
+}
 
 }           // namespace seq64
 

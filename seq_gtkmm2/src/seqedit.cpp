@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-28
+ * \updates       2018-06-30
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1468,7 +1468,15 @@ seqedit::fill_top_bar ()
     (
         mem_fun(*this, &seqedit::follow_change_callback)
     );
-    m_button_redo->set_can_focus(false);
+
+    /*
+     * \change ca 2018-06-30
+     *      This seems like a bug.
+     *
+     * m_button_redo->set_can_focus(false);
+     */
+
+    m_toggle_follow->set_can_focus(false);
     m_toggle_follow->set_active(m_seqroll_wid->get_progress_follow());
     m_hbox2->pack_start(*m_toggle_follow, false, false);
 #endif
@@ -2972,32 +2980,13 @@ seqedit::timeout ()
     }
 #endif
 
-    /*
-     * This was ours, did not seem to work.
-     *
-    if (m_seq.recording_next_measure() && m_seqroll_wid->get_expanded_record())
+    bool expandrec = m_seq.expand_recording();
+    if (expandrec)
     {
         set_measures(get_measures() + 1);
         m_seqroll_wid->follow_progress();
     }
-     */
-
-    /*
-     * This is the way Seq32 does it now, and it seems to work for Sequencer64.
-     * However, the hardwired "4" is suspicious.
-     */
-
-    bool expandrec = m_seq.get_recording() && m_seqroll_wid->get_expanded_record();
-    bool expand = m_seq.get_last_tick() >=
-        (m_seq.get_length() - m_seq.get_unit_measure() / 4);
-
-    if (expandrec && expand)
-    {
-        set_measures(get_measures() + 1);
-        m_seqroll_wid->follow_progress();
-    }
-
-    if (perf().follow_progress() && ! expandrec)
+    else if (perf().follow_progress())
         m_seqroll_wid->follow_progress();       /* keep up with progress    */
 
     if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */

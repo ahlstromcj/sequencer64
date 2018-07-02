@@ -28,13 +28,14 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-06-18
- * \updates       2018-06-22
+ * \updates       2018-06-30
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <list>                         /* std::list container class        */
 #include <QScrollArea>
+#include <QSize>
+#include <list>                         /* std::list container class        */
 
 /*
  *  Forward declarations.  The Qt header files are moved into the cpp file.
@@ -104,6 +105,21 @@ public:
     void add_h_scroll (QScrollBar * qsb)
     {
         m_h_scrollbars.push_back(qsb);
+    }
+
+    QScrollBar * v_scroll ()
+    {
+        return m_self_v_scrollbar;
+    }
+
+    QScrollBar * h_scroll ()
+    {
+        return m_self_h_scrollbar;
+    }
+
+    QSize viewport_size () const
+    {
+        return viewportSizeHint();
     }
 
 protected:

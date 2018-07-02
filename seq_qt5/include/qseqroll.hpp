@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-27
+ * \updates       2018-06-30
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -45,6 +45,13 @@
 
 #include "qseqbase.hpp"                 /* seq64::qseqbase mixin class      */
 #include "sequence.hpp"                 /* seq64::edit_mode_t mode          */
+
+/*
+ *  Need a forward declaration here, and it is not in the seq64 namespace.
+ */
+
+// class qscrollmaster;
+class qseqeditframe64;
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -80,6 +87,49 @@ public:
         QWidget * parent        = nullptr
     );
 
+    void follow_progress ();
+
+    /**
+     * \getter m_expanded_recording
+     */
+
+    void set_expanded_recording (bool expand)
+    {
+        m_expanded_recording = expand;
+        seq().set_expanded_recording(expand);
+    }
+
+    /**
+     * \setter m_expanded_recording
+     */
+
+    bool get_expanded_record ()
+    {
+        return m_expanded_recording;
+    }
+
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+
+    /**
+     * \getter m_progress_follow
+
+    void set_progress_follow (bool follow)
+    {
+        m_progress_follow = follow;
+    }
+     */
+
+    /**
+     * \setter m_progress_follow
+
+    bool get_progress_follow ()
+    {
+        return m_progress_follow;
+    }
+     */
+
+#endif
+
 protected:
 
     /**
@@ -100,14 +150,7 @@ protected:
         m_note_length = len;
     }
 
-    /**
-     * \setter m_snap
-
-    void set_snap (int snap)
-    {
-        m_snap = snap;
-    }
-     */
+    void set_chord (int chord);
 
 protected:      // overrides for painting, mouse/keyboard events, & size hints
 
@@ -124,8 +167,19 @@ private:
     void snap_y (int & y);
     void set_adding (bool a_adding);
     void start_paste();
+#if 0
+    void set_scroll_x ();
+    void set_scroll_y ();
+#endif
 
 private:
+
+    /**
+     *  Holds a pointer to the scroll-master object in the edit-frame window.
+     */
+
+    // qscrollmaster * m_scroll_master;
+    qseqeditframe64 * m_parent_frame;
 
     /**
      *  Holds a pointer to the qseqkeys pane that is associated with the
@@ -159,9 +213,36 @@ private:
 
     int m_pos;
 
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+
+    /**
+     *  Indicates either that chord support is disabled (0), or a particular
+     *  chord is to be created when inserting notes.
+     */
+
+    int m_chord;
+
     /**
      *  The current key selected?
      */
+
+#endif
+
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+
+    /**
+     *  Provides the current scroll page in which the progress bar resides.
+
+    int m_scroll_page;
+     */
+
+    /**
+     *  Progress bar follow state.
+
+    bool m_progress_follow;
+     */
+
+#endif
 
     int m_key;
 
@@ -218,8 +299,8 @@ private:
     int note_y;
     int note_height;
 
-    int keyY;               // dimensions of height
-    int keyAreaY;
+    int m_key_y;               // dimensions of height
+    int m_keyarea_y;
 
 signals:
 

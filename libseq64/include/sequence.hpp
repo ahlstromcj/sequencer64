@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-06-02
+ * \updates       2018-06-30
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -328,6 +328,14 @@ private:
      */
 
     bool m_recording;
+
+    /**
+     *  Provides an option for expanding the number of measures while
+     *  recording.  In essence, the "infinite" track we've wanted, thanks
+     *  to Stazed and his Seq32 project.  Defaults to false.
+     */
+
+    bool m_expanded_recording;
 
     /**
      *  True if recording in quantized mode.
@@ -891,10 +899,12 @@ public:
     /*
      * Amazingly, the functions set_measures() and get_measures() have had no
      * definitions (just declarations) since seq24!  We don't store the
-     * measures, but calculate them when needed.
+     * measures, but calculate them when needed.  And, for the new qseqbase
+     * class, provide a get_measures() function.
      */
 
     int calculate_measures () const;
+    int get_measures () const;
 
     /**
      * \getter m_ppqn
@@ -1251,16 +1261,24 @@ public:
     }
 
     /**
-     *  Makes a calculation for expanded recording, used in seqedit.
+     * \getter m_expanded_recording
      */
 
-    bool recording_next_measure () const
+    void set_expanded_recording (bool expand)
     {
-        return
-        (
-            m_recording && (get_last_tick() >= m_length - m_unit_measure / 4)
-        );
+        m_expanded_recording = expand;
     }
+
+    /**
+     * \setter m_expanded_recording
+     */
+
+    bool get_expanded_record ()
+    {
+        return m_expanded_recording;
+    }
+
+    bool expand_recording () const;     /* does more checking for status    */
 
     /**
      * \getter m_snap_tick

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-26
+ * \updates       2018-06-29
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -255,7 +255,15 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     );
     qt_set_icon(song_rec_on_xpm, ui->btnRecord);
 
-    connect(ui->spinBpm, SIGNAL(valueChanged(int)), this, SLOT(updateBpm(int)));
+    // BPM spin-box
+
+    ui->spinBpm->setDecimals(usr().bpm_precision());
+    ui->spinBpm->setSingleStep(usr().bpm_step_increment());
+    connect
+    (
+        ui->spinBpm, SIGNAL(valueChanged(double)),
+        this, SLOT(updateBpm(double))
+    );
     connect
     (
         ui->cmb_beat_length, SIGNAL(currentIndexChanged(int)),
@@ -388,9 +396,9 @@ qsmainwnd::setSongPlayback (bool playSongData)
  */
 
 void
-qsmainwnd::updateBpm (int newBpm)
+qsmainwnd::updateBpm (double bpm)
 {
-    perf().set_beats_per_minute(newBpm);
+    perf().set_beats_per_minute(midibpm(bpm));
 }
 
 /**
@@ -469,6 +477,8 @@ qsmainwnd::open_file (const std::string & fn)
              */
         }
         ui->spinBpm->setValue(perf().bpm());
+        ui->spinBpm->setDecimals(usr().bpm_precision());
+        ui->spinBpm->setSingleStep(usr().bpm_step_increment());
         if (not_nullptr(m_song_frame))
             m_song_frame->update_sizes();
 
@@ -661,6 +671,8 @@ qsmainwnd::showImportDialog()
                 midifile * f = is_wrk ? new wrkfile(fn) : new midifile(fn) ;
                 f->parse(m_main_perf, perf().screenset());
                 ui->spinBpm->setValue(perf().bpm());
+                ui->spinBpm->setDecimals(usr().bpm_precision());
+                ui->spinBpm->setSingleStep(usr().bpm_step_increment());
                 if (not_nullptr(m_live_frame))
                     m_live_frame->setBank(perf().screenset());
             }
@@ -706,8 +718,8 @@ qsmainwnd::showqsbuildinfo ()
 void
 qsmainwnd::load_editor (int seqid)
 {
-    edit_container::iterator eci = m_open_editors.find(seqid);
-    if (eci == m_open_editors.end())
+    edit_container::iterator ei = m_open_editors.find(seqid);
+    if (ei == m_open_editors.end())
     {
         ui->EditTabLayout->removeWidget(m_edit_frame);  /* no nullptr check */
         if (not_nullptr(m_edit_frame))
@@ -730,8 +742,8 @@ qsmainwnd::load_editor (int seqid)
 void
 qsmainwnd::load_qseqedit (int seqid)
 {
-    edit_container::iterator eci = m_open_editors.find(seqid);
-    if (eci == m_open_editors.end())
+    edit_container::iterator ei = m_open_editors.find(seqid);
+    if (ei == m_open_editors.end())
     {
         qseqeditex * ex = new qseqeditex(m_main_perf, seqid, this);
         if (not_nullptr(ex))
@@ -762,35 +774,27 @@ qsmainwnd::load_qseqedit (int seqid)
 void
 qsmainwnd::remove_editor (int seqid)
 {
-    edit_container::iterator eci = m_open_editors.find(seqid);
-    printf("remove_editor()\n");
-    if (eci != m_open_editors.end())
-    {
-        printf("erasing qseqeditex(%d)\n", seqid);
-        m_open_editors.erase(eci);
-    }
+    edit_container::iterator ei = m_open_editors.find(seqid);
+    if (ei != m_open_editors.end())
+        m_open_editors.erase(ei);
 }
 
 /**
- *
+ *  Uses the standard "associative-container erase idiom".  Otherwise, the
+ *  current iterator is invalid, and a segfault results in the top of the
+ *  for-loop.  Another option with C++11 is "ci = m_open_editors.erase(ei)".
  */
 
 void
 qsmainwnd::remove_all_editors ()
 {
-    edit_container::iterator eci;
-    printf("remove_all_editors()\n");
-    for (eci = m_open_editors.begin(); eci != m_open_editors.end(); ++eci)
+    edit_container::iterator ei;
+    for (ei = m_open_editors.begin(); ei != m_open_editors.end(); /*++ei*/)
     {
-        int seqid = eci->first;             /* save the sequence number */
-        qseqeditex * qep = eci->second;     /* save the pointer         */
-        m_open_editors.erase(eci);          /* remove the pointer item  */
+        qseqeditex * qep = ei->second;      /* save the pointer             */
+        m_open_editors.erase(ei++);         /* remove pointer, inc iterator */
         if (not_nullptr(qep))
-        {
-            printf("erasing & deleting qseqeditex(%d)\n", seqid);
-            delete qep;                     /* delete the pointer       */
-            printf("deleted\n");
-        }
+            delete qep;                     /* delete the pointer           */
     }
 }
 

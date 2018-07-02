@@ -46,9 +46,8 @@
  *  The page increment is smaller (usually), and is one bar.
  *
  *  When the progress bar is nearly at the end of the current page, we want
- *  to move to the next page and continue the progress bar.
- *
- *  The page-size in ticks is the page-size in pixels divided by the zoom:
+ *  to move to the next page and continue the progress bar.  The page-size in
+ *  ticks is the page-size in pixels divided by the zoom:
  *
 \verbatim
         Ps = Pp / Z

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-06-28
+ * \updates       2018-06-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -42,12 +42,12 @@
  *  cpp file.
  */
 
-class QWidget;
 class QGridLayout;
+class QMenu;
+class QPalette;
 class QScrollArea;
 class QScrollBar;
-class QPalette;
-class QMenu;
+class QWidget;
 
 /*
  * Do not document namespaces, it breaks Doxygen.
@@ -72,6 +72,36 @@ namespace seq64
     class qstriggereditor;
 
 /**
+ * Actions.  These variables represent actions that can be applied to a
+ * selection of notes.  One idea would be to add a swing-quantize action.
+ * We will reserve the value here, for notes only; not yet used or part of the
+ * action menu.
+ */
+
+enum edit_action_t
+{
+    c_select_all_notes         =  1,
+    c_select_all_events        =  2,
+    c_select_inverse_notes     =  3,
+    c_select_inverse_events    =  4,
+    c_quantize_notes           =  5,
+    c_quantize_events          =  6,
+#ifdef USE_STAZED_RANDOMIZE_SUPPORT
+    c_randomize_events         =  7,
+#endif
+    c_tighten_events           =  8,
+    c_tighten_notes            =  9,
+    c_transpose_notes          = 10,    /* basic transpose      */
+    c_reserved                 = 11,
+    c_transpose_h              = 12,    /* harmonic transpose   */
+    c_expand_pattern           = 13,
+    c_compress_pattern         = 14,
+    c_select_even_notes        = 15,
+    c_select_odd_notes         = 16,
+    c_swing_notes              = 17     /* swing quantize       */
+};
+
+/**
  *  This frame holds tools for editing an individual MIDI sequence.  This frame is
  *  a more advanced version of qseqeditframe, which was based on Kepler34's
  *  EditFrame class.
@@ -91,6 +121,10 @@ public:
 
     void update_draw_geometry ();
     void set_editor_mode (edit_mode_t mode);
+
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+    void follow_progress ();
+#endif
 
 private:
 
@@ -125,9 +159,41 @@ private slots:
     void next_measures ();
     void update_grid_snap (int index);
     void update_note_length (int index);
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+    void transpose (bool ischecked);
+#endif
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    void update_chord (int index);
+    void increment_chord ();
+#endif
+
+    void reset_midi_bus ();
+    void update_midi_bus (int index);
+    void reset_midi_channel ();
+    void update_midi_channel (int index);
+    void undo ();
+    void redo ();
+    void tools ();
+    void select_all_notes ();
+    void inverse_note_selection ();
+    void quantize_notes ();
+    void tighten_notes ();
+    void transpose_notes ();
+
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+    void follow (bool ischecked);
+#endif
+
     void update_grid_zoom (int index);
     void zoom_in ();
     void zoom_out ();
+
+private:
+
+    void do_action (edit_action_t action, int var);
+    void create_tools_menu ();
 
 private:
 
@@ -139,6 +205,11 @@ private:
     void set_beat_width (int bw);
     void set_measures (int len);
     int get_measures ();
+    void set_chord (int chord);
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+    void set_transpose_image (bool istransposable);
+#endif
 
 private:
 
@@ -150,6 +221,12 @@ private:
     qseqroll * m_seqroll;
     qseqdata * m_seqdata;
     qstriggereditor * m_seqevent;  // qseqevent?
+
+    /**
+     *  Menu for Tools.
+     */
+
+    QMenu * m_tools_popup;
 
     /**
      *  Holds the current beats-per-measure selection.

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ui version="5.0">
+<ui version="4.0">
  <class>qsmainwnd</class>
  <widget class="QMainWindow" name="qsmainwnd">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>450</height>
+    <width>864</width>
+    <height>580</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -34,7 +34,7 @@
    <string>qseq64</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../src/qseq64.qrc">
+   <iconset>
     <normaloff>:/pixmaps/logo.xpm</normaloff>:/pixmaps/logo.xpm</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -60,45 +60,24 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLabel" name="label_15">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>31</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>999</width>
-          <height>999</height>
-         </size>
-        </property>
-        <property name="layoutDirection">
-         <enum>Qt::LeftToRight</enum>
-        </property>
+       <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>B/M</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-        <property name="margin">
-         <number>2</number>
+         <string>Time Sig</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QComboBox" name="cmb_beat_measure">
-        <property name="maximumSize">
+        <property name="minimumSize">
          <size>
           <width>45</width>
-          <height>25</height>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>90</width>
+          <height>64</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -116,18 +95,24 @@
        <widget class="QLabel" name="label_16">
         <property name="minimumSize">
          <size>
-          <width>25</width>
-          <height>19</height>
+          <width>10</width>
+          <height>32</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>999</width>
-          <height>999</height>
+          <width>16</width>
+          <height>32</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
         <property name="text">
-         <string>BW</string>
+         <string>/</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -139,10 +124,16 @@
       </item>
       <item>
        <widget class="QComboBox" name="cmb_beat_length">
-        <property name="maximumSize">
+        <property name="minimumSize">
          <size>
           <width>45</width>
-          <height>25</height>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>90</width>
+          <height>64</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -172,10 +163,16 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>24</width>
+          <height>32</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
-          <width>25</width>
-          <height>25</height>
+          <width>48</width>
+          <height>64</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -200,10 +197,16 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>24</width>
+          <height>32</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
-          <width>25</width>
-          <height>25</height>
+          <width>48</width>
+          <height>64</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -231,10 +234,16 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>24</width>
+          <height>32</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
-          <width>25</width>
-          <height>25</height>
+          <width>48</width>
+          <height>64</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -262,10 +271,16 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>24</width>
+          <height>32</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
-          <width>25</width>
-          <height>25</height>
+          <width>48</width>
+          <height>64</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -293,10 +308,16 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>24</width>
+          <height>32</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
-          <width>25</width>
-          <height>25</height>
+          <width>48</width>
+          <height>64</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -321,10 +342,16 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>24</width>
+          <height>32</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
-          <width>25</width>
-          <height>25</height>
+          <width>48</width>
+          <height>64</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -375,11 +402,17 @@
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="spinBpm">
+       <widget class="QDoubleSpinBox" name="spinBpm">
+        <property name="minimumSize">
+         <size>
+          <width>72</width>
+          <height>32</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
-          <width>47</width>
-          <height>25</height>
+          <width>96</width>
+          <height>64</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -392,13 +425,13 @@
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
         <property name="minimum">
-         <number>30</number>
+         <double>30.000000000000000</double>
         </property>
         <property name="maximum">
-         <number>300</number>
+         <double>300.000000000000000</double>
         </property>
         <property name="value">
-         <number>120</number>
+         <double>120.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -407,7 +440,7 @@
     <item row="1" column="0" colspan="7">
      <widget class="QTabWidget" name="tabWidget">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
         <horstretch>1</horstretch>
         <verstretch>1</verstretch>
        </sizepolicy>
@@ -532,8 +565,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
-     <height>27</height>
+     <width>864</width>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -650,8 +683,6 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources>
-  <include location="../src/qseq64.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

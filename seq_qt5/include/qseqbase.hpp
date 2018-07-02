@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-20
- * \updates       2018-06-28
+ * \updates       2018-07-01
  * \license       GNU GPLv2 or above
  *
  *  This class WILL BE the base class for qseqroll, qseqdata, qtriggereditor,
@@ -567,8 +567,6 @@ public:
         m_snap = snap;
     }
 
-    bool needs_update () const;
-
     /**
      *  Used by qseqeditframe64 to force a redraw when the user changes
      *  a sequence parameter in this frame.
@@ -576,9 +574,12 @@ public:
 
     void set_dirty (bool f = true)
     {
-        m_is_dirty = f;
-        //////// perf().modify();   /////// TODO
+        m_is_dirty = f; //////// perf().modify();   /////// TODO
     }
+
+    bool needs_update () const;
+    void set_measures (int len);
+    int get_measures ();
 
 protected:
 
@@ -659,7 +660,6 @@ protected:
         m_justselected_one = v;
     }
 
-    // might remove, as Qt's width() and height() are available
     void window_width (int v)
     {
         m_window_width = v;
@@ -760,8 +760,8 @@ protected:
 
 protected:
 
-    void set_scroll_x ();
-    void set_scroll_y ();
+    void set_scroll_x (int x);
+    void set_scroll_y (int y);
 
     const perform & perf () const
     {

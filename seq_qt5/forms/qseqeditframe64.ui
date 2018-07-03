@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>884</width>
-    <height>554</height>
+    <height>558</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -582,7 +582,7 @@
     <rect>
      <x>51</x>
      <y>80</y>
-     <width>811</width>
+     <width>795</width>
      <height>30</height>
     </rect>
    </property>
@@ -600,7 +600,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>811</width>
+      <width>795</width>
       <height>30</height>
      </rect>
     </property>
@@ -663,7 +663,7 @@
     <rect>
      <x>51</x>
      <y>350</y>
-     <width>811</width>
+     <width>795</width>
      <height>20</height>
     </rect>
    </property>
@@ -684,7 +684,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>811</width>
+      <width>795</width>
       <height>20</height>
      </rect>
     </property>
@@ -693,9 +693,9 @@
   <widget class="QScrollArea" name="dataScrollArea">
    <property name="geometry">
     <rect>
-     <x>57</x>
-     <y>370</y>
-     <width>805</width>
+     <x>55</x>
+     <y>372</y>
+     <width>791</width>
      <height>128</height>
     </rect>
    </property>
@@ -719,7 +719,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>805</width>
+      <width>791</width>
       <height>128</height>
      </rect>
     </property>

@@ -37,11 +37,6 @@ const int c_maxBuses = 32;
 const int qc_thread_trigger_width_ms = 4;
 const int qc_thread_trigger_lookahead_ms = 2;
 
-/* data entry area (velocity, aftertouch, etc ) */
-const int qc_dataarea_y = 128;
-/* width of 'bar' */
-const int qc_data_x = 2;
-
 /* keyboard */
 
 // padding to the left of the note roll

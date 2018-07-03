@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-06-30
+ * \updates       2018-07-02
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1608,6 +1608,12 @@ public:
         midipulse tick_s, midipulse tick_f,
         midibyte status, midibyte cc,
         int d_s, int d_f
+    );
+    bool change_event_data_relative
+    (
+        midipulse tick_s, midipulse tick_f,
+        midibyte status, midibyte cc,
+        int newval
     );
 
 #ifdef SEQ64_STAZED_LFO_SUPPORT

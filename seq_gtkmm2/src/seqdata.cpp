@@ -691,6 +691,7 @@ seqdata::on_button_press_event (GdkEventButton * ev)
         m_old.x = m_old.y = m_old.width = m_old.height = 0;
         m_dragging = ! m_drag_handle;
 #else
+        m_seq.push_undo();
         m_old.x = m_old.y = m_old.width = m_old.height = 0;
         m_dragging = true;                          /* may be dragging now  */
 #endif
@@ -736,11 +737,11 @@ seqdata::on_button_release_event (GdkEventButton * ev)
 
         /*
          * \change ca 2016-06-19
-         *  Why do we modify here?
-         *
-         *  if (result)
-         *      perf().modify();
+         *  Why do we modify here?  We should!  Uncommenn
          */
+
+        if (result)
+            perf().modify();
     }
 
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS

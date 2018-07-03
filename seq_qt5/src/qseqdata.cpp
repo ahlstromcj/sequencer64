@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-30
+ * \updates       2018-07-02
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -60,15 +60,16 @@ qseqdata::qseqdata
     int snap,
     QWidget * parent
 ) :
-    QWidget         (parent),
-    qseqbase        (p, seq, zoom, snap),
-    mTimer          (nullptr),          // (new QTimer(this)),
-    mNumbers        (),
-    mFont           (),
-    m_status        (EVENT_NOTE_ON),   // edit note velocity for now
-    m_cc            (1),
-    mLineAdjust     (false),
-    mRelativeAdjust (false)
+    QWidget             (parent),
+    qseqbase            (p, seq, zoom, snap),
+    mTimer              (nullptr),          // (new QTimer(this)),
+    mNumbers            (),
+    mFont               (),
+    m_status            (EVENT_NOTE_ON),    // edit note velocity for now
+    m_cc                (1),
+    m_line_adjust       (false),
+    m_relative_adjust   (false),
+    m_dragging          (false)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     mTimer = new QTimer(this);                          // redraw timer !!!
@@ -98,7 +99,8 @@ qseqdata::sizeHint () const
 {
     return QSize
     (
-        seq().get_length() / zoom() + 100 + c_keyboard_padding_x, qc_dataarea_y
+        seq().get_length() / zoom() + 100 + c_keyboard_padding_x,
+        c_dataarea_y
     );
 }
 
@@ -159,7 +161,7 @@ qseqdata::paintEvent (QPaintEvent *)
             pen.setWidth(1);
             painter.setPen(pen);
             int x_offset = event_x + 3;
-            int y_offset = qc_dataarea_y - 25;
+            int y_offset = c_dataarea_y - 25;
             if (val.length() >= 1)
                 painter.drawText(x_offset, y_offset, val.at(0));
 
@@ -172,13 +174,16 @@ qseqdata::paintEvent (QPaintEvent *)
         ++cev;
     }
 
-    if (mLineAdjust)                            // draw edit line
+    if (m_line_adjust)                            // draw edit line
     {
         int x, y, w, h;
         pen.setColor(Qt::black);
         pen.setStyle(Qt::DashLine);
         painter.setPen(pen);
-        rect::xy_to_rect_get(drop_x(), drop_y(), current_x(), current_y(), x, y, w, h);
+        rect::xy_to_rect_get
+        (
+            drop_x(), drop_y(), current_x(), current_y(), x, y, w, h
+        );
         old_rect().set(x, y, w, h);
         painter.drawLine
         (
@@ -193,16 +198,16 @@ qseqdata::paintEvent (QPaintEvent *)
  */
 
 void
-qseqdata::mousePressEvent (QMouseEvent *event)
+qseqdata::mousePressEvent (QMouseEvent * event)
 {
-    int mouseX = event->x() - c_keyboard_padding_x;
-    int mouseY = event->y();
+    int mouse_x = event->x() - c_keyboard_padding_x;
+    int mouse_y = event->y();
 
     // If near an event (4px), do relative adjustment
 
     midipulse tick_start, tick_finish;
-    convert_x(mouseX - 2, tick_start);
-    convert_x(mouseX + 2, tick_finish);
+    convert_x(mouse_x - 2, tick_start);
+    convert_x(mouse_x + 2, tick_finish);
 
     seq().push_undo();
     if                      // check if these ticks would select an event
@@ -213,16 +218,17 @@ qseqdata::mousePressEvent (QMouseEvent *event)
         )
     )
     {
-        mRelativeAdjust = true;
+        m_relative_adjust = true;
     }
     else                    // set new values for seqs under a line
     {
-        mLineAdjust = true;
+        m_line_adjust = true;
     }
 
-    drop_x(mouseX);                     /* set values for line      */
-    drop_y(mouseY);
-    old_rect().clear();                 /* reset dirty redraw box   */
+    drop_x(mouse_x);                        /* set values for line      */
+    drop_y(mouse_y);
+    old_rect().clear();                     /* reset dirty redraw box   */
+    m_dragging = true;                      /* may be dragging now      */
 }
 
 /**
@@ -232,9 +238,9 @@ qseqdata::mousePressEvent (QMouseEvent *event)
 void
 qseqdata::mouseReleaseEvent (QMouseEvent * event)
 {
-    current_x(int(event->x()) - c_keyboard_padding_x);
+    current_x(int(event->x()) - c_keyboard_padding_x + scroll_offset_x());
     current_y(int(event->y()));
-    if (mLineAdjust)
+    if (m_line_adjust)
     {
         midipulse tick_s, tick_f;
         if (current_x() < drop_x())
@@ -249,16 +255,19 @@ qseqdata::mouseReleaseEvent (QMouseEvent * event)
 
         convert_x(drop_x(), tick_s);
         convert_x(current_x(), tick_f);
-        seq().change_event_data_range
+        bool ok = seq().change_event_data_range
         (
             tick_s, tick_f, m_status, m_cc,
-            qc_dataarea_y - drop_y() - 1, qc_dataarea_y - current_y() - 1
+            c_dataarea_y - drop_y() - 1, c_dataarea_y - current_y() - 1
         );
-
-        mLineAdjust = false;
+        m_line_adjust = false;
+        if (ok)
+            set_dirty();
     }
-    else if (mRelativeAdjust)
-        mRelativeAdjust = false;
+    else if (m_relative_adjust)
+        m_relative_adjust = false;
+
+    m_dragging = false;
 }
 
 /**
@@ -268,10 +277,13 @@ qseqdata::mouseReleaseEvent (QMouseEvent * event)
 void
 qseqdata::mouseMoveEvent (QMouseEvent * event)
 {
+    if (! m_dragging)
+        return;
+
     current_x(int(event->x()) - c_keyboard_padding_x);
     current_y(int(event->y()));
     midipulse tick_s, tick_f;
-    if (mLineAdjust)
+    if (m_line_adjust)
     {
         int adj_x_min, adj_x_max, adj_y_min, adj_y_max;
         if (current_x() < drop_x())
@@ -291,22 +303,30 @@ qseqdata::mouseMoveEvent (QMouseEvent * event)
 
         convert_x(adj_x_min, tick_s);
         convert_x(adj_x_max, tick_f);
-        seq().change_event_data_range
+        bool ok = seq().change_event_data_range
         (
             tick_s, tick_f, m_status, m_cc,
-            qc_dataarea_y - adj_y_min - 1, qc_dataarea_y - adj_y_max - 1
+            c_dataarea_y - adj_y_min - 1, c_dataarea_y - adj_y_max - 1
         );
+        if (ok)
+            set_dirty();
     }
-    else if (mRelativeAdjust)
+    else if (m_relative_adjust)
     {
         convert_x(drop_x() - 2, tick_s);
         convert_x(drop_x() + 2, tick_f);
 
-        ///// TODO
-        ///// int adjY = drop_y() - current_y();
-        ///// seq().change_event_data_relative(tick_s, tick_f, m_status, m_cc, adjY);
+        int adjy = drop_y() - current_y();
+        bool ok = seq().change_event_data_relative
+        (
+            tick_s, tick_f, m_status, m_cc, adjy
+        );
+        if (ok)
+            set_dirty();
 
-        // move the drop location so we increment properly on next mouse move
+        /*
+         * Move the drop location so we increment properly on next mouse move.
+         */
 
         drop_y(current_y());
     }

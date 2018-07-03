@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-30
+ * \updates       2018-07-03
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -801,8 +801,9 @@ sequence::select_event_handle
     bool have_selection = false;
     if (status == EVENT_NOTE_ON)                    // use a function!
     {
-        if (get_num_selected_events(status, cc))
-            have_selection = true;
+//      if (get_num_selected_events(status, cc))
+//          have_selection = true;
+        have_selection = m_events.any_selected_events(status, cc);
     }
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
@@ -2257,8 +2258,8 @@ sequence::randomize_selected
                 plus_minus;
 
             datitem += random;
-            if (datitem > (SEQ64_MAX_DATA_VALUE))       /* 127 */
-                datitem = (SEQ64_MAX_DATA_VALUE);
+            if (datitem > SEQ64_MAX_DATA_VALUE)         /* 127 */
+                datitem = SEQ64_MAX_DATA_VALUE;
 
             /*
              * Not possible with an unsigned data type.
@@ -2661,7 +2662,128 @@ sequence::change_event_data_range
 {
     automutex locker(m_mutex);
     bool result = false;
-    bool have_selection = get_num_selected_events(status, cc) > 0;
+    bool have_selection = m_events.any_selected_events(status, cc);
+    midibyte d0, d1;
+//  int count = 0;
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    {
+        event & er = DREF(i);
+        er.get_data(d0, d1);
+//      printf("count = %d\n", count++);
+
+        /*
+         * We should also match tempo events here.  But we have to treat them
+         * differently from the matched status events.
+         */
+
+        bool match = er.get_status() == status;
+        bool good;                          /* event::is_desired_cc_or_not_cc */
+        if (status == EVENT_CONTROL_CHANGE)
+            good = match && d0 == cc;       /* correct status & correct cc  */
+        else
+        {
+            if (er.is_tempo())
+                good = true;                /* Set tempo always editable    */
+            else
+                good = match;               /* correct status and not a cc  */
+        }
+
+        /*
+         * Optimize:  stop at the first event past the high end of the
+         * range.
+         */
+
+        midipulse tick = er.get_timestamp();
+        if (tick > tick_f)                              /* in range?        */
+            break;
+
+        if (tick < tick_s)                              /* in range?         */
+            good = false;
+
+        if (have_selection && ! er.is_selected())       /* in selection?     */
+            good = false;
+
+        if (good)
+        {
+#ifdef USE_SET_HOLD_UNDO                                /* issue #130       */
+            if (! get_hold_undo())                      /* stazed           */
+                set_hold_undo(true);
+#endif
+
+            if (tick_f == tick_s)
+                tick_f = tick_s + 1;                    /* no divide-by-0   */
+
+            int newdata =
+            (
+                (tick - tick_s) * data_f + (tick_f - tick) * data_s
+            ) / (tick_f - tick_s);
+
+            if (newdata < 0)
+                newdata = 0;
+            else if (newdata > SEQ64_MAX_DATA_VALUE)    /* 127              */
+                newdata = SEQ64_MAX_DATA_VALUE;
+
+            /*
+             * I think we can assume, at this point, that this is a good
+             * channel-message status byte.  However, we must treat tempo
+             * events differently.
+             */
+
+            if (er.is_tempo())
+            {
+                midibpm tempo = note_value_to_tempo(midibyte(newdata));
+                er.set_tempo(tempo);
+            }
+            else
+            {
+                if (event::is_one_byte_msg(status))     /* patch or pressure */
+                    d0 = newdata;
+                else
+                    d1 = newdata;
+
+                er.set_data(d0, d1);
+            }
+            result = true;
+        }
+    }
+    return result;
+}
+
+/**
+ *  Changes the event data range.  Changes only selected events, if any.
+ *
+ * \threadsafe
+ *
+ * \param tick_s
+ *      Provides the starting tick value.
+ *
+ * \param tick_f
+ *      Provides the ending tick value.
+ *
+ * \param status
+ *      Provides the event status that is to be changed.
+ *
+ * \param cc
+ *      Provides the event control value.
+ *
+ * \param newval
+ *      Provides the new data value for (additive) "scaling".
+ *
+ * \return
+ *      Returns true if the data was changed.
+ */
+
+bool
+sequence::change_event_data_relative
+(
+    midipulse tick_s, midipulse tick_f,
+    midibyte status, midibyte cc,
+    int newval
+)
+{
+    automutex locker(m_mutex);
+    bool result = false;
+    bool have_selection = m_events.any_selected_events(status, cc);
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         midibyte d0, d1;
@@ -2685,53 +2807,56 @@ sequence::change_event_data_range
                 good = match;               /* correct status and not a cc  */
         }
 
+        /*
+         * Optimize:  stop at the first event past the high end of the
+         * range.
+         */
+
         midipulse tick = er.get_timestamp();
-        if (! (tick >= tick_s && tick <= tick_f))       /* in range?         */
+        if (tick > tick_f)                              /* in range?        */
+            break;
+
+        if (tick < tick_s)                              /* in range?         */
             good = false;
 
-        if (have_selection && ! er.is_selected())       /* in selection?     */
+        if (have_selection && ! er.is_selected())       /* in selection?    */
             good = false;
 
         if (good)
         {
+            int newdata = d1 + newval;                  /* "scale" data     */
+#ifdef USE_SET_HOLD_UNDO                                /* issue #130       */
             if (! get_hold_undo())                      /* stazed           */
                 set_hold_undo(true);
-
-            if (tick_f == tick_s)
-                tick_f = tick_s + 1;                    /* no divide-by-0   */
-
-            int newdata =
-            (
-                (tick - tick_s) * data_f + (tick_f - tick) * data_s
-            ) / (tick_f - tick_s);
+#endif
 
             if (newdata < 0)
                 newdata = 0;
+            else if (newdata > SEQ64_MAX_DATA_VALUE)    /* 127              */
+                newdata = SEQ64_MAX_DATA_VALUE;
 
-            if (newdata >= SEQ64_MIDI_COUNT_MAX)        /* 128              */
-                newdata = SEQ64_MIDI_COUNT_MAX - 1;
+            if (status == EVENT_NOTE_ON)
+                d1 = newdata;
 
-            /*
-             * I think we can assume, at this point, that this is a good
-             * channel-message status byte.  However, we must treat tempo
-             * events differently.
-             */
+            if (status == EVENT_NOTE_OFF)
+                d1 = newdata;
 
-            if (er.is_tempo())
-            {
-                midibpm tempo = note_value_to_tempo(midibyte(newdata));
-                er.set_tempo(tempo);
-            }
-            else
-            {
-                if (event::is_one_byte_msg(status))     /* patch or pressure */
-                    d0 = newdata;
-                else
-                    d1 = newdata;
+            if (status == EVENT_AFTERTOUCH)
+                d1 = newdata;
 
-                er.set_data(d0, d1);
-            }
-            result = true;
+            if (status == EVENT_CONTROL_CHANGE)
+                d1 = newdata;
+
+            if (status == EVENT_PROGRAM_CHANGE)
+                d0 = newdata;                           /* d0 == new patch  */
+
+            if (status == EVENT_CHANNEL_PRESSURE)
+                d0 = newdata;                           /* d0 == pressure   */
+
+            if (status == EVENT_PITCH_WHEEL)
+                d1 = newdata;
+
+            er.set_data(d0, d1);
         }
     }
     return result;
@@ -2782,10 +2907,9 @@ sequence::change_event_data_lfo
     automutex locker(m_mutex);
     double dlength = double(m_length);
     double dbw = double(m_time_beat_width);
-    bool have_selection = false;            /* change only selected if true */
-    if (get_num_selected_events(status, cc))
-        have_selection = true;
-
+//  bool have_selection = false;            /* change only selected if true */
+//  if (get_num_selected_events(status, cc))
+    bool have_selection = m_events.any_selected_events(status, cc);
     if (m_length == 0)                      /* should never happen, though  */
         dlength = double(m_ppqn);
 
@@ -2808,8 +2932,10 @@ sequence::change_event_data_lfo
 
         if (is_set)
         {
+#ifdef USE_SET_HOLD_UNDO                                /* issue #130       */
             if (! get_hold_undo())
                 set_hold_undo(true);
+#endif
 
             double dtick = double(e.get_timestamp());
             double angle = speed * dtick * dbw / dlength + phase;

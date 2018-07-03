@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2018-02-25
+ * \updates       2018-07-02
  * \license       GNU GPLv2 or above
  *
  *  This container now can indicate if certain Meta events (time-signaure or
@@ -784,6 +784,47 @@ event_list::count_selected_events (midibyte status, midibyte cc) const
             {
                 if (e.is_selected())
                     ++result;
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ *  Indicates that at least one matching event is selected.  Acts like
+ *  event_list::count_selected_events(), but stops after finding a selected
+ *  note.
+ *
+ * \return
+ *      Returns true if at least one matching event is selected.
+ */
+
+bool
+event_list::any_selected_events (midibyte status, midibyte cc) const
+{
+    bool result = false;
+    for (Events::const_iterator i = m_events.begin(); i != m_events.end(); ++i)
+    {
+        const event & e = dref(i);
+        if (e.is_tempo())
+        {
+            if (e.is_selected())
+            {
+                result = true;
+                break;
+            }
+        }
+        else if (e.get_status() == status)
+        {
+            midibyte d0, d1;
+            e.get_data(d0, d1);                 /* get the two data bytes */
+            if (event::is_desired_cc_or_not_cc(status, cc, d0))
+            {
+                if (e.is_selected())
+                {
+                    result = true;
+                    break;
+                }
             }
         }
     }

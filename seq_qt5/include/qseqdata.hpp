@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-27
+ * \updates       2018-07-02
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -117,10 +117,25 @@ private:
     midibyte m_status;
     midibyte m_cc;
 
-    // interaction states
+    /**
+     *  Used when dragging a new-level adjustment slope with the mouse.
+     */
 
-    bool mLineAdjust;           // dragging a new-level adjustment slope
-    bool mRelativeAdjust;       // relative adjusting notes by dragging
+    bool m_line_adjust;
+
+    /**
+     *  Use when doing a relative adjustment of notes by dragging.
+     */
+
+    bool m_relative_adjust;
+
+    /**
+     *  This value is true if the mouse is being dragged in the data pane,
+     *  which is done in order to change the height and value of each data
+     *  line.
+     */
+
+    bool m_dragging;
 
 };          // class qseqdata
 

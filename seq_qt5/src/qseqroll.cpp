@@ -117,7 +117,7 @@ qseqroll::qseqroll
      *  window_height(wh);
      */
 
-    window_width(800 - 5);
+    window_width(791 - SEQ64_PROGRESS_PAGE_OVERLAP);  // window_width(800 - 5);
     window_height(240 - 5);
 
     /*

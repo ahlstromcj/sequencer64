@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-27
+ * \updates       2018-07-04
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1903,6 +1903,8 @@ public:
         return is_mseq_valid(seq) ? m_seqs_active[seq] : false ;
     }
 
+    bool screenset_is_active (int screenset);
+
 #ifdef SEQ64_STAZED_TRANSPOSE
 
     void apply_song_transpose ();
@@ -2353,7 +2355,7 @@ public:
     /**
      *  New for the Qt 5 version, to stop endless needless redraws upon
      *  ticking of the redraw timer.  Also see (for Qt 5) the qseqbase ::
-     *  needs_update() function.
+     *  needs_update() function.  Most useful in seqedit or qseqedit.
      */
 
     bool needs_update (int seq)

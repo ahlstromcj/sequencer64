@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-06-08
+ * \updates       2018-07-04
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1880,6 +1880,34 @@ perform::set_was_active (int seq)
         m_was_active_main[seq] = m_was_active_edit[seq] =
             m_was_active_perf[seq] = m_was_active_names[seq] = true;
     }
+}
+
+/**
+ *  Tests to see if the screen-set is active.  By "active", we mean that
+ *  the screen-set has at least one active pattern.
+ *
+ * \param screenset
+ *      The number of the screen-set to check, re 0.
+ *
+ * \return
+ *      Returns true if the screen-set has an active pattern.
+ */
+
+bool
+perform::screenset_is_active (int screenset)
+{
+    bool result = false;
+    int seqsinset = usr().seqs_in_set();
+    int seqnum = screenset * seqsinset;
+    for (int seq = 0; seq < seqsinset; ++seq, ++seqnum)
+    {
+        if (is_active(seqnum))
+        {
+            result = true;
+            break;
+        }
+    }
+    return result;
 }
 
 /**

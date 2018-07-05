@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-30
+ * \updates       2018-07-04
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -113,7 +113,7 @@
 #include <sigc++/bind.h>
 
 #include "calculations.hpp"             /* measures_to_ticks()          */
-#include "controllers.hpp"
+#include "controllers.hpp"              /* seq64::c_controller_names[]  */
 #include "event.hpp"
 #include "fruityseq.hpp"                /* seq64::FruitySeqEventInput   */
 #include "fruityseqroll.hpp"            /* seq64::FruitySeqRollInput    */
@@ -1756,6 +1756,10 @@ seqedit::repopulate_midich_menu (int buss)
  *  less than 128, which means the sequences from 0 to 127, or the first four
  *  screen sets.  Higher sequences can be selected, but, right now, they
  *  cannot be saved.  We'll probably fix that at some point, low priority.
+ *
+ * \todo
+ *      What if the sequences get moved around, or deleted, or new ones created?
+ *      Then we must reconstruct this menu from scratch.
  */
 
 void
@@ -1777,28 +1781,27 @@ seqedit::popup_sequence_menu ()
     );
     m_menu_sequences->items().push_back(SeparatorElem());
     int seqsinset = usr().seqs_in_set();
-    for (int ss = 0; ss < c_max_sets; ++ss)
+    for (int sset = 0; sset < c_max_sets; ++sset)
     {
-        Gtk::Menu * menuss = nullptr;
-        bool inserted = false;
+        Gtk::Menu * menusset = nullptr;
+        if (perf().screenset_is_active(sset))
+        {
+            char number[8];
+            snprintf(number, sizeof number, "[%d]", sset);
+            menusset = manage(new Gtk::Menu());
+            m_menu_sequences->items().push_back(MenuElem(number, *menusset));
+        }
         for (int seq = 0; seq < seqsinset; ++seq)
         {
             char name[32];
-            int i = ss * seqsinset + seq;
-            if (perf().is_active(i))
+            int s = sset * seqsinset + seq;
+            sequence * sp = perf().get_sequence(s);
+            if (not_nullptr(sp))
             {
-                if (! inserted)
-                {
-                    inserted = true;
-                    snprintf(name, sizeof name, "[%d]", ss);
-                    menuss = manage(new Gtk::Menu());
-                    m_menu_sequences->items().push_back(MenuElem(name, *menuss));
-                }
-                sequence * seq = perf().get_sequence(i);
-                snprintf(name, sizeof name, "[%d] %.13s", i, seq->name().c_str());
-                menuss->items().push_back
+                snprintf(name, sizeof name, "[%d] %.13s", s, sp->name().c_str());
+                menusset->items().push_back
                 (
-                    MenuElem(name, sigc::bind(SET_BG_SEQ, i))
+                    MenuElem(name, sigc::bind(SET_BG_SEQ, s))
                 );
             }
         }
@@ -1823,7 +1826,7 @@ seqedit::popup_sequence_menu ()
 void
 seqedit::set_background_sequence (int seqnum)
 {
-    m_bgsequence = seqnum;              /* we should check this value!  */
+    m_bgsequence = seqnum;                      /* should check this value!  */
     if (usr().global_seq_feature())
         usr().seqedit_bgsequence(seqnum);
 
@@ -1832,21 +1835,28 @@ seqedit::set_background_sequence (int seqnum)
         m_entry_sequence->set_text("Off");
         m_seqroll_wid->set_background_sequence(false, SEQ64_SEQUENCE_LIMIT);
     }
-    if (perf().is_active(seqnum))
+    sequence * seq = perf().get_sequence(seqnum);
+    if (not_nullptr(seq))
     {
         char name[24];
-        sequence * seq = perf().get_sequence(seqnum);
         snprintf(name, sizeof name, "[%d] %.13s", seqnum, seq->name().c_str());
         m_entry_sequence->set_text(name);
         m_seqroll_wid->set_background_sequence(true, seqnum);
         if (seqnum < usr().max_sequence())      /* even more restrictive */
-            m_seq.background_sequence(long(seqnum));
+            m_seq.background_sequence(seqnum);
     }
 }
 
 /**
  *  Sets the menu pixmap depending on the given state, where true is a
  *  full menu (black background), and empty menu (gray background).
+ *
+ * \param state
+ *      If true, the full-menu image will be created.  Otherwise, the
+ *      empty-menu image will be created.
+ *
+ * \return
+ *      Returns a pointer to the created image.
  */
 
 Gtk::Image *
@@ -2203,6 +2213,10 @@ seqedit::repopulate_mini_event_menu (int buss, int channel)
     if (not_nullptr(eventflag))
         m_button_minidata->set_image(*eventflag);
 }
+
+/**
+ *
+ */
 
 void
 seqedit::popup_record_menu()

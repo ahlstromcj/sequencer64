@@ -254,8 +254,21 @@ sequence::set_hold_undo (bool hold)
     automutex locker(m_mutex);
     if (hold)
     {
-        for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
-            m_events_undo_hold.add(DREF(i));
+        /*
+         * \change ca 2018-07-03
+         *      Helps resolve GitHub issue #130.  A simple copy is a lot
+         *      faster for large patterns!  The reason is that event_list ::
+         *      add() for std::list does a sort after every addition.
+         *
+         *  for
+         *  (
+         *      event_list::iterator i = m_events.begin();
+         *      i != m_events.end(); ++i
+         *  )
+         *  m_events_undo_hold.add(DREF(i));
+         */
+
+        m_events_undo_hold = m_events;
     }
     else
        m_events_undo_hold.clear();
@@ -2648,6 +2661,12 @@ sequence::paste_selected (midipulse tick, int note)
  * \param data_f
  *      Provides the finishing data value.
  *
+ * \param useundo
+ *      If true, then log the events for a potential undo operation.
+ *      This value defaults to false, because, for long patterns, there is a
+ *      significant delay while moving the mouse.  Set this value to true only
+ *      for the button-release event.
+ *
  * \return
  *      Returns true if the data was changed.
  */
@@ -2657,19 +2676,22 @@ sequence::change_event_data_range
 (
     midipulse tick_s, midipulse tick_f,
     midibyte status, midibyte cc,
-    int data_s, int data_f
+    int data_s, int data_f, bool useundo
 )
 {
     automutex locker(m_mutex);
     bool result = false;
     bool have_selection = m_events.any_selected_events(status, cc);
-    midibyte d0, d1;
-//  int count = 0;
+    if (useundo)
+    {
+        if (! get_hold_undo())                          /* stazed           */
+            set_hold_undo(true);
+    }
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
+        midibyte d0, d1;
         event & er = DREF(i);
         er.get_data(d0, d1);
-//      printf("count = %d\n", count++);
 
         /*
          * We should also match tempo events here.  But we have to treat them
@@ -2769,6 +2791,12 @@ sequence::change_event_data_range
  * \param newval
  *      Provides the new data value for (additive) "scaling".
  *
+ * \param useundo
+ *      If true, then log the events for a potential undo operation.
+ *      This value defaults to false, because, for long patterns, there is a
+ *      significant delay while moving the mouse.  Set this value to true only
+ *      for the button-release event.
+ *
  * \return
  *      Returns true if the data was changed.
  */
@@ -2778,12 +2806,17 @@ sequence::change_event_data_relative
 (
     midipulse tick_s, midipulse tick_f,
     midibyte status, midibyte cc,
-    int newval
+    int newval, bool useundo
 )
 {
     automutex locker(m_mutex);
     bool result = false;
     bool have_selection = m_events.any_selected_events(status, cc);
+    if (useundo)
+    {
+        if (! get_hold_undo())                          /* stazed           */
+            set_hold_undo(true);
+    }
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         midibyte d0, d1;
@@ -2895,24 +2928,33 @@ sequence::change_event_data_relative
  * \param cc
  *      Provides the control-change value for Control Change events that are
  *      to be modified.
+ *
+ * \param useundo
+ *      If true, then log the events for a potential undo operation.
+ *      This value defaults to false, because, for long patterns, there is a
+ *      significant delay while moving the mouse.  Set this value to true only
+ *      for the button-release event.
  */
 
 void
 sequence::change_event_data_lfo
 (
     double value, double range, double speed, double phase,
-    wave_type_t wave, midibyte status, midibyte cc
+    wave_type_t wave, midibyte status, midibyte cc, bool useundo
 )
 {
     automutex locker(m_mutex);
     double dlength = double(m_length);
     double dbw = double(m_time_beat_width);
-//  bool have_selection = false;            /* change only selected if true */
-//  if (get_num_selected_events(status, cc))
     bool have_selection = m_events.any_selected_events(status, cc);
     if (m_length == 0)                      /* should never happen, though  */
         dlength = double(m_ppqn);
 
+    if (useundo)
+    {
+        if (! get_hold_undo())                          /* stazed           */
+            set_hold_undo(true);
+    }
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         bool is_set = false;

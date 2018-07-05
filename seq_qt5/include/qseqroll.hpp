@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-30
+ * \updates       2018-07-04
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -50,7 +50,6 @@
  *  Need a forward declaration here, and it is not in the seq64 namespace.
  */
 
-// class qscrollmaster;
 class qseqeditframe64;
 
 /*
@@ -151,6 +150,9 @@ protected:
     }
 
     void set_chord (int chord);
+    void set_key (int key);
+    void set_scale (int scale);
+    void set_background_sequence (bool state, int seq);
 
 protected:      // overrides for painting, mouse/keyboard events, & size hints
 
@@ -178,7 +180,6 @@ private:
      *  Holds a pointer to the scroll-master object in the edit-frame window.
      */
 
-    // qscrollmaster * m_scroll_master;
     qseqeditframe64 * m_parent_frame;
 
     /**
@@ -222,10 +223,6 @@ private:
 
     int m_chord;
 
-    /**
-     *  The current key selected?
-     */
-
 #endif
 
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
@@ -243,6 +240,10 @@ private:
      */
 
 #endif
+
+    /**
+     *  The current musical key selected.
+     */
 
     int m_key;
 

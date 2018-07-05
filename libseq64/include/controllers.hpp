@@ -48,7 +48,7 @@ namespace seq64
 /*
  *  Provides the default names of MIDI controllers, which a specified in the
  *  controllers.cpp module.  This array is used
- *  only by the seqedit class.
+ *  only by the seqedit/qseqedit classes.
  */
 
 extern std::string c_controller_names[SEQ64_MIDI_COUNT_MAX];

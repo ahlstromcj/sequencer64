@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-01
+ * \updates       2018-07-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -60,9 +60,9 @@
 namespace seq64
 {
 
-static const int qc_text_x = 6;
-static const int qc_text_y = 12;
-static const int qc_mainwid_border = 0;
+static const int c_text_x = 6;
+// static const int c_text_y = 12;
+static const int c_mainwid_border = 0;
 
 /**
  *
@@ -89,6 +89,8 @@ qsliveframe::qsliveframe (perform & p, QWidget * parent)
     m_mainwnd_rows      (usr().mainwnd_rows()),
     m_mainwnd_cols      (usr().mainwnd_cols()),
     m_mainwid_spacing   (usr().mainwid_spacing()),
+    m_screenset_slots   (m_mainwnd_rows * m_mainwnd_cols),
+    m_screenset_offset  (m_bank_id * m_screenset_slots),
     m_slot_w            (0),
     m_slot_h            (0),
     m_preview_w         (0),
@@ -126,10 +128,9 @@ qsliveframe::qsliveframe (perform & p, QWidget * parent)
     connect(ui->spinBank, SIGNAL(valueChanged(int)), this, SLOT(updateBank(int)));
     connect(ui->txtBankName, SIGNAL(textChanged()), this, SLOT(updateBankName()));
 
-
     m_timer = new QTimer(this);        /* timer for regular redraws    */
     m_timer->setInterval(usr().window_redraw_rate());
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(update()));
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(conditional_update()));
     m_timer->start();
 }
 
@@ -145,6 +146,20 @@ qsliveframe::~qsliveframe()
     delete ui;
     if (not_nullptr(m_msg_box))
         delete m_msg_box;
+}
+
+/**
+ *  In an effort to reduce CPU usage when simply idling, this function calls
+ *  update() only if necessary.  See qseqbase::needs_update().  For now, we
+ *  just copped the code from that function, but have to check all sequences
+ *  at some point.  LATER.
+ */
+
+void
+qsliveframe::conditional_update ()
+{
+    if (perf().needs_update(0))     // seq().number()))
+        update();
 }
 
 /**
@@ -296,7 +311,7 @@ qsliveframe::drawSequence (int seq)
             pen.setWidth(1);
             pen.setStyle(Qt::SolidLine);
             painter.setPen(pen);
-            painter.drawText(base_x + qc_text_x, base_y + 4, 80, 80, 1, title);
+            painter.drawText(base_x + c_text_x, base_y + 4, 80, 80, 1, title);
 
             std::string sl = perf().sequence_label(*s);
             QString label(sl.c_str());
@@ -479,11 +494,41 @@ qsliveframe::drawSequence (int seq)
 void
 qsliveframe::drawAllSequences ()
 {
-    for (int i = 0; i < (m_mainwnd_rows * m_mainwnd_cols); i++)
+#ifdef USE_KEPLER34_REDRAW_ALL
+    for (int i = 0; i < (m_mainwnd_rows * m_mainwnd_cols); ++i)
     {
         drawSequence(i + (m_bank_id * m_mainwnd_rows * m_mainwnd_cols));
         m_last_tick_x[i + (m_bank_id * m_mainwnd_rows * m_mainwnd_cols)] = 0;
     }
+#else
+    int send =  m_screenset_offset + m_screenset_slots;
+    for (int s = m_screenset_offset; s < send; ++s)
+    {
+        drawSequence(s);
+        m_last_tick_x[s] = 0;
+    }
+#endif
+}
+
+/**
+ *  Common-code helper function.
+ *
+ * \param seqnum
+ *      Provides the number of the sequence to validate.
+ *
+ * \return
+ *      Returns true if the sequence number is valid for the current
+ *      m_bank_id value.
+ */
+
+bool
+qsliveframe::valid_sequence (int seqnum)
+{
+    return
+    (
+        seqnum >= m_screenset_offset &&
+        seqnum < (m_screenset_offset + m_screenset_slots)
+    );
 }
 
 /**
@@ -498,7 +543,7 @@ qsliveframe::setBank ()
 }
 
 /**
- *
+ *  Roughly similar to mainwid::log_screenset().
  */
 
 void
@@ -508,7 +553,8 @@ qsliveframe::setBank (int bank)
     ui->txtBankName->setPlainText(bname);
     ui->spinBank->setValue(bank);
     m_bank_id = bank;
-    update();
+    m_screenset_offset = m_screenset_slots * bank;
+    update(); // perf().modify();
 }
 
 /**
@@ -520,7 +566,6 @@ qsliveframe::updateBank (int bank)
 {
     perf().set_screenset(bank);
     setBank(bank);
-    perf().modify();
 }
 
 /**
@@ -563,8 +608,8 @@ qsliveframe::updateInternalBankName ()
 int
 qsliveframe::seqIDFromClickXY (int click_x, int click_y)
 {
-    int x = click_x - qc_mainwid_border;        /* adjust for border */
-    int y = click_y - qc_mainwid_border;
+    int x = click_x - c_mainwid_border;         /* adjust for border */
+    int y = click_y - c_mainwid_border;
     if                                          /* is it in the box ? */
     (
         x < 0 || x >= ((m_slot_w + m_mainwid_spacing) * m_mainwnd_cols) ||
@@ -614,7 +659,7 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
 {
     /* get the sequence number we clicked on */
 
-    m_curr_seq = seqIDFromClickXY( event->x(), event->y());
+    m_curr_seq = seqIDFromClickXY(event->x(), event->y());
     m_button_down = false;
 
     /*
@@ -782,10 +827,20 @@ qsliveframe::mouseMoveEvent (QMouseEvent * event)
  */
 
 void
-qsliveframe::mouseDoubleClickEvent (QMouseEvent *)
+qsliveframe::mouseDoubleClickEvent (QMouseEvent * event)
 {
+#ifdef USE_KEPLER34_LIVE_DOUBLE_CLICK
     if (m_adding_new)
         newSeq();
+#else
+    int m_curr_seq = seqIDFromClickXY(event->x(), event->y());
+    if (! perf().is_active(m_curr_seq))
+    {
+        perf().new_sequence(m_curr_seq);
+        perf().get_sequence(m_curr_seq)->set_dirty();
+    }
+    callEditorEx(m_curr_seq);
+#endif
 }
 
 /**
@@ -890,18 +945,28 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
         if (! done)
         {
             /*
-             * THIS IS ONLY A STOP-GAP!!!  Point to the pattern, click, and press
-             * the key.
+             * THIS IS ONLY A STOP-GAP!!!  Point to the pattern, click, and
+             * press the key.
              */
 
             keystroke k(gdkkey, SEQ64_KEYSTROKE_PRESS);
             if (k.is(PREFKEY(pattern_edit)))                // equals sign
             {
+                if (! perf().is_active(m_curr_seq))
+                {
+                    perf().new_sequence(m_curr_seq);
+                    perf().get_sequence(m_curr_seq)->set_dirty();
+                }
                 callEditorEx(m_curr_seq);
                 done = true;
             }
             else if (k.is(PREFKEY(event_edit)))             // minus sign
             {
+                if (! perf().is_active(m_curr_seq))
+                {
+                    perf().new_sequence(m_curr_seq);
+                    perf().get_sequence(m_curr_seq)->set_dirty();
+                }
                 callEditor(m_curr_seq);
                 done = true;
             }

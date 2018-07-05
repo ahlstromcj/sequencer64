@@ -574,7 +574,7 @@ public:
 
     void set_dirty (bool f = true)
     {
-        m_is_dirty = f; //////// perf().modify();   /////// TODO
+        m_is_dirty = f;
     }
 
     bool needs_update () const;

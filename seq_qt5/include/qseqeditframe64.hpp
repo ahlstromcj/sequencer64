@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-06-30
+ * \updates       2018-07-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -43,6 +43,7 @@
  */
 
 class QGridLayout;
+class QIcon;
 class QMenu;
 class QPalette;
 class QScrollArea;
@@ -148,33 +149,35 @@ private:
         return m_performance;
     }
 
+    QIcon * create_menu_image (bool state);
+
 private slots:
 
     void update_seq_name ();
     void update_beats_per_measure (int index);
     void increment_beats_per_measure ();
+    void reset_beats_per_measure ();
     void update_beat_width (int index);
     void next_beat_width ();
+    void reset_beat_width ();
     void update_measures (int index);
     void next_measures ();
-    void update_grid_snap (int index);
-    void update_note_length (int index);
-
+    void reset_measures ();
 #ifdef SEQ64_STAZED_TRANSPOSE
     void transpose (bool ischecked);
 #endif
-
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
     void update_chord (int index);
     void increment_chord ();
+    void reset_chord ();
 #endif
-
-    void reset_midi_bus ();
     void update_midi_bus (int index);
-    void reset_midi_channel ();
+    void reset_midi_bus ();
     void update_midi_channel (int index);
+    void reset_midi_channel ();
     void undo ();
     void redo ();
+
     void tools ();
     void select_all_notes ();
     void inverse_note_selection ();
@@ -182,34 +185,67 @@ private slots:
     void tighten_notes ();
     void transpose_notes ();
 
+    void sequences ();
+
+    void update_grid_snap (int index);
+    void reset_grid_snap ();
+    void update_note_length (int index);
+    void reset_note_length ();
+    void update_zoom (int index);
+    void reset_zoom ();
+    void zoom_in ();
+    void zoom_out ();
+    void update_key (int index);
+    void reset_key ();
+    void update_scale (int index);
+    void reset_scale ();
+    void events ();
+
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
     void follow (bool ischecked);
 #endif
 
-    void update_grid_zoom (int index);
-    void zoom_in ();
-    void zoom_out ();
-
 private:
 
     void do_action (edit_action_t action, int var);
-    void create_tools_menu ();
+    void popup_tool_menu ();
+    void popup_sequence_menu ();
+    void popup_event_menu ();
+    void repopulate_event_menu (int buss, int channel);
+    void popup_mini_event_menu ();
+    void repopulate_mini_event_menu (int buss, int channel);
 
 private:
 
-    void set_snap (int s);
-    void set_note_length (int nlen);
-    void set_zoom (int z);
     void set_dirty ();
     void set_beats_per_measure (int bpm);
     void set_beat_width (int bw);
     void set_measures (int len);
     int get_measures ();
+    void set_midi_channel (int midichannel, bool user_change = false);
+    void set_midi_bus (int midibus, bool user_change = false);
+    void set_note_length (int nlen);
+    void set_snap (int s);
+    void set_zoom (int z);
     void set_chord (int chord);
+    void set_key (int key);
+    void set_scale (int key);
+    void set_background_sequence (int seqnum);
 
 #ifdef SEQ64_STAZED_TRANSPOSE
     void set_transpose_image (bool istransposable);
 #endif
+
+    void set_event_entry
+    (
+        QMenu * menu,
+        const std::string & text,
+        bool present,
+        midibyte status,
+        midibyte control = 0
+    );
+
+    void set_data_type (midibyte status, midibyte control = 0);
 
 private:
 
@@ -227,6 +263,24 @@ private:
      */
 
     QMenu * m_tools_popup;
+
+    /**
+     *  Menu for Background Sequences.
+     */
+
+    QMenu * m_sequences_popup;
+
+    /**
+     *  Menu for the Event Data button.
+     */
+
+    QMenu * m_events_popup;
+
+    /**
+     *  Menu for the "mini" Event Data button.
+     */
+
+    QMenu * m_minidata_popup;
 
     /**
      *  Holds the current beats-per-measure selection.

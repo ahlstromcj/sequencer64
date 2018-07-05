@@ -1,6 +1,6 @@
 README for Sequencer64 0.95.1 (Native JACK, CLI, varisets, tempo, Windows)
 Chris Ahlstrom
-2015-09-10 to 2018-06-29
+2015-09-10 to 2018-07-03
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
 The heart of seq24 remains intact.  It is an old friend, and maintains some
@@ -47,7 +47,8 @@ conventional source tarball.
 
 Pull Request #150 from user jfrey-xx:
 
-	While the commit messages should be self-explanatory, here is a list of the current modifications:
+    While the commit messages should be self-explanatory, here is a list of
+    the current modifications:
 
 	-	I encountered weird behaviors while recording without touching the GUI,
         and switching back and forth between play / pause (note on 0, note off
@@ -79,6 +80,8 @@ Recent changes:
         -   Fixed seq64 to match seq24/qpseq64 for displaying beats and
             measures properly in seqedit when the time-signature is changed.
         -   Double precision for BPM in Qt user-interface.
+        -   Fixed issue #130 where editing event data (seqdata) would
+            be slow/jerky with large patterns.
     -   Version 0.95.0:
         -   Improved the Windows version and its packaging.  Added a Windows
             icon, an installer, better data support and documentation, and

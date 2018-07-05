@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-01
+ * \updates       2018-07-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -128,6 +128,31 @@ qseqroll::qseqroll
     mTimer->setInterval(usr().window_redraw_rate());    // 20
     QObject::connect(mTimer, SIGNAL(timeout()), this, SLOT(conditional_update()));
     mTimer->start();
+}
+
+/**
+ *  This function sets the given sequence onto the piano roll of the pattern
+ *  editor, so that the musician can have another pattern to play against.
+ *  The state parameter sets the boolean m_drawing_background_seq.
+ *
+ * \param state
+ *      If true, the background sequence will be drawn.
+ *
+ * \param seq
+ *      Provides the sequence number, which is checked against the
+ *      SEQ64_IS_LEGAL_SEQUENCE() macro before being used.  This macro allows
+ *      the value SEQ64_SEQUENCE_LIMIT, which disables the background
+ *      sequence.
+ */
+
+void
+qseqroll::set_background_sequence (bool state, int seq)
+{
+    m_drawing_background_seq = state;
+    if (SEQ64_IS_LEGAL_SEQUENCE(seq))
+        m_background_sequence = seq;
+
+    set_dirty();                        // update_and_draw();
 }
 
 /**
@@ -1208,6 +1233,29 @@ qseqroll::set_chord (int chord)
 }
 
 #endif  // SEQ64_STAZED_CHORD_GENERATOR
+
+/**
+ *
+ */
+
+void
+qseqroll::set_key (int key)
+{
+    if (m_key != key)
+        m_key = key;
+}
+
+/**
+ *
+ */
+
+void
+qseqroll::set_scale (int scale)
+{
+    if (m_scale != scale)
+        m_scale = scale;
+}
+
 
 /**
  *  Checks the position of the tick, and, if it is in a different piano-roll

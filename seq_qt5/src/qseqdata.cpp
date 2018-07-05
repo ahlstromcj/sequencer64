@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-02
+ * \updates       2018-07-03
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -200,15 +200,17 @@ qseqdata::paintEvent (QPaintEvent *)
 void
 qseqdata::mousePressEvent (QMouseEvent * event)
 {
-    int mouse_x = event->x() - c_keyboard_padding_x;
+    int mouse_x = event->x() - c_keyboard_padding_x + scroll_offset_x();
     int mouse_y = event->y();
 
-    // If near an event (4px), do relative adjustment
+    /*
+     * If near an event (4px), do relative adjustment.  Compare to
+     * seqdata code marked by USE_STAZED_SEQDATA_EXTENSIONS.
+     */
 
     midipulse tick_start, tick_finish;
     convert_x(mouse_x - 2, tick_start);
     convert_x(mouse_x + 2, tick_finish);
-
     seq().push_undo();
     if                      // check if these ticks would select an event
     (
@@ -258,11 +260,12 @@ qseqdata::mouseReleaseEvent (QMouseEvent * event)
         bool ok = seq().change_event_data_range
         (
             tick_s, tick_f, m_status, m_cc,
-            c_dataarea_y - drop_y() - 1, c_dataarea_y - current_y() - 1
+            c_dataarea_y - drop_y() - 1, c_dataarea_y - current_y() - 1,
+            true                        /* allow undo setup to happen */
         );
         m_line_adjust = false;
         if (ok)
-            set_dirty();
+            set_dirty();                /* TODO: do this for undo/redo  */
     }
     else if (m_relative_adjust)
         m_relative_adjust = false;

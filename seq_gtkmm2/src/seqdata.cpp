@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-02
+ * \updates       2018-07-03
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -731,13 +731,14 @@ seqdata::on_button_release_event (GdkEventButton * ev)
         result = m_seq.change_event_data_range
         (
             tick_s, tick_f, m_status, m_cc,
-            c_dataarea_y - m_drop_y - 1, c_dataarea_y - m_current_y - 1
+            c_dataarea_y - m_drop_y - 1, c_dataarea_y - m_current_y - 1,
+            true                             /* allow undo setup to happen */
         );
         m_dragging = false;     /* convert x,y to ticks, set events in range */
 
         /*
          * \change ca 2016-06-19
-         *  Why do we modify here?  We should!  Uncommenn
+         *  Why do we modify here?  We should!  Uncommented.
          */
 
         if (result)

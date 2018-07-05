@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq42 team; modifications by Chris Ahlstrom
  * \date          2016-07-30
- * \updates       2018-01-29
+ * \updates       2018-07-03
  * \license       GNU GPLv2 or above
  *
  *  Created on: 22 mar 2013
@@ -250,7 +250,7 @@ lfownd::scale_lfo_change ()
     m_seq.change_event_data_lfo
     (
         m_value, m_range, m_speed, m_phase, m_wave,
-        m_seqdata.m_status, m_seqdata.m_cc
+        m_seqdata.m_status, m_seqdata.m_cc, true
     );
     m_seqdata.update_pixmap();
     m_seqdata.draw_pixmap_on_window();

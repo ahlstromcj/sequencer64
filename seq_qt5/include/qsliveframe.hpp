@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-01
+ * \updates       2018-07-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -100,8 +100,7 @@ private:
     void drawSequence (int seq);
     void drawAllSequences ();
     void updateInternalBankName ();
-
-
+    bool valid_sequence (int seqnum);
     int seqIDFromClickXY (int click_x, int click_y);
 
 private:
@@ -115,26 +114,50 @@ private:
     QMessageBox * m_msg_box;
     QFont m_font;
     int m_bank_id;                  // same as the screen-set number
+
+    /**
+     *  These values are assigned to the values given by the constants of
+     *  similar names in globals.h, and we will make them parameters or
+     *  user-interface configuration items later.  Some of them already have
+     *  counterparts in the user_settings class.
+     */
+
     int m_mainwnd_rows;
     int m_mainwnd_cols;
     int m_mainwid_spacing;
+
+    /**
+     *  Provides a convenience variable for avoiding multiplications.
+     *  It is equal to m_mainwnd_rows * m_mainwnd_cols.
+     */
+
+    const int m_screenset_slots;
+
+    /**
+     *  Provides a convenience variable for avoiding multiplications.
+     *  It is equal to m_screenset_slots * m_screenset.
+     */
+
+    int m_screenset_offset;
+
     int m_slot_w;
     int m_slot_h;
     int m_preview_w;
-    int m_preview_h;                   // internal seq MIDI preview dimensions
-    int m_last_metro;                  // beat pulsing
+    int m_preview_h;                    // internal seq MIDI preview dimensions
+    int m_last_metro;                   // beat pulsing
     int m_alpha;
-    int m_curr_seq;                 // mouse interaction
+    int m_curr_seq;                     // mouse interaction
     int m_old_seq;
     bool m_button_down;
-    bool m_moving;                   // are we moving bewteen slots
-    bool m_adding_new; /*we can add a new seq here, wait for double click*/
+    bool m_moving;                      // are we moving between slots
+    bool m_adding_new;                  // new seq here, wait for double click
     midipulse m_last_tick_x[c_max_sequence];
     bool m_last_playing[c_max_sequence];
     bool m_can_paste;
 
 private slots:
 
+    void conditional_update ();
     void updateBank (int newBank);
     void updateBankName ();
     void newSeq ();

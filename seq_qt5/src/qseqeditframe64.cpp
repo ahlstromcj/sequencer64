@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-05
+ * \updates       2018-07-06
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -127,16 +127,20 @@ QWidget container?
 #include "pixmaps/down.xpm"
 #include "pixmaps/follow.xpm"
 #include "pixmaps/key.xpm"
+#include "pixmaps/length_short.xpm"     /* not length.xpm, it is too long   */
 #include "pixmaps/menu_empty.xpm"
 #include "pixmaps/menu_full.xpm"
 #include "pixmaps/midi.xpm"
 #include "pixmaps/note_length.xpm"
-#include "pixmaps/length_short.xpm"     /* not length.xpm, it is too long   */
+#include "pixmaps/play.xpm"
+#include "pixmaps/q_rec.xpm"
 #include "pixmaps/quantize.xpm"
+#include "pixmaps/rec.xpm"
 #include "pixmaps/redo.xpm"
 #include "pixmaps/scale.xpm"
 #include "pixmaps/sequences.xpm"
 #include "pixmaps/snap.xpm"
+#include "pixmaps/thru.xpm"
 #include "pixmaps/tools.xpm"
 #include "pixmaps/undo.xpm"
 #include "pixmaps/zoom.xpm"             /* zoom_in/_out combo-box           */
@@ -725,14 +729,14 @@ qseqeditframe64::qseqeditframe64
     );
     set_midi_bus(m_seq->get_midi_bus());
 
-    // Move this call to the Event button zone when that is ready.
-    set_data_type(EVENT_NOTE_ON);
-
     /*
-     *  MIDI channels.  Not sure if we want to
-     *  use the button to reset the channel, or increment to the next channel.
+     *  MIDI channels.  Not sure if we want to use the button to reset the
+     *  channel, or increment to the next channel.
      */
 
+#ifdef SEQ64_QSEQEDIT_BUTTON_INCREMENT
+    // No increment code at this time.
+#endif
     qt_set_icon(midi_xpm, ui->m_button_channel);
     ui->m_button_channel->setToolTip("Resets output MIDI channel number to 1.");
     connect
@@ -740,19 +744,7 @@ qseqeditframe64::qseqeditframe64
         ui->m_button_channel, SIGNAL(clicked(bool)),
         this, SLOT(reset_midi_channel())
     );
-
-    for (int channel = 0; channel < SEQ64_MIDI_CHANNEL_MAX; ++channel)
-    {
-        QString combo_text = QString::number(channel + 1);
-        ui->m_combo_channel->insertItem(channel, combo_text);
-    }
-    ui->m_combo_channel->setCurrentIndex(m_seq->get_midi_channel());
-    connect
-    (
-        ui->m_combo_channel, SIGNAL(currentIndexChanged(int)),
-        this, SLOT(update_midi_channel(int))
-    );
-    set_midi_channel(m_seq->get_midi_channel());
+    repopulate_midich_combo(m_seq->get_midi_bus());
 
     /*
      * Undo and Redo Buttons.
@@ -1034,27 +1026,71 @@ qseqeditframe64::qseqeditframe64
         ui->m_button_event, SIGNAL(clicked(bool)),
         this, SLOT(events())
     );
-    popup_event_menu();                 /* create the initial popup menu    */
+
+    int buss = m_seq->get_midi_bus();
+    int channel = m_seq->get_midi_channel();
+    repopulate_event_menu(buss, channel);
+    set_data_type(EVENT_NOTE_ON);
 
     /*
      * Event Data Presence-Indicator Button and Popup Menu.
      */
 
+    ui->m_button_data->setToolTip("Present events to show, popup menu.");
+    connect
+    (
+        ui->m_button_data, SIGNAL(clicked(bool)),
+        this, SLOT(data())
+    );
+    repopulate_mini_event_menu(buss, channel);
+
     /*
-     * LFO Button.
+     * LFO Button.  This window is not yet ported to Qt 5.
+     *
+     * ui->m_button_lfo
      */
 
     /*
      * Enable (unmute) Play Button.
      */
 
+    qt_set_icon(play_xpm, ui->m_toggle_play);
+    ui->m_toggle_play->setToolTip("When active, the pattern is unmuted.");
+    connect
+    (
+        ui->m_toggle_play, SIGNAL(toggled(bool)),
+        this, SLOT(play_change())
+    );
+
     /*
      * MIDI Thru Button.
      */
 
+    qt_set_icon(thru_xpm, ui->m_toggle_thru);
+    ui->m_toggle_thru->setToolTip
+    (
+        "When active, incoming MIDI goes through to output."
+    );
+    connect
+    (
+        ui->m_toggle_thru, SIGNAL(toggled(bool)),
+        this, SLOT(thru_change())
+    );
+
     /*
      * MIDI Record Button.
      */
+
+    qt_set_icon(rec_xpm, ui->m_toggle_record);
+    ui->m_toggle_record->setToolTip
+    (
+        "When active, incoming MIDI is recorded."
+    );
+    connect
+    (
+        ui->m_toggle_record, SIGNAL(toggled(bool)),
+        this, SLOT(record_change())
+    );
 
     /*
      * MIDI Quantized Record Button.
@@ -1438,7 +1474,10 @@ qseqeditframe64::reset_midi_bus ()
  *
  * \param user_change
  *      True if the user made this change, and thus has potentially modified
- *      the song.
+ *      the song.  If true, and the bus number has changed, then the MIDI
+ *      channel and event menus (but not the mini-event menu!?) are
+ *      repopulated to reflect the new bus.  This parameter is false in the
+ *      constructor because those items have not been set up at that time.
  */
 
 void
@@ -1447,13 +1486,55 @@ qseqeditframe64::set_midi_bus (int bus, bool user_change)
     int initialbus = m_seq->get_midi_bus();
     m_seq->set_midi_bus(bus, user_change);          /* user-modified value? */
     ui->m_combo_bus->setCurrentIndex(0);            /* update_midi_bus(0)   */
-    if (bus != initialbus)
+    if (bus != initialbus && user_change)
     {
-        // int channel = m_seq->get_midi_channel();
-        // TODO
-        // repopulate_midich_menu(bus);
-        // repopulate_event_menu(bus, channel);
+        int channel = m_seq->get_midi_channel();
+        repopulate_midich_combo(bus);
+        repopulate_event_menu(bus, channel);
     }
+}
+
+/**
+ *  Populates the MIDI Channel combo-box with the number and names of each
+ *  channel.  This action is needed at startup of the seqedit window, and when
+ *  the user changes the active buss for the sequence.
+ *
+ *  When the output buss or channel are changed, we get the 16 "channels" from
+ *  the new buss's definition, get the corresponding instrument, and load its
+ *  name into this midich popup.  Then we need to go to the instrument/channel
+ *  that has been selected, and repopulate the event menu with that item's
+ *  controller values/names.
+ *
+ * \param buss
+ *      The new value for the buss from which to get the [user-instrument-N]
+ *      settings in the [user-instrument-definitions] section.
+ */
+
+void
+qseqeditframe64::repopulate_midich_combo (int buss)
+{
+    ui->m_combo_channel->clear();
+    for (int channel = 0; channel < SEQ64_MIDI_BUS_CHANNEL_MAX; ++channel)
+    {
+        char b[4];                                  /* 2 digits or less  */
+        snprintf(b, sizeof b, "%2d", channel + 1);
+        std::string name = std::string(b);
+        std::string s = usr().instrument_name(buss, channel);
+        if (! s.empty())
+        {
+            name += " ";
+            name += s;
+        }
+        QString combo_text(name.c_str());
+        ui->m_combo_channel->insertItem(channel, combo_text);
+    }
+    ui->m_combo_channel->setCurrentIndex(m_seq->get_midi_channel());
+    connect
+    (
+        ui->m_combo_channel, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(update_midi_channel(int))
+    );
+    set_midi_channel(m_seq->get_midi_channel());
 }
 
 /**
@@ -1499,8 +1580,14 @@ qseqeditframe64::reset_midi_channel ()
 void
 qseqeditframe64::set_midi_channel (int midichannel, bool user_change)
 {
+    int initialchan = m_seq->get_midi_channel();
     ui->m_combo_channel->setCurrentIndex(midichannel);
-    m_seq->set_midi_channel(midichannel, user_change); /* user-modified value? */
+    m_seq->set_midi_channel(midichannel, user_change);
+    if (midichannel != initialchan && user_change)
+    {
+        int initialbus = m_seq->get_midi_bus();
+        repopulate_event_menu(initialbus, midichannel);
+    }
 }
 
 /**
@@ -1780,20 +1867,6 @@ printf("seq name = '%s'\n", name);
 }
 
 /**
- *  Builds the Event (data) popup menu on the fly.  Analogous to seqedit ::
- *  popup_event_menu().
-
-void
-qseqeditframe64::popup_event_menu ()
-{
-    if (is_nullptr(m_events_popup))
-    {
-        m_events_popup = new QMenu(this);
-    }
-}
- */
-
-/**
  *  Sets the data type based on the given parameters.  This function uses the
  *  hardwired array c_controller_names.
  *
@@ -1810,9 +1883,9 @@ qseqeditframe64::set_data_type (midibyte status, midibyte control)
     // TODO:
     // m_editing_status = status;
     // m_editing_cc = control;
-    // m_seqevent_wid->set_data_type(status, control);
-    // m_seqdata_wid->set_data_type(status, control);
-    // m_seqroll_wid->set_data_type(status, control);
+    // m_seqevent->set_data_type(status, control);
+    // m_seqdata->set_data_type(status, control);
+    // m_seqroll->set_data_type(status, control);
 
     char hex[8];
     char type[80];
@@ -1831,7 +1904,7 @@ qseqeditframe64::set_data_type (midibyte status, midibyte control)
         if (usr().controller_active(bus, channel, control))
             ccname = usr().controller_name(bus, channel, control);
 
-        snprintf(type, sizeof type, "Control Change - %s", ccname.c_str());
+        snprintf(type, sizeof type, "CC - %s", ccname.c_str());
     }
     else if (status == EVENT_PROGRAM_CHANGE)
         snprintf(type, sizeof type, "Program Change");
@@ -1889,8 +1962,6 @@ qseqeditframe64::follow_progress ()
     int scrollx = hadjust->value();
     if (m_seqroll->get_expanded_record() && m_seq->get_recording())
     {
-        // double h_max_value = m_seq->get_length() - w * m_zoom;
-        // hadjust->setValue(int(h_max_value));
         int newx = scrollx + w;
         hadjust->setValue(newx);
     }
@@ -1899,14 +1970,12 @@ qseqeditframe64::follow_progress ()
         midipulse progress_tick = m_seq->get_last_tick();
         if (progress_tick > 0 && m_seqroll->progress_follow())
         {
-            // int prog_x = progress_tick / m_zoom + SEQ64_PROGRESS_PAGE_OVERLAP;
             int prog_x = progress_tick / m_zoom;
             int page = prog_x / w;
             if (page != m_seqroll->scroll_page() || (page == 0 && scrollx != 0))
             {
                 m_seqroll->scroll_page(page);
-                hadjust->setValue(prog_x);
-                // set_scroll_x();              // not needed
+                hadjust->setValue(prog_x);      // set_scroll_x() not needed
             }
         }
     }
@@ -2231,25 +2300,6 @@ qseqeditframe64::events ()
 }
 
 /**
- *  Populates the event-selection menu, in necessary, and then pops it up.
- *  Also see the handling of the m_button_data and m_entry_data objects.
- */
-
-void
-qseqeditframe64::popup_event_menu ()
-{
-    if (is_nullptr(m_events_popup))
-    {
-        m_events_popup = new QMenu(this);
-    }
-
-    int buss = m_seq->get_midi_bus();
-    int channel = m_seq->get_midi_channel();
-    repopulate_event_menu(buss, channel);
-    // m_events_popup->popup(0, 0);
-}
-
-/**
  *  Sets the menu pixmap depending on the given state, where true is a
  *  full menu (black background), and empty menu (gray background).
  *
@@ -2286,21 +2336,12 @@ qseqeditframe64::set_event_entry
     const std::string & text,
     bool present,
     midibyte status,
-    midibyte control    // = 0
+    midibyte control
 )
 {
-    QAction * item = new QAction(*create_menu_image(present), "XXX");
-    /**
-     *
-    menu->items().push_back
-    (
-        connect
-        (
-            menu, *create_menu_image(present),
-            SET_DATA_TYPE(status, control)
-        )
-    );
-     */
+    QAction * item = new QAction(*create_menu_image(present), text.c_str());
+    menu->addAction(item);
+    connect(item, &QAction::triggered, SET_DATA_TYPE(status, control));
     if (present && m_first_event == 0x00)
     {
         m_first_event = status;
@@ -2346,10 +2387,11 @@ qseqeditframe64::repopulate_event_menu (int buss, int channel)
     bool program_change = false;
     bool channel_pressure = false;
     bool pitch_wheel = false;
-    midibyte status, cc;
+    midibyte status = 0, cc = 0;
     memset(ccs, false, sizeof(bool) * SEQ64_MIDI_COUNT_MAX);
-    m_seq->reset_draw_marker();
-    while (m_seq->get_next_event(status, cc))           /* used only here!  */
+    event_list::const_iterator cev;
+    m_seq->reset_ex_iterator(cev);                   /* reset_draw_marker()  */
+    while (m_seq->get_next_event_ex(status, cc, cev))
     {
         switch (status)
         {
@@ -2381,11 +2423,15 @@ qseqeditframe64::repopulate_event_menu (int buss, int channel)
             channel_pressure = true;
             break;
         }
+        ++cev;                                      /* found, must do this  */
     }
+
+    if (not_nullptr(m_events_popup))
+        delete m_events_popup;
 
     m_events_popup = new QMenu(this);
     set_event_entry(m_events_popup, "Note On Velocity", note_on, EVENT_NOTE_ON);
-//  m_events_popup->items().push_back(SeparatorElem());
+    m_events_popup->addSeparator();
     set_event_entry(m_events_popup, "Note Off Velocity", note_off, EVENT_NOTE_OFF);
     set_event_entry(m_events_popup, "Aftertouch", aftertouch, EVENT_AFTERTOUCH);
     set_event_entry
@@ -2397,7 +2443,7 @@ qseqeditframe64::repopulate_event_menu (int buss, int channel)
         m_events_popup, "Channel Pressure", channel_pressure, EVENT_CHANNEL_PRESSURE
     );
     set_event_entry(m_events_popup, "Pitch Wheel", pitch_wheel, EVENT_PITCH_WHEEL);
-//  m_events_popup->items().push_back(SeparatorElem());
+    m_events_popup->addSeparator();
 
     /**
      *  Create the 8 sub-menus for the various ranges of controller
@@ -2411,7 +2457,7 @@ qseqeditframe64::repopulate_event_menu (int buss, int channel)
     {
         int offset = submenu * itemcount;
         snprintf(b, sizeof b, "Controls %d-%d", offset, offset + itemcount - 1);
-        QMenu * menucc = new QMenu(this);
+        QMenu * menucc = new QMenu(tr(b), m_events_popup);  // this);
         for (int item = 0; item < itemcount; ++item)
         {
             /*
@@ -2438,27 +2484,31 @@ qseqeditframe64::repopulate_event_menu (int buss, int channel)
                 EVENT_CONTROL_CHANGE, offset + item
             );
         }
-//      m_events_popup->items().push_back(MenuElem(std::string(b), *menucc));
+        m_events_popup->addMenu(menucc);
     }
 }
 
 /**
- *  Populates the event-selection menu, in necessary, and then pops it up.
- *  Also see the handling of the m_button_minidata and m_entry_data objects.
+ *  Popup menu data button.
  */
 
 void
-qseqeditframe64::popup_mini_event_menu ()
+qseqeditframe64::data ()
 {
-    if (is_nullptr(m_minidata_popup))
+    if (not_nullptr(m_minidata_popup))
     {
-        m_minidata_popup = new QMenu(this);
+        m_minidata_popup->exec
+        (
+            ui->m_button_data->mapToGlobal
+            (
+                QPoint
+                (
+                    ui->m_button_data->width()-2,
+                    ui->m_button_data->height()-2
+                )
+            )
+        );
     }
-
-    int buss = m_seq->get_midi_bus();
-    int channel = m_seq->get_midi_channel();
-    repopulate_mini_event_menu(buss, channel);
-    // m_minidata_popup->popup(0, 0);
 }
 
 /**
@@ -2484,10 +2534,11 @@ qseqeditframe64::repopulate_mini_event_menu (int buss, int channel)
     bool program_change = false;
     bool channel_pressure = false;
     bool pitch_wheel = false;
-    midibyte status, cc;
+    midibyte status = 0, cc = 0;
     memset(ccs, false, sizeof(bool) * SEQ64_MIDI_COUNT_MAX);
-    m_seq->reset_draw_marker();
-    while (m_seq->get_next_event(status, cc))            /* used only here!  */
+    event_list::const_iterator cev;
+    m_seq->reset_ex_iterator(cev);                   /* reset_draw_marker()  */
+    while (m_seq->get_next_event_ex(status, cc, cev))
     {
         switch (status)
         {
@@ -2519,8 +2570,14 @@ qseqeditframe64::repopulate_mini_event_menu (int buss, int channel)
             channel_pressure = true;
             break;
         }
+        ++cev;                                      /* found, must do this  */
     }
+
+    if (not_nullptr(m_minidata_popup))
+        delete m_minidata_popup;
+
     m_minidata_popup = new QMenu(this);
+
     bool any_events = false;
     if (note_on)
     {
@@ -2565,7 +2622,8 @@ qseqeditframe64::repopulate_mini_event_menu (int buss, int channel)
         );
     }
 
-//  m_minidata_popup->items().push_back(SeparatorElem());
+    if (any_events)
+        m_minidata_popup->addSeparator();
 
     /**
      *  Create the one menu for the controller changes that actually exist in
@@ -2596,15 +2654,66 @@ qseqeditframe64::repopulate_mini_event_menu (int buss, int channel)
     }
     if (any_events)
     {
-        // Here, we would like to pre-select the first kind of event found,
-        // somehow.
+        /*
+         * Here, we would like to pre-select the first kind of event found,
+         * somehow.
+         */
+
+        qt_set_icon(menu_full_xpm, ui->m_button_data);
     }
     else
+    {
         set_event_entry(m_minidata_popup, "(no events)", false, 0);
+        qt_set_icon(menu_empty_xpm, ui->m_button_data);
+    }
+}
 
-    // Gtk::Image * eventflag = manage(create_menu_image(any_events));
-    // if (not_nullptr(eventflag))
-        // m_button_minidata->set_image(*eventflag);
+/**
+ *  Passes the play status to the sequence object.
+ */
+
+void
+qseqeditframe64::play_change (bool ischecked)
+{
+    m_seq->set_playing(ischecked);
+}
+
+/**
+ *  Passes the MIDI Thru status to the perform object.
+ *
+ * Stazed:
+ *
+ *      Both record_change_callback() and thru_change_callback() will call
+ *      set_sequence_input() for the same sequence. We only need to call it if
+ *      it is not already set, if setting. And, we should not unset it if the
+ *      m_toggle_thru->get_active() is true.
+ */
+
+void
+qseqeditframe64::thru_change (bool ischecked)
+{
+    bool thru_active = ui->m_toggle_thru->isChecked();
+    bool record_active = ui->m_toggle_record->isChecked();
+    perf().set_thru(record_active, thru_active, m_seq);
+}
+
+/**
+ *  Passes the recording status to the perform object.
+ *
+ * Stazed:
+ *
+ *      Both record_change_callback() and thru_change_callback() will call
+ *      set_sequence_input() for the same sequence. We only need to call it if
+ *      it is not already set, if setting. And, we should not unset it if the
+ *      m_toggle_thru->get_active() is true.
+ */
+
+void
+qseqeditframe64::record_change (bool ischecked)
+{
+    bool thru_active = ui->m_toggle_thru->isChecked();
+    bool record_active = ui->m_toggle_record->isChecked();
+    perf().set_recording(record_active, thru_active, m_seq);
 }
 
 /**

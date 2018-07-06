@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-07-03
+ * \updates       2018-07-05
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -4526,13 +4526,61 @@ sequence::get_next_event (midibyte & status, midibyte & cc)
 }
 
 /**
- *  Reset the caller's iterator.
+ *  Reset the caller's iterator.  This is used with get_next_event_match()
+ *  and get_next_event_ex().
+ *
+ * \param evi
+ *      The caller's "copy" of the m_events iterator to be reset to
+ *      m_events.begin().
  */
 
 void
 sequence::reset_ex_iterator (event_list::const_iterator & evi)
 {
     evi = m_events.begin();
+}
+
+/**
+ *  Get the next event in the event list.  Then set the status and control
+ *  character parameters using that event.  This function requires that
+ *  reset_ex_iterator() be called to reset to the beginnign of the events list.
+ *
+ * \param status
+ *      Provides a pointer to the MIDI status byte to be set, as a way to
+ *      retrieve the event.
+ *
+ * \param cc
+ *      The return pointer for the control value.
+ *
+ * \param [out] evi
+ *      An iterator return value for the next event found.  The caller might
+ *      want to check if it is a Tempo event.  Do not use this iterator if
+ *      false is returned!  For consistency with get_next_event_match(),
+ *      we rely on the caller to increment this pointer for the next call.
+ *
+ * \return
+ *      Returns true if the data is useable, and false if there are no more
+ *      events.
+ */
+
+bool
+sequence::get_next_event_ex
+(
+    midibyte & status,
+    midibyte & cc,
+    event_list::const_iterator & evi
+)
+{
+    if (evi != m_events.end())
+    {
+        midibyte d1;                            /* will be ignored          */
+        const event & ev = DREF(evi);
+        status = ev.get_status();
+        ev.get_data(cc, d1);
+        return true;                /* we have a good one; update and return */
+    }
+    else
+        return false;
 }
 
 /**
@@ -4576,7 +4624,7 @@ sequence::reset_ex_iterator (event_list::const_iterator & evi)
  */
 
 bool
-sequence::get_next_event_ex
+sequence::get_next_event_match
 (
     midibyte status, midibyte cc,
     event_list::const_iterator & evi,

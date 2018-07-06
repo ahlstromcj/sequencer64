@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-r1
+ * \updates       2018-07-05
  * \license       GNU GPLv2 or above
  *
  *  We are currently trying to get event processing to accomodate tempo
@@ -359,7 +359,7 @@ seqevent::update_pixmap ()
  *  seqdata::draw_events_on().
  *
  *  This function exercises the new version of get_next_event(),
- *  get_next_event_ex(), which allows (and forces) the caller to provide the
+ *  get_next_event_match(), which allows (and forces) the caller to provide the
  *  event iterator.
  *
  * \param drawable
@@ -374,7 +374,7 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
     event_list::const_iterator ev;
     m_seq.reset_ex_iterator(ev);
     m_gc->set_foreground(black_paint());
-    while (m_seq.get_next_event_ex(m_status, m_cc, ev))
+    while (m_seq.get_next_event_match(m_status, m_cc, ev))
     {
         midipulse tick = ev->get_timestamp();
         bool selected = ev->is_selected();

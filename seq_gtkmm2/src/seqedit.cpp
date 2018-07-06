@@ -140,30 +140,30 @@
 #include "lfownd.hpp"
 #endif
 
+#include "pixmaps/bus.xpm"
+#include "pixmaps/down.xpm"
 #include "pixmaps/follow.xpm"
 #include "pixmaps/fruity.xpm"
-#include "pixmaps/tux.xpm"
-#include "pixmaps/play.xpm"
-#include "pixmaps/q_rec.xpm"
-#include "pixmaps/rec.xpm"
-#include "pixmaps/thru.xpm"
-#include "pixmaps/bus.xpm"
-#include "pixmaps/midi.xpm"
-#include "pixmaps/snap.xpm"
-#include "pixmaps/zoom.xpm"
-#include "pixmaps/length_short.xpm"
-#include "pixmaps/scale.xpm"
 #include "pixmaps/key.xpm"
-#include "pixmaps/down.xpm"
-#include "pixmaps/note_length.xpm"
-#include "pixmaps/undo.xpm"
-#include "pixmaps/redo.xpm"
-#include "pixmaps/quantize.xpm"
+#include "pixmaps/length_short.xpm"
 #include "pixmaps/menu_empty.xpm"
 #include "pixmaps/menu_full.xpm"
-#include "pixmaps/sequences.xpm"
-#include "pixmaps/tools.xpm"
+#include "pixmaps/midi.xpm"
+#include "pixmaps/note_length.xpm"
+#include "pixmaps/play.xpm"
+#include "pixmaps/q_rec.xpm"
+#include "pixmaps/quantize.xpm"
+#include "pixmaps/rec.xpm"
+#include "pixmaps/redo.xpm"
+#include "pixmaps/scale.xpm"
 #include "pixmaps/seq-editor.xpm"
+#include "pixmaps/sequences.xpm"
+#include "pixmaps/snap.xpm"
+#include "pixmaps/thru.xpm"
+#include "pixmaps/tools.xpm"
+#include "pixmaps/tux.xpm"
+#include "pixmaps/undo.xpm"
+#include "pixmaps/zoom.xpm"
 
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
 #include "pixmaps/chord3-inv.xpm"
@@ -1955,10 +1955,11 @@ seqedit::repopulate_event_menu (int buss, int channel)
     bool program_change = false;
     bool channel_pressure = false;
     bool pitch_wheel = false;
-    midibyte status, cc;
+    midibyte status = 0, cc = 0;
     memset(ccs, false, sizeof(bool) * SEQ64_MIDI_COUNT_MAX);
-    m_seq.reset_draw_marker();
-    while (m_seq.get_next_event(status, cc))            /* used only here!  */
+    event_list::const_iterator cev;
+    m_seq.reset_ex_iterator(cev);                   /* reset_draw_marker()  */
+    while (m_seq.get_next_event_ex(status, cc, cev))
     {
         switch (status)
         {
@@ -1990,6 +1991,7 @@ seqedit::repopulate_event_menu (int buss, int channel)
             channel_pressure = true;
             break;
         }
+        ++cev;
     }
 
     m_menu_data = manage(new Gtk::Menu());
@@ -2091,10 +2093,14 @@ seqedit::repopulate_mini_event_menu (int buss, int channel)
     bool program_change = false;
     bool channel_pressure = false;
     bool pitch_wheel = false;
-    midibyte status, cc;
+//  midibyte status, cc;
+    midibyte status = 0, cc = 0;
     memset(ccs, false, sizeof(bool) * SEQ64_MIDI_COUNT_MAX);
-    m_seq.reset_draw_marker();
-    while (m_seq.get_next_event(status, cc))            /* used only here!  */
+//  m_seq.reset_draw_marker();
+//  while (m_seq.get_next_event(status, cc))            /* used only here!  */
+    event_list::const_iterator cev;
+    m_seq.reset_ex_iterator(cev);                   /* reset_draw_marker()  */
+    while (m_seq.get_next_event_ex(status, cc, cev))
     {
         switch (status)
         {
@@ -2126,8 +2132,10 @@ seqedit::repopulate_mini_event_menu (int buss, int channel)
             channel_pressure = true;
             break;
         }
+        ++cev;
     }
     m_menu_minidata = manage(new Gtk::Menu());
+
     bool any_events = false;
     if (note_on)
     {
@@ -2172,7 +2180,8 @@ seqedit::repopulate_mini_event_menu (int buss, int channel)
         );
     }
 
-    m_menu_minidata->items().push_back(SeparatorElem());
+    if (any_events)
+        m_menu_minidata->items().push_back(SeparatorElem());
 
     /**
      *  Create the one menu for the controller changes that actually exist in
@@ -2203,8 +2212,10 @@ seqedit::repopulate_mini_event_menu (int buss, int channel)
     }
     if (any_events)
     {
-        // Here, we would like to pre-select the first kind of event found,
-        // somehow.
+        /*
+         * Here, we would like to pre-select the first kind of event found,
+         * somehow.
+         */
     }
     else
         set_event_entry(m_menu_minidata, "(no events)", false, 0);
@@ -2726,7 +2737,7 @@ seqedit::play_change_callback ()
 }
 
 /**
- *  Passes the recording status to the sequence object.
+ *  Passes the recording status to the perform object.
  *
  * Stazed:
  *
@@ -2797,7 +2808,7 @@ seqedit::redo_callback ()
 }
 
 /**
- *  Passes the MIDI Thru status to the sequence object.
+ *  Passes the MIDI Thru status to the perform object.
  *
  * Stazed:
  *

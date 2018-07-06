@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-07-03
+ * \updates       2018-07-05
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -257,7 +257,7 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 
         event_list::const_iterator ev;
         m_seq.reset_ex_iterator(ev);
-        while (m_seq.get_next_event_ex(m_status, m_cc, ev))
+        while (m_seq.get_next_event_match(m_status, m_cc, ev))
         {
             midipulse tick = ev->get_timestamp();
             bool selected = ev->is_selected();

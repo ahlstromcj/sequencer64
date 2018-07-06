@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-07-03
+ * \updates       2018-07-05
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1681,11 +1681,16 @@ public:
     );
     bool get_minmax_note_events (int & lowest, int & highest);
     bool get_next_event (midibyte & status, midibyte & cc);
-    bool get_next_event_ex
+    bool get_next_event_match
     (
         midibyte status, midibyte cc,
         event_list::const_iterator & ev,
         int evtype = EVENTS_ALL
+    );
+    bool get_next_event_ex
+    (
+        midibyte & status, midibyte & cc,
+        event_list::const_iterator & evi
     );
     bool get_next_trigger
     (

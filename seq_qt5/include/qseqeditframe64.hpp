@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-05
+ * \updates       2018-07-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -178,6 +178,10 @@ private slots:
     void undo ();
     void redo ();
 
+    /*
+     * Tools button and handlers.
+     */
+
     void tools ();
     void select_all_notes ();
     void inverse_note_selection ();
@@ -185,8 +189,11 @@ private slots:
     void tighten_notes ();
     void transpose_notes ();
 
-    void sequences ();
+    /*
+     * More slots.
+     */
 
+    void sequences ();
     void update_grid_snap (int index);
     void reset_grid_snap ();
     void update_note_length (int index);
@@ -200,6 +207,10 @@ private slots:
     void update_scale (int index);
     void reset_scale ();
     void events ();
+    void data ();
+    void play_change (bool ischecked);
+    void thru_change (bool ischecked);
+    void record_change (bool ischecked);
 
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
     void follow (bool ischecked);
@@ -207,13 +218,16 @@ private slots:
 
 private:
 
+    /*
+     * Slot helper functions.
+     */
+
     void do_action (edit_action_t action, int var);
     void popup_tool_menu ();
     void popup_sequence_menu ();
-    void popup_event_menu ();
     void repopulate_event_menu (int buss, int channel);
-    void popup_mini_event_menu ();
     void repopulate_mini_event_menu (int buss, int channel);
+    void repopulate_midich_combo (int buss);
 
 private:
 

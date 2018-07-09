@@ -1166,9 +1166,7 @@ build_details ()
 #ifdef SEQ64_STAZED_MENU_BUTTONS
         << "Seq32 menu buttons on" << std::endl
 #endif
-#ifdef SEQ64_STAZED_TRANSPOSE
         << "Seq32 transpose on" << std::endl
-#endif
 #ifdef SEQ64_MAINWND_TAP_BUTTON
         << "BPM Tap button on" << std::endl
 #endif

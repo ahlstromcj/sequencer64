@@ -71,6 +71,11 @@ public:
 
     explicit qperfroll (perform & p, QWidget * parent);
 
+    virtual ~qperfroll ()
+    {
+        // no code needed
+    }
+
     int getSnap () const;
     void set_snap (int getSnap);
     void set_guides (int snap, int measure, int beat);

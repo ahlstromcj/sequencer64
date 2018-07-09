@@ -1,0 +1,425 @@
+/*
+ *    This module provides no code.  It provides only a Doxygen "Doxygen
+ *    information" page.
+ */
+/**
+
+\file       roadmap.dox
+
+This document describes some issues and scenarios involving the JACK, live, and
+song modes.
+
+\page       roadmap_page Sequencer64 Roadmap
+\author     Chris Ahlstrom 2018-07-08
+
+\section roadmap_intro Introduction
+
+This section describes stuff we need to consider.
+
+\section roadmap_midi_ctrl_out MIDI Control Out
+
+\subsection roadmap_midi_ctrl_out_igor MIDI Control Out Fork
+
+From: Igor Angst <notifications@github.com>
+
+Check out the branch midictrlout in my fork.
+To enable the feature, run
+
+   ./configure --enable-midictrlout
+
+For the moment, the midi control output is hard wired to output port 15 (this
+will be moved to the configuration). In the sequencer64.rc file, there is a new
+section [midi-control-out]. For now, there is only feedback on sequence state.
+For each sequence, you can set up four events with the typical syntax (e.g. [1
+0 144 36 127] for enabled: note on event with pitch 'C' and 127 velocity). The
+four events are sent on arm, mute, queue, and delete, respectively. For now,
+there is 32 rows (hardwired, will be made variable). Also, all events are wrt
+the absolute sequence number, so no support for swapping the screen set.
+Anyway, this is just the start, and it works fine for me :-)
+
+What should be the behavior for swapping screen sets?
+
+ 1. None, use absolute sequence numbers
+ 2. Reflect visible screen set (display in sync with the seq64 window)
+ 3. Refresh only on setting the playing screen set
+
+There are more events coming:
+
+  * Queue modifier
+  * One shot modifier
+  * Replace modifier
+  * Play, Stop, Pause
+  * Snapshot 1/2 active
+
+\subsection roadmap_midi_ctrl_out_milk MIDI Control Out Fork Part 2
+
+From: Milk Brewster <notifications@github.com>
+
+I've just realised having MIDI out of pattern status comes very close to
+solving something I've been mulling for a while now; how could one use
+sequencer64 patterns to control MIDI/audio routing in conjunction with Carla,
+its internal plugins, and the few do-one-thing MIDI filter collections like
+[1]midifilter.lv2 & [2]Piz MIDI.
+
+What I would like to do is have a "Drum parts" set with
+single-instrument-of-percussion drum patterns that combine well when they are
+all turned on.*
+
+Then a "Drum instruments" set with patterns that, when turned on, would "send"
+the drum MIDI to one instrument plugin, so there could be an "alvdrums black"
+pattern, an "alvdrums red" pattern, maybe some for some for drum soundfonts, so
+I can easily switch or layer up the sound. *
+
+The "control" patterns could be blank, but turning them on and off, with the
+new MIDI control out feature, would send a MIDI event that could be utilised to
+automate the MIDI routing plugins in Carla.
+
+* This example is a simple picture; I would actually send parts out on
+different MIDI channels so MIDI effects can be applied separately to each, and
+this would be controlled similarly with a "Drum MIDI FX" set (with like "MIDI
+delay", "Probabilistic drop", etc. patterns.) that
+
+I say very close because it would require the output of set change details out
+so as to automate the automation of the automation, or something like that :)
+
+(Previously I had tried patterns full of CCs which made things slow and plugins
+unstable, and notes-the-length-of-a-pattern don't just come on if the pattern
+is activated half-way through)
+ 
+\section roadmap_midi_ctrl_upgrade MIDI Control Upgrade
+
+From: Jérémy Frey <notifications@github.com>
+
+First I would like to thank you for spending so much effort on
+sequencer64; I am new to music making and it really matches what I had in
+mind when I started to take interest in the topic. It results in a
+powerful workflow once combined with other bricks from the opensource
+ecosystem, this is inspiring :)
+
+I have been trying to use sequencer64 in combination with a midi keyboard
+controller. The goal would be to control (almost) everything using the
+controller, without touching the GUI. With the help of mididings I am
+getting there, however I stumbled on several bugs and lack of features
+along the way. Here are some changes that I made in order to accommodate
+my usage.
+
+While the commit messages should be self-explanatory, here is a list of
+the current modifications:
+
+  * I encountered weird behaviors while recording without touching the
+	 GUI, and switching back and forth between play / pause (note on 0,
+	 note off with some positive values, as if it got inverted at some
+	 point)
+  * I am controlling which sequence to record or to set to midi through,
+	 explicitly disabling for each state the previous sequence when I am
+	 switching to a new one. Since it appears only one sequence at a time
+	 (or one sequence/channel) can be an "input" at the level of
+	 perform.cpp, it could happen that disabling recording or midi through
+	 "steals" the input from an active sequence.
+  * incoming midi events are systematically checked against all captured
+	 midi, otherwise too often unwanted notes would be recorded or played
+	 -- in the comments previous behavior is justified to avoid delays, but
+	 I willing to trade few (?) CPU cycles for that
+  * fixed toggle for quantizing mode (was not working neither for MIDI
+	 control nor GUI??)
+  * biggest change: the MIDI control "reserved for expansion" is now used
+	 to set the "replace" flag while recording.
+
+If you think some of that could make it to master, I would happily improve on
+the comments (e.g. some "HOTFIX" tags helped me track what I was modifying) or
+on the code (e.g. in order to touch the least current code I did not even
+change variable names associated to the last MIDI control...) if necessary.
+
+Among the things that would require too much work for me but that would be
+welcomed additions (at least in my opinion :D):
+
+  * a MIDI input dedicated to MIDI controls (more flexibility for sending
+	 events and easier to handle)
+  * MIDI control for record expand (and possibly a way to reduce afterward
+	 sequence length through MIDI?)
+  * a better quantization (with live MIDI input the result is very odd,
+	 especially regarding note off, but it seems to be the same with seq24)
+  * a color/icon associated to the status of a sequence (e.g. record, midi
+	 through). This is somehow related to [1]#58, however I would not be
+	 able to benefit directly from such implementation since I don't have a
+	 controller that could listen to MIDI events and change colors. Hence
+	 having such feedback directly in the GUI would make sense. (Okay, in
+	 the meantime I am using Open Stage Control to display my own (and
+	 crude) GUI and keep track of launch / record / midi through per
+	 sequence, and with mididings that could then achieve bi-directional
+
+NB: I did not touch all functionalities (such as screens), so maybe some
+propositions are off; also I can open a proper issue to help sort out
+features request.
+
+This is it, again thanks for you work, now I should probably stop
+procrastinating with code and start making some noise!
+
+  [2]https://github.com/ahlstromcj/sequencer64/pull/150
+
+ Commit Summary
+
+  * Fixing default velocity without GUI
+  * reset note on only when recording state changes
+  * sync input with last sequence change
+  * always check against all midi events that should be captured
+  * fix quantizing toggle
+  * fix note off velocity (to 0)
+  * adding midi control for setting overwrite
+  * ask for sequence reset on midi overwrite
+  * Merge branch 'master' into dev-midi
+
+PULLED and MERGED
+
+\section roadmap_loop_upgrade Loop Upgrade
+
+From: Andrew <notifications@github.com>
+
+Sorry I didn't explain myself well. I'll try and be clearer :)
+For this example I am working in pattern mode as I want to trigger the
+loops manually in a live scenario.
+
+say at slot 1 has a 2 bar pattern and slot 2 has a 16 bar pattern
+[ {2 bar kick loop)] [(16 bar synth lead line)]
+
+Because I want to start loops on the beat I have Queue set to on.
+
+Before I press play I activate "1" the kick loop.
+
+I press play and the kick loop is going (and sending out MIDI data).
+After playing the kick loop for 4 bars I decide that on the next bar I
+want to activate my slot 2 lead line to start at the next bar.
+I hit activate on slot 2 and it is queued. But currently as it is 16 bars
+long and I have only been going for 4 bars. I now have to wait 12 bars
+before the Lead line will start.
+
+Even if my timing is impeccable (and I assure you it's not :) ) If I
+activate the lead line immediately it now starts play from 4 bars in, not
+from the beginning of the 16 bar lead line.
+
+I see two possible solutions:
+
+ 1. An option to "reset" the individual pattern to the next bar on
+	 activate
+ 2. That patterns when activated could be synced to the main loop (the one
+	 on the top right of the pattern editor) and that loop could be
+	 adjusted?? So I could set the main loop to 2 bars long. and when I
+	 activate a pattern it will start when the main loop resets AND from
+	 the beginning of the loop,
+
+\section roadmap_windows Windows
+
+From: mayornancy <mayornancy@yahoo.com>
+
+Getting my feet wet with v 0.95 on Windows7 x64- is it expected that some 
+keyboard shortcuts under Windows don't work?
+There is no mention of this in section 12.2 of manual; also my usr and rc
+files are unmodified and contain the defaults.
+Here are two examples of the many I have come across, making following
+along with the manual difficult...
+1. p in patternEditor (have to press and hold right mouse to 'paint'
+2. =, -, modifier keys as described below:
+[1]Inline image
+Thanks for your time,
+Greg P.
+
+\section roadmap_pattern_triggering Pattern Triggering
+
+From: Julian L <julianlpc15@gmail.com>
+
+I came up with an idea to make larger sequences:
+with a midi controller, I can launch patterns pressing whichever midi
+buttons, but if I record these midi events in a pattern and then send them
+back to seq64 (or paint events on the piano roll) so that they trigger
+other sequences, I could make patterns that trigger a sequence of more
+than one pattern.
+I can't get it working, though. seq64 doesn't allow me to record and
+trigger patterns with my midi controller (if I try to record, it disables
+pattern triggering) and I haven't figured out how to send back the midi
+events back to seq64 so that they trigger patterns (or if it is even
+possible).
+Any suggestions to make it work? Maybe a new feature to implement in
+future versions? I'm willing to contribute to the code if it's necessary.
+
+\section roadmap_lievens_suggestions Lieven's Suggestions
+
+From: lieven <lievenvanpee@telenet.be>
+
+first of all thanks for this fork of seq24! i’m building a liveset with seq64, a
+linuxized chromebook,  an emu6400 + small desk + ssl comp clone and some other
+stuff. kinda ghetto back-to-basics-setup hehe
+
+i have a couple of questions/suggestions:
+
+- would it be possible to implement a regular note input system with a modifier
+key as in ableton/logic X/reaper? without pressing P each time or right click to
+exit paint mode (i think its not necessary and the 'common' system works better
+and seems kind of standard these days).
+so holding CTRL als modifier draws notes (but not continually as it is now), CTRL
+left click on note deletes it. clicking without modifier can be used to select
+multiple/individual notes. left click + drag near borders to expand/shorten note
+length. oh and the possibility to zoom both vertical/horizontal in the editor
+window, important one.
+
+- i greatly miss the possibility to start a pattern from any arbitrary point while
+editing it. i make quite some idm-ish complex programmed tracks, an example:
+https://www.youtube.com/watch?v=bF01U2IQGbI
+when working with longer or more complex patterns its a pain in the ass to start
+the pattern each time from the beginning when you are editing the last quarter
+notes of say, a 21/4 loop. being able to click just above the grid to position the
+locator would be super awesome (or even beter: to be able to loop a small section 
+of the pattern while editing it) again see ableton/logic x/reaper.
+
+- is it possible to make the main screen matrix bigger? i think i can work with 8 cols but having more cols/rows would be cool + ability to scroll up/down by a
+pattern with ex. arrow keys. so i can fit a tune in one scene, now i have to split
+it up between different scenes.
+
+- is it possible to copy scenes? i couldn’t find a way to do it, could be handy
+too.
+
+- is it possible to rearrange the scene order? i could not find this one either. i
+think this is important for long livesets. if you want to build something with 10+
+scenes one is screwed if you want to insert a new scene somewhere in the middle.
+
+- i can live without it but a swing function could be cool.
+
+- more ‘clip' colours could be nice.
+
+sorry to bomb you with thoughts/suggestions! i hope i makes sense.
+seq24/64 is a cool and underrated sequencer and it shines with some complex
+sampler/hw synth imho
+
+yes more or less how i described there. ideally would be for me not having to
+press P/right click.
+and no continuous drawing when you draw +'drag', just moving the note. so each new
+note needs a defined click.
+
+something like this seems intuitive to me:
+
+-left click + modifier(ctrl or alt) on grid space/note:draw or delete note
+- left click+modifier+mousedrag: create one note and drag it around (no continuous
+multiple note drawing as it is now, thats not really practical)
+-left click near (right) edge of note and drag: change note length
+(ideally with changing mouse pointer so you see visually that note length can be
+changed)
+-left click on note: select note *** as it is now **
+-left click mousedrag: make rectangular selection. next left click on one of
+selected notes + mousedrag moves selection *** as it is now ***
+
+something like this. it doesn't have to be exactly the same thing, but i think you
+get my point.
+no more P-clicking, ability to edit notes as soon as the grid pops up. purely in
+function of workflow.
+thanks i just checked it out but need to spend some more time with it. i'm still
+kinda biased to my suggestions though
+
+>That one I will make a priority.  Probably use "L" and "R" markers like
+>in the Song Editor, but serving to constrain the playback range.
+
+cool that would be awesome. i didn't check out song mode because i mainly want to 
+use seq64 live. so i just doubleclick a pattern in the matrix to edit it without
+going through song mode. do you think it would be feasible to change the L R
+markers in the pattern editor too? eventually i could program them in song mode,
+but that would kill the ableton-matrix-workflow a bit i think. i think ableton
+solves this by a seperate set of markers in the pattern editor (its been a while
+i'm not really an ableton guy)
+
+>Check out the user manual or do "man sequencer64" to learn about
+>the  -o wid or  -o sets options.
+
+thanks! i will check this out.
+
+>Do you mean "sets"?  That's a common request and something I would like
+>to do at some point.
+
+yes sets, sorry i'm thinking again in ableton lingo. this is very important i
+think. even just the ability to change the numbering (thus order) + ability to
+copy a set would be perfect for me. although maybe i can get around with changing 
+the grid size and do everything in one set. but still that seems more cumbersome
+and it would be tidier to just give each tune a set (switching between sets and
+next row of patterns there seems to work out very well in current state!)
+                                                                                  yes i mean more colors! i sometimes work with big sessions in linear daws
+(100+channels) and its handy to have more hues at your disposal :)
+
+>Thanks!  I started this fork (in 2015!) because seq24 was closest to the
+>simple MIDI sequencer I wanted to use, and it kind of took off.  I haven't
+>been able to use it to make music nearly as much as I'd like to have done.
+>With the port to Qt 5 and Windows, there still so much to do!
+
+cool keep up the good work! looking forward to future versions.
+i hope i will be able to build qt5 version on my chromebook (remember having some
+nightmares trying to build supercollider w/qt5)
+
+best regards,
+Lieven
+
+ps. i forgot to mention, but i especially miss vertical zooming in the pattern
+editor. on an 11" screen its really hard to click on the intended note in a
+cluster
+
+
+extending on my last ps. (sorry i'm tired gotta gig this night and leave on
+vacation tomorrow)
+
+- ability to scroll both vertical and horizontal in pattern editor (usually resp.
+mouse scroll or shift+mouse scroll)
+- ability to zoom both vertical and horizontal in pattern editor (something like
+ctrl+mouse scroll and ctrl+shift+mouse scroll)
+
+sorry i assume this is not easy to implement. but some streamlined
+zooming/scrolling abilities would be very cool for complex patterns
+
+
+sorry for my mails last weekend, i didn’t want to sound like a (dickhole-) feature
+begger.  and my c/c++ skills are really bad so i cannot really help with that :/
+
+meanwhile i found out about the -o commands to change rows/cols and screen estate,
+really cool. i think i understand the song mode a bit better (although its still
+kinda weird to operate imho), i tried to use the LR markers in there to edit 
+smaller parts of seqs which kinda works but selecting a seq in song mode seems to 
+break mute groups over here. also displaying multiple sets is nice, but only being
+able to apply mute groups on the active set makes it less useful to me.
+
+anyway being able to loop/edit smaller parts of seqs and copy/paste/edit set order
+would be awesome.  i think i can live with the way of editing seqs atm even if it
+feels a bit slower workflow-wise.
+
+thanks for your answer Chris.
+
+i think i can work around most things atm., part of the goal for my live setup is 
+to try to keep it really simple + playing around with a bunch of hardware fx.
+so the 4x8 limit is kind of a challenge in a good way :)
+
+let me know if i can help or test something. usually i’m on OSX but for this
+project i want to work with my small linux chromebook so i’m gonna stick with
+linux for a while. and building stuff for osx seems much more tedious these days. 
+i’m totally no apple fan anymore but kinda have to because i teach some
+DAW/electronic music stuff and the hip kids still adore apple hehe.
+
+keep up the good work. i’d like to donate some bucks but i’m really broke for now 
+(being a poor professional bass player, pregnant wife, house renovated, car just 
+broke down on holidays ouch)
+
+ps. changing rows/cols to 8x8 seems to break mute groups when reloading the file
+over here
+
+\section roadmap_build_bugs Build Bugs
+
+From: harm@harmlammers.nl
+
+See build-bugs.txt
+
+\section roadmap_references References
+
+<ul>
+   <li>  xxx
+   <li>  xxx
+</ul>
+
+ */
+
+/*
+ * roadmap.dox
+ *
+ * vim: ts=3 sw=3 et syntax=doxygen
+ */

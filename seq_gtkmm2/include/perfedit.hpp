@@ -142,11 +142,9 @@ private:
     perfroll * m_perfroll;              /**< The piano roll in the song editor. */
     perftime * m_perftime;              /**< The time/measures bar above roll.  */
     Gtk::Menu * m_menu_snap;            /**< The menu for grid-snap selection.  */
-#ifdef SEQ64_STAZED_TRANSPOSE
     Gtk::Menu * m_menu_xpose;           /**< The menu for transpose selection.  */
     Gtk::Button * m_button_xpose;       /**< Button to bring up transpose menu. */
     Gtk::Entry * m_entry_xpose;         /**< Text edit for the transpose value. */
-#endif
     Gtk::Image * m_image_play;          /**< The image for the play button.     */
     Gtk::Button * m_button_snap;        /**< Button to bring up the snap menu.  */
     Gtk::Entry * m_entry_snap;          /**< Text edit for the grid-snap value. */
@@ -313,13 +311,8 @@ public:
     void set_follow_transport ();
     void toggle_follow_transport ();
     void set_jack_mode ();
-
-#ifdef SEQ64_STAZED_TRANSPOSE
-
     void set_transpose (int transpose);
     void transpose_button_callback (int transpose);
-
-#endif
 
 private:
 

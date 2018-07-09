@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-02
+ * \updates       2018-07-08
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -78,7 +78,22 @@ public:
         QWidget * parent    = nullptr
     );
 
+    virtual ~qseqdata ()
+    {
+        // no code needed
+    }
+
     void set_data_type (midibyte a_status, midibyte a_control);
+
+    midibyte status () const
+    {
+        return m_status;
+    }
+
+    midibyte cc () const
+    {
+        return m_cc;
+    }
 
 protected:
 
@@ -112,9 +127,16 @@ private:
     QString mNumbers;
     QFont mFont;
 
-    /* what is the data window currently editing ? */
+    /*
+     * What events is the data window currently editing?
+     */
 
     midibyte m_status;
+
+    /*
+     * What events is the data window currently editing?
+     */
+
     midibyte m_cc;
 
     /**

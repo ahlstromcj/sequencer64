@@ -67,7 +67,7 @@ class qsliveframe : public QFrame, gui_palette_qt5
 public:
 
     explicit qsliveframe (perform & perf, QWidget * parent = 0 );
-    ~qsliveframe ();                // not virtual ???
+    virtual ~qsliveframe ();
 
     void setBank (int newBank);     // bank (screen-set) of sequences displayed
     void setBank ();                // bank number retrieved from perform

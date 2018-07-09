@@ -830,7 +830,7 @@
      <widget class="QPushButton" name="m_toggle_play">
       <property name="minimumSize">
        <size>
-        <width>40</width>
+        <width>42</width>
         <height>32</height>
        </size>
       </property>
@@ -842,6 +842,12 @@
       </property>
       <property name="text">
        <string>Play</string>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>36</width>
+        <height>14</height>
+       </size>
       </property>
      </widget>
     </item>
@@ -862,50 +868,77 @@
       <property name="text">
        <string>Thru</string>
       </property>
+      <property name="iconSize">
+       <size>
+        <width>60</width>
+        <height>14</height>
+       </size>
+      </property>
      </widget>
     </item>
     <item>
      <widget class="QPushButton" name="m_toggle_record">
       <property name="minimumSize">
        <size>
-        <width>64</width>
+        <width>42</width>
         <height>32</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>64</width>
+        <width>42</width>
         <height>32</height>
        </size>
       </property>
       <property name="text">
        <string>Record</string>
       </property>
+      <property name="iconSize">
+       <size>
+        <width>36</width>
+        <height>14</height>
+       </size>
+      </property>
      </widget>
     </item>
     <item>
      <widget class="QPushButton" name="m_toggle_qrecord">
+      <property name="minimumSize">
+       <size>
+        <width>42</width>
+        <height>32</height>
+       </size>
+      </property>
       <property name="maximumSize">
        <size>
-        <width>64</width>
+        <width>42</width>
         <height>32</height>
        </size>
       </property>
       <property name="text">
        <string>QRecord</string>
       </property>
+      <property name="iconSize">
+       <size>
+        <width>36</width>
+        <height>14</height>
+       </size>
+      </property>
+      <property name="shortcut">
+       <string>Ctrl+S</string>
+      </property>
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="m_button_rec_type">
+     <widget class="QComboBox" name="m_combo_rec_type">
       <property name="maximumSize">
        <size>
-        <width>64</width>
+        <width>84</width>
         <height>32</height>
        </size>
       </property>
-      <property name="text">
-       <string>Merge</string>
+      <property name="currentText">
+       <string/>
       </property>
      </widget>
     </item>

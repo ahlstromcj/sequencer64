@@ -631,15 +631,11 @@ private:
      * past the iniitialization of the member values it needs.
      */
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
     /**
      *  Holds the global MIDI transposition value.
      */
 
     int m_transpose;
-
-#endif
 
 private:
 
@@ -1905,8 +1901,6 @@ public:
 
     bool screenset_is_active (int screenset);
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
     void apply_song_transpose ();
 
     /**
@@ -1928,8 +1922,6 @@ public:
     {
         return m_transpose;
     }
-
-#endif
 
     /**
      * \getter m_master_bus.get_beats_per_minute

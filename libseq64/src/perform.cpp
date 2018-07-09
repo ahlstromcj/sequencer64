@@ -267,9 +267,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_sequence_state            (),         // boolean array [c_max_sequence]
     m_screenset_state           (m_seqs_in_set, false),    // boolean vector
     m_queued_replace_slot       (SEQ64_NO_QUEUED_SOLO),
-#ifdef SEQ64_STAZED_TRANSPOSE
     m_transpose                 (0),
-#endif
     m_out_thread                (),
     m_in_thread                 (),
     m_out_thread_launched       (false),
@@ -6664,8 +6662,6 @@ perform::print_busses () const
         m_master_bus->print();
 }
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
 /**
  *  Calls the apply_song_transpose() function for all active sequences.
  */
@@ -6680,8 +6676,6 @@ perform::apply_song_transpose ()
             seq->apply_song_transpose();
     }
 }
-
-#endif      // SEQ64_STAZED_TRANSPOSE
 
 /**
  *  Reloads the mute groups from the "rc" file.

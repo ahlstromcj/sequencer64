@@ -1,6 +1,6 @@
 To-Do Items
 Chris Ahlstrom
-2016-12-03 to 2018-04-15
+2016-12-03 to 2018-07-07
 
 Debian (and other) Packaging:
 
@@ -16,21 +16,6 @@ Build Issues:
 
     -   In the Makefiles, "-I..", "-I../include", and "-I../../include" appear
         more than once on command lines.
-
-qplseq64:
-
-    -   Update the Help / About properly.
-    -   Show "Input buss name" when writing the "rc" file, the same as
-        "Output buss name: " is shown.
-
-Windows (for the Future):
-
-    -   Implement api_sysex() for PortMIDI.
-    -   Implement api_flush() for PortMIDI.
-    -   Add NSIS installer creation.
-    -   Get basic Qt 5 support working.  We have the code building and
-        running in Windows via Qt Creator or qmake, using the MingW
-        facilities.  Still working on it.
 
 Tempo Track:
 
@@ -59,7 +44,7 @@ Modify flag:
     -   If the main tempo control is modified, the modification is not
         detected.
 
-Hot bugs:
+Random bugs:
 
     -   JACK MIDI does not auto connect with the JACK connect button is
         clicked.
@@ -100,6 +85,7 @@ Hot ideas (from GitHub):
         are armed.
     -   Any way to make playback multicore?  The "stress" file maxes out a
         core.
+    -   Many more to come.  Need a real roadmap Doxygen document.
 
 Puzzles:
 

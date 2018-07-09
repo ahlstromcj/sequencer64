@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2018-06-30
+ * \updates       2018-07-07
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -53,18 +53,6 @@
  */
 
 #include <string>
-
-/*
- * For now, let's see if we can get MingW to create a Windows-appropriate
- * header file.
- *
-#ifdef PLATFORM_WINDOWS
-#include "configwin32.h"
-#else
-#include "seq64-config.h"
-#endif
- *
- */
 
 #include "seq64-config.h"
 
@@ -258,7 +246,6 @@
  *    - SEQ64_LASH_SUPPORT
  *    - SEQ64_PAUSE_SUPPORT
  *    - SEQ64_STAZED_CHORD_GENERATOR
- *    - SEQ64_STAZED_TRANSPOSE
  *    - SEQ64_STAZED_LFO_SUPPORT
  *      Enables using the lfownd dialog to control the envelope of certain events
  *      in seqedit's seqdata pane.  We're not too keen on the user interface,
@@ -322,13 +309,7 @@
  *      active.  Still investigating.
  */
 
-#ifdef SEQ64_QTMIDI_SUPPORT
-#undef SEQ64_FOLLOW_PROGRESS_BAR        /* not ready in Qt 5 support        */
-#else
 #define SEQ64_FOLLOW_PROGRESS_BAR
-#endif
-
-#define SEQ64_FOLLOW_PROGRESS_BAR       /* for debugging                    */
 
 /**
  * \obsolete
@@ -345,9 +326,6 @@
  *  Let's try using lighter solid lines in the piano rolls and see how it
  *  looks.  It looks a little better.
  */
-
-#ifndef SEQ64_QT5_USER_INTERFACE
-#endif
 
 #define SEQ64_SOLID_PIANOROLL_GRID
 

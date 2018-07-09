@@ -73,10 +73,7 @@
 #include "pixmaps/perfedit.xpm"
 #include "pixmaps/jack_black.xpm"       /* #include "pixmaps/jack.xpm"  */
 #include "pixmaps/transport_follow.xpm"
-
-#ifdef SEQ64_STAZED_TRANSPOSE
 #include "pixmaps/transpose.xpm"
-#endif
 
 using namespace Gtk::Menu_Helpers;
 
@@ -163,11 +160,9 @@ perfedit::perfedit
     ),
     m_perftime          (manage(new perftime(perf(), *this, *m_hadjust))),
     m_menu_snap         (manage(new Gtk::Menu())),
-#ifdef SEQ64_STAZED_TRANSPOSE
     m_menu_xpose        (manage(new Gtk::Menu())),
     m_button_xpose      (manage(new Gtk::Button())),
     m_entry_xpose       (manage(new Gtk::Entry())),
-#endif
     m_image_play        (manage(new PIXBUF_IMAGE(play2_xpm))),
     m_button_snap       (manage(new Gtk::Button())),
     m_entry_snap        (manage(new Gtk::Entry())),
@@ -291,8 +286,6 @@ perfedit::perfedit
     m_entry_snap->set_size_request(40, -1);
     m_entry_snap->set_editable(false);
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
     char num[12];
     for (int i = -SEQ64_OCTAVE_SIZE; i <= SEQ64_OCTAVE_SIZE; ++i)
     {
@@ -327,8 +320,6 @@ perfedit::perfedit
     add_tooltip(m_button_xpose, "Song-transpose all transposable patterns.");
     m_entry_xpose->set_size_request(30, -1);
     m_entry_xpose->set_editable(false);
-
-#endif  // SEQ64_STAZED_TRANSPOSE
 
 #define SET_BPB     mem_fun(*this, &perfedit::set_beats_per_bar)
 
@@ -440,12 +431,8 @@ perfedit::perfedit
     m_hlbox->pack_start(*(manage(new Gtk::Label("x"))), false, false, 4);
     m_hlbox->pack_start(*m_button_snap , false, false);
     m_hlbox->pack_start(*m_entry_snap , false, false);
-
-#ifdef SEQ64_STAZED_TRANSPOSE
     m_hlbox->pack_start(*m_button_xpose , false, false);
     m_hlbox->pack_start(*m_entry_xpose , false, false);
-#endif
-
     m_hlbox->pack_start(*m_button_jack, false, false);
     m_hlbox->pack_start(*m_button_follow, false, false);
     add(*m_table);
@@ -460,10 +447,7 @@ perfedit::perfedit
     set_beats_per_bar(SEQ64_DEFAULT_BEATS_PER_MEASURE); /* time-sig numerator   */
     set_beat_width(SEQ64_DEFAULT_BEAT_WIDTH);           /* time-sig denominator */
     set_snap(SEQ64_DEFAULT_PERFEDIT_SNAP);
-
-#ifdef SEQ64_STAZED_TRANSPOSE
     set_transpose(0);
-#endif
 
     /*
      * Log the pointer to the appropriate perfedit object, if not already
@@ -919,8 +903,6 @@ perfedit::set_zoom (int z)
     m_perftime->set_zoom(z);
 }
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
 /**
  *  The button callback for transposition for this window.
  *
@@ -953,8 +935,6 @@ perfedit::set_transpose (int transpose)
     perf().all_notes_off();
     perf().set_transpose(transpose);
 }
-
-#endif  // SEQ64_STAZED_TRANSPOSE
 
 /**
  *  This callback function calls the base-class on_realize() function, and

@@ -189,9 +189,7 @@ namespace seq64
  *
  * \note
  *      -   The value c_transpose value is from Stazed's seq32 project.
- *          The code to support this option is turned on via the
- *          build-configurable SEQ64_STAZED_TRANSPOSE macro, but here we
- *          reserved the value even if that option is not enabled by the user.
+ *          The code to support this option is turned on permanently.
  *          There are additional values from Stazed/seq32, not yet used.
  *      -   The values below are compatible with Seq32, but they are not
  *          compatible with Kepler34.  It uses 0x24240011 and 0x24240012 for

@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2018-05-30
+# \update     	2018-07-07
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -35,9 +35,9 @@ LANG=C
 export LANG
 CYGWIN=binmode
 export CYGWIN
-export SEQ64_SCRIPT_EDIT_DATE="2018-04-09"
-export SEQ64_LIBRARY_API_VERSION="0.94"
-export SEQ64_LIBRARY_VERSION="$SEQ64_LIBRARY_API_VERSION.94.0"
+export SEQ64_SCRIPT_EDIT_DATE="2018-07-07"
+export SEQ64_LIBRARY_API_VERSION="0.95"
+export SEQ64_LIBRARY_VERSION="$SEQ64_LIBRARY_API_VERSION.95.0"
 
 #******************************************************************************
 #  Version info
@@ -98,7 +98,7 @@ EXTRAFLAGS="--enable-rtmidi"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.94.6-2018-04-09)
+Usage: ./bootstrap [options]                                 (0.95.1-2018-07-07)
 
     'bootstrap' sets up GNU automake support and libtool support for the
     Sequencer64 projects, creating the 'configure' script.  It can also
@@ -118,9 +118,15 @@ Usage: ./bootstrap [options]                                 (0.94.6-2018-04-09)
                      either --debug or --release to be specified.
  --static            Do a static, release, "rtmidi" build.
  -am                 Configure to build sequencer64 (original ALSA version).
+                     Implies --enable-alsamidi.
  -pm                 Configure for seq64portmidi.
+                     Implies --enable-portmidi.
  -rm                 Configure for seq64rtmidi (JACK version, the default).
- -qm, -qt            Configure for Qt5 user-interface, still not full-featured.
+                     Gtkmm-2.4 is the default user interface (Linux only).
+                     Implies --enable-rtmidi.
+ -qt                 Configure for Qt5 user-interface, which currently lacks
+                     some features of the Gtkmm-2.4 user-interface.
+                     Implies --enable-qt.
  -cli, -rc           Configure for seq64cli (command-line rtmidi version).
  --windows, -win     Configure for Windows.  Currently implies only the -cli
  -w64, --win32, -w32 option now, enables MingW build.  IMPORTANT: specify
@@ -198,11 +204,18 @@ if [ $# -ge 1 ] ; then
             EXTRAFLAGS="--enable-rtmidi"
             ;;
 
-         --qtmidi | -qt | -qm | --qt | --qm)
-            DORTMIDI="yes"
+#        --qtmidi | -qm)
+#           DORTMIDI="yes"
+#           DOGTKMMUI="no"
+#           DOQT5UI="yes"
+#           EXTRAFLAGS="--enable-qtmidi"
+#           ;;
+
+         --qt | -qt)
+#           DORTMIDI="yes"
             DOGTKMMUI="no"
             DOQT5UI="yes"
-            EXTRAFLAGS="--enable-qtmidi"
+            EXTRAFLAGS="--enable-qt"
             ;;
 
          --cli | -cli | -rc)
@@ -272,7 +285,7 @@ if [ $DOFULLCLEAN == "yes" ] ; then
 #  rm -f include/config.h.in
    rm -f include/config.h
    rm -f include/stamp-h1
-   rm -f seq64-config.h
+   rm -f include/seq64-config.h
    rm -rf po
    rm -f configure
    clean_debfiles
@@ -547,7 +560,7 @@ Now run './configure' to configure Sequencer64 for compilation, or './configure
 
       --enable-debug=gdb  --disable-shared   --enable-silent-rules
       --disable-seq32jack --enable-alsamidi  --enable-rtmidi (default)
-      --enable-cli (no GUI) --enable-portmidi (deprecated)
+      --enable-cli (no GUI) --enable-portmidi --enable-qtmidi
 
 E_O_F
       fi

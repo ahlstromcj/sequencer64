@@ -50,7 +50,7 @@ class qsbuildinfo : public QDialog
 public:
 
     explicit qsbuildinfo (QWidget * parent = 0);
-    ~qsbuildinfo ();
+    virtual ~qsbuildinfo ();
 
 private:
 

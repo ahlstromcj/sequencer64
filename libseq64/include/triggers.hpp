@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2017-11-24
+ * \updates       2018-07-07
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -550,11 +550,8 @@ public:
 
 private:
 
-#ifdef SEQ64_SONG_BOX_SELECT
-    void offset_selected (midipulse tick, grow_edit_t editmode);
-#endif
-
     midipulse adjust_offset (midipulse offset);
+    void offset_selected (midipulse tick, grow_edit_t editmode);
     void split (trigger & t, midipulse splittick);
     void select (trigger & t, bool count = true);
     void unselect (trigger & t, bool count = true);

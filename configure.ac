@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-06-11
+dnl \update        2018-07-09
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -120,7 +120,7 @@ build_rtmidi="no"
 build_portmidi="no"
 build_rtcli="no"
 build_windows="no"
-need_gtkmm="no"
+need_gtkmm="yes"
 need_qt="no"
 
 dnl Flaky, the AR macro is set well after this test, but the GCC macro
@@ -321,35 +321,37 @@ dnl macro.
 
 if test "x$use_as_needed" = "xyes" ; then       # disables this code
 
-AC_MSG_CHECKING(if --as-needed works)
-AC_ARG_ENABLE(as_needed,
-    [AS_HELP_STRING(--enable-as-needed,
-         [Enable linker options -Wl,--as-needed (default=yes)])],
-    [
-    case "${enableval}" in
-         yes) as_needed="1" ;;
-         no) as_needed="" ;;
-         *) AC_MSG_ERROR([bad value ${enableval} for --enable-as_needed]) ;;
-    esac
-    ],[
-        as_needed="unknown"
-    ])
-if test "x${as_needed}" = "xunknown" ; then
-    ac_old_ldflags="${LDFLAGS}"
-    LDFLAGS="-Wl,--as-needed"
-    AC_TRY_LINK(
-        [],
-        [],
-        [as_needed="1"],
-        [as_needed=""])
-    LDFLAGS="${ac_old_ldflags}"
-fi
-if test -n "$as_needed"; then
-    AC_MSG_RESULT(yes)
-    LDFLAGS="${LDFLAGS} -Wl,--as-needed"
-else
-    AC_MSG_RESULT(no)
-fi
+    AC_MSG_CHECKING(if --as-needed works)
+    AC_ARG_ENABLE(as_needed,
+        [AS_HELP_STRING(--enable-as-needed,
+             [Enable linker options -Wl,--as-needed (default=yes)])],
+        [
+        case "${enableval}" in
+             yes) as_needed="1" ;;
+             no) as_needed="" ;;
+             *) AC_MSG_ERROR([bad value ${enableval} for --enable-as_needed]) ;;
+        esac
+        ],[
+            as_needed="unknown"
+        ])
+
+    if test "x${as_needed}" = "xunknown" ; then
+        ac_old_ldflags="${LDFLAGS}"
+        LDFLAGS="-Wl,--as-needed"
+        AC_TRY_LINK(
+            [],
+            [],
+            [as_needed="1"],
+            [as_needed=""])
+        LDFLAGS="${ac_old_ldflags}"
+    fi
+
+    if test -n "$as_needed"; then
+        AC_MSG_RESULT(yes)
+        LDFLAGS="${LDFLAGS} -Wl,--as-needed"
+    else
+        AC_MSG_RESULT(no)
+    fi
 
 fi
 
@@ -369,17 +371,6 @@ dnl 4. Get external flags, if any.
 CFLAGS="${CFLAGS}"
 
 dnl Checks for libraries.
-
-dnl DO WE NEED THIS REALLY?  Comment it out for now.
-dnl
-dnl AC_CHECK_LIB(rt, main,, AC_MSG_ERROR([POSIX.1b Realtime library missing librt]))
-
-dnl Not supported in a Windows build at this time.
-
-if test "x$windows_host" = "xno" ; then
-    AC_CHECK_LIB(sigc-2.0, main,,
-        AC_MSG_ERROR([Essential library libsigc++-2.0 not found]))
-fi
 
 dnl Checks for header files.  Added some more to support daemonization.
 
@@ -409,8 +400,8 @@ dnl
 dnl AC_PROG_DOXYGEN
 
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
-if test -z "$DOXYGEN";
-   then AC_MSG_WARN([Doxygen not found, FYI only, not to worry])
+if test -z "$DOXYGEN"; then
+    AC_MSG_WARN([Doxygen not found, FYI only, not to worry])
 fi
 
 dnl Checks for the Cygwin environment. If present, sets shell variable
@@ -428,8 +419,6 @@ AC_ARG_ENABLE(mingw,
 
 dnl Clear out the X11 flags for the case where we are cross-compiling
 dnl for i586-mingw32 targets, under UNIX.
-dnl
-dnl if test "x$CYGWIN" = "xyes" -o "x$MINGW" = "xyes" ; then
 
 if test "x$mingw" = "xyes" ; then
    X_CFLAGS=""
@@ -500,25 +489,23 @@ dnl SUBDIRS variable.  Also see the latest versions of the midibus.hpp and
 dnl mastermidibus.hpp files in libseq64/include.
 dnl
 dnl Note that rtmidi is enabled by default now, and gtkmm is provisionally
-dnl required.
+dnl required.  However, we intend to support the rtmidi+qt combination.
 dnl
 dnl Eventually we want to make ALSA optional for the user/developer.
 
 AC_ARG_ENABLE(rtmidi,
-    [AS_HELP_STRING(--enable-rtmidi, [Enable rtmidi build, which is the default])],
+    [AS_HELP_STRING(--enable-rtmidi, [Enable rtmidi build, the default engine])],
     [rtmidi=$enableval],
     [rtmidi=yes])
 
 if test "$rtmidi" != "no"; then
     build_rtmidi="yes"
-    need_gtkmm="yes"
+    build_portmidi="no"
     AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
     AC_DEFINE(CONFIG_NAME, ["sequencer64"], [Configuration file name])
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi is enabled])
     AM_PATH_ALSA(0.9.0)
-    AC_MSG_RESULT([rtmidi native build enabled.]);
-else
-    AC_MSG_NOTICE([rtmidi native build disabled.]);
+    AC_MSG_RESULT([rtmidi engine build enabled.]);
 fi
 
 dnl "QtMidi" support.  This is support for the "RtMidi" configuration plus
@@ -537,26 +524,24 @@ dnl
 dnl PKG_CHECK_MODULES([Qt5Svg], [Qt5Svg], [], [
 dnl     AC_CHECK_LIB([Qt5Svg], [main], [], [exit 1])
 
-AC_ARG_ENABLE(qtmidi,
-    [AS_HELP_STRING(--enable-qtmidi, [Enable Qt5/rtmidi build])],
+AC_ARG_ENABLE(qt,
+    [AS_HELP_STRING(--enable-qt, [Enable Qt5 user-interface build])],
     [qtmidi=$enableval],
     [qtmidi=no])
 
 if test "$qtmidi" != "no"; then
     build_qtmidi="yes"
     need_qt="yes"
-    build_rtmidi="yes"
-    build_portmidi="no"
     need_gtkmm="no"
-    AC_DEFINE(APP_NAME, ["qseq64"], [Names the Qt/rtmidi version of application])
-    AC_DEFINE(CONFIG_NAME, ["qseq64"], [Configuration file name])
-    AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates that rtmidi is enabled])
-    AC_DEFINE(QTMIDI_SUPPORT, 1, [Indicates that Qt5 is enabled])
+dnl build_rtmidi="yes"
+dnl build_portmidi="no"
+    AC_DEFINE(APP_NAME, ["qrseq64"], [Names the Qt/rtmidi version of application])
+    AC_DEFINE(CONFIG_NAME, ["qrseq64"], [Configuration file name for Qt/rtmidi])
+dnl AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates that rtmidi is enabled])
+dnl AC_DEFINE(QTMIDI_SUPPORT, 1, [Indicates that Qt5 is enabled])
     AM_PATH_ALSA(0.9.0)
     AX_HAVE_QT
-    AC_MSG_RESULT([qtmidi native build enabled.]);
-else
-    AC_MSG_NOTICE([qtmidi native build disabled.]);
+    AC_MSG_RESULT([qt user-interface build enabled.]);
 fi
 
 dnl "CLI" or "Command-line" support.  This is enable for Windows or Linux.
@@ -584,8 +569,6 @@ if test "$cli" != "no"; then
     fi
     need_qt="no"
     need_gtkmm="no"
-else
-    AC_MSG_NOTICE([portmidi/rtmidi command-line build disabled.])
 fi
 
 dnl ALSA MIDI (legacy) support.
@@ -597,14 +580,12 @@ AC_ARG_ENABLE(alsamidi,
 
 if test "$alsamidi" != "no"; then
     build_alsamidi="yes"
-    need_gtkmm="yes"
+dnl need_gtkmm="yes"
     AC_DEFINE(ALSAMIDI_SUPPORT, 1, [Indicates if ALSA MIDI support is enabled])
     AC_DEFINE(APP_NAME, ["sequencer64"], [Names legacy version of application])
     AC_DEFINE(CONFIG_NAME, ["sequencer64"], [Configuration file name])
     AM_PATH_ALSA(0.9.0)
     AC_MSG_RESULT([Legacy ALSA build enabled.]);
-else
-    AC_MSG_NOTICE([Legacy ALSA build disabled.]);
 fi
 
 dnl PortMidi support.  Deprecated for Linux, but will still build it. It needs
@@ -618,7 +599,6 @@ AC_ARG_ENABLE(portmidi,
 if test "$portmidi" != "no"; then
     build_portmidi="yes"
     build_rtmidi="no"
-    need_gtkmm="yes"
     AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates if PortMidi support is enabled])
     AC_DEFINE(APP_NAME, ["seq64portmidi"], [Names this version of application])
     AC_DEFINE(CONFIG_NAME, ["seq64portmidi"], [Configuration file name])
@@ -631,12 +611,22 @@ fi
 AC_SUBST(APP_NAME)
 AC_SUBST(CONFIG_NAME)
 
-dnl PKG_CHECK_MODULES(GTKMM, gtkmm-3.0 >= 3.0.0)
+dnl libsigc not supported in a Windows build at this time.  Neither is
+dnl gtkmm-2.4, but we can support Qt as well now.  We need to beef up the
+dnl testing here.
 
-if test "x$need_gtkmm" = "xyes" ; then
-    PKG_CHECK_MODULES(GTKMM, gtkmm-2.4 >= 2.4.0)
-    AC_SUBST(GTKMM_CFLAGS)
-    AC_SUBST(GTKMM_LIBS)
+if test "x$windows_host" = "xno" ; then
+    if test "x$need_gtkmm" = "xyes" ; then
+        AC_CHECK_LIB(gtkmm-2.4, _init,,
+            AC_MSG_ERROR([Essential library libgtkmm-2.4 not found]))
+
+        AC_CHECK_LIB(sigc-2.0, main,,
+            AC_MSG_ERROR([Essential library libsigc++-2.0 not found]))
+
+        PKG_CHECK_MODULES(GTKMM, gtkmm-2.4 >= 2.4.0)
+        AC_SUBST(GTKMM_CFLAGS)
+        AC_SUBST(GTKMM_LIBS)
+    fi
 fi
 
 dnl Support for highlighting empty sequences (in yellow).  If enabled, the
@@ -749,21 +739,6 @@ else
     AC_MSG_NOTICE([Chord generator disabled.]);
 fi
 
-dnl Support for using the stazed transpose feature.  This affects sequence and
-dnl song transpose, not the transpose tool.
-
-AC_ARG_ENABLE(transpose,
-    [AS_HELP_STRING(--disable-transpose, [Disable using global transpose])],
-    [transpose=$enableval],
-    [transpose=yes])
-
-if test "$transpose" != "no"; then
-    AC_DEFINE(STAZED_TRANSPOSE, 1, [Define to enable global transpose])
-    AC_MSG_RESULT([Global Seq32 transpose enabled.])
-else
-    AC_MSG_NOTICE([Global Seq32 transpose disabled.]);
-fi
-
 dnl Support for using jean-emmanuel's scrollbars in the patterns panel.  We will
 dnl call this panel "main" for short.
 
@@ -786,6 +761,8 @@ AM_CONDITIONAL([BUILD_RTMIDI], [test "$build_rtmidi" = "yes"])
 AM_CONDITIONAL([BUILD_RTCLI], [test "$build_rtcli" = "yes"])
 AM_CONDITIONAL([BUILD_PORTMIDI], [test "$build_portmidi" = "yes"])
 AM_CONDITIONAL([BUILD_WINDOWS], [test "$build_windows" = "yes"])
+AM_CONDITIONAL([NEED_GTKMM], [test "$need_gtkmm" = "yes"])
+AM_CONDITIONAL([NEED_QT], [test "$need_qt" = "yes"])
 
 dnl 6.0  Top portion of the config.h/seq64-config.h header files.  The
 dnl      seq64-config.h header file has "SEQ64_" prepended to these
@@ -798,7 +775,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-06-11"
+#define VERSION_DATE_SHORT "2018-07-09"
 #define VERSION "0.95.1"
 
 )

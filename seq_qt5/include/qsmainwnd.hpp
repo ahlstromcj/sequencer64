@@ -75,7 +75,7 @@ class qsmainwnd : public QMainWindow
 public:
 
     explicit qsmainwnd (perform & p, QWidget * parent = 0);
-    ~qsmainwnd ();
+    virtual ~qsmainwnd ();
 
     // open the file at the given path
 

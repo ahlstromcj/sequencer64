@@ -142,6 +142,7 @@
 
 #include "pixmaps/bus.xpm"
 #include "pixmaps/down.xpm"
+#include "pixmaps/drum.xpm"
 #include "pixmaps/follow.xpm"
 #include "pixmaps/fruity.xpm"
 #include "pixmaps/key.xpm"
@@ -161,17 +162,13 @@
 #include "pixmaps/snap.xpm"
 #include "pixmaps/thru.xpm"
 #include "pixmaps/tools.xpm"
+#include "pixmaps/transpose.xpm"
 #include "pixmaps/tux.xpm"
 #include "pixmaps/undo.xpm"
 #include "pixmaps/zoom.xpm"
 
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
 #include "pixmaps/chord3-inv.xpm"
-#endif
-
-#ifdef SEQ64_STAZED_TRANSPOSE
-#include "pixmaps/drum.xpm"
-#include "pixmaps/transpose.xpm"
 #endif
 
 /**
@@ -327,10 +324,8 @@ seqedit::seqedit
     m_menu_snap         (manage(new Gtk::Menu())),
     m_menu_note_length  (manage(new Gtk::Menu())),
     m_menu_length       (manage(new Gtk::Menu())),
-#ifdef SEQ64_STAZED_TRANSPOSE
     m_toggle_transpose  (manage(new Gtk::ToggleButton())),
     m_image_transpose   (nullptr),
-#endif
     m_menu_midich       (nullptr),
     m_menu_midibus      (nullptr),
     m_menu_data         (nullptr),                  // see m_button_data
@@ -542,7 +537,6 @@ seqedit::seqedit
     );
 #endif
 
-#ifdef SEQ64_STAZED_TRANSPOSE
     m_toggle_transpose->add(*manage(new PIXBUF_IMAGE(transpose_xpm)));
     m_toggle_transpose->set_focus_on_click(false); // set_can_focus(false);
     m_toggle_transpose->signal_clicked().connect
@@ -557,7 +551,6 @@ seqedit::seqedit
     m_toggle_transpose->set_active(m_seq.get_transposable());
     if (! usr().work_around_transpose_image())
         set_transpose_image(m_seq.get_transposable());
-#endif
 
     /* play, rec, thru */
 
@@ -1372,9 +1365,7 @@ seqedit::fill_top_bar ()
     m_hbox->pack_start(*m_button_length , false, false);
     m_hbox->pack_start(*m_entry_length , false, false);
 
-#ifdef SEQ64_STAZED_TRANSPOSE
     m_hbox->pack_start(*m_toggle_transpose, false, false, 4);
-#endif
 
     /*
      * We need the space this takes up:
@@ -2651,8 +2642,6 @@ seqedit::name_change_callback ()
     m_seq.set_name(m_entry_name->get_text());
 }
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
 /**
  *  Passes the transpose status to the sequence object.
  */
@@ -2694,8 +2683,6 @@ seqedit::set_transpose_image (bool istransposable)
     if (not_nullptr(m_image_transpose))
         m_toggle_transpose->set_image(*m_image_transpose);
 }
-
-#endif
 
 /**
  *  Changes the image used for the mouse-mode indicator.
@@ -2756,7 +2743,7 @@ seqedit::record_change_callback ()
 }
 
 /**
- *  Passes the quantized-recording status to the sequence object.
+ *  Passes the quantized-recording status to the perform object.
  *
  * Stazed fix:
  *
@@ -2770,8 +2757,6 @@ seqedit::record_change_callback ()
 void
 seqedit::q_rec_change_callback ()
 {
-    // m_seq.set_quantized_recording(m_toggle_q_rec->get_active());
-
     perf().set_quantized_recording(m_toggle_q_rec->get_active(), &m_seq);
     if (m_toggle_q_rec->get_active() && ! m_toggle_record->get_active())
         m_toggle_record->activate();

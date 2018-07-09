@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2017-09-06
-# \update      2018-05-30
+# \update      2018-07-06
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -67,6 +67,7 @@ sequencer64libdir = @sequencer64libdir@
 #----------------------------------------------------------------------------
 
 pkginclude_HEADERS = \
+ Globals.hpp \
  gui_assistant_qt5.hpp \
  gui_palette_qt5.hpp \
  keys_perform_qt5.hpp \
@@ -78,14 +79,20 @@ pkginclude_HEADERS = \
  qperftime.hpp \
  qsabout.hpp \
  qsbuildinfo.hpp \
+ qscrollmaster.h \
  qseditoptions.hpp \
+ qseqbase.hpp \
  qseqdata.hpp \
+ qseqeditex.hpp \
+ qseqeditframe64.hpp \
  qseqeditframe.hpp \
  qseqkeys.hpp \
  qseqroll.hpp \
  qseqstyle.hpp \
  qseqtime.hpp \
+ qskeymaps.hpp \
  qsliveframe.hpp \
+ qsmacros.hpp \
  qskeymaps.hpp \
  qsmaintime.hpp \
  qsmainwnd.hpp \

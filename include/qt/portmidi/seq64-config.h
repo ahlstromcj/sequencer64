@@ -1,5 +1,5 @@
-#ifndef _INCLUDE_SEQ___CONFIG_H
-#define _INCLUDE_SEQ___CONFIG_H 1
+#ifndef SEQ64_QT_PORTMIDI_CONFIG_H
+#define SEQ64_QT_PORTMIDI_CONFIG_H
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-04-08
- * \updates       2018-06-28
+ * \updates       2018-07-08
  * \license       GNU GPLv2 or above
  *
  *  Qt Portmidi Linux version.
@@ -38,8 +38,12 @@
  *  However, it still defines things that are available on GNU/Linux systems.
  */
 
+#ifdef _INCLUDE_SEQ___CONFIG_H
+#error Automake-generated include file seq64-config.h already included.
+#endif
+
 #ifndef SEQ64_VERSION_DATE_SHORT
-#define SEQ64_VERSION_DATE_SHORT "2018-06-11"
+#define SEQ64_VERSION_DATE_SHORT "2018-07-09"
 #endif
 
 #ifndef SEQ64_VERSION
@@ -396,20 +400,10 @@
 
 /*
  * Define to enable Seq32 LFO window support.
- *
- *      NOT AVAILABLE YET IN QT USER INTERFACE.
- *
+ */
+
 #ifndef SEQ64_STAZED_LFO_SUPPORT
 #define SEQ64_STAZED_LFO_SUPPORT 1
-#endif
- */
-
-/*
- * Define to enable pattern transpose.
- */
-
-#ifndef SEQ64_STAZED_TRANSPOSE
-#define SEQ64_STAZED_TRANSPOSE 1
 #endif
 
 /*
@@ -449,7 +443,7 @@
 
 /* once: _INCLUDE_SEQ___CONFIG_H */
 
-#endif
+#endif  // SEQ64_QT_PORTMIDI_CONFIG_H
 
 /*
  * seq64-config.h for Qt/PortMidi

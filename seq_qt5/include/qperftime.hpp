@@ -63,6 +63,11 @@ public:
 
     explicit qperftime (perform & a_perf, QWidget * parent);
 
+    virtual ~qperftime ()
+    {
+        // no code needed
+    }
+
     void zoom_in();
     void zoom_out();
     void set_guides(int a_snap, int a_measure);

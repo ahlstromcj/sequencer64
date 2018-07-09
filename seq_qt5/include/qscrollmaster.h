@@ -49,6 +49,13 @@ class QScrollBar;
  * support them well.
  */
 
+/*
+ * Do not document a namespace.  It breaks Doxygen.
+
+namespace seq64
+{
+ */
+
 /**
  *  Derived from QScrollArea, this class provides a way to pass any horizontal
  *  or vertical scrollbar value changes on to one or more other QScrollBars.
@@ -127,6 +134,10 @@ protected:
     virtual void scrollContentsBy (int dx, int dy);     /* override */
 
 };          // class qscrollmaster
+
+/*
+}           // namespace seq64
+ */
 
 #endif      // SEQ64_QSCROLLMASTER_HPP
 

@@ -68,6 +68,11 @@ public:
         QWidget * parent    = nullptr
     );
 
+    virtual ~qseqtime ()
+    {
+        // no code needed
+    }
+
 protected:
 
     void paintEvent (QPaintEvent *); // painting event to draw on the frame

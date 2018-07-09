@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-24
+ * \updates       2018-07-06
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -79,6 +79,11 @@ public:
         int keyHeight           = SEQ64_SEQKEY_HEIGHT,
         QWidget * parent        = nullptr
     );
+
+    virtual ~qstriggereditor ()
+    {
+        // no code needed
+    }
 
     void set_data_type (midibyte a_status, midibyte a_control);
 

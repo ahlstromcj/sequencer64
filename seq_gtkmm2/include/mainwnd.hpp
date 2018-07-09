@@ -724,10 +724,7 @@ private:
 #endif
     }
 
-#ifdef SEQ64_STAZED_TRANSPOSE
     void apply_song_transpose ();
-#endif
-
     void clear_mute_groups ();
     void reload_mute_groups ();
 

@@ -276,7 +276,6 @@ seqmenu::popup_menu ()
     {
         m_menu->items().push_back(SeparatorElem());
 
-#ifdef SEQ64_STAZED_TRANSPOSE
 #define SET_TRANS   mem_fun(*this, &seqmenu::set_transposable)
 
         sequence * s = get_current_sequence();
@@ -294,7 +293,6 @@ seqmenu::popup_menu ()
                 MenuElem("Enable Transpose", sigc::bind(SET_TRANS, true))
             );
         }
-#endif
 
         Gtk::Menu * menu_buses = manage(new Gtk::Menu());
         m_menu->items().push_back(MenuElem("MIDI Bus", *menu_buses));
@@ -416,7 +414,6 @@ seqmenu::set_transposable (bool flag)
 {
     if (is_current_seq_active())        /* also checks sequence pointer */
     {
-#ifdef SEQ64_STAZED_TRANSPOSE
         sequence * s = get_current_sequence();
         if (not_nullptr(s))
         {
@@ -425,7 +422,6 @@ seqmenu::set_transposable (bool flag)
 
             s->set_transposable(flag);
         }
-#endif
     }
 }
 

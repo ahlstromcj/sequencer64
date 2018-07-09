@@ -151,15 +151,15 @@ dependencies = \
 # The programs to build
 #------------------------------------------------------------------------------
 
-bin_PROGRAMS = qseq64
+bin_PROGRAMS = qrseq64
 
 #******************************************************************************
 # seq64
 #----------------------------------------------------------------------------
 
-qseq64_SOURCES = seq64qt5.cpp
-qseq64_DEPENDENCIES = $(dependencies)
-qseq64_LDADD = $(libraries) $(QT_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
+qrseq64_SOURCES = seq64qt5.cpp
+qrseq64_DEPENDENCIES = $(dependencies)
+qrseq64_LDADD = $(libraries) $(QT_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(AM_LDFLAGS)
 
 #******************************************************************************
 # Testing

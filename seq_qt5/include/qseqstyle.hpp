@@ -41,9 +41,15 @@
 
 class qseqstyle : public QCommonStyle
 {
+
 public:
 
     qseqstyle();
+
+    virtual ~qseqstyle ()
+    {
+        // no code needed
+    }
 
 };          // class qseqstyle
 

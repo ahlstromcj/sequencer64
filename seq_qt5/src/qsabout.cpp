@@ -25,13 +25,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-08
+ * \updates       2018-07-06
  * \license       GNU GPLv2 or above
  *
  */
 
+#include "seq64-config.h"               /* needed to check Qt environment   */
 #include "qsabout.hpp"
-#include "seq64-config.h"
 
 /*
  *  Qt's uic application allows a different output file-name, but not sure
@@ -43,6 +43,10 @@
 #else
 #include "forms/qsabout.ui.h"
 #endif
+
+/*
+ * Do not document a namespace.  It breaks Doxygen.
+ */
 
 namespace seq64
 {

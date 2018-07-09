@@ -63,7 +63,7 @@ class qseditoptions : public QDialog
 public:
 
     explicit qseditoptions (seq64::perform & perf, QWidget * parent = 0);
-    ~qseditoptions();
+    virtual ~qseditoptions();
 
 private:
 

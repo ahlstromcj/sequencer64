@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-06
+ * \updates       2018-07-08
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -98,6 +98,7 @@ QWidget container?
 
 #include "controllers.hpp"              /* seq64::c_controller_names[]      */
 #include "perform.hpp"                  /* seq64::perform reference         */
+#include "qlfoframe.hpp"
 #include "qseqdata.hpp"
 #include "qseqeditframe64.hpp"
 #include "qseqkeys.hpp"
@@ -125,6 +126,7 @@ QWidget container?
 
 #include "pixmaps/bus.xpm"
 #include "pixmaps/down.xpm"
+#include "pixmaps/drum.xpm"
 #include "pixmaps/follow.xpm"
 #include "pixmaps/key.xpm"
 #include "pixmaps/length_short.xpm"     /* not length.xpm, it is too long   */
@@ -142,16 +144,12 @@ QWidget container?
 #include "pixmaps/snap.xpm"
 #include "pixmaps/thru.xpm"
 #include "pixmaps/tools.xpm"
+#include "pixmaps/transpose.xpm"
 #include "pixmaps/undo.xpm"
 #include "pixmaps/zoom.xpm"             /* zoom_in/_out combo-box           */
 
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
 #include "pixmaps/chord3-inv.xpm"
-#endif
-
-#ifdef SEQ64_STAZED_TRANSPOSE
-#include "pixmaps/drum.xpm"
-#include "pixmaps/transpose.xpm"
 #endif
 
 /*
@@ -304,7 +302,7 @@ s_lookup_zoom (int zoom)
     return result;
 }
 
-#ifdef SEQ64_STAZED_CHORD_GENERATOR_NOT_NEEDED
+#ifdef SEQ64_STAZED_CHORD_GENERATOR_NOT_NEEDED_YET
 
 /**
  *  Looks up a chord name and returns its index.  Note that the chord names
@@ -327,6 +325,28 @@ s_lookup_chord (const std::string & chordname)
 }
 
 #endif
+
+static const int s_rec_vol_items [] =
+{
+    SEQ64_PRESERVE_VELOCITY, 127, 112, 96, 80, 64, 48, 32, 16
+};
+static const int s_rec_vol_count = sizeof(s_rec_vol_items) / sizeof(int);
+
+/**
+ *
+ * NOT YET USED.
+
+static int
+s_lookup_rec_vol (const std::string & volstring)
+{
+    int result = SEQ64_PRESERVE_VELOCITY;
+    if (volstring != "Free")
+    {
+        result = std::stoi(volstring);
+    }
+    return result;
+}
+ */
 
 /**
  *
@@ -359,6 +379,7 @@ qseqeditframe64::qseqeditframe64
     m_seqroll           (nullptr),
     m_seqdata           (nullptr),
     m_seqevent          (nullptr),
+    m_lfo_wnd           (nullptr),
     m_tools_popup       (nullptr),
     m_sequences_popup   (nullptr),
     m_events_popup      (nullptr),
@@ -623,30 +644,31 @@ qseqeditframe64::qseqeditframe64
     m_seq->set_unit_measure();              /* must precede set_measures()  */
     set_measures(get_measures());
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
     /*
      *  Transpose button.
      */
 
     bool cantranspose = m_seq->get_transposable();
     qt_set_icon(transpose_xpm, ui->m_toggle_transpose);
+    ui->m_toggle_transpose->setCheckable(true);
+    ui->m_toggle_transpose->setChecked(cantranspose);
     ui->m_toggle_transpose->setToolTip
     (
         "Sequence is allowed to be transposed if button is highighted/checked."
     );
-    ui->m_toggle_transpose->setCheckable(true);
-    ui->m_toggle_transpose->setChecked(cantranspose);
-    if (! usr().work_around_transpose_image())
-        set_transpose_image(cantranspose);
 
+    /*
+     * Qt::NoFocus is the default focus policy.
+     */
+
+    ui->m_toggle_transpose->setAutoDefault(false);
     connect
     (
         ui->m_toggle_transpose, SIGNAL(toggled(bool)),
         this, SLOT(transpose(bool))
     );
-
-#endif
+    if (! usr().work_around_transpose_image())
+        set_transpose_image(cantranspose);
 
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
 
@@ -786,10 +808,9 @@ qseqeditframe64::qseqeditframe64
      * Follow Progress Button.
      */
 
-    qt_set_icon(follow_xpm, ui->m_toggle_follow);
-
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
 
+    qt_set_icon(follow_xpm, ui->m_toggle_follow);
     ui->m_toggle_follow->setEnabled(true);
     ui->m_toggle_follow->setCheckable(true);
     ui->m_toggle_follow->setToolTip
@@ -806,9 +827,7 @@ qseqeditframe64::qseqeditframe64
     ui->m_toggle_follow->setChecked(m_seqroll->progress_follow());
     connect(ui->m_toggle_follow, SIGNAL(toggled(bool)), this, SLOT(follow(bool)));
 #else
-
-    ui->m_toggle_follow->setEnabled(false);
-
+    // ui->m_toggle_follow->setEnabled(false);
 #endif
 
     /**
@@ -1046,20 +1065,30 @@ qseqeditframe64::qseqeditframe64
 
     /*
      * LFO Button.  This window is not yet ported to Qt 5.
-     *
-     * ui->m_button_lfo
      */
+
+#ifdef SEQ64_STAZED_LFO_SUPPORT
+     ui->m_button_lfo->setEnabled(true);
+     connect
+     (
+        ui->m_button_lfo, SIGNAL(clicked(bool)),
+        this, SLOT(show_lfo_frame())
+     );
+#else
+     ui->m_button_lfo->setEnabled(false);
+#endif
 
     /*
      * Enable (unmute) Play Button.
      */
 
     qt_set_icon(play_xpm, ui->m_toggle_play);
+    ui->m_toggle_play->setCheckable(true);
     ui->m_toggle_play->setToolTip("When active, the pattern is unmuted.");
     connect
     (
         ui->m_toggle_play, SIGNAL(toggled(bool)),
-        this, SLOT(play_change())
+        this, SLOT(play_change(bool))
     );
 
     /*
@@ -1067,6 +1096,7 @@ qseqeditframe64::qseqeditframe64
      */
 
     qt_set_icon(thru_xpm, ui->m_toggle_thru);
+    ui->m_toggle_play->setCheckable(true);
     ui->m_toggle_thru->setToolTip
     (
         "When active, incoming MIDI goes through to output."
@@ -1074,7 +1104,7 @@ qseqeditframe64::qseqeditframe64
     connect
     (
         ui->m_toggle_thru, SIGNAL(toggled(bool)),
-        this, SLOT(thru_change())
+        this, SLOT(thru_change(bool))
     );
 
     /*
@@ -1082,6 +1112,7 @@ qseqeditframe64::qseqeditframe64
      */
 
     qt_set_icon(rec_xpm, ui->m_toggle_record);
+    ui->m_toggle_play->setCheckable(true);
     ui->m_toggle_record->setToolTip
     (
         "When active, incoming MIDI is recorded."
@@ -1089,20 +1120,79 @@ qseqeditframe64::qseqeditframe64
     connect
     (
         ui->m_toggle_record, SIGNAL(toggled(bool)),
-        this, SLOT(record_change())
+        this, SLOT(record_change(bool))
     );
 
     /*
      * MIDI Quantized Record Button.
      */
 
-    /*
-     * Recording Merge, Replace, Extend Button.
-     */
+    qt_set_icon(q_rec_xpm, ui->m_toggle_qrecord);
+    ui->m_toggle_play->setCheckable(true);
+    ui->m_toggle_qrecord->setToolTip
+    (
+        "When active, incoming MIDI is quantize recorded."
+    );
+    connect
+    (
+        ui->m_toggle_qrecord, SIGNAL(toggled(bool)),
+        this, SLOT(q_record_change(bool))
+    );
 
     /*
-     * Recording Volume Button (and Combo?)
+     * Recording Merge, Replace, Extend Button.  Provides a button to set the
+     * recording style to "legacy" (when looping, merge new incoming events
+     * into the pattern), "overwrite" (replace events with incoming events),
+     * and "expand" (increase the size of the loop to accomodate new events).
      */
+
+    ui->m_combo_rec_type->setToolTip
+    (
+        "Select recording type for loop patterns: merge events (legacy); "
+        "overwrite events; or expand the pattern length while recording."
+    );
+    ui->m_combo_rec_type->insertItem(int(LOOP_RECORD_LEGACY), "Merge");
+    ui->m_combo_rec_type->insertItem(int(LOOP_RECORD_OVERWRITE), "Replace");
+    ui->m_combo_rec_type->insertItem(int(LOOP_RECORD_EXPAND), "Expand");
+    connect
+    (
+        ui->m_combo_rec_type, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(update_record_type(int))
+    );
+    ui->m_combo_rec_type->setCurrentIndex(int(LOOP_RECORD_LEGACY));
+
+    /*
+     * Recording Volume Button and Combo Box
+     */
+
+    ui->m_button_rec_vol->setToolTip
+    (
+        "Resets recording volume to 'Free', "
+        "which means whatever volume is incoming."
+    );
+    connect
+    (
+        ui->m_button_rec_vol, SIGNAL(clicked(bool)),
+        this, SLOT(reset_recording_volume())
+    );
+    for (int v = 0; v < s_rec_vol_count; ++v)
+    {
+        int item = s_rec_vol_items[v];
+        char fmt[8];
+        if (v == 0)
+            snprintf(fmt, sizeof fmt, "%s", "Free");
+        else
+            snprintf(fmt, sizeof fmt, "%d", item);
+
+        QString combo_text = fmt;
+        ui->m_combo_rec_vol->insertItem(v, combo_text);
+    }
+    connect
+    (
+        ui->m_combo_rec_vol, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(update_recording_volume(int))
+    );
+    set_recording_volume(usr().velocity_override());
 
 }
 
@@ -1332,8 +1422,6 @@ qseqeditframe64::next_measures ()
         set_measures(m);
 }
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
 /**
  *  Passes the transpose status to the sequence object.
  */
@@ -1369,8 +1457,6 @@ qseqeditframe64::set_transpose_image (bool istransposable)
     }
 }
 
-#endif
-
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
 
 /**
@@ -1388,6 +1474,8 @@ qseqeditframe64::update_chord (int index)
     }
 }
 
+#ifdef SEQ64_QSEQEDIT_BUTTON_INCREMENT
+
 /**
  *  When the chord button is pushed, we can go to the next chord
  *  entry in the combo-box, wrapping around when the end is reached.
@@ -1404,6 +1492,21 @@ qseqeditframe64::increment_chord ()
     set_chord(chord);
 }
 
+#else   // SEQ64_QSEQEDIT_BUTTON_INCREMENT
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::reset_chord ()
+{
+    ui->m_combo_chord->setCurrentIndex(0);
+    m_seqroll->set_chord(0);
+}
+
+#endif  // SEQ64_QSEQEDIT_BUTTON_INCREMENT
+
 /**
  *
  */
@@ -1417,17 +1520,6 @@ qseqeditframe64::set_chord (int chord)
         m_chord = m_initial_chord = chord;
         m_seqroll->set_chord(chord);
     }
-}
-
-/**
- *
- */
-
-void
-qseqeditframe64::reset_chord ()
-{
-    ui->m_combo_chord->setCurrentIndex(0);
-    m_seqroll->set_chord(0);
 }
 
 #endif  // SEQ64_STAZED_CHORD_GENERATOR
@@ -1986,7 +2078,7 @@ qseqeditframe64::follow_progress ()
 void
 qseqeditframe64::follow_progress ()
 {
-    // No code, never follow the progress bar.
+// No code, never follow the progress bar.
 }
 
 #endif  // SEQ64_FOLLOW_PROGRESS_BAR
@@ -2669,6 +2761,20 @@ qseqeditframe64::repopulate_mini_event_menu (int buss, int channel)
 }
 
 /**
+ *
+ */
+
+void
+qseqeditframe64::show_lfo_frame ()
+{
+    if (is_nullptr(m_lfo_wnd))
+    {
+        m_lfo_wnd = new qlfoframe(perf(), *m_seq, *m_seqdata);
+    }
+    m_lfo_wnd->show();
+}
+
+/**
  *  Passes the play status to the sequence object.
  */
 
@@ -2714,6 +2820,118 @@ qseqeditframe64::record_change (bool ischecked)
     bool thru_active = ui->m_toggle_thru->isChecked();
     bool record_active = ui->m_toggle_record->isChecked();
     perf().set_recording(record_active, thru_active, m_seq);
+}
+
+/**
+ *  Passes the quantized-recording status to the perform object.
+ *
+ * Stazed fix:
+ *
+ *      If we set Quantized recording, then also set recording, but do not
+ *      unset recording if we unset Quantized recording.
+ *
+ *  This is not necessarily the most intuitive thing to do.  See
+ *  midi_record.txt.
+ */
+
+void
+qseqeditframe64::q_record_change (bool ischecked)
+{
+    perf().set_quantized_recording(ischecked, m_seq);
+    if (ui->m_toggle_qrecord->isChecked() && ! ui->m_toggle_record->isChecked())
+        ui->m_toggle_record->setChecked(true);
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::update_record_type (int index)
+{
+    loop_record_t rectype = loop_record_t(index);
+    bool ok = rectype >= LOOP_RECORD_LEGACY && rectype <= LOOP_RECORD_EXPAND;
+    if (ok)
+    {
+        switch (rectype)
+        {
+        case LOOP_RECORD_LEGACY:
+
+            m_seq->set_overwrite_rec(false);
+            m_seqroll->set_expanded_recording(false);
+            break;
+
+        case LOOP_RECORD_OVERWRITE:
+
+            m_seq->set_overwrite_rec(true);
+            m_seqroll->set_expanded_recording(false);
+            break;
+
+        case LOOP_RECORD_EXPAND:
+
+            m_seq->set_overwrite_rec(false);
+            m_seqroll->set_expanded_recording(true);
+            break;
+
+        default:
+
+            /*
+             * Nothing else.
+             */
+
+            break;
+        }
+        set_dirty();
+    }
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::update_recording_volume (int index)
+{
+    if (index >= 0 && index < s_rec_vol_count)
+    {
+        int recvol = s_rec_vol_items[index];
+        set_recording_volume(recvol);
+    }
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::reset_recording_volume ()
+{
+    ui->m_combo_rec_vol->setCurrentIndex(0);
+}
+
+/**
+ *  Passes the given parameter to sequence::set_rec_vol().  This function also
+ *  changes the button's text to match the selection, and also changes the
+ *  global velocity-override setting in user_settings.  Note that the setting
+ *  will not be saved to the "usr" configuration file unless Sequencer64 was
+ *  run with the "--user-save" option.
+ *
+ * \param recvol
+ *      The setting to be made, obtained from the recording-volume ("Vol")
+ *      menu.
+ */
+
+void
+qseqeditframe64::set_recording_volume (int recvol)
+{
+//  char selection[16];
+//  if (recvol == SEQ64_PRESERVE_VELOCITY)
+//      snprintf(selection, sizeof selection, "Free");
+//  else
+//      snprintf(selection, sizeof selection, "%d", recvol);
+
+    m_seq->set_rec_vol(recvol);         /* save to the sequence settings    */
+    usr().velocity_override(recvol);    /* save to the "usr" config file    */
 }
 
 /**

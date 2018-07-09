@@ -39,7 +39,6 @@
 
 namespace seq64
 {
-    class perform;
 
 /**
  *
@@ -55,15 +54,15 @@ qsmaintime::qsmaintime
     QWidget             (parent),
     m_main_perf         (perf),
     m_color             (new QColor(Qt::red)),
-    mFont               (),
+    m_font              (),
     m_beats_per_measure (beats_per_measure),
     m_beat_width        (beat_width),
     m_lastMetro         (0),
     m_alpha             (0)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
-    mFont.setPointSize(9);
-    mFont.setBold(true);
+    m_font.setPointSize(9);
+    m_font.setBold(true);
 }
 
 /**
@@ -88,7 +87,7 @@ qsmaintime::paintEvent (QPaintEvent *)
     QBrush brush(Qt::NoBrush);
 
     painter.setPen(pen);
-    painter.setFont(mFont);
+    painter.setFont(m_font);
     painter.setBrush(brush);
 
     midipulse tick = m_main_perf.get_tick();
@@ -143,8 +142,8 @@ qsmaintime::paintEvent (QPaintEvent *)
         painter.setPen(pen);
         painter.drawText
         (
-            (metro + 1) * divX - (mFont.pointSize() + 2),
-            height() * 0.3 + mFont.pointSize(), QString::number(metro + 1)
+            (metro + 1) * divX - (m_font.pointSize() + 2),
+            height() * 0.3 + m_font.pointSize(), QString::number(metro + 1)
         );
     }
 
@@ -164,7 +163,7 @@ qsmaintime::paintEvent (QPaintEvent *)
 QSize
 qsmaintime::sizeHint () const
 {
-    return QSize(150, mFont.pointSize() * 2.4);
+    return QSize(150, m_font.pointSize() * 2.4);
 }
 
 }           // namespace seq64

@@ -35,10 +35,19 @@
 
 #include <QDialog>
 
+/*
+ * This is necessary to keep the compiler from thinking Ui::qsabout
+ * should be in the seq64 namespace.
+ */
+
 namespace Ui
 {
     class qsabout;
 }
+
+/*
+ * Do not document a namespace.  It breaks Doxygen.
+ */
 
 namespace seq64
 {
@@ -50,7 +59,7 @@ class qsabout : public QDialog
 public:
 
     explicit qsabout (QWidget * parent = 0);
-    ~qsabout ();
+    virtual ~qsabout ();
 
 private:
 

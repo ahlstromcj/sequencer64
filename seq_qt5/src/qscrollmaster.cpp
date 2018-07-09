@@ -45,6 +45,13 @@
  * support them.
  */
 
+/*
+ * Do not document a namespace.  It breaks Doxygen.
+
+namespace seq64
+{
+ */
+
 /**
  *
  */
@@ -116,6 +123,10 @@ qscrollmaster::scrollContentsBy (int dx, int dy)
     }
     QScrollArea::scrollContentsBy(dx, dy);
 }
+
+/*
+}               // namespace seq64
+ */
 
 /*
  * qscrollmaster.cpp

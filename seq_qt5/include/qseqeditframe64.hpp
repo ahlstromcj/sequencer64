@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-06
+ * \updates       2018-07-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -36,6 +36,21 @@
 #include <QLayout>
 
 #include "sequence.hpp"                 /* seq64::edit_mode_t enumeration   */
+
+/*
+ * We have a weird issues with the automake build (but not the Qt build),
+ * where these macros appear to be defined, but at run time, Qt says
+ * that the reset_chord() callback, for example, does not exist.  Still
+ * trying to figure that one out.  In the meantime....
+ */
+
+// This does not work for the "chord" feature!
+//
+// #include "seq64_features.h"   /* includes seq64-config.h */
+
+#undef SEQ64_STAZED_CHORD_GENERATOR     // otherwise redefined !!! weird !!!
+#define SEQ64_STAZED_CHORD_GENERATOR
+#define SEQ64_FOLLOW_PROGRESS_BAR
 
 /*
  *  A bunch of forward declarations.  The Qt header files are moved into the
@@ -71,6 +86,7 @@ namespace seq64
     class qseqroll;
     class qseqdata;
     class qstriggereditor;
+    class qlfoframe;
 
 /**
  * Actions.  These variables represent actions that can be applied to a
@@ -103,9 +119,9 @@ enum edit_action_t
 };
 
 /**
- *  This frame holds tools for editing an individual MIDI sequence.  This frame is
- *  a more advanced version of qseqeditframe, which was based on Kepler34's
- *  EditFrame class.
+ *  This frame holds tools for editing an individual MIDI sequence.  This
+ *  frame is a more advanced version of qseqeditframe, which was based on
+ *  Kepler34's EditFrame class.
  */
 
 class qseqeditframe64 : public QFrame
@@ -114,11 +130,13 @@ class qseqeditframe64 : public QFrame
 
 public:
 
-    explicit qseqeditframe64
+    qseqeditframe64
     (
-        perform & p, int seqid, QWidget * parent = nullptr
+        perform & p,
+        int seqid,
+        QWidget * parent = nullptr
     );
-    ~qseqeditframe64 ();
+    virtual ~qseqeditframe64 ();
 
     void update_draw_geometry ();
     void set_editor_mode (edit_mode_t mode);
@@ -163,13 +181,14 @@ private slots:
     void update_measures (int index);
     void next_measures ();
     void reset_measures ();
-#ifdef SEQ64_STAZED_TRANSPOSE
     void transpose (bool ischecked);
-#endif
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
     void update_chord (int index);
+#ifdef SEQ64_QSEQEDIT_BUTTON_INCREMENT
     void increment_chord ();
+#else
     void reset_chord ();
+#endif
 #endif
     void update_midi_bus (int index);
     void reset_midi_bus ();
@@ -208,9 +227,14 @@ private slots:
     void reset_scale ();
     void events ();
     void data ();
+    void show_lfo_frame ();
     void play_change (bool ischecked);
     void thru_change (bool ischecked);
     void record_change (bool ischecked);
+    void q_record_change (bool ischecked);
+    void update_record_type (int index);
+    void update_recording_volume (int index);
+    void reset_recording_volume ();
 
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
     void follow (bool ischecked);
@@ -245,11 +269,7 @@ private:
     void set_key (int key);
     void set_scale (int key);
     void set_background_sequence (int seqnum);
-
-#ifdef SEQ64_STAZED_TRANSPOSE
     void set_transpose_image (bool istransposable);
-#endif
-
     void set_event_entry
     (
         QMenu * menu,
@@ -258,8 +278,8 @@ private:
         midibyte status,
         midibyte control = 0
     );
-
     void set_data_type (midibyte status, midibyte control = 0);
+    void set_recording_volume (int recvol);
 
 private:
 
@@ -271,6 +291,14 @@ private:
     qseqroll * m_seqroll;
     qseqdata * m_seqdata;
     qstriggereditor * m_seqevent;  // qseqevent?
+
+    /**
+     *  The LFO window object used by the pattern editor.  This item get the
+     *  seqdata window hooked into it, and so must follow that item in the C++
+     *  initializer list.
+     */
+
+    qlfoframe * m_lfo_wnd;
 
     /**
      *  Menu for Tools.

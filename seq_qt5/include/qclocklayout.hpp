@@ -95,6 +95,11 @@ public:
         int bus
     );
 
+    virtual ~qclocklayout ()
+    {
+        // no code needed
+    }
+
     QHBoxLayout * layout ()
     {
         return m_horizlayout_clockline;

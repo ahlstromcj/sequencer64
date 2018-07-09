@@ -1,12 +1,12 @@
 #******************************************************************************
-# qplseq64.pro (qplseq64)
+# qpseq64.pro (qpseq64)
 #------------------------------------------------------------------------------
 ##
-# \file       	qplseq64.pro
-# \library    	qplseq64 application
+# \file       	qpseq64.pro
+# \library    	qpseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-04-13
+# \update      2018-07-07
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -29,7 +29,7 @@ CONFIG += static link_prl ordered qtc_runnable
 Seq64qt5.depends = libseq64 seq_portmidi seq_qt5
 
 #******************************************************************************
-# qplseq64.pro (qplseq64)
+# qpseq64.pro (qpseq64)
 #------------------------------------------------------------------------------
 # 	vim: ts=3 sw=3 ft=automake
 #------------------------------------------------------------------------------

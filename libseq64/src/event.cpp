@@ -246,8 +246,6 @@ event::operator < (const event & rhs) const
         return m_timestamp < rhs.m_timestamp;
 }
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
 /**
  *  Transpose the note, if possible.
  *
@@ -263,8 +261,6 @@ event::transpose_note (int tn)
     if (note >= 0 && note < SEQ64_MIDI_COUNT_MAX)
         m_data[0] = midibyte(note);
 }
-
-#endif
 
 /**
  *  Sets the m_status member to the value of status.  If a_status is a

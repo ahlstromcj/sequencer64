@@ -1,12 +1,12 @@
 #******************************************************************************
-# seq_qt5.pro (qplseq64)
+# seq_qt5.pro (plseq64)
 #------------------------------------------------------------------------------
 ##
 # \file       	seq_qt5.pro
-# \library    	qplseq64 application
+# \library    	plseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-06-21
+# \update      2018-07-06
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -58,7 +58,8 @@ FORMS += \
  forms/qseqeditframe64.ui \
  forms/qsliveframe.ui \
  forms/qsmainwnd.ui \
- forms/qsbuildinfo.ui
+ forms/qsbuildinfo.ui \
+ forms/qlfoframe.ui
 
 RESOURCES += src/qseq64.qrc
 
@@ -92,7 +93,8 @@ HEADERS += \
  include/qsmainwnd.hpp \
  include/qstriggereditor.hpp \
  include/qt5_helpers.hpp \
- include/qsbuildinfo.hpp
+ include/qsbuildinfo.hpp \
+ include/qlfoframe.hpp
 
 SOURCES += \
  src/gui_assistant_qt5.cpp \
@@ -122,7 +124,8 @@ SOURCES += \
  src/qsmainwnd.cpp \
  src/qstriggereditor.cpp \
  src/qt5_helpers.cpp \
- src/qsbuildinfo.cpp
+ src/qsbuildinfo.cpp \
+ src/qlfoframe.cpp
 
 # The output of the uic command goes to the seq_qt5/forms directory in
 # the shadow directory, and cannot be located unless the OUT_PWD macro
@@ -137,7 +140,7 @@ INCLUDEPATH = \
  $$OUT_PWD
 
 #******************************************************************************
-# seq_qt5.pro (qplseq64)
+# seq_qt5.pro (plseq64)
 #------------------------------------------------------------------------------
 # 	vim: ts=3 sw=3 ft=automake
 #------------------------------------------------------------------------------

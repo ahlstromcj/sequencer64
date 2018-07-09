@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2018-01-01
-# \update      2018-06-10
+# \update      2018-07-07
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -139,12 +139,18 @@ git_info = "$(git_version) $(git_branch)"
 #     -  We include "-I.." and require that the Qt5-generated modules be
 #        included as:   "#include "qt/generated_module.h".
 #
-# -I..
+# Do we need these flags in a GUI library?  I think not.
+#
+# $(ALSA_CFLAGS)
+# $(JACK_CFLAGS)
+# $(LASH_CFLAGS)
+#
 #------------------------------------------------------------------------------
 
 AM_CXXFLAGS = \
  -I$(hppdir) \
  -I$(thisdir) \
+ -I$(top_srcdir)/include \
  -I$(top_srcdir)/libseq64/include \
  -I$(top_srcdir)/seq_alsamidi/include \
  -I$(top_srcdir)/seq_portmidi/include \
@@ -221,11 +227,17 @@ lib_LTLIBRARIES = libseq_qt5.la
 #
 #  Somehow, using the hppdir macro creates a '$(hppdir)' directory.... :-(
 #
+#  Also note that we have to include ALL modules that declare QOBJECT in this
+#  list, otherwise we get "undefined reference to 'vtable...'" for
+#  their constructors.  Took awhile to figure that one out; qtcreator/qmake
+#  took care of that issue, but in automake we have to do it ourselves.
+#
 #----------------------------------------------------------------------------
 
 moc_qt_headers = \
  ../include/qclocklayout.hpp \
  ../include/qinputcheckbox.hpp \
+ ../include/qlfoframe.hpp \
  ../include/qperfeditframe.hpp \
  ../include/qperfnames.hpp \
  ../include/qperfroll.hpp \
@@ -234,6 +246,8 @@ moc_qt_headers = \
  ../include/qsbuildinfo.hpp \
  ../include/qseditoptions.hpp \
  ../include/qseqdata.hpp \
+ ../include/qseqeditex.hpp \
+ ../include/qseqeditframe64.hpp \
  ../include/qseqeditframe.hpp \
  ../include/qseqkeys.hpp \
  ../include/qseqroll.hpp \
@@ -246,10 +260,13 @@ moc_qt_headers = \
 moc_sources = $(moc_qt_headers:.hpp=.moc.cpp)
 
 uic_qt_forms = \
- $(formsdir)/qseditoptions.ui \
+ $(formsdir)/qlfoframe.ui \
  $(formsdir)/qperfeditframe.ui \
  $(formsdir)/qsabout.ui \
  $(formsdir)/qsbuildinfo.ui \
+ $(formsdir)/qseditoptions.ui \
+ $(formsdir)/qseqeditex.ui \
+ $(formsdir)/qseqeditframe64.ui \
  $(formsdir)/qseqeditframe.ui \
  $(formsdir)/qsliveframe.ui \
  $(formsdir)/qsmainwnd.ui
@@ -316,14 +333,19 @@ libseq_qt5_la_SOURCES = \
  keys_perform_qt5.cpp \
  qclocklayout.cpp \
  qinputcheckbox.cpp \
+ qlfoframe.cpp \
  qperfeditframe.cpp \
  qperfnames.cpp \
  qperfroll.cpp \
  qperftime.cpp \
  qsabout.cpp \
  qsbuildinfo.cpp \
+ qscrollmaster.cpp \
  qseditoptions.cpp \
+ qseqbase.cpp \
  qseqdata.cpp \
+ qseqeditex.cpp \
+ qseqeditframe64.cpp \
  qseqeditframe.cpp \
  qseqkeys.cpp \
  qseqroll.cpp \

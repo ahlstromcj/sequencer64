@@ -733,8 +733,6 @@ perfroll::draw_sequence_on (int seqnum)
                         int velocity;
                         draw_type_t dt;
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
                         /*
                          * If a pattern is not transposable, draw it in red
                          * instead of black.
@@ -745,10 +743,6 @@ perfroll::draw_sequence_on (int seqnum)
                             m_gc->set_foreground(black_paint());
                         else
                             m_gc->set_foreground(red());
-#else
-                        bool transposable = false;
-                        m_gc->set_foreground(black_paint());
-#endif
 
                         seq->reset_draw_marker();       /* container iterator */
                         do

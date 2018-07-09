@@ -225,13 +225,8 @@ private:
     Gtk::Menu * m_menu_snap;            /**< Two-arrows grid-snap menu.     */
     Gtk::Menu * m_menu_note_length;     /**< Notes menu for note length.    */
     Gtk::Menu * m_menu_length;          /**< Pattern-length "bars" menu.    */
-
-#ifdef SEQ64_STAZED_TRANSPOSE
     Gtk::ToggleButton * m_toggle_transpose;  /**< Transpose toggle button.  */
-
     Gtk::Image * m_image_transpose;     /**< Image for transpose button.    */
-#endif
-
     Gtk::Menu * m_menu_midich;          /**< MIDI channel DIN menu button.  */
     Gtk::Menu * m_menu_midibus;         /**< MIDI output buss menu button.  */
     Gtk::Menu * m_menu_data;            /**< "Event" button to select data. */
@@ -431,9 +426,7 @@ private:
     void set_beats_per_bar (int bpm);
     void set_beats_per_bar_manual ();                       /* issue #77    */
     void set_beat_width (int bw);
-#ifdef SEQ64_STAZED_TRANSPOSE
     void set_transpose_image (bool istransposable);
-#endif
     void set_mousemode_image (bool isfruity);
     void set_rec_vol (int recvol);
     void set_rec_type (loop_record_t rectype);
@@ -508,9 +501,7 @@ private:
 
     void set_key (int note);
     void set_background_sequence (int seq);
-#ifdef SEQ64_STAZED_TRANSPOSE
     void transpose_change_callback ();
-#endif
     void name_change_callback ();
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
     void follow_change_callback ();

@@ -1,9 +1,9 @@
 #******************************************************************************
-# seq_portmidi.pro (qplseq64)
+# seq_portmidi.pro (qpseq64)
 #------------------------------------------------------------------------------
 ##
 # \file       	seq_portmidi.pro
-# \library    	qplseq64 application
+# \library    	qpseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
 # \update      2018-05-15
@@ -101,12 +101,12 @@ macx: {
 windows: SOURCES += src/pmwin.c \
  src/pmerrmm.c \
  src/pmwinmm.c \
-  src/ptwinmm.c
+ src/ptwinmm.c
 
 INCLUDEPATH = ../include/qt/portmidi include ../libseq64/include
 
 #******************************************************************************
-# seq_portmidi.pro (qplseq64)
+# seq_portmidi.pro (qpseq64)
 #------------------------------------------------------------------------------
 # 	vim: ts=3 sw=3 ft=automake
 #------------------------------------------------------------------------------

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-06-26
+ * \updates       2018-07-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -47,7 +47,7 @@
 #ifdef SEQ64_QMAKE_RULES
 #include "forms/ui_qseqeditex.h"
 #else
-#include "forms/ui_qseqeditex.ui.h"
+#include "forms/qseqeditex.ui.h"
 #endif
 
 /*

@@ -1052,13 +1052,11 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 seq.background_sequence(int(read_long()));
                                 len -= 4;
                             }
-#ifdef SEQ64_STAZED_TRANSPOSE
                             else if (seqspec == c_transpose)
                             {
                                 seq.set_transposable(read_byte() != 0);
                                 --len;
                             }
-#endif
                             else if (seqspec == c_seq_color)
                             {
                                 seq.color(read_byte());

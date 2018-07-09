@@ -82,6 +82,11 @@ public:
         int bus
     );
 
+    virtual ~qinputcheckbox ()
+    {
+        // no code needed
+    }
+
     QCheckBox * input_checkbox ()
     {
         return m_chkbox_inputactive;

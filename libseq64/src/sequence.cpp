@@ -107,9 +107,7 @@ sequence::sequence (int ppqn)
     m_midi_channel              (0),
     m_bus                       (0),
     m_song_mute                 (false),
-#ifdef SEQ64_STAZED_TRANSPOSE
     m_transposable              (true),
-#endif
     m_notes_on                  (0),
     m_master_bus                 (nullptr),
     m_playing_notes             (),             // an array
@@ -221,9 +219,7 @@ sequence::partial_assign (const sequence & rhs)
         m_events        = rhs.m_events;
         m_triggers      = rhs.m_triggers;
         m_midi_channel  = rhs.m_midi_channel;
-#ifdef SEQ64_STAZED_TRANSPOSE
         m_transposable  = rhs.m_transposable;
-#endif
         m_bus           = rhs.m_bus;
         m_master_bus    = rhs.m_master_bus;          /* a pointer, be aware! */
         m_playing       = false;
@@ -1146,9 +1142,7 @@ sequence::play
         midipulse end_tick_offset = end_tick + offset;
         midipulse times_played = m_last_tick / m_length;
         midipulse offset_base = times_played * m_length;
-#ifdef SEQ64_STAZED_TRANSPOSE
         int transpose = get_transposable() ? m_parent->get_transpose() : 0 ;
-#endif
         event_list::iterator e = m_events.begin();
         while (e != m_events.end())
         {
@@ -1156,7 +1150,6 @@ sequence::play
             midipulse stamp = er.get_timestamp() + offset_base;
             if (stamp >= start_tick_offset && stamp <= end_tick_offset)
             {
-#ifdef SEQ64_STAZED_TRANSPOSE
                 if (transpose != 0 && er.is_note()) /* includes Aftertouch  */
                 {
                     event transposed_event = er;    /* assign ALL members   */
@@ -1165,7 +1158,6 @@ sequence::play
                 }
                 else
                 {
-#endif
                     if (er.is_tempo())
                     {
                         if (not_nullptr(m_parent))
@@ -1173,9 +1165,7 @@ sequence::play
                     }
                     else if (! er.is_ex_data())
                         put_event_on_bus(er);       /* frame still going    */
-#ifdef SEQ64_STAZED_TRANSPOSE
                 }
-#endif
             }
             else if (stamp > end_tick_offset)
                 break;                              /* frame is done        */
@@ -4089,8 +4079,6 @@ sequence::move_triggers
     return m_triggers.move_selected(tick, adjustoffset, which);
 }
 
-#ifdef SEQ64_SONG_BOX_SELECT
-
 /**
  *  Used in the song-sequence grid TODO TODO TODO
  */
@@ -4101,8 +4089,6 @@ sequence::offset_triggers (midipulse tick, triggers::grow_edit_t editmode)
     automutex locker(m_mutex);
     m_triggers.offset_selected(tick, editmode);
 }
-
-#endif
 
 /**
  *  Get the ending value of the last trigger in the trigger-list.
@@ -5457,8 +5443,6 @@ sequence::shift_notes (midipulse ticks)
 
 #endif  // USE_STAZED_SHIFT_SUPPORT
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
 /**
  *  Applies the transpose value held by the master MIDI buss object, if
  *  non-zero, and if the sequence is set to be transposable.
@@ -5498,8 +5482,6 @@ sequence::set_transposable (bool flag)
 
     m_transposable = flag;
 }
-
-#endif
 
 /**
  *  Grabs the specified events, puts them into a list, quantizes them against

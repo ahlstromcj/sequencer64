@@ -65,7 +65,7 @@ public:
         int beat_width          = 4
     );
 
-    ~qsmaintime();
+    virtual ~qsmaintime ();
 
     /**
      * \getter m_beats_per_measure
@@ -127,7 +127,7 @@ private:
 
     const perform & m_main_perf;
     QColor * m_color;
-    QFont mFont;
+    QFont m_font;
     int m_beats_per_measure;
     int m_beat_width;
     int m_lastMetro;

@@ -47,18 +47,13 @@
 #include "sequence.hpp"                 /* seq64::edit_mode_t mode          */
 
 /*
- *  Need a forward declaration here, and it is not in the seq64 namespace.
- */
-
-class qseqeditframe64;
-
-/*
  *  Do not document a namespace; it breaks Doxygen.
  */
 
 namespace seq64
 {
     class perform;
+    class qseqeditframe64;
     class qseqkeys;
 
 /**
@@ -67,10 +62,10 @@ namespace seq64
 
 class qseqroll : public QWidget, protected qseqbase
 {
-    Q_OBJECT
-
     friend class qseqeditframe;
     friend class qseqeditframe64;
+
+    Q_OBJECT
 
 public:
 
@@ -85,6 +80,11 @@ public:
         seq64::edit_mode_t mode = EDIT_MODE_NOTE,
         QWidget * parent        = nullptr
     );
+
+    virtual ~qseqroll ()
+    {
+        // no code needed
+    }
 
     void follow_progress ();
 

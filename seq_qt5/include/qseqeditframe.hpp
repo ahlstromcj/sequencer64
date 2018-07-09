@@ -105,7 +105,7 @@ public:
     (
         seq64::perform & perf, int seqid, QWidget * parent = nullptr
     );
-    ~qseqeditframe ();
+    virtual ~qseqeditframe ();
 
     void updateDrawGeometry ();
     void setEditorMode (seq64::edit_mode_t mode); // set a new editing mode

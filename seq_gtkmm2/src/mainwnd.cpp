@@ -2806,8 +2806,6 @@ mainwnd::set_songlive_image (bool issong)
     m_button_mode->set_image(*m_image_songlive);
 }
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
 /**
  *  Apply full song transposition, if enabled.  Then reset the perfedit
  *  transpose setting to 0.
@@ -2822,8 +2820,6 @@ mainwnd::apply_song_transpose ()
         m_perf_edit->set_transpose(0);
     }
 }
-
-#endif
 
 /**
  *  Reload all mute-group settings from the "rc" file.
@@ -3788,8 +3784,6 @@ mainwnd::populate_menu_edit ()
         )
     );
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
     m_menu_edit->items().push_back
     (
         MenuElem
@@ -3798,8 +3792,6 @@ mainwnd::populate_menu_edit ()
             mem_fun(*this, &mainwnd::apply_song_transpose)
         )
     );
-
-#endif
 
     m_menu_edit->items().push_back
     (

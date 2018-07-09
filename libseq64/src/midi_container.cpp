@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2018-05-31
+ * \updates       2018-07-08
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -467,8 +467,6 @@ midi_container::fill_proprietary ()
             }
         }
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
         /**
          *  For the new "transposable" flag (tagged by the value c_transpose)
          *  we really only care about saving the value of "false", because
@@ -495,9 +493,6 @@ midi_container::fill_proprietary ()
             add_long(c_seq_color);
             put(colorbyte(m_sequence.color()));
         }
-
-#endif  // SEQ64_STAZED_TRANSPOSE
-
     }
 }
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-07-05
+ * \updates       2018-07-07
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -277,8 +277,6 @@ private:
 
     bool m_song_mute;
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
     /**
      *  Indicate if the sequence is transposable or not.  A potential feature
      *  from stazed's seq32 project.  Now it is an actual, configurable
@@ -286,8 +284,6 @@ private:
      */
 
     bool m_transposable;
-
-#endif
 
     /**
      *  Provides a member to hold the polyphonic step-edit note counter.  We
@@ -1043,8 +1039,6 @@ public:
         return m_song_mute;
     }
 
-#ifdef SEQ64_STAZED_TRANSPOSE
-
     void apply_song_transpose ();
     void set_transposable (bool flag);
 
@@ -1056,8 +1050,6 @@ public:
     {
         return m_transposable;
     }
-
-#endif
 
     std::string title () const;
 
@@ -1486,13 +1478,11 @@ public:
         triggers::grow_edit_t which = triggers::GROW_MOVE
     );
 
-#ifdef SEQ64_SONG_BOX_SELECT
     void offset_triggers
     (
         midipulse offset,
         triggers::grow_edit_t editmode = triggers::GROW_MOVE
     );
-#endif
 
     midipulse selected_trigger_start ();
     midipulse selected_trigger_end ();

@@ -349,14 +349,11 @@ qsliveframe::drawSequence (int seq)
                 draw_type_t dt;
                 Color drawcolor = fg_color();
                 Color eventcolor = fg_color();
-
-#ifdef SEQ64_STAZED_TRANSPOSE
                 if (! s->get_transposable())
                 {
                     eventcolor = red();
                     drawcolor = red();
                 }
-#endif
                 m_preview_h -= 6;           /* padding for box measurements */
                 m_preview_w -= 6;
                 rectangle_x += 2;

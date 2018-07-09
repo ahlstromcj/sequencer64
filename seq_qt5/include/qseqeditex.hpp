@@ -69,7 +69,7 @@ public:
         int seqid,
         qsmainwnd * parent = nullptr
     );
-    ~qseqeditex ();
+    virtual ~qseqeditex ();
 
 protected:
 

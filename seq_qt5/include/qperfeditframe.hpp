@@ -72,7 +72,7 @@ public:
      * should ~QFrame().
      */
 
-    ~qperfeditframe();
+    virtual ~qperfeditframe();
 
     int get_beat_width() const;
     void set_beat_width(int a_beat_width);

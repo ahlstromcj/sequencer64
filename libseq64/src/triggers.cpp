@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2017-10-28
+ * \updates       2018-07-07
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -1030,7 +1030,9 @@ triggers::move_selected (midipulse tick, bool fixoffset, grow_edit_t which)
     return result;
 }
 
-#ifdef SEQ64_SONG_BOX_SELECT
+/**
+ *
+ */
 
 void
 triggers::offset_selected (midipulse tick, grow_edit_t editmode)
@@ -1052,8 +1054,6 @@ triggers::offset_selected (midipulse tick, grow_edit_t editmode)
         ++i;
     }
 }
-
-#endif  // SEQ64_SONG_BOX_SELECT
 
 /**
  *  Get the ending value of the last trigger in the trigger-list.

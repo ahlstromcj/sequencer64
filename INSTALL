@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.95.1 and above
 Chris Ahlstrom
-2015-09-10 to 2018-06-03
+2015-09-10 to 2018-07-07
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -17,8 +17,10 @@ bootstrapping setup is primarily aimed at developers.  Starting with version
     -   sequencer64. ALSA with JACK transport; the original version.
     -   seq64portmidi. PortMIDI implementation; has issues, a less effective
         option for Linux.
+    -   qrseq64.  The RtMidi version of the application, with a Qt5
+        user interface based on Kepler34.  Built via GNU automake, Linux only.
     -   qpseq64.  The PortMidi version of the application, with a Qt5
-        user interface based on Kepler34.  Useable, but still lacks many of
+        user interface based on Kepler34.  Useable, but still lacks some of
         the user-interface elements of the Gtkmm 2.4 application.  Built via
         qmake and suitable for loading in QtCreator installed with its mingw32
         tools.
@@ -175,15 +177,15 @@ Qmake-based Install:
     interface, but the Sequencer64 libraries are used internally.
 
     The first way to use this build is to run qtcreator and load the
-    qplseq64.pro file.  This method can be used if you do not care for the
+    qpseq64.pro file.  This method can be used if you do not care for the
     command-line.  However, if the installer for Qt Creator did not
     set up the default "kit" properly, you must create a good kit manually.
-    If the kit is set up properly, the "qplseq64.pro" entry in the left
+    If the kit is set up properly, the "qpseq64.pro" entry in the left
     project panel will show the other "pro" files as subprojects.  Note that
     a successful build will put the generated files in a "shadow" directory
     parallel with the "sequencer64" directory, such as:
     
-        build-qplseq64-Desktop_Qt_5_10_1_MinGW_32bit-Debug
+        build-qpseq64-Desktop_Qt_5_10_1_MinGW_32bit-Debug
     
     Do not forget to "Configure Project" before trying to build it!
 
@@ -193,9 +195,9 @@ Qmake-based Install:
         $ cd ..
         $ mkdir debug-build
         $ cd debug-build
-        $ qmake -makefile -recursive "CONFIG += debug" ../sequencer64/qplseq64.pro
+        $ qmake -makefile -recursive "CONFIG += debug" ../sequencer64/qpseq64.pro
         $ make
-        $ gdb ./Seq64qt/qplseq64 (for debugging)
+        $ gdb ./Seq64qt/qpseq64 (for debugging)
 
     One can also use "CONFIG += release", or just leave that off entirely.
 
@@ -217,7 +219,6 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         SEQ64_JACK_SESSION
         SEQ64_PAUSE_SUPPORT
         SEQ64_STAZED_CHORD_GENERATOR
-        SEQ64_STAZED_TRANSPOSE
         SEQ64_JE_PATTERN_PANEL_SCROLLBARS
         SEQ64_MULTI_MAINWID
 
@@ -287,16 +288,6 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         in the pattern editor, which enables entering whole chords with a
         single click.  This feature is grabbed from
         https://github.com/Stazed/seq32.
-
-    --disable-transpose
-
-        Undefines the SEQ64_STAZED_TRANSPOSE macro.  If this macro is defined,
-        then the application is built with support for transpose buttons in
-        the pattern and song editors, which enable transposing whole songs, or
-        just sequences that are marked as transposable.  This feature is
-        grabbed from https://github.com/Stazed/seq32.  It does not affect the
-        ability to select notes and transpose them individually.  It does
-        affect Aftertouch events.  Not yet supported in the Qt user-interface.
 
     --disable-seq32jack (obsolete, removed)
 

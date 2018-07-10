@@ -41,12 +41,14 @@
  * We have a weird issues with the automake build (but not the Qt build),
  * where these macros appear to be defined, but at run time, Qt says
  * that the reset_chord() callback, for example, does not exist.  Still
- * trying to figure that one out.  In the meantime....
+ * trying to figure that one out.
+ *
+ * This does not work for the "chord" feature!
+ *
+ * #include "seq64_features.h"          // includes seq64-config.h //
+ *
+ * In the meantime....
  */
-
-// This does not work for the "chord" feature!
-//
-// #include "seq64_features.h"   /* includes seq64-config.h */
 
 #undef SEQ64_STAZED_CHORD_GENERATOR     // otherwise redefined !!! weird !!!
 #define SEQ64_STAZED_CHORD_GENERATOR
@@ -126,6 +128,8 @@ enum edit_action_t
 
 class qseqeditframe64 : public QFrame
 {
+    friend class qlfoframe;
+
     Q_OBJECT
 
 public:
@@ -146,6 +150,8 @@ public:
 #endif
 
 private:
+
+    void remove_lfo_frame ();
 
     /**
      * \getter m_performance

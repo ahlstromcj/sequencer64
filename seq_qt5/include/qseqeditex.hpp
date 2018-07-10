@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-06-26
+ * \updates       2018-07-10
  * \license       GNU GPLv2 or above
  *
  *  The sequence editing window is known as the "Pattern Editor".  Kepler34
@@ -54,7 +54,9 @@ namespace seq64
     class qsmainwnd;
 
 /**
- *
+ *  Provides a container for a qseqeditframe64 object.  Thus, the Qt 5 version
+ *  of Sequencer64 has an external seqedit window like its Gtkmm-2.4
+ *  counterpart.
  */
 
 class qseqeditex : public QWidget
@@ -73,7 +75,7 @@ public:
 
 protected:
 
-    void closeEvent (QCloseEvent *);
+    virtual void closeEvent (QCloseEvent *);
 
     const perform & perf () const
     {

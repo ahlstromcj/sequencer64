@@ -1,7 +1,7 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-#define VERSION_DATE_SHORT "2018-05-13"
-#define VERSION "0.94.8"
+#define VERSION_DATE_SHORT "2018-07-09"
+#define VERSION "0.95.1"
 
 
 
@@ -164,9 +164,6 @@
    your system. */
 #undef PTHREAD_CREATE_JOINABLE
 
-/* Indicates that Qt5 is enabled */
-#undef QTMIDI_SUPPORT
-
 /* Indicates that rtmidi is enabled */
 #undef RTMIDI_SUPPORT
 
@@ -178,9 +175,6 @@
 
 /* Define to enable Seq32 LFO window support */
 #undef STAZED_LFO_SUPPORT
-
-/* Define to enable global transpose */
-#undef STAZED_TRANSPOSE
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

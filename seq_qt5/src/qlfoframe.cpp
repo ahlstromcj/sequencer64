@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-08
+ * \updates       2018-07-09
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -41,6 +41,7 @@
 #include "perform.hpp"
 #include "qlfoframe.hpp"
 #include "qseqdata.hpp"
+#include "qseqeditframe64.hpp"
 #include "sequence.hpp"
 
 /*
@@ -61,6 +62,19 @@
 namespace seq64
 {
 
+/**
+ *  Static members.
+ */
+
+double qlfoframe::m_value_min   =   0.0;
+double qlfoframe::m_value_max   = 127.0;
+double qlfoframe::m_range_min   =   0.0;
+double qlfoframe::m_range_max   = 127.0;
+double qlfoframe::m_speed_min   =   0.0;
+double qlfoframe::m_speed_max   =  16.0;
+double qlfoframe::m_phase_min   =   0.0;
+double qlfoframe::m_phase_max   =   1.0;
+
 /*
  *  Signal buttonClicked(int) is overloaded in this class. To connect to this
  *  signal by using the function pointer syntax, Qt provides a convenient
@@ -70,7 +84,10 @@ namespace seq64
 
 qlfoframe::qlfoframe
 (
-    perform & p, sequence & seq, qseqdata & sdata,
+    perform & p,
+    sequence & seq,
+    qseqdata & sdata,
+    qseqeditframe64 * editparent,
     QWidget * parent
 ) :
     QFrame          (parent),
@@ -79,13 +96,15 @@ qlfoframe::qlfoframe
     m_perform       (p),
     m_seq           (seq),
     m_seqdata       (sdata),
-    m_value         (0.0),
-    m_range         (0.0),
+    m_edit_frame    (editparent),
+    m_value         (64.0),
+    m_range         (64.0),
     m_speed         (0.0),
     m_phase         (0.0),
     m_wave          (WAVE_SINE)
 {
     ui->setupUi(this);
+    connect(ui->m_button_close, SIGNAL(clicked()), this, SLOT(close()));
 
     m_wave_group = new QButtonGroup(this);
     m_wave_group->addButton(ui->m_radio_wave_none, int(WAVE_NONE));
@@ -93,19 +112,11 @@ qlfoframe::qlfoframe
     m_wave_group->addButton(ui->m_radio_wave_saw, int(WAVE_SAWTOOTH));
     m_wave_group->addButton(ui->m_radio_wave_revsaw, int(WAVE_REVERSE_SAWTOOTH));
     m_wave_group->addButton(ui->m_radio_wave_triangle, int(WAVE_TRIANGLE));
-
-    /*
-     * TODO:  set default radio button to WAVE_SINE !!!!!!!!!!!
-     * TODO:  add this objects pointer to qseqeditframe64 destructor !!!!
-     */
-
+    ui->m_radio_wave_sine->setChecked(true);    /* match m_wave member init */
     connect
     (
         m_wave_group, QOverload<int>::of(&QButtonGroup::buttonClicked),
-        [=](int id)
-        {
-            m_wave = wave_type_t(id);
-        }
+        [=](int id) { m_wave = wave_type_t(id); }
     );
 
     ui->m_wave_type_group->setToolTip
@@ -118,26 +129,40 @@ qlfoframe::qlfoframe
     (
         "Value: a kind of DC offset for the data value. Starts at 64."
     );
-    ui->m_value_slider->setMinimum(to_slider(0));
-    ui->m_value_slider->setMaximum(to_slider(127));
-    ui->m_value_slider->setValue(to_slider(64));
+    ui->m_value_slider->setMinimum(to_slider(m_value_min));
+    ui->m_value_slider->setMaximum(to_slider(m_value_max));
+    ui->m_value_slider->setValue(to_slider(m_value));
     connect
     (
         ui->m_value_slider, SIGNAL(valueChanged(int)),
         this, SLOT(scale_lfo_change(int))
     );
+    connect
+    (
+        ui->m_value_text, SIGNAL(editingFinished()),
+        this, SLOT(value_text_change())
+    );
+
+    char valtext[16];
+    snprintf(valtext, sizeof valtext, "%g", m_value);
+    ui->m_value_text->setText(valtext);
 
     ui->m_range_slider->setToolTip
     (
         "Range: controls the depth of modulation. Starts at 64."
     );
-    ui->m_range_slider->setMinimum(to_slider(0));
-    ui->m_range_slider->setMaximum(to_slider(127));
-    ui->m_range_slider->setValue(to_slider(64));
+    ui->m_range_slider->setMinimum(to_slider(m_range_min));
+    ui->m_range_slider->setMaximum(to_slider(m_range_max));
+    ui->m_range_slider->setValue(to_slider(m_range));
     connect
     (
         ui->m_range_slider, SIGNAL(valueChanged(int)),
         this, SLOT(scale_lfo_change(int))
+    );
+    connect
+    (
+        ui->m_range_text, SIGNAL(editingFinished()),
+        this, SLOT(range_text_change())
     );
 
     ui->m_speed_slider->setToolTip
@@ -148,13 +173,18 @@ qlfoframe::qlfoframe
         "some parts of the range, especially for short patterns. "
         "Try it.  For short patterns, try a value of 1."
     );
-    ui->m_speed_slider->setMinimum(to_slider(0));
-    ui->m_speed_slider->setMaximum(to_slider(16));
-    ui->m_speed_slider->setValue(to_slider(1));
+    ui->m_speed_slider->setMinimum(to_slider(m_speed_min));
+    ui->m_speed_slider->setMaximum(to_slider(m_speed_max));
+    ui->m_speed_slider->setValue(to_slider(m_speed));
     connect
     (
         ui->m_speed_slider, SIGNAL(valueChanged(int)),
         this, SLOT(scale_lfo_change(int))
+    );
+    connect
+    (
+        ui->m_speed_text, SIGNAL(editingFinished()),
+        this, SLOT(speed_text_change())
     );
 
     ui->m_phase_slider->setToolTip
@@ -162,23 +192,85 @@ qlfoframe::qlfoframe
         "Phase: phase shift in a beat width (quarter note). "
         "A value of 1 is a phase shift of 360 degrees."
     );
-    ui->m_phase_slider->setMinimum(to_slider(0));
-    ui->m_phase_slider->setMaximum(to_slider(1));
-    ui->m_speed_slider->setValue(to_slider(0));
+    ui->m_phase_slider->setMinimum(to_slider(m_phase_min));
+    ui->m_phase_slider->setMaximum(to_slider(m_phase_max));
+    ui->m_phase_slider->setValue(to_slider(m_phase));
     connect
     (
         ui->m_phase_slider, SIGNAL(valueChanged(int)),
         this, SLOT(scale_lfo_change(int))
     );
+    connect
+    (
+        ui->m_phase_text, SIGNAL(editingFinished()),
+        this, SLOT(phase_text_change())
+    );
+}
+
+/**
+ *  Deletes the user-interface object.
+ */
+
+qlfoframe::~qlfoframe()
+{
+    delete ui;
+}
+
+/**
+ *  Gets the "value" number from the text field when editing is finished (when
+ *  Enter is struck.
+ */
+
+void
+qlfoframe::value_text_change ()
+{
+    QString t = ui->m_value_text->text();
+    bool ok;
+    double v = t.toDouble(&ok);
+    if (ok && (v >= m_value_min && v <= m_value_max))
+        ui->m_value_slider->setValue(to_slider(v));
 }
 
 /**
  *
  */
 
-qlfoframe::~qlfoframe()
+void
+qlfoframe::range_text_change ()
 {
-    delete ui;
+    QString t = ui->m_range_text->text();
+    bool ok;
+    double v = t.toDouble(&ok);
+    if (ok && (v >= m_range_min && v <= m_range_max))
+        ui->m_range_slider->setValue(to_slider(v));
+}
+
+/**
+ *
+ */
+
+void
+qlfoframe::speed_text_change ()
+{
+    QString t = ui->m_speed_text->text();
+    bool ok;
+    double v = t.toDouble(&ok);
+    if (ok && (v >= m_speed_min && v <= m_speed_max))
+        ui->m_speed_slider->setValue(to_slider(v));
+}
+
+/**
+ *
+ */
+
+void
+qlfoframe::phase_text_change ()
+{
+    QString t = ui->m_phase_text->text();
+    bool ok;
+    double v = t.toDouble(&ok);
+    if (ok && (v >= m_phase_min && v <= m_phase_max))
+        ui->m_phase_slider->setValue(to_slider(v));
 }
 
 /**
@@ -213,19 +305,12 @@ qlfoframe::scale_lfo_change (int /*v*/)
 #endif
 }
 
-/**
- *
-
-void
-qlfoframe::scale_lfo_edit ()
-{
-}
- */
-
 #if 0
 
 /**
  *  Undoes the LFO changes if there is undo available.
+ *
+ *  TODO:  implement undo via selection of "None" for the wave type.
  *
  * \return
  *      Always returns true.
@@ -245,6 +330,19 @@ qlfoframe::on_focus_out_event (GdkEventFocus * /* p0 */)
 }
 
 #endif  // 0
+
+/**
+ *
+ */
+
+void
+qlfoframe::closeEvent (QCloseEvent * event)
+{
+    if (not_nullptr(m_edit_frame))
+        m_edit_frame->remove_lfo_frame();
+
+    event->accept();
+}
 
 }               // namespace seq64
 

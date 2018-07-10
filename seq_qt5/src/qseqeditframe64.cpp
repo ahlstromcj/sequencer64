@@ -3078,6 +3078,20 @@ qseqeditframe64::do_action (edit_action_t action, int var)
     set_dirty();
 }
 
+/**
+ *  Removes the LFO editor frame.
+ */
+
+void
+qseqeditframe64::remove_lfo_frame ()
+{
+    if (not_nullptr(m_lfo_wnd))
+    {
+        delete m_lfo_wnd;
+        m_lfo_wnd = nullptr;
+    }
+}
+
 }           // namespace seq64
 
 /*

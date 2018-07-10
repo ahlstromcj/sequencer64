@@ -93,7 +93,6 @@ pkginclude_HEADERS = \
  qskeymaps.hpp \
  qsliveframe.hpp \
  qsmacros.hpp \
- qskeymaps.hpp \
  qsmaintime.hpp \
  qsmainwnd.hpp \
  qstriggereditor.hpp \

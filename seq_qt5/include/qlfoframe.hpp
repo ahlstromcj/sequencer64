@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-09
+ * \updates       2018-07-10
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -46,6 +46,7 @@
  */
 
 class QButtonGroup;
+class QLineEdit;
 
 /*
  * This is necessary to keep the compiler from thinking Ui::qlfoframe
@@ -116,6 +117,8 @@ private:
     {
         return int(v * double(m_scale_factor) + 0.5);
     }
+
+    void set_value_text (double value, QLineEdit * textline);
 
 private slots:
 

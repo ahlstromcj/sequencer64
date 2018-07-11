@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-07-09
+dnl \update        2018-07-10
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -28,6 +28,7 @@ AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.94$)dnl
 AC_INIT(Sequencer64, [0.95.1], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
+AC_CONFIG_MACRO_DIR([m4])
 
 dnl See AC_CONFIG_SRCDIR
 

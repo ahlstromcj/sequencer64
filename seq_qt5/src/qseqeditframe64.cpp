@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-08
+ * \updates       2018-07-10
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -1096,7 +1096,7 @@ qseqeditframe64::qseqeditframe64
      */
 
     qt_set_icon(thru_xpm, ui->m_toggle_thru);
-    ui->m_toggle_play->setCheckable(true);
+    ui->m_toggle_thru->setCheckable(true);
     ui->m_toggle_thru->setToolTip
     (
         "When active, incoming MIDI goes through to output."
@@ -1112,7 +1112,7 @@ qseqeditframe64::qseqeditframe64
      */
 
     qt_set_icon(rec_xpm, ui->m_toggle_record);
-    ui->m_toggle_play->setCheckable(true);
+    ui->m_toggle_record->setCheckable(true);
     ui->m_toggle_record->setToolTip
     (
         "When active, incoming MIDI is recorded."
@@ -1128,7 +1128,7 @@ qseqeditframe64::qseqeditframe64
      */
 
     qt_set_icon(q_rec_xpm, ui->m_toggle_qrecord);
-    ui->m_toggle_play->setCheckable(true);
+    ui->m_toggle_qrecord->setCheckable(true);
     ui->m_toggle_qrecord->setToolTip
     (
         "When active, incoming MIDI is quantize recorded."

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-09
+ * \updates       2018-07-10
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -125,6 +125,10 @@ qlfoframe::qlfoframe
         "4 = triangle."
     );
 
+    /*
+     * Order of calls is important here.
+     */
+
     ui->m_value_slider->setToolTip
     (
         "Value: a kind of DC offset for the data value. Starts at 64."
@@ -132,6 +136,7 @@ qlfoframe::qlfoframe
     ui->m_value_slider->setMinimum(to_slider(m_value_min));
     ui->m_value_slider->setMaximum(to_slider(m_value_max));
     ui->m_value_slider->setValue(to_slider(m_value));
+    set_value_text(m_value, ui->m_value_text);
     connect
     (
         ui->m_value_slider, SIGNAL(valueChanged(int)),
@@ -143,9 +148,9 @@ qlfoframe::qlfoframe
         this, SLOT(value_text_change())
     );
 
-    char valtext[16];
-    snprintf(valtext, sizeof valtext, "%g", m_value);
-    ui->m_value_text->setText(valtext);
+    /*
+     * Order of calls is important here.
+     */
 
     ui->m_range_slider->setToolTip
     (
@@ -154,6 +159,7 @@ qlfoframe::qlfoframe
     ui->m_range_slider->setMinimum(to_slider(m_range_min));
     ui->m_range_slider->setMaximum(to_slider(m_range_max));
     ui->m_range_slider->setValue(to_slider(m_range));
+    set_value_text(m_range, ui->m_range_text);
     connect
     (
         ui->m_range_slider, SIGNAL(valueChanged(int)),
@@ -164,6 +170,10 @@ qlfoframe::qlfoframe
         ui->m_range_text, SIGNAL(editingFinished()),
         this, SLOT(range_text_change())
     );
+
+    /*
+     * Order of calls is important here.
+     */
 
     ui->m_speed_slider->setToolTip
     (
@@ -176,6 +186,7 @@ qlfoframe::qlfoframe
     ui->m_speed_slider->setMinimum(to_slider(m_speed_min));
     ui->m_speed_slider->setMaximum(to_slider(m_speed_max));
     ui->m_speed_slider->setValue(to_slider(m_speed));
+    set_value_text(m_speed, ui->m_speed_text);
     connect
     (
         ui->m_speed_slider, SIGNAL(valueChanged(int)),
@@ -187,6 +198,10 @@ qlfoframe::qlfoframe
         this, SLOT(speed_text_change())
     );
 
+    /*
+     * Order of calls is important here.
+     */
+
     ui->m_phase_slider->setToolTip
     (
         "Phase: phase shift in a beat width (quarter note). "
@@ -195,6 +210,7 @@ qlfoframe::qlfoframe
     ui->m_phase_slider->setMinimum(to_slider(m_phase_min));
     ui->m_phase_slider->setMaximum(to_slider(m_phase_max));
     ui->m_phase_slider->setValue(to_slider(m_phase));
+    set_value_text(m_phase, ui->m_phase_text);
     connect
     (
         ui->m_phase_slider, SIGNAL(valueChanged(int)),
@@ -214,6 +230,22 @@ qlfoframe::qlfoframe
 qlfoframe::~qlfoframe()
 {
     delete ui;
+}
+
+/**
+ *  A helper function to set the text of the slider control's text field.
+ */
+
+void
+qlfoframe::set_value_text
+(
+    double value,
+    QLineEdit * textline
+)
+{
+    char valtext[16];
+    snprintf(valtext, sizeof valtext, "%g", value);
+    textline->setText(valtext);
 }
 
 /**

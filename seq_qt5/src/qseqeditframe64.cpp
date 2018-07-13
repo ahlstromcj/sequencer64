@@ -1975,9 +1975,8 @@ qseqeditframe64::set_data_type (midibyte status, midibyte control)
     // TODO:
     // m_editing_status = status;
     // m_editing_cc = control;
-    // m_seqevent->set_data_type(status, control);
-    // m_seqdata->set_data_type(status, control);
-    // m_seqroll->set_data_type(status, control);
+    m_seqevent->set_data_type(status, control);
+    m_seqdata->set_data_type(status, control);
 
     char hex[8];
     char type[80];

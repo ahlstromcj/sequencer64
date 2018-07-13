@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-26
+ * \updates       2018-07-11
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -189,7 +189,7 @@ qstriggereditor::paintEvent (QPaintEvent *)
 
     event_list::const_iterator cev;
     seq().reset_ex_iterator(cev);                   /* reset_draw_marker()  */
-    while (seq().get_next_event_ex(m_status, m_cc, cev))
+    while (seq().get_next_event_match(m_status, m_cc, cev))
     {
         midipulse tick = cev->get_timestamp();
         if ((tick >= starttick && tick <= endtick))
@@ -641,6 +641,7 @@ qstriggereditor::set_data_type (midibyte status, midibyte control)
 {
     m_status = status;
     m_cc = control;
+    set_dirty();
 }
 
 }           // namespace seq64

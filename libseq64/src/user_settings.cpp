@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2018-05-27
+ * \updates       2018-07-13
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -224,7 +224,8 @@ user_settings::user_settings ()
      * [user-ui-tweaks]
      */
 
-    m_user_ui_key_height        (12)
+    m_user_ui_key_height        (12),
+    m_user_ui_seqedit_in_tab    (true)
 
 {
     // Empty body; it's no use to call normalize() here, see set_defaults().
@@ -319,13 +320,6 @@ user_settings::user_settings (const user_settings & rhs)
 
     /*
      * Back to non-constant values.
-
-    m_user_option_daemonize     (false),
-    m_user_use_logfile          (false),
-    m_user_option_logfile       (),
-    m_work_around_play_image    (false),
-    m_work_around_transpose_image (false)
-    m_user_ui_key_height        (12)
      */
 
     m_user_option_daemonize     (rhs.m_user_option_daemonize),
@@ -338,7 +332,8 @@ user_settings::user_settings (const user_settings & rhs)
      * [user-ui-tweaks]
      */
 
-    m_user_ui_key_height        (rhs.m_user_ui_key_height)
+    m_user_ui_key_height        (rhs.m_user_ui_key_height),
+    m_user_ui_seqedit_in_tab    (rhs.m_user_ui_seqedit_in_tab)
 {
     // Empty body; no need to call normalize() here.
 }
@@ -446,6 +441,7 @@ user_settings::operator = (const user_settings & rhs)
          */
 
         m_user_ui_key_height = rhs.m_user_ui_key_height;
+        m_user_ui_seqedit_in_tab = rhs.m_user_ui_seqedit_in_tab;
     }
     return *this;
 }
@@ -522,6 +518,7 @@ user_settings::set_defaults ()
     m_work_around_play_image = false;
     m_work_around_transpose_image = false;
     m_user_ui_key_height = 12;
+    m_user_ui_seqedit_in_tab = true;
     normalize();                            // recalculate derived values
 }
 

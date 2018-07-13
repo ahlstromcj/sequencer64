@@ -440,6 +440,11 @@ seqroll::update_background ()
     {
         int remkeys = c_num_keys - key;             /* remaining keys?      */
         int modkey = remkeys - m_scroll_offset_key + octkey;
+
+        /*
+         * Set line colour dependent on the note row we're on.
+         */
+
         if (fruity_lines)
         {
             if ((modkey % SEQ64_OCTAVE_SIZE) == 0)

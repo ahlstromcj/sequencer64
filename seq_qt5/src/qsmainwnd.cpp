@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-29
+ * \updates       2018-07-12
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -37,13 +37,14 @@
 #include "file_functions.hpp"           /* seq64::file_extension_match()    */
 #include "keystroke.hpp"
 #include "perform.hpp"
-#include "qsmacros.hpp"                 /* QS_TEXT_CHAR() macro             */
 #include "qperfeditframe.hpp"
+#include "qsmacros.hpp"                 /* QS_TEXT_CHAR() macro             */
 #include "qsabout.hpp"
 #include "qsbuildinfo.hpp"
 #include "qseditoptions.hpp"
 #include "qseqeditex.hpp"
-#include "qseqeditframe.hpp"
+#include "qseqeditframe.hpp"            /* Kepler34 version                 */
+#include "qseqeditframe64.hpp"          /* Sequencer64 version              */
 #include "qskeymaps.hpp"                /* mapping between Gtkmm and Qt     */
 #include "qsmaintime.hpp"
 #include "qsmainwnd.hpp"
@@ -93,6 +94,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     ui                  (new Ui::qsmainwnd),
     m_live_frame        (nullptr),
     m_song_frame        (nullptr),
+    m_edit_frame64      (nullptr),
     m_edit_frame        (nullptr),
     m_msg_error         (nullptr),
     m_msg_save_changes  (nullptr),
@@ -721,13 +723,26 @@ qsmainwnd::load_editor (int seqid)
     edit_container::iterator ei = m_open_editors.find(seqid);
     if (ei == m_open_editors.end())
     {
-        ui->EditTabLayout->removeWidget(m_edit_frame);  /* no nullptr check */
-        if (not_nullptr(m_edit_frame))
-            delete m_edit_frame;
+        if (usr().seqedit_in_tab())
+        {
+            ui->EditTabLayout->removeWidget(m_edit_frame64);  /* no ptr check */
+            if (not_nullptr(m_edit_frame64))
+                delete m_edit_frame64;
 
-        m_edit_frame = new qseqeditframe(m_main_perf, seqid, ui->EditTab);
-        ui->EditTabLayout->addWidget(m_edit_frame);     /* no nullptr check */
-        m_edit_frame->show();
+            m_edit_frame64 = new qseqeditframe64(perf(), seqid, ui->EditTab);
+            ui->EditTabLayout->addWidget(m_edit_frame64);
+            m_edit_frame64->show();
+        }
+        else
+        {
+            ui->EditTabLayout->removeWidget(m_edit_frame);  /* no ptr check */
+            if (not_nullptr(m_edit_frame))
+                delete m_edit_frame;
+
+            m_edit_frame = new qseqeditframe(perf(), seqid, ui->EditTab);
+            ui->EditTabLayout->addWidget(m_edit_frame);
+            m_edit_frame->show();
+        }
         ui->tabWidget->setCurrentIndex(2);
     }
 }
@@ -745,7 +760,7 @@ qsmainwnd::load_qseqedit (int seqid)
     edit_container::iterator ei = m_open_editors.find(seqid);
     if (ei == m_open_editors.end())
     {
-        qseqeditex * ex = new qseqeditex(m_main_perf, seqid, this);
+        qseqeditex * ex = new qseqeditex(perf(), seqid, this);
         if (not_nullptr(ex))
         {
             ex->show();
@@ -852,8 +867,11 @@ qsmainwnd::updateBeatLength (int blIndex)
         }
     }
 
+    if (not_nullptr(m_edit_frame64))
+        m_edit_frame64->update_draw_geometry();
+
     if (not_nullptr(m_edit_frame))
-        m_edit_frame->updateDrawGeometry();
+        m_edit_frame->update_draw_geometry();
 }
 
 /**
@@ -882,8 +900,11 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
 
         }
     }
+    if (not_nullptr(m_edit_frame64))
+        m_edit_frame64->update_draw_geometry();
+
     if (not_nullptr(m_edit_frame))
-        m_edit_frame->updateDrawGeometry();
+        m_edit_frame->update_draw_geometry();
 }
 
 /**
@@ -919,9 +940,18 @@ qsmainwnd::tabWidgetClicked (int newIndex)
 
         sequence * seq = perf().get_sequence(seqid);
         seq->set_dirty();
-        m_edit_frame = new qseqeditframe(m_main_perf, seqid, ui->EditTab);
-        ui->EditTabLayout->addWidget(m_edit_frame);     /* no nullptr check */
-        m_edit_frame->show();
+        if (usr().seqedit_in_tab())
+        {
+            m_edit_frame64 = new qseqeditframe64(perf(), seqid, ui->EditTab);
+            ui->EditTabLayout->addWidget(m_edit_frame64);   /* no ptr check */
+            m_edit_frame64->show();
+        }
+        else
+        {
+            m_edit_frame = new qseqeditframe(perf(), seqid, ui->EditTab);
+            ui->EditTabLayout->addWidget(m_edit_frame);     /* no ptr check */
+            m_edit_frame->show();
+        }
         update();
     }
 }

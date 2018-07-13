@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-17
+ * \updates       2018-07-12
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -107,7 +107,7 @@ public:
     );
     virtual ~qseqeditframe ();
 
-    void updateDrawGeometry ();
+    void update_draw_geometry ();
     void setEditorMode (seq64::edit_mode_t mode); // set a new editing mode
 
 private:

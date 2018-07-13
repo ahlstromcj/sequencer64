@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-05-28
+ * \updates       2018-07-13
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -569,8 +569,12 @@ userfile::parse (perform & /* p */)
             int scratch = 0;
             sscanf(m_line, "%d", &scratch);
             usr().key_height(scratch);
+            if (next_data_line(file))
+            {
+                sscanf(m_line, "%d", &scratch);
+                usr().seqedit_in_tab(scratch != 0);
+            }
         }
-
     }
 
     /*
@@ -1258,13 +1262,26 @@ userfile::write (const perform & /* a_perf */ )
             "[user-ui-tweaks]\n"
             "\n"
             "# This first value specifies the height of the keys in the\n"
-            "# sequence editor.  Defaults to 12 (pixels).\n"
+            "# sequence editor.  Defaults to 12 (pixels), but 8 is better.\n"
             "# Currently used only in the Qt GUI.\n"
             "\n"
             ;
 
         uscratch = usr().key_height();
         file << uscratch << "       # (user_ui_) key_height\n";
+
+        file << "\n"
+            "# Normally, the Qt version of Sequencer64 uses the old pattern\n"
+            "# editor in the 'Edit' tab.  If the following value is set to 1,\n"
+            "# then the new, larger, more functional pattern editor can be\n"
+            "# used in the 'Edit' tab.  This setting also has the side-effect\n"
+            "# of making the whole Sequencer64 window larger.\n"
+            "# Currently used only in the Qt GUI.\n"
+            "\n"
+            ;
+
+        uscratch = usr().seqedit_in_tab();
+        file << uscratch << "       # (user_ui_) seqedit_in_tab\n";
     }
 
     /*

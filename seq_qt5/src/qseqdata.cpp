@@ -132,7 +132,7 @@ qseqdata::paintEvent (QPaintEvent *)
     int starttick = 0;
     int endtick = width() * zoom();
     seq().reset_ex_iterator(cev);               /* reset_draw_marker()      */
-    while (seq().get_next_event_ex(m_status, m_cc, cev))
+    while (seq().get_next_event_match(m_status, m_cc, cev))
     {
         midipulse tick = cev->get_timestamp();
         if (tick >= starttick && tick <= endtick)
@@ -156,20 +156,18 @@ qseqdata::paintEvent (QPaintEvent *)
                 event_x + 1, height() - event_height, event_x + 1, height()
             );
 
-            QString val = QString::number(d1);  /* draw numbers             */
+            char tmp[4];
+            snprintf(tmp, sizeof tmp, "%3d", d1);   /* to draw digits       */
             pen.setColor(Qt::black);
             pen.setWidth(1);
             painter.setPen(pen);
+
             int x_offset = event_x + 3;
             int y_offset = c_dataarea_y - 25;
-            if (val.length() >= 1)
-                painter.drawText(x_offset, y_offset, val.at(0));
-
-            if (val.length() >= 2)
-                painter.drawText(x_offset, y_offset + 8, val.at(1));
-
-            if (val.length() >= 3)
-                painter.drawText(x_offset, y_offset + 16, val.at(2));
+            QString val = tmp;
+            painter.drawText(x_offset, y_offset,      val.at(0));
+            painter.drawText(x_offset, y_offset +  8, val.at(1));
+            painter.drawText(x_offset, y_offset + 16, val.at(2));
         }
         ++cev;
     }
@@ -344,6 +342,7 @@ qseqdata::set_data_type (midibyte status, midibyte control = 0)
 {
     m_status = status;
     m_cc = control;
+    set_dirty();
 }
 
 /**

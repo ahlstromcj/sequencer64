@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-25
+ * \updates       2018-07-12
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -36,27 +36,27 @@
  *  The layout of this frame is depicted here:
  *
 \verbatim
-                     -----------------------------------------------------------
-    QHBoxLayout     | seqname : gridsnap : notelength : seqlength : ...         |
-                     -----------------------------------------------------------
-    QHBoxLayout     | undo : redo : tools : zoomin : zoomout : scale : ...      |
-                     -----------------------------------------------------------
-                    |   | qseqtime      (0, 1, 1, 1)                        | V |
-                    |-- |---------------------------------------------------| e |
-    QVBoxLayout     | q |                                                   | r |
-        < >         | s | qseqroll      (1, 1, 1, 1)                        | t |
-         |          | e |                                                   |   |
-         v          | q |---------------------------------------------------| s |
-    QScrollArea     | k | qtriggeredit  (2, 1, 1, 1)                        | ' |
-  QWidget container | e |---------------------------------------------------| b |
-    QGridLayout     | y |                                                   | a |
-                    | s | qseqdata      (3, 1, 1, 1)                        | r |
-                    |   |                                                   |   |
-                     -----------------------------------------------------------
-                    | Horizontal scroll bar                                 |   |
-                     -----------------------------------------------------------
+                 -----------------------------------------------------------
+QHBoxLayout     | seqname : gridsnap : notelength : seqlength : ...         |
+                 -----------------------------------------------------------
+QHBoxLayout     | undo : redo : tools : zoomin : zoomout : scale : ...      |
+                 -----------------------------------------------------------
+                |   | qseqtime      (0, 1, 1, 1)                        | V |
+                |-- |---------------------------------------------------| e |
+QVBoxLayout     | q |                                                   | r |
+    < >         | s | qseqroll      (1, 1, 1, 1)                        | t |
+     |          | e |                                                   |   |
+     v          | q |---------------------------------------------------| s |
+QScrollArea     | k | qtriggeredit  (2, 1, 1, 1)                        | ' |
+QWidget container | e |---------------------------------------------------| b |
+QGridLayout     | y |                                                   | a |
+                | s | qseqdata      (3, 1, 1, 1)                        | r |
+                |   |                                                   |   |
+                 -----------------------------------------------------------
+                | Horizontal scroll bar                                 |   |
+                 -----------------------------------------------------------
 
-                     qseqkey            (1, 0, 1, 1)
+                 qseqkey            (1, 0, 1, 1)
 \endverbatim
  *
  *  The horizontal and vertical scroll bars are not shown, but they control
@@ -599,7 +599,7 @@ qseqeditframe::zoom_in ()
     mTimeBar->zoom_in();
     mEventTriggers->zoom_in();
     mEventValues->zoom_in();
-    updateDrawGeometry();
+    update_draw_geometry();
 }
 
 /**
@@ -613,7 +613,7 @@ qseqeditframe::zoom_out ()
     mTimeBar->zoom_out();
     mEventTriggers->zoom_out();
     mEventValues->zoom_out();
-    updateDrawGeometry();
+    update_draw_geometry();
 }
 
 /**
@@ -665,7 +665,7 @@ qseqeditframe::updateBackgroundSeq(int newindex)
  */
 
 void
-qseqeditframe::updateDrawGeometry()
+qseqeditframe::update_draw_geometry()
 {
     QString seqLenText(QString::number(mSeq->get_num_measures()));
     ui->cmbSeqLen->setCurrentText(seqLenText);

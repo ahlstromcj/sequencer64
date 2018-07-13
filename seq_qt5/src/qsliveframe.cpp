@@ -61,7 +61,6 @@ namespace seq64
 {
 
 static const int c_text_x = 6;
-// static const int c_text_y = 12;
 static const int c_mainwid_border = 0;
 
 /**

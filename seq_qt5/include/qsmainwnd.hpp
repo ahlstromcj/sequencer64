@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-27
+ * \updates       2018-07-13
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -45,12 +45,24 @@
 #include <QMessageBox>
 #include <QDesktopWidget>
 
+/*
+ *  Forward declaration.
+ */
+
 class QCloseEvent;
+
+/*
+ *  The Qt UI namespace.
+ */
 
 namespace Ui
 {
     class qsmainwnd;
 }
+
+/*
+ *  Do not document namespaces, it seems to break Doxygen.
+ */
 
 namespace seq64
 {
@@ -59,6 +71,7 @@ namespace seq64
     class qperfeditframe;
     class qseqeditex;
     class qseqeditframe;
+    class qseqeditframe64;
     class qsmaintime;
     class qseditoptions;
     class qsabout;
@@ -131,6 +144,7 @@ private:
     Ui::qsmainwnd * ui;
     qsliveframe * m_live_frame;
     qperfeditframe * m_song_frame;
+    qseqeditframe64 * m_edit_frame64;
     qseqeditframe * m_edit_frame;
     QErrorMessage * m_msg_error;
     QMessageBox * m_msg_save_changes;

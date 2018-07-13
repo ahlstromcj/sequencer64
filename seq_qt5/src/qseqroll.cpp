@@ -207,17 +207,10 @@ qseqroll::paintEvent (QPaintEvent *)
     painter.setFont(mFont);
 
     /*
-     * Draw the border.
-     */
-
-    /*
-     * In later usage, the width() function [and height() as well?], returns a
-     * humongous value (38800+).  So we store the current values to use, via
-     * window_width() and window_height(), in follow_progress().
-     *
-     *  // QSize temp = m_scroll_master->viewport_size();
-     *  // int ww = geometry().width();   // window_width();
-     *  // int wh = geometry().height();   // window_height();
+     * Draw the border.  In later usage, the width() function [and height() as
+     * well?], returns a humongous value (38800+).  So we store the current
+     * values to use, via window_width() and window_height(), in
+     * follow_progress().
      */
 
     int ww = width();
@@ -263,32 +256,21 @@ qseqroll::paintEvent (QPaintEvent *)
          * Draw horizontal grid lines differently depending on editing mode.
          */
 
-        int y;
-        switch (m_edit_mode)
-        {
-        case EDIT_MODE_NOTE:
-
-            y = key * m_key_y;
-            // painter.drawLine(0, key * m_key_y, ww, key * m_key_y);
-            break;
-
-        case EDIT_MODE_DRUM:
-
-            y = key * m_key_y - (0.5 * m_key_y);
-            // painter.drawLine
-            // (
-            //      0, key * m_key_y - (0.5 * m_key_y),
-            //     ww, key * m_key_y - (0.5 * m_key_y)
-            // );
-            break;
-        }
+        int y = key * m_key_y;
+        if (m_edit_mode == EDIT_MODE_DRUM)
+            y -= (0.5 * m_key_y);
 
         painter.drawLine(0, y, ww, y);
         if (m_scale != c_scale_off)
         {
             if (! c_scales_policy[m_scale][(modkey - 1) % SEQ64_OCTAVE_SIZE])
             {
-                // painter.drawRect(0, key * m_key_y + 1, m_size_x, m_key_y - 1);
+                pen.setColor(Qt::lightGray);
+                brush.setColor(Qt::lightGray);
+                brush.setStyle(Qt::SolidPattern);
+                painter.setBrush(brush);
+                painter.setPen(pen);
+                painter.drawRect(0, y + 1, ww, m_key_y - 1);
             }
         }
     }
@@ -383,15 +365,10 @@ qseqroll::paintEvent (QPaintEvent *)
      */
 
     static bool s_loop_in_progress = false;     /* indicates when to reset  */
-
-    // int prog_x = old_progress_x() + c_keyboard_padding_x - scroll_offset_x();
-
     int prog_x = old_progress_x();
     pen.setColor(Qt::red);                      // draw the playhead
     pen.setStyle(Qt::SolidLine);
     painter.setPen(pen);
-
-    //  painter.drawLine(old_progress_x(), 0, old_progress_x(), wh * 8);
 
     /*
      * If this test is used, then when not running, the overwrite
@@ -510,15 +487,19 @@ qseqroll::paintEvent (QPaintEvent *)
                     length_add = 1;
                 }
                 pen.setColor(Qt::black);
-                pen.setColor(Qt::black);
-                if (method == 0)
+                if (method == 0)                    // draw background note
                 {
                     length_add = 1;
-                    pen.setColor(Qt::darkGray);
+                    pen.setColor(Qt::darkCyan);     // note border color
+                    brush.setColor(Qt::darkCyan);
+                }
+                else
+                {
+                    pen.setColor(Qt::black);     // note border color
+                    brush.setColor(Qt::black);
                 }
 
                 brush.setStyle(Qt::SolidPattern);
-                brush.setColor(Qt::black);
                 painter.setBrush(brush);
                 painter.setPen(pen);
                 switch (m_edit_mode)
@@ -742,7 +723,11 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                 drop_x(snapped_x);      /* adding, snapped x */
                 convert_xy(drop_x(), drop_y(), tick_s, note);
 
-                // test if a note is already there, fake select, if so, no add
+                /*
+                 * Test if a note is already there, fake select, if so,
+                 * don't add, else add a note, length = little less than
+                 * snap.
+                 */
 
                 if
                 (
@@ -751,13 +736,13 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                         tick_s, note, tick_s, note, sequence::e_would_select
                     )
                 )
-                {               /* add note, length = little less than snap */
+                {
                     seq().push_undo();
                     seq().add_note(tick_s, m_note_length - 2, note, true);
                     needs_update = true;
                 }
             }
-            else                // we're selecting
+            else                        /* we're selecting                  */
             {
                 // if nothing's already selected in the range
 

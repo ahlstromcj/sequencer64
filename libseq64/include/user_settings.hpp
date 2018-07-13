@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-05-27
+ * \updates       2018-07-13
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -855,6 +855,14 @@ private:
      */
 
     int m_user_ui_key_height;
+
+    /**
+     *  Turns on the replacement of the Qt 5 qseqeditframe with the larger
+     *  and more functional qseqeditframe64.  The size of the main window is
+     *  increased to fit it.
+     */
+
+    bool m_user_ui_seqedit_in_tab;
 
 public:
 
@@ -1759,6 +1767,15 @@ public:
         return m_user_ui_key_height;
     }
 
+    /**
+     * \getter m_user_ui_seqedit_in_tab
+     */
+
+    bool seqedit_in_tab () const
+    {
+        return m_user_ui_seqedit_in_tab;
+    }
+
 public:         // used in main application module and the userfile class
 
     /**
@@ -1894,6 +1911,15 @@ public:         // used in main application module and the userfile class
     {
         if (h >= 7 && h <= 24)
             m_user_ui_key_height = h;
+    }
+
+    /**
+     * \setter m_user_ui_seqedit_in_tab
+     */
+
+    void seqedit_in_tab (bool f)
+    {
+        m_user_ui_seqedit_in_tab = f;
     }
 
     void midi_ppqn (int ppqn);

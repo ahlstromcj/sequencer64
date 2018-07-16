@@ -20,20 +20,24 @@
  */
 
 /**
- * \file          qseqbase.hpp
+ * \file          qperfbase.hpp
  *
- *  This module declares/defines the base class for the various editing panes
+ *  This module declares/defines the base class for the various song panes
  *  of Sequencer64's Qt 5 version.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2018-06-20
- * \updates       2018-07-14
+ * \date          2018-07-14
+ * \updates       2018-07-16
  * \license       GNU GPLv2 or above
  *
- *  This class is a base class for qseqroll, qseqdata, qtriggereditor, and
- *  qseqtime, the four panes of the qseqeditframe64 class or the legacy Kepler34
- *  qseqeditframe class.  It will be used as a mix-in class
+ *  This class WILL BE the base class for qseqroll, qseqdata, qtriggereditor,
+ *  and qseqtime, the four panes of the qseqeditframe64 class or the legacy
+ *  Kepler34 qseqeditframe class.
+ *
+ *  And maybe we can use it in the qperf* classes as well.
+ *
+ *  It will be used as a mix-in class
  */
 
 #include "app_limits.h"                 /* SEQ64_DEFAULT_ZOOM, _SNAP    */
@@ -52,7 +56,7 @@ namespace seq64
  * The MIDI note grid in the sequence editor
  */
 
-class qseqbase
+class qperfbase
 {
 
 private:
@@ -62,12 +66,6 @@ private:
      */
 
     perform & m_perform;
-
-    /**
-     *  Provides a reference to the sequence represented by piano roll.
-     */
-
-    sequence & m_seq;
 
     /**
      *  The previous selection rectangle, used for undrawing it.  Accessed by
@@ -88,6 +86,18 @@ private:
      */
 
     int m_zoom;
+
+    /**
+     *  X scaling.
+     */
+
+    int m_perf_scale_x;
+
+    /**
+     *  Zoom times x scale, to save a very common calculation.
+     */
+
+    int m_perf_scale_x_zoom;
 
     /**
      *  The grid-snap setting for the piano roll grid.  Same meaning as for the
@@ -136,40 +146,6 @@ private:
     bool m_growing;
 
     /**
-     *  Indicates the painting of events.  Used in the fruity and seq24
-     *  mouse-handling modules.
-     */
-
-    bool m_painting;
-
-    /**
-     *  Indicates that we are in the process of pasting notes.
-     */
-
-    bool m_paste;
-
-    /**
-     *  Indicates the drag-pasting of events.  Used in the fruity
-     *  mouse-handling module.
-     */
-
-    bool m_is_drag_pasting;
-
-    /**
-     *  Indicates the drag-pasting of events.  Used in the fruity
-     *  mouse-handling module.
-     */
-
-    bool m_is_drag_pasting_start;
-
-    /**
-     *  Indicates the selection of one event.  Used in the fruity
-     *  mouse-handling module.
-     */
-
-    bool m_justselected_one;
-
-    /**
      *  The x size of the window.  Would be good to allocate this
      *  to a base class for all grid panels.  In Qt 5, this is the width().
      */
@@ -198,18 +174,6 @@ private:
     int m_drop_y;
 
     /**
-     *  Tells where the dragging started, the x value.
-     */
-
-    int m_move_delta_x;
-
-    /**
-     *  Tells where the dragging started, the y value.
-     */
-
-    int m_move_delta_y;
-
-    /**
      *  Current x coordinate of pointer. Could move it to a base class.
      */
 
@@ -220,12 +184,6 @@ private:
      */
 
     int m_current_y;
-
-    /**
-     *  This item is used in the fruityseqroll module.
-     */
-
-    int m_move_snap_offset_x;
 
     /**
      *  Provides the location of the progress bar.
@@ -263,10 +221,10 @@ private:
     int m_scroll_offset_ticks;
 
     /**
-     *  The vertical offset of the scroll window in units of MIDI notes/keys.
+     *  The vertical offset of the scroll window in units of sequences.
      */
 
-    int m_scroll_offset_key;
+    int m_scroll_offset_seq;
 
     /**
      *  The horizontal value of the scroll window in units of pixels.
@@ -300,15 +258,14 @@ private:
 
 public:
 
-    qseqbase
+    qperfbase
     (
         perform & perf,
-        sequence & seq,
-        int zoom            = SEQ64_DEFAULT_ZOOM,
+        int zoom            = SEQ64_DEFAULT_PERF_ZOOM,
         int snap            = SEQ64_DEFAULT_SNAP,
         int ppqn            = SEQ64_USE_DEFAULT_PPQN,
-        int unit_height     =  1,
-        int total_height    =  1
+        int unit_height     = 1,
+        int total_height    = 1
     );
 
     const seq64::rect & old_rect () const
@@ -334,6 +291,16 @@ public:
     int zoom () const
     {
         return m_zoom;
+    }
+
+    int perf_scale_x () const
+    {
+        return m_perf_scale_x;
+    }
+
+    int perf_scale_x_zoom () const
+    {
+        return m_perf_scale_x_zoom;
     }
 
     bool is_dirty () const
@@ -363,7 +330,7 @@ public:
 
     bool normal_action () const
     {
-        return m_is_drag_pasting || select_action();
+        return select_action();
     }
 
     /**
@@ -375,7 +342,7 @@ public:
 
     bool drop_action () const
     {
-        return moving() || paste();
+        return moving();
     }
 
     int snap () const
@@ -413,33 +380,6 @@ public:
         return m_growing;
     }
 
-    bool painting () const
-    {
-        return m_painting;
-    }
-
-    bool paste () const
-    {
-        return m_paste;
-    }
-
-    bool is_drag_pasting () const
-    {
-        return m_is_drag_pasting;
-    }
-
-    bool is_drag_pasting_start () const
-    {
-        return m_is_drag_pasting_start;
-    }
-
-    bool just_selected_one () const
-    {
-        return m_justselected_one;
-    }
-
-    // might remove, as Qt's width() and height() are available
-
     int window_width () const
     {
         return m_window_width;
@@ -470,16 +410,6 @@ public:
         snap_y(m_drop_y);
     }
 
-    int move_delta_x () const
-    {
-        return m_move_delta_x;
-    }
-
-    int move_delta_y () const
-    {
-        return m_move_delta_y;
-    }
-
     int current_x () const
     {
         return m_current_x;
@@ -488,11 +418,6 @@ public:
     int current_y () const
     {
         return m_current_y;
-    }
-
-    int move_snap_offset_x () const
-    {
-        return m_move_snap_offset_x;
     }
 
     int progress_x () const
@@ -522,9 +447,9 @@ public:
         return m_scroll_offset_ticks;
     }
 
-    int scroll_offset_key () const
+    int scroll_offset_seq () const
     {
-        return m_scroll_offset_key;
+        return m_scroll_offset_seq;
     }
 
     int scroll_offset_x () const
@@ -549,32 +474,9 @@ public:
 
 public:
 
-    void zoom_in ()
-    {
-        if (m_zoom > 1)         // restricted more by qseqeditframe64
-        {
-            m_zoom /= 2;
-            set_dirty();
-        }
-    }
-
-    void zoom_out ()
-    {
-        if (m_zoom < 32)       // restricted more by qseqeditframe64
-        {
-            m_zoom *= 2;
-            set_dirty();
-        }
-    }
-
-    void set_zoom (int z)
-    {
-        if (z != m_zoom)
-        {
-            m_zoom = z;         // must be validated by the caller
-            set_dirty();
-        }
-    }
+    void zoom_in ();
+    void zoom_out ();
+    void set_zoom (int z);
 
     /**
      * \setter m_snap
@@ -598,8 +500,6 @@ public:
     }
 
     bool needs_update () const;
-    void set_measures (int len);
-    int get_measures ();
 
 protected:
 
@@ -626,8 +526,7 @@ protected:
 
     void clear_action_flags ()
     {
-		m_selecting = m_moving = m_growing = m_paste = m_moving_init =
-			 m_painting = false;
+		m_selecting = m_moving = m_growing = m_moving_init = false;
     }
 
     void selecting (bool v)
@@ -655,31 +554,6 @@ protected:
         m_growing = v;
     }
 
-    void painting (bool v)
-    {
-        m_painting = v;
-    }
-
-    void paste (bool v)
-    {
-        m_paste = v;
-    }
-
-    void is_drag_pasting (bool v)
-    {
-        m_is_drag_pasting = v;
-    }
-
-    void is_drag_pasting_start (bool v)
-    {
-        m_is_drag_pasting_start = v;
-    }
-
-    void justselected_one (bool v)
-    {
-        m_justselected_one = v;
-    }
-
     void window_width (int v)
     {
         m_window_width = v;
@@ -700,16 +574,6 @@ protected:
         m_drop_y = v;
     }
 
-    void move_delta_x (int v)
-    {
-        m_move_delta_x = v;
-    }
-
-    void move_delta_y (int v)
-    {
-        m_move_delta_y = v;
-    }
-
     void current_x (int v)
     {
         m_current_x = v;
@@ -718,11 +582,6 @@ protected:
     void current_y (int v)
     {
         m_current_y = v;
-    }
-
-    void move_snap_offset_x (int v)
-    {
-        m_move_snap_offset_x = v;
     }
 
     void progress_x (int v)
@@ -747,14 +606,15 @@ protected:
     }
 
 #endif
+
     void scroll_offset_ticks (int v)
     {
         m_scroll_offset_ticks = v;
     }
 
-    void scroll_offset_key (int v)
+    void scroll_offset_seq (int v)
     {
-        m_scroll_offset_key = v;
+        m_scroll_offset_seq = v;
     }
 
     void scroll_offset_x (int v)
@@ -777,7 +637,6 @@ protected:
         m_total_height = v;
     }
 
-
 protected:
 
     void set_scroll_x (int x);
@@ -793,16 +652,6 @@ protected:
         return m_perform;
     }
 
-    const sequence & seq () const
-    {
-        return m_seq;
-    }
-
-    sequence & seq ()
-    {
-        return m_seq;
-    }
-
     void snap_x (int & x);
 
     void snap_current_x ()
@@ -812,7 +661,7 @@ protected:
 
     void snap_y (int & y)
     {
-        y -= y % m_unit_height;
+        y -= y % c_names_y;     // m_unit_height;
     }
 
     void snap_current_y ()
@@ -840,11 +689,12 @@ protected:
      * horizontal user-interface quantity).
      */
 
-    void convert_xy (int x, int y, midipulse & ticks, int & note);
-    void convert_tn (midipulse ticks, int note, int & x, int & y);
-    void convert_tn_box_to_rect
+    void convert_x (int x, midipulse & tick);
+    void convert_xy (int x, int y, midipulse & ticks, int & seq);
+    void convert_ts (midipulse ticks, int seq, int & x, int & y);
+    void convert_ts_box_to_rect
     (
-        midipulse tick_s, midipulse tick_f, int note_h, int note_l,
+        midipulse tick_s, midipulse tick_f, int seq_h, int seq_l,
         seq64::rect & r
     );
 
@@ -861,16 +711,14 @@ protected:
         adding(a);
     }
 
-    void start_paste();
-
-};          // class qseqbase
+};          // class qperfbase
 
 }           // namespace seq64
 
 #endif      // SEQ64_QSEQBASE_HPP
 
 /*
- * qseqbase.hpp
+ * qperfbase.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

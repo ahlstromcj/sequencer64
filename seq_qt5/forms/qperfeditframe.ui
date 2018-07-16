@@ -43,8 +43,8 @@
         <widget class="QPushButton" name="btnUndo">
          <property name="maximumSize">
           <size>
-           <width>27</width>
-           <height>25</height>
+           <width>28</width>
+           <height>32</height>
           </size>
          </property>
          <property name="focusPolicy">
@@ -59,12 +59,25 @@
         <widget class="QPushButton" name="btnRedo">
          <property name="maximumSize">
           <size>
-           <width>27</width>
-           <height>25</height>
+           <width>28</width>
+           <height>32</height>
           </size>
          </property>
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="m_toggle_follow">
+         <property name="maximumSize">
+          <size>
+           <width>28</width>
+           <height>32</height>
+          </size>
          </property>
          <property name="text">
           <string/>
@@ -80,14 +93,14 @@
          <property name="maximumSize">
           <size>
            <width>35</width>
-           <height>25</height>
+           <height>32</height>
           </size>
          </property>
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
          <property name="text">
-          <string> </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -96,14 +109,14 @@
          <property name="maximumSize">
           <size>
            <width>35</width>
-           <height>25</height>
+           <height>32</height>
           </size>
          </property>
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
          <property name="text">
-          <string> </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -132,7 +145,7 @@
          <property name="maximumSize">
           <size>
            <width>55</width>
-           <height>16777215</height>
+           <height>32</height>
           </size>
          </property>
          <property name="focusPolicy">
@@ -150,7 +163,7 @@
        <property name="maximumSize">
         <size>
          <width>40</width>
-         <height>25</height>
+         <height>32</height>
         </size>
        </property>
        <property name="focusPolicy">
@@ -190,7 +203,7 @@
          <property name="maximumSize">
           <size>
            <width>39</width>
-           <height>25</height>
+           <height>32</height>
           </size>
          </property>
          <property name="focusPolicy">
@@ -211,8 +224,8 @@
         <widget class="QPushButton" name="btnExpand">
          <property name="maximumSize">
           <size>
-           <width>39</width>
-           <height>25</height>
+           <width>40</width>
+           <height>32</height>
           </size>
          </property>
          <property name="focusPolicy">
@@ -239,8 +252,8 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>39</width>
-           <height>25</height>
+           <width>40</width>
+           <height>32</height>
           </size>
          </property>
          <property name="focusPolicy">
@@ -298,8 +311,6 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../src/qseq64.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-07-04
+ * \updates       2018-07-13
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2377,6 +2377,7 @@ public:
 
     bool toggle_other_seqs (int seqnum, bool isshiftkey);   /* mainwid      */
     bool toggle_other_names (int seqnum, bool isshiftkey);  /* perfnames    */
+    bool toggle_sequences (int seqnum, bool isshiftkey);    /* (q)perfnames */
     bool are_any_armed ();
 
     /**

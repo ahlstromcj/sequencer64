@@ -93,8 +93,10 @@ private:
 
     perform & perf ()
     {
-        return mPerf;
+        return m_perform;
     }
+
+    int convert_y (int y);
 
 signals:
 
@@ -102,10 +104,17 @@ public slots:
 
 private:
 
-    perform & mPerf;
-    QTimer * mTimer;
-    QFont mFont;
+    perform & m_perform;
+//  QTimer * m_timer;
+    QFont m_font;
     bool m_sequence_active[c_max_sequence];
+
+    /**
+     *  The maximum number of sequences, current 32 x 32 = 1024.
+     */
+
+    const int m_sequence_max;
+
     int m_nametext_x;
     int m_nametext_y;
 

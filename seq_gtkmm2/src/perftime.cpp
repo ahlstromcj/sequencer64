@@ -305,12 +305,12 @@ perftime::draw_background ()
     if (left >= 0 && left <= m_window_x)                /* draw L marker    */
     {
         draw_rectangle(black_paint(), left, m_window_y - 9, 7, 10);
-        render_string(left + 1, 9, "L", font::WHITE, true);
+        render_string(left + 1, 8 /*9*/, "L", font::WHITE, true);
     }
     if (right >= 0 && right <= m_window_x)              /* draw R marker    */
     {
         draw_rectangle(black_paint(), right - 6, m_window_y - 9, 7, 10);
-        render_string(right - 6 + 1, 9, "R", font::WHITE, true);
+        render_string(right - 6 + 1, 8 /*9*/, "R", font::WHITE, true);
     }
 }
 

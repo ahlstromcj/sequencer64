@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-12
+ * \updates       2018-07-15
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -33,6 +33,8 @@
  *  elements that surround the patterns, and mainwid, which implements the
  *  behavior of the pattern slots.
  */
+
+#include <utility>                      /* std::make_pair()                 */
 
 #include "file_functions.hpp"           /* seq64::file_extension_match()    */
 #include "keystroke.hpp"
@@ -230,26 +232,33 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
         );
     }
 
-    // Play
+    /*
+     * Play button.
+     */
 
     connect(ui->btnPlay, SIGNAL(clicked(bool)), this, SLOT(startPlaying()));
     qt_set_icon(play2_xpm, ui->btnPlay);
 
-    // Song Play (live vs song)
+    /*
+     * Song Play (Live vs Song) button.
+     */
 
     connect
     (
-        ui->btnSongPlay, SIGNAL(clicked(bool)),
-        this, SLOT(setSongPlayback(bool))
+        ui->btnSongPlay, SIGNAL(clicked(bool)), this, SLOT(setSongPlayback(bool))
     );
     qt_set_icon(live_mode_xpm, ui->btnSongPlay);
 
-    // Stop
+    /*
+     * Stop button.
+     */
 
     connect(ui->btnStop, SIGNAL(clicked(bool)), this, SLOT(stopPlaying()));
     qt_set_icon(stop_xpm, ui->btnStop);
 
-    // Record (song)
+    /*
+     * Record-Song button.
+     */
 
     connect
     (
@@ -257,32 +266,56 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     );
     qt_set_icon(song_rec_on_xpm, ui->btnRecord);
 
-    // BPM spin-box
+    /*
+     * BPM (beats-per-minute) spin-box.
+     */
 
     ui->spinBpm->setDecimals(usr().bpm_precision());
     ui->spinBpm->setSingleStep(usr().bpm_step_increment());
+    ui->spinBpm->setValue(perf().bpm());
+    ui->spinBpm->setReadOnly(false);
     connect
     (
-        ui->spinBpm, SIGNAL(valueChanged(double)),
-        this, SLOT(updateBpm(double))
+        ui->spinBpm, SIGNAL(valueChanged(double)), this, SLOT(update_bpm(double))
     );
+    connect
+    (
+        ui->spinBpm, SIGNAL(editingFinished()), this, SLOT(edit_bpm())
+    );
+
+    /*
+     * Beat Length (Width) combo-box.
+     */
+
     connect
     (
         ui->cmb_beat_length, SIGNAL(currentIndexChanged(int)),
         this, SLOT(updateBeatLength(int))
     );
+
+    /*
+     * Beats-Per-Measure combo-box.
+     */
+
     connect
     (
         ui->cmb_beat_measure, SIGNAL(currentIndexChanged(int)),
         this, SLOT(updatebeats_per_measure(int))
     );
+
+    /*
+     * Tab-change callback.
+     */
+
     connect
     (
         ui->tabWidget, SIGNAL(currentChanged(int)),
         this, SLOT(tabWidgetClicked(int))
     );
 
-    // Record snap
+    /*
+     * Record Snap button.
+     */
 
     connect
     (
@@ -290,6 +323,11 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
         this, SLOT(setRecordingSnap(bool))
     );
     qt_set_icon(snap_xpm, ui->btnRecSnap);
+
+    /*
+     * Pattern editor callbacks.  One for editing in the tab, and the other
+     * for editing in an external pattern editor window.
+     */
 
     if (not_nullptr(m_live_frame))
     {
@@ -303,10 +341,16 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
         );
     }
 
-    // Panic
+    /*
+     * Panic button.
+     */
 
     connect(ui->btnPanic, SIGNAL(clicked(bool)), this, SLOT(panic()));
     qt_set_icon(panic_xpm, ui->btnPanic);
+
+    /*
+     * Other setups.
+     */
 
     create_action_connections();
     create_action_menu();
@@ -398,8 +442,19 @@ qsmainwnd::setSongPlayback (bool playSongData)
  */
 
 void
-qsmainwnd::updateBpm (double bpm)
+qsmainwnd::update_bpm (double bpm)
 {
+    perf().set_beats_per_minute(midibpm(bpm));
+}
+
+/**
+ *
+ */
+
+void
+qsmainwnd::edit_bpm ()
+{
+    double bpm = ui->spinBpm->value();
     perf().set_beats_per_minute(midibpm(bpm));
 }
 
@@ -478,9 +533,6 @@ qsmainwnd::open_file (const std::string & fn)
              *  m_live_frame->redraw();
              */
         }
-        ui->spinBpm->setValue(perf().bpm());
-        ui->spinBpm->setDecimals(usr().bpm_precision());
-        ui->spinBpm->setSingleStep(usr().bpm_step_increment());
         if (not_nullptr(m_song_frame))
             m_song_frame->update_sizes();
 
@@ -765,9 +817,9 @@ qsmainwnd::load_qseqedit (int seqid)
         {
             ex->show();
 #if __cplusplus >= 201103L              /* C++11    */
-            std::pair<int, qseqeditex *> p = make_pair(seqid, ex);
+            std::pair<int, qseqeditex *> p = std::make_pair(seqid, ex);
 #else
-            std::pair<int, qseqeditex *> p = make_pair<int, qseqeditex *>
+            std::pair<int, qseqeditex *> p = std::make_pair<int, qseqeditex *>
             (
                 seqid, ex
             );
@@ -908,6 +960,8 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
 }
 
 /**
+ *  If we've selected the edit tab, make sure it has something to edit.
+ *
  * \warning
  *      Somehow, checking for not_nullptr(m_edit_frame) to determine whether
  *      to remove or add that widget causes the edit frame to not get created,
@@ -917,11 +971,10 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
 void
 qsmainwnd::tabWidgetClicked (int newIndex)
 {
-    /*
-     * If we've selected the edit tab, make sure it has something to edit.
-     */
+    bool isnull = usr().seqedit_in_tab() ?
+        is_nullptr(m_edit_frame64) : is_nullptr(m_edit_frame);
 
-    if (newIndex == 2 && is_nullptr(m_edit_frame))
+    if (newIndex == 2 && isnull)
     {
         int seqid = -1;
         for (int i = 0; i < c_max_sequence; ++i)

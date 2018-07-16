@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-27
+ * \updates       2018-07-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -148,11 +148,15 @@ qsmaintime::paintEvent (QPaintEvent *)
     }
 
     /*
-     * lessen alpha on each redraw to have smooth fading done as a factor of
-     * the bpm to get useful fades
+     * Lessen alpha on each redraw to have smooth fading done as a factor of
+     * the BPM to get useful fades.  However, we have to scale this
+     * differently than 300, because Sequencer64 allows BPM higher than 300.
      */
 
-    m_alpha *= 0.7 - m_main_perf.bpm() / 300;
+    m_alpha *= 0.7 - m_main_perf.bpm() / SEQ64_MAXIMUM_BPM;     /* 600 */
+    if (m_alpha < 0)
+        m_alpha = 0;
+
     m_lastMetro = metro;
 }
 

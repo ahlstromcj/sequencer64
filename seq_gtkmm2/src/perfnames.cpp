@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-31
+ * \updates       2018-07-13
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -381,45 +381,8 @@ perfnames::on_button_press_event (GdkEventButton * ev)
     current_seq(seqnum);
     if (SEQ64_CLICK_LEFT(ev->button))
     {
-#define USE_THIS_WORKING_CODE
-#ifdef USE_THIS_WORKING_CODE
-        if (perf().toggle_other_names(seqnum, is_shift_key(ev)))
+        if (perf().toggle_sequences(seqnum, is_shift_key(ev)))
             enqueue_draw();
-#else
-        if (perf().is_active(seqnum))
-        {
-            if (is_shift_key(ev))
-            {
-                /*
-                 *  If the Shift key is pressed, toggle the mute state of all
-                 *  other sequences.  Inactive sequences are skipped.
-                 */
-
-                for (int s = 0; s < m_sequence_max; ++s)
-                {
-                    if (s != seqnum)
-                    {
-                        sequence * seq = perf().get_sequence(s);
-                        if (not_nullptr(seq))
-                        {
-                            bool muted = seq->get_song_mute();
-                            seq->set_song_mute(! muted);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                sequence * seq = perf().get_sequence(seqnum);
-                if (not_nullptr(seq))
-                {
-                    bool muted = seq->get_song_mute();
-                    seq->set_song_mute(! muted);
-                }
-            }
-            enqueue_draw();
-        }
-#endif
     }
     return true;
 }

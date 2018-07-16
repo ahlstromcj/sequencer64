@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-02-19
+ * \updates       2018-07-15
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -76,14 +76,11 @@ public:
 
     int get_beat_width() const;
     void set_beat_width(int a_beat_width);
-
     int get_beats_per_measure() const;
     void set_beats_per_measure(int a_beats_per_measure);
+    void follow_progress ();
 
 private:
-
-    // Calls update geometry on elements to react to changes in MIDI file
-    // sizes
 
     void update_sizes ();
     void set_snap(int a_snap);
@@ -97,15 +94,15 @@ private:
 
 private:
 
-    int m_snap;                 /* set snap to in pulses */
-    int mbeats_per_measure;
-    int mbeat_width;
     Ui::qperfeditframe * ui;
+    seq64::perform & m_mainperf;
     QGridLayout * m_layout_grid;
     QScrollArea * m_scroll_area;
     QWidget * mContainer;
     QPalette * m_palette;
-    seq64::perform & m_mainperf;
+    int m_snap;                 /* set snap to in pulses */
+    int mbeats_per_measure;
+    int mbeat_width;
     seq64::qperfroll * m_perfroll;
     seq64::qperfnames * m_perfnames;
     seq64::qperftime * m_perftime;
@@ -119,6 +116,10 @@ private slots:
     void markerExpand ();
     void markerExpandCopy ();
     void markerLoop (bool loop);
+
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+    void follow (bool ischecked);
+#endif
 
 };              // class qperfeditframe
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2018-06-28
+ * \updates       2018-07-15
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -328,6 +328,29 @@
  */
 
 #define SEQ64_MAXIMUM_ZOOM               512
+
+/**
+ *  Minimum possible value for zoom, indicating that one pixel represents one
+ *  tick.
+ */
+
+#define SEQ64_MINIMUM_PERF_ZOOM            1
+
+/**
+ *  The default value of the zoom, indicating that one pixel represents two
+ *  ticks.  However, it turns out we're going to have to support adapting the
+ *  default zoom to the PPQN, in addition to allowing some extra zoom values.
+ */
+
+#define SEQ64_DEFAULT_PERF_ZOOM            1
+
+/**
+ *  The maximum value of the zoom, indicating that one pixel represents 512
+ *  ticks.  The old maximum was 32, but now that we support PPQN up to 19200,
+ *  we need a couple of extra entries.
+ */
+
+#define SEQ64_MAXIMUM_PERF_ZOOM           64
 
 /**
  *  The default value of the snap in the sequence editors.

@@ -176,7 +176,8 @@ private slots:
     void setRecording (bool record);
     void setRecordingSnap (bool snap);
     void panic ();
-    void updateBpm (double bpm);
+    void update_bpm (double bpm);
+    void edit_bpm ();
     void updatebeats_per_measure (int bmIndex);
     void updateBeatLength (int blIndex);
     void open_recent_file ();   // new

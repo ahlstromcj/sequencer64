@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-03
+ * \updates       2018-07-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -42,6 +42,7 @@
 
 #include "globals.h"
 #include "perform.hpp"
+#include "qperfbase.hpp"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -55,58 +56,48 @@ namespace seq64
  * The time bar for the song editor
  */
 
-class qperftime : public QWidget
+class qperftime : public QWidget, public qperfbase
 {
+    friend class qperfeditframe;    /* for scrolling a horizontal page  */
+
     Q_OBJECT
 
 public:
 
-    explicit qperftime (perform & a_perf, QWidget * parent);
+    qperftime
+    (
+        perform & a_perf,
+        int zoom            = SEQ64_DEFAULT_PERF_ZOOM,
+        int snap            = SEQ64_DEFAULT_SNAP,
+        int ppqn            = SEQ64_USE_DEFAULT_PPQN,
+        QWidget * parent    = nullptr
+    );
 
     virtual ~qperftime ()
     {
         // no code needed
     }
 
-    void zoom_in();
-    void zoom_out();
-    void set_guides(int a_snap, int a_measure);
+    void set_guides (int snap, int measure);
 
-protected:
+protected:      // override Qt event handlers
 
-    //override painting event to draw on the frame
-    void paintEvent(QPaintEvent *);
-
-    //override mouse events for interaction
-    void mousePressEvent(QMouseEvent * event);
-    void mouseReleaseEvent(QMouseEvent * event);
-    void mouseMoveEvent(QMouseEvent * event);
-
-    //override the sizehint to set our own defaults
+    void paintEvent (QPaintEvent *);
+    void mousePressEvent (QMouseEvent * event);
+    void mouseReleaseEvent (QMouseEvent * event);
+    void mouseMoveEvent (QMouseEvent * event);
     QSize sizeHint() const;
-
-    const perform & perf () const
-    {
-        return m_mainperf;
-    }
-
-    perform & perf ()
-    {
-        return m_mainperf;
-    }
 
 private:
 
-    perform & m_mainperf;
-    QTimer * mTimer;
-    QFont mFont;
-
+    QTimer * m_timer;
+    QFont m_font;
     int m_4bar_offset;
-    int m_snap;
     int m_measure_length;
-    int zoom;
 
 signals:
+
+    // no signals
 
 public slots:
 

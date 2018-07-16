@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-26
+ * \updates       2018-07-14
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -42,6 +42,8 @@
  *      happens even in seq24, so this is long standing behavior.  Is it
  *      useful, and how?  Where is it done?  In perfroll?
  */
+
+#include <QMouseEvent>
 
 #include "perform.hpp"
 #include "qperfnames.hpp"
@@ -62,11 +64,12 @@ qperfnames::qperfnames (perform & p, QWidget * parent)
  :
     QWidget             (parent),
     gui_palette_qt5     (),
-    mPerf               (p),
-    mTimer              (nullptr),
-    mFont               (),
+    m_perform           (p),
+//  m_timer             (nullptr),
+    m_font               ("Monospace"),
     m_sequence_active   (),
-    m_nametext_x        (6 * 2 + 6 * 20),
+    m_sequence_max      (c_max_sequence),
+    m_nametext_x        (6 * 2 + 6 * 20),       // not used!
     m_nametext_y        (c_names_y)
 {
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
@@ -93,21 +96,18 @@ qperfnames::paintEvent (QPaintEvent *)
     QPainter painter(this);
     QPen pen(Qt::black);
     QBrush brush(Qt::lightGray);
-
     pen.setStyle(Qt::SolidLine);
     brush.setStyle((Qt::SolidPattern));
-    mFont.setPointSize(6);
-    mFont.setLetterSpacing(QFont::AbsoluteSpacing, 1);
-
-    mFont.setStyleHint(QFont::Monospace);       // EXPERIMENT
-
+    m_font.setPointSize(6);
+    m_font.setLetterSpacing(QFont::AbsoluteSpacing, 1);
+    m_font.setStyleHint(QFont::Monospace);               // EXPERIMENT
     painter.setPen(pen);
     painter.setBrush(brush);
-    painter.setFont(mFont);
+    painter.setFont(m_font);
 
     int y_s = 0;
-    int y_f = height() / c_names_y;
-    painter.drawRect(0, 0, width(), height() - 1);    // draw border
+    int y_f = height() / m_nametext_y;
+    painter.drawRect(0, 0, width(), height() - 1);      // draw border
     for (int y = y_s; y <= y_f; ++y)
     {
         int seqId = y;
@@ -121,7 +121,7 @@ qperfnames::paintEvent (QPaintEvent *)
                 brush.setStyle(Qt::SolidPattern);
                 painter.setPen(pen);
                 painter.setBrush(brush);
-                painter.drawRect(1, name_y(i) + 1, 15, c_names_y - 1);
+                painter.drawRect(1, name_y(i) + 1, 15, m_nametext_y - 1);
 
                 char ss[4];
                 int bankId = seqId / c_seqs_in_set;
@@ -129,81 +129,73 @@ qperfnames::paintEvent (QPaintEvent *)
 
                 pen.setColor(Qt::white);        // draw bank number here
                 painter.setPen(pen);
-                painter.drawText(4, c_names_y * i + 15, ss);
-
-                // offset and draw bank name sideways
-
-                pen.setColor(Qt::black);
+                painter.drawText(4, m_nametext_y * i + 15, ss);
+                pen.setColor(Qt::black);        // offset, bank name sideways
                 painter.setPen(pen);
                 painter.save();
                 QString bankName(perf().get_bank_name(bankId).c_str());
                 painter.translate
                 (
-                    12, (c_names_y * i) + (c_names_y * c_seqs_in_set * 0.5)
+                    12, (m_nametext_y * i) + (m_nametext_y * c_seqs_in_set * 0.5)
                         + bankName.length() * 4
                 );
                 painter.rotate(270);
-                mFont.setPointSize(9);
-                mFont.setBold(true);
-                mFont.setLetterSpacing(QFont::AbsoluteSpacing, 2);
-                painter.setFont(mFont);
+                m_font.setPointSize(9);
+                m_font.setBold(true);
+                m_font.setLetterSpacing(QFont::AbsoluteSpacing, 2);
+                painter.setFont(m_font);
                 painter.drawText(0, 0, bankName);
                 painter.restore();
             }
-            pen.setStyle(Qt::SolidLine);
-            pen.setColor(Qt::black);
-            sequence * s = mPerf.get_sequence(seqId);
-            if (not_nullptr(s))
-            {
-                int c = s->color();
-                Color backcolor = get_color_fix(PaletteColor(c));
-                brush.setColor(backcolor);
-            }
-            else
-                brush.setColor(Qt::lightGray);
-
-            painter.setPen(pen);    // fill seq label background
-            painter.setBrush(brush);
-            painter.drawRect(6 * 2 + 4, c_names_y * i, c_names_x - 15, c_names_y);
+            int rect_x = 6 * 2 + 4;
+            int rect_y = m_nametext_y * i;
+            int rect_w = c_names_x - 15;
             if (perf().is_active(seqId))
             {
-                m_sequence_active[seqId] = true;
-
+                std::string sname = perf().sequence_label(seqId); // seq name
+                sequence * s = perf().get_sequence(seqId);
+                bool muted = s->get_song_mute();
                 char name[64];
+                m_sequence_active[seqId] = true;
                 snprintf
                 (
-                    // name, sizeof name, "%-14.14s   %2d",
-                    name, sizeof name, "%-14.14s         %2d",
-                    perf().get_sequence(seqId)->name().c_str(),
-                    perf().get_sequence(seqId)->get_midi_channel() + 1
+                    name, sizeof name, "%-14.14s   %2d",
+                    s->name().c_str(), s->get_midi_channel() + 1
                 );
 
-                pen.setColor(Qt::black);
-                painter.setPen(pen);
-                painter.drawText(18, c_names_y * i + 10, name);
-
-                std::string sname = perf().sequence_label(seqId); // seq name
-                painter.drawText(18, c_names_y * i + 20, sname.c_str());
-
-                bool muted = perf().get_sequence(seqId)->get_song_mute();
-                pen.setColor(Qt::black);
-                painter.setPen(pen);
-                painter.drawRect(name_x(2), name_y(i), 10, m_nametext_y);
-//              (
-//                  6 * 2 + 6 * 20 + 2, (c_names_y * i), 10, c_names_y
-//              );
-
-                if (muted) // seq mute state
+                if (muted)
                 {
-                    painter.drawText(name_x(4), name_y(i) + 14, "M");
-//                  (
-//                      6 * 2 + 6 * 20 + 4, c_names_y * i + 14, "M"
-//                  );
+                    brush.setColor(Qt::black);
+                    brush.setStyle(Qt::SolidPattern);
+                    painter.setBrush(brush);
+                    painter.drawRect(rect_x, rect_y, rect_w, m_nametext_y);
+                    pen.setColor(Qt::white);
                 }
                 else
                 {
-                    painter.drawText(name_x(4), name_y(i) + 14, "M");
+                    int c = s->color();
+                    Color backcolor = get_color_fix(PaletteColor(c));
+                    brush.setColor(Qt::white);
+                    brush.setStyle(Qt::SolidPattern);
+                    painter.setBrush(brush);
+                    painter.drawRect(rect_x, rect_y, rect_w, m_nametext_y);
+                    brush.setColor(backcolor);
+                    pen.setColor(Qt::black);
                 }
+                painter.setPen(pen);
+                painter.drawText(18, rect_y + 10, name);
+                painter.drawText(18, rect_y + 20, sname.c_str());
+                painter.drawRect(name_x(2), name_y(i), 11, m_nametext_y);
+                painter.drawText(name_x(5), name_y(i) + 15, "M");
+            }
+            else
+            {
+                pen.setStyle(Qt::SolidLine);
+                pen.setColor(Qt::black);
+                brush.setColor(Qt::lightGray);
+                painter.setPen(pen);        /* fill seq label background    */
+                painter.setBrush(brush);
+                painter.drawRect(rect_x, rect_y, rect_w, m_nametext_y);
             }
         }
     }
@@ -216,7 +208,31 @@ qperfnames::paintEvent (QPaintEvent *)
 QSize
 qperfnames::sizeHint () const
 {
-    return QSize(c_names_x, c_names_y * c_max_sequence + 1);
+    return QSize(c_names_x, m_nametext_y * c_max_sequence + 1);
+}
+
+/**
+ *  Converts a y-value into a sequence number and returns it.  Used in
+ *  figuring out which sequence to mute/unmute in the performance editor.
+ *
+ * \param y
+ *      The y value (within the vertical limits of the perfnames column to the
+ *      left of the performance editor's piano roll.
+ *
+ * \return
+ *      Returns the sequence number corresponding to the y value.
+ */
+
+int
+qperfnames::convert_y (int y)
+{
+    int seq = y / m_nametext_y;            // + m_sequence_offset;
+    if (seq >= m_sequence_max)
+        seq = m_sequence_max - 1;
+    else if (seq < 0)
+        seq = 0;
+
+    return seq;
 }
 
 /**
@@ -224,9 +240,16 @@ qperfnames::sizeHint () const
  */
 
 void
-qperfnames::mousePressEvent (QMouseEvent * /*event*/)
+qperfnames::mousePressEvent (QMouseEvent * ev)
 {
-    // no code
+    int y = int(ev->y());
+    int seqnum = convert_y(y);
+    if (ev->button() == Qt::LeftButton)  // (SEQ64_CLICK_LEFT(ev->button))
+    {
+        bool isshiftkey = (ev->modifiers() & Qt::ShiftModifier) != 0;
+        (void) perf().toggle_sequences(seqnum, isshiftkey);
+        update();
+    }
 }
 
 /**
@@ -234,9 +257,9 @@ qperfnames::mousePressEvent (QMouseEvent * /*event*/)
  */
 
 void
-qperfnames::mouseReleaseEvent (QMouseEvent * /*event*/)
+qperfnames::mouseReleaseEvent (QMouseEvent * /*ev*/)
 {
-    // no code
+    // no code; add a call to update() if a change is made
 }
 
 /**
@@ -246,7 +269,7 @@ qperfnames::mouseReleaseEvent (QMouseEvent * /*event*/)
 void
 qperfnames::mouseMoveEvent (QMouseEvent * /*event*/)
 {
-    // no code
+    // no code; add a call to update() if a change is made
 }
 
 }           // namespace seq64

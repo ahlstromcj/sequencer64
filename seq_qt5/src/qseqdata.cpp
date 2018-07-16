@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-03
+ * \updates       2018-07-14
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -58,10 +58,11 @@ qseqdata::qseqdata
     sequence & seq,
     int zoom,
     int snap,
+    int ppqn,
     QWidget * parent
 ) :
     QWidget             (parent),
-    qseqbase            (p, seq, zoom, snap),
+    qseqbase            (p, seq, zoom, ppqn, snap),
     mTimer              (nullptr),          // (new QTimer(this)),
     mNumbers            (),
     mFont               (),

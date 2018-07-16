@@ -369,11 +369,11 @@ perfroll::fill_background_pixmap ()
 
     int beats = m_measure_length / m_beat_length;
     m_gc->set_foreground(grey_paint());
-    for (int i = 0; i < beats; /* inc'd in body */) /* draw vertical lines  */
+    for (int i = 0; i < beats; /* inc'd in body */)     /* vertical lines   */
     {
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
         if (i == 0)
-            m_gc->set_foreground(dark_grey_paint());      /* was black()          */
+            m_gc->set_foreground(dark_grey_paint());    /* was black()      */
         else
             m_gc->set_foreground(light_grey_paint());
 #else
@@ -618,6 +618,14 @@ perfroll::auto_scroll_horz ()
 /**
  *  Draws the given pattern/sequence on the given drawable area.
  *  Statement nesting from hell!
+ *
+ *  Items drawn on the Song editor piano roll:
+ *
+ *      -#  Main trigger box (also called a "segment") background.
+ *      -#  Trigger outline (the rectangle around a "segment").
+ *      -#  The left hand side little sequence grab handle,
+ *          or segment handle.
+ *      -#  The right-side segment handle.
  */
 
 void
@@ -651,13 +659,6 @@ perfroll::draw_sequence_on (int seqnum)
                 x -= x_offset;                  /* adjust to screen coords  */
 
                 /**
-                 * Items drawn on the Song editor piano roll:
-                 *
-                 *  -# Main trigger box (also called a "segment") background.
-                 *  -# Trigger outline (the rectangle around a "segment").
-                 *  -# The left hand side little sequence grab handle,
-                 *     or segment handle.
-                 *  -# The right-side segment handle.
                  *
                  *  printf
                  *  (
@@ -673,8 +674,7 @@ perfroll::draw_sequence_on (int seqnum)
                 else
                 {
                     int c = seq->color();
-                    // if (c != SEQ64_COLOR_NONE)
-                        evbkground = get_color(PaletteColor(c));
+                    evbkground = get_color(PaletteColor(c));
                 }
 #else
                 else
@@ -831,7 +831,8 @@ perfroll::draw_sequence_on (int seqnum)
  *  Draws the given pattern/sequence background on the given drawable area.
  */
 
-void perfroll::draw_background_on (int seqnum)
+void
+perfroll::draw_background_on (int seqnum)
 {
     midipulse tick_offset = m_4bar_offset;              // * m_ticks_per_bar;
     long first_measure = tick_offset / m_measure_length;

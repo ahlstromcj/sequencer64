@@ -28,13 +28,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-04
+ * \updates       2018-07-15
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
  *
  *  User jean-emmanual added support for disabling the following of the
- *  progress bar during playback.  See the seqroll::m_progress_follow member.
+ *  progress bar during playback.  See the qseqbase::m_progress_follow member.
  */
 
 #include <QWidget>
@@ -76,6 +76,7 @@ public:
         qseqkeys * seqkeys_wid  = nullptr,
         int zoom                = SEQ64_DEFAULT_ZOOM,
         int snap                = SEQ64_DEFAULT_SNAP,
+        int ppqn                = SEQ64_DEFAULT_PPQN,
         int pos                 =  0,
         seq64::edit_mode_t mode = EDIT_MODE_NOTE,
         QWidget * parent        = nullptr
@@ -106,28 +107,6 @@ public:
     {
         return m_expanded_recording;
     }
-
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-
-    /**
-     * \getter m_progress_follow
-
-    void set_progress_follow (bool follow)
-    {
-        m_progress_follow = follow;
-    }
-     */
-
-    /**
-     * \setter m_progress_follow
-
-    bool get_progress_follow ()
-    {
-        return m_progress_follow;
-    }
-     */
-
-#endif
 
 protected:
 
@@ -169,10 +148,6 @@ private:
     void snap_y (int & y);
     void set_adding (bool a_adding);
     void start_paste();
-#if 0
-    void set_scroll_x ();
-    void set_scroll_y ();
-#endif
 
 private:
 
@@ -222,22 +197,6 @@ private:
      */
 
     int m_chord;
-
-#endif
-
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-
-    /**
-     *  Provides the current scroll page in which the progress bar resides.
-
-    int m_scroll_page;
-     */
-
-    /**
-     *  Progress bar follow state.
-
-    bool m_progress_follow;
-     */
 
 #endif
 
@@ -295,11 +254,10 @@ private:
 
     seq64::edit_mode_t m_edit_mode;
 
-    int note_x;             // note drawing variables
+    int note_x;                 // note drawing variables
     int note_width;
     int note_y;
     int note_height;
-
     int m_key_y;               // dimensions of height
     int m_keyarea_y;
 

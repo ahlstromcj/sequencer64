@@ -25,12 +25,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-08
+ * \updates       2018-07-15
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
  *  perfroll (piano roll), will zoom the view horizontally.
  */
+
+#include <QScrollBar>
 
 #include "perform.hpp"
 #include "qperfeditframe.hpp"
@@ -47,9 +49,15 @@
 #include "forms/qperfeditframe.ui.h"
 #endif
 
+/*
+ *  We prefer to load the pixmaps on the fly, rather than deal with those
+ *  friggin' resource files.
+ */
+
 #include "pixmaps/collapse.xpm"
 #include "pixmaps/copy.xpm"
 #include "pixmaps/expand.xpm"
+#include "pixmaps/follow.xpm"
 #include "pixmaps/loop.xpm"
 #include "pixmaps/redo.xpm"
 #include "pixmaps/undo.xpm"
@@ -66,15 +74,15 @@ namespace seq64
 qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
  :
     QFrame                  (parent),
-    m_snap                  (8),
-    mbeats_per_measure      (4),
-    mbeat_width             (4),
     ui                      (new Ui::qperfeditframe),
+    m_mainperf              (p),
     m_layout_grid           (nullptr),
     m_scroll_area           (nullptr),
     mContainer              (nullptr),
     m_palette               (nullptr),
-    m_mainperf              (p),
+    m_snap                  (8),
+    mbeats_per_measure      (4),
+    mbeat_width             (4),
     m_perfroll              (nullptr),
     m_perfnames             (nullptr),
     m_perftime              (nullptr)
@@ -82,7 +90,9 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
     ui->setupUi(this);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    // fill options for grid snap combo box and set default
+    /*
+     * Snap.  Fill options for grid snap combo box and set the default.
+     */
 
     for (int i = 0; i < 6; ++i)
     {
@@ -90,6 +100,15 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
         ui->cmbGridSnap->insertItem(i, combo_text);
     }
     ui->cmbGridSnap->setCurrentIndex(3);
+    connect
+    (
+        ui->cmbGridSnap, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(updateGridSnap(int))
+    );
+
+    /*
+     * Create and add the scroll-area and widget-container for this frame.
+     */
 
     m_scroll_area = new QScrollArea(this);
     ui->vbox_centre->addWidget(m_scroll_area);
@@ -98,13 +117,34 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
     m_layout_grid = new QGridLayout(mContainer);
     mContainer->setLayout(m_layout_grid);
 
+    /*
+     * Create the color palette for coloring the patterns.
+     */
+
     m_palette = new QPalette();
     m_palette->setColor(QPalette::Background, Qt::darkGray);
     mContainer->setPalette(*m_palette);
 
+    /*
+     * Create the names, piano roll, and time panels of the song editor
+     * frame.
+     */
+
     m_perfnames = new seq64::qperfnames(m_mainperf, mContainer);
-    m_perfroll = new seq64::qperfroll(m_mainperf, mContainer);
-    m_perftime = new seq64::qperftime(m_mainperf, mContainer);
+    m_perfroll = new seq64::qperfroll
+    (
+        m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
+        SEQ64_DEFAULT_PPQN, this, mContainer
+    );
+    m_perftime = new seq64::qperftime
+    (
+        m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
+        SEQ64_DEFAULT_PPQN, mContainer
+    );
+
+    /*
+     * Layout grid.
+     */
 
     m_layout_grid->setSpacing(0);
     m_layout_grid->addWidget(m_perfnames, 1, 0, 1, 1);
@@ -112,24 +152,55 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
     m_layout_grid->addWidget(m_perfroll, 1, 1, 1, 1);
     m_layout_grid->setAlignment(m_perfroll, Qt::AlignTop);
     m_scroll_area->setWidget(mContainer);
-    connect
-    (
-        ui->cmbGridSnap, SIGNAL(currentIndexChanged(int)),
-        this, SLOT(updateGridSnap(int))
-    );
+
+    /*
+     * Undo and Redo buttons.
+     */
+
     connect(ui->btnUndo, SIGNAL(clicked(bool)), m_perfroll, SLOT(undo()));
     qt_set_icon(undo_xpm, ui->btnUndo);
     connect(ui->btnRedo, SIGNAL(clicked(bool)), m_perfroll, SLOT(redo()));
     qt_set_icon(redo_xpm, ui->btnRedo);
-    connect
+
+    /*
+     * Follow Progress Button.
+     */
+
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+
+    qt_set_icon(follow_xpm, ui->m_toggle_follow);
+    ui->m_toggle_follow->setEnabled(true);
+    ui->m_toggle_follow->setCheckable(true);
+    ui->m_toggle_follow->setToolTip
     (
-        ui->cmbGridSnap, SIGNAL(currentIndexChanged(int)),
-        this, SLOT(updateGridSnap(int))
+        "If active, the piano roll scrolls to "
+        "follow the progress bar in playback."
     );
+
+    /*
+     * Qt::NoFocus is the default focus policy.
+     */
+
+    ui->m_toggle_follow->setAutoDefault(false);
+    ui->m_toggle_follow->setChecked(m_perfroll->progress_follow());
+    connect(ui->m_toggle_follow, SIGNAL(toggled(bool)), this, SLOT(follow(bool)));
+#else
+    ui->m_toggle_follow->setEnabled(false);
+#endif
+
+    /*
+     * Zoom-In and Zoom-Out buttons.
+     */
+
     connect(ui->btnZoomIn, SIGNAL(clicked(bool)), this, SLOT(zoom_in()));
     qt_set_icon(zoom_in_xpm, ui->btnZoomIn);
     connect(ui->btnZoomOut, SIGNAL(clicked(bool)), this, SLOT(zoom_out()));
     qt_set_icon(zoom_out_xpm, ui->btnZoomOut);
+
+    /*
+     * Collapse, Expand, Expand-Copy, and Loop buttons.
+     */
+
     connect(ui->btnCollapse, SIGNAL(clicked(bool)), this, SLOT(markerCollapse()));
     qt_set_icon(collapse_xpm, ui->btnCollapse);
     connect(ui->btnExpand, SIGNAL(clicked(bool)), this, SLOT(markerExpand()));
@@ -141,6 +212,11 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
     qt_set_icon(copy_xpm, ui->btnExpandCopy);
     connect(ui->btnLoop, SIGNAL(clicked(bool)), this, SLOT(markerLoop(bool)));
     qt_set_icon(loop_xpm, ui->btnLoop);
+
+    /*
+     * Final settings.
+     */
+
     set_snap(8);
     set_beats_per_measure(4);
     set_beat_width(4);
@@ -156,6 +232,56 @@ qperfeditframe::~qperfeditframe ()
     if (not_nullptr(m_palette))     // valgrind fix?
         delete m_palette;
 }
+
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+
+/**
+ *  Passes the Follow status to the qperfroll object.
+ */
+
+void
+qperfeditframe::follow (bool ischecked)
+{
+    m_perfroll->progress_follow(ischecked);
+}
+
+/**
+ *  Checks the position of the tick, and, if it is in a different piano-roll
+ *  "page" than the last page, moves the page to the next page.
+ */
+
+void
+qperfeditframe::follow_progress ()
+{
+    int w = m_perfroll->width();        // m_perfroll->window_width();
+    if (w > 0)
+    {
+        QScrollBar * hadjust = m_scroll_area->horizontalScrollBar();
+        int scrollx = hadjust->value();
+        midipulse progress_tick = perf().get_tick();
+        if (progress_tick > 0 && m_perfroll->progress_follow())
+        {
+            int prog_x = progress_tick / m_perfroll->zoom();
+            int page = prog_x / w;
+            if (page != m_perfroll->scroll_page() || (page == 0 && scrollx != 0))
+            {
+                m_perfroll->scroll_page(page);
+                m_perftime->scroll_page(page);
+                hadjust->setValue(prog_x);      // set_scroll_x() not needed
+            }
+        }
+    }
+}
+
+#else
+
+void
+qperfeditframe::follow_progress ()
+{
+    // No code, never follow the progress bar.
+}
+
+#endif  // SEQ64_FOLLOW_PROGRESS_BAR
 
 /**
  *
@@ -241,9 +367,10 @@ qperfeditframe::set_beat_width (int bw)
 void
 qperfeditframe::set_guides ()
 {
-    midipulse measure_ticks = (c_ppqn * 4) * mbeats_per_measure / mbeat_width;
+    int ppqn = SEQ64_DEFAULT_PPQN * 4;      // TODO: allow runtime changes
+    midipulse measure_ticks = (ppqn * 4) * mbeats_per_measure / mbeat_width;
     midipulse snap_ticks =  measure_ticks / m_snap;
-    midipulse beat_ticks = (c_ppqn * 4) / mbeat_width;
+    midipulse beat_ticks = (ppqn * 4) / mbeat_width;
     m_perfroll->set_guides(snap_ticks, measure_ticks, beat_ticks);
     m_perftime->set_guides(snap_ticks, measure_ticks);
 }
@@ -271,7 +398,7 @@ qperfeditframe::zoom_out ()
 }
 
 /**
- *
+ *  Calls update geometry on elements to react to changes in MIDI file sizes.
  */
 
 void

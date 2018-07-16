@@ -264,22 +264,25 @@ qseqeditframe::qseqeditframe
         usr().key_height(),
         usr().key_height() * c_num_keys + 1
     );
-    mTimeBar = new qseqtime(perf(), *mSeq, SEQ64_DEFAULT_ZOOM, mContainer);
+    mTimeBar = new qseqtime
+    (
+        perf(), *mSeq, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_PPQN, mContainer
+    );
     mNoteGrid = new qseqroll
     (
         perf(), *mSeq, mKeyboard,
-        SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP, 0,
+        SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP, SEQ64_DEFAULT_PPQN, 0,
         EDIT_MODE_NOTE, mContainer
     );
     mNoteGrid->update_edit_mode(editMode);
     mEventValues = new qseqdata
     (
-        perf(), *mSeq, SEQ64_DEFAULT_ZOOM, mSnap, mContainer
+        perf(), *mSeq, SEQ64_DEFAULT_ZOOM, mSnap, SEQ64_DEFAULT_PPQN, mContainer
     );
     mEventTriggers = new qstriggereditor
     (
         perf(), *mSeq, mEventValues, SEQ64_DEFAULT_ZOOM, mSnap,
-        usr().key_height(), mContainer
+        SEQ64_DEFAULT_PPQN, usr().key_height(), mContainer
     );
 
     m_layout_grid->setSpacing(0);
@@ -309,10 +312,13 @@ qseqeditframe::qseqeditframe
 
     QAction *actionSelectAll = new QAction(tr("Select all"), mPopup);
     actionSelectAll->setShortcut(tr("Ctrl+A"));
-    connect(actionSelectAll,
-            SIGNAL(triggered(bool)),
-            this,
-            SLOT(selectAllNotes()));
+    connect
+    (
+        actionSelectAll,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(selectAllNotes())
+    );
     menuSelect->addAction(actionSelectAll);
 
     QAction *actionSelectInverse = new QAction(tr("Inverse selection"), mPopup);

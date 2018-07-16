@@ -144,10 +144,7 @@ public:
 
     void update_draw_geometry ();
     void set_editor_mode (edit_mode_t mode);
-
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     void follow_progress ();
-#endif
 
 private:
 

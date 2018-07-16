@@ -421,10 +421,8 @@ qseqeditframe64::qseqeditframe64
 
     m_seqkeys = new qseqkeys
     (
-        *m_seq,
-        ui->keysScrollArea,
-        usr().key_height(),
-        usr().key_height() * c_num_keys + 1
+        *m_seq, ui->keysScrollArea,
+        usr().key_height(), usr().key_height() * c_num_keys + 1
     );
     ui->keysScrollArea->setWidget(m_seqkeys);
     ui->keysScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -436,7 +434,7 @@ qseqeditframe64::qseqeditframe64
 
     m_seqtime = new qseqtime
     (
-        perf(), *m_seq, SEQ64_DEFAULT_ZOOM, ui->timeScrollArea
+        perf(), *m_seq, m_zoom, m_ppqn, ui->timeScrollArea
     );
     ui->timeScrollArea->setWidget(m_seqtime);
     ui->timeScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -450,7 +448,7 @@ qseqeditframe64::qseqeditframe64
 
     m_seqroll = new qseqroll
     (
-        perf(), *m_seq, m_seqkeys, m_zoom, m_snap, 0,
+        perf(), *m_seq, m_seqkeys, m_zoom, m_snap, m_ppqn, 0 /*pos*/,
         EDIT_MODE_NOTE, this                            /* see note above   */
     );
     ui->rollScrollArea->setWidget(m_seqroll);
@@ -464,7 +462,7 @@ qseqeditframe64::qseqeditframe64
 
     m_seqdata = new qseqdata
     (
-        perf(), *m_seq, m_zoom, m_snap, ui->dataScrollArea
+        perf(), *m_seq, m_zoom, m_snap, m_ppqn, ui->dataScrollArea
     );
     ui->dataScrollArea->setWidget(m_seqdata);
     ui->dataScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -476,7 +474,7 @@ qseqeditframe64::qseqeditframe64
 
     m_seqevent = new qstriggereditor
     (
-        perf(), *m_seq, m_seqdata, m_zoom, m_snap,
+        perf(), *m_seq, m_seqdata, m_zoom, m_snap, m_ppqn,
         usr().key_height(), ui->eventScrollArea
     );
     ui->eventScrollArea->setWidget(m_seqevent);
@@ -827,7 +825,7 @@ qseqeditframe64::qseqeditframe64
     ui->m_toggle_follow->setChecked(m_seqroll->progress_follow());
     connect(ui->m_toggle_follow, SIGNAL(toggled(bool)), this, SLOT(follow(bool)));
 #else
-    // ui->m_toggle_follow->setEnabled(false);
+    ui->m_toggle_follow->setEnabled(false);
 #endif
 
     /**
@@ -2077,7 +2075,7 @@ qseqeditframe64::follow_progress ()
 void
 qseqeditframe64::follow_progress ()
 {
-// No code, never follow the progress bar.
+    // No code, never follow the progress bar.
 }
 
 #endif  // SEQ64_FOLLOW_PROGRESS_BAR

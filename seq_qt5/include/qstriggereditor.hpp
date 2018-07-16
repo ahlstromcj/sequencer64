@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-06
+ * \updates       2018-07-14
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -76,6 +76,7 @@ public:
         qseqdata * seqdata_wid  = nullptr,
         int zoom                = SEQ64_DEFAULT_ZOOM,
         int snap                = SEQ64_DEFAULT_SNAP,
+        int ppqn                = SEQ64_USE_DEFAULT_PPQN,
         int keyHeight           = SEQ64_SEQKEY_HEIGHT,
         QWidget * parent        = nullptr
     );

@@ -55,6 +55,7 @@ qseqroll::qseqroll
     qseqkeys * seqkeys_wid,
     int zoom,
     int snap,
+    int ppqn,
     int pos,
     edit_mode_t mode,
     QWidget * parent        // must be a qscrollmaster widget
@@ -62,7 +63,7 @@ qseqroll::qseqroll
     QWidget                 (parent),
     qseqbase
     (
-        perf, seq, zoom, snap,
+        perf, seq, zoom, snap, ppqn,
         usr().key_height(),                         // m_key_y
         (usr().key_height() * c_num_keys + 1)       // m_keyarea_y
     ),
@@ -165,18 +166,16 @@ qseqroll::conditional_update ()
 {
     if (needs_update())
     {
-
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
-    bool expandrec = seq().expand_recording();
-    if (expandrec)
-    {
-        set_measures(get_measures() + 1);
-        follow_progress();
-    }
-    else if (perf().follow_progress())
-        follow_progress();              /* keep up with progress    */
+        bool expandrec = seq().expand_recording();
+        if (expandrec)
+        {
+            set_measures(get_measures() + 1);
+            follow_progress();
+        }
+        else if (perf().follow_progress())
+            follow_progress();              /* keep up with progress    */
 #endif
-
         update();
     }
 }
@@ -221,7 +220,7 @@ qseqroll::paintEvent (QPaintEvent *)
     painter.setPen(pen);
 
     int octkey = SEQ64_OCTAVE_SIZE - m_key;         /* used three times     */
-    for (int key = 1; key <= c_num_keys; ++key)      /* for each note row    */
+    for (int key = 1; key <= c_num_keys; ++key)     /* for each note row    */
     {
         int remkeys = c_num_keys - key;             /* remaining keys?      */
         int modkey = remkeys - scroll_offset_key() + octkey;
@@ -368,7 +367,6 @@ qseqroll::paintEvent (QPaintEvent *)
     int prog_x = old_progress_x();
     pen.setColor(Qt::red);                      // draw the playhead
     pen.setStyle(Qt::SolidLine);
-    painter.setPen(pen);
 
     /*
      * If this test is used, then when not running, the overwrite
@@ -380,6 +378,7 @@ qseqroll::paintEvent (QPaintEvent *)
     else
         pen.setWidth(1);
 
+    painter.setPen(pen);
     painter.drawLine(prog_x, 0, prog_x, wh * 8);    // why * 8?
     old_progress_x(seq().get_last_tick() / zoom() + c_keyboard_padding_x);
 

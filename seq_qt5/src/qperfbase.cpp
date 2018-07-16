@@ -17,15 +17,15 @@
  */
 
 /**
- * \file          qseqbase.cpp
+ * \file          qperfbase.cpp
  *
  *  This module declares/defines the base class for drawing on the piano
- *  roll of the patterns editor.
+ *  roll of the song editor.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2018-01-01
- * \updates       2018-07-14
+ * \date          2018-07-14
+ * \updates       2018-07-15
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -35,7 +35,7 @@
  */
 
 #include "perform.hpp"
-#include "qseqbase.hpp"
+#include "qperfbase.hpp"
 #include "settings.hpp"                 /* seq64::choose_ppqn()             */
 
 /*
@@ -49,10 +49,9 @@ namespace seq64
  *
  */
 
-qseqbase::qseqbase
+qperfbase::qperfbase
 (
     perform & perf,
-    sequence & seq,
     int zoom,
     int snap,
     int ppqn,
@@ -60,10 +59,11 @@ qseqbase::qseqbase
     int total_height
 ) :
     m_perform               (perf),
-    m_seq                   (seq),
     m_old                   (),
     m_selected              (),
     m_zoom                  (zoom),
+    m_perf_scale_x          (c_perf_scale_x),   //       / 2),
+    m_perf_scale_x_zoom     (m_perf_scale_x * m_zoom),
     m_snap                  (snap),
     m_ppqn                  (0),
     m_selecting             (false),
@@ -71,20 +71,12 @@ qseqbase::qseqbase
     m_moving                (false),
     m_moving_init           (false),
     m_growing               (false),
-    m_painting              (false),
-    m_paste                 (false),
-    m_is_drag_pasting       (false),
-    m_is_drag_pasting_start (false),
-    m_justselected_one      (false),
     m_window_width          (0),            // m_window_x
     m_window_height         (0),            // m_window_y
     m_drop_x                (0),
     m_drop_y                (0),
-    m_move_delta_x          (0),
-    m_move_delta_y          (0),
     m_current_x             (0),
     m_current_y             (0),
-    m_move_snap_offset_x    (0),
     m_progress_x            (0),
     m_old_progress_x        (0),
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
@@ -92,7 +84,7 @@ qseqbase::qseqbase
     m_progress_follow       (false),
 #endif
     m_scroll_offset_ticks   (0),
-    m_scroll_offset_key     (0),
+    m_scroll_offset_seq     (0),
     m_scroll_offset_x       (0),
     m_scroll_offset_y       (0),
     m_unit_height           (unit_height),
@@ -100,57 +92,51 @@ qseqbase::qseqbase
     m_is_dirty              (true)
 {
     set_ppqn(ppqn);
-    set_snap(m_seq.get_snap_tick());
-}
-
-#ifdef USE_SCROLLING_CODE    // not ready for this class
-
-/**
- *  Sets the horizontal scroll value according to the current value of the
- *  horizontal scroll-bar.
- */
-
-void
-qseqbase::set_scroll_x (int x)
-{
-    m_scroll_offset_x = x;
-    m_scroll_offset_ticks = x * m_zoom;
 }
 
 /**
- *  Sets the vertical scroll value according to the current value of the
- *  vertical scroll-bar.
  *
- *  TODO:  use the height member....
  */
 
 void
-qseqbase::set_scroll_y (int y)
+qperfbase::zoom_in ()
 {
-    m_scroll_offset_y = y;
-    m_scroll_offset_key * c_key_y;          // m_unit_height
-    m_scroll_offset_key = y / c_key_y;      // m_unit_height
+    if (m_zoom > 1)
+    {
+        m_zoom /= 2;
+        m_perf_scale_x_zoom = m_zoom * m_perf_scale_x;
+        set_dirty();
+    }
 }
-
-#endif  // USE_SCROLLING_CODE
 
 /**
  *
- *  snap = number pulses to snap to
- *
- *  m_zoom = number of pulses per pixel
- *
- *  so snap / m_zoom  = number pixels to snap to
  */
 
 void
-qseqbase::snap_x (int & x)
+qperfbase::zoom_out ()
 {
-    int mod = (m_snap / m_zoom);
-    if (mod <= 0)
-        mod = 1;
+    if (m_zoom < 64)    // 32
+    {
+        m_zoom *= 2;
+        m_perf_scale_x_zoom = m_zoom * m_perf_scale_x;
+        set_dirty();
+    }
+}
 
-    x -= x % mod;
+/**
+ *
+ */
+
+void
+qperfbase::set_zoom (int z)
+{
+    if (z != m_zoom)
+    {
+        m_zoom = z;         // must be validated by the caller
+        m_perf_scale_x_zoom = m_zoom * m_perf_scale_x;
+        set_dirty();
+    }
 }
 
 /**
@@ -169,7 +155,7 @@ qseqbase::snap_x (int & x)
  */
 
 void
-qseqbase::set_ppqn (int ppqn)
+qperfbase::set_ppqn (int ppqn)
 {
     if (ppqn_is_valid(ppqn))
     {
@@ -180,44 +166,74 @@ qseqbase::set_ppqn (int ppqn)
         // m_w_scale_x = sm_perfroll_size_box_click_w * m_perf_scale_x;
         // if (m_perf_scale_x == 0)
         //     m_perf_scale_x = 1;
+        m_perf_scale_x = c_perf_scale_x * m_ppqn / SEQ64_DEFAULT_PPQN;
+        m_perf_scale_x_zoom = m_zoom * m_perf_scale_x;
     }
 }
 
+#ifdef USE_SCROLLING_CODE    // not ready for this class
+
+/**
+ *  Sets the horizontal scroll value according to the current value of the
+ *  horizontal scroll-bar.
+ */
+
+void
+qperfbase::set_scroll_x (int x)
+{
+    m_scroll_offset_x = x;
+    m_scroll_offset_ticks = x * m_zoom;
+}
+
+/**
+ *  Sets the vertical scroll value according to the current value of the
+ *  vertical scroll-bar.
+ *
+ *  TODO:  use the height member....
+ */
+
+void
+qperfbase::set_scroll_y (int y)
+{
+    m_scroll_offset_y = y;
+    m_scroll_offset_seq * m_unit_height;        // c_key_y;
+    m_scroll_offset_seq = y / m_unit_height;    // c_key_y;
+}
+
+#endif  // USE_SCROLLING_CODE
+
 /**
  *
+ *  snap = number pulses to snap to
+ *
+ *  m_zoom = number of pulses per pixel
+ *
+ *  so snap / m_zoom  = number pixels to snap to
+ */
+
+void
+qperfbase::snap_x (int & x)
+{
+    int mod = m_snap / m_perf_scale_x_zoom;
+    if (mod <= 0)
+        mod = 1;
+
+    x -= x % mod;
+}
+
+/**
+ *  Checks to see if the song is running or if the "dirty" flag had been
+ *  set.  The obtuse code here helps in debugging.
  */
 
 bool
-qseqbase::needs_update () const
+qperfbase::needs_update () const
 {
-    bool dirty = const_cast<qseqbase *>(this)->check_dirty();
-    perform & ncp = const_cast<perform &>(perf());
-    return ncp.needs_update(seq().number()) || dirty;
-}
+    bool result = const_cast<qperfbase *>(this)->check_dirty();
+    if (! result)
+        result = perf().is_running();
 
-/**
- *  Set the measures value, using the given parameter, and some internal
- *  values passed to apply_length().
- *
- * \param len
- *      Provides the sequence length, in measures.
- */
-
-void
-qseqbase::set_measures (int len)
-{
-    seq().apply_length(len);
-    set_dirty();
-}
-
-/**
- *
- */
-
-int
-qseqbase::get_measures ()
-{
-    return seq().get_measures();
+    return result;
 }
 
 /**
@@ -225,10 +241,11 @@ qseqbase::get_measures ()
  */
 
 void
-qseqbase::convert_xy (int x, int y, midipulse & tick, int & note)
+qperfbase::convert_x (int x, midipulse & tick)
 {
-    tick = x * m_zoom;
-    note = (m_total_height - y - 2) / m_unit_height;
+    midipulse tick_offset = 0;                  // it's always this!!!
+    tick = x * m_perf_scale_x_zoom;
+    tick += tick_offset;
 }
 
 /**
@@ -236,14 +253,34 @@ qseqbase::convert_xy (int x, int y, midipulse & tick, int & note)
  */
 
 void
-qseqbase::convert_tn (midipulse ticks, int note, int & x, int & y)
+qperfbase::convert_xy (int x, int y, midipulse & tick, int & seq)
+{
+//  tick = x * m_zoom;
+//  seq = (m_total_height - y - 2) / m_unit_height;
+
+    midipulse tick_offset =  0;                 // again, always 0!!!
+    tick = x * m_perf_scale_x_zoom;
+    seq = y / c_names_y;
+    tick += tick_offset;
+    if (seq >= c_max_sequence)
+        seq = c_max_sequence - 1;
+
+    if (seq < 0)
+        seq = 0;
+}
+
+/**
+ *
+ */
+
+void
+qperfbase::convert_ts (midipulse ticks, int seq, int & x, int & y)
 {
     x = ticks /  m_zoom;
-    y = m_total_height - ((note + 1) * m_unit_height) - 1;
+    y = m_total_height - ((seq + 1) * m_unit_height) - 1;
 }
 
 /**
- *  See seqroll::convert_sel_box_to_rect() for a potential upgrade.
  *
  * \param tick_s
  *      The starting tick of the rectangle.
@@ -251,55 +288,34 @@ qseqbase::convert_tn (midipulse ticks, int note, int & x, int & y)
  * \param tick_f
  *      The finishing tick of the rectangle.
  *
- * \param note_h
- *      The high note of the rectangle.
+ * \param seq_h
+ *      The high sequence row of the rectangle.
  *
- * \param note_l
- *      The low note of the rectangle.
+ * \param seq_l
+ *      The low sequence row of the rectangle.
  *
  * \param [out] r
  *      The destination rectangle for the calculations.
  */
 
 void
-qseqbase::convert_tn_box_to_rect
+qperfbase::convert_ts_box_to_rect
 (
-    midipulse tick_s, midipulse tick_f, int note_h, int note_l,
+    midipulse tick_s, midipulse tick_f, int seq_h, int seq_l,
     seq64::rect & r
 )
 {
     int x1, y1, x2, y2;
-    convert_tn(tick_s, note_h, x1, y1);         /* convert box to X,Y values */
-    convert_tn(tick_f, note_l, x2, y2);
+    convert_ts(tick_s, seq_h, x1, y1);         /* convert box to X,Y values */
+    convert_ts(tick_f, seq_l, x2, y2);
     rect::xy_to_rect(x1, y1, x2, y2, r);
     r.height_incr(m_unit_height);
-}
-
-/**
- *  Get the box that selected elements are in, then adjust for clipboard
- *  being shifted to tick 0.
- */
-
-void
-qseqbase::start_paste ()
-{
-    snap_x(m_current_x);
-    snap_y(m_current_x);
-    m_drop_x = m_current_x;
-    m_drop_y = m_current_y;
-    m_paste = true;
-
-    midipulse tick_s, tick_f;
-    int note_l, note_h;
-    m_seq.get_clipboard_box(tick_s, note_h, tick_f, note_l);
-    convert_tn_box_to_rect(tick_s, tick_f, note_h, note_l, m_selected);
-    m_selected.xy_incr(m_drop_x, m_drop_y - m_selected.y());
 }
 
 }           // namespace seq64
 
 /*
- * qseqbase.cpp
+ * qperfbase.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

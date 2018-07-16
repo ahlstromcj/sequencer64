@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-07-04
+ * \updates       2018-07-13
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -6417,7 +6417,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
  *  This code handles the use of the Shift key to toggle the mute state of all
  *  other sequences.  See mainwid::on_button_release_event().  If the Shift
  *  key is pressed, toggle the mute state of all other sequences.  Inactive
- *  sequences are skipped.
+ *  sequences are skipped.  Compare it to toggle_other_names().
  *
  * \param seqnum
  *      The sequence that is being clicked on.  It must be active in order to
@@ -6468,7 +6468,7 @@ perform::toggle_other_seqs (int seqnum, bool isshiftkey)
  *  This code handles the use of the Shift key to toggle the mute state of all
  *  other sequences.  See perfnames::on_button_press_event().  If the Shift
  *  key is pressed, toggle the mute state of all other sequences.
- *  Inactive sequences are skipped.
+ *  Inactive sequences are skipped.  Compare it to toggle_other_seqs().
  *
  * \param seqnum
  *      The sequence that is being clicked on.  It must be active in order to
@@ -6505,6 +6505,57 @@ perform::toggle_other_names (int seqnum, bool isshiftkey)
             get_sequence(seqnum)->toggle_song_mute();   /* already tested   */
         }
     }
+    return result;
+}
+
+/**
+ *  Toggles sequences.  Useful in perfnames, taken from
+ *  perfnames::on_button_press_event() so that it can be re-used in qperfnames.
+ */
+
+bool
+perform::toggle_sequences (int seqnum, bool isshiftkey)
+{
+#define USE_THIS_WORKING_CODE
+#ifdef USE_THIS_WORKING_CODE
+    bool result = toggle_other_names(seqnum, isshiftkey);
+#else
+    bool result = false;
+    if (is_active(seqnum))
+    {
+        if (isshiftkey)
+        {
+            /*
+             *  If the Shift key is pressed, toggle the mute state of all
+             *  other sequences.  Inactive sequences are skipped.
+             */
+
+            for (int s = 0; s < m_sequence_high; ++s)
+            {
+                if (s != seqnum)
+                {
+                    sequence * seq = get_sequence(s);
+                    if (not_nullptr(seq))
+                    {
+                        bool muted = seq->get_song_mute();
+                        seq->set_song_mute(! muted);
+                        result = true;
+                    }
+                }
+            }
+        }
+        else
+        {
+            sequence * seq = get_sequence(seqnum);
+            if (not_nullptr(seq))
+            {
+                bool muted = seq->get_song_mute();
+                seq->set_song_mute(! muted);
+                result = true;
+            }
+        }
+    }
+#endif
     return result;
 }
 

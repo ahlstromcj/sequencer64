@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-04-02
+ * \updates       2018-07-15
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -42,12 +42,16 @@
 #include <QPen>
 #include <QMouseEvent>
 
-#include "Globals.hpp"
 #include "globals.h"
 #include "gui_palette_qt5.hpp"
+#include "qperfbase.hpp"
 #include "rect.hpp"
 
-const int c_perfroll_background_x = (c_ppqn * 4 * 16) / c_perf_scale_x;
+/*
+ * TODO: allow runtime adjustment of PPQN here.
+ */
+
+const int c_perfroll_background_x = (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_scale_x;
 const int c_perfroll_size_box_w = 3;
 const int c_perfroll_size_box_click_w = c_perfroll_size_box_w + 1 ;
 
@@ -58,74 +62,55 @@ const int c_perfroll_size_box_click_w = c_perfroll_size_box_w + 1 ;
 namespace seq64
 {
     class perform;
+    class qperfeditframe;
 
 /**
  * The grid in the song editor for setting out sequences
  */
 
-class qperfroll : public QWidget, gui_palette_qt5
+class qperfroll : public QWidget, private gui_palette_qt5, public qperfbase
 {
+    friend class qperfeditframe;    /* for scrolling a horizontal page  */
+
     Q_OBJECT
 
 public:
 
-    explicit qperfroll (perform & p, QWidget * parent);
+    qperfroll
+    (
+        perform & p,
+        int zoom                = SEQ64_DEFAULT_PERF_ZOOM,
+        int snap                = SEQ64_DEFAULT_SNAP,
+        int ppqn                = SEQ64_USE_DEFAULT_PPQN,
+        qperfeditframe * frame  = nullptr,
+        QWidget * parent        = nullptr
+    );
 
-    virtual ~qperfroll ()
-    {
-        // no code needed
-    }
+    virtual ~qperfroll ();
 
-    int getSnap () const;
-    void set_snap (int getSnap);
     void set_guides (int snap, int measure, int beat);
     void update_sizes ();
     void increment_size ();
-    void zoom_in ();
-    void zoom_out ();
 
-protected:
+protected:      // Qt event-function overrides
 
-    // override painting event to draw on the frame
-
-    void paintEvent (QPaintEvent *);
-
-    // override mouse events for interaction
-
+    void paintEvent (QPaintEvent *);    // override painting event to draw on frame
     void mousePressEvent (QMouseEvent * event);
     void mouseReleaseEvent (QMouseEvent * event);
     void mouseMoveEvent (QMouseEvent * event);
-
-    // override keyboard events for interaction
-
     void keyPressEvent (QKeyEvent * event);
     void keyReleaseEvent (QKeyEvent * event);
-
-    // override the sizehint to set our own defaults
-
-    QSize sizeHint () const;
+    QSize sizeHint () const;            // override sizehint to set our defaults
 
 public slots:
 
     void undo ();
     void redo ();
+    void conditional_update ();
 
 private:
 
-    const perform & perf () const
-    {
-        return mPerf;
-    }
-
-    perform & perf ()
-    {
-        return mPerf;
-    }
-
-    void convert_xy (int x, int y, midipulse & ticks, int & seq);
-    void convert_x (int x, midipulse & ticks);
-    void snap_x (int & x);
-    void snap_y (int & y);
+    virtual void set_adding (bool adding);
 
     // We could add these function to perform and here:
     //
@@ -136,25 +121,17 @@ private:
     void add_trigger (int seq, midipulse tick);
     void half_split_trigger (int seq, midipulse tick);
     void delete_trigger (int seq, midipulse tick);
-    void set_adding (bool adding);
+    void follow_progress ();
 
 private:
 
-    perform & mPerf;
+    qperfeditframe * m_parent_frame;
     QTimer * mTimer;
     QFont mFont;
-    seq64::rect m_old;      // why do we need the namespace here?
-    int m_snap;
     int m_measure_length;
     int m_beat_length;
     int m_roll_length_ticks;
-    int m_drop_x, m_drop_y;
-    int m_current_x, m_current_y;
-    int m_drop_sequence;
-    int m_zoom;
-
-    // sequence selection
-
+    int m_drop_sequence;                    // sequence selection
     midipulse m_tick_s;                     // start of tick window
     midipulse m_tick_f;                     // end of tick window
     int m_seq_h;                            // highest seq in window
@@ -163,11 +140,8 @@ private:
     midipulse m_drop_tick_trigger_offset;   // ticks clicked from trigger
     midipulse mLastTick;                    // tick using at last mouse event
     bool m_sequence_active[c_max_sequence];
-    bool m_moving;
     bool mBoxSelect;
-    bool m_growing;
     bool m_grow_direction;
-    bool m_adding;
     bool m_adding_pressed;
 
 };          // class qperfroll

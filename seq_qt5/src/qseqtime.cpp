@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-02
+ * \updates       2018-07-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -52,10 +52,11 @@ qseqtime::qseqtime
     perform & p,
     sequence & seq,
     int zoom,
+    int ppqn,
     QWidget * parent
 ) :
     QWidget                 (parent),
-    qseqbase                (p, seq, zoom, SEQ64_DEFAULT_SNAP),
+    qseqbase                (p, seq, zoom, SEQ64_DEFAULT_SNAP, ppqn),
     m_timer                 (nullptr),
     m_font                  ()
 {
@@ -88,6 +89,7 @@ qseqtime::paintEvent (QPaintEvent *)
     QPainter painter(this);
     QBrush brush(Qt::lightGray, Qt::SolidPattern);
     QPen pen(Qt::black);
+    pen.setStyle(Qt::SolidLine);
     m_font.setPointSize(6);
     painter.setPen(pen);
     painter.setBrush(brush);

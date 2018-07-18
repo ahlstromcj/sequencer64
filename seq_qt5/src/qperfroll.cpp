@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-15
+ * \updates       2018-07-17
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -66,8 +66,8 @@ qperfroll::qperfroll
         p, zoom, snap, ppqn, c_names_y, c_names_y*c_max_sequence
     ),
     m_parent_frame      (frame),
-    mTimer              (nullptr),
-    mFont               (),
+    m_timer             (nullptr),
+    m_font              (),
     m_measure_length    (0),
     m_beat_length       (0),
     m_roll_length_ticks (0),
@@ -90,13 +90,13 @@ qperfroll::qperfroll
     for (int i = 0; i < c_max_sequence; ++i)
         m_sequence_active[i] = false;
 
-    m_roll_length_ticks = perf().get_max_trigger();
+    m_roll_length_ticks  = perf().get_max_trigger();
     m_roll_length_ticks -= (m_roll_length_ticks % (perf().ppqn() * 16));
-    m_roll_length_ticks +=  perf().ppqn() * 64;         // ?????
-    mTimer = new QTimer(this);                          // timer for redraws
-    mTimer->setInterval(usr().window_redraw_rate());    // 50
-    QObject::connect(mTimer, SIGNAL(timeout()), this, SLOT(conditional_update()));
-    mTimer->start();
+    m_roll_length_ticks += perf().ppqn() * 64;              // ?????
+    m_timer = new QTimer(this);                             // timer for redraws
+    m_timer->setInterval(usr().window_redraw_rate());       // 50
+    QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(conditional_update()));
+    m_timer->start();
 }
 
 /**
@@ -105,7 +105,7 @@ qperfroll::qperfroll
 
 qperfroll::~qperfroll ()
 {
-    mTimer->stop();
+    m_timer->stop();
 }
 
 /**
@@ -124,7 +124,6 @@ qperfroll::conditional_update ()
         update();
     }
 }
-
 
 /**
  *  Checks the position of the tick, and, if it is in a different piano-roll
@@ -151,13 +150,12 @@ qperfroll::paintEvent (QPaintEvent *)
     QBrush brush(Qt::NoBrush);
     QPen pen(Qt::black);
     pen.setStyle(Qt::SolidLine);
-    mFont.setPointSize(6);
+    m_font.setPointSize(6);
     painter.setPen(pen);
     painter.setBrush(brush);
-    painter.setFont(mFont);
+    painter.setFont(m_font);
     painter.drawRect(0, 0, width(), height());      // EXPERIMENTAL
 
-    int beats = m_measure_length / m_beat_length;
     for (int i = 0; i < height(); i += c_names_y)
     {
         pen.setStyle(Qt::SolidLine);            /* draw horizontal lines    */
@@ -166,26 +164,44 @@ qperfroll::paintEvent (QPaintEvent *)
         painter.drawLine(0, i, width(), i);
     }
 
-    for (int i = 0; i < width(); )              /* draw vertical lines      */
+    /*
+     *  Draw the vertical lines for the measures and the beats.
+     */
+
+    midipulse tick0 = scroll_offset_ticks();
+    midipulse windowticks = length_ticks(width());
+    midipulse tick1 = tick0 + windowticks;
+    midipulse tickstep = 1;
+    pen.setStyle(Qt::SolidLine);
+    for (midipulse tick = tick0; tick < tick1; tick += tickstep)
     {
-        if (i % beats == 0)                     /* solid line on every beat */
+        if (tick % measure_length() == 0)                   /* measure  */
         {
-            pen.setStyle(Qt::SolidLine);
+            int x_pos = position_pixel(tick);
+            pen.setColor(Qt::black);
+            pen.setWidth(2);
+            painter.setPen(pen);
+            painter.drawLine(x_pos, 0, x_pos, height());
+        }
+        else if (tick % beat_length() == 0)                 /* measure  */
+        {
+            int x_pos = position_pixel(tick);
+            pen.setColor(Qt::lightGray);
+            pen.setWidth(1);
+            painter.setPen(pen);
+            painter.drawLine(x_pos, 0, x_pos, height());
+        }
+#if USE_TOO_MANY_LINES
+        else if (tick % snap() == 0)                        /* snap     */
+        {
+            int x_pos = position_pixel(tick);
+            pen.setColor(Qt::lightGray);
+            pen.setWidth(1);
+            painter.setPen(pen);
+            painter.drawLine(x_pos, 0, x_pos, height());
             pen.setColor(Qt::black);
         }
-        else
-        {
-            pen.setStyle(Qt::SolidLine);        /* pen.setStyle(Qt::DotLine)*/
-            pen.setColor(Qt::lightGray);
-        }
-
-        int line_x = i * m_beat_length / perf_scale_x_zoom();
-        painter.setPen(pen);
-        painter.drawLine(line_x, 1, line_x, height() - 1);
-        if (m_beat_length < perf().ppqn() / 2)      // jump 2 if 16th notes
-            i += perf().ppqn() / m_beat_length;
-        else
-            ++i;
+#endif
     }
 
     int y_s = 0;                                    // draw background
@@ -196,7 +212,7 @@ qperfroll::paintEvent (QPaintEvent *)
     bool selected;
 
     midipulse tick_offset = 0;              // long tick_offset = c_ppqn * 16;
-    int x_offset = tick_offset / perf_scale_x_zoom();
+    int x_offset = tick_offset / scale_zoom();
     for (int y = y_s; y <= y_f; ++y)
     {
         int seqId = y;
@@ -209,20 +225,20 @@ qperfroll::paintEvent (QPaintEvent *)
 
                 midipulse seq_length = seq->get_length();
                 seq->reset_draw_trigger_marker();
-                int length_w = seq_length / perf_scale_x_zoom();
+                int length_w = seq_length / scale_zoom();
                 while (seq->get_next_trigger(tick_on, tick_off, selected, offset))
                 {
                     if (tick_off > 0)
                     {
-                        int x_on = tick_on / perf_scale_x_zoom();
-                        int x_off = tick_off / perf_scale_x_zoom();
+                        int x_on = tick_on / scale_zoom();
+                        int x_off = tick_off / scale_zoom();
                         int w = x_off - x_on + 1;
                         int x = x_on;
                         int y = c_names_y * seqId + 1;  // + 2
                         int h = c_names_y - 2; // - 4
                         x = x - x_offset;   // adjust to screen coordinates
                         if (selected)
-                            pen.setColor(Qt::red);
+                            pen.setColor( "orange" /*Qt::red*/ );
                         else
                             pen.setColor(Qt::black);
 
@@ -267,7 +283,7 @@ qperfroll::paintEvent (QPaintEvent *)
                         while (tick_marker < tick_off)
                         {
                             midipulse tick_marker_x =
-                                tick_marker / perf_scale_x_zoom() - x_offset;
+                                tick_marker / scale_zoom() - x_offset;
 
                             int lowest_note;  // = seq->get_lowest_note_event();
                             int highest_note; // = seq->get_highest_note_event();
@@ -287,7 +303,11 @@ qperfroll::paintEvent (QPaintEvent *)
                             int velocity;
                             draw_type_t dt;
                             seq->reset_draw_marker();
-                            pen.setColor(Qt::black);
+                            if (seq->get_transposable())
+                                pen.setColor(Qt::black);
+                            else
+                                pen.setColor(Qt::red);
+
                             painter.setPen(pen);
                             do
                             {
@@ -380,7 +400,7 @@ qperfroll::paintEvent (QPaintEvent *)
      */
 
     midipulse tick = perf().get_tick();         // draw playhead
-    int progress_x = tick / perf_scale_x_zoom();
+    int progress_x = tick / scale_zoom();
     pen.setColor(Qt::red);
     pen.setStyle(Qt::SolidLine);
     if (usr().progress_bar_thick())
@@ -401,7 +421,7 @@ qperfroll::sizeHint() const
 {
     return QSize
     (
-        perf().get_max_trigger() / perf_scale_x_zoom() + 2000,
+        perf().get_max_trigger() / scale_zoom() + 2000,
         c_names_y * c_max_sequence + 1
     );
 }
@@ -496,7 +516,7 @@ qperfroll::mousePressEvent(QMouseEvent *event)
 
                 int clickminus = c_perfroll_size_box_click_w - 1;
                 int clickbox = c_perfroll_size_box_click_w *
-                    perf_scale_x_zoom();
+                    scale_zoom();
 
                 if
                 (
@@ -801,6 +821,7 @@ qperfroll::set_guides (int snap, int measure, int beat)
     set_snap(snap);
     m_measure_length = measure;
     m_beat_length = beat;
+    set_dirty();
 }
 
 /**

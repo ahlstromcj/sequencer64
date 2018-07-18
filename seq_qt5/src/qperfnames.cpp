@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-14
+ * \updates       2018-07-17
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -65,13 +65,13 @@ qperfnames::qperfnames (perform & p, QWidget * parent)
     QWidget             (parent),
     gui_palette_qt5     (),
     m_perform           (p),
-//  m_timer             (nullptr),
-    m_font               ("Monospace"),
+    m_font              ("Monospace"),
     m_sequence_active   (),
     m_sequence_max      (c_max_sequence),
     m_nametext_x        (6 * 2 + 6 * 20),       // not used!
     m_nametext_y        (c_names_y)
 {
+    m_font.setBold(true);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
     for (int i = 0; i < c_max_sequence; ++i)
         m_sequence_active[i] = false;
@@ -98,7 +98,7 @@ qperfnames::paintEvent (QPaintEvent *)
     QBrush brush(Qt::lightGray);
     pen.setStyle(Qt::SolidLine);
     brush.setStyle((Qt::SolidPattern));
-    m_font.setPointSize(6);
+    m_font.setPointSize(7);     // 6
     m_font.setLetterSpacing(QFont::AbsoluteSpacing, 1);
     m_font.setStyleHint(QFont::Monospace);               // EXPERIMENT
     painter.setPen(pen);
@@ -141,7 +141,7 @@ qperfnames::paintEvent (QPaintEvent *)
                 );
                 painter.rotate(270);
                 m_font.setPointSize(9);
-                m_font.setBold(true);
+                // m_font.setBold(true);
                 m_font.setLetterSpacing(QFont::AbsoluteSpacing, 2);
                 painter.setFont(m_font);
                 painter.drawText(0, 0, bankName);

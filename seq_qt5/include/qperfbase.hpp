@@ -1,5 +1,5 @@
-#ifndef SEQ64_QSEQBASE_HPP
-#define SEQ64_QSEQBASE_HPP
+#ifndef SEQ64_QPERFBASE_HPP
+#define SEQ64_QPERFBASE_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-14
- * \updates       2018-07-16
+ * \updates       2018-07-17
  * \license       GNU GPLv2 or above
  *
  *  This class WILL BE the base class for qseqroll, qseqdata, qtriggereditor,
@@ -41,6 +41,7 @@
  */
 
 #include "app_limits.h"                 /* SEQ64_DEFAULT_ZOOM, _SNAP    */
+#include "Globals.hpp"                  /* c_ppqn for TESTING */
 #include "rect.hpp"
 
 /*
@@ -82,22 +83,25 @@ private:
     seq64::rect m_selected;
 
     /**
-     *  Zoom setting, means that one pixel == m_zoom ticks.
+     *  Zoom setting, means that one pixel == m_zoom ticks.  That is, the
+     *  units of zoom are ticks/pixel.
      */
 
     int m_zoom;
 
     /**
-     *  X scaling.
+     *  X scaling.  Allows the caller to adjust the overall zoom.   A
+     *  constant.
      */
 
-    int m_perf_scale_x;
+    const int m_scale;
 
     /**
-     *  Zoom times x scale, to save a very common calculation.
+     *  Zoom times the scale, to save a very common calculation,
+     *  m_zoom * m_scale.
      */
 
-    int m_perf_scale_x_zoom;
+    int m_scale_zoom;
 
     /**
      *  The grid-snap setting for the piano roll grid.  Same meaning as for the
@@ -112,6 +116,18 @@ private:
      */
 
     int m_ppqn;
+
+    /**
+     *  Provides the length of a beat, in ticks.
+     */
+
+    midipulse m_beat_length;
+
+    /**
+     *  Provides the length of a measure or bar, in ticks.
+     */
+
+    midipulse m_measure_length;
 
     /**
      *  Set when highlighting a bunch of events.
@@ -293,14 +309,14 @@ public:
         return m_zoom;
     }
 
-    int perf_scale_x () const
+    int scale () const
     {
-        return m_perf_scale_x;
+        return m_scale;
     }
 
-    int perf_scale_x_zoom () const
+    int scale_zoom () const
     {
-        return m_perf_scale_x_zoom;
+        return m_scale_zoom;
     }
 
     bool is_dirty () const
@@ -353,6 +369,16 @@ public:
     int ppqn () const
     {
         return m_ppqn;
+    }
+
+    midipulse beat_length () const
+    {
+        return m_beat_length;
+    }
+
+    midipulse measure_length () const
+    {
+        return m_measure_length;
     }
 
     bool selecting () const
@@ -684,10 +710,30 @@ protected:
     }
 
     /*
-     * Takes screen corrdinates, give us notes/keys (to be generalized to
+     * Takes screen coordinates, give us notes/keys (to be generalized to
      * other vertical user-interface quantities) and ticks (always the
      * horizontal user-interface quantity).
      */
+
+    midipulse length_ticks (int pixels) const
+    {
+        return pixels * m_scale_zoom;
+    }
+
+    midipulse position_tick (int pixel)
+    {
+        return m_scroll_offset_ticks + length_ticks(pixel-m_scroll_offset_x);
+    }
+
+    int length_pixels (midipulse ticks) const
+    {
+        return ticks / m_scale_zoom;
+    }
+
+    int position_pixel (midipulse tick)
+    {
+        return m_scroll_offset_x + length_pixels(tick-m_scroll_offset_ticks);
+    }
 
     void convert_x (int x, midipulse & tick);
     void convert_xy (int x, int y, midipulse & ticks, int & seq);
@@ -715,7 +761,7 @@ protected:
 
 }           // namespace seq64
 
-#endif      // SEQ64_QSEQBASE_HPP
+#endif      // SEQ64_QPERFBASE_HPP
 
 /*
  * qperfbase.hpp

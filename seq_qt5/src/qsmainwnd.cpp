@@ -337,7 +337,8 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
         );
         connect         // new standalone sequence editor
         (
-            m_live_frame, SIGNAL(callEditorEx(int)), this, SLOT(load_qseqedit(int))
+            m_live_frame, SIGNAL(callEditorEx(int)),
+            this, SLOT(load_qseqedit(int))
         );
     }
 
@@ -361,7 +362,8 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
      */
 
     int width = usr().scale_size(800);
-    int height = usr().scale_size(450);
+//  int height = usr().scale_size(450);
+    int height = usr().scale_size(480);
     resize(width, height);
     show();
 }

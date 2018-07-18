@@ -126,8 +126,8 @@ private:
 private:
 
     qperfeditframe * m_parent_frame;
-    QTimer * mTimer;
-    QFont mFont;
+    QTimer * m_timer;
+    QFont m_font;
     int m_measure_length;
     int m_beat_length;
     int m_roll_length_ticks;

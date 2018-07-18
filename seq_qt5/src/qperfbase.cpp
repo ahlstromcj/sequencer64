@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-14
- * \updates       2018-07-15
+ * \updates       2018-07-17
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -62,10 +62,12 @@ qperfbase::qperfbase
     m_old                   (),
     m_selected              (),
     m_zoom                  (zoom),
-    m_perf_scale_x          (c_perf_scale_x),   //       / 2),
-    m_perf_scale_x_zoom     (m_perf_scale_x * m_zoom),
+    m_scale                 (c_perf_scale_x / 4),
+    m_scale_zoom            (m_scale * m_zoom),
     m_snap                  (snap),
     m_ppqn                  (0),
+    m_beat_length           (0),
+    m_measure_length        (0),
     m_selecting             (false),
     m_adding                (false),
     m_moving                (false),
@@ -104,7 +106,7 @@ qperfbase::zoom_in ()
     if (m_zoom > 1)
     {
         m_zoom /= 2;
-        m_perf_scale_x_zoom = m_zoom * m_perf_scale_x;
+        m_scale_zoom = m_zoom * m_scale;
         set_dirty();
     }
 }
@@ -119,7 +121,7 @@ qperfbase::zoom_out ()
     if (m_zoom < 64)    // 32
     {
         m_zoom *= 2;
-        m_perf_scale_x_zoom = m_zoom * m_perf_scale_x;
+        m_scale_zoom = m_zoom * m_scale;
         set_dirty();
     }
 }
@@ -134,7 +136,7 @@ qperfbase::set_zoom (int z)
     if (z != m_zoom)
     {
         m_zoom = z;         // must be validated by the caller
-        m_perf_scale_x_zoom = m_zoom * m_perf_scale_x;
+        m_scale_zoom = m_zoom * m_scale;
         set_dirty();
     }
 }
@@ -146,12 +148,12 @@ qperfbase::set_zoom (int z)
  *  construct is parts-per-quarter-note times 4 quarter notes times 4
  *  sixteenth notes in a bar.  (We think...)
  *
- *  The m_perf_scale_x member starts out at c_perf_scale_x, which is 32 ticks
+ *  The m_scale member starts out at c_perf_scale_x, which is 32 ticks
  *  per pixel at the default tick rate of 192 PPQN.  We adjust this now.
  *  But note that this calculation still involves the c_perf_scale_x constant.
  *
  * \todo
- *      Resolve the issue of c_perf_scale_x versus m_perf_scale_x in perfroll.
+ *      Resolve the issue of c_perf_scale_x versus m_scale in perfroll.
  */
 
 void
@@ -162,12 +164,14 @@ qperfbase::set_ppqn (int ppqn)
         m_ppqn = choose_ppqn(ppqn);
         // m_ticks_per_bar = m_ppqn * m_divs_per_beat;             /* 16 */
         // m_background_x = (m_ppqn * 4 * 16) / c_perf_scale_x;
-        // m_perf_scale_x = m_zoom * m_ppqn / SEQ64_DEFAULT_PPQN;
-        // m_w_scale_x = sm_perfroll_size_box_click_w * m_perf_scale_x;
-        // if (m_perf_scale_x == 0)
-        //     m_perf_scale_x = 1;
-        m_perf_scale_x = c_perf_scale_x * m_ppqn / SEQ64_DEFAULT_PPQN;
-        m_perf_scale_x_zoom = m_zoom * m_perf_scale_x;
+        // m_scale = m_zoom * m_ppqn / SEQ64_DEFAULT_PPQN;
+        // m_w_scale_x = sm_perfroll_size_box_click_w * m_scale;
+        // if (m_scale == 0)
+        //     m_scale = 1;
+        ///// m_scale = c_perf_scale_x * m_ppqn / SEQ64_DEFAULT_PPQN;
+        m_scale_zoom = m_zoom * m_scale;
+        m_beat_length = m_ppqn;
+        m_measure_length = m_beat_length * 4;
     }
 }
 
@@ -214,7 +218,7 @@ qperfbase::set_scroll_y (int y)
 void
 qperfbase::snap_x (int & x)
 {
-    int mod = m_snap / m_perf_scale_x_zoom;
+    int mod = m_snap / m_scale_zoom;
     if (mod <= 0)
         mod = 1;
 
@@ -244,7 +248,7 @@ void
 qperfbase::convert_x (int x, midipulse & tick)
 {
     midipulse tick_offset = 0;                  // it's always this!!!
-    tick = x * m_perf_scale_x_zoom;
+    tick = x * m_scale_zoom;
     tick += tick_offset;
 }
 
@@ -259,7 +263,7 @@ qperfbase::convert_xy (int x, int y, midipulse & tick, int & seq)
 //  seq = (m_total_height - y - 2) / m_unit_height;
 
     midipulse tick_offset =  0;                 // again, always 0!!!
-    tick = x * m_perf_scale_x_zoom;
+    tick = x * m_scale_zoom;
     seq = y / c_names_y;
     tick += tick_offset;
     if (seq >= c_max_sequence)

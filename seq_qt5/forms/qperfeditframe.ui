@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>660</width>
-    <height>380</height>
+    <height>424</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -34,9 +34,6 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <property name="spacing">
-      <number>10</number>
-     </property>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_8">
        <item>

@@ -101,6 +101,8 @@ signals:
 
 public slots:
 
+    void conditional_update ();
+
 };          // class qperftime
 
 }           // namespace seq64

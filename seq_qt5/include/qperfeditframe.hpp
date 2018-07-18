@@ -83,9 +83,9 @@ public:
 private:
 
     void update_sizes ();
-    void set_snap(int a_snap);
-    void set_guides();
-    void grow();
+    void set_snap (int a_snap);
+    void set_guides ();
+    void grow ();
 
     perform & perf ()
     {

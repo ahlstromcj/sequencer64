@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-15
+ * \updates       2018-07-18
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -173,7 +173,7 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
     ui->m_toggle_follow->setCheckable(true);
     ui->m_toggle_follow->setToolTip
     (
-        "If active, the piano roll scrolls to "
+        "If active, the song roll scrolls to "
         "follow the progress bar in playback."
     );
 
@@ -259,11 +259,13 @@ qperfeditframe::follow_progress ()
         QScrollBar * hadjust = m_scroll_area->horizontalScrollBar();
         int scrollx = hadjust->value();
         midipulse progress_tick = perf().get_tick();
+        // printf("tick = %ld\n", progress_tick);
         if (progress_tick > 0 && m_perfroll->progress_follow())
         {
-            int prog_x = progress_tick / m_perfroll->zoom();
+            // int prog_x = progress_tick / m_perfroll->zoom();
+            int prog_x = m_perfroll->length_pixels(progress_tick);
             int page = prog_x / w;
-            if (page != m_perfroll->scroll_page() || (page == 0 && scrollx != 0))
+            if (page > m_perfroll->scroll_page() || (page == 0 && scrollx != 0))
             {
                 m_perfroll->scroll_page(page);
                 m_perftime->scroll_page(page);
@@ -361,18 +363,25 @@ qperfeditframe::set_beat_width (int bw)
 }
 
 /**
- *
+ *  These values are ticks, but passed as integers.
  */
 
 void
 qperfeditframe::set_guides ()
 {
     int ppqn = SEQ64_DEFAULT_PPQN * 4;      // TODO: allow runtime changes
-    midipulse measure_ticks = (ppqn * 4) * mbeats_per_measure / mbeat_width;
-    midipulse snap_ticks =  measure_ticks / m_snap;
-    midipulse beat_ticks = (ppqn * 4) / mbeat_width;
-    m_perfroll->set_guides(snap_ticks, measure_ticks, beat_ticks);
-    m_perftime->set_guides(snap_ticks, measure_ticks);
+    int measure = (ppqn * 4) * mbeats_per_measure / mbeat_width;
+    int snap = m_snap;        // measure / m_snap;
+    int beat = (ppqn * 4) / mbeat_width;
+    m_perfroll->set_guides(snap, measure, beat);
+    m_perftime->set_guides(snap, measure);
+#ifdef PLATFORM_DEBUG_TMI
+    printf
+    (
+        "set_guides(snap = %d, measure = %d, beat = %d ticks\n",
+        snap, measure, beat
+    );
+#endif
 }
 
 /**

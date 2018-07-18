@@ -2047,24 +2047,27 @@ void
 qseqeditframe64::follow_progress ()
 {
     int w = m_seqroll->window_width();
-    QScrollBar * hadjust = ui->rollScrollArea->h_scroll();
-    int scrollx = hadjust->value();
-    if (m_seqroll->get_expanded_record() && m_seq->get_recording())
+    if (w > 0)
     {
-        int newx = scrollx + w;
-        hadjust->setValue(newx);
-    }
-    else                                        /* use for non-recording */
-    {
-        midipulse progress_tick = m_seq->get_last_tick();
-        if (progress_tick > 0 && m_seqroll->progress_follow())
+        QScrollBar * hadjust = ui->rollScrollArea->h_scroll();
+        int scrollx = hadjust->value();
+        if (m_seqroll->get_expanded_record() && m_seq->get_recording())
         {
-            int prog_x = progress_tick / m_zoom;
-            int page = prog_x / w;
-            if (page != m_seqroll->scroll_page() || (page == 0 && scrollx != 0))
+            int newx = scrollx + w;
+            hadjust->setValue(newx);
+        }
+        else                                        /* use for non-recording */
+        {
+            midipulse progress_tick = m_seq->get_last_tick();
+            if (progress_tick > 0 && m_seqroll->progress_follow())
             {
-                m_seqroll->scroll_page(page);
-                hadjust->setValue(prog_x);      // set_scroll_x() not needed
+                int prog_x = progress_tick / m_zoom;
+                int page = prog_x / w;
+                if (page > m_seqroll->scroll_page() || (page == 0 && scrollx != 0))
+                {
+                    m_seqroll->scroll_page(page);
+                    hadjust->setValue(prog_x);      // set_scroll_x() not needed
+                }
             }
         }
     }

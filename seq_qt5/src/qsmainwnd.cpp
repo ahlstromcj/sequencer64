@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-15
+ * \updates       2018-07-18
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -39,14 +39,15 @@
 #include "file_functions.hpp"           /* seq64::file_extension_match()    */
 #include "keystroke.hpp"
 #include "perform.hpp"
+#include "qperfeditframe64.hpp"
 #include "qperfeditframe.hpp"
 #include "qsmacros.hpp"                 /* QS_TEXT_CHAR() macro             */
 #include "qsabout.hpp"
 #include "qsbuildinfo.hpp"
 #include "qseditoptions.hpp"
 #include "qseqeditex.hpp"
-#include "qseqeditframe.hpp"            /* Kepler34 version                 */
 #include "qseqeditframe64.hpp"          /* Sequencer64 version              */
+#include "qseqeditframe.hpp"            /* Kepler34 version                 */
 #include "qskeymaps.hpp"                /* mapping between Gtkmm and Qt     */
 #include "qsmaintime.hpp"
 #include "qsmainwnd.hpp"
@@ -95,6 +96,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     QMainWindow         (parent),
     ui                  (new Ui::qsmainwnd),
     m_live_frame        (nullptr),
+    m_song_frame64      (nullptr),
     m_song_frame        (nullptr),
     m_edit_frame64      (nullptr),
     m_edit_frame        (nullptr),
@@ -157,10 +159,36 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     );
 
     m_dialog_prefs = new qseditoptions(m_main_perf, this);
-    m_song_frame = new qperfeditframe(m_main_perf, ui->SongTab);
+    if (usr().seqedit_in_tab())             // BOGUS BOGUS BOGUS
+        m_song_frame64 = new qperfeditframe64(m_main_perf, ui->SongTab);
+    else
+        m_song_frame = new qperfeditframe(m_main_perf, ui->SongTab);
+
     m_beat_ind = new qsmaintime(m_main_perf, this, 4, 4);
     mDialogAbout = new qsabout(this);
     mDialogBuildInfo = new qsbuildinfo(this);
+
+    if (not_nullptr(m_song_frame64))
+    {
+        ui->SongTabLayout->addWidget(m_song_frame64);
+        ui->cmb_beat_length->setCurrentText // pull defaults from song frame
+        (
+            QString::number(m_song_frame64->get_beat_width())
+        );
+        ui->cmb_beat_measure->setCurrentText
+        (
+            QString::number(m_song_frame64->get_beats_per_measure())
+        );
+        if (not_nullptr(m_beat_ind))
+        {
+            ui->lay_bpm->addWidget(m_beat_ind);
+            m_beat_ind->set_beat_width(m_song_frame64->get_beat_width());
+            m_beat_ind->set_beats_per_measure
+            (
+                m_song_frame64->get_beats_per_measure()
+            );
+        }
+    }
 
     if (not_nullptr(m_song_frame))
     {
@@ -535,6 +563,9 @@ qsmainwnd::open_file (const std::string & fn)
              *  m_live_frame->redraw();
              */
         }
+        if (not_nullptr(m_song_frame64))
+            m_song_frame64->update_sizes();
+
         if (not_nullptr(m_song_frame))
             m_song_frame->update_sizes();
 
@@ -902,6 +933,9 @@ qsmainwnd::updateBeatLength (int blIndex)
         break;
     }
 
+    if (not_nullptr(m_song_frame64))
+        m_song_frame64->set_beat_width(bl);
+
     if (not_nullptr(m_song_frame))
         m_song_frame->set_beat_width(bl);
 
@@ -938,6 +972,9 @@ void
 qsmainwnd::updatebeats_per_measure(int bmIndex)
 {
     int bm = bmIndex + 1;
+    if (not_nullptr(m_song_frame64))
+        m_song_frame64->set_beats_per_measure(bm);
+
     if (not_nullptr(m_song_frame))
         m_song_frame->set_beats_per_measure(bm);
 

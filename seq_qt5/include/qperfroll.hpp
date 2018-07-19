@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-15
+ * \updates       2018-07-18
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -62,6 +62,7 @@ const int c_perfroll_size_box_click_w = c_perfroll_size_box_w + 1 ;
 namespace seq64
 {
     class perform;
+    class qperfeditframe64;
     class qperfeditframe;
 
 /**
@@ -70,6 +71,7 @@ namespace seq64
 
 class qperfroll : public QWidget, private gui_palette_qt5, public qperfbase
 {
+    friend class qperfeditframe64;  /* for scrolling a horizontal page  */
     friend class qperfeditframe;    /* for scrolling a horizontal page  */
 
     Q_OBJECT
@@ -82,7 +84,8 @@ public:
         int zoom                = SEQ64_DEFAULT_PERF_ZOOM,
         int snap                = SEQ64_DEFAULT_SNAP,
         int ppqn                = SEQ64_USE_DEFAULT_PPQN,
-        qperfeditframe * frame  = nullptr,
+        // qperfeditframe * frame  = nullptr,
+        QWidget * frame         = nullptr,
         QWidget * parent        = nullptr
     );
 
@@ -125,7 +128,7 @@ private:
 
 private:
 
-    qperfeditframe * m_parent_frame;
+    qperfeditframe64 * m_parent_frame;
     QTimer * m_timer;
     QFont m_font;
     int m_measure_length;

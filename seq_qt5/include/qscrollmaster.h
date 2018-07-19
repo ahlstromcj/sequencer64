@@ -46,14 +46,7 @@ class QScrollBar;
 
 /*
  * Note that there is no namespace; the Qt uic specification does not seem to
- * support them well.
- */
-
-/*
- * Do not document a namespace.  It breaks Doxygen.
-
-namespace seq64
-{
+ * support them well.  Also note the lack of namespace seq64 for this class.
  */
 
 /**
@@ -134,10 +127,6 @@ protected:
     virtual void scrollContentsBy (int dx, int dy);     /* override */
 
 };          // class qscrollmaster
-
-/*
-}           // namespace seq64
- */
 
 #endif      // SEQ64_QSCROLLMASTER_HPP
 

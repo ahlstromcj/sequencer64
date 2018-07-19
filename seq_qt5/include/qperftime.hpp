@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-15
+ * \updates       2018-07-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -51,6 +51,8 @@
 namespace seq64
 {
     class perform;
+    class qperfeditframe64;
+    class qperfeditframe;
 
 /**
  * The time bar for the song editor
@@ -58,6 +60,7 @@ namespace seq64
 
 class qperftime : public QWidget, public qperfbase
 {
+    friend class qperfeditframe64;  /* for scrolling a horizontal page  */
     friend class qperfeditframe;    /* for scrolling a horizontal page  */
 
     Q_OBJECT

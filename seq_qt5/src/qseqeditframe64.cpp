@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-10
+ * \updates       2018-07-18
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -334,22 +334,6 @@ static const int s_rec_vol_count = sizeof(s_rec_vol_items) / sizeof(int);
 
 /**
  *
- * NOT YET USED.
-
-static int
-s_lookup_rec_vol (const std::string & volstring)
-{
-    int result = SEQ64_PRESERVE_VELOCITY;
-    if (volstring != "Free")
-    {
-        result = std::stoi(volstring);
-    }
-    return result;
-}
- */
-
-/**
- *
  * \param p
  *      Provides the perform object to use for interacting with this sequence.
  *      Among other things, this object provides the active PPQN.
@@ -469,7 +453,7 @@ qseqeditframe64::qseqeditframe64
     ui->dataScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     /*
-     * qseqevent
+     * qstriggereditor
      */
 
     m_seqevent = new qstriggereditor
@@ -2924,12 +2908,6 @@ qseqeditframe64::reset_recording_volume ()
 void
 qseqeditframe64::set_recording_volume (int recvol)
 {
-//  char selection[16];
-//  if (recvol == SEQ64_PRESERVE_VELOCITY)
-//      snprintf(selection, sizeof selection, "Free");
-//  else
-//      snprintf(selection, sizeof selection, "%d", recvol);
-
     m_seq->set_rec_vol(recvol);         /* save to the sequence settings    */
     usr().velocity_override(recvol);    /* save to the "usr" config file    */
 }

@@ -1,12 +1,12 @@
 #******************************************************************************
-# seq_qt5.pro (plseq64)
+# seq_qt5.pro (qplseq64)
 #------------------------------------------------------------------------------
 ##
 # \file       	seq_qt5.pro
-# \library    	plseq64 application
+# \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-07-14
+# \update      2018-07-18
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -50,6 +50,7 @@ TARGET = seq_qt5
 UI_DIR = forms
 
 FORMS += \
+ forms/qperfeditframe64.ui \
  forms/qperfeditframe.ui \
  forms/qsabout.ui \
  forms/qseditoptions.ui \
@@ -71,6 +72,7 @@ HEADERS += \
  include/qclocklayout.hpp \
  include/qinputcheckbox.hpp \
  include/qperfbase.hpp \
+ include/qperfeditframe64.hpp \
  include/qperfeditframe.hpp \
  include/qperfnames.hpp \
  include/qperfroll.hpp \
@@ -104,6 +106,7 @@ SOURCES += \
  src/qclocklayout.cpp \
  src/qinputcheckbox.cpp \
  src/qperfbase.cpp \
+ src/qperfeditframe64.cpp \
  src/qperfeditframe.cpp \
  src/qperfnames.cpp \
  src/qperfroll.cpp \

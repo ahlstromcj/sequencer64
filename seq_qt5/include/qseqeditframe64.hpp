@@ -27,13 +27,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-07
+ * \updates       2018-07-18
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <QFrame>
-#include <QLayout>
 
 #include "sequence.hpp"                 /* seq64::edit_mode_t enumeration   */
 
@@ -55,16 +54,11 @@
 #define SEQ64_FOLLOW_PROGRESS_BAR
 
 /*
- *  A bunch of forward declarations.  The Qt header files are moved into the
- *  cpp file.
+ *  A few forward declarations.  The Qt header files are in the cpp file.
  */
 
-class QGridLayout;
 class QIcon;
 class QMenu;
-class QPalette;
-class QScrollArea;
-class QScrollBar;
 class QWidget;
 
 /*
@@ -89,6 +83,7 @@ namespace seq64
     class qseqdata;
     class qstriggereditor;
     class qlfoframe;
+    class sequence;
 
 /**
  * Actions.  These variables represent actions that can be applied to a

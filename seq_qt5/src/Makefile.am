@@ -238,6 +238,7 @@ moc_qt_headers = \
  ../include/qclocklayout.hpp \
  ../include/qinputcheckbox.hpp \
  ../include/qlfoframe.hpp \
+ ../include/qperfeditframe64.hpp \
  ../include/qperfeditframe.hpp \
  ../include/qperfnames.hpp \
  ../include/qperfroll.hpp \
@@ -261,6 +262,7 @@ moc_sources = $(moc_qt_headers:.hpp=.moc.cpp)
 
 uic_qt_forms = \
  $(formsdir)/qlfoframe.ui \
+ $(formsdir)/qperfeditframe64.ui \
  $(formsdir)/qperfeditframe.ui \
  $(formsdir)/qsabout.ui \
  $(formsdir)/qsbuildinfo.ui \
@@ -335,6 +337,7 @@ libseq_qt5_la_SOURCES = \
  qinputcheckbox.cpp \
  qlfoframe.cpp \
  qperfbase.cpp \
+ qperfeditframe64.cpp \
  qperfeditframe.cpp \
  qperfnames.cpp \
  qperfroll.cpp \

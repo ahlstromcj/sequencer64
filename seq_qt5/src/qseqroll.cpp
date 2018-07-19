@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-03
+ * \updates       2018-07-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -58,16 +58,16 @@ qseqroll::qseqroll
     int ppqn,
     int pos,
     edit_mode_t mode,
-    QWidget * parent        // must be a qscrollmaster widget
+    QWidget * frame         // must be a qseqeditframe/64 widget
 ) :
-    QWidget                 (parent),
+    QWidget                 (frame),
     qseqbase
     (
         perf, seq, zoom, snap, ppqn,
         usr().key_height(),                         // m_key_y
         (usr().key_height() * c_num_keys + 1)       // m_keyarea_y
     ),
-    m_parent_frame          (reinterpret_cast<qseqeditframe64 *>(parent)),
+    m_parent_frame          (reinterpret_cast<qseqeditframe64 *>(frame)),
     m_seqkeys_wid           (seqkeys_wid),
     mTimer                  (nullptr),
     mFont                   (),

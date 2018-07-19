@@ -17,14 +17,14 @@
  */
 
 /**
- * \file          qperfeditframe.cpp
+ * \file          qperfeditframe64.cpp
  *
  *  This module declares/defines the base class for the Performance Editor,
  *  also known as the Song Editor.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2018-01-01
+ * \date          2018-07-18
  * \updates       2018-07-18
  * \license       GNU GPLv2 or above
  *
@@ -35,8 +35,12 @@
 #include <QScrollBar>
 
 #include "perform.hpp"
-#include "qperfeditframe.hpp"
+#include "qperfeditframe64.hpp"
 #include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
+
+#ifdef USE_QSCROLLMASTER
+#include "qscrollmaster.h"
+#endif
 
 /*
  *  Qt's uic application allows a different output file-name, but not sure
@@ -44,9 +48,9 @@
  */
 
 #ifdef SEQ64_QMAKE_RULES
-#include "forms/ui_qperfeditframe.h"
+#include "forms/ui_qperfeditframe64.h"
 #else
-#include "forms/qperfeditframe.ui.h"
+#include "forms/qperfeditframe64.ui.h"
 #endif
 
 /*
@@ -57,9 +61,7 @@
 #include "pixmaps/collapse.xpm"
 #include "pixmaps/copy.xpm"
 #include "pixmaps/expand.xpm"
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR_DISABLED
 #include "pixmaps/follow.xpm"
-#endif
 #include "pixmaps/loop.xpm"
 #include "pixmaps/redo.xpm"
 #include "pixmaps/undo.xpm"
@@ -73,10 +75,10 @@ namespace seq64
  *
  */
 
-qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
+qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
  :
     QFrame                  (parent),
-    ui                      (new Ui::qperfeditframe),
+    ui                      (new Ui::qperfeditframe64),
     m_mainperf              (p),
     m_layout_grid           (nullptr),
     m_scroll_area           (nullptr),
@@ -110,22 +112,87 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
 
     /*
      * Create and add the scroll-area and widget-container for this frame.
+     * If we're using the qscrollmaster (a QScrollArea), the scroll-area will
+     * contain only the qperfoll.  Otherwise, it will contain the qperfroll,
+     * qperfnames, and qperftime.  In either case the widget-container contains
+     * all three panels.
      */
 
-    m_scroll_area = new QScrollArea(this);
-    ui->vbox_centre->addWidget(m_scroll_area);
-
+#ifdef USE_QSCROLLMASTER
+    m_scroll_area = new qscrollmaster(this);
     mContainer = new QWidget(m_scroll_area);
+    ui->vbox_centre->addWidget(mContainer);
+#else
+    m_scroll_area = new QScrollArea(this);
+    // ui->vbox_centre->addWidget(m_scroll_area);
+    mContainer = new QWidget(m_scroll_area);
+#endif
+
+    /*
+     * Create and add a layout-grid to the widget-container.
+     */
+
     m_layout_grid = new QGridLayout(mContainer);
     mContainer->setLayout(m_layout_grid);
 
+#ifdef USE_QSCROLLMASTER
+
     /*
-     * Create the color palette for coloring the patterns.
+     * Create the piano roll panel, the names panel, and time panel of the song
+     * editor frame.
      */
 
-    m_palette = new QPalette();
-    m_palette->setColor(QPalette::Background, Qt::darkGray);
-    mContainer->setPalette(*m_palette);
+//  QScrollArea * scroll_area_roll = new QScrollArea(this);
+    m_perfroll = new seq64::qperfroll
+    (
+        m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
+        SEQ64_DEFAULT_PPQN, this, m_scroll_area     // scroll_area_roll
+    );
+    ///////// m_scroll_area->setWidget(m_perfroll); ?????
+    m_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    m_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+    QScrollArea * scroll_area_names = new QScrollArea(this);
+    m_perfnames = new seq64::qperfnames(m_mainperf, scroll_area_names);
+    scroll_area_names->setWidget(m_perfnames);
+    scroll_area_names->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scroll_area_names->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    QScrollArea * scroll_area_time = new QScrollArea(this);
+    m_perftime = new seq64::qperftime
+    (
+        m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
+        SEQ64_DEFAULT_PPQN, scroll_area_time
+    );
+    scroll_area_time->setWidget(m_perftime);
+    scroll_area_time->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scroll_area_time->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    /*
+     *  Add the various scrollbar points to the qscrollmaster object,
+     *  m_scroll_area
+     */
+
+    m_scroll_area->add_v_scroll(scroll_area_names->verticalScrollBar());
+    m_scroll_area->add_v_scroll(scroll_area_time->horizontalScrollBar());
+
+    /*
+     * Layout grid.
+     */
+
+    m_layout_grid->setSpacing(0);
+    m_layout_grid->addWidget(scroll_area_names, 1, 0, 1, 1);
+    m_layout_grid->addWidget(scroll_area_time, 0, 1, 1, 1);
+//  m_layout_grid->addWidget(scroll_area_roll, 1, 1, 1, 1);
+//  m_layout_grid->setAlignment(scroll_area_roll, Qt::AlignTop);
+    m_layout_grid->addWidget(m_scroll_area, 1, 1, 1, 1);
+    m_layout_grid->setAlignment(m_scroll_area, Qt::AlignTop);
+
+    // CAUSES 100% CPU USAGE
+    //
+    // m_scroll_area->setWidget(mContainer);
+
+#else   // USE_QSCROLLMASTER
 
     /*
      * Create the names, piano roll, and time panels of the song editor
@@ -155,6 +222,16 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
     m_layout_grid->setAlignment(m_perfroll, Qt::AlignTop);
     m_scroll_area->setWidget(mContainer);
 
+#endif  // USE_QSCROLLMASTER
+
+    /*
+     * Create the color palette for coloring the patterns.
+     */
+
+    m_palette = new QPalette();
+    m_palette->setColor(QPalette::Background, Qt::darkGray);
+    mContainer->setPalette(*m_palette);
+
     /*
      * Undo and Redo buttons.
      */
@@ -167,8 +244,6 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
     /*
      * Follow Progress Button.
      */
-
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR_DISABLED
 
     qt_set_icon(follow_xpm, ui->m_toggle_follow);
     ui->m_toggle_follow->setEnabled(true);
@@ -186,9 +261,6 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
     ui->m_toggle_follow->setAutoDefault(false);
     ui->m_toggle_follow->setChecked(m_perfroll->progress_follow());
     connect(ui->m_toggle_follow, SIGNAL(toggled(bool)), this, SLOT(follow(bool)));
-#else
-    ui->m_toggle_follow->setEnabled(false);
-#endif
 
     /*
      * Zoom-In and Zoom-Out buttons.
@@ -228,21 +300,19 @@ qperfeditframe::qperfeditframe (seq64::perform & p, QWidget * parent)
  *
  */
 
-qperfeditframe::~qperfeditframe ()
+qperfeditframe64::~qperfeditframe64 ()
 {
     delete ui;
     if (not_nullptr(m_palette))     // valgrind fix?
         delete m_palette;
 }
 
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-
 /**
  *  Passes the Follow status to the qperfroll object.
  */
 
 void
-qperfeditframe::follow (bool ischecked)
+qperfeditframe64::follow (bool ischecked)
 {
     m_perfroll->progress_follow(ischecked);
 }
@@ -253,7 +323,7 @@ qperfeditframe::follow (bool ischecked)
  */
 
 void
-qperfeditframe::follow_progress ()
+qperfeditframe64::follow_progress ()
 {
     int w = m_perfroll->width();        // m_perfroll->window_width();
     if (w > 0)
@@ -277,22 +347,12 @@ qperfeditframe::follow_progress ()
     }
 }
 
-#else
-
-void
-qperfeditframe::follow_progress ()
-{
-    // No code, never follow the progress bar.
-}
-
-#endif  // SEQ64_FOLLOW_PROGRESS_BAR
-
 /**
  *
  */
 
 int
-qperfeditframe::get_beat_width () const
+qperfeditframe64::get_beat_width () const
 {
     return mbeat_width;
 }
@@ -302,7 +362,7 @@ qperfeditframe::get_beat_width () const
  */
 
 void
-qperfeditframe::updateGridSnap (int snapIndex)
+qperfeditframe64::updateGridSnap (int snapIndex)
 {
     int snap;
     switch (snapIndex)
@@ -324,7 +384,7 @@ qperfeditframe::updateGridSnap (int snapIndex)
  */
 
 void
-qperfeditframe::set_snap (int a_snap)
+qperfeditframe64::set_snap (int a_snap)
 {
     char b[16];
     snprintf(b, sizeof(b), "1/%d", a_snap);
@@ -338,7 +398,7 @@ qperfeditframe::set_snap (int a_snap)
  */
 
 void
-qperfeditframe::set_beats_per_measure (int bpm)
+qperfeditframe64::set_beats_per_measure (int bpm)
 {
     mbeats_per_measure = bpm;
     set_guides();
@@ -348,7 +408,7 @@ qperfeditframe::set_beats_per_measure (int bpm)
  *
  */
 
-int qperfeditframe::get_beats_per_measure () const
+int qperfeditframe64::get_beats_per_measure () const
 {
     return mbeats_per_measure;
 }
@@ -358,7 +418,7 @@ int qperfeditframe::get_beats_per_measure () const
  */
 
 void
-qperfeditframe::set_beat_width (int bw)
+qperfeditframe64::set_beat_width (int bw)
 {
     mbeat_width = bw;
     set_guides();
@@ -369,7 +429,7 @@ qperfeditframe::set_beat_width (int bw)
  */
 
 void
-qperfeditframe::set_guides ()
+qperfeditframe64::set_guides ()
 {
     int ppqn = SEQ64_DEFAULT_PPQN * 4;      // TODO: allow runtime changes
     int measure = (ppqn * 4) * mbeats_per_measure / mbeat_width;
@@ -391,7 +451,7 @@ qperfeditframe::set_guides ()
  */
 
 void
-qperfeditframe::zoom_in ()
+qperfeditframe64::zoom_in ()
 {
     m_perftime->zoom_in();
     m_perfroll->zoom_in();
@@ -402,7 +462,7 @@ qperfeditframe::zoom_in ()
  */
 
 void
-qperfeditframe::zoom_out ()
+qperfeditframe64::zoom_out ()
 {
     m_perftime->zoom_out();
     m_perfroll->zoom_out();
@@ -413,7 +473,7 @@ qperfeditframe::zoom_out ()
  */
 
 void
-qperfeditframe::update_sizes ()
+qperfeditframe64::update_sizes ()
 {
     m_perfroll->updateGeometry();
     m_perftime->updateGeometry();
@@ -425,7 +485,7 @@ qperfeditframe::update_sizes ()
  */
 
 void
-qperfeditframe::markerCollapse ()
+qperfeditframe64::markerCollapse ()
 {
     perf().push_trigger_undo();
     perf().move_triggers(false);
@@ -436,7 +496,7 @@ qperfeditframe::markerCollapse ()
  */
 
 void
-qperfeditframe::markerExpand ()
+qperfeditframe64::markerExpand ()
 {
     perf().push_trigger_undo();
     perf().move_triggers(true);
@@ -447,7 +507,7 @@ qperfeditframe::markerExpand ()
  */
 
 void
-qperfeditframe::markerExpandCopy ()
+qperfeditframe64::markerExpandCopy ()
 {
     perf().push_trigger_undo();
     perf().copy_triggers();
@@ -458,7 +518,7 @@ qperfeditframe::markerExpandCopy ()
  */
 
 void
-qperfeditframe::markerLoop (bool loop)
+qperfeditframe64::markerLoop (bool loop)
 {
     perf().set_looping(loop);
 }
@@ -466,7 +526,7 @@ qperfeditframe::markerLoop (bool loop)
 }           // namespace seq64
 
 /*
- * qperfeditframe.cpp
+ * qperfeditframe64.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

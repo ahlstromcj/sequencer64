@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-18
- * \updates       2018-07-18
+ * \updates       2018-07-19
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -36,15 +36,9 @@
  */
 
 #include <QFrame>
-#include <QGridLayout>
+// #include <QGridLayout>
 #include <QScrollArea>
 #include <qmath.h>
-
-#include "qperfroll.hpp"
-#include "qperfnames.hpp"
-#include "qperftime.hpp"
-
-#undef  USE_QSCROLLMASTER       // EXPERIMENTAL
 
 /*
  *  A bunch of forward declarations.  The Qt header files are moved into the
@@ -72,6 +66,9 @@ namespace seq64
 {
     class perform;
     class qsmainwnd;
+    class qperfroll;
+    class qperfnames;
+    class qperftime;
 
 /**
  *  This class is an improved version of qperfeditframe.
@@ -92,12 +89,12 @@ public:
      * should ~QFrame().
      */
 
-    virtual ~qperfeditframe64();
+    virtual ~qperfeditframe64 ();
 
-    int get_beat_width() const;
-    void set_beat_width(int a_beat_width);
-    int get_beats_per_measure() const;
-    void set_beats_per_measure(int a_beats_per_measure);
+    int get_beat_width () const;
+    void set_beat_width (int beat_width);
+    int get_beats_per_measure () const;
+    void set_beats_per_measure (int beats_per_measure);
     void follow_progress ();
 
 private:
@@ -116,20 +113,14 @@ private:
 
     Ui::qperfeditframe64 * ui;
     seq64::perform & m_mainperf;
-    QGridLayout * m_layout_grid;
-#ifdef USE_QSCROLLMASTER
-    qscrollmaster * m_scroll_area;
-#else
-    QScrollArea * m_scroll_area;
-#endif
     QWidget * mContainer;
     QPalette * m_palette;
     int m_snap;                 /* set snap to in pulses */
     int mbeats_per_measure;
     int mbeat_width;
-    seq64::qperfroll * m_perfroll;
-    seq64::qperfnames * m_perfnames;
-    seq64::qperftime * m_perftime;
+    qperfroll * m_perfroll;
+    qperfnames * m_perfnames;
+    qperftime * m_perftime;
 
 private slots:
 

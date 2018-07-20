@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-18
- * \updates       2018-07-18
+ * \updates       2018-07-19
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -36,11 +36,11 @@
 
 #include "perform.hpp"
 #include "qperfeditframe64.hpp"
+#include "qperfroll.hpp"
+#include "qperfnames.hpp"
+#include "qperftime.hpp"
 #include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
-
-#ifdef USE_QSCROLLMASTER
-#include "qscrollmaster.h"
-#endif
+#include "settings.hpp"                 /* usr()                            */
 
 /*
  *  Qt's uic application allows a different output file-name, but not sure
@@ -80,8 +80,6 @@ qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
     QFrame                  (parent),
     ui                      (new Ui::qperfeditframe64),
     m_mainperf              (p),
-    m_layout_grid           (nullptr),
-    m_scroll_area           (nullptr),
     mContainer              (nullptr),
     m_palette               (nullptr),
     m_snap                  (8),
@@ -116,113 +114,46 @@ qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
      * contain only the qperfoll.  Otherwise, it will contain the qperfroll,
      * qperfnames, and qperftime.  In either case the widget-container contains
      * all three panels.
-     */
-
-#ifdef USE_QSCROLLMASTER
-    m_scroll_area = new qscrollmaster(this);
-    mContainer = new QWidget(m_scroll_area);
-    ui->vbox_centre->addWidget(mContainer);
-#else
-    m_scroll_area = new QScrollArea(this);
-    // ui->vbox_centre->addWidget(m_scroll_area);
-    mContainer = new QWidget(m_scroll_area);
-#endif
-
-    /*
-     * Create and add a layout-grid to the widget-container.
-     */
-
-    m_layout_grid = new QGridLayout(mContainer);
-    mContainer->setLayout(m_layout_grid);
-
-#ifdef USE_QSCROLLMASTER
-
-    /*
+     *
      * Create the piano roll panel, the names panel, and time panel of the song
      * editor frame.
      */
 
-//  QScrollArea * scroll_area_roll = new QScrollArea(this);
-    m_perfroll = new seq64::qperfroll
+    m_perfnames = new seq64::qperfnames
     (
-        m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
-        SEQ64_DEFAULT_PPQN, this, m_scroll_area     // scroll_area_roll
+        m_mainperf, ui->namesScrollArea     // this
     );
-    ///////// m_scroll_area->setWidget(m_perfroll); ?????
-    m_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    m_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    ui->namesScrollArea->setWidget(m_perfnames);
+    ui->namesScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->namesScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    QScrollArea * scroll_area_names = new QScrollArea(this);
-    m_perfnames = new seq64::qperfnames(m_mainperf, scroll_area_names);
-    scroll_area_names->setWidget(m_perfnames);
-    scroll_area_names->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    scroll_area_names->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-    QScrollArea * scroll_area_time = new QScrollArea(this);
     m_perftime = new seq64::qperftime
     (
         m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
-        SEQ64_DEFAULT_PPQN, scroll_area_time
+        SEQ64_DEFAULT_PPQN, ui->timeScrollArea     // this
     );
-    scroll_area_time->setWidget(m_perftime);
-    scroll_area_time->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    scroll_area_time->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->timeScrollArea->setWidget(m_perftime);
+    ui->timeScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->timeScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    m_perfroll = new seq64::qperfroll
+    (
+        m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
+        SEQ64_DEFAULT_PPQN, this, ui->rollScrollArea
+    );
+    ui->rollScrollArea->setWidget(m_perfroll);
+    ui->rollScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    ui->rollScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     /*
      *  Add the various scrollbar points to the qscrollmaster object,
      *  m_scroll_area
      */
 
-    m_scroll_area->add_v_scroll(scroll_area_names->verticalScrollBar());
-    m_scroll_area->add_v_scroll(scroll_area_time->horizontalScrollBar());
+    ui->rollScrollArea->add_v_scroll(ui->namesScrollArea->verticalScrollBar());
+    ui->rollScrollArea->add_h_scroll(ui->timeScrollArea->horizontalScrollBar());
 
-    /*
-     * Layout grid.
-     */
-
-    m_layout_grid->setSpacing(0);
-    m_layout_grid->addWidget(scroll_area_names, 1, 0, 1, 1);
-    m_layout_grid->addWidget(scroll_area_time, 0, 1, 1, 1);
-//  m_layout_grid->addWidget(scroll_area_roll, 1, 1, 1, 1);
-//  m_layout_grid->setAlignment(scroll_area_roll, Qt::AlignTop);
-    m_layout_grid->addWidget(m_scroll_area, 1, 1, 1, 1);
-    m_layout_grid->setAlignment(m_scroll_area, Qt::AlignTop);
-
-    // CAUSES 100% CPU USAGE
-    //
-    // m_scroll_area->setWidget(mContainer);
-
-#else   // USE_QSCROLLMASTER
-
-    /*
-     * Create the names, piano roll, and time panels of the song editor
-     * frame.
-     */
-
-    m_perfnames = new seq64::qperfnames(m_mainperf, mContainer);
-    m_perfroll = new seq64::qperfroll
-    (
-        m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
-        SEQ64_DEFAULT_PPQN, this, mContainer
-    );
-    m_perftime = new seq64::qperftime
-    (
-        m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
-        SEQ64_DEFAULT_PPQN, mContainer
-    );
-
-    /*
-     * Layout grid.
-     */
-
-    m_layout_grid->setSpacing(0);
-    m_layout_grid->addWidget(m_perfnames, 1, 0, 1, 1);
-    m_layout_grid->addWidget(m_perftime, 0, 1, 1, 1);
-    m_layout_grid->addWidget(m_perfroll, 1, 1, 1, 1);
-    m_layout_grid->setAlignment(m_perfroll, Qt::AlignTop);
-    m_scroll_area->setWidget(mContainer);
-
-#endif  // USE_QSCROLLMASTER
+    // mContainer = new QWidget(ui->rollScrollArea);
 
     /*
      * Create the color palette for coloring the patterns.
@@ -230,7 +161,7 @@ qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
 
     m_palette = new QPalette();
     m_palette->setColor(QPalette::Background, Qt::darkGray);
-    mContainer->setPalette(*m_palette);
+    // mContainer->setPalette(*m_palette);
 
     /*
      * Undo and Redo buttons.
@@ -328,7 +259,7 @@ qperfeditframe64::follow_progress ()
     int w = m_perfroll->width();        // m_perfroll->window_width();
     if (w > 0)
     {
-        QScrollBar * hadjust = m_scroll_area->horizontalScrollBar();
+        QScrollBar * hadjust = ui->rollScrollArea->horizontalScrollBar();
         int scrollx = hadjust->value();
         midipulse progress_tick = perf().get_tick();
         // printf("tick = %ld\n", progress_tick);
@@ -477,7 +408,7 @@ qperfeditframe64::update_sizes ()
 {
     m_perfroll->updateGeometry();
     m_perftime->updateGeometry();
-    mContainer->adjustSize();
+    // mContainer->adjustSize();
 }
 
 /**

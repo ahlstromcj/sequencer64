@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-18
+ * \updates       2018-07-20
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -67,7 +67,10 @@
 #include "forms/qsmainwnd.ui.h"         /* generated btnStop, btnPlay, etc. */
 #endif
 
+#ifdef SEQ64_STAZED_MENU_BUTTONS        /* actually for Kepler34, must fix  */
 #include "pixmaps/live_mode.xpm"        /* #include "pixmaps/song_mode.xpm" */
+#endif
+
 #include "pixmaps/panic.xpm"
 #include "pixmaps/play2.xpm"
 #include "pixmaps/snap.xpm"
@@ -125,7 +128,10 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     int y = (screen.height() - height()) / 2;
     move(x, y);
 
-    // fill options for beats per measure combo box and set default
+    /*
+     * Fill options for beats per measure in the combo box, and set the
+     * default.
+     */
 
     for (int i = 0; i < 16; ++i)
     {
@@ -133,7 +139,10 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
         ui->cmb_beat_measure->insertItem(i, combo_text);
     }
 
-    // fill options for beat length combo box and set default
+    /*
+     * Fill options for beat length (beat width) in the combo box, and set the
+     * default.
+     */
 
     for (int i = 0; i < 5; ++i)
     {
@@ -275,7 +284,10 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     (
         ui->btnSongPlay, SIGNAL(clicked(bool)), this, SLOT(setSongPlayback(bool))
     );
+#ifdef SEQ64_STAZED_MENU_BUTTONS            // actually Kepler34 in this case
     qt_set_icon(live_mode_xpm, ui->btnSongPlay);
+#endif
+    setSongPlayback(false);
 
     /*
      * Stop button.
@@ -390,7 +402,6 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
      */
 
     int width = usr().scale_size(800);
-//  int height = usr().scale_size(450);
     int height = usr().scale_size(480);
     resize(width, height);
     show();
@@ -452,18 +463,24 @@ qsmainwnd::setRecording (bool record)
  */
 
 void
-qsmainwnd::setSongPlayback (bool playSongData)
+qsmainwnd::setSongPlayback (bool song_mode)
 {
-    perf().playback_mode(playSongData);
-    if (playSongData)
+    perf().playback_mode(song_mode);
+    if (song_mode)
     {
         ui->btnRecord->setEnabled(true);
+#ifndef SEQ64_STAZED_MENU_BUTTONS
+        ui->btnSongPlay->setText("Song");
+#endif
     }
     else
     {
         setRecording(false);
         ui->btnRecord->setChecked(false);
         ui->btnRecord->setEnabled(false);
+#ifndef SEQ64_STAZED_MENU_BUTTONS
+        ui->btnSongPlay->setText("Live");
+#endif
     }
 }
 

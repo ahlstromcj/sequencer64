@@ -236,7 +236,7 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>24</width>
+          <width>36</width>
           <height>32</height>
          </size>
         </property>
@@ -253,7 +253,13 @@
          <string>Toggle playback of the Song Editor data</string>
         </property>
         <property name="text">
-         <string/>
+         <string>Live</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>16</height>
+         </size>
         </property>
         <property name="checkable">
          <bool>true</bool>

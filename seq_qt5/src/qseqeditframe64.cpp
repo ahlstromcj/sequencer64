@@ -99,6 +99,7 @@ QWidget container?
 #include "controllers.hpp"              /* seq64::c_controller_names[]      */
 #include "perform.hpp"                  /* seq64::perform reference         */
 #include "qlfoframe.hpp"
+// #include "qscrollmaster.h"
 #include "qseqdata.hpp"
 #include "qseqeditframe64.hpp"
 #include "qseqkeys.hpp"

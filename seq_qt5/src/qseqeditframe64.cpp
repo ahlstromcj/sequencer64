@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-18
+ * \updates       2018-07-22
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -99,7 +99,6 @@ QWidget container?
 #include "controllers.hpp"              /* seq64::c_controller_names[]      */
 #include "perform.hpp"                  /* seq64::perform reference         */
 #include "qlfoframe.hpp"
-// #include "qscrollmaster.h"
 #include "qseqdata.hpp"
 #include "qseqeditframe64.hpp"
 #include "qseqkeys.hpp"
@@ -153,12 +152,21 @@ QWidget container?
 #include "pixmaps/chord3-inv.xpm"
 #endif
 
+#undef  USE_LAYOUT_GRID     // EXPERIMENTAL, FAILS
+
 /*
  *  Do not document the name space.
  */
 
 namespace seq64
 {
+
+/*
+ *  We have an issue that using the new (and larger) qseqeditframe64 class in
+ *  the Edit tab causes the whole main window to increase in size, which
+ *  stretches the Live frame's pattern slots too much vertically.  So let's
+ *  try to shrink the seq-edit's piano roll to compensate.  Nope.
+ */
 
 /**
  *  Static data members.  These items apply to all of the instances of seqedit,
@@ -398,6 +406,10 @@ qseqeditframe64::qseqeditframe64
     ui->setupUi(this);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
+#ifdef USE_LAYOUT_GRID
+    QGridLayout * layout_grid = new QGridLayout(this);
+#endif
+
     /*
      * Instantiate the various editable areas of the seqedit user-interface.
      * seqkeys: Not quite working as we'd hope.  The scrollbars still eat up
@@ -475,6 +487,16 @@ qseqeditframe64::qseqeditframe64
     ui->rollScrollArea->add_h_scroll(ui->timeScrollArea->horizontalScrollBar());
     ui->rollScrollArea->add_h_scroll(ui->dataScrollArea->horizontalScrollBar());
     ui->rollScrollArea->add_h_scroll(ui->eventScrollArea->horizontalScrollBar());
+
+#ifdef USE_LAYOUT_GRID
+    layout_grid->setSpacing(0);
+    layout_grid->addWidget(ui->keysScrollArea, 1, 0, 1, 1); // keys
+    layout_grid->addWidget(ui->timeScrollArea, 0, 1, 1, 1);  // time
+    layout_grid->addWidget(ui->rollScrollArea, 1, 1, 1, 1);  // roll
+    layout_grid->addWidget(ui->eventScrollArea, 2, 1, 1, 1); // event
+    layout_grid->addWidget(ui->dataScrollArea, 3, 1, 1, 1);  // data
+    layout_grid->setAlignment(ui->rollScrollArea, Qt::AlignTop);
+#endif
 
     /*
      *  Sequence Number Label
@@ -1019,6 +1041,18 @@ qseqeditframe64::qseqeditframe64
     set_background_sequence(m_bgsequence);
 
     /*
+     * Drum-Mode Button.  Qt::NoFocus is the default focus policy.
+     */
+
+    ui->m_toggle_drum->setAutoDefault(false);
+    connect
+    (
+        ui->m_toggle_drum, SIGNAL(toggled(bool)),
+        this, SLOT(editor_mode(bool))
+    );
+    qt_set_icon(drum_xpm, ui->m_toggle_drum);
+
+    /*
      * Event Selection Button and Popup Menu for qseqdata.
      */
 
@@ -1177,6 +1211,14 @@ qseqeditframe64::qseqeditframe64
     );
     set_recording_volume(usr().velocity_override());
 
+    /*
+     * EXPERIMENTAL!  Doesn't stick, due to Qt layout stretching?
+
+    int width = usr().scale_size(884);
+    int height = usr().scale_size(558);
+    resize(width, height);
+
+     */
 }
 
 /**
@@ -2354,6 +2396,32 @@ qseqeditframe64::reset_scale ()
 }
 
 /**
+ *
+ */
+
+void
+qseqeditframe64::editor_mode (bool ischecked)
+{
+    set_editor_mode(ischecked ? EDIT_MODE_DRUM : EDIT_MODE_NOTE);
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe64::set_editor_mode (seq64::edit_mode_t mode)
+{
+    if (mode != m_edit_mode)
+    {
+        m_edit_mode = mode;
+        perf().seq_edit_mode(*m_seq, mode);
+        m_seqroll->update_edit_mode(mode);
+        set_dirty();
+    }
+}
+
+/**
  *  Popup menu events button.
  */
 
@@ -2944,21 +3012,6 @@ qseqeditframe64::update_draw_geometry()
     m_seqroll->updateGeometry();
     m_seqevent->updateGeometry();
     m_seqdata->updateGeometry();
-}
-
-/**
- *
- */
-
-void
-qseqeditframe64::set_editor_mode (seq64::edit_mode_t mode)
-{
-    if (mode != m_edit_mode)
-    {
-        m_edit_mode = mode;
-        perf().seq_edit_mode(*m_seq, mode);
-        m_seqroll->update_edit_mode(mode);
-    }
 }
 
 /**

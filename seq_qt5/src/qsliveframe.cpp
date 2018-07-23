@@ -226,11 +226,19 @@ qsliveframe::drawSequence (int seq)
 
     /*
      * Grab frame dimensions for scaled drawing.  Note that the frame
-     * size can be modified by the user dragging a corner.
+     * size can be modified by the user dragging a corner, in some window
+     * managers.
      */
 
-    m_slot_w = (ui->frame->width() - 1 - m_mainwid_spacing * 8) / m_mainwnd_cols;
-    m_slot_h = (ui->frame->height() - 1 - m_mainwid_spacing * 5) / m_mainwnd_rows;
+    int fw = ui->frame->width();
+    int fh = ui->frame->height();
+    if (usr().window_scaled_up())       // EXPERIMENTAL
+    {
+        fw = 660;
+        fh = 350;
+    }
+    m_slot_w = (fw - 1 - m_mainwid_spacing * 8) / m_mainwnd_cols;
+    m_slot_h = (fh - 1 - m_mainwid_spacing * 5) / m_mainwnd_rows;
     m_preview_w = m_slot_w - m_font.pointSize() * 2;
     m_preview_h = m_slot_h - m_font.pointSize() * 5;
     if

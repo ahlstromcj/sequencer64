@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-18
+ * \updates       2018-07-21
  * \license       GNU GPLv2 or above
  *
  */
@@ -52,6 +52,40 @@
 #undef SEQ64_STAZED_CHORD_GENERATOR     // otherwise redefined !!! weird !!!
 #define SEQ64_STAZED_CHORD_GENERATOR
 #define SEQ64_FOLLOW_PROGRESS_BAR
+
+/**
+ *  Specifies the base size of the main window. The size in the "ui" file is
+ *  864 x 580.  We can control the base size at build time by altering the
+ *  qsmainwnd values.
+ */
+
+#define SEQ64_QSMAINWND_WIDTH           800
+#define SEQ64_QSMAINWND_HEIGHT          480
+
+/**
+ *  Specifies the reported final size of the main window when the larger edit
+ *  frame "kicks in".  See the comments for qsmainwnd::refresh().  The final
+ *  vertical size of the main window ends up at around 700, puzzling!  The
+ *  vertical size of the "external" edit-frame is only about 600.  Here are
+ *  the current measured (via kruler) heights:
+ *
+ *      -   Top panel: 90
+ *      -   Time pane: 20
+ *      -   Roll pane: 250
+ *      -   Event pane: 27
+ *      -   Data pane: 128
+ *      -   Bottom panel: 57
+ *
+ *  That total is 572.
+ *
+ *      -   qseqframe_height = 558, qseqeditframe64.ui
+ *      -   qsmainwnd_height = 580, qsmainwnd.ui
+ */
+
+#define QSEQEDITFRAME64_WIDTH         680
+#define QSEQEDITFRAME64_HEIGHT        920
+#define QSEQEDITFRAME64_BASE_HEIGHT   572
+#define QSEQEDITFRAME64_ROLL_HEIGHT   250
 
 /*
  *  A few forward declarations.  The Qt header files are in the cpp file.
@@ -223,6 +257,7 @@ private slots:
     void reset_key ();
     void update_scale (int index);
     void reset_scale ();
+    void editor_mode (bool ischecked);
     void events ();
     void data ();
     void show_lfo_frame ();

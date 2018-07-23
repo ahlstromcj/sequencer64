@@ -162,7 +162,7 @@ qseqeditframe::qseqeditframe
      * defaults
      */
 
-    for (int i = 0; i < 8; i++) // 16th intervals
+    for (int i = 0; i < 8; ++i) // 16th intervals
     {
         QString combo_text = "1/" + QString::number(pow(2, i));
         ui->cmbGridSnap->insertItem(i, combo_text);
@@ -174,7 +174,7 @@ qseqeditframe::qseqeditframe
 
     // triplet intervals
 
-    for (int i = 1; i < 8; i++)
+    for (int i = 1; i < 8; ++i)
     {
         QString combo_text = "1/" + QString::number(pow(2, i) * 1.5);
         ui->cmbGridSnap->insertItem(i + 9, combo_text);
@@ -185,7 +185,7 @@ qseqeditframe::qseqeditframe
 
     /* fill options for MIDI channel numbers */
 
-    for (int i = 0; i <= 15; i++)
+    for (int i = 0; i <= 15; ++i)
     {
         QString combo_text = QString::number(i + 1);
         ui->cmbMidiChan->insertItem(i, combo_text);
@@ -193,7 +193,7 @@ qseqeditframe::qseqeditframe
 
     // fill options for seq length
 
-    for (int i = 0; i <= 15; i++)
+    for (int i = 0; i <= 15; ++i)
     {
         QString combo_text = QString::number(i + 1);
         ui->cmbSeqLen->insertItem(i, combo_text);
@@ -210,7 +210,7 @@ qseqeditframe::qseqeditframe
     // fill MIDI buss options
 
     mastermidibus & masterbus = perf().master_bus();
-    for (int i = 0; i < masterbus.get_num_out_buses(); i++)
+    for (int i = 0; i < masterbus.get_num_out_buses(); ++i)
     {
         ui->cmbMidiBus->addItem
         (
@@ -228,7 +228,6 @@ qseqeditframe::qseqeditframe
 
     /* pull data from sequence object */
 
-    // ui->txtSeqName->setPlainText(mSeq->name());
     ui->txtSeqName->setPlainText(mSeq->name().c_str());
     ui->cmbMidiChan->setCurrentIndex(mSeq->get_midi_channel());
 
@@ -252,7 +251,8 @@ qseqeditframe::qseqeditframe
     m_layout_grid = new QGridLayout(mContainer);
     mContainer->setLayout(m_layout_grid);
 
-    m_palette->setColor(QPalette::Background, Qt::darkGray);
+ // m_palette->setColor(QPalette::Background, Qt::darkGray);
+    m_palette->setColor(QPalette::Background, Qt::white);
     mContainer->setPalette(*m_palette);
 
     // The key-height parameters should be a user_settings member.
@@ -272,7 +272,7 @@ qseqeditframe::qseqeditframe
     (
         perf(), *mSeq, mKeyboard,
         SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP, SEQ64_DEFAULT_PPQN, 0,
-        EDIT_MODE_NOTE, mContainer
+        EDIT_MODE_NOTE, this // mContainer
     );
     mNoteGrid->update_edit_mode(editMode);
     mEventValues = new qseqdata
@@ -306,11 +306,11 @@ qseqeditframe::qseqeditframe
     ui->cmbRecVol->addItem("Fixed 15",   15);
 
     mPopup = new QMenu(this);
-    QMenu *menuSelect = new QMenu(tr("Select..."), mPopup);
-    QMenu *menuTiming = new QMenu(tr("Timing..."), mPopup);
-    QMenu *menuPitch  = new QMenu(tr("Pitch..."), mPopup);
+    QMenu * menuSelect = new QMenu(tr("Select..."), mPopup);
+    QMenu * menuTiming = new QMenu(tr("Timing..."), mPopup);
+    QMenu * menuPitch  = new QMenu(tr("Pitch..."), mPopup);
 
-    QAction *actionSelectAll = new QAction(tr("Select all"), mPopup);
+    QAction * actionSelectAll = new QAction(tr("Select all"), mPopup);
     actionSelectAll->setShortcut(tr("Ctrl+A"));
     connect
     (
@@ -321,34 +321,26 @@ qseqeditframe::qseqeditframe
     );
     menuSelect->addAction(actionSelectAll);
 
-    QAction *actionSelectInverse = new QAction(tr("Inverse selection"), mPopup);
+    QAction * actionSelectInverse = new QAction(tr("Inverse selection"), mPopup);
     actionSelectInverse->setShortcut(tr("Ctrl+Shift+I"));
-    connect(actionSelectInverse,
-            SIGNAL(triggered(bool)),
-            this,
-            SLOT(inverseNoteSelection()));
+    connect(actionSelectInverse, SIGNAL(triggered(bool)),
+            this, SLOT(inverseNoteSelection()));
     menuSelect->addAction(actionSelectInverse);
 
     QAction *actionQuantize = new QAction(tr("Quantize"), mPopup);
     actionQuantize->setShortcut(tr("Ctrl+Q"));
-    connect(actionQuantize,
-            SIGNAL(triggered(bool)),
-            this,
-            SLOT(quantizeNotes()));
+    connect(actionQuantize, SIGNAL(triggered(bool)), this, SLOT(quantizeNotes()));
     menuTiming->addAction(actionQuantize);
 
     QAction *actionTighten = new QAction(tr("Tighten"), mPopup);
     actionTighten->setShortcut(tr("Ctrl+T"));
-    connect(actionTighten,
-            SIGNAL(triggered(bool)),
-            this,
-            SLOT(tightenNotes()));
+    connect(actionTighten, SIGNAL(triggered(bool)), this, SLOT(tightenNotes()));
     menuTiming->addAction(actionTighten);
 
     //fill out note transpositions
     char num[11];
     QAction *actionsTranspose[24];
-    for (int i = -12; i <= 12; i++)
+    for (int i = -12; i <= 12; ++i)
     {
         if (i != 0)
         {
@@ -384,7 +376,8 @@ qseqeditframe::qseqeditframe
 
     connect
     (
-        ui->txtSeqName, SIGNAL(textChanged(const QString &)),
+        // ui->txtSeqName, SIGNAL(textChanged(const QString &)),
+        ui->txtSeqName, SIGNAL(textChanged()),
         this, SLOT(updateSeqName())
     );
     connect
@@ -653,7 +646,7 @@ qseqeditframe::updateSeqLength()
 void
 qseqeditframe::updateScale(int newindex)
 {
-
+    // Available only in qseqeditframe64.
 }
 
 /**
@@ -663,7 +656,7 @@ qseqeditframe::updateScale(int newindex)
 void
 qseqeditframe::updateBackgroundSeq(int newindex)
 {
-
+    // Available only in qseqeditframe64.
 }
 
 /**
@@ -820,7 +813,7 @@ qseqeditframe::tightenNotes()
 void
 qseqeditframe::transposeNotes()
 {
-    QAction *senderAction = (QAction*) sender();
+    QAction * senderAction = (QAction *) sender();
     int transposeVal = senderAction->data().toInt();
     mSeq->push_undo();
     mSeq->transpose_notes(transposeVal, 0);

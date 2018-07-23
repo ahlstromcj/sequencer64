@@ -1,5 +1,5 @@
-#ifndef SEQ64_QSEQEDITEX_HPP
-#define SEQ64_QSEQEDITEX_HPP
+#ifndef SEQ64_QPERFEDITEX_HPP
+#define SEQ64_QPERFEDITEX_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -23,18 +23,18 @@
  * \file          qseditex.hpp
  *
  *  This module declares/defines the base class for the external
- *  sequence-editing window.
+ *  performance-editing window.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2018-06-15
- * \updates       2018-07-10
+ * \date          2018-07-21
+ * \updates       2018-07-21
  * \license       GNU GPLv2 or above
  *
- *  The sequence editing window is known as the "Pattern Editor".  Kepler34
+ *  The performance editing window is known as the "Song Editor".  Kepler34
  *  provides an editor embedded within a tab, but we supplement that with a
  *  more sophisticated external editor, which works a lot more like the Gtkmm
- *  seqedit class.
+ *  perfedit class.
  */
 
 #include <QWidget>
@@ -43,35 +43,34 @@ class QCloseEvent;
 
 namespace Ui
 {
-    class qseqeditex;
+    class qperfeditex;
 }
 
 namespace seq64
 {
     class perform;
     class sequence;
-    class qseqeditframe64;
+    class qperfeditframe64;
     class qsmainwnd;
 
 /**
- *  Provides a container for a qseqeditframe64 object.  Thus, the Qt 5 version
+ *  Provides a container for a qperfeditframe64 object.  Thus, the Qt 5 version
  *  of Sequencer64 has an external seqedit window like its Gtkmm-2.4
  *  counterpart.
  */
 
-class qseqeditex : public QWidget
+class qperfeditex : public QWidget
 {
     Q_OBJECT
 
 public:
 
-    explicit qseqeditex
+    explicit qperfeditex
     (
         perform & p,
-        int seqid,
         qsmainwnd * parent = nullptr
     );
-    virtual ~qseqeditex ();
+    virtual ~qperfeditex ();
 
 protected:
 
@@ -89,17 +88,16 @@ protected:
 
 private:
 
-    Ui::qseqeditex * ui;
+    Ui::qperfeditex * ui;
     perform & m_perform;
-    int m_seq_id;
     qsmainwnd * m_edit_parent;
-    qseqeditframe64 * m_edit_frame;
+    qperfeditframe64 * m_edit_frame;
 
-};              // class qseqeditex
+};              // class qperfeditex
 
 }               // namespace seq64
 
-#endif          // SEQ64_QSEQEDITEX_HPP
+#endif          // SEQ64_QPERFEDITEX_HPP
 
 /*
  * qseditex.hpp

@@ -1,6 +1,6 @@
 README for Sequencer64 0.95.1 (Native JACK, CLI, varisets, tempo, Windows)
 Chris Ahlstrom
-2015-09-10 to 2018-07-07
+2015-09-10 to 2018-07-22
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
 The heart of seq24 remains intact.  It is an old friend, and maintains some
@@ -35,7 +35,7 @@ Windows support (derived from PortMidi):
     standard Sequencer64 libraries.  The user-interface works, and Windows
     built-in MIDI devices are detected, inaccessible devices are ignored, and
     playback (e.g. to the built-in wavetable synthesizer) work. It can be
-    built easily via Qt Creator or qmake.
+    built easily via Qt Creator or qmake, using the MingW support of Qt.
 
     The Qt 5 GUI is well behind the Gtkmm 2.4 GUI for many features.
     That will be fixed bit-by-bit (help wanted!).  In the meantime,
@@ -45,34 +45,11 @@ Windows support (derived from PortMidi):
 See the INSTALL file for build-from-source instructions or using a
 conventional source tarball.
 
-Pull Request #150 from user jfrey-xx:
-
-    While the commit messages should be self-explanatory, here is a list of
-    the current modifications:
-
-	-	I encountered weird behaviors while recording without touching the GUI,
-        and switching back and forth between play / pause (note on 0, note off
-        with some positive values, as if it got inverted at some point) -	I
-        am controlling which sequence to record or to set to midi through,
-        explicitly disabling for each state the previous sequence when I am
-        switching to a new one. Since it appears only one sequence at a time
-        (or one sequence/channel) can be an "input" at the level of
-        perform.cpp, it could happen that disabling recording or midi through
-        "steals" the input from an active sequence.
-    -	Incoming MIDI events are systematically checked against all captured
-        MIDI, otherwise too often unwanted notes would be recorded or played
-        -- in the comments previous behavior is justified to avoid delays, but
-        I willing to trade CPU cycles for that.
-    -	Fixed toggle for quantizing mode; it was not working neither for MIDI
-        control nor GUI.
-    -	Biggest change: the MIDI control "reserved for expansion" is now used
-        to set the "replace" flag while recording.
-
 Recent changes:
 
-    -   Version 0.95.1:
+    -   Version 0.95.1:  A lot of stuff for a "minor" release!
         -   Clean up the Build Info dialog and enhance the About dialog.
-        -   See "Pull Request #150" above.
+        -   See "Pull Request #150" in the NEWS file.
         -   Added the ability to read Cakewalk "WRK" files.
         -   Refactoring the "qseq" classes to avoid constant redraws.
         -   More work on getting Qt version of seqedit to handle the same
@@ -83,8 +60,11 @@ Recent changes:
         -   Fixed issue #130 where editing event data (seqdata) would
             be slow/jerky with large patterns.
         -   Fixed issues building Qt/rtmidi executable with automake.
-        -   Added provisional LFO window for the Qt user-interface.
+        -   Added an external pattern-editor window for the Qt user-interface.
+        -   Added an LFO window for the new version of the pattern editor.
+        -   Added an external song-editor window for the Qt user-interface.
         -   Made the Seq32 transpose option permanent, not macroed.
+        -   Adding progress-following for the pattern and song editors.
     -   Version 0.95.0:
         -   Improved the Windows version and its packaging.  Added a Windows
             icon, an installer, better data support and documentation, and

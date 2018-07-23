@@ -586,7 +586,7 @@ p, li { white-space: pre-wrap; }
     </layout>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="vbox_centre"/>
+    <layout class="QVBoxLayout" name="vbox_centre" stretch=""/>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_15">

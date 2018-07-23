@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-18
+ * \updates       2018-07-22
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -68,8 +68,9 @@ namespace seq64
 {
     class perform;
     class qsliveframe;
+    class qperfeditex;
     class qperfeditframe64;
-    class qperfeditframe;
+//  class qperfeditframe;
     class qseqeditex;
     class qseqeditframe64;
     class qseqeditframe;
@@ -91,11 +92,10 @@ public:
     explicit qsmainwnd (perform & p, QWidget * parent = 0);
     virtual ~qsmainwnd ();
 
-    // open the file at the given path
-
     void open_file (const std::string & path);
     void show_message_box (const std::string & msg_text);
     void remove_editor (int seq);
+    void remove_qperfedit ();
 
 protected:
 
@@ -144,8 +144,8 @@ private:
 
     Ui::qsmainwnd * ui;
     qsliveframe * m_live_frame;
+    qperfeditex * m_perfedit;
     qperfeditframe64 * m_song_frame64;
-    qperfeditframe * m_song_frame;
     qseqeditframe64 * m_edit_frame64;
     qseqeditframe * m_edit_frame;
     QErrorMessage * m_msg_error;
@@ -162,6 +162,13 @@ private:
     qsbuildinfo * mDialogBuildInfo;
 
     /**
+     *  Indicates whether to show the time as bar:beats:ticks or as
+     *  hours:minutes:seconds.  The default is true:  bar:beats:ticks.
+     */
+
+    bool m_tick_time_as_bbt;
+
+    /**
      *  Holds a list of the sequences currently under edit.  We do not want to
      *  open the same sequence in two different editors.  Also, we need to be
      *  able to delete any open qseqeditex windows when exiting the
@@ -173,8 +180,10 @@ private:
 private slots:
 
     void startPlaying ();
+    void pausePlaying ();
     void stopPlaying ();
-    void setSongPlayback (bool playSongData);
+    void set_song_mode (bool song_mode);
+    void toggle_song_mode ();
     void setRecording (bool record);
     void setRecordingSnap (bool snap);
     void panic ();
@@ -195,6 +204,8 @@ private slots:
     void refresh ();                    /* redraw certain GUI elements      */
     void load_editor (int seqid);
     void load_qseqedit (int seqid);
+    void load_qperfedit (bool on);
+    void toggle_time_format (bool on);
 
 };          // class qsmainwnd
 

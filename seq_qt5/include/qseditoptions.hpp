@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-03-03
+ * \updates       2018-07-21
  * \license       GNU GPLv2 or above
  *
  */
@@ -91,7 +91,8 @@ private:
 
     seq64::perform & mPerf;
 
-    // backup variables for settings
+    // Backup variables for settings.  Not everything new is currently backed
+    // up, though.
 
     bool backupJackTransport;
     bool backupTimeMaster;
@@ -101,21 +102,23 @@ private:
 
 private slots:
 
-    void updateTransportSupport();
-    void updateTimeMaster();
-    void updateMasterCond();
-    void jackConnect();
-    void jackDisconnect();
-    void okay();
-    void cancel();
-    void updateNoteResume();
-    void updateKeyHeight();
+    void update_transport_support ();
+    void update_time_master ();
+    void update_master_cond ();
+    void update_jack_connect ();
+    void update_jack_disconnect ();
+    void okay ();
+    void cancel ();
+    void update_note_resume ();
+    void update_key_height ();
+    void update_ui_scaling (const QString &);
+    void update_pattern_editor ();
 
-    void on_spinBoxClockStartModulo_valueChanged(int arg1);
-    void on_plainTextEditTempoTrack_textChanged();
-    void on_pushButtonTempoTrack_clicked();
-    void on_checkBoxRecordByChannel_clicked(bool checked);
-    void on_chkJackConditional_stateChanged(int arg1);
+    void on_spinBoxClockStartModulo_valueChanged (int arg1);
+    void on_plainTextEditTempoTrack_textChanged ();
+    void on_pushButtonTempoTrack_clicked ();
+    void on_checkBoxRecordByChannel_clicked (bool checked);
+    void on_chkJackConditional_stateChanged (int arg1);
 };          // class qseditoptions
 
 }           // namespace seq64

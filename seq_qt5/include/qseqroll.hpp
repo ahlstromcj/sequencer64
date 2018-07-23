@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-15
+ * \updates       2018-07-22
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -42,6 +42,8 @@
 #include <QPen>
 #include <QTimer>
 #include <QMouseEvent>
+
+class QFrame;
 
 #include "qseqbase.hpp"                 /* seq64::qseqbase mixin class      */
 #include "sequence.hpp"                 /* seq64::edit_mode_t mode          */
@@ -155,7 +157,13 @@ private:
      *  Holds a pointer to the scroll-master object in the edit-frame window.
      */
 
-    qseqeditframe64 * m_parent_frame;
+    QFrame * m_parent_frame;        // qseqeditframe64 or qseqeditframe
+
+    /**
+     *  Avoids continual dynamic_cast tests.
+     */
+
+    bool m_is_new_edit_frame;
 
     /**
      *  Holds a pointer to the qseqkeys pane that is associated with the
@@ -168,7 +176,7 @@ private:
      *  Screen update timer.
      */
 
-    QTimer * mTimer;
+    QTimer * m_timer;
 
     /**
      *  Main font for the piano roll.

@@ -146,13 +146,11 @@ qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
     ui->rollScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     /*
-     *  Add the various scrollbar points to the qscrollmaster object,
-     *  m_scroll_area
+     *  Add the various scrollbar points to the qscrollmaster object.
      */
 
     ui->rollScrollArea->add_v_scroll(ui->namesScrollArea->verticalScrollBar());
     ui->rollScrollArea->add_h_scroll(ui->timeScrollArea->horizontalScrollBar());
-
     // mContainer = new QWidget(ui->rollScrollArea);
 
     /*
@@ -169,6 +167,7 @@ qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
 
     connect(ui->btnUndo, SIGNAL(clicked(bool)), m_perfroll, SLOT(undo()));
     qt_set_icon(undo_xpm, ui->btnUndo);
+
     connect(ui->btnRedo, SIGNAL(clicked(bool)), m_perfroll, SLOT(redo()));
     qt_set_icon(redo_xpm, ui->btnRedo);
 

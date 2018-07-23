@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2018-07-15
+ * \updates       2018-07-21
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -248,8 +248,6 @@
 
 #define SEQ64_MAX_MAINWND_COLUMNS          12   // 8
 
-#if defined SEQ64_MULTI_MAINWID
-
 /**
  *  The maximum number of rows of mainwids we will support, regardless of
  *  screen resolution.
@@ -263,8 +261,6 @@
  */
 
 #define SEQ64_MAINWID_BLOCK_COLS_MAX       2
-
-#endif  // SEQ64_MULTI_MAINWID
 
 /**
  *  This constant indicates that a configuration file numeric value is

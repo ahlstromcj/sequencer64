@@ -6,7 +6,7 @@
 # \library      libseq_qt5 library
 # \author       Chris Ahlstrom
 # \date         2018-03-09
-# \update       2018-07-18
+# \update       2018-07-22
 # \version      $Revision$
 # \license      $XPC_SUITE_GPL_LICENSE$
 #
@@ -69,7 +69,6 @@ sequencer64libdir = @sequencer64libdir@
 UI_FILES = \
  qlfoframe.ui \
  qperfeditframe64.ui \
- qperfeditframe.ui \
  qsabout.ui \
  qsbuildinfo.ui \
  qseditoptions.ui \
@@ -82,7 +81,6 @@ UI_FILES = \
 UI_H_FILES = \
  qlfoframe.ui.h \
  qperfeditframe64.ui.h \
- qperfeditframe.ui.h \
  qsabout.ui.h \
  qsbuildinfo.ui.h \
  qseditoptions.ui.h \

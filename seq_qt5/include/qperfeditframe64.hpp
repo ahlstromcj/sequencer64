@@ -36,7 +36,6 @@
  */
 
 #include <QFrame>
-// #include <QGridLayout>
 #include <QScrollArea>
 #include <qmath.h>
 

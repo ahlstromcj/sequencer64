@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2018-07-17
+ * \updates       2018-07-22
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -225,7 +225,7 @@ user_settings::user_settings ()
      */
 
     m_user_ui_key_height        (12),
-    m_user_ui_seqedit_in_tab    (false)
+    m_user_ui_seqedit_in_tab    (true)
 
 {
     // Empty body; it's no use to call normalize() here, see set_defaults().
@@ -518,7 +518,7 @@ user_settings::set_defaults ()
     m_work_around_play_image = false;
     m_work_around_transpose_image = false;
     m_user_ui_key_height = 12;
-    m_user_ui_seqedit_in_tab = false;
+    m_user_ui_seqedit_in_tab = true;
     normalize();                            // recalculate derived values
 }
 

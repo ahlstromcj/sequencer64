@@ -171,7 +171,7 @@ main (int argc, char * argv [])
 #endif
         );
 
-        if (seq64::usr().seqedit_in_tab())
+        if (seq64::usr().use_new_seqedit())
             seq24_window.setFixedSize(920, 680);
 
         seq24_window.show();

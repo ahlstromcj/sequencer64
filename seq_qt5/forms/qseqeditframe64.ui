@@ -10,6 +10,18 @@
     <height>558</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>500</width>
+    <height>300</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Frame</string>
   </property>
@@ -668,7 +680,7 @@
     </property>
    </widget>
   </widget>
-  <widget class="qscrollmaster" name="rollScrollArea" native="true">
+  <widget class="qscrollmaster" name="rollScrollArea">
    <property name="geometry">
     <rect>
      <x>50</x>
@@ -677,16 +689,16 @@
      <height>251</height>
     </rect>
    </property>
-   <property name="widgetResizable" stdset="0">
+   <property name="widgetResizable">
     <bool>true</bool>
    </property>
-   <widget class="QWidget" name="scrollAreaWidgetContents_3" native="true">
+   <widget class="QWidget" name="scrollAreaWidgetContents_3">
     <property name="geometry">
      <rect>
-      <x>8</x>
+      <x>0</x>
       <y>0</y>
-      <width>800</width>
-      <height>240</height>
+      <width>809</width>
+      <height>249</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -985,12 +997,44 @@
     </item>
    </layout>
   </widget>
+  <widget class="QPushButton" name="m_toggle_drum">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>390</y>
+     <width>34</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>34</width>
+     <height>32</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>34</width>
+     <height>32</height>
+    </size>
+   </property>
+   <property name="text">
+    <string>Drum</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>20</width>
+     <height>20</height>
+    </size>
+   </property>
+  </widget>
  </widget>
  <customwidgets>
   <customwidget>
    <class>qscrollmaster</class>
-   <extends>QWidget</extends>
+   <extends>QScrollArea</extends>
    <header>qscrollmaster.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

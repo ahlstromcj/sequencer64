@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2018-01-01
-# \update      2018-07-17
+# \update      2018-07-22
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -238,8 +238,8 @@ moc_qt_headers = \
  ../include/qclocklayout.hpp \
  ../include/qinputcheckbox.hpp \
  ../include/qlfoframe.hpp \
+ ../include/qperfeditex.hpp \
  ../include/qperfeditframe64.hpp \
- ../include/qperfeditframe.hpp \
  ../include/qperfnames.hpp \
  ../include/qperfroll.hpp \
  ../include/qperftime.hpp \
@@ -262,8 +262,8 @@ moc_sources = $(moc_qt_headers:.hpp=.moc.cpp)
 
 uic_qt_forms = \
  $(formsdir)/qlfoframe.ui \
+ $(formsdir)/qperfeditex.ui \
  $(formsdir)/qperfeditframe64.ui \
- $(formsdir)/qperfeditframe.ui \
  $(formsdir)/qsabout.ui \
  $(formsdir)/qsbuildinfo.ui \
  $(formsdir)/qseditoptions.ui \
@@ -337,8 +337,8 @@ libseq_qt5_la_SOURCES = \
  qinputcheckbox.cpp \
  qlfoframe.cpp \
  qperfbase.cpp \
+ qperfeditex.cpp \
  qperfeditframe64.cpp \
- qperfeditframe.cpp \
  qperfnames.cpp \
  qperfroll.cpp \
  qperftime.cpp \

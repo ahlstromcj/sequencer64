@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-18
+ * \updates       2018-07-21
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -56,7 +56,6 @@ qperfroll::qperfroll
     int zoom,
     int snap,
     int ppqn,
-//  qperfeditframe * frame,
     QWidget * frame,        // must be a qseqeditframe/64 widget
     QWidget * parent
 ) :

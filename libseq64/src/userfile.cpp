@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-07-13
+ * \updates       2018-07-21
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -396,9 +396,6 @@ userfile::parse (perform & /* p */)
                     if (scratch <= 1)                       /* boolean?     */
                         usr().use_more_icons(scratch != 0);
                 }
-
-#if defined SEQ64_MULTI_MAINWID
-
                 if (next_data_line(file))
                 {
                     sscanf(m_line, "%d", &scratch);
@@ -416,9 +413,6 @@ userfile::parse (perform & /* p */)
                     sscanf(m_line, "%d", &scratch);
                     usr().block_independent(scratch != 0);
                 }
-
-#endif  // SEQ64_MULTI_MAINWID
-
                 if (next_data_line(file))
                 {
                     float scale = 1.0f;
@@ -572,7 +566,7 @@ userfile::parse (perform & /* p */)
             if (next_data_line(file))
             {
                 sscanf(m_line, "%d", &scratch);
-                usr().seqedit_in_tab(scratch != 0);
+                usr().use_new_seqedit(scratch != 0);
             }
         }
     }
@@ -1020,12 +1014,14 @@ userfile::write (const perform & /* a_perf */ )
             << "      # use_more_icons (currently affects only main window)\n"
             ;
 
-#if defined SEQ64_MULTI_MAINWID
 
         file << "\n"
             "# Specifies the number of set-window ('wid') rows to show.\n"
             "# The long-standing default is 1, but 2 or 3 may also be set.\n"
             "# Corresponds to R in the '-o wid=RxC,F' option.\n"
+#if ! defined SEQ64_MULTI_MAINWID
+            "# SUPPORT FOR THIS OPTION NOT COMPILED INTO THIS BUILD.\n"
+#endif
             "\n"
             << usr().block_rows()
             << "      # block_rows (number of rows of set blocks/wids)\n"
@@ -1035,6 +1031,9 @@ userfile::write (const perform & /* a_perf */ )
             "# Specifies the number of set window ('wid') columns to show.\n"
             "# The long-standing default is 1, but 2 may also be set.\n"
             "# Corresponds to C in the '-o wid=RxC,F' option.\n"
+#if ! defined SEQ64_MULTI_MAINWID
+            "# SUPPORT FOR THIS OPTION NOT COMPILED INTO THIS BUILD.\n"
+#endif
             "\n"
             << usr().block_columns()
             << "      # block_columns (number of columns of set blocks/wids)\n"
@@ -1050,6 +1049,9 @@ userfile::write (const perform & /* a_perf */ )
             "# Corresponds to the 'f' (true, false, or 'indep') in the\n"
             "# '-o wid=RxC,F' option.  Here, 1 is the same as 'indep' or false,\n"
             "# and 0 is the same as f = true.  Backwards, so be careful.\n"
+#if ! defined SEQ64_MULTI_MAINWID
+            "# SUPPORT FOR THIS OPTION NOT COMPILED INTO THIS BUILD.\n"
+#endif
             "\n"
             << (usr().block_independent() ? "1" : "0")
             << "      # block_independent (set spinners for each block/wid)\n"
@@ -1065,8 +1067,6 @@ userfile::write (const perform & /* a_perf */ )
             << usr().window_scale()
             << "      # window_scale (scales the main window upwards in size)\n"
             ;
-
-#endif  // SEQ64_MULTI_MAINWID
 
     }
 
@@ -1280,8 +1280,8 @@ userfile::write (const perform & /* a_perf */ )
             "\n"
             ;
 
-        uscratch = usr().seqedit_in_tab();
-        file << uscratch << "       # (user_ui_) seqedit_in_tab\n";
+        uscratch = usr().use_new_seqedit();
+        file << uscratch << "       # (user_ui_) use_new_seqedit\n";
     }
 
     /*

@@ -25,14 +25,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-18
+ * \updates       2018-07-23
  * \license       GNU GPLv2 or above
  *
  */
 
+#include <QFrame>                       /* base class for seqedit frame(s)  */
+#include <QApplication>                 /* QApplication keyboardModifiers() */
 #include <QScrollBar>                   /* needed by qscrollmaster          */
 
 #include "perform.hpp"
+#include "qseqeditframe.hpp"            /* seq64::qseqeditframe legacy      */
 #include "qseqeditframe64.hpp"          /* seq64::qseqeditframe64 class     */
 #include "qseqroll.hpp"
 #include "settings.hpp"                 /* seq64::usr().key_height(), etc.  */
@@ -67,9 +70,13 @@ qseqroll::qseqroll
         usr().key_height(),                         // m_key_y
         (usr().key_height() * c_num_keys + 1)       // m_keyarea_y
     ),
-    m_parent_frame          (reinterpret_cast<qseqeditframe64 *>(frame)),
+    m_parent_frame          (dynamic_cast<QFrame *>(frame)),
+    m_is_new_edit_frame
+    (
+        not_nullptr(dynamic_cast<qseqeditframe64 *>(m_parent_frame))
+    ),
     m_seqkeys_wid           (seqkeys_wid),
-    mTimer                  (nullptr),
+    m_timer                  (nullptr),
     mFont                   (),
     m_scale                 (0),
     m_pos                   (0),
@@ -125,10 +132,13 @@ qseqroll::qseqroll
      * Does doing this later fix the width() issue?
      */
 
-    mTimer = new QTimer(this);                          // redraw timer !!!
-    mTimer->setInterval(usr().window_redraw_rate());    // 20
-    QObject::connect(mTimer, SIGNAL(timeout()), this, SLOT(conditional_update()));
-    mTimer->start();
+    m_timer = new QTimer(this);                          // redraw timer !!!
+    m_timer->setInterval(usr().window_redraw_rate());    // 20
+    QObject::connect
+    (
+        m_timer, SIGNAL(timeout()), this, SLOT(conditional_update())
+    );
+    m_timer->start();
 }
 
 /**
@@ -344,6 +354,7 @@ qseqroll::paintEvent (QPaintEvent *)
         painter.setPen(pen);
         painter.drawLine(x_offset, 0, x_offset, m_keyarea_y);
     }
+    pen.setWidth(1);
 
 #if ! defined SEQ64_SOLID_PIANOROLL_GRID
     pen.setStyle(Qt::SolidLine);
@@ -425,6 +436,7 @@ qseqroll::paintEvent (QPaintEvent *)
 
         pen.setColor(Qt::black);      /* draw boxes from sequence */
         pen.setStyle(Qt::SolidLine);
+        pen.setWidth(1);
         s->reset_draw_marker();
         while
         (
@@ -494,7 +506,7 @@ qseqroll::paintEvent (QPaintEvent *)
                 }
                 else
                 {
-                    pen.setColor(Qt::black);     // note border color
+                    pen.setColor(Qt::black);        // note border color
                     brush.setColor(Qt::black);
                 }
 
@@ -613,7 +625,7 @@ qseqroll::paintEvent (QPaintEvent *)
         );
 
         old_rect().set(x, y, w, h + m_key_y);
-        pen.setColor(Qt::black);
+        pen.setColor("orange");         /*  pen.setColor(Qt::black);    */
         painter.setPen(pen);
         painter.drawRect(x + c_keyboard_padding_x, y, w, h + m_key_y);
     }
@@ -668,6 +680,7 @@ qseqroll::paintEvent (QPaintEvent *)
         old_rect().width(width);
         old_rect().height(selection().height());
     }
+    set_dirty();
 }
 
 /**
@@ -681,7 +694,6 @@ qseqroll::mousePressEvent (QMouseEvent * event)
     midipulse tick_f;
     int note;
     int note_l;
-    bool needs_update = false;
     int norm_x, norm_y, snapped_x, snapped_y;
     snapped_x = norm_x = event->x() - c_keyboard_padding_x;
     snapped_y = norm_y = event->y();
@@ -695,7 +707,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
         paste(false);
         seq().push_undo();
         seq().paste_selected(tick_s, note);
-        needs_update = true;
+        set_dirty();
     }
     else
     {
@@ -738,7 +750,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                 {
                     seq().push_undo();
                     seq().add_note(tick_s, m_note_length - 2, note, true);
-                    needs_update = true;
+                    set_dirty();
                 }
             }
             else                        /* we're selecting                  */
@@ -793,7 +805,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                     }
                     else
                     {
-                        needs_update = true;
+                        set_dirty();
                     }
                 }
                 isSelected = false;
@@ -824,7 +836,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                     )
                     {
                         moving_init(true);
-                        needs_update = true;
+                        set_dirty();
                         switch (m_edit_mode)
                         {
                         case EDIT_MODE_NOTE:           // acount note lengths
@@ -885,7 +897,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
         if (event->button() == Qt::RightButton)
             set_adding(true);
     }
-    if (needs_update)       // set seq dirty if something's changed
+    if (is_dirty())                     // set seq dirty if something changed
         seq().set_dirty();
 }
 
@@ -901,7 +913,6 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
     int note_h;                         // highest note in window
     int note_l;                         // lowest note in window
     int x, y, w, h;                     // window dimensions
-    bool needs_update = false;
     current_x(event->x() - c_keyboard_padding_x);
     current_y(event->y());
     snap_current_y();
@@ -940,7 +951,7 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
                 );
                 break;
             }
-            needs_update = true;
+            set_dirty();
         }
 
         if (moving())
@@ -959,7 +970,7 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
             delta_note = delta_note - (c_num_keys - 1);
             seq().push_undo();
             seq().move_selected_notes(delta_tick, delta_note);
-            needs_update = true;
+            set_dirty();
         }
     }
 
@@ -976,16 +987,22 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
             else
                 seq().grow_selected(delta_tick);
 
-            needs_update = true;
+            set_dirty();
         }
     }
 
     if (event->button() == Qt::RightButton)
-        set_adding(false);
+    {
+        if (! QApplication::queryKeyboardModifiers().testFlag(Qt::MetaModifier))
+        {
+            set_adding(false);
+            set_dirty();
+        }
+    }
 
     clear_action_flags();               /* turn off */
     seq().unpaint_all();
-    if (needs_update)                   /* if clicked, something changed */
+    if (is_dirty())                   /* if clicked, something changed */
         seq().set_dirty();
 }
 
@@ -1029,78 +1046,114 @@ qseqroll::mouseMoveEvent (QMouseEvent * event)
 void
 qseqroll::keyPressEvent (QKeyEvent * event)
 {
+    bool dirty = false;
     if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace)
     {
         seq().remove_selected();
-        return;
+        dirty = true;
     }
-
-    // TODO: get these working and fix the 1:1 zoom in combo-dropdown.
-
-    if (! perf().is_pattern_playing())
+    else
     {
-        if (event->key() == Qt::Key_Home)
-        {
-            seq().set_last_tick(0);
-            return;
-        }
-        if (event->key() == Qt::Key_Left)
-        {
-            seq().set_last_tick(seq().get_last_tick() - snap());
-            return;
-        }
-        if (event->key() == Qt::Key_Right)
-        {
-            seq().set_last_tick(seq().get_last_tick() + snap());
-            return;
-        }
-        if (event->modifiers() & Qt::ShiftModifier) // Shift + ... events
-        {
-            if (event->key() == Qt::Key_Z)
-                zoom_in();
-        }
-        else
-        {
-            if (event->key() == Qt::Key_Z)
-                zoom_out();
-        }
-    }
+        // TODO: get these working and fix the 1:1 zoom in combo-dropdown.
 
-    if (event->modifiers() & Qt::ControlModifier)   // Ctrl + ... events
-    {
-        switch (event->key())
+        if (! perf().is_pattern_playing())
         {
-        case Qt::Key_X:
-
-            seq().cut_selected();
-            return;
-            break;
-
-        case Qt::Key_C:
-            seq().copy_selected();
-            return;
-            break;
-
-        case Qt::Key_V:
-            start_paste();
-            return;
-            break;
-
-        case Qt::Key_Z:
-            if (event->modifiers() & Qt::ShiftModifier)
+            if (event->key() == Qt::Key_Home)
             {
-                seq().pop_redo();
-                return;
+                seq().set_last_tick(0);
+                dirty = true;
+            }
+            else if (event->key() == Qt::Key_Left)
+            {
+                seq().set_last_tick(seq().get_last_tick() - snap());
+                dirty = true;
+            }
+            else if (event->key() == Qt::Key_Right)
+            {
+                seq().set_last_tick(seq().get_last_tick() + snap());
+                dirty = true;
+            }
+            else if (event->modifiers() & Qt::ShiftModifier) // Shift + ...
+            {
+                if (event->key() == Qt::Key_Z)
+                {
+                    zoom_in();
+                    dirty = true;
+                }
             }
             else
-                seq().pop_undo();
-            return;
-            break;
+            {
+                if (event->key() == Qt::Key_Z)
+                {
+                    zoom_out();
+                    dirty = true;
+                }
+            }
+        }
+        if (! dirty && event->modifiers() & Qt::ControlModifier) // Ctrl + ...
+        {
+            switch (event->key())
+            {
+            case Qt::Key_X:
 
-        case Qt::Key_A:
-            seq().select_all();
-            return;
-            break;
+                seq().cut_selected();
+                dirty = true;
+                break;
+
+            case Qt::Key_C:
+
+                seq().copy_selected();
+                dirty = true;
+                break;
+
+            case Qt::Key_V:
+
+                start_paste();
+                dirty = true;
+                break;
+
+            case Qt::Key_Z:
+
+                if (event->modifiers() & Qt::ShiftModifier)
+                {
+                    seq().pop_redo();
+                    dirty = true;
+                }
+                else
+                    seq().pop_undo();
+
+                dirty = true;
+                break;
+
+            case Qt::Key_A:
+
+                seq().select_all();
+                dirty = true;
+                break;
+            }
+        } else
+        {
+            if
+            (
+                (event->modifiers() & Qt::ShiftModifier) == 0 &&
+                (event->modifiers() & Qt::MetaModifier) == 0
+            )
+            {
+                switch (event->key())
+                {
+                case Qt::Key_P:
+
+                    set_adding(true);
+                    dirty = true;
+                    break;
+
+                case Qt::Key_X:
+
+                    set_adding(false);
+                    dirty = true;
+                    break;
+                }
+            }
         }
     }
 
@@ -1109,7 +1162,10 @@ qseqroll::keyPressEvent (QKeyEvent * event)
      * event is passed to the parent.
      */
 
-    event->ignore();
+    if (dirty)
+        set_dirty();
+    else
+        event->ignore();
 }
 
 /**
@@ -1157,9 +1213,11 @@ qseqroll::set_adding (bool a)
 {
     qseqbase::set_adding(a);
     if (a)
-        setCursor(Qt::PointingHandCursor);
+        setCursor(Qt::PointingHandCursor);  // Qt::CrossCursor ?
     else
         setCursor(Qt::ArrowCursor);
+
+    set_dirty();
 }
 
 /**
@@ -1249,6 +1307,9 @@ qseqroll::set_scale (int scale)
  *  window, but for now it doesn't hurt; the progress bar just never meets the
  *  criterion for moving to the next page.
  *
+ *  This feature is not provided by qseqeditframe; it requires
+ *  qseqeditframe64.
+ *
  * \todo
  *      -   If playback is disabled (such as by a trigger), then do not update
  *          the page;
@@ -1261,8 +1322,10 @@ void
 qseqroll::follow_progress ()
 {
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
-    if (not_nullptr(m_parent_frame))
-        m_parent_frame->follow_progress();
+    if (not_nullptr(m_parent_frame) && m_is_new_edit_frame)
+    {
+        reinterpret_cast<qseqeditframe64 *>(m_parent_frame)->follow_progress();
+    }
 #endif
 }
 

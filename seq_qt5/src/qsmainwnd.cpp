@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-20
+ * \updates       2018-07-22
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -36,11 +36,12 @@
 
 #include <utility>                      /* std::make_pair()                 */
 
+#include "calculations.hpp"             /* pulse_to_measurestring(), etc.   */
 #include "file_functions.hpp"           /* seq64::file_extension_match()    */
 #include "keystroke.hpp"
 #include "perform.hpp"
+#include "qperfeditex.hpp"
 #include "qperfeditframe64.hpp"
-#include "qperfeditframe.hpp"
 #include "qsmacros.hpp"                 /* QS_TEXT_CHAR() macro             */
 #include "qsabout.hpp"
 #include "qsbuildinfo.hpp"
@@ -67,11 +68,10 @@
 #include "forms/qsmainwnd.ui.h"         /* generated btnStop, btnPlay, etc. */
 #endif
 
-#ifdef SEQ64_STAZED_MENU_BUTTONS        /* actually for Kepler34, must fix  */
 #include "pixmaps/live_mode.xpm"        /* #include "pixmaps/song_mode.xpm" */
-#endif
-
 #include "pixmaps/panic.xpm"
+#include "pixmaps/pause.xpm"
+#include "pixmaps/perfedit.xpm"
 #include "pixmaps/play2.xpm"
 #include "pixmaps/snap.xpm"
 #include "pixmaps/song_rec_on.xpm"      /* #include "pixmaps/song_rec.xpm" */
@@ -99,8 +99,8 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     QMainWindow         (parent),
     ui                  (new Ui::qsmainwnd),
     m_live_frame        (nullptr),
+    m_perfedit          (nullptr),
     m_song_frame64      (nullptr),
-    m_song_frame        (nullptr),
     m_edit_frame64      (nullptr),
     m_edit_frame        (nullptr),
     m_msg_error         (nullptr),
@@ -115,6 +115,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_dialog_prefs      (nullptr),
     mDialogAbout        (nullptr),
     mDialogBuildInfo    (nullptr),
+    m_tick_time_as_bbt  (true),
     m_open_editors      ()
 {
 #if __cplusplus < 201103L                               // C++11
@@ -168,10 +169,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     );
 
     m_dialog_prefs = new qseditoptions(m_main_perf, this);
-    if (usr().seqedit_in_tab())             // BOGUS BOGUS BOGUS
-        m_song_frame64 = new qperfeditframe64(m_main_perf, ui->SongTab);
-    else
-        m_song_frame = new qperfeditframe(m_main_perf, ui->SongTab);
+    m_song_frame64 = new qperfeditframe64(m_main_perf, ui->SongTab);
 
     m_beat_ind = new qsmaintime(m_main_perf, this, 4, 4);
     mDialogAbout = new qsabout(this);
@@ -190,33 +188,12 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
         );
         if (not_nullptr(m_beat_ind))
         {
-            ui->lay_bpm->addWidget(m_beat_ind);
+            // ui->lay_bpm->addWidget(m_beat_ind);
+            ui->layout_beat_ind->addWidget(m_beat_ind);
             m_beat_ind->set_beat_width(m_song_frame64->get_beat_width());
             m_beat_ind->set_beats_per_measure
             (
                 m_song_frame64->get_beats_per_measure()
-            );
-        }
-    }
-
-    if (not_nullptr(m_song_frame))
-    {
-        ui->SongTabLayout->addWidget(m_song_frame);
-        ui->cmb_beat_length->setCurrentText // pull defaults from song frame
-        (
-            QString::number(m_song_frame->get_beat_width())
-        );
-        ui->cmb_beat_measure->setCurrentText
-        (
-            QString::number(m_song_frame->get_beats_per_measure())
-        );
-        if (not_nullptr(m_beat_ind))
-        {
-            ui->lay_bpm->addWidget(m_beat_ind);
-            m_beat_ind->set_beat_width(m_song_frame->get_beat_width());
-            m_beat_ind->set_beats_per_measure
-            (
-                m_song_frame->get_beats_per_measure()
             );
         }
     }
@@ -270,6 +247,20 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     }
 
     /*
+     * Stop button.
+     */
+
+    connect(ui->btnStop, SIGNAL(clicked(bool)), this, SLOT(stopPlaying()));
+    qt_set_icon(stop_xpm, ui->btnStop);
+
+    /*
+     * Pause button.
+     */
+
+    connect(ui->btnPause, SIGNAL(clicked(bool)), this, SLOT(pausePlaying()));
+    qt_set_icon(pause_xpm, ui->btnPause);
+
+    /*
      * Play button.
      */
 
@@ -282,19 +273,12 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
 
     connect
     (
-        ui->btnSongPlay, SIGNAL(clicked(bool)), this, SLOT(setSongPlayback(bool))
+        ui->btnSongPlay, SIGNAL(clicked(bool)), this, SLOT(set_song_mode(bool))
     );
-#ifdef SEQ64_STAZED_MENU_BUTTONS            // actually Kepler34 in this case
-    qt_set_icon(live_mode_xpm, ui->btnSongPlay);
-#endif
-    setSongPlayback(false);
+    if (usr().use_more_icons())
+        qt_set_icon(live_mode_xpm, ui->btnSongPlay);
 
-    /*
-     * Stop button.
-     */
-
-    connect(ui->btnStop, SIGNAL(clicked(bool)), this, SLOT(stopPlaying()));
-    qt_set_icon(stop_xpm, ui->btnStop);
+    set_song_mode(false);
 
     /*
      * Record-Song button.
@@ -305,6 +289,26 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
         ui->btnRecord, SIGNAL(clicked(bool)), this, SLOT(setRecording(bool))
     );
     qt_set_icon(song_rec_on_xpm, ui->btnRecord);
+
+    /*
+     * Performance Editor button.
+     */
+
+    connect
+    (
+        ui->btnPerfEdit, SIGNAL(clicked(bool)), this, SLOT(load_qperfedit(bool))
+    );
+    qt_set_icon(perfedit_xpm, ui->btnPerfEdit);
+
+    /*
+     * B:B:T vs H:M:S button.
+     */
+
+    connect
+    (
+        ui->btn_set_HMS, SIGNAL(clicked(bool)),
+        this, SLOT(toggle_time_format(bool))
+    );
 
     /*
      * BPM (beats-per-minute) spin-box.
@@ -398,11 +402,13 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     update_recent_files_menu();
 
     /*
-     * This scales the full GUI, cool!
+     * This scales the full GUI, cool!  However, it can be overridden by the
+     * size of the new, larger, qseqeditframe64 frame.  We see the normal-size
+     * window come up, and then it jumps to the larger size.
      */
 
-    int width = usr().scale_size(800);
-    int height = usr().scale_size(480);
+    int width = usr().scale_size(SEQ64_QSMAINWND_WIDTH);
+    int height = usr().scale_size(SEQ64_QSMAINWND_HEIGHT);
     resize(width, height);
     show();
 }
@@ -427,17 +433,6 @@ qsmainwnd::closeEvent (QCloseEvent *)
 }
 
 /**
- *  Implements the play button, which is also a pause button in Sequencer64,
- *  though we do not yet change the pixmap in the Qt 5 version.
- */
-
-void
-qsmainwnd::startPlaying ()
-{
-    perf().pause_key();                 /* not the start_key()              */
-}
-
-/**
  *
  */
 
@@ -446,6 +441,27 @@ qsmainwnd::stopPlaying()
 {
     perf().stop_key();                  /* make sure it's seq64-able        */
     ui->btnPlay->setChecked(false);
+}
+
+/**
+ *  Implements the pause button.
+ */
+
+void
+qsmainwnd::pausePlaying ()
+{
+    perf().pause_key();
+}
+
+/**
+ *  Implements the play button, which is not a pause button in the Qt version
+ *  of Sequencer64.
+ */
+
+void
+qsmainwnd::startPlaying ()
+{
+    perf().start_key();                 /* not the pause_key()              */
 }
 
 /**
@@ -459,28 +475,46 @@ qsmainwnd::setRecording (bool record)
 }
 
 /**
- *
+ *  Sets the song mode, which is actually the JACK start mode.  If true, we
+ *  are in playback/song mode.  If false, we are in live mode.  This
+ *  function must be in the cpp module, where the button header file is
+ *  included.
  */
 
 void
-qsmainwnd::setSongPlayback (bool song_mode)
+qsmainwnd::set_song_mode (bool song_mode)
 {
-    perf().playback_mode(song_mode);
     if (song_mode)
     {
         ui->btnRecord->setEnabled(true);
-#ifndef SEQ64_STAZED_MENU_BUTTONS
-        ui->btnSongPlay->setText("Song");
-#endif
+        if (! usr().use_more_icons())
+            ui->btnSongPlay->setText("Song");
     }
     else
     {
         setRecording(false);
         ui->btnRecord->setChecked(false);
         ui->btnRecord->setEnabled(false);
-#ifndef SEQ64_STAZED_MENU_BUTTONS
-        ui->btnSongPlay->setText("Live");
-#endif
+        if (! usr().use_more_icons())
+            ui->btnSongPlay->setText("Live");
+    }
+    perf().playback_mode(song_mode);        // useful? not used in mainwnd!
+    perf().song_start_mode(song_mode);
+}
+
+/**
+ *  Toggles the song mode.  Note that calling this function will trigger the
+ *  button signal callback, set_song_mode().  It only operates if the patterns
+ *  are not playing.  This function must be in the cpp module, where the
+ *  button header file is included.
+ */
+
+void
+qsmainwnd::toggle_song_mode ()
+{
+    if (! perf().is_pattern_playing())
+    {
+        ui->btnSongPlay->setEnabled(perf().toggle_song_start_mode());
     }
 }
 
@@ -583,9 +617,6 @@ qsmainwnd::open_file (const std::string & fn)
         if (not_nullptr(m_song_frame64))
             m_song_frame64->update_sizes();
 
-        if (not_nullptr(m_song_frame))
-            m_song_frame->update_sizes();
-
         update_recent_files_menu();
         update_window_title();
     }
@@ -624,14 +655,60 @@ qsmainwnd::update_window_title ()
 }
 
 /**
- *
+ *  Toggles the recording of the live song control done by the musician.
+ *  This functionality currently does not have a key devoted to it, nor is it
+ *  a saved setting.
+ */
+
+void
+qsmainwnd::toggle_time_format (bool /*on*/)
+{
+    m_tick_time_as_bbt = ! m_tick_time_as_bbt; // m_tick_time_as_bbt = on;
+    QString label = m_tick_time_as_bbt ? "B:B:T" : "H:M:S" ;
+    ui->btn_set_HMS->setText(label);
+}
+
+/**
+ *  The debug statement shows us that the main-window size starts at
+ *  920 x 680, goes to 800 x 480 (unscaled) briefly, and then back to
+ *  920 x 680.
  */
 
 void
 qsmainwnd::refresh ()
 {
+
+#ifdef PLATFORM_DEBUG_TMI
+    printf("qsmainwnd: %d x %d\n", width(), height());
+#endif
+
     if (not_nullptr(m_beat_ind))
         m_beat_ind->update();
+
+    /*
+     * Calculate the current time, and display it.
+     */
+
+    if (perf().is_pattern_playing())
+    {
+        midipulse tick = perf().get_tick();
+        midibpm bpm = perf().get_beats_per_minute();
+        int ppqn = perf().ppqn();
+        if (m_tick_time_as_bbt)
+        {
+            midi_timing mt
+            (
+                bpm, perf().get_beats_per_bar(), perf().get_beat_width(), ppqn
+            );
+            std::string t = pulses_to_measurestring(tick, mt);
+            ui->label_HMS->setText(t.c_str());
+        }
+        else
+        {
+            std::string t = pulses_to_timestring(tick, bpm, ppqn, false);
+            ui->label_HMS->setText(t.c_str());
+        }
+    }
 }
 
 /**
@@ -813,6 +890,8 @@ qsmainwnd::showqsbuildinfo ()
 }
 
 /**
+ *  Loads a new pattern editor for the selected sequence into the "Edit" tab.
+ *
  * \warning
  *      Somehow, checking for not_nullptr(m_edit_frame) to determine whether
  *      to remove or add that widget causes the edit frame to not get created,
@@ -825,9 +904,10 @@ qsmainwnd::load_editor (int seqid)
     edit_container::iterator ei = m_open_editors.find(seqid);
     if (ei == m_open_editors.end())
     {
-        if (usr().seqedit_in_tab())
+        bool usenew = is_nullptr(m_edit_frame) && usr().use_new_seqedit();
+        if (usenew)
         {
-            ui->EditTabLayout->removeWidget(m_edit_frame64);  /* no ptr check */
+            ui->EditTabLayout->removeWidget(m_edit_frame64);    /* no ptr check */
             if (not_nullptr(m_edit_frame64))
                 delete m_edit_frame64;
 
@@ -837,7 +917,7 @@ qsmainwnd::load_editor (int seqid)
         }
         else
         {
-            ui->EditTabLayout->removeWidget(m_edit_frame);  /* no ptr check */
+            ui->EditTabLayout->removeWidget(m_edit_frame);      /* no ptr check */
             if (not_nullptr(m_edit_frame))
                 delete m_edit_frame;
 
@@ -920,6 +1000,39 @@ qsmainwnd::remove_all_editors ()
  */
 
 void
+qsmainwnd::load_qperfedit (bool on)
+{
+    if (is_nullptr(m_perfedit))
+    {
+        qperfeditex * ex = new qperfeditex(perf(), this);
+        if (not_nullptr(ex))
+        {
+            m_perfedit = ex;
+            ex->show();
+        }
+    }
+}
+
+/**
+ *  Removes the single song editor window.  This function is called by the
+ *  editor window to tell its parent (this) that it is going away.
+ */
+
+void
+qsmainwnd::remove_qperfedit ()
+{
+    if (not_nullptr(m_perfedit))
+    {
+        delete m_perfedit;
+        m_perfedit = nullptr;
+    }
+}
+
+/**
+ *
+ */
+
+void
 qsmainwnd::updateBeatLength (int blIndex)
 {
     int bl;
@@ -952,9 +1065,6 @@ qsmainwnd::updateBeatLength (int blIndex)
 
     if (not_nullptr(m_song_frame64))
         m_song_frame64->set_beat_width(bl);
-
-    if (not_nullptr(m_song_frame))
-        m_song_frame->set_beat_width(bl);
 
     if (not_nullptr(m_beat_ind))
         m_beat_ind->set_beat_width(bl);
@@ -992,9 +1102,6 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
     if (not_nullptr(m_song_frame64))
         m_song_frame64->set_beats_per_measure(bm);
 
-    if (not_nullptr(m_song_frame))
-        m_song_frame->set_beats_per_measure(bm);
-
     if (not_nullptr(m_beat_ind))
         m_beat_ind->set_beats_per_measure(bm);
 
@@ -1027,8 +1134,8 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
 void
 qsmainwnd::tabWidgetClicked (int newIndex)
 {
-    bool isnull = usr().seqedit_in_tab() ?
-        is_nullptr(m_edit_frame64) : is_nullptr(m_edit_frame);
+    bool isnull = usr().use_new_seqedit() ?
+        is_nullptr(m_edit_frame64) : is_nullptr(m_edit_frame) ;
 
     if (newIndex == 2 && isnull)
     {
@@ -1049,7 +1156,8 @@ qsmainwnd::tabWidgetClicked (int newIndex)
 
         sequence * seq = perf().get_sequence(seqid);
         seq->set_dirty();
-        if (usr().seqedit_in_tab())
+        bool usenew = is_nullptr(m_edit_frame) && usr().use_new_seqedit();
+        if (usenew)
         {
             m_edit_frame64 = new qseqeditframe64(perf(), seqid, ui->EditTab);
             ui->EditTabLayout->addWidget(m_edit_frame64);   /* no ptr check */

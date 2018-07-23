@@ -93,7 +93,7 @@
 #include <gtkmm/stock.h>
 #include <gtkmm/tooltips.h>
 
-#include "calculations.hpp"             /* pulse_to_measurestring()         */
+#include "calculations.hpp"             /* pulse_to_measurestring(), etc.   */
 #include "cmdlineopts.hpp"              /* for build info function          */
 #include "file_functions.hpp"           /* seq64::file_extension_match()    */
 #include "globals.h"
@@ -1293,15 +1293,11 @@ mainwnd::set_song_mode ()
  */
 
 void
-mainwnd::toggle_song_mode()
+mainwnd::toggle_song_mode ()
 {
     if (! perf().is_pattern_playing())
         m_button_mode->set_active(! m_button_mode->get_active());
 }
-
-#endif
-
-#ifdef SEQ64_STAZED_MENU_BUTTONS
 
 /**
  *  This function must be in the cpp module, where the button header file
@@ -1360,7 +1356,6 @@ mainwnd::timer_callback ()
 
     if (perf().is_pattern_playing())
     {
-        midibpm bpm = perf().get_beats_per_minute();
         int ppqn = perf().ppqn();
         if (m_tick_time_as_bbt)
         {

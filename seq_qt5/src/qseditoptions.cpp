@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-05-27
+ * \updates       2018-07-21
  * \license       GNU GPLv2 or above
  *
  */
@@ -71,32 +71,73 @@ qseditoptions::qseditoptions (perform & p, QWidget * parent)
 {
     ui->setupUi(this);
     backup();
-    syncWithInternals();
+    // Move to end: syncWithInternals();
+
+    /*
+     * Jack Sync tab.  JACK Transport Connect/Disconnect buttons.
+     */
+
     connect
     (
         ui->btnJackConnect, SIGNAL(clicked(bool)),
-        this, SLOT(jackConnect())
+        this, SLOT(update_jack_connect())
     );
     connect
     (
         ui->btnJackDisconnect, SIGNAL(clicked(bool)),
-        this, SLOT(jackDisconnect())
+        this, SLOT(update_jack_disconnect())
     );
+
+    /*
+     * Jack Sync tab.  JACK Transport/MIDI tab.
+     */
+
     connect
     (
         ui->chkJackTransport, SIGNAL(stateChanged(int)),
-        this, SLOT(updateTransportSupport())
+        this, SLOT(update_transport_support())
     );
     connect
     (
         ui->chkJackConditional, SIGNAL(stateChanged(int)),
-        this, SLOT(updateMasterCond())
+        this, SLOT(update_master_cond())
     );
     connect
     (
         ui->chkJackMaster, SIGNAL(stateChanged(int)),
-        this, SLOT(updateTimeMaster())
+        this, SLOT(update_time_master())
     );
+    connect
+    (
+        ui->chkNoteResume, SIGNAL(stateChanged(int)),
+        this, SLOT(update_note_resume())
+    );
+
+    /*
+     * Display tab.
+     */
+
+    connect
+    (
+        ui->spinKeyHeight, SIGNAL(valueChanged(int)),
+        this, SLOT(update_key_height())
+    );
+    connect
+    (
+        ui->lineEditUiScaling, SIGNAL(textEdited(const QString &)),
+        this, SLOT(update_ui_scaling(const QString &))
+    );
+
+    connect
+    (
+        ui->checkBoxKeplerSeqedit, SIGNAL(stateChanged(int)),
+        this, SLOT(update_pattern_editor())
+    );
+
+    /*
+     * OK/Cancel Buttons
+     */
+
     connect
     (
         ui->buttonBoxOptionsDialog->button(QDialogButtonBox::Ok),
@@ -106,16 +147,6 @@ qseditoptions::qseditoptions (perform & p, QWidget * parent)
     (
         ui->buttonBoxOptionsDialog->button(QDialogButtonBox::Cancel),
         SIGNAL(clicked(bool)), this, SLOT(cancel())
-    );
-    connect
-    (
-        ui->chkNoteResume, SIGNAL(stateChanged(int)),
-        this, SLOT(updateNoteResume())
-    );
-    connect
-    (
-        ui->spinKeyHeight, SIGNAL(valueChanged(int)),
-        this, SLOT(updateKeyHeight())
     );
 
     /*
@@ -159,10 +190,14 @@ qseditoptions::qseditoptions (perform & p, QWidget * parent)
     );
     vboxinputs->addItem(spacer2);
     ui->groupBoxInputs->setLayout(vboxinputs);
+
+    // Moved to here
+
+    syncWithInternals();
 }
 
 /**
- *  Why is this not virtual?
+ *  A stock Qt GUI destructor.
  */
 
 qseditoptions::~qseditoptions ()
@@ -175,7 +210,7 @@ qseditoptions::~qseditoptions ()
  */
 
 void
-qseditoptions::jackConnect ()
+qseditoptions::update_jack_connect ()
 {
     perf().set_jack_mode(true);             // perf().init_jack();
 }
@@ -185,7 +220,7 @@ qseditoptions::jackConnect ()
  */
 
 void
-qseditoptions::jackDisconnect ()
+qseditoptions::update_jack_disconnect ()
 {
     perf().set_jack_mode(false);            // perf().deinit_jack();
 }
@@ -195,7 +230,7 @@ qseditoptions::jackDisconnect ()
  */
 
 void
-qseditoptions::updateMasterCond ()
+qseditoptions::update_master_cond ()
 {
     rc().with_jack_master_cond(ui->chkJackConditional->isChecked());
     syncWithInternals();
@@ -206,7 +241,7 @@ qseditoptions::updateMasterCond ()
  */
 
 void
-qseditoptions::updateTimeMaster ()
+qseditoptions::update_time_master ()
 {
     rc().with_jack_master(ui->chkJackMaster->isChecked());
     syncWithInternals();
@@ -217,7 +252,7 @@ qseditoptions::updateTimeMaster ()
  */
 
 void
-qseditoptions::updateTransportSupport ()
+qseditoptions::update_transport_support ()
 {
     rc().with_jack_transport(ui->chkJackTransport->isChecked());
     syncWithInternals();
@@ -290,6 +325,11 @@ qseditoptions::syncWithInternals ()
 
     ui->chkNoteResume->setChecked(perf().resume_note_ons());
     ui->spinKeyHeight->setValue(usr().key_height());
+
+    char tmp[16];
+    snprintf(tmp, sizeof tmp, "%g", usr().window_scale());
+    ui->lineEditUiScaling->setText(tmp);
+    ui->checkBoxKeplerSeqedit->setChecked(! usr().use_new_seqedit());
 }
 
 /**
@@ -299,7 +339,7 @@ qseditoptions::syncWithInternals ()
  */
 
 void
-qseditoptions::updateNoteResume ()
+qseditoptions::update_note_resume ()
 {
     perf().resume_note_ons(ui->chkNoteResume->isChecked());
     syncWithInternals();
@@ -312,10 +352,39 @@ qseditoptions::updateNoteResume ()
  */
 
 void
-qseditoptions::updateKeyHeight ()
+qseditoptions::update_key_height ()
 {
     usr().key_height(ui->spinKeyHeight->value());
     syncWithInternals();
+}
+
+/**
+ *
+ */
+
+void
+qseditoptions::update_ui_scaling (const QString & qs)
+{
+    const std::string valuetext = qs.toStdString();
+    double value = std::stod(valuetext);
+    usr().window_scale(value);
+    usr().save_user_config(true);
+}
+
+/**
+ *  Sequencer64 has a new pattern editor GUI for Qt that is larger and more
+ *  functional than the Kepler34 pattern editor.  However, it has the
+ *  side-effect, currently, of making the main window larger.
+ *
+ *  This slot sets the new feature to off if the check-box is checked.
+ */
+
+void
+qseditoptions::update_pattern_editor ()
+{
+    bool use_kepler_seqedit = ui->checkBoxKeplerSeqedit->isChecked();
+    usr().use_new_seqedit(! use_kepler_seqedit);
+    usr().save_user_config(true);
 }
 
 /**

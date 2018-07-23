@@ -1,11 +1,34 @@
-NEWS for Sequencer64 0.95.0
+NEWS for Sequencer64 0.95.1
 Chris Ahlstrom
-2015-07-10 to 2018-06-02
+2015-07-10 to 2018-07-22
 
 This file collects major changes that are older and clutter up
 the README file.  This file should be called "OLD NEWS".
 
 Older major updates:
+
+Pull Request #150 from user jfrey-xx:
+
+    While the commit messages should be self-explanatory, here is a list of
+    the current modifications:
+
+	-	I encountered weird behaviors while recording without touching the GUI,
+        and switching back and forth between play / pause (note on 0, note off
+        with some positive values, as if it got inverted at some point) -	I
+        am controlling which sequence to record or to set to midi through,
+        explicitly disabling for each state the previous sequence when I am
+        switching to a new one. Since it appears only one sequence at a time
+        (or one sequence/channel) can be an "input" at the level of
+        perform.cpp, it could happen that disabling recording or midi through
+        "steals" the input from an active sequence.
+    -	Incoming MIDI events are systematically checked against all captured
+        MIDI, otherwise too often unwanted notes would be recorded or played
+        -- in the comments previous behavior is justified to avoid delays, but
+        I willing to trade CPU cycles for that.
+    -	Fixed toggle for quantizing mode; it was not working neither for MIDI
+        control nor GUI.
+    -	Biggest change: the MIDI control "reserved for expansion" is now used
+        to set the "replace" flag while recording.
 
     -   Version 0.94.6:
         -   Fixed tempo handling, issue #141.

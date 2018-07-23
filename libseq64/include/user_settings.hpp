@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-07-13
+ * \updates       2018-07-21
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -99,7 +99,7 @@ class user_settings
 {
     friend class midifile;      /* allow access to midi_bpm_maximum()    */
     friend class userfile;      /* allow protected access to file parser */
-    friend bool parse_o_options (int, char *[]);
+    friend bool parse_o_options (int, char * []);
 
 private:
 
@@ -858,8 +858,8 @@ private:
 
     /**
      *  Turns on the replacement of the Qt 5 qseqeditframe with the larger
-     *  and more functional qseqeditframe64.  The size of the main window is
-     *  increased to fit it.
+     *  and more functional qseqeditframe64, in the "Edit" tab.  The size of
+     *  the main window is increased to fit it.  A Kepler34 adaptation.
      */
 
     bool m_user_ui_seqedit_in_tab;
@@ -1042,13 +1042,37 @@ public:
         return m_window_scale;
     }
 
+    void window_scale (float winscale);
+
+    /**
+     *  Returns true if we're increasing the size of the main window.
+     *  In order to avoid double-precision issues, the limit is 1.01 rather
+     *  than 1.0.
+     */
+
+    bool window_scaled_up () const
+    {
+        return m_window_scale >= 1.01f;
+    }
+
     /**
      *  Returns true if we're reducing the size of the main window.
+     *  In order to avoid double-precision issues, the limit is 0.99 rather
+     *  than 1.0.
      */
 
     bool window_scaled_down () const
     {
-        return m_window_scale < 1.0f;
+        return m_window_scale <= 0.99f;
+    }
+
+    /**
+     *  Returns true if the window is scaled.
+     */
+
+    bool window_is_scaled () const
+    {
+        return window_scaled_up() || window_scaled_down();
     }
 
     /**
@@ -1555,7 +1579,6 @@ protected:
             m_grid_brackets = thickness;
     }
 
-    void window_scale (float winscale);
     void grid_style (int gridstyle);
     void mainwnd_rows (int value);
     void mainwnd_cols (int value);
@@ -1771,7 +1794,7 @@ public:
      * \getter m_user_ui_seqedit_in_tab
      */
 
-    bool seqedit_in_tab () const
+    bool use_new_seqedit () const
     {
         return m_user_ui_seqedit_in_tab;
     }
@@ -1917,7 +1940,7 @@ public:         // used in main application module and the userfile class
      * \setter m_user_ui_seqedit_in_tab
      */
 
-    void seqedit_in_tab (bool f)
+    void use_new_seqedit (bool f)
     {
         m_user_ui_seqedit_in_tab = f;
     }

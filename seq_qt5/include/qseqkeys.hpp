@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-06-30
+ * \updates       2018-07-22
  * \license       GNU GPLv2 or above
  *
  *      We've added the feature of a right-click toggling between showing the
@@ -101,16 +101,40 @@ private:
 
     void convert_y (int y, int & note);
 
+    /**
+     *  Detects a black key.
+     *
+     * \param key
+     *      The key to analyze.
+     *
+     * \return
+     *      Returns true if the key is black (value 1, 3, 6, 8, or 10).
+     */
+
+    bool is_black_key (int key) const
+    {
+        return key == 1 || key == 3 || key == 6 || key == 8 || key == 10;
+    }
+
 private:
 
     sequence & m_seq;
     QTimer * m_timer;
     QFont m_font;
+
+    /**
+     *  The default value is to show the octave letters on the vertical
+     *  virtual keyboard.  If false, then the MIDI key numbers are shown
+     *  instead.  This is a new feature of Sequencer64.
+     */
+
+    bool m_show_octave_letters;
+
     int m_key;
-    int keyY;
-    int keyAreaY;
-    bool mPreviewing;
-    int  mPreviewKey;
+    int m_key_y;
+    int m_key_area_y;
+    bool m_Previewing;
+    int  m_PreviewKey;
 
 };          // class qseqkeys
 

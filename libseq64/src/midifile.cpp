@@ -1317,8 +1317,9 @@ midifile::parse_prop_header (int file_size)
             {
                 fprintf
                 (
-                    stderr, "Bad meta type '%x' in prop section near offset %lx\n",
-                    int(type), m_pos
+                    stderr,
+                    "Bad meta type '%x' in prop section near offset %lx\n",
+                    int(type), (unsigned long)(m_pos)
                 );
             }
         }
@@ -2721,7 +2722,7 @@ bool
 midifile::set_error_dump (const std::string & msg)
 {
     char temp[32];
-    snprintf(temp, sizeof temp, "Near offset 0x%lx: ", m_pos);
+    snprintf(temp, sizeof temp, "Near offset 0x%lx: ", (unsigned long)(m_pos));
     std::string result = temp;
     result += msg;
     fprintf(stderr, "%s\n", result.c_str());
@@ -2754,7 +2755,7 @@ midifile::set_error_dump (const std::string & msg, unsigned long value)
     snprintf
     (
         temp, sizeof temp, "Near offset 0x%lx, bad value %lu (0x%lx): ",
-        m_pos, value, value
+        (unsigned long)(m_pos), value, value
     );
     std::string result = temp;
     result += msg;

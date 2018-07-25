@@ -105,7 +105,7 @@
         </property>
        </widget>
       </widget>
-      <widget class="QWidget" name="layoutWidget">
+      <widget class="QWidget" name="layoutWidgetClockStart">
        <property name="geometry">
         <rect>
          <x>30</x>
@@ -210,6 +210,9 @@
         <string>UI Boolean Options</string>
        </property>
        <widget class="QCheckBox" name="checkBoxKeplerSeqedit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -219,11 +222,11 @@
          </rect>
         </property>
         <property name="text">
-         <string>Use Kepler34 Pattern Editor in Tab *</string>
+         <string>Reserved for expansion</string>
         </property>
        </widget>
       </widget>
-      <widget class="QWidget" name="layoutWidget">
+      <widget class="QWidget" name="layoutWidgetGuiOptions">
        <property name="geometry">
         <rect>
          <x>10</x>

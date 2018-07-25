@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-07-13
+ * \updates       2018-07-24
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -170,10 +170,6 @@ main (int argc, char * argv [])
 #endif
 #endif
         );
-
-        if (seq64::usr().use_new_seqedit())
-            seq24_window.setFixedSize(920, 680);
-
         seq24_window.show();
 
         /*

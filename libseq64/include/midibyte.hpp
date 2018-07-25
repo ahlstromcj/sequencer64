@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-23
- * \updates       2018-06-07
+ * \updates       2018-07-24
  * \license       GNU GPLv2 or above
  *
  *  These typedef specifications are intended to remove the ambiguity we have
@@ -188,6 +188,11 @@ public:
 
     midi_measures ();
     midi_measures (int measures, int beats, int divisions);
+
+    void clear ()
+    {
+        m_measures = m_beats = m_divisions = 0;
+    }
 
     /**
      * \getter m_measures

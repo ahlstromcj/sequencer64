@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-22
+ * \updates       2018-07-24
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -401,7 +401,8 @@ qseqeditframe64::qseqeditframe64
     m_first_event       (0),
     m_first_event_name  ("(no events)"),
     m_have_focus        (false),
-    m_edit_mode         (perf().seq_edit_mode(seqid))
+    m_edit_mode         (perf().seq_edit_mode(seqid)),
+    m_timer             (nullptr)
 {
     ui->setupUi(this);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -1211,6 +1212,14 @@ qseqeditframe64::qseqeditframe64
     );
     set_recording_volume(usr().velocity_override());
 
+    m_timer = new QTimer(this);                          // redraw timer !!!
+    m_timer->setInterval(2 * usr().window_redraw_rate());    // 20
+    QObject::connect
+    (
+        m_timer, SIGNAL(timeout()), this, SLOT(conditional_update())
+    );
+    m_timer->start();
+
     /*
      * EXPERIMENTAL!  Doesn't stick, due to Qt layout stretching?
 
@@ -1233,6 +1242,17 @@ qseqeditframe64::~qseqeditframe64 ()
 /*
  * Play the SLOTS!
  */
+
+/**
+ *  We need to set the dirty state while the sequence has been changed.
+ */
+
+void
+qseqeditframe64::conditional_update ()
+{
+    if (m_seq->is_dirty_edit())
+        set_dirty();
+}
 
 /**
  *  Handles edits of the sequence title.
@@ -1289,7 +1309,6 @@ void
 qseqeditframe64::reset_beats_per_measure ()
 {
     ui->m_combo_bpm->setCurrentIndex(SEQ64_DEFAULT_BEATS_PER_MEASURE - 1);
-    // set_dirty();
 }
 
 /**
@@ -1333,7 +1352,6 @@ void
 qseqeditframe64::reset_measures ()
 {
     ui->m_combo_length->setCurrentIndex(0);
-    // set_dirty();
 }
 
 /**
@@ -2004,7 +2022,7 @@ qseqeditframe64::set_data_type (midibyte status, midibyte control)
     m_seqdata->set_data_type(status, control);
 
     char hex[8];
-    char type[80];
+    char type[32];                                  /* was 80 */
     snprintf(hex, sizeof hex, "[0x%02X]", status);
     if (status == EVENT_NOTE_OFF)
         snprintf(type, sizeof type, "Note Off");
@@ -2314,7 +2332,6 @@ void
 qseqeditframe64::reset_zoom ()
 {
     ui->m_combo_zoom->setCurrentIndex(1);
-    // set_dirty();
 }
 
 /**

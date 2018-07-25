@@ -1,5 +1,5 @@
-#ifndef SEQ64_QSCROLLMASTER_HPP
-#define SEQ64_QSCROLLMASTER_HPP
+#ifndef SEQ64_QSCROLLMASTER_H
+#define SEQ64_QSCROLLMASTER_H
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          qscrollmaster.hpp
+ * \file          qscrollmaster.h
  *
  *  This module declares/defines a class for controlling other QScrollAreas
  *  from this one.
@@ -94,7 +94,8 @@ private:
 
 public:
 
-    qscrollmaster (QFrame * qf);
+    // qscrollmaster (QFrame * qf);
+    qscrollmaster (QWidget * qf);
     virtual ~qscrollmaster ();
 
     void add_v_scroll (QScrollBar * qsb)
@@ -128,10 +129,10 @@ protected:
 
 };          // class qscrollmaster
 
-#endif      // SEQ64_QSCROLLMASTER_HPP
+#endif      // SEQ64_QSCROLLMASTER_H
 
 /*
- * qscrollmaster.hpp
+ * qscrollmaster.h
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

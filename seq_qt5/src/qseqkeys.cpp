@@ -59,7 +59,8 @@ qseqkeys::qseqkeys
     m_Previewing            (false),
     m_PreviewKey            (-1)
 {
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
+    // setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
     setMouseTracking(true);
 }
 

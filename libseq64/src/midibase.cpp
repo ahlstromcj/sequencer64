@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2018-05-09
+ * \updates       2018-07-24
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -272,7 +272,7 @@ midibase::set_name
          * Old: std::string bname = usr().bus_name(get_port_id());
          */
 
-        char alias[128];
+        char alias[80];                                     /* was 128  */
         std::string bname = usr().bus_name(m_bus_index);
         if (is_output_port() && ! bname.empty())
         {

@@ -76,7 +76,7 @@ qseqroll::qseqroll
         not_nullptr(dynamic_cast<qseqeditframe64 *>(m_parent_frame))
     ),
     m_seqkeys_wid           (seqkeys_wid),
-    m_timer                  (nullptr),
+    m_timer                 (nullptr),
     mFont                   (),
     m_scale                 (0),
     m_pos                   (0),
@@ -100,7 +100,8 @@ qseqroll::qseqroll
 {
     set_snap(seq.get_snap_tick());
     setFocusPolicy(Qt::StrongFocus);
-    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+    // setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
 
     /*
      * If not called, the width (and presumably the height) are set to some
@@ -680,7 +681,6 @@ qseqroll::paintEvent (QPaintEvent *)
         old_rect().width(width);
         old_rect().height(selection().height());
     }
-    set_dirty();
 }
 
 /**
@@ -753,10 +753,8 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                     set_dirty();
                 }
             }
-            else                        /* we're selecting                  */
+            else                            /* we're selecting anew         */
             {
-                // if nothing's already selected in the range
-
                 bool isSelected = false;
                 switch (m_edit_mode)
                 {
@@ -780,13 +778,13 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                     if (! (event->modifiers() & Qt::ControlModifier))
                         seq().unselect();
 
-                    switch (m_edit_mode) /* on direct click select only 1 event */
+                    switch (m_edit_mode)    /* direct click; select 1 event */
                     {
                     case EDIT_MODE_NOTE:
                         numsel = seq().select_note_events
                         (
                             tick_s, note, tick_f, note,
-                            sequence::e_select_one  // sequence::e_select_single
+                            sequence::e_select_one
                         );
                         break;
 
@@ -828,8 +826,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
 
                 if (isSelected)
                 {
-                    // moving - left click only
-                    if
+                    if                          /* moving - left click only */
                     (
                         event->button() == Qt::LeftButton &&
                         ! (event->modifiers() & Qt::ControlModifier)
@@ -839,14 +836,16 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                         set_dirty();
                         switch (m_edit_mode)
                         {
-                        case EDIT_MODE_NOTE:           // acount note lengths
-                            seq().get_selected_box
+                        case EDIT_MODE_NOTE:
+
+                            seq().get_selected_box      /* use note lengths */
                             (
                                 tick_s, note, tick_f, note_l
                             );
                             break;
 
-                        case EDIT_MODE_DRUM:           // ignore note lengths
+                        case EDIT_MODE_DRUM:           /* ignore them       */
+
                             seq().get_onsets_selected_box
                             (
                                 tick_s, note, tick_f, note_l
@@ -867,10 +866,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                         current_x(snapped_x);
                         drop_x(snapped_x);
                     }
-
-                    /* middle mouse button or left-ctrl click (2 button mice) */
-
-                    if
+                    if          /* Middle mouse button or left-ctrl click   */
                     (
                         (
                             event->button() == Qt::MiddleButton ||
@@ -882,9 +878,6 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                             && m_edit_mode == EDIT_MODE_NOTE)
                     {
                         growing(true);
-
-                        /* get the box that selected elements are in */
-
                         seq().get_selected_box(tick_s, note, tick_f, note_l);
                         convert_tn_box_to_rect
                         (
@@ -897,7 +890,7 @@ qseqroll::mousePressEvent (QMouseEvent * event)
         if (event->button() == Qt::RightButton)
             set_adding(true);
     }
-    if (is_dirty())                     // set seq dirty if something changed
+    if (is_dirty())                                 /* something changed?   */
         seq().set_dirty();
 }
 

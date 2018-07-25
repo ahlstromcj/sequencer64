@@ -5982,21 +5982,21 @@ perform::main_window_title ()
 void
 perform::set_input_bus (bussbyte bus, bool active)
 {
-    if (bus >= SEQ64_DEFAULT_BUSS_MAX)                  /* 32 busses    */
+    if (bus >= SEQ64_DEFAULT_BUSS_MAX)                  /* 32 busses        */
     {
         if (bus == PERFORM_KEY_LABELS_ON_SEQUENCE)
             show_ui_sequence_key(active);
         else if (bus == PERFORM_NUM_LABELS_ON_SEQUENCE)
             show_ui_sequence_number(active);
 
-        for (int seq = 0; seq < m_sequence_high; seq++)  /* m_sequence_max  */
+        for (int seq = 0; seq < m_sequence_high; ++seq) /* m_sequence_max  */
         {
             sequence * s = get_sequence(seq);
             if (not_nullptr(s))
                 s->set_dirty();
         }
     }
-    else // if (bus >= 0)
+    else
     {
         if (m_master_bus->set_input(bus, active))
             set_input(bus, active);

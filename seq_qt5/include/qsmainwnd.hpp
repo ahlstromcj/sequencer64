@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-22
+ * \updates       2018-07-24
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -70,9 +70,7 @@ namespace seq64
     class qsliveframe;
     class qperfeditex;
     class qperfeditframe64;
-//  class qperfeditframe;
     class qseqeditex;
-    class qseqeditframe64;
     class qseqeditframe;
     class qsmaintime;
     class qseditoptions;
@@ -146,7 +144,6 @@ private:
     qsliveframe * m_live_frame;
     qperfeditex * m_perfedit;
     qperfeditframe64 * m_song_frame64;
-    qseqeditframe64 * m_edit_frame64;
     qseqeditframe * m_edit_frame;
     QErrorMessage * m_msg_error;
     QMessageBox * m_msg_save_changes;

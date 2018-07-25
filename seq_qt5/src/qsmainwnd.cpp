@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-22
+ * \updates       2018-07-25
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -47,7 +47,6 @@
 #include "qsbuildinfo.hpp"
 #include "qseditoptions.hpp"
 #include "qseqeditex.hpp"
-#include "qseqeditframe64.hpp"          /* Sequencer64 version              */
 #include "qseqeditframe.hpp"            /* Kepler34 version                 */
 #include "qskeymaps.hpp"                /* mapping between Gtkmm and Qt     */
 #include "qsmaintime.hpp"
@@ -101,7 +100,6 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_live_frame        (nullptr),
     m_perfedit          (nullptr),
     m_song_frame64      (nullptr),
-    m_edit_frame64      (nullptr),
     m_edit_frame        (nullptr),
     m_msg_error         (nullptr),
     m_msg_save_changes  (nullptr),
@@ -427,9 +425,12 @@ qsmainwnd::~qsmainwnd ()
  */
 
 void
-qsmainwnd::closeEvent (QCloseEvent *)
+qsmainwnd::closeEvent (QCloseEvent * event)
 {
-    quit();
+    if (check())
+        remove_all_editors();
+    else
+        event->ignore();
 }
 
 /**
@@ -725,11 +726,13 @@ qsmainwnd::check ()
         switch (choice)
         {
         case QMessageBox::Save:
+
             if (save_file())
                 result = true;
             break;
 
         case QMessageBox::Discard:
+
             result = true;
             break;
 
@@ -890,7 +893,16 @@ qsmainwnd::showqsbuildinfo ()
 }
 
 /**
- *  Loads a new pattern editor for the selected sequence into the "Edit" tab.
+ *  Loads the older Kepler34 pattern editor (qseqeditframe) for the selected
+ *  sequence into the "Edit" tab.
+ *
+ *  We wanted to load the newer version, which has more functions, but it
+ *  works somewhat differently, and cannot be fit into the current main window
+ *  without enlarging it.  Therefore, we use the new version, qsegeditframe64,
+ *  only in the external mode.
+ *
+ * \param seqid
+ *      The slot value (0 to 1024) of the sequence to be edited.
  *
  * \warning
  *      Somehow, checking for not_nullptr(m_edit_frame) to determine whether
@@ -904,36 +916,25 @@ qsmainwnd::load_editor (int seqid)
     edit_container::iterator ei = m_open_editors.find(seqid);
     if (ei == m_open_editors.end())
     {
-        bool usenew = is_nullptr(m_edit_frame) && usr().use_new_seqedit();
-        if (usenew)
-        {
-            ui->EditTabLayout->removeWidget(m_edit_frame64);    /* no ptr check */
-            if (not_nullptr(m_edit_frame64))
-                delete m_edit_frame64;
+        ui->EditTabLayout->removeWidget(m_edit_frame);      /* no ptr check */
+        if (not_nullptr(m_edit_frame))
+            delete m_edit_frame;
 
-            m_edit_frame64 = new qseqeditframe64(perf(), seqid, ui->EditTab);
-            ui->EditTabLayout->addWidget(m_edit_frame64);
-            m_edit_frame64->show();
-        }
-        else
-        {
-            ui->EditTabLayout->removeWidget(m_edit_frame);      /* no ptr check */
-            if (not_nullptr(m_edit_frame))
-                delete m_edit_frame;
-
-            m_edit_frame = new qseqeditframe(perf(), seqid, ui->EditTab);
-            ui->EditTabLayout->addWidget(m_edit_frame);
-            m_edit_frame->show();
-        }
+        m_edit_frame = new qseqeditframe(perf(), seqid, ui->EditTab);
+        ui->EditTabLayout->addWidget(m_edit_frame);
+        m_edit_frame->show();
         ui->tabWidget->setCurrentIndex(2);
     }
 }
 
 /**
- *  Opens an external window for editing the sequence.  This window is much
- *  more like the Gtkmm seqedit window, and somewhat more functional.  It has
- *  no parent widget, otherwise the whole big dialog will appear inside that
- *  parent.
+ *  Opens an external window for editing the sequence.  This window
+ *  (qseqeditex with an embedded qseqeditframe64) is much more like the Gtkmm
+ *  seqedit window, and somewhat more functional.  It has no parent widget,
+ *  otherwise the whole big dialog will appear inside that parent.
+ *
+ * \param seqid
+ *      The slot value (0 to 1024) of the sequence to be edited.
  */
 
 void
@@ -1081,10 +1082,6 @@ qsmainwnd::updateBeatLength (int blIndex)
             seq->set_num_measures(seq->get_num_measures());
         }
     }
-
-    if (not_nullptr(m_edit_frame64))
-        m_edit_frame64->update_draw_geometry();
-
     if (not_nullptr(m_edit_frame))
         m_edit_frame->update_draw_geometry();
 }
@@ -1099,9 +1096,6 @@ void
 qsmainwnd::updatebeats_per_measure(int bmIndex)
 {
     int bm = bmIndex + 1;
-    if (not_nullptr(m_song_frame64))
-        m_song_frame64->set_beats_per_measure(bm);
-
     if (not_nullptr(m_beat_ind))
         m_beat_ind->set_beats_per_measure(bm);
 
@@ -1115,9 +1109,6 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
 
         }
     }
-    if (not_nullptr(m_edit_frame64))
-        m_edit_frame64->update_draw_geometry();
-
     if (not_nullptr(m_edit_frame))
         m_edit_frame->update_draw_geometry();
 }
@@ -1134,9 +1125,7 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
 void
 qsmainwnd::tabWidgetClicked (int newIndex)
 {
-    bool isnull = usr().use_new_seqedit() ?
-        is_nullptr(m_edit_frame64) : is_nullptr(m_edit_frame) ;
-
+    bool isnull = is_nullptr(m_edit_frame);
     if (newIndex == 2 && isnull)
     {
         int seqid = -1;
@@ -1156,19 +1145,9 @@ qsmainwnd::tabWidgetClicked (int newIndex)
 
         sequence * seq = perf().get_sequence(seqid);
         seq->set_dirty();
-        bool usenew = is_nullptr(m_edit_frame) && usr().use_new_seqedit();
-        if (usenew)
-        {
-            m_edit_frame64 = new qseqeditframe64(perf(), seqid, ui->EditTab);
-            ui->EditTabLayout->addWidget(m_edit_frame64);   /* no ptr check */
-            m_edit_frame64->show();
-        }
-        else
-        {
-            m_edit_frame = new qseqeditframe(perf(), seqid, ui->EditTab);
-            ui->EditTabLayout->addWidget(m_edit_frame);     /* no ptr check */
-            m_edit_frame->show();
-        }
+        m_edit_frame = new qseqeditframe(perf(), seqid, ui->EditTab);
+        ui->EditTabLayout->addWidget(m_edit_frame);     /* no ptr check */
+        m_edit_frame->show();
         update();
     }
 }

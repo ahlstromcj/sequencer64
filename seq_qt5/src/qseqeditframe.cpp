@@ -143,15 +143,16 @@ qseqeditframe::qseqeditframe
     m_scroll_area   (nullptr),
     m_palette       (new QPalette()),
     mPopup          (nullptr),
-    mPerformance    (p),                            // a reference
-    mSeq            (perf().get_sequence(seqid)),   // a pointer
-    mKeyboard       (nullptr),
-    mTimeBar        (nullptr),
-    mNoteGrid       (nullptr),
-    mEventValues    (nullptr),
-    mEventTriggers  (nullptr),
+    m_perform       (p),                            // a reference
+    m_seq           (perf().get_sequence(seqid)),   // a pointer
+    m_seqkeys       (nullptr),
+    m_seqtime       (nullptr),
+    m_seqroll       (nullptr),
+    m_seqdata       (nullptr),
+    m_seqevent      (nullptr),
+    m_timer         (nullptr),
     mSnap           (0),
-    mSeqId          (seqid),
+    m_seqId         (seqid),
     editMode        (perf().seq_edit_mode(seqid))
 {
     ui->setupUi(this);
@@ -222,23 +223,23 @@ qseqeditframe::qseqeditframe
     (
         QString::fromStdString
         (
-            masterbus.get_midi_out_bus_name(mSeq->get_midi_bus())
+            masterbus.get_midi_out_bus_name(m_seq->get_midi_bus())
         )
     );
 
     /* pull data from sequence object */
 
-    ui->txtSeqName->setPlainText(mSeq->name().c_str());
-    ui->cmbMidiChan->setCurrentIndex(mSeq->get_midi_channel());
+    ui->txtSeqName->setPlainText(m_seq->name().c_str());
+    ui->cmbMidiChan->setCurrentIndex(m_seq->get_midi_channel());
 
     QString snapText("1/");
-    snapText.append(QString::number(c_ppqn * 4 / mSeq->get_snap_tick()));
+    snapText.append(QString::number(c_ppqn * 4 / m_seq->get_snap_tick()));
     ui->cmbGridSnap->setCurrentText(snapText);
 
-    QString seqLenText(QString::number(mSeq->get_num_measures()));
+    QString seqLenText(QString::number(m_seq->get_num_measures()));
     ui->cmbSeqLen->setCurrentText(seqLenText);
 
-    mSeq->set_editing(true);
+    m_seq->set_editing(true);
 
     /*
      * Set out our custom elements.
@@ -257,41 +258,41 @@ qseqeditframe::qseqeditframe
 
     // The key-height parameters should be a user_settings member.
 
-    mKeyboard = new qseqkeys
+    m_seqkeys = new qseqkeys
     (
-        *mSeq,                          // eventually replace ptr with reference
+        *m_seq,                          // eventually replace ptr with reference
         mContainer,
         usr().key_height(),
         usr().key_height() * c_num_keys + 1
     );
-    mTimeBar = new qseqtime
+    m_seqtime = new qseqtime
     (
-        perf(), *mSeq, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_PPQN, mContainer
+        perf(), *m_seq, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_PPQN, mContainer
     );
-    mNoteGrid = new qseqroll
+    m_seqroll = new qseqroll
     (
-        perf(), *mSeq, mKeyboard,
+        perf(), *m_seq, m_seqkeys,
         SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP, SEQ64_DEFAULT_PPQN, 0,
         EDIT_MODE_NOTE, this // mContainer
     );
-    mNoteGrid->update_edit_mode(editMode);
-    mEventValues = new qseqdata
+    m_seqroll->update_edit_mode(editMode);
+    m_seqdata = new qseqdata
     (
-        perf(), *mSeq, SEQ64_DEFAULT_ZOOM, mSnap, SEQ64_DEFAULT_PPQN, mContainer
+        perf(), *m_seq, SEQ64_DEFAULT_ZOOM, mSnap, SEQ64_DEFAULT_PPQN, mContainer
     );
-    mEventTriggers = new qstriggereditor
+    m_seqevent = new qstriggereditor
     (
-        perf(), *mSeq, mEventValues, SEQ64_DEFAULT_ZOOM, mSnap,
+        perf(), *m_seq, m_seqdata, SEQ64_DEFAULT_ZOOM, mSnap,
         SEQ64_DEFAULT_PPQN, usr().key_height(), mContainer
     );
 
     m_layout_grid->setSpacing(0);
-    m_layout_grid->addWidget(mKeyboard, 1, 0, 1, 1);
-    m_layout_grid->addWidget(mTimeBar, 0, 1, 1, 1);
-    m_layout_grid->addWidget(mNoteGrid, 1, 1, 1, 1);
-    m_layout_grid->addWidget(mEventTriggers, 2, 1, 1, 1);
-    m_layout_grid->addWidget(mEventValues, 3, 1, 1, 1);
-    m_layout_grid->setAlignment(mNoteGrid, Qt::AlignTop);
+    m_layout_grid->addWidget(m_seqkeys, 1, 0, 1, 1);
+    m_layout_grid->addWidget(m_seqtime, 0, 1, 1, 1);
+    m_layout_grid->addWidget(m_seqroll, 1, 1, 1, 1);
+    m_layout_grid->addWidget(m_seqevent, 2, 1, 1, 1);
+    m_layout_grid->addWidget(m_seqdata, 3, 1, 1, 1);
+    m_layout_grid->setAlignment(m_seqroll, Qt::AlignTop);
 
     m_scroll_area->setWidget(mContainer);
 
@@ -445,6 +446,14 @@ qseqeditframe::qseqeditframe
     qt_set_icon(rec_xpm, ui->btnRec);
     connect(ui->btnThru, SIGNAL(clicked(bool)), this, SLOT(toggleMidiThru(bool)));
     qt_set_icon(thru_xpm, ui->btnThru);
+
+    m_timer = new QTimer(this);                          // redraw timer !!!
+    m_timer->setInterval(2 * usr().window_redraw_rate());    // 20
+    QObject::connect
+    (
+        m_timer, SIGNAL(timeout()), this, SLOT(conditional_update())
+    );
+    m_timer->start();
 }
 
 /**
@@ -457,13 +466,38 @@ qseqeditframe::~qseqeditframe ()
 }
 
 /**
+ *  We need to set the dirty state while the sequence has been changed.
+ */
+
+void
+qseqeditframe::conditional_update ()
+{
+    if (m_seq->is_dirty_edit())
+        set_dirty();
+}
+
+/**
+ *
+ */
+
+void
+qseqeditframe::set_dirty ()
+{
+    m_seqroll->set_dirty();
+    m_seqtime->set_dirty();
+    m_seqevent->set_dirty();
+    m_seqdata->set_dirty();
+    update_draw_geometry();
+}
+
+/**
  *
  */
 
 void
 qseqeditframe::updateSeqName()
 {
-    mSeq->set_name(ui->txtSeqName->document()->toPlainText().toStdString());
+    m_seq->set_name(ui->txtSeqName->document()->toPlainText().toStdString());
 }
 
 /**
@@ -494,8 +528,8 @@ qseqeditframe::updateGridSnap (int snapindex)
     case 15: snap = c_ppqn / 16 / 3; break;
     default: snap = c_ppqn * 4; break;
     }
-    mNoteGrid->set_snap(snap);
-    mSeq->set_snap_tick(snap);
+    m_seqroll->set_snap(snap);
+    m_seq->set_snap_tick(snap);
 }
 
 /**
@@ -505,7 +539,7 @@ qseqeditframe::updateGridSnap (int snapindex)
 void
 qseqeditframe::updatemidibus (int newindex)
 {
-    mSeq->set_midi_bus(newindex);
+    m_seq->set_midi_bus(newindex);
 }
 
 /**
@@ -515,7 +549,7 @@ qseqeditframe::updatemidibus (int newindex)
 void
 qseqeditframe::updateMidiChannel (int newindex)
 {
-    mSeq->set_midi_channel(newindex);
+    m_seq->set_midi_channel(newindex);
 }
 
 /**
@@ -525,7 +559,7 @@ qseqeditframe::updateMidiChannel (int newindex)
 void
 qseqeditframe::undo ()
 {
-    mSeq->pop_undo();
+    m_seq->pop_undo();
 }
 
 /**
@@ -535,7 +569,7 @@ qseqeditframe::undo ()
 void
 qseqeditframe::redo()
 {
-    mSeq->pop_redo();
+    m_seq->pop_redo();
 }
 
 /**
@@ -584,7 +618,7 @@ qseqeditframe::updateNoteLength (int newindex)
     default: length = c_ppqn * 4; break;
     }
 
-    mNoteGrid->set_note_length(length);
+    m_seqroll->set_note_length(length);
 }
 
 /**
@@ -594,10 +628,10 @@ qseqeditframe::updateNoteLength (int newindex)
 void
 qseqeditframe::zoom_in ()
 {
-    mNoteGrid->zoom_in();
-    mTimeBar->zoom_in();
-    mEventTriggers->zoom_in();
-    mEventValues->zoom_in();
+    m_seqroll->zoom_in();
+    m_seqtime->zoom_in();
+    m_seqevent->zoom_in();
+    m_seqdata->zoom_in();
     update_draw_geometry();
 }
 
@@ -608,10 +642,10 @@ qseqeditframe::zoom_in ()
 void
 qseqeditframe::zoom_out ()
 {
-    mNoteGrid->zoom_out();
-    mTimeBar->zoom_out();
-    mEventTriggers->zoom_out();
-    mEventValues->zoom_out();
+    m_seqroll->zoom_out();
+    m_seqtime->zoom_out();
+    m_seqevent->zoom_out();
+    m_seqdata->zoom_out();
     update_draw_geometry();
 }
 
@@ -633,9 +667,9 @@ void
 qseqeditframe::updateSeqLength()
 {
     int measures = ui->cmbSeqLen->currentText().toInt();
-    mSeq->set_num_measures(measures);                       // ????
-    mTimeBar->updateGeometry();
-    mNoteGrid->updateGeometry();
+    m_seq->set_num_measures(measures);                       // ????
+    m_seqtime->updateGeometry();
+    m_seqroll->updateGeometry();
     mContainer->adjustSize();
 }
 
@@ -666,10 +700,10 @@ qseqeditframe::updateBackgroundSeq(int newindex)
 void
 qseqeditframe::update_draw_geometry()
 {
-    QString seqLenText(QString::number(mSeq->get_num_measures()));
+    QString seqLenText(QString::number(m_seq->get_num_measures()));
     ui->cmbSeqLen->setCurrentText(seqLenText);
-    mTimeBar->updateGeometry();
-    mNoteGrid->updateGeometry();
+    m_seqtime->updateGeometry();
+    m_seqroll->updateGeometry();
     mContainer->adjustSize();
 }
 
@@ -694,8 +728,8 @@ qseqeditframe::toggleEditorMode()
         ui->lblNoteLen->show();
         break;
     }
-    perf().seq_edit_mode(mSeqId, editMode);
-    mNoteGrid->update_edit_mode(editMode);
+    perf().seq_edit_mode(m_seqId, editMode);
+    m_seqroll->update_edit_mode(editMode);
 }
 
 /**
@@ -706,8 +740,8 @@ void
 qseqeditframe::setEditorMode (seq64::edit_mode_t mode)
 {
     editMode = mode;
-    perf().seq_edit_mode(mSeqId, editMode);
-    mNoteGrid->update_edit_mode(mode);
+    perf().seq_edit_mode(m_seqId, editMode);
+    m_seqroll->update_edit_mode(mode);
 }
 
 /**
@@ -717,7 +751,7 @@ qseqeditframe::setEditorMode (seq64::edit_mode_t mode)
 void
 qseqeditframe::updateRecVol()
 {
-    mSeq->set_rec_vol(ui->cmbRecVol->currentData().toInt());
+    m_seq->set_rec_vol(ui->cmbRecVol->currentData().toInt());
 }
 
 /**
@@ -727,7 +761,7 @@ qseqeditframe::updateRecVol()
 void
 qseqeditframe::toggleMidiPlay(bool newVal)
 {
-    mSeq->set_playing(newVal);
+    m_seq->set_playing(newVal);
 }
 
 /**
@@ -737,7 +771,7 @@ qseqeditframe::toggleMidiPlay(bool newVal)
 void
 qseqeditframe::toggleMidiQRec(bool newVal)
 {
-    mSeq->set_quantized_recording(newVal);
+    m_seq->set_quantized_recording(newVal);
 }
 
 /**
@@ -747,8 +781,8 @@ qseqeditframe::toggleMidiQRec(bool newVal)
 void
 qseqeditframe::toggleMidiRec (bool newVal)
 {
-    perf().master_bus().set_sequence_input(true, mSeq);
-    mSeq->set_recording(newVal);
+    perf().master_bus().set_sequence_input(true, m_seq);
+    m_seq->set_recording(newVal);
 }
 
 /**
@@ -758,8 +792,8 @@ qseqeditframe::toggleMidiRec (bool newVal)
 void
 qseqeditframe::toggleMidiThru (bool newVal)
 {
-    perf().master_bus().set_sequence_input(true, mSeq);
-    mSeq->set_thru(newVal);
+    perf().master_bus().set_sequence_input(true, m_seq);
+    m_seq->set_thru(newVal);
 }
 
 /**
@@ -769,8 +803,8 @@ qseqeditframe::toggleMidiThru (bool newVal)
 void
 qseqeditframe::selectAllNotes()
 {
-    mSeq->select_events(EVENT_NOTE_ON, 0);
-    mSeq->select_events(EVENT_NOTE_OFF, 0);
+    m_seq->select_events(EVENT_NOTE_ON, 0);
+    m_seq->select_events(EVENT_NOTE_OFF, 0);
 }
 
 /**
@@ -780,8 +814,8 @@ qseqeditframe::selectAllNotes()
 void
 qseqeditframe::inverseNoteSelection()
 {
-    mSeq->select_events(EVENT_NOTE_ON, 0, true);
-    mSeq->select_events(EVENT_NOTE_OFF, 0, true);
+    m_seq->select_events(EVENT_NOTE_ON, 0, true);
+    m_seq->select_events(EVENT_NOTE_OFF, 0, true);
 }
 
 /**
@@ -791,8 +825,8 @@ qseqeditframe::inverseNoteSelection()
 void
 qseqeditframe::quantizeNotes()
 {
-    mSeq->push_undo();
-    mSeq->quantize_events(EVENT_NOTE_ON, 0, mSeq->get_snap_tick(), 1, true);
+    m_seq->push_undo();
+    m_seq->quantize_events(EVENT_NOTE_ON, 0, m_seq->get_snap_tick(), 1, true);
 }
 
 /**
@@ -802,8 +836,8 @@ qseqeditframe::quantizeNotes()
 void
 qseqeditframe::tightenNotes()
 {
-    mSeq->push_undo();
-    mSeq->quantize_events(EVENT_NOTE_ON, 0, mSeq->get_snap_tick(), 2, true);
+    m_seq->push_undo();
+    m_seq->quantize_events(EVENT_NOTE_ON, 0, m_seq->get_snap_tick(), 2, true);
 }
 
 /**
@@ -815,8 +849,8 @@ qseqeditframe::transposeNotes()
 {
     QAction * senderAction = (QAction *) sender();
     int transposeVal = senderAction->data().toInt();
-    mSeq->push_undo();
-    mSeq->transpose_notes(transposeVal, 0);
+    m_seq->push_undo();
+    m_seq->transpose_notes(transposeVal, 0);
 }
 
 }           // namespace seq64

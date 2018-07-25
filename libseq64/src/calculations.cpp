@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-12-11
+ * \updates       2017-07-24
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -464,8 +464,7 @@ measurestring_to_pulses
         int valuecount = extract_timing_numbers(measures, m, b, d, dummy);
         if (valuecount >= 1)
         {
-            midi_measures meas_values;
-            memset(&meas_values, 0, sizeof meas_values);
+            midi_measures meas_values;          /* initializes to 0 in ctor */
             meas_values.measures(atoi(m.c_str()));
             if (valuecount > 1)
             {

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-21
+ * \updates       2018-07-24
  * \license       GNU GPLv2 or above
  *
  */
@@ -52,15 +52,6 @@
 #undef SEQ64_STAZED_CHORD_GENERATOR     // otherwise redefined !!! weird !!!
 #define SEQ64_STAZED_CHORD_GENERATOR
 #define SEQ64_FOLLOW_PROGRESS_BAR
-
-/**
- *  Specifies the base size of the main window. The size in the "ui" file is
- *  864 x 580.  We can control the base size at build time by altering the
- *  qsmainwnd values.
- */
-
-#define SEQ64_QSMAINWND_WIDTH           800
-#define SEQ64_QSMAINWND_HEIGHT          480
 
 /**
  *  Specifies the reported final size of the main window when the larger edit
@@ -203,6 +194,7 @@ private:
 
 private slots:
 
+    void conditional_update ();
     void update_seq_name ();
     void update_beats_per_measure (int index);
     void increment_beats_per_measure ();
@@ -483,6 +475,12 @@ private:
      */
 
     edit_mode_t m_edit_mode;
+
+    /**
+     *  Update timer for pass-along to the roll, event, and data classes.
+     */
+
+    QTimer * m_timer;
 
 private:
 

@@ -56,7 +56,8 @@ namespace seq64
  *
  */
 
-qscrollmaster::qscrollmaster (QFrame * qf)
+// qscrollmaster::qscrollmaster (QFrame * qf)
+qscrollmaster::qscrollmaster (QWidget * qf)
  :
     QScrollArea         (qf),
     m_v_scrollbars      (),

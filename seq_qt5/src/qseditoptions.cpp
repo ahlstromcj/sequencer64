@@ -329,7 +329,6 @@ qseditoptions::syncWithInternals ()
     char tmp[16];
     snprintf(tmp, sizeof tmp, "%g", usr().window_scale());
     ui->lineEditUiScaling->setText(tmp);
-    ui->checkBoxKeplerSeqedit->setChecked(! usr().use_new_seqedit());
 }
 
 /**

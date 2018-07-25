@@ -1837,8 +1837,13 @@ wrkfile::NewTrack ()
     midishort trackno = read_16_bit();
     midibyte len = read_byte();
     std::string trackname = read_string(len);
+#ifdef USE_Q_EMIT_CODE
     midishort bank = read_16_bit();
     midishort patch = read_16_bit();
+#else
+    (void) read_16_bit();
+    (void) read_16_bit();
+#endif
     midishort vol = read_16_bit();
     midishort pan = read_16_bit();
     midibyte key = read_byte();
@@ -1871,13 +1876,15 @@ wrkfile::NewTrack ()
     }
 
     next_track(trackno, channel, trackname);
+
+#ifdef USE_Q_EMIT_CODE
     if (short(bank) >= 0)
     {
         // Q_EMIT signalWRKTrackBank(trackno, bank);
     }
     if (short(patch) >= 0)
     {
-        if (short(channel) >= 0)
+        if (short(channel) >= 0)        // always true with a byte range
         {
             // Q_EMIT signalWRKProgram(trackno, 0, channel, patch);
         }
@@ -1886,6 +1893,7 @@ wrkfile::NewTrack ()
             // Q_EMIT signalWRKTrackPatch(trackno, patch);
         }
     }
+#endif  // USE_Q_EMIT_CODE
 }
 
 /**

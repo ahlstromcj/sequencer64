@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-12
+ * \updates       2018-07-24
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -55,6 +55,15 @@
 #include <QLayout>
 
 #include "sequence.hpp"                 /* seq64::edit_mode_t enumeration   */
+
+/**
+ *  Specifies the base size of the main window. The size in the "ui" file is
+ *  864 x 580.  We can control the base size at build time by altering the
+ *  qsmainwnd values.
+ */
+
+#define SEQ64_QSMAINWND_WIDTH           800
+#define SEQ64_QSMAINWND_HEIGHT          480
 
 /*
  *  A bunch of forward declarations.  The Qt header files are moved into the
@@ -113,23 +122,23 @@ public:
 private:
 
     /**
-     * \getter mPerformance
+     * \getter m_perform
      *      The const version.
      */
 
     const seq64::perform & perf () const
     {
-        return mPerformance;
+        return m_perform;
     }
 
     /**
-     * \getter mPerformance
+     * \getter m_perform
      *      The non-const version.
      */
 
     seq64::perform & perf ()
     {
-        return mPerformance;
+        return m_perform;
     }
 
 private:
@@ -140,19 +149,31 @@ private:
     QScrollArea * m_scroll_area;
     QPalette * m_palette;
     QMenu * mPopup;
-    seq64::perform & mPerformance;
-    seq64::sequence * mSeq;
-    seq64::qseqkeys * mKeyboard;
-    seq64::qseqtime * mTimeBar;
-    seq64::qseqroll * mNoteGrid;
-    seq64::qseqdata * mEventValues;
-    seq64::qstriggereditor * mEventTriggers;
+    perform & m_perform;
+    sequence * m_seq;
+    qseqkeys * m_seqkeys;
+    qseqtime * m_seqtime;
+    qseqroll * m_seqroll;
+    qseqdata * m_seqdata;
+    qstriggereditor * m_seqevent;
+
+    /**
+     *  Update timer for pass-along to the roll, event, and data classes.
+     */
+
+    QTimer * m_timer;
+
     int mSnap; /* set snap to in pulses, off = 1 */
-    int mSeqId;
+    int m_seqId;
     edit_mode_t editMode;
+
+private:
+
+    void set_dirty ();
 
 private slots:
 
+    void conditional_update ();
     void updateSeqName ();
     void updateGridSnap (int snapIndex);
     void updatemidibus (int newIndex);

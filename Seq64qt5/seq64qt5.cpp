@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-07-24
+ * \updates       2018-07-26
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -157,17 +157,12 @@ main (int argc, char * argv [])
 
         seq64::qsmainwnd seq24_window
         (
-            p
-#if defined READY_FOR_USE
-            ,
-            seq64::usr().allow_two_perfedits(),
-            seq64::usr().midi_ppqn()
-#if defined SEQ64_MULTI_MAINWID
+            p, seq64::usr().midi_ppqn()
+#if defined SEQ64_MULTI_MAINWID         // might never be supported!
             ,
             seq64::usr().block_rows(),
             seq64::usr().block_columns(),
             seq64::usr().block_independent()
-#endif
 #endif
         );
         seq24_window.show();

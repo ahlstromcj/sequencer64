@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-24
+ * \updates       2018-07-26
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -87,13 +87,42 @@ class qsmainwnd : public QMainWindow
 
 public:
 
-    explicit qsmainwnd (perform & p, QWidget * parent = 0);
+    explicit qsmainwnd
+    (
+        perform & p,
+        int ppqn,
+        QWidget * parent = nullptr
+    );
     virtual ~qsmainwnd ();
 
     void open_file (const std::string & path);
     void show_message_box (const std::string & msg_text);
     void remove_editor (int seq);
     void remove_qperfedit ();
+
+    /**
+     * \getter m_ppqn
+     */
+
+    int ppqn () const
+    {
+        return m_ppqn;
+    }
+
+protected:
+
+    /**
+     * \setter m_ppqn
+     *      We can't set the PPQN value when the mainwnd is created, we have
+     *      to do it later, using this function.
+     *
+     *      m_ppqn = choose_ppqn(ppqn);
+     */
+
+    void ppqn (int ppqn)
+    {
+        m_ppqn = ppqn;
+    }
 
 protected:
 
@@ -157,6 +186,15 @@ private:
     qseditoptions * m_dialog_prefs;
     qsabout * mDialogAbout;
     qsbuildinfo * mDialogBuildInfo;
+
+    /**
+     *  Saves the PPQN value obtained from the MIDI file (or the default
+     *  value, the global ppqn, if SEQ64_USE_DEFAULT_PPQN was specified in
+     *  reading the MIDI file.  We need it early here to be able to pass it
+     *  along to child objects.
+     */
+
+    int m_ppqn;
 
     /**
      *  Indicates whether to show the time as bar:beats:ticks or as

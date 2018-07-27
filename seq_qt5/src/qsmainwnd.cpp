@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-25
+ * \updates       2018-07-26
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -93,8 +93,12 @@ namespace seq64
  *      to null.
  */
 
-qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
- :
+qsmainwnd::qsmainwnd
+(
+    perform & p,
+    int ppqn,
+    QWidget * parent
+) :
     QMainWindow         (parent),
     ui                  (new Ui::qsmainwnd),
     m_live_frame        (nullptr),
@@ -113,6 +117,7 @@ qsmainwnd::qsmainwnd (perform & p, QWidget * parent)
     m_dialog_prefs      (nullptr),
     mDialogAbout        (nullptr),
     mDialogBuildInfo    (nullptr),
+    m_ppqn              (choose_ppqn(ppqn)),
     m_tick_time_as_bbt  (true),
     m_open_editors      ()
 {
@@ -561,7 +566,7 @@ qsmainwnd::showOpenFileDialog ()
 }
 
 /**
- *  Set the last-used directory to the one just loaded.
+ *  Also sets the last-used directory to the one just loaded.
  *
  *  Compare this function to mainwnd::open_file() [the Gtkmm version]/
  */
@@ -576,7 +581,7 @@ qsmainwnd::open_file (const std::string & fn)
     bool result = f->parse(m_main_perf, 0);
     if (result)
     {
-//      ppqn(f->ppqn());                /* get and save the actual PPQN     */
+        ppqn(f->ppqn());                /* get and save the actual PPQN     */
         rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
         rc().filename(fn);
         rc().add_recent_file(fn);       /* from Oli Kester's Kepler34       */
@@ -641,9 +646,9 @@ qsmainwnd::update_window_title ()
 {
     std::string title = SEQ64_APP_NAME + std::string(" - [");
     std::string itemname = "unnamed";
-    int ppqn = SEQ64_DEFAULT_PPQN;          // choose_ppqn(m_ppqn);
+    int pp = choose_ppqn(ppqn());
     char temp[16];
-    snprintf(temp, sizeof temp, " (%d ppqn) ", ppqn);
+    snprintf(temp, sizeof temp, " (%d ppqn) ", pp);
     if (! rc().filename().empty())
     {
         std::string name = shorten_file_spec(rc().filename(), 56);
@@ -780,8 +785,8 @@ bool qsmainwnd::save_file()
     {
         midifile f
         (
-            rc().filename()
-            // , ppqn(), rc().legacy_format(), usr().global_seq_feature()
+            rc().filename(), ppqn(),
+            rc().legacy_format(), usr().global_seq_feature()
         );
         result = f.write(m_main_perf);
         if (result)
@@ -1227,9 +1232,13 @@ qsmainwnd::open_recent_file ()
     QAction * action = qobject_cast<QAction *>(sender());
     if (not_nullptr(action))
     {
-        QString fname = QVariant(action->data()).toString();
-        std::string actionfile = fname.toStdString();
-        open_file(actionfile);
+        if (check())
+        {
+            QString fname = QVariant(action->data()).toString();
+            std::string actionfile = fname.toStdString();
+            if (! actionfile.empty())
+                open_file(actionfile);
+        }
     }
 }
 

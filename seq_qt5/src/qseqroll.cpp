@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-23
+ * \updates       2018-07-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -1172,20 +1172,28 @@ qseqroll::keyReleaseEvent (QKeyEvent *)
 }
 
 /**
- *
+ *  Provides the base sizing of the piano roll.  If less than the width of the
+ *  parent frame, it is increased to that, so that the roll covers the whole
+ *  scrolling area (in qseqeditframe).
  */
 
 QSize
 qseqroll::sizeHint () const
 {
-    return QSize
-    (
-        seq().get_length() / zoom() + 100 + c_keyboard_padding_x, m_keyarea_y + 1
-    );
+    int w = m_parent_frame->width();
+    int z = zoom();
+    int len = int(seq().get_length()) / z;
+    if (len < w)
+        len = w;
+
+    return QSize(len + c_keyboard_padding_x, m_keyarea_y + 1);
 }
 
 /**
+ *  Snaps the y pixel to the height of a piano key.
  *
+ * \param [in,out] y
+ *      The vertical pixel value to be snapped.
  */
 
 void
@@ -1195,7 +1203,8 @@ qseqroll::snap_y (int & y)
 }
 
 /**
- *  Provides an override to change the mouse "cursor".
+ *  Provides an override to change the mouse "cursor" based on whether adding
+ *  notes is active, or not.
  *
  * \param a
  *      The value of the status of adding (e.g. a note).
@@ -1214,6 +1223,10 @@ qseqroll::set_adding (bool a)
 }
 
 /**
+ *  The current (x, y) drop points are snapped, and the pasting flag is set to
+ *  true.  Then this function
+ *  Gets the box that selected elements are in, then adjusts for the clipboard
+ *  being shifted to tick 0.
  *
  */
 
@@ -1226,23 +1239,18 @@ qseqroll::start_paste ()
     drop_y(current_y());
     paste(true);
 
-    midipulse tick_s;
-    midipulse tick_f;
-    int note_h;
-    int note_l;
-
-    /*
-     *  Get the box that selected elements are in, then adjust for clipboard
-     *  being shifted to tick 0.
-     */
-
+    midipulse tick_s, tick_f;
+    int note_h, note_l;
     seq().get_clipboard_box(tick_s, note_h, tick_f, note_l);
     convert_tn_box_to_rect(tick_s, tick_f, note_h, note_l, selection());
     selection().xy_incr(drop_x(), drop_y() - selection().y());
 }
 
 /**
+ *  Sets the drum/note mode status.
  *
+ * \param mode
+ *      The drum or note mode status.
  */
 
 void

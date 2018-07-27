@@ -26,8 +26,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-12
+ * \updates       2018-07-26
  * \license       GNU GPLv2 or above
+ *
+ *  This version of the qseqedit-frame class is basically the Kepler34
+ *  version, which scrolls the time, keys, roll, data, and event panes
+ *  all at the same time.  This behavior is not ideal, but works better
+ *  in the "Edit" tab than the new qseqeditframe64 class, which is too
+ *  large vertically, even when shrunk to its minimum.
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
  *  contains vertical lines whose height matches the value of each data event.
@@ -48,7 +54,7 @@ QVBoxLayout     | q |                                                   | r |
      |          | e |                                                   |   |
      v          | q |---------------------------------------------------| s |
 QScrollArea     | k | qtriggeredit  (2, 1, 1, 1)                        | ' |
-QWidget container | e |---------------------------------------------------| b |
+QWidget containe| e |---------------------------------------------------| b |
 QGridLayout     | y |                                                   | a |
                 | s | qseqdata      (3, 1, 1, 1)                        | r |
                 |   |                                                   |   |
@@ -134,15 +140,17 @@ namespace seq64
 
 qseqeditframe::qseqeditframe
 (
-    perform & p, int seqid, QWidget * parent
+    perform & p,
+    int seqid,
+    QWidget * parent
 ) :
     QFrame          (parent),
     ui              (new Ui::qseqeditframe),
-    mContainer      (nullptr),
+    m_container     (nullptr),
     m_layout_grid   (nullptr),
     m_scroll_area   (nullptr),
     m_palette       (new QPalette()),
-    mPopup          (nullptr),
+    m_popup         (nullptr),
     m_perform       (p),                            // a reference
     m_seq           (perf().get_sequence(seqid)),   // a pointer
     m_seqkeys       (nullptr),
@@ -151,31 +159,28 @@ qseqeditframe::qseqeditframe
     m_seqdata       (nullptr),
     m_seqevent      (nullptr),
     m_timer         (nullptr),
-    mSnap           (0),
-    m_seqId         (seqid),
-    editMode        (perf().seq_edit_mode(seqid))
+    m_snap          (0),
+    m_seq_id        (seqid),
+    m_ppqn          (perf().ppqn()),
+    m_edit_mode     (perf().seq_edit_mode(seqid))
 {
     ui->setupUi(this);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     /*
-     * fill options for grid snap & note length combo box and set their
+     * Fill options for grid snap & note length combo box and set their
      * defaults
      */
 
-    for (int i = 0; i < 8; ++i) // 16th intervals
+    for (int i = 0; i < 8; ++i)             /* 16th intervals       */
     {
         QString combo_text = "1/" + QString::number(pow(2, i));
         ui->cmbGridSnap->insertItem(i, combo_text);
         ui->cmbNoteLen->insertItem(i, combo_text);
     }
-
     ui->cmbGridSnap->insertSeparator(8);
     ui->cmbNoteLen->insertSeparator(8);
-
-    // triplet intervals
-
-    for (int i = 1; i < 8; ++i)
+    for (int i = 1; i < 8; ++i)             /* triplet intervals    */
     {
         QString combo_text = "1/" + QString::number(pow(2, i) * 1.5);
         ui->cmbGridSnap->insertItem(i + 9, combo_text);
@@ -183,18 +188,12 @@ qseqeditframe::qseqeditframe
     }
     ui->cmbGridSnap->setCurrentIndex(3);
     ui->cmbNoteLen->setCurrentIndex(3);
-
-    /* fill options for MIDI channel numbers */
-
-    for (int i = 0; i <= 15; ++i)
+    for (int i = 0; i <= 15; ++i)           /* MIDI channel numbers */
     {
         QString combo_text = QString::number(i + 1);
         ui->cmbMidiChan->insertItem(i, combo_text);
     }
-
-    // fill options for seq length
-
-    for (int i = 0; i <= 15; ++i)
+    for (int i = 0; i <= 15; ++i)           /* seq length options   */
     {
         QString combo_text = QString::number(i + 1);
         ui->cmbSeqLen->insertItem(i, combo_text);
@@ -202,13 +201,16 @@ qseqeditframe::qseqeditframe
     ui->cmbSeqLen->insertItem(16, "32");
     ui->cmbSeqLen->insertItem(17, "64");
 
-    // fill options for scale
+    /*
+     * Fill options for scale.  There are many more in the new
+     * edit frame.
+     */
 
     ui->cmbScale->insertItem(0, "Off");
     ui->cmbScale->insertItem(1, "Major");
     ui->cmbScale->insertItem(2, "Minor");
 
-    // fill MIDI buss options
+    /* MIDI buss options */
 
     mastermidibus & masterbus = perf().master_bus();
     for (int i = 0; i < masterbus.get_num_out_buses(); ++i)
@@ -218,7 +220,6 @@ qseqeditframe::qseqeditframe
             QString::fromStdString(masterbus.get_midi_out_bus_name(i))
         );
     }
-
     ui->cmbMidiBus->setCurrentText
     (
         QString::fromStdString
@@ -227,18 +228,18 @@ qseqeditframe::qseqeditframe
         )
     );
 
-    /* pull data from sequence object */
+    /*
+     * Pull data from sequence object.
+     */
 
     ui->txtSeqName->setPlainText(m_seq->name().c_str());
     ui->cmbMidiChan->setCurrentIndex(m_seq->get_midi_channel());
-
     QString snapText("1/");
-    snapText.append(QString::number(c_ppqn * 4 / m_seq->get_snap_tick()));
+    snapText.append(QString::number(m_ppqn * 4 / m_seq->get_snap_tick()));
     ui->cmbGridSnap->setCurrentText(snapText);
 
     QString seqLenText(QString::number(m_seq->get_num_measures()));
     ui->cmbSeqLen->setCurrentText(seqLenText);
-
     m_seq->set_editing(true);
 
     /*
@@ -247,45 +248,38 @@ qseqeditframe::qseqeditframe
 
     m_scroll_area = new QScrollArea(this);
     ui->vbox_centre->addWidget(m_scroll_area);
-
-    mContainer = new QWidget(m_scroll_area);
-    m_layout_grid = new QGridLayout(mContainer);
-    mContainer->setLayout(m_layout_grid);
-
- // m_palette->setColor(QPalette::Background, Qt::darkGray);
+    m_container = new QWidget(m_scroll_area);
+    m_layout_grid = new QGridLayout(m_container);
+    m_container->setLayout(m_layout_grid);
     m_palette->setColor(QPalette::Background, Qt::white);
-    mContainer->setPalette(*m_palette);
-
-    // The key-height parameters should be a user_settings member.
-
+    m_container->setPalette(*m_palette);
     m_seqkeys = new qseqkeys
     (
         *m_seq,                          // eventually replace ptr with reference
-        mContainer,
+        m_container,
         usr().key_height(),
         usr().key_height() * c_num_keys + 1
     );
     m_seqtime = new qseqtime
     (
-        perf(), *m_seq, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_PPQN, mContainer
+        perf(), *m_seq, SEQ64_DEFAULT_ZOOM, m_ppqn, m_container
     );
     m_seqroll = new qseqroll
     (
-        perf(), *m_seq, m_seqkeys,
-        SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP, SEQ64_DEFAULT_PPQN, 0,
-        EDIT_MODE_NOTE, this // mContainer
+        perf(), *m_seq, m_seqkeys, SEQ64_DEFAULT_ZOOM, m_snap, m_ppqn, 0,
+        EDIT_MODE_NOTE, this            // m_container
     );
-    m_seqroll->update_edit_mode(editMode);
+    m_seqroll->update_edit_mode(m_edit_mode);
     m_seqdata = new qseqdata
     (
-        perf(), *m_seq, SEQ64_DEFAULT_ZOOM, mSnap, SEQ64_DEFAULT_PPQN, mContainer
+        perf(), *m_seq, SEQ64_DEFAULT_ZOOM, m_snap,
+        m_ppqn, m_container
     );
     m_seqevent = new qstriggereditor
     (
-        perf(), *m_seq, m_seqdata, SEQ64_DEFAULT_ZOOM, mSnap,
-        SEQ64_DEFAULT_PPQN, usr().key_height(), mContainer
+        perf(), *m_seq, m_seqdata, SEQ64_DEFAULT_ZOOM, m_snap,
+        m_ppqn, usr().key_height(), m_container
     );
-
     m_layout_grid->setSpacing(0);
     m_layout_grid->addWidget(m_seqkeys, 1, 0, 1, 1);
     m_layout_grid->addWidget(m_seqtime, 0, 1, 1, 1);
@@ -293,8 +287,7 @@ qseqeditframe::qseqeditframe
     m_layout_grid->addWidget(m_seqevent, 2, 1, 1, 1);
     m_layout_grid->addWidget(m_seqdata, 3, 1, 1, 1);
     m_layout_grid->setAlignment(m_seqroll, Qt::AlignTop);
-
-    m_scroll_area->setWidget(mContainer);
+    m_scroll_area->setWidget(m_container);
 
     ui->cmbRecVol->addItem("Free",       0);
     ui->cmbRecVol->addItem("Fixed 127",  127);
@@ -306,63 +299,62 @@ qseqeditframe::qseqeditframe
     ui->cmbRecVol->addItem("Fixed 31",   31);
     ui->cmbRecVol->addItem("Fixed 15",   15);
 
-    mPopup = new QMenu(this);
-    QMenu * menuSelect = new QMenu(tr("Select..."), mPopup);
-    QMenu * menuTiming = new QMenu(tr("Timing..."), mPopup);
-    QMenu * menuPitch  = new QMenu(tr("Pitch..."), mPopup);
+    m_popup = new QMenu(this);
+    QMenu * menuSelect = new QMenu(tr("Select..."), m_popup);
+    QMenu * menuTiming = new QMenu(tr("Timing..."), m_popup);
+    QMenu * menuPitch  = new QMenu(tr("Pitch..."), m_popup);
 
-    QAction * actionSelectAll = new QAction(tr("Select all"), mPopup);
+    QAction * actionSelectAll = new QAction(tr("Select all"), m_popup);
     actionSelectAll->setShortcut(tr("Ctrl+A"));
     connect
     (
-        actionSelectAll,
-        SIGNAL(triggered(bool)),
-        this,
-        SLOT(selectAllNotes())
+        actionSelectAll, SIGNAL(triggered(bool)), this, SLOT(selectAllNotes())
     );
     menuSelect->addAction(actionSelectAll);
 
-    QAction * actionSelectInverse = new QAction(tr("Inverse selection"), mPopup);
+    QAction * actionSelectInverse = new QAction(tr("Inverse selection"), m_popup);
     actionSelectInverse->setShortcut(tr("Ctrl+Shift+I"));
     connect(actionSelectInverse, SIGNAL(triggered(bool)),
             this, SLOT(inverseNoteSelection()));
     menuSelect->addAction(actionSelectInverse);
 
-    QAction *actionQuantize = new QAction(tr("Quantize"), mPopup);
+    QAction *actionQuantize = new QAction(tr("Quantize"), m_popup);
     actionQuantize->setShortcut(tr("Ctrl+Q"));
     connect(actionQuantize, SIGNAL(triggered(bool)), this, SLOT(quantizeNotes()));
     menuTiming->addAction(actionQuantize);
 
-    QAction *actionTighten = new QAction(tr("Tighten"), mPopup);
+    QAction *actionTighten = new QAction(tr("Tighten"), m_popup);
     actionTighten->setShortcut(tr("Ctrl+T"));
     connect(actionTighten, SIGNAL(triggered(bool)), this, SLOT(tightenNotes()));
     menuTiming->addAction(actionTighten);
 
-    //fill out note transpositions
-    char num[11];
-    QAction *actionsTranspose[24];
-    for (int i = -12; i <= 12; ++i)
+    char num[12];
+    QAction * actionsTranspose[24];
+    for (int i = -12; i <= 12; ++i)     /* fill note transpositions     */
     {
         if (i != 0)
         {
             snprintf(num, sizeof(num), "%+d [%s]", i, c_interval_text[abs(i)]);
-            actionsTranspose[i + 12] = new QAction(num, mPopup);
+            actionsTranspose[i + 12] = new QAction(num, m_popup);
             actionsTranspose[i + 12]->setData(i);
             menuPitch->addAction(actionsTranspose[i + 12]);
-            connect(actionsTranspose[i + 12],
-                    SIGNAL(triggered(bool)),
-                    this,
-                    SLOT(transposeNotes()));
+            connect
+            (
+                actionsTranspose[i + 12], SIGNAL(triggered(bool)),
+                this, SLOT(transposeNotes())
+            );
         }
         else
             menuPitch->addSeparator();
     }
 
-    mPopup->addMenu(menuSelect);
-    mPopup->addMenu(menuTiming);
-    mPopup->addMenu(menuPitch);
+    m_popup->addMenu(menuSelect);
+    m_popup->addMenu(menuTiming);
+    m_popup->addMenu(menuPitch);
 
-    // Hide unused GUI elements
+    /*
+     * Hide unused GUI elements
+     */
 
     ui->lblBackgroundSeq->hide();
     ui->cmbBackgroundSeq->hide();
@@ -373,13 +365,9 @@ qseqeditframe::qseqeditframe
     ui->lblScale->hide();
     ui->cmbScale->hide();
 
-    // connect all the UI signals
-
     connect
     (
-        // ui->txtSeqName, SIGNAL(textChanged(const QString &)),
-        ui->txtSeqName, SIGNAL(textChanged()),
-        this, SLOT(updateSeqName())
+        ui->txtSeqName, SIGNAL(textChanged()), this, SLOT(updateSeqName())
     );
     connect
     (
@@ -396,13 +384,15 @@ qseqeditframe::qseqeditframe
         ui->cmbMidiChan, SIGNAL(currentIndexChanged(int)),
         this, SLOT(updateMidiChannel(int))
     );
-
     connect(ui->btnUndo, SIGNAL(clicked(bool)), this, SLOT(undo()));
     qt_set_icon(undo_xpm, ui->btnUndo);
+
     connect(ui->btnRedo, SIGNAL(clicked(bool)), this, SLOT(redo()));
     qt_set_icon(redo_xpm, ui->btnRedo);
+
     connect(ui->btnTools, SIGNAL(clicked(bool)), this, SLOT(showTools()));
     qt_set_icon(tools_xpm, ui->btnTools);
+
     connect
     (
         ui->cmbNoteLen, SIGNAL(currentIndexChanged(int)),
@@ -410,8 +400,10 @@ qseqeditframe::qseqeditframe
     );
     connect(ui->btnZoomIn, SIGNAL(clicked(bool)), this, SLOT(zoom_in()));
     qt_set_icon(zoom_in_xpm, ui->btnZoomIn);
+
     connect(ui->btnZoomOut, SIGNAL(clicked(bool)), this, SLOT(zoom_out()));
     qt_set_icon(zoom_out_xpm, ui->btnZoomOut);
+
     connect
     (
         ui->cmbKey, SIGNAL(currentIndexChanged(int)), this, SLOT(updateKey(int))
@@ -433,6 +425,7 @@ qseqeditframe::qseqeditframe
     );
     connect(ui->btnDrum, SIGNAL(clicked(bool)), this, SLOT(toggleEditorMode()));
     qt_set_icon(drum_xpm, ui->btnDrum);
+
     connect
     (
         ui->cmbRecVol, SIGNAL(currentIndexChanged(int)),
@@ -440,15 +433,18 @@ qseqeditframe::qseqeditframe
     );
     connect(ui->btnPlay, SIGNAL(clicked(bool)), this, SLOT(toggleMidiPlay(bool)));
     qt_set_icon(play_xpm, ui->btnPlay);
+
     connect(ui->btnQRec, SIGNAL(clicked(bool)), this, SLOT(toggleMidiQRec(bool)));
     qt_set_icon(quantize_xpm, ui->btnQRec);
+
     connect(ui->btnRec, SIGNAL(clicked(bool)), this, SLOT(toggleMidiRec(bool)));
     qt_set_icon(rec_xpm, ui->btnRec);
+
     connect(ui->btnThru, SIGNAL(clicked(bool)), this, SLOT(toggleMidiThru(bool)));
     qt_set_icon(thru_xpm, ui->btnThru);
 
-    m_timer = new QTimer(this);                          // redraw timer !!!
-    m_timer->setInterval(2 * usr().window_redraw_rate());    // 20
+    m_timer = new QTimer(this);                             // redraw timer !!!
+    m_timer->setInterval(2 * usr().window_redraw_rate());   // 20
     QObject::connect
     (
         m_timer, SIGNAL(timeout()), this, SLOT(conditional_update())
@@ -457,7 +453,7 @@ qseqeditframe::qseqeditframe
 }
 
 /**
- *
+ *  Provides stock deletion of the Qt user-interface.
  */
 
 qseqeditframe::~qseqeditframe ()
@@ -477,7 +473,8 @@ qseqeditframe::conditional_update ()
 }
 
 /**
- *
+ *  Dirties all of the sub-panels to make them reflect any changes made
+ *  to the sequence.
  */
 
 void
@@ -491,7 +488,7 @@ qseqeditframe::set_dirty ()
 }
 
 /**
- *
+ *  Sets the name of the sequence as obtained from the sequence.
  */
 
 void
@@ -510,23 +507,23 @@ qseqeditframe::updateGridSnap (int snapindex)
     int snap;
     switch (snapindex)
     {
-    case 0:  snap = c_ppqn * 4; break;
-    case 1:  snap = c_ppqn * 2; break;
-    case 2:  snap = c_ppqn * 1; break;
-    case 3:  snap = c_ppqn / 2; break;
-    case 4:  snap = c_ppqn / 4; break;
-    case 5:  snap = c_ppqn / 8; break;
-    case 6:  snap = c_ppqn / 16; break;
-    case 7:  snap = c_ppqn / 32; break;
-    case 8: snap = c_ppqn * 4; break; // index 8 is a separator
-    case 9:  snap = c_ppqn * 4  / 3; break;
-    case 10: snap = c_ppqn * 2  / 3; break;
-    case 11: snap = c_ppqn * 1 / 3; break;
-    case 12: snap = c_ppqn / 2 / 3; break;
-    case 13: snap = c_ppqn / 4 / 3; break;
-    case 14: snap = c_ppqn / 8 / 3; break;
-    case 15: snap = c_ppqn / 16 / 3; break;
-    default: snap = c_ppqn * 4; break;
+    case  0: snap = m_ppqn * 4; break;
+    case  1: snap = m_ppqn * 2; break;
+    case  2: snap = m_ppqn * 1; break;
+    case  3: snap = m_ppqn / 2; break;
+    case  4: snap = m_ppqn / 4; break;
+    case  5: snap = m_ppqn / 8; break;
+    case  6: snap = m_ppqn / 16; break;
+    case  7: snap = m_ppqn / 32; break;
+    case  8: snap = m_ppqn * 4; break; // index 8 is a separator
+    case  9: snap = m_ppqn * 4  / 3; break;
+    case 10: snap = m_ppqn * 2  / 3; break;
+    case 11: snap = m_ppqn * 1 / 3; break;
+    case 12: snap = m_ppqn / 2 / 3; break;
+    case 13: snap = m_ppqn / 4 / 3; break;
+    case 14: snap = m_ppqn / 8 / 3; break;
+    case 15: snap = m_ppqn / 16 / 3; break;
+    default: snap = m_ppqn * 4; break;
     }
     m_seqroll->set_snap(snap);
     m_seq->set_snap_tick(snap);
@@ -580,49 +577,51 @@ s   //popup menu over button
 void
 qseqeditframe::showTools()
 {
-    mPopup->exec(ui->btnTools->mapToGlobal(QPoint(ui->btnTools->width() - 2,
+    m_popup->exec(ui->btnTools->mapToGlobal(QPoint(ui->btnTools->width() - 2,
                                            ui->btnTools->height() - 2)));
 }
 
 /**
+ *  Updates the selected note length.
  *
+ * \param newindex
+ *      Provides the index of the combo-box that specifies the note length.
  */
 
 void
 qseqeditframe::updateNoteLength (int newindex)
 {
-    int length;
+    int len;
     switch (newindex)
     {
-    case 0: length = c_ppqn * 4; break;
-    case 1: length = c_ppqn * 2; break;
-    case 2: length = c_ppqn * 1; break;
-    case 3: length = c_ppqn / 2; break;
-    case 4: length = c_ppqn / 4; break;
-    case 5: length = c_ppqn / 8; break;
-    case 6: length = c_ppqn / 16; break;
-    case 7: length = c_ppqn / 32; break;
+    case  0: len = m_ppqn * 4; break;
+    case  1: len = m_ppqn * 2; break;
+    case  2: len = m_ppqn * 1; break;
+    case  3: len = m_ppqn / 2; break;
+    case  4: len = m_ppqn / 4; break;
+    case  5: len = m_ppqn / 8; break;
+    case  6: len = m_ppqn / 16; break;
+    case  7: len = m_ppqn / 32; break;
 
-        /*
-         * Index 8 is a separator. Treat it as the default case.
-         */
+    /*
+     * Index 8 is a separator. Treat it as the default case.
+     */
 
-    case 8: length = c_ppqn * 4; break;
-    case 9: length = c_ppqn * 4  / 3; break;
-    case 10: length = c_ppqn * 2  / 3; break;
-    case 11: length = c_ppqn * 1 / 3; break;
-    case 12: length = c_ppqn / 2 / 3; break;
-    case 13: length = c_ppqn / 4 / 3; break;
-    case 14: length = c_ppqn / 8 / 3; break;
-    case 15: length = c_ppqn / 16 / 3; break;
-    default: length = c_ppqn * 4; break;
+    case  8: len = m_ppqn * 4; break;
+    case  9: len = m_ppqn * 4  / 3; break;
+    case 10: len = m_ppqn * 2  / 3; break;
+    case 11: len = m_ppqn * 1 / 3; break;
+    case 12: len = m_ppqn / 2 / 3; break;
+    case 13: len = m_ppqn / 4 / 3; break;
+    case 14: len = m_ppqn / 8 / 3; break;
+    case 15: len = m_ppqn / 16 / 3; break;
+    default: len = m_ppqn * 4; break;
     }
-
-    m_seqroll->set_note_length(length);
+    m_seqroll->set_note_length(len);
 }
 
 /**
- *
+ *  Zooms in all the panes.
  */
 
 void
@@ -636,7 +635,7 @@ qseqeditframe::zoom_in ()
 }
 
 /**
- *
+ *  Zooms out all the panes.
  */
 
 void
@@ -654,135 +653,154 @@ qseqeditframe::zoom_out ()
  */
 
 void
-qseqeditframe::updateKey(int newindex)
+qseqeditframe::updateKey (int newindex)
 {
-    // no code
+    // no code, see qseqeditframe64() instead for now.
 }
 
 /**
- *
+ *  Updates the geometry of all of the sub-panels based on the new pattern
+ *  length.
  */
 
 void
-qseqeditframe::updateSeqLength()
+qseqeditframe::updateSeqLength ()
 {
     int measures = ui->cmbSeqLen->currentText().toInt();
     m_seq->set_num_measures(measures);                       // ????
     m_seqtime->updateGeometry();
     m_seqroll->updateGeometry();
-    mContainer->adjustSize();
+    m_container->adjustSize();
 }
 
 /**
- *
+ *  Not implemented in this class.  Use qseqeditframe64 for full
+ *  functionality.
  */
 
 void
-qseqeditframe::updateScale(int newindex)
+qseqeditframe::updateScale (int newindex)
 {
     // Available only in qseqeditframe64.
 }
 
 /**
- *
+ *  Not implemented in this class.  Use qseqeditframe64 for full
+ *  functionality.
  */
 
 void
-qseqeditframe::updateBackgroundSeq(int newindex)
+qseqeditframe::updateBackgroundSeq (int newindex)
 {
     // Available only in qseqeditframe64.
 }
 
 /**
- *
+ *  Updates the geometry of all of the sub-panels.
  */
 
 void
-qseqeditframe::update_draw_geometry()
+qseqeditframe::update_draw_geometry ()
 {
     QString seqLenText(QString::number(m_seq->get_num_measures()));
     ui->cmbSeqLen->setCurrentText(seqLenText);
     m_seqtime->updateGeometry();
     m_seqroll->updateGeometry();
-    mContainer->adjustSize();
+    m_container->adjustSize();
 }
 
 /**
- *
+ *  Changes the note-editing mode between drum mode and note mode.
  */
 
 void
-qseqeditframe::toggleEditorMode()
+qseqeditframe::toggleEditorMode ()
 {
-    switch (editMode)
+    switch (m_edit_mode)
     {
     case EDIT_MODE_NOTE:
-        editMode = EDIT_MODE_DRUM;
+
+        m_edit_mode = EDIT_MODE_DRUM;
         ui->cmbNoteLen->hide();
         ui->lblNoteLen->hide();
         break;
 
     case EDIT_MODE_DRUM:
-        editMode = EDIT_MODE_NOTE;
+
+        m_edit_mode = EDIT_MODE_NOTE;
         ui->cmbNoteLen->show();
         ui->lblNoteLen->show();
         break;
     }
-    perf().seq_edit_mode(m_seqId, editMode);
-    m_seqroll->update_edit_mode(editMode);
+    perf().seq_edit_mode(m_seq_id, m_edit_mode);
+    m_seqroll->update_edit_mode(m_edit_mode);
 }
 
 /**
+ *  Sets the editing mode.
  *
+ * \param mode
+ *      Provides the DRUM or NOTE mode to be set.
  */
 
 void
 qseqeditframe::setEditorMode (seq64::edit_mode_t mode)
 {
-    editMode = mode;
-    perf().seq_edit_mode(m_seqId, editMode);
+    m_edit_mode = mode;
+    perf().seq_edit_mode(m_seq_id, m_edit_mode);
     m_seqroll->update_edit_mode(mode);
 }
 
 /**
- *
+ *  Updates the recording volume (incoming volumen [Free] versus wiring
+ *  the volume to the current selection.
  */
 
 void
-qseqeditframe::updateRecVol()
+qseqeditframe::updateRecVol ()
 {
     m_seq->set_rec_vol(ui->cmbRecVol->currentData().toInt());
 }
 
 /**
+ *  Toggles the mute status of the sequence.  This also updates,
+ *  indirectly, the Live frame view.
  *
+ * \param newval
+ *      True if the sequence/pattern is to be playing.
  */
 
 void
-qseqeditframe::toggleMidiPlay(bool newVal)
+qseqeditframe::toggleMidiPlay (bool newval)
 {
-    m_seq->set_playing(newVal);
+    m_seq->set_playing(newval);
 }
 
 /**
+ *  Toggles the quantized recording status of the sequence.
  *
+ * \param newval
+ *      True if the sequence/pattern is to be quantized recorded.
  */
 
 void
-qseqeditframe::toggleMidiQRec(bool newVal)
+qseqeditframe::toggleMidiQRec (bool newval)
 {
-    m_seq->set_quantized_recording(newVal);
+    m_seq->set_quantized_recording(newval);
 }
 
 /**
+ *  Toggles the recording status of the sequence.
  *
+ * \param newval
+ *      True if the sequence/pattern is to be recorded.
  */
 
 void
-qseqeditframe::toggleMidiRec (bool newVal)
+qseqeditframe::toggleMidiRec (bool newval)
 {
     perf().master_bus().set_sequence_input(true, m_seq);
-    m_seq->set_recording(newVal);
+    m_seq->set_recording(newval);
 }
 
 /**
@@ -790,10 +808,10 @@ qseqeditframe::toggleMidiRec (bool newVal)
  */
 
 void
-qseqeditframe::toggleMidiThru (bool newVal)
+qseqeditframe::toggleMidiThru (bool newval)
 {
     perf().master_bus().set_sequence_input(true, m_seq);
-    m_seq->set_thru(newVal);
+    m_seq->set_thru(newval);
 }
 
 /**

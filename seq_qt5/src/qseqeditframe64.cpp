@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-24
+ * \updates       2018-07-26
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -152,8 +152,6 @@ QWidget container?
 #include "pixmaps/chord3-inv.xpm"
 #endif
 
-#undef  USE_LAYOUT_GRID     // EXPERIMENTAL, FAILS
-
 /*
  *  Do not document the name space.
  */
@@ -260,6 +258,8 @@ s_lookup_measures (int m)
 /**
  *  These static items are used to fill in and select the proper snap values for
  *  the grids.  Note that they are not members, though they could be.
+ *  These values are also used for note length.  See update_grid_snap() and
+ *  update_note_length().
  */
 
 static const int s_snap_items [] =
@@ -407,10 +407,6 @@ qseqeditframe64::qseqeditframe64
     ui->setupUi(this);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-#ifdef USE_LAYOUT_GRID
-    QGridLayout * layout_grid = new QGridLayout(this);
-#endif
-
     /*
      * Instantiate the various editable areas of the seqedit user-interface.
      * seqkeys: Not quite working as we'd hope.  The scrollbars still eat up
@@ -439,7 +435,7 @@ qseqeditframe64::qseqeditframe64
     ui->timeScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     /*
-     * qseqroll.  Note the last parameter, "this" is not really a parent
+     * qseqroll.  Note the last parameter, "this" is not really a Qt parent
      * parameter.  It simply gives qseqroll access to the qseqeditframe64 ::
      * follow_progress() function.
      */
@@ -489,24 +485,14 @@ qseqeditframe64::qseqeditframe64
     ui->rollScrollArea->add_h_scroll(ui->dataScrollArea->horizontalScrollBar());
     ui->rollScrollArea->add_h_scroll(ui->eventScrollArea->horizontalScrollBar());
 
-#ifdef USE_LAYOUT_GRID
-    layout_grid->setSpacing(0);
-    layout_grid->addWidget(ui->keysScrollArea, 1, 0, 1, 1); // keys
-    layout_grid->addWidget(ui->timeScrollArea, 0, 1, 1, 1);  // time
-    layout_grid->addWidget(ui->rollScrollArea, 1, 1, 1, 1);  // roll
-    layout_grid->addWidget(ui->eventScrollArea, 2, 1, 1, 1); // event
-    layout_grid->addWidget(ui->dataScrollArea, 3, 1, 1, 1);  // data
-    layout_grid->setAlignment(ui->rollScrollArea, Qt::AlignTop);
-#endif
-
     /*
      *  Sequence Number Label
      */
 
+    QString labeltext;
     char tmp[32];
     snprintf(tmp, sizeof tmp, "%d", seqid);
-
-    QString labeltext = tmp;
+    labeltext = tmp;
     ui->m_label_seqnumber->setText(labeltext);
 
     /*

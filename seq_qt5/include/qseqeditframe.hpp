@@ -144,11 +144,11 @@ private:
 private:
 
     Ui::qseqeditframe * ui;
-    QWidget * mContainer;
+    QWidget * m_container;
     QGridLayout * m_layout_grid;
     QScrollArea * m_scroll_area;
     QPalette * m_palette;
-    QMenu * mPopup;
+    QMenu * m_popup;
     perform & m_perform;
     sequence * m_seq;
     qseqkeys * m_seqkeys;
@@ -163,9 +163,24 @@ private:
 
     QTimer * m_timer;
 
-    int mSnap; /* set snap to in pulses, off = 1 */
-    int m_seqId;
-    edit_mode_t editMode;
+    /**
+     *  Set the snap-to value in pulses (ticks), off == 1.
+     */
+
+    int m_snap;
+    int m_seq_id;
+
+    /**
+     *  Holds the PPQN value in force.
+     */
+
+    int m_ppqn;
+
+    /**
+     *  Indicates either a drum mode or a note mode of editing the notes.
+     */
+
+    edit_mode_t m_edit_mode;
 
 private:
 

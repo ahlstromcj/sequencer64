@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-07-04
+ * \updates       2018-07-25
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -2924,7 +2924,7 @@ seqedit::set_data_type (midibyte status, midibyte control)
     m_seqroll_wid->set_data_type(status, control);
 
     char hex[8];
-    char type[80];
+    char type[64];
     snprintf(hex, sizeof hex, "[0x%02X]", status);
     if (status == EVENT_NOTE_OFF)
         snprintf(type, sizeof type, "Note Off");

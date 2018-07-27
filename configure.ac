@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-07-21
+dnl \update        2018-07-26
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -776,7 +776,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-07-21"
+#define VERSION_DATE_SHORT "2018-07-26"
 #define VERSION "0.95.1"
 
 )
@@ -798,8 +798,11 @@ dnl -Wno-error=date-time breaks the build on KX Studio (gcc 4.8)
 dnl
 dnl Not present on gcc 4.8: -Wno-error=date-time
 dnl WARNFLAGS="-Wall -Wextra -pedantic -Wno-error=date-time $WARNINGS"
+dnl
+dnl gcc 8 uncovers a warnings issue in libsigc++, so remove -Wextra for now,
+dnl and add -Wno-parentheses.
 
-WARNFLAGS="-Wall -Wextra -pedantic $WARNINGS"
+WARNFLAGS="-Wall -pedantic -Wno-parentheses $WARNINGS"
 APIDEF="-DAPI_VERSION=\"$SEQ64_API_VERSION\""
 SPEEDFLAGS="-ffast-math"
 COMMONFLAGS="$WARNFLAGS -D_REENTRANT $APIDEF $DBGFLAGS $STACKCHK $NOERRLOG $NOTHISPTR"

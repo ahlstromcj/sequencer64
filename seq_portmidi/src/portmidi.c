@@ -24,7 +24,7 @@
  * \library     sequencer64 application
  * \author      PortMIDI team; modifications by Chris Ahlstrom
  * \date        2017-08-21
- * \updates     2018-05-23
+ * \updates     2018-07-27
  * \license     GNU GPLv2 or above
  *
  * Notes on host error reporting:
@@ -400,7 +400,7 @@ pm_errmsg (PmError err, int deviceid)
 {
     if (err == pmHostError)
     {
-        char temp[PM_HOST_ERROR_MSG_LEN];
+        char temp[PM_STRING_MAX];
         (void) snprintf
         (
             temp, sizeof temp, "PortMidi host error: [%d] '%s'\n",
@@ -416,7 +416,7 @@ pm_errmsg (PmError err, int deviceid)
     }
     else if (err < 0)
     {
-        char temp[PM_HOST_ERROR_MSG_LEN];
+        char temp[PM_STRING_MAX];
         const char * errmsg = Pm_GetErrorText(err);
         (void) snprintf
         (

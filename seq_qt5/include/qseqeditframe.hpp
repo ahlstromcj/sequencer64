@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-24
+ * \updates       2018-07-28
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -51,9 +51,7 @@
 \endverbatim
  */
 
-#include <QFrame>
-#include <QLayout>
-
+#include "qseqframe.hpp"                /* seq64::qseqframe                 */
 #include "sequence.hpp"                 /* seq64::edit_mode_t enumeration   */
 
 /**
@@ -104,7 +102,7 @@ namespace seq64
  *  the Gtkmm version's naming conventions.
  */
 
-class qseqeditframe : public QFrame
+class qseqeditframe : public qseqframe
 {
     Q_OBJECT
 
@@ -112,34 +110,14 @@ public:
 
     explicit qseqeditframe
     (
-        seq64::perform & perf, int seqid, QWidget * parent = nullptr
+        seq64::perform & perf,
+        int seqid,
+        QWidget * parent = nullptr
     );
     virtual ~qseqeditframe ();
 
     void update_draw_geometry ();
     void setEditorMode (seq64::edit_mode_t mode); // set a new editing mode
-
-private:
-
-    /**
-     * \getter m_perform
-     *      The const version.
-     */
-
-    const seq64::perform & perf () const
-    {
-        return m_perform;
-    }
-
-    /**
-     * \getter m_perform
-     *      The non-const version.
-     */
-
-    seq64::perform & perf ()
-    {
-        return m_perform;
-    }
 
 private:
 
@@ -149,13 +127,6 @@ private:
     QScrollArea * m_scroll_area;
     QPalette * m_palette;
     QMenu * m_popup;
-    perform & m_perform;
-    sequence * m_seq;
-    qseqkeys * m_seqkeys;
-    qseqtime * m_seqtime;
-    qseqroll * m_seqroll;
-    qseqdata * m_seqdata;
-    qstriggereditor * m_seqevent;
 
     /**
      *  Update timer for pass-along to the roll, event, and data classes.
@@ -168,13 +139,6 @@ private:
      */
 
     int m_snap;
-    int m_seq_id;
-
-    /**
-     *  Holds the PPQN value in force.
-     */
-
-    int m_ppqn;
 
     /**
      *  Indicates either a drum mode or a note mode of editing the notes.
@@ -184,25 +148,26 @@ private:
 
 private:
 
-    void set_dirty ();
+    virtual void set_dirty ();
+    void initialize_panels ();
 
 private slots:
 
     void conditional_update ();
     void updateSeqName ();
-    void updateGridSnap (int snapIndex);
-    void updatemidibus (int newIndex);
-    void updateMidiChannel (int newIndex);
+    void updateGridSnap (int snapindex);
+    void updatemidibus (int newindex);
+    void updateMidiChannel (int newindex);
     void undo ();
     void redo ();
     void showTools ();
-    void updateNoteLength (int newIndex);
+    void updateNoteLength (int newindex);
     void zoom_in ();
     void zoom_out ();
-    void updateKey (int newIndex);
+    void updateKey (int newindex);
     void updateSeqLength ();
-    void updateScale (int newIndex);
-    void updateBackgroundSeq (int newIndex);
+    void updateScale (int newindex);
+    void updateBackgroundSeq (int newindex);
     void toggleEditorMode ();
     void updateRecVol ();
     void toggleMidiPlay (bool newVal);

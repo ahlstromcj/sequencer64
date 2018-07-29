@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-20
- * \updates       2018-07-14
+ * \updates       2018-07-29
  * \license       GNU GPLv2 or above
  *
  *  This class is a base class for qseqroll, qseqdata, qtriggereditor, and
@@ -168,20 +168,6 @@ private:
      */
 
     bool m_justselected_one;
-
-    /**
-     *  The x size of the window.  Would be good to allocate this
-     *  to a base class for all grid panels.  In Qt 5, this is the width().
-     */
-
-    int m_window_width;         // might remove, as Qt's width() is available
-
-    /**
-     *  The y size of the window.  Would be good to allocate this
-     *  to a base class for all grid panels.  In Qt 5, this is the height().
-     */
-
-    int m_window_height;       // might remove, as Qt's height() is available
 
     /**
      *  The x location of the mouse when dropped.  Would be good to allocate this
@@ -438,18 +424,6 @@ public:
         return m_justselected_one;
     }
 
-    // might remove, as Qt's width() and height() are available
-
-    int window_width () const
-    {
-        return m_window_width;
-    }
-
-    int window_height () const
-    {
-        return m_window_height;
-    }
-
     int drop_x () const
     {
         return m_drop_x;
@@ -549,7 +523,7 @@ public:
 
 public:
 
-    void zoom_in ()
+    virtual void zoom_in ()
     {
         if (m_zoom > 1)         // restricted more by qseqeditframe64
         {
@@ -558,16 +532,16 @@ public:
         }
     }
 
-    void zoom_out ()
+    virtual void zoom_out ()
     {
-        if (m_zoom < 32)       // restricted more by qseqeditframe64
+        if (m_zoom < 32)        // restricted more by qseqeditframe64
         {
             m_zoom *= 2;
             set_dirty();
         }
     }
 
-    void set_zoom (int z)
+    virtual void set_zoom (int z)
     {
         if (z != m_zoom)
         {
@@ -678,16 +652,6 @@ protected:
     void justselected_one (bool v)
     {
         m_justselected_one = v;
-    }
-
-    void window_width (int v)
-    {
-        m_window_width = v;
-    }
-
-    void window_height (int v)
-    {
-        m_window_height = v;
     }
 
     void drop_x (int v)

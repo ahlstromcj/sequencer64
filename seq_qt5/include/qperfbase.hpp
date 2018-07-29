@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-14
- * \updates       2018-07-17
+ * \updates       2018-07-29
  * \license       GNU GPLv2 or above
  *
  *  This class WILL BE the base class for qseqroll, qseqdata, qtriggereditor,
@@ -160,20 +160,6 @@ private:
      */
 
     bool m_growing;
-
-    /**
-     *  The x size of the window.  Would be good to allocate this
-     *  to a base class for all grid panels.  In Qt 5, this is the width().
-     */
-
-    int m_window_width;         // might remove, as Qt's width() is available
-
-    /**
-     *  The y size of the window.  Would be good to allocate this
-     *  to a base class for all grid panels.  In Qt 5, this is the height().
-     */
-
-    int m_window_height;       // might remove, as Qt's height() is available
 
     /**
      *  The x location of the mouse when dropped.  Would be good to allocate this
@@ -406,16 +392,6 @@ public:
         return m_growing;
     }
 
-    int window_width () const
-    {
-        return m_window_width;
-    }
-
-    int window_height () const
-    {
-        return m_window_height;
-    }
-
     int drop_x () const
     {
         return m_drop_x;
@@ -578,16 +554,6 @@ protected:
     void growing (bool v)
     {
         m_growing = v;
-    }
-
-    void window_width (int v)
-    {
-        m_window_width = v;
-    }
-
-    void window_height (int v)
-    {
-        m_window_height = v;
     }
 
     void drop_x (int v)

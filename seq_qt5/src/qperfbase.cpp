@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-14
- * \updates       2018-07-17
+ * \updates       2018-07-29
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -73,8 +73,6 @@ qperfbase::qperfbase
     m_moving                (false),
     m_moving_init           (false),
     m_growing               (false),
-    m_window_width          (0),            // m_window_x
-    m_window_height         (0),            // m_window_y
     m_drop_x                (0),
     m_drop_y                (0),
     m_current_x             (0),

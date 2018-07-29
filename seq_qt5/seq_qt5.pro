@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-07-22
+# \update      2018-07-27
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -85,6 +85,7 @@ HEADERS += \
  include/qseqeditex.hpp \
  include/qseqeditframe.hpp \
  include/qseqeditframe64.hpp \
+ include/qseqframe.hpp \
  include/qseqkeys.hpp \
  include/qseqroll.hpp \
  include/qseqstyle.hpp \
@@ -119,6 +120,7 @@ SOURCES += \
  src/qseqeditex.cpp \
  src/qseqeditframe.cpp \
  src/qseqeditframe64.cpp \
+ src/qseqframe.cpp \
  src/qseqkeys.cpp \
  src/qseqroll.cpp \
  src/qseqstyle.cpp \

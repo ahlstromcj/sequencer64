@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2018-01-01
-# \update      2018-07-22
+# \update      2018-07-27
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -250,6 +250,7 @@ moc_qt_headers = \
  ../include/qseqeditex.hpp \
  ../include/qseqeditframe64.hpp \
  ../include/qseqeditframe.hpp \
+ ../include/qseqframe.hpp \
  ../include/qseqkeys.hpp \
  ../include/qseqroll.hpp \
  ../include/qseqtime.hpp \
@@ -351,6 +352,7 @@ libseq_qt5_la_SOURCES = \
  qseqeditex.cpp \
  qseqeditframe64.cpp \
  qseqeditframe.cpp \
+ qseqframe.cpp \
  qseqkeys.cpp \
  qseqroll.cpp \
  qseqstyle.cpp \

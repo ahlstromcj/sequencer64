@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-06-18
- * \updates       2018-06-30
+ * \updates       2018-07-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -94,7 +94,6 @@ private:
 
 public:
 
-    // qscrollmaster (QFrame * qf);
     qscrollmaster (QWidget * qf);
     virtual ~qscrollmaster ();
 

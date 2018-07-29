@@ -27,13 +27,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-24
+ * \updates       2018-07-27
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <QFrame>
 
+#include "qseqframe.hpp"                /* seq64::qseqframe                 */
 #include "sequence.hpp"                 /* seq64::edit_mode_t enumeration   */
 
 /*
@@ -146,7 +147,7 @@ enum edit_action_t
  *  Kepler34's EditFrame class.
  */
 
-class qseqeditframe64 : public QFrame
+class qseqeditframe64 : public qseqframe
 {
     friend class qlfoframe;
 
@@ -162,6 +163,7 @@ public:
     );
     virtual ~qseqeditframe64 ();
 
+    void initialize_panels ();
     void update_draw_geometry ();
     void set_editor_mode (edit_mode_t mode);
     void follow_progress ();
@@ -169,30 +171,14 @@ public:
 private:
 
     void remove_lfo_frame ();
-
-    /**
-     * \getter m_performance
-     *      The const version.
-     */
-
-    const perform & perf () const
-    {
-        return m_performance;
-    }
-
-    /**
-     * \getter m_performance
-     *      The non-const version.
-     */
-
-    perform & perf ()
-    {
-        return m_performance;
-    }
-
     QIcon * create_menu_image (bool state);
 
 private slots:
+
+    virtual void zoom_in ();
+    virtual void zoom_out ();
+    virtual void update_zoom (int index);
+    virtual void reset_zoom ();
 
     void conditional_update ();
     void update_seq_name ();
@@ -241,10 +227,6 @@ private slots:
     void reset_grid_snap ();
     void update_note_length (int index);
     void reset_note_length ();
-    void update_zoom (int index);
-    void reset_zoom ();
-    void zoom_in ();
-    void zoom_out ();
     void update_key (int index);
     void reset_key ();
     void update_scale (int index);
@@ -280,7 +262,8 @@ private:
 
 private:
 
-    void set_dirty ();
+    virtual void set_dirty ();
+
     void set_beats_per_measure (int bpm);
     void set_beat_width (int bw);
     void set_measures (int len);
@@ -289,7 +272,6 @@ private:
     void set_midi_bus (int midibus, bool user_change = false);
     void set_note_length (int nlen);
     void set_snap (int s);
-    void set_zoom (int z);
     void set_chord (int chord);
     void set_key (int key);
     void set_scale (int key);
@@ -309,13 +291,6 @@ private:
 private:
 
     Ui::qseqeditframe64 * ui;
-    perform & m_performance;
-    sequence * m_seq;
-    qseqkeys * m_seqkeys;
-    qseqtime * m_seqtime;
-    qseqroll * m_seqroll;
-    qseqdata * m_seqdata;
-    qstriggereditor * m_seqevent;  // qseqevent?
 
     /**
      *  The LFO window object used by the pattern editor.  This item get the
@@ -360,21 +335,6 @@ private:
      */
 
     int m_beat_width;
-
-    /**
-     *  Provides the initial zoom, used for restoring the original zoom using
-     *  the 0 key.
-     */
-
-    const int m_initial_zoom;
-
-    /**
-     *  Provides the zoom values: 1  2  3  4, and 1, 2, 4, 8, 16.
-     *  The value of zoom is the same as the number of pixels per tick on the
-     *  piano roll.
-     */
-
-    int m_zoom;
 
     /**
      *  Used in setting the snap-to value in pulses, off = 1.
@@ -428,9 +388,9 @@ private:
     /**
      *  Holds a copy of the current PPQN for the sequence (and the entire MIDI
      *  file).
-     */
 
     int m_ppqn;
+     */
 
 #ifdef USE_STAZED_ODD_EVEN_SELECTION
     int m_pp_whole;

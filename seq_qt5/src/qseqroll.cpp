@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-26
+ * \updates       2018-07-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,7 +37,8 @@
 #include "perform.hpp"
 #include "qseqeditframe.hpp"            /* seq64::qseqeditframe legacy      */
 #include "qseqeditframe64.hpp"          /* seq64::qseqeditframe64 class     */
-#include "qseqroll.hpp"
+#include "qseqframe.hpp"                /* interface class for seqedits     */
+#include "qseqroll.hpp"                 /* seq64::qseqroll class            */
 #include "settings.hpp"                 /* seq64::usr().key_height(), etc.  */
 
 /*
@@ -61,7 +62,7 @@ qseqroll::qseqroll
     int ppqn,
     int pos,
     edit_mode_t mode,
-    QWidget * frame         // must be a qseqeditframe/64 widget
+    qseqframe * frame
 ) :
     QWidget                 (frame),
     qseqbase
@@ -70,7 +71,7 @@ qseqroll::qseqroll
         usr().key_height(),                         // m_key_y
         (usr().key_height() * c_num_keys + 1)       // m_keyarea_y
     ),
-    m_parent_frame          (dynamic_cast<QFrame *>(frame)),
+    m_parent_frame          (frame),
     m_is_new_edit_frame
     (
         not_nullptr(dynamic_cast<qseqeditframe64 *>(m_parent_frame))
@@ -100,39 +101,7 @@ qseqroll::qseqroll
 {
     set_snap(seq.get_snap_tick());
     setFocusPolicy(Qt::StrongFocus);
-    // setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
-
-    /*
-     * If not called, the width (and presumably the height) are set to some
-     * weirdly large values.
-     */
-
-    show();
-
-    /*
-     * In later usage, the width() function [and height() as well?], returns a
-     * humongous value (38800+).  So we store the current values to use, via
-     * window_width() and window_height(), in follow_progress().
-     *
-     * This is all BS... width(), viewport, all reflect the total range of the
-     * sequence, rather than just the actual windows showing part of the
-     * sequence.  We may end up hard-wiring this :-(
-     *
-     *  int ww = geometry().width();
-     *  int wh = geometry().height();
-     *  // QSize temp = m_scroll_master->viewport_size();
-     *  window_width(ww);
-     *  window_height(wh);
-     */
-
-    window_width(791 - SEQ64_PROGRESS_PAGE_OVERLAP);  // window_width(800 - 5);
-    window_height(240 - 5);
-
-    /*
-     * Does doing this later fix the width() issue?
-     */
-
     m_timer = new QTimer(this);                          // redraw timer !!!
     m_timer->setInterval(usr().window_redraw_rate());    // 20
     QObject::connect
@@ -140,6 +109,32 @@ qseqroll::qseqroll
         m_timer, SIGNAL(timeout()), this, SLOT(conditional_update())
     );
     m_timer->start();
+}
+
+/**
+ *  Zooms in, first calling the base-class version of this function, then
+ *  passing along the message to the parent edit frame, so that it can change
+ *  the zoom on the other panels of the parent edit frame.
+ */
+
+void
+qseqroll::zoom_in ()
+{
+    qseqbase::zoom_in();
+    m_parent_frame->zoom_in();
+}
+
+/**
+ *  Zooms out, first calling the base-class version of this function, then
+ *  passing along the message to the parent edit frame, so that it can change
+ *  the zoom on the other panels of the parent edit frame.
+ */
+
+void
+qseqroll::zoom_out ()
+{
+    qseqbase::zoom_out();
+    m_parent_frame->zoom_out();
 }
 
 /**
@@ -1000,7 +995,7 @@ qseqroll::mouseReleaseEvent (QMouseEvent * event)
 }
 
 /**
- *
+ *  Handles a mouse movement, including selection and note-painting.
  */
 
 void
@@ -1033,7 +1028,7 @@ qseqroll::mouseMoveEvent (QMouseEvent * event)
 }
 
 /**
- *
+ *  Handles keystrokes for note movement, zoom, and more.
  */
 
 void
@@ -1079,6 +1074,11 @@ qseqroll::keyPressEvent (QKeyEvent * event)
                 if (event->key() == Qt::Key_Z)
                 {
                     zoom_out();
+                    dirty = true;
+                }
+                else if (event->key() == Qt::Key_0)
+                {
+                    // TODO: reset zoom somehow
                     dirty = true;
                 }
             }

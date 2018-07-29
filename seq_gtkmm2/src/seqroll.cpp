@@ -37,7 +37,7 @@
 \verbatim
       lower                 Ps = page-size (ticks)                     upper
   Seq:  0-------------------|-------------------------------------------Ts
- Page:  0-------------------| Pp = page-size (pixels) = window_width * zoom
+ Page:  0-------------------| Pp = page-size (pixels) = window width * zoom
         |--|--|--|--|         page-increment, one bar
         |--|                  step-increment, one semi-quaver (16th note)
 \endverbatim

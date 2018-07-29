@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-22
+ * \updates       2018-07-28
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -43,8 +43,6 @@
 #include <QTimer>
 #include <QMouseEvent>
 
-class QFrame;
-
 #include "qseqbase.hpp"                 /* seq64::qseqbase mixin class      */
 #include "sequence.hpp"                 /* seq64::edit_mode_t mode          */
 
@@ -56,14 +54,16 @@ namespace seq64
 {
     class perform;
     class qseqeditframe64;
+    class qseqframe;
     class qseqkeys;
 
 /**
  * The MIDI note grid in the sequence editor
  */
 
-class qseqroll : public QWidget, protected qseqbase
+class qseqroll : public QWidget, public qseqbase
 {
+    friend class qseqframe;
     friend class qseqeditframe;
     friend class qseqeditframe64;
 
@@ -81,7 +81,7 @@ public:
         int ppqn                = SEQ64_DEFAULT_PPQN,
         int pos                 =  0,
         seq64::edit_mode_t mode = EDIT_MODE_NOTE,
-        QWidget * parent        = nullptr
+        qseqframe * parent      = nullptr
     );
 
     virtual ~qseqroll ()
@@ -108,6 +108,25 @@ public:
     bool get_expanded_record ()
     {
         return m_expanded_recording;
+    }
+
+    virtual void zoom_in ();
+    virtual void zoom_out ();
+
+    /**
+     *  Zoom without forwarding to the parent frame.  To be called by the
+     *  parent frame.  Slightly tricky, sigh.
+     *
+     * \param in
+     *      If true, zoom in, otherwise zoom out.
+     */
+
+    void change_zoom (bool in)
+    {
+        if (in)
+            qseqbase::zoom_in();
+        else
+            qseqbase::zoom_out();
     }
 
 protected:
@@ -157,7 +176,7 @@ private:
      *  Holds a pointer to the scroll-master object in the edit-frame window.
      */
 
-    QFrame * m_parent_frame;        // qseqeditframe64 or qseqeditframe
+    qseqframe * m_parent_frame;     /* qseqeditframe64 or qseqeditframe */
 
     /**
      *  Avoids continual dynamic_cast tests.

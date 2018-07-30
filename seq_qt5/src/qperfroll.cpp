@@ -414,16 +414,20 @@ qperfroll::paintEvent (QPaintEvent *)
 
 /**
  *
+ *  The scale_zoom() function is the zoom value times the scale value.
  */
 
 QSize
-qperfroll::sizeHint() const
+qperfroll::sizeHint () const
 {
-    return QSize
-    (
-        perf().get_max_trigger() / scale_zoom() + 2000,
-        c_names_y * c_max_sequence + 1
-    );
+    int h = c_names_y * c_max_sequence + 1;
+    int w = m_parent_frame->width();
+//  int len = perf().get_max_trigger() / scale_zoom() + 2000;
+    int len = perf().get_max_trigger() / scale_zoom();
+    if (len < w)
+        len = w;
+
+    return QSize(len, h);
 }
 
 /**
@@ -515,9 +519,7 @@ qperfroll::mousePressEvent(QMouseEvent *event)
                 // check for corner drag to grow sequence start
 
                 int clickminus = c_perfroll_size_box_click_w - 1;
-                int clickbox = c_perfroll_size_box_click_w *
-                    scale_zoom();
-
+                int clickbox = c_perfroll_size_box_click_w * scale_zoom();
                 if
                 (
                     tick >= start_tick &&

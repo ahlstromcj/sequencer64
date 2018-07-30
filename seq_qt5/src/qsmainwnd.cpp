@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-26
+ * \updates       2018-07-29
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -171,13 +171,11 @@ qsmainwnd::qsmainwnd
         tr("MIDI files (*.midi *.mid);;WRK files (*.wrk);;All files (*)")
     );
 
-    m_dialog_prefs = new qseditoptions(m_main_perf, this);
-    m_song_frame64 = new qperfeditframe64(m_main_perf, ui->SongTab);
-
-    m_beat_ind = new qsmaintime(m_main_perf, this, 4, 4);
+    m_dialog_prefs = new qseditoptions(perf(), this);
+    m_song_frame64 = new qperfeditframe64(perf(), m_ppqn, ui->SongTab);
+    m_beat_ind = new qsmaintime(perf(), this, 4, 4);
     mDialogAbout = new qsabout(this);
     mDialogBuildInfo = new qsbuildinfo(this);
-
     if (not_nullptr(m_song_frame64))
     {
         ui->SongTabLayout->addWidget(m_song_frame64);
@@ -191,7 +189,6 @@ qsmainwnd::qsmainwnd
         );
         if (not_nullptr(m_beat_ind))
         {
-            // ui->lay_bpm->addWidget(m_beat_ind);
             ui->layout_beat_ind->addWidget(m_beat_ind);
             m_beat_ind->set_beat_width(m_song_frame64->get_beat_width());
             m_beat_ind->set_beats_per_measure
@@ -201,7 +198,7 @@ qsmainwnd::qsmainwnd
         }
     }
 
-    m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
+    m_live_frame = new qsliveframe(perf(), ui->LiveTab);
     if (not_nullptr(m_live_frame))
     {
         ui->LiveTabLayout->addWidget(m_live_frame);
@@ -417,12 +414,14 @@ qsmainwnd::qsmainwnd
 }
 
 /**
- *
+ *  Destroys the user interface and removes any external qperfeditex that
+ *  exists.
  */
 
 qsmainwnd::~qsmainwnd ()
 {
     delete ui;
+    remove_qperfedit();     // hmmm, doesn't seem to work; see closeEvent()
 }
 
 /**
@@ -433,7 +432,10 @@ void
 qsmainwnd::closeEvent (QCloseEvent * event)
 {
     if (check())
+    {
         remove_all_editors();
+        remove_qperfedit();
+    }
     else
         event->ignore();
 }
@@ -578,7 +580,7 @@ qsmainwnd::open_file (const std::string & fn)
     midifile * f = is_wrk ? new wrkfile(fn) : new midifile(fn) ;
     perf().clear_all();
 
-    bool result = f->parse(m_main_perf, 0);
+    bool result = f->parse(perf(), 0);
     if (result)
     {
         ppqn(f->ppqn());                /* get and save the actual PPQN     */
@@ -595,7 +597,7 @@ qsmainwnd::open_file (const std::string & fn)
         if (not_nullptr(m_live_frame))
             delete m_live_frame;
 
-        m_live_frame = new qsliveframe(m_main_perf, ui->LiveTab);
+        m_live_frame = new qsliveframe(perf(), ui->LiveTab);
         if (not_nullptr(m_live_frame))
         {
             ui->LiveTabLayout->addWidget(m_live_frame);
@@ -788,7 +790,7 @@ bool qsmainwnd::save_file()
             rc().filename(), ppqn(),
             rc().legacy_format(), usr().global_seq_feature()
         );
-        result = f.write(m_main_perf);
+        result = f.write(perf());
         if (result)
         {
             rc().add_recent_file(rc().filename());
@@ -858,7 +860,7 @@ qsmainwnd::showImportDialog()
                 std::string fn = path.toStdString();
                 bool is_wrk = file_extension_match(fn, "wrk");
                 midifile * f = is_wrk ? new wrkfile(fn) : new midifile(fn) ;
-                f->parse(m_main_perf, perf().screenset());
+                f->parse(perf(), perf().screenset());
                 ui->spinBpm->setValue(perf().bpm());
                 ui->spinBpm->setDecimals(usr().bpm_precision());
                 ui->spinBpm->setSingleStep(usr().bpm_step_increment());
@@ -1010,11 +1012,12 @@ qsmainwnd::load_qperfedit (bool on)
 {
     if (is_nullptr(m_perfedit))
     {
-        qperfeditex * ex = new qperfeditex(perf(), this);
+        qperfeditex * ex = new qperfeditex(perf(), m_ppqn, this);
         if (not_nullptr(ex))
         {
             m_perfedit = ex;
             ex->show();
+            ui->btnPerfEdit->setEnabled(false);
         }
     }
 }
@@ -1032,6 +1035,7 @@ qsmainwnd::remove_qperfedit ()
         delete m_perfedit;
         m_perfedit = nullptr;
     }
+    ui->btnPerfEdit->setEnabled(true);
 }
 
 /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-18
- * \updates       2018-07-19
+ * \updates       2018-07-29
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -68,29 +68,56 @@
 #include "pixmaps/zoom_in.xpm"
 #include "pixmaps/zoom_out.xpm"
 
+/**
+ *  Helps with making the page leaps slightly smaller than the width of the
+ *  piano roll scroll area.  Same value as used in qseqeditframe64.
+ */
+
+#define SEQ64_PROGRESS_PAGE_OVERLAP_QT      80
+
 namespace seq64
 {
 
 /**
+ *  Principal constructor, has a reference to a perform object.
  *
+ * \param p
+ *      Refers to the main performance object.
+ *
+ * \param ppqn
+ *      The optionally-changed PPQN value to use for the performance editor.
+ *
+ * \param parent
+ *      The Qt widget that owns this frame.  Either the qperfeditex (the
+ *      external window holding this frame) or the "Song" tab object in the
+ *      main window.
  */
 
-qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
- :
+qperfeditframe64::qperfeditframe64
+(
+    seq64::perform & p,
+    int ppqn,
+    QWidget * parent
+) :
     QFrame                  (parent),
     ui                      (new Ui::qperfeditframe64),
     m_mainperf              (p),
-    mContainer              (nullptr),
     m_palette               (nullptr),
     m_snap                  (8),
-    mbeats_per_measure      (4),
-    mbeat_width             (4),
+    m_beats_per_measure     (4),
+    m_beat_width            (4),
+    m_ppqn                  (0),
     m_perfroll              (nullptr),
     m_perfnames             (nullptr),
     m_perftime              (nullptr)
 {
+    m_ppqn = choose_ppqn(ppqn);
     ui->setupUi(this);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    /*
+     * What about the window title?
+     */
 
     /*
      * Snap.  Fill options for grid snap combo box and set the default.
@@ -130,7 +157,7 @@ qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
     m_perftime = new seq64::qperftime
     (
         m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
-        SEQ64_DEFAULT_PPQN, ui->timeScrollArea     // this
+        m_ppqn, ui->timeScrollArea     // this
     );
     ui->timeScrollArea->setWidget(m_perftime);
     ui->timeScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -139,7 +166,7 @@ qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
     m_perfroll = new seq64::qperfroll
     (
         m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
-        SEQ64_DEFAULT_PPQN, this, ui->rollScrollArea
+        m_ppqn, this, ui->rollScrollArea
     );
     ui->rollScrollArea->setWidget(m_perfroll);
     ui->rollScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -151,7 +178,6 @@ qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
 
     ui->rollScrollArea->add_v_scroll(ui->namesScrollArea->verticalScrollBar());
     ui->rollScrollArea->add_h_scroll(ui->timeScrollArea->horizontalScrollBar());
-    // mContainer = new QWidget(ui->rollScrollArea);
 
     /*
      * Create the color palette for coloring the patterns.
@@ -159,7 +185,6 @@ qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
 
     m_palette = new QPalette();
     m_palette->setColor(QPalette::Background, Qt::darkGray);
-    // mContainer->setPalette(*m_palette);
 
     /*
      * Undo and Redo buttons.
@@ -180,7 +205,7 @@ qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
     ui->m_toggle_follow->setCheckable(true);
     ui->m_toggle_follow->setToolTip
     (
-        "If active, the song roll scrolls to "
+        "If active, the song piano roll scrolls to "
         "follow the progress bar in playback."
     );
 
@@ -255,23 +280,21 @@ qperfeditframe64::follow (bool ischecked)
 void
 qperfeditframe64::follow_progress ()
 {
-    int w = m_perfroll->width();        // m_perfroll->window_width();
+    int w = ui->rollScrollArea->width() - SEQ64_PROGRESS_PAGE_OVERLAP_QT;
     if (w > 0)
     {
-        QScrollBar * hadjust = ui->rollScrollArea->horizontalScrollBar();
-        int scrollx = hadjust->value();
-        midipulse progress_tick = perf().get_tick();
-        // printf("tick = %ld\n", progress_tick);
-        if (progress_tick > 0 && m_perfroll->progress_follow())
+        QScrollBar * hadjust = ui->rollScrollArea->h_scroll();
+        midipulse progtick = perf().get_tick();
+        if (progtick > 0 && m_perfroll->progress_follow())
         {
-            // int prog_x = progress_tick / m_perfroll->zoom();
-            int prog_x = m_perfroll->length_pixels(progress_tick);
-            int page = prog_x / w;
-            if (page > m_perfroll->scroll_page() || (page == 0 && scrollx != 0))
+            int progx = m_perfroll->length_pixels(progtick);
+            int page = progx / w;
+            int oldpage = m_perfroll->scroll_page();
+            bool newpage = page != oldpage;
+            if (newpage)
             {
-                m_perfroll->scroll_page(page);
-                m_perftime->scroll_page(page);
-                hadjust->setValue(prog_x);      // set_scroll_x() not needed
+                m_perfroll->scroll_page(page);  // scrollmaster will update the rest
+                hadjust->setValue(progx);       // set_scroll_x() not needed
             }
         }
     }
@@ -284,7 +307,7 @@ qperfeditframe64::follow_progress ()
 int
 qperfeditframe64::get_beat_width () const
 {
-    return mbeat_width;
+    return m_beat_width;
 }
 
 /**
@@ -330,7 +353,7 @@ qperfeditframe64::set_snap (int a_snap)
 void
 qperfeditframe64::set_beats_per_measure (int bpm)
 {
-    mbeats_per_measure = bpm;
+    m_beats_per_measure = bpm;
     set_guides();
 }
 
@@ -340,7 +363,7 @@ qperfeditframe64::set_beats_per_measure (int bpm)
 
 int qperfeditframe64::get_beats_per_measure () const
 {
-    return mbeats_per_measure;
+    return m_beats_per_measure;
 }
 
 /**
@@ -350,7 +373,7 @@ int qperfeditframe64::get_beats_per_measure () const
 void
 qperfeditframe64::set_beat_width (int bw)
 {
-    mbeat_width = bw;
+    m_beat_width = bw;
     set_guides();
 }
 
@@ -361,10 +384,10 @@ qperfeditframe64::set_beat_width (int bw)
 void
 qperfeditframe64::set_guides ()
 {
-    int ppqn = SEQ64_DEFAULT_PPQN * 4;      // TODO: allow runtime changes
-    int measure = (ppqn * 4) * mbeats_per_measure / mbeat_width;
-    int snap = m_snap;        // measure / m_snap;
-    int beat = (ppqn * 4) / mbeat_width;
+    int ppqn = m_ppqn * 4;      // TODO: allow runtime changes
+    int measure = (ppqn * 4) * m_beats_per_measure / m_beat_width;
+    int snap = m_snap;          // measure / m_snap;
+    int beat = (ppqn * 4) / m_beat_width;
     m_perfroll->set_guides(snap, measure, beat);
     m_perftime->set_guides(snap, measure);
 #ifdef PLATFORM_DEBUG_TMI
@@ -407,7 +430,6 @@ qperfeditframe64::update_sizes ()
 {
     m_perfroll->updateGeometry();
     m_perftime->updateGeometry();
-    // mContainer->adjustSize();
 }
 
 /**

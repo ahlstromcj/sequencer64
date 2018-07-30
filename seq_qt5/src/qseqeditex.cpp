@@ -75,7 +75,9 @@ namespace seq64
 
 qseqeditex::qseqeditex
 (
-    perform & p, int seqid, qsmainwnd * parent
+    perform & p,
+    int seqid,
+    qsmainwnd * parent
 ) :
     QWidget             (nullptr),
     ui                  (new Ui::qseqeditex),
@@ -87,7 +89,7 @@ qseqeditex::qseqeditex
     ui->setupUi(this);
 
     QGridLayout * layout = new QGridLayout(this);
-    m_edit_frame = new qseqeditframe64(p, seqid, this);
+    m_edit_frame = new qseqeditframe64(p, seqid, this);     // no PPQN ???
     layout->addWidget(m_edit_frame);
     show();
     m_edit_frame->show();

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>890</width>
-    <height>412</height>
+    <height>414</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -716,7 +716,7 @@
             <x>0</x>
             <y>0</y>
             <width>46</width>
-            <height>68</height>
+            <height>70</height>
            </rect>
           </property>
          </widget>
@@ -736,6 +736,15 @@
            <height>64</height>
           </size>
          </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOn</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOn</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustToContents</enum>
+         </property>
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
@@ -744,8 +753,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>812</width>
-            <height>68</height>
+            <width>798</width>
+            <height>56</height>
            </rect>
           </property>
           <property name="sizePolicy">

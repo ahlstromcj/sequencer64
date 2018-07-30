@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-18
- * \updates       2018-07-19
+ * \updates       2018-07-29
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -38,6 +38,8 @@
 #include <QFrame>
 #include <QScrollArea>
 #include <qmath.h>
+
+#include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN           */
 
 /*
  *  A bunch of forward declarations.  The Qt header files are moved into the
@@ -81,7 +83,12 @@ class qperfeditframe64 : public QFrame
 
 public:
 
-    explicit qperfeditframe64 (seq64::perform & p, QWidget * parent);
+    qperfeditframe64
+    (
+        seq64::perform & p,
+        int ppqn            = SEQ64_USE_DEFAULT_PPQN,
+        QWidget * parent    = nullptr
+    );
 
     /*
      * One thing that bugs me about Qt... this function should be virtual, as
@@ -112,11 +119,11 @@ private:
 
     Ui::qperfeditframe64 * ui;
     seq64::perform & m_mainperf;
-    QWidget * mContainer;
     QPalette * m_palette;
     int m_snap;                 /* set snap to in pulses */
-    int mbeats_per_measure;
-    int mbeat_width;
+    int m_beats_per_measure;
+    int m_beat_width;
+    int m_ppqn;
     qperfroll * m_perfroll;
     qperfnames * m_perfnames;
     qperftime * m_perftime;

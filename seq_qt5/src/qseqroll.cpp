@@ -101,7 +101,8 @@ qseqroll::qseqroll
 {
     set_snap(seq.get_snap_tick());
     setFocusPolicy(Qt::StrongFocus);
-    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+    show();
     m_timer = new QTimer(this);                          // redraw timer !!!
     m_timer->setInterval(usr().window_redraw_rate());    // 20
     QObject::connect
@@ -1180,13 +1181,15 @@ qseqroll::keyReleaseEvent (QKeyEvent *)
 QSize
 qseqroll::sizeHint () const
 {
+    int h = m_keyarea_y + 1;
     int w = m_parent_frame->width();
     int z = zoom();
     int len = int(seq().get_length()) / z;
     if (len < w)
         len = w;
 
-    return QSize(len + c_keyboard_padding_x, m_keyarea_y + 1);
+    len += c_keyboard_padding_x;
+    return QSize(len, h);
 }
 
 /**

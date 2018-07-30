@@ -62,6 +62,9 @@ namespace seq64
  * \param p
  *      Provides the perform object to use for interacting with this sequence.
  *
+ * \param ppqn
+ *      The optional PPQN value.
+ *
  * \param parent
  *      Provides the parent window/widget for this container window.  Defaults
  *      to null.  Note that this parameter does not link this class to the
@@ -71,7 +74,9 @@ namespace seq64
 
 qperfeditex::qperfeditex
 (
-    perform & p, qsmainwnd * parent
+    perform & p,
+    int ppqn,
+    qsmainwnd * parent
 ) :
     QWidget             (nullptr),
     ui                  (new Ui::qperfeditex),
@@ -82,7 +87,7 @@ qperfeditex::qperfeditex
     ui->setupUi(this);
 
     QGridLayout * layout = new QGridLayout(this);
-    m_edit_frame = new qperfeditframe64(p, this);
+    m_edit_frame = new qperfeditframe64(p, ppqn, this);
     layout->addWidget(m_edit_frame);
     show();
     m_edit_frame->show();

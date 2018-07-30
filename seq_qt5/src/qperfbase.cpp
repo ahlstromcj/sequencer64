@@ -160,13 +160,6 @@ qperfbase::set_ppqn (int ppqn)
     if (ppqn_is_valid(ppqn))
     {
         m_ppqn = choose_ppqn(ppqn);
-        // m_ticks_per_bar = m_ppqn * m_divs_per_beat;             /* 16 */
-        // m_background_x = (m_ppqn * 4 * 16) / c_perf_scale_x;
-        // m_scale = m_zoom * m_ppqn / SEQ64_DEFAULT_PPQN;
-        // m_w_scale_x = sm_perfroll_size_box_click_w * m_scale;
-        // if (m_scale == 0)
-        //     m_scale = 1;
-        ///// m_scale = c_perf_scale_x * m_ppqn / SEQ64_DEFAULT_PPQN;
         m_scale_zoom = m_zoom * m_scale;
         m_beat_length = m_ppqn;
         m_measure_length = m_beat_length * 4;

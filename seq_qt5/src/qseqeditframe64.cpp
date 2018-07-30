@@ -154,7 +154,7 @@ QWidget container?
 
 /**
  *  Helps with making the page leaps slightly smaller than the width of the
- *  piano roll scroll area.
+ *  piano roll scroll area.  Same value as used in qperfeditframe64.
  */
 
 #define SEQ64_PROGRESS_PAGE_OVERLAP_QT      80
@@ -729,7 +729,7 @@ qseqeditframe64::qseqeditframe64
     ui->m_toggle_follow->setCheckable(true);
     ui->m_toggle_follow->setToolTip
     (
-        "If active, the piano roll scrolls to "
+        "If active, the pattern piano roll scrolls to "
         "follow the progress bar in playback."
     );
 

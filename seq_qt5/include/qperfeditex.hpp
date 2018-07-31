@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-21
- * \updates       2018-07-29
+ * \updates       2018-07-30
  * \license       GNU GPLv2 or above
  *
  *  The performance editing window is known as the "Song Editor".  Kepler34
@@ -86,6 +86,8 @@ public:
         qsmainwnd * parent  = nullptr
     );
     virtual ~qperfeditex ();
+
+    void update_sizes ();
 
 protected:
 

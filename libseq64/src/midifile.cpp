@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-09
+ * \updates       2018-07-30
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -143,7 +143,17 @@ midifile::midifile
     m_new_format                (! oldformat),
     m_global_bgsequence         (globalbgs),
     m_ppqn                      (0),
-    m_use_default_ppqn          (ppqn == SEQ64_USE_DEFAULT_PPQN),
+
+    /*
+     * \change ca 2018-07-30
+     * We need a better way to convert the file PPQN to the "legacy" value.
+     * Using the legacy mode is a stop-gap. An rc() or usr() option would be
+     * better.  See the "[user-midi-settings] midi_ppqn" option.
+     *
+     * m_use_default_ppqn          (ppqn == SEQ64_USE_DEFAULT_PPQN),
+     */
+
+    m_use_default_ppqn          (rc().legacy_format()),     /* stop-gap */
     m_smf0_splitter             (ppqn)
 {
     m_ppqn = choose_ppqn(ppqn);
@@ -725,9 +735,13 @@ bool
 midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 {
     bool result = true;
-    midishort NumTracks = read_short();
-    midishort ppqn = read_short();
     char buss_override = usr().midi_buss_override();
+    midishort NumTracks = read_short();
+    midishort fileppqn = read_short();
+    if (! m_use_default_ppqn)
+        ppqn(int(fileppqn));
+
+    p.ppqn(ppqn());
     for (int track = 0; track < NumTracks; ++track)
     {
         midipulse Delta;                            /* MIDI delta time      */
@@ -744,7 +758,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
             midibyte laststatus;
             midilong seqspec = 0;                   /* sequencer-specific   */
             bool done = false;                      /* done for each track  */
-            sequence * s = new sequence(m_ppqn);    /* create new sequence  */
+            sequence * s = new sequence(ppqn());    /* create new sequence  */
             midilong len;                           /* important counter!   */
             midibyte d0, d1;                        /* was data[2];         */
             if (is_nullptr(s))
@@ -775,9 +789,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                 RunningTime += Delta;           /* add in the time          */
                 if (m_use_default_ppqn)         /* legacy handling of ppqn  */
                 {
-                    if (ppqn > 0)
+                    if (fileppqn > 0)
                     {
-                        CurrentTime = RunningTime * m_ppqn / ppqn;
+                        CurrentTime = RunningTime * m_ppqn / fileppqn;
                         e.set_timestamp(CurrentTime);
                     }
                 }
@@ -1030,7 +1044,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             else if (seqspec == c_triggers_new)
                             {
                                 int num_triggers = len / 12;
-                                midishort p = m_use_default_ppqn ? ppqn : 0 ;
+                                midishort p = m_use_default_ppqn ? fileppqn : 0 ;
                                 for (int i = 0; i < num_triggers; ++i)
                                 {
                                     len -= 12;
@@ -1216,7 +1230,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 sequence *
 midifile::initialize_sequence (perform & p)
 {
-    sequence * result = new sequence(m_ppqn);
+    sequence * result = new sequence(ppqn());
     if (not_nullptr(result))
     {
         result->set_master_midi_bus(&p.master_bus());   /* set master buss  */

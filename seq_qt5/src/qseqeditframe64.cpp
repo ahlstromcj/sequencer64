@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-29
+ * \updates       2018-07-30
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -798,7 +798,7 @@ qseqeditframe64::qseqeditframe64
         ui->m_button_snap, SIGNAL(clicked(bool)),
         this, SLOT(reset_grid_snap())
     );
-    set_snap(m_initial_snap * m_ppqn / SEQ64_DEFAULT_PPQN);
+    set_snap(m_initial_snap * perf().ppqn() / SEQ64_DEFAULT_PPQN);
 
     qt_set_icon(note_length_xpm, ui->m_button_note);
 #ifdef SEQ64_QSEQEDIT_BUTTON_INCREMENT
@@ -810,7 +810,7 @@ qseqeditframe64::qseqeditframe64
         ui->m_button_note, SIGNAL(clicked(bool)),
         this, SLOT(reset_note_length())
     );
-    set_note_length(m_initial_note_length * m_ppqn / SEQ64_DEFAULT_PPQN);
+    set_note_length(m_initial_note_length * perf().ppqn() / SEQ64_DEFAULT_PPQN);
 
     /*
      *  Zoom In and Zoom Out:  Rather than two buttons, we use one and
@@ -856,7 +856,7 @@ qseqeditframe64::qseqeditframe64
 
     int zoom = usr().zoom();
     if (usr().zoom() == SEQ64_USE_ZOOM_POWER_OF_2)      /* i.e. 0 */
-        zoom = zoom_power_of_2(m_ppqn);
+        zoom = zoom_power_of_2(perf().ppqn());
 
     set_zoom(zoom);
 
@@ -1184,7 +1184,7 @@ qseqeditframe64::initialize_panels ()
 
     m_seqtime = new qseqtime
     (
-        perf(), seq(), m_zoom, m_ppqn, ui->timeScrollArea
+        perf(), seq(), m_zoom, perf().ppqn(), ui->timeScrollArea
     );
     ui->timeScrollArea->setWidget(m_seqtime);
     ui->timeScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -1198,7 +1198,7 @@ qseqeditframe64::initialize_panels ()
 
     m_seqroll = new qseqroll
     (
-        perf(), seq(), m_seqkeys, m_zoom, m_snap, m_ppqn, 0 /*pos*/,
+        perf(), seq(), m_seqkeys, m_zoom, m_snap, perf().ppqn(), 0 /*pos*/,
         EDIT_MODE_NOTE, this                            /* see note above   */
     );
     ui->rollScrollArea->setWidget(m_seqroll);
@@ -1212,7 +1212,7 @@ qseqeditframe64::initialize_panels ()
 
     m_seqdata = new qseqdata
     (
-        perf(), seq(), m_zoom, m_snap, m_ppqn, ui->dataScrollArea
+        perf(), seq(), m_zoom, m_snap, perf().ppqn(), ui->dataScrollArea
     );
     ui->dataScrollArea->setWidget(m_seqdata);
     ui->dataScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -1224,7 +1224,7 @@ qseqeditframe64::initialize_panels ()
 
     m_seqevent = new qstriggereditor
     (
-        perf(), seq(), m_seqdata, m_zoom, m_snap, m_ppqn,
+        perf(), seq(), m_seqdata, m_zoom, m_snap, perf().ppqn(),
         usr().key_height(), ui->eventScrollArea
     );
     ui->eventScrollArea->setWidget(m_seqevent);
@@ -1344,7 +1344,7 @@ qseqeditframe64::set_beats_per_measure (int bpm)
     int measures = get_measures();
     seq().set_beats_per_bar(bpm);
     m_beats_per_bar = bpm;
-    seq().apply_length(bpm, m_ppqn, seq().get_beat_width(), measures);
+    seq().apply_length(bpm, perf().ppqn(), seq().get_beat_width(), measures);
     set_dirty();
 }
 
@@ -1362,7 +1362,7 @@ qseqeditframe64::set_measures (int len)
     m_measures = len;
     seq().apply_length
     (
-        seq().get_beats_per_bar(), m_ppqn, seq().get_beat_width(), len
+        seq().get_beats_per_bar(), perf().ppqn(), seq().get_beat_width(), len
     );
     set_dirty();
 }
@@ -1391,7 +1391,7 @@ qseqeditframe64::get_measures ()
 {
     int units =
     (
-        seq().get_beats_per_bar() * m_ppqn * 4 / seq().get_beat_width()
+        seq().get_beats_per_bar() * perf().ppqn() * 4 / seq().get_beat_width()
     );
     int measures = seq().get_length() / units;
     if (seq().get_length() % units != 0)
@@ -1455,7 +1455,7 @@ qseqeditframe64::set_beat_width (int bw)
 {
     int measures = get_measures();
     seq().set_beat_width(bw);
-    seq().apply_length(seq().get_beats_per_bar(), m_ppqn, bw, measures);
+    seq().apply_length(seq().get_beats_per_bar(), perf().ppqn(), bw, measures);
     m_beat_width = bw;
     set_dirty();
 }
@@ -2200,7 +2200,7 @@ qseqeditframe64::follow_progress ()
 void
 qseqeditframe64::update_grid_snap (int index)
 {
-    int qnfactor = m_ppqn * 4;
+    int qnfactor = perf().ppqn() * 4;
     int item = s_snap_items[index];
     int v = qnfactor / item;
     set_snap(v);
@@ -2257,7 +2257,7 @@ qseqeditframe64::reset_grid_snap ()
 void
 qseqeditframe64::update_note_length (int index)
 {
-    int qnfactor = m_ppqn * 4;
+    int qnfactor = perf().ppqn() * 4;
     int item = s_snap_items[index];
     int v = qnfactor / item;
     set_note_length(v);
@@ -2284,9 +2284,9 @@ void
 qseqeditframe64::set_note_length (int notelength)
 {
 #ifdef CAN_MODIFY_GLOBAL_PPQN
-    if (m_ppqn != m_original_ppqn)
+    if (perf().ppqn() != m_original_ppqn)
     {
-        double factor = double(m_ppqn) / double(m_original);
+        double factor = double(perf().ppqn()) / double(m_original);
         notelength = int(notelength * factor + 0.5);
     }
 #endif
@@ -2630,7 +2630,10 @@ qseqeditframe64::repopulate_event_menu (int buss, int channel)
     m_events_popup = new QMenu(this);
     set_event_entry(m_events_popup, "Note On Velocity", note_on, EVENT_NOTE_ON);
     m_events_popup->addSeparator();
-    set_event_entry(m_events_popup, "Note Off Velocity", note_off, EVENT_NOTE_OFF);
+    set_event_entry
+    (
+        m_events_popup, "Note Off Velocity", note_off, EVENT_NOTE_OFF
+    );
     set_event_entry(m_events_popup, "Aftertouch", aftertouch, EVENT_AFTERTOUCH);
     set_event_entry
     (
@@ -2638,9 +2641,13 @@ qseqeditframe64::repopulate_event_menu (int buss, int channel)
     );
     set_event_entry
     (
-        m_events_popup, "Channel Pressure", channel_pressure, EVENT_CHANNEL_PRESSURE
+        m_events_popup, "Channel Pressure", channel_pressure,
+        EVENT_CHANNEL_PRESSURE
     );
-    set_event_entry(m_events_popup, "Pitch Wheel", pitch_wheel, EVENT_PITCH_WHEEL);
+    set_event_entry
+    (
+        m_events_popup, "Pitch Wheel", pitch_wheel, EVENT_PITCH_WHEEL
+    );
     m_events_popup->addSeparator();
 
     /**
@@ -2655,7 +2662,7 @@ qseqeditframe64::repopulate_event_menu (int buss, int channel)
     {
         int offset = submenu * itemcount;
         snprintf(b, sizeof b, "Controls %d-%d", offset, offset + itemcount - 1);
-        QMenu * menucc = new QMenu(tr(b), m_events_popup);  // this);
+        QMenu * menucc = new QMenu(tr(b), m_events_popup);
         for (int item = 0; item < itemcount; ++item)
         {
             /*
@@ -2780,7 +2787,10 @@ qseqeditframe64::repopulate_mini_event_menu (int buss, int channel)
     if (note_on)
     {
         any_events = true;
-        set_event_entry(m_minidata_popup, "Note On Velocity", true, EVENT_NOTE_ON);
+        set_event_entry
+        (
+            m_minidata_popup, "Note On Velocity", true, EVENT_NOTE_ON
+        );
     }
     if (note_off)
     {
@@ -2828,14 +2838,14 @@ qseqeditframe64::repopulate_mini_event_menu (int buss, int channel)
      *  the track, if any.
      */
 
-    const int itemcount = SEQ64_MIDI_COUNT_MAX;             /* 128 */
+    const int itemcount = SEQ64_MIDI_COUNT_MAX;             /* 128          */
     for (int item = 0; item < itemcount; ++item)
     {
         std::string controller_name(c_controller_names[item]);
         const user_midi_bus & umb = usr().bus(buss);
         int inst = umb.instrument(channel);
         const user_instrument & uin = usr().instrument(inst);
-        if (uin.is_valid())                             // redundant check
+        if (uin.is_valid())                                 /* redundant    */
         {
             if (uin.controller_active(item))
                 controller_name = uin.controller_name(item);
@@ -3030,7 +3040,7 @@ qseqeditframe64::reset_recording_volume ()
 void
 qseqeditframe64::set_recording_volume (int recvol)
 {
-    seq().set_rec_vol(recvol);         /* save to the sequence settings    */
+    seq().set_rec_vol(recvol);          /* save to the sequence settings    */
     usr().velocity_override(recvol);    /* save to the "usr" config file    */
 }
 

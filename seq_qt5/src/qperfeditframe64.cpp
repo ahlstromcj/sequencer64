@@ -384,7 +384,7 @@ qperfeditframe64::set_beat_width (int bw)
 void
 qperfeditframe64::set_guides ()
 {
-    int ppqn = m_ppqn * 4;      // TODO: allow runtime changes
+    int ppqn = perf().ppqn() * 4;      // TODO: allow runtime changes
     int measure = (ppqn * 4) * m_beats_per_measure / m_beat_width;
     int snap = m_snap;          // measure / m_snap;
     int beat = (ppqn * 4) / m_beat_width;

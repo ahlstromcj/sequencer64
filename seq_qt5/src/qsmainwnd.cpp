@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-29
+ * \updates       2018-07-31
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -117,6 +117,7 @@ qsmainwnd::qsmainwnd
     m_dialog_prefs      (nullptr),
     mDialogAbout        (nullptr),
     mDialogBuildInfo    (nullptr),
+    m_is_title_dirty    (false),
     m_ppqn              (choose_ppqn(ppqn)),
     m_tick_time_as_bbt  (true),
     m_open_editors      ()
@@ -172,31 +173,16 @@ qsmainwnd::qsmainwnd
     );
 
     m_dialog_prefs = new qseditoptions(perf(), this);
-    m_song_frame64 = new qperfeditframe64(perf(), m_ppqn, ui->SongTab);
+
+    /*
+     * New Song editor frame.
+     */
+
     m_beat_ind = new qsmaintime(perf(), this, 4, 4);
     mDialogAbout = new qsabout(this);
     mDialogBuildInfo = new qsbuildinfo(this);
-    if (not_nullptr(m_song_frame64))
-    {
-        ui->SongTabLayout->addWidget(m_song_frame64);
-        ui->cmb_beat_length->setCurrentText // pull defaults from song frame
-        (
-            QString::number(m_song_frame64->get_beat_width())
-        );
-        ui->cmb_beat_measure->setCurrentText
-        (
-            QString::number(m_song_frame64->get_beats_per_measure())
-        );
-        if (not_nullptr(m_beat_ind))
-        {
-            ui->layout_beat_ind->addWidget(m_beat_ind);
-            m_beat_ind->set_beat_width(m_song_frame64->get_beat_width());
-            m_beat_ind->set_beats_per_measure
-            (
-                m_song_frame64->get_beats_per_measure()
-            );
-        }
-    }
+
+    make_perf_frame_in_tab();           /* create m_song_frame64 pointer    */
 
     m_live_frame = new qsliveframe(perf(), ui->LiveTab);
     if (not_nullptr(m_live_frame))
@@ -205,8 +191,8 @@ qsmainwnd::qsmainwnd
         m_live_frame->setFocus();
     }
 
-    m_timer = new QTimer(this);     /* refresh GUI elements every few ms    */
-    m_timer->setInterval(50);
+    m_timer = new QTimer(this);         /* refresh GUI element every few ms */
+    m_timer->setInterval(2 * usr().window_redraw_rate());    // 50
     connect(m_timer, SIGNAL(timeout()), this, SLOT(refresh()));
     m_timer->start();
 
@@ -402,6 +388,13 @@ qsmainwnd::qsmainwnd
     update_recent_files_menu();
 
     /*
+     * Race condition?  Anyway, we don't know the actual title until
+     * open_file() is called.
+     *
+     * update_window_title();
+     */
+
+    /*
      * This scales the full GUI, cool!  However, it can be overridden by the
      * size of the new, larger, qseqeditframe64 frame.  We see the normal-size
      * window come up, and then it jumps to the larger size.
@@ -438,6 +431,30 @@ qsmainwnd::closeEvent (QCloseEvent * event)
     }
     else
         event->ignore();
+}
+
+/**
+ *  Pulls defaults from song frame.
+ */
+
+void
+qsmainwnd::make_perf_frame_in_tab ()
+{
+    m_song_frame64 = new qperfeditframe64(perf(), m_ppqn, ui->SongTab);
+    if (not_nullptr(m_song_frame64))
+    {
+        int bpmeasure = m_song_frame64->get_beats_per_measure();
+        int beatwidth = m_song_frame64->get_beat_width();
+        ui->SongTabLayout->addWidget(m_song_frame64);
+        ui->cmb_beat_length->setCurrentText(QString::number(beatwidth));
+        ui->cmb_beat_measure->setCurrentText(QString::number(bpmeasure));
+        if (not_nullptr(m_beat_ind))
+        {
+            ui->layout_beat_ind->addWidget(m_beat_ind);
+            m_beat_ind->set_beat_width(beatwidth);
+            m_beat_ind->set_beats_per_measure(bpmeasure);
+        }
+    }
 }
 
 /**
@@ -622,11 +639,42 @@ qsmainwnd::open_file (const std::string & fn)
              *  m_live_frame->redraw();
              */
         }
+
+        /*
+         * Update all of the children.  Doesn't seem to work for the edit
+         * frames, may have to recreate them, or somehow hook in the new
+         * sequence objects (as pointers, not references).  Probably an issue
+         * to be ignored; the user will have to close and reopen the pattern
+         * editor(s).
+         */
+
         if (not_nullptr(m_song_frame64))
             m_song_frame64->update_sizes();
 
+        if (not_nullptr(m_perfedit))
+            m_perfedit->update_sizes();
+
+#ifdef USE_SEQEDIT_REDRAWING
+        if (not_nullptr(m_edit_frame))
+            m_edit_frame->update_draw_geometry();
+
+        edit_container::iterator ei;
+        for (ei = m_open_editors.begin(); ei != m_open_editors.end(); ++ei)
+        {
+            qseqeditex * qep = ei->second;      /* save the pointer         */
+            qep->update_draw_geometry();
+        }
+#else
+        /*
+         * The tabbed edit frame is automatically removed if no other seq-edit
+         * is open.
+         */
+
+        remove_all_editors();
+#endif
+
         update_recent_files_menu();
-        update_window_title();
+        m_is_title_dirty = true;
     }
     else
     {
@@ -644,22 +692,26 @@ qsmainwnd::open_file (const std::string & fn)
  */
 
 void
-qsmainwnd::update_window_title ()
+qsmainwnd::update_window_title (const std::string & fn)
 {
-    std::string title = SEQ64_APP_NAME + std::string(" - [");
     std::string itemname = "unnamed";
-    int pp = choose_ppqn(ppqn());
-    char temp[16];
-    snprintf(temp, sizeof temp, " (%d ppqn) ", pp);
-    if (! rc().filename().empty())
+    if (fn.empty())
     {
-        std::string name = shorten_file_spec(rc().filename(), 56);
-        itemname = name;                    // Glib::filename_to_utf8(name);
+        itemname = perf().main_window_title();
     }
-    title += itemname + std::string("]") + std::string(temp);
+    else
+    {
+        itemname = fn;
+        int pp = choose_ppqn(ppqn());
+        char temp[16];
+        snprintf(temp, sizeof temp, " (%d ppqn) ", pp);
+        itemname = fn;
+        itemname += temp;
+    }
+    itemname += " [*]";                         // required by Qt 5
 
-    QString t = title.c_str();
-    setWindowTitle(t);
+    QString fname = QString::fromLocal8Bit(itemname.c_str());
+    setWindowTitle(fname);
 }
 
 /**
@@ -717,6 +769,11 @@ qsmainwnd::refresh ()
             ui->label_HMS->setText(t.c_str());
         }
     }
+    if (m_is_title_dirty)
+    {
+        update_window_title();
+        m_is_title_dirty = false;
+    }
 }
 
 /**
@@ -761,13 +818,12 @@ qsmainwnd::check ()
  */
 
 void
-qsmainwnd::new_file()
+qsmainwnd::new_file ()
 {
     if (check() && perf().clear_all())
     {
-        // m_entry_notes->set_text(perf().current_screenset_notepad());
         rc().filename("");
-        update_window_title();
+        m_is_title_dirty = true;
     }
 }
 
@@ -775,7 +831,7 @@ qsmainwnd::new_file()
  *
  */
 
-bool qsmainwnd::save_file()
+bool qsmainwnd::save_file ()
 {
     bool result = false;
     if (rc().filename().empty())
@@ -835,9 +891,10 @@ qsmainwnd::save_file_as ()
         if ((suffix != "midi") && (suffix != "mid"))
             file += ".midi";
 
-        rc().filename(file.toStdString());
-        update_window_title();
+        std::string fn = file.toStdString();
+        rc().filename(fn);
         save_file();
+        m_is_title_dirty = true;
     }
 }
 
@@ -915,13 +972,20 @@ qsmainwnd::showqsbuildinfo ()
  *      Somehow, checking for not_nullptr(m_edit_frame) to determine whether
  *      to remove or add that widget causes the edit frame to not get created,
  *      and then the Edit tab is empty.
+ *
+ *  There are still some issues here:
+ *
+ *      -   Making sure that there is only one sequence editor window/tab
+ *          per pattern.
+ *      -   Removing the current song editor window/tab when another MIDI file
+ *          is loaded.
  */
 
 void
 qsmainwnd::load_editor (int seqid)
 {
     edit_container::iterator ei = m_open_editors.find(seqid);
-    if (ei == m_open_editors.end())
+    if (ei == m_open_editors.end())                         /* 1 editor/seq */
     {
         ui->EditTabLayout->removeWidget(m_edit_frame);      /* no ptr check */
         if (not_nullptr(m_edit_frame))
@@ -1083,7 +1147,7 @@ qsmainwnd::updateBeatLength (int blIndex)
     {
         if (perf().is_active(i))
         {
-            sequence *seq =  perf().get_sequence(i);
+            sequence * seq =  perf().get_sequence(i);
             seq->set_beat_width(bl);
 
             // reset number of measures, causing length to adjust to new b/m

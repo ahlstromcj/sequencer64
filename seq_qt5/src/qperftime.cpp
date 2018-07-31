@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-17
+ * \updates       2018-07-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -186,10 +186,9 @@ qperftime::paintEvent (QPaintEvent *)
 QSize
 qperftime::sizeHint () const
 {
-    return QSize
-    (
-        perf().get_max_trigger() / scale_zoom() + 2000, 22
-    );
+    int height = 24;    // 22
+    int width = horizSizeHint();
+    return QSize(width, height);
 }
 
 /**

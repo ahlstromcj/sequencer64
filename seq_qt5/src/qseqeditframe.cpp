@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-28
+ * \updates       2018-07-30
  * \license       GNU GPLv2 or above
  *
  *  This version of the qseqedit-frame class is basically the Kepler34
@@ -227,7 +227,7 @@ qseqeditframe::qseqeditframe
     ui->txtSeqName->setPlainText(seq().name().c_str());
     ui->cmbMidiChan->setCurrentIndex(seq().get_midi_channel());
     QString snapText("1/");
-    snapText.append(QString::number(ppqn() * 4 / seq().get_snap_tick()));
+    snapText.append(QString::number(perf().ppqn() * 4 / seq().get_snap_tick()));
     ui->cmbGridSnap->setCurrentText(snapText);
 
     QString seqLenText(QString::number(seq().get_num_measures()));
@@ -467,23 +467,23 @@ qseqeditframe::initialize_panels ()
     );
     m_seqtime = new qseqtime
     (
-        perf(), seq(), zoom(), ppqn(), m_container
+        perf(), seq(), zoom(), perf().ppqn(), m_container
     );
     m_seqroll = new qseqroll
     (
-        perf(), seq(), m_seqkeys, zoom(), m_snap, ppqn(), 0,
+        perf(), seq(), m_seqkeys, zoom(), m_snap, perf().ppqn(), 0,
         EDIT_MODE_NOTE, this            // m_container
     );
     m_seqroll->update_edit_mode(m_edit_mode);
     m_seqdata = new qseqdata
     (
         perf(), seq(), zoom(), m_snap,
-        ppqn(), m_container
+        perf().ppqn(), m_container
     );
     m_seqevent = new qstriggereditor
     (
         perf(), seq(), m_seqdata, zoom(), m_snap,
-        ppqn(), usr().key_height(), m_container
+        perf().ppqn(), usr().key_height(), m_container
     );
 }
 
@@ -537,25 +537,26 @@ void
 qseqeditframe::updateGridSnap (int snapindex)
 {
     int snap;
+    int p = perf().ppqn();              /* ppqn()   */
     switch (snapindex)
     {
-    case  0: snap = ppqn() * 4; break;
-    case  1: snap = ppqn() * 2; break;
-    case  2: snap = ppqn() * 1; break;
-    case  3: snap = ppqn() / 2; break;
-    case  4: snap = ppqn() / 4; break;
-    case  5: snap = ppqn() / 8; break;
-    case  6: snap = ppqn() / 16; break;
-    case  7: snap = ppqn() / 32; break;
-    case  8: snap = ppqn() * 4; break; // index 8 is a separator
-    case  9: snap = ppqn() * 4  / 3; break;
-    case 10: snap = ppqn() * 2  / 3; break;
-    case 11: snap = ppqn() * 1 / 3; break;
-    case 12: snap = ppqn() / 2 / 3; break;
-    case 13: snap = ppqn() / 4 / 3; break;
-    case 14: snap = ppqn() / 8 / 3; break;
-    case 15: snap = ppqn() / 16 / 3; break;
-    default: snap = ppqn() * 4; break;
+    case  0: snap = p * 4; break;
+    case  1: snap = p * 2; break;
+    case  2: snap = p * 1; break;
+    case  3: snap = p / 2; break;
+    case  4: snap = p / 4; break;
+    case  5: snap = p / 8; break;
+    case  6: snap = p / 16; break;
+    case  7: snap = p / 32; break;
+    case  8: snap = p * 4; break; // index 8 is a separator
+    case  9: snap = p * 4  / 3; break;
+    case 10: snap = p * 2  / 3; break;
+    case 11: snap = p * 1 / 3; break;
+    case 12: snap = p / 2 / 3; break;
+    case 13: snap = p / 4 / 3; break;
+    case 14: snap = p / 8 / 3; break;
+    case 15: snap = p / 16 / 3; break;
+    default: snap = p * 4; break;
     }
     m_seqroll->set_snap(snap);
     seq().set_snap_tick(snap);
@@ -624,30 +625,31 @@ void
 qseqeditframe::updateNoteLength (int newindex)
 {
     int len;
+    int p = perf().ppqn();
     switch (newindex)
     {
-    case  0: len = ppqn() * 4; break;
-    case  1: len = ppqn() * 2; break;
-    case  2: len = ppqn() * 1; break;
-    case  3: len = ppqn() / 2; break;
-    case  4: len = ppqn() / 4; break;
-    case  5: len = ppqn() / 8; break;
-    case  6: len = ppqn() / 16; break;
-    case  7: len = ppqn() / 32; break;
+    case  0: len = p * 4; break;
+    case  1: len = p * 2; break;
+    case  2: len = p * 1; break;
+    case  3: len = p / 2; break;
+    case  4: len = p / 4; break;
+    case  5: len = p / 8; break;
+    case  6: len = p / 16; break;
+    case  7: len = p / 32; break;
 
     /*
      * Index 8 is a separator. Treat it as the default case.
      */
 
-    case  8: len = ppqn() * 4; break;
-    case  9: len = ppqn() * 4  / 3; break;
-    case 10: len = ppqn() * 2  / 3; break;
-    case 11: len = ppqn() * 1 / 3; break;
-    case 12: len = ppqn() / 2 / 3; break;
-    case 13: len = ppqn() / 4 / 3; break;
-    case 14: len = ppqn() / 8 / 3; break;
-    case 15: len = ppqn() / 16 / 3; break;
-    default: len = ppqn() * 4; break;
+    case  8: len = p * 4; break;
+    case  9: len = p * 4  / 3; break;
+    case 10: len = p * 2  / 3; break;
+    case 11: len = p * 1 / 3; break;
+    case 12: len = p / 2 / 3; break;
+    case 13: len = p / 4 / 3; break;
+    case 14: len = p / 8 / 3; break;
+    case 15: len = p / 16 / 3; break;
+    default: len = p * 4; break;
     }
     m_seqroll->set_note_length(len);
 }

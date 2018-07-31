@@ -1,6 +1,6 @@
 README for Sequencer64 0.95.1 (Native JACK, CLI, varisets, tempo, Windows)
 Chris Ahlstrom
-2015-09-10 to 2018-07-22
+2015-09-10 to 2018-07-31
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
 The heart of seq24 remains intact.  It is an old friend, and maintains some
@@ -47,8 +47,10 @@ conventional source tarball.
 
 Recent changes:
 
-    -   Version 0.95.1:  A lot of stuff for a "minor" release!
-        -   Clean up the Build Info dialog and enhance the About dialog.
+    -   Version 0.95.1:  A lot of stuff for a "minor" release! We are
+        conserving version numbers, plus most fixes are getting the Qt 5
+        version as functional as the Gtkmm-2.4 version of the GUI.
+        -   Cleaned up the Build Info dialog and enhanced the About dialog.
         -   See "Pull Request #150" in the NEWS file.
         -   Added the ability to read Cakewalk "WRK" files.
         -   Refactoring the "qseq" classes to avoid constant redraws.
@@ -60,11 +62,11 @@ Recent changes:
         -   Fixed issue #130 where editing event data (seqdata) would
             be slow/jerky with large patterns.
         -   Fixed issues building Qt/rtmidi executable with automake.
-        -   Added an external pattern-editor window for the Qt user-interface.
-        -   Added an LFO window for the new version of the pattern editor.
-        -   Added an external song-editor window for the Qt user-interface.
+        -   Added an external pattern-editor window and song-editor window
+            for the Qt user-interface, plus an LFO window.
         -   Made the Seq32 transpose option permanent, not macroed.
         -   Adding progress-following for the pattern and song editors.
+        -   Fixed issue with not loading the MIDI file PPQN value if present.
     -   Version 0.95.0:
         -   Improved the Windows version and its packaging.  Added a Windows
             icon, an installer, better data support and documentation, and
@@ -110,6 +112,7 @@ up after some old-man surgery.
 See the ROADMAP file for more information and a kind of TODO list.  Also see
 contrib/notes/bugs_to_investigate.  Sequencer64 is documented by the following
 project, a 190+-page PDF file and its LaTeX source code:
-https://github.com/ahlstromcj/sequencer64-doc.git
+
+    https://github.com/ahlstromcj/sequencer64-doc.git
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

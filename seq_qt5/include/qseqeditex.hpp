@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-10
+ * \updates       2018-07-30
  * \license       GNU GPLv2 or above
  *
  *  The sequence editing window is known as the "Pattern Editor".  Kepler34
@@ -72,6 +72,8 @@ public:
         qsmainwnd * parent = nullptr
     );
     virtual ~qseqeditex ();
+
+    void update_draw_geometry ();
 
 protected:
 

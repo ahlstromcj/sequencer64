@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-14
- * \updates       2018-07-29
+ * \updates       2018-07-30
  * \license       GNU GPLv2 or above
  *
  *  This class WILL BE the base class for qseqroll, qseqdata, qtriggereditor,
@@ -504,6 +504,8 @@ public:
     bool needs_update () const;
 
 protected:
+
+    int horizSizeHint () const;
 
     bool check_dirty ()
     {

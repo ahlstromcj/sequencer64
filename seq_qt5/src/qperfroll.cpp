@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-21
+ * \updates       2018-07-30
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -55,7 +55,7 @@ qperfroll::qperfroll
     perform & p,
     int zoom,
     int snap,
-    int ppqn,
+    int appqn,
     QWidget * frame,        // must be a qseqeditframe/64 widget
     QWidget * parent
 ) :
@@ -63,7 +63,7 @@ qperfroll::qperfroll
     gui_palette_qt5     (),
     qperfbase
     (
-        p, zoom, snap, ppqn, c_names_y, c_names_y*c_max_sequence
+        p, zoom, snap, appqn, c_names_y, c_names_y*c_max_sequence
     ),
     m_parent_frame      (reinterpret_cast<qperfeditframe64 *>(frame)),
     m_timer             (nullptr),
@@ -86,13 +86,13 @@ qperfroll::qperfroll
 {
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setFocusPolicy(Qt::StrongFocus);
-    set_ppqn(ppqn);
+    set_ppqn(appqn);
     for (int i = 0; i < c_max_sequence; ++i)
         m_sequence_active[i] = false;
 
     m_roll_length_ticks  = perf().get_max_trigger();
-    m_roll_length_ticks -= (m_roll_length_ticks % (perf().ppqn() * 16));
-    m_roll_length_ticks += perf().ppqn() * 64;              // ?????
+    m_roll_length_ticks -= (m_roll_length_ticks % (ppqn() * 16));
+    m_roll_length_ticks += ppqn() * 64;              // ?????
     m_timer = new QTimer(this);                             // timer for redraws
     m_timer->setInterval(usr().window_redraw_rate());       // 50
     QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(conditional_update()));
@@ -420,14 +420,13 @@ qperfroll::paintEvent (QPaintEvent *)
 QSize
 qperfroll::sizeHint () const
 {
-    int h = c_names_y * c_max_sequence + 1;
+    int height = c_names_y * c_max_sequence + 1;
+    int width = horizSizeHint();
     int w = m_parent_frame->width();
-//  int len = perf().get_max_trigger() / scale_zoom() + 2000;
-    int len = perf().get_max_trigger() / scale_zoom();
-    if (len < w)
-        len = w;
+    if (width < w)
+        width = w;
 
-    return QSize(len, h);
+    return QSize(width, height);
 }
 
 /**

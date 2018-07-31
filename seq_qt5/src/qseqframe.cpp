@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-27
- * \updates       2018-07-28
+ * \updates       2018-07-30
  * \license       GNU GPLv2 or above
  *
  *  Sequencer64 (Qt version) has two different pattern editor frames to
@@ -92,7 +92,7 @@ qseqframe::qseqframe
     m_seqevent          (nullptr),
     m_initial_zoom      (SEQ64_DEFAULT_ZOOM),
     m_zoom              (SEQ64_DEFAULT_ZOOM),           // fixed below
-    m_ppqn              (p.ppqn())
+    m_ppqn              (p.ppqn())                      // MIGHT REMOVE
 {
     // bool ok = initialize_panels();
 }

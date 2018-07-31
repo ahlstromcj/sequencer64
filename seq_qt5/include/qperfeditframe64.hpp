@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-18
- * \updates       2018-07-29
+ * \updates       2018-07-30
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -102,10 +102,10 @@ public:
     int get_beats_per_measure () const;
     void set_beats_per_measure (int beats_per_measure);
     void follow_progress ();
+    void update_sizes ();
 
 private:
 
-    void update_sizes ();
     void set_snap (int a_snap);
     void set_guides ();
     void grow ();

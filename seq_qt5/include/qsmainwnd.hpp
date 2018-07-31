@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-26
+ * \updates       2018-07-31
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -126,9 +126,7 @@ protected:
 
 protected:
 
-    // override keyboard events for interaction
-
-    void keyPressEvent (QKeyEvent * event);
+    void keyPressEvent (QKeyEvent * event); /* override keyboard events */
 
 protected:
 
@@ -146,13 +144,15 @@ private:
 
     virtual void closeEvent (QCloseEvent *);
 
+    void make_perf_frame_in_tab ();
+
     /*
      * Check if the file has been modified.  If modified, ask the user whether
      * to save changes.
      */
 
     bool check ();
-    void update_window_title ();
+    void update_window_title (const std::string & fn = "");
     void update_recent_files_menu ();
 
     void create_action_connections ();      // new
@@ -186,6 +186,14 @@ private:
     qseditoptions * m_dialog_prefs;
     qsabout * mDialogAbout;
     qsbuildinfo * mDialogBuildInfo;
+
+    /**
+     *  Provides a workaround for a race condition when a MIDI file-name is
+     *  provided on the command line.  This would cause the title to be
+     *  "unnamed".
+     */
+
+    bool m_is_title_dirty;
 
     /**
      *  Saves the PPQN value obtained from the MIDI file (or the default

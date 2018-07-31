@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-14
- * \updates       2018-07-29
+ * \updates       2018-07-30
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -92,6 +92,17 @@ qperfbase::qperfbase
     m_is_dirty              (true)
 {
     set_ppqn(ppqn);
+}
+
+/**
+ *
+ */
+
+int
+qperfbase::horizSizeHint () const
+{
+    int hint = perf().get_max_trigger() / scale_zoom() + 2000;
+    return hint;
 }
 
 /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-21
- * \updates       2018-07-21
+ * \updates       2018-07-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -112,6 +112,17 @@ qperfeditex::closeEvent (QCloseEvent *)
 {
     if (not_nullptr(m_edit_parent))
        m_edit_parent->remove_qperfedit();
+}
+
+/**
+ *  See usage is qsmainwnd.
+ */
+
+void
+qperfeditex::update_sizes ()
+{
+    if (not_nullptr(m_edit_frame))
+        m_edit_frame->update_sizes();
 }
 
 }               // namespace seq64

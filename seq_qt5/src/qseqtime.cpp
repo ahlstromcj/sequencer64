@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-14
+ * \updates       2018-07-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -114,7 +114,7 @@ qseqtime::paintEvent (QPaintEvent *)
 
     int bpbar = seq().get_beats_per_bar();
     int bwidth = seq().get_beat_width();
-    int ticks_per_beat = (4 * perf().ppqn()) / bwidth;
+    int ticks_per_beat = (4 * perf().get_ppqn()) / bwidth;
     int ticks_per_bar = bpbar * ticks_per_beat;
     int measures_per_line = zoom() * bwidth * bpbar * 2;
     if (measures_per_line <= 0)

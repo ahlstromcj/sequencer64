@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-04
- * \updates       2018-06-12
+ * \updates       2018-07-31
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the WRK format, see, for example:
@@ -711,13 +711,13 @@ wrkfile::Timebase_chunk ()
     if (timebase >= SEQ64_MINIMUM_PPQN && timebase <= SEQ64_MAXIMUM_PPQN)
     {
         ppqn(timebase);
-        m_perform->ppqn(timebase);
+        m_perform->set_ppqn(timebase);
     }
     else
     {
         infoprint("[Setting default PPQN]");
         ppqn(SEQ64_DEFAULT_PPQN);
-        m_perform->ppqn(SEQ64_DEFAULT_PPQN);
+        m_perform->set_ppqn(SEQ64_DEFAULT_PPQN);
     }
 
     // Q_EMIT signalWRKTimeBase(timebase);

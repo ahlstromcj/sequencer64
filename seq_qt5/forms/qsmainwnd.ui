@@ -54,7 +54,7 @@
     <enum>Qt::LeftToRight</enum>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="3" column="5" colspan="2">
+    <item row="3" column="7" colspan="2">
      <widget class="QPushButton" name="btnPerfEdit">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -88,14 +88,14 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="6" colspan="2">
+    <item row="1" column="8" colspan="2">
      <widget class="QLabel" name="label_HMS">
       <property name="text">
        <string>0:0:0</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="3">
+    <item row="1" column="5">
      <widget class="QLabel" name="label_ts_slash">
       <property name="minimumSize">
        <size>
@@ -117,7 +117,7 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="4">
+    <item row="1" column="6">
      <widget class="QComboBox" name="cmb_beat_length">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -145,7 +145,7 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="10">
+    <item row="3" column="12">
      <layout class="QHBoxLayout" name="lay_bpm">
       <item>
        <widget class="QLabel" name="label">
@@ -202,7 +202,7 @@
       </item>
      </layout>
     </item>
-    <item row="3" column="7">
+    <item row="3" column="9">
      <widget class="QPushButton" name="btn_set_HMS">
       <property name="minimumSize">
        <size>
@@ -221,11 +221,11 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="8">
+    <item row="1" column="10">
      <widget class="QWidget" name="verticalWidget" native="true">
       <property name="minimumSize">
        <size>
-        <width>300</width>
+        <width>256</width>
         <height>0</height>
        </size>
       </property>
@@ -251,7 +251,7 @@
       </layout>
      </widget>
     </item>
-    <item row="2" column="0" colspan="13">
+    <item row="2" column="0" colspan="15">
      <widget class="QTabWidget" name="tabWidget">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
@@ -372,7 +372,7 @@
       </widget>
      </widget>
     </item>
-    <item row="3" column="4">
+    <item row="3" column="6">
      <widget class="QPushButton" name="btnSongPlay">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -412,7 +412,7 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="2">
+    <item row="1" column="4">
      <widget class="QComboBox" name="cmb_beat_measure">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -670,6 +670,29 @@
        <string notr="true">QSEQ64</string>
       </property>
      </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QComboBox" name="cmbPPQN">
+      <property name="minimumSize">
+       <size>
+        <width>44</width>
+        <height>32</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
     </item>
    </layout>
   </widget>

@@ -119,6 +119,11 @@ qperftime::paintEvent (QPaintEvent *)
 
     for (midipulse tick = tick0; tick < tick1; tick += tickstep)
     {
+        if (measure_length() == 0)
+        {
+            printf("qperftime measure-length is 0, cannot draw\n");
+            break;
+        }
         if (tick % measure_length() == 0)
         {
             int x_pos = position_pixel(tick);

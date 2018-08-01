@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-30
+ * \updates       2018-07-31
  * \license       GNU GPLv2 or above
  *
  *  This version of the qseqedit-frame class is basically the Kepler34
@@ -227,7 +227,7 @@ qseqeditframe::qseqeditframe
     ui->txtSeqName->setPlainText(seq().name().c_str());
     ui->cmbMidiChan->setCurrentIndex(seq().get_midi_channel());
     QString snapText("1/");
-    snapText.append(QString::number(perf().ppqn() * 4 / seq().get_snap_tick()));
+    snapText.append(QString::number(perf().get_ppqn() * 4 / seq().get_snap_tick()));
     ui->cmbGridSnap->setCurrentText(snapText);
 
     QString seqLenText(QString::number(seq().get_num_measures()));
@@ -467,23 +467,23 @@ qseqeditframe::initialize_panels ()
     );
     m_seqtime = new qseqtime
     (
-        perf(), seq(), zoom(), perf().ppqn(), m_container
+        perf(), seq(), zoom(), perf().get_ppqn(), m_container
     );
     m_seqroll = new qseqroll
     (
-        perf(), seq(), m_seqkeys, zoom(), m_snap, perf().ppqn(), 0,
+        perf(), seq(), m_seqkeys, zoom(), m_snap, perf().get_ppqn(), 0,
         EDIT_MODE_NOTE, this            // m_container
     );
     m_seqroll->update_edit_mode(m_edit_mode);
     m_seqdata = new qseqdata
     (
         perf(), seq(), zoom(), m_snap,
-        perf().ppqn(), m_container
+        perf().get_ppqn(), m_container
     );
     m_seqevent = new qstriggereditor
     (
         perf(), seq(), m_seqdata, zoom(), m_snap,
-        perf().ppqn(), usr().key_height(), m_container
+        perf().get_ppqn(), usr().key_height(), m_container
     );
 }
 
@@ -537,7 +537,7 @@ void
 qseqeditframe::updateGridSnap (int snapindex)
 {
     int snap;
-    int p = perf().ppqn();              /* ppqn()   */
+    int p = perf().get_ppqn();              /* ppqn()   */
     switch (snapindex)
     {
     case  0: snap = p * 4; break;
@@ -625,7 +625,7 @@ void
 qseqeditframe::updateNoteLength (int newindex)
 {
     int len;
-    int p = perf().ppqn();
+    int p = perf().get_ppqn();
     switch (newindex)
     {
     case  0: len = p * 4; break;

@@ -1148,7 +1148,7 @@ public:
      * \getter m_ppqn
      */
 
-    int ppqn () const
+    int get_ppqn () const
     {
         return m_ppqn;
     }
@@ -2696,19 +2696,10 @@ public:         // GUI-support functions
     }
 
     void set_beats_per_minute (midibpm bpm);    /* more than just a setter  */
+    void set_ppqn (int p);
     void panic ();                              /* from kepler43        */
 
 private:
-
-    /**
-     * \setter m_ppqn
-     */
-
-    void ppqn (int p)
-    {
-         m_ppqn = p;
-         m_master_bus->set_ppqn(p);
-    }
 
     /**
      *  Convenience function for perfedit's collapse functionality.

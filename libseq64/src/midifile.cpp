@@ -741,7 +741,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
     if (! m_use_default_ppqn)
         ppqn(int(fileppqn));
 
-    p.ppqn(ppqn());
+    p.set_ppqn(ppqn());
     for (int track = 0; track < NumTracks; ++track)
     {
         midipulse Delta;                            /* MIDI delta time      */

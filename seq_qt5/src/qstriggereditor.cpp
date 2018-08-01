@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-14
+ * \updates       2018-07-31
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -130,7 +130,7 @@ qstriggereditor::paintEvent (QPaintEvent *)
 
     int bpbar = seq().get_beats_per_bar();
     int bwidth = seq().get_beat_width();
-    midipulse ticks_per_beat = 4 * perf().ppqn() / bwidth;
+    midipulse ticks_per_beat = 4 * perf().get_ppqn() / bwidth;
     midipulse ticks_per_bar = bpbar * ticks_per_beat;
     midipulse ticks_per_step = 6 * zoom();
     midipulse starttick = scroll_offset_ticks() -

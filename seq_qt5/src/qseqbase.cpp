@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-30
+ * \updates       2018-07-31
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -51,7 +51,7 @@ namespace seq64
 
 qseqbase::qseqbase
 (
-    perform & perf,
+    perform & p,
     sequence & seq,
     int zoom,
     int snap,
@@ -59,13 +59,13 @@ qseqbase::qseqbase
     int unit_height,
     int total_height
 ) :
-    m_perform               (perf),
+    m_perform               (p),
     m_seq                   (seq),
     m_old                   (),
     m_selected              (),
     m_zoom                  (zoom),
     m_snap                  (snap),
-    m_ppqn                  (0),
+    m_ppqn                  (p.get_ppqn()),
     m_selecting             (false),
     m_adding                (false),
     m_moving                (false),

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-18
- * \updates       2018-07-29
+ * \updates       2018-07-31
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -96,7 +96,7 @@ namespace seq64
 qperfeditframe64::qperfeditframe64
 (
     seq64::perform & p,
-    int ppqn,
+    int /*ppqn*/,
     QWidget * parent
 ) :
     QFrame                  (parent),
@@ -106,12 +106,11 @@ qperfeditframe64::qperfeditframe64
     m_snap                  (8),
     m_beats_per_measure     (4),
     m_beat_width            (4),
-    m_ppqn                  (0),
+    m_ppqn                  (p.get_ppqn()),     /* not choose_ppqn(ppqn)    */
     m_perfroll              (nullptr),
     m_perfnames             (nullptr),
     m_perftime              (nullptr)
 {
-    m_ppqn = choose_ppqn(ppqn);
     ui->setupUi(this);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -157,7 +156,7 @@ qperfeditframe64::qperfeditframe64
     m_perftime = new seq64::qperftime
     (
         m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
-        m_ppqn, ui->timeScrollArea     // this
+        p.get_ppqn(), ui->timeScrollArea     // this
     );
     ui->timeScrollArea->setWidget(m_perftime);
     ui->timeScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -166,7 +165,7 @@ qperfeditframe64::qperfeditframe64
     m_perfroll = new seq64::qperfroll
     (
         m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
-        m_ppqn, this, ui->rollScrollArea
+        p.get_ppqn(), this, ui->rollScrollArea
     );
     ui->rollScrollArea->setWidget(m_perfroll);
     ui->rollScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -379,15 +378,22 @@ qperfeditframe64::set_beat_width (int bw)
 
 /**
  *  These values are ticks, but passed as integers.
+ *  The guides are set to 4 measures by default.
  */
 
 void
 qperfeditframe64::set_guides ()
 {
-    int ppqn = perf().ppqn() * 4;      // TODO: allow runtime changes
-    int measure = (ppqn * 4) * m_beats_per_measure / m_beat_width;
-    int snap = m_snap;          // measure / m_snap;
-    int beat = (ppqn * 4) / m_beat_width;
+    int ppqn = perf().get_ppqn();               // TODO: allow runtime changes
+    int measure = (ppqn * 4 * 4) * m_beats_per_measure / m_beat_width;
+    int snap = m_snap;                          // measure / m_snap;
+    int beat = (ppqn * 4 * 4) / m_beat_width;
+    if (ppqn != m_ppqn)
+    {
+        m_ppqn = ppqn;
+        // set dirty?
+    }
+
     m_perfroll->set_guides(snap, measure, beat);
     m_perftime->set_guides(snap, measure);
 #ifdef PLATFORM_DEBUG_TMI

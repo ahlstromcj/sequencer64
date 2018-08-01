@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2017-07-24
+ * \updates       2017-07-31
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -700,27 +700,15 @@ shorten_file_spec (const std::string & fpath, int leng)
 {
     std::size_t fpathsize = fpath.size();
     if (fpathsize <= std::size_t(leng))
+    {
         return fpath;
+    }
     else
     {
         std::string ellipse("...");
         std::size_t halflength = (std::size_t(leng) - ellipse.size()) / 2 - 1;
-        std::string result = fpath;
-        std::size_t foundpos = result.find("/home");
-        if (foundpos != std::string::npos)
-        {
-            foundpos = result.find_first_of('/', foundpos + 1);
-            if (foundpos != std::string::npos)
-            {
-                foundpos = result.find_first_of('/', foundpos + 1);
-                if (foundpos != std::string::npos)
-                {
-                    result.replace(0, foundpos /*length*/, "~");
-                }
-            }
-        }
-        result = result.substr(0, halflength);
-        std::string lastpart = fpath.substr(fpathsize-halflength-1, halflength+1);
+        std::string result = fpath.substr(0, halflength);
+        std::string lastpart = fpath.substr(fpathsize-halflength-1);
         result = result + ellipse + lastpart;
         return result;
     }

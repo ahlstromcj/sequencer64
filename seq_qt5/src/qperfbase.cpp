@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-14
- * \updates       2018-07-30
+ * \updates       2018-07-31
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -51,23 +51,23 @@ namespace seq64
 
 qperfbase::qperfbase
 (
-    perform & perf,
+    perform & p,
     int zoom,
     int snap,
-    int ppqn,
+    int /*ppqn*/,
     int unit_height,
     int total_height
 ) :
-    m_perform               (perf),
+    m_perform               (p),
     m_old                   (),
     m_selected              (),
     m_zoom                  (zoom),
     m_scale                 (c_perf_scale_x / 4),
     m_scale_zoom            (m_scale * m_zoom),
     m_snap                  (snap),
-    m_ppqn                  (0),
-    m_beat_length           (0),
-    m_measure_length        (0),
+    m_ppqn                  (p.get_ppqn()),     /* not choose_ppqn(ppqn)    */
+    m_beat_length           (p.get_ppqn()),
+    m_measure_length        (m_beat_length * 4),
     m_selecting             (false),
     m_adding                (false),
     m_moving                (false),
@@ -91,7 +91,7 @@ qperfbase::qperfbase
     m_total_height          (total_height),
     m_is_dirty              (true)
 {
-    set_ppqn(ppqn);
+    // no other code needed
 }
 
 /**

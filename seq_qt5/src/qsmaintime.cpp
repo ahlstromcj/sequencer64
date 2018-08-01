@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-15
+ * \updates       2018-07-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -91,7 +91,7 @@ qsmaintime::paintEvent (QPaintEvent *)
     painter.setBrush(brush);
 
     midipulse tick = m_main_perf.get_tick();
-    int metro = (tick / (perf().ppqn() / 4 * m_beat_width)) % m_beats_per_measure;
+    int metro = (tick / (perf().get_ppqn() / 4 * m_beat_width)) % m_beats_per_measure;
     int divX = (width() - 1) / m_beats_per_measure;
 
     /*

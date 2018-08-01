@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-04
+ * \updates       2018-07-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -216,13 +216,14 @@ qsliveframe::drawSequence (int seq)
     QPen pen(Qt::black);
     QBrush brush(Qt::black);            // QBrush brush(Qt::darkGray);
     m_font.setPointSize(6);
+    m_font.setBold(true);               // EXPERIMENTAL
     m_font.setLetterSpacing(QFont::AbsoluteSpacing, 1);
     painter.setPen(pen);
     painter.setBrush(brush);
     painter.setFont(m_font);
 
     midipulse tick = perf().get_tick();  // timing info for timed elements
-    int metro = (tick / perf().ppqn()) % 2;
+    int metro = (tick / perf().get_ppqn()) % 2;
 
     /*
      * Grab frame dimensions for scaled drawing.  Note that the frame

@@ -96,7 +96,7 @@ namespace seq64
 qsmainwnd::qsmainwnd
 (
     perform & p,
-    int ppqn,
+    int /*ppqn*/,
     QWidget * parent
 ) :
     QMainWindow         (parent),
@@ -118,7 +118,7 @@ qsmainwnd::qsmainwnd
     mDialogAbout        (nullptr),
     mDialogBuildInfo    (nullptr),
     m_is_title_dirty    (false),
-    m_ppqn              (choose_ppqn(ppqn)),
+    m_ppqn              (p.get_ppqn()),
     m_tick_time_as_bbt  (true),
     m_open_editors      ()
 {
@@ -132,6 +132,14 @@ qsmainwnd::qsmainwnd
     int x = (screen.width() - width()) / 2;             // center on screen
     int y = (screen.height() - height()) / 2;
     move(x, y);
+
+    /*
+     * TODO.
+     *  Combo-box for tweaking the PPQN.
+     *  Hidden for now.
+     */
+
+    ui->cmbPPQN->hide();
 
     /*
      * Fill options for beats per measure in the combo box, and set the
@@ -440,7 +448,8 @@ qsmainwnd::closeEvent (QCloseEvent * event)
 void
 qsmainwnd::make_perf_frame_in_tab ()
 {
-    m_song_frame64 = new qperfeditframe64(perf(), m_ppqn, ui->SongTab);
+    // m_song_frame64 = new qperfeditframe64(perf(), m_ppqn, ui->SongTab);
+    m_song_frame64 = new qperfeditframe64(perf(), perf().get_ppqn(), ui->SongTab);
     if (not_nullptr(m_song_frame64))
     {
         int bpmeasure = m_song_frame64->get_beats_per_measure();
@@ -701,7 +710,6 @@ qsmainwnd::update_window_title (const std::string & fn)
     }
     else
     {
-        itemname = fn;
         int pp = choose_ppqn(ppqn());
         char temp[16];
         snprintf(temp, sizeof temp, " (%d ppqn) ", pp);
@@ -710,6 +718,7 @@ qsmainwnd::update_window_title (const std::string & fn)
     }
     itemname += " [*]";                         // required by Qt 5
 
+    printf("title = '%s'\n", itemname.c_str());
     QString fname = QString::fromLocal8Bit(itemname.c_str());
     setWindowTitle(fname);
 }
@@ -753,7 +762,7 @@ qsmainwnd::refresh ()
     {
         midipulse tick = perf().get_tick();
         midibpm bpm = perf().get_beats_per_minute();
-        int ppqn = perf().ppqn();
+        int ppqn = perf().get_ppqn();
         if (m_tick_time_as_bbt)
         {
             midi_timing mt
@@ -771,8 +780,8 @@ qsmainwnd::refresh ()
     }
     if (m_is_title_dirty)
     {
-        update_window_title();
         m_is_title_dirty = false;
+        update_window_title();
     }
 }
 
@@ -1076,7 +1085,8 @@ qsmainwnd::load_qperfedit (bool on)
 {
     if (is_nullptr(m_perfedit))
     {
-        qperfeditex * ex = new qperfeditex(perf(), m_ppqn, this);
+        // qperfeditex * ex = new qperfeditex(perf(), m_ppqn, this);
+        qperfeditex * ex = new qperfeditex(perf(), perf().get_ppqn(), this);
         if (not_nullptr(ex))
         {
             m_perfedit = ex;

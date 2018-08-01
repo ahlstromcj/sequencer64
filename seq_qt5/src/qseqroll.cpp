@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-29
+ * \updates       2018-07-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -85,7 +85,7 @@ qseqroll::qseqroll
     m_chord                 (0),
 #endif
     m_key                   (0),
-    m_note_length           (perf.ppqn() * 4 / 16),
+    m_note_length           (perf.get_ppqn() * 4 / 16),
     m_background_sequence   (0),
     m_drawing_background_seq (false),
     m_expanded_recording    (false),
@@ -291,7 +291,7 @@ qseqroll::paintEvent (QPaintEvent *)
 
     int bpbar = seq().get_beats_per_bar();
     int bwidth = seq().get_beat_width();
-    midipulse ticks_per_beat = (4 * perf().ppqn()) / bwidth;
+    midipulse ticks_per_beat = (4 * perf().get_ppqn()) / bwidth;
     midipulse ticks_per_bar = bpbar * ticks_per_beat;
     midipulse ticks_per_step = 6 * zoom();
     midipulse starttick = scroll_offset_ticks() -

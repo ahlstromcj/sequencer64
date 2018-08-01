@@ -284,7 +284,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_current_tick              (0.0),
 #endif
     m_playback_mode             (false),
-    m_ppqn                      (choose_ppqn(ppqn)),
+    m_ppqn                      (choose_ppqn(ppqn)),    /* may change later */
     m_bpm                       (SEQ64_DEFAULT_BPM),    /* now a double     */
     m_beats_per_bar             (SEQ64_DEFAULT_BEATS_PER_MEASURE),
     m_beat_width                (SEQ64_DEFAULT_BEAT_WIDTH),
@@ -295,7 +295,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_filter_by_channel         (false),                /* "rc" option      */
     m_master_clocks             (),                     /* vector<clock_e>  */
     m_master_inputs             (),                     /* vector<bool>     */
-    m_one_measure               (m_ppqn * 4),
+    m_one_measure               (m_ppqn * 4),           /* may change later */
     m_left_tick                 (0),
     m_right_tick                (m_one_measure * 4),    /* m_ppqn * 16      */
     m_starting_tick             (0),
@@ -396,6 +396,27 @@ perform::~perform ()
 
     if (not_nullptr(m_master_bus))
         delete(m_master_bus);
+}
+
+/**
+ * \setter ppqn
+ *      Also sets other related members.
+ *
+ *      Might also have to run though ALL patterns and user-interface objects
+ *      to fix them.
+ */
+
+void
+perform::set_ppqn (int p)
+{
+    m_ppqn = p;
+    m_master_bus->set_ppqn(p);
+#ifdef SEQ64_JACK_SUPPORT
+    m_jack_asst.set_ppqn(p);
+#endif
+    m_one_measure = p * 4;                  // simplistic!
+    m_right_tick = m_one_measure * 4;       // ditto
+    // set_dirty_settings();
 }
 
 /**

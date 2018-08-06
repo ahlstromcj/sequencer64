@@ -216,7 +216,7 @@ seqevent::draw_background ()
 
     int bpbar = m_seq.get_beats_per_bar();
     int bwidth = m_seq.get_beat_width();
-    int ticks_per_beat = 4 * perf().ppqn() / bwidth;    /* 4-->bpbar?????    */
+    int ticks_per_beat = 4 * perf().get_ppqn() / bwidth;
     int ticks_per_major = bpbar * ticks_per_beat;
     int ticks_per_step = 6 * m_zoom;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;

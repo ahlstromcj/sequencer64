@@ -50,7 +50,7 @@
 #include "calculations.hpp"             /* clock_ticks_from_ppqn()          */
 #include "event.hpp"                    /* seq64::event (MIDI event)        */
 #include "midibase.hpp"                 /* seq64::midibase for ALSA         */
-#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+#include "settings.hpp"                 /* seq64::rc()                      */
 
 #ifdef PLATFORM_WINDOWS
 #include <windows.h>                    /* Sleep()                          */
@@ -621,6 +621,9 @@ midibase::flush ()
 void
 midibase::init_clock (midipulse tick)
 {
+    if (m_ppqn == 0)
+        return;
+
     if (m_clock_type == e_clock_pos && tick != 0)
     {
         continue_from(tick);

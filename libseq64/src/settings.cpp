@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-05-17
- * \updates       2017-09-11
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -87,29 +87,68 @@ usr ()
 
 /**
  *  Common code for handling PPQN settings.  Putting it here means we can
- *  reduce the reliance on the global ppqn.
+ *  reduce the reliance on the global PPQN, and have a lot more flexibility in
+ *  changing the PPQN.
  *
  *  However, this function works completely only if the "user" configuration
  *  file has already been read.  In some cases we may need to retrofit the
- *  desired PPQN value!
+ *  desired PPQN value!  Also, the default constructor for
+ *  seqmenu::sm_clipboard is called before we read either the configuration
+ *  files or the MIDI file, so we don't report issues when that happens.
  *
  * \param ppqn
- *      Provides the PPQN value to be used.
+ *      Provides the PPQN value to be used.  The legal values are:
+ *
+ *      -   SEQ64_USE_FILE_PPQN (0).  Return 0.  The caller should then get
+ *          the PPQN from the usr().file_ppqn() or usr().midi_ppqn() values,
+ *          perhaps by calling this function again with no parameters. See the
+ *          next option below.
+ *      -   SEQ64_USE_DEFAULT_PPQN (-1).  This is the default value of this
+ *          parameter.  Behavior:
+ *          -   Return the value of usr().midi_ppqn(), if in the range
+ *              SEQ64_MINIMUM_PPQN to SEQ64_MAXIMUM_PPQN.  The default
+ *              PPQN value can be changed (from 192 to another value) on the
+ *              command-line (options "--ppqn" or "-q"), or in the "usr"
+ *              configuration file at the "midi_ppqn" setting.
+ *          -   If usr().midi_ppqn() is SEQ64_USE_FILE_PPQN (0), then return
+ *              usr().file_ppqn() instead.  If that is invalid, return
+ *              SEQ64_DEFAULT_PPQN (192).
+ *          -   If usr().midi_ppqn() is invalid, return SEQ64_DEFAULT_PPQN.
+ *      -   Legal PPQN.  Return it unchanged.
+ *      -   Illegal PPQN.  Return SEQ64_DEFAULT_PPQN.
  *
  * \return
- *      Returns the ppqn parameter, unless that parameter is
- *      SEQ64_USE_DEFAULT_PPQN (-1), then usr().midi_ppqn is returned.
- *      If that value is also -1, then we return SEQ64_DEFAULT_PPQN (192).
+ *      Returns the ppqn parameter, unless that parameter is one of the
+ *      special values above, or is illegal, as noted above.
  */
 
 int
 choose_ppqn (int ppqn)
 {
-    int result = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? usr().midi_ppqn() : ppqn ;
-    if (result == SEQ64_USE_DEFAULT_PPQN || result >= int(USHRT_MAX))
+    int result = ppqn;
+    if (ppqn == SEQ64_USE_FILE_PPQN)
     {
+        result = SEQ64_USE_FILE_PPQN;
+    }
+    else if (ppqn == SEQ64_USE_DEFAULT_PPQN)
+    {
+        if (usr().midi_ppqn() == SEQ64_USE_FILE_PPQN)
+            result = usr().file_ppqn();
+        else
+            result = usr().midi_ppqn();
+
+        if (result < SEQ64_MINIMUM_PPQN || result > SEQ64_MAXIMUM_PPQN)
+        {
+            if (result > SEQ64_USE_FILE_PPQN)
+                warnprint("Default & file PPQN out of range, setting PPQN = 192");
+
+            result = SEQ64_DEFAULT_PPQN;
+        }
+    }
+    else if (result < SEQ64_MINIMUM_PPQN || result > SEQ64_MAXIMUM_PPQN)
+    {
+        warnprint("Provided PPQN out of range, setting PPQN = 192");
         result = SEQ64_DEFAULT_PPQN;
-        warnprint("Returning chosen PPQN = 192");
     }
     return result;
 }

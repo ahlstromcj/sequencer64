@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-24
- * \updates       2017-07-09
+ * \updates       2018-08-05
  * \license       GNU GPLv2 or above
  *
  *  We have recently updated this module to put Set Tempo events into the
@@ -50,35 +50,15 @@ namespace seq64
 /**
  *  Principal constructor.
  *
- * \param ppqn
- *      Provides the initial value of the PPQN setting.  It is handled
- *      differently for parsing (reading) versus writing the MIDI file.
- *      -   Reading.
- *          -   If set to SEQ64_USE_DEFAULT_PPQN, the legacy application
- *              behavior is used.  The m_ppqn member is set to the default
- *              PPQN, DEFAULT_PPQN.  The value read from the MIDI
- *              file, ppqn, is then use to scale the running-time of the
- *              sequence relative to DEFAULT_PPQN.
- *          -   Otherwise, m_ppqn is set to the value read from the MIDI file.
- *              No scaling is done.  Since the value gets written, specify
- *              ppqn as 0, an obviously bogus value, to get this behavior.
- *      -   Writing.  This value is written to the MIDI file in the header
- *          chunk of the song.  Note that the caller must query for the
- *          PPQN set during parsing, and pass it to the constructor when
- *          preparing to write the file.  See how it is done in the mainwnd
- *          class.
  */
 
-midi_splitter::midi_splitter (int ppqn)
+midi_splitter::midi_splitter ()
  :
-    m_ppqn                  (0),
-    m_use_default_ppqn      (ppqn == SEQ64_USE_DEFAULT_PPQN),
     m_smf0_channels_count   (0),
     m_smf0_channels         (),         /* array, initialized in parse()    */
     m_smf0_main_sequence    (nullptr),
     m_smf0_seq_number       (-1)
 {
-    m_ppqn = choose_ppqn(ppqn);
     initialize();
 }
 
@@ -181,13 +161,16 @@ midi_splitter::log_main_sequence (sequence & seq, int seqnum)
  *      The screen-set offset to be used when loading a sequence (track) from
  *      the file.
  *
+ * \param ppqn
+ *      Use the provided PPQN.
+ *
  * \return
  *      Returns true if the parsing succeeded.  Returns false if no SMF 0 main
  *      sequence was logged.
  */
 
 bool
-midi_splitter::split (perform & p, int screenset)
+midi_splitter::split (perform & p, int screenset, int ppqn)
 {
     bool result = not_nullptr(m_smf0_main_sequence);
     if (result)
@@ -204,7 +187,7 @@ midi_splitter::split (perform & p, int screenset)
                      * otherwise the null pointer causes a segfault.
                      */
 
-                    sequence * s = new sequence(m_ppqn);
+                    sequence * s = new sequence(ppqn);
                     s->set_master_midi_bus(&p.master_bus());
                     if (split_channel(*m_smf0_main_sequence, s, chan))
                     {
@@ -274,7 +257,7 @@ midi_splitter::split_channel
 )
 {
     bool result = false;
-    char tmp[24];
+    char tmp[32];
     if (main_seq.name().empty())
     {
         snprintf(tmp, sizeof tmp, "Track %d", channel+1);

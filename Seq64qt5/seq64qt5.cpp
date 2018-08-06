@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-07-26
+ * \updates       2018-08-02
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -139,7 +139,8 @@ main (int argc, char * argv [])
          * timely fashion.
          */
 
-        p.launch(seq64::usr().midi_ppqn());         /* set up performance   */
+        if (ok)
+            p.launch(seq64::usr().midi_ppqn());     /* set up performance   */
 
         /*
          * TODO
@@ -148,16 +149,43 @@ main (int argc, char * argv [])
             seq64::gui_palette_qt5::load_inverse_palette(true);
          */
 
+        std::string midifname;                      /* start out blank      */
+        std::string errmsg = "unspecified error";
+        if (ok)
+        {
+            if (optionindex < argc)                 /* MIDI filename given? */
+            {
+                std::string fname = argv[optionindex];
+                if (seq64::file_accessible(fname))
+                {
+                    midifname = fname;      // seq24_window.open_file(fname);
+                }
+                else
+                {
+                    char temp[256];
+                    (void) snprintf
+                    (
+                        temp, sizeof temp,
+                        "? MIDI file not found: %s\n", fname.c_str()
+                    );
+                    printf(temp);
+                    ok = false;
+                    errmsg = temp;
+                }
+            }
+        }
+
         /*
-         * Push the qsmainwnd window onto the stack, with an option for
-         * allowing a second perfedit to be created.  Also be sure to pass
+         * Push the qsmainwnd window onto the stack.  Also be sure to pass
          * along the PPQN value, which might be different than the default
-         * (192), and affects some of the child objects of mainwnd.
+         * (192), and affects some of the child objects of qsmainwnd.
          */
 
         seq64::qsmainwnd seq24_window
         (
-            p, seq64::usr().midi_ppqn()
+            p,
+            midifname,                  // optional
+            seq64::usr().midi_ppqn()    // can be 0
 #if defined SEQ64_MULTI_MAINWID         // might never be supported!
             ,
             seq64::usr().block_rows(),
@@ -180,33 +208,18 @@ main (int argc, char * argv [])
          */
 
 #ifdef SEQ64_PORTMIDI_SUPPORT
-        if (Pm_error_present())
+        if (ok)
         {
-            ok = false;
-            seq24_window.show_message_box(std::string(Pm_hosterror_message()));
+            if (Pm_error_present())
+            {
+                ok = false;
+                errmsg = std::string(Pm_hosterror_message());
+            }
         }
 #endif
 
-        if (ok)
-        {
-            if (optionindex < argc)                 /* MIDI filename given? */
-            {
-                std::string midifilename = argv[optionindex];
-                if (seq64::file_accessible(midifilename))
-                    seq24_window.open_file(midifilename);
-                else
-                {
-                    char temp[256];
-                    (void) snprintf
-                    (
-                        temp, sizeof temp,
-                        "? MIDI file not found: %s\n", midifilename.c_str()
-                    );
-                    printf(temp);
-                    seq24_window.show_message_box(std::string(temp));
-                }
-            }
-        }
+        if (! ok)
+            seq24_window.show_message_box(errmsg);
 
 #ifdef PLATFORM_LINUX
         if (ok)

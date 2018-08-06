@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-07-05
+ * \updates       2018-08-05
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -48,7 +48,7 @@
 #include "perform.hpp"
 #include "scales.h"
 #include "sequence.hpp"
-#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+#include "settings.hpp"                 /* seq64::rc()                      */
 
 /**
  *  Enables and marks a user's patch for issue #95.
@@ -109,7 +109,7 @@ sequence::sequence (int ppqn)
     m_song_mute                 (false),
     m_transposable              (true),
     m_notes_on                  (0),
-    m_master_bus                 (nullptr),
+    m_master_bus                (nullptr),
     m_playing_notes             (),             // an array
     m_was_playing               (false),
     m_playing                   (false),
@@ -125,7 +125,7 @@ sequence::sequence (int ppqn)
     m_song_playback_block       (false),
     m_song_recording            (false),
     m_song_recording_snap       (false),
-    m_song_record_tick       (0),
+    m_song_record_tick          (0),
 #endif
     m_overwrite_recording       (false),
     m_loop_reset                (false),
@@ -138,15 +138,15 @@ sequence::sequence (int ppqn)
     m_raise                     (false),
     m_name                      (),
     m_last_tick                 (0),
-    m_queued_tick               (0),            /* used by perform::play()   */
-    m_trigger_offset            (0),            /* needed for record-keeping */
+    m_queued_tick               (0),            /* used by perform::play()  */
+    m_trigger_offset            (0),            /* for record-keeping       */
     m_maxbeats                  (c_maxbeats),
-    m_ppqn                      (0),            /* set in constructor body   */
-    m_seq_number                (-1),           /* may be set later          */
-    m_seq_color                 (SEQ64_COLOR_NONE), /* PaletteColor::NONE    */
-    m_seq_edit_mode             (EDIT_MODE_NOTE),   /* edit_mode_t           */
-    m_length                    (0),            /* set in constructor body   */
-    m_snap_tick                 (0),            /* set in constructor body   */
+    m_ppqn                      (choose_ppqn(ppqn)),
+    m_seq_number                (-1),               /* may be set later     */
+    m_seq_color                 (SEQ64_COLOR_NONE), /* PaletteColor::NONE   */
+    m_seq_edit_mode             (EDIT_MODE_NOTE),   /* edit_mode_t          */
+    m_length                    (4 * int(m_ppqn)),  /* one bar of ticks     */
+    m_snap_tick                 (int(m_ppqn) / 4),
     m_time_beats_per_measure    (4),
     m_time_beat_width           (4),
     m_clocks_per_metronome      (24),
@@ -161,9 +161,6 @@ sequence::sequence (int ppqn)
     m_mutex                     (),
     m_note_off_margin           (2)
 {
-    m_ppqn = choose_ppqn(ppqn);
-    m_length = 4 * int(m_ppqn);                 /* one bar's worth of ticks */
-    m_snap_tick = int(m_ppqn) / 4;
     m_triggers.set_ppqn(int(m_ppqn));
     m_triggers.set_length(m_length);
     for (int i = 0; i < c_midi_notes; ++i)      /* no notes are playing now */
@@ -1244,6 +1241,10 @@ sequence::remove (event_list::iterator i)
  *  Finds the given event in m_events, and removes the first iterator
  *  matching that.  If there are events that would match after that, they
  *  remain in the container.  This matches seq24 behavior.
+ *
+ * \todo
+ *      Use the find() function to find the matching event more
+ *      conventionally.
  *
  * \threadunsafe
  *
@@ -3371,9 +3372,9 @@ sequence::stream_event (event & ev)
          *      how?
          */
 
-        if (get_overwrite_rec() && get_loop_reset())
+        if (overwrite_rec() && loop_reset())
         {
-            set_loop_reset(false);
+            loop_reset(false);
             remove_all();                       /* clear old items          */
         }
         ev.set_status(ev.get_status());         /* clear the channel nybble */
@@ -4916,6 +4917,13 @@ sequence::set_playing (bool p)
         if (! p)
             off_playing_notes();
 
+#ifdef PLATFORM_DEBUG_TMI
+        if (p)
+            printf("seq %d on\n", number());
+        else
+            printf("seq %d off\n", number());
+#endif
+
         set_dirty();
     }
     m_queued = false;
@@ -4937,8 +4945,9 @@ void
 sequence::set_recording (bool r)
 {
     automutex locker(m_mutex);
-    if (r != m_recording) {
-        m_notes_on = 0;
+    if (r != m_recording)
+    {
+        m_notes_on = 0;         // is there a more robust way to do this?
         m_recording = r;
     }
 }
@@ -4957,9 +4966,9 @@ void
 sequence::set_quantized_recording (bool qr)
 {
     automutex locker(m_mutex);
-    if (qr != m_quantized_rec) {
-
-        m_notes_on = 0;
+    if (qr != m_quantized_rec)
+    {
+        m_notes_on = 0;         // is there a more robust way to do this?
         m_quantized_rec = qr;
     }
 }
@@ -4986,12 +4995,16 @@ sequence::set_input_recording (bool record_active, bool toggle)
         record_active = ! m_recording;
 
     /*
-     * Except if already Thru and trying to turn recording (hence input) off,
-     * set input to here no matter what, because even if m_thru, input could
+     * Except if already Thru and trying to turn recording (input) off,
+     * set input on here no matter what, because even if m_thru, input could
      * have been replaced in another sequence.
      */
 
-    if (record_active or ! m_thru)
+    /*
+     * LET's try commenting out the conditional.
+     */
+
+    ////// if (record_active || ! m_thru)
         m_master_bus->set_sequence_input(record_active, this);
 
     set_recording(record_active);
@@ -5017,7 +5030,7 @@ sequence::set_snap_tick (int st)
  */
 
 void
-sequence::set_overwrite_rec (bool ovwr)
+sequence::overwrite_rec (bool ovwr)
 {
     automutex locker(m_mutex);
     m_overwrite_recording = ovwr;
@@ -5030,7 +5043,7 @@ sequence::set_overwrite_rec (bool ovwr)
  */
 
 void
-sequence::set_loop_reset (bool reset)
+sequence::loop_reset (bool reset)
 {
     automutex locker(m_mutex);
     m_loop_reset = reset;
@@ -5071,9 +5084,12 @@ sequence::set_input_thru (bool thru_active, bool toggle)
      * Except if already recording and trying to turn Thru (hence input) off,
      * set input to here no matter what, because even in m_recording,
      * input could have been replaced in another sequence.
+     *
+     * LET's try putting in the original conditional.
      */
 
-    if (thru_active or ! m_recording)
+    //// if (thru_active or ! m_recording)
+     if (! m_recording)
         m_master_bus->set_sequence_input(thru_active, this);
 
     set_thru(thru_active);
@@ -5121,7 +5137,7 @@ sequence::title () const
 
     if (measures > 0 && showmeasures)           /* do we have bars to show? */
     {
-        char mtemp[8];                          /* holds measures as string */
+        char mtemp[16];                         /* holds measures as string */
         char fulltemp[32];                      /* seq name + measures      */
         memset(fulltemp, ' ', sizeof fulltemp);
         snprintf(mtemp, sizeof mtemp, " %d", measures);
@@ -5438,6 +5454,7 @@ sequence::shift_notes (midipulse ticks)
 #endif
 
         verify_and_link();
+        set_dirty();                        /* tells perfedit to update     */
     }
 }
 
@@ -5601,8 +5618,9 @@ sequence::quantize_events
             }
         }
         (void) remove_marked();
-        m_events.merge(quantized_events);       /* presort quantized events */
+        m_events.merge(quantized_events);   /* presort quantized events */
         verify_and_link();
+        set_dirty();                        /* tells perfedit to update     */
     }
 }
 
@@ -5673,6 +5691,8 @@ sequence::multiply_pattern (double multiplier)
     verify_and_link();
     if (new_length < orig_length)
         set_length(new_length);
+
+    set_dirty();                        /* tells perfedit to update     */
 }
 
 #endif

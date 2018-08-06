@@ -98,16 +98,16 @@ qperfnames::paintEvent (QPaintEvent *)
     QBrush brush(Qt::lightGray);
     pen.setStyle(Qt::SolidLine);
     brush.setStyle((Qt::SolidPattern));
-    m_font.setPointSize(7);     // 6
+    m_font.setPointSize(7);                                 // 6
     m_font.setLetterSpacing(QFont::AbsoluteSpacing, 1);
-    m_font.setStyleHint(QFont::Monospace);               // EXPERIMENT
+    m_font.setStyleHint(QFont::Monospace);                  // EXPERIMENT
     painter.setPen(pen);
     painter.setBrush(brush);
     painter.setFont(m_font);
 
     int y_s = 0;
     int y_f = height() / m_nametext_y;
-    painter.drawRect(0, 0, width(), height() - 1);      // draw border
+    painter.drawRect(0, 0, width(), height() - 1);          // draw border
     for (int y = y_s; y <= y_f; ++y)
     {
         int seqId = y;

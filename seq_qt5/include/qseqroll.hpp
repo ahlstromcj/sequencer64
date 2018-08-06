@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-28
+ * \updates       2018-08-05
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -95,23 +95,24 @@ public:
      * \getter m_expanded_recording
      */
 
-    void set_expanded_recording (bool expand)
+    void expanded_recording (bool expand)
     {
         m_expanded_recording = expand;
-        seq().set_expanded_recording(expand);
+        seq().expanded_recording(expand);
     }
 
     /**
      * \setter m_expanded_recording
      */
 
-    bool get_expanded_record ()
+    bool expanded_record ()
     {
         return m_expanded_recording;
     }
 
     virtual void zoom_in ();
     virtual void zoom_out ();
+    virtual void reset_zoom ();
 
     /**
      *  Zoom without forwarding to the parent frame.  To be called by the

@@ -25,9 +25,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-31
+ * \updates       2018-08-05
  * \license       GNU GPLv2 or above
  *
+ *  Please see the additional notes for the Gtkmm-2.4 version of this panel,
+ *  seqroll.
  */
 
 #include <QFrame>                       /* base class for seqedit frame(s)  */
@@ -54,7 +56,7 @@ namespace seq64
 
 qseqroll::qseqroll
 (
-    perform & perf,
+    perform & p,
     sequence & seq,
     qseqkeys * seqkeys_wid,
     int zoom,
@@ -67,7 +69,7 @@ qseqroll::qseqroll
     QWidget                 (frame),
     qseqbase
     (
-        perf, seq, zoom, snap, ppqn,
+        p, seq, zoom, snap, ppqn,
         usr().key_height(),                         // m_key_y
         (usr().key_height() * c_num_keys + 1)       // m_keyarea_y
     ),
@@ -85,7 +87,7 @@ qseqroll::qseqroll
     m_chord                 (0),
 #endif
     m_key                   (0),
-    m_note_length           (perf.get_ppqn() * 4 / 16),
+    m_note_length           (p.get_ppqn() * 4 / 16),
     m_background_sequence   (0),
     m_drawing_background_seq (false),
     m_expanded_recording    (false),
@@ -122,7 +124,7 @@ void
 qseqroll::zoom_in ()
 {
     qseqbase::zoom_in();
-    m_parent_frame->zoom_in();
+    m_parent_frame->set_zoom(zoom());      // m_parent_frame->zoom_in();
 }
 
 /**
@@ -135,7 +137,17 @@ void
 qseqroll::zoom_out ()
 {
     qseqbase::zoom_out();
-    m_parent_frame->zoom_out();
+    m_parent_frame->set_zoom(zoom());      // m_parent_frame->zoom_out();
+}
+
+/**
+ *  Tells the parent frame to reset our zoom.
+ */
+
+void
+qseqroll::reset_zoom ()
+{
+    m_parent_frame->reset_zoom();
 }
 
 /**
@@ -398,7 +410,7 @@ qseqroll::paintEvent (QPaintEvent *)
     {
         if (s_loop_in_progress)
         {
-            seq().set_loop_reset(true);         /* for overwrite recording  */
+            seq().loop_reset(true);             /* for overwrite recording  */
             s_loop_in_progress = false;
         }
     }
@@ -686,11 +698,8 @@ qseqroll::paintEvent (QPaintEvent *)
 void
 qseqroll::mousePressEvent (QMouseEvent * event)
 {
-    midipulse tick_s;
-    midipulse tick_f;
-    int note;
-    int note_l;
-    int norm_x, norm_y, snapped_x, snapped_y;
+    midipulse tick_s, tick_f;
+    int note, note_l, norm_x, norm_y, snapped_x, snapped_y;
     snapped_x = norm_x = event->x() - c_keyboard_padding_x;
     snapped_y = norm_y = event->y();
     snap_x(snapped_x);
@@ -731,9 +740,8 @@ qseqroll::mousePressEvent (QMouseEvent * event)
                 convert_xy(drop_x(), drop_y(), tick_s, note);
 
                 /*
-                 * Test if a note is already there, fake select, if so,
-                 * don't add, else add a note, length = little less than
-                 * snap.
+                 * Test if a note is already there, fake select, if so, don't
+                 * add, else add a note, length = little less than snap.
                  */
 
                 if
@@ -1079,7 +1087,7 @@ qseqroll::keyPressEvent (QKeyEvent * event)
                 }
                 else if (event->key() == Qt::Key_0)
                 {
-                    // TODO: reset zoom somehow
+                    reset_zoom();
                     dirty = true;
                 }
             }
@@ -1159,7 +1167,7 @@ qseqroll::keyPressEvent (QKeyEvent * event)
     if (dirty)
         set_dirty();
     else
-        event->ignore();
+        QWidget::keyPressEvent(event);  // event->ignore();
 }
 
 /**

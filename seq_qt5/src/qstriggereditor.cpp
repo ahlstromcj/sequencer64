@@ -472,7 +472,6 @@ qstriggereditor::keyPressEvent (QKeyEvent * event)
         seq().remove_selected();
         ret = true;
     }
-
     if (event->modifiers() & Qt::ControlModifier)
     {
         switch (event->key())
@@ -504,6 +503,8 @@ qstriggereditor::keyPressEvent (QKeyEvent * event)
     }
     if (ret == true)
         seq().set_dirty();
+    else
+        QWidget::keyPressEvent(event);
 }
 
 /**

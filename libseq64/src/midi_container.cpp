@@ -37,7 +37,7 @@
 #include "midi_container.hpp"           /* seq64::midi_container ABC        */
 #include "perform.hpp"                  /* seq64::perform master class      */
 #include "sequence.hpp"                 /* seq64::sequence                  */
-#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+#include "settings.hpp"                 /* seq64::rc()                      */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

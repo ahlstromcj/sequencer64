@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-07-31
+ * \updates       2018-08-05
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -161,7 +161,7 @@
 #include "keystroke.hpp"
 #include "midibus.hpp"
 #include "perform.hpp"
-#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+#include "settings.hpp"                 /* seq64::rc()                      */
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>                    /* Muahhhahahahahah!                */
@@ -495,6 +495,9 @@ perform::launch (int ppqn)
 #ifdef SEQ64_JACK_SUPPORT
         init_jack_transport();
 #endif
+
+        if (ppqn == SEQ64_USE_FILE_PPQN)
+            ppqn = SEQ64_DEFAULT_PPQN;
 
         m_master_bus->init(ppqn, m_bpm);    /* calls api_init() per API     */
 
@@ -4624,17 +4627,17 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 
         if (a == midi_control::action_toggle)
         {
-            set_overwrite_recording(false, v, true);        /* toggles */
+            overwrite_recording(false, v, true);        /* toggles */
             result = true;
         }
         else if (a == midi_control::action_on)
         {
-            set_overwrite_recording(true, v);
+            overwrite_recording(true, v);
             result = true;
         }
         else if (a == midi_control::action_off)
         {
-            set_overwrite_recording(false, v);
+            overwrite_recording(false, v);
             result = true;
         }
         break;
@@ -4742,9 +4745,8 @@ perform::set_recording (bool record_active, int seq, bool toggle)
 void
 perform::set_quantized_recording (bool record_active, sequence * s)
 {
-  if (not_nullptr(s)) {
+    if (not_nullptr(s))
         s->set_quantized_recording(record_active);
-  }
 }
 
 /**
@@ -4788,7 +4790,7 @@ perform::set_quantized_recording (bool record_active, int seq, bool toggle)
  *      Ask for a reset explicitly upon toggle-on, since we don't have the GUI
  *      to control for progress.
  *
- * \param overwrite_active
+ * \param oactive
  *      Provides the current status of the overwrite mode.
  *
  * \param seq
@@ -4800,22 +4802,22 @@ perform::set_quantized_recording (bool record_active, int seq, bool toggle)
  */
 
 void
-perform::set_overwrite_recording (bool overwrite_active, int seq, bool toggle)
+perform::overwrite_recording (bool oactive, int seq, bool toggle)
 {
     sequence * s = get_sequence(seq);
     if (not_nullptr(s))
     {
         if (toggle)
-            overwrite_active = ! s->get_overwrite_rec();
+            oactive = ! s->overwrite_rec();
 
         /*
-         * On overwrite, the sequence will reset no matter what here.
+         * On overwrite, the sequence will reset no matter what is here.
          */
 
-        if (overwrite_active)
-            s->set_loop_reset(true);
+        if (oactive)
+            s->loop_reset(true);
 
-        s->set_overwrite_rec(overwrite_active);
+        s->overwrite_rec(oactive);
     }
 }
 
@@ -5199,10 +5201,12 @@ perform::input_func ()
                         {
                             /*
                              * Check for all events, not just record-control,
-                             * to prevent unwanted recordings.
+                             * to prevent unwanted recordings. Issue #150?
+                             *
+                             * if (! midi_control_record())
                              */
 
-                            if (! midi_control_event(ev)) // midi_control_record()
+                            if (! midi_control_event(ev))
                             {
                                 ev.set_timestamp(get_tick());
                                 if (rc().show_midi())
@@ -5956,22 +5960,29 @@ perform::sequence_window_title (const sequence & seq)
  */
 
 std::string
-perform::main_window_title ()
+perform::main_window_title (const std::string & file_name)
 {
 	std::string result = SEQ64_APP_NAME + std::string(" - ");
 	std::string itemname = "unnamed";
 	int ppqn = choose_ppqn(m_ppqn);
 	char temp[32];
 	snprintf(temp, sizeof temp, " (%d ppqn) ", ppqn);
-	if (! rc().filename().empty())
-	{
-		std::string name = shorten_file_spec(rc().filename(), 56);
+    if (file_name.empty())
+    {
+        if (! rc().filename().empty())
+        {
+            std::string name = shorten_file_spec(rc().filename(), 56);
 #ifdef USE_UTF8_CONVERSION
-		itemname = Glib::filename_to_utf8(name);
+            itemname = Glib::filename_to_utf8(name);
 #else
-		itemname = name;
+            itemname = name;
 #endif
-	}
+        }
+    }
+    else
+    {
+        itemname = file_name;
+    }
 	result += itemname + std::string(temp);
     return result;
 }
@@ -6040,7 +6051,7 @@ perform::set_input_bus (bussbyte bus, bool active)
 void
 perform::set_clock_bus (bussbyte bus, clock_e clocktype)
 {
-    if (m_master_bus->set_clock(bus, clocktype))     /* checks bus index, too */
+    if (m_master_bus->set_clock(bus, clocktype))    /* checks bus index too */
         set_clock(bus, clocktype);
 }
 

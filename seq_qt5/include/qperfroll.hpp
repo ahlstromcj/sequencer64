@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-18
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -36,11 +36,6 @@
  */
 
 #include <QWidget>
-#include <QTimer>
-#include <QObject>
-#include <QPainter>
-#include <QPen>
-#include <QMouseEvent>
 
 #include "globals.h"
 #include "gui_palette_qt5.hpp"
@@ -54,6 +49,14 @@
 const int c_perfroll_background_x = (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_scale_x;
 const int c_perfroll_size_box_w = 3;
 const int c_perfroll_size_box_click_w = c_perfroll_size_box_w + 1 ;
+
+/*
+ *  Forward references.
+ */
+
+class QKeyEvent;
+class QMouseEvent;
+class QTimer;
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -72,7 +75,7 @@ namespace seq64
 class qperfroll : public QWidget, private gui_palette_qt5, public qperfbase
 {
     friend class qperfeditframe64;  /* for scrolling a horizontal page  */
-    friend class qperfeditframe;    /* for scrolling a horizontal page  */
+//  friend class qperfeditframe;    /* for scrolling a horizontal page  */
 
     Q_OBJECT
 
@@ -81,12 +84,10 @@ public:
     qperfroll
     (
         perform & p,
-        int zoom                = SEQ64_DEFAULT_PERF_ZOOM,
-        int snap                = SEQ64_DEFAULT_SNAP,
-        int ppqn                = SEQ64_USE_DEFAULT_PPQN,
-        // qperfeditframe * frame  = nullptr,
-        QWidget * frame         = nullptr,
-        QWidget * parent        = nullptr
+        int zoom            = SEQ64_DEFAULT_PERF_ZOOM,
+        int snap            = SEQ64_DEFAULT_SNAP,
+        QWidget * frame     = nullptr,
+        QWidget * parent    = nullptr
     );
 
     virtual ~qperfroll ();
@@ -95,15 +96,15 @@ public:
     void update_sizes ();
     void increment_size ();
 
-protected:      // Qt event-function overrides
+protected:      // overrides for painting, mouse/keyboard events, & size hints
 
-    void paintEvent (QPaintEvent *);    // override painting event to draw on frame
+    void paintEvent (QPaintEvent *);
     void mousePressEvent (QMouseEvent * event);
     void mouseReleaseEvent (QMouseEvent * event);
     void mouseMoveEvent (QMouseEvent * event);
     void keyPressEvent (QKeyEvent * event);
     void keyReleaseEvent (QKeyEvent * event);
-    QSize sizeHint () const;            // override sizehint to set our defaults
+    QSize sizeHint () const;
 
 public slots:
 

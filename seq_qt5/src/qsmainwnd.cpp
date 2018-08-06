@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-31
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -33,6 +33,12 @@
  *  elements that surround the patterns, and mainwid, which implements the
  *  behavior of the pattern slots.
  */
+
+#include <QErrorMessage>
+#include <QFileDialog>
+#include <QTimer>
+#include <QMessageBox>
+#include <QDesktopWidget>
 
 #include <utility>                      /* std::make_pair()                 */
 
@@ -54,7 +60,7 @@
 #include "qsliveframe.hpp"
 #include "qt5_helpers.hpp"              /* seq64::qt_set_icon()             */
 #include "settings.hpp"                 /* seq64::rc() and seq64::usr()     */
-#include "wrkfile.hpp"
+#include "wrkfile.hpp"                  /* seq64::wrkfile class             */
 
 /*
  *  Qt's uic application allows a different output file-name, but not sure
@@ -84,9 +90,19 @@ namespace seq64
 {
 
 /**
+ *  Provides the main window for the application.
  *
  * \param p
  *      Provides the perform object to use for interacting with this sequence.
+ *
+ * \param midifilename
+ *      Provides an optional MIDI file-name.  If provided, the file is opened
+ *      immediately.
+ *
+ * \param ppqn
+ *      Sets the desired PPQN value.  If 0 (SEQ64_USE_FILE_PPQN), then
+ *      the PPQN to use is obtained from the file.  Otherwise, if a legal
+ *      PPQN, any file read is scaled temporally to that PPQN, as applicable.
  *
  * \param parent
  *      Provides the parent window/widget for this container window.  Defaults
@@ -96,7 +112,8 @@ namespace seq64
 qsmainwnd::qsmainwnd
 (
     perform & p,
-    int /*ppqn*/,
+    const std::string & midifilename,
+    int ppqn,
     QWidget * parent
 ) :
     QMainWindow         (parent),
@@ -109,8 +126,8 @@ qsmainwnd::qsmainwnd
     m_msg_save_changes  (nullptr),
     m_timer             (nullptr),
     m_menu_recent       (nullptr),
-    m_recent_action_list(),                 // new
-    mc_max_recent_files (10),               // new
+    m_recent_action_list(),
+    mc_max_recent_files (10),
     mImportDialog       (nullptr),
     m_main_perf         (p),
     m_beat_ind          (nullptr),
@@ -118,7 +135,7 @@ qsmainwnd::qsmainwnd
     mDialogAbout        (nullptr),
     mDialogBuildInfo    (nullptr),
     m_is_title_dirty    (false),
-    m_ppqn              (p.get_ppqn()),
+    m_ppqn              (ppqn),             // can specify 0 for file ppqn
     m_tick_time_as_bbt  (true),
     m_open_editors      ()
 {
@@ -198,11 +215,6 @@ qsmainwnd::qsmainwnd
         ui->LiveTabLayout->addWidget(m_live_frame);
         m_live_frame->setFocus();
     }
-
-    m_timer = new QTimer(this);         /* refresh GUI element every few ms */
-    m_timer->setInterval(2 * usr().window_redraw_rate());    // 50
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(refresh()));
-    m_timer->start();
 
     /*
      * Connect the GUI elements to event handlers.
@@ -394,13 +406,11 @@ qsmainwnd::qsmainwnd
     create_action_connections();
     create_action_menu();
     update_recent_files_menu();
-
-    /*
-     * Race condition?  Anyway, we don't know the actual title until
-     * open_file() is called.
-     *
-     * update_window_title();
-     */
+    if (! midifilename.empty())
+    {
+        open_file(midifilename);
+        m_is_title_dirty = true;
+    }
 
     /*
      * This scales the full GUI, cool!  However, it can be overridden by the
@@ -412,6 +422,11 @@ qsmainwnd::qsmainwnd
     int height = usr().scale_size(SEQ64_QSMAINWND_HEIGHT);
     resize(width, height);
     show();
+
+    m_timer = new QTimer(this);         /* refresh GUI element every few ms */
+    m_timer->setInterval(2 * usr().window_redraw_rate());    // 50
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(refresh()));
+    m_timer->start();
 }
 
 /**
@@ -448,8 +463,7 @@ qsmainwnd::closeEvent (QCloseEvent * event)
 void
 qsmainwnd::make_perf_frame_in_tab ()
 {
-    // m_song_frame64 = new qperfeditframe64(perf(), m_ppqn, ui->SongTab);
-    m_song_frame64 = new qperfeditframe64(perf(), perf().get_ppqn(), ui->SongTab);
+    m_song_frame64 = new qperfeditframe64(perf(), ui->SongTab);
     if (not_nullptr(m_song_frame64))
     {
         int bpmeasure = m_song_frame64->get_beats_per_measure();
@@ -594,7 +608,8 @@ qsmainwnd::showOpenFileDialog ()
 }
 
 /**
- *  Also sets the last-used directory to the one just loaded.
+ *  Also sets the current file-name and the last-used directory to the ones
+ *  just loaded.
  *
  *  Compare this function to mainwnd::open_file() [the Gtkmm version]/
  */
@@ -602,18 +617,11 @@ qsmainwnd::showOpenFileDialog ()
 void
 qsmainwnd::open_file (const std::string & fn)
 {
-    bool is_wrk = file_extension_match(fn, "wrk");
-    midifile * f = is_wrk ? new wrkfile(fn) : new midifile(fn) ;
-    perf().clear_all();
-
-    bool result = f->parse(perf(), 0);
+    std::string errmsg;
+    int ppqn = m_ppqn;                      /* potential side-effect here   */
+    bool result = open_midi_file(perf(), fn, ppqn, errmsg);
     if (result)
     {
-        ppqn(f->ppqn());                /* get and save the actual PPQN     */
-        rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
-        rc().filename(fn);
-        rc().add_recent_file(fn);       /* from Oli Kester's Kepler34       */
-
         /*
          *  Reinitialize the "Live" frame.  Reconnect its signal, as we've
          *  made a new object.
@@ -687,12 +695,9 @@ qsmainwnd::open_file (const std::string & fn)
     }
     else
     {
-        std::string errmsg = f->error_message();
         QString msg_text = errmsg.c_str();      /* msg_text += fn.c_str();  */
         m_msg_error->showMessage(msg_text);
         m_msg_error->exec();
-        if (f->error_is_fatal())
-            rc().remove_recent_file(fn);
     }
 }
 
@@ -706,11 +711,11 @@ qsmainwnd::update_window_title (const std::string & fn)
     std::string itemname = "unnamed";
     if (fn.empty())
     {
-        itemname = perf().main_window_title();
+        itemname = perf().main_window_title(fn);
     }
     else
     {
-        int pp = choose_ppqn(ppqn());
+        int pp = choose_ppqn();                 // choose_ppqn(ppqn());
         char temp[16];
         snprintf(temp, sizeof temp, " (%d ppqn) ", pp);
         itemname = fn;
@@ -718,7 +723,6 @@ qsmainwnd::update_window_title (const std::string & fn)
     }
     itemname += " [*]";                         // required by Qt 5
 
-    printf("title = '%s'\n", itemname.c_str());
     QString fname = QString::fromLocal8Bit(itemname.c_str());
     setWindowTitle(fname);
 }
@@ -800,8 +804,7 @@ qsmainwnd::check ()
         {
         case QMessageBox::Save:
 
-            if (save_file())
-                result = true;
+            result = save_file();
             break;
 
         case QMessageBox::Discard:
@@ -811,6 +814,7 @@ qsmainwnd::check ()
 
         case QMessageBox::Cancel:
         default:
+
             break;
         }
     }
@@ -840,7 +844,8 @@ qsmainwnd::new_file ()
  *
  */
 
-bool qsmainwnd::save_file ()
+bool
+qsmainwnd::save_file ()
 {
     bool result = false;
     if (rc().filename().empty())
@@ -850,29 +855,18 @@ bool qsmainwnd::save_file ()
     }
     else
     {
-        midifile f
-        (
-            rc().filename(), ppqn(),
-            rc().legacy_format(), usr().global_seq_feature()
-        );
-        result = f.write(perf());
+        std::string errmsg;
+        result = save_midi_file(perf(), rc().filename(), errmsg);
         if (result)
         {
-            rc().add_recent_file(rc().filename());
             update_recent_files_menu();
         }
         else
         {
-            std::string errmsg = f.error_message();
             m_msg_error->showMessage(errmsg.c_str());
             m_msg_error->exec();
         }
     }
-
-    /*
-     * The Gtkmm version does not do this.
-     */
-
     return result;
 }
 
@@ -925,7 +919,9 @@ qsmainwnd::showImportDialog()
             {
                 std::string fn = path.toStdString();
                 bool is_wrk = file_extension_match(fn, "wrk");
-                midifile * f = is_wrk ? new wrkfile(fn) : new midifile(fn) ;
+                midifile * f = is_wrk ?
+                    new wrkfile(fn) : new midifile(fn, ppqn()) ;
+
                 f->parse(perf(), perf().screenset());
                 ui->spinBpm->setValue(perf().bpm());
                 ui->spinBpm->setDecimals(usr().bpm_precision());
@@ -1085,8 +1081,7 @@ qsmainwnd::load_qperfedit (bool on)
 {
     if (is_nullptr(m_perfedit))
     {
-        // qperfeditex * ex = new qperfeditex(perf(), m_ppqn, this);
-        qperfeditex * ex = new qperfeditex(perf(), perf().get_ppqn(), this);
+        qperfeditex * ex = new qperfeditex(perf(), this);
         if (not_nullptr(ex))
         {
             m_perfedit = ex;
@@ -1391,7 +1386,14 @@ qsmainwnd::keyPressEvent (QKeyEvent * event)
         }
     }
     else
-        event->ignore();
+    {
+        /*
+         * If you reimplement this handler, it is very important that you call
+         * the base class implementation if you do not act upon the key.
+         */
+
+        QWidget::keyPressEvent(event);              // event->ignore();
+    }
 }
 
 /**

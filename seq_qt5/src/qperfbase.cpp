@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-14
- * \updates       2018-07-31
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -54,13 +54,13 @@ qperfbase::qperfbase
     perform & p,
     int zoom,
     int snap,
-    int /*ppqn*/,
     int unit_height,
     int total_height
 ) :
     m_perform               (p),
     m_old                   (),
     m_selected              (),
+    m_initial_zoom          (zoom),
     m_zoom                  (zoom),
     m_scale                 (c_perf_scale_x / 4),
     m_scale_zoom            (m_scale * m_zoom),
@@ -151,7 +151,8 @@ qperfbase::set_zoom (int z)
 }
 
 /**
- *  Handles changes to the PPQN value in one place.
+ *  Handles changes to the PPQN value in one place.  Useful mainly at startup
+ *  time for adjusting the user-interface zooming.
  *
  *  The m_ticks_per_bar member replaces the global ppqn times 16.  This
  *  construct is parts-per-quarter-note times 4 quarter notes times 4
@@ -176,37 +177,6 @@ qperfbase::set_ppqn (int ppqn)
         m_measure_length = m_beat_length * 4;
     }
 }
-
-#ifdef USE_SCROLLING_CODE    // not ready for this class
-
-/**
- *  Sets the horizontal scroll value according to the current value of the
- *  horizontal scroll-bar.
- */
-
-void
-qperfbase::set_scroll_x (int x)
-{
-    m_scroll_offset_x = x;
-    m_scroll_offset_ticks = x * m_zoom;
-}
-
-/**
- *  Sets the vertical scroll value according to the current value of the
- *  vertical scroll-bar.
- *
- *  TODO:  use the height member....
- */
-
-void
-qperfbase::set_scroll_y (int y)
-{
-    m_scroll_offset_y = y;
-    m_scroll_offset_seq * m_unit_height;        // c_key_y;
-    m_scroll_offset_seq = y / m_unit_height;    // c_key_y;
-}
-
-#endif  // USE_SCROLLING_CODE
 
 /**
  *
@@ -261,8 +231,8 @@ qperfbase::convert_x (int x, midipulse & tick)
 void
 qperfbase::convert_xy (int x, int y, midipulse & tick, int & seq)
 {
-//  tick = x * m_zoom;
-//  seq = (m_total_height - y - 2) / m_unit_height;
+    //  tick = x * m_zoom;
+    //  seq = (m_total_height - y - 2) / m_unit_height;
 
     midipulse tick_offset =  0;                 // again, always 0!!!
     tick = x * m_scale_zoom;

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-07-30
+ * \updates       2018-08-03
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -63,7 +63,8 @@
  *      -   Proprietary SeqSpec data.
  */
 
-#include <fstream>
+#include <fstream>                      /* std::ifstream and std::ofstream  */
+#include <memory>                       /* std::unique_ptr<>                */
 
 #include "app_limits.h"                 /* SEQ64_USE_MIDI_VECTOR            */
 #include "calculations.hpp"             /* seq64::bpm_from_tempo_us()       */
@@ -72,6 +73,7 @@
 #include "midifile.hpp"                 /* seq64::midifile                  */
 #include "sequence.hpp"                 /* seq64::sequence                  */
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+#include "wrkfile.hpp"                  /* seq64::wrkfile class             */
 
 #ifdef SEQ64_USE_MIDI_VECTOR
 #include "midi_vector.hpp"              /* seq64::midi_vector container     */
@@ -98,9 +100,10 @@ namespace seq64
  *      -   Reading.
  *          -   If set to SEQ64_USE_DEFAULT_PPQN, the legacy application
  *              behavior is used.  The m_ppqn member is set to the default
- *              PPQN, DEFAULT_PPQN.  The value read from the MIDI
- *              file, ppqn, is then use to scale the running-time of the
- *              sequence relative to DEFAULT_PPQN.
+ *              PPQN, usr.midi_ppqn().  The PPQN value read from the MIDI
+ *              file is then use to scale the running-time of the sequence
+ *              relative to DEFAULT_PPQN.
+ *          -   If in the valid PPQN range, that is the value used.
  *          -   Otherwise, m_ppqn is set to the value read from the MIDI file.
  *              No scaling is done.  Since the value gets written, specify
  *              ppqn as 0, an obviously bogus value, to get this behavior.
@@ -142,7 +145,6 @@ midifile::midifile
     m_char_list                 (),
     m_new_format                (! oldformat),
     m_global_bgsequence         (globalbgs),
-    m_ppqn                      (0),
 
     /*
      * \change ca 2018-07-30
@@ -151,12 +153,15 @@ midifile::midifile
      * better.  See the "[user-midi-settings] midi_ppqn" option.
      *
      * m_use_default_ppqn          (ppqn == SEQ64_USE_DEFAULT_PPQN),
+     * m_use_default_ppqn          (rc().legacy_format()),
      */
 
-    m_use_default_ppqn          (rc().legacy_format()),     /* stop-gap */
-    m_smf0_splitter             (ppqn)
+    m_use_scaled_ppqn           (true),
+    m_ppqn                      (choose_ppqn(ppqn)),    /* can be 0     */
+    m_file_ppqn                 (m_ppqn),               /* for now      */
+    m_smf0_splitter             ()
 {
-    m_ppqn = choose_ppqn(ppqn);
+    // no other code needed
 }
 
 /**
@@ -522,7 +527,10 @@ midifile::parse (perform & p, int screenset, bool importing)
     else
     {
         m_error_is_fatal = true;
-        result = set_error_dump("Unsupported MIDI format number", midilong(Format));
+        result = set_error_dump
+        (
+            "Unsupported MIDI format number", midilong(Format)
+        );
     }
     if (result)
     {
@@ -562,7 +570,7 @@ midifile::parse_smf_0 (perform & p, int screenset)
     bool result = parse_smf_1(p, screenset, true);  /* format 0 is flagged  */
     if (result)
     {
-        result = m_smf0_splitter.split(p, screenset);
+        result = m_smf0_splitter.split(p, screenset, m_ppqn);
         if (result)
             p.modify();                             /* to prompt for save   */
         else
@@ -625,7 +633,7 @@ midifile::checklen (midilong len, midibyte type)
  *
  * \param ppqn
  *      Provides the ppqn value to use to scale the tick values if
- *      m_use_default_ppqn is true.  If 0, the ppqn value is not used.
+ *      m_use_scaled_ppqn is true.  If 0, the ppqn value is not used.
  */
 
 void
@@ -738,8 +746,15 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
     char buss_override = usr().midi_buss_override();
     midishort NumTracks = read_short();
     midishort fileppqn = read_short();
-    if (! m_use_default_ppqn)
-        ppqn(int(fileppqn));
+    file_ppqn(int(fileppqn));                       /* original file PPQN   */
+    if (ppqn() == SEQ64_USE_FILE_PPQN)
+    {
+        // ppqn(usr().midi_ppqn());                 /* always a valid value */
+        ppqn(file_ppqn());
+        m_use_scaled_ppqn = false;
+    }
+    else
+        m_use_scaled_ppqn = file_ppqn() > 0;
 
     p.set_ppqn(ppqn());
     for (int track = 0; track < NumTracks; ++track)
@@ -787,13 +802,10 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                  */
 
                 RunningTime += Delta;           /* add in the time          */
-                if (m_use_default_ppqn)         /* legacy handling of ppqn  */
+                if (m_use_scaled_ppqn)         /* adjust time via ppqn     */
                 {
-                    if (fileppqn > 0)
-                    {
-                        CurrentTime = RunningTime * m_ppqn / fileppqn;
-                        e.set_timestamp(CurrentTime);
-                    }
+                    CurrentTime = RunningTime * m_ppqn / m_file_ppqn;
+                    e.set_timestamp(CurrentTime);
                 }
                 else
                 {
@@ -1044,7 +1056,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             else if (seqspec == c_triggers_new)
                             {
                                 int num_triggers = len / 12;
-                                midishort p = m_use_default_ppqn ? fileppqn : 0 ;
+                                midishort p = m_use_scaled_ppqn ?
+                                    m_file_ppqn : 0 ;
+
                                 for (int i = 0; i < num_triggers; ++i)
                                 {
                                     len -= 12;
@@ -2778,6 +2792,111 @@ midifile::set_error_dump (const std::string & msg, unsigned long value)
     m_error_is_fatal = true;
     m_disable_reported = true;
     return false;
+}
+
+/**
+ *  A global function to unify the opening of a MIDI or WRK file.  It also
+ *  handles PPQN discovery.
+ *
+ * \param [in,out] p
+ *      Provides the performance object to update with information read from
+ *      the file.
+ *
+ * \param fn
+ *      The full path specification for the file to be opened.
+ *
+ * \param [in,out] ppqn
+ *      Provides the PPQN to start with.  It can also be SEQ64_USE_FILE_PPQN.
+ *      If the function succeeds, it is updated with the (possibly new) PPQN,
+ *      unless it is SEQ64_USE_FILE_PPQN, which is left as is for the call to
+ *      decide what to do.
+ *
+ * \param [out] errmsg
+ *      If the function fails, this string is filled with the error message.
+ *
+ * \return
+ *      Returns true if reading the MIDI/WRK file succeeded. As a side-effect,
+ *      the user_settings::file_ppqn() is set to return the final PPQN to be
+ *      used.
+ */
+
+bool
+open_midi_file
+(
+    perform & p,
+    const std::string & fn,
+    int & ppqn,
+    std::string & errmsg
+)
+{
+    bool is_wrk = file_extension_match(fn, "wrk");
+
+    /*
+     * TODO:  tighten up wrkfile/midifile handling re PPQN!!!
+     */
+
+    midifile * fp = is_wrk ?  new wrkfile(fn, ppqn) : new midifile(fn, ppqn) ;
+    std::unique_ptr<midifile> f(fp);
+    p.clear_all();
+
+    bool result = f->parse(p, 0);
+    if (result)
+    {
+        if (ppqn != SEQ64_USE_FILE_PPQN)    /* preserve this in the parent  */
+            ppqn = f->ppqn();               /* get & return file PPQN       */
+
+        usr().file_ppqn(f->ppqn());         /* save the value from the file */
+        p.set_ppqn(choose_ppqn());          /* set chosen PPQN for MIDI     */
+        rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
+        rc().filename(fn);
+        rc().add_recent_file(fn);           /* from Oli Kester's Kepler34   */
+    }
+    else
+    {
+        errmsg = f->error_message();
+        if (f->error_is_fatal())
+            rc().remove_recent_file(fn);
+    }
+    return result;
+}
+
+/**
+ *
+ */
+
+bool
+save_midi_file
+(
+    perform & p,
+    const std::string & fn,
+    std::string & errmsg
+)
+{
+    bool result = false;
+    std::string fname = fn.empty() ? rc().filename() : fn ;
+    if (fname.empty())
+    {
+        // result = save_file_as(p, errmsg);
+        errmsg = "No file-name for save_midi_file()";
+    }
+    else
+    {
+        int ppqn = p.get_ppqn();
+        bool legacy = rc().legacy_format();
+        bool glob = usr().global_seq_feature();
+        midifile f(fname, ppqn, legacy, glob);
+        result = f.write(p);
+        if (result)
+        {
+            rc().filename(fname);
+            rc().add_recent_file(rc().filename());
+        }
+        else
+        {
+            errmsg = f.error_message();
+        }
+    }
+    return result;
 }
 
 }           // namespace seq64

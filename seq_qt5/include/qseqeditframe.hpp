@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-28
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -164,6 +164,16 @@ private slots:
     void updateNoteLength (int newindex);
     void zoom_in ();
     void zoom_out ();
+
+    /**
+     *  Need a placeholder for this function.
+     */
+
+    virtual void reset_zoom ()
+    {
+        // non-functional, use qseqeditframe64 instead
+    }
+
     void updateKey (int newindex);
     void updateSeqLength ();
     void updateScale (int newindex);

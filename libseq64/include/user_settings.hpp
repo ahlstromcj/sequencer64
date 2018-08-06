@@ -511,7 +511,7 @@ private:
      */
 
     /**
-     *  Provides the universal PPQN setting for the duration of this setting.
+     *  Provides the universal PPQN setting for the duration of this session.
      *  This variable replaces the global ppqn.  The default value of this
      *  setting is 192 parts-per-quarter-note (PPQN).  There is still a lot of
      *  work to get a different PPQN to work properly in speed of playback,
@@ -521,6 +521,14 @@ private:
      */
 
     int m_midi_ppqn;                     /* PPQN, parts per QN       */
+
+    /**
+     *  EXPERIMENTAL.
+     *  Holds the PPQN read from the file, for use with the
+     *  SEQ64_USE_FILE_PPQN value.
+     */
+
+    int m_file_ppqn;
 
     /**
      *  Provides the universal and unambiguous MIDI value for beats per
@@ -1624,6 +1632,24 @@ public:
     int midi_ppqn () const
     {
         return m_midi_ppqn;
+    }
+
+    /**
+     * \getter m_file_ppqn
+     */
+
+    int file_ppqn () const
+    {
+        return m_file_ppqn;
+    }
+
+    /**
+     * \setter m_file_ppqn
+     */
+
+    void file_ppqn (int p)
+    {
+        m_file_ppqn = p;        // LATER: validate, still EXPERIMENTAL
     }
 
     /**

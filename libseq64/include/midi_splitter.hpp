@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-24
- * \updates       2015-11-24
+ * \updates       2018-08-01
  * \license       GNU GPLv2 or above
  *
  *  Sequencer64 can also split an SMF 0 file into multiple tracks, effectively
@@ -59,19 +59,6 @@ class midi_splitter
 {
 
 private:
-
-    /**
-     *  Provides the current value of the PPQN, which used to be constant
-     *  and is now only the macro DEFAULT_PPQN.
-     */
-
-    int m_ppqn;
-
-    /**
-     *  Indicates that the default PPQN is in force.
-     */
-
-    bool m_use_default_ppqn;
 
     /**
      *  Provides support for SMF 0, indicates how many channels were found in
@@ -106,27 +93,13 @@ private:
 
 public:
 
-    midi_splitter (int ppqn = SEQ64_USE_DEFAULT_PPQN);
+    midi_splitter ();
     ~midi_splitter ();
 
     bool log_main_sequence (sequence & seq, int seqnum);
     void initialize ();
     void increment (int channel);
-    bool split (perform & p, int screenset);
-
-    /**
-     * \getter m_ppqn
-     *      Provides a way to get the actual value of PPQN used in processing
-     *      the sequences when parse() was called.  The PPQN will be either
-     *      the global ppqn (legacy behavior) or the value read from the
-     *      file, depending on the ppqn parameter passed to the midi_splitter
-     *      constructor.
-     */
-
-    int ppqn () const
-    {
-        return m_ppqn;
-    }
+    bool split (perform & p, int screenset, int ppqn);
 
     /**
      * \getter m_smf0_channels_count

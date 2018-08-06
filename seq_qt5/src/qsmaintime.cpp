@@ -57,7 +57,7 @@ qsmaintime::qsmaintime
     m_font              (),
     m_beats_per_measure (beats_per_measure),
     m_beat_width        (beat_width),
-    m_lastMetro         (0),
+    m_last_metro        (0),
     m_alpha             (0)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
@@ -91,8 +91,9 @@ qsmaintime::paintEvent (QPaintEvent *)
     painter.setBrush(brush);
 
     midipulse tick = m_main_perf.get_tick();
-    int metro = (tick / (perf().get_ppqn() / 4 * m_beat_width)) % m_beats_per_measure;
-    int divX = (width() - 1) / m_beats_per_measure;
+    int boxwidth = (width() - 1) / m_beats_per_measure;
+    int metro = (tick / (perf().get_ppqn() / 4 * m_beat_width)) %
+        m_beats_per_measure;
 
     /*
      * Flash on beats (i.e. if the metronome has changed, or we've just started
@@ -102,7 +103,7 @@ qsmaintime::paintEvent (QPaintEvent *)
      *      We need to select a color from the palette.
      */
 
-    if (metro != m_lastMetro || (tick < 50 && tick > 0))
+    if (metro != m_last_metro || (tick < 50 && tick > 0))
     {
         m_alpha = 230;
         if (metro == 0)
@@ -113,7 +114,7 @@ qsmaintime::paintEvent (QPaintEvent *)
 
     for (int i = 0; i < m_beats_per_measure; ++i)       // draw beat blocks
     {
-        int offsetX = divX * i;
+        int offsetX = boxwidth * i;
         if (i == metro && m_main_perf.is_running())    // flash on current beat
         {
             brush.setStyle(Qt::SolidPattern);
@@ -132,7 +133,7 @@ qsmaintime::paintEvent (QPaintEvent *)
         painter.drawRect
         (
             offsetX + pen.width() - 1, pen.width() - 1,
-            divX - pen.width(), height() - pen.width()
+            boxwidth - pen.width(), height() - pen.width()
         );
     }
     if (m_beats_per_measure < 10)       // draw beat number (if there's space)
@@ -142,7 +143,7 @@ qsmaintime::paintEvent (QPaintEvent *)
         painter.setPen(pen);
         painter.drawText
         (
-            (metro + 1) * divX - (m_font.pointSize() + 2),
+            (metro + 1) * boxwidth - (m_font.pointSize() + 2),
             height() * 0.3 + m_font.pointSize(), QString::number(metro + 1)
         );
     }
@@ -157,7 +158,7 @@ qsmaintime::paintEvent (QPaintEvent *)
     if (m_alpha < 0)
         m_alpha = 0;
 
-    m_lastMetro = metro;
+    m_last_metro = metro;
 }
 
 /**

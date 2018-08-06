@@ -55,7 +55,7 @@ qseqbase::qseqbase
     sequence & seq,
     int zoom,
     int snap,
-    int ppqn,
+    int /*ppqn*/,
     int unit_height,
     int total_height
 ) :
@@ -97,7 +97,7 @@ qseqbase::qseqbase
     m_total_height          (total_height),
     m_is_dirty              (true)
 {
-    set_ppqn(ppqn);
+    // set_ppqn(ppqn);
     set_snap(m_seq.get_snap_tick());
 }
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-13
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -104,7 +104,7 @@
 #include "maintime.hpp"
 #include "mainwid.hpp"
 #include "mainwnd.hpp"
-#include "midifile.hpp"
+#include "midifile.hpp"                 /* seq64::midifile, open_midi_file()*/
 #include "options.hpp"
 #include "perfedit.hpp"
 #include "wrkfile.hpp"
@@ -237,13 +237,19 @@ int mainwnd::sm_sigpipe[2];
  * \param p
  *      Refers to the main performance object.
  *
+ * \param midifilename
+ *      If not empty, try to open this MIDI file.
+ *
  * \param allowperf2
  *      Indicates if a second perfedit window should be created.
  *      This is currently a run-time option, selectable in the "user"
  *      configuration file.
  *
  * \param ppqn
- *      An optional PPQN value to use in the song.
+ *      An optional PPQN value to use in the song. The default value is
+ *      SEQ64_USE_DEFAULT_PPQN (-1), which makes the choose_ppqn() function
+ *      use a specified default value.  SEQ64_USE_FILE_PPQN (0) will cause the
+ *      MIDI file's PPQN value to be logged as the default value.
  *
  * \param mainwid_rows
  *      The number of rows of mainwids to create vertically.  The default
@@ -265,6 +271,7 @@ int mainwnd::sm_sigpipe[2];
 mainwnd::mainwnd
 (
     perform & p,
+    const std::string & midifilename,
     bool allowperf2,
     int ppqn
 #if defined SEQ64_MULTI_MAINWID
@@ -309,16 +316,16 @@ mainwnd::mainwnd
     m_spinbutton_ss         (manage(new Gtk::SpinButton(*m_adjust_ss))),
 #endif
     m_current_screenset     (-1),
-    m_main_time             (manage(new maintime(p, ppqn))),
-    m_perf_edit             (new perfedit(p, false /*allowperf2*/, ppqn)),
-    m_perf_edit_2           (allowperf2 ? new perfedit(p, true, ppqn) : nullptr),
+    m_main_time             (manage(new maintime(p))),
+    m_perf_edit             (new perfedit(p, false /*allowperf2*/)),
+    m_perf_edit_2           (allowperf2 ? new perfedit(p, true) : nullptr),
     m_options               (nullptr),
     m_main_cursor           (),
     m_image_play            (nullptr),
-    m_button_panic          (manage(new Gtk::Button())),    /* from kepler34   */
-    m_button_learn          (manage(new Gtk::Button())),    /* group learn (L) */
+    m_button_panic          (manage(new Gtk::Button())), /* from kepler34   */
+    m_button_learn          (manage(new Gtk::Button())), /* group learn (L) */
     m_button_stop           (manage(new Gtk::Button())),
-    m_button_play           (manage(new Gtk::Button())),    /* also for pause  */
+    m_button_play           (manage(new Gtk::Button())), /* also for pause  */
     m_button_tempo_log      (manage(new Gtk::Button())),
     m_button_tempo_record   (manage(new Gtk::ToggleButton())),
     m_is_tempo_recording    (false),
@@ -433,7 +440,6 @@ mainwnd::mainwnd
 #endif
 
     perf().enregister(this);                        /* register for notify  */
-    update_window_title();                          /* main window          */
 
     m_menubar->items().push_front(MenuElem("_File", *m_menu_file));
     populate_menu_file();
@@ -445,7 +451,7 @@ mainwnd::mainwnd
     populate_menu_help();
     m_menubar->set_sensitive(m_menu_mode);
 
-    /**
+    /*
      * Top panel items, including the logo (updated for the new version of
      * this application) and the "timeline" progress bar.
      */
@@ -522,7 +528,7 @@ mainwnd::mainwnd
         m_mainwid_blocks[block] = nullptr;
     }
 
-    /**
+    /*
      *  For multiple mainwids, the numbering of the sets is like that of the
      *  patterns...  increasing downward and increasing to the right.
      *  We're trying to add a frame for each set.  However, although attaching
@@ -628,14 +634,18 @@ mainwnd::mainwnd
 
 #endif  // SEQ64_STAZED_MENU_BUTTONS
 
-    /* Placement of the logo and time-line. */
+    /*
+     * Placement of the logo and time-line.
+     */
 
     Gtk::VBox * vbox_b = manage(new Gtk::VBox(true,  0));
     Gtk::HBox * hbox3 = manage(new Gtk::HBox(false, 0));
     hbox3->pack_start(*m_main_time, Gtk::PACK_SHRINK, TIMELINE_PILL_PADDING);
     vbox_b->pack_start(*hbox3, false, false);
 
-    /* Add the time-line and the time-clock */
+    /*
+     * Add the time-line and the time-clock.
+     */
 
     Gtk::HBox * hbox4 = manage(new Gtk::HBox(false, 0));
     m_tick_time->set_justify(Gtk::JUSTIFY_LEFT);
@@ -664,7 +674,7 @@ mainwnd::mainwnd
     tophbox->pack_end(*vbox_b, false, false);
 
     /*
-     * Learn ("L")  button
+     * Learn ("L")  button.
      */
 
     m_button_learn->set_focus_on_click(false);
@@ -704,7 +714,7 @@ mainwnd::mainwnd
     bottomhbox->pack_start(*startstophbox, HBOX_PACKING);
 
     /*
-     * Panic button
+     * Panic button.
      */
 
     m_button_panic->set_focus_on_click(false);
@@ -721,7 +731,6 @@ mainwnd::mainwnd
 
     /*
      * Stop button.
-     *
      * If we don't call this function, then clicking the stop button makes
      * it steal focus, and be "clicked" when the space bar is hit, which is
      * very confusing.
@@ -1209,6 +1218,11 @@ mainwnd::mainwnd
     set_size_request(width, height);
     install_signal_handlers();
     reset_window();
+
+    if (! midifilename.empty())
+    {
+        open_file(midifilename);
+    }
 }
 
 /**
@@ -1356,7 +1370,7 @@ mainwnd::timer_callback ()
 
     if (perf().is_pattern_playing())
     {
-        int ppqn = perf().ppqn();
+        int ppqn = perf().get_ppqn();
         if (m_tick_time_as_bbt)
         {
             midi_timing mt
@@ -2057,7 +2071,6 @@ mainwnd::file_save_as (SaveOption option)
                 if ((suffix != "midi") && (suffix != "mid"))
                     fname += ".midi";
             }
-
             if (Glib::file_test(fname, Glib::FILE_TEST_EXISTS))
             {
                 Gtk::MessageDialog warning
@@ -2072,9 +2085,14 @@ mainwnd::file_save_as (SaveOption option)
             }
             if (option == FILE_SAVE_AS_EXPORT_SONG)
             {
-                midifile f(fname, ppqn());
+                midifile f(fname, choose_ppqn());
                 bool result = f.write_song(perf());
-                if (! result)
+                if (result)
+                {
+                    rc().filename(fname);
+                    rc().add_recent_file(rc().filename());
+                }
+                else
                 {
                     std::string errmsg = f.error_message();
                     Gtk::MessageDialog errdialog
@@ -2082,14 +2100,14 @@ mainwnd::file_save_as (SaveOption option)
                         *this, errmsg, false, Gtk::MESSAGE_ERROR,
                         Gtk::BUTTONS_OK, true
                     );
+                    rc().filename("");
                     errdialog.run();
                 }
             }
             else if (option == FILE_SAVE_AS_EXPORT_MIDI)
             {
-                rc().filename(fname);
                 update_window_title();
-                midifile f(rc().filename(), ppqn());
+                midifile f(fname, choose_ppqn());
                 bool result = f.write(perf(), false);   /* no SeqSpec   */
 
                 /*
@@ -2098,6 +2116,7 @@ mainwnd::file_save_as (SaveOption option)
 
                 if (result)
                 {
+                    rc().filename(fname);
                     rc().add_recent_file(rc().filename());
                     update_recent_files_menu();
                 }
@@ -2109,6 +2128,7 @@ mainwnd::file_save_as (SaveOption option)
                         *this, errmsg, false, Gtk::MESSAGE_ERROR,
                         Gtk::BUTTONS_OK, true
                     );
+                    rc().filename("");
                     errdialog.run();
                 }
             }
@@ -2146,31 +2166,23 @@ mainwnd::file_save_as (SaveOption option)
 void
 mainwnd::open_file (const std::string & fn)
 {
-    bool is_wrk = file_extension_match(fn, "wrk");
-    midifile * f = is_wrk ? new wrkfile(fn) : new midifile(fn) ;
-    perf().clear_all();
-
-    bool result = f->parse(perf());      /* parsing handles old & new format */
+    std::string errmsg;
+    int ppqn = m_ppqn;                      /* potential side-effect here   */
+    bool result = open_midi_file(perf(), fn, ppqn, errmsg);
     if (result)
     {
-        ppqn(f->ppqn());                 /* get and save the actual PPQN     */
-        rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
-        rc().filename(fn);
-        rc().add_recent_file(fn);       /* from Oli Kester's Kepler34       */
         update_recent_files_menu();
         update_window_title();
         reset_window();
     }
     else
     {
-        std::string errmsg = f->error_message();
         Gtk::MessageDialog errdialog
         (
             *this, errmsg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
         );
+        rc().filename("");
         errdialog.run();
-        if (f->error_is_fatal())
-            rc().remove_recent_file(fn);
     }
 }
 
@@ -2249,12 +2261,14 @@ mainwnd::choose_file ()
 }
 
 /**
- *  Saves the current state in a MIDI file.  Here we specify the current value
- *  of m_ppqn, which was set when reading the MIDI file.  We also let midifile
- *  tell the perform that saving worked, so that the "is modified" flag can be
- *  cleared.  The midifile class is already a friend of perform.
+ *  Saves the current state in a MIDI file.  We let midifile tell the perform
+ *  that saving worked, so that the "is modified" flag can be cleared.  The
+ *  midifile class is already a friend of perform.
  *
  *  Note that we do not support saving files in the Cakewalk WRK format.
+ *
+ * \return
+ *      Returns true if the save succeeded.
  */
 
 bool
@@ -2264,27 +2278,25 @@ mainwnd::save_file ()
     if (rc().filename().empty())
     {
         file_save_as();
-        return true;
-    }
-
-    midifile f
-    (
-        rc().filename(), ppqn(), rc().legacy_format(), usr().global_seq_feature()
-    );
-    result = f.write(perf());
-    if (result)
-    {
-        rc().add_recent_file(rc().filename());
-        update_recent_files_menu();
+        return ! rc().filename().empty();
     }
     else
     {
-        std::string errmsg = f.error_message();
-        Gtk::MessageDialog errdialog
-        (
-            *this, errmsg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
-        );
-        errdialog.run();
+        std::string errmsg;
+        result = save_midi_file(perf(), rc().filename(), errmsg);
+        if (result)
+        {
+            update_recent_files_menu();
+        }
+        else
+        {
+            Gtk::MessageDialog errdialog
+            (
+                *this, errmsg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
+            );
+            rc().filename("");
+            errdialog.run();
+        }
     }
     return result;
 }
@@ -2434,6 +2446,9 @@ mainwnd::file_import_dialog ()
             rc().filename(fn);
             rc().add_recent_file(fn);   /* from Oli Kester's Kepler34       */
             update_recent_files_menu();
+            rc().filename(std::string(dlg.get_filename()));
+            m_entry_notes->set_text(perf().current_screenset_notepad());
+            m_adjust_bpm->set_value(perf().get_beats_per_minute());
         }
         catch (...)
         {
@@ -2442,19 +2457,10 @@ mainwnd::file_import_dialog ()
                 *this, "Error importing file: " + fn, false,
                 Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
             );
+            rc().filename("");
             errdialog.run();
         }
-        rc().filename(std::string(dlg.get_filename()));
         update_window_title();
-
-        /*
-         * Doesn't seem to be necessary.
-         *
-         * reset();                                // m_main_wid->reset();
-         */
-
-        m_entry_notes->set_text(perf().current_screenset_notepad());
-        m_adjust_bpm->set_value(perf().get_beats_per_minute());
         break;
     }
 

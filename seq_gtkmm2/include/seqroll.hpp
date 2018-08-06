@@ -465,7 +465,7 @@ public:
      * \getter m_expanded_recording
      */
 
-    void set_expanded_recording (bool expand)
+    void expanded_recording (bool expand)
     {
         m_expanded_recording = expand;
     }
@@ -474,7 +474,7 @@ public:
      * \setter m_expanded_recording
      */
 
-    bool get_expanded_record ()
+    bool expanded_record ()
     {
         return m_expanded_recording;
     }

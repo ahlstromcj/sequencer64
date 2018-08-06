@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-05-17
- * \updates       2016-08-19
+ * \updates       2018-08-01
  * \license       GNU GPLv2 or above
  *
  *  A couple of universal helper functions remain as inline functions in the
@@ -59,7 +59,7 @@ namespace seq64
 
 extern rc_settings & rc ();
 extern user_settings & usr ();
-extern int choose_ppqn (int ppqn);
+extern int choose_ppqn (int ppqn = SEQ64_USE_DEFAULT_PPQN);
 
 }           // namespace seq64
 

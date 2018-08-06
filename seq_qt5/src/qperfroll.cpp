@@ -25,12 +25,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-30
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
  *  performance/song editor.
  */
+
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPen>
+#include <QTimer>
 
 #include "perform.hpp"
 #include "qperfeditframe64.hpp"
@@ -44,7 +49,6 @@
 
 namespace seq64
 {
-    class perform;
 
 /**
  *
@@ -55,7 +59,6 @@ qperfroll::qperfroll
     perform & p,
     int zoom,
     int snap,
-    int appqn,
     QWidget * frame,        // must be a qseqeditframe/64 widget
     QWidget * parent
 ) :
@@ -63,7 +66,7 @@ qperfroll::qperfroll
     gui_palette_qt5     (),
     qperfbase
     (
-        p, zoom, snap, appqn, c_names_y, c_names_y*c_max_sequence
+        p, zoom, snap, c_names_y, c_names_y*c_max_sequence
     ),
     m_parent_frame      (reinterpret_cast<qperfeditframe64 *>(frame)),
     m_timer             (nullptr),
@@ -86,7 +89,6 @@ qperfroll::qperfroll
 {
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setFocusPolicy(Qt::StrongFocus);
-    set_ppqn(appqn);
     for (int i = 0; i < c_max_sequence; ++i)
         m_sequence_active[i] = false;
 
@@ -734,8 +736,10 @@ qperfroll::mouseMoveEvent (QMouseEvent * event)
 void
 qperfroll::keyPressEvent (QKeyEvent * event)
 {
+    bool unhandled = true;
     if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace)
     {
+        unhandled = false;
         perf().push_trigger_undo();                 // delete selected notes
         for (int seqId = m_seq_l; seqId <= m_seq_h; seqId++)
             if (perf().is_active(seqId))
@@ -746,20 +750,24 @@ qperfroll::keyPressEvent (QKeyEvent * event)
         switch (event->key())
         {
         case Qt::Key_X:
+            unhandled = false;
             perf().push_trigger_undo();
             perf().get_sequence(m_drop_sequence)->cut_selected_trigger();
             break;
 
         case Qt::Key_C:
+            unhandled = false;
             perf().get_sequence(m_drop_sequence)->copy_selected_trigger();
             break;
 
         case Qt::Key_V:
+            unhandled = false;
             perf().push_trigger_undo();
             perf().get_sequence(m_drop_sequence)->paste_trigger();
             break;
 
         case Qt::Key_Z:
+            unhandled = false;
             if (event->modifiers() & Qt::ShiftModifier)
                 perf().pop_trigger_redo();
             else
@@ -767,6 +775,32 @@ qperfroll::keyPressEvent (QKeyEvent * event)
             break;
         }
     }
+    else if (event->modifiers() & Qt::ShiftModifier) // Shift + ...
+    {
+        if (event->key() == Qt::Key_Z)
+        {
+            unhandled = false;
+            m_parent_frame->zoom_in();
+            set_dirty();
+        }
+    }
+    else
+    {
+        if (event->key() == Qt::Key_Z)
+        {
+            unhandled = false;
+            m_parent_frame->zoom_out();
+            set_dirty();
+        }
+        else if (event->key() == Qt::Key_0)
+        {
+            unhandled = false;
+            m_parent_frame->reset_zoom();
+            set_dirty();
+        }
+    }
+    if (unhandled)
+        QWidget::keyPressEvent(event);
 }
 
 /**

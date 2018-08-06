@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-09
+ * \updates       2018-08-03
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -47,10 +47,10 @@
 #include <list>
 #include <vector>
 
-#include "globals.h"                    /* SEQ64_USE_DEFAULT_PPQN       */
-#include "midibyte.hpp"                 /* midishort, midibyte, etc.    */
-#include "midi_splitter.hpp"            /* seq64::midi_splitter         */
-#include "mutex.hpp"                    /* seq64::mutex, automutex  */
+#include "globals.h"                    /* SEQ64_USE_DEFAULT_PPQN           */
+#include "midibyte.hpp"                 /* midishort, midibyte, etc.        */
+#include "midi_splitter.hpp"            /* seq64::midi_splitter             */
+#include "mutex.hpp"                    /* seq64::mutex, automutex          */
 
 /**
  *  A feature to use the song/performance triggers to write out the MIDI
@@ -126,7 +126,12 @@
 
 namespace seq64
 {
-    class perform;                      /* forward reference            */
+    /*
+     * Forward references.
+     */
+
+    class midi_splitter;
+    class perform;
 
 #if defined SEQ64_USE_MIDI_VECTOR
     class midi_vector;
@@ -241,6 +246,12 @@ private:
     bool m_global_bgsequence;
 
     /**
+     *  Indicates that we are rescaling the PPQN of a file as it is read in.
+     */
+
+    bool m_use_scaled_ppqn;
+
+    /**
      *  Provides the current value of the PPQN, which used to be constant
      *  and is now only the macro SEQ64_DEFAULT_PPQN.
      */
@@ -248,10 +259,10 @@ private:
     int m_ppqn;
 
     /**
-     *  Indicates that the default PPQN is in force.
+     *  The value of the PPQN from the file itself.
      */
 
-    bool m_use_default_ppqn;
+    int m_file_ppqn;
 
     /**
      *  Provides support for SMF 0. This object holds all of the information
@@ -311,6 +322,15 @@ public:
     }
 
     /**
+     * \getter m_file_ppqn
+     */
+
+    int file_ppqn () const
+    {
+        return m_file_ppqn;
+    }
+
+    /**
      * \getter m_pos
      *
      *  Current position in the data stream.
@@ -346,6 +366,15 @@ protected:
     void ppqn (int p)
     {
         m_ppqn = p;
+    }
+
+    /**
+     * \setter m_file_ppqn
+     */
+
+    void file_ppqn (int p)
+    {
+        m_file_ppqn = p;
     }
 
     /**
@@ -458,6 +487,24 @@ protected:
     }
 
 };          // class midifile
+
+/*
+ *  Free functions related to midifile.
+ */
+
+extern bool open_midi_file
+(
+    perform & p,
+    const std::string & fn,
+    int & ppqn,
+    std::string & errmsg
+);
+extern bool save_midi_file
+(
+    perform & p,
+    const std::string & fn,
+    std::string & errmsg
+);
 
 }           // namespace seq64
 

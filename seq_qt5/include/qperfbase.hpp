@@ -83,6 +83,12 @@ private:
     seq64::rect m_selected;
 
     /**
+     *  Saves the default zoom setting.
+     */
+
+    const int m_initial_zoom;
+
+    /**
      *  Zoom setting, means that one pixel == m_zoom ticks.  That is, the
      *  units of zoom are ticks/pixel.
      */
@@ -112,7 +118,8 @@ private:
     int m_snap;
 
     /**
-     *  Provides the PPQN value.
+     *  Provides the PPQN value.  This value is obtained from the perform
+     *  object.
      */
 
     int m_ppqn;
@@ -265,7 +272,6 @@ public:
         perform & perf,
         int zoom            = SEQ64_DEFAULT_PERF_ZOOM,
         int snap            = SEQ64_DEFAULT_SNAP,
-        int ppqn            = SEQ64_USE_DEFAULT_PPQN,
         int unit_height     = 1,
         int total_height    = 1
     );
@@ -479,6 +485,11 @@ public:
     void zoom_in ();
     void zoom_out ();
     void set_zoom (int z);
+
+    void reset_zoom ()
+    {
+        set_zoom(m_initial_zoom);
+    }
 
     /**
      * \setter m_snap

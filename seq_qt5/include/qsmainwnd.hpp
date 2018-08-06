@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-31
+ * \updates       2018-08-02
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -38,18 +38,19 @@
  */
 
 #include <QMainWindow>
-#include <QFileDialog>
-#include <QErrorMessage>
 #include <QList>
-#include <QTimer>
-#include <QMessageBox>
-#include <QDesktopWidget>
+
+#include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
 
 /*
  *  Forward declaration.
  */
 
 class QCloseEvent;
+class QErrorMessage;
+class QFileDialog;
+class QMessageBox;
+class QTimer;
 
 /*
  *  The Qt UI namespace.
@@ -87,11 +88,12 @@ class qsmainwnd : public QMainWindow
 
 public:
 
-    explicit qsmainwnd
+    qsmainwnd
     (
         perform & p,
-        int ppqn,
-        QWidget * parent = nullptr
+        const std::string & midifilename    = "",
+        int ppqn                            = SEQ64_USE_DEFAULT_PPQN,
+        QWidget * parent                    = nullptr
     );
     virtual ~qsmainwnd ();
 

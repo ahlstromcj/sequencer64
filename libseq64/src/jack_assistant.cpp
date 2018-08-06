@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2018-04-12
+ * \updates       2018-08-03
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -523,12 +523,12 @@ jack_assistant::jack_assistant
     m_jack_frame_rate           (0),
     m_toggle_jack               (false),
     m_jack_stop_tick            (0),
-    m_ppqn                      (0),
-    m_beats_per_measure         (bpmeasure),    // m_bp_measure
-    m_beat_width                (beatwidth),    // m_bw
+    m_ppqn                      (choose_ppqn(ppqn)),
+    m_beats_per_measure         (bpmeasure),
+    m_beat_width                (beatwidth),
     m_beats_per_minute          (bpminute)
 {
-    m_ppqn = choose_ppqn(ppqn);
+    // No other code needed
 }
 
 /**

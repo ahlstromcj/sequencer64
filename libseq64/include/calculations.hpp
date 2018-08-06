@@ -161,6 +161,8 @@ extern midibpm note_value_to_tempo (midibyte note);
 
 /**
  *  Common code for handling PPQN settings.  Validates a PPQN value.
+ *  The value SEQ64_USE_FILE_PPQN (0) is considered invalid by this function.
+ *  Very few classes need that macro.
  *
  * \param ppqn
  *      Provides the PPQN value to be used.

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-31
+ * \updates       2018-08-05
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -364,12 +364,8 @@ static const int s_rec_vol_count = sizeof(s_rec_vol_items) / sizeof(int);
  *      to null.
  */
 
-qseqeditframe64::qseqeditframe64
-(
-    perform & p,
-    int seqid,
-    QWidget * parent
-) :
+qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
+ :
     qseqframe           (p, seqid, parent),
     ui                  (new Ui::qseqeditframe64),
     m_lfo_wnd           (nullptr),
@@ -2138,7 +2134,7 @@ qseqeditframe64::follow_progress ()
     {
         QScrollBar * hadjust = ui->rollScrollArea->h_scroll();
         int scrollx = hadjust->value();
-        if (m_seqroll->get_expanded_record() && seq().get_recording())
+        if (m_seqroll->expanded_record() && seq().get_recording())
         {
             int newx = scrollx + w;
             hadjust->setValue(newx);
@@ -2361,7 +2357,7 @@ qseqeditframe64::zoom_out ()
 void
 qseqeditframe64::reset_zoom ()
 {
-    ui->m_combo_zoom->setCurrentIndex(1);
+    qseqframe::reset_zoom();    // ui->m_combo_zoom->setCurrentIndex(1);
 }
 
 /**
@@ -2973,20 +2969,20 @@ qseqeditframe64::update_record_type (int index)
         {
         case LOOP_RECORD_LEGACY:
 
-            seq().set_overwrite_rec(false);
-            m_seqroll->set_expanded_recording(false);
+            seq().overwrite_rec(false);
+            m_seqroll->expanded_recording(false);
             break;
 
         case LOOP_RECORD_OVERWRITE:
 
-            seq().set_overwrite_rec(true);
-            m_seqroll->set_expanded_recording(false);
+            seq().overwrite_rec(true);
+            m_seqroll->expanded_recording(false);
             break;
 
         case LOOP_RECORD_EXPAND:
 
-            seq().set_overwrite_rec(false);
-            m_seqroll->set_expanded_recording(true);
+            seq().overwrite_rec(false);
+            m_seqroll->expanded_recording(true);
             break;
 
         default:

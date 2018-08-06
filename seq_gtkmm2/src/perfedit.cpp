@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-01-28
+ * \updates       2018-08-05
  * \license       GNU GPLv2 or above
  *
  *  When the Song/Performance editor has focus, Sequencer64 is automatically
@@ -57,7 +57,7 @@
 #include "perfedit.hpp"
 #include "perfnames.hpp"
 #include "perftime.hpp"
-#include "settings.hpp"                 /* seq64::choose_ppqn()             */
+#include "settings.hpp"                 /* seq64::rc() configuration items  */
 
 #include "pixmaps/pause.xpm"
 #include "pixmaps/play2.xpm"
@@ -129,17 +129,10 @@ update_perfedit_sequences ()
  *
  * \param second_perfedit
  *      If true, this object is the second perfedit object.
- *
- * \param ppqn
- *      The optionally-changed PPQN value to use for the performance editor.
  */
 
-perfedit::perfedit
-(
-    perform & p,
-    bool second_perfedit,
-    int ppqn
-) :
+perfedit::perfedit (perform & p, bool second_perfedit)
+ :
     gui_window_gtk2     (p, 750, 500),
     m_peer_perfedit     (nullptr),
     m_table             (manage(new Gtk::Table(6, 3, false))),
@@ -153,9 +146,9 @@ perfedit::perfedit
         manage                              /* ya gotta love C code :-D */
         (
             (rc().interaction_method() == e_seq24_interaction) ?
-                new Seq24PerfInput(perf(), *this, *m_hadjust, *m_vadjust, ppqn)
+                new Seq24PerfInput(perf(), *this, *m_hadjust, *m_vadjust)
               :
-                new FruityPerfInput(perf(), *this, *m_hadjust, *m_vadjust, ppqn)
+                new FruityPerfInput(perf(), *this, *m_hadjust, *m_vadjust)
         )
     ),
     m_perftime          (manage(new perftime(perf(), *this, *m_hadjust))),
@@ -188,7 +181,6 @@ perfedit::perfedit
     m_snap              (0),
     m_bpm               (0),
     m_bw                (0),
-    m_ppqn              (0),
     m_is_running        (false),
     m_standard_bpm      (SEQ64_DEFAULT_LINES_PER_MEASURE)   /* 4            */
 {
@@ -197,7 +189,6 @@ perfedit::perfedit
     if (second_perfedit)
         title += " 2";
 
-    m_ppqn = choose_ppqn(ppqn);
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
     set_title(title);                                       /* caption bar  */
     m_table->set_border_width(2);
@@ -251,7 +242,7 @@ perfedit::perfedit
     for (int si = 0; si < s_width_count; ++si)
     {
         int item = s_width_items[si];
-        char fmt[8];
+        char fmt[16];
         bool use_separator = false;
         if (item > 1)
             snprintf(fmt, sizeof fmt, "1/%d", item);
@@ -652,7 +643,9 @@ perfedit::set_guides ()
 {
     if (m_bw > 0 && m_snap > 0 && m_bpm > 0)
     {
-        midipulse measure_pulses = m_ppqn * m_standard_bpm * m_bpm / m_bw;
+        midipulse measure_pulses = perf().get_ppqn() *
+            m_standard_bpm * m_bpm / m_bw;
+
         midipulse snap_pulses = measure_pulses / m_snap;
         midipulse beat_pulses = measure_pulses / m_bpm;
         m_perfroll->set_guides(snap_pulses, measure_pulses, beat_pulses);
@@ -674,7 +667,7 @@ perfedit::set_snap (int snap)
 {
     if (snap != m_snap && snap > 0)
     {
-        char b[8];
+        char b[16];
         if (snap > 1)
             snprintf(b, sizeof b, "1/%d", snap);
         else

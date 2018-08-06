@@ -25,11 +25,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-18
- * \updates       2018-07-31
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
- *  perfroll (piano roll), will zoom the view horizontally.
+ *  perfroll (piano roll), will zoom the view horizontally.  Not working!
  */
 
 #include <QScrollBar>
@@ -84,21 +84,14 @@ namespace seq64
  * \param p
  *      Refers to the main performance object.
  *
- * \param ppqn
- *      The optionally-changed PPQN value to use for the performance editor.
- *
  * \param parent
  *      The Qt widget that owns this frame.  Either the qperfeditex (the
  *      external window holding this frame) or the "Song" tab object in the
  *      main window.
  */
 
-qperfeditframe64::qperfeditframe64
-(
-    seq64::perform & p,
-    int /*ppqn*/,
-    QWidget * parent
-) :
+qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
+ :
     QFrame                  (parent),
     ui                      (new Ui::qperfeditframe64),
     m_mainperf              (p),
@@ -128,7 +121,8 @@ qperfeditframe64::qperfeditframe64
         ui->cmbGridSnap->insertItem(i, combo_text);
     }
     ui->cmbGridSnap->setCurrentIndex(3);
-    connect
+    
+     connect
     (
         ui->cmbGridSnap, SIGNAL(currentIndexChanged(int)),
         this, SLOT(updateGridSnap(int))
@@ -147,7 +141,7 @@ qperfeditframe64::qperfeditframe64
 
     m_perfnames = new seq64::qperfnames
     (
-        m_mainperf, ui->namesScrollArea     // this
+        m_mainperf, ui->namesScrollArea
     );
     ui->namesScrollArea->setWidget(m_perfnames);
     ui->namesScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -156,7 +150,7 @@ qperfeditframe64::qperfeditframe64
     m_perftime = new seq64::qperftime
     (
         m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
-        p.get_ppqn(), ui->timeScrollArea     // this
+        ui->timeScrollArea
     );
     ui->timeScrollArea->setWidget(m_perftime);
     ui->timeScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -165,7 +159,7 @@ qperfeditframe64::qperfeditframe64
     m_perfroll = new seq64::qperfroll
     (
         m_mainperf, SEQ64_DEFAULT_ZOOM, SEQ64_DEFAULT_SNAP,
-        p.get_ppqn(), this, ui->rollScrollArea
+        this, ui->rollScrollArea
     );
     ui->rollScrollArea->setWidget(m_perfroll);
     ui->rollScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -388,12 +382,6 @@ qperfeditframe64::set_guides ()
     int measure = (ppqn * 4 * 4) * m_beats_per_measure / m_beat_width;
     int snap = m_snap;                          // measure / m_snap;
     int beat = (ppqn * 4 * 4) / m_beat_width;
-    if (ppqn != m_ppqn)
-    {
-        m_ppqn = ppqn;
-        // set dirty?
-    }
-
     m_perfroll->set_guides(snap, measure, beat);
     m_perftime->set_guides(snap, measure);
 #ifdef PLATFORM_DEBUG_TMI
@@ -425,6 +413,17 @@ qperfeditframe64::zoom_out ()
 {
     m_perftime->zoom_out();
     m_perfroll->zoom_out();
+}
+
+/**
+ *
+ */
+
+void
+qperfeditframe64::reset_zoom ()
+{
+    m_perftime->reset_zoom();
+    m_perfroll->reset_zoom();
 }
 
 /**

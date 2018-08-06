@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-07-25
+ * \updates       2018-08-05
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -282,18 +282,13 @@ enum edit_action_t
  * \param pos
  *      The sequence number (pattern slot number) for this sequence and
  *      window.
- *
- * \param ppqn
- *      The optional PPQN parameter for this sequence.  Warning:  not really
- *      used by the caller, need to square that!
  */
 
 seqedit::seqedit
 (
     perform & p,
     sequence & seq,
-    int pos,
-    int ppqn
+    int pos
 ) :
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
     gui_window_gtk2     (p, 900, 500),                  // size request
@@ -311,7 +306,7 @@ seqedit::seqedit
     m_key               (usr().seqedit_key()),          // m_initial_key
     m_bgsequence        (usr().seqedit_bgsequence()),   // m_initial_sequence
     m_measures          (0),                            // fixed below
-    m_ppqn              (p.ppqn()),
+    m_ppqn              (p.get_ppqn()),
 #ifdef USE_STAZED_ODD_EVEN_SELECTION
     m_pp_whole          (0),
     m_pp_eighth         (0),
@@ -615,6 +610,7 @@ seqedit::seqedit
         "Incoming MIDI data passes through to sequence's MIDI bus and channel."
     );
     m_toggle_play->set_active(m_seq.get_playing());
+    m_toggle_play->set_sensitive(! perf().song_start_mode());
     m_toggle_record->set_active(m_seq.get_recording());
     m_toggle_thru->set_active(m_seq.get_thru());
     dhbox->pack_end(*m_button_rec_vol, false, false, 4);
@@ -763,7 +759,7 @@ seqedit::create_menus ()
     for (int si = 0; si < s_snap_count; ++si)
     {
         int item = s_snap_items[si];
-        char fmt[8];
+        char fmt[16];
         if (item > 1)
             snprintf(fmt, sizeof fmt, "1/%d", item);
         else
@@ -1225,10 +1221,12 @@ seqedit::do_action (int action, int var)
 
     case c_transpose:                           /* regular transpose    */
         m_seq.transpose_notes(var, 0);
+        m_seq.set_dirty();                      /* updates perfedit     */
         break;
 
     case c_transpose_h:                         /* harmonic transpose   */
         m_seq.transpose_notes(var, m_scale);
+        m_seq.set_dirty();                      /* updates perfedit     */
         break;
 
 #ifdef USE_STAZED_COMPANDING
@@ -2225,8 +2223,8 @@ seqedit::popup_record_menu()
 {
     bool legacy = !
     (
-        m_seq.get_overwrite_rec() ||
-        m_seqroll_wid->get_expanded_record()
+        m_seq.overwrite_rec() ||
+        m_seqroll_wid->expanded_record()
     );
     m_menu_rec_type = manage(new Gtk::Menu());
     m_menu_rec_type->items().push_back
@@ -2247,7 +2245,7 @@ seqedit::popup_record_menu()
         ImageMenuElem
         (
             "Replace notes in loop recording",
-            *create_menu_image(m_seq.get_overwrite_rec()),
+            *create_menu_image(m_seq.overwrite_rec()),
             sigc::bind
             (
                 mem_fun(*this, &seqedit::set_rec_type), LOOP_RECORD_OVERWRITE
@@ -2260,7 +2258,7 @@ seqedit::popup_record_menu()
         ImageMenuElem
         (
             "Expand length in loop recording",
-            *create_menu_image(m_seqroll_wid->get_expanded_record()),
+            *create_menu_image(m_seqroll_wid->expanded_record()),
             sigc::bind
             (
                 mem_fun(*this, &seqedit::set_rec_type), LOOP_RECORD_EXPAND
@@ -2288,7 +2286,7 @@ seqedit::popup_record_menu()
 void
 seqedit::set_midi_channel (int midichannel, bool user_change)
 {
-    char b[8];
+    char b[16];
     snprintf(b, sizeof b, "%d", midichannel + 1);
     m_entry_channel->set_text(b);
     m_seq.set_midi_channel(midichannel, user_change); /* user-modified value? */
@@ -2720,7 +2718,7 @@ seqedit::set_mousemode_image (bool isfruity)
 void
 seqedit::play_change_callback ()
 {
-    m_seq.set_playing(m_toggle_play->get_active());
+     m_seq.set_playing(m_toggle_play->get_active());
 }
 
 /**
@@ -2866,21 +2864,21 @@ seqedit::set_rec_type (loop_record_t rectype)
     {
     case LOOP_RECORD_LEGACY:
 
-        m_seq.set_overwrite_rec(false);
-        m_seqroll_wid->set_expanded_recording(false);
+        m_seq.overwrite_rec(false);
+        m_seqroll_wid->expanded_recording(false);
         break;
 
     case LOOP_RECORD_OVERWRITE:
 
-        m_seq.set_overwrite_rec(true);
-        m_seqroll_wid->set_expanded_recording(false);
+        m_seq.overwrite_rec(true);
+        m_seqroll_wid->expanded_recording(false);
         label = "Replace";
         break;
 
     case LOOP_RECORD_EXPAND:
 
-        m_seq.set_overwrite_rec(false);
-        m_seqroll_wid->set_expanded_recording(true);
+        m_seq.overwrite_rec(false);
+        m_seqroll_wid->expanded_recording(true);
         label = "Expand";
         break;
 
@@ -3027,6 +3025,13 @@ seqedit::timeout ()
 
     if (m_seq.get_playing() != m_toggle_play->get_active())
         m_toggle_play->set_active(m_seq.get_playing());
+
+    /*
+     * Disable the play/arming button if in song mode, otherwise it can be
+     * puzzling for the unsuspecting user (me).
+     */
+
+    m_toggle_play->set_sensitive(! perf().song_start_mode());
 
     if (m_seq.get_recording() != m_toggle_record->get_active())
         m_toggle_record->set_active(m_seq.get_recording());

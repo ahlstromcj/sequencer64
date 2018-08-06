@@ -129,9 +129,37 @@ main (int argc, char * argv [])
             if (seq64::usr().option_use_logfile() && ! logfile.empty())
                 (void) seq64::reroute_stdio(logfile);
         }
-        p.launch(seq64::usr().midi_ppqn());         /* set up performance   */
+        if (ok)
+            p.launch(seq64::usr().midi_ppqn());     /* set up performance   */
+
         if (seq64::usr().inverse_colors())
             seq64::gui_palette_gtk2::load_inverse_palette(true);
+
+        std::string midifname;                      /* start out blank      */
+        std::string errmsg = "unspecified error";
+        if (ok)
+        {
+            if (optionindex < argc)                 /* MIDI filename given? */
+            {
+                std::string fname = argv[optionindex];
+                if (seq64::file_accessible(fname))
+                {
+                    midifname = fname;      // seq24_window.open_file(fname);
+                }
+                else
+                {
+                    char temp[256];
+                    (void) snprintf
+                    (
+                        temp, sizeof temp,
+                        "? MIDI file not found: %s\n", fname.c_str()
+                    );
+                    printf(temp);
+                    ok = false;
+                    errmsg = temp;
+                }
+            }
+        }
 
         /*
          * Push the mainwnd window onto the stack, with an option for allowing
@@ -142,7 +170,9 @@ main (int argc, char * argv [])
 
         seq64::mainwnd seq24_window
         (
-            p, seq64::usr().allow_two_perfedits(),
+            p,
+            midifname,                  // optional
+            seq64::usr().allow_two_perfedits(),
             seq64::usr().midi_ppqn()
 #if defined SEQ64_MULTI_MAINWID
             ,
@@ -151,19 +181,19 @@ main (int argc, char * argv [])
             seq64::usr().block_independent()
 #endif
         );
+
+#ifdef CAN_SHOW_MESSAGEBOX
+        if (! ok)
+            seq24_window.show_message_box(errmsg);
+#endif
+
         if (ok)
         {
-            if (optionindex < argc)                 /* MIDI filename provided?  */
-            {
-                std::string midifilename = argv[optionindex];
-                if (seq64::file_accessible(midifilename))
-                    seq24_window.open_file(midifilename);
-                else
-                    printf("? MIDI file not found: %s\n", midifilename.c_str());
-            }
 
+#ifdef PLATFORM_LINUX
             if (seq64::rc().lash_support())
                 seq64::create_lash_driver(p, argc, argv);
+#endif
 
             kit.run(seq24_window);                  /* run until user quits  */
             p.finish();                             /* tear down performance */
@@ -175,7 +205,9 @@ main (int argc, char * argv [])
             else
                 printf("[auto-option-save is off, so not saving config files]\n");
 
+#ifdef PLATFORM_LINUX
             seq64::delete_lash_driver();            /* deletes only if exists */
+#endif
         }
         else
             seq24_window.rc_error_dialog(errmessage);

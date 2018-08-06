@@ -25,7 +25,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2018-04-14
+ * \updates       2018-08-03
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -144,9 +144,37 @@ main (int argc, char * argv [])
          * timely fashion.
          */
 
-        p.launch(seq64::usr().midi_ppqn());         /* set up performance   */
+        if (ok)
+            p.launch(seq64::usr().midi_ppqn());     /* set up performance   */
+
         if (seq64::usr().inverse_colors())
             seq64::gui_palette_gtk2::load_inverse_palette(true);
+
+        std::string midifname;                      /* start out blank      */
+        std::string errmsg = "unspecified error";
+        if (ok)
+        {
+            if (optionindex < argc)                 /* MIDI filename given? */
+            {
+                std::string fname = argv[optionindex];
+                if (seq64::file_accessible(fname))
+                {
+                    midifname = fname;      // seq24_window.open_file(fname);
+                }
+                else
+                {
+                    char temp[256];
+                    (void) snprintf
+                    (
+                        temp, sizeof temp,
+                        "? MIDI file not found: %s\n", fname.c_str()
+                    );
+                    printf(temp);
+                    ok = false;
+                    errmsg = temp;
+                }
+            }
+        }
 
         /*
          * Push the mainwnd window onto the stack, with an option for allowing
@@ -157,7 +185,9 @@ main (int argc, char * argv [])
 
         seq64::mainwnd seq24_window
         (
-            p, seq64::usr().allow_two_perfedits(),
+            p,
+            midifname,                  // optional
+            seq64::usr().allow_two_perfedits(),
             seq64::usr().midi_ppqn()
 #if defined SEQ64_MULTI_MAINWID
             ,
@@ -166,6 +196,11 @@ main (int argc, char * argv [])
             seq64::usr().block_independent()
 #endif
         );
+
+#ifdef CAN_SHOW_MESSAGEBOX
+        if (! ok)
+            seq24_window.show_message_box(errmsg);
+#endif
 
         /*
          * Having this here after creating the main window may cause issue
@@ -176,14 +211,6 @@ main (int argc, char * argv [])
 
         if (ok)
         {
-            if (optionindex < argc)                 /* MIDI filename given? */
-            {
-                std::string midifilename = argv[optionindex];
-                if (seq64::file_accessible(midifilename))
-                    seq24_window.open_file(midifilename);
-                else
-                    printf("? MIDI file not found: %s\n", midifilename.c_str());
-            }
 
 #ifdef PLATFORM_LINUX
             if (seq64::rc().lash_support())

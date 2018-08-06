@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2018-07-21
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -274,23 +274,36 @@
  *  This value indicates to use the default value of PPQN and ignore (to some
  *  extent) what value is specified in the MIDI file.  Note that the default
  *  default PPQN is given by the global ppqn (192) or, if the "--ppqn qn"
- *  option is specified on the command-line, by the global ppqn = qn.
+ *  option is specified on the command-line or the "midi_ppqn" setting in the
+ *  "usr" file.
+ *
+ *  However, if the "midi_ppqn" setting is 0, then the default PPQN is
+ *  whatever the MIDI file specifies.
  */
 
 #define SEQ64_USE_DEFAULT_PPQN            (-1)
 
 /**
+ *  Use the PPQN from the loaded file, rather than converting to the active
+ *  default PPQN of the application.
+ */
+
+#define SEQ64_USE_FILE_PPQN               0
+
+/**
  *  Default value for the global parts-per-quarter-note value.  This is
  *  the unit of time for delta timing.  It represents the units, ticks, or
  *  pulses per beat.  Note that we're migrating this global value into the
- *  user_settings class.
+ *  user_settings class.  Please leave this value at 192 for all eternity, for
+ *  compatibility with other versions of Seq24 or Kepler34.
  */
 
 #define SEQ64_DEFAULT_PPQN               192
 
 /**
  *  Minimum value for PPQN.  Mostly for sanity checking.  This was set to 96,
- *  but there have been tunes set to 32 PPQN, I think.
+ *  but there have been tunes set to 32 PPQN, I think.  At this setting,
+ *  the Gtkmm-2.4 maintime bar moves pretty jerkily.
  */
 
 #define SEQ64_MINIMUM_PPQN                32

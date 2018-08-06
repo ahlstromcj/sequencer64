@@ -73,12 +73,8 @@ namespace seq64
  *      the qsmainwnd user-interface.
  */
 
-qseqeditex::qseqeditex
-(
-    perform & p,
-    int seqid,
-    qsmainwnd * parent
-) :
+qseqeditex::qseqeditex (perform & p,int seqid, qsmainwnd * parent)
+ :
     QWidget             (nullptr),
     ui                  (new Ui::qseqeditex),
     m_perform           (p),

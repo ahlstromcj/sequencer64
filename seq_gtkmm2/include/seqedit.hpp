@@ -409,13 +409,7 @@ private:
 
 public:
 
-    seqedit
-    (
-        perform & perf,
-        sequence & seq,
-        int pos,
-        int ppqn = SEQ64_USE_DEFAULT_PPQN
-    );
+    seqedit (perform & perf, sequence & seq, int pos);
     virtual ~seqedit ();
 
 private:

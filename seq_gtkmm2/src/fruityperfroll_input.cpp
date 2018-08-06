@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-13
- * \updates       2018-01-11
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  *  Now derived directly Seq24PerfInput.  No more AbstractPerfInput and no
@@ -62,9 +62,6 @@ namespace seq64
  *
  * \param vadjust
  *      A vertical adjustment object, passed along to the perfroll class.
- *
- * \param ppqn
- *      The "resolution" of the MIDI file, used in zooming and scaling.
  */
 
 FruityPerfInput::FruityPerfInput
@@ -72,10 +69,9 @@ FruityPerfInput::FruityPerfInput
     perform & p,
     perfedit & parent,
     Gtk::Adjustment & hadjust,
-    Gtk::Adjustment & vadjust,
-    int ppqn
+    Gtk::Adjustment & vadjust
 ) :
-    Seq24PerfInput      (p, parent, hadjust, vadjust, ppqn)
+    Seq24PerfInput      (p, parent, hadjust, vadjust)
 {
     // Empty body
 }

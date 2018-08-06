@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-10
+ * \updates       2018-08-06
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -67,6 +67,42 @@
  *
  *  User jean-emmanual added support for disabling the following of the
  *  progress bar during playback.
+ *
+ * Replace recording:
+ *
+ *      If set, when playing a pattern and recording it, the idea is that, at
+ *      the beginning of the *next* loop in the pattern, before that loop
+ *      finishes, if a note is recorded, the existing notes are deleted first.
+ *      We have to be strict about the conditions for replacement:
+ *
+ *          -#  The application must be in playing mode.  (Maybe not, since
+ *              we can create notes by editing in the seqroll.)
+ *          -#  Recording must be enabled in the seqroll for that pattern.
+ *              This is implicit when sequence::stream_event() is called.
+ *          -#  The LOOP_RECORD_OVERWRITE option must be enabled by the
+ *              seqedit window, which calls sequence::overwrite_rec(true) to
+ *              enable that option, and calls seqroll ::
+ *              expanded_recording(false).
+ *          -#  The transition from tick = sequence::get_length() to tick = 0
+ *              must have occurred.  We call this the "loop reset".
+ *          -#  A new note must be entered at that point.  This note causes
+ *              the pattern to be cleared before the note is added.
+ *
+ *  Expand recording:
+ *
+ *      If set, when playing a pattern and recording it, the idea is that,
+ *      when the end of the loop is reached, it is automatically extended by
+ *      another measure.
+ *
+ *          -#  The application must be in playing mode.
+ *          -#  Recording must be enabled in the seqroll for that pattern.
+ *          -#  The LOOP_RECORD_EXPAND option must be enabled by the
+ *              seqedit window, which calls sequence::overwrite_rec(true) to
+ *              enable that option.
+ *          -#  The transition from tick = sequence::get_length() to tick = 0
+ *              must have occurred.  We call this the "loop reset".
+ *          -#  The current tick value is restored, and sequence::set_length()
+ *              is called to extend the pattern by one measure.
  */
 
 #include <gdkmm/cursor.h>
@@ -253,7 +289,7 @@ seqroll::set_background_sequence (bool state, int seq)
  *  The horizontal page increment is currently always one bar.  We may want to
  *  make that larger for scrolling after the progress bar.
  *
- *  Tha maximum value set for the scrollbar brings it to the last "page" of the
+ *  The maximum value set for the scrollbar brings it to the last "page" of the
  *  piano roll.
  *
  *  The vertical size are also adjusted.  More on the story later.
@@ -262,9 +298,9 @@ seqroll::set_background_sequence (bool state, int seq)
 void
 seqroll::update_sizes ()
 {
-    int ppqn = perf().ppqn();
+    int ppqn = perf().get_ppqn();
     int zoom_x = m_window_x * m_zoom;
-    int h_max_value = m_seq.get_length() - zoom_x;
+    int hmaxvalue = m_seq.get_length() - zoom_x;
     int inc = ppqn * m_seq.get_beats_per_bar() / m_seq.get_beat_width();
     int page_increment = 4 * inc;
 
@@ -273,8 +309,8 @@ seqroll::update_sizes ()
     m_hadjust.set_page_size(zoom_x);
     m_hadjust.set_step_increment(m_zoom * ppqn / 4);
     m_hadjust.set_page_increment(page_increment);
-    if (m_hadjust.get_value() > h_max_value)
-        m_hadjust.set_value(h_max_value);
+    if (m_hadjust.get_value() > hmaxvalue)
+        m_hadjust.set_value(hmaxvalue);
 
     m_vadjust.set_lower(0);
     m_vadjust.set_upper(c_num_keys);
@@ -487,7 +523,7 @@ seqroll::update_background ()
     int bpbar = m_seq.get_beats_per_bar();
     int bwidth = m_seq.get_beat_width();
     int ticks_per_step = m_zoom * 6;
-    int ticks_per_beat = 4 * perf().ppqn() / bwidth;
+    int ticks_per_beat = 4 * perf().get_ppqn() / bwidth;
     int ticks_per_major = bpbar * ticks_per_beat;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     int starttick = m_scroll_offset_ticks -
@@ -660,8 +696,8 @@ seqroll::draw_progress_on_window ()
     static bool s_loop_in_progress = false;     /* indicates when to reset  */
 
     /*
-     * If this test is used, then when not running, the overwrite functionality of
-     * recording will not work: if (perf().is_running())
+     * If this test is used, then when not running, the overwrite
+     * functionality of recording will not work: if (perf().is_running())
      */
 
     if (usr().progress_bar_thick())
@@ -673,6 +709,11 @@ seqroll::draw_progress_on_window ()
         draw_drawable(m_progress_x, 0, m_progress_x, 0, 1, m_window_y);
 
     m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
+
+    /*
+     * It would be easier to use ticks here, rather than x values.
+     */
+
     if (m_progress_x > 0)
     {
         s_loop_in_progress = true;
@@ -681,7 +722,7 @@ seqroll::draw_progress_on_window ()
     {
         if (s_loop_in_progress)
         {
-            m_seq.set_loop_reset(true);         /* for overwrite recording  */
+            m_seq.loop_reset(true);             /* for overwrite recording  */
             s_loop_in_progress = false;
         }
     }
@@ -725,15 +766,15 @@ seqroll::follow_progress ()
 {
     if (m_expanded_recording && m_seq.get_recording())
     {
-        double h_max_value = m_seq.get_length() - m_window_x * m_zoom;
-        m_hadjust.set_value(h_max_value);
+        double hmaxvalue = m_seq.get_length() - m_window_x * m_zoom;
+        m_hadjust.set_value(hmaxvalue);
     }
     else                                        /* use for non-recording */
     {
-        midipulse progress_tick = m_seq.get_last_tick();
-        if (progress_tick > 0 && m_progress_follow)
+        midipulse progtick = m_seq.get_last_tick();
+        if (progtick > 0) // && m_progress_follow)
         {
-            int progress_x = progress_tick / m_zoom + SEQ64_PROGRESS_PAGE_OVERLAP;
+            int progress_x = progtick / m_zoom + SEQ64_PROGRESS_PAGE_OVERLAP;
             int page = progress_x / m_window_x;
             if
             (
@@ -741,9 +782,19 @@ seqroll::follow_progress ()
                 (page == 0 && m_hadjust.get_value() != 0)  // NEW CHECK
             )
             {
-                midipulse left_tick = page * m_window_x * m_zoom;
+                double pagesize = m_hadjust.get_page_size();
+                double upper = m_hadjust.get_upper();
+                midipulse lefttick = page * m_window_x * m_zoom;
                 m_scroll_page = page;
-                m_hadjust.set_value(double(left_tick));
+
+                /*
+                 * Don't scroll past "upper".
+                 */
+
+                if ((lefttick + pagesize) >= upper)
+                    m_hadjust.set_value(upper - pagesize);
+                else
+                    m_hadjust.set_value(double(lefttick));
             }
         }
     }

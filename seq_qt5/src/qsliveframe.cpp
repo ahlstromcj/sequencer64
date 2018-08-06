@@ -1008,7 +1008,7 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
         }
     }
     if (! done)
-        event->ignore();
+        QWidget::keyPressEvent(event);  // event->ignore();
 }
 
 /**

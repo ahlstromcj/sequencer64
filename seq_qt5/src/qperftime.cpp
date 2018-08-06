@@ -25,9 +25,10 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-30
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
+ *  Compare to perftime, the Gtkmm-2.4 implementation of this class.
  */
 
 #include "qperftime.hpp"
@@ -50,11 +51,10 @@ qperftime::qperftime
     perform & p,
     int zoom,
     int snap,
-    int appqn,
     QWidget * parent
 ) :
     QWidget             (parent),
-    qperfbase           (p, zoom, snap, appqn, 1, 1 * 1),
+    qperfbase           (p, zoom, snap, 1, 1 * 1),
     m_timer             (new QTimer(this)), // refresh timer for redraws
     m_font              (),
     m_4bar_offset       (0)
@@ -70,7 +70,9 @@ qperftime::qperftime
 }
 
 /**
- *
+ *  A timer callback/slot that updates the window only if it needs it.
+ *  Without the check for needing to update, it is always called and increase
+ *  the CPU load.
  */
 
 void
@@ -146,16 +148,6 @@ qperftime::paintEvent (QPaintEvent *)
             }
             ++measure;
         }
-#if 0
-        else if (tick % beat_length() == 0)
-        {
-            int x_pos = position_pixel(tick);
-            pen.setColor(Qt::black);                        /* beat    */
-            pen.setWidth(1);
-            painter.setPen(pen);
-            painter.drawLine(x_pos, 0, x_pos, height());
-        }
-#endif
     }
 
     int left = position_pixel(perf().get_left_tick());
@@ -191,7 +183,7 @@ qperftime::paintEvent (QPaintEvent *)
 QSize
 qperftime::sizeHint () const
 {
-    int height = 24;    // 22
+    int height = 24;
     int width = horizSizeHint();
     return QSize(width, height);
 }

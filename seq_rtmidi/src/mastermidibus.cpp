@@ -41,7 +41,7 @@
 #include "event.hpp"                    /* seq64::event                     */
 #include "mastermidibus_rm.hpp"         /* seq64::mastermidibus, RtMIDI     */
 #include "midibus_rm.hpp"               /* seq64::midibus, RtMIDI           */
-#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+#include "settings.hpp"                 /* seq64::rc()                      */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

@@ -701,6 +701,8 @@ wrkfile::Vars_chunk ()
  *      - timebase ticks per quarter note
  *
  * void signalWRKTimeBase(int timebase);
+ *
+ * TODO: set file PPQN etc!!!
  */
 
 void

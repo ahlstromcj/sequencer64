@@ -130,14 +130,6 @@ private:
 
     midipulse m_tick;
 
-    /**
-     *  Provides the active PPQN value.  While this is effectively a constant
-     *  for the duration of a tune, it might change as different tunes are
-     *  loaded.
-     */
-
-    int m_ppqn;
-
 private:
 
     maintime (const maintime &);
@@ -145,7 +137,7 @@ private:
 
 public:
 
-    maintime (perform & p, int ppqn = SEQ64_USE_DEFAULT_PPQN);
+    maintime (perform & p);
 
     /**
      *  Let's provide a do-nothing virtual destructor.

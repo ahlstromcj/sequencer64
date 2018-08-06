@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-07-07
+ * \updates       2018-08-05
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -412,7 +412,7 @@ private:
 #endif  // SEQ64_SONG_RECORDING
 
     /**
-     *  Indicates if overwrite recording more is in force.
+     *  Indicates if overwrite recording of notes in a loop is in force.
      */
 
     bool m_overwrite_recording;
@@ -754,7 +754,7 @@ public:
 
     std::string seq_number () const
     {
-        char temp[8];
+        char temp[16];
         snprintf(temp, sizeof temp, "%d", int(m_seq_number));
         return std::string(temp);
     }
@@ -1188,7 +1188,7 @@ public:
      * Documented at the definition point in the cpp module.
      */
 
-    void set_playing (bool);
+    void set_playing (bool p);
 
     /**
      * \getter m_playing
@@ -1256,7 +1256,7 @@ public:
      * \getter m_expanded_recording
      */
 
-    void set_expanded_recording (bool expand)
+    void expanded_recording (bool expand)
     {
         m_expanded_recording = expand;
     }
@@ -1265,7 +1265,7 @@ public:
      * \setter m_expanded_recording
      */
 
-    bool get_expanded_record ()
+    bool expanded_record ()
     {
         return m_expanded_recording;
     }
@@ -1805,24 +1805,24 @@ public:
         return m_channel_match;
     }
 
-    void set_overwrite_rec (bool ovwr);
+    void overwrite_rec (bool ovwr);
 
     /**
      * \getter m_overwrite_recording
      */
 
-    bool get_overwrite_rec ()
+    bool overwrite_rec ()
     {
         return m_overwrite_recording;
     }
 
-    void set_loop_reset (bool reset);
+    void loop_reset (bool reset);
 
     /**
      * \getter m_loop_reset
      */
 
-    bool get_loop_reset ()
+    bool loop_reset ()
     {
         return m_loop_reset;
     }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-10
+ * \updates       2018-08-05
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -202,7 +202,7 @@ seqtime::update_pixmap ()
 
     int bpbar = m_seq.get_beats_per_bar();
     int bwidth = m_seq.get_beat_width();
-    int ticks_per_major = 4 * perf().ppqn() * bpbar / bwidth;
+    int ticks_per_major = 4 * perf().get_ppqn() * bpbar / bwidth;
 
     /*
      * This makes the position of END the same for zoom = 2 or 1, but it is
@@ -238,7 +238,7 @@ seqtime::update_pixmap ()
     m_gc->set_foreground(black_paint());                     /* vert. line   */
     for (int tick = starttick; tick < endtick; tick += ticks_per_major)
     {
-        char bar[8];
+        char bar[16];
         int x_offset = (tick / m_zoom) - m_scroll_offset_x; /* for the beat */
         draw_line_on_pixmap(x_offset, 0, x_offset, m_window_y);
         snprintf(bar, sizeof(bar), "%d", (tick / ticks_per_major) + 1);

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-07-13
+ * \updates       2018-08-05
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1738,9 +1738,9 @@ public:
      * New from jfrey-xx on GitHub.
      */
 
-    void set_overwrite_recording
+    void overwrite_recording
     (
-        bool overwrite_active, int seq, bool toggle = false
+        bool oactive, int seq, bool toggle = false
     );
     void set_thru (bool rec_active, bool thru_active, sequence * s);
     void set_thru (bool thru_active, int seq, bool toggle = false);
@@ -2300,13 +2300,11 @@ public:
     std::string sequence_label (const sequence & seq);
     std::string sequence_label (int seqnumb);               // for qperfnames
     std::string sequence_title (const sequence & seq);
-    std::string main_window_title ();
+    std::string main_window_title (const std::string & fn = "");
     std::string sequence_window_title (const sequence & seq);
     void set_input_bus (bussbyte bus, bool input_active);   // used in options
     void set_clock_bus (bussbyte bus, clock_e clocktype);   // used in options
-
     bool mainwnd_key_event (const keystroke & k);
-
     bool keyboard_control_press (unsigned key);
     bool keyboard_group_c_status_press (unsigned key);
     bool keyboard_group_c_status_release (unsigned key);

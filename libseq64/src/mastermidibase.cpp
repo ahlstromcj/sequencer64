@@ -38,7 +38,7 @@
 #include "event.hpp"                    /* seq64::event                     */
 #include "mastermidibase.hpp"           /* seq64::mastermidibase            */
 #include "sequence.hpp"                 /* seq64::sequence                  */
-#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+#include "settings.hpp"                 /* seq64::rc()                      */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

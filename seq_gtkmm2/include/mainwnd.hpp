@@ -558,8 +558,9 @@ public:
     mainwnd
     (
         perform & p,
-        bool allowperf2     = true,
-        int ppqn            = SEQ64_USE_DEFAULT_PPQN
+        const std::string & midifilename    = "",
+        bool allowperf2                     = true,
+        int ppqn                            = SEQ64_USE_DEFAULT_PPQN
 #if defined SEQ64_MULTI_MAINWID
         ,
         int mainwid_rows    = 1,

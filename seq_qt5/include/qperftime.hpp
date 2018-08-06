@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-18
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -72,7 +72,6 @@ public:
         perform & a_perf,
         int zoom            = SEQ64_DEFAULT_PERF_ZOOM,
         int snap            = SEQ64_DEFAULT_SNAP,
-        int ppqn            = SEQ64_USE_DEFAULT_PPQN,
         QWidget * parent    = nullptr
     );
 

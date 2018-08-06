@@ -71,7 +71,7 @@
 #include "midibus.hpp"
 #include "optionsfile.hpp"
 #include "perform.hpp"
-#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+#include "settings.hpp"                 /* seq64::rc()                      */
 
 /**
  *  Provides names for the mouse-handling used by the application.

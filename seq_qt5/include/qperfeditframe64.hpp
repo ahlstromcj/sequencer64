@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-18
- * \updates       2018-07-30
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -80,15 +80,11 @@ class qperfeditframe64 : public QFrame
     Q_OBJECT
 
     friend class qsmainwnd;
+    friend class qperfroll;
 
 public:
 
-    qperfeditframe64
-    (
-        seq64::perform & p,
-        int ppqn            = SEQ64_USE_DEFAULT_PPQN,
-        QWidget * parent    = nullptr
-    );
+    qperfeditframe64 (seq64::perform & p, QWidget * parent = nullptr);
 
     /*
      * One thing that bugs me about Qt... this function should be virtual, as
@@ -115,15 +111,17 @@ private:
         return m_mainperf;
     }
 
+    void reset_zoom ();
+
 private:
 
     Ui::qperfeditframe64 * ui;
     seq64::perform & m_mainperf;
     QPalette * m_palette;
-    int m_snap;                 /* set snap to in pulses */
+    int m_snap;                 /* set snap-to in pulses/ticks  */
     int m_beats_per_measure;
     int m_beat_width;
-    int m_ppqn;
+    int m_ppqn;                 /* might not need this          */
     qperfroll * m_perfroll;
     qperfnames * m_perfnames;
     qperftime * m_perftime;

@@ -188,7 +188,10 @@ perfroll::~perfroll ()
 }
 
 /**
- *  Handles changes to the PPQN value in one place.
+ *  Handles changes to the PPQN value in one place.  This function is actually
+ *  useful mainly at construction time, and when zoom changes; it affects only
+ *  the user-interface.  Changes are not passed on to the perform object, and
+ *  we use perform :: get_ppqn().
  *
  *  The m_ticks_per_bar member replaces the global ppqn times 16.  This
  *  construct is parts-per-quarter-note times 4 quarter notes times 4

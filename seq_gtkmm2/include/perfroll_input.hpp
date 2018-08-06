@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-20
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  *  Now refactored to be derived from perfroll directly; no more passing
@@ -79,8 +79,7 @@ public:
         perform & perf,
         perfedit & parent,
         Gtk::Adjustment & hadjust,
-        Gtk::Adjustment & vadjust,
-        int ppqn = SEQ64_USE_DEFAULT_PPQN
+        Gtk::Adjustment & vadjust
     );
 
     /**

@@ -91,7 +91,7 @@
 #include "midibus_rm.hpp"               /* seq64::midibus for rtmidi        */
 #include "midi_alsa.hpp"                /* seq64::midi_alsa for ALSA        */
 #include "midi_info.hpp"                /* seq64::midi_info                 */
-#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+#include "settings.hpp"                 /* seq64::rc()                      */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.

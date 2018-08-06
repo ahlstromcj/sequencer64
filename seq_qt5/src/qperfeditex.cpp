@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-21
- * \updates       2018-07-30
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -62,9 +62,6 @@ namespace seq64
  * \param p
  *      Provides the perform object to use for interacting with this sequence.
  *
- * \param ppqn
- *      The optional PPQN value.
- *
  * \param parent
  *      Provides the parent window/widget for this container window.  Defaults
  *      to null.  Note that this parameter does not link this class to the
@@ -72,12 +69,8 @@ namespace seq64
  *      the qsmainwnd user-interface.
  */
 
-qperfeditex::qperfeditex
-(
-    perform & p,
-    int ppqn,
-    qsmainwnd * parent
-) :
+qperfeditex::qperfeditex (perform & p, qsmainwnd * parent)
+ :
     QWidget             (nullptr),
     ui                  (new Ui::qperfeditex),
     m_perform           (p),
@@ -87,15 +80,16 @@ qperfeditex::qperfeditex
     ui->setupUi(this);
 
     QGridLayout * layout = new QGridLayout(this);
-    m_edit_frame = new qperfeditframe64(p, ppqn, this);
+    m_edit_frame = new qperfeditframe64(p, this);
     layout->addWidget(m_edit_frame);
     show();
     m_edit_frame->show();
 }
 
 /**
- *  Deletes the user interface, then tells the editor parent to remove
- *  this object.
+ *  Deletes the user interface.  It does not tell the editor parent to remove
+ *  this object.  Contrary to previous claims, why would it need to do that
+ *  here?  See the closeEvent() override.
  */
 
 qperfeditex::~qperfeditex()
@@ -104,7 +98,8 @@ qperfeditex::~qperfeditex()
 }
 
 /**
- *
+ *  Override in order to tell the parent frame to remove this fellow
+ *  from its memory.
  */
 
 void
@@ -115,7 +110,9 @@ qperfeditex::closeEvent (QCloseEvent *)
 }
 
 /**
- *  See usage is qsmainwnd.
+ *  See usage in qsmainwnd.  It basically tells the edit-frame to update
+ *  itself based on some user-interface or zoom changes.  (Don't quote me on
+ *  that!)
  */
 
 void

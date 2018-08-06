@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-09-17
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  *  Note that this class doesn't handle keystrokes (directly), so even if the
@@ -70,8 +70,7 @@ public:
         perform & perf,
         perfedit & parent,
         Gtk::Adjustment & hadjust,
-        Gtk::Adjustment & vadjust,
-        int ppqn = SEQ64_USE_DEFAULT_PPQN
+        Gtk::Adjustment & vadjust
     );
 
     /**

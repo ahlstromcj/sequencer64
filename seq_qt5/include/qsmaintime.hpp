@@ -130,7 +130,7 @@ private:
     QFont m_font;
     int m_beats_per_measure;
     int m_beat_width;
-    int m_lastMetro;
+    int m_last_metro;
     int m_alpha;
 
 };          // class qsmaintime

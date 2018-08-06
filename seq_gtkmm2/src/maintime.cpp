@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-20
+ * \updates       2018-08-04
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
@@ -39,8 +39,8 @@
  *  the expense of a little memory.
  */
 
-#include "globals.h"
-#include "maintime.hpp"
+#include "maintime.hpp"                 /* seq64::maintime class            */
+#include "perform.hpp"                  /* seq64::perform class             */
 
 /**
  *  Static internal constants.  These will eventually be replaced by variables
@@ -65,7 +65,7 @@ namespace seq64
  *  realized.
  */
 
-maintime::maintime (perform & p, int ppqn)
+maintime::maintime (perform & p)
  :
     gui_drawingarea_gtk2
     (
@@ -80,8 +80,7 @@ maintime::maintime (perform & p, int ppqn)
     m_flash_height          (m_window_y - 4),
     m_flash_x               (m_window_x / m_beat_width),
     m_box_less_pill         (m_window_x - m_pill_width - 1),
-    m_tick                  (0),
-    m_ppqn                  (choose_ppqn(ppqn))
+    m_tick                  (0)
 {
     // No other code
 }
@@ -109,9 +108,10 @@ maintime::idle_progress (midipulse ticks)
     if (ticks >= 0)                     /* ca 2016-03-17 to make bar appear */
     {
         const int yoff = 4;
-        int tick_x = (ticks % m_ppqn) * m_box_width / m_ppqn;
-        int beat_x = ((ticks / m_beat_width) % m_ppqn) * m_box_less_pill / m_ppqn;
-        int bar_x  = ((ticks / m_bar_width)  % m_ppqn) * m_box_less_pill / m_ppqn;
+        const int ppqn = perf().get_ppqn();
+        int tick_x = (ticks % ppqn) * m_box_width / ppqn;
+        int beat_x = ((ticks / m_beat_width) % ppqn) * m_box_less_pill / ppqn;
+        int bar_x  = ((ticks / m_bar_width)  % ppqn) * m_box_less_pill / ppqn;
         m_tick = ticks;
         clear_window();
         draw_rectangle(black(), 0, yoff, m_box_width, m_box_height, false);

@@ -1639,6 +1639,15 @@ public:
     }
 
     /**
+     *
+     */
+
+    bool follow () const
+    {
+        return is_running() && get_follow_transport();
+    }
+
+    /**
      * \setter m_jack_asst.toggle_follow_transport()
      */
 

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-07-27
+ * \updates       2018-08-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -112,36 +112,6 @@ namespace seq64
     class sequence;
 
 /**
- * Actions.  These variables represent actions that can be applied to a
- * selection of notes.  One idea would be to add a swing-quantize action.
- * We will reserve the value here, for notes only; not yet used or part of the
- * action menu.
- */
-
-enum edit_action_t
-{
-    c_select_all_notes         =  1,
-    c_select_all_events        =  2,
-    c_select_inverse_notes     =  3,
-    c_select_inverse_events    =  4,
-    c_quantize_notes           =  5,
-    c_quantize_events          =  6,
-#ifdef USE_STAZED_RANDOMIZE_SUPPORT
-    c_randomize_events         =  7,
-#endif
-    c_tighten_events           =  8,
-    c_tighten_notes            =  9,
-    c_transpose_notes          = 10,    /* basic transpose      */
-    c_reserved                 = 11,
-    c_transpose_h              = 12,    /* harmonic transpose   */
-    c_expand_pattern           = 13,
-    c_compress_pattern         = 14,
-    c_select_even_notes        = 15,
-    c_select_odd_notes         = 16,
-    c_swing_notes              = 17     /* swing quantize       */
-};
-
-/**
  *  This frame holds tools for editing an individual MIDI sequence.  This
  *  frame is a more advanced version of qseqeditframe, which was based on
  *  Kepler34's EditFrame class.
@@ -166,7 +136,7 @@ public:
     void initialize_panels ();
     void update_draw_geometry ();
     void set_editor_mode (edit_mode_t mode);
-    void follow_progress ();
+    void follow_progress (bool expand = false);
 
 private:
 

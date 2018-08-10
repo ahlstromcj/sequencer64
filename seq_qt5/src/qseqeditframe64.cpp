@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-08-05
+ * \updates       2018-08-09
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -1265,8 +1265,27 @@ qseqeditframe64::initialize_panels ()
 void
 qseqeditframe64::conditional_update ()
 {
+    bool expandrec = seq().expand_recording();
+    if (expandrec)
+    {
+        set_measures(get_measures() + 1);
+#ifdef PLATFORM_DEBUG_TMI
+        printf("expand m=%d\n", get_measures());
+#endif
+        follow_progress(expandrec);         /* keep up with progress    */
+    }
+    else if (perf().follow())
+    {
+#ifdef PLATFORM_DEBUG_TMI
+        midipulse progtick = seq().get_last_tick();
+        printf("follow tick =%ld\n", progtick);
+#endif
+        follow_progress();
+    }
     if (seq().is_dirty_edit())
+    {
         set_dirty();
+    }
 }
 
 /**
@@ -2127,27 +2146,36 @@ qseqeditframe64::follow (bool ischecked)
  */
 
 void
-qseqeditframe64::follow_progress ()
+qseqeditframe64::follow_progress (bool expand)
 {
     int w = ui->rollScrollArea->width() - SEQ64_PROGRESS_PAGE_OVERLAP_QT;
     if (w > 0)
     {
         QScrollBar * hadjust = ui->rollScrollArea->h_scroll();
-        int scrollx = hadjust->value();
-        if (m_seqroll->expanded_record() && seq().get_recording())
+        midipulse progtick = seq().get_last_tick();
+        int progx = progtick / m_zoom;
+        int page = progx / w;
+        int oldpage = m_seqroll->scroll_page();
+        bool newpage = page != oldpage;
+        if (seq().expanded_recording() && expand)
         {
-            int newx = scrollx + w;
-            hadjust->setValue(newx);
+            if (newpage)
+            {
+                int scrollx = hadjust->value();
+                int newx = scrollx + w - perf().get_ppqn() * m_zoom;
+                hadjust->setValue(newx);
+//              printf("scrollx = %d; newx = %d\n", scrollx, newx);
+            }
         }
         else                                        /* use for non-recording */
         {
-            midipulse progtick = seq().get_last_tick();
-            if (progtick > 0 && m_seqroll->progress_follow())
-            {
-                int progx = progtick / m_zoom; // + SEQ64_PROGRESS_PAGE_OVERLAP;
-                int page = progx / w;
-                int oldpage = m_seqroll->scroll_page();
-                bool newpage = page != oldpage;
+//          midipulse progtick = seq().get_last_tick();
+//          if (progtick > 0)
+//          {
+//              int progx = progtick / m_zoom; // + SEQ64_PROGRESS_PAGE_OVERLAP;
+//              int page = progx / w;
+//              int oldpage = m_seqroll->scroll_page();
+//              bool newpage = page != oldpage;
 
                 /*
                  * Did this in the Gtkmm-2.4 version, causes continual
@@ -2159,10 +2187,12 @@ qseqeditframe64::follow_progress ()
 
                 if (newpage)
                 {
+//                  printf("newpage %d\n", page);
                     m_seqroll->scroll_page(page);
                     hadjust->setValue(progx);
+                    set_dirty();
                 }
-            }
+//          }
         }
     }
     else
@@ -2969,20 +2999,23 @@ qseqeditframe64::update_record_type (int index)
         {
         case LOOP_RECORD_LEGACY:
 
-            seq().overwrite_rec(false);
-            m_seqroll->expanded_recording(false);
+            seq().overwrite_recording(false);
+            seq().expanded_recording(false);
+            // m_seqroll->expanded_recording(false);
             break;
 
         case LOOP_RECORD_OVERWRITE:
 
-            seq().overwrite_rec(true);
-            m_seqroll->expanded_recording(false);
+            seq().overwrite_recording(true);
+            seq().expanded_recording(false);
+            // m_seqroll->expanded_recording(false);
             break;
 
         case LOOP_RECORD_EXPAND:
 
-            seq().overwrite_rec(false);
-            m_seqroll->expanded_recording(true);
+            seq().overwrite_recording(false);
+            seq().expanded_recording(true);
+            // m_seqroll->expanded_recording(true);
             break;
 
         default:
@@ -3058,17 +3091,11 @@ qseqeditframe64::set_dirty ()
 void
 qseqeditframe64::update_draw_geometry()
 {
-    /*
-     *  QString lentext(QString::number(m_seq->get_num_measures()));
-     *  ui->cmbSeqLen->setCurrentText(lentext);
-     *  mContainer->adjustSize();
-     */
-
     if (not_nullptr(m_seqroll))
         m_seqroll->updateGeometry();
 
-    if (not_nullptr(m_seqroll))
-        m_seqroll->updateGeometry();
+    if (not_nullptr(m_seqtime))
+        m_seqtime->updateGeometry();
 
     if (not_nullptr(m_seqevent))
         m_seqevent->updateGeometry();
@@ -3087,89 +3114,7 @@ qseqeditframe64::update_draw_geometry()
 void
 qseqeditframe64::do_action (edit_action_t action, int var)
 {
-    switch (action)
-    {
-    case c_select_all_notes:
-        seq().select_all_notes();
-        break;
-
-    case c_select_inverse_notes:
-        seq().select_all_notes(true);
-        break;
-
-    case c_select_all_events:
-        seq().select_events(m_editing_status, m_editing_cc);
-        break;
-
-    case c_select_inverse_events:
-        seq().select_events(m_editing_status, m_editing_cc, true);
-        break;
-
-#ifdef USE_STAZED_ODD_EVEN_SELECTION
-
-    case c_select_even_notes:
-        seq().select_even_or_odd_notes(var, true);
-        break;
-
-    case c_select_odd_notes:
-        seq().select_even_or_odd_notes(var, false);
-        break;
-
-#endif
-
-#ifdef USE_STAZED_RANDOMIZE_SUPPORT
-
-    case c_randomize_events:
-        seq().randomize_selected(m_editing_status, m_editing_cc, var);
-        break;
-
-#endif
-
-    case c_quantize_notes:
-
-        /*
-         * sequence::quantize_events() is used in recording as well, so we do
-         * not want to incorporate sequence::push_undo() into it.  So we make
-         * a new function to do that.
-         */
-
-        seq().push_quantize(EVENT_NOTE_ON, 0, m_snap, 1, true);
-        break;
-
-    case c_quantize_events:
-        seq().push_quantize(m_editing_status, m_editing_cc, m_snap, 1);
-        break;
-
-    case c_tighten_notes:
-        seq().push_quantize(EVENT_NOTE_ON, 0, m_snap, 2, true);
-        break;
-
-    case c_tighten_events:
-        seq().push_quantize(m_editing_status, m_editing_cc, m_snap, 2);
-        break;
-
-    case c_transpose_notes:                     /* regular transpose    */
-        seq().transpose_notes(var, 0);
-        break;
-
-    case c_transpose_h:                         /* harmonic transpose   */
-        seq().transpose_notes(var, m_scale);
-        break;
-
-#ifdef USE_STAZED_COMPANDING
-
-    case c_expand_pattern:
-        seq().multiply_pattern(2.0);
-        break;
-
-    case c_compress_pattern:
-        seq().multiply_pattern(0.5);
-        break;
-#endif
-
-    default:
-        break;
-    }
+    seq().handle_edit_action(action, var);
     set_dirty();
 }
 

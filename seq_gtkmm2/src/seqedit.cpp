@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-05
+ * \updates       2018-08-10
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -226,36 +226,6 @@ int seqedit::m_initial_note_length          = SEQ64_DEFAULT_PPQN / 4;
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
 int seqedit::m_initial_chord = 0;
 #endif
-
-/**
- * Actions.  These variables represent actions that can be applied to a
- * selection of notes.  One idea would be to add a swing-quantize action.
- * We will reserve the value here, for notes only; not yet used or part of the
- * action menu.
- */
-
-enum edit_action_t
-{
-    c_select_all_notes         =  1,
-    c_select_all_events        =  2,
-    c_select_inverse_notes     =  3,
-    c_select_inverse_events    =  4,
-    c_quantize_notes           =  5,
-    c_quantize_events          =  6,
-#ifdef USE_STAZED_RANDOMIZE_SUPPORT
-    c_randomize_events         =  7,
-#endif
-    c_tighten_events           =  8,
-    c_tighten_notes            =  9,
-    c_transpose_notes          = 10,    /* basic transpose      */
-    c_reserved                 = 11,
-    c_transpose_h              = 12,    /* harmonic transpose   */
-    c_expand_pattern           = 13,
-    c_compress_pattern         = 14,
-    c_select_even_notes        = 15,
-    c_select_odd_notes         = 16,
-    c_swing_notes              = 17     /* swing quantize       */
-};
 
 /**
  *  Principal constructor.
@@ -573,10 +543,10 @@ seqedit::seqedit
     add_tooltip(m_toggle_q_rec, "If active, quantized record.");
 
     /*
-     * Provides a button to set the recording style to "legacy" (when looping,
-     * merge new incoming events into the patter), "overwrite" (replace events
-     * with incoming events), and "expand" (increase the size of the loop to
-     * accomodate new events).
+     * Provides a button to set the recording style to "legacy/merge" (when
+     * looping, merge new incoming events into the patter), "overwrite"
+     * (replace events with incoming events), and "expand" (increase the size
+     * of the loop to accomodate new events).
      */
 
     m_button_rec_type = manage(new Gtk::Button("Merge"));
@@ -699,7 +669,6 @@ seqedit::seqedit
      *
      * Not needed: m_seqroll_wid->set_ignore_redraw(false);
      */
-
 }
 
 /**
@@ -1153,100 +1122,16 @@ seqedit::popup_tool_menu ()
  *
  *  Note that the push_undo() calls push all of the current events (in
  *  sequence::m_events) onto the stack (as a single entry).
+ *
+ * \todo
+ *      Move this code into sequence (without the redraw call).
  */
 
 void
 seqedit::do_action (int action, int var)
 {
-    switch (action)
-    {
-    case c_select_all_notes:
-        m_seq.select_all_notes();
-        break;
-
-    case c_select_inverse_notes:
-        m_seq.select_all_notes(true);
-        break;
-
-    case c_select_all_events:
-        m_seq.select_events(m_editing_status, m_editing_cc);
-        break;
-
-    case c_select_inverse_events:
-        m_seq.select_events(m_editing_status, m_editing_cc, true);
-        break;
-
-#ifdef USE_STAZED_ODD_EVEN_SELECTION
-
-    case c_select_even_notes:
-        m_seq.select_even_or_odd_notes(var, true);
-        break;
-
-    case c_select_odd_notes:
-        m_seq.select_even_or_odd_notes(var, false);
-        break;
-
-#endif
-
-#ifdef USE_STAZED_RANDOMIZE_SUPPORT
-
-    case c_randomize_events:
-        m_seq.randomize_selected(m_editing_status, m_editing_cc, var);
-        break;
-
-#endif
-
-    case c_quantize_notes:
-
-        /*
-         * sequence::quantize_events() is used in recording as well, so we do
-         * not want to incorporate sequence::push_undo() into it.  So we make
-         * a new function to do that.
-         */
-
-        m_seq.push_quantize(EVENT_NOTE_ON, 0, m_snap, 1, true);
-        break;
-
-    case c_quantize_events:
-        m_seq.push_quantize(m_editing_status, m_editing_cc, m_snap, 1);
-        break;
-
-    case c_tighten_notes:
-        m_seq.push_quantize(EVENT_NOTE_ON, 0, m_snap, 2, true);
-        break;
-
-    case c_tighten_events:
-        m_seq.push_quantize(m_editing_status, m_editing_cc, m_snap, 2);
-        break;
-
-    case c_transpose:                           /* regular transpose    */
-        m_seq.transpose_notes(var, 0);
-        m_seq.set_dirty();                      /* updates perfedit     */
-        break;
-
-    case c_transpose_h:                         /* harmonic transpose   */
-        m_seq.transpose_notes(var, m_scale);
-        m_seq.set_dirty();                      /* updates perfedit     */
-        break;
-
-#ifdef USE_STAZED_COMPANDING
-
-    case c_expand_pattern:
-        m_seq.multiply_pattern(2.0);
-        break;
-
-    case c_compress_pattern:
-        m_seq.multiply_pattern(0.5);
-        break;
-#endif
-
-    default:
-        break;
-    }
-    m_seqroll_wid->redraw();
-    m_seqtime_wid->redraw();
-    m_seqdata_wid->redraw();
-    m_seqevent_wid->redraw();
+    m_seq.handle_edit_action(action, var);
+    redraw();
 }
 
 /**
@@ -2082,11 +1967,8 @@ seqedit::repopulate_mini_event_menu (int buss, int channel)
     bool program_change = false;
     bool channel_pressure = false;
     bool pitch_wheel = false;
-//  midibyte status, cc;
     midibyte status = 0, cc = 0;
     memset(ccs, false, sizeof(bool) * SEQ64_MIDI_COUNT_MAX);
-//  m_seq.reset_draw_marker();
-//  while (m_seq.get_next_event(status, cc))            /* used only here!  */
     event_list::const_iterator cev;
     m_seq.reset_ex_iterator(cev);                   /* reset_draw_marker()  */
     while (m_seq.get_next_event_ex(status, cc, cev))
@@ -2215,50 +2097,45 @@ seqedit::repopulate_mini_event_menu (int buss, int channel)
 }
 
 /**
- *
+ *  Pops up the menu for selecting Merge (legacy), Replace, or Expand loop
+ *  recording.
  */
 
 void
-seqedit::popup_record_menu()
+seqedit::popup_record_menu ()
 {
-    bool legacy = !
-    (
-        m_seq.overwrite_rec() ||
-        m_seqroll_wid->expanded_record()
-    );
+    bool merge = ! (m_seq.overwrite_recording() || m_seq.expanded_recording());
     m_menu_rec_type = manage(new Gtk::Menu());
     m_menu_rec_type->items().push_back
     (
         ImageMenuElem
         (
             "Merge notes in loop recording",
-            *create_menu_image(legacy),
+            *create_menu_image(merge),
             sigc::bind
             (
                 mem_fun(*this, &seqedit::set_rec_type), LOOP_RECORD_LEGACY
             )
         )
     );
-
     m_menu_rec_type->items().push_back
     (
         ImageMenuElem
         (
             "Replace notes in loop recording",
-            *create_menu_image(m_seq.overwrite_rec()),
+            *create_menu_image(m_seq.overwrite_recording()),
             sigc::bind
             (
                 mem_fun(*this, &seqedit::set_rec_type), LOOP_RECORD_OVERWRITE
             )
         )
     );
-
     m_menu_rec_type->items().push_back
     (
         ImageMenuElem
         (
             "Expand length in loop recording",
-            *create_menu_image(m_seqroll_wid->expanded_record()),
+            *create_menu_image(m_seq.expanded_recording()),
             sigc::bind
             (
                 mem_fun(*this, &seqedit::set_rec_type), LOOP_RECORD_EXPAND
@@ -2442,6 +2319,8 @@ seqedit::set_note_length (int notelength)
 void
 seqedit::set_scale (int scale)
 {
+    m_seq.set_editing(m_editing_status, m_editing_cc, m_snap, m_scale);
+
     m_entry_scale->set_text(c_scales_text[scale]);
     m_seqroll_wid->set_scale(scale);
     m_seqkeys_wid->set_scale(scale);
@@ -2769,10 +2648,7 @@ void
 seqedit::undo_callback ()
 {
     m_seq.pop_undo();
-    m_seqroll_wid->redraw();
-    m_seqtime_wid->redraw();
-    m_seqdata_wid->redraw();
-    m_seqevent_wid->redraw();
+    redraw();
 }
 
 /**
@@ -2784,10 +2660,7 @@ void
 seqedit::redo_callback ()
 {
     m_seq.pop_redo();
-    m_seqroll_wid->redraw();
-    m_seqtime_wid->redraw();
-    m_seqdata_wid->redraw();
-    m_seqevent_wid->redraw();
+    redraw();
 }
 
 /**
@@ -2853,7 +2726,7 @@ seqedit::set_rec_vol (int recvol)
 }
 
 /**
- *
+ *  Sets the value of the loop recording type to Merge, Replace, or Expand.
  */
 
 void
@@ -2864,29 +2737,28 @@ seqedit::set_rec_type (loop_record_t rectype)
     {
     case LOOP_RECORD_LEGACY:
 
-        m_seq.overwrite_rec(false);
-        m_seqroll_wid->expanded_recording(false);
+        m_seq.overwrite_recording(false);
+        m_seq.expanded_recording(false);
         break;
 
     case LOOP_RECORD_OVERWRITE:
 
-        m_seq.overwrite_rec(true);
-        m_seqroll_wid->expanded_recording(false);
+        m_seq.overwrite_recording(true);
+        m_seq.expanded_recording(false);
         label = "Replace";
         break;
 
     case LOOP_RECORD_EXPAND:
 
-        m_seq.overwrite_rec(false);
-        m_seqroll_wid->expanded_recording(true);
+        m_seq.overwrite_recording(false);
+        m_seq.expanded_recording(true);
         label = "Expand";
         break;
 
     default:
 
         /*
-         * We could also offer a true-true setting to overwrite and expand.
-         * :-)
+         * Could offer a true-true setting to overwrite and expand.  :-)
          */
 
         break;
@@ -2917,6 +2789,7 @@ seqedit::set_data_type (midibyte status, midibyte control)
 {
     m_editing_status = status;
     m_editing_cc = control;
+    m_seq.set_editing(status, control, m_snap, m_scale);
     m_seqevent_wid->set_data_type(status, control);
     m_seqdata_wid->set_data_type(status, control);
     m_seqroll_wid->set_data_type(status, control);
@@ -2973,36 +2846,22 @@ seqedit::timeout ()
         m_seq.set_raise(false);
         raise();
     }
-    m_seqroll_wid->draw_progress_on_window();
-
-#if 0
-    /*
-     * Seq32 has this, but we are not sure why it is needed.
-     * The set_active call triggers the button callback.
-     */
-
-    if (perf().get_sequence_record())
-    {
-        perf().set_sequence_record(false);
-        m_toggle_record->set_active(! m_toggle_record->get_active());
-    }
-#endif
 
     bool expandrec = m_seq.expand_recording();
     if (expandrec)
     {
         set_measures(get_measures() + 1);
-        m_seqroll_wid->follow_progress();
+        m_seqroll_wid->follow_progress();       /* keep up with progress    */
     }
     else if (perf().follow_progress())
         m_seqroll_wid->follow_progress();       /* keep up with progress    */
 
     if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */
-    {
-        m_seqroll_wid->redraw_events();
-        m_seqevent_wid->redraw();
-        m_seqdata_wid->redraw();
-    }
+        redraw(true);
+
+    if (perf().follow() && ! expandrec)
+        m_seqroll_wid->follow_progress();
+
     m_seqroll_wid->draw_progress_on_window();
 
     bool undo_on = m_button_undo->get_sensitive();
@@ -3089,8 +2948,6 @@ seqedit::handle_close ()
      * perf().master_bus().set_sequence_input(false, nullptr);
      */
 
-//  perf().master_bus().set_sequence_input(false, &m_seq);
-
     perf().set_sequence_input(false, &m_seq);
     m_seq.set_recording(false);
     m_seq.set_editing(false);
@@ -3115,6 +2972,28 @@ seqedit::stop_playing()
 }
 
 #endif
+
+/**
+ *  Encapsulates the redraw calls for the seqroll, seqtime, seqdata, and
+ *  seqevent panes.
+ *
+ * \param drawevents
+ *      If true, call seqroll::redraw_events() rather than seqroll::redraw().
+ *      This is a sop until we can clean up the redrawing processes.
+ */
+
+void
+seqedit::redraw (bool drawevents)
+{
+    if (drawevents)
+        m_seqroll_wid->redraw_events();
+    else
+        m_seqroll_wid->redraw();
+
+    m_seqtime_wid->redraw();
+    m_seqdata_wid->redraw();
+    m_seqevent_wid->redraw();
+}
 
 /**
  *  On realization, calls the base-class version, and connects the redraw

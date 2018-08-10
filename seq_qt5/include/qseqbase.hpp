@@ -741,7 +741,6 @@ protected:
         m_total_height = v;
     }
 
-
 protected:
 
     void set_scroll_x (int x);

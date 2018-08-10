@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-08-05
+ * \updates       2018-08-08
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -117,6 +117,36 @@ enum loop_record_t
     LOOP_RECORD_LEGACY = 0, /**< Incoming events are merged into the loop.  */
     LOOP_RECORD_OVERWRITE,  /**< Incoming events overwrite the loop.        */
     LOOP_RECORD_EXPAND      /**< Incoming events increase size of loop.     */
+};
+
+/**
+ * Actions.  These variables represent actions that can be applied to a
+ * selection of notes.  One idea would be to add a swing-quantize action.
+ * We will reserve the value here, for notes only; not yet used or part of the
+ * action menu.
+ */
+
+enum edit_action_t
+{
+    c_select_all_notes         =  1,
+    c_select_all_events        =  2,
+    c_select_inverse_notes     =  3,
+    c_select_inverse_events    =  4,
+    c_quantize_notes           =  5,
+    c_quantize_events          =  6,
+#ifdef USE_STAZED_RANDOMIZE_SUPPORT
+    c_randomize_events         =  7,
+#endif
+    c_tighten_events           =  8,
+    c_tighten_notes            =  9,
+    c_transpose_notes          = 10,    /* basic transpose      */
+    c_reserved                 = 11,
+    c_transpose_h              = 12,    /* harmonic transpose   */
+    c_expand_pattern           = 13,
+    c_compress_pattern         = 14,
+    c_select_even_notes        = 15,
+    c_select_odd_notes         = 16,
+    c_swing_notes              = 17     /* swing quantize       */
 };
 
 /**
@@ -456,6 +486,15 @@ private:
     bool m_raise;
 
     /**
+     *  Set by seqedit for the handle_action() function to use.
+     */
+
+    midibyte m_status;
+    midibyte m_cc;
+    midipulse m_snap;         // replace m_snap_tick???
+    int m_scale;
+
+    /**
      *  Provides the name/title for the sequence.
      */
 
@@ -656,6 +695,14 @@ public:
     ~sequence ();
 
     void partial_assign (const sequence & rhs);
+
+    void set_editing (midibyte status, midibyte cc, midipulse snap, int scale)
+    {
+        m_status = status;
+        m_cc = cc;
+        m_snap = snap;
+        m_scale = scale;
+    }
 
     /**
      * \getter m_events
@@ -1265,7 +1312,7 @@ public:
      * \setter m_expanded_recording
      */
 
-    bool expanded_record ()
+    bool expanded_recording ()
     {
         return m_expanded_recording;
     }
@@ -1805,13 +1852,13 @@ public:
         return m_channel_match;
     }
 
-    void overwrite_rec (bool ovwr);
+    void overwrite_recording (bool ovwr);
 
     /**
      * \getter m_overwrite_recording
      */
 
-    bool overwrite_rec ()
+    bool overwrite_recording ()
     {
         return m_overwrite_recording;
     }
@@ -1828,12 +1875,16 @@ public:
     }
 
     midipulse handle_size (midipulse start, midipulse finish);
+    void handle_edit_action (int action, int var);
+
+    bool check_loop_reset ();
 
 private:
 
     bool event_in_range
     (
-        const event & e, midibyte status, midipulse tick_s, midipulse tick_f
+        const event & e, midibyte status,
+        midipulse tick_s, midipulse tick_f
     ) const;
 
     void set_parent (perform * p);

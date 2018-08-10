@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-10
+ * \updates       2018-08-10
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -263,6 +263,18 @@ protected:
     int m_progress_x;
 
     /**
+     *  Provides the old location of the progress bar.
+     */
+
+    int m_old_progress_x;
+
+    /**
+     *  Provides the previous scroll value.
+     */
+
+    int m_last_scroll;
+
+    /**
      *  The horizontal value of the scroll window in units of
      *  ticks/pulses/divisions.
      */
@@ -330,12 +342,10 @@ protected:
     bool m_drawing_background_seq;
 
     /**
-     *  Provides an option for expanding the number of measures while
-     *  recording.  In essence, the "infinite" track we've wanted, thanks
-     *  to Stazed and his Seq32 project.  Defaults to false.
+     *  From Seq32 ?
      */
 
-    bool m_expanded_recording;
+    bool m_ignore_redraw;
 
     /**
      *  The current status/event selected in the seqedit.  Not used in seqroll
@@ -405,15 +415,10 @@ public:
 
     bool add_note (midipulse tick, int note, bool paint = true);
 
-    /*
-     * \setter m_ignore_redraw
-     *
-     *  void set_ignore_redraw (bool ignore)
-     *  {
-     *      m_ignore_redraw = ignore;
-     *  }
-     *
-     */
+    void set_ignore_redraw (bool ignore)
+    {
+        m_ignore_redraw = ignore;
+    }
 
     void set_key (int key);
     void set_scale (int scale);
@@ -460,24 +465,6 @@ public:
 
     void complete_paste (int x, int y);
     void follow_progress ();
-
-    /**
-     * \getter m_expanded_recording
-     */
-
-    void expanded_recording (bool expand)
-    {
-        m_expanded_recording = expand;
-    }
-
-    /**
-     * \setter m_expanded_recording
-     */
-
-    bool expanded_record ()
-    {
-        return m_expanded_recording;
-    }
 
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
 

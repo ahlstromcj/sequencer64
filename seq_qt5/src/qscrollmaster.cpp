@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-06-18
- * \updates       2018-07-27
+ * \updates       2018-08-10
  * \license       GNU GPLv2 or above
  *
  * Other useful QScrollBar functions:
@@ -45,15 +45,11 @@
  * support them.
  */
 
-/*
- * Do not document a namespace.  It breaks Doxygen.
-
-namespace seq64
-{
- */
-
 /**
+ *  Constructor.
  *
+ * \param qf
+ *      Provides the "parent" of this object.
  */
 
 qscrollmaster::qscrollmaster (QWidget * qf)
@@ -79,7 +75,7 @@ qscrollmaster::~qscrollmaster ()
 
 /**
  *  This override of a QScrollArea virtual member function
- *  odifies any attached/listed scrollbars and then calls the base-class
+ *  modifies any attached/listed scrollbars and then calls the base-class
  *  version of this function.
  *
  * \param dx
@@ -94,6 +90,10 @@ qscrollmaster::~qscrollmaster ()
 void
 qscrollmaster::scrollContentsBy (int dx, int dy)
 {
+#ifdef PLATFORM_DEBUG_TMI
+    printf("scrollContentsBy(%d, %d)\n", dx, dy);
+#endif
+
     if (! m_v_scrollbars.empty())
     {
         int vvalue = m_self_v_scrollbar->value();
@@ -123,10 +123,6 @@ qscrollmaster::scrollContentsBy (int dx, int dy)
     }
     QScrollArea::scrollContentsBy(dx, dy);
 }
-
-/*
-}               // namespace seq64
- */
 
 /*
  * qscrollmaster.cpp

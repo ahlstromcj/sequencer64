@@ -606,10 +606,8 @@ public:
      *  parameter.
      *
      * \param modtick
-     *      The tick value to mod the timestamp against.
-     *
-     * \return
-     *      Returns a value ranging from 0 to _mod-1.
+     *      The tick value to mod the timestamp against.  Usually the length
+     *      of the pattern receiving this event.
      */
 
     void mod_timestamp (midipulse modtick)

@@ -492,7 +492,7 @@ measurestring_to_pulses
  *      m == number of measures
  *      B == beats per measure (constant)
  *      P == pulses per quarter-note (constant)
- *      W == beat width in beats per measure (constant)
+ *      W == beat width in beats per measure (constant) [NOT CORRECT]
  *
  *  Note that the 0-pulse MIDI measure is "1:1:0", which means "at the
  *  beginning of the first beat of the first measure, no pulses'.  It is not

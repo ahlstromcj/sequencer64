@@ -782,7 +782,7 @@ mastermidibase::set_sequence_input (bool state, sequence * seq)
  *
  *  If we have more than one sequence recording, and the channel-match feature
  *  [the sequence::channels_match() function] is disabled, then only the first
- *  sequence will get the events.  So now we add an addition call to the new
+ *  sequence will get the events.  So now we add an additional call to the new
  *  sequence::channel_match() function.
  *
  * \param ev

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-05
+ * \updates       2018-08-06
  * \license       GNU GPLv2 or above
  *
  *  Please see the additional notes for the Gtkmm-2.4 version of this panel,
@@ -90,7 +90,7 @@ qseqroll::qseqroll
     m_note_length           (p.get_ppqn() * 4 / 16),
     m_background_sequence   (0),
     m_drawing_background_seq (false),
-    m_expanded_recording    (false),
+//  m_expanded_recording    (false),
     m_status                (0),
     m_cc                    (0),
     m_edit_mode             (mode),
@@ -185,16 +185,9 @@ qseqroll::conditional_update ()
 {
     if (needs_update())
     {
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-        bool expandrec = seq().expand_recording();
-        if (expandrec)
-        {
-            set_measures(get_measures() + 1);
-            follow_progress();
-        }
-        else if (perf().follow_progress())
+        if (progress_follow())
             follow_progress();              /* keep up with progress    */
-#endif
+
         update();
     }
 }
@@ -383,7 +376,6 @@ qseqroll::paintEvent (QPaintEvent *)
      *  scroll-offset x value.
      */
 
-    static bool s_loop_in_progress = false;     /* indicates when to reset  */
     int prog_x = old_progress_x();
     pen.setColor(Qt::red);                      // draw the playhead
     pen.setStyle(Qt::SolidLine);
@@ -402,6 +394,13 @@ qseqroll::paintEvent (QPaintEvent *)
     painter.drawLine(prog_x, 0, prog_x, wh * 8);    // why * 8?
     old_progress_x(seq().get_last_tick() / zoom() + c_keyboard_padding_x);
 
+    /*
+     * It would be easier to use ticks here, rather than x values.
+     */
+
+#if 0
+
+    static bool s_loop_in_progress = false;     /* indicates when to reset  */
     if (old_progress_x() > c_keyboard_padding_x)
     {
         s_loop_in_progress = true;
@@ -414,6 +413,8 @@ qseqroll::paintEvent (QPaintEvent *)
             s_loop_in_progress = false;
         }
     }
+
+#endif
 
     /*
      * End of draw_progress_on_window()

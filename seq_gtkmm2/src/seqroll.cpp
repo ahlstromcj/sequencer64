@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-06
+ * \updates       2018-08-10
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -213,6 +213,8 @@ seqroll::seqroll
     m_move_delta_y          (0),
     m_move_snap_offset_x    (0),        /* used in fruityseqroll            */
     m_progress_x            (0),
+    m_old_progress_x        (0),        // new 2018-08-07
+    m_last_scroll           (0),        // new 2018-08-07
     m_scroll_offset_ticks   (0),
     m_scroll_offset_key     (0),
     m_scroll_offset_x       (0),
@@ -225,7 +227,7 @@ seqroll::seqroll
     m_trans_button_press    (false),
     m_background_sequence   (0),
     m_drawing_background_seq(false),
-    m_expanded_recording    (false),
+    m_ignore_redraw         (false),
     m_status                (0),
     m_cc                    (0)
 {
@@ -357,6 +359,10 @@ seqroll::set_scroll_y ()
 /**
  *  Change the horizontal scrolling offset and redraw.  Roughly similar to
  *  seqevent::change_horz().
+ *
+ *  Update_and_draw() is meant to replace calls to update_background();
+ *  update_pixmap(); and force_draw().  The m_ignore_redraw (from Seq32?) is
+ *  no longer checked before calling these functions.
  */
 
 void
@@ -416,24 +422,29 @@ seqroll::redraw ()
 void
 seqroll::update_and_draw (int force)
 {
-    update_background();
-    update_pixmap();
-    if (force)
-        force_draw();
-    else
-        queue_draw();
+    if (! m_ignore_redraw)
+    {
+        update_background();
+        update_pixmap();
+        if (force)
+            force_draw();
+        else
+            queue_draw();
+    }
 }
 
 /**
- *  Redraws events unless m_ignore_redraw is true.  Actually, that member is
- *  not needed and no longer exists.
+ *  Redraws events unless m_ignore_redraw is true.
  */
 
 void
 seqroll::redraw_events ()
 {
-    update_pixmap();
-    force_draw();
+    if (! m_ignore_redraw)
+    {
+        update_pixmap();
+        force_draw();
+    }
 }
 
 /**
@@ -693,38 +704,36 @@ seqroll::update_pixmap ()
 void
 seqroll::draw_progress_on_window ()
 {
-    static bool s_loop_in_progress = false;     /* indicates when to reset  */
-
-    /*
-     * If this test is used, then when not running, the overwrite
-     * functionality of recording will not work: if (perf().is_running())
-     */
-
+    int progx;
     if (usr().progress_bar_thick())
     {
-        draw_drawable(m_progress_x-1, 0, m_progress_x-1, 0, 2, m_window_y);
+        progx = m_old_progress_x - 1;
+        draw_drawable(progx, 0, progx, 0, 2, m_window_y);
         set_line(Gdk::LINE_SOLID, 2);
     }
     else
-        draw_drawable(m_progress_x, 0, m_progress_x, 0, 1, m_window_y);
-
-    m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
+    {
+        progx = m_old_progress_x;
+        draw_drawable(progx, 0, progx, 0, 1, m_window_y);
+    }
 
     /*
-     * It would be easier to use ticks here, rather than x values.
+     * More from Seq32
      */
 
-    if (m_progress_x > 0)
+    int last_progress = m_old_progress_x;
+    if (m_last_scroll < m_scroll_offset_x)
     {
-        s_loop_in_progress = true;
+        last_progress -= m_scroll_offset_x;
+        m_last_scroll = m_scroll_offset_x;
     }
-    else
+
+    m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
+    m_old_progress_x = m_progress_x;
+    if (m_old_progress_x < last_progress)
     {
-        if (s_loop_in_progress)
-        {
-            m_seq.loop_reset(true);             /* for overwrite recording  */
-            s_loop_in_progress = false;
-        }
+        m_seq.loop_reset(true);             /* for overwrite recording     */
+        m_last_scroll = 0;
     }
 
     /*
@@ -732,12 +741,10 @@ seqroll::draw_progress_on_window ()
      * progress bar to be drawn.
      */
 
-    if (m_progress_x != 0)      /* m_progress_x > -16, m_progress_x >= 0    */
+    if (m_old_progress_x != 0)
     {
-        draw_line
-        (
-            progress_color(), m_progress_x, 0, m_progress_x, m_window_y
-        );
+        int progx = m_old_progress_x;           /* m_progress_x     */
+        draw_line(progress_color(), progx, 0, progx, m_window_y);
         if (usr().progress_bar_thick())
             set_line(Gdk::LINE_SOLID, 1);
     }
@@ -764,7 +771,7 @@ seqroll::draw_progress_on_window ()
 void
 seqroll::follow_progress ()
 {
-    if (m_expanded_recording && m_seq.get_recording())
+    if (m_seq.expanded_recording())
     {
         double hmaxvalue = m_seq.get_length() - m_window_x * m_zoom;
         m_hadjust.set_value(hmaxvalue);
@@ -772,15 +779,13 @@ seqroll::follow_progress ()
     else                                        /* use for non-recording */
     {
         midipulse progtick = m_seq.get_last_tick();
-        if (progtick > 0) // && m_progress_follow)
+        if (progtick > 0)
         {
             int progress_x = progtick / m_zoom + SEQ64_PROGRESS_PAGE_OVERLAP;
             int page = progress_x / m_window_x;
-            if
-            (
-                page != m_scroll_page ||
-                (page == 0 && m_hadjust.get_value() != 0)  // NEW CHECK
-            )
+            bool newpage = page != m_scroll_page;
+            bool firstscroll = (page == 0 && m_hadjust.get_value() != 0) ;
+            if (newpage || firstscroll)
             {
                 double pagesize = m_hadjust.get_page_size();
                 double upper = m_hadjust.get_upper();
@@ -857,7 +862,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
         {
 #ifdef SEQ64_SEQROLL_DRAW_TEMPO
             bool istempo = dt == DRAW_TEMPO;
-            bool do_draw = true;                    /* dt != DRAW_TEMPO;    */
+            bool do_draw = true;
 #else
             bool do_draw = dt != DRAW_TEMPO;
 #endif
@@ -871,8 +876,8 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
             if (do_draw)
             {
                 int note_width;
-                int note_off_width = 0;             /* for wrapped Note Off    */
-                int note_x = tick_s / m_zoom;       /* turn into screen coords */
+                int note_off_width = 0;         /* for wrapped Note Off     */
+                int note_x = tick_s / m_zoom;   /* turn into screen coords  */
                 int note_y = c_rollarea_y - (note * c_key_y) - c_key_y + 1;
                 int note_height = c_key_y - 3;
                 int in_shift = 0;
@@ -1758,7 +1763,7 @@ seqroll::button_release (GdkEventButton * ev)
     int delta_y = m_current_y - m_drop_y;
     midipulse delta_tick;
     int delta_note;
-    m_seqkeys_wid.set_listen_button_release(ev);    /* stazed: turn play off */
+    m_seqkeys_wid.set_listen_button_release(ev);    /* stazed turn play off */
     if (SEQ64_CLICK_LEFT(ev->button))
     {
         if (m_selecting)
@@ -1785,7 +1790,7 @@ seqroll::button_release (GdkEventButton * ev)
              * adjust.
              */
 
-            delta_x -= m_move_snap_offset_x;      /* adjust for snap */
+            delta_x -= m_move_snap_offset_x;        /* adjust for snap      */
             convert_xy(delta_x, delta_y, delta_tick, delta_note);
             delta_note -= c_num_keys - 1;
             m_seq.move_selected_notes(delta_tick, delta_note);
@@ -1907,7 +1912,7 @@ seqroll::motion_notify (GdkEventMotion * ev)
 
 #ifdef USE_UNREADY_NEW_FUNCTIONS
 
-/*
+/**
  *  Sets the hint key based on the current mouse position.
  */
 
@@ -1921,7 +1926,7 @@ seqroll::set_hint_note ()
     m_seqkeys_wid.set_hint_key(note);
 }
 
-/*
+/**
  *  Adds a note based on the current mouse position.
  */
 

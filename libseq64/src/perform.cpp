@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-08-05
+ * \updates       2018-08-06
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -4808,7 +4808,7 @@ perform::overwrite_recording (bool oactive, int seq, bool toggle)
     if (not_nullptr(s))
     {
         if (toggle)
-            oactive = ! s->overwrite_rec();
+            oactive = ! s->overwrite_recording();
 
         /*
          * On overwrite, the sequence will reset no matter what is here.
@@ -4817,7 +4817,7 @@ perform::overwrite_recording (bool oactive, int seq, bool toggle)
         if (oactive)
             s->loop_reset(true);
 
-        s->overwrite_rec(oactive);
+        s->overwrite_recording(oactive);
     }
 }
 

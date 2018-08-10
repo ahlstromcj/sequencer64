@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-05
+ * \updates       2018-08-10
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -136,6 +136,10 @@ sequence::sequence (int ppqn)
     m_dirty_names               (true),
     m_editing                   (false),
     m_raise                     (false),
+    m_status                    (0),
+    m_cc                        (0),
+    m_snap                      (0),
+    m_scale                     (0),
     m_name                      (),
     m_last_tick                 (0),
     m_queued_tick               (0),            /* used by perform::play()  */
@@ -496,7 +500,12 @@ sequence::calculate_measures () const
 }
 
 /**
- *  Encapsulates a calculation needed in the new qseqbase class.
+ *  Encapsulates a calculation needed in the new qseqbase class.  We could
+ *  just assume m_unit_measures is always up-to-date and use that value.
+ *
+ * \return
+ *      Returns the whole number of measure in the current length of the
+ *      sequence.  Essentially rounds up if there is some leftover ticks.
  */
 
 int
@@ -3317,6 +3326,26 @@ sequence::add_event
 }
 
 /**
+ *  Handles loop/replace status on behalf of seqrolls.
+ */
+
+bool
+sequence::check_loop_reset ()
+{
+    bool result = false;
+    if (m_overwrite_recording)
+    {
+        midipulse tstamp = m_parent->get_tick() % m_length;
+        if (tstamp < (m_ppqn / 4))
+        {
+            loop_reset(true);
+            result = true;
+        }
+    }
+    return result;
+}
+
+/**
  *  Streams the given event.  The event's timestamp is adjusted, if needed.
  *  If recording:
  *
@@ -3372,13 +3401,14 @@ sequence::stream_event (event & ev)
          *      how?
          */
 
-        if (overwrite_rec() && loop_reset())
+        if (overwrite_recording() && loop_reset())
         {
             loop_reset(false);
             remove_all();                       /* clear old items          */
+            // set_dirty(); ???
         }
         ev.set_status(ev.get_status());         /* clear the channel nybble */
-        ev.mod_timestamp(m_length);             /* adjust the tick          */
+        ev.mod_timestamp(m_length);             /* adjust tick re length    */
         if (m_recording)
         {
             if (m_parent->is_pattern_playing()) /* m_parent->is_running()   */
@@ -5030,7 +5060,7 @@ sequence::set_snap_tick (int st)
  */
 
 void
-sequence::overwrite_rec (bool ovwr)
+sequence::overwrite_recording (bool ovwr)
 {
     automutex locker(m_mutex);
     m_overwrite_recording = ovwr;
@@ -6013,7 +6043,6 @@ sequence::resume_note_ons (midipulse tick)
 /**
  *  Makes a calculation for expanded recording, used in seqedit and qseqroll.
  *  This is the way Seq32 does it now, and it seems to work for Sequencer64.
- *  However, the hardwired "4" is suspicious.
  *
  * \return
  *      Returns true if we are recording, expanded-record is enabled,
@@ -6024,10 +6053,22 @@ sequence::resume_note_ons (midipulse tick)
 bool
 sequence::expand_recording () const
 {
-    bool result = m_recording && m_expanded_recording;
-    if (result)
-        result = m_last_tick >= (m_length - get_unit_measure() / 4);
-
+    bool result = false;
+    if (m_recording && m_expanded_recording)
+    {
+        midipulse tstamp = m_last_tick;     // m_parent->get_tick() % m_length;
+        if (tstamp >= (m_length - get_unit_measure() / 4))
+        {
+#ifdef PLATFORM_DEBUG_TMI
+            printf
+            (
+                "tick %ld >= length %ld - measure %ld / 4\n",
+                tstamp, m_length, get_unit_measure()
+            );
+#endif
+            result = true;
+        }
+    }
     return result;
 }
 
@@ -6044,6 +6085,106 @@ sequence::get_num_measures ()
         ++measures;
 
     return measures;
+}
+
+/**
+ *  Implements the actions brought forth from the Tools (hammer) button.
+ *
+ *  Note that the push_undo() calls push all of the current events (in
+ *  sequence::m_events) onto the stack (as a single entry).
+ *
+ * \todo
+ *      Move this code into sequence (without the redraw call).
+ */
+
+void
+sequence::handle_edit_action (int action, int var)
+{
+    switch (action)
+    {
+    case c_select_all_notes:
+        select_all_notes();
+        break;
+
+    case c_select_inverse_notes:
+        select_all_notes(true);
+        break;
+
+    case c_select_all_events:
+        select_events(m_status, m_cc);
+        break;
+
+    case c_select_inverse_events:
+        select_events(m_status, m_cc, true);
+        break;
+
+#ifdef USE_STAZED_ODD_EVEN_SELECTION
+
+    case c_select_even_notes:
+        select_even_or_odd_notes(var, true);
+        break;
+
+    case c_select_odd_notes:
+        select_even_or_odd_notes(var, false);
+        break;
+
+#endif
+
+#ifdef USE_STAZED_RANDOMIZE_SUPPORT
+
+    case c_randomize_events:
+        randomize_selected(m_status, m_cc, var);
+        break;
+
+#endif
+
+    case c_quantize_notes:
+
+        /*
+         * sequence::quantize_events() is used in recording as well, so we do
+         * not want to incorporate sequence::push_undo() into it.  So we make
+         * a new function to do that.
+         */
+
+        push_quantize(EVENT_NOTE_ON, 0, m_snap, 1, true);
+        break;
+
+    case c_quantize_events:
+        push_quantize(m_status, m_cc, m_snap, 1);
+        break;
+
+    case c_tighten_notes:
+        push_quantize(EVENT_NOTE_ON, 0, m_snap, 2, true);
+        break;
+
+    case c_tighten_events:
+        push_quantize(m_status, m_cc, m_snap, 2);
+        break;
+
+    case c_transpose:                           /* regular transpose    */
+        transpose_notes(var, 0);
+        set_dirty();                            /* updates perfedit     */
+        break;
+
+    case c_transpose_h:                         /* harmonic transpose   */
+        transpose_notes(var, m_scale);
+        set_dirty();                            /* updates perfedit     */
+        break;
+
+#ifdef USE_STAZED_COMPANDING
+
+    case c_expand_pattern:
+        multiply_pattern(2.0);
+        break;
+
+    case c_compress_pattern:
+        multiply_pattern(0.5);
+        break;
+#endif
+
+    default:
+        break;
+    }
 }
 
 }           // namespace seq64

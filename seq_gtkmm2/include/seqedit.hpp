@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-02
+ * \updates       2018-08-08
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -414,6 +414,7 @@ public:
 
 private:
 
+    void redraw (bool drawevents = false);
     void set_zoom (int zoom);
     void set_snap (int snap);
     void set_note_length (int note_length);

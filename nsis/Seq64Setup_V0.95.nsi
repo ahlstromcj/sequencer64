@@ -3,20 +3,23 @@
 ; File:         Seq64Setup_V0.95.nsi
 ; Author:       Chris Ahlstrom
 ; Date:         2018-05-26
-; Updated:      2018-05-29
-; Version:      0.95.0
+; Updated:      2018-08-12
+; Version:      0.95.1
 ;
 ;       Installation is silent.
 ;
 ; Usage of this script:
 ;
-;    -  Obtain and install the NSIS 2.46 installer from
+;    -  Obtain and install the NSIS 2.46 (or above) installer from
 ;       http://nsis.sourceforge.net/Download
-;    -  Check out the latest branch project from Git.
+;    -  In Windows, Check out the latest branch project from Git.  Or
+;       make a source package using the handy "pack" script on Linux,
+;       and copy the source package to your Windows system, and unpack it
+;       there.
 ;    -  In the project directory, on the command-line, run the following
 ;       command to build the Release version of Seq64 using qmake and make,
 ;       and to create a 7-Zip "release" package that can be unpacked in
-;       the root "sequencer64" directory:
+;       the root "sequencer64" directory.
 ;
 ;           $ build_release_package.bat
 ;
@@ -31,8 +34,10 @@
 ;               "Test Installer" button in the NSIS window.
 ;           -   When you get to the "Choose Install Location" window, you can
 ;               use "C" and test the installation.
-;       -   Linux:
-;           -   TODO
+;       -   Linux: The program that creates Windows installers on Linux is
+;           'makensis'.
+;           -   The actual build is done on Windows.
+;           -   Change to the "xxxx" directory
 ;    -  The installer package is located at "...."
 ;       -   Select the defaults and let the installer do its thing.
 ;    -  To uninstall the application, use Settings /

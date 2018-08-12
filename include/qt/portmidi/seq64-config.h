@@ -416,7 +416,7 @@
 
 /* Version number of package */
 #ifndef SEQ64_VERSION
-#define SEQ64_VERSION "0.94.8"
+#define SEQ64_VERSION "0.95.1"
 #endif
 
 /* Indicates limited Windows support */

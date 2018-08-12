@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.95.1 and above
 Chris Ahlstrom
-2015-09-10 to 2018-08-11
+2015-09-10 to 2018-08-12
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -205,6 +205,11 @@ Qmake-based Install:
     Currently, we have tried only using the "mingw" tools in Windows, not the
     "msvc" (Microsoft) tools.  For debugging, gdb can be used, but QtCreator
     is an easier debugging interface.
+
+    To create an installer package for Windows, see the instructions at the
+    top of the "nsis/Seq64Setup_V0.95.nsi" file. One can build the Sequencer64
+    application in Windows, and then build the installer for it in Windows or
+    Linux!
 
 CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 
@@ -673,17 +678,19 @@ DEPENDENCIES:
 
     Avoid use of AC_CYGWIN and AC_MINGW32.
 
-    https://mail.gnome.org/archives/commits-list/2013-January/msg03009.html
-    https://www.gnu.org/software/autoconf/manual/autoconf-2.69/html_node/Obsolete-Macros.html
-    http://mingw-cross.sourceforge.net/hello_autotools.html#mingw
+https://mail.gnome.org/archives/commits-list/2013-January/msg03009.html
 
-        https://www.tinc-vpn.org/examples/cross-compiling-windows-binary/
+https://www.gnu.org/software/autoconf/manual/autoconf-2.69/html_node/Obsolete-Macros.html
 
-        https://wiki.wxwidgets.org/Compiling_wxWidgets_with_MinGW
+http://mingw-cross.sourceforge.net/hello_autotools.html#mingw
 
-        https://github.com/Alexpux/MINGW-packages/blob/master/mingw-w64-gimp/PKGBUILD
+https://www.tinc-vpn.org/examples/cross-compiling-windows-binary/
 
-        https://mail.gnome.org/archives/gimp-developer-list/2016-March/msg00014.html
+https://wiki.wxwidgets.org/Compiling_wxWidgets_with_MinGW
+
+https://github.com/Alexpux/MINGW-packages/blob/master/mingw-w64-gimp/PKGBUILD
+
+https://mail.gnome.org/archives/gimp-developer-list/2016-March/msg00014.html
 
    JACK Testing (optional):
 

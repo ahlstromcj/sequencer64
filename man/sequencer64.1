@@ -1,4 +1,4 @@
-.TH Sequencer64 "June 3 2018" "Version 0.95.1" "Sequencer64 Manual Page"
+.TH Sequencer64 "August 12 2018" "Version 0.95.1" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real-time live MIDI sequencer refactored from Seq24
@@ -66,10 +66,12 @@ The same as the --bus option, just for oldsters to use.
 
 .TP 8
 .B \-q p, \-\-ppqn p
-Supports modifying the PPQN value of Sequencer64, which is currently hardwired
+Supports modifying the PPQN value of Sequencer64, which defaults
 to a value of 192.  This setting should allow MIDI files to play back at the
-proper speed, and be written with the new PPQN value.  This feature is STILL IN
-PROGRESS, and undependable.
+proper speed, and be written with the new PPQN value.  The support values for
+PPQN (p) are 0 and 32 to 19200.  The value of 0 is special.  It indicates
+that the Sequencer64 internal PPQN should be set to the value that
+is present in the current MIDI file.
 
 .TP 8
 .B \-L, \-\-lash
@@ -255,9 +257,17 @@ exits.  If it does exist, it will be rewritten with the current configuration
 of Sequencer64.  Note that the --legacy option causes the old
 configuration-file names to be used.
 
+.SH BUGS
+Sequencer64 has them.  See 
+.UR https://github.com/ahlstromcj/sequencer64/issues
+for the reported bugs.  We take pride in hiding a few more :-D.
+
 .SH SUGGESTIONS AND BUG REPORTS
 Any bugs found should be reported to the upstream author and/or package 
-maintainer.
+maintainer.  See the link in the previous section.
+
+.SH HOMEPAGE
+.UR https://github.com/ahlstromcj/sequencer64/
 
 .SH OTHER INFO
 --ppqn works, but be aware that it may have bugs.  If a MIDI file is re-saved,
@@ -272,6 +282,11 @@ the https://github.com/ahlstromcj/sequencer64-doc.git URL.
 The old Seq24 project homepage is at <http://www.filter24.org/seq24/>, and the
 new one is at <https://edge.launchpad.net/seq24/>.  It is released under the
 GNU GPL license.  Sequencer64 is also released under the GNU GPL license.
+
+.SH SEE ALSO
+There are no man-pages yet for the "rc" and "usr" configuration files.
+However, when Sequencer64 is first run, these files are saved in
+$HOME/.config/sequencer64, and they are fairly self-documenting.
 
 .SH AUTHOR
 Sequencer64 was written by Chris Ahlstrom <ahlstromcj@gmail.com>, with

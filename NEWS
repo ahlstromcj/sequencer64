@@ -1,6 +1,6 @@
 NEWS for Sequencer64 0.95.1
 Chris Ahlstrom
-2015-07-10 to 2018-07-22
+2015-07-10 to 2018-08-12
 
 This file collects major changes that are older and clutter up
 the README file.  This file should be called "OLD NEWS".
@@ -29,7 +29,29 @@ Pull Request #150 from user jfrey-xx:
         control nor GUI.
     -	Biggest change: the MIDI control "reserved for expansion" is now used
         to set the "replace" flag while recording.
-
+    -   Version 0.94.8:
+        -   Fixed issues with configure.ac.
+        -   Added Qt "pro" files to support qmake and Qt Creator to make
+            a PortMidi build for Linux/Windows.
+        -   Added full-path handling to recent-files feature and fixed issues
+            with it.
+        -   Improved the log-file handling and added it to all versions of the
+            application.  Added reroute_stdio() implementation for Windows.
+        -   Caught up with the latest features for 32-bit builds, more to do.
+        -   Beefing up PortMidi error-handling.
+    -   Version 0.94.7:
+        -   Keystroke-handling cleanup in preparation for a Qt build.
+            Qt keystroke combinations now mapped to Gtkmm values. Tricky.
+        -   Now storing the full path-names of recent-file entries.
+        -   Restored mainwid event color to the normal colors if no
+            color palette selection for the sequence.
+        -   Fixed a bug in reading long recent-file entries.  Caused an
+            infinite loop.  Your basic programmer brain-fart.  Also fixed
+            recent-file handling in Gtkmm and Qt builds.
+        -   Improve the handling of "-o scale=x.y", still has minor issues.
+        -   The basics of the Qt build work.  It uses the internals from
+            seq64, but the Qt user-interface still lacks a lot of features of
+            seq64.
     -   Version 0.94.6:
         -   Fixed tempo handling, issue #141.
         -   Added sequence-coloring, stored per sequence as an index into a

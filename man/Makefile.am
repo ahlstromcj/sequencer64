@@ -6,7 +6,7 @@
 # \library    	sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update      2017-03-19
+# \update      2018-08-12
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -31,7 +31,7 @@ EXTRA_DIST =
 # dist
 #-------------------------------------------------------------------------------
 
-dist_man_MANS = sequencer64.1 seq64.1
+dist_man_MANS = sequencer64.1 seq64.1 seq64cli.1
 
 #******************************************************************************
 # Makefile.am (man)

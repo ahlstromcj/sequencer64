@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-05-30
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -1136,9 +1136,7 @@ build_details ()
 #ifdef SEQ64_USE_EVENT_MAP
         << "Event multimap (vs list) on" << std::endl
 #endif
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
         << "Follow progress bar on" << std::endl
-#endif
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
         << "Highlight edit pattern on" << std::endl
 #endif

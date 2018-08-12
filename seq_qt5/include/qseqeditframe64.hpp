@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-08-09
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -52,7 +52,6 @@
 
 #undef SEQ64_STAZED_CHORD_GENERATOR     // otherwise redefined !!! weird !!!
 #define SEQ64_STAZED_CHORD_GENERATOR
-#define SEQ64_FOLLOW_PROGRESS_BAR
 
 /**
  *  Specifies the reported final size of the main window when the larger edit
@@ -212,10 +211,7 @@ private slots:
     void update_record_type (int index);
     void update_recording_volume (int index);
     void reset_recording_volume ();
-
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     void follow (bool ischecked);
-#endif
 
 private:
 

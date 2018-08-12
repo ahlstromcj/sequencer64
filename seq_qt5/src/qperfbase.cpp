@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-14
- * \updates       2018-08-04
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -79,10 +79,8 @@ qperfbase::qperfbase
     m_current_y             (0),
     m_progress_x            (0),
     m_old_progress_x        (0),
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_scroll_page           (0),
     m_progress_follow       (false),
-#endif
     m_scroll_offset_ticks   (0),
     m_scroll_offset_seq     (0),
     m_scroll_offset_x       (0),

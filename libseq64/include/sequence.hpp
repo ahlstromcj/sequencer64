@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2018-08-08
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1178,7 +1178,7 @@ public:
      *  Kepler34
      */
 
-    void set_num_measures (int measures)
+    void set_measures (int measures)
     {
         set_length
         (
@@ -1190,7 +1190,7 @@ public:
      *  Kepler34
      */
 
-    int get_num_measures ();
+    int get_measures ();
 
     void apply_length (int bpb, int ppqn, int bw, int measures = 1);
     int extend (midipulse len);
@@ -1826,19 +1826,10 @@ public:
         return m_note_off_margin;
     }
 
-    void set_unit_measure () const;
-
-    /**
-     * \getter m_unit_measure
-     */
-
-    midipulse get_unit_measure () const
-    {
-        if (m_unit_measure == 0)
-            set_unit_measure();
-
-        return m_unit_measure;
-    }
+    void calculate_unit_measure () const;
+    midipulse unit_measure () const;
+    midipulse expand_threshold () const;
+    midipulse progress_value () const;
 
     /**
      * \getter m_channel_match

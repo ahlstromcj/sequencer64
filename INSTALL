@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.95.1 and above
 Chris Ahlstrom
-2015-09-10 to 2018-08-06
+2015-09-10 to 2018-08-11
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -28,7 +28,8 @@ bootstrapping setup is primarily aimed at developers.  Starting with version
         option for Linux. Deprecated.
 
     We provide a portable Windows Zip package and a Windows installer in
-    the "sequencer64-packages" project in GitHub.
+    the "sequencer64-packages" project in GitHub.  It is also fairly easy to
+    build the Windows version using QtCreator/qmake.
 
 Below are sections for various ways of installing this project by building
 from source code:
@@ -172,7 +173,7 @@ Qmake-based Install:
     
     The Qmake-based build is designed *only* to use the PortMidi
     library and the new Kepler34-based Qt 5 user interface.  This
-    user interface is currently less functional than the Gtkmm 2.4 user
+    user interface is currently still less functional than the Gtkmm 2.4 user
     interface, but the Sequencer64 libraries are used internally.
 
     The first way to use this build is to run qtcreator and load the
@@ -463,6 +464,8 @@ MANUALLY-DEFINED MACROS IN CODE:
         this variable.
 
     SEQ64_FOLLOW_PROGRESS_BAR:
+
+        Now a permanent option.  This macro has been removed.
 
         Currently enabled by default in the seqroll.cpp module, this macro
         turns on code that scrolls the sequence/pattern editor horizontally to

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-06
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  *  Please see the additional notes for the Gtkmm-2.4 version of this panel,
@@ -90,7 +90,6 @@ qseqroll::qseqroll
     m_note_length           (p.get_ppqn() * 4 / 16),
     m_background_sequence   (0),
     m_drawing_background_seq (false),
-//  m_expanded_recording    (false),
     m_status                (0),
     m_cc                    (0),
     m_edit_mode             (mode),
@@ -1334,12 +1333,10 @@ qseqroll::set_scale (int scale)
 void
 qseqroll::follow_progress ()
 {
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     if (not_nullptr(m_parent_frame) && m_is_new_edit_frame)
     {
         reinterpret_cast<qseqeditframe64 *>(m_parent_frame)->follow_progress();
     }
-#endif
 }
 
 }           // namespace seq64

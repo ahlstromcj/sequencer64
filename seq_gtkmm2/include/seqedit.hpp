@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-08
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -36,7 +36,7 @@
  *
  *  User jean-emmanual added support for disabling the following of the
  *  progress bar during playback, which is useful in working on a small part
- *  of a longer pattern.  Marked with the SEQ64_FOLLOW_PROGRESS_BAR macro.
+ *  of a longer pattern.
  */
 
 #include <list>
@@ -357,11 +357,7 @@ private:
     Gtk::Entry * m_entry_bw;            /**< Text for chosen Beat-Width.    */
     Gtk::Button * m_button_rec_vol;     /**< Button for recording volume.   */
     Gtk::Button * m_button_rec_type;    /**< Button for recording type.     */
-
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     Gtk::ToggleButton * m_toggle_follow; /**< Follow progress bar button.   */
-#endif
-
     Gtk::ToggleButton * m_toggle_play;  /**< Pattern-to-MIDI record button. */
     Gtk::ToggleButton * m_toggle_record; /**< MIDI-port-to-pattern button.  */
     Gtk::ToggleButton * m_toggle_q_rec; /**< Quantized-record MIDI button.  */
@@ -498,9 +494,7 @@ private:
     void set_background_sequence (int seq);
     void transpose_change_callback ();
     void name_change_callback ();
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     void follow_change_callback ();
-#endif
     void play_change_callback ();
     void record_change_callback ();
     void q_rec_change_callback ();

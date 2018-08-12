@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-10
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -219,10 +219,8 @@ seqroll::seqroll
     m_scroll_offset_key     (0),
     m_scroll_offset_x       (0),
     m_scroll_offset_y       (0),
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_scroll_page           (0),
     m_progress_follow       (true),
-#endif
     m_transport_follow      (true),
     m_trans_button_press    (false),
     m_background_sequence   (0),
@@ -750,8 +748,6 @@ seqroll::draw_progress_on_window ()
     }
 }
 
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-
 /**
  *  Checks the position of the tick, and, if it is in a different piano-roll
  *  "page" than the last page, moves the page to the next page.
@@ -773,8 +769,8 @@ seqroll::follow_progress ()
 {
     if (m_seq.expanded_recording())
     {
-        double hmaxvalue = m_seq.get_length() - m_window_x * m_zoom;
-        m_hadjust.set_value(hmaxvalue);
+        double hvalue = double(m_seq.progress_value());
+        m_hadjust.set_value(hvalue);
     }
     else                                        /* use for non-recording */
     {
@@ -804,16 +800,6 @@ seqroll::follow_progress ()
         }
     }
 }
-
-#else
-
-void
-seqroll::follow_progress ()
-{
-    // No code, do not follow the progress bar.
-}
-
-#endif      // SEQ64_FOLLOW_PROGRESS_BAR
 
 /**
  *  Draws events on the given drawable area.  "Method 0" draws the background

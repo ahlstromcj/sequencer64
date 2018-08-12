@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-10
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -299,8 +299,6 @@ protected:
 
     int m_scroll_offset_y;
 
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-
     /**
      *  Provides the current scroll page in which the progress bar resides.
      */
@@ -312,8 +310,6 @@ protected:
      */
 
     bool m_progress_follow;
-
-#endif
 
     /**
      *  Indicates if we are going to follow the transport in the GUI.
@@ -466,8 +462,6 @@ public:
     void complete_paste (int x, int y);
     void follow_progress ();
 
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-
     /**
      * \getter m_progress_follow
      */
@@ -485,8 +479,6 @@ public:
     {
         return m_progress_follow;
     }
-
-#endif
 
 protected:
 

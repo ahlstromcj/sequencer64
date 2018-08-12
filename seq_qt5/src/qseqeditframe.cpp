@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-31
+ * \updates       2018-08-10
  * \license       GNU GPLv2 or above
  *
  *  This version of the qseqedit-frame class is basically the Kepler34
@@ -230,7 +230,7 @@ qseqeditframe::qseqeditframe
     snapText.append(QString::number(perf().get_ppqn() * 4 / seq().get_snap_tick()));
     ui->cmbGridSnap->setCurrentText(snapText);
 
-    QString seqLenText(QString::number(seq().get_num_measures()));
+    QString seqLenText(QString::number(seq().get_measures()));
     ui->cmbSeqLen->setCurrentText(seqLenText);
     seq().set_editing(true);
 
@@ -701,7 +701,7 @@ void
 qseqeditframe::updateSeqLength ()
 {
     int measures = ui->cmbSeqLen->currentText().toInt();
-    seq().set_num_measures(measures);                       // ????
+    seq().set_measures(measures);                       // ????
     m_seqtime->updateGeometry();
     m_seqroll->updateGeometry();
     m_container->adjustSize();
@@ -736,7 +736,7 @@ qseqeditframe::updateBackgroundSeq (int newindex)
 void
 qseqeditframe::update_draw_geometry ()
 {
-    QString seqLenText(QString::number(seq().get_num_measures()));
+    QString seqLenText(QString::number(seq().get_measures()));
     ui->cmbSeqLen->setCurrentText(seqLenText);
     m_seqtime->updateGeometry();
     m_seqroll->updateGeometry();

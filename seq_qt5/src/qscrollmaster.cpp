@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-06-18
- * \updates       2018-08-10
+ * \updates       2018-08-12
  * \license       GNU GPLv2 or above
  *
  * Other useful QScrollBar functions:
@@ -57,11 +57,10 @@ qscrollmaster::qscrollmaster (QWidget * qf)
     QScrollArea         (qf),
     m_v_scrollbars      (),
     m_h_scrollbars      (),
-    m_self_v_scrollbar  (nullptr),
-    m_self_h_scrollbar  (nullptr)
+    m_self_v_scrollbar  (verticalScrollBar()),
+    m_self_h_scrollbar  (horizontalScrollBar())
 {
-    m_self_v_scrollbar = verticalScrollBar();
-    m_self_h_scrollbar = horizontalScrollBar();
+    // Done!
 }
 
 /**
@@ -100,8 +99,7 @@ qscrollmaster::scrollContentsBy (int dx, int dy)
         for
         (
             iterator vit = m_v_scrollbars.begin();
-            vit != m_v_scrollbars.end();
-            ++vit
+            vit != m_v_scrollbars.end(); ++vit
         )
         {
             (*vit)->setValue(vvalue);
@@ -114,8 +112,7 @@ qscrollmaster::scrollContentsBy (int dx, int dy)
         for
         (
             iterator hit = m_h_scrollbars.begin();
-            hit != m_h_scrollbars.end();
-            ++hit
+            hit != m_h_scrollbars.end(); ++hit
         )
         {
             (*hit)->setValue(hvalue);

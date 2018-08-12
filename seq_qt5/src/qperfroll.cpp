@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-04
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -119,10 +119,9 @@ qperfroll::conditional_update ()
 {
     if (needs_update())
     {
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
         if (perf().follow_progress())
             follow_progress();              /* keep up with progress    */
-#endif
+
         update();
     }
 }
@@ -135,10 +134,8 @@ qperfroll::conditional_update ()
 void
 qperfroll::follow_progress ()
 {
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     if (not_nullptr(m_parent_frame))
         m_parent_frame->follow_progress();
-#endif
 }
 
 /**

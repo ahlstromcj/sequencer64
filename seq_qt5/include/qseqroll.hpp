@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-05
+ * \updates       2018-08-10
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -90,25 +90,6 @@ public:
     }
 
     void follow_progress ();
-
-    /**
-     * \getter m_expanded_recording
-
-    void expanded_recording (bool expand)
-    {
-        m_expanded_recording = expand;
-        seq().expanded_recording(expand);
-    }
-     */
-
-    /**
-     * \setter m_expanded_recording
-
-    bool expanded_record ()
-    {
-        return m_expanded_recording;
-    }
-     */
 
     virtual void zoom_in ();
     virtual void zoom_out ();
@@ -253,14 +234,6 @@ private:
      */
 
     bool m_drawing_background_seq;
-
-    /**
-     *  Provides an option for expanding the number of measures while
-     *  recording.  In essence, the "infinite" track we've wanted, thanks
-     *  to Stazed and his Seq32 project.  Defaults to false.
-
-    bool m_expanded_recording;
-     */
 
     /**
      *  The current status/event selected in the seqedit.  Not used in seqroll

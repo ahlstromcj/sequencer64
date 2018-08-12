@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-10-15
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -184,15 +184,11 @@ protected:
 
     midipulse m_old_progress_ticks;
 
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-
     /**
      *  Provides the current scroll page in which the progress bar resides.
      */
 
     int m_scroll_page;
-
-#endif
 
     /**
      *  Used in the fruity and seq24 perfroll input classes to help with

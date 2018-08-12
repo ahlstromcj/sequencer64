@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-14
- * \updates       2018-07-30
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  *  This class WILL BE the base class for qseqroll, qseqdata, qtriggereditor,
@@ -206,8 +206,6 @@ private:
 
     int m_old_progress_x;
 
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-
     /**
      *  Provides the current scroll page in which the progress bar resides.
      */
@@ -219,8 +217,6 @@ private:
      */
 
     bool m_progress_follow;
-
-#endif
 
     /**
      *  The horizontal value of the scroll window in units of
@@ -438,7 +434,6 @@ public:
         return m_old_progress_x;
     }
 
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     int scroll_page () const
     {
         return m_scroll_page;
@@ -448,7 +443,6 @@ public:
     {
         return m_progress_follow;
     }
-#endif
 
     int scroll_offset_ticks () const
     {
@@ -599,7 +593,6 @@ protected:
         m_old_progress_x = v;
     }
 
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     void scroll_page (int v)
     {
         m_scroll_page = v;
@@ -609,8 +602,6 @@ protected:
     {
         m_progress_follow = v;
     }
-
-#endif
 
     void scroll_offset_ticks (int v)
     {

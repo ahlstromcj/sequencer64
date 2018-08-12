@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2018-02-20
+ * \updates       2018-08-10
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -1429,7 +1429,7 @@ eventslots::on_frame_end ()
 int
 eventslots::calculate_measures () const
 {
-    midipulse unitmeasure = seq().get_unit_measure();
+    midipulse unitmeasure = seq().unit_measure();
     return 1 + get_length() / unitmeasure;
 }
 

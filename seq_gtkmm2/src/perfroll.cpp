@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-01
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -142,9 +142,7 @@ perfroll::perfroll
     m_measure_length        (0),
     m_beat_length           (0),
     m_old_progress_ticks    (0),
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_scroll_page           (0),
-#endif
     m_have_button_press     (false),                        // stazed
 #ifdef USE_UNNECESSARY_TRANSPORT_FOLLOW_CALLBACK
     m_transport_follow      (true),
@@ -511,8 +509,6 @@ perfroll::draw_progress ()
 
 }
 
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-
 /**
  *  Checks the position of the tick, and, if it is in a different piano-roll
  *  "page" than the last page, moves the page to the next page.
@@ -534,16 +530,6 @@ perfroll::follow_progress ()
         }
     }
 }
-
-#else
-
-void
-perfroll::follow_progress ()
-{
-    // No code, do not follow the progress bar.
-}
-
-#endif      // SEQ64_FOLLOW_PROGRESS_BAR
 
 #ifdef USE_STAZED_PERF_AUTO_SCROLL
 

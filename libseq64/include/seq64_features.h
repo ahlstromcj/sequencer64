@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2018-07-07
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -303,13 +303,11 @@
  *  configure option.  We could also disable it it "legacy" mode, which also
  *  disables a lot of other features.
  *
- * \warning
- *      This code might still have issues with interactions between triggers
- *      and gaps in the performance (song) window when JACK transport is
- *      active.  Still investigating.
+ *  Now a permanent option.  Can be disabled for each individual edit or
+ *  performance window.
+ *
+ * #define SEQ64_FOLLOW_PROGRESS_BAR
  */
-
-#define SEQ64_FOLLOW_PROGRESS_BAR
 
 /**
  * \obsolete

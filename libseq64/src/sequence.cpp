@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-10
+ * \updates       2018-08-11
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -469,10 +469,59 @@ sequence::set_beat_width (int beatwidth)
  */
 
 void
-sequence::set_unit_measure () const
+sequence::calculate_unit_measure () const
 {
     automutex locker(m_mutex);
     m_unit_measure = get_beats_per_bar() * (m_ppqn * 4) / get_beat_width();
+}
+
+/**
+ * \getter m_unit_measure
+ */
+
+midipulse
+sequence::unit_measure () const
+{
+    if (m_unit_measure == 0)
+        calculate_unit_measure();
+
+    return m_unit_measure;
+}
+
+/**
+ *  Provides a consistent threshold value for the triggering of the
+ *  addition of a measure when recording a pattern in Expand mode.
+ *
+ *  We want to have the threshold be a quarter of a beat, that is,
+ *  unit_measure() / 4 / 4, but that setting makes the drawing occur twice, in
+ *  slightly different places, and we have not figured that out yet.  So we
+ *  stick with unit_measure() / 4, which is one beat.
+ *
+ *  \return
+ *      Returns the current length of the sequence minus a beat.
+ */
+
+midipulse
+sequence::expand_threshold () const
+{
+    // return get_length() - unit_measure() / 16;
+    return get_length() - unit_measure() / 4;
+}
+
+/**
+ *  Provides the new value of the horizontal scroll bar to set when doing
+ *  expanded recording.  See expand_threshold() for an issue we currently
+ *  have not solved.
+ *
+ * \return
+ *      Returns the expand_threshold() minus a unit_measure() and a quarter.
+ */
+
+midipulse
+sequence::progress_value () const
+{
+    // return get_length() - (unit_measure() + unit_measure() / 16);
+    return expand_threshold() - (unit_measure() + unit_measure() / 4);
 }
 
 /**
@@ -494,7 +543,7 @@ int
 sequence::calculate_measures () const
 {
     if (m_unit_measure == 0)
-        set_unit_measure();
+        calculate_unit_measure();
 
     return 1 + (m_length - 1) / m_unit_measure;
 }
@@ -3326,7 +3375,9 @@ sequence::add_event
 }
 
 /**
- *  Handles loop/replace status on behalf of seqrolls.
+ *  Handles loop/replace status on behalf of seqrolls.  This sets the
+ *  loop-reset status, which is check in the stream_event() function in this
+ *  module.
  */
 
 bool
@@ -4876,8 +4927,8 @@ sequence::set_length (midipulse len, bool adjust_triggers, bool verify)
  *  implicit "adjust-triggers = true" parameter used in this function.  Please
  *  note that there is an overload that takes only a measure number and uses
  *  the current beats/bar, PPQN, and beat-width values of this sequence.  The
- *  set_unit_measure() function is called, but won't change any values just
- *  because the length (number of measures) changed.
+ *  calculate_unit_measure() function is called, but won't change any values
+ *  just because the length (number of measures) changed.
  *
  * \warning
  *      The measures calculation is useless if the BPM (beats/minute) varies
@@ -4906,7 +4957,7 @@ sequence::apply_length (int bpb, int ppqn, int bw, int measures)
         // what to do?
     }
     set_length(seq64::measures_to_ticks(bpb, ppqn, bw, measures));
-    set_unit_measure();                 /* for progress and redrawing   */
+    calculate_unit_measure();                 /* for progress and redrawing   */
 }
 
 /**
@@ -6057,13 +6108,13 @@ sequence::expand_recording () const
     if (m_recording && m_expanded_recording)
     {
         midipulse tstamp = m_last_tick;     // m_parent->get_tick() % m_length;
-        if (tstamp >= (m_length - get_unit_measure() / 4))
+        if (tstamp >= expand_threshold())
         {
 #ifdef PLATFORM_DEBUG_TMI
             printf
             (
                 "tick %ld >= length %ld - measure %ld / 4\n",
-                tstamp, m_length, get_unit_measure()
+                tstamp, m_length, unit_measure()
             );
 #endif
             result = true;
@@ -6077,7 +6128,7 @@ sequence::expand_recording () const
  */
 
 int
-sequence::get_num_measures ()
+sequence::get_measures ()
 {
     int units = get_beats_per_bar() * (m_ppqn * 4) / get_beat_width();
     int measures = get_length() / units;

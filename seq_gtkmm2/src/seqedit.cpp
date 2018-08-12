@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-10
+ * \updates       2018-08-12
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -391,9 +391,7 @@ seqedit::seqedit
     m_entry_bw          (nullptr),
     m_button_rec_vol    (manage(new Gtk::Button())),
     m_button_rec_type   (manage(new Gtk::Button())),
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_toggle_follow     (manage(new Gtk::ToggleButton())),
-#endif
     m_toggle_play       (manage(new Gtk::ToggleButton())),
     m_toggle_record     (manage(new Gtk::ToggleButton())),
     m_toggle_q_rec      (manage(new Gtk::ToggleButton())),
@@ -592,15 +590,6 @@ seqedit::seqedit
     dhbox->pack_end(*(manage(new Gtk::VSeparator())), false, false, 4);
     fill_top_bar();
     set_rec_vol(usr().velocity_override());
-
-#ifdef USE_STAZED_EXTRAS
-    if (! m_seq.is_default_name())
-    {
-        m_seqroll_wid->set_can_focus();
-        m_seqroll_wid->grab_focus();
-    }
-#endif
-
     add(*m_vbox);                              /* add table */
 
     /*
@@ -609,14 +598,6 @@ seqedit::seqedit
      */
 
     show_all();
-
-    /*
-     * OPTION?  Sets vertical scroll bar to the middle:
-     *
-     * gfloat middle = m_vscroll->get_adjustment()->get_upper() / 3;
-     * m_vscroll->get_adjustment()->set_value(middle);
-     * m_seqroll_wid->set_ignore_draw(true);        // WE MISSED THIS!
-     */
 
     set_snap(m_initial_snap * m_ppqn / SEQ64_DEFAULT_PPQN);
     set_note_length(m_initial_note_length * m_ppqn / SEQ64_DEFAULT_PPQN);
@@ -628,7 +609,7 @@ seqedit::seqedit
     set_zoom(zoom);
     set_beats_per_bar(m_seq.get_beats_per_bar());
     set_beat_width(m_seq.get_beat_width());
-    m_seq.set_unit_measure();              /* must precede set_measures()  */
+    m_seq.calculate_unit_measure();         /* must precede set_measures()  */
     set_measures(get_measures());
     set_midi_channel(m_seq.get_midi_channel());
 
@@ -1331,7 +1312,6 @@ seqedit::fill_top_bar ()
     m_tooltips->set_tip(*m_button_tools, "Tools");
     m_hbox2->pack_start(*m_button_tools , false, false);
 
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_toggle_follow->set_image(*manage(new PIXBUF_IMAGE(follow_xpm)));
     add_tooltip
     (
@@ -1353,7 +1333,6 @@ seqedit::fill_top_bar ()
     m_toggle_follow->set_can_focus(false);
     m_toggle_follow->set_active(m_seqroll_wid->get_progress_follow());
     m_hbox2->pack_start(*m_toggle_follow, false, false);
-#endif
 
 #if ! defined SEQ64_STAZED_CHORD_GENERATOR
     m_hbox2->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
@@ -2682,8 +2661,6 @@ seqedit::thru_change_callback ()
     perf().set_thru(record_active, thru_active, &m_seq);
 }
 
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-
 /**
  *  Passes the Follow status to the seqroll object.
  */
@@ -2693,8 +2670,6 @@ seqedit::follow_change_callback ()
 {
     m_seqroll_wid->set_progress_follow(m_toggle_follow->get_active());
 }
-
-#endif  // SEQ64_FOLLOW_PROGRESS_BAR
 
 /**
  *  Passes the given parameter to sequence::set_rec_vol().  This function also
@@ -2794,6 +2769,13 @@ seqedit::set_data_type (midibyte status, midibyte control)
     m_seqdata_wid->set_data_type(status, control);
     m_seqroll_wid->set_data_type(status, control);
 
+    /*
+     * Set up the strings needed to be displayed in the Event menu.
+     * We should move this code into the event class at some point.
+     *
+     * std::string event_menu_entry (status, control, bus, channel);
+     */
+
     char hex[8];
     char type[64];
     snprintf(hex, sizeof hex, "[0x%02X]", status);
@@ -2856,11 +2838,9 @@ seqedit::timeout ()
     else if (perf().follow_progress())
         m_seqroll_wid->follow_progress();       /* keep up with progress    */
 
-    if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */
-        redraw(true);
-
-    if (perf().follow() && ! expandrec)
-        m_seqroll_wid->follow_progress();
+    (void) m_seq.check_loop_reset();
+    if (m_seq.is_dirty_edit())                  /* needed when recording    */
+       redraw(true);
 
     m_seqroll_wid->draw_progress_on_window();
 
@@ -2891,7 +2871,6 @@ seqedit::timeout ()
      */
 
     m_toggle_play->set_sensitive(! perf().song_start_mode());
-
     if (m_seq.get_recording() != m_toggle_record->get_active())
         m_toggle_record->set_active(m_seq.get_recording());
 

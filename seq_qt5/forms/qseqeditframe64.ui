@@ -503,13 +503,13 @@
       <widget class="QComboBox" name="m_combo_zoom">
        <property name="minimumSize">
         <size>
-         <width>88</width>
+         <width>64</width>
          <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>88</width>
+         <width>72</width>
          <height>32</height>
         </size>
        </property>

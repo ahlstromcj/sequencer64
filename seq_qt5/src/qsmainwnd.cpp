@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-04
+ * \updates       2018-08-10
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -1157,7 +1157,7 @@ qsmainwnd::updateBeatLength (int blIndex)
 
             // reset number of measures, causing length to adjust to new b/m
 
-            seq->set_num_measures(seq->get_num_measures());
+            seq->set_measures(seq->get_measures());
         }
     }
     if (not_nullptr(m_edit_frame))
@@ -1183,7 +1183,7 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
         {
             sequence *seq =  perf().get_sequence(i);
             seq->set_beats_per_bar(bmIndex + 1);
-            seq->set_num_measures(seq->get_num_measures());
+            seq->set_measures(seq->get_measures());
 
         }
     }

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-15
- * \updates       2018-08-09
+ * \updates       2018-08-12
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -551,7 +551,7 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
         ui->m_combo_length, SIGNAL(currentIndexChanged(int)),
         this, SLOT(update_measures(int))
     );
-    seq().set_unit_measure();              /* must precede set_measures()  */
+    seq().calculate_unit_measure();         /* must precede set_measures()  */
     set_measures(get_measures());
 
     /*
@@ -718,8 +718,6 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
      * Follow Progress Button.
      */
 
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-
     qt_set_icon(follow_xpm, ui->m_toggle_follow);
     ui->m_toggle_follow->setEnabled(true);
     ui->m_toggle_follow->setCheckable(true);
@@ -735,9 +733,6 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
 
     ui->m_toggle_follow->setAutoDefault(false);
     connect(ui->m_toggle_follow, SIGNAL(toggled(bool)), this, SLOT(follow(bool)));
-#else
-    ui->m_toggle_follow->setEnabled(false);
-#endif
 
     /**
      *  Fill "Snap" and "Note" Combo Boxes:
@@ -823,7 +818,10 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
     );
 #else
     qt_set_icon(zoom_xpm, ui->m_button_zoom);
-    ui->m_button_zoom->setToolTip("Zoom level. Resets to default zoom.");
+    ui->m_button_zoom->setToolTip
+    (
+        "Zoom level. Resets to the default zoom value, 2."
+    );
     connect
     (
         ui->m_button_zoom, SIGNAL(clicked(bool)),
@@ -837,12 +835,17 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
         if (zoom >= usr().min_zoom() && zoom <= usr().max_zoom())
         {
             char fmt[16];
-            snprintf(fmt, sizeof fmt, "1px:%dtx", zoom);
+            snprintf(fmt, sizeof fmt, "1:%d", zoom);
 
             QString combo_text = fmt;
             ui->m_combo_zoom->insertItem(zi, combo_text);
         }
     }
+    ui->m_combo_zoom->setToolTip
+    (
+        "Zoom level in 'pixels:ticks', the number of ticks or pulses "
+        "represented by 1 pixel.  A lower value zooms 'in'."
+    );
     ui->m_combo_zoom->setCurrentIndex(1);
     connect
     (
@@ -1124,15 +1127,10 @@ qseqeditframe64::qseqeditframe64 (perform & p, int seqid, QWidget * parent)
      * printf("scroll width = %d height = %d\n", sz.width(), sz.height());
      */
 
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     int seqwidth = m_seqroll->width();
     int scrollwidth = ui->rollScrollArea->width();
-    if (seqwidth > scrollwidth)
-        m_seqroll->progress_follow(true);
-
+    m_seqroll->progress_follow(seqwidth > scrollwidth);
     ui->m_toggle_follow->setChecked(m_seqroll->progress_follow());
-#endif
-
 
     m_timer = new QTimer(this);                             /* redraw timer */
     m_timer->setInterval(2 * usr().window_redraw_rate());   /* 20           */
@@ -1269,23 +1267,15 @@ qseqeditframe64::conditional_update ()
     if (expandrec)
     {
         set_measures(get_measures() + 1);
-#ifdef PLATFORM_DEBUG_TMI
-        printf("expand m=%d\n", get_measures());
-#endif
         follow_progress(expandrec);         /* keep up with progress    */
     }
     else if (perf().follow())
     {
-#ifdef PLATFORM_DEBUG_TMI
-        midipulse progtick = seq().get_last_tick();
-        printf("follow tick =%ld\n", progtick);
-#endif
         follow_progress();
     }
+    (void) seq().check_loop_reset();
     if (seq().is_dirty_edit())
-    {
         set_dirty();
-    }
 }
 
 /**
@@ -2111,8 +2101,6 @@ qseqeditframe64::set_data_type (midibyte status, midibyte control)
  * Follow-progress callback.
  */
 
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
-
 /**
  *  Passes the Follow status to the qseqroll object.  When qseqroll has been
  *  upgraded to support follow-progress, then enable this macro in
@@ -2148,51 +2136,37 @@ qseqeditframe64::follow (bool ischecked)
 void
 qseqeditframe64::follow_progress (bool expand)
 {
-    int w = ui->rollScrollArea->width() - SEQ64_PROGRESS_PAGE_OVERLAP_QT;
-    if (w > 0)
+    int w = ui->rollScrollArea->width();
+    if (w > 0)              /* w is constant, e.g. around 742 by default    */
     {
         QScrollBar * hadjust = ui->rollScrollArea->h_scroll();
-        midipulse progtick = seq().get_last_tick();
-        int progx = progtick / m_zoom;
-        int page = progx / w;
-        int oldpage = m_seqroll->scroll_page();
-        bool newpage = page != oldpage;
         if (seq().expanded_recording() && expand)
         {
-            if (newpage)
-            {
-                int scrollx = hadjust->value();
-                int newx = scrollx + w - perf().get_ppqn() * m_zoom;
-                hadjust->setValue(newx);
-//              printf("scrollx = %d; newx = %d\n", scrollx, newx);
-            }
+            midipulse prog = seq().progress_value(); // int hx = hadjust->value();
+            int newx = int(prog / m_zoom);
+            hadjust->setValue(newx);
         }
         else                                        /* use for non-recording */
         {
-//          midipulse progtick = seq().get_last_tick();
-//          if (progtick > 0)
-//          {
-//              int progx = progtick / m_zoom; // + SEQ64_PROGRESS_PAGE_OVERLAP;
-//              int page = progx / w;
-//              int oldpage = m_seqroll->scroll_page();
-//              bool newpage = page != oldpage;
+            /*
+             * Did this in the Gtkmm-2.4 version, causes continual
+             * scrolling on restart here in the Qt 5 version.
+             *
+             * bool firstpage = page == 0 && scrollx != 0;
+             * if (newpage || firstpage)
+             */
 
-                /*
-                 * Did this in the Gtkmm-2.4 version, causes continual
-                 * scrolling on restart here in the Qt 5 version.
-                 *
-                 * bool firstpage = page == 0 && scrollx != 0;
-                 * if (newpage || firstpage)
-                 */
-
-                if (newpage)
-                {
-//                  printf("newpage %d\n", page);
-                    m_seqroll->scroll_page(page);
-                    hadjust->setValue(progx);
-                    set_dirty();
-                }
-//          }
+            midipulse progtick = seq().get_last_tick();
+            int progx = progtick / m_zoom;
+            int page = progx / w;
+            int oldpage = m_seqroll->scroll_page();
+            bool newpage = page != oldpage;
+            if (newpage)
+            {
+                m_seqroll->scroll_page(page);
+                hadjust->setValue(progx);
+                set_dirty();
+            }
         }
     }
     else
@@ -2204,16 +2178,6 @@ qseqeditframe64::follow_progress (bool expand)
         printf("qseqeditframe64::follow_progress(): 0 seqroll width!!!\n");
     }
 }
-
-#else
-
-void
-qseqeditframe64::follow_progress ()
-{
-    // No code, never follow the progress bar.
-}
-
-#endif  // SEQ64_FOLLOW_PROGRESS_BAR
 
 /**
  *  Updates the grid-snap values and control based on the index.  The value is

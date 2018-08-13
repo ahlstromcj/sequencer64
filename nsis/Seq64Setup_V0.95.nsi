@@ -20,8 +20,8 @@
 ;       command to build the Release version of Seq64 using qmake and make,
 ;       and to create a 7-Zip "release" package that can be unpacked in
 ;       the root "sequencer64" directory.
-;
 ;           $ build_release_package.bat
+;    -  The resulting package is
 ;
 ;    -  Then run NSIS:
 ;       -   Windows:
@@ -29,7 +29,7 @@
 ;           -   Click File / Load Script.
 ;           -   Navigate to the "nsis" directory and select
 ;               "Seq64Setup_V0.95.nsi".  The script will take a few minutes
-;               to build.  The output goes to "...."
+;               to build.  The output goes to ".... (TBD)"
 ;           -   You can run that executable, or you can instead click the
 ;               "Test Installer" button in the NSIS window.
 ;           -   When you get to the "Choose Install Location" window, you can
@@ -37,7 +37,8 @@
 ;       -   Linux: The program that creates Windows installers on Linux is
 ;           'makensis'.
 ;           -   The actual build is done on Windows.
-;           -   Change to the "xxxx" directory
+;           -   Change to the "sequencer64/nsis" directory.
+;           -   Run "makensis Seq64Setup_V0.95.nsi" (or current version).
 ;    -  The installer package is located at "...."
 ;       -   Select the defaults and let the installer do its thing.
 ;    -  To uninstall the application, use Settings /

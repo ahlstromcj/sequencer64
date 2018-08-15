@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2018-01-01
-# \update      2018-07-27
+# \update      2018-08-13
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -250,10 +250,12 @@ moc_qt_headers = \
  ../include/qseqeditex.hpp \
  ../include/qseqeditframe64.hpp \
  ../include/qseqeditframe.hpp \
+ ../include/qseqeventframe.hpp \
  ../include/qseqframe.hpp \
  ../include/qseqkeys.hpp \
  ../include/qseqroll.hpp \
  ../include/qseqtime.hpp \
+ ../include/qseventslots.hpp \
  ../include/qsliveframe.hpp \
  ../include/qsmaintime.hpp \
  ../include/qsmainwnd.hpp \
@@ -271,6 +273,7 @@ uic_qt_forms = \
  $(formsdir)/qseqeditex.ui \
  $(formsdir)/qseqeditframe64.ui \
  $(formsdir)/qseqeditframe.ui \
+ $(formsdir)/qseqeventframe.ui \
  $(formsdir)/qsliveframe.ui \
  $(formsdir)/qsmainwnd.ui
 
@@ -352,11 +355,13 @@ libseq_qt5_la_SOURCES = \
  qseqeditex.cpp \
  qseqeditframe64.cpp \
  qseqeditframe.cpp \
+ qseqeventframe.cpp \
  qseqframe.cpp \
  qseqkeys.cpp \
  qseqroll.cpp \
  qseqstyle.cpp \
  qseqtime.cpp \
+ qseventslots.cpp \
  qskeymaps.cpp \
  qsliveframe.cpp \
  qsmaintime.cpp \

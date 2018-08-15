@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-10
+ * \updates       2018-08-14
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -54,6 +54,7 @@
 #include "qseditoptions.hpp"
 #include "qseqeditex.hpp"
 #include "qseqeditframe.hpp"            /* Kepler34 version                 */
+#include "qseqeventframe.hpp"           /* a new event editor for Qt        */
 #include "qskeymaps.hpp"                /* mapping between Gtkmm and Qt     */
 #include "qsmaintime.hpp"
 #include "qsmainwnd.hpp"
@@ -122,6 +123,7 @@ qsmainwnd::qsmainwnd
     m_perfedit          (nullptr),
     m_song_frame64      (nullptr),
     m_edit_frame        (nullptr),
+    m_event_frame       (nullptr),
     m_msg_error         (nullptr),
     m_msg_save_changes  (nullptr),
     m_timer             (nullptr),
@@ -389,6 +391,20 @@ qsmainwnd::qsmainwnd
         (
             m_live_frame, SIGNAL(callEditorEx(int)),
             this, SLOT(load_qseqedit(int))
+        );
+    }
+
+    /*
+     * Event editor callback.  There is only one, for editing in the tab.
+     * The event editor is meant for light use only at this time.
+     */
+
+    if (not_nullptr(m_live_frame))
+    {
+        connect         // connect to sequence-edit signal from the Live tab
+        (
+            m_live_frame, SIGNAL(callEditorEvents(int)),
+            this, SLOT(load_event_editor(int))
         );
     }
 
@@ -1001,6 +1017,25 @@ qsmainwnd::load_editor (int seqid)
         m_edit_frame->show();
         ui->tabWidget->setCurrentIndex(2);
     }
+}
+
+/**
+ *
+ */
+
+void
+qsmainwnd::load_event_editor (int seqid)
+{
+//  edit_container::iterator ei = m_open_editors.find(seqid);
+//  if (ei == m_open_editors.end())                         /* 1 editor/seq */
+    ui->EventTabLayout->removeWidget(m_event_frame);      /* no ptr check */
+    if (not_nullptr(m_event_frame))
+        delete m_event_frame;
+
+    m_event_frame = new qseqeventframe(/*perf(), seqid,*/ ui->EventTab);
+    ui->EventTabLayout->addWidget(m_event_frame);
+    m_event_frame->show();
+    ui->tabWidget->setCurrentIndex(3);
 }
 
 /**

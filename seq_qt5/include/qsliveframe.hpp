@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-04
+ * \updates       2018-08-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -163,6 +163,7 @@ private slots:
     void newSeq ();
     void editSeq ();
     void editSeqEx ();
+    void editEvents ();
     void copySeq ();
     void cutSeq ();
     void pasteSeq ();
@@ -181,6 +182,7 @@ signals:
 
     void callEditor (int seqid);    /* call editor tab for the sequence     */
     void callEditorEx (int seqid);  /* call editor window for the sequence  */
+    void callEditorEvents (int seqid);  /* call event tab for the sequence  */
 
 };              // class qsliveframe
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-07-31
+ * \updates       2018-08-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -734,6 +734,13 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
             m_popup->addAction(editseqex);
             connect(editseqex, SIGNAL(triggered(bool)), this, SLOT(editSeqEx()));
 
+            QAction * editevents = new QAction(tr("Edit e&vents"), m_popup);
+            m_popup->addAction(editevents);
+            connect
+            (
+                editevents, SIGNAL(triggered(bool)), this, SLOT(editEvents())
+            );
+
             QMenu * menuColour = new QMenu(tr("Set pattern &color..."));
             QAction * color[8];
             color[0] = new QAction(tr("White"), menuColour);
@@ -889,6 +896,16 @@ void
 qsliveframe::editSeqEx ()
 {
     callEditorEx(m_curr_seq);
+}
+
+/**
+ *
+ */
+
+void
+qsliveframe::editEvents ()
+{
+    callEditorEvents(m_curr_seq);
 }
 
 /**

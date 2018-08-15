@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-02
+ * \updates       2018-08-14
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -73,6 +73,7 @@ namespace seq64
     class qperfeditframe64;
     class qseqeditex;
     class qseqeditframe;
+    class qseqeventframe;
     class qsmaintime;
     class qseditoptions;
     class qsabout;
@@ -176,6 +177,7 @@ private:
     qperfeditex * m_perfedit;
     qperfeditframe64 * m_song_frame64;
     qseqeditframe * m_edit_frame;
+    qseqeventframe * m_event_frame;
     QErrorMessage * m_msg_error;
     QMessageBox * m_msg_save_changes;
     QTimer * m_timer;
@@ -248,6 +250,7 @@ private slots:
     void tabWidgetClicked (int newindex);
     void refresh ();                    /* redraw certain GUI elements      */
     void load_editor (int seqid);
+    void load_event_editor (int seqid);
     void load_qseqedit (int seqid);
     void load_qperfedit (bool on);
     void toggle_time_format (bool on);

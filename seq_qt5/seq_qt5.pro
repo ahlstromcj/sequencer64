@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-07-27
+# \update      2018-08-13
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -60,7 +60,8 @@ FORMS += \
  forms/qsliveframe.ui \
  forms/qsmainwnd.ui \
  forms/qsbuildinfo.ui \
- forms/qlfoframe.ui
+ forms/qlfoframe.ui \
+ forms/qseqeventframe.ui
 
 RESOURCES += src/qseq64.qrc
 
@@ -90,6 +91,7 @@ HEADERS += \
  include/qseqroll.hpp \
  include/qseqstyle.hpp \
  include/qseqtime.hpp \
+ include/qseventslots.hpp \
  include/qskeymaps.hpp \
  include/qsliveframe.hpp \
  include/qsmacros.hpp \
@@ -98,7 +100,8 @@ HEADERS += \
  include/qstriggereditor.hpp \
  include/qt5_helpers.hpp \
  include/qsbuildinfo.hpp \
- include/qlfoframe.hpp
+ include/qlfoframe.hpp \
+ include/qseqeventframe.hpp
 
 SOURCES += \
  src/gui_assistant_qt5.cpp \
@@ -125,6 +128,7 @@ SOURCES += \
  src/qseqroll.cpp \
  src/qseqstyle.cpp \
  src/qseqtime.cpp \
+ src/qseventslots.cpp \
  src/qskeymaps.cpp \
  src/qsliveframe.cpp \
  src/qsmaintime.cpp \
@@ -132,7 +136,8 @@ SOURCES += \
  src/qstriggereditor.cpp \
  src/qt5_helpers.cpp \
  src/qsbuildinfo.cpp \
- src/qlfoframe.cpp
+ src/qlfoframe.cpp \
+ src/qseqeventframe.cpp
 
 # The output of the uic command goes to the seq_qt5/forms directory in
 # the shadow directory, and cannot be located unless the OUT_PWD macro

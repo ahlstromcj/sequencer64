@@ -370,6 +370,22 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="EventTab">
+       <attribute name="title">
+        <string>E&amp;vents</string>
+       </attribute>
+       <widget class="QWidget" name="verticalLayoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>821</width>
+          <height>411</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="EventTabLayout"/>
+       </widget>
+      </widget>
      </widget>
     </item>
     <item row="3" column="6">

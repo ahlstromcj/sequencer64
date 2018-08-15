@@ -186,7 +186,7 @@ main (int argc, char * argv [])
             p,
             midifname,                  // optional
             seq64::usr().midi_ppqn()    // can be 0
-#if defined SEQ64_MULTI_MAINWID         // might never be supported!
+#if defined SEQ64_MULTI_MAINWID_DISABLED // might never be supported!
             ,
             seq64::usr().block_rows(),
             seq64::usr().block_columns(),

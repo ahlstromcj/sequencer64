@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-20
+ * \updates       2018-08-19
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
@@ -306,18 +306,18 @@ protected:
      *  Forwards the new-current-sequence call to the perform object.
      */
 
-    void new_current_sequence ()
+    bool new_current_sequence ()
     {
-        m_mainperf.new_sequence(current_seq());
+        return m_mainperf.new_sequence(current_seq());
     }
 
     /**
      *  Forwards the new-sequence call to the perform object.
      */
 
-    void new_sequence (int seqnum)
+    bool new_sequence (int seqnum)
     {
-        m_mainperf.new_sequence(seqnum);
+        return m_mainperf.new_sequence(seqnum);
     }
 
     /**

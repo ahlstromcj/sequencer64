@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-06-12
+ * \updates       2018-08-18
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -631,7 +631,7 @@ public:
      *      allow EVENT_NULL_CHANNEL if issues are uncovered.
      */
 
-    void set_channel (midibyte channel)
+    virtual void set_channel (midibyte channel)
     {
         m_channel = (channel == EVENT_NULL_CHANNEL) ?
             EVENT_NULL_CHANNEL : (channel & EVENT_GET_CHAN_MASK) ;

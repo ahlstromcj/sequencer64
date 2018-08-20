@@ -1,16 +1,16 @@
-README.windows for Sequencer64 0.95.1
+README.windows for Sequencer64 0.95.2
 Chris Ahlstrom
-2018-05-13 to 2018-06-03
+2018-05-13 to 2018-08-20
 
 This README file provides the things you need to know to run the new native
-Windows implmentation of sequencer64, an executable called qpseq64.exe.  It
+Windows implmentation of Sequencer64, an executable called qpseq64.exe.  It
 provides some notes on Sequencer64 and Windows.  We mostly use Windows 10;
 some features might differ in Windows 7 or Windows 2012+ Server.
 
-At first, we will provide only a portable ZIP package for qpseq64.  Now,
-we also provide an NSIS-based installer.  See
-
-    https://github.com/ahlstromcj/sequencer64-packages
+We provide a portable ZIP package for qpseq64 and an NSIS-based installer.
+See https://github.com/ahlstromcj/sequencer64-packages.  For documentation,
+see https://github.com/ahlstromcj/sequencer64-doc.  Some minor features are
+still missing from the Windows version, unfortunately.
 
 Inaccessible Devices:
 
@@ -52,8 +52,13 @@ Inaccessible Devices:
     We still have some minor issues at start up and at exit, but are now able
     to play a tune on the wavetable synthesizer using the "-b 2" option.
 
-    When you first run qpseq64 on Windows, it will create a new configuration
-    file, with inaccessible devices noted in the "[midi-clock]" section of
+    When you first run qpseq64 on Windows, it will create two new configuration
+    files:
+
+        C:\Users\username\AppData\Local\sequencer64\qpseq64.rc
+        C:\Users\username\AppData\Local\sequencer64\qpseq64.usr
+    
+    Inaccessible devices are noted in the "[midi-clock]" section of
     "C:\Users\username\AppData\Local\sequencer64\qpseq64.rc" by a "-1" value.
 
 Configuration Files:
@@ -61,14 +66,15 @@ Configuration Files:
     On Linux, the normal directory location of the Sequencer64 configuration
     files is "/home/username/.config/sequencer64".  Various confignames:
 
-        sequencer64.rc      The RtMidi Native ALSA/JACK version.
-        seq64portmidi.rc    The PortMidi Gtkmm 2.4 version.
-        qpseq64.rc          The PortMidi Qt 5 version.
+        sequencer64.rc, .usr      The RtMidi Native ALSA/JACK version.
+        seq64portmidi.rc, .usr    The PortMidi Gtkmm 2.4 version.
+        qpseq64.rc, .usr          The PortMidi Qt 5 version.
 
     On Windows, the conventional location is different, and the location used
     is "C:\Users\username\AppData\Local\sequencer64".  The file is:
 
         qpseq64.rc          The PortMidi Qt 5 version for Windows.
+        qpseq64.usr         Ditto.
 
     To access AppData, highlight the username directory, then append
     "AppData" to the end of "C:\username".  It is a Windows thang.

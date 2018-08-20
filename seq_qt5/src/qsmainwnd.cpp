@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-14
+ * \updates       2018-08-19
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -383,29 +383,7 @@ qsmainwnd::qsmainwnd
 
     if (not_nullptr(m_live_frame))
     {
-        connect         // connect to sequence-edit signal from the Live tab
-        (
-            m_live_frame, SIGNAL(callEditor(int)), this, SLOT(load_editor(int))
-        );
-        connect         // new standalone sequence editor
-        (
-            m_live_frame, SIGNAL(callEditorEx(int)),
-            this, SLOT(load_qseqedit(int))
-        );
-    }
-
-    /*
-     * Event editor callback.  There is only one, for editing in the tab.
-     * The event editor is meant for light use only at this time.
-     */
-
-    if (not_nullptr(m_live_frame))
-    {
-        connect         // connect to sequence-edit signal from the Live tab
-        (
-            m_live_frame, SIGNAL(callEditorEvents(int)),
-            this, SLOT(load_event_editor(int))
-        );
+        connect_editor_slots();
     }
 
     /*
@@ -501,7 +479,7 @@ qsmainwnd::make_perf_frame_in_tab ()
  */
 
 void
-qsmainwnd::stopPlaying()
+qsmainwnd::stopPlaying ()
 {
     perf().stop_key();                  /* make sure it's seq64-able        */
     ui->btnPlay->setChecked(false);
@@ -651,16 +629,7 @@ qsmainwnd::open_file (const std::string & fn)
         if (not_nullptr(m_live_frame))
         {
             ui->LiveTabLayout->addWidget(m_live_frame);
-            connect
-            (
-                m_live_frame, SIGNAL(callEditor(int)),
-                this, SLOT(load_editor(int))
-            );
-            connect
-            (
-                m_live_frame, SIGNAL(callEditorEx(int)),
-                this, SLOT(load_qseqedit(int))
-            );
+            connect_editor_slots();
             m_live_frame->show();
             m_live_frame->setFocus();
 
@@ -1026,16 +995,18 @@ qsmainwnd::load_editor (int seqid)
 void
 qsmainwnd::load_event_editor (int seqid)
 {
-//  edit_container::iterator ei = m_open_editors.find(seqid);
-//  if (ei == m_open_editors.end())                         /* 1 editor/seq */
-    ui->EventTabLayout->removeWidget(m_event_frame);      /* no ptr check */
-    if (not_nullptr(m_event_frame))
-        delete m_event_frame;
+    edit_container::iterator ei = m_open_editors.find(seqid);
+    if (ei == m_open_editors.end())                         /* 1 editor/seq */
+    {
+        ui->EventTabLayout->removeWidget(m_event_frame);    /* no ptr check */
+        if (not_nullptr(m_event_frame))
+            delete m_event_frame;
 
-    m_event_frame = new qseqeventframe(/*perf(), seqid,*/ ui->EventTab);
-    ui->EventTabLayout->addWidget(m_event_frame);
-    m_event_frame->show();
-    ui->tabWidget->setCurrentIndex(3);
+        m_event_frame = new qseqeventframe(perf(), seqid, ui->EventTab);
+        ui->EventTabLayout->addWidget(m_event_frame);
+        m_event_frame->show();
+        ui->tabWidget->setCurrentIndex(3);
+    }
 }
 
 /**
@@ -1044,6 +1015,11 @@ qsmainwnd::load_event_editor (int seqid)
  *  seqedit window, and somewhat more functional.  It has no parent widget,
  *  otherwise the whole big dialog will appear inside that parent.
  *
+ * \warning
+ *      We have to make sure the pattern ID is valid.  Somehow, we can
+ *      double-click on the qsmainwnd's set/bank roller and get this function
+ *      called!  For now, we work around that bug.
+ *
  * \param seqid
  *      The slot value (0 to 1024) of the sequence to be edited.
  */
@@ -1051,22 +1027,23 @@ qsmainwnd::load_event_editor (int seqid)
 void
 qsmainwnd::load_qseqedit (int seqid)
 {
-    edit_container::iterator ei = m_open_editors.find(seqid);
-    if (ei == m_open_editors.end())
+    if (perf().is_seq_valid(seqid))
     {
-        qseqeditex * ex = new qseqeditex(perf(), seqid, this);
-        if (not_nullptr(ex))
+        edit_container::iterator ei = m_open_editors.find(seqid);
+        if (ei == m_open_editors.end())
         {
-            ex->show();
+            qseqeditex * ex = new qseqeditex(perf(), seqid, this);
+            if (not_nullptr(ex))
+            {
+                ex->show();
 #if __cplusplus >= 201103L              /* C++11    */
-            std::pair<int, qseqeditex *> p = std::make_pair(seqid, ex);
+                std::pair<int, qseqeditex *> p = std::make_pair(seqid, ex);
 #else
-            std::pair<int, qseqeditex *> p = std::make_pair<int, qseqeditex *>
-            (
-                seqid, ex
-            );
+                std::pair<int, qseqeditex *> p =
+                    std::make_pair<int, qseqeditex *>(seqid, ex);
 #endif
-            m_open_editors.insert(p);
+                m_open_editors.insert(p);
+            }
         }
     }
 }
@@ -1250,9 +1227,9 @@ qsmainwnd::tabWidgetClicked (int newIndex)
                 break;
             }
         }
-        if (seqid == -1)                /* no sequence found, make a new one */
+        if (seqid == -1)                /* no sequence found, make new one  */
         {
-            perf().new_sequence(0);
+            (void) perf().new_sequence(0);
             seqid = 0;
         }
 
@@ -1454,6 +1431,36 @@ qsmainwnd::show_message_box (const std::string & msg_text)
         m_msg_error->showMessage(msg);
         m_msg_error->exec();
     }
+}
+
+/**
+ *
+ */
+
+void
+qsmainwnd::connect_editor_slots ()
+{
+    connect         // connect to sequence-edit signal from the Live tab
+    (
+        m_live_frame, SIGNAL(callEditor(int)),
+        this, SLOT(load_editor(int))
+    );
+    connect         // new standalone sequence editor
+    (
+        m_live_frame, SIGNAL(callEditorEx(int)),
+        this, SLOT(load_qseqedit(int))
+    );
+
+    /*
+     * Event editor callback.  There is only one, for editing in the tab.
+     * The event editor is meant for light use only at this time.
+     */
+
+    connect         // connect to sequence-edit signal from the Event tab
+    (
+        m_live_frame, SIGNAL(callEditorEvents(int)),
+        this, SLOT(load_event_editor(int))
+    );
 }
 
 }               // namespace seq64

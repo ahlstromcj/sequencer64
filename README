@@ -1,6 +1,6 @@
-README for Sequencer64 0.95.1 (Native JACK, CLI, varisets, tempo, Windows)
+README for Sequencer64 0.95.2 (Native JACK, CLI, varisets, tempo, Windows)
 Chris Ahlstrom
-2015-09-10 to 2018-08-12
+2015-09-10 to 2018-08-20
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
 The heart of seq24 remains intact.  It is an old friend, and maintains some
@@ -47,6 +47,10 @@ conventional source tarball.
 
 Recent changes:
 
+    -   Version 0.95.2:
+        -   Added the Qt 5 version of the Event Editor.
+        -   Catching up on some more features from the Gtkmm-2.4 version.
+        -   Fixed some minor issues found.
     -   Version 0.95.1:  A lot of stuff for a "minor" release! We are
         conserving version numbers, plus most fixes are getting the Qt 5
         version as functional as the Gtkmm-2.4 version of the GUI.

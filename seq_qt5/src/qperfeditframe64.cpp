@@ -121,8 +121,8 @@ qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
         ui->cmbGridSnap->insertItem(i, combo_text);
     }
     ui->cmbGridSnap->setCurrentIndex(3);
-    
-     connect
+
+    connect
     (
         ui->cmbGridSnap, SIGNAL(currentIndexChanged(int)),
         this, SLOT(updateGridSnap(int))

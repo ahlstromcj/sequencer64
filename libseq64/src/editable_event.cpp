@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-04-22
+ * \updates       2018-08-16
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_event
@@ -538,7 +538,7 @@ void
 editable_event::timestamp (midipulse ts)
 {
     event::set_timestamp(ts);
-    format_timestamp();
+    (void) format_timestamp();
 }
 
 /**
@@ -556,7 +556,7 @@ editable_event::timestamp (const std::string & ts_string)
 {
     midipulse ts = m_parent.string_to_pulses(ts_string);
     event::set_timestamp(ts);
-    format_timestamp();
+    (void) format_timestamp();
 }
 
 /**
@@ -762,6 +762,20 @@ editable_event::set_status_from_string
 }
 
 /**
+ *  Sets the channel and creates the channel string for this editable event.
+ *
+ * \param channel
+ *      The channel byte to be set.
+ */
+
+void
+editable_event::set_channel (midibyte channel)
+{
+    event::set_channel(channel);
+    analyze();                          /* (too much extra work, optimize!! */
+}
+
+/**
  *  Converts the event into a string desribing the full event.  We get the
  *  time-stamp as a string, make sure the event is fully analyzed so that all
  *  items and strings are set correctly.
@@ -847,6 +861,7 @@ editable_event::analyze ()
 {
     midibyte status = get_status();
     char tmp[32];
+    (void) format_timestamp();
     if (status >= EVENT_NOTE_OFF && status <= EVENT_PITCH_WHEEL)
     {
         midibyte channel = get_channel();
@@ -860,7 +875,7 @@ editable_event::analyze ()
          */
 
         m_name_status = value_to_name(status, category_channel_message);
-        snprintf(tmp, sizeof tmp, "Chan %d", int(channel));
+        snprintf(tmp, sizeof tmp, "Ch %d", int(channel));
         m_name_channel = std::string(tmp);
         if (is_one_byte_msg(status))
             snprintf(tmp, sizeof tmp, "Data %d", int(d0));

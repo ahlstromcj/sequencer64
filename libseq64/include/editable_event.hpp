@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-28
- * \updates       2017-07-15
+ * \updates       2018-08-18
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -352,11 +352,11 @@ private:
 
     std::string m_name_data;
 
-private:        // hidden functions
-
-    editable_event ();
-
 public:
+
+    /*
+     * The default constructor is now enabled; the compiler generates it.
+     */
 
     editable_event (const editable_events & parent);
     editable_event
@@ -491,6 +491,8 @@ public:
         return m_name_channel;
     }
 
+    virtual void set_channel (midibyte channel);
+
     /**
      * \getter m_name_data
      */
@@ -499,8 +501,6 @@ public:
     {
         return m_name_data;
     }
-
-private:
 
     void analyze ();
 

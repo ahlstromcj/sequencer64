@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-08-13
- * \updates       2018-08-13
+ * \updates       2018-08-18
  * \license       GNU GPLv2 or above
  *
  *  Also note that, currently, the editable_events container does not support
@@ -35,10 +35,17 @@
  *  as well.
  */
 
-// #include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.    */
 #include "qseqeventframe.hpp"
 #include "perform.hpp"
 #include "qseventslots.hpp"
+
+/**
+ *  Provides the printf() format statement for a data value for both the data
+ *  columns in the event table and the data field in the right-hand editable
+ *  area of the event editor.
+ */
+
+#define SEQ64_EVENT_DATA_FMT    "0x%02x (%d)"
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -69,19 +76,25 @@ qseventslots::qseventslots
     m_parent                (parent),
     m_seq                   (seq),
     m_event_container       (seq, p.get_beats_per_minute()),
+    m_current_event         (m_event_container),                // NEW
     m_event_count           (0),
     m_last_max_timestamp    (0),
     m_measures              (0),
     m_line_count            (0),
-    m_line_maximum          (43),   /* need a way to calculate this value   */
+    m_line_maximum          (999999),   /* don't need with Qt table widget  */
     m_line_overlap          (5),
     m_top_index             (0),
     m_current_index         (SEQ64_NULL_EVENT_INDEX),   /* -1 */
+    m_current_row           (0),
     m_top_iterator          (),
     m_bottom_iterator       (),
     m_current_iterator      (),
     m_pager_index           (0)
 {
+    /*
+     * Let the caller determined when this will happen?
+     */
+
     load_events();
 }
 
@@ -90,6 +103,10 @@ qseventslots::qseventslots
  *  editable-event list.  Determines how many events can be shown in the
  *  GUI [later] and adjusts the top and bottom editable-event iterators to
  *  show the first page of events.
+ *
+ *  Note that, for this QWdigetTable support class, the line_maximum() is more
+ *  of a sanity check, since the table can grow indefinitely and has no
+ *  viewport in the sense the Gtkmm-2.4 version had.
  *
  * \return
  *      Returns true if the event iterators were able to be set up as valid.
@@ -107,7 +124,7 @@ qseventslots::load_events ()
             if (m_event_count < m_line_count)
                 m_line_count = m_event_count;
             else
-                m_line_count = m_line_maximum;
+                m_line_count = line_maximum();
 
             m_current_iterator = m_bottom_iterator =
                 m_top_iterator = m_event_container.begin();
@@ -116,6 +133,15 @@ qseventslots::load_events ()
             {
                 if (increment_bottom() == SEQ64_NULL_EVENT_INDEX)
                     break;
+            }
+
+            for
+            (
+                editable_events::iterator ei = m_event_container.begin();
+                ei != m_event_container.end(); ++ei
+            )
+            {
+                ei->second.analyze();       /* creates the event strings    */
             }
         }
         else
@@ -126,6 +152,29 @@ qseventslots::load_events ()
         m_line_count = 0;
         m_current_iterator = m_bottom_iterator =
             m_top_iterator = m_event_container.end();
+    }
+    return result;
+}
+
+/**
+ *
+ */
+
+bool
+qseventslots::load_table ()
+{
+    bool result = m_event_container.count() > 0;
+    if (m_event_count > 0)
+    {
+        int row = 0;
+        for
+        (
+            editable_events::const_iterator ei = m_event_container.begin();
+            ei != m_event_container.end(); ++ei, ++row
+        )
+        {
+            set_table_event(ei, row);
+        }
     }
     return result;
 }
@@ -170,24 +219,55 @@ qseventslots::set_current_event
         char tmp[32];
         midibyte d0, d1;
         ev.get_data(d0, d1);
-        snprintf(tmp, sizeof tmp, "%d (0x%02x)", int(d0), int(d0));
+        snprintf(tmp, sizeof tmp, SEQ64_EVENT_DATA_FMT, int(d0), int(d0));
         data_0 = tmp;
-        snprintf(tmp, sizeof tmp, "%d (0x%02x)", int(d1), int(d1));
+        snprintf(tmp, sizeof tmp, SEQ64_EVENT_DATA_FMT, int(d1), int(d1));
         data_1 = tmp;
     }
-    set_text
+    set_event_text
     (
         ev.category_string(), ev.timestamp_string(), ev.status_string(),
         data_0, data_1
     );
+    m_current_row   = index;
     m_current_index = index;
     m_current_iterator = ei;
-    /*
-    if (full_redraw)
-        enqueue_draw();
+}
+
+/**
+ *  Similar to set_current_event(), but fill in the table row with data,
+ *  rather than filling the side fields for the current event.
+ */
+
+void
+qseventslots::set_table_event
+(
+    const editable_events::const_iterator ei,
+    int index
+)
+{
+    std::string data_0;
+    std::string data_1;
+    const editable_event & ev = EEDREF(ei);
+    if (ev.is_ex_data())
+    {
+        data_0 = ev.ex_data_string();
+    }
     else
-        draw_event(m_current_iterator, m_current_index);
-        */
+    {
+        char tmp[32];
+        midibyte d0, d1;
+        ev.get_data(d0, d1);
+        snprintf(tmp, sizeof tmp, SEQ64_EVENT_DATA_FMT, int(d0), int(d0));
+        data_0 = tmp;
+        snprintf(tmp, sizeof tmp, SEQ64_EVENT_DATA_FMT, int(d1), int(d1));
+        data_1 = tmp;
+    }
+    m_parent.set_event_line
+    (
+        index, ev.timestamp_string(), ev.status_string(),
+        ev.channel_string(), data_0, data_1
+    );
 }
 
 /**
@@ -210,7 +290,7 @@ qseventslots::set_current_event
  */
 
 void
-qseventslots::set_text
+qseventslots::set_event_text
 (
     const std::string & evcategory,
     const std::string & evtimestamp,
@@ -219,15 +299,11 @@ qseventslots::set_text
     const std::string & evdata1
 )
 {
-    /*
-     * TODO
-     *
     m_parent.set_event_timestamp(evtimestamp);
     m_parent.set_event_category(evcategory);
     m_parent.set_event_name(evname);
     m_parent.set_event_data_0(evdata0);
     m_parent.set_event_data_1(evdata1);
-     */
 }
 
 /**
@@ -278,22 +354,22 @@ qseventslots::insert_event (const editable_event & edev)
             m_top_iterator = m_current_iterator =
                 m_bottom_iterator = m_event_container.begin();
 
-            // TODO: m_parent.set_dirty();
-            select_event(m_current_index);
+            select_event(m_current_index);      // m_parent.set_dirty() ?
         }
         else
         {
             /*
              * This iterator is a short-lived [changed after the next add()
              * call] pointer to the added event.  This check somehow breaks
-             * the redisplay of the modified event list.
+             * the redisplay of the modified event list in the Gtkmm-2.4
+             * user-interface.
              *
              * if (m_event_container.is_valid_iterator(nev))
              */
 
             editable_events::iterator nev = m_event_container.current_event();
-            // TODO: m_parent.set_dirty();
             page_topper(nev);
+            m_parent.set_dirty();
         }
 
         /*
@@ -304,7 +380,7 @@ qseventslots::insert_event (const editable_event & edev)
 
         if (get_length() > m_last_max_timestamp)
         {
-            m_last_max_timestamp = get_length(); // m_parent.set_dirty();
+            m_last_max_timestamp = get_length(); // m_parent.set_dirty() ?
         }
     }
     return result;
@@ -359,6 +435,7 @@ qseventslots::insert_event
     if (! edev.is_ex_data())
         edev.set_channel(m_seq.get_midi_channel());
 
+    m_current_event = edev;
     return insert_event(edev);
 }
 
@@ -416,7 +493,9 @@ qseventslots::insert_event
  *
  * \return
  *      Returns true if the delete was possible.  If the container was empty
- *      or became empty, then false is returned.
+ *      then false is returned.  It is the caller's responsibility to check if
+ *      the container is empty after this operation, via a call to
+ *      qseventslots::empty().
  */
 
 bool
@@ -505,13 +584,14 @@ qseventslots::delete_current_event ()
         bool ok = newcount == (oldcount - 1);
         if (ok)
         {
-            // TODO: m_parent.set_dirty();
-            m_event_count = newcount;
-            result = newcount > 0;
-            if (result)
+            result = true;                  /* an event was deleted */
+            m_event_count = newcount;       // result = newcount > 0;
+            if (newcount > 0)
                 select_event(m_current_index);
             else
                 select_event(SEQ64_NULL_EVENT_INDEX);
+
+            // TODO: m_parent.set_dirty();
         }
     }
     return result;
@@ -692,7 +772,9 @@ qseventslots::page_movement (int new_value)
              */
 
             if (absmovement > 1)
+            {
                 set_current_event(m_top_iterator, 0);
+            }
             else
             {
                 set_current_event
@@ -739,7 +821,7 @@ qseventslots::page_topper (editable_events::iterator newcurrent)
                 break;
             }
         }
-        if (m_event_count <= m_line_maximum)    /* fewer events than lines  */
+        if (m_event_count <= line_maximum())    /* fewer events than lines  */
         {
             if (ok)
             {
@@ -757,7 +839,7 @@ qseventslots::page_topper (editable_events::iterator newcurrent)
             if (ok)
             {
                 /*
-                 * Backtrack by up to m_line_maximum events so that the new
+                 * Backtrack by up to line_maximum() events so that the new
                  * event is shown at the bottom or at its natural location; it
                  * also needs to be the current event, for highlighting.
                  * Count carefully!
@@ -789,88 +871,8 @@ qseventslots::page_topper (editable_events::iterator newcurrent)
 }
 
 /**
- *  Draw the given slot/event.  The slot contains the event details in
- *  (so far) one line of text in the box:
- *
- *  | timestamp | event kind | channel
- *      | data 0 name + value
- *      | data 1 name + value
- *
- *  Currently, this view shows only events that get copied to the sequence's
- *  event list.  This rules out the following items from the view:
- *
- *      -   MThd (song header)
- *      -   MTrk and Meta TrkEnd (track marker, a sequence has only one track)
- *      -   SeqNr (sequence number)
- *      -   SeqSpec (but there are three that might appear, see below)
- *      -   Meta TrkName
- *
- *  The events that are shown in this view are:
- *
- *      -   One-data-value events:
- *          -   Program Change
- *          -   Channel Pressure
- *      -   Two-data-value events:
- *          -   Note Off
- *          -   Note On
- *          -   Aftertouch
- *          -   Control Change
- *          -   Pitch Wheel
- *      -   Other:
- *          -   SysEx events, with partial show of data bytes
- *          -   SeqSpec events (TBD):
- *              -   Key
- *              -   Scale
- *              -   Background sequence
- *
- *  The index of the event is shown in the editor portion of the qseqeventframe
- *  dialog.
- */
-
-void
-qseventslots::draw_event (editable_events::iterator ei, int index)
-{
-}
-
-/**
- *  Converts a y-value into an event index relative to 0 (the top of the
- *  qseventslots window/pixmap) and returns it.
- *
- * \param y
- *      The y coordinate of the position of the mouse click in the eventslot
- *      window/pixmap.
- *
- * \return
- *      Returns the index of the event position in the user-interface, which
- *      should range from 0 to m_line_count.
- */
-
-int
-qseventslots::convert_y (int y)
-{
-    return 0;           // TODO!!!
-}
-
-/**
- *  Draws all of the events in the current qseventslots frame.
- *  It first clears the whole bitmap to white, so that no artifacts from the
- *  previous state of the frame are left behind.
- *
- *  Need to figure out how to calculate the number of displayable events.
- *
- *      m_line_maximum = ???
- */
-
-void
-qseventslots::draw_events ()
-{
-}
-
-/**
  *  Selects and highlights the event that is located in the frame at the given
- *  event index.  The event index is provided by converting the y-coordinate of
- *  the mouse pointer into a slot number, and then an event index (actually the
- *  slot-distance from the m_top_iterator.  Confusing, yes no?
+ *  event index.  The event index is provided by the QtTable Widget.
  *
  *  Note that, if the event index is negative, then we just queue up a draw
  *  operation, which should paint an empty frame -- the event container is
@@ -882,7 +884,8 @@ qseventslots::draw_events ()
  *
  * \param full_redraw
  *      Defaulting to true, this parameter can be set to false in some case to
- *      reduce the flickering of the frame under fast movement.
+ *      reduce the flickering of the frame under fast movement.  Doesn't
+ *      really make sense yet in the Qt 5 version.
  */
 
 void
@@ -890,7 +893,7 @@ qseventslots::select_event (int event_index, bool full_redraw)
 {
     bool ok = event_index != SEQ64_NULL_EVENT_INDEX;
     if (ok)
-        ok = (event_index < m_line_count);  // || (event_index == 0);
+        ok = (event_index < m_line_count);
 
     if (ok)
     {
@@ -910,8 +913,6 @@ qseventslots::select_event (int event_index, bool full_redraw)
         if (ok)
             set_current_event(ei, event_index, full_redraw);
     }
-//  else
-//      enqueue_draw();                 /* for drawing an empty frame */
 }
 
 /**

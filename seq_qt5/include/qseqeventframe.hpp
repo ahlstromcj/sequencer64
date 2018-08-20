@@ -27,16 +27,27 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-13
- * \updates       2018-08-13
+ * \updates       2018-08-18
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <QFrame>
+#include "easy_macros.hpp"
+
+/**
+ *  Forward reference.
+ */
+
+class QTableWidgetItem;
+
+/*
+ * Do not document namespaces, it breaks Doxygen.
+ */
 
 namespace Ui
 {
-   class qseqeventframe;
+    class qseqeventframe;
 }
 
 /*
@@ -45,24 +56,114 @@ namespace Ui
 
 namespace seq64
 {
+    class perform;
+    class qseventslots;
+    class sequence;
 
 class qseqeventframe : public QFrame
 {
+    friend class qseventslots;
+
+private:
+
+    /**
+     *
+     */
+
+    enum column_id_t
+    {
+        CID_TIMESTAMP,
+        CID_EVENTNAME,
+        CID_CHANNEL,
+        CID_DATA_0,
+        CID_DATA_1
+    };
+
     Q_OBJECT
 
 public:
 
-    explicit qseqeventframe (QWidget * parent = 0);
+    qseqeventframe
+    (
+        perform & p, int seqid, QWidget * parent = nullptr
+    );
     virtual ~qseqeventframe ();
 
 private:
 
-    void setRowHeights (int height);
-    void setColumnWidths (int total_width);
+    void set_row_heights (int height);
+    void set_row_height (int row, int height);
+    void set_column_widths (int total_width);
+    void set_seq_title (const std::string & title);
+    void set_seq_time_sig_and_ppqn (const std::string & sig);
+    void set_seq_lengths (const std::string & mevents);
+    void set_seq_channel (const std::string & channel);
+
+    void set_event_category (const std::string & c);
+    void set_event_timestamp (const std::string & ts);
+    void set_event_name (const std::string & n);
+    void set_event_data_0 (const std::string & d);
+    void set_event_data_1 (const std::string & d);
+    void set_event_line
+    (
+        int row,
+        const std::string & evtimestamp,
+        const std::string & evname,
+        const std::string & evchannel,
+        const std::string & evdata0,
+        const std::string & evdata1
+    );
+    void set_dirty (bool flag = true);
+
+    bool initialize_table ();
+
+    std::string get_lengths ();
+
+private:
+
+    QTableWidgetItem * cell (int row, column_id_t col);
+    void set_current_row (int row);
+
+private slots:
+
+    void handle_table_click (int row, int column);
+    void handle_table_click_ex (int row, int column, int prevrow, int prevcol);
+    void handle_delete ();
+    void handle_insert ();
+    void handle_modify ();
+    void handle_save ();
+    void handle_cancel ();
 
 private:
 
     Ui::qseqeventframe * ui;
+
+private:
+
+    /**
+     *  The perform object.
+     */
+
+    perform & m_perform;
+
+    /**
+     *  Provides a reference to the sequence that this dialog is meant to view
+     *  or modify.
+     */
+
+    sequence & m_seq;
+
+    /**
+     *
+     */
+
+    qseventslots * m_eventslots;
+
+    /**
+     *
+     */
+
+    int m_current_row;
 
 };
 

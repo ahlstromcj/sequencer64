@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-08-06
+ * \updates       2018-08-19
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1794,12 +1794,17 @@ perform::add_sequence (sequence * seq, int prefnum)
  *
  * \param seq
  *      The prospective sequence number of the new sequence.
+ *
+ * \return
+ *      Returns true if the sequence number is valid.  Do not use the
+ *      sequence if false is returned, it will be null.
  */
 
-void
+bool
 perform::new_sequence (int seq)
 {
-    if (is_seq_valid(seq))
+    bool result = is_seq_valid(seq);
+    if (result)
     {
         sequence * seqptr = new sequence();     /* std::nothrow */
         if (not_nullptr(seqptr))
@@ -1823,6 +1828,7 @@ perform::new_sequence (int seq)
             }
         }
     }
+    return result;
 }
 
 /**
@@ -2352,6 +2358,25 @@ perform::is_mseq_valid (int seq) const
 }
 
 /**
+ *  A check that is even strong than is_mseq_valid(), this function checks for
+ *  the pattern number being valid, the pattern being inactive, and not in
+ *  editing mode.  A convenience function for use in user-interfaces.
+ *
+ * \param seq
+ *      Provides the sequence number to be checked.
+ *
+ * \return
+ *      Returns true if the sequence number is valid as per is_seq_valid(),
+ *      the sequence is active, and not in editing mode.
+ */
+
+bool
+perform::is_mseq_available (int seq) const
+{
+    return is_seq_valid(seq) && ! is_active(seq) && ! is_sequence_in_edit(seq);
+}
+
+/**
  *  Check if the pattern/sequence, given by number, has an edit in
  *  progress.
  *
@@ -2365,7 +2390,7 @@ perform::is_mseq_valid (int seq) const
  */
 
 bool
-perform::is_sequence_in_edit (int seq)
+perform::is_sequence_in_edit (int seq) const
 {
     if (is_mseq_valid(seq))
         return m_seqs[seq]->get_editing();
@@ -6209,6 +6234,7 @@ perform::mainwnd_key_event (const keystroke & k)
 
 /**
  *  Still need to work on this one.
+ *  See mainwnd.cpp line 3312 or thereabouts.
  */
 
 bool

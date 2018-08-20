@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-14
+ * \updates       2018-08-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -101,6 +101,11 @@ qsliveframe::qsliveframe (perform & p, QWidget * parent)
     m_button_down       (false),
     m_moving            (false),
     m_adding_new        (false),
+#ifdef USE_MAINWID_STYLE_PLUS_MINUS_KEYS
+    m_call_seq_edit     (false),
+    m_call_seq_eventedit(false),
+    m_call_seq_shift    (0),            // for future usage
+#endif
     m_last_tick_x       (),             // array
     m_last_playing      (),             // array
     m_can_paste         (false)
@@ -216,7 +221,7 @@ qsliveframe::drawSequence (int seq)
     QPen pen(Qt::black);
     QBrush brush(Qt::black);            // QBrush brush(Qt::darkGray);
     m_font.setPointSize(6);
-    m_font.setBold(true);               // EXPERIMENTAL
+    m_font.setBold(true);
     m_font.setLetterSpacing(QFont::AbsoluteSpacing, 1);
     painter.setPen(pen);
     painter.setBrush(brush);
@@ -233,7 +238,7 @@ qsliveframe::drawSequence (int seq)
 
     int fw = ui->frame->width();
     int fh = ui->frame->height();
-    if (usr().window_scaled_up())       // EXPERIMENTAL
+    if (usr().window_scaled_up())
     {
         fw = 660;
         fh = 350;
@@ -331,7 +336,10 @@ qsliveframe::drawSequence (int seq)
                 (
                     seq - perf().screenset() * c_seqs_in_set
                 );
-                painter.drawText(base_x + m_slot_w - 10, base_y + m_slot_h - 5, key);
+                painter.drawText
+                (
+                    base_x + m_slot_w - 10, base_y + m_slot_h - 5, key
+                );
             }
 
             int rectangle_x = base_x + 7;
@@ -339,15 +347,18 @@ qsliveframe::drawSequence (int seq)
             pen.setColor(Qt::gray);
             brush.setStyle(Qt::NoBrush);
             painter.setBrush(brush);
-            painter.setPen(pen);                /* for inner box of notes       */
-            painter.drawRect(rectangle_x-2, rectangle_y-1, m_preview_w, m_preview_h);
+            painter.setPen(pen);        /* for inner box of notes   */
+            painter.drawRect
+            (
+                rectangle_x-2, rectangle_y-1, m_preview_w, m_preview_h
+            );
 
-            int lowest_note;
-            int highest_note;
-            bool have_notes = s->get_minmax_note_events(lowest_note, highest_note);
+            int lowest;
+            int highest;
+            bool have_notes = s->get_minmax_note_events(lowest, highest);
             if (have_notes)
             {
-                int height = highest_note - lowest_note + 2;
+                int height = highest - lowest+ 2;
                 int length = s->get_length();
                 midipulse tick_s;
                 midipulse tick_f;
@@ -401,7 +412,7 @@ qsliveframe::drawSequence (int seq)
                     {
                         pen.setWidth(1);                    /* 2 too thick  */
                         note_y = m_preview_h -
-                             (m_preview_h * (note+1-lowest_note)) / height;
+                             (m_preview_h * (note+1 - lowest)) / height;
                     }
 
                     int sx = rectangle_x + tick_s_x;        /* start x      */
@@ -635,12 +646,11 @@ qsliveframe::seqIDFromClickXY (int click_x, int click_y)
 
     x /= (m_slot_w + m_mainwid_spacing);
     y /= (m_slot_h + m_mainwid_spacing);
-    int seqId =
+    int seqid =
     (
-        (x * m_mainwnd_rows + y) +
-        (m_bank_id * m_mainwnd_rows * m_mainwnd_cols)
+        (x * m_mainwnd_rows + y) + (m_bank_id * m_mainwnd_rows * m_mainwnd_cols)
     );
-    return seqId;
+    return seqid;
 }
 
 /**
@@ -686,25 +696,31 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
             m_adding_new = true;
     }
 
-    /* if left mouse button & we're moving a seq between slots */
+    /*
+     * If it's the left mouse button and we're moving a pattern between slots,
+     * then, if the sequence number is valid, inactive, and not in editing,
+     * create a new pattern and copy the data to it.  Otherwise, copy the data
+     * to the old sequence.
+     */
 
     if (event->button() == Qt::LeftButton && m_moving)
     {
         m_moving = false;
-        if
-        (
-            ! perf().is_active(m_curr_seq) && m_curr_seq != -1 &&
-                ! perf().is_sequence_in_edit(m_curr_seq))
+        if (perf().is_mseq_available(m_curr_seq))
         {
-            perf().new_sequence(m_curr_seq);
-            perf().get_sequence(m_curr_seq)->partial_assign(m_moving_seq);
-            update();
+            if (perf().new_sequence(m_curr_seq))
+            {
+                perf().get_sequence(m_curr_seq)->partial_assign(m_moving_seq);
+                update();
+            }
         }
         else
         {
-            perf().new_sequence(m_old_seq);
-            perf().get_sequence(m_old_seq)->partial_assign(m_moving_seq);
-            update();
+            if (perf().new_sequence(m_old_seq))
+            {
+                perf().get_sequence(m_old_seq)->partial_assign(m_moving_seq);
+                update();
+            }
         }
     }
 
@@ -734,7 +750,10 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
             m_popup->addAction(editseqex);
             connect(editseqex, SIGNAL(triggered(bool)), this, SLOT(editSeqEx()));
 
-            QAction * editevents = new QAction(tr("Edit e&vents"), m_popup);
+            QAction * editevents = new QAction
+            (
+                tr("Edit e&vents in tab"), m_popup
+            );
             m_popup->addAction(editevents);
             connect
             (
@@ -743,13 +762,13 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
 
             QMenu * menuColour = new QMenu(tr("Set pattern &color..."));
             QAction * color[8];
-            color[0] = new QAction(tr("White"), menuColour);
-            color[1] = new QAction(tr("Red"), menuColour);
-            color[2] = new QAction(tr("Green"), menuColour);
-            color[3] = new QAction(tr("Blue"), menuColour);
+            color[0] = new QAction(tr("White"),  menuColour);
+            color[1] = new QAction(tr("Red"),    menuColour);
+            color[2] = new QAction(tr("Green"),  menuColour);
+            color[3] = new QAction(tr("Blue"),   menuColour);
             color[4] = new QAction(tr("Yellow"), menuColour);
             color[5] = new QAction(tr("Purple"), menuColour);
-            color[6] = new QAction(tr("Pink"), menuColour);
+            color[6] = new QAction(tr("Pink"),   menuColour);
             color[7] = new QAction(tr("Orange"), menuColour);
 
             connect(color[0], SIGNAL(triggered(bool)), this, SLOT(color_white()));
@@ -808,12 +827,12 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
 void
 qsliveframe::mouseMoveEvent (QMouseEvent * event)
 {
-    int seqId = seqIDFromClickXY(event->x(), event->y());
+    int seqid = seqIDFromClickXY(event->x(), event->y());
     if (m_button_down)
     {
         if
         (
-            seqId != m_curr_seq && ! m_moving &&
+            seqid != m_curr_seq && ! m_moving &&
             ! perf().is_sequence_in_edit(m_curr_seq)
         )
         {
@@ -848,8 +867,8 @@ qsliveframe::mouseDoubleClickEvent (QMouseEvent * event)
     int m_curr_seq = seqIDFromClickXY(event->x(), event->y());
     if (! perf().is_active(m_curr_seq))
     {
-        perf().new_sequence(m_curr_seq);
-        perf().get_sequence(m_curr_seq)->set_dirty();
+        if (perf().new_sequence(m_curr_seq))
+            perf().get_sequence(m_curr_seq)->set_dirty();
     }
     callEditorEx(m_curr_seq);
 #endif
@@ -868,12 +887,13 @@ qsliveframe::newSeq ()
         if (choice == QMessageBox::No)
             return;
     }
-    perf().new_sequence(m_curr_seq);
-    perf().get_sequence(m_curr_seq)->set_dirty();
+    if (perf().new_sequence(m_curr_seq))
+        perf().get_sequence(m_curr_seq)->set_dirty();
 
-    //TODO reenable - disabled opening the editor for each new seq
-    //    callEditor(m_main_perf->get_sequence(m_current_seq));
-
+    /*
+     * TODO: reenable - disabled opening the editor for each new seq
+     *    callEditor(m_main_perf->get_sequence(m_current_seq));
+     */
 }
 
 /**
@@ -958,6 +978,34 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
         done = perf().keyboard_group_c_status_press(gdkkey);
         if (! done)
         {
+
+#ifdef USE_MAINWID_STYLE_PLUS_MINUS_KEYS
+            int seqnum = perf().lookup_keyevent_seq(gdkkey);
+            if (m_call_seq_edit)
+            {
+                m_call_seq_edit = false;
+                callEditorEx(seqnum);
+                done = true;
+            }
+            else if (m_call_seq_eventedit)
+            {
+                m_call_seq_eventedit = false;
+                callEditorEvents(seqnum);
+                done = true;
+            }
+            else if (m_call_seq_shift > 0)      /* variset support  */
+            {
+                /*
+                 * NOT READY HERE
+                int keynum = seqnum + m_call_seq_shift * c_seqs_in_set;
+                sequence_key(keynum);
+                 */
+                done = true;
+            }
+#endif  // USE_MAINWID_STYLE_PLUS_MINUS_KEYS
+        }
+        if (! done)
+        {
             /*
              * Replaces a call to Kepler34's sequence_key() function.
              */
@@ -966,18 +1014,36 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
         }
         if (! done)
         {
+            keystroke k(gdkkey, SEQ64_KEYSTROKE_PRESS);
+
+#ifdef USE_MAINWID_STYLE_PLUS_MINUS_KEYS
+
+            if (k.is(PREFKEY(pattern_edit)))                // equals sign
+            {
+                m_call_seq_edit = ! m_call_seq_edit;
+                done = true;
+            }
+            else if (k.is(PREFKEY(event_edit)))             // minus sign
+            {
+                m_call_seq_eventedit = ! m_call_seq_eventedit;
+                done = true;
+            }
+
+#else
+
             /*
              * THIS IS ONLY A STOP-GAP!!!  Point to the pattern, click, and
-             * press the key.
+             * press the key.  This bring up the current sequence.  But we
+             * would like to be able to save this status and then use the next
+             * character to select the sequence.
              */
 
-            keystroke k(gdkkey, SEQ64_KEYSTROKE_PRESS);
             if (k.is(PREFKEY(pattern_edit)))                // equals sign
             {
                 if (! perf().is_active(m_curr_seq))
                 {
-                    perf().new_sequence(m_curr_seq);
-                    perf().get_sequence(m_curr_seq)->set_dirty();
+                    if (perf().new_sequence(m_curr_seq))
+                        perf().get_sequence(m_curr_seq)->set_dirty();
                 }
                 callEditorEx(m_curr_seq);
                 done = true;
@@ -986,11 +1052,22 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
             {
                 if (! perf().is_active(m_curr_seq))
                 {
-                    perf().new_sequence(m_curr_seq);
-                    perf().get_sequence(m_curr_seq)->set_dirty();
+                    if (perf().new_sequence(m_curr_seq))
+                        perf().get_sequence(m_curr_seq)->set_dirty();
                 }
-                callEditor(m_curr_seq);
+                callEditorEvents(m_curr_seq);
                 done = true;
+            }
+
+#endif  // USE_MAINWID_STYLE_PLUS_MINUS_KEYS
+
+            if (! done)
+            {
+                if (k.is(PREFKEY(toggle_mutes)))
+                {
+                    perf().toggle_playing_tracks();
+                    done = true;
+                }
             }
         }
     }
@@ -1024,7 +1101,9 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
             break;
         }
     }
-    if (! done)
+    if (done)
+        update();
+    else
         QWidget::keyPressEvent(event);  // event->ignore();
 }
 
@@ -1035,8 +1114,11 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
 void
 qsliveframe::keyReleaseEvent (QKeyEvent * event)
 {
-    unsigned kkey = unsigned(event->key());
-    (void) perf().keyboard_group_c_status_press(kkey);
+    /*
+     * EXPERIMENTAL COMMENTING
+     * unsigned kkey = unsigned(event->key());
+     * (void) perf().keyboard_group_c_status_press(kkey);
+     */
 }
 
 /**
@@ -1152,20 +1234,25 @@ qsliveframe::cutSeq ()
 }
 
 /**
- *
+ *  If the sequence/pattern is delete-able (valid and not being edited), then
+ *  it is deleted via the perform object.
  */
 
 void
 qsliveframe::deleteSeq ()
 {
-    if
-    (
-        perf().is_active(m_curr_seq) && !perf().is_sequence_in_edit(m_curr_seq)
-    )
+    bool valid = perf().is_mseq_valid(m_curr_seq);
+    bool not_editing = ! perf().is_sequence_in_edit(m_curr_seq);
+    if (valid && not_editing)
     {
-        // TODO
-        //dialog warning that the editor is the reason this seq cant be deleted
         perf().delete_sequence(m_curr_seq);
+    }
+    else
+    {
+        /*
+         * TODO: Dialog warning that the editor is the reason this seq can't be
+         * deleted.
+         */
     }
 }
 
@@ -1178,9 +1265,11 @@ qsliveframe::pasteSeq ()
 {
     if (! perf().is_active(m_curr_seq))
     {
-        perf().new_sequence(m_curr_seq);
-        perf().get_sequence(m_curr_seq)->partial_assign(m_seq_clipboard);
-        perf().get_sequence(m_curr_seq)->set_dirty();
+        if (perf().new_sequence(m_curr_seq))
+        {
+            perf().get_sequence(m_curr_seq)->partial_assign(m_seq_clipboard);
+            perf().get_sequence(m_curr_seq)->set_dirty();
+        }
     }
 }
 

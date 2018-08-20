@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-31
+ * \updates       2018-08-19
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -1100,15 +1100,19 @@ mainwid::on_button_release_event (GdkEventButton * ev)
             m_moving = false;
             if (! is_current_seq_active() && ! is_current_seq_in_edit())
             {
-                new_current_sequence();
-                get_current_sequence()->partial_assign(m_moving_seq);
-                redraw(current_seq());
+                if (new_current_sequence())
+                {
+                    get_current_sequence()->partial_assign(m_moving_seq);
+                    redraw(current_seq());
+                }
             }
             else
             {
-                new_sequence(m_old_seq);
-                get_sequence(m_old_seq)->partial_assign(m_moving_seq);
-                redraw(m_old_seq);
+                if (new_sequence(m_old_seq))
+                {
+                    get_sequence(m_old_seq)->partial_assign(m_moving_seq);
+                    redraw(m_old_seq);
+                }
             }
         }
         else

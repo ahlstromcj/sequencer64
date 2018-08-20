@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-14
+ * \updates       2018-08-16
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -157,10 +157,10 @@ private:
     bool check ();
     void update_window_title (const std::string & fn = "");
     void update_recent_files_menu ();
-
-    void create_action_connections ();      // new
-    void create_action_menu ();             // new
+    void create_action_connections ();
+    void create_action_menu ();
     void remove_all_editors ();
+    void connect_editor_slots ();
 
 private:
 

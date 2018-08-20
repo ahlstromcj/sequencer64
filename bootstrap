@@ -98,7 +98,7 @@ EXTRAFLAGS="--enable-rtmidi"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.95.1-2018-07-10)
+Usage: ./bootstrap [options]                                 (0.95.2-2018-08-20)
 
     'bootstrap' sets up GNU automake support and libtool support for the
     Sequencer64 projects, creating the 'configure' script.  It can also

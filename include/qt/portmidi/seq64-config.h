@@ -27,9 +27,9 @@
  *  qmake build of the PortMidi Linux and Windows versions.
  *
  * \library       sequencer64 application
- * \author        Seq24 team; modifications by Chris Ahlstrom
+ * \author        Chris Ahlstrom
  * \date          2018-04-08
- * \updates       2018-07-31
+ * \updates       2018-08-20
  * \license       GNU GPLv2 or above
  *
  *  Qt Portmidi Linux version.
@@ -43,11 +43,11 @@
 #endif
 
 #ifndef SEQ64_VERSION_DATE_SHORT
-#define SEQ64_VERSION_DATE_SHORT "2018-07-31"
+#define SEQ64_VERSION_DATE_SHORT "2018-08-20"
 #endif
 
 #ifndef SEQ64_VERSION
-#define SEQ64_VERSION "0.95.1"
+#define SEQ64_VERSION "0.95.2"
 #endif
 
 #ifndef SEQ64_GIT_VERSION
@@ -85,7 +85,8 @@
 #endif
 
 /**
- * Names the configuration file for this version of application.
+ * Names the configuration file for this version of application. The "q"
+ * stands for Qt, and the "p" stands for "portmidi".
  */
 
 #ifndef SEQ64_CONFIG_NAME
@@ -416,7 +417,7 @@
 
 /* Version number of package */
 #ifndef SEQ64_VERSION
-#define SEQ64_VERSION "0.95.1"
+#define SEQ64_VERSION "0.95.2"
 #endif
 
 /* Indicates limited Windows support */

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2018-08-13
- * \updates       2018-08-13
+ * \updates       2018-08-17
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Qt 5 version of the Event Editor
@@ -87,6 +87,13 @@ private:
     editable_events m_event_container;
 
     /**
+     *  Holds the current event (i.e. most recently inserted) for usage by the
+     *  caller.
+     */
+
+    editable_event m_current_event;
+
+    /**
      *  The current number of events in the edited container.
      */
 
@@ -141,9 +148,18 @@ private:
      *  This event will also be pointed to by the m_current_event iterator.
      *  Do not confuse it with m_top_index, which is relative to the
      *  container-beginning, not the frame.
+     *
+     *  THIS WILL EVENTUALLY GO AWAY.  See m_current_row instead.
      */
 
     int m_current_index;
+
+    /**
+     *  Indicates the current row (and index of the current event) in the
+     *  event table.
+     */
+
+    int m_current_row;
 
     /**
      *  Provides the top "pointer" to the start of the editable-events section
@@ -200,6 +216,15 @@ public:
     }
 
     /**
+     * \getter m_current_event
+     */
+
+    const editable_event & current_event () const
+    {
+        return m_current_event;
+    }
+
+    /**
      * \getter m_event_count
      *      Returns the number of total events in the sequence represented by
      *      the qseventslots object.
@@ -208,6 +233,15 @@ public:
     int event_count () const
     {
         return m_event_count;
+    }
+
+    /**
+     *
+     */
+
+    bool empty () const
+    {
+        return m_event_count == 0;
     }
 
     /**
@@ -271,6 +305,15 @@ public:
     }
 
     /**
+     * \getter m_current_row
+     */
+
+    int current_row () const
+    {
+        return m_current_row;
+    }
+
+    /**
      * \getter m_pager_index
      */
 
@@ -291,11 +334,17 @@ private:
     }
 
     bool load_events ();
+    bool load_table ();
     void set_current_event
     (
         const editable_events::iterator ei,
         int index,
         bool full_redraw = true
+    );
+    void set_table_event
+    (
+        const editable_events::const_iterator ei,
+        int index
     );
     bool insert_event (const editable_event & edev);
     bool insert_event
@@ -319,18 +368,15 @@ private:
         int event_index = SEQ64_NULL_EVENT_INDEX,
         bool full_redraw = true
     );
-    void set_text
+    void set_event_text
     (
-        const std::string & evcategory,
+        const std::string & evchannel,
         const std::string & evtimestamp,
         const std::string & evname,
         const std::string & evdata0,
         const std::string & evdata1
     );
 
-    int convert_y (int y);
-    void draw_event (editable_events::iterator ei, int index);
-    void draw_events ();
     void page_movement (int new_value);
     void page_topper (editable_events::iterator newcurrent);
     int decrement_top ();

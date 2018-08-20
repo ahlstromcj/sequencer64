@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-04
+ * \updates       2018-08-19
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -397,10 +397,10 @@ mainwnd::mainwnd
     m_base_time_ms          (0),
     m_last_time_ms          (0),
 #endif
-    m_menu_mode             (true),                 /* stazed 2016-07-30    */
-    m_call_seq_edit         (false),                /* new ca 2016-05-15    */
-    m_call_seq_shift        (0),                    /* new ca 2017-06-17    */
-    m_call_seq_eventedit    (false)                 /* new ca 2016-05-19    */
+    m_menu_mode             (true),
+    m_call_seq_edit         (false),
+    m_call_seq_shift        (0),
+    m_call_seq_eventedit    (false)
 {
 #if defined SEQ64_MULTI_MAINWID
     if (! multi_wid())
@@ -3164,7 +3164,8 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             else if (k.is(PREFKEY(toggle_mutes)))
             {
                 /*
-                 * TODO: SEQ64_MULTI_MAINWND
+                 * TODO: SEQ64_MULTI_MAINWND.  Also the following call is
+                 * just perf().toggle_playing_tracks();
                  */
 
                 m_main_wid->toggle_playing_tracks();

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-03-20
+ * \updates       2018-08-20
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -614,10 +614,12 @@ seqmenu::seq_new ()
 {
     if (! is_current_seq_active())      /* false if not active or if null   */
     {
-        new_current_sequence();
-        sequence * s = get_current_sequence();
-        if (not_nullptr(s))
-            s->set_dirty();
+        if (new_current_sequence())
+        {
+            sequence * s = get_current_sequence();
+            if (not_nullptr(s))
+                s->set_dirty();
+        }
     }
 }
 
@@ -686,12 +688,14 @@ seqmenu::seq_paste ()
 {
     if (! is_current_seq_active())      /* false if not active or if null   */
     {
-        new_current_sequence();
-        sequence * s = get_current_sequence();
-        if (not_nullptr(s) && ! sm_clipboard_empty)
+        if (new_current_sequence())
         {
-            s->partial_assign(sm_clipboard);
-            s->set_dirty();
+            sequence * s = get_current_sequence();
+            if (not_nullptr(s) && ! sm_clipboard_empty)
+            {
+                s->partial_assign(sm_clipboard);
+                s->set_dirty();
+            }
         }
     }
 }

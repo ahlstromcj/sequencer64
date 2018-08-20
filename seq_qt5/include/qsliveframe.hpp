@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-14
+ * \updates       2018-08-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -151,6 +151,39 @@ private:
     bool m_button_down;
     bool m_moving;                      // are we moving between slots
     bool m_adding_new;                  // new seq here, wait for double click
+
+#define USE_MAINWID_STYLE_PLUS_MINUS_KEYS
+#ifdef USE_MAINWID_STYLE_PLUS_MINUS_KEYS
+
+    /**
+     *  Indicates that this object is in a mode where the usual mute/unmute
+     *  keystroke will instead bring up the pattern slot for editing.
+     *  Currently, the hard-wired key for this function is the equals key.
+     */
+
+    bool m_call_seq_edit;
+
+    /**
+     *  Indicates that this object is in a mode where the usual mute/unmute
+     *  keystroke will instead bring up the pattern slot for event-editing.
+     *  Currently, the hard-wired key for this function is the minus key.
+     */
+
+    bool m_call_seq_eventedit;
+
+    /**
+     *  A new flag to indicate if the next pattern hot-key will reach into the
+     *  extended part of the set.  It causes 32 (c_seqs_in_set) to be added to
+     *  the hot key.  Actually, let's make it an integer that can range from 0
+     *  (off) to 1 to 2 (m_seqs_in_set / c_seqs_in_set).
+     *
+     *  NOT YET ENABLED.
+     */
+
+    int m_call_seq_shift;
+
+#endif  // USE_MAINWID_STYLE_PLUS_MINUS_KEYS
+
     midipulse m_last_tick_x[c_max_sequence];
     bool m_last_playing[c_max_sequence];
     bool m_can_paste;
@@ -180,9 +213,9 @@ private slots:
 
 signals:
 
-    void callEditor (int seqid);    /* call editor tab for the sequence     */
-    void callEditorEx (int seqid);  /* call editor window for the sequence  */
-    void callEditorEvents (int seqid);  /* call event tab for the sequence  */
+    void callEditor (int seqid);        /* call editor tab for pattern      */
+    void callEditorEx (int seqid);      /* call editor window for pattern   */
+    void callEditorEvents (int seqid);  /* call event tab for pattern       */
 
 };              // class qsliveframe
 

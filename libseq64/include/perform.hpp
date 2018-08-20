@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-05
+ * \updates       2018-08-19
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1794,10 +1794,10 @@ public:
     bool clear_all ();
     void launch (int ppqn);
     void finish ();
-    void new_sequence (int seq);                    /* seqmenu & mainwid    */
+    bool new_sequence (int seq);                    /* seqmenu & mainwid    */
     void add_sequence (sequence * seq, int perf);   /* midifile             */
     void delete_sequence (int seq);                 /* seqmenu & mainwid    */
-    bool is_sequence_in_edit (int seq);
+    bool is_sequence_in_edit (int seq) const;
     void print_busses () const;
 
     /**
@@ -1908,8 +1908,10 @@ public:
         return is_mseq_valid(seq) ? m_seqs_active[seq] : false ;
     }
 
+    bool is_seq_valid (int seq) const;
+    bool is_mseq_valid (int seq) const;
+    bool is_mseq_available (int seq) const;
     bool screenset_is_active (int screenset);
-
     void apply_song_transpose ();
 
     /**
@@ -2902,8 +2904,6 @@ private:
         return ss * m_seqs_in_set;
     }
 
-    bool is_seq_valid (int seq) const;
-    bool is_mseq_valid (int seq) const;
     bool install_sequence (sequence * seq, int seqnum);
     void inner_start (bool state);
     void inner_stop (bool midiclock = false);

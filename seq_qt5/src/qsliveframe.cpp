@@ -19,14 +19,15 @@
 /**
  * \file          qsliveframe.cpp
  *
- *  This module declares/defines the base class for plastering
+ *  This module declares/defines the base class for holding pattern slots.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-19
+ * \updates       2018-08-22
  * \license       GNU GPLv2 or above
  *
+ *  This class is the Qt counterpart to the mainwid class.
  */
 
 #include <QPainter>
@@ -40,6 +41,7 @@
 #include "qskeymaps.hpp"                /* mapping between Gtkmm and Qt     */
 #include "qsliveframe.hpp"
 #include "qsmacros.hpp"                 /* QS_TEXT_CHAR() macro             */
+#include "qsmainwnd.hpp"                /* the true parent of this class    */
 #include "settings.hpp"                 /* usr().window_redraw_rate()       */
 
 /*
@@ -73,11 +75,12 @@ static const int c_mainwid_border = 0;
  *      to null.
  */
 
-qsliveframe::qsliveframe (perform & p, QWidget * parent)
+qsliveframe::qsliveframe (perform & p, qsmainwnd * window, QWidget * parent)
  :
     QFrame              (parent),
     ui                  (new Ui::qsliveframe),
-    mPerf               (p),
+    m_perform           (p),
+    m_parent            (window),
     m_moving_seq        (),
     m_seq_clipboard     (),
     m_popup             (nullptr),
@@ -101,11 +104,9 @@ qsliveframe::qsliveframe (perform & p, QWidget * parent)
     m_button_down       (false),
     m_moving            (false),
     m_adding_new        (false),
-#ifdef USE_MAINWID_STYLE_PLUS_MINUS_KEYS
     m_call_seq_edit     (false),
     m_call_seq_eventedit(false),
     m_call_seq_shift    (0),            // for future usage
-#endif
     m_last_tick_x       (),             // array
     m_last_playing      (),             // array
     m_can_paste         (false)
@@ -125,9 +126,9 @@ qsliveframe::qsliveframe (perform & p, QWidget * parent)
     );
     m_msg_box->setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     m_msg_box->setDefaultButton(QMessageBox::No);
-    setBank(0);
+    set_bank(0);
 
-    QString bname = mPerf.get_bank_name(m_bank_id).c_str();
+    QString bname = m_perform.get_bank_name(m_bank_id).c_str();
     ui->txtBankName->setPlainText(bname);
     connect(ui->spinBank, SIGNAL(valueChanged(int)), this, SLOT(updateBank(int)));
     connect(ui->txtBankName, SIGNAL(textChanged()), this, SLOT(updateBankName()));
@@ -552,10 +553,10 @@ qsliveframe::valid_sequence (int seqnum)
  */
 
 void
-qsliveframe::setBank ()
+qsliveframe::set_bank ()
 {
     int bank = perf().screenset();
-    setBank(bank);
+    set_bank(bank);
 }
 
 /**
@@ -563,7 +564,7 @@ qsliveframe::setBank ()
  */
 
 void
-qsliveframe::setBank (int bank)
+qsliveframe::set_bank (int bank)
 {
     QString bname = perf().get_bank_name(bank).c_str();
     ui->txtBankName->setPlainText(bname);
@@ -581,7 +582,7 @@ void
 qsliveframe::updateBank (int bank)
 {
     perf().set_screenset(bank);
-    setBank(bank);
+    set_bank(bank);
 }
 
 /**
@@ -978,8 +979,6 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
         done = perf().keyboard_group_c_status_press(gdkkey);
         if (! done)
         {
-
-#ifdef USE_MAINWID_STYLE_PLUS_MINUS_KEYS
             int seqnum = perf().lookup_keyevent_seq(gdkkey);
             if (m_call_seq_edit)
             {
@@ -1002,7 +1001,6 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
                  */
                 done = true;
             }
-#endif  // USE_MAINWID_STYLE_PLUS_MINUS_KEYS
         }
         if (! done)
         {
@@ -1015,9 +1013,6 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
         if (! done)
         {
             keystroke k(gdkkey, SEQ64_KEYSTROKE_PRESS);
-
-#ifdef USE_MAINWID_STYLE_PLUS_MINUS_KEYS
-
             if (k.is(PREFKEY(pattern_edit)))                // equals sign
             {
                 m_call_seq_edit = ! m_call_seq_edit;
@@ -1028,39 +1023,6 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
                 m_call_seq_eventedit = ! m_call_seq_eventedit;
                 done = true;
             }
-
-#else
-
-            /*
-             * THIS IS ONLY A STOP-GAP!!!  Point to the pattern, click, and
-             * press the key.  This bring up the current sequence.  But we
-             * would like to be able to save this status and then use the next
-             * character to select the sequence.
-             */
-
-            if (k.is(PREFKEY(pattern_edit)))                // equals sign
-            {
-                if (! perf().is_active(m_curr_seq))
-                {
-                    if (perf().new_sequence(m_curr_seq))
-                        perf().get_sequence(m_curr_seq)->set_dirty();
-                }
-                callEditorEx(m_curr_seq);
-                done = true;
-            }
-            else if (k.is(PREFKEY(event_edit)))             // minus sign
-            {
-                if (! perf().is_active(m_curr_seq))
-                {
-                    if (perf().new_sequence(m_curr_seq))
-                        perf().get_sequence(m_curr_seq)->set_dirty();
-                }
-                callEditorEvents(m_curr_seq);
-                done = true;
-            }
-
-#endif  // USE_MAINWID_STYLE_PLUS_MINUS_KEYS
-
             if (! done)
             {
                 if (k.is(PREFKEY(toggle_mutes)))
@@ -1068,6 +1030,24 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
                     perf().toggle_playing_tracks();
                     done = true;
                 }
+
+                /* **********************************
+                 * ACTION handled in the switch below.
+                 *
+                else if (k.is(PREFKEY(tap_bpm)))
+                {
+                    m_parent->tap();
+                    done = true;
+                }
+                 */
+
+#ifdef SEQ64_SONG_RECORDING
+                else if (k.is(PREFKEY(song_record)))
+                {
+                    bool record = true;             // TODO
+                    perf().song_recording(record);
+                }
+#endif
             }
         }
     }
@@ -1082,12 +1062,12 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
         case perform::ACTION_GROUP_MUTE:
             break;
 
-        case perform::ACTION_BPM:                   // partly done by perform
-            // TODO:  handle tap-BPM functionality
+        case perform::ACTION_BPM:
+            m_parent->tap();
             break;
 
         case perform::ACTION_SCREENSET:             // replaces L/R brackets
-            setBank();                              // screenset from perform
+            set_bank();                             // screenset from perform
             break;
 
         case perform::ACTION_GROUP_LEARN:
@@ -1097,7 +1077,7 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
             break;
 
         default:
-            done = false;
+            done = false;                           // seems wrong
             break;
         }
     }

@@ -156,6 +156,26 @@
       </layout>
      </item>
      <item>
+      <widget class="QPushButton" name="btnTranspose">
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Trans</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboTranspose">
+       <property name="currentText">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="btnLoop">
        <property name="maximumSize">
         <size>
@@ -408,7 +428,7 @@
       </widget>
      </item>
      <item>
-      <widget class="qscrollmaster" name="rollScrollArea" native="true">
+      <widget class="qscrollmaster" name="rollScrollArea">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -421,13 +441,13 @@
          <height>240</height>
         </size>
        </property>
-       <property name="widgetResizable" stdset="0">
+       <property name="widgetResizable">
         <bool>true</bool>
        </property>
-       <widget class="QWidget" name="scrollAreaWidgetContents_3" native="true">
+       <widget class="QWidget" name="scrollAreaWidgetContents_3">
         <property name="geometry">
          <rect>
-          <x>20</x>
+          <x>0</x>
           <y>0</y>
           <width>580</width>
           <height>240</height>
@@ -466,7 +486,7 @@
  <customwidgets>
   <customwidget>
    <class>qscrollmaster</class>
-   <extends>QWidget</extends>
+   <extends>QScrollArea</extends>
    <header>qscrollmaster.h</header>
    <container>1</container>
   </customwidget>

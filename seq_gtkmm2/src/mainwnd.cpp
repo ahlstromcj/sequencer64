@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-19
+ * \updates       2018-08-22
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -200,15 +200,6 @@
 #define VBOX_PACKING                Gtk::PACK_EXPAND_WIDGET
 #define HBOX_PACKING                Gtk::PACK_EXPAND_WIDGET
 
-/**
- *  The amount of time to wait for inaction before clearing the tap-button
- *  values, in milliseconds.
- */
-
-#ifdef SEQ64_MAINWND_TAP_BUTTON
-#define SEQ64_TAP_BUTTON_TIMEOUT    5000L
-#endif
-
 /*
  * Access some menu elements more easily.
  */
@@ -375,9 +366,7 @@ mainwnd::mainwnd
         )
     ),
     m_spinbutton_bpm        (manage(new Gtk::SpinButton(*m_adjust_bpm))),
-#ifdef SEQ64_MAINWND_TAP_BUTTON
     m_button_tap            (manage(new Gtk::Button("0"))),
-#endif
     m_button_queue          (manage(new Gtk::ToggleButton("Q"))),
 
     /*
@@ -392,11 +381,9 @@ mainwnd::mainwnd
     m_entry_notes           (manage(new Gtk::Entry())),
     m_is_running            (false),
     m_timeout_connect       (),                     /* handler              */
-#ifdef SEQ64_MAINWND_TAP_BUTTON
     m_current_beats         (0),
     m_base_time_ms          (0),
     m_last_time_ms          (0),
-#endif
     m_menu_mode             (true),
     m_call_seq_edit         (false),
     m_call_seq_shift        (0),
@@ -804,9 +791,6 @@ mainwnd::mainwnd
     m_spinbutton_bpm->set_sensitive(true);
     m_spinbutton_bpm->set_editable(true);
     m_spinbutton_bpm->set_digits(usr().bpm_precision());
-
-#ifdef SEQ64_MAINWND_TAP_BUTTON
-
     m_button_tap->signal_clicked().connect(mem_fun(*this, &mainwnd::tap));
     add_tooltip
     (
@@ -815,8 +799,6 @@ mainwnd::mainwnd
         "After 5 seconds of no taps, the tap-counter will reset to 0. "
         "Also see the File / Options / Ext Keys / Tap BPM key assignment."
     );
-
-#endif
 
     m_button_tempo_log->set_focus_on_click(false);
     m_button_tempo_log->add(*manage(new PIXBUF_IMAGE(tempo_log_xpm)));
@@ -875,10 +857,7 @@ mainwnd::mainwnd
         bpmhbox->pack_start(*bpmlabel, HBOX_PACKING);
     }
     bpmhbox->pack_start(*m_spinbutton_bpm, HBOX_PACKING);
-
-#ifdef SEQ64_MAINWND_TAP_BUTTON
     bpmhbox->pack_start(*m_button_tap, HBOX_PACKING);
-#endif
 
     Gtk::VBox * tempovbox = manage(new Gtk::VBox(true,  0));
     tempovbox->pack_start(*m_button_tempo_log, VBOX_PACKING);
@@ -1481,9 +1460,6 @@ mainwnd::timer_callback ()
             set_play_image(m_is_running);
 #endif
     }
-
-#ifdef SEQ64_MAINWND_TAP_BUTTON
-
     if (m_current_beats > 0 && m_last_time_ms > 0)
     {
         struct timespec spec;
@@ -1497,9 +1473,6 @@ mainwnd::timer_callback ()
             set_tap_button(0);
         }
     }
-
-#endif
-
     return true;
 }
 
@@ -2019,19 +1992,19 @@ mainwnd::rc_error_dialog (const std::string & message)
  *
  * \param option
  *      Indicates how to save or export the MIDI sequences.
- *      The default value of this parameter is FILE_SAVE_AS_NORMAL.
+ *      The default value of this parameter is midifile::FILE_SAVE_AS_NORMAL.
  *      The export options allow one to save the file as if the triggers were
  *      employed, or with a lot of the Sequencer64-specific information
  *      removed.
  */
 
 void
-mainwnd::file_save_as (SaveOption option)
+mainwnd::file_save_as (midifile::SaveOption option)
 {
     const char * prompt = "Save File As" ;
-    if (option == FILE_SAVE_AS_EXPORT_SONG)
+    if (option == midifile::FILE_SAVE_AS_EXPORT_SONG)
         prompt = "Export Song As";
-    else if (option == FILE_SAVE_AS_EXPORT_MIDI)
+    else if (option == midifile::FILE_SAVE_AS_EXPORT_MIDI)
         prompt = "Export MIDI Only As";
 
     Gtk::FileChooserDialog dialog(prompt, Gtk::FILE_CHOOSER_ACTION_SAVE);
@@ -2083,7 +2056,7 @@ mainwnd::file_save_as (SaveOption option)
                 if (response == Gtk::RESPONSE_NO)
                     return;
             }
-            if (option == FILE_SAVE_AS_EXPORT_SONG)
+            if (option == midifile::FILE_SAVE_AS_EXPORT_SONG)
             {
                 midifile f(fname, choose_ppqn());
                 bool result = f.write_song(perf());
@@ -2104,7 +2077,7 @@ mainwnd::file_save_as (SaveOption option)
                     errdialog.run();
                 }
             }
-            else if (option == FILE_SAVE_AS_EXPORT_MIDI)
+            else if (option == midifile::FILE_SAVE_AS_EXPORT_MIDI)
             {
                 update_window_title();
                 midifile f(fname, choose_ppqn());
@@ -2367,7 +2340,7 @@ mainwnd::is_save ()
 void
 mainwnd::toLower (std::string & s)
 {
-    for (std::string::iterator p = s.begin(); p != s.end(); p++)
+    for (std::string::iterator p = s.begin(); p != s.end(); ++p)
         *p = tolower(*p);
 }
 
@@ -2938,8 +2911,6 @@ mainwnd::toggle_playing ()
     }
 }
 
-#ifdef SEQ64_MAINWND_TAP_BUTTON
-
 /**
  *  Implements the Tap button or Tap keystroke (currently hard-wired as F9).
  */
@@ -3001,8 +2972,6 @@ mainwnd::update_bpm ()
     ++m_current_beats;
     return bpm;
 }
-
-#endif      // SEQ64_MAINWND_TAP_BUTTON
 
 /**
  *  Logs the current tempo/tick value as a Set Tempo event.
@@ -3154,21 +3123,14 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 int newss = perf().increment_screenset();
                 (void) set_screenset(newss);            /* does it all now */
             }
-#ifdef SEQ64_MAINWND_TAP_BUTTON
             else if (k.is(PREFKEY(tap_bpm)))
             {
                 tap();
             }
-#endif
 #ifdef SEQ64_STAZED_MENU_BUTTONS
             else if (k.is(PREFKEY(toggle_mutes)))
             {
-                /*
-                 * TODO: SEQ64_MULTI_MAINWND.  Also the following call is
-                 * just perf().toggle_playing_tracks();
-                 */
-
-                m_main_wid->toggle_playing_tracks();
+                perf().toggle_playing_tracks(); // m_main_wid->toggle_playing_tracks();
             }
             else if (k.is(PREFKEY(song_mode)))
             {
@@ -3184,16 +3146,6 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             {
                 toggle_song_record();
             }
-
-            /*
-             * Handle this like the queue key, in
-             * perform::mainwnd_key_event().
-             *
-            else if (k.is(PREFKEY(oneshot_queue)))
-            {
-                // TODO: toggle_menu_mode();
-            }
-             */
 #endif
         }
 
@@ -3203,7 +3155,9 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
         {
             int group = perf().lookup_keygroup_group(k.key());
             if (group >= 0)
+            {
                 perf().select_and_mute_group(group);    /* use mute group key */
+            }
             else
             {
                 mgl = false;
@@ -3702,7 +3656,8 @@ mainwnd::populate_menu_file ()
             "Save _as...", Gtk::AccelKey("<control><shift>S"),
             sigc::bind
             (
-                mem_fun(*this, &mainwnd::file_save_as), FILE_SAVE_AS_NORMAL
+                mem_fun(*this, &mainwnd::file_save_as),
+                midifile::FILE_SAVE_AS_NORMAL
             )
         )
     );
@@ -3728,7 +3683,8 @@ mainwnd::populate_menu_file ()
             "Export _Song as MIDI...", Gtk::AccelKey("<control><shift>I"),
             sigc::bind
             (
-                mem_fun(*this, &mainwnd::file_save_as), FILE_SAVE_AS_EXPORT_SONG
+                mem_fun(*this, &mainwnd::file_save_as),
+                midifile::FILE_SAVE_AS_EXPORT_SONG
             )
         )
     );
@@ -3745,7 +3701,8 @@ mainwnd::populate_menu_file ()
             "Export _MIDI Only...", Gtk::AccelKey("<control><shift>O"),
             sigc::bind
             (
-                mem_fun(*this, &mainwnd::file_save_as), FILE_SAVE_AS_EXPORT_MIDI
+                mem_fun(*this, &mainwnd::file_save_as),
+                midifile::FILE_SAVE_AS_EXPORT_MIDI
             )
         )
     );

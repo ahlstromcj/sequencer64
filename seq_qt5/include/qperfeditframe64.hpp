@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-18
- * \updates       2018-08-04
+ * \updates       2018-08-21
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -112,6 +112,7 @@ private:
     }
 
     void reset_zoom ();
+    void set_transpose (int transpose);
 
 private:
 
@@ -131,6 +132,8 @@ private slots:
     void updateGridSnap (int snapIndex);
     void zoom_in ();
     void zoom_out ();
+    void reset_transpose ();
+    void update_transpose (int index);
     void markerCollapse ();
     void markerExpand ();
     void markerExpandCopy ();

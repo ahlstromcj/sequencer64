@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-16
+ * \updates       2018-08-23
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -41,6 +41,7 @@
 #include <QList>
 
 #include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
+#include "midibyte.hpp"                 /* typedef midibpm              */
 
 /*
  *  Forward declaration.
@@ -80,11 +81,13 @@ namespace seq64
     class qsbuildinfo;
 
 /**
- * The main window of kepler34
+ * The main window of Kepler34.
  */
 
 class qsmainwnd : public QMainWindow
 {
+    friend class qsliveframe;           /* semantically a "child" class */
+
     Q_OBJECT
 
 public:
@@ -155,12 +158,15 @@ private:
      */
 
     bool check ();
+    std::string filename_prompt (const std::string & prompt);
     void update_window_title (const std::string & fn = "");
     void update_recent_files_menu ();
     void create_action_connections ();
     void create_action_menu ();
     void remove_all_editors ();
     void connect_editor_slots ();
+    void set_tap_button (int beats);
+    midibpm update_tap_bpm ();
 
 private:
 
@@ -216,6 +222,27 @@ private:
     bool m_tick_time_as_bbt;
 
     /**
+     *  Indicates the number of beats considered in calculating the BPM via
+     *  button tapping.  This value is displayed in the button.
+     */
+
+    int m_current_beats;
+
+    /**
+     *  Indicates the first time the tap button was ... tapped.
+     */
+
+    long m_base_time_ms;
+
+    /**
+     *  Indicates the last time the tap button was tapped.  If this button
+     *  wasn't tapped for awhile, we assume the user has been satisfied with
+     *  the tempo he/she tapped out.
+     */
+
+    long m_last_time_ms;
+
+    /**
      *  Holds a list of the sequences currently under edit.  We do not want to
      *  open the same sequence in two different editors.  Also, we need to be
      *  able to delete any open qseqeditex windows when exiting the
@@ -226,25 +253,27 @@ private:
 
 private slots:
 
-    void startPlaying ();
-    void pausePlaying ();
-    void stopPlaying ();
+    void start_playing ();
+    void pause_playing ();
+    void stop_playing ();
     void set_song_mode (bool song_mode);
     void toggle_song_mode ();
-    void setRecording (bool record);
-    void setRecordingSnap (bool snap);
+    void set_recording (bool record);
+    void set_recording_snap (bool snap);
     void panic ();
     void update_bpm (double bpm);
     void edit_bpm ();
     void updatebeats_per_measure (int bmIndex);
-    void updateBeatLength (int blIndex);
-    void open_recent_file ();   // new
+    void update_beat_length (int blIndex);
+    void open_recent_file ();
     void new_file ();
-    bool save_file ();
-    void save_file_as ();
+    bool save_file (const std::string & fname = "");
+    bool save_file_as ();
+    bool export_file_as_midi (const std::string & fname = "");
+    bool export_song (const std::string & fname = "");
     void quit ();
-    void showImportDialog ();           /* import MIDI into current bank    */
-    void showOpenFileDialog ();
+    void show_import_dialog ();           /* import MIDI into current bank    */
+    void show_open_file_dialog ();
     void showqsabout ();
     void showqsbuildinfo ();
     void tabWidgetClicked (int newindex);
@@ -254,6 +283,16 @@ private slots:
     void load_qseqedit (int seqid);
     void load_qperfedit (bool on);
     void toggle_time_format (bool on);
+    void open_performance_edit ();
+    void apply_song_transpose ();
+    void reload_mute_groups ();
+    void clear_mute_groups ();
+    void set_song_mute_on ();
+    void set_song_mute_off ();
+    void set_song_mute_toggle ();
+    void learn_toggle ();
+    void tap ();
+    void queue_it ();
 
 };          // class qsmainwnd
 

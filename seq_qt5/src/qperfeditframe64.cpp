@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-07-18
- * \updates       2018-08-04
+ * \updates       2018-08-21
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -64,6 +64,7 @@
 #include "pixmaps/follow.xpm"
 #include "pixmaps/loop.xpm"
 #include "pixmaps/redo.xpm"
+#include "pixmaps/transpose.xpm"
 #include "pixmaps/undo.xpm"
 #include "pixmaps/zoom_in.xpm"
 #include "pixmaps/zoom_out.xpm"
@@ -218,6 +219,35 @@ qperfeditframe64::qperfeditframe64 (seq64::perform & p, QWidget * parent)
     qt_set_icon(zoom_in_xpm, ui->btnZoomIn);
     connect(ui->btnZoomOut, SIGNAL(clicked(bool)), this, SLOT(zoom_out()));
     qt_set_icon(zoom_out_xpm, ui->btnZoomOut);
+
+    /*
+     * Transpose button and combo-box.
+     */
+
+    connect
+    (
+        ui->btnTranspose, SIGNAL(clicked(bool)),
+        this, SLOT(reset_transpose())
+    );
+    qt_set_icon(transpose_xpm, ui->btnTranspose);
+
+    char num[16];
+    for (int t = -SEQ64_OCTAVE_SIZE; t <= SEQ64_OCTAVE_SIZE; ++t)
+    {
+        int index = t + SEQ64_OCTAVE_SIZE;
+        if (t != 0)
+            snprintf(num, sizeof num, "%+d [%s]", t, c_interval_text[abs(t)]);
+        else
+            snprintf(num, sizeof num, "0 [normal]");
+
+//                  perfedit::transpose_button_callback()
+        ui->comboTranspose->insertItem(index, num);
+    }
+    connect
+    (
+        ui->comboTranspose, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(update_transpose(int))
+    );
 
     /*
      * Collapse, Expand, Expand-Copy, and Loop buttons.
@@ -424,6 +454,59 @@ qperfeditframe64::reset_zoom ()
 {
     m_perftime->reset_zoom();
     m_perfroll->reset_zoom();
+}
+
+/**
+ *  The button callback for transposition for this window.  Unlike the
+ *  Gtkmm-2.4 version, this version just toggles whether it is used or not,
+ *  for now.  We will add a combo-box selector soon.
+ */
+
+void
+qperfeditframe64::reset_transpose ()
+{
+    // if (perf().get_transpose() != transpose)
+    //     set_transpose(transpose);
+}
+
+/**
+ *  Handles updates to the tranposition value.
+ */
+
+void
+qperfeditframe64::update_transpose (int index)
+{
+    // if (index != m_chord && index >= 0 && index < c_chord_number)
+    int transpose = index - SEQ64_OCTAVE_SIZE;
+    if (transpose >= -SEQ64_OCTAVE_SIZE && transpose <= SEQ64_OCTAVE_SIZE)
+    {
+        if (perf().get_transpose() != transpose)
+        {
+            set_transpose(transpose);
+            // set_dirty();
+        }
+    }
+}
+
+/**
+ *  Sets the value of transposition for this window.
+ *
+ * \param transpose
+ *      The amount to transpose the transposable sequences.
+ *      We need to add validation at some point, if the widget does not
+ *      enforce that.
+ */
+
+void
+qperfeditframe64::set_transpose (int transpose)
+{
+    /*
+    char b[12];
+    snprintf(b, sizeof b, "%+d", transpose);
+    m_entry_xpose->set_text(b);
+     */
+    perf().all_notes_off();
+    perf().set_transpose(transpose);
 }
 
 /**

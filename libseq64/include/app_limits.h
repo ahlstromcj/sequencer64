@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2018-08-04
+ * \updates       2018-08-22
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -399,6 +399,13 @@
  */
 
 #define SEQ64_BPM_SCALE_FACTOR          1000.0
+
+/**
+ *  The amount of time to wait for inaction before clearing the tap-button
+ *  values, in milliseconds.
+ */
+
+#define SEQ64_TAP_BUTTON_TIMEOUT        5000L
 
 /**
  *  Default value for c_beats_per_minute (global beats-per-minute, also known

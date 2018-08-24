@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-19
+ * \updates       2018-08-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -55,6 +55,7 @@ namespace Ui
 namespace seq64
 {
     class perform;
+    class qsmainwnd;
 
 /**
  *
@@ -66,11 +67,16 @@ class qsliveframe : public QFrame, gui_palette_qt5
 
 public:
 
-    explicit qsliveframe (perform & perf, QWidget * parent = 0 );
+    qsliveframe
+    (
+        perform & perf,
+        qsmainwnd * window,
+        QWidget * parent = nullptr
+    );
     virtual ~qsliveframe ();
 
-    void setBank (int newBank);     // bank (screen-set) of sequences displayed
-    void setBank ();                // bank number retrieved from perform
+    void set_bank (int newBank);    // bank (screen-set) of sequences displayed
+    void set_bank ();               // bank number retrieved from perform
 
 protected:                          // overrides of event handlers
 
@@ -86,12 +92,12 @@ private:
 
     const seq64::perform & perf () const
     {
-        return mPerf;
+        return m_perform;
     }
 
     seq64::perform & perf ()
     {
-        return mPerf;
+        return m_perform;
     }
 
 private:
@@ -106,7 +112,8 @@ private:
 private:
 
     Ui::qsliveframe * ui;
-    seq64::perform & mPerf;
+    seq64::perform & m_perform;
+    qsmainwnd * m_parent;
     seq64::sequence m_moving_seq;
     seq64::sequence m_seq_clipboard;
     QMenu * m_popup;
@@ -152,9 +159,6 @@ private:
     bool m_moving;                      // are we moving between slots
     bool m_adding_new;                  // new seq here, wait for double click
 
-#define USE_MAINWID_STYLE_PLUS_MINUS_KEYS
-#ifdef USE_MAINWID_STYLE_PLUS_MINUS_KEYS
-
     /**
      *  Indicates that this object is in a mode where the usual mute/unmute
      *  keystroke will instead bring up the pattern slot for editing.
@@ -181,8 +185,6 @@ private:
      */
 
     int m_call_seq_shift;
-
-#endif  // USE_MAINWID_STYLE_PLUS_MINUS_KEYS
 
     midipulse m_last_tick_x[c_max_sequence];
     bool m_last_playing[c_max_sequence];

@@ -1,6 +1,6 @@
 README for Sequencer64 0.95.2 (Native JACK, CLI, varisets, tempo, Windows)
 Chris Ahlstrom
-2015-09-10 to 2018-08-20
+2015-09-10 to 2018-08-23
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
 The heart of seq24 remains intact.  It is an old friend, and maintains some
@@ -49,7 +49,17 @@ Recent changes:
 
     -   Version 0.95.2:
         -   Added the Qt 5 version of the Event Editor.
-        -   Catching up on some more features from the Gtkmm-2.4 version.
+        -   Catching up on some more features from the Gtkmm-2:4 version.
+            -   Group-learn support.
+            -   Tap BPM support.
+            -   Export Song as non-SeqSpec MIDI.
+            -   Export as non-SeqSpec MIDI.
+            -   Additional buttons:
+                -   Open Song Editor ("performance edit").
+                -   Apply Song Transpose.
+                -   Clear Mute Groups.
+                -   Reload Mute Groups.
+                -   Song Mute On/Off/Toggle.
         -   Fixed some minor issues found.
     -   Version 0.95.1:  A lot of stuff for a "minor" release! We are
         conserving version numbers, plus most fixes are getting the Qt 5

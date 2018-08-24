@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-19
+ * \updates       2018-08-23
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -74,6 +74,8 @@
 #include "forms/qsmainwnd.ui.h"         /* generated btnStop, btnPlay, etc. */
 #endif
 
+#include "pixmaps/learn.xpm"
+#include "pixmaps/learn2.xpm"
 #include "pixmaps/live_mode.xpm"        /* #include "pixmaps/song_mode.xpm" */
 #include "pixmaps/panic.xpm"
 #include "pixmaps/pause.xpm"
@@ -117,29 +119,32 @@ qsmainwnd::qsmainwnd
     int ppqn,
     QWidget * parent
 ) :
-    QMainWindow         (parent),
-    ui                  (new Ui::qsmainwnd),
-    m_live_frame        (nullptr),
-    m_perfedit          (nullptr),
-    m_song_frame64      (nullptr),
-    m_edit_frame        (nullptr),
-    m_event_frame       (nullptr),
-    m_msg_error         (nullptr),
-    m_msg_save_changes  (nullptr),
-    m_timer             (nullptr),
-    m_menu_recent       (nullptr),
-    m_recent_action_list(),
-    mc_max_recent_files (10),
-    mImportDialog       (nullptr),
-    m_main_perf         (p),
-    m_beat_ind          (nullptr),
-    m_dialog_prefs      (nullptr),
-    mDialogAbout        (nullptr),
-    mDialogBuildInfo    (nullptr),
-    m_is_title_dirty    (false),
-    m_ppqn              (ppqn),             // can specify 0 for file ppqn
-    m_tick_time_as_bbt  (true),
-    m_open_editors      ()
+    QMainWindow             (parent),
+    ui                      (new Ui::qsmainwnd),
+    m_live_frame            (nullptr),
+    m_perfedit              (nullptr),
+    m_song_frame64          (nullptr),
+    m_edit_frame            (nullptr),
+    m_event_frame           (nullptr),
+    m_msg_error             (nullptr),
+    m_msg_save_changes      (nullptr),
+    m_timer                 (nullptr),
+    m_menu_recent           (nullptr),
+    m_recent_action_list    (),
+    mc_max_recent_files     (10),
+    mImportDialog           (nullptr),
+    m_main_perf             (p),
+    m_beat_ind              (nullptr),
+    m_dialog_prefs          (nullptr),
+    mDialogAbout            (nullptr),
+    mDialogBuildInfo        (nullptr),
+    m_is_title_dirty        (false),
+    m_ppqn                  (ppqn),     /* can specify 0 for file ppqn  */
+    m_tick_time_as_bbt      (true),
+    m_current_beats         (0),
+    m_base_time_ms          (0),
+    m_last_time_ms          (0),
+    m_open_editors          ()
 {
 #if __cplusplus < 201103L                               // C++11
     initialize_key_map();
@@ -199,19 +204,16 @@ qsmainwnd::qsmainwnd
         tr("MIDI files (*.midi *.mid);;WRK files (*.wrk);;All files (*)")
     );
 
-    m_dialog_prefs = new qseditoptions(perf(), this);
-
     /*
      * New Song editor frame.
      */
 
+    m_dialog_prefs = new qseditoptions(perf(), this);
     m_beat_ind = new qsmaintime(perf(), this, 4, 4);
     mDialogAbout = new qsabout(this);
     mDialogBuildInfo = new qsbuildinfo(this);
-
     make_perf_frame_in_tab();           /* create m_song_frame64 pointer    */
-
-    m_live_frame = new qsliveframe(perf(), ui->LiveTab);
+    m_live_frame = new qsliveframe(perf(), this, ui->LiveTab);
     if (not_nullptr(m_live_frame))
     {
         ui->LiveTabLayout->addWidget(m_live_frame);
@@ -219,7 +221,7 @@ qsmainwnd::qsmainwnd
     }
 
     /*
-     * Connect the GUI elements to event handlers.
+     * File menu.  Connect the GUI elements to event handlers.
      */
 
     connect(ui->actionNew, SIGNAL(triggered(bool)), this, SLOT(new_file()));
@@ -230,21 +232,42 @@ qsmainwnd::qsmainwnd
     );
     connect
     (
+        ui->actionExportSong, SIGNAL(triggered(bool)), this, SLOT(export_song())
+    );
+    connect
+    (
+        ui->actionExportMIDI, SIGNAL(triggered(bool)),
+        this, SLOT(export_file_as_midi())
+    );
+    connect
+    (
         ui->actionImport_MIDI, SIGNAL(triggered(bool)),
-        this, SLOT(showImportDialog())
+        this, SLOT(show_import_dialog())
     );
     connect
     (
         ui->actionOpen, SIGNAL(triggered(bool)),
-        this, SLOT(showOpenFileDialog())
+        this, SLOT(show_open_file_dialog())
     );
     connect(ui->actionQuit, SIGNAL(triggered(bool)), this, SLOT(quit()));
+
+    /*
+     * Help menu.
+     */
+
     connect(ui->actionAbout, SIGNAL(triggered(bool)), this, SLOT(showqsabout()));
     connect
     (
         ui->actionBuildInfo, SIGNAL(triggered(bool)),
         this, SLOT(showqsbuildinfo())
     );
+
+    /*
+     * Edit Menu.  First connect the preferences dialog to the main window's
+     * Edit / Preferences menu entry.  Then connect all the new Edit menu
+     * entries.
+     */
+
     if (not_nullptr(m_dialog_prefs))
     {
         connect
@@ -254,25 +277,61 @@ qsmainwnd::qsmainwnd
         );
     }
 
+    connect
+    (
+        ui->actionSongEditor, SIGNAL(triggered(bool)),
+        this, SLOT(open_performance_edit())
+    );
+    connect
+    (
+        ui->actionSongTranspose, SIGNAL(triggered(bool)),
+        this, SLOT(apply_song_transpose())
+    );
+    connect
+    (
+        ui->actionClearMuteGroups, SIGNAL(triggered(bool)),
+        this, SLOT(clear_mute_groups())
+    );
+    connect
+    (
+        ui->actionReloadMuteGroups, SIGNAL(triggered(bool)),
+        this, SLOT(reload_mute_groups())
+    );
+    connect
+    (
+        ui->actionMuteAllTracks, SIGNAL(triggered(bool)),
+        this, SLOT(set_song_mute_on())
+    );
+    connect
+    (
+        ui->actionUnmuteAllTracks, SIGNAL(triggered(bool)),
+        this, SLOT(set_song_mute_off())
+    );
+    connect
+    (
+        ui->actionToggleAllTracks, SIGNAL(triggered(bool)),
+        this, SLOT(set_song_mute_toggle())
+    );
+
     /*
      * Stop button.
      */
 
-    connect(ui->btnStop, SIGNAL(clicked(bool)), this, SLOT(stopPlaying()));
+    connect(ui->btnStop, SIGNAL(clicked(bool)), this, SLOT(stop_playing()));
     qt_set_icon(stop_xpm, ui->btnStop);
 
     /*
      * Pause button.
      */
 
-    connect(ui->btnPause, SIGNAL(clicked(bool)), this, SLOT(pausePlaying()));
+    connect(ui->btnPause, SIGNAL(clicked(bool)), this, SLOT(pause_playing()));
     qt_set_icon(pause_xpm, ui->btnPause);
 
     /*
      * Play button.
      */
 
-    connect(ui->btnPlay, SIGNAL(clicked(bool)), this, SLOT(startPlaying()));
+    connect(ui->btnPlay, SIGNAL(clicked(bool)), this, SLOT(start_playing()));
     qt_set_icon(play2_xpm, ui->btnPlay);
 
     /*
@@ -294,7 +353,7 @@ qsmainwnd::qsmainwnd
 
     connect
     (
-        ui->btnRecord, SIGNAL(clicked(bool)), this, SLOT(setRecording(bool))
+        ui->btnRecord, SIGNAL(clicked(bool)), this, SLOT(set_recording(bool))
     );
     qt_set_icon(song_rec_on_xpm, ui->btnRecord);
 
@@ -319,6 +378,54 @@ qsmainwnd::qsmainwnd
     );
 
     /*
+     * Group-learn ("L") button.
+     */
+
+    connect
+    (
+        ui->button_learn, SIGNAL(clicked(bool)),
+        this, SLOT(learn_toggle())
+    );
+    qt_set_icon(learn_xpm, ui->button_learn);
+    ui->button_learn->setToolTip
+    (
+        "Mute Group Learn.\n"
+        "Click the 'L' button, then press a mute-group key to store\n"
+        "the mute state of the sequences in the Shift of that key.\n"
+    );
+
+    /*
+     * Tap BPM button.
+     */
+
+    connect
+    (
+        ui->button_tap_bpm, SIGNAL(clicked(bool)),
+        this, SLOT(tap())
+    );
+    ui->button_tap_bpm->setToolTip
+    (
+        "Tap in time to set the beats per minute (BPM) value.\n"
+        "After 5 seconds of no taps, the tap-counter will reset to 0.\n"
+        "The default keystroke for tap-BPM is F9."
+    );
+
+    /*
+     * Keep Queue button.
+     */
+
+    connect
+    (
+        ui->button_keep_queue, SIGNAL(clicked(bool)),
+        this, SLOT(queue_it())
+    );
+    ui->button_keep_queue->setToolTip
+    (
+        "Shows and toggles the keep-queue status.\n"
+        "Does not show one-shot queue status."
+    );
+
+    /*
      * BPM (beats-per-minute) spin-box.
      */
 
@@ -328,7 +435,8 @@ qsmainwnd::qsmainwnd
     ui->spinBpm->setReadOnly(false);
     connect
     (
-        ui->spinBpm, SIGNAL(valueChanged(double)), this, SLOT(update_bpm(double))
+        ui->spinBpm, SIGNAL(valueChanged(double)),
+        this, SLOT(update_bpm(double))
     );
     connect
     (
@@ -342,7 +450,7 @@ qsmainwnd::qsmainwnd
     connect
     (
         ui->cmb_beat_length, SIGNAL(currentIndexChanged(int)),
-        this, SLOT(updateBeatLength(int))
+        this, SLOT(update_beat_length(int))
     );
 
     /*
@@ -372,7 +480,7 @@ qsmainwnd::qsmainwnd
     connect
     (
         ui->btnRecSnap, SIGNAL(clicked(bool)),
-        this, SLOT(setRecordingSnap(bool))
+        this, SLOT(set_recording_snap(bool))
     );
     qt_set_icon(snap_xpm, ui->btnRecSnap);
 
@@ -435,7 +543,11 @@ qsmainwnd::~qsmainwnd ()
 }
 
 /**
+ *  Handles closing this window by calling check(), and, if it returns false,
+ *  ignoring the close event.
  *
+ * \param event
+ *      Provides a pointer to the close event to be checked.
  */
 
 void
@@ -475,11 +587,11 @@ qsmainwnd::make_perf_frame_in_tab ()
 }
 
 /**
- *
+ *  Calls perform::stop_key() and unchecks the Play button.
  */
 
 void
-qsmainwnd::stopPlaying ()
+qsmainwnd::stop_playing ()
 {
     perf().stop_key();                  /* make sure it's seq64-able        */
     ui->btnPlay->setChecked(false);
@@ -490,7 +602,7 @@ qsmainwnd::stopPlaying ()
  */
 
 void
-qsmainwnd::pausePlaying ()
+qsmainwnd::pause_playing ()
 {
     perf().pause_key();
 }
@@ -501,7 +613,7 @@ qsmainwnd::pausePlaying ()
  */
 
 void
-qsmainwnd::startPlaying ()
+qsmainwnd::start_playing ()
 {
     perf().start_key();                 /* not the pause_key()              */
 }
@@ -511,7 +623,7 @@ qsmainwnd::startPlaying ()
  */
 
 void
-qsmainwnd::setRecording (bool record)
+qsmainwnd::set_recording (bool record)
 {
     perf().song_recording(record);
 }
@@ -534,7 +646,7 @@ qsmainwnd::set_song_mode (bool song_mode)
     }
     else
     {
-        setRecording(false);
+        set_recording(false);
         ui->btnRecord->setChecked(false);
         ui->btnRecord->setEnabled(false);
         if (! usr().use_more_icons())
@@ -586,7 +698,7 @@ qsmainwnd::edit_bpm ()
  */
 
 void
-qsmainwnd::showOpenFileDialog ()
+qsmainwnd::show_open_file_dialog ()
 {
     QString file;
     if (check())
@@ -625,7 +737,7 @@ qsmainwnd::open_file (const std::string & fn)
         if (not_nullptr(m_live_frame))
             delete m_live_frame;
 
-        m_live_frame = new qsliveframe(perf(), ui->LiveTab);
+        m_live_frame = new qsliveframe(perf(), this, ui->LiveTab);
         if (not_nullptr(m_live_frame))
         {
             ui->LiveTabLayout->addWidget(m_live_frame);
@@ -735,13 +847,11 @@ qsmainwnd::toggle_time_format (bool /*on*/)
 void
 qsmainwnd::refresh ()
 {
-
-#ifdef PLATFORM_DEBUG_TMI
-    printf("qsmainwnd: %d x %d\n", width(), height());
-#endif
-
     if (not_nullptr(m_beat_ind))
         m_beat_ind->update();
+
+    if (ui->button_keep_queue->isChecked() != perf().is_keep_queue())
+        ui->button_keep_queue->setChecked(perf().is_keep_queue());
 
     /*
      * Calculate the current time, and display it.
@@ -765,6 +875,19 @@ qsmainwnd::refresh ()
         {
             std::string t = pulses_to_timestring(tick, bpm, ppqn, false);
             ui->label_HMS->setText(t.c_str());
+        }
+    }
+    if (m_current_beats > 0 && m_last_time_ms > 0)
+    {
+        struct timespec spec;
+        clock_gettime(CLOCK_REALTIME, &spec);
+        long ms = long(spec.tv_sec) * 1000;         /* seconds to ms        */
+        ms += round(spec.tv_nsec * 1.0e-6);         /* nanoseconds to ms    */
+        long difference = ms - m_last_time_ms;
+        if (difference > SEQ64_TAP_BUTTON_TIMEOUT)
+        {
+            m_current_beats = m_base_time_ms = m_last_time_ms = 0;
+            set_tap_button(0);
         }
     }
     if (m_is_title_dirty)
@@ -810,6 +933,40 @@ qsmainwnd::check ()
 }
 
 /**
+ *  Prompts for a file-name, returning it as, what else, a C++ std::string.
+ *
+ * \param prompt
+ *      The prompt to display.
+ *
+ * \return
+ *      Returns the name of the file.  If empty, the user cancelled.
+ */
+
+std::string
+qsmainwnd::filename_prompt (const std::string & prompt)
+{
+    std::string result;
+    QString file = QFileDialog::getSaveFileName
+    (
+        this,
+        tr(prompt.c_str()),
+        rc().last_used_dir().c_str(),
+        tr("MIDI files (*.midi *.mid);;All files (*)")
+    );
+
+    if (! file.isEmpty())
+    {
+        QFileInfo fileInfo(file);
+        QString suffix = fileInfo.completeSuffix();
+        if ((suffix != "midi") && (suffix != "mid"))
+            file += ".midi";
+
+        result = file.toStdString();
+    }
+    return result;
+}
+
+/**
  *
  * \todo
  *      Ensure proper reset on load.
@@ -830,20 +987,21 @@ qsmainwnd::new_file ()
  */
 
 bool
-qsmainwnd::save_file ()
+qsmainwnd::save_file (const std::string & fname)
 {
     bool result = false;
-    if (rc().filename().empty())
+    std::string filename = fname.empty() ? rc().filename() : fname ;
+    if (filename.empty())
     {
-        save_file_as();
-        result = true;
+        result = save_file_as();
     }
     else
     {
         std::string errmsg;
-        result = save_midi_file(perf(), rc().filename(), errmsg);
+        result = save_midi_file(perf(), filename, errmsg);
         if (result)
         {
+            rc().add_recent_file(filename);
             update_recent_files_menu();
         }
         else
@@ -856,13 +1014,13 @@ qsmainwnd::save_file ()
 }
 
 /**
- * \todo
- *      Add the export options as done in mainwnd::file_save_as().
+ *
  */
 
-void
+bool
 qsmainwnd::save_file_as ()
 {
+#if 0
     QString file;
     file = QFileDialog::getSaveFileName
     (
@@ -884,6 +1042,127 @@ qsmainwnd::save_file_as ()
         save_file();
         m_is_title_dirty = true;
     }
+#endif
+    bool result = false;
+    std::string prompt = "Save MIDI file as...";
+    std::string filename = filename_prompt(prompt);
+    if (filename.empty())
+    {
+    }
+    else
+    {
+        result = save_file(filename);
+        if (result)
+        {
+            rc().filename(filename);
+            m_is_title_dirty = true;
+        }
+    }
+    return result;
+}
+
+/**
+ *  Prompts for a file-name, then exports the current tune as a standard
+ *  MIDI file, stripping out the Sequencer64 SeqSpec information.  Does not
+ *  update the the current file-name, but does update the recent-file
+ *  information at this time.
+ *
+ * \param fname
+ *      The full path-name to the file to be written.  If empty (the default),
+ *      then the user is prompted for the file-name.
+ *
+ * \return
+ *      Returns true if the file was successfully written.
+ */
+
+bool
+qsmainwnd::export_file_as_midi (const std::string & fname)
+{
+    bool result = false;
+    std::string filename;
+    if (fname.empty())
+    {
+        std::string prompt = "Export file as stock MIDI...";
+        filename = filename_prompt(prompt);
+    }
+    else
+        filename = fname;
+
+    if (filename.empty())
+    {
+        /*
+         * Maybe later, add some kind of warning dialog.
+         */
+    }
+    else
+    {
+        midifile f(filename, choose_ppqn());
+        bool result = f.write(perf(), false);           /* no SeqSpec   */
+        if (result)
+        {
+            rc().add_recent_file(rc().filename());
+            update_recent_files_menu();
+        }
+        else
+        {
+            std::string errmsg = f.error_message();
+            m_msg_error->showMessage(errmsg.c_str());
+            m_msg_error->exec();
+        }
+    }
+    return result;
+}
+
+/**
+ *  Prompts for a file-name, then exports the current tune as a standard
+ *  MIDI file, stripping out the Sequencer64 SeqSpec information.  Does not
+ *  update the current file-name, but does update the the recent-file
+ *  information at this time.
+ *
+ * \param fname
+ *      The full path-name to the file to be written.  If empty (the default),
+ *      then the user is prompted for the file-name.
+ *
+ * \return
+ *      Returns true if the file was successfully written.
+ */
+
+bool
+qsmainwnd::export_song (const std::string & fname)
+{
+    bool result = false;
+    std::string filename;
+    if (fname.empty())
+    {
+        std::string prompt = "Export Song as MIDI...";
+        filename = filename_prompt(prompt);
+    }
+    else
+        filename = fname;
+
+    if (filename.empty())
+    {
+        /*
+         * Maybe later, add some kind of warning dialog.
+         */
+    }
+    else
+    {
+        midifile f(filename, choose_ppqn());
+        bool result = f.write_song(perf());
+        if (result)
+        {
+            rc().add_recent_file(filename);
+            update_recent_files_menu();
+        }
+        else
+        {
+            std::string errmsg = f.error_message();
+            m_msg_error->showMessage(errmsg.c_str());
+            m_msg_error->exec();
+        }
+    }
+    return result;
 }
 
 /**
@@ -891,7 +1170,7 @@ qsmainwnd::save_file_as ()
  */
 
 void
-qsmainwnd::showImportDialog()
+qsmainwnd::show_import_dialog ()
 {
     mImportDialog->exec();
     QStringList filePaths = mImportDialog->selectedFiles();
@@ -912,7 +1191,7 @@ qsmainwnd::showImportDialog()
                 ui->spinBpm->setDecimals(usr().bpm_precision());
                 ui->spinBpm->setSingleStep(usr().bpm_step_increment());
                 if (not_nullptr(m_live_frame))
-                    m_live_frame->setBank(perf().screenset());
+                    m_live_frame->set_bank(perf().screenset());
             }
             catch (...)
             {
@@ -1085,11 +1364,12 @@ qsmainwnd::remove_all_editors ()
 }
 
 /**
- *
+ * \param on
+ *      If true, ???? Not yet in use.
  */
 
 void
-qsmainwnd::load_qperfedit (bool on)
+qsmainwnd::load_qperfedit (bool /*on*/)
 {
     if (is_nullptr(m_perfedit))
     {
@@ -1124,7 +1404,7 @@ qsmainwnd::remove_qperfedit ()
  */
 
 void
-qsmainwnd::updateBeatLength (int blIndex)
+qsmainwnd::update_beat_length (int blIndex)
 {
     int bl;
     switch (blIndex)
@@ -1193,10 +1473,9 @@ qsmainwnd::updatebeats_per_measure(int bmIndex)
     {
         if (perf().is_active(i))
         {
-            sequence *seq =  perf().get_sequence(i);
+            sequence *seq = perf().get_sequence(i);
             seq->set_beats_per_bar(bmIndex + 1);
             seq->set_measures(seq->get_measures());
-
         }
     }
     if (not_nullptr(m_edit_frame))
@@ -1290,7 +1569,9 @@ qsmainwnd::create_action_connections ()
 }
 
 /**
- *
+ *  Deletes the recent-files menu and recreates it, insert it into the File
+ *  menu.  Not sure why we picked create_action_menu() for the name of this
+ *  function.
  */
 
 void
@@ -1308,27 +1589,25 @@ qsmainwnd::create_action_menu ()
 }
 
 /**
- *
+ *  Opens the selected recent file.
  */
 
 void
 qsmainwnd::open_recent_file ()
 {
     QAction * action = qobject_cast<QAction *>(sender());
-    if (not_nullptr(action))
+    if (not_nullptr(action) && check())
     {
-        if (check())
-        {
-            QString fname = QVariant(action->data()).toString();
-            std::string actionfile = fname.toStdString();
-            if (! actionfile.empty())
-                open_file(actionfile);
-        }
+        QString fname = QVariant(action->data()).toString();
+        std::string actionfile = fname.toStdString();
+        if (! actionfile.empty())
+            open_file(actionfile);
     }
 }
 
 /**
- *
+ *  Calls check(), and if it checks out (heh heh), remove all of the editor
+ *  windows and then calls for an exit of the application.
  */
 
 void
@@ -1342,11 +1621,14 @@ qsmainwnd::quit ()
 }
 
 /**
+ *  Sets the perform object's song recording snap value.
  *
+ * \param snap
+ *      Provides the desired snap value.
  */
 
 void
-qsmainwnd::setRecordingSnap (bool snap)
+qsmainwnd::set_recording_snap (bool snap)
 {
     perf().song_record_snap(snap);
 }
@@ -1390,11 +1672,11 @@ qsmainwnd::keyPressEvent (QKeyEvent * event)
     {
         if (perf().is_running())
         {
-            ui->btnPlay->setChecked(false);         // stopPlaying();
+            ui->btnPlay->setChecked(false);         // stop_playing();
         }
         else
         {
-            ui->btnPlay->setChecked(true);          // startPlaying();
+            ui->btnPlay->setChecked(true);          // start_playing();
         }
     }
     else
@@ -1461,6 +1743,213 @@ qsmainwnd::connect_editor_slots ()
         m_live_frame, SIGNAL(callEditorEvents(int)),
         this, SLOT(load_event_editor(int))
     );
+}
+
+
+/**
+ *  Opens the Performance Editor (Song Editor).
+ *
+ *  We will let perform keep track of modifications, and not just set an
+ *  is-modified flag just because we opened the song editor.  We're going to
+ *  centralize the modification flag in the perform object, and see if it can
+ *  work.
+ */
+
+void
+qsmainwnd::open_performance_edit ()
+{
+    if (not_nullptr(m_perfedit))
+    {
+        if (m_perfedit->isVisible())
+        {
+            m_perfedit->hide();
+        }
+        else
+        {
+            // m_perfedit->init_before_show();
+            m_perfedit->show();
+        }
+    }
+    else
+        load_qperfedit(true);
+}
+
+/**
+ *  Apply full song transposition, if enabled.  Then reset the perfedit
+ *  transpose setting to 0.
+ */
+
+void
+qsmainwnd::apply_song_transpose ()
+{
+    if (perf().get_transpose() != 0)
+    {
+        perf().apply_song_transpose();
+#ifdef USE_THIS_CODE_IT_IS_READY
+        m_perfedit->set_transpose(0);
+#endif
+    }
+}
+
+/**
+ *  Reload all mute-group settings from the "rc" file.
+ */
+
+void
+qsmainwnd::reload_mute_groups ()
+{
+    std::string errmessage;
+    bool result = perf().reload_mute_groups(errmessage);
+    if (! result)
+    {
+#ifdef USE_THIS_CODE_IT_IS_READY
+        Gtk::MessageDialog dialog           /* display the error-message    */
+        (
+            *this, "reload of mute groups", false,
+            Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
+        );
+        dialog.set_title("Mute Groups");
+        dialog.set_secondary_text("Failed", false);
+        dialog.run();
+#endif
+    }
+}
+
+/**
+ *  Clear all mute-group settings.  Sets all values to false/zero.  Also,
+ *  since the intent might be to clean up the MIDI file, the user is prompted
+ *  to save.
+ */
+
+void
+qsmainwnd::clear_mute_groups ()
+{
+    if (perf().clear_mute_groups())     /* did any mute statuses change?    */
+    {
+#ifdef USE_THIS_CODE_IT_IS_READY
+        if (is_save())
+        {
+            if (perf().is_running())    /* \change ca 2016-03-19            */
+                stop_playing();
+        }
+#endif
+    }
+}
+
+/**
+ *  Sets the song-mute mode.
+ */
+
+void
+qsmainwnd::set_song_mute_on ()
+{
+    perf().set_song_mute(perform::MUTE_ON);
+}
+
+/**
+ *  Sets the song-mute mode.
+ */
+
+void
+qsmainwnd::set_song_mute_off ()
+{
+    perf().set_song_mute(perform::MUTE_OFF);
+}
+
+/**
+ *  Sets the song-mute mode.
+ */
+
+void
+qsmainwnd::set_song_mute_toggle ()
+{
+    perf().set_song_mute(perform::MUTE_TOGGLE);
+}
+
+/**
+ *  Toggle the group-learn status.  Simply forwards the call to
+ *  perform::learn_toggle().
+ */
+
+void
+qsmainwnd::learn_toggle ()
+{
+    perf().learn_toggle();
+    qt_set_icon
+    (
+        perf().is_group_learning() ?  learn2_xpm : learn_xpm, ui->button_learn
+    );
+}
+
+/**
+ *  Implements the Tap button or Tap keystroke (currently hard-wired as F9).
+ */
+
+void
+qsmainwnd::tap ()
+{
+    midibpm bpm = update_tap_bpm();
+    set_tap_button(m_current_beats);
+    if (m_current_beats > 1)                    /* first one is useless */
+    {
+        ui->spinBpm->setValue(double(bpm));
+    }
+}
+
+/**
+ *  Sets the label in the Tap button to the given number of taps.
+ *
+ * \param beats
+ *      The current number of times the user has clicked the Tap button/key.
+ */
+
+void
+qsmainwnd::set_tap_button (int beats)
+{
+    char temp[8];
+    snprintf(temp, sizeof temp, "%d", beats);
+    ui->button_tap_bpm->setText(temp);
+}
+
+/**
+ *  Calculates the running BPM value from the user's sequences of taps.
+ *
+ * \return
+ *      Returns the current BPM value.
+ */
+
+midibpm
+qsmainwnd::update_tap_bpm ()
+{
+    midibpm bpm = 0.0;
+    struct timespec spec;
+    clock_gettime(CLOCK_REALTIME, &spec);
+    long ms = long(spec.tv_sec) * 1000;     /* seconds to milliseconds      */
+    ms += round(spec.tv_nsec * 1.0e-6);     /* nanoseconds to milliseconds  */
+    if (m_current_beats == 0)
+    {
+        m_base_time_ms = ms;
+        m_last_time_ms = 0;
+    }
+    else if (m_current_beats >= 1)
+    {
+        int diffms = ms - m_base_time_ms;
+        bpm = m_current_beats * 60000.0 / diffms;
+        m_last_time_ms = ms;
+    }
+    ++m_current_beats;
+    return bpm;
+}
+
+/**
+ *  Implements the keep-queue button.
+ */
+
+void
+qsmainwnd::queue_it ()
+{
+    bool is_active = ui->button_keep_queue->isChecked();
+    perf().set_keep_queue(is_active);
 }
 
 }               // namespace seq64

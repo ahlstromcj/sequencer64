@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-03
+ * \updates       2018-08-20
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -147,6 +147,20 @@ namespace seq64
 
 class midifile
 {
+
+public:
+
+    /**
+     *  Instead of having two save options, we now have three.
+     */
+
+    typedef enum
+    {
+        FILE_SAVE_AS_NORMAL,
+        FILE_SAVE_AS_EXPORT_SONG,
+        FILE_SAVE_AS_EXPORT_MIDI
+
+    } SaveOption;
 
 private:
 

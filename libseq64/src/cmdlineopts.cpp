@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-08-11
+ * \updates       2018-08-22
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -1165,9 +1165,7 @@ build_details ()
         << "Seq32 menu buttons on" << std::endl
 #endif
         << "Seq32 transpose on" << std::endl
-#ifdef SEQ64_MAINWND_TAP_BUTTON
         << "BPM Tap button on" << std::endl
-#endif
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
         << "Solid piano-roll grid on" << std::endl
 #endif

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2018-08-11
+ * \updates       2018-08-22
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -172,11 +172,11 @@
  *  can be used to calculate a tempo based on the user's periodic clicks.
  *  (Later, a shortcut key will be added).  Inspired by a request from user
  *  alejg.
+ *
+ *  No longer needed; this feature is now permanent.
+ *
+ * #define SEQ64_MAINWND_TAP_BUTTON
  */
-
-#ifndef SEQ64_QT5_USER_INTERFACE    /* include/qt/portmidi/seq64-config.h   */
-#define SEQ64_MAINWND_TAP_BUTTON
-#endif
 
 /**
  *  In the perform object, replaces a direct call to sequence::stream_event()

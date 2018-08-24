@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-02-18
+ * \updates       2018-08-22
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -45,6 +45,7 @@
 #include "seq64_features.h"             /* feature macros for the app   */
 #include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
 #include "gui_window_gtk2.hpp"          /* seq64::qui_window_gtk2       */
+#include "midifile.hpp"                 /* seq64::midifile::SaveOption  */
 #include "mutex.hpp"                    /* seq64::mutex, automutex      */
 #include "perform.hpp"                  /* seq64::perform and callback  */
 
@@ -110,20 +111,6 @@ namespace seq64
 
 class mainwnd : public gui_window_gtk2, public performcallback
 {
-
-private:
-
-    /**
-     *  Instead of having two save options, we now have three.
-     */
-
-    typedef enum
-    {
-        FILE_SAVE_AS_NORMAL,
-        FILE_SAVE_AS_EXPORT_SONG,
-        FILE_SAVE_AS_EXPORT_MIDI
-
-    } SaveOption;
 
 private:
 
@@ -452,10 +439,7 @@ private:
 
     Gtk::Adjustment * m_adjust_bpm;     /**< BPM adjustment object.         */
     Gtk::SpinButton * m_spinbutton_bpm; /**< BPM spin-button object.        */
-
-#ifdef SEQ64_MAINWND_TAP_BUTTON
     Gtk::Button * m_button_tap;         /**< Tap-for-tempo button.          */
-#endif
 
     /**
      *  It seems convenient to have a button that can show that status
@@ -495,8 +479,6 @@ private:
 
     sigc::connection m_timeout_connect;
 
-#ifdef SEQ64_MAINWND_TAP_BUTTON
-
     /**
      *  Indicates the number of beats considered in calculating the BPM via
      *  button tapping.  This value is displayed in the button.
@@ -517,8 +499,6 @@ private:
      */
 
     long m_last_time_ms;
-
-#endif
 
     /**
      *  Indicates if the menu bar is to be greyed out or not.  This is a
@@ -654,18 +634,11 @@ private:
     void pause_playing ();
     void stop_playing ();
     void toggle_playing ();
-
     bool timer_callback ();
     int set_screenset (int screenset);
-
-#ifdef SEQ64_MAINWND_TAP_BUTTON
-
     void tap ();
     void set_tap_button (int beats);
     midibpm update_bpm ();
-
-#endif
-
     void tempo_log ();
     void toggle_tempo_record ();
     void toggle_time_format ();
@@ -793,7 +766,10 @@ private:
     void build_info_dialog ();
     int query_save_changes ();
     void new_open_error_dialog ();
-    void file_save_as (SaveOption option = FILE_SAVE_AS_NORMAL);
+    void file_save_as
+    (
+        midifile::SaveOption option = midifile::FILE_SAVE_AS_NORMAL
+    );
     void file_exit ();
     void new_file ();
     bool save_file ();

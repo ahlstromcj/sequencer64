@@ -100,7 +100,7 @@
 #include "gtk_helpers.h"
 #include "gui_key_tests.hpp"            /* is_ctrl_key(), etc.              */
 #include "keys_perform.hpp"
-#include "keystroke.hpp"
+#include "keystroke.hpp"                /* seq64::keystroke class           */
 #include "maintime.hpp"
 #include "mainwid.hpp"
 #include "mainwnd.hpp"
@@ -1826,6 +1826,97 @@ mainwnd::toggle_time_format ()
 }
 
 /**
+ *
+ */
+
+bool
+mainwnd::handle_group_learn (const keystroke & k)
+{
+    bool mgl = perf().is_group_learning() && k.key() != PREFKEY(group_learn);
+    int count = perf().get_key_groups().count(k.key());
+    if (count != 0)
+    {
+        int group = perf().lookup_keygroup_group(k.key());
+        if (group >= 0)
+        {
+            perf().select_and_mute_group(group);    /* use mute group key */
+        }
+        else
+        {
+            mgl = false;
+            std::ostringstream os;
+            os
+                << "Due to larger set-size, only " << perf().group_max()
+                << " groups available.  See File / Options / Keyboard."
+                ;
+            Gtk::MessageDialog dialog
+            (
+                *this, "Mute group out of range, ignored", false,
+                Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true
+            );
+            dialog.set_title("Group Learn");
+            dialog.set_secondary_text(os.str(), false);
+            dialog.run();
+            perf().unset_mode_group_learn();
+        }
+    }
+
+    if (mgl)                                    /* mute group learn     */
+    {
+        if (count != 0)
+        {
+            std::ostringstream os;
+            os
+                << "Mute group key '"
+                << perf().key_name(k.key()) // keyval_name(k.key())
+                << "' (code = " << k.key() << ") successfully mapped."
+               ;
+
+            Gtk::MessageDialog dialog
+            (
+                *this, "MIDI mute group learn success", false,
+                Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true
+            );
+            dialog.set_title("Group Learn");
+            dialog.set_secondary_text(os.str(), false);
+            dialog.run();
+
+            /*
+             * Missed the key-up group-learn message, so force it to off.
+             */
+
+            perf().unset_mode_group_learn();
+        }
+        else
+        {
+            std::ostringstream os;
+            os
+                << "Key '" << perf().key_name(k.key()) // keyval_name(k.key())
+                << "' (code = " << k.key()
+                << ") is not a configured mute-group key. "
+                << "To add it, see File/Options menu or the 'rc' file."
+               ;
+
+            Gtk::MessageDialog dialog
+            (
+                *this, "MIDI mute group learn failed", false,
+                Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
+            );
+            dialog.set_title("Group Learn");
+            dialog.set_secondary_text(os.str(), false);
+            dialog.run();
+
+            /*
+             * Missed the key-up message for group-learn, so force it off.
+             */
+
+            perf().unset_mode_group_learn();
+        }
+    }
+    return mgl;
+}
+
+/**
  *  We are trying to work around an apparent Gtk+ bug (which occurs on my
  *  64-bit Debian Sid laptop, but not on my 32-bit Debian Jessie laptop) that
  *  causes Sequencer64 to freeze, emitting Gtk errors, if one tries to access
@@ -3149,87 +3240,9 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 #endif
         }
 
-        bool mgl = perf().is_group_learning() && k.key() != PREFKEY(group_learn);
-        int count = perf().get_key_groups().count(k.key());
-        if (count != 0)
-        {
-            int group = perf().lookup_keygroup_group(k.key());
-            if (group >= 0)
-            {
-                perf().select_and_mute_group(group);    /* use mute group key */
-            }
-            else
-            {
-                mgl = false;
-                std::ostringstream os;
-                os
-                    << "Due to larger set-size, only " << perf().group_max()
-                    << " groups available.  See File / Options / Keyboard."
-                    ;
-                Gtk::MessageDialog dialog
-                (
-                    *this, "Mute group out of range, ignored", false,
-                    Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true
-                );
-                dialog.set_title("Group Learn");
-                dialog.set_secondary_text(os.str(), false);
-                dialog.run();
-                perf().unset_mode_group_learn();
-            }
-        }
+        /* bool mgl = */ (void) handle_group_learn(k);
 
-        if (mgl)                                    /* mute group learn     */
-        {
-            if (count != 0)
-            {
-                std::ostringstream os;
-                os
-                    << "Mute group key '"
-                    << perf().key_name(k.key()) // keyval_name(k.key())
-                    << "' (code = " << k.key() << ") successfully mapped."
-                   ;
 
-                Gtk::MessageDialog dialog
-                (
-                    *this, "MIDI mute group learn success", false,
-                    Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true
-                );
-                dialog.set_title("Group Learn");
-                dialog.set_secondary_text(os.str(), false);
-                dialog.run();
-
-                /*
-                 * Missed the key-up group-learn message, so force it to off.
-                 */
-
-                perf().unset_mode_group_learn();
-            }
-            else
-            {
-                std::ostringstream os;
-                os
-                    << "Key '" << perf().key_name(k.key()) // keyval_name(k.key())
-                    << "' (code = " << k.key()
-                    << ") is not a configured mute-group key. "
-                    << "To add it, see File/Options menu or the 'rc' file."
-                   ;
-
-                Gtk::MessageDialog dialog
-                (
-                    *this, "MIDI mute group learn failed", false,
-                    Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
-                );
-                dialog.set_title("Group Learn");
-                dialog.set_secondary_text(os.str(), false);
-                dialog.run();
-
-                /*
-                 * Missed the key-up message for group-learn, so force it off.
-                 */
-
-                perf().unset_mode_group_learn();
-            }
-        }
         if (! perf().playback_key_event(k))
         {
             /**

@@ -8,7 +8,7 @@
 :: \library     Sequencer64 for Windows
 :: \author      Chris Ahlstrom
 :: \date        2018-05-26
-:: \update      2018-08-12
+:: \update      2018-08-26
 :: \license     $XPC_SUITE_GPL_LICENSE$
 ::
 ::      This script sets up and creates a release build of Sequencer64 for
@@ -19,9 +19,10 @@
 :: Requirements:
 ::
 ::       1. Runs in Windows only.
-::       2. Requires QtCreator to be installed, configured to provide
+::       2. Requires QtCreator to be installed, and configured to provide
 ::          the 32-bit Mingw tools, including mingw32-make.exe, and
 ::          qmake.exe.  The PATH must included the path to both executables.
+::          We have not tried using the Microsoft C++ compiler yet.
 ::       3. Requires 7-Zip to be installed and accessible from the DOS
 ::          command-line, as 7z.exe.
 ::
@@ -34,8 +35,9 @@
 ::          and Sequencer64 version number.  The macros to modify are
 ::          VER_NUMBER (e.g. "0.95") and VER_REVISION (e.g. "1", as in
 ::          "0.95.1").
-::       2. In Windows Explorer, just double-click on this batch file and
-::          watch the build run in a DOS window.
+::       2. In Windows Explorer, just double-click on this batch file in its
+::          location in the "nsis" directory, and watch the build run in a
+::          DOS window.
 ::       3. The result is a file such as "qpseq64-release-package-0.95.1.7z".
 ::          It is found in ../seq64-release/Seq64qt5.
 ::       4. In Linux (have not tried NSIS in Windows yet), copy this 7z file

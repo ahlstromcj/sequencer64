@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-12
+ * \updates       2018-08-25
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -191,7 +191,7 @@ optionsfile::error_message
  *
  *  [keyboard-control]
  *
- *  The keyboard control defines the keys that will toggle the stage of
+ *  The keyboard control defines the keys that will toggle the state of
  *  each of up to 32 patterns in a pattern/sequence box.  These keys are
  *  displayed in each box as a reminder.  The first number specifies the
  *  Key number, and the second number specifies the Sequence number.
@@ -201,7 +201,7 @@ optionsfile::error_message
  *  The keyboard group specifies more automation for the application.
  *  The first number specifies the Key number, and the second number
  *  specifies the Group number.  This section should be better described
- *  in the seq24-doc project on GitHub.
+ *  in the sequencer64-doc project on GitHub.
  *
  *  [extended-keys]
  *
@@ -471,6 +471,8 @@ optionsfile::parse (perform & p)
     }
 
     /*
+     *  Keys for Group Learn.
+     *
      *  We used to crap out when this section had 0 entries.  But for working
      *  with the new Qt5 implmentation, it is worthwhile to continue.  Also,
      *  we note that Kepler34 has this section commented out.
@@ -1403,7 +1405,13 @@ optionsfile::write (const perform & p)
      */
 
     int x = 0;
-    file << "\n[interaction-method]\n\n";
+    file
+        << "\n[interaction-method]\n\n"
+        << "# Sets the mouse handling style for drawing and editing a pattern\n"
+        << "# This feature is current NOT supported in the Qt version of\n"
+        << "# Sequencer64 (qpseq64).\n\n"
+        ;
+
     while (c_interaction_method_names[x] && c_interaction_method_descs[x])
     {
         file
@@ -1451,8 +1459,12 @@ optionsfile::write (const perform & p)
 
     file
         << "\n[keyboard-control]\n\n"
+        << "# Defines the keys that toggle the state of each of up to 32\n"
+        << "# patterns in the pattern/sequence window.  These keys are normally\n"
+        << "# shown in each box.  The first number below specifies the key\n"
+        << "# code, and the second number specifies the pattern number.\n\n"
         << kevsize << "     # number of keys\n\n"
-        << "# Key #  Sequence #  Key name\n\n"
+        << "# Key-No.  Sequence-No.  Key-Name\n\n"
         ;
 
 for
@@ -1474,7 +1486,11 @@ for
          ;
     file
         << "\n[keyboard-group]\n\n"
-        << kegsize << "     # number of key groups\n\n"
+        << "# This section actually defines the mute-group keys for the group\n"
+        << "# learn function.  Pressing the 'L' button and then pressing one\n"
+        << "# of the keys in this list will cause the current set of armed\n"
+        << "# patterns to be memorized and associated with that key.\n\n"
+        << kegsize << "     # number of group-learn keys (key groups)\n\n"
         << "# Key #  group # Key name\n\n"
         ;
 

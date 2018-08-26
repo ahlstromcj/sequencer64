@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-22
+ * \updates       2018-08-24
  * \license       GNU GPLv2 or above
  *
  */
@@ -54,6 +54,7 @@ namespace Ui
 
 namespace seq64
 {
+    class keystroke;
     class perform;
     class qsmainwnd;
 
@@ -63,6 +64,8 @@ namespace seq64
 
 class qsliveframe : public QFrame, gui_palette_qt5
 {
+    friend class qsmainwnd;
+
     Q_OBJECT
 
 public:
@@ -108,6 +111,8 @@ private:
     void updateInternalBankName ();
     bool valid_sequence (int seqnum);
     int seqIDFromClickXY (int click_x, int click_y);
+    bool handle_key_press (unsigned gdkkey);
+    bool handle_group_learn (keystroke & k, std::string & msgout);
 
 private:
 

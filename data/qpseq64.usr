@@ -1,4 +1,4 @@
-# Sequencer64 0.94.0 (and above) user-configuration file
+# Sequencer64 0.95.0 (and above) user-configuration file
 #
 # Created by reading the following file and writing it out via the
 # Sequencer64 application:
@@ -37,7 +37,6 @@
 
 0     # number of user-defined MIDI busses
 
-
 # In the following MIDI instrument definitions, active controller
 # numbers (i.e. supported by the instrument) are paired with
 # the (optional) name of the controller supported.
@@ -45,7 +44,6 @@
 [user-instrument-definitions]
 
 0     # instrument list count
-
 
 # ======== Sequencer64-Specific Variables Section ========
 
@@ -191,7 +189,7 @@
 # that concept.  The default is 40 ms.  Some windows used 25 ms,
 # which is faster.
 
-20      # window_redraw_rate
+40      # window_redraw_rate
 
 # Specifies using icons for some of the user-interface buttons
 # instead of text buttons.  This is purely a preference setting.
@@ -200,6 +198,41 @@
 
 0      # use_more_icons (currently affects only main window)
 
+# Specifies the number of set-window ('wid') rows to show.
+# The long-standing default is 1, but 2 or 3 may also be set.
+# Corresponds to R in the '-o wid=RxC,F' option.
+# SUPPORT FOR THIS OPTION NOT COMPILED INTO THIS BUILD.
+
+1      # block_rows (number of rows of set blocks/wids)
+
+# Specifies the number of set window ('wid') columns to show.
+# The long-standing default is 1, but 2 may also be set.
+# Corresponds to C in the '-o wid=RxC,F' option.
+# SUPPORT FOR THIS OPTION NOT COMPILED INTO THIS BUILD.
+
+1      # block_columns (number of columns of set blocks/wids)
+
+# Specifies if the multiple set windows are 'in sync' or can
+# be set to arbitrary set numbers independently.
+# The default is false (0), means that there is a single set
+# spinner, which controls the set number of the upper-left 'wid',
+# and the rest of the set numbers follow sequentially.  If true
+# (1), then each 'wid' can be set to any set-number.
+# Corresponds to the 'f' (true, false, or 'indep') in the
+# '-o wid=RxC,F' option.  Here, 1 is the same as 'indep' or false,
+# and 0 is the same as f = true.  Backwards, so be careful.
+# SUPPORT FOR THIS OPTION NOT COMPILED INTO THIS BUILD.
+
+1      # block_independent (set spinners for each block/wid)
+
+# Specifies an enlargement of the main window of Sequencer64.
+# The normal value is 1.0, which is the legacy sizing.  If this
+# value is between 1.0 and 3.0, it will increase the size of all
+# of the main window elements proportionately. Same as the
+# '-o scale=x.y' option.
+
+1.001      # window_scale (scales the main window upwards in size)
+
 [user-midi-settings]
 
 # These settings specify MIDI-specific value that might be
@@ -207,7 +240,8 @@
 
 # Specifies parts-per-quarter note to use, if the MIDI file.
 # does not override it.  Default is 192, but we'd like to go
-# higher than that.
+# lower and higher than that.  Set to 0 to use the PPQN from the
+# MIDI file, rather than scaling its PPQN re this value.
 
 192       # midi_ppqn
 
@@ -234,7 +268,7 @@
 # either for testing or convenience.  And don't save the MIDI file
 # afterwards, unless you want to overwrite all the buss values!
 
-2       # midi_buss_override (enabled, careful!)
+-1       # midi_buss_override (disabled)
 
 # Specifies the default velocity override when adding notes in the
 # sequence/pattern editor.  This value is obtained via the 'Vol'
@@ -248,7 +282,7 @@
 # the BPM is an integer.  Other values are 1 and 2 decimal digits
 # of precision.
 
-0       # bpm_precision
+1       # bpm_precision
 
 # Specifies the step increment of the beats/minute spinner and
 # MIDI control over the BPM value.  The default is 1. For a
@@ -256,7 +290,7 @@
 # precision of 2 decimal points, 0.01 is a good value, but one
 # might want somethings a little faster, like 0.05.
 
-1       # bpm_step_increment
+0.1       # bpm_step_increment
 
 # Specifies the page increment of the beats/minute field. It is
 # used when the Page-Up/Page-Down keys are pressed while the BPM
@@ -312,6 +346,23 @@ C:\Users\chris\AppData\Local\sequencer64\/virtualmidi.log
 # some users have setting the transpose button in seqedit.
 
 0       # work_around_transpose_image
+
+[user-ui-tweaks]
+
+# This first value specifies the height of the keys in the
+# sequence editor.  Defaults to 12 (pixels), but 8 is better.
+# Currently used only in the Qt GUI.
+
+8       # (user_ui_) key_height
+
+# Normally, the Qt version of Sequencer64 uses the old pattern
+# editor in the 'Edit' tab.  If the following value is set to 1,
+# then the new, larger, more functional pattern editor can be
+# used in the 'Edit' tab.  This setting also has the side-effect
+# of making the whole Sequencer64 window larger.
+# Currently used only in the Qt GUI.
+
+1       # (user_ui_) use_new_seqedit
 
 # End of C:\Users\chris\AppData\Local\sequencer64\qpseq64.usr
 #

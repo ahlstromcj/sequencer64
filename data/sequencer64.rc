@@ -5,6 +5,17 @@
 # file, but adds some new options, such as LASH, Mod4 interaction
 # support, an auto-save-on-exit option, and more.  Also provided
 # is a legacy mode.
+#
+# The [comments] section can document this file.  Lines starting
+# with '#' and '[' are ignored.  Blank lines are ignored.  Show a
+# blank line by adding a space character to the line.
+
+[comments]
+
+(Comments added to this section are preserved.  Lines starting with
+ a '#' or '[', or that are blank, are ignored.  Start lines that must
+ be blank with a space.)
+
 
 [midi-control]
 
@@ -26,6 +37,17 @@
 # 'd1min'/'d1max' are the range of second values that should match.
 # Example:  For a Note On for note 0, 0 and 127 indicate that any
 # Note On velocity will cause the MIDI control to take effect.
+
+#     ------------------ on/off (indicate is the section is enabled)
+#    | ----------------- inverse
+#    | |  -------------- MIDI status (event) byte (e.g. note on)
+#    | | |  ------------ data 1 (e.g. note number)
+#    | | | |  ---------- data 2 min
+#    | | | | |  -------- data 2 max
+#    | | | | | |
+#    v v v v v v
+#   [0 0 0 0 0 0]   [0 0 0 0 0 0]   [0 0 0 0 0 0]
+#    Toggle          On              Off
 
 84      # MIDI controls count (74 or 84)
 
@@ -62,6 +84,7 @@
 29 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 30 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 31 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+
 # Mute-in group section:
 32 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 33 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
@@ -95,6 +118,9 @@
 61 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 62 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 63 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+
+# Automation group
+
 # bpm up:
 64 [0 0   0   0   0   0] [1 0 144   9   0 127] [0 0   0   0   0   0]
 # bpm down:
@@ -115,7 +141,9 @@
 72 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # screen set play:
 73 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+
 # Extended MIDI controls:
+ 
 # start playback (pause, start, stop):
 74 [1 0 144   2   0 127] [1 0 144   4   0 127] [1 0 144   0   0 127]
 # performance record:
@@ -197,18 +225,10 @@
 # Clock Modulo, where MIDI clocking will not begin until the song
 # position reaches the start modulo value [midi-clock-mod-ticks].
 
-5    # number of MIDI clocks/busses
+1    # number of MIDI clocks/busses
 
 # Output buss name: [0] 14:0 Midi Through Port-0
-0 1  # buss number, clock status
-# Output buss name: [1] 128:0 TiMidity port 0
-1 0  # buss number, clock status
-# Output buss name: [2] 128:1 TiMidity port 1
-2 0  # buss number, clock status
-# Output buss name: [3] 128:2 TiMidity port 2
-3 0  # buss number, clock status
-# Output buss name: [4] 128:3 TiMidity port 3
-4 0  # buss number, clock status
+0 0  # buss number, clock status
 
 [midi-clock-mod-ticks]
 
@@ -235,10 +255,10 @@
 # The first number is the port number, and the second number
 # indicates whether it is disabled (0), or enabled (1).
 
-# [0] 0:1 system:announce
-0 1
-# [1] 14:0 Midi Through Port-0
-1 0
+# Input buss name: [0] 0:1 system:announce
+0 0  # buss number, input status
+# Input buss name: [1] 14:0 Midi Through Port-0
+1 0  # buss number, input status
 
 # If set to 1, this option allows the master MIDI bus to record
 # (filter) incoming MIDI data by channel, allocating each incoming
@@ -250,10 +270,10 @@
 [manual-alsa-ports]
 
 # Set to 1 to have sequencer64 create its own ALSA ports and not
-# connect to other clients.  Use 1 to expose all the MIDI ports to
+# connect to other clients.  Use 1 to expose all 16 MIDI ports to
 # JACK (e.g. via a2jmidid).  Use 0 to access the ALSA MIDI ports
-# already running on one's computer, or to use the MIDI Through
-# (capture) output alone in JACK.
+# already running on one's computer, or to use the autoconnect
+# feature (Sequencer64 connects to existing JACK ports on startup.
 
 0   # flag for manual ALSA ports
 
@@ -292,6 +312,11 @@
 1   # allow_click_edit
 
 [keyboard-control]
+
+# Defines the keys that toggle the state of each of up to 32
+# patterns in the pattern/sequence window.  These keys are normally
+# shown in each box.  The first number below specifies the key
+# code, and the second number specifies the pattern number.
 
 32     # number of keys
 
@@ -332,7 +357,12 @@
 
 [keyboard-group]
 
-32     # number of key groups
+# This section actually defines the mute-group keys for the group
+# learn function.  Pressing the 'L' button and then pressing one
+# of the keys in this list will cause the current set of armed
+# patterns to be memorized and associated with that key.
+
+32     # number of group-learn keys (key groups)
 
 # Key #  group # Key name
 
@@ -472,14 +502,8 @@ contrib/midi/
 
 7
 
-contrib/midi/1Bar.midi
-contrib/midi/b4uacuse-gm-patchless.midi
-/home/ahlstrom/Home/ca/mls/git/sequencer64/contrib/midi/b4uacuse-gm-patchless.midi
-contrib/midi/b4uacuse-GM-format.midi
-/home/ahlstrom/Home/ca/mls/git/sequencer64/contrib/midi/b4-8x8.midi
-/home/ahlstrom/Home/ca/mls/git/sequencer64/contrib/midi/b4-4x8.midi
-/home/ahlstrom/Home/ca/mls/git/sequencer64/contrib/midi/1Bar-8x8.midi
+data/b4uacuse-gm-patchless.midi
 
-# End of /home/ahlstrom/.config/sequencer64/sequencer64.rc
+# End of /home/yourname/.config/sequencer64/sequencer64.rc
 #
 # vim: sw=4 ts=4 wm=4 et ft=sh

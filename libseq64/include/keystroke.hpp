@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2018-02-13
+ * \updates       2018-08-25
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -214,6 +214,9 @@ public:
     {
         return bool(m_modifier & SEQ64_MOD4_MASK);      // GDK_MOD4_MASK
     }
+
+    void toupper ();
+    void tolower ();
 
 };          // class keystroke
 

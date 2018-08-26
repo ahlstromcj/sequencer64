@@ -296,6 +296,10 @@
 
 [interaction-method]
 
+# Sets the mouse handling style for drawing and editing a pattern
+# This feature is current NOT supported in the Qt version of
+# Sequencer64 (qpseq64).
+
 # 0 - 'seq24' (original seq24 method)
 # 1 - 'fruity' (similar to a certain fruity sequencer we like)
 
@@ -321,6 +325,11 @@
 1   # allow_click_edit
 
 [keyboard-control]
+
+# Defines the keys that toggle the state of each of up to 32
+# patterns in the pattern/sequence window.  These keys are normally
+# shown in each box.  The first number below specifies the key
+# code, and the second number specifies the pattern number.
 
 32     # number of keys
 
@@ -361,7 +370,12 @@
 
 [keyboard-group]
 
-32     # number of key groups
+# This section actually defines the mute-group keys for the group
+# learn function.  Pressing the 'L' button and then pressing one
+# of the keys in this list will cause the current set of armed
+# patterns to be memorized and associated with that key.
+
+32     # number of group-learn keys (key groups)
 
 # Key #  group # Key name
 
@@ -410,7 +424,7 @@
 32    # Space start sequencer
 65307    # Escape stop sequencer
 46    # . pause sequencer
-0     # show sequence numbers (1 = true / 0 = false); ignored in legacy mode
+1     # show sequence numbers (1 = true / 0 = false); ignored in legacy mode
 61    # = is the shortcut key to bring up the pattern editor
 45    # - is the shortcut key to bring up the event editor
 47    # / shifts the hot-key so that it toggles pattern + 32

@@ -331,7 +331,8 @@ Yoshimi
 
 # Specifies parts-per-quarter note to use, if the MIDI file.
 # does not override it.  Default is 192, but we'd like to go
-# higher than that.
+# lower and higher than that.  Set to 0 to use the PPQN from the
+# MIDI file, rather than scaling its PPQN re this value.
 
 192       # midi_ppqn
 

@@ -24,11 +24,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-22
+ * \updates       2018-08-25
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
  */
+
+#include <sstream>                      /* std::ostringstream class         */
 
 #include <QPainter>
 #include <QMenu>
@@ -36,7 +38,7 @@
 #include <QMessageBox>
 
 #include "globals.h"
-#include "keystroke.hpp"
+#include "keystroke.hpp"                /* seq64::keystroke class           */
 #include "perform.hpp"
 #include "qskeymaps.hpp"                /* mapping between Gtkmm and Qt     */
 #include "qsliveframe.hpp"
@@ -930,45 +932,110 @@ qsliveframe::editEvents ()
 }
 
 /**
- *  The Gtkmm 2.4 version calls perform::mainwnd_key_event().  We have broken
- *  that function into pieces (smaller functions) that we can use here.  An
- *  important point is that keys that affect the GUI directly need to be
- *  handled here in the GUI.  Another important point is that other events are
- *  offloaded to the perform object, and we need to let that object handle as
- *  much as possible.  The logic here is an admixture of events that we will
- *  have to sort out.
+ *  Handles associating a group-learn with the give keystroke.
  *
- *  Note that the QKeyEWvent::key() function does not distinguish between
- *  capital and non-capital letters, so we use the text() function (returning
- *  the Unicode text the key generated) for this purpose and provide a the
- *  QS_TEXT_CHAR() macro to make it obvious.
+ * \warning
+ *      In Gtkmm-2.4, keystrokes that are letters emit the upper-case ASCII
+ *      code (e.g. 65 for the letter 'A').  However, Qt 5 emits the actual
+ *      ASCII code (e.g. 97 for the letter 'a').  Since we copped out and
+ *      translate Qt 5 key-codes to the Gtkmm-2.4 values for use in the "rc"
+ *      file, we have to do that here as well.  But only if we are in
+ *      group-learn mode.  Note that mainwnd (Gtkmm-2.4) does the same thing.
  *
- *  Weird.  After the first keystroke, for, say 'o' (ascii 111) == kkey, we
- *  get kkey == 0, presumably a terminator character that we have to ignore.
- *  Also, we can't intercept the Esc key.  Qt grabbing it?
+ * \param k
+ *      The (remapped, if necessary) keystroke object that perform expects in
+ *      its keystroke handlers.
  *
- * \param event
- *      Provides a pointer to the key event.
+ * \param [out] msgout
+ *      Storage for either an informational string or an error string.
+ *      If it comes out empty, then no group-learn action occurred.
+ *
+ * \return
+ *      Returns true if in group-learn mode and a group key was successfully
+ *      learned.  If true, then the msgout parameter should contain an
+ *      informational message. Returns false otherwise.  In that case, a
+ *      non-empty msgout is an error message.
  */
 
-void
-qsliveframe::keyPressEvent (QKeyEvent * event)
+bool
+qsliveframe::handle_group_learn (keystroke & k, std::string & msgout)
 {
-    unsigned ktext = QS_TEXT_CHAR(event->text());
-    unsigned kkey = event->key();
-    unsigned gdkkey = qt_map_to_gdk(kkey, ktext);   /* remap to "legacy" keys   */
+    bool mgl = perf().is_group_learning() && k.key() != PREFKEY(group_learn);
+    if (mgl)
+        k.shift_lock();                             /* remap to upper-case  */
 
-#ifdef PLATFORM_DEBUG_TMI
-    std::string kname = qt_key_name(kkey, ktext);
-    printf
-    (
-        "qsliveframe: name = %s; gdk = 0x%x; key = 0x%x; text = 0x%x\n",
-        kname.c_str(), gdkkey, kkey, ktext
-    );
-#endif
+    int count = perf().get_key_groups().count(k.key());
+    msgout.clear();
+    if (count != 0)
+    {
+        int group = perf().lookup_keygroup_group(k.key());
+        if (group >= 0)
+        {
+            perf().select_and_mute_group(group);    /* use mute group key   */
+        }
+        else
+        {
+            std::ostringstream os;
+            os
+                << "Mute group out of range, ignored. "
+                << "Due to larger set-size, only " << perf().group_max()
+                << " groups available."
+                ;
+            perf().unset_mode_group_learn();
+            msgout = os.str();
+            mgl = false;
+        }
+    }
+    if (mgl)                                        /* mute group learn     */
+    {
+        if (count != 0)
+        {
+            std::ostringstream os;
+            os
+                << "MIDI mute group learn success, "
+                << "Mute group key '"
+                << perf().key_name(k.key())
+                << "' (code = " << k.key() << ") successfully mapped."
+               ;
 
-    perform::action_t action = perf().keyboard_group_action(gdkkey);
+            /*
+             * Missed the key-up group-learn message, so force it to off.
+             */
+
+            perf().unset_mode_group_learn();
+            msgout = os.str();
+        }
+        else
+        {
+            std::ostringstream os;
+            os
+                << "Key '" << perf().key_name(k.key()) // keyval_name(k.key())
+                << "' (code = " << k.key()
+                << ") is not a configured mute-group key. "
+                << "To add it, see the 'rc' file, section [mute-group]."
+               ;
+
+            /*
+             * Missed the key-up message for group-learn, so force it off.
+             */
+
+            perf().unset_mode_group_learn();
+            msgout = os.str();
+            mgl = false;
+        }
+    }
+    return mgl;
+}
+
+/**
+ *
+ */
+
+bool
+qsliveframe::handle_key_press (unsigned gdkkey)
+{
     bool done = false;
+    perform::action_t action = perf().keyboard_group_action(gdkkey);
     if (action == perform::ACTION_NONE)
     {
         /*
@@ -1081,6 +1148,48 @@ qsliveframe::keyPressEvent (QKeyEvent * event)
             break;
         }
     }
+    return done;
+}
+
+/**
+ *  The Gtkmm 2.4 version calls perform::mainwnd_key_event().  We have broken
+ *  that function into pieces (smaller functions) that we can use here.  An
+ *  important point is that keys that affect the GUI directly need to be
+ *  handled here in the GUI.  Another important point is that other events are
+ *  offloaded to the perform object, and we need to let that object handle as
+ *  much as possible.  The logic here is an admixture of events that we will
+ *  have to sort out.
+ *
+ *  Note that the QKeyEWvent::key() function does not distinguish between
+ *  capital and non-capital letters, so we use the text() function (returning
+ *  the Unicode text the key generated) for this purpose and provide a the
+ *  QS_TEXT_CHAR() macro to make it obvious.
+ *
+ *  Weird.  After the first keystroke, for, say 'o' (ascii 111) == kkey, we
+ *  get kkey == 0, presumably a terminator character that we have to ignore.
+ *  Also, we can't intercept the Esc key.  Qt grabbing it?
+ *
+ * \param event
+ *      Provides a pointer to the key event.
+ */
+
+void
+qsliveframe::keyPressEvent (QKeyEvent * event)
+{
+    unsigned ktext = QS_TEXT_CHAR(event->text());
+    unsigned kkey = event->key();
+    unsigned gdkkey = qt_map_to_gdk(kkey, ktext);   /* remap to "legacy" keys   */
+
+#ifdef PLATFORM_DEBUG_TMI
+    std::string kname = qt_key_name(kkey, ktext);
+    printf
+    (
+        "qsliveframe: name = %s; gdk = 0x%x; key = 0x%x; text = 0x%x\n",
+        kname.c_str(), gdkkey, kkey, ktext
+    );
+#endif
+
+    bool done = handle_key_press(gdkkey);
     if (done)
         update();
     else

@@ -11,10 +11,10 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-08-31
+ * \updates       2018-08-25
  * \license       GNU GPLv2 or above
  *
- *  Copyright (C) 2013-2015 Chris Ahlstrom <ahlstromcj@gmail.com>
+ *  Copyright (C) 2013-2018 Chris Ahlstrom <ahlstromcj@gmail.com>
  *
  *  We need a uniform way to specify OS and compiler features without
  *  have to litter our code with many macros.  (Littering this file
@@ -71,18 +71,24 @@
 
 /**
  *  Provides a "Windows" macro, in case the environment doesn't provide
- *  it.  This macro is defined if not already defined and _WIN32 is
- *  encountered.
+ *  it.  This macro is defined if not already defined and _WIN32 or WIN32
+ *  are encountered.
  */
 
-#if defined Windows                    /* defined by the nar-maven-plugin     */
+#if defined Windows                     /* defined by nar-maven-plugin      */
 #define PLATFORM_WINDOWS
 #define PLATFORM_WINDOWS_API
 #else
-#if defined _WIN32 || defined _WIN64   /* defined by the Microsoft compiler   */
+#if defined _WIN32 || defined _WIN64    /* defined by Microsoft compiler    */
 #define PLATFORM_WINDOWS
 #define PLATFORM_WINDOWS_API
 #define Windows
+#else
+#if defined WIN32 || defined WIN64      /* defined by Mingw compiler        */
+#define PLATFORM_WINDOWS
+#define PLATFORM_WINDOWS_API
+#define Windows
+#endif
 #endif
 #endif
 
@@ -92,11 +98,11 @@
  *  encountered.
  */
 
-#if defined Linux                      /* defined by the nar-maven-plugin     */
+#if defined Linux                      /* defined by nar-maven-plugin       */
 #define PLATFORM_LINUX
 #define PLATFORM_POSIX_API
 #else
-#if defined __linux__                  /* defined by the GNU compiler         */
+#if defined __linux__                  /* defined by the GNU compiler       */
 #define PLATFORM_LINUX
 #define PLATFORM_POSIX_API
 #define Linux

@@ -257,6 +257,7 @@ class perform
     friend class mainwnd;
     friend class qperfeditframe64;
     friend class qsmainwnd;
+    friend class qsliveframe;
     friend class jack_assistant;
     friend class keybindentry;
     friend class midifile;

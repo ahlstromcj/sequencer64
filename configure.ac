@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-08-20
+dnl \update        2018-08-26
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -25,7 +25,7 @@ dnl
 dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
-AC_REVISION($Revision: 0.94$)dnl
+AC_REVISION($Revision: 0.95$)dnl
 AC_INIT(Sequencer64, [0.95.2], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 AC_CONFIG_MACRO_DIR([m4])
@@ -196,7 +196,7 @@ dnl      incremented.
 SEQ64_API_MAJOR="0"
 AC_SUBST([SEQ64_API_MAJOR])
 
-SEQ64_API_MINOR="94"
+SEQ64_API_MINOR="95"
 AC_SUBST([SEQ64_API_MINOR])
 
 SEQ64_API_PATCH="0"
@@ -776,7 +776,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-08-20"
+#define VERSION_DATE_SHORT "2018-08-26"
 #define VERSION "0.95.2"
 
 )
@@ -946,7 +946,7 @@ AC_MSG_RESULT([$SEQ64_APP_NAME]);
 
 cat << E_O_F
 
-Now do 'make' to compile the selected application.  Do 'make install'
+Do 'make' to compile the selected application.  Do 'make install'
 as root/sudo to install the selected application.  Some tests can be run
 using the separate seq64-tests project.  Do 'make dist', etc. to create gzip
 and other archives.  To build the PDF documentation, make sure Doxygen and

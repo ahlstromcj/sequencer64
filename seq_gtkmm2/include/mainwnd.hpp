@@ -642,6 +642,7 @@ private:
     void tempo_log ();
     void toggle_tempo_record ();
     void toggle_time_format ();
+    bool handle_group_learn (const keystroke & k);
     void queue_it ();
 
 #ifdef SEQ64_SONG_RECORDING

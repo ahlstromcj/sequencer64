@@ -1,6 +1,6 @@
 Bugs, etc.
 Chris Ahlstrom
-2015-10-27 to 2018-01-17
+2015-10-27 to 2018-08-26
 
 In no particular order...  "y" means "in progress".
 
@@ -215,5 +215,147 @@ There is even a helper script to support this scenario in
 [github](https://github.com/rhetr/nsm-scripts/blob/master/scripts/seq24-nsm).
 Please note that this script expects to find an (empty) Midi file in
 `~/.local/share/seq24/blank.midi`.
+
+Date: Sun, 1 Apr 2018 17:41:52 +0300
+From: Valery McHno <chaocrator@gmail.com>
+
+actually, i'm quite happy with gtk2 (and will be completely happy when
+i'll be able to use only cli version + launchpad)
+
+Date: Thu, 12 Jul 2018 22:12:26 +0200
+From: harm@harmlammers.nl
+
+Thank you for your email. The --no-create and --no-recursion shown below is
+what the make printed on the screen.
+
+Date: Tue, 24 Jul 2018 23:03:12 -0700
+From: layk <notifications@github.com>
+
+Learnig a mute group fails with quotedbl, currency, slash and parentleft
+doing Insert + key in question.
+Below is mute group section from sequencer64.rc and attached image from
+File->Options->Keyboard->Mute-group slots [mute-group]
+
+quotedbl: Key 'at' (code = 64) is not a configured mute-group key. To add
+it, see File/Options menu or the 'rc' file.
+Currency: Key 'dollar' (code = 36) is not a configured mute-group key. To
+add it, see File/Options menu or the 'rc' file.
+Slash: Key 'asciicircum' (code = 94) is not a configured mute-group key.
+To add it, see File/Options menu or the 'rc' file.
+Parentleft: Key 'asterisk' (code = 42) is not a configured mute-group key.
+To add it, see File/Options menu or the 'rc' file.
+
+Seems like those groups are not mapped correctly even if the
+sequencer64.rc file and File->options indicates to characters in question.
+
+Way to reproduce: Open sequencer64 , add sequences, arm sequences and try
+to make a mute group with Insert + " or ¤ or / or (
+
+Code is with ./bootstrap -er -rm on qt5_reconcile commit [1]7d316be
+
+Hmmh. I don't see if that helps since for example exlamation (!) over
+keybad 1 works.
+Sequencer64.rc has the only cghanged value 164 3 # currency mentioned but
+when i try to use it ie. Insert + currency sign over keybad 4 i get "Key
+'dollar' (code = 36) is not a configured mute-group key. To add it, see
+File/Options menu or the 'rc' file."
+
+I was able to bind midi program changes to toggle individual sequences
+with program change messsages in pattern-group section but i'm not sure
+how to do the same with mute groups?
+												
+Should below work for mute group for exclam / ! configured in
+Options->Keyboard section?
+												
+Mute-in group section:
+											 
+32 [1 0 192 3 0 0] [0 0 0 0 0 0] [0 0 0 0 0 0]
+33 [0 0 0 0 0 0] [0 0 0 0 0 0] [0 0 0 0 0 0]
+[1]screenshot from 2018-07-25 10-21-38
+
+This works in pattern group section for patterns in row 1, pattern 1 and
+row 2, pattern1:
+												
+Pattern-group section:
+												
+0 [1 0 192 5 0 0] [0 0 0 0 0 0] [0 0 0 0 0 0]
+1 [1 0 192 0 0 0] [0 0 0 0 0 0] [0 0 0 0 0 0]
+
+Date: Fri, 24 Aug 2018 00:56:20 +0000 (UTC)
+From: mayornancy <mayornancy@yahoo.com>
+To: "ahlstromcj@gmail.com" <ahlstromcj@gmail.com>
+Subject: Sequencer64 on Windows - v0.95.1 Feedback
+
+Spent some time using Seq64 v0.95.1 (again on Win7x64, as a 'portable'
+unzipped app) and I have some additional issues / questions / feedback:
+1. Bugs:
+   a.  If I add 4 patterns to the left-most column (1,q,a,z), the visual
+'active' state of patterns q, a, z don't update until pattern 1 is clicked
+(i.e  when pattern 1 is clicked, the other pattern states are properly
+refreshed).
+																			
+   b. Pattern 'Delete' and Cut don't seem to work; actually get a program
+crash shortly after issuing those actions.
+   c. Changing the bank number via the spinner up arrow. i.e. to 5,
+change back down to 0, and down again crashes the program (same thing
+happens if try to set above max value).
+2. Questions:
+   a. What do people use for an audible metronome? a dedicated pattern
+created by hand using quarter notes? or is there some other option I'm
+missing?
+   b. Is there a shortcut to go back to the Pattern view?
+																			
+	   Improvements over v0.95.0:
+	   i. the minus key ( - ) now creates a new pattern in the first cell
+(slot) and changes the GUI to the 'Edit' tab; I can only switch back via
+ALT+L
+	  ii. the equals key (=) now creates a new pattern in the first cell
+(slot) opens a new Edit window; I can only close via the mouse.
+   c. Is there a way to make another pattern (i.e. in slot 'q') via
+keyboard shortcut or midi command?
+   d. Can a midi command be linked to a specific midi device/controller
+(i.e use note 36 ON from 2nd mini keyboard to to pause/stop while note 36
+ON from main midi device is recorded in sequence?)
+Thanks again for your time and Sequencer64!
+Greg
+
+Date: Fri, 24 Aug 2018 05:04:14 -0700
+From: chaocrator <notifications@github.com>
+
+i've successfully built 0.95.1 deb package using the contents of debian
+subdirectory from 0.94.x.
+
+Date: Sat, 25 Aug 2018 17:53:56 +0200
+From: Jakob Michael Wilms <ernstnoetzelmann@gmail.com>
+To: ahlstromcj@gmail.com
+Subject: Sequencer64 MIDI Clock Input
+
+I've been a seq24 User for years and I appreciate it very much someone
+puts the effort into building a successor to it (I had a few views in
+seq24's source code despite not being a programmer and have not the least
+idea of what I was looking at and how the magic works, so I guess this
+demands a somewhat big effort).
+While I was able all the years to provide my fellow musicians with a MIDI
+Clock via seq24, it looks like I'm going to be the one receiving a MIDI
+Clock in the future.
+So while being at changing my setup I also decided to try out sequencer64;
+and I was able to get a instance of seq24 sending a MIDI Clock to the MIDI
+through port, which was received by a instance of sequencer64 from it —
+the speed changes in the one were noticable in the other. Sadly, when not
+using the MIDI through port but real hardware (an Electrix Tweaker with
+one MIDI cable connected to MIDI In as well as MIDI out), this behaviour
+could not be reproduced. Also, the MIDI Clock from a Korg R3 was not
+received/used either. Is there a way to get general MIDI Clock Input
+working?
+I'm looking forward to using sequencer64 in the future and would be very
+pleased if this issue worked out somehow. Thank you for this piece of
+software :-)
+With kind regards,
+Köbes
+PS: If you are looking for features to integrate in the future, MIDI
+feedback for controllers with LEDs would be awesome!
+
+
+
 
 # vim: sw=4 ts=4 wm=4 et ft=rc

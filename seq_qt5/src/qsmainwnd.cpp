@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-23
+ * \updates       2018-08-25
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -792,7 +792,7 @@ qsmainwnd::open_file (const std::string & fn)
     }
     else
     {
-        QString msg_text = errmsg.c_str();      /* msg_text += fn.c_str();  */
+        QString msg_text = tr(errmsg.c_str());
         m_msg_error->showMessage(msg_text);
         m_msg_error->exec();
     }
@@ -876,6 +876,14 @@ qsmainwnd::refresh ()
             std::string t = pulses_to_timestring(tick, bpm, ppqn, false);
             ui->label_HMS->setText(t.c_str());
         }
+    }
+    else
+    {
+        qt_set_icon
+        (
+            perf().is_group_learning() ?
+                learn2_xpm : learn_xpm, ui->button_learn
+        );
     }
     if (m_current_beats > 0 && m_last_time_ms > 0)
     {
@@ -1667,6 +1675,7 @@ qsmainwnd::keyPressEvent (QKeyEvent * event)
     );
 #endif
 
+    bool done = false;
     keystroke k(gdkkey, SEQ64_KEYSTROKE_PRESS);
     if (perf().playback_key_event(k))               // song mode parameter?
     {
@@ -1678,15 +1687,44 @@ qsmainwnd::keyPressEvent (QKeyEvent * event)
         {
             ui->btnPlay->setChecked(true);          // start_playing();
         }
+        done = true;
     }
     else
     {
+        if (! done)
+        {
+            std::string msgout;
+            done = m_live_frame->handle_group_learn(k, msgout);
+            if (! msgout.empty())
+            {
+                if (done)                           // info message
+                {
+                    QMessageBox * msg = new QMessageBox(this);
+                    msg->setText(tr(msgout.c_str()));
+                    msg->setInformativeText(tr("Click OK to continue."));
+                    msg->setStandardButtons(QMessageBox::Ok);
+                    msg->exec();
+                }
+                else                                // error message
+                {
+                    QErrorMessage * errmsg = new QErrorMessage(this);
+                    errmsg->showMessage(tr(msgout.c_str()));
+                    errmsg->exec();
+                    done = true;                    // key handled nonetheless
+                }
+            }
+        }
+
+        if (! done && not_nullptr(m_live_frame))
+            done = m_live_frame->handle_key_press(gdkkey);
+
         /*
          * If you reimplement this handler, it is very important that you call
          * the base class implementation if you do not act upon the key.
          */
 
-        QWidget::keyPressEvent(event);              // event->ignore();
+        if (! done)
+            QWidget::keyPressEvent(event);          // event->ignore();
     }
 }
 
@@ -1877,7 +1915,7 @@ qsmainwnd::learn_toggle ()
     perf().learn_toggle();
     qt_set_icon
     (
-        perf().is_group_learning() ?  learn2_xpm : learn_xpm, ui->button_learn
+        perf().is_group_learning() ? learn2_xpm : learn_xpm, ui->button_learn
     );
 }
 

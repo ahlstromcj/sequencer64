@@ -5170,6 +5170,13 @@ perform::input_func ()
                     else if (ev.get_status() == EVENT_MIDI_CONTINUE)
                     {
                         m_midiclockrunning = true;
+
+                        /*
+                         * TRIAL CODE.
+
+                        m_usemidiclock = true;
+
+                         */
                         song_start_mode(false);             // Kepler34
                         start(song_start_mode());
                     }

@@ -25,13 +25,13 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2017-08-19
+ * \updates       2017-08-25
  * \license       GNU GPLv2 or above
  *
  *  This class makes access to keystroke features simpler.
  */
 
-#include <ctype.h>
+#include <cctype>                       /* std::islower(), std::toupper()   */
 
 #include "keystroke.hpp"            // seq64::keystroke
 
@@ -136,9 +136,9 @@ bool
 keystroke::is_letter (unsigned ch) const
 {
     if (ch == SEQ64_KEYSTROKE_BAD_VALUE)
-        return bool(isalpha(m_key));
+        return bool(std::isalpha(m_key));
     else
-        return tolower(m_key) == tolower(ch);
+        return std::tolower(m_key) == std::tolower(ch);
 }
 
 /**
@@ -202,8 +202,10 @@ struct charpair_t s_character_mapping [] =
 void
 keystroke::shift_lock ()
 {
-    if (m_key >= 'a' && m_key <= 'z')
-        m_key -= 32;
+    if (std::islower(m_key))
+    {
+        m_key = unsigned(std::toupper(m_key));
+    }
     else
     {
         charpair_t * cp_ptr = &s_character_mapping[0];
@@ -217,6 +219,30 @@ keystroke::shift_lock ()
             ++cp_ptr;
         }
     }
+}
+
+/**
+ *  If the character is lower-case, it is converted (internally) to
+ *  upper-case.  Also see the shift_lock() function.
+ */
+
+void
+keystroke::toupper ()
+{
+    if (std::islower(m_key))
+        m_key = unsigned(std::toupper(m_key));
+}
+
+/**
+ *  If the character is upper-case, it is converted (internally) to
+ *  lower-case.
+ */
+
+void
+keystroke::tolower ()
+{
+    if (std::isupper(m_key))
+        m_key = unsigned(std::tolower(m_key));
 }
 
 }           // namespace seq64

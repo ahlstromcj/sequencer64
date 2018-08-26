@@ -1,4 +1,4 @@
-README for Sequencer64 0.95.2 (Native JACK, CLI, varisets, tempo, Windows)
+README for Sequencer64 0.95.3 (Native JACK, CLI, varisets, tempo, Windows)
 Chris Ahlstrom
 2015-09-10 to 2018-08-26
 
@@ -47,6 +47,8 @@ conventional source tarball.
 
 Recent changes:
 
+    -   Version 0.95.3:
+        -   TBD
     -   Version 0.95.2:
         -   Added the Qt 5 version of the Event Editor.
         -   Catching up on some more features from the Gtkmm-2:4 version.

@@ -39,16 +39,30 @@
 ::          location in the "nsis" directory, and watch the build run in a
 ::          DOS window.
 ::       3. The result is a file such as "qpseq64-release-package-0.95.1.7z".
-::          It is found in ../seq64-release/Seq64qt5.
+::          It is found in ../sequencer64/seq64-release/Seq64qt5.
 ::       4. In Linux (have not tried NSIS in Windows yet), copy this 7z file
 ::          to the root sequencer64 directory.
 ::       5. Use 7zip to extract this file; it will unpack the contents into
-::          the 'release' directory.
+::          the 'release' directory.  Then move it out of the way.
+::
+::          $ 7x x qpseq64-release-package-0.95.2.7z
+::          $ mv qpseq64-release-package-0.95.2.7z ..
+::
 ::       6. Change to the sequencer64/nsis directory and run:
 ::
 ::          $ makensis Seq64Setup_V0.95.nsi
 ::
 ::       7. The installer is sequencer64/release/sequencer64_setup_0.95.1.exe.
+::          Move it out of this directory to a safe place for transport.
+::          For example:
+::
+::          $ mv sequencer64_setup_0.95.1.exe ../../sequencer64-packages/0.95
+::
+::       8. Make a portable Zip package:
+::
+::          $ mv release/ qpseq64
+::          $ zip -u -r qpseq64-portable-0.95.1-0.zip qpseq64/
+::          $ mv qpseq64-portable-0.95.1-0.zip ../sequencer64-packages/0.95
 ::
 :: This batch file completely removes the old release directory and re-does
 :: everything.

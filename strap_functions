@@ -8,7 +8,7 @@
 # \library    	Any project
 # \author     	Chris Ahlstrom
 # \date       	2015-07-24
-# \update     	2018-05-10
+# \update     	2018-08-26
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -369,6 +369,7 @@ function clean_tempfiles()
    find . -name "tmwrk*" -exec rm -rf '{}' \; 2> /dev/null
    find . -name "tmpcvs*" -exec rm -rf '{}' \; 2> /dev/null
    find . -name "tmp" -exec rm -rf '{}' \; 2> /dev/null
+   rm -f doc/dox/config.log
 
 #  find . -name "safety" -exec rm -rf '{}' \; 2> /dev/null
 }

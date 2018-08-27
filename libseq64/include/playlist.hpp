@@ -1,5 +1,5 @@
-#ifndef SEQ64_USERFILE_HPP
-#define SEQ64_USERFILE_HPP
+#ifndef SEQ64_PLAYLIST_HPP
+#define SEQ64_PLAYLIST_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -20,21 +20,18 @@
  */
 
 /**
- * \file          userfile.hpp
+ * \file          playlist.hpp
  *
- *  This module declares/defines the base class for
- *  managing the user's <code> ~/.config/sequencer64/sequencer64.usr </code>
- *  or <code> ~/.seq24usr </code> configuration file.
+ *  This module declares/defines the base class for a playlist file and
+ *  a playlist manager.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2015-07-24
+ * \date          2018-08-26
  * \updates       2018-08-26
  * \license       GNU GPLv2 or above
  *
  */
-
-#include <string>
 
 #include "configfile.hpp"
 
@@ -44,37 +41,41 @@
 
 namespace seq64
 {
-
     class perform;
 
 /**
- *    Supports the user's <code> ~/.config/sequencer64/sequencer64.usr </code> and
- *    <code> ~/.seq24usr </code> configuration file.
+ *  Provides a file for reading and writing the application' main
+ *  configuration file.  The settings that are passed around are provided
+ *  or used by the perform class.
  */
 
-class userfile : public configfile
+class playlist : public configfile
 {
 
 public:
 
-    userfile (const std::string & a_name);
-    virtual ~userfile ();
+    playlist (const std::string & name);
+    virtual ~playlist ();
 
-    bool parse (perform & a_perf);
-    bool write (const perform & a_perf);
+    bool parse (perform & p);
+    bool write (const perform & p);
 
 private:
 
-    void dump_setting_summary ();
+    bool error_message
+    (
+        const std::string & sectionname,
+        const std::string & additional = ""
+    );
 
-};
+};          // class playlist
 
 }           // namespace seq64
 
-#endif      // SEQ64_USERFILE_HPP
+#endif      // SEQ64_PLAYLIST_HPP
 
 /*
- * userfile.hpp
+ * playlist.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2018-06-07
+# \update      2018-08-26
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -125,6 +125,7 @@ pkginclude_HEADERS = \
    palette.hpp \
 	perform.hpp \
 	platform_macros.h \
+   playlist.hpp \
 	rc_settings.hpp \
    recent.hpp \
    rect.hpp \

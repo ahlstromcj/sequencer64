@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-25
+ * \updates       2018-08-26
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1467,19 +1467,20 @@ optionsfile::write (const perform & p)
         << "# Key-No.  Sequence-No.  Key-Name\n\n"
         ;
 
-for
-(
-    keys_perform::SlotMap::const_iterator i = ucperf.get_key_events().begin();
-    i != ucperf.get_key_events().end(); ++i
-)
-{
-    std::string keyname = ucperf.key_name(i->first);
-    snprintf
+    for
     (
-        outs, sizeof outs, "%u %d   # %s", i->first, i->second, keyname.c_str()
-    );
-    file << std::string(outs) << "\n";
-}
+        keys_perform::SlotMap::const_iterator i = ucperf.get_key_events().begin();
+        i != ucperf.get_key_events().end(); ++i
+    )
+    {
+        std::string keyname = ucperf.key_name(i->first);
+        snprintf
+        (
+            outs, sizeof outs, "%u %d   # %s",
+            i->first, i->second, keyname.c_str()
+        );
+        file << std::string(outs) << "\n";
+    }
 
     size_t kegsize = ucperf.get_key_groups().size() < size_t(c_max_keys) ?
          ucperf.get_key_groups().size() : size_t(c_max_keys)

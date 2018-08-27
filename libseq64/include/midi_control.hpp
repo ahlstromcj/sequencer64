@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-21
- * \updates       2018-06-08
+ * \updates       2018-08-27
  * \license       GNU GPLv2 or above
  *
  *  This module defines a number of constants relating to control of the 32
@@ -85,9 +85,9 @@ const int c_midi_control_ss_dn        = c_midi_track_ctrl + 3;
 const int c_midi_control_mod_replace  = c_midi_track_ctrl + 4;
 const int c_midi_control_mod_snapshot = c_midi_track_ctrl + 5;
 const int c_midi_control_mod_queue    = c_midi_track_ctrl + 6;
-const int c_midi_control_mod_gmute    = c_midi_track_ctrl + 7;
-const int c_midi_control_mod_glearn   = c_midi_track_ctrl + 8;
-const int c_midi_control_play_ss      = c_midi_track_ctrl + 9;
+const int c_midi_control_mod_gmute    = c_midi_track_ctrl + 7;  /* andy      */
+const int c_midi_control_mod_glearn   = c_midi_track_ctrl + 8;  /* andy      */
+const int c_midi_control_play_ss      = c_midi_track_ctrl + 9;  /* andy      */
 const int c_midi_controls             = c_midi_track_ctrl + 10; /* old = 74  */
 const int c_midi_control_playback     = c_midi_track_ctrl + 10;
 const int c_midi_control_song_record  = c_midi_track_ctrl + 11; /* arm for   */
@@ -99,7 +99,23 @@ const int c_midi_control_ss_set       = c_midi_track_ctrl + 16; /* pull #85  */
 const int c_midi_control_record       = c_midi_track_ctrl + 17;
 const int c_midi_control_quan_record  = c_midi_track_ctrl + 18;
 const int c_midi_control_reset_seq    = c_midi_track_ctrl + 19; /* pull #150 */
+#ifdef USE_MIDI_PLAYLIST
+const int c_midi_control_playlist     = c_midi_track_ctrl + 20;
+const int c_midi_control_FF           = c_midi_track_ctrl + 21;
+const int c_midi_control_rewind       = c_midi_track_ctrl + 22;
+const int c_midi_control_top          = c_midi_track_ctrl + 23;
+const int c_midi_control_reserved_1   = c_midi_track_ctrl + 24;
+const int c_midi_control_reserved_2   = c_midi_track_ctrl + 25;
+const int c_midi_control_reserved_3   = c_midi_track_ctrl + 26;
+const int c_midi_control_reserved_4   = c_midi_track_ctrl + 27;
+const int c_midi_control_reserved_5   = c_midi_track_ctrl + 28;
+const int c_midi_control_reserved_6   = c_midi_track_ctrl + 29;
+const int c_midi_control_reserved_7   = c_midi_track_ctrl + 30;
+const int c_midi_control_reserved_8   = c_midi_track_ctrl + 31;
+const int c_midi_controls_extended    = c_midi_track_ctrl + 32; /* new = 96  */
+#else
 const int c_midi_controls_extended    = c_midi_track_ctrl + 20; /* new = 84  */
+#endif
 
 extern int g_midi_control_limit;
 

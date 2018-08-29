@@ -8,7 +8,7 @@
 :: \library     Sequencer64 for Windows
 :: \author      Chris Ahlstrom
 :: \date        2018-05-26
-:: \update      2018-08-26
+:: \update      2018-08-27
 :: \license     $XPC_SUITE_GPL_LICENSE$
 ::
 ::      This script sets up and creates a release build of Sequencer64 for
@@ -63,6 +63,13 @@
 ::          $ mv release/ qpseq64
 ::          $ zip -u -r qpseq64-portable-0.95.1-0.zip qpseq64/
 ::          $ mv qpseq64-portable-0.95.1-0.zip ../sequencer64-packages/0.95
+::
+::       9. Make a standard Linux source/configure tarball:
+::
+::          $ ./pack --release rtmidi 0.95.3
+::
+::          where "rtmidi" can be replaced with whatever the current build
+::          is, such as "cli" or "portmidi" or "qt".
 ::
 :: This batch file completely removes the old release directory and re-does
 :: everything.

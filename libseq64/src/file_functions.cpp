@@ -7,7 +7,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-06-08
+ * \updates       2018-08-28
  * \version       $Revision$
  *
  *    We basically include only the functions we need for Sequencer64, not
@@ -413,15 +413,91 @@ normalize_path (const std::string & path, bool to_unix)
 }
 
 /**
- *  Strips the double quotes from a string.  Meant mainly for removing quotes
- *  around a file-name, so it works only if the first character is a quote,
+ *  Makes sure the path is using the proper separators, and that a separator
+ *  appears at the end.  The path is trimmed, normalized, and then properly
+ *  terminated.
+ */
+
+std::string
+clean_path (const std::string & path, bool to_unix)
+{
+    std::string slash = to_unix ? "/" : "\\" ;
+    std::string result = path;
+    (void) trim(result, SEQ64_TRIM_CHARS_QUOTES);
+    result = normalize_path(result, to_unix);
+    if (! result.empty())
+    {
+        if (result[result.length()] != slash[0])
+            result += slash;
+    }
+    return result;
+}
+
+/**
+ *  Cleans up the path to make sure it is either valid or empty, and then
+ *  appends the base file-name (hopefully in the format "base.extension") to
+ *  it.
+ *
+ *  This function works soley using UNIX conventions, it is for internal use.
+ *  If desired, it can be converted to Windows conventions using
+ *  normalize_path().
+ */
+
+std::string
+filename_concatenate (const std::string & path, const std::string & filebase)
+{
+    std::string result = clean_path(path);
+    result += filebase;
+    return result;
+}
+
+/**
+ *  This function is a kind of inverse of filename_concatenate().  Note that
+ *  it does not split out the file-extension.  Also note that the results are
+ *  in UNIX convention.
+ */
+
+void
+filename_split
+(
+    const std::string & fullpath,
+    std::string & path,
+    std::string & filebase
+)
+{
+    std::string temp = normalize_path(fullpath);
+    std::string::size_type spos = temp.find_last_of("/");
+    if (spos != std::string::npos)
+    {
+        std::string::size_type pos = spos + 1;
+        path = temp.substr(0, pos);                     /* include slash    */
+        filebase = temp.substr(pos, temp.length() - pos);
+    }
+    else
+    {
+        path.clear();
+        filebase = fullpath;
+    }
+#ifdef PLATFORM_DEBUG
+    printf
+    (
+        "'%s' in, '%s' and '%s' out\n",
+        fullpath.c_str(), path.c_str(), filebase.c_str()
+    );
+#endif
+}
+
+
+/**
+ *  Strips single- or double-quotes from a string.  Meant mainly for removing
+ *  quotes around a file-name, so it works only if the first character is a quote,
  *  and the last character is a quote.
  *
  * \param item
  *      The string to be massaged.
  *
  * \return
- *      The string without double quotes.  If it didn't have any, the string
+ *      The string without double-quotes.  If it didn't have any, the string
  *      should be unchanged.
  */
 
@@ -439,6 +515,54 @@ strip_quotes (const std::string & item)
             std::string::size_type end_index = result.length() - 1;
             if (lpos != std::string::npos && lpos == end_index)
                 result = result.substr(1, end_index - 1);
+        }
+        else
+        {
+            fpos = result.find_first_of("'");
+            if (fpos == 0)
+            {
+                std::string::size_type lpos = result.find_last_of("'");
+                std::string::size_type end_index = result.length() - 1;
+                if (lpos != std::string::npos && lpos == end_index)
+                    result = result.substr(1, end_index - 1);
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ *  Wraps a string in double-quotes.  It works only if the first character is
+ *  not a quote, and the last character is not a quote.
+ *
+ * \param item
+ *      The string to be massaged.
+ *
+ * \return
+ *      The string with double-quotes.  If it already had them, the string
+ *      should be unchanged.  If the string was empty, a string consisting of
+ *      two double-quotes is returned.
+ */
+
+std::string
+add_quotes (const std::string & item)
+{
+    std::string result;
+    if (item.empty())
+    {
+        result = "\"\"";
+    }
+    else
+    {
+        result = item;
+        std::string::size_type pos0 = result.find_first_of("\"");
+        std::string::size_type pos1 = result.find_last_of("\"");
+        bool change = pos0 != 0 && pos1 < result.length() - 1;
+        if (change)
+        {
+            result = "\"";
+            result += item;
+            result += "\"";
         }
     }
     return result;
@@ -518,6 +642,43 @@ file_extension_match (const std::string & path, const std::string & target)
 {
     std::string ext = file_extension(path);
     return strcasecompare(ext, target);
+}
+
+/*
+ * There are implementations of these functions using the std::find_if()
+ * algorithm, but the implementations here seem simpler and more flexible.
+ */
+
+/**
+ *
+ */
+
+std::string &
+ltrim (std::string & str, const std::string & chars)
+{
+    str.erase(0, str.find_first_not_of(chars));
+    return str;
+}
+
+/**
+ *
+ */
+
+std::string &
+rtrim (std::string & str, const std::string & chars)
+{
+    str.erase(str.find_last_not_of(chars) + 1);
+    return str;
+}
+
+/**
+ *
+ */
+
+std::string &
+trim (std::string & str, const std::string & chars)
+{
+    return ltrim(rtrim(str, chars), chars);
 }
 
 }           // namespace seq64

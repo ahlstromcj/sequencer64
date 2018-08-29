@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-26
+ * \updates       2018-08-28
  * \license       GNU GPLv2 or above
  *
  */
@@ -57,11 +57,11 @@ class userfile : public configfile
 
 public:
 
-    userfile (const std::string & a_name);
+    userfile (const std::string & name);
     virtual ~userfile ();
 
-    bool parse (perform & a_perf);
-    bool write (const perform & a_perf);
+    virtual bool parse (perform & perf);
+    virtual bool write (const perform & perf);
 
 private:
 

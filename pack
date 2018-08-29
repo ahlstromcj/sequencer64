@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2018-03-21
+# \update     	2018-08-27
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -38,6 +38,7 @@ TAGSTRING="pack"
 DODRYRUN="no"
 DOCLEAN="no"
 DORELEASE="no"
+DODIFFS="no"
 
 BRANCH=`git symbolic-ref -q HEAD 2> /dev/null`
 
@@ -57,9 +58,9 @@ if [ "$1" == "--help" ] || [ "$1" == "help" ] ; then
 
    cat << E_O_F
 
-pack 0.4 2018-03-21
+pack 0.5 2018-08-27
 
-Usage:  ./pack [--dry-run] [--clean] [--release package] [tag]
+Usage:  ./pack [--dry-run] [--clean] [--release package] [--diffs] [tag]
 
 where tag is alternate information you want to include in the
 name of the tarball; it replaces the current date.
@@ -77,6 +78,10 @@ a file named like the following (using no tag as an example):
 
    $WORKINGDIR-master-$TAGSTRING-my-code.tar.xz
    $WORKINGDIR-$TAGSTRING-my-code.tar.xz
+
+If the --diffs option is specified, "seqpack" is used in lieu of the
+current working directory. Obviously, this option will work only in a
+git repository.
 
 For source-code releases, one first checks out the desired git branch,
 then bootstraps the desired package (e.g. 'rtmidi'), then builds the code
@@ -135,6 +140,10 @@ else
             PACKAGENAME="$1"
             ;;
 
+        --diffs)
+            DODIFFS="yes"
+            ;;
+
         *)
             TAGSTRING="$1"
             ;;
@@ -146,10 +155,17 @@ else
    if [ "$ISGITBRANCH" == "yes" ] ; then
       if [ "$DORELEASE" == "yes" ] ; then
          TARBALLNAME="$WORKINGDIR-$GITBRANCH-$PACKAGENAME-$TAGSTRING.tar.xz"
+      elif [ "$DODIFFS" == "yes" ] ; then
+         TARBALLNAME="seqpack-$GITBRANCH-$CURRENTDATE-$TAGSTRING.tar.xz"
       else
          TARBALLNAME="$WORKINGDIR-$GITBRANCH-$CURRENTDATE-$TAGSTRING.tar.xz"
       fi
    else
+      if [ "$DODIFFS" == "yes" ] ; then
+         echo "The --diffs option requires a git repository, aborting!"
+         exit 1
+      fi
+      
       if [ "$DORELEASE" == "yes" ] ; then
          TARBALLNAME="$WORKINGDIR-$PACKAGENAME-$TAGSTRING.tar.xz"
       else
@@ -157,13 +173,17 @@ else
       fi
    fi
 
-   echo "The tar-ball to be generated is '../$TARBALLNAME'..."
+   echo "The tar-ball to be generated is '../$TARBALLNAME'"
 
    if [ "$DODRYRUN" == "yes" ] ; then
       if [ "$DOCLEAN" == "yes" ] ; then
          echo "Sequencer64 will be cleaned by 'bootstrap --full-clean'."
       fi
-      echo "Would run 'tar cJf $TARBALLNAME ... $WORKINGDIR '"
+      if [ "$DODIFFS" == "yes" ] ; then
+         echo "Will do 'tar cJf $TARBALLNAME \$(git diff --name-only)'"
+      else
+         echo "Will do 'tar cJf $TARBALLNAME $WORKINGDIR'"
+      fi
       exit 1
    fi
 
@@ -172,8 +192,14 @@ else
       ./bootstrap --full-clean
    fi
 
-   pushd ..
-   if [ -d $WORKINGDIR ] ; then
+   if [ "$DODIFFS" == "yes" ] ; then
+
+      tar cJf $TARBALLNAME $(git diff --name-only)
+
+   else
+
+      pushd ..
+      if [ -d $WORKINGDIR ] ; then
 
 # Others that mostly, but not always, are not needed, and so aren't excluded
 # at this time:
@@ -187,81 +213,83 @@ else
 # now allows tar to not include .git in the archive, saving a lot of time
 # and space.
 
-   tar cJf $TARBALLNAME \
- --exclude-vcs         \
- --exclude=".git"      \
- --exclude="Midiclocker64/midiclocker64" \
- --exclude="Sequencer64/sequencer64" \
- --exclude="Seq64rtmidi/seq64" \
- --exclude="Seq64qt5/qseq64" \
- --exclude="Seq64cli/seq64cli" \
- --exclude="config.h"  \
- --exclude="config.status"  \
- --exclude="libtool"   \
- --exclude="Makefile"  \
- --exclude="Debug"     \
- --exclude="Release"   \
- --exclude="debug"     \
- --exclude="release"   \
- --exclude="autom4te.cache" \
- --exclude="core"      \
- --exclude="moc"       \
- --exclude="obj"       \
- --exclude="html"      \
- --exclude="ipch"      \
- --exclude="latex"     \
- --exclude="*stamp*"     \
- --exclude="tests"     \
- --exclude="out.*"     \
- --exclude=".deps"     \
- --exclude=".exes"     \
- --exclude=".libs"     \
- --exclude="*obsolete*" \
- --exclude="*.a"       \
- --exclude="*.bak"     \
- --exclude="*.BAK"     \
- --exclude="*.bpi"     \
- --exclude="*.bz2"     \
- --exclude="*.xz"      \
- --exclude="*.deps"    \
- --exclude="*.bz"      \
- --exclude="*.idb"     \
- --exclude="*.ilc"     \
- --exclude="*.ild"     \
- --exclude="*.ilf"     \
- --exclude="*.o"       \
- --exclude="*.lo"      \
- --exclude="*.la"      \
- --exclude="*.lib"     \
- --exclude="*.log"     \
- --exclude="*.obj"     \
- --exclude="*.pch"     \
- --exclude="*.pdb"     \
- --exclude="*.Po"      \
- --exclude="*.sdf"     \
- --exclude="*.so"      \
- --exclude="*.stash"   \
- --exclude="*.swp"     \
- --exclude=".*.swp"    \
- --exclude="*.t"       \
- --exclude="*.tds"     \
- --exclude="*.tmp"     \
- --exclude="*.user"    \
- --exclude="*.xz"      \
- --exclude="*.testsettings" \
-   $WORKINGDIR
+      tar cJf $TARBALLNAME \
+    --exclude-vcs         \
+    --exclude=".git"      \
+    --exclude="Midiclocker64/midiclocker64" \
+    --exclude="Sequencer64/sequencer64" \
+    --exclude="Seq64rtmidi/seq64" \
+    --exclude="Seq64qt5/qseq64" \
+    --exclude="Seq64cli/seq64cli" \
+    --exclude="config.h"  \
+    --exclude="config.status"  \
+    --exclude="libtool"   \
+    --exclude="Makefile"  \
+    --exclude="Debug"     \
+    --exclude="Release"   \
+    --exclude="debug"     \
+    --exclude="release"   \
+    --exclude="autom4te.cache" \
+    --exclude="core"      \
+    --exclude="moc"       \
+    --exclude="obj"       \
+    --exclude="html"      \
+    --exclude="ipch"      \
+    --exclude="latex"     \
+    --exclude="*stamp*"     \
+    --exclude="tests"     \
+    --exclude="out.*"     \
+    --exclude=".deps"     \
+    --exclude=".exes"     \
+    --exclude=".libs"     \
+    --exclude="*obsolete*" \
+    --exclude="*.a"       \
+    --exclude="*.bak"     \
+    --exclude="*.BAK"     \
+    --exclude="*.bpi"     \
+    --exclude="*.bz2"     \
+    --exclude="*.xz"      \
+    --exclude="*.deps"    \
+    --exclude="*.bz"      \
+    --exclude="*.idb"     \
+    --exclude="*.ilc"     \
+    --exclude="*.ild"     \
+    --exclude="*.ilf"     \
+    --exclude="*.o"       \
+    --exclude="*.lo"      \
+    --exclude="*.la"      \
+    --exclude="*.lib"     \
+    --exclude="*.log"     \
+    --exclude="*.obj"     \
+    --exclude="*.pch"     \
+    --exclude="*.pdb"     \
+    --exclude="*.Po"      \
+    --exclude="*.sdf"     \
+    --exclude="*.so"      \
+    --exclude="*.stash"   \
+    --exclude="*.swp"     \
+    --exclude=".*.swp"    \
+    --exclude="*.t"       \
+    --exclude="*.tds"     \
+    --exclude="*.tmp"     \
+    --exclude="*.user"    \
+    --exclude="*.xz"      \
+    --exclude="*.testsettings" \
+      $WORKINGDIR
 
-      echo
+         echo
 
-   else
+      else
 
-      echo "? Working directory $WORKINGDIR does not exist above this directory."
-      echo "  Are you running pack.sh from the proper directory?"
-      echo "  That is what you must do.  See './pack --help'."
+         echo "? Working directory $WORKINGDIR does not exist above this directory."
+         echo "  Are you running pack.sh from the proper directory?"
+         echo "  That is what you must do.  See './pack --help'."
+
+      fi
+
+      popd
 
    fi
-
-   popd
 
 fi
 

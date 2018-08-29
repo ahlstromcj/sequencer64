@@ -26,12 +26,27 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-08-26
+ * \updates       2018-08-29
  * \license       GNU GPLv2 or above
+ *
+ *  Here is a skeletal representation of a Sequencer64 playlist:
+ *
+ *      [playlist]
+ *
+ *      0                       # playlist number, which can be arbitrary
+ *      "Downtempo"             # playlist name, for display/selection
+ *      /home/user/midifiles/   # directory where the songs are stored
+ *      file1.mid
+ *      file2.midi
+ *      file3.midi
+ *       . . .
+ *
  */
 
+#include <utility>                      /* std::make_pair()                 */
 #include <string.h>                     /* memset()                         */
 
+#include "file_functions.hpp"           /* functions for file-names         */
 #include "playlist.hpp"
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::rc()                      */
@@ -51,9 +66,21 @@ namespace seq64
  *      file-specification.
  */
 
-playlist::playlist (const std::string & name)
+playlist::playlist (perform & p, const std::string & name)
  :
-    configfile  (name)               // base class constructor
+    configfile                  (name),              // base class constructor
+    m_perform                   (p),
+    m_comments                  (),
+    m_play_list                 (),
+    m_mode                      (false),
+    m_list_directory            (),
+    m_list_filename             (),
+    m_current_list_index        (-1),
+    m_current_list_name         (),
+    m_song_directory            (),
+    m_current_song_index        (-1),
+    m_current_song_filename     (),
+    m_current_song_count        (0)
 {
     // Empty body
 }
@@ -100,9 +127,7 @@ playlist::error_message
 }
 
 /**
- *  Parse the ~/.config/sequencer64/playlist.lst file.
- *
- *  [midi-control]
+ *  Parse the ~/.config/sequencer64/file.playlist file.
  *
  * \param p
  *      Provides the performance object to which all of these options apply.
@@ -115,47 +140,131 @@ playlist::error_message
 bool
 playlist::parse (perform & p)
 {
+    bool result = false;
     std::ifstream file(m_name.c_str(), std::ios::in | std::ios::ate);
     if (! file.is_open())
     {
         printf("? error opening [%s] for reading\n", m_name.c_str());
         return false;
     }
-    file.seekg(0, std::ios::beg);                           /* seek to start */
-
-    /*
-     * [comments]
-     *
-     * Header commentary is skipped during parsing.  However, we now try to
-     * read an optional comment block.
-     */
-
-    if (line_after(file, "[comments]"))                 /* gets first line  */
+    if (file.is_open())
     {
-#if 0
-        rc().clear_comments();
-        do
+        file.seekg(0, std::ios::beg);                       /* seek to start    */
+        m_play_list.clear();                                /* start fresh      */
+        m_comments.clear();
+
+        /*
+         * [comments]
+         *
+         * Header commentary is skipped during parsing.  However, we now try
+         * to read an optional comment block, for restoration when rewriting
+         * the file.
+         */
+
+        if (line_after(file, "[comments]"))                 /* gets first line  */
         {
-            rc().append_comment_line(m_line);
-            rc().append_comment_line("\n");
+            do
+            {
+                m_comments += std::string(m_line);
+                m_comments += std::string("\n");
 
-        } while (next_data_line(file));
+            } while (next_data_line(file));
+        }
+
+        /*
+         * The next_section() function is like line-after, but scans from the
+         * current line in the file.  Necessary here because all the sections
+         * have the same name.  After detecting the "[playlist]" section, the
+         * following items need to be obtained:
+         *
+         *      -   Playlist number.  This number is used as the key value for
+         *          the playlist. It can be any integer, and the order of the
+         *          playlists is based on this integer.
+         *      -   Playlist name.  A human-readable string describing the
+         *          nick-name for the playlist.  This is an alternate way to
+         *          look up the playlist.
+         *      -   Song directory name.  The directory where the songs are
+         *          stored.  If this name is empty, then the song file-names
+         *          need to include the individual directories for each file.
+         *      -   Song file-name, or path to the song file-name.
+         *
+         * Note that the call to next_section() already gets to the next line
+         * of data, which should be the index number of the playlist.
+         */
+
+        bool ok = true;
+        while (next_section(file, "[playlist]"))        /* find section     */
+        {
+            int count = 0;
+            play_list_t plist;                          /* current playlist */
+            sscanf(m_line, "%d", &plist.ls_index);      /* playlist number  */
+            if (next_data_line(file))
+            {
+                song_list slist;
+                std::string line = m_line;
+                plist.ls_list_name = strip_quotes(line);
+                if (next_data_line(file))
+                {
+                    /*
+                     * Make sure the directory name is canonical and clean.  The
+                     * existence of the file should be validated later.
+                     */
+
+                    line = m_line;
+                    plist.ls_file_directory = clean_path(line);
+
+                    slist.clear();
+                    while (next_data_line(file))
+                    {
+                        std::string fname = m_line;
+                        if (! fname.empty())
+                        {
+                            song_list_t sinfo;
+                            sinfo.ss_index = count;
+                            sinfo.ss_filename = fname;
+
+#if __cplusplus >= 201103L
+                            std::pair<int, song_list_t> s =
+                                std::make_pair(count, sinfo);
+#else
+                            std::pair<int, song_list_t> s =
+                                std::make_pair<int, song_list_t>(count, sinfo);
 #endif
+                            slist.insert(s);
+                            ++count;
+                        }
+                    }
+                    plist.ls_song_count = count;
+                    plist.ls_song_list = slist;     /* copy the temp list   */
+#if __cplusplus >= 201103L
+                    std::pair<int, play_list_t> ls =
+                        std::make_pair(plist.ls_index, plist);
+#else
+                    std::pair<int, play_list_t> ls =
+                        std::make_pair<int, play_list_t>(plist.ls_index, plist);
+#endif
+                    m_play_list.insert(ls);
+                }
+                else
+                {
+                    ok = false;
+                    break;
+                }
+            }
+            else
+            {
+                ok = false;
+                break;
+            }
+        }
+        result = ok;
+        file.close();           /* done parsing the "rc" configuration file */
     }
+    else
+        printf("? error opening [%s] for reading\n", m_name.c_str());
 
-    /*
-     * This call causes parsing to skip all of the header material.  Please note
-     * that the line_after() function always starts from the beginning of the
-     * file every time.  A lot a rescanning!  But it goes fast these days.
-     */
-
-    unsigned sequences = 0;                                 /* seq & ctrl #s */
-    if (line_after(file, "[midi-control]"))                 /* find section  */
-    {
-        sscanf(m_line, "%u", &sequences);
-    }
-    file.close();           /* done parsing the "rc" configuration file */
-    return true;
+    m_mode = result;
+    return result;
 }
 
 /**
@@ -200,17 +309,19 @@ playlist::write (const perform & p)
 
     /*
      * [comments]
+     */
 
     file << "\n"
         << "[comments]\n"
         << "\n"
-        << comments_block() << "\n"
+        << m_comments << "\n"
         ;
-    file << "\n"
-        "[midi-control]\n"
-        "\n"
-        ;
-     */
+
+    std::map<int, play_list_t>::const_iterator pci;
+    for (pci = m_play_list.begin(); pci != m_play_list.end(); ++pci)
+    {
+        // TODO
+    }
 
     file
         << "# End of " << m_name << "\n#\n"
@@ -219,6 +330,38 @@ playlist::write (const perform & p)
 
     file.close();
     return true;
+}
+
+/**
+ *  Performs a simple dump of the playlists, most for troubleshooting.
+ */
+
+void
+playlist::show ()
+{
+    if (m_play_list.empty())
+    {
+        printf("No items in playist.\n");
+    }
+    else
+    {
+        std::map<int, play_list_t>::const_iterator pci;
+        for (pci = m_play_list.begin(); pci != m_play_list.end(); ++pci)
+        {
+            const play_list_t & pl = pci->second;
+            printf
+            (
+                "%d [playlist] %d:  '%s'\n",
+                pci->first, pl.ls_index, pl.ls_list_name.c_str()
+            );
+            printf
+            (
+                "  Directory '%s', %d songs \n",
+                pl.ls_file_directory.c_str(), pl.ls_song_count
+            );
+            // TODO: list the songs with indentation
+        }
+    }
 }
 
 }           // namespace seq64

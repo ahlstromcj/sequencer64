@@ -1,4 +1,4 @@
-#if ! defined SEQ64_FILE_FUNCTIONS_HPP
+#ifndef SEQ64_FILE_FUNCTIONS_HPP
 #define SEQ64_FILE_FUNCTIONS_HPP
 
 /**
@@ -9,13 +9,16 @@
  *
  * \author        Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-06-08
+ * \updates       2018-08-28
  * \version       $Revision$
  *
  *    Also see the file_functions.cpp module.
  */
 
 #include <string>
+
+#define SEQ64_TRIM_CHARS                " \t\n\v\f\r"
+#define SEQ64_TRIM_CHARS_QUOTES         " \t\n\v\f\r\"\'"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -39,12 +42,36 @@ extern bool make_directory (const std::string & pathname);
 extern std::string get_current_directory ();
 extern std::string get_full_path (const std::string & path);
 extern std::string normalize_path (const std::string & path, bool tounix = true);
+extern std::string clean_path (const std::string & path, bool tounix = true);
+extern std::string filename_concatenate
+(
+    const std::string & path, const std::string & filebase
+);
+extern void filename_split
+(
+    const std::string & fullpath,
+    std::string & path,
+    std::string & filebase
+);
 extern std::string strip_quotes (const std::string & item);
+extern std::string add_quotes (const std::string & item);
 extern std::string file_extension (const std::string & path);
 extern bool strcasecompare (const std::string & a, const std::string & b);
 extern bool file_extension_match
 (
     const std::string & path, const std::string & target
+);
+extern std::string & ltrim
+(
+    std::string & str, const std::string & chars = SEQ64_TRIM_CHARS
+);
+extern std::string & rtrim
+(
+    std::string & str, const std::string & chars = SEQ64_TRIM_CHARS
+);
+extern std::string & trim
+(
+    std::string & str, const std::string & chars = SEQ64_TRIM_CHARS
 );
 
 #endif      // SEQ64_FILE_FUNCTIONS_HPP

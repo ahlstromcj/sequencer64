@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2017-12-17
+ * \updates       2018-08-27
  * \license       GNU GPLv2 or above
  *
  *  We found a couple of unused members in this module and removed them.
@@ -99,6 +99,40 @@ configfile::next_data_line (std::ifstream & file)
     }
     if (file.eof())
         result = false;
+
+    return result;
+}
+
+/**
+ *  Looks for the next named section.  Unlike line_after(), it does not
+ *  restart from the beginning of the file.  Like next_data_line(), it starts
+ *  at the current line in the file.  This makes it useful in parsing files,
+ *  such as a playlist, that has multiple sections with the same name.
+ */
+
+bool
+configfile::next_section (std::ifstream & file, const std::string & tag)
+{
+    bool result = false;
+    file.clear();
+    file.getline(m_line, sizeof m_line);
+    while (file.good())                 /* includes the EOF check           */
+    {
+        result = strncmp(m_line, tag.c_str(), tag.length()) == 0;
+        if (result)
+            break;
+        else
+        {
+            if (file.bad())
+            {
+                errprint("bad file stream reading config file");
+            }
+            else
+                file.getline(m_line, sizeof m_line);
+        }
+    }
+    if (result)
+        result = next_data_line(file);
 
     return result;
 }

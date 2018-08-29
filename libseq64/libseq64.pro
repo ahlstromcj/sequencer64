@@ -6,7 +6,7 @@
 # \library    	qpseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-06-08
+# \update      2018-08-28
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -69,6 +69,7 @@ HEADERS += \
  include/palette.hpp \
  include/perform.hpp \
  include/platform_macros.h \
+ include/playlist.hpp \
  include/rc_settings.hpp \
  include/recent.hpp \
  include/rect.hpp \
@@ -115,6 +116,7 @@ SOURCES += \
  src/optionsfile.cpp \
  src/palette.cpp \
  src/perform.cpp \
+ src/playlist.cpp \
  src/rc_settings.cpp \
  src/recent.cpp \
  src/rect.cpp \

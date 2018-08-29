@@ -59,9 +59,9 @@ public:
     optionsfile (const std::string & name);
     virtual ~optionsfile ();
 
-    bool parse (perform & p);
+    virtual bool parse (perform & p);
+    virtual bool write (const perform & p);
     bool parse_mute_group_section (perform & p);
-    bool write (const perform & p);
 
 private:
 

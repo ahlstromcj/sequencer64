@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-27
+ * \updates       2018-08-30
  * \license       GNU GPLv2 or above
  *
  *  This is actually an elegant little parser, and works well as long as one
@@ -75,7 +75,7 @@ private:
 protected:
 
     /**
-     *  Provides the name of the configuration file.
+     *  Provides the name of the configuration or other file being parsed.
      */
 
     std::string m_name;
@@ -96,6 +96,7 @@ protected:
 
 protected:
 
+    bool get_line (std::ifstream & file);
     bool next_data_line (std::ifstream & file);
     bool next_section (std::ifstream & file, const std::string & tag);
     bool line_after (std::ifstream & file, const std::string & tag);
@@ -130,6 +131,11 @@ public:
     virtual bool parse (perform & perf) = 0;
     virtual bool write (const perform & perf) = 0;
 
+    const std::string & name () const
+    {
+        return m_name;
+    }
+
     const std::string & get_error_message () const
     {
         return m_error_message;
@@ -140,6 +146,11 @@ protected:
     void set_error_message (const std::string & msg)
     {
         m_error_message = msg;
+    }
+
+    void name (const std::string & n)
+    {
+        m_name = n;
     }
 
 };

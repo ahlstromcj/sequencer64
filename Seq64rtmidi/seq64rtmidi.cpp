@@ -25,7 +25,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2018-08-03
+ * \updates       2018-08-29
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -45,6 +45,7 @@
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "gui_assistant_gtk2.hpp"       /* seq64::gui_assistant_gtk2        */
 #include "gui_palette_gtk2.hpp"         /* colors and "inverse" colors      */
+#include "playlist.hpp"                 /* seq64::playlist                  */
 
 #ifdef PLATFORM_LINUX
 #include "lash.hpp"                     /* seq64::lash_driver functions     */
@@ -147,6 +148,7 @@ main (int argc, char * argv [])
         if (ok)
             p.launch(seq64::usr().midi_ppqn());     /* set up performance   */
 
+
         if (seq64::usr().inverse_colors())
             seq64::gui_palette_gtk2::load_inverse_palette(true);
 
@@ -154,6 +156,26 @@ main (int argc, char * argv [])
         std::string errmsg = "unspecified error";
         if (ok)
         {
+            // TEST CODE
+            std::string playlistname = seq64::rc().playlist_filespec();
+            if (playlistname.empty())
+            {
+                printf("NO PLAYLIST\n");
+            }
+            else
+            {
+                seq64::playlist tunes(p, playlistname);
+                if (tunes.open(playlistname, false))   // if (tunes.parse())
+                {
+                    tunes.show();
+                    tunes.write();
+                }
+                else
+                {
+                    printf("%s\n", tunes.get_error_message().c_str());
+                }
+            }
+
             if (optionindex < argc)                 /* MIDI filename given? */
             {
                 std::string fname = argv[optionindex];

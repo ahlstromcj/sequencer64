@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-08-29
+ * \updates       2018-08-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -74,9 +74,10 @@ private:
      *  able to specify a title for the tune?
      */
 
-    struct song_list_t
+    struct song_spec_t
     {
         int ss_index;
+        std::string ss_song_directory;
         std::string ss_filename;
     };
 
@@ -84,7 +85,8 @@ private:
      *  A type for holding a numerically ordered list of songs.
      */
 
-    typedef std::map<int, song_list_t> song_list;
+    typedef std::map<int, song_spec_t> song_list;
+    typedef std::map<int, song_spec_t>::const_iterator song_iterator;
 
     /**
      *  Holds a playlist list entry to be used as the "second" in a map.
@@ -105,8 +107,15 @@ private:
      */
 
     typedef std::map<int, play_list_t> play_list;
+    typedef std::map<int, play_list_t>::const_iterator play_iterator;
 
 private:
+
+    /**
+     *  Provides an empty map to use to access the end() function.
+     */
+
+    static song_list sm_dummy;
 
     /**
      *  Holds a reference to the performer for this playlist.
@@ -125,7 +134,7 @@ private:
      *  The list of playlists.
      */
 
-    play_list m_play_list;
+    play_list m_play_lists;
 
     /**
      *  Indicates if we are in playlist mode.  Only true if the user specified
@@ -135,79 +144,30 @@ private:
     bool m_mode;
 
     /**
-     *  Provides the directory location of the playlist file.  This value
-     *  defaults to the modern "sequencer64" configuration directory in the
-     *  user's HOME or AppData directory.  This is stored in canonical UNIX
-     *  format (forward-slash directory separators, with a separator at the
-     *  end), but might be stored here in the conventions of the operation
-     *  system. We shall see.  Form: "C:/path/to/directory/" or
-     *  "/home/user/path/to/directory/".  Made for easy concatenation.
+     *  Provides an iterator to the current playlist.  If valid, it provides
+     *  access to the name of the playlist, its file-directory, and its list
+     *  of songs.
      */
 
-    std::string m_list_directory;
+    play_iterator m_current_list;
 
     /**
-     *  Holds the basename (e.g. "sequencer64.playlist") of the file holding
-     *  all of the desired playlists.  This is a bare file-name of the form
-     *  "base.extension".  Made for easy concatenation.
+     *  Provides an iterator to the current song.  It can only be valid if the
+     *  current playlist is valid, otherwise it "points" to a static empty
+     *  song structure, sm_dummy. If valid, it provides
+     *  access to the file-name for the song and its file-directory.
      */
 
-    std::string m_list_filename;
-
-    /**
-     *  Holds the index/number of the currently-active playlist, re 0.  The
-     *  numbers need not be consecutive, as the main playlist items, each
-     *  tagged by "[playlist]", are held in a map.  However, the numbers are
-     *  used to order the playlist when writing it to a file.
-     */
-
-    int m_current_list_index;
-
-    /**
-     *  Holds the name of the currently-active playlist, which is not the
-     *  filename, but a descriptive name for the playlist.  This string is
-     *  trimmed of white-space or quotation characters at either end.
-     */
-
-    std::string m_current_list_name;
-
-    /**
-     *  Holds the name of the directory holding the songs for the currently
-     *  active playlist.  All songs in a playlist must be in the same
-     *  directory.  This is less flexible, but also a less confusing way
-     *  to organize tunes.
-     *
-     *  However, if empty, every song in the playlist must specify the full or
-     *  relative path to the file.  To represent this empty name in the
-     *  playlist, two consecutive double quotes are used.
-     */
-
-    std::string m_song_directory;
-
-    /**
-     *  Hold the index of the currently-active song, re 0.
-     */
-
-    int m_current_song_index;
-
-    /**
-     *  Provides the base-name and the extension.
-     */
-
-    std::string m_current_song_filename;
-
-    /**
-     *  Holds the number of songs in the active plalist.
-     */
-
-    int m_current_song_count;
+    song_iterator m_current_song;
 
 public:
 
     playlist (perform & p, const std::string & name);
     virtual ~playlist ();
 
-    void show ();
+    void show_list (const play_list_t & pl) const;
+    void show_song (const song_spec_t & pl) const;
+    void show () const;
 
 public:
 
@@ -226,111 +186,77 @@ public:
         return m_mode;
     }
 
-    const std::string & list_directory () const
-    {
-        return m_list_directory;
-    }
-
-    const std::string & list_filename () const
-    {
-        return m_list_filename;
-    }
-
-    int list_index () const
-    {
-        return m_current_list_index;
-    }
-
-    const std::string & list_name () const
-    {
-        return m_current_list_name;
-    }
-
-    const std::string & song_directory () const
-    {
-        return m_song_directory;
-    }
-
-    int song_index () const
-    {
-        return m_current_song_index;
-    }
-
-    const std::string & song_filename () const
-    {
-        return m_current_song_filename;
-    }
-
-    int song_count () const
-    {
-        return m_current_song_count;
-    }
-
-public:
-
-    void clear ();
-    bool open_playlist (const std::string & filename);
-    bool verify_playlist ();
-    bool select_list (int index);
-    bool select_list (const std::string & name);
-    bool next_list ();
-    bool previous_list ();
-    bool select_song (int index);
-    bool select_song (const std::string & filename);
-    bool next_song ();
-    bool previous_song ();
-
-private:        /* for internal use only, in this class */
-
-    virtual bool parse (perform & p);
-    virtual bool write (const perform & p);
-
-protected:
-
     void mode (bool m)
     {
         m_mode = m;
     }
 
-    void list_directory (const std::string & d)
+    int list_index () const
     {
-        m_list_directory = d;
+        return m_current_list != m_play_lists.end() ?
+            m_current_list->second.ls_index : (-1) ;
     }
 
-    void list_filename (const std::string & f)
+    const std::string & list_name () const
     {
-        m_list_filename = f;
+        static std::string s_dummy;
+        return m_current_list != m_play_lists.end() ?
+            m_current_list->second.ls_list_name : s_dummy ;
     }
 
-    void list_index (int i)
+    int list_count () const
     {
-        m_current_list_index = i;
+        return int(m_play_lists.size());
     }
 
-    void list_name (const std::string & n)
+    const std::string & song_directory () const
     {
-        m_current_list_name = n;
+        static std::string s_dummy;
+        return m_current_list != m_play_lists.end() ?
+            m_current_list->second.ls_file_directory : s_dummy ;
     }
 
-    void song_directory (const std::string & d)
+    int song_index () const;
+
+    /**
+     *  Holds the name of the directory holding the songs for the currently
+     *  active playlist.  All songs in a playlist must be in the same
+     *  directory.  This is less flexible, but also a less confusing way
+     *  to organize tunes.
+     *
+     *  However, if empty, every song in the playlist must specify the full or
+     *  relative path to the file.  To represent this empty name in the
+     *  playlist, two consecutive double quotes are used.
+     */
+
+    const std::string & song_filename () const;     // base-name only
+    std::string song_filepath () const;             // directory + base-name
+
+    int song_count () const
     {
-        m_song_directory = d;
+        return m_current_list != m_play_lists.end() ?
+            m_current_list->second.ls_song_count : (-1) ;
     }
 
-    void song_index (int i)
-    {
-        m_current_song_index = i;
-    }
+public:
 
-    void  song_filename (const std::string & f)
-    {
-        m_current_song_filename = f;
-    }
+    void clear ();
+    bool reset ();
+    bool open (const std::string & filename, bool verify_it = true);
 
-    void song_count (int c)
-    {
-        m_current_song_count = c;
-    }
+    bool select_list (int index, bool selectsong = false);
+//  bool select_list (const std::string & name);        // maybe
+    bool next_list (bool selectsong = false);
+    bool previous_list (bool selectsong = false);
+
+    bool select_song (int index);
+//  bool select_song (const std::string & filename);    // maybe
+    bool next_song ();
+    bool previous_song ();
+    bool verify ();
+
+    virtual bool parse (perform & p);
+    virtual bool write (const perform & p);
 
 private:
 

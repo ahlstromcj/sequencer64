@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-03
+ * \updates       2018-08-30
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -37,10 +37,11 @@
 #include <iostream>
 
 #include "globals.h"
-#include "file_functions.hpp"           /* seq64::strip_quotes()        */
-#include "settings.hpp"                 /* seq64::rc()                  */
-#include "userfile.hpp"                 /* seq64::userfile              */
-#include "user_instrument.hpp"          /* seq64::user_instrument       */
+#include "calculations.hpp"             /* seq64::current_date_time()       */
+#include "file_functions.hpp"           /* seq64::strip_quotes()            */
+#include "settings.hpp"                 /* seq64::rc()                      */
+#include "userfile.hpp"                 /* seq64::userfile                  */
+#include "user_instrument.hpp"          /* seq64::user_instrument           */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -48,8 +49,6 @@
 
 namespace seq64
 {
-
-//////// class perform;          // temporary forward reference
 
 /**
  *  Principal constructor.
@@ -614,8 +613,11 @@ userfile::write (const perform & /* a_perf */ )
     else
         file << "# Sequencer64 0.95.0 (and above) user-configuration file\n";
 
-    file <<
-        "#\n"
+    file
+        << "#\n"
+        << "# Written on " << current_date_time() << "\n"
+        << "#\n"
+        <<
         "# Created by reading the following file and writing it out via the\n"
         "# Sequencer64 application:\n"
         "#\n"

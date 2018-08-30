@@ -1,0 +1,50 @@
+# Sequencer64 0.96.0 (and above) playlist file
+
+# Written on 2018-08-29 19:11:35
+#
+# This file holds a playlist for Sequencer64.
+#
+# The [comments] section can document this file.  Lines starting
+# with '#' are ignored.  Blank lines are ignored.  Show a
+# blank line by adding a space character to the line.
+
+[comments]
+
+This is a file for testing the open/verify playlist process.
+
+
+[playlist]
+
+# Playlist number, arbitrary but unique
+1
+
+# Display name of this list
+"Downtempo Grooves"
+
+# Storage area for this list
+contrib/midi///
+
+# The file-names of songs in this playlist:
+file1-1.mid
+file1-2.mid
+file1-3.mid
+
+[playlist]
+
+# Playlist number, arbitrary but unique
+2
+
+# Display name of this list
+"Music for Dogs"
+
+# Storage area for this list
+/home/user/midi/dogs///
+
+# The file-names of songs in this playlist:
+file2-1.midi
+file2-2.midi
+file2-3.midi
+
+# End of /home/ahlstrom/.config/sequencer64/test.playlist
+#
+# vim: sw=4 ts=4 wm=4 et ft=sh

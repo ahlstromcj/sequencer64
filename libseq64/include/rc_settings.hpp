@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-03-30
+ * \updates       2018-08-29
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -205,6 +205,15 @@ private:
     std::string m_user_filename_alt;
 
     /**
+     *  Provides the base name of a play-list file, such as "tunes.playlist".
+     *  It is used only if playlist mode is active.  This file is always
+     *  located in the configuration directory (which can be modified from the
+     *  command-line).
+     */
+
+    std::string m_playlist_filename;
+
+    /**
      *  Holds the application name, e.g. "sequencer64", "seq64portmidi", or
      *  "seq64".  This is a constant, set to SEQ64_APP_NAME.  Also see the
      *  seq_app_name() function.
@@ -247,6 +256,7 @@ public:
 
     std::string config_filespec () const;
     std::string user_filespec () const;
+    std::string playlist_filespec () const;
     void set_defaults ();
 
     /**
@@ -595,6 +605,15 @@ public:
     }
 
     /**
+     * \getter m_playlist_filename
+     */
+
+    const std::string & playlist_filename () const
+    {
+        return m_playlist_filename;
+    }
+
+    /**
      * \getter m_user_filename
      */
 
@@ -826,6 +845,7 @@ protected:
     void jack_session_uuid (const std::string & value);
     void config_directory (const std::string & value);
     void config_filename (const std::string & value);
+    void playlist_filename (const std::string & value);
     void user_filename (const std::string & value);
     void config_filename_alt (const std::string & value);
     void user_filename_alt (const std::string & value);

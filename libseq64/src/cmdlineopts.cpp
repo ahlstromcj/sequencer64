@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-08-22
+ * \updates       2018-08-29
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -117,6 +117,7 @@ static struct option long_options [] =
     {"priority",            0, 0, 'p'},
     {"ignore",              required_argument, 0, 'i'},
     {"interaction-method",  required_argument, 0, 'x'},
+    {"playlist",            required_argument, 0, 'X'},
 #ifdef SEQ64_JACK_SUPPORT
     {"jack-transport",      0, 0, 'j'},
     {"jack-master",         0, 0, 'J'},
@@ -181,7 +182,7 @@ static struct option long_options [] =
  *
 \verbatim
         0123456789 @AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz#
-         ooooooooo oxxxxxx x  xx  xx xxx xxxxxxx *xx xxxxx xxxxx   x    x
+         ooooooooo oxxxxxx x  xx  xx xxx xxxxxxx *xx xxxxx xxxxx  xx    x
 \endverbatim
  *
  *  Previous arg-list, items missing! "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"
@@ -192,7 +193,7 @@ static struct option long_options [] =
  */
 
 static const std::string s_arg_list =
-    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNnoPpq:RrtSsU:uVvx:#"   /* modern args      */
+    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mNnoPpq:RrtSsU:uVvX:x:#" /* modern args      */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -211,6 +212,7 @@ SEQ64_APP_NAME " v " SEQ64_VERSION
 "   -H, --home dir           Set the directory to hold the configuration files,\n"
 "                            always relative to $HOME.  The default is\n"
 "                            .config/sequencer64.\n"
+"   -X, --playlist filename  Load the give playlist from the home directory.\n"
 "   -l, --legacy             Write MIDI file in strict Seq24 format.  Same if\n"
 "                            Sequencer64 is run as 'seq24'.  Affects some other\n"
 "                            options as well.\n"
@@ -694,7 +696,7 @@ parse_options_files
 )
 {
     std::string rcname = seq64::rc().config_filespec();
-    bool result = true; // ! rcname.empty();
+    bool result = true;
     if (file_accessible(rcname))
     {
         printf("[Reading rc configuration %s]\n", rcname.c_str());
@@ -1009,6 +1011,10 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             printf("%s", versiontext.c_str());
             printf("%s", build_details().c_str());
             result = SEQ64_NULL_OPTION_INDEX;
+            break;
+
+        case 'X':
+            seq64::rc().playlist_filename(optarg);
             break;
 
         case 'x':

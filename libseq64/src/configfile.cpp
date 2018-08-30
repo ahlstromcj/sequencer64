@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-27
+ * \updates       2018-08-29
  * \license       GNU GPLv2 or above
  *
  *  We found a couple of unused members in this module and removed them.
@@ -62,6 +62,26 @@ configfile::configfile (const std::string & name)
 }
 
 /**
+ *  A useful intermediate function to save a call and allow for debugging.
+ *
+ * \param file
+ *      The refernce to the opened input file-stream.
+ *
+ * \return
+ *      Returns the value of file.good().
+ */
+
+bool
+configfile::get_line (std::ifstream & file)
+{
+    file.getline(m_line, sizeof m_line);
+#ifdef PLATFORM_DEBUG_TMI
+    std::cout << "Line = " << m_line << std::endl;
+#endif
+    return file.good();
+}
+
+/**
  *  Gets the next line of data from an input stream.  If the line starts with
  *  a number-sign, a space (!), or a null, it is skipped, to try the next
  *  line.  This occurs until an EOF is encountered.
@@ -83,23 +103,28 @@ configfile::configfile (const std::string & name)
 bool
 configfile::next_data_line (std::ifstream & file)
 {
-    bool result = true;
-    char ch;
-    file.getline(m_line, sizeof m_line);
-    ch = m_line[0];
-    while ((ch == '#' || /*ch == ' ' ||*/ ch == '[' || ch == 0) && ! file.eof())
+    bool result = get_line(file);   // file.getline(m_line, sizeof m_line);
+    if (result)
     {
-        if (m_line[0] == '[')
+        char ch = m_line[0];
+        while ((ch == '#' || ch == '[' || ch == 0) && ! file.eof())
         {
-            result = false;
-            break;
+            if (m_line[0] == '[')
+            {
+                result = false;
+                break;
+            }
+            if (get_line(file))     // file.getline(m_line, sizeof m_line);
+                ch = m_line[0];
+            else
+            {
+                result = false;
+                break;
+            }
         }
-        file.getline(m_line, sizeof m_line);
-        ch = m_line[0];
+        if (file.eof())
+            result = false;
     }
-    if (file.eof())
-        result = false;
-
     return result;
 }
 
@@ -108,6 +133,12 @@ configfile::next_data_line (std::ifstream & file)
  *  restart from the beginning of the file.  Like next_data_line(), it starts
  *  at the current line in the file.  This makes it useful in parsing files,
  *  such as a playlist, that has multiple sections with the same name.
+ *
+ *  Note one other quirk.  If we are on a line matching the tag, then we do
+ *  not search, but instead use that line.  The reason is that the
+ *  next_data_line() function for the previous section will often end up
+ *  at the beginning of the next section.  Especially important with
+ *  play-lists.
  */
 
 bool
@@ -115,20 +146,27 @@ configfile::next_section (std::ifstream & file, const std::string & tag)
 {
     bool result = false;
     file.clear();
-    file.getline(m_line, sizeof m_line);
-    while (file.good())                 /* includes the EOF check           */
+    if (tag == m_line)
     {
-        result = strncmp(m_line, tag.c_str(), tag.length()) == 0;
-        if (result)
-            break;
-        else
+        result = true;
+    }
+    else
+    {
+        bool ok = get_line(file);       // file.getline(m_line, sizeof m_line);
+        while (ok)                      /* includes the EOF check           */
         {
-            if (file.bad())
-            {
-                errprint("bad file stream reading config file");
-            }
+            result = strncmp(m_line, tag.c_str(), tag.length()) == 0;
+            if (result)
+                break;
             else
-                file.getline(m_line, sizeof m_line);
+            {
+                if (file.bad())
+                {
+                    errprint("bad file stream reading config file");
+                }
+                else
+                    ok = get_line(file); // file.getline(m_line, sizeof m_line);
+            }
         }
     }
     if (result)
@@ -164,12 +202,14 @@ configfile::line_after (std::ifstream & file, const std::string & tag)
     bool result = false;
     file.clear();
     file.seekg(0, std::ios::beg);
-    file.getline(m_line, sizeof m_line);
-    while (file.good())                 /* includes the EOF check           */
+    bool ok = get_line(file);           // file.getline(m_line, sizeof m_line);
+    while (ok)                          /* includes the EOF check           */
     {
         result = strncmp(m_line, tag.c_str(), tag.length()) == 0;
         if (result)
+        {
             break;
+        }
         else
         {
             if (file.bad())
@@ -177,7 +217,7 @@ configfile::line_after (std::ifstream & file, const std::string & tag)
                 errprint("bad file stream reading config file");
             }
             else
-                file.getline(m_line, sizeof m_line);
+                ok = get_line(file);    // file.getline(m_line, sizeof m_line);
         }
     }
     if (result)

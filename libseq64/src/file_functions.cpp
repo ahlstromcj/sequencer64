@@ -427,7 +427,7 @@ clean_path (const std::string & path, bool to_unix)
     result = normalize_path(result, to_unix);
     if (! result.empty())
     {
-        if (result[result.length()] != slash[0])
+        if (result[result.length() - 1] != slash[0])
             result += slash;
     }
     return result;

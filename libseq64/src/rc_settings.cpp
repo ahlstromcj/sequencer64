@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-04-29
+ * \updates       2018-08-29
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -124,6 +124,7 @@ rc_settings::rc_settings ()
     m_user_filename             (),
     m_config_filename_alt       (),
     m_user_filename_alt         (),
+    m_playlist_filename         (),
     m_application_name          (SEQ64_APP_NAME),
     m_app_client_name           (SEQ64_CLIENT_NAME),
     m_tempo_track_number        (0),
@@ -172,6 +173,7 @@ rc_settings::rc_settings (const rc_settings & rhs)
     m_user_filename             (rhs.m_user_filename),
     m_config_filename_alt       (rhs.m_config_filename_alt),
     m_user_filename_alt         (rhs.m_user_filename_alt),
+    m_playlist_filename         (rhs.m_playlist_filename),
     m_application_name          (rhs.m_application_name),
     m_app_client_name           (rhs.m_app_client_name),
     m_tempo_track_number        (rhs.m_tempo_track_number),
@@ -225,6 +227,7 @@ rc_settings::operator = (const rc_settings & rhs)
         m_user_filename             = rhs.m_user_filename;
         m_config_filename_alt       = rhs.m_config_filename_alt;
         m_user_filename_alt         = rhs.m_user_filename_alt;
+        m_playlist_filename         = rhs.m_playlist_filename;
 
         /*
          * const: m_application_name = rhs.m_application_name;
@@ -286,6 +289,7 @@ rc_settings::set_defaults ()
     m_user_filename             = "sequencer64.usr";    // ditto
     m_config_filename_alt       = ".seq24rc";
     m_user_filename_alt         = ".seq24usr";
+    m_playlist_filename         = "";                   // emnpty by default
 
     /*
      * const: m_application_name = SEQ64_APP_NAME;
@@ -405,6 +409,30 @@ rc_settings::user_filespec () const
             result += user_filename_alt();
         else
             result += user_filename();
+    }
+    return result;
+}
+
+/**
+ *  Constructs the full path and file specification for the "playlist" file,
+ *  if the playlist file-name exists.
+ *
+ * \return
+ *      If home_config_directory() returns a non-empty string, then the normal
+ *      "playlist" file-name is appended to that result, and returned.
+ *      Otherwise, an empty string is returned.
+ */
+
+std::string
+rc_settings::playlist_filespec () const
+{
+    std::string result;
+    std::string listname = playlist_filename();
+    if (! listname.empty())
+    {
+        result = home_config_directory();
+        if (! result.empty())
+            result += playlist_filename();
     }
     return result;
 }
@@ -624,6 +652,25 @@ rc_settings::config_filename (const std::string & value)
 
     if (m_config_filename.find(".") == std::string::npos)
         m_config_filename += ".rc";
+}
+
+/**
+ * \setter m_playlist_filename ("playlist")
+ *
+ * \param value
+ *      The value to use to make the setting, if the string is not empty.
+ *      If there is no period in the string, then ".playlist" is appended to
+ *      the end of the filename.
+ */
+
+void
+rc_settings::playlist_filename (const std::string & value)
+{
+    if (! value.empty())
+        m_playlist_filename = value;
+
+    if (m_playlist_filename.find(".") == std::string::npos)
+        m_playlist_filename += ".playlist";
 }
 
 /**

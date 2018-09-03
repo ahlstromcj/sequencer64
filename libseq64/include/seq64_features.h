@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2018-08-22
+ * \updates       2018-09-01
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -116,6 +116,14 @@
 #else
 #undef  SEQ64_SONG_BOX_SELECT           /* not ready in Gtkmm support       */
 #endif
+
+/**
+ *  We're in the middle of adding playlist support.  Some might not like the
+ *  overhead, so we're making it a compile-time header option.  However, the
+ *  playlist class will still be compiled, but hopefully not linked.
+ */
+
+#define SEQ64_USE_MIDI_PLAYLIST
 
 /**
  *  Currently, many macros are undefined as tentative or experimental.

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-21
+ * \updates       2018-09-03
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -51,6 +51,10 @@
  *  User jean-emmanuel added a new MIDI control for setting the screen-set
  *  directly by number.  To handle this, a value parameter was added to
  *  handle_midi_control_ex().
+ *
+ * \todo
+ *      One big TO DO with this and other classes is to use std::unique_ptr
+ *      instead of raw pointers, to make truly exception-safe destructors.
  */
 
 #include "globals.h"                    /* globals, nullptr, & more         */
@@ -59,6 +63,7 @@
 #include "keys_perform.hpp"             /* seq64::keys_perform              */
 #include "mastermidibus.hpp"            /* seq64::mastermidibus for ALSA    */
 #include "midi_control.hpp"             /* seq64::midi_control "struct"     */
+#include "playlist.hpp"                 /* seq64::playlist, 0.96 and above  */
 #include "sequence.hpp"                 /* seq64::sequence                  */
 
 #ifdef SEQ64_SONG_BOX_SELECT
@@ -66,6 +71,11 @@
 #include <set>                          /* std::set, arbitary selection     */
 #endif
 
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+#include <memory>                       /* std::unique_ptr                  */
+#endif
+
+#include <memory>                       /* std::unique_ptr                  */
 #include <vector>                       /* std::vector                      */
 #include <pthread.h>                    /* pthread_t C structure            */
 
@@ -254,19 +264,20 @@ struct performcallback
 
 class perform
 {
-    friend class mainwnd;
-    friend class qperfeditframe64;
-    friend class qsmainwnd;
-    friend class qsliveframe;
     friend class jack_assistant;
     friend class keybindentry;
+    friend class mainwnd;
     friend class midifile;
-    friend class wrkfile;
-    friend class optionsfile;           // needs cleanup
     friend class options;
+    friend class optionsfile;           // needs cleanup
     friend class perfedit;
     friend class perfroll;
+    friend class playlist;              // new feature for 0.96.0
+    friend class qperfeditframe64;
+    friend class qsliveframe;
+    friend class qsmainwnd;
     friend class sequence;              // for setting tempo from events
+    friend class wrkfile;
     friend void * input_thread_func (void * myperf);
     friend void * output_thread_func (void * myperf);
 
@@ -394,6 +405,13 @@ private:
      */
 
     static midi_control sm_mc_dummy;
+
+    /**
+     *  Provides an optional play-list, loosely patterned after Stazed's Seq32
+     *  play-list. Important: This object is now owned by perform.
+     */
+
+    std::unique_ptr<playlist> m_play_list;
 
     /**
      *  If true, playback is done in Song mode, not Live mode.  This is
@@ -1125,6 +1143,91 @@ public:
 
     perform (gui_assistant & mygui, int ppqn = SEQ64_USE_DEFAULT_PPQN);
     ~perform ();
+
+    bool open_playlist (const std::string & pl);
+
+    /**
+     *  Gets the playlist mode, which is true if the playlist object exists
+     *  and is active.
+     */
+
+    bool playlist_mode () const
+    {
+        return bool(m_play_list) ? m_play_list->mode() : false ;
+    }
+
+    /**
+     *  Sets the play-list mode.  Even if a playlist is loaded,
+     *  the user may need to toggle it active/inactive.
+     *
+     * \param on
+     *      Set to true to active the play-list.  If there is no play-list,
+     *      nothing happens.
+     */
+
+    void playlist_mode (bool on)
+    {
+        if (bool(m_play_list))
+            m_play_list->mode(on);
+    }
+
+    /**
+     *
+     */
+
+    bool open_previous_list ()
+    {
+        return bool(m_play_list) ? m_play_list->open_previous_list() : false ;
+    }
+
+    /**
+     *
+     */
+
+    bool open_next_list ()
+    {
+        return bool(m_play_list) ? m_play_list->open_next_list() : false ;
+    }
+
+    /**
+     *
+     */
+
+    bool open_previous_song ()
+    {
+        return bool(m_play_list) ? m_play_list->open_previous_song() : false ;
+    }
+
+    /**
+     *
+     */
+
+    bool open_next_song ()
+    {
+        return bool(m_play_list) ? m_play_list->open_next_song() : false ;
+    }
+
+    /**
+     * \return
+     *      Returns the current play-list song if it exists, otherwise an empty
+     *      string is returned.
+     */
+
+    std::string playlist_song () const
+    {
+        return bool(m_play_list) ? m_play_list->current_song() : "" ;
+    }
+
+    /**
+     *
+     */
+
+    bool open_current_song ()
+    {
+        return bool(m_play_list) ? m_play_list->open_current_song() : false ;
+    }
+
+    const std::string & playlist_error_message () const;
 
     /**
      * \getter m_is_modfied
@@ -2712,6 +2815,32 @@ public:         // GUI-support functions
     void panic ();                              /* from kepler43        */
 
 private:
+
+    /**
+     *  This function is meant to be called by play-list in order to inform the
+     *  perform object that it can manage a play-list.  This value can be
+     *  changed at any time, and should only be done in the playlist
+     *  constructor, and only for the lifetime of one playlist.
+     *
+     * \param pl
+     *      The playlist object to be referenced.
+
+    void register_playlist (playlist & pl)
+    {
+        m_play_list = &pl;
+    }
+     */
+
+    /**
+     *  This function is meant to be called by play-list in order to inform the
+     *  perform object that it can no longer manage a play-list, because it is
+     *  gone.
+
+    void unregister_playlist ()
+    {
+        m_play_list = nullptr;
+    }
+     */
 
     /**
      *  Convenience function for perfedit's collapse functionality.

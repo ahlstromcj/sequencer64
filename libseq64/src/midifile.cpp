@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-03
+ * \updates       2018-09-03
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -125,6 +125,14 @@ namespace seq64
  *      background sequence to the global "proprietary" section of the MIDI
  *      file, instead of to each sequence.  Note that this option is only used
  *      in writing; reading can handle either format transparently.
+ *
+ * \param playlistmode
+ *      If set to true, we are opening files just to verify them before
+ *      accepting the usage of a playlist.  In this case, we clear out each
+ *      song after it is read in for verification.  It defaults to false.
+ *      Actually, the playlist::verify() function clears the song, but this
+ *      variable is still useful to cut down on output during verfication.
+ *      See grab_input_stream().
  */
 
 midifile::midifile
@@ -132,9 +140,11 @@ midifile::midifile
     const std::string & name,
     int ppqn,
     bool oldformat,
-    bool globalbgs
+    bool globalbgs,
+    bool playlistmode
 ) :
-    m_mutex                     (),         /* new ca 2016-08-01 */
+    m_mutex                     (),
+    m_playlist_mode             (playlistmode),
     m_file_size                 (0),
     m_error_message             (),
     m_error_is_fatal            (false),
@@ -395,7 +405,14 @@ midifile::grab_input_stream (const std::string & tag)
     {
         std::string path = get_full_path(m_name);
         m_file_size = file.tellg();                 /* get the end offset   */
-        printf("[Opened %s file, '%s']\n", tag.c_str(), path.c_str());
+
+        /*
+         * Kind of annoying with playlists:
+         */
+
+        if (! playlist_mode())
+            printf("[Opened %s file, '%s']\n", tag.c_str(), path.c_str());
+
         if (m_file_size <= sizeof(long))
         {
             result = set_error("Invalid file size... reading a directory?");
@@ -749,7 +766,6 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
     file_ppqn(int(fileppqn));                       /* original file PPQN   */
     if (ppqn() == SEQ64_USE_FILE_PPQN)
     {
-        // ppqn(usr().midi_ppqn());                 /* always a valid value */
         ppqn(file_ppqn());
         m_use_scaled_ppqn = false;
     }

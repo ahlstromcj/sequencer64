@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-22
+ * \updates       2018-09-03
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -80,6 +80,11 @@
 #include <csignal>
 #include <cerrno>
 #include <cstring>                      /* strerror()                       */
+
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+#include <memory>                       /* std::unique_ptr                  */
+#endif
+
 #include <stdio.h>                      /* snprintf()                       */
 #include <gtk/gtkversion.h>
 #include <gtkmm/aboutdialog.h>
@@ -308,6 +313,10 @@ mainwnd::mainwnd
 #endif
     m_current_screenset     (-1),
     m_main_time             (manage(new maintime(p))),
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+    m_playlist_sep          (manage(new Gtk::HSeparator())),
+    m_playlist_text         (manage(new (Gtk::Label))),
+#endif
     m_perf_edit             (new perfedit(p, false /*allowperf2*/)),
     m_perf_edit_2           (allowperf2 ? new perfedit(p, true) : nullptr),
     m_options               (nullptr),
@@ -629,6 +638,13 @@ mainwnd::mainwnd
     Gtk::HBox * hbox3 = manage(new Gtk::HBox(false, 0));
     hbox3->pack_start(*m_main_time, Gtk::PACK_SHRINK, TIMELINE_PILL_PADDING);
     vbox_b->pack_start(*hbox3, false, false);
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+    vbox_b->pack_start(*m_playlist_sep, false, false);
+    vbox_b->pack_start(*m_playlist_text, false, false);
+    m_playlist_text->set_text("Playlists entries shown here");
+    m_playlist_text->hide();
+    m_playlist_sep->hide();
+#endif
 
     /*
      * Add the time-line and the time-clock.
@@ -1199,9 +1215,7 @@ mainwnd::mainwnd
     reset_window();
 
     if (! midifilename.empty())
-    {
         open_file(midifilename);
-    }
 }
 
 /**
@@ -1379,6 +1393,21 @@ mainwnd::timer_callback ()
         m_adjust_bpm->set_value(bpm);
 
     update_screenset();
+
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+    if (perf().playlist_mode())
+    {
+        m_playlist_text->set_text(perf().playlist_song());
+        m_playlist_text->show();
+        m_playlist_sep->show();
+    }
+    else
+    {
+        m_playlist_text->set_text("");
+        m_playlist_text->hide();
+        m_playlist_sep->hide();
+    }
+#endif
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS
 
@@ -2235,6 +2264,9 @@ mainwnd::open_file (const std::string & fn)
     bool result = open_midi_file(perf(), fn, ppqn, errmsg);
     if (result)
     {
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+        perf().playlist_mode(false);
+#endif
         update_recent_files_menu();
         update_window_title();
         reset_window();
@@ -2292,36 +2324,107 @@ mainwnd::reset_window ()
  */
 
 void
-mainwnd::choose_file ()
+mainwnd::choose_file (bool openplaylist)
 {
     Gtk::FileChooserDialog dlg("Open MIDI file", Gtk::FILE_CHOOSER_ACTION_OPEN);
     dlg.set_transient_for(*this);
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+    if (openplaylist)
+        dlg.set_title("Open play-list file");
+#endif
     dlg.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
     dlg.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
 
     Gtk::FileFilter filter_midi;
-    filter_midi.set_name("MIDI files");
-    filter_midi.add_pattern("*.midi");
-    filter_midi.add_pattern("*.MIDI");
-    filter_midi.add_pattern("*.mid");
-    filter_midi.add_pattern("*.MID");
-    dlg.add_filter(filter_midi);
+    if (openplaylist)
+    {
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+        filter_midi.set_name("Sequencer64 play-list files");
+        filter_midi.add_pattern("*.playlist");
+        dlg.add_filter(filter_midi);
 
-    Gtk::FileFilter filter_wrk;
-    filter_wrk.set_name("WRK files");
-    filter_wrk.add_pattern("*.wrk");
-    filter_wrk.add_pattern("*.WRK");
-    dlg.add_filter(filter_wrk);
+        Gtk::FileFilter filter_any;
+        filter_any.set_name("Any play-list files");
+        filter_any.add_pattern("*");
+        dlg.add_filter(filter_any);
+        dlg.set_current_folder(rc().last_used_dir());
+#endif
+    }
+    else
+    {
+        filter_midi.set_name("MIDI files");
+        filter_midi.add_pattern("*.midi");
+        filter_midi.add_pattern("*.MIDI");
+        filter_midi.add_pattern("*.mid");
+        filter_midi.add_pattern("*.MID");
+        dlg.add_filter(filter_midi);
 
-    Gtk::FileFilter filter_any;
-    filter_any.set_name("Any files");
-    filter_any.add_pattern("*");
-    dlg.add_filter(filter_any);
-    dlg.set_current_folder(rc().last_used_dir());
+        Gtk::FileFilter filter_wrk;
+        filter_wrk.set_name("WRK files");
+        filter_wrk.add_pattern("*.wrk");
+        filter_wrk.add_pattern("*.WRK");
+        dlg.add_filter(filter_wrk);
+
+        Gtk::FileFilter filter_any;
+        filter_any.set_name("Any files");
+        filter_any.add_pattern("*");
+        dlg.add_filter(filter_any);
+        dlg.set_current_folder(rc().last_used_dir());
+    }
 
     int result = dlg.run();
     if (result == Gtk::RESPONSE_OK)
-        open_file(dlg.get_filename());
+    {
+        if (openplaylist)
+        {
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+
+            /*
+             * This call is forwarded to the playlist attached to the perform
+             * object to open the play-list file, verify the play-list (no need to
+             * ask, just do it), and set the pointers to the first song in the
+             * first play-list.
+             */
+
+            bool playlistmode = perf().open_playlist(dlg.get_filename());
+            if (playlistmode)
+            {
+                /*
+                 * We will need to update the window-title, the play-list
+                 * versus normal XPM bitmap (if we decide to that), and
+                 * perhaps fill in the current play-list name and current
+                 * song-file name.
+                 *
+                 * update_window_title();
+                 * update_window_xpm();
+                 */
+
+                playlistmode = perf().open_current_song();
+            }
+            if (! playlistmode)
+            {
+                std::string errmsg = perf().playlist_error_message();
+                Gtk::MessageDialog errdialog
+                (
+                    *this, errmsg, false, Gtk::MESSAGE_ERROR,
+                    Gtk::BUTTONS_OK, true
+                );
+                rc().playlist_filename("");
+                errdialog.run();
+            }
+            playlistmode = perf().playlist_mode();
+#endif
+        }
+        else
+        {
+            open_file(dlg.get_filename());
+
+            /*
+             * update_window_title();
+             * update_window_xpm();
+             */
+        }
+    }
 }
 
 /**
@@ -3238,11 +3341,27 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 toggle_song_record();
             }
 #endif
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+            else if (k.is(SEQ64_Right))
+            {
+                (void) perf().open_next_song();
+            }
+            else if (k.is(SEQ64_Left))
+            {
+                (void) perf().open_previous_song();
+            }
+            else if (k.is(SEQ64_Down))
+            {
+                (void) perf().open_next_list();
+            }
+            else if (k.is(SEQ64_Up))
+            {
+                (void) perf().open_previous_list();
+            }
+#endif
         }
 
-        /* bool mgl = */ (void) handle_group_learn(k);
-
-
+        (void) handle_group_learn(k);
         if (! perf().playback_key_event(k))
         {
             /**
@@ -3651,6 +3770,16 @@ mainwnd::populate_menu_file ()
             mem_fun(*this, &mainwnd::file_open)
         )
     );
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+    m_menu_file->items().push_back
+    (
+        MenuElem
+        (
+            "Open _playlist...",  Gtk::AccelKey("<control><shift>P"),
+            mem_fun(*this, &mainwnd::file_open_playlist)
+        )
+    );
+#endif
     m_menu_file->items().push_back(SeparatorElem());
     update_recent_files_menu();                     /* copped from Kepler34 */
     m_menu_file->items().push_back(SeparatorElem());

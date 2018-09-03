@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-08-30
+ * \updates       2018-09-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -53,6 +53,8 @@ namespace seq64
 
 class playlist : public configfile
 {
+
+    friend class perform;
 
 public:
 
@@ -160,14 +162,22 @@ private:
 
     song_iterator m_current_song;
 
-public:
+private:
+
+    /*
+     * Only the friend class perform is able to call these functions.
+     */
 
     playlist (perform & p, const std::string & name);
-    virtual ~playlist ();
+
+public:
+
+    virtual ~playlist ();               // how to hide this???
 
     void show_list (const play_list_t & pl) const;
     void show_song (const song_spec_t & pl) const;
     void show () const;
+    void test ();
 
 public:
 
@@ -218,19 +228,20 @@ public:
 
     int song_index () const;
 
-    /**
-     *  Holds the name of the directory holding the songs for the currently
-     *  active playlist.  All songs in a playlist must be in the same
-     *  directory.  This is less flexible, but also a less confusing way
-     *  to organize tunes.
+    /*
+     *  Normally, play_list_t holds the name of the directory holding the
+     *  songs for the currently active playlist.  All songs in a playlist must
+     *  be in the same directory.  This is less flexible, but also a less
+     *  confusing way to organize tunes.
      *
-     *  However, if empty, every song in the playlist must specify the full or
-     *  relative path to the file.  To represent this empty name in the
+     *  However, if empty, every song in that playlist must specify the full
+     *  or relative path to the file.  To represent this empty name in the
      *  playlist, two consecutive double quotes are used.
      */
 
     const std::string & song_filename () const;     // base-name only
-    std::string song_filepath () const;             // directory + base-name
+    std::string song_filepath (const song_spec_t & s) const;
+    std::string song_filepath () const;             // for current song
 
     int song_count () const
     {
@@ -238,33 +249,39 @@ public:
             m_current_list->second.ls_song_count : (-1) ;
     }
 
+    std::string current_song () const;
+
 public:
 
     void clear ();
     bool reset ();
+    bool open (bool verify_it = true);
     bool open (const std::string & filename, bool verify_it = true);
-
     bool select_list (int index, bool selectsong = false);
-//  bool select_list (const std::string & name);        // maybe
     bool next_list (bool selectsong = false);
     bool previous_list (bool selectsong = false);
-
     bool select_song (int index);
-//  bool select_song (const std::string & filename);    // maybe
     bool next_song ();
     bool previous_song ();
-    bool verify ();
+    bool open_song (const std::string & filename, bool playlistmode = false);
+    bool open_current_song ();
+    bool open_next_list ();
+    bool open_previous_list ();
+    bool open_next_song ();
+    bool open_previous_song ();
 
     virtual bool parse (perform & p);
     virtual bool write (const perform & p);
 
 private:
 
-    bool error_message
+    bool make_error_message (const std::string & additional);
+    bool make_file_error_message
     (
-        const std::string & sectionname,
-        const std::string & additional = ""
+        const std::string & fmt,
+        const std::string & filename
     );
+    bool verify (bool strong = true);
 
 };          // class playlist
 

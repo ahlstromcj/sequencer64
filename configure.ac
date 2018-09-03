@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-08-26
+dnl \update        2018-09-02
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -25,8 +25,8 @@ dnl
 dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
-AC_REVISION($Revision: 0.95$)dnl
-AC_INIT(Sequencer64, [0.95.2], [ahlstromcj@gmail.com])
+AC_REVISION($Revision: 0.96$)dnl
+AC_INIT(Sequencer64, [0.96.0], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -154,7 +154,7 @@ AC_SUBST(PACKAGE)
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
 
-VERSION="0.95.2"
+VERSION="0.96.0"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -196,7 +196,7 @@ dnl      incremented.
 SEQ64_API_MAJOR="0"
 AC_SUBST([SEQ64_API_MAJOR])
 
-SEQ64_API_MINOR="95"
+SEQ64_API_MINOR="96"
 AC_SUBST([SEQ64_API_MINOR])
 
 SEQ64_API_PATCH="0"
@@ -776,8 +776,8 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-08-26"
-#define VERSION "0.95.2"
+#define VERSION_DATE_SHORT "2018-09-02"
+#define VERSION "0.96.0"
 
 )
 

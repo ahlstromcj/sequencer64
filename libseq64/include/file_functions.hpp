@@ -9,7 +9,7 @@
  *
  * \author        Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-08-28
+ * \updates       2018-09-03
  * \version       $Revision$
  *
  *    Also see the file_functions.cpp module.
@@ -18,7 +18,7 @@
 #include <string>
 
 #define SEQ64_TRIM_CHARS                " \t\n\v\f\r"
-#define SEQ64_TRIM_CHARS_QUOTES         " \t\n\v\f\r\"\'"
+#define SEQ64_TRIM_CHARS_QUOTES         " \t\n\v\f\r\"'"
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -38,10 +38,17 @@ extern bool file_writable (const std::string & targetfile);
 extern bool file_accessible (const std::string & targetfile);
 extern bool file_executable (const std::string & targetfile);
 extern bool file_is_directory (const std::string & targetfile);
+extern bool name_has_directory (const std::string & filename);
 extern bool make_directory (const std::string & pathname);
 extern std::string get_current_directory ();
 extern std::string get_full_path (const std::string & path);
-extern std::string normalize_path (const std::string & path, bool tounix = true);
+extern std::string normalize_path
+(
+    const std::string & path,
+    bool tounix = true,
+    bool terminate = false
+);
+extern std::string clean_file (const std::string & path, bool tounix = true);
 extern std::string clean_path (const std::string & path, bool tounix = true);
 extern std::string filename_concatenate
 (

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-22
+ * \updates       2018-09-03
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -42,12 +42,12 @@
 #include <gdkmm/cursor.h>
 #include <gtkmm/window.h>
 
-#include "seq64_features.h"             /* feature macros for the app   */
-#include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
-#include "gui_window_gtk2.hpp"          /* seq64::qui_window_gtk2       */
-#include "midifile.hpp"                 /* seq64::midifile::SaveOption  */
-#include "mutex.hpp"                    /* seq64::mutex, automutex      */
-#include "perform.hpp"                  /* seq64::perform and callback  */
+#include "seq64_features.h"             /* feature macros for the app       */
+#include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN           */
+#include "gui_window_gtk2.hpp"          /* seq64::qui_window_gtk2           */
+#include "midifile.hpp"                 /* seq64::midifile::SaveOption      */
+#include "mutex.hpp"                    /* seq64::mutex, automutex          */
+#include "perform.hpp"                  /* seq64::perform and callback      */
 
 /**
  *  A new feature for showing whether JACK is connected or not in the main
@@ -73,6 +73,9 @@ namespace Gtk
     class Button;
     class Cursor;
     class Entry;
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+    class HSeparator;
+#endif
     class Label;
     class MenuBar;
     class Menu;
@@ -274,6 +277,11 @@ private:
      */
 
     maintime * m_main_time;
+
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+    Gtk::HSeparator * m_playlist_sep;
+    Gtk::Label * m_playlist_text;
+#endif
 
     /**
      *  A pointer to the first song/performance editor.
@@ -736,6 +744,16 @@ private:
     }
 
     /**
+     *  A callback function for the File / Open menu entry.
+     */
+
+    void file_open_playlist ()
+    {
+        if (is_save())
+            choose_file(true);
+    }
+
+    /**
      *  A callback function for the File / Save menu entry.
      */
 
@@ -774,7 +792,7 @@ private:
     void file_exit ();
     void new_file ();
     bool save_file ();
-    void choose_file ();
+    void choose_file (bool openplaylist = false);
     bool is_save ();
     bool install_signal_handlers ();
     bool signal_action (Glib::IOCondition condition);

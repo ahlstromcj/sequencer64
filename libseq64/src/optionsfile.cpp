@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-30
+ * \updates       2018-09-03
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -141,7 +141,7 @@ optionsfile::~optionsfile ()
  */
 
 bool
-optionsfile::error_message
+optionsfile::make_error_message
 (
     const std::string & sectionname,
     const std::string & additional
@@ -323,13 +323,13 @@ optionsfile::parse (perform & p)
 
     if (int(sequences) > g_midi_control_limit)
     {
-        return error_message("midi-control", "too many control entries");
+        return make_error_message("midi-control", "too many control entries");
     }
     else if (sequences > 0)
     {
         ok = next_data_line(file);
         if (! ok)
-            return error_message("midi-control", "no data");
+            return make_error_message("midi-control", "no data");
         else
             ok = true;
 
@@ -353,7 +353,7 @@ optionsfile::parse (perform & p)
             p.midi_control_off(i).set(c);
             ok = next_data_line(file);
             if (! ok && i < (sequences - 1))
-                return error_message("midi-control", "not enough data");
+                return make_error_message("midi-control", "not enough data");
             else
                 ok = true;
         }
@@ -417,7 +417,7 @@ optionsfile::parse (perform & p)
             if (! ok)
             {
                 if (i < (buses-1))
-                    return error_message("midi-clock data line missing");
+                    return make_error_message("midi-clock data line missing");
             }
         }
     }
@@ -427,7 +427,7 @@ optionsfile::parse (perform & p)
          *  If this is zero, we need to fake it to have 1 buss with a 0 clock,
          *  rather than make the poor user figure out how to fix it.
          *
-         *      return error_message("midi-clock");
+         *      return make_error_message("midi-clock");
          *
          *  And let's use the new e_clock_disabled code instead of
          *  e_clock_off.  LATER.
@@ -447,7 +447,7 @@ optionsfile::parse (perform & p)
     sscanf(m_line, "%ld", &keys);
     ok = next_data_line(file) && keys > 0 && keys <= c_max_keys;
     if (! ok)
-        (void) error_message("keyboard-control");   // now allowed to continue
+        (void) make_error_message("keyboard-control");   // allowed to continue
 
     /*
      * Bug involving the optionsfile and perform modules:  At the 4th or 5th
@@ -467,7 +467,7 @@ optionsfile::parse (perform & p)
         p.set_key_event(key, seq);
         ok = next_data_line(file);
         if (! ok && i < (keys - 1))
-            return error_message("keyboard-control data line");
+            return make_error_message("keyboard-control data line");
     }
 
     /*
@@ -483,10 +483,10 @@ optionsfile::parse (perform & p)
     sscanf(m_line, "%ld", &groups);
     ok = next_data_line(file) && groups > 0 && groups <= c_max_keys;
     if (! ok)
-        (void) error_message("keyboard-group");     // now allowed to continue
+        (void) make_error_message("keyboard-group");     // allowed to continue
 
     p.get_key_groups().clear();
-    p.get_key_groups_rev().clear();       // \new ca 2015-09-16
+    p.get_key_groups_rev().clear();
     for (int i = 0; i < groups; ++i)
     {
         long key = 0, group = 0;
@@ -494,7 +494,7 @@ optionsfile::parse (perform & p)
         p.set_key_group(key, group);
         ok = next_data_line(file);
         if (! ok && i < (groups - 1))
-            return error_message("keyboard-group data line");
+            return make_error_message("keyboard-group data line");
     }
 
     keys_perform_transfer ktx;
@@ -701,11 +701,11 @@ optionsfile::parse (perform & p)
                 }
             }
             if (b < buses)
-                return error_message("midi-input", "too few buses");
+                return make_error_message("midi-input", "too few buses");
         }
     }
     else
-        return error_message("midi-input");
+        return make_error_message("midi-input");
 
 #ifdef USE_THIS_CODE
 
@@ -782,6 +782,30 @@ optionsfile::parse (perform & p)
         }
     }
 
+    if (line_after(file, "[playlist]"))
+    {
+        int flag;
+        sscanf(m_line, "%d", &flag);
+        rc().playlist_active(bool(flag));
+        if (next_data_line(file))
+        {
+            size_t len = strlen(m_line);
+            if (len > 0)
+            {
+                if (strcmp(m_line, "\"\"") == 0)
+                {
+                    rc().playlist_active(false);
+                    rc().playlist_filename("");
+                }
+                else
+                    rc().playlist_filename(m_line);
+            }
+            else
+                rc().playlist_active(false);
+        }
+    }
+
+
     long method = 0;
     if (line_after(file, "[interaction-method]"))
         sscanf(m_line, "%ld", &method);
@@ -791,7 +815,7 @@ optionsfile::parse (perform & p)
      */
 
     if (! rc().interaction_method(interaction_method_t(method)))
-        return error_message("interaction-method", "illegal value");
+        return make_error_message("interaction-method", "illegal value");
 
     if (! rc().legacy_format())
     {
@@ -864,7 +888,7 @@ optionsfile::parse_mute_group_section (perform & p)
         result = gtrack == 0 || gtrack == (c_max_sets * c_max_keys); /* 1024 */
     }
     if (! result)
-        (void) error_message("mute-group");         /* abort the parsing!   */
+        (void) make_error_message("mute-group");    /* abort the parsing!   */
 
     if (result && gtrack > 0)
     {
@@ -899,7 +923,7 @@ optionsfile::parse_mute_group_section (perform & p)
             );
             if (groupmute < 0 || groupmute >= c_max_groups)
             {
-                return error_message("group-mute number out of range");
+                return make_error_message("group-mute number out of range");
             }
             else
             {
@@ -920,7 +944,7 @@ optionsfile::parse_mute_group_section (perform & p)
 
             result = next_data_line(file);
             if (! result && g < (c_max_groups - 1))
-                return error_message("mute-group data line");
+                return make_error_message("mute-group data line");
             else
                 result = true;
         }
@@ -933,7 +957,7 @@ optionsfile::parse_mute_group_section (perform & p)
                 sscanf(m_line, "%d", &v);
                 result = rc().mute_group_saving((mute_group_handling_t) v);
                 if (! result)
-                    return error_message("mute-group", "handling value bad");
+                    return make_error_message("mute-group", "handling value bad");
             }
         }
     }
@@ -1037,7 +1061,7 @@ optionsfile::write (const perform & p)
         "#   [0 0 0 0 0 0]   [0 0 0 0 0 0]   [0 0 0 0 0 0]\n"
         "#    Toggle          On              Off\n"
         "\n"
-        <<  g_midi_control_limit << "      # MIDI controls count (74 or 84)\n"
+        <<  g_midi_control_limit << "      # MIDI controls count (74/84/96)\n"
         "\n"
         << "# Pattern-group section:\n"
         ;
@@ -1057,7 +1081,8 @@ optionsfile::write (const perform & p)
          *      starting with "bpm up" and ending with "screen set play", and
          *      are each one line long.  Then we've added 10 more, for
          *      playback, record (of performance), solo, thru, and 6 reserved
-         *      for expansion.
+         *      for expansion.  Finally, if play-list support is enabled,
+         *      there are another 12 more controls to handle.
          */
 
         switch (mcontrol)
@@ -1145,11 +1170,72 @@ optionsfile::write (const perform & p)
             break;
 
         case c_midi_control_reset_seq:      // 83
-            file << "# reserved for expansion:\n";
+            file << "# reserved for expansion:\n";      // still true???
+            break;
+
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+        case c_midi_control_reserved_1:     // 84
+            file << "# Reserved for expansion 1\n";
+            break;
+
+        case c_midi_control_FF:
+            file << "# MIDI Control for fast-forward\n";
+            break;
+
+        case c_midi_control_rewind:
+            file << "# MIDI Control for rewind\n";
+            break;
+
+        case c_midi_control_top:
+            file << "# MIDI Control for top...\n";
+            break;
+
+        case c_midi_control_playlist:
+            file << "# MIDI Control to select playlist "
+                "(value, next, previous)\n"
+                ;
+            break;
+
+        case c_midi_control_playlist_song:
+            file << "# MIDI Control to select song in current playlist"
+                "(value, next, previous)\n"
+                ;
+            break;
+
+        case c_midi_control_reserved_7:
+            file << "# Reserved for expansion 7\n";
+            break;
+
+        case c_midi_control_reserved_8:
+            file << "# Reserved for expansion 8\n";
+            break;
+
+        case c_midi_control_reserved_9:
+            file << "# Reserved for expansion 9\n";
+            break;
+
+        case c_midi_control_reserved_10:
+            file << "Reserved for expansion 10\n";
+            break;
+
+        case c_midi_control_reserved_11:
+            file << "# Reserved for expansion 11\n";
+            break;
+
+        case c_midi_control_reserved_12:
+            file << "# Reserved for expansion 12\n";
             break;
 
         /*
-         * case g_midi_control_limit:  74 or 84, last value, not written.
+         * case c_midi_controls_extended:
+         *     file << "# Reserved for expansion 9\n";
+         *     break;
+         */
+
+#endif  // SEQ64_USE_MIDI_PLAYLIST
+
+        /*
+         * case g_midi_control_limit:  74/8496, last value, not written.
          */
 
         default:
@@ -1741,6 +1827,24 @@ optionsfile::write (const perform & p)
 
         file << "\n";
     }
+
+    file
+        << "[playlist]\n\n"
+        "# Provides a configured play-list and a flag to activate it.\n\n"
+        << (rc().playlist_active() ? "1" : "0")
+        << "     # playlist_active, 1 = active, 0 = do not use it\n"
+        ;
+
+    file << "\n"
+        "# Provides the name of a play-list.  If there is none, use '\"\"'.\n"
+        "# Or set the flag above to 0.\n\n"
+        ;
+
+    std::string plname = rc().playlist_filename();
+    if (plname.empty())
+        plname = "\"\"";
+
+    file << plname << "\n\n";
 
     file
         << "# End of " << m_name << "\n#\n"

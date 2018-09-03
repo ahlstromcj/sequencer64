@@ -1,6 +1,6 @@
-README for Sequencer64 0.95.2 (Native JACK, CLI, varisets, tempo, Windows)
+README for Sequencer64 0.96.0 (Native JACK, CLI, playlist, tempo, Windows)
 Chris Ahlstrom
-2015-09-10 to 2018-08-26
+2015-09-10 to 2018-09-02
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
 The heart of seq24 remains intact.  It is an old friend, and maintains some
@@ -47,6 +47,8 @@ conventional source tarball.
 
 Recent changes:
 
+    -   Version 0.96.0:
+        -   Support for playlists and MIDI selections of playlists and songs.
     -   Version 0.95.2:
         -   Added the Qt 5 version of the Event Editor.
         -   Catching up on some more features from the Gtkmm-2:4 version.

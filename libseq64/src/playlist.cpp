@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-08-30
+ * \updates       2018-09-03
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
@@ -51,6 +51,7 @@
 #include "playlist.hpp"
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::rc()                      */
+#include "wrkfile.hpp"                  /* seq64::midifile & seq64::wrkfile */
 
 /*
  *  Do not document a namespace; it breaks Doxygen.
@@ -75,32 +76,29 @@ playlist::song_list playlist::sm_dummy;
 
 playlist::playlist (perform & p, const std::string & name)
  :
-    configfile                  (name),              // base class constructor
-    m_perform                   (p),
+    configfile                  (name),             // base class constructor
+    m_perform                   (p),                // the owner of this object
     m_comments                  (),
     m_play_lists                (),
     m_mode                      (false),
     m_current_list              (),                 // play-list iterator
     m_current_song              ()                  // song-list iterator
 {
-    // Empty body
+    // No code needed
 }
 
 /**
- *  A rote destructor.
+ *  This destructor unregisters this playlist from the perform object.
  */
 
 playlist::~playlist ()
 {
-    // Empty body
+    // No code needed
 }
 
 /**
  *  Helper function for error-handling.  It assembles a message and then
  *  passes it to set_error_message().
- *
- * \param sectionname
- *      Provides the name of the section for reporting the error.
  *
  * \param additional
  *      Additional context information to help in finding the error.
@@ -110,25 +108,47 @@ playlist::~playlist ()
  */
 
 bool
-playlist::error_message
-(
-    const std::string & sectionname,
-    const std::string & additional
-)
+playlist::make_error_message (const std::string & additional)
 {
-    std::string msg = "BAD DATA in playlist [";
-    msg += sectionname;
-    msg += "]: ";
+    std::string msg = "BAD [playlist]";
     if (! additional.empty())
+    {
+        msg += ": ";
         msg += additional;
-
+    }
     errprint(msg.c_str());
     set_error_message(msg);
     return false;
 }
 
 /**
- *  Opens the play-list file and optionally verifies it.
+ *  Opens the current play-list file and optionally verifies it.
+ *
+ * \param verify_it
+ *      If true (the default), call verify() to make sure the playlist is
+ *      sane.
+ *
+ * \return
+ *      Returns true if the file was parseable and verifiable.
+ */
+
+bool
+playlist::open (bool verify_it)
+{
+    bool result = parse(m_perform);
+    if (result)
+    {
+        if (verify_it)
+            result = verify();
+    }
+    mode(result);
+    return result;
+}
+
+/**
+ *  Opens the play-list file and optionally verifies it.  Provisionally sets
+ *  m_name to the provided file-name, but will clear the current play-list if
+ *  something bad happens.  We cannot easily recover from a bad play-list.
  *
  * \param filename
  *      The name of the file to be opened and parsed.
@@ -144,17 +164,9 @@ playlist::error_message
 bool
 playlist::open (const std::string & filename, bool verify_it)
 {
-    std::string old_filename = m_name;
-    m_name = filename;
-
-    bool result = parse(m_perform);
-    if (result)
-    {
-        if (verify_it)
-            result = verify();
-    }
+    bool result = open(verify_it);
     if (! result)
-        m_name = old_filename;
+        clear();
 
     return result;
 }
@@ -176,6 +188,8 @@ playlist::open (const std::string & filename, bool verify_it)
  *      -   Song directory name.  The directory where the songs are
  *          stored.  If this name is empty, then the song file-names
  *          need to include the individual directories for each file.
+ *          But even if not empty, the play-list directory is not used if
+ *          the song file-name includes a path, as indicated by "/" or "\".
  *      -   Song file-name, or path to the song file-name.
  *
  * Note that the call to next_section() already gets to the next line
@@ -193,12 +207,12 @@ bool
 playlist::parse (perform & p)
 {
     bool result = false;
-    std::ifstream file(m_name.c_str(), std::ios::in | std::ios::ate);
+    std::ifstream file(name().c_str(), std::ios::in | std::ios::ate);
     if (file.is_open())
     {
         file.seekg(0, std::ios::beg);                   /* seek to start    */
         m_play_lists.clear();                           /* start fresh      */
-        m_comments.clear();
+        m_comments.clear();                             /* ditto            */
 
         /*
          * [comments]
@@ -223,6 +237,10 @@ playlist::parse (perform & p)
          */
 
         bool have_section = line_after(file, "[playlist]");
+        if (! have_section)
+        {
+            result = make_error_message("empty section");
+        }
         while (have_section)
         {
             int count = 0;
@@ -236,15 +254,15 @@ playlist::parse (perform & p)
                 if (next_data_line(file))
                 {
                     /*
-                     * Make sure the directory name is canonical and clean.  The
-                     * existence of the file should be validated later.
+                     * Make sure the directory name is canonical and clean.
+                     * The existence of the file should be validated later.
+                     * Also determine if the song file-name already has a
+                     * directory before using the play-list's directory.
                      */
 
                     line = m_line;
                     plist.ls_file_directory = clean_path(line);
                     slist.clear();
-
-                    bool emptydir = plist.ls_file_directory.empty();
                     while (next_data_line(file))
                     {
                         std::string fname = m_line;
@@ -252,7 +270,7 @@ playlist::parse (perform & p)
                         {
                             song_spec_t sinfo;
                             sinfo.ss_index = count;
-                            if (emptydir)
+                            if (name_has_directory(fname))
                             {
                                 std::string path;
                                 std::string filebase;
@@ -266,7 +284,7 @@ playlist::parse (perform & p)
                                 sinfo.ss_filename = fname;
                             }
 
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L              // C++11
                             std::pair<int, song_spec_t> s =
                                 std::make_pair(count, sinfo);
 #else
@@ -293,24 +311,38 @@ playlist::parse (perform & p)
                     }
                     else
                     {
-                        result = false;
+                        result = make_error_message("no songs");
                         break;
                     }
                 }
                 else
+                {
+                    std::string msg = "no list directory in playlist #" +
+                        std::to_string(count);
+
+                    result = make_error_message(msg);
                     break;
+                }
             }
             else
+            {
+                std::string msg = "no data in playlist #" + std::to_string(count);
+                result = make_error_message(msg);
                 break;
-
+            }
             have_section = next_section(file, "[playlist]");
         }
         file.close();           /* done parsing the "playlist" file */
     }
     else
-        printf("? error opening [%s] for reading\n", m_name.c_str());
+    {
+        std::string msg = "error opening file [" + name() + "]";
+        result = make_error_message(msg);
+    }
+    if (result)
+        result = reset();
 
-    m_mode = result;
+    mode(result);
     return result;
 }
 
@@ -329,10 +361,10 @@ playlist::parse (perform & p)
 bool
 playlist::write (const perform & /*p*/)
 {
-    std::ofstream file(m_name.c_str(), std::ios::out | std::ios::trunc);
+    std::ofstream file(name().c_str(), std::ios::out | std::ios::trunc);
     if (! file.is_open())
     {
-        printf("? error opening [%s] for writing\n", m_name.c_str());
+        errprintf("error opening [%s] for writing\n", name().c_str());
         return false;
     }
 
@@ -345,7 +377,25 @@ playlist::write (const perform & /*p*/)
         << "#\n"
         << "# Written on " << current_date_time() << "\n"
         << "#\n"
-        << "# This file holds a playlist for Sequencer64.\n"
+        << "# This file holds a playlist for Sequencer64. It consists of one\n"
+        << "# or more '[playlist]' sections.  Each section has a user-specified\n"
+        << "# number.  This number should range from 0 to 127, but it can go\n"
+        << "# higher if the user doesn't need to use MIDI control to select\n"
+        << "# a playlist.\n"
+        << "#\n"
+        << "# Next comes a display name for this list, with or without quotes.\n"
+        << "#\n"
+        << "# Next comes the name of the directory, always using the UNIX-style\n"
+        << "# separator, a forward slash (solidus).  It can optionally be\n"
+        << "# terminated with a slash.\n"
+        << "#\n"
+        << "# Last comes the list of MIDI files.  They will be numbered in the\n"
+        << "# order shown, starting from 0.  They can be simple 'base.ext'\n"
+        << "# file-names; the playlist directory will be prepended before the\n"
+        << "# song is accessed.\n"
+        << "#\n"
+        << "# If the MIDI file-name already has a directory name, that will be\n"
+        << "# used instead.\n"
         ;
 
     file << "#\n"
@@ -397,7 +447,7 @@ playlist::write (const perform & /*p*/)
 
     file
         << "\n"
-        << "# End of " << m_name << "\n#\n"
+        << "# End of " << name() << "\n#\n"
         << "# vim: sw=4 ts=4 wm=4 et ft=sh\n"   /* ft=sh for nice colors */
         ;
 
@@ -406,39 +456,245 @@ playlist::write (const perform & /*p*/)
 }
 
 /**
- *  Goes through all of the playlists and makes sure that all of the song files
- *  are accessible.
+ *  Given a file-name, opens that file as a song.  This function holds common
+ *  code.
+ *
+ * \param fname
+ *      The full path to the file to be opened.
+ *
+ * \param playlistmode
+ *      If true, open the file in play-list mode.  Currently, all this means
+ *      is that some output from the file-opening process is suppressed.
  */
 
 bool
-playlist::verify ()
+playlist::open_song (const std::string & fname, bool playlistmode)
 {
-    bool result = true;
-    for
-    (
-        play_iterator pci = m_play_lists.begin();
-        pci != m_play_lists.end(); ++pci
-    )
+    bool result = false;
+    bool is_wrk = file_extension_match(fname, "wrk");
+    m_perform.clear_all();
+    if (is_wrk)
     {
-        const song_list & sl = pci->second.ls_song_list;
-        for (song_iterator sci = sl.begin(); sci != sl.end(); ++sci)
+        wrkfile m(fname, SEQ64_USE_DEFAULT_PPQN, playlistmode);
+        result = m.parse(m_perform);
+    }
+    else
+    {
+        midifile m(fname, SEQ64_USE_DEFAULT_PPQN, false, true, playlistmode);
+        result = m.parse(m_perform);
+    }
+    if (playlistmode)
+        m_perform.clear_all();
+
+    return result;
+}
+
+/**
+ *  Goes through all of the playlists and makes sure that all of the song files
+ *  are accessible.
+ *
+ * \param strong
+ *      If true, also make sure the MIDI files open without error as well.
+ *      The code is similar to open_midi_file() in the midifile module, but it
+ *      does not make configuration settings.
+ *
+ * \return
+ *      Returns true if all of the MIDI files are verifiable.
+ */
+
+bool
+playlist::verify (bool strong)
+{
+    bool result = ! m_play_lists.empty();
+    if (result)
+    {
+        for
+        (
+            play_iterator pci = m_play_lists.begin();
+            pci != m_play_lists.end(); ++pci
+        )
         {
-            const song_spec_t & s = sci->second;
-            if (! file_exists(s.ss_filename))
+            const song_list & sl = pci->second.ls_song_list;
+            for (song_iterator sci = sl.begin(); sci != sl.end(); ++sci)
             {
-#ifdef PLATFORM_DEBUG
-                printf
-                (
-                    "playlist '%s', song '%s' is missing\n",
-                    pci->second.ls_list_name.c_str(), s.ss_filename.c_str()
-                );
-#endif
-                result = false;
-                break;
+                const song_spec_t & s = sci->second;
+                const std::string fname = song_filepath(s);
+                if (file_exists(fname))
+                {
+                    if (strong)
+                    {
+                        /*
+                         * The file is parsed.  If the result is false, then the
+                         * play-list mode end up false.  Although we don't
+                         * really need a playlist-mode flag here, it is useful
+                         * to cut down on console output.  Let the caller do
+                         * the reporting on errors only.
+                         */
+
+                        result = open_song(fname, true);
+#if 0
+                        bool is_wrk = file_extension_match(fname, "wrk");
+                        if (is_wrk)
+                        {
+                            wrkfile m(fname, SEQ64_USE_DEFAULT_PPQN, true);
+                            result = m.parse(m_perform);
+                        }
+                        else
+                        {
+                            midifile m
+                            (
+                                fname, SEQ64_USE_DEFAULT_PPQN, false, true, true
+                            );
+                            result = m.parse(m_perform);
+                        }
+
+                        /*
+                         * Make sure the song isn't loaded for good; we are
+                         * only verifying.
+                         */
+
+                        m_perform.clear_all();
+#endif      // 0
+                        if (! result)
+                        {
+                            make_file_error_message("song '%s' missing", fname);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    std::string fmt = pci->second.ls_list_name;
+                    fmt += ": song '%s' is missing";
+                    result = make_file_error_message(fmt, fname);
+                    break;
+                }
             }
+            if (! result)
+                break;
+        }
+    }
+    else
+    {
+        std::string msg = "empty list file '";
+        msg += name();
+        msg += "'";
+        make_error_message(msg);
+    }
+    return result;
+}
+
+/**
+ *  Opens/loads the current song.
+ *
+ * \return
+ *      Returns true if there was a song to be opened, and it opened properly.
+ */
+
+bool
+playlist::open_current_song ()
+{
+    bool result = false;
+    if (m_current_list != m_play_lists.end())
+    {
+        m_perform.clear_all();
+        if (m_current_song != m_current_list->second.ls_song_list.end())
+        {
+            const std::string fname = song_filepath(m_current_song->second);
+            result = open_song(fname);
+#if 0
+            bool is_wrk = file_extension_match(fname, "wrk");
+            if (is_wrk)
+            {
+                wrkfile m(fname, SEQ64_USE_DEFAULT_PPQN);
+                result = m.parse(m_perform);
+            }
+            else
+            {
+                midifile m(fname, SEQ64_USE_DEFAULT_PPQN);
+                result = m.parse(m_perform);
+            }
+#endif  // 0
+            if (! result)
+                (void) make_file_error_message("could not open song '%s'", fname);
         }
     }
     return result;
+}
+
+/**
+ *
+ */
+
+bool
+playlist::open_next_list ()
+{
+    bool result = next_list(true);      /* select the next list, first song */
+    if (result)
+    if (result)
+        result = open_current_song();
+
+    return result;
+}
+
+/**
+ *
+ */
+
+bool
+playlist::open_previous_list ()
+{
+    bool result = previous_list(true);  /* select the prev. list, first song */
+    if (result)
+        result = open_current_song();
+
+    return result;
+}
+
+/**
+ *
+ */
+
+bool
+playlist::open_next_song ()
+{
+    bool result = next_song();
+    if (result)
+        result = open_current_song();
+
+    return result;
+}
+
+/**
+ *
+ */
+
+bool
+playlist::open_previous_song ()
+{
+    bool result = previous_song();
+    if (result)
+        result = open_current_song();
+
+    return result;
+}
+
+
+/**
+ *  Makes a file-error message.
+ */
+
+bool
+playlist::make_file_error_message
+(
+    const std::string & fmt,
+    const std::string & filename
+)
+{
+    char tmp[256];
+    snprintf(tmp, sizeof tmp, fmt.c_str(), filename.c_str());
+    make_error_message(tmp);
+    return false;
 }
 
 /**
@@ -450,12 +706,16 @@ playlist::clear ()
 {
     m_comments.clear();
     m_play_lists.clear();
-    m_mode = false;
+    mode(false);
     m_current_list = m_play_lists.end();
 }
 
 /**
+ *  Resets to the first play-list and the first-song in that playlist.
  *
+ * \return
+ *      Returns true if the play-lists where present and the first song of the
+ *      first play-list was able to be selected.
  */
 
 bool
@@ -464,12 +724,28 @@ playlist::reset ()
     bool result = ! m_play_lists.empty();
     if (result)
     {
+        m_current_list = m_play_lists.begin();
+        result = select_song(0);
     }
+    else
+        clear();
+
     return result;
 }
 
 /**
+ *  Selects a play-list with the given index.
  *
+ * \param index
+ *      The index of the play-list re 0.  Generally should be restricted to
+ *      the range of 0 to 127, to be suitable for MIDI control.
+ *
+ * \param selectsong
+ *      If true, then the first (0th) song in the play-list is selected.
+ *
+ * \return
+ *      Returns true if the selected play-list is valid.  If true, then the
+ *      m_current_list iterator points to the current list.
  */
 
 bool
@@ -479,19 +755,12 @@ playlist::select_list (int index, bool selectsong)
     bool result = pci != m_play_lists.end();
     if (result)
     {
-        const play_list_t & pl = pci->second;
 #ifdef PLATFORM_DEBUG
-        show_list(pl);
+        show_list(pci->second);
 #endif
+        m_current_list = pci;
         if (selectsong)
-        {
-            /*
-             * Similar to select_song(0), but we don't need to check so many
-             * iterators.
-             */
-
-            // TODO
-        }
+            select_song(0);
     }
     return result;
 }
@@ -520,15 +789,12 @@ playlist::next_list (bool selectsong)
         if (m_current_list == m_play_lists.end())
             m_current_list = m_play_lists.begin();
 
-        if (selectsong)
-        {
-            /*
-             * Similar to select_song(0), but we don't need to check so many
-             * iterators.
-             */
+#ifdef PLATFORM_DEBUG
+        show_list(m_current_list->second);
+#endif
 
-            // TODO
-        }
+        if (selectsong)
+            select_song(0);
     }
     return result;
 }
@@ -558,15 +824,12 @@ playlist::previous_list (bool selectsong)
         else
             --m_current_list;
 
-        if (selectsong)
-        {
-            /*
-             * Similar to select_song(0), but we don't need to check so many
-             * iterators.
-             */
+#ifdef PLATFORM_DEBUG
+        show_list(m_current_list->second);
+#endif
 
-            // TODO
-        }
+        if (selectsong)
+            select_song(0);
     }
     return result;
 }
@@ -614,15 +877,89 @@ playlist::song_filename () const
  */
 
 std::string
+playlist::song_filepath (const song_spec_t & sinfo) const
+{
+    std::string result = clean_path(sinfo.ss_song_directory);
+    result += sinfo.ss_filename;
+    return result;
+}
+
+/**
+ *  Gets the current song-specification from the current play-list, and, if
+ *  valid concatenates the song's directory and file-name.
+ *
+ * \return
+ *      Returns the song's directory and file-name as a full path
+ *      specification.  However, if there's an error, then an empty string is
+ *      returned.
+ */
+
+std::string
 playlist::song_filepath () const
 {
     std::string result;
     if (m_current_list != m_play_lists.end())
     {
         if (m_current_song != m_current_list->second.ls_song_list.end())
+            result = song_filepath(m_current_song->second);
+    }
+    return result;
+}
+
+/**
+ *  Provides a one-line description containing the current play-list name and
+ *  song file.
+ *
+ * \return
+ *      Returns the play-list name and song file-name.  If not in playlist
+ *      mode, or an item cannot be found, then an empty string is returned.
+ */
+
+std::string
+playlist::current_song () const
+{
+    std::string result;
+    if (mode())
+    {
+        if (m_current_list != m_play_lists.end())
         {
-            result = m_current_song->second.ss_song_directory;
-            result += m_current_song->second.ss_filename;
+            if (m_current_song != m_current_list->second.ls_song_list.end())
+            {
+                result = m_current_list->second.ls_list_name;
+                result += ": ";
+                result += m_current_song->second.ss_filename;
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ *  Selects a song with the given index.
+ *
+ * \param index
+ *      The index of the song re 0.  Generally should be restricted to the
+ *      range of 0 to 127, to be suitable for MIDI control.
+ *
+ * \return
+ *      Returns true if the current play-list and the current song are valid.
+ *      If true, then the m_current_song iterator points to the current song.
+ */
+
+bool
+playlist::select_song (int index)
+{
+    bool result = m_current_list != m_play_lists.end();
+    if (result)
+    {
+        song_iterator sci = m_current_list->second.ls_song_list.find(index);
+        result = sci != m_current_list->second.ls_song_list.end();
+        if (result)
+        {
+#ifdef PLATFORM_DEBUG
+            show_song(sci->second);
+#endif
+            m_current_song = sci;
         }
     }
     return result;
@@ -633,21 +970,32 @@ playlist::song_filepath () const
  */
 
 bool
-playlist::select_song (int index)
+playlist::next_song ()
 {
     bool result = m_current_list != m_play_lists.end();
     if (result)
     {
-        song_iterator sci = m_current_list->second.ls_song_list.find(index);
+        ++m_current_song;
+        if (m_current_song == m_current_list->second.ls_song_list.end())
+            m_current_song = m_current_list->second.ls_song_list.begin();
+    }
+    return result;
+}
 
-        result = sci != m_current_list->second.ls_song_list.end();
-        if (result)
-        {
-#ifdef PLATFORM_DEBUG
-            const song_spec_t & s = sci->second;
-            show_song(s);
-#endif
-        }
+/**
+ *
+ */
+
+bool
+playlist::previous_song ()
+{
+    bool result = m_current_list != m_play_lists.end();
+    if (result)
+    {
+        if (m_current_song == m_current_list->second.ls_song_list.begin())
+            m_current_song = std::prev(m_current_list->second.ls_song_list.end());
+        else
+            --m_current_song;
     }
     return result;
 }
@@ -714,6 +1062,60 @@ playlist::show () const
             }
         }
     }
+}
+
+/**
+ *  A function for running tests of the play-list handling.
+ */
+
+void
+playlist::test ()
+{
+    show();
+    show_list(m_current_list->second);
+    show_song(m_current_song->second);
+    for (int i = 0; i < 8; ++i)
+    {
+        if (next_song())
+        {
+            std::cout << "Next song: ";
+            show_song(m_current_song->second);
+        }
+        else
+            break;
+    }
+    for (int i = 0; i < 8; ++i)
+    {
+        if (previous_song())
+        {
+            std::cout << "Prev song: ";
+            show_song(m_current_song->second);
+        }
+        else
+            break;
+    }
+    for (int i = 0; i < 8; ++i)
+    {
+        if (next_list())
+        {
+            std::cout << "Next list: ";
+            show_list(m_current_list->second);
+        }
+        else
+            break;
+    }
+    for (int i = 0; i < 8; ++i)
+    {
+        if (previous_list())
+        {
+            std::cout << "Prev list: ";
+            show_list(m_current_list->second);
+        }
+        else
+            break;
+    }
+    reset();
+    write();
 }
 
 }           // namespace seq64

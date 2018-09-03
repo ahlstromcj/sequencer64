@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-20
+ * \updates       2018-09-03
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -172,6 +172,14 @@ private:
     mutable mutex m_mutex;
 
     /**
+     *  Indicates if we are reading this file simply to verify it.  If so,
+     *  then the song data will be removed after checking, via a call to
+     *  perform::clear_all().
+     */
+
+    bool m_playlist_mode;
+
+    /**
      *  Holds the size of the MIDI file.  This variable was added when loading
      *  a file that caused an attempt to load data well beyond the file-size
      *  of the midicvt test file Dixie04.mid.
@@ -290,9 +298,10 @@ public:
     midifile
     (
         const std::string & name,
-        int ppqn = SEQ64_USE_DEFAULT_PPQN,
-        bool oldformat = false,
-        bool globalbgs = true
+        int ppqn            = SEQ64_USE_DEFAULT_PPQN,
+        bool oldformat      = false,
+        bool globalbgs      = true,
+        bool playlistmode   = false
     );
     virtual ~midifile ();
 
@@ -362,6 +371,15 @@ protected:
     (
         perform & p, sequence & seq, int seqnum, int screenset
     );
+
+    /**
+     * \getter m_playlist_mode;
+     */
+
+    bool playlist_mode () const
+    {
+        return m_playlist_mode;
+    }
 
     /**
      * \setter m_error_message

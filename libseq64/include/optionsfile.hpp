@@ -65,7 +65,7 @@ public:
 
 private:
 
-    bool error_message
+    bool make_error_message
     (
         const std::string & sectionname,
         const std::string & additional = ""

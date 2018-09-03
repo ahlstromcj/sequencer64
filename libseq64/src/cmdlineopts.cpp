@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-08-29
+ * \updates       2018-09-02
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -707,7 +707,7 @@ parse_options_files
         }
         else
         {
-            errmessage = options.get_error_message();
+            errmessage = options.error_message();
             result = false;
         }
     }
@@ -732,7 +732,7 @@ parse_options_files
             }
             else
             {
-                errmessage = ufile.get_error_message();
+                errmessage = ufile.error_message();
                 result = false;
             }
         }
@@ -778,7 +778,7 @@ parse_mute_groups (perform & p, std::string & errmessage)
         }
         else
         {
-            errmessage = options.get_error_message();
+            errmessage = options.error_message();
             result = false;
         }
     }

@@ -7,7 +7,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-08-28
+ * \updates       2018-09-03
  * \version       $Revision$
  *
  *    We basically include only the functions we need for Sequencer64, not
@@ -264,6 +264,23 @@ file_is_directory (const std::string & filename)
 }
 
 /**
+ *
+ */
+
+bool
+name_has_directory (const std::string & filename)
+{
+    std::string::size_type pos = filename.find_first_of("/");
+    bool result = pos != std::string::npos;
+    if (! result)
+    {
+        pos = filename.find_first_of("\\");
+        result = pos != std::string::npos;
+    }
+    return result;
+}
+
+/**
  *  A function to ensure that the ~/.config/sequencer64 directory exists.
  *  This function is actually a little more general than that, but it is not
  *  sufficiently general, in general, General.
@@ -304,14 +321,14 @@ make_directory (const std::string & pathname)
 }
 
 /**
- *  Provides the path name of the current working directory.  This function is a
- *  wrapper for getcwd() and other such functions.  It obtains the current
+ *  Provides the path name of the current working directory.  This function is
+ *  a wrapper for getcwd() and other such functions.  It obtains the current
  *  working directory in the application.
  *
  * \return
  *      The pointer to the string containg the name of the current directory.
- *      This name is the full path name for the directory.  If an error occurs,
- *      then an empty string is returned.
+ *      This name is the full path name for the directory.  If an error
+ *      occurs, then an empty string is returned.
  */
 
 std::string
@@ -322,19 +339,21 @@ get_current_directory ()
     char * cwd = GETCWD(temp, PATH_MAX);  /* get current directory      */
     if (not_nullptr(cwd))
     {
-      size_t len = strlen(cwd);
-      if (len > 0)
-         result = cwd;
-      else
-      {
-         errprint("empty directory name returned");
-      }
-   }
-   else
-   {
-      errprint("could not get current directory");
-   }
-   return result;
+        size_t len = strlen(cwd);
+        if (len > 0)
+        {
+            result = cwd;
+        }
+        else
+        {
+            errprint("empty directory name returned");
+        }
+    }
+    else
+    {
+        errprint("could not get current directory");
+    }
+    return result;
 }
 
 /**
@@ -385,12 +404,15 @@ get_full_path (const std::string & path)
  *      Defaults to true, which converts "\" to "/".  False converts in the
  *      opposite direction.
  *
+ * \param terminate
+ *      If true, tack on a finally separator, if necessary. Defaults to false.
+ *
  * \return
  *      The possibly modified path is returned.
  */
 
 std::string
-normalize_path (const std::string & path, bool to_unix)
+normalize_path (const std::string & path, bool to_unix, bool terminate)
 {
     std::string result;
     if (! path.empty())
@@ -401,15 +423,35 @@ normalize_path (const std::string & path, bool to_unix)
             std::string::size_type pos = path.find_first_of("\\");
             if (pos != std::string::npos)
                 std::replace(result.begin(), result.end(), '\\', '/');
+
+            if (terminate && result[result.length()-1] != '/')
+                result += "/";
         }
         else
         {
             std::string::size_type pos = path.find_first_of("/");
             if (pos != std::string::npos)
                 std::replace(result.begin(), result.end(), '/', '\\');
+
+            if (terminate && result[result.length()-1] != '\\')
+                result += "\\";
         }
     }
     return result;
+}
+
+/**
+ *  Makes sure the path is using the proper separators, and that a separator
+ *  appears at the end.  The path is trimmed and normalized, but not
+ *  terminated.
+ */
+
+std::string
+clean_file (const std::string & path, bool to_unix)
+{
+    std::string result = path;
+    (void) trim(result, SEQ64_TRIM_CHARS_QUOTES);
+    return normalize_path(result, to_unix, false);
 }
 
 /**
@@ -421,16 +463,9 @@ normalize_path (const std::string & path, bool to_unix)
 std::string
 clean_path (const std::string & path, bool to_unix)
 {
-    std::string slash = to_unix ? "/" : "\\" ;
     std::string result = path;
     (void) trim(result, SEQ64_TRIM_CHARS_QUOTES);
-    result = normalize_path(result, to_unix);
-    if (! result.empty())
-    {
-        if (result[result.length() - 1] != slash[0])
-            result += slash;
-    }
-    return result;
+    return normalize_path(result, to_unix, true);
 }
 
 /**
@@ -478,7 +513,7 @@ filename_split
         path.clear();
         filebase = fullpath;
     }
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_TMI
     printf
     (
         "'%s' in, '%s' and '%s' out\n",
@@ -490,8 +525,8 @@ filename_split
 
 /**
  *  Strips single- or double-quotes from a string.  Meant mainly for removing
- *  quotes around a file-name, so it works only if the first character is a quote,
- *  and the last character is a quote.
+ *  quotes around a file-name, so it works only if the first character is a
+ *  quote, and the last character is a quote.
  *
  * \param item
  *      The string to be massaged.
@@ -597,7 +632,10 @@ file_extension (const std::string & path)
 }
 
 /**
+ *  Performs a case-insensitive comparison of two characters.
  *
+ * \return
+ *      Returns true if the characters match via the std::toupper() call.
  */
 
 static inline bool
@@ -611,7 +649,11 @@ casecompare (char a, char b)
 }
 
 /**
+ *  Performs a case-insensitive comparison of two strings.
  *
+ * \return
+ *      Returns true if the strings match via the casecompare() call.  The
+ *      strings must be the same length.
  */
 
 bool
@@ -620,7 +662,7 @@ strcasecompare (const std::string & a, const std::string & b)
     return
     (
         (a.size() == b.size()) &&
-        std::equal(a.begin(), a.end(), b.begin(), casecompare)
+            std::equal(a.begin(), a.end(), b.begin(), casecompare)
     );
 }
 
@@ -650,7 +692,16 @@ file_extension_match (const std::string & path, const std::string & target)
  */
 
 /**
+ *  Left-trims a set of characters from the string.
  *
+ * \param str
+ *      The prospective string to be trimmed.
+ *
+ * \param chars
+ *      The set of characters to be trimmed.  Defaults to SEQ64_TRIM_CHARS
+ *      (" \t\n\v\f\r").  Another macro available is SEQ64_TRIM_CHARS_QUOTES
+ *      (" \t\n\v\f\r\"'") which adds the double- and single-quote
+ *      characters.
  */
 
 std::string &
@@ -661,7 +712,14 @@ ltrim (std::string & str, const std::string & chars)
 }
 
 /**
+ *  Right-trims a set of characters from the string.  Similar to the ltrim()
+ *  function.
  *
+ * \param str
+ *      The prospective string to be trimmed.
+ *
+ * \param chars
+ *      The set of characters to be trimmed.
  */
 
 std::string &
@@ -672,8 +730,16 @@ rtrim (std::string & str, const std::string & chars)
 }
 
 /**
+ *  Left- and right-trims a set of characters from the string.  Similar to the
+ *  ltrim() and rtrim() functions combined.
  *
- */
+ * \param str
+ *      The prospective string to be trimmed.
+ *
+ * \param chars
+ *      The set of characters to be trimmed.
+*
+*/
 
 std::string &
 trim (std::string & str, const std::string & chars)

@@ -99,19 +99,19 @@ const int c_midi_control_ss_set        = c_midi_track_ctrl + 16; /* pull #85  */
 const int c_midi_control_record        = c_midi_track_ctrl + 17;
 const int c_midi_control_quan_record   = c_midi_track_ctrl + 18;
 const int c_midi_control_reset_seq     = c_midi_track_ctrl + 19; /* pull #150 */
-#ifdef USE_MIDI_PLAYLIST
+#ifdef SEQ64_USE_MIDI_PLAYLIST
 const int c_midi_control_reserved_1    = c_midi_track_ctrl + 20;
 const int c_midi_control_FF            = c_midi_track_ctrl + 21;
 const int c_midi_control_rewind        = c_midi_track_ctrl + 22;
 const int c_midi_control_top           = c_midi_track_ctrl + 23;
 const int c_midi_control_playlist      = c_midi_track_ctrl + 24;
 const int c_midi_control_playlist_song = c_midi_track_ctrl + 25;
-const int c_midi_control_reserved_3    = c_midi_track_ctrl + 26;
-const int c_midi_control_reserved_4    = c_midi_track_ctrl + 27;
-const int c_midi_control_reserved_5    = c_midi_track_ctrl + 28;
-const int c_midi_control_reserved_6    = c_midi_track_ctrl + 29;
-const int c_midi_control_reserved_7    = c_midi_track_ctrl + 30;
-const int c_midi_control_reserved_8    = c_midi_track_ctrl + 31;
+const int c_midi_control_reserved_7    = c_midi_track_ctrl + 26;
+const int c_midi_control_reserved_8    = c_midi_track_ctrl + 27;
+const int c_midi_control_reserved_9    = c_midi_track_ctrl + 28;
+const int c_midi_control_reserved_10   = c_midi_track_ctrl + 29;
+const int c_midi_control_reserved_11   = c_midi_track_ctrl + 30;
+const int c_midi_control_reserved_12   = c_midi_track_ctrl + 31;
 const int c_midi_controls_extended     = c_midi_track_ctrl + 32; /* new = 96  */
 #else
 const int c_midi_controls_extended     = c_midi_track_ctrl + 20; /* new = 84  */

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-08-19
+ * \updates       2018-09-01
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -157,10 +157,11 @@
 
 #include "calculations.hpp"
 #include "cmdlineopts.hpp"              /* seq64::parse_mute_groups()       */
-#include "event.hpp"
-#include "keystroke.hpp"
-#include "midibus.hpp"
-#include "perform.hpp"
+#include "event.hpp"                    /* seq64::event class               */
+#include "keystroke.hpp"                /* seq64::keystroke class           */
+#include "midibus.hpp"                  /* seq64::midibus class             */
+#include "perform.hpp"                  /* seq64::perform, this class       */
+#include "playlist.hpp"                 /* seq64::playlist, 0.96 and above  */
 #include "settings.hpp"                 /* seq64::rc()                      */
 
 #if defined PLATFORM_WINDOWS
@@ -242,6 +243,7 @@ midi_control perform::sm_mc_dummy;
 
 perform::perform (gui_assistant & mygui, int ppqn)
  :
+    m_play_list                 (),         // optional, not owned by perform
     m_song_start_mode           (false),    // set later during options read
     m_start_from_perfedit       (false),
     m_reposition                (false),
@@ -395,7 +397,7 @@ perform::~perform ()
     }
 
     if (not_nullptr(m_master_bus))
-        delete(m_master_bus);
+        delete m_master_bus;
 }
 
 /**
@@ -731,9 +733,10 @@ perform::selected_trigger
 
 /**
  *  Clears all of the patterns/sequences.  The mainwnd module calls this
- *  function.  Note that perform now handles the "is modified" flag on behalf
- *  of all external objects, to centralize and simplify the dirtying of a MIDI
- *  tune.
+ *  function, and the midifile and wrkfile classes, if a play-list is being
+ *  loaded and verified.  Note that perform now handles the "is modified" flag
+ *  on behalf of all external objects, to centralize and simplify the dirtying
+ *  of a MIDI tune.
  *
  *  Anything else to clear?  What about all the other sequence flags?  We can
  *  beef up delete_sequence() for them, at some point.
@@ -4476,7 +4479,7 @@ perform::handle_midi_control (int ctl, bool state)
  *      The action of the control.
  *
  * \param v
- *      The value of the control (ie.: note velocity / control change value).
+ *      The value of the control (i.e.: note velocity / control change value).
  *      Also called a "parameter" in the comments.
  *
  * \return
@@ -4487,11 +4490,6 @@ bool
 perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
 {
     bool result = false;
-
-    /*
-     * TMI: printf("ctl %d, action %d, value %d\n", ctl, int(a), v);
-     */
-
     switch (ctl)
     {
     case c_midi_control_playback:
@@ -4539,17 +4537,17 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
         if (a == midi_control::action_toggle)
         {
             // TODO
-            result = true;
+            result = false;
         }
         else if (a == midi_control::action_on)
         {
             // TODO
-            result = true;
+            result = false;
         }
         else if (a == midi_control::action_off)
         {
             // TODO
-            result = true;
+            result = false;
         }
         break;
 
@@ -4666,6 +4664,70 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
             result = true;
         }
         break;
+
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+
+    case c_midi_control_reserved_1:
+
+        result = false;
+        break;
+
+    case c_midi_control_FF:
+
+        result = false;
+        break;
+
+    case c_midi_control_rewind:
+
+        result = false;
+        break;
+
+    case c_midi_control_top:
+
+        result = false;
+        break;
+
+    case c_midi_control_playlist:
+
+        result = false;
+        break;
+
+    case c_midi_control_playlist_song:
+
+        result = false;
+        break;
+
+    case c_midi_control_reserved_7:
+
+        result = false;
+        break;
+
+    case c_midi_control_reserved_8:
+
+        result = false;
+        break;
+
+    case c_midi_control_reserved_9:
+
+        result = false;
+        break;
+
+    case c_midi_control_reserved_10:
+
+        result = false;
+        break;
+
+    case c_midi_control_reserved_11:
+
+        result = false;
+        break;
+
+    case c_midi_control_reserved_12:
+
+        result = false;
+        break;
+
+#endif  // SEQ64_USE_MIDI_PLAYLIST
 
     default:
 
@@ -4908,6 +4970,13 @@ perform::set_thru (bool thru_active, int seq, bool toggle)
  *  Note that the event::get_status() function returns a value with the
  *  channel nybble stripped off.
  *
+ * \note
+ *      The value g_midi_control_limit indicates how many MIDI control values
+ *      Sequencer64 support.  In Seq24, this value was 74.  Sequencer64 added
+ *      10 more for a total of 84.  Version 0.96 of Sequencer64 ads more to
+ *      support playlist controls and to reserve a much larger set of MIDI
+ *      controls, including reserved values, bringing the number up to 96.
+ *
  * \param ev
  *      Provides the MIDI event to potentially trigger a control action.
  *
@@ -4920,7 +4989,7 @@ perform::midi_control_event (const event & ev)
 {
     bool result = false;
     int offset = m_screenset_offset;
-    for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)  /* 84 */
+    for (int ctl = 0; ctl < g_midi_control_limit; ++ctl, ++offset)
     {
         result = handle_midi_control_event(ev, ctl, offset);
         if (result)
@@ -6995,6 +7064,53 @@ perform::song_recording_stop ()
 }
 
 #endif  // SEQ64_SONG_RECORDING
+
+/**
+ *  Creates a playlist object and opens it.  If there is a playlist object already
+ *  in existence, it is replaced.
+ *
+ *  We'also ve realized that the perform object needs to own the playlist.
+ *
+ * \param pl
+ *      Provides the full path file-specification for the play-list file to be
+ *      opened.
+ *
+ * \return
+ *      Returns true if the playlist object was able to be opened, and the list
+ *      read.  If false is returned, currently the bad playlist still exists, but
+ *      is invalid and inactive.
+ */
+
+bool
+perform::open_playlist (const std::string & pl)
+{
+    bool result = false;
+    m_play_list.reset(new playlist(*this, pl));
+    if (bool(m_play_list))
+    {
+        result = m_play_list->open();
+        if (! result)
+        {
+            errprintf("%s\n", m_play_list->error_message().c_str());
+        }
+    }
+    return result;
+}
+
+/**
+ *  \return
+ *      Returns the current error-message from the play-list.
+ */
+
+const std::string &
+perform::playlist_error_message () const
+{
+    static std::string s_dummy;
+    if (bool(m_play_list))
+        return m_play_list->error_message();
+    else
+        return s_dummy;
+}
 
 #ifdef PLATFORM_DEBUG_TMI
 

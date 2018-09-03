@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.95.2 and above
+INSTALL for Sequencer64 v. 0.96.0 and above
 Chris Ahlstrom
-2015-09-10 to 2018-08-20
+2015-09-10 to 2018-09-02
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version

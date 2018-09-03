@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-03-14
- * \updates       2017-03-14
+ * \updates       2017-09-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,6 +38,13 @@
 
 namespace seq64
 {
+
+/**
+ *  This value varies depending on whether we're using legacy Seq24 values
+ *  (74), early extended Sequencer64 values (84), or latter-day Seqeuencer64
+ *  values (96), which includes play-list support and a lot of reserved
+ *  values.
+ */
 
 int g_midi_control_limit = c_midi_controls_extended;    /* c_midi_controls */
 

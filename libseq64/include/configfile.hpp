@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-30
+ * \updates       2018-09-02
  * \license       GNU GPLv2 or above
  *
  *  This is actually an elegant little parser, and works well as long as one
@@ -136,7 +136,7 @@ public:
         return m_name;
     }
 
-    const std::string & get_error_message () const
+    const std::string & error_message () const
     {
         return m_error_message;
     }

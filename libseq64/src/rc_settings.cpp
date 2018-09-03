@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-08-29
+ * \updates       2018-09-03
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -669,8 +669,11 @@ rc_settings::playlist_filename (const std::string & value)
     if (! value.empty())
         m_playlist_filename = value;
 
-    if (m_playlist_filename.find(".") == std::string::npos)
-        m_playlist_filename += ".playlist";
+    if (! value.empty() && value != "\"\"")
+    {
+        if (m_playlist_filename.find(".") == std::string::npos)
+            m_playlist_filename += ".playlist";
+    }
 }
 
 /**

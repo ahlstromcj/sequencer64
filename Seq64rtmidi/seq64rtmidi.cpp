@@ -25,7 +25,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2018-08-29
+ * \updates       2018-09-03
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -45,7 +45,6 @@
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "gui_assistant_gtk2.hpp"       /* seq64::gui_assistant_gtk2        */
 #include "gui_palette_gtk2.hpp"         /* colors and "inverse" colors      */
-#include "playlist.hpp"                 /* seq64::playlist                  */
 
 #ifdef PLATFORM_LINUX
 #include "lash.hpp"                     /* seq64::lash_driver functions     */
@@ -156,25 +155,27 @@ main (int argc, char * argv [])
         std::string errmsg = "unspecified error";
         if (ok)
         {
-            // TEST CODE
+#ifdef SEQ64_USE_MIDI_PLAYLIST
             std::string playlistname = seq64::rc().playlist_filespec();
-            if (playlistname.empty())
+            if (seq64::rc().playlist_active() && ! playlistname.empty())
             {
-                printf("NO PLAYLIST\n");
-            }
-            else
-            {
-                seq64::playlist tunes(p, playlistname);
-                if (tunes.open(playlistname, false))   // if (tunes.parse())
+                bool success = p.open_playlist(playlistname);
+                if (success)
                 {
-                    tunes.show();
-                    tunes.write();
+                    /*
+                     * No need for this now:  tunes.test();
+                     */
+
+                    success = p.open_current_song();
                 }
                 else
                 {
-                    printf("%s\n", tunes.get_error_message().c_str());
+                    /*
+                     * error message
+                     */
                 }
             }
+#endif
 
             if (optionindex < argc)                 /* MIDI filename given? */
             {

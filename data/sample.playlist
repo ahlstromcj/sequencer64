@@ -28,11 +28,12 @@
 
 [comments]
 
-Just a sample comment.
+This sample play-list file contains two playlists.  One for
+demo ditties, and one for more realistic songs.  These songs
+are found in the contrib/midi directory.  You may need to
+change that directory name for both of the playlists if you
+have a different setup than the developers.
  
-Feel free to delete or modify this 3-line comment.
-
-
 [playlist]
 
 # Playlist number, arbitrary but unique. 0 to 127 recommended.
@@ -40,15 +41,16 @@ Feel free to delete or modify this 3-line comment.
 1
 
 # Display name of this play list.
-"Downtempo Grooves"
+"Demo Ditties"
 
 # Storage directory for the song-files in this play list.
-contrib/midi/
+contrib/midi
 
 # The base file-names (tune.midi) of songs in this playlist:
-file1-1.mid
-file1-2.mid
-file1-3.mid
+1Bar.midi
+2Bars.midi
+click_4_4.midi
+colours.midi
 
 [playlist]
 
@@ -57,15 +59,15 @@ file1-3.mid
 2
 
 # Display name of this play list.
-"Music for Dogs"
+"Music for Serious Dogs"
 
 # Storage directory for the song-files in this play list.
-/home/user/midi/dogs
+contrib/midi
 
 # The base file-names (tune.midi) of songs in this playlist:
-file2-1.midi
-file2-2.midi
-file2-3.midi
+allofarow.mid
+CountryStrum.midi
+contrib/wrk/longhair.wrk
 
 # End of /home/ahlstrom/.config/sequencer64/test.playlist
 #

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-04
- * \updates       2018-06-12
+ * \updates       2018-09-03
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the WRK format, see, for example:
@@ -158,11 +158,7 @@ private:
         midilong m_EndAllTime;   ///< Time of latest event (incl. all tracks).
         int m_division;          ///< TODO.
         midistring m_lastChunkData; ///< Holds the latest raw data chunk.
-
-    //  QTextCodec * m_codec;
-    //  QDataStream * m_IOStream;
-
-        std::list<RecTempo> m_tempos;
+        std::list<RecTempo> m_tempos;   ///< Tempo data.
     };
 
 private:
@@ -241,7 +237,8 @@ public:
     wrkfile
     (
         const std::string & name,
-        int ppqn = SEQ64_USE_DEFAULT_PPQN
+        int ppqn            = SEQ64_USE_DEFAULT_PPQN,
+        bool playlistmode   = false
     );
     virtual ~wrkfile ();
 

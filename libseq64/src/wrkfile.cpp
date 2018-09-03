@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-04
- * \updates       2018-07-31
+ * \updates       2018-09-03
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the WRK format, see, for example:
@@ -142,14 +142,20 @@ wrkfile::wrkfile_private::wrkfile_private ()
  *      Provides the initial value of the PPQN setting.  It is handled
  *      differently for parsing (reading) versus writing the MIDI file.
  *      See the midifile class.
+ *
+ * \param playlistmode
+ *      If set to true, we are opening files just to verify them before
+ *      accepting the usage of a playlist.  In this case, we clear out each
+ *      song after it is read in for verification.  It defaults to false.
  */
 
 wrkfile::wrkfile
 (
     const std::string & name,
-    int ppqn
+    int ppqn,
+    bool playlistmode
 ) :
-    midifile        (name, ppqn),
+    midifile        (name, ppqn, false, true, playlistmode),
     m_wrk_data      (),
     m_perform       (nullptr),
     m_screen_set    (-1),

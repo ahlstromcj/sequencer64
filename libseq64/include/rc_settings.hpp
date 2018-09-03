@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-08-29
+ * \updates       2018-09-02
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -203,6 +203,13 @@ private:
      */
 
     std::string m_user_filename_alt;
+
+    /**
+     *  Indicates if the user wants to use the play-list stored in the "rc"
+     *  file.  This value is stored as well.
+     */
+
+    bool m_playlist_active;
 
     /**
      *  Provides the base name of a play-list file, such as "tunes.playlist".
@@ -605,6 +612,15 @@ public:
     }
 
     /**
+     * \getter m_playlist_active
+     */
+
+    bool playlist_active () const
+    {
+        return m_playlist_active;
+    }
+
+    /**
      * \getter m_playlist_filename
      */
 
@@ -831,6 +847,15 @@ protected:
     void device_ignore (bool flag)
     {
         m_device_ignore = flag;
+    }
+
+    /**
+     * \setter m_playlist_active
+     */
+
+    void playlist_active (bool flag)
+    {
+        m_playlist_active = flag;
     }
 
     /*

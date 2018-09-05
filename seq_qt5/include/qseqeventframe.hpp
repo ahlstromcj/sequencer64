@@ -33,7 +33,7 @@
  */
 
 #include <QFrame>
-#include "easy_macros.hpp"
+#include "easy_macros.hpp"              /* nullptr and related macros   */
 
 /**
  *  Forward reference.
@@ -165,7 +165,7 @@ private:
 
     int m_current_row;
 
-};
+};          // class qseqeventframe
 
 }           // namespace seq64
 
@@ -176,5 +176,4 @@ private:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
-
 

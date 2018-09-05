@@ -1,4 +1,6 @@
-# Sequencer64 0.94.0 (and above) rc configuration file
+# Sequencer64 0.95.1 (and above) rc configuration file
+#
+# Written on 2018-09-05 05:31:46
 #
 # This file holds the main configuration options for Sequencer64.
 # It follows the format of the legacy seq24 'rc' configuration
@@ -49,7 +51,7 @@
 #   [0 0 0 0 0 0]   [0 0 0 0 0 0]   [0 0 0 0 0 0]
 #    Toggle          On              Off
 
-84      # MIDI controls count (74 or 84)
+96      # MIDI controls count (74/84/96)
 
 # Pattern-group section:
 0 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
@@ -122,9 +124,9 @@
 # Automation group
 
 # bpm up:
-64 [0 0   0   0   0   0] [1 0 144   9   0 127] [0 0   0   0   0   0]
+64 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # bpm down:
-65 [0 0   0   0   0   0] [1 0 144   7   0 127] [0 0   0   0   0   0]
+65 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # screen set up:
 66 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # screen set down:
@@ -143,9 +145,9 @@
 73 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 
 # Extended MIDI controls:
- 
+
 # start playback (pause, start, stop):
-74 [1 0 144   2   0 127] [1 0 144   4   0 127] [1 0 144   0   0 127]
+74 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # performance record:
 75 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # solo (toggle, on, off):
@@ -153,17 +155,41 @@
 # MIDI THRU (toggle, on, off):
 77 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # bpm page up:
-78 [0 0   0   0   0   0] [1 0 144  11   0 127] [0 0   0   0   0   0]
+78 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # bpm page down:
-79 [0 0   0   0   0   0] [1 0 144   5   0 127] [0 0   0   0   0   0]
+79 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # screen set by number:
 80 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-# reserved for expansion:
+# MIDI RECORD (toggle, on, off):
 81 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-# reserved for expansion:
+# MIDI Quantized RECORD (toggle, on, off):
 82 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # reserved for expansion:
 83 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved for expansion 1
+84 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control for fast-forward
+85 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control for rewind
+86 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control for top...
+87 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control to select playlist (value, next, previous)
+88 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# MIDI Control to select song in current playlist(value, next, previous)
+89 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved for expansion 7
+90 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved for expansion 8
+91 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved for expansion 9
+92 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+Reserved for expansion 10
+93 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved for expansion 11
+94 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# Reserved for expansion 12
+95 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 
 [mute-group]
 
@@ -174,8 +200,8 @@
 # section to be intact.
 
 1024       # group mute count
-0 [1 1 1 0 1 1 1 1] [1 0 0 0 1 1 1 1] [1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1]
-1 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [1 1 1 1 0 0 0 0] [0 0 0 0 0 0 0 0]
+0 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+1 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
 2 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
 3 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
 4 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
@@ -205,7 +231,7 @@
 28 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
 29 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
 30 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
-31 [1 1 1 0 1 1 1 1] [1 1 1 1 0 0 0 0] [1 0 0 0 1 1 1 1] [1 1 1 1 1 1 1 1]
+31 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
 
 # Handling of mute-groups.  If set to 0, a legacy value, then
 # any mute-groups read from the MIDI file (whether modified or
@@ -218,17 +244,20 @@
 [midi-clock]
 
 # The first line indicates the number of MIDI busses defined.
-
 # Each buss line contains the buss (re 0) and the clock status of
 # that buss.  0 = MIDI Clock is off; 1 = MIDI Clock on, and Song
-# Position and MIDI Continue will be sent, if needed; and 2 = MIDI
+# Position and MIDI Continue will be sent, if needed; 2 = MIDI
 # Clock Modulo, where MIDI clocking will not begin until the song
 # position reaches the start modulo value [midi-clock-mod-ticks].
+# A value of -1 indicates that the output port is totally
+# disabled.  One can set this value manually for devices that are
+# present, but not available, perhaps because another application
+# has exclusive access to the device (e.g. on Windows).
 
 1    # number of MIDI clocks/busses
 
 # Output buss name: [0] 14:0 Midi Through Port-0
-0 0  # buss number, clock status
+0 0    # buss number, clock status
 
 [midi-clock-mod-ticks]
 
@@ -283,9 +312,13 @@
 # declared in the 'user' configuration file.  Use this option if
 # you want to be able to see the port names as detected by ALSA.
 
-1   # flag for reveal ALSA ports
+0   # flag for reveal ALSA ports
 
 [interaction-method]
+
+# Sets the mouse handling style for drawing and editing a pattern
+# This feature is current NOT supported in the Qt version of
+# Sequencer64 (qpseq64).
 
 # 0 - 'seq24' (original seq24 method)
 # 1 - 'fruity' (similar to a certain fruity sequencer we like)
@@ -303,7 +336,7 @@
 # trigger exactly in its middle.  Remember that the split is
 # activated by a middle click.
 
-1   # allow_snap_split
+0   # allow_snap_split
 
 # Set to 1 to allow a double-click on a slot to bring it up in
 # the pattern editor.  This is the default.  Set it to 0 if
@@ -320,40 +353,40 @@
 
 32     # number of keys
 
-# Key #  Sequence #  Key name
+# Key-No.  Sequence-No.  Key-Name
 
-44  31   # comma
-49  0   # 1
-50  4   # 2
-51  8   # 3
-52  12   # 4
-53  16   # 5
-54  20   # 6
-55  24   # 7
-56  28   # 8
-97  2   # a
-98  19   # b
-99  11   # c
-100  10   # d
-101  9   # e
-102  14   # f
-103  18   # g
-104  22   # h
-105  29   # i
-106  26   # j
-107  30   # k
-109  27   # m
-110  23   # n
-113  1   # q
-114  13   # r
-115  6   # s
-116  17   # t
-117  25   # u
-118  15   # v
-119  5   # w
-120  7   # x
-121  21   # y
-122  3   # z
+44 31   # comma
+49 0   # 1
+50 4   # 2
+51 8   # 3
+52 12   # 4
+53 16   # 5
+54 20   # 6
+55 24   # 7
+56 28   # 8
+97 2   # a
+98 19   # b
+99 11   # c
+100 10   # d
+101 9   # e
+102 14   # f
+103 18   # g
+104 22   # h
+105 29   # i
+106 26   # j
+107 30   # k
+109 27   # m
+110 23   # n
+113 1   # q
+114 13   # r
+115 6   # s
+116 17   # t
+117 25   # u
+118 15   # v
+119 5   # w
+120 7   # x
+121 21   # y
+122 3   # z
 
 [keyboard-group]
 
@@ -373,8 +406,8 @@
 37  4   # percent
 38  5   # ampersand
 40  7   # parenleft
-42  6   # asterisk
-60  31   # less
+59  31   # semicolon
+63  6   # question
 65  16   # A
 66  28   # B
 67  26   # C
@@ -404,9 +437,9 @@
 # screen set up, screen set down, play:
 93 91 65360    # bracketright bracketleft Home
 # group on, group off, group learn:
-96 65535 65379   # grave Delete Insert
+236 65535 65379   # igrave Delete Insert
 # replace, queue, snapshot_1, snapshot 2, keep queue:
-112 111 65436 65433 92   # p o KP_End KP_Down backslash
+65429 111 65513 65514 92   # KP_Home o Alt_L Alt_R backslash
 1     # show_ui_sequence_key and seq measures (1 = true / 0 = false)
 32    # space start sequencer
 65307    # Escape stop sequencer
@@ -460,7 +493,7 @@
 #     controls, regardless of which window was used to start the
 #     playback.
 
-1   # song_start_mode
+0   # song_start_mode
 
 # jack_midi - Enable JACK MIDI, which is a separate option from
 # JACK Transport.
@@ -494,16 +527,27 @@
 
 # Last-used and currently-active directory:
 
-contrib/midi/
+/home/ahlstrom/Home/ca/mls/git/sequencer64/data
 
 [recent-files]
 
 # Holds a list of the last few recently-loaded MIDI files.
 
-7
+1
 
-data/b4uacuse-gm-patchless.midi
+/home/ahlstrom/Home/ca/mls/git/sequencer64/data/b4uacuse-gm-patchless.midi
 
-# End of /home/yourname/.config/sequencer64/sequencer64.rc
+[playlist]
+
+# Provides a configured play-list and a flag to activate it.
+
+0     # playlist_active, 1 = active, 0 = do not use it
+
+# Provides the name of a play-list.  If there is none, use '""'.
+# Or set the flag above to 0.
+
+/home/ahlstrom/.config/sequencer64/sample.playlist
+
+# End of /home/ahlstrom/.config/sequencer64/sequencer64.rc
 #
 # vim: sw=4 ts=4 wm=4 et ft=sh

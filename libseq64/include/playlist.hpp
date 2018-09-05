@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-09-03
+ * \updates       2018-09-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -55,18 +55,6 @@ class playlist : public configfile
 {
 
     friend class perform;
-
-public:
-
-    enum action_t
-    {
-        LIST_ZERO,
-        LIST_NEXT,
-        LIST_PREVIOUS,
-        SONG_ZERO,
-        SONG_NEXT,
-        SONG_PREVIOUS
-    };
 
 private:
 
@@ -265,10 +253,10 @@ public:
     bool previous_song ();
     bool open_song (const std::string & filename, bool playlistmode = false);
     bool open_current_song ();
-    bool open_next_list ();
-    bool open_previous_list ();
-    bool open_next_song ();
-    bool open_previous_song ();
+    bool open_next_list (bool opensong = true);
+    bool open_previous_list (bool opensong = true);
+    bool open_next_song (bool opensong = true);
+    bool open_previous_song (bool opensong = true);
 
     virtual bool parse (perform & p);
     virtual bool write (const perform & p);

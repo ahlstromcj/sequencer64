@@ -22,7 +22,8 @@
 /**
  * \file          qsliveframe.hpp
  *
- *  This module declares/defines the base class for plastering
+ *  This module declares/defines the base class for the Qt 5 version of
+ *  the pattern window.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom

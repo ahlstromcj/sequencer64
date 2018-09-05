@@ -31,9 +31,9 @@
  *
  */
 
+#include "perform.hpp"                  /* seq64::perform                   */
 #include "qseqeventframe.hpp"           /* seq64::qseqeventframe            */
 #include "qseventslots.hpp"             /* seq64::qseventslots              */
-#include "perform.hpp"                  /* seq64::perform                   */
 #include "sequence.hpp"                 /* seq64::sequence                  */
 #include "settings.hpp"                 /* SEQ64_QMAKE_RULES indirectly     */
 

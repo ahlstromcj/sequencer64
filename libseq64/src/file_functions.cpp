@@ -264,7 +264,7 @@ file_is_directory (const std::string & filename)
 }
 
 /**
- *
+ *  Hmmm, what about "C:filename.ext"?
  */
 
 bool

@@ -25,7 +25,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2018-09-03
+ * \updates       2018-09-05
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-25
+ * \updates       2018-09-05
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -48,6 +48,7 @@
 #include "perform.hpp"
 #include "qperfeditex.hpp"
 #include "qperfeditframe64.hpp"
+#include "qplaylistframe.hpp"
 #include "qsmacros.hpp"                 /* QS_TEXT_CHAR() macro             */
 #include "qsabout.hpp"
 #include "qsbuildinfo.hpp"
@@ -126,6 +127,7 @@ qsmainwnd::qsmainwnd
     m_song_frame64          (nullptr),
     m_edit_frame            (nullptr),
     m_event_frame           (nullptr),
+    m_playlist_frame        (nullptr),
     m_msg_error             (nullptr),
     m_msg_save_changes      (nullptr),
     m_timer                 (nullptr),
@@ -214,6 +216,10 @@ qsmainwnd::qsmainwnd
     mDialogBuildInfo = new qsbuildinfo(this);
     make_perf_frame_in_tab();           /* create m_song_frame64 pointer    */
     m_live_frame = new qsliveframe(perf(), this, ui->LiveTab);
+    m_playlist_frame = new qplaylistframe(perf(), ui->PlaylistTab);
+    if (not_nullptr(m_playlist_frame))
+        ui->PlaylistTabLayout->addWidget(m_playlist_frame);
+
     if (not_nullptr(m_live_frame))
     {
         ui->LiveTabLayout->addWidget(m_live_frame);

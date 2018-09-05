@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-08-13
+# \update      2018-09-04
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -52,6 +52,7 @@ UI_DIR = forms
 FORMS += \
  forms/qperfeditex.ui \
  forms/qperfeditframe64.ui \
+ forms/qplaylistframe.ui \
  forms/qsabout.ui \
  forms/qseditoptions.ui \
  forms/qseqeditex.ui \
@@ -78,6 +79,7 @@ HEADERS += \
  include/qperfnames.hpp \
  include/qperfroll.hpp \
  include/qperftime.hpp \
+ include/qplaylistframe.hpp \
  include/qsabout.hpp \
  include/qscrollmaster.h \
  include/qseditoptions.hpp \
@@ -115,6 +117,7 @@ SOURCES += \
  src/qperfnames.cpp \
  src/qperfroll.cpp \
  src/qperftime.cpp \
+ src/qplaylistframe.cpp \
  src/qsabout.cpp \
  src/qscrollmaster.cpp \
  src/qseditoptions.cpp \

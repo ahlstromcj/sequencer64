@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-09-03
+ * \updates       2018-09-04
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
@@ -459,33 +459,40 @@ playlist::write (const perform & /*p*/)
  *  Given a file-name, opens that file as a song.  This function holds common
  *  code.
  *
+ *  Before the song is loaded, the current song is cleared from memory.
+ *  Remember that clear_all() will fail if it detects a sequence being edited.
+ *  In that case, this function will fail as well.
+ *
  * \param fname
  *      The full path to the file to be opened.
  *
  * \param playlistmode
- *      If true, open the file in play-list mode.  Currently, all this means
- *      is that some output from the file-opening process is suppressed.
+ *      If true, open the file in play-list mode.  Currently, this means
+ *      is that some output from the file-opening process is suppressed, and
+ *      the perform::clear_all() function is called right after parsing the
+ *      song file.
  */
 
 bool
 playlist::open_song (const std::string & fname, bool playlistmode)
 {
-    bool result = false;
-    bool is_wrk = file_extension_match(fname, "wrk");
-    m_perform.clear_all();
-    if (is_wrk)
+    bool result = m_perform.clear_all();
+    if (result)
     {
-        wrkfile m(fname, SEQ64_USE_DEFAULT_PPQN, playlistmode);
-        result = m.parse(m_perform);
+        bool is_wrk = file_extension_match(fname, "wrk");
+        if (is_wrk)
+        {
+            wrkfile m(fname, SEQ64_USE_DEFAULT_PPQN, playlistmode);
+            result = m.parse(m_perform);
+        }
+        else
+        {
+            midifile m(fname, SEQ64_USE_DEFAULT_PPQN, false, true, playlistmode);
+            result = m.parse(m_perform);
+        }
+        if (playlistmode)
+            (void) m_perform.clear_all();
     }
-    else
-    {
-        midifile m(fname, SEQ64_USE_DEFAULT_PPQN, false, true, playlistmode);
-        result = m.parse(m_perform);
-    }
-    if (playlistmode)
-        m_perform.clear_all();
-
     return result;
 }
 
@@ -532,29 +539,6 @@ playlist::verify (bool strong)
                          */
 
                         result = open_song(fname, true);
-#if 0
-                        bool is_wrk = file_extension_match(fname, "wrk");
-                        if (is_wrk)
-                        {
-                            wrkfile m(fname, SEQ64_USE_DEFAULT_PPQN, true);
-                            result = m.parse(m_perform);
-                        }
-                        else
-                        {
-                            midifile m
-                            (
-                                fname, SEQ64_USE_DEFAULT_PPQN, false, true, true
-                            );
-                            result = m.parse(m_perform);
-                        }
-
-                        /*
-                         * Make sure the song isn't loaded for good; we are
-                         * only verifying.
-                         */
-
-                        m_perform.clear_all();
-#endif      // 0
                         if (! result)
                         {
                             make_file_error_message("song '%s' missing", fname);
@@ -597,24 +581,10 @@ playlist::open_current_song ()
     bool result = false;
     if (m_current_list != m_play_lists.end())
     {
-        m_perform.clear_all();
         if (m_current_song != m_current_list->second.ls_song_list.end())
         {
             const std::string fname = song_filepath(m_current_song->second);
             result = open_song(fname);
-#if 0
-            bool is_wrk = file_extension_match(fname, "wrk");
-            if (is_wrk)
-            {
-                wrkfile m(fname, SEQ64_USE_DEFAULT_PPQN);
-                result = m.parse(m_perform);
-            }
-            else
-            {
-                midifile m(fname, SEQ64_USE_DEFAULT_PPQN);
-                result = m.parse(m_perform);
-            }
-#endif  // 0
             if (! result)
                 (void) make_file_error_message("could not open song '%s'", fname);
         }
@@ -627,11 +597,10 @@ playlist::open_current_song ()
  */
 
 bool
-playlist::open_next_list ()
+playlist::open_next_list (bool opensong)
 {
     bool result = next_list(true);      /* select the next list, first song */
-    if (result)
-    if (result)
+    if (result && opensong)
         result = open_current_song();
 
     return result;
@@ -642,10 +611,10 @@ playlist::open_next_list ()
  */
 
 bool
-playlist::open_previous_list ()
+playlist::open_previous_list (bool opensong)
 {
     bool result = previous_list(true);  /* select the prev. list, first song */
-    if (result)
+    if (result && opensong)
         result = open_current_song();
 
     return result;
@@ -656,10 +625,10 @@ playlist::open_previous_list ()
  */
 
 bool
-playlist::open_next_song ()
+playlist::open_next_song (bool opensong)
 {
     bool result = next_song();
-    if (result)
+    if (result && opensong)
         result = open_current_song();
 
     return result;
@@ -670,15 +639,14 @@ playlist::open_next_song ()
  */
 
 bool
-playlist::open_previous_song ()
+playlist::open_previous_song (bool opensong)
 {
     bool result = previous_song();
-    if (result)
+    if (result && opensong)
         result = open_current_song();
 
     return result;
 }
-
 
 /**
  *  Makes a file-error message.
@@ -755,7 +723,7 @@ playlist::select_list (int index, bool selectsong)
     bool result = pci != m_play_lists.end();
     if (result)
     {
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_TMI
         show_list(pci->second);
 #endif
         m_current_list = pci;
@@ -789,7 +757,7 @@ playlist::next_list (bool selectsong)
         if (m_current_list == m_play_lists.end())
             m_current_list = m_play_lists.begin();
 
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_TMI
         show_list(m_current_list->second);
 #endif
 
@@ -824,7 +792,7 @@ playlist::previous_list (bool selectsong)
         else
             --m_current_list;
 
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_TMI
         show_list(m_current_list->second);
 #endif
 
@@ -956,7 +924,7 @@ playlist::select_song (int index)
         result = sci != m_current_list->second.ls_song_list.end();
         if (result)
         {
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_TMI
             show_song(sci->second);
 #endif
             m_current_song = sci;

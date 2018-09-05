@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-03
+ * \updates       2018-09-04
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1172,42 +1172,6 @@ public:
     }
 
     /**
-     *
-     */
-
-    bool open_previous_list ()
-    {
-        return bool(m_play_list) ? m_play_list->open_previous_list() : false ;
-    }
-
-    /**
-     *
-     */
-
-    bool open_next_list ()
-    {
-        return bool(m_play_list) ? m_play_list->open_next_list() : false ;
-    }
-
-    /**
-     *
-     */
-
-    bool open_previous_song ()
-    {
-        return bool(m_play_list) ? m_play_list->open_previous_song() : false ;
-    }
-
-    /**
-     *
-     */
-
-    bool open_next_song ()
-    {
-        return bool(m_play_list) ? m_play_list->open_next_song() : false ;
-    }
-
-    /**
      * \return
      *      Returns the current play-list song if it exists, otherwise an empty
      *      string is returned.
@@ -1226,6 +1190,31 @@ public:
     {
         return bool(m_play_list) ? m_play_list->open_current_song() : false ;
     }
+
+    bool open_next_list (bool opensong = true)
+    {
+        return bool(m_play_list) ?
+            m_play_list->open_next_list(opensong) : false ;
+    }
+
+    bool open_previous_list (bool opensong = true)
+    {
+        return bool(m_play_list) ?
+            m_play_list->open_previous_list(opensong) : false ;
+    }
+
+    bool open_next_song (bool opensong = true)
+    {
+        return bool(m_play_list) ?
+            m_play_list->open_next_song(opensong) : false ;
+    }
+
+    bool open_previous_song (bool opensong = true)
+    {
+        return bool(m_play_list) ?
+            m_play_list->open_previous_song(opensong) : false ;
+    }
+
 
     const std::string & playlist_error_message () const;
 

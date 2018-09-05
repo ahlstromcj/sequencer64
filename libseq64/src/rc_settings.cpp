@@ -415,12 +415,14 @@ rc_settings::user_filespec () const
 
 /**
  *  Constructs the full path and file specification for the "playlist" file,
- *  if the playlist file-name exists.
+ *  if necessary, if the playlist file-name exists.  If the playlist file-name
+ *  already has a directory as part of its name, then it is used as is.
  *
  * \return
- *      If home_config_directory() returns a non-empty string, then the normal
+ *      Returns either the filename itself, if it already has a directory in
+ *      it.  Otherwise, home_config_directory() is retrieved, the
  *      "playlist" file-name is appended to that result, and returned.
- *      Otherwise, an empty string is returned.
+ *      Otherwise, an empty string is returned.  Don't use it!
  */
 
 std::string
@@ -430,9 +432,10 @@ rc_settings::playlist_filespec () const
     std::string listname = playlist_filename();
     if (! listname.empty())
     {
-        result = home_config_directory();
-        if (! result.empty())
-            result += playlist_filename();
+        if (name_has_directory(listname))
+            result = listname;
+        else
+            result = home_config_directory() + listname;
     }
     return result;
 }

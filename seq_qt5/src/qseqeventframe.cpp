@@ -54,7 +54,7 @@
  *  Specifies the current hardwired value for set_row_heights().
  */
 
-#define SEQ64_EVENT_ROW_HEIGHT          16
+#define SEQ64_EVENT_ROW_HEIGHT          18
 
 /*
  *  Do not document the name space.

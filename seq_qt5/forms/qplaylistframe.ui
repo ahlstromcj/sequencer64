@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>736</width>
+    <width>762</width>
     <height>352</height>
    </rect>
   </property>
@@ -17,10 +17,17 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>50</y>
-     <width>251</width>
+     <y>30</y>
+     <width>301</width>
      <height>16</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
    </property>
    <property name="text">
     <string>Playlist Section</string>
@@ -30,49 +37,55 @@
    <property name="geometry">
     <rect>
      <x>80</x>
-     <y>90</y>
+     <y>70</y>
      <width>31</width>
      <height>16</height>
     </rect>
    </property>
+   <property name="frameShape">
+    <enum>QFrame::Panel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Sunken</enum>
+   </property>
    <property name="text">
-    <string>127</string>
+    <string/>
    </property>
   </widget>
   <widget class="QLabel" name="labelPlaylistName">
    <property name="geometry">
     <rect>
-     <x>110</x>
-     <y>90</y>
-     <width>171</width>
+     <x>120</x>
+     <y>70</y>
+     <width>241</width>
      <height>16</height>
     </rect>
    </property>
+   <property name="frameShape">
+    <enum>QFrame::Panel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Sunken</enum>
+   </property>
    <property name="text">
-    <string>Hello Federal</string>
+    <string/>
    </property>
   </widget>
   <widget class="QTableWidget" name="tablePlaylistSections">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>120</y>
-     <width>301</width>
-     <height>221</height>
+     <y>100</y>
+     <width>291</width>
+     <height>211</height>
     </rect>
    </property>
    <property name="rowCount">
-    <number>16</number>
+    <number>10</number>
    </property>
    <property name="columnCount">
     <number>2</number>
    </property>
-   <row/>
-   <row/>
-   <row/>
-   <row/>
-   <row/>
-   <row/>
    <row/>
    <row/>
    <row/>
@@ -90,10 +103,15 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>90</y>
+     <y>70</y>
      <width>61</width>
      <height>16</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <italic>true</italic>
+    </font>
    </property>
    <property name="text">
     <string>Current:</string>
@@ -102,11 +120,18 @@
   <widget class="QLabel" name="labelListSong">
    <property name="geometry">
     <rect>
-     <x>340</x>
-     <y>50</y>
-     <width>271</width>
+     <x>390</x>
+     <y>30</y>
+     <width>371</width>
      <height>16</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
    </property>
    <property name="text">
     <string>Song Selection</string>
@@ -115,11 +140,16 @@
   <widget class="QLabel" name="labelCurrentSong">
    <property name="geometry">
     <rect>
-     <x>340</x>
-     <y>90</y>
+     <x>390</x>
+     <y>70</y>
      <width>59</width>
      <height>15</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <italic>true</italic>
+    </font>
    </property>
    <property name="text">
     <string>Current:</string>
@@ -128,37 +158,57 @@
   <widget class="QLabel" name="labelSongNumber">
    <property name="geometry">
     <rect>
-     <x>420</x>
-     <y>90</y>
+     <x>470</x>
+     <y>70</y>
      <width>31</width>
      <height>16</height>
     </rect>
    </property>
+   <property name="frameShape">
+    <enum>QFrame::Panel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Sunken</enum>
+   </property>
    <property name="text">
-    <string>127</string>
+    <string/>
    </property>
   </widget>
   <widget class="QLabel" name="labelSongFilename">
    <property name="geometry">
     <rect>
-     <x>460</x>
-     <y>90</y>
-     <width>251</width>
+     <x>510</x>
+     <y>70</y>
+     <width>231</width>
      <height>16</height>
     </rect>
    </property>
+   <property name="frameShape">
+    <enum>QFrame::Panel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Sunken</enum>
+   </property>
+   <property name="midLineWidth">
+    <number>0</number>
+   </property>
    <property name="text">
-    <string>b4uacuse_me_patch_less.midi</string>
+    <string/>
    </property>
   </widget>
-  <widget class="QLabel" name="labelPlaylistDirecotry">
+  <widget class="QLabel" name="labelPlaylistDirectory">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>70</y>
+     <y>50</y>
      <width>61</width>
      <height>16</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <italic>true</italic>
+    </font>
    </property>
    <property name="text">
     <string>Directory:</string>
@@ -168,23 +218,34 @@
    <property name="geometry">
     <rect>
      <x>80</x>
-     <y>70</y>
-     <width>231</width>
+     <y>50</y>
+     <width>281</width>
      <height>16</height>
     </rect>
    </property>
+   <property name="frameShape">
+    <enum>QFrame::Panel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Sunken</enum>
+   </property>
    <property name="text">
-    <string>/home/userdude/.config/sequencer64</string>
+    <string/>
    </property>
   </widget>
   <widget class="QLabel" name="labelSongDirectory">
    <property name="geometry">
     <rect>
-     <x>340</x>
-     <y>70</y>
+     <x>390</x>
+     <y>50</y>
      <width>61</width>
      <height>16</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <italic>true</italic>
+    </font>
    </property>
    <property name="text">
     <string>Directory:</string>
@@ -193,37 +254,37 @@
   <widget class="QLabel" name="labelSongPath">
    <property name="geometry">
     <rect>
-     <x>420</x>
-     <y>70</y>
-     <width>291</width>
+     <x>470</x>
+     <y>50</y>
+     <width>271</width>
      <height>16</height>
     </rect>
    </property>
+   <property name="frameShape">
+    <enum>QFrame::Panel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Sunken</enum>
+   </property>
    <property name="text">
-    <string>/home/userdude/midi/cooltunes/</string>
+    <string/>
    </property>
   </widget>
   <widget class="QTableWidget" name="tablePlaylistSongs">
    <property name="geometry">
     <rect>
-     <x>340</x>
-     <y>120</y>
-     <width>256</width>
-     <height>221</height>
+     <x>380</x>
+     <y>100</y>
+     <width>291</width>
+     <height>211</height>
     </rect>
    </property>
    <property name="rowCount">
-    <number>16</number>
+    <number>10</number>
    </property>
    <property name="columnCount">
     <number>2</number>
    </property>
-   <row/>
-   <row/>
-   <row/>
-   <row/>
-   <row/>
-   <row/>
    <row/>
    <row/>
    <row/>
@@ -240,10 +301,10 @@
   <widget class="QPushButton" name="buttonPlaylistLoad">
    <property name="geometry">
     <rect>
-     <x>630</x>
-     <y>160</y>
-     <width>80</width>
-     <height>23</height>
+     <x>310</x>
+     <y>140</y>
+     <width>64</width>
+     <height>24</height>
     </rect>
    </property>
    <property name="text">
@@ -253,34 +314,34 @@
   <widget class="QPushButton" name="buttonPlaylistSave">
    <property name="geometry">
     <rect>
-     <x>630</x>
-     <y>200</y>
-     <width>80</width>
-     <height>23</height>
+     <x>310</x>
+     <y>260</y>
+     <width>64</width>
+     <height>24</height>
     </rect>
    </property>
    <property name="text">
     <string>Save</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="buttonOpenSong">
+  <widget class="QPushButton" name="buttonSongLoad">
    <property name="geometry">
     <rect>
-     <x>630</x>
-     <y>240</y>
-     <width>80</width>
-     <height>23</height>
+     <x>680</x>
+     <y>140</y>
+     <width>64</width>
+     <height>24</height>
     </rect>
    </property>
    <property name="text">
-    <string>Open Song</string>
+    <string>Load</string>
    </property>
   </widget>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>20</y>
+     <y>0</y>
      <width>701</width>
      <height>25</height>
     </rect>
@@ -288,6 +349,13 @@
    <layout class="QHBoxLayout" name="horizPlaylistFileLayout">
     <item>
      <widget class="QLabel" name="label_playlist_file">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
       <property name="text">
        <string>Playlist File</string>
       </property>
@@ -296,11 +364,79 @@
     <item>
      <widget class="QLineEdit" name="entry_playlist_file">
       <property name="text">
-       <string>/home/dude/.config/sequencer64/my.playlist</string>
+       <string/>
       </property>
      </widget>
     </item>
    </layout>
+  </widget>
+  <widget class="QPushButton" name="buttonSongAdd">
+   <property name="geometry">
+    <rect>
+     <x>680</x>
+     <y>180</y>
+     <width>64</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Add</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonSongRemove">
+   <property name="geometry">
+    <rect>
+     <x>680</x>
+     <y>220</y>
+     <width>64</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Remove</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonPlaylistAdd">
+   <property name="geometry">
+    <rect>
+     <x>310</x>
+     <y>180</y>
+     <width>64</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Add</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonPlaylistRemove">
+   <property name="geometry">
+    <rect>
+     <x>310</x>
+     <y>220</y>
+     <width>64</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Remove</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBoxPlaylistActive">
+   <property name="geometry">
+    <rect>
+     <x>680</x>
+     <y>280</y>
+     <width>61</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>If checked, the loaded playlist is active.</string>
+   </property>
+   <property name="text">
+    <string>Active</string>
+   </property>
   </widget>
  </widget>
  <resources/>

@@ -800,6 +800,7 @@
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
+    <addaction name="actionOpenPlaylist"/>
     <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_As"/>
@@ -863,10 +864,18 @@
     <string>&amp;Open...</string>
    </property>
    <property name="toolTip">
-    <string>Open a MIDI or Seq64 MIDI file</string>
+    <string>Open a MIDI or Seq64 MIDI file.</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionOpenPlaylist">
+   <property name="text">
+    <string>Open &amp;Playlist...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open a Seq64 playlist file.</string>
    </property>
   </action>
   <action name="actionRecent">

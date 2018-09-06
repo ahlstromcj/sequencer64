@@ -276,6 +276,7 @@ private slots:
     void quit ();
     void show_import_dialog ();           /* import MIDI into current bank    */
     void show_open_file_dialog ();
+    void show_open_list_dialog ();
     void showqsabout ();
     void showqsbuildinfo ();
     void tabWidgetClicked (int newindex);

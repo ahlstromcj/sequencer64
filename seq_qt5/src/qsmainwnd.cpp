@@ -216,7 +216,7 @@ qsmainwnd::qsmainwnd
     mDialogBuildInfo = new qsbuildinfo(this);
     make_perf_frame_in_tab();           /* create m_song_frame64 pointer    */
     m_live_frame = new qsliveframe(perf(), this, ui->LiveTab);
-    m_playlist_frame = new qplaylistframe(perf(), ui->PlaylistTab);
+    m_playlist_frame = new qplaylistframe(perf(), this, ui->PlaylistTab);
     if (not_nullptr(m_playlist_frame))
         ui->PlaylistTabLayout->addWidget(m_playlist_frame);
 
@@ -254,6 +254,11 @@ qsmainwnd::qsmainwnd
     (
         ui->actionOpen, SIGNAL(triggered(bool)),
         this, SLOT(show_open_file_dialog())
+    );
+    connect
+    (
+        ui->actionOpenPlaylist, SIGNAL(triggered(bool)),
+        this, SLOT(show_open_list_dialog())
     );
     connect(ui->actionQuit, SIGNAL(triggered(bool)), this, SLOT(quit()));
 
@@ -717,6 +722,38 @@ qsmainwnd::show_open_file_dialog ()
     }
     if (! file.isEmpty())                   // if the user did not cancel
         open_file(file.toStdString());
+}
+
+/**
+ *
+ */
+
+void
+qsmainwnd::show_open_list_dialog ()
+{
+    QString file;
+    if (check())
+    {
+        file = QFileDialog::getOpenFileName
+        (
+            this, tr("Open playlist file"), rc().last_used_dir().c_str(),
+            tr("Playlist files (*.playlist);;All files (*)")
+        );
+    }
+    if (! file.isEmpty())                   // if the user did not cancel
+    {
+        bool playlistmode = perf().open_playlist(file.toStdString());
+        if (playlistmode)
+        {
+            playlistmode = perf().open_current_song();
+
+            /*
+             * Update Playlist tab.
+             */
+
+            m_playlist_frame->load_playlist();
+        }
+    }
 }
 
 /**

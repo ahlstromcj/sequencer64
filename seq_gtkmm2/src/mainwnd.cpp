@@ -2049,24 +2049,10 @@ mainwnd::new_open_error_dialog ()
 void
 mainwnd::rc_error_dialog (const std::string & message)
 {
-    std::string prompt;
-    if (message.empty())
-    {
-        prompt =
-            "Error found in 'rc' configuration file.  Run within\n"
-            "a terminal window to see the error message." ;
-    }
-    else
-    {
-        prompt = "Error found in 'rc' configuration file:\n";
-        prompt += message;
-    }
+    std::string prompt = message.empty() ?
+        "Run in a terminal window to see the error message." : message ;
 
-    Gtk::MessageDialog errdialog
-    (
-        *this, prompt, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
-    );
-    errdialog.run();
+    show_message_box(prompt, "Error found in 'rc' configuration file");
 }
 
 /**
@@ -2409,7 +2395,11 @@ mainwnd::choose_file (bool openplaylist)
                     *this, errmsg, false, Gtk::MESSAGE_ERROR,
                     Gtk::BUTTONS_OK, true
                 );
-                rc().playlist_filename("");
+
+                /*
+                 * rc().playlist_filename("");
+                 */
+
                 errdialog.run();
             }
             playlistmode = perf().playlist_mode();
@@ -4018,6 +4008,31 @@ void
 mainwnd::set_status_text (const std::string & text)
 {
     m_status_label->set_text(text);
+}
+
+/**
+ *
+ */
+
+void
+mainwnd::show_message_box
+(
+    const std::string & errmsg,
+    const std::string & title,
+    const std::string & secondarymsg
+)
+{
+    Gtk::MessageDialog dialog
+    (
+        *this, errmsg, false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true
+    );
+    if (! title.empty())
+        dialog.set_title(title);
+
+    if (! secondarymsg.empty())
+        dialog.set_secondary_text(secondarymsg, false);
+
+    dialog.run();
 }
 
 }           /* namespace seq64 */

@@ -33,44 +33,6 @@
     <string>Playlist Section</string>
    </property>
   </widget>
-  <widget class="QLabel" name="labelPlaylistNumber">
-   <property name="geometry">
-    <rect>
-     <x>80</x>
-     <y>70</y>
-     <width>31</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::Panel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Sunken</enum>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QLabel" name="labelPlaylistName">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>70</y>
-     <width>241</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::Panel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Sunken</enum>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
   <widget class="QTableWidget" name="tablePlaylistSections">
    <property name="geometry">
     <rect>
@@ -155,47 +117,6 @@
     <string>Current:</string>
    </property>
   </widget>
-  <widget class="QLabel" name="labelSongNumber">
-   <property name="geometry">
-    <rect>
-     <x>470</x>
-     <y>70</y>
-     <width>31</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::Panel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Sunken</enum>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QLabel" name="labelSongFilename">
-   <property name="geometry">
-    <rect>
-     <x>510</x>
-     <y>70</y>
-     <width>231</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::Panel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Sunken</enum>
-   </property>
-   <property name="midLineWidth">
-    <number>0</number>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
   <widget class="QLabel" name="labelPlaylistDirectory">
    <property name="geometry">
     <rect>
@@ -214,25 +135,6 @@
     <string>Directory:</string>
    </property>
   </widget>
-  <widget class="QLabel" name="labelPlaylistPath">
-   <property name="geometry">
-    <rect>
-     <x>80</x>
-     <y>50</y>
-     <width>281</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::Panel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Sunken</enum>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
   <widget class="QLabel" name="labelSongDirectory">
    <property name="geometry">
     <rect>
@@ -249,25 +151,6 @@
    </property>
    <property name="text">
     <string>Directory:</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="labelSongPath">
-   <property name="geometry">
-    <rect>
-     <x>470</x>
-     <y>50</y>
-     <width>271</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::Panel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Sunken</enum>
-   </property>
-   <property name="text">
-    <string/>
    </property>
   </widget>
   <widget class="QTableWidget" name="tablePlaylistSongs">
@@ -312,6 +195,9 @@
    </property>
   </widget>
   <widget class="QPushButton" name="buttonPlaylistSave">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>310</x>
@@ -319,6 +205,9 @@
      <width>64</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Currently not available.</string>
    </property>
    <property name="text">
     <string>Save</string>
@@ -371,6 +260,9 @@
    </layout>
   </widget>
   <widget class="QPushButton" name="buttonSongAdd">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>680</x>
@@ -378,12 +270,18 @@
      <width>64</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Currently not available.</string>
    </property>
    <property name="text">
     <string>Add</string>
    </property>
   </widget>
   <widget class="QPushButton" name="buttonSongRemove">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>680</x>
@@ -392,11 +290,17 @@
      <height>24</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Currently not available.</string>
+   </property>
    <property name="text">
     <string>Remove</string>
    </property>
   </widget>
   <widget class="QPushButton" name="buttonPlaylistAdd">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>310</x>
@@ -405,11 +309,17 @@
      <height>24</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Currently not available.</string>
+   </property>
    <property name="text">
     <string>Add</string>
    </property>
   </widget>
   <widget class="QPushButton" name="buttonPlaylistRemove">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>310</x>
@@ -417,6 +327,9 @@
      <width>64</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Currently not available.</string>
    </property>
    <property name="text">
     <string>Remove</string>
@@ -436,6 +349,84 @@
    </property>
    <property name="text">
     <string>Active</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="editPlaylistPath">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
+     <y>46</y>
+     <width>281</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>M</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="editPlaylistNumber">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
+     <y>70</y>
+     <width>31</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>8</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="editPlaylistName">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>70</y>
+     <width>241</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>M</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="editSongPath">
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>46</y>
+     <width>271</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>M</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="editSongNumber">
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>70</y>
+     <width>31</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>8</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="editSongFilename">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>70</y>
+     <width>231</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>M</string>
    </property>
   </widget>
  </widget>

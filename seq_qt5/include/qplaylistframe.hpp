@@ -81,6 +81,7 @@ private:
 
     void set_row_heights (int height);
     void set_column_widths ();
+    void set_current_playlist ();
 
     perform & perf ()
     {

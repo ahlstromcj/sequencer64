@@ -46,8 +46,8 @@ Feel free to delete or modify this 3-line comment.
 contrib/midi/
 
 # The base file-names (tune.midi) of songs in this playlist:
-file1-1.mid
-file1-2.mid
+0 file1-1.mid
+1 file1-2.mid
 file1-3.mid
 
 [playlist]
@@ -65,7 +65,7 @@ file1-3.mid
 # The base file-names (tune.midi) of songs in this playlist:
 file2-1.midi
 file2-2.midi
-file2-3.midi
+/home/user/noneexistent/file2-3.midi
 
 # End of /home/ahlstrom/.config/sequencer64/test.playlist
 #

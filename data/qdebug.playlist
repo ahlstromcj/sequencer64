@@ -28,11 +28,8 @@
 
 [comments]
 
-This qdebug play-list file contains two playlists.  One for
-demo ditties, and one for more realistic songs.  These songs
-are found in the contrib/midi directory.  You may need to
-change that directory name for both of the playlists if you
-have a different setup than the developers.
+This qdebug play-list file is sample.playlist with relative
+directories suitable for debugging the Qt build.
  
 [playlist]
 
@@ -44,13 +41,13 @@ have a different setup than the developers.
 "Demo Ditties"
 
 # Storage directory for the song-files in this play list.
-contrib/midi
+../sequencer64/contrib/midi
 
 # The base file-names (tune.midi) of songs in this playlist:
-1Bar.midi
-2Bars.midi
-click_4_4.midi
-colours.midi
+10 1Bar.midi
+11 2Bars.midi
+12 click_4_4.midi
+13 colours.midi
 
 [playlist]
 
@@ -62,12 +59,12 @@ colours.midi
 "Music for Serious Dogs"
 
 # Storage directory for the song-files in this play list.
-contrib/midi
+../sequencer64/contrib/midi
 
 # The base file-names (tune.midi) of songs in this playlist:
-allofarow.mid
-CountryStrum.midi
-contrib/wrk/longhair.wrk
+20 allofarow.mid
+21 CountryStrum.midi
+22 ../sequencer64/contrib/wrk/longhair.wrk
 
 # End of /home/ahlstrom/.config/sequencer64/test.playlist
 #

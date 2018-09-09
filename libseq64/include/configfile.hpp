@@ -76,6 +76,7 @@ protected:
 
     /**
      *  Provides the name of the configuration or other file being parsed.
+     *  This will normally be a full-path specification.
      */
 
     std::string m_name;

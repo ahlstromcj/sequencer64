@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-30
+ * \updates       2018-09-08
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -127,10 +127,10 @@ userfile::dump_setting_summary ()
 bool
 userfile::parse (perform & /* p */)
 {
-    std::ifstream file(m_name.c_str(), std::ios::in | std::ios::ate);
+    std::ifstream file(name().c_str(), std::ios::in | std::ios::ate);
     if (! file.is_open())
     {
-        fprintf(stderr, "? error opening [%s]\n", m_name.c_str());
+        fprintf(stderr, "? error opening [%s]\n", name().c_str());
         return false;
     }
     file.seekg(0, std::ios::beg);                       /* seek to start    */
@@ -593,10 +593,10 @@ userfile::parse (perform & /* p */)
 bool
 userfile::write (const perform & /* a_perf */ )
 {
-    std::ofstream file(m_name.c_str(), std::ios::out | std::ios::trunc);
+    std::ofstream file(name().c_str(), std::ios::out | std::ios::trunc);
     if (! file.is_open())
     {
-        fprintf(stderr, "? error opening [%s] for writing\n", m_name.c_str());
+        fprintf(stderr, "? error opening [%s] for writing\n", name().c_str());
         return false;
     }
     dump_setting_summary();
@@ -615,6 +615,7 @@ userfile::write (const perform & /* a_perf */ )
 
     file
         << "#\n"
+        << "# " << name() << "\n"
         << "# Written on " << current_date_time() << "\n"
         << "#\n"
         <<
@@ -1291,9 +1292,9 @@ userfile::write (const perform & /* a_perf */ )
      * End of file.
      */
 
-    file << "\n"
-        << "# End of " << m_name
-        << "\n#\n"
+    file
+        << "\n"
+        << "# End of " << name() << "\n#\n"
         << "# vim: sw=4 ts=4 wm=4 et ft=sh\n"   /* ft=sh for nice colors */
         ;
     file.close();

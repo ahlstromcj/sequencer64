@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-03
+ * \updates       2018-09-08
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -273,10 +273,10 @@ optionsfile::make_error_message
 bool
 optionsfile::parse (perform & p)
 {
-    std::ifstream file(m_name.c_str(), std::ios::in | std::ios::ate);
+    std::ifstream file(name().c_str(), std::ios::in | std::ios::ate);
     if (! file.is_open())
     {
-        printf("? error opening [%s] for reading\n", m_name.c_str());
+        printf("? error opening [%s] for reading\n", name().c_str());
         return false;
     }
     file.seekg(0, std::ios::beg);                           /* seek to start */
@@ -871,10 +871,10 @@ optionsfile::parse (perform & p)
 bool
 optionsfile::parse_mute_group_section (perform & p)
 {
-    std::ifstream file(m_name.c_str(), std::ios::in | std::ios::ate);
+    std::ifstream file(name().c_str(), std::ios::in | std::ios::ate);
     if (! file.is_open())
     {
-        printf("? error opening [%s] for reading\n", m_name.c_str());
+        printf("? error opening [%s] for reading\n", name().c_str());
         return false;
     }
     file.seekg(0, std::ios::beg);                           /* seek to start */
@@ -980,11 +980,11 @@ optionsfile::parse_mute_group_section (perform & p)
 bool
 optionsfile::write (const perform & p)
 {
-    std::ofstream file(m_name.c_str(), std::ios::out | std::ios::trunc);
+    std::ofstream file(name().c_str(), std::ios::out | std::ios::trunc);
     perform & ucperf = const_cast<perform &>(p);
     if (! file.is_open())
     {
-        printf("? error opening [%s] for writing\n", m_name.c_str());
+        printf("? error opening [%s] for writing\n", name().c_str());
         return false;
     }
 
@@ -1002,6 +1002,7 @@ optionsfile::write (const perform & p)
         file
             << "# Sequencer64 0.95.1 (and above) rc configuration file\n"
             << "#\n"
+            << "# " << name() << "\n"
             << "# Written on " << current_date_time() << "\n"
             << "#\n"
             <<
@@ -1847,7 +1848,7 @@ optionsfile::write (const perform & p)
     file << plname << "\n\n";
 
     file
-        << "# End of " << m_name << "\n#\n"
+        << "# End of " << name() << "\n#\n"
         << "# vim: sw=4 ts=4 wm=4 et ft=sh\n"   /* ft=sh for nice colors */
         ;
 

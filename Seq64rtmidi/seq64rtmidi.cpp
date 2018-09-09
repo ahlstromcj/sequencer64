@@ -25,7 +25,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2018-09-05
+ * \updates       2018-09-08
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <gdkmm/cursor.h>
 #include <gtkmm/main.h>
+#include <gtkmm/messagedialog.h>
 
 #include "cmdlineopts.hpp"              /* command-line functions           */
 #include "daemonize.hpp"                /* seq64::reroute_stdio()           */
@@ -152,27 +153,27 @@ main (int argc, char * argv [])
             seq64::gui_palette_gtk2::load_inverse_palette(true);
 
         std::string midifname;                      /* start out blank      */
-        std::string errmsg = "unspecified error";
+        std::string extant_errmsg = "unspecified error";
+        bool extant_msg_active = false;           /* a kludge             */
         if (ok)
         {
 #ifdef SEQ64_USE_MIDI_PLAYLIST
             std::string playlistname = seq64::rc().playlist_filespec();
             if (seq64::rc().playlist_active() && ! playlistname.empty())
             {
-                bool success = p.open_playlist(playlistname);
-                if (success)
+                ok = p.open_playlist(playlistname);
+                if (ok)
                 {
                     /*
-                     * No need for this now:  tunes.test();
+                     * No need for this now:  p.playlist_test();
                      */
 
-                    success = p.open_current_song();
+                    ok = p.open_current_song();
                 }
                 else
                 {
-                    /*
-                     * error message
-                     */
+                    extant_errmsg = p.playlist_error_message();
+                    extant_msg_active = true;
                 }
             }
 #endif
@@ -194,7 +195,8 @@ main (int argc, char * argv [])
                     );
                     printf(temp);
                     ok = false;
-                    errmsg = temp;
+                    extant_errmsg = temp;
+                    extant_msg_active = true;
                 }
             }
         }
@@ -220,11 +222,6 @@ main (int argc, char * argv [])
 #endif
         );
 
-#ifdef CAN_SHOW_MESSAGEBOX
-        if (! ok)
-            seq24_window.show_message_box(errmsg);
-#endif
-
         /*
          * Having this here after creating the main window may cause issue
          * #100, where ladish doesn't see seq64's ports in time.
@@ -234,7 +231,6 @@ main (int argc, char * argv [])
 
         if (ok)
         {
-
 #ifdef PLATFORM_LINUX
             if (seq64::rc().lash_support())
                 seq64::create_lash_driver(p, argc, argv);
@@ -255,7 +251,12 @@ main (int argc, char * argv [])
 #endif
         }
         else
-            seq24_window.rc_error_dialog(errmessage);
+        {
+            if (extant_msg_active)
+                seq24_window.show_message_box(extant_errmsg, "Start-up Error");
+            else
+                seq24_window.rc_error_dialog(errmessage);
+        }
     }
     return ok ? EXIT_SUCCESS : EXIT_FAILURE ;
 }

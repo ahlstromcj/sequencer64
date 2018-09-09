@@ -753,6 +753,12 @@ qsmainwnd::show_open_list_dialog ()
 
             m_playlist_frame->load_playlist();
         }
+        else
+        {
+            QString msg_text = tr(perf().playlist_error_message().c_str());
+            m_msg_error->showMessage(msg_text);
+            m_msg_error->exec();
+        }
     }
 }
 
@@ -1396,8 +1402,8 @@ qsmainwnd::remove_editor (int seqid)
 }
 
 /**
- *  Uses the standard "associative-container erase idiom".  Otherwise, the
- *  current iterator is invalid, and a segfault results in the top of the
+ *  Uses the standard "associative-container erase-remove idiom".  Otherwise,
+ *  the current iterator is invalid, and a segfault results in the top of the
  *  for-loop.  Another option with C++11 is "ci = m_open_editors.erase(ei)".
  */
 

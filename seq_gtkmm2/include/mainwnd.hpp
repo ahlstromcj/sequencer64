@@ -560,6 +560,12 @@ public:
 
     void open_file (const std::string & filename);
     void rc_error_dialog (const std::string & message);
+    void show_message_box
+    (
+        const std::string & errmsg,
+        const std::string & title           = "",
+        const std::string & secondarymsg    = ""
+    );
 
     /**
      * \getter m_ppqn

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-04
+ * \updates       2018-09-07
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1147,6 +1147,25 @@ public:
     bool open_playlist (const std::string & pl);
 
     /**
+     *  Runs the playlist test.
+     */
+
+    void playlist_test ()
+    {
+        if (bool(m_play_list))
+            m_play_list->test();
+    }
+
+    /**
+     *  Gets the playlist full-path specification.
+     */
+
+    std::string playlist_filename () const
+    {
+        return bool(m_play_list) ? m_play_list->name() : "" ;
+    }
+
+    /**
      *  Gets the playlist mode, which is true if the playlist object exists
      *  and is active.
      */
@@ -1214,7 +1233,6 @@ public:
         return bool(m_play_list) ?
             m_play_list->open_previous_song(opensong) : false ;
     }
-
 
     const std::string & playlist_error_message () const;
 

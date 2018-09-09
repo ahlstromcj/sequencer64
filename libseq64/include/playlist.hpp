@@ -28,9 +28,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-09-04
+ * \updates       2018-09-08
  * \license       GNU GPLv2 or above
  *
+ * \todo
+ *      Add filepath to BAD playlist message.
  */
 
 #include <map>
@@ -60,14 +62,39 @@ private:
 
     /**
      *  Holds an entry describing a song, to be used as the "second" in a map.
-     *  Also holds a copy of the key (index) value.  Do we want the user to be
+     *  Also holds a copy of the key value.  Do we want the user to be
      *  able to specify a title for the tune?
      */
 
     struct song_spec_t
     {
+        /**
+         *  Provides an ordinal value that indicates the offset of the song in the
+         *  list.
+         */
+
         int ss_index;
+
+        /**
+         *  Provides a copy of the key, which is the MIDI control number that the
+         *  user has applied to this song in the playlist.
+         */
+
+        int ss_midi_number;
+
+        /**
+         *  The directory where the song is located.  This either the default
+         *  directory specified in the playlist, or the path specification that
+         *  existed in the file-name of the song.
+         */
+
         std::string ss_song_directory;
+
+        /**
+         *  The base file-name, of the form "base.ext".  When appended to
+         *  ss_song_directory, this yields the full path to the file.
+         */
+
         std::string ss_filename;
     };
 
@@ -76,19 +103,55 @@ private:
      */
 
     typedef std::map<int, song_spec_t> song_list;
-    typedef std::map<int, song_spec_t>::const_iterator song_iterator;
+    typedef std::map<int, song_spec_t>::iterator song_iterator;
+    typedef std::map<int, song_spec_t>::const_iterator const_song_iterator;
 
     /**
      *  Holds a playlist list entry to be used as the "second" in a map.
-     *  Also holds a copy of the key (index) value.
+     *  Also holds a copy of the key value.
      */
 
     struct play_list_t
     {
+        /**
+         *  Provides an ordinal value that indicates the offset of the playlist
+         *  in the play-list file.
+         */
+
         int ls_index;
+
+        /**
+         *  Provides a copy of the key, which is the MIDI control number that the
+         *  user has applied to this playlist in the play-list file.
+         */
+
+        int ls_midi_number;
+
+        /**
+         *  Provides the human name for the playlist, it's meaningful title.
+         */
+
         std::string ls_list_name;
+
+        /**
+         *  The default directory where each song in the playlist is located.
+         *  If there is a path specification that exists in the file-name of a
+         *  given song, that overrides this directory name.
+         */
+
         std::string ls_file_directory;
+
+        /**
+         *  A quick way to get the number of songs in this playlist.
+         */
+
         int ls_song_count;
+
+        /**
+         *  A container holding the list of information for the songs in the
+         *  playlist.
+         */
+
         song_list ls_song_list;
     };
 
@@ -97,7 +160,8 @@ private:
      */
 
     typedef std::map<int, play_list_t> play_list;
-    typedef std::map<int, play_list_t>::const_iterator play_iterator;
+    typedef std::map<int, play_list_t>::iterator play_iterator;
+    typedef std::map<int, play_list_t>::const_iterator const_play_iterator;
 
 private:
 
@@ -112,6 +176,14 @@ private:
      */
 
     perform & m_perform;
+
+    /**
+     *  The full path to the file from which this object was filled.
+     *  This item is not needed.  Instead, use the configfile::name()
+     *  function.
+     *
+     *      std::string m_list_filespec;
+     */
 
     /**
      *  Holds the [comments] section of the file. It is a list of concatenated
@@ -189,6 +261,12 @@ public:
         m_mode = m;
     }
 
+    int list_midi_number () const
+    {
+        return m_current_list != m_play_lists.end() ?
+            m_current_list->second.ls_midi_number : (-1) ;
+    }
+
     int list_index () const
     {
         return m_current_list != m_play_lists.end() ?
@@ -214,6 +292,7 @@ public:
             m_current_list->second.ls_file_directory : s_dummy ;
     }
 
+    int song_midi_number () const;
     int song_index () const;
 
     /*
@@ -245,9 +324,21 @@ public:
     bool reset ();
     bool open (bool verify_it = true);
     bool open (const std::string & filename, bool verify_it = true);
+    bool add_list (play_list_t & plist);
+    bool add_list
+    (
+        int index, int midinumber,
+        const std::string & name,
+        const std::string & directory
+    );
+    bool remove_list (int index);
     bool select_list (int index, bool selectsong = false);
     bool next_list (bool selectsong = false);
     bool previous_list (bool selectsong = false);
+    bool add_song (song_spec_t & sspec);                    // add to current list
+    bool add_song (song_list & slist, song_spec_t & sspec);
+    bool add_song (play_list_t & plist, song_spec_t & sspec);
+    bool remove_song (int index);
     bool select_song (int index);
     bool next_song ();
     bool previous_song ();
@@ -263,6 +354,9 @@ public:
 
 private:
 
+    void reorder_play_list (play_list & pl);
+    void reorder_song_list (song_list & sl);
+    bool scan_song_file (int & song_number, std::string & song_file);
     bool make_error_message (const std::string & additional);
     bool make_file_error_message
     (

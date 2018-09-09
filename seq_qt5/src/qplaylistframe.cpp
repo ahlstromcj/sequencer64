@@ -101,13 +101,13 @@ qplaylistframe::qplaylistframe
 #if 0
     QLineEdit *entry_playlist_file;
 
-    QLabel *labelPlaylistPath;
-    QLabel *labelPlaylistNumber;
-    QLabel *labelPlaylistName;
+    QLabel *editPlaylistPath;
+    QLabel *editPlaylistNumber;
+    QLabel *editPlaylistName;
 
-    QLabel *labelSongPath;
-    QLabel *labelSongNumber;
-    QLabel *labelSongFilename;
+    QLabel *editSongPath;
+    QLabel *editSongNumber;
+    QLabel *editSongFilename;
 
     QTableWidget *tablePlaylistSections;
     QTableWidget *tablePlaylistSongs;
@@ -209,18 +209,44 @@ qplaylistframe::set_column_widths ()
 #if 0
     QLineEdit *entry_playlist_file;
 
-    QLabel *labelPlaylistPath;
-    QLabel *labelPlaylistNumber;
-    QLabel *labelPlaylistName;
+    QLabel *editPlaylistPath;
+    QLabel *editPlaylistNumber;
+    QLabel *editPlaylistName;
 
-    QLabel *labelSongPath;
-    QLabel *labelSongNumber;
-    QLabel *labelSongFilename;
+    QLabel *editSongPath;
+    QLabel *editSongNumber;
+    QLabel *editSongFilename;
 
     QTableWidget *tablePlaylistSections;
     QTableWidget *tablePlaylistSongs;
     QCheckBox *checkBoxPlaylistActive;
 #endif  // 0
+
+/**
+ *
+ */
+
+void
+qplaylistframe::set_current_playlist ()
+{
+    std::string filename = perf().playlist_filename();
+    ui->entry_playlist_file->setText(QString::fromStdString(filename));
+}
+
+/**
+ *
+
+void
+qplaylistframe::set_current_song ()
+{
+    std::string filename = perf().playlist_filename();
+    ui->entry_playlist_file->setText(QString::fromStdString(filename));
+}
+ */
+
+/**
+ *
+ */
 
 bool
 qplaylistframe::load_playlist (const std::string & fullfilespec)
@@ -233,6 +259,7 @@ qplaylistframe::load_playlist (const std::string & fullfilespec)
     }
     if (perf().playlist_mode())
     {
+        set_current_playlist();
     }
     else
     {

@@ -300,7 +300,7 @@ lash::handle_event (lash_event_t * ev)
 
         midifile f
         (
-            str, m_perform.ppqn(), rc().legacy_format(),
+            str, m_perform.get_ppqn(), rc().legacy_format(),
             usr().global_seq_feature()
         );
         f.write(m_perform);

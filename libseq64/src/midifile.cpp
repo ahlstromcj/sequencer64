@@ -384,9 +384,11 @@ midifile::read_gap (size_t sz)
 bool
 midifile::grab_input_stream (const std::string & tag)
 {
-    std::ifstream file = std::ifstream
+    std::ifstream file // = std::ifstream
     (
-        m_name.c_str(), std::ios::in | std::ios::binary | std::ios::ate
+        // errors in old 32-bit debian stable, g++ 4.9.
+        // m_name.c_str(), std::ios::in | std::ios::binary | std::ios::ate
+        m_name, std::ios::in | std::ios::binary | std::ios::ate
     );
     m_error_is_fatal = false;
 

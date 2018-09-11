@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.95.3 and above
 Chris Ahlstrom
-2015-09-10 to 2018-08-26
+2015-09-10 to 2018-09-11
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -671,6 +671,7 @@ DEPENDENCIES:
       See the README file in the Debian directory.
 
       -  debhelper
+      -  dh-autoreconf (Perl)
       -  fakeroot
       -  More?
 

@@ -150,9 +150,31 @@ main (int argc, char * argv [])
          */
 
         std::string midifname;                      /* start out blank      */
+        std::string extant_errmsg = "unspecified error";
+        bool extant_msg_active = false;             /* a kludge             */
         std::string errmsg = "unspecified error";
         if (ok)
         {
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+            std::string playlistname = seq64::rc().playlist_filespec();
+            if (seq64::rc().playlist_active() && ! playlistname.empty())
+            {
+                ok = p.open_playlist(playlistname);
+                if (ok)
+                {
+                    /*
+                     * No need for this now:  p.playlist_test();
+                     */
+
+                    ok = p.open_current_song();
+                }
+                else
+                {
+                    extant_errmsg = p.playlist_error_message();
+                    extant_msg_active = true;
+                }
+            }
+#endif
             if (optionindex < argc)                 /* MIDI filename given? */
             {
                 std::string fname = argv[optionindex];
@@ -218,29 +240,41 @@ main (int argc, char * argv [])
         }
 #endif
 
-        if (! ok)
-            seq24_window.show_message_box(errmsg);
+//      if (! ok)
+//          seq24_window.show_message_box(errmsg);
 
 #ifdef PLATFORM_LINUX
         if (ok)
         {
             if (seq64::rc().lash_support())
                 seq64::create_lash_driver(p, argc, argv);
-        }
-#endif
 
-        exit_status = a.exec();                 /* run main window loop */
-        p.finish();                             /* tear down performer  */
-        if (seq64::rc().auto_option_save())
-        {
-            (void) seq64::write_options_files(p);
-        }
-        else
-            printf("[auto-option-save off, not saving config files]\n");
+            exit_status = a.exec();             /* run main window loop */
+            p.finish();                         /* tear down performer  */
+            if (seq64::rc().auto_option_save())
+                (void) seq64::write_options_files(p);
+            else
+                printf("[auto-option-save off, not saving config files]\n");
 
 #ifdef PLATFORM_LINUX
-    if (ok)
         seq64::delete_lash_driver();            /* deleted only exists  */
+#endif
+        }
+        else
+        {
+            /**
+             * TODO
+             */
+
+            if (extant_msg_active)
+            {
+                // seq24_window.show_message_box(extant_errmsg, "Start-up Error");
+            }
+            else
+            {
+                // seq24_window.rc_error_dialog(errmessage);
+            }
+        }
 #endif
     }
     return exit_status;

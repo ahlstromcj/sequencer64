@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-09-08
+ * \updates       2018-09-10
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
@@ -787,6 +787,9 @@ playlist::reset ()
  *  play-lists.  It assumes all of the fields in the play-list have been set,
  *  including an empty song-list.
  *
+ * \note
+ *      Do not reorder!
+ *
  * \param plist
  *      Provides a reference to the new playlist to be added.  This parameter
  *      is copied into the list.
@@ -957,6 +960,10 @@ playlist::previous_list (bool selectsong)
  *  An overloaded function to encapsulare adding a playlist and make the
  *  callers simpler.  The inserted list has an empty song-list.  This function
  *  is intended for use by a playlist editor.
+ *
+ * \param index
+ *      Provides the location of the active list in the table.  The actual
+ *      stored value may change after reordering.
  */
 
 bool
@@ -981,7 +988,9 @@ playlist::add_list
      *      plist.ls_song_list = slist;
      */
 
-    return add_list(plist);
+    bool result = add_list(plist);
+    reorder_play_list();
+    return result;
 }
 
 /**
@@ -1006,7 +1015,10 @@ playlist::remove_list (int index)
     bool result = false;
     int count = 0;
     play_iterator pci;
-    for (pci = m_play_lists.begin(); pci != m_play_lists.end(); /*++pci,*/ ++count)
+    for
+    (
+        pci = m_play_lists.begin(); pci != m_play_lists.end(); /*++pci,*/ ++count
+    )
     {
         if (count == index)
         {
@@ -1018,7 +1030,7 @@ playlist::remove_list (int index)
             ++pci;
     }
     if (result)
-        reorder_play_list(m_play_lists);
+        reorder_play_list();
 
     return result;
 }
@@ -1029,10 +1041,14 @@ playlist::remove_list (int index)
  */
 
 void
-playlist::reorder_play_list (play_list & pl)
+playlist::reorder_play_list ()
 {
     int index = 0;
-    for (play_iterator pci = pl.begin(); pci != pl.end(); ++pci, ++index)
+    for
+    (
+        play_iterator pci = m_play_lists.begin();
+        pci != m_play_lists.end(); ++pci, ++index
+    )
     {
         play_list_t & p = pci->second;
         p.ls_index = index;
@@ -1273,6 +1289,43 @@ playlist::add_song (play_list_t & plist, song_spec_t & sspec)
 {
     song_list & sl = plist.ls_song_list;
     bool result = add_song(sl, sspec);
+    return result;
+}
+
+/**
+ *  An overloaded function to encapsulare adding a song and make the
+ *  callers simpler.  This function is intended for use by a playlist editor.
+ *
+ * \param index
+ *      Provides the location of the active item in the table.  The actual
+ *      stored value may change after reordering.
+ */
+
+bool
+playlist::add_song
+(
+    int index,
+    int midinumber,
+    const std::string & name,
+    const std::string & directory
+)
+{
+    song_spec_t slist;                  /* will be copied upon insertion    */
+    slist.ss_index = index;             /* an ordinal value from song table */
+    slist.ss_midi_number = midinumber;  /* MIDI control number to use       */
+    slist.ss_song_directory = directory;
+    slist.ss_filename = name;
+
+    /*
+     * Song list is empty at first, created by the playlist default constructor.
+     *
+     *      plist.ls_song_list = slist;
+     */
+
+    bool result = add_song(slist);
+    if (result)
+        reorder_song_list(m_current_list->second.ls_song_list);
+
     return result;
 }
 

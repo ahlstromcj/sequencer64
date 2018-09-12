@@ -155,7 +155,7 @@ main (int argc, char * argv [])
     bool is_help = seq64::help_check(argc, argv);
     bool ok = true;
     int optionindex = SEQ64_NULL_OPTION_INDEX;
-    if (! stdio_rerouted)                       /* not done already?        */
+    if (! stdio_rerouted)                           /* not done already?    */
     {
         std::string logfile = seq64::usr().option_logfile();
         if (seq64::usr().option_use_logfile() && ! logfile.empty())
@@ -163,6 +163,9 @@ main (int argc, char * argv [])
     }
     if (! is_help)
     {
+        std::string extant_errmsg = "unspecified error";
+        bool extant_msg_active = false;             /* a kludge             */
+
         /*
          *  If parsing fails, report it and disable usage of the application
          *  and saving bad garbage out when exiting.  Still must launch,
@@ -184,6 +187,26 @@ main (int argc, char * argv [])
 
                 p.print_busses();
             }
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+            std::string playlistname = seq64::rc().playlist_filespec();
+            if (seq64::rc().playlist_active() && ! playlistname.empty())
+            {
+                ok = p.open_playlist(playlistname);
+                if (ok)
+                {
+                    /*
+                     * No need for this now:  p.playlist_test();
+                     */
+
+                    ok = p.open_current_song();
+                }
+                else
+                {
+                    extant_errmsg = p.playlist_error_message();
+                    extant_msg_active = true;
+                }
+            }
+#endif
             if (optionindex < argc)                 /* MIDI filename given?   */
             {
                 std::string fn = argv[optionindex];
@@ -198,10 +221,30 @@ main (int argc, char * argv [])
                         seq64::rc().filename(fn);
                     }
                     else
-                        printf("? MIDI file not parsed: %s\n", fn.c_str());
+                    {
+                        // printf("? MIDI file not parsed: %s\n", fn.c_str());
+                        char temp[256];
+                        (void) snprintf
+                        (
+                            temp, sizeof temp,
+                            "? MIDI file not parsed: %s\n", fn.c_str()
+                        );
+                        extant_errmsg = temp;
+                        extant_msg_active = true;
+                    }
                 }
                 else
-                    printf("? MIDI file not found: %s\n", fn.c_str());
+                {
+                    // printf("? MIDI file not found: %s\n", fn.c_str());
+                    char temp[256];
+                    (void) snprintf
+                    (
+                        temp, sizeof temp,
+                        "? MIDI file not found: %s\n", fn.c_str()
+                    );
+                    extant_errmsg = temp;
+                    extant_msg_active = true;
+                }
             }
             if (ok)
             {
@@ -243,6 +286,13 @@ main (int argc, char * argv [])
                 seq64::delete_lash_driver();        /* deleted only exists  */
 #endif
             }
+        }
+        else
+        {
+            if (extant_msg_active)
+                errprint(extant_errmsg.c_str());
+            else
+                errprint(errmessage.c_str());
         }
 
 #ifdef PLATFORM_LINUX

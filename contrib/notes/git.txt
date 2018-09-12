@@ -181,6 +181,23 @@ Pulls and merges:
     $ git merge --no-ff TDeagan-mute_groups
     $ git push origin master
 
+Trial merge:
+
+	To do a trial merge, pass in the --no-commit flag, but, to avoid a
+    fast-forward commit, also pass in --no-ff, like so:
+
+	$ git merge --no-commit --no-ff $BRANCH
+
+	To examine the staged changes:
+
+	$ git diff --cached
+
+	And you can undo the merge, even if it is a fast-forward merge:
+
+	$ git merge --abort
+
+	This still modifies the working copy.
+
 Tagging:
 
     We want to tag release points (e.g. 0.9.9.xx) with a tag of the

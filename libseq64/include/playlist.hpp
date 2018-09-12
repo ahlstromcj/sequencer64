@@ -234,8 +234,6 @@ public:
 
     virtual ~playlist ();               // how to hide this???
 
-    void show_list (const play_list_t & pl) const;
-    void show_song (const song_spec_t & pl) const;
     void show () const;
     void test ();
 
@@ -307,7 +305,6 @@ public:
      */
 
     const std::string & song_filename () const;     // base-name only
-    std::string song_filepath (const song_spec_t & s) const;
     std::string song_filepath () const;             // for current song
 
     int song_count () const
@@ -324,7 +321,6 @@ public:
     bool reset ();
     bool open (bool verify_it = true);
     bool open (const std::string & filename, bool verify_it = true);
-    bool add_list (play_list_t & plist);
     bool add_list
     (
         int index, int midinumber,
@@ -335,9 +331,12 @@ public:
     bool select_list (int index, bool selectsong = false);
     bool next_list (bool selectsong = false);
     bool previous_list (bool selectsong = false);
-    bool add_song (song_spec_t & sspec);                    // add to current list
-    bool add_song (song_list & slist, song_spec_t & sspec);
-    bool add_song (play_list_t & plist, song_spec_t & sspec);
+    bool add_song
+    (
+        int index, int midinumber,
+        const std::string & name,
+        const std::string & directory
+    );
     bool remove_song (int index);
     bool select_song (int index);
     bool next_song ();
@@ -349,13 +348,26 @@ public:
     bool open_next_song (bool opensong = true);
     bool open_previous_song (bool opensong = true);
 
+private:
+
     virtual bool parse (perform & p);
     virtual bool write (const perform & p);
 
-private:
+    /*
+     * We want to hide the internal structures from the caller.
+     */
 
-    void reorder_play_list (play_list & pl);
-    void reorder_song_list (song_list & sl);
+    bool add_list (play_list_t & plist);
+    void show_list (const play_list_t & pl) const;
+
+    std::string song_filepath (const song_spec_t & s) const;
+    bool add_song (song_spec_t & sspec);                    // add to current list
+    bool add_song (song_list & slist, song_spec_t & sspec);
+    bool add_song (play_list_t & plist, song_spec_t & sspec);
+    void show_song (const song_spec_t & pl) const;
+
+    void reorder_play_list ();                              // current list
+    void reorder_song_list (song_list & sl);                // current song list
     bool scan_song_file (int & song_number, std::string & song_file);
     bool make_error_message (const std::string & additional);
     bool make_file_error_message

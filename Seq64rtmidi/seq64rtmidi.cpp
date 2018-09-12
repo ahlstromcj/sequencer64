@@ -148,13 +148,12 @@ main (int argc, char * argv [])
         if (ok)
             p.launch(seq64::usr().midi_ppqn());     /* set up performance   */
 
-
         if (seq64::usr().inverse_colors())
             seq64::gui_palette_gtk2::load_inverse_palette(true);
 
         std::string midifname;                      /* start out blank      */
         std::string extant_errmsg = "unspecified error";
-        bool extant_msg_active = false;           /* a kludge             */
+        bool extant_msg_active = false;             /* a kludge             */
         if (ok)
         {
 #ifdef SEQ64_USE_MIDI_PLAYLIST
@@ -177,7 +176,6 @@ main (int argc, char * argv [])
                 }
             }
 #endif
-
             if (optionindex < argc)                 /* MIDI filename given? */
             {
                 std::string fname = argv[optionindex];
@@ -239,10 +237,7 @@ main (int argc, char * argv [])
             kit.run(seq24_window);                  /* run until user quit  */
             p.finish();                             /* tear down performer  */
             if (seq64::rc().auto_option_save())
-            {
-                if (ok)                             /* don't write bad data */
-                    ok = seq64::write_options_files(p);
-            }
+                ok = seq64::write_options_files(p);
             else
                 printf("[auto-option-save off, not saving config files]\n");
 

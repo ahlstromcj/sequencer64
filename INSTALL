@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.95.2 and above
+INSTALL for Sequencer64 v. 0.95.3 and above
 Chris Ahlstrom
-2015-09-10 to 2018-08-20
+2015-09-10 to 2018-09-11
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -70,7 +70,7 @@ Quick Install:
 Advanced Steps:
 
     These steps are meant for those who want to try the various versions of
-    Sequencer64, and do not mind install a lot of extra developer software.
+    Sequencer64, and do not mind installing a lot of extra developer software.
 
    0.  Preload any DEPENDENCIES, as listed at the end of this document.
        However, if some are missing, the configure script will tell you,
@@ -78,7 +78,7 @@ Advanced Steps:
 
    1.  Check-out the branch you want, if you do not want "master".  Make a
        branch if you want to make changes.  The active branches are "master",
-       "tempo_track", and "qt5-support".  The comand "git branch -a" will
+       "playlist", and "qt5_reconcile".  The comand "git branch -a" will
        show other branches not yet deleted.  See GitHub.
 
    2.  The first thing to do is decide what version of Sequencer64 you want to
@@ -89,26 +89,27 @@ Advanced Steps:
        3.   Sequencer64/sequencer64:     ./bootstrap -er -am
        4.   Seq64portmidi/seq64portmidi: ./bootstrap -er -pm (fewer features)
        5.   Seq64qt5/qseq64:             ./bootstrap -er -qt (in progress)
+
+       (Currently, one can use "-cli" and "-rm" together to build both
+       versions in one pass.
    
        From the top project directory, run one of the commands above (they
        auto-configure) or run the following commands, which set up a release
        build of seq64 (native JACK, native ALSA fallback).
 
-       $ ./bootstrap    (needed only if the configure script does not exist)
-       $ ./configure
+       $ ./bootstrap            (only if the configure script does not exist)
+       $ ./configure [options]
 
        If you do not want to see a lot of output, the stock autotools
        option "--enable-silent-rules" can be added to the ./configure command.
-
-       For building in release mode without seeing a ton of compiler output,
-       the following command will configure for the "silent rules" of Automake.
+       Otherwise:
 
        $ ./bootstrap --enable-release [ -rm | -cli | -am | -pm ]
        $ ./bootstrap -er [ -rm | -cli | -am | -pm ]
 
-       Note that the options in brackets are option and mutually exclusive.
-       The additional options select the kind of Sequencer64 to build.
-       There is now no default, but -rm is most likely what you want.
+       Note that the options in brackets are optional.  The additional options
+       select the kind of Sequencer64 to build.  There is now no default, but
+       -rm is most likely what you want, for a Linux build.
 
        For debugging without libtool getting in the way, just run the
        following command, which will add the --enable-debug and
@@ -117,10 +118,10 @@ Advanced Steps:
        $ ./bootstrap --enable-debug [ -rm | -cli | -am | -pm ]
        $ ./bootstrap -ed [ -rm | -cli | -am | -pm ]
 
-       If desired, there are also configure options as described below,
-       and also conditional macros in the code.  The configure options can be 
-       supplied to the ./configure command, while build macros can be defined
-       (in the code) to even further tailor the build.
+       There are also configure options as described below, and conditional
+       macros in the header files.  The configure options can be supplied to
+       the ./configure command, while build macros can be defined (in the
+       code) to even further tailor the build.
 
    3.  Run the make command:
 
@@ -133,9 +134,9 @@ Advanced Steps:
        WARNING:  "./make_dox reference" is currently BROKEN, even though
                  no errors/warnings are shown in the Doxygen log files.
       
-       Do not forget that you can add options to "make", such as "V=0" (enable
-       silent build), "V=1" (enable the normal verbose build), and "-j n" (use
-       n processors to speed up the build).
+       You can add options to "make", such as "V=0" (enable silent build),
+       "V=1" (enable the normal verbose build), and "-j n" (use n processors
+       to speed up the build).
 
    4.  To install, become root and run:
 
@@ -671,6 +672,7 @@ DEPENDENCIES:
       See the README file in the Debian directory.
 
       -  debhelper
+      -  dh-autoreconf (Perl)
       -  fakeroot
       -  More?
 

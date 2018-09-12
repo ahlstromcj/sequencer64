@@ -6,7 +6,7 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2018-07-07
+# \updates     2018-09-11
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -177,12 +177,12 @@ if BUILD_RTMIDI
 SUBDIRS += seq_rtmidi
 endif
 
-if NEED_GTKMM
 if BUILD_ALSAMIDI
 SUBDIRS += Sequencer64
-else
-SUBDIRS += Seq64rtmidi Midiclocker64
 endif
+
+if BUILD_RTMIDI
+SUBDIRS += Seq64rtmidi Midiclocker64
 endif
 
 if BUILD_QTMIDI
@@ -194,12 +194,15 @@ SUBDIRS += Seq64portmidi
 endif
 
 if BUILD_RTCLI
-SUBDIRS += Seq64cli Midiclocker64
-endif
-
-if BUILD_WINDOWS
 SUBDIRS += Seq64cli
 endif
+
+# Not supported.  Use the Qt project file and qmake+mingw to build the
+# Windows version.  See the INSTALL file, section "Qmake-based Install".
+#
+# if BUILD_WINDOWS
+# SUBDIRS += Seq64cli
+# endif
 
 SUBDIRS += man data
 

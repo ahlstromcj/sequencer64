@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-08-26
+dnl \update        2018-09-11
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -26,7 +26,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.95$)dnl
-AC_INIT(Sequencer64, [0.95.2], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.95.3], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -154,7 +154,7 @@ AC_SUBST(PACKAGE)
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
 
-VERSION="0.95.2"
+VERSION="0.95.3"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -502,6 +502,7 @@ AC_ARG_ENABLE(rtmidi,
 if test "$rtmidi" != "no"; then
     build_rtmidi="yes"
     build_portmidi="no"
+    need_gtkmm="yes"
     AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
     AC_DEFINE(CONFIG_NAME, ["sequencer64"], [Configuration file name])
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi is enabled])
@@ -534,12 +535,8 @@ if test "$qtmidi" != "no"; then
     build_qtmidi="yes"
     need_qt="yes"
     need_gtkmm="no"
-dnl build_rtmidi="yes"
-dnl build_portmidi="no"
     AC_DEFINE(APP_NAME, ["qrseq64"], [Names the Qt/rtmidi version of application])
     AC_DEFINE(CONFIG_NAME, ["qrseq64"], [Configuration file name for Qt/rtmidi])
-dnl AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates that rtmidi is enabled])
-dnl AC_DEFINE(QTMIDI_SUPPORT, 1, [Indicates that Qt5 is enabled])
     AM_PATH_ALSA(0.9.0)
     AX_HAVE_QT
     AC_MSG_RESULT([qt user-interface build enabled.]);
@@ -558,18 +555,11 @@ if test "$cli" != "no"; then
     AC_DEFINE(CONFIG_NAME, ["seq64cli"], [Configuration file name])
     if test "x$mingw" != "xyes" ; then
         build_rtcli="yes"
-        build_rtmidi="yes"
         build_portmidi="no"
         AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates that rtmidi is enabled])
         AM_PATH_ALSA(0.9.0)
-    else
-        build_windows="yes"
-        build_rtmidi="no"
-        build_portmidi="yes"
-        AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates that PortMidi is enabled])
     fi
     need_qt="no"
-    need_gtkmm="no"
 fi
 
 dnl ALSA MIDI (legacy) support.
@@ -581,7 +571,6 @@ AC_ARG_ENABLE(alsamidi,
 
 if test "$alsamidi" != "no"; then
     build_alsamidi="yes"
-dnl need_gtkmm="yes"
     AC_DEFINE(ALSAMIDI_SUPPORT, 1, [Indicates if ALSA MIDI support is enabled])
     AC_DEFINE(APP_NAME, ["sequencer64"], [Names legacy version of application])
     AC_DEFINE(CONFIG_NAME, ["sequencer64"], [Configuration file name])
@@ -776,8 +765,8 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-08-26"
-#define VERSION "0.95.2"
+#define VERSION_DATE_SHORT "2018-09-11"
+#define VERSION "0.95.3"
 
 )
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-03
+ * \updates       2018-09-11
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -384,13 +384,19 @@ midifile::read_gap (size_t sz)
 bool
 midifile::grab_input_stream (const std::string & tag)
 {
-    std::ifstream file = std::ifstream
-    (
-        m_name.c_str(), std::ios::in | std::ios::binary | std::ios::ate
-    );
-    m_error_is_fatal = false;
+    /*
+     * We were using the assignment operator, but this caused an error
+     * using old 32-bit debian stable, g++ 4.9 on one of our old laptops.
+     * The assignment operator was deleted by the compiler.  So now we
+     * use constructor notation.  A little bit odd, since we thought the
+     * compiler would convert assignment operator notation to constructor
+     * notation, but hey, compilers are not perfect.  Also, no need to use the
+     * krufty string pointer for the file-name.
+     */
 
+    std::ifstream file(m_name, std::ios::in | std::ios::binary | std::ios::ate);
     bool result = file.is_open();
+    m_error_is_fatal = false;
     if (result)
     {
         std::string path = get_full_path(m_name);

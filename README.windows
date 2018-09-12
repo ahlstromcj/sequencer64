@@ -1,13 +1,13 @@
-README.windows for Sequencer64 0.95.2
+README.windows for Sequencer64 0.95.3
 Chris Ahlstrom
-2018-05-13 to 2018-08-20
+2018-05-13 to 2018-09-11
 
-This README file provides the things you need to know to run the new native
-Windows implmentation of Sequencer64, an executable called qpseq64.exe.  It
-provides some notes on Sequencer64 and Windows.  We mostly use Windows 10;
-some features might differ in Windows 7 or Windows 2012+ Server.
+This README file provides what you need to know to run the new native
+Windows implmentation of Sequencer64 (qpseq64.exe).  It provides notes on
+Sequencer64 and Windows.  We mostly use Windows 10; some features might differ
+in Windows 7 or Windows 2012+ Server.
 
-We provide a portable ZIP package for qpseq64 and an NSIS-based installer.
+There is a portable ZIP package for qpseq64 and an NSIS-based installer.
 See https://github.com/ahlstromcj/sequencer64-packages.  For documentation,
 see https://github.com/ahlstromcj/sequencer64-doc.  Some minor features are
 still missing from the Windows version, unfortunately.
@@ -26,7 +26,6 @@ Inaccessible Devices:
     inaccessible devices, and the resulting errors would cause qpseq64 to
     abort.  So we had to spend a lot of time supporting the disabling of
     inaccessible ports, and saving and restoring the "rc" setup properly.
-
     Here is the latest output on our Windows, generated using the option
     "-o log=virtualmidi.log":
 
@@ -128,4 +127,11 @@ Configuration Files:
 
 	qpseq64 --buss 1 --option log=filename.out 
 
+Keystroke Support:
+
+    Some keystrokes are hardwired, but a number of them can be configured by
+    editing the "rc" file directly.  Eventually, a Qt 5 keystroke editor will
+    be provided.
+
 # vim: sw=4 ts=4 wm=4 et ft=sh
+

@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-09-02
+dnl \update        2018-09-12
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -502,6 +502,7 @@ AC_ARG_ENABLE(rtmidi,
 if test "$rtmidi" != "no"; then
     build_rtmidi="yes"
     build_portmidi="no"
+    need_gtkmm="yes"
     AC_DEFINE(APP_NAME, ["seq64"], [Names the JACK/ALSA version of application])
     AC_DEFINE(CONFIG_NAME, ["sequencer64"], [Configuration file name])
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi is enabled])
@@ -534,12 +535,8 @@ if test "$qtmidi" != "no"; then
     build_qtmidi="yes"
     need_qt="yes"
     need_gtkmm="no"
-dnl build_rtmidi="yes"
-dnl build_portmidi="no"
     AC_DEFINE(APP_NAME, ["qrseq64"], [Names the Qt/rtmidi version of application])
     AC_DEFINE(CONFIG_NAME, ["qrseq64"], [Configuration file name for Qt/rtmidi])
-dnl AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates that rtmidi is enabled])
-dnl AC_DEFINE(QTMIDI_SUPPORT, 1, [Indicates that Qt5 is enabled])
     AM_PATH_ALSA(0.9.0)
     AX_HAVE_QT
     AC_MSG_RESULT([qt user-interface build enabled.]);
@@ -558,18 +555,11 @@ if test "$cli" != "no"; then
     AC_DEFINE(CONFIG_NAME, ["seq64cli"], [Configuration file name])
     if test "x$mingw" != "xyes" ; then
         build_rtcli="yes"
-        build_rtmidi="yes"
         build_portmidi="no"
         AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates that rtmidi is enabled])
         AM_PATH_ALSA(0.9.0)
-    else
-        build_windows="yes"
-        build_rtmidi="no"
-        build_portmidi="yes"
-        AC_DEFINE(PORTMIDI_SUPPORT, 1, [Indicates that PortMidi is enabled])
     fi
     need_qt="no"
-    need_gtkmm="no"
 fi
 
 dnl ALSA MIDI (legacy) support.
@@ -581,7 +571,6 @@ AC_ARG_ENABLE(alsamidi,
 
 if test "$alsamidi" != "no"; then
     build_alsamidi="yes"
-dnl need_gtkmm="yes"
     AC_DEFINE(ALSAMIDI_SUPPORT, 1, [Indicates if ALSA MIDI support is enabled])
     AC_DEFINE(APP_NAME, ["sequencer64"], [Names legacy version of application])
     AC_DEFINE(CONFIG_NAME, ["sequencer64"], [Configuration file name])
@@ -776,7 +765,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-09-02"
+#define VERSION_DATE_SHORT "2018-09-12"
 #define VERSION "0.96.0"
 
 )

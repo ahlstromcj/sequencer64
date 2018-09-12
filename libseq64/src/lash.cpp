@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-23
+ * \updates       2018-09-10
  * \license       GNU GPLv2 or above
  *
  *  Not totally sure that the LASH support is completely finished, at this
@@ -295,12 +295,13 @@ lash::handle_event (lash_event_t * ev)
     {
         /*
          * Issue #49 made us discover that this call was out-of-date and thus
-         * missing the PPQN parameter.
+         * missing the PPQN parameter.  And issue #163, where we forgot to
+         * change perform::ppqn() to get_ppqn().
          */
 
         midifile f
         (
-            str, m_perform.ppqn(), rc().legacy_format(),
+            str, m_perform.get_ppqn(), rc().legacy_format(),
             usr().global_seq_feature()
         );
         f.write(m_perform);

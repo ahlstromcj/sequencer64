@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2018-07-10
+# \update     	2018-09-11
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -35,7 +35,7 @@ LANG=C
 export LANG
 CYGWIN=binmode
 export CYGWIN
-export SEQ64_SCRIPT_EDIT_DATE="2018-07-10"
+export SEQ64_SCRIPT_EDIT_DATE="2018-09-11"
 export SEQ64_LIBRARY_API_VERSION="0.95"
 export SEQ64_LIBRARY_VERSION="$SEQ64_LIBRARY_API_VERSION.95.0"
 
@@ -89,7 +89,7 @@ M4DIR="m4"
 #------------------------------------------------------------------------------
 
 DORTMIDI="yes"
-EXTRAFLAGS="--enable-rtmidi"
+EXTRAFLAGS=""
 
 #******************************************************************************
 #  Help
@@ -98,7 +98,7 @@ EXTRAFLAGS="--enable-rtmidi"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.95.2-2018-08-20)
+Usage: ./bootstrap [options]                                 (0.95.3-2018-09-11)
 
     'bootstrap' sets up GNU automake support and libtool support for the
     Sequencer64 projects, creating the 'configure' script.  It can also
@@ -186,33 +186,33 @@ if [ $# -ge 1 ] ; then
          --static)
             DORELEASE="yes"
             DORTMIDI="yes"
-            EXTRAFLAGS="--enable-rtmidi --disable-shared --enable-static"
+            EXTRAFLAGS+=" --enable-rtmidi --disable-shared --enable-static"
             ;;
 
          --alsamidi | -am | --am)
             DOALSAMIDI="yes"
-            EXTRAFLAGS="--enable-alsamidi --disable-rtmidi"
+            EXTRAFLAGS+=" --enable-alsamidi --disable-rtmidi"
             ;;
 
          --portmidi | -pm | --pm)
             DOPORTMIDI="yes"
-            EXTRAFLAGS="--enable-portmidi --disable-rtmidi"
+            EXTRAFLAGS+=" --enable-portmidi --disable-rtmidi"
             ;;
 
          --rtmidi | -rm | --rm)
             DORTMIDI="yes"
-            EXTRAFLAGS="--enable-rtmidi"
+            EXTRAFLAGS+=" --enable-rtmidi"
             ;;
 
          --qt | -qt)
             DOGTKMMUI="no"
             DOQT5UI="yes"
-            EXTRAFLAGS="--enable-qt"
+            EXTRAFLAGS+=" --enable-qt"
             ;;
 
          --cli | -cli | -rc)
             DORTCLI="yes"
-            EXTRAFLAGS="--enable-cli"
+            EXTRAFLAGS+=" --enable-cli"
             ;;
 
          --windows | -win | -w64)
@@ -222,14 +222,14 @@ if [ $# -ge 1 ] ; then
             DOQT5UI="yes"
             DOPORTMIDI="yes"
             DOMINGW="yes"
-            EXTRAFLAGS="--disable-rtmidi --enable-portmidi --enable-mingw --build=x86_64-pc-linux-gnu --host=x86_64-w64-mingw32"
+            EXTRAFLAGS=" --disable-rtmidi --enable-portmidi --enable-mingw --build=x86_64-pc-linux-gnu --host=x86_64-w64-mingw32"
             ;;
 
          --win32 | -w32)
             DORTMIDI="no"
             DORTCLI="yes"
             DOMINGW="yes"
-            EXTRAFLAGS="--disable-rtmidi --enable-cli --enable-mingw --build=i686-pc-linux-gnu --host=i686-w64-mingw32"
+            EXTRAFLAGS=" --disable-rtmidi --enable-cli --enable-mingw --build=i686-pc-linux-gnu --host=i686-w64-mingw32"
             ;;
 
          --version)
@@ -246,6 +246,12 @@ if [ $# -ge 1 ] ; then
       shift
    done
 fi
+
+if [ "$EXTRAFLAGS" == "" ] ; then
+   EXTRAFLAGS="--enable-rtmidi"
+fi
+
+echo "EXTRAFLAGS = $EXTRAFLAGS"
 
 #******************************************************************************
 #  Implement the clean option.

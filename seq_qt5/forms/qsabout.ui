@@ -48,7 +48,7 @@
       </font>
      </property>
      <property name="text">
-      <string>2018-08-26 v. 0.95.2 * master</string>
+      <string>2018-08-26 v. 0.95.3 * master</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

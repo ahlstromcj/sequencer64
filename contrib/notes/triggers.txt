@@ -121,7 +121,4 @@ EXPORT:
     2.  In midifile::write_song(), pass the LAST trigger to
         midi_vector::song_fill_seq_trigger().
 
-
-
-
 # vim: sw=4 ts=4 wm=8 et ft=c

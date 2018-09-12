@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-21
- * \updates       2018-08-27
+ * \updates       2018-09-12
  * \license       GNU GPLv2 or above
  *
  *  This module defines a number of constants relating to control of the 32
@@ -171,16 +171,22 @@ public:
      *  perform::handle_midi_control_ex() function.
      *
      * \var action_toggle
-     *      Toggles the status of the given control.  For the "playback"
-     *      status, indicates the "pause" functionality.
+     *      -   Normally, toggles the status of the given control.
+     *      -   For the "playback" status, indicates the "pause" functionality.
+     *      -   For the "playlist" and "playlist-song" status, indicates the
+     *          "select-by-value" functionality.
      *
      * \var action_on
-     *      Turns on the status of the given control.  For the "playback"
-     *      status, indicates the "start" functionality.
+     *      -   Normally, turns on the status of the given control.
+     *      -   For the "playback" status, indicates the "start" functionality.
+     *      -   For the "playlist" and "playlist-song" status, indicates the
+     *          "select-next" functionality.
      *
      * \var action_off
-     *      Turns off the status of the given control.  For the "playback"
-     *      status, indicates the "stop" functionality.
+     *      -   Normally, turns off the status of the given control.
+     *      -   For the "playback" status, indicates the "stop" functionality.
+     *      -   For the "playlist" and "playlist-song" status, indicates the
+     *          "select-previous" functionality.
      */
 
     typedef enum

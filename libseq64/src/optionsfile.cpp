@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-08
+ * \updates       2018-09-12
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1034,9 +1034,12 @@ optionsfile::write (const perform & p)
         "\n"
         "# The leftmost number on each line here is the pattern number, from\n"
         "# 0 to 31 (and beyond for the mute-groups). Next, there are three\n"
-        "# groups of bracketed numbers that follow:\n"
+        "# groups of bracketed numbers that follow, each providing three:\n"
+        "# different categories of functionality:\n"
         "#\n"
-        "#    [toggle]  [on]  [off]\n"
+        "#    Normal:           [toggle]    [on]      [off]\n"
+        "#    Playback:         [pause]     [start]   [stop]\n"
+        "#    Playlist:         [by-value]  [next]    [previous] (if active)\n"
         "#\n"
         "# In each group, there are six numbers:\n"
         "#\n"
@@ -1198,7 +1201,7 @@ optionsfile::write (const perform & p)
             break;
 
         case c_midi_control_playlist_song:
-            file << "# MIDI Control to select song in current playlist"
+            file << "# MIDI Control to select song in current playlist "
                 "(value, next, previous)\n"
                 ;
             break;

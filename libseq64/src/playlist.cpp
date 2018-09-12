@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-09-10
+ * \updates       2018-09-12
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
@@ -839,16 +839,25 @@ playlist::add_list (play_list_t & plist)
 bool
 playlist::select_list (int index, bool selectsong)
 {
-    play_iterator pci = m_play_lists.find(index);
-    bool result = pci != m_play_lists.end();
-    if (result)
+    bool result = false;
+    int count = 0;
+    for
+    (
+        play_iterator pci = m_play_lists.begin(); pci != m_play_lists.end();
+        ++pci, ++count
+    )
     {
+        if (count == index)
+        {
 #ifdef PLATFORM_DEBUG_TMI
-        show_list(pci->second);
+            show_list(pci->second);
 #endif
-        m_current_list = pci;
-        if (selectsong)
-            select_song(0);
+            m_current_list = pci;
+            if (selectsong)
+                select_song(0);
+
+            result = true;
+        }
     }
     return result;
 }
@@ -1014,10 +1023,10 @@ playlist::remove_list (int index)
 {
     bool result = false;
     int count = 0;
-    play_iterator pci;
     for
     (
-        pci = m_play_lists.begin(); pci != m_play_lists.end(); /*++pci,*/ ++count
+        play_iterator pci = m_play_lists.begin(); pci != m_play_lists.end();
+        /*++pci,*/ ++count
     )
     {
         if (count == index)
@@ -1197,14 +1206,22 @@ playlist::select_song (int index)
     bool result = m_current_list != m_play_lists.end();
     if (result)
     {
-        song_iterator sci = m_current_list->second.ls_song_list.find(index);
-        result = sci != m_current_list->second.ls_song_list.end();
-        if (result)
+        int count = 0;
+        song_list & slist = m_current_list->second.ls_song_list;
+        for
+        (
+            song_iterator sci = slist.begin(); sci != slist.end();
+            ++sci, ++count
+        )
         {
+            if (count == index)
+            {
 #ifdef PLATFORM_DEBUG_TMI
-            show_song(sci->second);
+                show_song(sci->second);
 #endif
-            m_current_song = sci;
+                m_current_song = sci;
+                result = true;
+            }
         }
     }
     return result;
@@ -1354,8 +1371,11 @@ playlist::remove_song (int index)
     {
         int count = 0;
         song_list & slist = m_current_list->second.ls_song_list;
-        song_iterator sci;
-        for (sci = slist.begin(); sci != slist.end(); /*++sci,*/ ++count)
+        for
+        (
+            song_iterator sci = slist.begin(); sci != slist.end();
+            /*++sci,*/ ++count
+        )
         {
             if (count == index)
             {

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-07
+ * \updates       2018-09-12
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1210,6 +1210,18 @@ public:
         return bool(m_play_list) ? m_play_list->open_current_song() : false ;
     }
 
+    bool open_select_list (int index, bool opensong = true)
+    {
+        bool result = bool(m_play_list);
+        if (result)
+        {
+            result = m_play_list->select_list(index, opensong);
+            if (result && opensong)
+                result = open_current_song();
+        }
+        return result;
+    }
+
     bool open_next_list (bool opensong = true)
     {
         return bool(m_play_list) ?
@@ -1220,6 +1232,16 @@ public:
     {
         return bool(m_play_list) ?
             m_play_list->open_previous_list(opensong) : false ;
+    }
+
+    bool open_select_song (int index, bool opensong = true)
+    {
+        bool result = bool(m_play_list);
+        if (result)
+        {
+            result = m_play_list->select_song(index);
+        }
+        return result;
     }
 
     bool open_next_song (bool opensong = true)
@@ -2824,32 +2846,6 @@ public:         // GUI-support functions
 private:
 
     /**
-     *  This function is meant to be called by play-list in order to inform the
-     *  perform object that it can manage a play-list.  This value can be
-     *  changed at any time, and should only be done in the playlist
-     *  constructor, and only for the lifetime of one playlist.
-     *
-     * \param pl
-     *      The playlist object to be referenced.
-
-    void register_playlist (playlist & pl)
-    {
-        m_play_list = &pl;
-    }
-     */
-
-    /**
-     *  This function is meant to be called by play-list in order to inform the
-     *  perform object that it can no longer manage a play-list, because it is
-     *  gone.
-
-    void unregister_playlist ()
-    {
-        m_play_list = nullptr;
-    }
-     */
-
-    /**
      *  Convenience function for perfedit's collapse functionality.
      */
 
@@ -2889,6 +2885,7 @@ private:
     bool handle_midi_control (int control, bool state);
     bool handle_midi_control_ex (int control, midi_control::action a, int v);
     bool handle_midi_control_event (const event & ev, int ctrl, int offset = 0);
+    bool handle_playlist_control (int ctl, midi_control::action a, int v);
     const std::string & get_screenset_notepad (int screenset) const;
     bool any_group_unmutes () const;
     void print_group_unmutes () const;

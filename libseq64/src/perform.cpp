@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-09-01
+ * \updates       2018-09-12
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -4469,6 +4469,7 @@ perform::handle_midi_control (int ctl, bool state)
     return result;
 }
 
+
 /**
  *  Provides operation of the new MIDI controls.
  *
@@ -4476,7 +4477,7 @@ perform::handle_midi_control (int ctl, bool state)
  *      The MIDI control value to use to perform an operation.
  *
  * \param a
- *      The action of the control.
+ *      The action of the control: toggle, on, or off.
  *
  * \param v
  *      The value of the control (i.e.: note velocity / control change value).
@@ -4688,14 +4689,11 @@ perform::handle_midi_control_ex (int ctl, midi_control::action a, int v)
         break;
 
     case c_midi_control_playlist:
-
-        result = false;
-        break;
-
     case c_midi_control_playlist_song:
 
-        result = false;
+        result = handle_playlist_control(ctl, a, v);
         break;
+
 
     case c_midi_control_reserved_7:
 
@@ -5116,6 +5114,68 @@ perform::handle_midi_control_event (const event & ev, int ctl, int offset)
             else
                 result = handle_midi_control(ctl, true);
         }
+    }
+    return result;
+}
+
+/**
+ *  Provides operation of the new playlist and playlist-song MIDI controls.
+ *
+ * \param ctl
+ *      The MIDI control value to use to perform the operation.
+ *
+ * \param a
+ *      The action of the control: select-by-value, select-next, or
+ *      select-previous.
+ *
+ * \param v
+ *      The value of the control (i.e.: note velocity / control change value).
+ *      Also called a "parameter" in the comments.
+ *
+ * \return
+ *      Returns true if the control was a playlist control and was acted on.
+ */
+
+bool
+perform::handle_playlist_control (int ctl, midi_control::action a, int v)
+{
+    bool result = false;
+    switch (ctl)
+    {
+    case c_midi_control_playlist:
+
+        if (a == midi_control::action_toggle)       /* select-by-value  */
+        {
+            result = open_select_list(v);
+        }
+        else if (a == midi_control::action_on)      /* select-next      */
+        {
+            result = open_next_list();
+        }
+        else if (a == midi_control::action_off)     /* select-previous  */
+        {
+            result = open_previous_list();
+        }
+        break;
+
+    case c_midi_control_playlist_song:
+
+        if (a == midi_control::action_toggle)       /* select-by-value  */
+        {
+            result = open_select_song(v);
+        }
+        else if (a == midi_control::action_on)      /* select-next      */
+        {
+            result = open_next_song();
+        }
+        else if (a == midi_control::action_off)     /* select-previous  */
+        {
+            result = open_previous_song();
+        }
+        break;
+
+    default:
+        break;
     }
     return result;
 }

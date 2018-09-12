@@ -1,0 +1,27 @@
+# This "rc" snippet is a test configuration for the new playlist MIDI
+# control functionality. Recreate your sequencer64.rc file to get the
+# newest version, merge the following settings into it, and then
+# run seq64 from the top of the source-code project directory.
+
+[midi-control]
+
+. . .
+
+# MIDI Control to select playlist (value, next, previous)
+88 [0 0   0   0   0   0] [1 0 144   4   1 127] [1 0 144   0   1 127]
+# MIDI Control to select song in current playlist (value, next, previous)
+89 [0 0   0   0   0   0] [1 0 144   3   1 127] [1 0 144   1   1 127]
+
+
+[playlist]
+
+# Provides a configured play-list and a flag to activate it.
+
+1     # playlist_active, 1 = active, 0 = do not use it
+
+# Provides the name of a play-list.  If there is none, use '""'.
+# Or set the flag above to 0.
+
+data/sample.playlist
+
+# vim: sw=4 ts=4 wm=4 et ft=sh

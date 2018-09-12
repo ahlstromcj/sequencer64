@@ -1,44 +1,45 @@
-README for Sequencer64 0.95.3 (Native JACK, CLI, varisets, tempo, Windows)
+README for Sequencer64 0.95.3 (Native JACK, CLI, tempo, Windows)
 Chris Ahlstrom
-2015-09-10 to 2018-09-10
+2015-09-10 to 2018-09-13
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
-The heart of seq24 remains intact.  It is an old friend, and maintains some
-backward-compatibility with the --legacy option.  An extensive manual is
-found at https://github.com/ahlstromcj/sequencer64-doc.git.  Prebuilt Debian
-packages, source tarballs, and Windows installers are available:
+The heart of seq24 remains intact.  It is an old friend, and maintains extra
+backward-compatibility with the --legacy option.  An extensive manual:
 
-    https://github.com/ahlstromcj/sequencer64-packages.git.
+    https://github.com/ahlstromcj/sequencer64-doc.git
+    
+Prebuilt Debian packages, source tarballs, and Windows installers:
 
-Sequencer64 has quite a few builds providing support for ALSA, PortMidi, JACK,
-and Gtkmm 2.4, Qt 5, and command-line user-interfaces.
+    https://github.com/ahlstromcj/sequencer64-packages.git
+
+Sequencer64 has various builds providing support for ALSA, PortMidi, JACK,
+and Gtkmm 2.4, Qt 5, Windows, and command-line user-interfaces.
 
 Native JACK support: Seq64rtmidi/seq64
 
-    Sequencer64 has native JACK MIDI and Transport, with virtual/manual ports
-    and auto-connect like ALSA, based on RtMidi massively refactored. It falls
+    Seq64 has native JACK MIDI/Transport, with virtual/manual ports and
+    auto-connect like ALSA, based on RtMidi massively refactored. It falls
     back to ALSA support if JACK is not running.  See README.jack for basic
     instructions on native JACK.
 
-GUI-less native JACK support: Seq64rtmidi/seq64cli
+GUI-less application: Seq64rtmidi/seq64cli
 
-    The JACK version without a GUI.  Currently controlled via MIDI control
+    The RtMidi/JACK version without a GUI.  Controlled via MIDI control
     events (start/stop events must be set up), it relies on a good working
     configuration generated via the GUI or edited by hand.  Currently the only
-    way to load a MIDI file is as the last argument on the command line.  We
-    hope to add an OSC harness eventually.  It supports a "daemonize" option
-    and dumping status to a log-file in the user-configuration directory.
+    way to load a MIDI file is as the last argument on the command line.
+    However, playlist support under MIDI control is coming soon. The CLI
+    version supports a "daemonize" option, with a log-file available.
 
 Windows support (derived from PortMidi):
 
     This version uses a Qt 5 user-interface based on Kepler34, but using the
-    standard Sequencer64 libraries.  The user-interface works, and Windows
-    built-in MIDI devices are detected, inaccessible devices are ignored, and
-    playback (e.g. to the built-in wavetable synthesizer) work. It can be
-    built easily via Qt Creator or qmake, using the MingW support of Qt.
-
-    The Qt 5 GUI is well behind the Gtkmm 2.4 GUI for many features.
-    That will be fixed bit-by-bit (help wanted!).  In the meantime,
+    standard Sequencer64 engine.  Windows built-in MIDI devices are detected,
+    inaccessible devices are ignored, and playback (e.g. to the built-in Windows
+    wavetable synthesizer) work. It is built easily via Qt Creator or qmake,
+    using the MingW support of Qt.
+    The Qt 5 GUI is still a little behind the Gtkmm 2.4 GUI, but will
+    eventually be the main GUI of Seq64.
     some configuration can be done manually in the "rc" and "usr" files.
     See README.windows for more information.
 
@@ -49,6 +50,9 @@ Recent changes:
 
     -   Version 0.95.3:
         -   Fixed errors building lash.
+        -   Fixed error building in 32-bit g++ 4.9.
+        -   Allowed builds of the command-line and GUI versions in the same
+            build:  ./bootstrap -er -cli -rm
     -   Version 0.95.2:
         -   Added the Qt 5 version of the Event Editor.
         -   Catching up on some more features from the Gtkmm-2:4 version.

@@ -25,7 +25,7 @@
  * \library       seq64qt5 application
  * \author        Chris Ahlstrom
  * \date          2017-09-05
- * \updates       2018-08-02
+ * \updates       2018-09-12
  * \license       GNU GPLv2 or above
  *
  *  This is an attempt to change from the hoary old (or, as H.P. Lovecraft
@@ -77,7 +77,7 @@
 int
 main (int argc, char * argv [])
 {
-    QApplication a(argc, argv);             /* main application object      */
+    QApplication app(argc, argv);           /* main application object      */
     int exit_status = EXIT_SUCCESS;         /* EXIT_FAILURE                 */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
@@ -136,11 +136,11 @@ main (int argc, char * argv [])
         /*
          * Issue #100, moved this call to before creating the qsmainwnd.
          * Otherwise, seq64 will not register with LASH (if enabled) in a
-         * timely fashion.
+         * timely fashion.  Also, we always have to launch, even if an error
+         * occurred, to avoid a segfault and show at least a minimal message.
          */
 
-        if (ok)
-            p.launch(seq64::usr().midi_ppqn());     /* set up performance   */
+        p.launch(seq64::usr().midi_ppqn());     /* set up performance   */
 
         /*
          * TODO
@@ -229,7 +229,7 @@ main (int argc, char * argv [])
         }
 #endif
 
-        exit_status = a.exec();                 /* run main window loop */
+        exit_status = app.exec();               /* run main window loop */
         p.finish();                             /* tear down performer  */
         if (seq64::rc().auto_option_save())
         {

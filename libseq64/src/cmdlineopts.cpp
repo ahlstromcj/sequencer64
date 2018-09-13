@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-09-05
+ * \updates       2018-09-12
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -1014,8 +1014,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             break;
 
         case 'X':
-            seq64::rc().playlist_filename(optarg);
-            seq64::rc().playlist_active(true);      // should validate, though
+            seq64::rc().playlist_filename(optarg);  /* some validation done */
             break;
 
         case 'x':

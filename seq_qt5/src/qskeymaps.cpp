@@ -118,6 +118,13 @@ typedef std::map<unsigned, q_key_spec_t> QtGtkKeyMap;
 /**
  *  The initializer list for the QtGtkKeyMap structure.  Requires C++11 and
  *  above in order to compile.
+ *
+ *  The first value is the Qt version of the key, and is the key-value in the
+ *  map.  The three values in brackets are:
+ *
+ *      -   The djinned up name of the key.
+ *      -   The key's value in Gtkmm 2.4.
+ *      -   The key's value in Qt 5.  A copy of the map's key value.
  */
 
 #if __cplusplus >= 201103L                  /* C++11                        */

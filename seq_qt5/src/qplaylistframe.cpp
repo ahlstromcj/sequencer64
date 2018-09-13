@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-09-04
- * \updates       2018-09-06
+ * \updates       2018-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -43,6 +43,13 @@
 #else
 #include "forms/qplaylistframe.ui.h"
 #endif
+
+/**
+ *  For correcting the width of the play-list tables.  It tries to account for
+ *  the width of the vertical scroll-bar, plus a bit more.
+ */
+
+#define SEQ64_PLAYLIST_TABLE_FIX        24  // 48
 
 /**
  *  Specifies the current hardwired value for set_row_heights().
@@ -71,17 +78,15 @@ qplaylistframe::qplaylistframe
 {
     ui->setupUi(this);
 
-    // QTableWidget *tablePlaylistSections;
-
     QStringList playcolumns;
-    playcolumns << "Index" << "List Name";
+    playcolumns << "MIDI#" << "List Name";
     ui->tablePlaylistSections->setHorizontalHeaderLabels(playcolumns);
-
-    // QTableWidget *tablePlaylistSongs;
+    ui->tablePlaylistSections->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     QStringList songcolumns;
-    songcolumns << "Index" << "Song File";
+    songcolumns << "MIDI#" << "Song File";
     ui->tablePlaylistSongs->setHorizontalHeaderLabels(songcolumns);
+    ui->tablePlaylistSongs->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     set_row_heights(SEQ64_PLAYLIST_ROW_HEIGHT);
     set_column_widths();
@@ -99,30 +104,20 @@ qplaylistframe::qplaylistframe
     );
 
 #if 0
-    QLineEdit *entry_playlist_file;
-
-    QLabel *editPlaylistPath;
-    QLabel *editPlaylistNumber;
-    QLabel *editPlaylistName;
-
-    QLabel *editSongPath;
-    QLabel *editSongNumber;
-    QLabel *editSongFilename;
-
-    QTableWidget *tablePlaylistSections;
-    QTableWidget *tablePlaylistSongs;
-
     QPushButton *buttonPlaylistLoad;
     QPushButton *buttonPlaylistAdd;
     QPushButton *buttonPlaylistRemove;
     QPushButton *buttonPlaylistSave;
-
     QPushButton *buttonSongLoad;
     QPushButton *buttonSongAdd;
     QPushButton *buttonSongRemove;
-
     QCheckBox *checkBoxPlaylistActive;
 #endif  // 0
+
+    if (perf().playlist_mode())
+    {
+        reset_playlist();           // set_current_playlist();
+    }
 
     m_timer = new QTimer(this);        /* timer for regular redraws    */
     m_timer->setInterval(usr().window_redraw_rate());
@@ -193,34 +188,29 @@ qplaylistframe::set_row_height (int row, int height)
 void
 qplaylistframe::set_column_widths ()
 {
-    int w = ui->tablePlaylistSections->width();
-    ui->tablePlaylistSections->setColumnWidth(0, int(0.15f * w));
-    ui->tablePlaylistSections->setColumnWidth(1, int(0.85f * w));
+    int w = ui->tablePlaylistSections->width() - SEQ64_PLAYLIST_TABLE_FIX;
+    ui->tablePlaylistSections->setColumnWidth(0, int(0.20f * w));
+    ui->tablePlaylistSections->setColumnWidth(1, int(0.80f * w));
 
-    w = ui->tablePlaylistSongs->width();
-    ui->tablePlaylistSongs->setColumnWidth(0, int(0.15f * w));
-    ui->tablePlaylistSongs->setColumnWidth(1, int(0.85f * w));
+    w = ui->tablePlaylistSongs->width() - SEQ64_PLAYLIST_TABLE_FIX;
+    ui->tablePlaylistSongs->setColumnWidth(0, int(0.20f * w));
+    ui->tablePlaylistSongs->setColumnWidth(1, int(0.80f * w));
 }
 
 /**
  *
  */
 
-#if 0
-    QLineEdit *entry_playlist_file;
-
-    QLabel *editPlaylistPath;
-    QLabel *editPlaylistNumber;
-    QLabel *editPlaylistName;
-
-    QLabel *editSongPath;
-    QLabel *editSongNumber;
-    QLabel *editSongFilename;
-
-    QTableWidget *tablePlaylistSections;
-    QTableWidget *tablePlaylistSongs;
-    QCheckBox *checkBoxPlaylistActive;
-#endif  // 0
+void
+qplaylistframe::reset_playlist ()
+{
+    if (perf().playlist_reset())
+    {
+        fill_playlists();
+        perf().playlist_reset();
+        set_current_playlist();
+    }
+}
 
 /**
  *
@@ -229,8 +219,173 @@ qplaylistframe::set_column_widths ()
 void
 qplaylistframe::set_current_playlist ()
 {
-    std::string filename = perf().playlist_filename();
-    ui->entry_playlist_file->setText(QString::fromStdString(filename));
+    if (perf().playlist_mode())
+    {
+        ui->checkBoxPlaylistActive->setChecked(true);
+
+        std::string temp = perf().playlist_filename();
+        ui->entry_playlist_file->setText(QString::fromStdString(temp));
+
+        temp = perf().song_directory();
+        ui->editPlaylistPath->setText(QString::fromStdString(temp));
+
+        int midinumber = perf().playlist_midi_number();
+        temp = std::to_string(midinumber);
+        ui->editPlaylistNumber->setText(QString::fromStdString(temp));
+
+        temp = perf().playlist_name();
+        ui->editPlaylistName->setText(QString::fromStdString(temp));
+
+        midinumber = perf().song_midi_number();
+        temp = std::to_string(midinumber);
+        ui->editSongNumber->setText(QString::fromStdString(temp));
+
+        temp = perf().song_directory();
+        ui->editSongPath->setText(QString::fromStdString(temp));
+
+        midinumber = perf().song_midi_number();
+        temp = std::to_string(midinumber);
+        ui->editSongNumber->setText(QString::fromStdString(temp));
+
+        temp = perf().song_filename();
+        ui->editSongFilename->setText(QString::fromStdString(temp));
+    }
+    else
+    {
+        ui->checkBoxPlaylistActive->setChecked(false);
+    }
+}
+
+/**
+ *  Retrieve the table cell at the given row and column.
+ *
+ * \param isplaylist
+ *      If true, this call affects the play-list table.  Otherwise, it affects
+ *      the song-list table.
+ *
+ * \param row
+ *      The row number, which should be in range.
+ *
+ * \param col
+ *      The column enumeration value, which will be in range.
+ *
+ * \return
+ *      Returns a pointer the table widget-item for the given row and column.
+ *      If out-of-range, a null pointer is returned.
+ */
+
+QTableWidgetItem *
+qplaylistframe::cell (bool isplaylist, int row, column_id_t col)
+{
+    int column = int(col);
+    QTableWidget * listptr = isplaylist ?
+        ui->tablePlaylistSections : ui->tablePlaylistSongs ;
+
+    QTableWidgetItem * result = listptr->item(row, column);
+    if (is_nullptr(result))
+    {
+        /*
+         * Will test row/column and maybe add rows on the fly later.
+         */
+
+        result = new QTableWidgetItem;
+        listptr->setItem(row, column, result);
+    }
+    return result;
+}
+
+/**
+ *  Adds the list of playlists to the tablePlaylistSections
+ *  table-widget.
+ */
+
+void
+qplaylistframe::fill_playlists (int list_index, int song_index)
+{
+    int rows = perf().playlist_count();
+    ui->tablePlaylistSections->clearContents();
+    if (rows > 0)
+    {
+        ui->tablePlaylistSections->setRowCount(rows);
+        for (int r = 0; r < rows; ++r)
+        {
+            std::string temp;
+            QTableWidgetItem * qtip = cell(true, r, CID_MIDI_NUMBER);
+            ui->tablePlaylistSections->setRowHeight(r, SEQ64_PLAYLIST_ROW_HEIGHT);
+            if (not_nullptr(qtip))
+            {
+                int midinumber = perf().playlist_midi_number();
+                temp = std::to_string(midinumber);
+                qtip->setText(QString::fromStdString(temp));
+            }
+            qtip = cell(true, r, CID_ITEM_NAME);
+            if (not_nullptr(qtip))
+            {
+                temp = perf().playlist_name();
+                qtip->setText(QString::fromStdString(temp));
+            }
+            if (r == list_index)
+            {
+                fill_songs(song_index);
+            }
+            if (! perf().open_next_list(false))     /* false = no load song */
+                break;
+        }
+    }
+}
+
+/**
+ *  Adds the songs of the current playlist to the tablePlaylistSongs
+ *  table-widget.
+ */
+
+void
+qplaylistframe::fill_songs (int song_index)
+{
+    int rows = perf().song_count();
+    ui->tablePlaylistSongs->clearContents();
+    if (rows > 0)
+    {
+        ui->tablePlaylistSongs->setRowCount(rows);
+        for (int r = 0; r < rows; ++r)
+        {
+            std::string temp;
+            if (perf().open_select_song(r, false))
+            {
+                QTableWidgetItem * qtip = cell(false, r, CID_MIDI_NUMBER);
+                ui->tablePlaylistSongs->setRowHeight
+                (
+                    r, SEQ64_PLAYLIST_ROW_HEIGHT
+                );
+                if (not_nullptr(qtip))
+                {
+                    int midinumber = perf().song_midi_number();
+                    temp = std::to_string(midinumber);
+                    qtip->setText(QString::fromStdString(temp));
+                }
+                qtip = cell(false, r, CID_ITEM_NAME);
+                if (not_nullptr(qtip))
+                {
+                    temp = perf().song_filename();
+                    qtip->setText(QString::fromStdString(temp));
+                }
+                if (r == song_index)
+                {
+                    // anything useful?
+                }
+
+                /*
+                 * We already open via index at the top of this loop, no need
+                 * to move to the next song here.
+                 *
+                 * if (! perf().open_next_song(false)) // false = no load song
+                 *     break;
+                 */
+            }
+            else
+                break;
+        }
+    }
 }
 
 /**
@@ -259,7 +414,7 @@ qplaylistframe::load_playlist (const std::string & fullfilespec)
     }
     if (perf().playlist_mode())
     {
-        set_current_playlist();
+        reset_playlist();           // set_current_playlist();
     }
     else
     {
@@ -277,8 +432,10 @@ qplaylistframe::handle_list_click_ex
     int row, int /*column*/, int /*prevrow*/, int /*prevcolumn*/
 )
 {
-    // m_eventslots->select_event(row);
-    // set_current_row(row);
+    if (perf().open_select_list(row, false))
+    {
+        fill_songs(0);
+    }
 }
 
 /**

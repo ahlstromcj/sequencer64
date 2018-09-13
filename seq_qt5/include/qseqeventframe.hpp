@@ -67,7 +67,7 @@ class qseqeventframe : public QFrame
 private:
 
     /**
-     *
+     *  Provides human-readable names for the columns of the event table.
      */
 
     enum column_id_t

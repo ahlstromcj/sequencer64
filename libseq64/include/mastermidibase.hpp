@@ -190,19 +190,21 @@ public:
         api_init(ppqn, bpm);
     }
 
-    /**
+    /*
+     *  Not used.  Get it outa here!  Wotta loser!  Sad!
+     *
      *  Indicates that we have an announce buss entry to skip when filling in
      *  the device list with "user" entries.  Another potentially equivalent
      *  test is is_input_system_port(bus).
      *
      * \return
      *      Returns true if m_bus_announce is not the null pointer.
-     */
 
     bool announce_bus_exists () const
     {
         return not_nullptr(m_bus_announce);
     }
+     */
 
     /**
      * \getter m_num_out_buses

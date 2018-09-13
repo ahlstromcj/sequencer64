@@ -240,9 +240,6 @@ main (int argc, char * argv [])
         }
 #endif
 
-//      if (! ok)
-//          seq24_window.show_message_box(errmsg);
-
 #ifdef PLATFORM_LINUX
         if (ok)
         {
@@ -262,18 +259,10 @@ main (int argc, char * argv [])
         }
         else
         {
-            /**
-             * TODO
-             */
-
             if (extant_msg_active)
-            {
-                // seq24_window.show_message_box(extant_errmsg, "Start-up Error");
-            }
+                seq24_window.show_message_box(extant_errmsg);
             else
-            {
-                // seq24_window.rc_error_dialog(errmessage);
-            }
+                seq24_window.show_message_box(errmessage);
         }
 #endif
     }

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-12
+ * \updates       2018-09-13
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -255,11 +255,10 @@ struct performcallback
 
 /**
  *  This class supports the performance mode.  It has way too many data
- *  members.  Might be ripe for refactoring.  That has its own dangers, of
- *  course.
- *
- *  One thing to do soon is remove the need to having GUI classes as friends.
- *  Will make some necessary setters public.
+ *  members.  It has way too many friends. Might be ripe for refactoring.
+ *  That has its own dangers, of course.  One thing to do soon is remove the
+ *  need to having GUI classes as friends.  Will make some necessary setters
+ *  public.
  */
 
 class perform
@@ -1144,6 +1143,39 @@ public:
     perform (gui_assistant & mygui, int ppqn = SEQ64_USE_DEFAULT_PPQN);
     ~perform ();
 
+    /*
+     * ------------------------------
+     * Start of playlist accessors.
+     * ------------------------------
+     */
+
+    /**
+     *  Get the number of playlists.
+     */
+
+    int playlist_count () const
+    {
+        return bool(m_play_list) ? m_play_list->list_count() : 0 ;
+    }
+
+    /**
+     *  Get the number of songs in the current playlist.
+     */
+
+    int song_count () const
+    {
+        return bool(m_play_list) ? m_play_list->song_count() : 0 ;
+    }
+
+    /**
+     *  Reset to the beginning of the playlist and song.
+     */
+
+    bool playlist_reset () const
+    {
+        return bool(m_play_list) ? m_play_list->reset() : false ;
+    }
+
     bool open_playlist (const std::string & pl);
 
     /**
@@ -1163,6 +1195,24 @@ public:
     std::string playlist_filename () const
     {
         return bool(m_play_list) ? m_play_list->name() : "" ;
+    }
+
+    /**
+     *  Get the MIDI control number for the current playlist.
+     */
+
+    int playlist_midi_number () const
+    {
+        return bool(m_play_list) ? m_play_list->list_midi_number() : (-1) ;
+    }
+
+    /**
+     *  Get the human name (title) for the current playlist.
+     */
+
+    std::string playlist_name () const
+    {
+        return bool(m_play_list) ? m_play_list->list_name() : "" ;
     }
 
     /**
@@ -1188,6 +1238,35 @@ public:
     {
         if (bool(m_play_list))
             m_play_list->mode(on);
+    }
+
+    /**
+     *
+     */
+
+    const std::string & song_directory () const
+    {
+        std::string s_dummy;
+        return bool(m_play_list) ? m_play_list->song_directory() : s_dummy ;
+    }
+
+    /**
+     *
+     */
+
+    const std::string & song_filename () const
+    {
+        std::string s_dummy;
+        return bool(m_play_list) ? m_play_list->song_filename() : s_dummy ;
+    }
+
+    /**
+     *
+     */
+
+    int song_midi_number () const
+    {
+        return bool(m_play_list) ? m_play_list->song_midi_number() : (-1) ;
     }
 
     /**
@@ -1257,6 +1336,12 @@ public:
     }
 
     const std::string & playlist_error_message () const;
+
+    /*
+     * ------------------------------
+     * End of playlist accessors.
+     * ------------------------------
+     */
 
     /**
      * \getter m_is_modfied

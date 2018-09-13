@@ -79,6 +79,7 @@ public:
     );
     virtual ~qsliveframe ();
 
+    void set_playlist_name (const std::string & plname = "");
     void set_bank (int newBank);    // bank (screen-set) of sequences displayed
     void set_bank ();               // bank number retrieved from perform
 

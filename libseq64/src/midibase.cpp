@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-11-25
- * \updates       2018-07-24
+ * \updates       2018-09-12
  * \license       GNU GPLv2 or above
  *
  *  This file provides a cross-platform implementation of MIDI support.
@@ -802,24 +802,25 @@ midibase::show_clock (const std::string & context, midipulse tick)
 void
 midibase::show_bus_values ()
 {
-#ifdef SEQ64_SHOW_API_CALLS
-    const char * vport = is_virtual_port() ? "virtual" : "non-virtual" ;
-    const char * iport = is_input_port() ? "input" : "output" ;
-    const char * sport = is_system_port() ? "system" : "device" ;
-    printf
-    (
-        "display name:      %s\n"
-        "connect name:      %s\n"
-        "bus : port name:   %s : %s\n"
-        "bus type:          %s %s %s\n"
-        "clock & inputing:  %d & %s\n"
-        ,
-        display_name().c_str(), connect_name().c_str(),
-        m_bus_name.c_str(), m_port_name.c_str(),
-        vport, iport, sport,
-        int(get_clock()), get_input() ? "yes" : "no"
-    );
-#endif
+    if (rc().verbose_option())
+    {
+        const char * vport = is_virtual_port() ? "virtual" : "non-virtual" ;
+        const char * iport = is_input_port() ? "input" : "output" ;
+        const char * sport = is_system_port() ? "system" : "device" ;
+        printf
+        (
+            "display name:      %s\n"
+            "connect name:      %s\n"
+            "bus : port name:   %s : %s\n"
+            "bus type:          %s %s %s\n"
+            "clock & inputing:  %d & %s\n"
+            ,
+            display_name().c_str(), connect_name().c_str(),
+            m_bus_name.c_str(), m_port_name.c_str(),
+            vport, iport, sport,
+            int(get_clock()), get_input() ? "yes" : "no"
+        );
+    }
 }
 
 /*

@@ -50,6 +50,8 @@ Recent changes:
 
     -   Version 0.96.0:
         -   Support for playlists and MIDI selections of playlists and songs.
+        -   Fixed ALSA issue with port system:announce being enabled in the
+            File / Options / MIDI input GUI.
     -   Version 0.95.3:
         -   Fixed errors building lash.
         -   Fixed error building in 32-bit g++ 4.9.

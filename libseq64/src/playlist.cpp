@@ -626,7 +626,7 @@ playlist::verify (bool strong)
                 else
                 {
                     std::string fmt = pci->second.ls_list_name;
-                    fmt += ": song '%s' is missing";
+                    fmt += ": song '%s' is missing.  Check relative directories.";
                     result = make_file_error_message(fmt, fname);
                     break;
                 }

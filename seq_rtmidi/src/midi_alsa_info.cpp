@@ -205,13 +205,29 @@ midi_alsa_info::get_all_port_info ()
         snd_seq_client_info_set_client(cinfo, -1);
         input_ports().clear();
         output_ports().clear();
+#ifdef USE_THIS_BAD_CODE
+        This code passes parameters in the wrong order!
+
         input_ports().add
         (
             SND_SEQ_CLIENT_SYSTEM, "system",
             SND_SEQ_PORT_SYSTEM_ANNOUNCE, "announce",
-            SEQ64_MIDI_NORMAL_PORT, global_queue(), true /* system port */,
-            SEQ64_MIDI_INPUT_PORT
+            SEQ64_MIDI_NORMAL_PORT,                 /* false = not virtual  */
+            global_queue(),
+            true,                                   /* system port          */
+            SEQ64_MIDI_INPUT_PORT                   /* input port           */
         );
+#else
+        input_ports().add
+        (
+            SND_SEQ_CLIENT_SYSTEM, "system",
+            SND_SEQ_PORT_SYSTEM_ANNOUNCE, "announce",
+            SEQ64_MIDI_NORMAL_PORT,                 /* false = not virtual  */
+            true,                                   /* system port          */
+            SEQ64_MIDI_INPUT_PORT,                  /* input port           */
+            global_queue()
+        );
+#endif
         ++count;
         while (snd_seq_query_next_client(m_alsa_seq, cinfo) >= 0)
         {

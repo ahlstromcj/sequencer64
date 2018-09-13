@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-25
+ * \updates       2018-09-13
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -135,6 +135,8 @@ qsliveframe::qsliveframe (perform & p, qsmainwnd * window, QWidget * parent)
     connect(ui->spinBank, SIGNAL(valueChanged(int)), this, SLOT(updateBank(int)));
     connect(ui->txtBankName, SIGNAL(textChanged()), this, SLOT(updateBankName()));
 
+    ui->labelPlaylistSong->setText("");
+
     m_timer = new QTimer(this);        /* timer for regular redraws    */
     m_timer->setInterval(usr().window_redraw_rate());
     connect(m_timer, SIGNAL(timeout()), this, SLOT(conditional_update()));
@@ -153,6 +155,18 @@ qsliveframe::~qsliveframe()
     delete ui;
     if (not_nullptr(m_msg_box))
         delete m_msg_box;
+}
+
+/**
+ *
+ */
+
+void
+qsliveframe::set_playlist_name (const std::string & plname)
+{
+    QString pln = " ";
+    pln += QString::fromStdString(plname);
+    ui->labelPlaylistSong->setText(pln);
 }
 
 /**

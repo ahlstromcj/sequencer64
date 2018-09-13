@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-09-05
+ * \updates       2018-09-13
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -952,6 +952,18 @@ qsmainwnd::refresh ()
         m_is_title_dirty = false;
         update_window_title();
     }
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+    if (perf().playlist_mode())
+    {
+        if (not_nullptr(m_live_frame))
+            m_live_frame->set_playlist_name(perf().playlist_song());
+    }
+    else
+    {
+        if (not_nullptr(m_live_frame))
+            m_live_frame->set_playlist_name("");
+    }
+#endif
 }
 
 /**
@@ -1763,6 +1775,36 @@ qsmainwnd::keyPressEvent (QKeyEvent * event)
                 }
             }
         }
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+        if (! done)
+        {
+            if (k.is(SEQ64_Right))
+            {
+                (void) perf().open_next_song();
+                done = true;
+            }
+            else if (k.is(SEQ64_Left))
+            {
+                (void) perf().open_previous_song();
+                done = true;
+            }
+            else if (k.is(SEQ64_Down))
+            {
+                (void) perf().open_next_list();
+                done = true;
+            }
+            else if (k.is(SEQ64_Up))
+            {
+                (void) perf().open_previous_list();
+                done = true;
+            }
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+            // Do in timer callback.
+            // if (done && not_nullptr(m_live_frame))
+            //     m_live_frame->set_playlist_name(xxxx);
+#endif
+        }
+#endif
 
         if (! done && not_nullptr(m_live_frame))
             done = m_live_frame->handle_key_press(gdkkey);
@@ -1848,14 +1890,9 @@ qsmainwnd::open_performance_edit ()
     if (not_nullptr(m_perfedit))
     {
         if (m_perfedit->isVisible())
-        {
             m_perfedit->hide();
-        }
         else
-        {
-            // m_perfedit->init_before_show();
             m_perfedit->show();
-        }
     }
     else
         load_qperfedit(true);

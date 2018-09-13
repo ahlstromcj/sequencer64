@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-09-04
- * \updates       2018-09-06
+ * \updates       2018-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -36,6 +36,7 @@
 #include <QFrame>
 #include "easy_macros.hpp"              /* nullptr and related macros   */
 
+class QTableWidgetItem;
 class QTimer;
 
 /*
@@ -64,6 +65,19 @@ class qplaylistframe : public QFrame
 {
     friend class qsmainwnd;
 
+private:
+
+    /**
+     *  Provides human-readable names for the columns of the playlist and song
+     *  tables.
+     */
+
+    enum column_id_t
+    {
+        CID_MIDI_NUMBER,
+        CID_ITEM_NAME
+    };
+
     Q_OBJECT
 
 public:
@@ -81,7 +95,15 @@ private:
 
     void set_row_heights (int height);
     void set_column_widths ();
+    void reset_playlist ();
     void set_current_playlist ();
+    void fill_playlists (int list_index = 0, int song_index = 0);
+    void fill_songs (int song_index = 0);
+    QTableWidgetItem * cell (bool isplaylist, int row, column_id_t col);
+
+    /**
+     * \getter m_perform
+     */
 
     perform & perf ()
     {

@@ -424,6 +424,11 @@ options::add_midi_input_page ()
             bind(mem_fun(*this, &options::input_callback), bus, check)
         );
         check->set_active(perf().get_input(bus));
+
+        /*
+         * Sometimes fails to act.  Why? (2018-09-12)
+         */
+
         check->set_sensitive(! perf().is_input_system_port(bus));
         inputbox->pack_start(*check, false, false);
     }

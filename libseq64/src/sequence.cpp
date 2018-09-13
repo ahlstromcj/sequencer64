@@ -4385,7 +4385,7 @@ sequence::reset_draw_marker ()
  *  This increments the draw marker.
  *
  * \warning
- *      This iterator is shared by about four GUI object, and they might
+ *      This iterator is shared by about four GUI objects, and they might
  *      interfere with each other!
  *
  * \threadsafe

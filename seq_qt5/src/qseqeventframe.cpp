@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-13
- * \updates       2018-08-19
+ * \updates       2018-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -439,7 +439,17 @@ qseqeventframe::set_event_data_1 (const std::string & d)
 }
 
 /**
+ *  Retrieve the table cell at the given row and column.
  *
+ * \param row
+ *      The row number, which should be in range.
+ *
+ * \param col
+ *      The column enumeration value, which will be in range.
+ *
+ * \return
+ *      Returns a pointer the table widget-item for the given row and column.
+ *      If out-of-range, a null pointer is returned.
  */
 
 QTableWidgetItem *
@@ -475,19 +485,24 @@ qseqeventframe::set_event_line
 )
 {
     QTableWidgetItem * qtip = cell(row, CID_TIMESTAMP);
-    qtip->setText(evtimestamp.c_str());
+    if (not_nullptr(qtip))
+        qtip->setText(evtimestamp.c_str());
 
     qtip = cell(row, CID_EVENTNAME);
-    qtip->setText(evname.c_str());
+    if (not_nullptr(qtip))
+        qtip->setText(evname.c_str());
 
     qtip = cell(row, CID_CHANNEL);
-    qtip->setText(evchannel.c_str());
+    if (not_nullptr(qtip))
+        qtip->setText(evchannel.c_str());
 
     qtip = cell(row, CID_DATA_0);
-    qtip->setText(evdata0.c_str());
+    if (not_nullptr(qtip))
+        qtip->setText(evdata0.c_str());
 
     qtip = cell(row, CID_DATA_1);
-    qtip->setText(evdata1.c_str());
+    if (not_nullptr(qtip))
+        qtip->setText(evdata1.c_str());
 }
 
 /**
@@ -532,7 +547,7 @@ qseqeventframe::set_current_row (int row)
 }
 
 /**
- *
+ *  Currently disabled by #ifdef USE_SIMPLE_CELL_CLICK.
  */
 
 void

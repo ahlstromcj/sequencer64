@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-09-03
+ * \updates       2018-09-12
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -669,14 +669,28 @@ rc_settings::config_filename (const std::string & value)
 void
 rc_settings::playlist_filename (const std::string & value)
 {
-    if (! value.empty())
-        m_playlist_filename = value;
-
-    if (! value.empty() && value != "\"\"")
+    if (value.empty() || value == "\"\"")
     {
+        clear_playlist();
+    }
+    else
+    {
+        m_playlist_active = true;
+        m_playlist_filename = value;
         if (m_playlist_filename.find(".") == std::string::npos)
             m_playlist_filename += ".playlist";
     }
+}
+
+/**
+ *
+ */
+
+void
+rc_settings::clear_playlist ()
+{
+    playlist_active(false);
+    m_playlist_filename.clear();
 }
 
 /**

@@ -1315,12 +1315,8 @@ public:
 
     bool open_select_song (int index, bool opensong = true)
     {
-        bool result = bool(m_play_list);
-        if (result)
-        {
-            result = m_play_list->select_song(index);
-        }
-        return result;
+        return bool(m_play_list) ?
+            m_play_list->open_select_song(index, opensong) : false ;
     }
 
     bool open_next_song (bool opensong = true)

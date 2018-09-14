@@ -103,7 +103,7 @@ configfile::get_line (std::ifstream & file)
 bool
 configfile::next_data_line (std::ifstream & file)
 {
-    bool result = get_line(file);   // file.getline(m_line, sizeof m_line);
+    bool result = get_line(file);
     if (result)
     {
         char ch = m_line[0];
@@ -114,7 +114,7 @@ configfile::next_data_line (std::ifstream & file)
                 result = false;
                 break;
             }
-            if (get_line(file))     // file.getline(m_line, sizeof m_line);
+            if (get_line(file))
                 ch = m_line[0];
             else
             {
@@ -152,7 +152,7 @@ configfile::next_section (std::ifstream & file, const std::string & tag)
     }
     else
     {
-        bool ok = get_line(file);       // file.getline(m_line, sizeof m_line);
+        bool ok = get_line(file);
         while (ok)                      /* includes the EOF check           */
         {
             result = strncmp(m_line, tag.c_str(), tag.length()) == 0;
@@ -165,7 +165,7 @@ configfile::next_section (std::ifstream & file, const std::string & tag)
                     errprint("bad file stream reading config file");
                 }
                 else
-                    ok = get_line(file); // file.getline(m_line, sizeof m_line);
+                    ok = get_line(file);
             }
         }
     }
@@ -202,7 +202,7 @@ configfile::line_after (std::ifstream & file, const std::string & tag)
     bool result = false;
     file.clear();
     file.seekg(0, std::ios::beg);
-    bool ok = get_line(file);           // file.getline(m_line, sizeof m_line);
+    bool ok = get_line(file);
     while (ok)                          /* includes the EOF check           */
     {
         result = strncmp(m_line, tag.c_str(), tag.length()) == 0;
@@ -217,7 +217,7 @@ configfile::line_after (std::ifstream & file, const std::string & tag)
                 errprint("bad file stream reading config file");
             }
             else
-                ok = get_line(file);    // file.getline(m_line, sizeof m_line);
+                ok = get_line(file);
         }
     }
     if (result)

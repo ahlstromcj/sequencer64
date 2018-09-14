@@ -448,8 +448,7 @@ qplaylistframe::handle_song_click_ex
     int row, int /*column*/, int /*prevrow*/, int /*prevcolumn*/
 )
 {
-    // m_eventslots->select_event(row);
-    // set_current_row(row);
+    (void) perf().open_select_song(row, true);  /* open selected song   */
 }
 
 }           // namespace seq64

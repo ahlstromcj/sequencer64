@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-09-12
+ * \updates       2018-09-14
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
@@ -208,7 +208,7 @@ bool
 playlist::parse (perform & p)
 {
     bool result = false;
-    std::ifstream file(name().c_str(), std::ios::in | std::ios::ate);
+    std::ifstream file(name(), std::ios::in | std::ios::ate);
     if (file.is_open())
     {
         file.seekg(0, std::ios::beg);                   /* seek to start    */
@@ -428,7 +428,7 @@ playlist::scan_song_file (int & song_number, std::string & song_file)
 bool
 playlist::write (const perform & /*p*/)
 {
-    std::ofstream file(name().c_str(), std::ios::out | std::ios::trunc);
+    std::ofstream file(name(), std::ios::out | std::ios::trunc);
     if (! file.is_open())
     {
         errprintf("error opening [%s] for writing\n", name().c_str());
@@ -570,6 +570,20 @@ playlist::open_song (const std::string & fname, bool playlistmode)
         if (playlistmode)
             (void) m_perform.clear_all();
     }
+    return result;
+}
+
+/**
+ *
+ */
+
+bool
+playlist::open_select_song (int index, bool opensong)
+{
+    bool result = true;
+    if (m_perform.clear_all())
+        result = select_song(index);
+
     return result;
 }
 

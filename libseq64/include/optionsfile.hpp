@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-26
+ * \updates       2018-09-14
  * \license       GNU GPLv2 or above
  *
  *  The ~/.seq24rc or ~/.config/sequencer64/sequencer64.rc files are
@@ -62,6 +62,7 @@ public:
     virtual bool parse (perform & p);
     virtual bool write (const perform & p);
     bool parse_mute_group_section (perform & p);
+    bool parse_midi_control_section (const std::string & fname, perform & p);
 
 private:
 

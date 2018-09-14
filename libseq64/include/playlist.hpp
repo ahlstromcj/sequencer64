@@ -342,6 +342,7 @@ public:
     bool next_song ();
     bool previous_song ();
     bool open_song (const std::string & filename, bool playlistmode = false);
+    bool open_select_song (int index, bool opensong = true);
     bool open_current_song ();
     bool open_next_list (bool opensong = true);
     bool open_previous_list (bool opensong = true);

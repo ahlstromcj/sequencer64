@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-12
+ * \updates       2018-09-14
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -273,7 +273,7 @@ optionsfile::make_error_message
 bool
 optionsfile::parse (perform & p)
 {
-    std::ifstream file(name().c_str(), std::ios::in | std::ios::ate);
+    std::ifstream file(name(), std::ios::in | std::ios::ate);
     if (! file.is_open())
     {
         printf("? error opening [%s] for reading\n", name().c_str());
@@ -305,8 +305,15 @@ optionsfile::parse (perform & p)
      * file every time.  A lot a rescanning!  But it goes fast these days.
      */
 
-    unsigned sequences = 0;                                 /* seq & ctrl #s */
     line_after(file, "[midi-control]");                     /* find section  */
+
+#ifdef USE_PARSE_MIDI_CONTROL_FUNCTION
+
+    ok = parse_midi_control_section(filename, p);
+
+#else
+
+    unsigned sequences = 0;                                 /* seq & ctrl #s */
     sscanf(m_line, "%u", &sequences);
 
     /*
@@ -363,6 +370,8 @@ optionsfile::parse (perform & p)
         warnprint("[midi-controls] specifies a count of 0, so skipped");
     }
 
+#endif  // USE_PARSE_MIDI_CONTROL_FUNCTION
+
     /*
      * [mute-group] plus some additional data about how to save them.  After
      * we parse the mute group, we need to see if there is another value for
@@ -372,7 +381,9 @@ optionsfile::parse (perform & p)
      * have to pase the new mute-group handling feature there as well.
      */
 
-    ok = parse_mute_group_section(p);
+    if (ok)
+        ok = parse_mute_group_section(p);
+
     if (ok)
         ok = line_after(file, "[midi-clock]");
 
@@ -871,7 +882,7 @@ optionsfile::parse (perform & p)
 bool
 optionsfile::parse_mute_group_section (perform & p)
 {
-    std::ifstream file(name().c_str(), std::ios::in | std::ios::ate);
+    std::ifstream file(name(), std::ios::in | std::ios::ate);
     if (! file.is_open())
     {
         printf("? error opening [%s] for reading\n", name().c_str());
@@ -965,6 +976,104 @@ optionsfile::parse_mute_group_section (perform & p)
 }
 
 /**
+ *  Parses the [midi-control] section.  This function is used both in the
+ *  original reading of the "rc" file, and for reloading the original
+ *  midi-control data from the "rc".
+ *
+ *  We used to throw the midi-control count value away, since it was always
+ *  1024, but it is useful if no mute groups have been created.  So, if it
+ *  reads 0 (instead of 1024), we will assume there are no midi-control
+ *  settings.  We also have to be sure to go to the next data line even if the
+ *  strip-empty-mutes option is on.
+ *
+ * \param p
+ *      Provides a reference to the main perform object.  However,
+ *      we have to cast away the constness, because too many of the
+ *      perform getter functions are used in non-const contexts.
+ *
+ * \return
+ *      Returns true if the file was able to be opened for reading, and the
+ *      desired data successfully extracted.
+ */
+
+bool
+optionsfile::parse_midi_control_section (const std::string & fname, perform & p)
+{
+    std::ifstream file(fname, std::ios::in | std::ios::ate);
+    if (! file.is_open())
+    {
+        printf("? error opening [%s] for reading\n", name().c_str());
+        return false;
+    }
+    file.seekg(0, std::ios::beg);                           /* seek to start */
+
+    /*
+     * This call causes parsing to skip all of the header material.  Please note
+     * that the line_after() function always starts from the beginning of the
+     * file every time.  A lot a rescanning!  But it goes fast these days.
+     */
+
+    unsigned sequences = 0;                                 /* seq & ctrl #s */
+    line_after(file, "[midi-control]");
+    sscanf(m_line, "%u", &sequences);
+
+    /*
+     * The above value is called "sequences", but what was written was the
+     * value of c_midi_controls.  If we make that value non-constant, then
+     * we should modify that value, instead of the throw-away "sequences"
+     * values.  Note that c_midi_controls is, in a roundabout way, defined
+     * as 74.  See the old "dot-seq24rc" file in the contrib directory.
+     */
+
+    bool ok = false;
+    if (rc().legacy_format())                   /* init "non-legacy" fields */
+        g_midi_control_limit = c_midi_controls; /* use the original value   */
+
+    if (int(sequences) > g_midi_control_limit)
+    {
+        return make_error_message("midi-control", "too many control entries");
+    }
+    else if (sequences > 0)
+    {
+        ok = next_data_line(file);
+        if (! ok)
+            return make_error_message("midi-control", "no data");
+        else
+            ok = true;
+
+        for (unsigned i = 0; i < sequences; ++i)    /* 0 to c_midi_controls-1 */
+        {
+            int sequence = 0;
+            int a[6], b[6], c[6];
+            sscanf
+            (
+                m_line,
+                "%d [ %d %d %d %d %d %d ]"
+                  " [ %d %d %d %d %d %d ]"
+                  " [ %d %d %d %d %d %d ]",
+                &sequence,
+                &a[0], &a[1], &a[2], &a[3], &a[4], &a[5],
+                &b[0], &b[1], &b[2], &b[3], &b[4], &b[5],
+                &c[0], &c[1], &c[2], &c[3], &c[4], &c[5]
+            );
+            p.midi_control_toggle(i).set(a);
+            p.midi_control_on(i).set(b);
+            p.midi_control_off(i).set(c);
+            ok = next_data_line(file);
+            if (! ok && i < (sequences - 1))
+                return make_error_message("midi-control", "not enough data");
+            else
+                ok = true;
+        }
+    }
+    else
+    {
+        warnprint("[midi-controls] specifies a count of 0, so skipped");
+    }
+    return true;
+}
+
+/**
  *  This options-writing function is just about as complex as the
  *  options-reading function.
  *
@@ -980,7 +1089,7 @@ optionsfile::parse_mute_group_section (perform & p)
 bool
 optionsfile::write (const perform & p)
 {
-    std::ofstream file(name().c_str(), std::ios::out | std::ios::trunc);
+    std::ofstream file(name(), std::ios::out | std::ios::trunc);
     perform & ucperf = const_cast<perform &>(p);
     if (! file.is_open())
     {

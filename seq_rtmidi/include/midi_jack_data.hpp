@@ -9,15 +9,18 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-01-02
- * \updates       2017-01-02
+ * \updates       2017-09-14
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
+ *  GitHub issue #165: enabled a build and run with no JACK support.
  */
+
+#include "midibyte.hpp"                 /* seq64::midibyte              */
+
+#ifdef SEQ64_JACK_SUPPORT
 
 #include <jack/jack.h>
 #include <jack/ringbuffer.h>
-
-#include "midibyte.hpp"                 /* seq64::midibyte              */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -118,6 +121,8 @@ struct midi_jack_data
 };          // class midi_jack_data
 
 }           // namespace seq64
+
+#endif      // SEQ64_JACK_SUPPORT
 
 #endif      // SEQ64_MIDI_JACK_DATA_HPP
 

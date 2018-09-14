@@ -9,7 +9,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2018-01-26
+ * \updates       2018-09-14
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    In this refactoring, we've stripped out most of the original RtMidi
@@ -17,11 +17,16 @@
  *    MIDI.  The method that Sequencer64's mastermidibus uses to initialize
  *    port has been transplanted to this rtmidi library.  The name "rtmidi" is
  *    now somewhat misleading.
+ *
+ *  GitHub issue #165: enabled a build and run with no JACK support.
  */
 
 #include <string>
 
 #include "midi_api.hpp"
+
+#ifdef SEQ64_JACK_SUPPORT
+
 #include "midi_jack_info.hpp"           /* seq64::midi_jack_info            */
 
 /*
@@ -251,7 +256,6 @@ public:
 
     midi_out_jack (midibus & parentbus, midi_info & masterinfo);
     virtual ~midi_out_jack ();
-    /// virtual bool send_message (const midi_message & message);
 
 private:
 
@@ -269,6 +273,8 @@ private:
 };          // class midi_out_jack
 
 }           // namespace seq64
+
+#endif      //  SEQ64_JACK_SUPPORT
 
 #endif      // SEQ64_MIDI_JACK_HPP
 

@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; severe refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2018-05-01
+ * \updates       2018-09-14
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  Written primarily by Alexander Svetalkin, with updates for delta time by
@@ -139,13 +139,19 @@
  *
  *      We need to study the source code to the jack_midi_clock application to
  *      make sure we're doing this correctly.
+ *
+ *  GitHub issue #165: enabled a build and run with no JACK support.
  */
 
+#include "calculations.hpp"             /* seq64::extract_port_name()       */
+
+#ifdef SEQ64_JACK_SUPPORT
+
 #include <sstream>
+
 #include <jack/midiport.h>
 #include <jack/ringbuffer.h>
 
-#include "calculations.hpp"             /* seq64::extract_port_name()       */
 #include "easy_macros.hpp"              /* C++ version of easy macros       */
 #include "event.hpp"                    /* seq64::event from main library   */
 #include "jack_assistant.hpp"           /* seq64::jack_status_pair_t        */
@@ -1560,6 +1566,8 @@ midi_out_jack::~midi_out_jack ()
 }
 
 }           // namespace seq64
+
+#endif      // SEQ64_JACK_SUPPORT
 
 /*
  * midi_jack.cpp

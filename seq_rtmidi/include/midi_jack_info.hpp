@@ -9,19 +9,25 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2018-06-02
+ * \updates       2018-09-14
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *    We need to have a way to get all of the JACK information of
- *    the midi_jack
+ *    the midi_jack module.  This module provides that information.
+ *
+ *  GitHub issue #165: enabled a build and run with no JACK support.
  */
 
-#include <jack/jack.h>
+#include "seq64-config.h"
+
+#ifdef SEQ64_JACK_SUPPORT
 
 #include "midi_info.hpp"                /* seq64::midi_port_info etc.   */
-#include "midi_jack_data.hpp"           /* seq64::midi_jack_data        */
 #include "mastermidibus_rm.hpp"
 #include "midibus.hpp"                  /* seq64::midibus               */
+
+#include <jack/jack.h>
+#include "midi_jack_data.hpp"           /* seq64::midi_jack_data        */
 
 /*
  * Do not document the namespace; it breaks Doxygen.
@@ -143,6 +149,8 @@ void silence_jack_errors (bool silent = true);
 void silence_jack_info (bool silent = true);
 
 }           // namespace seq64
+
+#endif      // SEQ64_JACK_SUPPORT
 
 #endif      // SEQ64_MIDI_JACK_INFO_HPP
 

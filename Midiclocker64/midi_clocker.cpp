@@ -26,9 +26,10 @@
  * \library       midiclocker64 application
  * \author        TODO team; refactoring by Chris Ahlstrom
  * \date          2017-11-10
- * \updates       2017-11-19
+ * \updates       2018-09-14
  * \license       GNU GPLv2 or above
  *
+ *  GitHub issue #165: enabled a build and run with no JACK support.
  */
 
 #include <stdio.h>                      /* C::read() and C::write()         */
@@ -36,13 +37,16 @@
 #include <unistd.h>                     /* C::pipe() and C::sleep()         */
 #include <math.h>                       /* C::rintf(), C::floor()           */
 
-#include <jack/jack.h>                  /* C::jack_xxxxxxxxx() functions    */
-#include <jack/midiport.h>              /* C::jack_midi_xxxx() functions    */
 #include <sys/mman.h>
 
 #include "event.hpp"                    /* Sequencer64 event symbols        */
 #include "jack_assistant.hpp"           /* seq64::jack_assistant statics    */
 #include "midi_clocker.hpp"             /* seq64::midi_clocker class        */
+
+#ifdef SEQ64_JACK_SUPPORT
+#include <jack/jack.h>                  /* C::jack_xxxxxxxxx() functions    */
+#include <jack/midiport.h>              /* C::jack_midi_xxxx() functions    */
+#endif
 
 #ifndef PLATFORM_WINDOWS
 #include <signal.h>
@@ -102,7 +106,9 @@ midi_clocker::midi_clocker ()
     m_msg_filter        (0),
     m_resync_delay      (2.0)
 {
+#ifdef SEQ64_JACK_SUPPORT
     memset(&m_last_xpos, 0, sizeof(jack_position_t));
+#endif
     midi_clocker::sm_self = this;
 }
 
@@ -126,7 +132,9 @@ midi_clocker::initialize ()
             }
             if (result)
             {
+#ifdef SEQ64_JACK_SUPPORT
                 if (jack_activate(m_jack_client))
+#endif
                 {
                     errprint("Cannot activate client.");
                     result = false;
@@ -141,8 +149,10 @@ midi_clocker::initialize ()
         signal(SIGINT, catchsig);
 #endif
 
+#ifdef SEQ64_JACK_SUPPORT
         m_rand_seed = jack_get_time();
         if (m_rand_seed == 0)
+#endif
             m_rand_seed = 1;
     }
     return result;
@@ -251,7 +261,9 @@ midi_clocker::cleanup (int /*sig*/)
 {
     if (m_jack_client)
     {
+#ifdef SEQ64_JACK_SUPPORT
         jack_client_close(m_jack_client);
+#endif
         m_jack_client = nullptr;
     }
 }
@@ -363,7 +375,11 @@ midi_clocker::send_pos_message (void * port_buf, jack_position_t * xpos, int off
         return -1;
     }
 
+#ifdef SEQ64_JACK_SUPPORT
     uint8_t * buffer = jack_midi_event_reserve(port_buf, 0, 3);
+#else
+    uint8_t * buffer = nullptr;
+#endif
     if (is_nullptr(buffer))
     {
         errprint("send_pos_message(): could not reserve MIDI event");
@@ -401,7 +417,12 @@ midi_clocker::send_rt_message
 
     printf("send_rt_message(%X)\n", unsigned(rt_msg));
 
+#ifdef SEQ64_JACK_SUPPORT
     uint8_t * buffer = jack_midi_event_reserve(port_buf, time, 1);
+#else
+    uint8_t * buffer = nullptr;
+#endif
+
     if (not_nullptr(buffer))
         buffer[0] = rt_msg;
 }
@@ -450,6 +471,9 @@ jack_process (jack_nframes_t nframes, void * arg)
 int
 midi_clocker::clock_process (jack_nframes_t nframes)
 {
+
+#ifdef SEQ64_JACK_SUPPORT
+
     /* query jack transport state */
 
     jack_position_t xpos;
@@ -674,6 +698,9 @@ midi_clocker::clock_process (jack_nframes_t nframes)
         m_clk_last_tick = next_tick;
         ++ticks_this_cycle;
     }
+
+#endif  // SEQ64_JACK_SUPPORT
+
     return 0;
 }
 
@@ -707,7 +734,7 @@ jack_shutdown (void * arg)
 bool
 midi_clocker::init_jack (const std::string & clientname)
 {
-printf("init_jack()\n");
+#ifdef SEQ64_JACK_SUPPORT
     jack_status_t status;
     m_jack_client = jack_client_open(clientname.c_str(), JackNullOption, &status);
     if (is_nullptr(m_jack_client))
@@ -732,7 +759,11 @@ printf("init_jack()\n");
         const char * cn = jack_get_client_name(m_jack_client);
         fprintf(stderr, "JACK client name not unique: `%s'\n", cn);
     }
-    int rc = jack_set_process_callback(m_jack_client, jack_process, (void *) this);
+
+    int rc = jack_set_process_callback
+    (
+        m_jack_client, jack_process, (void *) this
+    );
     if (rc != 0)
     {
         errprint("Unable to connect to set JACK process callback");
@@ -744,6 +775,13 @@ printf("init_jack()\n");
 #endif
 
     return true;
+
+#else
+
+    return false;
+
+#endif
+
 }
 
 /**
@@ -753,7 +791,7 @@ printf("init_jack()\n");
 bool
 midi_clocker::jack_portsetup ()
 {
-printf("jack_portsetup()\n");
+#ifdef SEQ64_JACK_SUPPORT
     m_clk_out_port = jack_port_register
     (
         m_jack_client, "mclk_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0
@@ -764,6 +802,9 @@ printf("jack_portsetup()\n");
         return false;
     }
     return true;
+#else
+    return false;
+#endif
 }
 
 /**
@@ -773,7 +814,7 @@ printf("jack_portsetup()\n");
 void
 midi_clocker::port_connect (char * clkport)
 {
-printf("port_connect()\n");
+#ifdef SEQ64_JACK_SUPPORT
     if
     (
         clkport &&
@@ -786,6 +827,7 @@ printf("port_connect()\n");
             jack_port_name(m_clk_out_port), clkport
         );
     }
+#endif
 }
 
 #ifdef USE_THESE_UNUSED_FUNCTIONS

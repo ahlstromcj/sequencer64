@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-09-12
+dnl \update        2018-09-14
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -26,11 +26,17 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.95$)dnl
-AC_INIT(Sequencer64, [0.95.3], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.95.4], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl See AC_CONFIG_SRCDIR
+dnl
+dnl GitHub Issue #165.  Defining PKG_BUILD to get to the pkg-config executable
+dnl seems to be necessary if "--disable-jack" is used.  Weird.  Also modified
+dnl the rtmidi JACK modules to conditionally compile JACK support.
+
+export PKG_CONFIG=$(which pkg-config)
 
 dnl Do we need the following?  No, but it cleans up a lot of warning messages.
 dnl Let's try the HOST variant instead.  There are also BUILD and TARGET
@@ -154,7 +160,7 @@ AC_SUBST(PACKAGE)
 AC_DEFINE(CLIENT_NAME, ["seq64"], "The name to display as client/port")
 AC_SUBST(CLIENT_NAME)
 
-VERSION="0.95.3"
+VERSION="0.95.4"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -451,6 +457,7 @@ if test "$jack" != "no"; then
                             jack_session_found="no")
             if test "$jack_session_found" = "yes"; then
                 AC_DEFINE(JACK_SESSION, 1, [Define to enable JACK session])
+                AC_MSG_RESULT([JACK session support enabled.]);
             fi
         fi
         AC_MSG_RESULT([JACK support enabled.]);
@@ -459,7 +466,7 @@ if test "$jack" != "no"; then
         AC_MSG_WARN([Could not find JACK library, disabling JACK.])
     fi
 else
-    AC_MSG_NOTICE([JACK disabled.]);
+    AC_MSG_NOTICE([JACK disabled in the configuration.]);
 fi
 
 dnl LASH support
@@ -565,7 +572,7 @@ fi
 dnl ALSA MIDI (legacy) support.
 
 AC_ARG_ENABLE(alsamidi,
-    [AS_HELP_STRING(--enable-alsamidi, [Enable legacy ALSA build])],
+    [AS_HELP_STRING(--enable-alsamidi, [Enable legacy ALSA build (deprecated)])],
     [alsamidi=$enableval],
     [alsamidi=no])
 
@@ -605,18 +612,16 @@ dnl libsigc not supported in a Windows build at this time.  Neither is
 dnl gtkmm-2.4, but we can support Qt as well now.  We need to beef up the
 dnl testing here.
 
-if test "x$windows_host" = "xno" ; then
-    if test "x$need_gtkmm" = "xyes" ; then
-        AC_CHECK_LIB(gtkmm-2.4, _init,,
-            AC_MSG_ERROR([Essential library libgtkmm-2.4 not found]))
+if test "x$need_gtkmm" = "xyes" ; then
+    AC_CHECK_LIB(gtkmm-2.4, _init,,
+        AC_MSG_ERROR([Essential library libgtkmm-2.4 not found]))
 
-        AC_CHECK_LIB(sigc-2.0, main,,
-            AC_MSG_ERROR([Essential library libsigc++-2.0 not found]))
+    AC_CHECK_LIB(sigc-2.0, main,,
+        AC_MSG_ERROR([Essential library libsigc++-2.0 not found]))
 
-        PKG_CHECK_MODULES(GTKMM, gtkmm-2.4 >= 2.4.0)
-        AC_SUBST(GTKMM_CFLAGS)
-        AC_SUBST(GTKMM_LIBS)
-    fi
+    PKG_CHECK_MODULES(GTKMM, gtkmm-2.4 >= 2.4.0)
+    AC_SUBST(GTKMM_CFLAGS)
+    AC_SUBST(GTKMM_LIBS)
 fi
 
 dnl Support for highlighting empty sequences (in yellow).  If enabled, the
@@ -698,8 +703,10 @@ else
 fi
 
 dnl Support for using the stazed JACK support is now permanent.
-
-AC_MSG_RESULT([Seq32 JACK support permanently enabled.]);
+dnl No need to mention it, because we might disable JACK entirely
+dnl during configuration.
+dnl
+dnl AC_MSG_RESULT([Seq32 JACK support permanently enabled, if JACK is enabled.]);
 
 dnl Support for using the stazed LFO window support.  Now enabled by default.
 
@@ -765,8 +772,8 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-09-12"
-#define VERSION "0.95.3"
+#define VERSION_DATE_SHORT "2018-09-14"
+#define VERSION "0.95.4"
 
 )
 

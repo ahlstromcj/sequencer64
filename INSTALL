@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.95.3 and above
+INSTALL for Sequencer64 v. 0.95.4 and above
 Chris Ahlstrom
-2015-09-10 to 2018-09-11
+2015-09-10 to 2018-09-14
 
 The current packaging for Sequencer64 requires building the code.  The
 bootstrapping setup is primarily aimed at developers.  Starting with version
@@ -164,6 +164,13 @@ Advanced Steps:
        where rtmidi is the intended default build, and 0.94.6 is the version
        of the project.  The branch is included in the resulting tarball name;
        the usual branch would be "master".
+
+Disabling JACK:
+
+    Those who do not want to use the deprecated legacy Sequencer64 project
+    (ALSA only) may want to do an rtmidi build without JACK enabled.
+
+    TODO.
 
 Qmake-based Install:
 

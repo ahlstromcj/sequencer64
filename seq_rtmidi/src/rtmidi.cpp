@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Gary P. Scavone; refactoring by Chris Ahlstrom
  * \date          2016-11-14
- * \updates       2018-04-12
+ * \updates       2018-09-14
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.
@@ -17,6 +17,8 @@
  *  RtMidi WWW site: http://music.mcgill.ca/~gary/rtmidi/
  *
  *  RtMidi:          realtime MIDI i/o C++ classes
+ *
+ *  GitHub issue #165: enabled a build and run with no JACK support.
  */
 
 #include "easy_macros.hpp"              /* C++ version of easy macros       */
@@ -181,8 +183,10 @@ rtmidi_in::openmidi_api (rtmidi_api api, rtmidi_info & info)
                 if (api == RTMIDI_API_UNIX_JACK)
                 {
 #ifdef SEQ64_BUILD_UNIX_JACK
+#ifdef SEQ64_JACK_SUPPORT
                     set_api(new midi_in_jack(parent_bus(), midiinfo));
                     got_an_api = true;
+#endif
 #endif
                 }
             }
@@ -199,7 +203,9 @@ rtmidi_in::openmidi_api (rtmidi_api api, rtmidi_info & info)
         else if (api == RTMIDI_API_UNIX_JACK)
         {
 #ifdef SEQ64_BUILD_UNIX_JACK
+#ifdef SEQ64_JACK_SUPPORT
             set_api(new midi_in_jack(parent_bus(), midiinfo));
+#endif
 #endif
         }
         else if (api == RTMIDI_API_LINUX_ALSA)
@@ -322,8 +328,10 @@ rtmidi_out::openmidi_api (rtmidi_api api, rtmidi_info & info)
                 if (api == RTMIDI_API_UNIX_JACK)
                 {
 #ifdef SEQ64_BUILD_UNIX_JACK
+#ifdef SEQ64_JACK_SUPPORT
                     set_api(new midi_out_jack(parent_bus(), midiinfo));
                     got_an_api = true;
+#endif
 #endif
                 }
             }
@@ -340,7 +348,9 @@ rtmidi_out::openmidi_api (rtmidi_api api, rtmidi_info & info)
         else if (api == RTMIDI_API_UNIX_JACK)
         {
 #ifdef SEQ64_BUILD_UNIX_JACK
+#ifdef SEQ64_JACK_SUPPORT
             set_api(new midi_out_jack(parent_bus(), midiinfo));
+#endif
 #endif
         }
         else if (api == RTMIDI_API_LINUX_ALSA)

@@ -6,7 +6,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2017-01-01
- * \updates       2018-06-02
+ * \updates       2018-09-14
  * \license       See the rtexmidi.lic file.  Too big.
  *
  *  This class is meant to collect a whole bunch of JACK information
@@ -30,9 +30,14 @@
  *
  *  So we're going to try to put MIDI input and output on separate clients, as
  *  an option.
+ *
+ *  GitHub issue #165: enabled a build and run with no JACK support.
  */
 
 #include "calculations.hpp"             /* extract_port_names()             */
+
+#ifdef SEQ64_JACK_SUPPORT
+
 #include "easy_macros.hpp"              /* C++ version of easy macros       */
 #include "event.hpp"                    /* seq64::event and other tokens    */
 #include "jack_assistant.hpp"           /* seq64::create_jack_client()      */
@@ -599,6 +604,8 @@ silence_jack_info (bool silent)
 }
 
 }           // namespace seq64
+
+#endif      // SEQ64_JACK_SUPPORT
 
 /*
  * midi_jack_info.cpp

@@ -6,12 +6,13 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-12-08
- * \updates       2018-04-12
+ * \updates       2018-09-14
  * \license       See the rtexmidi.lic file.  Too big for a header file.
  *
  *  An abstract base class for realtime MIDI input/output.  This class
  *  implements some common functionality enumerating MIDI clients and ports.
  *
+ *  GitHub issue #165: enabled a build and run with no JACK support.
  */
 
 #include "easy_macros.hpp"              /* C++ version of easy macros       */
@@ -211,7 +212,11 @@ rtmidi_info::openmidi_api
     {
         if (rc().with_jack_midi())
         {
+#ifdef SEQ64_JACK_SUPPORT
             result = set_api_info(new midi_jack_info(appname, ppqn, bpm));
+#else
+            result = false;
+#endif
             if (! result)
             {
                 /**

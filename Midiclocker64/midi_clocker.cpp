@@ -91,7 +91,11 @@ midi_clocker::midi_clocker ()
     m_clk_out_port      (nullptr),
     m_jack_client       (nullptr),
     m_client_state      (midi_clocker::Run::INIT),
+#ifdef SEQ64_JACK_SUPPORT
     m_xstate            (JackTransportStopped),
+#else
+    m_xstate            (0),
+#endif
     m_clk_last_tick     (0.0),
     m_song_pos_sync     (-1),
     m_last_xpos         (),
@@ -275,6 +279,7 @@ midi_clocker::cleanup (int /*sig*/)
 int
 midi_clocker::pos_changed (jack_position_t * xp0, jack_position_t * xp1)
 {
+#ifdef SEQ64_JACK_SUPPORT
     if (! (xp0->valid & JackPositionBBT))
         return -1;
 
@@ -283,7 +288,7 @@ midi_clocker::pos_changed (jack_position_t * xp0, jack_position_t * xp1)
 
     if (xp0->bar == xp1->bar && xp0->beat == xp1->beat && xp0->tick == xp1->tick)
         return 0;
-
+#endif
     return 1;
 }
 
@@ -294,6 +299,7 @@ midi_clocker::pos_changed (jack_position_t * xp0, jack_position_t * xp1)
 void
 midi_clocker::remember_pos (jack_position_t * xp0, jack_position_t * xp1)
 {
+#ifdef SEQ64_JACK_SUPPORT
     if (! (xp1->valid & JackPositionBBT))
         return;
 
@@ -302,6 +308,7 @@ midi_clocker::remember_pos (jack_position_t * xp0, jack_position_t * xp1)
     xp0->beat  = xp1->beat;
     xp0->tick  = xp1->tick;
     xp0->bar_start_tick = xp1->bar_start_tick;
+#endif
 }
 
 /**
@@ -324,6 +331,7 @@ midi_clocker::remember_pos (jack_position_t * xp0, jack_position_t * xp1)
 int64_t
 midi_clocker::calc_song_pos (jack_position_t * xpos, int off)
 {
+#ifdef SEQ64_JACK_SUPPORT
     if (! (xpos->valid & JackPositionBBT))
         return -1;
 
@@ -346,6 +354,10 @@ midi_clocker::calc_song_pos (jack_position_t * xpos, int off)
         floor(4.0 * xpos->tick / xpos->ticks_per_beat);
 
     return pos;
+#else
+    return -1;
+#endif
+
 }
 
 /**
@@ -357,6 +369,8 @@ midi_clocker::calc_song_pos (jack_position_t * xpos, int off)
 int64_t
 midi_clocker::send_pos_message (void * port_buf, jack_position_t * xpos, int off)
 {
+#ifdef SEQ64_JACK_SUPPORT
+
     /*
      * TMI:
      */
@@ -390,6 +404,9 @@ midi_clocker::send_pos_message (void * port_buf, jack_position_t * xpos, int off
     buffer[1] = bcnt & 0x7f;            // LSB
     buffer[2] = (bcnt >> 7) & 0x7f;     // MSB
     return bcnt;
+#else
+    return -1;
+#endif
 }
 
 /**

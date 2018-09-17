@@ -29,9 +29,10 @@
 [comments]
 
 Just a sample comment.
- 
 Feel free to delete or modify this 3-line comment.
-
+ 
+Wait!  Do not delete it!  We need to tell you that the loading of this
+file is guaranteed to fail!  See sample.playlist instead!
 
 [playlist]
 

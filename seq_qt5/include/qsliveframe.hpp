@@ -73,9 +73,9 @@ public:
 
     qsliveframe
     (
-        perform & perf,
-        qsmainwnd * window,
-        QWidget * parent = nullptr
+        perform & perf,             /* performance master   */
+        qsmainwnd * window,         /* functional parent    */
+        QWidget * parent = nullptr  /* Qt-parent            */
     );
     virtual ~qsliveframe ();
 

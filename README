@@ -1,6 +1,6 @@
 README for Sequencer64 0.96.0 (Native JACK, CLI, tempo, Windows)
 Chris Ahlstrom
-2015-09-10 to 2018-09-14
+2015-09-10 to 2018-09-16
 
 Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
 The heart of seq24 remains intact.  It is an old friend, and maintains extra
@@ -50,8 +50,12 @@ Recent changes:
 
     -   Version 0.96.0:
         -   Support for playlists and MIDI selections of playlists and songs.
+            Includes the command-line option, "rc" file, keystroke selection,
+            and MIDI control.
         -   Fixed ALSA issue with port system:announce being enabled in the
             File / Options / MIDI input GUI.
+        -   Added an external window for additional live-frame views.
+            Still a work in progress in the playlist branch.
     -   Version 0.95.4:
         -   Enable a JACK-less version of the rtmidi build.  GitHub issue #165.  
             If --disable-jack is used, rtmidi will come up as ALSA even if

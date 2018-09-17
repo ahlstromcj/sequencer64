@@ -72,9 +72,12 @@ static const int c_mainwid_border = 0;
  * \param p
  *      Provides the perform object to use for interacting with this sequence.
  *
+ * \param window
+ *      Provides the functional parent of this live frame.
+ *
  * \param parent
- *      Provides the parent window/widget for this container window.  Defaults
- *      to null.
+ *      Provides the Qt-parent window/widget for this container window.
+ *      Defaults to null.
  */
 
 qsliveframe::qsliveframe (perform & p, qsmainwnd * window, QWidget * parent)

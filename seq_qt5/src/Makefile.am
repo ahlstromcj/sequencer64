@@ -6,7 +6,7 @@
 # \library    	libseq_qt5 library
 # \author     	Chris Ahlstrom
 # \date       	2018-01-01
-# \update      2018-09-05
+# \update      2018-09-16
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -238,6 +238,7 @@ moc_qt_headers = \
  ../include/qclocklayout.hpp \
  ../include/qinputcheckbox.hpp \
  ../include/qlfoframe.hpp \
+ ../include/qliveframeex.hpp \
  ../include/qperfeditex.hpp \
  ../include/qperfeditframe64.hpp \
  ../include/qperfnames.hpp \

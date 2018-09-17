@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-09-12
+ * \updates       2018-09-15
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -203,6 +203,23 @@ private:
      */
 
     std::string m_user_filename_alt;
+
+    /**
+     *  Indicates if the user wants to use a [midi-control] section from a
+     *  separate file, for the convenience of changing the MIDI control setup
+     *  without a lot of editing.  This value is set to true if a
+     *  [midi-control-file] section is encountered.
+     */
+
+    bool m_use_midi_control_file;
+
+    /**
+     *  The name of the MIDI control file, if applicable.  This file is
+     *  located only in the specific "rc"/"usr" HOME directory,
+     *  m_config_directory.
+     */
+
+    std::string m_midi_control_filename;
 
     /**
      *  Indicates if the user wants to use the play-list stored in the "rc"
@@ -658,6 +675,25 @@ public:
     }
 
     /**
+     * \getter m_use_midi_control_file
+     */
+
+     bool use_midi_control_file () const
+     {
+        return m_use_midi_control_file;
+     }
+
+    /**
+     * \getter m_midi_control_filename
+     */
+
+     const std::string & midi_control_filename () const
+     {
+        return m_midi_control_filename;
+     }
+     std::string midi_control_filespec () const;
+
+    /**
      * \getter m_application_name
      */
 
@@ -849,6 +885,24 @@ protected:
     {
         m_device_ignore = flag;
     }
+
+    /**
+     * \setter m_use_midi_control_file
+     */
+
+     void use_midi_control_file (bool flag)
+     {
+        m_use_midi_control_file = flag;
+     }
+
+    /**
+     * \getter m_midi_control_filename
+     */
+
+     void midi_control_filename (const std::string & name)
+     {
+        m_midi_control_filename = name;
+     }
 
     /**
      * \setter m_playlist_active

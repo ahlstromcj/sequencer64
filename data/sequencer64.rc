@@ -176,7 +176,7 @@
 87 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # MIDI Control to select playlist (value, next, previous)
 88 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-# MIDI Control to select song in current playlist(value, next, previous)
+# MIDI Control to select song in current playlist (value, next, previous)
 89 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # Reserved for expansion 7
 90 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
@@ -184,7 +184,7 @@
 91 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # Reserved for expansion 9
 92 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
-Reserved for expansion 10
+# Reserved for expansion 10
 93 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
 # Reserved for expansion 11
 94 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]

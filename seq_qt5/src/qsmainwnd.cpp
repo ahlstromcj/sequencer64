@@ -46,6 +46,7 @@
 #include "file_functions.hpp"           /* seq64::file_extension_match()    */
 #include "keystroke.hpp"
 #include "perform.hpp"
+#include "qliveframeex.hpp"
 #include "qperfeditex.hpp"
 #include "qperfeditframe64.hpp"
 #include "qplaylistframe.hpp"
@@ -146,7 +147,8 @@ qsmainwnd::qsmainwnd
     m_current_beats         (0),
     m_base_time_ms          (0),
     m_last_time_ms          (0),
-    m_open_editors          ()
+    m_open_editors          (),
+    m_open_live_frames      ()
 {
 #if __cplusplus < 201103L                               // C++11
     initialize_key_map();
@@ -1466,6 +1468,79 @@ qsmainwnd::remove_qperfedit ()
         m_perfedit = nullptr;
     }
     ui->btnPerfEdit->setEnabled(true);
+}
+
+/**
+ *  Opens an external live frame.
+ *  It has no parent widget,
+ *  otherwise the whole big dialog will appear inside that parent.
+ *
+ * \param ssnum
+ *      The screen-set value (0 to 31) of the live-frame to be displayed.
+ */
+
+void
+qsmainwnd::load_live_frame (int ssnum)
+{
+    if (ssnum >= 0 && ssnum < 32)               // FIX LATER
+    {
+        live_container::iterator ei = m_open_live_frames.find(ssnum);
+        if (ei == m_open_live_frames.end())
+        {
+            qliveframeex * ex = new qliveframeex(perf(), ssnum, this);
+            if (not_nullptr(ex))
+            {
+                ex->show();
+#if __cplusplus >= 201103L              /* C++11    */
+                std::pair<int, qliveframeex *> p = std::make_pair(ssnum, ex);
+#else
+                std::pair<int, qliveframeex *> p =
+                    std::make_pair<int, qliveframeex *>(ssnum, ex);
+#endif
+                m_open_live_frames.insert(p);
+            }
+        }
+    }
+}
+
+/**
+ *  Removes the live frame window from the list.  This function is called by
+ *  the live frame window to tell its parent (this) that it is going away.
+ *  Note that this does not delete the editor, it merely removes the pointer
+ *  to it.
+ *
+ * \param ssnum
+ *      The screen-set number that the live frame represented.
+ */
+
+void
+qsmainwnd::remove_live_frame (int ssnum)
+{
+    live_container::iterator ei = m_open_live_frames.find(ssnum);
+    if (ei != m_open_live_frames.end())
+        m_open_live_frames.erase(ei);
+}
+
+/**
+ *  Uses the standard "associative-container erase-remove idiom".  Otherwise,
+ *  the current iterator is invalid, and a segfault results in the top of the
+ *  for-loop.  Another option with C++11 is "ci = m_open_editors.erase(ei)".
+ */
+
+void
+qsmainwnd::remove_all_live_frames ()
+{
+    live_container::iterator ei;
+    for
+    (
+        ei = m_open_live_frames.begin(); ei != m_open_live_frames.end(); /*++ei*/
+    )
+    {
+        qliveframeex * lep = ei->second;    /* save the pointer             */
+        m_open_live_frames.erase(ei++);     /* remove pointer, inc iterator */
+        if (not_nullptr(lep))
+            delete lep;                     /* delete the pointer           */
+    }
 }
 
 /**

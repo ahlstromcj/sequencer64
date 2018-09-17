@@ -1,5 +1,5 @@
-#ifndef SEQ64_QPERFEDITEX_HPP
-#define SEQ64_QPERFEDITEX_HPP
+#ifndef SEQ64_QLIVEFRAMEEX_HPP
+#define SEQ64_QLIVEFRAMEEX_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -20,69 +20,60 @@
  */
 
 /**
- * \file          qperfeditex.hpp
+ * \file          qliveframeex.hpp
  *
  *  This module declares/defines the base class for the external
- *  performance-editing window.
+ *  sequence-editing window.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2018-07-21
- * \updates       2018-08-04
+ * \date          2018-09-16
+ * \updates       2018-09-16
  * \license       GNU GPLv2 or above
  *
- *  The performance editing window is known as the "Song Editor".  Kepler34
+ *  The sequence editing window is known as the "Pattern Editor".  Kepler34
  *  provides an editor embedded within a tab, but we supplement that with a
  *  more sophisticated external editor, which works a lot more like the Gtkmm
- *  perfedit class.
+ *  seqedit class.
  */
 
 #include <QWidget>
 
-#include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN           */
-
-/*
- * Forward reference.
- */
-
 class QCloseEvent;
-
-/*
- * Do not document the namespace.
- */
 
 namespace Ui
 {
-    class qperfeditex;
+    class qliveframeex;
 }
-
-/*
- * Do not document the namespace.
- */
 
 namespace seq64
 {
     class perform;
     class sequence;
-    class qperfeditframe64;
+    class qsliveframe;
     class qsmainwnd;
 
 /**
- *  Provides a container for a qperfeditframe64 object.  Thus, the Qt 5 version
+ *  Provides a container for a qsliveframe object.  Thus, the Qt 5 version
  *  of Sequencer64 has an external seqedit window like its Gtkmm-2.4
  *  counterpart.
  */
 
-class qperfeditex : public QWidget
+class qliveframeex : public QWidget
 {
     Q_OBJECT
 
 public:
 
-    explicit qperfeditex (perform & p, qsmainwnd * parent = nullptr);
-    virtual ~qperfeditex ();
+    explicit qliveframeex
+    (
+        perform & p,
+        int ssnum,
+        qsmainwnd * parent = nullptr
+    );
+    virtual ~qliveframeex ();
 
-    void update_sizes ();
+    void update_draw_geometry ();
 
 protected:
 
@@ -100,19 +91,20 @@ protected:
 
 private:
 
-    Ui::qperfeditex * ui;
+    Ui::qliveframeex * ui;
     perform & m_perform;
-    qsmainwnd * m_edit_parent;
-    qperfeditframe64 * m_edit_frame;
+    int m_screenset;
+    qsmainwnd * m_live_parent;
+    qsliveframe * m_live_frame;
 
-};              // class qperfeditex
+};              // class qliveframeex
 
 }               // namespace seq64
 
-#endif          // SEQ64_QPERFEDITEX_HPP
+#endif          // SEQ64_QLIVEFRAMEEX_HPP
 
 /*
- * qperfeditex.hpp
+ * qliveframeex.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

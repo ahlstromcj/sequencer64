@@ -6,7 +6,7 @@
 # \library    	qplseq64 application
 # \author     	Chris Ahlstrom
 # \date       	2018-04-08
-# \update      2018-09-04
+# \update      2018-09-16
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -50,6 +50,7 @@ TARGET = seq_qt5
 UI_DIR = forms
 
 FORMS += \
+ forms/qliveframeex.ui \
  forms/qperfeditex.ui \
  forms/qperfeditframe64.ui \
  forms/qplaylistframe.ui \
@@ -73,6 +74,7 @@ HEADERS += \
  include/keys_perform_qt5.hpp \
  include/qclocklayout.hpp \
  include/qinputcheckbox.hpp \
+ include/qliveframeex.hpp \
  include/qperfbase.hpp \
  include/qperfeditex.hpp \
  include/qperfeditframe64.hpp \
@@ -111,6 +113,7 @@ SOURCES += \
  src/keys_perform_qt5.cpp \
  src/qclocklayout.cpp \
  src/qinputcheckbox.cpp \
+ src/qliveframeex.cpp \
  src/qperfbase.cpp \
  src/qperfeditex.cpp \
  src/qperfeditframe64.cpp \

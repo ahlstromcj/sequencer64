@@ -17,15 +17,15 @@
  */
 
 /**
- * \file          qseqeditex.cpp
+ * \file          qliveframeex.cpp
  *
  *  This module declares/defines the base class for the external sequence edit
  *  window.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2018-06-15
- * \updates       2018-07-30
+ * \date          2018-09-16
+ * \updates       2018-09-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -34,8 +34,8 @@
 
 #include "seq64-config.h"
 #include "perform.hpp"
-#include "qseqeditex.hpp"
-#include "qseqeditframe64.hpp"
+#include "qliveframeex.hpp"
+#include "qsliveframe.hpp"
 #include "qsmainwnd.hpp"
 #include "sequence.hpp"
 
@@ -45,9 +45,9 @@
  */
 
 #ifdef SEQ64_QMAKE_RULES
-#include "forms/ui_qseqeditex.h"
+#include "forms/ui_qliveframeex.h"
 #else
-#include "forms/qseqeditex.ui.h"
+#include "forms/qliveframeex.ui.h"
 #endif
 
 /*
@@ -60,11 +60,11 @@ namespace seq64
 /**
  *
  * \param p
- *      Provides the perform object to use for interacting with this sequence.
+ *      Provides the perform object to use for interacting with this live
+ *      frame.
  *
- * \param seqid
- *      Provides the sequence number.  The sequence pointer is looked up using
- *      this number.
+ * \param ssnum
+ *      Provides the screen-set number.
  *
  * \param parent
  *      Provides the parent window/widget for this container window.  Defaults
@@ -73,22 +73,23 @@ namespace seq64
  *      the qsmainwnd user-interface.
  */
 
-qseqeditex::qseqeditex (perform & p, int seqid, qsmainwnd * parent)
+qliveframeex::qliveframeex (perform & p, int ssnum, qsmainwnd * parent)
  :
     QWidget             (nullptr),
-    ui                  (new Ui::qseqeditex),
+    ui                  (new Ui::qliveframeex),
     m_perform           (p),
-    m_seq_id            (seqid),
-    m_edit_parent       (parent),
-    m_edit_frame        (nullptr)
+    m_screenset         (ssnum),
+    m_live_parent       (parent),
+    m_live_frame        (nullptr)
 {
     ui->setupUi(this);
 
     QGridLayout * layout = new QGridLayout(this);
-    m_edit_frame = new qseqeditframe64(p, seqid, this);     // no PPQN ???
-    layout->addWidget(m_edit_frame);
+    m_live_frame = new qsliveframe(p, parent, nullptr);
+    layout->addWidget(m_live_frame);
     show();
-    m_edit_frame->show();
+    m_live_frame->set_bank(ssnum);
+    m_live_frame->show();
 }
 
 /**
@@ -96,7 +97,7 @@ qseqeditex::qseqeditex (perform & p, int seqid, qsmainwnd * parent)
  *  this object.
  */
 
-qseqeditex::~qseqeditex()
+qliveframeex::~qliveframeex()
 {
     delete ui;
 }
@@ -106,10 +107,12 @@ qseqeditex::~qseqeditex()
  */
 
 void
-qseqeditex::closeEvent (QCloseEvent *)
+qliveframeex::closeEvent (QCloseEvent *)
 {
-    if (not_nullptr(m_edit_parent))
-        m_edit_parent->remove_editor(m_seq_id);
+    if (not_nullptr(m_live_parent))
+    {
+        m_live_parent->remove_live_frame(m_screenset);
+    }
 }
 
 /**
@@ -117,16 +120,19 @@ qseqeditex::closeEvent (QCloseEvent *)
  */
 
 void
-qseqeditex::update_draw_geometry ()
+qliveframeex::update_draw_geometry ()
 {
-    if (not_nullptr(m_edit_frame))
-        m_edit_frame->update_draw_geometry();
+    if (not_nullptr(m_live_frame))
+    {
+        // m_live_frame->update_draw_geometry();
+        m_live_frame->updateGeometry();
+    }
 }
 
 }               // namespace seq64
 
 /*
- * qseqeditex.cpp
+ * qliveframeex.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

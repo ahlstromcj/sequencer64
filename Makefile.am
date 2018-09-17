@@ -6,7 +6,7 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2018-09-11
+# \updates     2018-09-16
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #

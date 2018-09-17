@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-09-14
+ * \updates       2018-09-16
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
@@ -503,7 +503,7 @@ playlist::write (const perform & /*p*/)
         << "# Default storage directory for the song-files in this playlist.\n\n"
         << pl.ls_file_directory << "\n"
         << "\n"
-        << "# Provides the MIDI song-control number, and also the\n"
+        << "# Provides the MIDI song-control number (0 to 127), and also the\n"
         << "# base file-name (tune.midi) of each song in this playlist.\n"
         << "# The playlist directory is used, unless the file-name contains its\n"
         << "# own path.\n\n"

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-14
+ * \updates       2018-09-16
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -67,6 +67,7 @@
 
 #include <string.h>                     /* memset()                         */
 
+#include "file_functions.hpp"           /* strip_quotes() function          */
 #include "gdk_basic_keys.h"             /* SEQ64_equal, SEQ64_minus         */
 #include "midibus.hpp"
 #include "optionsfile.hpp"
@@ -172,6 +173,17 @@ optionsfile::make_error_message
  *  Mod Gmute, Mod Glearn, and Screen Set Play.  These are all forms of
  *  MIDI automation useful to control the playback while not sitting near
  *  the computer.
+ *
+ *  [midi-control-file]
+ *
+ *  If this section is present, the [midi-control] section is ignored, even
+ *  if present, in favor of reading the MIDI control information from a
+ *  separate file.  This allows the user to switch between different setups
+ *  without having to mess with editing the "rc" file much.
+ *
+ *  Then next data line after this section tag should be a filename.  If there
+ *  is none, or if it is set to "", then the [midi-control] section is used,
+ *  if present.  If neither are present, this is a fatal error.
  *
  *  [mute-group]
  *
@@ -298,79 +310,36 @@ optionsfile::parse (perform & p)
 
         } while (next_data_line(file));
     }
-
-    /*
-     * This call causes parsing to skip all of the header material.  Please note
-     * that the line_after() function always starts from the beginning of the
-     * file every time.  A lot a rescanning!  But it goes fast these days.
-     */
-
-    line_after(file, "[midi-control]");                     /* find section  */
-
-#ifdef USE_PARSE_MIDI_CONTROL_FUNCTION
-
-    ok = parse_midi_control_section(filename, p);
-
-#else
-
-    unsigned sequences = 0;                                 /* seq & ctrl #s */
-    sscanf(m_line, "%u", &sequences);
-
-    /*
-     * The above value is called "sequences", but what was written was the
-     * value of c_midi_controls.  If we make that value non-constant, then
-     * we should modify that value, instead of the throw-away "sequences"
-     * values.  Note that c_midi_controls is, in a roundabout way, defined
-     * as 74.  See the old "dot-seq24rc" file in the contrib directory.
-     */
-
     bool ok = false;
-    if (rc().legacy_format())                   /* init "non-legacy" fields */
-        g_midi_control_limit = c_midi_controls; /* use the original value   */
-
-    if (int(sequences) > g_midi_control_limit)
+    if (line_after(file, "[midi-control-file]"))
     {
-        return make_error_message("midi-control", "too many control entries");
-    }
-    else if (sequences > 0)
-    {
-        ok = next_data_line(file);
-        if (! ok)
-            return make_error_message("midi-control", "no data");
-        else
-            ok = true;
-
-        for (unsigned i = 0; i < sequences; ++i)    /* 0 to c_midi_controls-1 */
+        std::string fullpath;
+        std::string line = m_line;
+        std::string filename = strip_quotes(line);
+        bool ok = ! filename.empty();
+        if (ok)
         {
-            int sequence = 0;
-            int a[6], b[6], c[6];
-            sscanf
-            (
-                m_line,
-                "%d [ %d %d %d %d %d %d ]"
-                  " [ %d %d %d %d %d %d ]"
-                  " [ %d %d %d %d %d %d ]",
-                &sequence,
-                &a[0], &a[1], &a[2], &a[3], &a[4], &a[5],
-                &b[0], &b[1], &b[2], &b[3], &b[4], &b[5],
-                &c[0], &c[1], &c[2], &c[3], &c[4], &c[5]
-            );
-            p.midi_control_toggle(i).set(a);
-            p.midi_control_on(i).set(b);
-            p.midi_control_off(i).set(c);
-            ok = next_data_line(file);
-            if (! ok && i < (sequences - 1))
-                return make_error_message("midi-control", "not enough data");
-            else
-                ok = true;
+            rc().midi_control_filename(filename);       /* base file-name   */
+            fullpath = rc().midi_control_filespec();    /* full path-spec   */
+            ok = parse_midi_control_section(fullpath, p);
         }
+        rc().use_midi_control_file(ok);                 /* did it work?     */
+        rc().midi_control_filename(ok ? filename : ""); /* base file-name   */
     }
     else
-    {
-        warnprint("[midi-controls] specifies a count of 0, so skipped");
-    }
+        rc().use_midi_control_file(false);
 
-#endif  // USE_PARSE_MIDI_CONTROL_FUNCTION
+   if (! rc().use_midi_control_file())
+   {
+        /*
+         * This call causes parsing to skip all of the header material.
+         * Please note that the line_after() function always starts from the
+         * beginning of the file every time.  A lot a rescanning!  But it goes
+         * fast these days.
+         */
+
+        ok = parse_midi_control_section(name(), p);
+    }
 
     /*
      * [mute-group] plus some additional data about how to save them.  After
@@ -1091,7 +1060,8 @@ optionsfile::write (const perform & p)
 {
     std::ofstream file(name(), std::ios::out | std::ios::trunc);
     perform & ucperf = const_cast<perform &>(p);
-    if (! file.is_open())
+    bool ok = file.is_open();
+    if (! ok)
     {
         printf("? error opening [%s] for writing\n", name().c_str());
         return false;
@@ -1108,6 +1078,10 @@ optionsfile::write (const perform & p)
     }
     else
     {
+        /*
+         * Top banner
+         */
+
         file
             << "# Sequencer64 0.95.1 (and above) rc configuration file\n"
             << "#\n"
@@ -1122,256 +1096,66 @@ optionsfile::write (const perform & p)
             "# is a legacy mode.\n"
             ;
 
+        /*
+         * [comments]
+         */
+
         file << "#\n"
             "# The [comments] section can document this file.  Lines starting\n"
             "# with '#' and '[' are ignored.  Blank lines are ignored.  Show a\n"
             "# blank line by adding a space character to the line.\n"
             ;
 
-        /*
-         * [comments]
-         */
-
-        file << "\n"
-            << "[comments]\n"
-            << "\n"
-            << rc().comments_block() << "\n"
-            ;
+        file << "\n[comments]\n\n" << rc().comments_block(); // << "\n" ;
     }
-    file << "\n"
-        "[midi-control]\n"
-        "\n"
-        "# The leftmost number on each line here is the pattern number, from\n"
-        "# 0 to 31 (and beyond for the mute-groups). Next, there are three\n"
-        "# groups of bracketed numbers that follow, each providing three:\n"
-        "# different categories of functionality:\n"
-        "#\n"
-        "#    Normal:           [toggle]    [on]      [off]\n"
-        "#    Playback:         [pause]     [start]   [stop]\n"
-        "#    Playlist:         [by-value]  [next]    [previous] (if active)\n"
-        "#\n"
-        "# In each group, there are six numbers:\n"
-        "#\n"
-        "#    [on/off invert status d0 d1min d1max]\n"
-        "#\n"
-        "# 'on/off' enables/disables (1/0) the MIDI control for the pattern.\n"
-        "# 'invert' (1/0) causes the opposite if data is outside the range.\n"
-        "# 'status' is by MIDI event to match (channel is NOT ignored).\n"
-        "# 'd0' is the first data value.  Example: if status is 144 (Note On),\n"
-        "# then d0 represents Note 0.\n"
-        "# 'd1min'/'d1max' are the range of second values that should match.\n"
-        "# Example:  For a Note On for note 0, 0 and 127 indicate that any\n"
-        "# Note On velocity will cause the MIDI control to take effect.\n"
-        "\n"
-        "#     ------------------ on/off (indicate is the section is enabled)\n"
-        "#    | ----------------- inverse\n"
-        "#    | |  -------------- MIDI status (event) byte (e.g. note on)\n"
-        "#    | | |  ------------ data 1 (e.g. note number)\n"
-        "#    | | | |  ---------- data 2 min\n"
-        "#    | | | | |  -------- data 2 max\n"
-        "#    | | | | | |\n"
-        "#    v v v v v v\n"
-        "#   [0 0 0 0 0 0]   [0 0 0 0 0 0]   [0 0 0 0 0 0]\n"
-        "#    Toggle          On              Off\n"
-        "\n"
-        <<  g_midi_control_limit << "      # MIDI controls count (74/84/96)\n"
-        "\n"
-        << "# Pattern-group section:\n"
-        ;
-
-    char outs[SEQ64_LINE_MAX];
-    for (int mcontrol = 0; mcontrol < g_midi_control_limit; ++mcontrol)
+    if (rc().use_midi_control_file())
     {
-        /*
-         * \tricky
-         *      32 mutes for channel, 32 group mutes, 10 odds-and-ends, and 10
-         *      extended values.  This first output item merely write a <i>
-         *      comment </i> to the "rc" file to indicate what the next
-         *      section describes.  The first section of [midi-control]
-         *      specifies 74 items.  The first 32 are unlabelled by a comment,
-         *      and run from 0 to 31.  The next 32 are labelled "mute in
-         *      group", and run from 32 to 63.  The next 10 are each labelled,
-         *      starting with "bpm up" and ending with "screen set play", and
-         *      are each one line long.  Then we've added 10 more, for
-         *      playback, record (of performance), solo, thru, and 6 reserved
-         *      for expansion.  Finally, if play-list support is enabled,
-         *      there are another 12 more controls to handle.
-         */
-
-        switch (mcontrol)
+        std::string fspec = rc().midi_control_filespec();
+        std::ofstream ctlfile(fspec, std::ios::out | std::ios::trunc);
+        ctlfile
+            << "# Sequencer64 0.96.0 (and above) midi-control "
+                   "configuration file\n"
+            << "#\n"
+            << "# " << fspec << "\n"
+            << "# Written on " << current_date_time() << "\n"
+            << "#\n"
+            <<
+            "# This file holds the MIDI control configuration for Sequencer64.\n"
+            "# It follows the format of the 'rc' configuration file, but is\n"
+            "# stored separate for convenience.  It is always stored in the\n"
+            "# main configuration directory.  To use this file, replace the\n"
+            "# [midi-control] section and its contents with a "
+                "[midi-control-file]\n"
+            "# tag, and simply add the basename (e.g. nanomap.rc) on a\n"
+            "# separate line.\n"
+            ;
+        ok = write_midi_control(p, ctlfile);
+        if (ok)
         {
-        case c_max_groups:                  // 32
-            file << "\n# Mute-in group section:\n";
-            break;
-
-        case c_midi_control_bpm_up:         // 64
-            file << "\n# Automation group\n\n" "# bpm up:\n" ;
-            break;
-
-        case c_midi_control_bpm_dn:         // 65
-            file << "# bpm down:\n";
-            break;
-
-        case c_midi_control_ss_up:          // 66
-            file << "# screen set up:\n";
-            break;
-
-        case c_midi_control_ss_dn:          // 67
-            file << "# screen set down:\n";
-            break;
-
-        case c_midi_control_mod_replace:    // 68
-            file << "# mod replace:\n";
-            break;
-
-        case c_midi_control_mod_snapshot:   // 69
-            file << "# mod snapshot:\n";
-            break;
-
-        case c_midi_control_mod_queue:      // 70
-            file << "# mod queue:\n";
-            break;
-
-        case c_midi_control_mod_gmute:      // 71
-            file << "# mod gmute:\n";
-            break;
-
-        case c_midi_control_mod_glearn:     // 72
-            file << "# mod glearn:\n";
-            break;
-
-        case c_midi_control_play_ss:        // 73
-            file << "# screen set play:\n";
-            break;
-
-        case c_midi_control_playback:       // 74 (new values!)
-            file << "\n# Extended MIDI controls:\n\n"
-                "# start playback (pause, start, stop):\n"
+            std::string fname = rc().midi_control_filename();   /* base */
+            ctlfile
+                << "\n\n# End of " << fspec << "\n#\n"
+                << "# vim: sw=4 ts=4 wm=4 et ft=sh\n"   /* ft=sh, nice colors */
                 ;
-            break;
 
-        case c_midi_control_song_record:    // 75
-            file << "# performance record:\n";
-            break;
+            /*
+             * [midi-control-file]
+             */
 
-        case c_midi_control_solo:           // 76
-            file << "# solo (toggle, on, off):\n";
-            break;
-
-        case c_midi_control_thru:           // 77
-            file << "# MIDI THRU (toggle, on, off):\n";
-            break;
-
-        case c_midi_control_bpm_page_up:    // 78
-            file << "# bpm page up:\n";
-            break;
-
-        case c_midi_control_bpm_page_dn:    // 79
-            file << "# bpm page down:\n";
-            break;
-
-        case c_midi_control_ss_set:         // 80, pull #85
-            file << "# screen set by number:\n";
-            break;
-
-        case c_midi_control_record:         // 81
-            file << "# MIDI RECORD (toggle, on, off):\n";
-            break;
-
-        case c_midi_control_quan_record:    // 82
-            file << "# MIDI Quantized RECORD (toggle, on, off):\n";
-            break;
-
-        case c_midi_control_reset_seq:      // 83
-            file << "# reserved for expansion:\n";      // still true???
-            break;
-
-#ifdef SEQ64_USE_MIDI_PLAYLIST
-        case c_midi_control_reserved_1:     // 84
-            file << "# Reserved for expansion 1\n";
-            break;
-
-        case c_midi_control_FF:
-            file << "# MIDI Control for fast-forward\n";
-            break;
-
-        case c_midi_control_rewind:
-            file << "# MIDI Control for rewind\n";
-            break;
-
-        case c_midi_control_top:
-            file << "# MIDI Control for top...\n";
-            break;
-
-        case c_midi_control_playlist:
-            file << "# MIDI Control to select playlist "
-                "(value, next, previous)\n"
+            file
+                << "\n[midi-control-file]\n\n" << fname
+                << "    # (" << fspec << ")\n"
+                << "\n"
                 ;
-            break;
-
-        case c_midi_control_playlist_song:
-            file << "# MIDI Control to select song in current playlist "
-                "(value, next, previous)\n"
-                ;
-            break;
-
-        case c_midi_control_reserved_7:
-            file << "# Reserved for expansion 7\n";
-            break;
-
-        case c_midi_control_reserved_8:
-            file << "# Reserved for expansion 8\n";
-            break;
-
-        case c_midi_control_reserved_9:
-            file << "# Reserved for expansion 9\n";
-            break;
-
-        case c_midi_control_reserved_10:
-            file << "Reserved for expansion 10\n";
-            break;
-
-        case c_midi_control_reserved_11:
-            file << "# Reserved for expansion 11\n";
-            break;
-
-        case c_midi_control_reserved_12:
-            file << "# Reserved for expansion 12\n";
-            break;
-
-        /*
-         * case c_midi_controls_extended:
-         *     file << "# Reserved for expansion 9\n";
-         *     break;
-         */
-
-#endif  // SEQ64_USE_MIDI_PLAYLIST
-
-        /*
-         * case g_midi_control_limit:  74/8496, last value, not written.
-         */
-
-        default:
-            break;
         }
-        const midi_control & toggle = ucperf.midi_control_toggle(mcontrol);
-        const midi_control & off = ucperf.midi_control_off(mcontrol);
-        const midi_control & on = ucperf.midi_control_on(mcontrol);
-        snprintf
-        (
-            outs, sizeof outs,
-            "%d [%1d %1d %3d %3d %3d %3d]"
-              " [%1d %1d %3d %3d %3d %3d]"
-              " [%1d %1d %3d %3d %3d %3d]",
-             mcontrol,
-             toggle.active(), toggle.inverse_active(), toggle.status(),
-                 toggle.data(), toggle.min_value(), toggle.max_value(),
-             on.active(), on.inverse_active(), on.status(),
-                 on.data(), on.min_value(), on.max_value(),
-             off.active(), off.inverse_active(), off.status(),
-                 off.data(), off.min_value(), off.max_value()
-        );
-        file << std::string(outs) << "\n";
+        else
+        {
+            errprintf("Failed to write '%s'\n", fspec.c_str());
+        }
+    }
+    else
+    {
+        ok = write_midi_control(p, file);
     }
 
     /*
@@ -1393,6 +1177,7 @@ optionsfile::write (const perform & p)
     }
      */
 
+    char outs[SEQ64_LINE_MAX];
     file << "\n[mute-group]\n\n";
 
     /*
@@ -1966,6 +1751,273 @@ optionsfile::write (const perform & p)
 
     file.close();
     return true;
+}
+
+/**
+ *  Writes the [midi-control] section to the given file stream.
+ *
+ * \param p
+ *      Provides a const reference to the main perform object.
+ *
+ * \param file
+ *      Provides the output file stream to write to.
+ *
+ * \param separatefile
+ *      If true, the [midi-control] section is being written to a separate
+ *      file.  The default value is false.
+ *
+ * \return
+ *      Returns true if the write operations all succeeded.
+ */
+
+bool
+optionsfile::write_midi_control
+(
+    const perform & p,
+    std::ofstream & file
+)
+{
+    bool result = false;
+    perform & ucperf = const_cast<perform &>(p);
+    file
+        << "\n[midi-control]\n\n"
+        "# The leftmost number on each line here is the pattern number, from\n"
+        "# 0 to 31; or it is the group number, from 32 to 63, for up to 32 \n"
+        "# groups; or it is an automation control number, from 64 to 95.\n"
+        "# This internal MIDI control number is followed by three groups of\n"
+        "# bracketed numbers, each providing three different type of control:\n"
+        "#\n"
+        "#    Normal:           [toggle]    [on]      [off]\n"
+        "#    Playback:         [pause]     [start]   [stop]\n"
+        "#    Playlist:         [by-value]  [next]    [previous] (if active)\n"
+        "#\n"
+        "# In each group, there are six numbers:\n"
+        "#\n"
+        "#    [on/off invert status d0 d1min d1max]\n"
+        "#\n"
+        "# 'on/off' enables/disables (1/0) the MIDI control for the pattern.\n"
+        "# 'invert' (1/0) causes the opposite if data is outside the range.\n"
+        "# 'status' is by MIDI event to match (channel is NOT ignored).\n"
+        "# 'd0' is the first data value.  Example: if status is 144 (Note On),\n"
+        "# then d0 represents Note 0.\n"
+        "# 'd1min'/'d1max' are the range of second values that should match.\n"
+        "# Example:  For a Note On for note 0, 0 and 127 indicate that any\n"
+        "# Note On velocity will cause the MIDI control to take effect.\n"
+        "\n"
+        "#     ------------------ on/off (indicate is the section is enabled)\n"
+        "#    | ----------------- inverse\n"
+        "#    | |  -------------- MIDI status (event) byte (e.g. note on)\n"
+        "#    | | |  ------------ data 1 (e.g. note number)\n"
+        "#    | | | |  ---------- data 2 min\n"
+        "#    | | | | |  -------- data 2 max\n"
+        "#    | | | | | |\n"
+        "#    v v v v v v\n"
+        "#   [0 0 0 0 0 0]   [0 0 0 0 0 0]   [0 0 0 0 0 0]\n"
+        "#    Toggle          On              Off\n"
+        "\n"
+        <<  g_midi_control_limit << "      # MIDI controls count (74/84/96)\n"
+        "\n"
+        << "# Pattern-group section:\n"
+        ;
+
+    char outs[SEQ64_LINE_MAX];
+    for (int mcontrol = 0; mcontrol < g_midi_control_limit; ++mcontrol)
+    {
+        /*
+         * \tricky
+         *      32 mutes for channel, 32 group mutes, 10 odds-and-ends, and 10
+         *      extended values.  This first output item merely write a <i>
+         *      comment </i> to the "rc" file to indicate what the next
+         *      section describes.  The first section of [midi-control]
+         *      specifies 74 items.  The first 32 are unlabelled by a comment,
+         *      and run from 0 to 31.  The next 32 are labelled "mute in
+         *      group", and run from 32 to 63.  The next 10 are each labelled,
+         *      starting with "bpm up" and ending with "screen set play", and
+         *      are each one line long.  Then we've added 10 more, for
+         *      playback, record (of performance), solo, thru, and 6 reserved
+         *      for expansion.  Finally, if play-list support is enabled,
+         *      there are another 12 more controls to handle.
+         */
+
+        switch (mcontrol)
+        {
+        case c_max_groups:                  // 32
+            file << "\n# Mute-in group section:\n";
+            break;
+
+        case c_midi_control_bpm_up:         // 64
+            file << "\n# Automation group\n\n" "# bpm up:\n" ;
+            break;
+
+        case c_midi_control_bpm_dn:         // 65
+            file << "# bpm down:\n";
+            break;
+
+        case c_midi_control_ss_up:          // 66
+            file << "# screen set up:\n";
+            break;
+
+        case c_midi_control_ss_dn:          // 67
+            file << "# screen set down:\n";
+            break;
+
+        case c_midi_control_mod_replace:    // 68
+            file << "# mod replace:\n";
+            break;
+
+        case c_midi_control_mod_snapshot:   // 69
+            file << "# mod snapshot:\n";
+            break;
+
+        case c_midi_control_mod_queue:      // 70
+            file << "# mod queue:\n";
+            break;
+
+        case c_midi_control_mod_gmute:      // 71
+            file << "# mod gmute:\n";
+            break;
+
+        case c_midi_control_mod_glearn:     // 72
+            file << "# mod glearn:\n";
+            break;
+
+        case c_midi_control_play_ss:        // 73
+            file << "# screen set play:\n";
+            break;
+
+        case c_midi_control_playback:       // 74 (new values!)
+            file << "\n# Extended MIDI controls:\n\n"
+                "# start playback (pause, start, stop):\n"
+                ;
+            break;
+
+        case c_midi_control_song_record:    // 75
+            file << "# performance record:\n";
+            break;
+
+        case c_midi_control_solo:           // 76
+            file << "# solo (toggle, on, off):\n";
+            break;
+
+        case c_midi_control_thru:           // 77
+            file << "# MIDI THRU (toggle, on, off):\n";
+            break;
+
+        case c_midi_control_bpm_page_up:    // 78
+            file << "# bpm page up:\n";
+            break;
+
+        case c_midi_control_bpm_page_dn:    // 79
+            file << "# bpm page down:\n";
+            break;
+
+        case c_midi_control_ss_set:         // 80, pull #85
+            file << "# screen set by number:\n";
+            break;
+
+        case c_midi_control_record:         // 81
+            file << "# MIDI RECORD (toggle, on, off):\n";
+            break;
+
+        case c_midi_control_quan_record:    // 82
+            file << "# MIDI Quantized RECORD (toggle, on, off):\n";
+            break;
+
+        case c_midi_control_reset_seq:      // 83
+            file << "# reserved for expansion:\n";      // still true???
+            break;
+
+#ifdef SEQ64_USE_MIDI_PLAYLIST
+        case c_midi_control_reserved_1:     // 84
+            file << "# Reserved for expansion 1\n";
+            break;
+
+        case c_midi_control_FF:
+            file << "# MIDI Control for fast-forward\n";
+            break;
+
+        case c_midi_control_rewind:
+            file << "# MIDI Control for rewind\n";
+            break;
+
+        case c_midi_control_top:
+            file << "# MIDI Control for top...\n";
+            break;
+
+        case c_midi_control_playlist:
+            file << "# MIDI Control to select playlist "
+                "(value, next, previous)\n"
+                ;
+            break;
+
+        case c_midi_control_playlist_song:
+            file << "# MIDI Control to select song in current playlist "
+                "(value, next, previous)\n"
+                ;
+            break;
+
+        case c_midi_control_reserved_7:
+            file << "# Reserved for expansion 7\n";
+            break;
+
+        case c_midi_control_reserved_8:
+            file << "# Reserved for expansion 8\n";
+            break;
+
+        case c_midi_control_reserved_9:
+            file << "# Reserved for expansion 9\n";
+            break;
+
+        case c_midi_control_reserved_10:
+            file << "# Reserved for expansion 10\n";
+            break;
+
+        case c_midi_control_reserved_11:
+            file << "# Reserved for expansion 11\n";
+            break;
+
+        case c_midi_control_reserved_12:
+            file << "# Reserved for expansion 12\n";
+            break;
+
+        /*
+         * case c_midi_controls_extended:
+         *     file << "# Reserved for expansion 9\n";
+         *     break;
+         */
+
+#endif  // SEQ64_USE_MIDI_PLAYLIST
+
+        /*
+         * case g_midi_control_limit:  74/8496, last value, not written.
+         */
+
+        default:
+            break;
+        }
+        const midi_control & toggle = ucperf.midi_control_toggle(mcontrol);
+        const midi_control & off = ucperf.midi_control_off(mcontrol);
+        const midi_control & on = ucperf.midi_control_on(mcontrol);
+        snprintf
+        (
+            outs, sizeof outs,
+            "%d [%1d %1d %3d %3d %3d %3d]"
+              " [%1d %1d %3d %3d %3d %3d]"
+              " [%1d %1d %3d %3d %3d %3d]",
+             mcontrol,
+             toggle.active(), toggle.inverse_active(), toggle.status(),
+                 toggle.data(), toggle.min_value(), toggle.max_value(),
+             on.active(), on.inverse_active(), on.status(),
+                 on.data(), on.min_value(), on.max_value(),
+             off.active(), off.inverse_active(), off.status(),
+                 off.data(), off.min_value(), off.max_value()
+        );
+        file << std::string(outs) << "\n";
+        result = file.good();
+        if (! result)
+            break;
+    }
+    return result;
 }
 
 }           // namespace seq64

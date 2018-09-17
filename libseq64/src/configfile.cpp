@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-08-29
+ * \updates       2018-09-14
  * \license       GNU GPLv2 or above
  *
  *  We found a couple of unused members in this module and removed them.
@@ -91,13 +91,16 @@ configfile::get_line (std::ifstream & file)
  * \param file
  *      Points to an input stream.  We converted this item to a reference;
  *      pointers can be subject to problems.  For example, what if someone
- *      passes a null pointer?
+ *      passes a null pointer?  Nonetheless, this is a small library.  Since
+ *      this function has this parameter, the caller can deal with multiple
+ *      files at the same time.
  *
  * \return
  *      Returns true if a presumed data line was found.  False is returned if
  *      not found before an EOF or a section marker ("[") is found.  This is a
  *      a new (ca 2016-02-14) feature of this function, to assist in adding
- *      new data to the file.
+ *      new data to the file without crapping out on old-style configuration
+ *      files.
  */
 
 bool
@@ -139,6 +142,20 @@ configfile::next_data_line (std::ifstream & file)
  *  next_data_line() function for the previous section will often end up
  *  at the beginning of the next section.  Especially important with
  *  play-lists.
+ *
+ * \param file
+ *      Points to the input file stream.  Since this function has this
+ *      parameter, the caller can deal with multiple files at the same time.
+ *      However, the caller must either close the file explicitly or open it
+ *      on the stack.
+ *
+ * \param tag
+ *      Provides a tag to be found.  Lines are read until a match occurs
+ *      with this tag.  Normally, the tag is a section marker, such as
+ *      "[user-interface]".  Best to assume an exact match is needed.
+ *
+ * \return
+ *      Returns true if the tag was found.  Otherwise, false is returned.
  */
 
 bool
@@ -185,7 +202,10 @@ configfile::next_section (std::ifstream & file, const std::string & tag)
  *  the configuration file a little more robust against errors.
  *
  * \param file
- *      Points to the input file stream.
+ *      Points to the input file stream.  Since this function has this
+ *      parameter, the caller can deal with multiple files at the same time.
+ *      However, the caller must either close the file explicitly or open it
+ *      on the stack.
  *
  * \param tag
  *      Provides a tag to be found.  Lines are read until a match occurs

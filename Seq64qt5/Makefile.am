@@ -6,7 +6,7 @@
 # \library    	seq64qt5 application
 # \author     	Chris Ahlstrom
 # \date       	2017-09-05
-# \update      2018-06-10
+# \update      2018-09-16
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -90,6 +90,13 @@ libseq_qt5dir = $(builddir)/seq_qt5/src/.libs
 #
 # 	'AM_CPPFLAGS' is the set of directories needed to access all of the
 # 	library header files used in this project.
+#
+# 	Note that we include both the portmidi and rtmidi include directories.
+# 	There are no conflicts in name of header files, and we don't want to
+# 	try to test SEQ64_RTMIDI_SUPPORT and SEQ64_PORTMIDI_SUPPORT until we have
+# 	to.
+#
+#   -I$(top_srcdir)/seq_portmidi/include
 #
 #------------------------------------------------------------------------------
 

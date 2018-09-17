@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2018-09-12
+ * \updates       2018-09-15
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -124,6 +124,8 @@ rc_settings::rc_settings ()
     m_user_filename             (),
     m_config_filename_alt       (),
     m_user_filename_alt         (),
+    m_use_midi_control_file     (false),
+    m_midi_control_filename     (),
     m_playlist_filename         (),
     m_application_name          (SEQ64_APP_NAME),
     m_app_client_name           (SEQ64_CLIENT_NAME),
@@ -173,6 +175,8 @@ rc_settings::rc_settings (const rc_settings & rhs)
     m_user_filename             (rhs.m_user_filename),
     m_config_filename_alt       (rhs.m_config_filename_alt),
     m_user_filename_alt         (rhs.m_user_filename_alt),
+    m_use_midi_control_file     (rhs.m_use_midi_control_file),
+    m_midi_control_filename     (rhs.m_midi_control_filename),
     m_playlist_filename         (rhs.m_playlist_filename),
     m_application_name          (rhs.m_application_name),
     m_app_client_name           (rhs.m_app_client_name),
@@ -228,6 +232,8 @@ rc_settings::operator = (const rc_settings & rhs)
         m_config_filename_alt       = rhs.m_config_filename_alt;
         m_user_filename_alt         = rhs.m_user_filename_alt;
         m_playlist_filename         = rhs.m_playlist_filename;
+        m_use_midi_control_file     = rhs.m_use_midi_control_file;
+        m_midi_control_filename     = rhs.m_midi_control_filename;
 
         /*
          * const: m_application_name = rhs.m_application_name;
@@ -290,6 +296,8 @@ rc_settings::set_defaults ()
     m_config_filename_alt       = ".seq24rc";
     m_user_filename_alt         = ".seq24usr";
     m_playlist_filename         = "";                   // emnpty by default
+    m_use_midi_control_file     = false;
+    m_midi_control_filename     = "";
 
     /*
      * const: m_application_name = SEQ64_APP_NAME;
@@ -436,6 +444,31 @@ rc_settings::playlist_filespec () const
             result = listname;
         else
             result = home_config_directory() + listname;
+    }
+    return result;
+}
+
+/**
+ *  Constructs the full path and file specification for a "MIDI control" file.
+ *
+ * \return
+ *      Returns either the filename itself, if it already has a directory in
+ *      it.  Otherwise, home_config_directory() is retrieved, the
+ *      "MIDI control" file-name is appended to that result, and returned.
+ *      Otherwise, an empty string is returned.  Don't use it!
+ */
+
+std::string
+rc_settings::midi_control_filespec () const
+{
+    std::string result;
+    std::string ctlfilename = midi_control_filename();
+    if (! ctlfilename.empty())
+    {
+        if (name_has_directory(ctlfilename))
+            result = ctlfilename;
+        else
+            result = home_config_directory() + ctlfilename;
     }
     return result;
 }

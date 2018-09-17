@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-09-04
+ * \updates       2018-09-17
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -69,13 +69,14 @@ namespace Ui
 namespace seq64
 {
     class perform;
-    class qsliveframe;
+    class qliveframeex;
     class qperfeditex;
     class qperfeditframe64;
     class qplaylistframe;
     class qseqeditex;
     class qseqeditframe;
     class qseqeventframe;
+    class qsliveframe;
     class qsmaintime;
     class qseditoptions;
     class qsabout;
@@ -106,6 +107,7 @@ public:
     void show_message_box (const std::string & msg_text);
     void remove_editor (int seq);
     void remove_qperfedit ();
+    void remove_live_frame (int ssnum);
 
     /**
      * \getter m_ppqn
@@ -165,6 +167,7 @@ private:
     void create_action_connections ();
     void create_action_menu ();
     void remove_all_editors ();
+    void remove_all_live_frames ();
     void connect_editor_slots ();
     void set_tap_button (int beats);
     midibpm update_tap_bpm ();
@@ -172,10 +175,16 @@ private:
 private:
 
     /**
-     *  A typedef for keeping track of sequence edits.
+     *  A typedef for keeping track of externa sequence edits.
      */
 
     typedef std::map<int, qseqeditex *> edit_container;
+
+    /**
+     *  A typedef for keeping track of external live-frames.
+     */
+
+    typedef std::map<int, qliveframeex *> live_container;
 
 private:
 
@@ -253,6 +262,12 @@ private:
 
     edit_container m_open_editors;
 
+    /**
+     *  Holds a list of open external qliveframeex objects.
+     */
+
+    live_container m_open_live_frames;
+
 private slots:
 
     void start_playing ();
@@ -285,6 +300,7 @@ private slots:
     void load_event_editor (int seqid);
     void load_qseqedit (int seqid);
     void load_qperfedit (bool on);
+    void load_live_frame (int ssnum);
     void toggle_time_format (bool on);
     void open_performance_edit ();
     void apply_song_transpose ();

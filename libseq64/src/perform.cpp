@@ -4315,6 +4315,11 @@ input_thread_func (void * myperf)
         c_midi_control_play_ss
 \endverbatim
  *
+ *  Note that the up/down controls above could be consolidated, using the "on"
+ *  section for "up", and the "off" section for "down".  And these controls
+ *  waste the "toggle" section.  But if we consolidate them, we will break
+ *  existing [midi-control] sections.
+ *
  *  We have added the following extended values:
  *
 \verbatim
@@ -4336,7 +4341,7 @@ input_thread_func (void * myperf)
  *  c_midi_control_solo probably will need a parameter.
  *
  *  Values from 32 through 2*32 are normalized by subtracting 32 and passed to
- *  the select_and_mute_group() function.  Otherwise, the following apply:
+ *  the select_and_mute_group() function.
  *
  *  We also reserve a few control values above that for expansion.
  *
@@ -4345,6 +4350,13 @@ input_thread_func (void * myperf)
  *
  * \param state
  *      The state of the control, used with the following values:
+ *
+ *          -   c_midi_control_mod_replace
+ *          -   c_midi_control_mod_snapshot
+ *          -   c_midi_control_mod_queue
+ *          -   c_status_oneshot (TO DO)
+ *          -   c_midi_control_mod_gmute
+ *          -   c_midi_control_mod_glearn
  *
  * \return
  *      Returns true if the event was handled.  Mostly rote, for conformance

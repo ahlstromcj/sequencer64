@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-08-24
+ * \updates       2018-09-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -202,14 +202,15 @@ private slots:
     void conditional_update ();
     void updateBank (int newBank);
     void updateBankName ();
-    void newSeq ();
-    void editSeq ();
-    void editSeqEx ();
-    void editEvents ();
-    void copySeq ();
-    void cutSeq ();
-    void pasteSeq ();
-    void deleteSeq ();
+    void new_seq ();
+    void edit_seq ();
+    void edit_seq_ex ();
+    void edit_events ();
+    void copy_seq ();
+    void cut_seq ();
+    void paste_seq ();
+    void delete_seq ();
+    void new_live_frame ();
 
     void color_white ();
     void color_red ();
@@ -225,6 +226,7 @@ signals:
     void callEditor (int seqid);        /* call editor tab for pattern      */
     void callEditorEx (int seqid);      /* call editor window for pattern   */
     void callEditorEvents (int seqid);  /* call event tab for pattern       */
+    void callLiveFrame (int ssnum);     /* call live frame for seq/screen # */
 
 };              // class qsliveframe
 

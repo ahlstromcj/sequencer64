@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-09-16
- * \updates       2018-09-16
+ * \updates       2018-09-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -110,9 +110,7 @@ void
 qliveframeex::closeEvent (QCloseEvent *)
 {
     if (not_nullptr(m_live_parent))
-    {
         m_live_parent->remove_live_frame(m_screenset);
-    }
 }
 
 /**

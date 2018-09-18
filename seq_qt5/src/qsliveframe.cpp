@@ -674,7 +674,10 @@ qsliveframe::seqIDFromClickXY (int click_x, int click_y)
 }
 
 /**
+ *  Sets m_curr_seq based on the position of the mouse over the live frame.
  *
+ * \param event
+ *      Provides the mouse event.
  */
 
 void
@@ -755,20 +758,33 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
 
         QAction * newseq = new QAction(tr("&New pattern"), m_popup);
         m_popup->addAction(newseq);
-        QObject::connect(newseq, SIGNAL(triggered(bool)), this, SLOT(newSeq()));
+        QObject::connect(newseq, SIGNAL(triggered(bool)), this, SLOT(new_seq()));
+
+        /*
+         *  Add an action to bring up an external qsliveframe window based
+         *  on the sequence number over which the mouse is resting.  This is
+         *  pretty tricky, but might be reasonable.
+         */
+
+        QAction * liveframe = new QAction(tr("Extern &live frame"), m_popup);
+        m_popup->addAction(liveframe);
+        QObject::connect
+        (
+            liveframe, SIGNAL(triggered(bool)), this, SLOT(new_live_frame())
+        );
 
         if (perf().is_active(m_curr_seq))
         {
             QAction * editseq = new QAction(tr("Edit pattern in &tab"), m_popup);
             m_popup->addAction(editseq);
-            connect(editseq, SIGNAL(triggered(bool)), this, SLOT(editSeq()));
+            connect(editseq, SIGNAL(triggered(bool)), this, SLOT(edit_seq()));
 
             QAction * editseqex = new QAction
             (
                 tr("Edit pattern in &window"), m_popup
             );
             m_popup->addAction(editseqex);
-            connect(editseqex, SIGNAL(triggered(bool)), this, SLOT(editSeqEx()));
+            connect(editseqex, SIGNAL(triggered(bool)), this, SLOT(edit_seq_ex()));
 
             QAction * editevents = new QAction
             (
@@ -777,7 +793,7 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
             m_popup->addAction(editevents);
             connect
             (
-                editevents, SIGNAL(triggered(bool)), this, SLOT(editEvents())
+                editevents, SIGNAL(triggered(bool)), this, SLOT(edit_events())
             );
 
             QMenu * menuColour = new QMenu(tr("Set pattern &color..."));
@@ -809,24 +825,24 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
 
             QAction * actionCopy = new QAction(tr("Cop&y pattern"), m_popup);
             m_popup->addAction(actionCopy);
-            connect(actionCopy, SIGNAL(triggered(bool)), this, SLOT(copySeq()));
+            connect(actionCopy, SIGNAL(triggered(bool)), this, SLOT(copy_seq()));
 
             QAction * actionCut = new QAction(tr("Cu&t pattern"), m_popup);
             m_popup->addAction(actionCut);
-            connect(actionCut, SIGNAL(triggered(bool)), this, SLOT(cutSeq()));
+            connect(actionCut, SIGNAL(triggered(bool)), this, SLOT(cut_seq()));
 
             QAction * actionDelete = new QAction(tr("&Delete pattern"), m_popup);
             m_popup->addAction(actionDelete);
             connect
             (
-                actionDelete, SIGNAL(triggered(bool)), this, SLOT(deleteSeq())
+                actionDelete, SIGNAL(triggered(bool)), this, SLOT(delete_seq())
             );
         }
         else if (m_can_paste)
         {
             QAction * actionPaste = new QAction(tr("Paste pattern"), m_popup);
             m_popup->addAction(actionPaste);
-            connect(actionPaste, SIGNAL(triggered(bool)), this, SLOT(pasteSeq()));
+            connect(actionPaste, SIGNAL(triggered(bool)), this, SLOT(paste_seq()));
         }
         m_popup->exec(QCursor::pos());
     }
@@ -882,7 +898,7 @@ qsliveframe::mouseDoubleClickEvent (QMouseEvent * event)
 {
 #ifdef USE_KEPLER34_LIVE_DOUBLE_CLICK
     if (m_adding_new)
-        newSeq();
+        new_seq();
 #else
     int m_curr_seq = seqIDFromClickXY(event->x(), event->y());
     if (! perf().is_active(m_curr_seq))
@@ -899,7 +915,7 @@ qsliveframe::mouseDoubleClickEvent (QMouseEvent * event)
  */
 
 void
-qsliveframe::newSeq ()
+qsliveframe::new_seq ()
 {
     if (perf().is_active(m_curr_seq))
     {
@@ -917,12 +933,24 @@ qsliveframe::newSeq ()
 }
 
 /**
+ *  We need to see if there is an external live-frame window already existing
+ *  for the current sequence number (which is used as a screen-set number).
+ *  If not, we can create a new one and add it to the list.
+ */
+
+void
+qsliveframe::new_live_frame ()
+{
+    callLiveFrame(m_curr_seq);
+}
+
+/**
  *  Emits the callEditor() signal.  In qsmainwnd, this signal is connected to
  *  the loadEditor() slot.
  */
 
 void
-qsliveframe::editSeq ()
+qsliveframe::edit_seq ()
 {
     callEditor(m_curr_seq);
 }
@@ -933,7 +961,7 @@ qsliveframe::editSeq ()
  */
 
 void
-qsliveframe::editSeqEx ()
+qsliveframe::edit_seq_ex ()
 {
     callEditorEx(m_curr_seq);
 }
@@ -943,7 +971,7 @@ qsliveframe::editSeqEx ()
  */
 
 void
-qsliveframe::editEvents ()
+qsliveframe::edit_events ()
 {
     callEditorEvents(m_curr_seq);
 }
@@ -1312,7 +1340,7 @@ qsliveframe::color_orange ()
  */
 
 void
-qsliveframe::copySeq ()
+qsliveframe::copy_seq ()
 {
     if (perf().is_active(m_curr_seq))
     {
@@ -1326,7 +1354,7 @@ qsliveframe::copySeq ()
  */
 
 void
-qsliveframe::cutSeq ()
+qsliveframe::cut_seq ()
 {
     // TODO: dialog warning that the editor is the reason
     // this seq cant be cut
@@ -1345,7 +1373,7 @@ qsliveframe::cutSeq ()
  */
 
 void
-qsliveframe::deleteSeq ()
+qsliveframe::delete_seq ()
 {
     bool valid = perf().is_mseq_valid(m_curr_seq);
     bool not_editing = ! perf().is_sequence_in_edit(m_curr_seq);
@@ -1367,7 +1395,7 @@ qsliveframe::deleteSeq ()
  */
 
 void
-qsliveframe::pasteSeq ()
+qsliveframe::paste_seq ()
 {
     if (! perf().is_active(m_curr_seq))
     {

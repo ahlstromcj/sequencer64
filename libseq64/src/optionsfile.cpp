@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-16
+ * \updates       2018-09-17
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -767,24 +767,26 @@ optionsfile::parse (perform & p)
         int flag;
         sscanf(m_line, "%d", &flag);
         rc().playlist_active(bool(flag));
-        if (next_data_line(file))
+        if (flag != 0)
         {
-            size_t len = strlen(m_line);
-            if (len > 0)
+            if (next_data_line(file))
             {
-                if (strcmp(m_line, "\"\"") == 0)
+                size_t len = strlen(m_line);
+                if (len > 0)
                 {
-                    rc().playlist_active(false);
-                    rc().playlist_filename("");
+                    if (strcmp(m_line, "\"\"") == 0)
+                    {
+                        rc().playlist_active(false);
+                        rc().playlist_filename("");
+                    }
+                    else
+                        rc().playlist_filename(m_line);
                 }
                 else
-                    rc().playlist_filename(m_line);
+                    rc().playlist_active(false);
             }
-            else
-                rc().playlist_active(false);
         }
     }
-
 
     long method = 0;
     if (line_after(file, "[interaction-method]"))

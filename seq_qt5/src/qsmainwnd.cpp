@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-09-13
+ * \updates       2018-09-18
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -499,12 +499,18 @@ qsmainwnd::qsmainwnd
 
     /*
      * Pattern editor callbacks.  One for editing in the tab, and the other
-     * for editing in an external pattern editor window.
+     * for editing in an external pattern editor window.  Also added is a
+     * signal/callback to create an external live-frame window.
      */
 
     if (not_nullptr(m_live_frame))
     {
         connect_editor_slots();
+        connect
+        (
+            m_live_frame, SIGNAL(callLiveFrame(int)),
+            this, SLOT(load_live_frame(int))
+        );
     }
 
     /*
@@ -570,6 +576,7 @@ qsmainwnd::closeEvent (QCloseEvent * event)
     {
         remove_all_editors();
         remove_qperfedit();
+        remove_all_live_frames();
     }
     else
         event->ignore();
@@ -792,7 +799,12 @@ qsmainwnd::open_file (const std::string & fn)
         if (not_nullptr(m_live_frame))
         {
             ui->LiveTabLayout->addWidget(m_live_frame);
-            connect_editor_slots();
+            connect_editor_slots();     /* external pattern editor window   */
+            connect                     /* external live frame window       */
+            (
+                m_live_frame, SIGNAL(callLiveFrame(int)),
+                this, SLOT(load_live_frame(int))
+            );
             m_live_frame->show();
             m_live_frame->setFocus();
 

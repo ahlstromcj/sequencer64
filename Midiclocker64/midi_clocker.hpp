@@ -29,15 +29,31 @@
  * \library       midiclocker64 application
  * \author        TODO team; refactoring by Chris Ahlstrom
  * \date          2017-11-10
- * \updates       2017-11-12
+ * \updates       2018-09-17
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <string>
-#include <jack/jack.h>
 
 #include "easy_macros.h"
+
+#ifdef SEQ64_JACK_SUPPORT
+#include <jack/jack.h>
+#else
+
+/*
+ *  Definitions to allow this application to compile under --disable-jack,
+ *  though it will not run.
+ */
+
+struct jack_nframes_t { int jnt_dummy; };
+struct jack_position_t { int jpt_dummy; };
+struct jack_port_t { int jport_dummy; };
+struct jack_client_t { int jct_dummy; };
+struct jack_transport_state_t { int jtst_dummy; };
+
+#endif
 
 #ifndef PLATFORM_WINDOWS
 #include <signal.h>
@@ -113,7 +129,11 @@ private:
      *  Application state.
      */
 
+#ifdef SEQ64_JACK_SUPPORT
     jack_transport_state_t m_xstate;
+#else
+    int m_xstate;
+#endif
     double m_clk_last_tick;
     int64_t m_song_pos_sync;
 

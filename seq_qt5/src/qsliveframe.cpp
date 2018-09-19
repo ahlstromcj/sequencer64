@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-09-13
+ * \updates       2018-09-19
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -68,6 +68,7 @@ static const int c_text_x = 6;
 static const int c_mainwid_border = 0;
 
 /**
+ *  The Qt 5 version of mainwid.
  *
  * \param p
  *      Provides the perform object to use for interacting with this sequence.
@@ -77,7 +78,9 @@ static const int c_mainwid_border = 0;
  *
  * \param parent
  *      Provides the Qt-parent window/widget for this container window.
- *      Defaults to null.
+ *      Defaults to null.  Normally, this is a pointer to the tab-widget
+ *      containing this frame.  If null, there is no parent, and this frame is
+ *      in an external window.
  */
 
 qsliveframe::qsliveframe (perform & p, qsmainwnd * window, QWidget * parent)
@@ -114,7 +117,9 @@ qsliveframe::qsliveframe (perform & p, qsmainwnd * window, QWidget * parent)
     m_call_seq_shift    (0),            // for future usage
     m_last_tick_x       (),             // array
     m_last_playing      (),             // array
-    m_can_paste         (false)
+    m_can_paste         (false),
+    m_has_focus         (false),
+    m_is_external       (is_nullptr(parent))
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setFocusPolicy(Qt::StrongFocus);
@@ -183,7 +188,9 @@ void
 qsliveframe::conditional_update ()
 {
     if (perf().needs_update(0))     // seq().number()))
+    {
         update();
+    }
 }
 
 /**
@@ -585,12 +592,18 @@ qsliveframe::set_bank ()
 void
 qsliveframe::set_bank (int bank)
 {
-    QString bname = perf().get_bank_name(bank).c_str();
-    ui->txtBankName->setPlainText(bname);
-    ui->spinBank->setValue(bank);
-    m_bank_id = bank;
-    m_screenset_offset = m_screenset_slots * bank;
-    update(); // perf().modify();
+    if (bank != m_bank_id)
+    {
+        QString bname = perf().get_bank_name(bank).c_str();
+        ui->txtBankName->setPlainText(bname);
+        ui->spinBank->setValue(bank);
+        m_bank_id = bank;
+        m_screenset_offset = m_screenset_slots * bank;
+        if (m_has_focus)
+            perf().set_screenset(bank);
+
+        update();
+    }
 }
 
 /**
@@ -613,7 +626,8 @@ void
 qsliveframe::updateBankName ()
 {
     updateInternalBankName();
-    perf().modify();
+    if (! m_is_external)
+        perf().modify();
 }
 
 /**
@@ -625,7 +639,7 @@ void
 qsliveframe::updateInternalBankName ()
 {
     std::string name = ui->txtBankName->document()->toPlainText().toStdString();
-    perf().set_screenset_notepad(m_bank_id, name);
+    perf().set_screenset_notepad(m_bank_id, name, m_is_external);
 }
 
 /**
@@ -766,19 +780,27 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
          *  pretty tricky, but might be reasonable.
          */
 
-        QAction * liveframe = new QAction(tr("Extern &live frame"), m_popup);
-        m_popup->addAction(liveframe);
-        QObject::connect
-        (
-            liveframe, SIGNAL(triggered(bool)), this, SLOT(new_live_frame())
-        );
+        if (! m_is_external)
+        {
+            QAction * liveframe = new QAction(tr("Extern &live frame"), m_popup);
+            m_popup->addAction(liveframe);
+            QObject::connect
+            (
+                liveframe, SIGNAL(triggered(bool)), this, SLOT(new_live_frame())
+            );
 
+            if (perf().is_active(m_curr_seq))
+            {
+                QAction * editseq = new QAction
+                (
+                    tr("Edit pattern in &tab"), m_popup
+                );
+                m_popup->addAction(editseq);
+                connect(editseq, SIGNAL(triggered(bool)), this, SLOT(edit_seq()));
+            }
+        }
         if (perf().is_active(m_curr_seq))
         {
-            QAction * editseq = new QAction(tr("Edit pattern in &tab"), m_popup);
-            m_popup->addAction(editseq);
-            connect(editseq, SIGNAL(triggered(bool)), this, SLOT(edit_seq()));
-
             QAction * editseqex = new QAction
             (
                 tr("Edit pattern in &window"), m_popup
@@ -786,15 +808,18 @@ qsliveframe::mouseReleaseEvent (QMouseEvent *event)
             m_popup->addAction(editseqex);
             connect(editseqex, SIGNAL(triggered(bool)), this, SLOT(edit_seq_ex()));
 
-            QAction * editevents = new QAction
-            (
-                tr("Edit e&vents in tab"), m_popup
-            );
-            m_popup->addAction(editevents);
-            connect
-            (
-                editevents, SIGNAL(triggered(bool)), this, SLOT(edit_events())
-            );
+            if (! m_is_external)
+            {
+                QAction * editevents = new QAction
+                (
+                    tr("Edit e&vents in tab"), m_popup
+                );
+                m_popup->addAction(editevents);
+                connect
+                (
+                    editevents, SIGNAL(triggered(bool)), this, SLOT(edit_events())
+                );
+            }
 
             QMenu * menuColour = new QMenu(tr("Set pattern &color..."));
             QAction * color[8];
@@ -1403,6 +1428,29 @@ qsliveframe::paste_seq ()
         {
             perf().get_sequence(m_curr_seq)->partial_assign(m_seq_clipboard);
             perf().get_sequence(m_curr_seq)->set_dirty();
+        }
+    }
+}
+
+/**
+ *  This is not called when focus changes.  Instead, we have to call this from
+ *  qliveframeex::changeEvent().
+ */
+
+void
+qsliveframe::changeEvent (QEvent * event)
+{
+    QWidget::changeEvent(event);
+    if (event->type() == QEvent::ActivationChange)
+    {
+        if (isActiveWindow())
+        {
+            m_has_focus = true;             // widget is now active
+            perf().set_screenset(m_bank_id);
+        }
+        else
+        {
+            m_has_focus = false;            // widget is now inactive
         }
     }
 }

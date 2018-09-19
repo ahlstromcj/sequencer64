@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-09-18
+ * \updates       2018-09-19
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -913,6 +913,13 @@ qsmainwnd::refresh ()
     if (not_nullptr(m_beat_ind))
         m_beat_ind->update();
 
+    if (not_nullptr(m_live_frame))
+    {
+        int active_screenset = perf().screenset();
+        std::string b = std::to_string(active_screenset);
+        ui->entry_active_set->setText(b.c_str());
+    }
+
     if (ui->button_keep_queue->isChecked() != perf().is_keep_queue())
         ui->button_keep_queue->setChecked(perf().is_keep_queue());
 
@@ -923,7 +930,7 @@ qsmainwnd::refresh ()
     if (perf().is_pattern_playing())
     {
         midipulse tick = perf().get_tick();
-        midibpm bpm = perf().get_beats_per_minute();
+        midibpm bpm = perf().bpm();         // perf().get_beats_per_minute();
         int ppqn = perf().get_ppqn();
         if (m_tick_time_as_bbt)
         {
@@ -2161,6 +2168,29 @@ qsmainwnd::queue_it ()
 {
     bool is_active = ui->button_keep_queue->isChecked();
     perf().set_keep_queue(is_active);
+}
+
+/**
+ *  This is not called when focus changes.  Instead, we have to call this from
+ *  qliveframeex::changeEvent().
+ */
+
+void
+qsmainwnd::changeEvent (QEvent * event)
+{
+    QWidget::changeEvent(event);
+    if (event->type() == QEvent::ActivationChange)
+    {
+        if (isActiveWindow())
+        {
+            if (not_nullptr(m_live_frame))
+                perf().set_screenset(m_live_frame->bank());
+        }
+        else
+        {
+            // widget is now inactive
+        }
+    }
 }
 
 }               // namespace seq64

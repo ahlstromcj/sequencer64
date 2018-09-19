@@ -78,6 +78,7 @@ public:
 protected:
 
     virtual void closeEvent (QCloseEvent *);
+    virtual void changeEvent (QEvent * event);
 
     const perform & perf () const
     {

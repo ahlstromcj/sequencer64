@@ -194,7 +194,7 @@
       </layout>
      </widget>
     </item>
-    <item row="2" column="0" colspan="15">
+    <item row="2" column="0" colspan="16">
      <widget class="QTabWidget" name="tabWidget">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
@@ -455,7 +455,7 @@
       </property>
      </spacer>
     </item>
-    <item row="3" column="11" colspan="2">
+    <item row="3" column="12" colspan="2">
      <layout class="QHBoxLayout" name="lay_bpm">
       <item>
        <widget class="QPushButton" name="button_tap_bpm">
@@ -782,6 +782,29 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item row="3" column="10">
+     <widget class="QLabel" name="labelActiveSet">
+      <property name="text">
+       <string>Active Set</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="11">
+     <widget class="QLineEdit" name="entry_active_set">
+      <property name="minimumSize">
+       <size>
+        <width>36</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

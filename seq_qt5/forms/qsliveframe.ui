@@ -193,7 +193,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Bank</string>
+        <string>Set</string>
        </property>
       </widget>
      </item>

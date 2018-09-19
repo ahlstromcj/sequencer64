@@ -122,8 +122,21 @@ qliveframeex::update_draw_geometry ()
 {
     if (not_nullptr(m_live_frame))
     {
-        // m_live_frame->update_draw_geometry();
-        m_live_frame->updateGeometry();
+        m_live_frame->updateGeometry(); // m_live_frame->update_draw_geometry();
+    }
+}
+
+/**
+ *
+ */
+
+void
+qliveframeex::changeEvent (QEvent * event)
+{
+    QWidget::changeEvent(event);
+    if (event->type() == QEvent::ActivationChange)
+    {
+        m_live_frame->changeEvent(event);
     }
 }
 

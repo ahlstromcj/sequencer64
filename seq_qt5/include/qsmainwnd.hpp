@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-09-17
+ * \updates       2018-09-19
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -152,6 +152,7 @@ protected:
 private:
 
     virtual void closeEvent (QCloseEvent *);
+    virtual void changeEvent (QEvent *);
 
     void make_perf_frame_in_tab ();
 

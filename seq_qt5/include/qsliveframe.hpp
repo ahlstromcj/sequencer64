@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-09-17
+ * \updates       2018-09-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -66,6 +66,7 @@ namespace seq64
 class qsliveframe : public QFrame, gui_palette_qt5
 {
     friend class qsmainwnd;
+    friend class qliveframeex;
 
     Q_OBJECT
 
@@ -83,6 +84,11 @@ public:
     void set_bank (int newBank);    // bank (screen-set) of sequences displayed
     void set_bank ();               // bank number retrieved from perform
 
+    int bank () const
+    {
+        return m_bank_id;           // same as the screen-set number
+    }
+
 protected:                          // overrides of event handlers
 
     virtual void paintEvent (QPaintEvent * event);
@@ -92,6 +98,7 @@ protected:                          // overrides of event handlers
     virtual void mouseDoubleClickEvent (QMouseEvent * event);
     virtual void keyPressEvent (QKeyEvent * event);
     virtual void keyReleaseEvent (QKeyEvent * event);
+    virtual void changeEvent (QEvent * event);
 
 private:
 
@@ -127,6 +134,11 @@ private:
     QTimer * m_timer;
     QMessageBox * m_msg_box;
     QFont m_font;
+
+    /**
+     *  Kepler34 calls "screensets" by the name "banks".
+     */
+
     int m_bank_id;                  // same as the screen-set number
 
     /**
@@ -149,7 +161,7 @@ private:
 
     /**
      *  Provides a convenience variable for avoiding multiplications.
-     *  It is equal to m_screenset_slots * m_screenset.
+     *  It is equal to m_screenset_slots * m_bank_id.
      */
 
     int m_screenset_offset;
@@ -196,6 +208,19 @@ private:
     midipulse m_last_tick_x[c_max_sequence];
     bool m_last_playing[c_max_sequence];
     bool m_can_paste;
+
+    /**
+     *
+     */
+
+    bool m_has_focus;
+
+    /**
+     *  Indicates this live frame is in an external window.  It does not have
+     *  a tab widget as a parent, and certain menu entries cannot be used.
+     */
+
+    bool m_is_external;
 
 private slots:
 

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-09-16
+ * \updates       2018-09-20
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
@@ -147,32 +147,6 @@ playlist::open (bool verify_it)
 }
 
 /**
- *  Opens the play-list file and optionally verifies it.  Provisionally sets
- *  m_name to the provided file-name, but will clear the current play-list if
- *  something bad happens.  We cannot easily recover from a bad play-list.
- *
- * \param filename
- *      The name of the file to be opened and parsed.
- *
- * \param verify_it
- *      If true (the default), call verify() to make sure the playlist is
- *      sane.
- *
- * \return
- *      Returns true if the file was parseable and verifiable.
- */
-
-bool
-playlist::open (const std::string & filename, bool verify_it)
-{
-    bool result = open(verify_it);
-    if (! result)
-        clear();
-
-    return result;
-}
-
-/**
  *  Parse the ~/.config/sequencer64/file.playlist file.
  *
  * The next_section() function is like line-after, but scans from the
@@ -241,7 +215,7 @@ playlist::parse (perform & p)
         bool have_section = line_after(file, "[playlist]");
         if (! have_section)
         {
-            result = make_error_message("empty section");
+            result = make_error_message("empty or missing section");
         }
         while (have_section)
         {
@@ -477,12 +451,11 @@ playlist::write (const perform & /*p*/)
      * [comments]
      */
 
-    file
-        << "\n"
-        << "[comments]\n"
-        << "\n"
-        << m_comments << "\n"
-        ;
+    file << "\n" << "[comments]\n" << "\n" << m_comments << "\n";
+
+    /*
+     * [playlist] sections
+     */
 
     for
     (
@@ -510,8 +483,8 @@ playlist::write (const perform & /*p*/)
         ;
 
         /*
-         * Here, we need to write the MIDI control number, following only by
-         * the file-name, which could include the path-name.
+         * For each song, write the MIDI control number, followed only by
+         * the song's file-name, which could include the path-name.
          */
 
         const song_list & sl = pl.ls_song_list;
@@ -534,7 +507,8 @@ playlist::write (const perform & /*p*/)
 
 /**
  *  Given a file-name, opens that file as a song.  This function holds common
- *  code.
+ *  code.  It is similar to open_midi_file() in the midifile module, but
+ *  does not affect the recent-files list.
  *
  *  Before the song is loaded, the current song is cleared from memory.
  *  Remember that clear_all() will fail if it detects a sequence being edited.
@@ -547,12 +521,15 @@ playlist::write (const perform & /*p*/)
  *      If true, open the file in play-list mode.  Currently, this means
  *      is that some output from the file-opening process is suppressed, and
  *      the perform::clear_all() function is called right after parsing the
- *      song file.
+ *      song file to verify it.
  */
 
 bool
 playlist::open_song (const std::string & fname, bool playlistmode)
 {
+    if (m_perform.is_running())
+        m_perform.stop_playing();
+
     bool result = m_perform.clear_all();
     if (result)
     {
@@ -574,15 +551,25 @@ playlist::open_song (const std::string & fname, bool playlistmode)
 }
 
 /**
+ *  Selects the current song, and optionally opens it.
  *
+ * \param index
+ *      The location of the song within the current playlist.
+ *
+ * \param opensong
+ *      If true (the default), the song is opened.
+ *
+ * \return
+ *      Returns true if the song is selected, and if specified, is opened
+ *      succesfully as well.
  */
 
 bool
 playlist::open_select_song (int index, bool opensong)
 {
-    bool result = true;
-    if (m_perform.clear_all())
-        result = select_song(index);
+    bool result = select_song(index);
+    if (result && opensong)
+        result = open_current_song();
 
     return result;
 }
@@ -757,7 +744,8 @@ playlist::make_file_error_message
 }
 
 /**
- *
+ *  Clears the comments and the play-lists, sets the play-list mode to false,
+ *  and disables the list and song iterators.
  */
 
 void
@@ -767,6 +755,7 @@ playlist::clear ()
     m_play_lists.clear();
     mode(false);
     m_current_list = m_play_lists.end();
+    m_current_song = sm_dummy.end();
 }
 
 /**
@@ -1217,8 +1206,8 @@ playlist::current_song () const
 bool
 playlist::select_song (int index)
 {
-    bool result = m_current_list != m_play_lists.end();
-    if (result)
+    bool result = false;
+    if (m_current_list != m_play_lists.end())
     {
         int count = 0;
         song_list & slist = m_current_list->second.ls_song_list;

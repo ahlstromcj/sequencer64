@@ -1065,7 +1065,7 @@ qsmainwnd::filename_prompt (const std::string & prompt)
 void
 qsmainwnd::new_file ()
 {
-    if (check() && perf().clear_all())
+    if (check() && perf().remove_playlist_and_clear())
     {
         rc().filename("");
         m_is_title_dirty = true;

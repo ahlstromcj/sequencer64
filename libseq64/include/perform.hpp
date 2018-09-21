@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-13
+ * \updates       2018-09-19
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1177,6 +1177,7 @@ public:
     }
 
     bool open_playlist (const std::string & pl);
+    bool remove_playlist_and_clear ();
 
     /**
      *  Runs the playlist test.

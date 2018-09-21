@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-12
+ * \updates       2018-09-19
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -2821,6 +2821,9 @@ midifile::set_error_dump (const std::string & msg, unsigned long value)
  *  A global function to unify the opening of a MIDI or WRK file.  It also
  *  handles PPQN discovery.
  *
+ *  We need to clear any existing playlist first.  The new function,
+ *  perform::remove_playlist_and_clear(), also does a clear-all.
+ *
  * \param [in,out] p
  *      Provides the performance object to update with information read from
  *      the file.
@@ -2852,33 +2855,36 @@ open_midi_file
     std::string & errmsg
 )
 {
-    bool is_wrk = file_extension_match(fn, "wrk");
-
-    /*
-     * TODO:  tighten up wrkfile/midifile handling re PPQN!!!
-     */
-
-    midifile * fp = is_wrk ?  new wrkfile(fn, ppqn) : new midifile(fn, ppqn) ;
-    std::unique_ptr<midifile> f(fp);
-    p.clear_all();
-
-    bool result = f->parse(p, 0);
+    bool result = file_accessible(fn);
     if (result)
     {
-        if (ppqn != SEQ64_USE_FILE_PPQN)    /* preserve this in the parent  */
-            ppqn = f->ppqn();               /* get & return file PPQN       */
+        bool is_wrk = file_extension_match(fn, "wrk");
 
-        usr().file_ppqn(f->ppqn());         /* save the value from the file */
-        p.set_ppqn(choose_ppqn());          /* set chosen PPQN for MIDI     */
-        rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
-        rc().filename(fn);
-        rc().add_recent_file(fn);           /* from Oli Kester's Kepler34   */
-    }
-    else
-    {
-        errmsg = f->error_message();
-        if (f->error_is_fatal())
-            rc().remove_recent_file(fn);
+        /*
+         * TODO:  tighten up wrkfile/midifile handling re PPQN!!!
+         */
+
+        midifile * fp = is_wrk ? new wrkfile(fn, ppqn) : new midifile(fn, ppqn) ;
+        std::unique_ptr<midifile> f(fp);
+        p.remove_playlist_and_clear();          /* see banner notes         */
+        result = f->parse(p, 0);
+        if (result)
+        {
+            if (ppqn != SEQ64_USE_FILE_PPQN)    /* preserve this in parent  */
+                ppqn = f->ppqn();               /* get & return file PPQN   */
+
+            usr().file_ppqn(f->ppqn());         /* save the value from file */
+            p.set_ppqn(choose_ppqn());          /* set chosen PPQN for MIDI */
+            rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
+            rc().filename(fn);
+            rc().add_recent_file(fn);           /* Oli Kester's Kepler34!   */
+        }
+        else
+        {
+            errmsg = f->error_message();
+            if (f->error_is_fatal())
+                rc().remove_recent_file(fn);
+        }
     }
     return result;
 }

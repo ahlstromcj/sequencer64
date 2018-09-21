@@ -24,7 +24,7 @@
  * \library       seq64rtcli application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-04-07
- * \updates       2018-04-22
+ * \updates       2018-09-19
  * \license       GNU GPLv2 or above
  *
  *  This application is seq64 without a GUI, control must be done via MIDI.
@@ -194,10 +194,6 @@ main (int argc, char * argv [])
                 ok = p.open_playlist(playlistname);
                 if (ok)
                 {
-                    /*
-                     * No need for this now:  p.playlist_test();
-                     */
-
                     ok = p.open_current_song();
                 }
                 else
@@ -207,44 +203,13 @@ main (int argc, char * argv [])
                 }
             }
 #endif
-            if (optionindex < argc)                 /* MIDI filename given?   */
+            if (ok && optionindex < argc)           /* MIDI filename given?   */
             {
+                int ppqn = 0;
                 std::string fn = argv[optionindex];
-                if (seq64::file_accessible(fn))
-                {
-                    seq64::midifile f(fn);          /* object represents file */
-                    p.clear_all();
-                    ok = f.parse(p);                /* handles old/new format */
-                    if (ok)
-                    {
-                        seq64::rc().last_used_dir(fn.substr(0, fn.rfind("/")+1));
-                        seq64::rc().filename(fn);
-                    }
-                    else
-                    {
-                        // printf("? MIDI file not parsed: %s\n", fn.c_str());
-                        char temp[256];
-                        (void) snprintf
-                        (
-                            temp, sizeof temp,
-                            "? MIDI file not parsed: %s\n", fn.c_str()
-                        );
-                        extant_errmsg = temp;
-                        extant_msg_active = true;
-                    }
-                }
-                else
-                {
-                    // printf("? MIDI file not found: %s\n", fn.c_str());
-                    char temp[256];
-                    (void) snprintf
-                    (
-                        temp, sizeof temp,
-                        "? MIDI file not found: %s\n", fn.c_str()
-                    );
-                    extant_errmsg = temp;
+                ok = open_midi_file(p, fn, ppqn, extant_errmsg);
+                if (! ok)
                     extant_msg_active = true;
-                }
             }
             if (ok)
             {

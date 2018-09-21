@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-09-13
+ * \updates       2018-09-20
  * \license       GNU GPLv2 or above
  *
  * \todo
@@ -69,15 +69,15 @@ private:
     struct song_spec_t
     {
         /**
-         *  Provides an ordinal value that indicates the offset of the song in the
-         *  list.
+         *  Provides an ordinal value that indicates the offset of the song in
+         *  the list.
          */
 
         int ss_index;
 
         /**
-         *  Provides a copy of the key, which is the MIDI control number that the
-         *  user has applied to this song in the playlist.
+         *  Provides a copy of the key, which is the MIDI control number that
+         *  the user has applied to this song in the playlist.
          */
 
         int ss_midi_number;
@@ -320,7 +320,6 @@ public:
     void clear ();
     bool reset ();
     bool open (bool verify_it = true);
-    bool open (const std::string & filename, bool verify_it = true);
     bool add_list
     (
         int index, int midinumber,

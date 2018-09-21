@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-09-12
+ * \updates       2018-09-19
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -7138,10 +7138,21 @@ perform::song_recording_stop ()
 #endif  // SEQ64_SONG_RECORDING
 
 /**
+ *  Clears the playlist, and cleans out the currently loaded song.
+ */
+
+bool
+perform::remove_playlist_and_clear ()
+{
+    m_play_list.reset();                /* deletes the playlist             */
+    return clear_all();                 /* remove all traces of the song    */
+}
+
+/**
  *  Creates a playlist object and opens it.  If there is a playlist object already
  *  in existence, it is replaced.
  *
- *  We'also ve realized that the perform object needs to own the playlist.
+ *  We've also realized that the perform object needs to own the playlist.
  *
  * \param pl
  *      Provides the full path file-specification for the play-list file to be

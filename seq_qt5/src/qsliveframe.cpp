@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-01-01
- * \updates       2018-09-19
+ * \updates       2018-09-21
  * \license       GNU GPLv2 or above
  *
  *  This class is the Qt counterpart to the mainwid class.
@@ -619,15 +619,22 @@ qsliveframe::updateBank (int bank)
 
 /**
  *  Used to grab the std::string bank name and convert it to QString for
- *  display, and then set the modify flag.
+ *  display. Let perform set the modify flag, it knows when to do it.
+ *  Otherwise, just scrolling to the next screen-set causes a spurious
+ *  modification and an annoying prompt to a user exiting the application.
  */
 
 void
 qsliveframe::updateBankName ()
 {
     updateInternalBankName();
-    if (! m_is_external)
-        perf().modify();
+
+    /*
+     * Unnecessary and annoying.
+     *
+     * if (! m_is_external)
+     *    perf().modify();
+     */
 }
 
 /**

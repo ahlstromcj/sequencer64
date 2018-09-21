@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-06-04
- * \updates       2018-09-03
+ * \updates       2018-09-20
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the WRK format, see, for example:
@@ -81,7 +81,7 @@
 
 #include "perform.hpp"                  /* must precede wrkfile.hpp !       */
 #include "sequence.hpp"                 /* seq64::sequence                  */
-#include "settings.hpp"                 /* seq64::rc().show_midi()          */
+#include "settings.hpp"                 /* seq64::rc().show_midi() etc.     */
 #include "wrkfile.hpp"                  /* seq64::wrkfile                   */
 
 namespace seq64
@@ -459,7 +459,23 @@ wrkfile::initialize_sequence (perform & p)
 }
 
 /**
+ *  Calls midifile::finalize_sequence().  Also sets the MIDI buss override if
+ *  active, though we could centralize this in that function.
  *
+ * \param p
+ *      The perform object to perhaps modify by the finalizing of this
+ *      sequence.
+ *
+ * \param seq
+ *      The sequence to be finalized.
+ *
+ * \param seqnum
+ *      The prospective sequence number, passed to
+ *      midifile::finalize_sequence().
+ *
+ * \param screenset
+ *      The prospective screen-set number, passed to
+ *      midifile::finalize_sequence().
  */
 
 void
@@ -472,10 +488,13 @@ wrkfile::finalize_sequence
 )
 {
     midifile::finalize_sequence(p, seq, seqnum, screenset);
+    char buss_override = usr().midi_buss_override();
+    if (buss_override != SEQ64_BAD_BUSS)
+        seq.set_midi_bus(buss_override);
+
     ++m_track_count;
     ++m_seq_number;
 }
-
 
 /**
  *  This function seems to get an element that described a track and how it is

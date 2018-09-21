@@ -1997,7 +1997,7 @@ mainwnd::on_grouplearnchange (bool state)
 void
 mainwnd::new_file ()
 {
-    if (perf().clear_all())
+    if (perf().remove_playlist_and_clear())/* and does a clear_all()   */
     {
         /*
          * TODO

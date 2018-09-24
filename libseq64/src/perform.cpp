@@ -78,7 +78,7 @@
  *          Holds the state of playing in the current screen-set, to determine
  *          which patterns follow the queued-replace (queued-solo) feature,
  *
- *  m_playscreen.  In seq24, this value (called m_playing_screen) is used for
+ *  m_playscreen.  In seq24, this value (called m_playing_screen) is used for:
  *
  *      -   select_group_mute(), to get the sequence/pattern offset for
  *          copying the pattern playing status into the mute-group array.
@@ -95,7 +95,7 @@
  *          -   c_midi_control_play_ss is performed.
  *          -   The main window hot-key for screen-set is pressed.
  *
- *  m_screenset.  In seq24, this value (called m_screen_set) is used for
+ *  m_screenset.  In seq24, this value (called m_screen_set) is used for:
  *
  *      -   In set_screenset().  The value is clipped to 0 to 31.
  *      -   set_playing_screenset(), as noted above.

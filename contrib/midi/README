@@ -1,6 +1,6 @@
 Contributed MIDI/Test Files
 Chris Ahlstrom
-2015-09-11 to 2018-09-10
+2015-09-11 to 2018-09-21
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
@@ -196,6 +196,11 @@ the "example1" file.
         One pattern per set for 8 sets.  Useful in testing issues with the
         new varisets feature, including labelling sets and paging between
         sets.
+
+   sets2.midi:
+
+        A simpler version of sets.midi just for testing the
+        set-playing-screen feature.
 
    signature-samples.midi:
 

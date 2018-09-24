@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-19
+ * \updates       2018-09-21
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -637,19 +637,13 @@ private:
     std::vector<bool> m_screenset_state;
 
     /**
-     *  A value not equal to -1 (it ranges from 0 to 32) ndicates we're now
+     *  A value not equal to -1 (it ranges from 0 to 31) indicates we're now
      *  using the saved screen-set state to control the queue-replace
      *  (queue-solo) status of sequence toggling.  This value is set to -1
      *  when queue mode is exited.  See the SEQ64_NO_QUEUED_SOLO value.
      */
 
     int m_queued_replace_slot;
-
-    /*
-     * \change ca 2016-12-29.  Found via the "rtmidi" branch that this
-     * was getting passed a bad PPQN value, so moved the m_master_bus value
-     * past the iniitialization of the member values it needs.
-     */
 
     /**
      *  Holds the global MIDI transposition value.

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-19
+ * \updates       2018-09-26
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -126,7 +126,7 @@ namespace seq64
  *      file, instead of to each sequence.  Note that this option is only used
  *      in writing; reading can handle either format transparently.
  *
- * \param playlistmode
+ * \param verifymode
  *      If set to true, we are opening files just to verify them before
  *      accepting the usage of a playlist.  In this case, we clear out each
  *      song after it is read in for verification.  It defaults to false.
@@ -141,10 +141,10 @@ midifile::midifile
     int ppqn,
     bool oldformat,
     bool globalbgs,
-    bool playlistmode
+    bool verifymode
 ) :
     m_mutex                     (),
-    m_playlist_mode             (playlistmode),
+    m_verify_mode               (verifymode),
     m_file_size                 (0),
     m_error_message             (),
     m_error_is_fatal            (false),
@@ -414,11 +414,13 @@ midifile::grab_input_stream (const std::string & tag)
 
         /*
          * Kind of annoying with playlists.  Also, be verbose only if asked to
-         * be, via the -v/--verbose option.
-         */
-
-        if (rc().verbose_option() && ! playlist_mode())
+         * be, via the -v/--verbose option.  Actually, this is annoying for
+         * long path-names.
+         *
+        if (rc().verbose_option() && ! verify_mode())
             printf("[Opened %s file, '%s']\n", tag.c_str(), path.c_str());
+         *
+         */
 
         if (m_file_size <= sizeof(long))
         {

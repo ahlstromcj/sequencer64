@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-09-20
+ * \updates       2018-09-26
  * \license       GNU GPLv2 or above
  *
  * \todo
@@ -222,13 +222,25 @@ private:
 
     song_iterator m_current_song;
 
+    /**
+     *  If true, write the lists/songs to standard output.  This is
+     *  useful to test the CLI/daemon version of Sequencer64.
+     */
+
+    bool m_show_on_stdout;
+
 private:
 
     /*
      * Only the friend class perform is able to call these functions.
      */
 
-    playlist (perform & p, const std::string & name);
+    playlist
+    (
+        perform & p,
+        const std::string & name,
+        bool show_on_stdout = false
+    );
 
 public:
 
@@ -340,7 +352,7 @@ public:
     bool select_song (int index);
     bool next_song ();
     bool previous_song ();
-    bool open_song (const std::string & filename, bool playlistmode = false);
+    bool open_song (const std::string & filename, bool verifymode = false);
     bool open_select_song (int index, bool opensong = true);
     bool open_current_song ();
     bool open_next_list (bool opensong = true);

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2018-08-26
- * \updates       2018-09-20
+ * \updates       2018-09-26
  * \license       GNU GPLv2 or above
  *
  *  Here is a skeletal representation of a Sequencer64 playlist:
@@ -70,20 +70,33 @@ playlist::song_list playlist::sm_dummy;
 /**
  *  Principal constructor.
  *
+ * \param p
+ *      Provides the perform object that will interface between this module
+ *      and the rest of the application.
+ *
  * \param name
  *      Provides the name of the options file; this is usually a full path
  *      file-specification.
+ *
+ * \param show_on_stdout
+ *      If true (the default is false), then the list/song information is
+ *      written to stdout, to help with debugging.
  */
 
-playlist::playlist (perform & p, const std::string & name)
- :
+playlist::playlist
+(
+    perform & p,
+    const std::string & name,
+    bool show_on_stdout
+) :
     configfile                  (name),             // base class constructor
     m_perform                   (p),                // the owner of this object
     m_comments                  (),
     m_play_lists                (),
     m_mode                      (false),
     m_current_list              (),                 // play-list iterator
-    m_current_song              ()                  // song-list iterator
+    m_current_song              (),                 // song-list iterator
+    m_show_on_stdout            (show_on_stdout)
 {
     // No code needed
 }
@@ -517,7 +530,7 @@ playlist::write (const perform & /*p*/)
  * \param fname
  *      The full path to the file to be opened.
  *
- * \param playlistmode
+ * \param verifymode
  *      If true, open the file in play-list mode.  Currently, this means
  *      is that some output from the file-opening process is suppressed, and
  *      the perform::clear_all() function is called right after parsing the
@@ -525,7 +538,7 @@ playlist::write (const perform & /*p*/)
  */
 
 bool
-playlist::open_song (const std::string & fname, bool playlistmode)
+playlist::open_song (const std::string & fname, bool verifymode)
 {
     if (m_perform.is_running())
         m_perform.stop_playing();
@@ -536,15 +549,15 @@ playlist::open_song (const std::string & fname, bool playlistmode)
         bool is_wrk = file_extension_match(fname, "wrk");
         if (is_wrk)
         {
-            wrkfile m(fname, SEQ64_USE_DEFAULT_PPQN, playlistmode);
+            wrkfile m(fname, SEQ64_USE_DEFAULT_PPQN, verifymode);
             result = m.parse(m_perform);
         }
         else
         {
-            midifile m(fname, SEQ64_USE_DEFAULT_PPQN, false, true, playlistmode);
+            midifile m(fname, SEQ64_USE_DEFAULT_PPQN, false, true, verifymode);
             result = m.parse(m_perform);
         }
-        if (playlistmode)
+        if (verifymode)
             (void) m_perform.clear_all();
     }
     return result;
@@ -852,9 +865,9 @@ playlist::select_list (int index, bool selectsong)
     {
         if (count == index)
         {
-#ifdef PLATFORM_DEBUG_TMI
-            show_list(pci->second);
-#endif
+            if (m_show_on_stdout)
+                show_list(pci->second);
+
             m_current_list = pci;
             if (selectsong)
                 select_song(0);
@@ -889,9 +902,8 @@ playlist::next_list (bool selectsong)
         if (m_current_list == m_play_lists.end())
             m_current_list = m_play_lists.begin();
 
-#ifdef PLATFORM_DEBUG_TMI
-        show_list(m_current_list->second);
-#endif
+        if (m_show_on_stdout)
+            show_list(m_current_list->second);
 
         if (selectsong)
             select_song(0);
@@ -924,9 +936,8 @@ playlist::previous_list (bool selectsong)
         else
             --m_current_list;
 
-#ifdef PLATFORM_DEBUG_TMI
-        show_list(m_current_list->second);
-#endif
+        if (m_show_on_stdout)
+            show_list(m_current_list->second);
 
         if (selectsong)
             select_song(0);
@@ -1219,9 +1230,9 @@ playlist::select_song (int index)
         {
             if (count == index)
             {
-#ifdef PLATFORM_DEBUG_TMI
-                show_song(sci->second);
-#endif
+                if (m_show_on_stdout)
+                    show_song(sci->second);
+
                 m_current_song = sci;
                 result = true;
             }
@@ -1231,18 +1242,26 @@ playlist::select_song (int index)
 }
 
 /**
+ *  Moves to the next song in the current playlist, wrapping around to the
+ *  beginning.
  *
+ * \return
+ *      Returns true if the next song was selected.
  */
 
 bool
 playlist::next_song ()
 {
-    bool result = m_current_list != m_play_lists.end();
-    if (result)
+    bool result = false;
+    if (m_current_list != m_play_lists.end())
     {
         ++m_current_song;
         if (m_current_song == m_current_list->second.ls_song_list.end())
             m_current_song = m_current_list->second.ls_song_list.begin();
+
+        result = m_current_song != m_current_list->second.ls_song_list.end();
+        if (result && m_show_on_stdout)
+            show_song(m_current_song->second);
     }
     return result;
 }
@@ -1254,13 +1273,17 @@ playlist::next_song ()
 bool
 playlist::previous_song ()
 {
-    bool result = m_current_list != m_play_lists.end();
-    if (result)
+    bool result = false;
+    if (m_current_list != m_play_lists.end())
     {
         if (m_current_song == m_current_list->second.ls_song_list.begin())
             m_current_song = std::prev(m_current_list->second.ls_song_list.end());
         else
             --m_current_song;
+
+        result = m_current_song != m_current_list->second.ls_song_list.end();
+        if (result && m_show_on_stdout)
+            show_song(m_current_song->second);
     }
     return result;
 }
@@ -1412,39 +1435,45 @@ playlist::reorder_song_list (song_list & sl)
 }
 
 /**
+ *  Shows a summary of a playlist.
  *
+ * \param pl
+ *      The playlist structure to show.
  */
 
 void
 playlist::show_list (const play_list_t & pl) const
 {
     std::cout
-        << "[playlist MIDI #" << pl.ls_midi_number
-        << "] at slot " << pl.ls_index
+        << "    Playlist MIDI #" << pl.ls_midi_number
+        << ", slot " << pl.ls_index
         << ": '" << pl.ls_list_name
-        << "', directory '" << pl.ls_file_directory
-        << "', " << pl.ls_song_count << " songs"
+        << "' (" << pl.ls_file_directory
+        << "), " << pl.ls_song_count << " songs"
         << std::endl
         ;
 }
 
 /**
+ *  Shows a summary of a song.
  *
+ * \param s
+ *      The song-specification structure to show.
  */
 
 void
 playlist::show_song (const song_spec_t & s) const
 {
     std::cout
-        << "    Song MIDI #" << s.ss_midi_number << " at slot " << s.ss_index
-        << ": '" << s.ss_song_directory << s.ss_filename
+        << "    Song MIDI #" << s.ss_midi_number << ", slot " << s.ss_index
+        << ": " << s.ss_song_directory << s.ss_filename
         << std::endl
         ;
 }
 
 
 /**
- *  Performs a simple dump of the playlists, most for troubleshooting.
+ *  Performs a simple dump of the playlists, mostly for troubleshooting.
  */
 
 void
@@ -1477,7 +1506,8 @@ playlist::show () const
 }
 
 /**
- *  A function for running tests of the play-list handling.
+ *  A function for running tests of the play-list handling.  Normally
+ *  not needed.
  */
 
 void

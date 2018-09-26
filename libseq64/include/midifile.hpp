@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-03
+ * \updates       2018-09-26
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -177,7 +177,7 @@ private:
      *  perform::clear_all().
      */
 
-    bool m_playlist_mode;
+    bool m_verify_mode;
 
     /**
      *  Holds the size of the MIDI file.  This variable was added when loading
@@ -373,12 +373,12 @@ protected:
     );
 
     /**
-     * \getter m_playlist_mode;
+     * \getter m_verify_mode;
      */
 
-    bool playlist_mode () const
+    bool verify_mode () const
     {
-        return m_playlist_mode;
+        return m_verify_mode;
     }
 
     /**

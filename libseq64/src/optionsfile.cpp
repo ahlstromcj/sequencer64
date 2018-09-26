@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2018-09-17
+ * \updates       2018-09-25
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -1124,7 +1124,7 @@ optionsfile::write (const perform & p)
             <<
             "# This file holds the MIDI control configuration for Sequencer64.\n"
             "# It follows the format of the 'rc' configuration file, but is\n"
-            "# stored separate for convenience.  It is always stored in the\n"
+            "# stored separately for convenience.  It is always stored in the\n"
             "# main configuration directory.  To use this file, replace the\n"
             "# [midi-control] section and its contents with a "
                 "[midi-control-file]\n"

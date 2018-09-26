@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2018-08-27
+# \update     	2018-09-25
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -31,9 +31,6 @@ CURRENTDATE=$(date +%Y-%m-%d)
 CURRENTDIR=$(pwd)
 WORKINGDIR=${CURRENTDIR##/*/}       # strip all but last part of path
 PACKAGENAME="bogus"
-
-# TAGSTRING="git"
-
 TAGSTRING="pack"
 DODRYRUN="no"
 DOCLEAN="no"
@@ -58,7 +55,7 @@ if [ "$1" == "--help" ] || [ "$1" == "help" ] ; then
 
    cat << E_O_F
 
-pack 0.5 2018-08-27
+pack 0.5 2018-09-25
 
 Usage:  ./pack [--dry-run] [--clean] [--release package] [--diffs] [tag]
 
@@ -198,9 +195,6 @@ else
 
    else
 
-      pushd ..
-      if [ -d $WORKINGDIR ] ; then
-
 # Others that mostly, but not always, are not needed, and so aren't excluded
 # at this time:
 #
@@ -213,80 +207,78 @@ else
 # now allows tar to not include .git in the archive, saving a lot of time
 # and space.
 
+      pushd ..
+      if [ -d $WORKINGDIR ] ; then
+
       tar cJf $TARBALLNAME \
-    --exclude-vcs         \
-    --exclude=".git"      \
-    --exclude="Midiclocker64/midiclocker64" \
-    --exclude="Sequencer64/sequencer64" \
-    --exclude="Seq64rtmidi/seq64" \
-    --exclude="Seq64qt5/qseq64" \
-    --exclude="Seq64cli/seq64cli" \
-    --exclude="config.h"  \
-    --exclude="config.status"  \
-    --exclude="libtool"   \
-    --exclude="Makefile"  \
-    --exclude="Debug"     \
-    --exclude="Release"   \
-    --exclude="debug"     \
-    --exclude="release"   \
-    --exclude="autom4te.cache" \
-    --exclude="core"      \
-    --exclude="moc"       \
-    --exclude="obj"       \
-    --exclude="html"      \
-    --exclude="ipch"      \
-    --exclude="latex"     \
-    --exclude="*stamp*"     \
-    --exclude="tests"     \
-    --exclude="out.*"     \
-    --exclude=".deps"     \
-    --exclude=".exes"     \
-    --exclude=".libs"     \
-    --exclude="*obsolete*" \
-    --exclude="*.a"       \
-    --exclude="*.bak"     \
-    --exclude="*.BAK"     \
-    --exclude="*.bpi"     \
-    --exclude="*.bz2"     \
-    --exclude="*.xz"      \
-    --exclude="*.deps"    \
-    --exclude="*.bz"      \
-    --exclude="*.idb"     \
-    --exclude="*.ilc"     \
-    --exclude="*.ild"     \
-    --exclude="*.ilf"     \
-    --exclude="*.o"       \
-    --exclude="*.lo"      \
-    --exclude="*.la"      \
-    --exclude="*.lib"     \
-    --exclude="*.log"     \
-    --exclude="*.obj"     \
-    --exclude="*.pch"     \
-    --exclude="*.pdb"     \
-    --exclude="*.Po"      \
-    --exclude="*.sdf"     \
-    --exclude="*.so"      \
-    --exclude="*.stash"   \
-    --exclude="*.swp"     \
-    --exclude=".*.swp"    \
-    --exclude="*.t"       \
-    --exclude="*.tds"     \
-    --exclude="*.tmp"     \
-    --exclude="*.user"    \
-    --exclude="*.xz"      \
-    --exclude="*.testsettings" \
-      $WORKINGDIR
-
+ --exclude-vcs         \
+ --exclude=".git"      \
+ --exclude="Midiclocker64/midiclocker64" \
+ --exclude="Sequencer64/sequencer64" \
+ --exclude="Seq64rtmidi/seq64" \
+ --exclude="Seq64qt5/qseq64" \
+ --exclude="Seq64cli/seq64cli" \
+ --exclude="config.h"  \
+ --exclude="config.status"  \
+ --exclude="libtool"   \
+ --exclude="Makefile"  \
+ --exclude="Debug"     \
+ --exclude="Release"   \
+ --exclude="debug"     \
+ --exclude="release"   \
+ --exclude="autom4te.cache" \
+ --exclude="core"      \
+ --exclude="moc"       \
+ --exclude="obj"       \
+ --exclude="html"      \
+ --exclude="ipch"      \
+ --exclude="latex"     \
+ --exclude="*stamp*"     \
+ --exclude="tests"     \
+ --exclude="out.*"     \
+ --exclude=".deps"     \
+ --exclude=".exes"     \
+ --exclude=".libs"     \
+ --exclude="*obsolete*" \
+ --exclude="*.a"       \
+ --exclude="*.BAK"     \
+ --exclude="*.bak"     \
+ --exclude="*.bpi"     \
+ --exclude="*.bz"      \
+ --exclude="*.bz2"     \
+ --exclude="*.deps"    \
+ --exclude="*.gz"      \
+ --exclude="*.idb"     \
+ --exclude="*.ilc"     \
+ --exclude="*.ild"     \
+ --exclude="*.ilf"     \
+ --exclude="*.o"       \
+ --exclude="*.lo"      \
+ --exclude="*.la"      \
+ --exclude="*.lib"     \
+ --exclude="*.log"     \
+ --exclude="*.obj"     \
+ --exclude="*.pch"     \
+ --exclude="*.pdb"     \
+ --exclude="*.Po"      \
+ --exclude="*.sdf"     \
+ --exclude="*.so"      \
+ --exclude="*.stash"   \
+ --exclude="*.swp"     \
+ --exclude=".*.swp"    \
+ --exclude="*.t"       \
+ --exclude="*.tds"     \
+ --exclude="*.tmp"     \
+ --exclude="*.user"    \
+ --exclude="*.xz"      \
+ --exclude="*.testsettings" \
+ $WORKINGDIR
          echo
-
       else
-
          echo "? Working directory $WORKINGDIR does not exist above this directory."
          echo "  Are you running pack.sh from the proper directory?"
          echo "  That is what you must do.  See './pack --help'."
-
       fi
-
       popd
 
    fi

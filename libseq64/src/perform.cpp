@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-09-19
+ * \updates       2018-09-25
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -7158,6 +7158,11 @@ perform::remove_playlist_and_clear ()
  *      Provides the full path file-specification for the play-list file to be
  *      opened.
  *
+ * \param show_on_stdout
+ *      If true (the default is false), the playlist is opened to show
+ *      song selections on stdout.  This is useful for trouble-shooting or for
+ *      making the CLI version of Sequencer64 easier to follow when running.
+ *
  * \return
  *      Returns true if the playlist object was able to be opened, and the list
  *      read.  If false is returned, currently the bad playlist still exists, but
@@ -7165,10 +7170,10 @@ perform::remove_playlist_and_clear ()
  */
 
 bool
-perform::open_playlist (const std::string & pl)
+perform::open_playlist (const std::string & pl, bool show_on_stdout)
 {
     bool result = false;
-    m_play_list.reset(new playlist(*this, pl));
+    m_play_list.reset(new playlist(*this, pl, show_on_stdout));
     if (bool(m_play_list))
     {
         result = m_play_list->open();

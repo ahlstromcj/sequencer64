@@ -2659,18 +2659,10 @@ mainwnd::about_dialog ()
     dialog.set_transient_for(*this);
 
     /*
-     * For some reason, using the new functions causes them to be found as
-     * unresolved.  Weird.
+     * Get the possibly-update application tag (app name + version).
      */
 
-#if USE_PROBLEMATICLY_LINKED_FUNCTION
-    std::string apptag = seq_app_name();
-    apptag += " ";
-    apptag += seq_version();
-#else
-    std::string apptag = SEQ64_APP_NAME " " SEQ64_VERSION;
-#endif
-
+    std::string apptag = seq_app_tag();
     dialog.set_name(apptag);
     dialog.set_version
     (

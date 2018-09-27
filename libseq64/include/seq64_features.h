@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2018-09-01
+ * \updates       2018-09-27
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -402,12 +402,26 @@
 #endif      // SEQ64_FEATURES_H
 
 /*
+ * This is the main namespace of Sequencer64.  Do not attempt to
+ * Doxygenate the documentation here; it breaks Doxygen.
+ */
+
+namespace seq64
+{
+
+/*
  * Global (free) functions.
  */
 
+extern void set_app_name (const std::string & aname);
+extern void set_client_name (const std::string & cname);
 extern const std::string & seq_app_name ();
 extern const std::string & seq_client_name ();
 extern const std::string & seq_version ();
+extern const std::string & seq_version_text ();
+extern const std::string & seq_app_tag ();
+
+}           // namespace seq64
 
 /*
  * seq64_features.h

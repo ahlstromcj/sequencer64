@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2018-09-26
+dnl \update        2018-09-27
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -545,7 +545,7 @@ if test "$qtmidi" != "no"; then
     AC_MSG_RESULT([qt user-interface build enabled.]);
 fi
 
-dnl "CLI" or "Command-line" support.  This is enable for Windows or Linux.
+dnl "CLI" or "Command-line" support.  This is enabled for Windows or Linux.
 
 AC_ARG_ENABLE(cli,
     [AS_HELP_STRING(--enable-cli, [Enable rtmidi command-line build])],
@@ -553,7 +553,7 @@ AC_ARG_ENABLE(cli,
     [cli=no])
 
 if test "$cli" != "no"; then
-    AC_MSG_RESULT([portmidi/rtmidi command-line build enabled.]);
+    AC_MSG_RESULT([rtmidi command-line build enabled.]);
     AC_DEFINE(APP_NAME, ["seq64cli"], [Names the CLI version of application])
     AC_DEFINE(CONFIG_NAME, ["seq64cli"], [Configuration file name])
     if test "x$mingw" != "xyes" ; then
@@ -767,7 +767,7 @@ dnl       "SEQ64_" to these values when it generated seq64-config.h.
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2018-09-26"
+#define VERSION_DATE_SHORT "2018-09-27"
 #define VERSION "0.96.0"
 
 )

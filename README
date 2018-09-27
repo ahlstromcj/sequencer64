@@ -1,10 +1,10 @@
-README for Sequencer64 0.96.0 (Native JACK, CLI, tempo, Windows)
+README for Sequencer64 0.96.0 (Native JACK, CLI, tempo, Windows, play-lists)
 Chris Ahlstrom
-2015-09-10 to 2018-09-26
+2015-09-10 to 2018-09-27
 
-Sequencer64 is a reboot of seq24, extending it with new features and bug fixes.
-The heart of seq24 remains intact.  It is an old friend, and maintains extra
-backward-compatibility with the --legacy option.  An extensive manual:
+Sequencer64 is a reboot of seq24, extending it with many new features.
+The heart of seq24 remains intact.  It is an old friend with a whole lot
+of added equipment.  An extensive manual:
 
     https://github.com/ahlstromcj/sequencer64-doc.git
     
@@ -24,24 +24,22 @@ Native JACK support: Seq64rtmidi/seq64
 
 GUI-less application: Seq64rtmidi/seq64cli
 
-    The RtMidi/JACK version without a GUI.  Controlled via MIDI control
-    events (start/stop events must be set up), it relies on a good working
-    configuration generated via the GUI or edited by hand.  Currently the only
-    way to load a MIDI file is as the last argument on the command line.
-    However, playlist support under MIDI control is coming soon. The CLI
-    version supports a "daemonize" option, with a log-file available.
+    The RtMidi/JACK version without a GUI.  Controlled via MIDI control events
+    (start/stop events must be set up), it relies on a good working
+    configuration generated via the GUI or edited by hand.  MIDI files are
+    loaded via play-lists (see data/nanomap.rc and data/seq64cli.rc).  Seq64cli
+    supports a "daemonize" option and log-files.
 
 Windows support (derived from PortMidi):
 
-    This version uses a Qt 5 user-interface based on Kepler34, but using the
-    standard Sequencer64 engine.  Windows built-in MIDI devices are detected,
-    inaccessible devices are ignored, and playback (e.g. to the built-in Windows
-    wavetable synthesizer) work. It is built easily via Qt Creator or qmake,
-    using the MingW support of Qt.
-    The Qt 5 GUI is still a little behind the Gtkmm 2.4 GUI, but will
-    eventually be the main GUI of Seq64.
-    some configuration can be done manually in the "rc" and "usr" files.
-    See README.windows for more information.
+    Qpseq64uses a Qt 5 user-interface based on Kepler34 and the Sequencer64
+    PortMidi engine.  Windows built-in MIDI devices are detected, inaccessible
+    devices are ignored, and playback (e.g. to the built-in Windows wavetable
+    synthesizer) work. It is built easily via Qt Creator or qmake, using the
+    MingW support of Qt.  The Qt 5 GUI is still a little behind the Gtkmm 2.4
+    GUI, but will eventually be the main GUI of Seq64.  Some configuration can
+    be done manually in the "rc" and "usr" files.  See README.windows for more
+    information.
 
 See the INSTALL file for build-from-source instructions or using a
 conventional source tarball.
@@ -59,76 +57,11 @@ Recent changes:
             MIDI/WRK file-open function as the rest of the versions.
         -   Fixed the wrkfile parser to set the buss-override value if
             specified.
-    -   Version 0.95.4:
-        -   Enable a JACK-less version of the rtmidi build.  GitHub issue #165.  
-            If --disable-jack is used, rtmidi will come up as ALSA even if
-            the JACK process is running.
-    -   Version 0.95.3:
-        -   Fixed errors building lash.
-        -   Fixed error building in 32-bit g++ 4.9.
-        -   Allowed builds of the command-line and GUI versions in the same
-            build:  ./bootstrap -er -cli -rm
-    -   Version 0.95.2:
-        -   Added the Qt 5 version of the Event Editor.
-        -   Catching up on some more features from the Gtkmm-2:4 version.
-            -   Group-learn support.
-            -   Tap BPM support.
-            -   Export Song as non-SeqSpec MIDI.
-            -   Export as non-SeqSpec MIDI.
-            -   Additional buttons:
-                -   Open Song Editor ("performance edit").
-                -   Apply Song Transpose.
-                -   Clear Mute Groups.
-                -   Reload Mute Groups.
-                -   Song Mute On/Off/Toggle.
-        -   Fixed some minor issues found.
-    -   Version 0.95.1:  A lot of stuff for a "minor" release! We are
-        conserving version numbers, plus most fixes are getting the Qt 5
-        version as functional as the Gtkmm-2.4 version of the GUI.
-        -   Cleaned up the Build Info dialog and enhanced the About dialog.
-        -   See "Pull Request #150" in the NEWS file.
-        -   Added the ability to read Cakewalk "WRK" files.
-        -   Refactoring the "qseq" classes to avoid constant redraws.
-        -   More work on getting Qt version of seqedit to handle the same
-            features as seqedit.
-        -   Fixed seq64 to match seq24/qpseq64 for displaying beats and
-            measures properly in seqedit when the time-signature is changed.
-        -   Double precision for BPM in Qt user-interface.
-        -   Fixed issue #130 where editing event data (seqdata) would
-            be slow/jerky with large patterns.
-        -   Fixed issues building Qt/rtmidi executable with automake.
-        -   Added an external pattern-editor window and song-editor window
-            for the Qt user-interface, plus an LFO window.
-        -   Made the Seq32 transpose option permanent, not macroed.
-        -   Adding progress-following for the pattern and song editors.
-        -   Enhanced MIDI file PPQN handling, and added an option to use the
-            PPQN in the MIDI file, if present.  Use "--ppqn 0" or set the
-            "user" file "midi_ppqn" value to 0.
-        -   Fixed the broken "Expand" and "Replace" options in the sequence
-            editor (still working on the Qt version).
-    -   Version 0.95.0:
-        -   Improved the Windows version and its packaging.  Added a Windows
-            icon, an installer, better data support and documentation, and
-            upgrades to the GUI.
-        -   Added the ability to ignore ports that cannot be opened, and to
-            report them.  Needed for Windows.
-        -   Fixed display of event data values in the Gtkmm GUI.
-        -   Fixed broken "replace loop" recording functionality (Linux).
-        -   Fixed broken "expand loop" recording functionality (Linux).
-        -   As usual, a raft of minor improvements.
     -   For earlier version information, see the NEWS and ChangeLog files.
 
 This package is oriented to developers and users who do not mind building from
-source, with a little help.  It is fairly well organized and well documented.
-Please see the INSTALL file for a brief description of installation.
-
+source, with a little help.  It is organized and well documented.
 Initial work/thought/documentation started in July of 2015, when I was laid
-up after some old-man surgery.
-
-See the ROADMAP file for more information and a kind of TODO list.  Also see
-contrib/notes/bugs_to_investigate.  Sequencer64 is documented by the following
-project, a 190+-page PDF file and its LaTeX source code:
-
-    https://github.com/ahlstromcj/sequencer64-doc.git
+up after some old-man surgery :-(.
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

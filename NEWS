@@ -1,6 +1,6 @@
-NEWS for Sequencer64 0.95.2
+NEWS for Sequencer64 0.96.0
 Chris Ahlstrom
-2015-07-10 to 2018-08-20
+2015-07-10 to 2018-09-27
 
 This file collects major changes that are older and clutter up
 the README file.  This file should be called "OLD NEWS".
@@ -29,6 +29,63 @@ Pull Request #150 from user jfrey-xx:
         control nor GUI.
     -	Biggest change: the MIDI control "reserved for expansion" is now used
         to set the "replace" flag while recording.
+    -   Version 0.95.4:
+        -   Enable a JACK-less version of the rtmidi build.  GitHub issue #165.  
+            If --disable-jack is used, rtmidi will come up as ALSA even if
+            the JACK process is running.
+    -   Version 0.95.3:
+        -   Fixed errors building lash.
+        -   Fixed error building in 32-bit g++ 4.9.
+        -   Allowed builds of the command-line and GUI versions in the same
+            build:  ./bootstrap -er -cli -rm
+    -   Version 0.95.2:
+        -   Added the Qt 5 version of the Event Editor.
+        -   Catching up on some more features from the Gtkmm-2:4 version.
+            -   Group-learn support.
+            -   Tap BPM support.
+            -   Export Song as non-SeqSpec MIDI.
+            -   Export as non-SeqSpec MIDI.
+            -   Additional buttons:
+                -   Open Song Editor ("performance edit").
+                -   Apply Song Transpose.
+                -   Clear Mute Groups.
+                -   Reload Mute Groups.
+                -   Song Mute On/Off/Toggle.
+        -   Fixed some minor issues found.
+    -   Version 0.95.1:  A lot of stuff for a "minor" release! We are
+        conserving version numbers, plus most fixes are getting the Qt 5
+        version as functional as the Gtkmm-2.4 version of the GUI.
+        -   Cleaned up the Build Info dialog and enhanced the About dialog.
+        -   See "Pull Request #150" in the NEWS file.
+        -   Added the ability to read Cakewalk "WRK" files.
+        -   Refactoring the "qseq" classes to avoid constant redraws.
+        -   More work on getting Qt version of seqedit to handle the same
+            features as seqedit.
+        -   Fixed seq64 to match seq24/qpseq64 for displaying beats and
+            measures properly in seqedit when the time-signature is changed.
+        -   Double precision for BPM in Qt user-interface.
+        -   Fixed issue #130 where editing event data (seqdata) would
+            be slow/jerky with large patterns.
+        -   Fixed issues building Qt/rtmidi executable with automake.
+        -   Added an external pattern-editor window and song-editor window
+            for the Qt user-interface, plus an LFO window.
+        -   Made the Seq32 transpose option permanent, not macroed.
+        -   Adding progress-following for the pattern and song editors.
+        -   Enhanced MIDI file PPQN handling, and added an option to use the
+            PPQN in the MIDI file, if present.  Use "--ppqn 0" or set the
+            "user" file "midi_ppqn" value to 0.
+        -   Fixed the broken "Expand" and "Replace" options in the sequence
+            editor (still working on the Qt version).
+    -   Version 0.95.0:
+        -   Improved the Windows version and its packaging.  Added a Windows
+            icon, an installer, better data support and documentation, and
+            upgrades to the GUI.
+        -   Added the ability to ignore ports that cannot be opened, and to
+            report them.  Needed for Windows.
+        -   Fixed display of event data values in the Gtkmm GUI.
+        -   Fixed broken "replace loop" recording functionality (Linux).
+        -   Fixed broken "expand loop" recording functionality (Linux).
+        -   As usual, a raft of minor improvements.
     -   Version 0.94.8:
         -   Fixed issues with configure.ac.
         -   Added Qt "pro" files to support qmake and Qt Creator to make

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2017-03-12
- * \updates       2017-03-12
+ * \updates       2018-09-27
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -44,6 +44,33 @@
 namespace seq64
 {
 
+static std::string s_app_name = SEQ64_APP_NAME;
+static std::string s_client_name = SEQ64_CLIENT_NAME;
+static std::string s_version = SEQ64_VERSION;
+static std::string s_apptag = SEQ64_APP_NAME " " SEQ64_VERSION;
+static std::string s_versiontext =
+    SEQ64_APP_NAME " " SEQ64_GIT_VERSION " " SEQ64_VERSION_DATE_SHORT "\n";
+
+/**
+ *
+ */
+
+void
+set_app_name (const std::string & aname)
+{
+    s_app_name = aname;
+}
+
+/**
+ *
+ */
+
+void
+set_client_name (const std::string & cname)
+{
+    s_client_name = cname;
+}
+
 /**
  *  Returns the name of the application.  We could continue to use the macro
  *  SEQ64_APP_NAME, but we might eventually want to make this name
@@ -56,7 +83,6 @@ namespace seq64
 const std::string &
 seq_app_name ()
 {
-    static std::string s_app_name = SEQ64_APP_NAME;
     return s_app_name;
 }
 
@@ -73,7 +99,6 @@ seq_app_name ()
 const std::string &
 seq_client_name ()
 {
-    static std::string s_client_name = SEQ64_CLIENT_NAME;
     return s_client_name;
 }
 
@@ -88,8 +113,28 @@ seq_client_name ()
 const std::string &
 seq_version ()
 {
-    static std::string s_version= SEQ64_VERSION;
     return s_version;
+}
+
+/**
+ *  Sets up the "hardwired" version text for Sequencer64.  This value
+ *  ultimately comes from the configure.ac script (for now).
+ */
+
+const std::string &
+seq_version_text ()
+{
+    return s_versiontext;
+}
+
+/**
+ *
+ */
+
+const std::string &
+seq_app_tag ()
+{
+    return s_apptag;
 }
 
 }           // namespace seq64

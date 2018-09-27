@@ -121,6 +121,7 @@ main (int argc, char * argv [])
     uint32_t usermask = 0;                  /* used only in daemonization   */
 #endif
     bool stdio_rerouted = false;            /* used only in log-file option */
+    seq64::set_app_name("seq64cli");
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
     if (seq64::parse_o_options(argc, argv))
@@ -136,7 +137,7 @@ main (int argc, char * argv [])
         if (seq64::usr().option_daemonize())
         {
             printf("Forking to background...\n");
-            usermask = seq64::daemonize(SEQ64_APP_NAME, ".");
+            usermask = seq64::daemonize(seq64::seq_app_name(), ".");
         }
 #endif
     }

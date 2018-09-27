@@ -1,13 +1,13 @@
 /**
  * \file          daemonize.cpp
- * \library       sequencer64 application
+ * \library       sequencer64 application (from PSXC library)
  * \author        Chris Ahlstrom
  * \date          2005-07-03 to 2007-08-21 (pre-Sequencer24/64)
- * \updates       2018-05-05
+ * \updates       2018-09-27
  * \license       GNU GPLv2 or above
  *
  *  Daemonization module of the POSIX C Wrapper (PSXC) library
- *  Copyright (C) 2005-2017 by Chris Ahlstrom
+ *  Copyright (C) 2005-2018 by Chris Ahlstrom
  *
  *  This program is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the Free
@@ -387,7 +387,7 @@ reroute_stdio (const std::string & logfile, bool closem)
             printf
             (
                 "\n%s \n%s \n%s \n",
-                SEQ64_APP_NAME, normedpath.c_str(), current_date_time().c_str()
+                seq_app_name(), normedpath.c_str(), current_date_time().c_str()
             );
         }
     }

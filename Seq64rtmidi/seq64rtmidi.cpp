@@ -25,7 +25,7 @@
  * \library       seq64rtmidi application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2016-12-03
- * \updates       2018-09-08
+ * \updates       2018-09-27
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -85,6 +85,7 @@ int
 main (int argc, char * argv [])
 {
     Gtk::Main kit(argc, argv);              /* strip GTK+ parameters        */
+    seq64::set_app_name("seq64");
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
     (void) seq64::parse_log_option(argc, argv);   /* -o log=file.ext early  */

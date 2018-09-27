@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.96.0 and above
 Chris Ahlstrom
-2015-09-10 to 2018-09-26
+2015-09-10 to 2018-09-27
 
 Getting Sequencer64 requires building the code or going to the
 sequencer64-packages site on GitHub.  The bootstrapping setup is primarily
@@ -14,16 +14,15 @@ the program can be built:
         builds a test application, midiclocker64.
     -   qseq64.  RtMidi version, with a Qt5 user-interface a la Kepler34.
         Built via GNU automake, Linux only.
-    -   qpseq64.  The PortMidi version of the application, with a Qt5 user
-        interface based on Kepler34.  Useable, but lacks some
-        user-interface elements of the Gtkmm 2.4 version.  Built via qmake and
-        suitable for loading in QtCreator installed with mingw32 tools.  This
-        version supports both Linux and (wait for it...) Windows.  If you want
-        to build it yourself in Windows, be sure to specify the Mingw library,
-        tools, and mkspec in Qt Creator.
-    -   seq64cli.  An in-progress version of a GUI-less version of Sequencer64,
-        which can run from the console or as a daemon.  Also builds a test
-        application, midiclocker64.
+    -   qpseq64.  The PortMidi version of the application, with a Qt 5 user
+        interface based on Kepler34.  Lacks some user-interface items of the
+        Gtkmm 2.4 version.  Built via qmake and suitable for loading in
+        QtCreator installed with mingw32 tools.  This version supports both
+        Linux and (wait for it...) Windows.  If you want to build it yourself
+        in Windows, be sure to specify the Mingw library and tools when
+        installing QtCreator.
+    -   seq64cli.  A GUI-less version of Sequencer64, which can run from the
+        console or as a daemon, controlled via MIDI and playlists.
     -   sequencer64. ALSA w/JACK transport; the original version. DEPRECATED.
     -   seq64portmidi. PortMIDI implementation; has issues, a less effective
         option for Linux. DEPRECATED.
@@ -176,26 +175,24 @@ Advanced Steps:
 Disabling JACK:
 
     Those who do not want to use the deprecated legacy Sequencer64 project
-    (ALSA only) may want to do an rtmidi build without JACK enabled.
-
-    TODO.
+    (ALSA only) may want to do an rtmidi build without JACK enabled.  TODO.
 
 Qmake-based Install:
 
-    A build based on Qt Creator and Qmake is available.  It has the sole
-    purpose of making it easy to build the project on Windows, though we
-    created this build on Linux first to work out the numerous "gotchas" with
-    Qt Creator, QMake, and the internal Sequencer64 "architecture".
+    A build based on QtCreator and Qmake is available, to build the project on
+    Windows, though we created this build on Linux first to work out the
+    numerous "gotchas" with QtCreator, QMake, and the internal Sequencer64
+    "architecture".
     
-    The Qmake-based build is designed *only* to use the PortMidi
-    library and the new Kepler34-based Qt 5 user interface.  This
-    user interface is currently still less functional than the Gtkmm 2.4 user
-    interface, but the Sequencer64 libraries are used internally.
+    The Qmake-based build is designed *only* to use the PortMidi library and
+    the new Kepler34-based Qt 5 user interface.  This user interface is
+    currently still missing some functions of the Gtkmm 2.4 user interface,
+    but the Sequencer64 libraries are used internally.
 
-    The first way to use this build is to run qtcreator and load the
+    The first way to use this build is to run QtCreator and load the
     qpseq64.pro file.  This method can be used if you do not care for the
-    command-line.  However, if the installer for Qt Creator did not
-    set up the default "kit" properly, you must create a good kit manually.
+    command-line.  However, if the installer for QtCreator did not
+    set up the default "kit" properly, create a good kit manually.
     If the kit is set up properly, the "qpseq64.pro" entry in the left
     project panel will show the other "pro" files as subprojects.  Note that
     a successful build will put the generated files in a "shadow" directory
@@ -216,11 +213,10 @@ Qmake-based Install:
         $ gdb ./Seq64qt/qpseq64 (for debugging)
 
     One can also use "CONFIG += release", or just leave that off entirely.
-
-    Our aim is to get a nice static build that works under Linux or Windows.
-    Currently, we have tried only using the "mingw" tools in Windows, not the
-    "msvc" (Microsoft) tools.  For debugging, gdb can be used, but QtCreator
-    is an easier debugging interface.
+    We get a nice build that works under Linux or Windows.  Currently, we have
+    tried only using the "mingw" tools in Windows, not the "msvc" (Microsoft)
+    tools.  For debugging, gdb can be used, but QtCreator is an easier
+    debugging interface.
 
     To create an installer package for Windows, see the instructions at the
     top of the "nsis/Seq64Setup_V0.95.nsi" file. One can build the Sequencer64

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2018-09-12
+ * \updates       2018-09-27
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -75,20 +75,9 @@ namespace seq64
 /**
  *  Sets up the "hardwired" version text for Sequencer64.  This value
  *  ultimately comes from the configure.ac script.
- *
- *  This was too redundant:
- *
- *  SEQ64_PACKAGE " " SEQ64_VERSION " (" SEQ64_GIT_VERSION ") " __DATE__ "\n"
- *
- *  This is out-of-date:
- *
- *  SEQ64_PACKAGE " " SEQ64_GIT_VERSION " " __DATE__ "\n";
  */
 
-static const std::string versiontext =
-    SEQ64_APP_NAME " " SEQ64_GIT_VERSION " "
-    SEQ64_VERSION_DATE_SHORT "\n"
-    ;
+static const std::string versiontext = seq_version_text();
 
 /**
  *  A structure for command parsing that provides the long forms of
@@ -201,10 +190,13 @@ static const std::string s_arg_list =
  *  Provides help text.
  */
 
+static const char * const s_help_0 =
+    "%s v %s"
+    " A reboot of the seq24 live sequencer.\n"
+    "Usage: %s [options] [MIDI filename]\n"
+    ;
+
 static const char * const s_help_1a =
-SEQ64_APP_NAME " v " SEQ64_VERSION
-" A reboot of the seq24 live sequencer.\n"
-"Usage: " SEQ64_APP_NAME " [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message and exit.\n"
 "   -V, --version            Show program version/build  information and exit.\n"
@@ -433,6 +425,11 @@ help_check (int argc, char * argv [])
         }
         else if (arg == "?")
         {
+            printf
+            (
+                s_help_0, seq_app_name().c_str(),
+                seq_version().c_str(), seq_app_name().c_str()
+            );
             printf(s_help_1a);
             printf(s_help_1b);
             printf(s_help_2);
@@ -880,6 +877,11 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             break;
 
         case 'h':
+            printf
+            (
+                s_help_0, seq_app_name().c_str(),
+                seq_version().c_str(), seq_app_name().c_str()
+            );
             printf(s_help_1a);
             printf(s_help_1b);
             printf(s_help_2);

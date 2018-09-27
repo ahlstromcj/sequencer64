@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and others
  * \date          2015-07-24
- * \updates       2018-09-25
+ * \updates       2018-09-27
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -6102,7 +6102,7 @@ perform::sequence_title (const sequence & seq)
 std::string
 perform::sequence_window_title (const sequence & seq)
 {
-	std::string result = SEQ64_APP_NAME;
+	std::string result = seq_app_name();
     int sn = seq.number();
     if (is_active(sn))
     {
@@ -6135,7 +6135,7 @@ perform::sequence_window_title (const sequence & seq)
 std::string
 perform::main_window_title (const std::string & file_name)
 {
-	std::string result = SEQ64_APP_NAME + std::string(" - ");
+	std::string result = seq_app_name() + std::string(" - ");
 	std::string itemname = "unnamed";
 	int ppqn = choose_ppqn(m_ppqn);
 	char temp[32];
